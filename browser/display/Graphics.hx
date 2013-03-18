@@ -16,9 +16,14 @@ import browser.filters.DropShadowFilter;
 import browser.geom.Matrix;
 import browser.geom.Point;
 import browser.geom.Rectangle;
-import browser.Html5Dom;
 import browser.Lib;
 import nme.Vector;
+import js.html.CanvasElement;
+import js.html.CanvasGradient;
+import js.html.CanvasRenderingContext2D;
+import js.html.Element;
+import js.html.MediaElement;
+import js.Browser;
 
 
 class Graphics {
@@ -69,7 +74,7 @@ class Graphics {
 	public var boundsDirty:Bool;
 	public var nmeExtent(default, null):Rectangle;
 	public var nmeExtentWithFilters(default, null):Rectangle;
-	public var nmeSurface(default, null):HTMLCanvasElement;
+	public var nmeSurface(default, null):CanvasElement;
 	
 	private var mBitmap(default, null):Texture;
 	private var mCurrentLine:LineJob;
@@ -91,13 +96,13 @@ class Graphics {
 	private var _padding:Float;
 	
 	
-	public function new(inSurface:HTMLElement = null) {
+	public function new(inSurface:Element = null) {
 		
 		Lib.nmeBootstrap(); // sanity check
 		
 		if (inSurface == null) {
 			
-			nmeSurface = cast Lib.document.createElement("canvas");
+			nmeSurface = cast Browser.document.createElement("canvas");
 			nmeSurface.width = 0;
 			nmeSurface.height = 0;
 			
@@ -786,7 +791,7 @@ class Graphics {
 			if (width <= NME_MAX_DIM && height <= NME_MAX_DIM) {
 				
 				// re-allocate canvas, copy into larger canvas.
-				var dstCanvas:HTMLCanvasElement = cast Lib.document.createElement("canvas");
+				var dstCanvas:CanvasElement = cast Browser.document.createElement("canvas");
 				dstCanvas.width = width;
 				dstCanvas.height = height;
 				
@@ -841,7 +846,7 @@ class Graphics {
 	
 	public static function nmeDetectIsPointInPathMode():PointInPathMode {
 		
-		var canvas:HTMLCanvasElement = cast Lib.document.createElement("canvas");
+		var canvas:CanvasElement = cast Browser.document.createElement("canvas");
 		var ctx = canvas.getContext('2d');
 		
 		if (ctx.isPointInPath == null) {
@@ -1064,14 +1069,14 @@ class Graphics {
 	}
 	
 	
-	public function nmeMediaSurface(surface:HTMLMediaElement):Void {
+	public function nmeMediaSurface(surface:MediaElement):Void {
 		
 		this.nmeSurface = cast surface;
 		
 	}
 	
 	
-	public function nmeRender(maskHandle:HTMLCanvasElement = null, filters:Array<BitmapFilter> = null, sx:Float = 1.0, sy:Float = 1.0, clip0:Point = null, clip1:Point = null, clip2:Point = null, clip3:Point = null) {
+	public function nmeRender(maskHandle:CanvasElement = null, filters:Array<BitmapFilter> = null, sx:Float = 1.0, sy:Float = 1.0, clip0:Point = null, clip1:Point = null, clip2:Point = null, clip3:Point = null) {
 		
 		if (!nmeChanged) return false;
 		

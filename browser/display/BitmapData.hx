@@ -16,9 +16,14 @@ import browser.geom.Rectangle;
 import browser.gl.GLTexture;
 import browser.utils.ByteArray;
 import browser.utils.Uuid;
-import browser.Html5Dom;
 import browser.Lib;
 import haxe.xml.Check;
+import js.html.CanvasElement;
+import js.html.CanvasRenderingContext2D;
+import js.html.ImageData;
+import js.html.ImageElement;
+import js.html.Uint8ClampedArray;
+import js.Browser;
 
 
 @:autoBuild(nme.Assets.embedBitmap())
@@ -41,10 +46,10 @@ class BitmapData implements IBitmapDrawable {
 	private var nmeLeaseNum:Int;
 	private var nmeLocked:Bool;
 	private var nmeTransparent:Bool;
-	private var nmeTransparentFiller:HTMLCanvasElement;
+	private var nmeTransparentFiller:CanvasElement;
 	
 	private var _nmeId:String;
-	private var _nmeTextureBuffer:HTMLCanvasElement;
+	private var _nmeTextureBuffer:CanvasElement;
 	
 	
 	public function new(width:Int, height:Int, transparent:Bool = true, inFillColor:Int = 0xFFFFFFFF) {
@@ -55,7 +60,7 @@ class BitmapData implements IBitmapDrawable {
 		nmeLease = new ImageDataLease();
 		nmeBuildLease();
 		
-		_nmeTextureBuffer = cast Lib.document.createElement('canvas');
+		_nmeTextureBuffer = cast Browser.document.createElement('canvas');
 		_nmeTextureBuffer.width = width;
 		_nmeTextureBuffer.height = height;
 		_nmeId = Uuid.uuid();
@@ -66,7 +71,7 @@ class BitmapData implements IBitmapDrawable {
 		
 		if (nmeTransparent) {
 			
-			nmeTransparentFiller = cast Lib.document.createElement('canvas');
+			nmeTransparentFiller = cast Browser.document.createElement('canvas');
 			nmeTransparentFiller.width = width;
 			nmeTransparentFiller.height = height;
 			
@@ -486,7 +491,7 @@ class BitmapData implements IBitmapDrawable {
 		
 		var me = this;
 		
-		var doGetColorBoundsRect = function(data:CanvasPixelArray) {
+		var doGetColorBoundsRect = function(data:Uint8ClampedArray) {
 			
 			var minX = me.width, maxX = 0, minY = me.height, maxY = 0, i = 0;
 			
@@ -556,7 +561,7 @@ class BitmapData implements IBitmapDrawable {
 	}
 	
 	
-	private function getInt32(offset:Int, data:CanvasPixelArray) {
+	private function getInt32(offset:Int, data:Uint8ClampedArray) {
 		
 		// code to deal with 31-bit ints.
 		
@@ -876,7 +881,7 @@ class BitmapData implements IBitmapDrawable {
 	}
 	
 	
-	public static function nmeCreateFromHandle(inHandle:HTMLCanvasElement):BitmapData {
+	public static function nmeCreateFromHandle(inHandle:CanvasElement):BitmapData {
 		
 		var result = new BitmapData(0, 0);
 		result._nmeTextureBuffer = inHandle;
@@ -992,7 +997,7 @@ class BitmapData implements IBitmapDrawable {
 			
 		}
 		
-		var img:HTMLImageElement = cast Lib.document.createElement("img");
+		var img:ImageElement = cast Browser.document.createElement("img");
 		var canvas = _nmeTextureBuffer;
 		
 		var drawImage = function(_) {
@@ -1017,6 +1022,8 @@ class BitmapData implements IBitmapDrawable {
 				
 			}
 			
+			rect = new Rectangle (0, 0, canvas.width, canvas.height);
+			
 			if (onload != null) {
 				
 				onload(this);
@@ -1026,12 +1033,7 @@ class BitmapData implements IBitmapDrawable {
 		}
 		
 		img.addEventListener("load", drawImage, false);
-		
-		#if haxe3
 		img.src = 'data:$type;base64,${nmeBase64Encode(bytes)}';
-		#else
-		img.src = Std.format("data:$type;base64,${nmeBase64Encode(bytes)}");
-		#end
 		
 	}
 	
@@ -1083,16 +1085,13 @@ class BitmapData implements IBitmapDrawable {
 	
 	public function nmeLoadFromFile(inFilename:String, inLoader:LoaderInfo = null) {
 		
-		var image:HTMLImageElement = cast Lib.document.createElement("img");
+		var image:ImageElement = cast Browser.document.createElement("img");
 		
 		if (inLoader != null) {
 			
 			var data:LoadData = { image: image, texture: _nmeTextureBuffer, inLoader: inLoader, bitmapData: this };
-			#if haxe3
+			
 			image.addEventListener("load", nmeOnLoad.bind (data), false);
-			#else
-			image.addEventListener("load", callback(nmeOnLoad, data), false);
-			#end
 			// IE9 bug, force a load, if error called and complete is false.
 			image.addEventListener("error", function(e) { if (!image.complete) nmeOnLoad(data, e); }, false);
 			
@@ -1350,7 +1349,7 @@ class BitmapData implements IBitmapDrawable {
 	
 	private function nmeOnLoad(data:LoadData, e) {
 		
-		var canvas:HTMLCanvasElement = cast data.texture;
+		var canvas:CanvasElement = cast data.texture;
 		var width = data.image.width;
 		var height = data.image.height;
 		canvas.width = width;
@@ -1426,8 +1425,8 @@ class BitmapData implements IBitmapDrawable {
 
 typedef LoadData = {
 	
-	var image:HTMLImageElement;
-	var texture:HTMLCanvasElement;
+	var image:ImageElement;
+	var texture:CanvasElement;
 	var inLoader:Null<LoaderInfo>;
 	var bitmapData:BitmapData;
 	
@@ -1471,8 +1470,8 @@ class ImageDataLease {
 
 typedef CopyPixelAtom = {
 	
-	var handle:HTMLCanvasElement;
-	var transparentFiller:HTMLCanvasElement;
+	var handle:CanvasElement;
+	var transparentFiller:CanvasElement;
 	var sourceX:Float;
 	var sourceY:Float;
 	var sourceWidth:Float;

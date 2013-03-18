@@ -2,8 +2,7 @@ package browser.utils;
 #if js
 
 
-import browser.Html5Dom;
+typedef Float32Array = js.html.Float32Array;
 
-typedef Float32Array = browser.Float32Array;
 
 #end

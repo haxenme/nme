@@ -2,7 +2,7 @@ package browser.filters;
 #if js
 
 
-import browser.Html5Dom;
+import js.html.CanvasElement;
 
 
 class BitmapFilter {
@@ -27,14 +27,14 @@ class BitmapFilter {
 	}
 	
 	
-	public function nmePreFilter(surface:HTMLCanvasElement) {
+	public function nmePreFilter(surface:CanvasElement) {
 		
 		
 		
 	}
 	
 	
-	public function nmeApplyFilter(surface:HTMLCanvasElement, refreshCache:Bool = false) {
+	public function nmeApplyFilter(surface:CanvasElement, refreshCache:Bool = false) {
 		
 		
 		

@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 import native.geom.Matrix;
 import native.Loader;
@@ -81,9 +82,9 @@ class Graphics
       nme_gfx_draw_datum(nmeHandle, graphicsDatum.nmeHandle);
    }
 
-   public function drawPoints(inXY:Array<Float>, inPointRGBA:Array<Int> = null, inDefaultRGBA:Int = #if (neko && !neko_v2) 0x3fffffff #else 0xffffffff #end, inSize:Float = -1.0) 
+   public function drawPoints(inXY:Array<Float>, inPointRGBA:Array<Int> = null, inDefaultRGBA:Int = #if (neko && neko_v1) 0x3fffffff #else 0xffffffff #end, inSize:Float = -1.0) 
    {
-      nme_gfx_draw_points(nmeHandle, inXY, inPointRGBA, inDefaultRGBA, #if (neko && !neko_v2) true #else false #end, inSize);
+      nme_gfx_draw_points(nmeHandle, inXY, inPointRGBA, inDefaultRGBA, #if (neko && neko_v1) true #else false #end, inSize);
    }
 
    public function drawRect(inX:Float, inY:Float, inWidth:Float, inHeight:Float) 
@@ -154,7 +155,7 @@ class Graphics
 
    inline static public function RGBA(inRGB:Int, inA:Int = 0xff):Int 
    {
-      #if (neko && !neko_v2)
+      #if (neko && neko_v1)
       return inRGB |((inA & 0xfc) << 22);
       #else
       return inRGB |(inA << 24);
@@ -185,3 +186,4 @@ class Graphics
    private static var nme_gfx_draw_triangles = Loader.load("nme_gfx_draw_triangles", -1);
 }
 
+#end

@@ -6,8 +6,8 @@ import browser.events.Event;
 import browser.geom.Matrix;
 import browser.geom.Point;
 import browser.geom.Rectangle;
-import browser.Html5Dom;
 import browser.Lib;
+import js.html.CanvasElement;
 
 
 class DisplayObjectContainer extends InteractiveObject {
@@ -320,7 +320,7 @@ class DisplayObjectContainer extends InteractiveObject {
 	}
 	
 	
-	override private function nmeRender(inMask:HTMLCanvasElement = null, clipRect:Rectangle = null):Void {
+	override private function nmeRender(inMask:CanvasElement = null, clipRect:Rectangle = null):Void {
 		
 		if (!nmeVisible) return;
 		

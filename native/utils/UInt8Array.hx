@@ -2,13 +2,8 @@ package native.utils;
 
 #if (cpp || neko)
 
-#if haxe3
 class UInt8Array extends ArrayBufferView implements ArrayAccess<Int> 
 {
-#else
-class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int> 
-{
-#end
 
    static public inline var SBYTES_PER_ELEMENT = 1;
 
@@ -39,7 +34,7 @@ class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int>
             #if cpp
             untyped __global__.__hxcpp_memory_set_byte(bytes,i, ints[i]);
             #else
-            buffer.writeByte(int[i + inStart]);
+            buffer.writeByte(ints[i + inStart]);
             #end
          }
       }

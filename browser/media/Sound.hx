@@ -7,14 +7,9 @@ import browser.events.EventDispatcher;
 import browser.events.IOErrorEvent;
 import browser.net.URLRequest;
 import browser.net.URLLoader;
-import browser.Html5Dom;
 import browser.Lib;
-
-#if haxe3
-import haxe.ds.IntMap;
-#else
-typedef IntMap<T> = IntHash<T>;
-#end
+import js.html.MediaElement;
+import js.Browser;
 
 
 @:autoBuild(nme.Assets.embedSound())
@@ -38,7 +33,7 @@ class Sound extends EventDispatcher {
 	public var url(default, null):String;
 	
 	private var nmeSoundCache:URLLoader;
-	private var nmeSoundChannels:IntMap<SoundChannel>;
+	private var nmeSoundChannels:Map<Int, SoundChannel>;
 	private var nmeSoundIdx:Int;
 	private var nmeStreamUrl:String;
 
@@ -54,7 +49,7 @@ class Sound extends EventDispatcher {
 		length = 0;
 		url = null;
 		
-		nmeSoundChannels = new IntMap<SoundChannel>();
+		nmeSoundChannels = new Map<Int, SoundChannel>();
 		nmeSoundIdx = 0;
 		
 		if (stream != null) {
@@ -89,14 +84,15 @@ class Sound extends EventDispatcher {
 	
 	public static function nmeCanPlayMime(mime:String):Bool {
 		
-		var audio:HTMLMediaElement = cast Lib.document.createElement("audio");
+		var audio:MediaElement = cast Browser.document.createElement("audio");
 		
 		var playable = function(ok:String) {
 			
 			if (ok != "" && ok != "no") return true; else return false;
 		}
 		
-		return playable(audio.canPlayType(mime));
+		//return playable(audio.canPlayType(mime));
+		return playable(audio.canPlayType(mime, null));
 		
 	}
 	

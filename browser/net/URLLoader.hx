@@ -10,7 +10,9 @@ import browser.events.ProgressEvent;
 import browser.errors.IOError;
 import browser.events.SecurityErrorEvent;
 import browser.utils.ByteArray;
-import browser.Html5Dom;
+import js.html.EventTarget;
+import js.html.XMLHttpRequest;
+import js.Browser;
 import js.Lib;
 
 
@@ -25,7 +27,7 @@ class URLLoader extends EventDispatcher {
 		// prevent inadvertently using typed arrays when they are unsupported
 		// @todo move these sorts of tests somewhere common in the vein of Modernizr
 		if (inputVal == URLLoaderDataFormat.BINARY
-				&& !Reflect.hasField(browser.Lib.window, "ArrayBuffer")) {
+				&& !Reflect.hasField(Browser.window, "ArrayBuffer")) {
 			dataFormat = URLLoaderDataFormat.TEXT;
 		} else {
 			dataFormat = inputVal;

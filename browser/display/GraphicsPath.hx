@@ -3,11 +3,10 @@ package browser.display;
 
 
 import browser.display.IGraphicsData;
-import browser.Html5Dom;
 import nme.Vector;
 
 
-class GraphicsPath implements IGraphicsData #if !haxe3 , #end implements IGraphicsPath {
+class GraphicsPath implements IGraphicsData implements IGraphicsPath {
 	
 	
 	public var commands:Vector<Int>;

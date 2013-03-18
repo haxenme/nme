@@ -76,7 +76,7 @@ class Stage extends DisplayObjectContainer
    private static var sDownEvents = [ "mouseDown", "middleMouseDown", "rightMouseDown" ];
    private static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
 
-   /** @private */ private var nmeJoyAxisData:IntHash <Array <Float>>;
+   /** @private */ private var nmeJoyAxisData:Map <Int, Array <Float>>;
    /** @private */ private var nmeDragBounds:Rectangle;
    /** @private */ private var nmeDragObject:Sprite;
    /** @private */ private var nmeDragOffsetX:Float;
@@ -88,7 +88,7 @@ class Stage extends DisplayObjectContainer
    /** @private */ private var nmeLastDown:Array<InteractiveObject>;
    /** @private */ private var nmeLastRender:Float;
    /** @private */ private var nmeMouseOverObjects:Array<InteractiveObject>;
-   /** @private */ private var nmeTouchInfo:IntHash<TouchInfo>;
+   /** @private */ private var nmeTouchInfo:Map <Int, TouchInfo>;
    public function new(inHandle:Dynamic, inWidth:Int, inHeight:Int) 
    {
       super(inHandle, "Stage");
@@ -110,8 +110,8 @@ class Stage extends DisplayObjectContainer
       nmeLastDown = [];
       nmeLastClickTime = 0.0;
       this.frameRate = 100;
-      nmeTouchInfo = new IntHash<TouchInfo>();
-      nmeJoyAxisData = new IntHash<Array<Float>>();
+      nmeTouchInfo = new Map<Int, TouchInfo>();
+      nmeJoyAxisData = new Map<Int, Array<Float>>();
 
       #if stage3d
       stage3Ds = new Vector();
@@ -930,9 +930,5 @@ class TouchInfo
       touchOverObjects = [];
    }
 }
-
-#if haxe3
-typedef IntHash<T> = haxe.ds.IntMap<T>
-#end
 
 #end

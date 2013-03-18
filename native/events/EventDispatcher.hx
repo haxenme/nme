@@ -172,11 +172,6 @@ class Listener
 }
 
 typedef ListenerList = Array<WeakRef<Listener>>;
-
-#if haxe3
-typedef EventMap = haxe.ds.StringMap<ListenerList>;
-#else
-typedef EventMap = Hash<ListenerList>;
-#end
+typedef EventMap = Map<String, ListenerList>;
 
 #end

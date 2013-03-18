@@ -13,13 +13,8 @@ import native.geom.Point;
 import native.filters.BitmapFilter;
 import native.Loader;
 
-#if haxe3
 class DisplayObject extends EventDispatcher implements IBitmapDrawable 
 {
-#else
-class DisplayObject extends EventDispatcher, implements IBitmapDrawable 
-{
-#end
 
    public var alpha(get_alpha, set_alpha):Float;
    public var blendMode(get_blendMode, set_blendMode):BlendMode;

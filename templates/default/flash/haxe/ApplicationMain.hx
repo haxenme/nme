@@ -1,3 +1,4 @@
+#if !macro
 #if nme
 
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
@@ -129,13 +130,32 @@ class ApplicationMain {
 
 #end
 
+@:build(DocumentClass.build())
+class DocumentClass extends ::APP_MAIN:: { }
 
-class DocumentClass extends ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS:: {
+#else
+
+import haxe.macro.Context;
+import haxe.macro.Expr;
+
+class DocumentClass {
 	
-	@:getter(stage) private function get_stage ():flash.display.Stage {
-		
-		return flash.Lib.current.stage;
-		
+	macro public static function build ():Array<Field> {
+		var classType = Context.getLocalClass().get();
+		var searchTypes = classType;
+		while (searchTypes.superClass != null) {
+			if (searchTypes.pack.length == 2 && searchTypes.pack[1] == "display" && searchTypes.name == "DisplayObject") {
+				var fields = Context.getBuildFields();
+				var method = macro {
+					return flash.Lib.current.stage;
+				}
+				fields.push ({ name: "get_stage", access: [ APrivate #if nme, AOverride #end ], meta: [ { name: ":getter", params: [ macro stage ], pos: Context.currentPos() } ], kind: FFun({ args: [], expr: method, params: [], ret: macro :flash.display.Stage }), pos: Context.currentPos() });
+				return fields;
+			}
+			searchTypes = searchTypes.superClass.t.get();
+		}
+		return null;
 	}
 	
 }
+#end

@@ -4,7 +4,6 @@ package browser.filters;
 
 import browser.display.BitmapData;
 import browser.geom.Point;
-import browser.Html5Dom;
 
 
 class DisplacementMapFilter extends BitmapFilter {

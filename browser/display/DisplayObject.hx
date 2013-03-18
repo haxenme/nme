@@ -20,15 +20,14 @@ import browser.geom.Point;
 import browser.geom.Rectangle;
 import browser.geom.Transform;
 import browser.utils.Uuid;
-import browser.Html5Dom;
 import browser.Lib;
+import js.html.CanvasElement;
+import js.html.DivElement;
+import js.html.Element;
+import js.Browser;
 
 
-#if haxe3
 class DisplayObject extends EventDispatcher implements IBitmapDrawable {
-#else
-class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
-#end
 	
 	
 	private static inline var GRAPHICS_INVALID:Int = 1 << 1;
@@ -79,7 +78,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	private var nmeX:Float;
 	private var nmeY:Float;
 	
-	private var _bottommostSurface(get__bottommostSurface, null):HTMLElement;
+	private var _bottommostSurface(get__bottommostSurface, null):Element;
 	private var _boundsInvalid(get__boundsInvalid, never):Bool;
 	private var _fullScaleX:Float;
 	private var _fullScaleY:Float;
@@ -87,11 +86,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	private var _matrixInvalid(get__matrixInvalid, never):Bool;
 	private var _nmeId:String;
 	private var _nmeRenderFlags:Int;
-	private var _topmostSurface(get__topmostSurface, null):HTMLElement;
+	private var _topmostSurface(get__topmostSurface, null):Element;
 		
 	//scrollRect divs
-	private var _srWindow : HTMLDivElement;
-	private var _srAxes   : HTMLDivElement;
+	private var _srWindow : DivElement;
+	private var _srAxes   : DivElement;
 
 	
 	public function new() {
@@ -387,7 +386,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	}
 	
 	
-	private inline function nmeApplyFilters(surface:HTMLCanvasElement):Void {
+	private inline function nmeApplyFilters(surface:CanvasElement):Void {
 		
 		if (nmeFilters != null) {
 			
@@ -579,7 +578,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	}
 	
 	
-	private inline function nmeGetSurface():HTMLCanvasElement {
+	private inline function nmeGetSurface():CanvasElement {
 		
 		var gfx = nmeGetGraphics();
 		var surface = null;
@@ -683,7 +682,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	}
 	
 	
-	private function nmeRender(inMask:HTMLCanvasElement = null, clipRect:Rectangle = null) {
+	private function nmeRender(inMask:CanvasElement = null, clipRect:Rectangle = null) {
 		
 		if (!nmeCombinedVisible) return;
 		
@@ -966,7 +965,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	
 	
 	
-	private function get__bottommostSurface():HTMLElement {
+	private function get__bottommostSurface():Element {
 		
 		var gfx = nmeGetGraphics();
 		if (gfx != null) return gfx.nmeSurface;
@@ -1272,7 +1271,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	}
 	
 	
-	private function get__topmostSurface():HTMLElement {
+	private function get__topmostSurface():Element {
 		
 		var gfx = nmeGetGraphics();
 		
@@ -1406,7 +1405,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 	* Get this._srWindow
 	*
 	*/
-	public function nmeGetSrWindow () : HTMLDivElement {
+	public function nmeGetSrWindow () : DivElement {
 	    return this._srWindow;
 	}//function nmeGetSrWindow()
 
@@ -1428,8 +1427,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable {
 
 		//create divs
 		if ( this._srWindow == null ) {
-			this._srWindow = cast Lib.document.createElement('div');
-			this._srAxes   = cast Lib.document.createElement('div');
+			this._srWindow = cast Browser.document.createElement('div');
+			this._srAxes   = cast Browser.document.createElement('div');
 
 			this._srWindow.style.setProperty("position", "absolute", "");
 			this._srWindow.style.setProperty("left", "0px", "");

@@ -1,4 +1,5 @@
 package native.display;
+#if (cpp || neko)
 
 import haxe.io.Bytes;
 import native.geom.Rectangle;
@@ -9,6 +10,7 @@ import native.filters.BitmapFilter;
 import native.utils.ByteArray;
 import native.Loader;
 
+@:autoBuild(nme.Assets.embedBitmap())
 class BitmapData implements IBitmapDrawable 
 {
    public static var CLEAR = createColor(0, 0);
@@ -96,7 +98,7 @@ class BitmapData implements IBitmapDrawable
 
    public static inline function createColor(inRGB:Int, inAlpha:Int = 0xFF):BitmapInt32 
    {
-      #if (neko && !neko_v2)
+      #if (neko && neko_v1)
       return { rgb: inRGB, a: inAlpha };
       #else
       return inRGB |(inAlpha << 24);
@@ -137,7 +139,7 @@ class BitmapData implements IBitmapDrawable
 
    public static inline function extractAlpha(v:BitmapInt32):Int 
    {
-      #if (neko && !neko_v2)
+      #if (neko && neko_v1)
       return v.a;
       #else
       return v >>> 24;
@@ -146,7 +148,7 @@ class BitmapData implements IBitmapDrawable
 
    public static inline function extractColor(v:BitmapInt32):Int 
    {
-      #if (neko && !neko_v2)
+      #if (neko && neko_v1)
       return v.rgb;
       #else
       return v & 0xFFFFFF;
@@ -163,6 +165,12 @@ class BitmapData implements IBitmapDrawable
    public function fillRectEx(rect:Rectangle, inColour:Int, inAlpha:Int = 255):Void 
    {
       nme_bitmap_data_fill(nmeHandle, rect, inColour, inAlpha);
+   }
+   
+   public function floodFill(x:Int, y:Int, color:Int):Void
+   {
+	   //nmeFloodFill(x, y, color, getPixel32(x, y)); // causing crashes, switching to clear() for now
+	   clear(color);
    }
 
    public function generateFilterRect(sourceRect:Rectangle, filter:BitmapFilter):Rectangle 
@@ -186,7 +194,7 @@ class BitmapData implements IBitmapDrawable
 
    public function getPixel32(x:Int, y:Int):BitmapInt32 
    {
-      #if (neko && !neko_v2)
+      #if (neko && neko_v1)
       return nme_bitmap_data_get_pixel_rgba(nmeHandle, x, y);
       #else
       return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
@@ -251,7 +259,7 @@ class BitmapData implements IBitmapDrawable
    public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):BitmapData 
    {
       var result = new BitmapData(0, 0);
-      result.nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
+	  result.nmeLoadFromBytes(inBytes, inRawAlpha);
       return result;
    }
 
@@ -268,6 +276,38 @@ class BitmapData implements IBitmapDrawable
    /** @private */ public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void {
       // IBitmapDrawable interface...
       nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendMode, clipRect, smoothing);
+   }
+   
+   // need to build a better way to do this
+   private inline function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:Int):Void
+   {
+	   if (getPixel32(x, y) == replaceColor) {
+		   
+		   setPixel32(x, y, color);
+		   
+		   var safeLeft = (x > 0);
+		   var safeRight = (x < width - 1);
+		   var safeBottom = (y < height - 1);
+		   var safeTop = (y > 0);
+		   
+		   try { 
+				
+			   if (safeRight) nmeFloodFill(x + 1, y, color, replaceColor);
+			   if (safeRight && safeBottom) nmeFloodFill(x + 1, y + 1, color, replaceColor);
+			   if (safeRight && safeTop) nmeFloodFill(x + 1, y - 1, color, replaceColor);
+			   if (safeLeft) nmeFloodFill(x - 1, y, color, replaceColor);
+			   if (safeLeft && safeBottom) nmeFloodFill(x - 1, y + 1, color, replaceColor);
+			   if (safeLeft && safeTop) nmeFloodFill(x - 1, y - 1, color, replaceColor);
+			   if (safeBottom) nmeFloodFill(x, y + 1, color, replaceColor);
+			   if (safeTop) nmeFloodFill(x, y - 1, color, replaceColor);
+			   
+		   } catch (e:Dynamic) {}
+	   }
+   }
+   
+   private inline function nmeLoadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Void 
+   {
+      nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
    }
 
    public function perlinNoise(baseX:Float, baseY:Float, numOctaves:Int, randomSeed:Int, stitch:Bool, fractalNoise:Bool, channelOptions:Int = 7, grayScale:Bool = false, ?offsets:Array<Point>):Void 
@@ -294,7 +334,7 @@ class BitmapData implements IBitmapDrawable
 
    public function setPixel32(inX:Int, inY:Int, inColour:BitmapInt32):Void 
    {
-      #if (neko && !neko_v2)
+      #if (neko && neko_v1)
       nme_bitmap_data_set_pixel_rgba(nmeHandle, inX, inY, inColour);
       #else
       nme_bitmap_data_set_pixel32(nmeHandle, inX, inY, inColour);
@@ -561,7 +601,7 @@ class OptimizedPerlin
 
             var color = Std.int(( s * fPersMax + 1 ) * 128);
 
-            #if (neko && !neko_v2)
+            #if (neko && neko_v1)
             var pixel = { a: 0xFF, rgb: color };
             #else
             var pixel = 0xff000000 | color << 16 | color << 8 | color;
@@ -598,7 +638,7 @@ class OptimizedPerlin
 
    private function seedOffset(iSeed:Int) 
    {
-      #if (neko && !neko_v2)
+      #if (neko && neko_v1)
       iXoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
       iYoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
       iZoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
@@ -610,3 +650,4 @@ class OptimizedPerlin
    }
 }
 
+#end

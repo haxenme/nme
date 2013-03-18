@@ -2,7 +2,7 @@ package native.utils;
 
 #if (cpp || neko)
 
-class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> 
+class Int16Array extends ArrayBufferView implements ArrayAccess<Int> 
 {
    static public inline var SBYTES_PER_ELEMENT = 2;
 
