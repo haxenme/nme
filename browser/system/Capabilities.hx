@@ -49,14 +49,14 @@ class Capabilities {
 	
 	private static function get_screenResolutionX():Float { 
 		
-		return Std.parseFloat(Browser.window.screen.width);
+		return Browser.window.screen.width;
 		
 	}
 	
 	
 	private static function get_screenResolutionY():Float {
 		
-		return Std.parseFloat(Browser.window.screen.height);
+		return Browser.window.screen.height;
 		
 	}
 	
