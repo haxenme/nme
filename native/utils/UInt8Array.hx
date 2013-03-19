@@ -2,8 +2,13 @@ package native.utils;
 
 #if (cpp || neko)
 
+#if haxe3
 class UInt8Array extends ArrayBufferView implements ArrayAccess<Int> 
 {
+#else
+class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int> 
+{
+#end
 
    static public inline var SBYTES_PER_ELEMENT = 1;
 

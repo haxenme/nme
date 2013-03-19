@@ -9,8 +9,13 @@ import browser.Lib;
 import haxe.io.Bytes;
 import haxe.Serializer;
 import haxe.Unserializer;
+
+#if haxe3
 import js.html.Storage;
 import js.Browser;
+#else
+import js.Storage;
+#end
 
 
 class SharedObject extends EventDispatcher {
@@ -107,7 +112,11 @@ class SharedObject extends EventDispatcher {
 	
 	private static function nmeGetLocalStorage():Storage {
 		
+		#if haxe3
 		var res = Browser.getLocalStorage();
+		#else
+		var res = Storage.getLocal();
+		#end
 		if (res == null) throw new Error("SharedObject not supported");
 		return res;
 		

@@ -29,7 +29,7 @@ package nme.utils;
  * </ul>
  * </p>
  */
-extern class ByteArray /*implements IDataOutput,*/ implements IDataInput implements ArrayAccess<Int> {
+extern class ByteArray /*implements IDataOutput,*/ implements IDataInput #if !haxe3 , #end implements ArrayAccess<Int> {
 
 	/**
 	 * The number of bytes of data available for reading from the current

@@ -16,15 +16,9 @@ import browser.geom.Matrix;
 import browser.geom.Point;
 import browser.geom.Rectangle;
 import browser.net.URLRequest;
+import browser.Html5Dom;
 import haxe.Template;
 import haxe.Timer;
-import js.html.Attr;
-import js.html.CanvasElement;
-import js.html.CanvasRenderingContext2D;
-import js.html.DivElement;
-import js.html.Element;
-import js.html.MetaElement;
-import js.Browser;
 
 
 class Lib {
@@ -34,6 +28,8 @@ class Lib {
 	public static inline var HTML_ORIENTATION_EVENT_TYPE = 'orientationchange';
 	
 	public static var current(get_current, null):MovieClip;
+	public static var document(get_document, null):HTMLDocument;
+	public static var window(get_window, null):Window;
 	
 	private static inline var DEFAULT_HEIGHT = 500;
 	private static inline var DEFAULT_WIDTH = 500;
@@ -53,10 +49,10 @@ class Lib {
 	
 	private var mArgs:Array<String>;
 	private var mKilled:Bool;
-	private var __scr:DivElement;
+	private var __scr:HTMLDivElement;
 	
 	
-	private function new(rootElement:DivElement, width:Int, height:Int) {
+	private function new(rootElement:HTMLDivElement, width:Int, height:Int) {
 		
 		mKilled = false;
 		
@@ -100,13 +96,26 @@ class Lib {
 	
 	public static function getURL(request:URLRequest, target:String = null) {
 		
-		//Browser.document.open(request.url);
-		untyped { document.open(request.url); }
+		if (target == null || target == "_self") {
+			
+			document.open(request.url);
+			
+		} else {
+			
+			switch (target) {
+				
+				case "_blank": window.open(request.url);
+				case "_parent": window.parent.open(request.url);
+				case "_top": window.top.open(request.url);
+				
+			}
+			
+		}
 		
 	}
 	
 	
-	public static function nmeAppendSurface(surface:Element, before:Element = null, after:Element = null):Void {
+	public static function nmeAppendSurface(surface:HTMLElement, before:HTMLElement = null, after:HTMLElement = null):Void {
 		
 		if (mMe.__scr != null) {
 			
@@ -132,7 +141,7 @@ class Lib {
 				} catch(e:Dynamic) { }
 				
 			}
-			
+						
 			if (before != null) {
 				before.parentNode.insertBefore(surface, before);
 				
@@ -149,7 +158,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeAppendText(surface:Element, container:Element, text:String, wrap:Bool, isHtml:Bool):Void {
+	public static function nmeAppendText(surface:HTMLElement, container:HTMLElement, text:String, wrap:Bool, isHtml:Bool):Void {
 		
 		for (i in 0...surface.childNodes.length) {
 			
@@ -163,7 +172,7 @@ class Lib {
 			
 		} else {
 			
-			container.appendChild(cast Browser.document.createTextNode(text));
+			container.appendChild(cast document.createTextNode(text));
 			
 		}
 		
@@ -180,7 +189,7 @@ class Lib {
 		
 		if (mMe == null) {
 			
-			var target:DivElement = cast Browser.document.getElementById(NME_IDENTIFIER);
+			var target:HTMLDivElement = cast document.getElementById(NME_IDENTIFIER);
 			
 			if (target == null) {
 				
@@ -216,7 +225,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeCopyStyle(src:Element, tgt:Element):Void {
+	public static function nmeCopyStyle(src:HTMLElement, tgt:HTMLElement):Void {
 		
 		tgt.id = src.id;
 		
@@ -229,7 +238,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeCreateSurfaceAnimationCSS<T>(surface:Element, data:Array<T>, template:Template, templateFunc:T -> Dynamic, fps:Float = 25, discrete:Bool = false, infinite:Bool = false):Dynamic {
+	public static function nmeCreateSurfaceAnimationCSS<T>(surface:HTMLElement, data:Array<T>, template:Template, templateFunc:T -> Dynamic, fps:Float = 25, discrete:Bool = false, infinite:Bool = false):Dynamic {
 		
 		// TODO: getSanitizedOrGenerate ID
 		
@@ -246,11 +255,11 @@ class Lib {
 		
 		if (surface.getAttribute("data-nme-anim") != null) {
 			
-			style = Browser.document.getElementById(surface.getAttribute("data-nme-anim"));
+			style = document.getElementById(surface.getAttribute("data-nme-anim"));
 			
 		} else {
 			
-			style = cast mMe.__scr.appendChild(Browser.document.createElement("style"));
+			style = cast mMe.__scr.appendChild(document.createElement("style"));
 			style.sheet.id = "__nme_anim_" + surface.id + "__";
 			surface.setAttribute("data-nme-anim", style.sheet.id);
 			
@@ -307,7 +316,7 @@ class Lib {
 	
 	public static function nmeDesignMode(mode:Bool):Void {
 		
-		Browser.document.designMode = mode ? 'on' : 'off';
+		document.designMode = mode ? 'on' : 'off';
 		
 	}
 	
@@ -342,7 +351,7 @@ class Lib {
 	}
 	
 	
-	private static function nmeDrawClippedImage(surface:CanvasElement, tgtCtx:CanvasRenderingContext2D, clipRect:Rectangle = null):Void {
+	private static function nmeDrawClippedImage(surface:HTMLCanvasElement, tgtCtx:CanvasRenderingContext2D, clipRect:Rectangle = null):Void {
 		
 		if (clipRect != null) {
 			
@@ -362,7 +371,7 @@ class Lib {
 	}
 	
 	
-	public inline static function nmeDrawSurfaceRect(surface:Element, tgt:CanvasElement, x:Float, y:Float, rect:Rectangle) {
+	public inline static function nmeDrawSurfaceRect(surface:HTMLElement, tgt:HTMLCanvasElement, x:Float, y:Float, rect:Rectangle) {
 		
 		var tgtCtx = tgt.getContext('2d');
 		
@@ -375,7 +384,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeDrawToSurface(surface:CanvasElement, tgt:CanvasElement, matrix:Matrix = null, alpha:Float = 1.0, clipRect:Rectangle = null):Void {
+	public static function nmeDrawToSurface(surface:HTMLCanvasElement, tgt:HTMLCanvasElement, matrix:Matrix = null, alpha:Float = 1.0, clipRect:Rectangle = null):Void {
 		
 		var srcCtx:CanvasRenderingContext2D = surface.getContext("2d");
 		var tgtCtx:CanvasRenderingContext2D = tgt.getContext("2d");
@@ -462,21 +471,21 @@ class Lib {
 	
 	public inline static function nmeFullScreenHeight():Int {
 		
-		return Browser.window.innerHeight;
+		return window.innerHeight;
 		
 	}
 	
 	
 	public inline static function nmeFullScreenWidth():Int {
 		
-		return Browser.window.innerWidth;
+		return window.innerWidth;
 		
 	}
 	
 	
 	public static function nmeGetHeight():Int {
 		
-		var tgt:DivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast Browser.document.getElementById(NME_IDENTIFIER);
+		var tgt:HTMLDivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast document.getElementById(NME_IDENTIFIER);
 		return (tgt != null && tgt.clientHeight > 0) ? tgt.clientHeight:Lib.DEFAULT_HEIGHT;
 		
 	}
@@ -500,15 +509,15 @@ class Lib {
 	
 	public static function nmeGetWidth():Int {
 		
-		var tgt:DivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast Browser.document.getElementById(NME_IDENTIFIER);
+		var tgt:HTMLDivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast document.getElementById(NME_IDENTIFIER);
 		return (tgt != null && tgt.clientWidth > 0) ? tgt.clientWidth:Lib.DEFAULT_WIDTH;
 		
 	}
 	
 	
-	public static inline function nmeIsOnStage(surface:Element):Bool {
+	public static inline function nmeIsOnStage(surface:HTMLElement):Bool {
 		
-		var p : Element = cast surface;
+		var p : HTMLElement = cast surface;
 
 		while (p != null && p != mMe.__scr) {
 			p = cast p.parentNode;
@@ -559,7 +568,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeRemoveSurface(surface:Element):Dynamic {
+	public static function nmeRemoveSurface(surface:HTMLElement):Dynamic {
 		
 		if (mMe.__scr != null) {
 			
@@ -567,7 +576,7 @@ class Lib {
 			
 			if (anim != null) {
 				
-				var style = Browser.document.getElementById(anim);
+				var style = document.getElementById(anim);
 				if (style != null) mMe.__scr.removeChild(cast style);
 				
 			}
@@ -583,7 +592,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetSurfaceBorder(surface:Element, color:Int, size:Int):Void {
+	public static function nmeSetSurfaceBorder(surface:HTMLElement, color:Int, size:Int):Void {
 		
 		surface.style.setProperty("border-color", '#' + StringTools.hex(color), "");
 		surface.style.setProperty("border-style", 'solid' , "");
@@ -593,7 +602,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetSurfaceClipping(surface:Element, rect:Rectangle):Void {
+	public static function nmeSetSurfaceClipping(surface:HTMLElement, rect:Rectangle):Void {
 		
 		//rect(<top>, <right>, <bottom>, <left>)
 		//trace("clip: " + "rect(" + rect.top + "px, " + rect.right + "px, " + rect.bottom + "px, " + rect.left + "px)");
@@ -602,7 +611,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetSurfaceFont(surface:Element, font:String, bold:Int, size:Float, color:Int, align:String, lineHeight:Int):Void {
+	public static function nmeSetSurfaceFont(surface:HTMLElement, font:String, bold:Int, size:Float, color:Int, align:String, lineHeight:Int):Void {
 		
 		surface.style.setProperty("font-family", font, "");
 		surface.style.setProperty("font-weight", Std.string(bold), "");
@@ -614,14 +623,14 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetSurfaceOpacity(surface:Element, alpha:Float):Void {
+	public static function nmeSetSurfaceOpacity(surface:HTMLElement, alpha:Float):Void {
 		
 		surface.style.setProperty("opacity", Std.string(alpha), "");
 		
 	}
 	
 	
-	public static function nmeSetSurfacePadding(surface:Element, padding:Float, margin:Float, display:Bool):Void {
+	public static function nmeSetSurfacePadding(surface:HTMLElement, padding:Float, margin:Float, display:Bool):Void {
 		
 		surface.style.setProperty("padding", padding + 'px', "");
 		surface.style.setProperty("margin", margin + 'px' , "");
@@ -634,7 +643,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetSurfaceTransform(surface:Element, matrix:Matrix):Void {
+	public static function nmeSetSurfaceTransform(surface:HTMLElement, matrix:Matrix):Void {
 		
 		if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1 && surface.getAttribute("data-nme-anim") == null) {
 			
@@ -671,7 +680,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetSurfaceZIndexAfter(surface1:Element, surface2:Element):Void {
+	public static function nmeSetSurfaceZIndexAfter(surface1:HTMLElement, surface2:HTMLElement):Void {
 		if ( surface1 != null && surface2 != null ) {
 			if ( surface1.parentNode != surface2.parentNode && surface2.parentNode != null ) {
 				surface2.parentNode.appendChild(surface1);
@@ -703,7 +712,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeSwapSurface(surface1:Element, surface2:Element):Void {
+	public static function nmeSwapSurface(surface1:HTMLElement, surface2:HTMLElement):Void {
 		
 		var parent1 = surface1.parentNode;
 		var parent2 = surface2.parentNode;
@@ -746,7 +755,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetContentEditable(surface:Element, contentEditable:Bool = true):Void {
+	public static function nmeSetContentEditable(surface:HTMLElement, contentEditable:Bool = true):Void {
 		
 		surface.setAttribute("contentEditable", contentEditable ? "true" : "false");
 		
@@ -770,14 +779,14 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetSurfaceAlign(surface:Element, align:String):Void {
+	public static function nmeSetSurfaceAlign(surface:HTMLElement, align:String):Void {
 		
 		surface.style.setProperty("text-align", align, "");
 		
 	}
 	
 	
-	public inline static function nmeSetSurfaceId(surface:Element, name:String):Void {
+	public inline static function nmeSetSurfaceId(surface:HTMLElement, name:String):Void {
 		
 		var regex = ~/[^a-zA-Z0-9\-]/g;
 		surface.id = regex.replace(name, "_");
@@ -785,7 +794,7 @@ class Lib {
 	}
 	
 	
-	public inline static function nmeSetSurfaceRotation(surface:Element, rotate:Float):Void {
+	public inline static function nmeSetSurfaceRotation(surface:HTMLElement, rotate:Float):Void {
 		
 		surface.style.setProperty("transform", "rotate(" + rotate + "deg)", "");
 		surface.style.setProperty("-moz-transform", "rotate(" + rotate + "deg)", "");
@@ -796,7 +805,7 @@ class Lib {
 	}
 	
 	
-	public inline static function nmeSetSurfaceScale(surface:Element, scale:Float):Void {
+	public inline static function nmeSetSurfaceScale(surface:HTMLElement, scale:Float):Void {
 		
 		surface.style.setProperty("transform", "scale(" + scale + ")", "");
 		surface.style.setProperty("-moz-transform", "scale(" + scale + ")", "");
@@ -807,15 +816,14 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetSurfaceSpritesheetAnimation(surface:CanvasElement, spec:Array<Rectangle>, fps:Float):Element {
+	public static function nmeSetSurfaceSpritesheetAnimation(surface:HTMLCanvasElement, spec:Array<Rectangle>, fps:Float):HTMLElement {
 		
 		if (spec.length == 0) return surface;
-		var div:DivElement = cast Browser.document.createElement("div");
+		var div:HTMLDivElement = cast document.createElement("div");
 		
 		// TODO: to be revisited...(see webkit-canvas and -moz-element)
 		
-		//div.style.backgroundImage = "url(" + surface.toDataURL("image/png", {}) + ")";
-		div.style.backgroundImage = "url(" + surface.toDataURL("image/png") + ")";
+		div.style.backgroundImage = "url(" + surface.toDataURL("image/png", {}) + ")";
 		div.id = surface.id;
 		
 		var keyframeTpl = new Template("background-position: ::left::px ::top::px; width: ::width::px; height: ::height::px; ");
@@ -852,7 +860,7 @@ class Lib {
 	}
 	
 	
-	public inline static function nmeSetSurfaceVisible(surface:Element, visible:Bool):Void {
+	public inline static function nmeSetSurfaceVisible(surface:HTMLElement, visible:Bool):Void {
 		
 		if (visible) {
 			
@@ -867,7 +875,7 @@ class Lib {
 	}
 	
 	
-	public static function nmeSetTextDimensions(surface:Element, width:Float, height:Float, align:String):Void {
+	public static function nmeSetTextDimensions(surface:HTMLElement, width:Float, height:Float, align:String):Void {
 		
 		surface.style.setProperty("width", width + "px", "");
 		surface.style.setProperty("height", height + "px", "");
@@ -877,11 +885,11 @@ class Lib {
 	}
 	
 	
-	public static function nmeSurfaceHitTest(surface:Element, x:Float, y:Float):Bool {
+	public static function nmeSurfaceHitTest(surface:HTMLElement, x:Float, y:Float):Bool {
 		
 		for (i in 0...surface.childNodes.length) {
 			
-			var node:Element = cast surface.childNodes[i];
+			var node:HTMLElement = cast surface.childNodes[i];
 			
 			if (x >= node.offsetLeft && x <= (node.offsetLeft + node.offsetWidth) && y >= node.offsetTop && y <= (node.offsetTop + node.offsetHeight)) {
 				
@@ -898,7 +906,7 @@ class Lib {
 	
 	public static function preventDefaultTouchMove():Void {
 		
-		Browser.document.addEventListener("touchmove", function(evt:js.html.Event):Void {
+		document.addEventListener("touchmove", function(evt:Html5DomEvent):Void {
 			
 			evt.preventDefault();
 			
@@ -907,7 +915,7 @@ class Lib {
 	}
 	
 	
-	private static function Run(tgt:DivElement, width:Int, height:Int):Lib {
+	private static function Run(tgt:HTMLDivElement, width:Int, height:Int):Lib {
 		
 		mMe = new Lib(tgt, width, height);
 		
@@ -951,21 +959,21 @@ class Lib {
 			
 		}
 		
-		if (Reflect.hasField(Browser.window, "on" + HTML_ACCELEROMETER_EVENT_TYPE)) {
+		if (Reflect.hasField(window, "on" + HTML_ACCELEROMETER_EVENT_TYPE)) {
 			
-			Browser.window.addEventListener(HTML_ACCELEROMETER_EVENT_TYPE, nmeGetStage().nmeQueueStageEvent, true);
+			window.addEventListener(HTML_ACCELEROMETER_EVENT_TYPE, nmeGetStage().nmeQueueStageEvent, true);
 			
 		}
 		
-		if (Reflect.hasField(Browser.window, "on" + HTML_ORIENTATION_EVENT_TYPE)) {
+		if (Reflect.hasField(window, "on" + HTML_ORIENTATION_EVENT_TYPE)) {
 			
-			Browser.window.addEventListener(HTML_ORIENTATION_EVENT_TYPE, nmeGetStage().nmeQueueStageEvent, true);
+			window.addEventListener(HTML_ORIENTATION_EVENT_TYPE, nmeGetStage().nmeQueueStageEvent, true);
 			
 		}
 		
 		for (type in HTML_WINDOW_EVENT_TYPES) {
 			
-			Browser.window.addEventListener(type, nmeGetStage().nmeQueueStageEvent, false);
+			window.addEventListener(type, nmeGetStage().nmeQueueStageEvent, false);
 			
 		}
 		
@@ -973,13 +981,13 @@ class Lib {
 		// search document for data-bindings
 		untyped {
 			
-			if (Browser.document.querySelectorAll != null) {
+			if (Lib.document.querySelectorAll != null) {
 				
 				var parser = new hscript.Parser();
 				
 				for (type in HTML_DIV_EVENT_TYPES) {
 					
-					var allElements = Browser.document.querySelectorAll("[data-nme-binding-" + type.toLowerCase() + "]");
+					var allElements = document.querySelectorAll("[data-nme-binding-" + type.toLowerCase() + "]");
 					
 					if (allElements != null) {
 						
@@ -1056,7 +1064,7 @@ class Lib {
 		
 		try {
 			
-			var winParameters = untyped Browser.window.winParameters();
+			var winParameters = untyped window.winParameters();
 			
 			for (prop in Reflect.fields(winParameters)) {
 				
@@ -1073,7 +1081,7 @@ class Lib {
 	
 	public static function setUserScalable(isScalable:Bool = true):Void {
 		
-		var meta:MetaElement = cast Browser.document.createElement("meta");
+		var meta:HTMLMetaElement = cast document.createElement("meta");
 		meta.name = "viewport";
 		meta.content = "user-scalable=" + (isScalable ? "yes" : "no");
 		
@@ -1105,6 +1113,28 @@ class Lib {
 		}
 		
 		return mMainClassRoot;
+		
+	}
+	
+	
+	private static inline function get_document():HTMLDocument {
+		
+		#if haxe3
+		return cast js.Browser.document;
+		#else
+		return cast js.Lib.document;
+		#end
+		
+	}
+	
+	
+	private static inline function get_window():Window {
+		
+		#if haxe3
+		return cast js.Browser.window;
+		#else
+		return cast js.Lib.window;
+		#end
 		
 	}
 	

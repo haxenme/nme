@@ -14,19 +14,25 @@ import nme.net.URLLoaderDataFormat;
 import nme.Assets;
 import nme.Lib;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
+
 class ApplicationMain {
 
 	private static var completed:Int;
 	private static var preloader:::PRELOADER_NAME::;
 	private static var total:Int;
 
-	public static var loaders:Map <String, Loader>;
-	public static var urlLoaders:Map <String, URLLoader>;
+	public static var loaders:StringMap <Loader>;
+	public static var urlLoaders:StringMap <URLLoader>;
 
 	public static function main() {
 		completed = 0;
-		loaders = new Map <String, Loader>();
-		urlLoaders = new Map <String, URLLoader>();
+		loaders = new StringMap <Loader>();
+		urlLoaders = new StringMap <URLLoader>();
 		total = 0;
 		
 		nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");

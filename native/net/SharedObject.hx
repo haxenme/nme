@@ -1,16 +1,42 @@
 package native.net;
 #if (cpp || neko)
 
-import haxe.io.Eof;
-import haxe.io.Path;
-import haxe.Serializer;
-import haxe.Unserializer;
-import native.events.EventDispatcher;
-import native.Loader;
+#if haxe3
+
 import sys.FileSystem;
 import sys.io.File;
 import sys.io.FileInput;
 import sys.io.FileOutput;
+import haxe.io.Path;
+import Sys;
+import native.Loader;
+
+#elseif cpp
+
+import cpp.FileSystem;
+import cpp.io.File;
+import cpp.io.FileInput;
+import cpp.io.FileOutput;
+import cpp.io.Path;
+import cpp.Sys;
+import native.Loader;
+
+#elseif neko
+
+import neko.FileSystem;
+import neko.io.File;
+import neko.io.FileInput;
+import neko.io.FileOutput;
+import neko.io.Path;
+import neko.Sys;
+import native.Loader;
+
+#end
+
+import haxe.Serializer;
+import haxe.Unserializer;
+import haxe.io.Eof;
+import native.events.EventDispatcher;
 
 class SharedObject extends EventDispatcher 
 {

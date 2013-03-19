@@ -13,7 +13,7 @@ package nme.display;
  * <code>Graphics.lineBitmapStyle()</code> method, or the
  * <code>Graphics.lineGradientStyle()</code> method. </p>
  */
-@:final extern class GraphicsStroke implements IGraphicsData/* implements IGraphicsStroke*/ {
+@:final extern class GraphicsStroke implements IGraphicsData/* #if !haxe3 , #end implements IGraphicsStroke*/ {
 
 	/**
 	 * Specifies the type of caps at the end of lines. Valid values are:

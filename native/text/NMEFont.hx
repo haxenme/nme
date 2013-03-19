@@ -3,9 +3,13 @@ package native.text;
 
 import native.display.BitmapData;
 
+#if haxe3
+typedef Hash<T> = haxe.ds.StringMap<T>;
+#end
+
 class NMEFont 
 {
-   static var factories = new Map<String, NMEFontFactory>();
+   static var factories = new Hash<NMEFontFactory>();
 
    var height:Int;
    var ascent:Int;

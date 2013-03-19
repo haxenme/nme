@@ -2,7 +2,7 @@ package nme.display;
 #if display
 
 
-@:final extern class GraphicsBitmapFill implements IGraphicsData implements IGraphicsFill {
+@:final extern class GraphicsBitmapFill implements IGraphicsData #if !haxe3 , #end implements IGraphicsFill {
 	var bitmapData : BitmapData;
 	var matrix : nme.geom.Matrix;
 	var repeat : Bool;

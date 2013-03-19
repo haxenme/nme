@@ -6,6 +6,12 @@ import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+import NMEProject;
+#end
+
 
 class RunScript {
 	
@@ -17,7 +23,7 @@ class RunScript {
 	private static var nmeFilters:Array <String> = [ "obj", ".git", ".gitignore", ".svn", ".DS_Store", "all_objs", "Export", "tools", "project" ];
 	
 	
-	private static function build (path:String = "", targets:Array<String> = null, flags:Map <String, String> = null, defines:Array<String> = null):Void {
+	private static function build (path:String = "", targets:Array<String> = null, flags:StringMap <String> = null, defines:Array<String> = null):Void {
 		
 		if (path == "") {
 			
@@ -47,7 +53,7 @@ class RunScript {
 		
 		if (flags == null) {
 			
-			flags = new Map <String, String> ();
+			flags = new StringMap <String> ();
 			
 		}
 		
@@ -149,11 +155,11 @@ class RunScript {
 	}
 	
 	
-	static private function buildLibrary (target:String, flags:Map <String, String> = null, defines:Array<String> = null, path:String = ""):Void {
+	static private function buildLibrary (target:String, flags:StringMap <String> = null, defines:Array<String> = null, path:String = ""):Void {
 		
 		if (flags == null) {
 			
-			flags = new Map <String, String> ();
+			flags = new StringMap <String> ();
 			
 		}
 		
@@ -780,7 +786,7 @@ class RunScript {
 			}
 			
 			var targets:Array <String> = null;
-			var flags = new Map <String, String> ();
+			var flags = new StringMap <String> ();
 			var ignoreLength = 0;
 			var defines = [];
 			

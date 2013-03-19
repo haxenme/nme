@@ -11,6 +11,12 @@ import browser.Lib;
 import js.html.MediaElement;
 import js.Browser;
 
+#if haxe3
+import haxe.ds.IntMap;
+#else
+typedef IntMap<T> = IntHash<T>;
+#end
+
 
 @:autoBuild(nme.Assets.embedSound())
 class Sound extends EventDispatcher {
@@ -33,7 +39,7 @@ class Sound extends EventDispatcher {
 	public var url(default, null):String;
 	
 	private var nmeSoundCache:URLLoader;
-	private var nmeSoundChannels:Map<Int, SoundChannel>;
+	private var nmeSoundChannels:IntMap<SoundChannel>;
 	private var nmeSoundIdx:Int;
 	private var nmeStreamUrl:String;
 
@@ -49,7 +55,7 @@ class Sound extends EventDispatcher {
 		length = 0;
 		url = null;
 		
-		nmeSoundChannels = new Map<Int, SoundChannel>();
+		nmeSoundChannels = new IntMap<SoundChannel>();
 		nmeSoundIdx = 0;
 		
 		if (stream != null) {
