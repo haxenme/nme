@@ -600,7 +600,7 @@ class NMEProject {
 			
 			var value = haxedefs.get (key);
 			
-			if (value == null || value == "") {
+			if (#if !haxe3 true || #end value == null || value == "") {
 				
 				compilerFlags.push ("-D " + key);
 				

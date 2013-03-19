@@ -7,9 +7,9 @@ import nme.Assets;
 class AssetData {
 
 	
-	public static var className = new Map <String, Dynamic> ();
-	public static var library = new Map <String, LibraryType> ();
-	public static var type = new Map <String, AssetType> ();
+	public static var className = new #if haxe3 Map <String, #else Hash <#end Dynamic> ();
+	public static var library = new #if haxe3 Map <String, #else Hash <#end LibraryType> ();
+	public static var type = new #if haxe3 Map <String, #else Hash <#end AssetType> ();
 	
 	private static var initialized:Bool = false;
 	
