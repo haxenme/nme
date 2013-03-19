@@ -7,7 +7,7 @@ before_install:
   - sudo add-apt-repository ppa:eyecreate/haxe -y
   - sudo apt-get update
   - sudo apt-get install haxe -y
-  - sudo apt-get install gcc-multilib g++-multilib -y  # for hxcpp, since VM is 64bit but hxcpp builds 32bit
+  - sudo apt-get install gcc-multilib g++-multilib -y  # since VM is 64bit but hxcpp builds 32bit by default
   - mkdir ~/haxelib
   - haxelib setup ~/haxelib
   - haxelib install pdiff-hx
