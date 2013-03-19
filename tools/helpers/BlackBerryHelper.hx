@@ -11,8 +11,6 @@ class BlackBerryHelper {
 	
 	
 	private static var binDirectory:String;
-	private static var defines:Map <String, String>;
-	private static var targetFlags:Map <String, String>;
 	
 	
 	public static function createPackage (project:NMEProject, workingDirectory:String, descriptorFile:String, targetPath:String):Void {

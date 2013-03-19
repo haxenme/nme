@@ -19,8 +19,8 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
-@:autoBuild(nme.Assets.embedFile())
-class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput implements IMemoryRange 
+#if haxe3 @:autoBuild(nme.Assets.embedFile()) #end
+class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if !haxe3 , #end implements IDataInput #if !haxe3 , #end implements IMemoryRange 
 {
 
    public var bigEndian:Bool;

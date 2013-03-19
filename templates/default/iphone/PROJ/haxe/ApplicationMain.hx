@@ -1,4 +1,4 @@
-#if !macro
+#if (!macro || !haxe3)
 import nme.Assets;
 
 
@@ -89,7 +89,7 @@ class ApplicationMain
 }
 
 
-@:build(DocumentClass.build())
+#if haxe3 @:build(DocumentClass.build()) #end
 class DocumentClass extends ::APP_MAIN:: { }
 
 #else

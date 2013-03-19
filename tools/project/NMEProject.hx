@@ -6,6 +6,14 @@ import haxe.Serializer;
 import haxe.Unserializer;
 import sys.FileSystem;
 
+#if haxe3
+typedef StringMap<T> = Map<String, T>;
+typedef IntMap<T> = Map<Int, T>;
+#else
+typedef StringMap<T> = Hash<T>;
+typedef IntMap<T> = IntHash<T>;
+#end
+
 
 class NMEProject {
 	
@@ -18,8 +26,8 @@ class NMEProject {
 	public var config:PlatformConfig;
 	public var debug:Bool;
 	public var dependencies:Array <String>;
-	public var environment:Map <String, String>;
-	public var haxedefs:Map <String, Dynamic>;
+	public var environment:StringMap <String>;
+	public var haxedefs:StringMap <Dynamic>;
 	public var haxeflags:Array <String>;
 	public var haxelibs:Array <Haxelib>;
 	public var host (get_host, null):Platform;
@@ -32,7 +40,7 @@ class NMEProject {
 	public var sources:Array <String>;
 	public var splashScreens:Array <SplashScreen>;
 	public var target:Platform;
-	public var targetFlags:Map <String, String>;
+	public var targetFlags:StringMap <String>;
 	public var templateContext (get_templateContext, null):Dynamic;
 	public var templatePaths:Array <String>;
 	public var window:Window;
@@ -44,7 +52,7 @@ class NMEProject {
 	public static var _command:String;
 	public static var _debug:Bool;
 	public static var _target:Platform;
-	public static var _targetFlags:Map <String, String>;
+	public static var _targetFlags:StringMap <String>;
 	public static var _templatePaths:Array <String>;
 	
 	private static var initialized:Bool;
@@ -148,7 +156,7 @@ class NMEProject {
 		assets = new Array <Asset> ();
 		dependencies = new Array <String> ();
 		environment = Sys.environment ();
-		haxedefs = new Map <String, Dynamic> ();
+		haxedefs = new StringMap <Dynamic> ();
 		haxeflags = new Array <String> ();
 		haxelibs = new Array <Haxelib> ();
 		icons = new Array <Icon> ();
@@ -403,7 +411,7 @@ class NMEProject {
 			
 			if (_targetFlags == null) {
 				
-				_targetFlags = new Map <String, String> ();
+				_targetFlags = new StringMap <String> ();
 				
 			}
 			

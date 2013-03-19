@@ -1,5 +1,5 @@
 package nme;
-#if !macro
+#if (!macro || !haxe3)
 
 
 import format.display.MovieClip;
@@ -45,15 +45,15 @@ import format.XFL;
 class Assets {
 	
 	
-	public static var cachedBitmapData = new Map<String, BitmapData>();
-	public static var id(get, null):Array<String>;
-	public static var library(get, null):Map<String, LibraryType>;
-	public static var path(get, null):Map<String, String>;
-	public static var type(get, null):Map<String, AssetType>;
+	public static var cachedBitmapData = new #if haxe3 Map <String, #else Hash <#end BitmapData>();
+	public static var id(get_id, null):Array<String>;
+	public static var library(get_library, null):#if haxe3 Map <String, #else Hash <#end LibraryType>;
+	public static var path(get_path, null):#if haxe3 Map <String, #else Hash <#end String>;
+	public static var type(get_type, null):#if haxe3 Map <String, #else Hash <#end AssetType>;
 	
-	#if (swf && !js) private static var cachedSWFLibraries = new Map<String, SWF>(); #end
-	#if (swfdev && js) private static var cachedSWFLibraries = new Map<String, SWFLite>(); #end
-	#if xfl private static var cachedXFLLibraries = new Map<String, XFL>(); #end
+	#if (swf && !js) private static var cachedSWFLibraries = new #if haxe3 Map <String, #else Hash <#end SWF>(); #end
+	#if (swfdev && js) private static var cachedSWFLibraries = new #if haxe3 Map <String, #else Hash <#end SWFLite>(); #end
+	#if xfl private static var cachedXFLLibraries = new #if haxe3 Map <String, #else Hash <#end XFL>(); #end
 	private static var initialized = false;
 	
 	
@@ -487,7 +487,7 @@ class Assets {
 	}
 	
 	
-	private static function get_library():Map<String, LibraryType> {
+	private static function get_library():#if haxe3 Map <String, #else Hash <#end LibraryType> {
 		
 		initialize ();
 		
@@ -497,14 +497,14 @@ class Assets {
 		
 		#else
 		
-		return new Map<String, LibraryType> ();
+		return new #if haxe3 Map <String, #else Hash <#end LibraryType> ();
 		
 		#end
 		
 	}
 	
 	
-	private static function get_path():Map<String, String> {
+	private static function get_path():#if haxe3 Map <String, #else Hash <#end String> {
 		
 		initialize ();
 		
@@ -514,14 +514,14 @@ class Assets {
 		
 		#else
 		
-		return new Map<String, String> ();
+		return new #if haxe3 Map <String, #else Hash <#end String> ();
 		
 		#end
 		
 	}
 	
 	
-	private static function get_type():Map<String, AssetType> {
+	private static function get_type():#if haxe3 Map <String, #else Hash <#end AssetType> {
 		
 		initialize ();
 		
@@ -531,7 +531,7 @@ class Assets {
 		
 		#else
 		
-		return new Map<String, AssetType> ();
+		return new #if haxe3 Map <String, #else Hash <#end AssetType> ();
 		
 		#end
 		

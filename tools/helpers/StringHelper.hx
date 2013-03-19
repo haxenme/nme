@@ -1,11 +1,14 @@
 package;
 
 
+import NMEProject;
+
+
 class StringHelper {
 	
 	
 	private static var seedNumber = 0;
-	private static var usedFlatNames = new Map <String, String> ();
+	private static var usedFlatNames = new StringMap <String> ();
 	
 	
 	public static function formatArray (array:Array <Dynamic>):String {

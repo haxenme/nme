@@ -1,4 +1,4 @@
-#if !macro
+#if (!macro || !haxe3)
 #if nme
 
 import ::APP_MAIN_PACKAGE::::APP_MAIN_CLASS::;
@@ -130,7 +130,7 @@ class ApplicationMain {
 
 #end
 
-@:build(DocumentClass.build())
+#if haxe3 @:build(DocumentClass.build()) #end
 class DocumentClass extends ::APP_MAIN:: { }
 
 #else

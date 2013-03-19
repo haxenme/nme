@@ -19,6 +19,7 @@ import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
 import utils.PlatformSetup;
+import NMEProject;
 	
 	
 class CommandLineTools {
@@ -35,10 +36,10 @@ class CommandLineTools {
 	private static var haxeflags:Array <String>;
 	private static var includePaths:Array <String>;
 	private static var project:NMEProject;
-	private static var projectDefines:Map <String, String>;
-	private static var targetFlags:Map <String, String>;
+	private static var projectDefines:StringMap <String>;
+	private static var targetFlags:StringMap <String>;
 	private static var traceEnabled:Bool;
-	private static var userDefines:Map <String, Dynamic>;
+	private static var userDefines:StringMap <Dynamic>;
 	private static var version:String;
 	private static var words:Array <String>;
 	
@@ -935,10 +936,10 @@ class CommandLineTools {
 		haxedefs = new Array <String> ();
 		haxeflags = new Array <String> ();
 		includePaths = new Array <String> ();
-		projectDefines = new Map <String, String> ();
-		targetFlags = new Map <String, String> ();
+		projectDefines = new StringMap <String> ();
+		targetFlags = new StringMap <String> ();
 		traceEnabled = true;
-		userDefines = new Map <String, Dynamic> ();
+		userDefines = new StringMap <Dynamic> ();
 		words = new Array <String> ();
 		
 		processArguments ();

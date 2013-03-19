@@ -10,7 +10,7 @@ import native.filters.BitmapFilter;
 import native.utils.ByteArray;
 import native.Loader;
 
-@:autoBuild(nme.Assets.embedBitmap())
+#if haxe3 @:autoBuild(nme.Assets.embedBitmap()) #end
 class BitmapData implements IBitmapDrawable 
 {
    public static var CLEAR = createColor(0, 0);
@@ -98,7 +98,7 @@ class BitmapData implements IBitmapDrawable
 
    public static inline function createColor(inRGB:Int, inAlpha:Int = 0xFF):BitmapInt32 
    {
-      #if (neko && neko_v1)
+      #if (neko && (!haxe3 || neko_v1))
       return { rgb: inRGB, a: inAlpha };
       #else
       return inRGB |(inAlpha << 24);
@@ -139,7 +139,7 @@ class BitmapData implements IBitmapDrawable
 
    public static inline function extractAlpha(v:BitmapInt32):Int 
    {
-      #if (neko && neko_v1)
+      #if (neko && (!haxe3 || neko_v1))
       return v.a;
       #else
       return v >>> 24;
@@ -148,7 +148,7 @@ class BitmapData implements IBitmapDrawable
 
    public static inline function extractColor(v:BitmapInt32):Int 
    {
-      #if (neko && neko_v1)
+      #if (neko && (!haxe3 || neko_v1))
       return v.rgb;
       #else
       return v & 0xFFFFFF;
@@ -194,7 +194,7 @@ class BitmapData implements IBitmapDrawable
 
    public function getPixel32(x:Int, y:Int):BitmapInt32 
    {
-      #if (neko && neko_v1)
+      #if (neko && (!haxe3 || neko_v1))
       return nme_bitmap_data_get_pixel_rgba(nmeHandle, x, y);
       #else
       return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
@@ -279,30 +279,30 @@ class BitmapData implements IBitmapDrawable
    }
    
    // need to build a better way to do this
-   private inline function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:Int):Void
+   private inline function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:BitmapInt32):Void
    {
-	   if (getPixel32(x, y) == replaceColor) {
-		   
-		   setPixel32(x, y, color);
-		   
-		   var safeLeft = (x > 0);
-		   var safeRight = (x < width - 1);
-		   var safeBottom = (y < height - 1);
-		   var safeTop = (y > 0);
-		   
-		   try { 
-				
-			   if (safeRight) nmeFloodFill(x + 1, y, color, replaceColor);
-			   if (safeRight && safeBottom) nmeFloodFill(x + 1, y + 1, color, replaceColor);
-			   if (safeRight && safeTop) nmeFloodFill(x + 1, y - 1, color, replaceColor);
-			   if (safeLeft) nmeFloodFill(x - 1, y, color, replaceColor);
-			   if (safeLeft && safeBottom) nmeFloodFill(x - 1, y + 1, color, replaceColor);
-			   if (safeLeft && safeTop) nmeFloodFill(x - 1, y - 1, color, replaceColor);
-			   if (safeBottom) nmeFloodFill(x, y + 1, color, replaceColor);
-			   if (safeTop) nmeFloodFill(x, y - 1, color, replaceColor);
-			   
-		   } catch (e:Dynamic) {}
-	   }
+	   //if (getPixel32(x, y) == replaceColor) {
+		   //
+		   //setPixel32(x, y, color);
+		   //
+		   //var safeLeft = (x > 0);
+		   //var safeRight = (x < width - 1);
+		   //var safeBottom = (y < height - 1);
+		   //var safeTop = (y > 0);
+		   //
+		   //try { 
+				//
+			   //if (safeRight) nmeFloodFill(x + 1, y, color, replaceColor);
+			   //if (safeRight && safeBottom) nmeFloodFill(x + 1, y + 1, color, replaceColor);
+			   //if (safeRight && safeTop) nmeFloodFill(x + 1, y - 1, color, replaceColor);
+			   //if (safeLeft) nmeFloodFill(x - 1, y, color, replaceColor);
+			   //if (safeLeft && safeBottom) nmeFloodFill(x - 1, y + 1, color, replaceColor);
+			   //if (safeLeft && safeTop) nmeFloodFill(x - 1, y - 1, color, replaceColor);
+			   //if (safeBottom) nmeFloodFill(x, y + 1, color, replaceColor);
+			   //if (safeTop) nmeFloodFill(x, y - 1, color, replaceColor);
+			   //
+		   //} catch (e:Dynamic) {}
+	   //}
    }
    
    private inline function nmeLoadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Void 
@@ -334,7 +334,7 @@ class BitmapData implements IBitmapDrawable
 
    public function setPixel32(inX:Int, inY:Int, inColour:BitmapInt32):Void 
    {
-      #if (neko && neko_v1)
+      #if (neko && (!haxe3 || neko_v1))
       nme_bitmap_data_set_pixel_rgba(nmeHandle, inX, inY, inColour);
       #else
       nme_bitmap_data_set_pixel32(nmeHandle, inX, inY, inColour);
@@ -601,7 +601,7 @@ class OptimizedPerlin
 
             var color = Std.int(( s * fPersMax + 1 ) * 128);
 
-            #if (neko && neko_v1)
+            #if (neko && (!haxe3 || neko_v1))
             var pixel = { a: 0xFF, rgb: color };
             #else
             var pixel = 0xff000000 | color << 16 | color << 8 | color;
@@ -638,7 +638,7 @@ class OptimizedPerlin
 
    private function seedOffset(iSeed:Int) 
    {
-      #if (neko && neko_v1)
+      #if (neko && (!haxe3 || neko_v1))
       iXoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
       iYoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
       iZoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);

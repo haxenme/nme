@@ -1,7 +1,7 @@
 package;
 
 
-import haxe.ds.StringMap;
+import NMEProject;
 
 
 class StringMapHelper {
