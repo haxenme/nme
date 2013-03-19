@@ -461,6 +461,11 @@ class Matrix3D
       rawData[13] = oRawData[7];
       rawData[14] = oRawData[11];
    }
+   
+	inline public function copyFrom(sourceMatrix:Matrix3D):Void {
+		this.rawData = sourceMatrix.rawData.copy();
+	}
+	   
 
    // Getters & Setters
    /** @private */ inline public function get_determinant():Float {
