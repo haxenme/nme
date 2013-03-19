@@ -110,6 +110,7 @@ class Stage extends DisplayObjectContainer
       nmeLastDown = [];
       nmeLastClickTime = 0.0;
       this.frameRate = 100;
+	  nmeTouchInfo = new #if haxe3 Map <Int, #else IntHash <#end TouchInfo>();
       nmeJoyAxisData = new #if haxe3 Map <Int, #else IntHash <#end Array<Float>>();
 
       #if stage3d
