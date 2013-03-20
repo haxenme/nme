@@ -4,5 +4,5 @@
 #define _AndroidCommon_h
 
 JNIEnv *GetEnv();
-
+jclass FindClass(const char *className);
 #endif
