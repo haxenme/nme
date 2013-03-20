@@ -792,6 +792,12 @@ class CommandLineTools {
 					
 				}
 				
+				project.command = command;
+				project.debug = debug;
+				project.target = target;
+				project.targetFlags = targetFlags;
+				project.templatePaths = [ nme + "/templates/default", nme + "/tools/command-line" ].concat (project.templatePaths);
+				
 			}
 			
 		}
@@ -802,12 +808,6 @@ class CommandLineTools {
 			return null;
 			
 		}
-		
-		project.command = command;
-		project.debug = debug;
-		project.target = target;
-		project.targetFlags = targetFlags;
-		project.templatePaths = project.templatePaths.concat ([ nme + "/templates/default", nme + "/tools/command-line" ]);
 		
 		project.merge (config);
 		
@@ -852,12 +852,11 @@ class CommandLineTools {
 				attribute = components.join ("");
 				
 			}
-
-
+			
 			if (field == "template" && attribute == "path") {
-						
+				
 				project.templatePaths.push (projectDefines.get (key));
-						
+				
 			} else {
 				
 				if (Reflect.hasField (project, field)) {

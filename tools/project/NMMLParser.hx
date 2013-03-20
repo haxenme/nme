@@ -1102,6 +1102,7 @@ class NMMLParser extends NMEProject {
 								
 							} else {
 								
+								templatePaths.remove (path);
 								templatePaths.push (path);
 								
 							}
@@ -1114,7 +1115,10 @@ class NMMLParser extends NMEProject {
 					
 					case "templatePath":
 						
-						templatePaths.push (PathHelper.combine (extensionPath, substitute (element.att.name)));
+						var path = PathHelper.combine (extensionPath, substitute (element.att.name));
+						
+						templatePaths.remove (path);
+						templatePaths.push (path);
 					
 					case "preloader":
 						

@@ -6,6 +6,6 @@
 	<ndll name="zlib" haxelib="hxcpp" />
 	<ndll name="nme" />
 	
-	<!-- <template path="templates/default" /> -->
+	<templatePath name="templates/default" />
 	
 </extension>
