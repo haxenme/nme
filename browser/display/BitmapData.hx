@@ -481,9 +481,62 @@ class BitmapData implements IBitmapDrawable {
 	
 	
 	public function floodFill(x:Int, y:Int, color:Int):Void
-   {
-	   //nmeFloodFill (x, y, color, getPixel32(x, y));
-	   clear(color);
+	{
+		var queue = new Array<Point>();
+		queue.push(new Point(x, y));
+		
+		var old = getPixel32(x, y);
+		var iterations = 0;
+		
+		var search = new Array ();
+		
+		for (i in 0...width + 1) {
+			
+			var column = new Array ();
+			
+			for (i in 0...height + 1) {
+				
+				column.push (false);
+				
+			}
+			
+			search.push (column);
+			
+		}
+		
+		var currPoint, newPoint;
+		
+		while (queue.length > 0) {
+			
+			currPoint = queue.shift();
+			++iterations;
+			
+			var x = Std.int (currPoint.x);
+			var y = Std.int (currPoint.y);
+			
+			if (x < 0 || x >= width) continue;
+			if (y < 0 || y >= height) continue;
+			
+			search[x][y] = true;
+			
+			if (getPixel32(x, y) == old) {
+				
+				setPixel32(x, y, color);
+				
+				if (!search[x + 1][y]) {
+					queue.push(new Point(x + 1, y));
+				} 
+				if (!search[x][y + 1]) {
+					queue.push(new Point(x, y + 1));
+				} 
+				if (x > 0 && !search[x - 1][y]) {
+					queue.push(new Point(x - 1, y));
+				} 
+				if (y > 0 && !search[x][y - 1]) {
+					queue.push(new Point(x, y - 1));
+				}
+			}
+		}
    }
 	
 	

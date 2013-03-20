@@ -169,8 +169,61 @@ class BitmapData implements IBitmapDrawable
    
    public function floodFill(x:Int, y:Int, color:Int):Void
    {
-	   //nmeFloodFill(x, y, color, getPixel32(x, y)); // causing crashes, switching to clear() for now
-	   clear(color);
+	   var queue = new Array<Point>();
+		queue.push(new Point(x, y));
+		
+		var old = getPixel32(x, y);
+		var iterations = 0;
+		
+		var search = new Array ();
+		
+		for (i in 0...width + 1) {
+			
+			var column = new Array ();
+			
+			for (i in 0...height + 1) {
+				
+				column.push (false);
+				
+			}
+			
+			search.push (column);
+			
+		}
+		
+		var currPoint, newPoint;
+		
+		while (queue.length > 0) {
+			
+			currPoint = queue.shift();
+			++iterations;
+			
+			var x = Std.int (currPoint.x);
+			var y = Std.int (currPoint.y);
+			
+			if (x < 0 || x >= width) continue;
+			if (y < 0 || y >= height) continue;
+			
+			search[x][y] = true;
+			
+			if (getPixel32(x, y) == old) {
+				
+				setPixel32(x, y, color);
+				
+				if (!search[x + 1][y]) {
+					queue.push(new Point(x + 1, y));
+				} 
+				if (!search[x][y + 1]) {
+					queue.push(new Point(x, y + 1));
+				} 
+				if (x > 0 && !search[x - 1][y]) {
+					queue.push(new Point(x - 1, y));
+				} 
+				if (y > 0 && !search[x][y - 1]) {
+					queue.push(new Point(x, y - 1));
+				}
+			}
+		}
    }
 
    public function generateFilterRect(sourceRect:Rectangle, filter:BitmapFilter):Rectangle 
@@ -276,33 +329,6 @@ class BitmapData implements IBitmapDrawable
    /** @private */ public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void {
       // IBitmapDrawable interface...
       nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendMode, clipRect, smoothing);
-   }
-   
-   // need to build a better way to do this
-   private inline function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:BitmapInt32):Void
-   {
-	   //if (getPixel32(x, y) == replaceColor) {
-		   //
-		   //setPixel32(x, y, color);
-		   //
-		   //var safeLeft = (x > 0);
-		   //var safeRight = (x < width - 1);
-		   //var safeBottom = (y < height - 1);
-		   //var safeTop = (y > 0);
-		   //
-		   //try { 
-				//
-			   //if (safeRight) nmeFloodFill(x + 1, y, color, replaceColor);
-			   //if (safeRight && safeBottom) nmeFloodFill(x + 1, y + 1, color, replaceColor);
-			   //if (safeRight && safeTop) nmeFloodFill(x + 1, y - 1, color, replaceColor);
-			   //if (safeLeft) nmeFloodFill(x - 1, y, color, replaceColor);
-			   //if (safeLeft && safeBottom) nmeFloodFill(x - 1, y + 1, color, replaceColor);
-			   //if (safeLeft && safeTop) nmeFloodFill(x - 1, y - 1, color, replaceColor);
-			   //if (safeBottom) nmeFloodFill(x, y + 1, color, replaceColor);
-			   //if (safeTop) nmeFloodFill(x, y - 1, color, replaceColor);
-			   //
-		   //} catch (e:Dynamic) {}
-	   //}
    }
    
    private inline function nmeLoadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Void 
