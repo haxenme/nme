@@ -3,7 +3,7 @@ package native;
 
 import cpp.zip.Uncompress;
 import haxe.io.Bytes;
-#if haxe_211
+#if (haxe_211 || haxe3)
 import haxe.crypto.BaseCode;
 #else
 import haxe.BaseCode;
