@@ -396,11 +396,8 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
    if (!face && inNative)
       face = FontFace::CreateNative(inFormat,inScale);
 
-   
-   #ifndef IPHONE
    if (!face)
       face = FontFace::CreateFreeType(inFormat,inScale);
-   #endif
   
    if (!face && !inNative)
       face = FontFace::CreateNative(inFormat,inScale);
