@@ -176,15 +176,7 @@ class Matrix3D
       return vec;
    }
 
-   inline public function deltaTransformVector(v:Vector3D):Vector3D 
-   {
-      var x:Float = v.x, y:Float = v.y, z:Float = v.z;
-      return new Vector3D(
-         (x * rawData[0] + y * rawData[1] + z * rawData[2] + rawData[3]),
-         (x * rawData[4] + y * rawData[5] + z * rawData[6] + rawData[7]),
-         (x * rawData[8] + y * rawData[9] + z * rawData[10] + rawData[11]),
-      0);
-   }
+
 
    inline static public function getAxisRotation(x:Float, y:Float, z:Float, degrees:Float):Matrix3D 
    {
@@ -234,6 +226,10 @@ class Matrix3D
       rawData[13] = 0;
       rawData[14] = 0;
       rawData[15] = 1;
+   }
+   
+   inline public function copyFrom(sourceMatrix3D:Matrix3D):Void {
+	   rawData = sourceMatrix3D.rawData.copy();
    }
 
    inline public static function interpolate(thisMat:Matrix3D, toMat:Matrix3D, percent:Float):Matrix3D 
@@ -430,6 +426,17 @@ class Matrix3D
          (x * rawData[1] + y * rawData[5] + z * rawData[9] + rawData[13]),
          (x * rawData[2] + y * rawData[6] + z * rawData[10] + rawData[14]),
       1);
+   }   
+
+   //TODO: Something fishy here. Does not work same as Flash implementation. Also seems to work on the matrix transpose; Not necessary to eliminate the translation component
+   inline public function deltaTransformVector(v:Vector3D):Vector3D 
+   {
+      var x:Float = v.x, y:Float = v.y, z:Float = v.z;
+      return new Vector3D(
+         (x * rawData[0] + y * rawData[1] + z * rawData[2] + rawData[3]),
+         (x * rawData[4] + y * rawData[5] + z * rawData[6] + rawData[7]),
+         (x * rawData[8] + y * rawData[9] + z * rawData[10] + rawData[11]),
+      0);
    }
 
    public function transformVectors(vin:Vector<Float>, vout:Vector<Float>):Void 
@@ -461,6 +468,8 @@ class Matrix3D
       rawData[13] = oRawData[7];
       rawData[14] = oRawData[11];
    }
+   
+	   
 
    // Getters & Setters
    /** @private */ inline public function get_determinant():Float {
