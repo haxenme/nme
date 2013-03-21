@@ -469,9 +469,6 @@ class Matrix3D
       rawData[14] = oRawData[11];
    }
    
-	inline public function copyFrom(sourceMatrix:Matrix3D):Void {
-		this.rawData = sourceMatrix.rawData.copy();
-	}
 	   
 
    // Getters & Setters
