@@ -22,6 +22,7 @@ class Property<T>
 	
 	private function set_value(value:T):T 
 	{
+		if (_value == value) return _value;
 		_value = value;
 		dirty = true;
 		return _value;

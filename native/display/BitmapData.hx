@@ -182,7 +182,7 @@ class BitmapData implements IBitmapDrawable
    public function getPixels(rect:Rectangle):ByteArray 
    {
       var result:ByteArray = nme_bitmap_data_get_pixels(nmeHandle, rect);
-      if (result != null) result.position = result.length;
+	  result.position = 0;
       return result;
    }
 
