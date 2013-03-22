@@ -9,7 +9,7 @@ Each of the tests normally comprises of
  * A *.spec* file, which tells what the test type is and what events need to be fired by the browser. 
    Read [phantomjs/PhantomSuiteRunner.hx](https://github.com/haxenme/NME/blob/master/tools/smoke.jeash.com/phantomjs/PhantomSuiteRunner.hx) for the details.
 
-Some of the tests are temporarily disable and need to be fixed. Read [line 160 of phantomjs/PhantomSuiteRunner.hx ](https://github.com/haxenme/NME/blob/master/tools/smoke.jeash.com/phantomjs/PhantomSuiteRunner.hx#L160) for the list of disabled tests.
+Some of the tests are temporarily disabled and need to be fixed. Read [line 160 of phantomjs/PhantomSuiteRunner.hx ](https://github.com/haxenme/NME/blob/master/tools/smoke.jeash.com/phantomjs/PhantomSuiteRunner.hx#L160) for the list of disabled tests.
 
 ## dependencies
 
@@ -17,7 +17,7 @@ To run the test, a number of dependencies need to be installed.
 
 ### node.js
 
-[node.js](http://nodejs.org/) and a number of node.js libraries (defined by **package.json** in the root directory) is needed.
+[node.js](http://nodejs.org/) and a number of node.js libraries (defined by [package.json](https://github.com/haxenme/NME/blob/master/package.json) in the root directory) is needed.
 It is used to run a server to host the web pages and resource needed by the tests.
 
 Once we've node.js installed, we can install the node.js libraries by:
@@ -46,14 +46,17 @@ The following need to be installed:
 ## run it
 
 1. Change directory to smoke.jeash.com.
+   
    ```
    cd tools/smoke.jeash.com
    ```
-1. Start the node server. Since it will not return, we need the trailing **&**.
+2. Start the node server. Since it will not return, we need the trailing **&**.
+   
    ```
    node webserver.js &
    ```
-2. Run the tests.
+3. Run the tests.
+   
    ```
    make clean  #clean the tests, if they were run previously
    make all    #compile the tests
