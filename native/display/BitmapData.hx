@@ -166,8 +166,17 @@ class BitmapData implements IBitmapDrawable
    {
       nme_bitmap_data_fill(nmeHandle, rect, inColour, inAlpha);
    }
+
+   static inline function sameValue(a:BitmapInt32, b:BitmapInt32)
+   {
+      #if (neko && (!haxe3 || neko_v1))
+      return a.rgb == b.rgb && a.a == b.a;
+      #else
+      return a==b;
+      #end
+   }
    
-   public function floodFill(x:Int, y:Int, color:Int):Void
+   public function floodFill(x:Int, y:Int, color:BitmapInt32):Void
    {
 	   var queue = new Array<Point>();
 		queue.push(new Point(x, y));
@@ -206,7 +215,7 @@ class BitmapData implements IBitmapDrawable
 			
 			search[x][y] = true;
 			
-			if (getPixel32(x, y) == old) {
+			if ( sameValue(getPixel32(x, y),old) ) {
 				
 				setPixel32(x, y, color);
 				
