@@ -1,5 +1,6 @@
 package nme;
 #if (!macro || !haxe3)
+#if !pazu
 
 
 import format.display.MovieClip;
@@ -563,6 +564,14 @@ enum LibraryType {
 
 #else
 
+import pazu.Assets;
+typedef Assets = pazu.Assets;
+typedef AssetType = pazu.AssetType;
+typedef LibraryType = pazu.LibraryType;
+
+#end
+#else
+
 
 import haxe.io.Bytes;
 import haxe.macro.Context;
@@ -725,7 +734,7 @@ class Assets {
 		
 		if (fields != null) {
 			
-			#if (!neko && !html5) // CFFILoader.h(248) : NOT Implemented:api_buffer_data
+			#if (!html5) // Neko bug: CFFILoader.h(248) : NOT Implemented:api_buffer_data
 			
 			var constructor = macro { 
 				
