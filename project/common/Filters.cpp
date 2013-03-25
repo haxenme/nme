@@ -304,6 +304,54 @@ void BlurFilter::Apply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0,I
    //ApplyStrength(mStrength,outDest);
 }
 
+
+// --- ColorMatrixFilter -------------------------------------------------------------
+
+ColorMatrixFilter::ColorMatrixFilter(QuickVec<float> inMatrix) : Filter(1)
+{
+   mMatrix = inMatrix;
+}
+
+void ColorMatrixFilter::ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const
+{
+}
+
+void ColorMatrixFilter::GetFilteredObjectRect(Rect &ioRect,int inPass) const
+{
+}
+
+template<typename PIXEL>
+void ColorMatrixFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0,ImagePoint inDiff,int inPass
+      ) const
+{
+   int w = outDest->Width();
+   int h = outDest->Height();
+   
+   AutoSurfaceRender render(outDest);
+   const RenderTarget &target = render.Target();
+   for(int y=0;y<h;y++)
+   {
+      ARGB *src = (ARGB *)inSrc -> Row(y);
+      ARGB *dest = (ARGB *)target.Row(y);
+      for(int x=0;x<w;x++)
+      {
+		 dest -> a = (mMatrix[15] * src -> c0) + (mMatrix[16] * src -> c1) + (mMatrix[17] * src -> c2) + (mMatrix[18] * src -> a) + mMatrix[19];
+		 dest -> c0 = (mMatrix[0]  * src -> c0) + (mMatrix[1]  * src -> c1) + (mMatrix[2]  * src -> c2) + (mMatrix[3]  * src -> a) + mMatrix[4];
+		 dest -> c1 = (mMatrix[5]  * src -> c0) + (mMatrix[6]  * src -> c1) + (mMatrix[7]  * src -> c2) + (mMatrix[8]  * src -> a) + mMatrix[9];
+		 dest -> c2 = (mMatrix[10] * src -> c0) + (mMatrix[11] * src -> c1) + (mMatrix[12] * src -> c2) + (mMatrix[13] * src -> a) + mMatrix[14];
+         src++;
+         dest++;
+      }
+   }
+}
+
+void ColorMatrixFilter::Apply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0,ImagePoint inDiff,int inPass) const
+{
+   DoApply<ARGB>(inSrc,outDest,inSrc0,inDiff,inPass);
+   //ApplyStrength(mStrength,outDest);
+}
+
+
 // --- DropShadowFilter --------------------------------------------------------------
 
 DropShadowFilter::DropShadowFilter(int inQuality, int inBlurX, int inBlurY,
