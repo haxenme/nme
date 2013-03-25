@@ -1149,6 +1149,7 @@ class CommandLineTools {
 				
 			} else if (argument == "-v" || argument == "-verbose") {
 				
+				haxeflags.push ("-v");
 				LogHelper.verbose = true;
 				
 			} else if (argument == "-args") {
