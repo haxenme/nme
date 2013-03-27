@@ -10,12 +10,19 @@ class Font
    public var fontName(default, null):String;
    public var fontStyle(default, null):FontStyle;
    public var fontType(default, null):FontType;
+   
+   private static var nmeRegisteredFonts = new Array<Font> ();
 
-   public function new(inFilename:String):Void 
+   public function new(inFilename:String = ""):Void 
    {
       fontName = inFilename;
       //fontStyle = FontStyle.REGULAR;
       //fontType = FontType.DEVICE;
+   }
+   
+   public static function enumerateFonts(enumerateDeviceFonts:Bool = false):Array<Font>
+   {
+      return nmeRegisteredFonts.copy();
    }
 
    public static function load(inFilename:String):NativeFontData 
@@ -26,6 +33,15 @@ class Font
       #else
       return null;
       #end
+   }
+   
+   public static function registerFont(font:Class<Dynamic>)
+   {
+      var instance = cast (Type.createInstance (font, []), Font);
+      if (instance != null)
+      {
+         nmeRegisteredFonts.push (instance);
+      }
    }
 
    // Native Methods
