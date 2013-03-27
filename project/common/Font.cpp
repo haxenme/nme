@@ -373,6 +373,8 @@ struct FontInfo
 
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
+typedef std::map<const char *, ByteArray *> FontBytesMap;
+FontBytesMap sgRegisteredFonts;
 
 Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,bool inNative,bool inInitRef)
 {
@@ -390,14 +392,19 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
 
 
    FontFace *face = 0;
+   ByteArray *bytes = sgRegisteredFonts[WideToUTF8(inFormat.font).c_str())];
+   
+   if (bytes != NULL)
+	  face = FontFace::CreateFreeType(inFormat,inScale,bytes);
 
-   face = FontFace::CreateCFFIFont(inFormat,inScale);
+   if (!face)
+      face = FontFace::CreateCFFIFont(inFormat,inScale);
 
    if (!face && inNative)
       face = FontFace::CreateNative(inFormat,inScale);
 
    if (!face)
-      face = FontFace::CreateFreeType(inFormat,inScale);
+      face = FontFace::CreateFreeType(inFormat,inScale,NULL);
   
    if (!face && !inNative)
       face = FontFace::CreateNative(inFormat,inScale);
@@ -411,6 +418,14 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
    sgFontMap[info] = font;
    return font;
 }
+
+
+void nme_font_register_font(value inFontName, value inBytes)
+{
+   ByteArray *bytes = new ByteArray(inBytes);
+   sgRegisteredFonts[val_string(inFontName)] = bytes;
+}
+DEFINE_PRIM(nme_font_register_font,2)
 
 
 } // end namespace nme
