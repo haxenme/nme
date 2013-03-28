@@ -89,11 +89,11 @@ class Lib
 	 * @param	title		The title to use when creating the application window.
 	 * @param	icon		An icon to use for the created application window.
 	 */
-	public static function create(onLoaded:Void->Void, width:Int, height:Int, frameRate:Float = 60.0, color:Int = 0xffffff, flags:Int = 0x0f, title:String = "NME", icon:BitmapData = null):Void
+	public static function create(onLoaded:Void->Void, width:Int, height:Int, frameRate:Float = 60.0, color:Int = 0xffffff, flags:Int = 0x0f, title:String = "NME", icon:BitmapData = null, stageClass:Class<Stage> = null):Void
 	{
 		#if display
 		#elseif (cpp || neko)
-		native.Lib.create(onLoaded, width, height, frameRate, color, flags, title, icon);
+		native.Lib.create(onLoaded, width, height, frameRate, color, flags, title, icon, stageClass);
 		#end
 	}
 	

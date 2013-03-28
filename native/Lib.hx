@@ -56,7 +56,7 @@ class Lib
       close();
    }
 
-   public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0, inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData) 
+   public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0, inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData, ?inStageClass:Class<native.display.Stage>) 
    {
       if (sIsInit) 
       {
@@ -72,6 +72,9 @@ class Lib
       sIsInit = true;
       initWidth = inWidth;
       initHeight = inHeight;
+	  
+	  var stageClass = inStageClass;
+	  if (stageClass == null) stageClass = Stage;
 
       var create_main_frame = Loader.load("nme_create_main_frame", -1);
 
@@ -81,7 +84,7 @@ class Lib
          nmeMainFrame = inFrameHandle;
          var stage_handle = nme_get_frame_stage(nmeMainFrame);
 
-         Lib.nmeStage = new Stage(stage_handle, inWidth, inHeight);
+         Lib.nmeStage = Type.createInstance (stageClass, [stage_handle, inWidth, inHeight]);
          Lib.nmeStage.frameRate = inFrameRate;
          Lib.nmeStage.opaqueBackground = inColour;
          Lib.nmeStage.onQuit = close;
