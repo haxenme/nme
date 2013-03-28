@@ -1,9 +1,7 @@
 package browser.text;
 #if js
 
-
-import browser.Html5Dom;
-
+import browser.utils.UInt;
 
 class TextFormat {
 	

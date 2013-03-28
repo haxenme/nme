@@ -12,9 +12,9 @@ import nme.utils.Float32Array;
 class Triangle extends Mesh
 {
 
-	public function new() 
+	public function new(?name) 
 	{
-		super();
+		super(name==null?"Triangle":name);
 		
 		createVertexBuffer([
 			Mesh.createVertex(new Vector3D(0, 1, 0), new Vector3D(0, 0, 1), new Vector3D(0, 0, 1), new Point(0, 0), new Vector3D(1, 0, 0, 1)),
@@ -23,8 +23,6 @@ class Triangle extends Mesh
 			]);
 			
 		createIndexBuffer([0, 1, 2]);
-		
-		name = "Triangle";
 	}
 	
 }

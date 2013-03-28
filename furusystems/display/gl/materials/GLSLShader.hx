@@ -79,7 +79,9 @@ class GLSLShader
 	
 	public function getUniformLocation(name:String):Int {
 		if (!uniforms.exists(name)) {
+			#if debug
 			trace("No uniform: " + name);
+			#end
 			return -1;
 		}
 		return uniforms.get(name).position;

@@ -13,13 +13,13 @@ import PlatformConfig;
 class NMMLParser extends NMEProject {
 	
 	
-	public var localDefines:Map <String, Dynamic>;
+	public var localDefines:StringMap <Dynamic>;
 	public var includePaths:Array <String>;
 	
 	private static var varMatch = new EReg("\\${(.*?)}", "");
 	
 	
-	public function new (path:String = "", defines:Map <String, Dynamic> = null, includePaths:Array <String> = null, useExtensionPath:Bool = false) {
+	public function new (path:String = "", defines:StringMap <Dynamic> = null, includePaths:Array <String> = null, useExtensionPath:Bool = false) {
 		
 		super ();
 		
@@ -29,7 +29,7 @@ class NMMLParser extends NMEProject {
 			
 		} else {
 			
-			localDefines = new Map <String, Dynamic> ();
+			localDefines = new StringMap <Dynamic> ();
 			
 		}
 		
@@ -1102,6 +1102,7 @@ class NMMLParser extends NMEProject {
 								
 							} else {
 								
+								templatePaths.remove (path);
 								templatePaths.push (path);
 								
 							}
@@ -1114,7 +1115,10 @@ class NMMLParser extends NMEProject {
 					
 					case "templatePath":
 						
-						templatePaths.push (PathHelper.combine (extensionPath, substitute (element.att.name)));
+						var path = PathHelper.combine (extensionPath, substitute (element.att.name));
+						
+						templatePaths.remove (path);
+						templatePaths.push (path);
 					
 					case "preloader":
 						

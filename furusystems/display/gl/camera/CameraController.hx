@@ -215,7 +215,7 @@ class CameraController extends EventDispatcher{
 					//dy = (target.mouseY-target.height/2)*360*0.0001*Math.sqrt(moveSpeed);
 					dx = (target.mouseX-stage.stageWidth/2)*360*0.00001;
 					dy = (target.mouseY-stage.stageHeight/2)*360*0.00001;
-					cam.rotate(dx, -dy);
+					cam.rotate(dx, dy);
 					
 					changed = true;
 					
@@ -331,10 +331,10 @@ class CameraController extends EventDispatcher{
 				cam.p.y += v.y;
 				cam.p.z += v.z;
 				
-				cam.matrix.identity();
-				cam.matrix.appendRotation(cam.p.y*180/Math.PI, Vector3D.Y_AXIS);
-				cam.matrix.appendRotation(cam.p.x*180/Math.PI, Vector3D.X_AXIS);
-				cam.matrix.appendTranslation(0, 0, -15+cam.p.z);
+				cam.view.identity();
+				cam.view.appendRotation(cam.p.y*180/Math.PI, Vector3D.Y_AXIS);
+				cam.view.appendRotation(cam.p.x*180/Math.PI, Vector3D.X_AXIS);
+				cam.view.appendTranslation(0, 0, -15+cam.p.z);
 				cam.update(true);
 				changed = true;
 				

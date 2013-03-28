@@ -29,6 +29,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
    public var filters(get_filters, set_filters):Array<Dynamic>;
    public var graphics(get_graphics, null):Graphics;
    public var height(get_height, set_height):Float;
+   public var loaderInfo:LoaderInfo;
    public var mask(default, set_mask):DisplayObject;
    public var mouseX(get_mouseX, null):Float;
    public var mouseY(get_mouseY, null):Float;

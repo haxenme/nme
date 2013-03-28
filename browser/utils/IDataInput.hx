@@ -1,9 +1,7 @@
 package browser.utils;
 #if js
 
-
-import browser.Html5Dom;
-
+import browser.utils.UInt;
 
 interface IDataInput {
 	

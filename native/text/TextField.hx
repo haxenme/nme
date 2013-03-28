@@ -26,6 +26,7 @@ class TextField extends InteractiveObject
    public var scrollH(get_scrollH, set_scrollH):Int;
    public var scrollV(get_scrollV, set_scrollV):Int;
    public var selectable(get_selectable, set_selectable):Bool;
+   public var sharpness:Float;
    public var text(get_text, set_text):String;
    public var textColor(get_textColor, set_textColor):Int;
    public var textHeight(get_textHeight, null):Float;
@@ -37,6 +38,8 @@ class TextField extends InteractiveObject
    {
       var handle = nme_text_field_create();
       super(handle, "TextField");
+	  gridFitType = GridFitType.PIXEL;
+	  sharpness = 0;
    }
 
    public function appendText(newText:String):Void 

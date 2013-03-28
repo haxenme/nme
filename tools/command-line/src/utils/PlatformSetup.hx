@@ -4,11 +4,16 @@ package utils;
 import haxe.Http;
 import haxe.io.Eof;
 import haxe.io.Path;
+#if haxe3
 import haxe.zip.Reader;
+#else
+import neko.zip.Reader;
+#end
 import neko.Lib;
 import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
+import NMEProject;
 
 
 class PlatformSetup {
@@ -249,7 +254,7 @@ class PlatformSetup {
 	}
 	
 	
-	private static function getDefines (names:Array <String> = null, descriptions:Array <String> = null, ignored:Array <String> = null):Map <String, String> {
+	private static function getDefines (names:Array <String> = null, descriptions:Array <String> = null, ignored:Array <String> = null):StringMap <String> {
 		
 		var config = CommandLineTools.getHXCPPConfig ();
 		
@@ -1721,7 +1726,7 @@ class PlatformSetup {
 	}
 	
 	
-	private static function writeConfig (path:String, defines:Map <String, String>):Void {
+	private static function writeConfig (path:String, defines:StringMap <String>):Void {
 		
 		var newContent = "";
 		var definesText = "";

@@ -26,5 +26,7 @@ class MouseEnabled extends Sprite
 		#if js untyped window.phantomTestResult = true; #end
 	}
 
-	static function main () Lib.current.stage.addChild(new MouseEnabled())
+	static function main () {
+		Lib.current.stage.addChild(new MouseEnabled());
+	}
 }

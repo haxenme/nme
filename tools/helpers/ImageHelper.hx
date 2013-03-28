@@ -1,17 +1,18 @@
 import format.SVG;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
+import nme.display.BitmapInt32;
 import nme.display.Shape;
 
 
 class ImageHelper {
 	
 	
-	public static function rasterizeSVG (svg:SVG, width:Int, height:Int, backgroundColor:Int = null):BitmapData {
+	public static function rasterizeSVG (svg:SVG, width:Int, height:Int, backgroundColor:BitmapInt32 = null):BitmapData {
 		
 		if (backgroundColor == null) {
 			
-			backgroundColor = 0x00FFFFFF;
+			backgroundColor = #if (!neko || (haxe3 && !neko_v1)) 0x00FFFFFF #else { rgb: 0xFFFFFF, a: 0x00 } #end;
 			
 		}
 		
@@ -34,7 +35,7 @@ class ImageHelper {
 		bitmap.width = width;
 		bitmap.height = height;
 		
-		var data = new BitmapData (width, height, true, 0x00FFFFFF);
+		var data = new BitmapData (width, height, true, #if (!neko || (haxe3 && !neko_v1)) 0x00FFFFFF #else { rgb: 0xFFFFFF, a: 0x00 } #end);
 		data.draw (bitmap);
 		
 		return data;

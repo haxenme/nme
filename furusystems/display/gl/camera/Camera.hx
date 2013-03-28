@@ -23,8 +23,7 @@ class Camera {
 	public var pitch:Float = 0;
 	public var roll:Float = 0;
 	
-	public var matrix:Matrix3D;
-	public var worldViewInverse:Matrix3D;
+	public var view:Matrix3D;
 	public var projection:Matrix3D;
 	public var camProj:Matrix3D;
 	
@@ -34,8 +33,7 @@ class Camera {
 	
 	public function new(p:Vector3D = null, yaw:Float = 0, pitch:Float = 0, roll:Float = 0) {
 		defaultRotationAmount = Math.PI / 20;
-		matrix = new Matrix3D();
-		worldViewInverse = new Matrix3D();
+		view = new Matrix3D();
 		projection = new Matrix3D();
 		camProj = new Matrix3D();
 		rotation = new Matrix3D();
@@ -77,16 +75,16 @@ class Camera {
 	
 	public var o(get_o, set_o):Vector3D;
 	private function get_o():Vector3D {
-		return matrix.position;
+		return view.position;
 	}
 	private function set_o(v:Vector3D):Vector3D{
-		matrix.position = v;
-		return matrix.position;
+		view.position = v;
+		return view.position;
 	}
 	
 	public var d(get_d, null):Vector3D;
 	private function get_d():Vector3D {
-		return matrix.deltaTransformVector(new Vector3D());
+		return view.deltaTransformVector(new Vector3D());
 	}
 	
 	public var x(get_x, set_x):Float;
@@ -206,7 +204,7 @@ class Camera {
 		
 		fx = -fx; fy = -fy;	fz = -fz;
 		
-		var data:Vector<Float> = matrix.rawData;
+		var data:Vector<Float> = view.rawData;
 		data[0] = sx;
 		data[1] = ux;
 		data[2] = fx;
@@ -223,7 +221,7 @@ class Camera {
 		data[13] = -(ux*ex+uy*ey+uz*ez);
 		data[14] = -(fx*ex+fy*ey+fz*ez);
 		data[15] = 1;
-		matrix.rawData = data;
+		view.rawData = data;
 		
 		updateCamProj();
 	}
@@ -236,32 +234,32 @@ class Camera {
 	}
 	
 	private function updateMatrix():Void {
-		matrix.identity();
+		view.identity();
 		//matrix.appendTranslation(p.x, p.y, p.z);
-		matrix.appendTranslation(-p.x, -p.y, -p.z);
-		matrix.appendRotation(yaw, Vector3D.Y_AXIS);
-		matrix.appendRotation(pitch, Vector3D.X_AXIS);
-		matrix.appendRotation(roll, Vector3D.Z_AXIS);
+		view.appendTranslation(-p.x, -p.y, -p.z);
+		view.appendRotation(yaw, Vector3D.Y_AXIS);
+		view.appendRotation(pitch, Vector3D.X_AXIS);
+		view.appendRotation(roll, Vector3D.Z_AXIS);
 	}
 	
 	private function updateCamProj():Void {
 		camProj.identity();
-		camProj.append(matrix);
+		camProj.append(view);
 		camProj.append(projection);
 	}
 	
 	public function export(bytes:ByteArray):Void {
-		var data:Vector<Float> = matrix.rawData;
+		var data:Vector<Float> = view.rawData;
 		for (i in 0...data.length) {
 			bytes.writeDouble(data[i]);
 		}
 	}
 	public function load(bytes:ByteArray):Void {
-		var data:Vector<Float> = matrix.rawData;
+		var data:Vector<Float> = view.rawData;
 		for (i in 0...data.length) {
 			data[i] = bytes.readDouble();
 		}
-		matrix.rawData = data;
+		view.rawData = data;
 	}
 	
 	public function toString():String {
@@ -270,7 +268,7 @@ class Camera {
 	
 	public function clone():Camera {
 		var c:Camera = new Camera();
-		c.matrix = matrix.clone();
+		c.view = view.clone();
 		c.p = p.clone();
 		c.yaw = yaw;
 		c.pitch = pitch;

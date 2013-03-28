@@ -373,6 +373,8 @@ struct FontInfo
 
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
+typedef std::map<std::string, AutoGCRoot *> FontBytesMap;
+FontBytesMap sgRegisteredFonts;
 
 Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,bool inNative,bool inInitRef)
 {
@@ -390,17 +392,25 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
 
 
    FontFace *face = 0;
+   
+   AutoGCRoot *bytes = 0;
+   FontBytesMap::iterator fbit = sgRegisteredFonts.find(WideToUTF8(inFormat.font).c_str());
+   if (fbit!=sgRegisteredFonts.end())
+   {
+      bytes = fbit->second;
+   }
+   
+   if (bytes != NULL)
+	  face = FontFace::CreateFreeType(inFormat,inScale,bytes);
 
-   face = FontFace::CreateCFFIFont(inFormat,inScale);
+   if (!face)
+      face = FontFace::CreateCFFIFont(inFormat,inScale);
 
    if (!face && inNative)
       face = FontFace::CreateNative(inFormat,inScale);
 
-   
-   #ifndef IPHONE
    if (!face)
-      face = FontFace::CreateFreeType(inFormat,inScale);
-   #endif
+      face = FontFace::CreateFreeType(inFormat,inScale,NULL);
   
    if (!face && !inNative)
       face = FontFace::CreateNative(inFormat,inScale);
@@ -414,6 +424,14 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
    sgFontMap[info] = font;
    return font;
 }
+
+
+void nme_font_register_font(value inFontName, value inBytes)
+{
+   AutoGCRoot *bytes = new AutoGCRoot(inBytes);
+   sgRegisteredFonts[std::string(val_string(inFontName))] = bytes;
+}
+DEFINE_PRIM(nme_font_register_font,2)
 
 
 } // end namespace nme

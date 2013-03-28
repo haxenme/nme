@@ -4,8 +4,7 @@ package browser.display;
 
 import browser.display.IGraphicsData;
 import browser.display.IGraphicsFill;
-import  browser.geom.Matrix;
-import browser.Html5Dom;
+import browser.geom.Matrix;
 
 
 class GraphicsGradientFill implements IGraphicsData #if !haxe3 , #end implements IGraphicsFill {

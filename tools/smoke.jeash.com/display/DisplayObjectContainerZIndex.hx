@@ -18,6 +18,7 @@ class DisplayObjectContainerZIndex extends Sprite {
 		s1.addChild(s1a);
 	}
 
-	static function main () 
-		Lib.current.addChild(new DisplayObjectContainerZIndex())
+	static function main () {
+		Lib.current.addChild(new DisplayObjectContainerZIndex());
+	}
 }

@@ -19,8 +19,8 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
-@:autoBuild(nme.Assets.embedFile())
-class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput implements IMemoryRange 
+#if haxe3 @:autoBuild(nme.Assets.embedFile()) #end
+class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if !haxe3 , #end implements IDataInput #if !haxe3 , #end implements IMemoryRange 
 {
 
    public var bigEndian:Bool;
@@ -175,14 +175,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
    static public function fromBytes(inBytes:Bytes) 
    {
-      var result = new ByteArray(-1);
-      result.b = inBytes.b;
-      result.length = inBytes.length;
-
-      #if neko
-      result.alloced = result.length;
-      #end
-
+      var result = new ByteArray( -1);
+	  result.nmeFromBytes(inBytes);
       return result;
    }
 
@@ -195,6 +189,16 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public function inflate() 
    {
       uncompress(CompressionAlgorithm.DEFLATE);
+   }
+   
+   private inline function nmeFromBytes(inBytes:Bytes):Void
+   {
+      b = inBytes.b;
+      length = inBytes.length;
+      
+      #if neko
+      alloced = length;
+      #end
    }
 
    public inline function readBoolean():Bool 

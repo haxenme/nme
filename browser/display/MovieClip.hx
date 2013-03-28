@@ -8,7 +8,6 @@ class MovieClip extends Sprite #if !haxe3 , #end implements Dynamic<Dynamic> {
 	public var currentFrame(get_currentFrame, null):Int;
 	public var enabled:Bool;
 	public var framesLoaded(get_framesLoaded, null):Int;
-	public var loaderInfo:LoaderInfo;
 	public var totalFrames(get_totalFrames, null):Int;
 	
 	private var mCurrentFrame:Int;

@@ -204,7 +204,7 @@
       <file name="common/CachedExtent.cpp"/>
       <file name="common/TextField.cpp"/>
       <file name="common/Font.cpp"/>
-      <file name="common/FreeType.cpp" unless="iphone"/>
+      <file name="common/FreeType.cpp" />
       <file name="common/Tilesheet.cpp"/>
       <file name="common/Display.cpp"/>
       <file name="common/ColorTransform.cpp"/>
@@ -324,6 +324,9 @@
    
    
    <set name="name_prefix" value="lib" if="iphone" />
+
+	<set name="openal_link" value="1" if="win_desktop"/>
+	<unset name="openal_link" unless="openal"/>
    
    
    <target id="NDLL" output="${name_prefix}nme${debug_extra}${name_extra}" tool="linker" toolid="${ndll-tool}">
@@ -348,6 +351,7 @@
       <files id="webos" if="webos"/>
       <files id="blackberry" if="blackberry"/>
       
+      <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" if="iphone"/>
       <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
       <lib name="${THIRDPARTY_LIBS}libjpeg${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
       <lib name="${THIRDPARTY_LIBS}libpng${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
@@ -425,7 +429,7 @@
       
       <lib name="gdi32.lib" if="win_desktop"/>
       <lib name="opengl32.lib" if="win_desktop"/>
-	  <lib name="${THIRDPARTY_LIBS}libOpenAL32.lib" if="win_desktop"/>
+	  <lib name="${THIRDPARTY_LIBS}libOpenAL32.lib" if="openal_link"/>
       <lib name="user32.lib" if="win_desktop"/>
       <lib name="kernel32.lib" if="win_desktop"/>
       <lib name="advapi32.lib" if="win_desktop"/>

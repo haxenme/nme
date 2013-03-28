@@ -8,12 +8,12 @@ class ExternalInterface {
 	public static inline var available:Bool = true;
 	public static var marshallExceptions:Bool = false;
 	
-	private static var mCallbacks:Hash<Dynamic>;
+	private static var mCallbacks:Map<String, Dynamic>;
 	
 	
 	public static function addCallback(functionName:String, closure:Dynamic):Void {
 		
-		if (mCallbacks == null) mCallbacks = new Hash <Dynamic>();
+		if (mCallbacks == null) mCallbacks = new Map <String, Dynamic>();
 		mCallbacks.set(functionName, closure);
 		
 	}

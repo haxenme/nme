@@ -74,9 +74,6 @@ class Icons
       return true;
    }
 
-
-   
-   
    function getIconBitmap(inWidth:Int, inHeight:Int, inTimedFile:String="", ?inBackgroundColour ) : BitmapData
    {
       var found:Icon = null;
@@ -119,7 +116,7 @@ class Icons
          var bytes = ByteArray.readFile(found.name);
          var svg = new gm2d.svg.SVG2Gfx( Xml.parse(bytes.asString()) );
 
-	      var shape = svg.CreateShape();
+         var shape = svg.CreateShape();
          var scale = inHeight/32;
 
          InstallTool.print("Creating " + inWidth + "x" + inHeight + " icon from " + found.name );
@@ -139,7 +136,7 @@ class Icons
       {
           throw "Unknown icon format : " + found.name;
       }
- 
+
       return null;
    }
 
@@ -182,8 +179,6 @@ class Icons
          out.writeByte( data[i*4+offset] );
       return out.getBytes();
    }
-
-
 
    public function createMacIcon(resource_dest:String)
    {
@@ -231,7 +226,7 @@ class Icons
             file.close();
             return filename;
          }
- 
+
       return "";
    }
 
@@ -243,7 +238,6 @@ class Icons
       else
       {
          var sizes = [ 32, 48, 64 ];
-
 
          var bmps = new Array<BitmapData>();
 
@@ -285,7 +279,7 @@ class Icons
             var xor_size = size*size*4;
             var and_size = size*size >> 3;
 
-            ico.writeInt(40); // size (bytes)
+            ico.writeInt(40); // size(bytes)
             ico.writeInt(size);
             ico.writeInt(size*2);
             ico.writeShort(1);
@@ -336,9 +330,6 @@ class Icons
       }
 
       var command = "ReplaceVistaIcon.exe";
-      InstallTool.runCommand (InstallTool.nme + "\\ndll\\Windows\\", command, [ Sys.getCwd () + "\\" + inExeName, Sys.getCwd () + "\\" + name ]);
-	  
+      InstallTool.runCommand(InstallTool.nme + "\\tools\\command-line-simple\\bin\\", command, [ Sys.getCwd() + "\\" + inExeName, Sys.getCwd() + "\\" + name ]);
    }
-
-
 }

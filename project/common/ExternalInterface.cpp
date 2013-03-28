@@ -243,178 +243,6 @@ WString val2stdwstr(value inVal)
 }
 
 
-void FromValue(Matrix &outMatrix, value inValue)
-{
-   if (!val_is_null(inValue))
-   {
-      outMatrix.m00 =  val_field_numeric(inValue,_id_a);
-      outMatrix.m01 =  val_field_numeric(inValue,_id_c);
-      outMatrix.m10 =  val_field_numeric(inValue,_id_b);
-      outMatrix.m11 =  val_field_numeric(inValue,_id_d);
-      outMatrix.mtx =  val_field_numeric(inValue,_id_tx);
-      outMatrix.mty =  val_field_numeric(inValue,_id_ty);
-   }
-}
-
-int ValInt(value inObject, int inID, int inDefault)
-{
-   value field = val_field(inObject,inID);
-   if (val_is_null(field))
-      return inDefault;
-   return (int)val_number(field);
-}
-
-
-void FromValue(Event &outEvent, value inValue)
-{
-   outEvent.type = (EventType)ValInt(inValue,_id_type,etUnknown);
-   outEvent.x = ValInt(inValue,_id_x,0);
-   outEvent.y = ValInt(inValue,_id_y,0);
-   outEvent.value = ValInt(inValue,_id_value,0);
-   outEvent.id = ValInt(inValue,_id_id,-1);
-   outEvent.flags = ValInt(inValue,_id_flags,0);
-   outEvent.code = ValInt(inValue,_id_code,0);
-   outEvent.result = (EventResult)ValInt(inValue,_id_result,0);
-}
-
-
-void FromValue(ColorTransform &outTrans, value inValue)
-{
-   if (!val_is_null(inValue))
-   {
-      outTrans.alphaOffset = val_field_numeric(inValue,_id_alphaOffset);
-      outTrans.redOffset = val_field_numeric(inValue,_id_redOffset);
-      outTrans.greenOffset = val_field_numeric(inValue,_id_greenOffset);
-      outTrans.blueOffset = val_field_numeric(inValue,_id_blueOffset);
-
-      outTrans.alphaMultiplier = val_field_numeric(inValue,_id_alphaMultiplier);
-      outTrans.redMultiplier = val_field_numeric(inValue,_id_redMultiplier);
-      outTrans.greenMultiplier = val_field_numeric(inValue,_id_greenMultiplier);
-      outTrans.blueMultiplier = val_field_numeric(inValue,_id_blueMultiplier);
-   }
-}
-
-
-
-int RGB2Int32(value inRGB)
-{
-   if (val_is_int(inRGB))
-      return val_int(inRGB);
-   if (val_is_object(inRGB))
-   {
-      return (int)(val_field_numeric(inRGB,_id_rgb)) |
-             ( ((int)val_field_numeric(inRGB,_id_a)) << 24 );
-   }
-   return 0;
-}
-
-
-void FromValue(SoundTransform &outTrans, value inValue)
-{
-   if (!val_is_null(inValue))
-   {
-       outTrans.volume = val_number( val_field(inValue,_id_volume) );
-       outTrans.pan = val_number( val_field(inValue,_id_pan) );
-   }
-}
-
-void FromValue(DRect &outRect, value inValue)
-{
-   if (val_is_null(inValue))
-      return;
-   outRect.x = val_field_numeric(inValue,_id_x);
-   outRect.y = val_field_numeric(inValue,_id_y);
-   outRect.w = val_field_numeric(inValue,_id_width);
-   outRect.h = val_field_numeric(inValue,_id_height);
-}
-
-void FromValue(Rect &outRect, value inValue)
-{
-   if (val_is_null(inValue))
-      return;
-   outRect.x = val_field_numeric(inValue,_id_x);
-   outRect.y = val_field_numeric(inValue,_id_y);
-   outRect.w = val_field_numeric(inValue,_id_width);
-   outRect.h = val_field_numeric(inValue,_id_height);
-}
-
-Filter *FilterFromValue(value filter)
-{
-   WString type = val2stdwstr( val_field(filter,_id_type) );
-   int q = val_int(val_field(filter,_id_quality));
-   if (q<1) return 0;;
-   if (type==L"BlurFilter")
-   {
-      return( new BlurFilter( q,
-          (int)val_field_numeric(filter,_id_blurX),
-          (int)val_field_numeric(filter,_id_blurY) ) );
-   }
-   else if (type==L"DropShadowFilter")
-   {
-      return( new DropShadowFilter( q,
-          (int)val_field_numeric(filter,_id_blurX),
-          (int)val_field_numeric(filter,_id_blurY),
-          val_field_numeric(filter,_id_angle),
-          val_field_numeric(filter,_id_distance),
-          val_int( val_field(filter,_id_color) ),
-          val_field_numeric(filter,_id_strength),
-          val_field_numeric(filter,_id_alpha),
-          (bool)val_field_numeric(filter,_id_hideObject),
-          (bool)val_field_numeric(filter,_id_knockout),
-          (bool)val_field_numeric(filter,_id_inner)
-          ) );
-   }
-   return 0;
-}
-
-void ToValue(value &outVal,const Rect &inRect)
-{
-    alloc_field(outVal,_id_x, alloc_float(inRect.x) );
-    alloc_field(outVal,_id_y, alloc_float(inRect.y) );
-    alloc_field(outVal,_id_width, alloc_float(inRect.w) );
-    alloc_field(outVal,_id_height, alloc_float(inRect.h) );
-}
-
-void FromValue(ImagePoint &outPoint,value inValue)
-{
-   outPoint.x = val_field_numeric(inValue,_id_x);
-   outPoint.y = val_field_numeric(inValue,_id_y);
-}
-
-void FromValue(UserPoint &outPoint,value inValue)
-{
-   outPoint.x = val_field_numeric(inValue,_id_x);
-   outPoint.y = val_field_numeric(inValue,_id_y);
-}
-
-
-
-void ToValue(value &outVal,const Matrix &inMatrix)
-{
-    alloc_field(outVal,_id_a, alloc_float(inMatrix.m00) );
-    alloc_field(outVal,_id_c, alloc_float(inMatrix.m01) );
-    alloc_field(outVal,_id_b, alloc_float(inMatrix.m10) );
-    alloc_field(outVal,_id_d, alloc_float(inMatrix.m11) );
-    alloc_field(outVal,_id_tx, alloc_float(inMatrix.mtx) );
-    alloc_field(outVal,_id_ty, alloc_float(inMatrix.mty) );
-}
-
-void ToValue(value &outVal,const ColorTransform &inTrans)
-{
-    alloc_field(outVal,_id_alphaMultiplier, alloc_float(inTrans.alphaMultiplier) );
-    alloc_field(outVal,_id_redMultiplier, alloc_float(inTrans.redMultiplier) );
-    alloc_field(outVal,_id_greenMultiplier, alloc_float(inTrans.greenMultiplier) );
-    alloc_field(outVal,_id_blueMultiplier, alloc_float(inTrans.blueMultiplier) );
-
-    alloc_field(outVal,_id_alphaOffset, alloc_float(inTrans.alphaOffset) );
-    alloc_field(outVal,_id_redOffset, alloc_float(inTrans.redOffset) );
-    alloc_field(outVal,_id_greenOffset, alloc_float(inTrans.greenOffset) );
-    alloc_field(outVal,_id_blueOffset, alloc_float(inTrans.blueOffset) );
-}
-
-
-
-
 template<typename T>
 void FillArrayInt(QuickVec<T> &outArray,value inVal)
 {
@@ -543,6 +371,186 @@ void FillArrayDouble(QuickVec<T> &outArray,value inVal)
 {
    FillArrayDoubleN<T,16>(outArray,inVal);
 }
+
+
+void FromValue(Matrix &outMatrix, value inValue)
+{
+   if (!val_is_null(inValue))
+   {
+      outMatrix.m00 =  val_field_numeric(inValue,_id_a);
+      outMatrix.m01 =  val_field_numeric(inValue,_id_c);
+      outMatrix.m10 =  val_field_numeric(inValue,_id_b);
+      outMatrix.m11 =  val_field_numeric(inValue,_id_d);
+      outMatrix.mtx =  val_field_numeric(inValue,_id_tx);
+      outMatrix.mty =  val_field_numeric(inValue,_id_ty);
+   }
+}
+
+int ValInt(value inObject, int inID, int inDefault)
+{
+   value field = val_field(inObject,inID);
+   if (val_is_null(field))
+      return inDefault;
+   return (int)val_number(field);
+}
+
+
+void FromValue(Event &outEvent, value inValue)
+{
+   outEvent.type = (EventType)ValInt(inValue,_id_type,etUnknown);
+   outEvent.x = ValInt(inValue,_id_x,0);
+   outEvent.y = ValInt(inValue,_id_y,0);
+   outEvent.value = ValInt(inValue,_id_value,0);
+   outEvent.id = ValInt(inValue,_id_id,-1);
+   outEvent.flags = ValInt(inValue,_id_flags,0);
+   outEvent.code = ValInt(inValue,_id_code,0);
+   outEvent.result = (EventResult)ValInt(inValue,_id_result,0);
+}
+
+
+void FromValue(ColorTransform &outTrans, value inValue)
+{
+   if (!val_is_null(inValue))
+   {
+      outTrans.alphaOffset = val_field_numeric(inValue,_id_alphaOffset);
+      outTrans.redOffset = val_field_numeric(inValue,_id_redOffset);
+      outTrans.greenOffset = val_field_numeric(inValue,_id_greenOffset);
+      outTrans.blueOffset = val_field_numeric(inValue,_id_blueOffset);
+
+      outTrans.alphaMultiplier = val_field_numeric(inValue,_id_alphaMultiplier);
+      outTrans.redMultiplier = val_field_numeric(inValue,_id_redMultiplier);
+      outTrans.greenMultiplier = val_field_numeric(inValue,_id_greenMultiplier);
+      outTrans.blueMultiplier = val_field_numeric(inValue,_id_blueMultiplier);
+   }
+}
+
+
+
+int RGB2Int32(value inRGB)
+{
+   if (val_is_int(inRGB))
+      return val_int(inRGB);
+   if (val_is_object(inRGB))
+   {
+      return (int)(val_field_numeric(inRGB,_id_rgb)) |
+             ( ((int)val_field_numeric(inRGB,_id_a)) << 24 );
+   }
+   return 0;
+}
+
+
+void FromValue(SoundTransform &outTrans, value inValue)
+{
+   if (!val_is_null(inValue))
+   {
+       outTrans.volume = val_number( val_field(inValue,_id_volume) );
+       outTrans.pan = val_number( val_field(inValue,_id_pan) );
+   }
+}
+
+void FromValue(DRect &outRect, value inValue)
+{
+   if (val_is_null(inValue))
+      return;
+   outRect.x = val_field_numeric(inValue,_id_x);
+   outRect.y = val_field_numeric(inValue,_id_y);
+   outRect.w = val_field_numeric(inValue,_id_width);
+   outRect.h = val_field_numeric(inValue,_id_height);
+}
+
+void FromValue(Rect &outRect, value inValue)
+{
+   if (val_is_null(inValue))
+      return;
+   outRect.x = val_field_numeric(inValue,_id_x);
+   outRect.y = val_field_numeric(inValue,_id_y);
+   outRect.w = val_field_numeric(inValue,_id_width);
+   outRect.h = val_field_numeric(inValue,_id_height);
+}
+
+Filter *FilterFromValue(value filter)
+{
+   WString type = val2stdwstr( val_field(filter,_id_type) );
+   if (type==L"BlurFilter")
+   {
+      int q = val_int(val_field(filter,_id_quality));
+      if (q<1) return 0;
+      return( new BlurFilter( q,
+          (int)val_field_numeric(filter,_id_blurX),
+          (int)val_field_numeric(filter,_id_blurY) ) );
+   }
+   else if (type==L"ColorMatrixFilter")
+   {
+      QuickVec<float> inMatrix;
+      FillArrayDouble(inMatrix, val_field(filter,_id_matrix));
+      return( new ColorMatrixFilter(inMatrix) );
+   }
+   else if (type==L"DropShadowFilter")
+   {
+      int q = val_int(val_field(filter,_id_quality));
+      if (q<1) return 0;
+      return( new DropShadowFilter( q,
+          (int)val_field_numeric(filter,_id_blurX),
+          (int)val_field_numeric(filter,_id_blurY),
+          val_field_numeric(filter,_id_angle),
+          val_field_numeric(filter,_id_distance),
+          val_int( val_field(filter,_id_color) ),
+          val_field_numeric(filter,_id_strength),
+          val_field_numeric(filter,_id_alpha),
+          (bool)val_field_numeric(filter,_id_hideObject),
+          (bool)val_field_numeric(filter,_id_knockout),
+          (bool)val_field_numeric(filter,_id_inner)
+          ) );
+   }
+   return 0;
+}
+
+void ToValue(value &outVal,const Rect &inRect)
+{
+    alloc_field(outVal,_id_x, alloc_float(inRect.x) );
+    alloc_field(outVal,_id_y, alloc_float(inRect.y) );
+    alloc_field(outVal,_id_width, alloc_float(inRect.w) );
+    alloc_field(outVal,_id_height, alloc_float(inRect.h) );
+}
+
+void FromValue(ImagePoint &outPoint,value inValue)
+{
+   outPoint.x = val_field_numeric(inValue,_id_x);
+   outPoint.y = val_field_numeric(inValue,_id_y);
+}
+
+void FromValue(UserPoint &outPoint,value inValue)
+{
+   outPoint.x = val_field_numeric(inValue,_id_x);
+   outPoint.y = val_field_numeric(inValue,_id_y);
+}
+
+
+
+void ToValue(value &outVal,const Matrix &inMatrix)
+{
+    alloc_field(outVal,_id_a, alloc_float(inMatrix.m00) );
+    alloc_field(outVal,_id_c, alloc_float(inMatrix.m01) );
+    alloc_field(outVal,_id_b, alloc_float(inMatrix.m10) );
+    alloc_field(outVal,_id_d, alloc_float(inMatrix.m11) );
+    alloc_field(outVal,_id_tx, alloc_float(inMatrix.mtx) );
+    alloc_field(outVal,_id_ty, alloc_float(inMatrix.mty) );
+}
+
+void ToValue(value &outVal,const ColorTransform &inTrans)
+{
+    alloc_field(outVal,_id_alphaMultiplier, alloc_float(inTrans.alphaMultiplier) );
+    alloc_field(outVal,_id_redMultiplier, alloc_float(inTrans.redMultiplier) );
+    alloc_field(outVal,_id_greenMultiplier, alloc_float(inTrans.greenMultiplier) );
+    alloc_field(outVal,_id_blueMultiplier, alloc_float(inTrans.blueMultiplier) );
+
+    alloc_field(outVal,_id_alphaOffset, alloc_float(inTrans.alphaOffset) );
+    alloc_field(outVal,_id_redOffset, alloc_float(inTrans.redOffset) );
+    alloc_field(outVal,_id_greenOffset, alloc_float(inTrans.greenOffset) );
+    alloc_field(outVal,_id_blueOffset, alloc_float(inTrans.blueOffset) );
+}
+
+
 
 void FromValue(value obj, URLRequest &request)
 {

@@ -16,7 +16,7 @@ import flash.events.Event;
 
 class Scroller extends Sprite {
 
-	public var model( default, setModel ) : ScrollModel;
+	public var model( default, set_model ) : ScrollModel;
 	
 	var dirty : Bool;
 	var mouseDown : Bool;
@@ -48,7 +48,7 @@ class Scroller extends Sprite {
 		addEventListener( Event.ADDED_TO_STAGE, addListeners );
 	}
 	
-	function setModel( m : ScrollModel ) {
+	function set_model( m : ScrollModel ) {
 		
 		if (model != null) {
 			model.removeEventListener( ScrollEvent.UPDATE, changed );
@@ -64,7 +64,7 @@ class Scroller extends Sprite {
 	}
 	
 	function createModel( w : Float, h : Float ) {
-		setModel( new ScrollModel(new Rectangle(0,0,w,h), new Rectangle(20,0,w/2,h)) );
+		set_model( new ScrollModel(new Rectangle(0,0,w,h), new Rectangle(20,0,w/2,h)) );
 	}
 	
 	function createElements( w : Float, h : Float ) {
@@ -137,7 +137,7 @@ class Scroller extends Sprite {
 		stage.removeEventListener( Event.ENTER_FRAME, handleNewFrame );
 		
 		mouseDown = false;
-		model.setThumbPosition( clickThumbPosition.x + (e.stageX - clickMousePosition.x) );
+		model.set_thumbPosition( clickThumbPosition.x + (e.stageX - clickMousePosition.x) );
 		draw();
 		
 		if( upCallback != null )
@@ -145,7 +145,7 @@ class Scroller extends Sprite {
 	}
 	
 	function onMouseMove( e : MouseEvent ) {
-		model.setThumbPosition( clickThumbPosition.x + (e.stageX - clickMousePosition.x) );
+		model.set_thumbPosition( clickThumbPosition.x + (e.stageX - clickMousePosition.x) );
 	}
 	
 	public function destroy() : Void {

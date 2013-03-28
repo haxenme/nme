@@ -35,19 +35,23 @@ class Material
 		renderMode = GL.TRIANGLES;
 		this.name = name;
 		this.shader = new GLSLShader(Assets.getText(vsPath), Assets.getText(fsPath));
-		posLocation = GL.getAttribLocation(shader.program, "vPosition");
-		normLocation = GL.getAttribLocation(shader.program, "vNormal");
-		binormLocation = GL.getAttribLocation(shader.program, "vBiNormal");
-		uvLocation = GL.getAttribLocation(shader.program, "vUV");
-		colorLocation = GL.getAttribLocation(shader.program, "vColor");
+		posLocation = GL.getAttribLocation(shader.program, "aPosition");
+		normLocation = GL.getAttribLocation(shader.program, "aNormal");
+		binormLocation = GL.getAttribLocation(shader.program, "aBiNormal");
+		uvLocation = GL.getAttribLocation(shader.program, "aUV");
+		colorLocation = GL.getAttribLocation(shader.program, "aColor");
 	}
-	public function predraw(camera:Camera):Void {
+	public function predraw(camera:Camera, world:Matrix3D, wvp:Matrix3D, time:Float):Void {
 		GL.useProgram(shader.program);
 		GL.blendFunc(blendSource, blendDestination);
-		shader.setUniform("cameraPos", camera.p);
-		shader.setUniform("viewProjection", camera.camProj);
-		shader.setUniform("worldViewInverse", camera.worldViewInverse );
-		shader.setUniform("time", Lib.getTimer() / 1000);
+		shader.setUniform("uWorld", world);
+		shader.setUniform("uView", camera.view);
+		shader.setUniform("uProjection", camera.projection);
+		shader.setUniform("uViewProjection", camera.camProj);
+		shader.setUniform("uWorldViewProjection", wvp);
+		
+		shader.setUniform("uTime", time);
+		shader.setUniform("uCameraPos", camera.p);
 		
 		shader.updateUniforms();
 		//cast(shader.getUniform("time"), UniformF).prop.value = Lib.getTimer() / 1000;

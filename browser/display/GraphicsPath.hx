@@ -3,7 +3,6 @@ package browser.display;
 
 
 import browser.display.IGraphicsData;
-import browser.Html5Dom;
 import nme.Vector;
 
 

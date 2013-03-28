@@ -4,7 +4,6 @@ package browser.events;
 
 import browser.display.InteractiveObject;
 import browser.geom.Point;
-import browser.Html5Dom;
 
 
 class TouchEvent extends Event {
@@ -55,7 +54,7 @@ class TouchEvent extends Event {
 	}
 	
 	
-	public static function nmeCreate(type:String, event:Html5DomTouchEvent, touch:Html5Dom.Touch, local:Point, target:InteractiveObject):TouchEvent {
+	public static function nmeCreate(type:String, event:js.html.TouchEvent, touch:js.html.Touch, local:Point, target:InteractiveObject):TouchEvent {
 		
 		var evt = new TouchEvent(type, true, false, local.x, local.y, null, event.ctrlKey, event.altKey, event.shiftKey, false /* note: buttonDown not supported on w3c spec */, 0, 0);
 		

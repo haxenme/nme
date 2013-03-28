@@ -10,7 +10,7 @@ import haxe.io.Bytes;
 import haxe.Serializer;
 import haxe.Unserializer;
 
-#if haxe_211
+#if haxe3
 import js.html.Storage;
 import js.Browser;
 #else
@@ -74,7 +74,7 @@ class SharedObject extends EventDispatcher {
 		
 		if (localPath == null) {
 			
-			localPath = Lib.window.location.href;
+			localPath = Browser.window.location.href;
 			
 		}
 		
@@ -112,7 +112,7 @@ class SharedObject extends EventDispatcher {
 	
 	private static function nmeGetLocalStorage():Storage {
 		
-		#if haxe_211
+		#if haxe3
 		var res = Browser.getLocalStorage();
 		#else
 		var res = Storage.getLocal();
@@ -132,6 +132,16 @@ class SharedObject extends EventDispatcher {
 		}
 		
 		return null;
+		
+	}
+	
+	
+	public function setProperty(propertyName:String, ?value:Dynamic):Void {
+		
+		if (data != null) {
+			
+			Reflect.setField (data, propertyName, value);
+		}
 		
 	}
 	

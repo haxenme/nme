@@ -1,5 +1,6 @@
 package nme.media.soundmanager;
 #if android
+import nme.gl.GL;
 import nme.media.soundmanager.io.android.AndroidPlayingSound;
 #else
 import nme.media.soundmanager.io.nme.NMEPlayingSound;

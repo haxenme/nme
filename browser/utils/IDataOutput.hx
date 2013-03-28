@@ -2,9 +2,6 @@ package browser.utils;
 #if js
 
 
-import browser.Html5Dom;
-
-
 interface IDataOutput {
 	
 	var endian:Endian;

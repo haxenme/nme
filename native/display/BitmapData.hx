@@ -10,15 +10,15 @@ import native.filters.BitmapFilter;
 import native.utils.ByteArray;
 import native.Loader;
 
-@:autoBuild(nme.Assets.embedBitmap())
+#if haxe3 @:autoBuild(nme.Assets.embedBitmap()) #end
 class BitmapData implements IBitmapDrawable 
 {
-   public static var CLEAR = 0x000000;
-   public static var BLACK = 0x000000;
-   public static var WHITE = 0x000000;
-   public static var RED = 0xff0000;
-   public static var GREEN = 0x00ff00;
-   public static var BLUE = 0x0000ff;
+   public static var CLEAR = createColor(0, 0);
+   public static var BLACK = createColor(0x000000);
+   public static var WHITE = createColor(0x000000);
+   public static var RED = createColor(0xff0000);
+   public static var GREEN = createColor(0x00ff00);
+   public static var BLUE = createColor(0x0000ff);
    public inline static var PNG = "png";
    public inline static var JPG = "jpg";
 
@@ -34,7 +34,7 @@ class BitmapData implements IBitmapDrawable
    public var width(get_width, null):Int;
 
    /** @private */ public var nmeHandle:Dynamic;
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:Int, ?inGPUMode:Null<Bool>) 
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:BitmapInt32, ?inGPUMode:Null<Bool>) 
    {
       var fill_col:Int;
       var fill_alpha:Int;
@@ -96,6 +96,15 @@ class BitmapData implements IBitmapDrawable
       nme_bitmap_data_copy(sourceBitmapData.nmeHandle, sourceRect, nmeHandle, destPoint, mergeAlpha);
    }
 
+   public static inline function createColor(inRGB:Int, inAlpha:Int = 0xFF):BitmapInt32 
+   {
+      #if (neko && (!haxe3 || neko_v1))
+      return { rgb: inRGB, a: inAlpha };
+      #else
+      return inRGB |(inAlpha << 24);
+      #end
+   }
+
    #if cpp
    public function createHardwareSurface() 
    {
@@ -128,17 +137,25 @@ class BitmapData implements IBitmapDrawable
       return nme_bitmap_data_encode(nmeHandle, inFormat, inQuality);
    }
 
-   public static inline function extractAlpha(v:Int):Int 
+   public static inline function extractAlpha(v:BitmapInt32):Int 
    {
+      #if (neko && (!haxe3 || neko_v1))
+      return v.a;
+      #else
       return v >>> 24;
+      #end
    }
 
-   public static inline function extractColor(v:Int):Int 
+   public static inline function extractColor(v:BitmapInt32):Int 
    {
+      #if (neko && (!haxe3 || neko_v1))
+      return v.rgb;
+      #else
       return v & 0xFFFFFF;
+      #end
    }
 
-   public function fillRect(rect:Rectangle, inColour:Int):Void 
+   public function fillRect(rect:Rectangle, inColour:BitmapInt32):Void 
    {
       var a = extractAlpha(inColour);
       var c = extractColor(inColour);
@@ -149,10 +166,73 @@ class BitmapData implements IBitmapDrawable
    {
       nme_bitmap_data_fill(nmeHandle, rect, inColour, inAlpha);
    }
-   
-   public function floodFill(x:Int, y:Int, color:Int):Void
+
+   static inline function sameValue(a:BitmapInt32, b:BitmapInt32)
    {
-	   nmeFloodFill (x, y, color, getPixel32(x, y));
+      #if (neko && (!haxe3 || neko_v1))
+      return a.rgb == b.rgb && a.a == b.a;
+      #else
+      return a==b;
+      #end
+   }
+   
+   public function floodFill(x:Int, y:Int, color:BitmapInt32):Void
+   {
+	   var queue = new Array<Point>();
+		queue.push(new Point(x, y));
+		
+		var old = getPixel32(x, y);
+		var iterations = 0;
+		
+		var search = new Array ();
+		
+		for (i in 0...width + 1) {
+			
+			var column = new Array ();
+			
+			for (i in 0...height + 1) {
+				
+				column.push (false);
+				
+			}
+			
+			search.push (column);
+			
+		}
+		
+		var currPoint, newPoint;
+		
+		while (queue.length > 0) {
+			
+			currPoint = queue.shift();
+			++iterations;
+			
+			var x = Std.int (currPoint.x);
+			var y = Std.int (currPoint.y);
+			
+			if (x < 0 || x >= width) continue;
+			if (y < 0 || y >= height) continue;
+			
+			search[x][y] = true;
+			
+			if ( sameValue(getPixel32(x, y),old) ) {
+				
+				setPixel32(x, y, color);
+				
+				if (!search[x + 1][y]) {
+					queue.push(new Point(x + 1, y));
+				} 
+				if (!search[x][y + 1]) {
+					queue.push(new Point(x, y + 1));
+				} 
+				if (x > 0 && !search[x - 1][y]) {
+					queue.push(new Point(x - 1, y));
+				} 
+				if (y > 0 && !search[x][y - 1]) {
+					queue.push(new Point(x, y - 1));
+				}
+			}
+		}
    }
 
    public function generateFilterRect(sourceRect:Rectangle, filter:BitmapFilter):Rectangle 
@@ -162,7 +242,7 @@ class BitmapData implements IBitmapDrawable
       return result;
    }
 
-   public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true):Rectangle 
+   public function getColorBoundsRect(mask:BitmapInt32, color:BitmapInt32, findColor:Bool = true):Rectangle 
    {
       var result = new Rectangle();
       nme_bitmap_data_get_color_bounds_rect(nmeHandle, mask, color, findColor, result);
@@ -174,15 +254,19 @@ class BitmapData implements IBitmapDrawable
       return nme_bitmap_data_get_pixel(nmeHandle, x, y);
    }
 
-   public function getPixel32(x:Int, y:Int):Int 
+   public function getPixel32(x:Int, y:Int):BitmapInt32 
    {
+      #if (neko && (!haxe3 || neko_v1))
+      return nme_bitmap_data_get_pixel_rgba(nmeHandle, x, y);
+      #else
       return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
+      #end
    }
 
    public function getPixels(rect:Rectangle):ByteArray 
    {
       var result:ByteArray = nme_bitmap_data_get_pixels(nmeHandle, rect);
-	  result.position = 0;
+      if (result != null) result.position = result.length;
       return result;
    }
 
@@ -237,7 +321,7 @@ class BitmapData implements IBitmapDrawable
    public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):BitmapData 
    {
       var result = new BitmapData(0, 0);
-      result.nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
+	  result.nmeLoadFromBytes(inBytes, inRawAlpha);
       return result;
    }
 
@@ -256,21 +340,9 @@ class BitmapData implements IBitmapDrawable
       nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendMode, clipRect, smoothing);
    }
    
-   private function nmeFloodFill(x:Int, y:Int, color:Int, replaceColor:Int):Void
+   private inline function nmeLoadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Void 
    {
-	   if (getPixel32(x, y) == replaceColor) {
-		   
-		   setPixel32(x, y, color);
-		   nmeFloodFill(x + 1, y, color, replaceColor);
-		   nmeFloodFill(x + 1, y + 1, color, replaceColor);
-		   nmeFloodFill(x + 1, y - 1, color, replaceColor);
-		   nmeFloodFill(x - 1, y, color, replaceColor);
-		   nmeFloodFill(x - 1, y + 1, color, replaceColor);
-		   nmeFloodFill(x - 1, y - 1, color, replaceColor);
-		   nmeFloodFill(x, y + 1, color, replaceColor);
-		   nmeFloodFill(x, y - 1, color, replaceColor);
-		   
-	   }
+      nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
    }
 
    public function perlinNoise(baseX:Float, baseY:Float, numOctaves:Int, randomSeed:Int, stitch:Bool, fractalNoise:Bool, channelOptions:Int = 7, grayScale:Bool = false, ?offsets:Array<Point>):Void 
@@ -295,9 +367,13 @@ class BitmapData implements IBitmapDrawable
       nme_bitmap_data_set_pixel(nmeHandle, inX, inY, inColour);
    }
 
-   public function setPixel32(inX:Int, inY:Int, inColour:Int):Void 
+   public function setPixel32(inX:Int, inY:Int, inColour:BitmapInt32):Void 
    {
+      #if (neko && (!haxe3 || neko_v1))
+      nme_bitmap_data_set_pixel_rgba(nmeHandle, inX, inY, inColour);
+      #else
       nme_bitmap_data_set_pixel32(nmeHandle, inX, inY, inColour);
+      #end
    }
 
    public function setPixels(rect:Rectangle, pixels:ByteArray):Void 
@@ -560,7 +636,11 @@ class OptimizedPerlin
 
             var color = Std.int(( s * fPersMax + 1 ) * 128);
 
+            #if (neko && (!haxe3 || neko_v1))
+            var pixel = { a: 0xFF, rgb: color };
+            #else
             var pixel = 0xff000000 | color << 16 | color << 8 | color;
+            #end
 
             bitmap.setPixel32(px, py, pixel);
 
@@ -593,9 +673,15 @@ class OptimizedPerlin
 
    private function seedOffset(iSeed:Int) 
    {
+      #if (neko && (!haxe3 || neko_v1))
+      iXoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
+      iYoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
+      iZoffset = iSeed = Std.int((iSeed * 16807.) % 21474836);
+      #else
       iXoffset = iSeed = Std.int((iSeed * 16807.) % 2147483647);
       iYoffset = iSeed = Std.int((iSeed * 16807.) % 2147483647);
       iZoffset = iSeed = Std.int((iSeed * 16807.) % 2147483647);
+      #end
    }
 }
 

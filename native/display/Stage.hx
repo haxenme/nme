@@ -76,7 +76,7 @@ class Stage extends DisplayObjectContainer
    private static var sDownEvents = [ "mouseDown", "middleMouseDown", "rightMouseDown" ];
    private static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
 
-   /** @private */ private var nmeJoyAxisData:IntHash <Array <Float>>;
+   /** @private */ private var nmeJoyAxisData:#if haxe3 Map <Int, #else IntHash <#end Array <Float>>;
    /** @private */ private var nmeDragBounds:Rectangle;
    /** @private */ private var nmeDragObject:Sprite;
    /** @private */ private var nmeDragOffsetX:Float;
@@ -88,7 +88,7 @@ class Stage extends DisplayObjectContainer
    /** @private */ private var nmeLastDown:Array<InteractiveObject>;
    /** @private */ private var nmeLastRender:Float;
    /** @private */ private var nmeMouseOverObjects:Array<InteractiveObject>;
-   /** @private */ private var nmeTouchInfo:IntHash<TouchInfo>;
+   /** @private */ private var nmeTouchInfo:#if haxe3 Map <Int, #else IntHash <#end TouchInfo>;
    public function new(inHandle:Dynamic, inWidth:Int, inHeight:Int) 
    {
       super(inHandle, "Stage");
@@ -110,8 +110,8 @@ class Stage extends DisplayObjectContainer
       nmeLastDown = [];
       nmeLastClickTime = 0.0;
       this.frameRate = 100;
-      nmeTouchInfo = new IntHash<TouchInfo>();
-      nmeJoyAxisData = new IntHash<Array<Float>>();
+	  nmeTouchInfo = new #if haxe3 Map <Int, #else IntHash <#end TouchInfo>();
+      nmeJoyAxisData = new #if haxe3 Map <Int, #else IntHash <#end Array<Float>>();
 
       #if stage3d
       stage3Ds = new Vector();
@@ -134,59 +134,62 @@ class Stage extends DisplayObjectContainer
       nmeInvalid = true;
    }
 
-	/** @private */ private function nmeCheckFocusInOuts(inEvent:Dynamic, inStack:Array<InteractiveObject>)
-	{
-		// Exit ...
-		var new_n = inStack.length;
-		var new_obj:InteractiveObject = new_n > 0 ? inStack[new_n - 1] : null;
-		var old_n = nmeFocusOverObjects.length;
-		var old_obj:InteractiveObject = old_n > 0 ? nmeFocusOverObjects[old_n - 1] : null;
-		
-		//if (new_obj != old_obj) 
-		//{
-			// focusOver/focusOut goes only over the non-common objects in the tree...
-			//var common = 0;
-			//while(common < new_n && common < old_n && inStack[common] == nmeFocusOverObjects[common])
-				//common++;
-			//
-			//var focusOut = new FocusEvent(FocusEvent.FOCUS_OUT, false, false, new_obj, inEvent.flags > 0, inEvent.code);
-			//
-			//var i = old_n - 1;
-			//while(i >= common) 
-			//{
-				//nmeFocusOverObjects[i].nmeDispatchEvent(focusOut);
-				//i--;
-			//}
-			//
-			//var focusIn = new FocusEvent(FocusEvent.FOCUS_IN, false, false, old_obj, inEvent.flags > 0, inEvent.code);
-			//var i = new_n - 1;
-			//
-			//while(i >= common) 
-			//{
-				//inStack[i].nmeDispatchEvent(focusIn);
-				//i--;
-			//}
-			//
-			//nmeFocusOverObjects = inStack;
-		//}
-		
-		if (new_obj != old_obj)
-		{
-			if (old_obj != null)
-			{
-				var focusOut = new FocusEvent(FocusEvent.FOCUS_OUT, true, false, new_obj, inEvent.flags > 0, inEvent.code);
-				focusOut.target = old_obj;
-				old_obj.nmeFireEvent(focusOut);
-			}
-			
-			var focusIn = new FocusEvent(FocusEvent.FOCUS_IN, true, false, old_obj, inEvent.flags > 0, inEvent.code);
-			
-			focusIn.target = new_obj;
-			new_obj.nmeFireEvent(focusIn);
-			
-			nmeFocusOverObjects = inStack;
-		}
-	}
+   /** @private */ private function nmeCheckFocusInOuts(inEvent:Dynamic, inStack:Array<InteractiveObject>)
+   {
+      // Exit ...
+      var new_n = inStack.length;
+      var new_obj:InteractiveObject = new_n > 0 ? inStack[new_n - 1] : null;
+      var old_n = nmeFocusOverObjects.length;
+      var old_obj:InteractiveObject = old_n > 0 ? nmeFocusOverObjects[old_n - 1] : null;
+      
+      //if (new_obj != old_obj) 
+      //{
+         // focusOver/focusOut goes only over the non-common objects in the tree...
+         //var common = 0;
+         //while(common < new_n && common < old_n && inStack[common] == nmeFocusOverObjects[common])
+            //common++;
+         //
+         //var focusOut = new FocusEvent(FocusEvent.FOCUS_OUT, false, false, new_obj, inEvent.flags > 0, inEvent.code);
+         //
+         //var i = old_n - 1;
+         //while(i >= common) 
+         //{
+            //nmeFocusOverObjects[i].nmeDispatchEvent(focusOut);
+            //i--;
+         //}
+         //
+         //var focusIn = new FocusEvent(FocusEvent.FOCUS_IN, false, false, old_obj, inEvent.flags > 0, inEvent.code);
+         //var i = new_n - 1;
+         //
+         //while(i >= common) 
+         //{
+            //inStack[i].nmeDispatchEvent(focusIn);
+            //i--;
+         //}
+         //
+         //nmeFocusOverObjects = inStack;
+      //}
+      
+      if (new_obj != old_obj)
+      {
+         if (old_obj != null)
+         {
+            var focusOut = new FocusEvent(FocusEvent.FOCUS_OUT, true, false, new_obj, inEvent.flags > 0, inEvent.code);
+            focusOut.target = old_obj;
+            old_obj.nmeFireEvent(focusOut);
+         }
+         
+         if (new_obj!=null)
+         {
+            var focusIn = new FocusEvent(FocusEvent.FOCUS_IN, true, false, old_obj, inEvent.flags > 0, inEvent.code);
+         
+            focusIn.target = new_obj;
+            new_obj.nmeFireEvent(focusIn);
+         }
+         
+         nmeFocusOverObjects = inStack;
+      }
+   }
 
    /** @private */ private function nmeCheckInOuts(inEvent:MouseEvent, inStack:Array<InteractiveObject>, ?touchInfo:TouchInfo) {
       var prev = touchInfo == null ? nmeMouseOverObjects : touchInfo.touchOverObjects;
@@ -927,9 +930,5 @@ class TouchInfo
       touchOverObjects = [];
    }
 }
-
-#if haxe3
-typedef IntHash<T> = haxe.ds.IntMap<T>
-#end
 
 #end

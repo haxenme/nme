@@ -160,13 +160,13 @@ class WindowsPlatform implements IPlatformTool {
 			
 			if (asset.type != AssetType.TEMPLATE) {
 				
-				PathHelper.mkdir (Path.directory (applicationDirectory + "/" + asset.targetPath));
-				FileHelper.copyAssetIfNewer (asset, applicationDirectory + "/" + asset.targetPath);
+				PathHelper.mkdir (Path.directory (PathHelper.combine (applicationDirectory, asset.targetPath)));
+				FileHelper.copyAssetIfNewer (asset, PathHelper.combine (applicationDirectory, asset.targetPath));
 				
 			} else {
 				
-				PathHelper.mkdir (Path.directory (applicationDirectory + "/" + asset.targetPath));
-				FileHelper.copyAsset (asset, applicationDirectory + "/" + asset.targetPath, context);
+				PathHelper.mkdir (Path.directory (PathHelper.combine (applicationDirectory, asset.targetPath)));
+				FileHelper.copyAsset (asset, PathHelper.combine (applicationDirectory, asset.targetPath), context);
 				
 			}
 			

@@ -1,5 +1,5 @@
-package native.text;
-#if (cpp || neko)
+package browser.text;
+#if js
 
 enum GridFitType {
 	NONE;

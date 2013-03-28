@@ -13,9 +13,9 @@ import browser.geom.Point;
 import browser.geom.Rectangle;
 import browser.media.VideoElement;
 import browser.net.NetStream;
-import browser.Html5Dom;
 import browser.Lib;
-import js.Dom;
+import js.html.CanvasElement;
+import js.html.MediaElement;
 
 
 class Video extends DisplayObject {
@@ -27,7 +27,7 @@ class Video extends DisplayObject {
 	private var netStream:NetStream;
 	private var nmeGraphics:Graphics;
 	private var renderHandler:Event->Void;
-	private var videoElement(default, null):HTMLMediaElement;
+	private var videoElement(default, null):MediaElement;
 	private var windowHack:Bool;
 	
 	
@@ -117,7 +117,7 @@ class Video extends DisplayObject {
 	}
 	
 	
-	override public function nmeRender(inMask:HTMLCanvasElement = null, clipRect:Rectangle = null):Void {
+	override public function nmeRender(inMask:CanvasElement = null, clipRect:Rectangle = null):Void {
 		
 		if (_matrixInvalid || _matrixChainInvalid) {
 			

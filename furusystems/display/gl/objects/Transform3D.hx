@@ -127,9 +127,6 @@ class Transform3D
 	
 	public var matrix(get_matrix, null):Matrix3D;
 	private function get_matrix():Matrix3D {
-		if (_dirty) {
-			updateMatrix();
-		}
 		return _matrix;
 	}
 	
@@ -160,13 +157,12 @@ class Transform3D
 	}
 	
 	public function predraw(parent:Matrix3D = null):Void {
-		var m = matrix;
+		updateMatrix();
 		if (parent != null) {
-			m.append(parent);
-			_dirty = true;
+			_matrix.append(parent);
 		}
 		for (c in children) {
-			c.predraw(m);
+			c.predraw(_matrix);
 		}
 	}
 	
@@ -180,16 +176,14 @@ class Transform3D
 		}
 	}
 	
-	private function updateMatrix():Void 
+	private inline function updateMatrix():Void 
 	{
-		if (!_dirty) return;
 		_matrix.identity();
 		_matrix.appendRotation(rotation.x, Vector3D.X_AXIS, pivot);
 		_matrix.appendRotation(rotation.y, Vector3D.Y_AXIS, pivot);
 		_matrix.appendRotation(rotation.z, Vector3D.Z_AXIS, pivot);
 		_matrix.appendScale(scale.x, scale.y, scale.z);
 		_matrix.appendTranslation(position.x, position.y, position.z);
-		_dirty = false;
 	}
 	
 }

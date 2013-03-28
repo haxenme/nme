@@ -11,7 +11,9 @@ import haxe.Resource;
 
 class DoubleCenteredTextField extends Sprite {
 
-	static function main () Lib.current.addChild(new DoubleCenteredTextField())
+	static function main () {
+		Lib.current.addChild(new DoubleCenteredTextField());
+	}
 
 	private var fontName:String;
 

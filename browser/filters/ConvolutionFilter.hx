@@ -1,9 +1,7 @@
 package browser.filters;
 #if js
 
-
-import browser.Html5Dom;
-
+import browser.utils.UInt;
 
 class ConvolutionFilter extends BitmapFilter {
 	

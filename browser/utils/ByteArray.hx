@@ -3,11 +3,13 @@ package browser.utils;
 
 
 import browser.errors.IOError;
-import browser.Html5Dom;
+import browser.utils.UInt;
 import haxe.io.Bytes;
 import haxe.io.BytesBuffer;
 import haxe.io.BytesData;
 import haxe.io.Input;
+import js.html.DataView;
+import js.html.Uint8Array;
 
 #if format
 import format.tools.Inflate;
@@ -103,8 +105,25 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	}
 	
 	
+	static public function fromBytes(inBytes:Bytes) 
+   {
+      var result = new ByteArray();
+	  result.nmeFromBytes(inBytes);
+      return result;
+   }
+   
+   
+   private inline function nmeFromBytes(inBytes:Bytes):Void
+   {
+	  byteView = untyped __new__("Uint8Array", inBytes.getData());
+	  length = byteView.length;
+	  allocated = length;
+   }
+	
+	
 	public inline function nmeGet(pos:Int):Int {
 		
+		var data:Dynamic = data;
 		return data.getUint8(pos);
 		
 	}
@@ -130,6 +149,7 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	
 	public inline function nmeSet(pos:Int, v:Int):Void {
 		
+		var data:Dynamic = data;
 		data.setUint8(pos, v);
 		
 	}
@@ -144,6 +164,7 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	
 	public inline function readByte():Int {
 		
+		var data:Dynamic = data;
 		return data.getUint8(this.position++);
 		
 	}
@@ -197,6 +218,7 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 		
 		for (i in pos...(pos + len)) {
 			
+			var data:Dynamic = data;
 			data.setInt8(this.position++, bytes.get(i));
 			
 		}
@@ -224,6 +246,7 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	
 	public inline function readUnsignedByte():Int {
 		
+		var data:Dynamic = data;
 		return data.getUint8(this.position++);
 		
 	}
@@ -263,6 +286,7 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 		// utf8-encode
 		while (this.position < max) {
 			
+			var data:Dynamic = data;
 			var c = data.getUint8(this.position++);
 			
 			if (c < 0x80) {
@@ -317,6 +341,7 @@ class ByteArray #if js_can_implement_array_access implements ArrayAccess<Int> #e
 	public function writeByte(value:Int):Void {
 		
 		ensureWrite(this.position + 1);
+		var data:Dynamic = data;
 		data.setInt8(this.position, value);
 		this.position += 1;
 		

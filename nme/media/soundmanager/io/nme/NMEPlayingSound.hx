@@ -1,5 +1,4 @@
 package nme.media.soundmanager.io.nme;
-import nme.media.SoundChannel;
 import nme.media.soundmanager.io.IPlayingSound;
 import nme.media.soundmanager.io.ISoundCue;
 import nme.media.SoundTransform;
@@ -36,7 +35,8 @@ class NMEPlayingSound implements IPlayingSound
 		length = loopcount==-1?Math.POSITIVE_INFINITY:cue.duration * (loopcount + 1);
 		position = 0;
 		
-		this.channel = cast(cue, NMECue).sound.play(0, loopcount==-1?Math.ceil(Math.POSITIVE_INFINITY):loopcount, new SoundTransform(vol, pan));
+		var c:NMECue = cast cue;
+		this.channel = c.sound.play(0, loopcount==-1?Math.ceil(Math.POSITIVE_INFINITY):loopcount, new SoundTransform(vol, pan));
 	}
 	public function dispose():Void {
 		//trace("Dispose sound");

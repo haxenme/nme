@@ -2,7 +2,8 @@ package browser.filters;
 #if js
 
 
-import browser.Html5Dom;
+import js.html.CanvasElement;
+import js.html.CanvasRenderingContext2D;
 
 
 class DropShadowFilter extends BitmapFilter {
@@ -50,7 +51,7 @@ class DropShadowFilter extends BitmapFilter {
 	}
 	
 	
-	override public function nmeApplyFilter(surface:HTMLCanvasElement, refreshCache:Bool = false):Void {
+	override public function nmeApplyFilter(surface:CanvasElement, refreshCache:Bool = false):Void {
 		
 		if (!_nmeCached || refreshCache) {
 			

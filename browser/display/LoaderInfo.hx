@@ -48,6 +48,10 @@ class LoaderInfo extends EventDispatcher {
 			
 			li.loader = ldr;
 			
+		} else {
+			
+			li.url = "";
+			
 		}
 		
 		return li;

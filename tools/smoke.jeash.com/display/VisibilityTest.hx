@@ -39,6 +39,8 @@ class VisibilityTest extends Sprite {
 
 	}
 
-	static function main () Lib.current.stage.addChild(new VisibilityTest())
+	static function main () {
+		Lib.current.stage.addChild(new VisibilityTest());
+	}
 
 }

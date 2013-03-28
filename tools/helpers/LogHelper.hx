@@ -2,10 +2,10 @@ package;
 
 
 import neko.Lib;
-
 #if nme
 import nme.Loader;
 #end
+import NMEProject;
 
 
 class LogHelper {
@@ -13,7 +13,7 @@ class LogHelper {
 	
 	public static var mute:Bool;
 	public static var verbose:Bool = false;
-	private static var sentWarnings:Map <String, Bool> = new Map <String, Bool> ();
+	private static var sentWarnings = new StringMap <Bool> ();
 	
 	
 	public static function error (message:String, verboseMessage:String = "", e:Dynamic = null):Void {

@@ -4,7 +4,7 @@ package browser.display;
 
 import browser.display.IGraphicsData;
 import browser.display.IGraphicsFill;
-import browser.Html5Dom;
+import browser.utils.UInt;
 
 
 class GraphicsSolidFill implements IGraphicsData #if !haxe3 , #end implements IGraphicsFill {

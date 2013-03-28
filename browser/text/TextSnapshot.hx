@@ -1,6 +1,7 @@
 package browser.text;
 #if js
 
+import browser.utils.UInt;
 
 class TextSnapshot {
 	

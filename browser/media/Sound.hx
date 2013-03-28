@@ -7,8 +7,9 @@ import browser.events.EventDispatcher;
 import browser.events.IOErrorEvent;
 import browser.net.URLRequest;
 import browser.net.URLLoader;
-import browser.Html5Dom;
 import browser.Lib;
+import js.html.MediaElement;
+import js.Browser;
 
 #if haxe3
 import haxe.ds.IntMap;
@@ -89,14 +90,15 @@ class Sound extends EventDispatcher {
 	
 	public static function nmeCanPlayMime(mime:String):Bool {
 		
-		var audio:HTMLMediaElement = cast Lib.document.createElement("audio");
+		var audio:MediaElement = cast Browser.document.createElement("audio");
 		
 		var playable = function(ok:String) {
 			
 			if (ok != "" && ok != "no") return true; else return false;
 		}
 		
-		return playable(audio.canPlayType(mime));
+		//return playable(audio.canPlayType(mime));
+		return playable(audio.canPlayType(mime, null));
 		
 	}
 	

@@ -7,6 +7,7 @@ import haxe.io.BytesOutput;
 import haxe.io.Path;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
+import nme.display.BitmapInt32;
 import nme.display.Shape;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
@@ -68,7 +69,11 @@ class IconHelper {
 				var bytes_g = packBits (pixels, 2, s * s);
 				var bytes_b = packBits (pixels, 3, s * s);
 				
+				#if (!neko || haxe3)
 				out.writeInt32 (bytes_r.length + bytes_g.length + bytes_b.length + 8);
+				#else
+				out.writeInt31 (bytes_r.length + bytes_g.length + bytes_b.length + 8);
+				#end
 				out.writeBytes (bytes_r, 0, bytes_r.length);
 				out.writeBytes (bytes_g, 0, bytes_g.length);
 				out.writeBytes (bytes_b, 0, bytes_b.length);
@@ -78,7 +83,11 @@ class IconHelper {
 				for (c in 0...4) out.writeByte (code.charCodeAt (c));
 				
 				var bytes_a = extractBits (pixels, 0, s * s);
+				#if (!neko || haxe3)
 				out.writeInt32 (bytes_a.length + 8);
+				#else
+				out.writeInt31 (bytes_a.length + 8);
+				#end
 				out.writeBytes (bytes_a, 0, bytes_a.length);
 				
 			}
@@ -97,7 +106,11 @@ class IconHelper {
 				
 				var bytes = bmp.encode ("png");
 				
+				#if (!neko || haxe3)
 				out.writeInt32 (bytes.length + 8);
+				#else
+				out.writeInt31 (bytes.length + 8);
+				#end
 				out.writeBytes (bytes, 0, bytes.length);
 				
 			}
@@ -113,7 +126,11 @@ class IconHelper {
 			
 			for (c in 0...4) file.writeByte ("icns".charCodeAt (c));
 			
+			#if (!neko || haxe3)
 			file.writeInt32 (bytes.length + 8);
+			#else
+			file.writeInt31 (bytes.length + 8);
+			#end
 			file.writeBytes (bytes, 0, bytes.length);
 			file.close ();
 			
@@ -324,7 +341,7 @@ class IconHelper {
 	}
 	
 	
-	private static function getIconBitmap (icons:Array <Icon>, width:Int, height:Int, backgroundColor:Int = null):BitmapData {
+	private static function getIconBitmap (icons:Array <Icon>, width:Int, height:Int, backgroundColor:BitmapInt32 = null):BitmapData {
 		
 		var icon = findMatch (icons, width, height);
 		var exactMatch = true;

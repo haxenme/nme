@@ -2,9 +2,7 @@ package browser.gl;
 #if js
 
 
-import browser.Html5Dom;
-
-typedef GLFramebuffer = WebGLFramebuffer;
+typedef GLFramebuffer = js.html.webgl.Framebuffer;
 
 
 #end

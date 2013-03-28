@@ -17,6 +17,7 @@ import nme.gl.GLFramebuffer;
 import nme.gl.GLProgram;
 import nme.gl.GLRenderbuffer;
 import nme.gl.GLTexture;
+import nme.Lib;
 import nme.utils.ArrayBuffer;
 import nme.utils.UInt8Array;
 import nme.Vector;
@@ -43,10 +44,8 @@ class GLRenderer extends OpenGLView
 	private var currentMesh:Mesh = null;
 	private var depthMaterial:Material;
 	
-	private var fbo:GLFramebuffer;
+	private var frameBuffer:GLFramebuffer;
 	private var depthBuffer:GLRenderbuffer;
-	
-	private var fxaa:Material;
 	
 	private var screenQuad:Quad;
 	private var fullscreenTexture:GLTexture;
@@ -55,11 +54,17 @@ class GLRenderer extends OpenGLView
 	
 	public var clearColor:Vector3D;
 	
+	private var wvp:Matrix3D;
+	
 	public var preRender:Void->Void = null;
+	
+	public var postProcessors:Array<Material>;
 	
 	public function new() 
 	{
 		super();
+		wvp = new Matrix3D();
+		postProcessors = [];
 		clearColor = new Vector3D(0,0,0,0);
 		addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 	}
@@ -87,31 +92,28 @@ class GLRenderer extends OpenGLView
 		
 	}
 	
-	private function initFXAA():Void {
-		
+	private function initPost():Void {
 		screenQuad = new Quad();
-		fxaa = new Material("FXAA", "shaders/FullscreenQuad.vs", "shaders/FXAA.fs");
 		
-		fbo = GL.createFramebuffer();
+		frameBuffer = GL.createFramebuffer();
 		depthBuffer = GL.createRenderbuffer();
 		
 		fullscreenTexture = GL.createTexture();
 		GL.bindTexture(GL.TEXTURE_2D, fullscreenTexture);
 		GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
 		GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
-		GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR); 
-		GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);		
+		GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST); 
+		GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);		
 		GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGB, Std.int(backbufferSize.x), Std.int(backbufferSize.y), 0, GL.RGB, GL.UNSIGNED_BYTE, null);
 		GL.bindTexture(GL.TEXTURE_2D, null);
 		
 		GL.bindRenderbuffer(GL.RENDERBUFFER, depthBuffer);
 		GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH_COMPONENT, Std.int(backbufferSize.x), Std.int(backbufferSize.y));
 		
-		GL.bindFramebuffer(GL.FRAMEBUFFER, fbo);
+		GL.bindFramebuffer(GL.FRAMEBUFFER, frameBuffer);
 		GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, fullscreenTexture, 0);
 		GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, depthBuffer);
 		
-		trace("Checking fbo status");
 		var status = GL.checkFramebufferStatus(GL.FRAMEBUFFER);
 		switch (status) {
 			case GL.FRAMEBUFFER_COMPLETE:
@@ -132,6 +134,13 @@ class GLRenderer extends OpenGLView
 		GL.bindRenderbuffer(GL.RENDERBUFFER, null);
 	}
 
+	public function addPost(m:Material):Void {
+		if (postProcessors.length == 0) {
+			initPost();
+		}
+		postProcessors.push(m);
+	}
+	
 	private function onAddedToStage(e:Event):Void 
 	{
 		removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
@@ -143,14 +152,7 @@ class GLRenderer extends OpenGLView
 		meshList = [];
 		materialList = [];
 		objectList = [];
-		materialMap = new Map<String, Array<WorldObject>>();
-		
-		#if (!iphone && earlyZ)
-		depthMaterial = new Material("DepthPass", "shaders/DepthPass.vs", "shaders/DepthPass.fs");
-		#end
-		
-
-		
+		materialMap = new Map<String, Array<WorldObject>>();	
 		
 		camera = new Camera();
 		camera.width = stage.stageWidth;
@@ -212,12 +214,8 @@ class GLRenderer extends OpenGLView
 		GL.clearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 		GL.clearDepth(1);
 		
-		#if fxaa
-		initFXAA();
-		#else
 		GL.enable(GL.CULL_FACE);
 		GL.enable(GL.DEPTH_TEST);
-		#end
 	}
 	
 	public function sortObjects() 
@@ -283,12 +281,10 @@ class GLRenderer extends OpenGLView
 		camera.height = stage.stageHeight;
 		backbufferSize.x = stage.stageWidth;
 		backbufferSize.y = stage.stageHeight;
-		#if fxaa
-		refreshFXAA();
-		#end
+		if(postProcessors.length!=0) refreshPost();
 	}
 	
-	private function refreshFXAA() 
+	private function refreshPost() 
 	{
 		GL.bindTexture(GL.TEXTURE_2D, fullscreenTexture);
 		GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, Std.int(backbufferSize.x), Std.int(backbufferSize.y), 0, GL.RGBA, GL.UNSIGNED_BYTE, null);
@@ -298,15 +294,22 @@ class GLRenderer extends OpenGLView
 		GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH_COMPONENT, Std.int(backbufferSize.x), Std.int(backbufferSize.y));
 		GL.bindRenderbuffer(GL.RENDERBUFFER, null);
 		
-		GL.bindFramebuffer(GL.FRAMEBUFFER, fbo);
+		GL.bindFramebuffer(GL.FRAMEBUFFER, frameBuffer);
 		GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, fullscreenTexture, 0);
 		GL.bindFramebuffer(GL.FRAMEBUFFER, null);
 	}
 	
-	
+	private var prevObjectListLength:Int = 0;
 	override public function render(rect:Rectangle):Void 
 	{
+		var time:Float = Lib.getTimer() / 1000;
+		
 		if (preRender != null) preRender();
+		
+		if (objectList.length != prevObjectListLength) {
+			sortObjects();
+			prevObjectListLength = objectList.length;
+		}
 		
         var w = rect.width;
         var h = rect.height;
@@ -314,14 +317,18 @@ class GLRenderer extends OpenGLView
 		camera.update();
 		rootTransform.update();
 		rootTransform.predraw(); //build matrices
-		camera.worldViewInverse.copyFrom(camera.matrix);
-		camera.worldViewInverse.append(rootTransform.matrix);
+		
+		wvp.identity();
+		wvp.append(rootTransform.matrix);
+		wvp.append(camera.camProj);
+		
+		var doPost:Bool = postProcessors.length != 0;
 
-		#if fxaa
-		//Draw to texture...
-		GL.bindFramebuffer(GL.FRAMEBUFFER, fbo);
-		GL.bindRenderbuffer(GL.RENDERBUFFER, depthBuffer);
-		#end
+		if (doPost) {
+			//Draw to texture...
+			GL.bindFramebuffer(GL.FRAMEBUFFER, frameBuffer);
+			GL.bindRenderbuffer(GL.RENDERBUFFER, depthBuffer);
+		}
 		
 		GL.viewport(Std.int(0), Std.int(0), Std.int(backbufferSize.x), Std.int(backbufferSize.y));
 		GL.clearDepth(1);
@@ -329,69 +336,64 @@ class GLRenderer extends OpenGLView
 		GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 		
 		//PRIMARY RENDER
-		#if fxaa
-		GL.enable(GL.CULL_FACE);
-		GL.enable(GL.DEPTH_TEST);
-		#end
+		if(doPost){
+			GL.enable(GL.CULL_FACE);
+			GL.enable(GL.DEPTH_TEST);
+		}
 		
 		GL.depthFunc(GL.LESS);
 		GL.depthMask(true);
 		
-		#if (!iphone && earlyZ)
-		GL.colorMask(false, false, false, false);
-		depthMaterial.predraw(camera.camProj);
-		drawObjects(objectList, depthMaterial);
-		depthMaterial.postdraw();
-		GL.depthFunc(GL.LEQUAL);
-		GL.depthMask(false);
-		GL.colorMask(true, true, true, true);
-		#end
-		
-		
 		for (m in materialList) 
 		{
-			drawMaterial(m);
+			drawMaterial(m, rootTransform.matrix, wvp, time);
 		}
 		
 		currentMesh = null;
 		
-		//AA
-		#if fxaa
-		GL.bindFramebuffer(GL.FRAMEBUFFER, null);
-		GL.bindRenderbuffer(GL.RENDERBUFFER, null);
-		
-        GL.viewport(Std.int(0), Std.int(0), Std.int(backbufferSize.x), Std.int(backbufferSize.y));
-		GL.clearDepth(1);
-		GL.clearColor(0, 0, 0, 0);
-		GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
-		
-		GL.depthMask(true);
-		GL.disable(GL.CULL_FACE);
-		GL.disable(GL.DEPTH_TEST);
-		
-		fxaa.predraw(camera);
-		GL.activeTexture(GL.TEXTURE0);
-		GL.bindTexture(GL.TEXTURE_2D, fullscreenTexture);
-		GL.uniform1i(fxaa.shader.getUniformLocation("textureSampler"), 0);
-		GL.uniform2f(fxaa.shader.getUniformLocation("texcoordOffset"),1/backbufferSize.x, 1/backbufferSize.y);
-		screenQuad.predraw();
-		fxaa.apply(screenQuad);
-		GL.drawElements(GL.TRIANGLES, screenQuad.indexCount, GL.UNSIGNED_BYTE, 0);
-		screenQuad.postdraw();
-		GL.bindTexture(GL.TEXTURE_2D, null);
-		//}
-		#end
+		if(doPost){
+			GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+			GL.bindRenderbuffer(GL.RENDERBUFFER, null);
+			GL.depthMask(true);
+			GL.clearDepth(1);
+			GL.clearColor(0, 0, 0, 0);
+			GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+			GL.viewport(Std.int(0), Std.int(0), Std.int(backbufferSize.x), Std.int(backbufferSize.y));
+			GL.disable(GL.CULL_FACE);
+			GL.disable(GL.DEPTH_TEST);
+			
+			for(p in postProcessors){
+				p.predraw(camera, rootTransform.matrix, wvp, time);
+				GL.activeTexture(GL.TEXTURE0);
+				GL.bindTexture(GL.TEXTURE_2D, fullscreenTexture);
+				GL.uniform2f(p.shader.getUniformLocation("targetDimensions"), backbufferSize.x, backbufferSize.y);
+				GL.uniform2f(p.shader.getUniformLocation("targetDimensionsRcp"), 1/backbufferSize.x, 1/backbufferSize.y);
+				GL.uniform1i(p.shader.getUniformLocation("uTextureSampler"), 0);
+				screenQuad.predraw();
+				p.apply(screenQuad);
+				GL.drawElements(GL.TRIANGLES, screenQuad.indexCount, GL.UNSIGNED_BYTE, 0);
+				screenQuad.postdraw();
+				p.postdraw();
+				GL.bindTexture(GL.TEXTURE_2D, null);
+			}
+		}
 		
 	}
-	private inline function drawMaterial(m:Material):Void {
+	private inline function drawMaterial(m:Material, world:Matrix3D, wvp:Matrix3D, time:Float):Void {
 		var l = materialMap.get(m.name);
 		if (l.length > 0){
-			m.predraw(camera);
-			drawObjects(l, m);
-			m.postdraw();
+			drawObjects(l, m, camera, world, wvp, time);
 		}
 	}
-	private inline function drawObjects(objects:Array<WorldObject>, material:Material):Void {
+	private inline function to3x3(m:Matrix3D, copy:Bool=false):Matrix3D {
+		if (copy) m = m.clone();
+		var rawData = m.rawData;
+		return m;
+	}
+	
+	private function drawObjects(objects:Array<WorldObject>, material:Material, camera:Camera, world:Matrix3D, wvp:Matrix3D, time:Float):Void {
+		material.predraw(camera, world, wvp, time);
+		var modelView:Matrix3D = new Matrix3D();
 		var count = 0;
 		for (o in objects) {
 			if (!o.visible || o.mesh == null) continue;
@@ -401,7 +403,14 @@ class GLRenderer extends OpenGLView
 				currentMesh.predraw();
 				material.apply(currentMesh);
 			}
-			o.prerender();
+			//var m:Matrix3D = o.matrix;
+			//o.prerender();
+			//modelView.identity();
+			//modelView.append(m);
+			//modelView.append(camera.view);
+			//
+			//GL.uniformMatrix3D(material.shader.getUniformLocation("uModelView"), false, modelView);
+			GL.uniformMatrix3D(material.shader.getUniformLocation("uModel"), false, o.matrix);
 			GL.drawElements(material.renderMode, currentMesh.indexCount, GL.UNSIGNED_BYTE, 0);
 			count++;
 		}
@@ -409,6 +418,7 @@ class GLRenderer extends OpenGLView
 			currentMesh.postdraw();
 			currentMesh = null;
 		}
+		material.postdraw();
 	}
 	
 	private inline function sortByMesh(list:Array<WorldObject>):Void {
@@ -425,11 +435,13 @@ class GLRenderer extends OpenGLView
 		for (m in materialList) {
 			m.dispose();
 		}
-		#if fxaa
-		GL.deleteFramebuffer(fbo);
-		GL.deleteRenderbuffer(depthBuffer);
-		fxaa.dispose();
-		#end
+		for (p in postProcessors) {
+			p.dispose();
+		}
+		if(postProcessors.length!=0){
+			GL.deleteFramebuffer(frameBuffer);
+			GL.deleteRenderbuffer(depthBuffer);
+		}
 	}
 	
 }

@@ -8,12 +8,14 @@ import nme.gl.GL;
  * ...
  * @author Andreas Rønning
  */
+typedef MaterialOverride = { location:Int, name:String, value:Dynamic };
 class WorldObject extends Transform3D
 {
 
 	public var mesh:Mesh;
 	public var material:Material;
 	public var visible:Bool;
+	public var materialOverrides:Map<String,MaterialOverride>;
 	public function new() 
 	{
 		super();
@@ -22,7 +24,13 @@ class WorldObject extends Transform3D
 		material = null;
 	}
 	override public function prerender():Void {
-		GL.uniformMatrix3D(material.shader.getUniform("transform").position, false, _matrix);		
+		pushOverrides();
 	}
+	
+	private inline function pushOverrides():Void 
+	{
+		
+	}
+	
 	
 }
