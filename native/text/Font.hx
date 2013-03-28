@@ -52,7 +52,7 @@ class Font
       {
          if (Reflect.hasField(font, "resourceName"))
          {
-            nme_font_register_font (instance.fontName, Resource.getBytes(Reflect.field(font, "resourceName")));
+            nme_font_register_font (instance.fontName, ByteArray.fromBytes (Resource.getBytes(Reflect.field(font, "resourceName"))));
          }
          nmeRegisteredFonts.push (instance);
       }

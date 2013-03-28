@@ -373,7 +373,7 @@ struct FontInfo
 
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
-typedef std::map<const char *, ByteArray *> FontBytesMap;
+typedef std::map<std::string, AutoGCRoot *> FontBytesMap;
 FontBytesMap sgRegisteredFonts;
 
 Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,bool inNative,bool inInitRef)
@@ -392,7 +392,13 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
 
 
    FontFace *face = 0;
-   ByteArray *bytes = sgRegisteredFonts[WideToUTF8(inFormat.font).c_str())];
+   
+   AutoGCRoot *bytes = 0;
+   FontBytesMap::iterator fbit = sgRegisteredFonts.find(WideToUTF8(inFormat.font).c_str());
+   if (fbit!=sgRegisteredFonts.end())
+   {
+      bytes = fbit->second;
+   }
    
    if (bytes != NULL)
 	  face = FontFace::CreateFreeType(inFormat,inScale,bytes);
@@ -422,8 +428,8 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
 
 void nme_font_register_font(value inFontName, value inBytes)
 {
-   ByteArray *bytes = new ByteArray(inBytes);
-   sgRegisteredFonts[val_string(inFontName)] = bytes;
+   AutoGCRoot *bytes = new AutoGCRoot(inBytes);
+   sgRegisteredFonts[std::string(val_string(inFontName))] = bytes;
 }
 DEFINE_PRIM(nme_font_register_font,2)
 

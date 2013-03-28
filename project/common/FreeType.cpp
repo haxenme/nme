@@ -148,7 +148,7 @@ public:
 
 };
 
-int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, ByteArray *inBytes)
+int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRoot *inBytes)
 {
    *outFace = 0;
    int result = 0;
@@ -162,7 +162,7 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, ByteArra
 	  }
 	  else
 	  {
-		  bytes = *inBytes;
+         bytes = ByteArray(inBytes->get());
 	  }
       if (bytes.Ok())
       {
@@ -183,7 +183,7 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, ByteArra
 
 
 
-static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags, ByteArray *inBytes)
+static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags, AutoGCRoot *inBytes)
 {
    FT_Face face = 0;
    MyNewFace(inFace.c_str(), 0, &face, inBytes);
@@ -372,7 +372,7 @@ std::string ToAssetName(const std::string &inPath)
 #endif
 }
 
-FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, ByteArray *inBytes)
+FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot *inBytes)
 {
    std::string fname = inFontName;
    
@@ -407,7 +407,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, ByteArray 
 
 
 
-FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,ByteArray *inBytes)
+FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes)
 {
    if (!sgLibrary)
      FT_Init_FreeType( &sgLibrary );

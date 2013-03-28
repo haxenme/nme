@@ -146,7 +146,7 @@ public:
    virtual ~FontFace() { };
 
    static FontFace *CreateNative(const TextFormat &inFormat,double inScale);
-   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,ByteArray *inBytes);
+   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes);
    static FontFace *CreateCFFIFont(const TextFormat &inFormat,double inScale);
 
    virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
