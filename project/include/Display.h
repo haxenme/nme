@@ -5,6 +5,7 @@
 #include <Utils.h>
 #include <Geom.h>
 #include <Graphics.h>
+#include <CachedExtent.h>
 #include <string>
 #include <Filters.h>
 
@@ -283,6 +284,8 @@ public:
                                const ColorTransform *inObjTrans,
                                ColorTransform *inBuf);
 
+   uint32 mDirtyFlags;
+
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
@@ -299,7 +302,6 @@ protected:
    int                    mIsMaskCount;
 
    // Matrix stuff
-   uint32 mDirtyFlags;
    Matrix mLocalMatrix;
    // Decomp
    double x;
@@ -333,6 +335,8 @@ public:
    bool NonNormalBlendChild();
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
 
+   void DirtyCache(bool inParentOnly = false);
+
    void hackAddChild(DisplayObject *inObj) { mChildren.push_back(inObj); } 
    void hackRemoveChildren() { mChildren.resize(0); }
 
@@ -341,6 +345,7 @@ public:
 
 
    bool mouseChildren;
+   CachedExtent mExtentCache[3];
 protected:
    ~DisplayObjectContainer();
    QuickVec<DisplayObject *> mChildren;

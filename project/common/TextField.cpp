@@ -1150,7 +1150,7 @@ void TextField::BuildBackground()
       {
          ImagePoint scroll = GetScrollPos();
          if (!mHighlightGfx)
-            mHighlightGfx = new Graphics(true);
+            mHighlightGfx = new Graphics(this,true);
 
          int l0 = LineFromChar(mSelectMin);
          int l1 = LineFromChar(mSelectMax-1);
@@ -1271,7 +1271,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       if (caret)
       {
          if (!mCaretGfx)
-            mCaretGfx = new Graphics(true);
+            mCaretGfx = new Graphics(this,true);
          int line = LineFromChar(caretIndex);
          if (line>=0)
          {

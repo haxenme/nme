@@ -669,7 +669,7 @@ typedef QuickVec<GraphicsJob> GraphicsJobs;
 class Graphics : public Object
 {
 public:
-   Graphics(bool inInitRef = false);
+   Graphics(DisplayObject *inOwner, bool inInitRef = false);
    ~Graphics();
 
    void clear();
@@ -729,8 +729,10 @@ public:
 protected:
    void                      BuildHardware();
    void                      Flush(bool inLine=true,bool inFill=true,bool inTile=true);
+   inline void               OnChanged();
 
 private:
+   DisplayObject             *mOwner;
    GraphicsJobs              mJobs;
    int                       mVersion;
 

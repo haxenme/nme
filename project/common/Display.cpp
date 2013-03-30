@@ -59,7 +59,7 @@ Graphics &DisplayObject::GetGraphics()
 {
    if (!mGfx)
    {
-      mGfx = new Graphics(true);
+      mGfx = new Graphics(this,true);
    }
    return *mGfx;
 }
@@ -76,7 +76,6 @@ void DisplayObject::ClearCacheDirty()
    mDirtyFlags &= ~dirtCache;
    mBitmapGfx = mGfx ? mGfx->Version() : 0;
 }
-
 
 
 void DisplayObject::SetParent(DisplayObjectContainer *inParent)
@@ -263,10 +262,13 @@ void DisplayObject::DirtyUp(uint32 inFlags)
 
 void DisplayObject::DirtyCache(bool inParentOnly)
 {
-   if (!inParentOnly)
-      mDirtyFlags |= dirtCache;
-   else if (mParent)
-      mParent->DirtyCache(false);
+   if (!(mDirtyFlags & dirtCache))
+   {
+      if (!inParentOnly)
+         mDirtyFlags |= dirtCache;
+      if (mParent)
+         mParent->DirtyCache(false);
+   }
 }
 
 Matrix DisplayObject::GetFullMatrix(bool inStageScaling)
@@ -865,6 +867,14 @@ void DisplayObjectContainer::addChild(DisplayObject *inChild)
    DecRef();
 }
 
+void DisplayObjectContainer::DirtyCache(bool inParentOnly)
+{
+   DisplayObject::DirtyCache(inParentOnly);
+   mExtentCache[0].mIsSet = 
+    mExtentCache[1].mIsSet = 
+     mExtentCache[2].mIsSet = false;
+}
+
 void DisplayObjectContainer::DirtyUp(uint32 inFlags)
 {
    mDirtyFlags |= inFlags;
@@ -1265,7 +1275,42 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
 void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke)
 {
-   DisplayObject::GetExtent(inTrans,outExt,inForScreen,inIncludeStroke);
+   int smallest = mExtentCache[0].mID;
+   int slot = 0;
+   for(int i=0;i<3;i++)
+   {
+      CachedExtent &cache = mExtentCache[i];
+      if (cache.mIsSet && *inTrans.mMatrix==cache.mMatrix &&
+            *inTrans.mScale9==cache.mScale9 && cache.mIncludeStroke==inIncludeStroke &&
+               cache.mForScreen==inForScreen)
+         {
+            // Maybe set but not valid - ie, 0 size
+            if (cache.mExtent.Valid())
+               outExt.Add(cache.mExtent);
+            return;
+         }
+      if (cache.mID<gCachedExtentID)
+         cache.mID = gCachedExtentID;
+
+      if (cache.mID<smallest)
+      {
+         smallest = cache.mID;
+         slot = i;
+      }
+   }
+
+   // Need to recalculate the extent...
+   CachedExtent &cache = mExtentCache[slot];
+   cache.mExtent = Extent2DF();
+   cache.mIsSet = true;
+   cache.mMatrix = *inTrans.mMatrix;
+   cache.mScale9 = *inTrans.mScale9;
+   // todo:Matrix3d?
+   cache.mForScreen = inForScreen;
+   cache.mIncludeStroke = inIncludeStroke;
+
+
+   DisplayObject::GetExtent(inTrans,cache.mExtent,inForScreen,inIncludeStroke);
 
    Matrix full;
    Transform trans(inTrans);
@@ -1282,13 +1327,16 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
          {
             double x = (corner & 1) ? obj->scrollRect.w : 0;
             double y = (corner & 2) ? obj->scrollRect.h : 0;
-            outExt.Add( full.Apply(x,y) );
+            cache.mExtent.Add( full.Apply(x,y) );
          }
       }
       else
          // Seems scroll rects are ignored when calculating extent...
-         obj->GetExtent(trans,outExt,inForScreen,inIncludeStroke);
+         obj->GetExtent(trans,cache.mExtent,inForScreen,inIncludeStroke);
    }
+
+   if (cache.mExtent.Valid())
+     outExt.Add(cache.mExtent);
 }
 
 
