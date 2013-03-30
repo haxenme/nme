@@ -148,14 +148,22 @@ public:
 
 };
 
-int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace)
+int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRoot *inBytes)
 {
    *outFace = 0;
    int result = 0;
    result = FT_New_Face(sgLibrary, inFace.c_str(), inIndex, outFace);
    if (*outFace==0)
    {
-      ByteArray bytes = ByteArray::FromFile(inFace.c_str());
+	  ByteArray bytes;
+	  if (inBytes == 0)
+	  {
+         bytes = ByteArray::FromFile(inFace.c_str());
+	  }
+	  else
+	  {
+         bytes = ByteArray(inBytes->get());
+	  }
       if (bytes.Ok())
       {
          int l = bytes.Size();
@@ -175,10 +183,10 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace)
 
 
 
-static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags)
+static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags, AutoGCRoot *inBytes)
 {
    FT_Face face = 0;
-   MyNewFace(inFace.c_str(), 0, &face);
+   MyNewFace(inFace.c_str(), 0, &face, inBytes);
    if (face && inFlags!=0 && face->num_faces>1)
    {
       int n = face->num_faces;
@@ -186,7 +194,7 @@ static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags)
       for(int f=1;f<n;f++)
       {
          FT_Face test = 0;
-         MyNewFace(inFace.c_str(), f, &test);
+         MyNewFace(inFace.c_str(), f, &test, NULL);
          if (test && test->style_flags == inFlags)
          {
             // A goodie!
@@ -364,7 +372,7 @@ std::string ToAssetName(const std::string &inPath)
 #endif
 }
 
-FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
+FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot *inBytes)
 {
    std::string fname = inFontName;
    
@@ -373,20 +381,20 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
       fname += ".ttf";
    #endif
 	  
-   FT_Face font = OpenFont(fname,inFlags);
+   FT_Face font = OpenFont(fname,inFlags,inBytes);
 
    if (font==0 && fname.find("\\")==std::string::npos && fname.find("/")==std::string::npos)
    {
       std::string file_name;
 
       #if HX_MACOS
-      font = OpenFont(ToAssetName(fname).c_str(),inFlags);
+      font = OpenFont(ToAssetName(fname).c_str(),inFlags,NULL);
       #endif
 
       if (font==0 && GetFontFile(fname,file_name))
       {
          // printf("Found font in %s\n", file_name.c_str());
-         font = OpenFont(file_name.c_str(),inFlags);
+         font = OpenFont(file_name.c_str(),inFlags,NULL);
 
 			// printf("Opened : %p\n", font);
       }
@@ -399,7 +407,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags)
 
 
 
-FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale)
+FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes)
 {
    if (!sgLibrary)
      FT_Init_FreeType( &sgLibrary );
@@ -415,7 +423,7 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale)
    if (inFormat.italic)
       flags |= ffItalic;
 
-   face = FindFont(str,flags);
+   face = FindFont(str,flags,inBytes);
    if (!face)
       return 0;
 
@@ -554,7 +562,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
    val_check(font_file, string);
    val_check(em_size, int);
 
-   result = nme::MyNewFace(val_string(font_file), 0, &face);
+   result = nme::MyNewFace(val_string(font_file), 0, &face, NULL);
      
    if (result == FT_Err_Unknown_File_Format) {
       val_throw(alloc_string("Unknown file format!"));
