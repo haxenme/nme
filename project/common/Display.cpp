@@ -98,9 +98,8 @@ void DisplayObject::SetParent(DisplayObjectContainer *inParent)
       mParent->RemoveChildFromList(this);
       mParent->DirtyCache();
    }
-   DirtyUp(dirtCache);
-
    mParent = inParent;
+   DirtyCache();
 
    DecRef();
 }
@@ -208,7 +207,7 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
          hit = mGfx->Render(inTarget,state);
          inState.mHitResult = state.mHitResult;
       }
-      else
+      else if (mGfx)
       {
          hit = mGfx->Render(inTarget,inState);
       }
@@ -253,11 +252,6 @@ void DisplayObject::DebugRenderMask( const RenderTarget &inTarget, const RenderS
 }
 
 
-
-void DisplayObject::DirtyUp(uint32 inFlags)
-{
-   mDirtyFlags |= inFlags;
-}
 
 
 void DisplayObject::DirtyCache(bool inParentOnly)
@@ -536,7 +530,6 @@ void DisplayObject::setScrollRect(const DRect &inRect)
    UpdateDecomp();
    mDirtyFlags |= dirtLocalMatrix;
    DirtyCache();
-   DirtyUp(dirtCache);
 }
 
 
@@ -591,7 +584,6 @@ void DisplayObject::setAlpha(double inAlpha)
 {
    colorTransform.alphaMultiplier = inAlpha;
    colorTransform.alphaOffset = 0;
-   DirtyUp(dirtCache);
    DirtyCache();
 }
 
@@ -600,7 +592,7 @@ void DisplayObject::setBlendMode(int inMode)
    if (inMode!=blendMode)
    {
       blendMode = (BlendMode)inMode;
-      DirtyUp(dirtCache);
+      DirtyCache();
    }
 }
 
@@ -694,7 +686,7 @@ void SimpleButton::setState(int inState, DisplayObject *inObject)
        if (mState[inState])
           mState[inState]->DecRef();
        mState[inState] = inObject;
-       DirtyUp(dirtCache);
+       DirtyCache();
    }
 }
 
@@ -723,7 +715,7 @@ void SimpleButton::Render( const RenderTarget &inTarget, const RenderState &inSt
 void SimpleButton::setMouseState(int inState)
 {
    if (mState[inState]!=mState[mMouseState])
-       DirtyUp(dirtCache);
+       DirtyCache();
 
    mMouseState = inState;
 }
@@ -759,14 +751,6 @@ void SimpleButton::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool in
    }
 }
 
-void SimpleButton::DirtyUp(uint32 inFlags)
-{
-   mDirtyFlags |= inFlags;
-   for(int i=0;i<stateSIZE;i++)
-      if (mState[i])
-         mState[i]->DirtyUp(inFlags);
-}
-
 
 bool SimpleButton::IsCacheDirty()
 {
@@ -775,6 +759,29 @@ bool SimpleButton::IsCacheDirty()
          return true;
    return DisplayObject::IsCacheDirty();
 }
+
+
+void SimpleButton::ClearCacheDirty()
+{
+   DisplayObject::ClearCacheDirty();
+   for(int i=0;i<stateSIZE;i++)
+      if (mState[i])
+         mState[i]->ClearCacheDirty();
+}
+
+bool SimpleButton::NonNormalBlendChild()
+{
+   for(int i=0;i<stateSIZE;i++)
+      if (mState[i] && mState[i]->NonNormalBlendChild())
+         return true;
+   return false;
+}
+
+void SimpleButton::DirtyCache(bool inParentOnly)
+{
+   DisplayObject::DirtyCache(inParentOnly);
+}
+
 
 
 
@@ -869,17 +876,16 @@ void DisplayObjectContainer::addChild(DisplayObject *inChild)
 
 void DisplayObjectContainer::DirtyCache(bool inParentOnly)
 {
-   DisplayObject::DirtyCache(inParentOnly);
-   mExtentCache[0].mIsSet = 
-    mExtentCache[1].mIsSet = 
-     mExtentCache[2].mIsSet = false;
-}
-
-void DisplayObjectContainer::DirtyUp(uint32 inFlags)
-{
-   mDirtyFlags |= inFlags;
-   for(int i=0;i<mChildren.size();i++)
-      mChildren[i]->DirtyUp(inFlags);
+   if (!(mDirtyFlags & dirtCache))
+   {
+      DisplayObject::DirtyCache(inParentOnly);
+      for(DisplayObjectContainer *c = this; c; c=c->mParent)
+      {
+         c->mExtentCache[0].mIsSet = 
+          c->mExtentCache[1].mIsSet = 
+           c->mExtentCache[2].mIsSet = false;
+      }
+   }
 }
 
 
@@ -921,7 +927,9 @@ bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
    {
       // Clear mask if invalid
       if (!GetBitmapCache()->StillGood(trans, rect,0))
+      {
          SetBitmapCache(0);
+      }
       else
          return true;
    }
@@ -1193,6 +1201,10 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->mRoundSizeToPOW2 = old_pow2;
                bitmap->DecRef();
             }
+            else
+            {
+               obj->ClearCacheDirty();
+            }
          }
          else
          {
@@ -1207,7 +1219,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          if ( (obj->IsBitmapRender(inTarget.IsHardware()) && inState.mPhase!=rpHitTest) )
          {
             if (inState.mPhase==rpRender)
+            {
                obj->RenderBitmap(inTarget,*obj_state);
+            }
             /* HitTest is done on vector, not bitmap
             else if (inState.mPhase==rpHitTest && obj->IsBitmapRender() )
             {
@@ -1309,9 +1323,9 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
    cache.mForScreen = inForScreen;
    cache.mIncludeStroke = inIncludeStroke;
 
-
    DisplayObject::GetExtent(inTrans,cache.mExtent,inForScreen,inIncludeStroke);
 
+   // TODO - allow translations without clearing cache
    Matrix full;
    Transform trans(inTrans);
    trans.mMatrix = &full;
@@ -1886,7 +1900,7 @@ void Stage::CalcStageScaling(double inNewWidth,double inNewHeight)
          break;
    }
 
-   DirtyUp(dirtCache);
+   DirtyCache();
 
    mStageScale.m00 = StageScaleX;
    mStageScale.m11 = StageScaleY;
@@ -1969,7 +1983,7 @@ void Stage::setAlign(int inAlign)
 void Stage::setQuality(int inQuality)
 {
    quality = (StageQuality)inQuality;
-   DirtyUp(dirtCache);
+   DirtyCache();
 }
 
 void Stage::setDisplayState(int inDisplayState)

@@ -435,7 +435,7 @@ public:
 	void PushTargetOffset(const ImagePoint &inOffset, ImagePoint &outBuffer);
 	void PopTargetOffset(ImagePoint &inBuffer);
 
-private:
+//private:
    int        mTX,mTY;
 	int        mVersion;
    Rect       mRect;

@@ -32,6 +32,7 @@ Graphics::Graphics(DisplayObject *inOwner,bool inInitRef) : Object(inInitRef)
 
 Graphics::~Graphics()
 {
+   mOwner = 0;
    clear();
    mPathData->DecRef();
 }
