@@ -139,8 +139,8 @@ public:
       GraphicsSolidFill *solid = inFill->AsSolidFill();
       if (solid)
       {
-         if (solid -> mRGB.a == 0)
-            return false;
+         //if (solid -> mRGB.a == 0)
+            //return false;
          mElement.mColour = solid->mRGB.ToInt();
       }
       else
