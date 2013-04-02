@@ -915,7 +915,6 @@ class RunScript {
 				arg = StringTools.replace(arg, '\"', '"');
 				arg = StringTools.replace(arg, "'", '"');
 				cleanArgs.push(arg);
-				trace("zARG: " + arg);
 			}
 			
 			Sys.exit (runCommand (nmeDirectory, "neko", cleanArgs));
