@@ -897,8 +897,28 @@ class RunScript {
 				args.unshift (PathHelper.getHaxelib (new Haxelib ("nmedev")) + "/command-line.n");
 				
 			}
+
+			/*
+			 * clean special characters from args
+			 * this allows for macros containing parens and quotes.
+			 *
+			 * Please do not make changes to this without first testing
+			 * a macro at the command line such as this:
+			 *  --macro=mcover.MCover.coverage([''],['src'],[''])
+			 * it has to work on all platforms!
+			 */ 
+			var cleanArgs = new Array<String>();
+			for (arg in args) {
+				arg = StringTools.replace(arg, "\\'", "'");
+				arg = StringTools.replace(arg, '\\"', '"');
+				arg = StringTools.replace(arg, "\'", "'");
+				arg = StringTools.replace(arg, '\"', '"');
+				arg = StringTools.replace(arg, "'", '"');
+				cleanArgs.push(arg);
+				trace("zARG: " + arg);
+			}
 			
-			Sys.exit (runCommand (nmeDirectory, "neko", args));
+			Sys.exit (runCommand (nmeDirectory, "neko", cleanArgs));
 			
 		}
 		
