@@ -3479,7 +3479,7 @@ value nme_render_surface_to_surface(value* arg, int nargs)
       state.mRoundSizeToPOW2 = false;
       state.mPhase = rpRender;
 
-      Graphics *gfx = new Graphics(true);
+      Graphics *gfx = new Graphics(0,true);
       gfx->beginBitmapFill(src,Matrix(),false,val_bool(arg[aSmooth]));
       gfx->moveTo(0,0);
       gfx->lineTo(src->Width(),0);

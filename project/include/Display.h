@@ -5,6 +5,7 @@
 #include <Utils.h>
 #include <Geom.h>
 #include <Graphics.h>
+#include <CachedExtent.h>
 #include <string>
 #include <Filters.h>
 
@@ -237,7 +238,6 @@ public:
    bool HitBitmap( const RenderTarget &inTarget, const RenderState &inState );
    void DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState );
 
-   virtual void DirtyUp(uint32 inFlags);
    virtual void DirtyCache(bool inParentOnly = false);
    virtual bool NonNormalBlendChild() { return false; }
 
@@ -283,6 +283,8 @@ public:
                                const ColorTransform *inObjTrans,
                                ColorTransform *inBuf);
 
+   uint32 mDirtyFlags;
+
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
@@ -299,7 +301,6 @@ protected:
    int                    mIsMaskCount;
 
    // Matrix stuff
-   uint32 mDirtyFlags;
    Matrix mLocalMatrix;
    // Decomp
    double x;
@@ -327,11 +328,11 @@ public:
    void RemoveChildFromList(DisplayObject *inChild);
 
    void Render( const RenderTarget &inTarget, const RenderState &inState );
-   void DirtyUp(uint32 inFlags);
    bool IsCacheDirty();
    void ClearCacheDirty();
    bool NonNormalBlendChild();
-   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
+   void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
+   void DirtyCache(bool inParentOnly = false);
 
    void hackAddChild(DisplayObject *inObj) { mChildren.push_back(inObj); } 
    void hackRemoveChildren() { mChildren.resize(0); }
@@ -341,6 +342,7 @@ public:
 
 
    bool mouseChildren;
+   CachedExtent mExtentCache[3];
 protected:
    ~DisplayObjectContainer();
    QuickVec<DisplayObject *> mChildren;
@@ -369,10 +371,13 @@ public:
 
    DisplayObject *mState[stateSIZE];
 
-   virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke);
    void Render( const RenderTarget &inTarget, const RenderState &inState );
-   void DirtyUp(uint32 inFlags);
+   void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke);
    bool IsCacheDirty();
+   void ClearCacheDirty();
+   bool NonNormalBlendChild();
+   void DirtyCache(bool inParentOnly = false);
+
 
 
    bool getEnabled() const { return enabled; }
