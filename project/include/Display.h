@@ -176,6 +176,8 @@ public:
    DisplayObject   *getMask() { return mMask; }
    virtual void   setOpaqueBackground(uint32 inBG);
    uint32 getOpaqueBackground() { return opaqueBackground; }
+   bool getInteractive() { return interactive; }
+   void setInteractive(bool inVal) { interactive = inVal; }
    bool getMouseEnabled() { return mouseEnabled; }
    void setMouseEnabled(bool inVal) { mouseEnabled = inVal; }
    bool getNeedsSoftKeyboard() { return needsSoftKeyboard; }
@@ -225,6 +227,7 @@ public:
    DRect   scrollRect;
    int     id;
    bool   visible;
+   bool   interactive;
    bool   mouseEnabled;
    bool   needsSoftKeyboard;
    bool   movesForSoftKeyboard;

@@ -36,6 +36,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    pixelSnapping = psNone;
    opaqueBackground = 0;
    mouseEnabled = true;
+   interactive = false;
    needsSoftKeyboard = false;
    mMask = 0;
    mIsMaskCount = 0;
@@ -205,7 +206,11 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
          state.mTransform.mMatrix = &unscaled;
 
          hit = mGfx->Render(inTarget,state);
-         inState.mHitResult = state.mHitResult;
+         
+         if(interactive)
+            inState.mHitResult = state.mHitResult;
+         else
+            inState.mHitResult = state.mHitResult != NULL ? mParent : NULL;
       }
       else if (mGfx)
       {
@@ -213,7 +218,12 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
       }
 
       if (hit)
-         inState.mHitResult = this;
+	  {
+         if(interactive)
+            inState.mHitResult = this;
+         else
+            inState.mHitResult = mParent;
+	  }
    }
 }
 
@@ -1235,6 +1245,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          }
          else
          {
+            if (inState.mHitResult==this && !obj->interactive)
+               continue;
+            
             if (obj->opaqueBackground)
             {
                Rect rect = clip_state.mClipRect;
@@ -1254,8 +1267,16 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                {
                   if (inState.mPhase == rpHitTest && obj->mouseEnabled)
                   {
-                     inState.mHitResult = obj;
-                     return;
+                     if (obj->interactive)
+                     {
+                        inState.mHitResult = obj;
+                        return;
+                     }
+                     else
+                     {
+                        inState.mHitResult = this;
+                        continue;
+					 }
                   }
                   else if (inState.mPhase == rpRender )
                      inTarget.Clear(obj->opaqueBackground,rect);
@@ -1273,14 +1294,19 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
 
          if (obj_state->mHitResult)
          {
-            if(mouseChildren && obj_state->mHitResult->mouseEnabled)
+            if(mouseChildren && obj_state->mHitResult->mouseEnabled && obj_state->mHitResult != NULL)
 	            inState.mHitResult = obj_state->mHitResult;
 			else if(mouseEnabled)
 	            inState.mHitResult = this;
-            return;
+            
+			if (inState.mHitResult!=this)
+               return;
          }
       }
    }
+   
+   if (inState.mPhase==rpHitTest && inState.mHitResult==this)
+      return;
 
    // Render parent at beginning or end...
    if (!parent_first)
