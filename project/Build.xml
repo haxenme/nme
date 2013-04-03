@@ -131,6 +131,7 @@
    
    
    <set name="dynamic_sdl" value="1" if="webos"/>
+   <set name="dynamic_sdl" value="1" if="emscripten"/>
    
    <files id="webos">
       
@@ -382,8 +383,9 @@
       <lib name="-lvorbis" if="dynamic_sdl" unless="webos"/>
       <lib name="-logg" if="dynamic_sdl" unless="webos"/>
       <lib name="-lsmpeg" if="dynamic_sdl" unless="webos"/>
-      <lib name="-lfreetype" if="dynamic_sdl" unless="webos"/>
-      <lib name="${THIRDPARTY_LIBS}libfreetype.a" if="webos"/>
+      <!--<lib name="-lfreetype" if="dynamic_sdl" unless="webos"/>
+      <lib name="${THIRDPARTY_LIBS}libfreetype.a" if="webos"/>-->
+	  <lib name="${THIRDPARTY_LIBS}libfreetype.a" if="dynamic_sdl"/>
       
       <lib name="-lcurl" if="dynamic_sdl" unless="nocurl"/>
       <lib name="-lpng" if="dynamic_sdl"/>
