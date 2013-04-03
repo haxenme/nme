@@ -25,6 +25,9 @@
    <set name="ogl" value="1" if="blackberry"/>
    <set name="nmeegl" value="1" if="rpi"/>
    
+   <set name="nocurl" value="1" if="winrt"/>
+   <set name="nocurl" value="1" if="emscripten"/>
+   
    <set name="NME_FORCE_GLES1" value="1" if="iphone" />
    
    <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
@@ -168,6 +171,7 @@
    <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Android/" if="android"/>
    <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/iPhone/" if="iphone"/>
    <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/BlackBerry/" if="blackberry"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Emscripten/" if="emscripten"/>
    <set name="THIRDPARTY_LIBS" value="${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/lib/" if="gph"/>
    
    <set name="SLIBEXT" value=".lib" if="windows"/>
@@ -191,7 +195,7 @@
       <!-- <compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/> -->
       <compilerflag value="-I${QNX_TARGET}/usr/include/GLES2" if="blackberry"/>
       <compilerflag value="-DSDL_OGL" if="sdl"/>
-      <compilerflag value="-DNME_CURL_SSL" if="ssl"/>
+      <compilerflag value="-DNME_CURL_SSL" if="ssl" unless="nocurl"/>
 	  <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <compilerflag value="-Wno-conversion" if="linux"/>
       
@@ -216,7 +220,7 @@
       <file name="common/Input.cpp" unless="iphone" />
       <file name="common/SurfaceIO.cpp" />
       <file name="common/ManagedStage.cpp" unless="winrt" />
-      <file name="common/CURL.cpp" unless="winrt"/>
+      <file name="common/CURL.cpp" unless="nocurl"/>
       <file name="common/Lzma.cpp"/>
       <file name="common/Thread.cpp"/>
       
@@ -333,6 +337,7 @@
       
       <outdir name="../ndll/${BINDIR}" />
       <ext value=".ndll" unless="mobile"/>
+      <ext value=".so" if="emscripten"/>
       <ext value=".ndll" if="gph"/>
 
       <flag value="-NODEFAULTLIB:LIBCMT" if="winrt"/>
@@ -380,7 +385,7 @@
       <lib name="-lfreetype" if="dynamic_sdl" unless="webos"/>
       <lib name="${THIRDPARTY_LIBS}libfreetype.a" if="webos"/>
       
-      <lib name="-lcurl" if="dynamic_sdl"/>
+      <lib name="-lcurl" if="dynamic_sdl" unless="nocurl"/>
       <lib name="-lpng" if="dynamic_sdl"/>
       <lib name="-ljpeg" if="dynamic_sdl"/>
       <lib name="-lz" if="dynamic_sdl"/>

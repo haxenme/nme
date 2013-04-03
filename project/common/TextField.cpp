@@ -308,7 +308,7 @@ void TextField::setScrollH(int inScrollH)
    if (scrollH<0)
       scrollH = 0;
    if (scrollH>maxScrollH)
-      scrollH = scrollH;
+      scrollH = maxScrollH;
    // TODO: do we need to re-layout on scroll?
    mLinesDirty = true;
    mGfxDirty = true;
