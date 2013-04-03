@@ -17,8 +17,6 @@ class InteractiveObject extends DisplayObject
       nmeMouseEnabled = true;
 
       super(inHandle, inType);
-	  
-	  nme_display_object_set_interactive(nmeHandle, true);
    }
 
    /** @private */ override private function nmeAsInteractiveObject():InteractiveObject {
@@ -62,7 +60,6 @@ class InteractiveObject extends DisplayObject
    }
 
    // Native Methods
-   private static var nme_display_object_set_interactive = Loader.load("nme_display_object_set_interactive", 2);
    private static var nme_display_object_set_mouse_enabled = Loader.load("nme_display_object_set_mouse_enabled", 2);
    private static var nme_display_object_set_needs_soft_keyboard = Loader.load("nme_display_object_set_needs_soft_keyboard", 2);
    private static var nme_display_object_get_needs_soft_keyboard = Loader.load("nme_display_object_get_needs_soft_keyboard", 1);

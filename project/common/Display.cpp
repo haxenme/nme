@@ -36,7 +36,6 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    pixelSnapping = psNone;
    opaqueBackground = 0;
    mouseEnabled = true;
-   interactive = false;
    needsSoftKeyboard = false;
    mMask = 0;
    mIsMaskCount = 0;
@@ -207,7 +206,7 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 
          hit = mGfx->Render(inTarget,state);
          
-         if(interactive)
+         if(IsInteractive())
             inState.mHitResult = state.mHitResult;
          else
             inState.mHitResult = state.mHitResult != NULL ? mParent : NULL;
@@ -219,7 +218,7 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 
       if (hit)
 	  {
-         if(interactive)
+         if(IsInteractive())
             inState.mHitResult = this;
          else
             inState.mHitResult = mParent;
@@ -1245,7 +1244,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
          }
          else
          {
-            if (inState.mHitResult==this && !obj->interactive)
+            if (inState.mHitResult==this && !obj->IsInteractive())
                continue;
             
             if (obj->opaqueBackground)
@@ -1267,7 +1266,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                {
                   if (inState.mPhase == rpHitTest && obj->mouseEnabled)
                   {
-                     if (obj->interactive)
+                     if (obj->IsInteractive())
                      {
                         inState.mHitResult = obj;
                         return;
