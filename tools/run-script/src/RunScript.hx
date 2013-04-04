@@ -738,8 +738,6 @@ class RunScript {
 	
 	public static function main () {
 		
-		//nmeDirectory = PathHelper.getHaxelib (new Haxelib ("nme"));
-		
 		if (new EReg ("window", "i").match (Sys.systemName ())) {
 			
 			isLinux = false;
@@ -892,7 +890,9 @@ class RunScript {
 			}
 			
 		} else {
-				
+			
+			nmeDirectory = PathHelper.getHaxelib (new Haxelib ("nme"));
+			
 			if (FileSystem.exists (nmeDirectory + "/command-line.n")) {
 				
 				args.unshift ("command-line.n");
