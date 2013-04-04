@@ -738,7 +738,7 @@ class RunScript {
 	
 	public static function main () {
 		
-		nmeDirectory = PathHelper.getHaxelib (new Haxelib ("nme"));
+		//nmeDirectory = PathHelper.getHaxelib (new Haxelib ("nme"));
 		
 		if (new EReg ("window", "i").match (Sys.systemName ())) {
 			
@@ -780,8 +780,13 @@ class RunScript {
 			
 			if (FileSystem.exists (lastArgument) && FileSystem.isDirectory (lastArgument)) {
 				
+				nmeDirectory = Sys.getCwd();
 				Sys.setCwd (lastArgument);
 				args.pop ();
+				
+			} else {
+				
+				nmeDirectory = PathHelper.getHaxelib (new Haxelib ("nme"));
 				
 			}
 			
