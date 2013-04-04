@@ -594,7 +594,7 @@ class Assets {
 				
 				super(0, 0);
 				
-				#if html5
+				#if (html5 && !webgl)
 				
 				var currentType = Type.getClass (this);
 				
@@ -632,7 +632,7 @@ class Assets {
 			
 			var args = [ { name: "width", opt: false, type: macro :Int, value: null }, { name: "height", opt: false, type: macro :Int, value: null }, { name: "transparent", opt: true, type: macro :Bool, value: macro true }, { name: "fillRGBA", opt: true, type: macro :Int, value: macro 0xFFFFFFFF } ];
 			
-			#if html5
+			#if (html5 && !webgl)
 			args.push ({ name: "onload", opt: true, type: macro :Dynamic, value: null });
 			fields.push ({ kind: FVar(macro :nme.display.BitmapData, null), name: "preload", doc: null, meta: [], access: [ APublic, AStatic ], pos: Context.currentPos() });
 			#end
@@ -734,7 +734,7 @@ class Assets {
 		
 		if (fields != null) {
 			
-			#if (!html5) // Neko bug: CFFILoader.h(248) : NOT Implemented:api_buffer_data
+			#if (!html5 || webgl) // Neko bug: CFFILoader.h(248) : NOT Implemented:api_buffer_data
 			
 			var constructor = macro { 
 				
