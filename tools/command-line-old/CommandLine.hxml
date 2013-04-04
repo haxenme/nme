@@ -1,8 +1,0 @@
--main InstallTool
--neko command-line.n
--cp src
--lib nme
--lib swf
--lib svg
---remap flash:nme
--D hxssl
