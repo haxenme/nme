@@ -140,15 +140,21 @@ void DisplayObject::setCacheAsBitmap(bool inVal)
 
 void DisplayObject::setPixelSnapping(int inVal)
 {
-   pixelSnapping = inVal;
-   DirtyCache();
+   if (pixelSnapping!=inVal)
+   {
+      pixelSnapping = inVal;
+      DirtyCache();
+   }
 }
 
 
 void DisplayObject::setVisible(bool inVal)
 {
-   visible = inVal;
-   DirtyCache(!visible);
+   if (visible!=inVal)
+   {
+      visible = inVal;
+      DirtyCache(!visible);
+   }
 }
 
 
