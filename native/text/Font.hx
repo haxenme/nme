@@ -37,12 +37,8 @@ class Font
 
    public static function load(inFilename:String):NativeFontData 
    {
-      #if !iphone
       var result = freetype_import_font(inFilename, null, 1024 * 20);
       return result;
-      #else
-      return null;
-      #end
    }
    
    public static function registerFont(font:Class<Dynamic>)
@@ -59,10 +55,8 @@ class Font
    }
 
    // Native Methods
-   #if !iphone
    private static var freetype_import_font = Loader.load("freetype_import_font", 3);
    private static var nme_font_register_font = Loader.load("nme_font_register_font", 2);
-   #end
 }
 
 typedef NativeFontData = 
