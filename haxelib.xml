@@ -1,7 +1,5 @@
-<project name="nme" url="http://www.nme.io" license="MIT">
-	<user name="gamehaxe"/>
+<project name="pazu-native" url="" license="MIT">
 	<user name="elyon"/>
-	<user name="leesylvester"/>
-	<description>NME provides an API that is similar to Flash, but available for C++ or Neko. Using the NME command-line tools, you can publish a single application for Windows, Mac, Linux, iOS, Android, webOS, Flash and HTML5. C++ targets require HXCPP, and HTML5 requires Jeash.</description>
-	<version name="4.0.0"></version>
+	<description>Pazu (Native)</description>
+	<version name="1.0.0"></version>
 </project>
