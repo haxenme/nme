@@ -3387,6 +3387,67 @@ DEFINE_PRIM_MULT(nme_bitmap_data_noise);
 
 
 
+void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inColor)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      int x = val_int(inX);
+      int y = val_int(inY);
+      int color = val_int(inColor);
+      
+      int width = surf->Width();
+      int height = surf->Height();
+      
+      std::vector<UserPoint> queue;
+      queue.push_back(UserPoint(x,y));
+      
+      int old = surf->getPixel(x,y);
+      
+	  bool *search = new bool[width*height];
+      std::fill_n(search, width*height, false);
+      
+      while (queue.size() > 0)
+      {
+         UserPoint currPoint = queue.back();
+		 queue.pop_back();
+         
+         x = currPoint.x;
+         y = currPoint.y;
+		 
+         if (x<0 || x>=width) continue;
+         if (y<0 || y>=height) continue;
+         
+         search[y*width + x] = true;
+         
+         if (surf->getPixel(x,y) == old)
+         {
+            surf->setPixel(x,y,color,true);
+            if (x<width && !search[y*width + (x+1)])
+            {
+               queue.push_back(UserPoint(x+1,y));
+            }
+            if (y<height && !search[(y+1)*width + x])
+            {
+               queue.push_back(UserPoint(x,y+1));
+            }
+            if (x>0 && !search[y*width + (x-1)])
+            {
+               queue.push_back(UserPoint(x-1,y));
+            }
+            if (y>0 && !search[(y-1)*width + x])
+            {
+               queue.push_back(UserPoint(x,y-1));
+            }
+         }
+      }
+      delete [] search;
+   }
+}
+DEFINE_PRIM(nme_bitmap_data_flood_fill,4);
+
+
+
 value nme_render_surface_to_surface(value* arg, int nargs)
 {
    enum { aTarget, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSmooth, aSIZE};

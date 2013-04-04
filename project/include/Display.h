@@ -252,7 +252,6 @@ public:
    virtual void OnKey(Event &inEvent) { }
    virtual bool FinishEditOnEnter() { return false; }
 
-
    void SetParent(DisplayObjectContainer *inParent);
 
    UserPoint GlobalToLocal(const UserPoint &inPoint);
@@ -278,6 +277,7 @@ public:
    void ChangeIsMaskCount(int inDelta);
 
    bool IsMask() const { return mIsMaskCount; }
+   virtual bool IsInteractive() const { return false; }
 
    void CombineColourTransform(const RenderState *inState,
                                const ColorTransform *inObjTrans,
@@ -333,14 +333,15 @@ public:
    bool NonNormalBlendChild();
    void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
    void DirtyCache(bool inParentOnly = false);
+   
+   bool IsInteractive() const { return true; }
 
    void hackAddChild(DisplayObject *inObj) { mChildren.push_back(inObj); } 
    void hackRemoveChildren() { mChildren.resize(0); }
 
    bool getMouseChildren() { return mouseChildren; }
    void setMouseChildren(bool inVal) { mouseChildren = inVal; }
-
-
+   
    bool mouseChildren;
    CachedExtent mExtentCache[3];
 protected:
@@ -378,7 +379,7 @@ public:
    bool NonNormalBlendChild();
    void DirtyCache(bool inParentOnly = false);
 
-
+   bool IsInteractive() const { return true; }
 
    bool getEnabled() const { return enabled; }
    void setEnabled(bool inEnabled) { enabled = inEnabled; }

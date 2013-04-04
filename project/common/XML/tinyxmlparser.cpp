@@ -296,7 +296,7 @@ const wchar_t* TiXmlBase::SkipWhiteSpace( const wchar_t* p, TiXmlEncoding encodi
 	}
 	else
 	{
-		while ( *p && IsWhiteSpace( *p ) || *p == '\n' || *p =='\r' )
+		while ( (*p && IsWhiteSpace( *p )) || *p == '\n' || *p =='\r' )
 			++p;
 	}
 

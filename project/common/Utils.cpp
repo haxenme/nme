@@ -7,7 +7,9 @@
 #else
 #include <sys/time.h>
 #include <stdint.h>
+#ifndef EMSCRIPTEN
 typedef uint64_t __int64;
+#endif
 #endif
 
 #ifdef HX_MACOS

@@ -487,7 +487,7 @@ template<bool SWAP, bool DEST_ALPHA> void MultiplyFunc(ARGB &ioDest, ARGB inSrc)
 struct DoScreen
 {
    inline void operator()(uint8 &ioVal,uint8 inDest) const
-     { ioVal = 255 - ((255 - inDest) * ( 256 - ioVal - (ioVal>>7)))>>8; }
+     { ioVal = 255 - (((255 - inDest) * ( 256 - ioVal - (ioVal>>7)))>>8); }
 };
 
 template<bool SWAP, bool DEST_ALPHA> void ScreenFunc(ARGB &ioDest, ARGB inSrc)
@@ -1442,7 +1442,7 @@ void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
 
 void SimpleSurface::scroll(int inDX,int inDY)
 {
-   if (inDX==0 && inDY==0 || !mBase) return;
+   if ((inDX==0 && inDY==0) || !mBase) return;
 
    Rect src(0,0,mWidth,mHeight);
    src = src.Intersect( src.Translated(inDX,inDY) ).Translated(-inDX,-inDY);

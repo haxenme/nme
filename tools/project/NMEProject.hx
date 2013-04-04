@@ -29,6 +29,7 @@ class NMEProject {
 	public var environment:StringMap <String>;
 	public var haxedefs:StringMap <Dynamic>;
 	public var haxeflags:Array <String>;
+	public var macros:Array <String>;
 	public var haxelibs:Array <Haxelib>;
 	public var host (get_host, null):Platform;
 	public var icons:Array <Icon>;
@@ -158,6 +159,7 @@ class NMEProject {
 		environment = Sys.environment ();
 		haxedefs = new StringMap <Dynamic> ();
 		haxeflags = new Array <String> ();
+		macros = new Array <String> ();
 		haxelibs = new Array <Haxelib> ();
 		icons = new Array <Icon> ();
 		javaPaths = new Array <String> ();
@@ -206,6 +208,8 @@ class NMEProject {
 		}
 		
 		project.haxeflags = haxeflags.copy ();
+
+		project.macros = macros.copy ();
 		
 		for (haxelib in haxelibs) {
 			
@@ -445,6 +449,7 @@ class NMEProject {
 			assets = ArrayHelper.concatUnique (assets, project.assets);
 			dependencies = ArrayHelper.concatUnique (dependencies, project.dependencies);
 			haxeflags = ArrayHelper.concatUnique (haxeflags, project.haxeflags);
+			macros = ArrayHelper.concatUnique (macros, project.macros);			
 			haxelibs = ArrayHelper.concatUnique (haxelibs, project.haxelibs);
 			icons = ArrayHelper.concatUnique (icons, project.icons);
 			javaPaths = ArrayHelper.concatUnique (javaPaths, project.javaPaths);
@@ -620,6 +625,7 @@ class NMEProject {
 		
 		compilerFlags.push ("-D " + Std.string (platformType).toLowerCase ());
 		compilerFlags = compilerFlags.concat (haxeflags);
+		compilerFlags = compilerFlags.concat (macros);
 		
 		if (compilerFlags.length == 0) {
 			
