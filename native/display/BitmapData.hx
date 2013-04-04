@@ -9,6 +9,7 @@ import native.geom.ColorTransform;
 import native.filters.BitmapFilter;
 import native.utils.ByteArray;
 import native.Loader;
+import nme.display.BitmapInt32;
 
 #if haxe3 @:autoBuild(nme.Assets.embedBitmap()) #end
 class BitmapData implements IBitmapDrawable 
@@ -181,6 +182,90 @@ class BitmapData implements IBitmapDrawable
 	  nme_bitmap_data_flood_fill(nmeHandle, x, y, color);
    }
 
+   /**
+    * Flips an ARGB pixel value to BGRA or vice-versa
+    * @param	pix4 a 4-byte pixel value in AARRGGBB or BBGGRRAA format
+    * @return   pix4 flipped-endian format
+    */
+   
+   public static inline function flip_pixel4(pix4:BitmapInt32):BitmapInt32{
+	   return (pix4       & 0xFF) << 24 |	//4th byte --> 1st byte
+			  (pix4 >>  8 & 0xFF) << 16 |	//3rd byte --> 2nd byte
+			  (pix4 >> 16 & 0xFF) <<  8 |	//2nd byte --> 3rd byte
+			  (pix4 >> 24 & 0xFF);       	//1st byte --> 4th byte			  			  
+   }
+   
+   public function threshold(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, operation:String, threshold:Int, color:Int, mask:Int = 0xFFFFFFFF, copySource:Bool = false):Int {
+	   var width:Int = width;
+	   var height:Int = height;
+	   var hits:Int = 0;
+	   
+	   //flip endian-ness since this function's guts needs BGRA instead of RGBA
+	   threshold = flip_pixel4(threshold);	   
+	   color = flip_pixel4(color);
+	   
+	   //access the pixel data faster via raw bytes
+	   var vRam:ByteArray = new ByteArray();
+	   //32bit integer = 4 bytes
+	   #if cpp
+			vRam.setLength((width * height) * 4);
+	   #else
+			vRam.length = (width * height) * 4;
+	   #end	   
+	   
+	   var vRam2:ByteArray = null;
+	   if(copySource){
+		   vRam2 = new ByteArray();
+		   #if cpp
+				vRam2.setLength(sourceBitmapData.width * sourceBitmapData.height * 4);
+		   #else
+				vRam2.length = (sourceBitmapData.width * sourceBitmapData.height * 4);
+		   #end
+	   }
+	   
+	   //write pixels into RAM
+	   var data:ByteArray = getPixels(rect);
+	   vRam.position = 0;
+	   vRam.writeBytes(data, 0, data.length);
+	   #if flash
+			data.clear();
+	   #end
+	   
+	   //Select the memory space (just once)
+	   Memory.select(vRam);
+	   	   
+	   var thresh_mask:Int = threshold & mask;
+	   
+	   for (yy in 0...height) {
+		   var width_yy:Int = width * yy;
+		   for (xx in 0...width) {
+			   var width_yy_xx_4:Int = (width_yy + xx) * 4;
+			   var pixelValue:BitmapInt32 = Memory.getI32(width_yy_xx_4);			   
+			   var pix_mask:Int = pixelValue & mask;
+			   var test:Bool = false; 
+			   if (operation == "==") { test = pix_mask == thresh_mask; }
+			   else if (operation == "<") { test = pix_mask < thresh_mask; }
+			   else if (operation == ">") { test = pix_mask > thresh_mask; }
+			   else if (operation == "!=") { test = pix_mask != thresh_mask; }			   
+			   else if (operation == "<=") { test = pix_mask <= thresh_mask; }
+			   else if (operation == ">=") { test = pix_mask >= thresh_mask; }			   
+			   if (test) {				   
+				   Memory.setI32(width_yy_xx_4, color);
+				   hits++;
+			   }else if (copySource) {
+				   Memory.select(vRam2);
+				   var pixelSource:BitmapInt32 = Memory.getI32(width_yy_xx_4); 
+				   Memory.select(vRam);   				   
+				   Memory.setI32(width_yy_xx_4, pixelSource);
+				   hits++;
+			   }
+			}
+	   }	   
+	   vRam.position = 0;
+	   setPixels(rect, vRam);
+	   return hits;
+   }
+   
    public function generateFilterRect(sourceRect:Rectangle, filter:BitmapFilter):Rectangle 
    {
       var result = new Rectangle();
