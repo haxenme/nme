@@ -30,7 +30,7 @@ class Bitmap extends DisplayObject
 
    private function nmeRebuild() 
    {
-      if (nmeHandle != null && bitmapData != null) 
+      if (nmeHandle != null) 
       {
          var gfx = graphics;
          gfx.clear();
