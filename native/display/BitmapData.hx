@@ -1,6 +1,7 @@
 package native.display;
 #if (cpp || neko)
 
+import haxe.Int32;
 import haxe.io.Bytes;
 import native.geom.Rectangle;
 import native.geom.Point;
@@ -195,9 +196,7 @@ class BitmapData implements IBitmapDrawable
 			  (pix4 >> 24 & 0xFF);       	//1st byte --> 4th byte			  			  
    }
    
-   public function threshold(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, operation:String, threshold:Int, color:Int, mask:Int = 0xFFFFFFFF, copySource:Bool = false):Int {
-	   var width:Int = width;
-	   var height:Int = height;
+   public function threshold(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, operation:String, threshold:Int, color:BitmapInt32, mask:BitmapInt32 = 0xFFFFFFFF, copySource:Bool = false):Int {
 	   var hits:Int = 0;
 	   
 	   //flip endian-ness since this function's guts needs BGRA instead of RGBA
@@ -224,32 +223,34 @@ class BitmapData implements IBitmapDrawable
 	   }
 	   
 	   //write pixels into RAM
-	   var data:ByteArray = getPixels(rect);
+	   var vRam:ByteArray = getPixels(rect);
 	   vRam.position = 0;
-	   vRam.writeBytes(data, 0, data.length);
-	   #if flash
-			data.clear();
-	   #end
+	   //vRam.writeBytes(data, 0, data.length);
+	   //#if flash
+			//data.clear();
+	   //#end
 	   
 	   //Select the memory space (just once)
 	   Memory.select(vRam);
 	   	   
-	   var thresh_mask:Int = threshold & mask;
-	   
+	   var thresh_mask:Int32 = cast threshold & mask;
+	   	   
 	   for (yy in 0...height) {
 		   var width_yy:Int = width * yy;
 		   for (xx in 0...width) {
 			   var width_yy_xx_4:Int = (width_yy + xx) * 4;
 			   var pixelValue:BitmapInt32 = Memory.getI32(width_yy_xx_4);			   
-			   var pix_mask:Int = pixelValue & mask;
-			   var test:Bool = false; 
-			   if (operation == "==") { test = pix_mask == thresh_mask; }
-			   else if (operation == "<") { test = pix_mask < thresh_mask; }
-			   else if (operation == ">") { test = pix_mask > thresh_mask; }
-			   else if (operation == "!=") { test = pix_mask != thresh_mask; }			   
-			   else if (operation == "<=") { test = pix_mask <= thresh_mask; }
-			   else if (operation == ">=") { test = pix_mask >= thresh_mask; }			   
-			   if (test) {				   
+			   var pix_mask:Int32 = cast pixelValue & mask;
+			   
+			   var i:Int = Int32.ucompare(pix_mask, thresh_mask);
+			   var test:Bool = false;
+					if (operation == "==") { test = i == 0; }
+			   else if (operation == "<") { test = i == -1;}
+			   else if (operation == ">") { test = i == 1; }
+			   else if (operation == "!=") { test = i != 0; }			   
+			   else if (operation == "<=") { test = i == 0 || i == -1; }
+			   else if (operation == ">=") { test = i == 0 || i == 1; }	
+			   if(test){
 				   Memory.setI32(width_yy_xx_4, color);
 				   hits++;
 			   }else if (copySource) {
@@ -263,6 +264,7 @@ class BitmapData implements IBitmapDrawable
 	   }	   
 	   vRam.position = 0;
 	   setPixels(rect, vRam);
+	   
 	   return hits;
    }
    
