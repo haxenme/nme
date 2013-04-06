@@ -1355,6 +1355,7 @@ void StartAnimation()
    SDL_Event event;
    while(!sgDead)
    {
+      event.type=SDL_NOEVENT;
       while (!sgDead && (firstTime || SDL_WaitEvent(&event)))
       {
          firstTime = false;
@@ -1367,7 +1368,7 @@ void StartAnimation()
          
          ProcessEvent(event);
          if (sgDead) break;
-         event.type = -1;
+         event.type = SDL_NOEVENT;
          
 		 while (SDL_PollEvent(&event)) {
             ProcessEvent (event);
