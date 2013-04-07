@@ -52,6 +52,11 @@ class Vector3D {
 		
 	}
 	
+	inline public function copyFrom(sourceVector3D:Vector3D): Void {
+		x = sourceVector3D.x;
+		y = sourceVector3D.y;
+		z = sourceVector3D.z;
+	}
 	
 	inline public function crossProduct(a:Vector3D):Vector3D {
 		
@@ -142,6 +147,12 @@ class Vector3D {
 		y /= w;
 		z /= w;
 		
+	}
+	
+	inline public function setTo(xa:Float, ya:Float, za:Float):Void {
+		x = xa;
+		y = ya;
+		z = za;
 	}
 	
 	
