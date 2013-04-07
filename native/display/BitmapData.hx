@@ -216,10 +216,6 @@ class BitmapData implements IBitmapDrawable
 			return _self_threshold(operation, threshold, color, mask);
 		}
 		
-		/*if (copySource) {
-			copyPixels(sourceBitmapData, sourceRect, destPoint);
-		}*/
-		
 		var bw:Int = Std.int(width - sourceRect.width - destPoint.x);
 		var bh:Int = Std.int(height - sourceRect.height - destPoint.y);
 		
@@ -294,9 +290,7 @@ class BitmapData implements IBitmapDrawable
 					hits++;
 				}else if (copySource) {
 					var source_color = Memory.getI32(canvas_mem+read_pos);
-					//Memory.setI32(write_pos, source_color);
-					//Memory.setI32(write_pos, source_color);
-					//Memory.setI32(write_pos, flip_pixel4(sourceBitmapData.getPixel32(xx + sx, yy + sy)));
+					Memory.setI32(write_pos, source_color);
 				}
 			}
 		}
