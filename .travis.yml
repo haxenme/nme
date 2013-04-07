@@ -19,7 +19,7 @@ before_install:
   - haxelib install hscript
   - sudo apt-get install xsltproc -y
   # NME dev
-  - haxelib dev nme ~/haxenme/NME/
+  - haxelib dev nme $(pwd)
   - haxelib install nmedev
   - haxelib run nme rebuild tools
   - haxelib run nme rebuild linux
