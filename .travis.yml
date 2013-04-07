@@ -17,6 +17,7 @@ before_install:
   - haxelib install utest
   - haxelib install format
   - haxelib install hscript
+  - haxelib install phantomjs
   - sudo apt-get install xsltproc -y
   # NME dev
   - haxelib dev nme $(pwd)
@@ -36,3 +37,4 @@ before_script:
 script:
   - make test -C tools/smoke.jeash.com
   - haxelib run nme test samples/16-Memory/Sample.nmml linux -64
+  - haxe -cp tools/unit-test --remap flash:nme -x nmetest.TestRunner
