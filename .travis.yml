@@ -1,13 +1,16 @@
 language: node_js
 node_js:
   - 0.6
-
+# env:
+#   - "NME_TEST_TARGET=html5"
+#   - "NME_TEST_TARGET=cross"
 before_install:
   - sudo apt-get install python-software-properties -y # for the next command
   - sudo add-apt-repository ppa:eyecreate/haxe -y
   - sudo apt-get update
   - sudo apt-get install haxe -y
   - sudo apt-get install gcc-multilib g++-multilib -y  # since VM is 64bit but hxcpp builds 32bit by default
+  - sudo apt-get install ia32-libs-multiarch mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev -y # for nme
   - mkdir ~/haxelib
   - haxelib setup ~/haxelib
   - haxelib install pdiff-hx
@@ -15,6 +18,13 @@ before_install:
   - haxelib install format
   - haxelib install hscript
   - sudo apt-get install xsltproc -y
+  # NME dev
+  - haxelib dev nme ~/haxenme/NME/
+  - haxelib install nmedev
+  - haxelib run nme rebuild tools
+  - haxelib run nme rebuild linux
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
 
 before_script:
   - make clean all -C tools/smoke.jeash.com
@@ -22,3 +32,4 @@ before_script:
 
 script:
   - make test -C tools/smoke.jeash.com
+  - haxelib run nme test samples/16-Memory/Sample.nmml linux -64
