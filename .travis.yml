@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install haxe -y
   - sudo apt-get install gcc-multilib g++-multilib -y  # since VM is 64bit but hxcpp builds 32bit by default
-  - sudo apt-get install ia32-libs-multiarch mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev -y # for nme
+  - sudo apt-get install mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev -y # for nme
   - mkdir ~/haxelib
   - haxelib setup ~/haxelib
   - haxelib install pdiff-hx
