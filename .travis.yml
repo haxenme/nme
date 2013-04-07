@@ -36,5 +36,4 @@ before_script:
 
 script:
   - make test -C tools/smoke.jeash.com
-  - haxelib run nme test samples/16-Memory/Sample.nmml linux -64
   - haxe -cp tools/unit-test --remap flash:nme -x nmetest.TestRunner
