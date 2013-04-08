@@ -73,8 +73,13 @@ class TestRunner {
 			Sys.println('-- $testCase');
 			if (testCase.endsWith("NMETest")) {
 				var nmml = path + testCase.replace(".", "/").withoutExtension() + ".nmml";
+				var compileArgs = 'run nme test $nmml cpp'.split(" ");
+				
+				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
+					compileArgs.push("-D HXCPP_M64");
+				}
 				if (!(
-					runProcess("haxelib", 'run nme test $nmml cpp'.split(" ")) == 0
+					runProcess("haxelib", compileArgs) == 0
 				)) {
 					success = false;
 				}
