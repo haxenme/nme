@@ -76,7 +76,8 @@ class TestRunner {
 				var compileArgs = 'run nme test $nmml cpp'.split(" ");
 				
 				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
-					compileArgs.push("-D HXCPP_M64");
+					compileArgs.push("-D");
+					compileArgs.push("HXCPP_M64");
 				}
 				if (!(
 					runProcess("haxelib", compileArgs) == 0
@@ -88,7 +89,8 @@ class TestRunner {
 				var compileArgs = '-cp tools/unit-test --remap flash:nme -main $testCase -cpp bin'.split(" ");
 				
 				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
-					compileArgs.push("-D HXCPP_M64");
+					compileArgs.push("-D");
+					compileArgs.push("HXCPP_M64");
 				}
 				
 				if (!(
