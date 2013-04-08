@@ -29,6 +29,8 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
   # dummy audio device
   - "export AUDIODEV=null"
+  # unit test output
+  - mkdir bin
 
 before_script:
   - make clean all -C tools/smoke.jeash.com
