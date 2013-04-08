@@ -270,6 +270,7 @@ class BitmapData implements IBitmapDrawable
 		
 		var thresh_mask:Int32 = cast threshold & mask;
 		
+		//bound from 0...dw/dh to avoid unecessary calculations and return correct hits value
 		for (yy in 0...dh) {
 			for (xx in 0...dw) {
 				var pos:Int = ((xx + sx) + (yy + sy) * sw) * 4;
@@ -295,9 +296,9 @@ class BitmapData implements IBitmapDrawable
 		}
 		
 	mem.position = 0;
-	bd1.setPixels(sourceRect, mem);
-	copyPixels(bd1, bd1.rect, destPoint);
-	return hits;
+	bd1.setPixels(sourceRect, mem);			//draw to our temp buffer
+	copyPixels(bd1, bd1.rect, destPoint);	//draw to this bitmapdata at offset point
+	return hits;	//# of pixels changed
    }
    
    /**
