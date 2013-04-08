@@ -4,6 +4,7 @@ import sys.*;
 import sys.io.*;
 using haxe.io.Path;
 using StringTools;
+using Lambda;
 
 class TestRunner {
 	public var testCases:List<String>;
@@ -72,17 +73,25 @@ class TestRunner {
 			Sys.println('-- $testCase');
 			if (testCase.endsWith("NMETest")) {
 				var nmml = path + testCase.replace(".", "/").withoutExtension() + ".nmml";
+				var compileArgs = 'run nme test $nmml cpp'.split(" ");
+				
+				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
+					compileArgs.push("-DHXCPP_M64");
+				}
 				if (!(
-					runProcess("haxelib", 'run nme test $nmml cpp'.split(" ")) == 0
+					runProcess("haxelib", compileArgs) == 0
 				)) {
 					success = false;
 				}
 			} else {
 				var testCaseName = testCase.substr(testCase.lastIndexOf(".")+1);
 				var compileArgs = '-cp tools/unit-test --remap flash:nme -main $testCase -cpp bin'.split(" ");
-				#if linux 
-				compileArgs.push("-D HXCPP_M64");
-				#end
+				
+				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
+					compileArgs.push("-D");
+					compileArgs.push("HXCPP_M64");
+				}
+				
 				if (!(
 					runProcess("haxe", compileArgs) == 0 &&
 					runProcess('bin/$testCaseName', []) == 0
@@ -126,9 +135,11 @@ class TestRunner {
 	}
 	
 	static public function runProcess(cmd : String, args : Array<String>, ?indent = "   "):Int {
+		Sys.println("start process: " + cmd + " " + args.join(" "));
 		var p = new Process(cmd, args);
-		var exitCode = p.exitCode();
 		Sys.println(indent + p.stdout.readAll().toString().replace("\n", "\n" + indent));
+		var exitCode = p.exitCode();
+		Sys.println("process exit with: " + exitCode);
 		return exitCode;
 	}
 	
