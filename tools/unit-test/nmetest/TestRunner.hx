@@ -136,9 +136,11 @@ class TestRunner {
 	}
 	
 	static public function runProcess(cmd : String, args : Array<String>, ?indent = "   "):Int {
+		Sys.println("start process: " + cmd + " " + args.join(" "));
 		var p = new Process(cmd, args);
-		var exitCode = p.exitCode();
 		Sys.println(indent + p.stdout.readAll().toString().replace("\n", "\n" + indent));
+		var exitCode = p.exitCode();
+		Sys.println("process exit with: " + exitCode);
 		return exitCode;
 	}
 	
