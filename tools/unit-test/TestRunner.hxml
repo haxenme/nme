@@ -1,0 +1,3 @@
+-cp tools/unit-test
+--remap flash:nme
+-x nmetest.TestRunner

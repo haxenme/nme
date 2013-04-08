@@ -2,8 +2,8 @@ language: node_js
 node_js:
   - 0.6
 # env:
-#   - "NME_TEST_TARGET=html5"
-#   - "NME_TEST_TARGET=cross"
+#   - "NME_UNIT_TEST=html5"
+#   - "NME_UNIT_TEST=cross"
 before_install:
   - sudo apt-get install python-software-properties -y # for the next command
   - sudo add-apt-repository ppa:eyecreate/haxe -y
@@ -36,4 +36,4 @@ before_script:
 
 script:
   - make test -C tools/smoke.jeash.com
-  - haxe -cp tools/unit-test --remap flash:nme -x nmetest.TestRunner
+  - haxe tools/unit-test/TestRunner.hxml

@@ -14,6 +14,9 @@ class TestBaseBuilder {
 		var cls = Context.getLocalClass().get();
 		var clsName = cls.name;
 		
+		/*
+			Add: static public function main
+		*/
 		var mainField:Field = {
 			name: "main",
 			access: [AStatic, APublic],
@@ -35,8 +38,12 @@ class TestBaseBuilder {
 							runner.add(new $clsName());
 							var success = runner.run();
 							js.Browser.window.console.log(printBuf.toString());
-							if (js.phantomjs.PhantomTools.inPhantom())
+							
+							if (js.phantomjs.PhantomTools.inPhantom()) {
 								js.phantomjs.Phantom.exit(success ? 0 : 1);
+							} else {
+								js.Browser.window.console.log("success:" + success);
+							}
 						}
 					else
 						macro {
