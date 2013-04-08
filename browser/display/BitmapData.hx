@@ -614,22 +614,16 @@ class BitmapData implements IBitmapDrawable {
 	}
 	
 	
-	private function getInt32(offset:Int, data:Uint8ClampedArray) {
+	private function getInt32(offset:Int, data:Uint8ClampedArray):Int {
 		
-		// code to deal with 31-bit ints.
-		
-		var b5, b6, b7, b8, pow = Math.pow;
+		var b5, b6, b7, b8;
 		
 		b5 = if (!nmeTransparent) 0xFF; else data[offset + 3] & 0xFF;
 		b6 = data[offset] & 0xFF;
 		b7 = data[offset + 1] & 0xFF;
 		b8 = data[offset + 2] & 0xFF;
 		
-		return untyped {
-			
-			parseInt(((b5 >> 7) * pow(2, 31)).toString(2), 2) + parseInt((((b5 & 0x7F) << 24) |(b6 << 16) |(b7 << 8) | b8).toString(2), 2);
-			
-		}
+		return (b5 << 24) |(b6 << 16) |(b7 << 8) | b8;
 		
 	}
 	
@@ -656,7 +650,7 @@ class BitmapData implements IBitmapDrawable {
 	}
 	
 	
-	public function getPixel32(x:Int, y:Int) {
+	public function getPixel32(x:Int, y:Int):Int {
 		
 		if (x < 0 || y < 0 || x >= this.width || y >= this.height) return 0;
 		

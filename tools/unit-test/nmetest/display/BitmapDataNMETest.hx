@@ -8,5 +8,7 @@ class BitmapDataNMETest extends TestCase implements TestBase {
 		var b = new BitmapData(4, 3);
 		this.assertEquals(4.0, b.width);
 		this.assertEquals(3.0, b.height);
+		
+		this.assertEquals(0xFFFFFFFF, b.getPixel32(0, 0));
 	}
 }
