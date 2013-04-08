@@ -216,18 +216,19 @@ class BitmapData implements IBitmapDrawable
 			return _self_threshold(operation, threshold, color, mask);
 		}
 		
-		var bw:Int = Std.int(width - sourceRect.width - destPoint.x);
-		var bh:Int = Std.int(height - sourceRect.height - destPoint.y);
-		
-		var dw:Int = Std.int((bw < 0) ? sourceRect.width + (width - sourceRect.width - destPoint.x) : sourceRect.width);
-		var dh:Int = Std.int((bh < 0) ? sourceRect.height + (height - sourceRect.height - destPoint.y) : sourceRect.height);
-		
 		var sx:Int = Std.int(sourceRect.x);
 		var sy:Int = Std.int(sourceRect.y);
 		var sw:Int = Std.int(sourceBitmapData.width);
+		var sh:Int = Std.int(sourceBitmapData.height);
 		
 		var dx:Int = Std.int(destPoint.x);
 		var dy:Int = Std.int(destPoint.y);
+		
+		var bw:Int = width - sw - dx;
+		var bh:Int = height - sh - dy;
+
+		var dw:Int = (bw < 0) ? sw + (width - sw - dx) : sw;
+		var dh:Int = (bw < 0) ? sh + (height - sh - dy) : sh;
 		
 		var hits:Int = 0;
 	
@@ -238,12 +239,12 @@ class BitmapData implements IBitmapDrawable
 		//access the pixel data faster via raw bytes
 		
 		//Calculate how many bytes we need
-		var canvas_mem:Int = (dw * dh) * 4;
+		var canvas_mem:Int = (sw * sh) * 4;
 		var source_mem:Int = 0;
 		if(copySource){
-			source_mem = (sourceBitmapData.width + sourceBitmapData.height) * 4;
+			source_mem = (sw * sh) * 4;
 			//for storing both bitmaps in one ByteArray
-		}		
+		}
 		var total_mem:Int = (canvas_mem + source_mem);
 		var mem:ByteArray = new ByteArray();
 		#if cpp
@@ -261,7 +262,6 @@ class BitmapData implements IBitmapDrawable
 			var bd2:BitmapData = sourceBitmapData.clone();
 			mem.writeBytes(bd2.getPixels(sourceRect));
 		}
-		//mem = sourceBitmapData.getPixels(sourceRect);
 		
 		mem.position = 0;
 		
@@ -272,9 +272,8 @@ class BitmapData implements IBitmapDrawable
 		
 		for (yy in 0...dh) {
 			for (xx in 0...dw) {
-				var read_pos:Int = ((xx + sx) + (yy + sy) * sw) * 4;
-				var write_pos:Int = ((xx + dx) + (yy + dy) * sw) * 4;
-				var pixelValue = Memory.getI32(read_pos);
+				var pos:Int = ((xx + sx) + (yy + sy) * sw) * 4;
+				var pixelValue = Memory.getI32(pos);
 				var pix_mask:Int32 = cast pixelValue & mask;
 			
 				var i:Int = Int32.ucompare(pix_mask, thresh_mask);
@@ -286,18 +285,18 @@ class BitmapData implements IBitmapDrawable
 				else if (operation == "<=") { test = i == 0 || i == -1; }
 				else if (operation == ">=") { test = i == 0 || i == 1; }
 				if(test){
-					Memory.setI32(write_pos, color);
+					Memory.setI32(pos, color);
 					hits++;
 				}else if (copySource) {
-					var source_color = Memory.getI32(canvas_mem+read_pos);
-					Memory.setI32(write_pos, source_color);
+					var source_color = Memory.getI32(canvas_mem+pos);
+					Memory.setI32(pos, source_color);
 				}
 			}
 		}
 		
 	mem.position = 0;
-	setPixels(rect, mem);
-	
+	bd1.setPixels(sourceRect, mem);
+	copyPixels(bd1, bd1.rect, destPoint);
 	return hits;
    }
    
