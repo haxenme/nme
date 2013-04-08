@@ -4,6 +4,7 @@ import sys.*;
 import sys.io.*;
 using haxe.io.Path;
 using StringTools;
+using Lambda;
 
 class TestRunner {
 	public var testCases:List<String>;
@@ -80,9 +81,11 @@ class TestRunner {
 			} else {
 				var testCaseName = testCase.substr(testCase.lastIndexOf(".")+1);
 				var compileArgs = '-cp tools/unit-test --remap flash:nme -main $testCase -cpp bin'.split(" ");
-				#if linux 
-				compileArgs.push("-D HXCPP_M64");
-				#end
+				
+				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
+					compileArgs.push("-D HXCPP_M64");
+				}
+				
 				if (!(
 					runProcess("haxe", compileArgs) == 0 &&
 					runProcess('bin/$testCaseName', []) == 0

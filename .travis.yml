@@ -36,4 +36,4 @@ before_script:
 
 script:
   - make test -C tools/smoke.jeash.com
-  - haxe tools/unit-test/TestRunner.hxml
+  - haxe tools/unit-test/TestRunner.hxml && neko bin/nmetest.TestRunner.n
