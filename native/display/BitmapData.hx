@@ -268,14 +268,14 @@ class BitmapData implements IBitmapDrawable
 		//Select the memory space (just once)
 		Memory.select(mem);
 		
-		var thresh_mask:Int32 = cast threshold & mask;
+		var thresh_mask:Int = cast threshold & mask;
 		
 		//bound from 0...dw/dh to avoid unecessary calculations and return correct hits value
 		for (yy in 0...dh) {
 			for (xx in 0...dw) {
 				var pos:Int = ((xx + sx) + (yy + sy) * sw) * 4;
 				var pixelValue = Memory.getI32(pos);
-				var pix_mask:Int32 = cast pixelValue & mask;
+				var pix_mask:Int = cast pixelValue & mask;
 			
 				var i:Int = Int32.ucompare(pix_mask, thresh_mask);
 				var test:Bool = false;
@@ -293,11 +293,11 @@ class BitmapData implements IBitmapDrawable
 					Memory.setI32(pos, source_color);
 				}
 			}
-		}
-		
-	mem.position = 0;
+		}		
+	mem.position = 0;	
 	bd1.setPixels(sourceRect, mem);			//draw to our temp buffer
 	copyPixels(bd1, bd1.rect, destPoint);	//draw to this bitmapdata at offset point
+	Memory.select(null);
 	return hits;	//# of pixels changed
    }
    
@@ -334,14 +334,14 @@ class BitmapData implements IBitmapDrawable
 		//Select the memory space (just once)
 		Memory.select(mem);
 		
-		var thresh_mask:Int32 = cast threshold & mask;
+		var thresh_mask:Int = cast threshold & mask;
 		
 		for (yy in 0...height) {
 			var width_yy:Int = width * yy;
 			for (xx in 0...width) {
 				var pos:Int = (width_yy + xx) * 4;
 				var pixelValue = Memory.getI32(pos);
-				var pix_mask:Int32 = cast pixelValue & mask;
+				var pix_mask:Int = cast pixelValue & mask;
 			
 				var i:Int = Int32.ucompare(pix_mask, thresh_mask);
 				var test:Bool = false;
@@ -357,9 +357,9 @@ class BitmapData implements IBitmapDrawable
 				}
 			}
 		}
-		mem.position = 0;
-		setPixels(rect, mem);
-	
+	mem.position = 0;
+	setPixels(rect, mem);
+	Memory.select(null);
 	return hits;
    }
    
