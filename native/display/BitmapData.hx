@@ -316,16 +316,16 @@ class BitmapData implements IBitmapDrawable
         //Int has 32 bits - 4 bytes (except neko 1.8)
 
         //compare first - "head" bytes
-        tmp1 = n1 >> 24; //shift integers by 24 bits right for this purpose, so only head bytes left (0xFF)
-        tmp2 = n2 >> 24;
+        tmp1 = (n1 >> 24) & 0x000000FF; //shift integers by 24 bits right for this purpose, so only head bytes left (0xFF)
+        tmp2 = (n2 >> 24) & 0x000000FF;
         if( tmp1 != tmp2 ){
             //if head bytes are not equal, we can already know, which one is bigger
             return (tmp1 > tmp2 ? 1 : -1);
 
         //compare second byte
         }else{
-            tmp1 = (n1 >> 16) & 0x00FF; //tmp1 now contains 0x3D
-            tmp2 = (n2 >> 16) & 0x00FF; //tmp2 now contains 0x3D
+            tmp1 = (n1 >> 16) & 0x000000FF; //tmp1 now contains 0x3D
+            tmp2 = (n2 >> 16) & 0x000000FF; //tmp2 now contains 0x3D
 
             if( tmp1 != tmp2 ){
                 return (tmp1 > tmp2 ? 1 : -1);
@@ -333,8 +333,8 @@ class BitmapData implements IBitmapDrawable
             //compare third byte
             }else{
 
-                tmp1 = (n1 >> 8) & 0x0000FF; //tmp1 now contains 0x76
-                tmp2 = (n2 >> 8) & 0x0000FF; //tmp2 now contains 0x76
+                tmp1 = (n1 >> 8) & 0x000000FF; //tmp1 now contains 0x76
+                tmp2 = (n2 >> 8) & 0x000000FF; //tmp2 now contains 0x76
 
                 if( tmp1 != tmp2 ){
                     return (tmp1 > tmp2 ? 1 : -1);
