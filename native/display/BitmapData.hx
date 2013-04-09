@@ -1,7 +1,6 @@
 package native.display;
 #if (cpp || neko)
 
-import haxe.Int32;
 import haxe.io.Bytes;
 import native.geom.Rectangle;
 import native.geom.Point;
@@ -189,11 +188,11 @@ class BitmapData implements IBitmapDrawable
     * @return   pix4 flipped-endian format
     */
    
-   public static inline function flip_pixel4(pix4:BitmapInt32):BitmapInt32{
+   public static inline function flip_pixel4(pix4:Int):Int{
 	   return (pix4       & 0xFF) << 24 |	//4th byte --> 1st byte
 			  (pix4 >>  8 & 0xFF) << 16 |	//3rd byte --> 2nd byte
 			  (pix4 >> 16 & 0xFF) <<  8 |	//2nd byte --> 3rd byte
-			  (pix4 >> 24 & 0xFF);       	//1st byte --> 4th byte			  			  
+			  (pix4 >> 24 & 0xFF);       	//1st byte --> 4th byte
    }
    
    /**
@@ -247,12 +246,8 @@ class BitmapData implements IBitmapDrawable
 		}
 		var total_mem:Int = (canvas_mem + source_mem);
 		var mem:ByteArray = new ByteArray();
-		#if cpp
-			mem.setLength(total_mem);
-		#else
-			mem.length = (total_mem);
-		#end
-	
+		mem.setLength(total_mem);
+		
 		//write pixels into RAM
 		mem.position = 0;
 		var bd1:BitmapData = sourceBitmapData.clone();
@@ -261,7 +256,7 @@ class BitmapData implements IBitmapDrawable
 		if(copySource){
 			var bd2:BitmapData = sourceBitmapData.clone();
 			mem.writeBytes(bd2.getPixels(sourceRect));
-		}
+			}
 		
 		mem.position = 0;
 		
@@ -277,7 +272,7 @@ class BitmapData implements IBitmapDrawable
 				var pixelValue = Memory.getI32(pos);
 				var pix_mask:Int = cast pixelValue & mask;
 			
-				var i:Int = Int32.ucompare(pix_mask, thresh_mask);
+				var i:Int = ucompare(pix_mask, thresh_mask);
 				var test:Bool = false;
 					 if (operation == "==") { test = i == 0; }
 				else if (operation == "<") { test = i == -1;}
@@ -301,6 +296,68 @@ class BitmapData implements IBitmapDrawable
 	return hits;	//# of pixels changed
    }
    
+   //******Replaces Int32.ucompare()******//
+	
+	/**
+	 * Compare 2 integers, byte-for-byte (unsigned mode)
+	 * @param	n1	an integer
+	 * @param	n2	another integer
+	 * @return	0 if n1 == n2, 1 if n1 > n2, -1 if n1 < n2
+	 */
+	
+   static public function ucompare(n1:Int, n2:Int) : Int {
+        var tmp1 : Int;
+        var tmp2 : Int;
+		
+		//For example, 
+			//tmp1 = 0xFF3D76BC;
+			//tmp2 = 0xFF3D76AA;
+			
+        //Int has 32 bits - 4 bytes (except neko 1.8)
+
+        //compare first - "head" bytes
+        tmp1 = n1 >> 24; //shift integers by 24 bits right for this purpose, so only head bytes left (0xFF)
+        tmp2 = n2 >> 24;
+        if( tmp1 != tmp2 ){
+            //if head bytes are not equal, we can already know, which one is bigger
+            return (tmp1 > tmp2 ? 1 : -1);
+
+        //compare second byte
+        }else{
+            tmp1 = (n1 >> 16) & 0x00FF; //tmp1 now contains 0x3D
+            tmp2 = (n2 >> 16) & 0x00FF; //tmp2 now contains 0x3D
+
+            if( tmp1 != tmp2 ){
+                return (tmp1 > tmp2 ? 1 : -1);
+
+            //compare third byte
+            }else{
+
+                tmp1 = (n1 >> 8) & 0x0000FF; //tmp1 now contains 0x76
+                tmp2 = (n2 >> 8) & 0x0000FF; //tmp2 now contains 0x76
+
+                if( tmp1 != tmp2 ){
+                    return (tmp1 > tmp2 ? 1 : -1);
+
+                //compare last byte
+                }else{
+                    tmp1 = n1 & 0x000000FF; //tmp1 now contains 0xBC
+                    tmp2 = n2 & 0x000000FF; //tmp2 now contains 0xAA
+
+                    if( tmp1 != tmp2 ){
+                        return (tmp1 > tmp2 ? 1 : -1);
+
+                    //numbers are equal (n1 == n2)
+                    }else{
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+   
+	//******END EXTRACTED SECTION******//
+	
    /**
     * Fast version for when you're not messing with multiple thingies
     * @param	operation
@@ -321,12 +378,8 @@ class BitmapData implements IBitmapDrawable
 		//access the pixel data faster via raw bytes
 		var mem:ByteArray = new ByteArray();
 		//32bit integer = 4 bytes
-		#if cpp
-			mem.setLength((width * height) * 4);
-		#else
-			mem.length = (width * height) * 4;
-		#end
-	
+		mem.setLength((width * height) * 4);
+		
 		//write pixels into RAM
 		var mem:ByteArray = getPixels(rect);
 		mem.position = 0;
@@ -343,7 +396,7 @@ class BitmapData implements IBitmapDrawable
 				var pixelValue = Memory.getI32(pos);
 				var pix_mask:Int = cast pixelValue & mask;
 			
-				var i:Int = Int32.ucompare(pix_mask, thresh_mask);
+				var i:Int = ucompare(pix_mask, thresh_mask);
 				var test:Bool = false;
 					 if (operation == "==") { test = i == 0; }
 				else if (operation == "<") { test = i == -1;}
