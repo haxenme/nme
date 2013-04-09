@@ -817,6 +817,7 @@ void DisplayObjectContainer::RemoveChildFromList(DisplayObject *inChild)
          if (gDisplayRefCounting & drDisplayParentRefs)
             DecRef();
          mChildren.EraseAt(i);
+         DirtyCache();
          return;
       }
    // This is an error, I think.
@@ -858,7 +859,10 @@ void DisplayObjectContainer::swapChildrenAt(int inChild1, int inChild2)
 {
    if (inChild1>=0 && inChild2>=0 &&
         inChild1<mChildren.size() &&  inChild2<mChildren.size() )
+   {
       std::swap(mChildren[inChild1],mChildren[inChild2]);
+      DirtyCache();
+   }
 }
  
 
@@ -868,6 +872,7 @@ void DisplayObjectContainer::removeChild(DisplayObject *inChild)
    IncRef();
    inChild->SetParent(0);
    DecRef();
+   DirtyCache();
 }
 
 void DisplayObjectContainer::removeChildAt(int inIndex)
@@ -887,6 +892,7 @@ void DisplayObjectContainer::addChild(DisplayObject *inChild)
    if (gDisplayRefCounting & drDisplayParentRefs)
       IncRef();
 
+   DirtyCache();
    DecRef();
 }
 
