@@ -8,8 +8,8 @@ namespace nme
 void Graphics::OnChanged()
 {
    mVersion++;
-   if (mOwner && !(mOwner->mDirtyFlags & dirtCache))
-      mOwner->DirtyCache(false);
+   if (mOwner && !(mOwner->mDirtyFlags & dirtExtent))
+      mOwner->DirtyExtent();
 }
 
 

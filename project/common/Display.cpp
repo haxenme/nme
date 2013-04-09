@@ -48,7 +48,10 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
 DisplayObject::~DisplayObject()
 {
    if (mGfx)
+   {
+      mGfx->removeOwner(this);
       mGfx->DecRef();
+   }
    delete mBitmapCache;
    if (mMask)
       setMask(0);
@@ -58,9 +61,7 @@ DisplayObject::~DisplayObject()
 Graphics &DisplayObject::GetGraphics()
 {
    if (!mGfx)
-   {
       mGfx = new Graphics(this,true);
-   }
    return *mGfx;
 }
 
@@ -892,16 +893,46 @@ void DisplayObjectContainer::addChild(DisplayObject *inChild)
 void DisplayObjectContainer::DirtyCache(bool inParentOnly)
 {
    if (!(mDirtyFlags & dirtCache))
-   {
       DisplayObject::DirtyCache(inParentOnly);
-      for(DisplayObjectContainer *c = this; c; c=c->mParent)
-      {
-         c->mExtentCache[0].mIsSet = 
-          c->mExtentCache[1].mIsSet = 
-           c->mExtentCache[2].mIsSet = false;
-      }
+   if (!(mDirtyFlags & dirtExtent))
+      DirtyExtent();
+}
+
+void DisplayObjectContainer::DirtyExtent()
+{
+   if (!(mDirtyFlags & dirtExtent))
+   {
+      mDirtyFlags |= dirtExtent;
+      mExtentCache[0].mIsSet = 
+       mExtentCache[1].mIsSet = 
+        mExtentCache[2].mIsSet = false;
+      if (mParent)
+         mParent->DirtyExtent();
    }
 }
+
+void DisplayObject::DirtyExtent()
+{
+   mDirtyFlags |= dirtExtent;
+   if (mParent)
+      mParent->DirtyExtent();
+}
+
+void DisplayObject::ClearExtentDirty()
+{
+   mDirtyFlags &= ~dirtExtent;
+}
+
+void DisplayObjectContainer::ClearExtentDirty()
+{
+   if (mDirtyFlags & dirtExtent)
+   {
+      mDirtyFlags &= ~dirtExtent;
+      for(int c=0;c<mChildren.size();c++)
+         mChildren[c]->ClearExtentDirty();
+   }
+}
+
 
 
 bool DisplayObject::CreateMask(const Rect &inClipRect,int inAA)
@@ -1322,6 +1353,7 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
 {
    int smallest = mExtentCache[0].mID;
    int slot = 0;
+   ClearExtentDirty();
    for(int i=0;i<3;i++)
    {
       CachedExtent &cache = mExtentCache[i];

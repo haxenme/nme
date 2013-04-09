@@ -112,6 +112,7 @@ enum
    dirtDecomp      = 0x0001,
    dirtLocalMatrix = 0x0002,
    dirtCache       = 0x0004,
+   dirtExtent      = 0x0008,
 };
 
 enum StageScaleMode
@@ -239,6 +240,8 @@ public:
    void DebugRenderMask( const RenderTarget &inTarget, const RenderState &inState );
 
    virtual void DirtyCache(bool inParentOnly = false);
+   virtual void DirtyExtent();
+   virtual void ClearExtentDirty();
    virtual bool NonNormalBlendChild() { return false; }
 
    virtual Cursor GetCursor() { return curPointer; }
@@ -333,7 +336,9 @@ public:
    bool NonNormalBlendChild();
    void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
    void DirtyCache(bool inParentOnly = false);
-   
+   virtual void DirtyExtent();
+   virtual void ClearExtentDirty();
+
    bool IsInteractive() const { return true; }
 
    void hackAddChild(DisplayObject *inObj) { mChildren.push_back(inObj); } 
