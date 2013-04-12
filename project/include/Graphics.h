@@ -723,6 +723,7 @@ public:
    bool  HitTest(const UserPoint &inPoint);
 
    bool empty() const { return !mPathData || mPathData->empty(); }
+   void removeOwner(DisplayObject *inOwner) { if (mOwner==inOwner) mOwner = 0; }
 
    int Version() const;
 

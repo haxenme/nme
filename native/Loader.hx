@@ -13,7 +13,7 @@ class Loader
    private static var moduleInit = false;
    private static var moduleName = "";
 
-   #if (iphone || android)
+   #if (iphone || android || emscripten)
    public static function load(func:String, args:Int):Dynamic 
    {
       return Lib.load("nme", func, args);
