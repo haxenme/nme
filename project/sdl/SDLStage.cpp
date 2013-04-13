@@ -22,6 +22,10 @@
 #include "../opengl/Egl.h"
 #endif
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 #ifdef NME_MIXER
 #include <SDL_mixer.h>
 #endif
@@ -963,7 +967,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    inOnFrame(sgSDLFrame);
 
+   #ifdef EMSCRIPTEN
+   emscripten_set_main_loop (StartAnimation, 30, true);
+   #else
    StartAnimation();
+   #endif
 }
 
 bool sgDead = false;
@@ -1357,8 +1365,9 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 
 void StartAnimation()
 {
-   bool firstTime = true;  
    SDL_Event event;
+   #ifndef EMSCRIPTEN
+   bool firstTime = true;
    while(!sgDead)
    {
       event.type=SDL_NOEVENT;
@@ -1373,9 +1382,11 @@ void StartAnimation()
          }
          
          ProcessEvent(event);
+		 #ifndef EMSCRIPTEN
          if (sgDead) break;
+		 #endif
          event.type = SDL_NOEVENT;
-         
+   #endif
 		 while (SDL_PollEvent(&event)) {
             ProcessEvent (event);
             if (sgDead) break;
@@ -1384,6 +1395,7 @@ void StartAnimation()
          
          Event poll(etPoll);
          sgSDLFrame->ProcessEvent(poll);
+   #ifndef EMSCRIPTEN
          if (sgDead) break;
          
          double next = sgSDLFrame->GetStage()->GetNextWake() - GetTimeStamp();
@@ -1403,6 +1415,7 @@ void StartAnimation()
    Event kill(etDestroyHandler);
    sgSDLFrame->ProcessEvent(kill);
    SDL_Quit();
+   #endif
    
    #if HX_WINDOWS
    done_win32();
