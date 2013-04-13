@@ -17,6 +17,7 @@
    <set name="sdl" value="1" if="win_desktop" />
    <set name="sdl" value="1" if="webos"/>
    <set name="sdl" value="1" if="blackberry"/>
+   <set name="sdl" value="1" if="emscripten"/>
    <set name="ogl" value="1" if="win_desktop" />
    <set name="ogl" value="1" if="sdl"/>
    <set name="ogl" value="1" if="gph"/>
