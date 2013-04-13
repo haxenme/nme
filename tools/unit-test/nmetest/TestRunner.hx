@@ -44,35 +44,41 @@ class TestRunner {
 			testCpp();
 		}
 		
-		Sys.exit(success ? 0 : 1);
+		if (success) {
+			Sys.println("ALL OK");
+			Sys.exit(0);
+		} else {
+			Sys.println("FAIL");
+			Sys.exit(1);
+		}
+	}
+	
+	/**
+	* Returns the path to the nmml of an NMETest.
+	* If there is no nmml placed next to the NMETest hx file, a minimal nmml will be created from "NMETest.tpl.nmml".
+	*/
+	public function getNmml(testCase:String):String {
+		var nmml = path + testCase.replace(".", "/").withoutExtension() + ".nmml";
+		//if custom nmml does not exist
+		if (!FileSystem.exists(nmml)) {
+			nmml = "bin/NMETest.nmml";
+			var nmmlContent = new haxe.Template(File.getContent(path + "NMETest.tpl.nmml")).execute({
+				testCase: testCase
+			});
+			File.saveContent(nmml, nmmlContent);
+		}
+		
+		return nmml;
 	}
 	
 	public function testNeko():Void {
 		for (testCase in testCases) {
 			Sys.println('-- $testCase');
 			if (testCase.endsWith("NMETest")) {
-				var nmml = path + testCase.replace(".", "/").withoutExtension() + ".nmml";
-				//if custom nmml does not exist
-				if (!FileSystem.exists(nmml)) {
-					nmml = "bin/NMETest.nmml";
-					var nmmlContent = new haxe.Template(File.getContent(path + "NMETest.tpl.nmml")).execute({
-						testCase: testCase
-					});
-					File.saveContent(nmml, nmmlContent);
-				}
-				
-				if (!(
-					runProcess("haxelib", 'run nme test $nmml neko'.split(" ")) == 0
-				)) {
-					success = false;
-				}
+				runProcess("haxelib", 'run nme test ${getNmml(testCase)} neko'.split(" "));
 			} else {
-				if (!(
-					runProcess("haxe", '-cp tools/unit-test --remap flash:nme -main $testCase -neko bin/${testCase}.n'.split(" ")) == 0 &&
-					runProcess("neko", ['bin/${testCase}.n']) == 0
-				)) {
-					success = false;
-				}
+				runProcess("haxe", '-cp tools/unit-test --remap flash:nme -main $testCase -neko bin/${testCase}.n'.split(" ")) &&
+				runProcess("neko", ['bin/${testCase}.n']);
 			}
 		}
 	}
@@ -81,26 +87,13 @@ class TestRunner {
 		for (testCase in testCases) {
 			Sys.println('-- $testCase');
 			if (testCase.endsWith("NMETest")) {
-				var nmml = path + testCase.replace(".", "/").withoutExtension() + ".nmml";
-				//if custom nmml does not exist
-				if (!FileSystem.exists(nmml)) {
-					nmml = "bin/NMETest.nmml";
-					var nmmlContent = new haxe.Template(File.getContent(path + "NMETest.tpl.nmml")).execute({
-						testCase: testCase
-					});
-					File.saveContent(nmml, nmmlContent);
-				}
-				
-				var compileArgs = 'run nme test $nmml cpp'.split(" ");
+				var compileArgs = 'run nme test ${getNmml(testCase)} cpp'.split(" ");
 				
 				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
 					compileArgs.push("-DHXCPP_M64");
 				}
-				if (!(
-					runProcess("haxelib", compileArgs) == 0
-				)) {
-					success = false;
-				}
+				
+				runProcess("haxelib", compileArgs);
 			} else {
 				var testCaseName = testCase.substr(testCase.lastIndexOf(".")+1);
 				var compileArgs = '-cp tools/unit-test --remap flash:nme -main $testCase -cpp bin'.split(" ");
@@ -110,12 +103,8 @@ class TestRunner {
 					compileArgs.push("HXCPP_M64");
 				}
 				
-				if (!(
-					runProcess("haxe", compileArgs) == 0 &&
-					runProcess('bin/$testCaseName', []) == 0
-				)) {
-					success = false;
-				}
+				runProcess("haxe", compileArgs) &&
+				runProcess('bin/$testCaseName', []);
 			}
 		}
 	}
@@ -123,51 +112,41 @@ class TestRunner {
 	public function testJs():Void {
 		//compile PhantomRunner
 		Sys.println('-- PhantomRunner');
-		if (!(runProcess("haxe", [path + "PhantomRunner.hxml"]) == 0)) {
-			success = false;
+		if (runProcess("haxe", [path + "PhantomRunner.hxml"])) {
+			Sys.println('   OK\n');
+		} else {
 			return;
 		}
-		Sys.println('   OK\n');
 		
 		
 		for (testCase in testCases) {
 			Sys.println('-- $testCase');
 			if (testCase.endsWith("NMETest")) {
-				var nmml = path + testCase.replace(".", "/").withoutExtension() + ".nmml";
-				//if custom nmml does not exist
-				if (!FileSystem.exists(nmml)) {
-					nmml = "bin/NMETest.nmml";
-					var nmmlContent = new haxe.Template(File.getContent(path + "NMETest.tpl.nmml")).execute({
-						testCase: testCase
-					});
-					File.saveContent(nmml, nmmlContent);
-				}
-				
-				if (!(
-					runProcess("haxelib", 'run nme build $nmml html5'.split(" ")) == 0 &&
-					runProcess("phantomjs", ["bin/nmetest.PhantomRunner.js", "html5/bin/index.html"]) == 0
-				)) {
-					success = false;
-				}
+				runProcess("haxelib", 'run nme build ${getNmml(testCase)} html5'.split(" ")) &&
+				runProcess("phantomjs", ["bin/nmetest.PhantomRunner.js", "html5/bin/index.html"]);
 			} else {
 				var testCaseName = testCase.substr(testCase.lastIndexOf(".")+1);
-				if (!(
-					runProcess("haxe", '-cp tools/unit-test --remap flash:nme -main $testCase -js bin/${testCase}.js -lib phantomjs'.split(" ")) == 0 &&
-					runProcess("phantomjs", ['bin/${testCase}.js']) == 0
-				)) {
-					success = false;
-				}
+				runProcess("haxe", '-cp tools/unit-test --remap flash:nme -main $testCase -js bin/${testCase}.js -lib phantomjs'.split(" ")) &&
+				runProcess("phantomjs", ['bin/${testCase}.js']);
 			}
 		}
 	}
 	
-	static public function runProcess(cmd : String, args : Array<String>, ?indent = "   "):Int {
+	/**
+	* Run a process. The process output will be printed.
+	*/
+	public function runProcess(cmd : String, args : Array<String>, ?shouldPass = true, ?indent = "   "):Bool {
 		Sys.println("start process: " + cmd + " " + args.join(" "));
 		var p = new Process(cmd, args);
 		Sys.println(indent + p.stdout.readAll().toString().replace("\n", "\n" + indent));
 		var exitCode = p.exitCode();
 		Sys.println("process exit with: " + exitCode);
-		return exitCode;
+		
+		if (shouldPass && exitCode != 0) {
+			success = false;
+		}
+		
+		return exitCode == 0;
 	}
 	
 	static var instance(default, null):TestRunner;
