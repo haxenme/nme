@@ -1,6 +1,7 @@
 <xml>
    
    <set name="GCC_THIN_ARCHIVE" value="1" if="iphone"/>
+   <set name="GCC_THIN_ARCHIVE" value="1" if="emscripten"/>
    <set name="debug" value="debug" if ="fulldebug" />
    
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
@@ -131,7 +132,6 @@
    
    
    <set name="dynamic_sdl" value="1" if="webos"/>
-   <set name="dynamic_sdl" value="1" if="emscripten"/>
    
    <files id="webos">
       
@@ -178,6 +178,7 @@
    <set name="SLIBEXT" value=".lib" if="windows"/>
    <set name="SLIBEXT" value=".a" unless="windows"/>
    <set name="SLIBEXT" value=".so" if="webos"/>
+   <set name="SLIBEXT" value=".a" if="emscripten"/>
    
    
    <files id="common">
@@ -262,11 +263,13 @@
    
    <set name="tool" value="exe" unless="iphone"/>
    <set name="tool" value="static_link" if="iphone"/>
+   <set name="tool" value="static_link" if="emscripten"/>
 
    <set name="IOS_ARCH" value="-v7" if="HXCPP_ARMV7" />
    
    <set name="ndll-tool" value="dll" unless="iphone"/>
    <set name="ndll-tool" value="static_link" if="iphone"/>
+   <set name="ndll-tool" value="static_link" if="emscripten"/>
    <set name="name_extra" value=".iphonesim" if="iphonesim"/>
    <set name="name_extra" value=".iphoneos${IOS_ARCH}" if="iphoneos"/>
    
@@ -282,9 +285,11 @@
    </section> -->
    
    <set name="no_thirdparty_extras" value="1" if="iphone"/>
+   <set name="no_thirdparty_extras" value="1" if="emscripten"/>
    <set name="no_thirdparty_extras" value="1" if="gph"/>
    
    <set name="sdl_static" value="1" unless="mobile"/>
+   <unset name="sdl_static" if="emscripten" />
    <set name="sdl_static" value="1" if="blackberry"/>
    <unset name="sdl_static" if="dynamic_sdl"/>
    <unset name="sdl_static" if="winrt"/>
@@ -338,7 +343,7 @@
       
       <outdir name="../ndll/${BINDIR}" />
       <ext value=".ndll" unless="mobile"/>
-      <ext value=".so" if="emscripten"/>
+      <ext value=".a" if="emscripten"/>
       <ext value=".ndll" if="gph"/>
 
       <flag value="-NODEFAULTLIB:LIBCMT" if="winrt"/>
