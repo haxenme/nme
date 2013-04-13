@@ -6,7 +6,7 @@
 	<ndll name="zlib" haxelib="hxcpp" />
 	<ndll name="nme" />
 	
-	<templatePath name="tools/command-line" />
+	<haxedef name="nme" />
 	<templatePath name="templates/default" />
 	
 </extension>

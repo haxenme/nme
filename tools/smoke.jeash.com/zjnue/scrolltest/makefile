@@ -1,3 +1,0 @@
-build: 
-	haxe build.hxml
-

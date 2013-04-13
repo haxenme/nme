@@ -1,3 +1,19 @@
+#if emscripten
+class ApplicationMain {
+	
+	public static function main () {
+		
+		trace ("hello from ApplicationMain");
+		
+		Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+		
+	}
+	
+}
+#else
+
+
+
 import nme.Assets;
 
 #if (!macro || !haxe3)
@@ -11,6 +27,12 @@ class ApplicationMain
 	static public var nmeStage : wx.NMEStage;
 	#end
 	#end
+	
+	private static var barA:flash.display.Sprite;
+	private static var barB:flash.display.Sprite;
+	private static var container:flash.display.Sprite;
+	private static var forceHeight:Int;
+	private static var forceWidth:Int;
 	
 	public static function main()
 	{
@@ -51,6 +73,29 @@ class ApplicationMain
 					nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
 					nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
 				//}
+				
+				#if mobile
+				
+				if (::WIN_WIDTH:: != 0 && ::WIN_HEIGHT:: != 0) {
+					
+					forceWidth = ::WIN_WIDTH::;
+					forceHeight = ::WIN_HEIGHT::;
+					
+					container = new flash.display.Sprite();
+					barA = new flash.display.Sprite();
+					barB = new flash.display.Sprite();
+					
+					flash.Lib.current.stage.addChild (container);
+					container.addChild (flash.Lib.current);
+					container.addChild (barA);
+					container.addChild (barB);
+					
+					applyScale();
+					flash.Lib.current.stage.addEventListener (flash.events.Event.RESIZE, applyScale);
+					
+				}
+				
+				#end
 				
 				var hasMain = false;
 				
@@ -94,9 +139,61 @@ class ApplicationMain
 			"::APP_TITLE::"
 			::if (WIN_ICON!=null)::
 			, getAsset("::WIN_ICON::")
+			::else::
+			, null
 			::end::
+			::if (WIN_WIDTH != 0)::::if (WIN_HEIGHT != 0)::#if mobile
+			, ScaledStage
+			#end::end::::end::
 		);
 		#end
+		
+	}
+	
+	public static function applyScale(?_) {
+		
+		var xScale:Float = untyped(flash.Lib.current.stage).nmeStageWidth / forceWidth;
+		var yScale:Float = untyped(flash.Lib.current.stage).nmeStageHeight / forceHeight;
+		
+		if ( xScale < yScale ) {
+			
+			flash.Lib.current.scaleX = xScale;
+			flash.Lib.current.scaleY = xScale;
+			flash.Lib.current.x = (untyped(flash.Lib.current.stage).nmeStageWidth - (forceWidth * xScale)) / 2;
+			flash.Lib.current.y = (untyped(flash.Lib.current.stage).nmeStageHeight - (forceHeight * xScale)) / 2;
+			
+		} else {
+			
+			flash.Lib.current.scaleX = yScale;
+			flash.Lib.current.scaleY = yScale;
+			flash.Lib.current.x = (untyped(flash.Lib.current.stage).nmeStageWidth - (forceWidth * yScale)) / 2;
+			flash.Lib.current.y = (untyped(flash.Lib.current.stage).nmeStageHeight - (forceHeight * yScale)) / 2;
+			
+		}
+		
+		if (flash.Lib.current.x > 0) {
+			
+			barA.graphics.clear();
+			barA.graphics.beginFill (0x000000);
+			barA.graphics.drawRect (0, 0, flash.Lib.current.x, untyped(flash.Lib.current.stage).nmeStageHeight);
+			
+			barB.graphics.clear();
+			barB.graphics.beginFill (0x000000);
+			var x = flash.Lib.current.x + (forceWidth * flash.Lib.current.scaleX);
+			barB.graphics.drawRect (x, 0, untyped(flash.Lib.current.stage).nmeStageWidth - x, untyped(flash.Lib.current.stage).nmeStageHeight);
+			
+		} else {
+			
+			barA.graphics.clear();
+			barA.graphics.beginFill (0x000000);
+			barA.graphics.drawRect (0, 0, untyped(flash.Lib.current.stage).nmeStageWidth, flash.Lib.current.y);
+			
+			barB.graphics.clear();
+			barB.graphics.beginFill (0x000000);
+			var y = flash.Lib.current.y + (forceHeight * flash.Lib.current.scaleY);
+			barB.graphics.drawRect (0, y, untyped(flash.Lib.current.stage).nmeStageWidth, untyped(flash.Lib.current.stage).nmeStageHeight - y);
+			
+		}
 		
 	}
 
@@ -133,6 +230,47 @@ class ApplicationMain
 class DocumentClass extends ::APP_MAIN:: {}
 
 
+::if (WIN_WIDTH != 0)::::if (WIN_HEIGHT != 0)::
+#if mobile
+class ScaledStage extends flash.display.Stage {
+	
+	
+	public var nmeStageHeight(get, null):Int;
+	public var nmeStageWidth(get, null):Int;
+	
+	
+	public function new (inHandle:Dynamic, inWidth:Int, inHeight:Int) {
+		
+		super(inHandle, 0, 0);
+		
+	}
+	
+	
+	private function get_nmeStageHeight():Int {
+		return super.get_stageHeight();
+	}
+	
+	private function get_nmeStageWidth():Int {
+		return super.get_stageWidth();
+	}
+	
+	
+	private override function get_stageHeight():Int 
+   {
+      return ::WIN_HEIGHT::;
+   }
+	
+   private override function get_stageWidth():Int 
+   {
+      return ::WIN_WIDTH::;
+   }
+	
+}
+
+#end
+::end::::end::
+
+
 #if haxe_211
 typedef Hash<T> = haxe.ds.StringMap<T>;
 #end
@@ -162,4 +300,5 @@ class DocumentClass {
 	}
 	
 }
+#end
 #end
