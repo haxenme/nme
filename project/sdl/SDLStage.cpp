@@ -813,7 +813,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       if (inFlags & wfStencilBuffer)
          startingPass = 1;
  
-	   #if defined (WEBOS) || defined (BLACKBERRY)
+	   #if defined (WEBOS) || defined (BLACKBERRY) || defined(EMSCRIPTEN)
       // Start at 16 bits...
 	   startingPass = 2;
 	   #endif
@@ -824,7 +824,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
       int oglLevelPasses = 1;
 
-      #if !defined(NME_FORCE_GLES1) && (defined(WEBOS) || defined(BLACKBERRY))
+      #if !defined(NME_FORCE_GLES1) && (defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN))
       // Try 2 then 1 ?
       if ( (inFlags & wfAllowShaders) && !(inFlags & wfRequireShaders) )
          oglLevelPasses = 2;
@@ -850,7 +850,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
                SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
                SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
    
-               #if defined(WEBOS) || defined(BLACKBERRY)
+               #if defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
                SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, level);
                #endif
                // try 32 24 or 16 bit depth...
@@ -867,11 +867,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
                   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, aa_pass>0);
                   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,  1<<aa_pass );
                }
-   
+               
+               #ifndef EMSCRIPTEN
                if ( inFlags & wfVSync )
                {
                   SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
                }
+               #endif
    
                sdl_flags |= SDL_OPENGL;
    			
@@ -886,7 +888,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
                else
                {
                   is_opengl = true;
-                  #if defined(WEBOS) || defined(BLACKBERRY)
+                  #if defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
                   sgIsOGL2 = level==2;
                   #else
                   // TODO: check extensions support
@@ -1346,6 +1348,10 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 	return true;
 }
 
+#endif
+
+#ifndef SDL_NOEVENT
+#define SDL_NOEVENT NULL;
 #endif
 
 
