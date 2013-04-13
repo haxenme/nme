@@ -209,7 +209,7 @@ double  GetTimeStamp()
 #else
    #if  defined(IPHONE)
       double t = CACurrentMediaTime(); 
-   #elif defined(GPH) || defined(HX_LINUX)
+   #elif defined(GPH) || defined(HX_LINUX) || defined(EMSCRIPTEN)
 	     struct timeval tv;
         if( gettimeofday(&tv,NULL) )
           return 0;

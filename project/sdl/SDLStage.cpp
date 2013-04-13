@@ -499,7 +499,7 @@ public:
 
    void SetCursor(Cursor inCursor)
    {
-	  #if defined(WEBOS) || defined(BLACKBERRY)
+	  #if defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
 	  SDL_ShowCursor(false);
 	  return;
 	  #endif
@@ -680,6 +680,273 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 SDLFrame *sgSDLFrame = 0;
 SDL_Joystick *sgJoystick = 0;
+
+
+void AddModStates(int &ioFlags,int inState = -1)
+{
+   int state = inState==-1 ? SDL_GetModState() : inState;
+   if (state & KMOD_SHIFT) ioFlags |= efShiftDown;
+   if (state & KMOD_CTRL) ioFlags |= efCtrlDown;
+   if (state & KMOD_ALT) ioFlags |= efAltDown;
+   if (state & KMOD_META) ioFlags |= efCommandDown;
+	
+ 
+	int m = SDL_GetMouseState(0,0);
+	if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
+	if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
+	if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
+		
+
+	ioFlags |= efPrimaryTouch;
+   ioFlags |= efNoNativeClick;
+}
+
+#define SDL_TRANS(x) case SDLK_##x: return key##x;
+
+int SDLKeyToFlash(int inKey,bool &outRight)
+{
+   outRight = (inKey==SDLK_RSHIFT || inKey==SDLK_RCTRL ||
+               inKey==SDLK_RALT || inKey==SDLK_RMETA || inKey==SDLK_RSUPER);
+   if (inKey>=keyA && inKey<=keyZ)
+      return inKey;
+   if (inKey>=SDLK_0 && inKey<=SDLK_9)
+      return inKey - SDLK_0 + keyNUMBER_0;
+   if (inKey>=SDLK_KP0 && inKey<=SDLK_KP9)
+      return inKey - SDLK_KP0 + keyNUMPAD_0;
+
+   if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
+      return inKey - SDLK_F1 + keyF1;
+
+
+   switch(inKey)
+   {
+      case SDLK_RALT:
+      case SDLK_LALT:
+         return keyALTERNATE;
+      case SDLK_RSHIFT:
+      case SDLK_LSHIFT:
+         return keySHIFT;
+      case SDLK_RCTRL:
+      case SDLK_LCTRL:
+         return keyCONTROL;
+      case SDLK_LMETA:
+      case SDLK_RMETA:
+         return keyCOMMAND;
+
+      case SDLK_CAPSLOCK: return keyCAPS_LOCK;
+      case SDLK_PAGEDOWN: return keyPAGE_DOWN;
+      case SDLK_PAGEUP: return keyPAGE_UP;
+      case SDLK_EQUALS: return keyEQUAL;
+      case SDLK_RETURN:
+      case SDLK_KP_ENTER:
+         return keyENTER;
+
+      SDL_TRANS(BACKQUOTE)
+      SDL_TRANS(BACKSLASH)
+      SDL_TRANS(BACKSPACE)
+      SDL_TRANS(COMMA)
+      SDL_TRANS(DELETE)
+      SDL_TRANS(DOWN)
+      SDL_TRANS(END)
+      SDL_TRANS(ESCAPE)
+      SDL_TRANS(HOME)
+      SDL_TRANS(INSERT)
+      SDL_TRANS(LEFT)
+      SDL_TRANS(LEFTBRACKET)
+      SDL_TRANS(MINUS)
+      SDL_TRANS(PERIOD)
+      SDL_TRANS(QUOTE)
+      SDL_TRANS(RIGHT)
+      SDL_TRANS(RIGHTBRACKET)
+      SDL_TRANS(SEMICOLON)
+      SDL_TRANS(SLASH)
+      SDL_TRANS(SPACE)
+      SDL_TRANS(TAB)
+      SDL_TRANS(UP)
+   }
+
+   return inKey;
+}
+
+std::map<int,wchar_t> sLastUnicode;
+
+
+
+void ProcessEvent(SDL_Event &inEvent)
+{
+
+  switch(inEvent.type)
+   {
+      case SDL_QUIT:
+      {
+         Event close(etQuit);
+         sgSDLFrame->ProcessEvent(close);
+         break;
+      }
+	   case SDL_ACTIVEEVENT:
+      {
+         if (inEvent.active.state & SDL_APPINPUTFOCUS)
+         {
+            Event activate( inEvent.active.gain ? etGotInputFocus : etLostInputFocus );
+            sgSDLFrame->ProcessEvent(activate);
+         }
+	
+         if (inEvent.active.state & SDL_APPACTIVE)
+         {
+            Event activate( inEvent.active.gain ? etActivate : etDeactivate );
+            sgSDLFrame->ProcessEvent(activate);
+         }
+		   break;
+	   }
+      case SDL_MOUSEMOTION:
+      {
+         Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
+		 #if defined(WEBOS) || defined(BLACKBERRY)
+		 mouse.value = inEvent.motion.which;
+		 mouse.flags |= efLeftDown;
+		 #else
+		 AddModStates(mouse.flags);
+		 #endif
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+      case SDL_MOUSEBUTTONDOWN:
+      {
+         Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
+         #if defined(WEBOS) || defined(BLACKBERRY)
+		 mouse.value = inEvent.motion.which;
+		 mouse.flags |= efLeftDown;
+		 #else
+		 AddModStates(mouse.flags);
+		 #endif
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+      case SDL_MOUSEBUTTONUP:
+      {
+         Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
+		 #if defined(WEBOS) || defined(BLACKBERRY)
+		 mouse.value = inEvent.motion.which;
+		 #else
+		 AddModStates(mouse.flags);
+		 #endif
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+
+      case SDL_KEYDOWN:
+      case SDL_KEYUP:
+      {
+         Event key(inEvent.type==SDL_KEYDOWN ? etKeyDown : etKeyUp );
+         bool right;
+         key.value = SDLKeyToFlash(inEvent.key.keysym.sym,right);
+         if (inEvent.type==SDL_KEYDOWN)
+         {
+            key.code = key.value==keyBACKSPACE ? keyBACKSPACE : inEvent.key.keysym.unicode;
+            sLastUnicode[inEvent.key.keysym.scancode] = key.code;
+         }
+         else
+            // SDL does not provide unicode on key up, so remember it,
+            //  keyed by scancode
+            key.code = sLastUnicode[inEvent.key.keysym.scancode];
+
+         AddModStates(key.flags,inEvent.key.keysym.mod);
+         if (right)
+            key.flags |= efLocationRight;
+         sgSDLFrame->ProcessEvent(key);
+         break;
+      }
+
+	  case SDL_VIDEOEXPOSE:
+	  {
+			Event poll(etPoll);
+			sgSDLFrame->ProcessEvent(poll);
+         break;
+	  }
+      case SDL_VIDEORESIZE:
+      {
+         Event resize(etResize,inEvent.resize.w,inEvent.resize.h);
+         sgSDLFrame->Resize(inEvent.resize.w,inEvent.resize.h);
+         sgSDLFrame->ProcessEvent(resize);
+         break;
+      }
+	  
+	  case SDL_JOYAXISMOTION:
+	  {
+         Event joystick(etJoyAxisMove);
+         joystick.id = inEvent.jaxis.which;
+         joystick.code = inEvent.jaxis.axis;
+         joystick.value = inEvent.jaxis.value;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
+	  }
+	  case SDL_JOYBALLMOTION:
+	  {
+         Event joystick(etJoyBallMove, inEvent.jball.xrel, inEvent.jball.yrel);
+         joystick.id = inEvent.jball.which;
+         joystick.code = inEvent.jball.ball;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
+	  }
+	  case SDL_JOYBUTTONDOWN:
+	  {
+         Event joystick(etJoyButtonDown);
+         joystick.id = inEvent.jbutton.which;
+         joystick.code = inEvent.jbutton.button;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
+	  }
+	  case SDL_JOYBUTTONUP:
+	  {
+         Event joystick(etJoyButtonUp);
+         joystick.id = inEvent.jbutton.which;
+         joystick.code = inEvent.jbutton.button;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
+	  }
+	  case SDL_JOYHATMOTION:
+	  {
+         Event joystick(etJoyHatMove);
+         joystick.id = inEvent.jhat.which;
+         joystick.code = inEvent.jhat.hat;
+		 joystick.value = inEvent.jhat.value;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
+	  }
+	  
+	  #ifdef BLACKBERRY
+	  case SDL_SYSWMEVENT:
+	  {
+         Event syswm(etSysWM);
+		 syswm.value = (int)inEvent.syswm.msg->event;
+		 sgSDLFrame->ProcessEvent(syswm);
+	  }
+	  #endif
+	  
+   }
+}
+
+
+#ifdef EMSCRIPTEN
+void loop () {
+	
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		ProcessEvent (event);
+	   // if (sgDead) break;
+		event.type = -1;
+	 }
+	 
+	 Event poll(etPoll);
+	 sgSDLFrame->ProcessEvent(poll);
+	
+	
+}
+#endif
+
+
+
+
 
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    unsigned int inFlags, const char *inTitle, Surface *inIcon )
@@ -966,9 +1233,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    sgSDLFrame = new SDLFrame( screen, sdl_flags, is_opengl, inWidth, inHeight );
 
    inOnFrame(sgSDLFrame);
-
+   
    #ifdef EMSCRIPTEN
-   emscripten_set_main_loop (StartAnimation, 30, true);
+   emscripten_set_main_loop (loop, 30, true);
    #else
    StartAnimation();
    #endif
@@ -1102,248 +1369,8 @@ Uint32 OnTimer(Uint32 interval, void *)
 }
 
 
-void AddModStates(int &ioFlags,int inState = -1)
-{
-   int state = inState==-1 ? SDL_GetModState() : inState;
-   if (state & KMOD_SHIFT) ioFlags |= efShiftDown;
-   if (state & KMOD_CTRL) ioFlags |= efCtrlDown;
-   if (state & KMOD_ALT) ioFlags |= efAltDown;
-   if (state & KMOD_META) ioFlags |= efCommandDown;
-	
- 
-	int m = SDL_GetMouseState(0,0);
-	if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
-	if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
-	if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
-		
-
-	ioFlags |= efPrimaryTouch;
-   ioFlags |= efNoNativeClick;
-}
-
-#define SDL_TRANS(x) case SDLK_##x: return key##x;
-
-int SDLKeyToFlash(int inKey,bool &outRight)
-{
-   outRight = (inKey==SDLK_RSHIFT || inKey==SDLK_RCTRL ||
-               inKey==SDLK_RALT || inKey==SDLK_RMETA || inKey==SDLK_RSUPER);
-   if (inKey>=keyA && inKey<=keyZ)
-      return inKey;
-   if (inKey>=SDLK_0 && inKey<=SDLK_9)
-      return inKey - SDLK_0 + keyNUMBER_0;
-   if (inKey>=SDLK_KP0 && inKey<=SDLK_KP9)
-      return inKey - SDLK_KP0 + keyNUMPAD_0;
-
-   if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
-      return inKey - SDLK_F1 + keyF1;
 
 
-   switch(inKey)
-   {
-      case SDLK_RALT:
-      case SDLK_LALT:
-         return keyALTERNATE;
-      case SDLK_RSHIFT:
-      case SDLK_LSHIFT:
-         return keySHIFT;
-      case SDLK_RCTRL:
-      case SDLK_LCTRL:
-         return keyCONTROL;
-      case SDLK_LMETA:
-      case SDLK_RMETA:
-         return keyCOMMAND;
-
-      case SDLK_CAPSLOCK: return keyCAPS_LOCK;
-      case SDLK_PAGEDOWN: return keyPAGE_DOWN;
-      case SDLK_PAGEUP: return keyPAGE_UP;
-      case SDLK_EQUALS: return keyEQUAL;
-      case SDLK_RETURN:
-      case SDLK_KP_ENTER:
-         return keyENTER;
-
-      SDL_TRANS(BACKQUOTE)
-      SDL_TRANS(BACKSLASH)
-      SDL_TRANS(BACKSPACE)
-      SDL_TRANS(COMMA)
-      SDL_TRANS(DELETE)
-      SDL_TRANS(DOWN)
-      SDL_TRANS(END)
-      SDL_TRANS(ESCAPE)
-      SDL_TRANS(HOME)
-      SDL_TRANS(INSERT)
-      SDL_TRANS(LEFT)
-      SDL_TRANS(LEFTBRACKET)
-      SDL_TRANS(MINUS)
-      SDL_TRANS(PERIOD)
-      SDL_TRANS(QUOTE)
-      SDL_TRANS(RIGHT)
-      SDL_TRANS(RIGHTBRACKET)
-      SDL_TRANS(SEMICOLON)
-      SDL_TRANS(SLASH)
-      SDL_TRANS(SPACE)
-      SDL_TRANS(TAB)
-      SDL_TRANS(UP)
-   }
-
-   return inKey;
-}
-
-std::map<int,wchar_t> sLastUnicode;
-
-
-void ProcessEvent(SDL_Event &inEvent)
-{
-
-  switch(inEvent.type)
-   {
-      case SDL_QUIT:
-      {
-         Event close(etQuit);
-         sgSDLFrame->ProcessEvent(close);
-         break;
-      }
-	   case SDL_ACTIVEEVENT:
-      {
-         if (inEvent.active.state & SDL_APPINPUTFOCUS)
-         {
-            Event activate( inEvent.active.gain ? etGotInputFocus : etLostInputFocus );
-            sgSDLFrame->ProcessEvent(activate);
-         }
-	
-         if (inEvent.active.state & SDL_APPACTIVE)
-         {
-            Event activate( inEvent.active.gain ? etActivate : etDeactivate );
-            sgSDLFrame->ProcessEvent(activate);
-         }
-		   break;
-	   }
-      case SDL_MOUSEMOTION:
-      {
-         Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
-		 #if defined(WEBOS) || defined(BLACKBERRY)
-		 mouse.value = inEvent.motion.which;
-		 mouse.flags |= efLeftDown;
-		 #else
-		 AddModStates(mouse.flags);
-		 #endif
-         sgSDLFrame->ProcessEvent(mouse);
-         break;
-      }
-      case SDL_MOUSEBUTTONDOWN:
-      {
-         Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
-         #if defined(WEBOS) || defined(BLACKBERRY)
-		 mouse.value = inEvent.motion.which;
-		 mouse.flags |= efLeftDown;
-		 #else
-		 AddModStates(mouse.flags);
-		 #endif
-         sgSDLFrame->ProcessEvent(mouse);
-         break;
-      }
-      case SDL_MOUSEBUTTONUP:
-      {
-         Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
-		 #if defined(WEBOS) || defined(BLACKBERRY)
-		 mouse.value = inEvent.motion.which;
-		 #else
-		 AddModStates(mouse.flags);
-		 #endif
-         sgSDLFrame->ProcessEvent(mouse);
-         break;
-      }
-
-      case SDL_KEYDOWN:
-      case SDL_KEYUP:
-      {
-         Event key(inEvent.type==SDL_KEYDOWN ? etKeyDown : etKeyUp );
-         bool right;
-         key.value = SDLKeyToFlash(inEvent.key.keysym.sym,right);
-         if (inEvent.type==SDL_KEYDOWN)
-         {
-            key.code = key.value==keyBACKSPACE ? keyBACKSPACE : inEvent.key.keysym.unicode;
-            sLastUnicode[inEvent.key.keysym.scancode] = key.code;
-         }
-         else
-            // SDL does not provide unicode on key up, so remember it,
-            //  keyed by scancode
-            key.code = sLastUnicode[inEvent.key.keysym.scancode];
-
-         AddModStates(key.flags,inEvent.key.keysym.mod);
-         if (right)
-            key.flags |= efLocationRight;
-         sgSDLFrame->ProcessEvent(key);
-         break;
-      }
-
-	  case SDL_VIDEOEXPOSE:
-	  {
-			Event poll(etPoll);
-			sgSDLFrame->ProcessEvent(poll);
-         break;
-	  }
-      case SDL_VIDEORESIZE:
-      {
-         Event resize(etResize,inEvent.resize.w,inEvent.resize.h);
-         sgSDLFrame->Resize(inEvent.resize.w,inEvent.resize.h);
-         sgSDLFrame->ProcessEvent(resize);
-         break;
-      }
-	  
-	  case SDL_JOYAXISMOTION:
-	  {
-         Event joystick(etJoyAxisMove);
-         joystick.id = inEvent.jaxis.which;
-         joystick.code = inEvent.jaxis.axis;
-         joystick.value = inEvent.jaxis.value;
-         sgSDLFrame->ProcessEvent(joystick);
-         break;
-	  }
-	  case SDL_JOYBALLMOTION:
-	  {
-         Event joystick(etJoyBallMove, inEvent.jball.xrel, inEvent.jball.yrel);
-         joystick.id = inEvent.jball.which;
-         joystick.code = inEvent.jball.ball;
-         sgSDLFrame->ProcessEvent(joystick);
-         break;
-	  }
-	  case SDL_JOYBUTTONDOWN:
-	  {
-         Event joystick(etJoyButtonDown);
-         joystick.id = inEvent.jbutton.which;
-         joystick.code = inEvent.jbutton.button;
-         sgSDLFrame->ProcessEvent(joystick);
-         break;
-	  }
-	  case SDL_JOYBUTTONUP:
-	  {
-         Event joystick(etJoyButtonUp);
-         joystick.id = inEvent.jbutton.which;
-         joystick.code = inEvent.jbutton.button;
-         sgSDLFrame->ProcessEvent(joystick);
-         break;
-	  }
-	  case SDL_JOYHATMOTION:
-	  {
-         Event joystick(etJoyHatMove);
-         joystick.id = inEvent.jhat.which;
-         joystick.code = inEvent.jhat.hat;
-		 joystick.value = inEvent.jhat.value;
-         sgSDLFrame->ProcessEvent(joystick);
-         break;
-	  }
-	  
-	  #ifdef BLACKBERRY
-	  case SDL_SYSWMEVENT:
-	  {
-         Event syswm(etSysWM);
-		 syswm.value = (int)inEvent.syswm.msg->event;
-		 sgSDLFrame->ProcessEvent(syswm);
-	  }
-	  #endif
-	  
-   }
-}
 
 
 #ifdef WEBOS
@@ -1382,9 +1409,7 @@ void StartAnimation()
          }
          
          ProcessEvent(event);
-		 #ifndef EMSCRIPTEN
          if (sgDead) break;
-		 #endif
          event.type = SDL_NOEVENT;
    #endif
 		 while (SDL_PollEvent(&event)) {
