@@ -52,6 +52,15 @@ class TestRunner {
 			Sys.println('-- $testCase');
 			if (testCase.endsWith("NMETest")) {
 				var nmml = path + testCase.replace(".", "/").withoutExtension() + ".nmml";
+				//if custom nmml does not exist
+				if (!FileSystem.exists(nmml)) {
+					nmml = "bin/NMETest.nmml";
+					var nmmlContent = new haxe.Template(File.getContent(path + "NMETest.tpl.nmml")).execute({
+						testCase: testCase
+					});
+					File.saveContent(nmml, nmmlContent);
+				}
+				
 				if (!(
 					runProcess("haxelib", 'run nme test $nmml neko'.split(" ")) == 0
 				)) {
@@ -73,6 +82,15 @@ class TestRunner {
 			Sys.println('-- $testCase');
 			if (testCase.endsWith("NMETest")) {
 				var nmml = path + testCase.replace(".", "/").withoutExtension() + ".nmml";
+				//if custom nmml does not exist
+				if (!FileSystem.exists(nmml)) {
+					nmml = "bin/NMETest.nmml";
+					var nmmlContent = new haxe.Template(File.getContent(path + "NMETest.tpl.nmml")).execute({
+						testCase: testCase
+					});
+					File.saveContent(nmml, nmmlContent);
+				}
+				
 				var compileArgs = 'run nme test $nmml cpp'.split(" ");
 				
 				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
@@ -116,6 +134,15 @@ class TestRunner {
 			Sys.println('-- $testCase');
 			if (testCase.endsWith("NMETest")) {
 				var nmml = path + testCase.replace(".", "/").withoutExtension() + ".nmml";
+				//if custom nmml does not exist
+				if (!FileSystem.exists(nmml)) {
+					nmml = "bin/NMETest.nmml";
+					var nmmlContent = new haxe.Template(File.getContent(path + "NMETest.tpl.nmml")).execute({
+						testCase: testCase
+					});
+					File.saveContent(nmml, nmmlContent);
+				}
+				
 				if (!(
 					runProcess("haxelib", 'run nme build $nmml html5'.split(" ")) == 0 &&
 					runProcess("phantomjs", ["bin/nmetest.PhantomRunner.js", "html5/bin/index.html"]) == 0
