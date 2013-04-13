@@ -1,3 +1,19 @@
+#if emscripten
+class ApplicationMain {
+	
+	public static function main () {
+		
+		trace ("hello from ApplicationMain");
+		
+		Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+		
+	}
+	
+}
+#else
+
+
+
 import nme.Assets;
 
 #if (!macro || !haxe3)
@@ -284,4 +300,5 @@ class DocumentClass {
 	}
 	
 }
+#end
 #end
