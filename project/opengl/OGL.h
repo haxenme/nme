@@ -1,7 +1,7 @@
 #ifndef INCLUDED_OGL_H
 #define INCLUDED_OGL_H
 
-#if defined(BLACKBERRY) || defined(ANDROID) || defined(WEBOS) || defined(GPH) || defined(RASPBERRYPI)
+#if defined(BLACKBERRY) || defined(ANDROID) || defined(WEBOS) || defined(GPH) || defined(RASPBERRYPI) || defined(EMSCRIPTEN)
 
 #define NME_GLES
 

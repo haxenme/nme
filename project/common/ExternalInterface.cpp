@@ -1,4 +1,4 @@
-#ifndef IPHONE
+#ifndef STATIC_LINK
 #define IMPLEMENT_API
 #endif
 
@@ -3935,13 +3935,13 @@ DEFINE_PRIM(nme_lzma_decode,1);
 
 
 // Reference this to bring in all the symbols for the static library
-#ifdef IPHONE
+#ifdef STATIC_LINK
 extern "C" int nme_oglexport_register_prims();
 #endif
 
 extern "C" int nme_register_prims()
 {
-   #ifdef IPHONE
+   #ifdef STATIC_LINK
    nme_oglexport_register_prims();
    #endif
    return 0;

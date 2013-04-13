@@ -24,6 +24,7 @@
    <set name="ogl" value="1" if="android"/>
    <set name="ogl" value="1" if="webos"/>
    <set name="ogl" value="1" if="blackberry"/>
+   <set name="ogl" value="1" if="emscripten"/>
    <set name="nmeegl" value="1" if="rpi"/>
    
    <set name="nocurl" value="1" if="winrt"/>
