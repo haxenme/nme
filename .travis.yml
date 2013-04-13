@@ -1,0 +1,41 @@
+language: node_js
+node_js:
+  - 0.6
+# env:
+#   - "NME_UNIT_TEST=html5"
+#   - "NME_UNIT_TEST=cross"
+before_install:
+  - sudo apt-get install python-software-properties -y # for the next command
+  - sudo add-apt-repository ppa:eyecreate/haxe -y
+  - sudo apt-get update
+  - sudo apt-get install haxe -y
+  - sudo apt-get install gcc-multilib g++-multilib -y  # since VM is 64bit but hxcpp builds 32bit by default
+  - sudo apt-get install mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev -y # for nme
+  - mkdir ~/haxelib
+  - haxelib setup ~/haxelib
+  - haxelib install pdiff-hx
+  - haxelib install utest
+  - haxelib install format
+  - haxelib install hscript
+  - haxelib install phantomjs
+  - sudo apt-get install xsltproc -y
+  # NME dev
+  - haxelib dev nme $(pwd)
+  - haxelib install nmedev
+  - haxelib run nme rebuild tools
+  - haxelib run nme rebuild linux
+  # emulate video device
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  # dummy audio device
+  - "export AUDIODEV=null"
+  # unit test output
+  - mkdir bin
+
+before_script:
+  - make clean all -C tools/smoke.jeash.com
+  - "cd tools/smoke.jeash.com && node webserver.js &"
+
+script:
+  - make test -C tools/smoke.jeash.com
+  - haxe tools/unit-test/TestRunner.hxml && neko bin/nmetest.TestRunner.n

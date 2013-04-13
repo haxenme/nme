@@ -1,0 +1,5 @@
+-cp source
+-main Welcome
+-neko welcome.n
+-lib nme
+-lib gm2d

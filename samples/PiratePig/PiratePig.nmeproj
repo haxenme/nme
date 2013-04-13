@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">Android</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4B226737-B02A-44DF-908A-64CC112FB388}</ProjectGuid>
+    <TargetNMMLFile>project.nmml</TargetNMMLFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Android' ">
+    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|BlackBerry' ">
+    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Flash' ">
+    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|HTML5' ">
+    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iOS' ">
+    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>.</OutputPath>
+    <AdditionalArguments>-simulator</AdditionalArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Linux' ">
+    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Mac' ">
+    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|webOS' ">
+    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Windows' ">
+    <DebugSymbols>True</DebugSymbols>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Android' ">
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|BlackBerry' ">
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Flash' ">
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|HTML5' ">
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iOS' ">
+    <OutputPath>.</OutputPath>
+    <AdditionalArguments>-simulator</AdditionalArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Linux' ">
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Mac' ">
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|webOS' ">
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Windows' ">
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Source\com\eclecticdesignstudio\piratepig\PiratePig.hx" />
+    <Compile Include="Source\com\eclecticdesignstudio\piratepig\PiratePigGame.hx" />
+    <Compile Include="Source\com\eclecticdesignstudio\piratepig\Tile.hx" />
+    <Compile Include="Assets\fonts\FreebooterUpdated.ttf" />
+    <Compile Include="Assets\fonts\FreebooterUpdated.ttf.hash" />
+    <Compile Include="Assets\images\background_tile.png" />
+    <Compile Include="Assets\images\center_bottom.png" />
+    <Compile Include="Assets\images\game_bear.png" />
+    <Compile Include="Assets\images\game_bunny_02.png" />
+    <Compile Include="Assets\images\game_carrot.png" />
+    <Compile Include="Assets\images\game_lemon.png" />
+    <Compile Include="Assets\images\game_panda.png" />
+    <Compile Include="Assets\images\game_piratePig.png" />
+    <Compile Include="Assets\images\icon.svg" />
+    <Compile Include="Assets\images\logo.png" />
+    <Compile Include="Assets\sounds\3.mp3" />
+    <Compile Include="Assets\sounds\3.ogg" />
+    <Compile Include="Assets\sounds\3.wav" />
+    <Compile Include="Assets\sounds\4.mp3" />
+    <Compile Include="Assets\sounds\4.ogg" />
+    <Compile Include="Assets\sounds\4.wav" />
+    <Compile Include="Assets\sounds\5.mp3" />
+    <Compile Include="Assets\sounds\5.ogg" />
+    <Compile Include="Assets\sounds\5.wav" />
+    <Compile Include="Assets\sounds\theme.mp3" />
+    <Compile Include="Assets\sounds\theme.ogg" />
+    <Compile Include="Assets\sounds\theme.wav" />
+    <Compile Include="Assets\sounds\whiff.mp3" />
+    <Compile Include="Assets\sounds\whiff.ogg" />
+    <Compile Include="Assets\sounds\whiff.wav" />
+    <Compile Include="project.nmml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets\" />
+  </ItemGroup>
+</Project>

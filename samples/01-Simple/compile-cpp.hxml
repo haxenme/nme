@@ -1,0 +1,4 @@
+-main Sample
+-cpp cpp
+-cp ../..
+--remap flash:nme

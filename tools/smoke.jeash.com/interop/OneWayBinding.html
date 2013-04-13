@@ -1,0 +1,13 @@
+<!DOCTYPE html PUBLIC "">
+<html xmlns:xi="http://www.w3.org/2001/XInclude">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Jeash Test for one way data binding</title>
+</head>
+<body>
+<input type="button" style="width: 200px; height: 80px" data-nme-binding-click="stage.dispatchEvent(createDOMEvent('smite', event))" data-nme-binding-mouseout="stage.dispatchEvent(createDOMEvent('sprint', event))" value="bound to jeash"></input>
+<div id="haxe:jeash" style="width: 1px; height: 1px;"></div>
+<div id="haxe:trace" style="position:absolute; bottom:0px; right:0px; height:80%; overflow:scroll"></div>
+<script src="OneWayBinding.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+-xml bin/cpp.xml
+-cpp obj/cpp
+-cp src/haxe
+--no-output
+-D xmldoc
+-D HXCPP_MULTI_THREADED
+--macro ImportAll.run()
+
+--next
+
+-xml bin/flash.xml
+-swf obj/flash.swf
+--no-output
+-cp src/haxe
+-swf-version 11.3
+--macro ImportAll.run()
+
+--next
+
+-xml bin/neko.xml
+-neko obj/neko.n
+--no-output
+-cp src/haxe
+--macro ImportAll.run()
+
+--next
+
+-xml bin/js.xml
+-js obj/js.js
+--no-output
+-cp src/haxe
+--macro ImportAll.run()
+
+--next
+
+-xml bin/nme.xml
+-cpp obj/nme
+-D display
+-cp src
+nme.ImportAll
+-D nme_document
+-lib nme
+--remap flash:nme
+--no-output
+
+--next
+
+-xml ../../haxedoc.xml
+-cpp obj/nme
+-cp src
+-D code_completion
+nme.ImportAll
+-D nme_document
+-lib nme
+--remap flash:nme
+--no-output
+
+--next
+
+-cmd ./chxdoc -o output --tmpDir=obj -f bin/cpp.xml,cpp -f bin/flash.xml,flash -f bin/neko.xml,neko -f bin/js.xml,js -f bin/nme.xml,nme --title="NME API Documentation" --subtitle="http://www.nme.io"
+#-cmd chxdoc.exe -o output --tmpDir=obj -f bin/cpp.xml,cpp -f bin/flash.xml,flash -f bin/neko.xml,neko -f bin/js.xml,js -f bin/nme.xml,nme --title="NME API Documentation" --subtitle="http://www.nme.io"

@@ -1,0 +1,3 @@
+-neko bin/nmetest.TestRunner.n
+-main nmetest.TestRunner
+-cp tools/unit-test

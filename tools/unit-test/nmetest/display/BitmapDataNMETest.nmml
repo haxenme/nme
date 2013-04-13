@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<meta title="BitmapDataNMETest" description="A really cool application!" package="nmetest.display.BitmapDataNMETest" version="1.0.0" company="NME" />
+	<app main="nmetest.display.BitmapDataNMETest" file="BitmapDataNMETest" path="../../../../bin" swf-version="11.3" />
+	
+	<window width="0" height="0" background="0xFFFFFF" fps="30" />
+	<window width="800" height="600" orientation="portrait" fps="60" background="0xFFFFFF" resizable="false" borderless="false" vsync="false" fullscreen="false" antialiasing="4"	/>
+	
+	<source path="../../../../tools/unit-test" />
+	<haxelib name="nme" />
+	<haxelib name="phantomjs" />
+</project>

@@ -1,0 +1,7 @@
+-cp src
+-js bin/test.js
+-main Test
+-resource assets/fonts/Arial.hash@Arial
+-cp ../../../..
+--remap flash:browser
+--no-traces

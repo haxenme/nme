@@ -1,0 +1,29 @@
+# js
+#-cp src
+#-cp ../../src
+#-cp ../../lib/nme/2,0,1
+#-cp include_js_v8
+#-main Test
+#-js bin_js_v8/Test.js
+#-D nme
+#--remap flash:nme
+#
+#--next
+
+# js
+-cp src
+-cp ../../../..
+-main Test
+-js bin_jeash/Test.js
+-D jeash
+--remap flash:browser
+
+#--next
+
+# flash
+#-cp src
+#-cp ../../src
+#-cp ../../../lib/nme/2,0,1
+#-main Test
+#-swf bin_swf/Test.swf
+#-swf-version 10

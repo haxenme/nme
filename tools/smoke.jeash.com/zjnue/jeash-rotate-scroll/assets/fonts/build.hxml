@@ -1,0 +1,3 @@
+# create font hash
+-cmd neko hxswfml.n ttf2hash Arial.ttf -glyphs [32-126]
+-cmd swfmill simple library.xml library.swf
