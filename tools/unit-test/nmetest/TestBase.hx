@@ -34,15 +34,36 @@ class TestBaseBuilder {
 						macro {
 							var printBuf = new StringBuf();
 							haxe.unit.TestRunner.print = printBuf.add;
+							
+							var log = js.Browser.window.console.log;
+							
 							var runner = new haxe.unit.TestRunner();
 							runner.add(new $clsName());
 							var success = runner.run();
-							js.Browser.window.console.log(printBuf.toString());
+							var resultDetail = printBuf.toString();
+							log(resultDetail);
 							
 							if (js.phantomjs.PhantomTools.inPhantom()) {
 								js.phantomjs.Phantom.exit(success ? 0 : 1);
 							} else {
-								js.Browser.window.console.log("success:" + success);
+								var resultDiv = js.Browser.document.createDivElement();
+								resultDiv.id = "result";
+								resultDiv.style.position = "absolute";
+								resultDiv.style.zIndex = "5";
+								resultDiv.style.backgroundColor = "rgba(255,255,255,0.75)";
+								js.Browser.document.body.appendChild(resultDiv);
+								
+								var div = js.Browser.document.createDivElement();
+								div.id = "detail";
+								div.innerHTML = StringTools.replace(resultDetail, "\n", "<br>");
+								resultDiv.appendChild(div);
+								
+								var div = js.Browser.document.createDivElement();
+								div.id = "success";
+								div.innerHTML = Std.string(success);
+								resultDiv.appendChild(div);
+								
+								log("success:" + success);
 							}
 						}
 					else
