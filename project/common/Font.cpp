@@ -426,12 +426,14 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
 }
 
 
-void nme_font_register_font(value inFontName, value inBytes)
+value nme_font_register_font(value inFontName, value inBytes)
 {
    AutoGCRoot *bytes = new AutoGCRoot(inBytes);
    sgRegisteredFonts[std::string(val_string(inFontName))] = bytes;
+   return alloc_null();
 }
 DEFINE_PRIM(nme_font_register_font,2)
+
 
 
 } // end namespace nme

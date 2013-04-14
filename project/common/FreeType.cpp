@@ -18,6 +18,11 @@
 #include "PDL.h"
 #endif
 
+#ifndef HX_WINDOWS
+#include <dirent.h>
+#include <sys/stat.h>
+#endif
+
 
 #include "ByteArray.h"
 
@@ -546,14 +551,17 @@ int outline_cubic_to(FVecPtr, FVecPtr , FVecPtr , void *user) {
 
 } // end namespace
 
-value freetype_init() {
+value freetype_init()
+{
    if (!nme::sgLibrary)
      FT_Init_FreeType( &nme::sgLibrary );
 
    return alloc_bool(nme::sgLibrary);
 }
+DEFINE_PRIM(freetype_init, 0);
 
-value freetype_import_font(value font_file, value char_vector, value em_size) {
+value freetype_import_font(value font_file, value char_vector, value em_size)
+{
    freetype_init();
 
    FT_Face           face;
@@ -564,16 +572,20 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
 
    result = nme::MyNewFace(val_string(font_file), 0, &face, NULL);
      
-   if (result == FT_Err_Unknown_File_Format) {
+   if (result == FT_Err_Unknown_File_Format)
+   {
       val_throw(alloc_string("Unknown file format!"));
       return alloc_null();
    
-   } else if(result != 0) {
+   }
+   else if (result != 0)
+   {
       val_throw(alloc_string("File open error!"));
       return alloc_null();
    }
 
-   if(!FT_IS_SCALABLE(face)) {
+   if (!FT_IS_SCALABLE(face))
+   {
       FT_Done_Face(face);
 
       val_throw(alloc_string("Font is not scalable!"));
@@ -581,13 +593,14 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
    }
 
 
-   int        em = val_int(em_size);
+   int em = val_int(em_size);
 
    FT_Set_Char_Size(face, em, em, 72, 72);
 
-   std::vector<glyph*>     glyphs;
+   std::vector<glyph*> glyphs;
 
-   FT_Outline_Funcs     ofn = {
+   FT_Outline_Funcs ofn =
+   {
       outline_move_to,
       outline_line_to,
       outline_conic_to,
@@ -596,45 +609,56 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
       0  // delta
    };
 
-   if(!val_is_null(char_vector)) {
+   if (!val_is_null(char_vector))
+   {
       // Import only specified characters
-      int         num_char_codes = val_array_size(char_vector);
+      int  num_char_codes = val_array_size(char_vector);
 
-      for(i = 0; i < num_char_codes; i++) {
+      for(i=0; i<num_char_codes; i++)
+      {
          FT_ULong    char_code = (FT_ULong)val_int(val_array_i(char_vector,i));
          FT_UInt     glyph_index = FT_Get_Char_Index(face, char_code);
 
-         if(glyph_index != 0 && FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0) {
-            glyph             *g = new glyph;
+         if(glyph_index != 0 && FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0)
+         {
+            glyph *g = new glyph;
 
             result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
-            if(result == 0) {
+            if(result == 0)
+            {
                g->index = glyph_index;
                g->char_code = char_code;
                g->metrics = face->glyph->metrics;
                glyphs.push_back(g);
-            } else
+            }
+            else
                delete g;
          }
       }
 
-   } else {
+   }
+   else
+   {
       // Import every character in face
       FT_ULong    char_code;
       FT_UInt     glyph_index;
 
       char_code = FT_Get_First_Char(face, &glyph_index);
-      while(glyph_index != 0) {
-         if(FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0) {
-            glyph             *g = new glyph;
+      while(glyph_index != 0)
+      {
+         if(FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0)
+         {
+            glyph *g = new glyph;
 
             result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
-            if(result == 0) {
+            if(result == 0)
+            {
                g->index = glyph_index;
                g->char_code = char_code;
                g->metrics = face->glyph->metrics;
                glyphs.push_back(g);
-            } else
+            }
+            else
                delete g;
          }
          
@@ -645,15 +669,18 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
    // Ascending sort by character codes
    std::sort(glyphs.begin(), glyphs.end(), glyph_sort_predicate());
 
-   std::vector<kerning>      kern;
-   if(FT_HAS_KERNING(face)) {
+   std::vector<kerning>  kern;
+   if (FT_HAS_KERNING(face))
+   {
       int         n = glyphs.size();
       FT_Vector   v;
 
-      for(i = 0; i < n; i++) {
-         int      l_glyph = glyphs[i]->index;
+      for(i = 0; i < n; i++)
+      {
+         int  l_glyph = glyphs[i]->index;
 
-         for(j = 0; j < n; j++) {
+         for(j = 0; j < n; j++)
+         {
             int   r_glyph = glyphs[j]->index;
 
             FT_Get_Kerning(face, l_glyph, r_glyph, FT_KERNING_DEFAULT, &v);
@@ -681,7 +708,8 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
 
    // 'glyphs' field
    value             neko_glyphs = alloc_array(num_glyphs);
-   for(i = 0; i < glyphs.size(); i++) {
+   for(i=0; i < glyphs.size(); i++)
+   {
       glyph          *g = glyphs[i];
       int            num_points = g->pts.size();
 
@@ -705,10 +733,12 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
    alloc_field(ret, val_id("glyphs"), neko_glyphs);
 
    // 'kerning' field
-   if(FT_HAS_KERNING(face)) {
+   if (FT_HAS_KERNING(face))
+   {
       value       neko_kerning = alloc_array(kern.size());
 
-      for(i = 0; i < kern.size(); i++) {
+      for(i = 0; i < kern.size(); i++)
+      {
          kerning  *k = &kern[i];
 
          value item = alloc_empty_object();
@@ -720,7 +750,8 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
       }
       
       alloc_field(ret, val_id("kerning"), neko_kerning);
-   } else
+   }
+   else
       alloc_field(ret, val_id("kerning"), alloc_null());
 
    FT_Done_Face(face);
@@ -728,7 +759,137 @@ value freetype_import_font(value font_file, value char_vector, value em_size) {
    return ret;
 }
 
-DEFINE_PRIM(freetype_init, 0);
 DEFINE_PRIM(freetype_import_font, 3);
+
+
+bool ChompEnding(std::string &ioName, const std::string &inEnding)
+{
+   int leadIn =  ioName.size() - inEnding.size();
+   if (leadIn>0 && ioName.substr(leadIn)==inEnding)
+   {
+      ioName = ioName.substr(0,leadIn);
+      return true;
+   }
+   return false;
+}
+
+void SendFont(std::string name, value inFunc)
+{
+   enum FontStyle
+   {
+      BOLD,
+      BOLD_ITALIC,
+      ITALIC,
+      REGULAR,
+   };
+   size_t pos = name.find_last_of('.');
+   if (pos!=std::string::npos)
+      name = name.substr(0,pos);
+
+   FontStyle style = REGULAR; 
+   if (ChompEnding(name," Bold Italic"))
+      style = BOLD_ITALIC;
+   else if (ChompEnding(name," Italic"))
+      style = ITALIC;
+   else if (ChompEnding(name," Bold"))
+      style = BOLD;
+      
+   val_call2(inFunc,alloc_string_len(name.c_str(),name.size()), alloc_int(style) );
+}
+
+#ifndef HX_WINRT
+
+
+void ItererateFontDir(const std::string &inDir, value inFunc, int inMaxDepth)
+{
+   #ifdef HX_WINDOWS
+   /*
+      TODO - test
+   std::string search = inDir + "*.ttf";
+
+	WIN32_FIND_DATA d;
+	HANDLE handle = FindFirstFile(search.c_str(),&d);
+	if( handle == INVALID_HANDLE_VALUE )
+	{
+		return;
+	}
+	while( true )
+   {
+		// skip magic dirs
+		//if( d.cFileName[0] != '.' || (d.cFileName[1] != 0 && (d.cFileName[1] != '.' || d.cFileName[2] != 0)) )
+      SendFont(d.cFileName,inFunc);
+
+		if( !FindNextFile(handle,&d) )
+			break;
+	}
+   */
+   #else
+	DIR *d = opendir(inDir.c_str());
+   if (d)
+   {
+	   while( true )
+      {
+	      struct dirent *e = readdir(d);
+         if (!e)
+           break;
+		   // skip magic dirs
+		   if( e->d_name[0] == '.' && (e->d_name[1] == 0 || (e->d_name[1] == '.' && e->d_name[2] == 0)) )
+			   continue;
+         std::string full = inDir + e->d_name + "/";
+
+         struct stat s;
+         if ( inMaxDepth>0 && stat(full.c_str(),&s)==0 && (s.st_mode & S_IFDIR) )
+         {
+            // TODO - record sub directory for later?
+            ItererateFontDir(full, inFunc, inMaxDepth-1);
+         }
+         else
+         {
+            const char *dot = e->d_name;
+            while(*dot && *dot!='.') dot++;
+            if (dot && !strcmp(dot+1,"ttf"))
+              SendFont(e->d_name,inFunc);
+         }
+      }
+	   closedir(d);
+	}
+   #endif
+}
+#endif
+
+value nme_font_iterate_device_fonts(value inFunc)
+{
+   #ifndef HX_WINRT
+      #ifdef HX_WINDOWS
+      _TCHAR win_path[2 * MAX_PATH];
+      GetWindowsDirectory(win_path, 2*MAX_PATH);
+      #endif
+   
+   
+      std::string fontDir = 
+   		#if defined (ANDROID)
+   			"/system/fonts/";
+   		#elif defined (WEBOS)
+   			"/usr/share/fonts/";
+         #elif defined (BLACKBERRY)
+            "/usr/fonts/font_repository/";
+   		#elif defined(IPHONEOS)
+            "/System/Library/Fonts/Cache/";
+   		#elif defined(__APPLE__)
+            "/Library/Fonts/";
+   		#elif defined(HX_WINDOWS)
+           outFile = std::string(win_path) + "\\Fonts\\";
+   		#else
+   			"/usr/share/fonts/truetype/";
+         #endif
+   
+      ItererateFontDir(fontDir, inFunc, 1);
+   #endif
+   
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_font_iterate_device_fonts,1)
+
 
 
