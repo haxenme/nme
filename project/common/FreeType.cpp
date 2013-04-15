@@ -23,6 +23,11 @@
 #include <sys/stat.h>
 #endif
 
+#if defined(HX_WINDOWS) && !defined(HX_WINRT)
+#define NOMINMAX
+#include <windows.h>
+#include <tchar.h>
+#endif
 
 #include "ByteArray.h"
 
@@ -225,8 +230,6 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 }
 
 #elif defined(HX_WINDOWS)
-#include <windows.h>
-#include <tchar.h>
 
 #define strcasecmp stricmp
 
@@ -803,38 +806,35 @@ void SendFont(std::string name, value inFunc)
 void ItererateFontDir(const std::string &inDir, value inFunc, int inMaxDepth)
 {
    #ifdef HX_WINDOWS
-   /*
-      TODO - test
    std::string search = inDir + "*.ttf";
 
-	WIN32_FIND_DATA d;
-	HANDLE handle = FindFirstFile(search.c_str(),&d);
-	if( handle == INVALID_HANDLE_VALUE )
-	{
-		return;
-	}
-	while( true )
+   WIN32_FIND_DATA d;
+   HANDLE handle = FindFirstFile(search.c_str(),&d);
+   if( handle == INVALID_HANDLE_VALUE )
    {
-		// skip magic dirs
-		//if( d.cFileName[0] != '.' || (d.cFileName[1] != 0 && (d.cFileName[1] != '.' || d.cFileName[2] != 0)) )
+      return;
+   }
+   while( true )
+   {
+      // skip magic dirs
+      //if( d.cFileName[0] != '.' || (d.cFileName[1] != 0 && (d.cFileName[1] != '.' || d.cFileName[2] != 0)) )
       SendFont(d.cFileName,inFunc);
 
-		if( !FindNextFile(handle,&d) )
-			break;
-	}
-   */
+      if( !FindNextFile(handle,&d) )
+         break;
+   }
    #else
-	DIR *d = opendir(inDir.c_str());
+   DIR *d = opendir(inDir.c_str());
    if (d)
    {
-	   while( true )
+      while( true )
       {
-	      struct dirent *e = readdir(d);
+         struct dirent *e = readdir(d);
          if (!e)
            break;
-		   // skip magic dirs
-		   if( e->d_name[0] == '.' && (e->d_name[1] == 0 || (e->d_name[1] == '.' && e->d_name[2] == 0)) )
-			   continue;
+         // skip magic dirs
+         if( e->d_name[0] == '.' && (e->d_name[1] == 0 || (e->d_name[1] == '.' && e->d_name[2] == 0)) )
+            continue;
          std::string full = inDir + e->d_name + "/";
 
          struct stat s;
@@ -851,8 +851,8 @@ void ItererateFontDir(const std::string &inDir, value inFunc, int inMaxDepth)
               SendFont(e->d_name,inFunc);
          }
       }
-	   closedir(d);
-	}
+      closedir(d);
+   }
    #endif
 }
 #endif
@@ -861,26 +861,26 @@ value nme_font_iterate_device_fonts(value inFunc)
 {
    #ifndef HX_WINRT
       #ifdef HX_WINDOWS
-      _TCHAR win_path[2 * MAX_PATH];
+      char win_path[2 * MAX_PATH];
       GetWindowsDirectory(win_path, 2*MAX_PATH);
       #endif
    
    
       std::string fontDir = 
-   		#if defined (ANDROID)
-   			"/system/fonts/";
-   		#elif defined (WEBOS)
-   			"/usr/share/fonts/";
+         #if defined (ANDROID)
+            "/system/fonts/";
+         #elif defined (WEBOS)
+            "/usr/share/fonts/";
          #elif defined (BLACKBERRY)
             "/usr/fonts/font_repository/";
-   		#elif defined(IPHONEOS)
+         #elif defined(IPHONEOS)
             "/System/Library/Fonts/Cache/";
-   		#elif defined(__APPLE__)
+         #elif defined(__APPLE__)
             "/Library/Fonts/";
-   		#elif defined(HX_WINDOWS)
-           outFile = std::string(win_path) + "\\Fonts\\";
-   		#else
-   			"/usr/share/fonts/truetype/";
+         #elif defined(HX_WINDOWS)
+           std::string(win_path) + "\\Fonts\\";
+         #else
+            "/usr/share/fonts/truetype/";
          #endif
    
       ItererateFontDir(fontDir, inFunc, 1);
