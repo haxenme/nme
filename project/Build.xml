@@ -33,6 +33,8 @@
    
    <set name="NME_FORCE_GLES1" value="1" if="iphone" />
    
+   <set name="sdl_image" value="1" if="emscripten" />
+   
    <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
    
    <!-- Toggle this for openal experimental osx code -->
@@ -222,7 +224,7 @@
       <file name="common/ExternalInterface.cpp"/>
       <file name="common/Cursors.cpp"/>
       <file name="common/Input.cpp" unless="iphone" />
-      <file name="common/SurfaceIO.cpp" />
+      <file name="common/SurfaceIO.cpp" unless="sdl_image" />
       <file name="common/ManagedStage.cpp" unless="winrt" />
       <file name="common/CURL.cpp" unless="nocurl"/>
       <file name="common/Lzma.cpp"/>
@@ -315,6 +317,7 @@
       <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
       <compilerflag value="-DDYNAMIC_SDL" if="dynamic_sdl" />
       <compilerflag value="-DNME_MIXER" />
+	  <compilerflag value="-DSDL_IMAGE" if="sdl_image" />
       <file name="sdl/SDLStage.cpp"/>
       <file name="sdl/SDLSound.cpp" unless="openal"/>
       
@@ -373,6 +376,7 @@
       <lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="linux" unless="dynamic_sdl"/>
       
       <lib name="${THIRDPARTY_LIBS}libSDL_mixer${name_extra}${SLIBEXT}" if="sdl_static"/>
+      <lib name="${THIRDPARTY_LIBS}libSDL_image${name_extra}${SLIBEXT}" if="sdl_image" unless="emscripten" />
       <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
@@ -386,6 +390,7 @@
       <lib name="-L../ndll/BlackBerry" if="blackberry"/>
       
       <lib name="-lSDL" if="dynamic_sdl"/>
+      <!-- <lib name="-lSDL_image" if="sdl_image" unless="sdl_static"/> -->
       <lib name="-lSDL_mixer" if="dynamic_sdl"/>
       <lib name="-lvorbis" if="dynamic_sdl" unless="webos"/>
       <lib name="-logg" if="dynamic_sdl" unless="webos"/>

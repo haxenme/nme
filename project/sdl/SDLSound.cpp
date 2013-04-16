@@ -60,7 +60,9 @@ static bool Init()
       }
       Mix_ChannelFinished(onChannelDone);
       Mix_HookMusicFinished(onMusicDone);
+      #ifndef EMSCRIPTEN
       Mix_SetPostMix(onPostMix,0);
+      #endif
    }
 
    return sChannelsInit;
@@ -314,13 +316,15 @@ public:
    SDLSound(unsigned char *inData, int len)
    {
       IncRef();
-
+      
+      #ifndef EMSCRIPTEN
       mChunk = Mix_LoadWAV_RW(SDL_RWFromMem(inData, len), 1);
       if ( mChunk == NULL )
       {
          mError = SDL_GetError();
          // ELOG("Error %s (%s)", mError.c_str(), name );
       }
+      #endif
    }
    
    ~SDLSound()
@@ -465,13 +469,15 @@ public:
    SDLMusic(unsigned char *inData, int len)
    {
       IncRef();
-
+      
+      #ifndef EMSCRIPTEN
       mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(inData, len));
       if ( mMusic == NULL )
       {
          mError = SDL_GetError();
          ELOG("Error in music with len (%d)", len );
       }
+      #endif
    }
    ~SDLMusic()
    {

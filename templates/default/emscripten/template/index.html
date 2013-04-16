@@ -16,6 +16,7 @@
 		
 		var Module = {};
 		Module.canvas = document.getElementById("canvas");
+		::if DEBUG::Module.setStatus = console.log;::else::Module.setStatus = function(_) {};::end::
 		
 	</script>
 	
