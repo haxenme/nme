@@ -1276,7 +1276,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    inOnFrame(sgSDLFrame);
    
    #ifdef EMSCRIPTEN
-   emscripten_set_main_loop (loop, 30, true);
+   emscripten_set_main_loop (loop, 0, true);
    #else
    StartAnimation();
    #endif
