@@ -134,6 +134,13 @@
       
    </files>
    
+   <files id="emscripten">
+	   
+	   <compilerflag value="-Iinclude"/>
+	   <file name="linux/NativeFont.cpp"/>
+	   
+   </files>
+   
    
    <set name="dynamic_sdl" value="1" if="webos"/>
    
@@ -366,6 +373,7 @@
       <files id="android" if="android"/>
       <files id="webos" if="webos"/>
       <files id="blackberry" if="blackberry"/>
+      <files id="emscripten" if="emscripten"/>
       
       <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" if="iphone"/>
       <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
