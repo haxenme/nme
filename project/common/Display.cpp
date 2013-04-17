@@ -213,7 +213,7 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
 
          hit = mGfx->Render(inTarget,state);
          
-         if(IsInteractive())
+         if (IsInteractive())
             inState.mHitResult = state.mHitResult;
          else
             inState.mHitResult = state.mHitResult != NULL ? mParent : NULL;
@@ -224,12 +224,12 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
       }
 
       if (hit)
-	  {
-         if(IsInteractive())
+      {
+         if (IsInteractive())
             inState.mHitResult = this;
          else
             inState.mHitResult = mParent;
-	  }
+      }
    }
 }
 
@@ -679,7 +679,7 @@ void DirectRenderer::Render( const RenderTarget &inTarget, const RenderState &in
 
 
 // --- SimpleButton ------------------------------------------------
-SimpleButton::SimpleButton(bool inInitRef) : DisplayObject(inInitRef),
+SimpleButton::SimpleButton(bool inInitRef) : DisplayObjectContainer(inInitRef),
         enabled(true), useHandCursor(true), mMouseState(stateUp)
 {
    for(int i=0;i<stateSIZE; i++)
@@ -693,6 +693,12 @@ SimpleButton::~SimpleButton()
          mState[i]->DecRef();
 }
 
+void SimpleButton::RemoveChildFromList(DisplayObject *inChild)
+{
+   // This is called by 'setParent'
+}
+
+
 void SimpleButton::setState(int inState, DisplayObject *inObject)
 {
    if (inState>=0 && inState<stateSIZE)
@@ -700,9 +706,18 @@ void SimpleButton::setState(int inState, DisplayObject *inObject)
        if (inObject)
           inObject->IncRef();
        if (mState[inState])
+       {
+          bool inMultipleTimes = false;
+          for(int i=0;i<stateSIZE;i++)
+             if (i!=inState && mState[i]==inObject)
+                inMultipleTimes = true;
+          if (!inMultipleTimes)
+             mState[inState]->SetParent(0);
           mState[inState]->DecRef();
+       }
        mState[inState] = inObject;
-       DirtyCache();
+       if (inObject)
+          inObject->SetParent(this);
    }
 }
 

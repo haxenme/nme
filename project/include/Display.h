@@ -367,7 +367,7 @@ public:
    RenderFunc onRender;
 };
 
-class SimpleButton : public DisplayObject
+class SimpleButton : public DisplayObjectContainer
 {
 public:
    enum { stateUp=0, stateDown, stateOver, stateHitTest, stateSIZE };
@@ -376,6 +376,9 @@ public:
    ~SimpleButton();
 
    DisplayObject *mState[stateSIZE];
+   
+   void RemoveChildFromList(DisplayObject *inChild);
+
 
    void Render( const RenderTarget &inTarget, const RenderState &inState );
    void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke);
@@ -383,8 +386,6 @@ public:
    void ClearCacheDirty();
    bool NonNormalBlendChild();
    void DirtyCache(bool inParentOnly = false);
-
-   bool IsInteractive() const { return true; }
 
    bool getEnabled() const { return enabled; }
    void setEnabled(bool inEnabled) { enabled = inEnabled; }

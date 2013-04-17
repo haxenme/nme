@@ -50,9 +50,16 @@ class NMMLParser extends NMEProject {
 			process (path, useExtensionPath);
 			
 		}
-		
+
+      var environment = Sys.environment();
+      for(key in environment.keys())
+         Reflect.setField(baseTemplateContext, key, environment.get(key));
+
+
+      for(key in localDefines.keys())
+         Reflect.setField(baseTemplateContext, key, localDefines.get(key));
 	}
-	
+
 	
 	private function initialize ():Void {
 		
