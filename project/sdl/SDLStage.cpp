@@ -30,6 +30,10 @@
 #include <SDL_mixer.h>
 #endif
 
+#ifdef SDL_IMAGE
+#include <SDL_image.h>
+#endif
+
 #ifdef HX_WINDOWS
 #include <windows.h>
 #include <SDL_syswm.h>
@@ -133,10 +137,14 @@ public:
    int Height() const  { return mSurf->h; }
    PixelFormat Format()  const
    {
-		uint8 swap = mSurf->format->Bshift; // is 0 on argb
-		if (mSurf->flags & SDL_SRCALPHA)
-			return swap ? pfARGBSwap : pfARGB;
-		return swap ? pfXRGBSwap : pfXRGB;
+      #ifdef EMSCRIPTEN
+      uint8 swap = 0;
+      #else
+      uint8 swap = mSurf->format->Bshift; // is 0 on argb
+      #endif
+      if (mSurf->flags & SDL_SRCALPHA)
+         return swap ? pfARGBSwap : pfARGB;
+      return swap ? pfXRGBSwap : pfXRGB;
    }
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }
@@ -203,6 +211,39 @@ SDL_Surface *SurfaceToSDL(Surface *inSurface)
              0x00ff0000^swap, 0x0000ff00,
              0x000000ff^swap, 0xff000000 );
 }
+
+
+#ifdef SDL_IMAGE
+Surface *Surface::Load(const OSChar *inFilename)
+{
+   #ifdef HX_WINDOWS
+   char *filename = new char [wcslen(inFilename) + 1];
+   wcstombs(filename, inFilename, wcslen(inFilename));
+   SDL_Surface *img = IMG_Load(filename);
+   #else
+   SDL_Surface *img = IMG_Load(inFilename);
+   #endif
+   
+   if (img != NULL)
+   {
+	  Surface *result = new SDLSurf(img, true);
+      result->IncRef();
+      return result;
+   }
+   
+   return 0;
+}
+
+Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
+{
+   return 0;
+}
+
+bool Surface::Encode( ByteArray *outBytes,bool inPNG,double inQuality)
+{
+   return 0;
+}
+#endif
 
 
 SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
@@ -1235,7 +1276,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    inOnFrame(sgSDLFrame);
    
    #ifdef EMSCRIPTEN
-   emscripten_set_main_loop (loop, 30, true);
+   emscripten_set_main_loop (loop, 0, true);
    #else
    StartAnimation();
    #endif
