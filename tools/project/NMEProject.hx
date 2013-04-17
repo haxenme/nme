@@ -45,6 +45,7 @@ class NMEProject {
 	public var templateContext (get_templateContext, null):Dynamic;
 	public var templatePaths:Array <String>;
 	public var window:Window;
+   private var baseTemplateContext:Dynamic;
 	
 	private var defaultApp:ApplicationData;
 	private var defaultMeta:MetaData;
@@ -87,6 +88,7 @@ class NMEProject {
 		
 		initialize ();
 		
+      baseTemplateContext = {};
 		command = _command;
 		config = new PlatformConfig ();
 		debug = _debug;
@@ -175,6 +177,7 @@ class NMEProject {
 		
 		var project = new NMEProject ();
 		
+		ObjectHelper.copyFields (baseTemplateContext, project.baseTemplateContext);
 		ObjectHelper.copyFields (app, project.app);
 		project.architectures = architectures.copy ();
 		
@@ -499,10 +502,9 @@ class NMEProject {
 		
 	}
 	
-	
 	private function get_templateContext ():Dynamic {
 		
-		var context:Dynamic = {};
+		var context:Dynamic = baseTemplateContext;
 		
 		if (app == null) app = { };
 		if (meta == null) meta = { };

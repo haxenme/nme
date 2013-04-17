@@ -32,9 +32,11 @@ class ApplicationMain {
 		}
 		::end::
 		
+      ::if (DONT_MESS_WITH_TRACE==null)::
 		#if !fdb
 		haxe.Log.trace = flashTrace;
 		#end
+      ::end::
 		
 		if (call_real)
 			begin();
