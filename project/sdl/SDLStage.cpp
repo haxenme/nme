@@ -720,7 +720,9 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 
 SDLFrame *sgSDLFrame = 0;
+#ifndef EMSCRIPTEN
 SDL_Joystick *sgJoystick = 0;
+#endif
 
 
 void AddModStates(int &ioFlags,int inState = -1)
@@ -1089,7 +1091,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    int use_w = fullscreen ? 0 : inWidth;
    int use_h = fullscreen ? 0 : inHeight;
 
-#if defined(IPHONE) || defined(BLACKBERRY)
+#if defined(IPHONE) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
    sdl_flags |= SDL_NOFRAME;
 #else
    if (inIcon)
@@ -1254,6 +1256,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    PDL_ScreenTimeoutEnable(PDL_TRUE);
    #endif
    
+   #ifndef EMSCRIPTEN
    int numJoysticks = SDL_NumJoysticks();
    
    if (sgJoystickEnabled && numJoysticks > 0) {
@@ -1269,7 +1272,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 	   #endif
 	   
    }
-   
+   #endif
 
    sgSDLFrame = new SDLFrame( screen, sdl_flags, is_opengl, inWidth, inHeight );
 
@@ -1285,13 +1288,14 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 bool sgDead = false;
 
 void SetIcon( const char *path ) {
+   #ifndef EMSCRIPTEN
    initSDL();
-
+   
    SDL_Surface *surf = SDL_LoadBMP(path);
    
    if ( surf != NULL )
       SDL_WM_SetIcon( surf, NULL);
-
+   #endif
 }
 
 QuickVec<int>*  CapabilitiesGetScreenResolutions() {

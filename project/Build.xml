@@ -138,6 +138,7 @@
 	   
 	   <compilerflag value="-Iinclude"/>
 	   <file name="linux/NativeFont.cpp"/>
+	   <file name="emscripten/System.cpp"/>
 	   
    </files>
    

@@ -851,7 +851,9 @@ DEFINE_PRIM(nme_gl_uniform4fv,2);
 
 value nme_gl_vertex_attrib1f(value inLocation, value inV0)
 {
+   #ifndef EMSCRIPTEN
    glVertexAttrib1f(val_int(inLocation),val_number(inV0));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_vertex_attrib1f,2);
@@ -859,7 +861,9 @@ DEFINE_PRIM(nme_gl_vertex_attrib1f,2);
 
 value nme_gl_vertex_attrib2f(value inLocation, value inV0,value inV1)
 {
+   #ifndef EMSCRIPTEN
    glVertexAttrib2f(val_int(inLocation),val_number(inV0),val_number(inV1));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_vertex_attrib2f,3);
@@ -867,7 +871,9 @@ DEFINE_PRIM(nme_gl_vertex_attrib2f,3);
 
 value nme_gl_vertex_attrib3f(value inLocation, value inV0,value inV1,value inV2)
 {
+   #ifndef EMSCRIPTEN
    glVertexAttrib3f(val_int(inLocation),val_number(inV0),val_number(inV1),val_number(inV2));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_vertex_attrib3f,4);
@@ -875,7 +881,9 @@ DEFINE_PRIM(nme_gl_vertex_attrib3f,4);
 
 value nme_gl_vertex_attrib4f(value inLocation, value inV0,value inV1,value inV2, value inV3)
 {
+   #ifndef EMSCRIPTEN
    glVertexAttrib4f(val_int(inLocation),val_number(inV0),val_number(inV1),val_number(inV2),val_number(inV3));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_vertex_attrib4f,5);
@@ -885,6 +893,7 @@ DEFINE_PRIM(nme_gl_vertex_attrib4f,5);
 
 value nme_gl_vertex_attrib1fv(value inLocation,value inArray)
 {
+   #ifndef EMSCRIPTEN
    float *f = val_array_float(inArray);
    if (f)
       glVertexAttrib1fv(val_int(inLocation),f);
@@ -896,6 +905,7 @@ value nme_gl_vertex_attrib1fv(value inLocation,value inArray)
       else
          nme_gl_vertex_attrib1f(inLocation,val_array_i(inArray,0));
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_vertex_attrib1fv,2);
@@ -904,6 +914,7 @@ DEFINE_PRIM(nme_gl_vertex_attrib1fv,2);
 
 value nme_gl_vertex_attrib2fv(value inLocation,value inArray)
 {
+   #ifndef EMSCRIPTEN
    float *f = val_array_float(inArray);
    if (f)
       glVertexAttrib2fv(val_int(inLocation),f);
@@ -915,6 +926,7 @@ value nme_gl_vertex_attrib2fv(value inLocation,value inArray)
       else
          nme_gl_vertex_attrib2f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1));
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_vertex_attrib2fv,2);
@@ -923,6 +935,7 @@ DEFINE_PRIM(nme_gl_vertex_attrib2fv,2);
 
 value nme_gl_vertex_attrib3fv(value inLocation,value inArray)
 {
+   #ifndef EMSCRIPTEN
    float *f = val_array_float(inArray);
    if (f)
       glVertexAttrib3fv(val_int(inLocation),f);
@@ -934,6 +947,7 @@ value nme_gl_vertex_attrib3fv(value inLocation,value inArray)
       else
          nme_gl_vertex_attrib3f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2));
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_vertex_attrib3fv,2);
@@ -942,6 +956,7 @@ DEFINE_PRIM(nme_gl_vertex_attrib3fv,2);
 
 value nme_gl_vertex_attrib4fv(value inLocation,value inArray)
 {
+   #ifndef EMSCRIPTEN
    float *f = val_array_float(inArray);
    if (f)
       glVertexAttrib4fv(val_int(inLocation),f);
@@ -953,6 +968,7 @@ value nme_gl_vertex_attrib4fv(value inLocation,value inArray)
       else
          nme_gl_vertex_attrib4f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2),val_array_i(inArray,3));
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_vertex_attrib4fv,2);

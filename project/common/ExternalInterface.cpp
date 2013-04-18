@@ -3831,86 +3831,104 @@ DEFINE_PRIM(nme_tilesheet_add_rect,3);
 
 value nme_curl_initialize(value inCACertFilePath)
 {
-  URLLoader::initialize(val_string(inCACertFilePath));
-  return alloc_null();
+   #ifndef EMSCRIPTEN
+   URLLoader::initialize(val_string(inCACertFilePath));
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_initialize,1);
 
 value nme_curl_create(value inURLRequest)
 {
+   #ifndef EMSCRIPTEN
    URLRequest request;
    FromValue(inURLRequest,request);
-	URLLoader *loader = URLLoader::create(request);
-	return ObjectToAbstract(loader);
+   URLLoader *loader = URLLoader::create(request);
+   return ObjectToAbstract(loader);
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_create,1);
 
 value nme_curl_process_loaders()
 {
-	return alloc_bool(URLLoader::processAll());
+   #ifndef EMSCRIPTEN
+   return alloc_bool(URLLoader::processAll());
+   #endif
+   return alloc_bool(true);
 }
 DEFINE_PRIM(nme_curl_process_loaders,0);
 
 value nme_curl_update_loader(value inLoader,value outHaxeObj)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		alloc_field(outHaxeObj,_id_state, alloc_int(loader->getState()) );
-		alloc_field(outHaxeObj,_id_bytesTotal, alloc_int(loader->bytesTotal()) );
-		alloc_field(outHaxeObj,_id_bytesLoaded, alloc_int(loader->bytesLoaded()) );
-	}
-	return alloc_null();
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      alloc_field(outHaxeObj,_id_state, alloc_int(loader->getState()) );
+      alloc_field(outHaxeObj,_id_bytesTotal, alloc_int(loader->bytesTotal()) );
+      alloc_field(outHaxeObj,_id_bytesLoaded, alloc_int(loader->bytesLoaded()) );
+   }
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_update_loader,2);
 
 value nme_curl_get_error_message(value inLoader)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		return alloc_string(loader->getErrorMessage());
-	}
-	return alloc_null();
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      return alloc_string(loader->getErrorMessage());
+   }
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_get_error_message,1);
 
 value nme_curl_get_code(value inLoader)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		return alloc_int(loader->getHttpCode());
-	}
-	return alloc_null();
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      return alloc_int(loader->getHttpCode());
+   }
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_get_code,1);
 
 
 value nme_curl_get_data(value inLoader)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		ByteArray b = loader->releaseData();
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      ByteArray b = loader->releaseData();
       return b.mValue;
-	}
-	return alloc_null();
+   }
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_get_data,1);
 
 value nme_curl_get_cookies(value inLoader)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		std::vector<std::string> cookies;
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      std::vector<std::string> cookies;
       loader->getCookies(cookies);
       value result = alloc_array(cookies.size());
       for(int i=0;i<cookies.size();i++)
          val_array_set_i(result,i,alloc_string_len(cookies[i].c_str(),cookies[i].length()));
       return result;
-	}
+   }
+   #endif
    return alloc_array(0);
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);

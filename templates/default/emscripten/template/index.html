@@ -10,10 +10,7 @@
 	<!-- <div id="haxe:trace" style="position: absolute; z-index: 2147483647;::if !debug:: display: none;::end::"></div> -->
 	<!-- <div id="haxe:jeash" style="background-color: #::WIN_FLASHBACKGROUND::; width: ::if (WIN_WIDTH == 0)::100%::else::::WIN_WIDTH::px::end::; height: ::if (WIN_HEIGHT == 0)::100%::else::::WIN_HEIGHT::px::end::" data-framerate="::WIN_FPS::"></div> -->
 	
-	<canvas id="canvas"></canvas>
-	
-	::if DEBUG::<script type="text/javascript" src="./webgl-debug.js"></script>::end::
-	<script>function winParameters () { return ::WIN_PARAMETERS::; }</script>
+	<canvas id="canvas" style="background-color: #::WIN_FLASHBACKGROUND::; width: ::if (WIN_WIDTH == 0)::100%::else::::WIN_WIDTH::px::end::; height: ::if (WIN_HEIGHT == 0)::100%::else::::WIN_HEIGHT::px::end::"></canvas>
 	
 	<script type="text/javascript">
 		
@@ -23,55 +20,10 @@
 		
 	</script>
 	
-	::if USE_COMPRESSION::
-	<script type='text/javascript'>
-      
-        var decompressWorker = new Worker('decompress.js');
-        var decompressCallbacks = [];
-        var decompressions = 0;
-        Module["decompress"] = function(data, callback) {
-          var id = decompressCallbacks.length;
-          decompressCallbacks.push(callback);
-          decompressWorker.postMessage({ data: data, id: id });
-          if (Module['setStatus']) {
-            decompressions++;
-            Module['setStatus']('Decompressing...');
-          }
-        };
-        decompressWorker.onmessage = function(event) {
-          decompressCallbacks[event.data.id](event.data.data);
-          decompressCallbacks[event.data.id] = null;
-          if (Module['setStatus']) {
-            decompressions--;
-            if (decompressions == 0) {
-              Module['setStatus']('');
-            }
-          }
-        };
-        var compiledCodeXHR = new XMLHttpRequest();
-        compiledCodeXHR.open('GET', '::APP_FILE::.js.compress?' + Math.random(), true);
-        compiledCodeXHR.responseType = 'arraybuffer';
-        compiledCodeXHR.onload = function() {
-          var arrayBuffer = compiledCodeXHR.response;
-          if (!arrayBuffer) throw('Loading compressed code failed.');
-          var byteArray = new Uint8Array(arrayBuffer);
-		  alert(byteArray.length);
-          Module.decompress(byteArray, function(decompressed) {
-		  alert(decompressed.length);
-            var source = Array.prototype.slice.apply(decompressed).map(function(x) { return String.fromCharCode(x) }).join(''); // createObjectURL instead?
-            
-			alert(source);
-			var scriptTag = document.createElement('script');
-            scriptTag.setAttribute('type', 'text/javascript');
-            scriptTag.innerHTML = source;
-            document.body.appendChild(scriptTag);
-          });
-        };
-        compiledCodeXHR.send(null);
-		
-    </script>::end::
+	::if DEBUG::<script type="text/javascript" src="./webgl-debug.js"></script>::end::
 	
-	::if !USE_COMPRESSION::<script type="text/javascript" src="./::APP_FILE::.js"></script>::end::
+	<script>function winParameters () { return ::WIN_PARAMETERS::; }</script>
+	<script type="text/javascript" src="./::APP_FILE::.js"></script>
 	
 </body>
 </html>

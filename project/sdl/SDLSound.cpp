@@ -194,7 +194,9 @@ public:
          int samples_left = (int)mDynamicFillPos - (int)(sSoundPos-mDynamicStartPos);
          int ticks_left = samples_left*1000/44100;
          //printf("Expire in %d (%d)\n", samples_left, ticks_left );
+		 #ifndef EMSCRIPTEN
          Mix_ExpireChannel(mChannel, ticks_left>0 ? ticks_left : 1 );
+		 #endif
       }
    }
  
