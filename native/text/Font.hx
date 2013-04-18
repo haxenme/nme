@@ -59,16 +59,16 @@ class Font
       return result;
    }
    
-   public static function registerFont(font:Class<Dynamic>)
+   public static function registerFont(font:Class<Font>)
    {
-      var instance = cast (Type.createInstance (font, []), Font);
+      var instance = Type.createInstance (font, [ "", null, null ]);
       if (instance != null)
       {
          if (Reflect.hasField(font, "resourceName"))
          {
             nme_font_register_font (instance.fontName, ByteArray.fromBytes (Resource.getBytes(Reflect.field(font, "resourceName"))));
          }
-         nmeRegisteredFonts.push (instance);
+         nmeRegisteredFonts.push (cast instance);
       }
    }
 
