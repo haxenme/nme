@@ -255,6 +255,11 @@ class Stage extends DisplayObjectContainer
                nmeRender(true);
          }
       }
+	  #if emscripten
+	  else {
+		  nmeRender(true);
+	  }
+	  #end
    }
 
    /** @private */ private function nmeDoProcessStageEvent(inEvent:Dynamic):Float {
