@@ -26,10 +26,10 @@ typedef AgalInfoData = {
 typedef Constant = Array<Float>;
 
 class AgalInfo{
-    public var types : Hash<String>;
-    public var consts : Hash<Constant>;
-    public var storage : Hash<String>;
-    public var varnames : Hash<String>;
+    public var types : Map<String,String>;
+    public var consts : Map<String,Constant>;
+    public var storage : Map<String,String>;
+    public var varnames : Map<String,String>;
     public var info : String;
     public var agalasm : String;
 
@@ -42,8 +42,8 @@ class AgalInfo{
         agalasm = agalInfoData.agalasm;
     }
 
-    private function populate<Type>(data) : Hash<Type>{
-        var hash = new Hash();
+    private function populate<Type>(data) : Map<String,Type>{
+        var hash = new Map<String,Type>();
         for (key in Reflect.fields(data)) {
             hash.set(key, Reflect.field(data, key));
         }
