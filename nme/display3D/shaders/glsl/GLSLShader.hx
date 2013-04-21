@@ -14,6 +14,13 @@ import nme.display3D.shaders.ShaderUtils;
 
 import haxe.Json;
 
+#if !haxe3
+typedef StringMap<T> = Hash<T>;
+#else
+import haxe.ds.StringMap;
+#end
+
+
 typedef AgalInfoData = {
     types : Dynamic,
     consts : Dynamic,
@@ -26,10 +33,10 @@ typedef AgalInfoData = {
 typedef Constant = Array<Float>;
 
 class AgalInfo{
-    public var types : Map<String,String>;
-    public var consts : Map<String,Constant>;
-    public var storage : Map<String,String>;
-    public var varnames : Map<String,String>;
+    public var types : StringMap<String>;
+    public var consts : StringMap<Constant>;
+    public var storage : StringMap<String>;
+    public var varnames : StringMap<String>;
     public var info : String;
     public var agalasm : String;
 
@@ -42,8 +49,8 @@ class AgalInfo{
         agalasm = agalInfoData.agalasm;
     }
 
-    private function populate<Type>(data) : Map<String,Type>{
-        var hash = new Map<String,Type>();
+    private function populate<Type>(data) : StringMap<Type>{
+        var hash = new StringMap<Type>();
         for (key in Reflect.fields(data)) {
             hash.set(key, Reflect.field(data, key));
         }
