@@ -34,3 +34,4 @@ NME.iml
 out
 bin
 *.n
+!run.n
