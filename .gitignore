@@ -33,3 +33,5 @@ node_modules
 NME.iml
 out
 bin
+*.n
+!run.n
