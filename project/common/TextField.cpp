@@ -1313,7 +1313,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       if (group.Chars() && group.mFont)
       {
          uint32 group_tint =
-              inState.mColourTransform->Transform(group.mFormat->color(textColor) | 0xff000000);
+              inState.mColourTransform->Transform(textColor != NULL ? textColor : group.mFormat->color | 0xff000000);
          for(int c=0;c<group.Chars();c++)
          {
             int ch = group.mString[c];
