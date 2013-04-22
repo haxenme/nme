@@ -1003,8 +1003,9 @@ namespace nme {}
    }*/
    while(isRunning /*&& !sgTerminated*/)
    {
-       double delta = sgMainView->mStage->GetNextWake() - GetTimeStamp();
-       if (delta<0) delta = 0;
+       //double delta = sgMainView->mStage->GetNextWake() - GetTimeStamp();
+       double delta = 0.01;// This is saving a lot of cpu comparing to the previous delta and sets the loop to 100fps
+       //if (delta<0) delta = 0;
        if (CFRunLoopRunInMode(kCFRunLoopDefaultMode,delta,TRUE) != kCFRunLoopRunHandledSource)
        {
           sgMainView->mStage->OnPoll();
