@@ -20,15 +20,41 @@ class Font
    {
       if (inFilename == "")
       {
-         var className = Type.getClassName(Type.getClass(this));
-         fontName = className.split(".").pop();
+         var fontClass = Type.getClass(this);
+         if (Reflect.hasField(fontClass, "resourceName")) {
+            var bytes = ByteArray.fromBytes (Resource.getBytes(Reflect.field(fontClass, "resourceName")));
+            var details = loadBytes(bytes);
+			fontName = details.family_name;
+			if (details.is_bold && details.is_italic)
+            {
+               fontStyle = FontStyle.BOLD_ITALIC;
+            }
+            else if (details.is_bold)
+            {
+               fontStyle = FontStyle.BOLD;
+            }
+            else if (details.is_italic)
+            {
+               fontStyle = FontStyle.ITALIC;
+            }
+            else
+            {
+               fontStyle = FontStyle.REGULAR;
+            }
+			fontType = FontType.EMBEDDED;
+         } else {
+            var className = Type.getClassName(Type.getClass(this));
+            fontName = className.split(".").pop();
+			fontStyle = FontStyle.REGULAR;
+            fontType = FontType.EMBEDDED;
+         }
 	  }
       else
       {
          fontName = inFilename;
+         fontStyle = inStyle==null ? FontStyle.REGULAR : inStyle;
+         fontType = inType==null ? FontType.EMBEDDED : inType;
       }
-      fontStyle = inStyle==null ? FontStyle.REGULAR : inStyle;
-      fontType = inType==null ? FontType.EMBEDDED : inType;
    }
 
    public function toString() : String
@@ -55,7 +81,13 @@ class Font
 
    public static function load(inFilename:String):NativeFontData 
    {
-      var result = freetype_import_font(inFilename, null, 1024 * 20);
+      var result = freetype_import_font(inFilename, null, 1024 * 20, null);
+      return result;
+   }
+   
+   public static function loadBytes(inBytes:ByteArray):NativeFontData 
+   {
+      var result = freetype_import_font("", null, 1024 * 20, inBytes);
       return result;
    }
    
@@ -73,7 +105,7 @@ class Font
    }
 
    // Native Methods
-   private static var freetype_import_font = Loader.load("freetype_import_font", 3);
+   private static var freetype_import_font = Loader.load("freetype_import_font", 4);
    private static var nme_font_register_font = Loader.load("nme_font_register_font", 2);
    private static var nme_font_iterate_device_fonts = Loader.load("nme_font_iterate_device_fonts", 1);
 }
