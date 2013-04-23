@@ -137,6 +137,26 @@ class ArrayBufferView implements IMemoryRange
       buffer.writeShort(Std.int(v));
       #end
    }
+   
+   inline public function getInt32(bytePos:Int):Float 
+   {
+      #if cpp
+      untyped return __global__.__hxcpp_memory_get_ui32(bytes, bytePos + byteOffset);
+      #else
+      buffer.position = bytePos + byteOffset;
+      return buffer.readInt();
+      #end
+   }
+
+   inline public function setInt32(bytePos:Int, v:Float):Void 
+   {
+      #if cpp
+      untyped __global__.__hxcpp_memory_set_i32(bytes, bytePos + byteOffset, v);
+      #else
+      buffer.position = bytePos + byteOffset;
+      buffer.writeInt(Std.int(v));
+      #end
+   }
 }
 
 #end
