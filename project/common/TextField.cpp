@@ -133,6 +133,7 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
    if (defaultTextFormat)
       defaultTextFormat->DecRef();
    defaultTextFormat = inFmt;
+   textColor = defaultTextFormat->color;
    mLinesDirty = true;
    mGfxDirty = true;
    if (mCharGroups.empty() || (mCharGroups.size() == 1 && mCharGroups[0]->Chars() == 0))
@@ -208,6 +209,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 void TextField::setTextColor(int inCol)
 {
    textColor = inCol;
+   defaultTextFormat->color = inCol;
 }
 
 void TextField::setIsInput(bool inIsInput)
@@ -1313,7 +1315,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       if (group.Chars() && group.mFont)
       {
          uint32 group_tint =
-              inState.mColourTransform->Transform(textColor != NULL ? textColor : group.mFormat->color | 0xff000000);
+              inState.mColourTransform->Transform(group.mFormat->color(textColor) | 0xff000000);
          for(int c=0;c<group.Chars();c++)
          {
             int ch = group.mString[c];
