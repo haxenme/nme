@@ -141,7 +141,7 @@ class ArrayBufferView implements IMemoryRange
    inline public function getInt32(bytePos:Int):Float 
    {
       #if cpp
-      untyped return __global__.__hxcpp_memory_get_ui32(bytes, bytePos + byteOffset);
+      untyped return __global__.__hxcpp_memory_get_i32(bytes, bytePos + byteOffset);
       #else
       buffer.position = bytePos + byteOffset;
       return buffer.readInt();
