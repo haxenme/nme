@@ -1,4 +1,5 @@
 package nme;
+#if !haxe3
 
 
 #if flash
@@ -7,7 +8,11 @@ typedef Vector<T> = flash.Vector<T>;
 typedef Vector<T> = Array<T>;
 #end
 
-/*#if flash
+
+#else
+
+
+#if flash
 private typedef VectorData<T> = flash.Vector<T>;
 #else
 private typedef VectorData<T> = Array<T>;
@@ -32,9 +37,27 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public function concat(?a:VectorData<T>):VectorData<T> {
+	public function concat(?a:VectorData<T>):Vector<T> {
 		
 		return this.concat(a);
+		
+	}
+	
+	
+	public function copy():Vector<T> {
+		
+		#if flash
+		return this.slice();
+		#else
+		return this.copy();
+		#end
+		
+	}
+	
+	
+	public function iterator<T>():Iterator<T> {
+		
+		return this.iterator();
 		
 	}
 	
@@ -81,7 +104,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public function slice(pos:Int, ?end:Int):VectorData<T> {
+	public function slice(pos:Int, ?end:Int):Vector<T> {
 		
 		return this.slice(pos, end);
 		
@@ -95,7 +118,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public function splice(pos:Int, len:Int):VectorData<T> {
+	public function splice(pos:Int, len:Int):Vector<T> {
 		
 		return this.splice(pos, len);
 		
@@ -109,32 +132,48 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public function indexOf(x:T, ?from:Int):Int {
-		
-		return this.indexOf(x, from);
-		
-	}
-	
-	
-	public function lastIndexOf(x:T, ?from:Int):Int {
-		
-		return this.lastIndexOf(x, from);
-		
-	}
-	
-	
-	public inline static function ofArray<T>(a:Array<T>):VectorData<T> {
+	public function indexOf(x:T, ?from:Int = 0):Int {
 		
 		#if flash
-		return flash.Vector.ofArray (a);
+		return this.indexOf(x, from);
 		#else
-		return cast a;
+		for (i in from...this.length) {
+			if (this[i] == x) return i;
+		}
+		return -1;
 		#end
 		
 	}
 	
 	
-	public inline static function convert<T,U>(v:VectorData<T>):VectorData<U> {
+	public function lastIndexOf(x:T, ?from:Int = 0):Int {
+		
+		#if flash
+		return this.lastIndexOf(x, from);
+		#else
+		var i = this.length - 1;
+		while (i >= from) {
+			if (this[i] == x) return i;
+			i--;
+		}
+		return -1;
+		#end
+		
+	}
+	
+	
+	public inline static function ofArray<T>(a:Array<Dynamic>):Vector<T> {
+		
+		#if flash
+		return flash.Vector.ofArray (a);
+		#else
+		return new Vector<T>().concat (cast a);
+		#end
+		
+	}
+	
+	
+	public inline static function convert<T,U>(v:VectorData<T>):Vector<U> {
 		
 		#if flash
 		return flash.Vector.convert (v);
@@ -145,7 +184,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	@:from static public inline function fromArray<T>(a:Array<T>) {
+	@:from static public inline function fromArray<T>(a:Array<Dynamic>):Vector<T> {
 		
         #if flash
 		return cast flash.Vector.ofArray (a);
@@ -154,6 +193,15 @@ private typedef VectorData<T> = Array<T>;
 		#end
 		
     }
+	
+	
+	#if !flash
+	@:to public inline function toArray<T>():Array<T> {
+		
+		return this;
+		
+    }
+	#end
 	
 	
 	
@@ -203,4 +251,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-}*/
+}
+
+
+#end
