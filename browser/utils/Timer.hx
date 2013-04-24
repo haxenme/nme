@@ -42,7 +42,7 @@ class Timer extends EventDispatcher {
 		if (running) return;
 		
 		running = true;
-		timerId = untyped window.setTimeout(__onInterval, Std.int(delay));
+		timerId = untyped window.setInterval(__onInterval, Std.int(delay));
 		
 	}
 	
@@ -51,7 +51,7 @@ class Timer extends EventDispatcher {
 		
 		if (timerId != null) {
 			
-			untyped window.clearTimeout(timerId);
+			untyped window.clearInterval(timerId);
 			timerId = null;
 			
 		}
