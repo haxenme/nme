@@ -39,7 +39,7 @@ private typedef VectorData<T> = Array<T>;
 	
 	public function concat(?a:VectorData<T>):Vector<T> {
 		
-		return this.concat(a);
+		return cast this.concat(a);
 		
 	}
 	
@@ -47,7 +47,7 @@ private typedef VectorData<T> = Array<T>;
 	public function copy():Vector<T> {
 		
 		#if flash
-		return this.slice();
+		return cast this.concat();
 		#else
 		return this.copy();
 		#end
@@ -57,7 +57,11 @@ private typedef VectorData<T> = Array<T>;
 	
 	public function iterator<T>():Iterator<T> {
 		
+		#if flash
+		return new VectorIter(this);
+		#else
 		return this.iterator();
+		#end
 		
 	}
 	
@@ -104,9 +108,9 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public function slice(pos:Int, ?end:Int):Vector<T> {
+	public function slice(?pos:Int, ?end:Int):Vector<T> {
 		
-		return this.slice(pos, end);
+		return cast this.slice(pos, end);
 		
 	}
 	
@@ -120,7 +124,7 @@ private typedef VectorData<T> = Array<T>;
 	
 	public function splice(pos:Int, len:Int):Vector<T> {
 		
-		return this.splice(pos, len);
+		return cast this.splice(pos, len);
 		
 	}
 	
@@ -165,7 +169,7 @@ private typedef VectorData<T> = Array<T>;
 	public inline static function ofArray<T>(a:Array<Dynamic>):Vector<T> {
 		
 		#if flash
-		return flash.Vector.ofArray (a);
+		return cast flash.Vector.ofArray (a);
 		#else
 		return new Vector<T>().concat (cast a);
 		#end
@@ -176,7 +180,7 @@ private typedef VectorData<T> = Array<T>;
 	public inline static function convert<T,U>(v:VectorData<T>):Vector<U> {
 		
 		#if flash
-		return flash.Vector.convert (v);
+		return cast flash.Vector.convert (v);
 		#else
 		return cast v;
 		#end
@@ -184,7 +188,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	@:from static public inline function fromArray<T>(a:Array<Dynamic>):Vector<T> {
+	@:from static public inline function fromArray<T, U>(a:Array<U>):Vector<T> {
 		
         #if flash
 		return cast flash.Vector.ofArray (a);
@@ -252,6 +256,40 @@ private typedef VectorData<T> = Array<T>;
 	
 	
 }
+
+
+#if flash
+private class VectorIter<T> {
+	
+	
+	private var index:Int;
+    private var vector:flash.Vector<T>;
+	
+	
+    public function new(vector:flash.Vector<T>) {
+		
+		index = 0;
+        this.vector = vector;
+		
+    }
+	
+	
+    public function hasNext() {
+		
+        return (index < vector.length - 1);
+		
+    }
+	
+	
+    public function next() {
+		
+        return vector[index++];
+		
+    }
+	
+	
+}
+#end
 
 
 #end
