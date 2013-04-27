@@ -54,8 +54,8 @@ class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
       }
    }
 
-   inline public function __get(index:Int):Float { return getInt16(index << 1); }
-   inline public function __set(index:Int, v:Float):Void { setInt16(index << 1, v); }
+   inline public function __get(index:Int):Int { return getInt16(index << 1); }
+   inline public function __set(index:Int, v:Int):Void { setInt16(index << 1, v); }
 }
 
 #end

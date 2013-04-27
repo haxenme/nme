@@ -118,17 +118,17 @@ class ArrayBufferView implements IMemoryRange
       #end
    }
 
-   inline public function getInt16(bytePos:Int):Float 
+   inline public function getInt16(bytePos:Int):Int 
    {
       #if cpp
-      untyped return __global__.__hxcpp_memory_get_ui16(bytes, bytePos + byteOffset);
+      untyped return __global__.__hxcpp_memory_get_i16(bytes, bytePos + byteOffset);
       #else
       buffer.position = bytePos + byteOffset;
       return buffer.readShort();
       #end
    }
 
-   inline public function setInt16(bytePos:Int, v:Float):Void 
+   inline public function setInt16(bytePos:Int, v:Int):Void 
    {
       #if cpp
       untyped __global__.__hxcpp_memory_set_i16(bytes, bytePos + byteOffset, v);
@@ -138,7 +138,7 @@ class ArrayBufferView implements IMemoryRange
       #end
    }
    
-   inline public function getInt32(bytePos:Int):Float 
+   inline public function getInt32(bytePos:Int):Int 
    {
       #if cpp
       untyped return __global__.__hxcpp_memory_get_i32(bytes, bytePos + byteOffset);
@@ -148,7 +148,7 @@ class ArrayBufferView implements IMemoryRange
       #end
    }
 
-   inline public function setInt32(bytePos:Int, v:Float):Void 
+   inline public function setInt32(bytePos:Int, v:Int):Void 
    {
       #if cpp
       untyped __global__.__hxcpp_memory_set_i32(bytes, bytePos + byteOffset, v);
