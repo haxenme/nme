@@ -2727,32 +2727,32 @@ value ToValue(const TextFormatAlign &inTFA)
 }
 
 
-#define GTF(attrib) \
+#define GTF(attrib,ifSet) \
 { \
-   alloc_field(outValue, _id_##attrib, ToValue( inFormat.attrib.Get() ) ); \
+   if (!ifSet || inFormat.attrib.IsSet()) alloc_field(outValue, _id_##attrib, ToValue( inFormat.attrib.Get() ) ); \
 }
 
 
-void GetTextFormat(const TextFormat &inFormat, value &outValue)
+void GetTextFormat(const TextFormat &inFormat, value &outValue, bool inIfSet = false)
 {
-   GTF(align);
-   GTF(blockIndent);
-   GTF(bold);
-   GTF(bullet);
-   GTF(color);
-   GTF(font);
-   GTF(indent);
-   GTF(italic);
-   GTF(kerning);
-   GTF(leading);
-   GTF(leftMargin);
-   GTF(letterSpacing);
-   GTF(rightMargin);
-   GTF(size);
-   GTF(tabStops);
-   GTF(target);
-   GTF(underline);
-   GTF(url);
+   GTF(align,inIfSet);
+   GTF(blockIndent,inIfSet);
+   GTF(bold,inIfSet);
+   GTF(bullet,inIfSet);
+   GTF(color,inIfSet);
+   GTF(font,inIfSet);
+   GTF(indent,inIfSet);
+   GTF(italic,inIfSet);
+   GTF(kerning,inIfSet);
+   GTF(leading,inIfSet);
+   GTF(leftMargin,inIfSet);
+   GTF(letterSpacing,inIfSet);
+   GTF(rightMargin,inIfSet);
+   GTF(size,inIfSet);
+   GTF(tabStops,inIfSet);
+   GTF(target,inIfSet);
+   GTF(underline,inIfSet);
+   GTF(url,inIfSet);
 }
 
 
@@ -2770,6 +2770,20 @@ value nme_text_field_set_def_text_format(value inText,value inFormat)
 }
 
 DEFINE_PRIM(nme_text_field_set_def_text_format,2)
+
+value nme_text_field_get_text_format(value inText,value outFormat,value inStart,value inEnd)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      TextFormat *fmt = text->getTextFormat(val_int(inStart),val_int(inEnd));
+      GetTextFormat(*fmt,outFormat,true);
+   }
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_text_field_get_text_format,4)
+
 
 value nme_text_field_set_text_format(value inText,value inFormat,value inStart,value inEnd)
 {

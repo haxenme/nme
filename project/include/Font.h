@@ -44,7 +44,7 @@ class Optional
 public:
    Optional(const Optional &inRHS) : mVal(inRHS.mVal), mSet(inRHS.mSet) { }
    void operator = (const Optional &inRHS) { mVal = inRHS.mVal; mSet = inRHS.mSet; }
-
+   
    Optional(const T&inVal) : mVal(inVal), mSet(false) { }
    T& operator >>(T &outRHS) { if (mSet) outRHS = mVal; return mVal; }
    T& operator=(const T&inRHS) { mVal = inRHS; mSet = true; return mVal; }
@@ -53,6 +53,7 @@ public:
    T &Set() { mSet=true; return mVal; }
    const T &Get() const { return mVal; }
    void Apply(Optional<T> &inRHS) const { if (mSet) inRHS=mVal; }
+   void IfEquals(Optional<T> &inRHS) { if (mSet && (!inRHS.mSet || inRHS.mVal != mVal)) mSet = false; }
    bool IsSet() const { return mSet; }
 
   T &__Get() { return mVal; }

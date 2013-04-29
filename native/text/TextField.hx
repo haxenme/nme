@@ -62,7 +62,14 @@ class TextField extends InteractiveObject
                 var result: TextLineMetrics = new TextLineMetrics();
                 nme_text_field_get_line_metrics(nmeHandle, lineIndex, result);
                 return result;
-   }   
+   }
+   
+   public function getTextFormat(beginIndex:Int = -1, endIndex:Int = -1):TextFormat 
+   {
+      var result = new TextFormat();
+      nme_text_field_get_text_format(nmeHandle, result, beginIndex, endIndex);
+      return result;
+   } 
 
    public function setSelection(beginIndex:Int, endIndex:Int):Void 
    {
@@ -150,6 +157,7 @@ class TextField extends InteractiveObject
    private static var nme_text_field_set_background_color = Loader.load("nme_text_field_set_background_color", 2);
    private static var nme_text_field_get_text_width = Loader.load("nme_text_field_get_text_width", 1);
    private static var nme_text_field_get_text_height = Loader.load("nme_text_field_get_text_height", 1);
+   private static var nme_text_field_get_text_format = Loader.load("nme_text_field_get_text_format", 4);
    private static var nme_text_field_set_text_format = Loader.load("nme_text_field_set_text_format", 4);
    private static var nme_text_field_get_max_scroll_v = Loader.load("nme_text_field_get_max_scroll_v", 1);
    private static var nme_text_field_get_max_scroll_h = Loader.load("nme_text_field_get_max_scroll_h", 1);

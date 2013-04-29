@@ -156,6 +156,43 @@ void TextField::SplitGroup(int inGroup,int inPos)
    mLinesDirty = true;
 }
 
+TextFormat *TextField::getTextFormat(int inStart,int inEnd)
+{
+   TextFormat *commonFormat = NULL;
+   
+   for(int i=0;i<mCharGroups.size();i++)
+   {
+      CharGroup *charGroup = mCharGroups[i];
+      TextFormat *format = charGroup->mFormat;
+      
+      if (commonFormat == NULL)
+      {
+         commonFormat = new TextFormat (*format);
+      }
+      else
+      {
+         commonFormat->align.IfEquals(format->align);
+         commonFormat->blockIndent.IfEquals(format->blockIndent);
+         commonFormat->bullet.IfEquals(format->bullet);
+         commonFormat->color.IfEquals(format->color);
+         commonFormat->font.IfEquals(format->font);
+         commonFormat->indent.IfEquals(format->indent);
+         commonFormat->italic.IfEquals(format->italic);
+         commonFormat->kerning.IfEquals(format->kerning);
+         commonFormat->leading.IfEquals(format->leading);
+         commonFormat->leftMargin.IfEquals(format->leftMargin);
+         commonFormat->letterSpacing.IfEquals(format->letterSpacing);
+         commonFormat->rightMargin.IfEquals(format->rightMargin);
+         commonFormat->size.IfEquals(format->size);
+         commonFormat->tabStops.IfEquals(format->tabStops);
+         commonFormat->target.IfEquals(format->target);
+         commonFormat->underline.IfEquals(format->underline);
+         commonFormat->url.IfEquals(format->url);
+      }
+   }
+   return commonFormat;
+}
+
 void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 {
    if (!inFmt)
