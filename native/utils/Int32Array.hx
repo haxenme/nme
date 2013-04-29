@@ -1,6 +1,7 @@
 package native.utils;
 #if (cpp || neko)
 
+@:arrayAccess
 class Int32Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> 
 {
    static public inline var SBYTES_PER_ELEMENT = 4;
@@ -12,17 +13,18 @@ class Int32Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
    public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>) 
    {
       BYTES_PER_ELEMENT = 4;
-      var ints:Array<Int> = inBufferOrArray;
 
-      if (!Std.is(inBufferOrArray,ArrayBuffer) && ints != null) 
+      if (Std.is(inBufferOrArray,Int))
       {
-            if (inLen != null)
-            {
-                length = inLen;
-            }else
-            {
-                length = ints.length - inStart;
-            }
+         super( Std.int(inBufferOrArray)<<2  );
+      }
+      else if (Std.is(inBufferOrArray,Array))
+      {
+         var ints:Array<Int> = inBufferOrArray;
+         if (inLen != null)
+            length = inLen;
+         else
+            length = ints.length - inStart;
 
             // 4 bytes per element -> shift it by two bits to get the length in bytes
          super(length << 2);
@@ -53,8 +55,8 @@ class Int32Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
       }
    }
 
-   inline public function __get(index:Int):Int { return getInt32(index << 1); }
-   inline public function __set(index:Int, v:Int):Void { setInt32(index << 1, v); }
+   inline public function __get(index:Int):Int { return getInt32(index << 2); }
+   inline public function __set(index:Int, v:Int):Void { setInt32(index << 2, v); }
 }
 
 #end

@@ -20,10 +20,14 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float>
    public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>)
    {
       BYTES_PER_ELEMENT = 4;
-      var floats:Array<Float> = inBufferOrArray;
 
-      if (!Std.is(inBufferOrArray,ArrayBuffer) && floats != null)
+      if (Std.is(inBufferOrArray,Int))
       {
+         super( Std.int(inBufferOrArray)*BYTES_PER_ELEMENT );
+      }
+      else if (Std.is(inBufferOrArray,Array))
+      {
+         var floats:Array<Float> = inBufferOrArray;
          if (inLen != null)
             length = inLen;
          else

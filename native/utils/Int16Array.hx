@@ -13,17 +13,18 @@ class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
    public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>) 
    {
       BYTES_PER_ELEMENT = 2;
-      var ints:Array<Int> = inBufferOrArray;
 
-      if (!Std.is(inBufferOrArray,ArrayBuffer) && ints != null) 
+      if (Std.is(inBufferOrArray,Int))
       {
-            if (inLen != null)
-            {
-                length = inLen;
-            }else
-            {
-                length = ints.length - inStart;
-            }
+         super( Std.int(inBufferOrArray) << 1 );
+      }
+      else if (Std.is(inBufferOrArray,Array))
+      {
+         var ints:Array<Int> = inBufferOrArray;
+         if (inLen != null)
+            length = inLen;
+         else
+            length = ints.length - inStart;
 
             // 2 bytes per element -> shift it by one bits to get the lenght in bytes
          super(length << 1);
