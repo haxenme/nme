@@ -80,7 +80,7 @@ class Sound extends EventDispatcher
    public function loadCompressedDataFromByteArray(bytes:nme.utils.ByteArray, length:Int, forcePlayAsMusic:Bool = false):Void 
    {
       bytesLoaded = bytesTotal = length;
-      nmeHandle = nme_sound_from_data(bytes.getData(), length, forcePlayAsMusic);
+      nmeHandle = nme_sound_from_data(bytes, length, forcePlayAsMusic);
 
       if (nmeHandle == null) 
       {

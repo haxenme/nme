@@ -135,7 +135,7 @@ public:
    {
    }
    
-   MFSound(unsigned char *inData, int len, bool inForceMusic)
+   MFSound(float *inData, int len, bool inForceMusic)
    {
    }
 
@@ -178,7 +178,7 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
    return new MFSound(inFilename, inForceMusic);
 }
 
-Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic)
+Sound *Sound::Create(float *inData, int len, bool inForceMusic)
 {
    return new MFSound(inData, len, inForceMusic);
 }

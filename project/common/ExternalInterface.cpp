@@ -3554,12 +3554,9 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
    Sound *sound;
   // printf("trying bytes with length %d", length);
    if (!val_is_null(inData) && length > 0) {
-      buffer buf = val_to_buffer(inData);
-      if (buf == 0) {
-         val_throw(alloc_string("Bad ByteArray"));
-      }
+      ByteArray buf = ByteArray(inData);
       //printf("I'm here! trying bytes with length %d", length);
-      sound = Sound::Create((unsigned char *)buffer_data(buf), length, val_bool(inForceMusic) );
+      sound = Sound::Create((float *)buf.Bytes(), length, val_bool(inForceMusic) );
    } else {
 	   val_throw(alloc_string("Empty ByteArray"));
    }
