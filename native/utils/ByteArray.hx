@@ -203,7 +203,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
 
    public inline function readBoolean():Bool 
    {
-      return(position + 1 < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
+      return(position < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
    }
 
    public inline function readByte():Int 
