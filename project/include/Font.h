@@ -53,7 +53,7 @@ public:
    T &Set() { mSet=true; return mVal; }
    const T &Get() const { return mVal; }
    void Apply(Optional<T> &inRHS) const { if (mSet) inRHS=mVal; }
-   void IfEquals(Optional<T> &inRHS) { if (mSet && (!inRHS.mSet || inRHS.mVal != mVal)) mSet = false; }
+   void IfEquals(Optional<T> &inRHS) { if (mSet && inRHS.mSet && inRHS.mVal != mVal) mSet = false; }
    bool IsSet() const { return mSet; }
 
   T &__Get() { return mVal; }

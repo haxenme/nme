@@ -168,6 +168,24 @@ TextFormat *TextField::getTextFormat(int inStart,int inEnd)
       if (commonFormat == NULL)
       {
          commonFormat = new TextFormat (*format);
+         commonFormat->align.Set();
+         commonFormat->blockIndent.Set();
+         commonFormat->bold.Set();
+         commonFormat->bullet.Set();
+         commonFormat->color.Set();
+         commonFormat->font.Set();
+         commonFormat->indent.Set();
+         commonFormat->italic.Set();
+         commonFormat->kerning.Set();
+         commonFormat->leading.Set();
+         commonFormat->leftMargin.Set();
+         commonFormat->letterSpacing.Set();
+         commonFormat->rightMargin.Set();
+         commonFormat->size.Set();
+         commonFormat->tabStops.Set();
+         commonFormat->target.Set();
+         commonFormat->underline.Set();
+         commonFormat->url.Set();
       }
       else
       {
@@ -202,7 +220,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 
    if (inStart<0) inStart = 0;
    int max = mCharPos.size();
-   if (inEnd>max || inEnd<0) inEnd = max;
+   if (inEnd>max || inEnd<0) inEnd = inStart + 1;
 
    if (inEnd<=inStart)
       return;
