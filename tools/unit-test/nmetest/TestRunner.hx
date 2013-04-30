@@ -43,6 +43,10 @@ class TestRunner {
 			Sys.println("== Test cpp ".rpad("=", 50));
 			testCpp();
 		}
+		if (NME_UNIT_TEST == "flash") {
+			Sys.println("== Test flash ".rpad("=", 50));
+			testFlash();
+		}
 		
 		if (success) {
 			Sys.println("ALL OK");
@@ -69,6 +73,18 @@ class TestRunner {
 		}
 		
 		return nmml;
+	}
+	
+	public function testFlash():Void {
+		for (testCase in testCases) {
+			Sys.println('-- $testCase');
+			if (testCase.endsWith("NMETest")) {
+				runProcess("haxelib", 'run nme test ${getNmml(testCase)} flash'.split(" "));
+			} else {
+				runProcess("haxe", '-cp tools/unit-test -main $testCase -swf bin/${testCase}.swf -swf-version 11'.split(" ")) &&
+				runProcess("open", ['bin/${testCase}.swf']);
+			}
+		}
 	}
 	
 	public function testNeko():Void {
