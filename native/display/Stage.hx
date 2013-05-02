@@ -378,9 +378,10 @@ class Stage extends DisplayObjectContainer
       return result;
    }
 
-   private function dummyTrace() { trace(""); }
 
    #if android
+   @:keep private function dummyTrace() { trace(""); }
+
    @:functionCode("try {") 
    @:functionTailCode(' } catch(Dynamic e) { __hx_dump_stack(); ::haxe::Log_obj::trace(HX_CSTRING("Uncaught exception: ") + e,hx::SourceInfo(HX_CSTRING("Stage.hx"),0,HX_CSTRING("nme.display.Stage"),HX_CSTRING("nmeDoProcessStageEvent")));}')
    #end
