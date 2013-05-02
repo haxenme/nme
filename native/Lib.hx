@@ -72,9 +72,8 @@ class Lib
       sIsInit = true;
       initWidth = inWidth;
       initHeight = inHeight;
-	  
-	  var stageClass = inStageClass;
-	  if (stageClass == null) stageClass = Stage;
+
+      var stageClass = inStageClass;
 
       var create_main_frame = Loader.load("nme_create_main_frame", -1);
 
@@ -84,7 +83,10 @@ class Lib
          nmeMainFrame = inFrameHandle;
          var stage_handle = nme_get_frame_stage(nmeMainFrame);
 
-         Lib.nmeStage = Type.createInstance (stageClass, [stage_handle, inWidth, inHeight]);
+         Lib.nmeStage =
+            stageClass==null ? new Stage(stage_handle, inWidth, inHeight) :
+             Type.createInstance (stageClass, [stage_handle, inWidth, inHeight]);
+
          Lib.nmeStage.frameRate = inFrameRate;
          Lib.nmeStage.opaqueBackground = inColour;
          Lib.nmeStage.onQuit = close;

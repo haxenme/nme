@@ -53,6 +53,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
       }
    }
 
+   @:keep
    inline public function __get(pos:Int):Int 
    {
       // Neko/cpp pseudo array accessors...
@@ -83,6 +84,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
    }
    #end
 
+   @:keep
    inline public function __set(pos:Int, v:Int):Void 
    {
       // No bounds checking is done in the cpp case
