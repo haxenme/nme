@@ -1,12 +1,12 @@
 package native.display3D.textures;
 #if (cpp || neko)
 
-import nme.geom.Rectangle;
-import nme.utils.ByteArray;
-import nme.display.BitmapData;
-import nme.gl.GL;
-import nme.gl.GLTexture;
-import nme.events.EventDispatcher;
+import native.geom.Rectangle;
+import native.utils.ByteArray;
+import native.display.BitmapData;
+import native.gl.GL;
+import native.gl.GLTexture;
+import native.events.EventDispatcher;
 
 class TextureBase extends EventDispatcher 
 {

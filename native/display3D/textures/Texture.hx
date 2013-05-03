@@ -1,14 +1,14 @@
 package native.display3D.textures;
 #if (cpp || neko)
 
-using nme.display.BitmapData;
+using native.display.BitmapData;
 
-import nme.geom.Rectangle;
-import nme.gl.GL;
-import nme.gl.GLTexture;
-import nme.utils.ArrayBuffer;
-import nme.utils.ByteArray;
-import nme.utils.UInt8Array;
+import native.geom.Rectangle;
+import native.gl.GL;
+import native.gl.GLTexture;
+import native.utils.ArrayBuffer;
+import native.utils.ByteArray;
+import native.utils.UInt8Array;
 
 class Texture extends TextureBase 
 {

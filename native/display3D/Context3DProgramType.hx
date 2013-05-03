@@ -1,7 +1,7 @@
 package native.display3D;
 #if (cpp || neko)
 
-import nme.gl.GL;
+import native.gl.GL;
 
 enum Context3DProgramType 
 {

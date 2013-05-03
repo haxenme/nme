@@ -6,7 +6,7 @@ import native.utils.ArrayBuffer;
 import native.utils.ByteArray;
 import native.utils.Float32Array;
 import native.utils.IMemoryRange;
-import browser.utils.ArrayBufferView;
+import native.utils.ArrayBufferView;
 import native.geom.Matrix3D;
 import native.Lib;
 import native.Loader;

@@ -9,7 +9,11 @@ import native.geom.ColorTransform;
 import native.filters.BitmapFilter;
 import native.utils.ByteArray;
 import native.Loader;
+#if (haxe3 && (!neko || !neko_v1))
+typedef BitmapInt32 = Int;
+#else
 import nme.display.BitmapInt32;
+#end
 
 #if haxe3 @:autoBuild(nme.Assets.embedBitmap()) #end
 class BitmapData implements IBitmapDrawable 
