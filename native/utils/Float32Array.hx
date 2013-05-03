@@ -65,7 +65,10 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float>
       return new Float32Array(inMatrix.rawData);
    }
 
+   @:keep
    inline public function __get(index:Int):Float { return getFloat32(index << 2); }
+
+   @:keep
    inline public function __set(index:Int, v:Float):Void { setFloat32(index << 2, v); }
 }
 
