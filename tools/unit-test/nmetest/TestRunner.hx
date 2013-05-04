@@ -5,47 +5,90 @@ import sys.io.*;
 using haxe.io.Path;
 using StringTools;
 using Lambda;
+using Reflect;
 
 class TestRunner {
 	public var testCases:List<String>;
-	public var success:Bool;
+	public var success:Bool = true;
 	public var path:String;
+	public var testTargets:{
+		neko:Bool,
+		js:Bool,
+		cpp:Bool,
+		flash:Bool
+	};
+	
 	public function new():Void {
 		testCases = new List();
 		path = "tools/unit-test/";
-		function getTestCases(dir:String) {
-			for (item in FileSystem.readDirectory(dir)) {
-				if (FileSystem.isDirectory(dir + item)) {
-					getTestCases(dir + item + "/");
-				} else if (item.endsWith("Test.hx")) {
-					testCases.add((dir + item).substr(path.length).replace("/", ".").substr(0, -3));
+		testTargets = {
+			neko: true,
+			js: true,
+			cpp: true,
+			flash: false
+		};
+		
+		var NME_UNIT_TEST:String = null;
+		var args = Sys.args();
+		switch (args.length) {
+			case 0: //pass
+			case 1:
+				switch (args[0]) {
+					case "neko", "js", "cpp", "flash":
+						NME_UNIT_TEST = args[0];
+					default:
+						testCases.add(args[0]);
+				}
+			case 2, _:
+				testCases.add(args[0]);
+				NME_UNIT_TEST = args[1];
+		}
+		
+		if (testCases.length == 0) {
+			function getTestCases(dir:String) {
+				for (item in FileSystem.readDirectory(dir)) {
+					if (FileSystem.isDirectory(dir + item)) {
+						getTestCases(dir + item + "/");
+					} else if (item.endsWith("Test.hx")) {
+						testCases.add((dir + item).substr(path.length).replace("/", ".").substr(0, -3));
+					}
 				}
 			}
+			getTestCases(path);
 		}
-		getTestCases(path);
 		
 		if (!FileSystem.exists("bin")) {
 			FileSystem.createDirectory("bin");
 		}
 		
-		success = true;
+		if (NME_UNIT_TEST == null)
+			NME_UNIT_TEST = Sys.getEnv("NME_UNIT_TEST");
 		
-		var NME_UNIT_TEST = Sys.getEnv("NME_UNIT_TEST");
-		if (NME_UNIT_TEST == null || NME_UNIT_TEST == "neko") {
-			Sys.println("== Test neko ".rpad("=", 50));
-			testNeko();
+		if (NME_UNIT_TEST != null) {
+			for (target in testTargets.fields()) {
+				testTargets.setField(target, target == NME_UNIT_TEST);
+			}
 		}
-		if (NME_UNIT_TEST == null || NME_UNIT_TEST == "js") {
-			Sys.println("== Test js ".rpad("=", 50));
-			testJs();
-		}
-		if (NME_UNIT_TEST == null || NME_UNIT_TEST == "cpp") {
-			Sys.println("== Test cpp ".rpad("=", 50));
-			testCpp();
-		}
-		if (NME_UNIT_TEST == "flash") {
-			Sys.println("== Test flash ".rpad("=", 50));
-			testFlash();
+		
+		for (target in testTargets.fields()) {
+			if (testTargets.field(target)) {
+				var testMethodName = "test" + target.charAt(0).toUpperCase() + target.substr(1);
+				Sys.println('== Test $target '.rpad("=", 50));
+				
+				if (target == "js"){
+					//compile PhantomRunner
+					Sys.println('-- PhantomRunner');
+					if (runProcess("haxe", [path + "PhantomRunner.hxml"])) {
+						Sys.println('   OK\n');
+					} else {
+						return;
+					}
+				}
+				
+				for (testCase in testCases) {
+					this.callMethod(this.field(testMethodName), [testCase]);
+				}
+			}
 		}
 		
 		if (success) {
@@ -75,76 +118,59 @@ class TestRunner {
 		return nmml;
 	}
 	
-	public function testFlash():Void {
-		for (testCase in testCases) {
-			Sys.println('-- $testCase');
-			if (testCase.endsWith("NMETest")) {
-				runProcess("haxelib", 'run nme test ${getNmml(testCase)} flash'.split(" "));
-			} else {
-				runProcess("haxe", '-cp tools/unit-test -main $testCase -swf bin/${testCase}.swf -swf-version 11'.split(" ")) &&
-				runProcess("open", ['bin/${testCase}.swf']);
-			}
-		}
-	}
-	
-	public function testNeko():Void {
-		for (testCase in testCases) {
-			Sys.println('-- $testCase');
-			if (testCase.endsWith("NMETest")) {
-				runProcess("haxelib", 'run nme test ${getNmml(testCase)} neko'.split(" "));
-			} else {
-				runProcess("haxe", '-cp tools/unit-test --remap flash:nme -main $testCase -neko bin/${testCase}.n'.split(" ")) &&
-				runProcess("neko", ['bin/${testCase}.n']);
-			}
-		}
-	}
-	
-	public function testCpp():Void {
-		for (testCase in testCases) {
-			Sys.println('-- $testCase');
-			if (testCase.endsWith("NMETest")) {
-				var compileArgs = 'run nme test ${getNmml(testCase)} cpp'.split(" ");
-				
-				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
-					compileArgs.push("-DHXCPP_M64");
-				}
-				
-				runProcess("haxelib", compileArgs);
-			} else {
-				var testCaseName = testCase.substr(testCase.lastIndexOf(".")+1);
-				var compileArgs = '-cp tools/unit-test --remap flash:nme -main $testCase -cpp bin'.split(" ");
-				
-				if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
-					compileArgs.push("-D");
-					compileArgs.push("HXCPP_M64");
-				}
-				
-				runProcess("haxe", compileArgs) &&
-				runProcess('bin/$testCaseName', []);
-			}
-		}
-	}
-	
-	public function testJs():Void {
-		//compile PhantomRunner
-		Sys.println('-- PhantomRunner');
-		if (runProcess("haxe", [path + "PhantomRunner.hxml"])) {
-			Sys.println('   OK\n');
+	public function testFlash(testCase:String):Void {
+		Sys.println('-- $testCase');
+		if (testCase.endsWith("NMETest")) {
+			runProcess("haxelib", 'run nme test ${getNmml(testCase)} flash'.split(" "));
 		} else {
-			return;
+			runProcess("haxe", '-cp tools/unit-test -main $testCase -swf bin/${testCase}.swf -swf-version 11.4'.split(" ")) &&
+			runProcess("open", ['bin/${testCase}.swf']);
 		}
-		
-		
-		for (testCase in testCases) {
-			Sys.println('-- $testCase');
-			if (testCase.endsWith("NMETest")) {
-				runProcess("haxelib", 'run nme build ${getNmml(testCase)} html5'.split(" ")) &&
-				runProcess("phantomjs", ["bin/nmetest.PhantomRunner.js", "html5/bin/index.html"]);
-			} else {
-				var testCaseName = testCase.substr(testCase.lastIndexOf(".")+1);
-				runProcess("haxe", '-cp tools/unit-test --remap flash:nme -main $testCase -js bin/${testCase}.js -lib phantomjs'.split(" ")) &&
-				runProcess("phantomjs", ['bin/${testCase}.js']);
+	}
+	
+	public function testNeko(testCase:String):Void {
+		Sys.println('-- $testCase');
+		if (testCase.endsWith("NMETest")) {
+			runProcess("haxelib", 'run nme test ${getNmml(testCase)} neko'.split(" "));
+		} else {
+			runProcess("haxe", '-cp tools/unit-test --remap flash:nme -main $testCase -neko bin/${testCase}.n'.split(" ")) &&
+			runProcess("neko", ['bin/${testCase}.n']);
+		}
+	}
+	
+	public function testCpp(testCase:String):Void {
+		Sys.println('-- $testCase');
+		if (testCase.endsWith("NMETest")) {
+			var compileArgs = 'run nme test ${getNmml(testCase)} cpp'.split(" ");
+			
+			if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
+				compileArgs.push("-DHXCPP_M64");
 			}
+			
+			runProcess("haxelib", compileArgs);
+		} else {
+			var testCaseName = testCase.substr(testCase.lastIndexOf(".")+1);
+			var compileArgs = '-cp tools/unit-test --remap flash:nme -main $testCase -cpp bin'.split(" ");
+			
+			if (Sys.args().indexOf("-64") != -1 || Sys.environment().exists("TRAVIS")) {
+				compileArgs.push("-D");
+				compileArgs.push("HXCPP_M64");
+			}
+			
+			runProcess("haxe", compileArgs) &&
+			runProcess('bin/$testCaseName', []);
+		}
+	}
+	
+	public function testJs(testCase:String):Void {		
+		Sys.println('-- $testCase');
+		if (testCase.endsWith("NMETest")) {
+			runProcess("haxelib", 'run nme build ${getNmml(testCase)} html5'.split(" ")) &&
+			runProcess("phantomjs", ["bin/nmetest.PhantomRunner.js", "html5/bin/index.html"]);
+		} else {
+			var testCaseName = testCase.substr(testCase.lastIndexOf(".")+1);
+			runProcess("haxe", '-cp tools/unit-test --remap flash:nme -main $testCase -js bin/${testCase}.js -lib phantomjs'.split(" ")) &&
+			runProcess("phantomjs", ['bin/${testCase}.js']);
 		}
 	}
 	
@@ -156,6 +182,9 @@ class TestRunner {
 		var p = new Process(cmd, args);
 		Sys.println(indent + p.stdout.readAll().toString().replace("\n", "\n" + indent));
 		var exitCode = p.exitCode();
+		if (exitCode != 0) {
+			Sys.println(indent + p.stderr.readAll().toString().replace("\n", "\n" + indent));
+		}
 		Sys.println("process exit with: " + exitCode);
 		
 		if (shouldPass && exitCode != 0) {
