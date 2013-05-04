@@ -19,7 +19,7 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
-#if haxe3 @:autoBuild(nme.Assets.embedFile()) #end
+#if pazu @:autoBuild(pazu.Assets.embedFile()) #end
 class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if !haxe3 , #end implements IDataInput #if !haxe3 , #end implements IMemoryRange 
 {
 
