@@ -15,7 +15,7 @@ import native.gl.GLFramebuffer;
 import native.gl.GLProgram;
 import native.utils.ByteArray;
 import native.Lib;
-import nme.Vector;
+import flash.Vector;
 
 class Context3D 
 {

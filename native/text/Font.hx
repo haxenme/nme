@@ -6,7 +6,7 @@ import native.display.Stage;
 import native.utils.ByteArray;
 import native.Loader;
 
-@:autoBuild(nme.Assets.embedFont())
+#if pazu @:autoBuild(pazu.Assets.embedFont()) #end
 class Font 
 {
    public var fontName(default, null):String;

@@ -15,7 +15,7 @@ typedef BitmapInt32 = Int;
 import nme.display.BitmapInt32;
 #end
 
-#if haxe3 @:autoBuild(nme.Assets.embedBitmap()) #end
+#if pazu @:autoBuild(pazu.Assets.embedBitmap()) #end
 class BitmapData implements IBitmapDrawable 
 {
    public static var CLEAR = createColor(0, 0);

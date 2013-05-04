@@ -1,7 +1,7 @@
 package native.geom;
 #if (cpp || neko)
 
-import nme.Vector;
+import flash.Vector;
 
 class Matrix3D 
 {

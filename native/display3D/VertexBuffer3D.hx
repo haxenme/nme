@@ -5,7 +5,7 @@ import native.gl.GL;
 import native.gl.GLBuffer;
 import native.utils.Float32Array;
 import native.utils.ByteArray;
-import nme.Vector;
+import flash.Vector;
 
 class VertexBuffer3D 
 {
