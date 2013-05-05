@@ -131,7 +131,11 @@ class TestRunner {
 	public function testNeko(testCase:String):Void {
 		Sys.println('-- $testCase');
 		if (testCase.endsWith("NMETest")) {
-			runProcess("haxelib", 'run nme test ${getNmml(testCase)} neko'.split(" "));
+			if (Sys.environment().exists("TRAVIS")) {
+				Sys.println("      Skipped.");
+			} else {
+				runProcess("haxelib", 'run nme test ${getNmml(testCase)} neko'.split(" "));
+			}
 		} else {
 			runProcess("haxe", '-cp tools/unit-test --remap flash:nme -main $testCase -neko bin/${testCase}.n'.split(" ")) &&
 			runProcess("neko", ['bin/${testCase}.n']);
@@ -185,7 +189,7 @@ class TestRunner {
 		if (exitCode != 0) {
 			Sys.println(indent + p.stderr.readAll().toString().replace("\n", "\n" + indent));
 		}
-		Sys.println("process exit with: " + exitCode);
+		Sys.println("process exited with: " + exitCode);
 		
 		if (shouldPass && exitCode != 0) {
 			success = false;
