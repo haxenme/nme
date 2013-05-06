@@ -2908,6 +2908,8 @@ value nme_bitmap_data_create(value* arg, int nargs)
       gpu = val_int(arg[aGPU]);
    
    Surface *result = new SimpleSurface( w, h, format, 1, gpu );
+   if (!(flags & 0x01))
+      result->SetAllowTrans(false);
    if (gpu==-1 && val_is_int(arg[aRGB]))
    {
       int rgb = val_int(arg[aRGB]);
@@ -2950,7 +2952,8 @@ value nme_bitmap_data_get_transparent(value inHandle,value inRGB)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_bool( surface->Format() & pfHasAlpha );
+      //return alloc_bool( surface->Format() & pfHasAlpha );
+      return alloc_bool( surface->GetAllowTrans() );
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_transparent,1);
@@ -3046,7 +3049,7 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
                }
             } 
          }
-      } 
+      }
 	  
       value result = ObjectToAbstract(surface);
       surface->DecRef();
@@ -3301,7 +3304,7 @@ value nme_bitmap_data_set_pixel32(value inSurface, value inX, value inY, value i
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),true);
+      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),surf->GetAllowTrans());
 
    return alloc_null();
 }
@@ -3316,7 +3319,7 @@ value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, valu
       value a = val_field(inRGBA,_id_a);
       value rgb = val_field(inRGBA,_id_rgb);
       if (val_is_int(a) && val_is_int(rgb))
-         surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), true );
+         surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), surf->GetAllowTrans() );
    }
    return alloc_null();
 }
@@ -3333,7 +3336,6 @@ value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes,val
       if (rect.w>0 && rect.h>0)
       {
          ByteArray array(inBytes);
-
          surf->setPixels(rect,(unsigned int *)(array.Bytes() + val_int(inOffset)) );
       }
    }
@@ -3417,6 +3419,7 @@ void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inC
       queue.push_back(UserPoint(x,y));
       
       int old = surf->getPixel(x,y);
+      bool useAlpha = surf->GetAllowTrans();
       
 	  bool *search = new bool[width*height];
       std::fill_n(search, width*height, false);
@@ -3436,7 +3439,7 @@ void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inC
          
          if (surf->getPixel(x,y) == old)
          {
-            surf->setPixel(x,y,color,true);
+            surf->setPixel(x,y,color,useAlpha);
             if (x<width && !search[y*width + (x+1)])
             {
                queue.push_back(UserPoint(x+1,y));

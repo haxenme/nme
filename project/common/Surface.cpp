@@ -1176,7 +1176,8 @@ Surface *SimpleSurface::clone()
    if (mBase)
       for(int y=0;y<mHeight;y++)
          memcpy(copy->mBase + copy->mStride*y, mBase+mStride*y, mWidth*(mPixelFormat==pfAlpha?1:4));
-
+   
+   copy->SetAllowTrans(mAllowTrans);
    copy->IncRef();
    return copy;
 }
@@ -1341,8 +1342,22 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       }
       else if (inIgnoreOrder)
       {
-         memcpy(dest,inPixels,r.w*4);
-         inPixels+=r.w;
+         if (mAllowTrans)
+         {
+            memcpy(dest,inPixels,r.w*4);
+            inPixels+=r.w;
+         }
+         else
+         {
+            for(int x=0;x<r.w;x++)
+            {
+               *dest++ = src[0];
+               *dest++ = src[1];
+               *dest++ = src[2];
+               *dest++ = 0xff;
+               src+=4;
+            }
+         }
       }
       else
       {
@@ -1350,8 +1365,22 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
          {
             if (!swap)
             {
-               memcpy(dest,src,r.w*sizeof(int));
-               src += r.w*sizeof(int);
+               if (mAllowTrans)
+               {
+                  memcpy(dest,src,r.w*sizeof(int));
+                  src += r.w*sizeof(int);
+               }
+               else
+               {
+                  for(int x=0;x<r.w;x++)
+                  {
+                     *dest++ = src[0];
+                     *dest++ = src[1];
+                     *dest++ = src[2];
+                     *dest++ = 0xff;
+                     src+=4;
+                  }
+               }
             }
             else
             {
@@ -1360,7 +1389,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                   *dest++ = src[2];
                   *dest++ = src[1];
                   *dest++ = src[0];
-                  *dest++ = src[3];
+                  *dest++ = mAllowTrans ? src[3] : 0xff;
                   src+=4;
                }
             }
@@ -1374,7 +1403,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                   *dest++ = src[3];
                   *dest++ = src[2];
                   *dest++ = src[1];
-                  *dest++ = src[0];
+                  *dest++ = mAllowTrans ? src[0] : 0xff;
                   src+=4;
                }
             }
@@ -1385,7 +1414,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                   *dest++ = src[1];
                   *dest++ = src[2];
                   *dest++ = src[3];
-                  *dest++ = src[0];
+                  *dest++ = mAllowTrans ? src[0] : 0xff;
                   src+=4;
                }
             }

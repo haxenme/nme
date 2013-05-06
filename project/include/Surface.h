@@ -40,7 +40,7 @@ class Surface : public Object
 {
 public:
    // Non-PO2 will generate dodgy repeating anyhow...
-   Surface() : mTexture(0), mVersion(0), mFlags(SURF_FLAGS_NOT_REPEAT_IF_NON_PO2) { };
+   Surface() : mTexture(0), mVersion(0), mFlags(SURF_FLAGS_NOT_REPEAT_IF_NON_PO2), mAllowTrans(true) { };
 
    // Implementation depends on platform.
    static Surface *Load(const OSChar *inFilename);
@@ -57,6 +57,8 @@ public:
    virtual int         GPUFormat() const { return Format(); }
    virtual const uint8 *GetBase() const = 0;
    virtual int GetStride() const = 0;
+   virtual bool GetAllowTrans() const { return mAllowTrans; }
+   virtual void SetAllowTrans(bool inAllowTrans) { mAllowTrans = inAllowTrans; }
 
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void Zero() { Clear(0); }
@@ -106,6 +108,7 @@ protected:
    Texture       *mTexture;
    virtual       ~Surface();
    unsigned int  mFlags;
+   bool          mAllowTrans;
 };
 
 // Helper class....
