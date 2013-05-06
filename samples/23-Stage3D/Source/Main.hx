@@ -66,10 +66,10 @@ class Main extends Sprite {
         var indices : Array<#if flash UInt #else Int #end> = [0,1,2,2,3,1];
 
         vertexBuffer = context3D.createVertexBuffer(4,3);
-        vertexBuffer.uploadFromVector(Vector.ofArray(vertices), 0, 4);
+        vertexBuffer.uploadFromVector(vertices, 0, 4);
 
         indexBuffer = context3D.createIndexBuffer(6);
-        indexBuffer.uploadFromVector(Vector.ofArray(indices), 0, 6);
+        indexBuffer.uploadFromVector(indices, 0, 6);
 
         context3D.setRenderCallback(update);
     }

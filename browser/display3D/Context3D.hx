@@ -207,7 +207,8 @@ class Context3D {
 			numIndices = numTriangles * 3;
 			
 		}
-		
+
+		GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
 		GL.drawElements(GL.TRIANGLES, numIndices, GL.UNSIGNED_SHORT, firstIndex);
 		
 	}
