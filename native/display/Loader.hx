@@ -36,13 +36,13 @@ class Loader extends Sprite
       if (inBytes == null)
          return false;
       
-      #if swf
-      try {
-         nmeSWF = new format.SWF(inBytes);
-         content = nmeSWF.createMovieClip();
-         return true;
-      } catch(e:Dynamic) {}
-      #end
+      //#if swf
+      //try {
+         //nmeSWF = new format.SWF(inBytes);
+         //content = nmeSWF.createMovieClip();
+         //return true;
+      //} catch(e:Dynamic) {}
+      //#end
 
       try 
       {
