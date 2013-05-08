@@ -1,0 +1,9 @@
+{
+  "name": "nme",
+  "url": "http://www.nme.io",
+  "license": "MIT",
+  "tags": ["cross"],
+  "description": "NME provides an API that is similar to Flash, but available for C++ or Neko. Using the NME command-line tools, you can publish a single application for Windows, Mac, Linux, iOS, Android, webOS, Flash and HTML5. C++ targets require HXCPP, and HTML5 requires Jeash.",
+  "version": "4.0.0",
+  "contributors": ["gamehaxe","elyon","leesylvester"]
+}
