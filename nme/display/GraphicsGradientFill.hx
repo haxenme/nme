@@ -2,16 +2,16 @@ package nme.display;
 #if display
 
 
-@:final extern class GraphicsGradientFill implements IGraphicsData #if !haxe3 , #end implements IGraphicsFill {
+@:final extern class GraphicsGradientFill implements IGraphicsData #if !haxe3 , #end /*implements IGraphicsFill*/ {
 	var alphas : Array<Float>;
-	var colors : Array<UInt>;
+	var colors : Array<Int>;
 	var focalPointRatio : Float;
 	var interpolationMethod : InterpolationMethod;
 	var matrix : flash.geom.Matrix;
 	var ratios : Array<Float>;
 	var spreadMethod : SpreadMethod;
 	var type : GradientType;
-	function new(?type : GradientType, ?colors : Array<UInt>, ?alphas : Array<Float>, ?ratios : Array<Float>, ?matrix : flash.geom.Matrix, ?spreadMethod : SpreadMethod, ?interpolationMethod : InterpolationMethod, focalPointRatio : Float = 0) : Void;
+	function new(?type : GradientType, ?colors : Array<Int>, ?alphas : Array<Float>, ?ratios : Array<Float>, ?matrix : flash.geom.Matrix, ?spreadMethod : SpreadMethod, ?interpolationMethod : InterpolationMethod, focalPointRatio : Float = 0) : Void;
 }
 
 

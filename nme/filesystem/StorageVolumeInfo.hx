@@ -57,7 +57,7 @@ extern class StorageVolumeInfo extends nme.events.EventDispatcher
     * listeners on this object for the <code>storageVolumeMount</code> and
     * <code>storageVolumeUnmount</code> events.
     */
-   static var storageVolumeInfo(getInstance,null):StorageVolumeInfo;
+   static var storageVolumeInfo(get_storageVolumeInfo,null):StorageVolumeInfo;
 
    /**
     * Returns vector of StorageVolume objects corresponding to the currently
