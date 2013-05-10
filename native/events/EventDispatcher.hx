@@ -29,8 +29,31 @@ class EventDispatcher implements IEventDispatcher
 
       var l = new Listener(listener, useCapture, priority);
       list.push(new WeakRef<Listener>(l, useWeakReference));
+     
+      // if pri is 0, it's fine on the end of the list. If not, might be out of order
+      if ( priority != 0 ) {
+         list.sort( sortEvents );
+      }
    }
 
+   private static inline function sortEvents( a:WeakRef<Listener>, b:WeakRef<Listener> ):Int 
+   { 
+      // in theory these can be null, might be best to tread carefully
+      if ( null == a && null == b ) { return 0; }
+      if ( null == a ) { return -1; }
+      if ( null == b ) { return 1; }
+      var al = a.get();
+      var bl = b.get();
+      if ( null == al || null == bl ) { return 0; }
+      if ( al.mPriority == bl.mPriority ) { 
+         // if priorities are the same, ensure original order of addition is maintained
+         return al.mID == bl.mID ? 0 : ( al.mID > bl.mID ? 1 : -1 ); 
+      } else {
+         // otherwise ensure higher priority listeners come first
+         return al.mPriority < bl.mPriority ? 1 : -1;
+      }
+   } 
+   
    public function DispatchCompleteEvent() 
    {
       var evt = new Event(Event.COMPLETE);
