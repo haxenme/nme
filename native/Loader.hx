@@ -83,7 +83,7 @@ class Loader
       if (result == null) 
       {
          var slash =(sysName().substr(7).toLowerCase() == "windows") ? "\\" : "/";
-         var haxelib = findHaxeLib("nme");
+         var haxelib = findHaxeLib(#if pazu "pazu-native" #else "nme" #end);
 
          if (haxelib != "") 
          {
@@ -94,7 +94,7 @@ class Loader
          }
       }
 	  
-	  if (result == null)
+	  /*if (result == null)
 	  {
 		  var slash =(sysName().substr(7).toLowerCase() == "windows") ? "\\" : "/";
          var haxelib = findHaxeLib("nmedev");
@@ -106,7 +106,7 @@ class Loader
             if (result == null)
                result = tryLoad(haxelib + slash + "ndll" + slash + sysName() + "64" + slash + "nme", func, args);
          }
-	  }
+	  }*/
 
       loaderTrace("Result : " + result );
 
