@@ -1,5 +1,5 @@
 package nme;
-#if (!haxe3 || !nmedev)
+#if (!haxe3)
 
 
 #if flash
