@@ -877,7 +877,7 @@ class RunScript {
 					
 					if (path != nmeDirectory + "/project" && !flags.exists ("debug")) {
 						
-						flags.set ("release", "");
+						//flags.set ("release", "");
 						
 					}
 					
