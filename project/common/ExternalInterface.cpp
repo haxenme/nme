@@ -2978,9 +2978,9 @@ value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
          surface->Clear( val_int(inRGB) | (val_int(inA)<<24) );
       else
       {
-         Rect r(val_int(val_field(inRect,_id_x)),val_int(val_field(inRect,_id_y)),
-                val_int(val_field(inRect,_id_width)),val_int(val_field(inRect,_id_height)) );
-         surface->Clear( val_int(inRGB) | (val_int(inA)<<24), &r );
+		 Rect rect;
+		 FromValue(rect,inRect);
+         surface->Clear( val_int(inRGB) | (val_int(inA)<<24), &rect );
       }
    }
    return alloc_null();
