@@ -71,7 +71,7 @@ class IOSPlatform implements IPlatformTool {
 		
 		for (dependency in project.dependencies) {
 			
-			if (!StringTools.endsWith (dependency, ".framework")) {
+			if (!(StringTools.endsWith (dependency, ".framework") || StringTools.endsWith (dependency, ".a"))) {
 				
 				context.linkedLibraries.push (dependency);
 				
@@ -125,6 +125,7 @@ class IOSPlatform implements IPlatformTool {
 		var armv6 = false;
 		var armv7 = false;
 		var architectures = project.architectures;
+		var extension;
 		
 		if (architectures == null || architectures.length == 0) {
 			
@@ -205,8 +206,8 @@ class IOSPlatform implements IPlatformTool {
 		context.ADDL_PBX_FRAMEWORK_GROUP = "";
 		
 		for (dependency in project.dependencies) {
-			
-			if (Path.extension (dependency) == "framework") {
+			extension = Path.extension (dependency);
+			if (extension == "framework") {
 				
 				var frameworkID = "11C0000000000018" + StringHelper.getUniqueID ();
 				var fileID = "11C0000000000018" + StringHelper.getUniqueID ();
@@ -216,6 +217,16 @@ class IOSPlatform implements IPlatformTool {
 				context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += "				" + frameworkID + " /* " + dependency + " in Frameworks */,\n";
 				context.ADDL_PBX_FRAMEWORK_GROUP += "				" + fileID + " /* " + dependency + " */,\n";
 				
+			} else if (extension == "a"){
+				var frameworkID = "11C0000000000018" + StringHelper.getUniqueID ();
+				var fileID = "11C0000000000018" + StringHelper.getUniqueID ();
+				var dependencyName = Path.withoutDirectory(dependency);
+				var dependencyPath = Path.directory(dependency);
+
+				context.ADDL_PBX_BUILD_FILE += "		" + frameworkID + " /* " + dependencyName + " in Frameworks */ = {isa = PBXBuildFile; fileRef = " + fileID + " /* " + dependencyName + " */; };\n";
+				context.ADDL_PBX_FILE_REFERENCE += "		" + fileID + " /* " + dependencyName + " */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = " + dependencyName + "; path = " + dependency + "; sourceTree = \"<group>\"; };\n";
+				context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += "				" + frameworkID + " /* " + dependencyName + " in Frameworks */,\n";
+				context.ADDL_PBX_FRAMEWORK_GROUP += "				" + fileID + " /* " + dependencyName + " */,\n";
 			}
 			
 		}
@@ -325,8 +336,7 @@ class IOSPlatform implements IPlatformTool {
 			PathHelper.mkdir (projectDirectory + "/lib/" + arch + "-debug");
 			
 			for (ndll in project.ndlls) {
-				
-				if (ndll.haxelib != null) {
+				//if (ndll.haxelib != null) {
 					
 					var releaseLib = PathHelper.getLibraryPath (ndll, "iPhone", "lib", libExt);
 					var debugLib = PathHelper.getLibraryPath (ndll, "iPhone", "lib", libExt);
@@ -345,7 +355,7 @@ class IOSPlatform implements IPlatformTool {
 						
 					}
 					
-				}
+				//}
 				
 			}
 			
