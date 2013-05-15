@@ -13,10 +13,10 @@ before_install:
   - sudo apt-get install mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev -y # for nme
   - mkdir ~/haxelib
   - haxelib setup ~/haxelib
-  - haxelib install pdiff-hx
-  - haxelib install utest
+  #- haxelib install pdiff-hx
+  #- haxelib install utest
   - haxelib install format
-  - haxelib install hscript
+  #- haxelib install hscript
   - haxelib install phantomjs
   - sudo apt-get install xsltproc -y
   # NME dev
@@ -32,10 +32,10 @@ before_install:
   # unit test output
   - mkdir bin
 
-before_script:
-  - make clean all -C tools/smoke.jeash.com
-  - "cd tools/smoke.jeash.com && node webserver.js &"
+#before_script:
+  #- make clean all -C tools/smoke.jeash.com
+  #- "cd tools/smoke.jeash.com && node webserver.js &"
 
 script:
-  - make test -C tools/smoke.jeash.com
+  #- make test -C tools/smoke.jeash.com
   - haxe tools/unit-test/TestRunner.hxml && neko bin/nmetest.TestRunner.n
