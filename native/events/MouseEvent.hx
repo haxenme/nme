@@ -65,7 +65,7 @@ class MouseEvent extends Event
 
    /** @private */ public static function nmeCreate(inType:String, inEvent:Dynamic, inLocal:Point, inTarget:InteractiveObject) {
       var flags : Int = inEvent.flags;
-      var evt = new MouseEvent(inType, true, false, inLocal.x, inLocal.y, null,(flags & efCtrlDown) != 0,(flags & efAltDown) != 0,(flags & efShiftDown) != 0,(flags & efLeftDown) != 0, 0, 0);
+      var evt = new MouseEvent(inType, true, true, inLocal.x, inLocal.y, null,(flags & efCtrlDown) != 0,(flags & efAltDown) != 0,(flags & efShiftDown) != 0,(flags & efLeftDown) != 0, 0, 0);
       evt.stageX = inEvent.x;
       evt.stageY = inEvent.y;
       evt.target = inTarget;

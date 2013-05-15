@@ -1,10 +1,10 @@
 package native.utils;
-
 #if (cpp || neko)
 
-class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> 
+@:arrayAccess
+class Int32Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> 
 {
-   static public inline var SBYTES_PER_ELEMENT = 2;
+   static public inline var SBYTES_PER_ELEMENT = 4;
 
    public var BYTES_PER_ELEMENT(default, null):Int;
    public var length(default, null):Int;
@@ -12,11 +12,11 @@ class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
    // Constrctor: length, array, float[], ArrayBuffer + start + len
    public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>) 
    {
-      BYTES_PER_ELEMENT = 2;
+      BYTES_PER_ELEMENT = 4;
 
       if (Std.is(inBufferOrArray,Int))
       {
-         super( Std.int(inBufferOrArray) << 1 );
+         super( Std.int(inBufferOrArray)<<2  );
       }
       else if (Std.is(inBufferOrArray,Array))
       {
@@ -26,8 +26,8 @@ class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
          else
             length = ints.length - inStart;
 
-            // 2 bytes per element -> shift it by one bits to get the lenght in bytes
-         super(length << 1);
+            // 4 bytes per element -> shift it by two bits to get the length in bytes
+         super(length << 2);
 
          #if !cpp
          buffer.position = 0;
@@ -36,9 +36,9 @@ class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
          for(i in 0...length) 
          {
             #if cpp
-            untyped __global__.__hxcpp_memory_set_i16(bytes,(i << 1), ints[i]);
+            untyped __global__.__hxcpp_memory_set_i32(bytes,(i << 2), ints[i]);
             #else
-            buffer.writeShort(ints[i + inStart]);
+            buffer.writeInt(ints[i + inStart]);
             #end
          }
 
@@ -46,20 +46,20 @@ class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
       {
          super(inBufferOrArray, inStart, inLen);
 
-         if ((byteLength & 0x01) > 0)
+         if ((byteLength & 0x03) > 0)
             throw("Invalid array size");
 
-         length = byteLength >> 1;
-         if ((length << 1) !=(byteLength))
+         length = byteLength >> 2;
+         if ((length << 2) !=(byteLength))
             throw "Invalid length multiple";
       }
    }
 
    @:keep
-   inline public function __get(index:Int):Int { return getInt16(index << 1); }
+   inline public function __get(index:Int):Int { return getInt32(index << 2); }
 
    @:keep
-   inline public function __set(index:Int, v:Int):Void { setInt16(index << 1, v); }
+   inline public function __set(index:Int, v:Int):Void { setInt32(index << 2, v); }
 }
 
 #end

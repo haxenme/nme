@@ -114,7 +114,7 @@ extern class File
 	 * pointing to the application directory is an empty string. Use the
 	 * <code>url</code> property to access application files.</p>
 	 */
-	static var applicationDirectory(nmeGetAppDir, null):File;
+	static var applicationDirectory(get_applicationDirectory, null):File;
 
 	/**
 	 * The application's private storage directory.
@@ -144,7 +144,7 @@ extern class File
 	 * using the <code>nativePath</code> or <code>url</code> property, it will
 	 * only work on the platform for which that path is valid.</p>
 	 */
-	static var applicationStorageDirectory(nmeGetStorageDir,null) : File;
+	static var applicationStorageDirectory(get_applicationStorageDirectory,null) : File;
 
 	/**
 	 * The user's desktop directory.
@@ -163,7 +163,7 @@ extern class File
 	 * directory location as <code>File.userDirectory</code> property. The user
 	 * directory is unique to the application.</p>
 	 */
-	static var desktopDirectory(nmeGetDesktopDir,null) : File;
+	static var desktopDirectory(get_desktopDirectory,null) : File;
 
 	/**
 	 * The user's documents directory.
@@ -188,7 +188,7 @@ extern class File
 	 * same directory location as the <code>File.userDirectory</code> property.
 	 * The user directory is unique to the application.</p>
 	 */
-	static var documentsDirectory(nmeGetDocsDir,null) : File;
+	static var documentsDirectory(get_documentsDirectory,null) : File;
 
 	/**
 	 * The user's directory.
@@ -209,7 +209,7 @@ extern class File
 	 * <p>On AIR for TV devices, the <code>userDirectory</code> property
 	 * references a user directory that is unique to the application.</p>
 	 */
-	static var userDirectory(nmeGetUserDir,null) : File;
+	static var userDirectory(get_userDirectory,null) : File;
 
 	/**
 	 * The full path in the host operating system representation. On Mac OS and
@@ -245,7 +245,7 @@ extern class File
 	 * @throws SecurityError The caller is not in the application security
 	 *                       sandbox.
 	 */
-	var nativePath(default, nmeSetNativePath):String;
+	var nativePath(default, set_nativePath):String;
 
 	/**
 	 * The URL for this file path.
@@ -264,7 +264,7 @@ extern class File
 	 * @throws SecurityError The caller is not in the application security
 	 *                       sandbox.
 	 */
-	var url(default, nmeSetURL):String;
+	var url(default, set_url):String;
 
 	/**
 	 * The constructor function for the File class.

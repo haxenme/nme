@@ -58,7 +58,7 @@ ByteArray ByteArray::FromFile(const OSChar *inFilename)
    fseek(file,0,SEEK_SET);
 
    ByteArray result(len);
-   fread(result.Bytes(),len,1,file);
+   int status = fread(result.Bytes(),len,1,file);
    fclose(file);
 
    return result;

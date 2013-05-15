@@ -417,7 +417,7 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
    if (!gC0IsRed)
       png_set_bgr(png_ptr);
 
-   result = new SimpleSurface(width,height,has_alpha ? pfARGB : pfXRGB);
+   result = new SimpleSurface(width,height, (has_alpha) ? pfARGB : pfXRGB);
    result->IncRef();
    target = result->BeginRender(Rect(width,height));
    

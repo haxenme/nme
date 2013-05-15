@@ -235,7 +235,7 @@ class Timer {
 	}
 	
 
-	static var nme_time_stamp = nme.Loader.load ("nme_time_stamp", 0);
+	static var nme_time_stamp = native.Loader.load ("nme_time_stamp", 0);
 	
 	
 }

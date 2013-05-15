@@ -1200,7 +1200,7 @@ value nme_gl_vertex_attrib_pointer(value *arg, int nargs)
                           val_int(arg[aType]),
                           val_bool(arg[aNormalized]),
                           val_int(arg[aStride]),
-                          (void *)val_int(arg[aOffset]) );
+                          (void *)(intptr_t)val_int(arg[aOffset]) );
 
    return alloc_null();
 }
@@ -1356,7 +1356,7 @@ DEFINE_PRIM(nme_gl_draw_arrays,3);
 
 value nme_gl_draw_elements(value inMode, value inCount, value inType, value inOffset)
 {
-   glDrawElements( val_int(inMode), val_int(inCount), val_int(inType), (void *)val_int(inOffset) );
+   glDrawElements( val_int(inMode), val_int(inCount), val_int(inType), (void *)(intptr_t)val_int(inOffset) );
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_draw_elements,4);

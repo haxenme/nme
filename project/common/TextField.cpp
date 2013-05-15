@@ -133,6 +133,7 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
    if (defaultTextFormat)
       defaultTextFormat->DecRef();
    defaultTextFormat = inFmt;
+   textColor = defaultTextFormat->color;
    mLinesDirty = true;
    mGfxDirty = true;
    if (mCharGroups.empty() || (mCharGroups.size() == 1 && mCharGroups[0]->Chars() == 0))
@@ -155,6 +156,61 @@ void TextField::SplitGroup(int inGroup,int inPos)
    mLinesDirty = true;
 }
 
+TextFormat *TextField::getTextFormat(int inStart,int inEnd)
+{
+   TextFormat *commonFormat = NULL;
+   
+   for(int i=0;i<mCharGroups.size();i++)
+   {
+      CharGroup *charGroup = mCharGroups[i];
+      TextFormat *format = charGroup->mFormat;
+      
+      if (commonFormat == NULL)
+      {
+         commonFormat = new TextFormat (*format);
+         commonFormat->align.Set();
+         commonFormat->blockIndent.Set();
+         commonFormat->bold.Set();
+         commonFormat->bullet.Set();
+         commonFormat->color.Set();
+         commonFormat->font.Set();
+         commonFormat->indent.Set();
+         commonFormat->italic.Set();
+         commonFormat->kerning.Set();
+         commonFormat->leading.Set();
+         commonFormat->leftMargin.Set();
+         commonFormat->letterSpacing.Set();
+         commonFormat->rightMargin.Set();
+         commonFormat->size.Set();
+         commonFormat->tabStops.Set();
+         commonFormat->target.Set();
+         commonFormat->underline.Set();
+         commonFormat->url.Set();
+      }
+      else
+      {
+         commonFormat->align.IfEquals(format->align);
+         commonFormat->blockIndent.IfEquals(format->blockIndent);
+         commonFormat->bullet.IfEquals(format->bullet);
+         commonFormat->color.IfEquals(format->color);
+         commonFormat->font.IfEquals(format->font);
+         commonFormat->indent.IfEquals(format->indent);
+         commonFormat->italic.IfEquals(format->italic);
+         commonFormat->kerning.IfEquals(format->kerning);
+         commonFormat->leading.IfEquals(format->leading);
+         commonFormat->leftMargin.IfEquals(format->leftMargin);
+         commonFormat->letterSpacing.IfEquals(format->letterSpacing);
+         commonFormat->rightMargin.IfEquals(format->rightMargin);
+         commonFormat->size.IfEquals(format->size);
+         commonFormat->tabStops.IfEquals(format->tabStops);
+         commonFormat->target.IfEquals(format->target);
+         commonFormat->underline.IfEquals(format->underline);
+         commonFormat->url.IfEquals(format->url);
+      }
+   }
+   return commonFormat;
+}
+
 void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 {
    if (!inFmt)
@@ -164,7 +220,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 
    if (inStart<0) inStart = 0;
    int max = mCharPos.size();
-   if (inEnd>max || inEnd<0) inEnd = max;
+   if (inEnd>max || inEnd<0) inEnd = inStart + 1;
 
    if (inEnd<=inStart)
       return;
@@ -208,6 +264,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 void TextField::setTextColor(int inCol)
 {
    textColor = inCol;
+   defaultTextFormat->color = inCol;
 }
 
 void TextField::setIsInput(bool inIsInput)

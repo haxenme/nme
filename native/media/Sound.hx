@@ -11,7 +11,7 @@ import native.errors.Error;
 import native.utils.ByteArray;
 import native.utils.Endian;
 
-#if haxe3 @:autoBuild(nme.Assets.embedSound()) #end
+#if pazu @:autoBuild(pazu.Assets.embedSound()) #end
 class Sound extends EventDispatcher 
 {
    public var bytesLoaded(default, null):Int;
@@ -77,10 +77,10 @@ class Sound extends EventDispatcher
       }
    }
 
-   public function loadCompressedDataFromByteArray(bytes:nme.utils.ByteArray, length:Int, forcePlayAsMusic:Bool = false):Void 
+   public function loadCompressedDataFromByteArray(bytes:ByteArray, length:Int, forcePlayAsMusic:Bool = false):Void 
    {
       bytesLoaded = bytesTotal = length;
-      nmeHandle = nme_sound_from_data(bytes.getData(), length, forcePlayAsMusic);
+      nmeHandle = nme_sound_from_data(bytes, length, forcePlayAsMusic);
 
       if (nmeHandle == null) 
       {
@@ -88,7 +88,7 @@ class Sound extends EventDispatcher
       }
    }
 
-   public function loadPCMFromByteArray(Bytes:nme.utils.ByteArray, samples:Int, format:String = "float", stereo:Bool = true, sampleRate:Float = 44100.0):Void 
+   public function loadPCMFromByteArray(Bytes:ByteArray, samples:Int, format:String = "float", stereo:Bool = true, sampleRate:Float = 44100.0):Void 
    {
       // http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
       var wav:ByteArray = new ByteArray();

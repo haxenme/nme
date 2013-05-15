@@ -315,7 +315,7 @@ public:
       }
    }
    
-   SDLSound(unsigned char *inData, int len)
+   SDLSound(float *inData, int len)
    {
       IncRef();
       
@@ -468,7 +468,7 @@ public:
       }
    }
    
-   SDLMusic(unsigned char *inData, int len)
+   SDLMusic(float *inData, int len)
    {
       IncRef();
       
@@ -525,7 +525,7 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
    return sound;
 }
 
-Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic) {
+Sound *Sound::Create(float *inData, int len, bool inForceMusic) {
    if (!Init())
       return 0;
    Sound *sound = inForceMusic ? 0 :  new SDLSound(inData, len);

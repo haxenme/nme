@@ -1,11 +1,11 @@
 package native.display3D.textures;
 #if (cpp || neko)
 
-import nme.geom.Rectangle;
-using nme.display.BitmapData;
-import nme.utils.ByteArray;
-import nme.gl.GL;
-import nme.gl.GLTexture;
+import native.geom.Rectangle;
+using native.display.BitmapData;
+import native.utils.ByteArray;
+import native.gl.GL;
+import native.gl.GLTexture;
 
 class CubeTexture extends TextureBase 
 {

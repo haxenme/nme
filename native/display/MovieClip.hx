@@ -25,12 +25,20 @@ class MovieClip extends Sprite
    public function gotoAndStop(frame:Dynamic, ?scene:String):Void 
    {
    }
+   
+   public function nextFrame():Void
+   {
+   }
 
    /** @private */ override function nmeGetType() {
       return "MovieClip";
    }
 
    public function play():Void 
+   {
+   }
+   
+   public function prevFrame():Void
    {
    }
 

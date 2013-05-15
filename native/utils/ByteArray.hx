@@ -19,7 +19,7 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
-#if haxe3 @:autoBuild(nme.Assets.embedFile()) #end
+#if pazu @:autoBuild(pazu.Assets.embedFile()) #end
 class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if !haxe3 , #end implements IDataInput #if !haxe3 , #end implements IMemoryRange 
 {
 
@@ -53,6 +53,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
       }
    }
 
+   @:keep
    inline public function __get(pos:Int):Int 
    {
       // Neko/cpp pseudo array accessors...
@@ -83,6 +84,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
    }
    #end
 
+   @:keep
    inline public function __set(pos:Int, v:Int):Void 
    {
       // No bounds checking is done in the cpp case
@@ -203,7 +205,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
 
    public inline function readBoolean():Bool 
    {
-      return(position + 1 < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
+      return(position < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
    }
 
    public inline function readByte():Int 

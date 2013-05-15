@@ -1,11 +1,11 @@
 package native.display3D;
 #if (cpp || neko)
 
-import nme.gl.GL;
-import nme.gl.GLBuffer;
-import nme.utils.Int16Array;
-import nme.utils.ByteArray;
-import nme.Vector;
+import native.gl.GL;
+import native.gl.GLBuffer;
+import native.utils.Int16Array;
+import native.utils.ByteArray;
+import flash.Vector;
 
 class IndexBuffer3D 
 {

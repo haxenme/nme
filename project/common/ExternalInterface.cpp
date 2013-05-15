@@ -2727,32 +2727,32 @@ value ToValue(const TextFormatAlign &inTFA)
 }
 
 
-#define GTF(attrib) \
+#define GTF(attrib,ifSet) \
 { \
-   alloc_field(outValue, _id_##attrib, ToValue( inFormat.attrib.Get() ) ); \
+   if (!ifSet || inFormat.attrib.IsSet()) alloc_field(outValue, _id_##attrib, ToValue( inFormat.attrib.Get() ) ); \
 }
 
 
-void GetTextFormat(const TextFormat &inFormat, value &outValue)
+void GetTextFormat(const TextFormat &inFormat, value &outValue, bool inIfSet = false)
 {
-   GTF(align);
-   GTF(blockIndent);
-   GTF(bold);
-   GTF(bullet);
-   GTF(color);
-   GTF(font);
-   GTF(indent);
-   GTF(italic);
-   GTF(kerning);
-   GTF(leading);
-   GTF(leftMargin);
-   GTF(letterSpacing);
-   GTF(rightMargin);
-   GTF(size);
-   GTF(tabStops);
-   GTF(target);
-   GTF(underline);
-   GTF(url);
+   GTF(align,inIfSet);
+   GTF(blockIndent,inIfSet);
+   GTF(bold,inIfSet);
+   GTF(bullet,inIfSet);
+   GTF(color,inIfSet);
+   GTF(font,inIfSet);
+   GTF(indent,inIfSet);
+   GTF(italic,inIfSet);
+   GTF(kerning,inIfSet);
+   GTF(leading,inIfSet);
+   GTF(leftMargin,inIfSet);
+   GTF(letterSpacing,inIfSet);
+   GTF(rightMargin,inIfSet);
+   GTF(size,inIfSet);
+   GTF(tabStops,inIfSet);
+   GTF(target,inIfSet);
+   GTF(underline,inIfSet);
+   GTF(url,inIfSet);
 }
 
 
@@ -2770,6 +2770,20 @@ value nme_text_field_set_def_text_format(value inText,value inFormat)
 }
 
 DEFINE_PRIM(nme_text_field_set_def_text_format,2)
+
+value nme_text_field_get_text_format(value inText,value outFormat,value inStart,value inEnd)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      TextFormat *fmt = text->getTextFormat(val_int(inStart),val_int(inEnd));
+      GetTextFormat(*fmt,outFormat,true);
+   }
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_text_field_get_text_format,4)
+
 
 value nme_text_field_set_text_format(value inText,value inFormat,value inStart,value inEnd)
 {
@@ -2894,6 +2908,8 @@ value nme_bitmap_data_create(value* arg, int nargs)
       gpu = val_int(arg[aGPU]);
    
    Surface *result = new SimpleSurface( w, h, format, 1, gpu );
+   if (!(flags & 0x01))
+      result->SetAllowTrans(false);
    if (gpu==-1 && val_is_int(arg[aRGB]))
    {
       int rgb = val_int(arg[aRGB]);
@@ -2936,7 +2952,8 @@ value nme_bitmap_data_get_transparent(value inHandle,value inRGB)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_bool( surface->Format() & pfHasAlpha );
+      //return alloc_bool( surface->Format() & pfHasAlpha );
+      return alloc_bool( surface->GetAllowTrans() );
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_transparent,1);
@@ -2961,9 +2978,9 @@ value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
          surface->Clear( val_int(inRGB) | (val_int(inA)<<24) );
       else
       {
-         Rect r(val_int(val_field(inRect,_id_x)),val_int(val_field(inRect,_id_y)),
-                val_int(val_field(inRect,_id_width)),val_int(val_field(inRect,_id_height)) );
-         surface->Clear( val_int(inRGB) | (val_int(inA)<<24), &r );
+		 Rect rect;
+		 FromValue(rect,inRect);
+         surface->Clear( val_int(inRGB) | (val_int(inA)<<24), &rect );
       }
    }
    return alloc_null();
@@ -3032,7 +3049,7 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
                }
             } 
          }
-      } 
+      }
 	  
       value result = ObjectToAbstract(surface);
       surface->DecRef();
@@ -3287,7 +3304,7 @@ value nme_bitmap_data_set_pixel32(value inSurface, value inX, value inY, value i
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),true);
+      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),surf->GetAllowTrans());
 
    return alloc_null();
 }
@@ -3302,7 +3319,7 @@ value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, valu
       value a = val_field(inRGBA,_id_a);
       value rgb = val_field(inRGBA,_id_rgb);
       if (val_is_int(a) && val_is_int(rgb))
-         surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), true );
+         surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), surf->GetAllowTrans() );
    }
    return alloc_null();
 }
@@ -3319,7 +3336,6 @@ value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes,val
       if (rect.w>0 && rect.h>0)
       {
          ByteArray array(inBytes);
-
          surf->setPixels(rect,(unsigned int *)(array.Bytes() + val_int(inOffset)) );
       }
    }
@@ -3403,6 +3419,7 @@ void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inC
       queue.push_back(UserPoint(x,y));
       
       int old = surf->getPixel(x,y);
+      bool useAlpha = surf->GetAllowTrans();
       
 	  bool *search = new bool[width*height];
       std::fill_n(search, width*height, false);
@@ -3422,7 +3439,7 @@ void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inC
          
          if (surf->getPixel(x,y) == old)
          {
-            surf->setPixel(x,y,color,true);
+            surf->setPixel(x,y,color,useAlpha);
             if (x<width && !search[y*width + (x+1)])
             {
                queue.push_back(UserPoint(x+1,y));
@@ -3554,12 +3571,9 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
    Sound *sound;
   // printf("trying bytes with length %d", length);
    if (!val_is_null(inData) && length > 0) {
-      buffer buf = val_to_buffer(inData);
-      if (buf == 0) {
-         val_throw(alloc_string("Bad ByteArray"));
-      }
+      ByteArray buf = ByteArray(inData);
       //printf("I'm here! trying bytes with length %d", length);
-      sound = Sound::Create((unsigned char *)buffer_data(buf), length, val_bool(inForceMusic) );
+      sound = Sound::Create((float *)buf.Bytes(), length, val_bool(inForceMusic) );
    } else {
 	   val_throw(alloc_string("Empty ByteArray"));
    }

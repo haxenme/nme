@@ -9,9 +9,13 @@ import native.geom.ColorTransform;
 import native.filters.BitmapFilter;
 import native.utils.ByteArray;
 import native.Loader;
+#if (haxe3 && (!neko || !neko_v1))
+typedef BitmapInt32 = Int;
+#else
 import nme.display.BitmapInt32;
+#end
 
-#if haxe3 @:autoBuild(nme.Assets.embedBitmap()) #end
+#if pazu @:autoBuild(pazu.Assets.embedBitmap()) #end
 class BitmapData implements IBitmapDrawable 
 {
    public static var CLEAR = createColor(0, 0);
@@ -33,19 +37,22 @@ class BitmapData implements IBitmapDrawable
    public var rect(get_rect, null):Rectangle;
    public var transparent(get_transparent, null):Bool;
    public var width(get_width, null):Int;
+   
+   private var nmeTransparent:Bool;
 
    /** @private */ public var nmeHandle:Dynamic;
    public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:BitmapInt32, ?inGPUMode:Null<Bool>) 
    {
       var fill_col:Int;
       var fill_alpha:Int;
+      nmeTransparent = inTransparent;
 
       if (inFillRGBA == null) 
       {
          fill_col = 0xffffff;
          fill_alpha = 0xff;
-
-      } else 
+      }
+      else 
       {
          fill_col = extractColor(inFillRGBA);
          fill_alpha = extractAlpha(inFillRGBA);
@@ -54,8 +61,8 @@ class BitmapData implements IBitmapDrawable
       if (inWidth < 1 || inHeight < 1) 
       {
          nmeHandle = null;
-
-      } else 
+      }
+      else 
       {
          var flags = HARDWARE;
 
@@ -77,7 +84,7 @@ class BitmapData implements IBitmapDrawable
 
    public function clone():BitmapData 
    {
-      var bm = new BitmapData(0, 0);
+      var bm = new BitmapData(0, 0, transparent);
       bm.nmeHandle = nme_bitmap_data_clone(nmeHandle);
       return bm;
    }
@@ -600,7 +607,7 @@ class BitmapData implements IBitmapDrawable
    private function get_rect():Rectangle { return new Rectangle(0, 0, width, height); }
    private function get_width():Int { return nme_bitmap_data_width(nmeHandle); }
    private function get_height():Int { return nme_bitmap_data_height(nmeHandle); }
-   private function get_transparent():Bool { return nme_bitmap_data_get_transparent(nmeHandle); }
+   private function get_transparent():Bool { return nmeTransparent; /*nme_bitmap_data_get_transparent(nmeHandle);*/ }
 
    // Native Methods
    private static var nme_bitmap_data_create = Loader.load("nme_bitmap_data_create", -1);

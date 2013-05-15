@@ -620,38 +620,93 @@ class TextField extends InteractiveObject {
 		
 	}
 	
+	private function BuildModifiedFont(inFmt:TextFormat) : FontInstance {
+		
+		var newFace = mFace;
+		var newTextHeight = mTextHeight;
+		var newTextColour = mTextColour;
 	
-	public function setTextFormat(inFmt:TextFormat, beginIndex:Int = 0, endIndex:Int = 0) {
+		if (inFmt.font != null)  newFace = inFmt.font;
+		if (inFmt.size != null)  newTextHeight = Std.int(inFmt.size);
+		if (inFmt.color != null) newTextColour = inFmt.color;
 		
-		if (inFmt.font != null) {
+		return FontInstance.CreateSolid(newFace, newTextHeight, newTextColour, 1.0);
+	}
+	
+	
+	public function setTextFormat(inFmt:TextFormat, beginIndex:Int = -1, endIndex:Int = -1) {
+
+		if((beginIndex < 0 && endIndex < 0) || mHTMLMode) {
+
+			if (inFmt.font != null) {
+				mFace = inFmt.font;
+			}
 			
-			mFace = inFmt.font;
+			if (inFmt.size != null) {
+				mTextHeight = Std.int(inFmt.size);
+			}
 			
+			if (inFmt.align != null) {
+				mAlign = inFmt.align;
+			}
+			
+			if (inFmt.color != null) {
+				mTextColour = inFmt.color;
+			}
+		
+			RebuildText();
+			nmeInvalidateBounds();
+			
+			return getTextFormat();
+		
+		} else {
+
+			if(endIndex < 0) {
+				endIndex = mText.length;
+			} else if(beginIndex < 0) {
+				beginIndex = 0;
+			}
+			
+			// Not HTML, and indexes are set, and affecting some region
+			var spanStart = 0;
+
+			for (paragraph in mParagraphs) {
+				var newSpans = new Array<Span>();
+
+				for (span in paragraph.spans) {
+					var relativeBegin = beginIndex - spanStart;
+					var relativeEnd = endIndex - spanStart;
+
+					// if not covering this span
+					if(relativeBegin > span.text.length || relativeEnd < 0) {
+						newSpans.push(span);
+					} else {
+						// split it into the part before, in, and after
+						if(relativeBegin > 0) {
+							newSpans.push( { font: span.font, text: span.text.substring(0, relativeBegin) } );
+						}
+
+						newSpans.push( {
+							font: BuildModifiedFont(inFmt),
+							text: span.text.substring(relativeBegin < 0 ? 0 : relativeBegin, relativeEnd) } );
+
+						if(relativeEnd < span.text.length) {
+							newSpans.push( { font: span.font, text: span.text.substring(relativeEnd) } );
+						}
+					}
+
+					spanStart += span.text.length;
+				}
+
+				paragraph.spans = newSpans;
+			}
 		}
-		
-		if (inFmt.size != null) {
-			
-			mTextHeight = Std.int(inFmt.size);
-			
-		}
-		
-		if (inFmt.align != null) {
-			
-			mAlign = inFmt.align;
-			
-		}
-		
-		if (inFmt.color != null) {
-			
-			mTextColour = inFmt.color;
-			
-		}
-		
-		RebuildText();
+
+		Rebuild();
 		nmeInvalidateBounds();
-		
-		return getTextFormat();
-		
+
+		return inFmt;
+
 	}
 	
 	

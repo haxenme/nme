@@ -1,21 +1,21 @@
 package native.display3D;
 #if (cpp || neko)
 
-import nme.utils.Float32Array;
-import nme.display3D.textures.CubeTexture;
-import nme.display3D.textures.Texture;
-import nme.display3D.textures.TextureBase;
-import nme.display.BitmapData;
-import nme.display.OpenGLView;
-import nme.errors.Error;
-import nme.geom.Matrix3D;
-import nme.geom.Rectangle;
-import nme.gl.GL;
-import nme.gl.GLFramebuffer;
-import nme.gl.GLProgram;
-import nme.utils.ByteArray;
-import nme.Lib;
-import nme.Vector;
+import native.utils.Float32Array;
+import native.display3D.textures.CubeTexture;
+import native.display3D.textures.Texture;
+import native.display3D.textures.TextureBase;
+import native.display.BitmapData;
+import native.display.OpenGLView;
+import native.errors.Error;
+import native.geom.Matrix3D;
+import native.geom.Rectangle;
+import native.gl.GL;
+import native.gl.GLFramebuffer;
+import native.gl.GLProgram;
+import native.utils.ByteArray;
+import native.Lib;
+import flash.Vector;
 
 class Context3D 
 {
@@ -186,6 +186,7 @@ class Context3D
          numIndices = numTriangles * 3;
       }
 
+      GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
       GL.drawElements(GL.TRIANGLES, numIndices, GL.UNSIGNED_SHORT, firstIndex);
    }
 

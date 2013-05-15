@@ -22,7 +22,7 @@ import native.Lib;
 import native.media.SoundChannel;
 import native.net.URLLoader;
 import native.Loader;
-import nme.Vector;
+import flash.Vector;
 
 
 class Stage extends DisplayObjectContainer 
@@ -378,9 +378,10 @@ class Stage extends DisplayObjectContainer
       return result;
    }
 
-   private function dummyTrace() { trace(""); }
 
    #if android
+   @:keep private function dummyTrace() { trace(""); }
+
    @:functionCode("try {") 
    @:functionTailCode(' } catch(Dynamic e) { __hx_dump_stack(); ::haxe::Log_obj::trace(HX_CSTRING("Uncaught exception: ") + e,hx::SourceInfo(HX_CSTRING("Stage.hx"),0,HX_CSTRING("nme.display.Stage"),HX_CSTRING("nmeDoProcessStageEvent")));}')
    #end
@@ -765,10 +766,10 @@ class Stage extends DisplayObjectContainer
       // TODO: In a multi-stage environment, may need to handle this better...
       var next_wake = Timer.nmeNextWake(315000000.0);
 
-      if (next_wake > 0.001 && nme.media.SoundChannel.nmeDynamicSoundCount > 0)
+      if (next_wake > 0.001 && SoundChannel.nmeDynamicSoundCount > 0)
          next_wake = 0.001;
 
-      if (next_wake > 0.02 && (nme.media.SoundChannel.nmeCompletePending() || nme.net.URLLoader.nmeLoadPending())) 
+      if (next_wake > 0.02 && (SoundChannel.nmeCompletePending() || URLLoader.nmeLoadPending())) 
       {
          next_wake =(active || !pauseWhenDeactivated) ? 0.020 : 0.500;
       }

@@ -19,10 +19,14 @@ class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int>
    public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>)
    {
       BYTES_PER_ELEMENT = 1;
-      var ints:Array<Int> = inBufferOrArray;
 
-      if (!Std.is(inBufferOrArray,ArrayBuffer) && ints != null)
+      if (Std.is(inBufferOrArray,Int))
       {
+         super( Std.int(inBufferOrArray) );
+      }
+      else if (Std.is(inBufferOrArray,Array))
+      {
+         var ints:Array<Int> = inBufferOrArray;
          if (inLen != null)
             length = inLen;
          else
@@ -50,7 +54,10 @@ class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int>
       }
    }
 
+   @:keep
    inline public function __get(index:Int):Int { return getUInt8(index); }
+
+   @:keep
    inline public function __set(index:Int, v:Int):Void { setUInt8(index, v); }
 }
 

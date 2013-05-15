@@ -262,7 +262,7 @@ namespace nme
 			loadWithPath(inPath, inForceMusic);
 		}
 		
-		AndroidSound(unsigned char *inData, int len, bool inForceMusic)
+		AndroidSound(float *inData, int len, bool inForceMusic)
 		{
 			JNIEnv *env = GetEnv();
 
@@ -335,7 +335,7 @@ namespace nme
 		return new AndroidSound(inFilename, inForceMusic);
 	}
 
-	Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic)
+	Sound *Sound::Create(float *inData, int len, bool inForceMusic)
 	{
 		return new AndroidSound(inData, len, inForceMusic);
 	}

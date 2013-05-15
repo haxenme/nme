@@ -10,6 +10,7 @@ import native.display.Shape;
 import native.display.Sprite;
 import native.events.Event;
 import native.events.IOErrorEvent;
+import native.system.LoaderContext;
 import native.utils.ByteArray;
 
 class Loader extends Sprite 
@@ -18,7 +19,9 @@ class Loader extends Sprite
    public var contentLoaderInfo(default, null):LoaderInfo;
 
    /** @private */ private var nmeImage:BitmapData;
-   /** @private */ private var nmeSWF:MovieClip;
+   #if swf
+   /** @private */ private var nmeSWF:format.SWF;
+   #end
    public function new() 
    {
       super();
@@ -32,6 +35,14 @@ class Loader extends Sprite
    {
       if (inBytes == null)
          return false;
+      
+      //#if swf
+      //try {
+         //nmeSWF = new format.SWF(inBytes);
+         //content = nmeSWF.createMovieClip();
+         //return true;
+      //} catch(e:Dynamic) {}
+      //#end
 
       try 
       {
@@ -55,13 +66,13 @@ class Loader extends Sprite
       }
    }
 
-   public function load(request:URLRequest) 
+   public function load(request:URLRequest, context:LoaderContext = null) 
    {
       // No "loader context" in nme
       contentLoaderInfo.load(request);
    }
 
-   public function loadBytes(bytes:ByteArray) 
+   public function loadBytes(bytes:ByteArray, context:LoaderContext = null) 
    {
       // No "loader context" in nme
       if (doLoad(bytes)) {

@@ -324,7 +324,7 @@ extern class Loader extends DisplayObjectContainer {
 	 * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	 *                      object when a loaded object is removed.
 	 */
-	function load(request : nme.net.URLRequest) : Void;
+	function load(request : nme.net.URLRequest, context : nme.system.LoaderContext = null) : Void;
 
 	/**
 	 * Loads from binary data stored in a ByteArray object.
@@ -392,7 +392,7 @@ extern class Loader extends DisplayObjectContainer {
 	 * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	 *                      object when a loaded object is removed.
 	 */
-	function loadBytes(bytes : nme.utils.ByteArray) : Void;
+	function loadBytes(bytes : nme.utils.ByteArray, context : nme.system.LoaderContext = null) : Void;
 
 	/**
 	 * Loads a SWF, JPEG, progressive JPEG, unanimated GIF, or PNG file into an

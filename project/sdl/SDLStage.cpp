@@ -1431,7 +1431,7 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 #endif
 
 #ifndef SDL_NOEVENT
-#define SDL_NOEVENT NULL;
+#define SDL_NOEVENT -1;
 #endif
 
 

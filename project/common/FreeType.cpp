@@ -9,6 +9,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_BITMAP_H
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_IDS_H
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -552,6 +554,58 @@ int outline_cubic_to(FVecPtr, FVecPtr , FVecPtr , void *user) {
    return 1;
 }
 
+wchar_t *get_familyname_from_sfnt_name(FT_Face face)
+{
+   wchar_t *family_name = NULL;
+   FT_SfntName sfnt_name;
+   FT_UInt num_sfnt_names, sfnt_name_index;
+   int len, i;
+   
+   if (FT_IS_SFNT(face))
+   {
+      num_sfnt_names = FT_Get_Sfnt_Name_Count(face);
+      sfnt_name_index = 0;
+      while (sfnt_name_index < num_sfnt_names)
+      {
+         if (!FT_Get_Sfnt_Name(face, sfnt_name_index++, (FT_SfntName *)&sfnt_name))
+         {
+            //if((sfnt_name.name_id == TT_NAME_ID_FONT_FAMILY) &&
+            if((sfnt_name.name_id == 4) &&
+               //(sfnt_name.language_id == GetUserDefaultLCID()) &&
+               (sfnt_name.platform_id == TT_PLATFORM_MICROSOFT) &&
+               (sfnt_name.encoding_id == TT_MS_ID_UNICODE_CS))
+            {
+               /* Note that most fonts contains a Unicode charmap using
+                  TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS.
+               */
+               
+               /* .string :
+                     Note that its format differs depending on the 
+                     (platform,encoding) pair. It can be a Pascal String, 
+                     a UTF-16 one, etc..
+                     Generally speaking, the string is "not" zero-terminated.
+                     Please refer to the TrueType specification for details..
+                      
+                  .string_len :
+                     The length of `string' in bytes.
+               */
+               
+               len = sfnt_name.string_len / 2;
+               family_name = (wchar_t*)malloc((len + 1) * sizeof(wchar_t));
+               for(i = 0; i < len; i++)
+               {
+                  family_name[i] = ((wchar_t)sfnt_name.string[i*2 + 1]) | (((wchar_t)sfnt_name.string[i*2]) << 8);
+               }
+               family_name[len] = 0;
+               return family_name;
+            }
+         }
+      }
+   }
+   
+   return NULL;
+}
+
 } // end namespace
 
 value freetype_init()
@@ -563,7 +617,7 @@ value freetype_init()
 }
 DEFINE_PRIM(freetype_init, 0);
 
-value freetype_import_font(value font_file, value char_vector, value em_size)
+value freetype_import_font(value font_file, value char_vector, value em_size, value inBytes)
 {
    freetype_init();
 
@@ -572,14 +626,15 @@ value freetype_import_font(value font_file, value char_vector, value em_size)
 
    val_check(font_file, string);
    val_check(em_size, int);
+   
+   AutoGCRoot *bytes = !val_is_null(inBytes) ? new AutoGCRoot(inBytes) : NULL;
 
-   result = nme::MyNewFace(val_string(font_file), 0, &face, NULL);
-     
+   result = nme::MyNewFace(val_string(font_file), 0, &face, bytes);
+   
    if (result == FT_Err_Unknown_File_Format)
    {
       val_throw(alloc_string("Unknown file format!"));
       return alloc_null();
-   
    }
    else if (result != 0)
    {
@@ -590,7 +645,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size)
    if (!FT_IS_SCALABLE(face))
    {
       FT_Done_Face(face);
-
+      
       val_throw(alloc_string("Font is not scalable!"));
       return alloc_null();
    }
@@ -692,8 +747,9 @@ value freetype_import_font(value font_file, value char_vector, value em_size)
          }
       }
    }
-
+   
    int               num_glyphs = glyphs.size();
+   wchar_t*          family_name = get_familyname_from_sfnt_name(face);
    
    value             ret = alloc_empty_object();
    alloc_field(ret, val_id("has_kerning"), alloc_bool(FT_HAS_KERNING(face)));
@@ -702,7 +758,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size)
    alloc_field(ret, val_id("is_italic"), alloc_bool(face->style_flags & FT_STYLE_FLAG_ITALIC));
    alloc_field(ret, val_id("is_bold"), alloc_bool(face->style_flags & FT_STYLE_FLAG_BOLD));
    alloc_field(ret, val_id("num_glyphs"), alloc_int(num_glyphs));
-   alloc_field(ret, val_id("family_name"), alloc_string(face->family_name));
+   alloc_field(ret, val_id("family_name"), family_name == NULL ? alloc_string(face->family_name) : alloc_wstring(family_name));
    alloc_field(ret, val_id("style_name"), alloc_string(face->style_name));
    alloc_field(ret, val_id("em_size"), alloc_int(face->units_per_EM));
    alloc_field(ret, val_id("ascend"), alloc_int(face->ascender));
@@ -762,7 +818,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size)
    return ret;
 }
 
-DEFINE_PRIM(freetype_import_font, 3);
+DEFINE_PRIM(freetype_import_font, 4);
 
 
 bool ChompEnding(std::string &ioName, const std::string &inEnding)
