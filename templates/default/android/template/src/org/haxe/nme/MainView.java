@@ -51,7 +51,7 @@ import java.util.Date;
  *   that matches it exactly (with regards to red/green/blue/alpha channels
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
-class MainView extends GLSurfaceView {
+public class MainView extends GLSurfaceView {
 
    Activity mActivity;
 	static MainView mRefreshView;
