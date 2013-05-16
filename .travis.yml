@@ -21,7 +21,7 @@ before_install:
   - sudo apt-get install xsltproc -y
   # NME dev
   - haxelib dev nme $(pwd)
-  - haxelib install nmedev
+  - haxelib git nmedev https://github.com/haxenme/nmedev.git
   - haxelib run nme rebuild tools
   - haxelib run nme rebuild linux
   # emulate video device
