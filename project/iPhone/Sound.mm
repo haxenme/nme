@@ -323,7 +323,7 @@ namespace nme
             LOG_SOUND("AVAudioPlayerSound constructor()");
             IncRef();
             
-            printf("AVAudioPlayerSound!!");
+            //printf("AVAudioPlayerSound!!");
             
             this->data = [[NSData alloc] initWithBytes:inDataPtr length:inDataLen];
             
