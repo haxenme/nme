@@ -86,7 +86,7 @@ class Context3D {
 	
 	
 
-	public function configureBackBuffer (width:Int, height:Int, antiAlias:Int, enableDepthAndStencil:Bool = true):Void {
+	public function configureBackBuffer (width:Int, height:Int, antiAlias:Int, enableDepthAndStencil:Bool = true, wantsBestResolution : Bool = false):Void {
 
         if(enableDepthAndStencil){
             // TODO check whether this is keep across frame
