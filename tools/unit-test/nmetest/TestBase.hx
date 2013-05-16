@@ -43,7 +43,7 @@ class TestBaseBuilder {
 							var resultDetail = printBuf.toString();
 							log(resultDetail);
 							
-							if (js.phantomjs.PhantomTools.inPhantom()) {
+							if (!js.phantomjs.PhantomTools.noPhantom()) {
 								js.phantomjs.Phantom.exit(success ? 0 : 1);
 							} else {
 								var resultDiv = js.Browser.document.createDivElement();
