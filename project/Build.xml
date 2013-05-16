@@ -31,7 +31,7 @@
    <set name="nocurl" value="1" if="winrt"/>
    <set name="nocurl" value="1" if="emscripten"/>
    
-   <set name="NME_FORCE_GLES1" value="1" if="iphone" />
+   <!-- <set name="NME_FORCE_GLES1" value="1" if="iphone" /> -->
    
    <set name="sdl_image" value="1" if="emscripten" />
    
