@@ -47,7 +47,7 @@ class Main extends Sprite {
 
     function onReady( _ ) {
         context3D = stage3D.context3D;
-        context3D.configureBackBuffer( stage.stageWidth, stage.stageHeight, 0, false);
+        context3D.configureBackBuffer( stage.stageWidth, stage.stageHeight, 0, false, true);
         context3D.enableErrorChecking = true;
 
         createProgram ();

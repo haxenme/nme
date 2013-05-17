@@ -249,13 +249,13 @@ public:
          // Tear down GL
          if (defaultFramebuffer)
          {
-            glDeleteFramebuffersOES(1, &defaultFramebuffer);
+            glDeleteFramebuffers(1, &defaultFramebuffer);
             defaultFramebuffer = 0;
          }
 
          if (colorRenderbuffer)
          {
-            glDeleteRenderbuffersOES(1, &colorRenderbuffer);
+            glDeleteRenderbuffers(1, &colorRenderbuffer);
             colorRenderbuffer = 0;
          }
    
@@ -300,25 +300,25 @@ public:
    {
       // Create default framebuffer object.
       // The backing will be allocated for the current layer in -resizeFromLayer
-      glGenFramebuffersOES(1, &defaultFramebuffer);
-      glGenRenderbuffersOES(1, &colorRenderbuffer);
-      glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
-      glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
-      [mOGLContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)mLayer];
-      glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES,
-                                  GL_RENDERBUFFER_OES, colorRenderbuffer);
+      glGenFramebuffers(1, &defaultFramebuffer);
+      glGenRenderbuffers(1, &colorRenderbuffer);
+      glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
+      glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
+      [mOGLContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)mLayer];
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                  GL_RENDERBUFFER, colorRenderbuffer);
    
-      glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-      glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+      glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+      glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
 
       //printf("Create OGL window %dx%d\n", backingWidth, backingHeight);
        
-       int framebufferStatus = glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES);
+       int framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-      if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE_OES)
+      if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
       {
          NSLog(@"Failed to make complete framebuffer object %x",
-              glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+              glCheckFramebufferStatus(GL_FRAMEBUFFER));
          throw "OpenGL resize failed";
       }
    }
@@ -327,10 +327,10 @@ public:
   void DestroyOGLFramebuffer()
    {
       if (defaultFramebuffer)
-         glDeleteFramebuffersOES(1, &defaultFramebuffer);
+         glDeleteFramebuffers(1, &defaultFramebuffer);
       defaultFramebuffer = 0;
       if (colorRenderbuffer)
-         glDeleteRenderbuffersOES(1, &colorRenderbuffer);
+         glDeleteRenderbuffers(1, &colorRenderbuffer);
       defaultFramebuffer = 0;
    }
 
@@ -416,8 +416,8 @@ public:
        // printf("flip %d\n", mRenderBuffer);
        if (sgHardwareRendering)
        {
-         glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
-         [mOGLContext presentRenderbuffer:GL_RENDERBUFFER_OES];
+         glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
+         [mOGLContext presentRenderbuffer:GL_RENDERBUFFER];
        }
        else
        {

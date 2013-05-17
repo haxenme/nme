@@ -77,7 +77,7 @@ class Context3D
       GL.clear(mask);
    }
 
-   public function configureBackBuffer(width:Int, height:Int, antiAlias:Int, enableDepthAndStencil:Bool = true):Void 
+   public function configureBackBuffer(width:Int, height:Int, antiAlias:Int, enableDepthAndStencil:Bool = true, wantsBestResolution : Bool = false):Void 
    {
         if (enableDepthAndStencil)
         {
