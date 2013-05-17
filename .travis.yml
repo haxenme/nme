@@ -13,6 +13,7 @@ before_install:
   - sudo apt-get install mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev -y # for nme
   - mkdir ~/haxelib
   - haxelib setup ~/haxelib
+  - haxelib install hxcpp
   #- haxelib install pdiff-hx
   #- haxelib install utest
   - haxelib install format
