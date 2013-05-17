@@ -354,9 +354,14 @@ class PlatformSetup {
 			
 		} else {
 			
-			File.copy (CommandLineTools.nme + "/tools/command-line/bin/nme.sh", "/usr/lib/haxe/nme");
-			Sys.command ("chmod", [ "755", "/usr/lib/haxe/nme" ]);
-			link ("haxe", "nme", "/usr/bin");
+			var haxePrefix = Sys.getEnv ("HAXE_PREFIX");
+			if (haxePrefix == null || haxePrefix == "") {
+				haxePrefix = "/usr";
+			}
+			
+			File.copy (CommandLineTools.nme + "/tools/command-line/bin/nme.sh", haxePrefix + "/lib/haxe/nme");
+			Sys.command ("chmod", [ "755", haxePrefix + "/lib/haxe/nme" ]);
+			link (haxePrefix + "/lib/haxe", "nme", haxePrefix + "/bin");
 			
 		}
 		
@@ -374,7 +379,7 @@ class PlatformSetup {
 	private static function link (dir:String, file:String, dest:String):Void {
 		
 		Sys.command("rm -rf " + dest + "/" + file);
-		Sys.command("ln -s " + "/usr/lib" +"/" + dir + "/" + file + " " + dest + "/" + file);
+		Sys.command("ln -s " + dir + "/" + file + " " + dest + "/" + file);
 		
 	}
 	
