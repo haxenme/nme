@@ -48,7 +48,7 @@ public class GameActivity extends Activity implements SensorEventListener
 	private static final int DEVICE_ROTATION_180 = 2;
 	private static final int DEVICE_ROTATION_270 = 3;
 	
-	static GameActivity activity;
+	public static GameActivity activity;
 	static AssetManager mAssets;
 	static Context mContext;
 	static DisplayMetrics metrics;
@@ -56,7 +56,7 @@ public class GameActivity extends Activity implements SensorEventListener
 	static SensorManager sensorManager;
 	
 	public Handler mHandler;
-	MainView mView;
+	public MainView mView;
 	
 	private static float[] accelData = new float[3];
 	private static int bufferedDisplayOrientation = -1;

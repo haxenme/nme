@@ -220,7 +220,8 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 
    if (inStart<0) inStart = 0;
    int max = mCharPos.size();
-   if (inEnd>max || inEnd<0) inEnd = inStart + 1;
+   //if (inEnd>max || inEnd<0) inEnd = inStart + 1;
+   if (inEnd>max || inEnd<0) inEnd = max;
 
    if (inEnd<=inStart)
       return;
