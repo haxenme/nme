@@ -1051,6 +1051,7 @@ class CommandLineTools {
 		
 		var catchArguments = false;
 		var catchHaxeFlag = false;
+		var catchPrefix = false;
 		
 		for (argument in arguments) {
 
@@ -1065,6 +1066,11 @@ class CommandLineTools {
 				
 				additionalArguments.push (argument);
 				
+			} else if (catchPrefix) {
+
+				userDefines.set ("prefix", argument);
+				catchPrefix = false;
+
 			} else if (equals > 0) {
 
 				var argValue = argument.substr (equals + 1);
@@ -1171,6 +1177,10 @@ class CommandLineTools {
 				
 				debug = true;
 				
+			} else if (argument == "-prefix") {
+				
+				catchPrefix = true;
+				
 			} else if (command.length == 0) {
 				
 				command = argument;
@@ -1208,11 +1218,11 @@ class CommandLineTools {
 		
 		if (words.length == 0) {
 			
-			PlatformSetup.run ();
+			PlatformSetup.run ("", userDefines);
 			
 		} else if (words.length == 1) {
 			
-			PlatformSetup.run (words[0]);
+			PlatformSetup.run (words[0], userDefines);
 			
 		} else {
 			
