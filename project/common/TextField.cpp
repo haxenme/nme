@@ -219,8 +219,9 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
    Layout();
 
    if (inStart<0) inStart = 0;
+   if (inEnd<0) inEnd = inStart + 1;
    int max = mCharPos.size();
-   if (inEnd>max || inEnd<0) inEnd = inStart + 1;
+   if (inEnd>max) inEnd = max;
 
    if (inEnd<=inStart)
       return;
