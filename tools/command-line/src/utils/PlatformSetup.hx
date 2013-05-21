@@ -338,7 +338,7 @@ class PlatformSetup {
 	}
 	
 	
-	public static function installNME (?prefix:String=""):Void {
+	public static function installNME (?prefix:String):Void {
 		
 		if (PlatformHelper.hostPlatform == Platform.WINDOWS) {
 			
