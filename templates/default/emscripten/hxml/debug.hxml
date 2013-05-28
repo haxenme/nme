@@ -3,7 +3,7 @@
 -cpp ::CPP_DIR::
 --remap flash:nme
 --remap browser:native
--lib pazu-native
+-lib openfl-native
 -D emscripten
 -D webgl
 -debug

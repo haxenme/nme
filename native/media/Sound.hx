@@ -11,7 +11,7 @@ import native.errors.Error;
 import native.utils.ByteArray;
 import native.utils.Endian;
 
-#if pazu @:autoBuild(pazu.Assets.embedSound()) #end
+#if openfl @:autoBuild(openfl.Assets.embedSound()) #end
 class Sound extends EventDispatcher 
 {
    public var bytesLoaded(default, null):Int;

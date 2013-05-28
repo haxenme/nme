@@ -1,6 +1,6 @@
 package nme;
 #if (!macro || !haxe3)
-#if !pazu
+#if !openfl
 
 
 import format.display.MovieClip;
@@ -564,10 +564,10 @@ enum LibraryType {
 
 #else
 
-import pazu.Assets;
-typedef Assets = pazu.Assets;
-typedef AssetType = pazu.AssetType;
-typedef LibraryType = pazu.LibraryType;
+import openfl.Assets;
+typedef Assets = openfl.Assets;
+typedef AssetType = openfl.AssetType;
+typedef LibraryType = openfl.LibraryType;
 
 #end
 #else

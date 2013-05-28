@@ -429,7 +429,7 @@ static uint8 *sgClamp0255;
 int InitClamp()
 {
    sgClamp0255 = sgClamp0255Values + 256;
-   for(int i=-255; i<255+255;i++)
+   for(int i=-255; i<=255+255;i++)
       sgClamp0255[i] = i<0 ? 0 : i>255 ? 255 : i;
    return 0;
 }
