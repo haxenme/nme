@@ -2272,6 +2272,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
         TILE_SMOOTH   = 0x1000,
 
         TILE_BLEND_ADD   = 0x10000,
+        TILE_BLEND_MULTIPLY   = 0x20000,
+        TILE_BLEND_SCREEN   = 0x40000,
         TILE_BLEND_MASK  = 0xf0000,
       };
 
@@ -2281,6 +2283,12 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
       {
          case TILE_BLEND_ADD:
             blend = bmAdd;
+            break;
+         case TILE_BLEND_MULTIPLY:
+            blend = bmMultiply;
+            break;
+         case TILE_BLEND_SCREEN:
+            blend = bmScreen;
             break;
       }
 

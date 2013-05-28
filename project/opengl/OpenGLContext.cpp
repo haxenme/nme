@@ -290,6 +290,10 @@ public:
          
          if ( arrays.mFlags & HardwareArrays::BM_ADD ) {
            glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+		 } else if (  arrays.mFlags & HardwareArrays::BM_MULTIPLY ) {
+           glBlendFunc( GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+		 } else if (  arrays.mFlags & HardwareArrays::BM_SCREEN ) {
+           glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
          } else {
            glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
          }

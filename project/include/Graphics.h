@@ -261,6 +261,8 @@ enum PathCommand
    pcTileTransCol   = 0x13,
 
    pcBlendModeAdd   = 0x20,
+   pcBlendModeMultiply   = 0x21,
+   pcBlendModeScreen   = 0x22,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -522,6 +524,8 @@ struct HardwareArrays
      BM_ADD      = 0x00000001,
      PERSPECTIVE = 0x00000002,
      RADIAL      = 0x00000004,
+	 BM_MULTIPLY = 0x00000008,
+	 BM_SCREEN   = 0x00000010,
 
      FOCAL_MASK  = 0x0000ff00,
      FOCAL_SIGN  = 0x00010000,

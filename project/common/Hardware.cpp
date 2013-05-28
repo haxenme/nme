@@ -90,6 +90,10 @@ public:
             flags |= HardwareArrays::PERSPECTIVE;
          if (inJob.mTriangles->mBlendMode==bmAdd)
             flags |= HardwareArrays::BM_ADD;
+         if (inJob.mTriangles->mBlendMode==bmMultiply)
+            flags |= HardwareArrays::BM_MULTIPLY;
+         if (inJob.mTriangles->mBlendMode==bmScreen)
+            flags |= HardwareArrays::BM_SCREEN;
          mArrays = &ioData.GetArrays(mSurface,has_colour,flags);
          AddTriangles(inJob.mTriangles);
 
@@ -111,9 +115,9 @@ public:
       else if (tile_mode)
       {
          bool has_colour = false;
-         bool bm_add = false;
-         GetTileFlags(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, has_colour, bm_add);
-         mArrays = &ioData.GetArrays(mSurface,has_colour,bm_add ? HardwareArrays::BM_ADD : 0);
+         BlendMode bm = bmNormal;
+         GetTileFlags(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, has_colour, bm);
+         mArrays = &ioData.GetArrays(mSurface,has_colour,(bm == bmAdd) ? HardwareArrays::BM_ADD : (bm == bmMultiply) ? HardwareArrays::BM_MULTIPLY : (bm == bmScreen) ? HardwareArrays::BM_SCREEN : 0);
          AddTiles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
       else if (tessellate_lines && !mSolidMode)
@@ -309,13 +313,17 @@ public:
    }
 
 
-  void GetTileFlags(const uint8* inCommands, int inCount,bool &outColour, bool &outAdd)
+  void GetTileFlags(const uint8* inCommands, int inCount,bool &outColour, BlendMode &outBlendMode)
   {
      for(int i=0;i<inCount;i++)
         if (inCommands[i] == pcTileCol || inCommands[i]==pcTileTransCol)
            outColour = true;
         else if (inCommands[i] == pcBlendModeAdd)
-           outAdd = true;
+           outBlendMode = bmAdd;
+		else if (inCommands[i] == pcBlendModeMultiply)
+           outBlendMode = bmMultiply;
+		else if (inCommands[i] == pcBlendModeScreen)
+           outBlendMode = bmScreen;
   }
 
   void AddTiles(const uint8* inCommands, int inCount, const float *inData)
