@@ -894,17 +894,17 @@ public:
       mBitmapSurface->Bind(*this,0);
       mCurrentProg->setTransform(mBitmapTrans);
       // TODO: Need replacement call for GLES2
-      #ifndef NME_FORCE_GLES2
-      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      #endif
+      //#ifndef NME_FORCE_GLES2
+      //glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      //#endif
    }
 
    virtual void FinishBitmapRender()
    {
       // TODO: Need replacement call for GLES2
-      #ifndef NME_FORCE_GLES2
-      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-      #endif
+      //#ifndef NME_FORCE_GLES2
+      //glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      //#endif
    }
 
    virtual void SetRadialGradient(bool inIsRadial, float inFocus)
@@ -977,7 +977,7 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bo
    #ifdef NME_FORCE_GLES2
    //printf ("Force GLES2\n");
    shaders = true;
-   #elif NME_FORCE_GLES1
+   #elif defined(NME_FORCE_GLES1)
    //printf ("Force GLES1\n");
    shaders = false;
    #endif
