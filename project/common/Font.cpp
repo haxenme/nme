@@ -422,6 +422,22 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
    // Store for Ron ...
    font->IncRef();
    sgFontMap[info] = font;
+
+   // Clear out any old fonts
+   for (FontMap::iterator fit = sgFontMap.begin(); fit!=sgFontMap.end();)
+   {
+      if (fit->second->GetRefCount()==1)
+      {
+         fit->second->DecRef();
+         FontMap::iterator next = fit;
+         next++;
+         sgFontMap.erase(fit);
+         fit = next;
+      }
+      else
+         ++fit;
+   }
+   
    return font;
 }
 

@@ -102,6 +102,25 @@ void Graphics::drawEllipse(float x, float y, float width, float height)
    OnChanged();
 }
 
+/*
+
+   < ------------ w ----->
+      < -------- w_ ----->
+       < ------ cw_ ----->
+             < --- lw ---> 
+        c   --------------+
+         222 |            x
+        2    |
+       p
+    c 1 ..   ry
+     1    . 
+     1     ..|
+    | - rx --
+    |
+    |
+
+*/
+
 void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  rx,float  ry)
 {
    rx *= 0.5;

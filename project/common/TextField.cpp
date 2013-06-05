@@ -274,7 +274,11 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 void TextField::setTextColor(int inCol)
 {
    textColor = inCol;
-   defaultTextFormat->color = inCol;
+   if (!defaultTextFormat->color.IsSet() || defaultTextFormat->color.Get()!=inCol)
+   {
+      defaultTextFormat = defaultTextFormat->COW();
+      defaultTextFormat->color = inCol;
+   }
 }
 
 void TextField::setIsInput(bool inIsInput)
