@@ -177,7 +177,7 @@ public:
 
    Font *IncRef() { Object::IncRef(); return this; }
 
-   Tile GetGlyph(int inCharacter,int &outAdvance);
+   Tile GetGlyph(int inCharacter,int &outAdvance6);
 
    void  UpdateMetrics(TextLineMetrics &ioMetrics);
 

@@ -52,7 +52,7 @@ public:
       {
          outW = val_number( val_field(result, _id_width) );
          outH = val_number( val_field(result, _id_height) );
-         outAdvance = val_number( val_field(result, _id_advance) );
+         outAdvance = (int)(val_number( val_field(result, _id_advance) )) << 6;
          outOx = val_number( val_field(result, _id_offsetX) );
          outOy = val_number( val_field(result, _id_offsetY) );
          return true;
@@ -171,7 +171,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
             gw = mPixelHeight;
             gh = mPixelHeight;
             ox = oy = 0;
-            adv = mPixelHeight;
+            adv = mPixelHeight<<6;
             use_default = true;
          }
          else

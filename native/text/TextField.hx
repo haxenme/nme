@@ -97,8 +97,8 @@ class TextField extends InteractiveObject
    private function set_defaultTextFormat(inFormat:TextFormat):TextFormat { nme_text_field_set_def_text_format(nmeHandle, inFormat); return inFormat; }
    private function get_displayAsPassword():Bool { return nme_text_field_get_display_as_password(nmeHandle); }
    private function set_displayAsPassword(inVal:Bool):Bool { nme_text_field_set_display_as_password(nmeHandle, inVal); return inVal; }
-   private function get_embedFonts():Bool { return true; }
-   private function set_embedFonts(value:Bool):Bool { return true; }
+   private function get_embedFonts():Bool { return nme_text_field_get_embed_fonts(nmeHandle); }
+   private function set_embedFonts(inVal:Bool):Bool { nme_text_field_set_embed_fonts(nmeHandle,inVal); return inVal; }
    private function get_htmlText():String { return StringTools.replace(nme_text_field_get_html_text(nmeHandle), "\n", "<br/>"); }
    private function set_htmlText(inText:String):String   { nme_text_field_set_html_text(nmeHandle, inText); return inText; }
    private function get_maxChars():Int { return nme_text_field_get_max_chars(nmeHandle); }
@@ -170,8 +170,10 @@ class TextField extends InteractiveObject
    private static var nme_text_field_get_max_chars = Loader.load("nme_text_field_get_max_chars", 1);
    private static var nme_text_field_set_max_chars = Loader.load("nme_text_field_set_max_chars", 2);
    private static var nme_text_field_get_line_text = Loader.load("nme_text_field_get_line_text", 2);
-    private static var nme_text_field_get_line_metrics = Loader.load("nme_text_field_get_line_metrics", 3);
+   private static var nme_text_field_get_line_metrics = Loader.load("nme_text_field_get_line_metrics", 3);
    private static var nme_text_field_get_line_offset = Loader.load("nme_text_field_get_line_offset", 2);
+   private static var nme_text_field_get_embed_fonts = Loader.load("nme_text_field_get_embed_fonts", 1);
+   private static var nme_text_field_set_embed_fonts = Loader.load("nme_text_field_set_embed_fonts", 2);
 }
 
 #end

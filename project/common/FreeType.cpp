@@ -91,7 +91,7 @@ public:
       FT_Bitmap &bitmap = mFace->glyph->bitmap;
       outW = bitmap.width;
       outH = bitmap.rows;
-      outAdvance = (mFace->glyph->advance.x >> 6);
+      outAdvance = (mFace->glyph->advance.x);
       return true;
    }
 

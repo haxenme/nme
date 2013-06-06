@@ -74,6 +74,10 @@ public:
    void  setMaxChars(int inMaxChars) { maxChars = inMaxChars; }
    bool  getDisplayAsPassword() const { return displayAsPassword; }
    void  setDisplayAsPassword(bool inValue) { displayAsPassword = inValue; }
+   bool  getEmbedFonts() const { return embedFonts; }
+   void  setEmbedFonts(bool inValue) { embedFonts = inValue; }
+
+
    int   getLineOffset(int inLine);
    WString getLineText(int inLine);
    TextLineMetrics *getLineMetrics(int inLine);

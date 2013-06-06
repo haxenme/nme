@@ -41,7 +41,7 @@ public:
 		GetTextExtentPointW(sgFontDC,  &ch, 1, &size );
 		outW = size.cx;
 		outH = size.cy;
-		outAdvance = outW;
+		outAdvance = outW<<6;
 		outOx = 0;
 		outOy = -mMetrics.tmAscent;
 		return true;

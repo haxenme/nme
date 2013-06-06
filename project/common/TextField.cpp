@@ -1547,6 +1547,11 @@ static bool IsWord(int inCh)
   //return inCh<255 && (iswalpha(inCh) || isdigit(inCh) || inCh=='_');
 }
 
+static inline int Round6(int inX6)
+{
+   return (inX6 + (1<<6) -1) >> 6;
+}
+
 // Combine x,y scaling with rotation to calculate pixel coordinates for
 //  each character.
 void TextField::Layout(const Matrix &inMatrix)
@@ -1594,7 +1599,7 @@ void TextField::Layout(const Matrix &inMatrix)
    int char_count = 0;
    textHeight = 0;
    textWidth = 0;
-   int x = gap;
+   int x6 = gap << 6;
    int y = gap;
    line.mY0 = y;
    mLastUpDownX = -1;
@@ -1607,7 +1612,7 @@ void TextField::Layout(const Matrix &inMatrix)
       g.mChar0 = char_count;
       int cid = 0;
       int last_word_cid = 0;
-      int last_word_x = x;
+      int last_word_x6 = x6;
       int last_word_line_chars = line.mChars;
 
       g.UpdateMetrics(line.mMetrics);
@@ -1615,19 +1620,19 @@ void TextField::Layout(const Matrix &inMatrix)
       {
          if (line.mChars==0)
          {
-            x = gap;
+            x6 = gap<<6;
             line.mY0 = y;
             line.mChar0 = char_count;
             line.mCharGroup0 = i;
             line.mCharInGroup0 = cid;
             last_word_line_chars = 0;
             last_word_cid = cid;
-            last_word_x = gap;
+            last_word_x6 = gap<<6;
          }
 
          int advance = 0;
          int ch = g.mString[cid];
-         mCharPos.push_back( ImagePoint(x,y) );
+         mCharPos.push_back( ImagePoint(x6>>6,y) );
          line.mChars++;
          char_count++;
          cid++;
@@ -1645,7 +1650,7 @@ void TextField::Layout(const Matrix &inMatrix)
                   last_word_cid = cid-1;
                   last_word_line_chars = line.mChars-1;
                }
-               last_word_x = x;
+               last_word_x6 = x6;
             }
    
             if (ch=='\n' || ch=='\r')
@@ -1659,16 +1664,16 @@ void TextField::Layout(const Matrix &inMatrix)
             }
          }
    
-         int ox = x;
+         int ox6 = x6;
          if (displayAsPassword)
             ch = gPasswordChar;
          if (g.mFont)
             g.mFont->GetGlyph( ch, advance );
          else
             advance = 0;
-         x+= advance;
+         x6 += advance;
          //printf(" Char %c (%d..%d/%d,%d) %p\n", ch, ox, x, max_x, y, g.mFont);
-         if ( !displayAsPassword && (wordWrap) && (x > max_x) && line.mChars>1)
+         if ( !displayAsPassword && (wordWrap) && Round6(x6) > max_x && line.mChars>1)
          {
             // No break on line so far - just back up 1 character....
             if (last_word_line_chars==0 || !wordWrap)
@@ -1677,7 +1682,7 @@ void TextField::Layout(const Matrix &inMatrix)
                line.mChars--;
                char_count--;
                mCharPos.qpop();
-               line.mMetrics.width = ox;
+               line.mMetrics.width = Round6(ox6);
             }
             else
             {
@@ -1686,16 +1691,17 @@ void TextField::Layout(const Matrix &inMatrix)
                char_count-= line.mChars - last_word_line_chars;
                mCharPos.resize(char_count);
                line.mChars = last_word_line_chars;
-               line.mMetrics.width = last_word_x;
+               line.mMetrics.width = Round6(last_word_x6);
             }
             mLines.push_back(line);
             y += g.Height() + g.mFormat->leading;
-            x = gap;
+            x6 = gap<<6;
             line.Clear();
             g.UpdateMetrics(line.mMetrics);
             continue;
          }
 
+         int x = Round6(x6);
          line.mMetrics.width = x;
          if (x>textWidth)
             textWidth = x;
