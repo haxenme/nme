@@ -83,7 +83,8 @@ bool ClearUserPreference(const char *inId)
 const std::string GetUniqueDeviceIdentifier()
 {
 	// @todo this is deprecated as of iOS 5. switch this out ASAP for UUID generation into user defaults.
-  	return [[[UIDevice currentDevice] uniqueIdentifier] cStringUsingEncoding:1];
+  	//return [[[UIDevice currentDevice] uniqueIdentifier] cStringUsingEncoding:1];
+	return "";
 }
 
 const std::string &GetResourcePath()

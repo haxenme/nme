@@ -5,4 +5,5 @@
 
 JNIEnv *GetEnv();
 jclass FindClass(const char *className);
+JavaVM *getJavaVM();
 #endif
