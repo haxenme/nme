@@ -1,17 +1,27 @@
 package nme.events;
-#if display
+#if (cpp || neko)
 
+class SystemEvent extends Event 
+{
+   public static var SYSTEM:String = "system";
 
-extern class SystemEvent extends Event {
+   public var data(default, null):Int;
 
-	var data(default, null) : Int;
-	
-	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, data : Int = 0) : Void;
+   public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, data:Int = 0) 
+   {
+      super(type, bubbles, cancelable);
+      this.data = data;
+   }
 
-	static var SYSTEM : String;
+   public override function clone():Event 
+   {
+      return new ErrorEvent(type, bubbles, cancelable, data);
+   }
+
+   public override function toString():String 
+   {
+      return "[SystemEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " data=" + data + "]";
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef SystemEvent = native.events.SystemEvent;
 #end

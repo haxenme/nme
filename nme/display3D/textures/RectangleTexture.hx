@@ -1,18 +1,27 @@
 package nme.display3D.textures;
-#if display
+#if (cpp || neko)
 
+import nme.display.BitmapData;
+import nme.gl.GL;
+import nme.gl.GLTexture;
+import nme.utils.ByteArray;
 
-@:final extern class RectangleTexture extends TextureBase {
-	function new() : Void;
-	function uploadFromBitmapData(source : nme.display.BitmapData) : Void;
-	function uploadFromByteArray(data : nme.utils.ByteArray, byteArrayOffset : UInt) : Void;
+class RectangleTexture extends TextureBase 
+{
+    public function new(glTexture:GLTexture) 
+    {
+        super(glTexture);
+    }
+
+   public function uploadFromBitmapData(source:BitmapData):Void 
+   {
+      // TODO
+   }
+
+   public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int):Void 
+   {
+      // TODO
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef RectangleTexture = native.display3D.textures.RectangleTexture;
-#elseif js
-typedef RectangleTexture = browser.display3D.textures.RectangleTexture;
-#elseif flash
-typedef RectangleTexture = flash.display3D.textures.RectangleTexture;
 #end

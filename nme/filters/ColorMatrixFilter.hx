@@ -1,18 +1,20 @@
 package nme.filters;
-#if display
+#if (cpp || neko)
 
+class ColorMatrixFilter extends BitmapFilter 
+{
+   /** @private */ private var matrix:Array<Float>;
+   public function new(inMatrix:Array<Float>) 
+   {
+      super("ColorMatrixFilter");
+	  
+      matrix = inMatrix;
+   }
 
-@:final extern class ColorMatrixFilter extends BitmapFilter {
-
-	function new(matrix : Array<Float>) : Void;
-	
+   override public function clone():BitmapFilter 
+   {
+      return new ColorMatrixFilter(matrix);
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef ColorMatrixFilter = native.filters.ColorMatrixFilter;
-#elseif js
-typedef ColorMatrixFilter = browser.filters.ColorMatrixFilter;
-#else
-typedef ColorMatrixFilter = flash.filters.ColorMatrixFilter;
 #end

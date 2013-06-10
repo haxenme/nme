@@ -1,15 +1,12 @@
 package nme.errors;
-#if display
+#if (cpp || neko)
 
-
-@:native("SecurityError") extern class SecurityError extends Error {
+class SecurityError extends Error 
+{
+   public function new(inMessage:String = "") 
+   {
+      super(inMessage, 0);
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef SecurityError = native.errors.SecurityError;
-#elseif js
-typedef SecurityError = browser.errors.SecurityError;
-#else
-typedef SecurityError = flash.errors.SecurityError;
 #end

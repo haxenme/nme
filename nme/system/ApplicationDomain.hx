@@ -1,21 +1,41 @@
 package nme.system;
-#if display
 
 
-@:final extern class ApplicationDomain {
-	//@:require(flash10) var domainMemory : flash.utils.ByteArray;
-	var parentDomain(default,null) : ApplicationDomain;
-	function new(?parentDomain : ApplicationDomain) : Void;
-	function getDefinition(name : String) : flash.utils.Object;
-	//@:require(flash11_3) function getQualifiedDefinitionNames() : flash.Vector<String>;
-	function hasDefinition(name : String) : Bool;
-	//@:require(flash10) static var MIN_DOMAIN_MEMORY_LENGTH(default,null) : UInt;
-	static var currentDomain(default,null) : ApplicationDomain;
+class ApplicationDomain {
+	
+	
+	public static var currentDomain(default, null) = new ApplicationDomain (null);
+	
+	public var parentDomain(default, null):ApplicationDomain;
+	
+	
+	public function new (parentDomain:ApplicationDomain = null) {
+		
+		if (parentDomain != null) {
+			
+			this.parentDomain = parentDomain;
+			
+		} else {
+			
+			this.parentDomain = currentDomain;
+			
+		}
+		
+	}
+	
+	
+	public function getDefinition (name:String):Dynamic {
+		
+		return Type.resolveClass (name);
+		
+	}
+	
+	
+	public function hasDefinition (name:String):Bool {
+		
+		return (Type.resolveClass (name) != null);
+		
+	}
+	
+	
 }
-
-
-#elseif (cpp || neko)
-typedef ApplicationDomain = native.system.ApplicationDomain;
-#elseif flash
-typedef ApplicationDomain = flash.system.ApplicationDomain;
-#end

@@ -1,17 +1,11 @@
 package nme.display3D;
-#if display
+#if (cpp || neko)
 
-
-@:fakeEnum(String) extern enum Context3DTextureFormat {
-	BGRA;
-	COMPRESSED;
+enum Context3DTextureFormat 
+{
+    BGRA;
+    COMPRESSED;
+    COMPRESSED_ALPHA;
 }
 
-
-#elseif (cpp || neko)
-typedef Context3DTextureFormat = native.display3D.Context3DTextureFormat;
-#elseif js
-typedef Context3DTextureFormat = browser.display3D.Context3DTextureFormat;
-#elseif flash
-typedef Context3DTextureFormat = flash.display3D.Context3DTextureFormat;
 #end

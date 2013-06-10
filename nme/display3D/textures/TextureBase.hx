@@ -1,16 +1,28 @@
 package nme.display3D.textures;
-#if display
+#if (cpp || neko)
 
+import nme.geom.Rectangle;
+import nme.utils.ByteArray;
+import nme.display.BitmapData;
+import nme.gl.GL;
+import nme.gl.GLTexture;
+import nme.events.EventDispatcher;
 
-extern class TextureBase extends nme.events.EventDispatcher {
-	function dispose() : Void;
-}}
+class TextureBase extends EventDispatcher 
+{
+    public var glTexture:GLTexture;
 
+   public function new(glTexture:GLTexture) 
+   {
+      super();
 
-#elseif (cpp || neko)
-typedef TextureBase = native.display3D.textures.TextureBase;
-#elseif js
-typedef TextureBase = browser.display3D.textures.TextureBase;
-#elseif flash
-typedef TextureBase = flash.display3D.textures.TextureBase;
+        this.glTexture = glTexture;
+    }
+
+   public function dispose():Void 
+   {
+        GL.deleteTexture(glTexture);
+   }
+}
+
 #end

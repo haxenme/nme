@@ -1,18 +1,45 @@
 package nme.display3D.textures;
-#if display
+#if (cpp || neko)
+
+import nme.geom.Rectangle;
+using nme.display.BitmapData;
+import nme.utils.ByteArray;
+import nme.gl.GL;
+import nme.gl.GLTexture;
+
+class CubeTexture extends TextureBase 
+{
+    public var size : Int;
+
+    public function new (glTexture:GLTexture, size : Int) {
+
+        super (glTexture);
+        this.size = size;
+
+    }
+
+   public function uploadCompressedTextureFromByteArray(data:ByteArray, byteArrayOffset:Int, async:Bool = false):Void 
+   {
+      // TODO
+   }
+
+   public function uploadFromBitmapData (source:BitmapData, side:Int, miplevel:Int = 0):Void {
+
+        var p = source.getRGBAPixels();
+
+        GL.bindTexture (GL.TEXTURE_CUBE_MAP, glTexture);
+        // TODO
+        //GL.texImage2D (GL.TEXTURE_CUBE_MAP, 0, GL.RGBA, source.width, source.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, new ArrayBufferView (source, 0));
+
+	}
 
 
-@:final extern class CubeTexture extends TextureBase {
-	function uploadCompressedTextureFromByteArray(data : nme.utils.ByteArray, byteArrayOffset : UInt, async : Bool = false) : Void;
-	function uploadFromBitmapData(source : nme.display.BitmapData, side : UInt, miplevel : UInt = 0) : Void;
-	function uploadFromByteArray(data : nme.utils.ByteArray, byteArrayOffset : UInt, side : UInt, miplevel : UInt = 0) : Void;
+	public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int, side:Int, miplevel:Int = 0):Void {
+
+		// TODO
+
+	}
+
 }
 
-
-#elseif (cpp || neko)
-typedef CubeTexture = native.display3D.textures.CubeTexture;
-#elseif js
-typedef CubeTexture = browser.display3D.textures.CubeTexture;
-#elseif flash
-typedef CubeTexture = flash.display3D.textures.CubeTexture;
 #end

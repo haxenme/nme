@@ -1,16 +1,17 @@
 package nme.gl;
-#if display
+#if (cpp || neko)
 
+class GLShader extends GLObject 
+{
+   public function new(inVersion:Int, inId:Dynamic) 
+   {
+      super(inVersion, inId);
+   }
 
-extern class GLShader extends GLObject {
-	
-	function new(inVersion:Int, inId:Dynamic):Void;
-	
+   override private function getType():String 
+   {
+      return "Shader";
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef GLShader = native.gl.GLShader;
-#elseif js
-typedef GLShader = browser.gl.GLShader;
 #end

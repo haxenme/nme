@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": [ "cpp", "neko" ],
   "description": "NME provides a backend for native iOS, Android, BlackBerry, webOS, Windows, Mac and Linux applications, using a Flash-similar API",
-  "version": "3.5.6",
-  "releasenote": "Improvements for Haxe 3, fixes, more feature support",
+  "version": "4.0.0",
+  "releasenote": "Update to a more focused architecture",
   "contributors": [ "gamehaxe", "singmajesty" ],
   "dependencies": {}
 }

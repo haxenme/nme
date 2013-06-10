@@ -1,72 +1,150 @@
 package nme.text;
-#if display
+#if (cpp || neko)
 
+import haxe.Resource;
+import nme.display.Stage;
+import nme.utils.ByteArray;
+import nme.Loader;
 
-/**
- * The Font class is used to manage embedded fonts in SWF files. Embedded
- * fonts are represented as a subclass of the Font class. The Font class is
- * currently useful only to find out information about embedded fonts; you
- * cannot alter a font by using this class. You cannot use the Font class to
- * load external fonts, or to create an instance of a Font object by itself.
- * Use the Font class as an abstract base class.
- */
-extern class Font {
+#if openfl @:autoBuild(openfl.Assets.embedFont()) #end
+class Font 
+{
+   public var fontName(default, null):String;
+   public var fontStyle(default, null):FontStyle;
+   public var fontType(default, null):FontType;
+   
+   private static var nmeRegisteredFonts = new Array<Font>();
+   private static var nmeDeviceFonts: Array<Font>;
 
-	/**
-	 * The name of an embedded font.
-	 */
-	var fontName(default,null) : String;
+   public function new(inFilename:String = "", ?inStyle:FontStyle, ?inType:FontType):Void 
+   {
+      if (inFilename == "")
+      {
+         var fontClass = Type.getClass(this);
+         if (Reflect.hasField(fontClass, "resourceName")) {
+            var bytes = ByteArray.fromBytes (Resource.getBytes(Reflect.field(fontClass, "resourceName")));
+            var details = loadBytes(bytes);
+			fontName = details.family_name;
+			if (details.is_bold && details.is_italic)
+            {
+               fontStyle = FontStyle.BOLD_ITALIC;
+            }
+            else if (details.is_bold)
+            {
+               fontStyle = FontStyle.BOLD;
+            }
+            else if (details.is_italic)
+            {
+               fontStyle = FontStyle.ITALIC;
+            }
+            else
+            {
+               fontStyle = FontStyle.REGULAR;
+            }
+			fontType = FontType.EMBEDDED;
+         } else {
+            var className = Type.getClassName(Type.getClass(this));
+            fontName = className.split(".").pop();
+			fontStyle = FontStyle.REGULAR;
+            fontType = FontType.EMBEDDED;
+         }
+	  }
+      else
+      {
+         fontName = inFilename;
+         fontStyle = inStyle==null ? FontStyle.REGULAR : inStyle;
+         fontType = inType==null ? FontType.EMBEDDED : inType;
+      }
+   }
 
-	/**
-	 * The style of the font. This value can be any of the values defined in the
-	 * FontStyle class.
-	 */
-	var fontStyle(default,null) : FontStyle;
+   public function toString() : String
+   {
+      return "{ name=" + fontName + ", style=" + fontStyle + ", type=" + fontType + " }";
+   }
+   
+   public static function enumerateFonts(enumerateDeviceFonts:Bool = false):Array<Font>
+   {
+      var result = nmeRegisteredFonts.copy();
+      if (enumerateDeviceFonts)
+      {
+         if (nmeDeviceFonts==null)
+         {
+            nmeDeviceFonts = new Array<Font>();
+            var styles = [ FontStyle.BOLD, FontStyle.BOLD_ITALIC, FontStyle.ITALIC, FontStyle.REGULAR ];
+            nme_font_iterate_device_fonts( function(name,style) nmeDeviceFonts.push(new Font(name,styles[style],FontType.DEVICE)) );
+         }
+         result = result.concat(nmeDeviceFonts);
+         
+      }
+      return result;
+   }
 
-	/**
-	 * The type of the font. This value can be any of the constants defined in
-	 * the FontType class.
-	 */
-	var fontType(default,null) : FontType;
-	function new() : Void;
+   public static function load(inFilename:String):NativeFontData 
+   {
+      var result = freetype_import_font(inFilename, null, 1024 * 20, null);
+      return result;
+   }
+   
+   public static function loadBytes(inBytes:ByteArray):NativeFontData 
+   {
+      var result = freetype_import_font("", null, 1024 * 20, inBytes);
+      return result;
+   }
+   
+   public static function registerFont(font:Class<Font>)
+   {
+      var instance = Type.createInstance (font, [ "", null, null ]);
+      if (instance != null)
+      {
+         if (Reflect.hasField(font, "resourceName"))
+         {
+            nme_font_register_font (instance.fontName, ByteArray.fromBytes (Resource.getBytes(Reflect.field(font, "resourceName"))));
+         }
+         nmeRegisteredFonts.push (cast instance);
+      }
+   }
 
-	/**
-	 * Specifies whether a provided string can be displayed using the currently
-	 * assigned font.
-	 * 
-	 * @param str The string to test against the current font.
-	 * @return A value of <code>true</code> if the specified string can be fully
-	 *         displayed using this font.
-	 */
-	function hasGlyphs(str : String) : Bool;
-
-	/**
-	 * Specifies whether to provide a list of the currently available embedded
-	 * fonts.
-	 * 
-	 * @param enumerateDeviceFonts Indicates whether you want to limit the list
-	 *                             to only the currently available embedded
-	 *                             fonts. If this is set to <code>true</code>
-	 *                             then a list of all fonts, both device fonts
-	 *                             and embedded fonts, is returned. If this is
-	 *                             set to <code>false</code> then only a list of
-	 *                             embedded fonts is returned.
-	 * @return A list of available fonts as an array of Font objects.
-	 */
-	static function enumerateFonts(enumerateDeviceFonts : Bool = false) : Array<Font>;
-
-	/**
-	 * Registers a font class in the global font list.
-	 * 
-	 */
-	static function registerFont(font : Class<Dynamic>) : Void;
+   // Native Methods
+   private static var freetype_import_font = Loader.load("freetype_import_font", 4);
+   private static var nme_font_register_font = Loader.load("nme_font_register_font", 2);
+   private static var nme_font_iterate_device_fonts = Loader.load("nme_font_iterate_device_fonts", 1);
 }
 
+typedef NativeFontData = 
+{
+   var has_kerning: Bool;
+   var is_fixed_width: Bool;
+   var has_glyph_names: Bool;
+   var is_italic: Bool;
+   var is_bold: Bool;
+   var num_glyphs: Int;
+   var family_name: String;
+   var style_name: String;
+   var em_size: Int;
+   var ascend: Int;
+   var descend: Int;
+   var height: Int;
+   var glyphs: Array<NativeGlyphData>;
+   var kerning: Array<NativeKerningData>;
+}
 
-#elseif (cpp || neko)
-typedef Font = native.text.Font;
-#elseif js
-typedef Font = browser.text.Font;
-#else
-typedef Font = flash.text.Font;
+typedef NativeGlyphData = 
+{
+   var char_code: Int;
+   var advance: Int;
+   var min_x: Int;
+   var max_x: Int;
+   var min_y: Int;
+   var max_y: Int;
+   var points: Array<Int>;
+}
+
+typedef NativeKerningData = 
+{
+   var left_glyph:Int;
+   var right_glyph:Int;
+   var x:Int;
+   var y:Int;
+}
+
 #end

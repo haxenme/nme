@@ -1,22 +1,32 @@
 package nme.system;
-#if display
 
 
-extern class LoaderContext {
-	@:require(flash10_1) var allowCodeImport : Bool;
-	@:require(flash10_1) var allowLoadBytesCodeExecution : Bool;
-	var applicationDomain : ApplicationDomain;
-	var checkPolicyFile : Bool;
-	//@:require(flash11) var imageDecodingPolicy : ImageDecodingPolicy;
-	@:require(flash11) var parameters : Dynamic;
-	@:require(flash11) var requestedContentParent : flash.display.DisplayObjectContainer;
-	var securityDomain : SecurityDomain;
-	function new(checkPolicyFile : Bool = false, ?applicationDomain : ApplicationDomain, ?securityDomain : SecurityDomain) : Void;
+class LoaderContext {
+	
+	
+	public var allowCodeImport:Bool;
+	public var allowLoadBytesCodeExecution:Bool;
+	public var applicationDomain:ApplicationDomain;
+	public var checkPolicyFile:Bool;
+	public var securityDomain:SecurityDomain;
+	
+	
+	public function new (checkPolicyFile:Bool = false, applicationDomain:ApplicationDomain = null, securityDomain:SecurityDomain = null):Void {
+		
+		this.checkPolicyFile = checkPolicyFile;
+		this.securityDomain = securityDomain;
+		
+		if (applicationDomain != null) {
+			
+			this.applicationDomain = applicationDomain;
+			
+		} else {
+			
+			this.applicationDomain = ApplicationDomain.currentDomain;
+			
+		}
+		
+	}
+	
+	
 }
-
-
-#elseif (cpp || neko)
-typedef LoaderContext = native.system.LoaderContext;
-#elseif flash
-typedef LoaderContext = flash.system.LoaderContext;
-#end

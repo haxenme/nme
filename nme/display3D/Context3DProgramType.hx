@@ -1,17 +1,12 @@
 package nme.display3D;
-#if display
+#if (cpp || neko)
 
+import nme.gl.GL;
 
-@:fakeEnum(String) extern enum Context3DProgramType {
-	FRAGMENT;
-	VERTEX;
+enum Context3DProgramType 
+{
+   VERTEX;
+   FRAGMENT;
 }
 
-
-#elseif (cpp || neko)
-typedef Context3DProgramType = native.display3D.Context3DProgramType;
-#elseif js
-typedef Context3DProgramType = browser.display3D.Context3DProgramType;
-#elseif flash
-typedef Context3DProgramType = flash.display3D.Context3DProgramType;
 #end

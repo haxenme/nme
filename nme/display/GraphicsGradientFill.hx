@@ -1,24 +1,17 @@
 package nme.display;
-#if display
+#if (cpp || neko)
 
+import nme.geom.Matrix;
+import nme.Loader;
 
-@:final extern class GraphicsGradientFill implements IGraphicsData #if !haxe3 , #end /*implements IGraphicsFill*/ {
-	var alphas : Array<Float>;
-	var colors : Array<Int>;
-	var focalPointRatio : Float;
-	var interpolationMethod : InterpolationMethod;
-	var matrix : flash.geom.Matrix;
-	var ratios : Array<Float>;
-	var spreadMethod : SpreadMethod;
-	var type : GradientType;
-	function new(?type : GradientType, ?colors : Array<Int>, ?alphas : Array<Float>, ?ratios : Array<Float>, ?matrix : flash.geom.Matrix, ?spreadMethod : SpreadMethod, ?interpolationMethod : InterpolationMethod, focalPointRatio : Float = 0) : Void;
+class GraphicsGradientFill extends IGraphicsData 
+{
+   public function new(type:GradientType = null, colors:Array<Int> = null, alphas:Array<Float> = null, ratios:Array<Float> = null, matrix:Matrix = null, spreadMethod:SpreadMethod = null, interpolationMethod:InterpolationMethod = null, focalPointRatio:Float = 0):Void 
+   {
+      super(nme_graphics_solid_fill_create(0, 1));
+   }
+
+   private static var nme_graphics_solid_fill_create = Loader.load("nme_graphics_solid_fill_create", 2);
 }
 
-
-#elseif (cpp || neko)
-typedef GraphicsGradientFill = native.display.GraphicsGradientFill;
-#elseif js
-typedef GraphicsGradientFill = browser.display.GraphicsGradientFill;
-#else
-typedef GraphicsGradientFill = flash.display.GraphicsGradientFill;
 #end

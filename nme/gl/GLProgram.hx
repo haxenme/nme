@@ -1,18 +1,30 @@
 package nme.gl;
-#if display
+#if (cpp || neko)
 
+class GLProgram extends GLObject 
+{
+   public var shaders:Array<GLShader>;
 
-extern class GLProgram extends GLObject {
-	
-	function new(inVersion:Int, inId:Dynamic):Void;
-	function attach(s:GLShader):Void;
-	function getShaders():Array<GLShader>;
-	
+   public function new(inVersion:Int, inId:Dynamic) 
+   {
+      super(inVersion, inId);
+      shaders = new Array<GLShader>();
+   }
+
+   public function attach(s:GLShader):Void 
+   {
+      shaders.push(s);
+   }
+
+   public function getShaders():Array<GLShader> 
+   {
+      return shaders.copy();
+   }
+
+   override private function getType():String 
+   {
+      return "Program";
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef GLProgram = native.gl.GLProgram;
-#elseif js
-typedef GLProgram = browser.gl.GLProgram;
 #end

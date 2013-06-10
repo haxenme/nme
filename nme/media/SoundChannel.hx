@@ -1,66 +1,147 @@
 package nme.media;
-#if display
+#if (cpp || neko)
 
+import nme.events.Event;
+import nme.events.EventDispatcher;
+import nme.events.SampleDataEvent;
+import nme.Loader;
 
-/**
- * The SoundChannel class controls a sound in an application. Every sound is
- * assigned to a sound channel, and the application can have multiple sound
- * channels that are mixed together. The SoundChannel class contains a
- * <code>stop()</code> method, properties for monitoring the amplitude
- * (volume) of the channel, and a property for assigning a SoundTransform
- * object to the channel.
- * 
- * @event soundComplete Dispatched when a sound has finished playing.
- */
-@:final extern class SoundChannel extends nme.events.EventDispatcher {
+class SoundChannel extends EventDispatcher 
+{
+   public var leftPeak(get_leftPeak, null):Float;
+   public var rightPeak(get_rightPeak, null):Float;
+   public var position(get_position, set_position):Float;
+   public var soundTransform(get_soundTransform, set_soundTransform):SoundTransform;
 
-	/**
-	 * The current amplitude(volume) of the left channel, from 0(silent) to 1
-	 * (full amplitude).
-	 */
-	var leftPeak(default,null) : Float;
+   /** @private */ public static var nmeDynamicSoundCount = 0;
+   private static var nmeIncompleteList = new Array<SoundChannel>();
 
-	/**
-	 * When the sound is playing, the <code>position</code> property indicates in
-	 * milliseconds the current point that is being played in the sound file.
-	 * When the sound is stopped or paused, the <code>position</code> property
-	 * indicates the last point that was played in the sound file.
-	 *
-	 * <p>A common use case is to save the value of the <code>position</code>
-	 * property when the sound is stopped. You can resume the sound later by
-	 * restarting it from that saved position. </p>
-	 *
-	 * <p>If the sound is looped, <code>position</code> is reset to 0 at the
-	 * beginning of each loop.</p>
-	 */
-	var position : Float;
+   /** @private */ private var nmeHandle:Dynamic;
+   /** @private */ private var nmeTransform:SoundTransform;
+   /** @private */ public var nmeDataProvider:EventDispatcher;
+   public function new(inSoundHandle:Dynamic, startTime:Float, loops:Int, sndTransform:SoundTransform) 
+   {
+      super();
 
-	/**
-	 * The current amplitude(volume) of the right channel, from 0(silent) to 1
-	 * (full amplitude).
-	 */
-	var rightPeak(default,null) : Float;
+      if (sndTransform != null) 
+      {
+         nmeTransform = sndTransform.clone();
+      }
 
-	/**
-	 * The SoundTransform object assigned to the sound channel. A SoundTransform
-	 * object includes properties for setting volume, panning, left speaker
-	 * assignment, and right speaker assignment.
-	 */
-	var soundTransform : SoundTransform;
-	function new() : Void;
+       if (inSoundHandle != null)
+         nmeHandle = nme_sound_channel_create(inSoundHandle, startTime, loops, nmeTransform);
 
-	/**
-	 * Stops the sound playing in the channel.
-	 * 
-	 */
-	function stop() : Void;
+      if (nmeHandle != null)
+         nmeIncompleteList.push(this);
+   }
+
+   public static function createDynamic(inSoundHandle:Dynamic, sndTransform:SoundTransform, dataProvider:EventDispatcher) 
+   {
+      var result = new SoundChannel(null, 0, 0, sndTransform);
+
+         result.nmeDataProvider = dataProvider;
+         result.nmeHandle = inSoundHandle;
+      nmeIncompleteList.push(result);
+         nmeDynamicSoundCount ++;
+
+         return result;
+      }
+
+   /** @private */ private function nmeCheckComplete():Bool {
+      if (nmeHandle != null ) 
+      {
+         if (nmeDataProvider != null && nme_sound_channel_needs_data(nmeHandle)) 
+         {
+            var request = new SampleDataEvent(SampleDataEvent.SAMPLE_DATA);
+            request.position = nme_sound_channel_get_data_position(nmeHandle);
+            nmeDataProvider.dispatchEvent(request);
+
+            if (request.data.length > 0) 
+            {
+               nme_sound_channel_add_data(nmeHandle, request.data);
+            }
+         }
+
+         if (nme_sound_channel_is_complete(nmeHandle)) 
+         {
+            nmeHandle = null;
+            if (nmeDataProvider != null) 
+            {
+               nmeDynamicSoundCount--;
+            }
+
+            var complete = new Event(Event.SOUND_COMPLETE);
+            dispatchEvent(complete);
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   /** @private */ public static function nmeCompletePending() {
+      return nmeIncompleteList.length > 0;
+   }
+
+   /** @private */ public static function nmePollComplete() {
+      if (nmeIncompleteList.length > 0) 
+      {
+         var incomplete = new Array<SoundChannel>();
+
+         for(channel in nmeIncompleteList) 
+         {
+            if (!channel.nmeCheckComplete()) 
+            {
+               incomplete.push(channel);
+            }
+         }
+
+         nmeIncompleteList = incomplete;
+      }
+   }
+
+   public function stop() 
+   {
+      nme_sound_channel_stop(nmeHandle);
+      nmeHandle = null;
+   }
+
+   // Getters & Setters
+   private function get_leftPeak():Float { return nme_sound_channel_get_left(nmeHandle); }
+   private function get_rightPeak():Float { return nme_sound_channel_get_right(nmeHandle); }
+   private function get_position():Float { return nme_sound_channel_get_position(nmeHandle); }
+   private function set_position(value:Float):Float { return nme_sound_channel_set_position(nmeHandle, position); }
+
+   private function get_soundTransform():SoundTransform 
+   {
+      if (nmeTransform == null) 
+      {
+         nmeTransform = new SoundTransform();
+      }
+
+      return nmeTransform.clone();
+   }
+
+   private function set_soundTransform(inTransform:SoundTransform):SoundTransform 
+   {
+      nmeTransform = inTransform.clone();
+      nme_sound_channel_set_transform(nmeHandle, nmeTransform);
+
+      return inTransform;
+   }
+
+   // Native Methods
+   private static var nme_sound_channel_is_complete = Loader.load("nme_sound_channel_is_complete", 1);
+   private static var nme_sound_channel_get_left = Loader.load("nme_sound_channel_get_left", 1);
+   private static var nme_sound_channel_get_right = Loader.load("nme_sound_channel_get_right", 1);
+   private static var nme_sound_channel_get_position = Loader.load("nme_sound_channel_get_position", 1);
+   private static var nme_sound_channel_set_position = Loader.load("nme_sound_channel_set_position", 2);
+   private static var nme_sound_channel_get_data_position = Loader.load("nme_sound_channel_get_data_position", 1);
+   private static var nme_sound_channel_stop = Loader.load("nme_sound_channel_stop", 1);
+   private static var nme_sound_channel_create = Loader.load("nme_sound_channel_create", 4);
+   private static var nme_sound_channel_set_transform = Loader.load("nme_sound_channel_set_transform", 2);
+   private static var nme_sound_channel_needs_data = Loader.load("nme_sound_channel_needs_data", 1);
+   private static var nme_sound_channel_add_data = Loader.load("nme_sound_channel_add_data", 2);
 }
 
-
-#elseif (cpp || neko)
-typedef SoundChannel = native.media.SoundChannel;
-#elseif js
-typedef SoundChannel = browser.media.SoundChannel;
-#else
-typedef SoundChannel = flash.media.SoundChannel;
 #end

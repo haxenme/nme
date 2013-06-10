@@ -1,78 +1,45 @@
 package nme.filesystem;
-#if display
+#if (cpp || neko)
 
+import nme.events.EventDispatcher;
+import nme.Loader;
 
-/**
- * The StorageVolumeInfo object dispatches a StorageVolumeChangeEvent object
- * when a storage volume is mounted or unmounted. The
- * <code>StorageVolume.storageVolume</code> static property references the
- * singleton StorageVolumeInfo object, which dispatches the events. The
- * StorageVolumeInfo class also defines a <code>getStorageVolumes</code>
- * method for listing currently mounted storage volumes.
- *
- * <p><i>AIR profile support:</i> This feature is supported on all desktop
- * operating systems, but it is not supported on all AIR for TV devices. It is
- * also not supported on mobile devices. You can test for support at run time
- * using the <code>StorageVolumeInfo.isSupported</code> property. See <a
- * href="http://help.adobe.com/en_US/air/build/WS144092a96ffef7cc16ddeea2126bb46b82f-8000.html">
- * AIR Profile Support</a> for more information regarding API support across
- * multiple profiles.</p>
- *
- * <p>On modern Linux distributions, the StorageVolumeInfo object only
- * dispatches <code>storageVolumeMount</code> and
- * <code>storageVolumeUnmount</code> events for physical devices and network
- * drives mounted at particular locations.</p>
- * 
- * @event storageVolumeMount   Dispatched when a storage volume has been
- *                             mounted.
- *
- *                             <p>On modern Linux distributions, the
- *                             StorageVolumeInfo object only dispatches
- *                             <code>storageVolumeMount</code> and
- *                             <code>storageVolumeUnmount</code> events for
- *                             physical devices and network drives mounted at
- *                             particular locations.</p>
- * @event storageVolumeUnmount Dispatched when a storage volume has been
- *                             unmounted.
- *
- *                             <p>On modern Linux distributions, the
- *                             StorageVolumeInfo object only dispatches
- *                             <code>storageVolumeMount</code> and
- *                             <code>storageVolumeUnmount</code> events for
- *                             physical devices and network drives mounted at
- *                             particular locations.</p>
- */
-extern class StorageVolumeInfo extends nme.events.EventDispatcher
+class StorageVolumeInfo extends EventDispatcher 
 {
+   public static inline var isSupported = true;
+   public static var storageVolumeInfo(get_storageVolumeInfo, null):StorageVolumeInfo;
 
-   /**
-    * The <code>isSupported</code> property is set to <code>true</code> if the
-    * StorageVolumeInfo class is supported on the current platform, otherwise
-    * it is set to <code>false</code>.
-    */
-   static var isSupported;
+   private static var nmeStorageVolumeInfo:StorageVolumeInfo;
 
-   /**
-    * The singleton instance of the StorageVolumeInfo object. Register event
-    * listeners on this object for the <code>storageVolumeMount</code> and
-    * <code>storageVolumeUnmount</code> events.
-    */
-   static var storageVolumeInfo(get_storageVolumeInfo,null):StorageVolumeInfo;
+   private var volumes:Array<StorageVolume>;
 
-   /**
-    * Returns vector of StorageVolume objects corresponding to the currently
-    * mounted storage volumes.
-    *
-    * <p>On modern Linux distributions, this method returns objects
-    * corresponding to physical devices and network drives mounted at
-    * particular locations.</p>
-    * 
-    */
-   function getStorageVolumes():Array<StorageVolume>;
-   static function getInstance():StorageVolumeInfo;
+   private function new() 
+   {
+      super();
+
+      volumes = [];
+      nme_filesystem_get_volumes(volumes, function(args:Array<Dynamic>)
+         return new StorageVolume(new File(args[0]), args[1], args[2], args[3], args[4], args[5]));
+   }
+
+   public function getStorageVolumes():Array<StorageVolume> 
+   {
+      return volumes.copy();
+   }
+
+   public static function getInstance() 
+   {
+      if (nmeStorageVolumeInfo == null)
+         nmeStorageVolumeInfo = new StorageVolumeInfo();
+
+      return nmeStorageVolumeInfo;
+   }
+
+   // Getters & Setters
+   private static function get_storageVolumeInfo() { return getInstance(); }
+
+   // Native Methods
+   private static var nme_filesystem_get_volumes = Loader.load("nme_filesystem_get_volumes", 2);
 }
 
-
-#elseif (cpp || neko)
-typedef StorageVolumeInfo = native.filesystem.StorageVolumeInfo;
 #end

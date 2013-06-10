@@ -1,16 +1,17 @@
 package nme.gl;
-#if display
+#if (cpp || neko)
 
+class GLTexture extends GLObject 
+{
+   public function new(inVersion:Int, inId:Dynamic) 
+   {
+      super(inVersion, inId);
+   }
 
-extern class GLTexture extends GLObject {
-	
-	function new(inVersion:Int, inId:Dynamic):Void;
-	
+   override private function getType():String 
+   {
+      return "Texture";
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef GLTexture = native.gl.GLTexture;
-#elseif js
-typedef GLTexture = browser.gl.GLTexture;
 #end

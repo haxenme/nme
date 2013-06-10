@@ -1,378 +1,231 @@
 package nme;
+#if (cpp || neko)
 
-
+import haxe.Timer;
 import nme.display.BitmapData;
+import nme.display.ManagedStage;
 import nme.display.MovieClip;
 import nme.display.Stage;
 import nme.net.URLRequest;
+import nme.Lib;
+import nme.Loader;
 
+#if haxe3
+import Sys;
+#else
+#if cpp
+import cpp.Sys;
+#else
+import neko.Sys;
+#end
+#end
 
-class Lib
-{	
-	
-	public static var FULLSCREEN = 0x0001;
-	public static var BORDERLESS = 0x0002;
-	public static var RESIZABLE = 0x0004;
-	public static var HARDWARE = 0x0008;
-	public static var VSYNC = 0x0010;
-	public static var HW_AA = 0x0020;
-	public static var HW_AA_HIRES = 0x0060;
-	public static var ALLOW_SHADERS = 0x0080;
-	public static var REQUIRE_SHADERS = 0x0100;
-	public static var DEPTH_BUFFER = 0x0200;
-	public static var STENCIL_BUFFER = 0x0400;
-	
-	#if flash
-	public static var MIN_FLOAT_VALUE:Float = untyped __global__ ["Number"].MIN_VALUE;
-	public static var MAX_FLOAT_VALUE:Float = untyped __global__ ["Number"].MAX_VALUE;
-	#elseif js
-	public static var MIN_FLOAT_VALUE:Float = untyped __js__("Number.MIN_VALUE");
-	public static var MAX_FLOAT_VALUE:Float = untyped __js__("Number.MAX_VALUE");
-	#else
-    public static inline var MIN_FLOAT_VALUE:Float = 2.2250738585072014e-308;
-    public static inline var MAX_FLOAT_VALUE:Float = 1.7976931348623158e+308;
-	#end
-	
-	public static var company(get_company, null):String;
-	public static var current(get_current, null):MovieClip;
-	public static var file(get_file, null):String;
-	public static var initHeight(get_initHeight, null):Int;
-	public static var initWidth(get_initWidth, null):Int;
-	public static var packageName(get_packageName, null):String;
-	public static var stage(get_stage, null):Stage;
-	public static var version(get_version, null):String;
-	
-	#if (flash || js)
-	private static var _company:String;
-	private static var _packageName:String;
-	private static var _version:String;
-	private static var _file:String;
-	#end
-	
-	
-	public inline static function as<T>(v:Dynamic, c:Class<T>):Null<T>
-	{
-		return cast v;
-	}
-	
-	
-	public static function attach(name:String):MovieClip
-	{
-		return new MovieClip ();
-	}
-	
-	
-	/**
-	 * Closes the application.
-	 * This is method is ignored in the Flash and HTML5 targets.
-	 */
-	public static function close():Void
-	{
-		#if display
-		#elseif (cpp || neko)
-		native.Lib.close();
-		#end
-	}
-	
-	
-	/**
-	 * Creates a new application window. If you are using the NME
-	 * command-line tools, this method will be called automatically
-	 * as a part of the default platform templates.
-	 * This is method is ignored in the Flash and HTML5 targets.
-	 * @param	onLoaded		A method callback that is called once the window is created.
-	 * @param	width		The requested width of the window. Use a width and height of 0 to request the full screen size.
-	 * @param	height		The requested height of the window. Use a width and height of 0 to request the full screen size.
-	 * @param	frameRate		The requested frame rate for the application.
-	 * @param	color		An RGB color to use for the application background.
-	 * @param	flags		A series of bit flags which can specify windowing options, like FULLSCREEN or HARDWARE
-	 * @param	title		The title to use when creating the application window.
-	 * @param	icon		An icon to use for the created application window.
-	 */
-	public static function create(onLoaded:Void->Void, width:Int, height:Int, frameRate:Float = 60.0, color:Int = 0xffffff, flags:Int = 0x0f, title:String = "NME", icon:BitmapData = null, stageClass:Class<Stage> = null):Void
-	{
-		#if display
-		#elseif (cpp || neko)
-		native.Lib.create(onLoaded, width, height, frameRate, color, flags, title, icon, stageClass);
-		#end
-	}
-	
-	
-	/**
-	 * Creates a managed stage, for greater control customization and control
-	 * of application events.
-	 * This method is ignored in the Flash and HTML5 targets.
-	 * @param	width		The requested width of the managed stage.
-	 * @param	height		The requested width of the managed stage.
-	 */
-	public static function createManagedStage(width:Int, height:Int)
-	{
-		#if display
-		#elseif (cpp || neko)
-		return native.Lib.createManagedStage(width, height);
-		#end
-		return null;
-	}
-	
-	
-	/**
-	 * Similar to the <code>close()</code> method, but the current 
-	 * <code>Stage</code> object is given an opportunity to handle 
-	 * the quit event before the application process is ended.
-	 * This method is ignored in the Flash and HTML5 targets.
-	 */
-	public static function exit():Void
-	{
-		#if display
-		#elseif (cpp || neko)
-		native.Lib.exit();
-		#end
-	}
-	
-	
-	/**
-	 * Terminates the application process immediately without
-	 * performing a clean shutdown.
-	 * This method is ignored in the Flash and HTML5 targets.
-	 */
-	public static function forceClose():Void
-	{
-		#if display
-		#elseif (cpp || neko)
-		native.Lib.forceClose();
-		#end
-	}
-	
-	
-	/**
-	 * Returns the time in milliseconds, relative to the start of
-	 * the application. This is a high performance call in order to 
-	 * help regulate time-based operations. Depending upon the
-	 * target platform, this value may or may not be an absolute
-	 * timestamp. If you need an exact time, you should use the
-	 * <code>Date</code> object.
-	 * @return		A relative time value in milliseconds.
-	 */
-	public inline static function getTimer():Int
-	{
-		#if display
-		return 0;
-		#elseif (cpp || neko)
-		return native.Lib.getTimer();
-		#elseif js
-		return browser.Lib.getTimer();
-		#else
-		return flash.Lib.getTimer();
-		#end
-	}
-	
-	
-	/**
-	 * Opens a browser window with the specified URL. 
-	 * @param	url		The URL to open.
-	 * @param	target		An optional window target value.
-	 */
-	public static function getURL(url:URLRequest, target:String = null):Void
-	{
-		#if display
-		#elseif (cpp || neko)
-		native.Lib.getURL(url, target);
-		#elseif js
-		browser.Lib.getURL(url, target);
-		#else
-		flash.Lib.getURL(url, target);
-		#end
-	}
-	
-	
-	/**
-	 * For supported platforms, the NME application will be
-	 * paused. This can help improve response times if fullscreen
-	 * native UI element is being used temporarily.
-	 * This method is ignored in the Flash and HTML5 targets.
-	 */
-	public static function pause():Void
-	{
-		#if display
-		#elseif (cpp || neko)
-		native.Lib.pause();
-		#end
-	}
-	
-	
-	/**
-	 * For some target platforms, NME operates on a separate thread
-	 * than the native application UI. In these cases, you can use this
-	 * method to make thread-safe calls to the native UI.
-	 * 
-	 * If the platform does not require thread-safe callbacks, the 
-	 * handler method will be called immediately.
-	 * @param	handler		The method handler you wish to call when the UI is available. 
-	 */
-	public static function postUICallback(handler:Void->Void)
-	{
-		#if display
-		#elseif (cpp || neko)
-		native.Lib.postUICallback(handler);
-		#else
-		handler();
-		#end
-	}
-	
-	
-	/**
-	 * Resumes the NME application. For certain platforms,
-	 * pausing the application can improve response times when
-	 * a fullscreen native UI element is being displayed.
-	 * This method is ignored in the Flash and HTML5 targets.
-	 */
-	public static function resume():Void
-	{
-		#if display
-		#elseif (cpp || neko)
-		native.Lib.resume();
-		#end
-	}
-	
-	
-	/**
-	 * Specifies meta-data for the running application. If you are using 
-	 * the NME command-line tools, this method will be called automatically
-	 * as a part of the default platform templates.
-	 * This method is ignored in the Flash and HTML5 targets.
-	 * @param	company		The company name for the application.
-	 * @param	file		The file name for the application.
-	 * @param	packageName		The package name of the application.
-	 * @param	version		The version string of the application.
-	 */
-	public static function setPackage(company:String, file:String, packageName:String, version:String):Void
-	{
-		#if display
-		#elseif (cpp || neko)
-		native.Lib.setPackage(company, file, packageName, version);
-		#else
-		_company = company;
-		_file = file;
-		_packageName = packageName;
-		_version = version;
-		#end
-	}
-	
-	
-	/**
-	 * Sends a <code>trace</code> call for the current platform.
-	 * @param	arg
-	 */
-	public static function trace(arg:Dynamic):Void
-	{
-		#if display
-		#elseif (cpp || neko)
-		trace(arg);
-		#elseif js
-		browser.Lib.trace(arg);
-		#else
-		flash.Lib.trace(arg);
-		#end
-	}
-	
-	
-	
-	
-	// Getters & Setters
-	
-	
-	
-	private static function get_company():String
-	{
-		#if display
-		#elseif (cpp || neko)
-		return native.Lib.company;
-		#else
-		return _company;
-		#end
-		return "";
-	}
-	
-	
-	private static function get_current():MovieClip
-	{
-		#if display
-		return null;
-		#elseif (cpp || neko)
-		return cast native.Lib.current;
-		#elseif js
-		return cast browser.Lib.current;
-		#else
-		return cast flash.Lib.current;
-		#end	
-	}
-	
-	
-	private static function get_file():String
-	{
-		#if display
-		#elseif (cpp || neko)
-		return native.Lib.file;
-		#else
-		return _file;
-		#end
-		return "";
-	}
-	
-	
-	private static function get_initHeight():Int
-	{
-		#if display
-		#elseif (cpp || neko)
-		return native.Lib.initHeight;
-		#end
-		return 0;
-	}
-	
-	
-	private static function get_initWidth():Int
-	{
-		#if display
-		#elseif (cpp || neko)
-		return native.Lib.initWidth;
-		#end
-		return 0;
-	}
-	
-	
-	private static function get_packageName():String
-	{
-		#if display
-		#elseif (cpp || neko)
-		return native.Lib.packageName;
-		#else
-		return _packageName;
-		#end
-		return "";
-	}
-	
-	
-	private static function get_stage():Stage
-	{
-		#if display
-		return null;
-		#elseif (cpp || neko)
-		return cast native.Lib.stage;
-		#else
-		return current.stage;
-		#end
-	}
-	
-	
-	private static function get_version():String
-	{
-		#if display
-		#elseif (cpp || neko)
-		return native.Lib.version;
-		#else
-		return _version;
-		#end
-		return "";
-	}
-	
+class Lib 
+{
+   static public var FULLSCREEN      = 0x0001;
+   static public var BORDERLESS      = 0x0002;
+   static public var RESIZABLE       = 0x0004;
+   static public var HARDWARE        = 0x0008;
+   static public var VSYNC           = 0x0010;
+   static public var HW_AA           = 0x0020;
+   static public var HW_AA_HIRES     = 0x0060;
+   static public var ALLOW_SHADERS   = 0x0080;
+   static public var REQUIRE_SHADERS = 0x0100;
+   static public var DEPTH_BUFFER    = 0x0200;
+   static public var STENCIL_BUFFER  = 0x0400;
+
+   public static var current(get_current, null):MovieClip;
+   public static var initHeight(default, null):Int;
+   public static var initWidth(default, null):Int;
+   public static var stage(get_stage, null):Stage;
+
+   private static var nmeCurrent:MovieClip = null;
+   private static var nmeMainFrame:Dynamic = null;
+   private static var nmeStage:Stage = null;
+   private static var sIsInit = false;
+
+   static public var company(default, null):String;
+   static public var version(default, null):String;
+   static public var packageName(default, null):String;
+   static public var file(default, null):String;
+   static public var silentRecreate:Bool = false;
+
+   public static function close() 
+   {
+      var close = Loader.load("nme_close", 0);
+      close();
+   }
+
+   public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0, inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData, ?inStageClass:Class<nme.display.Stage>) 
+   {
+      if (sIsInit) 
+      {
+         if (silentRecreate) 
+         {
+            inOnLoaded();
+            return;
+         }
+
+         throw("nme.Lib.create called multiple times. This function is automatically called by the project code.");
+      }
+
+      sIsInit = true;
+      initWidth = inWidth;
+      initHeight = inHeight;
+
+      var stageClass = inStageClass;
+
+      var create_main_frame = Loader.load("nme_create_main_frame", -1);
+
+      create_main_frame(function(inFrameHandle:Dynamic) 
+      {
+         #if android try { #end
+         nmeMainFrame = inFrameHandle;
+         var stage_handle = nme_get_frame_stage(nmeMainFrame);
+
+         Lib.nmeStage =
+            stageClass==null ? new Stage(stage_handle, inWidth, inHeight) :
+             Type.createInstance (stageClass, [stage_handle, inWidth, inHeight]);
+
+         Lib.nmeStage.frameRate = inFrameRate;
+         Lib.nmeStage.opaqueBackground = inColour;
+         Lib.nmeStage.onQuit = close;
+
+         if (nmeCurrent != null) // Already created...
+            Lib.nmeStage.addChild(nmeCurrent);
+
+         inOnLoaded();
+         #if android } catch(e:Dynamic) { trace("ERROR: " +  e); } #end
+
+      },
+      inWidth, inHeight, inFlags, inTitle, inIcon == null ? null : inIcon.nmeHandle);
+   }
+
+   public static function createManagedStage(inWidth:Int, inHeight:Int, inFlags:Int = 0) 
+   {
+      initWidth = inWidth;
+      initHeight = inHeight;
+
+      var result = new ManagedStage(inWidth, inHeight, inFlags);
+      nmeStage = result;
+
+      return result;
+   }
+
+   public static function exit() 
+   {
+      var quit = stage.onQuit;
+
+      if (quit != null) 
+      {
+         #if android
+         if (quit == close) 
+         {
+            Sys.exit(0);
+         }
+         #end
+
+         quit();
+      }
+   }
+
+   public static function forceClose() 
+   {
+      // Terminates the process straight away, bypassing graceful shutdown
+      var terminate = Loader.load("nme_terminate", 0);
+      terminate();
+   }
+
+   static public function getTimer():Int 
+   {
+      // Be careful not to blow precision, since storing ms since 1970 can overflow...
+      return Std.int(Timer.stamp() * 1000.0);
+   }
+
+   public static function getURL(url:URLRequest, ?target:String):Void 
+   {
+      nme_get_url(url.url);
+   }
+
+   /** @private */ public static function nmeSetCurrentStage(inStage:Stage) {
+      nmeStage = inStage;
+   }
+
+   public static function pause() 
+   {
+      nme_pause_animation();
+   }
+
+   public static function postUICallback(inCallback:Void->Void) 
+   {
+      #if android
+      nme_post_ui_callback(inCallback);
+      #else
+      // May still be worth posting event to come back with the next UI event loop...
+      // (or use timer?)
+      inCallback();
+      #end
+   }
+
+   public static function resume() 
+   {
+      nme_resume_animation();
+   }
+
+   // Is this still used?
+   //static public function setAssetBase(inBase:String)
+   //{
+     //nme_set_asset_base(inBase);
+   //}
+   //private static var nme_set_asset_base = Loader.load("nme_set_asset_base", 1);
+   public static function setIcon(path:String) 
+   {
+      //Useful only on SDL platforms. Sets the title bar's icon, based on the path given.
+      var set_icon = Loader.load("nme_set_icon", 1);
+      set_icon(path);
+   }
+
+   public static function setPackage(inCompany:String, inFile:String, inPack:String, inVersion:String) 
+   {
+      company = inCompany;
+      file = inFile;
+      packageName = inPack;
+      version = inVersion;
+
+      nme_set_package(inCompany, inFile, inPack, inVersion);
+   }
+
+   // Getters & Setters
+   static function get_current():MovieClip 
+   {
+      if (nmeCurrent == null) 
+      {
+         nmeCurrent = new MovieClip();
+
+         if (nmeStage != null)
+            nmeStage.addChild(nmeCurrent);
+      }
+
+      return nmeCurrent;
+   }
+
+   private static function get_stage() 
+   {
+      if (nmeStage == null)
+         throw("Error : stage can't be accessed until init is called");
+
+      return nmeStage;
+   }
+
+   // Native Methods
+   #if android
+   private static var nme_post_ui_callback = Loader.load("nme_post_ui_callback", 1);
+   #end
+   private static var nme_set_package = Loader.load("nme_set_package", 4);
+   private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
+   private static var nme_get_url = Loader.load("nme_get_url", 1);
+   private static var nme_pause_animation = Loader.load("nme_pause_animation", 0);
+   private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
 }
+
+#end

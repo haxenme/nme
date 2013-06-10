@@ -445,6 +445,7 @@ class Assets {
 	private static function resolveClass(name:String):Class <Dynamic> {
 		
 		name = StringTools.replace(name, "native.", "browser.");
+		name = StringTools.replace(name, "nme.", "browser.");
 		return Type.resolveClass(name);
 		
 	}
@@ -453,6 +454,7 @@ class Assets {
 	private static function resolveEnum(name:String):Enum <Dynamic> {
 		
 		name = StringTools.replace(name, "native.", "browser.");
+		name = StringTools.replace(name, "nme.", "browser.");
 		return Type.resolveEnum(name);
 		
 	}
