@@ -8,4 +8,6 @@ class BitmapFilterQuality
    public static var LOW = 1;
 }
 
+#else
+typedef BitmapFilterQuality = flash.filters.BitmapFilterQuality;
 #end

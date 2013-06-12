@@ -7,4 +7,6 @@ enum InterpolationMethod
    LINEAR_RGB;
 }
 
+#else
+typedef InterpolationMethod = flash.display.InterpolationMethod;
 #end

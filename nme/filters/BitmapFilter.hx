@@ -16,4 +16,6 @@ class BitmapFilter
    }
 }
 
+#else
+typedef BitmapFilter = flash.filters.BitmapFilter;
 #end

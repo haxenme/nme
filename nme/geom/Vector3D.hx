@@ -149,4 +149,6 @@ class Vector3D
    inline private static function get_Z_AXIS():Vector3D { return new Vector3D(0, 0, 1);   }
 }
 
+#else
+typedef Vector3D = flash.geom.Vector3D;
 #end

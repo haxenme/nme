@@ -84,4 +84,6 @@ class Capabilities
    private static var nme_capabilities_get_language = Loader.load("nme_capabilities_get_language", 0);
 }
 
+#else
+typedef Capabilities = flash.system.Capabilities;
 #end

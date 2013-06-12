@@ -219,4 +219,6 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end
    }
 }
 
+#else
+typedef Matrix = flash.geom.Matrix;
 #end

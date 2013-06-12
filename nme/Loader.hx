@@ -83,7 +83,7 @@ class Loader
       if (result == null) 
       {
          var slash =(sysName().substr(7).toLowerCase() == "windows") ? "\\" : "/";
-         var haxelib = findHaxeLib(#if openfl "openfl-native" #else "nme" #end);
+         var haxelib = findHaxeLib("nme");
 
          if (haxelib != "") 
          {

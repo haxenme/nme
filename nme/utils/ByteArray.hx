@@ -19,7 +19,6 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
-#if openfl @:autoBuild(openfl.Assets.embedFile()) #end
 class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if !haxe3 , #end implements IDataInput #if !haxe3 , #end implements IMemoryRange 
 {
 
@@ -579,4 +578,6 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
    private static var nme_lzma_decode = Loader.load("nme_lzma_decode", 1);
 }
 
+#else
+typedef ByteArray = flash.utils.ByteArray;
 #end

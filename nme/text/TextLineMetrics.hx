@@ -1,4 +1,5 @@
 package nme.text;
+#if (cpp || neko)
 
 class TextLineMetrics 
 {
@@ -19,3 +20,7 @@ class TextLineMetrics
       leading = in_leading;
    }
 }
+
+#else
+typedef TextLineMetrics = flash.text.TextLineMetrics;
+#end

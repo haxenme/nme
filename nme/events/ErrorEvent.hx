@@ -24,4 +24,6 @@ class ErrorEvent extends TextEvent
    }
 }
 
+#else
+typedef ErrorEvent = flash.events.ErrorEvent;
 #end

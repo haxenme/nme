@@ -42,4 +42,6 @@ class StorageVolumeInfo extends EventDispatcher
    private static var nme_filesystem_get_volumes = Loader.load("nme_filesystem_get_volumes", 2);
 }
 
+#else
+typedef StorageVolumeInfo = flash.filesystem.StorageVolumeInfo;
 #end

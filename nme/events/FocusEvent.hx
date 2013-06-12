@@ -34,4 +34,6 @@ class FocusEvent extends Event
    }
 }
 
+#else
+typedef FocusEvent = flash.events.FocusEvent;
 #end

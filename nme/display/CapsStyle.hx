@@ -8,4 +8,6 @@ enum CapsStyle
    SQUARE;
 }
 
+#else
+typedef CapsStyle = flash.display.CapsStyle;
 #end

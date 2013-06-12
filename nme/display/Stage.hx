@@ -937,4 +937,6 @@ class TouchInfo
    }
 }
 
+#else
+typedef Stage = flash.display.Stage;
 #end

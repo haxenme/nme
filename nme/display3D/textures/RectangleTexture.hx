@@ -24,4 +24,6 @@ class RectangleTexture extends TextureBase
    }
 }
 
+#else
+typedef RectangleTexture = flash.display3D.textures.RectangleTexture;
 #end

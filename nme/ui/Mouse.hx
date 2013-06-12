@@ -18,4 +18,6 @@ class Mouse
    }
 }
 
+#else
+typedef Mouse = flash.ui.Mouse;
 #end

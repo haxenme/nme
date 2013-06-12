@@ -31,4 +31,6 @@ class Stage3D extends EventDispatcher
    }
 }
 
+#else
+typedef Stage3D = flash.display.Stage3D;
 #end

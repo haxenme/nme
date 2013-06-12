@@ -26,4 +26,6 @@ class TextEvent extends Event
    }
 }
 
+#else
+typedef TextEvent = flash.events.TextEvent;
 #end

@@ -8,4 +8,6 @@ enum Context3DProfile
    BASELINE_EXTENDED;
 }
 
+#else
+typedef Context3DProfile = flash.display3D.Context3DProfile;
 #end

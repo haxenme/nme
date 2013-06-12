@@ -1,6 +1,5 @@
 import nme.Assets;
 
-#if (!macro || !haxe3)
 class ApplicationMain
 {
 
@@ -69,7 +68,7 @@ class ApplicationMain
 				}
 				else
 				{
-					var instance = Type.createInstance(DocumentClass, []);
+					var instance = Type.createInstance(::APP_MAIN::, []);
 					#if nme
 					if (Std.is (instance, nme.display.DisplayObject)) {
 						nme.Lib.current.addChild(cast instance);
@@ -129,37 +128,6 @@ class ApplicationMain
 }
 
 
-#if haxe3 @:build(DocumentClass.build()) #end
-class DocumentClass extends ::APP_MAIN:: {}
-
-
 #if haxe_211
 typedef Hash<T> = haxe.ds.StringMap<T>;
-#end
-
-#else
-
-import haxe.macro.Context;
-import haxe.macro.Expr;
-
-class DocumentClass {
-	
-	macro public static function build ():Array<Field> {
-		var classType = Context.getLocalClass().get();
-		var searchTypes = classType;
-		while (searchTypes.superClass != null) {
-			if (searchTypes.pack.length == 2 && searchTypes.pack[1] == "display" && searchTypes.name == "DisplayObject") {
-				var fields = Context.getBuildFields();
-				var method = macro {
-					return nme.Lib.current.stage;
-				}
-				fields.push ({ name: "get_stage", access: [ APrivate, AOverride ], kind: FFun({ args: [], expr: method, params: [], ret: macro :nme.display.Stage }), pos: Context.currentPos() });
-				return fields;
-			}
-			searchTypes = searchTypes.superClass.t.get();
-		}
-		return null;
-	}
-	
-}
 #end

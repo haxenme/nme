@@ -8,4 +8,6 @@ class BitmapFilterType
    public static var OUTER = "outer";
 }
 
+#else
+typedef BitmapFilterType = flash.filters.BitmapFilterType;
 #end

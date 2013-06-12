@@ -17,4 +17,6 @@ class Context3DBlendFactor
    inline public static var ZERO:Int = GL.ZERO;
 }
 
+#else
+typedef Context3DBlendFactor = flash.display3D.Context3DBlendFactor;
 #end

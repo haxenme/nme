@@ -18,4 +18,6 @@ class SoundTransform
    }
 }
 
+#else
+typedef SoundTransform = flash.media.SoundTransform;
 #end

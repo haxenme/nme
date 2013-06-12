@@ -1,17 +1,15 @@
 package nme.system;
+#if (cpp || neko)
 
-
-class SecurityDomain {
+class SecurityDomain
+{		
+	public static var currentDomain(default, null) = new SecurityDomain();
 	
-	
-	public static var currentDomain (default, null) = new SecurityDomain ();
-	
-	
-	private function new () {
-		
-		
-		
+	private function new()
+	{	
 	}
-	
-	
 }
+
+#else
+typedef SecurityDomain = flash.system.SecurityDomain;
+#end

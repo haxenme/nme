@@ -228,4 +228,6 @@ class Lib
    private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
 }
 
+#else
+typedef Lib = flash.Lib;
 #end

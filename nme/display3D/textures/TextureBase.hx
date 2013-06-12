@@ -25,4 +25,6 @@ class TextureBase extends EventDispatcher
    }
 }
 
+#else
+typedef TextureBase = flash.display3D.textures.TextureBase;
 #end

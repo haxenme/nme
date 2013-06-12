@@ -9,4 +9,6 @@ enum StageQuality
    BEST;
 }
 
+#else
+typedef StageQuality = flash.display.StageQuality;
 #end

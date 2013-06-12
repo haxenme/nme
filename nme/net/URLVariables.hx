@@ -41,4 +41,6 @@ class URLVariables implements Dynamic
    }
 }
 
+#else
+typedef URLVariables = flash.net.URLVariables;
 #end

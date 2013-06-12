@@ -41,4 +41,6 @@ class TextFormat
    }
 }
 
+#else
+typedef TextFormat = flash.text.TextFormat;
 #end

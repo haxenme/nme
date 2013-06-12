@@ -53,4 +53,6 @@ class TouchEvent extends MouseEvent
    }
 }
 
+#else
+typedef TouchEvent = flash.events.TouchEvent;
 #end

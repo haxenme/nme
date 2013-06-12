@@ -37,4 +37,6 @@ class DropShadowFilter extends BitmapFilter
    }
 }
 
+#else
+typedef DropShadowFilter = flash.filters.DropShadowFilter;
 #end

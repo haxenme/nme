@@ -186,4 +186,6 @@ class Graphics
    private static var nme_gfx_draw_triangles = Loader.load("nme_gfx_draw_triangles", -1);
 }
 
+#else
+typedef Graphics = flash.display.Graphics;
 #end

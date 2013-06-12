@@ -76,4 +76,6 @@ class SimpleButton extends InteractiveObject
    private static var nme_simple_button_create = Loader.load("nme_simple_button_create", 0);
 }
 
+#else
+typedef SimpleButton = flash.display.SimpleButton;
 #end

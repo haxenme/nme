@@ -8,4 +8,6 @@ enum SpreadMethod
    REFLECT;
 }
 
+#else
+typedef SpreadMethod = flash.display.SpreadMethod;
 #end

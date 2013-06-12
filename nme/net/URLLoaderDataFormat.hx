@@ -8,4 +8,6 @@ enum URLLoaderDataFormat
    VARIABLES;
 }
 
+#else
+typedef URLLoaderDataFormat = flash.net.URLLoaderDataFormat;
 #end

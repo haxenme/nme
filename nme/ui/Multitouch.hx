@@ -48,4 +48,6 @@ class Multitouch
    private static var nme_stage_set_multitouch_active = Loader.load("nme_stage_set_multitouch_active", 2);
 }
 
+#else
+typedef Multitouch = flash.ui.Multitouch;
 #end

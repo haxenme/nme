@@ -188,4 +188,6 @@ class Rectangle
    private function set_topLeft(p:Point) { x = p.x; y = p.y; return p.clone(); }
 }
 
+#else
+typedef Rectangle = flash.geom.Rectangle;
 #end

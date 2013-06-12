@@ -21,4 +21,6 @@ class BlurFilter extends BitmapFilter
    }
 }
 
+#else
+typedef BlurFilter = flash.filters.BlurFilter;
 #end

@@ -21,4 +21,6 @@ class SecurityErrorEvent extends ErrorEvent
    }
 }
 
+#else
+typedef SecurityErrorEvent = flash.events.SecurityErrorEvent;
 #end

@@ -28,4 +28,6 @@ class ProgressEvent extends Event
    }
 }
 
+#else
+typedef ProgressEvent = flash.events.ProgressEvent;
 #end

@@ -174,4 +174,6 @@ class Memory
    #end
 }
 
+#else
+typedef Memory = flash.Memory;
 #end

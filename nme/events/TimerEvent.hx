@@ -26,4 +26,6 @@ class TimerEvent extends Event
    }
 }
 
+#else
+typedef TimerEvent = flash.events.TimerEvent;
 #end

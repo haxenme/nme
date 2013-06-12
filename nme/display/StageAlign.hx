@@ -13,4 +13,6 @@ enum StageAlign
    BOTTOM;
 }
 
+#else
+typedef StageAlign = flash.display.StageAlign;
 #end

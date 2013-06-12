@@ -53,4 +53,6 @@ class ColorTransform
    }
 }
 
+#else
+typedef ColorTransform = flash.geom.ColorTransform;
 #end

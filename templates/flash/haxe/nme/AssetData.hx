@@ -33,5 +33,5 @@ class AssetData {
 }
 
 
-::foreach assets::::if (type == "image")::class NME_::flatName:: extends nme.display.BitmapData { public function new () { super (0, 0); } }::else::class NME_::flatName:: extends ::flashClass:: { }::end::
+::foreach assets::::if (type == "image")::class NME_::flatName:: extends flash.display.BitmapData { public function new () { super (0, 0); } }::else::class NME_::flatName:: extends ::flashClass:: { }::end::
 ::end::

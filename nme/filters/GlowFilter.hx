@@ -9,4 +9,6 @@ class GlowFilter extends DropShadowFilter
    }
 }
 
+#else
+typedef GlowFilter = flash.filters.GlowFilter;
 #end

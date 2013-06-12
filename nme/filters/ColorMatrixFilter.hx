@@ -17,4 +17,6 @@ class ColorMatrixFilter extends BitmapFilter
    }
 }
 
+#else
+typedef ColorMatrixFilter = flash.filters.ColorMatrixFilter;
 #end

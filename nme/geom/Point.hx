@@ -85,4 +85,6 @@ class Point
    private function get_length() { return Math.sqrt(x * x + y * y); }
 }
 
+#else
+typedef Point = flash.geom.Point;
 #end

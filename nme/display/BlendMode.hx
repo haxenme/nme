@@ -19,4 +19,6 @@ enum BlendMode
    HARDLIGHT;
 }
 
+#else
+typedef BlendMode = flash.display.BlendMode;
 #end

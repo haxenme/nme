@@ -499,4 +499,6 @@ class Context3D
    }
 }
 
+#else
+typedef Context3D = flash.display3D.Context3D;
 #end

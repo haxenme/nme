@@ -15,4 +15,6 @@ class Context3DCompareMode
    inline static public var NOT_EQUAL = GL.NOTEQUAL;
 }
 
+#else
+typedef Context3DCompareMode = flash.display3D.Context3DCompareMode;
 #end

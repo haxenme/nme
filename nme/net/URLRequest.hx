@@ -90,4 +90,6 @@ class URLRequest
    }
 }
 
+#else
+typedef URLRequest = flash.net.URLRequest;
 #end

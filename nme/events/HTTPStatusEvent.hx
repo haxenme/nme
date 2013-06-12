@@ -25,4 +25,6 @@ class HTTPStatusEvent extends Event
    }
 }
 
+#else
+typedef HTTPStatusEvent = flash.events.HTTPStatusEvent;
 #end

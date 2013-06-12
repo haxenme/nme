@@ -7,4 +7,6 @@ enum GridFitType {
 	SUBPIXEL;
 }
 
+#else
+typedef GridFitType = flash.text.GridFitType;
 #end

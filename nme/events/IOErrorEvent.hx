@@ -21,4 +21,6 @@ class IOErrorEvent extends ErrorEvent
    }
 }
 
+#else
+typedef IOErrorEvent = flash.events.IOErrorEvent;
 #end

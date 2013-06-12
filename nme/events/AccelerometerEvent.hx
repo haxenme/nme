@@ -33,4 +33,6 @@ class AccelerometerEvent extends Event
    }
 }
 
+#else
+typedef AccelerometerEvent = flash.events.AccelerometerEvent;
 #end

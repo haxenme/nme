@@ -9,4 +9,6 @@ class EOFError extends Error
    }
 }
 
+#else
+typedef EOFError = flash.errors.EOFError;
 #end

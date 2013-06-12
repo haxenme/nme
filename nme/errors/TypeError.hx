@@ -9,4 +9,6 @@ class TypeError extends Error
    }
 }
 
+#else
+typedef TypeError = flash.errors.TypeError;
 #end

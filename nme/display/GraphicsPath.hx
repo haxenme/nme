@@ -78,4 +78,6 @@ class GraphicsPath extends IGraphicsData
    private static var nme_graphics_path_set_data = Loader.load("nme_graphics_path_set_data", 2);
 }
 
+#else
+typedef GraphicsPath = flash.display.GraphicsPath;
 #end

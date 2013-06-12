@@ -12,4 +12,6 @@ interface IEventDispatcher
 
 typedef Function = Dynamic -> Void;
 
+#else
+typedef IEventDispatcher = flash.events.IEventDispatcher;
 #end

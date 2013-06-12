@@ -95,4 +95,6 @@ class Timer extends EventDispatcher
    }
 }
 
+#else
+typedef Timer = flash.utils.Timer;
 #end

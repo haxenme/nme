@@ -62,4 +62,6 @@ class Bitmap extends DisplayObject
    }
 }
 
+#else
+typedef Bitmap = flash.display.Bitmap;
 #end

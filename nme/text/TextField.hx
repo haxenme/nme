@@ -176,4 +176,6 @@ class TextField extends InteractiveObject
    private static var nme_text_field_set_embed_fonts = Loader.load("nme_text_field_set_embed_fonts", 2);
 }
 
+#else
+typedef TextField = flash.text.TextField;
 #end

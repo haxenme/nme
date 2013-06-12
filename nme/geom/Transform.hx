@@ -27,4 +27,6 @@ class Transform
    private function get_pixelBounds():Rectangle { return nmeObj.nmeGetPixelBounds(); }
 }
 
+#else
+typedef Transform = flash.geom.Transform;
 #end

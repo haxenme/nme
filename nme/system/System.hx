@@ -47,4 +47,6 @@ class System
    private static var nme_get_unique_device_identifier = Loader.load("nme_get_unique_device_identifier", 0);
 }
 
+#else
+typedef System = flash.system.System;
 #end

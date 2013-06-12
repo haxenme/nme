@@ -9,4 +9,6 @@ enum CompressionAlgorithm
    GZIP;
 }
 
+#else
+typedef CompressionAlgorithm = flash.utils.CompressionAlgorithm;
 #end

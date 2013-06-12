@@ -8,4 +8,6 @@ class SoundLoaderContext
    }
 }
 
+#else
+typedef SoundLoaderContext = flash.media.SoundLoaderContext;
 #end

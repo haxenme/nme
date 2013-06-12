@@ -202,4 +202,6 @@ typedef EventMap = haxe.ds.StringMap<ListenerList>;
 typedef EventMap = Hash<ListenerList>;
 #end
 
+#else
+typedef EventDispatcher = flash.events.EventDispatcher;
 #end

@@ -88,4 +88,6 @@ class LoaderInfo extends URLLoader
    }
 }
 
+#else
+typedef LoaderInfo = flash.display.LoaderInfo;
 #end

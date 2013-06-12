@@ -144,4 +144,6 @@ class SoundChannel extends EventDispatcher
    private static var nme_sound_channel_add_data = Loader.load("nme_sound_channel_add_data", 2);
 }
 
+#else
+typedef SoundChannel = flash.media.SoundChannel;
 #end

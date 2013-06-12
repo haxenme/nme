@@ -6,7 +6,6 @@ import nme.display.Stage;
 import nme.utils.ByteArray;
 import nme.Loader;
 
-#if openfl @:autoBuild(openfl.Assets.embedFont()) #end
 class Font 
 {
    public var fontName(default, null):String;
@@ -147,4 +146,6 @@ typedef NativeKerningData =
    var y:Int;
 }
 
+#else
+typedef Font = flash.text.Font;
 #end

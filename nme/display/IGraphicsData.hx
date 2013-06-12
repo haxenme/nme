@@ -10,4 +10,6 @@ class IGraphicsData
    }
 }
 
+#else
+typedef IGraphicsData = flash.display.IGraphicsData;
 #end

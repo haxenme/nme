@@ -52,4 +52,6 @@ class MovieClip extends Sprite
    /** @private */ private function get_totalFrames() { return mTotalFrames; }
 }
 
+#else
+typedef MovieClip = flash.display.MovieClip;
 #end

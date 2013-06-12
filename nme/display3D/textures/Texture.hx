@@ -51,4 +51,6 @@ class Texture extends TextureBase
 	}
 }
 
+#else
+typedef Texture = flash.display3D.textures.Texture;
 #end

@@ -7,4 +7,6 @@ enum AntiAliasType
    NORMAL;
 }
 
+#else
+typedef AntiAliasType = flash.text.AntiAliasType;
 #end

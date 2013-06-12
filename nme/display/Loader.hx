@@ -116,4 +116,6 @@ class Loader extends Sprite
    }
 }
 
+#else
+typedef Loader = flash.display.Loader;
 #end

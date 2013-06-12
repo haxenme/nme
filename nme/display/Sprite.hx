@@ -32,4 +32,6 @@ class Sprite extends DisplayObjectContainer
    }
 }
 
+#else
+typedef Sprite = flash.display.Sprite;
 #end

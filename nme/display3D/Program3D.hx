@@ -34,4 +34,6 @@ class Program3D
     }
 }
 
+#else
+typedef Program3D = flash.display3D.Program3D;
 #end

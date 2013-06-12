@@ -94,4 +94,6 @@ class MouseEvent extends Event
    }
 }
 
+#else
+typedef MouseEvent = flash.events.MouseEvent;
 #end

@@ -8,4 +8,6 @@ enum StageDisplayState
    FULL_SCREEN_INTERACTIVE;
 }
 
+#else
+typedef StageDisplayState = flash.display.StageDisplayState;
 #end

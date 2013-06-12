@@ -68,4 +68,6 @@ class InteractiveObject extends DisplayObject
    private static var nme_display_object_request_soft_keyboard = Loader.load("nme_display_object_request_soft_keyboard", 1);
 }
 
+#else
+typedef InteractiveObject = flash.display.InteractiveObject;
 #end

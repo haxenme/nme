@@ -13,4 +13,6 @@ enum Context3DStencilAction
    ZERO;
 }
 
+#else
+typedef Context3DStencilAction = flash.display3D.Context3DStencilAction;
 #end

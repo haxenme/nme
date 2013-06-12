@@ -42,4 +42,6 @@ class CubeTexture extends TextureBase
 
 }
 
+#else
+typedef CubeTexture = flash.display3D.textures.CubeTexture;
 #end

@@ -9,4 +9,6 @@ package nme.text;
    REGULAR;
 }
 
+#else
+typedef FontStyle = flash.text.FontStyle;
 #end

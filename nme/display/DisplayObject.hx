@@ -602,4 +602,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
    private static var nme_display_object_hit_test_point = Loader.load("nme_display_object_hit_test_point", 5);
 }
 
+#else
+typedef DisplayObject = flash.display.DisplayObject;
 #end

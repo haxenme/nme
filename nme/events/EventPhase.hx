@@ -8,4 +8,6 @@ class EventPhase
    public static var BUBBLING_PHASE = 2;
 }
 
+#else
+typedef EventPhase = flash.events.EventPhase;
 #end

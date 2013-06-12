@@ -41,4 +41,6 @@ class KeyboardEvent extends Event
    }
 }
 
+#else
+typedef KeyboardEvent = flash.events.KeyboardEvent;
 #end

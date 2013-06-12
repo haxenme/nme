@@ -11,7 +11,6 @@ import nme.errors.Error;
 import nme.utils.ByteArray;
 import nme.utils.Endian;
 
-#if openfl @:autoBuild(openfl.Assets.embedSound()) #end
 class Sound extends EventDispatcher 
 {
    public var bytesLoaded(default, null):Int;
@@ -223,4 +222,6 @@ class Sound extends EventDispatcher
    private static var nme_sound_channel_create_dynamic = Loader.load("nme_sound_channel_create_dynamic", 2);
 }
 
+#else
+typedef Sound = flash.media.Sound;
 #end

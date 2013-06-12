@@ -92,4 +92,6 @@ class File
    #end
 }
 
+#else
+typedef File = flash.filesystem.File;
 #end

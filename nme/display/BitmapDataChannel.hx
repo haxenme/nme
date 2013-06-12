@@ -9,4 +9,6 @@ class BitmapDataChannel
    static public inline var RED = 0x0001;
 }
 
+#else
+typedef BitmapDataChannel = flash.display.BitmapDataChannel;
 #end

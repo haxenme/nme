@@ -8,4 +8,6 @@ enum JointStyle
    BEVEL;
 }
 
+#else
+typedef JointStyle = flash.display.JointStyle;
 #end

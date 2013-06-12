@@ -103,4 +103,6 @@ class Event
    private function get_type():String { return _type; }
 }
 
+#else
+typedef Event = flash.events.Event;
 #end

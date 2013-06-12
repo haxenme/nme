@@ -8,4 +8,6 @@ enum MultitouchInputMode
    GESTURE;
 }
 
+#else
+typedef MultitouchInputMode = flash.ui.MultitouchInputMode;
 #end

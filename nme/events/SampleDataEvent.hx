@@ -30,4 +30,6 @@ class SampleDataEvent extends Event
    }
 }
 
+#else
+typedef SampleDataEvent = flash.events.SampleDataEvent;
 #end

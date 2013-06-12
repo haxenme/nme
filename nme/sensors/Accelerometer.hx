@@ -73,4 +73,6 @@ class Accelerometer extends EventDispatcher
 
 typedef Function = Dynamic -> Void;
 
+#else
+typedef Accelerometer = flash.sensors.Accelerometer;
 #end

@@ -13,4 +13,6 @@ class GraphicsSolidFill extends IGraphicsData
    private static var nme_graphics_solid_fill_create = Loader.load("nme_graphics_solid_fill_create", 2);
 }
 
+#else
+typedef GraphicsSolidFill = flash.display.GraphicsSolidFill;
 #end

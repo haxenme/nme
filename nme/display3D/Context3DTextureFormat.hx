@@ -8,4 +8,6 @@ enum Context3DTextureFormat
     COMPRESSED_ALPHA;
 }
 
+#else
+typedef Context3DTextureFormat = flash.display3D.Context3DTextureFormat;
 #end

@@ -39,4 +39,6 @@ class VertexBuffer3D
    }
 }
 
+#else
+typedef VertexBuffer3D = flash.display3D.VertexBuffer3D;
 #end

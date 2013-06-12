@@ -9,4 +9,6 @@ class Shape extends DisplayObject
    }
 }
 
+#else
+typedef Shape = flash.display.Shape;
 #end

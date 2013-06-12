@@ -67,4 +67,6 @@ class ExternalInterface
    private static var nme_external_interface_register_callbacks = Loader.load("nme_external_interface_register_callbacks", 0);
 }
 
+#else
+typedef ExternalInterface = flash.external.ExternalInterface;
 #end

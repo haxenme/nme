@@ -229,4 +229,6 @@ class SharedObject extends EventDispatcher
    #end
 }
 
+#else
+typedef SharedObject = flash.net.SharedObject;
 #end

@@ -228,4 +228,6 @@ class URLLoader extends EventDispatcher
    private static var nme_curl_initialize = Loader.load("nme_curl_initialize", 1);
 }
 
+#else
+typedef URLLoader = flash.net.URLLoader;
 #end

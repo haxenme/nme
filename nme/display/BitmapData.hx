@@ -15,7 +15,6 @@ typedef BitmapInt32 = Int;
 import nme.display.BitmapInt32;
 #end
 
-#if openfl @:autoBuild(openfl.Assets.embedBitmap()) #end
 class BitmapData implements IBitmapDrawable 
 {
    public static var CLEAR = createColor(0, 0);
@@ -874,4 +873,6 @@ class OptimizedPerlin
    }
 }
 
+#else
+typedef BitmapData = flash.display.BitmapData;
 #end

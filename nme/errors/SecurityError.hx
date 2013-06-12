@@ -9,4 +9,6 @@ class SecurityError extends Error
    }
 }
 
+#else
+typedef SecurityError = flash.errors.SecurityError;
 #end

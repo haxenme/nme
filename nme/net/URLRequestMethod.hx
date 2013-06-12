@@ -11,4 +11,6 @@ class URLRequestMethod
    public static inline var PUT:String = "PUT";
 }
 
+#else
+typedef URLRequestMethod = flash.net.URLRequestMethod;
 #end

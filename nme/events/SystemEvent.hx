@@ -24,4 +24,6 @@ class SystemEvent extends Event
    }
 }
 
+#else
+typedef SystemEvent = flash.events.SystemEvent;
 #end

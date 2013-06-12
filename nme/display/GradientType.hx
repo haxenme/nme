@@ -7,4 +7,6 @@ enum GradientType
    LINEAR;
 }
 
+#else
+typedef GradientType = flash.display.GradientType;
 #end

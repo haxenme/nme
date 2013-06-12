@@ -24,4 +24,6 @@ class Error
    }
 }
 
+#else
+typedef Error = flash.errors.Error;
 #end

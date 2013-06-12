@@ -13,4 +13,6 @@ class GraphicsStroke extends IGraphicsData
    private static var nme_graphics_stroke_create = Loader.load("nme_graphics_stroke_create", -1);
 }
 
+#else
+typedef GraphicsStroke = flash.display.GraphicsStroke;
 #end

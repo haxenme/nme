@@ -8,4 +8,6 @@ package nme.text;
    EMBEDDED_CFF;
 }
 
+#else
+typedef FontType = flash.text.FontType;
 #end

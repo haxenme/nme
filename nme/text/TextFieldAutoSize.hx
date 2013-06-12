@@ -9,4 +9,6 @@ enum TextFieldAutoSize
    RIGHT;
 }
 
+#else
+typedef TextFieldAutoSize = flash.text.TextFieldAutoSize;
 #end

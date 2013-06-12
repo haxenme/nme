@@ -13,4 +13,6 @@ class URLRequestHeader
    }
 }
 
+#else
+typedef URLRequestHeader = flash.net.URLRequestHeader;
 #end

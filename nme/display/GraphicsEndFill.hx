@@ -13,4 +13,6 @@ class GraphicsEndFill extends IGraphicsData
    private static var nme_graphics_end_fill_create = Loader.load("nme_graphics_end_fill_create", 0);
 }
 
+#else
+typedef GraphicsEndFill = flash.display.GraphicsEndFill;
 #end

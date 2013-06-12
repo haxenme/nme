@@ -9,4 +9,6 @@ class RangeError extends Error
    }
 }
 
+#else
+typedef RangeError = flash.errors.RangeError;
 #end

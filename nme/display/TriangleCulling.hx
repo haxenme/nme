@@ -9,4 +9,6 @@ enum TriangleCulling
    NEGATIVE;
 }
 
+#else
+typedef TriangleCulling = flash.display.TriangleCulling;
 #end

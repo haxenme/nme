@@ -9,4 +9,6 @@ enum StageScaleMode
    EXACT_FIT;
 }
 
+#else
+typedef StageScaleMode = flash.display.StageScaleMode;
 #end

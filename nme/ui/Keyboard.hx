@@ -109,4 +109,6 @@ class Keyboard
    //public static function isAccessible() : Bool;
 }
 
+#else
+typedef Keyboard = flash.ui.Keyboard;
 #end

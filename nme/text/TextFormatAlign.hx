@@ -9,4 +9,6 @@ class TextFormatAlign
    public static var JUSTIFY = "justify";
 }
 
+#else
+typedef TextFormatAlign = flash.text.TextFormatAlign;
 #end

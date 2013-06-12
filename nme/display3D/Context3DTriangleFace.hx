@@ -11,4 +11,6 @@ class Context3DTriangleFace
    inline public static var NONE = 0;
 }
 
+#else
+typedef Context3DTriangleFace = flash.display3D.Context3DTriangleFace;
 #end

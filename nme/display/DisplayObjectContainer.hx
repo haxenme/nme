@@ -318,4 +318,6 @@ class DisplayObjectContainer extends InteractiveObject
    private static var nme_doc_swap_children = Loader.load("nme_doc_swap_children", 3);
 }
 
+#else
+typedef DisplayObjectContainer = flash.display.DisplayObjectContainer;
 #end

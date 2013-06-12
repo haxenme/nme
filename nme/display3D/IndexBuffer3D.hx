@@ -38,4 +38,6 @@ class IndexBuffer3D
     }
 }
 
+#else
+typedef IndexBuffer3D = flash.display3D.IndexBuffer3D;
 #end

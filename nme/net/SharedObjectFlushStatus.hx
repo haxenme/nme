@@ -7,4 +7,6 @@ package nme.net;
    PENDING;
 }
 
+#else
+typedef SharedObjectFlushStatus = flash.net.SharedObjectFlushStatus;
 #end

@@ -10,4 +10,6 @@ enum LineScaleMode
    OPENGL;
 }
 
+#else
+typedef LineScaleMode = flash.display.LineScaleMode;
 #end

@@ -8,4 +8,6 @@ enum PixelSnapping
    ALWAYS;
 }
 
+#else
+typedef PixelSnapping = flash.display.PixelSnapping;
 #end

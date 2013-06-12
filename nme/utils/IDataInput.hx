@@ -29,4 +29,6 @@ interface IDataInput
    private function set_endian(s:String):String;
 }
 
+#else
+typedef IDataInput = flash.utils.IDataInput;
 #end

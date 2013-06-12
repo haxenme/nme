@@ -23,4 +23,6 @@ class StorageVolume
    }
 }
 
+#else
+typedef StorageVolume = flash.filesystem.StorageVolume;
 #end
