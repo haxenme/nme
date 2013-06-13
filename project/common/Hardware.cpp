@@ -353,17 +353,17 @@ public:
                   UserPoint tex_pos(point[1]);
                   UserPoint size(point[2]);
                   point += 3;
-
+				  
                   if (inCommands[i]&pcTile_Trans_Bit)
                   {
                      UserPoint trans_x = *point++;
                      UserPoint trans_y = *point++;
 
                      UserPoint p1(pos.x + size.x*trans_x.x,
-                                  pos.y + size.x*trans_y.x);
-                     UserPoint p2(pos.x + size.x*trans_x.x + size.y*trans_x.y,
-                                  pos.y + size.x*trans_y.x + size.y*trans_y.y );
-                     UserPoint p3(pos.x + size.y*trans_x.y,
+                                  pos.y + size.x*trans_x.y);
+                     UserPoint p2(pos.x + size.x*trans_x.x + size.y*trans_y.x,
+                                  pos.y + size.x*trans_x.y + size.y*trans_y.y );
+                     UserPoint p3(pos.x + size.y*trans_y.x,
                                   pos.y + size.y*trans_y.y );
 
                      vertices.push_back( pos );

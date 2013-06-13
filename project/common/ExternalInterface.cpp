@@ -2387,8 +2387,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
                   trans_2x2[2] = -trans_2x2[1];
                   trans_2x2[3] = trans_2x2[0];
                }
-               double ox_ = ox*trans_2x2[0] + oy*trans_2x2[1];
-                      oy  = ox*trans_2x2[2] + oy*trans_2x2[3];
+               double ox_ = ox*trans_2x2[0] + oy*trans_2x2[2];
+                      oy  = ox*trans_2x2[1] + oy*trans_2x2[3];
                ox = ox_;
             }
 
