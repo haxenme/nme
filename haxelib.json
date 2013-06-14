@@ -5,7 +5,7 @@
   "tags": [ "cpp", "neko" ],
   "description": "NME provides a backend for native iOS, Android, BlackBerry, webOS, Windows, Mac and Linux applications, using a Flash-similar API",
   "version": "4.0.2",
-  "releasenote": "Fix Flash compile",
+  "releasenote": "Update binaries, improvements to drawTiles",
   "contributors": [ "gamehaxe", "singmajesty" ],
   "dependencies": {}
 }
