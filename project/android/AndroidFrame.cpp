@@ -37,7 +37,7 @@ int GetResult()
 
 class AndroidStage : public Stage
 {
-    
+
 public:
    AndroidStage(int inWidth,int inHeight,int inFlags) : Stage(true)
    {
@@ -56,7 +56,7 @@ public:
       mDownY = 0;
 
       normalOrientation = 0;
-       
+
    }
    ~AndroidStage()
    {
@@ -87,7 +87,7 @@ public:
          HandleEvent(evt);
       }
    }
- 
+
 
    void OnRender()
    {
@@ -119,7 +119,16 @@ public:
       joystick.code = inCode;
       HandleEvent(joystick);
    }
-   
+
+   void OnJoyMotion(int inDeviceId, int inAxis, float inValue)
+   {
+      Event joystick(etJoyAxisMove);
+      joystick.id = inDeviceId;
+      joystick.code = inAxis;
+      joystick.value = inValue;
+      HandleEvent(joystick);
+   }
+
 
    void OnTrackball(double inX, double inY)
    {
@@ -164,7 +173,7 @@ public:
                   mouse.flags |= efLeftDown;
                }
                mouse.value = inID;
-               
+
                mouse.sx = sizeX;
                mouse.sy = sizeY;
 
@@ -197,7 +206,7 @@ public:
       mOrientationZ = inZ;
       //__android_log_print(ANDROID_LOG_INFO, "NME", "Orientation %f %f %f", inX, inY, inZ);
    }
-   
+
    void OnAccelerate(double inX, double inY, double inZ)
    {
       if (normalOrientation == 0 || normalOrientation == 1) { // UNKNOWN || PORTRAIT
@@ -230,20 +239,20 @@ public:
 
    bool mMultiTouch;
    int  mSingleTouchID;
-  
+
    double mDX;
    double mDY;
-   
+
    int currentDeviceOrientation;
    int normalOrientation;
    double mOrientationX;
    double mOrientationY;
    double mOrientationZ;
-      
+
    double mAccX;
    double mAccY;
    double mAccZ;
-      
+
    double mDownX;
    double mDownY;
 
@@ -273,7 +282,7 @@ public:
 
    virtual void SetTitle() { }
    virtual void SetIcon() { }
-   virtual Stage *GetStage() 
+   virtual Stage *GetStage()
    {
       return sStage;
    }
@@ -512,6 +521,16 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyChange(JNIEnv * env, jobject 
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
       nme::sStage->OnJoy(deviceId,code,down);
+   gc_set_top_of_stack(0,true);
+   return nme::GetResult();
+}
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyMotion(JNIEnv * env, jobject obj, int deviceId, int axis, int value)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->OnJoyMotion(deviceId,axis,value);
    gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
