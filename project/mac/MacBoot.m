@@ -330,7 +330,7 @@ static void CustomApplicationMain (int argc, char **argv)
 
     #ifndef OBJC_ARC
     //[sdlMain release];
-    //[pool release];
+    [pool release];
     #endif
 }
 
