@@ -166,7 +166,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public inline static function ofArray<T>(a:Array<Dynamic>):Vector<T> {
+	public inline static function ofArray<T>(a:Array<T>):Vector<T> {
 		
 		#if flash
 		return cast flash.Vector.ofArray (a);
