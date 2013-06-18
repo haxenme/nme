@@ -276,7 +276,7 @@ private class VectorIter<T> {
 	
     public function hasNext() {
 		
-        return (index < vector.length - 1);
+        return (index < vector.length);
 		
     }
 	
