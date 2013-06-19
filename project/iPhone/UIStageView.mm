@@ -51,6 +51,7 @@ namespace nme { int gFixedOrientation = -1; }
 
 @interface UIStageViewController : UIViewController
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+- (NSUInteger)application:(UIApplication*)application supportedInterfaceOrientationsForWindow:(UIWindow*)window;
 - (void)loadView;
 @end
 
@@ -572,6 +573,11 @@ public:
    evt.value = interfaceOrientation;
    sgMainView->mStage->OnEvent(evt);
    return evt.result == 2;
+}
+
+- (NSUInteger)application:(UIApplication*)application supportedInterfaceOrientationsForWindow:(UIWindow*)window
+{
+    return UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 - (NSUInteger)supportedInterfaceOrientations
