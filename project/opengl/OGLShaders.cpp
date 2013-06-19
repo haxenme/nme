@@ -377,7 +377,7 @@ const char *gBitmapAlphaFrag =
 "void main(void)\n"
 "{\n"
 "   gl_FragColor.rgb = uTint.rgb;\n"
-"   gl_FragColor.a  = texture2D(uImage0,vTexCoord).a;\n"
+"   gl_FragColor.a  = texture2D(uImage0,vTexCoord).a*uTint.a;\n"
 "}\n";
 
 
@@ -457,6 +457,8 @@ const char *gTextureTransFrag =
 
 GPUProg *GPUProg::create(GPUProgID inID)
 {
+	printf ("SLDFKJSLDFKJF\n");
+	printf ("id : %d\n", inID);
    switch(inID)
    {
       case gpuSolid:
@@ -478,6 +480,7 @@ GPUProg *GPUProg::create(GPUProgID inID)
       case gpuBitmap:
          return new OGLProg( gTextureVert, gBitmapFrag );
       case gpuBitmapAlpha:
+		  printf("hi!");
          return new OGLProg( gTextureVert, gBitmapAlphaFrag );
       default:
         break;
