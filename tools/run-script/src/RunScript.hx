@@ -542,13 +542,21 @@ class RunScript {
 			libraryPath = PathHelper.getHaxelib (new Haxelib (library));
 			
 		}
-		
+			
 		if (FileSystem.exists (libraryPath + "/haxelib.json")) {
 			
-			var json = Json.parse (File.getContent (libraryPath + "/haxelib.json"));
+			var json = Json.parse (File.getContent (libraryPath + "/haxelib.json"));	
 			var result:String = json.version;
-			result = result.substring (0, result.indexOf ("-"));
-			return StringTools.replace (result, ".", ",");
+			
+			if (haxelibFormat) {
+				
+				return StringTools.replace (result, ".", ",");
+				
+			} else {
+				
+				return result;
+					
+			}
 			
 		} else if (FileSystem.exists (libraryPath + "/haxelib.xml")) {
 			
@@ -1147,7 +1155,7 @@ class RunScript {
 					var targetPath = "";
 					
 					targetPath = "../nme-" + getRevision () + ".zip";
-					
+						
 					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", nmeFilters);
 					
 					if (FileSystem.exists (nmeDirectory + targetPath)) {
