@@ -457,8 +457,6 @@ const char *gTextureTransFrag =
 
 GPUProg *GPUProg::create(GPUProgID inID)
 {
-	printf ("SLDFKJSLDFKJF\n");
-	printf ("id : %d\n", inID);
    switch(inID)
    {
       case gpuSolid:
@@ -480,7 +478,6 @@ GPUProg *GPUProg::create(GPUProgID inID)
       case gpuBitmap:
          return new OGLProg( gTextureVert, gBitmapFrag );
       case gpuBitmapAlpha:
-		  printf("hi!");
          return new OGLProg( gTextureVert, gBitmapAlphaFrag );
       default:
         break;
