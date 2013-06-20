@@ -22,7 +22,7 @@ import nme.Lib;
 import nme.media.SoundChannel;
 import nme.net.URLLoader;
 import nme.Loader;
-import flash.Vector;
+import nme.Vector;
 
 
 class Stage extends DisplayObjectContainer 
