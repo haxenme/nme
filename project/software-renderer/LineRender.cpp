@@ -345,10 +345,11 @@ public:
                   //  is initially parallel to these, end cap perpendicular...
                   UserPoint g0 = point[0]-prev;
                   UserPoint g2 = point[1]-point[0];
-                  
+
                   UserPoint perp = g0.Perp(perp_len);
                   UserPoint perp_end = g2.Perp(perp_len);
-                  
+
+                 
                   if (points>0)
                   {
                      if (points>1)
@@ -356,19 +357,32 @@ public:
                      else
                         first_perp = perp;
                   }
-                  
-                  // Add curvy bits
-                  if (inMode==itGetExtent)
+ 
+                  if (fabs(g0.Cross(g2))<0.0001)
                   {
-                     FatCurveExtent(prev, point[0], point[1],perp_len);
-                  }
-                  else if (inMode==itHitTest)
-                  {
-                     HitTestFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
+                     // Treat as line, rather than curve
+                     perp_end = perp;
+
+                     // Add edges ...
+                     AddLinePart(prev+perp,point[1]+perp,point[1]-perp,prev-perp);
+                     prev = *point;
+                     prev_perp = perp;
                   }
                   else
                   {
-                     BuildFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
+                     // Add curvy bits
+                     if (inMode==itGetExtent)
+                     {
+                        FatCurveExtent(prev, point[0], point[1],perp_len);
+                     }
+                     else if (inMode==itHitTest)
+                     {
+                        HitTestFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
+                     }
+                     else
+                     {
+                        BuildFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
+                     }
                   }
                   
                   prev = point[1];
