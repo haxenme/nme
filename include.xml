@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension>
+	
+	<ndll name="std" haxelib="hxcpp" />
+	<ndll name="regexp" haxelib="hxcpp" />
+	<ndll name="zlib" haxelib="hxcpp" />
+	<ndll name="nme" />
+	<ndll name="libfreetype" register="false" if="emscripten" />
+	
+	<include haxelib="openfl-tools" />
+	
+	<templatePath name="templates" />
+	
+</extension>

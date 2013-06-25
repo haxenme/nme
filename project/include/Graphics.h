@@ -261,6 +261,8 @@ enum PathCommand
    pcTileTransCol   = 0x13,
 
    pcBlendModeAdd   = 0x20,
+   pcBlendModeMultiply   = 0x21,
+   pcBlendModeScreen   = 0x22,
 };
 
 enum WindingRule { wrOddEven, wrNonZero };
@@ -435,7 +437,7 @@ public:
 	void PushTargetOffset(const ImagePoint &inOffset, ImagePoint &outBuffer);
 	void PopTargetOffset(ImagePoint &inBuffer);
 
-private:
+//private:
    int        mTX,mTY;
 	int        mVersion;
    Rect       mRect;
@@ -522,6 +524,8 @@ struct HardwareArrays
      BM_ADD      = 0x00000001,
      PERSPECTIVE = 0x00000002,
      RADIAL      = 0x00000004,
+	 BM_MULTIPLY = 0x00000008,
+	 BM_SCREEN   = 0x00000010,
 
      FOCAL_MASK  = 0x0000ff00,
      FOCAL_SIGN  = 0x00010000,
@@ -669,7 +673,7 @@ typedef QuickVec<GraphicsJob> GraphicsJobs;
 class Graphics : public Object
 {
 public:
-   Graphics(bool inInitRef = false);
+   Graphics(DisplayObject *inOwner, bool inInitRef = false);
    ~Graphics();
 
    void clear();
@@ -723,14 +727,17 @@ public:
    bool  HitTest(const UserPoint &inPoint);
 
    bool empty() const { return !mPathData || mPathData->empty(); }
+   void removeOwner(DisplayObject *inOwner) { if (mOwner==inOwner) mOwner = 0; }
 
    int Version() const;
 
 protected:
    void                      BuildHardware();
    void                      Flush(bool inLine=true,bool inFill=true,bool inTile=true);
+   inline void               OnChanged();
 
 private:
+   DisplayObject             *mOwner;
    GraphicsJobs              mJobs;
    int                       mVersion;
 

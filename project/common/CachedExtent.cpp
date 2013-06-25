@@ -3,13 +3,13 @@
 namespace nme
 {
 
-static int sgCachedExtentID = 1;
+int gCachedExtentID = 1;
 
 // --- CachedExtent --------------------------------------
 
 Extent2DF CachedExtent::Get(const Transform &inTransform)
 {
-   mID = sgCachedExtentID++;
+   mID = gCachedExtentID++;
    if (!mExtent.Valid())
       return Extent2DF();
    /*
@@ -48,12 +48,17 @@ bool CachedExtentRenderer::GetExtent(const Transform &inTransform,Extent2DF &ioE
    for(int i=0;i<3;i++)
    {
       CachedExtent &cache = mExtentCache[i];
-      if (cache.mExtent.Valid() && test==cache.mTestMatrix &&
+      if (cache.mIsSet && test==cache.mTestMatrix &&
             *inTransform.mScale9==cache.mScale9 && cache.mIncludeStroke==inIncludeStroke)
       {
-         ioExtent.Add(cache.Get(inTransform));
+         // Maybe set but not valid - ie, 0 size
+         if (cache.mExtent.Valid())
+            ioExtent.Add(cache.Get(inTransform));
          return true;
       }
+      if (cache.mID<gCachedExtentID)
+         cache.mID = gCachedExtentID;
+
       if (cache.mID<smallest)
       {
          smallest = cache.mID;
@@ -71,6 +76,7 @@ bool CachedExtentRenderer::GetExtent(const Transform &inTransform,Extent2DF &ioE
    cache.mTransform.mMatrix3D = &cache.mMatrix;
    cache.mTransform.mScale9 = &cache.mScale9;
    cache.mIncludeStroke = inIncludeStroke;
+   cache.mIsSet = true;
    GetExtent(cache);
 
    cache.Get(inTransform);

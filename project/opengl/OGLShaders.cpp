@@ -377,7 +377,7 @@ const char *gBitmapAlphaFrag =
 "void main(void)\n"
 "{\n"
 "   gl_FragColor.rgb = uTint.rgb;\n"
-"   gl_FragColor.a  = texture2D(uImage0,vTexCoord).a;\n"
+"   gl_FragColor.a  = texture2D(uImage0,vTexCoord).a*uTint.a;\n"
 "}\n";
 
 

@@ -1,546 +1,583 @@
 package nme.utils;
-#if display
+#if (cpp || neko)
 
+import haxe.io.Bytes;
+import haxe.io.BytesData;
+import nme.errors.EOFError; // Ensure that the neko->haxe callbacks are initialized
+import nme.utils.CompressionAlgorithm;
+import nme.Loader;
 
-/**
- * The ByteArray class provides methods and properties to optimize reading,
- * writing, and working with binary data.
- *
- * <p><i>Note:</i> The ByteArray class is for advanced developers who need to
- * access data on the byte level.</p>
- *
- * <p>In-memory data is a packed array(the most compact representation for
- * the data type) of bytes, but an instance of the ByteArray class can be
- * manipulated with the standard <code>[]</code>(array access) operators. It
- * also can be read and written to as an in-memory file, using methods similar
- * to those in the URLStream and Socket classes.</p>
- *
- * <p>In addition, zlib compression and decompression are supported, as well
- * as Action Message Format(AMF) object serialization.</p>
- *
- * <p>Possible uses of the ByteArray class include the following:
- * <ul>
- *   <li>Creating a custom protocol to connect to a server.</li>
- *   <li>Writing your own URLEncoder/URLDecoder.</li>
- *   <li>Writing your own AMF/Remoting packet.</li>
- *   <li>Optimizing the size of your data by using data types.</li>
- *   <li>Working with binary data loaded from a file in Adobe<sup>®</sup>
- * AIR<sup>®</sup>.</li>
- * </ul>
- * </p>
- */
-extern class ByteArray /*implements IDataOutput,*/ implements IDataInput #if !haxe3 , #end implements ArrayAccess<Int> {
+#if neko
+import neko.Lib;
+import neko.zip.Compress;
+import neko.zip.Uncompress;
+import neko.zip.Flush;
+#else
+import cpp.Lib;
+import cpp.zip.Compress;
+import cpp.zip.Uncompress;
+import cpp.zip.Flush;
+#end
 
-	/**
-	 * The number of bytes of data available for reading from the current
-	 * position in the byte array to the end of the array.
-	 *
-	 * <p>Use the <code>bytesAvailable</code> property in conjunction with the
-	 * read methods each time you access a ByteArray object to ensure that you
-	 * are reading valid data.</p>
-	 */
-	var bytesAvailable(default,null) : Int;
+class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if !haxe3 , #end implements IDataInput #if !haxe3 , #end implements IMemoryRange 
+{
 
-	/**
-	 * Changes or reads the byte order for the data; either
-	 * <code>Endian.BIG_ENDIAN</code> or <code>Endian.LITTLE_ENDIAN</code>.
-	 */
-	var endian : Endian;
+   public var bigEndian:Bool;
+   public var bytesAvailable(get_bytesAvailable, null):Int;
+   public var endian(get_endian, set_endian):String;
+   public var position:Int;
+   public var byteLength(get_byteLength,null):Int;
 
-	/**
-	 * The length of the ByteArray object, in bytes.
-	 *
-	 * <p>If the length is set to a value that is larger than the current length,
-	 * the right side of the byte array is filled with zeros.</p>
-	 *
-	 * <p>If the length is set to a value that is smaller than the current
-	 * length, the byte array is truncated.</p>
-	 */
-	var length : Int;
+   #if neko
+   /** @private */ private var alloced:Int;
+   #end
 
-	/**
-	 * Used to determine whether the ActionScript 3.0, ActionScript 2.0, or
-	 * ActionScript 1.0 format should be used when writing to, or reading from, a
-	 * ByteArray instance. The value is a constant from the ObjectEncoding class.
-	 */
-	var objectEncoding : Int;
+   public function new(inSize = 0) 
+   {
+      bigEndian = true;
+      position = 0;
 
-	/**
-	 * Moves, or returns the current position, in bytes, of the file pointer into
-	 * the ByteArray object. This is the point at which the next call to a read
-	 * method starts reading or a write method starts writing.
-	 */
-	var position : Int;
+      if (inSize >= 0) 
+      {
+         #if neko
+         alloced = inSize < 16 ? 16 : inSize;
+         var bytes = untyped __dollar__smake(alloced);
+         super(inSize, bytes);
+         #else
+         var data = new BytesData();
+         if (inSize > 0)
+            untyped data[inSize - 1] = 0;
+         super(inSize, data);
+         #end
+      }
+   }
 
-	/**
-	 * Creates a ByteArray instance representing a packed array of bytes, so that
-	 * you can use the methods and properties in this class to optimize your data
-	 * storage and stream.
-	 */
-	function new() : Void;
+   @:keep
+   inline public function __get(pos:Int):Int 
+   {
+      // Neko/cpp pseudo array accessors...
+      // No bounds checking is done in the cpp case
+      #if cpp
+      return untyped b[pos];
+      #else
+      return get(pos);
+      #end
+   }
 
-	/**
-	 * Clears the contents of the byte array and resets the <code>length</code>
-	 * and <code>position</code> properties to 0. Calling this method explicitly
-	 * frees up the memory used by the ByteArray instance.
-	 * 
-	 */
-	@:require(flash10) function clear() : Void;
+   #if !no_nme_io
+   /** @private */ static function __init__() {
+      var factory = function(inLen:Int) { return new ByteArray(inLen); };
+      var resize = function(inArray:ByteArray, inLen:Int) 
+      {
+         if (inLen > 0)
+            inArray.ensureElem(inLen - 1, true);
+         inArray.length = inLen;
 
-	/**
-	 * Compresses the byte array. The entire byte array is compressed. For
-	 * content running in Adobe AIR, you can specify a compression algorithm by
-	 * passing a value(defined in the CompressionAlgorithm class) as the
-	 * <code>algorithm</code> parameter. Flash Player supports only the default
-	 * algorithm, zlib.
-	 *
-	 * <p>After the call, the <code>length</code> property of the ByteArray is
-	 * set to the new length. The <code>position</code> property is set to the
-	 * end of the byte array.</p>
-	 *
-	 * <p>The zlib compressed data format is described at <a
-	 * href="http://www.ietf.org/rfc/rfc1950.txt"
-	 * scope="external">http://www.ietf.org/rfc/rfc1950.txt</a>.</p>
-	 *
-	 * <p>The deflate compression algorithm is described at <a
-	 * href="http://www.ietf.org/rfc/rfc1951.txt"
-	 * scope="external">http://www.ietf.org/rfc/rfc1951.txt</a>.</p>
-	 *
-	 * <p>The deflate compression algorithm is used in several compression
-	 * formats, such as zlib, gzip, some zip implementations, and others. When
-	 * data is compressed using one of those compression formats, in addition to
-	 * storing the compressed version of the original data, the compression
-	 * format data(for example, the .zip file) includes metadata information.
-	 * Some examples of the types of metadata included in various file formats
-	 * are file name, file modification date/time, original file size, optional
-	 * comments, checksum data, and more.</p>
-	 *
-	 * <p>For example, when a ByteArray is compressed using the zlib algorithm,
-	 * the resulting ByteArray is structured in a specific format. Certain bytes
-	 * contain metadata about the compressed data, while other bytes contain the
-	 * actual compressed version of the original ByteArray data. As defined by
-	 * the zlib compressed data format specification, those bytes(that is, the
-	 * portion containing the compressed version of the original data) are
-	 * compressed using the deflate algorithm. Consequently those bytes are
-	 * identical to the result of calling <code>compress(<ph
-	 * outputclass="javascript">air.CompressionAlgorithm.DEFLATE)</code> on the
-	 * original ByteArray. However, the result from <code>compress(<ph
-	 * outputclass="javascript">air.CompressionAlgorithm.ZLIB)</code> includes
-	 * the extra metadata, while the
-	 * <code>compress(CompressionAlgorithm.DEFLATE)</code> result includes only
-	 * the compressed version of the original ByteArray data and nothing
-	 * else.</p>
-	 *
-	 * <p>In order to use the deflate format to compress a ByteArray instance's
-	 * data in a specific format such as gzip or zip, you cannot simply call
-	 * <code>compress(CompressionAlgorithm.DEFLATE)</code>. You must create a
-	 * ByteArray structured according to the compression format's specification,
-	 * including the appropriate metadata as well as the compressed data obtained
-	 * using the deflate format. Likewise, in order to decode data compressed in
-	 * a format such as gzip or zip, you can't simply call
-	 * <code>uncompress(CompressionAlgorithm.DEFLATE)</code> on that data. First,
-	 * you must separate the metadata from the compressed data, and you can then
-	 * use the deflate format to decompress the compressed data.</p>
-	 * 
-	 */
-	function compress(#if flash11 ?algorithm : CompressionAlgorithm #end) : Void;
+      };
 
-	/**
-	 * Compresses the byte array using the deflate compression algorithm. The
-	 * entire byte array is compressed.
-	 *
-	 * <p>After the call, the <code>length</code> property of the ByteArray is
-	 * set to the new length. The <code>position</code> property is set to the
-	 * end of the byte array.</p>
-	 *
-	 * <p>The deflate compression algorithm is described at <a
-	 * href="http://www.ietf.org/rfc/rfc1951.txt"
-	 * scope="external">http://www.ietf.org/rfc/rfc1951.txt</a>.</p>
-	 *
-	 * <p>In order to use the deflate format to compress a ByteArray instance's
-	 * data in a specific format such as gzip or zip, you cannot simply call
-	 * <code>deflate()</code>. You must create a ByteArray structured according
-	 * to the compression format's specification, including the appropriate
-	 * metadata as well as the compressed data obtained using the deflate format.
-	 * Likewise, in order to decode data compressed in a format such as gzip or
-	 * zip, you can't simply call <code>inflate()</code> on that data. First, you
-	 * must separate the metadata from the compressed data, and you can then use
-	 * the deflate format to decompress the compressed data.</p>
-	 * 
-	 */
-	@:require(flash10) function deflate() : Void;
+      var bytes = function(inArray:ByteArray) { return inArray==null ? null :  inArray.b; }
+      var slen = function(inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
 
-	/**
-	 * Decompresses the byte array using the deflate compression algorithm. The
-	 * byte array must have been compressed using the same algorithm.
-	 *
-	 * <p>After the call, the <code>length</code> property of the ByteArray is
-	 * set to the new length. The <code>position</code> property is set to 0.</p>
-	 *
-	 * <p>The deflate compression algorithm is described at <a
-	 * href="http://www.ietf.org/rfc/rfc1951.txt"
-	 * scope="external">http://www.ietf.org/rfc/rfc1951.txt</a>.</p>
-	 *
-	 * <p>In order to decode data compressed in a format that uses the deflate
-	 * compression algorithm, such as data in gzip or zip format, it will not
-	 * work to simply call <code>inflate()</code> on a ByteArray containing the
-	 * compression formation data. First, you must separate the metadata that is
-	 * included as part of the compressed data format from the actual compressed
-	 * data. For more information, see the <code>compress()</code> method
-	 * description.</p>
-	 * 
-	 * @throws IOError The data is not valid compressed data; it was not
-	 *                 compressed with the same compression algorithm used to
-	 *                 compress.
-	 */
-	@:require(flash10) function inflate() : Void;
+      var init = Loader.load("nme_byte_array_init", 4);
+      init(factory, slen, resize, bytes);
+   }
+   #end
 
-	/**
-	 * Reads a Boolean value from the byte stream. A single byte is read, and
-	 * <code>true</code> is returned if the byte is nonzero, <code>false</code>
-	 * otherwise.
-	 * 
-	 * @return Returns <code>true</code> if the byte is nonzero,
-	 *         <code>false</code> otherwise.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readBoolean() : Bool;
+   @:keep
+   inline public function __set(pos:Int, v:Int):Void 
+   {
+      // No bounds checking is done in the cpp case
+      #if cpp
+      untyped b[pos] = v;
+      #else
+      set(pos, v);
+      #end
+   }
 
-	/**
-	 * Reads a signed byte from the byte stream.
-	 *
-	 * <p>The returned value is in the range -128 to 127.</p>
-	 * 
-	 * @return An integer between -128 and 127.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readByte() : Int;
+   public function asString():String 
+   {
+      return readUTFBytes(length);
+   }
 
-	/**
-	 * Reads the number of data bytes, specified by the <code>length</code>
-	 * parameter, from the byte stream. The bytes are read into the ByteArray
-	 * object specified by the <code>bytes</code> parameter, and the bytes are
-	 * written into the destination ByteArray starting at the position specified
-	 * by <code>offset</code>.
-	 * 
-	 * @param bytes  The ByteArray object to read data into.
-	 * @param offset The offset(position) in <code>bytes</code> at which the
-	 *               read data should be written.
-	 * @param length The number of bytes to read. The default value of 0 causes
-	 *               all available data to be read.
-	 * @throws EOFError   There is not sufficient data available to read.
-	 * @throws RangeError The value of the supplied offset and length, combined,
-	 *                    is greater than the maximum for a uint.
-	 */
-	function readBytes(bytes : ByteArray, offset : Int = 0, length : Int = 0) : Void;
+   public function checkData(inLength:Int) 
+   {
+      if (inLength + position > length)
+         ThrowEOFi();
+   }
 
-	/**
-	 * Reads an IEEE 754 double-precision(64-bit) floating-point number from the
-	 * byte stream.
-	 * 
-	 * @return A double-precision(64-bit) floating-point number.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readDouble() : Float;
+   public function clear() 
+   {
+      position = 0;
+      length = 0;
+   }
 
-	/**
-	 * Reads an IEEE 754 single-precision(32-bit) floating-point number from the
-	 * byte stream.
-	 * 
-	 * @return A single-precision(32-bit) floating-point number.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readFloat() : Float;
+   public function compress(algorithm:CompressionAlgorithm = null) 
+   {
+      #if neko
+      var src = alloced == length ? this : sub(0, length);
+      #else
+      var src = this;
+      #end
 
-	/**
-	 * Reads a signed 32-bit integer from the byte stream.
-	 *
-	 * <p>The returned value is in the range -2147483648 to 2147483647.</p>
-	 * 
-	 * @return A 32-bit signed integer between -2147483648 and 2147483647.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readInt() : Int;
+      var result:Bytes;
 
-	/**
-	 * Reads a multibyte string of specified length from the byte stream using
-	 * the specified character set.
-	 * 
-	 * @param length  The number of bytes from the byte stream to read.
-	 * @param charSet The string denoting the character set to use to interpret
-	 *                the bytes. Possible character set strings include
-	 *                <code>"shift-jis"</code>, <code>"cn-gb"</code>,
-	 *                <code>"iso-8859-1"</code>, and others. For a complete list,
-	 *                see <a href="../../charset-codes.html">Supported Character
-	 *                Sets</a>.
-	 *
-	 *                <p><b>Note:</b> If the value for the <code>charSet</code>
-	 *                parameter is not recognized by the current system, the
-	 *                application uses the system's default code page as the
-	 *                character set. For example, a value for the
-	 *                <code>charSet</code> parameter, as in
-	 *                <code>myTest.readMultiByte(22, "iso-8859-01")</code> that
-	 *                uses <code>01</code> instead of <code>1</code> might work
-	 *                on your development system, but not on another system. On
-	 *                the other system, the application will use the system's
-	 *                default code page.</p>
-	 * @return UTF-8 encoded string.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readMultiByte(length : Int, charSet : String) : String;
+      if (algorithm == CompressionAlgorithm.LZMA) 
+      {
+         result = Bytes.ofData(nme_lzma_encode(src.getData()));
 
-	/**
-	 * Reads an object from the byte array, encoded in AMF serialized format.
-	 * 
-	 * @return The deserialized object.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readObject() : Dynamic;
+      } else 
+      {
+         var windowBits = switch(algorithm) 
+         {
+            case DEFLATE: -15;
+            case GZIP: 31;
+            default: 15;
+         }
 
-	/**
-	 * Reads a signed 16-bit integer from the byte stream.
-	 *
-	 * <p>The returned value is in the range -32768 to 32767.</p>
-	 * 
-	 * @return A 16-bit signed integer between -32768 and 32767.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readShort() : Int;
+         #if enable_deflate
+         result = Compress.run(src, 8, windowBits);
+         #else
+         result = Compress.run(src, 8);
+         #end
+      }
 
-	/**
-	 * Reads a UTF-8 string from the byte stream. The string is assumed to be
-	 * prefixed with an unsigned short indicating the length in bytes.
-	 * 
-	 * @return UTF-8 encoded string.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readUTF() : String;
+      b = result.b;
+      length = result.length;
+      position = length;
+      #if neko
+      alloced = length;
+      #end
+   }
 
-	/**
-	 * Reads a sequence of UTF-8 bytes specified by the <code>length</code>
-	 * parameter from the byte stream and returns a string.
-	 * 
-	 * @param length An unsigned short indicating the length of the UTF-8 bytes.
-	 * @return A string composed of the UTF-8 bytes of the specified length.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readUTFBytes(length : Int) : String;
+   public function deflate() 
+   {
+      compress(CompressionAlgorithm.DEFLATE);
+   }
 
-	/**
-	 * Reads an unsigned byte from the byte stream.
-	 *
-	 * <p>The returned value is in the range 0 to 255. </p>
-	 * 
-	 * @return A 32-bit unsigned integer between 0 and 255.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readUnsignedByte() : Int;
+   /** @private */ private function ensureElem(inSize:Int, inUpdateLenght:Bool) {
+      var len = inSize + 1;
 
-	/**
-	 * Reads an unsigned 32-bit integer from the byte stream.
-	 *
-	 * <p>The returned value is in the range 0 to 4294967295. </p>
-	 * 
-	 * @return A 32-bit unsigned integer between 0 and 4294967295.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readUnsignedInt() : Int;
+      #if neko
+      if (alloced < len) 
+      {
+         alloced =((len+1) * 3) >> 1;
+         var new_b = untyped __dollar__smake(alloced);
+         untyped __dollar__sblit(new_b, 0, b, 0, length);
+         b = new_b;
+      }
+      #else
+      if (b.length < len)
+         untyped b.__SetSize(len);
+      #end
 
-	/**
-	 * Reads an unsigned 16-bit integer from the byte stream.
-	 *
-	 * <p>The returned value is in the range 0 to 65535. </p>
-	 * 
-	 * @return A 16-bit unsigned integer between 0 and 65535.
-	 * @throws EOFError There is not sufficient data available to read.
-	 */
-	function readUnsignedShort() : Int;
+      if (inUpdateLenght && length < len)
+         length = len;
+   }
 
-	/**
-	 * Converts the byte array to a string. If the data in the array begins with
-	 * a Unicode byte order mark, the application will honor that mark when
-	 * converting to a string. If <code>System.useCodePage</code> is set to
-	 * <code>true</code>, the application will treat the data in the array as
-	 * being in the current system code page when converting.
-	 * 
-	 * @return The string representation of the byte array.
-	 */
-	function toString() : String;
+   static public function fromBytes(inBytes:Bytes) 
+   {
+      var result = new ByteArray( -1);
+	  result.nmeFromBytes(inBytes);
+      return result;
+   }
 
-	/**
-	 * Decompresses the byte array. For content running in Adobe AIR, you can
-	 * specify a compression algorithm by passing a value(defined in the
-	 * CompressionAlgorithm class) as the <code>algorithm</code> parameter. The
-	 * byte array must have been compressed using the same algorithm. Flash
-	 * Player supports only the default algorithm, zlib.
-	 *
-	 * <p>After the call, the <code>length</code> property of the ByteArray is
-	 * set to the new length. The <code>position</code> property is set to 0.</p>
-	 *
-	 * <p>The zlib compressed data format is described at <a
-	 * href="http://www.ietf.org/rfc/rfc1950.txt"
-	 * scope="external">http://www.ietf.org/rfc/rfc1950.txt</a>.</p>
-	 *
-	 * <p>The deflate compression algorithm is described at <a
-	 * href="http://www.ietf.org/rfc/rfc1951.txt"
-	 * scope="external">http://www.ietf.org/rfc/rfc1951.txt</a>.</p>
-	 *
-	 * <p>In order to decode data compressed in a format that uses the deflate
-	 * compression algorithm, such as data in gzip or zip format, it will not
-	 * work to call <code>uncompress(CompressionAlgorithm.DEFLATE)</code> on a
-	 * ByteArray containing the compression formation data. First, you must
-	 * separate the metadata that is included as part of the compressed data
-	 * format from the actual compressed data. For more information, see the
-	 * <code>compress()</code> method description.</p>
-	 * 
-	 * @throws IOError The data is not valid compressed data; it was not
-	 *                 compressed with the same compression algorithm used to
-	 *                 compress.
-	 */
-	function uncompress(#if flash11 ?algorithm : CompressionAlgorithm #end) : Void;
+   public function getLength():Int { return length; }
 
-	/**
-	 * Writes a Boolean value. A single byte is written according to the
-	 * <code>value</code> parameter, either 1 if <code>true</code> or 0 if
-	 * <code>false</code>.
-	 * 
-	 * @param value A Boolean value determining which byte is written. If the
-	 *              parameter is <code>true</code>, the method writes a 1; if
-	 *              <code>false</code>, the method writes a 0.
-	 */
-	function writeBoolean(value : Bool) : Void;
+   // IMemoryRange
+   public function getByteBuffer():ByteArray { return this; }
+   public function getStart():Int { return 0; }
 
-	/**
-	 * Writes a byte to the byte stream.
-	 *
-	 * <p>The low 8 bits of the parameter are used. The high 24 bits are ignored.
-	 * </p>
-	 * 
-	 * @param value A 32-bit integer. The low 8 bits are written to the byte
-	 *              stream.
-	 */
-	function writeByte(value : Int) : Void;
+   public function inflate() 
+   {
+      uncompress(CompressionAlgorithm.DEFLATE);
+   }
+   
+   private inline function nmeFromBytes(inBytes:Bytes):Void
+   {
+      b = inBytes.b;
+      length = inBytes.length;
+      
+      #if neko
+      alloced = length;
+      #end
+   }
 
-	/**
-	 * Writes a sequence of <code>length</code> bytes from the specified byte
-	 * array, <code>bytes</code>, starting <code>offset</code>(zero-based index)
-	 * bytes into the byte stream.
-	 *
-	 * <p>If the <code>length</code> parameter is omitted, the default length of
-	 * 0 is used; the method writes the entire buffer starting at
-	 * <code>offset</code>. If the <code>offset</code> parameter is also omitted,
-	 * the entire buffer is written. </p>
-	 *
-	 * <p>If <code>offset</code> or <code>length</code> is out of range, they are
-	 * clamped to the beginning and end of the <code>bytes</code> array.</p>
-	 * 
-	 * @param bytes  The ByteArray object.
-	 * @param offset A zero-based index indicating the position into the array to
-	 *               begin writing.
-	 * @param length An unsigned integer indicating how far into the buffer to
-	 *               write.
-	 */
-	function writeBytes(bytes : ByteArray, offset : Int = 0, length : Int = 0) : Void;
+   public inline function readBoolean():Bool 
+   {
+      return(position < length) ? __get(position++) != 0 : ThrowEOFi() != 0;
+   }
 
-	/**
-	 * Writes an IEEE 754 double-precision(64-bit) floating-point number to the
-	 * byte stream.
-	 * 
-	 * @param value A double-precision(64-bit) floating-point number.
-	 */
-	function writeDouble(value : Float) : Void;
+   public inline function readByte():Int 
+   {
+      var val:Int = readUnsignedByte();
+      return((val & 0x80) != 0) ?(val - 0x100) : val;
+   }
 
-	/**
-	 * Writes an IEEE 754 single-precision(32-bit) floating-point number to the
-	 * byte stream.
-	 * 
-	 * @param value A single-precision(32-bit) floating-point number.
-	 */
-	function writeFloat(value : Float) : Void;
+   public function readBytes(outData:ByteArray, inOffset:Int = 0, inLen:Int = 0):Void 
+   {
+      if (inLen == 0)
+         inLen = length - position;
 
-	/**
-	 * Writes a 32-bit signed integer to the byte stream.
-	 * 
-	 * @param value An integer to write to the byte stream.
-	 */
-	function writeInt(value : Int) : Void;
+      if (position + inLen > length)
+         ThrowEOFi();
 
-	/**
-	 * Writes a multibyte string to the byte stream using the specified character
-	 * set.
-	 * 
-	 * @param value   The string value to be written.
-	 * @param charSet The string denoting the character set to use. Possible
-	 *                character set strings include <code>"shift-jis"</code>,
-	 *                <code>"cn-gb"</code>, <code>"iso-8859-1"</code>, and
-	 *                others. For a complete list, see <a
-	 *                href="../../charset-codes.html">Supported Character
-	 *                Sets</a>.
-	 */
-	function writeMultiByte(value : String, charSet : String) : Void;
+      if (outData.length < inOffset + inLen)
+         outData.ensureElem(inOffset + inLen - 1, true);
 
-	/**
-	 * Writes an object into the byte array in AMF serialized format.
-	 * 
-	 * @param object The object to serialize.
-	 */
-	function writeObject(object : Dynamic) : Void;
+      #if neko
+      outData.blit(inOffset, this, position, inLen);
+      #else
+      var b1 = b;
+      var b2 = outData.b;
+      var p = position;
+      for(i in 0...inLen)
+         b2[inOffset + i] = b1[p + i];
+      #end
 
-	/**
-	 * Writes a 16-bit integer to the byte stream. The low 16 bits of the
-	 * parameter are used. The high 16 bits are ignored.
-	 * 
-	 * @param value 32-bit integer, whose low 16 bits are written to the byte
-	 *              stream.
-	 */
-	function writeShort(value : Int) : Void;
+      position += inLen;
+   }
 
-	/**
-	 * Writes a UTF-8 string to the byte stream. The length of the UTF-8 string
-	 * in bytes is written first, as a 16-bit integer, followed by the bytes
-	 * representing the characters of the string.
-	 * 
-	 * @param value The string value to be written.
-	 * @throws RangeError If the length is larger than 65535.
-	 */
-	function writeUTF(value : String) : Void;
+   public function readDouble():Float 
+   {
+      if (position + 8 > length)
+         ThrowEOFi();
 
-	/**
-	 * Writes a UTF-8 string to the byte stream. Similar to the
-	 * <code>writeUTF()</code> method, but <code>writeUTFBytes()</code> does not
-	 * prefix the string with a 16-bit length word.
-	 * 
-	 * @param value The string value to be written.
-	 */
-	function writeUTFBytes(value : String) : Void;
+      #if neko
+      var bytes = new Bytes(8, untyped __dollar__ssub(b, position, 8));
+      #elseif cpp
+      var bytes = new Bytes(8, b.slice(position, position + 8));
+      #end
 
-	/**
-	 * Writes a 32-bit unsigned integer to the byte stream.
-	 * 
-	 * @param value An unsigned integer to write to the byte stream.
-	 */
-	function writeUnsignedInt(value : Int) : Void;
+      position += 8;
+      return _double_of_bytes(bytes.b, bigEndian);
+   }
 
-	/**
-	 * Denotes the default object encoding for the ByteArray class to use for a
-	 * new ByteArray instance. When you create a new ByteArray instance, the
-	 * encoding on that instance starts with the value of
-	 * <code>defaultObjectEncoding</code>. The <code>defaultObjectEncoding</code>
-	 * property is initialized to <code>ObjectEncoding.AMF3</code>.
-	 *
-	 * <p>When an object is written to or read from binary data, the
-	 * <code>objectEncoding</code> value is used to determine whether the
-	 * ActionScript 3.0, ActionScript2.0, or ActionScript 1.0 format should be
-	 * used. The value is a constant from the ObjectEncoding class.</p>
-	 */
-	static var defaultObjectEncoding : Int;
+   #if !no_nme_io
+   static public function readFile(inString:String):ByteArray 
+   {
+      return nme_byte_array_read_file(inString);
+   }
+   #end
+
+   public function readFloat():Float 
+   {
+      if (position + 4 > length)
+         ThrowEOFi();
+
+      #if neko
+      var bytes = new Bytes(4, untyped __dollar__ssub(b, position, 4));
+      #elseif cpp
+      var bytes = new Bytes(4, b.slice(position, position + 4));
+      #end
+
+      position += 4;
+      return _float_of_bytes(bytes.b, bigEndian);
+   }
+
+   public function readInt():Int 
+   {
+      var ch1 = readUnsignedByte();
+      var ch2 = readUnsignedByte();
+      var ch3 = readUnsignedByte();
+      var ch4 = readUnsignedByte();
+
+      return bigEndian ?(ch1 << 24) |(ch2 << 16) |(ch3 << 8) | ch4 :(ch4 << 24) |(ch3 << 16) |(ch2 << 8) | ch1;
+   }
+
+   public inline function readMultiByte(inLen:Int, charSet:String):String 
+   {
+      // TODO - use code page
+      return readUTFBytes(inLen);
+   }
+
+   public function readShort():Int 
+   {
+      var ch1 = readUnsignedByte();
+      var ch2 = readUnsignedByte();
+
+      var val = bigEndian ?((ch1 << 8) | ch2) :((ch2 << 8) | ch1);
+
+      return((val & 0x8000) != 0) ?(val - 0x10000) : val;
+   }
+
+   inline public function readUnsignedByte():Int 
+   {
+      return(position < length) ? __get(position++) : ThrowEOFi();
+   }
+
+   public function readUnsignedInt():Int 
+   {
+      var ch1 = readUnsignedByte();
+      var ch2 = readUnsignedByte();
+      var ch3 = readUnsignedByte();
+      var ch4 = readUnsignedByte();
+
+      return bigEndian ?(ch1 << 24) |(ch2 << 16) |(ch3 << 8) | ch4 :(ch4 << 24) |(ch3 << 16) |(ch2 << 8) | ch1;
+   }
+
+   public function readUnsignedShort():Int 
+   {
+      var ch1 = readUnsignedByte();
+      var ch2 = readUnsignedByte();
+
+      return bigEndian ?(ch1 << 8) | ch2 :(ch2 << 8) + ch1;
+   }
+
+   public function readUTF():String 
+   {
+      var len = readUnsignedShort();
+      return readUTFBytes(len);
+   }
+
+   public function readUTFBytes(inLen:Int):String 
+   {
+      if (position + inLen > length)
+         ThrowEOFi();
+
+      var p = position;
+      position += inLen;
+
+      #if neko
+      return new String(untyped __dollar__ssub(b, p, inLen));
+      #elseif cpp
+      var result:String="";
+      untyped __global__.__hxcpp_string_of_bytes(b, result, p, inLen);
+      return result;
+      #end
+   }
+
+   public function setLength(inLength:Int):Void 
+   {
+      if (inLength > 0)
+         ensureElem(inLength - 1, false);
+      length = inLength;
+   }
+
+   // ArrayBuffer interface
+   public function slice(inBegin:Int, ?inEnd:Int):ByteArray 
+   {
+      var begin = inBegin;
+
+      if (begin < 0) 
+      {
+         begin += length;
+         if (begin < 0)
+            begin = 0;
+      }
+
+      var end:Int = inEnd == null ? length : inEnd;
+
+      if (end < 0) 
+      {
+         end += length;
+
+         if (end < 0)
+            end = 0;
+      }
+
+      if (begin >= end)
+         return new ByteArray();
+
+      var result = new ByteArray(end - begin);
+
+      var opos = position;
+      result.blit(0, this, begin, end - begin);
+
+      return result;
+   }
+
+   /** @private */ private function ThrowEOFi():Int {
+      throw new EOFError();
+      return 0;
+   }
+
+   public function uncompress(algorithm:CompressionAlgorithm = null):Void 
+   {
+      if (algorithm == null) algorithm = CompressionAlgorithm.GZIP;
+
+      #if neko
+      var src = alloced == length ? this : sub(0, length);
+      #else
+      var src = this;
+      #end
+
+      var result:Bytes;
+
+      if (algorithm == CompressionAlgorithm.LZMA) 
+      {
+         result = Bytes.ofData(nme_lzma_decode(src.getData()));
+
+      } else 
+      {
+         var windowBits = switch(algorithm) 
+         {
+            case DEFLATE: -15;
+            case GZIP: 31;
+            default: 15;
+         }
+
+         #if enable_deflate
+         result = Uncompress.run(src, null, windowBits);
+         #else
+         result = Uncompress.run(src, null);
+         #end
+      }
+
+      b = result.b;
+      length = result.length;
+      position = 0;
+      #if neko
+      alloced = length;
+      #end
+   }
+
+   /** @private */ inline function write_uncheck(inByte:Int) {
+      #if cpp
+      untyped b.__unsafe_set(position++, inByte);
+      #else
+      untyped __dollar__sset(b, position++, inByte & 0xff);
+      #end
+   }
+
+   public function writeBoolean(value:Bool) 
+   {
+      writeByte(value ? 1 : 0);
+   }
+
+   inline public function writeByte(value:Int) 
+   {
+      ensureElem(position, true);
+
+      #if cpp
+      b[position++] = untyped value;
+      #else
+      untyped __dollar__sset(b, position++, value & 0xff);
+      #end
+   }
+
+   public function writeBytes(bytes:Bytes, inOffset:Int = 0, inLength:Int = 0) 
+   {
+      if (inLength == 0) inLength = bytes.length - inOffset;
+      ensureElem(position + inLength - 1, true);
+      var opos = position;
+      position += inLength;
+      blit(opos, bytes, inOffset, inLength);
+   }
+
+   public function writeDouble(x:Float) 
+   {
+      #if neko
+      var bytes = new Bytes(8, _double_bytes(x, bigEndian));
+      #elseif cpp
+      var bytes = Bytes.ofData(_double_bytes(x, bigEndian));
+      #end
+
+      writeBytes(bytes);
+   }
+
+   #if !no_nme_io
+   public function writeFile(inString:String):Void 
+   {
+      nme_byte_array_overwrite_file(inString, this);
+   }
+   #end
+
+   public function writeFloat(x:Float) 
+   {
+      #if neko
+      var bytes = new Bytes(4, _float_bytes(x, bigEndian));
+      #elseif cpp
+      var bytes = Bytes.ofData(_float_bytes(x, bigEndian));
+      #end
+
+      writeBytes(bytes);
+   }
+
+   public function writeInt(value:Int) 
+   {
+      ensureElem(position + 3, true);
+
+      if (bigEndian) 
+      {
+         write_uncheck(value >> 24);
+         write_uncheck(value >> 16);
+         write_uncheck(value >> 8);
+         write_uncheck(value);
+
+      } else 
+      {
+         write_uncheck(value);
+         write_uncheck(value >> 8);
+         write_uncheck(value >> 16);
+         write_uncheck(value >> 24);
+      }
+   }
+
+   // public function writeMultiByte(value:String, charSet:String)
+   // public function writeObject(object:*)
+   public function writeShort(value:Int) 
+   {
+      ensureElem(position + 1, true);
+
+      if (bigEndian) 
+      {
+         write_uncheck(value >> 8);
+         write_uncheck(value);
+
+      } else 
+      {
+         write_uncheck(value);
+         write_uncheck(value >> 8);
+      }
+   }
+
+   public function writeUnsignedInt(value:Int) 
+   {
+      writeInt(value);
+   }
+
+   public function writeUTF(s:String) 
+   {
+      #if neko
+      var bytes = new Bytes(s.length, untyped s.__s);
+      #else
+      var bytes = Bytes.ofString(s);
+      #end
+
+      writeShort(bytes.length);
+      writeBytes(bytes);
+   }
+
+   public function writeUTFBytes(s:String) 
+   {
+      #if neko
+      var bytes = new Bytes(s.length, untyped s.__s);
+      #else
+      var bytes = Bytes.ofString(s);
+      #end
+
+      writeBytes(bytes);
+   }
+
+   // Getters & Setters
+   private function get_bytesAvailable():Int { return length - position; }
+   private function get_byteLength():Int { return length; }
+   private function get_endian():String { return bigEndian ? Endian.BIG_ENDIAN : Endian.LITTLE_ENDIAN; }
+   private function set_endian(s:String):String { bigEndian =(s == Endian.BIG_ENDIAN); return s; }
+
+   // Native Methods
+   /** @private */ private static var _double_bytes = Lib.load("std", "double_bytes", 2);
+   /** @private */ private static var _double_of_bytes = Lib.load("std", "double_of_bytes", 2);
+   /** @private */ private static var _float_bytes = Lib.load("std", "float_bytes", 2);
+   /** @private */ private static var _float_of_bytes = Lib.load("std", "float_of_bytes", 2);
+   #if !no_nme_io
+   private static var nme_byte_array_overwrite_file = Loader.load("nme_byte_array_overwrite_file", 2);
+   private static var nme_byte_array_read_file = Loader.load("nme_byte_array_read_file", 1);
+   #end
+   private static var nme_lzma_encode = Loader.load("nme_lzma_encode", 1);
+   private static var nme_lzma_decode = Loader.load("nme_lzma_decode", 1);
 }
 
-
-#elseif (cpp || neko)
-typedef ByteArray = native.utils.ByteArray;
-#elseif js
-typedef ByteArray = browser.utils.ByteArray;
 #else
 typedef ByteArray = flash.utils.ByteArray;
 #end

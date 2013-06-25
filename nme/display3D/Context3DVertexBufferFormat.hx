@@ -1,20 +1,15 @@
 package nme.display3D;
-#if display
+#if (cpp || neko)
 
-
-@:fakeEnum(String) extern enum Context3DVertexBufferFormat {
-	BYTES_4;
-	FLOAT_1;
-	FLOAT_2;
-	FLOAT_3;
-	FLOAT_4;
+enum Context3DVertexBufferFormat 
+{
+    BYTES_4;
+    FLOAT_1;
+    FLOAT_2;
+    FLOAT_3;
+    FLOAT_4;
 }
 
-
-#elseif (cpp || neko)
-typedef Context3DVertexBufferFormat = native.display3D.Context3DVertexBufferFormat;
-#elseif js
-typedef Context3DVertexBufferFormat = browser.display3D.Context3DVertexBufferFormat;
-#elseif flash
+#else
 typedef Context3DVertexBufferFormat = flash.display3D.Context3DVertexBufferFormat;
 #end

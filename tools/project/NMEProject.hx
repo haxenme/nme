@@ -29,6 +29,7 @@ class NMEProject {
 	public var environment:StringMap <String>;
 	public var haxedefs:StringMap <Dynamic>;
 	public var haxeflags:Array <String>;
+	public var macros:Array <String>;
 	public var haxelibs:Array <Haxelib>;
 	public var host (get_host, null):Platform;
 	public var icons:Array <Icon>;
@@ -44,6 +45,7 @@ class NMEProject {
 	public var templateContext (get_templateContext, null):Dynamic;
 	public var templatePaths:Array <String>;
 	public var window:Window;
+   private var baseTemplateContext:Dynamic;
 	
 	private var defaultApp:ApplicationData;
 	private var defaultMeta:MetaData;
@@ -86,6 +88,7 @@ class NMEProject {
 		
 		initialize ();
 		
+      baseTemplateContext = {};
 		command = _command;
 		config = new PlatformConfig ();
 		debug = _debug;
@@ -158,6 +161,7 @@ class NMEProject {
 		environment = Sys.environment ();
 		haxedefs = new StringMap <Dynamic> ();
 		haxeflags = new Array <String> ();
+		macros = new Array <String> ();
 		haxelibs = new Array <Haxelib> ();
 		icons = new Array <Icon> ();
 		javaPaths = new Array <String> ();
@@ -173,6 +177,7 @@ class NMEProject {
 		
 		var project = new NMEProject ();
 		
+		ObjectHelper.copyFields (baseTemplateContext, project.baseTemplateContext);
 		ObjectHelper.copyFields (app, project.app);
 		project.architectures = architectures.copy ();
 		
@@ -206,6 +211,8 @@ class NMEProject {
 		}
 		
 		project.haxeflags = haxeflags.copy ();
+
+		project.macros = macros.copy ();
 		
 		for (haxelib in haxelibs) {
 			
@@ -445,6 +452,7 @@ class NMEProject {
 			assets = ArrayHelper.concatUnique (assets, project.assets);
 			dependencies = ArrayHelper.concatUnique (dependencies, project.dependencies);
 			haxeflags = ArrayHelper.concatUnique (haxeflags, project.haxeflags);
+			macros = ArrayHelper.concatUnique (macros, project.macros);			
 			haxelibs = ArrayHelper.concatUnique (haxelibs, project.haxelibs);
 			icons = ArrayHelper.concatUnique (icons, project.icons);
 			javaPaths = ArrayHelper.concatUnique (javaPaths, project.javaPaths);
@@ -494,10 +502,9 @@ class NMEProject {
 		
 	}
 	
-	
 	private function get_templateContext ():Dynamic {
 		
-		var context:Dynamic = {};
+		var context:Dynamic = baseTemplateContext;
 		
 		if (app == null) app = { };
 		if (meta == null) meta = { };
@@ -620,6 +627,7 @@ class NMEProject {
 		
 		compilerFlags.push ("-D " + Std.string (platformType).toLowerCase ());
 		compilerFlags = compilerFlags.concat (haxeflags);
+		compilerFlags = compilerFlags.concat (macros);
 		
 		if (compilerFlags.length == 0) {
 			

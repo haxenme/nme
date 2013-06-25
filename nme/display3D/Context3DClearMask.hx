@@ -1,19 +1,16 @@
 package nme.display3D;
-#if display
+#if (cpp || neko)
 
+import nme.gl.GL;
 
-extern class Context3DClearMask {
-	static var ALL : Int;
-	static var COLOR : Int;
-	static var DEPTH : Int;
-	static var STENCIL : Int;
+class Context3DClearMask 
+{
+   inline static public var ALL:Int = COLOR | DEPTH | STENCIL;
+   inline static public var COLOR:Int = GL.COLOR_BUFFER_BIT;
+   inline static public var DEPTH:Int = GL.DEPTH_BUFFER_BIT;
+   inline static public var STENCIL:Int = GL.STENCIL_BUFFER_BIT;
 }
 
-
-#elseif (cpp || neko)
-typedef Context3DClearMask = native.display3D.Context3DClearMask;
-#elseif js
-typedef Context3DClearMask = browser.display3D.Context3DClearMask;
-#elseif flash
+#else
 typedef Context3DClearMask = flash.display3D.Context3DClearMask;
 #end

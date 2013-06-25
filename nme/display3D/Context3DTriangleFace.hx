@@ -1,19 +1,16 @@
 package nme.display3D;
-#if display
+#if (cpp || neko)
 
+import nme.gl.GL;
 
-@:fakeEnum(String) extern enum Context3DTriangleFace {
-	BACK;
-	FRONT;
-	FRONT_AND_BACK;
-	NONE;
+class Context3DTriangleFace 
+{
+   inline public static var BACK = GL.FRONT;
+   inline public static var FRONT = GL.BACK;
+   inline public static var FRONT_AND_BACK = GL.FRONT_AND_BACK;
+   inline public static var NONE = 0;
 }
 
-
-#elseif (cpp || neko)
-typedef Context3DTriangleFace = native.display3D.Context3DTriangleFace;
-#elseif js
-typedef Context3DTriangleFace = browser.display3D.Context3DTriangleFace;
-#elseif flash
+#else
 typedef Context3DTriangleFace = flash.display3D.Context3DTriangleFace;
 #end

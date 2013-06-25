@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <Geom.h>
+#include <ByteArray.h>
 
 namespace nme
 {
@@ -43,7 +44,7 @@ class Optional
 public:
    Optional(const Optional &inRHS) : mVal(inRHS.mVal), mSet(inRHS.mSet) { }
    void operator = (const Optional &inRHS) { mVal = inRHS.mVal; mSet = inRHS.mSet; }
-
+   
    Optional(const T&inVal) : mVal(inVal), mSet(false) { }
    T& operator >>(T &outRHS) { if (mSet) outRHS = mVal; return mVal; }
    T& operator=(const T&inRHS) { mVal = inRHS; mSet = true; return mVal; }
@@ -52,6 +53,7 @@ public:
    T &Set() { mSet=true; return mVal; }
    const T &Get() const { return mVal; }
    void Apply(Optional<T> &inRHS) const { if (mSet) inRHS=mVal; }
+   void IfEquals(Optional<T> &inRHS) { if (mSet && inRHS.mSet && inRHS.mVal != mVal) mSet = false; }
    bool IsSet() const { return mSet; }
 
   T &__Get() { return mVal; }
@@ -145,7 +147,7 @@ public:
    virtual ~FontFace() { };
 
    static FontFace *CreateNative(const TextFormat &inFormat,double inScale);
-   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale);
+   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes);
    static FontFace *CreateCFFIFont(const TextFormat &inFormat,double inScale);
 
    virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
@@ -175,7 +177,7 @@ public:
 
    Font *IncRef() { Object::IncRef(); return this; }
 
-   Tile GetGlyph(int inCharacter,int &outAdvance);
+   Tile GetGlyph(int inCharacter,int &outAdvance6);
 
    void  UpdateMetrics(TextLineMetrics &ioMetrics);
 

@@ -1,12 +1,22 @@
 #include <Graphics.h>
 #include <Surface.h>
+#include <Display.h>
 
 namespace nme
 {
 
+void Graphics::OnChanged()
+{
+   mVersion++;
+   if (mOwner && !(mOwner->mDirtyFlags & dirtExtent))
+      mOwner->DirtyExtent();
+}
+
+
+
 // TODO: invlidate/cache extents (do for whole lot at once)
 
-Graphics::Graphics(bool inInitRef) : Object(inInitRef)
+Graphics::Graphics(DisplayObject *inOwner,bool inInitRef) : Object(inInitRef)
 {
    mRotation0 = 0;
    mCursor = UserPoint(0,0);
@@ -16,11 +26,13 @@ Graphics::Graphics(bool inInitRef) : Object(inInitRef)
    mTileJob.mIsTileJob = true;
    mMeasuredJobs = 0;
    mVersion = 0;
+   mOwner = inOwner;
 }
 
 
 Graphics::~Graphics()
 {
+   mOwner = 0;
    clear();
    mPathData->DecRef();
 }
@@ -49,7 +61,7 @@ void Graphics::clear()
    mBuiltHardware = 0;
    mMeasuredJobs = 0;
    mCursor = UserPoint(0,0);
-   mVersion++;
+   OnChanged();
 }
 
 int Graphics::Version() const
@@ -87,8 +99,27 @@ void Graphics::drawEllipse(float x, float y, float width, float height)
    mPathData->curveTo(x+w,  y-ch_, x+w,  y);
 
    Flush();
-   mVersion++;
+   OnChanged();
 }
+
+/*
+
+   < ------------ w ----->
+      < -------- w_ ----->
+       < ------ cw_ ----->
+             < --- lw ---> 
+        c   --------------+
+         222 |            x
+        2    |
+       p
+    c 1 ..   ry
+     1    . 
+     1     ..|
+    | - rx --
+    |
+    |
+
+*/
 
 void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  rx,float  ry)
 {
@@ -124,7 +155,7 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    mPathData->lineTo(x+w,  y+lh);
 
    Flush();
-   mVersion++;
+   OnChanged();
 }
 
 void Graphics::drawPath(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData,
@@ -168,7 +199,7 @@ void Graphics::drawPath(const QuickVec<uint8> &inCommands, const QuickVec<float>
             point += 2;
       }
    }
-   mVersion++;
+   OnChanged();
 }
 
 
@@ -231,14 +262,14 @@ void Graphics::drawGraphicsDatum(IGraphicsData *inData)
          break;
 
    }
-   mVersion++;
+   OnChanged();
 }
 
 void Graphics::drawGraphicsData(IGraphicsData **graphicsData,int inN)
 {
    for(int i=0;i<inN;i++)
       drawGraphicsDatum(graphicsData[i]);
-   mVersion++;
+   OnChanged();
 }
 
 void Graphics::beginFill(unsigned int color, float alpha)
@@ -282,6 +313,8 @@ void Graphics::endTiles()
    {
       mTileJob.mFill->DecRef();
       mTileJob.mFill = 0;
+
+      OnChanged();
    }
 }
 
@@ -330,14 +363,14 @@ void Graphics::lineTo(float x, float y)
 
    mPathData->lineTo(x,y);
    mCursor = UserPoint(x,y);
-   mVersion++;
+   OnChanged();
 }
 
 void Graphics::moveTo(float x, float y)
 {
    mPathData->moveTo(x,y);
    mCursor = UserPoint(x,y);
-   mVersion++;
+   OnChanged();
 }
 
 void Graphics::curveTo(float cx, float cy, float x, float y)
@@ -354,7 +387,7 @@ void Graphics::curveTo(float cx, float cy, float x, float y)
    else
       mPathData->curveTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
-   mVersion++;
+   OnChanged();
 }
 
 void Graphics::arcTo(float cx, float cy, float x, float y)
@@ -365,13 +398,12 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
 
    mPathData->arcTo(cx,cy,x,y);
    mCursor = UserPoint(x,y);
-   mVersion++;
+   OnChanged();
 }
 
 void Graphics::tile(float x, float y, const Rect &inTileRect,float *inTrans,float *inRGBA)
 {
    mPathData->tile(x,y,inTileRect,inTrans,inRGBA);
-   mVersion++;
 }
 
 

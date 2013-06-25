@@ -52,7 +52,7 @@ public:
       {
          outW = val_number( val_field(result, _id_width) );
          outH = val_number( val_field(result, _id_height) );
-         outAdvance = val_number( val_field(result, _id_advance) );
+         outAdvance = (int)(val_number( val_field(result, _id_advance) )) << 6;
          outOx = val_number( val_field(result, _id_offsetX) );
          outOy = val_number( val_field(result, _id_offsetY) );
          return true;
@@ -171,7 +171,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
             gw = mPixelHeight;
             gh = mPixelHeight;
             ox = oy = 0;
-            adv = mPixelHeight;
+            adv = mPixelHeight<<6;
             use_default = true;
          }
          else
@@ -373,6 +373,8 @@ struct FontInfo
 
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
+typedef std::map<std::string, AutoGCRoot *> FontBytesMap;
+FontBytesMap sgRegisteredFonts;
 
 Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,bool inNative,bool inInitRef)
 {
@@ -390,17 +392,25 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
 
 
    FontFace *face = 0;
+   
+   AutoGCRoot *bytes = 0;
+   FontBytesMap::iterator fbit = sgRegisteredFonts.find(WideToUTF8(inFormat.font).c_str());
+   if (fbit!=sgRegisteredFonts.end())
+   {
+      bytes = fbit->second;
+   }
+   
+   if (bytes != NULL)
+	  face = FontFace::CreateFreeType(inFormat,inScale,bytes);
 
-   face = FontFace::CreateCFFIFont(inFormat,inScale);
+   if (!face)
+      face = FontFace::CreateCFFIFont(inFormat,inScale);
 
    if (!face && inNative)
       face = FontFace::CreateNative(inFormat,inScale);
 
-   
-   #ifndef IPHONE
    if (!face)
-      face = FontFace::CreateFreeType(inFormat,inScale);
-   #endif
+      face = FontFace::CreateFreeType(inFormat,inScale,NULL);
   
    if (!face && !inNative)
       face = FontFace::CreateNative(inFormat,inScale);
@@ -412,8 +422,34 @@ Font *Font::Create(TextFormat &inFormat,double inScale,GlyphRotation inRotation,
    // Store for Ron ...
    font->IncRef();
    sgFontMap[info] = font;
+
+   // Clear out any old fonts
+   for (FontMap::iterator fit = sgFontMap.begin(); fit!=sgFontMap.end();)
+   {
+      if (fit->second->GetRefCount()==1)
+      {
+         fit->second->DecRef();
+         FontMap::iterator next = fit;
+         next++;
+         sgFontMap.erase(fit);
+         fit = next;
+      }
+      else
+         ++fit;
+   }
+   
    return font;
 }
+
+
+value nme_font_register_font(value inFontName, value inBytes)
+{
+   AutoGCRoot *bytes = new AutoGCRoot(inBytes);
+   sgRegisteredFonts[std::string(val_string(inFontName))] = bytes;
+   return alloc_null();
+}
+DEFINE_PRIM(nme_font_register_font,2)
+
 
 
 } // end namespace nme

@@ -1,20 +1,19 @@
 package nme.display;
-#if display
+#if (cpp || neko)
 
+import nme.geom.Matrix;
+import nme.Loader;
 
-@:final extern class GraphicsBitmapFill implements IGraphicsData #if !haxe3 , #end implements IGraphicsFill {
-	var bitmapData : BitmapData;
-	var matrix : nme.geom.Matrix;
-	var repeat : Bool;
-	var smooth : Bool;
-	function new(?bitmapData : BitmapData, ?matrix : nme.geom.Matrix, repeat : Bool = true, smooth : Bool = false) : Void;
+class GraphicsBitmapFill extends IGraphicsData 
+{
+   public function new(bitmapData:BitmapData = null, matrix:Matrix = null, repeat:Bool = true, smooth:Bool = false) 
+   {
+      super(nme_graphics_solid_fill_create(0, 1));
+   }
+
+   private static var nme_graphics_solid_fill_create = Loader.load("nme_graphics_solid_fill_create", 2);
 }
 
-
-#elseif (cpp || neko)
-typedef GraphicsBitmapFill = native.display.GraphicsBitmapFill;
-#elseif js
-typedef GraphicsBitmapFill = browser.display.GraphicsBitmapFill;
 #else
 typedef GraphicsBitmapFill = flash.display.GraphicsBitmapFill;
 #end

@@ -1,5 +1,0 @@
--main ApplicationMain ::HAXE_FLAGS::
--D iphone
--D ios
---remap flash:nme
---remap browser:native

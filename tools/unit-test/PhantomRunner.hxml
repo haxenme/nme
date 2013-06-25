@@ -1,0 +1,5 @@
+#this file is used by TestRunner
+-main nmetest.PhantomRunner
+-js bin/nmetest.PhantomRunner.js
+-cp tools/unit-test/
+-lib phantomjs

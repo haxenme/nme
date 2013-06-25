@@ -1,786 +1,942 @@
 package nme.display;
-#if display
+#if (cpp || neko)
+
+import haxe.Timer;
+import nme.display.DisplayObjectContainer;
+import nme.ui.Keyboard;
+
+#if stage3d
+import nme.display.Stage3D;
+#end
+
+import nme.events.JoystickEvent;
+import nme.events.MouseEvent;
+import nme.events.FocusEvent;
+import nme.events.KeyboardEvent;
+import nme.events.SystemEvent;
+import nme.events.TouchEvent;
+import nme.events.Event;
+import nme.geom.Point;
+import nme.geom.Rectangle;
+import nme.Lib;
+import nme.media.SoundChannel;
+import nme.net.URLLoader;
+import nme.Loader;
+import flash.Vector;
 
 
-/**
- * The Stage class represents the main drawing area.
- *
- * <p>For SWF content running in the browser(in Flash<sup>®</sup> Player),
- * the Stage represents the entire area where Flash content is shown. For
- * content running in AIR on desktop operating systems, each NativeWindow
- * object has a corresponding Stage object.</p>
- *
- * <p>The Stage object is not globally accessible. You need to access it
- * through the <code>stage</code> property of a DisplayObject instance.</p>
- *
- * <p>The Stage class has several ancestor classes  -  DisplayObjectContainer,
- * InteractiveObject, DisplayObject, and EventDispatcher  -  from which it
- * inherits properties and methods. Many of these properties and methods are
- * either inapplicable to Stage objects, or require security checks when
- * called on a Stage object. The properties and methods that require security
- * checks are documented as part of the Stage class.</p>
- *
- * <p>In addition, the following inherited properties are inapplicable to
- * Stage objects. If you try to set them, an IllegalOperationError is thrown.
- * These properties may always be read, but since they cannot be set, they
- * will always contain default values.</p>
- *
- * <ul>
- *   <li><code>accessibilityProperties</code></li>
- *   <li><code>alpha</code></li>
- *   <li><code>blendMode</code></li>
- *   <li><code>cacheAsBitmap</code></li>
- *   <li><code>contextMenu</code></li>
- *   <li><code>filters</code></li>
- *   <li><code>focusRect</code></li>
- *   <li><code>loaderInfo</code></li>
- *   <li><code>mask</code></li>
- *   <li><code>mouseEnabled</code></li>
- *   <li><code>name</code></li>
- *   <li><code>opaqueBackground</code></li>
- *   <li><code>rotation</code></li>
- *   <li><code>scale9Grid</code></li>
- *   <li><code>scaleX</code></li>
- *   <li><code>scaleY</code></li>
- *   <li><code>scrollRect</code></li>
- *   <li><code>tabEnabled</code></li>
- *   <li><code>tabIndex</code></li>
- *   <li><code>transform</code></li>
- *   <li><code>visible</code></li>
- *   <li><code>x</code></li>
- *   <li><code>y</code></li>
- * </ul>
- *
- * <p>Some events that you might expect to be a part of the Stage class, such
- * as <code>enterFrame</code>, <code>exitFrame</code>,
- * <code>frameConstructed</code>, and <code>render</code>, cannot be Stage
- * events because a reference to the Stage object cannot be guaranteed to
- * exist in every situation where these events are used. Because these events
- * cannot be dispatched by the Stage object, they are instead dispatched by
- * every DisplayObject instance, which means that you can add an event
- * listener to any DisplayObject instance to listen for these events. These
- * events, which are part of the DisplayObject class, are called broadcast
- * events to differentiate them from events that target a specific
- * DisplayObject instance. Two other broadcast events, <code>activate</code>
- * and <code>deactivate</code>, belong to DisplayObject's superclass,
- * EventDispatcher. The <code>activate</code> and <code>deactivate</code>
- * events behave similarly to the DisplayObject broadcast events, except that
- * these two events are dispatched not only by all DisplayObject instances,
- * but also by all EventDispatcher instances and instances of other
- * EventDispatcher subclasses. For more information on broadcast events, see
- * the DisplayObject class.</p>
- * 
- * @event fullScreen             Dispatched when the Stage object enters, or
- *                               leaves, full-screen mode. A change in
- *                               full-screen mode can be initiated through
- *                               ActionScript, or the user invoking a keyboard
- *                               shortcut, or if the current focus leaves the
- *                               full-screen window.
- * @event mouseLeave             Dispatched by the Stage object when the
- *                               pointer moves out of the stage area. If the
- *                               mouse button is pressed, the event is not
- *                               dispatched.
- * @event orientationChange      Dispatched by the Stage object when the stage
- *                               orientation changes.
- *
- *                               <p>Orientation changes can occur when the
- *                               user rotates the device, opens a slide-out
- *                               keyboard, or when the
- *                               <code>setAspectRatio()</code> is called.</p>
- *
- *                               <p><b>Note:</b> If the
- *                               <code>autoOrients</code> property is
- *                               <code>false</code>, then the stage
- *                               orientation does not change when a device is
- *                               rotated. Thus, StageOrientationEvents are
- *                               only dispatched for device rotation when
- *                               <code>autoOrients</code> is
- *                               <code>true</code>.</p>
- * @event orientationChanging    Dispatched by the Stage object when the stage
- *                               orientation begins changing.
- *
- *                               <p><b>Important:</b> orientationChanging
- *                               events are not dispatched on Android
- *                               devices.</p>
- *
- *                               <p><b>Note:</b> If the
- *                               <code>autoOrients</code> property is
- *                               <code>false</code>, then the stage
- *                               orientation does not change when a device is
- *                               rotated. Thus, StageOrientationEvents are
- *                               only dispatched for device rotation when
- *                               <code>autoOrients</code> is
- *                               <code>true</code>.</p>
- * @event resize                 Dispatched when the <code>scaleMode</code>
- *                               property of the Stage object is set to
- *                               <code>StageScaleMode.NO_SCALE</code> and the
- *                               SWF file is resized.
- * @event stageVideoAvailability Dispatched by the Stage object when the state
- *                               of the stageVideos property changes.
- */
-extern class Stage extends DisplayObjectContainer {
+class Stage extends DisplayObjectContainer 
+{
+   /**
+    * Time, in seconds, we wake up before the frame is due.  We then do a
+    * "busy wait" to ensure the frame comes at the right time.  By increasing this number,
+    * the frame rate will be more constant, but the busy wait will take more CPU.
+    * @private
+    */
+   public static var nmeEarlyWakeup = 0.005;
 
-	/**
-	 * A value from the StageAlign class that specifies the alignment of the
-	 * stage in Flash Player or the browser. The following are valid values:
-	 *
-	 * <p>The <code>align</code> property is only available to an object that is
-	 * in the same security sandbox as the Stage owner(the main SWF file). To
-	 * avoid this, the Stage owner can grant permission to the domain of the
-	 * calling object by calling the <code>Security.allowDomain()</code> method
-	 * or the <code>Security.alowInsecureDomain()</code> method. For more
-	 * information, see the "Security" chapter in the <i>ActionScript 3.0
-	 * Developer's Guide</i>.</p>
-	 */
-	var align : StageAlign;
+   public static var OrientationPortrait = 1;
+   public static var OrientationPortraitUpsideDown = 2;
+   public static var OrientationLandscapeRight = 3;
+   public static var OrientationLandscapeLeft = 4;
+   public static var OrientationFaceUp = 5;
+   public static var OrientationFaceDown = 6;
 
-	/**
-	 * Specifies whether this stage allows the use of the full screen mode
-	 */
-	@:require(flash11) var allowsFullScreen(default,null) : Bool;
+   public var active(default, null):Bool;
+   public var align(get_align, set_align):StageAlign;
+   public var displayState(get_displayState, set_displayState):StageDisplayState;
+   public var dpiScale(get_dpiScale, null):Float;
+   public var focus(get_focus, set_focus):InteractiveObject;
+   public var frameRate(default, set_frameRate): Float;
+   public var isOpenGL(get_isOpenGL, null):Bool;
+   public var onKey:Int -> Bool -> Int -> Int -> Void; 
+   public var onQuit:Void -> Void; 
+   public var pauseWhenDeactivated:Bool;
+   public var quality(get_quality, set_quality):StageQuality;
+   public var renderRequest:Void -> Void; 
+   public var scaleMode(get_scaleMode, set_scaleMode):StageScaleMode;
+   public var stageFocusRect(get_stageFocusRect, set_stageFocusRect):Bool;
+   public var stageHeight(get_stageHeight, null):Int;
+   public var stageWidth(get_stageWidth, null):Int;
 
-	/**
-	 */
-	@:require(flash10_2) var color : Int;
+   #if stage3d
+   public var stage3Ds:Vector<Stage3D>;
+   #end
 
-	/**
-	 * Controls Flash runtime color correction for displays. Color correction
-	 * works only if the main monitor is assigned a valid ICC color profile,
-	 * which specifies the device's particular color attributes. By default, the
-	 * Flash runtime tries to match the color correction of its host(usually a
-	 * browser).
-	 *
-	 * <p>Use the <code>Stage.colorCorrectionSupport</code> property to determine
-	 * if color correction is available on the current system and the default
-	 * state. . If color correction is available, all colors on the stage are
-	 * assumed to be in the sRGB color space, which is the most standard color
-	 * space. Source profiles of input devices are not considered during color
-	 * correction. No input color correction is applied; only the stage output is
-	 * mapped to the main monitor's ICC color profile.</p>
-	 *
-	 * <p>In general, the benefits of activating color management include
-	 * predictable and consistent color, better conversion, accurate proofing and
-	 * more efficient cross-media output. Be aware, though, that color management
-	 * does not provide perfect conversions due to devices having a different
-	 * gamut from each other or original images. Nor does color management
-	 * eliminate the need for custom or edited profiles. Color profiles are
-	 * dependent on browsers, operating systems(OS), OS extensions, output
-	 * devices, and application support.</p>
-	 *
-	 * <p>Applying color correction degrades the Flash runtime performance. A
-	 * Flash runtime's color correction is document style color correction
-	 * because all SWF movies are considered documents with implicit sRGB
-	 * profiles. Use the <code>Stage.colorCorrectionSupport</code> property to
-	 * tell the Flash runtime to correct colors when displaying the SWF file
-	 * (document) to the display color space. Flash runtimes only compensates for
-	 * differences between monitors, not for differences between input devices
-	 * (camera/scanner/etc.). </p>
-	 *
-	 * <p>The three possible values are strings with corresponding constants in
-	 * the nme.display.ColorCorrection class:</p>
-	 *
-	 * <ul>
-	 *   <li><code>"default"</code>: Use the same color correction as the host
-	 * system.</li>
-	 *   <li><code>"on"</code>: Always perform color correction.</li>
-	 *   <li><code>"off"</code>: Never perform color correction.</li>
-	 * </ul>
-	 */
-	//@:require(flash10) var colorCorrection : ColorCorrection;
+   private static var efLeftDown = 0x0001;
+   private static var efShiftDown = 0x0002;
+   private static var efCtrlDown = 0x0004;
+   private static var efAltDown = 0x0008;
+   private static var efCommandDown = 0x0010;
+   private static var efLocationRight = 0x4000;
+   private static var efNoNativeClick = 0x10000;
+   private static var nmeMouseChanges:Array<String> = [ MouseEvent.MOUSE_OUT, MouseEvent.MOUSE_OVER, MouseEvent.ROLL_OUT, MouseEvent.ROLL_OVER ];
+   private static var nmeTouchChanges:Array<String> = [ TouchEvent.TOUCH_OUT, TouchEvent.TOUCH_OVER,   TouchEvent.TOUCH_ROLL_OUT, TouchEvent.TOUCH_ROLL_OVER ];
+   private static var sClickEvents = [ "click", "middleClick", "rightClick" ];
+   private static var sDownEvents = [ "mouseDown", "middleMouseDown", "rightMouseDown" ];
+   private static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
 
-	/**
-	 * Specifies whether the Flash runtime is running on an operating system that
-	 * supports color correction and whether the color profile of the main
-	 * (primary) monitor can be read and understood by the Flash runtime. This
-	 * property also returns the default state of color correction on the host
-	 * system(usually the browser). Currently the return values can be:
-	 *
-	 * <p>The three possible values are strings with corresponding constants in
-	 * the nme.display.ColorCorrectionSupport class:</p>
-	 *
-	 * <ul>
-	 *   <li><code>"unsupported"</code>: Color correction is not available.</li>
-	 *   <li><code>"defaultOn"</code>: Always performs color correction.</li>
-	 *   <li><code>"defaultOff"</code>: Never performs color correction.</li>
-	 * </ul>
-	 */
-	//@:require(flash10) var colorCorrectionSupport(default,null) : ColorCorrectionSupport;
-	@:require(flash11) var displayContextInfo(default,null) : String;
+   /** @private */ private var nmeJoyAxisData:#if haxe3 Map <Int, #else IntHash <#end Array <Float>>;
+   /** @private */ private var nmeDragBounds:Rectangle;
+   /** @private */ private var nmeDragObject:Sprite;
+   /** @private */ private var nmeDragOffsetX:Float;
+   /** @private */ private var nmeDragOffsetY:Float;
+   /** @private */ private var nmeFocusOverObjects:Array<InteractiveObject>;
+   /** @private */ private var nmeFramePeriod:Float;
+   /** @private */ private var nmeInvalid:Bool;
+   /** @private */ private var nmeLastClickTime:Float;
+   /** @private */ private var nmeLastDown:Array<InteractiveObject>;
+   /** @private */ private var nmeLastRender:Float;
+   /** @private */ private var nmeMouseOverObjects:Array<InteractiveObject>;
+   /** @private */ private var nmeTouchInfo:#if haxe3 Map <Int, #else IntHash <#end TouchInfo>;
+   public function new(inHandle:Dynamic, inWidth:Int, inHeight:Int) 
+   {
+      super(inHandle, "Stage");
 
-	/**
-	 * A value from the StageDisplayState class that specifies which display
-	 * state to use. The following are valid values:
-	 * <ul>
-	 *   <li><code>StageDisplayState.FULL_SCREEN</code> Sets AIR application or
-	 * Flash runtime to expand the stage over the user's entire screen, with
-	 * keyboard input disabled.</li>
-	 *   <li><code>StageDisplayState.FULL_SCREEN_INTERACTIVE</code> Sets the AIR
-	 * application to expand the stage over the user's entire screen, with
-	 * keyboard input allowed.(Not available for content running in Flash
-	 * Player.)</li>
-	 *   <li><code>StageDisplayState.NORMAL</code> Sets the Flash runtime back to
-	 * the standard stage display mode.</li>
-	 * </ul>
-	 *
-	 * <p>The scaling behavior of the movie in full-screen mode is determined by
-	 * the <code>scaleMode</code> setting(set using the
-	 * <code>Stage.scaleMode</code> property or the SWF file's <code>embed</code>
-	 * tag settings in the HTML file). If the <code>scaleMode</code> property is
-	 * set to <code>noScale</code> while the application transitions to
-	 * full-screen mode, the Stage <code>width</code> and <code>height</code>
-	 * properties are updated, and the Stage dispatches a <code>resize</code>
-	 * event. If any other scale mode is set, the stage and its contents are
-	 * scaled to fill the new screen dimensions. The Stage object retains its
-	 * original <code>width</code> and <code>height</code> values and does not
-	 * dispatch a <code>resize</code> event.</p>
-	 *
-	 * <p>The following restrictions apply to SWF files that play within an HTML
-	 * page(not those using the stand-alone Flash Player or not running in the
-	 * AIR runtime):</p>
-	 *
-	 * <ul>
-	 *   <li>To enable full-screen mode, add the <code>allowFullScreen</code>
-	 * parameter to the <code>object</code> and <code>embed</code> tags in the
-	 * HTML page that includes the SWF file, with <code>allowFullScreen</code>
-	 * set to <code>"true"</code>, as shown in the following example: </li>
-	 *   <li>Full-screen mode is initiated in response to a mouse click or key
-	 * press by the user; the movie cannot change <code>Stage.displayState</code>
-	 * without user input. Flash runtimes restrict keyboard input in full-screen
-	 * mode. Acceptable keys include keyboard shortcuts that terminate
-	 * full-screen mode and non-printing keys such as arrows, space, Shift, and
-	 * Tab keys. Keyboard shortcuts that terminate full-screen mode are: Escape
-	 * (Windows, Linux, and Mac), Control+W(Windows), Command+W(Mac), and
-	 * Alt+F4.
-	 *
-	 * <p>A Flash runtime dialog box appears over the movie when users enter
-	 * full-screen mode to inform the users they are in full-screen mode and that
-	 * they can press the Escape key to end full-screen mode.</p>
-	 * </li>
-	 *   <li>Starting with Flash Player 9.0.115.0, full-screen works the same in
-	 * windowless mode as it does in window mode. If you set the Window Mode
-	 * (<code>wmode</code> in the HTML) to Opaque Windowless
-	 * (<code>opaque</code>) or Transparent Windowless
-	 * (<code>transparent</code>), full-screen can be initiated, but the
-	 * full-screen window will always be opaque.</li>
-	 * </ul>
-	 *
-	 * <p>These restrictions are <i>not</i> present for SWF content running in
-	 * the stand-alone Flash Player or in AIR. AIR supports an interactive
-	 * full-screen mode which allows keyboard input.</p>
-	 *
-	 * <p>For AIR content running in full-screen mode, the system screen saver
-	 * and power saving options are disabled while video content is playing and
-	 * until either the video stops or full-screen mode is exited.</p>
-	 *
-	 * <p>On Linux, setting <code>displayState</code> to
-	 * <code>StageDisplayState.FULL_SCREEN</code> or
-	 * <code>StageDisplayState.FULL_SCREEN_INTERACTIVE</code> is an asynchronous
-	 * operation.</p>
-	 * 
-	 * @throws SecurityError Calling the <code>displayState</code> property of a
-	 *                       Stage object throws an exception for any caller that
-	 *                       is not in the same security sandbox as the Stage
-	 *                       owner(the main SWF file). To avoid this, the Stage
-	 *                       owner can grant permission to the domain of the
-	 *                       caller by calling the
-	 *                       <code>Security.allowDomain()</code> method or the
-	 *                       <code>Security.allowInsecureDomain()</code> method.
-	 *                       For more information, see the "Security" chapter in
-	 *                       the <i>ActionScript 3.0 Developer's Guide</i>.
-	 *                       Trying to set the <code>displayState</code> property
-	 *                       while the settings dialog is displayed, without a
-	 *                       user response, or if the <code>param</code> or
-	 *                       <code>embed</code> HTML tag's
-	 *                       <code>allowFullScreen</code> attribute is not set to
-	 *                       <code>true</code> throws a security error.
-	 */
-	var displayState : StageDisplayState;
+      nmeMouseOverObjects = [];
+      nmeFocusOverObjects = [];
+      active = true;
+      pauseWhenDeactivated = true;
 
-	/**
-	 * The interactive object with keyboard focus; or <code>null</code> if focus
-	 * is not set or if the focused object belongs to a security sandbox to which
-	 * the calling object does not have access.
-	 * 
-	 * @throws Error Throws an error if focus cannot be set to the target.
-	 */
-	var focus : InteractiveObject;
+      #if android
+      renderRequest = nme_stage_request_render;
+      #else
+      renderRequest = null;
+      #end
 
-	/**
-	 * Gets and sets the frame rate of the stage. The frame rate is defined as
-	 * frames per second. By default the rate is set to the frame rate of the
-	 * first SWF file loaded. Valid range for the frame rate is from 0.01 to 1000
-	 * frames per second.
-	 *
-	 * <p><b>Note:</b> An application might not be able to follow high frame rate
-	 * settings, either because the target platform is not fast enough or the
-	 * player is synchronized to the vertical blank timing of the display device
-	 * (usually 60 Hz on LCD devices). In some cases, a target platform might
-	 * also choose to lower the maximum frame rate if it anticipates high CPU
-	 * usage.</p>
-	 *
-	 * <p>For content running in Adobe AIR, setting the <code>frameRate</code>
-	 * property of one Stage object changes the frame rate for all Stage objects
-	 * (used by different NativeWindow objects). </p>
-	 * 
-	 * @throws SecurityError Calling the <code>frameRate</code> property of a
-	 *                       Stage object throws an exception for any caller that
-	 *                       is not in the same security sandbox as the Stage
-	 *                       owner(the main SWF file). To avoid this, the Stage
-	 *                       owner can grant permission to the domain of the
-	 *                       caller by calling the
-	 *                       <code>Security.allowDomain()</code> method or the
-	 *                       <code>Security.allowInsecureDomain()</code> method.
-	 *                       For more information, see the "Security" chapter in
-	 *                       the <i>ActionScript 3.0 Developer's Guide</i>.
-	 */
-	var frameRate : Float;
+      nme_set_stage_handler(nmeHandle, nmeProcessStageEvent, inWidth, inHeight);
+      nmeInvalid = false;
+      nmeLastRender = 0;
+      nmeLastDown = [];
+      nmeLastClickTime = 0.0;
+      this.frameRate = 100;
+	  nmeTouchInfo = new #if haxe3 Map <Int, #else IntHash <#end TouchInfo>();
+      nmeJoyAxisData = new #if haxe3 Map <Int, #else IntHash <#end Array<Float>>();
 
-	/**
-	 * Returns the height of the monitor that will be used when going to full
-	 * screen size, if that state is entered immediately. If the user has
-	 * multiple monitors, the monitor that's used is the monitor that most of the
-	 * stage is on at the time.
-	 *
-	 * <p><b>Note</b>: If the user has the opportunity to move the browser from
-	 * one monitor to another between retrieving the value and going to full
-	 * screen size, the value could be incorrect. If you retrieve the value in an
-	 * event handler that sets <code>Stage.displayState</code> to
-	 * <code>StageDisplayState.FULL_SCREEN</code>, the value will be correct.</p>
-	 *
-	 * <p>This is the pixel height of the monitor and is the same as the stage
-	 * height would be if <code>Stage.align</code> is set to
-	 * <code>StageAlign.TOP_LEFT</code> and <code>Stage.scaleMode</code> is set
-	 * to <code>StageScaleMode.NO_SCALE</code>.</p>
-	 */
-	var fullScreenHeight(default,null) : Int;
+      #if stage3d
+      stage3Ds = new Vector();
+      stage3Ds.push(new Stage3D());
+      #end
+   }
 
-	/**
-	 * Sets the Flash runtime to scale a specific region of the stage to
-	 * full-screen mode. If available, the Flash runtime scales in hardware,
-	 * which uses the graphics and video card on a user's computer, and generally
-	 * displays content more quickly than software scaling.
-	 *
-	 * <p>When this property is set to a valid rectangle and the
-	 * <code>displayState</code> property is set to full-screen mode, the Flash
-	 * runtime scales the specified area. The actual Stage size in pixels within
-	 * ActionScript does not change. The Flash runtime enforces a minimum limit
-	 * for the size of the rectangle to accommodate the standard "Press Esc to
-	 * exit full-screen mode" message. This limit is usually around 260 by 30
-	 * pixels but can vary on platform and Flash runtime version.</p>
-	 *
-	 * <p>This property can only be set when the Flash runtime is not in
-	 * full-screen mode. To use this property correctly, set this property first,
-	 * then set the <code>displayState</code> property to full-screen mode, as
-	 * shown in the code examples.</p>
-	 *
-	 * <p>To enable scaling, set the <code>fullScreenSourceRect</code> property
-	 * to a rectangle object:</p>
-	 *
-	 * <p>The end user also can select within Flash Player Display Settings to
-	 * turn off hardware scaling, which is enabled by default. For more
-	 * information, see <a href="http://www.adobe.com/go/display_settings"
-	 * scope="external">www.adobe.com/go/display_settings</a>.</p>
-	 */
-	var fullScreenSourceRect : nme.geom.Rectangle;
+   public static dynamic function getOrientation():Int 
+   {
+      return nme_stage_get_orientation();
+   }
 
-	/**
-	 * Returns the width of the monitor that will be used when going to full
-	 * screen size, if that state is entered immediately. If the user has
-	 * multiple monitors, the monitor that's used is the monitor that most of the
-	 * stage is on at the time.
-	 *
-	 * <p><b>Note</b>: If the user has the opportunity to move the browser from
-	 * one monitor to another between retrieving the value and going to full
-	 * screen size, the value could be incorrect. If you retrieve the value in an
-	 * event handler that sets <code>Stage.displayState</code> to
-	 * <code>StageDisplayState.FULL_SCREEN</code>, the value will be correct.</p>
-	 *
-	 * <p>This is the pixel width of the monitor and is the same as the stage
-	 * width would be if <code>Stage.align</code> is set to
-	 * <code>StageAlign.TOP_LEFT</code> and <code>Stage.scaleMode</code> is set
-	 * to <code>StageScaleMode.NO_SCALE</code>.</p>
-	 */
-	var fullScreenWidth(default,null) : Int;
+   public static dynamic function getNormalOrientation():Int 
+   {
+      return nme_stage_get_normal_orientation();
+   }
 
-	/**
-	 * A value from the StageQuality class that specifies which rendering quality
-	 * is used. The following are valid values:
-	 * <ul>
-	 *   <li><code>StageQuality.LOW</code> - Low rendering quality. Graphics are
-	 * not anti-aliased, and bitmaps are not smoothed, but runtimes still use
-	 * mip-mapping.</li>
-	 *   <li><code>StageQuality.MEDIUM</code> - Medium rendering quality.
-	 * Graphics are anti-aliased using a 2 x 2 pixel grid, bitmap smoothing is
-	 * dependent on the <code>Bitmap.smoothing</code> setting. Runtimes use
-	 * mip-mapping. This setting is suitable for movies that do not contain
-	 * text.</li>
-	 *   <li><code>StageQuality.HIGH</code> - High rendering quality. Graphics
-	 * are anti-aliased using a 4 x 4 pixel grid, and bitmap smoothing is
-	 * dependent on the <code>Bitmap.smoothing</code> setting. Runtimes use
-	 * mip-mapping. This is the default rendering quality setting that Flash
-	 * Player uses.</li>
-	 *   <li><code>StageQuality.BEST</code> - Very high rendering quality.
-	 * Graphics are anti-aliased using a 4 x 4 pixel grid. If
-	 * <code>Bitmap.smoothing</code> is <code>true</code> the runtime uses a high
-	 * quality downscale algorithm that produces fewer artifacts(however, using
-	 * <code>StageQuality.BEST</code> with <code>Bitmap.smoothing</code> set to
-	 * <code>true</code> slows performance significantly and is not a recommended
-	 * setting).</li>
-	 * </ul>
-	 *
-	 * <p>Higher quality settings produce better rendering of scaled bitmaps.
-	 * However, higher quality settings are computationally more expensive. In
-	 * particular, when rendering scaled video, using higher quality settings can
-	 * reduce the frame rate. </p>
-	 *
-	 * <p>In the desktop profile of Adobe AIR, <code>quality</code> can be set to
-	 * <code>StageQuality.BEST</code> or <code>StageQuality.HIGH</code>(and the
-	 * default value is <code>StageQuality.HIGH</code>). Attempting to set it to
-	 * another value has no effect(and the property remains unchanged). In the
-	 * moble profile of AIR, all four quality settings are available. The default
-	 * value on mobile devices is <code>StageQuality.MEDIUM</code>.</p>
-	 *
-	 * <p>For content running in Adobe AIR, setting the <code>quality</code>
-	 * property of one Stage object changes the rendering quality for all Stage
-	 * objects(used by different NativeWindow objects). </p>
-	 * <b><i>Note:</i></b> The operating system draws the device fonts, which are
-	 * therefore unaffected by the <code>quality</code> property.
-	 * 
-	 * @throws SecurityError Calling the <code>quality</code> property of a Stage
-	 *                       object throws an exception for any caller that is
-	 *                       not in the same security sandbox as the Stage owner
-	 *                      (the main SWF file). To avoid this, the Stage owner
-	 *                       can grant permission to the domain of the caller by
-	 *                       calling the <code>Security.allowDomain()</code>
-	 *                       method or the
-	 *                       <code>Security.allowInsecureDomain()</code> method.
-	 *                       For more information, see the "Security" chapter in
-	 *                       the <i>ActionScript 3.0 Developer's Guide</i>.
-	 */
-	var quality : StageQuality;
+   public function invalidate():Void 
+   {
+      nmeInvalid = true;
+   }
 
-	/**
-	 * A value from the StageScaleMode class that specifies which scale mode to
-	 * use. The following are valid values:
-	 * <ul>
-	 *   <li><code>StageScaleMode.EXACT_FIT</code> - The entire application is
-	 * visible in the specified area without trying to preserve the original
-	 * aspect ratio. Distortion can occur, and the application may appear
-	 * stretched or compressed. </li>
-	 *   <li><code>StageScaleMode.SHOW_ALL</code> - The entire application is
-	 * visible in the specified area without distortion while maintaining the
-	 * original aspect ratio of the application. Borders can appear on two sides
-	 * of the application. </li>
-	 *   <li><code>StageScaleMode.NO_BORDER</code> - The entire application fills
-	 * the specified area, without distortion but possibly with some cropping,
-	 * while maintaining the original aspect ratio of the application. </li>
-	 *   <li><code>StageScaleMode.NO_SCALE</code> - The entire application is
-	 * fixed, so that it remains unchanged even as the size of the player window
-	 * changes. Cropping might occur if the player window is smaller than the
-	 * content. </li>
-	 * </ul>
-	 * 
-	 * @throws SecurityError Calling the <code>scaleMode</code> property of a
-	 *                       Stage object throws an exception for any caller that
-	 *                       is not in the same security sandbox as the Stage
-	 *                       owner(the main SWF file). To avoid this, the Stage
-	 *                       owner can grant permission to the domain of the
-	 *                       caller by calling the
-	 *                       <code>Security.allowDomain()</code> method or the
-	 *                       <code>Security.allowInsecureDomain()</code> method.
-	 *                       For more information, see the "Security" chapter in
-	 *                       the <i>ActionScript 3.0 Developer's Guide</i>.
-	 */
-	var scaleMode : StageScaleMode;
+   /** @private */ private function nmeCheckFocusInOuts(inEvent:Dynamic, inStack:Array<InteractiveObject>)
+   {
+      // Exit ...
+      var new_n = inStack.length;
+      var new_obj:InteractiveObject = new_n > 0 ? inStack[new_n - 1] : null;
+      var old_n = nmeFocusOverObjects.length;
+      var old_obj:InteractiveObject = old_n > 0 ? nmeFocusOverObjects[old_n - 1] : null;
+      
+      //if (new_obj != old_obj) 
+      //{
+         // focusOver/focusOut goes only over the non-common objects in the tree...
+         //var common = 0;
+         //while(common < new_n && common < old_n && inStack[common] == nmeFocusOverObjects[common])
+            //common++;
+         //
+         //var focusOut = new FocusEvent(FocusEvent.FOCUS_OUT, false, false, new_obj, inEvent.flags > 0, inEvent.code);
+         //
+         //var i = old_n - 1;
+         //while(i >= common) 
+         //{
+            //nmeFocusOverObjects[i].nmeDispatchEvent(focusOut);
+            //i--;
+         //}
+         //
+         //var focusIn = new FocusEvent(FocusEvent.FOCUS_IN, false, false, old_obj, inEvent.flags > 0, inEvent.code);
+         //var i = new_n - 1;
+         //
+         //while(i >= common) 
+         //{
+            //inStack[i].nmeDispatchEvent(focusIn);
+            //i--;
+         //}
+         //
+         //nmeFocusOverObjects = inStack;
+      //}
+      
+      if (new_obj != old_obj)
+      {
+         if (old_obj != null)
+         {
+            var focusOut = new FocusEvent(FocusEvent.FOCUS_OUT, true, false, new_obj, inEvent.flags > 0, inEvent.code);
+            focusOut.target = old_obj;
+            old_obj.nmeFireEvent(focusOut);
+         }
+         
+         if (new_obj!=null)
+         {
+            var focusIn = new FocusEvent(FocusEvent.FOCUS_IN, true, false, old_obj, inEvent.flags > 0, inEvent.code);
+         
+            focusIn.target = new_obj;
+            new_obj.nmeFireEvent(focusIn);
+         }
+         
+         nmeFocusOverObjects = inStack;
+      }
+   }
 
-	/**
-	 * Specifies whether to show or hide the default items in the Flash runtime
-	 * context menu.
-	 *
-	 * <p>If the <code>showDefaultContextMenu</code> property is set to
-	 * <code>true</code>(the default), all context menu items appear. If the
-	 * <code>showDefaultContextMenu</code> property is set to <code>false</code>,
-	 * only the Settings and About... menu items appear.</p>
-	 * 
-	 * @throws SecurityError Calling the <code>showDefaultContextMenu</code>
-	 *                       property of a Stage object throws an exception for
-	 *                       any caller that is not in the same security sandbox
-	 *                       as the Stage owner(the main SWF file). To avoid
-	 *                       this, the Stage owner can grant permission to the
-	 *                       domain of the caller by calling the
-	 *                       <code>Security.allowDomain()</code> method or the
-	 *                       <code>Security.allowInsecureDomain()</code> method.
-	 *                       For more information, see the "Security" chapter in
-	 *                       the <i>ActionScript 3.0 Developer's Guide</i>.
-	 */
-	var showDefaultContextMenu : Bool;
+   /** @private */ private function nmeCheckInOuts(inEvent:MouseEvent, inStack:Array<InteractiveObject>, ?touchInfo:TouchInfo) {
+      var prev = touchInfo == null ? nmeMouseOverObjects : touchInfo.touchOverObjects;
+      var events = touchInfo == null ? nmeMouseChanges : nmeTouchChanges;
 
-	/**
-	 * The area of the stage that is currently covered by the software keyboard.
-	 *
-	 * <p>The area has a size of zero(0,0,0,0) when the soft keyboard is not
-	 * visible.</p>
-	 *
-	 * <p>When the keyboard opens, the <code>softKeyboardRect</code> is set at
-	 * the time the softKeyboardActivate event is dispatched. If the keyboard
-	 * changes size while open, the runtime updates the
-	 * <code>softKeyboardRect</code> property and dispatches an additional
-	 * softKeyboardActivate event.</p>
-	 *
-	 * <p><b>Note:</b> On Android, the area covered by the keyboard is estimated
-	 * when the operating system does not provide the information necessary to
-	 * determine the exact area. This problem occurs in fullscreen mode and also
-	 * when the keyboard opens in response to an InteractiveObject receiving
-	 * focus or invoking the <code>requestSoftKeyboard()</code> method.</p>
-	 */
-	@:require(flash11) var softKeyboardRect(default,null) : nme.geom.Rectangle;
-	//@:require(flash11) var stage3Ds(default,null) : nme.Vector<Stage3D>;
+      var new_n = inStack.length;
+      var new_obj:InteractiveObject = new_n > 0 ? inStack[new_n - 1] : null;
+      var old_n = prev.length;
+      var old_obj:InteractiveObject = old_n > 0 ? prev[old_n - 1] : null;
 
-	/**
-	 * Specifies whether or not objects display a glowing border when they have
-	 * focus.
-	 * 
-	 * @throws SecurityError Calling the <code>stageFocusRect</code> property of
-	 *                       a Stage object throws an exception for any caller
-	 *                       that is not in the same security sandbox as the
-	 *                       Stage owner(the main SWF file). To avoid this, the
-	 *                       Stage owner can grant permission to the domain of
-	 *                       the caller by calling the
-	 *                       <code>Security.allowDomain()</code> method or the
-	 *                       <code>Security.allowInsecureDomain()</code> method.
-	 *                       For more information, see the "Security" chapter in
-	 *                       the <i>ActionScript 3.0 Developer's Guide</i>.
-	 */
-	var stageFocusRect : Bool;
+      if (new_obj != old_obj) 
+      {
+         // mouseOut/MouseOver goes up the object tree...
+         if (old_obj != null)
+            old_obj.nmeFireEvent(inEvent.nmeCreateSimilar(events[0], new_obj, old_obj));
 
-	/**
-	 * The current height, in pixels, of the Stage.
-	 *
-	 * <p>If the value of the <code>Stage.scaleMode</code> property is set to
-	 * <code>StageScaleMode.NO_SCALE</code> when the user resizes the window, the
-	 * Stage content maintains its size while the <code>stageHeight</code>
-	 * property changes to reflect the new height size of the screen area
-	 * occupied by the SWF file.(In the other scale modes, the
-	 * <code>stageHeight</code> property always reflects the original height of
-	 * the SWF file.) You can add an event listener for the <code>resize</code>
-	 * event and then use the <code>stageHeight</code> property of the Stage
-	 * class to determine the actual pixel dimension of the resized Flash runtime
-	 * window. The event listener allows you to control how the screen content
-	 * adjusts when the user resizes the window.</p>
-	 *
-	 * <p>Air for TV devices have slightly different behavior than desktop
-	 * devices when you set the <code>stageHeight</code> property. If the
-	 * <code>Stage.scaleMode</code> property is set to
-	 * <code>StageScaleMode.NO_SCALE</code> and you set the
-	 * <code>stageHeight</code> property, the stage height does not change until
-	 * the next frame of the SWF.</p>
-	 *
-	 * <p><b>Note:</b> In an HTML page hosting the SWF file, both the
-	 * <code>object</code> and <code>embed</code> tags' <code>height</code>
-	 * attributes must be set to a percentage(such as <code>100%</code>), not
-	 * pixels. If the settings are generated by JavaScript code, the
-	 * <code>height</code> parameter of the <code>AC_FL_RunContent() </code>
-	 * method must be set to a percentage, too. This percentage is applied to the
-	 * <code>stageHeight</code> value.</p>
-	 * 
-	 * @throws SecurityError Calling the <code>stageHeight</code> property of a
-	 *                       Stage object throws an exception for any caller that
-	 *                       is not in the same security sandbox as the Stage
-	 *                       owner(the main SWF file). To avoid this, the Stage
-	 *                       owner can grant permission to the domain of the
-	 *                       caller by calling the
-	 *                       <code>Security.allowDomain()</code> method or the
-	 *                       <code>Security.allowInsecureDomain()</code> method.
-	 *                       For more information, see the "Security" chapter in
-	 *                       the <i>ActionScript 3.0 Developer's Guide</i>.
-	 */
-	var stageHeight : Int;
+         if (new_obj != null)
+            new_obj.nmeFireEvent(inEvent.nmeCreateSimilar(events[1], old_obj));
 
-	/**
-	 * A list of StageVideo objects available for playing external videos.
-	 *
-	 * <p>You can use only a limited number of StageVideo objects at a time. When
-	 * a SWF begins to run, the number of available StageVideo objects depends on
-	 * the platform and on available hardware. </p>
-	 *
-	 * <p>To use a StageVideo object, assign a member of the
-	 * <code>stageVideos</code> Vector object to a StageVideo variable. </p>
-	 *
-	 * <p>All StageVideo objects are displayed on the stage behind any display
-	 * objects. The StageVideo objects are displayed on the stage in the order
-	 * they appear in the <code>stageVideos</code> Vector object. For example, if
-	 * the <code>stageVideos</code> Vector object contains three entries:</p>
-	 *
-	 * <ol>
-	 *   <li>The StageVideo object in the 0 index of the <code>stageVideos</code>
-	 * Vector object is displayed behind all StageVideo objects.</li>
-	 *   <li>The StageVideo object at index 1 is displayed in front of the
-	 * StageVideo object at index 0.</li>
-	 *   <li>The StageVideo object at index 2 is displayed in front of the
-	 * StageVideo object at index 1.</li>
-	 * </ol>
-	 *
-	 * <p>Use the <code>StageVideo.depth</code> property to change this
-	 * ordering.</p>
-	 *
-	 * <p><b>Note:</b> AIR for TV devices support only one StageVideo object.</p>
-	 */
-	//@:require(flash10_2) var stageVideos(default,null) : nme.Vector<nme.media.StageVideo>;
+         // rollOver/rollOut goes only over the non-common objects in the tree...
+         var common = 0;
+         while(common < new_n && common < old_n && inStack[common] == prev[common])
+            common++;
 
-	/**
-	 * Specifies the current width, in pixels, of the Stage.
-	 *
-	 * <p>If the value of the <code>Stage.scaleMode</code> property is set to
-	 * <code>StageScaleMode.NO_SCALE</code> when the user resizes the window, the
-	 * Stage content maintains its defined size while the <code>stageWidth</code>
-	 * property changes to reflect the new width size of the screen area occupied
-	 * by the SWF file.(In the other scale modes, the <code>stageWidth</code>
-	 * property always reflects the original width of the SWF file.) You can add
-	 * an event listener for the <code>resize</code> event and then use the
-	 * <code>stageWidth</code> property of the Stage class to determine the
-	 * actual pixel dimension of the resized Flash runtime window. The event
-	 * listener allows you to control how the screen content adjusts when the
-	 * user resizes the window.</p>
-	 *
-	 * <p>Air for TV devices have slightly different behavior than desktop
-	 * devices when you set the <code>stageWidth</code> property. If the
-	 * <code>Stage.scaleMode</code> property is set to
-	 * <code>StageScaleMode.NO_SCALE</code> and you set the
-	 * <code>stageWidth</code> property, the stage width does not change until
-	 * the next frame of the SWF.</p>
-	 *
-	 * <p><b>Note:</b> In an HTML page hosting the SWF file, both the
-	 * <code>object</code> and <code>embed</code> tags' <code>width</code>
-	 * attributes must be set to a percentage(such as <code>100%</code>), not
-	 * pixels. If the settings are generated by JavaScript code, the
-	 * <code>width</code> parameter of the <code>AC_FL_RunContent() </code>
-	 * method must be set to a percentage, too. This percentage is applied to the
-	 * <code>stageWidth</code> value.</p>
-	 * 
-	 * @throws SecurityError Calling the <code>stageWidth</code> property of a
-	 *                       Stage object throws an exception for any caller that
-	 *                       is not in the same security sandbox as the Stage
-	 *                       owner(the main SWF file). To avoid this, the Stage
-	 *                       owner can grant permission to the domain of the
-	 *                       caller by calling the
-	 *                       <code>Security.allowDomain()</code> method or the
-	 *                       <code>Security.allowInsecureDomain()</code> method.
-	 *                       For more information, see the "Security" chapter in
-	 *                       the <i>ActionScript 3.0 Developer's Guide</i>.
-	 */
-	var stageWidth : Int;
+         var rollOut = inEvent.nmeCreateSimilar(events[2], new_obj, old_obj);
+         var i = old_n - 1;
+         while(i >= common) 
+         {
+            prev[i].nmeDispatchEvent(rollOut);
+            i--;
+         }
 
-	/**
-	 * Indicates whether GPU compositing is available and in use. The
-	 * <code>wmodeGPU</code> value is <code>true</code> <i>only</i> when all
-	 * three of the following conditions exist:
-	 *
-	 * <p>
-	 * <ul>
-	 *   <li>GPU compositing has been requested.</li>
-	 *   <li>GPU compositing is available.</li>
-	 *   <li>GPU compositing is in use.</li>
-	 * </ul>
-	 * </p>
-	 *
-	 * <p>Specifically, the <code>wmodeGPU</code> property indicates one of the
-	 * following:</p>
-	 *
-	 * <p>
-	 * <ol>
-	 *   <li>GPU compositing has not been requested or is unavailable. In this
-	 * case, the <code>wmodeGPU</code> property value is <code>false</code>.</li>
-	 *   <li>GPU compositing has been requested(if applicable and available),
-	 * but the environment is operating in "fallback mode"(not optimal
-	 * rendering) due to limitations of the content. In this case, the
-	 * <code>wmodeGPU</code> property value is <code>true</code>.</li>
-	 *   <li>GPU compositing has been requested(if applicable and available),
-	 * and the environment is operating in the best mode. In this case, the
-	 * <code>wmodeGPU</code> property value is also <code>true</code>.</li>
-	 * </ol>
-	 * </p>
-	 *
-	 * <p>In other words, the <code>wmodeGPU</code> property identifies the
-	 * capability and state of the rendering environment. For runtimes that do
-	 * not support GPU compositing, such as AIR 1.5.2, the value is always
-	 * <code>false</code>, because(as stated above) the value is
-	 * <code>true</code> only when GPU compositing has been requested, is
-	 * available, and is in use.</p>
-	 *
-	 * <p>The <code>wmodeGPU</code> property is useful to determine, at runtime,
-	 * whether or not GPU compositing is in use. The value of
-	 * <code>wmodeGPU</code> indicates if your content is going to be scaled by
-	 * hardware, or not, so you can present graphics at the correct size. You can
-	 * also determine if you're rendering in a fast path or not, so that you can
-	 * adjust your content complexity accordingly.</p>
-	 *
-	 * <p>For Flash Player in a browser, GPU compositing can be requested by the
-	 * value of <code>gpu</code> for the <code>wmode</code> HTML parameter in the
-	 * page hosting the SWF file. For other configurations, GPU compositing can
-	 * be requested in the header of a SWF file(set using SWF authoring
-	 * tools).</p>
-	 *
-	 * <p>However, the <code>wmodeGPU</code> property does not identify the
-	 * current rendering performance. Even if GPU compositing is "in use" the
-	 * rendering process might not be operating in the best mode. To adjust your
-	 * content for optimal rendering, use a Flash runtime debugger version, and
-	 * set the <code>DisplayGPUBlendsetting</code> in your mm.cfg file.</p>
-	 *
-	 * <p><b>Note:</b> This property is always <code>false</code> when referenced
-	 * from ActionScript that runs before the runtime performs its first
-	 * rendering pass. For example, if you examine <code>wmodeGPU</code> from a
-	 * script in Frame 1 of Adobe Flash Professional, and your SWF file is the
-	 * first SWF file loaded in a new instance of the runtime, then the
-	 * <code>wmodeGPU</code> value is <code>false</code>. To get an accurate
-	 * value, wait until at least one rendering pass has occurred. If you write
-	 * an event listener for the <code>exitFrame</code> event of any
-	 * <code>DisplayObject</code>, the <code>wmodeGPU</code> value at is the
-	 * correct value.</p>
-	 */
-	@:require(flash10_1) var wmodeGPU(default,null) : Bool;
+         var rollOver = inEvent.nmeCreateSimilar(events[3], old_obj);
+         var i = new_n - 1;
+         while(i >= common) 
+         {
+            inStack[i].nmeDispatchEvent(rollOver);
+            i--;
+         }
 
-	/**
-	 * Calling the <code>invalidate()</code> method signals Flash runtimes to
-	 * alert display objects on the next opportunity it has to render the display
-	 * list(for example, when the playhead advances to a new frame). After you
-	 * call the <code>invalidate()</code> method, when the display list is next
-	 * rendered, the Flash runtime sends a <code>render</code> event to each
-	 * display object that has registered to listen for the <code>render</code>
-	 * event. You must call the <code>invalidate()</code> method each time you
-	 * want the Flash runtime to send <code>render</code> events.
-	 *
-	 * <p>The <code>render</code> event gives you an opportunity to make changes
-	 * to the display list immediately before it is actually rendered. This lets
-	 * you defer updates to the display list until the latest opportunity. This
-	 * can increase performance by eliminating unnecessary screen updates.</p>
-	 *
-	 * <p>The <code>render</code> event is dispatched only to display objects
-	 * that are in the same security domain as the code that calls the
-	 * <code>stage.invalidate()</code> method, or to display objects from a
-	 * security domain that has been granted permission via the
-	 * <code>Security.allowDomain()</code> method.</p>
-	 * 
-	 */
-	function invalidate() : Void;
+         if (touchInfo == null)
+            nmeMouseOverObjects = inStack;
+         else
+            touchInfo.touchOverObjects = inStack;
 
-	/**
-	 * Determines whether the <code>Stage.focus</code> property returns
-	 * <code>null</code> for security reasons. In other words,
-	 * <code>isFocusInaccessible</code> returns <code>true</code> if the object
-	 * that has focus belongs to a security sandbox to which the SWF file does
-	 * not have access.
-	 * 
-	 * @return <code>true</code> if the object that has focus belongs to a
-	 *         security sandbox to which the SWF file does not have access.
-	 */
-	function isFocusInaccessible() : Bool;
+         return false;
+      }
+
+      return true;
+   }
+
+   /** @private */ private function nmeCheckRender() {
+      //trace("nmeCheckRender " + frameRate);
+      if (frameRate > 0) 
+      {
+         var now = Timer.stamp();
+         if (now >= nmeLastRender + nmeFramePeriod) 
+         {
+            nmeLastRender = now;
+            if (renderRequest != null)
+               renderRequest();
+            else
+               nmeRender(true);
+         }
+      }
+	  #if emscripten
+	  else {
+		  nmeRender(true);
+	  }
+	  #end
+   }
+
+   /** @private */ private function nmeDoProcessStageEvent(inEvent:Dynamic):Float {
+      var result = 0.0;
+      //if (inEvent.type!=9) trace("Stage Event : " + inEvent);
+      var type:Int = Std.int(Reflect.field(inEvent, "type"));
+
+      switch(type) 
+      {
+         case 2: // etChar
+            if (onKey != null)
+               untyped onKey(inEvent.code, inEvent.down, inEvent.char, inEvent.flags);
+
+         case 1: // etKeyDown
+            nmeOnKey(inEvent, KeyboardEvent.KEY_DOWN);
+
+         case 3: // etKeyUp
+            nmeOnKey(inEvent, KeyboardEvent.KEY_UP);
+
+         case 4: // etMouseMove
+            nmeOnMouse(inEvent, MouseEvent.MOUSE_MOVE, true);
+
+         case 5: // etMouseDown
+            nmeOnMouse(inEvent, MouseEvent.MOUSE_DOWN, true);
+
+         case 6: // etMouseClick
+            nmeOnMouse(inEvent, MouseEvent.CLICK, true);
+
+         case 7: // etMouseUp
+            nmeOnMouse(inEvent, MouseEvent.MOUSE_UP, true);
+
+         case 8: // etResize
+            nmeOnResize(inEvent.x, inEvent.y);
+            if (renderRequest == null)
+               nmeRender(false);
+
+         case 9: // etPoll
+            nmePollTimers();
+
+         case 10: // etQuit
+            if (onQuit != null)
+               untyped onQuit();
+
+         case 11: // etFocus
+            nmeOnFocus(inEvent);
+
+         case 12: // etShouldRotate
+            if (shouldRotateInterface(inEvent.value))
+               inEvent.result = 2;
+
+         case 14: // etRedraw
+            nmeRender(true);
+
+         case 15: // etTouchBegin
+            var touchInfo = new TouchInfo();
+            nmeTouchInfo.set(inEvent.value, touchInfo);
+            nmeOnTouch(inEvent, TouchEvent.TOUCH_BEGIN, touchInfo);
+            // trace("etTouchBegin : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y+ " OBJ:" + inEvent.id + " sizeX:" + inEvent.sx + " sizeY:" + inEvent.sy );
+            if ((inEvent.flags & 0x8000) > 0)
+               nmeOnMouse(inEvent, MouseEvent.MOUSE_DOWN, false);
+
+         case 16: // etTouchMove
+            var touchInfo = nmeTouchInfo.get(inEvent.value);
+            nmeOnTouch(inEvent, TouchEvent.TOUCH_MOVE, touchInfo);
+
+         case 17: // etTouchEnd
+            var touchInfo = nmeTouchInfo.get(inEvent.value);
+            nmeOnTouch(inEvent, TouchEvent.TOUCH_END, touchInfo);
+            nmeTouchInfo.remove(inEvent.value);
+            // trace("etTouchEnd : " + inEvent.value + "   " + inEvent.x + "," + inEvent.y + " OBJ:" + inEvent.id + " sizeX:" + inEvent.sx + " sizeY:" + inEvent.sy );
+            if ((inEvent.flags & 0x8000) > 0)
+               nmeOnMouse(inEvent, MouseEvent.MOUSE_UP, false);
+
+         case 18: // etTouchTap
+            //nmeOnTouchTap(inEvent.TouchEvent.TOUCH_TAP);
+         case 19: // etChange
+            nmeOnChange(inEvent);
+
+         case 20: // etActivate
+            nmeSetActive(true);
+
+         case 21: // etDeactivate
+            nmeSetActive(false);
+
+         case 22: // etGotInputFocus
+            var evt = new Event(FocusEvent.FOCUS_IN);
+            nmeDispatchEvent(evt);
+
+         case 23: // etLostInputFocus
+            var evt = new Event(FocusEvent.FOCUS_OUT);
+            nmeDispatchEvent(evt);
+
+         case 24: // etJoyAxisMove
+            nmeOnJoystick(inEvent, JoystickEvent.AXIS_MOVE);
+
+         case 25: // etJoyBallMove
+            nmeOnJoystick(inEvent, JoystickEvent.BALL_MOVE);
+
+         case 26: // etJoyHatMove
+            nmeOnJoystick(inEvent, JoystickEvent.HAT_MOVE);
+
+         case 27: // etJoyButtonDown
+            nmeOnJoystick(inEvent, JoystickEvent.BUTTON_DOWN);
+
+         case 28: // etJoyButtonUp
+            nmeOnJoystick(inEvent, JoystickEvent.BUTTON_UP);
+
+         case 29: // etSysWM
+            nmeOnSysWM(inEvent);
+
+         // TODO: user, sys_wm, sound_finished
+      }
+
+      result = nmeUpdateNextWake();
+
+      return result;
+   }
+
+
+   #if android
+   @:keep private function dummyTrace() { trace(""); }
+
+   @:functionCode("try {") 
+   @:functionTailCode(' } catch(Dynamic e) { __hx_dump_stack(); ::haxe::Log_obj::trace(HX_CSTRING("Uncaught exception: ") + e,hx::SourceInfo(HX_CSTRING("Stage.hx"),0,HX_CSTRING("nme.display.Stage"),HX_CSTRING("nmeDoProcessStageEvent")));}')
+   #end
+   /** @private */ private function nmeProcessStageEvent(inEvent:Dynamic):Dynamic {
+      nmeDoProcessStageEvent(inEvent);
+      return null;
+   }
+
+   /** @private */ private function nmeDrag(inMouse:Point) {
+      var p = nmeDragObject.parent;
+      if (p != null)
+         inMouse = p.globalToLocal(inMouse);
+
+      var x = inMouse.x + nmeDragOffsetX;
+      var y = inMouse.y + nmeDragOffsetY;
+
+      if (nmeDragBounds != null) 
+      {
+         if (x < nmeDragBounds.x) x = nmeDragBounds.x;
+         else if (x > nmeDragBounds.right) x = nmeDragBounds.right;
+
+         if (y < nmeDragBounds.y) y = nmeDragBounds.y;
+         else if (y > nmeDragBounds.bottom) y = nmeDragBounds.bottom;
+      }
+
+      nmeDragObject.x = x;
+      nmeDragObject.y = y;
+   }
+
+   /** @private */ private function nmeNextFrameDue(inOtherTimers:Float) {
+      if (!active && pauseWhenDeactivated)
+         return inOtherTimers;
+
+      if (frameRate > 0) 
+      {
+         var next = nmeLastRender + nmeFramePeriod - Timer.stamp() - nmeEarlyWakeup;
+         if (next < inOtherTimers)
+            return next;
+      }
+
+      return inOtherTimers;
+   }
+
+   /** @private */ private function nmeOnChange(inEvent) {
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+      if (obj != null)
+         obj.nmeFireEvent(new Event(Event.CHANGE));
+   }
+
+   /** @private */ private function nmeOnFocus(inEvent:Dynamic) {
+      var stack = new Array<InteractiveObject>();
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+
+      if (obj != null)
+         obj.nmeGetInteractiveObjectStack(stack);
+
+      if (stack.length > 0 && (inEvent.value == 1 || inEvent.value == 2)) 
+      {
+         var obj = stack[0];
+         var evt = new FocusEvent(inEvent.value == 1 ? FocusEvent.MOUSE_FOCUS_CHANGE : FocusEvent.KEY_FOCUS_CHANGE, true, true, nmeFocusOverObjects.length == 0 ? null : nmeFocusOverObjects[0], inEvent.flags > 0, inEvent.code);
+         obj.nmeFireEvent(evt);
+
+         if (evt.nmeGetIsCancelled()) 
+         {
+            inEvent.result = 1;
+            return;
+         }
+      }
+
+      stack.reverse();
+
+      nmeCheckFocusInOuts(inEvent, stack);
+   }
+
+   /** @private */ private function nmeOnJoystick(inEvent:Dynamic, inType:String) {
+      var evt:JoystickEvent = null;
+
+      switch(inType) 
+      {
+         case JoystickEvent.AXIS_MOVE:
+            var data = nmeJoyAxisData.get(inEvent.id);
+            if (data == null) 
+            {
+               data = [ 0.0, 0.0, 0.0, 0.0 ];
+            }
+
+            var value:Float = inEvent.value / 32767; // Range: -32768 to 32767
+            if (value < -1) value = -1;
+
+            while(data.length < inEvent.code) 
+            {
+               data.push(0);
+            }
+
+            data[inEvent.code] = value;
+
+            evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2]);
+            evt.axis = data.copy();
+
+            nmeJoyAxisData.set(inEvent.id, data);
+
+         case JoystickEvent.BALL_MOVE:
+            evt = new JoystickEvent(inType, false, false, inEvent.id,  inEvent.code, inEvent.x, inEvent.y);
+
+         case JoystickEvent.HAT_MOVE:
+            var x = 0;
+            var y = 0;
+
+            if (inEvent.value & 0x01 != 0) 
+            {
+               y = -1; // up
+
+            } else if (inEvent.value & 0x04 != 0) 
+            {
+               y = 1; // down
+            }
+
+            if (inEvent.value & 0x02 != 0) 
+            {
+               x = 1; // right
+
+            } else if (inEvent.value & 0x08 != 0) 
+            {
+               x = -1; // left
+            }
+
+            evt = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code, x, y);
+
+         default:
+            evt = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code);
+      }
+
+      nmeDispatchEvent(evt);
+   }
+
+   /** @private */ private function nmeOnKey(inEvent:Dynamic, inType:String) {
+      var stack = new Array<InteractiveObject>();
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+
+      if (obj != null)
+         obj.nmeGetInteractiveObjectStack(stack);
+
+      if (stack.length > 0) 
+      {
+         var value = inEvent.value;
+
+         if (value >= 96 && value <= 122) value -= 32;
+
+         var obj = stack[0];
+         var flags:Int = inEvent.flags;
+         var evt = new KeyboardEvent(inType, true, true, inEvent.code, value,((flags & efLocationRight) == 0) ? 1 : 0,(flags & efCtrlDown) != 0,(flags & efAltDown) != 0,(flags & efShiftDown) !=0);
+         obj.nmeFireEvent(evt);
+
+         if (evt.nmeGetIsCancelled())
+            inEvent.result = 1;
+
+         #if (windows || linux)
+         if (flags & efAltDown > 0 && inEvent.result != -1 && inEvent.code == Keyboard.ENTER) 
+         {
+            if (displayState == StageDisplayState.NORMAL) 
+            {
+               displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+
+            } else 
+            {
+               displayState = StageDisplayState.NORMAL;
+            }
+         }
+         #end
+      }
+   }
+
+   /** @private */ private function nmeOnMouse(inEvent:Dynamic, inType:String, inFromMouse:Bool) {
+      var type = inType;
+      var button:Int = inEvent.value;
+
+      if (!inFromMouse)
+         button = 0;
+
+      var wheel = 0;
+
+      if (inType == MouseEvent.MOUSE_DOWN) 
+      {
+         if (button > 2)
+            return;
+         type = sDownEvents[button];
+
+      } else if (inType == MouseEvent.MOUSE_UP) 
+      {
+         if (button > 2) 
+         {
+            type = MouseEvent.MOUSE_WHEEL;
+            wheel = button == 3 ? 1 : -1;
+
+         } else 
+         {
+            type = sUpEvents[button];
+         }
+      }
+
+      if (nmeDragObject != null)
+         nmeDrag(new Point(inEvent.x, inEvent.y));
+
+      var stack = new Array<InteractiveObject>();
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+
+      if (obj != null)
+         obj.nmeGetInteractiveObjectStack(stack);
+
+      var local:Point = null;
+      if (stack.length > 0) 
+      {
+         var obj = stack[0];
+         stack.reverse();
+         local = obj.globalToLocal(new Point(inEvent.x, inEvent.y));
+         var evt = MouseEvent.nmeCreate(type, inEvent, local, obj);
+         evt.delta = wheel;
+         if (inFromMouse)
+            nmeCheckInOuts(evt, stack);
+         obj.nmeFireEvent(evt);
+
+      } else 
+      {
+         //trace("No obj?");
+         local = new Point(inEvent.x, inEvent.y);
+         var evt = MouseEvent.nmeCreate(type, inEvent, local, null);
+         evt.delta = wheel;
+         if (inFromMouse)
+            nmeCheckInOuts(evt, stack);
+      }
+
+      var click_obj = stack.length > 0 ? stack[ stack.length - 1] : this;
+      if (inType == MouseEvent.MOUSE_DOWN && button < 3) 
+      {
+         nmeLastDown[button] = click_obj;
+
+      } else if (inType == MouseEvent.MOUSE_UP && button < 3) 
+      {
+         if (click_obj == nmeLastDown[button]) 
+         {
+            var evt = MouseEvent.nmeCreate(sClickEvents[button], inEvent, local, click_obj);
+            click_obj.nmeFireEvent(evt);
+
+            if (button == 0 && click_obj.doubleClickEnabled) 
+            {
+               var now = Timer.stamp();
+               if (now - nmeLastClickTime < 0.25) 
+               {
+                  var evt = MouseEvent.nmeCreate(MouseEvent.DOUBLE_CLICK, inEvent, local, click_obj);
+                  click_obj.nmeFireEvent(evt);
+               }
+
+               nmeLastClickTime = now;
+            }
+         }
+
+         nmeLastDown[button] = null;
+      }
+   }
+
+   /** @private */ private function nmeOnResize(inW:Float, inH:Float) {
+      var evt = new Event(Event.RESIZE);
+      nmeDispatchEvent(evt);
+   }
+
+   private function nmeOnSysWM(inEvent:Dynamic) 
+   {
+      var evt = new SystemEvent(SystemEvent.SYSTEM, false, false, inEvent.value);
+      nmeDispatchEvent(evt);
+   }
+
+   /** @private */ private function nmeOnTouch(inEvent:Dynamic, inType:String, touchInfo:TouchInfo) {
+      var stack = new Array<InteractiveObject>();
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+
+      if (obj != null)
+         obj.nmeGetInteractiveObjectStack(stack);
+
+      if (stack.length > 0) 
+      {
+         var obj = stack[0];
+         stack.reverse();
+         var local = obj.globalToLocal(new Point(inEvent.x, inEvent.y));
+         var evt = TouchEvent.nmeCreate(inType, inEvent, local, obj, inEvent.sx, inEvent.sy);
+         evt.touchPointID = inEvent.value;
+         evt.isPrimaryTouchPoint =(inEvent.flags & 0x8000) > 0;
+         //if (evt.isPrimaryTouchPoint)
+         nmeCheckInOuts(evt, stack, touchInfo);
+         obj.nmeFireEvent(evt);
+
+         if (evt.isPrimaryTouchPoint && inType == TouchEvent.TOUCH_MOVE) 
+         {
+            if (nmeDragObject != null)
+               nmeDrag(new Point(inEvent.x, inEvent.y));
+
+            var evt = MouseEvent.nmeCreate(MouseEvent.MOUSE_MOVE, inEvent, local, obj);
+            obj.nmeFireEvent(evt);
+         }
+
+      } else 
+      {
+         //trace("No object?");
+         var evt = TouchEvent.nmeCreate(inType, inEvent, new Point(inEvent.x, inEvent.y), null, inEvent.sx, inEvent.sy);
+         evt.touchPointID = inEvent.value;
+         evt.isPrimaryTouchPoint =(inEvent.flags & 0x8000) > 0;
+         //if (evt.isPrimaryTouchPoint)
+         nmeCheckInOuts(evt, stack, touchInfo);
+      }
+   }
+
+   /** @private */ public function nmePollTimers() {
+      //trace("poll");
+      Timer.nmeCheckTimers();
+      SoundChannel.nmePollComplete();
+      URLLoader.nmePollData();
+      nmeCheckRender();
+   }
+
+   /** @private */ public function nmeRender(inSendEnterFrame:Bool) {
+      if (!active)
+         return;
+
+      //trace("Render");
+      if (inSendEnterFrame) 
+      {
+         nmeBroadcast(new Event(Event.ENTER_FRAME));
+
+      } if (nmeInvalid) 
+      {
+         nmeInvalid = false;
+         nmeBroadcast(new Event(Event.RENDER));
+      }
+
+      nme_render_stage(nmeHandle);
+   }
+
+   /** @private */ public function nmeSetActive(inActive:Bool) {
+      // trace("nmeSetActive : " + inActive);
+      if (inActive != active) 
+      {
+         active = inActive;
+         if (!active)
+            nmeLastRender = Timer.stamp();
+
+         var evt = new Event(inActive ? Event.ACTIVATE : Event.DEACTIVATE);
+         nmeBroadcast(evt);
+         if (inActive)
+            nmePollTimers();
+      }
+   }
+
+   /** @private */ public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:Rectangle):Void {
+      nmeDragBounds =(bounds == null) ? null : bounds.clone();
+      nmeDragObject = sprite;
+
+      if (nmeDragObject != null) 
+      {
+         if (lockCenter) 
+         {
+            nmeDragOffsetX = -nmeDragObject.width / 2;
+            nmeDragOffsetY = -nmeDragObject.height / 2;
+
+         } else 
+         {
+            var mouse = new Point(mouseX, mouseY);
+            var p = nmeDragObject.parent;
+            if (p != null)
+               mouse = p.globalToLocal(mouse);
+
+            nmeDragOffsetX = nmeDragObject.x - mouse.x;
+            nmeDragOffsetY = nmeDragObject.y - mouse.y;
+         }
+      }
+   }
+
+   /** @private */ public function nmeStopDrag(sprite:Sprite):Void {
+      nmeDragBounds = null;
+      nmeDragObject = null;
+   }
+
+   /** @private */ public function nmeUpdateNextWake() {
+      // TODO: In a multi-stage environment, may need to handle this better...
+      var next_wake = Timer.nmeNextWake(315000000.0);
+
+      if (next_wake > 0.001 && SoundChannel.nmeDynamicSoundCount > 0)
+         next_wake = 0.001;
+
+      if (next_wake > 0.02 && (SoundChannel.nmeCompletePending() || URLLoader.nmeLoadPending())) 
+      {
+         next_wake =(active || !pauseWhenDeactivated) ? 0.020 : 0.500;
+      }
+
+      next_wake = nmeNextFrameDue(next_wake);
+      nme_stage_set_next_wake(nmeHandle, next_wake);
+
+      return next_wake;
+   }
+
+   public static function setFixedOrientation(inOrientation:Int) 
+   {
+      // If you set this, you don't need to set the 'shouldRotateInterface' function.
+      nme_stage_set_fixed_orientation(inOrientation);
+   }
+
+   public static dynamic function shouldRotateInterface(inOrientation:Int):Bool 
+   {
+      return inOrientation == OrientationPortrait;
+   }
+
+   public function showCursor(inShow:Bool) 
+   {
+      nme_stage_show_cursor(nmeHandle, inShow);
+   }
+
+   // Getters & Setters
+   private function get_align():StageAlign 
+   {
+      var i:Int = nme_stage_get_align(nmeHandle);
+      return Type.createEnumIndex(StageAlign, i);
+   }
+
+   private function set_align(inMode:StageAlign):StageAlign 
+   {
+      nme_stage_set_align(nmeHandle, Type.enumIndex(inMode));
+      return inMode;
+   }
+
+   private function get_displayState():StageDisplayState 
+   {
+      var i:Int = nme_stage_get_display_state(nmeHandle);
+      return Type.createEnumIndex(StageDisplayState, i);
+   }
+
+   private function set_displayState(inState:StageDisplayState):StageDisplayState 
+   {
+      nme_stage_set_display_state(nmeHandle, Type.enumIndex(inState));
+      return inState;
+   }
+
+   private function get_dpiScale():Float 
+   {
+      return nme_stage_get_dpi_scale(nmeHandle);
+   }
+
+   private function get_focus():InteractiveObject 
+   {
+      var id = nme_stage_get_focus_id(nmeHandle);
+      var obj:DisplayObject = nmeFindByID(id);
+      return cast obj;
+   }
+
+   private function set_focus(inObject:InteractiveObject):InteractiveObject 
+   {
+      if (inObject == null)
+         nme_stage_set_focus(nmeHandle, null, 0);
+      else
+         nme_stage_set_focus(nmeHandle, inObject.nmeHandle, 0);
+      return inObject;
+   }
+
+   private function set_frameRate(inRate:Float):Float 
+   {
+      frameRate = inRate;
+      nmeFramePeriod = frameRate <= 0 ? frameRate : 1.0 / frameRate;
+      return inRate;
+   }
+
+   private function get_isOpenGL():Bool 
+   {
+      return nme_stage_is_opengl(nmeHandle);
+   }
+
+   private function get_quality():StageQuality 
+   {
+      var i:Int = nme_stage_get_quality(nmeHandle);
+      return Type.createEnumIndex(StageQuality, i);
+   }
+
+   private function set_quality(inQuality:StageQuality):StageQuality 
+   {
+      nme_stage_set_quality(nmeHandle, Type.enumIndex(inQuality));
+      return inQuality;
+   }
+
+   private function get_scaleMode():StageScaleMode 
+   {
+      var i:Int = nme_stage_get_scale_mode(nmeHandle);
+      return Type.createEnumIndex(StageScaleMode, i);
+   }
+
+   private function set_scaleMode(inMode:StageScaleMode):StageScaleMode 
+   {
+      nme_stage_set_scale_mode(nmeHandle, Type.enumIndex(inMode));
+      return inMode;
+   }
+
+   private override function get_stage():Stage 
+   {
+      return this;
+   }
+
+   private function get_stageFocusRect():Bool { return nme_stage_get_focus_rect(nmeHandle); }
+   private function set_stageFocusRect(inVal:Bool):Bool 
+   {
+      nme_stage_set_focus_rect(nmeHandle, inVal);
+      return inVal;
+   }
+
+   private function get_stageHeight():Int 
+   {
+      return Std.int(cast(nme_stage_get_stage_height(nmeHandle), Float));
+   }
+
+   private function get_stageWidth():Int 
+   {
+      return Std.int(cast(nme_stage_get_stage_width(nmeHandle), Float));
+   }
+
+   // Native Methods
+   private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler", 4);
+   private static var nme_render_stage = Loader.load("nme_render_stage", 1);
+   private static var nme_stage_get_focus_id = Loader.load("nme_stage_get_focus_id", 1);
+   private static var nme_stage_set_focus = Loader.load("nme_stage_set_focus", 3);
+   private static var nme_stage_get_focus_rect = Loader.load("nme_stage_get_focus_rect", 1);
+   private static var nme_stage_set_focus_rect = Loader.load("nme_stage_set_focus_rect", 2);
+   private static var nme_stage_is_opengl = Loader.load("nme_stage_is_opengl", 1);
+   private static var nme_stage_get_stage_width = Loader.load("nme_stage_get_stage_width", 1);
+   private static var nme_stage_get_stage_height = Loader.load("nme_stage_get_stage_height", 1);
+   private static var nme_stage_get_dpi_scale = Loader.load("nme_stage_get_dpi_scale", 1);
+   private static var nme_stage_get_scale_mode = Loader.load("nme_stage_get_scale_mode", 1);
+   private static var nme_stage_set_scale_mode = Loader.load("nme_stage_set_scale_mode", 2);
+   private static var nme_stage_get_align = Loader.load("nme_stage_get_align", 1);
+   private static var nme_stage_set_align = Loader.load("nme_stage_set_align", 2);
+   private static var nme_stage_get_quality = Loader.load("nme_stage_get_quality", 1);
+   private static var nme_stage_set_quality = Loader.load("nme_stage_set_quality", 2);
+   private static var nme_stage_get_display_state = Loader.load("nme_stage_get_display_state", 1);
+   private static var nme_stage_set_display_state = Loader.load("nme_stage_set_display_state", 2);
+   private static var nme_stage_set_next_wake = Loader.load("nme_stage_set_next_wake", 2);
+   private static var nme_stage_request_render = Loader.load("nme_stage_request_render", 0);
+   private static var nme_stage_show_cursor = Loader.load("nme_stage_show_cursor", 2);
+   private static var nme_stage_set_fixed_orientation = Loader.load("nme_stage_set_fixed_orientation", 1);
+   private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);
+   private static var nme_stage_get_normal_orientation = Loader.load("nme_stage_get_normal_orientation", 0);
 }
 
+class TouchInfo 
+{
+   public var touchOverObjects:Array<InteractiveObject>;
 
-#elseif (cpp || neko)
-typedef Stage = native.display.Stage;
-#elseif js
-typedef Stage = browser.display.Stage;
+   public function new() 
+   {
+      touchOverObjects = [];
+   }
+}
+
 #else
 typedef Stage = flash.display.Stage;
 #end

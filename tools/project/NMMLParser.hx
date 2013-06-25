@@ -50,9 +50,16 @@ class NMMLParser extends NMEProject {
 			process (path, useExtensionPath);
 			
 		}
-		
+
+      var environment = Sys.environment();
+      for(key in environment.keys())
+         Reflect.setField(baseTemplateContext, key, environment.get(key));
+
+
+      for(key in localDefines.keys())
+         Reflect.setField(baseTemplateContext, key, localDefines.get(key));
 	}
-	
+
 	
 	private function initialize ():Void {
 		
@@ -1102,6 +1109,7 @@ class NMMLParser extends NMEProject {
 								
 							} else {
 								
+								templatePaths.remove (path);
 								templatePaths.push (path);
 								
 							}
@@ -1114,7 +1122,10 @@ class NMMLParser extends NMEProject {
 					
 					case "templatePath":
 						
-						templatePaths.push (PathHelper.combine (extensionPath, substitute (element.att.name)));
+						var path = PathHelper.combine (extensionPath, substitute (element.att.name));
+						
+						templatePaths.remove (path);
+						templatePaths.push (path);
 					
 					case "preloader":
 						

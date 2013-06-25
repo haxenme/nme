@@ -1,4 +1,4 @@
-#ifndef IPHONE
+#ifndef STATIC_LINK
 #define IMPLEMENT_API
 #endif
 
@@ -243,178 +243,6 @@ WString val2stdwstr(value inVal)
 }
 
 
-void FromValue(Matrix &outMatrix, value inValue)
-{
-   if (!val_is_null(inValue))
-   {
-      outMatrix.m00 =  val_field_numeric(inValue,_id_a);
-      outMatrix.m01 =  val_field_numeric(inValue,_id_c);
-      outMatrix.m10 =  val_field_numeric(inValue,_id_b);
-      outMatrix.m11 =  val_field_numeric(inValue,_id_d);
-      outMatrix.mtx =  val_field_numeric(inValue,_id_tx);
-      outMatrix.mty =  val_field_numeric(inValue,_id_ty);
-   }
-}
-
-int ValInt(value inObject, int inID, int inDefault)
-{
-   value field = val_field(inObject,inID);
-   if (val_is_null(field))
-      return inDefault;
-   return (int)val_number(field);
-}
-
-
-void FromValue(Event &outEvent, value inValue)
-{
-   outEvent.type = (EventType)ValInt(inValue,_id_type,etUnknown);
-   outEvent.x = ValInt(inValue,_id_x,0);
-   outEvent.y = ValInt(inValue,_id_y,0);
-   outEvent.value = ValInt(inValue,_id_value,0);
-   outEvent.id = ValInt(inValue,_id_id,-1);
-   outEvent.flags = ValInt(inValue,_id_flags,0);
-   outEvent.code = ValInt(inValue,_id_code,0);
-   outEvent.result = (EventResult)ValInt(inValue,_id_result,0);
-}
-
-
-void FromValue(ColorTransform &outTrans, value inValue)
-{
-   if (!val_is_null(inValue))
-   {
-      outTrans.alphaOffset = val_field_numeric(inValue,_id_alphaOffset);
-      outTrans.redOffset = val_field_numeric(inValue,_id_redOffset);
-      outTrans.greenOffset = val_field_numeric(inValue,_id_greenOffset);
-      outTrans.blueOffset = val_field_numeric(inValue,_id_blueOffset);
-
-      outTrans.alphaMultiplier = val_field_numeric(inValue,_id_alphaMultiplier);
-      outTrans.redMultiplier = val_field_numeric(inValue,_id_redMultiplier);
-      outTrans.greenMultiplier = val_field_numeric(inValue,_id_greenMultiplier);
-      outTrans.blueMultiplier = val_field_numeric(inValue,_id_blueMultiplier);
-   }
-}
-
-
-
-int RGB2Int32(value inRGB)
-{
-   if (val_is_int(inRGB))
-      return val_int(inRGB);
-   if (val_is_object(inRGB))
-   {
-      return (int)(val_field_numeric(inRGB,_id_rgb)) |
-             ( ((int)val_field_numeric(inRGB,_id_a)) << 24 );
-   }
-   return 0;
-}
-
-
-void FromValue(SoundTransform &outTrans, value inValue)
-{
-   if (!val_is_null(inValue))
-   {
-       outTrans.volume = val_number( val_field(inValue,_id_volume) );
-       outTrans.pan = val_number( val_field(inValue,_id_pan) );
-   }
-}
-
-void FromValue(DRect &outRect, value inValue)
-{
-   if (val_is_null(inValue))
-      return;
-   outRect.x = val_field_numeric(inValue,_id_x);
-   outRect.y = val_field_numeric(inValue,_id_y);
-   outRect.w = val_field_numeric(inValue,_id_width);
-   outRect.h = val_field_numeric(inValue,_id_height);
-}
-
-void FromValue(Rect &outRect, value inValue)
-{
-   if (val_is_null(inValue))
-      return;
-   outRect.x = val_field_numeric(inValue,_id_x);
-   outRect.y = val_field_numeric(inValue,_id_y);
-   outRect.w = val_field_numeric(inValue,_id_width);
-   outRect.h = val_field_numeric(inValue,_id_height);
-}
-
-Filter *FilterFromValue(value filter)
-{
-   WString type = val2stdwstr( val_field(filter,_id_type) );
-   int q = val_int(val_field(filter,_id_quality));
-   if (q<1) return 0;;
-   if (type==L"BlurFilter")
-   {
-      return( new BlurFilter( q,
-          (int)val_field_numeric(filter,_id_blurX),
-          (int)val_field_numeric(filter,_id_blurY) ) );
-   }
-   else if (type==L"DropShadowFilter")
-   {
-      return( new DropShadowFilter( q,
-          (int)val_field_numeric(filter,_id_blurX),
-          (int)val_field_numeric(filter,_id_blurY),
-          val_field_numeric(filter,_id_angle),
-          val_field_numeric(filter,_id_distance),
-          val_int( val_field(filter,_id_color) ),
-          val_field_numeric(filter,_id_strength),
-          val_field_numeric(filter,_id_alpha),
-          (bool)val_field_numeric(filter,_id_hideObject),
-          (bool)val_field_numeric(filter,_id_knockout),
-          (bool)val_field_numeric(filter,_id_inner)
-          ) );
-   }
-   return 0;
-}
-
-void ToValue(value &outVal,const Rect &inRect)
-{
-    alloc_field(outVal,_id_x, alloc_float(inRect.x) );
-    alloc_field(outVal,_id_y, alloc_float(inRect.y) );
-    alloc_field(outVal,_id_width, alloc_float(inRect.w) );
-    alloc_field(outVal,_id_height, alloc_float(inRect.h) );
-}
-
-void FromValue(ImagePoint &outPoint,value inValue)
-{
-   outPoint.x = val_field_numeric(inValue,_id_x);
-   outPoint.y = val_field_numeric(inValue,_id_y);
-}
-
-void FromValue(UserPoint &outPoint,value inValue)
-{
-   outPoint.x = val_field_numeric(inValue,_id_x);
-   outPoint.y = val_field_numeric(inValue,_id_y);
-}
-
-
-
-void ToValue(value &outVal,const Matrix &inMatrix)
-{
-    alloc_field(outVal,_id_a, alloc_float(inMatrix.m00) );
-    alloc_field(outVal,_id_c, alloc_float(inMatrix.m01) );
-    alloc_field(outVal,_id_b, alloc_float(inMatrix.m10) );
-    alloc_field(outVal,_id_d, alloc_float(inMatrix.m11) );
-    alloc_field(outVal,_id_tx, alloc_float(inMatrix.mtx) );
-    alloc_field(outVal,_id_ty, alloc_float(inMatrix.mty) );
-}
-
-void ToValue(value &outVal,const ColorTransform &inTrans)
-{
-    alloc_field(outVal,_id_alphaMultiplier, alloc_float(inTrans.alphaMultiplier) );
-    alloc_field(outVal,_id_redMultiplier, alloc_float(inTrans.redMultiplier) );
-    alloc_field(outVal,_id_greenMultiplier, alloc_float(inTrans.greenMultiplier) );
-    alloc_field(outVal,_id_blueMultiplier, alloc_float(inTrans.blueMultiplier) );
-
-    alloc_field(outVal,_id_alphaOffset, alloc_float(inTrans.alphaOffset) );
-    alloc_field(outVal,_id_redOffset, alloc_float(inTrans.redOffset) );
-    alloc_field(outVal,_id_greenOffset, alloc_float(inTrans.greenOffset) );
-    alloc_field(outVal,_id_blueOffset, alloc_float(inTrans.blueOffset) );
-}
-
-
-
-
 template<typename T>
 void FillArrayInt(QuickVec<T> &outArray,value inVal)
 {
@@ -543,6 +371,186 @@ void FillArrayDouble(QuickVec<T> &outArray,value inVal)
 {
    FillArrayDoubleN<T,16>(outArray,inVal);
 }
+
+
+void FromValue(Matrix &outMatrix, value inValue)
+{
+   if (!val_is_null(inValue))
+   {
+      outMatrix.m00 =  val_field_numeric(inValue,_id_a);
+      outMatrix.m01 =  val_field_numeric(inValue,_id_c);
+      outMatrix.m10 =  val_field_numeric(inValue,_id_b);
+      outMatrix.m11 =  val_field_numeric(inValue,_id_d);
+      outMatrix.mtx =  val_field_numeric(inValue,_id_tx);
+      outMatrix.mty =  val_field_numeric(inValue,_id_ty);
+   }
+}
+
+int ValInt(value inObject, int inID, int inDefault)
+{
+   value field = val_field(inObject,inID);
+   if (val_is_null(field))
+      return inDefault;
+   return (int)val_number(field);
+}
+
+
+void FromValue(Event &outEvent, value inValue)
+{
+   outEvent.type = (EventType)ValInt(inValue,_id_type,etUnknown);
+   outEvent.x = ValInt(inValue,_id_x,0);
+   outEvent.y = ValInt(inValue,_id_y,0);
+   outEvent.value = ValInt(inValue,_id_value,0);
+   outEvent.id = ValInt(inValue,_id_id,-1);
+   outEvent.flags = ValInt(inValue,_id_flags,0);
+   outEvent.code = ValInt(inValue,_id_code,0);
+   outEvent.result = (EventResult)ValInt(inValue,_id_result,0);
+}
+
+
+void FromValue(ColorTransform &outTrans, value inValue)
+{
+   if (!val_is_null(inValue))
+   {
+      outTrans.alphaOffset = val_field_numeric(inValue,_id_alphaOffset);
+      outTrans.redOffset = val_field_numeric(inValue,_id_redOffset);
+      outTrans.greenOffset = val_field_numeric(inValue,_id_greenOffset);
+      outTrans.blueOffset = val_field_numeric(inValue,_id_blueOffset);
+
+      outTrans.alphaMultiplier = val_field_numeric(inValue,_id_alphaMultiplier);
+      outTrans.redMultiplier = val_field_numeric(inValue,_id_redMultiplier);
+      outTrans.greenMultiplier = val_field_numeric(inValue,_id_greenMultiplier);
+      outTrans.blueMultiplier = val_field_numeric(inValue,_id_blueMultiplier);
+   }
+}
+
+
+
+int RGB2Int32(value inRGB)
+{
+   if (val_is_int(inRGB))
+      return val_int(inRGB);
+   if (val_is_object(inRGB))
+   {
+      return (int)(val_field_numeric(inRGB,_id_rgb)) |
+             ( ((int)val_field_numeric(inRGB,_id_a)) << 24 );
+   }
+   return 0;
+}
+
+
+void FromValue(SoundTransform &outTrans, value inValue)
+{
+   if (!val_is_null(inValue))
+   {
+       outTrans.volume = val_number( val_field(inValue,_id_volume) );
+       outTrans.pan = val_number( val_field(inValue,_id_pan) );
+   }
+}
+
+void FromValue(DRect &outRect, value inValue)
+{
+   if (val_is_null(inValue))
+      return;
+   outRect.x = val_field_numeric(inValue,_id_x);
+   outRect.y = val_field_numeric(inValue,_id_y);
+   outRect.w = val_field_numeric(inValue,_id_width);
+   outRect.h = val_field_numeric(inValue,_id_height);
+}
+
+void FromValue(Rect &outRect, value inValue)
+{
+   if (val_is_null(inValue))
+      return;
+   outRect.x = val_field_numeric(inValue,_id_x);
+   outRect.y = val_field_numeric(inValue,_id_y);
+   outRect.w = val_field_numeric(inValue,_id_width);
+   outRect.h = val_field_numeric(inValue,_id_height);
+}
+
+Filter *FilterFromValue(value filter)
+{
+   WString type = val2stdwstr( val_field(filter,_id_type) );
+   if (type==L"BlurFilter")
+   {
+      int q = val_int(val_field(filter,_id_quality));
+      if (q<1) return 0;
+      return( new BlurFilter( q,
+          (int)val_field_numeric(filter,_id_blurX),
+          (int)val_field_numeric(filter,_id_blurY) ) );
+   }
+   else if (type==L"ColorMatrixFilter")
+   {
+      QuickVec<float> inMatrix;
+      FillArrayDouble(inMatrix, val_field(filter,_id_matrix));
+      return( new ColorMatrixFilter(inMatrix) );
+   }
+   else if (type==L"DropShadowFilter")
+   {
+      int q = val_int(val_field(filter,_id_quality));
+      if (q<1) return 0;
+      return( new DropShadowFilter( q,
+          (int)val_field_numeric(filter,_id_blurX),
+          (int)val_field_numeric(filter,_id_blurY),
+          val_field_numeric(filter,_id_angle),
+          val_field_numeric(filter,_id_distance),
+          val_int( val_field(filter,_id_color) ),
+          val_field_numeric(filter,_id_strength),
+          val_field_numeric(filter,_id_alpha),
+          (bool)val_field_numeric(filter,_id_hideObject),
+          (bool)val_field_numeric(filter,_id_knockout),
+          (bool)val_field_numeric(filter,_id_inner)
+          ) );
+   }
+   return 0;
+}
+
+void ToValue(value &outVal,const Rect &inRect)
+{
+    alloc_field(outVal,_id_x, alloc_float(inRect.x) );
+    alloc_field(outVal,_id_y, alloc_float(inRect.y) );
+    alloc_field(outVal,_id_width, alloc_float(inRect.w) );
+    alloc_field(outVal,_id_height, alloc_float(inRect.h) );
+}
+
+void FromValue(ImagePoint &outPoint,value inValue)
+{
+   outPoint.x = val_field_numeric(inValue,_id_x);
+   outPoint.y = val_field_numeric(inValue,_id_y);
+}
+
+void FromValue(UserPoint &outPoint,value inValue)
+{
+   outPoint.x = val_field_numeric(inValue,_id_x);
+   outPoint.y = val_field_numeric(inValue,_id_y);
+}
+
+
+
+void ToValue(value &outVal,const Matrix &inMatrix)
+{
+    alloc_field(outVal,_id_a, alloc_float(inMatrix.m00) );
+    alloc_field(outVal,_id_c, alloc_float(inMatrix.m01) );
+    alloc_field(outVal,_id_b, alloc_float(inMatrix.m10) );
+    alloc_field(outVal,_id_d, alloc_float(inMatrix.m11) );
+    alloc_field(outVal,_id_tx, alloc_float(inMatrix.mtx) );
+    alloc_field(outVal,_id_ty, alloc_float(inMatrix.mty) );
+}
+
+void ToValue(value &outVal,const ColorTransform &inTrans)
+{
+    alloc_field(outVal,_id_alphaMultiplier, alloc_float(inTrans.alphaMultiplier) );
+    alloc_field(outVal,_id_redMultiplier, alloc_float(inTrans.redMultiplier) );
+    alloc_field(outVal,_id_greenMultiplier, alloc_float(inTrans.greenMultiplier) );
+    alloc_field(outVal,_id_blueMultiplier, alloc_float(inTrans.blueMultiplier) );
+
+    alloc_field(outVal,_id_alphaOffset, alloc_float(inTrans.alphaOffset) );
+    alloc_field(outVal,_id_redOffset, alloc_float(inTrans.redOffset) );
+    alloc_field(outVal,_id_greenOffset, alloc_float(inTrans.greenOffset) );
+    alloc_field(outVal,_id_blueOffset, alloc_float(inTrans.blueOffset) );
+}
+
+
 
 void FromValue(value obj, URLRequest &request)
 {
@@ -2264,6 +2272,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
         TILE_SMOOTH   = 0x1000,
 
         TILE_BLEND_ADD   = 0x10000,
+        TILE_BLEND_MULTIPLY   = 0x20000,
+        TILE_BLEND_SCREEN   = 0x40000,
         TILE_BLEND_MASK  = 0xf0000,
       };
 
@@ -2273,6 +2283,12 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
       {
          case TILE_BLEND_ADD:
             blend = bmAdd;
+            break;
+         case TILE_BLEND_MULTIPLY:
+            blend = bmMultiply;
+            break;
+         case TILE_BLEND_SCREEN:
+            blend = bmScreen;
             break;
       }
 
@@ -2371,8 +2387,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
                   trans_2x2[2] = -trans_2x2[1];
                   trans_2x2[3] = trans_2x2[0];
                }
-               double ox_ = ox*trans_2x2[0] + oy*trans_2x2[1];
-                      oy  = ox*trans_2x2[2] + oy*trans_2x2[3];
+               double ox_ = ox*trans_2x2[0] + oy*trans_2x2[2];
+                      oy  = ox*trans_2x2[1] + oy*trans_2x2[3];
                ox = ox_;
             }
 
@@ -2719,32 +2735,32 @@ value ToValue(const TextFormatAlign &inTFA)
 }
 
 
-#define GTF(attrib) \
+#define GTF(attrib,ifSet) \
 { \
-   alloc_field(outValue, _id_##attrib, ToValue( inFormat.attrib.Get() ) ); \
+   if (!ifSet || inFormat.attrib.IsSet()) alloc_field(outValue, _id_##attrib, ToValue( inFormat.attrib.Get() ) ); \
 }
 
 
-void GetTextFormat(const TextFormat &inFormat, value &outValue)
+void GetTextFormat(const TextFormat &inFormat, value &outValue, bool inIfSet = false)
 {
-   GTF(align);
-   GTF(blockIndent);
-   GTF(bold);
-   GTF(bullet);
-   GTF(color);
-   GTF(font);
-   GTF(indent);
-   GTF(italic);
-   GTF(kerning);
-   GTF(leading);
-   GTF(leftMargin);
-   GTF(letterSpacing);
-   GTF(rightMargin);
-   GTF(size);
-   GTF(tabStops);
-   GTF(target);
-   GTF(underline);
-   GTF(url);
+   GTF(align,inIfSet);
+   GTF(blockIndent,inIfSet);
+   GTF(bold,inIfSet);
+   GTF(bullet,inIfSet);
+   GTF(color,inIfSet);
+   GTF(font,inIfSet);
+   GTF(indent,inIfSet);
+   GTF(italic,inIfSet);
+   GTF(kerning,inIfSet);
+   GTF(leading,inIfSet);
+   GTF(leftMargin,inIfSet);
+   GTF(letterSpacing,inIfSet);
+   GTF(rightMargin,inIfSet);
+   GTF(size,inIfSet);
+   GTF(tabStops,inIfSet);
+   GTF(target,inIfSet);
+   GTF(underline,inIfSet);
+   GTF(url,inIfSet);
 }
 
 
@@ -2762,6 +2778,20 @@ value nme_text_field_set_def_text_format(value inText,value inFormat)
 }
 
 DEFINE_PRIM(nme_text_field_set_def_text_format,2)
+
+value nme_text_field_get_text_format(value inText,value outFormat,value inStart,value inEnd)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      TextFormat *fmt = text->getTextFormat(val_int(inStart),val_int(inEnd));
+      GetTextFormat(*fmt,outFormat,true);
+   }
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_text_field_get_text_format,4)
+
 
 value nme_text_field_set_text_format(value inText,value inFormat,value inStart,value inEnd)
 {
@@ -2858,6 +2888,7 @@ TEXT_PROP(background,Background,alloc_bool,val_bool);
 TEXT_PROP(background_color,BackgroundColor,alloc_int,val_int);
 TEXT_PROP(border,Border,alloc_bool,val_bool);
 TEXT_PROP(border_color,BorderColor,alloc_int,val_int);
+TEXT_PROP(embed_fonts,EmbedFonts,alloc_bool,val_bool);
 TEXT_PROP(auto_size,AutoSize,alloc_int,val_int);
 TEXT_PROP_GET(text_width,TextWidth,alloc_float);
 TEXT_PROP_GET(text_height,TextHeight,alloc_float);
@@ -2886,6 +2917,8 @@ value nme_bitmap_data_create(value* arg, int nargs)
       gpu = val_int(arg[aGPU]);
    
    Surface *result = new SimpleSurface( w, h, format, 1, gpu );
+   if (!(flags & 0x01))
+      result->SetAllowTrans(false);
    if (gpu==-1 && val_is_int(arg[aRGB]))
    {
       int rgb = val_int(arg[aRGB]);
@@ -2928,7 +2961,8 @@ value nme_bitmap_data_get_transparent(value inHandle,value inRGB)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_bool( surface->Format() & pfHasAlpha );
+      //return alloc_bool( surface->Format() & pfHasAlpha );
+      return alloc_bool( surface->GetAllowTrans() );
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_transparent,1);
@@ -2953,9 +2987,9 @@ value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
          surface->Clear( val_int(inRGB) | (val_int(inA)<<24) );
       else
       {
-         Rect r(val_int(val_field(inRect,_id_x)),val_int(val_field(inRect,_id_y)),
-                val_int(val_field(inRect,_id_width)),val_int(val_field(inRect,_id_height)) );
-         surface->Clear( val_int(inRGB) | (val_int(inA)<<24), &r );
+		 Rect rect;
+		 FromValue(rect,inRect);
+         surface->Clear( val_int(inRGB) | (val_int(inA)<<24), &rect );
       }
    }
    return alloc_null();
@@ -3024,7 +3058,7 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
                }
             } 
          }
-      } 
+      }
 	  
       value result = ObjectToAbstract(surface);
       surface->DecRef();
@@ -3279,7 +3313,7 @@ value nme_bitmap_data_set_pixel32(value inSurface, value inX, value inY, value i
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),true);
+      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),surf->GetAllowTrans());
 
    return alloc_null();
 }
@@ -3294,7 +3328,7 @@ value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, valu
       value a = val_field(inRGBA,_id_a);
       value rgb = val_field(inRGBA,_id_rgb);
       if (val_is_int(a) && val_is_int(rgb))
-         surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), true );
+         surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), surf->GetAllowTrans() );
    }
    return alloc_null();
 }
@@ -3311,7 +3345,6 @@ value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes,val
       if (rect.w>0 && rect.h>0)
       {
          ByteArray array(inBytes);
-
          surf->setPixels(rect,(unsigned int *)(array.Bytes() + val_int(inOffset)) );
       }
    }
@@ -3379,6 +3412,68 @@ DEFINE_PRIM_MULT(nme_bitmap_data_noise);
 
 
 
+void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inColor)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      int x = val_int(inX);
+      int y = val_int(inY);
+      int color = val_int(inColor);
+      
+      int width = surf->Width();
+      int height = surf->Height();
+      
+      std::vector<UserPoint> queue;
+      queue.push_back(UserPoint(x,y));
+      
+      int old = surf->getPixel(x,y);
+      bool useAlpha = surf->GetAllowTrans();
+      
+	  bool *search = new bool[width*height];
+      std::fill_n(search, width*height, false);
+      
+      while (queue.size() > 0)
+      {
+         UserPoint currPoint = queue.back();
+		 queue.pop_back();
+         
+         x = currPoint.x;
+         y = currPoint.y;
+		 
+         if (x<0 || x>=width) continue;
+         if (y<0 || y>=height) continue;
+         
+         search[y*width + x] = true;
+         
+         if (surf->getPixel(x,y) == old)
+         {
+            surf->setPixel(x,y,color,useAlpha);
+            if (x<width && !search[y*width + (x+1)])
+            {
+               queue.push_back(UserPoint(x+1,y));
+            }
+            if (y<height && !search[(y+1)*width + x])
+            {
+               queue.push_back(UserPoint(x,y+1));
+            }
+            if (x>0 && !search[y*width + (x-1)])
+            {
+               queue.push_back(UserPoint(x-1,y));
+            }
+            if (y>0 && !search[(y-1)*width + x])
+            {
+               queue.push_back(UserPoint(x,y-1));
+            }
+         }
+      }
+      delete [] search;
+   }
+}
+DEFINE_PRIM(nme_bitmap_data_flood_fill,4);
+
+
+
 value nme_render_surface_to_surface(value* arg, int nargs)
 {
    enum { aTarget, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSmooth, aSIZE};
@@ -3410,7 +3505,7 @@ value nme_render_surface_to_surface(value* arg, int nargs)
       state.mRoundSizeToPOW2 = false;
       state.mPhase = rpRender;
 
-      Graphics *gfx = new Graphics(true);
+      Graphics *gfx = new Graphics(0,true);
       gfx->beginBitmapFill(src,Matrix(),false,val_bool(arg[aSmooth]));
       gfx->moveTo(0,0);
       gfx->lineTo(src->Width(),0);
@@ -3485,12 +3580,9 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
    Sound *sound;
   // printf("trying bytes with length %d", length);
    if (!val_is_null(inData) && length > 0) {
-      buffer buf = val_to_buffer(inData);
-      if (buf == 0) {
-         val_throw(alloc_string("Bad ByteArray"));
-      }
+      ByteArray buf = ByteArray(inData);
       //printf("I'm here! trying bytes with length %d", length);
-      sound = Sound::Create((unsigned char *)buffer_data(buf), length, val_bool(inForceMusic) );
+      sound = Sound::Create((float *)buf.Bytes(), length, val_bool(inForceMusic) );
    } else {
 	   val_throw(alloc_string("Empty ByteArray"));
    }
@@ -3762,86 +3854,104 @@ DEFINE_PRIM(nme_tilesheet_add_rect,3);
 
 value nme_curl_initialize(value inCACertFilePath)
 {
-  URLLoader::initialize(val_string(inCACertFilePath));
-  return alloc_null();
+   #ifndef EMSCRIPTEN
+   URLLoader::initialize(val_string(inCACertFilePath));
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_initialize,1);
 
 value nme_curl_create(value inURLRequest)
 {
+   #ifndef EMSCRIPTEN
    URLRequest request;
    FromValue(inURLRequest,request);
-	URLLoader *loader = URLLoader::create(request);
-	return ObjectToAbstract(loader);
+   URLLoader *loader = URLLoader::create(request);
+   return ObjectToAbstract(loader);
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_create,1);
 
 value nme_curl_process_loaders()
 {
-	return alloc_bool(URLLoader::processAll());
+   #ifndef EMSCRIPTEN
+   return alloc_bool(URLLoader::processAll());
+   #endif
+   return alloc_bool(true);
 }
 DEFINE_PRIM(nme_curl_process_loaders,0);
 
 value nme_curl_update_loader(value inLoader,value outHaxeObj)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		alloc_field(outHaxeObj,_id_state, alloc_int(loader->getState()) );
-		alloc_field(outHaxeObj,_id_bytesTotal, alloc_int(loader->bytesTotal()) );
-		alloc_field(outHaxeObj,_id_bytesLoaded, alloc_int(loader->bytesLoaded()) );
-	}
-	return alloc_null();
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      alloc_field(outHaxeObj,_id_state, alloc_int(loader->getState()) );
+      alloc_field(outHaxeObj,_id_bytesTotal, alloc_int(loader->bytesTotal()) );
+      alloc_field(outHaxeObj,_id_bytesLoaded, alloc_int(loader->bytesLoaded()) );
+   }
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_update_loader,2);
 
 value nme_curl_get_error_message(value inLoader)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		return alloc_string(loader->getErrorMessage());
-	}
-	return alloc_null();
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      return alloc_string(loader->getErrorMessage());
+   }
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_get_error_message,1);
 
 value nme_curl_get_code(value inLoader)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		return alloc_int(loader->getHttpCode());
-	}
-	return alloc_null();
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      return alloc_int(loader->getHttpCode());
+   }
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_get_code,1);
 
 
 value nme_curl_get_data(value inLoader)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		ByteArray b = loader->releaseData();
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      ByteArray b = loader->releaseData();
       return b.mValue;
-	}
-	return alloc_null();
+   }
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_curl_get_data,1);
 
 value nme_curl_get_cookies(value inLoader)
 {
-	URLLoader *loader;
-	if (AbstractToObject(inLoader,loader))
-	{
-		std::vector<std::string> cookies;
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      std::vector<std::string> cookies;
       loader->getCookies(cookies);
       value result = alloc_array(cookies.size());
       for(int i=0;i<cookies.size();i++)
          val_array_set_i(result,i,alloc_string_len(cookies[i].c_str(),cookies[i].length()));
       return result;
-	}
+   }
+   #endif
    return alloc_array(0);
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);
@@ -3866,13 +3976,13 @@ DEFINE_PRIM(nme_lzma_decode,1);
 
 
 // Reference this to bring in all the symbols for the static library
-#ifdef IPHONE
+#ifdef STATIC_LINK
 extern "C" int nme_oglexport_register_prims();
 #endif
 
 extern "C" int nme_register_prims()
 {
-   #ifdef IPHONE
+   #ifdef STATIC_LINK
    nme_oglexport_register_prims();
    #endif
    return 0;

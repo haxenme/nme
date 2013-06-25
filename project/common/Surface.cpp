@@ -429,7 +429,7 @@ static uint8 *sgClamp0255;
 int InitClamp()
 {
    sgClamp0255 = sgClamp0255Values + 256;
-   for(int i=-255; i<255+255;i++)
+   for(int i=-255; i<=255+255;i++)
       sgClamp0255[i] = i<0 ? 0 : i>255 ? 255 : i;
    return 0;
 }
@@ -487,7 +487,7 @@ template<bool SWAP, bool DEST_ALPHA> void MultiplyFunc(ARGB &ioDest, ARGB inSrc)
 struct DoScreen
 {
    inline void operator()(uint8 &ioVal,uint8 inDest) const
-     { ioVal = 255 - ((255 - inDest) * ( 256 - ioVal - (ioVal>>7)))>>8; }
+     { ioVal = 255 - (((255 - inDest) * ( 256 - ioVal - (ioVal>>7)))>>8); }
 };
 
 template<bool SWAP, bool DEST_ALPHA> void ScreenFunc(ARGB &ioDest, ARGB inSrc)
@@ -1176,7 +1176,8 @@ Surface *SimpleSurface::clone()
    if (mBase)
       for(int y=0;y<mHeight;y++)
          memcpy(copy->mBase + copy->mStride*y, mBase+mStride*y, mWidth*(mPixelFormat==pfAlpha?1:4));
-
+   
+   copy->SetAllowTrans(mAllowTrans);
    copy->IncRef();
    return copy;
 }
@@ -1341,8 +1342,22 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       }
       else if (inIgnoreOrder)
       {
-         memcpy(dest,inPixels,r.w*4);
-         inPixels+=r.w;
+         if (mAllowTrans)
+         {
+            memcpy(dest,inPixels,r.w*4);
+            inPixels+=r.w;
+         }
+         else
+         {
+            for(int x=0;x<r.w;x++)
+            {
+               *dest++ = src[0];
+               *dest++ = src[1];
+               *dest++ = src[2];
+               *dest++ = 0xff;
+               src+=4;
+            }
+         }
       }
       else
       {
@@ -1350,8 +1365,22 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
          {
             if (!swap)
             {
-               memcpy(dest,src,r.w*sizeof(int));
-               src += r.w*sizeof(int);
+               if (mAllowTrans)
+               {
+                  memcpy(dest,src,r.w*sizeof(int));
+                  src += r.w*sizeof(int);
+               }
+               else
+               {
+                  for(int x=0;x<r.w;x++)
+                  {
+                     *dest++ = src[0];
+                     *dest++ = src[1];
+                     *dest++ = src[2];
+                     *dest++ = 0xff;
+                     src+=4;
+                  }
+               }
             }
             else
             {
@@ -1360,7 +1389,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                   *dest++ = src[2];
                   *dest++ = src[1];
                   *dest++ = src[0];
-                  *dest++ = src[3];
+                  *dest++ = mAllowTrans ? src[3] : 0xff;
                   src+=4;
                }
             }
@@ -1374,7 +1403,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                   *dest++ = src[3];
                   *dest++ = src[2];
                   *dest++ = src[1];
-                  *dest++ = src[0];
+                  *dest++ = mAllowTrans ? src[0] : 0xff;
                   src+=4;
                }
             }
@@ -1385,7 +1414,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                   *dest++ = src[1];
                   *dest++ = src[2];
                   *dest++ = src[3];
-                  *dest++ = src[0];
+                  *dest++ = mAllowTrans ? src[0] : 0xff;
                   src+=4;
                }
             }
@@ -1442,7 +1471,7 @@ void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
 
 void SimpleSurface::scroll(int inDX,int inDY)
 {
-   if (inDX==0 && inDY==0 || !mBase) return;
+   if ((inDX==0 && inDY==0) || !mBase) return;
 
    Rect src(0,0,mWidth,mHeight);
    src = src.Intersect( src.Translated(inDX,inDY) ).Translated(-inDX,-inDY);

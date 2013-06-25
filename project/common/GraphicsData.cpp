@@ -44,6 +44,10 @@ void GraphicsPath::elementBlendMode(int inMode)
    {
       case bmAdd:
          commands.push_back(pcBlendModeAdd);
+      case bmMultiply:
+         commands.push_back(pcBlendModeMultiply);
+      case bmScreen:
+         commands.push_back(pcBlendModeScreen);
    }
 }
 

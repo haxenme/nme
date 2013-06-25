@@ -1,25 +1,55 @@
 package nme.gl;
-#if display
+#if (cpp || neko)
 
+class GLObject 
+{
+   public var id(default, null):Dynamic;
+   public var invalidated(get_invalidated, null):Bool;
+   public var valid(get_valid, null):Bool;
 
-extern class GLObject {
-	
-	var id(default, null):Dynamic;
-	var invalidated(get_invalidated, null):Bool;
-	var valid(get_valid, null):Bool;
-	
-	function new(inVersion:Int, inId:Dynamic):Void;
-	function getType():String;
-	function invalidate():Void;
-	function toString():String;
-	function isValid():Bool;
-	function isInvalid():Bool;
-	
+   private var version:Int;
+
+   private function new(inVersion:Int, inId:Dynamic) 
+   {
+      version = inVersion;
+      id = inId;
+   }
+
+   private function getType():String 
+   {
+      return "GLObject";
+   }
+
+   public function invalidate():Void 
+   {
+      id = null;
+   }
+
+   public function isValid():Bool 
+   {
+      return id != null && version == GL.version;
+   }
+
+   public function isInvalid():Bool 
+   {
+      return !isValid();
+   }
+
+   public function toString():String 
+   {
+      return getType() + "(" + id + ")";
+   }
+
+   // Getters & Setters
+   private function get_invalidated():Bool 
+   {
+      return isInvalid();
+   }
+
+   private function get_valid():Bool 
+   {
+      return isValid();
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef GLObject = native.gl.GLObject;
-#elseif js
-typedef GLObject = browser.gl.GLObject;
 #end

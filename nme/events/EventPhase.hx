@@ -1,22 +1,13 @@
 package nme.events;
-#if display
+#if (cpp || neko)
 
-
-/**
- * The EventPhase class provides values for the <code>eventPhase</code>
- * property of the Event class.
- */
-@:fakeEnum(Int) extern enum EventPhase {
-	AT_TARGET;
-	BUBBLING_PHASE;
-	CAPTURING_PHASE;
+class EventPhase 
+{
+   public static var CAPTURING_PHASE = 0;
+   public static var AT_TARGET = 1;
+   public static var BUBBLING_PHASE = 2;
 }
 
-
-#elseif (cpp || neko)
-typedef EventPhase = native.events.EventPhase;
-#elseif js
-typedef EventPhase = browser.events.EventPhase;
 #else
 typedef EventPhase = flash.events.EventPhase;
 #end

@@ -1,16 +1,16 @@
 import haxe.io.Eof;
 import haxe.Http;
 import haxe.io.Path;
+import haxe.Json;
 import neko.Lib;
+import project.Architecture;
+import project.Haxelib;
 import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
-
-#if haxe3
-import haxe.ds.StringMap;
-#else
-import NMEProject;
-#end
+import helpers.FileHelper;
+import helpers.PathHelper;
+import helpers.PlatformHelper;
 
 
 class RunScript {
@@ -23,7 +23,7 @@ class RunScript {
 	private static var nmeFilters:Array <String> = [ "obj", ".git", ".gitignore", ".svn", ".DS_Store", "all_objs", "Export", "tools", "project" ];
 	
 	
-	private static function build (path:String = "", targets:Array<String> = null, flags:StringMap <String> = null, defines:Array<String> = null):Void {
+	private static function build (path:String = "", targets:Array<String> = null, flags:Map <String, String> = null, defines:Array<String> = null):Void {
 		
 		if (path == "") {
 			
@@ -53,7 +53,7 @@ class RunScript {
 		
 		if (flags == null) {
 			
-			flags = new StringMap <String> ();
+			flags = new Map <String, String> ();
 			
 		}
 		
@@ -67,7 +67,20 @@ class RunScript {
 			
 			if (target == "tools") {
 				
-				runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
+				var toolsDirectory = PathHelper.getHaxelib (new Haxelib("openfl-tools"));
+				
+				runCommand (toolsDirectory, "haxe", [ "build.hxml" ]);
+				
+				FileHelper.copyIfNewer (nmeDirectory + "/ndll/Windows/nme.ndll", toolsDirectory + "/ndll/Windows/nme.ndll");
+				FileHelper.copyIfNewer (nmeDirectory + "/ndll/Mac/nme.ndll", toolsDirectory + "/ndll/Mac/nme.ndll");
+				FileHelper.copyIfNewer (nmeDirectory + "/ndll/Linux/nme.ndll", toolsDirectory + "/ndll/Linux/nme.ndll");
+				FileHelper.copyIfNewer (nmeDirectory + "/ndll/Linux64/nme.ndll", toolsDirectory + "/ndll/Linux64/nme.ndll");
+				
+				if (FileSystem.exists (PathHelper.combine (nmeDirectory, "ndll/RPi/nme.ndll"))) {
+					
+					FileHelper.copyIfNewer (nmeDirectory + "/ndll/RPi/nme.ndll", toolsDirectory + "/ndll/RPi/nme.ndll");
+					
+				}
 				
 			} else if (target == "clean") {
 				
@@ -94,32 +107,28 @@ class RunScript {
 				
 				if (target == "all") {
 					
-					runCommand (nmeDirectory + "/tools/command-line", "haxe", [ "CommandLine.hxml" ]);
+					runCommand (PathHelper.getHaxelib (new Haxelib ("nmedev")), "haxe", [ "build.hxml" ]);
 					
 					if (isWindows) {
 						
 						buildLibrary ("windows", flags, defines, path);
-						buildLibrary ("android", flags, defines, path);
-						buildLibrary ("blackberry", flags, defines, path);
-						buildLibrary ("webos", flags, defines, path);
 						
 					} else if (isLinux) {
 						
 						buildLibrary ("linux", flags, defines, path);
 						//buildLibrary ("linux", flags, defines.concat ([ "rpi" ]));
-						buildLibrary ("android", flags, defines, path);
-						buildLibrary ("blackberry", flags, defines, path);
-						buildLibrary ("webos", flags, defines, path);
 						
 					} else if (isMac) {
 						
 						buildLibrary ("mac", flags, defines, path);
 						buildLibrary ("ios", flags, defines, path);
-						buildLibrary ("android", flags, defines, path);
-						buildLibrary ("blackberry", flags, defines, path);
-						buildLibrary ("webos", flags, defines, path);
 						
 					}
+					
+					buildLibrary ("android", flags, defines, path);
+					buildLibrary ("blackberry", flags, defines, path);
+					buildLibrary ("emscripten", flags, defines, path);
+					buildLibrary ("webos", flags, defines, path);
 					
 					buildDocumentation ();
 					
@@ -144,22 +153,22 @@ class RunScript {
 		
 		if (isWindows) {
 			
-			runCommand (nmeDirectory + "/tools/documentation", "haxe", [ "compile-win.hxml" ]);
+			//runCommand (nmeDirectory + "/tools/documentation", "haxe", [ "compile-win.hxml" ]);
 			
 		} else {
 			
-			runCommand (nmeDirectory + "/tools/documentation", "haxe", [ "compile.hxml" ]);
+			//runCommand (nmeDirectory + "/tools/documentation", "haxe", [ "compile.hxml" ]);
 			
 		}
 		
 	}
 	
 	
-	static private function buildLibrary (target:String, flags:StringMap <String> = null, defines:Array<String> = null, path:String = ""):Void {
+	static private function buildLibrary (target:String, flags:Map <String, String> = null, defines:Array<String> = null, path:String = ""):Void {
 		
 		if (flags == null) {
 			
-			flags = new StringMap <String> ();
+			flags = new Map <String, String> ();
 			
 		}
 		
@@ -217,6 +226,20 @@ class RunScript {
 					
 				}
 			
+			case "emscripten":
+				
+				if (!flags.exists ("debug")) {
+					
+					runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Demscripten" ].concat (defines));
+					
+				}
+				
+				if (!flags.exists ("release")) {
+					
+					runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Demscripten", "-Dfulldebug" ].concat (defines));
+					
+				}
+			
 			case "ios":
 				
 				//mkdir (nmeDirectory + "/ndll/iPhone");
@@ -247,13 +270,13 @@ class RunScript {
 						
 						if (!flags.exists ("debug")) {
 							
-							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ].concat (defines), false);
+							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64" ].concat (defines));
 							
 						}
 						
 						if (!flags.exists ("release")) {
 							
-							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ].concat (defines), false);
+							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-DHXCPP_M64", "-Dfulldebug" ].concat (defines));
 							
 						}
 						
@@ -265,13 +288,13 @@ class RunScript {
 						
 						if (!flags.exists ("debug")) {
 							
-							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines), false);
+							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines));
 							
 						}
 						
 						if (!flags.exists ("release")) {
 							
-							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines), false);
+							runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines));
 							
 						}
 						
@@ -283,13 +306,13 @@ class RunScript {
 					
 					if (!flags.exists ("debug")) {
 						
-						runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Drpi" ].concat (defines), false);
+						runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Drpi" ].concat (defines));
 						
 					}
 					
 					if (!flags.exists ("release")) {
 						
-						runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Drpi", "-Dfulldebug" ].concat (defines), false);
+						runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Drpi", "-Dfulldebug" ].concat (defines));
 						
 					}
 					
@@ -331,25 +354,29 @@ class RunScript {
 				
 				//mkdir (nmeDirectory + "/ndll/Windows");
 				
-				if (Sys.environment ().exists ("VS110COMNTOOLS") && Sys.environment ().exists ("VS100COMNTOOLS")) {
+				if (!flags.exists ("winrt")) {
 					
-					Sys.putEnv ("HXCPP_MSVC", Sys.getEnv ("VS100COMNTOOLS"));
+					if (Sys.environment ().exists ("VS110COMNTOOLS") && Sys.environment ().exists ("VS100COMNTOOLS")) {
+						
+						Sys.putEnv ("HXCPP_MSVC", Sys.getEnv ("VS100COMNTOOLS"));
+						
+					}
+					
+					if (!flags.exists ("debug")) {
+						
+						runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines));
+						
+					}
+					
+					if (!flags.exists ("release")) {
+						
+						runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines));
+						
+					}
 					
 				}
 				
-				if (!flags.exists ("debug")) {
-					
-					runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml" ].concat (defines));
-					
-				}
-				
-				if (!flags.exists ("release")) {
-					
-					runCommand (path, "haxelib", [ "run", "hxcpp", "Build.xml", "-Dfulldebug" ].concat (defines));
-					
-				}
-				
-				if (Sys.environment ().exists ("VS110COMNTOOLS")) {
+				if (Sys.environment ().exists ("VS110COMNTOOLS") && !flags.exists ("win32")) {
 					
 					Sys.putEnv ("HXCPP_MSVC", Sys.getEnv ("VS110COMNTOOLS"));
 					
@@ -521,25 +548,45 @@ class RunScript {
 	
 	
 	private static function getVersion (library:String = "nme", haxelibFormat:Bool = false):String {
+		
 		var libraryPath = nmeDirectory;
 		
 		if (library != "nme") {
 			
-			libraryPath = PathHelper.getHaxelib (new Haxelib(library));
+			libraryPath = PathHelper.getHaxelib (new Haxelib (library));
 			
 		}
-		
-		for (element in Xml.parse (File.getContent (libraryPath + "/haxelib.xml")).firstElement ().elements ()) {
 			
-			if (element.nodeName == "version") {
+		if (FileSystem.exists (libraryPath + "/haxelib.json")) {
+			
+			var json = Json.parse (File.getContent (libraryPath + "/haxelib.json"));	
+			var result:String = json.version;
+			
+			if (haxelibFormat) {
 				
-				if (haxelibFormat) {
+				return StringTools.replace (result, ".", ",");
+				
+			} else {
+				
+				return result;
 					
-					return StringTools.replace (element.get ("name"), ".", ",");
+			}
+			
+		} else if (FileSystem.exists (libraryPath + "/haxelib.xml")) {
+			
+			for (element in Xml.parse (File.getContent (libraryPath + "/haxelib.xml")).firstElement ().elements ()) {
+				
+				if (element.nodeName == "version") {
 					
-				} else {
-					
-					return element.get ("name");
+					if (haxelibFormat) {
+						
+						return StringTools.replace (element.get ("name"), ".", ",");
+						
+					} else {
+						
+						return element.get ("name");
+						
+					}
 					
 				}
 				
@@ -701,7 +748,7 @@ class RunScript {
 		
 		var oldPath:String = "";
 		
-		if (path != "") {
+		if (path != null && path != "") {
 			
 			//trace ("cd " + path);
 			
@@ -738,7 +785,7 @@ class RunScript {
 	
 	public static function main () {
 		
-		nmeDirectory = PathHelper.getHaxelib (new Haxelib ("nme"));
+		nmeDirectory = PathHelper.getHaxelib (new Haxelib ("nme"), true);
 		
 		if (new EReg ("window", "i").match (Sys.systemName ())) {
 			
@@ -760,8 +807,7 @@ class RunScript {
 			
 		}
 		
-		var args:Array <String> = Sys.args ();
-		
+		var args = Sys.args ();
 		var command = args[0];
 		
 		if (command == "rebuild" || command == "release") {
@@ -786,7 +832,7 @@ class RunScript {
 			}
 			
 			var targets:Array <String> = null;
-			var flags = new StringMap <String> ();
+			var flags = new Map <String, String> ();
 			var ignoreLength = 0;
 			var defines = [];
 			
@@ -818,8 +864,8 @@ class RunScript {
 					
 					if (!FileSystem.exists (nmeDirectory + "/project")) {
 						
-						Sys.println ("This command must be run from a development checkout of NME");
-						return;
+						//Sys.println ("This command must be run from a development checkout of NME");
+						//return;
 						
 					}
 					
@@ -887,18 +933,87 @@ class RunScript {
 			}
 			
 		} else {
+			
+			var flags = new Map <String, String> ();
+			
+			for (arg in args) {
 				
-			if (FileSystem.exists (nmeDirectory + "/command-line.n")) {
-				
-				args.unshift ("command-line.n");
-				
-			} else {
-				
-				args.unshift (PathHelper.getHaxelib (new Haxelib ("nmedev")) + "/command-line.n");
+				switch (arg.substr (1)) {
+					
+					case "rebuild", "clean", "32", "64":
+						
+						flags.set (arg.substr (1), "");
+					
+					case "d", "debug":
+						
+						flags.set ("debug", "");
+					
+					default:
+					
+				}
 				
 			}
 			
-			Sys.exit (runCommand (nmeDirectory, "neko", args));
+			if (flags.exists ("rebuild")) {
+				
+				var target = "";
+				
+				for (i in 1...args.length) {
+					
+					switch (args[i]) {
+						
+						case "cpp", "neko":
+							
+							target = Std.string (PlatformHelper.hostPlatform).toLowerCase ();
+							continue;
+							
+						case "windows", "mac", "linux", "emscripten", "ios", "android", "blackberry", "webos":
+							
+							target = args[i];
+							continue;
+							
+						default:
+						
+					}
+					
+				}
+				
+				if (target == "windows") {
+					
+					flags.set ("win32", "");
+					
+				} else if (target == "linux") {
+					
+					if (!flags.exists ("64") && !flags.exists ("32")) {
+						
+						if (PlatformHelper.hostArchitecture == Architecture.X64) {
+							
+							flags.set ("64", "");
+							
+						} else {
+							
+							flags.set ("32", "");
+							
+						}
+						
+					}
+					
+				}
+								
+				if (!flags.exists ("debug")) {
+					
+					flags.set ("release", "");
+					
+				}
+				
+				build ("", [ "tools", target ], flags);
+				
+			}
+			
+			var workingDirectory = args.pop ();
+			var args = [ "run", "openfl-tools", "-Dnme" ].concat (args);
+			
+			Sys.exit (runCommand (workingDirectory, "haxelib", args));
 			
 		}
 		
@@ -981,35 +1096,35 @@ class RunScript {
 					
 					if (isWindows) {
 						
-						runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "Windows/nme.ndll" ]);
-						runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "Windows/nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, nmeDirectory, "Windows/nme.ndll" ]);
+						runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, nmeDirectory, "Windows/nme-debug.ndll" ]);
 						
 						if (Sys.environment ().exists ("VS110COMNTOOLS")) {
 							
-							//runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx64/nme.ndll" ]);
-							//runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx64/nme-debug.ndll" ]);
-							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx86/nme.ndll" ]);
-							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, "WinRTx86/nme-debug.ndll" ]);
+							//runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, nmeDirectory, "WinRTx64/nme.ndll" ]);
+							//runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, nmeDirectory, "WinRTx64/nme-debug.ndll" ]);
+							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, nmeDirectory, "WinRTx86/nme.ndll" ]);
+							runCommand (nmeDirectory, "tools\\run-script\\upload-build.bat", [ user, password, nmeDirectory, "WinRTx86/nme-debug.ndll" ]);
 							
 						}
 						
 					} else if (isLinux) {
 						
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux/nme.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux/nme-debug.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux64/nme.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Linux64/nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "Linux/nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "Linux/nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "Linux64/nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "Linux64/nme-debug.ndll" ]);
 						
 					} else if (isMac) {
 						
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Mac/nme.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "Mac/nme-debug.ndll" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme.iphoneos.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme.iphoneos-v7.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme.iphonesim.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme-debug.iphoneos.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme-debug.iphoneos-v7.a" ]);
-						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, "iPhone/libnme-debug.iphonesim.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "Mac/nme.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "Mac/nme-debug.ndll" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "iPhone/libnme.iphoneos.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "iPhone/libnme.iphoneos-v7.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "iPhone/libnme.iphonesim.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "iPhone/libnme-debug.iphoneos.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "iPhone/libnme-debug.iphoneos-v7.a" ]);
+						runCommand (nmeDirectory, "tools/run-script/upload-build.sh", [ user, password, nmeDirectory, "iPhone/libnme-debug.iphonesim.a" ]);
 						
 					}
 				
@@ -1054,9 +1169,8 @@ class RunScript {
 					var targetPath = "";
 					
 					targetPath = "../nme-" + getRevision () + ".zip";
-					
+						
 					recursiveCopy (nmeDirectory, nmeDirectory + tempPath + "/nme", nmeFilters);
-					recursiveCopy (nmeDirectory + "/tools/project", nmeDirectory + tempPath + "/nme/tools/project");
 					
 					if (FileSystem.exists (nmeDirectory + targetPath)) {
 						

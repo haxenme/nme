@@ -7,7 +7,9 @@
 #else
 #include <sys/time.h>
 #include <stdint.h>
+#ifndef EMSCRIPTEN
 typedef uint64_t __int64;
+#endif
 #endif
 
 #ifdef HX_MACOS
@@ -56,7 +58,7 @@ ByteArray ByteArray::FromFile(const OSChar *inFilename)
    fseek(file,0,SEEK_SET);
 
    ByteArray result(len);
-   fread(result.Bytes(),len,1,file);
+   int status = fread(result.Bytes(),len,1,file);
    fclose(file);
 
    return result;
@@ -207,7 +209,7 @@ double  GetTimeStamp()
 #else
    #if  defined(IPHONE)
       double t = CACurrentMediaTime(); 
-   #elif defined(GPH) || defined(HX_LINUX)
+   #elif defined(GPH) || defined(HX_LINUX) || defined(EMSCRIPTEN)
 	     struct timeval tv;
         if( gettimeofday(&tv,NULL) )
           return 0;

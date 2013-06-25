@@ -1236,7 +1236,7 @@ void TiXmlAttribute::SetDoubleValue( double _value )
 int TiXmlAttribute::IntValue() const
 {
 	//return _wtoi (fvalue.c_str ());
-	int* i;
+	int* i = 0;
 	TIXML_SSCANF( fvalue.c_str (), L"%d", i );
 	return *i;
 }
@@ -1244,7 +1244,7 @@ int TiXmlAttribute::IntValue() const
 double  TiXmlAttribute::DoubleValue() const
 {
 	//return _wtof (fvalue.c_str ());
-	double* d;
+	double* d = 0;
     TIXML_SSCANF( fvalue.c_str (), L"%f", d );
     return *d;
 }

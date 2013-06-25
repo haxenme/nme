@@ -1,13 +1,21 @@
 package nme.feedback;
-#if display
+#if (cpp || neko)
 
+import nme.Loader;
 
-extern class Haptic
+class Haptic 
 {
-	static function vibrate(period:Int = 0, duration:Int = 1000):Void;
+   public static function vibrate(period:Int = 0, duration:Int = 1000):Void 
+   {
+      #if cpp
+      nme_haptic_vibrate(period, duration);
+      #end
+   }
+
+   // Native Methods
+   #if cpp
+   static var nme_haptic_vibrate = Loader.load("nme_haptic_vibrate", 2);
+   #end
 }
 
-
-#elseif (cpp || neko)
-typedef Haptic = native.feedback.Haptic;
 #end

@@ -22,8 +22,16 @@
 #include "../opengl/Egl.h"
 #endif
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 #ifdef NME_MIXER
 #include <SDL_mixer.h>
+#endif
+
+#ifdef SDL_IMAGE
+#include <SDL_image.h>
 #endif
 
 #ifdef HX_WINDOWS
@@ -129,10 +137,14 @@ public:
    int Height() const  { return mSurf->h; }
    PixelFormat Format()  const
    {
-		uint8 swap = mSurf->format->Bshift; // is 0 on argb
-		if (mSurf->flags & SDL_SRCALPHA)
-			return swap ? pfARGBSwap : pfARGB;
-		return swap ? pfXRGBSwap : pfXRGB;
+      #ifdef EMSCRIPTEN
+      uint8 swap = 0;
+      #else
+      uint8 swap = mSurf->format->Bshift; // is 0 on argb
+      #endif
+      if (mSurf->flags & SDL_SRCALPHA)
+         return swap ? pfARGBSwap : pfARGB;
+      return swap ? pfXRGBSwap : pfXRGB;
    }
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }
@@ -199,6 +211,39 @@ SDL_Surface *SurfaceToSDL(Surface *inSurface)
              0x00ff0000^swap, 0x0000ff00,
              0x000000ff^swap, 0xff000000 );
 }
+
+
+#ifdef SDL_IMAGE
+Surface *Surface::Load(const OSChar *inFilename)
+{
+   #ifdef HX_WINDOWS
+   char *filename = new char [wcslen(inFilename) + 1];
+   wcstombs(filename, inFilename, wcslen(inFilename));
+   SDL_Surface *img = IMG_Load(filename);
+   #else
+   SDL_Surface *img = IMG_Load(inFilename);
+   #endif
+   
+   if (img != NULL)
+   {
+	  Surface *result = new SDLSurf(img, true);
+      result->IncRef();
+      return result;
+   }
+   
+   return 0;
+}
+
+Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
+{
+   return 0;
+}
+
+bool Surface::Encode( ByteArray *outBytes,bool inPNG,double inQuality)
+{
+   return 0;
+}
+#endif
 
 
 SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
@@ -495,7 +540,7 @@ public:
 
    void SetCursor(Cursor inCursor)
    {
-	  #if defined(WEBOS) || defined(BLACKBERRY)
+	  #if defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
 	  SDL_ShowCursor(false);
 	  return;
 	  #endif
@@ -675,421 +720,9 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 
 SDLFrame *sgSDLFrame = 0;
+#ifndef EMSCRIPTEN
 SDL_Joystick *sgJoystick = 0;
-
-void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
-   unsigned int inFlags, const char *inTitle, Surface *inIcon )
-{
-
-#ifdef HX_MACOS
-   MacBoot();
 #endif
-#ifdef WEBOS
-   openlog (gPackage.c_str(), 0, LOG_USER);
-#endif
-#ifdef HX_WINDOWS
-	//ShowWindow (GetConsoleWindow (), SW_MINIMIZE);
-#endif
-	
-   unsigned int sdl_flags = 0;
-   bool fullscreen = (inFlags & wfFullScreen) != 0;
-   bool opengl = (inFlags & wfHardware) != 0;
-   bool resizable = (inFlags & wfResizable) != 0;
-   bool borderless = (inFlags & wfBorderless) != 0;
-   sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
-
-   Rect r(100,100,inWidth,inHeight);
-
-   int err = initSDL ();// SDL_Init( init_flags );
-   
-   if ( err == -1 )
-   {
-      fprintf(stderr,"Could not initialize SDL : %s\n", SDL_GetError());
-      inOnFrame(0);
-      // SDL_GetError()
-      return;
-   }
-   
-   #ifdef BLACKBERRY
-   virtualkeyboard_request_events(0);
-   #endif
-
-   SDL_EnableUNICODE(1);
-   SDL_EnableKeyRepeat(500,30);
-
-   gSDLIsInit = true;
-
-   #ifdef NME_MIXER
-   
-   #ifdef WEBOS
-   int chunksize = 256;
-   if (PDL_GetPDKVersion () == 100 || PDL_GetHardwareID () < 300)
-   {
-      // use a larger chunksize for older devices
-      chunksize = 1024;
-   }
-   #elif BLACKBERRY
-   int chunksize = 512;
-   #elif HX_WINDOWS
-   int chunksize = 2048;
-   #else
-   int chunksize = 4096;
-   #endif
-   
-   int frequency = 44100;
-   //int frequency = MIX_DEFAULT_FREQUENCY //22050
-   
-   // The default frequency would have less latency, but is incompatible with the average MP3 file
-   
-   if ( Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize)!= 0 )
-   {
-      fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
-      gSDLIsInit = false;
-   }
-   #endif
-
-
-   const SDL_VideoInfo *info  = SDL_GetVideoInfo();
-   sgDesktopWidth = info->current_w;
-   sgDesktopHeight = info->current_h;
-
-
-   #ifdef RASPBERRYPI
-   sdl_flags = SDL_SWSURFACE;
-   if (opengl)
-      fullscreen = true;
-   #else
-   sdl_flags = SDL_HWSURFACE;
-   #endif
-
-   if ( resizable )
-      sdl_flags |= SDL_RESIZABLE;
-	
-   if ( borderless )
-      sdl_flags |= SDL_NOFRAME;
-
-   if ( fullscreen )
-   {
-      sdl_flags |= SDL_FULLSCREEN;
-   }
-
-
-   int use_w = fullscreen ? 0 : inWidth;
-   int use_h = fullscreen ? 0 : inHeight;
-
-#if defined(IPHONE) || defined(BLACKBERRY)
-   sdl_flags |= SDL_NOFRAME;
-#else
-   if (inIcon)
-   {
-      SDL_Surface *sdl = SurfaceToSDL(inIcon);
-      SDL_WM_SetIcon( sdl, NULL );
-   }
-#endif
-
-
-   #if defined (HX_WINDOWS) || defined (HX_LINUX)
-   SDL_WM_SetCaption( inTitle, 0 );
-   #endif
-
-   SDL_Surface* screen = 0;
-   bool is_opengl = false;
-   sgIsOGL2 = false;
-
-   #ifdef RASPBERRYPI
-   bool nmeEgl = true;
-   #else
-   bool nmeEgl = false;
-   #endif
-
-   if (opengl && !nmeEgl)
-   {
-      int  aa_tries = (inFlags & wfHW_AA) ? ( (inFlags & wfHW_AA_HIRES) ? 2 : 1 ) : 0;
-   
-      //int bpp = info->vfmt->BitsPerPixel;
-      int startingPass = 0;
-
-      // Try for 24:8  depth:stencil
-      if (inFlags & wfStencilBuffer)
-         startingPass = 1;
- 
-	   #if defined (WEBOS) || defined (BLACKBERRY)
-      // Start at 16 bits...
-	   startingPass = 2;
-	   #endif
-
-      // No need to loop over depth
-      if (!(inFlags & wfDepthBuffer))
-         startingPass = 2;
-
-      int oglLevelPasses = 1;
-
-      #if !defined(NME_FORCE_GLES1) && (defined(WEBOS) || defined(BLACKBERRY))
-      // Try 2 then 1 ?
-      if ( (inFlags & wfAllowShaders) && !(inFlags & wfRequireShaders) )
-         oglLevelPasses = 2;
-      #endif
-
-      // Find config...
-
-      for(int oglPass = 0; oglPass< oglLevelPasses && !is_opengl; oglPass++)
-      {
-         #ifdef NME_FORCE_GLES1
-         int level = 1;
-         #else
-         int level = (inFlags & wfRequireShaders) ? 2 : (inFlags & wfAllowShaders) ? 2-oglPass : 1;
-         #endif
-        
-   
-         for(int depthPass=startingPass;depthPass<3 && !is_opengl;depthPass++)
-         {
-            /* Initialize the display */
-            for(int aa_pass = aa_tries; aa_pass>=0 && !is_opengl; --aa_pass)
-            {
-               SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
-               SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
-               SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
-   
-               #if defined(WEBOS) || defined(BLACKBERRY)
-               SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, level);
-               #endif
-               // try 32 24 or 16 bit depth...
-               if (inFlags & wfDepthBuffer)
-                  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - depthPass*8 );
-   
-               if (inFlags & wfStencilBuffer)
-                  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8 );
-   
-               SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-   			
-               if (aa_tries > 0)
-               {
-                  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, aa_pass>0);
-                  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,  1<<aa_pass );
-               }
-   
-               if ( inFlags & wfVSync )
-               {
-                  SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
-               }
-   
-               sdl_flags |= SDL_OPENGL;
-   			
-               if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
-               {
-                  if (depthPass==2 && aa_pass==0 && oglPass==oglLevelPasses-1)
-                  {
-                     sdl_flags &= ~SDL_OPENGL;
-                     fprintf(stderr, "Couldn't set OpenGL mode32: %s\n", SDL_GetError());
-                  }
-               }
-               else
-               {
-                  is_opengl = true;
-                  #if defined(WEBOS) || defined(BLACKBERRY)
-                  sgIsOGL2 = level==2;
-                  #else
-                  // TODO: check extensions support
-                  sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders) );
-                  #endif
-                  break;
-               }
-            }
-         }
-      }
-   }
- 
-   if (!screen)
-   {
-      if (!opengl || !nmeEgl)
-         sdl_flags |= SDL_DOUBLEBUF;
-
-      screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags );
-      if (!screen)
-      {
-         fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
-         inOnFrame(0);
-         gSDLIsInit = false;
-         return;
-      }
-   }
-
-   #ifdef RASPBERRYPI
-   if (opengl)
-   {
-      sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders) );
-         
-      use_w = screen->w;
-      use_h = screen->h;
-      bool ok = nmeEGLCreate( 0, use_w, use_h,
-                        sgIsOGL2,
-                        (inFlags & wfDepthBuffer) ? 16 : 0,
-                        (inFlags & wfStencilBuffer) ? 8 : 0,
-                        0 );
-      if (ok)
-         is_opengl = true;
-   }
-   #endif
-
-
-
-
-   HintColourOrder( is_opengl || screen->format->Rmask==0xff );
-
-   #ifdef WEBOS
-   PDL_ScreenTimeoutEnable(PDL_TRUE);
-   #endif
-   
-   int numJoysticks = SDL_NumJoysticks();
-   
-   if (sgJoystickEnabled && numJoysticks > 0) {
-	   
-	   for (int i = 0; i < numJoysticks; i++) {
-		   
-		   sgJoystick = SDL_JoystickOpen(i);
-		   
-	   }
-	   
-	   #ifndef WEBOS
-	   SDL_JoystickEventState(SDL_TRUE);
-	   #endif
-	   
-   }
-   
-
-   sgSDLFrame = new SDLFrame( screen, sdl_flags, is_opengl, inWidth, inHeight );
-
-   inOnFrame(sgSDLFrame);
-
-   StartAnimation();
-}
-
-bool sgDead = false;
-
-void SetIcon( const char *path ) {
-   initSDL();
-
-   SDL_Surface *surf = SDL_LoadBMP(path);
-   
-   if ( surf != NULL )
-      SDL_WM_SetIcon( surf, NULL);
-
-}
-
-QuickVec<int>*  CapabilitiesGetScreenResolutions() {
-	
-	
-	initSDL ();
-	
-	QuickVec<int> *out = new QuickVec<int>();
-	
-	// Get available fullscreen/hardware modes
-	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
-	
-	// Check if there are any modes available
-	if (modes == (SDL_Rect**)0) {
-	    return out;
-	}
-	
-	// Check if our resolution is unrestricted
-	if (modes == (SDL_Rect**)-1) {
-	    return out;
-	}
-	else{
-	    // Print valid modes 
-	    
-	    for ( int i=0; modes[i]; ++i) {
-	       out->push_back( modes[ i ]->w );
-	       out->push_back( modes[ i ]->h );
-	    }
-	       
-	}
-		
-	
-	return out;
-	
-	
-}
-
-#ifndef BLACKBERRY
-
-double CapabilitiesGetScreenResolutionX() {
-	
-	initSDL ();
-	
-	return sgDesktopWidth;
-	
-	/*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
-	
-	if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
-		
-		const SDL_VideoInfo* videoInfo = SDL_GetVideoInfo();
-		return videoInfo->current_w;
-		
-	}
-	
-	return modes[0]->w;*/
-	
-}
-
-double CapabilitiesGetScreenResolutionY() {
-	
-	initSDL ();
-	
-	return sgDesktopHeight;
-	
-	/*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
-	
-	if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
-		
-		const SDL_VideoInfo* videoInfo = SDL_GetVideoInfo();
-		return videoInfo->current_h;
-		
-	}
-	
-	return modes[0]->h;*/
-	
-}
-
-#endif
-
-void PauseAnimation() {}
-void ResumeAnimation() {}
-
-void StopAnimation()
-{
-   #ifdef NME_MIXER
-   Mix_CloseAudio();
-   #endif
-   #ifdef WEBOS
-   closelog();
-   PDL_Quit();
-   #endif
-   sgDead = true;
-}
-
-static SDL_TimerID  sgTimerID = 0;
-bool sgTimerActive = false;
-
-Uint32 OnTimer(Uint32 interval, void *)
-{
-    // Ping off an event - any event will force the frame check.
-    SDL_Event event;
-    SDL_UserEvent userevent;
-    /* In this example, our callback pushes an SDL_USEREVENT event
-    into the queue, and causes ourself to be called again at the
-    same interval: */
-    userevent.type = SDL_USEREVENT;
-    userevent.code = 0;
-    userevent.data1 = NULL;
-    userevent.data2 = NULL;
-    event.type = SDL_USEREVENT;
-    event.user = userevent;
-    sgTimerActive = false;
-    sgTimerID = 0;
-    SDL_PushEvent(&event);
-    return 0;
-}
 
 
 void AddModStates(int &ioFlags,int inState = -1)
@@ -1179,6 +812,7 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 }
 
 std::map<int,wchar_t> sLastUnicode;
+
 
 
 void ProcessEvent(SDL_Event &inEvent)
@@ -1336,6 +970,454 @@ void ProcessEvent(SDL_Event &inEvent)
 }
 
 
+#ifdef EMSCRIPTEN
+void loop () {
+	
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		ProcessEvent (event);
+	   // if (sgDead) break;
+		event.type = -1;
+	 }
+	 
+	 Event poll(etPoll);
+	 sgSDLFrame->ProcessEvent(poll);
+	
+	
+}
+#endif
+
+
+
+
+
+void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
+   unsigned int inFlags, const char *inTitle, Surface *inIcon )
+{
+
+#ifdef HX_MACOS
+   MacBoot();
+#endif
+#ifdef WEBOS
+   openlog (gPackage.c_str(), 0, LOG_USER);
+#endif
+#ifdef HX_WINDOWS
+	//ShowWindow (GetConsoleWindow (), SW_MINIMIZE);
+#endif
+	
+   unsigned int sdl_flags = 0;
+   bool fullscreen = (inFlags & wfFullScreen) != 0;
+   bool opengl = (inFlags & wfHardware) != 0;
+   bool resizable = (inFlags & wfResizable) != 0;
+   bool borderless = (inFlags & wfBorderless) != 0;
+   sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
+
+   Rect r(100,100,inWidth,inHeight);
+
+   int err = initSDL ();// SDL_Init( init_flags );
+   
+   if ( err == -1 )
+   {
+      fprintf(stderr,"Could not initialize SDL : %s\n", SDL_GetError());
+      inOnFrame(0);
+      // SDL_GetError()
+      return;
+   }
+   
+   #ifdef BLACKBERRY
+   virtualkeyboard_request_events(0);
+   #endif
+
+   SDL_EnableUNICODE(1);
+   SDL_EnableKeyRepeat(500,30);
+
+   gSDLIsInit = true;
+
+   #ifdef NME_MIXER
+   
+   #ifdef WEBOS
+   int chunksize = 256;
+   if (PDL_GetPDKVersion () == 100 || PDL_GetHardwareID () < 300)
+   {
+      // use a larger chunksize for older devices
+      chunksize = 1024;
+   }
+   #elif BLACKBERRY
+   int chunksize = 512;
+   #elif HX_WINDOWS
+   int chunksize = 2048;
+   #else
+   int chunksize = 4096;
+   #endif
+   
+   int frequency = 44100;
+   //int frequency = MIX_DEFAULT_FREQUENCY //22050
+   
+   // The default frequency would have less latency, but is incompatible with the average MP3 file
+   
+   if ( Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize)!= 0 )
+   {
+      fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
+      gSDLIsInit = false;
+   }
+   #endif
+
+
+   const SDL_VideoInfo *info  = SDL_GetVideoInfo();
+   sgDesktopWidth = info->current_w;
+   sgDesktopHeight = info->current_h;
+
+
+   #ifdef RASPBERRYPI
+   sdl_flags = SDL_SWSURFACE;
+   if (opengl)
+      fullscreen = true;
+   #else
+   sdl_flags = SDL_HWSURFACE;
+   #endif
+
+   if ( resizable )
+      sdl_flags |= SDL_RESIZABLE;
+	
+   if ( borderless )
+      sdl_flags |= SDL_NOFRAME;
+
+   if ( fullscreen )
+   {
+      sdl_flags |= SDL_FULLSCREEN;
+   }
+
+
+   int use_w = fullscreen ? 0 : inWidth;
+   int use_h = fullscreen ? 0 : inHeight;
+
+#if defined(IPHONE) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
+   sdl_flags |= SDL_NOFRAME;
+#else
+   if (inIcon)
+   {
+      SDL_Surface *sdl = SurfaceToSDL(inIcon);
+      SDL_WM_SetIcon( sdl, NULL );
+   }
+#endif
+
+
+   #if defined (HX_WINDOWS) || defined (HX_LINUX)
+   SDL_WM_SetCaption( inTitle, 0 );
+   #endif
+
+   SDL_Surface* screen = 0;
+   bool is_opengl = false;
+   sgIsOGL2 = false;
+
+   #ifdef RASPBERRYPI
+   bool nmeEgl = true;
+   #else
+   bool nmeEgl = false;
+   #endif
+
+   if (opengl && !nmeEgl)
+   {
+      int  aa_tries = (inFlags & wfHW_AA) ? ( (inFlags & wfHW_AA_HIRES) ? 2 : 1 ) : 0;
+   
+      //int bpp = info->vfmt->BitsPerPixel;
+      int startingPass = 0;
+
+      // Try for 24:8  depth:stencil
+      if (inFlags & wfStencilBuffer)
+         startingPass = 1;
+ 
+	   #if defined (WEBOS) || defined (BLACKBERRY) || defined(EMSCRIPTEN)
+      // Start at 16 bits...
+	   startingPass = 2;
+	   #endif
+
+      // No need to loop over depth
+      if (!(inFlags & wfDepthBuffer))
+         startingPass = 2;
+
+      int oglLevelPasses = 1;
+
+      #if !defined(NME_FORCE_GLES1) && (defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN))
+      // Try 2 then 1 ?
+      if ( (inFlags & wfAllowShaders) && !(inFlags & wfRequireShaders) )
+         oglLevelPasses = 2;
+      #endif
+
+      // Find config...
+
+      for(int oglPass = 0; oglPass< oglLevelPasses && !is_opengl; oglPass++)
+      {
+         #ifdef NME_FORCE_GLES1
+         int level = 1;
+         #else
+         int level = (inFlags & wfRequireShaders) ? 2 : (inFlags & wfAllowShaders) ? 2-oglPass : 1;
+         #endif
+        
+   
+         for(int depthPass=startingPass;depthPass<3 && !is_opengl;depthPass++)
+         {
+            /* Initialize the display */
+            for(int aa_pass = aa_tries; aa_pass>=0 && !is_opengl; --aa_pass)
+            {
+               SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
+               SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
+               SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
+   
+               #if defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
+               SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, level);
+               #endif
+               // try 32 24 or 16 bit depth...
+               if (inFlags & wfDepthBuffer)
+                  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  32 - depthPass*8 );
+   
+               if (inFlags & wfStencilBuffer)
+                  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8 );
+   
+               SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+   			
+               if (aa_tries > 0)
+               {
+                  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, aa_pass>0);
+                  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,  1<<aa_pass );
+               }
+               
+               #ifndef EMSCRIPTEN
+               if ( inFlags & wfVSync )
+               {
+                  SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+               }
+               #endif
+   
+               sdl_flags |= SDL_OPENGL;
+   			
+               if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
+               {
+                  if (depthPass==2 && aa_pass==0 && oglPass==oglLevelPasses-1)
+                  {
+                     sdl_flags &= ~SDL_OPENGL;
+                     fprintf(stderr, "Couldn't set OpenGL mode32: %s\n", SDL_GetError());
+                  }
+               }
+               else
+               {
+                  is_opengl = true;
+                  #if defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
+                  sgIsOGL2 = level==2;
+                  #else
+                  // TODO: check extensions support
+                  sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders) );
+                  #endif
+                  break;
+               }
+            }
+         }
+      }
+   }
+ 
+   if (!screen)
+   {
+      if (!opengl || !nmeEgl)
+         sdl_flags |= SDL_DOUBLEBUF;
+
+      screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags );
+      if (!screen)
+      {
+         fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
+         inOnFrame(0);
+         gSDLIsInit = false;
+         return;
+      }
+   }
+
+   #ifdef RASPBERRYPI
+   if (opengl)
+   {
+      sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders) );
+         
+      use_w = screen->w;
+      use_h = screen->h;
+      bool ok = nmeEGLCreate( 0, use_w, use_h,
+                        sgIsOGL2,
+                        (inFlags & wfDepthBuffer) ? 16 : 0,
+                        (inFlags & wfStencilBuffer) ? 8 : 0,
+                        0 );
+      if (ok)
+         is_opengl = true;
+   }
+   #endif
+
+
+
+
+   HintColourOrder( is_opengl || screen->format->Rmask==0xff );
+
+   #ifdef WEBOS
+   PDL_ScreenTimeoutEnable(PDL_TRUE);
+   #endif
+   
+   #ifndef EMSCRIPTEN
+   int numJoysticks = SDL_NumJoysticks();
+   
+   if (sgJoystickEnabled && numJoysticks > 0) {
+	   
+	   for (int i = 0; i < numJoysticks; i++) {
+		   
+		   sgJoystick = SDL_JoystickOpen(i);
+		   
+	   }
+	   
+	   #ifndef WEBOS
+	   SDL_JoystickEventState(SDL_TRUE);
+	   #endif
+	   
+   }
+   #endif
+
+   sgSDLFrame = new SDLFrame( screen, sdl_flags, is_opengl, inWidth, inHeight );
+
+   inOnFrame(sgSDLFrame);
+   
+   #ifdef EMSCRIPTEN
+   emscripten_set_main_loop (loop, 0, true);
+   #else
+   StartAnimation();
+   #endif
+}
+
+bool sgDead = false;
+
+void SetIcon( const char *path ) {
+   #ifndef EMSCRIPTEN
+   initSDL();
+   
+   SDL_Surface *surf = SDL_LoadBMP(path);
+   
+   if ( surf != NULL )
+      SDL_WM_SetIcon( surf, NULL);
+   #endif
+}
+
+QuickVec<int>*  CapabilitiesGetScreenResolutions() {
+	
+	
+	initSDL ();
+	
+	QuickVec<int> *out = new QuickVec<int>();
+	
+	// Get available fullscreen/hardware modes
+	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
+	
+	// Check if there are any modes available
+	if (modes == (SDL_Rect**)0) {
+	    return out;
+	}
+	
+	// Check if our resolution is unrestricted
+	if (modes == (SDL_Rect**)-1) {
+	    return out;
+	}
+	else{
+	    // Print valid modes 
+	    
+	    for ( int i=0; modes[i]; ++i) {
+	       out->push_back( modes[ i ]->w );
+	       out->push_back( modes[ i ]->h );
+	    }
+	       
+	}
+		
+	
+	return out;
+	
+	
+}
+
+#ifndef BLACKBERRY
+
+double CapabilitiesGetScreenResolutionX() {
+	
+	initSDL ();
+	
+	return sgDesktopWidth;
+	
+	/*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
+	
+	if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
+		
+		const SDL_VideoInfo* videoInfo = SDL_GetVideoInfo();
+		return videoInfo->current_w;
+		
+	}
+	
+	return modes[0]->w;*/
+	
+}
+
+double CapabilitiesGetScreenResolutionY() {
+	
+	initSDL ();
+	
+	return sgDesktopHeight;
+	
+	/*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
+	
+	if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
+		
+		const SDL_VideoInfo* videoInfo = SDL_GetVideoInfo();
+		return videoInfo->current_h;
+		
+	}
+	
+	return modes[0]->h;*/
+	
+}
+
+#endif
+
+void PauseAnimation() {}
+void ResumeAnimation() {}
+
+void StopAnimation()
+{
+   #ifdef NME_MIXER
+   Mix_CloseAudio();
+   #endif
+   #ifdef WEBOS
+   closelog();
+   PDL_Quit();
+   #endif
+   sgDead = true;
+}
+
+static SDL_TimerID  sgTimerID = 0;
+bool sgTimerActive = false;
+
+Uint32 OnTimer(Uint32 interval, void *)
+{
+    // Ping off an event - any event will force the frame check.
+    SDL_Event event;
+    SDL_UserEvent userevent;
+    /* In this example, our callback pushes an SDL_USEREVENT event
+    into the queue, and causes ourself to be called again at the
+    same interval: */
+    userevent.type = SDL_USEREVENT;
+    userevent.code = 0;
+    userevent.data1 = NULL;
+    userevent.data2 = NULL;
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+    sgTimerActive = false;
+    sgTimerID = 0;
+    SDL_PushEvent(&event);
+    return 0;
+}
+
+
+
+
+
+
 #ifdef WEBOS
 
 bool GetAcceleration(double &outX, double &outY, double &outZ)
@@ -1348,13 +1430,19 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 
 #endif
 
+#ifndef SDL_NOEVENT
+#define SDL_NOEVENT -1;
+#endif
+
 
 void StartAnimation()
 {
-   bool firstTime = true;  
    SDL_Event event;
+   #ifndef EMSCRIPTEN
+   bool firstTime = true;
    while(!sgDead)
    {
+      event.type=SDL_NOEVENT;
       while (!sgDead && (firstTime || SDL_WaitEvent(&event)))
       {
          firstTime = false;
@@ -1367,8 +1455,8 @@ void StartAnimation()
          
          ProcessEvent(event);
          if (sgDead) break;
-         event.type = -1;
-         
+         event.type = SDL_NOEVENT;
+   #endif
 		 while (SDL_PollEvent(&event)) {
             ProcessEvent (event);
             if (sgDead) break;
@@ -1377,6 +1465,7 @@ void StartAnimation()
          
          Event poll(etPoll);
          sgSDLFrame->ProcessEvent(poll);
+   #ifndef EMSCRIPTEN
          if (sgDead) break;
          
          double next = sgSDLFrame->GetStage()->GetNextWake() - GetTimeStamp();
@@ -1396,6 +1485,7 @@ void StartAnimation()
    Event kill(etDestroyHandler);
    sgSDLFrame->ProcessEvent(kill);
    SDL_Quit();
+   #endif
    
    #if HX_WINDOWS
    done_win32();

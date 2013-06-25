@@ -34,6 +34,7 @@ class CommandLineTools {
 	private static var haxelibs:Array <Haxelib>;
 	private static var haxedefs:Array <String>;
 	private static var haxeflags:Array <String>;
+	private static var macros:Array <String>;
 	private static var includePaths:Array <String>;
 	private static var project:NMEProject;
 	private static var projectDefines:StringMap <String>;
@@ -792,6 +793,12 @@ class CommandLineTools {
 					
 				}
 				
+				project.command = command;
+				project.debug = debug;
+				project.target = target;
+				project.targetFlags = targetFlags;
+				project.templatePaths = [ nme + "/templates/default", nme + "/tools/command-line" ].concat (project.templatePaths);
+				
 			}
 			
 		}
@@ -803,12 +810,6 @@ class CommandLineTools {
 			
 		}
 		
-		project.command = command;
-		project.debug = debug;
-		project.target = target;
-		project.targetFlags = targetFlags;
-		project.templatePaths = project.templatePaths.concat ([ nme + "/templates/default", nme + "/tools/command-line" ]);
-		
 		project.merge (config);
 		
 		if (architectures.length > 0) {
@@ -818,6 +819,7 @@ class CommandLineTools {
 		}
 		
 		project.haxeflags = project.haxeflags.concat (haxeflags);
+		project.macros = project.macros.concat(macros);
 		project.haxelibs = project.haxelibs.concat(haxelibs);
 		project.sources = project.sources.concat(sources);
 		
@@ -852,12 +854,11 @@ class CommandLineTools {
 				attribute = components.join ("");
 				
 			}
-
-
+			
 			if (field == "template" && attribute == "path") {
-						
+				
 				project.templatePaths.push (projectDefines.get (key));
-						
+				
 			} else {
 				
 				if (Reflect.hasField (project, field)) {
@@ -935,6 +936,7 @@ class CommandLineTools {
 		haxelibs = new Array <Haxelib> ();
 		haxedefs = new Array <String> ();
 		haxeflags = new Array <String> ();
+		macros = new Array <String> ();
 		includePaths = new Array <String> ();
 		projectDefines = new StringMap <String> ();
 		targetFlags = new StringMap <String> ();
@@ -1091,6 +1093,10 @@ class CommandLineTools {
 					} else if (field == "haxeflag") {
 						
 						haxeflags.push (argValue);
+
+					} else if (field == "macro") {
+
+						macros.push(StringTools.replace(argument, "macro=", "macro "));
 						
 					} else if (field == "haxelib") {
 						
@@ -1150,6 +1156,7 @@ class CommandLineTools {
 				
 			} else if (argument == "-v" || argument == "-verbose") {
 				
+				haxeflags.push ("-v");
 				LogHelper.verbose = true;
 				
 			} else if (argument == "-args") {

@@ -1,23 +1,21 @@
 package nme.media;
-#if display
+#if (cpp || neko)
 
+class ID3Info 
+{
+   public var album:String;
+   public var artist:String;
+   public var comment:String;
+   public var genre:String;
+   public var songName:String;
+   public var track:String;
+   public var year:String;
 
-@:final extern class ID3Info implements Dynamic {
-	var album : String;
-	var artist : String;
-	var comment : String;
-	var genre : String;
-	var songName : String;
-	var track : String;
-	var year : String;
-	function new() : Void;
+   public function new() 
+   {
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef ID3Info = native.media.ID3Info;
-#elseif js
-typedef ID3Info = browser.media.ID3Info;
 #else
 typedef ID3Info = flash.media.ID3Info;
 #end

@@ -1,46 +1,14 @@
 package nme.text;
-#if display
+#if (cpp || neko)
 
-
-/**
- * The FontStyle class provides values for the TextRenderer class.
- */
-@:fakeEnum(String) extern enum FontStyle {
-
-	/**
-	 * Defines the bold style of a font for the <code>fontStyle</code> parameter
-	 * in the <code>setAdvancedAntiAliasingTable()</code> method. Use the syntax
-	 * <code>FontStyle.BOLD</code>.
-	 */
-	BOLD;
-
-	/**
-	 * Defines the italic style of a font for the <code>fontStyle</code>
-	 * parameter in the <code>setAdvancedAntiAliasingTable()</code> method. Use
-	 * the syntax <code>FontStyle.ITALIC</code>.
-	 */
-	BOLD_ITALIC;
-
-	/**
-	 * Defines the italic style of a font for the <code>fontStyle</code>
-	 * parameter in the <code>setAdvancedAntiAliasingTable()</code> method. Use
-	 * the syntax <code>FontStyle.ITALIC</code>.
-	 */
-	ITALIC;
-
-	/**
-	 * Defines the plain style of a font for the <code>fontStyle</code> parameter
-	 * in the <code>setAdvancedAntiAliasingTable()</code> method. Use the syntax
-	 * <code>FontStyle.REGULAR</code>.
-	 */
-	REGULAR;
+@:fakeEnum(String) enum FontStyle 
+{
+   BOLD;
+   BOLD_ITALIC;
+   ITALIC;
+   REGULAR;
 }
 
-
-#elseif (cpp || neko)
-typedef FontStyle = native.text.FontStyle;
-#elseif js
-typedef FontStyle = browser.text.FontStyle;
 #else
 typedef FontStyle = flash.text.FontStyle;
 #end

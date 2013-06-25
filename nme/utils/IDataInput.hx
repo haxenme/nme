@@ -1,32 +1,34 @@
 package nme.utils;
-#if display
+#if (cpp || neko)
 
+interface IDataInput 
+{
+   public var bytesAvailable(get_bytesAvailable, null):Int;
+   public var endian(get_endian, set_endian):String;
 
-extern interface IDataInput {
-	var bytesAvailable(default,null) : Int;
-	var endian : Endian;
-	var objectEncoding : Int;
-	function readBoolean() : Bool;
-	function readByte() : Int;
-	function readBytes(bytes : ByteArray, offset : Int = 0, length : Int = 0) : Void;
-	function readDouble() : Float;
-	function readFloat() : Float;
-	function readInt() : Int;
-	function readMultiByte(length : Int, charSet : String) : String;
-	function readObject() : Dynamic;
-	function readShort() : Int;
-	function readUTF() : String;
-	function readUTFBytes(length : Int) : String;
-	function readUnsignedByte() : Int;
-	function readUnsignedInt() : Int;
-	function readUnsignedShort() : Int;
+   public function readBoolean():Bool;
+   public function readByte():Int;
+   public function readBytes(outData:ByteArray, inOffset:Int = 0, inLen:Int = 0):Void;
+   public function readDouble():Float;
+   public function readFloat():Float;
+   public function readInt():Int;
+
+   // not implemented ...
+   //var objectEncoding : UInt;
+   //public function readMultiByte(length : Int, charSet:String):String;
+   //public function readObject():Dynamic;
+   public function readShort():Int;
+   public function readUnsignedByte():Int;
+   public function readUnsignedInt():Int;
+   public function readUnsignedShort():Int;
+   public function readUTF():String;
+   public function readUTFBytes(inLen:Int):String;
+
+   private function get_bytesAvailable():Int;
+   private function get_endian():String;
+   private function set_endian(s:String):String;
 }
 
-
-#elseif (cpp || neko)
-typedef IDataInput = native.utils.IDataInput;
-#elseif js
-typedef IDataInput = browser.utils.IDataInput;
 #else
 typedef IDataInput = flash.utils.IDataInput;
 #end

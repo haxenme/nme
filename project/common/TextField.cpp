@@ -133,6 +133,7 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
    if (defaultTextFormat)
       defaultTextFormat->DecRef();
    defaultTextFormat = inFmt;
+   textColor = defaultTextFormat->color;
    mLinesDirty = true;
    mGfxDirty = true;
    if (mCharGroups.empty() || (mCharGroups.size() == 1 && mCharGroups[0]->Chars() == 0))
@@ -155,16 +156,81 @@ void TextField::SplitGroup(int inGroup,int inPos)
    mLinesDirty = true;
 }
 
+TextFormat *TextField::getTextFormat(int inStart,int inEnd)
+{
+   TextFormat *commonFormat = NULL;
+   
+   for(int i=0;i<mCharGroups.size();i++)
+   {
+      CharGroup *charGroup = mCharGroups[i];
+      TextFormat *format = charGroup->mFormat;
+      
+      if (commonFormat == NULL)
+      {
+         commonFormat = new TextFormat (*format);
+         commonFormat->align.Set();
+         commonFormat->blockIndent.Set();
+         commonFormat->bold.Set();
+         commonFormat->bullet.Set();
+         commonFormat->color.Set();
+         commonFormat->font.Set();
+         commonFormat->indent.Set();
+         commonFormat->italic.Set();
+         commonFormat->kerning.Set();
+         commonFormat->leading.Set();
+         commonFormat->leftMargin.Set();
+         commonFormat->letterSpacing.Set();
+         commonFormat->rightMargin.Set();
+         commonFormat->size.Set();
+         commonFormat->tabStops.Set();
+         commonFormat->target.Set();
+         commonFormat->underline.Set();
+         commonFormat->url.Set();
+      }
+      else
+      {
+         commonFormat->align.IfEquals(format->align);
+         commonFormat->blockIndent.IfEquals(format->blockIndent);
+         commonFormat->bullet.IfEquals(format->bullet);
+         commonFormat->color.IfEquals(format->color);
+         commonFormat->font.IfEquals(format->font);
+         commonFormat->indent.IfEquals(format->indent);
+         commonFormat->italic.IfEquals(format->italic);
+         commonFormat->kerning.IfEquals(format->kerning);
+         commonFormat->leading.IfEquals(format->leading);
+         commonFormat->leftMargin.IfEquals(format->leftMargin);
+         commonFormat->letterSpacing.IfEquals(format->letterSpacing);
+         commonFormat->rightMargin.IfEquals(format->rightMargin);
+         commonFormat->size.IfEquals(format->size);
+         commonFormat->tabStops.IfEquals(format->tabStops);
+         commonFormat->target.IfEquals(format->target);
+         commonFormat->underline.IfEquals(format->underline);
+         commonFormat->url.IfEquals(format->url);
+      }
+   }
+   return commonFormat;
+}
+
 void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 {
    if (!inFmt)
       return;
    
    Layout();
-
-   if (inStart<0) inStart = 0;
+   
    int max = mCharPos.size();
-   if (inEnd>max || inEnd<0) inEnd = max;
+   
+   if (inStart<0)
+   {
+      inStart = 0;
+	  inEnd = max;
+   }
+   else if (inEnd<0)
+   {
+      inEnd = inStart + 1;
+   }
+   
+   if (inEnd>max) inEnd = max;
 
    if (inEnd<=inStart)
       return;
@@ -208,6 +274,11 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 void TextField::setTextColor(int inCol)
 {
    textColor = inCol;
+   if (!defaultTextFormat->color.IsSet() || defaultTextFormat->color.Get()!=inCol)
+   {
+      defaultTextFormat = defaultTextFormat->COW();
+      defaultTextFormat->color = inCol;
+   }
 }
 
 void TextField::setIsInput(bool inIsInput)
@@ -308,7 +379,7 @@ void TextField::setScrollH(int inScrollH)
    if (scrollH<0)
       scrollH = 0;
    if (scrollH>maxScrollH)
-      scrollH = scrollH;
+      scrollH = maxScrollH;
    // TODO: do we need to re-layout on scroll?
    mLinesDirty = true;
    mGfxDirty = true;
@@ -1150,7 +1221,7 @@ void TextField::BuildBackground()
       {
          ImagePoint scroll = GetScrollPos();
          if (!mHighlightGfx)
-            mHighlightGfx = new Graphics(true);
+            mHighlightGfx = new Graphics(this,true);
 
          int l0 = LineFromChar(mSelectMin);
          int l1 = LineFromChar(mSelectMax-1);
@@ -1271,7 +1342,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       if (caret)
       {
          if (!mCaretGfx)
-            mCaretGfx = new Graphics(true);
+            mCaretGfx = new Graphics(this,true);
          int line = LineFromChar(caretIndex);
          if (line>=0)
          {
@@ -1476,6 +1547,11 @@ static bool IsWord(int inCh)
   //return inCh<255 && (iswalpha(inCh) || isdigit(inCh) || inCh=='_');
 }
 
+static inline int Round6(int inX6)
+{
+   return (inX6 + (1<<6) -1) >> 6;
+}
+
 // Combine x,y scaling with rotation to calculate pixel coordinates for
 //  each character.
 void TextField::Layout(const Matrix &inMatrix)
@@ -1523,7 +1599,7 @@ void TextField::Layout(const Matrix &inMatrix)
    int char_count = 0;
    textHeight = 0;
    textWidth = 0;
-   int x = gap;
+   int x6 = gap << 6;
    int y = gap;
    line.mY0 = y;
    mLastUpDownX = -1;
@@ -1536,7 +1612,7 @@ void TextField::Layout(const Matrix &inMatrix)
       g.mChar0 = char_count;
       int cid = 0;
       int last_word_cid = 0;
-      int last_word_x = x;
+      int last_word_x6 = x6;
       int last_word_line_chars = line.mChars;
 
       g.UpdateMetrics(line.mMetrics);
@@ -1544,19 +1620,19 @@ void TextField::Layout(const Matrix &inMatrix)
       {
          if (line.mChars==0)
          {
-            x = gap;
+            x6 = gap<<6;
             line.mY0 = y;
             line.mChar0 = char_count;
             line.mCharGroup0 = i;
             line.mCharInGroup0 = cid;
             last_word_line_chars = 0;
             last_word_cid = cid;
-            last_word_x = gap;
+            last_word_x6 = gap<<6;
          }
 
          int advance = 0;
          int ch = g.mString[cid];
-         mCharPos.push_back( ImagePoint(x,y) );
+         mCharPos.push_back( ImagePoint(x6>>6,y) );
          line.mChars++;
          char_count++;
          cid++;
@@ -1574,7 +1650,7 @@ void TextField::Layout(const Matrix &inMatrix)
                   last_word_cid = cid-1;
                   last_word_line_chars = line.mChars-1;
                }
-               last_word_x = x;
+               last_word_x6 = x6;
             }
    
             if (ch=='\n' || ch=='\r')
@@ -1588,16 +1664,16 @@ void TextField::Layout(const Matrix &inMatrix)
             }
          }
    
-         int ox = x;
+         int ox6 = x6;
          if (displayAsPassword)
             ch = gPasswordChar;
          if (g.mFont)
             g.mFont->GetGlyph( ch, advance );
          else
             advance = 0;
-         x+= advance;
+         x6 += advance;
          //printf(" Char %c (%d..%d/%d,%d) %p\n", ch, ox, x, max_x, y, g.mFont);
-         if ( !displayAsPassword && (wordWrap) && (x > max_x) && line.mChars>1)
+         if ( !displayAsPassword && (wordWrap) && Round6(x6) > max_x && line.mChars>1)
          {
             // No break on line so far - just back up 1 character....
             if (last_word_line_chars==0 || !wordWrap)
@@ -1606,7 +1682,7 @@ void TextField::Layout(const Matrix &inMatrix)
                line.mChars--;
                char_count--;
                mCharPos.qpop();
-               line.mMetrics.width = ox;
+               line.mMetrics.width = Round6(ox6);
             }
             else
             {
@@ -1615,16 +1691,17 @@ void TextField::Layout(const Matrix &inMatrix)
                char_count-= line.mChars - last_word_line_chars;
                mCharPos.resize(char_count);
                line.mChars = last_word_line_chars;
-               line.mMetrics.width = last_word_x;
+               line.mMetrics.width = Round6(last_word_x6);
             }
             mLines.push_back(line);
             y += g.Height() + g.mFormat->leading;
-            x = gap;
+            x6 = gap<<6;
             line.Clear();
             g.UpdateMetrics(line.mMetrics);
             continue;
          }
 
+         int x = Round6(x6);
          line.mMetrics.width = x;
          if (x>textWidth)
             textWidth = x;

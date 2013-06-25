@@ -316,14 +316,14 @@ namespace nme
             #endif
         }
         
-        AVAudioPlayerSound(unsigned char *inDataPtr, int inDataLen)
+        AVAudioPlayerSound(float *inDataPtr, int inDataLen)
         {
             mFilename = "unknown";
             
             LOG_SOUND("AVAudioPlayerSound constructor()");
             IncRef();
             
-            printf("AVAudioPlayerSound!!");
+            //printf("AVAudioPlayerSound!!");
             
             this->data = [[NSData alloc] initWithBytes:inDataPtr length:inDataLen];
             
@@ -982,7 +982,7 @@ namespace nme
         }
     }
     
-    Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic)
+    Sound *Sound::Create(float *inData, int len, bool inForceMusic)
     {
         // Here we pick a Sound object based on either OpenAL or Apple's AVSoundPlayer
         // depending on the inForceMusic flag.

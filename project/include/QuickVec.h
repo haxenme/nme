@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <memory.h>
+#include <stdlib.h>
 
 namespace nme
 {
@@ -328,7 +329,9 @@ public:
       memmove(mPtr + inPos + inN, mPtr + inPos, (mSize-inPos-inN) * sizeof(T_) );
 		memcpy(mPtr+inPos,inValues,inN*sizeof(T_));
    }
-
+   
+   bool operator == (const QuickVec<T_,QBUF_SIZE_> &inRHS) { return (*mPtr == *(inRHS.mPtr)); }
+   bool operator != (const QuickVec<T_,QBUF_SIZE_> &inRHS) { return !(*mPtr == *(inRHS.mPtr)); }
 
    inline int size() const { return mSize; }
    inline bool empty() const { return mSize==0; }

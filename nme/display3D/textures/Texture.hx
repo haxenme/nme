@@ -1,18 +1,56 @@
 package nme.display3D.textures;
-#if display
+#if (cpp || neko)
+
+using nme.display.BitmapData;
+
+import nme.geom.Rectangle;
+import nme.gl.GL;
+import nme.gl.GLTexture;
+import nme.utils.ArrayBuffer;
+import nme.utils.ByteArray;
+import nme.utils.UInt8Array;
+
+class Texture extends TextureBase 
+{
+   public var width : Int;
+    public var height : Int;
+
+	public function new(glTexture:GLTexture, width : Int, height : Int) {
+
+		super (glTexture);
+		this.width = width;
+		this.height = height;
+
+        GL.bindTexture (GL.TEXTURE_2D, glTexture);
+        GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, width, height, 0, GL.RGBA, GL.UNSIGNED_BYTE, null);
 
 
-@:final extern class Texture extends TextureBase {
-	function uploadCompressedTextureFromByteArray(data : nme.utils.ByteArray, byteArrayOffset : UInt, async : Bool = false) : Void;
-	function uploadFromBitmapData(source : nme.display.BitmapData, miplevel : UInt = 0) : Void;
-	function uploadFromByteArray(data : nme.utils.ByteArray, byteArrayOffset : UInt, miplevel : UInt = 0) : Void;
+	}
+
+
+	public function uploadCompressedTextureFromByteArray(data:ByteArray, byteArrayOffset:Int, async:Bool = false):Void {
+
+		// TODO
+
+	}
+
+
+	public function uploadFromBitmapData (bitmapData:BitmapData, miplevel:Int = 0):Void {
+
+        var p = bitmapData.getRGBAPixels();
+        uploadFromByteArray(p, 0, miplevel);
+
+	}
+
+
+	public function uploadFromByteArray(data:ByteArray, byteArrayOffset:Int, miplevel:Int = 0):Void {
+
+        GL.bindTexture (GL.TEXTURE_2D, glTexture);
+        GL.texSubImage2D(GL.TEXTURE_2D, miplevel, 0, 0, width, height, GL.RGBA, GL.UNSIGNED_BYTE, new UInt8Array(data));
+
+	}
 }
 
-
-#elseif (cpp || neko)
-typedef Texture = native.display3D.textures.Texture;
-#elseif js
-typedef Texture = browser.display3D.textures.Texture;
-#elseif flash
+#else
 typedef Texture = flash.display3D.textures.Texture;
 #end

@@ -60,7 +60,9 @@ static bool Init()
       }
       Mix_ChannelFinished(onChannelDone);
       Mix_HookMusicFinished(onMusicDone);
+      #ifndef EMSCRIPTEN
       Mix_SetPostMix(onPostMix,0);
+      #endif
    }
 
    return sChannelsInit;
@@ -192,7 +194,9 @@ public:
          int samples_left = (int)mDynamicFillPos - (int)(sSoundPos-mDynamicStartPos);
          int ticks_left = samples_left*1000/44100;
          //printf("Expire in %d (%d)\n", samples_left, ticks_left );
+		 #ifndef EMSCRIPTEN
          Mix_ExpireChannel(mChannel, ticks_left>0 ? ticks_left : 1 );
+		 #endif
       }
    }
  
@@ -311,16 +315,18 @@ public:
       }
    }
    
-   SDLSound(unsigned char *inData, int len)
+   SDLSound(float *inData, int len)
    {
       IncRef();
-
+      
+      #ifndef EMSCRIPTEN
       mChunk = Mix_LoadWAV_RW(SDL_RWFromMem(inData, len), 1);
       if ( mChunk == NULL )
       {
          mError = SDL_GetError();
          // ELOG("Error %s (%s)", mError.c_str(), name );
       }
+      #endif
    }
    
    ~SDLSound()
@@ -462,16 +468,18 @@ public:
       }
    }
    
-   SDLMusic(unsigned char *inData, int len)
+   SDLMusic(float *inData, int len)
    {
       IncRef();
-
+      
+      #ifndef EMSCRIPTEN
       mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(inData, len));
       if ( mMusic == NULL )
       {
          mError = SDL_GetError();
          ELOG("Error in music with len (%d)", len );
       }
+      #endif
    }
    ~SDLMusic()
    {
@@ -517,7 +525,7 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
    return sound;
 }
 
-Sound *Sound::Create(unsigned char *inData, int len, bool inForceMusic) {
+Sound *Sound::Create(float *inData, int len, bool inForceMusic) {
    if (!Init())
       return 0;
    Sound *sound = inForceMusic ? 0 :  new SDLSound(inData, len);

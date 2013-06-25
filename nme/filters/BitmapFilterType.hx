@@ -1,34 +1,13 @@
 package nme.filters;
-#if display
+#if (cpp || neko)
 
-
-/**
- * The BitmapFilterType class contains values to set the type of a
- * BitmapFilter.
- */
-@:fakeEnum(String) extern enum BitmapFilterType {
-
-	/**
-	 * Defines the setting that applies a filter to the entire area of an object.
-	 */
-	FULL;
-
-	/**
-	 * Defines the setting that applies a filter to the inner area of an object.
-	 */
-	INNER;
-
-	/**
-	 * Defines the setting that applies a filter to the outer area of an object.
-	 */
-	OUTER;
+class BitmapFilterType 
+{
+   public static var FULL = "full";
+   public static var INNER = "inner";
+   public static var OUTER = "outer";
 }
 
-
-#elseif (cpp || neko)
-typedef BitmapFilterType = native.filters.BitmapFilterType;
-#elseif js
-typedef BitmapFilterType = browser.filters.BitmapFilterType;
 #else
 typedef BitmapFilterType = flash.filters.BitmapFilterType;
 #end

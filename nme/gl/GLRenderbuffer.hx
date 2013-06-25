@@ -1,16 +1,17 @@
 package nme.gl;
-#if display
+#if (cpp || neko)
 
+class GLRenderbuffer extends GLObject 
+{
+   public function new(inVersion:Int, inId:Dynamic) 
+   {
+      super(inVersion, inId);
+   }
 
-extern class GLRenderbuffer extends GLObject {
-	
-	function new(inVersion:Int, inId:Dynamic):Void;
-	
+   override private function getType():String 
+   {
+      return "Renderbuffer";
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef GLRenderbuffer = native.gl.GLRenderbuffer;
-#elseif js
-typedef GLRenderbuffer = browser.gl.GLRenderbuffer;
 #end

@@ -1,20 +1,36 @@
 package nme.display;
-#if display
+#if (cpp || neko)
 
+import nme.display3D.Context3D;
+import nme.events.ErrorEvent;
+import nme.events.Event;
+import nme.events.EventDispatcher;
 
-extern class Stage3D extends nme.events.EventDispatcher {
-	var context3D(default,null) : nme.display3D.Context3D;
-	var visible : Bool;
-	var x : Float;
-	var y : Float;
-	function requestContext3D(?context3DRenderMode : String) : Void;
+class Stage3D extends EventDispatcher 
+{
+   public var context3D:Context3D;
+   public var visible:Bool; // TODO
+   public var x:Float; // TODO
+   public var y:Float; // TODO
+
+   public function new() 
+   {
+      super();
+   }
+
+   public function requestContext3D(context3DRenderMode:String = ""):Void 
+   {
+      if (OpenGLView.isSupported) 
+      {
+          context3D = new Context3D();
+          dispatchEvent(new Event(Event.CONTEXT3D_CREATE));
+      }else
+      {
+            dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
+      }
+   }
 }
 
-
-#elseif (cpp || neko)
-typedef Stage3D = native.display.Stage3D;
-#elseif js
-typedef Stage3D = browser.display.Stage3D;
-#elseif flash
+#else
 typedef Stage3D = flash.display.Stage3D;
 #end

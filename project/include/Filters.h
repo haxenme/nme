@@ -42,6 +42,22 @@ public:
 };
 
 
+class ColorMatrixFilter : public Filter
+{
+public:
+   ColorMatrixFilter(QuickVec<float> inMatrix);
+   
+   template<typename PIXEL>
+   void DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0,ImagePoint inDiff,int inPass) const;
+   
+   void Apply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0, ImagePoint inDiff,int inPass) const;
+   void ExpandVisibleFilterDomain(Rect &ioRect,int inPass) const;
+   void GetFilteredObjectRect(Rect &ioRect,int inPass) const;
+   
+   QuickVec<float> mMatrix;
+};
+
+
 class DropShadowFilter : public BlurFilter
 {
 public:

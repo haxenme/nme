@@ -7,10 +7,10 @@
 namespace nme
 {
 
-
+extern int gCachedExtentID;
 struct CachedExtent
 {
-   CachedExtent() : mID(0), mIncludeStroke(false) {}
+   CachedExtent() : mID(0), mIncludeStroke(false), mIsSet(false), mForScreen(false) {}
    Extent2DF Get(const Transform &inTransform);
 
    Transform mTransform;
@@ -19,6 +19,8 @@ struct CachedExtent
    Scale9    mScale9;
    Extent2DF mExtent;
    bool      mIncludeStroke;
+   bool      mIsSet;
+   bool      mForScreen;
    int       mID;
 };
 

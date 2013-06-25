@@ -1,20 +1,32 @@
 package nme.display;
-#if display
+#if (cpp || neko)
 
-
+import nme.Loader;
+import nme.events.Event;
 import nme.geom.Rectangle;
 
+class DirectRenderer extends DisplayObject 
+{
+   public function new(inType:String = "DirectRenderer") 
+   {
+      super(nme_direct_renderer_create(), inType);
 
-extern class DirectRenderer extends DisplayObject {
+      addEventListener(Event.ADDED_TO_STAGE, function(_) nme_direct_renderer_set(nmeHandle, nmeOnRender));
+      addEventListener(Event.REMOVED_FROM_STAGE, function(_) nme_direct_renderer_set(nmeHandle, null));
+   }
 
-	function new(inType:String = "DirectRenderer"):Void;
-	dynamic function render(inRect:Rectangle):Void;
-	
+   private function nmeOnRender(inRect:Dynamic) 
+   {
+      if (render != null) render(new Rectangle(inRect.x, inRect.y, inRect.width, inRect.height));
+   }
+
+   public dynamic function render(inRect:Rectangle) 
+   {
+   }
+
+   // Native Methods
+   private static var nme_direct_renderer_create = Loader.load("nme_direct_renderer_create", 0);
+   private static var nme_direct_renderer_set = Loader.load("nme_direct_renderer_set", 2);
 }
 
-
-#elseif (cpp || neko)
-typedef DirectRenderer = native.display.DirectRenderer;
-#elseif js
-typedef DirectRenderer = browser.display.DirectRenderer;
 #end
