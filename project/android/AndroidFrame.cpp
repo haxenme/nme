@@ -518,8 +518,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyChange(JNIEnv * env, jobject 
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
 {
-   //env->GetJavaVM(&gJVM);
-      
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -530,8 +528,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
 
 JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobject obj)
 {
-   //env->GetJavaVM(&gJVM);
-      
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -555,10 +551,5 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject o
    return nme::GetResult();
 }
 
-
 } // end extern C
-
-
-
-
 
