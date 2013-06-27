@@ -13,6 +13,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -47,17 +48,17 @@ public class GameActivity extends Activity implements SensorEventListener
 	private static final int DEVICE_ROTATION_90 = 1;
 	private static final int DEVICE_ROTATION_180 = 2;
 	private static final int DEVICE_ROTATION_270 = 3;
-	
+
 	static GameActivity activity;
 	static AssetManager mAssets;
 	static Context mContext;
 	static DisplayMetrics metrics;
 	static HashMap<String, Class> mLoadedClasses = new HashMap<String, Class>();
 	static SensorManager sensorManager;
-	
+
 	public Handler mHandler;
 	MainView mView;
-	
+
 	private static float[] accelData = new float[3];
 	private static int bufferedDisplayOrientation = -1;
 	private static int bufferedNormalOrientation = -1;
@@ -66,73 +67,80 @@ public class GameActivity extends Activity implements SensorEventListener
 	private static float[] orientData = new float[3];
 	private static float[] rotationMatrix = new float[16];
 	private Sound _sound;
-	
+
 	protected void onCreate(Bundle state)
 	{
 		super.onCreate(state);
-		
+
 		activity = this;
 		mContext = this;
 		mHandler = new Handler();
 		mAssets = getAssets();
-		
+
 		_sound = new Sound(getApplication());
 		//getResources().getAssets();
-		
+
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		
+
 		metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		
+
 		// Pre-load these, so the C++ knows where to find them
-		
+
 		::foreach ndlls::
 		System.loadLibrary("::name::");::end::
 		org.haxe.HXCPP.run("ApplicationMain");
-		
-		mView = new MainView(getApplication(), this);
+
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1)
+		{
+			mView = new MainView(getApplication(), this);
+		}
+		else
+		{
+			mView = new HoneycombView(getApplication(), this);
+		}
 		setContentView(mView);
-		
+
 		sensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
-		
+
 		if (sensorManager != null)
 		{
 			sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
 			sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_GAME);
 		}
 	}
-	
-	
+
+
 	public static double CapabilitiesGetPixelAspectRatio()
 	{
 		return metrics.xdpi / metrics.ydpi;
 	}
-	
-	
+
+
 	public static double CapabilitiesGetScreenDPI()
 	{
-		return metrics.xdpi;	
+		return metrics.xdpi;
 	}
-	
-	
+
+
 	public static double CapabilitiesGetScreenResolutionX()
 	{
 		return metrics.widthPixels;
 	}
-	
-	
+
+
 	public static double CapabilitiesGetScreenResolutionY()
 	{
 		return metrics.heightPixels;
 	}
-	
+
 	public static String CapabilitiesGetLanguage()
 	{
 		return Locale.getDefault().getLanguage();
 	}
-	
-	
+
+
 	public static void clearUserPreference(String inId)
 	{
 		SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE, MODE_PRIVATE);
@@ -140,47 +148,47 @@ public class GameActivity extends Activity implements SensorEventListener
 		prefEditor.putString(inId, "");
 		prefEditor.commit();
 	}
-	
-	
+
+
 	public void doPause()
 	{
 		_sound.doPause();
-		
+
 		mView.sendActivity(NME.DEACTIVATE);
 		mView.onPause();
-		
+
 		if (sensorManager != null)
 		{
 			sensorManager.unregisterListener(this);
 		}
 	}
-	
+
 	public void doResume()
-	{	
+	{
 		mView.onResume();
-		
+
 		_sound.doResume();
-		
+
 		mView.sendActivity(NME.ACTIVATE);
-		
+
 		if (sensorManager != null)
 		{
 			sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
 			sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_GAME);
 		}
 	}
-	
-	
+
+
 	public static Context getContext()
 	{
 		return mContext;
 	}
-	
+
 	public static GameActivity getInstance()
 	{
 		return activity;
 	}
-	
+
 	public static MainView getMainView()
 	{
 		return activity.mView;
@@ -190,8 +198,8 @@ public class GameActivity extends Activity implements SensorEventListener
 	{
 		Log.e("GameActivity", "queueing...");
 	}
-	
-	
+
+
 	public static byte[] getResource(String inResource)
 	{
 		try
@@ -207,11 +215,11 @@ public class GameActivity extends Activity implements SensorEventListener
 		{
 			Log.e("GameActivity",  "getResource" + ":" + e.toString());
 		}
-		
+
 		return null;
 	}
-	
-	
+
+
 	public static int getResourceID(String inFilename)
 	{
 		::foreach assets::::if (type == "music")::if (inFilename.equals("::id::")) return ::APP_PACKAGE::.R.raw.::flatName::;
@@ -220,50 +228,50 @@ public class GameActivity extends Activity implements SensorEventListener
 		::end::::end::
 		return -1;
 	}
-	
-	
+
+
 	static public String getSpecialDir(int inWhich)
     {
 		Log.v("GameActivity","Get special Dir " + inWhich);
 		File path = null;
-		
+
 		switch (inWhich)
 		{
 			case 0: // App
 				return mContext.getPackageCodePath();
-			
+
 			case 1: // Storage
 				path = mContext.getFilesDir();
 				break;
-			
+
 			case 2: // Desktop
 				path = Environment.getDataDirectory();
 				break;
-			
+
 			case 3: // Docs
 				path = Environment.getExternalStorageDirectory();
 				break;
-			
+
 			case 4: // User
 				path = mContext.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
 				break;
 		}
-		
+
 		return path == null ? "" : path.getAbsolutePath();
 	}
-	
-	
+
+
 	public static String getUserPreference(String inId)
 	{
 		SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE, MODE_PRIVATE);
 		return prefs.getString(inId, "");
 	}
-	
-	
+
+
 	public static void launchBrowser(String inURL)
 	{
 		Intent browserIntent = new Intent(Intent.ACTION_VIEW).setData(Uri.parse(inURL));
-		
+
 		try
 		{
 			activity.startActivity(browserIntent);
@@ -274,32 +282,32 @@ public class GameActivity extends Activity implements SensorEventListener
 			return;
 		}
 	}
-	
-	
+
+
 	private void loadNewSensorData(SensorEvent event)
 	{
 		final int type = event.sensor.getType();
-		
+
 		if (type == Sensor.TYPE_ACCELEROMETER)
 		{
 			accelData = event.values.clone();
 			NME.onAccelerate(-accelData[0], -accelData[1], accelData[2]);
 		}
-		
+
 		if (type == Sensor.TYPE_MAGNETIC_FIELD)
 		{
 			magnetData = event.values.clone();
 			//Log.d("GameActivity","new mag: " + magnetData[0] + ", " + magnetData[1] + ", " + magnetData[2]);
 		}
 	}
-	
-	
+
+
 	@Override public void onAccuracyChanged(Sensor sensor, int accuracy)
 	{
-		
+
 	}
-	
-	
+
+
 	@Override protected void onDestroy()
 	{
 		// TODO: Wait for result?
@@ -307,25 +315,25 @@ public class GameActivity extends Activity implements SensorEventListener
 		activity = null;
 		super.onDestroy();
 	}
-	
-	
+
+
 	@Override protected void onPause()
 	{
 		super.onPause();
 		doPause();
 	}
-	
-	
+
+
 	@Override protected void onResume()
 	{
 		super.onResume();
 		doResume();
 	}
-	
+
 	@Override public void onSensorChanged(SensorEvent event)
 	{
 		loadNewSensorData(event);
-		
+
 		if (accelData != null && magnetData != null)
 		{
 			boolean foundRotationMatrix = SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix, accelData, magnetData);
@@ -335,19 +343,19 @@ public class GameActivity extends Activity implements SensorEventListener
 				NME.onOrientationUpdate(orientData[0], orientData[1], orientData[2]);
 			}
 		}
-		
+
 		NME.onDeviceOrientationUpdate(prepareDeviceOrientation());
 		NME.onNormalOrientationFound(bufferedNormalOrientation);
 	}
 
-	
+
 	public static void popView()
 	{
 		activity.setContentView(activity.mView);
 		activity.doResume();
 	}
-	
-	
+
+
 	public static void postUICallback(final long inHandle)
 	{
 		activity.mHandler.post(new Runnable()
@@ -358,20 +366,20 @@ public class GameActivity extends Activity implements SensorEventListener
 			}
 		});
 	}
-	
-	
+
+
 	private int prepareDeviceOrientation()
 	{
 		int rawOrientation = getWindow().getWindowManager().getDefaultDisplay().getOrientation();
-		
+
 		if (rawOrientation != bufferedDisplayOrientation)
 		{
 			bufferedDisplayOrientation = rawOrientation;
 		}
-		
+
 		int screenOrientation = getResources().getConfiguration().orientation;
 		int deviceOrientation = DEVICE_ORIENTATION_UNKNOWN;
-		
+
 		if (bufferedNormalOrientation < 0)
 		{
 			switch (screenOrientation)
@@ -383,17 +391,17 @@ public class GameActivity extends Activity implements SensorEventListener
 						case DEVICE_ROTATION_180:
 							bufferedNormalOrientation = DEVICE_ORIENTATION_LANDSCAPE_LEFT;
 							break;
-						
+
 						case DEVICE_ROTATION_90:
 						case DEVICE_ROTATION_270:
 							bufferedNormalOrientation = DEVICE_ORIENTATION_PORTRAIT;
 							break;
-						
+
 						default:
 							bufferedNormalOrientation = DEVICE_ORIENTATION_UNKNOWN;
 					}
 					break;
-				
+
 				case Configuration.ORIENTATION_PORTRAIT:
 					switch (bufferedDisplayOrientation)
 					{
@@ -401,22 +409,22 @@ public class GameActivity extends Activity implements SensorEventListener
 						case DEVICE_ROTATION_180:
 							bufferedNormalOrientation = DEVICE_ORIENTATION_PORTRAIT;
 							break;
-						
+
 						case DEVICE_ROTATION_90:
 						case DEVICE_ROTATION_270:
 							bufferedNormalOrientation = DEVICE_ORIENTATION_LANDSCAPE_LEFT;
 							break;
-						
+
 						default:
 							bufferedNormalOrientation = DEVICE_ORIENTATION_UNKNOWN;
 					}
 					break;
-				
+
 				default: // ORIENTATION_SQUARE OR ORIENTATION_UNDEFINED
 					bufferedNormalOrientation = DEVICE_ORIENTATION_UNKNOWN;
 			}
 		}
-		
+
 		switch (screenOrientation)
 		{
 			case Configuration.ORIENTATION_LANDSCAPE:
@@ -426,17 +434,17 @@ public class GameActivity extends Activity implements SensorEventListener
 					case DEVICE_ROTATION_270:
 						deviceOrientation = DEVICE_ORIENTATION_LANDSCAPE_LEFT;
 						break;
-					
+
 					case DEVICE_ROTATION_90:
 					case DEVICE_ROTATION_180:
 						deviceOrientation = DEVICE_ORIENTATION_LANDSCAPE_RIGHT;
 						break;
-					
+
 					default: // impossible!
 						deviceOrientation = DEVICE_ORIENTATION_UNKNOWN;
 				}
 				break;
-			
+
 			case Configuration.ORIENTATION_PORTRAIT:
 				switch (bufferedDisplayOrientation)
 				{
@@ -444,32 +452,32 @@ public class GameActivity extends Activity implements SensorEventListener
 					case DEVICE_ROTATION_90:
 						deviceOrientation = DEVICE_ORIENTATION_PORTRAIT;
 						break;
-					
+
 					case DEVICE_ROTATION_180:
 					case DEVICE_ROTATION_270:
 						deviceOrientation = DEVICE_ORIENTATION_PORTRAIT_UPSIDE_DOWN;
 						break;
-					
+
 					default: // impossible!
 						deviceOrientation = DEVICE_ORIENTATION_UNKNOWN;
 				}
 				break;
-			
+
 			default: // ORIENTATION_SQUARE OR ORIENTATION_UNDEFINED
 				deviceOrientation = DEVICE_ORIENTATION_UNKNOWN;
 		}
-		
+
 		return deviceOrientation;
 	}
-	
-	
+
+
 	public static void pushView(View inView)
 	{
 		activity.doPause();
 		activity.setContentView(inView);
 	}
-	
-	
+
+
 	public static void setUserPreference(String inId, String inPreference)
 	{
 		SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE, MODE_PRIVATE);
@@ -477,13 +485,13 @@ public class GameActivity extends Activity implements SensorEventListener
 		prefEditor.putString(inId, inPreference);
 		prefEditor.commit();
 	}
-	
-	
+
+
 	public static void showKeyboard(boolean show)
 	{
 		InputMethodManager mgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 		mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
-		
+
 		if (show)
 		{
 			mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
@@ -492,27 +500,27 @@ public class GameActivity extends Activity implements SensorEventListener
 			// On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
 		}
 	}
-	
-	
+
+
 	public static void vibrate(int period, int duration)
 	{
 		Vibrator v = (Vibrator)activity.getSystemService(Context.VIBRATOR_SERVICE);
-		
+
 		if (period == 0)
 		{
 			v.vibrate(duration);
 		}
 		else
-		{	
+		{
 			int periodMS = (int)Math.ceil(period / 2);
 			int count = (int)Math.ceil((duration / period) * 2);
 			long[] pattern = new long[count];
-			
+
 			for (int i = 0; i < count; i++)
 			{
 				pattern[i] = periodMS;
 			}
-			
+
 			v.vibrate(pattern, -1);
 		}
 	}
