@@ -104,7 +104,7 @@ public:
 
    void OnKey(int inCode, bool inDown)
    {
-      __android_log_print(ANDROID_LOG_ERROR, "NME", "OnKey %d %d", inCode, inDown);
+      //__android_log_print(ANDROID_LOG_INFO, "NME", "OnKey %d %d", inCode, inDown);
       Event key( inDown ? etKeyDown : etKeyUp );
       key.code = inCode;
       key.value = inCode;
@@ -113,14 +113,22 @@ public:
 
    void OnJoy(int inDeviceId, int inCode, bool inDown)
    {
-      __android_log_print(ANDROID_LOG_ERROR, "NME", "OnJoy %d %d %d", inDeviceId, inCode, inDown);
+      //__android_log_print(ANDROID_LOG_INFO, "NME", "OnJoy %d %d %d", inDeviceId, inCode, inDown);
       Event joystick( inDown ? etJoyButtonDown : etJoyButtonUp );
       joystick.id = inDeviceId;
       joystick.code = inCode;
       HandleEvent(joystick);
    }
    
-
+   void OnJoyMotion(int inDeviceId, int inAxis, float inValue)
+   {
+      Event joystick(etJoyAxisMove);
+      joystick.id = inDeviceId;
+      joystick.code = inAxis;
+      joystick.value = inValue;
+      HandleEvent(joystick);
+   }
+   
    void OnTrackball(double inX, double inY)
    {
       // __android_log_print(ANDROID_LOG_INFO, "NME", "Trackball %f %f", inX, inY);
@@ -512,6 +520,16 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyChange(JNIEnv * env, jobject 
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
       nme::sStage->OnJoy(deviceId,code,down);
+   gc_set_top_of_stack(0,true);
+   return nme::GetResult();
+}
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyMotion(JNIEnv * env, jobject obj, int deviceId, int axis, float value)
+{
+   int top = 0;
+   gc_set_top_of_stack(&top,true);
+   if (nme::sStage)
+      nme::sStage->OnJoyMotion(deviceId,axis,value);
    gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
