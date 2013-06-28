@@ -175,7 +175,7 @@
    </files>
    
    
-   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Mac/" if="macos"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Mac${M64}/" if="macos"/>
    <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Windows/" if="windows" unless="winrt"/>
    <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/WinRTx86/" if="winrt"/>
    <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/webOS/" if="webos" />
