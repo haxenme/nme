@@ -22,7 +22,9 @@ class URLRequest
    public var data:Dynamic;
    public var credentials:String;
 
-   /** @private */ public var nmeBytes:ByteArray;
+   /** @private */ public var __bytes:ByteArray;
+   /** @private */ public var nmeBytes(get, set):ByteArray;
+   
    public function new(?inURL:String) 
    {
       if (inURL != null)
@@ -88,6 +90,9 @@ class URLRequest
          throw "Unknown data type";
       }
    }
+   
+   private function get_nmeBytes():ByteArray { return __bytes; }
+   private function set_nmeBytes(value:ByteArray):ByteArray { return __bytes = value; }
 }
 
 #else
