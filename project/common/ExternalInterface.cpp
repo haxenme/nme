@@ -3473,6 +3473,16 @@ void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inC
 DEFINE_PRIM(nme_bitmap_data_flood_fill,4);
 
 
+void nme_bitmap_data_unmultiply_alpha(value inSurface)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      surf->unmultiplyAlpha();
+   }
+}
+DEFINE_PRIM(nme_bitmap_data_unmultiply_alpha,1);
+
 
 value nme_render_surface_to_surface(value* arg, int nargs)
 {

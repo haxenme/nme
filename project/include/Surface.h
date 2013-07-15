@@ -66,6 +66,7 @@ public:
    virtual void destroyHardwareSurface() { }
    virtual void dumpBits() { /*printf("Dumping bits from Surface\n");*/  }
    virtual void setGPUFormat( PixelFormat pf ) {}
+   virtual void unmultiplyAlpha() { }
 
    int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
    const uint8 *Row(int inY) const { return GetBase() + GetStride()*inY; }
@@ -155,6 +156,7 @@ public:
 
    virtual void colorTransform(const Rect &inRect, ColorTransform &inTransform);
    virtual void setGPUFormat( PixelFormat pf ) { mGPUPixelFormat = pf; }
+   void unmultiplyAlpha();
    
    const uint8 *GetBase() const { return mBase; }
    int GetStride() const { return mStride; }
