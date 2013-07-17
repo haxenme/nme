@@ -113,6 +113,7 @@
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <file name="iPhone/UIStageView.mm"/>
+      <file name="iPhone/UIDeviceHardware.mm"/>
       <!-- <file name="iPhone/SurfaceIO.mm"/> -->
       <file name="iPhone/Sound.mm"/>
       <file name="iPhone/NativeFont.mm"/>
