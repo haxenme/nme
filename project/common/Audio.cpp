@@ -8,8 +8,8 @@
 
 namespace nme {
 
-		#define LOG_SOUND(args...) printf(args)
-		//#define LOG_SOUND(args...)  { }
+		#define LOG_SOUND(args,...) printf(args)
+		// #define LOG_SOUND(args,...)  { }
 
 	namespace Audio {
 
@@ -25,6 +25,7 @@ namespace nme {
 
 		AudioFormat determineAudioTypeFromMagic( const QuickVec<unsigned char> &bytes ) {
 			//todo
+            return eAF_unknown;
 		}
 
 		std::string _get_extension(const std::string& _filename) {

@@ -26,7 +26,7 @@
 typedef unsigned char uint8;
 
 
-#define LOG_SOUND(args...) printf(args)
+#define LOG_SOUND(args,...) printf(args)
 
 //#define LOG_SOUND(args...)  { }
 
