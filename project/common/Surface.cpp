@@ -1154,6 +1154,19 @@ void SimpleSurface::Zero()
       memset(mBase,0,mStride * mHeight);
 }
 
+void SimpleSurface::dispose()
+{
+   if (mBase)
+   {
+      if (mBase[mStride * mHeight] != 69)
+      {
+         ELOG("Image write overflow");
+      }
+      delete [] mBase;
+      mBase = NULL;
+   }
+}
+
 RenderTarget SimpleSurface::BeginRender(const Rect &inRect,bool inForHitTest)
 {
    if (!mBase)

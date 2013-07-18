@@ -64,6 +64,7 @@ public:
    virtual void Zero() { Clear(0); }
    virtual void createHardwareSurface() { }
    virtual void destroyHardwareSurface() { }
+   virtual void dispose() { }
    virtual void dumpBits() { /*printf("Dumping bits from Surface\n");*/  }
    virtual void setGPUFormat( PixelFormat pf ) {}
    virtual void unmultiplyAlpha() { }
@@ -171,6 +172,7 @@ public:
    void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale);
    void createHardwareSurface();
    void destroyHardwareSurface();
+   void dispose();
    
    void dumpBits();
 

@@ -1021,7 +1021,7 @@ DEFINE_PRIM(nme_clear_user_preference,1);
 
 value nme_stage_set_fixed_orientation(value inValue)
 {
-#if IPHONE
+#ifdef IPHONE
    gFixedOrientation = val_int(inValue);
 #endif
 	return alloc_null();
@@ -3533,6 +3533,18 @@ value nme_render_surface_to_surface(value* arg, int nargs)
    return alloc_null();
 }
 DEFINE_PRIM_MULT(nme_render_surface_to_surface);
+
+
+value nme_bitmap_data_dispose(value inSurface)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface, surf))
+   {
+       surf->dispose();
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_dispose,1);
 
 
 value nme_bitmap_data_destroy_hardware_surface(value inHandle)
