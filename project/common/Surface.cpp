@@ -1156,6 +1156,7 @@ void SimpleSurface::Zero()
 
 void SimpleSurface::dispose()
 {
+   destroyHardwareSurface();
    if (mBase)
    {
       if (mBase[mStride * mHeight] != 69)
