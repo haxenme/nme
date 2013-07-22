@@ -39,6 +39,7 @@
    
    <!-- Toggle this for openal experimental osx code -->
    <!-- <set name="openal" value="1" if="macos"/> -->
+   <!-- <set name="openal" value="1" if="iphone"/> -->
    <!-- <set name="openal" value="1" if="win_desktop"/> -->
 	
    <set name="mobile" value="1" if="iphone"/>
@@ -113,6 +114,7 @@
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <file name="iPhone/UIStageView.mm"/>
+      <file name="iPhone/UIDeviceHardware.mm"/>
       <!-- <file name="iPhone/SurfaceIO.mm"/> -->
       <file name="iPhone/Sound.mm"/>
       <file name="iPhone/NativeFont.mm"/>
@@ -175,7 +177,7 @@
    </files>
    
    
-   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Mac/" if="macos"/>
+   <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Mac${M64}/" if="macos"/>
    <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/Windows/" if="windows" unless="winrt"/>
    <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/WinRTx86/" if="winrt"/>
    <set name="THIRDPARTY_LIBS" value="${SDL_STATIC}/lib/webOS/" if="webos" />
@@ -237,6 +239,7 @@
       <file name="common/CURL.cpp" unless="nocurl"/>
       <file name="common/Lzma.cpp"/>
       <file name="common/Thread.cpp"/>
+      <file name="common/Audio.cpp" if="openal"/>
       
       <file name="common/XML/tinystr.cpp"/>
       <file name="common/XML/tinyxml.cpp"/>
@@ -335,13 +338,14 @@
    <files id="mac">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I${SDL_STATIC}/include" if="sdl_static" />
       <compilerflag value="-I${SDL_STATIC}/include/SDL12" if="sdl_static" />
       <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
       <file name="mac/NSFont.cpp"/>
       <file name="mac/MacBoot.m"/>
       <file name="mac/System.mm"/>
       <file name="cocoa/FileManager.mm"/>
-      <file name="openal/OpenALSound.mm" if="openal"/>
+      <file name="openal/OpenALSound.cpp" if="openal"/>
       
    </files>
    

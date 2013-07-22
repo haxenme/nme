@@ -1,23 +1,38 @@
 
-#include <AL/al.h>
-#include <AL/alc.h>
+#ifdef HX_MACOS
+        
+    #include <OpenAL/al.h>
+    #include <OpenAL/alc.h>
+
+#else
+
+    #include <AL/al.h>
+    #include <AL/alc.h>
+
+#endif
+
+#include <SDL.h>
+
 
 #include <Sound.h>
 #include <QuickVec.h>
 #include <Utils.h>
 
+    //new audio api to handle loading
+    //sounds and streams from various formats.
+#include <Audio.h>
+
 
 typedef unsigned char uint8;
 
 
-//#define LOG_SOUND(args...) NSLog(@args)
+#define LOG_SOUND(args,...) printf(args)
 
 //#define LOG_SOUND(args...)  { }
+
+
+namespace nme {
     
-
-
-namespace nme
-{
     bool gSDLIsInit = false;
     
     
@@ -270,6 +285,10 @@ namespace nme
             return (panX+1)/2;
         }
         
+        double setPosition(const float &inFloat)  {
+            alSourcef(mSourceID,AL_SEC_OFFSET,inFloat);
+            return inFloat;
+        }
         double getPosition()  
         {
             float pos = 0;
@@ -324,31 +343,57 @@ namespace nme
              const char *fileURL = inFilename.c_str();
              #endif
             
-            if (!fileURL)
-            {
+            if (!fileURL) {
+                
                 //LOG_SOUND("OpenALSound constructor() error in url");
                 mError = "Error int url: " + inFilename;
-            }
-            else
-            {
+
+            } else {
+
                 QuickVec<uint8> buffer;
+                int _channels;
+                int _bitsPerSample;
                 ALenum  format;
                 ALsizei freq;
+                bool ok = false;
+
+                    //Determine the file format before we try anything
+                AudioFormat type = Audio::determineAudioTypeFromFilename(std::string(fileURL));
+
+                switch(type) {
+                    case eAF_ogg:
+                        ok = Audio::loadOggData( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+                    break;
+                    case eAF_wav:
+                        ok = Audio::loadWavData( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+                    break;
+                    default:
+                        LOG_SOUND("Error opening sound file, unsupported type.");
+                }
+
+                    //Work out the format from the data
+                if (_channels == 1) {
+                    if (_bitsPerSample == 8 ) {
+                        format = AL_FORMAT_MONO8;
+                    } else if (_bitsPerSample == 16) {
+                        format = (int)AL_FORMAT_MONO16;
+                    }
+                } else if (_channels == 2) {
+                    if (_bitsPerSample == 8 ) {
+                        format = (int)AL_FORMAT_STEREO8;
+                    } else if (_bitsPerSample == 16) {
+                        format = (int)AL_FORMAT_STEREO16;
+                    }
+                } //channels = 2
+                 
                 
-                bool ok = LoadData(fileURL, buffer, &format, &freq);
-                
-                if (!ok)
-                {
-                    //LOG_SOUND("Error opening sound data");
+                if (!ok) {
+                    LOG_SOUND("Error opening sound data");
                     mError = "Error opening sound data";
-                }
-                else if (alGetError() != AL_NO_ERROR)
-                {
-                    //LOG_SOUND("Error after opening sound data");
+                } else if (alGetError() != AL_NO_ERROR) {
+                    LOG_SOUND("Error after opening sound data");
                     mError = "Error after opening sound data";
-                }
-                else
-                {
+                } else {
                     // grab a buffer ID from openAL
                     alGenBuffers(1, &mBufferID);
                     
@@ -360,7 +405,7 @@ namespace nme
                     alGetBufferi(mBufferID, AL_FREQUENCY, &frequency);
                     alGetBufferi(mBufferID, AL_CHANNELS, &channels);    
                     alGetBufferi(mBufferID, AL_BITS, &bitsPerSample); 
-                }
+                } //!ok
             }
         }
         
@@ -370,127 +415,6 @@ namespace nme
             if (mBufferID!=0)
                 alDeleteBuffers(1, &mBufferID);
         }
-        
-        
-        bool LoadData(const char *inFileURL, QuickVec<uint8> &outBuffer,
-                      ALenum *outDataFormat, ALsizei*   outSampleRate)
-        {
-            //LOG_SOUND("OpenALSound LoadData()");
-            
-            OSStatus err = noErr;
-            SInt64 theFileLengthInFrames = 0;
-            AudioStreamBasicDescription theFileFormat;
-            UInt32 thePropertySize = sizeof(theFileFormat);
-            ExtAudioFileRef extRef = NULL;
-            AudioStreamBasicDescription theOutputFormat;
-                        
-            // Open a file with ExtAudioFileOpen()
-            //LOG_SOUND("OpenALSound Open a file with ExtAudioFileOpen()");            
-            err = ExtAudioFileOpenURL(inFileURL, &extRef);
-            if (err)
-            {
-                //LOG_SOUND("OpenALSound Could not load audio data");
-                mError = "Could not load audio data";
-                return false;
-            }
-            
-            //LOG_SOUND("OpenALSound Getting the audio data format");
-            // Get the audio data format
-            err = ExtAudioFileGetProperty(extRef, kExtAudioFileProperty_FileDataFormat,
-                                          &thePropertySize, &theFileFormat);
-            
-            if (err)
-            {
-                //LOG_SOUND("OpenALSound Could not get FileDataFormat");
-                mError = "Could not get FileDataFormat";
-            }
-            else if (theFileFormat.mChannelsPerFrame > 2)
-            {
-                //LOG_SOUND("OpenALSound Too many channels");
-                mError = "Too many channels";
-            }
-            
-            
-            if (ok())
-            {
-                //LOG_SOUND("OpenALSound ok() was true so Set the  client format to 16 bit signed integer (native-endian) data Maintain the  channel count and sample rate of the original source format");
-                
-                // Set the client format to 16 bit signed integer (native-endian) data
-                // Maintain the channel count and sample rate of the original source format
-                theOutputFormat.mSampleRate = theFileFormat.mSampleRate;
-                theOutputFormat.mChannelsPerFrame = theFileFormat.mChannelsPerFrame;
-                
-                theOutputFormat.mFormatID = kAudioFormatLinearPCM;
-                theOutputFormat.mBytesPerPacket = 2 * theOutputFormat.mChannelsPerFrame;
-                theOutputFormat.mFramesPerPacket = 1;
-                theOutputFormat.mBytesPerFrame = 2 * theOutputFormat.mChannelsPerFrame;
-                theOutputFormat.mBitsPerChannel = 16;
-                theOutputFormat.mFormatFlags = kAudioFormatFlagsNativeEndian |
-                kAudioFormatFlagIsPacked | kAudioFormatFlagIsSignedInteger;
-                
-                // Set the desired client (output) data format
-                err = ExtAudioFileSetProperty(extRef, kExtAudioFileProperty_ClientDataFormat,
-                                              sizeof(theOutputFormat), &theOutputFormat);
-                if (err)
-                {
-                    //LOG_SOUND("Could not set output format");
-                    mError = "Could not set output format";
-                }
-            }
-            
-            if (ok())
-            {
-                // Get the total frame count
-                thePropertySize = sizeof(theFileLengthInFrames);
-                err = ExtAudioFileGetProperty(extRef, kExtAudioFileProperty_FileLengthFrames,
-                                              &thePropertySize, &theFileLengthInFrames);
-                if(err)
-                {
-                    //LOG_SOUND("OpenALSound Could not get the number of frames");
-                    mError = "Could not get the number of frames";
-                }
-            }
-            
-            if (ok())
-            {
-                // Read all the data into memory
-                UInt32 dataSize = theFileLengthInFrames * theOutputFormat.mBytesPerFrame;;
-                //LOG_SOUND("OpenALSound dataSize: %u", dataSize);
-                outBuffer.resize(dataSize);
-                
-                AudioBufferList theDataBuffer;
-                theDataBuffer.mNumberBuffers = 1;
-                theDataBuffer.mBuffers[0].mDataByteSize = dataSize;
-                theDataBuffer.mBuffers[0].mNumberChannels = theOutputFormat.mChannelsPerFrame;
-                theDataBuffer.mBuffers[0].mData = &outBuffer[0];
-                
-                // Read the data into an AudioBufferList
-                err = ExtAudioFileRead(extRef, (UInt32*)&theFileLengthInFrames, &theDataBuffer);
-                if (err)
-                {
-                    //LOG_SOUND("OpenALSound dataSize: %u", dataSize);
-                    mError = "Read audio buffer";
-                }
-                else
-                {
-                    //LOG_SOUND("OpenALSound success");
-                    // success
-                    *outDataFormat = (theOutputFormat.mChannelsPerFrame > 1) ?
-                    AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-                    *outSampleRate = (ALsizei)theOutputFormat.mSampleRate;
-                }
-                
-            }
-            
-            if (extRef)
-            {
-                //LOG_SOUND("OpenALSound calling ExtAudioFileDispose");
-                ExtAudioFileDispose(extRef);
-            }
-            return ok();
-        }
-        
-        
         
         double getLength()
         {
@@ -550,33 +474,14 @@ namespace nme
     };
     
     
-    Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
-    {
-        // Here we pick a Sound object based on either OpenAL or Apple's AVSoundPlayer
-        // depending on the inForceMusic flag.
-        //
-        // OpenAL has lower latency but can be expensive memory-wise when playing
-        // files more than a few seconds long, and it's not really needed anyways if there is
-        // no need to work with the uncompressed data.
-        //
-        // AVAudioPlayer has slightly higher latency and doesn't give access to uncompressed
-        // sound data, but uses "Apple's optimized pathways" and doesn't need to store
-        // uncompressed sound data in memory.
-        //
-        // By default the OpenAL implementation is picked, while AVAudioPlayer is used then
-        // inForceMusic is true.
-        
-        //LOG_SOUND("Sound.mm Create()"); 
-        //if (inForceMusic)
-        //{
-            //return new AVAudioPlayerSound(inFilename);
-        //}
-        //else
-        //{
-            if (!OpenALInit())
-                return 0;
-            return new OpenALSound(inFilename);
-        //}
+    Sound *Sound::Create(const std::string &inFilename,bool inForceMusic) {
+
+            //Always check if openal is intitialized
+        if (!OpenALInit())
+            return 0;
+
+            //Return a reference
+        return new OpenALSound(inFilename);
     }
     
     Sound *Sound::Create(float *inData, int len, bool inForceMusic)

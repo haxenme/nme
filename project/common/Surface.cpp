@@ -127,17 +127,17 @@ void SimpleSurface::destroyHardwareSurface() {
       delete mTexture;
       mTexture = 0;
    }
-	
+   
 }
 
 
 void SimpleSurface::createHardwareSurface() {
 
-	if ( nme::HardwareContext::current == NULL )
-		printf( "Null Hardware Context" );
-	else
- 		GetOrCreateTexture( *nme::HardwareContext::current );
-	
+   if ( nme::HardwareContext::current == NULL )
+      printf( "Null Hardware Context" );
+   else
+       GetOrCreateTexture( *nme::HardwareContext::current );
+   
 }
 
 void SimpleSurface::dumpBits()
@@ -1154,6 +1154,20 @@ void SimpleSurface::Zero()
       memset(mBase,0,mStride * mHeight);
 }
 
+void SimpleSurface::dispose()
+{
+   destroyHardwareSurface();
+   if (mBase)
+   {
+      if (mBase[mStride * mHeight] != 69)
+      {
+         ELOG("Image write overflow");
+      }
+      delete [] mBase;
+      mBase = NULL;
+   }
+}
+
 RenderTarget SimpleSurface::BeginRender(const Rect &inRect,bool inForHitTest)
 {
    if (!mBase)
@@ -1651,6 +1665,38 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 }
 
 
+void SimpleSurface::unmultiplyAlpha()
+{
+   if (!mBase)
+      return;
+   Rect r = Rect(0,0,mWidth,mHeight);
+   mVersion++;
+   if (mTexture)
+      mTexture->Dirty(r);
+   
+   if (mPixelFormat==pfAlpha)
+      return;
+   int i = 0;
+   int a;
+   double unmultiply;
+   
+   for(int y=0;y<r.h;y++)
+   {
+      uint8 *dest = mBase + (r.y+y)*mStride + r.x*4;
+      for(int x=0;x<r.w;x++)
+      {
+         a = *(dest + 3);
+         if(a!=0)
+         {
+            unmultiply = 255.0/a;
+            *dest = sgClamp0255[int((*dest) * unmultiply)];
+            *(dest+1) = sgClamp0255[int(*(dest + 1) * unmultiply)];
+            *(dest+2) = sgClamp0255[int(*(dest + 2) * unmultiply)];
+         }
+         dest += 4;
+      }
+   }
+}
 
 
 
