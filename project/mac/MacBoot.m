@@ -5,6 +5,7 @@
     Feel free to customize this file to suit your needs
 */
 
+#ifndef HXCPP_M64
 #import <SDL.h>
 #import <sys/param.h> /* for MAXPATHLEN */
 #import <unistd.h>
@@ -523,6 +524,31 @@ int main (int argc, char **argv)
     CustomApplicationMain (argc, argv);
 #endif
     return 0;
+}
+
+#endif
+#else
+
+#import <Cocoa/Cocoa.h>
+#import <unistd.h>
+#import <stdio.h>
+
+
+FILE *OpenRead(const char *inName)
+{
+    FILE * result = fopen(inName,"rb");
+    return result;
+}
+
+bool GetBundleFilename(const char *inName, char *outBuffer,int inSize)
+{
+   return true;
+}
+
+// TODO:?
+FILE *OpenOverwrite(const char *inName)
+{
+   return fopen(inName,"w");
 }
 
 #endif

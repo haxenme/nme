@@ -484,7 +484,7 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
 
    bool swap = (gC0IsRed == (((inSurface->Format() & pfSwapRB ))>0) );
    bool do_alpha = color_type==PNG_COLOR_TYPE_RGBA;
-
+   
    if (!swap && do_alpha)
    {
       QuickVec<png_bytep> row_pointers(h);

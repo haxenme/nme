@@ -13,7 +13,7 @@
    <set name="SDL_STATIC" value="${haxelib:nmedev}sdl-static" unless="SDL_STATIC" />
    
    <set name="sdl" value="1" if="linux"/>
-   <set name="sdl" value="1" if="macos"/>
+   <set name="sdl" value="1" if="macos" unless="HXCPP_M64"/>
    <set name="sdl" value="1" if="win_desktop" />
    <set name="sdl" value="1" if="webos"/>
    <set name="sdl" value="1" if="blackberry"/>
@@ -30,6 +30,8 @@
    
    <set name="nocurl" value="1" if="winrt"/>
    <set name="nocurl" value="1" if="emscripten"/>
+   <set name="nocurl" value="1" if="macos" />
+   <unset name="nocurl" if="macos" unless="HXCPP_M64" />
    
    <!-- <set name="NME_FORCE_GLES1" value="1" if="iphone" /> -->
    
@@ -305,6 +307,7 @@
    
    <set name="sdl_static" value="1" unless="mobile"/>
    <unset name="sdl_static" if="emscripten" />
+   <unset name="sdl_static" unless="sdl" />
    <set name="sdl_static" value="1" if="blackberry"/>
    <unset name="sdl_static" if="dynamic_sdl"/>
    <unset name="sdl_static" if="winrt"/>
@@ -342,7 +345,11 @@
       <compilerflag value="-I${SDL_STATIC}/include/SDL12" if="sdl_static" />
       <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
       <file name="mac/NSFont.cpp"/>
-      <file name="mac/MacBoot.m"/>
+      <file name="mac/MacBoot.m" />
+      <file name="empty/URL.cpp" if="nocurl" />
+      <file name="empty/Sound.cpp" unless="sdl" />
+      <file name="empty/Stage.cpp" unless="sdl" />
+      <file name="empty/HardwareContext.cpp" unless="sdl" />
       <file name="mac/System.mm"/>
       <file name="cocoa/FileManager.mm"/>
       <file name="openal/OpenALSound.cpp" if="openal"/>

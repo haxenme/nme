@@ -1345,7 +1345,10 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
 
    const uint8 *src = (const uint8 *)inPixels;
    bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
-
+   
+   if (mAllowTrans && mPixelFormat==pfXRGB)
+      mPixelFormat=pfARGB;
+   
    for(int y=0;y<r.h;y++)
    {
       uint8 *dest = mBase + (r.y+y)*mStride + r.x*(mPixelFormat==pfAlpha?1:4);
@@ -1462,6 +1465,8 @@ void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
 
    if (inAlphaToo)
    {
+      if(mPixelFormat==pfXRGB)
+         mPixelFormat=pfARGB;
       if (mPixelFormat==pfAlpha)
          mBase[inY*mStride + inX] = inRGBA >> 24;
       else if ( (bool)(mPixelFormat & pfSwapRB) == gC0IsRed )
