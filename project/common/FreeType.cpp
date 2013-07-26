@@ -148,7 +148,7 @@ public:
       {
          FT_Size_Metrics &metrics = mFace->size->metrics;
          ioMetrics.ascent = std::max( ioMetrics.ascent, (float)metrics.ascender/(1<<6) );
-         ioMetrics.descent = std::max( ioMetrics.descent, fabs((float)metrics.descender/(1<<6)) );
+         ioMetrics.descent = std::max( ioMetrics.descent, (float)fabs((float)metrics.descender/(1<<6)) );
          ioMetrics.height = std::max( ioMetrics.height, (float)metrics.height/(1<<6) );
       }
    }
