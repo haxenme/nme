@@ -331,6 +331,7 @@
 	  <compilerflag value="-DSDL_IMAGE" if="sdl_image" />
       <file name="sdl/SDLStage.cpp"/>
       <file name="sdl/SDLSound.cpp" unless="openal"/>
+      <file name="video/TheoraVideo.cpp"/>
       
    </files>
    
@@ -393,6 +394,7 @@
       <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
+      <lib name="${THIRDPARTY_LIBS}libtheora${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libsmpeg${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="android"/>
