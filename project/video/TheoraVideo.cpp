@@ -14,7 +14,8 @@ namespace nme
    class VideoSurface : public SimpleSurface
    {
    public:
-      VideoSurface(int inW, int inH) : SimpleSurface(inW, inH, pfARGB)
+      VideoSurface(int inW, int inH)
+         : SimpleSurface(inW, inH, pfARGB)
       {
          Clear();
       }
@@ -26,13 +27,12 @@ namespace nme
 
       void RenderTo(const unsigned int *pixels, int width, int height, bool smoothing)
       {
-         unsigned int *buffer = (unsigned int *)mBase;
          if (width == mWidth && height == mHeight)
          {
             // grab scanlines
             for (int y = 0; y < height; y++)
             {
-               memcpy(&buffer[y * mWidth],
+               memcpy(&mBase[y * mWidth],
                   &pixels[y * width],
                   width * sizeof(unsigned int));
             }
@@ -43,6 +43,7 @@ namespace nme
             float xRatio = (width - 1) / (float)mWidth;
             float yRatio = (height - 1) / (float)mHeight;
             float xDiff, yDiff;
+            uint8 *buffer = mBase;
             for (int i = 0; i < mHeight; i++)
             {
                for (int j = 0; j < mWidth; j++)
@@ -63,22 +64,26 @@ namespace nme
                   float c = yDiff * (1 - xDiff);
                   float d = (xDiff * yDiff);
 
-                  int blue  = (A & 0xFF) * a +
-                              (B & 0xFF) * b +
-                              (C & 0xFF) * c +
-                              (D & 0xFF) * d;
+                  // blue
+                  *(buffer++) = (A & 0xFF) * a +
+                                (B & 0xFF) * b +
+                                (C & 0xFF) * c +
+                                (D & 0xFF) * d;
 
-                  int green = (A >> 8 & 0xFF) * a +
-                              (B >> 8 & 0xFF) * b +
-                              (C >> 8 & 0xFF) * c +
-                              (D >> 8 & 0xFF) * d;
+                  // green
+                  *(buffer++) = (A >> 8 & 0xFF) * a +
+                                (B >> 8 & 0xFF) * b +
+                                (C >> 8 & 0xFF) * c +
+                                (D >> 8 & 0xFF) * d;
 
-                  int red   = (A >> 16 & 0xFF) * a +
-                              (B >> 16 & 0xFF) * b +
-                              (C >> 16 & 0xFF) * c +
-                              (D >> 16 & 0xFF) * d;
-
-                  *(buffer++) = 0xFF000000 | ((red << 16) & 0xFF0000) | ((green << 8) & 0xFF00) | blue;
+                  // red
+                  *(buffer++) = (A >> 16 & 0xFF) * a +
+                                (B >> 16 & 0xFF) * b +
+                                (C >> 16 & 0xFF) * c +
+                                (D >> 16 & 0xFF) * d;
+                  
+                  // alpha
+                  *(buffer++) = 0xFF;
                }
             }
          }
@@ -87,6 +92,7 @@ namespace nme
             // nearest neighbor scaling
             float xRatio = width / (float)mWidth;
             float yRatio = height / (float)mHeight;
+            unsigned int *buffer = (unsigned int *)mBase;
             for (int y = 0; y < mHeight; y++)
             {
                for (int x = 0; x < mWidth; x++)
@@ -233,9 +239,7 @@ namespace nme
                mLastAudioPacket = mAudioPacket;
 
                if (mAudioPacket->playms > elapsed + 400)
-               {
                   break;
-               }
             }
 
             if (mVideoFrame)
