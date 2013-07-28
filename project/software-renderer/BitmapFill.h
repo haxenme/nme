@@ -104,7 +104,7 @@ public:
       mBase = mBitmap->bitmapData->GetBase();
       mStride = mBitmap->bitmapData->GetStride();
       mMapped = false;
-		mPerspective = false;
+      mPerspective = false;
    }
 
 
@@ -139,14 +139,14 @@ public:
       double dv2;
       double dw1=0;
       double dw2=0;
-		double w0=1,w1=1,w2=1;
-		if (inComponents==3)
-		{
-			w0 = inUVT[2];
-			w1 = inUVT[3+2];
-			w2 = inUVT[6+2];
-			//w0 = w1 = w2 = 1.0;
-			dx1 = inVertex[1].x-inVertex[0].x;
+      double w0=1,w1=1,w2=1;
+      if (inComponents==3)
+      {
+         w0 = inUVT[2];
+         w1 = inUVT[3+2];
+         w2 = inUVT[6+2];
+         //w0 = w1 = w2 = 1.0;
+         dx1 = inVertex[1].x-inVertex[0].x;
          dy1 = inVertex[1].y-inVertex[0].y;
          dx2 = inVertex[2].x-inVertex[0].x;
          dy2 = inVertex[2].y-inVertex[0].y;
@@ -157,10 +157,10 @@ public:
 
          dw1 = w1 - w0;
          dw2 = w2 - w0;
-		}
-		else
-		{
-		   dx1 = inVertex[1].x-inVertex[0].x;
+      }
+      else
+      {
+         dx1 = inVertex[1].x-inVertex[0].x;
          dy1 = inVertex[1].y-inVertex[0].y;
          dx2 = inVertex[2].x-inVertex[0].x;
          dy2 = inVertex[2].y-inVertex[0].y;
@@ -168,7 +168,7 @@ public:
          du2 = (inUVT[inComponents*2] - inUVT[0])*w;
          dv1 = (inUVT[inComponents  +1] - inUVT[1])*h;
          dv2 = (inUVT[inComponents*2+1] - inUVT[1])*h;
-		}
+      }
 
       // u = a*x + b*y + c
       //   u0 = a*v0.x + b*v0.y + c
@@ -196,7 +196,7 @@ public:
          mMapper.mtx = (inUVT[0]*w*w0 - a*inVertex[0].x - b*inVertex[0].y);
 
          a = mMapper.m10 = (dv1*dy2 - dv2*dy1)*det;
-			b = mMapper.m11 = (dv2*dx1 - dv1*dx2)*det;
+         b = mMapper.m11 = (dv2*dx1 - dv1*dx2)*det;
          mMapper.mty = (inUVT[1]*h*w0 - a*inVertex[0].x - b*inVertex[0].y);
 
          if (mPerspective && inComponents>2)
@@ -209,11 +209,11 @@ public:
 
       mMapper.Translate(0.5,0.5);
 
-		if (!mPerspective || inComponents<3)
-		{
+      if (!mPerspective || inComponents<3)
+      {
          mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
          mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
-		}
+      }
    }
 
 
@@ -244,21 +244,21 @@ public:
    enum { HasAlpha = HAS_ALPHA };
 
    BitmapFiller(GraphicsBitmapFill *inFill) : BitmapFillerBase(inFill)
-	{
-		mPerspective = PERSP;
-	}
+   {
+      mPerspective = PERSP;
+   }
 
    ARGB GetInc( )
    {
-		if (PERSP)
-		{
+      if (PERSP)
+      {
          double w = 65536.0/mTW;
          mPos.x = (int)(mTX*w);
          mPos.y = (int)(mTY*w);
-			mTX += mMapper.m00;
-			mTY += mMapper.m10;
-			mTW += mWX;
-		}
+         mTX += mMapper.m00;
+         mTY += mMapper.m10;
+         mTW += mWX;
+      }
       int x = mPos.x >> 16;
       int y = mPos.y >> 16;
       if (SMOOTH)
@@ -269,35 +269,77 @@ public:
 
          GET_PIXEL_POINTERS
 
-			if (!PERSP)
-			{
+         if (!PERSP)
+         {
             mPos.x += mDPxDX;
             mPos.y += mDPyDX;
-			}
-
-         result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
-                    (  p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
-         result.c1 = ( (p00.c1*frac_nx + p01.c1*frac_x)*frac_ny +
-                    (  p10.c1*frac_nx + p11.c1*frac_x)*frac_y ) >> 24;
-         result.c2 = ( (p00.c2*frac_nx + p01.c2*frac_x)*frac_ny +
-                    (  p10.c2*frac_nx + p11.c2*frac_x)*frac_y ) >> 24;
-
+         }
+         
          if (HAS_ALPHA)
          {
-            result.a = ( (p00.a*frac_nx + p01.a*frac_x)*frac_ny +
-                         (p10.a*frac_nx + p11.a*frac_x)*frac_y ) >> 24;
+            bool p0_visible = (p00.a > 0 && p01.a > 0);
+            bool p1_visible = (p10.a > 0 && p11.a > 0);
+            if (p0_visible && p1_visible)
+            {
+               result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
+                  ( p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
+               result.c1 = ( (p00.c1*frac_nx + p01.c1*frac_x)*frac_ny +
+                  ( p10.c1*frac_nx + p11.c1*frac_x)*frac_y ) >> 24;
+               result.c2 = ( (p00.c2*frac_nx + p01.c2*frac_x)*frac_ny +
+                  ( p10.c2*frac_nx + p11.c2*frac_x)*frac_y ) >> 24;
+               result.a = ( (p00.a*frac_nx + p01.a*frac_x)*frac_ny +
+                  ( p10.a*frac_nx + p11.a*frac_x)*frac_y ) >> 24;
+            }
+            else if (p0_visible)
+            {
+               result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
+                  ( p00.c0*frac_nx + p01.c0*frac_x)*frac_y ) >> 24;
+               result.c1 = ( (p00.c1*frac_nx + p01.c1*frac_x)*frac_ny +
+                  ( p00.c1*frac_nx + p01.c1*frac_x)*frac_y ) >> 24;
+               result.c2 = ( (p00.c2*frac_nx + p01.c2*frac_x)*frac_ny +
+                  ( p00.c2*frac_nx + p01.c2*frac_x)*frac_y ) >> 24;
+               result.a = ( (p00.a*frac_nx + p01.a*frac_x)*frac_ny +
+                  ( p10.a*frac_nx + p11.a*frac_x)*frac_y ) >> 24;
+            }
+            else if (p1_visible)
+            {
+               result.c0 = ( (p10.c0*frac_nx + p11.c0*frac_x)*frac_ny +
+                  ( p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
+               result.c1 = ( (p10.c1*frac_nx + p11.c1*frac_x)*frac_ny +
+                  ( p10.c1*frac_nx + p11.c1*frac_x)*frac_y ) >> 24;
+               result.c2 = ( (p10.c2*frac_nx + p11.c2*frac_x)*frac_ny +
+                  ( p10.c2*frac_nx + p11.c2*frac_x)*frac_y ) >> 24;
+               result.a = ( (p00.a*frac_nx + p01.a*frac_x)*frac_ny +
+                  ( p10.a*frac_nx + p11.a*frac_x)*frac_y ) >> 24;
+            }
+            else
+            {
+               result.c0 = 0;
+               result.c1 = 0;
+               result.c2 = 0;
+               result.a = 0;
+            }
          }
          else
+         {
+            result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
+               ( p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
+            result.c1 = ( (p00.c1*frac_nx + p01.c1*frac_x)*frac_ny +
+               ( p10.c1*frac_nx + p11.c1*frac_x)*frac_y ) >> 24;
+            result.c2 = ( (p00.c2*frac_nx + p01.c2*frac_x)*frac_ny +
+               ( p10.c2*frac_nx + p11.c2*frac_x)*frac_y ) >> 24;
             result.a = 255;
+            
+         }
          return result;
       }
       else
       {
-			if (!PERSP)
-			{
+         if (!PERSP)
+         {
             mPos.x += mDPxDX;
             mPos.y += mDPyDX;
-			}
+         }
          MODIFY_EDGE_XY;
          return *(ARGB *)( mBase + y*mStride + x*4);
       }
@@ -305,19 +347,19 @@ public:
 
    inline void SetPos(int inSX,int inSY)
    {
-		double x = inSX+0.5;
+      double x = inSX+0.5;
       double y = inSY+0.5;
-		if (PERSP)
-		{
+      if (PERSP)
+      {
          mTX = mMapper.m00*x + mMapper.m01*y + mMapper.mtx;
          mTY = mMapper.m10*x + mMapper.m11*y + mMapper.mty;
          mTW =         mWX*x +         mWY*y +         mW0;
-		}
-		else
-		{
+      }
+      else
+      {
          mPos.x = (int)( (mMapper.m00*x + mMapper.m01*y + mMapper.mtx) * (1<<16) + 0.5);
          mPos.y = (int)( (mMapper.m10*x + mMapper.m11*y + mMapper.mty) * (1<<16) + 0.5);
-		}
+      }
    }
 
 
