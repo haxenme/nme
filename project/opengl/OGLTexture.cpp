@@ -148,6 +148,18 @@ public:
       {
          buffer = (uint8 *)inSurface->Row(0);
       }
+      
+      if (store_format != GL_ALPHA)
+      {
+         for (int i=0;i<mTextureWidth*mTextureHeight*4;i+=4)
+         {
+            float a = buffer[i+3]/255.0;
+            buffer[i] = int(buffer[i]*a);
+            buffer[i+1] = int(buffer[i+1]*a);
+            buffer[i+2] = int(buffer[i+2]*a);
+         }
+      }
+      
 
 
       glGenTextures(1, &mTextureID);

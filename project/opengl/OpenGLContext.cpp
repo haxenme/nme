@@ -196,7 +196,7 @@ public:
          SetViewport(inRect);
 
          glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
 
          #ifdef WEBOS
          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
@@ -295,7 +295,7 @@ public:
 		 } else if (  arrays.mFlags & HardwareArrays::BM_SCREEN ) {
            glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
          } else {
-           glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+           glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_ALPHA); 
          }
          
          #ifdef NME_USE_VBO
@@ -485,9 +485,9 @@ public:
    {
       #ifndef NME_FORCE_GLES2
       if (inTransform)
-         glColor4f( inTransform->redMultiplier,
-                    inTransform->greenMultiplier,
-                    inTransform->blueMultiplier,
+         glColor4f( inTransform->redMultiplier*inTransform->alphaMultiplier,
+                    inTransform->greenMultiplier*inTransform->alphaMultiplier,
+                    inTransform->blueMultiplier*inTransform->alphaMultiplier,
                     inTransform->alphaMultiplier);
       #endif
    }

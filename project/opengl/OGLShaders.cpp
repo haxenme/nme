@@ -202,15 +202,15 @@ public:
       {
           if (mColourOffsetSlot>=0)
              glUniform4f(mColourOffsetSlot,
-                      inTransform->redOffset*one_on_255,
-                      inTransform->greenOffset*one_on_255,
-                      inTransform->blueOffset*one_on_255,
+                      inTransform->redOffset*one_on_255*inTransform->alphaMultiplier,
+                      inTransform->greenOffset*one_on_255*inTransform->alphaMultiplier,
+                      inTransform->blueOffset*one_on_255*inTransform->alphaMultiplier,
                       inTransform->alphaOffset*one_on_255);
           if (mColourScaleSlot>=0)
              glUniform4f(mColourScaleSlot,
-                      inTransform->redMultiplier,
-                      inTransform->greenMultiplier,
-                      inTransform->blueMultiplier,
+                      inTransform->redMultiplier*inTransform->alphaMultiplier,
+                      inTransform->greenMultiplier*inTransform->alphaMultiplier,
+                      inTransform->blueMultiplier*inTransform->alphaMultiplier,
                       inTransform->alphaMultiplier);
           /*
              printf("offset %d = %f %f %f %f\n",mColourOffsetSlot,
