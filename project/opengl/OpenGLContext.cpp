@@ -448,11 +448,11 @@ public:
    virtual void SetSolidColour(unsigned int col)
    {
        #ifndef NME_FORCE_GLES2
-       glColor4f(
-         (float) ((col >> 16) & 0xFF) *  one_on_255,
-         (float) ((col >> 8) & 0xFF) * one_on_255,
-         (float) (col & 0xFF) * one_on_255,
-         (float) ((col >> 24) & 0xFF) * one_on_255);
+       float a = (float) ((col >> 24) & 0xFF) * one_on_255;
+       float c0 = (float) ((col >> 16) & 0xFF) * one_on_255;
+       float c1 = (float) ((col >> 8) & 0xFF) * one_on_255;
+       float c2 = (float) (col & 0xFF) * one_on_255;
+       glColor4f(c0*a,c1*a,c2*a,a);
        #endif
    }
 
@@ -527,11 +527,11 @@ public:
    virtual void PrepareBitmapRender()
    {
       #ifndef NME_FORCE_GLES2
-      glColor4f(
-        (float) ((mTint >> 16) & 0xFF) *one_on_255,
-        (float) ((mTint >> 8) & 0xFF) *one_on_255,
-        (float) (mTint & 0xFF) * one_on_255,
-        (float) ((mTint >> 24) & 0xFF) *one_on_255);
+      float a = (float) ((mTint >> 24) & 0xFF) *one_on_255;
+      float c0 = (float) ((mTint >> 16) & 0xFF) *one_on_255;
+      float c1 = (float) ((mTint >> 8) & 0xFF) *one_on_255;
+      float c2 = (float) (mTint & 0xFF) *one_on_255;
+      glColor4f(c0*a,c1*a,c2*a,a);
       glEnable(GL_TEXTURE_2D);
       glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       #ifdef NME_DITHER

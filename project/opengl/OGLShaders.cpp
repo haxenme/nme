@@ -248,10 +248,13 @@ public:
    void setTint(unsigned int inColour)
    {
       if (mTintSlot>=0)
-         glUniform4f(mTintSlot, ((inColour >> 16) & 0xff) * one_on_255,
-                                ((inColour >> 8) & 0xff) * one_on_255,
-                                ((inColour) & 0xff) * one_on_255,
-                                ((inColour >> 24) & 0xff) * one_on_255 );
+      {
+         float a = ((inColour >> 24) & 0xff) * one_on_255;
+         float c0 = ((inColour >> 16) & 0xff) * one_on_255;
+         float c1 = ((inColour >> 8) & 0xff) * one_on_255;
+         float c2 = (inColour & 0xff) * one_on_255;
+         glUniform4f(mTintSlot, c0*a, c1*a, c2*a, a);
+      }
    }
 
    virtual void setGradientFocus(float inFocus)
@@ -376,6 +379,7 @@ const char *gBitmapAlphaFrag =
 "uniform vec4 uTint;\n"
 "void main(void)\n"
 "{\n"
+"   if (texture2D(uImage0,vTexCoord).a > 0)\n"
 "   gl_FragColor.rgb = uTint.rgb;\n"
 "   gl_FragColor.a  = texture2D(uImage0,vTexCoord).a*uTint.a;\n"
 "}\n";
