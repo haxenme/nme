@@ -295,6 +295,8 @@ GLFWFrame *createWindowFrame(const char *inTitle, int inWidth, int inHeight, uns
 
    if (inFlags & wfResizable)
       glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+   else
+      glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
    if (inFlags & wfBorderless)
       glfwWindowHint(GLFW_DECORATED, GL_FALSE);

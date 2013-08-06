@@ -242,6 +242,8 @@
       <file name="common/Lzma.cpp"/>
       <file name="common/Thread.cpp"/>
       <file name="common/Audio.cpp" if="openal"/>
+	  <file name="video/TheoraVideo.cpp" if="theora" />
+      <file name="empty/Video.cpp" unless="theora" />
       
       <file name="common/XML/tinystr.cpp"/>
       <file name="common/XML/tinyxml.cpp"/>
@@ -334,7 +336,6 @@
 	  <compilerflag value="-DSDL_IMAGE" if="sdl_image" />
       <file name="sdl/SDLStage.cpp"/>
       <file name="sdl/SDLSound.cpp" unless="openal"/>
-      <file name="video/TheoraVideo.cpp"/>
       
    </files>
    
@@ -414,7 +415,7 @@
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal_link" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="openal_link" unless="sdl_static" />
-      <lib name="${THIRDPARTY_LIBS}libtheora${name_extra}${SLIBEXT}" if="sdl_static"/>
+      <lib name="${THIRDPARTY_LIBS}libtheora${name_extra}${SLIBEXT}" if="theora" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libsmpeg${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="glfw"/>
