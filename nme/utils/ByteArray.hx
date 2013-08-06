@@ -19,7 +19,7 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
-class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if !haxe3 , #end implements IDataInput #if !haxe3 , #end implements IMemoryRange 
+class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput implements IMemoryRange implements IDataOutput
 {
 
    public var bigEndian:Bool;
@@ -455,7 +455,15 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
       #end
    }
 
-   public function writeBytes(bytes:Bytes, inOffset:Int = 0, inLength:Int = 0) 
+   // This needs to support both
+   //    writeBytes(bytes:ByteArray,...   for IDataOutput and
+   //    writeBytes(bytes:Bytes,...       for haxe.io.Bytes and
+   public function writeBytes(bytes:Dynamic, inOffset:Int = 0, inLength:Int = 0) 
+   {
+      writeHaxeBytes( bytes, inOffset, inLength );
+   }
+
+   public function writeHaxeBytes(bytes:Bytes, inOffset:Int, inLength:Int) 
    {
       if (inLength == 0) inLength = bytes.length - inOffset;
       ensureElem(position + inLength - 1, true);
@@ -463,6 +471,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
       position += inLength;
       blit(opos, bytes, inOffset, inLength);
    }
+
 
    public function writeDouble(x:Float) 
    {
@@ -472,7 +481,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
       var bytes = Bytes.ofData(_double_bytes(x, bigEndian));
       #end
 
-      writeBytes(bytes);
+      writeHaxeBytes(bytes,0,0);
    }
 
    #if !no_nme_io
@@ -490,7 +499,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
       var bytes = Bytes.ofData(_float_bytes(x, bigEndian));
       #end
 
-      writeBytes(bytes);
+      writeHaxeBytes(bytes,0,0);
    }
 
    public function writeInt(value:Int) 
@@ -545,7 +554,7 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
       #end
 
       writeShort(bytes.length);
-      writeBytes(bytes);
+      writeHaxeBytes(bytes,0,0);
    }
 
    public function writeUTFBytes(s:String) 
@@ -553,10 +562,10 @@ class ByteArray extends Bytes #if !haxe3 , #end implements ArrayAccess<Int> #if 
       #if neko
       var bytes = new Bytes(s.length, untyped s.__s);
       #else
-      var bytes = Bytes.ofString(s);
+      var bytes:haxe.io.Bytes = Bytes.ofString(s);
       #end
 
-      writeBytes(bytes);
+      writeHaxeBytes(bytes,0,0);
    }
 
    // Getters & Setters
