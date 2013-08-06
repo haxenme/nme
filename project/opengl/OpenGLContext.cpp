@@ -181,7 +181,9 @@ public:
       {
          #ifndef NME_GLES
          #ifndef SDL_OGL
+         #ifndef GLFW_OGL
          wglMakeCurrent(mDC,mOGLCtx);
+         #endif
          #endif
          #endif
 		 
@@ -237,7 +239,9 @@ public:
    {
       #ifndef NME_GLES
       #ifndef SDL_OGL
+      #ifndef GLFW_OGL
       SwapBuffers(mDC);
+      #endif
       #endif
       #endif
    }
@@ -948,7 +952,9 @@ void InitExtensions()
       extentions_init = true;
       #ifdef HX_WINDOWS
       #ifndef SDL_OGL
+	  #ifndef GLFW_OGL
          wglMakeCurrent( (WinDC)inWindow,(GLCtx)inGLCtx);
+      #endif
       #endif
 
 

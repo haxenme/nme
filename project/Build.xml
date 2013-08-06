@@ -12,20 +12,18 @@
    
    <set name="SDL_STATIC" value="${haxelib:nmedev}sdl-static" unless="SDL_STATIC" />
    
+   <set name="glfw" value="1" if="win_desktop"/>
    <set name="sdl" value="1" if="linux"/>
    <set name="sdl" value="1" if="macos" unless="HXCPP_M64"/>
-   <set name="sdl" value="1" if="win_desktop" />
+   <set name="sdl" value="1" if="win_desktop" unless="glfw" />
    <set name="sdl" value="1" if="webos"/>
    <set name="sdl" value="1" if="blackberry"/>
    <set name="sdl" value="1" if="emscripten"/>
-   <set name="ogl" value="1" if="win_desktop" />
+   <set name="ogl" value="1" if="glfw"/>
    <set name="ogl" value="1" if="sdl"/>
    <set name="ogl" value="1" if="gph"/>
    <set name="ogl" value="1" if="iphone"/>
    <set name="ogl" value="1" if="android"/>
-   <set name="ogl" value="1" if="webos"/>
-   <set name="ogl" value="1" if="blackberry"/>
-   <set name="ogl" value="1" if="emscripten"/>
    <set name="nmeegl" value="1" if="rpi"/>
    
    <set name="nocurl" value="1" if="winrt"/>
@@ -42,7 +40,7 @@
    <!-- Toggle this for openal experimental osx code -->
    <!-- <set name="openal" value="1" if="macos"/> -->
    <!-- <set name="openal" value="1" if="iphone"/> -->
-   <!-- <set name="openal" value="1" if="win_desktop"/> -->
+   <set name="openal" value="1" if="win_desktop" unless="sdl" />
 	
    <set name="mobile" value="1" if="iphone"/>
    <set name="mobile" value="1" if="android"/>
@@ -64,8 +62,9 @@
       <file name="windows/GDIFont.cpp"/>
       <file name="windows/System.cpp" />
       <!-- Use SDL on windows too ? -->
-      <file name="windows/SimpleFrame.cpp" unless="sdl"/>
-      <file name="sdl/SDLSound.cpp" unless="sdl"/>
+      <!-- <file name="windows/SimpleFrame.cpp" unless="sdl"/> -->
+      <!-- <file name="sdl/SDLSound.cpp" unless="sdl"/> -->
+	  <file name="empty/Sound.cpp" if="glfw" unless="openal" />
 	  <file name="openal/OpenALSound.cpp" if="openal"/>
       
    </files>
@@ -213,6 +212,7 @@
       <!-- <compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/> -->
       <compilerflag value="-I${QNX_TARGET}/usr/include/GLES2" if="blackberry"/>
       <compilerflag value="-DSDL_OGL" if="sdl"/>
+	  <compilerflag value="-DGLFW_OGL" if="glfw"/>
       <compilerflag value="-DNME_CURL_SSL" if="ssl" unless="nocurl"/>
 	  <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <compilerflag value="-Wno-conversion" if="linux"/>
@@ -338,6 +338,15 @@
    </files>
    
    
+	<files id="glfw">
+		
+		<compilerflag value="-Iinclude"/>
+		<compilerflag value="-I${SDL_STATIC}/include"/>
+		<file name="glfw/GLFWStage.cpp"/>
+		
+	</files>
+   
+   
    <files id="mac">
       
       <compilerflag value="-Iinclude"/>
@@ -371,6 +380,7 @@
       <ext value=".ndll" if="gph"/>
 
       <flag value="-NODEFAULTLIB:LIBCMT" if="winrt"/>
+      <flag value="-NODEFAULTLIB:LIBCMT" if="glfw"/>
       
       <files id="common"/>
       <files id="common_lzma"/>
@@ -382,6 +392,7 @@
       <files id="linux" if="linux"/>
       <files id="gph" if="gph"/>
       <files id="sdl" if="sdl"/>
+	  <files id="glfw" if="glfw"/>
       <files id="android" if="android"/>
       <files id="webos" if="webos"/>
       <files id="blackberry" if="blackberry"/>
@@ -395,14 +406,18 @@
       <lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="macos" unless="dynamic_sdl"/>
       <lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="linux" unless="dynamic_sdl"/>
       
-      <lib name="${THIRDPARTY_LIBS}libSDL_mixer${name_extra}${SLIBEXT}" if="sdl_static"/>
+      <lib name="${THIRDPARTY_LIBS}libSDL_mixer${name_extra}${SLIBEXT}" if="sdl" unless="dynamic_sdl" />
       <lib name="${THIRDPARTY_LIBS}libSDL_image${name_extra}${SLIBEXT}" if="sdl_image" unless="emscripten" />
       <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
+      <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal_link" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
+      <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="openal_link" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libsmpeg${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
+      <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="glfw"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="android"/>
+	  <lib name="${THIRDPARTY_LIBS}libglfw3${name_extra}${SLIBEXT}" if="glfw"/>
       
       <lib name="-L${THIRDPARTY_LIBS}" if="linux"/>
       

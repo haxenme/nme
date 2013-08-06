@@ -34,9 +34,19 @@
 #elif !defined(HX_WINDOWS)
 
 // Mac/Linux....
+
+
+#ifdef SDL_OGL
+
 #define GL_GLEXT_PROTOTYPES
 #include <SDL_opengl.h>
 #define FORCE_NON_PO2
+
+#else
+
+#include <GLFW/glfw3.h>
+
+#endif
 
 #ifndef HX_LINUX
 #define ALLOW_OGL2
@@ -70,7 +80,15 @@ typedef ptrdiff_t GLsizeiptrARB;
 
 
 #define ALLOW_OGL2
+
+#ifdef SDL_OGL
 #include <SDL_opengl.h>
+#endif
+
+#ifdef GLFW_OGL
+#include <GL/glext.h>
+#include <GLFW/glfw3.h>
+#endif
 
 #endif
 
