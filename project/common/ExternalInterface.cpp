@@ -21,6 +21,7 @@
 #include <Tilesheet.h>
 #include <Font.h>
 #include <Sound.h>
+#include <Video.h>
 #include <Input.h>
 #include <algorithm>
 #include <URL.h>
@@ -3578,6 +3579,55 @@ value nme_bitmap_data_dump_bits(value inSurface)
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_dump_bits,1);
+
+
+
+// --- Video --------------------------------------------------
+
+value nme_video_create(value inWidth, value inHeight)
+{
+   Video *video = Video::Create( val_int(inWidth), val_int(inHeight) );
+   if (video)
+   {
+      value result = ObjectToAbstract(video);
+      return result;
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_video_create,2);
+
+void nme_video_load(value inHandle, value inFilename)
+{
+   Video *video;
+   if (AbstractToObject(inHandle,video))
+      video->Load(val_string(inFilename));
+}
+DEFINE_PRIM(nme_video_load,2);
+
+void nme_video_play(value inHandle)
+{
+   Video *video;
+   if (AbstractToObject(inHandle,video))
+      video->Play();
+}
+DEFINE_PRIM(nme_video_play,1);
+
+void nme_video_clear(value inHandle)
+{
+   Video *video;
+   if (AbstractToObject(inHandle,video))
+      video->Clear();
+}
+DEFINE_PRIM(nme_video_clear,1);
+
+value nme_video_set_smoothing(value inHandle, value inSmoothing)
+{
+   Video *video;
+   if (AbstractToObject(inHandle,video))
+      video->smoothing = val_bool(inSmoothing);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_video_set_smoothing,2);
 
 
 
