@@ -97,7 +97,6 @@
       <file name="linux/System.cpp"/>
       <file name="empty/URL.cpp" if="nocurl" />
       <file name="empty/Sound.cpp" unless="sdl" />
-      <file name="empty/Stage.cpp" unless="sdl" />
       <file name="empty/HardwareContext.cpp" unless="sdl" />
       
    </files>
@@ -359,6 +358,7 @@
    <files id="directfb">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I/usr/include/directfb" />
       <compilerflag value="-I${SDL_STATIC}/include"/>
       <file name="directfb/DirectFBStage.cpp"/>
       
@@ -411,6 +411,7 @@
       <files id="gph" if="gph"/>
       <files id="sdl" if="sdl"/>
 	  <files id="glfw" if="glfw"/>
+      <files id="directfb" if="directfb" />
       <files id="android" if="android"/>
       <files id="webos" if="webos"/>
       <files id="blackberry" if="blackberry"/>
@@ -491,6 +492,8 @@
       
       <!-- <lib name="-lGLESv1_CM" if="blackberry"/> -->
       <lib name="-lGLESv2" if="blackberry" />
+      
+      <lib name="-ldirectfb" if="directfb" />
       
       <lib name="/opt/vc/lib/libGLESv1_CM.so" if="rpi" unless="ogl_shaders"/>
       <lib name="/opt/vc/lib/libGLESv2.so" if="rpi"/>
