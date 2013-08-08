@@ -70,7 +70,7 @@ public:
 
    void Flip()
    {
-      DFBCHECK (primary->Flip (primary, NULL, (DFBSurfaceFlipFlags)0));
+      //DFBCHECK (primary->Flip (primary, NULL, (DFBSurfaceFlipFlags)0));
       //DirectFBSwapBuffers(mWindow);
    }
 
@@ -148,19 +148,25 @@ private:
 
 void StartAnimation() {
    //while loop
-	
+	while (true) {
   DFBCHECK (primary->GetSize (primary, &screen_width, &screen_height));
+  DFBCHECK (primary->SetColor (primary, 0x0, 0x0, 0x0, 0xFF));
   DFBCHECK (primary->FillRectangle (primary, 0, 0, screen_width, screen_height));
-  DFBCHECK (primary->SetColor (primary, 0x80, 0x80, 0xff, 0xff));
+  DFBCHECK (primary->SetColor (primary, 0xFF, 0x80, 0xFF, 0xFF));
+  
+  //DFBCHECK (primary->DrawRectangle(primary, 0, 0, screen_width, screen_height));
   DFBCHECK (primary->DrawLine (primary,
 			                      0, screen_height / 2,
 			       screen_width - 1, screen_height / 2));
+			                      
+  DFBCHECK (primary->Flip (primary, NULL, (DFBSurfaceFlipFlags)0));
+}
 }
 void PauseAnimation() {}
 void ResumeAnimation() {}
 void StopAnimation() {
-	primary->Release( primary );
-  dfb->Release( dfb );
+	//primary->Release( primary );
+  //dfb->Release( dfb );
    /*DirectFBwindow *window = sgDirectFBFrame->GetWindow();
    DirectFBDestroyWindow(window);
    DirectFBTerminate();*/
@@ -229,6 +235,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    inOnFrame(sgDirectFBFrame);
 
    StartAnimation();*/
+   
+   sgDirectFBFrame = createWindowFrame(inTitle, inWidth, inHeight, inFlags);
+   inOnFrame(sgDirectFBFrame);
+
+   StartAnimation();
 }
 
 void SetIcon(const char *path) {}
