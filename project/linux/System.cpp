@@ -43,6 +43,7 @@ namespace nme {
 		
 	}
 	
+	#ifdef SDL_OGL
 	double CapabilitiesGetScreenDPI() {
 		double xres, yres;
 		Display *dpy;
@@ -78,6 +79,15 @@ namespace nme {
 		
 		return xres / yres;
 	}
+	#else
+	double CapabilitiesGetScreenDPI() {
+		return 72;
+	}
+
+	double CapabilitiesGetPixelAspectRatio() {
+		return 1;
+	}
+	#endif
 
 
 }
