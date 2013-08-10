@@ -9,8 +9,6 @@
 #include <android/log.h>
 #include "AndroidCommon.h"
 
-JavaVM *gJVM=0;
-
 namespace nme
 {
 
@@ -419,7 +417,8 @@ extern "C"
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
 {
-   env->GetJavaVM(&gJVM);
+   //env->GetJavaVM(&gJVM);
+      
    int top = 0;
    gc_set_top_of_stack(&top,true);
    __android_log_print(ANDROID_LOG_INFO, "Resize", "%p  %d,%d", nme::sFrame, width, height);
@@ -432,7 +431,8 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
 {
-   env->GetJavaVM(&gJVM);
+   //env->GetJavaVM(&gJVM);
+      
    int top = 0;
    gc_set_top_of_stack(&top,true);
    //double t0 = nme::GetTimeStamp();
@@ -536,7 +536,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyMotion(JNIEnv * env, jobject 
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
 {
-   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -547,7 +546,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
 
 JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobject obj)
 {
-   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -571,10 +569,5 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject o
    return nme::GetResult();
 }
 
-
 } // end extern C
-
-
-
-
 

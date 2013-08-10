@@ -108,9 +108,11 @@ struct JNIType
             return 0;
       }
 
-      jclass result  = inEnv->FindClass(name.c_str());
+      jclass result = FindClass(name.c_str());
+      /*
       if (result)
          inEnv->NewGlobalRef(result);
+      */
       mClasses[*this] = result;
       return result;
    }
@@ -120,28 +122,28 @@ struct JNIType
       for(int i=0;i<jniELEMENTS;i++)
          elementGetValue[i] = 0;
 
-      elementClass[jniBoolean] = inEnv->FindClass("java/lang/Boolean");
+      elementClass[jniBoolean] = FindClass("java/lang/Boolean");
       elementGetValue[jniBoolean] = inEnv->GetMethodID(elementClass[jniBoolean],"booleanValue","()Z");
       CheckException(inEnv,false);
-      elementClass[jniByte] = inEnv->FindClass("java/lang/Byte");
+      elementClass[jniByte] = FindClass("java/lang/Byte");
       elementGetValue[jniByte] = inEnv->GetMethodID(elementClass[jniByte],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniChar] = inEnv->FindClass("java/lang/Character");
+      elementClass[jniChar] = FindClass("java/lang/Character");
       elementGetValue[jniChar] = inEnv->GetMethodID(elementClass[jniChar],"charValue","()C");
       CheckException(inEnv,false);
-      elementClass[jniShort] = inEnv->FindClass("java/lang/Short");
+      elementClass[jniShort] = FindClass("java/lang/Short");
       elementGetValue[jniShort] = inEnv->GetMethodID(elementClass[jniShort],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniInt] = inEnv->FindClass("java/lang/Integer");
+      elementClass[jniInt] = FindClass("java/lang/Integer");
       elementGetValue[jniInt] = inEnv->GetMethodID(elementClass[jniInt],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniLong] = inEnv->FindClass("java/lang/Long");
+      elementClass[jniLong] = FindClass("java/lang/Long");
       elementGetValue[jniLong] = inEnv->GetMethodID(elementClass[jniLong],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniFloat] = inEnv->FindClass("java/lang/Float");
+      elementClass[jniFloat] = FindClass("java/lang/Float");
       elementGetValue[jniFloat] = inEnv->GetMethodID(elementClass[jniFloat],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniDouble] = inEnv->FindClass("java/lang/Double");
+      elementClass[jniDouble] = FindClass("java/lang/Double");
       elementGetValue[jniDouble] = inEnv->GetMethodID(elementClass[jniDouble],"doubleValue","()D");
       CheckException(inEnv,false);
       elementClass[jniVoid] = 0;
@@ -184,10 +186,10 @@ void JNIInit(JNIEnv *env)
 {
    if (sInit)
       return;
-   GameActivity = (jclass)env->NewGlobalRef(env->FindClass("org/haxe/nme/GameActivity"));
+   GameActivity = FindClass("org/haxe/nme/GameActivity");
    postUICallback = env->GetStaticMethodID(GameActivity, "postUICallback", "(J)V");
 
-   ObjectClass = env->FindClass("java/lang/Object");
+   ObjectClass = FindClass("java/lang/Object");
 
    HaxeObject   = JNIType(jniObjectHaxe,0).getClass(env);
    HaxeObject_create = env->GetStaticMethodID(HaxeObject, "create", "(J)Lorg/haxe/nme/HaxeObject;");
@@ -266,25 +268,24 @@ void RemoveJavaHaxeObjectRef(value inValue)
    pthread_mutex_unlock(&gJavaObjectsMutex);
 }
 
-
 struct JNIObject : public nme::Object
 {
-   JNIObject(jobject inObject)
-   {
-      mObject = inObject;
-      if (mObject)
-         mObject = (GetEnv()->NewGlobalRef(mObject));
-   }
-   ~JNIObject()
-   {
-      if (mObject)
-         GetEnv()->DeleteGlobalRef(mObject);
-   }
-   operator jobject() { return mObject; }
-   jobject GetJObject() { return mObject; }
-   jobject mObject;
+	JNIObject(jobject inObject)
+	{
+		mObject = inObject;
+		if (mObject)
+			globalClass = reinterpret_cast<jclass>(GetEnv()->NewGlobalRef(mObject));
+	}
+	~JNIObject()
+	{
+	if (globalClass)
+		GetEnv()->DeleteGlobalRef(globalClass);
+	}
+	operator jobject() { return mObject; }
+	jobject GetJObject() { return mObject; }
+	jobject mObject;
+	jclass globalClass;
 };
-
 
 
 bool AbstractToJObject(value inValue, jobject &outObject)
@@ -449,7 +450,6 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
       case jniFloat:
       case jniDouble:
           return alloc_float(inEnv->CallDoubleMethod(inObject, JNIType::elementGetValue[inType.element] ) );
-
 
       default:
       {
@@ -618,10 +618,6 @@ bool HaxeToJNI(JNIEnv *inEnv, value inValue, JNIType inType, jvalue &out)
    return false;
 }
 
-
-
-
-
 struct JNIMethod : public nme::Object
 {
    enum { MAX = 20 };
@@ -639,8 +635,7 @@ struct JNIMethod : public nme::Object
       const char *method = val_string(inMethod);
       mIsConstructor = !strncmp(method,"<init>",6);
 
-
-      mClass = (jclass)env->NewGlobalRef(env->FindClass(val_string(inClass)));
+      mClass = FindClass(val_string(inClass));
       const char *signature = val_string(inSignature);
       if (mClass)
       {
@@ -662,7 +657,6 @@ struct JNIMethod : public nme::Object
 
    ~JNIMethod()
    {
-      GetEnv()->DeleteGlobalRef(mClass);
    }
 
    bool HaxeToJNIArgs(JNIEnv *inEnv, value inArray, jvalue *outValues)
@@ -689,8 +683,6 @@ struct JNIMethod : public nme::Object
    {
    }
 
-
-
    bool ParseSignature(const char *inSig)
    {
       if (*inSig++!='(')
@@ -713,8 +705,6 @@ struct JNIMethod : public nme::Object
    }
 
    bool Ok() const { return mMethod>0; }
-
-
 
    value CallStatic( value inArgs)
    {
@@ -773,8 +763,6 @@ struct JNIMethod : public nme::Object
       CheckException(env);
       return result;
    }
-
-
 
    value CallMember(jobject inObject, value inArgs)
    {
@@ -837,6 +825,12 @@ struct JNIMethod : public nme::Object
    bool      mIsConstructor;
 };
 
+value nme_jni_detach_current_thread()
+{
+    getJavaVM()->DetachCurrentThread();
+    return alloc_null();
+}
+DEFINE_PRIM(nme_jni_detach_current_thread, 0);
 
 value nme_jni_create_method(value inClass, value inMethod, value inSig,value inStatic)
 {
@@ -849,7 +843,6 @@ value nme_jni_create_method(value inClass, value inMethod, value inSig,value inS
 }
 DEFINE_PRIM(nme_jni_create_method,4);
 
-
 value nme_jni_call_static(value inMethod, value inArgs)
 {
    JNIMethod *method;
@@ -859,7 +852,6 @@ value nme_jni_call_static(value inMethod, value inArgs)
    return result;
 }
 DEFINE_PRIM(nme_jni_call_static,2);
-
 
 value nme_jni_call_member(value inMethod, value inObject, value inArgs)
 {
@@ -878,9 +870,6 @@ value nme_jni_call_member(value inMethod, value inObject, value inArgs)
    return method->CallMember(object,inArgs);
 }
 DEFINE_PRIM(nme_jni_call_member,3);
-
-
-
 
 value nme_post_ui_callback(value inCallback)
 {
@@ -903,7 +892,6 @@ value nme_post_ui_callback(value inCallback)
 }
 DEFINE_PRIM(nme_post_ui_callback,1);
 
-
 extern "C"
 {
 
@@ -912,7 +900,6 @@ extern "C"
 #else
   #define JAVA_EXPORT JNIEXPORT
 #endif
-
 
 JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onCallback(JNIEnv * env, jobject obj, jlong handle)
 {
@@ -925,7 +912,6 @@ JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onCallback(JNIEnv * env, jobject 
    delete root;
    gc_set_top_of_stack(0,true);
 }
-
 
 JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_releaseReference(JNIEnv * env, jobject obj, jlong handle)
 {
@@ -952,8 +938,6 @@ value CallHaxe(JNIEnv * env, jobject obj, jlong handle, jstring function, jobjec
    }
 }
 
-
-
 JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_callObjectFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
 {
    int top = 0;
@@ -969,7 +953,6 @@ JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_callObjectFunction(JNIEnv * en
    return val;
 }
 
-
 JAVA_EXPORT jdouble JNICALL Java_org_haxe_nme_NME_callNumericFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
 {
    int top = 0;
@@ -983,8 +966,5 @@ JAVA_EXPORT jdouble JNICALL Java_org_haxe_nme_NME_callNumericFunction(JNIEnv * e
    return val;
 }
 
-
-
 }
-
 

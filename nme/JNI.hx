@@ -69,8 +69,18 @@ class JNI
       return method.getStaticMethod(useArray);
    }
 
+   /**
+    * Detachs the Java VM thread associated to the current native thread. This should be always called when a native thread ends its execution on the
+    * Android target.
+    */
+   public static function detachCurrentThread()
+   {
+      nme_jni_detach_current_thread();
+   }
+
    // Native Methods
    private static var nme_jni_create_method = Loader.load("nme_jni_create_method", 4);
+   private static var nme_jni_detach_current_thread = Loader.load("nme_jni_detach_current_thread", 0);
 }
 
 class JNIMethod 
