@@ -149,6 +149,7 @@ public:
          buffer = (uint8 *)inSurface->Row(0);
       }
       
+      #ifdef NME_PREMULTIPLIED_ALPHA
       if (store_format != GL_ALPHA)
       {
          for (int i=0;i<mTextureWidth*mTextureHeight*4;i+=4)
@@ -159,7 +160,7 @@ public:
             buffer[i+2] = int(buffer[i+2]*a);
          }
       }
-      
+      #endif
 
 
       glGenTextures(1, &mTextureID);

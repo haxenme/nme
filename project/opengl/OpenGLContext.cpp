@@ -198,7 +198,11 @@ public:
          SetViewport(inRect);
 
          glEnable(GL_BLEND);
+         #ifdef NME_PREMULTIPLIED_ALPHA
          glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+         #else
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         #endif
 
          #ifdef WEBOS
          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
@@ -299,7 +303,11 @@ public:
 		 } else if (  arrays.mFlags & HardwareArrays::BM_SCREEN ) {
            glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
          } else {
-           glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_ALPHA); 
+           #ifdef NME_PREMULTIPLIED_ALPHA
+           glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+           #else
+           glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+           #endif 
          }
          
          #ifdef NME_USE_VBO
@@ -456,7 +464,11 @@ public:
        float c0 = (float) ((col >> 16) & 0xFF) * one_on_255;
        float c1 = (float) ((col >> 8) & 0xFF) * one_on_255;
        float c2 = (float) (col & 0xFF) * one_on_255;
+       #ifdef NME_PREMULTIPLIED_ALPHA
        glColor4f(c0*a,c1*a,c2*a,a);
+       #else
+       glColor4f(c0,c1,c2,a);
+       #endif
        #endif
    }
 
@@ -489,10 +501,17 @@ public:
    {
       #ifndef NME_FORCE_GLES2
       if (inTransform)
+         #ifdef NME_PREMULTIPLIED_ALPHA
          glColor4f( inTransform->redMultiplier*inTransform->alphaMultiplier,
                     inTransform->greenMultiplier*inTransform->alphaMultiplier,
                     inTransform->blueMultiplier*inTransform->alphaMultiplier,
                     inTransform->alphaMultiplier);
+         #else
+         glColor4f( inTransform->redMultiplier,
+                    inTransform->greenMultiplier,
+                    inTransform->blueMultiplier,
+                    inTransform->alphaMultiplier);
+         #endif
       #endif
    }
 
@@ -535,7 +554,11 @@ public:
       float c0 = (float) ((mTint >> 16) & 0xFF) *one_on_255;
       float c1 = (float) ((mTint >> 8) & 0xFF) *one_on_255;
       float c2 = (float) (mTint & 0xFF) *one_on_255;
+      #ifdef NME_PREMULTIPLIED_ALPHA
       glColor4f(c0*a,c1*a,c2*a,a);
+      #else
+      glColor4f(c0,c1,c2,a);
+      #endif
       glEnable(GL_TEXTURE_2D);
       glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       #ifdef NME_DITHER

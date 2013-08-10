@@ -202,15 +202,27 @@ public:
       {
           if (mColourOffsetSlot>=0)
              glUniform4f(mColourOffsetSlot,
+                      #ifdef NME_PREMULTIPLIED_ALPHA
                       inTransform->redOffset*one_on_255*inTransform->alphaMultiplier,
                       inTransform->greenOffset*one_on_255*inTransform->alphaMultiplier,
                       inTransform->blueOffset*one_on_255*inTransform->alphaMultiplier,
+                      #else
+                      inTransform->redOffset*one_on_255,
+                      inTransform->greenOffset*one_on_255,
+                      inTransform->blueOffset*one_on_255,
+                      #endif
                       inTransform->alphaOffset*one_on_255);
           if (mColourScaleSlot>=0)
              glUniform4f(mColourScaleSlot,
+                      #ifdef NME_PREMULTIPLIED_ALPHA
                       inTransform->redMultiplier*inTransform->alphaMultiplier,
                       inTransform->greenMultiplier*inTransform->alphaMultiplier,
                       inTransform->blueMultiplier*inTransform->alphaMultiplier,
+                      #else
+                      inTransform->redMultiplier,
+                      inTransform->greenMultiplier,
+                      inTransform->blueMultiplier,
+                      #endif
                       inTransform->alphaMultiplier);
           /*
              printf("offset %d = %f %f %f %f\n",mColourOffsetSlot,
@@ -253,7 +265,11 @@ public:
          float c0 = ((inColour >> 16) & 0xff) * one_on_255;
          float c1 = ((inColour >> 8) & 0xff) * one_on_255;
          float c2 = (inColour & 0xff) * one_on_255;
+         #ifdef NME_PREMULTIPLIED_ALPHA
          glUniform4f(mTintSlot, c0*a, c1*a, c2*a, a);
+         #else
+         glUniform4f(mTintSlot, c0, c1, c2, a);
+         #endif
       }
    }
 
@@ -379,7 +395,9 @@ const char *gBitmapAlphaFrag =
 "uniform vec4 uTint;\n"
 "void main(void)\n"
 "{\n"
+#ifdef NME_PREMULTIPLIED_ALPHA
 "   if (texture2D(uImage0,vTexCoord).a > 0)\n"
+#endif
 "   gl_FragColor.rgb = uTint.rgb;\n"
 "   gl_FragColor.a  = texture2D(uImage0,vTexCoord).a*uTint.a;\n"
 "}\n";
