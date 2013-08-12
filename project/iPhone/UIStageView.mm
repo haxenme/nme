@@ -674,7 +674,7 @@ public:
           #ifdef HXCPP_CLANG // this cast currently does not build.
           //mLayer.contents = objc_unretainedObject(imageRef);
           #else
-            mLayer.contents = (objc_object*)imageRef;
+            mLayer.contents = (NSNumber *)imageRef;
           #endif
 
 
