@@ -460,7 +460,12 @@ const char *gTextureColourFrag =
 "varying vec4 vColourArray;\n"
 "void main(void)\n"
 "{\n"
+#ifdef NME_PREMULTIPLIED_ALPHA
+"   gl_FragColor.rgb = texture2D(uImage0,vTexCoord).rgb * vColourArray.rgb * vColourArray.a;\n"
+"   gl_FragColor.a = texture2D(uImage0,vTexCoord).a * vColourArray.a;\n"
+#else
 "   gl_FragColor = texture2D(uImage0,vTexCoord) * vColourArray;\n"
+#endif
 "}\n";
 
 

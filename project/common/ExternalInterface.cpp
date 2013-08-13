@@ -2423,11 +2423,6 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
                   rgba[3] = fvals[pos++];
                else
                   rgba[3] = val_number(val_ptr[pos++]);
-               #ifdef NME_PREMULTIPLIED_ALPHA
-               rgba[0] *= rgba[3];
-               rgba[1] *= rgba[3];
-               rgba[2] *= rgba[3];
-               #endif
             }
 
             gfx->tile(x-ox,y-oy,r,trans_2x2,rgba);
