@@ -384,7 +384,12 @@ const char *gColourTransFrag =
 "uniform vec4 uColourOffset;\n"
 "void main(void)\n"
 "{\n"
+#ifdef NME_PREMULTIPLIED_ALPHA
+"   gl_FragColor.rgb = vColourArray.rgb*vColourArray.a*uColourScale.rgb+uColourOffset.rgb;\n"
+"   gl_FragColor.a = vColourArray.a*uColourScale.a+uColourOffset.a;\n"
+#else
 "   gl_FragColor = vColourArray*uColourScale+uColourOffset;\n"
+#endif
 "}\n";
 
 
@@ -477,7 +482,12 @@ const char *gTextureTransFrag =
 "uniform vec4 uColourOffset;\n"
 "void main(void)\n"
 "{\n"
+#ifdef NME_PREMULTIPLIED_ALPHA
+"   gl_FragColor.rgb = texture2D(uImage0,vTexCoord).rgb * texture2D(uImage0,vTexCoord).a * uColourScale.rgb + uColourOffset.rgb;\n"
+"   gl_FragColor.a = texture2D(uImage0,vTexCoord).a * uColourScale.a + uColourOffset.a;\n"
+#else
 "   gl_FragColor = texture2D(uImage0,vTexCoord) * uColourScale + uColourOffset;\n"
+#endif
 "}\n";
 
 
