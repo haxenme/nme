@@ -396,10 +396,11 @@ const char *gBitmapAlphaFrag =
 "void main(void)\n"
 "{\n"
 #ifdef NME_PREMULTIPLIED_ALPHA
-"   if (texture2D(uImage0,vTexCoord).a > 0)\n"
-#endif
+"   gl_FragColor.rgb = uTint.rgb*texture2D(uImage0,vTexCoord).a;\n"
+#else
 "   gl_FragColor.rgb = uTint.rgb;\n"
-"   gl_FragColor.a  = texture2D(uImage0,vTexCoord).a*uTint.a;\n"
+#endif
+"   gl_FragColor.a = texture2D(uImage0,vTexCoord).a*uTint.a;\n"
 "}\n";
 
 
@@ -409,7 +410,7 @@ const char *gBitmapFrag =
 "uniform vec4 uTint;\n"
 "void main(void)\n"
 "{\n"
-"   gl_FragColor  = texture2D(uImage0,vTexCoord)*uTint;\n"
+"   gl_FragColor = texture2D(uImage0,vTexCoord)*uTint;\n"
 "}\n";
 
 
