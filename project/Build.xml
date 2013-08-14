@@ -13,14 +13,14 @@
    <set name="NME_DEV" value="${haxelib:nmedev}" unless="NME_DEV" />
    <set name="NME_DEV" value="${SDL_STATIC}" if="SDL_STATIC" />
    
-   <set name="has_window" value="1" if="NME_WINDOW_SDL" />
-   <set name="has_window" value="1" if="NME_WINDOW_SDL2" />
-   <set name="has_window" value="1" if="NME_WINDOW_GLFW" />
-   <set name="has_window" value="1" if="NME_WINDOW_DIRECTFB" />
-   <set name="sdl" value="1" if="NME_WINDOW_SDL" />
-   <set name="sdl2" value="1" if="NME_WINDOW_SDL2" />
-   <set name="glfw" value="1" if="NME_WINDOW_GLFW" />
-   <set name="directfb" value="1" if="NME_WINDOW_DIRECTFB" />
+   <set name="has_window" value="1" if="NME_SDL" />
+   <set name="has_window" value="1" if="NME_SDL2" />
+   <set name="has_window" value="1" if="NME_GLFW" />
+   <set name="has_window" value="1" if="NME_DIRECTFB" />
+   <set name="sdl" value="1" if="NME_SDL" />
+   <set name="sdl2" value="1" if="NME_SDL2" />
+   <set name="glfw" value="1" if="NME_GLFW" />
+   <set name="directfb" value="1" if="NME_DIRECTFB" />
    
    <set name="has_window" value="0" if="macos" unless="HXCPP_M64"/>
    
