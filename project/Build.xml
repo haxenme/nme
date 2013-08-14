@@ -47,6 +47,7 @@
    <!-- <set name="openal" value="1" if="macos"/> -->
    <!-- <set name="openal" value="1" if="iphone"/> -->
    <set name="openal" value="1" if="glfw" />
+   <set name="openal" value="1" if="sdl2" />
    
    <set name="mobile" value="1" if="iphone"/>
    <set name="mobile" value="1" if="android"/>
@@ -62,6 +63,8 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I${NME_DEV}/include"/>
+      <compilerflag value="-I${NME_DEV}/include/SDL" if="sdl" />
+      <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
       <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
       <file name="windows/GDIFont.cpp"/>
       <file name="windows/System.cpp" />
@@ -359,7 +362,7 @@
       <!-- <compilerflag value="-DNME_MIXER" /> -->
       <file name="sdl2/SDL2Stage.cpp"/>
       <!-- <file name="sdl/SDLSound.cpp" unless="openal"/> -->
-      <file name="empty/Sound.cpp" />
+      <file name="empty/Sound.cpp" unless="openal" />
       
    </files>
    

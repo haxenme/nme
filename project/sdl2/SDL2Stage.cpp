@@ -733,34 +733,23 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	//SDL_EnableKeyRepeat(500,30);
 	//gSDLIsInit = true;
 
-	//#ifdef NME_MIXER
-	//
-	//#ifdef WEBOS
-	//int chunksize = 256;
-	//if (PDL_GetPDKVersion () == 100 || PDL_GetHardwareID () < 300)
-	//{
-		// use a larger chunksize for older devices
-		//chunksize = 1024;
-	//}
-	//#elif BLACKBERRY
-	//int chunksize = 512;
-	//#elif HX_WINDOWS
-	//int chunksize = 2048;
-	//#else
-	//int chunksize = 4096;
-	//#endif
-	//
-	//int frequency = 44100;
+	#ifdef NME_MIXER
+	#ifdef HX_WINDOWS
+	int chunksize = 2048;
+	#else
+	int chunksize = 4096;
+	#endif
+	
+	int frequency = 44100;
 	//int frequency = MIX_DEFAULT_FREQUENCY //22050
-	//
-	// The default frequency would have less latency, but is incompatible with the average MP3 file
-	//
-	//if ( Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize)!= 0 )
-	//{
-		//fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
-		//gSDLIsInit = false;
-	//}
-	//#endif
+	//The default frequency would have less latency, but is incompatible with the average MP3 file
+	
+	if (Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize) != 0)
+	{
+		fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
+		gSDLIsInit = false;
+	}
+	#endif
 	
 	//const SDL_VideoInfo *info  = SDL_GetVideoInfo();
 	//sgDesktopWidth = info->current_w;
