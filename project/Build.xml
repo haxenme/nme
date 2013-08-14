@@ -13,8 +13,8 @@
    <set name="NME_DEV" value="${haxelib:nmedev}" unless="NME_DEV" />
    <set name="NME_DEV" value="${SDL_STATIC}" if="SDL_STATIC" />
    
-   <!-- <set name="sdl" value="1" if="win_desktop" /> -->
-   <set name="sdl2" value="1" if="win_desktop" />
+   <set name="sdl" value="1" if="win_desktop" />
+   <!-- <set name="sdl2" value="1" if="win_desktop" /> -->
    <!-- <set name="glfw" value="1" if="win_desktop"/> -->
    <set name="sdl" value="1" if="macos" unless="HXCPP_M64"/>
    <!-- <set name="directfb" value="1" if="linux" /> -->
@@ -450,7 +450,7 @@
       <lib name="${THIRDPARTY_LIBS}libSDL_mixer${name_extra}${SLIBEXT}" if="sdl" unless="dynamic_sdl" />
       <lib name="${THIRDPARTY_LIBS}libSDL_image${name_extra}${SLIBEXT}" if="sdl_image" unless="emscripten" />
       <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
-      <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
+	  <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal_link" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
