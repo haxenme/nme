@@ -13,9 +13,9 @@
    <set name="NME_DEV" value="${haxelib:nmedev}" unless="NME_DEV" />
    <set name="NME_DEV" value="${SDL_STATIC}" if="SDL_STATIC" />
    
+   <!-- <set name="sdl" value="1" if="win_desktop" /> -->
+   <set name="sdl2" value="1" if="win_desktop" />
    <!-- <set name="glfw" value="1" if="win_desktop"/> -->
-   <!-- <set name="sdl2" value="1" if="win_desktop" /> -->
-   <set name="sdl" value="1" if="win_desktop" />
    <set name="sdl" value="1" if="macos" unless="HXCPP_M64"/>
    <!-- <set name="directfb" value="1" if="linux" /> -->
    <set name="sdl" value="1" if="linux"/>
