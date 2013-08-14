@@ -14,15 +14,18 @@
    <set name="NME_DEV" value="${SDL_STATIC}" if="SDL_STATIC" />
    
    <!-- <set name="glfw" value="1" if="win_desktop"/> -->
+   <!-- <set name="sdl2" value="1" if="win_desktop" /> -->
+   <set name="sdl" value="1" if="win_desktop" />
+   <set name="sdl" value="1" if="macos" unless="HXCPP_M64"/>
    <!-- <set name="directfb" value="1" if="linux" /> -->
    <set name="sdl" value="1" if="linux"/>
-   <set name="sdl" value="1" if="macos" unless="HXCPP_M64"/>
-   <set name="sdl" value="1" if="win_desktop" unless="glfw" />
    <set name="sdl" value="1" if="webos"/>
    <set name="sdl" value="1" if="blackberry"/>
    <set name="sdl" value="1" if="emscripten"/>
+   
    <set name="ogl" value="1" if="glfw"/>
    <set name="ogl" value="1" if="sdl"/>
+   <set name="ogl" value="1" if="sdl2"/>
    <set name="ogl" value="1" if="gph"/>
    <set name="ogl" value="1" if="iphone"/>
    <set name="ogl" value="1" if="android"/>
@@ -43,7 +46,7 @@
    <!-- Toggle this for openal experimental osx code -->
    <!-- <set name="openal" value="1" if="macos"/> -->
    <!-- <set name="openal" value="1" if="iphone"/> -->
-   <set name="openal" value="1" if="win_desktop" unless="sdl" />
+   <set name="openal" value="1" if="glfw" />
    
    <set name="mobile" value="1" if="iphone"/>
    <set name="mobile" value="1" if="android"/>
@@ -59,8 +62,7 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I${NME_DEV}/include"/>
-      <compilerflag value="-I${NME_DEV}/include/SDL12"/>
-      <compilerflag value="-I${NME_DEV}/include/openal"/>
+      <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
       <file name="windows/GDIFont.cpp"/>
       <file name="windows/System.cpp" />
       <!-- Use SDL on windows too ? -->
@@ -209,6 +211,7 @@
       <compilerflag value="-I${NME_DEV}/include" unless="gph"/>
       <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
       <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" unless="dynamic_sdl"/>
+      <compilerflag value="-I${NME_DEV}/include/SDL2"/>
       <compilerflag value="-I${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/include" if="gph"/>
       <compilerflag value="-I/opt/vc/include" if="rpi"/>
       <compilerflag value="-I/opt/vc/include/interface/vcos/pthreads/" if="rpi"/>
@@ -218,6 +221,7 @@
       <!-- <compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/> -->
       <compilerflag value="-I${QNX_TARGET}/usr/include/GLES2" if="blackberry"/>
       <compilerflag value="-DSDL_OGL" if="sdl"/>
+      <compilerflag value="-DSDL_OGL" if="sdl2"/>
       <compilerflag value="-DGLFW_OGL" if="glfw"/>
       <compilerflag value="-DNME_CURL_SSL" if="ssl" unless="nocurl"/>
       <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
@@ -347,6 +351,19 @@
    </files>
    
    
+   <files id="sdl2">
+      
+      <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I${NME_DEV}/include"/>
+      <compilerflag value="-I${NME_DEV}/include/SDL2"/>
+      <!-- <compilerflag value="-DNME_MIXER" /> -->
+      <file name="sdl2/SDL2Stage.cpp"/>
+      <!-- <file name="sdl/SDLSound.cpp" unless="openal"/> -->
+      <file name="empty/Sound.cpp" />
+      
+   </files>
+   
+   
    <files id="glfw">
       
       <compilerflag value="-Iinclude"/>
@@ -400,6 +417,7 @@
       
       <flag value="-NODEFAULTLIB:LIBCMT" if="winrt"/>
       <flag value="-NODEFAULTLIB:LIBCMT" if="glfw"/>
+      <!-- <flag value="-NODEFAULTLIB:LIBCMT" if="sdl2"/> -->
       
       <files id="common"/>
       <files id="common_lzma"/>
@@ -411,6 +429,7 @@
       <files id="linux" if="linux"/>
       <files id="gph" if="gph"/>
       <files id="sdl" if="sdl"/>
+      <files id="sdl2" if="sdl2"/>
       <files id="glfw" if="glfw"/>
       <files id="directfb" if="directfb" />
       <files id="android" if="android"/>
@@ -429,6 +448,7 @@
       <lib name="${THIRDPARTY_LIBS}libSDL_mixer${name_extra}${SLIBEXT}" if="sdl" unless="dynamic_sdl" />
       <lib name="${THIRDPARTY_LIBS}libSDL_image${name_extra}${SLIBEXT}" if="sdl_image" unless="emscripten" />
       <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
+      <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal_link" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
@@ -436,6 +456,7 @@
       <lib name="${THIRDPARTY_LIBS}libtheora${name_extra}${SLIBEXT}" if="theora" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libsmpeg${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
+      <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl2"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="glfw"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="android"/>
       <lib name="${THIRDPARTY_LIBS}libglfw3${name_extra}${SLIBEXT}" if="glfw"/>
@@ -504,15 +525,15 @@
       <lib name="-lm" if="blackberry"/>
       <lib name="-lsocket" if="blackberry"/>
       
-      <lib name="gdi32.lib" if="win_desktop"/>
-      <lib name="opengl32.lib" if="win_desktop"/>
+      <lib name="gdi32.lib" if="win_desktop" />
+      <lib name="opengl32.lib" if="win_desktop" />
       <lib name="${THIRDPARTY_LIBS}libOpenAL32.lib" if="openal_link"/>
       <lib name="user32.lib" if="win_desktop"/>
-      <lib name="kernel32.lib" if="win_desktop"/>
-      <lib name="advapi32.lib" if="win_desktop"/>
+      <lib name="kernel32.lib" if="win_desktop" unless="sdl2"/>
+      <lib name="advapi32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="${THIRDPARTY_LIBS}dxguid.lib" if="win_desktop"/>
-      <lib name="winmm.lib" if="win_desktop"/>
-      <lib name="ws2_32.lib" if="win_desktop"/>
+      <lib name="winmm.lib" if="win_desktop" unless="sdl2"/>
+      <lib name="ws2_32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="wldap32.lib" if="win_desktop"/>
       <lib name="shell32.lib" if="win_desktop"/>
       <lib name="-ldl" if="linux"/>
