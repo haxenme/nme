@@ -13,6 +13,104 @@ DirectFBFrame *sgDirectFBFrame;
 static IDirectFB *dfb = NULL;
 
 
+class DFBSurface : public Surface
+{
+public:
+   DFBSurface(IDirectFBSurface *inSurface, bool inDelete) : mSurface(inSurface)
+   {
+      mDelete = inDelete;
+      mLockedForHitTest = false;
+   }
+   
+   ~SDLSurf()
+   {
+      //if (mDelete)
+         //SDL_FreeSurface(mSurf);
+   }
+   
+   int Width() const
+   {
+      int w;
+      mSurface->GetSize(w, NULL);
+      return w;
+   }
+   
+   int Height() const
+   {
+      int h;
+      mSurface->GetSize(NULL, h);
+      return h;
+   }
+   
+   PixelFormat Format() const
+   {
+      //uint8 swap = mSurf->format->Bshift; // is 0 on argb
+      //if (mSurf->flags & SDL_SRCALPHA)
+         //return swap ? pfARGBSwap : pfARGB;
+      //return swap ? pfXRGBSwap : pfXRGB;
+   }
+   
+   const uint8 *GetBase() const
+   {
+      return 0;
+      //return (const uint8 *)mSurf->pixels;
+   }
+   
+   int GetStride() const
+   {
+      return 0;
+      //return mSurf->pitch;
+   }
+   
+   void Clear(uint32 inColour, const Rect *inRect)
+   {
+      if (inRect)
+      {
+         mSurface->SetColor(mSurface, inColour>>16, inColour>>8, inColour, inColour>>24);
+         mSurface->FillRectangle(mSurface, inRect->x, inRect->y, inRect->w, inRect->h);
+      }
+      else
+      {
+         mSurface->Clear(mSurface, inColour>>16, inColour>>8, inColour, inColour>>24);
+      }
+   }
+   
+   RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
+   {
+      mLockedForHitTest = inForHitTest;
+      //if (SDL_MUSTLOCK(mSurf) && !mLockedForHitTest)
+         //SDL_LockSurface(mSurf);
+      return RenderTarget(Rect(Width(), Height()), Format(), /*(uint8 *)mSurf->pixels*/ 0, /*mSurf->pitch*/ 0);
+   }
+   
+   void EndRender()
+   {
+      //if (SDL_MUSTLOCK(mSurf) && !mLockedForHitTest)
+         //SDL_UnlockSurface(mSurf);
+   }
+   
+   void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect, int inPosX, int inPosY, BlendMode inBlend, const BitmapCache *inMask, uint32 inTint = 0xffffff) const
+   {
+       
+   }
+   
+   void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect, int inPosX, int inPosY, int inSrcChannel, int inDestChannel) const
+   {
+      
+   }
+   
+   void StretchTo(const RenderTarget &outTarget, const Rect &inSrcRect, const DRect &inDestRect) const
+   {
+      
+   }
+   
+   IDirectFBSurface *mSurface;
+   bool  mDelete;
+   bool  mLockedForHitTest;
+   
+};
+
+
 class DirectFBStage : public Stage
 {
 public:
@@ -21,12 +119,10 @@ public:
       mWindow = inWindow;
    }
    
-   
    ~DirectFBStage()
    {
       mPrimarySurface->DecRef();
    }
-   
    
    void SetCursor(Cursor inCursor)
    {
@@ -41,43 +137,34 @@ public:
       }
    }
    
-   
    void GetMouse()
    {
       
    }
-   
    
    Surface *GetPrimarySurface()
    {
       return mPrimarySurface;
    }
    
-   
    bool isOpenGL() const { return false; }
-   
    
    void Flip()
    {
       
    }
    
-   
    void Resize(const int inWidth, const int inHeight)
    {
       
    }
    
-   
    IDirectFBSurface *mWindow;
-   
    
 private:
    Surface *mPrimarySurface;
    
-   
 };
-
 
 
 class DirectFBFrame : public Frame
@@ -89,52 +176,43 @@ public:
       mStage->IncRef();
    }
    
-   
    ~DirectFBFrame()
    {
       mStage->DecRef();
    }
-   
    
    void Resize(const int inWidth, const int inHeight)
    {
       mStage->Resize(inWidth, inHeight);
    }
    
-   
    void SetTitle()
    {
       
    }
-   
    
    void SetIcon()
    {
       
    }
    
-   
    Stage *GetStage()
    {
       return mStage;
    }
-   
    
    inline void HandleEvent(Event &event)
    {
       mStage->HandleEvent(event);
    }
    
-   
    IDirectFBSurface *GetWindow()
    {
       return mStage->mWindow;
    }
    
-   
 private:
    DirectFBStage *mStage;
-   
    
 };
 
@@ -155,18 +233,15 @@ void StartAnimation()
    }
 }
 
-
 void PauseAnimation()
 {
    
 }
 
-
 void ResumeAnimation()
 {
    
 }
-
 
 void StopAnimation()
 {
@@ -183,23 +258,19 @@ DirectFBFrame *createWindowFrame(const char *inTitle, int inWidth, int inHeight,
    DirectFBInit(0, NULL);
    DirectFBCreate(&dfb);
    dfb->SetCooperativeLevel(dfb, DFSCL_FULLSCREEN);
-   
    dsc.flags = DSDESC_CAPS;
    dsc.caps = (DFBSurfaceCapabilities)(DSCAPS_PRIMARY | DSCAPS_FLIPPING);
    
    IDirectFBSurface *surface = NULL;
-   
    dfb->CreateSurface(dfb, &dsc, &surface);
    
    return new DirectFBFrame(surface, inWidth, inHeight);
 }
 
-
 void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight, unsigned int inFlags, const char *inTitle, Surface *inIcon)
 {
    sgDirectFBFrame = createWindowFrame(inTitle, inWidth, inHeight, inFlags);
    inOnFrame(sgDirectFBFrame);
-   
    StartAnimation();
 }
 
@@ -217,12 +288,10 @@ QuickVec<int>* CapabilitiesGetScreenResolutions()
    return out;
 }
 
-
 double CapabilitiesGetScreenResolutionX()
 {
 	return 0;
 }
-
 
 double CapabilitiesGetScreenResolutionY()
 {

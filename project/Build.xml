@@ -80,14 +80,16 @@
       <!-- <file name="sdl/SDLSound.cpp" unless="sdl"/> -->
       <file name="empty/Sound.cpp" if="glfw" unless="openal" />
       <file name="openal/OpenALSound.cpp" if="openal"/>
-         
+      
    </files>
+   
    
    <files id="winrt_shaders">
       <hlsl name="winrt\\SimplePixelShader.hlsl" profile="ps_4_0" variable="gPixelShader" target="winrt\\shaders\\SimplePixelShader.h"/>
       <hlsl name="winrt\\SimpleVertexShader.hlsl" profile="vs_4_0" variable="gVertexShader" target="winrt\\shaders\\SimpleVertexShader.h"/>
       <file name="winrt/ShaderData.cpp" />
    </files>
+   
    
    <files id="winrt">
       <compilerflag value="-Iinclude"/>
@@ -251,7 +253,7 @@
       <file name="common/Tilesheet.cpp"/>
       <file name="common/Display.cpp"/>
       <file name="common/ColorTransform.cpp"/>
-      <file name="common/Hardware.cpp"/>
+      <file name="common/Hardware.cpp" unless="directfb"/>
       <file name="common/Tessellate.cpp"/>
       <file name="common/Filters.cpp"/>
       <file name="common/ExternalInterface.cpp"/>
@@ -388,7 +390,10 @@
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I/usr/include/directfb" />
       <compilerflag value="-I${NME_DEV}/include"/>
+      
+      <file name="directfb/DirectFBHardware.cpp"/>
       <file name="directfb/DirectFBStage.cpp"/>
+      <file name="empty/HardwareContext.cpp" />
       
    </files>
    
@@ -457,7 +462,7 @@
       <lib name="${THIRDPARTY_LIBS}libSDL_mixer${name_extra}${SLIBEXT}" if="sdl" unless="dynamic_sdl" />
       <lib name="${THIRDPARTY_LIBS}libSDL_image${name_extra}${SLIBEXT}" if="sdl_image" unless="emscripten" />
       <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
-	  <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
+      <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal_link" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
@@ -542,10 +547,10 @@
       <lib name="advapi32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="${THIRDPARTY_LIBS}dxguid.lib" if="win_desktop"/>
       <lib name="winmm.lib" if="win_desktop"/>
-	  <lib name="imm32.lib" if="win_desktop" />
-	  <lib name="ole32.lib" if="win_desktop" />
-	  <lib name="oleaut32.lib" if="win_desktop" />
-	  <lib name="version.lib" if="win_desktop" />
+      <!-- <lib name="imm32.lib" if="win_desktop" />
+      <lib name="ole32.lib" if="win_desktop" />
+      <lib name="oleaut32.lib" if="win_desktop" />
+      <lib name="version.lib" if="win_desktop" /> -->
       <lib name="ws2_32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="wldap32.lib" if="win_desktop"/>
       <lib name="shell32.lib" if="win_desktop"/>
