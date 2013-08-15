@@ -245,22 +245,34 @@ void ProcessEvent(DFBInputEvent &inEvent)
    {
       case DIET_KEYPRESS:
       {
-         printf("Pressed key (code: %d)\n", inEvent.key_code);
+         printf("KeyboardEvent.KEY_DOWN (%d)\n", inEvent.key_code);
          break;
       }
       case DIET_KEYRELEASE:
       {
-         printf("Released key (code: %d)\n", inEvent.key_code);
+         printf("KeyboardEvent.KEY_UP (%d)\n", inEvent.key_code);
          break;
       }
       case DIET_BUTTONPRESS:
       {
-         printf("Pressed button (code: %d)\n", inEvent.key_code);
+         switch (inEvent.button)
+         {
+            case DIBI_LEFT: printf("MouseEvent.MOUSE_DOWN\n"); break;
+            case DIBI_RIGHT: printf("MouseEvent.RIGHT_MOUSE_DOWN\n"); break;
+            case DIBI_MIDDLE: printf("MouseEvent.MIDDLE_MOUSE_DOWN\n"); break;
+            default: break;
+         }
          break;
       }
       case DIET_BUTTONRELEASE:
       {
-         printf("Released button (code: %d)\n", inEvent.key_code);
+         switch (inEvent.button)
+         {
+            case DIBI_LEFT: printf("MouseEvent.MOUSE_UP\n"); break;
+            case DIBI_RIGHT: printf("MouseEvent.RIGHT_MOUSE_UP\n"); break;
+            case DIBI_MIDDLE: printf("MouseEvent.MIDDLE_MOUSE_UP\n"); break;
+            default: break;
+         }
          break;
       } 
    }

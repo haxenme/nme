@@ -159,19 +159,92 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bo
 void BuildHardwareJob(const GraphicsJob &inJob, const GraphicsPath &inPath, HardwareData &ioData, HardwareContext &inHardware)
 {
    DirectFBHardwareContext *context = (DirectFBHardwareContext*)&inHardware;
-   
-   printf("Build hardware job\n");
-   
    IDirectFBSurface *surface = context->mPrimarySurface;
    
-   int screen_width, screen_height;
+   surface->Clear(surface, 0xFF, 0xFF, 0xFF, 0xFF);
    
-   surface->GetSize(surface, &screen_width, &screen_height);
-   surface->SetColor(surface, 0x0, 0x0, 0x0, 0xFF);
-   surface->FillRectangle(surface, 0, 0, screen_width, screen_height);
-   surface->SetColor(surface, 0xFF, 0x80, 0xFF, 0xFF);
-   //DFBCHECK (primary->DrawRectangle(primary, 0, 0, screen_width, screen_height));
-   surface->DrawLine(surface, 0, screen_height / 2, screen_width - 1, screen_height / 2);               
+   if (inJob.mIsTileJob)
+   {
+      printf("Render tile\n");
+   }
+   else if (inJob.mFill)
+   {
+      GraphicsSolidFill *solid = inJob.mFill->AsSolidFill();
+      if (solid)
+      {
+         surface->SetColor(surface, solid->mRGB.c0, solid->mRGB.c1, solid->mRGB.c2, solid->mRGB.a);
+      }
+      else
+      {
+         GraphicsGradientFill *grad = inJob.mFill->AsGradientFill();
+         if (grad)
+         {
+            
+         }
+         else
+         {
+            GraphicsBitmapFill *bmp = inJob.mFill->AsBitmapFill();
+            //mTextureMapper = bmp->matrix.Inverse();
+            //mSurface = bmp->bitmapData->IncRef();
+            //mTexture = mSurface->GetOrCreateTexture(inHardware);
+            //mElement.mBitmapRepeat = bmp->repeat;
+            //mElement.mBitmapSmooth = bmp->smooth;
+            surface->SetColor(surface, 0xFF, 0, 0, 0xFF);
+          }
+       }
+   }
+   
+   if (inJob.mTriangles)
+   {
+      printf("Render triangle\n");
+   }
+   else if (inJob.mIsPointJob)
+   {
+      printf("Render point\n");
+   }
+   else if (inJob.mStroke)
+   {
+      printf("Render stroke\n");
+   }
+   else
+   {
+      const uint8* inCommands = (const uint8*)&inPath.commands[inJob.mCommand0];
+      UserPoint *point = (UserPoint *)&inPath.data[inJob.mData0];
+      
+      float x0, y0, x1, y1;
+      
+      for(int i=0; i< inJob.mCommandCount; i++)
+      {
+         switch(inCommands[i])
+         {
+            case pcBeginAt:
+               //printf("begin at\n");
+               // fallthrough
+            case pcMoveTo:
+               //printf("move to\n");
+               x0 = point->x;
+               y0 = point->y;
+               point++;
+               break;
+
+            case pcLineTo:
+               if (point->x > x1) x1 = point->x;
+               if (point->x < x0) x0 = point->x;
+               if (point->y > y1) y1 = point->y;
+               if (point->y < y0) y0 = point->y;
+               point++;
+               break;
+
+            case pcCurveTo:
+               //printf("curve to\n");
+               point++;
+               break;
+         }
+      }
+      
+      surface->FillRectangle(surface, x0, y0, x1 - x0, y1 - y0);
+   }
+               
    surface->Flip(surface, NULL, (DFBSurfaceFlipFlags)0);
 }
 
