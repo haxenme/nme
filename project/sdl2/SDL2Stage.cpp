@@ -598,9 +598,11 @@ void ProcessEvent(SDL_Event &inEvent)
 				}
 				case SDL_WINDOWEVENT_CLOSE:
 				{
-					//Should there be a close event?
 					Event deactivate(etDeactivate);
 					sgSDLFrame->ProcessEvent(deactivate);
+					
+					Event kill(etDestroyHandler);
+					sgSDLFrame->ProcessEvent(kill);
 					break;
 				}
 				default: break;

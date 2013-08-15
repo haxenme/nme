@@ -111,7 +111,7 @@
       <file name="linux/System.cpp"/>
       <file name="empty/URL.cpp" if="nocurl" />
       <file name="empty/Sound.cpp" unless="sdl" />
-      <file name="empty/HardwareContext.cpp" unless="sdl" />
+      <file name="empty/HardwareContext.cpp" unless="has_window" />
       
    </files>
    
@@ -393,7 +393,6 @@
       
       <file name="directfb/DirectFBHardware.cpp"/>
       <file name="directfb/DirectFBStage.cpp"/>
-      <file name="empty/HardwareContext.cpp" />
       
    </files>
    

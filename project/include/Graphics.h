@@ -565,6 +565,7 @@ public:
    static HardwareContext *current;
    static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders);
    static HardwareContext *CreateDX11(void *inDevice, void *inContext);
+   static HardwareContext *CreateDirectFB(void *inDFB, void *inSurface);
 
    // Could be common to multiple implementations...
    virtual bool Hits(const RenderState &inState, const HardwareCalls &inCalls );

@@ -1,18 +1,183 @@
 #include <Graphics.h>
 #include <Surface.h>
+#include <directfb.h>
 
 
 namespace nme
 {
 
 
+// --- HardwareContext -----------------------------
+
+
+class DirectFBHardwareContext : public HardwareContext
+{
+public:
+   IDirectFB *mDirectFB;
+   IDirectFBSurface *mPrimarySurface;
+   int mWidth;
+   int mHeight;
+   
+   DirectFBHardwareContext(IDirectFB *inDirectFB, IDirectFBSurface *inSurface)
+   {
+      mDirectFB = inDirectFB;
+      mPrimarySurface = inSurface;
+      mWidth = mHeight = 0;
+   }
+   
+   void SetWindowSize(int inWidth, int inHeight)
+   {
+      mWidth = inWidth;
+      mHeight = inHeight;
+   }
+   
+   void SetQuality(StageQuality inQuality)
+   {
+      
+   }
+   
+   void BeginRender(const Rect &inRect,bool inForHitTest)
+   {
+      //printf("render\n");
+   }
+   
+   void EndRender()
+   {
+      
+   }
+   
+   void SetViewport(const Rect &inRect)
+   {
+      
+   }
+   
+   void Clear(uint32 inColour,const Rect *inRect=0)
+   {
+      
+   }
+   
+   void Flip()
+   {
+      
+   }
+   
+   void DestroyNativeTexture(void *)
+   {
+      // TODO
+   }
+   
+   int Width() const { return mWidth; }
+   int Height() const { return mHeight; } 
+   
+   class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags);
+   
+   void Render(const RenderState &inState, const HardwareCalls &inCalls)
+   {
+      
+   }
+   
+   void BeginBitmapRender(Surface *inSurface,uint32 inTint, bool inRepeat, bool inSmooth)
+   {
+      
+   }
+   
+   void RenderBitmap(const Rect &inSrc, int inX, int inY)
+   {
+      
+   }
+   
+   void EndBitmapRender()
+   {
+      
+   }
+};
+
+
+class DirectFBTexture : public Texture
+{
+public:
+   unsigned int flags;
+   int          width;
+   int          height;
+   
+   DirectFBTexture(DirectFBHardwareContext *inContext, Surface *inSurface, unsigned int inFlags)
+   {
+      
+   }
+
+   ~DirectFBTexture()
+   {
+      
+   }
+
+   void Bind(class Surface *inSurface, int inSlot)
+   {
+      
+   }
+
+   void BindFlags(bool inRepeat, bool inSmooth)
+   {
+      // TODO:
+   }
+   
+   UserPoint PixelToTex(const UserPoint &inPixels)
+   {
+      return UserPoint(inPixels.x/width, inPixels.y/height);
+   }
+   
+   UserPoint TexToPaddedTex(const UserPoint &inPixels)
+   {
+      return inPixels;
+   }
+};
+
+
+class Texture *DirectFBHardwareContext::CreateTexture(class Surface *inSurface, unsigned int inFlags)
+{
+   return new DirectFBTexture(this, inSurface, inFlags);
+}
+
+
+HardwareContext *HardwareContext::current = 0;
+
+
+HardwareContext *HardwareContext::CreateDirectFB(void *inDirectFB, void *inSurface)
+{
+   return new DirectFBHardwareContext((IDirectFB*)inDirectFB, (IDirectFBSurface*)inSurface);
+}
+
+
+HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders)
+{
+   return NULL;
+}
+
+
+// --- Hardware Jobs ---------------------------------------------------------------------
+
+
 void BuildHardwareJob(const GraphicsJob &inJob, const GraphicsPath &inPath, HardwareData &ioData, HardwareContext &inHardware)
 {
+   DirectFBHardwareContext *context = (DirectFBHardwareContext*)&inHardware;
    
+   printf("Build hardware job\n");
+   
+   IDirectFBSurface *surface = context->mPrimarySurface;
+   
+   int screen_width, screen_height;
+   
+   surface->GetSize(surface, &screen_width, &screen_height);
+   surface->SetColor(surface, 0x0, 0x0, 0x0, 0xFF);
+   surface->FillRectangle(surface, 0, 0, screen_width, screen_height);
+   surface->SetColor(surface, 0xFF, 0x80, 0xFF, 0xFF);
+   //DFBCHECK (primary->DrawRectangle(primary, 0, 0, screen_width, screen_height));
+   surface->DrawLine(surface, 0, screen_height / 2, screen_width - 1, screen_height / 2);               
+   surface->Flip(surface, NULL, (DFBSurfaceFlipFlags)0);
 }
 
 
 // --- HardwareArrays ---------------------------------------------------------------------
+
 
 HardwareArrays::HardwareArrays(Surface *inSurface,unsigned int inFlags)
 {

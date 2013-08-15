@@ -10,6 +10,7 @@ namespace nme
 
 class DirectFBFrame;
 DirectFBFrame *sgDirectFBFrame;
+IDirectFBEventBuffer *sgEventBuffer;
 static IDirectFB *dfb = NULL;
 
 
@@ -22,7 +23,7 @@ public:
       mLockedForHitTest = false;
    }
    
-   ~SDLSurf()
+   ~DFBSurface()
    {
       //if (mDelete)
          //SDL_FreeSurface(mSurf);
@@ -31,14 +32,14 @@ public:
    int Width() const
    {
       int w;
-      mSurface->GetSize(w, NULL);
+      mSurface->GetSize(mSurface, &w, NULL);
       return w;
    }
    
    int Height() const
    {
       int h;
-      mSurface->GetSize(NULL, h);
+      mSurface->GetSize(mSurface, NULL, &h);
       return h;
    }
    
@@ -117,10 +118,17 @@ public:
    DirectFBStage(IDirectFBSurface *inWindow, int inWidth, int inHeight) : mPrimarySurface(0)
    {
       mWindow = inWindow;
+      
+      mHardwareContext = HardwareContext::CreateDirectFB(dfb, inWindow);
+      mHardwareContext->SetWindowSize(inWidth, inHeight);
+      mHardwareContext->IncRef();
+      mPrimarySurface = new HardwareSurface(mHardwareContext);
+      mPrimarySurface->IncRef();
    }
    
    ~DirectFBStage()
    {
+      mHardwareContext->DecRef();
       mPrimarySurface->DecRef();
    }
    
@@ -149,6 +157,11 @@ public:
    
    bool isOpenGL() const { return false; }
    
+   void ProcessEvent(Event &inEvent)
+   {
+      HandleEvent(inEvent);
+   }
+   
    void Flip()
    {
       
@@ -162,6 +175,7 @@ public:
    IDirectFBSurface *mWindow;
    
 private:
+   HardwareContext *mHardwareContext;
    Surface *mPrimarySurface;
    
 };
@@ -179,6 +193,11 @@ public:
    ~DirectFBFrame()
    {
       mStage->DecRef();
+   }
+   
+   void ProcessEvent(Event &inEvent)
+   {
+      mStage->ProcessEvent(inEvent);
    }
    
    void Resize(const int inWidth, const int inHeight)
@@ -217,20 +236,73 @@ private:
 };
 
 
+bool sgDead = false;
+
+
+void ProcessEvent(DFBInputEvent &inEvent)
+{
+   switch(inEvent.type)
+   {
+      case DIET_KEYPRESS:
+      {
+         printf("Pressed key (code: %d)\n", inEvent.key_code);
+         break;
+      }
+      case DIET_KEYRELEASE:
+      {
+         printf("Released key (code: %d)\n", inEvent.key_code);
+         break;
+      }
+      case DIET_BUTTONPRESS:
+      {
+         printf("Pressed button (code: %d)\n", inEvent.key_code);
+         break;
+      }
+      case DIET_BUTTONRELEASE:
+      {
+         printf("Released button (code: %d)\n", inEvent.key_code);
+         break;
+      } 
+   }
+}
+
+
 void StartAnimation()
 {
-   while (true)
+   DFBInputEvent event;
+   bool firstTime = true;
+   
+   while(!sgDead)
    {
-      IDirectFBSurface *surface = sgDirectFBFrame->GetWindow();
-      int screen_width, screen_height;
-      surface->GetSize(surface, &screen_width, &screen_height);
-      surface->SetColor(surface, 0x0, 0x0, 0x0, 0xFF);
-      surface->FillRectangle(surface, 0, 0, screen_width, screen_height);
-      surface->SetColor(surface, 0xFF, 0x80, 0xFF, 0xFF);
-      //DFBCHECK (primary->DrawRectangle(primary, 0, 0, screen_width, screen_height));
-      surface->DrawLine(surface, 0, screen_height / 2, screen_width - 1, screen_height / 2);               
-      surface->Flip(surface, NULL, (DFBSurfaceFlipFlags)0);
+      double next = sgDirectFBFrame->GetStage()->GetNextWake() - GetTimeStamp();
+      event.type = DIET_UNKNOWN;
+      
+      if (!firstTime)
+      {
+         sgEventBuffer->WaitForEventWithTimeout(sgEventBuffer, 0, next);
+      }
+      else
+      {
+         firstTime = false;
+      }
+      
+      while (sgEventBuffer->HasEvent(sgEventBuffer) != DFB_BUFFEREMPTY)
+      {
+         sgEventBuffer->GetEvent(sgEventBuffer, DFB_EVENT(&event));
+         ProcessEvent(event);
+         if (sgDead) break;
+         event.type = DIET_UNKNOWN;
+      }
+      
+      Event poll(etPoll);
+      sgDirectFBFrame->ProcessEvent(poll);
    }
+   
+   Event deactivate(etDeactivate);
+   sgDirectFBFrame->ProcessEvent(deactivate);
+   
+   Event kill(etDestroyHandler);
+   sgDirectFBFrame->ProcessEvent(kill);
 }
 
 void PauseAnimation()
@@ -251,15 +323,30 @@ void StopAnimation()
 
 DirectFBFrame *createWindowFrame(const char *inTitle, int inWidth, int inHeight, unsigned int inFlags)
 {
-   DFBSurfaceDescription dsc;
-   
    putenv ((char*)"DFBARGS=system=x11");
    
    DirectFBInit(0, NULL);
    DirectFBCreate(&dfb);
-   dfb->SetCooperativeLevel(dfb, DFSCL_FULLSCREEN);
+   
+   bool fullscreen = (inFlags & wfFullScreen) != 0;
+   if (fullscreen)
+   {
+      dfb->SetCooperativeLevel(dfb, DFSCL_FULLSCREEN);
+   }
+   else
+   {
+      //dfb->SetCooperativeLevel(dfb, DFSCL_NORMAL);
+      dfb->SetCooperativeLevel(dfb, DFSCL_FULLSCREEN);
+   }
+   
+   dfb->SetVideoMode(dfb, inWidth, inHeight, 32);
+   dfb->CreateInputEventBuffer(dfb, (DFBInputDeviceCapabilities)(DICAPS_KEYS | DICAPS_BUTTONS), DFB_FALSE, &sgEventBuffer);
+   
+   DFBSurfaceDescription dsc;
    dsc.flags = DSDESC_CAPS;
    dsc.caps = (DFBSurfaceCapabilities)(DSCAPS_PRIMARY | DSCAPS_FLIPPING);
+   dsc.width = inWidth;
+   dsc.height = inHeight;
    
    IDirectFBSurface *surface = NULL;
    dfb->CreateSurface(dfb, &dsc, &surface);
