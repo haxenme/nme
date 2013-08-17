@@ -166,7 +166,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public inline static function ofArray<T>(a:Array<Dynamic>):Vector<T> {
+	public inline static function ofArray<T>(a:Array<T>):Vector<T> {
 		
 		#if flash
 		return cast flash.Vector.ofArray (a);
@@ -276,7 +276,7 @@ private class VectorIter<T> {
 	
     public function hasNext() {
 		
-        return (index < vector.length - 1);
+        return (index < vector.length);
 		
     }
 	

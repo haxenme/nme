@@ -248,11 +248,11 @@ class Context3D
     {
       if (programType == Context3DProgramType.VERTEX) 
       {
-         return "vc";
+         return "vc" + firstRegister;
 
       } else if (programType == Context3DProgramType.FRAGMENT) 
       {
-         return "fc";
+         return "fc" + firstRegister;
       }
 
         throw "Program Type " + programType + " not supported";
