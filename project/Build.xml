@@ -232,6 +232,7 @@
       <compilerflag value="-I${QNX_TARGET}/usr/include" if="blackberry"/>
       <!-- <compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/> -->
       <compilerflag value="-I${QNX_TARGET}/usr/include/GLES2" if="blackberry"/>
+      <compilerflag value="-DNME_DIRECTFB" if="directfb"/>
       <compilerflag value="-DSDL_OGL" if="sdl"/>
       <compilerflag value="-DSDL_OGL" if="sdl2"/>
       <compilerflag value="-DGLFW_OGL" if="glfw"/>
@@ -390,6 +391,7 @@
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I/usr/include/directfb" />
       <compilerflag value="-I${NME_DEV}/include"/>
+      <compilerflag value="-DNME_DIRECTFB"/>
       
       <file name="directfb/DirectFBHardware.cpp"/>
       <file name="directfb/DirectFBStage.cpp"/>

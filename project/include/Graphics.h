@@ -524,8 +524,8 @@ struct HardwareArrays
      BM_ADD      = 0x00000001,
      PERSPECTIVE = 0x00000002,
      RADIAL      = 0x00000004,
-	 BM_MULTIPLY = 0x00000008,
-	 BM_SCREEN   = 0x00000010,
+     BM_MULTIPLY = 0x00000008,
+     BM_SCREEN   = 0x00000010,
 
      FOCAL_MASK  = 0x0000ff00,
      FOCAL_SIGN  = 0x00010000,
@@ -556,6 +556,7 @@ public:
    HardwareArrays &GetArrays(Surface *inSurface,bool inWithColour,unsigned int inFlags);
 
    HardwareCalls mCalls;
+   
 };
 
 
@@ -639,7 +640,11 @@ public:
    virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent, bool inIncludeStroke) = 0;
 
    virtual bool Hits(const RenderState &inState) { return false; }
-
+   
+   #ifdef NME_DIRECTFB
+   static Renderer *CreateHardware(const class GraphicsJob &inJob,const GraphicsPath &inPath,HardwareContext &inHardware);
+   #endif
+   
    static Renderer *CreateSoftware(const class GraphicsJob &inJob,const GraphicsPath &inPath);
 
 protected:
@@ -657,6 +662,9 @@ struct GraphicsJob
    GraphicsStroke  *mStroke;
    IGraphicsFill   *mFill;
    GraphicsTrianglePath  *mTriangles;
+   #ifdef NME_DIRECTFB
+   class Renderer  *mHardwareRenderer;
+   #endif
    class Renderer  *mSoftwareRenderer;
    int             mCommand0;
    int             mData0;

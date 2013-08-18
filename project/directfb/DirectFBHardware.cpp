@@ -31,65 +31,31 @@ public:
       mHeight = inHeight;
    }
    
-   void SetQuality(StageQuality inQuality)
-   {
-      
-   }
+   void SetQuality(StageQuality inQuality) {}
    
    void BeginRender(const Rect &inRect,bool inForHitTest)
    {
-      //printf("render\n");
+      mPrimarySurface->Clear(mPrimarySurface, 0xFF, 0xFF, 0xFF, 0xFF);
    }
    
    void EndRender()
    {
-      
+      mPrimarySurface->Flip(mPrimarySurface, NULL, (DFBSurfaceFlipFlags)0);
    }
    
-   void SetViewport(const Rect &inRect)
-   {
-      
-   }
-   
-   void Clear(uint32 inColour,const Rect *inRect=0)
-   {
-      
-   }
-   
-   void Flip()
-   {
-      
-   }
-   
-   void DestroyNativeTexture(void *)
-   {
-      // TODO
-   }
+   void SetViewport(const Rect &inRect) {}
+   void Clear(uint32 inColour,const Rect *inRect=0) {}
+   void Flip() {}
+   void DestroyNativeTexture(void *) {}
    
    int Width() const { return mWidth; }
    int Height() const { return mHeight; } 
    
    class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags);
-   
-   void Render(const RenderState &inState, const HardwareCalls &inCalls)
-   {
-      
-   }
-   
-   void BeginBitmapRender(Surface *inSurface,uint32 inTint, bool inRepeat, bool inSmooth)
-   {
-      
-   }
-   
-   void RenderBitmap(const Rect &inSrc, int inX, int inY)
-   {
-      
-   }
-   
-   void EndBitmapRender()
-   {
-      
-   }
+   void Render(const RenderState &inState, const HardwareCalls &inCalls) {}
+   void BeginBitmapRender(Surface *inSurface,uint32 inTint, bool inRepeat, bool inSmooth) {}
+   void RenderBitmap(const Rect &inSrc, int inX, int inY) {}
+   void EndBitmapRender() {}
 };
 
 
@@ -104,21 +70,14 @@ public:
    {
       
    }
-
+   
    ~DirectFBTexture()
    {
       
    }
-
-   void Bind(class Surface *inSurface, int inSlot)
-   {
-      
-   }
-
-   void BindFlags(bool inRepeat, bool inSmooth)
-   {
-      // TODO:
-   }
+   
+   void Bind(class Surface *inSurface, int inSlot) {}
+   void BindFlags(bool inRepeat, bool inSmooth) {}
    
    UserPoint PixelToTex(const UserPoint &inPixels)
    {
@@ -140,7 +99,6 @@ class Texture *DirectFBHardwareContext::CreateTexture(class Surface *inSurface, 
 
 HardwareContext *HardwareContext::current = 0;
 
-
 HardwareContext *HardwareContext::CreateDirectFB(void *inDirectFB, void *inSurface)
 {
    return new DirectFBHardwareContext((IDirectFB*)inDirectFB, (IDirectFBSurface*)inSurface);
@@ -156,96 +114,122 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bo
 // --- Hardware Jobs ---------------------------------------------------------------------
 
 
-void BuildHardwareJob(const GraphicsJob &inJob, const GraphicsPath &inPath, HardwareData &ioData, HardwareContext &inHardware)
+class HardwareRenderer : public Renderer
 {
-   DirectFBHardwareContext *context = (DirectFBHardwareContext*)&inHardware;
-   IDirectFBSurface *surface = context->mPrimarySurface;
-   
-   surface->Clear(surface, 0xFF, 0xFF, 0xFF, 0xFF);
-   
-   if (inJob.mIsTileJob)
+public:
+   HardwareRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath, HardwareContext &inHardware)
    {
-      printf("Render tile\n");
+      mJob = &inJob;
+      mPath = &inPath;
+      mContext = &inHardware;
+      
+      DirectFBHardwareContext *context = (DirectFBHardwareContext*)&inHardware;
+      mPrimarySurface = context->mPrimarySurface;
    }
-   else if (inJob.mFill)
+   
+   void Destroy() {};
+
+   bool Render(const RenderTarget &inTarget, const RenderState &inState)
    {
-      GraphicsSolidFill *solid = inJob.mFill->AsSolidFill();
-      if (solid)
+      if (mJob->mIsTileJob)
       {
-         surface->SetColor(surface, solid->mRGB.c0, solid->mRGB.c1, solid->mRGB.c2, solid->mRGB.a);
+         printf("Render tile\n");
       }
-      else
+      else if (mJob->mFill)
       {
-         GraphicsGradientFill *grad = inJob.mFill->AsGradientFill();
-         if (grad)
+         GraphicsSolidFill *solid = mJob->mFill->AsSolidFill();
+         if (solid)
          {
-            
+            mPrimarySurface->SetColor(mPrimarySurface, solid->mRGB.c0, solid->mRGB.c1, solid->mRGB.c2, solid->mRGB.a);
          }
          else
          {
-            GraphicsBitmapFill *bmp = inJob.mFill->AsBitmapFill();
-            //mTextureMapper = bmp->matrix.Inverse();
-            //mSurface = bmp->bitmapData->IncRef();
-            //mTexture = mSurface->GetOrCreateTexture(inHardware);
-            //mElement.mBitmapRepeat = bmp->repeat;
-            //mElement.mBitmapSmooth = bmp->smooth;
-            surface->SetColor(surface, 0xFF, 0, 0, 0xFF);
+            GraphicsGradientFill *grad = mJob->mFill->AsGradientFill();
+            if (grad)
+            {
+               
+            }
+            else
+            {
+               GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
+               //mTextureMapper = bmp->matrix.Inverse();
+               //mSurface = bmp->bitmapData->IncRef();
+               //mTexture = mSurface->GetOrCreateTexture(inHardware);
+               //mElement.mBitmapRepeat = bmp->repeat;
+               //mElement.mBitmapSmooth = bmp->smooth;
+               mPrimarySurface->SetColor(mPrimarySurface, 0xFF, 0, 0, 0xFF);
+             }
           }
-       }
-   }
-   
-   if (inJob.mTriangles)
-   {
-      printf("Render triangle\n");
-   }
-   else if (inJob.mIsPointJob)
-   {
-      printf("Render point\n");
-   }
-   else if (inJob.mStroke)
-   {
-      printf("Render stroke\n");
-   }
-   else
-   {
-      const uint8* inCommands = (const uint8*)&inPath.commands[inJob.mCommand0];
-      UserPoint *point = (UserPoint *)&inPath.data[inJob.mData0];
-      
-      float x0, y0, x1, y1;
-      
-      for(int i=0; i< inJob.mCommandCount; i++)
-      {
-         switch(inCommands[i])
-         {
-            case pcBeginAt:
-               //printf("begin at\n");
-               // fallthrough
-            case pcMoveTo:
-               //printf("move to\n");
-               x0 = point->x;
-               y0 = point->y;
-               point++;
-               break;
-
-            case pcLineTo:
-               if (point->x > x1) x1 = point->x;
-               if (point->x < x0) x0 = point->x;
-               if (point->y > y1) y1 = point->y;
-               if (point->y < y0) y0 = point->y;
-               point++;
-               break;
-
-            case pcCurveTo:
-               //printf("curve to\n");
-               point++;
-               break;
-         }
       }
       
-      surface->FillRectangle(surface, x0, y0, x1 - x0, y1 - y0);
-   }
-               
-   surface->Flip(surface, NULL, (DFBSurfaceFlipFlags)0);
+      if (mJob->mTriangles)
+      {
+         printf("Render triangle\n");
+      }
+      else if (mJob->mIsPointJob)
+      {
+         printf("Render point\n");
+      }
+      else if (mJob->mStroke)
+      {
+         printf("Render stroke\n");
+      }
+      else
+      {
+         const uint8* inCommands = (const uint8*)&mPath->commands[mJob->mCommand0];
+         UserPoint *point = (UserPoint *)&mPath->data[mJob->mData0];
+         
+         float x0, y0, x1, y1;
+         
+         for(int i=0; i< mJob->mCommandCount; i++)
+         {
+            switch(inCommands[i])
+            {
+               case pcBeginAt:
+                  //printf("begin at\n");
+                  // fallthrough
+               case pcMoveTo:
+                  //printf("move to\n");
+                  //printf("move to: %d %d \n", point->x, point->y);
+                  x0 = point->x;
+                  y0 = point->y;
+                  point++;
+                  break;
+
+               case pcLineTo:
+                  if (point->x > x1) x1 = point->x;
+                  if (point->x < x0) x0 = point->x;
+                  if (point->y > y1) y1 = point->y;
+                  if (point->y < y0) y0 = point->y;
+                  point++;
+                  break;
+
+               case pcCurveTo:
+                  //printf("curve to\n");
+                  point++;
+                  break;
+            }
+         }
+         
+         mPrimarySurface->FillRectangle(mPrimarySurface, inState.mTransform.mMatrix->mtx + x0, inState.mTransform.mMatrix->mty + y0, x1 - x0, y1 - y0);
+      }
+      return true;
+   };
+
+   bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent, bool inIncludeStroke) { return false; };
+   bool Hits(const RenderState &inState) { return false; }
+   
+private:
+   const GraphicsJob *mJob;
+   const GraphicsPath *mPath;
+   HardwareContext *mContext;
+   IDirectFBSurface *mPrimarySurface;
+};
+
+
+Renderer *Renderer::CreateHardware(const GraphicsJob &inJob, const GraphicsPath &inPath, HardwareContext &inHardware)
+{
+   return new HardwareRenderer(inJob, inPath, inHardware);
 }
 
 

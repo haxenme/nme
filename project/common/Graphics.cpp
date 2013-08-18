@@ -599,23 +599,58 @@ const Extent2DF &Graphics::GetExtent0(double inRotation)
 bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
    Flush();
+   
+   #ifdef NME_DIRECTFB
+   
+   for(int i=0;i<mJobs.size();i++)
+   {
+      GraphicsJob &job = mJobs[i];
+      
+      if (!job.mHardwareRenderer && !job.mSoftwareRenderer)
+         job.mHardwareRenderer = Renderer::CreateHardware(job,*mPathData,*inTarget.mHardware);
+      
+      //if (!job.mSoftwareRenderer)
+         //job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
+      
+      if (inState.mPhase==rpHitTest)
+      {
+         if (job.mHardwareRenderer && job.mSoftwareRenderer->Hits(inState))
+         {
+            return true;
+         }
+         /*else if (job.mSoftwareRenderer && job.mSoftwareRenderer->Hits(inState))
+         {
+            return true;
+         }*/
+      }
+      else
+      {
+         if (job.mHardwareRenderer)
+            job.mHardwareRenderer->Render(inTarget,inState);
+         //else
+            //job.mSoftwareRenderer->Render(inTarget,inState);
+      }
+   }
+   
+   #else
+   
    if (inTarget.IsHardware())
    {
-     if (!mHardwareData)
+      if (!mHardwareData)
          mHardwareData = new HardwareData();
-
-     while(mBuiltHardware<mJobs.size())
-     {
+      
+      while(mBuiltHardware<mJobs.size())
+      {
          BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData,*inTarget.mHardware);
-     }
-
-     if (mHardwareData->mCalls.size())
-     {
+      }
+      
+      if (mHardwareData->mCalls.size())
+      {
          if (inState.mPhase==rpHitTest)
             return inTarget.mHardware->Hits(inState,mHardwareData->mCalls);
          else
             inTarget.mHardware->Render(inState,mHardwareData->mCalls);
-     }
+      }
    }
    else
    {
@@ -634,6 +669,8 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
             job.mSoftwareRenderer->Render(inTarget,inState);
       }
    }
+   
+   #endif
 
    return false;
 }
