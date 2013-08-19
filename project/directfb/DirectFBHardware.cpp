@@ -65,15 +65,48 @@ public:
    unsigned int flags;
    int          width;
    int          height;
+   IDirectFBSurface *dfbSurface;
    
    DirectFBTexture(DirectFBHardwareContext *inContext, Surface *inSurface, unsigned int inFlags)
    {
+      width = inSurface->Width();
+      height = inSurface->Height();
       
+      DFBSurfaceDescription dsc;
+      dsc.width = width;
+      dsc.height = height;
+      dsc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_HEIGHT | DSDESC_WIDTH | DSDESC_PREALLOCATED | DSDESC_PIXELFORMAT);
+      dsc.caps = DSCAPS_NONE;
+      dsc.pixelformat = DSPF_ARGB;
+      
+      uint8 *pixelData = (uint8 *)malloc(inSurface->Width()*inSurface->Height()*4);
+      for (int y=0;y<inSurface->Height();y++)
+      {
+         const uint8 *source = inSurface->Row(y);
+         uint8 *dest = pixelData + (y*inSurface->Width()*4);
+         for (int x=0;x<inSurface->Width();x++)
+         {
+            dest[0] = source[2];
+            dest[1] = source[1];
+            dest[2] = source[0];
+            dest[3] = source[3];
+            dest += 4;
+            source += 4;
+         }
+      }
+      
+      dsc.preallocated[0].data = pixelData;
+      dsc.preallocated[0].pitch = inSurface->GetStride();
+      dsc.preallocated[1].data = NULL;
+      dsc.preallocated[1].pitch = 0;
+      
+      inContext->mDirectFB->CreateSurface(inContext->mDirectFB, &dsc, &dfbSurface);
    }
    
    ~DirectFBTexture()
    {
-      
+      //dispose of dfbSurface somehow
+      free(pixelData);
    }
    
    void Bind(class Surface *inSurface, int inSlot) {}
@@ -88,6 +121,10 @@ public:
    {
       return inPixels;
    }
+   
+private:
+   uint8 *pixelData;
+   
 };
 
 
@@ -125,14 +162,22 @@ public:
       
       DirectFBHardwareContext *context = (DirectFBHardwareContext*)&inHardware;
       mPrimarySurface = context->mPrimarySurface;
+      
+      if (mJob->mFill)
+      {
+         GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
+         if (bmp)
+         {
+            Surface *surface = bmp->bitmapData->IncRef();
+            mTexture = (DirectFBTexture *)surface->GetOrCreateTexture(inHardware);
+         }
+      }
    }
    
    void Destroy() {};
 
    bool Render(const RenderTarget &inTarget, const RenderState &inState)
    {
-      IDirectFBSurface *bitmapSurface = NULL;
-      
       if (mJob->mIsTileJob)
       {
          printf("Render tile\n");
@@ -153,39 +198,9 @@ public:
             }
             else
             {
-               GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
-               Surface *surface = bmp->bitmapData->IncRef();
-               
-               DFBSurfaceDescription dsc;
-               dsc.width = surface->Width();
-               dsc.height = surface->Height();
-               dsc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_HEIGHT | DSDESC_WIDTH | DSDESC_PREALLOCATED | DSDESC_PIXELFORMAT);
-               dsc.caps = DSCAPS_NONE;
-               dsc.pixelformat = DSPF_ARGB;
-               
-               uint8 *data = (uint8 *)malloc(surface->Width()*surface->Height()*4);
-               for (int y=0;y<surface->Height();y++)
-               {
-                  const uint8 *source = surface->Row(y);
-                  uint8 *dest = data + (y*surface->Width()*4);
-                  for (int x=0;x<surface->Width();x++)
-                  {
-                     dest[0] = source[2];
-                     dest[1] = source[1];
-                     dest[2] = source[0];
-                     dest[3] = source[3];
-                     dest += 4;
-                     source += 4;
-                  }
-               }
-               
-               dsc.preallocated[0].data = data;
-               dsc.preallocated[0].pitch = surface->GetStride();
-               dsc.preallocated[1].data = NULL;
-               dsc.preallocated[1].pitch = 0;
-               
-               DirectFBHardwareContext *context = (DirectFBHardwareContext*)mContext;
-               context->mDirectFB->CreateSurface(context->mDirectFB, &dsc, &bitmapSurface);
+               //GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
+               //Surface *surface = bmp->bitmapData->IncRef();
+               //mTexture = surface->GetOrCreateTexture(mContext);
              }
           }
       }
@@ -239,37 +254,22 @@ public:
             }
          }
          
-         if (bitmapSurface)
+         if (mTexture)
          {
             const Matrix *matrix = inState.mTransform.mMatrix;
-            
-            /*const Matrix *srcMatrix = inState.mTransform.mMatrix;
-            
-            s32 matrix[9];
-            
-            matrix[0] = (s32)(srcMatrix->m00 * 0x10000);
-            matrix[1] = (s32)(srcMatrix->m01 * 0x10000);
-            matrix[2] = (s32)(srcMatrix->mtx * 0x10000);
-            matrix[3] = (s32)(srcMatrix->m10 * 0x10000);
-            matrix[4] = (s32)(srcMatrix->m11 * 0x10000);
-            matrix[5] = (s32)(srcMatrix->mty * 0x10000);
-            
-            mPrimarySurface->SetRenderOptions(mPrimarySurface, DSRO_MATRIX);
-            mPrimarySurface->SetMatrix(mPrimarySurface, matrix);
-            
-            mPrimarySurface->Blit(mPrimarySurface, bitmapSurface, NULL, srcMatrix->mtx, srcMatrix->mty);*/
             
             mPrimarySurface->SetBlittingFlags(mPrimarySurface, DSBLIT_BLEND_ALPHACHANNEL);
             
             if (matrix->GetScaleX() == 1 && matrix->GetScaleY() == 1)
             {
-               mPrimarySurface->Blit(mPrimarySurface, bitmapSurface, NULL, matrix->mtx, matrix->mty);
+               mPrimarySurface->Blit(mPrimarySurface, mTexture->dfbSurface, NULL, matrix->mtx, matrix->mty);
             }
             else
             {
                DFBRectangle srcRect;
                srcRect.x = srcRect.y = 0;
-               bitmapSurface->GetSize(bitmapSurface, &srcRect.w, &srcRect.h);
+               srcRect.w = mTexture->width;
+               srcRect.h = mTexture->height;
                
                DFBRectangle target;
                target.x = matrix->mtx;
@@ -277,7 +277,7 @@ public:
                target.w = srcRect.w*matrix->GetScaleX();
                target.h = srcRect.h*matrix->GetScaleY();
                
-               mPrimarySurface->StretchBlit(mPrimarySurface, bitmapSurface, &srcRect, &target);
+               mPrimarySurface->StretchBlit(mPrimarySurface, mTexture->dfbSurface, &srcRect, &target);
             }
          }
          else
@@ -296,6 +296,8 @@ private:
    const GraphicsPath *mPath;
    HardwareContext *mContext;
    IDirectFBSurface *mPrimarySurface;
+   DirectFBTexture *mTexture;
+   
 };
 
 
