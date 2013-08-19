@@ -164,11 +164,10 @@ public:
                dsc.pixelformat = DSPF_ARGB;
                
                uint8 *data = (uint8 *)malloc(surface->Width()*surface->Height()*4);
-               
                for (int y=0;y<surface->Height();y++)
                {
                   const uint8 *source = surface->Row(y);
-                  uint8 *dest = data + (y*surface->GetStride());
+                  uint8 *dest = data + (y*surface->Width()*4);
                   for (int x=0;x<surface->Width();x++)
                   {
                      dest[0] = source[2];
@@ -242,7 +241,44 @@ public:
          
          if (bitmapSurface)
          {
-            mPrimarySurface->Blit(mPrimarySurface, bitmapSurface, NULL, inState.mTransform.mMatrix->mtx, inState.mTransform.mMatrix->mty);
+            const Matrix *matrix = inState.mTransform.mMatrix;
+            
+            /*const Matrix *srcMatrix = inState.mTransform.mMatrix;
+            
+            s32 matrix[9];
+            
+            matrix[0] = (s32)(srcMatrix->m00 * 0x10000);
+            matrix[1] = (s32)(srcMatrix->m01 * 0x10000);
+            matrix[2] = (s32)(srcMatrix->mtx * 0x10000);
+            matrix[3] = (s32)(srcMatrix->m10 * 0x10000);
+            matrix[4] = (s32)(srcMatrix->m11 * 0x10000);
+            matrix[5] = (s32)(srcMatrix->mty * 0x10000);
+            
+            mPrimarySurface->SetRenderOptions(mPrimarySurface, DSRO_MATRIX);
+            mPrimarySurface->SetMatrix(mPrimarySurface, matrix);
+            
+            mPrimarySurface->Blit(mPrimarySurface, bitmapSurface, NULL, srcMatrix->mtx, srcMatrix->mty);*/
+            
+            mPrimarySurface->SetBlittingFlags(mPrimarySurface, DSBLIT_BLEND_ALPHACHANNEL);
+            
+            if (matrix->GetScaleX() == 1 && matrix->GetScaleY() == 1)
+            {
+               mPrimarySurface->Blit(mPrimarySurface, bitmapSurface, NULL, matrix->mtx, matrix->mty);
+            }
+            else
+            {
+               DFBRectangle srcRect;
+               srcRect.x = srcRect.y = 0;
+               bitmapSurface->GetSize(bitmapSurface, &srcRect.w, &srcRect.h);
+               
+               DFBRectangle target;
+               target.x = matrix->mtx;
+               target.y = matrix->mty;
+               target.w = srcRect.w*matrix->GetScaleX();
+               target.h = srcRect.h*matrix->GetScaleY();
+               
+               mPrimarySurface->StretchBlit(mPrimarySurface, bitmapSurface, &srcRect, &target);
+            }
          }
          else
          {
