@@ -131,6 +131,8 @@ public:
 
    bool Render(const RenderTarget &inTarget, const RenderState &inState)
    {
+      IDirectFBSurface *bitmapSurface = NULL;
+      
       if (mJob->mIsTileJob)
       {
          printf("Render tile\n");
@@ -152,12 +154,21 @@ public:
             else
             {
                GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
-               //mTextureMapper = bmp->matrix.Inverse();
-               //mSurface = bmp->bitmapData->IncRef();
-               //mTexture = mSurface->GetOrCreateTexture(inHardware);
-               //mElement.mBitmapRepeat = bmp->repeat;
-               //mElement.mBitmapSmooth = bmp->smooth;
-               mPrimarySurface->SetColor(mPrimarySurface, 0xFF, 0, 0, 0xFF);
+               Surface *surface = bmp->bitmapData->IncRef();
+               
+               DFBSurfaceDescription dsc;
+               dsc.width = surface->Width();
+               dsc.height = surface->Height();
+               dsc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_HEIGHT | DSDESC_WIDTH | DSDESC_PREALLOCATED | DSDESC_PIXELFORMAT);
+               dsc.caps = DSCAPS_NONE;
+               dsc.pixelformat = DSPF_ARGB;
+               dsc.preallocated[0].data = (void *)surface->GetBase();
+               dsc.preallocated[0].pitch = surface->GetStride();
+               dsc.preallocated[1].data = NULL;
+               dsc.preallocated[1].pitch = 0;
+               
+               DirectFBHardwareContext *context = (DirectFBHardwareContext*)mContext;
+               context->mDirectFB->CreateSurface(context->mDirectFB, &dsc, &bitmapSurface);
              }
           }
       }
@@ -211,7 +222,14 @@ public:
             }
          }
          
-         mPrimarySurface->FillRectangle(mPrimarySurface, inState.mTransform.mMatrix->mtx + x0, inState.mTransform.mMatrix->mty + y0, x1 - x0, y1 - y0);
+         if (bitmapSurface)
+         {
+            mPrimarySurface->Blit(mPrimarySurface, bitmapSurface, NULL, inState.mTransform.mMatrix->mtx, inState.mTransform.mMatrix->mty);
+         }
+         else
+         {
+            mPrimarySurface->FillRectangle(mPrimarySurface, inState.mTransform.mMatrix->mtx + x0, inState.mTransform.mMatrix->mty + y0, x1 - x0, y1 - y0);
+         }
       }
       return true;
    };
