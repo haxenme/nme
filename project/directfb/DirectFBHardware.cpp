@@ -162,7 +162,25 @@ public:
                dsc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_HEIGHT | DSDESC_WIDTH | DSDESC_PREALLOCATED | DSDESC_PIXELFORMAT);
                dsc.caps = DSCAPS_NONE;
                dsc.pixelformat = DSPF_ARGB;
-               dsc.preallocated[0].data = (void *)surface->GetBase();
+               
+               uint8 *data = (uint8 *)malloc(surface->Width()*surface->Height()*4);
+               
+               for (int y=0;y<surface->Height();y++)
+               {
+                  const uint8 *source = surface->Row(y);
+                  uint8 *dest = data + (y*surface->GetStride());
+                  for (int x=0;x<surface->Width();x++)
+                  {
+                     dest[0] = source[2];
+                     dest[1] = source[1];
+                     dest[2] = source[0];
+                     dest[3] = source[3];
+                     dest += 4;
+                     source += 4;
+                  }
+               }
+               
+               dsc.preallocated[0].data = data;
                dsc.preallocated[0].pitch = surface->GetStride();
                dsc.preallocated[1].data = NULL;
                dsc.preallocated[1].pitch = 0;
