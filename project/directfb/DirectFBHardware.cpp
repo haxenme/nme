@@ -257,27 +257,42 @@ public:
          if (mTexture)
          {
             const Matrix *matrix = inState.mTransform.mMatrix;
-            
+            GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
             mPrimarySurface->SetBlittingFlags(mPrimarySurface, DSBLIT_BLEND_ALPHACHANNEL);
             
-            if (matrix->GetScaleX() == 1 && matrix->GetScaleY() == 1)
+            if (bmp->repeat)
             {
-               mPrimarySurface->Blit(mPrimarySurface, mTexture->dfbSurface, NULL, matrix->mtx, matrix->mty);
+               DFBRegion clip;
+               clip.x1 = x0;
+               clip.x2 = x1;
+               clip.y1 = y0;
+               clip.y2 = y1;
+               
+               mPrimarySurface->SetClip(mPrimarySurface, &clip);
+               mPrimarySurface->TileBlit(mPrimarySurface, mTexture->dfbSurface, NULL, x0, y0);
+               mPrimarySurface->SetClip(mPrimarySurface, NULL);
             }
             else
             {
-               DFBRectangle srcRect;
-               srcRect.x = srcRect.y = 0;
-               srcRect.w = mTexture->width;
-               srcRect.h = mTexture->height;
-               
-               DFBRectangle target;
-               target.x = matrix->mtx;
-               target.y = matrix->mty;
-               target.w = srcRect.w*matrix->GetScaleX();
-               target.h = srcRect.h*matrix->GetScaleY();
-               
-               mPrimarySurface->StretchBlit(mPrimarySurface, mTexture->dfbSurface, &srcRect, &target);
+               if (matrix->GetScaleX() == 1 && matrix->GetScaleY() == 1)
+               {
+                  mPrimarySurface->Blit(mPrimarySurface, mTexture->dfbSurface, NULL, matrix->mtx, matrix->mty);
+               }
+               else
+               {
+                  DFBRectangle srcRect;
+                  srcRect.x = srcRect.y = 0;
+                  srcRect.w = mTexture->width;
+                  srcRect.h = mTexture->height;
+                  
+                  DFBRectangle target;
+                  target.x = matrix->mtx;
+                  target.y = matrix->mty;
+                  target.w = srcRect.w*matrix->GetScaleX();
+                  target.h = srcRect.h*matrix->GetScaleY();
+                  
+                  mPrimarySurface->StretchBlit(mPrimarySurface, mTexture->dfbSurface, &srcRect, &target);
+               }
             }
          }
          else
