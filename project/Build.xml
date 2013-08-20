@@ -402,8 +402,9 @@
    <files id="mac">
       
       <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${NME_DEV}/include" if="sdl_static" />
-      <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl_static" />
+      <compilerflag value="-I${NME_DEV}/include" />
+      <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" />
+      <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
       <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
       <file name="mac/NSFont.cpp"/>
       <file name="mac/MacBoot.m" />
