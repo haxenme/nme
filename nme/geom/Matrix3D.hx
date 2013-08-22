@@ -1,7 +1,7 @@
 package nme.geom;
 #if (cpp || neko)
 
-import flash.Vector;
+import nme.Vector;
 
 class Matrix3D 
 {
