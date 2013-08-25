@@ -297,8 +297,8 @@ public:
       mSDLSurface = inSurface;
       mFlags = inFlags;
       mShowCursor = true;
-      mCurrentCursor = curPointer;
-
+      mLockCursor = false;
+      mCurrentCursor = curPointer;      
 
       mIsFullscreen =  (mFlags & SDL_FULLSCREEN);
       if (mIsFullscreen)
@@ -579,10 +579,21 @@ public:
       if (inShow!=mShowCursor)
       {
          mShowCursor = inShow;
-         this->SetCursor(mCurrentCursor);
+         SetCursor( mCurrentCursor );
+      }
+   }
+
+   void ConstrainCursorToWindowFrame(bool inLock) {
+      if (inLock != mLockCursor) {
+         mLockCursor = inLock;
+         SDL_WM_GrabInput( inLock ? SDL_GRAB_ON : SDL_GRAB_OFF );
       }
    }
    
+      //Note that this fires a mouse event, see the SDL_WarpMouse docs
+   void SetCursorPositionInWindow(int inX, int inY) {
+      SDL_WarpMouse( inX, inY );
+   }
    
    void EnablePopupKeyboard (bool enabled) {
       
@@ -658,6 +669,7 @@ public:
    bool         mIsOpenGL;
    Cursor       mCurrentCursor;
    bool         mShowCursor;
+   bool         mLockCursor;
    bool         mIsFullscreen;
    unsigned int mFlags;
    int          mWidth;

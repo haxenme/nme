@@ -1273,6 +1273,32 @@ value nme_stage_show_cursor(value inStage,value inShow)
 }
 DEFINE_PRIM(nme_stage_show_cursor,2);
 
+value nme_stage_constrain_cursor_to_window_frame(value inStage, value inLock) {
+
+
+    Stage *stage;
+  
+    if (AbstractToObject(inStage,stage)) {       
+        bool lock = val_bool(inLock);
+        stage->ConstrainCursorToWindowFrame( lock );
+    } 
+
+    return alloc_null();
+}
+DEFINE_PRIM(nme_stage_constrain_cursor_to_window_frame,2);
+
+value nme_stage_set_cursor_position_in_window( value inStage, value inX, value inY ) {
+
+    Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      int x = val_int(inX);
+      int y = val_int(inY);      
+      stage->SetCursorPositionInWindow(x,y);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_set_cursor_position_in_window,3);
 
 
 value nme_stage_get_orientation() {

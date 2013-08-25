@@ -485,6 +485,12 @@ protected:
    SimpleButton  *mSimpleButton;
 
    static Stage  *gCurrentStage;
+
+public:
+      //Window pointer locking
+   virtual void ConstrainCursorToWindowFrame(bool inLock) { };
+   virtual void SetCursorPositionInWindow(int inX, int inY) { };
+
 };
 
 class HardwareSurface;
