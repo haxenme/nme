@@ -153,6 +153,11 @@ class Graphics
       nme_gfx_move_to(nmeHandle, inX, inY);
    }
 
+   public function attachShader(?shader:Shader)
+   {
+      nme_gfx_attach_shader(nmeHandle, (shader == null ? null : shader.nmeHandle));
+   }
+
    inline static public function RGBA(inRGB:Int, inA:Int = 0xff):Int 
    {
       #if (neko && (!haxe3 || neko_v1))
@@ -184,6 +189,7 @@ class Graphics
    private static var nme_gfx_draw_points = Loader.load("nme_gfx_draw_points", -1);
    private static var nme_gfx_draw_round_rect = Loader.load("nme_gfx_draw_round_rect", -1);
    private static var nme_gfx_draw_triangles = Loader.load("nme_gfx_draw_triangles", -1);
+   private static var nme_gfx_attach_shader = Loader.load("nme_gfx_attach_shader", 2);
 }
 
 #else

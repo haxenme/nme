@@ -2507,6 +2507,43 @@ value nme_gfx_draw_points(value *arg, int nargs)
 DEFINE_PRIM_MULT(nme_gfx_draw_points);
 
 
+void nme_gfx_attach_shader(value inGfx, value inProgram)
+{
+   Graphics *gfx;
+   GPUProg *prog;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      AbstractToObject(inProgram,prog); // allow null to detach shader
+      gfx->attachShader(prog);
+   }
+}
+DEFINE_PRIM(nme_gfx_attach_shader,2);
+
+value nme_shader_create(value inVert, value inFrag)
+{
+   GPUProg *prog = GPUProg::create(val_string(inVert), val_string(inFrag));
+   return ObjectToAbstract(prog);
+}
+DEFINE_PRIM(nme_shader_create,2);
+
+value nme_shader_set_uniform(value inProgram, value inId, value inValue)
+{
+   GPUProg *prog;
+   if (AbstractToObject(inProgram,prog))
+   {
+      if (val_is_int(inValue))
+      {
+         int val = val_int(inValue);
+         prog->setUniformi(val_string(inId), &val, 1);
+      }
+      else if (val_is_float(inValue))
+      {
+         float val = val_float(inValue);
+         prog->setUniformf(val_string(inId), &val, 1);
+      }
+   }
+}
+DEFINE_PRIM(nme_shader_set_uniform,3);
 
 
 // --- IGraphicsData -----------------------------------------------------

@@ -1,4 +1,5 @@
 #include "./OGL.h"
+#include "./OGLShaders.h"
 #include <NMEThread.h>
 
 
@@ -288,6 +289,7 @@ public:
          if (elements.empty())
             continue;
 
+         mCustomProg = arrays.mProgram;
          Vertices &vert = arrays.mVertices;
          Vertices &tex_coords = arrays.mTexCoords;
          bool persp = arrays.mFlags & HardwareArrays::PERSPECTIVE;
@@ -722,6 +724,7 @@ public:
    double mLineWidth;
    Surface *mBitmapSurface;
    Texture *mBitmapTexture;
+   GPUProg *mCustomProg;
    
    QuickVec<GLuint> mZombieTextures;
 };
@@ -815,67 +818,107 @@ public:
       mColourArray = inData;
    }
 
+   GPUProg *createDefaultShader(GPUProgID inID)
+   {
+      switch(inID)
+      {
+         case gpuSolid:
+            return GPUProg::create( gSolidVert, gSolidFrag );
+         case gpuColourTransform:
+            return GPUProg::create( gColourVert, gColourTransFrag );
+         case gpuColour:
+            return GPUProg::create( gColourVert, gColourFrag );
+         case gpuRadialGradient:
+            return GPUProg::create( gTextureVert, gRadialTextureFrag );
+         case gpuRadialFocusGradient:
+            return GPUProg::create( gTextureVert, gRadialFocusTextureFrag );
+         case gpuTexture:
+            return GPUProg::create( gTextureVert, gTextureFrag );
+         case gpuTextureColourArray:
+            return GPUProg::create( gTextureColourVert, gTextureColourFrag );
+         case gpuTextureTransform:
+            return GPUProg::create( gTextureVert, gTextureTransFrag );
+         case gpuBitmap:
+            return GPUProg::create( gTextureVert, gBitmapFrag );
+         case gpuBitmapAlpha:
+            return GPUProg::create( gTextureVert, gBitmapAlphaFrag );
+         default:
+           break;
+      }
+      return 0;
+   }
+
    virtual bool PrepareDrawing()
    {
-      GPUProgID id = gpuNone; 
-      if (mTexCoords)
+      GPUProgID id = gpuNone;
+      GPUProg *prog = 0;
+      // check for custom program
+      if (mCustomProg)
+         prog = mCustomProg;
+
+      // fallback if custom program not defined
+      if (!prog)
       {
-         if (mIsRadial)
+         if (mTexCoords)
          {
-            if (mRadialFocus!=0)
-               id = gpuRadialFocusGradient;
+            if (mIsRadial)
+            {
+               if (mRadialFocus!=0)
+                  id = gpuRadialFocusGradient;
+               else
+                  id = gpuRadialGradient;
+            }
+            else if (mColourTransform && !mColourTransform->IsIdentity())
+               id = gpuTextureTransform;
+            else if (mColourArray)
+               id = gpuTextureColourArray;
             else
-               id = gpuRadialGradient;
-         }
-         else if (mColourTransform && !mColourTransform->IsIdentity())
-            id = gpuTextureTransform;
-         else if (mColourArray)
-            id = gpuTextureColourArray;
-         else
-            id = gpuTexture;
-      }
-      else
-      {
-         if (mColourArray)
-         {
-            if (mColourTransform && !mColourTransform->IsIdentity())
-               id = gpuColourTransform;
-            else
-               id = gpuColour;
+               id = gpuTexture;
          }
          else
-            id = gpuSolid;
+         {
+            if (mColourArray)
+            {
+               if (mColourTransform && !mColourTransform->IsIdentity())
+                  id = gpuColourTransform;
+               else
+                  id = gpuColour;
+            }
+            else
+               id = gpuSolid;
+         }
+
+         if (id==gpuNone)
+            return false;
+
+         if (!mProg[id])
+            mProg[id] = createDefaultShader(id);
+
+         if (!mProg[id])
+            return false;
+
+         prog = mProg[id];
       }
 
-      if (id==gpuNone)
-         return false;
-
-      if (!mProg[id])
-         mProg[id] = GPUProg::create(id);
-
-      if (!mProg[id])
-         return false;
-
-      GPUProg *prog = mProg[id];
       mCurrentProg = prog;
-      prog->bind();
+      mCurrentProg->bind();
 
 
-      prog->setPositionData(mPosition,mPositionPerspective);
-      prog->setTransform(mTrans);
+      mCurrentProg->setPositionData(mPosition,mPositionPerspective);
+      mCurrentProg->setTransform(mTrans);
       if (mTexCoords)
       {
-         prog->setTexCoordData(mTexCoords);
+         mCurrentProg->setTexCoordData(mTexCoords);
          mTextureSurface->Bind(*this,0);
       }
       if (mColourArray)
-         prog->setColourData(mColourArray);
+         mCurrentProg->setColourData(mColourArray);
       
       if (mColourTransform)
-         prog->setColourTransform(mColourTransform);
+         mCurrentProg->setColourTransform(mColourTransform);
 
       if (id==gpuRadialFocusGradient)
-         prog->setGradientFocus(mRadialFocus);
+         mCurrentProg->setGradientFocus(mRadialFocus);
 
       return true;
    }
@@ -911,7 +954,7 @@ public:
    {
       GPUProgID id = mBitmapSurface->BytesPP() == 1 ? gpuBitmapAlpha : gpuBitmap;
       if (!mProg[id])
-         mProg[id] = GPUProg::create(id);
+         mProg[id] = createDefaultShader(id);
       mCurrentProg = mProg[id];
       if (!mCurrentProg)
          return;
