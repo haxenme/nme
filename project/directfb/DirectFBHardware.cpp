@@ -75,7 +75,7 @@ public:
       DFBSurfaceDescription dsc;
       dsc.width = width;
       dsc.height = height;
-      dsc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_HEIGHT | DSDESC_WIDTH | DSDESC_PREALLOCATED | DSDESC_PIXELFORMAT);
+      dsc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_HEIGHT | DSDESC_WIDTH | DSDESC_PREALLOCATED | DSDESC_PIXELFORMAT | DSDESC_CAPS);
       dsc.caps = DSCAPS_NONE;
       dsc.pixelformat = DSPF_ARGB;
       
@@ -148,7 +148,15 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bo
 }
 
 
-// --- Hardware Jobs ---------------------------------------------------------------------
+// --- Hardware Renderer ---------------------------------------------------------------------
+
+
+Renderer *CreateLineRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath);
+Renderer *CreateTriangleLineRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath, Renderer *inSolid);
+Renderer *CreateSolidRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath);
+Renderer *CreatePointRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath);
+Renderer *CreateTileRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath);
+Renderer *CreateTriangleRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath);
 
 
 class HardwareRenderer : public Renderer
@@ -158,19 +166,46 @@ public:
    {
       mJob = &inJob;
       mPath = &inPath;
-      mContext = &inHardware;
+      mContext = (DirectFBHardwareContext*)&inHardware;
+      mPrimarySurface = mContext->mPrimarySurface;
+      mSoftwareRenderer = 0;
       
-      DirectFBHardwareContext *context = (DirectFBHardwareContext*)&inHardware;
-      mPrimarySurface = context->mPrimarySurface;
-      
-      if (mJob->mFill)
+      if (inJob.mTriangles)
       {
-         GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
-         if (bmp)
+         Renderer *solid = 0;
+         if (inJob.mFill)
+            solid = CreateTriangleRenderer(inJob,inPath);
+         mSoftwareRenderer = inJob.mStroke ? CreateTriangleLineRenderer(inJob,inPath,solid) : solid;
+      }
+      else if (inJob.mIsTileJob)
+      {
+         //TODO: Use DirectFB blitting instead of the software renderer
+         mSoftwareRenderer = CreateTileRenderer(inJob,inPath);
+      }
+      else if (inJob.mIsPointJob)
+      {
+         mSoftwareRenderer = CreatePointRenderer(inJob,inPath);
+      }
+      else if (inJob.mStroke)
+      {
+         mSoftwareRenderer = CreateLineRenderer(inJob,inPath);
+      }
+      else
+      {
+         //TODO: Detect bitmap blitting
+         /* 
+         if (mJob->mFill)
          {
-            Surface *surface = bmp->bitmapData->IncRef();
-            mTexture = (DirectFBTexture *)surface->GetOrCreateTexture(inHardware);
+            GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
+            if (bmp)
+            {
+               Surface *surface = bmp->bitmapData->IncRef();
+               mTexture = (DirectFBTexture *)surface->GetOrCreateTexture(inHardware);
+            }
          }
+         bool useHardware = false;
+         */
+         mSoftwareRenderer = CreateSolidRenderer(inJob,inPath);
       }
    }
    
@@ -178,126 +213,168 @@ public:
 
    bool Render(const RenderTarget &inTarget, const RenderState &inState)
    {
-      if (mJob->mIsTileJob)
+      if (mSoftwareRenderer)
       {
-         printf("Render tile\n");
-      }
-      else if (mJob->mFill)
-      {
-         GraphicsSolidFill *solid = mJob->mFill->AsSolidFill();
-         if (solid)
-         {
-            mPrimarySurface->SetColor(mPrimarySurface, solid->mRGB.c0, solid->mRGB.c1, solid->mRGB.c2, solid->mRGB.a);
-         }
-         else
-         {
-            GraphicsGradientFill *grad = mJob->mFill->AsGradientFill();
-            if (grad)
-            {
-               
-            }
-            else
-            {
-               //GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
-               //Surface *surface = bmp->bitmapData->IncRef();
-               //mTexture = surface->GetOrCreateTexture(mContext);
-             }
-          }
-      }
-      
-      if (mJob->mTriangles)
-      {
-         printf("Render triangle\n");
-      }
-      else if (mJob->mIsPointJob)
-      {
-         printf("Render point\n");
-      }
-      else if (mJob->mStroke)
-      {
-         printf("Render stroke\n");
+         uint8 *pixels;
+         int pitch;
+         
+         mPrimarySurface->Lock(mPrimarySurface, DSLF_WRITE, (void **)&pixels, &pitch);
+         const RenderTarget &target = RenderTarget(Rect(inState.mClipRect.w,inState.mClipRect.h), pfSwapRB, pixels, pitch);
+         mSoftwareRenderer->Render(target, inState);
+         mPrimarySurface->Unlock(mPrimarySurface);
+         
+         return true;
       }
       else
       {
-         const uint8* inCommands = (const uint8*)&mPath->commands[mJob->mCommand0];
-         UserPoint *point = (UserPoint *)&mPath->data[mJob->mData0];
+         const Matrix *matrix = inState.mTransform.mMatrix;
          
-         float x0, y0, x1, y1;
-         
-         for(int i=0; i< mJob->mCommandCount; i++)
+         if (mJob->mIsTileJob)
          {
-            switch(inCommands[i])
-            {
-               case pcBeginAt:
-                  //printf("begin at\n");
-                  // fallthrough
-               case pcMoveTo:
-                  //printf("move to\n");
-                  //printf("move to: %d %d \n", point->x, point->y);
-                  x0 = point->x;
-                  y0 = point->y;
-                  point++;
-                  break;
-
-               case pcLineTo:
-                  if (point->x > x1) x1 = point->x;
-                  if (point->x < x0) x0 = point->x;
-                  if (point->y > y1) y1 = point->y;
-                  if (point->y < y0) y0 = point->y;
-                  point++;
-                  break;
-
-               case pcCurveTo:
-                  //printf("curve to\n");
-                  point++;
-                  break;
-            }
+            printf("Render tiles\n");
+            return true;
          }
-         
-         if (mTexture)
+         else if (mJob->mFill)
          {
-            const Matrix *matrix = inState.mTransform.mMatrix;
-            GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
-            mPrimarySurface->SetBlittingFlags(mPrimarySurface, DSBLIT_BLEND_ALPHACHANNEL);
-            
-            if (bmp->repeat)
+            GraphicsSolidFill *solid = mJob->mFill->AsSolidFill();
+            if (solid)
             {
-               DFBRegion clip;
-               clip.x1 = x0;
-               clip.x2 = x1;
-               clip.y1 = y0;
-               clip.y2 = y1;
-               
-               mPrimarySurface->SetClip(mPrimarySurface, &clip);
-               mPrimarySurface->TileBlit(mPrimarySurface, mTexture->dfbSurface, NULL, x0, y0);
-               mPrimarySurface->SetClip(mPrimarySurface, NULL);
+               mPrimarySurface->SetColor(mPrimarySurface, solid->mRGB.c0, solid->mRGB.c1, solid->mRGB.c2, solid->mRGB.a);
             }
             else
             {
-               if (matrix->GetScaleX() == 1 && matrix->GetScaleY() == 1)
+               GraphicsGradientFill *grad = mJob->mFill->AsGradientFill();
+               if (grad)
                {
-                  mPrimarySurface->Blit(mPrimarySurface, mTexture->dfbSurface, NULL, matrix->mtx, matrix->mty);
+                  
                }
                else
                {
-                  DFBRectangle srcRect;
-                  srcRect.x = srcRect.y = 0;
-                  srcRect.w = mTexture->width;
-                  srcRect.h = mTexture->height;
-                  
-                  DFBRectangle target;
-                  target.x = matrix->mtx;
-                  target.y = matrix->mty;
-                  target.w = srcRect.w*matrix->GetScaleX();
-                  target.h = srcRect.h*matrix->GetScaleY();
-                  
-                  mPrimarySurface->StretchBlit(mPrimarySurface, mTexture->dfbSurface, &srcRect, &target);
-               }
-            }
+                  //GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
+                  //Surface *surface = bmp->bitmapData->IncRef();
+                  //mTexture = surface->GetOrCreateTexture(mContext);
+                }
+             }
+         }
+         
+         if (mJob->mTriangles)
+         {
+            printf("Render triangle\n");
+            return true;
+         }
+         else if (mJob->mIsPointJob)
+         {
+            printf("Render point\n");
+            return true;
+         }
+         else if (mJob->mStroke)
+         {
+            printf("Render stroke\n");
+            return true;
          }
          else
          {
-            mPrimarySurface->FillRectangle(mPrimarySurface, inState.mTransform.mMatrix->mtx + x0, inState.mTransform.mMatrix->mty + y0, x1 - x0, y1 - y0);
+            const uint8* inCommands = (const uint8*)&mPath->commands[mJob->mCommand0];
+            UserPoint *point = (UserPoint *)&mPath->data[mJob->mData0];
+            
+            float x0, y0, x1, y1;
+            
+            for(int i=0; i< mJob->mCommandCount; i++)
+            {
+               switch(inCommands[i])
+               {
+                  case pcBeginAt:
+                     //printf("begin at\n");
+                     // fallthrough
+                  case pcMoveTo:
+                     //printf("move to\n");
+                     //printf("move to: %d %d \n", point->x, point->y);
+                     x0 = point->x;
+                     y0 = point->y;
+                     point++;
+                     break;
+
+                  case pcLineTo:
+                     if (point->x > x1) x1 = point->x;
+                     if (point->x < x0) x0 = point->x;
+                     if (point->y > y1) y1 = point->y;
+                     if (point->y < y0) y0 = point->y;
+                     point++;
+                     break;
+
+                  case pcCurveTo:
+                     //printf("curve to\n");
+                     point++;
+                     break;
+               }
+            }
+            
+            if (mTexture)
+            {
+               GraphicsBitmapFill *bmp = mJob->mFill->AsBitmapFill();
+               
+               if (bmp->repeat)
+               {
+                  DFBRegion clip;
+                  clip.x1 = x0;
+                  clip.x2 = x1;
+                  clip.y1 = y0;
+                  clip.y2 = y1;
+                  
+                  mPrimarySurface->SetClip(mPrimarySurface, &clip);
+                  mPrimarySurface->SetBlittingFlags(mPrimarySurface, DSBLIT_BLEND_ALPHACHANNEL);
+                  mPrimarySurface->TileBlit(mPrimarySurface, mTexture->dfbSurface, NULL, x0, y0);
+                  mPrimarySurface->SetClip(mPrimarySurface, NULL);
+               }
+               else
+               {
+                  if (matrix->GetScaleX() == 1 && matrix->GetScaleY() == 1)
+                  {
+                     /*DFBSurfaceDescription desc;
+                     desc.flags = (DFBSurfaceDescriptionFlags)(DSDESC_WIDTH | DSDESC_HEIGHT);
+                     desc.width = mTexture->width;
+                     desc.height = mTexture->height;
+                     
+                     mContext->mDirectFB->CreateSurface(mContext->mDirectFB, &desc, &mMask);
+                     
+                     mMask->Clear(mMask, 0, 0, 0, 0x88);
+                     
+                     mPrimarySurface->SetSourceMask(mPrimarySurface, mMask, 0, 0, DSMF_NONE);
+                     DFBSurfaceBlittingFlags flags = (DFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_SRC_MASK_ALPHA);
+                     mPrimarySurface->SetBlittingFlags(mPrimarySurface, flags);*/
+                     
+                     //mPrimarySurface->SetDrawingFlags(mPrimarySurface, DSDRAW_SRC_PREMULTIPLY);
+                     //mPrimarySurface->SetDrawingFlags(mPrimarySurface, DSDRAW_BLEND);
+                     //mPrimarySurface->SetPorterDuff(mPrimarySurface, DSPD_SRC);
+                     //mTexture->dfbSurface->SetColor(mTexture->dfbSurface, 0x0, 0xFF, 0xFF, 0x8);
+                     //mPrimarySurface->SetSrcBlendFunction(mPrimarySurface, DSBF_ONE);
+                     //mPrimarySurface->SetBlittingFlags(mPrimarySurface, (DFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_SRC_PREMULTIPLY | DSBLIT_SRC_PREMULTCOLOR));
+                     //mPrimarySurface->SetBlittingFlags(mPrimarySurface, (DFBSurfaceBlittingFlags)(DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_SRC_PREMULTIPLY | DSBLIT_SRC_PREMULTCOLOR));
+                     mPrimarySurface->SetBlittingFlags(mPrimarySurface, DSBLIT_BLEND_ALPHACHANNEL);
+                     mPrimarySurface->Blit(mPrimarySurface, mTexture->dfbSurface, NULL, matrix->mtx, matrix->mty);
+                  }
+                  else
+                  {
+                     DFBRectangle srcRect;
+                     srcRect.x = srcRect.y = 0;
+                     srcRect.w = mTexture->width;
+                     srcRect.h = mTexture->height;
+                     
+                     DFBRectangle target;
+                     target.x = matrix->mtx;
+                     target.y = matrix->mty;
+                     target.w = srcRect.w*matrix->GetScaleX();
+                     target.h = srcRect.h*matrix->GetScaleY();
+                     
+                     mPrimarySurface->SetBlittingFlags(mPrimarySurface, DSBLIT_BLEND_ALPHACHANNEL);
+                     mPrimarySurface->StretchBlit(mPrimarySurface, mTexture->dfbSurface, &srcRect, &target);
+                  }
+               }
+            }
+            else
+            {
+               mPrimarySurface->FillRectangle(mPrimarySurface, inState.mTransform.mMatrix->mtx + x0, inState.mTransform.mMatrix->mty + y0, x1 - x0, y1 - y0);
+            }
          }
       }
       return true;
@@ -309,9 +386,11 @@ public:
 private:
    const GraphicsJob *mJob;
    const GraphicsPath *mPath;
-   HardwareContext *mContext;
+   DirectFBHardwareContext *mContext;
    IDirectFBSurface *mPrimarySurface;
+   IDirectFBSurface *mMask;
    DirectFBTexture *mTexture;
+   Renderer *mSoftwareRenderer;
    
 };
 
@@ -320,6 +399,7 @@ Renderer *Renderer::CreateHardware(const GraphicsJob &inJob, const GraphicsPath 
 {
    return new HardwareRenderer(inJob, inPath, inHardware);
 }
+
 
 
 // --- HardwareArrays ---------------------------------------------------------------------
@@ -349,6 +429,8 @@ bool HardwareArrays::ColourMatch(bool inWantColour)
 
 
 // --- HardwareData ---------------------------------------------------------------------
+
+
 HardwareData::~HardwareData()
 {
    mCalls.DeleteAll();
@@ -370,6 +452,8 @@ HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour,uns
 
 
 // --- Texture -----------------------------
+
+
 void Texture::Dirty(const Rect &inRect)
 {
    if (!mDirtyRect.HasPixels())
@@ -377,6 +461,8 @@ void Texture::Dirty(const Rect &inRect)
    else
       mDirtyRect = mDirtyRect.Union(inRect);
 }
+
+
 
 // --- HardwareContext -----------------------------
 
@@ -573,4 +659,3 @@ bool HardwareContext::Hits(const RenderState &inState, const HardwareCalls &inCa
 
 
 } // end namespace nme
-

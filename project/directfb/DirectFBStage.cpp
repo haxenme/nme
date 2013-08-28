@@ -14,7 +14,7 @@ IDirectFBEventBuffer *sgEventBuffer;
 static IDirectFB *dfb = NULL;
 
 
-class DFBSurface : public Surface
+/*class DFBSurface : public Surface
 {
 public:
    DFBSurface(IDirectFBSurface *inSurface, bool inDelete) : mSurface(inSurface)
@@ -81,7 +81,8 @@ public:
       mLockedForHitTest = inForHitTest;
       //if (SDL_MUSTLOCK(mSurf) && !mLockedForHitTest)
          //SDL_LockSurface(mSurf);
-      return RenderTarget(Rect(Width(), Height()), Format(), /*(uint8 *)mSurf->pixels*/ 0, /*mSurf->pitch*/ 0);
+      //return RenderTarget(Rect(Width(), Height()), Format(), (uint8 *)mSurf->pixels, mSurf->pitch);
+      return RenderTarget(Rect(Width(), Height()), Format(), 0, 0);
    }
    
    void EndRender()
@@ -109,7 +110,7 @@ public:
    bool  mDelete;
    bool  mLockedForHitTest;
    
-};
+};*/
 
 
 class DirectFBStage : public Stage
