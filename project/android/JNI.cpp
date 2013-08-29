@@ -621,6 +621,304 @@ bool HaxeToJNI(JNIEnv *inEnv, value inValue, JNIType inType, jvalue &out)
 
 
 
+struct JNIField : public nme::Object
+{
+   JNIField(value inClass, value inField, value inSignature,bool inStatic)
+   {
+      JNIEnv *env = GetEnv();
+      JNIInit(env);
+      
+      mClass = 0;
+      mField = 0;
+      mFieldType = JNIType(jniVoid,0);
+      
+      const char *field = val_string(inField);
+      
+      mClass = (jclass)env->NewGlobalRef(env->FindClass(val_string(inClass)));
+      const char *signature = val_string(inSignature);
+      if (mClass)
+      {
+         if (inStatic)
+            mField = env->GetStaticFieldID(mClass, field, signature);
+         else
+            mField = env->GetFieldID(mClass, field, signature);
+      }
+      if (Ok())
+      {
+         bool ok = ParseSignature(signature);
+         if (!ok)
+         {
+            ELOG("Bad JNI signature: %s", signature);
+            mField = 0;
+         }
+      }
+   }
+   
+   ~JNIField()
+   {
+      GetEnv()->DeleteGlobalRef(mClass);
+   }
+
+   bool ParseSignature(const char *inSig)
+   {
+      JNIParseType(inSig,mFieldType);
+      return (!mFieldType.isUnknown());
+   }
+
+   bool Ok() const { return mField>0; }
+   
+   value GetStatic()
+   {
+      JNIEnv *env = GetEnv();
+      value result = 0;
+      
+      if (mFieldType.isObject())
+      {
+         result = JObjectToHaxe(env,mFieldType,env->GetStaticObjectField(mClass, mField));
+      }
+      else switch(mFieldType.element)
+      {
+         case jniBoolean:
+            result = alloc_bool(env->GetStaticBooleanField(mClass, mField));
+            break;
+         case jniByte:
+            result = alloc_int(env->GetStaticByteField(mClass, mField));
+            break;
+         case jniChar:
+            result = alloc_int(env->GetStaticCharField(mClass, mField));
+            break;
+         case jniShort:
+            result = alloc_int(env->GetStaticShortField(mClass, mField));
+            break;
+         case jniInt:
+            result = alloc_int(env->GetStaticIntField(mClass, mField));
+            break;
+         case jniLong:
+            result = alloc_int(env->GetStaticLongField(mClass, mField));
+            break;
+         case jniFloat:
+            result = alloc_float(env->GetStaticFloatField(mClass, mField));
+            break;
+         case jniDouble:
+            result = alloc_float(env->GetStaticDoubleField(mClass, mField));
+            break;
+      }
+      
+      CheckException(env);
+      return result;
+   }
+   
+   void SetStatic( value inValue)
+   {
+      JNIEnv *env = GetEnv();
+      jvalue setValue;
+      if (!HaxeToJNI(env,inValue,mFieldType,setValue))
+      {
+         ELOG("SetStatic - bad value");
+         return;
+      }
+      
+      if (mFieldType.isObject())
+      {
+         env->SetStaticObjectField(mClass, mField, setValue.l);
+      }
+      else switch(mFieldType.element)
+      {
+         case jniBoolean:
+            env->SetStaticBooleanField(mClass, mField, setValue.z);
+            break;
+         case jniByte:
+            env->SetStaticByteField(mClass, mField, setValue.b);
+            break;
+         case jniChar:
+            env->SetStaticCharField(mClass, mField, setValue.c);
+            break;
+         case jniShort:
+            env->SetStaticShortField(mClass, mField, setValue.s);
+            break;
+         case jniInt:
+            env->SetStaticIntField(mClass, mField, setValue.i);
+            break;
+         case jniLong:
+            env->SetStaticLongField(mClass, mField, setValue.j);
+            break;
+         case jniFloat:
+            env->SetStaticFloatField(mClass, mField, setValue.f);
+            break;
+         case jniDouble:
+            env->SetStaticDoubleField(mClass, mField, setValue.d);
+            break;
+      }
+      
+      CheckException(env);
+   }
+   
+   
+   value GetMember(jobject inObject)
+   {
+      JNIEnv *env = GetEnv();
+      value result = 0;
+      
+      if (mFieldType.isObject())
+      {
+         result = JObjectToHaxe(env,mFieldType,env->GetObjectField(inObject, mField));
+      }
+      else switch(mFieldType.element)
+      {
+         case jniBoolean:
+            result = alloc_bool(env->GetBooleanField(inObject, mField));
+            break;
+         case jniByte:
+            result = alloc_int(env->GetByteField(inObject, mField));
+            break;
+         case jniChar:
+            result = alloc_int(env->GetCharField(inObject, mField));
+            break;
+         case jniShort:
+            result = alloc_int(env->GetShortField(inObject, mField));
+            break;
+         case jniInt:
+            result = alloc_int(env->GetIntField(inObject, mField));
+            break;
+         case jniLong:
+            result = alloc_int(env->GetLongField(inObject, mField));
+            break;
+         case jniFloat:
+            result = alloc_float(env->GetFloatField(inObject, mField));
+            break;
+         case jniDouble:
+            result = alloc_float(env->GetDoubleField(inObject, mField));
+            break;
+      }
+      
+      CheckException(env);
+      return result;
+   }
+   
+   void SetMember( jobject inObject, value inValue)
+   {
+      JNIEnv *env = GetEnv();
+      jvalue setValue;
+      if (!HaxeToJNI(env,inValue,mFieldType,setValue))
+      {
+         ELOG("SetMember - bad value");
+         return;
+      }
+      
+      if (mFieldType.isObject())
+      {
+         env->SetObjectField(inObject, mField, setValue.l);
+      }
+      else switch(mFieldType.element)
+      {
+         case jniBoolean:
+            env->SetBooleanField(inObject, mField, setValue.z);
+            break;
+         case jniByte:
+            env->SetByteField(inObject, mField, setValue.b);
+            break;
+         case jniChar:
+            env->SetCharField(inObject, mField, setValue.c);
+            break;
+         case jniShort:
+            env->SetShortField(inObject, mField, setValue.s);
+            break;
+         case jniInt:
+            env->SetIntField(inObject, mField, setValue.i);
+            break;
+         case jniLong:
+            env->SetLongField(inObject, mField, setValue.j);
+            break;
+         case jniFloat:
+            env->SetFloatField(inObject, mField, setValue.f);
+            break;
+         case jniDouble:
+            env->SetDoubleField(inObject, mField, setValue.d);
+            break;
+      }
+      
+      CheckException(env);
+   }
+
+   jclass    mClass;
+   jfieldID  mField;
+   JNIType   mFieldType;
+};
+
+
+value nme_jni_create_field(value inClass, value inField, value inSig,value inStatic)
+{
+   JNIField *field = new JNIField(inClass,inField,inSig,val_bool(inStatic) );
+   if (field->Ok())
+      return ObjectToAbstract(field);
+   ELOG("nme_jni_create_field - failed");
+   delete field;
+   return alloc_null();
+}
+DEFINE_PRIM(nme_jni_create_field,4);
+
+
+value nme_jni_get_static(value inField)
+{
+   JNIField *field;
+   if (!AbstractToObject(inField,field))
+      return alloc_null();
+   value result = field->GetStatic();
+   return result;
+}
+DEFINE_PRIM(nme_jni_get_static,1);
+
+
+void nme_jni_set_static(value inField, value inValue)
+{
+   JNIField *field;
+   if (!AbstractToObject(inField,field))
+      return;
+   field->SetStatic(inValue);
+}
+DEFINE_PRIM(nme_jni_set_static,2);
+
+
+value nme_jni_get_member(value inField, value inObject)
+{
+   JNIField *field;
+   jobject object;
+   if (!AbstractToObject(inField,field))
+   {
+      ELOG("nme_jni_get_member - not a field");
+      return alloc_null();
+   }
+   if (!AbstractToJObject(inObject,object))
+   {
+      ELOG("nme_jni_get_member - invalid this");
+      return alloc_null();
+   }
+   return field->GetMember(object);
+}
+DEFINE_PRIM(nme_jni_get_member,2);
+
+
+void nme_jni_set_member(value inField, value inObject, value inValue)
+{
+   JNIField *field;
+   jobject object;
+   if (!AbstractToObject(inField,field))
+   {
+      ELOG("nme_jni_set_member - not a field");
+      return;
+   }
+   if (!AbstractToJObject(inObject,object))
+   {
+      ELOG("nme_jni_set_member - invalid this");
+      return;
+   }
+   field->SetMember(object,inValue);
+}
+DEFINE_PRIM(nme_jni_set_member,3);
+
+
+
+
 
 struct JNIMethod : public nme::Object
 {
@@ -878,6 +1176,30 @@ value nme_jni_call_member(value inMethod, value inObject, value inArgs)
    return method->CallMember(object,inArgs);
 }
 DEFINE_PRIM(nme_jni_call_member,3);
+
+
+
+
+
+value nme_jni_get_env()
+{
+   JNIEnv *env = GetEnv();
+   return alloc_int((int)env);
+}
+DEFINE_PRIM(nme_jni_get_env,0);
+
+
+value nme_jni_get_jobject(value inValue)
+{
+   jobject obj = 0;
+   if (AbstractToJObject(inValue,obj))
+   {
+      return alloc_int((int)obj);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_jni_get_jobject,1);
+
 
 
 

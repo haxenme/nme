@@ -671,11 +671,7 @@ public:
                 kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little,
                 dataProvider, 0, false, kCGRenderingIntentDefault);
 
-          #ifdef HXCPP_CLANG // this cast currently does not build.
-          //mLayer.contents = objc_unretainedObject(imageRef);
-          #else
-            mLayer.contents = (NSNumber *)imageRef;
-          #endif
+          mLayer.contents = (NSNumber *)imageRef;
 
 
           CGDataProviderRelease(dataProvider);
