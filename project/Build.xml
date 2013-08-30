@@ -112,7 +112,7 @@
       <file name="linux/System.cpp"/>
       <file name="empty/URL.cpp" if="nocurl" />
       <file name="empty/Sound.cpp" unless="sdl" />
-      <file name="empty/HardwareContext.cpp" unless="has_window" />
+      <!-- <file name="empty/HardwareContext.cpp" unless="has_window" /> -->
       
    </files>
    
