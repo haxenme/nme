@@ -110,6 +110,7 @@ static bool sgHasDepthBuffer = true;
 static bool sgHasStencilBuffer = true;
 static bool sgEnableMSAA2 = true;
 static bool sgEnableMSAA4 = true;
+static bool sgVSync = false;
 
 
 
@@ -924,9 +925,9 @@ public:
       */
 
       //displayLinkSupported = FALSE;
-      displayLinkSupported = TRUE;
+      //displayLinkSupported = TRUE;
 
-      if (displayLinkSupported) {
+      if (sgVSync) {
         displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(mainLoop:)];
         [displayLink setFrameInterval:animationFrameInterval];
         [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
@@ -1280,8 +1281,8 @@ namespace nme {}
 
 - (void) startAnimation
 {
-   // if (!isPaused)
-   //    [self performSelectorOnMainThread:@selector(mainLoop) withObject:nil waitUntilDone:NO];
+    if (!isPaused && !sgVSync)
+       [self performSelectorOnMainThread:@selector(mainLoop) withObject:nil waitUntilDone:NO];
 
     if (!isPaused) {
         isRunning = YES;
@@ -1443,6 +1444,7 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    sgHasStencilBuffer = ( inFlags & wfStencilBuffer );
    sgEnableMSAA2 = ( inFlags & wfHW_AA );
    sgEnableMSAA4 = ( inFlags & wfHW_AA_HIRES );
+   sgVSync = ( inFlags & wfVSync );
 
       //can't have a stencil buffer on it's own, 
     if(sgHasStencilBuffer && !sgHasDepthBuffer) {
