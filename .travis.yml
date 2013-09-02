@@ -16,17 +16,18 @@ before_install:
   - haxelib install hxcpp
   #- haxelib install pdiff-hx
   #- haxelib install utest
-  - haxelib install format
+  #- haxelib install format
   #- haxelib install hscript
   - haxelib install phantomjs
   - sudo apt-get install xsltproc -y
   # NME dev
   - haxelib dev nme $(pwd)
   - haxelib git nmedev https://github.com/haxenme/nmedev.git
-  - haxelib git swf https://github.com/haxenme/swf.git
-  - haxelib git xfl https://github.com/haxenme/xfl.git
-  - haxelib install svg
-  - haxelib run nme rebuild tools
+  #- haxelib git swf https://github.com/haxenme/swf.git
+  #- haxelib git xfl https://github.com/haxenme/xfl.git
+  #- haxelib install svg
+  - haxelib install openfl-tools
+  #- haxelib run nme rebuild tools
   - haxelib run nme rebuild linux
   # emulate video device
   - "export DISPLAY=:99.0"
