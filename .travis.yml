@@ -1,4 +1,5 @@
 language: node_js
+
 node_js:
   - 0.6
 # env:
@@ -18,7 +19,7 @@ before_install:
   #- haxelib install utest
   #- haxelib install format
   #- haxelib install hscript
-  - haxelib install phantomjs
+  #- haxelib install phantomjs
   - sudo apt-get install xsltproc -y
   # NME dev
   - haxelib dev nme $(pwd)
@@ -43,4 +44,4 @@ before_install:
 
 script:
   #- make test -C tools/smoke.jeash.com
-  - haxe tools/unit-test/TestRunner.hxml && neko bin/nmetest.TestRunner.n
+  #- haxe tools/unit-test/TestRunner.hxml && neko bin/nmetest.TestRunner.n
