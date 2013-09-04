@@ -606,7 +606,7 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
    {
       GraphicsJob &job = mJobs[i];
       
-      if (!job.mHardwareRenderer && !job.mSoftwareRenderer)
+      if (!job.mHardwareRenderer /*&& !job.mSoftwareRenderer*/)
          job.mHardwareRenderer = Renderer::CreateHardware(job,*mPathData,*inTarget.mHardware);
       
       //if (!job.mSoftwareRenderer)
