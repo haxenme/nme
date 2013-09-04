@@ -697,8 +697,9 @@ public:
    {
       mStage->ProcessEvent(inEvent);
    }
-   void Resize(int inWidth,int inHeight)
+   void Resize(int inWidth, int inHeight)
    {
+	  printf("SDLFrame.Resize(%d,%d)",inWidth,inHeight);
       mStage->Resize(inWidth,inHeight);
    }
 
