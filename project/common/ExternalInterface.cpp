@@ -1048,8 +1048,7 @@ void nme_resize_frame(value inValue, value inWidth, value inHeight)
 	if (!AbstractToObject(inValue,frame)){
 		return;
 	}
-	frame->GetStage()->Resize(w,h);
-	//frame->Resize(w,h);
+	frame->Resize(w,h);
 }
 DEFINE_PRIM(nme_resize_frame,3);
 
