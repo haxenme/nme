@@ -360,17 +360,21 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
       if (cls)
       {
          for(int i=0;i<jniELEMENTS;i++)
-            if (JNIType::elementClass[i]==cls)
+         {
+            if (JNIType::elementClass[i]==0) continue;
+            if (inEnv->IsAssignableFrom(JNIType::elementClass[i],cls)==JNI_TRUE)
             {
                inType = JNIType((JNIElement)i,0);
                break;
             }
+         }
       
          if (inType.isUnknownType())
          {
             for(int i=0;i<jniELEMENTS;i++)
             {
-               if (cls==JNIType::elementArrayClass[i])
+               if (JNIType::elementArrayClass[i]==0) continue;
+               if (inEnv->IsAssignableFrom(JNIType::elementArrayClass[i],cls)==JNI_TRUE)
                {
                  inType = JNIType((JNIElement)i,1);
                   break;
