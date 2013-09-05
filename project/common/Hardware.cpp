@@ -94,7 +94,7 @@ public:
             flags |= HardwareArrays::BM_MULTIPLY;
          if (inJob.mTriangles->mBlendMode==bmScreen)
             flags |= HardwareArrays::BM_SCREEN;
-         mArrays = &ioData.GetArrays(mSurface,has_colour,flags);
+         mArrays = &ioData.GetArrays(mSurface,inJob.mProgram,has_colour,flags);
          AddTriangles(inJob.mTriangles);
 
          if (inJob.mStroke && inJob.mStroke->fill)
@@ -104,7 +104,7 @@ public:
             if (!SetFill(stroke->fill,inHardware))
                return;
 
-            mArrays = &ioData.GetArrays(mSurface,false,mGradFlags);
+            mArrays = &ioData.GetArrays(mSurface,inJob.mProgram,false,mGradFlags);
             mElement.mFirst = 0;
             mElement.mCount = 0;
             mElement.mScaleMode = ssmNormal;
@@ -117,17 +117,17 @@ public:
          bool has_colour = false;
          BlendMode bm = bmNormal;
          GetTileFlags(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, has_colour, bm);
-         mArrays = &ioData.GetArrays(mSurface,has_colour,(bm == bmAdd) ? HardwareArrays::BM_ADD : (bm == bmMultiply) ? HardwareArrays::BM_MULTIPLY : (bm == bmScreen) ? HardwareArrays::BM_SCREEN : 0);
+         mArrays = &ioData.GetArrays(mSurface,inJob.mProgram,has_colour,(bm == bmAdd) ? HardwareArrays::BM_ADD : (bm == bmMultiply) ? HardwareArrays::BM_MULTIPLY : (bm == bmScreen) ? HardwareArrays::BM_SCREEN : 0);
          AddTiles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
       else if (tessellate_lines && !mSolidMode)
       {
-         mArrays = &ioData.GetArrays(mSurface,false,mGradFlags);
+         mArrays = &ioData.GetArrays(mSurface,inJob.mProgram,false,mGradFlags);
          AddLineTriangles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
       else
       {
-         mArrays = &ioData.GetArrays(mSurface,false,mGradFlags);
+         mArrays = &ioData.GetArrays(mSurface,inJob.mProgram,false,mGradFlags);
          AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
    }
@@ -1141,7 +1141,7 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 
    elem.mCount = inJob.mDataCount / (fill ? 2 : 3);
 
-   HardwareArrays *arrays = &ioData.GetArrays(0,fill==0, /* TODO: bm add ? */ 0);
+   HardwareArrays *arrays = &ioData.GetArrays(0,0,fill==0, /* TODO: bm add ? */ 0);
    Vertices &vertices = arrays->mVertices;
    elem.mFirst = vertices.size();
    vertices.resize( elem.mFirst + elem.mCount );
@@ -1178,10 +1178,11 @@ void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardwa
 
 // --- HardwareArrays ---------------------------------------------------------------------
 
-HardwareArrays::HardwareArrays(Surface *inSurface,unsigned int inFlags)
+HardwareArrays::HardwareArrays(Surface *inSurface,GPUProg *inProgram,unsigned int inFlags)
 {
    mFlags = inFlags;
    mSurface = inSurface;
+   mProgram = inProgram;
    if (inSurface)
       inSurface->IncRef();
 }
@@ -1207,13 +1208,14 @@ HardwareData::~HardwareData()
    mCalls.DeleteAll();
 }
 
-HardwareArrays &HardwareData::GetArrays(Surface *inSurface,bool inWithColour,unsigned int inFlags)
+HardwareArrays &HardwareData::GetArrays(Surface *inSurface,GPUProg *inProgram,bool inWithColour,unsigned int inFlags)
 {
    if (mCalls.empty() || mCalls.last()->mSurface != inSurface ||
+           mCalls.last()->mProgram != inProgram ||
            !mCalls.last()->ColourMatch(inWithColour) ||
            mCalls.last()->mFlags != inFlags )
    {
-       HardwareArrays *arrays = new HardwareArrays(inSurface,inFlags);
+       HardwareArrays *arrays = new HardwareArrays(inSurface,inProgram,inFlags);
        mCalls.push_back(arrays);
    }
 

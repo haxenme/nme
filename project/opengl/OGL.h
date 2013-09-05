@@ -192,29 +192,6 @@ enum GPUProgID
    gpuSIZE,
 };
 
-typedef float Trans4x4[4][4];
-
-class GPUProg
-{
-public:
-   static GPUProg *create(GPUProgID inID);
-
-   virtual ~GPUProg() {}
-
-   virtual bool bind() = 0;
-
-   virtual void setPositionData(const float *inData, bool inIsPerspective) = 0;
-   virtual void setTexCoordData(const float *inData) = 0;
-   virtual void setColourData(const int *inData) = 0;
-   virtual void setColourTransform(const ColorTransform *inTransform) = 0;
-   virtual int  getTextureSlot() = 0;
-
-   virtual void setTransform(const Trans4x4 &inTrans) = 0;
-   virtual void setTint(unsigned int inColour) = 0;
-   virtual void setGradientFocus(float inFocus) = 0;
-   virtual void finishDrawing() = 0;
-};
-
 void InitOGL2Extensions();
 
 } // end namespace nme

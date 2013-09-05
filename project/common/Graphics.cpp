@@ -465,6 +465,12 @@ void Graphics::drawTriangles(const QuickVec<float> &inXYs,
    mJobs.push_back(job);
 }
 
+void Graphics::attachShader(GPUProg *prog)
+{
+   // Flush();
+   mFillJob.mProgram = prog;
+   mTileJob.mProgram = prog;
+}
 
 
 // This routine converts a list of "GraphicsPaths" (mItems) into a list
