@@ -1,4 +1,4 @@
-﻿#include <directfb.h>
+#include <directfb.h>
 #include <Display.h>
 #include <Surface.h>
 #include <KeyCodes.h>
@@ -12,6 +12,9 @@ class DirectFBFrame;
 DirectFBFrame *sgDirectFBFrame;
 IDirectFBEventBuffer *sgEventBuffer;
 static IDirectFB *dfb = NULL;
+
+// So as not to clutter this file ...
+#include "DirectFBKeyInputEventConvert.cpp"
 
 
 /*class DFBSurface : public Surface
@@ -158,11 +161,6 @@ public:
    
    bool isOpenGL() const { return false; }
    
-   void ProcessEvent(Event &inEvent)
-   {
-      HandleEvent(inEvent);
-   }
-   
    void Flip()
    {
       
@@ -173,6 +171,58 @@ public:
       
    }
    
+    void ProcessEvent(DFBEvent &inEvent)
+    {
+        switch (inEvent.clazz) {
+        case DFEC_INPUT:
+            DFBInputEvent &inputEvent = (DFBInputEvent &) inEvent;
+            switch(inputEvent.type) {
+            case DIET_KEYPRESS:
+                {
+                    Event event(etKeyDown);
+                    if (DirectFBKeyInputEventConvert(inputEvent, event)) {
+                        this->HandleEvent(event);
+                    }
+                }
+                break;
+            case DIET_KEYRELEASE:
+                {
+                    Event event(etKeyUp);
+                    if (DirectFBKeyInputEventConvert(inputEvent, event)) {
+                        this->HandleEvent(event);
+                    }
+                }
+                break;
+            // Mouse button press currently not handled, just stubbed here
+            case DIET_BUTTONPRESS:
+                switch (inputEvent.button) {
+                case DIBI_LEFT:
+                    break;
+                case DIBI_RIGHT: 
+                    break;
+                case DIBI_MIDDLE:
+                    break;
+                default:
+                    break;
+                }
+                break;
+            // Mouse button release currently not handled, just stubbed here
+            case DIET_BUTTONRELEASE:
+                switch (inputEvent.button) {
+                case DIBI_LEFT:
+                    break;
+                case DIBI_RIGHT:
+                    break;
+                case DIBI_MIDDLE:
+                    break;
+                default:
+                    break;
+                }
+                break;
+            } 
+        }
+    }
+
    IDirectFBSurface *mWindow;
    
 private:
@@ -196,11 +246,6 @@ public:
       mStage->DecRef();
    }
    
-   void ProcessEvent(Event &inEvent)
-   {
-      mStage->ProcessEvent(inEvent);
-   }
-   
    void Resize(const int inWidth, const int inHeight)
    {
       mStage->Resize(inWidth, inHeight);
@@ -216,14 +261,9 @@ public:
       
    }
    
-   Stage *GetStage()
+   DirectFBStage *GetStage()
    {
       return mStage;
-   }
-   
-   inline void HandleEvent(Event &event)
-   {
-      mStage->HandleEvent(event);
    }
    
    IDirectFBSurface *GetWindow()
@@ -240,82 +280,35 @@ private:
 bool sgDead = false;
 
 
-void ProcessEvent(DFBInputEvent &inEvent)
-{
-   switch(inEvent.type)
-   {
-      case DIET_KEYPRESS:
-      {
-         printf("KeyboardEvent.KEY_DOWN (%d)\n", inEvent.key_code);
-         break;
-      }
-      case DIET_KEYRELEASE:
-      {
-         printf("KeyboardEvent.KEY_UP (%d)\n", inEvent.key_code);
-         break;
-      }
-      case DIET_BUTTONPRESS:
-      {
-         switch (inEvent.button)
-         {
-            case DIBI_LEFT: printf("MouseEvent.MOUSE_DOWN\n"); break;
-            case DIBI_RIGHT: printf("MouseEvent.RIGHT_MOUSE_DOWN\n"); break;
-            case DIBI_MIDDLE: printf("MouseEvent.MIDDLE_MOUSE_DOWN\n"); break;
-            default: break;
-         }
-         break;
-      }
-      case DIET_BUTTONRELEASE:
-      {
-         switch (inEvent.button)
-         {
-            case DIBI_LEFT: printf("MouseEvent.MOUSE_UP\n"); break;
-            case DIBI_RIGHT: printf("MouseEvent.RIGHT_MOUSE_UP\n"); break;
-            case DIBI_MIDDLE: printf("MouseEvent.MIDDLE_MOUSE_UP\n"); break;
-            default: break;
-         }
-         break;
-      } 
-   }
-}
-
-
 void StartAnimation()
 {
-   DFBInputEvent event;
-   bool firstTime = true;
+   DirectFBStage *stage = sgDirectFBFrame->GetStage();
    
-   while(!sgDead)
-   {
-      double next = sgDirectFBFrame->GetStage()->GetNextWake() - GetTimeStamp();
-      event.type = DIET_UNKNOWN;
+   while (!sgDead) {
+       int waitMs = (stage->GetNextWake() - GetTimeStamp()) * 1000;
+       if (waitMs < 0) {
+           waitMs = 0;
+       }
+       sgEventBuffer->WaitForEventWithTimeout(sgEventBuffer, 0, waitMs);
       
-      if (!firstTime)
-      {
-         sgEventBuffer->WaitForEventWithTimeout(sgEventBuffer, 0, next);
+      while (sgEventBuffer->HasEvent(sgEventBuffer) != DFB_BUFFEREMPTY) {
+          DFBEvent event;
+          sgEventBuffer->GetEvent(sgEventBuffer, DFB_EVENT(&event));
+          stage->ProcessEvent(event);
+          if (sgDead) {
+              break;
+          }
       }
-      else
-      {
-         firstTime = false;
-      }
-      
-      while (sgEventBuffer->HasEvent(sgEventBuffer) != DFB_BUFFEREMPTY)
-      {
-         sgEventBuffer->GetEvent(sgEventBuffer, DFB_EVENT(&event));
-         ProcessEvent(event);
-         if (sgDead) break;
-         event.type = DIET_UNKNOWN;
-      }
-      
+
       Event poll(etPoll);
-      sgDirectFBFrame->ProcessEvent(poll);
+      stage->HandleEvent(poll);
    }
    
    Event deactivate(etDeactivate);
-   sgDirectFBFrame->ProcessEvent(deactivate);
+   stage->HandleEvent(deactivate);
    
    Event kill(etDestroyHandler);
-   sgDirectFBFrame->ProcessEvent(kill);
+   stage->HandleEvent(kill);
 }
 
 void PauseAnimation()
