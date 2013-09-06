@@ -108,11 +108,9 @@ struct JNIType
             return 0;
       }
 
-      jclass result = inEnv->FindClass(name.c_str());
+      jclass result  = inEnv->FindClass(name.c_str());
       if (result)
-      {
-         result = (jclass) inEnv->NewGlobalRef(result);
-      }
+         inEnv->NewGlobalRef(result);
       mClasses[*this] = result;
       return result;
    }
@@ -122,28 +120,28 @@ struct JNIType
       for(int i=0;i<jniELEMENTS;i++)
          elementGetValue[i] = 0;
 
-      elementClass[jniBoolean] = (jclass) inEnv->NewGlobalRef(inEnv->FindClass("java/lang/Boolean"));
+      elementClass[jniBoolean] = inEnv->FindClass("java/lang/Boolean");
       elementGetValue[jniBoolean] = inEnv->GetMethodID(elementClass[jniBoolean],"booleanValue","()Z");
       CheckException(inEnv,false);
-      elementClass[jniByte] = (jclass) inEnv->NewGlobalRef(inEnv->FindClass("java/lang/Byte"));
+      elementClass[jniByte] = inEnv->FindClass("java/lang/Byte");
       elementGetValue[jniByte] = inEnv->GetMethodID(elementClass[jniByte],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniChar] = (jclass) inEnv->NewGlobalRef(inEnv->FindClass("java/lang/Character"));
+      elementClass[jniChar] = inEnv->FindClass("java/lang/Character");
       elementGetValue[jniChar] = inEnv->GetMethodID(elementClass[jniChar],"charValue","()C");
       CheckException(inEnv,false);
-      elementClass[jniShort] = (jclass) inEnv->NewGlobalRef(inEnv->FindClass("java/lang/Short"));
+      elementClass[jniShort] = inEnv->FindClass("java/lang/Short");
       elementGetValue[jniShort] = inEnv->GetMethodID(elementClass[jniShort],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniInt] = (jclass) inEnv->NewGlobalRef(inEnv->FindClass("java/lang/Integer"));
+      elementClass[jniInt] = inEnv->FindClass("java/lang/Integer");
       elementGetValue[jniInt] = inEnv->GetMethodID(elementClass[jniInt],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniLong] = (jclass) inEnv->NewGlobalRef(inEnv->FindClass("java/lang/Long"));
+      elementClass[jniLong] = inEnv->FindClass("java/lang/Long");
       elementGetValue[jniLong] = inEnv->GetMethodID(elementClass[jniLong],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniFloat] = (jclass) inEnv->NewGlobalRef(inEnv->FindClass("java/lang/Float"));
+      elementClass[jniFloat] = inEnv->FindClass("java/lang/Float");
       elementGetValue[jniFloat] = inEnv->GetMethodID(elementClass[jniFloat],"doubleValue","()D");
       CheckException(inEnv,false);
-      elementClass[jniDouble] = (jclass) inEnv->NewGlobalRef(inEnv->FindClass("java/lang/Double"));
+      elementClass[jniDouble] = inEnv->FindClass("java/lang/Double");
       elementGetValue[jniDouble] = inEnv->GetMethodID(elementClass[jniDouble],"doubleValue","()D");
       CheckException(inEnv,false);
       elementClass[jniVoid] = 0;
@@ -360,12 +358,11 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
    {
       jclass cls = inEnv->GetObjectClass(inObject);
       if (cls)
-      { 
-
+      {
          for(int i=0;i<jniELEMENTS;i++)
          {
             if (JNIType::elementClass[i]==0) continue;
-            if (inEnv->IsSameObject(cls,JNIType::elementClass[i]))
+            if (inEnv->IsAssignableFrom(JNIType::elementClass[i],cls)==JNI_TRUE)
             {
                inType = JNIType((JNIElement)i,0);
                break;
@@ -377,18 +374,14 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
             for(int i=0;i<jniELEMENTS;i++)
             {
                if (JNIType::elementArrayClass[i]==0) continue;
-               if (inEnv->IsSameObject(cls,JNIType::elementArrayClass[i]))
+               if (inEnv->IsAssignableFrom(JNIType::elementArrayClass[i],cls)==JNI_TRUE)
                {
-                  inType = JNIType((JNIElement)i,1);
+                 inType = JNIType((JNIElement)i,1);
                   break;
                }
             }
          }
       }
-
-      inEnv->DeleteLocalRef(cls);
-
-
 
       if (inType.isUnknownType())
          inType = JNIType(jniObject,0);
