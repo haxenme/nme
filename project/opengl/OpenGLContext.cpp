@@ -992,17 +992,44 @@ void InitExtensions()
 }
 
 
-HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders)
+bool HasShaderSupport()
 {
-   HardwareContext *ctx;
-
-   #ifdef ANDROID
+   int glMajor = 1;
+   int glMinor = 0;
+   bool shaders = false;
+   
    const char *version = (const char *)glGetString(GL_VERSION);
    if (version)
-      shaders = version[10] == '2';
+   {
+      sscanf(version, "%d.%d", glMajor, glMinor);
+   }
+   
+   if (glMajor == 1)
+   {
+      const char *ext = (const char *)glGetString(GL_EXTENSIONS);
+      if (ext && strstr(ext, "GL_ARB_shading_language_100"))
+      {
+         shaders = true;
+      }
+   }
+   else if (glMajor >= 2)
+   {
+      shaders = true;
+   }
+   
+   #ifdef ANDROID
    ELOG("VERSION %s (%c), pipeline = %s", version, version==0 ? '?' : version[10], shaders ? "programmable" : "fixed");
    #endif
    
+   return shaders;
+}
+
+
+HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders)
+{
+   HardwareContext *ctx;
+   
+   #if defined(ANDROID) || defined(BLACKBERRY) || defined(IPHONE) || defined(WEBOS)
    #ifdef NME_FORCE_GLES2
    //printf ("Force GLES2\n");
    shaders = true;
@@ -1010,8 +1037,9 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bo
    //printf ("Force GLES1\n");
    shaders = false;
    #endif
+   #endif
    
-   if (shaders)
+   if (shaders && HasShaderSupport())
    {
 	  //printf("Using OGL2\n");
       ctx = new OGL2Context( (WinDC)inWindow, (GLCtx)inGLCtx );
