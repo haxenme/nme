@@ -999,10 +999,16 @@ bool HasShaderSupport()
    bool shaders = false;
    
    const char *version = (const char *)glGetString(GL_VERSION);
+   
+   #ifdef ANDROID
+   glMajor = version[10];
+   glMinor = version[12];
+   #else
    if (version)
    {
-      sscanf(version, "%d.%d", glMajor, glMinor);
+      sscanf(version, "%d.%d", &glMajor, &glMinor);
    }
+   #endif
    
    if (glMajor == 1)
    {
