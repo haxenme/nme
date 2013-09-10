@@ -668,7 +668,7 @@ value nme_gl_uniform_matrix(value inLocation, value inTranspose, value inBytes,v
    ByteArray bytes(inBytes);
    int size = bytes.Size();
 
-   if (size>=count*4*4)
+   if (size==count*count*4)
    {
       const float *data = (float *)bytes.Bytes();
 
