@@ -346,6 +346,7 @@ public:
       #ifdef HX_WINDOWS
       if (mIsOpenGL)
       {
+         mSDLSurface = SDL_SetVideoMode(inWidth, inHeight, 32, mFlags);
          // Little hack to help windows
          mSDLSurface->w = inWidth;
          mSDLSurface->h = inHeight;
