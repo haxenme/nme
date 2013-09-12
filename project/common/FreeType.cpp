@@ -679,18 +679,21 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
 
          if(glyph_index != 0 && FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0)
          {
-            glyph *g = new glyph;
-
-            result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
-            if(result == 0)
+            if (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
             {
-               g->index = glyph_index;
-               g->char_code = char_code;
-               g->metrics = face->glyph->metrics;
-               glyphs.push_back(g);
+               glyph *g = new glyph;
+               
+               result = FT_Outline_Decompose(&((FT_OutlineGlyph)face->glyph)->outline, &ofn, g);
+               if(result == 0)
+               {
+                  g->index = glyph_index;
+                  g->char_code = char_code;
+                  g->metrics = face->glyph->metrics;
+                  glyphs.push_back(g);
+               }
+               else
+                  delete g;
             }
-            else
-               delete g;
          }
       }
 
@@ -706,18 +709,21 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
       {
          if(FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0)
          {
-            glyph *g = new glyph;
-
-            result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
-            if(result == 0)
+            if (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
             {
-               g->index = glyph_index;
-               g->char_code = char_code;
-               g->metrics = face->glyph->metrics;
-               glyphs.push_back(g);
+               glyph *g = new glyph;
+               
+               result = FT_Outline_Decompose(&((FT_OutlineGlyph)face->glyph)->outline, &ofn, g);
+               if(result == 0)
+               {
+                  g->index = glyph_index;
+                  g->char_code = char_code;
+                  g->metrics = face->glyph->metrics;
+                  glyphs.push_back(g);
+               }
+               else
+                  delete g;
             }
-            else
-               delete g;
          }
          
          char_code = FT_Get_Next_Char(face, char_code, &glyph_index);  
