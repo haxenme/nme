@@ -510,7 +510,7 @@
       <vflag name="-framework" value="ForceFeedback" if="macos"/>
       <vflag name="-framework" value="Cocoa" if="macos"/>
       <vflag name="-framework" value="OpenGL" if="macos"/>
-      <vflag name="-framework" value="QuickTime" if="macos"/>
+      <vflag name="-framework" value="QuickTime" if="macos" unless="HXCPP_M64"/>
       <vflag name="-framework" value="AppKit" if="macos"/>
       <vflag name="-framework" value="OpenAL" if="macos"/>
       
