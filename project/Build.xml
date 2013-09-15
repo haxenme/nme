@@ -88,7 +88,7 @@
       <file name="empty/Sound.cpp" if="glfw" unless="openal" />
       <file name="openal/OpenALSound.cpp" if="openal"/>
       <compilerflag value="-DAL_LIBTYPE_STATIC" if="openal"/>
-      
+
    </files>
    
    
@@ -555,10 +555,10 @@
       <lib name="advapi32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="${THIRDPARTY_LIBS}dxguid.lib" if="win_desktop"/>
       <lib name="winmm.lib" if="win_desktop"/>
-      <!-- <lib name="imm32.lib" if="win_desktop" />
-      <lib name="ole32.lib" if="win_desktop" />
-      <lib name="oleaut32.lib" if="win_desktop" />
-      <lib name="version.lib" if="win_desktop" /> -->
+      <!-- <lib name="imm32.lib" if="win_desktop" />-->
+      <lib name="ole32.lib" if="win_desktop" unless="noopenal"/>
+      <lib name="oleaut32.lib" if="win_desktop" unless="noopenal" />
+      <!-- <lib name="version.lib" if="win_desktop" />  -->
       <lib name="ws2_32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="wldap32.lib" if="win_desktop"/>
       <lib name="shell32.lib" if="win_desktop"/>
