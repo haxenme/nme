@@ -63,7 +63,7 @@ namespace nme {
             f = fopen(inFileURL, "rb");
 
             if(!f) {
-                LOG_SOUND("FAILED to read sound file, file pointer as null? \n");
+                LOG_SOUND("FAILED to read sound file, file pointer as null?\n");
                 return false;
             }
 
@@ -116,13 +116,12 @@ namespace nme {
             f = fopen(inFileURL, "rb");
 
             if (!f) {
-                LOG_SOUND("FAILED to read sound file, file pointer as null? \n");
+                LOG_SOUND("FAILED to read sound file, file pointer as null?\n");
                 return false;
             }
          
             // Read in the first chunk into the struct
             fread(&riff_header, sizeof(RIFF_Header), 1, f);
-         
                 //check for RIFF and WAVE tag in memeory
             if  (
                     (riff_header.chunkID[0] != 'R'  ||
@@ -134,7 +133,7 @@ namespace nme {
                       riff_header.format[2] != 'V'  ||
                       riff_header.format[3] != 'E')
                 ) {
-                    LOG_SOUND("Invalid RIFF or WAVE Header! ");
+                    LOG_SOUND("Invalid RIFF or WAVE Header!\n");
                     return false;
                 }
                 
@@ -148,7 +147,7 @@ namespace nme {
                 wave_format.subChunkID[2] != 't' ||
                 wave_format.subChunkID[3] != ' ') 
             {
-                    LOG_SOUND("Invalid Wave Format! ");
+                    LOG_SOUND("Invalid Wave Format!\n");
                     return false;
             }
 
@@ -165,7 +164,7 @@ namespace nme {
                 wave_data.subChunkID[1] != 'a' ||
                 wave_data.subChunkID[2] != 't' ||
                 wave_data.subChunkID[3] != 'a') {
-                    LOG_SOUND("Invalid Wav Data Header! ");
+                    LOG_SOUND("Invalid Wav Data Header!\n");
                     return false;
                 }
          
@@ -174,7 +173,7 @@ namespace nme {
          
             // Read in the sound data into the soundData variable
             if (!fread(data, wave_data.subChunk2Size, 1, f)) {
-                LOG_SOUND("error loading WAVE data into struct!  ");
+                LOG_SOUND("error loading WAVE data into struct!\n");
                 return false;
             }   
 

@@ -365,7 +365,7 @@ namespace nme {
                         ok = Audio::loadWavData( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
                     break;
                     default:
-                        LOG_SOUND("Error opening sound file, unsupported type.");
+                        LOG_SOUND("Error opening sound file, unsupported type.\n");
                 }
 
                     //Work out the format from the data
@@ -385,10 +385,10 @@ namespace nme {
                  
                 
                 if (!ok) {
-                    LOG_SOUND("Error opening sound data");
+                    LOG_SOUND("Error opening sound data\n");
                     mError = "Error opening sound data";
                 } else if (alGetError() != AL_NO_ERROR) {
-                    LOG_SOUND("Error after opening sound data");
+                    LOG_SOUND("Error after opening sound data\n");
                     mError = "Error after opening sound data";  
                 } else {
                         // grab a buffer ID from openAL
