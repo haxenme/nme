@@ -71,7 +71,7 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I${NME_DEV}/include"/>
-      <compilerflag value="-I${NME_DEV}/include/SDL" if="sdl" />
+      <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" />
       <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
       <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
       <file name="windows/GDIFont.cpp"/>
