@@ -52,7 +52,7 @@ namespace nme {
                 // 0 for Little-Endian, 1 for Big-Endian
             int endian = 0;
             int bitStream;
-            long bytes;
+            long bytes = 1;
 
             #define BUFFER_SIZE 32768
             char array[BUFFER_SIZE]; 
@@ -94,9 +94,11 @@ namespace nme {
                 outBuffer.InsertAt(outBuffer.size(), (unsigned char*)array, bytes);
             }
 
-            ov_clear(&oggFile);            
+            ov_clear(&oggFile);         
 
             #undef BUFFER_SIZE
+
+            return true;
 
 		} //loadOggData
 
@@ -112,6 +114,7 @@ namespace nme {
             unsigned char* data;
          
             f = fopen(inFileURL, "rb");
+
             if (!f) {
                 LOG_SOUND("FAILED to read sound file, file pointer as null? \n");
                 return false;
@@ -182,10 +185,11 @@ namespace nme {
                 //data from the structs
             *outSampleRate = (int)wave_format.sampleRate;
 
-            //The format is worked out by looking at the number of
-            //channels and the bits per sample.
-            
-            
+                //The format is worked out by looking at the number of
+                //channels and the bits per sample.
+            *channels = wave_format.numChannels;
+            *bitsPerSample = wave_format.bitsPerSample;
+
             //clean up and return true if successful
             fclose(f);
             delete[] data;

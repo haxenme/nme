@@ -11,7 +11,7 @@
 
 #endif
 
-#include <SDL.h>
+//#include <SDL.h>
 
 
 #include <Sound.h>
@@ -392,19 +392,20 @@ namespace nme {
                     mError = "Error opening sound data";
                 } else if (alGetError() != AL_NO_ERROR) {
                     LOG_SOUND("Error after opening sound data");
-                    mError = "Error after opening sound data";
+                    mError = "Error after opening sound data";  
                 } else {
-                    // grab a buffer ID from openAL
+                        // grab a buffer ID from openAL
                     alGenBuffers(1, &mBufferID);
                     
-                    // load the awaiting data blob into the openAL buffer.
+                        // load the awaiting data blob into the openAL buffer.
                     alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
 
-                    // once we have all our information loaded, get some extra flags
+                        // once we have all our information loaded, get some extra flags
                     alGetBufferi(mBufferID, AL_SIZE, &bufferSize);
                     alGetBufferi(mBufferID, AL_FREQUENCY, &frequency);
                     alGetBufferi(mBufferID, AL_CHANNELS, &channels);    
                     alGetBufferi(mBufferID, AL_BITS, &bitsPerSample); 
+                    
                 } //!ok
             }
         }
