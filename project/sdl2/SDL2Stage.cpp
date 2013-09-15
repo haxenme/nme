@@ -226,9 +226,9 @@ public:
 				case SDLK_w:
 					inEvent.type = etQuit;
 					break;
-				case SDLK_m:
+				/*case SDLK_m:
 					SDL_WM_IconifyWindow();
-					return;
+					return;*/
 			}
 		}
 		#endif
