@@ -5,7 +5,7 @@
     Feel free to customize this file to suit your needs
 */
 
-#ifndef HXCPP_M64
+//#ifndef HXCPP_M64
 #import <SDL.h>
 #import <sys/param.h> /* for MAXPATHLEN */
 #import <unistd.h>
@@ -527,7 +527,7 @@ int main (int argc, char **argv)
 }
 
 #endif
-#else
+/*#else
 
 #import <Cocoa/Cocoa.h>
 #import <unistd.h>
@@ -551,4 +551,4 @@ FILE *OpenOverwrite(const char *inName)
    return fopen(inName,"w");
 }
 
-#endif
+#endif*/
