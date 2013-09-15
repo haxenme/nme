@@ -32,7 +32,7 @@ int InitSDL()
 		
 	sgInitCalled = true;
 	
-	int err = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
+	int err = SDL_Init(SDL_INIT_VIDEO /*| SDL_INIT_AUDIO*/ | SDL_INIT_TIMER);
 	
 	if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0)
 	{
