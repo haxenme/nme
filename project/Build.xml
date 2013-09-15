@@ -87,6 +87,7 @@
       <!-- <file name="sdl/SDLSound.cpp" unless="sdl"/> -->
       <file name="empty/Sound.cpp" if="glfw" unless="openal" />
       <file name="openal/OpenALSound.cpp" if="openal"/>
+      <compilerflag value="-DAL_LIBTYPE_STATIC" if="openal"/>
       
    </files>
    

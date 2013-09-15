@@ -11,9 +11,6 @@
 
 #endif
 
-//#include <SDL.h>
-
-
 #include <Sound.h>
 #include <QuickVec.h>
 #include <Utils.h>
@@ -355,7 +352,7 @@ namespace nme {
                 int _bitsPerSample;
                 ALenum  format;
                 ALsizei freq;
-                bool ok = false;
+                bool ok = false; 
 
                     //Determine the file format before we try anything
                 AudioFormat type = Audio::determineAudioTypeFromFilename(std::string(fileURL));
