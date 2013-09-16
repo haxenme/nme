@@ -214,6 +214,7 @@ public:
 	{
 		mWidth = inWidth;
 		mHeight = inHeight;
+		
 		if (mIsOpenGL)
 		{
 			mOpenGLContext->SetWindowSize(inWidth, inHeight);
@@ -236,7 +237,27 @@ public:
 	
 	void SetFullscreen(bool inFullscreen)
 	{
-		printf("set fullscreen\n");
+		if (inFullscreen != mIsFullscreen)
+		{
+			mIsFullscreen = inFullscreen;
+			
+			if (mIsFullscreen)
+			{
+				SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN_DESKTOP /*SDL_WINDOW_FULLSCREEN*/);
+			}
+			else
+			{
+				SDL_SetWindowFullscreen(mSDLWindow, 0);
+			}
+			
+			/*int width, height;
+			SDL_GetWindowSize(mSDLWindow, &width, &height);
+			printf("Size? %d x %d\n", width, height);
+			Resize(width, height);
+			
+			Event resize(etResize, width, height);
+			ProcessEvent(resize);*/
+		}
 	}
 	
 	
@@ -789,7 +810,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	if (opengl) windowFlags |= SDL_WINDOW_OPENGL;
 	if (resizable) windowFlags |= SDL_WINDOW_RESIZABLE;
 	if (borderless) windowFlags |= SDL_WINDOW_BORDERLESS;
-	if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN; //SDL_WINDOW_FULLSCREEN_DESKTOP;
+	if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP; //SDL_WINDOW_FULLSCREEN;
 	
 	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? 0 : inWidth, fullscreen ? 0 : inHeight, windowFlags);
 	
@@ -993,7 +1014,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 		SDL_JoystickEventState(SDL_TRUE);
 	}
 	
-	sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, inWidth, inHeight);
+	int width, height;
+	SDL_GetWindowSize(window, &width, &height);
+	
+	sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, width, height);
 	inOnFrame(sgSDLFrame);
 	StartAnimation();
 }
