@@ -217,7 +217,7 @@ public:
 	
 	void ProcessEvent(Event &inEvent)
 	{
-		#ifdef HX_MACOS
+		/*#ifdef HX_MACOS
 		if (inEvent.type == etKeyUp && (inEvent.flags & efCommandDown))
 		{
 			switch (inEvent.code)
@@ -226,12 +226,12 @@ public:
 				case SDLK_w:
 					inEvent.type = etQuit;
 					break;
-				/*case SDLK_m:
-					SDL_WM_IconifyWindow();
-					return;*/
+				case SDLK_m:
+					//SDL_WM_IconifyWindow();
+					return;
 			}
 		}
-		#endif
+		#endif*/
 		
 		#if defined(HX_WINDOWS) || defined(HX_LINUX)
 		if (inEvent.type == etKeyUp && (inEvent.flags & efAltDown) && inEvent.value == keyF4)
@@ -448,21 +448,19 @@ SDL_Joystick *sgJoystick = 0;
 
 void AddModStates(int &ioFlags,int inState = -1)
 {
-	//int state = inState==-1 ? SDL_GetModState() : inState;
-	//if (state & KMOD_SHIFT) ioFlags |= efShiftDown;
-	//if (state & KMOD_CTRL) ioFlags |= efCtrlDown;
-	//if (state & KMOD_ALT) ioFlags |= efAltDown;
-	//if (state & KMOD_META) ioFlags |= efCommandDown;
-	//
- //
-	//int m = SDL_GetMouseState(0,0);
-	//if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
-	//if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
-	//if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
-		//
-//
-	//ioFlags |= efPrimaryTouch;
-	//ioFlags |= efNoNativeClick;
+	int state = inState==-1 ? SDL_GetModState() : inState;
+	if (state & KMOD_SHIFT) ioFlags |= efShiftDown;
+	if (state & KMOD_CTRL) ioFlags |= efCtrlDown;
+	if (state & KMOD_ALT) ioFlags |= efAltDown;
+	if (state & KMOD_GUI) ioFlags |= efCommandDown;
+	
+	int m = SDL_GetMouseState(0,0);
+	if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
+	if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
+	if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
+	
+	ioFlags |= efPrimaryTouch;
+	ioFlags |= efNoNativeClick;
 }
 
 
@@ -471,65 +469,65 @@ void AddModStates(int &ioFlags,int inState = -1)
 
 int SDLKeyToFlash(int inKey,bool &outRight)
 {
-	//outRight = (inKey==SDLK_RSHIFT || inKey==SDLK_RCTRL ||
-					//inKey==SDLK_RALT || inKey==SDLK_RMETA || inKey==SDLK_RSUPER);
-	//if (inKey>=keyA && inKey<=keyZ)
-		//return inKey;
-	//if (inKey>=SDLK_0 && inKey<=SDLK_9)
-		//return inKey - SDLK_0 + keyNUMBER_0;
-	//if (inKey>=SDLK_KP0 && inKey<=SDLK_KP9)
-		//return inKey - SDLK_KP0 + keyNUMPAD_0;
-	//
-	//if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
-		//return inKey - SDLK_F1 + keyF1;
-	//
-	//
-	//switch(inKey)
-	//{
-		//case SDLK_RALT:
-		//case SDLK_LALT:
-			//return keyALTERNATE;
-		//case SDLK_RSHIFT:
-		//case SDLK_LSHIFT:
-			//return keySHIFT;
-		//case SDLK_RCTRL:
-		//case SDLK_LCTRL:
-			//return keyCONTROL;
-		//case SDLK_LMETA:
-		//case SDLK_RMETA:
-			//return keyCOMMAND;
-		//
-		//case SDLK_CAPSLOCK: return keyCAPS_LOCK;
-		//case SDLK_PAGEDOWN: return keyPAGE_DOWN;
-		//case SDLK_PAGEUP: return keyPAGE_UP;
-		//case SDLK_EQUALS: return keyEQUAL;
-		//case SDLK_RETURN:
-		//case SDLK_KP_ENTER:
-			//return keyENTER;
-		//
-		//SDL_TRANS(BACKQUOTE)
-		//SDL_TRANS(BACKSLASH)
-		//SDL_TRANS(BACKSPACE)
-		//SDL_TRANS(COMMA)
-		//SDL_TRANS(DELETE)
-		//SDL_TRANS(DOWN)
-		//SDL_TRANS(END)
-		//SDL_TRANS(ESCAPE)
-		//SDL_TRANS(HOME)
-		//SDL_TRANS(INSERT)
-		//SDL_TRANS(LEFT)
-		//SDL_TRANS(LEFTBRACKET)
-		//SDL_TRANS(MINUS)
-		//SDL_TRANS(PERIOD)
-		//SDL_TRANS(QUOTE)
-		//SDL_TRANS(RIGHT)
-		//SDL_TRANS(RIGHTBRACKET)
-		//SDL_TRANS(SEMICOLON)
-		//SDL_TRANS(SLASH)
-		//SDL_TRANS(SPACE)
-		//SDL_TRANS(TAB)
-		//SDL_TRANS(UP)
-	//}
+	outRight = (inKey==SDLK_RSHIFT || inKey==SDLK_RCTRL ||
+					inKey==SDLK_RALT || inKey==SDLK_RGUI);
+	if (inKey>=keyA && inKey<=keyZ)
+		return inKey;
+	if (inKey>=SDLK_0 && inKey<=SDLK_9)
+		return inKey - SDLK_0 + keyNUMBER_0;
+	if (inKey>=SDLK_KP_0 && inKey<=SDLK_KP_9)
+		return inKey - SDLK_KP_0 + keyNUMPAD_0;
+	
+	if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
+		return inKey - SDLK_F1 + keyF1;
+	
+	
+	switch(inKey)
+	{
+		case SDLK_RALT:
+		case SDLK_LALT:
+			return keyALTERNATE;
+		case SDLK_RSHIFT:
+		case SDLK_LSHIFT:
+			return keySHIFT;
+		case SDLK_RCTRL:
+		case SDLK_LCTRL:
+			return keyCONTROL;
+		case SDLK_LGUI:
+		case SDLK_RGUI:
+			return keyCOMMAND;
+		
+		case SDLK_CAPSLOCK: return keyCAPS_LOCK;
+		case SDLK_PAGEDOWN: return keyPAGE_DOWN;
+		case SDLK_PAGEUP: return keyPAGE_UP;
+		case SDLK_EQUALS: return keyEQUAL;
+		case SDLK_RETURN:
+		case SDLK_KP_ENTER:
+			return keyENTER;
+		
+		SDL_TRANS(BACKQUOTE)
+		SDL_TRANS(BACKSLASH)
+		SDL_TRANS(BACKSPACE)
+		SDL_TRANS(COMMA)
+		SDL_TRANS(DELETE)
+		SDL_TRANS(DOWN)
+		SDL_TRANS(END)
+		SDL_TRANS(ESCAPE)
+		SDL_TRANS(HOME)
+		SDL_TRANS(INSERT)
+		SDL_TRANS(LEFT)
+		SDL_TRANS(LEFTBRACKET)
+		SDL_TRANS(MINUS)
+		SDL_TRANS(PERIOD)
+		SDL_TRANS(QUOTE)
+		SDL_TRANS(RIGHT)
+		SDL_TRANS(RIGHTBRACKET)
+		SDL_TRANS(SEMICOLON)
+		SDL_TRANS(SLASH)
+		SDL_TRANS(SPACE)
+		SDL_TRANS(TAB)
+		SDL_TRANS(UP)
+	}
 
 	return inKey;
 }
