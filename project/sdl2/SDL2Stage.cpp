@@ -43,7 +43,7 @@ int InitSDL()
 }
 
 
-/*class SDLSurf : public Surface
+class SDLSurf : public Surface
 {
 public:
 	SDLSurf(SDL_Surface *inSurf,bool inDelete) : mSurf(inSurf)
@@ -57,17 +57,17 @@ public:
 			SDL_FreeSurface(mSurf);
 	}
 
-	int Width() const  { return mSurf->w; }
-	int Height() const  { return mSurf->h; }
-	PixelFormat Format()  const
+	int Width() const { return mSurf->w; }
+	int Height() const { return mSurf->h; }
+	PixelFormat Format() const
 	{
 		#ifdef EMSCRIPTEN
 		uint8 swap = 0;
 		#else
 		uint8 swap = mSurf->format->Bshift; // is 0 on argb
 		#endif
-		//if (mSurf->flags & SDL_SRCALPHA)
-		//	return swap ? pfARGBSwap : pfARGB;
+		if (mSurf->format->Amask)
+			return swap ? pfARGBSwap : pfARGB;
 		return swap ? pfXRGBSwap : pfXRGB;
 	}
 	const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
@@ -85,7 +85,7 @@ public:
 			r.w = inRect->w;
 			r.h = inRect->h;
 		}
-
+		
 		SDL_FillRect(mSurf,rect_ptr,SDL_MapRGBA(mSurf->format,
 				inColour>>16, inColour>>8, inColour, inColour>>24 )  );
 	}
@@ -135,7 +135,7 @@ SDL_Surface *SurfaceToSDL(Surface *inSurface)
 				 32, inSurface->Width()*4,
 				 0x00ff0000^swap, 0x0000ff00,
 				 0x000000ff^swap, 0xff000000 );
-}*/
+}
 
 
 class SDLStage : public Stage
@@ -169,7 +169,13 @@ public:
 		else
 		{
 			mOpenGLContext = 0;
-			//mPrimarySurface = new SDLSurf(inSurface,inIsOpenGL);
+			mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+			if (!mSoftwareSurface)
+			{
+				fprintf(stderr, "Could not create SDL surface : %s\n", SDL_GetError());
+			}
+			mSoftwareTexture = SDL_CreateTexture(mSDLRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, mWidth, mHeight);
+			mPrimarySurface = new SDLSurf(mSoftwareSurface, inIsOpenGL);
 		}
 		mPrimarySurface->IncRef();
 	  
@@ -189,19 +195,41 @@ public:
 	
 	~SDLStage()
 	{
-		//if (!mIsOpenGL)
-			//SDL_FreeSurface(mSDLSurface);
-		//else
+		if (!mIsOpenGL)
+		{
+			SDL_FreeSurface(mSoftwareSurface);
+			SDL_DestroyTexture(mSoftwareTexture);
+		}
+		else
+		{
 			mOpenGLContext->DecRef();
+		}
 		mPrimarySurface->DecRef();
+		SDL_DestroyRenderer(mSDLRenderer);
+		SDL_DestroyWindow(mSDLWindow);
 	}
 	
 	
 	void Resize(int inWidth, int inHeight)
 	{
+		mWidth = inWidth;
+		mHeight = inHeight;
 		if (mIsOpenGL)
 		{
 			mOpenGLContext->SetWindowSize(inWidth, inHeight);
+		}
+		else
+		{
+			SDL_FreeSurface(mSoftwareSurface);
+			SDL_DestroyTexture(mSoftwareTexture);
+			
+			mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+			if (!mSoftwareSurface)
+			{
+				fprintf(stderr, "Could not create SDL surface : %s\n", SDL_GetError());
+			}
+			mSoftwareTexture = SDL_CreateTexture(mSDLRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, mWidth, mHeight);
+			((SDLSurf*)mPrimarySurface)->mSurf = mSoftwareSurface;
 		}
 	}
 	
@@ -217,22 +245,6 @@ public:
 	
 	void ProcessEvent(Event &inEvent)
 	{
-		/*#ifdef HX_MACOS
-		if (inEvent.type == etKeyUp && (inEvent.flags & efCommandDown))
-		{
-			switch (inEvent.code)
-			{
-				case SDLK_q:
-				case SDLK_w:
-					inEvent.type = etQuit;
-					break;
-				case SDLK_m:
-					//SDL_WM_IconifyWindow();
-					return;
-			}
-		}
-		#endif*/
-		
 		#if defined(HX_WINDOWS) || defined(HX_LINUX)
 		if (inEvent.type == etKeyUp && (inEvent.flags & efAltDown) && inEvent.value == keyF4)
 		{
@@ -286,6 +298,9 @@ public:
 		}
 		else
 		{
+			SDL_UpdateTexture(mSoftwareTexture, NULL, mSoftwareSurface->pixels, mSoftwareSurface->pitch);
+			//SDL_RenderClear(mSDLRenderer);
+			SDL_RenderCopy(mSDLRenderer, mSoftwareTexture, NULL, NULL);
 			SDL_RenderPresent(mSDLRenderer);
 		}
 	}
@@ -362,6 +377,8 @@ public:
 	SDL_Window *mSDLWindow;
 	SDL_Renderer *mSDLRenderer;
 	Surface	  *mPrimarySurface;
+	SDL_Surface *mSoftwareSurface;
+	SDL_Texture *mSoftwareTexture;
 	double		 mFrameRate;
 	bool			mIsOpenGL;
 	Cursor		 mCurrentCursor;
