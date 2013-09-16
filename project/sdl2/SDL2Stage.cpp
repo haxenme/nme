@@ -847,25 +847,17 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	if (Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize) != 0)
 	{
 		fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
-		gSDLIsInit = false;
+		//gSDLIsInit = false;
 	}
 	#endif
 	
-	//const SDL_VideoInfo *info  = SDL_GetVideoInfo();
-	//sgDesktopWidth = info->current_w;
-	//sgDesktopHeight = info->current_h;
-	
-	//#ifdef RASPBERRYPI
-	//sdl_flags = SDL_SWSURFACE;
-	//if (opengl)
-		//fullscreen = true;
-	//#else
-	//sdl_flags = SDL_HWSURFACE;
-	//#endif
-	
-	//int use_w = fullscreen ? 0 : inWidth;
-	//int use_h = fullscreen ? 0 : inHeight;
-	
+	if (SDL_GetNumVideoDisplays() > 0)
+	{
+		SDL_DisplayMode currentMode;
+		SDL_GetDesktopDisplayMode(0, &currentMode);
+		sgDesktopWidth = currentMode.w;
+		sgDesktopHeight = currentMode.h;
+	}
 	
 	int windowFlags = 0;
 	
@@ -1098,29 +1090,17 @@ QuickVec<int>* CapabilitiesGetScreenResolutions()
 {	
 	InitSDL();
 	QuickVec<int> *out = new QuickVec<int>();
-	/*
-	// Get available fullscreen/hardware modes
-	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
 	
-	// Check if there are any modes available
-	if (modes == (SDL_Rect**)0) {
-		 return out;
+	int numModes = SDL_GetNumDisplayModes(0);
+	SDL_DisplayMode mode;
+	
+	for (int i = 0; i < numModes; i++)
+	{
+		SDL_GetDisplayMode(0, i, &mode);
+		out->push_back(mode.w);
+		out->push_back(mode.h);
 	}
 	
-	// Check if our resolution is unrestricted
-	if (modes == (SDL_Rect**)-1) {
-		 return out;
-	}
-	else{
-		 // Print valid modes 
-		 
-		 for ( int i=0; modes[i]; ++i) {
-			 out->push_back( modes[ i ]->w );
-			 out->push_back( modes[ i ]->h );
-		 }
-			 
-	}
-	*/
 	return out;
 }
 
