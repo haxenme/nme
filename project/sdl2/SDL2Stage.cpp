@@ -137,6 +137,42 @@ SDL_Surface *SurfaceToSDL(Surface *inSurface)
 				 0x000000ff^swap, 0xff000000 );
 }
 
+SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
+{
+	int i, row, col;
+	Uint8 data[4*32];
+	Uint8 mask[4*32];
+
+	i = -1;
+	for ( row=0; row<32; ++row ) {
+		for ( col=0; col<32; ++col ) {
+			if ( col % 8 ) {
+				data[i] <<= 1;
+				mask[i] <<= 1;
+			} else {
+				++i;
+				data[i] = mask[i] = 0;
+			}
+			switch (image[row][col]) {
+				case 'X':
+					data[i] |= 0x01;
+					mask[i] |= 0x01;
+					break;
+				case '.':
+					mask[i] |= 0x01;
+					break;
+				case ' ':
+					break;
+			}
+		}
+	}
+	return SDL_CreateCursor(data, mask, 32, 32, inHotX, inHotY);
+}
+
+SDL_Cursor *sDefaultCursor = 0;
+SDL_Cursor *sTextCursor = 0;
+SDL_Cursor *sHandCursor = 0;
+
 
 class SDLStage : public Stage
 {
@@ -335,7 +371,33 @@ public:
 	
 	void SetCursor(Cursor inCursor)
 	{
+		if (sDefaultCursor==0)
+			sDefaultCursor = SDL_GetCursor();
 		
+		mCurrentCursor = inCursor;
+		
+		if (inCursor==curNone || !mShowCursor)
+			SDL_ShowCursor(false);
+		else
+		{
+			SDL_ShowCursor(true);
+			
+			if (inCursor==curPointer)
+				SDL_SetCursor(sDefaultCursor);
+			else if (inCursor==curHand)
+			{
+				if (!sHandCursor)
+					sHandCursor = CreateCursor(sHandCursorData,13,1);
+				SDL_SetCursor(sHandCursor);
+			}
+			else
+			{
+			// TODO: Rotated
+			if (sTextCursor==0)
+				sTextCursor = CreateCursor(sTextCursorData,2,13);
+			SDL_SetCursor(sTextCursor);
+			}
+		}
 	}
 	
 	
@@ -344,7 +406,7 @@ public:
 		if (inShow!=mShowCursor)
 		{
 			mShowCursor = inShow;
-			//this->SetCursor(mCurrentCursor);
+			this->SetCursor(mCurrentCursor);
 		}
 	}
 	
