@@ -241,8 +241,8 @@ public:
 			mOpenGLContext->DecRef();
 		}
 		mPrimarySurface->DecRef();
-		SDL_DestroyRenderer(mSDLRenderer);
-		SDL_DestroyWindow(mSDLWindow);
+		//SDL_DestroyRenderer(mSDLRenderer);
+		//SDL_DestroyWindow(mSDLWindow);
 	}
 	
 	
@@ -696,11 +696,11 @@ void ProcessEvent(SDL_Event &inEvent)
 				}
 				case SDL_WINDOWEVENT_CLOSE:
 				{
-					Event deactivate(etDeactivate);
-					sgSDLFrame->ProcessEvent(deactivate);
+					//Event deactivate(etDeactivate);
+					//sgSDLFrame->ProcessEvent(deactivate);
 					
-					Event kill(etDestroyHandler);
-					sgSDLFrame->ProcessEvent(kill);
+					//Event kill(etDestroyHandler);
+					//sgSDLFrame->ProcessEvent(kill);
 					break;
 				}
 				default: break;
