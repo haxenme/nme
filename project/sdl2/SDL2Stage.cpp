@@ -916,8 +916,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	
 	if (opengl) {
 		
-		//SDL_GL_SetAttribute();
-		// set attributes?
+		sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders));
 		
 	}
 	

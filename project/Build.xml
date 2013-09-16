@@ -25,13 +25,13 @@
    <set name="directfb" value="1" if="NME_DIRECTFB" />
    
    <set name="sdl" value="1" if="win_desktop" unless="has_window" />
-   <set name="sdl" value="1" if="macos" unless="has_window" />
+   <set name="sdl2" value="1" if="macos" unless="has_window" />
    <set name="sdl" value="1" if="linux" unless="has_window" />
    <set name="sdl" value="1" if="blackberry" unless="has_window" />
    <set name="sdl" value="1" if="emscripten" unless="has_window" />
-   <set name="mac64" value="1" if="macos" unless="HXCPP_M32" />
+   <!-- <set name="mac64" value="1" if="macos" unless="HXCPP_M32" />
    <set name="sdl2" value="1" if="mac64" unless="has_window" />
-   <unset name="sdl" if="mac64" unless="has_window" />
+   <unset name="sdl" if="mac64" unless="has_window" /> -->
    <set name="has_window" value="1" if="sdl" />
    <set name="has_window" value="1" if="sdl2" />
    <set name="has_window" value="1" if="glfw" />
