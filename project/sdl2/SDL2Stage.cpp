@@ -866,6 +866,32 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	if (borderless) windowFlags |= SDL_WINDOW_BORDERLESS;
 	if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP; //SDL_WINDOW_FULLSCREEN;
 	
+	if (opengl)
+	{
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+		
+		if (inFlags & wfDepthBuffer)
+			SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32 - (inFlags & wfStencilBuffer) ? 8 : 0);
+		
+		if (inFlags & wfStencilBuffer)
+			SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+		
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		
+		if (inFlags & wfHW_AA_HIRES)
+		{
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, true);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+		}
+		else if (inFlags & wfHW_AA)
+		{
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, true);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
+		}
+	}
+	
 	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? 0 : inWidth, fullscreen ? 0 : inHeight, windowFlags);
 	
 	if (!window) return;
