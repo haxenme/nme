@@ -208,7 +208,7 @@ public:
          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
          #endif
 
-         #ifndef NME_FORCE_GLES2
+         //#ifndef NME_FORCE_GLES2
          if (mQuality>=sqHigh)
          {
             if (mPointSmooth)
@@ -216,7 +216,7 @@ public:
          }
          if (mQuality>=sqBest)
             glEnable(GL_LINE_SMOOTH);
-         #endif
+         //#endif
          mLineWidth = 99999;
 
          // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
@@ -679,7 +679,7 @@ public:
 
    void SetQuality(StageQuality inQ)
    {
-      #ifndef NME_FORCE_GLES2
+      //#ifndef NME_FORCE_GLES2
       inQ = sqMedium;
       if (inQ!=mQuality)
       {
@@ -698,7 +698,7 @@ public:
             glDisable(GL_LINE_SMOOTH);
          mLineWidth = 99999;
       }
-      #endif
+      //#endif
    }
 
    Matrix mModelView;

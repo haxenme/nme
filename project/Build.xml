@@ -470,6 +470,7 @@
       <lib name="${THIRDPARTY_LIBS}libSDL_image${name_extra}${SLIBEXT}" if="sdl_image" unless="emscripten" />
       <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
       <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
+	  <!-- <lib name="${THIRDPARTY_LIBS}libSDL2main${name_extra}${SLIBEXT}" if="windows" unless="sdl" /> -->
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
@@ -555,10 +556,10 @@
       <lib name="advapi32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="${THIRDPARTY_LIBS}dxguid.lib" if="win_desktop"/>
       <lib name="winmm.lib" if="win_desktop"/>
-      <!-- <lib name="imm32.lib" if="win_desktop" />-->
+      <lib name="imm32.lib" if="win_desktop" />
       <lib name="ole32.lib" if="win_desktop" unless="noopenal"/>
       <lib name="oleaut32.lib" if="win_desktop" unless="noopenal" />
-      <!-- <lib name="version.lib" if="win_desktop" />  -->
+      <lib name="version.lib" if="win_desktop" />
       <lib name="ws2_32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="wldap32.lib" if="win_desktop"/>
       <lib name="shell32.lib" if="win_desktop"/>
