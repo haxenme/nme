@@ -409,6 +409,21 @@ public:
 			this->SetCursor(mCurrentCursor);
 		}
 	}
+
+    void ConstrainCursorToWindowFrame(bool inLock) 
+    {
+        if (inLock != mLockCursor) 
+        {
+           mLockCursor = inLock;
+           SDL_SetRelativeMouseMode( inLock ? SDL_FALSE : SDL_TRUE );
+        }
+    }
+   
+      //Note that this fires a mouse event, see the SDL_WarpMouseInWindow docs
+    void SetCursorPositionInWindow(int inX, int inY) 
+    {
+		SDL_WarpMouseInWindow( mSDLWindow, inX, inY );
+    }	
 	
 	
 	void EnablePopupKeyboard(bool enabled)
@@ -466,6 +481,7 @@ public:
 	bool			mIsOpenGL;
 	Cursor		 mCurrentCursor;
 	bool			mShowCursor;
+	bool         	mLockCursor;	
 	bool			mIsFullscreen;
 	unsigned int mWindowFlags;
 	int			 mWidth;
@@ -740,6 +756,22 @@ void ProcessEvent(SDL_Event &inEvent)
 			#endif
 			sgSDLFrame->ProcessEvent(mouse);
 			break;
+		}
+		case SDL_MOUSEWHEEL: 
+		{	
+				//previous behavior in nme was 3 for down, 4 for up
+			int event_dir = (inEvent.wheel.y > 0) ? 3 : 4;
+				//space to get the current mouse position, to make sure the values are sane
+			int _x = 0; 
+			int _y = 0;
+				//fetch the mouse position
+			SDL_GetMouseState(&_x,&_y);
+				//create the event
+			Event mouse(etMouseDown, _x, _y, event_dir);
+				//add flags for modifier keys
+			AddModStates(mouse.flags);
+				//and done.
+			sgSDLFrame->ProcessEvent(mouse);
 		}
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
