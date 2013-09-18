@@ -47,7 +47,7 @@
    
    <set name="nocurl" value="1" if="winrt"/>
    <set name="nocurl" value="1" if="emscripten"/>
-   <set name="nocurl" value="1" if="macos" unless="HXCPP_M32" />
+   <!-- <set name="nocurl" value="1" if="macos" unless="HXCPP_M32" /> -->
    <set name="nocurl" value="1" if="directfb" />
    
    <!-- <set name="NME_FORCE_GLES1" value="1" if="iphone" /> -->
