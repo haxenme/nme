@@ -975,7 +975,7 @@ void InitExtensions()
       extentions_init = true;
       #ifdef HX_WINDOWS
       #ifndef SDL_OGL
-	  #ifndef GLFW_OGL
+      #ifndef GLFW_OGL
          wglMakeCurrent( (WinDC)inWindow,(GLCtx)inGLCtx);
       #endif
       #endif
@@ -1000,7 +1000,9 @@ bool HasShaderSupport()
    
    const char *version = (const char *)glGetString(GL_VERSION);
    
-   #ifdef ANDROID
+   //printf("GL_VERSION: %s\n", version);
+   
+   #ifdef NME_GLES
    glMajor = version[10];
    glMinor = version[12];
    #else
@@ -1047,12 +1049,12 @@ HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bo
    
    if (shaders && HasShaderSupport())
    {
-	  //printf("Using OGL2\n");
+      //printf("Using OGL2\n");
       ctx = new OGL2Context( (WinDC)inWindow, (GLCtx)inGLCtx );
    }
    else
    {
-	  //printf("Using OGL1\n");
+      //printf("Using OGL1\n");
       ctx = new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
    }
 
