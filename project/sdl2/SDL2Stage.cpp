@@ -276,7 +276,20 @@ public:
 	
 	void ResizeWindow(int inWidth, int inHeight)
 	{
-		SDL_SetWindowSize(mSDLWindow, inWidth, inHeight);
+		if (mIsFullscreen)
+		{
+			SDL_DisplayMode mode;
+			SDL_GetCurrentDisplayMode(0, &mode);
+			
+			mode.w = inWidth;
+			mode.h = inHeight;
+			
+			SDL_SetWindowDisplayMode(mSDLWindow, &mode);
+		}
+		else
+		{
+			SDL_SetWindowSize(mSDLWindow, inWidth, inHeight);
+		}
 	}
 	
 	
@@ -289,7 +302,14 @@ public:
 			if (mIsFullscreen)
 			{
 				SDL_GetWindowSize(mSDLWindow, &sgWindowWidth, &sgWindowHeight);
-				SDL_SetWindowSize(mSDLWindow, sgDesktopWidth, sgDesktopHeight);
+				//SDL_SetWindowSize(mSDLWindow, sgDesktopWidth, sgDesktopHeight);
+				
+				SDL_DisplayMode mode;
+				SDL_GetCurrentDisplayMode(0, &mode);
+				mode.w = sgDesktopWidth;
+				mode.h = sgDesktopHeight;
+				SDL_SetWindowDisplayMode(mSDLWindow, &mode);
+					
 				SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
 			}
 			else
@@ -946,13 +966,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	
 	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? sgDesktopWidth : inWidth, fullscreen ? sgDesktopHeight : inHeight, windowFlags);
 	
+	if (!window) return;
+	
 	if (fullscreen)
 	{
 		sgWindowWidth = inWidth;
 		sgWindowHeight = inHeight;
 	}
-	
-	if (!window) return;
 	
 	int renderFlags = 0;
 	
@@ -1152,7 +1172,19 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	}
 	
 	int width, height;
-	SDL_GetWindowSize(window, &width, &height);
+	if (fullscreen)
+	{
+		//SDL_DisplayMode mode;
+		//SDL_GetCurrentDisplayMode(0, &mode);
+		//width = mode.w;
+		//height = mode.h;
+		width = sgDesktopWidth;
+		height = sgDesktopHeight;
+	}
+	else
+	{
+		SDL_GetWindowSize(window, &width, &height);
+	}
 	
 	sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, width, height);
 	inOnFrame(sgSDLFrame);
