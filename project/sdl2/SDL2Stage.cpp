@@ -251,8 +251,6 @@ public:
 		mWidth = inWidth;
 		mHeight = inHeight;
 		
-		SDL_SetWindowSize(mSDLWindow, inWidth, inHeight);
-		
 		if (mIsOpenGL)
 		{
 			mOpenGLContext->SetWindowSize(inWidth, inHeight);
@@ -270,6 +268,12 @@ public:
 			mSoftwareTexture = SDL_CreateTexture(mSDLRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, mWidth, mHeight);
 			((SDLSurf*)mPrimarySurface)->mSurf = mSoftwareSurface;
 		}
+	}
+	
+	
+	void ResizeWindow(int inWidth, int inHeight)
+	{
+		SDL_SetWindowSize(mSDLWindow, inWidth, inHeight);
 	}
 	
 	

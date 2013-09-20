@@ -415,7 +415,7 @@ public:
    virtual void PollNow() { }
 
    virtual void RenderStage();
-   virtual void Resize(int inWidth, int inHeight) {};
+   virtual void ResizeWindow(int inWidth, int inHeight) {};
 
    virtual bool isOpenGL() const = 0;
 

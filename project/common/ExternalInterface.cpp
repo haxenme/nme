@@ -1201,18 +1201,18 @@ value nme_render_stage(value inStage)
 DEFINE_PRIM(nme_render_stage,1);
 
 
-void nme_stage_resize(value inStage, value inWidth, value inHeight)
+void nme_stage_resize_window(value inStage, value inWidth, value inHeight)
 {
    #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
    Stage *stage;
    
    if (AbstractToObject(inStage,stage))
    {
-      stage->Resize(val_int(inHeight), val_int(inWidth));
+      stage->ResizeWindow(val_int(inHeight), val_int(inWidth));
    }
    #endif
 }
-DEFINE_PRIM(nme_stage_resize,3);
+DEFINE_PRIM(nme_stage_resize_window,3);
 
 
 value nme_stage_get_focus_id(value inValue)
