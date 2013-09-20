@@ -891,6 +891,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	bool vsync = (inFlags & wfVSync) != 0;
 	
 	sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
+	
+	sgWindowWidth = inWidth;
+	sgWindowHeight = inHeight;
 
 	//Rect r(100,100,inWidth,inHeight);
 	
@@ -964,15 +967,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 		}
 	}
 	
-	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? sgDesktopWidth : inWidth, fullscreen ? sgDesktopHeight : inHeight, windowFlags);
+	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, inWidth, inHeight, windowFlags);
 	
 	if (!window) return;
-	
-	if (fullscreen)
-	{
-		sgWindowWidth = inWidth;
-		sgWindowHeight = inHeight;
-	}
+	windowFlags = SDL_GetWindowFlags (window);
 	
 	int renderFlags = 0;
 	
@@ -1172,7 +1170,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	}
 	
 	int width, height;
-	if (fullscreen)
+	if (windowFlags & SDL_WINDOW_FULLSCREEN || windowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP)
 	{
 		//SDL_DisplayMode mode;
 		//SDL_GetCurrentDisplayMode(0, &mode);
