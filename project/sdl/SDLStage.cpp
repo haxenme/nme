@@ -341,7 +341,7 @@ public:
       mPrimarySurface->DecRef();
    }
 
-   void Resize(int inWidth, int inHeight, bool resizeWindow)
+   void Resize(int inWidth, int inHeight, bool resizeWindow = false)
    {
       #ifdef HX_WINDOWS
       if (mIsOpenGL && !resizeWindow)
@@ -392,6 +392,8 @@ public:
    void ResizeWindow(int inWidth, int inHeight)
    {
       Resize(inWidth, inHeight, true);
+      Event resize(etResize, mSDLSurface->w, mSDLSurface->h);
+      ProcessEvent(resize);
    }
 
    void SetFullscreen(bool inFullscreen)
