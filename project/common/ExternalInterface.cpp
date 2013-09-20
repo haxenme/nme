@@ -1039,6 +1039,19 @@ value nme_get_frame_stage(value inValue)
 }
 DEFINE_PRIM(nme_get_frame_stage,1);
 
+void nme_resize_frame(value inValue, value inWidth, value inHeight)
+{
+	int h = val_int(inHeight);
+	int w = val_int(inWidth);
+	//printf("nme_resize_frame(%p,%d,%d)",inValue,w,h);
+	Frame *frame;
+	if (!AbstractToObject(inValue,frame)){
+		return;
+	}
+	frame->Resize(w,h);
+}
+DEFINE_PRIM(nme_resize_frame,3);
+
 AutoGCRoot *sOnCreateCallback = 0;
 
 void OnMainFrameCreated(Frame *inFrame)

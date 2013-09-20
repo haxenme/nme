@@ -251,6 +251,8 @@ public:
 		mWidth = inWidth;
 		mHeight = inHeight;
 		
+		SDL_SetWindowSize(mSDLWindow, inWidth, inHeight);
+		
 		if (mIsOpenGL)
 		{
 			mOpenGLContext->SetWindowSize(inWidth, inHeight);
