@@ -24,13 +24,18 @@
    <set name="glfw" value="1" if="NME_GLFW" />
    <set name="directfb" value="1" if="NME_DIRECTFB" />
    
-   <set name="has_window" value="0" if="macos" unless="HXCPP_M32"/>
-   
-   <set name="sdl" value="1" if="win_desktop" unless="has_window" />
-   <set name="sdl" value="1" if="macos" unless="has_window" />
-   <set name="sdl" value="1" if="linux" unless="has_window" />
+   <set name="sdl2" value="1" if="win_desktop" unless="has_window" />
+   <set name="sdl2" value="1" if="macos" unless="has_window" />
+   <set name="sdl2" value="1" if="linux" unless="has_window" />
    <set name="sdl" value="1" if="blackberry" unless="has_window" />
    <set name="sdl" value="1" if="emscripten" unless="has_window" />
+   <!-- <set name="mac64" value="1" if="macos" unless="HXCPP_M32" />
+   <set name="sdl2" value="1" if="mac64" unless="has_window" />
+   <unset name="sdl" if="mac64" unless="has_window" /> -->
+   <set name="has_window" value="1" if="sdl" />
+   <set name="has_window" value="1" if="sdl2" />
+   <set name="has_window" value="1" if="glfw" />
+   <set name="has_window" value="1" if="directfb" />
    
    <set name="ogl" value="1" if="glfw"/>
    <set name="ogl" value="1" if="sdl"/>
@@ -42,7 +47,7 @@
    
    <set name="nocurl" value="1" if="winrt"/>
    <set name="nocurl" value="1" if="emscripten"/>
-   <set name="nocurl" value="1" if="macos" unless="HXCPP_M32" />
+   <!-- <set name="nocurl" value="1" if="macos" unless="HXCPP_M32" /> -->
    <set name="nocurl" value="1" if="directfb" />
    
    <!-- <set name="NME_FORCE_GLES1" value="1" if="iphone" /> -->
@@ -51,11 +56,12 @@
    
    <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
    
-   <!-- Toggle this for openal experimental osx code -->
-   <!-- <set name="openal" value="1" if="macos"/> -->
-   <!-- <set name="openal" value="1" if="iphone"/> -->
-   <!-- <set name="openal" value="1" if="glfw" />
-   <set name="openal" value="1" if="sdl2" /> -->
+   <set name="openal" value="1" if="NME_OPENAL" />
+   <set name="has_sound" value="1" if="sdl" />
+   <set name="has_sound" value="1" if="openal" />
+   <set name="openal" value="1" if="sdl2" unless="has_sound" />
+   <set name="noopenal" value="1" unless="openal" />
+   <set name="has_sound" value="1" if="sdl2" />
    
    <set name="mobile" value="1" if="iphone"/>
    <set name="mobile" value="1" if="android"/>
@@ -71,7 +77,7 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I${NME_DEV}/include"/>
-      <compilerflag value="-I${NME_DEV}/include/SDL" if="sdl" />
+      <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" />
       <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
       <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
       <file name="windows/GDIFont.cpp"/>
@@ -81,7 +87,8 @@
       <!-- <file name="sdl/SDLSound.cpp" unless="sdl"/> -->
       <file name="empty/Sound.cpp" if="glfw" unless="openal" />
       <file name="openal/OpenALSound.cpp" if="openal"/>
-      
+      <compilerflag value="-DAL_LIBTYPE_STATIC" if="openal"/>
+
    </files>
    
    
@@ -410,9 +417,9 @@
       <file name="mac/NSFont.cpp"/>
       <file name="mac/MacBoot.m" />
       <file name="empty/URL.cpp" if="nocurl" />
-      <file name="empty/Sound.cpp" unless="sdl" />
-      <file name="empty/Stage.cpp" unless="sdl" />
-      <file name="empty/HardwareContext.cpp" unless="sdl" />
+      <file name="empty/Sound.cpp" unless="has_sound" />
+      <file name="empty/Stage.cpp" unless="has_window" />
+      <file name="empty/HardwareContext.cpp" unless="has_window" />
       <file name="mac/System.mm"/>
       <file name="cocoa/FileManager.mm"/>
       <file name="openal/OpenALSound.cpp" if="openal"/>
@@ -421,9 +428,6 @@
    
    
    <set name="name_prefix" value="lib" if="iphone" />
-   
-   <set name="openal_link" value="1" if="win_desktop"/>
-   <unset name="openal_link" unless="openal"/>
    
    
    <target id="NDLL" output="${name_prefix}nme${debug_extra}${name_extra}" tool="linker" toolid="${ndll-tool}">
@@ -466,10 +470,11 @@
       <lib name="${THIRDPARTY_LIBS}libSDL_image${name_extra}${SLIBEXT}" if="sdl_image" unless="emscripten" />
       <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
       <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
+	  <!-- <lib name="${THIRDPARTY_LIBS}libSDL2main${name_extra}${SLIBEXT}" if="windows" unless="sdl" /> -->
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
-      <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal_link" unless="sdl_static" />
+      <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
-      <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="openal_link" unless="sdl_static" />
+      <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="openal" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libtheora${name_extra}${SLIBEXT}" if="theora" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libsmpeg${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
@@ -510,9 +515,9 @@
       <vflag name="-framework" value="ForceFeedback" if="macos"/>
       <vflag name="-framework" value="Cocoa" if="macos"/>
       <vflag name="-framework" value="OpenGL" if="macos"/>
-      <vflag name="-framework" value="QuickTime" if="macos"/>
+      <vflag name="-framework" value="QuickTime" if="macos" unless="HXCPP_M64"/>
       <vflag name="-framework" value="AppKit" if="macos"/>
-      <vflag name="-framework" value="OpenAL" if="macos"/>
+      <vflag name="-framework" value="OpenAL" if="macos" unless="noopenal"/>
       
       <lib name="-ldl" if="android"/>
       <lib name="-lGLESv1_CM" if="android" unless="ogl_shaders"/>
@@ -544,16 +549,17 @@
       
       <lib name="gdi32.lib" if="win_desktop" />
       <lib name="opengl32.lib" if="win_desktop" />
-      <lib name="${THIRDPARTY_LIBS}libOpenAL32.lib" if="openal_link"/>
+      <lib name="${THIRDPARTY_LIBS}libOpenAL32${SLIBEXT}" if="windows" unless="noopenal"/>
+      <!-- <lib name="${THIRDPARTY_LIBS}libOpenAL32_dynamic${SLIBEXT}" if="openal_link_dynamic"/> -->
       <lib name="user32.lib" if="win_desktop"/>
       <lib name="kernel32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="advapi32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="${THIRDPARTY_LIBS}dxguid.lib" if="win_desktop"/>
       <lib name="winmm.lib" if="win_desktop"/>
-      <!-- <lib name="imm32.lib" if="win_desktop" />
-      <lib name="ole32.lib" if="win_desktop" />
-      <lib name="oleaut32.lib" if="win_desktop" />
-      <lib name="version.lib" if="win_desktop" /> -->
+      <lib name="imm32.lib" if="win_desktop" />
+      <lib name="ole32.lib" if="win_desktop" unless="noopenal"/>
+      <lib name="oleaut32.lib" if="win_desktop" unless="noopenal" />
+      <lib name="version.lib" if="win_desktop" />
       <lib name="ws2_32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="wldap32.lib" if="win_desktop"/>
       <lib name="shell32.lib" if="win_desktop"/>

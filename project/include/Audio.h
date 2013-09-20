@@ -40,24 +40,24 @@ namespace nme {
 //Wav format info
 	struct RIFF_Header {
 	  char chunkID[4];
-	  long chunkSize;//size not including chunkSize or chunkID
+	  unsigned int chunkSize;//size not including chunkSize or chunkID
 	  char format[4];
 	};
 
 	struct WAVE_Format {
 	  char subChunkID[4];
-	  long subChunkSize;
+	  unsigned int subChunkSize;
 	  short audioFormat;
 	  short numChannels;
-	  long sampleRate;
-	  long byteRate;
+	  unsigned int sampleRate;
+	  unsigned int byteRate;
 	  short blockAlign;
 	  short bitsPerSample;
 	};
 
 	struct WAVE_Data {
 	  char subChunkID[4]; //should contain the word data
-	  long subChunk2Size; //Stores the size of the data block
+	  unsigned int subChunk2Size; //Stores the size of the data block
 	};
 
 } //namespace nme

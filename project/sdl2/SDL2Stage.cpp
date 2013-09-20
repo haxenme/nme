@@ -32,7 +32,7 @@ int InitSDL()
 		
 	sgInitCalled = true;
 	
-	int err = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
+	int err = SDL_Init(SDL_INIT_VIDEO /*| SDL_INIT_AUDIO*/ | SDL_INIT_TIMER);
 	
 	if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0)
 	{
@@ -43,7 +43,7 @@ int InitSDL()
 }
 
 
-/*class SDLSurf : public Surface
+class SDLSurf : public Surface
 {
 public:
 	SDLSurf(SDL_Surface *inSurf,bool inDelete) : mSurf(inSurf)
@@ -57,17 +57,17 @@ public:
 			SDL_FreeSurface(mSurf);
 	}
 
-	int Width() const  { return mSurf->w; }
-	int Height() const  { return mSurf->h; }
-	PixelFormat Format()  const
+	int Width() const { return mSurf->w; }
+	int Height() const { return mSurf->h; }
+	PixelFormat Format() const
 	{
 		#ifdef EMSCRIPTEN
 		uint8 swap = 0;
 		#else
 		uint8 swap = mSurf->format->Bshift; // is 0 on argb
 		#endif
-		//if (mSurf->flags & SDL_SRCALPHA)
-		//	return swap ? pfARGBSwap : pfARGB;
+		if (mSurf->format->Amask)
+			return swap ? pfARGBSwap : pfARGB;
 		return swap ? pfXRGBSwap : pfXRGB;
 	}
 	const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
@@ -85,7 +85,7 @@ public:
 			r.w = inRect->w;
 			r.h = inRect->h;
 		}
-
+		
 		SDL_FillRect(mSurf,rect_ptr,SDL_MapRGBA(mSurf->format,
 				inColour>>16, inColour>>8, inColour, inColour>>24 )  );
 	}
@@ -135,7 +135,43 @@ SDL_Surface *SurfaceToSDL(Surface *inSurface)
 				 32, inSurface->Width()*4,
 				 0x00ff0000^swap, 0x0000ff00,
 				 0x000000ff^swap, 0xff000000 );
-}*/
+}
+
+SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
+{
+	int i, row, col;
+	Uint8 data[4*32];
+	Uint8 mask[4*32];
+
+	i = -1;
+	for ( row=0; row<32; ++row ) {
+		for ( col=0; col<32; ++col ) {
+			if ( col % 8 ) {
+				data[i] <<= 1;
+				mask[i] <<= 1;
+			} else {
+				++i;
+				data[i] = mask[i] = 0;
+			}
+			switch (image[row][col]) {
+				case 'X':
+					data[i] |= 0x01;
+					mask[i] |= 0x01;
+					break;
+				case '.':
+					mask[i] |= 0x01;
+					break;
+				case ' ':
+					break;
+			}
+		}
+	}
+	return SDL_CreateCursor(data, mask, 32, 32, inHotX, inHotY);
+}
+
+SDL_Cursor *sDefaultCursor = 0;
+SDL_Cursor *sTextCursor = 0;
+SDL_Cursor *sHandCursor = 0;
 
 
 class SDLStage : public Stage
@@ -169,7 +205,13 @@ public:
 		else
 		{
 			mOpenGLContext = 0;
-			//mPrimarySurface = new SDLSurf(inSurface,inIsOpenGL);
+			mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+			if (!mSoftwareSurface)
+			{
+				fprintf(stderr, "Could not create SDL surface : %s\n", SDL_GetError());
+			}
+			mSoftwareTexture = SDL_CreateTexture(mSDLRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, mWidth, mHeight);
+			mPrimarySurface = new SDLSurf(mSoftwareSurface, inIsOpenGL);
 		}
 		mPrimarySurface->IncRef();
 	  
@@ -189,26 +231,69 @@ public:
 	
 	~SDLStage()
 	{
-		//if (!mIsOpenGL)
-			//SDL_FreeSurface(mSDLSurface);
-		//else
+		if (!mIsOpenGL)
+		{
+			SDL_FreeSurface(mSoftwareSurface);
+			SDL_DestroyTexture(mSoftwareTexture);
+		}
+		else
+		{
 			mOpenGLContext->DecRef();
+		}
 		mPrimarySurface->DecRef();
+		//SDL_DestroyRenderer(mSDLRenderer);
+		//SDL_DestroyWindow(mSDLWindow);
 	}
 	
 	
 	void Resize(int inWidth, int inHeight)
 	{
+		mWidth = inWidth;
+		mHeight = inHeight;
+		
 		if (mIsOpenGL)
 		{
 			mOpenGLContext->SetWindowSize(inWidth, inHeight);
+		}
+		else
+		{
+			SDL_FreeSurface(mSoftwareSurface);
+			SDL_DestroyTexture(mSoftwareTexture);
+			
+			mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+			if (!mSoftwareSurface)
+			{
+				fprintf(stderr, "Could not create SDL surface : %s\n", SDL_GetError());
+			}
+			mSoftwareTexture = SDL_CreateTexture(mSDLRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, mWidth, mHeight);
+			((SDLSurf*)mPrimarySurface)->mSurf = mSoftwareSurface;
 		}
 	}
 	
 	
 	void SetFullscreen(bool inFullscreen)
 	{
-		printf("set fullscreen\n");
+		if (inFullscreen != mIsFullscreen)
+		{
+			mIsFullscreen = inFullscreen;
+			
+			if (mIsFullscreen)
+			{
+				SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN_DESKTOP /*SDL_WINDOW_FULLSCREEN*/);
+			}
+			else
+			{
+				SDL_SetWindowFullscreen(mSDLWindow, 0);
+			}
+			
+			/*int width, height;
+			SDL_GetWindowSize(mSDLWindow, &width, &height);
+			printf("Size? %d x %d\n", width, height);
+			Resize(width, height);
+			
+			Event resize(etResize, width, height);
+			ProcessEvent(resize);*/
+		}
 	}
 	
 	
@@ -217,22 +302,6 @@ public:
 	
 	void ProcessEvent(Event &inEvent)
 	{
-		#ifdef HX_MACOS
-		if (inEvent.type == etKeyUp && (inEvent.flags & efCommandDown))
-		{
-			switch (inEvent.code)
-			{
-				case SDLK_q:
-				case SDLK_w:
-					inEvent.type = etQuit;
-					break;
-				case SDLK_m:
-					SDL_WM_IconifyWindow();
-					return;
-			}
-		}
-		#endif
-		
 		#if defined(HX_WINDOWS) || defined(HX_LINUX)
 		if (inEvent.type == etKeyUp && (inEvent.flags & efAltDown) && inEvent.value == keyF4)
 		{
@@ -286,6 +355,9 @@ public:
 		}
 		else
 		{
+			SDL_UpdateTexture(mSoftwareTexture, NULL, mSoftwareSurface->pixels, mSoftwareSurface->pitch);
+			//SDL_RenderClear(mSDLRenderer);
+			SDL_RenderCopy(mSDLRenderer, mSoftwareTexture, NULL, NULL);
 			SDL_RenderPresent(mSDLRenderer);
 		}
 	}
@@ -299,7 +371,33 @@ public:
 	
 	void SetCursor(Cursor inCursor)
 	{
+		if (sDefaultCursor==0)
+			sDefaultCursor = SDL_GetCursor();
 		
+		mCurrentCursor = inCursor;
+		
+		if (inCursor==curNone || !mShowCursor)
+			SDL_ShowCursor(false);
+		else
+		{
+			SDL_ShowCursor(true);
+			
+			if (inCursor==curPointer)
+				SDL_SetCursor(sDefaultCursor);
+			else if (inCursor==curHand)
+			{
+				if (!sHandCursor)
+					sHandCursor = CreateCursor(sHandCursorData,13,1);
+				SDL_SetCursor(sHandCursor);
+			}
+			else
+			{
+			// TODO: Rotated
+			if (sTextCursor==0)
+				sTextCursor = CreateCursor(sTextCursorData,2,13);
+			SDL_SetCursor(sTextCursor);
+			}
+		}
 	}
 	
 	
@@ -308,9 +406,24 @@ public:
 		if (inShow!=mShowCursor)
 		{
 			mShowCursor = inShow;
-			//this->SetCursor(mCurrentCursor);
+			this->SetCursor(mCurrentCursor);
 		}
 	}
+
+    void ConstrainCursorToWindowFrame(bool inLock) 
+    {
+        if (inLock != mLockCursor) 
+        {
+           mLockCursor = inLock;
+           SDL_SetRelativeMouseMode( inLock ? SDL_FALSE : SDL_TRUE );
+        }
+    }
+   
+      //Note that this fires a mouse event, see the SDL_WarpMouseInWindow docs
+    void SetCursorPositionInWindow(int inX, int inY) 
+    {
+		SDL_WarpMouseInWindow( mSDLWindow, inX, inY );
+    }	
 	
 	
 	void EnablePopupKeyboard(bool enabled)
@@ -362,10 +475,13 @@ public:
 	SDL_Window *mSDLWindow;
 	SDL_Renderer *mSDLRenderer;
 	Surface	  *mPrimarySurface;
+	SDL_Surface *mSoftwareSurface;
+	SDL_Texture *mSoftwareTexture;
 	double		 mFrameRate;
 	bool			mIsOpenGL;
 	Cursor		 mCurrentCursor;
 	bool			mShowCursor;
+	bool         	mLockCursor;	
 	bool			mIsFullscreen;
 	unsigned int mWindowFlags;
 	int			 mWidth;
@@ -448,21 +564,19 @@ SDL_Joystick *sgJoystick = 0;
 
 void AddModStates(int &ioFlags,int inState = -1)
 {
-	//int state = inState==-1 ? SDL_GetModState() : inState;
-	//if (state & KMOD_SHIFT) ioFlags |= efShiftDown;
-	//if (state & KMOD_CTRL) ioFlags |= efCtrlDown;
-	//if (state & KMOD_ALT) ioFlags |= efAltDown;
-	//if (state & KMOD_META) ioFlags |= efCommandDown;
-	//
- //
-	//int m = SDL_GetMouseState(0,0);
-	//if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
-	//if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
-	//if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
-		//
-//
-	//ioFlags |= efPrimaryTouch;
-	//ioFlags |= efNoNativeClick;
+	int state = inState==-1 ? SDL_GetModState() : inState;
+	if (state & KMOD_SHIFT) ioFlags |= efShiftDown;
+	if (state & KMOD_CTRL) ioFlags |= efCtrlDown;
+	if (state & KMOD_ALT) ioFlags |= efAltDown;
+	if (state & KMOD_GUI) ioFlags |= efCommandDown;
+	
+	int m = SDL_GetMouseState(0,0);
+	if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
+	if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
+	if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
+	
+	ioFlags |= efPrimaryTouch;
+	ioFlags |= efNoNativeClick;
 }
 
 
@@ -471,65 +585,65 @@ void AddModStates(int &ioFlags,int inState = -1)
 
 int SDLKeyToFlash(int inKey,bool &outRight)
 {
-	//outRight = (inKey==SDLK_RSHIFT || inKey==SDLK_RCTRL ||
-					//inKey==SDLK_RALT || inKey==SDLK_RMETA || inKey==SDLK_RSUPER);
-	//if (inKey>=keyA && inKey<=keyZ)
-		//return inKey;
-	//if (inKey>=SDLK_0 && inKey<=SDLK_9)
-		//return inKey - SDLK_0 + keyNUMBER_0;
-	//if (inKey>=SDLK_KP0 && inKey<=SDLK_KP9)
-		//return inKey - SDLK_KP0 + keyNUMPAD_0;
-	//
-	//if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
-		//return inKey - SDLK_F1 + keyF1;
-	//
-	//
-	//switch(inKey)
-	//{
-		//case SDLK_RALT:
-		//case SDLK_LALT:
-			//return keyALTERNATE;
-		//case SDLK_RSHIFT:
-		//case SDLK_LSHIFT:
-			//return keySHIFT;
-		//case SDLK_RCTRL:
-		//case SDLK_LCTRL:
-			//return keyCONTROL;
-		//case SDLK_LMETA:
-		//case SDLK_RMETA:
-			//return keyCOMMAND;
-		//
-		//case SDLK_CAPSLOCK: return keyCAPS_LOCK;
-		//case SDLK_PAGEDOWN: return keyPAGE_DOWN;
-		//case SDLK_PAGEUP: return keyPAGE_UP;
-		//case SDLK_EQUALS: return keyEQUAL;
-		//case SDLK_RETURN:
-		//case SDLK_KP_ENTER:
-			//return keyENTER;
-		//
-		//SDL_TRANS(BACKQUOTE)
-		//SDL_TRANS(BACKSLASH)
-		//SDL_TRANS(BACKSPACE)
-		//SDL_TRANS(COMMA)
-		//SDL_TRANS(DELETE)
-		//SDL_TRANS(DOWN)
-		//SDL_TRANS(END)
-		//SDL_TRANS(ESCAPE)
-		//SDL_TRANS(HOME)
-		//SDL_TRANS(INSERT)
-		//SDL_TRANS(LEFT)
-		//SDL_TRANS(LEFTBRACKET)
-		//SDL_TRANS(MINUS)
-		//SDL_TRANS(PERIOD)
-		//SDL_TRANS(QUOTE)
-		//SDL_TRANS(RIGHT)
-		//SDL_TRANS(RIGHTBRACKET)
-		//SDL_TRANS(SEMICOLON)
-		//SDL_TRANS(SLASH)
-		//SDL_TRANS(SPACE)
-		//SDL_TRANS(TAB)
-		//SDL_TRANS(UP)
-	//}
+	outRight = (inKey==SDLK_RSHIFT || inKey==SDLK_RCTRL ||
+					inKey==SDLK_RALT || inKey==SDLK_RGUI);
+	if (inKey>=keyA && inKey<=keyZ)
+		return inKey;
+	if (inKey>=SDLK_0 && inKey<=SDLK_9)
+		return inKey - SDLK_0 + keyNUMBER_0;
+	if (inKey>=SDLK_KP_0 && inKey<=SDLK_KP_9)
+		return inKey - SDLK_KP_0 + keyNUMPAD_0;
+	
+	if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
+		return inKey - SDLK_F1 + keyF1;
+	
+	
+	switch(inKey)
+	{
+		case SDLK_RALT:
+		case SDLK_LALT:
+			return keyALTERNATE;
+		case SDLK_RSHIFT:
+		case SDLK_LSHIFT:
+			return keySHIFT;
+		case SDLK_RCTRL:
+		case SDLK_LCTRL:
+			return keyCONTROL;
+		case SDLK_LGUI:
+		case SDLK_RGUI:
+			return keyCOMMAND;
+		
+		case SDLK_CAPSLOCK: return keyCAPS_LOCK;
+		case SDLK_PAGEDOWN: return keyPAGE_DOWN;
+		case SDLK_PAGEUP: return keyPAGE_UP;
+		case SDLK_EQUALS: return keyEQUAL;
+		case SDLK_RETURN:
+		case SDLK_KP_ENTER:
+			return keyENTER;
+		
+		SDL_TRANS(BACKQUOTE)
+		SDL_TRANS(BACKSLASH)
+		SDL_TRANS(BACKSPACE)
+		SDL_TRANS(COMMA)
+		SDL_TRANS(DELETE)
+		SDL_TRANS(DOWN)
+		SDL_TRANS(END)
+		SDL_TRANS(ESCAPE)
+		SDL_TRANS(HOME)
+		SDL_TRANS(INSERT)
+		SDL_TRANS(LEFT)
+		SDL_TRANS(LEFTBRACKET)
+		SDL_TRANS(MINUS)
+		SDL_TRANS(PERIOD)
+		SDL_TRANS(QUOTE)
+		SDL_TRANS(RIGHT)
+		SDL_TRANS(RIGHTBRACKET)
+		SDL_TRANS(SEMICOLON)
+		SDL_TRANS(SLASH)
+		SDL_TRANS(SPACE)
+		SDL_TRANS(TAB)
+		SDL_TRANS(UP)
+	}
 
 	return inKey;
 }
@@ -598,11 +712,11 @@ void ProcessEvent(SDL_Event &inEvent)
 				}
 				case SDL_WINDOWEVENT_CLOSE:
 				{
-					Event deactivate(etDeactivate);
-					sgSDLFrame->ProcessEvent(deactivate);
+					//Event deactivate(etDeactivate);
+					//sgSDLFrame->ProcessEvent(deactivate);
 					
-					Event kill(etDestroyHandler);
-					sgSDLFrame->ProcessEvent(kill);
+					//Event kill(etDestroyHandler);
+					//sgSDLFrame->ProcessEvent(kill);
 					break;
 				}
 				default: break;
@@ -642,6 +756,22 @@ void ProcessEvent(SDL_Event &inEvent)
 			#endif
 			sgSDLFrame->ProcessEvent(mouse);
 			break;
+		}
+		case SDL_MOUSEWHEEL: 
+		{	
+				//previous behavior in nme was 3 for down, 4 for up
+			int event_dir = (inEvent.wheel.y > 0) ? 3 : 4;
+				//space to get the current mouse position, to make sure the values are sane
+			int _x = 0; 
+			int _y = 0;
+				//fetch the mouse position
+			SDL_GetMouseState(&_x,&_y);
+				//create the event
+			Event mouse(etMouseDown, _x, _y, event_dir);
+				//add flags for modifier keys
+			AddModStates(mouse.flags);
+				//and done.
+			sgSDLFrame->ProcessEvent(mouse);
 		}
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
@@ -749,32 +879,50 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	if (Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize) != 0)
 	{
 		fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
-		gSDLIsInit = false;
+		//gSDLIsInit = false;
 	}
 	#endif
 	
-	//const SDL_VideoInfo *info  = SDL_GetVideoInfo();
-	//sgDesktopWidth = info->current_w;
-	//sgDesktopHeight = info->current_h;
-	
-	//#ifdef RASPBERRYPI
-	//sdl_flags = SDL_SWSURFACE;
-	//if (opengl)
-		//fullscreen = true;
-	//#else
-	//sdl_flags = SDL_HWSURFACE;
-	//#endif
-	
-	//int use_w = fullscreen ? 0 : inWidth;
-	//int use_h = fullscreen ? 0 : inHeight;
-	
+	if (SDL_GetNumVideoDisplays() > 0)
+	{
+		SDL_DisplayMode currentMode;
+		SDL_GetDesktopDisplayMode(0, &currentMode);
+		sgDesktopWidth = currentMode.w;
+		sgDesktopHeight = currentMode.h;
+	}
 	
 	int windowFlags = 0;
 	
 	if (opengl) windowFlags |= SDL_WINDOW_OPENGL;
 	if (resizable) windowFlags |= SDL_WINDOW_RESIZABLE;
 	if (borderless) windowFlags |= SDL_WINDOW_BORDERLESS;
-	if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN; //SDL_WINDOW_FULLSCREEN_DESKTOP;
+	if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP; //SDL_WINDOW_FULLSCREEN;
+	
+	if (opengl)
+	{
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+		
+		if (inFlags & wfDepthBuffer)
+			SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32 - (inFlags & wfStencilBuffer) ? 8 : 0);
+		
+		if (inFlags & wfStencilBuffer)
+			SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+		
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		
+		if (inFlags & wfHW_AA_HIRES)
+		{
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, true);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+		}
+		else if (inFlags & wfHW_AA)
+		{
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, true);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
+		}
+	}
 	
 	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? 0 : inWidth, fullscreen ? 0 : inHeight, windowFlags);
 	
@@ -800,8 +948,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	
 	if (opengl) {
 		
-		//SDL_GL_SetAttribute();
-		// set attributes?
+		sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders));
 		
 	}
 	
@@ -978,7 +1125,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 		SDL_JoystickEventState(SDL_TRUE);
 	}
 	
-	sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, inWidth, inHeight);
+	int width, height;
+	SDL_GetWindowSize(window, &width, &height);
+	
+	sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, width, height);
 	inOnFrame(sgSDLFrame);
 	StartAnimation();
 }
@@ -997,29 +1147,17 @@ QuickVec<int>* CapabilitiesGetScreenResolutions()
 {	
 	InitSDL();
 	QuickVec<int> *out = new QuickVec<int>();
-	/*
-	// Get available fullscreen/hardware modes
-	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
 	
-	// Check if there are any modes available
-	if (modes == (SDL_Rect**)0) {
-		 return out;
+	int numModes = SDL_GetNumDisplayModes(0);
+	SDL_DisplayMode mode;
+	
+	for (int i = 0; i < numModes; i++)
+	{
+		SDL_GetDisplayMode(0, i, &mode);
+		out->push_back(mode.w);
+		out->push_back(mode.h);
 	}
 	
-	// Check if our resolution is unrestricted
-	if (modes == (SDL_Rect**)-1) {
-		 return out;
-	}
-	else{
-		 // Print valid modes 
-		 
-		 for ( int i=0; modes[i]; ++i) {
-			 out->push_back( modes[ i ]->w );
-			 out->push_back( modes[ i ]->h );
-		 }
-			 
-	}
-	*/
 	return out;
 }
 

@@ -11,9 +11,6 @@
 
 #endif
 
-#include <SDL.h>
-
-
 #include <Sound.h>
 #include <QuickVec.h>
 #include <Utils.h>
@@ -355,7 +352,7 @@ namespace nme {
                 int _bitsPerSample;
                 ALenum  format;
                 ALsizei freq;
-                bool ok = false;
+                bool ok = false; 
 
                     //Determine the file format before we try anything
                 AudioFormat type = Audio::determineAudioTypeFromFilename(std::string(fileURL));
@@ -368,7 +365,7 @@ namespace nme {
                         ok = Audio::loadWavData( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
                     break;
                     default:
-                        LOG_SOUND("Error opening sound file, unsupported type.");
+                        LOG_SOUND("Error opening sound file, unsupported type.\n");
                 }
 
                     //Work out the format from the data
@@ -388,23 +385,24 @@ namespace nme {
                  
                 
                 if (!ok) {
-                    LOG_SOUND("Error opening sound data");
+                    LOG_SOUND("Error opening sound data\n");
                     mError = "Error opening sound data";
                 } else if (alGetError() != AL_NO_ERROR) {
-                    LOG_SOUND("Error after opening sound data");
-                    mError = "Error after opening sound data";
+                    LOG_SOUND("Error after opening sound data\n");
+                    mError = "Error after opening sound data";  
                 } else {
-                    // grab a buffer ID from openAL
+                        // grab a buffer ID from openAL
                     alGenBuffers(1, &mBufferID);
                     
-                    // load the awaiting data blob into the openAL buffer.
+                        // load the awaiting data blob into the openAL buffer.
                     alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
 
-                    // once we have all our information loaded, get some extra flags
+                        // once we have all our information loaded, get some extra flags
                     alGetBufferi(mBufferID, AL_SIZE, &bufferSize);
                     alGetBufferi(mBufferID, AL_FREQUENCY, &frequency);
                     alGetBufferi(mBufferID, AL_CHANNELS, &channels);    
                     alGetBufferi(mBufferID, AL_BITS, &bitsPerSample); 
+                    
                 } //!ok
             }
         }

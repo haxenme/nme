@@ -43,7 +43,11 @@ public:
       mPrimarySurface->Flip(mPrimarySurface, NULL, (DFBSurfaceFlipFlags)0);
    }
    
-   void SetViewport(const Rect &inRect) {}
+   void SetViewport(const Rect &inRect)
+   {
+      mBitmapRect = inRect;
+   }
+   
    void Clear(uint32 inColour,const Rect *inRect=0) {}
    void Flip() {}
    void DestroyNativeTexture(void *) {}
@@ -53,9 +57,33 @@ public:
    
    class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags);
    void Render(const RenderState &inState, const HardwareCalls &inCalls) {}
-   void BeginBitmapRender(Surface *inSurface,uint32 inTint, bool inRepeat, bool inSmooth) {}
-   void RenderBitmap(const Rect &inSrc, int inX, int inY) {}
-   void EndBitmapRender() {}
+   
+   void BeginBitmapRender(Surface *inSurface,uint32 inTint, bool inRepeat, bool inSmooth)
+   {
+      mBitmapSurface = inSurface;
+      mBitmapTint = inTint;
+      
+      mPrimarySurface->Lock(mPrimarySurface, DSLF_WRITE, (void **)&mPixels, &mPitch);
+   }
+   
+   void RenderBitmap(const Rect &inSrc, int inX, int inY)
+   {
+      const RenderTarget &target = RenderTarget(mBitmapRect, pfSwapRB, mPixels, mPitch);
+      mBitmapSurface->BlitTo(target, inSrc, inX, inY, bmTinted, 0, mBitmapTint);
+   }
+   
+   void EndBitmapRender()
+   {
+      mPrimarySurface->Unlock(mPrimarySurface);
+   }
+   
+private:
+   Rect mBitmapRect;
+   Surface *mBitmapSurface;
+   uint32 mBitmapTint;
+   uint8 *mPixels;
+   int mPitch;
+   
 };
 
 
