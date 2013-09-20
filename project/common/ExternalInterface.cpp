@@ -1043,7 +1043,7 @@ void nme_resize_frame(value inValue, value inWidth, value inHeight)
 {
 	int h = val_int(inHeight);
 	int w = val_int(inWidth);
-	printf("nme_resize_frame(%p,%d,%d)",inValue,w,h);
+	//printf("nme_resize_frame(%p,%d,%d)",inValue,w,h);
 	Frame *frame;
 	if (!AbstractToObject(inValue,frame)){
 		return;
