@@ -320,7 +320,9 @@ public:
 				{
 					SDL_SetWindowSize(mSDLWindow, sgWindowRect.w, sgWindowRect.h);
 				}
+				#ifndef HX_LINUX
 				SDL_SetWindowPosition(mSDLWindow, sgWindowRect.x, sgWindowRect.y);
+				#endif
 			}
 		}
 	}
@@ -953,7 +955,15 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 		}
 	}
 	
-	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? sgDesktopWidth : inWidth, fullscreen ? sgDesktopHeight : inHeight, windowFlags);
+	#ifdef HX_LINUX
+	int setWidth = inWidth;
+	int setHeight = inHeight;
+	#else
+	int setWidth = fullscreen ? sgDesktopWidth : inWidth;
+	int setHeight = fullscreen ? sgDesktopHeight : inHeight;
+	#endif
+	
+	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, setWidth, setWidth, windowFlags);
 	
 	if (!window) return;
 	windowFlags = SDL_GetWindowFlags (window);
