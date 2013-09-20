@@ -17,8 +17,7 @@ namespace nme
 
 static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
-static int sgWindowWidth = 0;
-static int sgWindowHeight = 0;
+static Rect sgWindowRect = Rect(0, 0, 0, 0);
 static bool sgInitCalled = false;
 static bool sgJoystickEnabled = false;
 static int  sgShaderFlags = 0;
@@ -301,7 +300,9 @@ public:
 			
 			if (mIsFullscreen)
 			{
-				SDL_GetWindowSize(mSDLWindow, &sgWindowWidth, &sgWindowHeight);
+				SDL_GetWindowPosition(mSDLWindow, &sgWindowRect.x, &sgWindowRect.y);
+				SDL_GetWindowSize(mSDLWindow, &sgWindowRect.w, &sgWindowRect.h);
+				
 				//SDL_SetWindowSize(mSDLWindow, sgDesktopWidth, sgDesktopHeight);
 				
 				SDL_DisplayMode mode;
@@ -309,25 +310,18 @@ public:
 				mode.w = sgDesktopWidth;
 				mode.h = sgDesktopHeight;
 				SDL_SetWindowDisplayMode(mSDLWindow, &mode);
-					
+				
 				SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
 			}
 			else
 			{
 				SDL_SetWindowFullscreen(mSDLWindow, 0);
-				if (sgWindowWidth && sgWindowHeight)
+				if (sgWindowRect.w && sgWindowRect.h)
 				{
-					SDL_SetWindowSize(mSDLWindow, sgWindowWidth, sgWindowHeight);
+					SDL_SetWindowSize(mSDLWindow, sgWindowRect.w, sgWindowRect.h);
 				}
+				SDL_SetWindowPosition(mSDLWindow, sgWindowRect.x, sgWindowRect.y);
 			}
-			
-			/*int width, height;
-			SDL_GetWindowSize(mSDLWindow, &width, &height);
-			printf("Size? %d x %d\n", width, height);
-			Resize(width, height);
-			
-			Event resize(etResize, width, height);
-			ProcessEvent(resize);*/
 		}
 	}
 	
@@ -545,11 +539,6 @@ public:
 	void ProcessEvent(Event &inEvent)
 	{
 		mStage->ProcessEvent(inEvent);
-		
-		if (inEvent.type == etQuit)
-		{
-			delete mStage;
-		}
 	}
 	
 	
@@ -891,9 +880,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	bool vsync = (inFlags & wfVSync) != 0;
 	
 	sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
-	
-	sgWindowWidth = inWidth;
-	sgWindowHeight = inHeight;
 
 	//Rect r(100,100,inWidth,inHeight);
 	
@@ -967,10 +953,16 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 		}
 	}
 	
-	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, inWidth, inHeight, windowFlags);
+	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? sgDesktopWidth : inWidth, fullscreen ? sgDesktopHeight : inHeight, windowFlags);
 	
 	if (!window) return;
 	windowFlags = SDL_GetWindowFlags (window);
+	
+	if (fullscreen) {
+		
+		sgWindowRect = Rect(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, inWidth, inHeight);
+		
+	}
 	
 	int renderFlags = 0;
 	
