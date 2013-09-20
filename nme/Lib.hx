@@ -194,11 +194,6 @@ class Lib
 
       nme_set_package(inCompany, inFile, inPack, inVersion);
    }
-
-	public static function resizeFrame(width:Int, height:Int):Void {
-		trace("nme.Lib.hx.resizeStage(" + width + "," + height + ")");
-		nme_resize_frame(nmeMainFrame, width, height);
-	}	
    
    // Getters & Setters
    static function get_current():MovieClip 
@@ -229,7 +224,6 @@ class Lib
    private static var nme_set_package = Loader.load("nme_set_package", 4);
    private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
    private static var nme_get_url = Loader.load("nme_get_url", 1);
-   private static var nme_resize_frame = Loader.load("nme_resize_frame", 3);
    private static var nme_pause_animation = Loader.load("nme_pause_animation", 0);
    private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
 }

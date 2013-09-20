@@ -1039,18 +1039,6 @@ value nme_get_frame_stage(value inValue)
 }
 DEFINE_PRIM(nme_get_frame_stage,1);
 
-void nme_resize_frame(value inValue, value inWidth, value inHeight)
-{
-	int h = val_int(inHeight);
-	int w = val_int(inWidth);
-	//printf("nme_resize_frame(%p,%d,%d)",inValue,w,h);
-	Frame *frame;
-	if (!AbstractToObject(inValue,frame)){
-		return;
-	}
-	frame->Resize(w,h);
-}
-DEFINE_PRIM(nme_resize_frame,3);
 
 AutoGCRoot *sOnCreateCallback = 0;
 
@@ -1211,6 +1199,20 @@ value nme_render_stage(value inStage)
 }
 
 DEFINE_PRIM(nme_render_stage,1);
+
+
+void nme_stage_resize(value inStage, value inWidth, value inHeight)
+{
+   #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
+   Stage *stage;
+   
+   if (AbstractToObject(inStage,stage))
+   {
+      stage->Resize(val_int(inHeight), val_int(inWidth));
+   }
+   #endif
+}
+DEFINE_PRIM(nme_stage_resize,3);
 
 
 value nme_stage_get_focus_id(value inValue)

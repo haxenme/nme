@@ -343,7 +343,7 @@ public:
 
    void Resize(int inWidth,int inHeight)
    {
-      #ifdef HX_WINDOWS
+      /*#ifdef HX_WINDOWS
       if (mIsOpenGL)
       {
          mSDLSurface = SDL_SetVideoMode(inWidth, inHeight, 32, mFlags);
@@ -353,7 +353,7 @@ public:
          mOpenGLContext->SetWindowSize(inWidth,inHeight);
       }
       else
-	  #endif
+	  #endif*/
       {
          // Calling this recreates the gl context and we loose all our textures and
          // display lists. So Work around it.
@@ -698,9 +698,9 @@ public:
    {
       mStage->ProcessEvent(inEvent);
    }
+   
    void Resize(int inWidth, int inHeight)
    {
-	  printf("SDLFrame.Resize(%d,%d)",inWidth,inHeight);
       mStage->Resize(inWidth,inHeight);
    }
 
