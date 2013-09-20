@@ -17,6 +17,8 @@ namespace nme
 
 static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
+static int sgWindowWidth = 0;
+static int sgWindowHeight = 0;
 static bool sgInitCalled = false;
 static bool sgJoystickEnabled = false;
 static int  sgShaderFlags = 0;
@@ -231,6 +233,7 @@ public:
 	
 	~SDLStage()
 	{
+		SDL_SetWindowFullscreen(mSDLWindow, 0);
 		if (!mIsOpenGL)
 		{
 			SDL_FreeSurface(mSoftwareSurface);
@@ -241,8 +244,8 @@ public:
 			mOpenGLContext->DecRef();
 		}
 		mPrimarySurface->DecRef();
-		//SDL_DestroyRenderer(mSDLRenderer);
-		//SDL_DestroyWindow(mSDLWindow);
+		SDL_DestroyRenderer(mSDLRenderer);
+		SDL_DestroyWindow(mSDLWindow);
 	}
 	
 	
@@ -285,11 +288,17 @@ public:
 			
 			if (mIsFullscreen)
 			{
-				SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN_DESKTOP /*SDL_WINDOW_FULLSCREEN*/);
+				SDL_GetWindowSize(mSDLWindow, &sgWindowWidth, &sgWindowHeight);
+				SDL_SetWindowSize(mSDLWindow, sgDesktopWidth, sgDesktopHeight);
+				SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
 			}
 			else
 			{
 				SDL_SetWindowFullscreen(mSDLWindow, 0);
+				if (sgWindowWidth && sgWindowHeight)
+				{
+					SDL_SetWindowSize(mSDLWindow, sgWindowWidth, sgWindowHeight);
+				}
 			}
 			
 			/*int width, height;
@@ -516,6 +525,11 @@ public:
 	void ProcessEvent(Event &inEvent)
 	{
 		mStage->ProcessEvent(inEvent);
+		
+		if (inEvent.type == etQuit)
+		{
+			delete mStage;
+		}
 	}
 	
 	
@@ -858,7 +872,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	
 	sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
 
-	Rect r(100,100,inWidth,inHeight);
+	//Rect r(100,100,inWidth,inHeight);
 	
 	int err = InitSDL();
 	if (err == -1)
@@ -902,7 +916,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	if (opengl) windowFlags |= SDL_WINDOW_OPENGL;
 	if (resizable) windowFlags |= SDL_WINDOW_RESIZABLE;
 	if (borderless) windowFlags |= SDL_WINDOW_BORDERLESS;
-	if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP; //SDL_WINDOW_FULLSCREEN;
+	if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN; //SDL_WINDOW_FULLSCREEN_DESKTOP;
 	
 	if (opengl)
 	{
@@ -930,7 +944,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 		}
 	}
 	
-	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? 0 : inWidth, fullscreen ? 0 : inHeight, windowFlags);
+	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? sgDesktopWidth : inWidth, fullscreen ? sgDesktopHeight : inHeight, windowFlags);
+	
+	if (fullscreen)
+	{
+		sgWindowWidth = inWidth;
+		sgWindowHeight = inHeight;
+	}
 	
 	if (!window) return;
 	
