@@ -69,7 +69,7 @@ class ManagedStage extends Stage
       nme_managed_stage_pump_event(nmeHandle, inEvent);
    }
 
-   public function resize(inWidth:Int, inHeight:Int) 
+   public override function resize(inWidth:Int, inHeight:Int) 
    {
       pumpEvent( { type: etResize, x: inWidth, y: inHeight } );
    }
