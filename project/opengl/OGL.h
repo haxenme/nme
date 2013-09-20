@@ -153,6 +153,16 @@ typedef void *GLCtx;
 #define GL_CLAMP_TO_EDGE 0x812F
 #endif
 
+#ifndef GL_POINT_SMOOTH
+#define GL_POINT_SMOOTH 0x0B10
+#endif
+
+#ifndef GL_LINE_SMOOTH
+#define GL_LINE_SMOOTH  0x0B20
+#endif
+
+
+
 #ifdef GPH
 #define NME_DITHER
 #endif
