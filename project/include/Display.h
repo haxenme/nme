@@ -538,6 +538,7 @@ public:
    virtual void SetTitle() = 0;
    virtual void SetIcon() = 0;
    virtual Stage *GetStage() = 0;
+   virtual void Resize(int inWidth, int inHeight) = 0;
 };
 
 enum WindowFlags
