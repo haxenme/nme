@@ -24,6 +24,9 @@
    <set name="glfw" value="1" if="NME_GLFW" />
    <set name="directfb" value="1" if="NME_DIRECTFB" />
    
+   <set name="sdl" value="1" if="rpi" unless="has_window" />
+   <set name="has_window" value="1" if="sdl" />
+   
    <set name="sdl2" value="1" if="win_desktop" unless="has_window" />
    <set name="sdl2" value="1" if="macos" unless="has_window" />
    <set name="sdl2" value="1" if="linux" unless="has_window" />
