@@ -963,7 +963,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	int setHeight = fullscreen ? sgDesktopHeight : inHeight;
 	#endif
 	
-	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, setWidth, setWidth, windowFlags);
+	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, setWidth, setHeight, windowFlags);
 	
 	if (!window) return;
 	windowFlags = SDL_GetWindowFlags (window);
