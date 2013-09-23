@@ -57,7 +57,7 @@ namespace nme
 	struct WAVE_Data
 	{
 		char subChunkID[4]; //should contain the word data
-		unsigned int subChunk2Size; //Stores the size of the data block
+		unsigned int subChunkSize; //Stores the size of the data block
 	};
 
 }
