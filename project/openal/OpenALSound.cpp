@@ -1,13 +1,13 @@
 
 #ifdef HX_MACOS
-        
-    #include <OpenAL/al.h>
-    #include <OpenAL/alc.h>
+   
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
 
 #else
 
-    #include <AL/al.h>
-    #include <AL/alc.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 
 #endif
 
@@ -15,8 +15,8 @@
 #include <QuickVec.h>
 #include <Utils.h>
 
-    //new audio api to handle loading
-    //sounds and streams from various formats.
+//new audio api to handle loading
+//sounds and streams from various formats.
 #include <Audio.h>
 
 
@@ -24,11 +24,11 @@ typedef unsigned char uint8;
 
 
 #define LOG_SOUND(args,...) printf(args)
-
 //#define LOG_SOUND(args...)  { }
 
 
-namespace nme {
+namespace nme
+{
     
     bool gSDLIsInit = false;
     
@@ -355,14 +355,14 @@ namespace nme {
                 bool ok = false; 
 
                     //Determine the file format before we try anything
-                AudioFormat type = Audio::determineAudioTypeFromFilename(std::string(fileURL));
+                AudioFormat type = Audio::determineAudioType(std::string(fileURL));
 
                 switch(type) {
                     case eAF_ogg:
-                        ok = Audio::loadOggData( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+                        ok = Audio::loadOggSample( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
                     break;
                     case eAF_wav:
-                        ok = Audio::loadWavData( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+                        ok = Audio::loadWavSample( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
                     break;
                     default:
                         LOG_SOUND("Error opening sound file, unsupported type.\n");
@@ -404,6 +404,70 @@ namespace nme {
                     alGetBufferi(mBufferID, AL_BITS, &bitsPerSample); 
                     
                 } //!ok
+            }
+        }
+        
+        OpenALSound(float *inData)
+        {
+            IncRef();
+            mBufferID = 0;
+            
+            QuickVec<uint8> buffer;
+            int _channels;
+            int _bitsPerSample;
+            ALenum  format;
+            ALsizei freq;
+            bool ok = false; 
+            
+            //Determine the file format before we try anything
+            AudioFormat type = Audio::determineAudioType(inData);
+            
+            switch(type) {
+                case eAF_ogg:
+                    ok = Audio::loadOggSample(inData, buffer, &_channels, &_bitsPerSample, &freq );
+                break;
+                case eAF_wav:
+                    ok = Audio::loadWavSample(inData, buffer, &_channels, &_bitsPerSample, &freq );
+                break;
+                default:
+                    LOG_SOUND("Error opening sound file, unsupported type.\n");
+            }
+
+                //Work out the format from the data
+            if (_channels == 1) {
+                if (_bitsPerSample == 8 ) {
+                    format = AL_FORMAT_MONO8;
+                } else if (_bitsPerSample == 16) {
+                    format = (int)AL_FORMAT_MONO16;
+                }
+            } else if (_channels == 2) {
+                if (_bitsPerSample == 8 ) {
+                    format = (int)AL_FORMAT_STEREO8;
+                } else if (_bitsPerSample == 16) {
+                    format = (int)AL_FORMAT_STEREO16;
+                }
+            } //channels = 2
+             
+            
+            if (!ok) {
+                LOG_SOUND("Error opening sound data\n");
+                mError = "Error opening sound data";
+            } else if (alGetError() != AL_NO_ERROR) {
+                LOG_SOUND("Error after opening sound data\n");
+                mError = "Error after opening sound data";  
+            } else {
+                    // grab a buffer ID from openAL
+                alGenBuffers(1, &mBufferID);
+                
+                    // load the awaiting data blob into the openAL buffer.
+                alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
+
+                    // once we have all our information loaded, get some extra flags
+                alGetBufferi(mBufferID, AL_SIZE, &bufferSize);
+                alGetBufferi(mBufferID, AL_FREQUENCY, &frequency);
+                alGetBufferi(mBufferID, AL_CHANNELS, &channels);    
+                alGetBufferi(mBufferID, AL_BITS, &bitsPerSample); 
+                
             }
         }
         
@@ -474,33 +538,22 @@ namespace nme {
     
     Sound *Sound::Create(const std::string &inFilename,bool inForceMusic) {
 
-            //Always check if openal is intitialized
+        //Always check if openal is intitialized
         if (!OpenALInit())
             return 0;
 
-            //Return a reference
+        //Return a reference
         return new OpenALSound(inFilename);
     }
     
     Sound *Sound::Create(float *inData, int len, bool inForceMusic)
     {
-        // Here we pick a Sound object based on either OpenAL or Apple's AVSoundPlayer
-        // depending on the inForceMusic flag.
-        //
-        // OpenAL has lower latency but can be expensive memory-wise when playing
-        // files more than a few seconds long, and it's not really needed anyways if there is
-        // no need to work with the uncompressed data.
-        //
-        // AVAudioPlayer has slightly higher latency and doesn't give access to uncompressed
-        // sound data, but uses "Apple's optimized pathways" and doesn't need to store
-        // uncompressed sound data in memory.
-        //
-        // By default the OpenAL implementation is picked, while AVAudioPlayer is used then
-        // inForceMusic is true.
-        
-        //LOG_SOUND("Sound.mm Create()");
-        //return new AVAudioPlayerSound(inData, len);
-		return NULL;
+        //Always check if openal is intitialized
+        if (!OpenALInit())
+            return 0;
+
+        //Return a reference
+        return new OpenALSound(inData);
     }
     
     
