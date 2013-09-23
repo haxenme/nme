@@ -26,13 +26,13 @@ namespace nme
 	
 	namespace Audio
 	{
-		AudioFormat determineAudioType(const float *inData);
-		AudioFormat determineAudioType(const std::string &filename);
+		AudioFormat determineFormatFromBytes(const float *inData, int len);
+		AudioFormat determineFormatFromFileName(const std::string &filename);
 		
-		bool loadOggSample(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
-		bool loadOggSample(const float *inData, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
-		bool loadWavSample(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
-		bool loadWavSample(const float *inData, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
+		bool loadOggSampleFromBytes(const float *inData, int len, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
+		bool loadOggSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
+		bool loadWavSampleFromBytes(const float *inData, int len, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
+		bool loadWavSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
 	}
 	
 	struct RIFF_Header

@@ -355,14 +355,14 @@ namespace nme
                 bool ok = false; 
 
                     //Determine the file format before we try anything
-                AudioFormat type = Audio::determineAudioType(std::string(fileURL));
+                AudioFormat type = Audio::determineFormatFromFileName(std::string(fileURL));
 
                 switch(type) {
                     case eAF_ogg:
-                        ok = Audio::loadOggSample( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+                        ok = Audio::loadOggSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
                     break;
                     case eAF_wav:
-                        ok = Audio::loadWavSample( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+                        ok = Audio::loadWavSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
                     break;
                     default:
                         LOG_SOUND("Error opening sound file, unsupported type.\n");
@@ -407,7 +407,7 @@ namespace nme
             }
         }
         
-        OpenALSound(float *inData)
+        OpenALSound(float *inData, int len)
         {
             IncRef();
             mBufferID = 0;
@@ -420,20 +420,20 @@ namespace nme
             bool ok = false; 
             
             //Determine the file format before we try anything
-            AudioFormat type = Audio::determineAudioType(inData);
+            AudioFormat type = Audio::determineFormatFromBytes(inData, len);
             
             switch(type) {
                 case eAF_ogg:
-                    ok = Audio::loadOggSample(inData, buffer, &_channels, &_bitsPerSample, &freq );
+                    ok = Audio::loadOggSampleFromBytes(inData, len, buffer, &_channels, &_bitsPerSample, &freq );
                 break;
                 case eAF_wav:
-                    ok = Audio::loadWavSample(inData, buffer, &_channels, &_bitsPerSample, &freq );
+                    ok = Audio::loadWavSampleFromBytes(inData, len, buffer, &_channels, &_bitsPerSample, &freq );
                 break;
                 default:
                     LOG_SOUND("Error opening sound file, unsupported type.\n");
             }
-
-                //Work out the format from the data
+            
+            //Work out the format from the data
             if (_channels == 1) {
                 if (_bitsPerSample == 8 ) {
                     format = AL_FORMAT_MONO8;
@@ -553,7 +553,7 @@ namespace nme
             return 0;
 
         //Return a reference
-        return new OpenALSound(inData);
+        return new OpenALSound(inData, len);
     }
     
     

@@ -16,6 +16,76 @@ namespace nme
 	namespace Audio
 	{
 		
+		typedef struct
+		{
+			unsigned char* data;
+			ogg_int64_t size;
+			ogg_int64_t pos;
+		} OAL_OggMemoryFile;
+		
+		
+		static size_t OAL_OggBufferRead(void* dest, size_t eltSize, size_t nelts, OAL_OggMemoryFile* src)
+		{
+			size_t len = eltSize * nelts;
+			if ( (src->pos + len) > src->size)
+			{
+				len = src->size - src->pos;
+			}
+			if (len > 0)
+			{
+				memcpy( dest, (src->data + src->pos), len);
+				src->pos += len;
+			}
+			return len;
+		}
+		
+		
+		static int OAL_OggBufferSeek(OAL_OggMemoryFile* src, ogg_int64_t pos, int whence)
+		{
+			switch (whence) {
+				case SEEK_CUR:
+					src->pos += pos;
+					break;
+				case SEEK_END:
+					src->pos = src->size - pos;
+					break;
+				case SEEK_SET:
+					src->pos = pos;
+					break;
+				default:
+					return -1;
+			}
+			if (src->pos < 0) {
+				src->pos = 0;
+				return -1;
+			}
+			if (src->pos > src->size) {
+				return -1;
+			}
+			return 0;
+		}
+		
+		
+		static int OAL_OggBufferClose(OAL_OggMemoryFile* src)
+		{
+			return 0;
+		}
+		
+		
+		static long OAL_OggBufferTell(OAL_OggMemoryFile *src)
+		{
+			return src->pos;
+		}
+		
+		
+		static ov_callbacks OAL_CALLBACKS_BUFFER = {
+			(size_t (*)(void *, size_t, size_t, void *))	OAL_OggBufferRead,
+			(int (*)(void *, ogg_int64_t, int))				OAL_OggBufferSeek,
+			(int (*)(void *))								OAL_OggBufferClose,
+			(long (*)(void *))								OAL_OggBufferTell
+		};
+		
+		
 		bool CompareBuffer(const char* apBuffer, const char* asMatch, size_t aSize)
 		{
 			for (int p= 0; p < aSize; ++p)
@@ -25,20 +95,6 @@ namespace nme
 			return true;
 		}
 		
-		AudioFormat determineAudioType(const float *inData)
-		{
-			const char* buff = (char*)inData;
-			int aSize = sizeof(buff);
-			if (aSize >= 35 && CompareBuffer(buff, "OggS", 4) && CompareBuffer(&buff[28], "\x01vorbis", 7))
-			{
-				return eAF_ogg;
-			}
-			if (aSize >= 12 && CompareBuffer(buff, "RIFF", 4) && CompareBuffer(&buff[8], "WAVE", 4))
-			{
-				return eAF_wav;
-			}
-			return eAF_unknown;
-		}
 		
 		std::string _get_extension(const std::string& _filename)
 		{
@@ -47,7 +103,23 @@ namespace nme
 			return "";
 		}
 		
-		AudioFormat determineAudioType(const std::string &filename)
+		
+		AudioFormat determineFormatFromBytes(const float *inData, int len)
+		{
+			const char* buff = (char*)inData;
+			if (len >= 35 && CompareBuffer(buff, "OggS", 4) && CompareBuffer(&buff[28], "\x01vorbis", 7))
+			{
+				return eAF_ogg;
+			}
+			if (len >= 12 && CompareBuffer(buff, "RIFF", 4) && CompareBuffer(&buff[8], "WAVE", 4))
+			{
+				return eAF_wav;
+			}
+			return eAF_unknown;
+		}
+		
+		
+		AudioFormat determineFormatFromFileName(const std::string &filename)
 		{
 			std::string extension = _get_extension(filename);
 			
@@ -59,7 +131,8 @@ namespace nme
 			return eAF_unknown;
 		}
 		
-		bool loadOggSample(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
+		
+		bool loadOggSample(OggVorbis_File &oggFile, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
 		{
 			// 0 for Little-Endian, 1 for Big-Endian
 			int endian = 0;
@@ -69,24 +142,9 @@ namespace nme
 			#define BUFFER_SIZE 32768
 			char array[BUFFER_SIZE]; 
 			
-			FILE *f;
-			
-			//Read the file data
-			f = fopen(inFileURL, "rb");
-			
-			if (!f)
-			{
-				LOG_SOUND("FAILED to read sound file, file pointer as null?\n");
-				return false;
-			}
-			
-			//vorbis data
-			vorbis_info *pInfo;
-			OggVorbis_File oggFile;
-			//Read the file data
-			ov_open(f, &oggFile, NULL, 0);
 			//Get the file information
-			pInfo = ov_info(&oggFile, -1);            
+			//vorbis data
+			vorbis_info *pInfo = ov_info(&oggFile, -1);            
 			//Make sure this is a valid file
 			if (pInfo == NULL)
 			{
@@ -116,12 +174,49 @@ namespace nme
 			return true;
 		}
 		
-		bool loadOggSample(const float *inData, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
+		
+		bool loadOggSampleFromBytes(const float *inData, int len, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
+		{
+			OAL_OggMemoryFile fakeFile = { (unsigned char*)inData, len, 0 };
+			OggVorbis_File ovFileHandle;
+			
+			if (ov_open_callbacks(&fakeFile, &ovFileHandle, NULL, 0, OAL_CALLBACKS_BUFFER) == 0)
+			{
+				return loadOggSample(ovFileHandle, outBuffer, channels, bitsPerSample, outSampleRate);
+			}
+			
+			return false;
+		}
+		
+		
+		bool loadOggSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
+		{
+			FILE *f;
+			
+			//Read the file data
+			f = fopen(inFileURL, "rb");
+			
+			if (!f)
+			{
+				LOG_SOUND("FAILED to read sound file, file pointer as null?\n");
+				return false;
+			}
+			
+			OggVorbis_File oggFile;
+			//Read the file data
+			ov_open(f, &oggFile, NULL, 0);
+			
+			return loadOggSample(oggFile, outBuffer, channels, bitsPerSample, outSampleRate);
+		}
+		
+		
+		bool loadWavSampleFromBytes(const float *inData, int len, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
 		{
 			return false;
 		}
 		
-		bool loadWavSample(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
+		
+		bool loadWavSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
 		{
 			//http://www.dunsanyinteractive.com/blogs/oliver/?p=72
 			
@@ -217,10 +312,6 @@ namespace nme
 			return true;
 		}
 		
-		bool loadWavSample(const float *inData, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
-		{
-			return false;
-		}
 		
 	}
 
