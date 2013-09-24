@@ -69,13 +69,13 @@ public:
       if (err)
          return false;
 
-		#ifndef GPH
+      #ifndef GPH
       if (mTransform & ffBold)
       {
          FT_GlyphSlot_Own_Bitmap(mFace->glyph);
          FT_Bitmap_Embolden(sgLibrary, &mFace->glyph->bitmap, 1<<6, 0);
       }
-		#endif
+      #endif
       return true;
    }
 
@@ -167,15 +167,15 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRo
    result = FT_New_Face(sgLibrary, inFace.c_str(), inIndex, outFace);
    if (*outFace==0)
    {
-	  ByteArray bytes;
-	  if (inBytes == 0)
-	  {
+     ByteArray bytes;
+     if (inBytes == 0)
+     {
          bytes = ByteArray::FromFile(inFace.c_str());
-	  }
-	  else
-	  {
+     }
+     else
+     {
          bytes = ByteArray(inBytes->get());
-	  }
+     }
       if (bytes.Ok())
       {
          int l = bytes.Size();
@@ -183,8 +183,8 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRo
          memcpy(buf,bytes.Bytes(),l);
          result = FT_New_Memory_Face(sgLibrary, buf, l, inIndex, outFace);
 
-			// The font owns the bytes here - so we just leak (fonts are not actually cleaned)
-			if (!*outFace)
+         // The font owns the bytes here - so we just leak (fonts are not actually cleaned)
+         if (!*outFace)
             free(buf);
       }
    }
@@ -237,23 +237,23 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
-	
-	std::string name = inName;
-	
-	if (!strcasecmp(inName.c_str(),"_serif")) {
-		
-		name = "georgia.ttf";
-		
-	} else if (!strcasecmp(inName.c_str(),"_sans")) {
-		
-		name = "arial.ttf";
-		
-	} else if (!strcasecmp(inName.c_str(),"_typewriter")) {
-		
-		name = "cour.ttf";
-		
-	}
-	
+   
+   std::string name = inName;
+   
+   if (!strcasecmp(inName.c_str(),"_serif")) {
+      
+      name = "georgia.ttf";
+      
+   } else if (!strcasecmp(inName.c_str(),"_sans")) {
+      
+      name = "arial.ttf";
+      
+   } else if (!strcasecmp(inName.c_str(),"_typewriter")) {
+      
+      name = "cour.ttf";
+      
+   }
+   
    _TCHAR win_path[2 * MAX_PATH];
    GetWindowsDirectory(win_path, 2*MAX_PATH);
    outFile = std::string(win_path) + "\\Fonts\\" + name;
@@ -304,53 +304,53 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
-	if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times")) {
-		
-		#if defined (ANDROID)
-			outFile = "/system/fonts/DroidSerif-Regular.ttf";
-		#elif defined (WEBOS)
-			outFile = "/usr/share/fonts/times.ttf";
+   if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times")) {
+      
+      #if defined (ANDROID)
+         outFile = "/system/fonts/DroidSerif-Regular.ttf";
+      #elif defined (WEBOS)
+         outFile = "/usr/share/fonts/times.ttf";
       #elif defined (BLACKBERRY)
          outFile = "/usr/fonts/font_repository/monotype/times.ttf";
-		#else
-			outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
-		#endif
-		
-	} else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"arial.ttf") || !strcasecmp(inName.c_str(),"arial")) {
-		
-		#if defined (ANDROID)
-			outFile = "/system/fonts/DroidSans.ttf";
-		#elif defined (WEBOS)
-			outFile = "/usr/share/fonts/Prelude-Medium.ttf";
+      #else
+         outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
+      #endif
+      
+   } else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"arial.ttf") || !strcasecmp(inName.c_str(),"arial")) {
+      
+      #if defined (ANDROID)
+         outFile = "/system/fonts/DroidSans.ttf";
+      #elif defined (WEBOS)
+         outFile = "/usr/share/fonts/Prelude-Medium.ttf";
       #elif defined (BLACKBERRY)
          outFile = "/usr/fonts/font_repository/monotype/arial.ttf";
-		#else
-			outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
-		#endif
-		
-	} else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf") || !strcasecmp(inName.c_str(),"courier")) {
-		
-		#if defined (ANDROID)
-			outFile = "/system/fonts/DroidSansMono.ttf";
-		#elif defined (WEBOS)
-			outFile = "/usr/share/fonts/cour.ttf";
+      #else
+         outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
+      #endif
+      
+   } else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf") || !strcasecmp(inName.c_str(),"courier")) {
+      
+      #if defined (ANDROID)
+         outFile = "/system/fonts/DroidSansMono.ttf";
+      #elif defined (WEBOS)
+         outFile = "/usr/share/fonts/cour.ttf";
       #elif defined (BLACKBERRY)
          outFile = "/usr/fonts/font_repository/monotype/cour.ttf";
-		#else
-			outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
-		#endif
-		
-	} else {
-		
-		#ifdef ANDROID
+      #else
+         outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
+      #endif
+      
+   } else {
+      
+      #ifdef ANDROID
        __android_log_print(ANDROID_LOG_INFO, "GetFontFile1", "Could not load font %s.",
           inName.c_str() );
        #endif
-		
+      
       //printf("Unfound font: %s\n",inName.c_str());
       return false;
-		
-	}
+      
+   }
 
    return true;
 }
@@ -390,7 +390,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
    if (fname.find(".") == std::string::npos && fname.find("_") == std::string::npos)
       fname += ".ttf";
    #endif
-	  
+     
    FT_Face font = OpenFont(fname,inFlags,inBytes);
 
    if (font==0 && fname.find("\\")==std::string::npos && fname.find("/")==std::string::npos)
@@ -406,7 +406,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
          // printf("Found font in %s\n", file_name.c_str());
          font = OpenFont(file_name.c_str(),inFlags,NULL);
 
-			// printf("Opened : %p\n", font);
+         // printf("Opened : %p\n", font);
       }
    }
 
@@ -679,21 +679,18 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
 
          if(glyph_index != 0 && FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0)
          {
-            if (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
+            glyph *g = new glyph;
+
+            result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
+            if(result == 0)
             {
-               glyph *g = new glyph;
-               
-               result = FT_Outline_Decompose(&((FT_OutlineGlyph)face->glyph)->outline, &ofn, g);
-               if(result == 0)
-               {
-                  g->index = glyph_index;
-                  g->char_code = char_code;
-                  g->metrics = face->glyph->metrics;
-                  glyphs.push_back(g);
-               }
-               else
-                  delete g;
+               g->index = glyph_index;
+               g->char_code = char_code;
+               g->metrics = face->glyph->metrics;
+               glyphs.push_back(g);
             }
+            else
+               delete g;
          }
       }
 
@@ -709,21 +706,18 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
       {
          if(FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0)
          {
-            if (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
+            glyph *g = new glyph;
+
+            result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
+            if(result == 0)
             {
-               glyph *g = new glyph;
-               
-               result = FT_Outline_Decompose(&((FT_OutlineGlyph)face->glyph)->outline, &ofn, g);
-               if(result == 0)
-               {
-                  g->index = glyph_index;
-                  g->char_code = char_code;
-                  g->metrics = face->glyph->metrics;
-                  glyphs.push_back(g);
-               }
-               else
-                  delete g;
+               g->index = glyph_index;
+               g->char_code = char_code;
+               g->metrics = face->glyph->metrics;
+               glyphs.push_back(g);
             }
+            else
+               delete g;
          }
          
          char_code = FT_Get_Next_Char(face, char_code, &glyph_index);  
@@ -952,6 +946,5 @@ value nme_font_iterate_device_fonts(value inFunc)
 }
 
 DEFINE_PRIM(nme_font_iterate_device_fonts,1)
-
 
 
