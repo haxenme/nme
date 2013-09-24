@@ -612,6 +612,7 @@ void AddModStates(int &ioFlags,int inState = -1)
 
 
 #define SDL_TRANS(x) case SDLK_##x: return key##x;
+#define SDL_TRANS_TO(x, y) case SDLK_##x: return key##y;
 
 
 int SDLKeyToFlash(int inKey,bool &outRight)
@@ -622,12 +623,9 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 		return inKey;
 	if (inKey>=SDLK_0 && inKey<=SDLK_9)
 		return inKey - SDLK_0 + keyNUMBER_0;
-	if (inKey>=SDLK_KP_0 && inKey<=SDLK_KP_9)
-		return inKey - SDLK_KP_0 + keyNUMPAD_0;
 	
-	if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
+	if (inKey>=SDLK_F1 && inKey<=SDLK_F12)
 		return inKey - SDLK_F1 + keyF1;
-	
 	
 	switch(inKey)
 	{
@@ -674,6 +672,26 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 		SDL_TRANS(SPACE)
 		SDL_TRANS(TAB)
 		SDL_TRANS(UP)
+		SDL_TRANS(F13)
+		SDL_TRANS(F14)
+		SDL_TRANS(F15)
+		SDL_TRANS_TO(KP_0, NUMPAD_0)
+		SDL_TRANS_TO(KP_1, NUMPAD_1)
+		SDL_TRANS_TO(KP_2, NUMPAD_2)
+		SDL_TRANS_TO(KP_3, NUMPAD_3)
+		SDL_TRANS_TO(KP_4, NUMPAD_4)
+		SDL_TRANS_TO(KP_5, NUMPAD_5)
+		SDL_TRANS_TO(KP_6, NUMPAD_6)
+		SDL_TRANS_TO(KP_7, NUMPAD_7)
+		SDL_TRANS_TO(KP_8, NUMPAD_8)
+		SDL_TRANS_TO(KP_9, NUMPAD_9)
+		SDL_TRANS_TO(KP_PLUS, NUMPAD_ADD)
+		SDL_TRANS_TO(KP_DECIMAL, NUMPAD_DECIMAL)
+		SDL_TRANS_TO(KP_PERIOD, NUMPAD_DECIMAL)
+		SDL_TRANS_TO(KP_DIVIDE, NUMPAD_DIVIDE)
+		//SDL_TRANS_TO(KP_ENTER, NUMPAD_ENTER)
+		SDL_TRANS_TO(KP_MULTIPLY, NUMPAD_MULTIPLY)
+		SDL_TRANS_TO(KP_MINUS, NUMPAD_SUBTRACT)
 	}
 
 	return inKey;

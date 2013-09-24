@@ -4,6 +4,19 @@
 #include <QuickVec.h>
 #include <Utils.h>
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
+
+#ifdef ANDROID
+#define LOG_SOUND(args,...) ELOG(args)
+#else
+#define LOG_SOUND(args,...) printf(args)
+#endif
+//#define LOG_SOUND(args...)  { }
+
+
 namespace nme
 {
 	class AudioSample
