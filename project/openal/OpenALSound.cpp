@@ -363,7 +363,7 @@ namespace nme
                 bool ok = false; 
 
                     //Determine the file format before we try anything
-                AudioFormat type = Audio::determineFormatFromFileName(std::string(fileURL));
+                AudioFormat type = Audio::determineFormatFromFile(std::string(fileURL));
 
                 switch(type) {
                     case eAF_ogg:

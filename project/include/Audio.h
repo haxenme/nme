@@ -27,7 +27,7 @@ namespace nme
 	namespace Audio
 	{
 		AudioFormat determineFormatFromBytes(const float *inData, int len);
-		AudioFormat determineFormatFromFileName(const std::string &filename);
+		AudioFormat determineFormatFromFile(const std::string &filename);
 		
 		bool loadOggSampleFromBytes(const float *inData, int len, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
 		bool loadOggSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);

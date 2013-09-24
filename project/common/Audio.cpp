@@ -152,7 +152,7 @@ namespace nme
 		}
 		
 		
-		AudioFormat determineFormatFromFileName(const std::string &filename)
+		AudioFormat determineFormatFromFile(const std::string &filename)
 		{
 			std::string extension = _get_extension(filename);
 			
@@ -161,7 +161,24 @@ namespace nme
 			else if( extension.compare("wav") == 0)
 				return eAF_wav;
 			
-			return eAF_unknown;
+			AudioFormat format = eAF_unknown;
+			FILE *f = fopen(filename.c_str(), "rb");
+			int len = 35;
+			char *bytes = (char*)calloc(len + 1, sizeof(char));
+			
+			if (f)
+			{
+				if (fread(bytes, 1, len, f))
+				{
+					fclose(f);
+					format = determineFormatFromBytes((float*)bytes, len);
+				}
+				
+				fclose(f);
+			}
+			
+			delete bytes;
+			return format;
 		}
 		
 		
