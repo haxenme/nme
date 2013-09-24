@@ -30,6 +30,7 @@
 #include <NMEThread.h>
 
 
+
 #ifdef min
 #undef min
 #undef max

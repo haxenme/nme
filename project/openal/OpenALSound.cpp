@@ -19,11 +19,19 @@
 //sounds and streams from various formats.
 #include <Audio.h>
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 
 typedef unsigned char uint8;
 
 
+#ifdef ANDROID
+#define LOG_SOUND(args,...) ELOG(args)
+#else
 #define LOG_SOUND(args,...) printf(args)
+#endif
 //#define LOG_SOUND(args...)  { }
 
 
