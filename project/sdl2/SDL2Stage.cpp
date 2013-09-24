@@ -828,7 +828,7 @@ void ProcessEvent(SDL_Event &inEvent)
 			Event key(inEvent.type == SDL_KEYDOWN ? etKeyDown : etKeyUp );
 			bool right;
 			key.value = SDLKeyToFlash(inEvent.key.keysym.sym, right);
-			if (inEvent.type == SDL_KEYDOWN)
+			/*if (inEvent.type == SDL_KEYDOWN)
 			{
 				//key.code = key.value==keyBACKSPACE ? keyBACKSPACE : inEvent.key.keysym.unicode;
 				key.code = inEvent.key.keysym.scancode;
@@ -837,7 +837,8 @@ void ProcessEvent(SDL_Event &inEvent)
 			else
 				// SDL does not provide unicode on key up, so remember it,
 				//  keyed by scancode
-				key.code = sLastUnicode[inEvent.key.keysym.scancode];
+				key.code = sLastUnicode[inEvent.key.keysym.scancode];*/
+			key.code = 0;
 			
 			AddModStates(key.flags, inEvent.key.keysym.mod);
 			if (right)
