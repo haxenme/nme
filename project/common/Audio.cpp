@@ -4,13 +4,21 @@
 #include <iostream>
 #include <vorbis/vorbisfile.h>
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 //The audio interface is to embed functions which are to be implemented in 
 //the platform specific layers. 
 
 namespace nme
 {
 	
+	#ifdef ANDROID
+	#define LOG_SOUND(args,...) ELOG(args)
+	#else
 	#define LOG_SOUND(args,...) printf(args)
+	#endif
 	//#define LOG_SOUND(args...)  { }
 	
 	namespace Audio

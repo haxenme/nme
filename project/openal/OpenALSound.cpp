@@ -544,14 +544,19 @@ namespace nme
     };
     
     
-    Sound *Sound::Create(const std::string &inFilename,bool inForceMusic) {
-
+    Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
+    {
         //Always check if openal is intitialized
         if (!OpenALInit())
             return 0;
-
+        
         //Return a reference
+        #ifdef ANDROID
+        ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
+        return new OpenALSound((float*)bytes.Bytes(), bytes.Size());
+        #else
         return new OpenALSound(inFilename);
+        #endif
     }
     
     Sound *Sound::Create(float *inData, int len, bool inForceMusic)
