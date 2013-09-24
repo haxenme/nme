@@ -75,7 +75,7 @@ namespace nme
     {
         enum { STEREO_SAMPLES = 2 };
     public:
-        OpenALChannel(Object *inSound,unsigned int inBufferID,
+        OpenALChannel(Object *inSound, unsigned int inBufferID, int startTime,
                       int inLoops, const SoundTransform &inTransform)
         {
             //LOG_SOUND("OpenALChannel constructor %d",inBufferID);
@@ -87,6 +87,8 @@ namespace nme
             mDynamicBuffer[1] = 0;
             mDynamicStackSize = 0;
             mSampleBuffer = 0;
+            float seek = 0;
+            int size = 0;
             
             if (inBufferID>0)
             {
@@ -103,7 +105,27 @@ namespace nme
                 if (inLoops>1)
                     alSourcei(mSourceID, AL_LOOPING, AL_TRUE);
                 
-                alSourcePlay(mSourceID);
+                if (startTime > 0)
+                {
+                    ALint bits, channels, freq;
+                    alGetBufferi(inBufferID, AL_SIZE, &size);
+                    alGetBufferi(inBufferID, AL_BITS, &bits);
+                    alGetBufferi(inBufferID, AL_CHANNELS, &channels);
+                    alGetBufferi(inBufferID, AL_FREQUENCY, &freq);
+                    int length = (ALfloat)((ALuint)size/channels/(bits/8)) / (ALfloat)freq;
+                    seek = (startTime * 0.001) / length;
+                }
+                
+                if (seek < 1)
+                {
+                    alSourcePlay(mSourceID);
+                }
+                
+                if (seek > 0 && seek < 1)
+                {
+                    // TODO: Do we need to call this before playing?
+                    alSourcei(mSourceID, AL_BYTE_OFFSET, seek * size);
+                }
             }
         }
         
@@ -252,7 +274,7 @@ namespace nme
             // got this hint from
             // http://www.gamedev.net/topic/410696-openal-how-to-query-if-a-source-sound-is-playing-solved/
             ALint state;
-            alGetSourcei(mSourceID,AL_SOURCE_STATE,&state);
+            alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
             /*
              Possible values of state
              AL_INITIAL
@@ -277,7 +299,7 @@ namespace nme
             float panX=0;
             float panY=0;
             float panZ=0;
-            alGetSource3f(mSourceID,AL_POSITION,&panX,&panY,&panZ);
+            alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
             return (1-panX)/2;
         }
         
@@ -286,7 +308,7 @@ namespace nme
             float panX=0;
             float panY=0;
             float panZ=0;
-            alGetSource3f(mSourceID,AL_POSITION,&panX,&panY,&panZ);
+            alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
             return (panX+1)/2;
         }
         
@@ -294,11 +316,12 @@ namespace nme
             alSourcef(mSourceID,AL_SEC_OFFSET,inFloat);
             return inFloat;
         }
-        double getPosition()  
+        
+        double getPosition() 
         {
             float pos = 0;
-            alGetSourcef(mSourceID,AL_SEC_OFFSET,&pos);
-            return pos*1000;
+            alGetSourcef(mSourceID, AL_SEC_OFFSET, &pos);
+            return pos * 1000.0;
         }
         
         void setTransform(const SoundTransform &inTransform)
@@ -309,6 +332,13 @@ namespace nme
         
         void stop()
         {
+            ALint state;
+            alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
+            
+            if (state == AL_PLAYING)
+            {
+                alSourceStop(mSourceID);
+            }
         }
         
         
@@ -531,7 +561,7 @@ namespace nme
         SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
         {
             //LOG_SOUND("OpenALSound openChannel()"); 
-            return new OpenALChannel(this,mBufferID,loops,inTransform);
+            return new OpenALChannel(this, mBufferID, startTime, loops, inTransform);
         }
         
         ALint bufferSize;
