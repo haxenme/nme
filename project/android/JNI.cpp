@@ -355,7 +355,6 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
    if (inType.isUnknownType())
    {
       jclass cls = inEnv->GetObjectClass(inObject);
-      CheckException(inEnv,true);
       if (cls)
       { 
 
