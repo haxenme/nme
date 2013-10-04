@@ -491,6 +491,7 @@ public:
       //Window pointer locking
    virtual void ConstrainCursorToWindowFrame(bool inLock) { };
    virtual void SetCursorPositionInWindow(int inX, int inY) { };
+   virtual void SetStageWindowPosition(int inX, int inY) { };
 
 };
 

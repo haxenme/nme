@@ -1318,6 +1318,19 @@ value nme_stage_set_cursor_position_in_window( value inStage, value inX, value i
 }
 DEFINE_PRIM(nme_stage_set_cursor_position_in_window,3);
 
+value nme_stage_set_window_position( value inStage, value inX, value inY ) {
+
+    Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      int x = val_int(inX);
+      int y = val_int(inY);      
+      stage->SetStageWindowPosition(x,y);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_set_window_position,3);
+
 
 value nme_stage_get_orientation() {
 
@@ -4092,6 +4105,43 @@ value nme_lzma_decode(value input_value)
 }
 DEFINE_PRIM(nme_lzma_decode,1);
 
+
+value nme_file_dialog_folder(value in_title, value in_text )
+{ 
+    std::string _title( val_string( in_title ) );
+    std::string _text( val_string( in_text ) );
+
+    std::string path = FileDialogFolder( _title, _text );
+
+    return alloc_string( path.c_str() );
+}
+DEFINE_PRIM(nme_file_dialog_folder,2);
+
+value nme_file_dialog_open(value in_title, value in_text, value in_types )
+{ 
+    std::string _title( val_string( in_title ) );
+    std::string _text( val_string( in_text ) );
+
+    value *_types = val_array_value( in_types );
+
+    std::string path = FileDialogOpen( _title, _text, std::vector<std::string>() );
+
+    return alloc_string( path.c_str() );
+}
+DEFINE_PRIM(nme_file_dialog_open,3);
+
+value nme_file_dialog_save(value in_title, value in_text, value in_types )
+{ 
+    std::string _title( val_string( in_title ) );
+    std::string _text( val_string( in_text ) );
+
+    value *_types = val_array_value( in_types );
+
+    std::string path = FileDialogSave( _title, _text, std::vector<std::string>() );
+
+    return alloc_string( path.c_str() );
+}
+DEFINE_PRIM(nme_file_dialog_save,3);
 
 // Reference this to bring in all the symbols for the static library
 #ifdef STATIC_LINK
