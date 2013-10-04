@@ -91,24 +91,43 @@ void TextField::setWidth(double inWidth)
 
 double TextField::getWidth()
 {
-   if (autoSize != asNone)
+   /*if (autoSize != asNone)
    {
       if (mLinesDirty)
          Layout();
       return textWidth;
    }
-   return boundsWidth;
+   return boundsWidth;*/
+   Transform trans;
+   trans.mMatrix = &GetLocalMatrix();
+   Extent2DF ext;
+   GetExtent(trans,ext,false,true);
+
+   if (!ext.Valid())
+   {
+      return 0;
+   }
+
+   return ext.Width();
 }
 
 double TextField::getHeight()
 {
-   if (autoSize != asNone)
+   /*if (autoSize != asNone)
    {
       if (mLinesDirty)
          Layout();
       return textHeight;
    }
-   return boundsHeight;
+   return boundsHeight;*/
+   Transform trans;
+   trans.mMatrix = &GetLocalMatrix();
+   Extent2DF ext;
+   GetExtent(trans,ext,false,true);
+   if (!ext.Valid())
+      return 0;
+
+   return ext.Height();
 }
  
 
