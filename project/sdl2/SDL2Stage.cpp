@@ -816,7 +816,7 @@ void ProcessEvent(SDL_Event &inEvent)
 				//fetch the mouse position
 			SDL_GetMouseState(&_x,&_y);
 				//create the event
-			Event mouse(etMouseDown, _x, _y, event_dir);
+			Event mouse(etMouseUp, _x, _y, event_dir);
 				//add flags for modifier keys
 			AddModStates(mouse.flags);
 				//and done.
