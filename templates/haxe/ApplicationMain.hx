@@ -42,6 +42,27 @@ class ApplicationMain
 		});
 		#else
 		
+		#if ios	
+		nme.display.Stage.shouldRotateInterface = function(orientation:Int):Bool
+		{
+			::if (WIN_ORIENTATION == "portrait")::
+			if (orientation == nme.display.Stage.OrientationPortrait || orientation == nme.display.Stage.OrientationPortraitUpsideDown)
+			{
+				return true;
+			}
+			return false;
+			::elseif (WIN_ORIENTATION == "landscape")::
+			if (orientation == nme.display.Stage.OrientationLandscapeLeft || orientation == nme.display.Stage.OrientationLandscapeRight)
+			{
+				return true;
+			}
+			return false;
+			::else::
+			return true;
+			::end::
+		}
+		#end
+		
 		nme.Lib.create(function()
 			{ 
 				//if ((::WIN_WIDTH:: == 0 && ::WIN_HEIGHT:: == 0) || ::WIN_FULLSCREEN::)
