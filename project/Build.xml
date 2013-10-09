@@ -120,12 +120,15 @@
    <files id="linux">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-Iopenal" if="openal" />
+      <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
       <compilerflag value="-DSDL_OGL" if="sdl"/>
       <file name="linux/NativeFont.cpp"/>
       <file name="linux/System.cpp"/>
       <file name="empty/URL.cpp" if="nocurl" />
-      <file name="empty/Sound.cpp" unless="sdl" />
+      <file name="empty/Sound.cpp" if="noopenal" />
       <!-- <file name="empty/HardwareContext.cpp" unless="has_window" /> -->
+      <file name="openal/OpenALSound.cpp" if="openal" />
       
    </files>
    
@@ -488,6 +491,7 @@
       <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
       <!-- <lib name="${THIRDPARTY_LIBS}libSDL2main${name_extra}${SLIBEXT}" if="windows" unless="sdl" /> -->
       <!-- <lib name="${THIRDPARTY_LIBS}libopenal${name_extra}${SLIBEXT}" if="android" unless="noopenal"/> -->
+      <lib name="${THIRDPARTY_LIBS}libopenal${name_extra}${SLIBEXT}" if="linux" unless="noopenal"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
@@ -501,6 +505,7 @@
       <lib name="${THIRDPARTY_LIBS}libglfw3${name_extra}${SLIBEXT}" if="glfw"/>
       
       <lib name="-L${THIRDPARTY_LIBS}" if="linux"/>
+      <!-- <lib name="-lopenal" if="linux" unless="noopenal" /> -->
       
       <lib name="-L${THIRDPARTY_LIBS}" if="webos"/>
       <lib name="-L../ndll/BlackBerry" if="blackberry"/>

@@ -156,6 +156,8 @@ namespace nme
 				return eAF_ogg;
 			else if( extension.compare("wav") == 0)
 				return eAF_wav;
+			else if (extension.compare("mp3") == 0)
+				return eAF_mp3;
 			
 			AudioFormat format = eAF_unknown;
 			FILE *f = fopen(filename.c_str(), "rb");
