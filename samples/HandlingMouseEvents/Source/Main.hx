@@ -1,4 +1,4 @@
-import com.eclecticdesignstudio.motion.Actuate;
+import motion.Actuate;
 import nme.display.Bitmap;
 import nme.display.Sprite;
 import nme.events.MouseEvent;

@@ -1,5 +1,5 @@
-import com.eclecticdesignstudio.motion.Actuate;
-import com.eclecticdesignstudio.motion.easing.Quad;
+import motion.Actuate;
+import motion.easing.Quad;
 import nme.display.Sprite;
 import nme.events.Event;
 import nme.Lib;

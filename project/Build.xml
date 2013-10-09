@@ -505,6 +505,7 @@
       <lib name="${THIRDPARTY_LIBS}libglfw3${name_extra}${SLIBEXT}" if="glfw"/>
       
       <lib name="-L${THIRDPARTY_LIBS}" if="linux"/>
+      <lib name="-lrt" if="linux" unless="noopenal" />
       <!-- <lib name="-lopenal" if="linux" unless="noopenal" /> -->
       
       <lib name="-L${THIRDPARTY_LIBS}" if="webos"/>
