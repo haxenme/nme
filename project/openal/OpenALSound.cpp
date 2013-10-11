@@ -46,13 +46,9 @@ namespace nme
          
          if (seek < 1)
          {
+            alSourceQueueBuffers(mSourceID, 1, (ALuint*)inBufferID);
             alSourcePlay(mSourceID);
-         }
-         
-         if (seek > 0 && seek < 1)
-         {
-            // TODO: Do we need to call this before playing?
-            alSourcei(mSourceID, AL_BYTE_OFFSET, seek * size);
+            alSourcef(mSourceID, AL_BYTE_OFFSET, seek * size);
          }
       }
    }
@@ -533,5 +529,33 @@ namespace nme
       return new OpenALSound(inData, len);
    }
    #endif
+   
+   
+   void Sound::Suspend()
+   {
+      //Always check if openal is intitialized
+      if (!OpenALInit())
+         return;
+      
+      //LOG_SOUND("SUSPEND AUDIO\n");
+      
+      //ALCcontext* mContext = alcGetCurrentContext();
+      alcMakeContextCurrent(0);
+      alcSuspendContext(sgContext);
+   }
+   
+   
+   void Sound::Resume()
+   {
+      //Always check if openal is intitialized
+      if (!OpenALInit())
+         return;
+      
+      //LOG_SOUND("RESUME AUDIO\n");
+      
+      //ALCcontext* mContext = alcGetCurrentContext();
+      alcMakeContextCurrent(sgContext);
+      alcProcessContext(sgContext);
+   }
    
 } // end namespace nme

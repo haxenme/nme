@@ -10,13 +10,13 @@
 
 
 #ifdef ANDROID
-#define LOG_SOUND(args,...) ELOG(args)
+#define LOG_SOUND(args,...) ELOG(args, ##__VA_ARGS__)
 #else
 #ifdef IPHONE
 //#define LOG_SOUND(args,...) printf(args, ##__VA_ARGS__)
 #define LOG_SOUND(args...) { }
 #else
-#define LOG_SOUND(args,...) printf(args)
+#define LOG_SOUND(args,...) printf(args, ##__VA_ARGS__)
 #endif
 #endif
 //#define LOG_SOUND(args...)  { }

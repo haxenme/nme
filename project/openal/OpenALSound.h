@@ -25,15 +25,15 @@ namespace nme
 
 static ALCdevice  *sgDevice = 0;
 static ALCcontext *sgContext = 0;
+static bool openal_is_init = false;
 
 static bool OpenALInit()
 {
    //LOG_SOUND("Sound.mm OpenALInit()");
    
-   static bool is_init = false;
-   if (!is_init)
+   if (!openal_is_init)
    {
-      is_init = true;
+      openal_is_init = true;
       sgDevice = alcOpenDevice(0); // select the "preferred device"
       if (sgDevice)
       {
