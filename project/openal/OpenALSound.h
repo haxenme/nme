@@ -28,7 +28,7 @@ class OpenALChannel;
 
 static ALCdevice  *sgDevice = 0;
 static ALCcontext *sgContext = 0;
-static QuickVec<unsigned int> sgOpenChannels;
+static QuickVec<intptr_t> sgOpenChannels;
 
 static bool openal_is_init = false;
 
@@ -45,7 +45,7 @@ static bool OpenALInit()
          sgContext=alcCreateContext(sgDevice,0);
          alcMakeContextCurrent(sgContext);
       }
-      sgOpenChannels = QuickVec<unsigned int>();
+      sgOpenChannels = QuickVec<intptr_t>();
    }
    return sgContext;
 }
@@ -54,7 +54,7 @@ static bool OpenALInit()
 class OpenALChannel : public SoundChannel
 {
 public:
-   OpenALChannel(Object *inSound, unsigned int inBufferID, int startTime, int inLoops, const SoundTransform &inTransform);
+   OpenALChannel(Object *inSound, ALuint inBufferID, int startTime, int inLoops, const SoundTransform &inTransform);
    OpenALChannel(const ByteArray &inBytes,const SoundTransform &inTransform);
    void QueueBuffer(ALuint inBuffer, const ByteArray &inBytes);
    void unqueueBuffers();
@@ -73,7 +73,7 @@ public:
 protected:
    ~OpenALChannel();
    Object *mSound;
-   unsigned int mSourceID;
+   ALuint mSourceID;
    short  *mSampleBuffer;
    bool   mDynamicDone;
    ALuint mDynamicStackSize;
@@ -106,7 +106,7 @@ protected:
    ALint bitsPerSample;
    ALint channels;
 
-   unsigned int mBufferID;
+   ALuint mBufferID;
    std::string mError;
         
 };

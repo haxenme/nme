@@ -4,7 +4,7 @@
 namespace nme
 {  
    
-   OpenALChannel::OpenALChannel(Object *inSound, unsigned int inBufferID, int startTime, int inLoops, const SoundTransform &inTransform)
+   OpenALChannel::OpenALChannel(Object *inSound, ALuint inBufferID, int startTime, int inLoops, const SoundTransform &inTransform)
    {
       //LOG_SOUND("OpenALChannel constructor %d",inBufferID);
       mSound = inSound;
@@ -47,13 +47,13 @@ namespace nme
          
          if (seek < 1)
          {
-            alSourceQueueBuffers(mSourceID, 1, (ALuint*)inBufferID);
+            alSourceQueueBuffers(mSourceID, 1, &inBufferID);
             alSourcePlay(mSourceID);
             alSourcef(mSourceID, AL_BYTE_OFFSET, seek * size);
          }
          
          mWasPlaying = true;
-         sgOpenChannels.push_back((unsigned int)this);
+         sgOpenChannels.push_back((intptr_t)this);
       }
    }
    
@@ -95,7 +95,7 @@ namespace nme
          alSourcePlay(mSourceID);
       }
       
-      //sgOpenChannels.push_back((unsigned int)this);
+      //sgOpenChannels.push_back((intptr_t)this);
    }
    
    
@@ -194,7 +194,7 @@ namespace nme
       
       for (int i = 0; i < sgOpenChannels.size(); i++)
       {
-         if (sgOpenChannels[i] == (unsigned int)this)
+         if (sgOpenChannels[i] == (intptr_t)this)
          {
             sgOpenChannels.erase (i, 1);
             break;
