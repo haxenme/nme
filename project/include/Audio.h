@@ -12,7 +12,12 @@
 #ifdef ANDROID
 #define LOG_SOUND(args,...) ELOG(args)
 #else
+#ifdef IPHONE
+//#define LOG_SOUND(args,...) printf(args, ##__VA_ARGS__)
+#define LOG_SOUND(args...) { }
+#else
 #define LOG_SOUND(args,...) printf(args)
+#endif
 #endif
 //#define LOG_SOUND(args...)  { }
 

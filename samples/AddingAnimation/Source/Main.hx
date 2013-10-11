@@ -1,5 +1,5 @@
-import com.eclecticdesignstudio.motion.easing.Elastic;
-import com.eclecticdesignstudio.motion.Actuate;
+import motion.easing.Elastic;
+import motion.Actuate;
 import nme.display.Bitmap;
 import nme.display.Sprite;
 import nme.Assets;

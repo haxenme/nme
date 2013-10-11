@@ -61,6 +61,7 @@
    
    <set name="openal" value="1" if="NME_OPENAL" />
    <set name="openal" value="1" if="android" />
+   <set name="openal" value="1" if="iphone" />
    <set name="has_sound" value="1" if="sdl" />
    <set name="has_sound" value="1" if="openal" />
    <set name="openal" value="1" if="sdl2" unless="has_sound" />
@@ -84,6 +85,7 @@
       <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" />
       <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
       <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
+      <compilerflag value="-Iopenal"/>
       <file name="windows/GDIFont.cpp"/>
       <file name="windows/System.cpp" />
       <!-- Use SDL on windows too ? -->
@@ -118,12 +120,15 @@
    <files id="linux">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-Iopenal" if="openal" />
+      <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
       <compilerflag value="-DSDL_OGL" if="sdl"/>
       <file name="linux/NativeFont.cpp"/>
       <file name="linux/System.cpp"/>
       <file name="empty/URL.cpp" if="nocurl" />
-      <file name="empty/Sound.cpp" unless="sdl" />
+      <file name="empty/Sound.cpp" if="noopenal" />
       <!-- <file name="empty/HardwareContext.cpp" unless="has_window" /> -->
+      <file name="openal/OpenALSound.cpp" if="openal" />
       
    </files>
    
@@ -145,10 +150,12 @@
    <files id="iphone">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-Iopenal"/>
       <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <file name="iPhone/UIStageView.mm"/>
       <file name="iPhone/UIDeviceHardware.mm"/>
       <!-- <file name="iPhone/SurfaceIO.mm"/> -->
+      <file name="openal/OpenALSound.cpp" />
       <file name="iPhone/Sound.mm"/>
       <file name="iPhone/NativeFont.mm"/>
       <file name="iPhone/System.mm"/>
@@ -161,6 +168,7 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
+      <compilerflag value="-Iopenal"/>
       <file name="android/AndroidCommon.cpp" />
       <file name="android/AndroidSound.cpp" unless="openal"/>
       <file name="android/AndroidFont.cpp"/>
@@ -424,6 +432,7 @@
       <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" />
       <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
       <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
+      <compilerflag value="-Iopenal"/>
       <file name="mac/NSFont.cpp"/>
       <file name="mac/MacBoot.m" />
       <file name="empty/URL.cpp" if="nocurl" />
@@ -482,6 +491,7 @@
       <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
       <!-- <lib name="${THIRDPARTY_LIBS}libSDL2main${name_extra}${SLIBEXT}" if="windows" unless="sdl" /> -->
       <!-- <lib name="${THIRDPARTY_LIBS}libopenal${name_extra}${SLIBEXT}" if="android" unless="noopenal"/> -->
+      <lib name="${THIRDPARTY_LIBS}libopenal${name_extra}${SLIBEXT}" if="linux" unless="noopenal"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
@@ -495,6 +505,8 @@
       <lib name="${THIRDPARTY_LIBS}libglfw3${name_extra}${SLIBEXT}" if="glfw"/>
       
       <lib name="-L${THIRDPARTY_LIBS}" if="linux"/>
+      <lib name="-lrt" if="linux" unless="noopenal" />
+      <!-- <lib name="-lopenal" if="linux" unless="noopenal" /> -->
       
       <lib name="-L${THIRDPARTY_LIBS}" if="webos"/>
       <lib name="-L../ndll/BlackBerry" if="blackberry"/>
