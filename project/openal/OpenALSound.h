@@ -23,8 +23,13 @@ namespace nme
 {
 
 
+class OpenALChannel;
+
+
 static ALCdevice  *sgDevice = 0;
 static ALCcontext *sgContext = 0;
+static QuickVec<unsigned int> sgOpenChannels;
+
 static bool openal_is_init = false;
 
 static bool OpenALInit()
@@ -40,6 +45,7 @@ static bool OpenALInit()
          sgContext=alcCreateContext(sgDevice,0);
          alcMakeContextCurrent(sgContext);
       }
+      sgOpenChannels = QuickVec<unsigned int>();
    }
    return sgContext;
 }
@@ -61,6 +67,8 @@ public:
    double getPosition();
    void setTransform(const SoundTransform &inTransform);
    void stop();
+   void pause();
+   void resume();
    
 protected:
    ~OpenALChannel();
@@ -72,6 +80,7 @@ protected:
    ALuint mDynamicStack[2];
    ALuint mDynamicBuffer[2];
    enum { STEREO_SAMPLES = 2 };
+   bool mWasPlaying;
    
 };
 
