@@ -121,6 +121,7 @@
       
       <compilerflag value="-Iinclude"/>
       <compilerflag value="-Iopenal" if="openal" />
+      <compilerflag value="-I${NME_DEV}/include" />
       <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
       <compilerflag value="-DSDL_OGL" if="sdl"/>
       <file name="linux/NativeFont.cpp"/>
