@@ -276,20 +276,18 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 
 #ifdef IPHONEOS
 #define FONT_BASE "/System/Library/Fonts/Cache/"
-#define TIMES_ROMAN "TimesNewRoman.ttf"
 #else
 #define FONT_BASE "/Library/Fonts/"
-#define TIMES_ROMAN "Times New Roman.ttf"
 #endif
 
    if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
-      outFile = FONT_BASE TIMES_ROMAN;
+      outFile = FONT_BASE "Georgia.ttf";
    else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"helvetica.ttf"))
-      outFile = FONT_BASE "Arial.ttf"; // Helvetica.dfont does not render
+      outFile = FONT_BASE "Arial Black.ttf"; // Helvetica.dfont does not render
    else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf"))
-      outFile = FONT_BASE "Courier.ttf";
+      outFile = FONT_BASE "Courier New.ttf";
    else if (!strcasecmp(inName.c_str(),"arial.ttf"))
-      outFile = FONT_BASE "Arial.ttf";
+      outFile = FONT_BASE "Arial Black.ttf";
    else
    {
       outFile = FONT_BASE + inName;

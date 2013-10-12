@@ -1208,14 +1208,12 @@ value nme_stage_resize_window(value inStage, value inWidth, value inHeight)
 {
    #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
    Stage *stage;
-   
    if (AbstractToObject(inStage,stage))
    {
       stage->ResizeWindow(val_int(inHeight), val_int(inWidth));
    }
-   
-   return alloc_null();
    #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_stage_resize_window,3);
 
@@ -1293,23 +1291,20 @@ value nme_stage_show_cursor(value inStage,value inShow)
 }
 DEFINE_PRIM(nme_stage_show_cursor,2);
 
-value nme_stage_constrain_cursor_to_window_frame(value inStage, value inLock) {
-
-
+value nme_stage_constrain_cursor_to_window_frame(value inStage, value inLock)
+{
     Stage *stage;
-  
     if (AbstractToObject(inStage,stage)) {       
         bool lock = val_bool(inLock);
         stage->ConstrainCursorToWindowFrame( lock );
-    } 
-
+    }
     return alloc_null();
 }
 DEFINE_PRIM(nme_stage_constrain_cursor_to_window_frame,2);
 
-value nme_stage_set_cursor_position_in_window( value inStage, value inX, value inY ) {
-
-    Stage *stage;
+value nme_stage_set_cursor_position_in_window( value inStage, value inX, value inY )
+{
+   Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
       int x = val_int(inX);
