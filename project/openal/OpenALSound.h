@@ -23,23 +23,29 @@ namespace nme
 {
 
 
+class OpenALChannel;
+
+
 static ALCdevice  *sgDevice = 0;
 static ALCcontext *sgContext = 0;
+static QuickVec<intptr_t> sgOpenChannels;
+
+static bool openal_is_init = false;
 
 static bool OpenALInit()
 {
    //LOG_SOUND("Sound.mm OpenALInit()");
    
-   static bool is_init = false;
-   if (!is_init)
+   if (!openal_is_init)
    {
-      is_init = true;
+      openal_is_init = true;
       sgDevice = alcOpenDevice(0); // select the "preferred device"
       if (sgDevice)
       {
          sgContext=alcCreateContext(sgDevice,0);
          alcMakeContextCurrent(sgContext);
       }
+      sgOpenChannels = QuickVec<intptr_t>();
    }
    return sgContext;
 }
@@ -48,7 +54,7 @@ static bool OpenALInit()
 class OpenALChannel : public SoundChannel
 {
 public:
-   OpenALChannel(Object *inSound, unsigned int inBufferID, int startTime, int inLoops, const SoundTransform &inTransform);
+   OpenALChannel(Object *inSound, ALuint inBufferID, int startTime, int inLoops, const SoundTransform &inTransform);
    OpenALChannel(const ByteArray &inBytes,const SoundTransform &inTransform);
    void QueueBuffer(ALuint inBuffer, const ByteArray &inBytes);
    void unqueueBuffers();
@@ -61,17 +67,20 @@ public:
    double getPosition();
    void setTransform(const SoundTransform &inTransform);
    void stop();
+   void pause();
+   void resume();
    
 protected:
    ~OpenALChannel();
    Object *mSound;
-   unsigned int mSourceID;
+   ALuint mSourceID;
    short  *mSampleBuffer;
    bool   mDynamicDone;
    ALuint mDynamicStackSize;
    ALuint mDynamicStack[2];
    ALuint mDynamicBuffer[2];
    enum { STEREO_SAMPLES = 2 };
+   bool mWasPlaying;
    
 };
 
@@ -97,7 +106,7 @@ protected:
    ALint bitsPerSample;
    ALint channels;
 
-   unsigned int mBufferID;
+   ALuint mBufferID;
    std::string mError;
         
 };

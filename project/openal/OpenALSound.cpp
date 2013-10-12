@@ -2,9 +2,9 @@
 
 
 namespace nme
-{
+{  
    
-   OpenALChannel::OpenALChannel(Object *inSound, unsigned int inBufferID, int startTime, int inLoops, const SoundTransform &inTransform)
+   OpenALChannel::OpenALChannel(Object *inSound, ALuint inBufferID, int startTime, int inLoops, const SoundTransform &inTransform)
    {
       //LOG_SOUND("OpenALChannel constructor %d",inBufferID);
       mSound = inSound;
@@ -14,6 +14,7 @@ namespace nme
       mDynamicBuffer[0] = 0;
       mDynamicBuffer[1] = 0;
       mDynamicStackSize = 0;
+      mWasPlaying = false;
       mSampleBuffer = 0;
       float seek = 0;
       int size = 0;
@@ -21,7 +22,7 @@ namespace nme
       if (inBufferID>0)
       {
          // grab a source ID from openAL
-         alGenSources(1, &mSourceID); 
+         alGenSources(1, &mSourceID);
          
          // attach the buffer to the source
          alSourcei(mSourceID, AL_BUFFER, inBufferID);
@@ -46,14 +47,13 @@ namespace nme
          
          if (seek < 1)
          {
+            //alSourceQueueBuffers(mSourceID, 1, &inBufferID);
             alSourcePlay(mSourceID);
+            alSourcef(mSourceID, AL_BYTE_OFFSET, seek * size);
          }
          
-         if (seek > 0 && seek < 1)
-         {
-            // TODO: Do we need to call this before playing?
-            alSourcei(mSourceID, AL_BYTE_OFFSET, seek * size);
-         }
+         mWasPlaying = true;
+         sgOpenChannels.push_back((intptr_t)this);
       }
    }
    
@@ -68,6 +68,7 @@ namespace nme
       mDynamicBuffer[1] = 0;
       mDynamicStackSize = 0;
       mSampleBuffer = 0;
+      mWasPlaying = true;
       
       alGenBuffers(2, mDynamicBuffer);
       if (!mDynamicBuffer[0])
@@ -93,6 +94,8 @@ namespace nme
          
          alSourcePlay(mSourceID);
       }
+      
+      //sgOpenChannels.push_back((intptr_t)this);
    }
    
    
@@ -188,6 +191,15 @@ namespace nme
       delete [] mSampleBuffer;
       if (mSound)
          mSound->DecRef();
+      
+      for (int i = 0; i < sgOpenChannels.size(); i++)
+      {
+         if (sgOpenChannels[i] == (intptr_t)this)
+         {
+            sgOpenChannels.erase (i, 1);
+            break;
+         }
+      }
    }
    
    
@@ -274,7 +286,35 @@ namespace nme
       
       if (state == AL_PLAYING)
       {
+         mWasPlaying = true;
          alSourceStop(mSourceID);
+      }
+      
+      mWasPlaying = false;
+   }
+   
+   
+   void OpenALChannel::pause()
+   {
+      ALint state;
+      alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
+      
+      if (state == AL_PLAYING)
+      {
+         alSourcePause(mSourceID);
+         mWasPlaying = true;
+         return;
+      }
+      
+      mWasPlaying = false;
+   }
+   
+   
+   void OpenALChannel::resume()
+   {
+      if (mWasPlaying)
+      {
+         alSourcePlay(mSourceID);
       }
    }
    
@@ -533,5 +573,47 @@ namespace nme
       return new OpenALSound(inData, len);
    }
    #endif
+   
+   
+   void Sound::Suspend()
+   {
+      //Always check if openal is initialized
+      if (!OpenALInit())
+         return;
+      
+      OpenALChannel* channel = 0;
+      for (int i = 0; i < sgOpenChannels.size(); i++)
+      {
+         channel = (OpenALChannel*)(sgOpenChannels[i]);
+         if (channel)
+         {
+            channel->pause();
+         }
+      }
+      
+      alcMakeContextCurrent(0);
+      alcSuspendContext(sgContext);
+   }
+   
+   
+   void Sound::Resume()
+   {
+      //Always check if openal is initialized
+      if (!OpenALInit())
+         return;
+      
+      alcMakeContextCurrent(sgContext);
+      alcProcessContext(sgContext);
+      
+      OpenALChannel* channel = 0;
+      for (int i = 0; i < sgOpenChannels.size(); i++)
+      {
+         channel = (OpenALChannel*)(sgOpenChannels[i]);
+         if (channel)
+         {
+            channel->resume();
+         }
+      }
+   }
    
 } // end namespace nme

@@ -5,6 +5,7 @@
 #include <Utils.h>
 #include <jni.h>
 #include <ByteArray.h>
+#include <Sound.h>
 
 #include <android/log.h>
 #include "AndroidCommon.h"
@@ -85,6 +86,14 @@ public:
       {
          Event evt( inVal==1 ? etActivate : etDeactivate );
          HandleEvent(evt);
+         if (inVal == 1)
+         {
+            Sound::Resume();
+         }
+         else
+         {
+            Sound::Suspend();
+         }
       }
    }
  

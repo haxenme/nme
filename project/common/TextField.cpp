@@ -1024,6 +1024,25 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
             }
             else if (el->ValueTStr()==L"p")
             {
+               if (ioCharCount > 0)
+               {
+                  if (mCharGroups.size())
+                  {
+                     CharGroup &last = *mCharGroups[ mCharGroups.size()-1 ];
+                     last.mString.push_back('\n');
+                     ioCharCount++;
+                  }
+                  else
+                  {
+                     CharGroup *chars = new CharGroup;
+                     chars->mFormat = inFormat->IncRef();
+                     chars->mFont = 0;
+                     chars->mFontHeight = 0;
+                     chars->mString.push_back('\n');
+                     ioCharCount++;
+                     mCharGroups.push_back(chars);
+                  }
+               }
             }
 
             for (const TiXmlAttribute *att = el->FirstAttribute(); att; att = att->Next())

@@ -41,6 +41,8 @@ class Sound : public Object
 public:
    static Sound *Create(const std::string &inFilename, bool inForceMusic);
    static Sound *Create(float *inData, int len, bool inForceMusic);
+   static void Suspend();
+   static void Resume();
 
    virtual void getID3Value(const std::string &inKey, std::string &outValue)
    {
