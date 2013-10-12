@@ -22,7 +22,7 @@ namespace nme
       if (inBufferID>0)
       {
          // grab a source ID from openAL
-         alGenSources(1, &mSourceID); 
+         alGenSources(1, &mSourceID);
          
          // attach the buffer to the source
          alSourcei(mSourceID, AL_BUFFER, inBufferID);
@@ -47,7 +47,7 @@ namespace nme
          
          if (seek < 1)
          {
-            alSourceQueueBuffers(mSourceID, 1, &inBufferID);
+            //alSourceQueueBuffers(mSourceID, 1, &inBufferID);
             alSourcePlay(mSourceID);
             alSourcef(mSourceID, AL_BYTE_OFFSET, seek * size);
          }
