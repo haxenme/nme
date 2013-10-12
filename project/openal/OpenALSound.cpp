@@ -24,15 +24,26 @@ namespace nme
          // grab a source ID from openAL
          alGenSources(1, &mSourceID);
          
-         // attach the buffer to the source
-         alSourcei(mSourceID, AL_BUFFER, inBufferID);
+         if (inLoops < 1)
+         {
+            // attach the buffer to the source
+            alSourcei(mSourceID, AL_BUFFER, inBufferID);
+         }
+         else
+         {
+            for (int i = 0; i <= inLoops; i++)
+            {
+               alSourceQueueBuffers(mSourceID, 1, &inBufferID);
+            }
+         }
+         
          // set some basic source prefs
          alSourcef(mSourceID, AL_PITCH, 1.0f);
          alSourcef(mSourceID, AL_GAIN, inTransform.volume);
          alSource3f(mSourceID, AL_POSITION, inTransform.pan * 1, 0, 0);
          // TODO: not right!
-         if (inLoops>1)
-            alSourcei(mSourceID, AL_LOOPING, AL_TRUE);
+         //if (inLoops>1)
+            //alSourcei(mSourceID, AL_LOOPING, AL_TRUE);
          
          if (startTime > 0)
          {
