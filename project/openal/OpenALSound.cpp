@@ -615,5 +615,190 @@ namespace nme
          }
       }
    }
+
+
+//Ogg Audio Stream implementation
+   void AudioStream_Ogg::open( const std::string &path ) {
+
+        int result;
+
+        if(!(oggFile = fopen(path.c_str(), "rb"))) {
+            throw std::string("Could not open Ogg file.");
+        }
+
+        if((result = ov_open(oggFile, &oggStream, NULL, 0)) < 0) {
+
+            fclose(oggFile);
+
+            throw std::string("Could not open Ogg stream. ") + errorString(result);
+        }
+
+        vorbisInfo = ov_info(&oggStream, -1);
+        vorbisComment = ov_comment(&oggStream, -1);
+
+        if(vorbisInfo->channels == 1) {
+            format = AL_FORMAT_MONO16;
+        } else {
+            format = AL_FORMAT_STEREO16;
+        }
+        
+        alGenBuffers(2, buffers);
+        check();
+        alGenSources(1, &source);
+        check();
+
+        alSource3f(source, AL_POSITION,        0.0, 0.0, 0.0);
+        alSource3f(source, AL_VELOCITY,        0.0, 0.0, 0.0);
+        alSource3f(source, AL_DIRECTION,       0.0, 0.0, 0.0);
+        alSourcef (source, AL_ROLLOFF_FACTOR,  0.0          );
+        alSourcei (source, AL_SOURCE_RELATIVE, AL_TRUE      );
+
+   } //open
+
+   void AudioStream_Ogg::release() {
+       
+       alSourceStop(source);
+       empty();
+       alDeleteSources(1, &source);
+       check();
+       alDeleteBuffers(1, buffers);
+       check();
+
+       ov_clear(&oggStream);
+
+   } //release
+      
+   bool AudioStream_Ogg::playback() {
+
+       if(playing()) {
+           return true;
+      }
+           
+       if(!stream(buffers[0])) {
+           return false;
+      }
+           
+       if(!stream(buffers[1])) {
+           return false;
+      }
+       
+       alSourceQueueBuffers(source, 2, buffers);
+       alSourcePlay(source);
+    
+      return true;
+
+   } //playback
+   
+   bool AudioStream_Ogg::playing() {
+
+       ALenum state;
+       
+       alGetSourcei(source, AL_SOURCE_STATE, &state);
+       
+       return (state == AL_PLAYING);
+
+   } //playing
+   
+   bool AudioStream_Ogg::update() {
+
+       int processed;
+       bool active = true;
+
+       alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
+
+       while(processed--) {
+
+           ALuint buffer;
+           
+           alSourceUnqueueBuffers(source, 1, &buffer);
+           check();
+
+           active = stream(buffer);
+
+           alSourceQueueBuffers(source, 1, &buffer);
+           check();
+       }
+
+       return active;
+
+   } //update
+   
+   bool AudioStream_Ogg::stream( ALuint buffer ) {
+
+       char pcm[STREAM_BUFFER_SIZE];
+       int  size = 0;
+       int  section;
+       int  result;
+
+       while(size < STREAM_BUFFER_SIZE) {
+
+           result = ov_read(&oggStream, pcm + size, STREAM_BUFFER_SIZE - size, 0, 2, 1, &section);
+       
+           if(result > 0)
+               size += result;
+           else
+               if(result < 0)
+                   throw errorString(result);
+               else
+                   break;
+       }
+       
+       if(size == 0) {
+           return false;
+      }
+           
+       alBufferData(buffer, format, pcm, size, vorbisInfo->rate);
+       check();
+       
+       return true;
+
+   } //stream
+
+    void AudioStream_Ogg::empty() {
+
+      int queued;
+    
+      alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
+    
+       while(queued--) {
+           ALuint buffer;
+       
+           alSourceUnqueueBuffers(source, 1, &buffer);
+           check();
+       }
+
+    } //empty
+
+    void AudioStream_Ogg::check() {
+      int error = alGetError();
+
+      if(error != AL_NO_ERROR) {
+         //todo : print meaningful errors instead
+         throw std::string("OpenAL error was raised.");
+      }
+
+    } //check
+
+   std::string AudioStream_Ogg::errorString(int code) {
+
+       switch(code) {
+
+           case OV_EREAD:
+               return std::string("Read from media.");
+           case OV_ENOTVORBIS:
+               return std::string("Not Vorbis data.");
+           case OV_EVERSION:
+               return std::string("Vorbis version mismatch.");
+           case OV_EBADHEADER:
+               return std::string("Invalid Vorbis header.");
+           case OV_EFAULT:
+               return std::string("Internal logic fault (bug or heap/stack corruption.");
+           default:
+               return std::string("Unknown Ogg error.");
+
+       } //switch
+
+   } //errorString
+
    
 } // end namespace nme
