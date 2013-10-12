@@ -151,6 +151,7 @@
    <files id="iphone">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I${NME_DEV}/include"/>
       <compilerflag value="-Iopenal"/>
       <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <file name="iPhone/UIStageView.mm"/>
@@ -168,6 +169,7 @@
    <files id="android">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I${NME_DEV}/include"/>
       <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
       <compilerflag value="-Iopenal"/>
       <file name="android/AndroidCommon.cpp" />
