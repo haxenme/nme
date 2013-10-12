@@ -387,7 +387,7 @@ public:
          }
          else
          {
-            printf("UIStageView :: Not creating depth/stencil buffers. \n");
+            printf("UIStageView :: No depth/stencil buffer requested. \n");
          }
          
          //printf("Create OGL window %dx%d\n", backingWidth, backingHeight);

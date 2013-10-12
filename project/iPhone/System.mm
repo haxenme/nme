@@ -109,4 +109,8 @@ const std::string &GetResourcePath()
 }
 
 
+	std::string FileDialogFolder( const std::string &title, const std::string &text ) { return ""; }
+	std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { return ""; }
+	std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { return ""; }
+
 }
