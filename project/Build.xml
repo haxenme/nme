@@ -588,6 +588,7 @@
       <lib name="ws2_32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="wldap32.lib" if="win_desktop"/>
       <lib name="shell32.lib" if="win_desktop"/>
+      <lib name="comdlg32.lib" if="win_desktop"/>
       <lib name="-ldl" if="linux"/>
       <lib name="-lGL" if="linux" unless="rpi"/>
       <lib name="-lpthread" if="linux"/>

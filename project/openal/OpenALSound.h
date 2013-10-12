@@ -15,6 +15,7 @@
 #include <Utils.h>
 #include <Audio.h>
 
+#include <vorbis/vorbisfile.h>
 
 typedef unsigned char uint8;
 
