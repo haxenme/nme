@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 namespace nme {
 	
