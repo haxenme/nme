@@ -295,8 +295,7 @@ namespace nme
    {
       if (mStream)
       {
-         // TODO: Need getRight() for stream
-         return 0;
+         return mStream->getLeft();
       }
       else
       {
@@ -313,8 +312,7 @@ namespace nme
    {
       if (mStream)
       {
-         // TODO: Need getRight() for stream
-         return 0;
+         return mStream->getRight();
       }
       else
       {
@@ -331,8 +329,7 @@ namespace nme
    {
       if (mStream)
       {
-         // TODO: Need setPosition() for stream
-         return 0;
+         return mStream->setPosition(inFloat);
       }
       else
       {
@@ -346,8 +343,7 @@ namespace nme
    {
       if (mStream)
       {
-         // TODO: Need getPosition() for stream
-         return 0;
+         return mStream->getPosition();
       }
       else
       {
@@ -610,10 +606,17 @@ namespace nme
    
    double OpenALSound::getLength()
    {
-      double result = ((double)bufferSize) / (frequency * channels * (bitsPerSample/8) );
-
-      //LOG_SOUND("OpenALSound getLength returning %f", toBeReturned);
-      return result;
+      if (mIsStream)
+      {
+         return 100;
+      }
+      else
+      {
+         double result = ((double)bufferSize) / (frequency * channels * (bitsPerSample/8) );
+         
+         //LOG_SOUND("OpenALSound getLength returning %f", toBeReturned);
+         return result;
+      }
    }
    
    
@@ -667,7 +670,7 @@ namespace nme
       if (mIsStream)
       {
          AudioStream_Ogg *oggStream = new AudioStream_Ogg();
-         oggStream->open(mStreamPath, loops);
+         oggStream->open(mStreamPath, startTime, loops);
          
          return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
       }
@@ -750,9 +753,10 @@ namespace nme
    
    
    //Ogg Audio Stream implementation
-   void AudioStream_Ogg::open( const std::string &path, int inLoops) {
+   void AudioStream_Ogg::open( const std::string &path, int startTime, int inLoops) {
 
         int result;
+        mStartTime = startTime;
         mLoops = inLoops;
 
         if(!(oggFile = fopen(path.c_str(), "rb"))) {
@@ -773,6 +777,12 @@ namespace nme
             format = AL_FORMAT_MONO16;
         } else {
             format = AL_FORMAT_STEREO16;
+        }
+        
+        if (startTime != 0)
+        {
+          double seek = startTime * 0.001;
+          ov_time_seek(&oggStream, seek);
         }
         
         alGenBuffers(2, buffers);
@@ -852,6 +862,14 @@ namespace nme
        
        if (active && !playing())
          alSourcePlay(source);
+       
+       if (!active && mLoops > 0)
+       {
+         mLoops --;
+         double seek = mStartTime * 0.001;
+         ov_time_seek(&oggStream, seek);
+         active = true;
+       }
 
        return active;
 
@@ -957,15 +975,15 @@ namespace nme
    
    double AudioStream_Ogg::setPosition(const float &inFloat)
    {
-      alSourcef(source,AL_SEC_OFFSET,inFloat);
+      double seek = inFloat * 0.001;
+      ov_time_seek(&oggStream, seek);
       return inFloat;
    }
    
    
    double AudioStream_Ogg::getPosition() 
-   {
-      float pos = 0;
-      alGetSourcef(source, AL_SEC_OFFSET, &pos);
+   { 
+      double pos = ov_time_tell(&oggStream);
       return pos * 1000.0;
    }
    

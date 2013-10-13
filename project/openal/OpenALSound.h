@@ -58,7 +58,7 @@ class OpenALChannel;
        
        public:
 
-           void open(const std::string &path, int inLoops);
+           void open(const std::string &path, int startTime, int inLoops);
            void release();
            bool playback();
            bool playing();
@@ -88,6 +88,7 @@ class OpenALChannel;
            ALenum format;
            
            int mLoops;
+           int mStartTime;
    };
 
 
