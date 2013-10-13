@@ -86,7 +86,7 @@ namespace nme
       
       mStream = inStream;
       
-      //mStream->update();
+      mStream->update();
       mStream->playback();
       
       mWasPlaying = true;
@@ -249,6 +249,8 @@ namespace nme
       if (mStream)
       {
          bool active = mStream->update();
+         bool playing = mStream->playing();
+         if (!playing) printf("NOT PLAYING\n");
          //return !(mStream->playing());
          //if (!active) printf("DONE!\n");
          //if (active) printf("UPDATE\n");
@@ -787,6 +789,9 @@ namespace nme
            alSourceQueueBuffers(source, 1, &buffer);
            check();
        }
+       
+       if (active && !playing())
+         alSourcePlay(source);
 
        return active;
 
