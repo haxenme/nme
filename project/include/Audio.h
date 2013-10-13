@@ -2,6 +2,7 @@
 #define AUDIO_H
 
 #include <QuickVec.h>
+#include <Sound.h>
 #include <Utils.h>
 
 #ifdef ANDROID
@@ -37,6 +38,7 @@ namespace nme
 		virtual bool playback() = 0;
         virtual bool playing() = 0;
 		virtual bool update() = 0;
+		virtual void setTransform(const SoundTransform &inTransform) = 0;
 		
 	};
 	

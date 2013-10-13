@@ -63,6 +63,7 @@ class OpenALChannel;
            bool playback();
            bool playing();
            bool update();
+           void setTransform(const SoundTransform &inTransform);
 
        protected:
 

@@ -292,82 +292,142 @@ namespace nme
    
    
    double OpenALChannel::getLeft()  
-   { 
-      float panX=0;
-      float panY=0;
-      float panZ=0;
-      alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
-      return (1-panX)/2;
+   {
+      if (mStream)
+      {
+         // TODO: Need getRight() for stream
+         return 0;
+      }
+      else
+      {
+         float panX=0;
+         float panY=0;
+         float panZ=0;
+         alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
+         return (1-panX)/2;
+      }
    }
    
    
    double OpenALChannel::getRight()   
    {
-      float panX=0;
-      float panY=0;
-      float panZ=0;
-      alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
-      return (panX+1)/2;
+      if (mStream)
+      {
+         // TODO: Need getRight() for stream
+         return 0;
+      }
+      else
+      {
+         float panX=0;
+         float panY=0;
+         float panZ=0;
+         alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
+         return (panX+1)/2;
+      }
    }
    
    
-   double OpenALChannel::setPosition(const float &inFloat)  {
-      alSourcef(mSourceID,AL_SEC_OFFSET,inFloat);
-      return inFloat;
+   double OpenALChannel::setPosition(const float &inFloat)
+   {
+      if (mStream)
+      {
+         // TODO: Need setPosition() for stream
+         return 0;
+      }
+      else
+      {
+         alSourcef(mSourceID,AL_SEC_OFFSET,inFloat);
+         return inFloat;
+      }
    }
    
    
    double OpenALChannel::getPosition() 
    {
-      float pos = 0;
-      alGetSourcef(mSourceID, AL_SEC_OFFSET, &pos);
-      return pos * 1000.0;
+      if (mStream)
+      {
+         // TODO: Need getPosition() for stream
+         return 0;
+      }
+      else
+      {
+         float pos = 0;
+         alGetSourcef(mSourceID, AL_SEC_OFFSET, &pos);
+         return pos * 1000.0;
+      }
    }
    
    
    void OpenALChannel::setTransform(const SoundTransform &inTransform)
    {
-      alSourcef(mSourceID, AL_GAIN, inTransform.volume);
-      alSource3f(mSourceID, AL_POSITION, inTransform.pan * 1, 0, 0);
+      if (mStream)
+      {
+         mStream->setTransform(inTransform);
+      }
+      else
+      {
+         alSourcef(mSourceID, AL_GAIN, inTransform.volume);
+         alSource3f(mSourceID, AL_POSITION, inTransform.pan * 1, 0, 0);
+      }
    }
    
    
    void OpenALChannel::stop()
    {
-      ALint state;
-      alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
-      
-      if (state == AL_PLAYING)
+      if (mStream)
       {
-         mWasPlaying = true;
-         alSourceStop(mSourceID);
+         mStream->release();
+         delete mStream;
+         mStream = 0;
       }
-      
-      mWasPlaying = false;
+      else
+      {
+         ALint state;
+         alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
+         
+         if (state == AL_PLAYING)
+         {
+            alSourceStop(mSourceID);
+         }
+      }
    }
    
    
    void OpenALChannel::pause()
    {
-      ALint state;
-      alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
-      
-      if (state == AL_PLAYING)
+      if (mStream)
       {
-         alSourcePause(mSourceID);
-         mWasPlaying = true;
-         return;
+         // TODO: Need suspend/resume for stream sound
       }
-      
-      mWasPlaying = false;
+      else 
+      {
+         ALint state;
+         alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
+         
+         if (state == AL_PLAYING)
+         {
+            alSourcePause(mSourceID);
+            mWasPlaying = true;
+            return;
+         }
+         
+         mWasPlaying = false;
+      }
    }
    
    
    void OpenALChannel::resume()
    {
-      if (mWasPlaying)
+      if (mStream)
       {
-         alSourcePlay(mSourceID);
+         // TODO: Need suspend/resume for stream sound
+      }
+      else
+      {
+         if (mWasPlaying)
+         {
+            alSourcePlay(mSourceID);
+         }
       }
    }
    
@@ -873,6 +933,13 @@ namespace nme
        } //switch
 
    } //errorString
+   
+   
+   void AudioStream_Ogg::setTransform(const SoundTransform &inTransform)
+   {
+      alSourcef(source, AL_GAIN, inTransform.volume);
+      alSource3f(source, AL_POSITION, inTransform.pan * 1, 0, 0);
+   }
 
    
 }
