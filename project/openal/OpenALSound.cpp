@@ -248,14 +248,8 @@ namespace nme
    {
       if (mStream)
       {
-         bool active = mStream->update();
-         bool playing = mStream->playing();
-         if (!playing) printf("NOT PLAYING\n");
-         //return !(mStream->playing());
-         //if (!active) printf("DONE!\n");
-         //if (active) printf("UPDATE\n");
-         return !active;
-         //return !(mStream->update());
+         mStream->update();
+         return !(mStream->playing());
       }
       
       if (!mSourceID)
@@ -441,7 +435,7 @@ namespace nme
    {
       IncRef();
       mBufferID = 0;
-      mIsStream = inForceMusic;
+      mIsStream = false;
       
       #ifdef HX_MACOS
       char fileURL[1024];
@@ -475,12 +469,16 @@ namespace nme
          switch(type) {
             case eAF_ogg:
                if (inForceMusic)
+               {
+                  mIsStream = true;
                   mStreamPath = fileURL;
+               }
                else
+               {
                   ok = Audio::loadOggSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+               }
             break;
             case eAF_wav:
-               mIsStream = false;
                ok = Audio::loadWavSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
             break;
             default:
@@ -670,7 +668,7 @@ namespace nme
       if (mIsStream)
       {
          AudioStream_Ogg *oggStream = new AudioStream_Ogg();
-         oggStream->open(mStreamPath, startTime, loops);
+         oggStream->open(mStreamPath, startTime, loops, inTransform);
          
          return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
       }
@@ -753,7 +751,7 @@ namespace nme
    
    
    //Ogg Audio Stream implementation
-   void AudioStream_Ogg::open( const std::string &path, int startTime, int inLoops) {
+   void AudioStream_Ogg::open( const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
 
         int result;
         mStartTime = startTime;
@@ -795,6 +793,8 @@ namespace nme
         alSource3f(source, AL_DIRECTION,       0.0, 0.0, 0.0);
         alSourcef (source, AL_ROLLOFF_FACTOR,  0.0          );
         alSourcei (source, AL_SOURCE_RELATIVE, AL_TRUE      );
+        
+        setTransform(inTransform);
 
    } //open
 
@@ -877,7 +877,7 @@ namespace nme
    
    bool AudioStream_Ogg::stream( ALuint buffer ) {
 
-       char pcm[STREAM_BUFFER_SIZE];
+       char pcm[STREAM_BUFFER_SIZE]; 
        int  size = 0;
        int  section;
        int  result;
@@ -896,6 +896,7 @@ namespace nme
        }
        
        if(size == 0) {
+           alSourceStop(source);
            return false;
       }
            
