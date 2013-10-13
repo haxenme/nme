@@ -935,6 +935,41 @@ namespace nme
    } //errorString
    
    
+   double AudioStream_Ogg::getLeft()  
+   {
+      float panX=0;
+      float panY=0;
+      float panZ=0;
+      alGetSource3f(source, AL_POSITION, &panX, &panY, &panZ);
+      return (1-panX)/2;
+   }
+   
+   
+   double AudioStream_Ogg::getRight()   
+   {
+      float panX=0;
+      float panY=0;
+      float panZ=0;
+      alGetSource3f(source, AL_POSITION, &panX, &panY, &panZ);
+      return (panX+1)/2;
+   }
+   
+   
+   double AudioStream_Ogg::setPosition(const float &inFloat)
+   {
+      alSourcef(source,AL_SEC_OFFSET,inFloat);
+      return inFloat;
+   }
+   
+   
+   double AudioStream_Ogg::getPosition() 
+   {
+      float pos = 0;
+      alGetSourcef(source, AL_SEC_OFFSET, &pos);
+      return pos * 1000.0;
+   }
+   
+   
    void AudioStream_Ogg::setTransform(const SoundTransform &inTransform)
    {
       alSourcef(source, AL_GAIN, inTransform.volume);

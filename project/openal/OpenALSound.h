@@ -64,6 +64,10 @@ class OpenALChannel;
            bool playing();
            bool update();
            void setTransform(const SoundTransform &inTransform);
+           double getPosition();
+           double setPosition(const float &inFloat);
+           double getLeft();
+           double getRight();
 
        protected:
 
