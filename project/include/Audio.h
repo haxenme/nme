@@ -30,6 +30,14 @@ namespace nme
 	
 	class AudioStream
 	{
+	public:
+		virtual ~AudioStream() {}
+		
+		virtual void release() = 0;
+		virtual bool playback() = 0;
+        virtual bool playing() = 0;
+		virtual bool update() = 0;
+		
 	};
 	
 	enum AudioFormat

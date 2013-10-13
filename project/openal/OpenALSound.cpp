@@ -2,7 +2,7 @@
 
 
 namespace nme
-{  
+{
    
    OpenALChannel::OpenALChannel(Object *inSound, ALuint inBufferID, int startTime, int inLoops, const SoundTransform &inTransform)
    {
@@ -18,6 +18,7 @@ namespace nme
       mSampleBuffer = 0;
       float seek = 0;
       int size = 0;
+      mStream = 0;
       
       if (inBufferID>0)
       {
@@ -66,6 +67,30 @@ namespace nme
          mWasPlaying = true;
          sgOpenChannels.push_back((intptr_t)this);
       }
+   }
+   
+   
+   OpenALChannel::OpenALChannel(Object *inSound, AudioStream *inStream, int startTime, int inLoops, const SoundTransform &inTransform)
+   {
+      mSound = inSound;
+      inSound->IncRef();
+      mSourceID = 0;
+      mDynamicDone = true;
+      mDynamicBuffer[0] = 0;
+      mDynamicBuffer[1] = 0;
+      mDynamicStackSize = 0;
+      mWasPlaying = false;
+      mSampleBuffer = 0;
+      float seek = 0;
+      int size = 0;
+      
+      mStream = inStream;
+      
+      //mStream->update();
+      mStream->playback();
+      
+      mWasPlaying = true;
+      sgOpenChannels.push_back((intptr_t)this);
    }
    
    
@@ -202,6 +227,11 @@ namespace nme
       delete [] mSampleBuffer;
       if (mSound)
          mSound->DecRef();
+      if (mStream)
+      {
+         mStream->release();
+         delete mStream;
+      }
       
       for (int i = 0; i < sgOpenChannels.size(); i++)
       {
@@ -216,6 +246,16 @@ namespace nme
    
    bool OpenALChannel::isComplete()
    {
+      if (mStream)
+      {
+         bool active = mStream->update();
+         //return !(mStream->playing());
+         //if (!active) printf("DONE!\n");
+         //if (active) printf("UPDATE\n");
+         return !active;
+         //return !(mStream->update());
+      }
+      
       if (!mSourceID)
       {
          //LOG_SOUND("OpenALChannel isComplete() - never started!");
@@ -339,10 +379,11 @@ namespace nme
    }
    
    
-   OpenALSound::OpenALSound(const std::string &inFilename)
+   OpenALSound::OpenALSound(const std::string &inFilename, bool inForceMusic)
    {
       IncRef();
       mBufferID = 0;
+      mIsStream = inForceMusic;
       
       #ifdef HX_MACOS
       char fileURL[1024];
@@ -372,18 +413,25 @@ namespace nme
 
             //Determine the file format before we try anything
          AudioFormat type = Audio::determineFormatFromFile(std::string(fileURL));
-
+         
          switch(type) {
             case eAF_ogg:
-               ok = Audio::loadOggSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+               if (inForceMusic)
+                  mStreamPath = fileURL;
+               else
+                  ok = Audio::loadOggSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
             break;
             case eAF_wav:
+               mIsStream = false;
                ok = Audio::loadWavSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
             break;
             default:
                LOG_SOUND("Error opening sound file, unsupported type.\n");
          }
-
+         
+         if (mIsStream)
+            return;
+         
             //Work out the format from the data
          if (_channels == 1) {
             if (_bitsPerSample == 8 ) {
@@ -428,6 +476,7 @@ namespace nme
    {
       IncRef();
       mBufferID = 0;
+      mIsStream = false;
       
       QuickVec<uint8> buffer;
       int _channels;
@@ -553,7 +602,17 @@ namespace nme
    SoundChannel *OpenALSound::openChannel(double startTime, int loops, const SoundTransform &inTransform)
    {
       //LOG_SOUND("OpenALSound openChannel()"); 
-      return new OpenALChannel(this, mBufferID, startTime, loops, inTransform);
+      if (mIsStream)
+      {
+         AudioStream_Ogg *oggStream = new AudioStream_Ogg();
+         oggStream->open(mStreamPath, loops);
+         
+         return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
+      }
+      else
+      {
+         return new OpenALChannel(this, mBufferID, startTime, loops, inTransform);
+      }
    }
    
    
@@ -569,7 +628,7 @@ namespace nme
       ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
       return new OpenALSound((float*)bytes.Bytes(), bytes.Size());
       #else
-      return new OpenALSound(inFilename);
+      return new OpenALSound(inFilename, inForceMusic);
       #endif
    }
    
@@ -626,12 +685,13 @@ namespace nme
          }
       }
    }
-
-
-//Ogg Audio Stream implementation
-   void AudioStream_Ogg::open( const std::string &path ) {
+   
+   
+   //Ogg Audio Stream implementation
+   void AudioStream_Ogg::open( const std::string &path, int inLoops) {
 
         int result;
+        mLoops = inLoops;
 
         if(!(oggFile = fopen(path.c_str(), "rb"))) {
             throw std::string("Could not open Ogg file.");
@@ -702,10 +762,8 @@ namespace nme
    
    bool AudioStream_Ogg::playing() {
 
-       ALenum state;
-       
+       ALint state;
        alGetSourcei(source, AL_SOURCE_STATE, &state);
-       
        return (state == AL_PLAYING);
 
    } //playing
@@ -812,4 +870,4 @@ namespace nme
    } //errorString
 
    
-} // end namespace nme
+}

@@ -415,16 +415,28 @@ namespace nme
         // By default the OpenAL implementation is picked, while AVAudioPlayer is used then
         // inForceMusic is true.
         
-        LOG_SOUND("Sound.mm Create()\n"); 
-        if (inForceMusic)
-        {
-            return new AVAudioPlayerSound(inFilename);
+        LOG_SOUND("Sound.mm Create()\n");
+        
+        std::string fileURL;
+        
+        if (inFilename[0] == '/') {
+            fileURL = inFilename;
+        } else {
+            fileURL = GetResourcePath() + gAssetBase + inFilename;
         }
-        else
+        
+        AudioFormat type = Audio::determineFormatFromFile(fileURL);
+        
+        if (type == eAF_ogg || !inForceMusic)
         {
             if (!OpenALInit())
                 return 0;
-            return new OpenALSound(inFilename);
+            
+            return new OpenALSound(inFilename, inForceMusic);
+        }
+        else
+        {
+            return new AVAudioPlayerSound(inFilename);
         }
     }
     
