@@ -281,7 +281,7 @@ public:
 			
 			if (mIsFullscreen)
 			{
-				SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN_DESKTOP /*SDL_WINDOW_FULLSCREEN*/);
+				SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
 			}
 			else
 			{
@@ -296,6 +296,18 @@ public:
 			Event resize(etResize, width, height);
 			ProcessEvent(resize);*/
 		}
+	}
+
+
+	void SetResolution(int inWidth, int inHeight)
+	{
+		fprintf(stderr, "SetResolution %i %i\n", inWidth, inHeight);
+		SDL_DisplayMode mode;
+		SDL_GetCurrentDisplayMode(0, &mode);
+		fprintf(stderr, "Current %i %i\n", mode.w, mode.h);
+		mode.w = inWidth;
+		mode.h = inHeight;
+		SDL_SetWindowDisplayMode(mSDLWindow, &mode);
 	}
 	
 	

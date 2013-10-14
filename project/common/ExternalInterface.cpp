@@ -1043,7 +1043,6 @@ void nme_resize_frame(value inValue, value inWidth, value inHeight)
 {
 	int h = val_int(inHeight);
 	int w = val_int(inWidth);
-	//printf("nme_resize_frame(%p,%d,%d)",inValue,w,h);
 	Frame *frame;
 	if (!AbstractToObject(inValue,frame)){
 		return;
@@ -1051,6 +1050,29 @@ void nme_resize_frame(value inValue, value inWidth, value inHeight)
 	frame->Resize(w,h);
 }
 DEFINE_PRIM(nme_resize_frame,3);
+
+void nme_set_resolution(value inValue, value inWidth, value inHeight)
+{
+  int h = val_int(inHeight);
+  int w = val_int(inWidth);
+  Frame *frame;
+  if (!AbstractToObject(inValue,frame)){
+    return;
+  }
+  frame->GetStage()->SetResolution(w,h);
+}
+DEFINE_PRIM(nme_set_resolution,3);
+
+void nme_set_fullscreen(value inValue, value inFull)
+{
+  bool full = val_bool(inFull);
+  Frame *frame;
+  if (!AbstractToObject(inValue,frame)){
+    return;
+  }
+  frame->GetStage()->setDisplayState(full ? sdsFullscreenInteractive : sdsNormal);
+}
+DEFINE_PRIM(nme_set_fullscreen,2);
 
 AutoGCRoot *sOnCreateCallback = 0;
 
