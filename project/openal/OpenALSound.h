@@ -58,7 +58,7 @@ class OpenALChannel;
        
        public:
 
-           void open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform);
+           bool open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform);
            void release();
            bool playback();
            bool playing();

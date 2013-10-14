@@ -700,8 +700,12 @@ namespace nme
       if (mIsStream)
       {
          AudioStream_Ogg *oggStream = new AudioStream_Ogg();
-         oggStream->open(mStreamPath.c_str(), startTime, loops, inTransform);
-         return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
+         bool open = oggStream->open(mStreamPath.c_str(), startTime, loops, inTransform);
+         if (open)
+         {
+            return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
+         }
+         return 0;
       }
       else
       {
@@ -784,7 +788,7 @@ namespace nme
    
    
    //Ogg Audio Stream implementation
-   void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
+   bool AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
 
         int result;
         mPath = path.c_str();
@@ -800,7 +804,9 @@ namespace nme
         #endif
         
         if(!oggFile) {
-            throw std::string("Could not open Ogg file.");
+            //throw std::string("Could not open Ogg file.");
+            LOG_SOUND("Could not open Ogg file.");
+            return false;
         }
         
         result = ov_open(oggFile, &oggStream, NULL, 0);
@@ -809,7 +815,9 @@ namespace nme
 
             fclose(oggFile);
 
-            throw std::string("Could not open Ogg stream. ") + errorString(result);
+            //throw std::string("Could not open Ogg stream. ") + errorString(result);
+            LOG_SOUND((std::string("Could not open Ogg stream. ") + errorString(result)).c_str());
+            return false;
         }
 
         vorbisInfo = ov_info(&oggStream, -1);
@@ -839,7 +847,8 @@ namespace nme
         alSourcei (source, AL_SOURCE_RELATIVE, AL_TRUE      );
         
         setTransform(inTransform);
-
+        
+        return true;
    } //open
 
 
