@@ -89,13 +89,13 @@ public:
       __android_log_print(ANDROID_LOG_INFO, "NME", "Activity action %d", inVal);
       if (inVal==1 || inVal==2)
       {
-         Event evt( inVal==1 ? etActivate : etDeactivate );
-         HandleEvent(evt);
          if (inVal == 1)
          {
             Sound::Resume();
          }
-         else
+         Event evt( inVal==1 ? etActivate : etDeactivate );
+         HandleEvent(evt);
+         if (inVal != 1)
          {
             Sound::Suspend();
          }

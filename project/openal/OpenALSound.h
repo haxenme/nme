@@ -58,21 +58,18 @@ class OpenALChannel;
        
        public:
 
-           void open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform, int offset);
+           void open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform);
            void release();
            bool playback();
            bool playing();
            bool update();
            void setTransform(const SoundTransform &inTransform);
-           SoundTransform getTransform();
            double getPosition();
            double setPosition(const float &inFloat);
            double getLeft();
            double getRight();
            void suspend();
            void resume();
-           
-           int mLoops;
 
        protected:
 
@@ -94,8 +91,8 @@ class OpenALChannel;
            
            const char *mPath;
            int mStartTime;
+           int mLoops;
            bool mSuspend;
-           SoundTransform mCurrentTransform;
    };
 
 
@@ -103,7 +100,7 @@ class OpenALChannel;
    {
       public:
          OpenALChannel(Object *inSound, ALuint inBufferID, int startTime, int inLoops, const SoundTransform &inTransform);
-         OpenALChannel(Object *inSound, std::string inStreamPath, int startTime, int inLoops, const SoundTransform &inTransform);
+         OpenALChannel(Object *inSound, AudioStream *inStream, int startTime, int inLoops, const SoundTransform &inTransform);
          OpenALChannel(const ByteArray &inBytes,const SoundTransform &inTransform);
          void QueueBuffer(ALuint inBuffer, const ByteArray &inBytes);
          void unqueueBuffers();
@@ -128,17 +125,12 @@ class OpenALChannel;
          ALuint mDynamicStackSize;
          ALuint mDynamicStack[2];
          ALuint mDynamicBuffer[2];
-         //AudioStream *mStream;
-         AudioStream_Ogg *mStream;
-         std::string mStreamPath;
+         AudioStream *mStream;
          int mStartTime;
          int mLoops;
-         double mSuspendTime;
-         SoundTransform mSuspendTransform;
          bool mUseStream;
          enum { STEREO_SAMPLES = 2 };
          bool mWasPlaying;
-         bool mSuspend;
       
    };
 

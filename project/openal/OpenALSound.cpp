@@ -20,7 +20,6 @@ namespace nme
       int size = 0;
       mStream = 0;
       mUseStream = false;
-      mSuspend = false;
       
       if (inBufferID>0)
       {
@@ -72,7 +71,7 @@ namespace nme
    }
    
    
-   OpenALChannel::OpenALChannel(Object *inSound, std::string inStreamPath, int startTime, int inLoops, const SoundTransform &inTransform)
+   OpenALChannel::OpenALChannel(Object *inSound, AudioStream *inStream, int startTime, int inLoops, const SoundTransform &inTransform)
    {
       mSound = inSound;
       inSound->IncRef();
@@ -85,18 +84,11 @@ namespace nme
       mSampleBuffer = 0;
       float seek = 0;
       int size = 0;
-      mSuspend = false;
       
-      mStreamPath = inStreamPath;
       mStartTime = startTime;
       mLoops = inLoops;
       
-      // TODO: Make this more generic
-      
-      AudioStream_Ogg *oggStream = new AudioStream_Ogg();
-      oggStream->open(mStreamPath.c_str(), startTime, inLoops, inTransform, 0);
-      
-      mStream = oggStream;
+      mStream = inStream;
       mUseStream = true;
       
       if (mStream)
@@ -123,7 +115,6 @@ namespace nme
       mSampleBuffer = 0;
       mWasPlaying = true;
       mStream = 0;
-      mSuspend = false;
       
       alGenBuffers(2, mDynamicBuffer);
       if (!mDynamicBuffer[0])
@@ -265,8 +256,6 @@ namespace nme
    
    bool OpenALChannel::isComplete()
    {
-      if (mSuspend) return false;
-      
       if (mUseStream)
       {
          if (mStream)
@@ -276,8 +265,7 @@ namespace nme
          }
          else
          {
-            return false;
-            //return !mWasPlaying;
+            return true;
          }
       }
       
@@ -418,19 +406,11 @@ namespace nme
    
    void OpenALChannel::suspend()
    {
-      mSuspend = true;
       if (mUseStream)
       {
          if (mStream)
          {
-            mLoops = mStream->mLoops;
-            mSuspendTime = getPosition();
-            mSuspendTransform = mStream->getTransform();
-            //mStream->suspend();
-            mStream->release();
-            delete mStream;
-            mStream = 0;
-            //mStream->suspend();
+            mStream->suspend();
             mWasPlaying = true;
          }
          else
@@ -457,19 +437,11 @@ namespace nme
    
    void OpenALChannel::resume()
    {
-      
       if (mUseStream)
       {
          if (mWasPlaying)
          {
-            AudioStream_Ogg *oggStream = new AudioStream_Ogg();
-            oggStream->open(mStreamPath.c_str(), mStartTime, mLoops, mSuspendTransform, mSuspendTime);
-            mStream = oggStream;
-            mStream->update();
-            mStream->playback();
-            //mWasPlaying = false;
-            //mStream->update();
-            //mStream->resume();
+            mStream->resume();
          }
       }
       else
@@ -479,7 +451,6 @@ namespace nme
             alSourcePlay(mSourceID);
          }
       }
-      mSuspend = false;
    }
    
    
@@ -728,7 +699,9 @@ namespace nme
       //LOG_SOUND("OpenALSound openChannel()"); 
       if (mIsStream)
       {
-         return new OpenALChannel(this, mStreamPath, startTime, loops, inTransform);
+         AudioStream_Ogg *oggStream = new AudioStream_Ogg();
+         oggStream->open(mStreamPath.c_str(), startTime, loops, inTransform);
+         return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
       }
       else
       {
@@ -811,13 +784,12 @@ namespace nme
    
    
    //Ogg Audio Stream implementation
-   void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform, int offset) {
+   void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
 
         int result;
         mPath = path.c_str();
         mStartTime = startTime;
         mLoops = inLoops;
-        mCurrentTransform = SoundTransform(inTransform);
         
         #ifdef ANDROID
         FileInfo mInfo = AndroidGetAssetFD(path.c_str());
@@ -849,8 +821,6 @@ namespace nme
             format = AL_FORMAT_STEREO16;
         }
         
-        if (offset != 0) startTime = offset;
-        
         if (startTime != 0)
         {
           double seek = startTime * 0.001;
@@ -872,6 +842,7 @@ namespace nme
 
    } //open
 
+
    void AudioStream_Ogg::release() {
        
        alSourceStop(source);
@@ -887,7 +858,8 @@ namespace nme
        source = 0;
 
    } //release
-      
+   
+   
    bool AudioStream_Ogg::playback() {
 
       if(playing()) {
@@ -909,9 +881,12 @@ namespace nme
 
    } //playback
    
+   
    bool AudioStream_Ogg::playing() {
       
-       if (mSuspend) return true;
+       // TODO: Android stream sounds won't resume :(
+       //if (mSuspend) return true;
+       if (mSuspend) return false;
       
        ALint state;
        alGetSourcei(source, AL_SOURCE_STATE, &state);
@@ -919,9 +894,10 @@ namespace nme
 
    } //playing
    
+   
    bool AudioStream_Ogg::update() {
       
-       if (mSuspend) return true;
+       if (mSuspend) return false;
       
        int processed;
        bool active = true;
@@ -956,6 +932,7 @@ namespace nme
 
    } //update
    
+   
    bool AudioStream_Ogg::stream( ALuint buffer ) {
       
        if (mSuspend) return true;
@@ -986,6 +963,7 @@ namespace nme
 
    } //stream
 
+
     void AudioStream_Ogg::empty() {
 
       int queued;
@@ -1001,7 +979,9 @@ namespace nme
 
     } //empty
 
-    void AudioStream_Ogg::check() {
+
+    void AudioStream_Ogg::check()
+    {
       int error = alGetError();
 
       if(error != AL_NO_ERROR) {
@@ -1010,6 +990,7 @@ namespace nme
       }
 
     } //check
+
 
    std::string AudioStream_Ogg::errorString(int code) {
 
@@ -1084,14 +1065,7 @@ namespace nme
       {
          alSourcef(source, AL_GAIN, inTransform.volume);
          alSource3f(source, AL_POSITION, inTransform.pan * 1, 0, 0);
-         mCurrentTransform = SoundTransform(inTransform);
       }
-   }
-   
-   
-   SoundTransform AudioStream_Ogg::getTransform()
-   {
-      return SoundTransform(mCurrentTransform);
    }
    
    
@@ -1104,8 +1078,8 @@ namespace nme
    
    void AudioStream_Ogg::resume()
    {
-      alSourcePlay(source);
-      mSuspend = false;
+      //alSourcePlay(source);
+      //mSuspend = false;
    }
 
    
