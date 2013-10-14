@@ -1090,6 +1090,22 @@ void nme_set_resolution(value inValue, value inWidth, value inHeight)
 }
 DEFINE_PRIM(nme_set_resolution,3);
 
+void nme_set_screenmode(value inValue, value inWidth, value inHeight, value inRefresh, value inFormat)
+{
+  ScreenMode mode;
+  mode.width = val_int(inWidth);
+  mode.height = val_int(inHeight);
+  mode.refreshRate = val_int(inRefresh);
+  mode.format = (ScreenFormat)val_int(inFormat);
+  Frame *frame;
+  if (!AbstractToObject(inValue,frame)){
+    return;
+  }
+
+  frame->GetStage()->SetScreenMode(mode);
+}
+DEFINE_PRIM(nme_set_screenmode,5);
+
 void nme_set_fullscreen(value inValue, value inFull)
 {
   bool full = val_bool(inFull);
