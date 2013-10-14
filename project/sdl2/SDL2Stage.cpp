@@ -1176,6 +1176,138 @@ QuickVec<int>* CapabilitiesGetScreenResolutions()
 }
 
 
+QuickVec<ScreenMode>* CapabilitiesGetScreenModes()
+{	
+	InitSDL();
+	QuickVec<ScreenMode> *out = new QuickVec<ScreenMode>();
+	
+	int numModes = SDL_GetNumDisplayModes(0);
+	SDL_DisplayMode mode;
+	
+	for (int i = 0; i < numModes; i++)
+	{
+		SDL_GetDisplayMode(0, i, &mode);
+		ScreenMode screenMode;
+		screenMode.width = mode.w;
+		screenMode.height = mode.h;
+		switch (mode.format) {
+		case SDL_PIXELFORMAT_UNKNOWN:
+			screenMode.format = PIXELFORMAT_UNKNOWN;
+			break;
+		case SDL_PIXELFORMAT_INDEX1LSB:
+			screenMode.format = PIXELFORMAT_INDEX1LSB;
+			break;
+		case SDL_PIXELFORMAT_INDEX1MSB:
+			screenMode.format = PIXELFORMAT_INDEX1MSB;
+			break;
+		case SDL_PIXELFORMAT_INDEX4LSB:
+			screenMode.format = PIXELFORMAT_INDEX4LSB;
+			break;
+		case SDL_PIXELFORMAT_INDEX4MSB:
+			screenMode.format = PIXELFORMAT_INDEX4MSB;
+			break;
+		case SDL_PIXELFORMAT_INDEX8:
+			screenMode.format = PIXELFORMAT_INDEX8;
+			break;
+		case SDL_PIXELFORMAT_RGB332:
+			screenMode.format = PIXELFORMAT_RGB332;
+			break;
+		case SDL_PIXELFORMAT_RGB444:
+			screenMode.format = PIXELFORMAT_RGB444;
+			break;
+		case SDL_PIXELFORMAT_RGB555:
+			screenMode.format = PIXELFORMAT_RGB555;
+			break;
+		case SDL_PIXELFORMAT_BGR555:
+			screenMode.format = PIXELFORMAT_BGR555;
+			break;
+		case SDL_PIXELFORMAT_ARGB4444:
+			screenMode.format = PIXELFORMAT_ARGB4444;
+			break;
+		case SDL_PIXELFORMAT_RGBA4444:
+			screenMode.format = PIXELFORMAT_RGBA4444;
+			break;
+		case SDL_PIXELFORMAT_ABGR4444:
+			screenMode.format = PIXELFORMAT_ABGR4444;
+			break;
+		case SDL_PIXELFORMAT_BGRA4444:
+			screenMode.format = PIXELFORMAT_BGRA4444;
+			break;
+		case SDL_PIXELFORMAT_ARGB1555:
+			screenMode.format = PIXELFORMAT_ARGB1555;
+			break;
+		case SDL_PIXELFORMAT_RGBA5551:
+			screenMode.format = PIXELFORMAT_RGBA5551;
+			break;
+		case SDL_PIXELFORMAT_ABGR1555:
+			screenMode.format = PIXELFORMAT_ABGR1555;
+			break;
+		case SDL_PIXELFORMAT_BGRA5551:
+			screenMode.format = PIXELFORMAT_BGRA5551;
+			break;
+		case SDL_PIXELFORMAT_RGB565:
+			screenMode.format = PIXELFORMAT_RGB565;
+			break;
+		case SDL_PIXELFORMAT_BGR565:
+			screenMode.format = PIXELFORMAT_BGR565;
+			break;
+		case SDL_PIXELFORMAT_RGB24:
+			screenMode.format = PIXELFORMAT_RGB24;
+			break;
+		case SDL_PIXELFORMAT_BGR24:
+			screenMode.format = PIXELFORMAT_BGR24;
+			break;
+		case SDL_PIXELFORMAT_RGB888:
+			screenMode.format = PIXELFORMAT_RGB888;
+			break;
+		case SDL_PIXELFORMAT_RGBX8888:
+			screenMode.format = PIXELFORMAT_RGBX8888;
+			break;
+		case SDL_PIXELFORMAT_BGR888:
+			screenMode.format = PIXELFORMAT_BGR888;
+			break;
+		case SDL_PIXELFORMAT_BGRX8888:
+			screenMode.format = PIXELFORMAT_BGRX8888;
+			break;
+		case SDL_PIXELFORMAT_ARGB8888:
+			screenMode.format = PIXELFORMAT_ARGB8888;
+			break;
+		case SDL_PIXELFORMAT_RGBA8888:
+			screenMode.format = PIXELFORMAT_RGBA8888;
+			break;
+		case SDL_PIXELFORMAT_ABGR8888:
+			screenMode.format = PIXELFORMAT_ABGR8888;
+			break;
+		case SDL_PIXELFORMAT_BGRA8888:
+			screenMode.format = PIXELFORMAT_BGRA8888;
+			break;
+		case SDL_PIXELFORMAT_ARGB2101010:
+			screenMode.format = PIXELFORMAT_ARGB2101010;
+			break;
+		case SDL_PIXELFORMAT_YV12:
+			screenMode.format = PIXELFORMAT_YV12;
+			break;
+		case SDL_PIXELFORMAT_IYUV:
+			screenMode.format = PIXELFORMAT_IYUV;
+			break;
+		case SDL_PIXELFORMAT_YUY2:
+			screenMode.format = PIXELFORMAT_YUY2;
+			break;
+		case SDL_PIXELFORMAT_UYVY:
+			screenMode.format = PIXELFORMAT_UYVY;
+			break;
+		case SDL_PIXELFORMAT_YVYU:
+			screenMode.format = PIXELFORMAT_YVYU;
+			break;
+		}
+		screenMode.refreshRate = mode.refresh_rate;
+		out->push_back(screenMode);
+	}
+	
+	return out;
+}
+
+
 double CapabilitiesGetScreenResolutionX()
 {
 	InitSDL();	
