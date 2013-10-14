@@ -722,12 +722,16 @@ namespace nme
          return 0;
       
       //Return a reference
-      //#ifdef ANDROID
-      //ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
-      //return new OpenALSound((float*)bytes.Bytes(), bytes.Size());
-      //#else
+      #ifdef ANDROID
+      // This may be more stable for most audio?
+      if (!inForceMusic)
+      {
+         ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
+         return new OpenALSound((float*)bytes.Bytes(), bytes.Size());
+      }
+      #else
       return new OpenALSound(inFilename, inForceMusic);
-      //#endif
+      #endif
    }
    
    
