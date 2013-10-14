@@ -20,6 +20,7 @@ namespace nme
       int size = 0;
       mStream = 0;
       mUseStream = false;
+      mSuspend = false;
       
       if (inBufferID>0)
       {
@@ -71,7 +72,7 @@ namespace nme
    }
    
    
-   OpenALChannel::OpenALChannel(Object *inSound, AudioStream *inStream, int startTime, int inLoops, const SoundTransform &inTransform)
+   OpenALChannel::OpenALChannel(Object *inSound, std::string inStreamPath, int startTime, int inLoops, const SoundTransform &inTransform)
    {
       mSound = inSound;
       inSound->IncRef();
@@ -84,8 +85,18 @@ namespace nme
       mSampleBuffer = 0;
       float seek = 0;
       int size = 0;
+      mSuspend = false;
       
-      mStream = inStream;
+      mStreamPath = inStreamPath;
+      mStartTime = startTime;
+      mLoops = inLoops;
+      
+      // TODO: Make this more generic
+      
+      AudioStream_Ogg *oggStream = new AudioStream_Ogg();
+      oggStream->open(mStreamPath.c_str(), startTime, inLoops, inTransform, 0);
+      
+      mStream = oggStream;
       mUseStream = true;
       
       if (mStream)
@@ -112,6 +123,7 @@ namespace nme
       mSampleBuffer = 0;
       mWasPlaying = true;
       mStream = 0;
+      mSuspend = false;
       
       alGenBuffers(2, mDynamicBuffer);
       if (!mDynamicBuffer[0])
@@ -253,6 +265,8 @@ namespace nme
    
    bool OpenALChannel::isComplete()
    {
+      if (mSuspend) return false;
+      
       if (mUseStream)
       {
          if (mStream)
@@ -262,7 +276,8 @@ namespace nme
          }
          else
          {
-            return true;
+            return false;
+            //return !mWasPlaying;
          }
       }
       
@@ -385,6 +400,7 @@ namespace nme
             mStream->release();
             delete mStream;
             mStream = 0;
+            mWasPlaying = false;
          }
       }
       else
@@ -402,9 +418,25 @@ namespace nme
    
    void OpenALChannel::suspend()
    {
+      mSuspend = true;
       if (mUseStream)
       {
-         if (mStream) mStream->suspend();
+         if (mStream)
+         {
+            mLoops = mStream->mLoops;
+            mSuspendTime = getPosition();
+            mSuspendTransform = mStream->getTransform();
+            //mStream->suspend();
+            mStream->release();
+            delete mStream;
+            mStream = 0;
+            //mStream->suspend();
+            mWasPlaying = true;
+         }
+         else
+         {
+            mWasPlaying = false;
+         }
       }
       else 
       {
@@ -425,9 +457,20 @@ namespace nme
    
    void OpenALChannel::resume()
    {
+      
       if (mUseStream)
       {
-         if (mStream) mStream->resume();
+         if (mWasPlaying)
+         {
+            AudioStream_Ogg *oggStream = new AudioStream_Ogg();
+            oggStream->open(mStreamPath.c_str(), mStartTime, mLoops, mSuspendTransform, mSuspendTime);
+            mStream = oggStream;
+            mStream->update();
+            mStream->playback();
+            //mWasPlaying = false;
+            //mStream->update();
+            //mStream->resume();
+         }
       }
       else
       {
@@ -436,6 +479,7 @@ namespace nme
             alSourcePlay(mSourceID);
          }
       }
+      mSuspend = false;
    }
    
    
@@ -684,10 +728,7 @@ namespace nme
       //LOG_SOUND("OpenALSound openChannel()"); 
       if (mIsStream)
       {
-         AudioStream_Ogg *oggStream = new AudioStream_Ogg();
-         oggStream->open(mStreamPath, startTime, loops, inTransform);
-         
-         return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
+         return new OpenALChannel(this, mStreamPath, startTime, loops, inTransform);
       }
       else
       {
@@ -753,7 +794,7 @@ namespace nme
          return;
       
       alcMakeContextCurrent(sgContext);
-      alcProcessContext(sgContext);
+      
       
       OpenALChannel* channel = 0;
       for (int i = 0; i < sgOpenChannels.size(); i++)
@@ -764,21 +805,24 @@ namespace nme
             channel->resume();
          }
       }
+      
+      alcProcessContext(sgContext);
    }
    
    
    //Ogg Audio Stream implementation
-   void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
+   void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform, int offset) {
 
         int result;
         mPath = path.c_str();
         mStartTime = startTime;
         mLoops = inLoops;
+        mCurrentTransform = SoundTransform(inTransform);
         
         #ifdef ANDROID
-        FileInfo info = AndroidGetAssetFD(path.c_str());
-        oggFile = fdopen(info.fd, "rb");
-        fseek(oggFile, info.offset, 0);
+        FileInfo mInfo = AndroidGetAssetFD(path.c_str());
+        oggFile = fdopen(mInfo.fd, "rb");
+        fseek(oggFile, mInfo.offset, 0);
         #else
         oggFile = fopen(path.c_str(), "rb");
         #endif
@@ -787,11 +831,7 @@ namespace nme
             throw std::string("Could not open Ogg file.");
         }
         
-        #ifdef ANDROID
-        result = ov_open(oggFile, &oggStream, NULL, info.length);
-        #else
         result = ov_open(oggFile, &oggStream, NULL, 0);
-        #endif
          
         if(result < 0) {
 
@@ -808,6 +848,8 @@ namespace nme
         } else {
             format = AL_FORMAT_STEREO16;
         }
+        
+        if (offset != 0) startTime = offset;
         
         if (startTime != 0)
         {
@@ -836,10 +878,13 @@ namespace nme
        empty();
        alDeleteSources(1, &source);
        check();
-       alDeleteBuffers(1, buffers);
+       alDeleteBuffers(2, buffers);
        check();
 
        ov_clear(&oggStream);
+       
+       oggFile = 0;
+       source = 0;
 
    } //release
       
@@ -914,15 +959,14 @@ namespace nme
    bool AudioStream_Ogg::stream( ALuint buffer ) {
       
        if (mSuspend) return true;
-      
-       char pcm[STREAM_BUFFER_SIZE]; 
+       
+       char pcm[STREAM_BUFFER_SIZE];
        int  size = 0;
        int  section;
        int  result;
 
        while(size < STREAM_BUFFER_SIZE) {
            result = ov_read(&oggStream, pcm + size, STREAM_BUFFER_SIZE - size, 0, 2, 1, &section);
-       
            if(result > 0)
                size += result;
            else
@@ -931,12 +975,11 @@ namespace nme
                else
                    break;
        }
-       
        if(size == 0) {
            alSourceStop(source);
            return false;
       }
-           
+      
        alBufferData(buffer, format, pcm, size, vorbisInfo->rate);
        check();
        return true;
@@ -1025,7 +1068,7 @@ namespace nme
    {
       if (mSuspend)
       {
-         return mSuspendTime;
+         return 0;
       }
       else
       {
@@ -1041,52 +1084,28 @@ namespace nme
       {
          alSourcef(source, AL_GAIN, inTransform.volume);
          alSource3f(source, AL_POSITION, inTransform.pan * 1, 0, 0);
+         mCurrentTransform = SoundTransform(inTransform);
       }
+   }
+   
+   
+   SoundTransform AudioStream_Ogg::getTransform()
+   {
+      return SoundTransform(mCurrentTransform);
    }
    
    
    void AudioStream_Ogg::suspend()
    {
       mSuspend = true;
-      //mSuspendTime = getPosition();
-      //mSuspendPosition = ftell(oggFile);
-      //alSourceStop(source);
       alSourcePause(source);
-      //empty();
-      //ov_clear(&oggStream);
    }
    
    
    void AudioStream_Ogg::resume()
    {
-      /*#ifdef ANDROID
-      FileInfo info = AndroidGetAssetFD(mPath);
-      oggFile = fdopen(info.fd, "rb");
-      fseek(oggFile, info.offset, 0);
-      #else
-      oggFile = fopen(mPath, "rb");
-      #endif
-      
-      if(!oggFile) {
-         throw std::string("Could not open Ogg file.");
-      }
-      
-      int result = 0;
-      
-      #ifdef ANDROID
-      result = ov_open(oggFile, &oggStream, NULL, info.length);
-      #else
-      result = ov_open(oggFile, &oggStream, NULL, 0);
-      #endif
-      mSuspend = false;
-      
-      setPosition(mSuspendTime);
-      update();*/
-      
       alSourcePlay(source);
       mSuspend = false;
-      //playback();
-      //update();
    }
 
    
