@@ -163,7 +163,9 @@ namespace nme
 			AudioFormat format = eAF_unknown;
 			
 			#ifdef ANDROID
-			FILE *f = AndroidGetAssetFD(filename.c_str());
+			FileInfo info = AndroidGetAssetFD(filename.c_str());
+			FILE *f = fdopen(info.fd, "rb");
+			fseek(f, info.offset, 0);
 			#else
 			FILE *f = fopen(filename.c_str(), "rb");
 			#endif
@@ -250,7 +252,9 @@ namespace nme
 			
 			//Read the file data
 			#ifdef ANDROID
-			f = AndroidGetAssetFD(inFileURL);
+			FileInfo info = AndroidGetAssetFD(inFileURL);
+			f = fdopen(info.fd, "rb");
+			fseek(f, info.offset, 0);
 			#else
 			f = fopen(inFileURL, "rb");
 			#endif
@@ -263,7 +267,11 @@ namespace nme
 			
 			OggVorbis_File oggFile;
 			//Read the file data
+			#ifdef ANDROID
+			ov_open(f, &oggFile, NULL, info.length);
+			#else
 			ov_open(f, &oggFile, NULL, 0);
+			#endif
 			
 			return loadOggSample(oggFile, outBuffer, channels, bitsPerSample, outSampleRate);
 		}
@@ -401,7 +409,9 @@ namespace nme
 			unsigned char* data;
 			
 			#ifdef ANDROID
-			f = AndroidGetAssetFD(inFileURL);
+			FileInfo info = AndroidGetAssetFD(inFileURL);
+			f = fdopen(info.fd, "rb");
+			fseek(f, info.offset, 0);
 			#else
 			f = fopen(inFileURL, "rb");
 			#endif

@@ -38,11 +38,15 @@ namespace nme
 		virtual bool playback() = 0;
         virtual bool playing() = 0;
 		virtual bool update() = 0;
+		
 		virtual void setTransform(const SoundTransform &inTransform) = 0;
 		virtual double getPosition() = 0;
 		virtual double setPosition(const float &inFloat) = 0;
 		virtual double getLeft() = 0;
 		virtual double getRight() = 0;
+		
+		virtual void suspend() = 0;
+		virtual void resume() = 0;
 		
 	};
 	

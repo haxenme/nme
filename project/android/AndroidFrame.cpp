@@ -10,6 +10,7 @@
 #include <android/log.h>
 #include "AndroidCommon.h"
 
+#include <assert.h>
 #include <sys/types.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -373,26 +374,36 @@ ByteArray AndroidGetAssetBytes(const char *inResource)
     return result;
 }
 
-FILE *AndroidGetAssetFD(const char *inResource)
+FileInfo AndroidGetAssetFD(const char *inResource)
 {
-   JNIEnv *env = GetEnv();
+   FileInfo info;
+   info.fd = 0;
+   info.offset = 0;
+   info.length = 0;
    
+   JNIEnv *env = GetEnv();
    jclass cls = FindClass("org/haxe/nme/GameActivity");
    jmethodID mid = env->GetStaticMethodID(cls, "getAssetManager", "()Landroid/content/res/AssetManager;");
    if (mid == 0)
-      return 0;
+      return info;
    
    jobject assetManager = (jobject)env->CallStaticObjectMethod(cls, mid);
+   assert(0 != assetManager);
    AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
+   assert(0 != mgr);
    AAsset* asset = AAssetManager_open(mgr, inResource, AASSET_MODE_UNKNOWN);
+   if (!asset)
+   {
+      return info;
+   }
    
    // open asset as file descriptor
-   off_t start, length;
-   FILE *fd = (FILE *)AAsset_openFileDescriptor(asset, &start, &length);
-   //assert(0 <= fd);
+   //off_t start, length;
+   info.fd = AAsset_openFileDescriptor(asset, &info.offset, &info.length);
+   assert(0 <= fd);
    AAsset_close(asset);
    
-   return fd;
+   return info;
 }
 
 void AndroidRequestRender()

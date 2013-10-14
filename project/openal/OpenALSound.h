@@ -68,6 +68,8 @@ class OpenALChannel;
            double setPosition(const float &inFloat);
            double getLeft();
            double getRight();
+           void suspend();
+           void resume();
 
        protected:
 
@@ -87,8 +89,12 @@ class OpenALChannel;
            ALuint source;
            ALenum format;
            
+           const char *mPath;
            int mLoops;
            int mStartTime;
+           bool mSuspend;
+           double mSuspendTime;
+           long mSuspendPosition;
    };
 
 
@@ -109,9 +115,8 @@ class OpenALChannel;
          double getPosition();
          void setTransform(const SoundTransform &inTransform);
          void stop();
-         void pause();
+         void suspend();
          void resume();
-         void update();
          
       protected:
          ~OpenALChannel();
