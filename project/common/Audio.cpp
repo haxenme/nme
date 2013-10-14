@@ -1,5 +1,6 @@
 #include <Audio.h>
-	
+
+#include <ByteArray.h>
 #include <cstdio>
 #include <iostream>
 #include <vorbis/vorbisfile.h>
@@ -160,7 +161,13 @@ namespace nme
 				return eAF_mp3;
 			
 			AudioFormat format = eAF_unknown;
+			
+			#ifdef ANDROID
+			FILE *f = AndroidGetAssetFD(filename.c_str());
+			#else
 			FILE *f = fopen(filename.c_str(), "rb");
+			#endif
+			
 			int len = 35;
 			char *bytes = (char*)calloc(len + 1, sizeof(char));
 			
@@ -242,7 +249,11 @@ namespace nme
 			FILE *f;
 			
 			//Read the file data
+			#ifdef ANDROID
+			f = AndroidGetAssetFD(inFileURL);
+			#else
 			f = fopen(inFileURL, "rb");
+			#endif
 			
 			if (!f)
 			{
@@ -389,7 +400,11 @@ namespace nme
 			WAVE_Data wave_data;
 			unsigned char* data;
 			
+			#ifdef ANDROID
+			f = AndroidGetAssetFD(inFileURL);
+			#else
 			f = fopen(inFileURL, "rb");
+			#endif
 			
 			if (!f)
 			{

@@ -10,6 +10,10 @@
 #include <android/log.h>
 #include "AndroidCommon.h"
 
+#include <sys/types.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+
 JavaVM *gJVM=0;
 
 namespace nme
@@ -367,6 +371,28 @@ ByteArray AndroidGetAssetBytes(const char *inResource)
 	 ByteArray result(len);
     env->GetByteArrayRegion(bytes, (jint)0, (jint)len, (jbyte*)result.Bytes());
     return result;
+}
+
+FILE *AndroidGetAssetFD(const char *inResource)
+{
+   JNIEnv *env = GetEnv();
+   
+   jclass cls = FindClass("org/haxe/nme/GameActivity");
+   jmethodID mid = env->GetStaticMethodID(cls, "getAssetManager", "()Landroid/content/res/AssetManager;");
+   if (mid == 0)
+      return 0;
+   
+   jobject assetManager = (jobject)env->CallStaticObjectMethod(cls, mid);
+   AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
+   AAsset* asset = AAssetManager_open(mgr, inResource, AASSET_MODE_UNKNOWN);
+   
+   // open asset as file descriptor
+   off_t start, length;
+   FILE *fd = (FILE *)AAsset_openFileDescriptor(asset, &start, &length);
+   //assert(0 <= fd);
+   AAsset_close(asset);
+   
+   return fd;
 }
 
 void AndroidRequestRender()

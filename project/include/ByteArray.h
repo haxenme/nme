@@ -36,6 +36,7 @@ struct ByteArray
 
 #ifdef ANDROID
 ByteArray AndroidGetAssetBytes(const char *);
+FILE *AndroidGetAssetFD(const char *);
 #endif
 
 }

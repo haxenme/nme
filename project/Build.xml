@@ -4,6 +4,8 @@
    <set name="GCC_THIN_ARCHIVE" value="1" if="emscripten"/>
    <set name="debug" value="debug" if ="fulldebug" />
    
+   <set name="PLATFORM" value="android-9" if="android" unless="PLATFORM" />
+   
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 
    <set name="HXCPP_M32" value="1" unless="HXCPP_M64" />
@@ -546,6 +548,7 @@
       <vflag name="-framework" value="OpenAL" if="macos" unless="noopenal"/>
       
       <lib name="-ldl" if="android"/>
+      <lib name="-landroid" if="android"/>
       <lib name="-lGLESv1_CM" if="android" unless="ogl_shaders"/>
       <lib name="-lGLESv2" if="android"/>
       <lib name="-lz" if="android"/>

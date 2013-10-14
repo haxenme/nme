@@ -19,6 +19,7 @@ namespace nme
       float seek = 0;
       int size = 0;
       mStream = 0;
+      mUseStream = false;
       
       if (inBufferID>0)
       {
@@ -85,9 +86,13 @@ namespace nme
       int size = 0;
       
       mStream = inStream;
+      mUseStream = true;
       
-      mStream->update();
-      mStream->playback();
+      if (mStream)
+      {
+         mStream->update();
+         mStream->playback();
+      }
       
       mWasPlaying = true;
       sgOpenChannels.push_back((intptr_t)this);
@@ -99,12 +104,14 @@ namespace nme
       //LOG_SOUND("OpenALChannel dynamic %d",inBytes.Size());
       mSound = 0;
       mSourceID = 0;
+      mUseStream = false;
       
       mDynamicBuffer[0] = 0;
       mDynamicBuffer[1] = 0;
       mDynamicStackSize = 0;
       mSampleBuffer = 0;
       mWasPlaying = true;
+      mStream = 0;
       
       alGenBuffers(2, mDynamicBuffer);
       if (!mDynamicBuffer[0])
@@ -246,10 +253,17 @@ namespace nme
    
    bool OpenALChannel::isComplete()
    {
-      if (mStream)
+      if (mUseStream)
       {
-         mStream->update();
-         return !(mStream->playing());
+         if (mStream)
+         {
+            mStream->update();
+            return !(mStream->playing());
+         }
+         else
+         {
+            return true;
+         }
       }
       
       if (!mSourceID)
@@ -287,9 +301,9 @@ namespace nme
    
    double OpenALChannel::getLeft()  
    {
-      if (mStream)
+      if (mUseStream)
       {
-         return mStream->getLeft();
+         return mStream ? mStream->getLeft() : 0;
       }
       else
       {
@@ -304,9 +318,9 @@ namespace nme
    
    double OpenALChannel::getRight()   
    {
-      if (mStream)
+      if (mUseStream)
       {
-         return mStream->getRight();
+         return mStream ? mStream->getRight() : 0;
       }
       else
       {
@@ -321,9 +335,9 @@ namespace nme
    
    double OpenALChannel::setPosition(const float &inFloat)
    {
-      if (mStream)
+      if (mUseStream)
       {
-         return mStream->setPosition(inFloat);
+         return mStream ? mStream->setPosition(inFloat) : inFloat;
       }
       else
       {
@@ -335,9 +349,9 @@ namespace nme
    
    double OpenALChannel::getPosition() 
    {
-      if (mStream)
+      if (mUseStream)
       {
-         return mStream->getPosition();
+         return mStream ? mStream->getPosition() : 0;
       }
       else
       {
@@ -350,9 +364,9 @@ namespace nme
    
    void OpenALChannel::setTransform(const SoundTransform &inTransform)
    {
-      if (mStream)
+      if (mUseStream)
       {
-         mStream->setTransform(inTransform);
+         if (mStream) mStream->setTransform(inTransform);
       }
       else
       {
@@ -364,11 +378,14 @@ namespace nme
    
    void OpenALChannel::stop()
    {
-      if (mStream)
+      if (mUseStream)
       {
-         mStream->release();
-         delete mStream;
-         mStream = 0;
+         if (mStream)
+         {
+            mStream->release();
+            delete mStream;
+            mStream = 0;
+         }
       }
       else
       {
@@ -385,7 +402,7 @@ namespace nme
    
    void OpenALChannel::pause()
    {
-      if (mStream)
+      if (mUseStream)
       {
          // TODO: Need suspend/resume for stream sound
       }
@@ -408,7 +425,7 @@ namespace nme
    
    void OpenALChannel::resume()
    {
-      if (mStream)
+      if (mUseStream)
       {
          // TODO: Need suspend/resume for stream sound
       }
@@ -687,12 +704,12 @@ namespace nme
          return 0;
       
       //Return a reference
-      #ifdef ANDROID
-      ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
-      return new OpenALSound((float*)bytes.Bytes(), bytes.Size());
-      #else
+      //#ifdef ANDROID
+      //ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
+      //return new OpenALSound((float*)bytes.Bytes(), bytes.Size());
+      //#else
       return new OpenALSound(inFilename, inForceMusic);
-      #endif
+      //#endif
    }
    
    
@@ -756,8 +773,14 @@ namespace nme
         int result;
         mStartTime = startTime;
         mLoops = inLoops;
-
-        if(!(oggFile = fopen(path.c_str(), "rb"))) {
+        
+        #ifdef ANDROID
+        oggFile = AndroidGetAssetFD(path.c_str());
+        #else
+        oggFile = fopen(path.c_str(), "rb");
+        #endif
+        
+        if(!oggFile) {
             throw std::string("Could not open Ogg file.");
         }
 

@@ -123,6 +123,7 @@ class OpenALChannel;
          ALuint mDynamicStack[2];
          ALuint mDynamicBuffer[2];
          AudioStream *mStream;
+         bool mUseStream;
          enum { STEREO_SAMPLES = 2 };
          bool mWasPlaying;
       
