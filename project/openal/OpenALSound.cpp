@@ -261,7 +261,7 @@ namespace nme
          if (mStream)
          {
             mStream->update();
-            return !(mStream->playing());
+            return !(mStream->isActive());
          }
          else
          {
@@ -497,7 +497,6 @@ namespace nme
 
             //Determine the file format before we try anything
          AudioFormat type = Audio::determineFormatFromFile(std::string(fileURL));
-         
          switch(type) {
             case eAF_ogg:
                if (inForceMusic)
@@ -700,12 +699,9 @@ namespace nme
       if (mIsStream)
       {
          AudioStream_Ogg *oggStream = new AudioStream_Ogg();
-         bool open = oggStream->open(mStreamPath.c_str(), startTime, loops, inTransform);
-         if (open)
-         {
-            return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
-         }
-         return 0;
+         if (oggStream) oggStream->open(mStreamPath.c_str(), startTime, loops, inTransform);
+         
+         return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
       }
       else
       {
@@ -723,15 +719,13 @@ namespace nme
       
       //Return a reference
       #ifdef ANDROID
-      // This may be more stable for most audio?
       if (!inForceMusic)
       {
          ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
          return new OpenALSound((float*)bytes.Bytes(), bytes.Size());
       }
-      #else
-      return new OpenALSound(inFilename, inForceMusic);
       #endif
+      return new OpenALSound(inFilename, inForceMusic);
    }
    
    
@@ -792,12 +786,13 @@ namespace nme
    
    
    //Ogg Audio Stream implementation
-   bool AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
+   void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
 
         int result;
         mPath = path.c_str();
         mStartTime = startTime;
         mLoops = inLoops;
+        mIsValid = true;
         
         #ifdef ANDROID
         FileInfo mInfo = AndroidGetAssetFD(path.c_str());
@@ -810,7 +805,8 @@ namespace nme
         if(!oggFile) {
             //throw std::string("Could not open Ogg file.");
             LOG_SOUND("Could not open Ogg file.");
-            return false;
+            mIsValid = false;
+            return;
         }
         
         result = ov_open(oggFile, &oggStream, NULL, 0);
@@ -821,7 +817,8 @@ namespace nme
 
             //throw std::string("Could not open Ogg stream. ") + errorString(result);
             LOG_SOUND((std::string("Could not open Ogg stream. ") + errorString(result)).c_str());
-            return false;
+            mIsValid = false;
+            return;
         }
 
         vorbisInfo = ov_info(&oggStream, -1);
@@ -851,8 +848,6 @@ namespace nme
         alSourcei (source, AL_SOURCE_RELATIVE, AL_TRUE      );
         
         setTransform(inTransform);
-        
-        return true;
    } //open
 
 
@@ -896,10 +891,6 @@ namespace nme
    
    
    bool AudioStream_Ogg::playing() {
-      
-       // TODO: Android stream sounds won't resume :(
-       //if (mSuspend) return true;
-       if (mSuspend) return false;
       
        ALint state;
        alGetSourcei(source, AL_SOURCE_STATE, &state);
@@ -1093,6 +1084,19 @@ namespace nme
    {
       //alSourcePlay(source);
       //mSuspend = false;
+   }
+   
+   
+   bool AudioStream_Ogg::isActive()
+   {
+      #ifdef ANDROID
+      // TODO: Android stream sounds won't resume :(
+      if (mSuspend) return false;
+      #else
+      if (mSuspend) return false;
+      #endif
+      
+      return (mIsValid && playing());
    }
 
    

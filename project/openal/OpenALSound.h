@@ -58,7 +58,7 @@ class OpenALChannel;
        
        public:
 
-           bool open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform);
+           void open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform);
            void release();
            bool playback();
            bool playing();
@@ -70,6 +70,7 @@ class OpenALChannel;
            double getRight();
            void suspend();
            void resume();
+           bool isActive();
 
        protected:
 
@@ -93,6 +94,7 @@ class OpenALChannel;
            int mStartTime;
            int mLoops;
            bool mSuspend;
+           bool mIsValid;
    };
 
 

@@ -48,6 +48,8 @@ namespace nme
 		virtual void suspend() = 0;
 		virtual void resume() = 0;
 		
+		virtual bool isActive() = 0;
+		
 	};
 	
 	enum AudioFormat
