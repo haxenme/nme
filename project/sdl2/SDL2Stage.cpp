@@ -334,7 +334,9 @@ public:
 		SDL_GetCurrentDisplayMode(0, &mode);
 		mode.w = inWidth;
 		mode.h = inHeight;
+		SDL_SetWindowFullscreen(mSDLWindow, 0);
 		SDL_SetWindowDisplayMode(mSDLWindow, &mode);
+		SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN);
 	}
 
 	void SetScreenMode(ScreenMode m)
@@ -453,7 +455,9 @@ public:
 			mode.format = SDL_PIXELFORMAT_YVYU;
 			break;
 		}
+		SDL_SetWindowFullscreen(mSDLWindow, 0);
 		SDL_SetWindowDisplayMode(mSDLWindow, &mode);
+		SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN);
 	}
 	
 	
