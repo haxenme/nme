@@ -190,6 +190,10 @@ QuickVec<ScreenMode>* CapabilitiesGetScreenModes ();
 
 std::string CapabilitiesGetLanguage();
 
+std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes );
+std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes );
+std::string FileDialogFolder( const std::string &title, const std::string &text );
+
 bool LaunchBrowser(const char *inUtf8URL);
 
 void ExternalInterface_AddCallback (const char *functionName, AutoGCRoot *inCallback);

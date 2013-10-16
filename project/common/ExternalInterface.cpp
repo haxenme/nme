@@ -30,6 +30,7 @@
 #include <NMEThread.h>
 
 
+
 #ifdef min
 #undef min
 #undef max
@@ -624,9 +625,10 @@ value nme_time_stamp()
 DEFINE_PRIM(nme_time_stamp,0);
 
 
-void nme_error_output(value message)
+value nme_error_output(value message)
 {
-	fprintf (stderr, "%s", val_string (message));
+   fprintf (stderr, "%s", val_string (message));
+   return alloc_null();
 }
 DEFINE_PRIM(nme_error_output,1);
 
@@ -732,7 +734,7 @@ value nme_byte_array_overwrite_file(value inFilename, value inBytes)
    fwrite( array.Bytes() , 1, array.Size() , file);
 
    fclose(file);
-	return alloc_null();
+   return alloc_null();
 }
 DEFINE_PRIM(nme_byte_array_overwrite_file,2);
 
@@ -849,7 +851,7 @@ value nme_set_icon( value path ) {
    //printf( "setting icon\n" );
    #if defined( HX_WINDOWS ) || defined( HX_MACOS )
        SetIcon( val_string( path ) );
-   #endif	
+   #endif   
    return alloc_null();
 }
 
@@ -858,29 +860,29 @@ DEFINE_PRIM(nme_set_icon,1);
 // --- nme.system.Capabilities -----------------------------------------------------
 
 value nme_capabilities_get_screen_resolutions () {
-	
+   
 
-	//Only really makes sense on PC platforms
+   //Only really makes sense on PC platforms
 	#if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
-	
-		
-		QuickVec<int>* res = CapabilitiesGetScreenResolutions();
-		
-		value result = alloc_array( res->size());
-		
-      		for(int i=0;i<res->size();i++) {
-      			int outres = (*res)[ i ];
-         		val_array_set_i(result,i,alloc_int( outres ) );
-		
-		}
-	
-		return result;
-	
-	#endif
-	
-	return alloc_null();
-	
-	
+   
+      
+      QuickVec<int>* res = CapabilitiesGetScreenResolutions();
+      
+      value result = alloc_array( res->size());
+      
+            for(int i=0;i<res->size();i++) {
+               int outres = (*res)[ i ];
+               val_array_set_i(result,i,alloc_int( outres ) );
+      
+      }
+   
+      return result;
+   
+   #endif
+   
+   return alloc_null();
+   
+   
 }
 
 DEFINE_PRIM( nme_capabilities_get_screen_resolutions, 0 );
@@ -914,37 +916,37 @@ value nme_capabilities_get_screen_modes () {
 DEFINE_PRIM( nme_capabilities_get_screen_modes, 0 );
 
 value nme_capabilities_get_pixel_aspect_ratio () {
-	
-	return alloc_float (CapabilitiesGetPixelAspectRatio ());
-	
+   
+   return alloc_float (CapabilitiesGetPixelAspectRatio ());
+   
 }
 DEFINE_PRIM (nme_capabilities_get_pixel_aspect_ratio, 0);
 
 value nme_capabilities_get_screen_dpi () {
-	
-	return alloc_float (CapabilitiesGetScreenDPI ());
-	
+   
+   return alloc_float (CapabilitiesGetScreenDPI ());
+   
 }
 DEFINE_PRIM (nme_capabilities_get_screen_dpi, 0);
 
 value nme_capabilities_get_screen_resolution_x () {
-	
-	return alloc_float (CapabilitiesGetScreenResolutionX ());
-	
+   
+   return alloc_float (CapabilitiesGetScreenResolutionX ());
+   
 }
 DEFINE_PRIM (nme_capabilities_get_screen_resolution_x, 0);
 
 value nme_capabilities_get_screen_resolution_y () {
-	
-	return alloc_float (CapabilitiesGetScreenResolutionY ());
-	
+   
+   return alloc_float (CapabilitiesGetScreenResolutionY ());
+   
 }
 DEFINE_PRIM (nme_capabilities_get_screen_resolution_y, 0);
 
 value nme_capabilities_get_language() {
-	
-	return alloc_string(CapabilitiesGetLanguage().c_str());
-	
+   
+   return alloc_string(CapabilitiesGetLanguage().c_str());
+   
 }
 DEFINE_PRIM (nme_capabilities_get_language, 0);
 
@@ -997,19 +999,20 @@ DEFINE_PRIM(nme_filesystem_get_volumes,2);
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)
 {
-	bool result=LaunchBrowser(val_string(url));
-	return alloc_bool(result);
+   bool result=LaunchBrowser(val_string(url));
+   return alloc_bool(result);
 }
 DEFINE_PRIM(nme_get_url,1);
 
 
 // --- Haptic Vibrate ---------------------------------------------------------------
 
-void nme_haptic_vibrate(value inPeriod, value inDuration)
+value nme_haptic_vibrate(value inPeriod, value inDuration)
 {
-	#if defined(WEBOS) || defined(ANDROID)
-	HapticVibrate (val_int(inPeriod), val_int(inDuration));
-	#endif
+   #if defined(WEBOS) || defined(ANDROID)
+   HapticVibrate (val_int(inPeriod), val_int(inDuration));
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_haptic_vibrate,2);
 
@@ -1017,31 +1020,31 @@ DEFINE_PRIM(nme_haptic_vibrate,2);
 // --- SharedObject ----------------------------------------------------------------------
 value nme_set_user_preference(value inId,value inValue)
 {
-	#if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
-		bool result=SetUserPreference(val_string(inId),val_string(inValue));
-		return alloc_bool(result);
-	#endif
-	return alloc_bool(false);
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
+      bool result=SetUserPreference(val_string(inId),val_string(inValue));
+      return alloc_bool(result);
+   #endif
+   return alloc_bool(false);
 }
 DEFINE_PRIM(nme_set_user_preference,2);
 
 value nme_get_user_preference(value inId)
 {
-	#if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
-		std::string result=GetUserPreference(val_string(inId));
-		return alloc_string(result.c_str());
-	#endif
-	return alloc_null();
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
+      std::string result=GetUserPreference(val_string(inId));
+      return alloc_string(result.c_str());
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_get_user_preference,1);
 
 value nme_clear_user_preference(value inId)
 {
-	#if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
-		bool result=ClearUserPreference(val_string(inId));
-		return alloc_bool(result);
-	#endif
-	return alloc_bool(false);
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
+      bool result=ClearUserPreference(val_string(inId));
+      return alloc_bool(result);
+   #endif
+   return alloc_bool(false);
 }
 DEFINE_PRIM(nme_clear_user_preference,1);
 
@@ -1052,7 +1055,7 @@ value nme_stage_set_fixed_orientation(value inValue)
 #ifdef IPHONE
    gFixedOrientation = val_int(inValue);
 #endif
-	return alloc_null();
+   return alloc_null();
 }
 DEFINE_PRIM(nme_stage_set_fixed_orientation,1);
 
@@ -1066,17 +1069,6 @@ value nme_get_frame_stage(value inValue)
 }
 DEFINE_PRIM(nme_get_frame_stage,1);
 
-void nme_resize_frame(value inValue, value inWidth, value inHeight)
-{
-	int h = val_int(inHeight);
-	int w = val_int(inWidth);
-	Frame *frame;
-	if (!AbstractToObject(inValue,frame)){
-		return;
-	}
-	frame->Resize(w,h);
-}
-DEFINE_PRIM(nme_resize_frame,3);
 
 void nme_set_resolution(value inValue, value inWidth, value inHeight)
 {
@@ -1134,7 +1126,7 @@ value nme_set_package(value inCompany,value inFile,value inPackage,value inVersi
    gFile = val_string(inFile);
    gPackage = val_string(inPackage);
    gVersion = val_string(inVersion);
-	return val_null;
+   return val_null;
 }
 DEFINE_PRIM(nme_set_package,4);
 
@@ -1162,7 +1154,7 @@ DEFINE_PRIM_MULT(nme_create_main_frame);
 value nme_set_asset_base(value inBase)
 {
    gAssetBase = val_string(inBase);
-	return val_null;
+   return val_null;
 }
 DEFINE_PRIM(nme_set_asset_base,1);
 
@@ -1278,6 +1270,20 @@ value nme_render_stage(value inStage)
 DEFINE_PRIM(nme_render_stage,1);
 
 
+value nme_stage_resize_window(value inStage, value inWidth, value inHeight)
+{
+   #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      stage->ResizeWindow(val_int(inHeight), val_int(inWidth));
+   }
+   #endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_resize_window,3);
+
+
 value nme_stage_get_focus_id(value inValue)
 {
    int result = -1;
@@ -1332,9 +1338,9 @@ DEFINE_PRIM(nme_stage_is_opengl,1);
 namespace nme { void AndroidRequestRender(); }
 value nme_stage_request_render()
 {
-	#ifdef ANDROID
-	AndroidRequestRender();
-	#endif
+   #ifdef ANDROID
+   AndroidRequestRender();
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_stage_request_render,0);
@@ -1351,23 +1357,20 @@ value nme_stage_show_cursor(value inStage,value inShow)
 }
 DEFINE_PRIM(nme_stage_show_cursor,2);
 
-value nme_stage_constrain_cursor_to_window_frame(value inStage, value inLock) {
-
-
+value nme_stage_constrain_cursor_to_window_frame(value inStage, value inLock)
+{
     Stage *stage;
-  
     if (AbstractToObject(inStage,stage)) {       
         bool lock = val_bool(inLock);
         stage->ConstrainCursorToWindowFrame( lock );
-    } 
-
+    }
     return alloc_null();
 }
 DEFINE_PRIM(nme_stage_constrain_cursor_to_window_frame,2);
 
-value nme_stage_set_cursor_position_in_window( value inStage, value inX, value inY ) {
-
-    Stage *stage;
+value nme_stage_set_cursor_position_in_window( value inStage, value inX, value inY )
+{
+   Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
       int x = val_int(inX);
@@ -1378,31 +1381,44 @@ value nme_stage_set_cursor_position_in_window( value inStage, value inX, value i
 }
 DEFINE_PRIM(nme_stage_set_cursor_position_in_window,3);
 
+value nme_stage_set_window_position( value inStage, value inX, value inY ) {
+
+    Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      int x = val_int(inX);
+      int y = val_int(inY);      
+      stage->SetStageWindowPosition(x,y);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_set_window_position,3);
+
 
 value nme_stage_get_orientation() {
 
-	#if defined(IPHONE) || defined(ANDROID) || defined(BLACKBERRY)
-		return alloc_int( GetDeviceOrientation() );
-	
-	#else
-	
-		return alloc_int( 0 );
-		
-	#endif
-	
+   #if defined(IPHONE) || defined(ANDROID) || defined(BLACKBERRY)
+      return alloc_int( GetDeviceOrientation() );
+   
+   #else
+   
+      return alloc_int( 0 );
+      
+   #endif
+   
 }
 
 DEFINE_PRIM (nme_stage_get_orientation, 0);
 
 value nme_stage_get_normal_orientation() {
 
-	#if defined(ANDROID)
-		return alloc_int( GetNormalOrientation() );
+   #if defined(ANDROID)
+      return alloc_int( GetNormalOrientation() );
    #elif defined(IPHONE)
       return alloc_int( 1 ); // ios device sensors are always portrait orientated  
    #else
       return alloc_int( 0 );  
-	#endif
+   #endif
 }
 
 DEFINE_PRIM (nme_stage_get_normal_orientation, 0);
@@ -2014,46 +2030,47 @@ DO_PROP(DisplayObjectContainer,doc,mouse_children,MouseChildren,alloc_bool,val_b
 
 AutoGCRoot *sExternalInterfaceHandler = 0;
 
-void nme_external_interface_add_callback (value inFunctionName, value inClosure)
+value nme_external_interface_add_callback (value inFunctionName, value inClosure)
 {
-	#ifdef WEBOS
-		if (sExternalInterfaceHandler == 0) {
-			AutoGCRoot *sExternalInterfaceHandler = new AutoGCRoot (inClosure);
-		}
-		ExternalInterface_AddCallback (val_string (inFunctionName), sExternalInterfaceHandler);
-	#endif
+   #ifdef WEBOS
+      if (sExternalInterfaceHandler == 0) {
+         AutoGCRoot *sExternalInterfaceHandler = new AutoGCRoot (inClosure);
+      }
+      ExternalInterface_AddCallback (val_string (inFunctionName), sExternalInterfaceHandler);
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_external_interface_add_callback,2);
 
 value nme_external_interface_available ()
 {
-	#ifdef WEBOS
-		return alloc_bool(true);
-	#else
-		return alloc_bool(false);
-	#endif
+   #ifdef WEBOS
+      return alloc_bool(true);
+   #else
+      return alloc_bool(false);
+   #endif
 }
 DEFINE_PRIM(nme_external_interface_available,0);
 
 value nme_external_interface_call (value inFunctionName, value args)
 {
-	#ifdef WEBOS
-		int n = val_array_size(args);
-		const char *params[n];
-		for (int i = 0; i < n; i++) {
-			params[i] = val_string (val_array_i(args, i));
-		}
-		ExternalInterface_Call (val_string (inFunctionName), params, n);
-	#endif
-	return alloc_null();
+   #ifdef WEBOS
+      int n = val_array_size(args);
+      const char *params[n];
+      for (int i = 0; i < n; i++) {
+         params[i] = val_string (val_array_i(args, i));
+      }
+      ExternalInterface_Call (val_string (inFunctionName), params, n);
+   #endif
+   return alloc_null();
 }
 DEFINE_PRIM(nme_external_interface_call,2);
 
 value nme_external_interface_register_callbacks ()
 {
-	#ifdef WEBOS
-		ExternalInterface_RegisterCallbacks ();
-	#endif
+   #ifdef WEBOS
+      ExternalInterface_RegisterCallbacks ();
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_external_interface_register_callbacks,0);
@@ -2272,21 +2289,21 @@ DEFINE_PRIM(nme_gfx_draw_rect,5);
 
 value nme_gfx_draw_path(value inGfx, value inCommands, value inData, value inWinding)
 {
-	Graphics *gfx;
-	if (AbstractToObject(inGfx,gfx))
-	{
-		QuickVec<uint8> commands;
-		QuickVec<float> data;
-		
-		FillArrayInt(commands, inCommands);
-		FillArrayDouble(data, inData);
-		
-		if (!val_bool(inWinding))
-			gfx->drawPath(commands, data, wrNonZero);
-		else
-			gfx->drawPath(commands, data, wrOddEven);
-	}
-	return alloc_null();
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      QuickVec<uint8> commands;
+      QuickVec<float> data;
+      
+      FillArrayInt(commands, inCommands);
+      FillArrayDouble(data, inData);
+      
+      if (!val_bool(inWinding))
+         gfx->drawPath(commands, data, wrNonZero);
+      else
+         gfx->drawPath(commands, data, wrOddEven);
+   }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_draw_path, 4);
 
@@ -2305,8 +2322,8 @@ DEFINE_PRIM_MULT(nme_gfx_draw_round_rect);
 value nme_gfx_draw_triangles(value *arg, int args )
 {
 
-	enum { aGfx, aVertices, aIndices, aUVData, aCull, aColours, aBlend, aViewport };
-	
+   enum { aGfx, aVertices, aIndices, aUVData, aCull, aColours, aBlend, aViewport };
+   
    Graphics *gfx;
    if (AbstractToObject(arg[aGfx],gfx))
    {
@@ -2937,7 +2954,7 @@ void GetTextLineMetrics(const TextLineMetrics &inMetrics, value &outValue)
    alloc_field(outValue,_id_leading, alloc_float(inMetrics.leading));
 }
 
-void nme_text_field_get_line_metrics(value inText,value inIndex,value outMetrics)
+value nme_text_field_get_line_metrics(value inText,value inIndex,value outMetrics)
 {
    TextField *text;
    if (AbstractToObject(inText,text))
@@ -2945,6 +2962,7 @@ void nme_text_field_get_line_metrics(value inText,value inIndex,value outMetrics
       const TextLineMetrics *mts = text->getLineMetrics(val_int(inIndex));
       GetTextLineMetrics(*mts, outMetrics);
    }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_text_field_get_line_metrics,3);
 
@@ -3092,8 +3110,8 @@ value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
          surface->Clear( val_int(inRGB) | (val_int(inA)<<24) );
       else
       {
-		 Rect rect;
-		 FromValue(rect,inRect);
+       Rect rect;
+       FromValue(rect,inRect);
          surface->Clear( val_int(inRGB) | (val_int(inA)<<24), &rect );
       }
    }
@@ -3158,7 +3176,7 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
             for (int y=0; y < surface->Height(); y++)
             {
                for (int x=0; x < surface->Width(); x++)
-			   {
+            {
                   uint32 alpha = alphabytes.data[index++] << 24;
                   uint32 pixel = surface->getPixel(x, y) << 8;
                   surface->setPixel(x, y, (pixel >> 8) + alpha, true);
@@ -3166,7 +3184,7 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
             } 
          }
       }
-	  
+     
       value result = ObjectToAbstract(surface);
       surface->DecRef();
       return result;
@@ -3276,7 +3294,7 @@ DEFINE_PRIM(nme_bitmap_data_copy,5);
 
 value nme_bitmap_data_copy_channel(value* arg, int nargs)
 {
-	enum { aSrc, aSrcRect, aDest, aDestPoint, aSrcChannel, aDestChannel, aSIZE };
+   enum { aSrc, aSrcRect, aDest, aDestPoint, aSrcChannel, aDestChannel, aSIZE };
    Surface *source;
    Surface *dest;
    if (AbstractToObject(arg[aSrc],source) && AbstractToObject(arg[aDest],dest))
@@ -3288,7 +3306,7 @@ value nme_bitmap_data_copy_channel(value* arg, int nargs)
 
       AutoSurfaceRender render(dest);
       source->BlitChannel(render.Target(),rect,offset.x, offset.y,
-								  val_int(arg[aSrcChannel]), val_int(arg[aDestChannel]) );
+                          val_int(arg[aSrcChannel]), val_int(arg[aDestChannel]) );
    }
 
    return alloc_null();
@@ -3519,7 +3537,7 @@ DEFINE_PRIM_MULT(nme_bitmap_data_noise);
 
 
 
-void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inColor)
+value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inColor)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
@@ -3537,17 +3555,17 @@ void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inC
       int old = surf->getPixel(x,y);
       bool useAlpha = surf->GetAllowTrans();
       
-	  bool *search = new bool[width*height];
+      bool *search = new bool[width*height];
       std::fill_n(search, width*height, false);
       
       while (queue.size() > 0)
       {
          UserPoint currPoint = queue.back();
-		 queue.pop_back();
+       queue.pop_back();
          
          x = currPoint.x;
          y = currPoint.y;
-		 
+       
          if (x<0 || x>=width) continue;
          if (y<0 || y>=height) continue;
          
@@ -3576,17 +3594,19 @@ void nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inC
       }
       delete [] search;
    }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_flood_fill,4);
 
 
-void nme_bitmap_data_unmultiply_alpha(value inSurface)
+value nme_bitmap_data_unmultiply_alpha(value inSurface)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
       surf->unmultiplyAlpha();
    }
+   return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_unmultiply_alpha,1);
 
@@ -3700,27 +3720,30 @@ value nme_video_create(value inWidth, value inHeight)
 }
 DEFINE_PRIM(nme_video_create,2);
 
-void nme_video_load(value inHandle, value inFilename)
+value nme_video_load(value inHandle, value inFilename)
 {
    Video *video;
    if (AbstractToObject(inHandle,video))
       video->Load(val_string(inFilename));
+   return alloc_null();
 }
 DEFINE_PRIM(nme_video_load,2);
 
-void nme_video_play(value inHandle)
+value nme_video_play(value inHandle)
 {
    Video *video;
    if (AbstractToObject(inHandle,video))
       video->Play();
+   return alloc_null();
 }
 DEFINE_PRIM(nme_video_play,1);
 
-void nme_video_clear(value inHandle)
+value nme_video_clear(value inHandle)
 {
    Video *video;
    if (AbstractToObject(inHandle,video))
       video->Clear();
+   return alloc_null();
 }
 DEFINE_PRIM(nme_video_clear,1);
 
@@ -3762,7 +3785,7 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
       //printf("I'm here! trying bytes with length %d", length);
       sound = Sound::Create((float *)buf.Bytes(), length, val_bool(inForceMusic) );
    } else {
-	   val_throw(alloc_string("Empty ByteArray"));
+      val_throw(alloc_string("Empty ByteArray"));
    }
 
    if (sound)
@@ -3771,7 +3794,7 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
       sound->DecRef();
       return result;
    } else {
-	   val_throw(alloc_string("Not Sound"));
+      val_throw(alloc_string("Not Sound"));
    }
    return alloc_null();
 }
@@ -4022,7 +4045,7 @@ value nme_tilesheet_add_rect(value inSheet,value inRect, value inHotSpot)
       if (!val_is_null(inHotSpot))
          FromValue(p,inHotSpot);
       int tile = sheet->addTileRect(rect,p.x,p.y);
-	  return alloc_int(tile);
+     return alloc_int(tile);
    }
    return alloc_null();
 }
@@ -4136,22 +4159,59 @@ DEFINE_PRIM(nme_curl_get_cookies,1);
 
 value nme_lzma_encode(value input_value)
 {
-	buffer input_buffer = val_to_buffer(input_value);
-	buffer output_buffer = alloc_buffer_len(0);
-	Lzma::Encode(input_buffer, output_buffer);
-	return buffer_val(output_buffer);
+   buffer input_buffer = val_to_buffer(input_value);
+   buffer output_buffer = alloc_buffer_len(0);
+   Lzma::Encode(input_buffer, output_buffer);
+   return buffer_val(output_buffer);
 }
 DEFINE_PRIM(nme_lzma_encode,1);
 
 value nme_lzma_decode(value input_value)
 {
-	buffer input_buffer = val_to_buffer(input_value);
-	buffer output_buffer = alloc_buffer_len(0);
-	Lzma::Decode(input_buffer, output_buffer);
-	return buffer_val(output_buffer);
+   buffer input_buffer = val_to_buffer(input_value);
+   buffer output_buffer = alloc_buffer_len(0);
+   Lzma::Decode(input_buffer, output_buffer);
+   return buffer_val(output_buffer);
 }
 DEFINE_PRIM(nme_lzma_decode,1);
 
+
+value nme_file_dialog_folder(value in_title, value in_text )
+{ 
+    std::string _title( val_string( in_title ) );
+    std::string _text( val_string( in_text ) );
+
+    std::string path = FileDialogFolder( _title, _text );
+
+    return alloc_string( path.c_str() );
+}
+DEFINE_PRIM(nme_file_dialog_folder,2);
+
+value nme_file_dialog_open(value in_title, value in_text, value in_types )
+{ 
+    std::string _title( val_string( in_title ) );
+    std::string _text( val_string( in_text ) );
+
+    value *_types = val_array_value( in_types );
+
+    std::string path = FileDialogOpen( _title, _text, std::vector<std::string>() );
+
+    return alloc_string( path.c_str() );
+}
+DEFINE_PRIM(nme_file_dialog_open,3);
+
+value nme_file_dialog_save(value in_title, value in_text, value in_types )
+{ 
+    std::string _title( val_string( in_title ) );
+    std::string _text( val_string( in_text ) );
+
+    value *_types = val_array_value( in_types );
+
+    std::string path = FileDialogSave( _title, _text, std::vector<std::string>() );
+
+    return alloc_string( path.c_str() );
+}
+DEFINE_PRIM(nme_file_dialog_save,3);
 
 // Reference this to bring in all the symbols for the static library
 #ifdef STATIC_LINK

@@ -415,6 +415,7 @@ public:
    virtual void PollNow() { }
 
    virtual void RenderStage();
+   virtual void ResizeWindow(int inWidth, int inHeight) {};
 
    virtual bool isOpenGL() const = 0;
 
@@ -492,6 +493,7 @@ public:
       //Window pointer locking
    virtual void ConstrainCursorToWindowFrame(bool inLock) { };
    virtual void SetCursorPositionInWindow(int inX, int inY) { };
+   virtual void SetStageWindowPosition(int inX, int inY) { };
 
 };
 
@@ -540,7 +542,6 @@ public:
    virtual void SetTitle() = 0;
    virtual void SetIcon() = 0;
    virtual Stage *GetStage() = 0;
-   virtual void Resize(int inWidth, int inHeight) = 0;
 };
 
 enum WindowFlags

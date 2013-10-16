@@ -4,6 +4,8 @@
    <set name="GCC_THIN_ARCHIVE" value="1" if="emscripten"/>
    <set name="debug" value="debug" if ="fulldebug" />
    
+   <set name="PLATFORM" value="android-9" if="android" unless="PLATFORM" />
+   
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
 
    <set name="HXCPP_M32" value="1" unless="HXCPP_M64" />
@@ -23,6 +25,9 @@
    <set name="sdl2" value="1" if="NME_SDL2" />
    <set name="glfw" value="1" if="NME_GLFW" />
    <set name="directfb" value="1" if="NME_DIRECTFB" />
+   
+   <set name="sdl" value="1" if="rpi" unless="has_window" />
+   <set name="has_window" value="1" if="sdl" />
    
    <set name="sdl2" value="1" if="win_desktop" unless="has_window" />
    <set name="sdl2" value="1" if="macos" unless="has_window" />
@@ -57,6 +62,8 @@
    <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
    
    <set name="openal" value="1" if="NME_OPENAL" />
+   <set name="openal" value="1" if="android" />
+   <set name="openal" value="1" if="iphone" />
    <set name="has_sound" value="1" if="sdl" />
    <set name="has_sound" value="1" if="openal" />
    <set name="openal" value="1" if="sdl2" unless="has_sound" />
@@ -80,6 +87,7 @@
       <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" />
       <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
       <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
+      <compilerflag value="-Iopenal"/>
       <file name="windows/GDIFont.cpp"/>
       <file name="windows/System.cpp" />
       <!-- Use SDL on windows too ? -->
@@ -114,12 +122,16 @@
    <files id="linux">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-Iopenal" if="openal" />
+      <compilerflag value="-I${NME_DEV}/include" />
+      <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
       <compilerflag value="-DSDL_OGL" if="sdl"/>
       <file name="linux/NativeFont.cpp"/>
       <file name="linux/System.cpp"/>
       <file name="empty/URL.cpp" if="nocurl" />
-      <file name="empty/Sound.cpp" unless="sdl" />
+      <file name="empty/Sound.cpp" if="noopenal" />
       <!-- <file name="empty/HardwareContext.cpp" unless="has_window" /> -->
+      <file name="openal/OpenALSound.cpp" if="openal" />
       
    </files>
    
@@ -141,10 +153,13 @@
    <files id="iphone">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I${NME_DEV}/include"/>
+      <compilerflag value="-Iopenal"/>
       <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
       <file name="iPhone/UIStageView.mm"/>
       <file name="iPhone/UIDeviceHardware.mm"/>
       <!-- <file name="iPhone/SurfaceIO.mm"/> -->
+      <file name="openal/OpenALSound.cpp" />
       <file name="iPhone/Sound.mm"/>
       <file name="iPhone/NativeFont.mm"/>
       <file name="iPhone/System.mm"/>
@@ -156,12 +171,17 @@
    <files id="android">
       
       <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I${NME_DEV}/include"/>
+      <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
+      <compilerflag value="-Iopenal"/>
       <file name="android/AndroidCommon.cpp" />
-      <file name="android/AndroidSound.cpp"/>
+      <file name="android/AndroidSound.cpp" unless="openal"/>
       <file name="android/AndroidFont.cpp"/>
       <file name="android/AndroidFrame.cpp"/>
       <file name="android/JNI.cpp"/>
       <file name="android/System.cpp"/>
+      <file name="openal/OpenALSound.cpp" if="openal"/>
+      <compilerflag value="-DAL_LIBTYPE_STATIC" if="openal"/>
       
    </files>
    
@@ -316,15 +336,18 @@
    <set name="tool" value="static_link" if="iphone"/>
    <set name="tool" value="static_link" if="emscripten"/>
    
-   <set name="IOS_ARCH" value="-v7" if="HXCPP_ARMV7" />
+   <set name="ARM_ARCH" value="-v7" if="HXCPP_ARMV7" />
    
    <set name="ndll-tool" value="dll" unless="iphone"/>
    <set name="ndll-tool" value="static_link" if="iphone"/>
    <set name="ndll-tool" value="static_link" if="emscripten"/>
    <set name="name_extra" value=".iphonesim" if="iphonesim"/>
-   <set name="name_extra" value=".iphoneos${IOS_ARCH}" if="iphoneos"/>
+   <set name="name_extra" value=".iphoneos${ARM_ARCH}" if="iphoneos"/>
+   <set name="name_extra" value="-v7" if="android" />
+   <set name="name_extra" value="" if="android" unless="HXCPP_ARMV7" />
    
    <set name="name_extra" value="-x86" if="simulator" unless="iphonesim" />
+   <set name="ndll_name_extra" value="${name_extra}" unless="android" />
    
    <set name="debug_extra" value="-debug" if="fulldebug" />
    
@@ -414,6 +437,7 @@
       <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" />
       <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
       <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
+      <compilerflag value="-Iopenal"/>
       <file name="mac/NSFont.cpp"/>
       <file name="mac/MacBoot.m" />
       <file name="empty/URL.cpp" if="nocurl" />
@@ -430,7 +454,7 @@
    <set name="name_prefix" value="lib" if="iphone" />
    
    
-   <target id="NDLL" output="${name_prefix}nme${debug_extra}${name_extra}" tool="linker" toolid="${ndll-tool}">
+   <target id="NDLL" output="${name_prefix}nme${debug_extra}${ndll_name_extra}" tool="linker" toolid="${ndll-tool}">
       
       <outdir name="../ndll/${BINDIR}" />
       <ext value=".ndll" unless="mobile"/>
@@ -470,7 +494,9 @@
       <lib name="${THIRDPARTY_LIBS}libSDL_image${name_extra}${SLIBEXT}" if="sdl_image" unless="emscripten" />
       <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
       <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
-	  <!-- <lib name="${THIRDPARTY_LIBS}libSDL2main${name_extra}${SLIBEXT}" if="windows" unless="sdl" /> -->
+      <!-- <lib name="${THIRDPARTY_LIBS}libSDL2main${name_extra}${SLIBEXT}" if="windows" unless="sdl" /> -->
+      <!-- <lib name="${THIRDPARTY_LIBS}libopenal${name_extra}${SLIBEXT}" if="android" unless="noopenal"/> -->
+      <lib name="${THIRDPARTY_LIBS}libopenal${name_extra}${SLIBEXT}" if="linux" unless="noopenal"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
       <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal" unless="sdl_static" />
       <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
@@ -484,6 +510,8 @@
       <lib name="${THIRDPARTY_LIBS}libglfw3${name_extra}${SLIBEXT}" if="glfw"/>
       
       <lib name="-L${THIRDPARTY_LIBS}" if="linux"/>
+      <lib name="-lrt" if="linux" unless="noopenal" />
+      <!-- <lib name="-lopenal" if="linux" unless="noopenal" /> -->
       
       <lib name="-L${THIRDPARTY_LIBS}" if="webos"/>
       <lib name="-L../ndll/BlackBerry" if="blackberry"/>
@@ -520,9 +548,12 @@
       <vflag name="-framework" value="OpenAL" if="macos" unless="noopenal"/>
       
       <lib name="-ldl" if="android"/>
+      <lib name="-landroid" if="android"/>
       <lib name="-lGLESv1_CM" if="android" unless="ogl_shaders"/>
       <lib name="-lGLESv2" if="android"/>
       <lib name="-lz" if="android"/>
+      <lib name="-L../ndll/Android" if="android" unless="noopenal"/>
+      <lib name="-lopenal" if="android" unless="noopenal"/>
       
       <lib name="-lGLES_CM" if="webos" unless="ogl_shaders"/>
       <lib name="-lGLESv2" if="webos"/>
@@ -563,6 +594,7 @@
       <lib name="ws2_32.lib" if="win_desktop" unless="sdl2"/>
       <lib name="wldap32.lib" if="win_desktop"/>
       <lib name="shell32.lib" if="win_desktop"/>
+      <lib name="comdlg32.lib" if="win_desktop"/>
       <lib name="-ldl" if="linux"/>
       <lib name="-lGL" if="linux" unless="rpi"/>
       <lib name="-lpthread" if="linux"/>

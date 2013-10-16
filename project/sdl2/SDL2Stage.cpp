@@ -17,6 +17,7 @@ namespace nme
 
 static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
+static Rect sgWindowRect = Rect(0, 0, 0, 0);
 static bool sgInitCalled = false;
 static bool sgJoystickEnabled = false;
 static int  sgShaderFlags = 0;
@@ -231,6 +232,7 @@ public:
 	
 	~SDLStage()
 	{
+		SDL_SetWindowFullscreen(mSDLWindow, 0);
 		if (!mIsOpenGL)
 		{
 			SDL_FreeSurface(mSoftwareSurface);
@@ -241,8 +243,8 @@ public:
 			mOpenGLContext->DecRef();
 		}
 		mPrimarySurface->DecRef();
-		//SDL_DestroyRenderer(mSDLRenderer);
-		//SDL_DestroyWindow(mSDLWindow);
+		SDL_DestroyRenderer(mSDLRenderer);
+		SDL_DestroyWindow(mSDLWindow);
 	}
 	
 	
@@ -250,8 +252,6 @@ public:
 	{
 		mWidth = inWidth;
 		mHeight = inHeight;
-		
-		SDL_SetWindowSize(mSDLWindow, inWidth, inHeight);
 		
 		if (mIsOpenGL)
 		{
@@ -273,6 +273,25 @@ public:
 	}
 	
 	
+	void ResizeWindow(int inWidth, int inHeight)
+	{
+		if (mIsFullscreen)
+		{
+			SDL_DisplayMode mode;
+			SDL_GetCurrentDisplayMode(0, &mode);
+			
+			mode.w = inWidth;
+			mode.h = inHeight;
+			
+			SDL_SetWindowDisplayMode(mSDLWindow, &mode);
+		}
+		else
+		{
+			SDL_SetWindowSize(mSDLWindow, inWidth, inHeight);
+		}
+	}
+	
+	
 	void SetFullscreen(bool inFullscreen)
 	{
 		if (inFullscreen != mIsFullscreen)
@@ -281,20 +300,30 @@ public:
 			
 			if (mIsFullscreen)
 			{
+				SDL_GetWindowPosition(mSDLWindow, &sgWindowRect.x, &sgWindowRect.y);
+				SDL_GetWindowSize(mSDLWindow, &sgWindowRect.w, &sgWindowRect.h);
+				
+				//SDL_SetWindowSize(mSDLWindow, sgDesktopWidth, sgDesktopHeight);
+				
+				SDL_DisplayMode mode;
+				SDL_GetCurrentDisplayMode(0, &mode);
+				mode.w = sgDesktopWidth;
+				mode.h = sgDesktopHeight;
+				SDL_SetWindowDisplayMode(mSDLWindow, &mode);
+				
 				SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
 			}
 			else
 			{
 				SDL_SetWindowFullscreen(mSDLWindow, 0);
+				if (sgWindowRect.w && sgWindowRect.h)
+				{
+					SDL_SetWindowSize(mSDLWindow, sgWindowRect.w, sgWindowRect.h);
+				}
+				#ifndef HX_LINUX
+				SDL_SetWindowPosition(mSDLWindow, sgWindowRect.x, sgWindowRect.y);
+				#endif
 			}
-			
-			/*int width, height;
-			SDL_GetWindowSize(mSDLWindow, &width, &height);
-			printf("Size? %d x %d\n", width, height);
-			Resize(width, height);
-			
-			Event resize(etResize, width, height);
-			ProcessEvent(resize);*/
 		}
 	}
 
@@ -556,6 +585,12 @@ public:
 		SDL_WarpMouseInWindow( mSDLWindow, inX, inY );
     }	
 	
+      //Note that this fires a mouse event, see the SDL_WarpMouseInWindow docs
+    void SetStageWindowPosition(int inX, int inY) 
+    {
+		SDL_SetWindowPosition( mSDLWindow, inX, inY );
+    }	
+	
 	
 	void EnablePopupKeyboard(bool enabled)
 	{
@@ -712,6 +747,7 @@ void AddModStates(int &ioFlags,int inState = -1)
 
 
 #define SDL_TRANS(x) case SDLK_##x: return key##x;
+#define SDL_TRANS_TO(x, y) case SDLK_##x: return key##y;
 
 
 int SDLKeyToFlash(int inKey,bool &outRight)
@@ -722,12 +758,9 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 		return inKey;
 	if (inKey>=SDLK_0 && inKey<=SDLK_9)
 		return inKey - SDLK_0 + keyNUMBER_0;
-	if (inKey>=SDLK_KP_0 && inKey<=SDLK_KP_9)
-		return inKey - SDLK_KP_0 + keyNUMPAD_0;
 	
-	if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
+	if (inKey>=SDLK_F1 && inKey<=SDLK_F12)
 		return inKey - SDLK_F1 + keyF1;
-	
 	
 	switch(inKey)
 	{
@@ -774,6 +807,26 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 		SDL_TRANS(SPACE)
 		SDL_TRANS(TAB)
 		SDL_TRANS(UP)
+		SDL_TRANS(F13)
+		SDL_TRANS(F14)
+		SDL_TRANS(F15)
+		SDL_TRANS_TO(KP_0, NUMPAD_0)
+		SDL_TRANS_TO(KP_1, NUMPAD_1)
+		SDL_TRANS_TO(KP_2, NUMPAD_2)
+		SDL_TRANS_TO(KP_3, NUMPAD_3)
+		SDL_TRANS_TO(KP_4, NUMPAD_4)
+		SDL_TRANS_TO(KP_5, NUMPAD_5)
+		SDL_TRANS_TO(KP_6, NUMPAD_6)
+		SDL_TRANS_TO(KP_7, NUMPAD_7)
+		SDL_TRANS_TO(KP_8, NUMPAD_8)
+		SDL_TRANS_TO(KP_9, NUMPAD_9)
+		SDL_TRANS_TO(KP_PLUS, NUMPAD_ADD)
+		SDL_TRANS_TO(KP_DECIMAL, NUMPAD_DECIMAL)
+		SDL_TRANS_TO(KP_PERIOD, NUMPAD_DECIMAL)
+		SDL_TRANS_TO(KP_DIVIDE, NUMPAD_DIVIDE)
+		//SDL_TRANS_TO(KP_ENTER, NUMPAD_ENTER)
+		SDL_TRANS_TO(KP_MULTIPLY, NUMPAD_MULTIPLY)
+		SDL_TRANS_TO(KP_MINUS, NUMPAD_SUBTRACT)
 	}
 
 	return inKey;
@@ -898,7 +951,7 @@ void ProcessEvent(SDL_Event &inEvent)
 				//fetch the mouse position
 			SDL_GetMouseState(&_x,&_y);
 				//create the event
-			Event mouse(etMouseDown, _x, _y, event_dir);
+			Event mouse(etMouseUp, _x, _y, event_dir);
 				//add flags for modifier keys
 			AddModStates(mouse.flags);
 				//and done.
@@ -910,7 +963,7 @@ void ProcessEvent(SDL_Event &inEvent)
 			Event key(inEvent.type == SDL_KEYDOWN ? etKeyDown : etKeyUp );
 			bool right;
 			key.value = SDLKeyToFlash(inEvent.key.keysym.sym, right);
-			if (inEvent.type == SDL_KEYDOWN)
+			/*if (inEvent.type == SDL_KEYDOWN)
 			{
 				//key.code = key.value==keyBACKSPACE ? keyBACKSPACE : inEvent.key.keysym.unicode;
 				key.code = inEvent.key.keysym.scancode;
@@ -919,7 +972,8 @@ void ProcessEvent(SDL_Event &inEvent)
 			else
 				// SDL does not provide unicode on key up, so remember it,
 				//  keyed by scancode
-				key.code = sLastUnicode[inEvent.key.keysym.scancode];
+				key.code = sLastUnicode[inEvent.key.keysym.scancode];*/
+			key.code = 0;
 			
 			AddModStates(key.flags, inEvent.key.keysym.mod);
 			if (right)
@@ -983,7 +1037,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	
 	sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
 
-	Rect r(100,100,inWidth,inHeight);
+	//Rect r(100,100,inWidth,inHeight);
 	
 	int err = InitSDL();
 	if (err == -1)
@@ -1027,7 +1081,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	if (opengl) windowFlags |= SDL_WINDOW_OPENGL;
 	if (resizable) windowFlags |= SDL_WINDOW_RESIZABLE;
 	if (borderless) windowFlags |= SDL_WINDOW_BORDERLESS;
-	if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP; //SDL_WINDOW_FULLSCREEN;
+	if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN; //SDL_WINDOW_FULLSCREEN_DESKTOP;
 	
 	if (opengl)
 	{
@@ -1055,9 +1109,24 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 		}
 	}
 	
-	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, fullscreen ? 0 : inWidth, fullscreen ? 0 : inHeight, windowFlags);
+	#ifdef HX_LINUX
+	int setWidth = inWidth;
+	int setHeight = inHeight;
+	#else
+	int setWidth = fullscreen ? sgDesktopWidth : inWidth;
+	int setHeight = fullscreen ? sgDesktopHeight : inHeight;
+	#endif
+	
+	SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, setWidth, setHeight, windowFlags);
 	
 	if (!window) return;
+	windowFlags = SDL_GetWindowFlags (window);
+	
+	if (fullscreen) {
+		
+		sgWindowRect = Rect(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, inWidth, inHeight);
+		
+	}
 	
 	int renderFlags = 0;
 	
@@ -1257,7 +1326,19 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	}
 	
 	int width, height;
-	SDL_GetWindowSize(window, &width, &height);
+	if (windowFlags & SDL_WINDOW_FULLSCREEN || windowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+	{
+		//SDL_DisplayMode mode;
+		//SDL_GetCurrentDisplayMode(0, &mode);
+		//width = mode.w;
+		//height = mode.h;
+		width = sgDesktopWidth;
+		height = sgDesktopHeight;
+	}
+	else
+	{
+		SDL_GetWindowSize(window, &width, &height);
+	}
 	
 	sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, width, height);
 	inOnFrame(sgSDLFrame);

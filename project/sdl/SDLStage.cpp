@@ -341,19 +341,18 @@ public:
       mPrimarySurface->DecRef();
    }
 
-   void Resize(int inWidth,int inHeight)
+   void Resize(int inWidth, int inHeight, bool resizeWindow = false)
    {
       #ifdef HX_WINDOWS
-      if (mIsOpenGL)
+      if (mIsOpenGL && !resizeWindow)
       {
-         mSDLSurface = SDL_SetVideoMode(inWidth, inHeight, 32, mFlags);
          // Little hack to help windows
          mSDLSurface->w = inWidth;
          mSDLSurface->h = inHeight;
          mOpenGLContext->SetWindowSize(inWidth,inHeight);
       }
       else
-	  #endif
+      #endif
       {
          // Calling this recreates the gl context and we loose all our textures and
          // display lists. So Work around it.
@@ -388,6 +387,13 @@ public:
          }
          mPrimarySurface->IncRef();
       }
+   }
+   
+   void ResizeWindow(int inWidth, int inHeight)
+   {
+      Resize(inWidth, inHeight, true);
+      Event resize(etResize, mSDLSurface->w, mSDLSurface->h);
+      ProcessEvent(resize);
    }
 
    void SetFullscreen(bool inFullscreen)
@@ -698,9 +704,9 @@ public:
    {
       mStage->ProcessEvent(inEvent);
    }
+   
    void Resize(int inWidth, int inHeight)
    {
-	  printf("SDLFrame.Resize(%d,%d)",inWidth,inHeight);
       mStage->Resize(inWidth,inHeight);
    }
 

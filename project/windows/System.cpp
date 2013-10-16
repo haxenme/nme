@@ -1,6 +1,9 @@
 #include <windows.h>
+#include <shlobj.h> 
+
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 namespace nme {
 	
@@ -52,6 +55,77 @@ namespace nme {
 		double vPixelsPerInch = GetDeviceCaps(screen,LOGPIXELSY);
 		ReleaseDC(NULL, screen);
 		return hPixelsPerInch / vPixelsPerInch;
+	}
+
+
+	std::string FileDialogFolder( const std::string &title, const std::string &text ) {
+
+		char path[MAX_PATH];
+	    BROWSEINFO bi = { 0 };
+	    bi.lpszTitle = ("All Folders Automatically Recursed.");
+	    LPITEMIDLIST pidl = SHBrowseForFolder ( &bi );
+
+	    if ( pidl != 0 ) {
+	        // get the name of the folder and put it in path
+	        SHGetPathFromIDList ( pidl, path );
+
+
+	        // free memory used
+	        IMalloc * imalloc = 0;
+	        if ( SUCCEEDED( SHGetMalloc ( &imalloc )) )
+	        {
+	            imalloc->Free ( pidl );
+	            imalloc->Release ( );
+	        }
+
+	        return std::string(path);
+	    }
+		
+		return ""; 
+	}
+
+	std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
+
+		OPENFILENAME ofn;
+	    char path[MAX_PATH] = "";
+
+	    ZeroMemory(&ofn, sizeof(ofn));
+
+	    ofn.lStructSize = sizeof(ofn);
+	    ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
+	    ofn.lpstrFile = path;
+	    ofn.lpstrTitle = title.c_str();
+	    ofn.nMaxFile = MAX_PATH;
+	    ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
+	    ofn.lpstrDefExt = "*";
+
+	    if(GetOpenFileName(&ofn)) {
+			return std::string( ofn.lpstrFile ); 
+	    } 
+
+		return ""; 
+	}
+
+	std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
+
+		OPENFILENAME ofn;
+	    char path[1024] = "";
+
+	    ZeroMemory(&ofn, sizeof(ofn));
+
+	    ofn.lStructSize = sizeof(ofn);
+	    ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
+	    ofn.lpstrFile = path;
+	    ofn.lpstrTitle = title.c_str();
+	    ofn.nMaxFile = MAX_PATH;
+	    ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
+	    ofn.lpstrDefExt = "*";
+
+	    if(GetSaveFileName(&ofn))  {
+			return std::string( ofn.lpstrFile ); 
+	    }
+
+		return ""; 
 	}
 
 }

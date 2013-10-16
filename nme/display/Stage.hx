@@ -779,6 +779,12 @@ class Stage extends DisplayObjectContainer
 
       return next_wake;
    }
+   
+   public function resize (width:Int, height:Int):Void {
+      
+      nme_stage_resize_window(nmeHandle, width, height);
+      
+   }
 
    public static function setFixedOrientation(inOrientation:Int) 
    {
@@ -921,6 +927,7 @@ class Stage extends DisplayObjectContainer
    private static var nme_stage_set_display_state = Loader.load("nme_stage_set_display_state", 2);
    private static var nme_stage_set_next_wake = Loader.load("nme_stage_set_next_wake", 2);
    private static var nme_stage_request_render = Loader.load("nme_stage_request_render", 0);
+   private static var nme_stage_resize_window = Loader.load("nme_stage_resize_window", 3);
    private static var nme_stage_show_cursor = Loader.load("nme_stage_show_cursor", 2);
    private static var nme_stage_set_fixed_orientation = Loader.load("nme_stage_set_fixed_orientation", 1);
    private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);

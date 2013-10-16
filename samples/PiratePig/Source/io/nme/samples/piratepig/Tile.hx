@@ -1,10 +1,10 @@
 package io.nme.samples.piratepig;
 
 
-import com.eclecticdesignstudio.motion.Actuate;
-import com.eclecticdesignstudio.motion.actuators.GenericActuator;
-import com.eclecticdesignstudio.motion.easing.Linear;
-import com.eclecticdesignstudio.motion.easing.Quad;
+import motion.Actuate;
+import motion.actuators.GenericActuator;
+import motion.easing.Linear;
+import motion.easing.Quad;
 import nme.Assets;
 import nme.display.Bitmap;
 import nme.display.Sprite;

@@ -91,24 +91,43 @@ void TextField::setWidth(double inWidth)
 
 double TextField::getWidth()
 {
-   if (autoSize != asNone)
+   /*if (autoSize != asNone)
    {
       if (mLinesDirty)
          Layout();
       return textWidth;
    }
-   return boundsWidth;
+   return boundsWidth;*/
+   Transform trans;
+   trans.mMatrix = &GetLocalMatrix();
+   Extent2DF ext;
+   GetExtent(trans,ext,false,true);
+
+   if (!ext.Valid())
+   {
+      return 0;
+   }
+
+   return ext.Width();
 }
 
 double TextField::getHeight()
 {
-   if (autoSize != asNone)
+   /*if (autoSize != asNone)
    {
       if (mLinesDirty)
          Layout();
       return textHeight;
    }
-   return boundsHeight;
+   return boundsHeight;*/
+   Transform trans;
+   trans.mMatrix = &GetLocalMatrix();
+   Extent2DF ext;
+   GetExtent(trans,ext,false,true);
+   if (!ext.Valid())
+      return 0;
+
+   return ext.Height();
 }
  
 
@@ -1005,6 +1024,25 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
             }
             else if (el->ValueTStr()==L"p")
             {
+               if (ioCharCount > 0)
+               {
+                  if (mCharGroups.size())
+                  {
+                     CharGroup &last = *mCharGroups[ mCharGroups.size()-1 ];
+                     last.mString.push_back('\n');
+                     ioCharCount++;
+                  }
+                  else
+                  {
+                     CharGroup *chars = new CharGroup;
+                     chars->mFormat = inFormat->IncRef();
+                     chars->mFont = 0;
+                     chars->mFontHeight = 0;
+                     chars->mString.push_back('\n');
+                     ioCharCount++;
+                     mCharGroups.push_back(chars);
+                  }
+               }
             }
 
             for (const TiXmlAttribute *att = el->FirstAttribute(); att; att = att->Next())

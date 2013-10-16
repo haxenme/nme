@@ -5,9 +5,15 @@
 #include <Utils.h>
 #include <jni.h>
 #include <ByteArray.h>
+#include <Sound.h>
 
 #include <android/log.h>
 #include "AndroidCommon.h"
+
+#include <assert.h>
+#include <sys/types.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 
 JavaVM *gJVM=0;
 
@@ -83,8 +89,16 @@ public:
       __android_log_print(ANDROID_LOG_INFO, "NME", "Activity action %d", inVal);
       if (inVal==1 || inVal==2)
       {
+         if (inVal == 1)
+         {
+            Sound::Resume();
+         }
          Event evt( inVal==1 ? etActivate : etDeactivate );
          HandleEvent(evt);
+         if (inVal != 1)
+         {
+            Sound::Suspend();
+         }
       }
    }
  
@@ -337,27 +351,74 @@ void StopAnimation()
    sCloseActivity = true;
 }
 
+AAsset *AndroidGetAsset(const char *inResource)
+{
+   JNIEnv *env = GetEnv();
+   jclass cls = FindClass("org/haxe/nme/GameActivity");
+   jmethodID mid = env->GetStaticMethodID(cls, "getAssetManager", "()Landroid/content/res/AssetManager;");
+   if (mid == 0)
+      return 0;
+   
+   jobject assetManager = (jobject)env->CallStaticObjectMethod(cls, mid);
+   assert(0 != assetManager);
+   AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
+   assert(0 != mgr);
+   return AAssetManager_open(mgr, inResource, AASSET_MODE_UNKNOWN);
+}
+
 ByteArray AndroidGetAssetBytes(const char *inResource)
 {
-    JNIEnv *env = GetEnv();
+   AAsset *asset = AndroidGetAsset(inResource);
+   
+   if (asset)
+   {
+      long size = AAsset_getLength(asset);
+      ByteArray result(size);
+      AAsset_read(asset, result.Bytes(), size);
+      AAsset_close(asset);
+      return result;
+   }
+   
+   return 0;
+   
+   /*JNIEnv *env = GetEnv();
+   
+   jclass cls = FindClass("org/haxe/nme/GameActivity");
+   jmethodID mid = env->GetStaticMethodID(cls, "getResource", "(Ljava/lang/String;)[B");
+   if (mid == 0)
+      return 0;
+   
+   jstring str = env->NewStringUTF( inResource );
+   jbyteArray bytes = (jbyteArray)env->CallStaticObjectMethod(cls, mid, str);
+   env->DeleteLocalRef(str);
+   if (bytes==0)
+   {
+      return 0;
+   }
+   
+   jint len = env->GetArrayLength(bytes);
+   ByteArray result(len);
+   env->GetByteArrayRegion(bytes, (jint)0, (jint)len, (jbyte*)result.Bytes());
+   return result;*/
+}
 
-    jclass cls = FindClass("org/haxe/nme/GameActivity");
-    jmethodID mid = env->GetStaticMethodID(cls, "getResource", "(Ljava/lang/String;)[B");
-    if (mid == 0)
-        return 0;
-
-    jstring str = env->NewStringUTF( inResource );
-    jbyteArray bytes = (jbyteArray)env->CallStaticObjectMethod(cls, mid, str);
-	env->DeleteLocalRef(str);
-    if (bytes==0)
-	 {
-       return 0;
-	 }
-
-    jint len = env->GetArrayLength(bytes);
-	 ByteArray result(len);
-    env->GetByteArrayRegion(bytes, (jint)0, (jint)len, (jbyte*)result.Bytes());
-    return result;
+FileInfo AndroidGetAssetFD(const char *inResource)
+{
+   FileInfo info;
+   info.fd = 0;
+   info.offset = 0;
+   info.length = 0;
+   
+   AAsset *asset = AndroidGetAsset(inResource);
+   
+   if (asset)
+   {
+      info.fd = AAsset_openFileDescriptor(asset, &info.offset, &info.length);
+      assert(0 <= fd);
+      AAsset_close(asset);
+   }
+   
+   return info;
 }
 
 void AndroidRequestRender()

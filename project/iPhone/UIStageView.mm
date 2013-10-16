@@ -216,7 +216,7 @@ public:
       if (sgHardwareRendering)
       {
          NSString* platform = [UIDeviceHardware platformString];
-         printf("Detected hardware: %s\n", [platform UTF8String]);
+         //printf("Detected hardware: %s\n", [platform UTF8String]);
          
          //todo ; rather expose this hardware value as a function
          //and they can disable AA selectively on devices themselves 
@@ -366,7 +366,7 @@ public:
          //Create the depth / stencil buffers
          if (sgHasDepthBuffer && !sgHasStencilBuffer)
          {
-            printf("UIStageView :: Creating Depth buffer. \n");
+            //printf("UIStageView :: Creating Depth buffer. \n");
             //Create just the depth buffer
             glGenRenderbuffers(1, &depthStencilBuffer);
             glBindRenderbuffer(GL_RENDERBUFFER, depthStencilBuffer);
@@ -375,8 +375,8 @@ public:
          }
          else if (sgHasDepthBuffer && sgHasStencilBuffer)
          {
-            printf("UIStageView :: Creating Depth buffers. \n");
-            printf("UIStageView :: Creating Stencil buffers. \n");
+            //printf("UIStageView :: Creating Depth buffers. \n");
+            //printf("UIStageView :: Creating Stencil buffers. \n");
             
             //Create the depth/stencil buffer combo
             glGenRenderbuffers(1, &depthStencilBuffer);
@@ -387,7 +387,7 @@ public:
          }
          else
          {
-            printf("UIStageView :: Not creating depth/stencil buffers. \n");
+            //printf("UIStageView :: No depth/stencil buffer requested. \n");
          }
          
          //printf("Create OGL window %dx%d\n", backingWidth, backingHeight);
