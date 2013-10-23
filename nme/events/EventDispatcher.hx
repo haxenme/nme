@@ -5,6 +5,51 @@ import nme.events.IEventDispatcher;
 import nme.events.Event;
 import nme.utils.WeakRef;
 
+
+
+
+class Listener 
+{
+   public var mID:Int;
+   public var mListner:WeakRef<Function>;
+   public var mPriority:Int;
+   public var mUseCapture:Bool;
+
+   private static var sIDs = 1;
+
+   public function new(inListener:Function, inUseCapture:Bool, inPriority:Int, inUseWeakRef:Bool) 
+   {
+      mListner = new WeakRef<Function>(inListener,inUseWeakRef);
+      mUseCapture = inUseCapture;
+      mPriority = inPriority;
+      mID = sIDs++;
+   }
+
+   public function dispatchEvent(event:Event) 
+   {
+      var ref = mListner.get();
+      if (ref!=null)
+         ref(event);
+   }
+
+   public function Is(inListener:Function, inCapture:Bool) 
+   {
+      var ref = mListner.get();
+      if (ref==null)
+         return false;
+      return Reflect.compareMethods(ref, inListener) && mUseCapture == inCapture;
+   }
+}
+
+typedef ListenerList = Array<Listener>;
+
+#if haxe3
+typedef EventMap = haxe.ds.StringMap<ListenerList>;
+#else
+typedef EventMap = Hash<ListenerList>;
+#end
+
+
 class EventDispatcher implements IEventDispatcher 
 {
    /** @private */ private var nmeEventMap:EventMap;
@@ -27,8 +72,7 @@ class EventDispatcher implements IEventDispatcher
          nmeEventMap.set(type, list);
       }
 
-      var l = new Listener(listener, useCapture, priority);
-      list.push(new WeakRef<Listener>(l, useWeakReference));
+      list.push(new Listener(listener, useCapture, priority,useWeakReference));
      
       // if pri is 0, it's fine on the end of the list. If not, might be out of order
       if ( priority != 0 ) {
@@ -36,21 +80,21 @@ class EventDispatcher implements IEventDispatcher
       }
    }
 
-   private static inline function sortEvents( a:WeakRef<Listener>, b:WeakRef<Listener> ):Int 
+   private static inline function sortEvents( a:Listener, b:Listener ):Int 
    { 
       // in theory these can be null, might be best to tread carefully
       if ( null == a && null == b ) { return 0; }
       if ( null == a ) { return -1; }
       if ( null == b ) { return 1; }
-      var al = a.get();
-      var bl = b.get();
+      var al = a.mListner.get();
+      var bl = b.mListner.get();
       if ( null == al || null == bl ) { return 0; }
-      if ( al.mPriority == bl.mPriority ) { 
+      if ( a.mPriority == b.mPriority ) { 
          // if priorities are the same, ensure original order of addition is maintained
-         return al.mID == bl.mID ? 0 : ( al.mID > bl.mID ? 1 : -1 ); 
+         return a.mID == b.mID ? 0 : ( a.mID > b.mID ? 1 : -1 ); 
       } else {
          // otherwise ensure higher priority listeners come first
-         return al.mPriority < bl.mPriority ? 1 : -1;
+         return a.mPriority < b.mPriority ? 1 : -1;
       }
    } 
    
@@ -79,15 +123,15 @@ class EventDispatcher implements IEventDispatcher
          var idx = 0;
          while(idx < list.length) 
          {
-            var list_item = list[idx];
-            var listener = list_item!=null ? list_item.get() : null;
+            var listener = list[idx];
+            var isValid = listener!=null && listener.mListner.get()!=null;
 
-            if (listener == null) 
+            if (!isValid)
             {
                // Lost reference - so we can remove listener. No need to move idx...
                list.splice(idx, 1);
-
-            } else 
+            }
+            else 
             {
                if (listener.mUseCapture == capture) 
                {
@@ -141,8 +185,8 @@ class EventDispatcher implements IEventDispatcher
       {
          if (list[i] != null) 
          {
-            var li = list[i].get();
-            if (li != null && li.Is(listener, capture)) 
+            var li = list[i];
+            if (li.Is(listener, capture)) 
             {
                // Null-out here - remove on the dispatch event...
                list[i] = null;
@@ -166,41 +210,6 @@ class EventDispatcher implements IEventDispatcher
    }
 }
 
-class Listener 
-{
-   public var mID:Int;
-   public var mListner:Function;
-   public var mPriority:Int;
-   public var mUseCapture:Bool;
-
-   private static var sIDs = 1;
-
-   public function new(inListener, inUseCapture, inPriority) 
-   {
-      mListner = inListener;
-      mUseCapture = inUseCapture;
-      mPriority = inPriority;
-      mID = sIDs++;
-   }
-
-   public function dispatchEvent(event:Event) 
-   {
-      mListner(event);
-   }
-
-   public function Is(inListener, inCapture) 
-   {
-      return Reflect.compareMethods(mListner, inListener) && mUseCapture == inCapture;
-   }
-}
-
-typedef ListenerList = Array<WeakRef<Listener>>;
-
-#if haxe3
-typedef EventMap = haxe.ds.StringMap<ListenerList>;
-#else
-typedef EventMap = Hash<ListenerList>;
-#end
 
 #else
 typedef EventDispatcher = flash.events.EventDispatcher;
