@@ -93,7 +93,7 @@ namespace nme
       
       if (mStream)
       {
-         mStream->update();
+         //mStream->update();
          mStream->playback();
       }
       
@@ -901,7 +901,8 @@ namespace nme
    
    bool AudioStream_Ogg::update() {
       
-       if (mSuspend) return false;
+       if (mSuspend) return true;
+       if (!mIsValid) return false;
       
        int processed;
        bool active = true;
@@ -914,11 +915,13 @@ namespace nme
            
            alSourceUnqueueBuffers(source, 1, &buffer);
            check();
+           if (!mIsValid) return false;
 
            active = stream(buffer);
 
            alSourceQueueBuffers(source, 1, &buffer);
            check();
+           if (!mIsValid) return false;
        }
        
        if (active && !playing())
@@ -990,7 +993,9 @@ namespace nme
 
       if(error != AL_NO_ERROR) {
          //todo : print meaningful errors instead
-         throw std::string("OpenAL error was raised.");
+         LOG_SOUND("OpenAL error was raised.");
+         mIsValid = false;
+         //throw std::string("OpenAL error was raised.");
       }
 
     } //check

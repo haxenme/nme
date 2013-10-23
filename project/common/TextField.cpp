@@ -605,6 +605,19 @@ void TextField::OnKey(Event &inEvent)
             ShowCaret();
             OnChange();
             return;
+         
+         case keyDELETE:
+            if (mSelectMin<mSelectMax)
+            {
+               DeleteSelection();
+            }
+            else if (caretIndex<getLength())
+            {
+               DeleteChars(caretIndex,caretIndex+1);
+            }
+            ShowCaret();
+            OnChange();
+            return;
 
          case keySHIFT:
             mSelectKeyDown = -1;

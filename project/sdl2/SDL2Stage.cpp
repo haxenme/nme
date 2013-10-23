@@ -625,8 +625,12 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 {
 	outRight = (inKey==SDLK_RSHIFT || inKey==SDLK_RCTRL ||
 					inKey==SDLK_RALT || inKey==SDLK_RGUI);
-	if (inKey>=keyA && inKey<=keyZ)
+	if (inKey>=keyA && inKey<=keyZ){
 		return inKey;
+	}
+	if (inKey>=keyA+32 && inKey<=keyZ+32){
+		return inKey - 32;
+	}
 	if (inKey>=SDLK_0 && inKey<=SDLK_9)
 		return inKey - SDLK_0 + keyNUMBER_0;
 	
@@ -701,6 +705,167 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 	}
 
 	return inKey;
+}
+
+
+void AddCharCode(Event &key)
+{
+	bool shift = (key.flags & efShiftDown);
+	bool foundCode = true;
+	
+	if (!shift)
+	{
+		switch (key.value)
+		{
+			case 8:
+			case 13:
+			case 27:
+			case 32:
+				key.code = key.value;
+				break;
+			case 186:
+				key.code = 59;
+				break;
+			case 187:
+				key.code = 61;
+				break;
+			case 188:
+			case 189:
+			case 190:
+			case 191:
+				key.code = key.value - 144;
+				break;
+			case 192:
+				key.code = 96;
+				break;
+			case 219:
+			case 220:
+			case 221:
+				key.code = key.value - 128;
+				break;
+			case 222:
+				key.code = 39;
+				break;
+			default:
+				foundCode = false;
+				break;
+		}
+		
+		if (!foundCode)
+		{
+			if (key.value >= 48 && key.value <= 57)
+			{
+				key.code = key.value;
+				foundCode = true;
+			}
+			else if (key.value >= 65 && key.value <= 90)
+			{
+				key.code = key.value + 32;
+				foundCode = true;
+			}
+		}
+	}
+	else
+	{
+		switch (key.value)
+		{
+			case 48:
+				key.code = 41;
+				break;
+			case 49:
+				key.code = 33;
+				break;
+			case 50:
+				key.code = 64;
+				break;
+			case 51:
+			case 52:
+			case 53:
+				key.code = key.value - 16;
+				break;
+			case 54:
+				key.code = 94;
+				break;
+			case 55:
+				key.code = 38;
+				break;
+			case 56:
+				key.code = 42;
+				break;
+			case 57:
+				key.code = 40;
+				break;
+			case 186:
+				key.code = 58;
+				break;
+			case 187:
+				key.code = 43;
+				break;
+			case 188:
+				key.code = 60;
+				break;
+			case 189:
+				key.code = 95;
+				break;
+			case 190:
+				key.code = 62;
+				break;
+			case 191:
+				key.code = 63;
+				break;
+			case 192:
+				key.code = 126;
+				break;
+			case 219:
+			case 220:
+			case 221:
+				key.code = key.value - 96;
+				break;
+			case 222:
+				key.code = 34;
+				break;
+			default:
+				foundCode = false;
+				break;
+		}
+		
+		if (!foundCode)
+		{
+			if (key.value >= 65 && key.value <= 90)
+			{
+				key.code = key.value;
+				foundCode = true;
+			}
+		}
+	}
+	
+	if (!foundCode)
+	{
+		if (key.value >= 96 && key.value <= 105)
+		{
+			key.code = key.value - 48;
+		}
+		else if (key.value >= 106 && key.value <= 111)
+		{
+			key.code = key.value - 64;
+		}
+		else if (key.value == 46)
+		{
+			key.code = 127;
+		}
+		else if (key.value == 13)
+		{
+			key.code = 13;
+		}
+		else if (key.value == 8)
+		{
+			key.code = keyBACKSPACE;
+		}
+		else
+		{
+			key.code = 0;
+		}
+	}
 }
 
 
@@ -844,11 +1009,14 @@ void ProcessEvent(SDL_Event &inEvent)
 				// SDL does not provide unicode on key up, so remember it,
 				//  keyed by scancode
 				key.code = sLastUnicode[inEvent.key.keysym.scancode];*/
-			key.code = 0;
-			
+			//key.code = 0;
 			AddModStates(key.flags, inEvent.key.keysym.mod);
 			if (right)
 				key.flags |= efLocationRight;
+			
+			// SDL2 does not expose char codes in key events (due to the more advanced
+			// Unicode event API), so we'll add some ASCII assumptions to return something
+			AddCharCode(key);
 			sgSDLFrame->ProcessEvent(key);
 			break;
 		}
