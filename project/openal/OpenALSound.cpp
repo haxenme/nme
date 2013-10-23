@@ -1049,8 +1049,8 @@ namespace nme
       {
          double seek = inFloat * 0.001;
          ov_time_seek(&oggStream, seek);
-         return inFloat;
       }
+      return inFloat;
    }
    
    

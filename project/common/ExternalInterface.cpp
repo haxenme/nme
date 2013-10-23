@@ -1797,6 +1797,25 @@ value nme_display_object_request_soft_keyboard(value inObj)
 DEFINE_PRIM(nme_display_object_request_soft_keyboard,1);
 
 
+value nme_display_object_dismiss_soft_keyboard(value inObj)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      Stage *stage = obj->getStage();
+      if (stage)
+      {
+         // TODO: return whether it pops up
+         stage->EnablePopupKeyboard(false);
+         return alloc_bool(true);
+      }
+   }
+
+   return alloc_bool(false);
+}
+DEFINE_PRIM(nme_display_object_dismiss_soft_keyboard,1);
+
+
 DO_DISPLAY_PROP(x,X,alloc_float,val_number)
 DO_DISPLAY_PROP(y,Y,alloc_float,val_number)
 DO_DISPLAY_PROP(scale_x,ScaleX,alloc_float,val_number)
