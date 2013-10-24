@@ -10,6 +10,11 @@
 #include <AL/alc.h>
 #endif
 
+#ifdef ANDROID
+#include <android_openal_funcs.h>
+#include <ByteArray.h>
+#endif
+
 #include <Sound.h>
 #include <QuickVec.h>
 #include <Utils.h>
@@ -76,6 +81,7 @@ class OpenALChannel;
 
            bool stream( ALuint buffer );
            void empty();
+           void start();
            void check();
            std::string errorString(int code);
 
@@ -90,11 +96,14 @@ class OpenALChannel;
            ALuint source;
            ALenum format;
            
-           const char *mPath;
+           std::string mPath;
            int mStartTime;
            int mLoops;
            bool mSuspend;
            bool mIsValid;
+           #ifdef ANDROID
+           FileInfo mInfo;
+           #endif
    };
 
 

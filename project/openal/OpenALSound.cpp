@@ -26,18 +26,18 @@ namespace nme
          // grab a source ID from openAL
          alGenSources(1, &mSourceID);
          
-         if (inLoops < 1)
-         {
+         //if (inLoops < 1)
+         //{
             // attach the buffer to the source
             alSourcei(mSourceID, AL_BUFFER, inBufferID);
-         }
+         /*}
          else
          {
             for (int i = 0; i <= inLoops; i++)
             {
                alSourceQueueBuffers(mSourceID, 1, &inBufferID);
             }
-         }
+         }*/
          
          // set some basic source prefs
          alSourcef(mSourceID, AL_PITCH, 1.0f);
@@ -759,6 +759,10 @@ namespace nme
       
       alcMakeContextCurrent(0);
       alcSuspendContext(sgContext);
+      
+      #ifdef ANDROID
+      alcSuspend();
+      #endif
    }
    
    
@@ -768,8 +772,11 @@ namespace nme
       if (!OpenALInit())
          return;
       
-      alcMakeContextCurrent(sgContext);
+      #ifdef ANDROID
+      alcResume();
+      #endif
       
+      alcMakeContextCurrent(sgContext);
       
       OpenALChannel* channel = 0;
       for (int i = 0; i < sgOpenChannels.size(); i++)
@@ -789,13 +796,13 @@ namespace nme
    void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
 
         int result;
-        mPath = path.c_str();
+        mPath = std::string(path.c_str());
         mStartTime = startTime;
         mLoops = inLoops;
         mIsValid = true;
         
         #ifdef ANDROID
-        FileInfo mInfo = AndroidGetAssetFD(path.c_str());
+        mInfo = AndroidGetAssetFD(path.c_str());
         oggFile = fdopen(mInfo.fd, "rb");
         fseek(oggFile, mInfo.offset, 0);
         #else
@@ -852,19 +859,26 @@ namespace nme
 
 
    void AudioStream_Ogg::release() {
-       
-       alSourceStop(source);
-       empty();
-       alDeleteSources(1, &source);
-       check();
-       alDeleteBuffers(2, buffers);
-       check();
-
-       ov_clear(&oggStream);
-       
-       oggFile = 0;
-       source = 0;
-
+      
+      if (mIsValid) {
+         
+         alSourceStop(source);
+         empty();
+         alDeleteSources(1, &source);
+         check();
+         alDeleteBuffers(2, buffers);
+         check();
+         
+         ov_clear(&oggStream);
+         //delete &oggStream;
+         //fclose(oggFile);
+         
+         oggFile = 0;
+         source = 0;
+         mIsValid = false;
+         
+      }
+      
    } //release
    
    
@@ -916,9 +930,9 @@ namespace nme
            alSourceUnqueueBuffers(source, 1, &buffer);
            check();
            if (!mIsValid) return false;
-
+           
            active = stream(buffer);
-
+           
            alSourceQueueBuffers(source, 1, &buffer);
            check();
            if (!mIsValid) return false;
@@ -934,7 +948,7 @@ namespace nme
          ov_time_seek(&oggStream, seek);
          active = true;
        }
-
+       
        return active;
 
    } //update
@@ -948,18 +962,31 @@ namespace nme
        int  size = 0;
        int  section;
        int  result;
+       
+       int maxSize = STREAM_BUFFER_SIZE;
+       
+       #ifdef ANDROID
+       int remainingBytes = mInfo.length - ov_raw_tell(&oggStream) + mInfo.offset;
+       if (maxSize > remainingBytes)
+       { 
+          maxSize = remainingBytes;  
+       }
+       #endif
 
-       while(size < STREAM_BUFFER_SIZE) {
-           result = ov_read(&oggStream, pcm + size, STREAM_BUFFER_SIZE - size, 0, 2, 1, &section);
+       while(size < maxSize) {
+           result = ov_read(&oggStream, pcm + size, maxSize - size, 0, 2, 1, &section);
            if(result > 0)
                size += result;
            else
-               if(result < 0)
-                   throw errorString(result);
+               if(result < 0) {
+                   break;
+                   //LOG_SOUND ("Result is less than 0");
+                   //throw errorString(result);
+               }
                else
                    break;
        }
-       if(size == 0) {
+       if(size <= 0) {
            alSourceStop(source);
            return false;
       }
@@ -993,7 +1020,7 @@ namespace nme
 
       if(error != AL_NO_ERROR) {
          //todo : print meaningful errors instead
-         LOG_SOUND("OpenAL error was raised.");
+         LOG_SOUND("OpenAL error was raised: %d\n", error);
          mIsValid = false;
          //throw std::string("OpenAL error was raised.");
       }
@@ -1082,24 +1109,33 @@ namespace nme
    {
       mSuspend = true;
       alSourcePause(source);
+      //release();
    }
    
    
    void AudioStream_Ogg::resume()
    {
-      //alSourcePlay(source);
-      //mSuspend = false;
+      alSourcePlay(source);
+      //SoundTransform transform = SoundTransform();
+      //transform.volume = 1;
+      //transform.pan = 0;
+      //open(mPath, mStartTime, mLoops, transform);
+      mSuspend = false;
+      //update();
+      //update();
+      //playback();
    }
    
    
    bool AudioStream_Ogg::isActive()
    {
-      #ifdef ANDROID
+      //#ifdef ANDROID
       // TODO: Android stream sounds won't resume :(
-      if (mSuspend) return false;
-      #else
-      if (mSuspend) return false;
-      #endif
+      //if (mSuspend) return false;
+      //#else
+      if (mSuspend) return true;
+      //#endif
+      //playback();
       
       return (mIsValid && playing());
    }
