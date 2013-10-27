@@ -76,8 +76,8 @@ class RunScript {
 			
 			if (target == "tools") {
 				
-				var toolsDirectory = PathHelper.getHaxelib (new Haxelib("openfl-tools"), true);
-				var extendedToolsDirectory = PathHelper.getHaxelib (new Haxelib("openfl-tools-extended"), false);
+				var toolsDirectory = PathHelper.getHaxelib (new Haxelib("hxtools"), true);
+				var extendedToolsDirectory = PathHelper.getHaxelib (new Haxelib("hxtools-extended"), false);
 				
 				if (extendedToolsDirectory != null && extendedToolsDirectory != "") {
 					
@@ -1009,11 +1009,11 @@ class RunScript {
 			
 			if (command == "setup") {
 				
-				var toolsDirectory = PathHelper.getHaxelib (new Haxelib ("openfl-tools"));
+				var toolsDirectory = PathHelper.getHaxelib (new Haxelib ("hxtools"));
 				
 				if (toolsDirectory == null || toolsDirectory == "" || toolsDirectory.indexOf ("is not installed") > -1) {
 					
-					Sys.command ("haxelib install openfl-tools");
+					Sys.command ("haxelib install hxtools");
 					
 				}
 				
@@ -1111,7 +1111,7 @@ class RunScript {
 			}
 			
 			var workingDirectory = args.pop ();
-			var args = [ "run", "openfl-tools", "-Dnme" ].concat (args);
+			var args = [ "run", "hxtools", "-Dnme" ].concat (args);
 			
 			Sys.exit (runCommand (workingDirectory, "haxelib", args));
 			
