@@ -1,0 +1,7 @@
+-main ApplicationMain ::HAXE_FLAGS::
+-cp ::BUILD_DIR::/gph/haxe
+-D gph
+-cpp ::CPP_DIR::
+--remap flash:nme
+
+

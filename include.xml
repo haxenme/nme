@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension>
+	
+	<ndll name="std" haxelib="hxcpp" />
+	<ndll name="regexp" haxelib="hxcpp" />
+	<ndll name="zlib" haxelib="hxcpp" />
+	<ndll name="nme" />
+	<ndll name="libfreetype" register="false" if="emscripten" />
+	<ndll name="curl_ssl" register="false" if="ios" />
+	<ndll name="png" register="false" if="ios" />
+	<ndll name="jpeg" register="false" if="ios" />
+	<ndll name="freetype" register="false" if="ios" />
+	<ndll name="ogg" register="false" if="ios" />
+	<ndll name="vorbis" register="false" if="ios" />
+	
+	<include haxelib="openfl-tools" if="openfl" />
+	
+	<templatePath name="templates" />
+	
+</extension>
