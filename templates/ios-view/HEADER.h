@@ -12,6 +12,7 @@ void register::CLASS_NAME::();
 - (void) activate;
 - (void) deactive;
 
+// Example functions
 - (void) setColor:(NSInteger) color24;
 - (void) setText:(NSString *) text;
 

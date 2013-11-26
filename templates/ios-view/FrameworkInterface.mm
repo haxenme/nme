@@ -39,12 +39,14 @@ extern "C" void register::CLASS_NAME::() { }
 
 - (void) setColor:(NSInteger) color24
 {
-   Main_obj::setColor(color24);
+   // Example implementation
+   // Main_obj::setColor(color24);
 }
 
 - (void) setText:(NSString *) text
 {
-   Main_obj::setText(text);
+   // Example implementation
+   // Main_obj::setText(text);
 }
 
 

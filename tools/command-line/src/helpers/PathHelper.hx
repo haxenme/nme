@@ -382,7 +382,7 @@ class PathHelper
 
          if (!FileSystem.exists(path)) 
          {
-            path = combine(getHaxelib(new Haxelib("nmedev")), "ndll/" + directoryName + "/" + filename);
+            path = combine(getHaxelib(new Haxelib("nme-state")), "lib/" + directoryName + "/" + filename);
          }
 
          return path;

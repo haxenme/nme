@@ -13,8 +13,6 @@
 	<ndll name="ogg" register="false" if="ios" />
 	<ndll name="vorbis" register="false" if="ios" />
 	
-	<include haxelib="openfl-tools" if="openfl" />
-	
 	<templatePath name="templates" />
 	
 </extension>
