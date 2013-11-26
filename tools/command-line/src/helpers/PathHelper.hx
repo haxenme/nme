@@ -135,6 +135,7 @@ class PathHelper
 
       var proc = new Process(combine(Sys.getEnv("HAXEPATH"), "haxelib"), [ "path", name ]);
       var result = "";
+      var stupidHaxelib = false;
 
       try 
       {
@@ -142,7 +143,13 @@ class PathHelper
          {
             var line = proc.stdout.readLine();
 
-            if (line.substr(0, 1) != "-") 
+            if (line.substr(0,11)=="Library nme") 
+            {
+               result = "";
+               stupidHaxelib = true;
+               break;
+            }
+            else if (line.substr(0, 1) != "-")
             {
                result = line;
                break;
@@ -153,13 +160,38 @@ class PathHelper
 
       proc.close();
 
+
+      if (stupidHaxelib)
+      {
+         var proc = new Process(combine(Sys.getEnv("HAXEPATH"), "haxelib"), [ "list" ]);
+         try 
+         {
+            while(true) 
+            {
+               var line = proc.stdout.readLine();
+   
+               if (line.substr(0,haxelib.name.length+1)==haxelib.name+":")
+               {
+                  var current = ~/\[(dev:)?(.*)\]/;
+                  if (current.match(line))
+                     result = current.matched(2);
+                  else
+                     LogHelper.error("Could not find haxelib \"" + haxelib.name + "\", nothing is current?");
+
+                  break;
+               }
+            }
+         } catch(e:Dynamic) { };
+         proc.close();
+      }
+
       if (result == "") 
       {
          LogHelper.error("Could not find haxelib \"" + haxelib.name + "\", does it need to be installed?");
       }
       else
       {
-         //LogHelper.info("", " - Discovered haxelib \"" + name + "\" at \"" + result + "\"");
+         LogHelper.info("", " - Discovered haxelib \"" + name + "\" at \"" + result + "\"");
       }
 
       return result;

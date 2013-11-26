@@ -3,7 +3,9 @@
 -cp src
 -cp src/helpers
 -cp src/project
--lib nme
+-cp ../..
+-D nme
+-D ndll_silent_fail
 -lib format
 -lib svg
 --remap flash:nme

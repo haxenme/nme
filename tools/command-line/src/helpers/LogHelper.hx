@@ -17,15 +17,16 @@ class LogHelper
       #if nme
       if (message != "") 
       {
+         var log = nme_error_output==null ? Sys.print : nme_error_output;
          try 
          {
             if (verbose && verboseMessage != "") 
             {
-               nme_error_output("Error: " + verboseMessage + "\n");
+               log("Error: " + verboseMessage + "\n");
             }
             else
             {
-               nme_error_output("Error: " + message + "\n");
+               log("Error: " + message + "\n");
             }
 
          } catch(e:Dynamic) { }
