@@ -484,15 +484,8 @@ class CommandLineTools
 
    private static function getVersion():String 
    {
-      for(element in Xml.parse(File.getContent(nme + "/haxelib.xml")).firstElement().elements()) 
-      {
-         if (element.nodeName == "version") 
-         {
-            return element.get("name");
-         }
-      }
-
-      return "";
+      var data = haxe.Json.parse(File.getContent(nme + "/haxelib.json"));
+      return data.version;
    }
 
    #if (neko && haxe_210)
