@@ -193,10 +193,9 @@ class IOSPlatform extends Platform
       //project.ndlls.push(new NDLL("jpeg", nmeLib, false));
       //project.ndlls.push(new NDLL("freetype", nmeLib, false));
 
-      for(asset in project.assets) 
-      {
-         asset.resourceName = asset.flatName;
-      }
+      if (!project.embedAssets)
+         for(asset in project.assets) 
+            asset.resourceName = asset.flatName;
 
       var context = generateContext(project);
 
