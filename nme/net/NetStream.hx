@@ -1,25 +1,28 @@
 package nme.net;
-
 #if (cpp||neko)
+
+import nme.media.StageVideo;
 
 class NetStream extends nme.events.EventDispatcher
 {
-	inline static var CONNECT_TO_FMS : String = "connectToFMS";
-	inline static var DIRECT_CONNECTIONS : String ="directConnections";
+   inline static var CONNECT_TO_FMS : String = "connectToFMS";
+   inline static var DIRECT_CONNECTIONS : String ="directConnections";
 
-	public var bytesTotal(get_bytesTotal,null) : Int;
-	public var bytesLoaded(get_bytesLoaded,null) : Int;
-	public var decodedFrames(get_decodedFrames,null) : Int;
+   public var bytesTotal(get_bytesTotal,null) : Int;
+   public var bytesLoaded(get_bytesLoaded,null) : Int;
+   public var decodedFrames(get_decodedFrames,null) : Int;
    public var client:Dynamic;
-	public var objectEncoding(default,null) : Int;
-	public var peerStreams(get_peerStreams,null) : Array<Dynamic>;
-	public var time(get_time,null) : Float;
+   public var objectEncoding(default,null) : Int;
+   public var peerStreams(get_peerStreams,null) : Array<Dynamic>;
+   public var time(get_time,null) : Float;
 
-   var nmeConnection:NetConnection;
-   var nmeReceiveAudio:Bool;
-   var nmeReceiveVideo:Bool;
+   public var nmeConnection:NetConnection;
+   public var nmeReceiveAudio:Bool;
+   public var nmeReceiveVideo:Bool;
 
-	function new(?inConnection : NetConnection, ?peerID : String) : Void
+   public var nmeAttachedVideo:StageVideo;
+
+   function new(?inConnection : NetConnection, ?peerID : String) : Void
    {
       super();
       nmeConnection = inConnection;
@@ -28,46 +31,62 @@ class NetStream extends nme.events.EventDispatcher
       nmeReceiveVideo = true;
       objectEncoding = 0;
    }
-	public function attach(inConnection : NetConnection) : Void
+   public function attach(inConnection : NetConnection) : Void
    {
       nmeConnection = inConnection;
    }
    public function get_time() : Float
    {
+      if (nmeAttachedVideo!=null)
+         nmeAttachedVideo.nmeGetTime();
       return 0.0;
    }
-	public function seek(offset : Float) : Void
+   public function seek(offset : Float) : Void
    {
+      if (nmeAttachedVideo!=null)
+         nmeAttachedVideo.nmeSeek(offset);
    }
-	public function close() : Void
+   public function close() : Void
    {
+      if (nmeAttachedVideo!=null)
+         nmeAttachedVideo.nmeDestroy();
    }
-	public function dispose() : Void { close(); }
-	public function play(?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic) : Void
-   {
-   }
-	// public function play2(param : NetStreamPlayOptions) : Void { }
-	
+   public function dispose() : Void { close(); }
 
-	public function pause() : Void
+   public function play(?inFilename : String, startSeconds : Float = 0.0, ?lenSeconds : Float = -1, ?p4 : Dynamic, ?p5 : Dynamic) : Void
    {
+      if (nmeAttachedVideo==null)
+         throw "Attach to video before calling play.";
+      nmeAttachedVideo.nmePlay(inFilename, startSeconds, lenSeconds);
    }
-	public function togglePause() : Void
+   // public function play2(param : NetStreamPlayOptions) : Void { }
+   
+
+   public function pause() : Void
    {
+      if (nmeAttachedVideo!=null)
+         nmeAttachedVideo.nmePause();
    }
-	public function resume() : Void
+   public function togglePause() : Void
    {
+      if (nmeAttachedVideo!=null)
+         nmeAttachedVideo.nmeTogglePause();
    }
-	public function receiveAudio(flag : Bool) : Void
+   public function resume() : Void
+   {
+      if (nmeAttachedVideo!=null)
+         nmeAttachedVideo.nmePause();
+   }
+   public function receiveAudio(flag : Bool) : Void
    {
       nmeReceiveAudio = flag;
    }
-	public function receiveVideo(flag : Bool) : Void
+   public function receiveVideo(flag : Bool) : Void
    {
       nmeReceiveVideo = flag;
    }
 
-	public function onPeerConnect(subscriber : NetStream) : Bool { return true; }
+   public function onPeerConnect(subscriber : NetStream) : Bool { return true; }
 
    function get_bytesTotal() { return 0; }
    function get_bytesLoaded() { return 0; }
@@ -75,13 +94,13 @@ class NetStream extends nme.events.EventDispatcher
    function get_peerStreams() { return new Array<Dynamic>(); }
 
 
-	//var checkPolicyFile : Bool;
-	//var videoStreamSettings : nme.media.VideoStreamSettings;
-	//function attachAudio(microphone : nme.media.Microphone) : Void;
-	//function attachCamera(theCamera : nme.media.Camera, snapshotMilliseconds : Int = -1) : Void;
-	//function receiveVideoFPS(FPS : Float) : Void;
+   //var checkPolicyFile : Bool;
+   //var videoStreamSettings : nme.media.VideoStreamSettings;
+   //function attachAudio(microphone : nme.media.Microphone) : Void;
+   //function attachCamera(theCamera : nme.media.Camera, snapshotMilliseconds : Int = -1) : Void;
+   //function receiveVideoFPS(FPS : Float) : Void;
    //public function publish(?name : String, ?type : String) : Void { }
-	//function send(handlerName : String, ?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic) : Void
+   //function send(handlerName : String, ?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic) : Void
 }
 
 #else

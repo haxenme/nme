@@ -24,6 +24,8 @@
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
 
+#include <StageVideo.h>
+
 using namespace nme;
 
 void EnableKeyboard(bool inEnable);
@@ -89,6 +91,77 @@ static bool sgEnableMSAA2 = true;
 static bool sgEnableMSAA4 = true;
 
 
+class IOSStage;
+
+class IOSVideo : public StageVideo
+{
+   IOSStage *stage;
+
+public:
+   IOSVideo(IOSStage *inStage)
+   {
+      stage = inStage;
+   }
+   ~IOSVideo()
+   {
+      // destroy(); ?
+   }
+   
+
+   void play(const char *inUrl, double inStart, double inLength)
+   {
+      printf("video: play %s %f %f\n", inUrl, inStart, inLength);
+   }
+
+   void seek(double inTime)
+   {
+      printf("video: seek %f\n", inTime);
+   }
+
+   void setPan(double x, double y)
+   {
+      printf("video: setPan %f %f\n",x,y);
+   }
+
+   void setZoom(double x, double y)
+   {
+      printf("video: setZoom %f %f\n",x,y);
+   }
+
+   void setViewport(double x, double y, double width, double height)
+   {
+      printf("video: setViewport %f %f %f %f\n",x,y, width,height);
+   }
+
+   double getTime()
+   {
+      printf("video: getTime\n");
+      return 0;
+   }
+
+   void pause()
+   {
+      printf("video: pause\n");
+   }
+
+   void resume()
+   {
+      printf("video: togglePause\n");
+   }
+
+   void togglePause()
+   {
+      printf("video: togglePause\n");
+   }
+
+   void destroy()
+   {
+      printf("video: destroy\n");
+   }
+
+};
+
+
 
 
 // --- Stage Implementaton ------------------------------------------------------
@@ -100,6 +173,7 @@ public:
    int mRenderBuffer;
    bool multisampling;
    bool multisamplingEnabled;
+   IOSVideo *video;
 
    IOSStage(CALayer *inLayer,bool inInitRef) : nme::Stage(inInitRef)
    {
@@ -112,6 +186,7 @@ public:
       mDPIScale = 1.0;
       mOGLContext = 0;
       mRenderBuffer = 0;
+      video = 0;
 
       NSString* platform = [UIDeviceHardware platformString];
       //printf("Detected hardware: %s\n", [platform UTF8String]);
@@ -148,6 +223,14 @@ public:
       mHardwareSurface = new HardwareSurface(mHardwareContext);
       mHardwareSurface->IncRef();
    }
+
+   StageVideo *createStageVideo()
+   {
+      printf("createStageVideo!\n");
+      video = new IOSVideo(this);
+      return video;
+   }
+
 
    double getDPIScale() { return mDPIScale; }
 

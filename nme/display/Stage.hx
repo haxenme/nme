@@ -120,7 +120,7 @@ class Stage extends DisplayObjectContainer
       stage3Ds.push(new Stage3D());
       #end
       stageVideos = new Vector<StageVideo>(1);
-      stageVideos[0] = new StageVideo();
+      stageVideos[0] = new StageVideo(this);
    }
 
    public static dynamic function getOrientation():Int 

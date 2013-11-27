@@ -458,6 +458,8 @@ public:
    void RemovingFromStage(DisplayObject *inObject);
    Stage  *getStage() { return this; }
 
+   virtual class StageVideo *createStageVideo() { return 0; }
+
 
    DisplayObject *GetFocusObject() { return mFocusObject; }
    void SetFocusObject(DisplayObject *inObj,FocusSource inSource=fsProgram,int inKey=0);

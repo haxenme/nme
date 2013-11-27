@@ -28,7 +28,7 @@
 #include <ByteArray.h>
 #include <Lzma.h>
 #include <NMEThread.h>
-
+#include <StageVideo.h>
 
 
 #ifdef min
@@ -1342,7 +1342,7 @@ value nme_stage_get_orientation() {
    
 }
 
-DEFINE_PRIM (nme_stage_get_orientation, 0);
+DEFINE_PRIM(nme_stage_get_orientation, 0);
 
 value nme_stage_get_normal_orientation() {
 
@@ -1355,7 +1355,116 @@ value nme_stage_get_normal_orientation() {
    #endif
 }
 
-DEFINE_PRIM (nme_stage_get_normal_orientation, 0);
+DEFINE_PRIM(nme_stage_get_normal_orientation, 0);
+
+// --- StageVideo ----------------------------------------------------------------------
+
+StageVideo::StageVideo() : mOwner(0) { }
+void StageVideo::setOwner(value inOwner) { mOwner.set(inOwner); }
+
+value nme_sv_create(value inStage, value inOwner)
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      StageVideo *video = stage->createStageVideo();
+      if (video)
+      {
+         video->setOwner(inOwner);
+         return ObjectToAbstract(video);
+       }
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_create, 2);
+
+value nme_sv_destroy(value inVideo)
+{
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+      video->destroy();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_destroy, 1);
+
+value nme_sv_action(value inVideo,value inAction)
+{
+   enum { actPause, actResume, actToggle };
+
+   int action = val_int(inAction);
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+   {
+      if (action==actPause)
+         video->pause();
+      else if (action==actResume)
+         video->resume();
+      else if (action==actToggle)
+         video->togglePause();
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_action, 2);
+
+
+value nme_sv_play(value inVideo,value inUrl, value inStart, value inLength)
+{
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+      video->play(val_string(inUrl), val_number(inStart), val_number(inLength));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_play, 4);
+
+value nme_sv_seek(value inVideo,value inWhere)
+{
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+      video->seek(val_number(inWhere));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_seek, 2);
+
+
+value nme_sv_get_time(value inVideo)
+{
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+      alloc_float( video->getTime() );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_get_time, 1);
+
+
+value nme_sv_viewport(value inVideo,value a0, value a1, value a2, value a3)
+{
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+      video->setViewport(val_number(a0), val_number(a1), val_number(a2), val_number(a3) );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_viewport, 5);
+
+
+value nme_sv_pan(value inVideo,value a0, value a1)
+{
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+      video->setPan(val_number(a0), val_number(a1));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_pan, 3);
+
+
+value nme_sv_zoom(value inVideo,value a0, value a1)
+{
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+      video->setZoom(val_number(a0), val_number(a1));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_zoom, 3);
+
 
 
 // --- ManagedStage ----------------------------------------------------------------------
