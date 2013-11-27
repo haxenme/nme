@@ -13,14 +13,8 @@ import nme.geom.Point;
 import nme.filters.BitmapFilter;
 import nme.Loader;
 
-#if haxe3
 class DisplayObject extends EventDispatcher implements IBitmapDrawable 
 {
-#else
-class DisplayObject extends EventDispatcher, implements IBitmapDrawable 
-{
-#end
-
    public var alpha(get_alpha, set_alpha):Float;
    public var blendMode(get_blendMode, set_blendMode):BlendMode;
    public var cacheAsBitmap(get_cacheAsBitmap, set_cacheAsBitmap):Bool;
@@ -57,11 +51,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
    /** @private */   private var nmeScrollRect:Rectangle;
    public function new(inHandle:Dynamic, inType:String) 
    {
-      super(this);
-
-      nmeParent = null;
       nmeHandle = inHandle;
+      if (nmeParent!=null)
+          nme_doc_add_child(nmeParent.nmeHandle, nmeHandle);
       nmeID = nme_display_object_get_id(nmeHandle);
+
+      super(this);
       this.name = inType + " " + nmeID;
    }
 
@@ -307,12 +302,17 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
       if (nmeParent != null)
          nmeParent.nmeRemoveChildFromArray(this);
 
-      if (nmeParent == null && inParent != null) 
+      if (nmeHandle==null)
+      {
+         // Main object being added
+         nmeParent = inParent;
+      }
+      else if (nmeParent == null && inParent != null) 
       {
          nmeParent = inParent;
          nmeOnAdded(this,(stage != null));
-
-      } else if (nmeParent != null && inParent == null) 
+      }
+      else if (nmeParent != null && inParent == null) 
       {
          var was_on_stage =(stage != null);
          nmeParent = inParent;
@@ -600,6 +600,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
    private static var nme_display_object_get_pixel_bounds = Loader.load("nme_display_object_get_pixel_bounds", 2);
    private static var nme_display_object_get_bounds = Loader.load("nme_display_object_get_bounds", 4);
    private static var nme_display_object_hit_test_point = Loader.load("nme_display_object_hit_test_point", 5);
+   private static var nme_doc_add_child = Loader.load("nme_doc_add_child", 2);
 }
 
 #else

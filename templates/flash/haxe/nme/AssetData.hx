@@ -2,6 +2,8 @@ package nme;
 
 
 import nme.Assets;
+import nme.AssetType;
+
 
 
 class AssetData

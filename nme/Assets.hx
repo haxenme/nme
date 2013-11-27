@@ -9,15 +9,6 @@ import nme.utils.ByteArray;
 
 import nme.AssetData;
 
-enum AssetType 
-{
-   BINARY;
-   FONT;
-   IMAGE;
-   MUSIC;
-   SOUND;
-   TEXT;
-}
 
 /**
  * <p>The Assets class provides a cross-platform interface to access 
@@ -57,7 +48,11 @@ class Assets
       var bytes = haxe.Resource.getBytes(inName);
       if (bytes==null)
          return null;
+      #if flash
+      return bytes.getData();
+      #else
       return ByteArray.fromBytes(bytes);
+      #end
    }
 
    /**

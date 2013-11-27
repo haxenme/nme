@@ -5,6 +5,20 @@ import nme.display.DisplayObject;
 import nme.Assets;
 import nme.events.Event;
 
+
+class ApplicationDocument extends ::APP_MAIN::
+{
+   public function new()
+   {
+      super();
+		nme.Lib.current.addChild(this);
+   }
+   @:getter(stage)
+   public function get_stage() : nme.display.Stage { return nme.Lib.current.stage; }
+}
+
+
+
 class ApplicationMain {
 
 	static var mPreloader:::PRELOADER_NAME::;
@@ -39,17 +53,6 @@ class ApplicationMain {
 			begin();
 	}
 
-	#if !fdb
-	//private static function flashTrace( v : Dynamic, ?pos : haxe.PosInfos ) {
-		//var className = pos.className.substr(pos.className.lastIndexOf('.') + 1);
-		//var message = className+"::"+pos.methodName+":"+pos.lineNumber+": " + v;
-		//
-		//if (nme.external.ExternalInterface.available)
-			//nme.external.ExternalInterface.call("console.log", message);
-		//else untyped flash.Boot.__trace(v, pos);
-    //}
-	#end
-
 	private static function begin() {
 		var hasMain = false;
 		
@@ -68,10 +71,7 @@ class ApplicationMain {
 		}
 		else
 		{
-			var instance = Type.createInstance(::APP_MAIN::, []);
-			if (Std.is(instance, nme.display.DisplayObject)) {
-				nme.Lib.current.addChild(cast instance);
-			}
+         new ApplicationDocument();
 		}
 	}
 

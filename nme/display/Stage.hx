@@ -8,6 +8,7 @@ import nme.ui.Keyboard;
 #if stage3d
 import nme.display.Stage3D;
 #end
+import nme.media.StageVideo;
 
 import nme.events.JoystickEvent;
 import nme.events.MouseEvent;
@@ -62,6 +63,7 @@ class Stage extends DisplayObjectContainer
    #if stage3d
    public var stage3Ds:Vector<Stage3D>;
    #end
+   public var stageVideos:Vector<StageVideo>;
 
    private static var efLeftDown = 0x0001;
    private static var efShiftDown = 0x0002;
@@ -117,6 +119,8 @@ class Stage extends DisplayObjectContainer
       stage3Ds = new Vector();
       stage3Ds.push(new Stage3D());
       #end
+      stageVideos = new Vector<StageVideo>(1);
+      stageVideos[0] = new StageVideo();
    }
 
    public static dynamic function getOrientation():Int 
@@ -424,6 +428,18 @@ class Stage extends DisplayObjectContainer
 
       return inOtherTimers;
    }
+
+   override private function set_opaqueBackground(inBG:Null<Int>):Null<Int> 
+   {
+      if (inBG == null)
+         DisplayObject.nme_display_object_set_bg(nmeHandle, 0);
+      else
+         DisplayObject.nme_display_object_set_bg(nmeHandle, inBG | 0xff000000);
+
+      return inBG;
+   }
+
+
 
    /** @private */ private function nmeOnChange(inEvent) {
       var obj:DisplayObject = nmeFindByID(inEvent.id);
