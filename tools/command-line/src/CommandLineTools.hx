@@ -825,6 +825,19 @@ class CommandLineTools
       userDefines = new StringMap<Dynamic>();
       words = new Array<String>();
 
+
+      // Haxelib bug
+      for(hackDir in ["Linux","Linux64", Sys.systemName(), Sys.systemName()+"64" ])
+      {
+         try
+         {
+            if (FileSystem.exists("ndll") && !FileSystem.exists("ndll/" + hackDir) )
+                FileSystem.createDirectory("ndll/" + hackDir);
+         }
+         catch(e:Dynamic) { }
+      }
+
+
       processArguments();
       version = getVersion();
 
