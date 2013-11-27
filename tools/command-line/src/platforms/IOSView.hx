@@ -6,18 +6,19 @@ import sys.io.File;
 import sys.FileSystem;
 import PlatformConfig;
 
-class IOSView implements IPlatformTool 
+class IOSView extends Platform
 {
    var component:String;
    var valid_archs:Array<String>;
 
    public function new(inComponent:String)
    {
+      super();
       component = inComponent;
    }
 
 
-   public function build(project:NMEProject):Void 
+   override public function build(project:NMEProject):Void 
    {
       var context = generateContext(project);
 
@@ -68,7 +69,7 @@ class IOSView implements IPlatformTool
       ProcessHelper.runCommand(buildDir, "make", [] );
    }
 
-   public function clean(project:NMEProject):Void 
+   override public function clean(project:NMEProject):Void 
    {
       #if false
       var targetPath = project.app.path + "/ios";
@@ -80,7 +81,7 @@ class IOSView implements IPlatformTool
       #end
    }
 
-   public function display(project:NMEProject):Void 
+   override public function display(project:NMEProject):Void 
    {
       #if false
       var hxml = PathHelper.findTemplate(project.templatePaths, "iphone/PROJ/haxe/Build.hxml");
@@ -89,7 +90,7 @@ class IOSView implements IPlatformTool
       #end
    }
 
-   private function generateContext(project:NMEProject):Dynamic 
+   override private function generateContext(project:NMEProject):Dynamic 
    {
       project = project.clone();
 
@@ -209,14 +210,14 @@ class IOSView implements IPlatformTool
       return context;
    }
 
-   public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(project:NMEProject, arguments:Array<String>):Void 
    {
       #if false
       IOSHelper.launch(project, PathHelper.combine(project.app.path, "ios"));
       #end
    }
 
-   public function update(project:NMEProject):Void 
+   override public function update(project:NMEProject):Void 
    {
       #if false
       project = project.clone();
@@ -306,8 +307,4 @@ class IOSView implements IPlatformTool
      #end
    }
 
-
-   @ignore public function install(project:NMEProject):Void {}
-   @ignore public function trace(project:NMEProject):Void {}
-   @ignore public function uninstall(project:NMEProject):Void {}
 }

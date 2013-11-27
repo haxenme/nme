@@ -5,9 +5,14 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
-class WebOSPlatform implements IPlatformTool 
+class WebOSPlatform extends Platform
 {
-   public function build(project:NMEProject):Void 
+   public function new()
+   {
+      super();
+   }
+
+   override public function build(project:NMEProject):Void 
    {
       var hxml = project.app.path + "/webos/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
       ProcessHelper.runCommand("", "haxe", [ hxml ] );
@@ -17,7 +22,7 @@ class WebOSPlatform implements IPlatformTool
       WebOSHelper.createPackage(project, project.app.path + "/webos", "bin");
    }
 
-   public function clean(project:NMEProject):Void 
+   override public function clean(project:NMEProject):Void 
    {
       var targetPath = project.app.path + "/webos";
 
@@ -27,7 +32,7 @@ class WebOSPlatform implements IPlatformTool
       }
    }
 
-   public function display(project:NMEProject):Void 
+   override public function display(project:NMEProject):Void 
    {
       var hxml = PathHelper.findTemplate(project.templatePaths, "webos/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
 
@@ -38,18 +43,18 @@ class WebOSPlatform implements IPlatformTool
       Sys.println(template.execute(context));
    }
 
-   public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(project:NMEProject, arguments:Array<String>):Void 
    {
       WebOSHelper.install(project, project.app.path + "/webos");
       WebOSHelper.launch(project);
    }
 
-   public function trace(project:NMEProject):Void 
+   override public function trace(project:NMEProject):Void 
    {
       WebOSHelper.trace(project);
    }
 
-   public function update(project:NMEProject):Void 
+   override public function update(project:NMEProject):Void 
    {
       project = project.clone();
       var destination = project.app.path + "/webos/bin/";
@@ -100,8 +105,6 @@ class WebOSPlatform implements IPlatformTool
          }
       }
    }
-
-   public function new() {}
-   @ignore public function install(project:NMEProject):Void {}
-   @ignore public function uninstall(project:NMEProject):Void {}
 }
+
+

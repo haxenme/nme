@@ -4,6 +4,7 @@ import haxe.io.Eof;
 import sys.FileSystem;
 import sys.io.File;
 import sys.io.Process;
+import platforms.Platform;
 
 class BlackBerryHelper 
 {

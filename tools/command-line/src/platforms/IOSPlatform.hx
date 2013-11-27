@@ -6,9 +6,14 @@ import sys.io.File;
 import sys.FileSystem;
 import PlatformConfig;
 
-class IOSPlatform implements IPlatformTool 
+class IOSPlatform extends Platform
 {
-   public function build(project:NMEProject):Void 
+   public function new()
+   {
+      super();
+   }
+
+   override public function build(project:NMEProject):Void 
    {
       var targetDirectory = PathHelper.combine(project.app.path, "ios");
 
@@ -22,7 +27,7 @@ class IOSPlatform implements IPlatformTool
         }
    }
 
-   public function clean(project:NMEProject):Void 
+   override public function clean(project:NMEProject):Void 
    {
       var targetPath = project.app.path + "/ios";
 
@@ -32,14 +37,14 @@ class IOSPlatform implements IPlatformTool
       }
    }
 
-   public function display(project:NMEProject):Void 
+   override public function display(project:NMEProject):Void 
    {
       var hxml = PathHelper.findTemplate(project.templatePaths, "ios/PROJ/haxe/Build.hxml");
       var template = new Template(File.getContent(hxml));
       Sys.println(template.execute(generateContext(project)));
    }
 
-   private function generateContext(project:NMEProject):Dynamic 
+   override private function generateContext(project:NMEProject):Dynamic 
    {
       project = project.clone();
       project.sources = PathHelper.relocatePaths(project.sources, PathHelper.combine(project.app.path, "ios/" + project.app.file + "/haxe"));
@@ -172,12 +177,12 @@ class IOSPlatform implements IPlatformTool
       return context;
    }
 
-   public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(project:NMEProject, arguments:Array<String>):Void 
    {
       IOSHelper.launch(project, PathHelper.combine(project.app.path, "ios"));
    }
 
-   public function update(project:NMEProject):Void 
+   override public function update(project:NMEProject):Void 
    {
       project = project.clone();
 
@@ -312,8 +317,4 @@ class IOSPlatform implements IPlatformTool
 
    }*/
 
-   public function new() {}
-   @ignore public function install(project:NMEProject):Void {}
-   @ignore public function trace(project:NMEProject):Void {}
-   @ignore public function uninstall(project:NMEProject):Void {}
 }

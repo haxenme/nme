@@ -2,6 +2,7 @@ package;
 
 import sys.io.Process;
 import sys.FileSystem;
+import platforms.Platform;
 
 class PathHelper 
 {
@@ -393,7 +394,8 @@ class PathHelper
       {
          return ndll.path;
 
-      } else if (ndll.haxelib == null) 
+      }
+      else if (ndll.haxelib == null) 
       {
          if (ndll.extensionPath != null && ndll.extensionPath != "") 
          {
@@ -404,17 +406,26 @@ class PathHelper
             return filename;
          }
 
-      } else if (ndll.haxelib.name == "hxcpp") 
+      }
+      else if (ndll.haxelib.name == "hxcpp") 
       {
          return combine(getHaxelib(ndll.haxelib), "bin/" + directoryName + "/" + filename);
 
-      } else if (ndll.haxelib.name == "nme") 
+      }
+      else if (ndll.haxelib.name == "nme") 
       {
          var path = combine(getHaxelib(ndll.haxelib), "ndll/" + directoryName + "/" + filename);
 
          if (!FileSystem.exists(path)) 
          {
-            path = combine(getHaxelib(new Haxelib("nme-state")), "lib/" + directoryName + "/" + filename);
+            try
+            {
+               path = combine(getHaxelib(new Haxelib("nme-state")), "lib/" + directoryName + "/" + filename);
+            }
+            catch(e:Dynamic)
+            {
+               trace(e);
+            }
          }
 
          return path;

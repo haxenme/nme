@@ -5,14 +5,19 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
-class WindowsPlatform implements IPlatformTool 
+class WindowsPlatform extends Platform
 {
    private var applicationDirectory:String;
    private var executablePath:String;
    private var targetDirectory:String;
    private var useNeko:Bool;
 
-   public function build(project:NMEProject):Void 
+   public function new()
+   {
+      super();
+   }
+
+   override public function build(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -39,7 +44,7 @@ class WindowsPlatform implements IPlatformTool
       }
    }
 
-   public function clean(project:NMEProject):Void 
+   override public function clean(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -49,7 +54,7 @@ class WindowsPlatform implements IPlatformTool
       }
    }
 
-   public function display(project:NMEProject):Void 
+   override public function display(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -58,7 +63,7 @@ class WindowsPlatform implements IPlatformTool
       Sys.println(template.execute(generateContext(project)));
    }
 
-   private function generateContext(project:NMEProject):Dynamic 
+   override private function generateContext(project:NMEProject):Dynamic 
    {
       var context = project.templateContext;
 
@@ -69,7 +74,7 @@ class WindowsPlatform implements IPlatformTool
       return context;
    }
 
-   private function initialize(project:NMEProject):Void 
+   override private function initialize(project:NMEProject):Void 
    {
       targetDirectory = project.app.path + "/windows/cpp";
 
@@ -83,7 +88,7 @@ class WindowsPlatform implements IPlatformTool
       executablePath = applicationDirectory + "/" + project.app.file + ".exe";
    }
 
-   public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(project:NMEProject, arguments:Array<String>):Void 
    {
       if (project.target == PlatformHelper.hostPlatform) 
       {
@@ -92,7 +97,7 @@ class WindowsPlatform implements IPlatformTool
       }
    }
 
-   public function update(project:NMEProject):Void 
+   override public function update(project:NMEProject):Void 
    {
       project = project.clone();
 
@@ -144,9 +149,4 @@ class WindowsPlatform implements IPlatformTool
          }
       }
    }
-
-   public function new() {}
-   @ignore public function install(project:NMEProject):Void {}
-   @ignore public function trace(project:NMEProject):Void {}
-   @ignore public function uninstall(project:NMEProject):Void {}
 }

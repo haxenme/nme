@@ -2,6 +2,7 @@ package;
 
 import haxe.io.Path;
 import sys.FileSystem;
+import platforms.Platform;
 
 class ProcessHelper 
 {

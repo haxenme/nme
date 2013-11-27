@@ -6,6 +6,7 @@ import sys.io.File;
 import sys.FileSystem;
 import NMEProject;
 import PlatformConfig;
+import platforms.Platform;
 
 class NMMLParser extends NMEProject 
 {
@@ -55,15 +56,15 @@ class NMMLParser extends NMEProject
    {
       switch(platformType) 
       {
-         case MOBILE:
+         case Platform.TYPE_MOBILE:
 
             localDefines.set("mobile", "1");
 
-         case DESKTOP:
+         case Platform.TYPE_DESKTOP:
 
             localDefines.set("desktop", "1");
 
-         case WEB:
+         case Platform.TYPE_WEB:
 
             localDefines.set("web", "1");
       }
@@ -73,7 +74,7 @@ class NMMLParser extends NMEProject
       else if (targetFlags.exists("neko")) 
          localDefines.set("neko", "1");
 
-      if (target==IOSVIEW)
+      if (target==Platform.IOSVIEW)
          localDefines.set("ios", "1");
 
       localDefines.set("haxe3", "1");
@@ -92,7 +93,7 @@ class NMMLParser extends NMEProject
          environment.set("FLASH_PLAYER_EXE", localDefines.get("SWF_PLAYER"));
       }
 
-      localDefines.set(Type.enumConstructor(target).toLowerCase(), "1");
+      localDefines.set(target.toLowerCase(), "1");
    }
 
    private function isValidElement(element:Fast, section:String):Bool 

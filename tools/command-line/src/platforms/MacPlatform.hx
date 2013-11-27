@@ -5,7 +5,7 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
-class MacPlatform implements IPlatformTool 
+class MacPlatform extends Platform
 {
    private var applicationDirectory:String;
    private var contentDirectory:String;
@@ -14,7 +14,12 @@ class MacPlatform implements IPlatformTool
    private var targetDirectory:String;
    private var useNeko:Bool;
 
-   public function build(project:NMEProject):Void 
+   public function new()
+   {
+      super();
+   }
+
+   override public function build(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -39,7 +44,7 @@ class MacPlatform implements IPlatformTool
       }
    }
 
-   public function clean(project:NMEProject):Void 
+   override public function clean(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -49,7 +54,7 @@ class MacPlatform implements IPlatformTool
       }
    }
 
-   public function display(project:NMEProject):Void 
+   override public function display(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -58,7 +63,7 @@ class MacPlatform implements IPlatformTool
       Sys.println(template.execute(generateContext(project)));
    }
 
-   private function generateContext(project:NMEProject):Dynamic 
+   override private function generateContext(project:NMEProject):Dynamic 
    {
       var context = project.templateContext;
       context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
@@ -68,7 +73,7 @@ class MacPlatform implements IPlatformTool
       return context;
    }
 
-   private function initialize(project:NMEProject):Void 
+   override private function initialize(project:NMEProject):Void 
    {
       targetDirectory = project.app.path + "/mac/cpp";
 
@@ -84,7 +89,7 @@ class MacPlatform implements IPlatformTool
       executablePath = executableDirectory + "/" + project.app.file;
    }
 
-   public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(project:NMEProject, arguments:Array<String>):Void 
    {
       if (project.target == PlatformHelper.hostPlatform) 
       {
@@ -93,7 +98,7 @@ class MacPlatform implements IPlatformTool
       }
    }
 
-   public function update(project:NMEProject):Void 
+   override public function update(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -137,8 +142,4 @@ class MacPlatform implements IPlatformTool
       }
    }
 
-   public function new() {}
-   @ignore public function install(project:NMEProject):Void {}
-   @ignore public function trace(project:NMEProject):Void {}
-   @ignore public function uninstall(project:NMEProject):Void {}
 }

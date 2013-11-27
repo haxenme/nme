@@ -6,7 +6,7 @@ import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
 
-class LinuxPlatform implements IPlatformTool 
+class LinuxPlatform extends Platform
 {
    private var applicationDirectory:String;
    private var executablePath:String;
@@ -15,7 +15,12 @@ class LinuxPlatform implements IPlatformTool
    private var targetDirectory:String;
    private var useNeko:Bool;
 
-   public function build(project:NMEProject):Void 
+   public function new()
+   {
+      super();
+   }
+
+   override public function build(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -40,7 +45,7 @@ class LinuxPlatform implements IPlatformTool
       }
    }
 
-   public function clean(project:NMEProject):Void 
+   override public function clean(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -50,7 +55,7 @@ class LinuxPlatform implements IPlatformTool
       }
    }
 
-   public function display(project:NMEProject):Void 
+   override public function display(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -59,7 +64,7 @@ class LinuxPlatform implements IPlatformTool
       Sys.println(template.execute(generateContext(project)));
    }
 
-   private function generateContext(project:NMEProject):Dynamic 
+   override private function generateContext(project:NMEProject):Dynamic 
    {
       var project = project.clone();
 
@@ -78,7 +83,7 @@ class LinuxPlatform implements IPlatformTool
       return context;
    }
 
-   private function initialize(project:NMEProject):Void 
+   override private function initialize(project:NMEProject):Void 
    {
       for(architecture in project.architectures) 
       {
@@ -118,7 +123,7 @@ class LinuxPlatform implements IPlatformTool
       executablePath = applicationDirectory + "/" + project.app.file;
    }
 
-   public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(project:NMEProject, arguments:Array<String>):Void 
    {
       if (project.target == PlatformHelper.hostPlatform) 
       {
@@ -127,7 +132,7 @@ class LinuxPlatform implements IPlatformTool
       }
    }
 
-   public function update(project:NMEProject):Void 
+   override public function update(project:NMEProject):Void 
    {
       project = project.clone();
       initialize(project);
@@ -180,9 +185,4 @@ class LinuxPlatform implements IPlatformTool
          }
       }
    }
-
-   public function new() {}
-   @ignore public function install(project:NMEProject):Void {}
-   @ignore public function trace(project:NMEProject):Void {}
-   @ignore public function uninstall(project:NMEProject):Void {}
 }

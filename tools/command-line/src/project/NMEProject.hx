@@ -4,14 +4,10 @@ import haxe.io.Path;
 import haxe.Serializer;
 import haxe.Unserializer;
 import sys.FileSystem;
+import platforms.Platform;
 
-#if haxe3
 typedef StringMap<T> = Map<String, T>;
 typedef IntMap<T> = Map<Int, T>;
-#else
-typedef StringMap<T> = Hash<T>;
-typedef IntMap<T> = IntHash<T>;
-#end
 
 class NMEProject 
 {
@@ -28,16 +24,16 @@ class NMEProject
    public var haxeflags:Array<String>;
    public var macros:Array<String>;
    public var haxelibs:Array<Haxelib>;
-   public var host(get_host, null):Platform;
+   public var host(get_host, null):String;
    public var icons:Array<Icon>;
    public var javaPaths:Array<String>;
    public var libraries:Array<Library>;
    public var meta:MetaData;
    public var ndlls:Array<NDLL>;
-   public var platformType:PlatformType;
+   public var platformType:String;
    public var sources:Array<String>;
    public var splashScreens:Array<SplashScreen>;
-   public var target:Platform;
+   public var target:String;
    public var targetFlags:StringMap<String>;
    public var templateContext(get_templateContext, null):Dynamic;
    public var templatePaths:Array<String>;
@@ -53,7 +49,7 @@ class NMEProject
 
    public static var _command:String;
    public static var _debug:Bool;
-   public static var _target:Platform;
+   public static var _target:String;
    public static var _targetFlags:StringMap<String>;
    public static var _templatePaths:Array<String>;
 
@@ -67,7 +63,7 @@ class NMEProject
       {
          NMEProject._command = args[1];
          NMEProject._debug = (args[2] == "true");
-         NMEProject._target = Type.createEnum(Platform, args[3]);
+         NMEProject._target = args[3];
          NMEProject._targetFlags = Unserializer.run(args[4]);
          NMEProject._templatePaths = Unserializer.run(args[5]);
       }
@@ -99,23 +95,23 @@ class NMEProject
 
       switch(target) 
       {
-         case FLASH:
+         case Platform.FLASH:
 
-            platformType = PlatformType.WEB;
+            platformType = Platform.TYPE_WEB;
             architectures = [];
 
-         case HTML5:
+         case Platform.HTML5:
 
-            platformType = PlatformType.WEB;
+            platformType = Platform.TYPE_WEB;
             architectures = [];
 
             defaultWindow.fps = 0;
 
-         case ANDROID, BLACKBERRY, IOS, IOSVIEW, WEBOS:
+         case Platform.ANDROID, Platform.BLACKBERRY, Platform.IOS, Platform.IOSVIEW, Platform.WEBOS:
 
-            platformType = PlatformType.MOBILE;
+            platformType = Platform.TYPE_MOBILE;
 
-            if (target == Platform.IOS || target==IOSVIEW) 
+            if (target == Platform.IOS || target==Platform.IOSVIEW) 
             {
                architectures = [ Architecture.ARMV7 ];
             }
@@ -128,9 +124,9 @@ class NMEProject
             defaultWindow.height = 0;
             defaultWindow.fullscreen = true;
 
-         case WINDOWS, MAC, LINUX:
+         case Platform.WINDOWS, Platform.MAC, Platform.LINUX:
 
-            platformType = PlatformType.DESKTOP;
+            platformType = Platform.TYPE_DESKTOP;
 
             if (target == Platform.LINUX) 
             {
@@ -434,7 +430,7 @@ class NMEProject
    }
 
    // Getters & Setters
-   private function get_host():Platform 
+   private function get_host():String 
    {
       return PlatformHelper.hostPlatform;
    }
@@ -555,7 +551,7 @@ class NMEProject
          compilerFlags.push("-D " + Std.string(target).toLowerCase());
       }
 
-      compilerFlags.push("-D " + Std.string(platformType).toLowerCase());
+      compilerFlags.push("-D " + platformType.toLowerCase());
       compilerFlags = compilerFlags.concat(haxeflags);
       compilerFlags = compilerFlags.concat(macros);
 

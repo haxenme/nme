@@ -1,14 +1,15 @@
 package;
 
 import sys.io.Process;
+import platforms.Platform;
 
 class PlatformHelper 
 {
    public static var hostArchitecture(get_hostArchitecture, null):Architecture;
-   public static var hostPlatform(get_hostPlatform, null):Platform;
+   public static var hostPlatform(get_hostPlatform, null):String;
 
    private static var _hostArchitecture:Architecture;
-   private static var _hostPlatform:Platform;
+   private static var _hostPlatform:String;
 
    private static function get_hostArchitecture():Architecture 
    {
@@ -16,7 +17,7 @@ class PlatformHelper
       {
          switch(hostPlatform) 
          {
-            case WINDOWS:
+            case Platform.WINDOWS:
 
                var architecture = Sys.getEnv("PROCESSOR_ARCHITEW6432");
 
@@ -29,7 +30,7 @@ class PlatformHelper
                   _hostArchitecture = Architecture.X86;
                }
 
-            case LINUX:
+            case Platform.LINUX:
 
                var process = new Process("uname", [ "-m" ]);
                var output = process.stdout.readAll().toString();
@@ -46,7 +47,7 @@ class PlatformHelper
                   _hostArchitecture = Architecture.X86;
                }
 
-            case MAC:
+            case Platform.MAC:
 
                _hostArchitecture = Architecture.X86;
 
@@ -61,7 +62,7 @@ class PlatformHelper
       return _hostArchitecture;
    }
 
-   private static function get_hostPlatform():Platform 
+   private static function get_hostPlatform():String 
    {
       if (_hostPlatform == null) 
       {
@@ -78,7 +79,7 @@ class PlatformHelper
             _hostPlatform = Platform.MAC;
          }
 
-         LogHelper.info("", " - Detected host platform: " + StringHelper.formatEnum(_hostPlatform));
+         LogHelper.info("", " - Detected host platform: " + _hostPlatform);
       }
 
       return _hostPlatform;

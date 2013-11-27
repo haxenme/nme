@@ -5,9 +5,11 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
-class AndroidPlatform implements IPlatformTool 
+class AndroidPlatform extends Platform
 {
-   public function build(project:NMEProject):Void 
+   public function new() { super(); }
+
+   override public function build(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -46,7 +48,7 @@ class AndroidPlatform implements IPlatformTool
       AndroidHelper.build(project, destination);
    }
 
-   public function clean(project:NMEProject):Void 
+   override public function clean(project:NMEProject):Void 
    {
       var targetPath = project.app.path + "/android";
 
@@ -56,7 +58,7 @@ class AndroidPlatform implements IPlatformTool
       }
    }
 
-   public function display(project:NMEProject):Void 
+   override public function display(project:NMEProject):Void 
    {
       var hxml = PathHelper.findTemplate(project.templatePaths, "android/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
 
@@ -67,7 +69,7 @@ class AndroidPlatform implements IPlatformTool
       Sys.println(template.execute(context));
    }
 
-   public function install(project:NMEProject):Void 
+   override public function install(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -81,7 +83,7 @@ class AndroidPlatform implements IPlatformTool
       AndroidHelper.install(FileSystem.fullPath(project.app.path) + "/android/bin/bin/" + project.app.file + "-" + build + ".apk");
    }
 
-   private function initialize(project:NMEProject):Void 
+   override private function initialize(project:NMEProject):Void 
    {
       if (!project.environment.exists("ANDROID_SETUP")) 
       {
@@ -91,28 +93,28 @@ class AndroidPlatform implements IPlatformTool
       AndroidHelper.initialize(project);
    }
 
-   public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(project:NMEProject, arguments:Array<String>):Void 
    {
       initialize(project);
 
       AndroidHelper.run(project.meta.packageName + "/" + project.meta.packageName + ".MainActivity");
    }
 
-   public function trace(project:NMEProject):Void 
+   override public function trace(project:NMEProject):Void 
    {
       initialize(project);
 
       AndroidHelper.trace(project, project.debug);
    }
 
-   public function uninstall(project:NMEProject):Void 
+   override public function uninstall(project:NMEProject):Void 
    {
       initialize(project);
 
       AndroidHelper.uninstall(project.meta.packageName);
    }
 
-   public function update(project:NMEProject):Void 
+   override public function update(project:NMEProject):Void 
    {
       project = project.clone();
 
@@ -221,6 +223,4 @@ class AndroidPlatform implements IPlatformTool
          }
       }
    }
-
-   public function new() {}
 }

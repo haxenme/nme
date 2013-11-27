@@ -10,7 +10,7 @@ import platforms.FlashPlatform;
 import platforms.HTML5Platform;
 import platforms.IOSPlatform;
 import platforms.IOSView;
-import platforms.IPlatformTool;
+import platforms.Platform;
 import platforms.LinuxPlatform;
 import platforms.MacPlatform;
 import platforms.WebOSPlatform;
@@ -42,44 +42,45 @@ class CommandLineTools
    private static var userDefines:StringMap<Dynamic>;
    private static var version:String;
    private static var words:Array<String>;
+   private static var host = PlatformHelper.hostPlatform;
 
    private static function buildProject() 
    {
       var project = initializeProject();
-      var platform:IPlatformTool = null;
+      var platform:Platform = null;
 
       LogHelper.info("", "Using target platform: " + project.target);
 
       switch(project.target) 
       {
-         case ANDROID:
+         case Platform.ANDROID:
             platform = new AndroidPlatform();
 
-         case BLACKBERRY:
+         case Platform.BLACKBERRY:
             platform = new BlackBerryPlatform();
 
-         case IOSVIEW:
+         case Platform.IOSVIEW:
             platform = new IOSView(project.getComponent());
 
-         case IOS:
+         case Platform.IOS:
             platform = new IOSPlatform();
 
-         case WEBOS:
+         case Platform.WEBOS:
             platform = new WebOSPlatform();
 
-         case WINDOWS:
+         case Platform.WINDOWS:
             platform = new WindowsPlatform();
 
-         case MAC:
+         case Platform.MAC:
             platform = new MacPlatform();
 
-         case LINUX:
+         case Platform.LINUX:
             platform = new LinuxPlatform();
 
-         case FLASH:
+         case Platform.FLASH:
             platform = new FlashPlatform();
 
-         case HTML5:
+         case Platform.HTML5:
             platform = new HTML5Platform();
       }
 
@@ -271,11 +272,11 @@ class CommandLineTools
       displayInfo();
 
       Sys.println("");
-      Sys.println(" Usage : nme setup(target)");
+      //Sys.println(" Usage : nme setup(target)");
       Sys.println(" Usage : nme help");
       Sys.println(" Usage : nme [clean|update|build|run|test|display] <project>(target) [options]");
       Sys.println(" Usage : nme create project <package> [options]");
-      Sys.println(" Usage : nme create extension <name>");
+      //Sys.println(" Usage : nme create extension <name>");
       Sys.println(" Usage : nme create <sample>");
       Sys.println(" Usage : nme rebuild <extension>(targets)");
       //Sys.println(" Usage : nme document <project>(target)");
@@ -284,7 +285,7 @@ class CommandLineTools
       Sys.println("");
       Sys.println(" Commands : ");
       Sys.println("");
-      Sys.println("  setup : Setup NME or a specific target");
+      //Sys.println("  setup : Setup NME or a specific target");
       Sys.println("  help : Show this information");
       Sys.println("  clean : Remove the target build directory if it exists");
       Sys.println("  update : Copy assets for the specified project/target");
@@ -293,7 +294,7 @@ class CommandLineTools
       Sys.println("  test : Update, build and run in one command");
       Sys.println("  display : Display information for the specified project/target");
       Sys.println("  create : Create a new project or extension using templates");
-      Sys.println("  rebuild : Recompile native binaries for extensions");
+      //Sys.println("  rebuild : Recompile native binaries for extensions");
       //Sys.println("  document : Generate documentation using haxedoc");
       //Sys.println("  generate : Tools to help create source code automatically");
       Sys.println("");
@@ -303,11 +304,11 @@ class CommandLineTools
       Sys.println("  blackberry : Create BlackBerry applications");
       //Sys.println("  cpp : Create application for the system you are compiling on");
       Sys.println("  flash : Create SWF applications for Adobe Flash Player");
-      Sys.println("  html5 : Create HTML5 canvas applications");
+      //Sys.println("  html5 : Create HTML5 canvas applications");
       Sys.println("  ios : Create Apple iOS applications");
       Sys.println("  linux : Create Linux applications");
       Sys.println("  mac : Create Apple Mac OS X applications");
-      Sys.println("  webos : Create HP webOS applications");
+      //Sys.println("  webos : Create HP webOS applications");
       Sys.println("  windows : Create Microsoft Windows applications");
       Sys.println("");
       Sys.println(" Options : ");
@@ -343,10 +344,11 @@ class CommandLineTools
       Sys.println("|             |");
       Sys.println("|_____________|");
       Sys.println("");
-      Sys.println("NME Command-Line Tools(" + version + ")");
+      Sys.println("NME Command-Line Tools(" + version + " @ '" + nme + "')");
 
       if (showHint) 
       {
+         //if (!FileSystem.exits(
          Sys.println("Use \"nme setup\" to configure NME or \"nme help\" for more commands");
       }
    }
@@ -462,7 +464,7 @@ class CommandLineTools
 
          config = home + "/.hxcpp_config.xml";
 
-         if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+         if (host == Platform.WINDOWS) 
          {
             config = config.split("/").join("\\");
          }
@@ -576,13 +578,11 @@ class CommandLineTools
       switch(targetName) 
       {
          case "cpp":
-
-            target = PlatformHelper.hostPlatform;
+            target = host;
             targetFlags.set("cpp", "");
 
          case "neko":
-
-            target = PlatformHelper.hostPlatform;
+            target = host;
             targetFlags.set("neko", "");
 
          case "iphone", "iphoneos":
@@ -594,17 +594,15 @@ class CommandLineTools
             target = Platform.IOSVIEW;
 
          case "iphonesim":
-
             target = Platform.IOS;
             targetFlags.set("simulator", "");
 
          default:
-
             try 
             {
-               target = Type.createEnum(Platform, targetName.toUpperCase());
-
-            } catch(e:Dynamic) 
+               target = targetName.toUpperCase();
+            }
+            catch(e:Dynamic) 
             {
                LogHelper.error("\"" + targetName + "\" is an unknown target");
             }
@@ -612,7 +610,7 @@ class CommandLineTools
 
       var config = getHXCPPConfig();
 
-      if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+      if (host == Platform.WINDOWS) 
       {
          if (config != null && config.environment.exists("JAVA_HOME")) 
          {
@@ -623,7 +621,7 @@ class CommandLineTools
          {
             var javaPath = PathHelper.combine(Sys.getEnv("JAVA_HOME"), "bin");
 
-            if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+            if (host == Platform.WINDOWS) 
             {
                Sys.putEnv("PATH", javaPath + ";" + Sys.getEnv("PATH"));
             }
@@ -787,7 +785,7 @@ class CommandLineTools
       // Better way to do this?
       switch(project.target) 
       {
-         case ANDROID, IOS, BLACKBERRY, IOSVIEW:
+         case Platform.ANDROID, Platform.IOS, Platform.BLACKBERRY, Platform.IOSVIEW:
 
             getBuildNumber(project);
 
@@ -839,27 +837,21 @@ class CommandLineTools
       switch(command) 
       {
          case "":
-
             displayInfo(true);
 
          case "help":
-
             displayHelp();
 
          case "setup":
-
             platformSetup();
 
          case "document":
-
             document();
 
          case "generate":
-
             generate();
 
          case "create":
-
             createTemplate();
 
          case "clean", "update", "display", "build", "run", "rerun", "install", "uninstall", "trace", "test":

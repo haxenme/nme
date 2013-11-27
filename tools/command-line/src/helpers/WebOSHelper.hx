@@ -1,3 +1,5 @@
+import platforms.Platform;
+
 class WebOSHelper 
 {
    public static function createPackage(project:NMEProject, workingDirectory:String, targetPath:String):Void 

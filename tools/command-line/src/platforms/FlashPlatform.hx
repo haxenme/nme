@@ -5,9 +5,14 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
-class FlashPlatform implements IPlatformTool 
+class FlashPlatform extends Platform
 {
-   public function build(project:NMEProject):Void 
+   public function new()
+   {
+      super();
+   }
+
+   override public function build(project:NMEProject):Void 
    {
       var destination = project.app.path + "/flash/bin";
       var hxml = project.app.path + "/flash/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
@@ -36,7 +41,7 @@ class FlashPlatform implements IPlatformTool
       }
    }
 
-   public function clean(project:NMEProject):Void 
+   override public function clean(project:NMEProject):Void 
    {
       var targetPath = project.app.path + "/flash";
 
@@ -46,7 +51,7 @@ class FlashPlatform implements IPlatformTool
       }
    }
 
-   public function display(project:NMEProject):Void 
+   override public function display(project:NMEProject):Void 
    {
       var hxml = PathHelper.findTemplate(project.templatePaths, "flash/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
 
@@ -57,7 +62,7 @@ class FlashPlatform implements IPlatformTool
       Sys.println(template.execute(context));
    }
 
-   private function generateContext(project:NMEProject):Dynamic 
+   override private function generateContext(project:NMEProject):Dynamic 
    {
       project = project.clone();
 
@@ -87,7 +92,7 @@ class FlashPlatform implements IPlatformTool
       return context;
    }
 
-   public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(project:NMEProject, arguments:Array<String>):Void 
    {
       if (project.app.url != "") 
       {
@@ -107,7 +112,7 @@ class FlashPlatform implements IPlatformTool
       }
    }
 
-   public function update(project:NMEProject):Void 
+   override public function update(project:NMEProject):Void 
    {
       var destination = project.app.path + "/flash/bin/";
       PathHelper.mkdir(destination);
@@ -162,8 +167,4 @@ class FlashPlatform implements IPlatformTool
 
    }*/
 
-   public function new() {}
-   @ignore public function install(project:NMEProject):Void { }
-   @ignore public function trace(project:NMEProject):Void { }
-   @ignore public function uninstall(project:NMEProject):Void { }
 }

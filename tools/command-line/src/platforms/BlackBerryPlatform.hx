@@ -5,12 +5,17 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
-class BlackBerryPlatform implements IPlatformTool 
+class BlackBerryPlatform extends Platform
 {
    private var outputDirectory:String;
    private var outputFile:String;
 
-   public function build(project:NMEProject):Void 
+   public function new()
+   {
+      super();
+   }
+
+   override public function build(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -36,7 +41,7 @@ class BlackBerryPlatform implements IPlatformTool
       }
    }
 
-   public function clean(project:NMEProject):Void 
+   override public function clean(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -46,7 +51,7 @@ class BlackBerryPlatform implements IPlatformTool
       }
    }
 
-   public function display(project:NMEProject):Void 
+   override public function display(project:NMEProject):Void 
    {
       var hxml = "";
       var context = project.templateContext;
@@ -69,7 +74,7 @@ class BlackBerryPlatform implements IPlatformTool
       Sys.println(template.execute(context));
    }
 
-   private function initialize(project:NMEProject):Void 
+   override private function initialize(project:NMEProject):Void 
    {
       if (!project.environment.exists("BLACKBERRY_SETUP")) 
       {
@@ -90,7 +95,7 @@ class BlackBerryPlatform implements IPlatformTool
       BlackBerryHelper.initialize(project);
    }
 
-   public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(project:NMEProject, arguments:Array<String>):Void 
    {
       initialize(project);
 
@@ -104,7 +109,7 @@ class BlackBerryPlatform implements IPlatformTool
       }
    }
 
-   public function trace(project:NMEProject):Void 
+   override public function trace(project:NMEProject):Void 
    {
       initialize(project);
 
@@ -118,7 +123,7 @@ class BlackBerryPlatform implements IPlatformTool
       }
    }
 
-   public function update(project:NMEProject):Void 
+   override public function update(project:NMEProject):Void 
    {
       project = project.clone();
       initialize(project);
@@ -264,8 +269,4 @@ class BlackBerryPlatform implements IPlatformTool
          }
       }
    }
-
-   public function new() {}
-   @ignore public function install(project:NMEProject):Void {}
-   @ignore public function uninstall(project:NMEProject):Void {}
 }

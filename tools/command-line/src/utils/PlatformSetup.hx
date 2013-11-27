@@ -14,6 +14,8 @@ import sys.io.Process;
 import sys.FileSystem;
 import NMEProject;
 
+import platforms.Platform;
+
 class PlatformSetup 
 {
    private static var airMacPath = "http://airdownload.adobe.com/air/mac/download/latest/AdobeAIRSDK.tbz2";
