@@ -50,6 +50,9 @@ class Lib
    static public var file(default, null):String;
    static public var silentRecreate:Bool = false;
 
+   static public var build(get, null):String;
+   static public var ndllVersion(get, null):Int;
+
    public static function close() 
    {
       var close = Loader.load("nme_close", 0);
@@ -217,6 +220,9 @@ class Lib
       return nmeStage;
    }
 
+   static public function get_build():String { return Version.name; }
+   static public function get_ndllVersion():Int { return nme_get_ndll_version(); }
+
    // Native Methods
    #if android
    private static var nme_post_ui_callback = Loader.load("nme_post_ui_callback", 1);
@@ -226,6 +232,7 @@ class Lib
    private static var nme_get_url = Loader.load("nme_get_url", 1);
    private static var nme_pause_animation = Loader.load("nme_pause_animation", 0);
    private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
+   private static var nme_get_ndll_version = Loader.load("nme_get_ndll_version", 0);
 }
 
 #else

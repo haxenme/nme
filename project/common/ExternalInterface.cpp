@@ -29,6 +29,7 @@
 #include <Lzma.h>
 #include <NMEThread.h>
 #include <StageVideo.h>
+#include <NmeBinVersion.h>
 
 
 #ifdef min
@@ -631,6 +632,13 @@ value nme_error_output(value message)
    return alloc_null();
 }
 DEFINE_PRIM(nme_error_output,1);
+
+value nme_get_ndll_version()
+{
+   return alloc_int( NME_BINARY_VERSION );
+}
+DEFINE_PRIM(nme_get_ndll_version,0);
+
 
 
 
