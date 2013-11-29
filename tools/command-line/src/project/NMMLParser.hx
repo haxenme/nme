@@ -52,6 +52,7 @@ class NMMLParser extends NMEProject
          Reflect.setField(baseTemplateContext, key, localDefines.get(key));
    }
 
+
    private function initialize():Void 
    {
       switch(platformType) 
@@ -94,6 +95,12 @@ class NMMLParser extends NMEProject
       }
 
       localDefines.set(target.toLowerCase(), "1");
+   }
+
+   function parseBool(value:String):Bool 
+   {
+      var v = substitute(value);
+      return v=="1" || v=="true" || v=="TRUE";
    }
 
    private function isValidElement(element:Fast, section:String):Bool 
@@ -281,6 +288,7 @@ class NMMLParser extends NMEProject
       var targetPath = "";
       var glyphs = null;
       var type = null;
+      var recurse = true;
 
       if (element.has.path) 
       {
@@ -306,6 +314,13 @@ class NMMLParser extends NMEProject
          glyphs = substitute(element.att.glyphs);
       }
 
+      if (element.has.recurse) 
+      {
+         recurse = parseBool(element.att.recurse);
+      }
+
+
+
       if (isTemplate) 
       {
          type = AssetType.TEMPLATE;
@@ -320,7 +335,8 @@ class NMMLParser extends NMEProject
          LogHelper.error("In order to use 'include' or 'exclude' on <asset /> nodes, you must specify also specify a 'path' attribute");
          return;
 
-      } else if (!element.elements.hasNext()) 
+      }
+      else if (!element.elements.hasNext()) 
       {
          // Empty element
          if (path == "") 
@@ -404,7 +420,7 @@ class NMMLParser extends NMEProject
                }
             }
 
-            parseAssetsElementDirectory(path, targetPath, include, exclude, type, embed, glyphs, true);
+            parseAssetsElementDirectory(path, targetPath, include, exclude, type, embed, glyphs, recurse);
          }
       }
       else

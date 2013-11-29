@@ -1475,6 +1475,18 @@ DEFINE_PRIM(nme_sv_zoom, 3);
 
 
 
+value nme_sv_set_sound_transform(value inVideo,value a0, value a1)
+{
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+      video->setSoundTransform(val_number(a0), val_number(a1));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sv_set_sound_transform, 3);
+
+
+
+
 // --- ManagedStage ----------------------------------------------------------------------
 
 #ifndef HX_WINRT

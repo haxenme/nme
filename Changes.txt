@@ -1,4 +1,7 @@
 
+* Add some StageVideo handlers
+* Add openfl compatibility support
+* Add cocktail support
 
 5.0.0
 --------------------------

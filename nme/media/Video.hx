@@ -40,6 +40,12 @@ class Video extends DisplayObject
       return value;
    }
 
+   public function attachNetStream(inNetStream : nme.net.NetStream) : Void
+   {
+      // TODO:
+   }
+
+
    private static var nme_video_create = Loader.load("nme_video_create", 2);
    private static var nme_video_load = Loader.load("nme_video_load", 2);
    private static var nme_video_play = Loader.load("nme_video_play", 1);

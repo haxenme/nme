@@ -40,6 +40,7 @@ class NMEProject
    public var window:Window;
    public var component:String;
    public var embedAssets:Bool;
+   public var openflCompat:Bool;
 
    private var baseTemplateContext:Dynamic;
 
@@ -84,6 +85,7 @@ class NMEProject
       baseTemplateContext = {};
       component = null;
       embedAssets = false;
+      openflCompat = true;
       command = _command;
       config = new PlatformConfig();
       debug = _debug;
@@ -189,6 +191,7 @@ class NMEProject
       project.dependencies = dependencies.copy();
       project.component = component;
       project.embedAssets = embedAssets;
+      project.openflCompat = openflCompat;
 
       for(key in environment.keys()) 
       {
@@ -403,6 +406,8 @@ class NMEProject
 
          if (project.embedAssets)
             embedAssets = true;
+         if (!project.openflCompat)
+            openflCompat = false;
          if (component==null) component = project.component;
          assets = ArrayHelper.concatUnique(assets, project.assets);
          dependencies = ArrayHelper.concatUnique(dependencies, project.dependencies);
@@ -470,6 +475,12 @@ class NMEProject
 
       context.BUILD_DIR = app.path;
       context.EMBED_ASSETS = embedAssets ? "true" : "false";
+      context.OPENFL_COMPAT = openflCompat ? "true" : "false";
+      if (openflCompat)
+      {
+         haxedefs.set("openfl","nme");
+         haxeflags.push("--remap openfl:nme");
+      }
 
 
       for(field in Reflect.fields(meta)) 

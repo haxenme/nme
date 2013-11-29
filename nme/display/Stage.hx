@@ -24,6 +24,7 @@ import nme.media.SoundChannel;
 import nme.net.URLLoader;
 import nme.Loader;
 import nme.Vector;
+import nme.events.StageVideoAvailabilityEvent;
 
 
 class Stage extends DisplayObjectContainer 
@@ -136,6 +137,13 @@ class Stage extends DisplayObjectContainer
    public function invalidate():Void 
    {
       nmeInvalid = true;
+   }
+
+   override public function addEventListener(type:String, listener:Dynamic->Void, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void 
+   {
+       super.addEventListener(type, listener, useCapture, priority, useWeakReference);
+       if (type==StageVideoAvailabilityEvent.STAGE_VIDEO_AVAILABILITY)
+          dispatchEvent( new StageVideoAvailabilityEvent(StageVideoAvailabilityEvent.STAGE_VIDEO_AVAILABILITY,false,false,"available") );
    }
 
    /** @private */ private function nmeCheckFocusInOuts(inEvent:Dynamic, inStack:Array<InteractiveObject>)

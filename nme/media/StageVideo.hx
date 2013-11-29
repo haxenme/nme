@@ -25,6 +25,9 @@ class StageVideo extends EventDispatcher
    inline static var RESUME = 1;
    inline static var TOGGLE = 2;
 
+   inline static var PAUSE_LEN = -3;
+   inline static var ALL_LEN = -1;
+
    var nmeHandle:Dynamic;
    var nmePan:Point;
    var nmeZoom:Point;
@@ -62,6 +65,8 @@ class StageVideo extends EventDispatcher
       {
          nmeNetStream.nmeAttachedVideo = this;
          nmeCreate();
+         if (nmeNetStream.nmeFilename!=null)
+            nmePlay( nmeNetStream.nmeFilename, nmeNetStream.nmeSeek, nmeNetStream.nmePaused ? PAUSE_LEN : ALL_LEN );
       }
       else
       {
@@ -136,14 +141,15 @@ class StageVideo extends EventDispatcher
       nme_sv_seek(nmeHandle,inTime);
    }
 
-   public function nmePlay(inUrl:String, inStart:Float=0, inLength:Float=0) : Void
+   public function nmePlay(inUrl:String, inStart:Float=0, inLength:Float=-1) : Void
    {
       if (nmeHandle==null)
          nmeCreate();
       if (nmeHandle==null)
         return;
 
-      nme_sv_play(nmeHandle,inUrl, inStart, inLength);
+      var localName = nme.Assets.getAssetPath(inUrl);
+      nme_sv_play(nmeHandle,localName!=null ? localName : inUrl, inStart, inLength);
    }
 
    public function nmePause()
@@ -165,6 +171,22 @@ class StageVideo extends EventDispatcher
    }
 
 
+   public function nmeSetVolume(inVolume:Float)
+   {
+      if (nmeHandle!=null)
+        nme_sv_set_sound_transform(nmeHandle,inVolume,0);
+   }
+
+
+
+   public function nmeSetSoundTransform(inVolume:Float, inRightness:Float)
+   {
+      if (nmeHandle!=null)
+        nme_sv_set_sound_transform(nmeHandle,inVolume,inRightness);
+   }
+
+
+
 
    private static var nme_sv_create = Loader.load("nme_sv_create", 2);
    private static var nme_sv_destroy = Loader.load("nme_sv_destroy", 1);
@@ -175,6 +197,7 @@ class StageVideo extends EventDispatcher
    private static var nme_sv_viewport = Loader.load("nme_sv_viewport", 5);
    private static var nme_sv_pan = Loader.load("nme_sv_pan", 3);
    private static var nme_sv_zoom = Loader.load("nme_sv_zoom", 3);
+   private static var nme_sv_set_sound_transform = Loader.load("nme_sv_set_sound_transform", 3);
 }
 
 #else

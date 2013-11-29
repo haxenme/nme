@@ -2,6 +2,7 @@ package nme.net;
 #if (cpp||neko)
 
 import nme.media.StageVideo;
+import nme.media.SoundTransform;
 
 class NetStream extends nme.events.EventDispatcher
 {
@@ -15,21 +16,33 @@ class NetStream extends nme.events.EventDispatcher
    public var objectEncoding(default,null) : Int;
    public var peerStreams(get_peerStreams,null) : Array<Dynamic>;
    public var time(get_time,null) : Float;
+   public var soundTransform(get,set) : SoundTransform;
+
 
    public var nmeConnection:NetConnection;
    public var nmeReceiveAudio:Bool;
    public var nmeReceiveVideo:Bool;
 
+   public var nmeVolume:Float;
+   public var nmeSoundPan:Float;
+   public var nmeFilename:String;
+   public var nmePaused:Bool;
+   public var nmeSeek:Float;
+
    public var nmeAttachedVideo:StageVideo;
 
-   function new(?inConnection : NetConnection, ?peerID : String) : Void
+   public function new(?inConnection : NetConnection, ?peerID : String) : Void
    {
       super();
       nmeConnection = inConnection;
       client = null;
       nmeReceiveAudio = true;
       nmeReceiveVideo = true;
+      nmeVolume = 1.0;
+      nmeSoundPan = 0.0;
       objectEncoding = 0;
+      nmePaused = false;
+      nmeSeek = 0.0;
    }
    public function attach(inConnection : NetConnection) : Void
    {
@@ -43,6 +56,7 @@ class NetStream extends nme.events.EventDispatcher
    }
    public function seek(offset : Float) : Void
    {
+      nmeSeek = offset;
       if (nmeAttachedVideo!=null)
          nmeAttachedVideo.nmeSeek(offset);
    }
@@ -50,32 +64,37 @@ class NetStream extends nme.events.EventDispatcher
    {
       if (nmeAttachedVideo!=null)
          nmeAttachedVideo.nmeDestroy();
+      nmeFilename = null;
+      nmeSeek = 0.0;
    }
    public function dispose() : Void { close(); }
 
    public function play(?inFilename : String, startSeconds : Float = 0.0, ?lenSeconds : Float = -1, ?p4 : Dynamic, ?p5 : Dynamic) : Void
    {
-      if (nmeAttachedVideo==null)
-         throw "Attach to video before calling play.";
-      nmeAttachedVideo.nmePlay(inFilename, startSeconds, lenSeconds);
+      nmeFilename = inFilename;
+      if (nmeAttachedVideo!=null)
+         nmeAttachedVideo.nmePlay(nmeFilename, startSeconds, lenSeconds);
    }
    // public function play2(param : NetStreamPlayOptions) : Void { }
    
 
    public function pause() : Void
    {
+      nmePaused = true;
       if (nmeAttachedVideo!=null)
          nmeAttachedVideo.nmePause();
    }
    public function togglePause() : Void
    {
+      nmePaused = !nmePaused;
       if (nmeAttachedVideo!=null)
          nmeAttachedVideo.nmeTogglePause();
    }
    public function resume() : Void
    {
+      nmePaused = false;
       if (nmeAttachedVideo!=null)
-         nmeAttachedVideo.nmePause();
+         nmeAttachedVideo.nmeResume();
    }
    public function receiveAudio(flag : Bool) : Void
    {
@@ -92,6 +111,21 @@ class NetStream extends nme.events.EventDispatcher
    function get_bytesLoaded() { return 0; }
    function get_decodedFrames() { return 0; }
    function get_peerStreams() { return new Array<Dynamic>(); }
+
+   function get_soundTransform() : SoundTransform
+   {
+      return new SoundTransform(nmeVolume, nmeSoundPan);
+   }
+
+
+   function set_soundTransform(inTransform:SoundTransform) : SoundTransform
+   {
+      nmeVolume = inTransform.volume;
+      nmeSoundPan = inTransform.pan;
+      if (nmeAttachedVideo!=null)
+         nmeAttachedVideo.nmeSetSoundTransform(nmeVolume, nmeSoundPan);
+      return inTransform;
+   }
 
 
    //var checkPolicyFile : Bool;

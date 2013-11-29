@@ -128,6 +128,11 @@ public:
       printf("video: setZoom %f %f\n",x,y);
    }
 
+   void setSoundTransform(double inVolume, double inPosition)
+   {
+      printf("video: setSoundTransform %f %f\n", inVolume, inPosition);
+   }
+
    void setViewport(double x, double y, double width, double height)
    {
       printf("video: setViewport %f %f %f %f\n",x,y, width,height);
