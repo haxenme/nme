@@ -36,6 +36,9 @@ class ApplicationMain
    {
       #if nme
       nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
+
+      nme.AssetData.create();
+
       ::if (sslCaCert != "")::
       nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
       ::end::
@@ -96,10 +99,8 @@ class ApplicationMain
             else
             {
                #if (nme && !waxe && !cocktail)
-trace("appdoc");
                new ApplicationDocument();
                #else
-trace("createinst");
                Type.createInstance(::APP_MAIN::, []);
                #end
             }
@@ -129,17 +130,21 @@ trace("createinst");
 
    public static function getAsset(inName:String) : Dynamic
    {
-      var types = Assets.type;
-      if (types.exists(inName))
-         switch(types.get(inName))
-         {
-            case BINARY, TEXT: return Assets.getBytes(inName);
-            case FONT: return Assets.getFont(inName);
-            case IMAGE: return Assets.getBitmapData(inName);
-            case MUSIC, SOUND: return Assets.getSound(inName);
-         }
+      var i = Assets.info.get(inName);
+      if (i==null)
+         throw "Asset does not exist: " + inName;
+      var cached = i.getCache();
+      if (cached!=null)
+         return cached;
+      switch(i.type)
+      {
+         case BINARY, TEXT: return Assets.getBytes(inName);
+         case FONT: return Assets.getFont(inName);
+         case IMAGE: return Assets.getBitmapData(inName);
+         case MUSIC, SOUND: return Assets.getSound(inName);
+      }
 
-      throw "Asset does not exist: " + inName;
+      throw "Unknown asset type: " + i.type;
       return null;
    }
    

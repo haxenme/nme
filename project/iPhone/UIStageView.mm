@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <CoreMotion/CMMotionManager.h>
+#import <MediaPlayer/MediaPlayer.h>
 
 #include <Display.h>
 #include <Surface.h>
@@ -45,28 +46,57 @@ bool sgHasAccelerometer = false;
 // This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
 // The view content is basically an EAGL surface you render your OpenGL scene into.
 // Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
-@interface UIStageView : UIView<UITextFieldDelegate>
+@interface NMEView : UIView<UITextFieldDelegate>
 {    
 @private
-   BOOL animating;
-   BOOL displayLinkSupported;
-   id displayLink;
-   NSInteger animationFrameInterval;
-   NSTimer *animationTimer;
-   int    mPrimaryEvent;
+   // TODO - move to stage?
+   BOOL       animating;
+   id         displayLink;
+   NSInteger  animationFrameInterval;
+
+
+   int      mRenderBuffer;
+   bool     multisampling;
+   bool     multisamplingEnabled;
+
+   CAEAGLLayer      *mLayer;
+
+  // The OpenGL names for the framebuffer and renderbuffer used to render to this view
+   GLuint          defaultFramebuffer;
+   GLuint          colorRenderbuffer;
+   GLuint          depthStencilBuffer;
+
+   //[ddc] antialiasing code taken from:
+   // http://www.gandogames.com/2010/07/tutorial-using-anti-aliasing-msaa-in-the-iphone/
+   // http://is.gd/oHLipb
+   // https://devforums.apple.com/thread/45850
+   // Buffer definitions for the MSAA
+   GLuint          msaaFramebuffer;
+   GLuint          msaaRenderBuffer;
+   GLuint          msaaDepthBuffer;
+
+
 @public
    class IOSStage *mStage;
-   UITextField *mTextField;
-   BOOL mKeyboardEnabled;
-   bool   mMultiTouch;
-   int    mPrimaryTouchHash;
+   UITextField    *mTextField;
+   BOOL           mKeyboardEnabled;
+   bool           mMultiTouch;
+   int            mPrimaryTouchHash;
+   double         dpiScale;
+
+   // The pixel dimensions of the CAEAGLLayer
+   EAGLContext     *mOGLContext;
+   GLint           backingWidth;
+   GLint           backingHeight;
+   HardwareSurface *mHardwareSurface;
+   HardwareContext *mHardwareContext;
 }
 
 
 @property (readonly, nonatomic, getter=isAnimating) BOOL animating;
 @property (nonatomic) NSInteger animationFrameInterval;
 
-- (void) myInit;
+- (void) setupStageLayer:(IOSStage *)inStage;
 - (void) drawView:(id)sender;
 - (void) onPoll:(id)sender;
 - (void) enableKeyboard:(bool)withEnable;
@@ -77,11 +107,92 @@ bool sgHasAccelerometer = false;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void) startAnimation;
 - (void) stopAnimation;
+- (void) makeCurrent:(bool)withMultisampling;
 
+- (void) createOGLFramebuffer;
+- (void) destroyOGLFramebuffer;
 @end
 
+
+
+
+
+// --- Stage Implementaton ------------------------------------------------------
+//
+// The stage acts as the controller between the NME view and the NME application.
+//  It passes events as sets properties as required
+
+class IOSStage : public nme::Stage
+{
+public:
+
+   EventHandler mHandler;
+   void *mHandlerData;
+
+
+   UIView         *container;
+   UIView         *playerView;
+   NMEView        *nmeView;
+   class IOSVideo *video;
+
+   IOSStage(CGRect inRect);
+   ~IOSStage();
+
+   UIView *getRootView() { return container; }
+   bool getMultitouchSupported() { return true; }
+   bool isOpenGL() const { return nmeView->mOGLContext; }
+   Surface *GetPrimarySurface() { return nmeView->mHardwareSurface; }
+   void SetCursor(nme::Cursor) { /* No cursors on iPhone ! */ }
+   void EnablePopupKeyboard(bool inEnable) { ::EnableKeyboard(inEnable); }
+   double getDPIScale() { return nmeView->dpiScale; }
+
+
+   StageVideo *createStageVideo();
+   void       onVideoPlay();
+   CGRect     getViewBounds();
+   void       setOpaqueBackground(uint32 inBG);
+   uint32     getBackgroundMask();
+   void       updateBackground();
+
+
+
+   void setMultitouchActive(bool inActive);
+   bool getMultitouchActive();
+
+
+   void OnOGLResize(int width, int height);
+   void OnRedraw();
+   void OnPoll();
+   void OnEvent(Event &inEvt);
+   void Flip();
+   void GetMouse() { }
+
+   // --- IRenderTarget Interface ------------------------------------------
+   int Width() { return nmeView->backingWidth; }
+   int Height() { return nmeView->backingHeight; }
+
+};
+
+
+
+// Wrapper for nme 'frame' class
+class IOSViewFrame : public nme::Frame
+{
+public:
+   NMEView *mView;
+
+   IOSViewFrame(NMEView *inView) : mView(inView) { }
+
+   virtual void SetTitle()  { }
+   virtual void SetIcon() { }
+   virtual Stage *GetStage()  { return mView->mStage; }
+
+};
+
+
+
 // Global instance ...
-UIStageView *sgNMEView = nil;
+NMEView *sgNMEView = nil;
 
 static FrameCreationCallback sOnFrame = nil;
 static bool sgAllowShaders = false;
@@ -90,622 +201,10 @@ static bool sgHasStencilBuffer = true;
 static bool sgEnableMSAA2 = true;
 static bool sgEnableMSAA4 = true;
 
-
-class IOSStage;
-
-class IOSVideo : public StageVideo
-{
-   IOSStage *stage;
-
-public:
-   IOSVideo(IOSStage *inStage)
-   {
-      stage = inStage;
-   }
-   ~IOSVideo()
-   {
-      // destroy(); ?
-   }
-   
-
-   void play(const char *inUrl, double inStart, double inLength)
-   {
-      printf("video: play %s %f %f\n", inUrl, inStart, inLength);
-   }
-
-   void seek(double inTime)
-   {
-      printf("video: seek %f\n", inTime);
-   }
-
-   void setPan(double x, double y)
-   {
-      printf("video: setPan %f %f\n",x,y);
-   }
-
-   void setZoom(double x, double y)
-   {
-      printf("video: setZoom %f %f\n",x,y);
-   }
-
-   void setSoundTransform(double inVolume, double inPosition)
-   {
-      printf("video: setSoundTransform %f %f\n", inVolume, inPosition);
-   }
-
-   void setViewport(double x, double y, double width, double height)
-   {
-      printf("video: setViewport %f %f %f %f\n",x,y, width,height);
-   }
-
-   double getTime()
-   {
-      printf("video: getTime\n");
-      return 0;
-   }
-
-   void pause()
-   {
-      printf("video: pause\n");
-   }
-
-   void resume()
-   {
-      printf("video: togglePause\n");
-   }
-
-   void togglePause()
-   {
-      printf("video: togglePause\n");
-   }
-
-   void destroy()
-   {
-      printf("video: destroy\n");
-   }
-
-};
-
-
-
-
-// --- Stage Implementaton ------------------------------------------------------
-// There is a single instance of the stage
-class IOSStage : public nme::Stage
-{
-public:
-
-   int mRenderBuffer;
-   bool multisampling;
-   bool multisamplingEnabled;
-   IOSVideo *video;
-
-   IOSStage(CALayer *inLayer,bool inInitRef) : nme::Stage(inInitRef)
-   {
-      defaultFramebuffer = 0;
-      colorRenderbuffer = 0;
-      depthStencilBuffer = 0;
-      mHardwareContext = 0;
-      mHardwareSurface = 0;
-      mLayer = inLayer;
-      mDPIScale = 1.0;
-      mOGLContext = 0;
-      mRenderBuffer = 0;
-      video = 0;
-
-      NSString* platform = [UIDeviceHardware platformString];
-      //printf("Detected hardware: %s\n", [platform UTF8String]);
-      
-      //todo ; rather expose this hardware value as a function
-      //and they can disable AA selectively on devices themselves 
-      //rather than hardcoding it here.
-      multisampling = sgEnableMSAA2 || sgEnableMSAA4;
-      
-      
-      if (sgAllowShaders)
-      {
-         mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-      }
-      else
-      {
-         mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-      }
-      
-      if (!mOGLContext || ![EAGLContext setCurrentContext:mOGLContext])
-      {
-         throw "Could not initilize OpenGL";
-      }
- 
-      CreateOGLFramebuffer();
-   
-      #ifndef OBJC_ARC
-      mHardwareContext = HardwareContext::CreateOpenGL(inLayer, mOGLContext, sgAllowShaders);
-      #else
-      mHardwareContext = HardwareContext::CreateOpenGL((__bridge void *)inLayer, (__bridge void *)mOGLContext, sgAllowShaders);
-      #endif
-      mHardwareContext->IncRef();
-      mHardwareContext->SetWindowSize(backingWidth, backingHeight);
-      mHardwareSurface = new HardwareSurface(mHardwareContext);
-      mHardwareSurface->IncRef();
-   }
-
-   StageVideo *createStageVideo()
-   {
-      printf("createStageVideo!\n");
-      video = new IOSVideo(this);
-      return video;
-   }
-
-
-   double getDPIScale() { return mDPIScale; }
-
-
-   ~IOSStage()
-   {
-      if (mOGLContext)
-      {
-         if (mHardwareSurface)
-            mHardwareSurface->DecRef();
-         if (mHardwareContext)
-            mHardwareContext->DecRef();
-         // Tear down GL
-         if (defaultFramebuffer)
-         {
-            if (sgAllowShaders)
-            {
-               glDeleteFramebuffers(1, &defaultFramebuffer);
-            }
-            else
-            {
-               glDeleteFramebuffersOES(1, &defaultFramebuffer);
-            }
-            defaultFramebuffer = 0;
-         }
-
-         if (colorRenderbuffer)
-         {
-            if (sgAllowShaders)
-            {
-               glDeleteRenderbuffers(1, &colorRenderbuffer);
-            }
-            else
-            {
-               glDeleteRenderbuffersOES(1, &colorRenderbuffer);
-            }
-            colorRenderbuffer = 0;
-         }
-   
-         if (depthStencilBuffer)
-         {
-            if (sgAllowShaders)
-            {
-               glDeleteRenderbuffers(1, &depthStencilBuffer);
-            }
-            else
-            {
-               glDeleteRenderbuffersOES(1, &depthStencilBuffer);
-            }
-            depthStencilBuffer = 0;
-         }
-  
-   
-         // Tear down context
-         if ([EAGLContext currentContext] == mOGLContext)
-            [EAGLContext setCurrentContext:nil];
-
-         #ifndef OBJC_ARC
-         [mOGLContext release];
-         #endif
-      }
-   }
-
-   bool getMultitouchSupported() { return true; }
-
-   void setMultitouchActive(bool inActive)
-   {
-      [ sgNMEView enableMultitouch:inActive ];
-
-   }
-   bool getMultitouchActive()
-   {
-      return sgNMEView->mMultiTouch;
-   }
-
-   bool isOpenGL() const { return mOGLContext; }
-
-   /*
-   void RenderState()
-   {
-      if ( [sgNMEView isAnimating] )
-         nme::Stage::RenderStage();
-   }
-   */
-   
-   void CreateOGLFramebuffer()
-   {
-      // Create default framebuffer object.
-      // The backing will be allocated for the current layer in -resizeFromLayer
-      if (sgAllowShaders)
-      {
-         glGenFramebuffers(1, &defaultFramebuffer);
-         glGenRenderbuffers(1, &colorRenderbuffer);
-         glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
-         glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
-         
-         [mOGLContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)mLayer];
-         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer);
-         
-         //fetch the values of size first
-         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
-         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
-         
-         //Create the depth / stencil buffers
-         if (sgHasDepthBuffer && !sgHasStencilBuffer)
-         {
-            //printf("UIStageView :: Creating Depth buffer. \n");
-            //Create just the depth buffer
-            glGenRenderbuffers(1, &depthStencilBuffer);
-            glBindRenderbuffer(GL_RENDERBUFFER, depthStencilBuffer);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, backingWidth, backingHeight);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilBuffer);
-         }
-         else if (sgHasDepthBuffer && sgHasStencilBuffer)
-         {
-            //printf("UIStageView :: Creating Depth buffers. \n");
-            //printf("UIStageView :: Creating Stencil buffers. \n");
-            
-            //Create the depth/stencil buffer combo
-            glGenRenderbuffers(1, &depthStencilBuffer);
-            glBindRenderbuffer(GL_RENDERBUFFER, depthStencilBuffer);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, backingWidth, backingHeight);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilBuffer);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilBuffer);    
-         }
-         else
-         {
-            //printf("UIStageView :: No depth/stencil buffer requested. \n");
-         }
-         
-         //printf("Create OGL window %dx%d\n", backingWidth, backingHeight);
-         
-         // [ddc]
-         // code taken from:
-         // http://www.gandogames.com/2010/07/tutorial-using-anti-aliasing-msaa-in-the-iphone/
-         // http://is.gd/oHLipb
-         // https://devforums.apple.com/thread/45850
-         // Generate and bind our MSAA Frame and Render buffers
-         if (multisampling)
-         {
-            glGenFramebuffers(1, &msaaFramebuffer);
-            glBindFramebuffer(GL_FRAMEBUFFER, msaaFramebuffer);
-            glGenRenderbuffers(1, &msaaRenderBuffer);
-            glBindRenderbuffer(GL_RENDERBUFFER, msaaRenderBuffer);
-            
-            glRenderbufferStorageMultisampleAPPLE(GL_RENDERBUFFER, (sgEnableMSAA4 ? 4 : 2) , GL_RGB5_A1, backingWidth, backingHeight);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, msaaRenderBuffer);
-            glGenRenderbuffers(1, &msaaDepthBuffer);
-            
-            multisamplingEnabled = true;
-            
-         }
-         else
-         {
-            multisamplingEnabled = false;
-         }
-         
-         int framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-         
-         if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
-         {
-            NSLog(@"Failed to make complete framebuffer object %x",
-            glCheckFramebufferStatus(GL_FRAMEBUFFER));
-            throw "OpenGL resize failed";
-         }
-      }
-      else
-      {
-         glGenFramebuffersOES(1, &defaultFramebuffer);
-         glGenRenderbuffersOES(1, &colorRenderbuffer);
-         glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
-         glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
-         
-         [mOGLContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)mLayer];
-         
-         glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, colorRenderbuffer);
-         
-         glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-         glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-         
-         if (sgHasDepthBuffer && !sgHasStencilBuffer)
-         {
-            //Create just the depth buffer
-            glGenRenderbuffersOES(1, &depthStencilBuffer);
-            glBindRenderbufferOES(GL_RENDERBUFFER, depthStencilBuffer);
-            glRenderbufferStorageOES(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, backingWidth, backingHeight);
-            glFramebufferRenderbufferOES(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilBuffer);
-            
-         }
-         else if (sgHasDepthBuffer && sgHasStencilBuffer)
-         {
-            //Create the depth/stencil buffer combo
-            glGenRenderbuffersOES(1, &depthStencilBuffer);
-            glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthStencilBuffer);
-            glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH24_STENCIL8_OES, backingWidth, backingHeight);
-            glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER, depthStencilBuffer);
-            glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_STENCIL_ATTACHMENT_OES, GL_RENDERBUFFER, depthStencilBuffer);          
-         }
-         
-         //printf("Create OGL window %dx%d\n", backingWidth, backingHeight);
-         
-         // [ddc]
-         // code taken from:
-         // http://www.gandogames.com/2010/07/tutorial-using-anti-aliasing-msaa-in-the-iphone/
-         // http://is.gd/oHLipb
-         // https://devforums.apple.com/thread/45850
-         // Generate and bind our MSAA Frame and Render buffers
-         if (multisampling)
-         {
-            glGenFramebuffersOES(1, &msaaFramebuffer);
-            glBindFramebufferOES(GL_FRAMEBUFFER_OES, msaaFramebuffer);
-            glGenRenderbuffersOES(1, &msaaRenderBuffer);
-            glBindRenderbufferOES(GL_RENDERBUFFER_OES, msaaRenderBuffer);
-            
-            glRenderbufferStorageMultisampleAPPLE(GL_RENDERBUFFER_OES, (sgEnableMSAA4 ? 4 : 2) , GL_RGB5_A1_OES, backingWidth, backingHeight);
-            glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, msaaRenderBuffer);
-            glGenRenderbuffersOES(1, &msaaDepthBuffer);
-            
-            multisamplingEnabled = true;
-         }
-         else
-         {
-            multisamplingEnabled = false;
-         }
-         
-         int framebufferStatus = glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES);
-         
-         if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE_OES)
-         {
-            NSLog(@"Failed to make complete framebuffer object %x",
-            glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
-            throw "OpenGL resize failed";
-         }
-      }
-   }
-   
-   
-   void DestroyOGLFramebuffer()
-   {
-      if (defaultFramebuffer)
-      {
-         if (sgAllowShaders)
-         {
-            glDeleteFramebuffers(1, &defaultFramebuffer);
-         }
-         else
-         {
-            glDeleteFramebuffersOES(1, &defaultFramebuffer);
-         }
-      }
-      defaultFramebuffer = 0;
-      if (colorRenderbuffer)
-      {
-         if (sgAllowShaders)
-         {
-            glDeleteRenderbuffers(1, &colorRenderbuffer);
-         }
-         else
-         {
-            glDeleteRenderbuffersOES(1, &colorRenderbuffer);
-         }
-      }
-      defaultFramebuffer = 0;
-   }
-
-   void OnOGLResize(CAEAGLLayer *inLayer)
-   {   
-      // Recreate frame buffers ..
-      //printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
-      [EAGLContext setCurrentContext:mOGLContext];
-      DestroyOGLFramebuffer();
-      CreateOGLFramebuffer();
-
-      mHardwareContext->SetWindowSize(backingWidth,backingHeight);
-
-      //printf("OnOGLResize %dx%d\n", backingWidth, backingHeight);
-      Event evt(etResize);
-      evt.x = backingWidth;
-      evt.y = backingHeight;
-      HandleEvent(evt);
-
-   }
-   
-   void OnRedraw()
-   {
-      Event evt(etRedraw);
-      HandleEvent(evt);
-   }
-
-   void OnPoll()
-   {
-      bool multisamplingEnabledNow = (GetAA() != 1);
-      
-      if (multisampling && multisamplingEnabled != multisamplingEnabledNow)
-      {
-         multisamplingEnabled = multisamplingEnabledNow;
-         if (multisamplingEnabled)
-         {
-            if (sgAllowShaders)
-            {
-               glBindFramebuffer(GL_FRAMEBUFFER, msaaFramebuffer);
-               glBindRenderbuffer(GL_RENDERBUFFER, msaaRenderBuffer);
-            }
-            else
-            {
-               glBindFramebufferOES(GL_FRAMEBUFFER_OES, msaaFramebuffer);
-               glBindRenderbufferOES(GL_RENDERBUFFER_OES, msaaRenderBuffer);
-            }
-         }
-         else
-         {
-            if (sgAllowShaders)
-            {
-               glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
-               glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
-            }
-            else
-            {
-               glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
-               glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
-            }
-         }
-      }
-      
-      if (multisampling && multisamplingEnabled)
-      {
-         if (sgAllowShaders)
-         {
-            glBindFramebuffer(GL_FRAMEBUFFER, msaaFramebuffer);  
-         }
-         else
-         {
-            glBindFramebufferOES(GL_FRAMEBUFFER_OES, msaaFramebuffer);
-         }
-      }
-    
-      Event evt(etPoll);
-      HandleEvent(evt);
-   }
-
-   void OnEvent(Event &inEvt)
-   {
-      HandleEvent(inEvt);
-   }
-
-   void OnMouseEvent(Event &inEvt)
-   {
-      inEvt.x *= mDPIScale;
-      inEvt.y *= mDPIScale;
-      HandleEvent(inEvt);
-   }
-
-   void Flip()
-   {
-      if (multisampling && multisamplingEnabled)
-      {
-         // [ddc] code taken from
-         // http://www.gandogames.com/2010/07/tutorial-using-anti-aliasing-msaa-in-the-iphone/
-         // http://is.gd/oHLipb
-         // https://devforums.apple.com/thread/45850
-         //GLenum attachments[] = {GL_DEPTH_ATTACHMENT_OES};
-         //glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 1, attachments);
-         
-         if (sgAllowShaders)
-         {
-            const GLenum discards[] = {GL_DEPTH_ATTACHMENT,GL_COLOR_ATTACHMENT0};
-            glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 2, discards);
-         }
-         else
-         {
-            const GLenum discards[] = {GL_DEPTH_ATTACHMENT_OES,GL_COLOR_ATTACHMENT0_OES};
-            glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 2, discards);
-         }
-         
-         //Bind both MSAA and View FrameBuffers.
-         if (sgAllowShaders)
-         {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER_APPLE, msaaFramebuffer);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER_APPLE, defaultFramebuffer);
-         }
-         else
-         {
-            glBindFramebufferOES(GL_READ_FRAMEBUFFER_APPLE, msaaFramebuffer);
-            glBindFramebufferOES(GL_DRAW_FRAMEBUFFER_APPLE, defaultFramebuffer);
-         }
-         
-         // Call a resolve to combine both buffers
-         glResolveMultisampleFramebufferAPPLE();
-         // Present final image to screen
-      }
-      
-      if (sgAllowShaders)
-      {
-         glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
-         [mOGLContext presentRenderbuffer:GL_RENDERBUFFER];
-      }
-      else
-      {
-         glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
-         [mOGLContext presentRenderbuffer:GL_RENDERBUFFER_OES];
-      }
-   }
-
-   void GetMouse()
-   {
-      // TODO
-   }
-
-   
-   Surface *GetPrimarySurface()
-   {
-      return mHardwareSurface;
-   }
-
-   void SetCursor(nme::Cursor)
-   {
-      // No cursors on iPhone !
-   }
-
-   void EnablePopupKeyboard(bool inEnable)
-   {
-      ::EnableKeyboard(inEnable);
-   }
-
-
-
-  // --- IRenderTarget Interface ------------------------------------------
-   int Width() { return backingWidth; }
-   int Height() { return backingHeight; }
-
-   //double getStageWidth() { return backingWidth; }
-   //double getStageHeight() { return backingHeight; }
-
-
-
-   EventHandler mHandler;
-   void *mHandlerData;
-
-
-   EAGLContext *mOGLContext;
-   CALayer *mLayer;
-   HardwareSurface *mHardwareSurface;
-   HardwareContext *mHardwareContext;
-
-
-   // The pixel dimensions of the CAEAGLLayer
-   GLint backingWidth;
-   GLint backingHeight;
-   double mDPIScale;
-   
-   // The OpenGL names for the framebuffer and renderbuffer used to render to this view
-   GLuint defaultFramebuffer, colorRenderbuffer, depthStencilBuffer;
-
-   //[ddc] antialiasing code taken from:
-   // http://www.gandogames.com/2010/07/tutorial-using-anti-aliasing-msaa-in-the-iphone/
-   // http://is.gd/oHLipb
-   // https://devforums.apple.com/thread/45850
-   // Buffer definitions for the MSAA
-   GLuint msaaFramebuffer, msaaRenderBuffer, msaaDepthBuffer;
-
-};
-
-
-
-
-
-// --- UIStageView -------------------------------------------------------------------
+// --- NMEView -------------------------------------------------------------------
 
 static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
-@implementation UIStageView
+@implementation NMEView
 
 @synthesize animating;
 @dynamic animationFrameInterval;
@@ -720,13 +219,18 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
 - (id) initWithCoder:(NSCoder*)coder
 {    
+   NSLog(@"NME View init with coder - not supported");
+   /*
    if ((self = [super initWithCoder:coder]))
    {
       sgNMEView = self;
+      printf("Init with coder\n");
       [self myInit];
       return self;
    }
+   */
    return nil;
+    
 }
 
 // For when we init programatically...
@@ -735,66 +239,103 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
    if ((self = [super initWithFrame:frame]))
    {
       sgNMEView = self;
+      dpiScale = 1.0;
+      printf("Init with frame %fx%f", frame.size.width, frame.size.height );
       self.autoresizingMask = UIViewAutoresizingFlexibleWidth |
                               UIViewAutoresizingFlexibleHeight;
-      [self myInit];
+      //[self myInit];
       return self;
    }
    return nil;
 }
 
 
-- (void) myInit
+- (void) setupStageLayer:(IOSStage *)inStage
 {
-      // Get the layer
-      CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+   printf("--- NMEView layer ----\n");
+   mStage = inStage;
 
-      eaglLayer.opaque = TRUE;
-      eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                     [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
-                                      kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
-                                      nil];
+   defaultFramebuffer = 0;
+   colorRenderbuffer = 0;
+   depthStencilBuffer = 0;
+   mHardwareContext = 0;
+   mHardwareSurface = 0;
+   mLayer = 0;
+   mOGLContext = 0;
+   mRenderBuffer = 0;
 
-      mStage = new IOSStage(self.layer,true);
+   //todo ; rather expose this hardware value as a function
+   //and they can disable AA selectively on devices themselves 
+   //rather than hardcoding it here.
+   multisampling = sgEnableMSAA2 || sgEnableMSAA4;
 
-      // Set scaling to ensure 1:1 pixels ...
-      if([[UIScreen mainScreen] respondsToSelector: NSSelectorFromString(@"scale")])
+
+
+   // Get the layer
+   mLayer = (CAEAGLLayer *)self.layer;
+
+   mLayer.opaque = YES;
+
+   mLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
+                                   kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
+                                   nil];
+
+   // Set scaling to ensure 1:1 pixels ...
+   if([[UIScreen mainScreen] respondsToSelector: NSSelectorFromString(@"scale")])
+   {
+      if([self respondsToSelector: NSSelectorFromString(@"contentScaleFactor")])
       {
-         if([self respondsToSelector: NSSelectorFromString(@"contentScaleFactor")])
-         {
-            mStage->mDPIScale = [[UIScreen mainScreen] scale];
-            self.contentScaleFactor = mStage->mDPIScale;
-         }
+         dpiScale = [[UIScreen mainScreen] scale];
+         self.contentScaleFactor = dpiScale;
       }
+   }
 
   
-      displayLinkSupported = FALSE;
-      animationFrameInterval = 1;
-      animationTimer = nil;
-      mTextField = nil;
-      mKeyboardEnabled = NO;
-      
-      mMultiTouch = false;
-      mPrimaryTouchHash = 0;
+   animationFrameInterval = 1;
+   mTextField = nil;
+   mKeyboardEnabled = NO;
+   
+   mMultiTouch = false;
+   mPrimaryTouchHash = 0;
+
+   // TODO - move display link out of view into stage
+   animating = true;
+   displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(mainLoop:)];
+   [displayLink setFrameInterval:animationFrameInterval];
+   [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:sgDisplayLinkMode];
 
 
-      animating = true;
-      displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(mainLoop:)];
-      [displayLink setFrameInterval:animationFrameInterval];
-      [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:sgDisplayLinkMode];
 
-      #ifndef IPHONESIM
-      if (!sgCmManager)
-      {
-         sgCmManager = [[CMMotionManager alloc]init];
-         if ([sgCmManager isAccelerometerAvailable])
-         {
-           sgCmManager.accelerometerUpdateInterval = 0.033;
-           [sgCmManager startAccelerometerUpdates];
-           sgHasAccelerometer = true;
-         }
-      }
-      #endif
+   if (sgAllowShaders)
+   {
+      mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+   }
+   else
+   {
+      mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+   }
+   
+   if (!mOGLContext || ![EAGLContext setCurrentContext:mOGLContext])
+   {
+      throw "Could not initilize OpenGL";
+   }
+ 
+   printf("createOGLFramebuffer...\n");
+   [self createOGLFramebuffer];
+
+   #ifndef OBJC_ARC
+   mHardwareContext = HardwareContext::CreateOpenGL(mLayer, mOGLContext, sgAllowShaders);
+   #else
+   mHardwareContext = HardwareContext::CreateOpenGL((__bridge void *)mLayer, (__bridge void *)mOGLContext, sgAllowShaders);
+   #endif
+   mHardwareContext->IncRef();
+   mHardwareContext->SetWindowSize(backingWidth, backingHeight);
+
+   mHardwareSurface = new HardwareSurface(mHardwareContext);
+   mHardwareSurface->IncRef();
+
+
 }
 
 
@@ -914,18 +455,18 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
       if (mMultiTouch)
       {
-         Event mouse(etTouchBegin, thumbPoint.x, thumbPoint.y);
+         Event mouse(etTouchBegin, thumbPoint.x*dpiScale, thumbPoint.y*dpiScale);
          mouse.value = [aTouch hash];
          if (mouse.value==mPrimaryTouchHash)
             mouse.flags |= efPrimaryTouch;
-         mStage->OnMouseEvent(mouse);
+         mStage->HandleEvent(mouse);
       }
       else
       {
-         Event mouse(etMouseDown, thumbPoint.x, thumbPoint.y);
+         Event mouse(etMouseDown, thumbPoint.x*dpiScale, thumbPoint.y*dpiScale);
          mouse.flags |= efLeftDown;
          mouse.flags |= efPrimaryTouch;
-         mStage->OnMouseEvent(mouse);
+         mStage->HandleEvent(mouse);
       }
 
    }
@@ -945,18 +486,18 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
       if (mMultiTouch)
       {
-         Event mouse(etTouchMove, thumbPoint.x, thumbPoint.y);
+         Event mouse(etTouchMove, thumbPoint.x*dpiScale, thumbPoint.y*dpiScale);
          mouse.value = [aTouch hash];
          if (mouse.value==mPrimaryTouchHash)
             mouse.flags |= efPrimaryTouch;
-         mStage->OnMouseEvent(mouse);
+         mStage->HandleEvent(mouse);
       }
       else
       {
-         Event mouse(etMouseMove, thumbPoint.x, thumbPoint.y);
+         Event mouse(etMouseMove, thumbPoint.x*dpiScale, thumbPoint.y*dpiScale);
          mouse.flags |= efLeftDown;
          mouse.flags |= efPrimaryTouch;
-         mStage->OnMouseEvent(mouse);
+         mStage->HandleEvent(mouse);
       }
    }
 }
@@ -976,20 +517,20 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
       if (mMultiTouch)
       {
-         Event mouse(etTouchEnd, thumbPoint.x, thumbPoint.y);
+         Event mouse(etTouchEnd, thumbPoint.x*dpiScale, thumbPoint.y*dpiScale);
          mouse.value = [aTouch hash];
          if (mouse.value==mPrimaryTouchHash)
          {
             mouse.flags |= efPrimaryTouch;
             mPrimaryTouchHash = 0;
          }
-         mStage->OnMouseEvent(mouse);
+         mStage->HandleEvent(mouse);
       }
       else
       {
-         Event mouse(etMouseUp, thumbPoint.x, thumbPoint.y);
+         Event mouse(etMouseUp, thumbPoint.x*dpiScale, thumbPoint.y*dpiScale);
          mouse.flags |= efPrimaryTouch;
-         mStage->OnMouseEvent(mouse);
+         mStage->HandleEvent(mouse);
       }
    }
 }
@@ -1064,9 +605,344 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 }
 
 
+
+
+- (void) createOGLFramebuffer
+{
+   // Create default framebuffer object.
+   // The backing will be allocated for the current layer in -resizeFromLayer
+   if (sgAllowShaders)
+   {
+      glGenFramebuffers(1, &defaultFramebuffer);
+      glGenRenderbuffers(1, &colorRenderbuffer);
+      glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
+      glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
+      
+      [mOGLContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)mLayer];
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer);
+      
+      //fetch the values of size first
+      glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+      glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
+      
+      //Create the depth / stencil buffers
+      if (sgHasDepthBuffer && !sgHasStencilBuffer)
+      {
+         //printf("NMEView :: Creating Depth buffer. \n");
+         //Create just the depth buffer
+         glGenRenderbuffers(1, &depthStencilBuffer);
+         glBindRenderbuffer(GL_RENDERBUFFER, depthStencilBuffer);
+         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, backingWidth, backingHeight);
+         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilBuffer);
+      }
+      else if (sgHasDepthBuffer && sgHasStencilBuffer)
+      {
+         //printf("NMEView :: Creating Depth buffers. \n");
+         //printf("NMEView :: Creating Stencil buffers. \n");
+         
+         //Create the depth/stencil buffer combo
+         glGenRenderbuffers(1, &depthStencilBuffer);
+         glBindRenderbuffer(GL_RENDERBUFFER, depthStencilBuffer);
+         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, backingWidth, backingHeight);
+         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilBuffer);
+         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilBuffer);    
+      }
+      else
+      {
+         //printf("NMEView :: No depth/stencil buffer requested. \n");
+      }
+      
+      //printf("Create OGL window %dx%d\n", backingWidth, backingHeight);
+      
+      // [ddc]
+      // code taken from:
+      // http://www.gandogames.com/2010/07/tutorial-using-anti-aliasing-msaa-in-the-iphone/
+      // http://is.gd/oHLipb
+      // https://devforums.apple.com/thread/45850
+      // Generate and bind our MSAA Frame and Render buffers
+      if (multisampling)
+      {
+         glGenFramebuffers(1, &msaaFramebuffer);
+         glBindFramebuffer(GL_FRAMEBUFFER, msaaFramebuffer);
+         glGenRenderbuffers(1, &msaaRenderBuffer);
+         glBindRenderbuffer(GL_RENDERBUFFER, msaaRenderBuffer);
+         
+         glRenderbufferStorageMultisampleAPPLE(GL_RENDERBUFFER, (sgEnableMSAA4 ? 4 : 2) , GL_RGB5_A1, backingWidth, backingHeight);
+         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, msaaRenderBuffer);
+         glGenRenderbuffers(1, &msaaDepthBuffer);
+         
+         multisamplingEnabled = true;
+         
+      }
+      else
+      {
+         multisamplingEnabled = false;
+      }
+      
+      int framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+      
+      if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+      {
+         NSLog(@"Failed to make complete framebuffer object %x",
+         glCheckFramebufferStatus(GL_FRAMEBUFFER));
+         throw "OpenGL resize failed";
+      }
+   }
+   else
+   {
+      glGenFramebuffersOES(1, &defaultFramebuffer);
+      glGenRenderbuffersOES(1, &colorRenderbuffer);
+      glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
+      glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
+      
+      [mOGLContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)mLayer];
+      
+      glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, colorRenderbuffer);
+      
+      glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+      glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+      
+      if (sgHasDepthBuffer && !sgHasStencilBuffer)
+      {
+         //Create just the depth buffer
+         glGenRenderbuffersOES(1, &depthStencilBuffer);
+         glBindRenderbufferOES(GL_RENDERBUFFER, depthStencilBuffer);
+         glRenderbufferStorageOES(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, backingWidth, backingHeight);
+         glFramebufferRenderbufferOES(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilBuffer);
+         
+      }
+      else if (sgHasDepthBuffer)
+      {
+         //Create the depth/stencil buffer combo
+         glGenRenderbuffersOES(1, &depthStencilBuffer);
+         glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthStencilBuffer);
+         glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH24_STENCIL8_OES, backingWidth, backingHeight);
+         glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER, depthStencilBuffer);
+         glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_STENCIL_ATTACHMENT_OES, GL_RENDERBUFFER, depthStencilBuffer);          
+      }
+      
+      //printf("Create OGL window %dx%d\n", backingWidth, backingHeight);
+      
+      // [ddc]
+      // code taken from:
+      // http://www.gandogames.com/2010/07/tutorial-using-anti-aliasing-msaa-in-the-iphone/
+      // http://is.gd/oHLipb
+      // https://devforums.apple.com/thread/45850
+      // Generate and bind our MSAA Frame and Render buffers
+      if (multisampling)
+      {
+         glGenFramebuffersOES(1, &msaaFramebuffer);
+         glBindFramebufferOES(GL_FRAMEBUFFER_OES, msaaFramebuffer);
+         glGenRenderbuffersOES(1, &msaaRenderBuffer);
+         glBindRenderbufferOES(GL_RENDERBUFFER_OES, msaaRenderBuffer);
+         
+         glRenderbufferStorageMultisampleAPPLE(GL_RENDERBUFFER_OES, (sgEnableMSAA4 ? 4 : 2) , GL_RGB5_A1_OES, backingWidth, backingHeight);
+         glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, msaaRenderBuffer);
+         glGenRenderbuffersOES(1, &msaaDepthBuffer);
+         
+         multisamplingEnabled = true;
+      }
+      else
+      {
+         multisamplingEnabled = false;
+      }
+      
+      int framebufferStatus = glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES);
+      
+      if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE_OES)
+      {
+         NSLog(@"Failed to make complete framebuffer object %x",
+         glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+         throw "OpenGL resize failed";
+      }
+   }
+}
+
+- (void) destroyOGLFramebuffer
+{
+   if (defaultFramebuffer)
+   {
+      if (sgAllowShaders)
+      {
+         glDeleteFramebuffers(1, &defaultFramebuffer);
+      }
+      else
+      {
+         glDeleteFramebuffersOES(1, &defaultFramebuffer);
+      }
+   }
+   defaultFramebuffer = 0;
+   if (colorRenderbuffer)
+   {
+      if (sgAllowShaders)
+      {
+         glDeleteRenderbuffers(1, &colorRenderbuffer);
+      }
+      else
+      {
+         glDeleteRenderbuffersOES(1, &colorRenderbuffer);
+      }
+   }
+   defaultFramebuffer = 0;
+
+   if (depthStencilBuffer)
+   {
+      if (sgAllowShaders)
+      {
+         glDeleteRenderbuffers(1, &depthStencilBuffer);
+      }
+      else
+      {
+         glDeleteRenderbuffersOES(1, &depthStencilBuffer);
+      }
+      depthStencilBuffer = 0;
+   }
+}
+
+- (void) makeCurrent :(bool)withMultisampling
+{
+   [EAGLContext setCurrentContext:mOGLContext];
+
+   bool multisamplingEnabledNow = withMultisampling;
+   
+   if (multisampling && multisamplingEnabled != multisamplingEnabledNow)
+   {
+      multisamplingEnabled = multisamplingEnabledNow;
+      if (multisamplingEnabled)
+      {
+         if (sgAllowShaders)
+         {
+            glBindFramebuffer(GL_FRAMEBUFFER, msaaFramebuffer);
+            glBindRenderbuffer(GL_RENDERBUFFER, msaaRenderBuffer);
+         }
+         else
+         {
+            glBindFramebufferOES(GL_FRAMEBUFFER_OES, msaaFramebuffer);
+            glBindRenderbufferOES(GL_RENDERBUFFER_OES, msaaRenderBuffer);
+         }
+      }
+      else
+      {
+         if (sgAllowShaders)
+         {
+            glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
+            glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
+         }
+         else
+         {
+            glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
+            glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
+         }
+      }
+   }
+   
+   if (multisampling && multisamplingEnabled)
+   {
+      if (sgAllowShaders)
+      {
+         glBindFramebuffer(GL_FRAMEBUFFER, msaaFramebuffer);  
+      }
+      else
+      {
+         glBindFramebufferOES(GL_FRAMEBUFFER_OES, msaaFramebuffer);
+      }
+   }
+}
+
+
+
+- (void) freeLayer
+{
+   if (mHardwareSurface)
+   {
+      mHardwareSurface->DecRef();
+      mHardwareSurface = 0;
+   }
+   if (mHardwareContext)
+   {
+      mHardwareContext->DecRef();
+      mHardwareContext = 0;
+   }
+
+   [self destroyOGLFramebuffer];
+   if (mOGLContext)
+   {
+      // Tear down context
+      if ([EAGLContext currentContext] == mOGLContext)
+         [EAGLContext setCurrentContext:nil];
+
+      #ifndef OBJC_ARC
+      [mOGLContext release];
+      #endif
+   }
+}
+
+
+- (void) flip
+{
+   if (multisampling && multisamplingEnabled)
+   {
+      // [ddc] code taken from
+      // http://www.gandogames.com/2010/07/tutorial-using-anti-aliasing-msaa-in-the-iphone/
+      // http://is.gd/oHLipb
+      // https://devforums.apple.com/thread/45850
+      //GLenum attachments[] = {GL_DEPTH_ATTACHMENT_OES};
+      //glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 1, attachments);
+      
+      if (sgAllowShaders)
+      {
+         const GLenum discards[] = {GL_DEPTH_ATTACHMENT,GL_COLOR_ATTACHMENT0};
+         glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 2, discards);
+      }
+      else
+      {
+         const GLenum discards[] = {GL_DEPTH_ATTACHMENT_OES,GL_COLOR_ATTACHMENT0_OES};
+         glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 2, discards);
+      }
+      
+      //Bind both MSAA and View FrameBuffers.
+      if (sgAllowShaders)
+      {
+         glBindFramebuffer(GL_READ_FRAMEBUFFER_APPLE, msaaFramebuffer);
+         glBindFramebuffer(GL_DRAW_FRAMEBUFFER_APPLE, defaultFramebuffer);
+      }
+      else
+      {
+         glBindFramebufferOES(GL_READ_FRAMEBUFFER_APPLE, msaaFramebuffer);
+         glBindFramebufferOES(GL_DRAW_FRAMEBUFFER_APPLE, defaultFramebuffer);
+      }
+      
+      printf("Huh?\n");
+      // Call a resolve to combine both buffers
+      glResolveMultisampleFramebufferAPPLE();
+      // Present final image to screen
+   }
+   
+   if (sgAllowShaders)
+   {
+      glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
+      [mOGLContext presentRenderbuffer:GL_RENDERBUFFER];
+   }
+   else
+   {
+      glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
+      [mOGLContext presentRenderbuffer:GL_RENDERBUFFER_OES];
+   }
+}
+
+
+
 - (void) layoutSubviews
 {
-   mStage->OnOGLResize((CAEAGLLayer*)self.layer);
+   // Recreate frame buffers ..
+   printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
+   [EAGLContext setCurrentContext:mOGLContext];
+   [self destroyOGLFramebuffer];
+   [self createOGLFramebuffer];
+
+   mHardwareContext->SetWindowSize(backingWidth,backingHeight);
+
+   mStage->OnOGLResize(backingWidth,backingHeight);
 }
 
 #ifndef OBJC_ARC
@@ -1080,11 +956,347 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 }
 #endif
 
-@end
+@end // End NMEView
+
+
+
+class IOSVideo : public StageVideo
+{
+   IOSStage                *stage;
+   MPMoviePlayerController *player; 
+   std::string             lastUrl;
+   bool                    vpIsSet;
+   CGRect                  viewport;
+   double                  pointScale;
+
+public:
+   IOSVideo(IOSStage *inStage,double inPointScale)
+   {
+      pointScale = inPointScale;
+      stage = inStage;
+      player = 0;
+      vpIsSet = false;
+   }
+
+   UIView *getPlayerView()
+   {
+      if (!player)
+        return 0;
+      return [player view];
+   }
+
+   void play(const char *inUrl, double inStart, double inLength)
+   {
+      printf("video: play %s %f %f\n", inUrl, inStart, inLength);
+
+      if (inUrl==lastUrl)
+      {
+         printf("Replay\n");
+         return;
+      }
+ 
+      /*
+      Create a MPMoviePlayerController movie object for the specified URL and add movie notification
+      observers. Configure the movie object for the source type, scaling mode, control style, background
+      color, background image, repeat mode and AirPlay mode. Add the view containing the movie content and 
+      controls to the existing view hierarchy.
+      */
+  
+      lastUrl = inUrl;
+      std::string local = gAssetBase + lastUrl;
+   
+      NSString *str = [[NSString alloc] initWithUTF8String:local.c_str()];
+
+      NSURL *localUrl = [[NSBundle mainBundle] URLForResource:str withExtension:nil];
+
+      printf( "URL : %s (%s)\n", [[localUrl absoluteString] UTF8String], local.c_str() );
+
+
+      if (player==0)
+      {
+         player = [[MPMoviePlayerController alloc] initWithContentURL:localUrl];
+         player.controlStyle = MPMovieControlStyleNone;
+      }
+      else
+      {
+         player.contentURL = localUrl;
+
+      }
+
+      stage->onVideoPlay();
+
+      if (!vpIsSet)
+         viewport = stage->getViewBounds();
+
+      printf("Player size %fx%f\n", viewport.size.width, viewport.size.height );
+
+      [[player view] setFrame:viewport];
+
+      [player play];
+    }
+
+
+      //if (player) 
+      //{
+         //[player prepareToPlay];
+
+         // MPMoviePlayerLoadStateDidChangeNotification
+
+         // NSTimeInterval initialPlaybackTime
+
+         /* Register the current object as an observer for the movie
+          notifications. */
+         //[self installMovieNotificationObservers];
+        
+         /* Specify the URL that points to the movie file. */
+         //[player setContentURL:localUrl];        
+        
+         /* If you specify the movie type before playing the movie it can result 
+          in faster load times. */
+         //[player setMovieSourceType:sourceType];
+        
+         /* Apply the user movie preference settings to the movie player object. */
+         //[self applyUserSettingsToMoviePlayer];
+        
+         /* Add a background view as a subview to hide our other view controls 
+          underneath during movie playback. */
+         //[stageView addSubview:stageView.backgroundView];
+        
+         /* Inset the movie frame in the parent view frame. */
+       
+         //[player view].backgroundColor = [UIColor black];
+        
+         /* To present a movie in your application, incorporate the view contained 
+          in a movie player’s view property into your application’s view hierarchy. 
+          Be sure to size the frame correctly. */
+     // }
+
+   ~IOSVideo()
+   {
+      destroy();
+   }
+   
+
+   void seek(double inTime)
+   {
+      printf("video: seek %f\n", inTime);
+   }
+
+   void setPan(double x, double y)
+   {
+      printf("video: setPan %f %f\n",x,y);
+   }
+
+   void setZoom(double x, double y)
+   {
+      printf("video: setZoom %f %f\n",x,y);
+   }
+
+   void setSoundTransform(double inVolume, double inPosition)
+   {
+      printf("video: setSoundTransform %f %f\n", inVolume, inPosition);
+   }
+
+   void setViewport(double x, double y, double width, double height)
+   {
+      printf("video: setviewport %f %f %f %f\n",x,y, width,height);
+      vpIsSet = true;
+      viewport = CGRectMake(x*pointScale,y*pointScale,width*pointScale,height*pointScale);
+      if (player)
+         [[player view] setFrame:viewport];
+   }
+
+   double getTime()
+   {
+      printf("video: getTime\n");
+      return 0;
+   }
+
+   void pause()
+   {
+      printf("video: pause\n");
+   }
+
+   void resume()
+   {
+      printf("video: togglePause\n");
+   }
+
+   void togglePause()
+   {
+      printf("video: togglePause\n");
+   }
+
+   void destroy()
+   {
+      printf("video: destroy\n");
+      lastUrl = "";
+      // TODO - dealloc
+      player = 0;
+   }
+
+};
+
 
 
 double sgWakeUp = 0.0;
 
+
+
+
+
+
+// --- Stage Implementaton ------------------------------------------------------
+//
+// The stage acts as the controller between the NME view and the NME application.
+//  It passes events as sets properties as required
+
+
+IOSStage::IOSStage(CGRect inRect) : nme::Stage(true)
+{
+   video = 0;
+
+   NSString* platform = [UIDeviceHardware platformString];
+   //printf("Detected hardware: %s\n", [platform UTF8String]);
+   
+  
+   playerView = 0;
+   container = [[UIView alloc] initWithFrame:inRect];
+   container.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+   container.opaque = TRUE;
+
+   CGRect childRect = CGRectMake(0,0, inRect.size.width, inRect.size.height);
+
+   nmeView = [[NMEView alloc] initWithFrame:childRect ];
+
+   [nmeView setupStageLayer:this];
+
+   [container addSubview:nmeView];
+
+   
+
+
+   #ifndef IPHONESIM
+   if (!sgCmManager)
+   {
+      sgCmManager = [[CMMotionManager alloc]init];
+      if ([sgCmManager isAccelerometerAvailable])
+      {
+        sgCmManager.accelerometerUpdateInterval = 0.033;
+        [sgCmManager startAccelerometerUpdates];
+        sgHasAccelerometer = true;
+      }
+   }
+   #endif
+}
+
+void IOSStage::setOpaqueBackground(uint32 inBG)
+{
+   Stage::setOpaqueBackground(inBG);
+   updateBackground();
+}
+ 
+void IOSStage::updateBackground()
+{
+   if (!playerView)
+   {
+      //printf("updateBackground -> no background\n");
+      container.backgroundColor = nil;
+      nmeView.layer.opaque = TRUE;
+   }
+   else
+   {
+      //printf("updateBackground -> set background, layer transparent\n");
+      double r = ((opaqueBackground>>16) & 0xff) / 255.0;
+      double g = ((opaqueBackground>>8 ) & 0xff) / 255.0;
+      double b = ((opaqueBackground    ) & 0xff) / 255.0;
+      //container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
+      nmeView.layer.opaque = FALSE;
+   }
+}
+
+uint32 IOSStage::getBackgroundMask()
+{
+   return playerView ? 0x00ffffff : 0xffffffff;
+}
+
+CGRect IOSStage::getViewBounds()
+{
+   return nmeView.bounds;
+}
+
+void IOSStage::onVideoPlay()
+{
+   if (!playerView)
+   {
+      playerView = video->getPlayerView();
+      [container insertSubview:playerView belowSubview:nmeView];
+      //[container addSubview:playerView ];
+
+      updateBackground();
+   }
+}
+
+StageVideo *IOSStage::createStageVideo()
+{
+   if (!video)
+      video = new IOSVideo(this,1.0/getDPIScale());
+
+   return video;
+}
+
+
+IOSStage::~IOSStage()
+{
+   [nmeView freeLayer];
+
+}
+
+void IOSStage::setMultitouchActive(bool inActive)
+{
+   [ sgNMEView enableMultitouch:inActive ];
+
+}
+bool IOSStage::getMultitouchActive()
+{
+   return sgNMEView->mMultiTouch;
+}
+
+void IOSStage::OnOGLResize(int width, int height)
+{   
+   //printf("OnOGLResize %dx%d\n", backingWidth, backingHeight);
+   Event evt(etResize);
+   evt.x = width;
+   evt.y = height;
+   printf("OnResize %dx%d\n", width, height);
+   HandleEvent(evt);
+
+}
+
+void IOSStage::OnRedraw()
+{
+   [nmeView makeCurrent: GetAA()>1 ];
+   Event evt(etRedraw);
+   HandleEvent(evt);
+}
+
+void IOSStage::OnPoll()
+{
+   [nmeView makeCurrent: GetAA()>1 ];
+   Event evt(etPoll);
+   HandleEvent(evt);
+}
+
+void IOSStage::OnEvent(Event &inEvt)
+{
+   [nmeView makeCurrent: GetAA()>1 ];
+   HandleEvent(inEvt);
+}
+
+void IOSStage::Flip()
+{
+   [nmeView flip];
+}
 
 
 
@@ -1164,30 +1376,15 @@ double sgWakeUp = 0.0;
 
 - (void)loadView
 {
-   UIStageView *view = [[UIStageView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-   self.view = view;
+   IOSStage *iosStage = new IOSStage([[UIScreen mainScreen] bounds]);
+   self.view = iosStage->getRootView();
 }
 
 @end
 
 
 
-
 // --- NMEAppDelegate ----------------------------------------------------------
-
-class UIViewFrame : public nme::Frame
-{
-public:
-   UIStageView *mView;
-
-   UIViewFrame(UIStageView *inView) : mView(inView) { }
-
-   virtual void SetTitle()  { }
-   virtual void SetIcon() { }
-   virtual Stage *GetStage()  { return mView->mStage; }
-
-};
-
 
 
 @interface NMEAppDelegate : NSObject <UIApplicationDelegate>
@@ -1217,7 +1414,7 @@ public:
    self.window.rootViewController = c;
    nme_app_set_active(true);
    application.idleTimerDisabled = YES;
-   sOnFrame( new UIViewFrame((UIStageView *)c.view) );
+   sOnFrame( new IOSViewFrame(sgNMEView) );
 }
 
 - (void) applicationWillResignActive:(UIApplication *)application
@@ -1245,6 +1442,11 @@ public:
 #endif
 
 @end
+
+
+
+
+
 
 
 
@@ -1380,11 +1582,11 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    {
       double width = nmeParentView.frame.size.width;
       double height = nmeParentView.frame.size.height;
-      UIStageView *view = [[UIStageView alloc] initWithFrame:CGRectMake(0.0,0.0,width,height)];
+      NMEView *view = [[NMEView alloc] initWithFrame:CGRectMake(0.0,0.0,width,height)];
 
       [nmeParentView  addSubview:view];
       // application.idleTimerDisabled = YES;
-      sOnFrame( new UIViewFrame(view) );
+      sOnFrame( new IOSViewFrame(view) );
 
       [view startAnimation];
       nmeParentView = 0;

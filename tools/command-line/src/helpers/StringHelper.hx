@@ -78,6 +78,7 @@ class StringHelper
    {
       var chars = name.toLowerCase();
       var flatName = "";
+      var mp4 = name.substr(-4)==".mp4";
 
       for(i in 0...chars.length) 
       {
@@ -120,6 +121,8 @@ class StringHelper
 
       usedFlatNames.set(flatName, "1");
 
+      if (mp4)
+         return flatName+".mp4";
       return flatName;
    }
 

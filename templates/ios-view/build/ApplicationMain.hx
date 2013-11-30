@@ -64,7 +64,7 @@ class ApplicationMain
    // This will get called by 'hxRunLibrary' above on creation of first view
    public static function main()
    {
-      trace("Application !");
+      nme.AssetData.create();
 
       nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
       ::if (sslCaCert != "")::

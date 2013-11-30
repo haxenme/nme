@@ -1,4 +1,5 @@
 
+* Some work on weak references for asset caching
 * Add some StageVideo handlers
 * Add openfl compatibility support
 * Add cocktail support

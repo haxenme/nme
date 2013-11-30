@@ -115,6 +115,7 @@ class PathHelper
       return matches;
    }
 
+   static var libMap = new Map<String,String>();
    public static function getHaxelib(haxelib:Haxelib):String 
    {
       var name = haxelib.name;
@@ -124,12 +125,17 @@ class PathHelper
          name += ":" + haxelib.version;
       }
 
+      var cached = libMap.get(name);
+      if (cached!=null)
+         return cached;
+
       if (name == "nme") 
       {
          var nmePath = Sys.getEnv("NMEPATH");
 
          if (nmePath != null && nmePath != "") 
          {
+            libMap.set(name,nmePath);
             return nmePath;
          }
       }
@@ -195,6 +201,7 @@ class PathHelper
          LogHelper.info("", " - Discovered haxelib \"" + name + "\" at \"" + result + "\"");
       }
 
+      libMap.set(name,result);
       return result;
    }
 

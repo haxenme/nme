@@ -104,12 +104,17 @@ public:
      
       glViewport(r.x,mHeight-r.y1(),r.w,r.h);
 
+
+      float alpha = ((inColour >>24) & 0xff) /255.0;
+      float red =   ((inColour >>16) & 0xff) /255.0;
+      float green = ((inColour >>8 ) & 0xff) /255.0;
+      float blue  = ((inColour     ) & 0xff) /255.0;
+      red *= alpha;
+      green *= alpha;
+      blue *= alpha;
       if (r==Rect(mWidth,mHeight))
       {
-         glClearColor((GLclampf)( ((inColour >>16) & 0xff) /255.0),
-                      (GLclampf)( ((inColour >>8 ) & 0xff) /255.0),
-                      (GLclampf)( ((inColour     ) & 0xff) /255.0),
-                      (GLclampf)1.0 );
+         glClearColor(red, green, blue, alpha );
          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       }
       else
@@ -117,10 +122,7 @@ public:
          #ifndef NME_FORCE_GLES2
          // TODO: Clear with a rect
          // TODO: Need replacement call for GLES2
-         glColor4f((GLclampf)( ((inColour >>16) & 0xff) /255.0),
-                   (GLclampf)( ((inColour >>8 ) & 0xff) /255.0),
-                   (GLclampf)( ((inColour     ) & 0xff) /255.0),
-                   (GLclampf)1.0 );
+         glColor4f(red, green, blue, alpha );
 
          glMatrixMode(GL_MODELVIEW);
          glPushMatrix();
@@ -138,6 +140,8 @@ public:
          glPopMatrix();
          glMatrixMode(GL_MODELVIEW);
          glPopMatrix();
+         #else
+         //printf(" - partial clear\n");
          #endif
       }
 

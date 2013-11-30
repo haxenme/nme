@@ -8,7 +8,7 @@ import nme.text.Font;
 import nme.utils.ByteArray;
 import nme.utils.WeakRef;
 
-import nme.AssetData;
+import nme.AssetInfo;
 
 
 /**
@@ -27,37 +27,26 @@ import nme.AssetData;
  * and specifying a custom preloader using <window preloader="" />
  * in the project file.</p>
  */
+
 class Assets 
 {
    public static inline var UNCACHED = 0;
    public static inline var WEAK_CACHE = 1;
    public static inline var STRONG_CACHE = 2;
 
-   public static var id(get_id, null):Array<String>;
-   public static var path(get_path, null): Map<String,String>;
-   public static var type(get_type, null): Map<String,AssetType>;
+   public static var info = new Map<String,AssetInfo>();
+   public static var useResources = false;
    public static var cacheMode:Int = WEAK_CACHE;
 
-   private static var initialized = false;
-   private static var cache:Map<String, WeakRef<Dynamic> >;
-
-   private static function initialize():Void 
-   {
-      if (!initialized) 
-      {
-         AssetData.initialize();
-         initialized = true;
-         cache = new Map<String, WeakRef<Dynamic> >();
-      }
-   }
+   //public static var id(get_id, null):Array<String>;
 
    public static function getAssetPath(inName:String) : String
    {
-      var map = path;
-      return map.get(inName);
+      var i = info.get(inName);
+      return i==null ? null : i.path;
    }
 
-   static function getReso(inName:String) : ByteArray
+   static function getResource(inName:String) : ByteArray
    {
       var bytes = haxe.Resource.getBytes(inName);
       if (bytes==null)
@@ -69,40 +58,28 @@ class Assets
       #end
    }
 
+   public static function trySetCache(info:AssetInfo, useCache:Null<Bool>, data:Dynamic)
+   {
+      if (useCache!=false && (useCache==true || cacheMode!=UNCACHED))
+         info.setCache(data, cacheMode!=STRONG_CACHE);
+   }
+
+   public static function noId(id:String, type:String)
+   {
+      trace("[nme.Assets] missing resource '" + id + "' of type " + type);
+   }
+
+   public static function badType(id:String, type:String)
+   {
+      trace("[nme.Assets] resource '" + id + "' is not of type " + type);
+   }
+
    public static function hasBitmapData(id:String):Bool 
    {
-      initialize();
+      var i = info.get(id);
 
-      return (AssetData.type.exists(id) && AssetData.type.get(id) == IMAGE);
+      return i!=null && i.type==IMAGE;
    }
-
-   public static function getCache(id:String,?inForce:Null<Bool>):Dynamic
-   {
-      if (inForce==false)
-         return null;
-
-      var ref:WeakRef<Dynamic> = cache.get(id);
-      if (ref==null)
-         return null;
-      var value = ref.get();
-      if (value==null)
-         cache.remove(id);
-      return value;
-   }
- 
-   public static function setCache<T>(id:String,value:T,?inForce:Null<Bool>):T
-   {
-      if (inForce==false)
-         return value;
-
-      if (inForce==true || cacheMode!=UNCACHED)
-      {
-         cache.set(id, new WeakRef<Dynamic>(value, cacheMode==WEAK_CACHE) );
-      }
-
-      return value;
-   }
- 
 
    /**
     * Gets an instance of an embedded bitmap
@@ -113,31 +90,42 @@ class Assets
     */
    public static function getBitmapData(id:String, ?useCache:Null<Bool>):BitmapData 
    {
-      if (hasBitmapData(id))
+      var i = info.get(id);
+      if (i==null)
       {
-         var cached = getCache(id,useCache);
-         if (cached!=null)
-            return cached;
-         #if flash
-         var data = cast(Type.createInstance(AssetData.className.get(id), []), BitmapData);
-         #elseif js
-         var data = cast(ApplicationMain.loaders.get(AssetData.path.get(id)).contentLoaderInfo.content, Bitmap).bitmapData;
-         #else
-         var name =  AssetData.path.get(id);
-         var data =AssetData.useResources ? BitmapData.loadFromBytes( getReso(name) ) :  BitmapData.load(name);
-         #end
-         return setCache(id,data,useCache);
+         noId(id,"BitmapData");
+         return null;
       }
-      return null;
+      if (i.type!=IMAGE)
+      {
+         badType(id,"BitmapData");
+         return null;
+      }
+      if (useCache!=false)
+      {
+         var val = i.getCache();
+         if (val!=null)
+            return val;
+      }
+ 
+      var data =
+         #if flash
+         cast(Type.createInstance(i.className, []), BitmapData)
+         #elseif js
+         cast(ApplicationMain.loaders.get(i.path).contentLoaderInfo.content, Bitmap).bitmapData
+         #else
+         useResources ? BitmapData.loadFromBytes( getResource(i.path) ) :  BitmapData.load(i.path)
+         #end
+      ;
+      trySetCache(i,useCache,data);
+      return data;
    }
 
    public static function hasBytes(id:String):Bool
    {
-      initialize();
-
-      return AssetData.type.exists(id);
+      var i = info.get(id);
+      return i!=null;
    }
- 
 
 
    /**
@@ -148,57 +136,52 @@ class Assets
     */
    public static function getBytes(id:String,?useCache:Null<Bool>):ByteArray 
    {
-      if (hasBytes(id))
+      var i = info.get(id);
+      if (i==null)
       {
-         var cached = getCache(id,useCache);
-         if (cached!=null)
-            return cached;
-
-         #if flash
-         return setCache(id,Type.createInstance(AssetData.className.get(id), []), useCache);
-
-         #elseif js
-         var bytes:ByteArray = null;
-         var data = ApplicationMain.urlLoaders.get(AssetData.path.get(id)).data;
-         if (Std.is(data, String)) 
-         {
-            var bytes = new ByteArray();
-            bytes.writeUTFBytes(data);
-         } else if (Std.is(data, ByteArray)) 
-         {
-            bytes = cast data;
-         } else 
-         {
-            bytes = null;
-         }
-
-         if (bytes != null) 
-         {
-            bytes.position = 0;
-            return setCache(id,bytes, useCache);
-         } else 
-         {
-            return null;
-         }
-         #else
-
-         return setCache(id,ByteArray.readFile(AssetData.path.get(id)), useCache);
-         #end
-
+         noId(id,"Bytes");
+         return null;
       }
-      else 
+      if (useCache!=false)
       {
-         trace("[nme.Assets] There is no String or ByteArray asset with an ID of \"" + id + "\"");
+         var val = i.getCache();
+         if (val!=null)
+            return val;
       }
 
-      return null;
+
+      #if flash
+      var data = Type.createInstance(i.className, []);
+      #elseif js
+      var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
+      var data:ByteArray = null;
+      if (Std.is(asset, String)) 
+      {
+         bytes = new ByteArray();
+         bytes.writeUTFBytes(asset);
+      }
+      else if (!Std.is(data, ByteArray)) 
+      {
+         badType(is,"Bytes");
+         return null;
+      }
+      #else
+      var data = ByteArray.readFile(i.path);
+      #end
+
+      if (data != null) 
+         data.position = 0;
+
+      trySetCache(i,useCache,data);
+
+      return data;
    }
 
    public static function hasFont(id:String):Bool 
    {
-      initialize();
+      var i = info.get(id);
 
-      return (AssetData.type.exists(id) && AssetData.type.get(id) == FONT);
+      return i!=null && i.type == FONT;
    }
    /**
     * Gets an instance of an embedded font
@@ -208,41 +191,42 @@ class Assets
     */
    public static function getFont(id:String,?useCache:Null<Bool>):Font 
    {
-      if (hasFont(id))
+      var i = info.get(id);
+      if (i==null)
       {
-         var cached = getCache(id,useCache);
-         if (cached!=null)
-            return cached;
+         noId(id,"Font");
+         return null;
+      }
+      if (i.type!=FONT)
+      {
+         badType(id,"Font");
+         return null;
+      }
+      if (useCache!=false)
+      {
+         var val = i.getCache();
+         if (val!=null)
+            return val;
+      }
 
+      var font = 
          #if (flash || js)
-
-         return setCache(id,cast(Type.createInstance(AssetData.className.get(id), []), Font), useCache);
-
+         cast(Type.createInstance(i.className,[]), Font)
          #else
-
-         return setCache(id,new Font(AssetData.path.get(id)), useCache);
-
+         new Font(i.path)
          #end
+      ;
 
-      }
-      else 
-      {
-         trace("[nme.Assets] There is no Font asset with an ID of \"" + id + "\"");
-      }
+      trySetCache(i,useCache,font);
 
-      return null;
+      return font;
    }
 
    public static function hasSound(id:String):Bool 
    {
-      initialize();
+      var i = info.get(id);
 
-      if (AssetData.type.exists(id)) 
-      {
-         var type = AssetData.type.get(id);
-         return (type == SOUND || type == MUSIC);
-      }
-      return false;
+      return i!=null && (i.type == SOUND || i.type==MUSIC);
    }
  
 
@@ -254,26 +238,37 @@ class Assets
     */
    public static function getSound(id:String,?useCache:Null<Bool>):Sound 
    {
-      if (hasSound(id))
+      var i = info.get(id);
+      if (i==null)
       {
-         var cached = getCache(id,useCache);
-         if (cached!=null)
-            return cached;
-
-         return setCache(id,
-            #if flash
-            cast(Type.createInstance(AssetData.className.get(id), []), Sound)
-            #elseif js
-            new Sound(new URLRequest(AssetData.path.get(id)))
-            #else
-            new Sound(new URLRequest(AssetData.path.get(id)), null, AssetData.type.get(id) == MUSIC)
-            #end
-         , useCache);
+         noId(id,"Sound");
+         return null;
+      }
+      if (i.type != SOUND || i.type!=MUSIC)
+      {
+         badType(id,"Sound");
+         return null;
+      }
+      if (useCache!=false)
+      {
+         var val = i.getCache();
+         if (val!=null)
+            return val;
       }
 
-      trace("[nme.Assets] There is no Sound asset with an ID of \"" + id + "\"");
+      var sound =
+            #if flash
+            cast(Type.createInstance(i.className, []), Sound)
+            #elseif js
+            new Sound(new URLRequest(i.path))
+            #else
+            new Sound(new URLRequest(i.path), null, i.type == MUSIC)
+            #end
+      ;
 
-      return null;
+      trySetCache(i,useCache,sound);
+
+      return sound;
    }
 
    public static function hasText(id:String) { return hasBytes(id); }
@@ -289,34 +284,14 @@ class Assets
       var bytes = getBytes(id,useCache);
 
       if (bytes == null) 
-      {
          return null;
 
-      } else 
-      {
-         return bytes.readUTFBytes(bytes.length);
-      }
+      return bytes.readUTFBytes(bytes.length);
    }
 
-   #if js
-
-   private static function resolveClass(name:String):Class<Dynamic> 
-   {
-      name = StringTools.replace(name, "native.", "browser.");
-      name = StringTools.replace(name, "nme.", "browser.");
-      return Type.resolveClass(name);
-   }
-
-   private static function resolveEnum(name:String):Enum <Dynamic> 
-   {
-      name = StringTools.replace(name, "native.", "browser.");
-      name = StringTools.replace(name, "nme.", "browser.");
-      return Type.resolveEnum(name);
-   }
-
-   #end
 
    // Getters & Setters
+   /*
    private static function get_id():Array<String> 
    {
       initialize();
@@ -330,28 +305,7 @@ class Assets
 
       return ids;
    }
-
-   private static function get_path():Map<String,String> 
-   {
-      initialize();
-
-      #if ((nme_install_tool && !display) && !flash)
-
-      return AssetData.path;
-
-      #else
-
-      return new Map<String,String>();
-
-      #end
-   }
-
-   private static function get_type(): Map<String,AssetType> 
-   {
-      initialize();
-
-      return AssetData.type;
-   }
+   */
 }
 
 

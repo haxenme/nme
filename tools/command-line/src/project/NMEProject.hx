@@ -516,10 +516,11 @@ class NMEProject
          }
          else if (asset.type != AssetType.TEMPLATE) 
          {
-            var embeddedAsset:Dynamic = { };
-            ObjectHelper.copyFields(asset, embeddedAsset);
-            embeddedAsset.type = Std.string(asset.type).toLowerCase();
-            context.assets.push(embeddedAsset);
+            //var embeddedAsset:Dynamic = { };
+            //ObjectHelper.copyFields(asset, embeddedAsset);
+            //embeddedAsset.type = Std.string(asset.type);
+            //context.assets.push(embeddedAsset);
+            context.assets.push(asset);
          }
       }
 
