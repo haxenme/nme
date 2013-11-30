@@ -1210,7 +1210,7 @@ void IOSStage::updateBackground()
       double r = ((opaqueBackground>>16) & 0xff) / 255.0;
       double g = ((opaqueBackground>>8 ) & 0xff) / 255.0;
       double b = ((opaqueBackground    ) & 0xff) / 255.0;
-      //container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
+      container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
       nmeView.layer.opaque = FALSE;
    }
 }
