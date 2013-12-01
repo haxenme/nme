@@ -94,7 +94,6 @@ class Stage extends DisplayObjectContainer
    /** @private */ private var nmeTouchInfo:#if haxe3 Map <Int, #else IntHash <#end TouchInfo>;
    public function new(inHandle:Dynamic, inWidth:Int, inHeight:Int) 
    {
-trace("New stage!");
       super(inHandle, "Stage");
 
       nmeMouseOverObjects = [];

@@ -29,7 +29,6 @@
 
 using namespace nme;
 
-void EnableKeyboard(bool inEnable);
 extern "C" void nme_app_set_active(bool inActive);
 
 namespace nme { int gFixedOrientation = -1; }
@@ -41,7 +40,7 @@ CMMotionManager *sgCmManager = 0;
 #endif
 bool sgHasAccelerometer = false;
 
-
+class NMEStage;
 
 // This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
 // The view content is basically an EAGL surface you render your OpenGL scene into.
@@ -49,10 +48,6 @@ bool sgHasAccelerometer = false;
 @interface NMEView : UIView<UITextFieldDelegate>
 {    
 @private
-   // TODO - move to stage?
-   BOOL       animating;
-   id         displayLink;
-   NSInteger  animationFrameInterval;
 
 
    int      mRenderBuffer;
@@ -77,7 +72,7 @@ bool sgHasAccelerometer = false;
 
 
 @public
-   class IOSStage *mStage;
+   class NMEStage *mStage;
    UITextField    *mTextField;
    BOOL           mKeyboardEnabled;
    bool           mMultiTouch;
@@ -93,20 +88,15 @@ bool sgHasAccelerometer = false;
 }
 
 
-@property (readonly, nonatomic, getter=isAnimating) BOOL animating;
-@property (nonatomic) NSInteger animationFrameInterval;
 
-- (void) setupStageLayer:(IOSStage *)inStage;
+- (void) setupStageLayer:(NMEStage *)inStage;
 - (void) drawView:(id)sender;
-- (void) onPoll:(id)sender;
 - (void) enableKeyboard:(bool)withEnable;
 - (void) enableMultitouch:(bool)withEnable;
-- (BOOL)canBecomeFirstResponder;
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void) startAnimation;
-- (void) stopAnimation;
+- (BOOL) canBecomeFirstResponder;
+- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void) makeCurrent:(bool)withMultisampling;
 
 - (void) createOGLFramebuffer;
@@ -114,7 +104,23 @@ bool sgHasAccelerometer = false;
 @end
 
 
+// --- NMEAnimationController ----------------------
 
+@interface NMEAnimationController : NSObject
+{
+   NMEStage   *stage;
+   BOOL       animating;
+   id         displayLink;
+   NSInteger  animationFrameInterval;
+}
+- (id)   initWithStage:(NMEStage *)inStage;
+- (void) startAnimation;
+- (void) stopAnimation;
+- (void) mainLoop:(id) sender;
+@end
+
+
+NMEAnimationController *sgAnimationController=0;
 
 
 // --- Stage Implementaton ------------------------------------------------------
@@ -122,7 +128,7 @@ bool sgHasAccelerometer = false;
 // The stage acts as the controller between the NME view and the NME application.
 //  It passes events as sets properties as required
 
-class IOSStage : public nme::Stage
+class NMEStage : public nme::Stage
 {
 public:
 
@@ -135,15 +141,20 @@ public:
    NMEView        *nmeView;
    class IOSVideo *video;
 
-   IOSStage(CGRect inRect);
-   ~IOSStage();
+   bool           popupEnabled;
+   bool           multiTouchEnabled;
+   bool           haveOpaqueBg;
+   bool           wantOpaqueBg;
+
+   NMEStage(CGRect inRect);
+   ~NMEStage();
 
    UIView *getRootView() { return container; }
    bool getMultitouchSupported() { return true; }
    bool isOpenGL() const { return nmeView->mOGLContext; }
    Surface *GetPrimarySurface() { return nmeView->mHardwareSurface; }
    void SetCursor(nme::Cursor) { /* No cursors on iPhone ! */ }
-   void EnablePopupKeyboard(bool inEnable) { ::EnableKeyboard(inEnable); }
+   void EnablePopupKeyboard(bool inEnable);
    double getDPIScale() { return nmeView->dpiScale; }
 
 
@@ -152,7 +163,7 @@ public:
    CGRect     getViewBounds();
    void       setOpaqueBackground(uint32 inBG);
    uint32     getBackgroundMask();
-   void       updateBackground();
+   void       recreateNmeView();
 
 
 
@@ -173,171 +184,42 @@ public:
 
 };
 
+NMEStage *sgNmeStage = 0;
+
 
 
 // Wrapper for nme 'frame' class
 class IOSViewFrame : public nme::Frame
 {
 public:
-   NMEView *mView;
+   Stage *stage;
 
-   IOSViewFrame(NMEView *inView) : mView(inView) { }
+   IOSViewFrame(Stage *inStage) : stage(inStage) { }
 
    virtual void SetTitle()  { }
    virtual void SetIcon() { }
-   virtual Stage *GetStage()  { return mView->mStage; }
+   virtual Stage *GetStage()  { return stage; }
 
 };
 
 
-
-// Global instance ...
-NMEView *sgNMEView = nil;
-
-static FrameCreationCallback sOnFrame = nil;
-static bool sgAllowShaders = false;
-static bool sgHasDepthBuffer = true;
-static bool sgHasStencilBuffer = true;
-static bool sgEnableMSAA2 = true;
-static bool sgEnableMSAA4 = true;
-
-// --- NMEView -------------------------------------------------------------------
+// --- NMEAnimationController -------------------------------------------------------------------
 
 static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
-@implementation NMEView
 
-@synthesize animating;
-@dynamic animationFrameInterval;
+@implementation NMEAnimationController
 
-// You must implement this method
-+ (Class) layerClass
+- (id) initWithStage:(NMEStage *)inStage
 {
-  return [CAEAGLLayer class];
-}
-
-//The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
-
-- (id) initWithCoder:(NSCoder*)coder
-{    
-   NSLog(@"NME View init with coder - not supported");
-   /*
-   if ((self = [super initWithCoder:coder]))
-   {
-      sgNMEView = self;
-      printf("Init with coder\n");
-      [self myInit];
-      return self;
-   }
-   */
-   return nil;
-    
-}
-
-// For when we init programatically...
-- (id) initWithFrame:(CGRect)frame
-{    
-   if ((self = [super initWithFrame:frame]))
-   {
-      sgNMEView = self;
-      dpiScale = 1.0;
-      printf("Init with frame %fx%f", frame.size.width, frame.size.height );
-      self.autoresizingMask = UIViewAutoresizingFlexibleWidth |
-                              UIViewAutoresizingFlexibleHeight;
-      //[self myInit];
-      return self;
-   }
-   return nil;
-}
-
-
-- (void) setupStageLayer:(IOSStage *)inStage
-{
-   printf("--- NMEView layer ----\n");
-   mStage = inStage;
-
-   defaultFramebuffer = 0;
-   colorRenderbuffer = 0;
-   depthStencilBuffer = 0;
-   mHardwareContext = 0;
-   mHardwareSurface = 0;
-   mLayer = 0;
-   mOGLContext = 0;
-   mRenderBuffer = 0;
-
-   //todo ; rather expose this hardware value as a function
-   //and they can disable AA selectively on devices themselves 
-   //rather than hardcoding it here.
-   multisampling = sgEnableMSAA2 || sgEnableMSAA4;
-
-
-
-   // Get the layer
-   mLayer = (CAEAGLLayer *)self.layer;
-
-   mLayer.opaque = YES;
-
-   mLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
-                                   kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
-                                   nil];
-
-   // Set scaling to ensure 1:1 pixels ...
-   if([[UIScreen mainScreen] respondsToSelector: NSSelectorFromString(@"scale")])
-   {
-      if([self respondsToSelector: NSSelectorFromString(@"contentScaleFactor")])
-      {
-         dpiScale = [[UIScreen mainScreen] scale];
-         self.contentScaleFactor = dpiScale;
-      }
-   }
-
-  
-   animationFrameInterval = 1;
-   mTextField = nil;
-   mKeyboardEnabled = NO;
-   
-   mMultiTouch = false;
-   mPrimaryTouchHash = 0;
-
-   // TODO - move display link out of view into stage
    animating = true;
+   animationFrameInterval = 1;
+   stage = inStage;
+
    displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(mainLoop:)];
    [displayLink setFrameInterval:animationFrameInterval];
    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:sgDisplayLinkMode];
-
-
-
-   if (sgAllowShaders)
-   {
-      mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-   }
-   else
-   {
-      mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-   }
-   
-   if (!mOGLContext || ![EAGLContext setCurrentContext:mOGLContext])
-   {
-      throw "Could not initilize OpenGL";
-   }
- 
-   printf("createOGLFramebuffer...\n");
-   [self createOGLFramebuffer];
-
-   #ifndef OBJC_ARC
-   mHardwareContext = HardwareContext::CreateOpenGL(mLayer, mOGLContext, sgAllowShaders);
-   #else
-   mHardwareContext = HardwareContext::CreateOpenGL((__bridge void *)mLayer, (__bridge void *)mOGLContext, sgAllowShaders);
-   #endif
-   mHardwareContext->IncRef();
-   mHardwareContext->SetWindowSize(backingWidth, backingHeight);
-
-   mHardwareSurface = new HardwareSurface(mHardwareContext);
-   mHardwareSurface->IncRef();
-
-
+   return self;
 }
-
 
 - (void) startAnimation
 {
@@ -360,8 +242,145 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 - (void) mainLoop:(id) sender
 {
    if (animating)
-      [self onPoll:sender];
+      stage->OnPoll();
 }
+
+
+@end
+
+
+
+// Global instance ...
+
+static FrameCreationCallback sOnFrame = nil;
+static bool sgAllowShaders = false;
+static bool sgHasDepthBuffer = true;
+static bool sgHasStencilBuffer = true;
+static bool sgEnableMSAA2 = true;
+static bool sgEnableMSAA4 = true;
+
+// --- NMEView -------------------------------------------------------------------
+
+@implementation NMEView
+
+
+// You must implement this method
++ (Class) layerClass
+{
+  return [CAEAGLLayer class];
+}
+
+//The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
+
+- (id) initWithCoder:(NSCoder*)coder
+{    
+   NSLog(@"NME View init with coder - not supported");
+   /*
+   if ((self = [super initWithCoder:coder]))
+   {
+      printf("Init with coder\n");
+      [self myInit];
+      return self;
+   }
+   */
+   return nil;
+    
+}
+
+// For when we init programatically...
+- (id) initWithFrame:(CGRect)frame
+{    
+   if ((self = [super initWithFrame:frame]))
+   {
+      dpiScale = 1.0;
+      //printf("Init with frame %fx%f", frame.size.width, frame.size.height );
+      self.autoresizingMask = UIViewAutoresizingFlexibleWidth |
+                              UIViewAutoresizingFlexibleHeight;
+      //[self myInit];
+      return self;
+   }
+   return nil;
+}
+
+
+- (void) setupStageLayer:(NMEStage *)inStage
+{
+   //printf("--- NMEView layer ----\n");
+   mStage = inStage;
+
+   defaultFramebuffer = 0;
+   colorRenderbuffer = 0;
+   depthStencilBuffer = 0;
+   mHardwareContext = 0;
+   mHardwareSurface = 0;
+   mLayer = 0;
+   mOGLContext = 0;
+   mRenderBuffer = 0;
+
+   //todo ; rather expose this hardware value as a function
+   //and they can disable AA selectively on devices themselves 
+   //rather than hardcoding it here.
+   multisampling = sgEnableMSAA2 || sgEnableMSAA4;
+
+
+
+   // Get the layer
+   mLayer = (CAEAGLLayer *)self.layer;
+
+   mLayer.opaque = mStage->wantOpaqueBg;
+
+   mLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
+                                   kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
+                                   nil];
+
+   // Set scaling to ensure 1:1 pixels ...
+   if([[UIScreen mainScreen] respondsToSelector: NSSelectorFromString(@"scale")])
+   {
+      if([self respondsToSelector: NSSelectorFromString(@"contentScaleFactor")])
+      {
+         dpiScale = [[UIScreen mainScreen] scale];
+         self.contentScaleFactor = dpiScale;
+      }
+   }
+
+  
+   mTextField = nil;
+   mKeyboardEnabled = NO;
+   
+   mMultiTouch = false;
+   mPrimaryTouchHash = 0;
+
+
+   if (sgAllowShaders)
+   {
+      mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+   }
+   else
+   {
+      mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+   }
+   
+   if (!mOGLContext || ![EAGLContext setCurrentContext:mOGLContext])
+   {
+      throw "Could not initilize OpenGL";
+   }
+ 
+   //printf("createOGLFramebuffer...\n");
+   [self createOGLFramebuffer];
+
+   #ifndef OBJC_ARC
+   mHardwareContext = HardwareContext::CreateOpenGL(mLayer, mOGLContext, sgAllowShaders);
+   #else
+   mHardwareContext = HardwareContext::CreateOpenGL((__bridge void *)mLayer, (__bridge void *)mOGLContext, sgAllowShaders);
+   #endif
+   mHardwareContext->IncRef();
+   mHardwareContext->SetWindowSize(backingWidth, backingHeight);
+
+   mHardwareSurface = new HardwareSurface(mHardwareContext);
+   mHardwareSurface->IncRef();
+}
+
 
 - (void)didMoveToWindow
 {
@@ -513,7 +532,7 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
       CGPoint thumbPoint;
       thumbPoint = [aTouch locationInView:aTouch.view];
-//printf("touchesEnd %d x %d!\n", (int)thumbPoint.x, (int)thumbPoint.y);
+      //printf("touchesEnd %d x %d!\n", (int)thumbPoint.x, (int)thumbPoint.y);
 
       if (mMultiTouch)
       {
@@ -581,7 +600,7 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
              mTextField.secureTextEntry = NO;   
              mTextField.hidden = YES;
 
-        [self addSubview: mTextField];
+            [self addSubview: mTextField];
 
           }
           [mTextField becomeFirstResponder];
@@ -598,13 +617,6 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 {
    mStage->OnRedraw();
 }
-
-- (void) onPoll:(id)sender
-{
-   mStage->OnPoll();
-}
-
-
 
 
 - (void) createOGLFramebuffer
@@ -851,8 +863,26 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
 
 
-- (void) freeLayer
+- (void) tearDown
 {
+   // TODO: Mouse events.
+
+   if (mStage)
+   {
+      // only holds a dumb reference since lifetime will be shorter
+      //mStage->DecRef();
+      mStage = 0;
+   }
+
+   if (mTextField)
+   {
+      [mTextField release];
+      mTextField = nil;
+   }
+ 
+
+   [self enableKeyboard:false];
+
    if (mHardwareSurface)
    {
       mHardwareSurface->DecRef();
@@ -865,16 +895,18 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
    }
 
    [self destroyOGLFramebuffer];
+
    if (mOGLContext)
    {
       // Tear down context
       if ([EAGLContext currentContext] == mOGLContext)
          [EAGLContext setCurrentContext:nil];
 
-      #ifndef OBJC_ARC
       [mOGLContext release];
-      #endif
+      mOGLContext = nil;
    }
+
+   [self removeFromSuperview];
 }
 
 
@@ -912,7 +944,6 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
          glBindFramebufferOES(GL_DRAW_FRAMEBUFFER_APPLE, defaultFramebuffer);
       }
       
-      printf("Huh?\n");
       // Call a resolve to combine both buffers
       glResolveMultisampleFramebufferAPPLE();
       // Present final image to screen
@@ -935,7 +966,7 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 - (void) layoutSubviews
 {
    // Recreate frame buffers ..
-   printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
+   //printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
    [EAGLContext setCurrentContext:mOGLContext];
    [self destroyOGLFramebuffer];
    [self createOGLFramebuffer];
@@ -948,10 +979,7 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 #ifndef OBJC_ARC
 - (void) dealloc
 {
-    if (mStage) mStage->DecRef();
-    if (mTextField)
-       [mTextField release];
-   
+  
     [super dealloc];
 }
 #endif
@@ -962,7 +990,7 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
 class IOSVideo : public StageVideo
 {
-   IOSStage                *stage;
+   NMEStage                *stage;
    MPMoviePlayerController *player; 
    std::string             lastUrl;
    bool                    vpIsSet;
@@ -970,7 +998,7 @@ class IOSVideo : public StageVideo
    double                  pointScale;
 
 public:
-   IOSVideo(IOSStage *inStage,double inPointScale)
+   IOSVideo(NMEStage *inStage,double inPointScale)
    {
       pointScale = inPointScale;
       stage = inStage;
@@ -1152,15 +1180,22 @@ double sgWakeUp = 0.0;
 //  It passes events as sets properties as required
 
 
-IOSStage::IOSStage(CGRect inRect) : nme::Stage(true)
+NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
 {
    video = 0;
+
+   sgNmeStage = this;
+
+   haveOpaqueBg = true;
+   wantOpaqueBg = true;
 
    NSString* platform = [UIDeviceHardware platformString];
    //printf("Detected hardware: %s\n", [platform UTF8String]);
    
   
    playerView = 0;
+   popupEnabled = false;
+   multiTouchEnabled = false;
    container = [[UIView alloc] initWithFrame:inRect];
    container.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
    container.opaque = TRUE;
@@ -1173,7 +1208,9 @@ IOSStage::IOSStage(CGRect inRect) : nme::Stage(true)
 
    [container addSubview:nmeView];
 
-   
+   sgAnimationController = [[NMEAnimationController alloc] initWithStage:this ];
+
+   [sgAnimationController startAnimation];
 
 
    #ifndef IPHONESIM
@@ -1190,54 +1227,77 @@ IOSStage::IOSStage(CGRect inRect) : nme::Stage(true)
    #endif
 }
 
-void IOSStage::setOpaqueBackground(uint32 inBG)
+void NMEStage::setOpaqueBackground(uint32 inBG)
 {
    Stage::setOpaqueBackground(inBG);
-   updateBackground();
-}
- 
-void IOSStage::updateBackground()
-{
-   if (!playerView)
+   if (!haveOpaqueBg || !wantOpaqueBg)
    {
-      //printf("updateBackground -> no background\n");
-      container.backgroundColor = nil;
-      nmeView.layer.opaque = TRUE;
-   }
-   else
-   {
-      //printf("updateBackground -> set background, layer transparent\n");
       double r = ((opaqueBackground>>16) & 0xff) / 255.0;
       double g = ((opaqueBackground>>8 ) & 0xff) / 255.0;
       double b = ((opaqueBackground    ) & 0xff) / 255.0;
       container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
-      nmeView.layer.opaque = FALSE;
    }
 }
 
-uint32 IOSStage::getBackgroundMask()
+void NMEStage::recreateNmeView()
+{
+   //printf("===== recreateNmeView =====\n");
+   [nmeView tearDown];
+   #ifndef OBJC_ARC
+   // Should do it here
+   [nmeView release];
+   #endif
+   nmeView = 0;
+
+
+   CGRect rect = [container bounds];
+
+   nmeView = [[NMEView alloc] initWithFrame:rect ];
+
+   [nmeView setupStageLayer:this];
+
+   [container addSubview:nmeView];
+
+   haveOpaqueBg = wantOpaqueBg;
+
+   if (haveOpaqueBg)
+   {
+      container.backgroundColor = nil;
+   }
+   else
+   {
+      double r = ((opaqueBackground>>16) & 0xff) / 255.0;
+      double g = ((opaqueBackground>>8 ) & 0xff) / 255.0;
+      double b = ((opaqueBackground    ) & 0xff) / 255.0;
+      container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
+   }
+}
+
+ 
+uint32 NMEStage::getBackgroundMask()
 {
    return playerView ? 0x00ffffff : 0xffffffff;
 }
 
-CGRect IOSStage::getViewBounds()
+CGRect NMEStage::getViewBounds()
 {
    return nmeView.bounds;
 }
 
-void IOSStage::onVideoPlay()
+void NMEStage::onVideoPlay()
 {
    if (!playerView)
    {
       playerView = video->getPlayerView();
       [container insertSubview:playerView belowSubview:nmeView];
-      //[container addSubview:playerView ];
 
-      updateBackground();
+      wantOpaqueBg = false;
+      if (wantOpaqueBg!=haveOpaqueBg)
+         recreateNmeView();
    }
 }
 
-StageVideo *IOSStage::createStageVideo()
+StageVideo *NMEStage::createStageVideo()
 {
    if (!video)
       video = new IOSVideo(this,1.0/getDPIScale());
@@ -1246,54 +1306,59 @@ StageVideo *IOSStage::createStageVideo()
 }
 
 
-IOSStage::~IOSStage()
+NMEStage::~NMEStage()
 {
-   [nmeView freeLayer];
-
+  [nmeView tearDown];
 }
 
-void IOSStage::setMultitouchActive(bool inActive)
+void NMEStage::EnablePopupKeyboard(bool inEnable)
 {
-   [ sgNMEView enableMultitouch:inActive ];
-
+  popupEnabled = inEnable;
+  [ nmeView enableKeyboard:inEnable];
 }
-bool IOSStage::getMultitouchActive()
+ 
+
+void NMEStage::setMultitouchActive(bool inActive)
 {
-   return sgNMEView->mMultiTouch;
+   multiTouchEnabled = inActive;
+   [ nmeView enableMultitouch:inActive ];
 }
 
-void IOSStage::OnOGLResize(int width, int height)
+bool NMEStage::getMultitouchActive()
+{
+   return multiTouchEnabled;
+}
+
+void NMEStage::OnOGLResize(int width, int height)
 {   
    //printf("OnOGLResize %dx%d\n", backingWidth, backingHeight);
    Event evt(etResize);
    evt.x = width;
    evt.y = height;
-   printf("OnResize %dx%d\n", width, height);
    HandleEvent(evt);
 
 }
 
-void IOSStage::OnRedraw()
+void NMEStage::OnRedraw()
 {
-   [nmeView makeCurrent: GetAA()>1 ];
+   //[nmeView makeCurrent: GetAA()>1 ];
    Event evt(etRedraw);
    HandleEvent(evt);
 }
 
-void IOSStage::OnPoll()
+void NMEStage::OnPoll()
 {
-   [nmeView makeCurrent: GetAA()>1 ];
+   //[nmeView makeCurrent: GetAA()>1 ];
    Event evt(etPoll);
    HandleEvent(evt);
 }
 
-void IOSStage::OnEvent(Event &inEvt)
+void NMEStage::OnEvent(Event &inEvt)
 {
-   [nmeView makeCurrent: GetAA()>1 ];
    HandleEvent(inEvt);
 }
 
-void IOSStage::Flip()
+void NMEStage::Flip()
 {
    [nmeView flip];
 }
@@ -1301,16 +1366,21 @@ void IOSStage::Flip()
 
 
 // --- UIStageViewController ----------------------------------------------------------
-// The NMEAppDelegate + UIStageViewController control the application when created in stand-alone mode
+// The NMEAppDelegate + NMEStageViewController control the application when created in stand-alone mode
 
 
-@interface UIStageViewController : UIViewController
+@interface NMEStageViewController : UIViewController
+{
+  @public
+  NMEStage *nmeStage;
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (void)loadView;
 @end
 
 
-@implementation UIStageViewController
+@implementation NMEStageViewController
 
 #define UIInterfaceOrientationPortraitMask (1 << UIInterfaceOrientationPortrait)
 #define UIInterfaceOrientationLandscapeLeftMask  (1 << UIInterfaceOrientationLandscapeLeft)
@@ -1327,7 +1397,7 @@ void IOSStage::Flip()
       return interfaceOrientation == gFixedOrientation;
    Event evt(etShouldRotate);
    evt.value = interfaceOrientation;
-   sgNMEView->mStage->OnEvent(evt);
+   nmeStage->OnEvent(evt);
    return evt.result == 2;
 }
 
@@ -1376,8 +1446,8 @@ void IOSStage::Flip()
 
 - (void)loadView
 {
-   IOSStage *iosStage = new IOSStage([[UIScreen mainScreen] bounds]);
-   self.view = iosStage->getRootView();
+   nmeStage = new NMEStage([[UIScreen mainScreen] bounds]);
+   self.view = nmeStage->getRootView();
 }
 
 @end
@@ -1408,13 +1478,13 @@ void IOSStage::Flip()
    UIWindow *win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
    window = win;
    [window makeKeyAndVisible];
-   UIStageViewController  *c = [[UIStageViewController alloc] init];
+   NMEStageViewController  *c = [[NMEStageViewController alloc] init];
    controller = c;
    [win addSubview:c.view];
    self.window.rootViewController = c;
    nme_app_set_active(true);
    application.idleTimerDisabled = YES;
-   sOnFrame( new IOSViewFrame(sgNMEView) );
+   sOnFrame( new IOSViewFrame(c->nmeStage) );
 }
 
 - (void) applicationWillResignActive:(UIApplication *)application
@@ -1454,7 +1524,7 @@ void IOSStage::Flip()
 
 void EnableKeyboard(bool inEnable)
 {
-   [ sgNMEView enableKeyboard:inEnable];
+   sgNmeStage->EnablePopupKeyboard(inEnable);
 }
 
 
@@ -1467,35 +1537,35 @@ namespace nme
 
 Stage *IPhoneGetStage()
 {
-   return sgNMEView->mStage;
+   return sgNmeStage;
 }
 
 void StartAnimation()
 {
-   if (sgNMEView)
+   if (sgAnimationController)
    {
-      [sgNMEView startAnimation];
+      [sgAnimationController startAnimation];
    }
 }
 void PauseAnimation()
 {
-   if (sgNMEView)
+   if (sgAnimationController)
    {
-      [sgNMEView stopAnimation];
+      [sgAnimationController stopAnimation];
    }
 }
 void ResumeAnimation()
 {
-   if (sgNMEView)
+   if (sgAnimationController)
    {
-      [sgNMEView startAnimation];
+      [sgAnimationController startAnimation];
    }
 }
 void StopAnimation()
 {
-   if (sgNMEView)
+   if (sgAnimationController)
    {
-      [sgNMEView stopAnimation];
+      [sgAnimationController stopAnimation];
    }
 }
 
@@ -1582,17 +1652,20 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    {
       double width = nmeParentView.frame.size.width;
       double height = nmeParentView.frame.size.height;
-      NMEView *view = [[NMEView alloc] initWithFrame:CGRectMake(0.0,0.0,width,height)];
+      NMEStage *stage = new NMEStage( CGRectMake(0.0,0.0,width,height) );
 
-      [nmeParentView  addSubview:view];
-      // application.idleTimerDisabled = YES;
-      sOnFrame( new IOSViewFrame(view) );
+      [nmeParentView  addSubview:stage->getRootView()];
 
-      [view startAnimation];
       nmeParentView = 0;
+
+      // application.idleTimerDisabled = YES;
+      sOnFrame( new IOSViewFrame(stage) );
+
    }
    else
    {
+      // The NMEAppDelegate will create a NMEStageViewController
+
       #ifndef OBJC_ARC
       NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
       #endif
@@ -1699,11 +1772,13 @@ void nmeReparentNMEView(void *inParent)
 {
    UIView *parent = (UIView *)inParent;
 
-   if (sgNMEView!=nil)
+   if (sgNmeStage!=nil)
    {
-      [parent  addSubview:sgNMEView];
+      UIView *view = sgNmeStage->getRootView();
 
-      [sgNMEView startAnimation];
+      [parent  addSubview:view];
+
+      nme::StartAnimation();
    }
 }
 
