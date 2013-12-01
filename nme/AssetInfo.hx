@@ -9,7 +9,7 @@ class AssetInfo
    public var type:AssetType;
    public var cache:WeakRef<Dynamic>;
 
-   public static function new(inPath:String, inType:AssetType, ?inClassName:String)
+   public function new(inPath:String, inType:AssetType, ?inClassName:String)
    {
       path = inPath;
       type = inType;
