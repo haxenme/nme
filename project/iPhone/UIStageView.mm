@@ -1035,9 +1035,16 @@ public:
    
       NSString *str = [[NSString alloc] initWithUTF8String:local.c_str()];
 
+      // Try asset first ...
       NSURL *localUrl = [[NSBundle mainBundle] URLForResource:str withExtension:nil];
 
-      printf( "URL : %s (%s)\n", [[localUrl absoluteString] UTF8String], local.c_str() );
+      // Treat as absolute url...
+      if (localUrl==nil)
+      {
+         localUrl = [[NSURL alloc] initWithString:[[NSString alloc] initWithUTF8String:inUrl ] ];
+      }
+
+      printf("Loading : %s\n", [[localUrl absoluteString] UTF8String]);
 
 
       if (player==0)
@@ -1060,6 +1067,7 @@ public:
 
       [[player view] setFrame:viewport];
 
+      printf("Play...");
       [player play];
     }
 
@@ -1290,6 +1298,7 @@ void NMEStage::onVideoPlay()
    {
       playerView = video->getPlayerView();
       [container insertSubview:playerView belowSubview:nmeView];
+      //[container addSubview:playerView];
 
       wantOpaqueBg = false;
       if (wantOpaqueBg!=haveOpaqueBg)
