@@ -9,6 +9,7 @@ namespace nme
 
 class StageVideo : public Object
 {
+protected:
    AutoGCRoot mOwner;
 
 public:

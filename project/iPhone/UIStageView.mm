@@ -987,6 +987,31 @@ static bool sgEnableMSAA4 = true;
 @end // End NMEView
 
 
+class IOSVideo;
+@interface PlayerHandler : NSObject
+{
+   class IOSVideo *video;
+   MPMoviePlayerController *player;
+}
+- (id) initWithVideo:(IOSVideo *)inVideo player:(MPMoviePlayerController*) inPlayer;
+
+-(void)moviePlayBackDidFinish:(NSNotification*)notification;
+-(void)loadStateDidChange:(NSNotification *)notification;
+-(void)moviePlayBackStateDidChange:(NSNotification*)notification;
+-(void)mediaIsPreparedToPlayDidChange:(NSNotification*)notification;
+-(void)movieDurationAvailable:(NSNotification*)notification;
+-(void)installMovieNotificationObservers;
+-(void)removeMovieNotificationHandlers;
+
+@end
+
+enum { PAUSE_LEN = -3 };
+enum
+{
+   PLAY_STATUS_COMPLETE = 0,
+   PLAY_STATUS_SWITCH = 1,
+   PLAY_STATUS_TRANSITION = 2,
+};
 
 class IOSVideo : public StageVideo
 {
@@ -996,6 +1021,10 @@ class IOSVideo : public StageVideo
    bool                    vpIsSet;
    CGRect                  viewport;
    double                  pointScale;
+   PlayerHandler           *handler;
+   double                  duration;
+   int                     videoWidth;
+   int                     videoHeight;
 
 public:
    IOSVideo(NMEStage *inStage,double inPointScale)
@@ -1004,6 +1033,10 @@ public:
       stage = inStage;
       player = 0;
       vpIsSet = false;
+      handler = 0;
+      videoWidth = 0;
+      videoHeight = 0;
+      duration = 0;
    }
 
    UIView *getPlayerView()
@@ -1051,6 +1084,7 @@ public:
       {
          player = [[MPMoviePlayerController alloc] initWithContentURL:localUrl];
          player.controlStyle = MPMovieControlStyleNone;
+         handler = [[PlayerHandler alloc] initWithVideo:this player:player ];
       }
       else
       {
@@ -1068,77 +1102,43 @@ public:
       [[player view] setFrame:viewport];
 
 
-      printf("Play...");
-      [player play];
+      if (inLength== PAUSE_LEN)
+      {
+         printf("Init paused...");
+         [player prepareToPlay];
+      }
+      else
+      {
+         printf("Play\n");
+         [player play];
+      }
     }
-
-
-
-/*
-MPMoviePlayerController *player = [self moviePlayerController];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self 
-                                             selector:@selector(loadStateDidChange:) 
-                                                 name:MPMoviePlayerLoadStateDidChangeNotification 
-                                               object:player];
- 
-    [[NSNotificationCenter defaultCenter] addObserver:self 
-                                             selector:@selector(moviePlayBackDidFinish:) 
-                                                 name:MPMoviePlayerPlaybackDidFinishNotification 
-                                               object:player];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self 
-                                             selector:@selector(mediaIsPreparedToPlayDidChange:) 
-                                                 name:MPMediaPlaybackIsPreparedToPlayDidChangeNotification 
-                                               object:player];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self 
-                                             selector:@selector(moviePlayBackStateDidChange:) 
-                                                 name:MPMoviePlayerPlaybackStateDidChangeNotification 
-                                               object:player];        
-*/
-
-
-      //if (player) 
-      //{
-         //[player prepareToPlay];
-
-         // MPMoviePlayerLoadStateDidChangeNotification
-
-         // NSTimeInterval initialPlaybackTime
-
-         /* Register the current object as an observer for the movie
-          notifications. */
-         //[self installMovieNotificationObservers];
-        
-         /* Specify the URL that points to the movie file. */
-         //[player setContentURL:localUrl];        
-        
-         /* If you specify the movie type before playing the movie it can result 
-          in faster load times. */
-         //[player setMovieSourceType:sourceType];
-        
-         /* Apply the user movie preference settings to the movie player object. */
-         //[self applyUserSettingsToMoviePlayer];
-        
-         /* Add a background view as a subview to hide our other view controls 
-          underneath during movie playback. */
-         //[stageView addSubview:stageView.backgroundView];
-        
-         /* Inset the movie frame in the parent view frame. */
-       
-         //[player view].backgroundColor = [UIColor black];
-        
-         /* To present a movie in your application, incorporate the view contained 
-          in a movie player’s view property into your application’s view hierarchy. 
-          Be sure to size the frame correctly. */
-     // }
 
    ~IOSVideo()
    {
       destroy();
    }
    
+
+   void sendMeta()
+   {
+      value args[] = {  alloc_int(videoWidth), alloc_int(videoHeight), alloc_float(duration) };
+      int widthId =  val_id("videoWidth");
+      alloc_field( mOwner.get(), widthId, alloc_int(videoWidth) );
+      int heightId =  val_id("videoHeight");
+      alloc_field( mOwner.get(), heightId, alloc_int(videoHeight) );
+      int durationId =  val_id("duration");
+      alloc_field( mOwner.get(), durationId, alloc_float(durationId) );
+
+      int f =  val_id("_native_meta_data");
+      val_ocall0(mOwner.get(), f);
+   }
+
+   void sendState(int inState)
+   {
+      int f =  val_id("_native_play_status");
+      val_ocall1(mOwner.get(), f, alloc_int(inState) );
+   }
 
    void seek(double inTime)
    {
@@ -1162,7 +1162,7 @@ MPMoviePlayerController *player = [self moviePlayerController];
 
    void setViewport(double x, double y, double width, double height)
    {
-      printf("video: setviewport %f %f %f %f\n",x,y, width,height);
+      //printf("video: setviewport %f %f %f %f\n",x,y, width,height);
       vpIsSet = true;
       viewport = CGRectMake(x*pointScale,y*pointScale,width*pointScale,height*pointScale);
       if (player)
@@ -1171,35 +1171,192 @@ MPMoviePlayerController *player = [self moviePlayerController];
 
    double getTime()
    {
-      printf("video: getTime\n");
-      return 0;
+      NSTimeInterval t = player.currentPlaybackTime;
+      //printf("video: getTime %f\n", t);
+      return t;
    }
 
    void pause()
    {
       printf("video: pause\n");
+      [player pause];
    }
 
    void resume()
    {
-      printf("video: togglePause\n");
+      printf("video: resume\n");
+      [player play];
    }
 
    void togglePause()
    {
       printf("video: togglePause\n");
+      if (player.currentPlaybackRate>0)
+         [player pause];
+      else
+         [player play];
    }
 
    void destroy()
    {
       printf("video: destroy\n");
+      /*
+      [player stop];
       lastUrl = "";
-      // TODO - dealloc
+      // TODO - dealloc ?
       player = 0;
+      */
    }
+
+   void onBufferingStateChange()
+   { 
+      switch(player.loadState)
+      {
+         case MPMovieLoadStateUnknown: break;
+         case MPMovieLoadStatePlayable: break;
+         case MPMovieLoadStatePlaythroughOK: break;
+         case MPMovieLoadStateStalled: break;
+      }
+   }
+    
+   void onPlaybackStateChange()
+   { 
+      switch(player.playbackState)
+      {
+         case MPMoviePlaybackStateStopped: break;
+         case MPMoviePlaybackStatePlaying: break;
+         case MPMoviePlaybackStatePaused: break;
+         case MPMoviePlaybackStateInterrupted: break;
+         case MPMoviePlaybackStateSeekingForward: break;
+         case MPMoviePlaybackStateSeekingBackward:break;
+      }
+   }
+ 
+   void onSizeAvailable()
+   { 
+      CGSize size = player.naturalSize;
+      videoWidth = size.width;
+      videoHeight = size.height;
+      if (duration>0)
+        sendMeta();
+   }
+ 
+
+   void onMovieDurationAvailable()
+   {
+      duration = player.duration;
+      if (videoWidth>0)
+        sendMeta();
+   }
+
+   
+   void onPreparedStateChanged()
+   { 
+   }
+    
+   void onFinished()
+   { 
+      sendState( PLAY_STATUS_COMPLETE );
+   }
+    
 
 };
 
+
+@implementation PlayerHandler
+
+- (id) initWithVideo:(IOSVideo *)inVideo player:(MPMoviePlayerController*) inPlayer
+{
+   video = inVideo;
+   player = inPlayer;
+   [self installMovieNotificationObservers];
+   return self;
+}
+
+-(void)moviePlayBackDidFinish:(NSNotification*)notification
+{
+   printf("moviePlayBackDidFinish\n");
+   video->onFinished();
+}
+
+-(void)loadStateDidChange:(NSNotification *)notification
+{
+   printf("loadStateDidChange\n");
+   video->onBufferingStateChange();
+}
+
+-(void)moviePlayBackStateDidChange:(NSNotification*)notification
+{
+   printf("moviePlayBackStateDidChange\n");
+   video->onPlaybackStateChange();
+}
+
+-(void)mediaIsPreparedToPlayDidChange:(NSNotification*)notification
+{
+   printf("mediaIsPreparedToPlayDidChange\n");
+   video->onPreparedStateChanged();
+}
+
+
+-(void)movieDurationAvailable:(NSNotification*)notification
+{
+   printf("movieDurationAvailable\n");
+   video->onMovieDurationAvailable();
+}
+
+
+-(void)sizeAvailable:(NSNotification*)notification
+{
+   printf("sizeAvailable\n");
+   video->onSizeAvailable();
+}
+
+
+
+-(void)installMovieNotificationObservers
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(loadStateDidChange:) 
+                                                 name:MPMoviePlayerLoadStateDidChangeNotification 
+                                               object:player];
+ 
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(moviePlayBackDidFinish:) 
+                                                 name:MPMoviePlayerPlaybackDidFinishNotification 
+                                               object:player];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(mediaIsPreparedToPlayDidChange:) 
+                                                 name:MPMediaPlaybackIsPreparedToPlayDidChangeNotification 
+                                               object:player];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(moviePlayBackStateDidChange:) 
+                                                 name:MPMoviePlayerPlaybackStateDidChangeNotification 
+                                               object:player];        
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(movieDurationAvailable:) 
+                                                 name:MPMovieDurationAvailableNotification 
+                                               object:player];        
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(sizeAvailable:) 
+                                                 name:MPMovieNaturalSizeAvailableNotification 
+                                               object:player];        
+}
+
+-(void)removeMovieNotificationHandlers
+{
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:MPMoviePlayerLoadStateDidChangeNotification object:player];
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:MPMoviePlayerPlaybackDidFinishNotification object:player];
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:MPMediaPlaybackIsPreparedToPlayDidChangeNotification object:player];
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:MPMoviePlayerPlaybackStateDidChangeNotification object:player];
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:MPMovieDurationAvailableNotification object:player];
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:MPMovieNaturalSizeAvailableNotification object:player];
+}
+
+@end
 
 
 double sgWakeUp = 0.0;

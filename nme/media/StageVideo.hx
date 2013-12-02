@@ -187,16 +187,17 @@ class StageVideo extends EventDispatcher
    }
 
    // The native code will call this...
-   @:keep private function _native_meta_data(inWidth:Int, inHeight:Int, inDuration:Float)
+   //@:keep private function _native_meta_data(inWidth:Int, inHeight:Int, inDuration:Float)
+   @:keep private function _native_meta_data()
    {
-      videoWidth = inWidth;
-      videoHeight = inHeight;
-      duration = inDuration;
+      //videoWidth = inWidth;
+      //videoHeight = inHeight;
+      //duration = inDuration;
       if (nmeNetStream!=null)
       {
          var client = nmeNetStream.client;
          if (client!=null && client.onMetaData!=null)
-            client.onMetaData({ width:inWidth, height:inHeight, duration:inDuration  });
+            client.onMetaData({ width:videoWidth, height:videoHeight, duration:duration  });
       }
    }
 

@@ -23,6 +23,7 @@ Listen for the VideoEvent.RENDER_STATE event on the Video object. This event pro
 class Main extends Sprite
 {
    static var sMain:Main;
+   public static inline var PROGRESS_SIZE = 30;
 
    static inline var BACK = 0;
    static inline var PLAY = 1;
@@ -37,6 +38,7 @@ class Main extends Sprite
    var metaData:Dynamic;
    var duration:Float;
    var stream:NetStream;
+   var progress:Sprite;
 
    public function new()
    {
@@ -50,6 +52,10 @@ class Main extends Sprite
       button.addEventListener(MouseEvent.CLICK, onClick );
       setButton(PAUSE);
       addChild(button);
+      progress = new Sprite();
+      addChild(progress);
+      progress.y = stage.stageHeight - PROGRESS_SIZE;
+      addEventListener(nme.events.Event.ENTER_FRAME, function(_) { updateProgress(); } );
 
 
       // In flash, we must wait for StageVideoAvailabilityEvent.STAGE_VIDEO_AVAILABILITY
@@ -74,11 +80,14 @@ class Main extends Sprite
              duration  = metaData.duration;
              trace("metaData " + data.width + "," + data.height + "  for " + duration);
              // Center video instance on Stage.
+             var sx = stage.stageWidth / data.width;
+             var sy = stage.stageHeight / data.height;
+             var scale = sx<sy ? sx:sy;
              video.viewPort = new nme.geom.Rectangle(
-                (stage.stageWidth - data.width) / 2,
-                (stage.stageHeight - data.height) / 2,
-                data.width,
-                data.height );
+                (stage.stageWidth - data.width*scale) / 2,
+                (stage.stageHeight - data.height*scale) / 2,
+                data.width*scale,
+                data.height*scale );
           };
           client.onPlayStatus = function(item:Dynamic)
           {
@@ -95,6 +104,28 @@ class Main extends Sprite
 
           // Seems flash needs this?
           addEventListener(nme.events.Event.ENTER_FRAME, function(_) { stream.bytesLoaded; } );
+      }
+   }
+
+   function updateProgress()
+   {
+      var w = stage.stageWidth;
+      var gfx = progress.graphics;
+      gfx.clear();
+      if (duration>0)
+      {
+         var t = stream.time;
+         gfx.lineStyle(1,0xffffff);
+         gfx.beginFill(0x808080,0.5);
+         gfx.drawRect(0.5,0.5,w-1,PROGRESS_SIZE-1);
+         gfx.lineStyle();
+         gfx.beginFill(0x5050ff);
+         gfx.drawRect(2,2,(w-4)*t/duration,PROGRESS_SIZE-4);
+      }
+      else
+      {
+         gfx.beginFill(0x808080,0.5);
+         gfx.drawRect(0.5,0.5,w-1,PROGRESS_SIZE-1);
       }
    }
 

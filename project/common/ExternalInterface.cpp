@@ -1438,7 +1438,7 @@ value nme_sv_get_time(value inVideo)
 {
    StageVideo *video;
    if (AbstractToObject(inVideo,video))
-      alloc_float( video->getTime() );
+      return alloc_float( video->getTime() );
    return alloc_null();
 }
 DEFINE_PRIM(nme_sv_get_time, 1);

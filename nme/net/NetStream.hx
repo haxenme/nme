@@ -51,7 +51,7 @@ class NetStream extends nme.events.EventDispatcher
    public function get_time() : Float
    {
       if (nmeAttachedVideo!=null)
-         nmeAttachedVideo.nmeGetTime();
+         return nmeAttachedVideo.nmeGetTime();
       return 0.0;
    }
    public function seek(offset : Float) : Void
