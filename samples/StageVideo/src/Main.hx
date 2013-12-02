@@ -33,15 +33,22 @@ class Main extends Sprite
    var buttonData:BitmapData;
    var button:Sprite;
    var buttonAction:Int;
+   var playing:Bool;
+   var metaData:Dynamic;
+   var duration:Float;
+   var stream:NetStream;
 
    public function new()
    {
       super();
  
+      playing = true;
+      metaData = null;
+      duration = 0;
       buttonData = nme.Assets.getBitmapData("buttons");
       button = new Sprite();
       button.addEventListener(MouseEvent.CLICK, onClick );
-      setButton(PLAY);
+      setButton(PAUSE);
       addChild(button);
 
 
@@ -59,17 +66,19 @@ class Main extends Sprite
           nc.connect(null);
           nc.addEventListener(NetStatusEvent.NET_STATUS,netStatusHandler); 
 
-          var stream = new NetStream(nc);
+          stream = new NetStream(nc);
           var client:Dynamic = {};
-          client.onMetaData = function(item:Dynamic)
+          client.onMetaData = function(data:Dynamic)
           {
-             trace("metaData " + item.width + "," + item.height);
+             metaData = data;
+             duration  = metaData.duration;
+             trace("metaData " + data.width + "," + data.height + "  for " + duration);
              // Center video instance on Stage.
              video.viewPort = new nme.geom.Rectangle(
-                (stage.stageWidth - item.width) / 2,
-                (stage.stageHeight - item.height) / 2,
-                item.width,
-                item.height );
+                (stage.stageWidth - data.width) / 2,
+                (stage.stageHeight - data.height) / 2,
+                data.width,
+                data.height );
           };
           client.onPlayStatus = function(item:Dynamic)
           {
@@ -91,8 +100,17 @@ class Main extends Sprite
 
    function onClick(_)
    {
-      trace("Click !");
-      stage.opaqueBackground = null;
+      playing = !playing;
+      if (playing)
+      {
+         setButton(PAUSE);
+         stream.resume();
+      }
+      else
+      {
+         setButton(PLAY);
+         stream.pause();
+      }
    }
 
    function setButton(inMode:Int)

@@ -1067,9 +1067,36 @@ public:
 
       [[player view] setFrame:viewport];
 
+
       printf("Play...");
       [player play];
     }
+
+
+
+/*
+MPMoviePlayerController *player = [self moviePlayerController];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(loadStateDidChange:) 
+                                                 name:MPMoviePlayerLoadStateDidChangeNotification 
+                                               object:player];
+ 
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(moviePlayBackDidFinish:) 
+                                                 name:MPMoviePlayerPlaybackDidFinishNotification 
+                                               object:player];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(mediaIsPreparedToPlayDidChange:) 
+                                                 name:MPMediaPlaybackIsPreparedToPlayDidChangeNotification 
+                                               object:player];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(moviePlayBackStateDidChange:) 
+                                                 name:MPMoviePlayerPlaybackStateDidChangeNotification 
+                                               object:player];        
+*/
 
 
       //if (player) 

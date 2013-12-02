@@ -16,6 +16,7 @@ class StageVideo extends EventDispatcher
    public var depth : Int;
    public var videoHeight(default,null) : Int;
    public var videoWidth(default,null) : Int;
+   public var duration(default,null) : Float;
 
    public var viewPort(get_viewPort, set_viewPort) : Rectangle;
    public var pan(get_pan,set_pan) : Point;
@@ -185,6 +186,34 @@ class StageVideo extends EventDispatcher
         nme_sv_set_sound_transform(nmeHandle,inVolume,inRightness);
    }
 
+   // The native code will call this...
+   @:keep private function _native_meta_data(inWidth:Int, inHeight:Int, inDuration:Float)
+   {
+      videoWidth = inWidth;
+      videoHeight = inHeight;
+      duration = inDuration;
+      if (nmeNetStream!=null)
+      {
+         var client = nmeNetStream.client;
+         if (client!=null && client.onMetaData!=null)
+            client.onMetaData({ width:inWidth, height:inHeight, duration:inDuration  });
+      }
+   }
+
+   @:keep private function _native_play_status(inStatus:Int)
+   {
+      if (nmeNetStream!=null)
+      {
+         var client = nmeNetStream.client;
+         if (client!=null && client.onPlayStatus!=null)
+         {
+             var code = inStatus==0 ?  "NetStream.Play.Complete" :
+                        inStatus==1 ? "NetStream.Play.Switch" :
+                        "NetStream.Play.TransitionComplete";
+             client.onPlayStatus(code);
+         }
+      }
+   }
 
 
 
