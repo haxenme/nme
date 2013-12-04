@@ -1470,6 +1470,7 @@ void NMEStage::recreateNmeView()
       double b = ((opaqueBackground    ) & 0xff) / 255.0;
       container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
    }
+   ResetHardwareContext();
 }
 
  

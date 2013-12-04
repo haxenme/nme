@@ -245,7 +245,7 @@ public:
          #endif
          int err = glGetError();
          if (err != GL_NO_ERROR) {
-          ELOG("GL Error: %d", err);
+          ELOG("GL Error: %d %dx%d", err, mDirtyRect.w, mDirtyRect.h);
          }
          mDirtyRect = Rect();
       }
