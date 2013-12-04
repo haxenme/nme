@@ -1,64 +1,58 @@
 #include "FrameworkHeader.h"
 #define Class HxcppClass
 #include <hxcpp.h>
-#include <Main.h>
 
-extern void nmeCreateNMEView(void *inParent);
+#include <stdio.h>
 
-extern "C" void register::CLASS_NAME::() { }
+extern "C" const char *hxRunLibrary();
+extern "C" void hxcpp_set_top_of_stack();
+	
+::foreach ndlls::
+::if (registerStatics!="false")::extern "C" int ::name::_register_prims();::end::
+::end::
 
-
-@implementation ::CLASS_NAME::
-
-
-- (id) initWithCoder:(NSCoder*)coder
-{    
-   printf("::CLASS_NAME:: initWithCoder!\n");
-   if ((self = [super initWithCoder:coder]))
-   {
-      nmeCreateNMEView(self);
-      return self;
-   }
-   return nil;
-}
-
-// For when we init programatically...
-- (id) initWithFrame:(CGRect)frame
-{    
-   printf("::CLASS_NAME:: initWithFrame!\n");
-   if ((self = [super initWithFrame:frame]))
-   {
-      nmeCreateNMEView(self);
-
-      self.autoresizingMask = UIViewAutoresizingFlexibleWidth |
-                              UIViewAutoresizingFlexibleHeight;
-      return self;
-   }
-   return nil;
-}
-
-- (void) setColor:(NSInteger) color24
+void nmeBoot()
 {
-   // Example implementation
-   // Main_obj::setColor(color24);
+   //printf("Starting ...\n" );
+   hxcpp_set_top_of_stack();
+
+   ::foreach ndlls::
+   ::if (registerStatics):: ::name::_register_prims(); ::end::
+   ::end::
+   
+   //printf("Running\n");
+
+   const char *err = NULL;
+   err = hxRunLibrary();
+   if (err)
+   {
+      NSLog(@"Error running application");
+      return -1;
+   }
 }
 
+
+@interface NMEStageViewController : UIViewController
+   - (void) sendOnFrame;
+@end
+
+
+@implementation ::CLASS_NAME:: (NMEStageViewController)
+
+/*
 - (void) setText:(NSString *) text
 {
    // Example implementation
-   // Main_obj::setText(text);
+   Main_obj::setText(text);
 }
+*/
 
 
-
-- (void) activate
+- (void)loadView
 {
+   nmeBoot();
+   [self sendOnFrame];
 }
-
-- (void) deactive
-{
-}
-
 
 
 
