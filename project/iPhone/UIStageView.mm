@@ -11,6 +11,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <CoreMotion/CMMotionManager.h>
 #import <MediaPlayer/MediaPlayer.h>
+#import "NMEStageViewController.h"
 
 #include <Display.h>
 #include <Surface.h>
@@ -1200,9 +1201,9 @@ public:
    void destroy()
    {
       printf("video: destroy\n");
-      /*
-      [player stop];
       lastUrl = "";
+      [player stop];
+      /*
       // TODO - dealloc ?
       player = 0;
       */
@@ -1559,21 +1560,12 @@ void NMEStage::Flip()
 
 
 // --- UIStageViewController ----------------------------------------------------------
-// The NMEAppDelegate + NMEStageViewController control the application when created in stand-alone mode
 
-
-@interface NMEStageViewController : UIViewController
+@implementation NMEStageViewController
 {
   @public
   NMEStage *nmeStage;
 }
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-- (void)loadView;
-@end
-
-
-@implementation NMEStageViewController
 
 #define UIInterfaceOrientationPortraitMask (1 << UIInterfaceOrientationPortrait)
 #define UIInterfaceOrientationLandscapeLeftMask  (1 << UIInterfaceOrientationLandscapeLeft)
