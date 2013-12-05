@@ -5,7 +5,6 @@ package org.haxe.nme;
 public class NME {
 
      static {
-         System.loadLibrary("openal");
          System.loadLibrary("nme");
      }
 

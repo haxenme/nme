@@ -3,6 +3,7 @@
 #include <Surface.h>
 #include <KeyCodes.h>
 #include <Utils.h>
+#include <StageVideo.h>
 #include <jni.h>
 #include <ByteArray.h>
 #include <Sound.h>
@@ -15,7 +16,12 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
-JavaVM *gJVM=0;
+JavaVM *gJVM = 0;
+extern jclass GameActivity;
+
+#define LOG(...) ((void)__android_log_print(ANDROID_LOG_VERBOSE, "NME", __VA_ARGS__))
+
+
 
 namespace nme
 {
@@ -26,6 +32,8 @@ static FrameCreationCallback sOnFrame = 0;
 static bool sCloseActivity = false;
 
 static int sgNMEResult = 0;
+
+void CreateStageVideoWindow(AndroidStage *inStage,const std::string &inUrl);
 
 enum { NO_TOUCH = -1 };
 
@@ -41,6 +49,133 @@ int GetResult()
    return r;
 }
 
+class AndroidVideo : public StageVideo
+{
+   AndroidStage            *stage;
+   std::string             lastUrl;
+   bool                    vpIsSet;
+   DRect                   viewport;
+   double                  duration;
+   int                     videoWidth;
+   int                     videoHeight;
+
+public:
+   AndroidVideo(AndroidStage *inStage)
+   {
+      IncRef();
+      stage = inStage;
+      vpIsSet = false;
+      videoWidth = 0;
+      videoHeight = 0;
+      duration = 0;
+      LOG("New video\n");
+   }
+
+   void play(const char *inUrl, double inStart, double inLength)
+   {
+      LOG("video: play %s %f %f\n", inUrl, inStart, inLength);
+
+      if (inUrl==lastUrl)
+      {
+         LOG("Replay\n");
+         return;
+      }
+
+      lastUrl = inUrl;
+
+      CreateStageVideoWindow(stage,lastUrl);
+   }
+   
+
+   void sendMeta()
+   {
+      value args[] = {  alloc_int(videoWidth), alloc_int(videoHeight), alloc_float(duration) };
+      int widthId =  val_id("videoWidth");
+      alloc_field( mOwner.get(), widthId, alloc_int(videoWidth) );
+      int heightId =  val_id("videoHeight");
+      alloc_field( mOwner.get(), heightId, alloc_int(videoHeight) );
+      int durationId =  val_id("duration");
+      alloc_field( mOwner.get(), durationId, alloc_float(durationId) );
+
+      int f =  val_id("_native_meta_data");
+      val_ocall0(mOwner.get(), f);
+   }
+
+   void sendState(int inState)
+   {
+      int f =  val_id("_native_play_status");
+      val_ocall1(mOwner.get(), f, alloc_int(inState) );
+   }
+
+   void seek(double inTime)
+   {
+      LOG("video: seek %f\n", inTime);
+   }
+
+   void setPan(double x, double y)
+   {
+      LOG("video: setPan %f %f\n",x,y);
+   }
+
+   void setZoom(double x, double y)
+   {
+      LOG("video: setZoom %f %f\n",x,y);
+   }
+
+   void setSoundTransform(double inVolume, double inPosition)
+   {
+      LOG("video: setSoundTransform %f %f\n", inVolume, inPosition);
+   }
+
+   void setViewport(double x, double y, double width, double height)
+   {
+      //LOG("video: setviewport %f %f %f %f\n",x,y, width,height);
+      vpIsSet = true;
+      viewport = DRect(x,y,width,height);
+      //if (player) [[player view] setFrame:viewport];
+   }
+
+   double getTime()
+   {
+      double t = 0;
+      //NSTimeInterval t = player.currentPlaybackTime;
+      //LOG("video: getTime %f\n", t);
+      return t;
+   }
+
+   void pause()
+   {
+      LOG("video: pause\n");
+   }
+
+   void resume()
+   {
+      LOG("video: resume\n");
+   }
+
+   void togglePause()
+   {
+      LOG("video: togglePause\n");
+      /*
+      if (player.currentPlaybackRate>0)
+         [player pause];
+      else
+         [player play];
+      */
+   }
+
+   void destroy()
+   {
+      LOG("video: destroy\n");
+      lastUrl = "";
+   }
+
+   void onFinished()
+   { 
+      sendState( PLAY_STATUS_COMPLETE );
+   }
+};
+
 class AndroidStage : public Stage
 {
     
@@ -54,6 +189,7 @@ public:
       mHardwareSurface->IncRef();
       mMultiTouch = true;
       mSingleTouchID = NO_TOUCH;
+      video = 0;
       mDX = 0;
       mDY = 0;
 
@@ -78,15 +214,37 @@ public:
    bool isOpenGL() const { return true; }
    virtual void SetCursor(Cursor inCursor) { }
 
-	void OnPoll()
+
+   void OnPoll()
    {
       Event evt(etPoll);
       HandleEvent(evt);
    }
 
+   void createStageVideoWindow(const std::string &inUrl)
+   {
+      JNIEnv *env = GetEnv();
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
+      jmethodID createVideoWindow = env->GetStaticMethodID(cls,"createStageVideo",
+                         "(Ljava/lang/String;)V" );
+      LOG("createStageVideo : %p", createVideoWindow);
+      jstring str = env->NewStringUTF(inUrl.c_str());
+      env->CallStaticVoidMethod(cls, createVideoWindow, str );
+      env->DeleteLocalRef(str);
+   }
+
+   StageVideo *createStageVideo()
+   {
+      if (!video)
+         video = new AndroidVideo(this);
+
+      return video;
+   }
+
+
    void onActivityEvent(int inVal)
    {
-      __android_log_print(ANDROID_LOG_INFO, "NME", "Activity action %d", inVal);
+      LOG("Activity action %d", inVal);
       if (inVal==1 || inVal==2)
       {
          if (inVal == 1)
@@ -249,6 +407,7 @@ public:
    void setMultitouchActive(bool inActive) { mMultiTouch = inActive; }
    bool getMultitouchActive() {  return mMultiTouch; }
 
+   AndroidVideo *video;
 
    bool mMultiTouch;
    int  mSingleTouchID;
@@ -273,6 +432,10 @@ public:
    HardwareSurface *mHardwareSurface;
 };
 
+void CreateStageVideoWindow(AndroidStage *inStage,const std::string &inUrl)
+{
+   inStage->createStageVideoWindow(inUrl);
+}
 
 
 class AndroidFrame : public Frame
@@ -480,7 +643,6 @@ extern "C"
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
 {
-   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    __android_log_print(ANDROID_LOG_INFO, "Resize", "%p  %d,%d", nme::sFrame, width, height);
@@ -493,7 +655,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
 {
-   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    //double t0 = nme::GetTimeStamp();
@@ -597,7 +758,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyMotion(JNIEnv * env, jobject 
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
 {
-   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -608,7 +768,6 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
 
 JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobject obj)
 {
-   env->GetJavaVM(&gJVM);
    int top = 0;
    gc_set_top_of_stack(&top,true);
    if (nme::sStage)
@@ -631,6 +790,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject o
    gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
+
 
 
 } // end extern C

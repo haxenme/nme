@@ -1005,13 +1005,6 @@ class IOSVideo;
 
 @end
 
-enum { PAUSE_LEN = -3 };
-enum
-{
-   PLAY_STATUS_COMPLETE = 0,
-   PLAY_STATUS_SWITCH = 1,
-   PLAY_STATUS_TRANSITION = 2,
-};
 
 class IOSVideo : public StageVideo
 {
