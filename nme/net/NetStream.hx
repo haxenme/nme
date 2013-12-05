@@ -107,9 +107,24 @@ class NetStream extends nme.events.EventDispatcher
 
    public function onPeerConnect(subscriber : NetStream) : Bool { return true; }
 
-   function get_bytesTotal() { return 0; }
-   function get_bytesLoaded() { return 0; }
-   function get_decodedFrames() { return 0; }
+   function get_bytesTotal() : Int
+   {
+      if (nmeAttachedVideo!=null)
+         return nmeAttachedVideo.nmeGetBytesTotal();
+      return 0;
+   }
+   function get_bytesLoaded() : Int
+   {
+      if (nmeAttachedVideo!=null)
+         return nmeAttachedVideo.nmeGetBytesLoaded();
+      return 0;
+   }
+   function get_decodedFrames() : Int
+   {
+      if (nmeAttachedVideo!=null)
+         return nmeAttachedVideo.nmeGetDecodedFrames();
+      return 0;
+   }
    function get_peerStreams() { return new Array<Dynamic>(); }
 
    function get_soundTransform() : SoundTransform

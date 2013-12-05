@@ -5,11 +5,12 @@ import nme.events.StageVideoEvent;
 
 import nme.events.AsyncErrorEvent;
 import nme.events.NetStatusEvent;
+import nme.events.MouseEvent;
 
 import nme.display.Bitmap;
 import nme.display.BitmapData;
 import nme.geom.Matrix;
-import nme.events.MouseEvent;
+import nme.media.SoundTransform;
 
 /*
 The following steps summarize how to use a StageVideo object to play a video:
@@ -39,6 +40,8 @@ class Main extends Sprite
    var duration:Float;
    var stream:NetStream;
    var progress:Sprite;
+   var volumeControl:Sprite;
+   var volume:Float;
 
    public function new()
    {
@@ -47,6 +50,7 @@ class Main extends Sprite
       playing = true;
       metaData = null;
       duration = 0;
+      volume = 0.5;
       buttonData = nme.Assets.getBitmapData("buttons");
       button = new Sprite();
       button.addEventListener(MouseEvent.CLICK, onClick );
@@ -55,7 +59,15 @@ class Main extends Sprite
       progress = new Sprite();
       addChild(progress);
       progress.y = stage.stageHeight - PROGRESS_SIZE;
+      progress.addEventListener(MouseEvent.MOUSE_DOWN, beginSeek);
       addEventListener(nme.events.Event.ENTER_FRAME, function(_) { updateProgress(); } );
+
+      volumeControl = new Sprite();
+      addChild(volumeControl);
+      volumeControl.addEventListener(MouseEvent.MOUSE_DOWN, beginVolume);
+      volumeControl.x = 10;
+      volumeControl.y = Std.int( (stage.stageHeight-100) * 0.5 );
+      updateVolume();
 
 
       // In flash, we must wait for StageVideoAvailabilityEvent.STAGE_VIDEO_AVAILABILITY
@@ -115,11 +127,21 @@ class Main extends Sprite
       if (duration>0)
       {
          var t = stream.time;
+         var total = stream.bytesTotal;
+         var loaded = stream.bytesLoaded;
+
+
          gfx.lineStyle(1,0xffffff);
          gfx.beginFill(0x808080,0.5);
          gfx.drawRect(0.5,0.5,w-1,PROGRESS_SIZE-1);
          gfx.lineStyle();
-         gfx.beginFill(0x5050ff);
+
+         if (total>0)
+         {
+            gfx.beginFill(0x5050ff);
+            gfx.drawRect(2,2,(w-4)*loaded/total,PROGRESS_SIZE-4);
+         }
+         gfx.beginFill(0x8080ff);
          gfx.drawRect(2,2,(w-4)*t/duration,PROGRESS_SIZE-4);
       }
       else
@@ -127,6 +149,24 @@ class Main extends Sprite
          gfx.beginFill(0x808080,0.5);
          gfx.drawRect(0.5,0.5,w-1,PROGRESS_SIZE-1);
       }
+   }
+
+   function onSeek(evt:MouseEvent)
+   {
+      var fraction = evt.stageX / stage.stageWidth;
+      stream.seek(fraction*duration);
+   }
+
+   function endSeek(_)
+   {
+      stage.removeEventListener(MouseEvent.MOUSE_MOVE, onSeek);
+      stage.removeEventListener(MouseEvent.MOUSE_UP, endSeek);
+   }
+
+   function beginSeek(_)
+   {
+      stage.addEventListener(MouseEvent.MOUSE_MOVE, onSeek);
+      stage.addEventListener(MouseEvent.MOUSE_UP, endSeek);
    }
 
    function onClick(_)
@@ -142,6 +182,45 @@ class Main extends Sprite
          setButton(PLAY);
          stream.pause();
       }
+   }
+
+   function updateVolume()
+   {
+      var gfx = volumeControl.graphics;
+      gfx.clear();
+      gfx.lineStyle(1,0xffffff);
+      gfx.beginFill(0x00ff00,0.3);
+      gfx.drawRect(0.5,0.5,20,100);
+      
+      gfx.lineStyle();
+      gfx.beginFill(0x00ff00);
+      gfx.drawRect(1.5,(1-volume)*100,18,volume*100);
+   
+   }
+
+   function onVolume(evt:MouseEvent)
+   {
+      var pos = volumeControl.globalToLocal( new nme.geom.Point(evt.stageX,evt.stageY) );
+      volume = 1.0-pos.y*0.01;
+      if (volume<0)
+         volume = 0.0;
+      if (volume>1)
+         volume = 1.0;
+      updateVolume();
+
+      stream.soundTransform = new SoundTransform(volume);
+   }
+
+   function endVolume(_)
+   {
+      stage.removeEventListener(MouseEvent.MOUSE_MOVE, onVolume);
+      stage.removeEventListener(MouseEvent.MOUSE_UP, endVolume);
+   }
+
+   function beginVolume(_)
+   {
+      stage.addEventListener(MouseEvent.MOUSE_MOVE, onVolume);
+      stage.addEventListener(MouseEvent.MOUSE_UP, endVolume);
    }
 
    function setButton(inMode:Int)

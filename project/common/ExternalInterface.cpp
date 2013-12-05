@@ -1485,6 +1485,17 @@ value nme_sv_set_sound_transform(value inVideo,value a0, value a1)
 DEFINE_PRIM(nme_sv_set_sound_transform, 3);
 
 
+value nme_sv_get_buffered_percent(value inVideo)
+{
+   StageVideo *video;
+   if (AbstractToObject(inVideo,video))
+      return alloc_float(video->getBufferedPercent());
+   return alloc_float(0);
+}
+DEFINE_PRIM(nme_sv_get_buffered_percent, 1);
+
+
+
 
 
 // --- ManagedStage ----------------------------------------------------------------------

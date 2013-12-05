@@ -117,6 +117,8 @@ public:
       LOG("video: setPan %f %f\n",x,y);
    }
 
+   double getBufferedPercent() { return 0; }
+
    void setZoom(double x, double y)
    {
       LOG("video: setZoom %f %f\n",x,y);

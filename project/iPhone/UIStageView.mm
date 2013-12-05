@@ -1111,7 +1111,7 @@ public:
 
    ~IOSVideo()
    {
-printf("~IOSVideo\n");
+      printf("~IOSVideo\n");
       destroy();
    }
    
@@ -1124,7 +1124,7 @@ printf("~IOSVideo\n");
       int heightId =  val_id("videoHeight");
       alloc_field( mOwner.get(), heightId, alloc_int(videoHeight) );
       int durationId =  val_id("duration");
-      alloc_field( mOwner.get(), durationId, alloc_float(durationId) );
+      alloc_field( mOwner.get(), durationId, alloc_float(duration) );
 
       int f =  val_id("_native_meta_data");
       val_ocall0(mOwner.get(), f);
@@ -1139,6 +1139,7 @@ printf("~IOSVideo\n");
    void seek(double inTime)
    {
       printf("video: seek %f\n", inTime);
+      player.currentPlaybackTime = inTime;
    }
 
    void setPan(double x, double y)
@@ -1153,7 +1154,10 @@ printf("~IOSVideo\n");
 
    void setSoundTransform(double inVolume, double inPosition)
    {
-      printf("video: setSoundTransform %f %f\n", inVolume, inPosition);
+      printf("video: setSoundTransform music %f %f\n", inVolume, inPosition);
+      // does this work?
+      MPMusicPlayerController* musicPlayer = [MPMusicPlayerController iPodMusicPlayer];
+      musicPlayer.volume = inVolume;
    }
 
    void setViewport(double x, double y, double width, double height)
@@ -1192,6 +1196,15 @@ printf("~IOSVideo\n");
       else
          [player play];
    }
+
+   double getBufferedPercent()
+   {
+      if (!player || duration<=0)
+         return 0;
+      // Add position?
+      return 100.0 * player.playableDuration/player.duration;
+   }
+
 
    void destroy()
    {

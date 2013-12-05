@@ -32,6 +32,7 @@ public:
    virtual void setSoundTransform(double x, double y) = 0;
    virtual void setViewport(double x, double y, double width, double height) = 0;
    virtual double getTime() = 0;
+   virtual double getBufferedPercent() = 0;
    virtual void pause() = 0;
    virtual void resume() = 0;
    virtual void togglePause() = 0;

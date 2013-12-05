@@ -45,6 +45,7 @@ class StageVideo extends EventDispatcher
       nmeZoom = new Point(1,1);
       videoWidth = 0;
       videoHeight = 0;
+      duration = 0;
       nmeViewport = new Rectangle(0,0,0,0);
    }
 
@@ -178,6 +179,31 @@ class StageVideo extends EventDispatcher
         nme_sv_set_sound_transform(nmeHandle,inVolume,0);
    }
 
+   public function nmeGetBytesTotal( ) : Int
+   {
+      if (nmeHandle!=null && duration>0)
+         return 100000;
+      return 0;
+   }
+
+
+   public function nmeGetDecodedFrames( ) : Int
+   {
+      // TODO
+      return 0;
+   }
+
+
+   public function nmeGetBytesLoaded( ) : Int
+   {
+      if (nmeHandle!=null && duration>0)
+      {
+         var percent = nme_sv_get_buffered_percent(nmeHandle);
+         return Std.int(1000*percent);
+      }
+      return 0;
+   }
+
 
 
    public function nmeSetSoundTransform(inVolume:Float, inRightness:Float)
@@ -186,13 +212,9 @@ class StageVideo extends EventDispatcher
         nme_sv_set_sound_transform(nmeHandle,inVolume,inRightness);
    }
 
-   // The native code will call this...
-   //@:keep private function _native_meta_data(inWidth:Int, inHeight:Int, inDuration:Float)
+   // The native code will call this after it has used reflection to set the fields
    @:keep private function _native_meta_data()
    {
-      //videoWidth = inWidth;
-      //videoHeight = inHeight;
-      //duration = inDuration;
       if (nmeNetStream!=null)
       {
          var client = nmeNetStream.client;
@@ -224,6 +246,7 @@ class StageVideo extends EventDispatcher
    private static var nme_sv_play = Loader.load("nme_sv_play", 4);
    private static var nme_sv_seek = Loader.load("nme_sv_seek", 2);
    private static var nme_sv_get_time = Loader.load("nme_sv_get_time", 1);
+   private static var nme_sv_get_buffered_percent = Loader.load("nme_sv_get_buffered_percent", 1);
    private static var nme_sv_viewport = Loader.load("nme_sv_viewport", 5);
    private static var nme_sv_pan = Loader.load("nme_sv_pan", 3);
    private static var nme_sv_zoom = Loader.load("nme_sv_zoom", 3);
