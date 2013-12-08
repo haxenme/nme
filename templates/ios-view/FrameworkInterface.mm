@@ -56,6 +56,7 @@ void nmeBoot()
 
 - (void)loadView
 {
+   printf("loadView!!!!\n");
    [self setNMEMain:false];
    nmeBoot();
    [super loadView];

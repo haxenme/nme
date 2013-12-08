@@ -50,6 +50,8 @@ class Assets
    {
       var bytes = haxe.Resource.getBytes(inName);
       if (bytes==null)
+         trace("[nme.Assets] missing resource '" + inName + "'");
+      if (bytes==null)
          return null;
       #if flash
       return bytes.getData();

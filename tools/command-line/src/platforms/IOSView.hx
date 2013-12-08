@@ -24,12 +24,6 @@ class IOSView extends Platform
 
       var nmeLib = new Haxelib("nme");
 
-      for(asset in project.assets) 
-      {
-         asset.resourceName = asset.flatName;
-      }
-
-
       var targetDirectory = PathHelper.combine(project.app.path, "ios");
       var name = project.app.file;
       //var outputDirectory = '$targetDirectory/$name.framework/';
@@ -37,8 +31,8 @@ class IOSView extends Platform
       var buildDir = targetDirectory + "/build/";
 
 
-      for(asset in project.assets) 
-         asset.resourceName = asset.flatName;
+      //for(asset in project.assets) 
+      //   asset.resourceName = asset.flatName;
 
 
       PathHelper.mkdir(targetDirectory);
@@ -123,6 +117,9 @@ class IOSView extends Platform
          }
       }
 
+
+      for(asset in project.assets) 
+         asset.resourceName = asset.flatName;
       
       valid_archs = new Array<String>();
       var armv6 = false;
@@ -226,8 +223,8 @@ class IOSView extends Platform
 
       var nmeLib = new Haxelib("nme");
 
-      for(asset in project.assets) 
-         asset.resourceName = asset.flatName;
+      //for(asset in project.assets) 
+      //   asset.resourceName = asset.flatName;
 
       var context = generateContext(project);
 

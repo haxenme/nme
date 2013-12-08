@@ -9,6 +9,7 @@
 
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
+#import <QuartzCore/CADisplayLink.h>
 #import <CoreMotion/CMMotionManager.h>
 #import <MediaPlayer/MediaPlayer.h>
 
@@ -110,7 +111,7 @@ class NMEStage;
 {
    NMEStage   *stage;
    BOOL       animating;
-   id         displayLink;
+   CADisplayLink   *displayLink;
    NSInteger  animationFrameInterval;
 }
 - (id)   initWithStage:(NMEStage *)inStage;
@@ -164,6 +165,7 @@ public:
    void       setOpaqueBackground(uint32 inBG);
    uint32     getBackgroundMask();
    void       recreateNmeView();
+   void       updateSize(int inWidth, int inHeight);
 
 
 
@@ -173,7 +175,6 @@ public:
 
    void OnOGLResize(int width, int height);
    void OnRedraw();
-   void OnPoll();
    void OnEvent(Event &inEvt);
    void Flip();
    void GetMouse() { }
@@ -211,12 +212,15 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
 - (id) initWithStage:(NMEStage *)inStage
 {
-   animating = true;
+   printf("CREATE NMEAnimationController %p\n", inStage);
    animationFrameInterval = 1;
    stage = inStage;
 
-   displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(mainLoop:)];
+   displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(mainLoop:)];
    [displayLink setFrameInterval:animationFrameInterval];
+
+   animating = true;
+printf("create Animation = addToRunLoop\n");
    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:sgDisplayLinkMode];
    return self;
 }
@@ -225,7 +229,8 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 {
    if (!animating)
    {
-      [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:sgDisplayLinkMode];
+printf("startAnimation = addToRunLoop\n");
+      displayLink.paused = NO;
       animating = true;
    }
 }
@@ -234,7 +239,8 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 {
    if (animating)
    {
-      [displayLink removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:sgDisplayLinkMode];
+printf("startAnimation = removeFromRunLoop\n");
+      displayLink.paused = NO;
       animating = false;
    }
 }
@@ -242,7 +248,10 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 - (void) mainLoop:(id) sender
 {
    if (animating)
-      stage->OnPoll();
+   {
+      Event evt(etPoll);
+      stage->OnEvent(evt);
+   }
 }
 
 
@@ -258,6 +267,7 @@ static bool sgHasDepthBuffer = true;
 static bool sgHasStencilBuffer = true;
 static bool sgEnableMSAA2 = true;
 static bool sgEnableMSAA4 = true;
+static std::string nmeTitle;
 
 // --- NMEView -------------------------------------------------------------------
 
@@ -305,7 +315,7 @@ static bool sgEnableMSAA4 = true;
 
 - (void) setupStageLayer:(NMEStage *)inStage
 {
-   //printf("--- NMEView layer ----\n");
+   printf("--- NMEView layer ----\n");
    mStage = inStage;
 
    defaultFramebuffer = 0;
@@ -384,6 +394,7 @@ static bool sgEnableMSAA4 = true;
 
 - (void)didMoveToWindow
 {
+   printf("didMoveToWindow %p\n", self.window);
    nme_app_set_active(self.window!=nil);
 }
 
@@ -478,14 +489,14 @@ static bool sgEnableMSAA4 = true;
          mouse.value = [aTouch hash];
          if (mouse.value==mPrimaryTouchHash)
             mouse.flags |= efPrimaryTouch;
-         mStage->HandleEvent(mouse);
+         mStage->OnEvent(mouse);
       }
       else
       {
          Event mouse(etMouseDown, thumbPoint.x*dpiScale, thumbPoint.y*dpiScale);
          mouse.flags |= efLeftDown;
          mouse.flags |= efPrimaryTouch;
-         mStage->HandleEvent(mouse);
+         mStage->OnEvent(mouse);
       }
 
    }
@@ -509,14 +520,14 @@ static bool sgEnableMSAA4 = true;
          mouse.value = [aTouch hash];
          if (mouse.value==mPrimaryTouchHash)
             mouse.flags |= efPrimaryTouch;
-         mStage->HandleEvent(mouse);
+         mStage->OnEvent(mouse);
       }
       else
       {
          Event mouse(etMouseMove, thumbPoint.x*dpiScale, thumbPoint.y*dpiScale);
          mouse.flags |= efLeftDown;
          mouse.flags |= efPrimaryTouch;
-         mStage->HandleEvent(mouse);
+         mStage->OnEvent(mouse);
       }
    }
 }
@@ -543,13 +554,13 @@ static bool sgEnableMSAA4 = true;
             mouse.flags |= efPrimaryTouch;
             mPrimaryTouchHash = 0;
          }
-         mStage->HandleEvent(mouse);
+         mStage->OnEvent(mouse);
       }
       else
       {
          Event mouse(etMouseUp, thumbPoint.x*dpiScale, thumbPoint.y*dpiScale);
          mouse.flags |= efPrimaryTouch;
-         mStage->HandleEvent(mouse);
+         mStage->OnEvent(mouse);
       }
    }
 }
@@ -966,10 +977,15 @@ static bool sgEnableMSAA4 = true;
 - (void) layoutSubviews
 {
    // Recreate frame buffers ..
-   //printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
+   CGRect b = self.bounds;
+   int bw = b.size.width;
+   int bh = b.size.height;
+   printf("layoutSubviews %dx%d\n", bw, bh );
+
    [EAGLContext setCurrentContext:mOGLContext];
    [self destroyOGLFramebuffer];
    [self createOGLFramebuffer];
+   printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingWidth);
 
    mHardwareContext->SetWindowSize(backingWidth,backingHeight);
 
@@ -1019,6 +1035,10 @@ class IOSVideo : public StageVideo
    int                     videoWidth;
    int                     videoHeight;
 
+   bool                    active;
+   bool                    playing;
+   bool                    stopped;
+
 public:
    IOSVideo(NMEStage *inStage,double inPointScale)
    {
@@ -1031,6 +1051,9 @@ public:
       videoWidth = 0;
       videoHeight = 0;
       duration = 0;
+      active = true;
+      playing = false;
+      stopped = false;
       printf("New video\n");
    }
 
@@ -1058,6 +1081,7 @@ public:
       controls to the existing view hierarchy.
       */
   
+      stopped = false;
       lastUrl = inUrl;
       std::string local = gAssetBase + lastUrl;
    
@@ -1105,7 +1129,8 @@ public:
       else
       {
          printf("Play\n");
-         [player play];
+         playing = true;
+         setState();
       }
     }
 
@@ -1118,6 +1143,9 @@ public:
 
    void sendMeta()
    {
+      int top = 0;
+      gc_set_top_of_stack(&top,false);
+
       value args[] = {  alloc_int(videoWidth), alloc_int(videoHeight), alloc_float(duration) };
       int widthId =  val_id("videoWidth");
       alloc_field( mOwner.get(), widthId, alloc_int(videoWidth) );
@@ -1132,8 +1160,18 @@ public:
 
    void sendState(int inState)
    {
+      int top = 0;
+      gc_set_top_of_stack(&top,false);
+
       int f =  val_id("_native_play_status");
       val_ocall1(mOwner.get(), f, alloc_int(inState) );
+   }
+
+   void setActive(bool inActive)
+   {
+      active = inActive;
+      printf("Video set active %d\n", inActive);
+      setState();
    }
 
    void seek(double inTime)
@@ -1176,25 +1214,36 @@ public:
       return t;
    }
 
+   void setState()
+   {
+      if (!stopped)
+      {
+         if (playing && active)
+            [player play];
+         else
+            [player pause];
+      }
+   }
+
    void pause()
    {
       printf("video: pause\n");
-      [player pause];
+      playing = false;
+      setState();
    }
 
    void resume()
    {
       printf("video: resume\n");
-      [player play];
+      playing = true;
+      setState();
    }
 
    void togglePause()
    {
       printf("video: togglePause\n");
-      if (player.currentPlaybackRate>0)
-         [player pause];
-      else
-         [player play];
+      playing = !playing;
+      setState();
    }
 
    double getBufferedPercent()
@@ -1213,6 +1262,7 @@ public:
       if (player)
       {
          printf("STOP\n");
+         stopped = true;
          [player stop];
       }
       /*
@@ -1388,6 +1438,7 @@ double sgWakeUp = 0.0;
 NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
 {
    video = 0;
+   printf("New NMEStage\n");
 
    sgNmeStage = this;
 
@@ -1446,7 +1497,7 @@ void NMEStage::setOpaqueBackground(uint32 inBG)
 
 void NMEStage::recreateNmeView()
 {
-   //printf("===== recreateNmeView =====\n");
+   printf("===== recreateNmeView =====\n");
    [nmeView tearDown];
    #ifndef OBJC_ARC
    // Should do it here
@@ -1477,6 +1528,16 @@ void NMEStage::recreateNmeView()
       container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
    }
    ResetHardwareContext();
+}
+
+void NMEStage::updateSize(int inWidth, int inHeight)
+{
+/*
+   if (backingWidth!=inWidth || backingHeight!=inHeight)
+   {
+      recreateNmeView();
+   }
+*/
 }
 
  
@@ -1538,11 +1599,11 @@ bool NMEStage::getMultitouchActive()
 
 void NMEStage::OnOGLResize(int width, int height)
 {   
-   //printf("OnOGLResize %dx%d\n", backingWidth, backingHeight);
+   printf("OnOGLResize %dx%d\n", width, height);
    Event evt(etResize);
    evt.x = width;
    evt.y = height;
-   HandleEvent(evt);
+   OnEvent(evt);
 
 }
 
@@ -1550,18 +1611,17 @@ void NMEStage::OnRedraw()
 {
    //[nmeView makeCurrent: GetAA()>1 ];
    Event evt(etRedraw);
-   HandleEvent(evt);
+   OnEvent(evt);
 }
 
-void NMEStage::OnPoll()
-{
-   //[nmeView makeCurrent: GetAA()>1 ];
-   Event evt(etPoll);
-   HandleEvent(evt);
-}
 
 void NMEStage::OnEvent(Event &inEvt)
 {
+   int top = 0;
+   gc_set_top_of_stack(&top,false);
+
+   if ((inEvt.type==etActivate || inEvt.type==etDeactivate) && video)
+      video->setActive(inEvt.type==etActivate);
    HandleEvent(inEvt);
 }
 
@@ -1584,6 +1644,7 @@ bool nmeIsMain = true;
 {
   @public
   NMEStage *nmeStage;
+  bool     isFirstAppearance;
 }
 
 #define UIInterfaceOrientationPortraitMask (1 << UIInterfaceOrientationPortrait)
@@ -1656,24 +1717,35 @@ bool nmeIsMain = true;
 
 - (void)loadView
 {
-   printf("loadView...\n");
+   //printf("loadView...\n");
    nmeStage = new NMEStage([[UIScreen mainScreen] bounds]);
    self.view = nmeStage->getRootView();
-   printf("loadView done\n");
+   //printf("loadView done\n");
 }
 
 - (void)didMoveToParentViewController:(UIViewController *)parent
 {
-   printf("didMoveToParentViewController!\n");
+   //printf("didMoveToParentViewController!\n");
    [super didMoveToParentViewController:parent];
 }
 
+
+
 - (void)viewDidAppear:(BOOL)animated
 {
-   printf("viewDidAppear!\n");
-   if (!nmeIsMain)
+   //CGRect bounds = self.view.bounds;
+   //printf("viewDidAppear %fx%f!\n", bounds.size.width, bounds.size.height);
+   //nmeStage->updateSize((int)bounds.size.width, (int)bounds.size.height);
+ 
+
+   if (!isFirstAppearance)
    {
-      sOnFrame( new IOSViewFrame(nmeStage) );
+      isFirstAppearance = true;
+      if (!nmeIsMain)
+      {
+         //printf("Run sOnFrame... %p/%p!", sOnFrame, nmeStage);
+         sOnFrame( new IOSViewFrame(nmeStage) );
+      }
    }
 }
 
@@ -1775,6 +1847,7 @@ void StartAnimation()
 {
    if (sgAnimationController)
    {
+printf("StartAnimation %p\n", sgAnimationController );
       [sgAnimationController startAnimation];
    }
 }
@@ -1809,6 +1882,8 @@ void SetNextWakeUp(double inWakeUp)
 void CreateMainFrame(FrameCreationCallback inCallback,
    int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, Surface *inIcon )
 {
+printf("CreateMainFrame with callback!\n");
+   nmeTitle= inTitle;
    sOnFrame = inCallback;
    int argc = 0;// *_NSGetArgc();
    char **argv = 0;// *_NSGetArgv();
@@ -1823,23 +1898,6 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    if(sgHasStencilBuffer && !sgHasDepthBuffer)
       sgHasDepthBuffer = true;
 
-/*
-   if (!nmeIsMain)
-   {
-      double width = nmeParentView.frame.size.width;
-      double height = nmeParentView.frame.size.height;
-      NMEStage *stage = new NMEStage( CGRectMake(0.0,0.0,width,height) );
-
-      [nmeParentView  addSubview:stage->getRootView()];
-
-      nmeParentView = 0;
-
-      // application.idleTimerDisabled = YES;
-      sOnFrame( new IOSViewFrame(stage) );
-
-   }
-   else
-*/
    if (nmeIsMain)
    {
       // The NMEAppDelegate will create a NMEStageViewController
@@ -1897,10 +1955,10 @@ extern "C"
 
 void nme_app_set_active(bool inActive)
 {
-   if (IPhoneGetStage())
+   if (sgNmeStage)
    {
       Event evt(inActive ? etActivate : etDeactivate);
-      IPhoneGetStage()->HandleEvent(evt);
+      sgNmeStage->OnEvent(evt);
    }
 
    if (inActive)

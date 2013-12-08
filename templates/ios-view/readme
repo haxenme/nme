@@ -20,6 +20,6 @@ New tabbed view application
 
 
 * Select Build Settings
-   *  Apple LLVM 5.0
+   *  Apple LLVM 5.0 - language c++
       > C++ standard library - set to libstdc++ (GNU C++ standard library)
 
