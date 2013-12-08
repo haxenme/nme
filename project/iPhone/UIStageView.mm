@@ -212,7 +212,6 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
 - (id) initWithStage:(NMEStage *)inStage
 {
-   printf("CREATE NMEAnimationController %p\n", inStage);
    animationFrameInterval = 1;
    stage = inStage;
 
@@ -220,7 +219,6 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
    [displayLink setFrameInterval:animationFrameInterval];
 
    animating = true;
-printf("create Animation = addToRunLoop\n");
    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:sgDisplayLinkMode];
    return self;
 }
@@ -229,7 +227,6 @@ printf("create Animation = addToRunLoop\n");
 {
    if (!animating)
    {
-printf("startAnimation = addToRunLoop\n");
       displayLink.paused = NO;
       animating = true;
    }
@@ -239,7 +236,6 @@ printf("startAnimation = addToRunLoop\n");
 {
    if (animating)
    {
-printf("startAnimation = removeFromRunLoop\n");
       displayLink.paused = NO;
       animating = false;
    }
@@ -976,16 +972,10 @@ static std::string nmeTitle;
 
 - (void) layoutSubviews
 {
-   // Recreate frame buffers ..
-   CGRect b = self.bounds;
-   int bw = b.size.width;
-   int bh = b.size.height;
-   printf("layoutSubviews %dx%d\n", bw, bh );
-
    [EAGLContext setCurrentContext:mOGLContext];
    [self destroyOGLFramebuffer];
    [self createOGLFramebuffer];
-   printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingWidth);
+   printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
 
    mHardwareContext->SetWindowSize(backingWidth,backingHeight);
 
@@ -1599,7 +1589,7 @@ bool NMEStage::getMultitouchActive()
 
 void NMEStage::OnOGLResize(int width, int height)
 {   
-   printf("OnOGLResize %dx%d\n", width, height);
+   //printf("OnOGLResize %dx%d\n", width, height);
    Event evt(etResize);
    evt.x = width;
    evt.y = height;
@@ -1733,9 +1723,7 @@ bool nmeIsMain = true;
 
 - (void)viewDidAppear:(BOOL)animated
 {
-   //CGRect bounds = self.view.bounds;
-   //printf("viewDidAppear %fx%f!\n", bounds.size.width, bounds.size.height);
-   //nmeStage->updateSize((int)bounds.size.width, (int)bounds.size.height);
+   CGRect bounds = self.view.bounds;
  
 
    if (!isFirstAppearance)
@@ -1743,7 +1731,6 @@ bool nmeIsMain = true;
       isFirstAppearance = true;
       if (!nmeIsMain)
       {
-         //printf("Run sOnFrame... %p/%p!", sOnFrame, nmeStage);
          sOnFrame( new IOSViewFrame(nmeStage) );
       }
    }

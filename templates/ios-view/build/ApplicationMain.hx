@@ -2,7 +2,7 @@ import nme.Assets;
 
 
 
-#if !cocktail
+#if (!cocktail && !Cocktail)
 class ApplicationDocument extends ::APP_MAIN::
 {
    public function new()
@@ -90,7 +90,7 @@ class ApplicationMain
             }
             else
             {
-               #if (nme && !waxe && !cocktail)
+               #if (!cocktail && !Cocktail)
                new ApplicationDocument();
                #else
                Type.createInstance(::APP_MAIN::, []);

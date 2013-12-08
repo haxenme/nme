@@ -10,6 +10,7 @@ New tabbed view application
 
 * In each of the story board files,
    change the "Custom Class" property of the controller object from "SecondViewController" to "StageVideo" (SDK name)
+   - you may also want to untick the "Extend Edges : Under Top Bars/Under Bottom Bars" n the layout tab.
 
 * Select the project in the folder view, then "Build Phases"
 
