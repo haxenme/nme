@@ -1574,6 +1574,9 @@ void NMEStage::Flip()
 
 // --- UIStageViewController ----------------------------------------------------------
 
+bool nmeIsMain = true;
+
+
 @interface NMEStageViewController : UIViewController
 @end
 
@@ -1601,6 +1604,12 @@ void NMEStage::Flip()
    nmeStage->OnEvent(evt);
    return evt.result == 2;
 }
+
+- (void) setNMEMain:(bool)isMain
+{
+   nmeIsMain = isMain;
+}
+
 
 - (NSUInteger)supportedInterfaceOrientations
 {
@@ -1653,9 +1662,19 @@ void NMEStage::Flip()
    printf("loadView done\n");
 }
 
+- (void)didMoveToParentViewController:(UIViewController *)parent
+{
+   printf("didMoveToParentViewController!\n");
+   [super didMoveToParentViewController:parent];
+}
+
 - (void)viewDidAppear:(BOOL)animated
 {
    printf("viewDidAppear!\n");
+   if (!nmeIsMain)
+   {
+      sOnFrame( new IOSViewFrame(nmeStage) );
+   }
 }
 
 
@@ -1744,10 +1763,6 @@ void EnableKeyboard(bool inEnable)
 }
 
 
-// Used when view is created as a child, rather than by application
-UIView *nmeParentView = 0;
-
-
 namespace nme
 {
 
@@ -1808,7 +1823,8 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    if(sgHasStencilBuffer && !sgHasDepthBuffer)
       sgHasDepthBuffer = true;
 
-   if (nmeParentView)
+/*
+   if (!nmeIsMain)
    {
       double width = nmeParentView.frame.size.width;
       double height = nmeParentView.frame.size.height;
@@ -1823,6 +1839,8 @@ void CreateMainFrame(FrameCreationCallback inCallback,
 
    }
    else
+*/
+   if (nmeIsMain)
    {
       // The NMEAppDelegate will create a NMEStageViewController
 
@@ -1854,12 +1872,7 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 }
 
 
-void nmeSetParentView(void *inParent)
-{
-   nmeParentView = (UIView *)inParent;
-}
-
-
+/*
 void nmeReparentNMEView(void *inParent)
 {
    UIView *parent = (UIView *)inParent;
@@ -1873,7 +1886,7 @@ void nmeReparentNMEView(void *inParent)
       nme::StartAnimation();
    }
 }
-
+*/
 
 } // namespace nme
 

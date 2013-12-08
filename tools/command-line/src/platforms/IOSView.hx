@@ -58,8 +58,10 @@ class IOSView extends Platform
       FileHelper.copyFileTemplate(project.templatePaths, "ios-view/FrameworkInterface.mm", buildDir+"/cpp/FrameworkInterface.mm", context);
       //FileHelper.copyFileTemplate(project.templatePaths, "ios-view/Info.plist", outputDirectory+"/Versions/A/Resources/Info.plist", context);
       FileHelper.recursiveCopyTemplate(project.templatePaths, "ios-view/build", buildDir, context);
+      FileHelper.recursiveCopyTemplate(project.templatePaths, "haxe/nme", buildDir+"/nme", context);
       FileHelper.copyFileTemplate(project.templatePaths, "ios-view/HEADER.h", outputDirectory+"/"+name + ".h", context);
       FileHelper.copyFileTemplate(project.templatePaths, "ios-view/HEADER.h",  buildDir+"/cpp/FrameworkHeader.h", context);
+      FileHelper.copyFileTemplate(project.templatePaths, "ios-view/CLASS.mm",  outputDirectory+"/"+name + ".mm", context);
 
       //ProcessHelper.runCommand(outputDirectory + "/Versions", "ln", [ "-s", "A", "Current"] );
       //ProcessHelper.runCommand(outputDirectory, "ln", [ "-s", "Versions/Current/Headers", "Headers"] );
@@ -240,7 +242,6 @@ class IOSView extends Platform
       PathHelper.mkdir(projectDirectory + "/haxe/nme/installer");
 
 
-      FileHelper.copyFileTemplate(project.templatePaths, "haxe/nme/AssetData.hx", projectDirectory + "/haxe/nme/AssetData.hx", context);
 
       //SWFHelper.generateSWFClasses(project, projectDirectory + "/haxe");
       PathHelper.mkdir(projectDirectory + "/lib");

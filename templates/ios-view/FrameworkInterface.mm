@@ -1,4 +1,4 @@
-#include "FrameworkHeader.h"
+#import <UIKit/UIKit.h>
 #define Class HxcppClass
 #include <hxcpp.h>
 
@@ -10,6 +10,8 @@ extern "C" void hxcpp_set_top_of_stack();
 ::foreach ndlls::
 ::if (registerStatics!="false")::extern "C" int ::name::_register_prims();::end::
 ::end::
+
+void __::CLASS_NAME::Register() { }
 
 void nmeBoot()
 {
@@ -27,17 +29,21 @@ void nmeBoot()
    if (err)
    {
       NSLog(@"Error running application");
-      return -1;
    }
 }
 
 
 @interface NMEStageViewController : UIViewController
    - (void) sendOnFrame;
+   - (void) setNMEMain:(bool)isMain ;
+@end
+
+@interface ::CLASS_NAME:: : NMEStageViewController
+
 @end
 
 
-@implementation ::CLASS_NAME:: (NMEStageViewController)
+@implementation ::CLASS_NAME::
 
 /*
 - (void) setText:(NSString *) text
@@ -50,8 +56,9 @@ void nmeBoot()
 
 - (void)loadView
 {
+   [self setNMEMain:false];
    nmeBoot();
-   [self sendOnFrame];
+   [super loadView];
 }
 
 
