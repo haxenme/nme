@@ -1731,6 +1731,8 @@ bool nmeIsMain = true;
       isFirstAppearance = true;
       if (!nmeIsMain)
       {
+         int top = 0;
+         gc_set_top_of_stack(&top,false);
          sOnFrame( new IOSViewFrame(nmeStage) );
       }
    }
