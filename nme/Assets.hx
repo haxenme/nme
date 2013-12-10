@@ -151,25 +151,32 @@ class Assets
             return val;
       }
 
-
-      #if flash
-      var data = Type.createInstance(i.className, []);
-      #elseif js
-      var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
       var data:ByteArray = null;
-      if (Std.is(asset, String)) 
+      if (useResources)
       {
-         bytes = new ByteArray();
-         bytes.writeUTFBytes(asset);
+         data = getResource(i.path);
       }
-      else if (!Std.is(data, ByteArray)) 
+      else
       {
-         badType(is,"Bytes");
-         return null;
+         #if flash
+         data = Type.createInstance(i.className, []);
+         #elseif js
+         var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
+         data:ByteArray = null;
+         if (Std.is(asset, String)) 
+         {
+            bytes = new ByteArray();
+            bytes.writeUTFBytes(asset);
+         }
+         else if (!Std.is(data, ByteArray)) 
+         {
+            badType(is,"Bytes");
+            return null;
+         }
+         #else
+         data = ByteArray.readFile(i.path);
+         #end
       }
-      #else
-      var data = ByteArray.readFile(i.path);
-      #end
 
       if (data != null) 
          data.position = 0;
@@ -274,6 +281,9 @@ class Assets
    }
 
    public static function hasText(id:String) { return hasBytes(id); }
+   public static function hasString(id:String) {
+     return hasBytes(id);
+   }
 
    /**
     * Gets an instance of an embedded text asset
@@ -283,12 +293,30 @@ class Assets
     */
    public static function getText(id:String,?useCache:Null<Bool>):String 
    {
+      if (useResources)
+      {
+         var i = info.get(id);
+         if (i==null)
+         {
+            noId(id,"String");
+            return null;
+         }
+
+         #if (!flash && !js)
+         return  haxe.Resource.getString(i.path);
+         #end
+      }
+
       var bytes = getBytes(id,useCache);
 
       if (bytes == null) 
          return null;
 
       return bytes.readUTFBytes(bytes.length);
+   }
+   public static function getString(id:String,?useCache:Null<Bool>):String 
+   {
+       return getText(id,useCache);
    }
 
 

@@ -274,8 +274,10 @@ class Stage extends DisplayObjectContainer
 	  #end
    }
 
-   /** @private */ private function nmeDoProcessStageEvent(inEvent:Dynamic):Float {
+   /** @private */ private function nmeDoProcessStageEvent(inEvent:Dynamic):Float
+   {
       var result = 0.0;
+      try {
       //if (inEvent.type!=9) trace("Stage Event : " + inEvent);
       var type:Int = Std.int(Reflect.field(inEvent, "type"));
 
@@ -386,6 +388,15 @@ class Stage extends DisplayObjectContainer
       }
 
       result = nmeUpdateNextWake();
+
+      }
+      catch(e:Dynamic)
+      {
+        var stack = haxe.CallStack.exceptionStack();
+        trace(e);
+        trace(haxe.CallStack.toString(stack));
+        throw(e);
+      }
 
       return result;
    }

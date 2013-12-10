@@ -124,7 +124,7 @@ class IOSView extends Platform
 
       for(asset in project.assets) 
          asset.resourceName = asset.flatName;
-      
+
       valid_archs = new Array<String>();
       var armv6 = false;
       var armv7 = false;

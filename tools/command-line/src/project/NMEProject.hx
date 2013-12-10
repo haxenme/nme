@@ -510,8 +510,9 @@ class NMEProject
       {
          if (embedAssets)
          {
-            var absPath = sys.FileSystem.fullPath(asset.sourcePath);
-            haxeflags.push("-resource " + absPath  + "@" + asset.id );
+            //already done in iosview
+            //var absPath = sys.FileSystem.fullPath(asset.sourcePath);
+            //haxeflags.push("-resource " + absPath  + "@" + asset.id );
             context.assets.push(asset);
          }
          else if (asset.type != AssetType.TEMPLATE) 
