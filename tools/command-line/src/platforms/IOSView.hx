@@ -101,6 +101,10 @@ class IOSView extends Platform
       {
          project.haxeflags.push("-xml " + project.app.path + "/ios/types.xml");
       }
+ 
+      if (project.debug)
+         project.haxeflags.push("-debug");
+ 
 
       var context = project.templateContext;
 
@@ -153,7 +157,6 @@ class IOSView extends Platform
 
       valid_archs.push("i386");
 
-      var libExts = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a" ];
 
       var libExts = new Array<String>();
       if (armv6) libExts.push(".iphoneos.a");
@@ -161,8 +164,9 @@ class IOSView extends Platform
       libExts.push(".iphonesim.a");
 
       var appLibs = new Array<String>();
+      var dbg = project.debug ? "-debug" : "";
       for(ext in libExts)
-         appLibs.push("cpp/ApplicationMain" + ext);
+         appLibs.push("cpp/ApplicationMain" + dbg + ext);
 
       for(ndll in project.ndlls) 
       {
