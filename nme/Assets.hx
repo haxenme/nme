@@ -42,7 +42,7 @@ class Assets
 
    public static function getAssetPath(inName:String) : String
    {
-      var i = info.get(inName);
+      var i = getInfo(inName);
       return i==null ? null : i.path;
    }
 
@@ -78,10 +78,49 @@ class Assets
 
    public static function hasBitmapData(id:String):Bool 
    {
-      var i = info.get(id);
+      var i = getInfo(id);
 
       return i!=null && i.type==IMAGE;
    }
+
+   public static function getInfo(inName:String)
+   {
+      var result = info.get(inName);
+      if (result!=null)
+         return result;
+      var parts = inName.split("/");
+      var first = 0;
+      while(first<parts.length)
+      {
+         if (parts[first]=="..")
+            first++;
+         else
+         {
+            var changed = false;
+            var test = first+1;
+            while(test<parts.length)
+            {
+               if (parts[test]==".." && parts[test-1]!="..")
+               {
+                  parts.splice(test-1,2);
+                  changed = true;
+                  break;
+               }
+               test++;
+            }
+            if (!changed)
+               break;
+         }
+      }
+      var path = parts.join("/");
+      if (path!=inName)
+      {
+         trace("trt " + inName + " -> " + path);
+         result = info.get(path);
+      }
+      return result;
+   }
+
 
    /**
     * Gets an instance of an embedded bitmap
@@ -92,7 +131,7 @@ class Assets
     */
    public static function getBitmapData(id:String, ?useCache:Null<Bool>):BitmapData 
    {
-      var i = info.get(id);
+      var i = getInfo(id);
       if (i==null)
       {
          noId(id,"BitmapData");
@@ -125,7 +164,7 @@ class Assets
 
    public static function hasBytes(id:String):Bool
    {
-      var i = info.get(id);
+      var i = getInfo(id);
       return i!=null;
    }
 
@@ -138,7 +177,7 @@ class Assets
     */
    public static function getBytes(id:String,?useCache:Null<Bool>):ByteArray 
    {
-      var i = info.get(id);
+      var i = getInfo(id);
       if (i==null)
       {
          noId(id,"Bytes");
@@ -188,7 +227,7 @@ class Assets
 
    public static function hasFont(id:String):Bool 
    {
-      var i = info.get(id);
+      var i = getInfo(id);
 
       return i!=null && i.type == FONT;
    }
@@ -200,7 +239,7 @@ class Assets
     */
    public static function getFont(id:String,?useCache:Null<Bool>):Font 
    {
-      var i = info.get(id);
+      var i = getInfo(id);
       if (i==null)
       {
          noId(id,"Font");
@@ -233,7 +272,7 @@ class Assets
 
    public static function hasSound(id:String):Bool 
    {
-      var i = info.get(id);
+      var i = getInfo(id);
 
       return i!=null && (i.type == SOUND || i.type==MUSIC);
    }
@@ -247,7 +286,7 @@ class Assets
     */
    public static function getSound(id:String,?useCache:Null<Bool>):Sound 
    {
-      var i = info.get(id);
+      var i = getInfo(id);
       if (i==null)
       {
          noId(id,"Sound");
@@ -295,7 +334,7 @@ class Assets
    {
       if (useResources)
       {
-         var i = info.get(id);
+         var i = getInfo(id);
          if (i==null)
          {
             noId(id,"String");
