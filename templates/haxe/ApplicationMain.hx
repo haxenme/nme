@@ -6,7 +6,7 @@ import wx.Assets;
 #end
 
 
-#if (nme && !waxe && !cocktail)
+#if (nme && !waxe && !cocktail && !Cocktail)
 class ApplicationDocument extends ::APP_MAIN::
 {
    public function new()
@@ -98,7 +98,7 @@ class ApplicationMain
             }
             else
             {
-               #if (nme && !waxe && !cocktail)
+               #if (nme && !waxe && !cocktail && !Cocktail)
                new ApplicationDocument();
                #else
                Type.createInstance(::APP_MAIN::, []);

@@ -87,7 +87,7 @@ class AndroidPlatform extends Platform
    {
       if (!project.environment.exists("ANDROID_SETUP")) 
       {
-         LogHelper.error("You need to run \"nme setup android\" before you can use the Android target");
+         LogHelper.error("You need to run \"nme setup android\" before you can use the Android target (or set ANDROID_SETUP manually)");
       }
 
       AndroidHelper.initialize(project);
@@ -159,6 +159,12 @@ class AndroidPlatform extends Platform
 
       context.CPP_DIR = project.app.path + "/android/obj";
       context.ANDROID_INSTALL_LOCATION = project.config.android.installLocation;
+
+      var android_platform = Sys.getEnv("ANDROID_SDK_PLATFORM");
+      if (android_platform!=null && android_platform.length>0)
+         context.ANDROID_PLATFORM = android_platform;
+      else
+         context.ANDROID_PLATFORM = "android-8";
 
       var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi" ];
       var iconSizes = [ 36, 48, 72, 96 ];

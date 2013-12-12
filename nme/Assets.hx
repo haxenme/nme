@@ -115,7 +115,6 @@ class Assets
       var path = parts.join("/");
       if (path!=inName)
       {
-         trace("trt " + inName + " -> " + path);
          result = info.get(path);
       }
       return result;
