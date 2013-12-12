@@ -22,6 +22,7 @@ extern jclass GameActivity;
 #define LOG(...) ((void)__android_log_print(ANDROID_LOG_VERBOSE, "NME", __VA_ARGS__))
 
 
+jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue);
 
 namespace nme
 {
@@ -33,7 +34,6 @@ static bool sCloseActivity = false;
 
 static int sgNMEResult = 0;
 
-void CreateStageVideoWindow(AndroidStage *inStage,const std::string &inUrl);
 
 enum { NO_TOUCH = -1 };
 
@@ -59,8 +59,22 @@ class AndroidVideo : public StageVideo
    int                     videoWidth;
    int                     videoHeight;
 
+   jclass                  nmeVideoView;
+   jmethodID               setStageVideoHandlerId;
+   jmethodID               setPathId;
+   jmethodID               playId;
+   jmethodID               startId;
+   jmethodID               pauseId;
+   jmethodID               stopId;
+   jmethodID               getDurationId;
+   jmethodID               getPositionId;
+   jmethodID               getBufferedId;
+   jmethodID               seekId;
+   jmethodID               setVolumeId;
+   jmethodID               setViewportId;
+
 public:
-   AndroidVideo(AndroidStage *inStage)
+   AndroidVideo(JNIEnv *env, AndroidStage *inStage)
    {
       IncRef();
       stage = inStage;
@@ -68,8 +82,19 @@ public:
       videoWidth = 0;
       videoHeight = 0;
       duration = 0;
-      LOG("New video\n");
+      nmeVideoView = FindClass("org/haxe/nme/NMEVideoView");
+      playId = env->GetStaticMethodID(nmeVideoView, "nmePlay", "(Ljava/lang/String;DD)V");
+      startId = env->GetStaticMethodID(nmeVideoView, "nmeStart", "()V");
+      stopId = env->GetStaticMethodID(nmeVideoView, "nmeStop", "()V");
+      pauseId = env->GetStaticMethodID(nmeVideoView, "nmePause", "()V");
+      seekId = env->GetStaticMethodID(nmeVideoView, "nmeSeek", "(D)V");
+      getDurationId = env->GetStaticMethodID(nmeVideoView, "nmeGetDuration", "()D");
+      getPositionId = env->GetStaticMethodID(nmeVideoView, "nmeGetPosition", "()D");
+      getBufferedId = env->GetStaticMethodID(nmeVideoView, "nmeGetBuffered", "()D");
+      setVolumeId = env->GetStaticMethodID(nmeVideoView, "nmeSetVolume", "(D)V");
+      setViewportId = env->GetStaticMethodID(nmeVideoView, "nmeSetViewport", "(DDDD)V");
    }
+
 
    void play(const char *inUrl, double inStart, double inLength)
    {
@@ -82,34 +107,18 @@ public:
       }
 
       lastUrl = inUrl;
+      JNIEnv *env = GetEnv();
 
-      CreateStageVideoWindow(stage,lastUrl);
-   }
-   
-
-   void sendMeta()
-   {
-      value args[] = {  alloc_int(videoWidth), alloc_int(videoHeight), alloc_float(duration) };
-      int widthId =  val_id("videoWidth");
-      alloc_field( mOwner.get(), widthId, alloc_int(videoWidth) );
-      int heightId =  val_id("videoHeight");
-      alloc_field( mOwner.get(), heightId, alloc_int(videoHeight) );
-      int durationId =  val_id("duration");
-      alloc_field( mOwner.get(), durationId, alloc_float(durationId) );
-
-      int f =  val_id("_native_meta_data");
-      val_ocall0(mOwner.get(), f);
-   }
-
-   void sendState(int inState)
-   {
-      int f =  val_id("_native_play_status");
-      val_ocall1(mOwner.get(), f, alloc_int(inState) );
+      jstring str = env->NewStringUTF( inUrl );
+      env->CallStaticVoidMethod(nmeVideoView, playId, str ,inStart, inLength);
+      env->DeleteLocalRef(str);
    }
 
    void seek(double inTime)
    {
       LOG("video: seek %f\n", inTime);
+      JNIEnv *env = GetEnv();
+      env->CallStaticVoidMethod(nmeVideoView, seekId, inTime);
    }
 
    void setPan(double x, double y)
@@ -117,7 +126,11 @@ public:
       LOG("video: setPan %f %f\n",x,y);
    }
 
-   double getBufferedPercent() { return 0; }
+   double getBufferedPercent()
+   {
+      JNIEnv *env = GetEnv();
+      return env->CallStaticDoubleMethod(nmeVideoView, getBufferedId);
+   }
 
    void setZoom(double x, double y)
    {
@@ -127,32 +140,38 @@ public:
    void setSoundTransform(double inVolume, double inPosition)
    {
       LOG("video: setSoundTransform %f %f\n", inVolume, inPosition);
+      JNIEnv *env = GetEnv();
+      return env->CallStaticVoidMethod(nmeVideoView, setVolumeId, inVolume);
    }
 
    void setViewport(double x, double y, double width, double height)
    {
       //LOG("video: setviewport %f %f %f %f\n",x,y, width,height);
       vpIsSet = true;
-      viewport = DRect(x,y,width,height);
-      //if (player) [[player view] setFrame:viewport];
+      JNIEnv *env = GetEnv();
+      return env->CallStaticVoidMethod(nmeVideoView, setViewportId, x,y,width,height);
    }
 
    double getTime()
    {
-      double t = 0;
       //NSTimeInterval t = player.currentPlaybackTime;
       //LOG("video: getTime %f\n", t);
-      return t;
+      JNIEnv *env = GetEnv();
+      return env->CallStaticDoubleMethod(nmeVideoView, getPositionId);
    }
 
    void pause()
    {
       LOG("video: pause\n");
+      JNIEnv *env = GetEnv();
+      env->CallStaticVoidMethod(nmeVideoView, pauseId);
    }
 
    void resume()
    {
       LOG("video: resume\n");
+      JNIEnv *env = GetEnv();
+      env->CallStaticVoidMethod(nmeVideoView, startId);
    }
 
    void togglePause()
@@ -174,7 +193,7 @@ public:
 
    void onFinished()
    { 
-      sendState( PLAY_STATUS_COMPLETE );
+      //sendState( PLAY_STATUS_COMPLETE );
    }
 };
 
@@ -225,22 +244,22 @@ public:
       HandleEvent(evt);
    }
 
-   void createStageVideoWindow(const std::string &inUrl)
-   {
-      JNIEnv *env = GetEnv();
-      jclass cls = FindClass("org/haxe/nme/GameActivity");
-      jmethodID createVideoWindow = env->GetStaticMethodID(cls,"createStageVideo",
-                         "(Ljava/lang/String;)V" );
-      LOG("createStageVideo : %p", createVideoWindow);
-      jstring str = env->NewStringUTF(inUrl.c_str());
-      env->CallStaticVoidMethod(cls, createVideoWindow, str );
-      env->DeleteLocalRef(str);
-   }
-
-   StageVideo *createStageVideo()
+   StageVideo *createStageVideo(void *inOwner)
    {
       if (!video)
-         video = new AndroidVideo(this);
+      {
+         JNIEnv *env = GetEnv();
+
+         jobject handler = CreateJavaHaxeObjectRef(env, (value)inOwner);
+
+         jclass cls = FindClass("org/haxe/nme/GameActivity");
+         jmethodID createVideoWindow = env->GetStaticMethodID(cls,"createStageVideo",
+                      "(Lorg/haxe/nme/HaxeObject;)V");
+         LOG("createStageVideo : %p", createVideoWindow);
+         env->CallStaticVoidMethod(cls, createVideoWindow, handler );
+         video = new AndroidVideo(env, this);
+         video->setOwner( (value) inOwner );
+      }
 
       return video;
    }
@@ -260,7 +279,7 @@ public:
          JNIEnv *env = GetEnv();
          jclass cls = FindClass("org/haxe/nme/GameActivity");
          jmethodID setBackground = env->GetStaticMethodID(cls,"setBackground","(I)V" );
-         env->CallStaticVoidMethod(cls, setBackground, str );
+         env->CallStaticVoidMethod(cls, setBackground, mSentBG );
       }
    }
 
@@ -455,11 +474,6 @@ public:
    HardwareContext *mHardwareContext;
    HardwareSurface *mHardwareSurface;
 };
-
-void CreateStageVideoWindow(AndroidStage *inStage,const std::string &inUrl)
-{
-   inStage->createStageVideoWindow(inUrl);
-}
 
 
 class AndroidFrame : public Frame

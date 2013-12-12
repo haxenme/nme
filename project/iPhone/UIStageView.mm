@@ -1555,10 +1555,13 @@ void NMEStage::onVideoPlay()
    }
 }
 
-StageVideo *NMEStage::createStageVideo()
+StageVideo *NMEStage::createStageVideo(void *inOwner)
 {
    if (!video)
+   {
       video = new IOSVideo(this,1.0/getDPIScale());
+      video->setOwner( (value) inOwner );
+   }
 
    return video;
 }

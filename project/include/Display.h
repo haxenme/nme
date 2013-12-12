@@ -460,7 +460,7 @@ public:
    void RemovingFromStage(DisplayObject *inObject);
    Stage  *getStage() { return this; }
 
-   virtual class StageVideo *createStageVideo() { return 0; }
+   virtual class StageVideo *createStageVideo(void *) { return 0; }
 
 
    DisplayObject *GetFocusObject() { return mFocusObject; }

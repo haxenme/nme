@@ -14,7 +14,7 @@ class JNI
 {
    static var isInit = false;
 
-   static function init() 
+   public static function init() 
    {
       if (!isInit) 
       {

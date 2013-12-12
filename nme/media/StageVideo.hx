@@ -113,7 +113,12 @@ class StageVideo extends EventDispatcher
    public function nmeCreate()
    {
       if (nmeHandle==null)
-        nmeHandle = nme_sv_create(nmeStage.nmeHandle,this);
+      {
+         #if android
+         nme.JNI.init();
+         #end
+         nmeHandle = nme_sv_create(nmeStage.nmeHandle,this);
+      }
       return nmeHandle!=null;
    }
 
@@ -221,6 +226,14 @@ class StageVideo extends EventDispatcher
          if (client!=null && client.onMetaData!=null)
             client.onMetaData({ width:videoWidth, height:videoHeight, duration:duration  });
       }
+   }
+   // Called by android listener
+   @:keep private function _native_set_data(inWidth:Int, inHeight:Int, inDuration:Float)
+   {
+      videoWidth = inWidth;
+      videoHeight = inHeight;
+      duration = inDuration;
+      _native_meta_data();
    }
 
    @:keep private function _native_play_status(inStatus:Int)

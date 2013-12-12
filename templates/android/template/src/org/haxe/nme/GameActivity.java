@@ -23,7 +23,9 @@ import android.view.View;
 import android.view.Window;
 import android.widget.FrameLayout;
 import android.view.ViewGroup;
+import android.view.Gravity;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.RelativeLayout;
 import android.view.WindowManager;
 import android.widget.VideoView;
 import android.net.Uri;
@@ -62,9 +64,16 @@ public class GameActivity extends Activity implements SensorEventListener
    static SensorManager sensorManager;
    
    public Handler mHandler;
-   FrameLayout    mContainer;
+   RelativeLayout mContainer;
    int            mBackground;
    MainView       mView;
+
+   boolean        videoVpSet = false;
+   int            videoX = 0;
+   int            videoY = 0;
+   int            videoW = 0;
+   int            videoH = 0;
+
    
    private static float[] accelData = new float[3];
    private static int bufferedDisplayOrientation = -1;
@@ -75,9 +84,14 @@ public class GameActivity extends Activity implements SensorEventListener
    private static float[] rotationMatrix = new float[16];
    private Sound _sound;
    
+   public NMEVideoView   mVideoView;
+
+
    protected void onCreate(Bundle state)
    {
       super.onCreate(state);
+
+      //Log.d(TAG,"==== onCreate =====");
       
       activity = this;
       mContext = this;
@@ -101,12 +115,12 @@ public class GameActivity extends Activity implements SensorEventListener
       org.haxe.HXCPP.run("ApplicationMain");
       
 
-      mContainer = new FrameLayout(getApplication());
+      mContainer = new RelativeLayout(this);
 
       mView = new MainView(getApplication(), this, false);
 
-
       mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
+
       setContentView(mContainer);
       
       sensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
@@ -118,29 +132,102 @@ public class GameActivity extends Activity implements SensorEventListener
       }
    }
 
-   public void createStageVideoSync(String inURL)
+  
+
+   public void createStageVideoSync(HaxeObject inHandler)
    {
-      Log.d(TAG,"Create stage video:" + inURL);
-      mView.setTranslucent(true);
-      VideoView video = new VideoView(this);
-      mContainer.addView( video,  new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
-      Uri uri = Uri.parse(inURL);
-      video.setVideoURI(uri);
-      video.start();
+      if (mVideoView==null)
+      {
+         mView.setTranslucent(true);
+         mVideoView = new NMEVideoView(this,inHandler);
+
+         RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
+         videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+
+         mContainer.addView( mVideoView, 0, videoLayout );
+      }
    }
 
-   public static void createStageVideo(final String inURL)
+   public void setVideoViewport(double inX, double inY, double inW, double inH)
+   {
+      //Log.d(TAG, "setVideoViewport " + inX + " " + inY + " " + inW + " " + inH);
+      if ( !videoVpSet || videoX!=(int)inX || videoY!=(int)inY || videoW!=(int)inW || videoH!=(int)inH)
+      {
+         videoVpSet = true;
+         videoX = (int)inX;
+         videoY = (int)inY;
+         videoW = (int)inW;
+         videoH = (int)inH;
+         setVideoLayout();
+      }
+   }
+
+   public void setVideoLayout()
+   {
+      // Center within view or specified viewport
+      if (mVideoView!=null)
+      {
+         int vidW = mVideoView.videoWidth;
+         int vidH = mVideoView.videoHeight;
+
+         if (vidW<1 || vidH<1)
+         {
+            RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+            videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+            mVideoView.setLayoutParams(videoLayout);
+         }
+         else
+         {
+            int x0 = videoVpSet ? videoX : 0;
+            int y0 = videoVpSet ? videoY : 0;
+            int w = videoVpSet ? videoW : mContainer.getWidth();
+            int h = videoVpSet ? videoH : mContainer.getHeight();
+            if (w*vidH > h*vidW)
+            {
+               int newW = h*vidW/vidH;
+               x0 += (w-newW)/2;
+               w = newW;
+            }
+            else
+            {
+               int newH = w*vidH/vidW;
+               y0 += (h-newH)/2;
+               h = newH;
+            }
+
+            int x1 = mContainer.getWidth() - x0 - w;
+            int y1 = mContainer.getHeight() - y0 - h;
+
+            RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
+            //videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+            //Log.d(TAG, "setMargins " + x0 + " " + y0 + " " + x1 + " " + y1);
+            videoLayout.setMargins(x0,y0,x1,y1);
+            mVideoView.setLayoutParams( videoLayout );
+         }
+         mVideoView.requestLayout();
+      }
+   }
+
+   public static void createStageVideo(final HaxeObject inHandler)
    {
       final GameActivity a = activity;
       queueRunnable( new Runnable() { @Override public void run() {
-          a.createStageVideoSync(inURL);
+          a.createStageVideoSync(inHandler);
+         } });
+   }
+
+   public void onResizeAsync(int width, int height)
+   {
+      final GameActivity me = this;
+      queueRunnable( new Runnable() { @Override public void run() {
+          me.setVideoLayout();
          } });
    }
 
    public void setBackgroundSync(int inVal)
    {
       mBackground = inVal;
-      Log.d(TAG,"Set background " + inVal);
+      //Log.d(TAG,"Set background " + inVal);
    }
 
    public static void setBackground(final int inVal)
@@ -192,10 +279,17 @@ public class GameActivity extends Activity implements SensorEventListener
    
    public void doPause()
    {
+      //Log.d(TAG,"====== doPause ========");
       _sound.doPause();
-      
+
+      //if (mVideoView!=null)
+      //   mVideoView.nmeSuspend();
+
       mView.sendActivity(NME.DEACTIVATE);
       mView.onPause();
+
+      if (mVideoView!=null)
+         mVideoView.nmeSuspend();
       
       if (sensorManager != null)
       {
@@ -205,12 +299,32 @@ public class GameActivity extends Activity implements SensorEventListener
    
    public void doResume()
    {   
+      //Log.d(TAG,"====== doResume ========");
+      mView.setZOrderMediaOverlay(true);
       mView.onResume();
       
       _sound.doResume();
-      
+
       mView.sendActivity(NME.ACTIVATE);
-      
+
+
+      if (mVideoView!=null)
+      {
+         // Need to rebuild the container to get the video to sit under the view - odd?
+         mContainer.removeView(mVideoView);
+         mContainer.removeView(mView);
+
+         mContainer = new RelativeLayout(this);
+         mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
+         RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
+         videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+         mContainer.addView( mVideoView, 0, videoLayout );
+         setContentView(mContainer);
+
+         mVideoView.nmeResume();
+      }
+
+
       if (sensorManager != null)
       {
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
@@ -357,7 +471,10 @@ public class GameActivity extends Activity implements SensorEventListener
    @Override protected void onDestroy()
    {
       // TODO: Wait for result?
+      Log.d(TAG,"onDestroy");
       mView.sendActivity(NME.DESTROY);
+      if (mVideoView!=null)
+         mVideoView.stopPlayback();
       activity = null;
       super.onDestroy();
    }
@@ -365,15 +482,15 @@ public class GameActivity extends Activity implements SensorEventListener
    
    @Override protected void onPause()
    {
-      super.onPause();
       doPause();
+      super.onPause();
    }
    
    
    @Override protected void onResume()
    {
-      super.onResume();
       doResume();
+      super.onResume();
    }
    
    @Override public void onSensorChanged(SensorEvent event)
@@ -571,3 +688,6 @@ public class GameActivity extends Activity implements SensorEventListener
       }
    }
 }
+
+
+

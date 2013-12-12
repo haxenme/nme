@@ -53,12 +53,12 @@ import java.util.Date;
  */
 class MainView extends GLSurfaceView {
 
-   Activity mActivity;
+   GameActivity mActivity;
    boolean  translucent;
    static MainView mRefreshView;
 
   //private InputDevice device;
-    public MainView(Context context,Activity inActivity, boolean inTranslucent)
+    public MainView(Context context,GameActivity inActivity, boolean inTranslucent)
     {
        super(context);
 
@@ -193,6 +193,10 @@ class MainView extends GLSurfaceView {
        //Log.v("VIEW", "present on system: " + InputDevice.getDeviceIds());
     }
 
+   public void checkZOrder()
+   {
+      setZOrderMediaOverlay(true);
+   }
 
    static final int etTouchBegin = 15;
    static final int etTouchMove  = 16;
@@ -422,12 +426,14 @@ class MainView extends GLSurfaceView {
         {
             //Log.v("VIEW","onSurfaceChanged " + width +"," + height);
             mMainView.HandleResult( NME.onResize(width,height) );
+            GameActivity a = GameActivity.activity;
+            if (a!=null)
+               GameActivity.activity.onResizeAsync(width,height);
         }
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config)
         {
-            Log.v("VIEW","onSurfaceCreated");
-            // Do nothing.
+            //Log.v("VIEW","onSurfaceCreated");
         }
     }
 }

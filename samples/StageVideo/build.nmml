@@ -17,7 +17,7 @@
   <window
      width="640" 
      height="480" 
-     orientation="landscape" 
+     orientation="any" 
      fps="60"
      background="0x000040"
      require_shaders="true"

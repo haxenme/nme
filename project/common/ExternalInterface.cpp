@@ -1375,12 +1375,11 @@ value nme_sv_create(value inStage, value inOwner)
    Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
-      StageVideo *video = stage->createStageVideo();
+      StageVideo *video = stage->createStageVideo(inOwner);
       if (video)
       {
-         video->setOwner(inOwner);
          return ObjectToAbstract(video);
-       }
+      }
    }
    return alloc_null();
 }

@@ -41,6 +41,8 @@ class Main extends Sprite
    var stream:NetStream;
    var progress:Sprite;
    var volumeControl:Sprite;
+   var videoWidth:Float;
+   var videoHeight:Float;
    var volume:Float;
 
    public function new()
@@ -51,6 +53,7 @@ class Main extends Sprite
       metaData = null;
       duration = 0;
       volume = 0.5;
+      videoWidth = videoHeight = 0;
       buttonData = nme.Assets.getBitmapData("buttons");
       button = new Sprite();
       button.addEventListener(MouseEvent.CLICK, onClick );
@@ -58,7 +61,6 @@ class Main extends Sprite
       addChild(button);
       progress = new Sprite();
       addChild(progress);
-      progress.y = stage.stageHeight - PROGRESS_SIZE;
       progress.addEventListener(MouseEvent.MOUSE_DOWN, beginSeek);
       addEventListener(nme.events.Event.ENTER_FRAME, function(_) { updateProgress(); } );
 
@@ -91,15 +93,9 @@ class Main extends Sprite
              metaData = data;
              duration  = metaData.duration;
              trace("metaData " + data.width + "," + data.height + "  for " + duration);
-             // Center video instance on Stage.
-             var sx = stage.stageWidth / data.width;
-             var sy = stage.stageHeight / data.height;
-             var scale = sx<sy ? sx:sy;
-             video.viewPort = new nme.geom.Rectangle(
-                (stage.stageWidth - data.width*scale) / 2,
-                (stage.stageHeight - data.height*scale) / 2,
-                data.width*scale,
-                data.height*scale );
+             videoWidth = data.width;
+             videoHeight = data.height;
+             centreVideo();
           };
           client.onPlayStatus = function(item:Dynamic)
           {
@@ -109,19 +105,41 @@ class Main extends Sprite
 
           stream.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);
  
-          video.viewPort = new nme.geom.Rectangle(0,0,500,500);
+          //video.viewPort = new nme.geom.Rectangle(0,0,500,500);
           video.addEventListener(StageVideoEvent.RENDER_STATE, onRenderState);
           video.attachNetStream(stream);
           stream.play("http://download.wavetlan.com/SVV/Media/HTTP/H264/Talkinghead_Media/H264_test1_Talkinghead_mp4_480x360.mp4");
 
           // Seems flash needs this?
           addEventListener(nme.events.Event.ENTER_FRAME, function(_) { stream.bytesLoaded; } );
+          stage.addEventListener(nme.events.Event.RESIZE, onResize );
       }
    }
+
+   function centreVideo()
+   {
+      var video = stage.stageVideos[0];
+      if (videoWidth<1 || videoHeight<1 || video==null)
+         return;
+
+      // Center video instance on Stage.
+      var sx = stage.stageWidth / videoWidth;
+      var sy = stage.stageHeight / videoHeight;
+      var scale = sx<sy ? sx:sy;
+
+      video.viewPort = new nme.geom.Rectangle(
+                (stage.stageWidth - videoWidth*scale) / 2,
+                (stage.stageHeight - videoHeight*scale) / 2,
+                videoWidth*scale,
+                videoHeight*scale );
+   }
+
+
 
    function updateProgress()
    {
       var w = stage.stageWidth;
+      progress.y = stage.stageHeight - PROGRESS_SIZE;
       var gfx = progress.graphics;
       gfx.clear();
       if (duration>0)
@@ -253,6 +271,14 @@ class Main extends Sprite
          case "NetStream.Publish.BadName":
             trace("Please check the name of the publishing stream" );
       }
+   }
+
+   function onResize(_)
+   {
+      setButton(buttonAction);
+      updateVolume();
+      updateProgress();
+      centreVideo();
    }
 
    function onRenderState(ev:StageVideoEvent)
