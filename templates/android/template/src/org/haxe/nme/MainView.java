@@ -16,7 +16,6 @@
 package org.haxe.nme;
 
 import android.content.Context;
-import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -24,6 +23,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.app.Activity;
+import android.graphics.PixelFormat;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -54,13 +54,21 @@ import java.util.Date;
 class MainView extends GLSurfaceView {
 
    Activity mActivity;
-	static MainView mRefreshView;
+   boolean  translucent;
+   static MainView mRefreshView;
 
   //private InputDevice device;
-    public MainView(Context context,Activity inActivity) {
-        super(context);
+    public MainView(Context context,Activity inActivity, boolean inTranslucent)
+    {
+       super(context);
+
+       translucent = inTranslucent;
+       getHolder().setFormat(
+          inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.RGB_565 );
+
 
         int eglVersion = 1;
+        setZOrderMediaOverlay(true);
 
         // See if version 2 is supported?
         if (::WIN_ALLOW_SHADERS:: || ::WIN_REQUIRE_SHADERS:: )
@@ -84,8 +92,12 @@ class MainView extends GLSurfaceView {
         final int renderType = eglVersion==1 ? 0x01 : 0x04;
 
 
-        setEGLConfigChooser(new EGLConfigChooser() {
-             public EGLConfig chooseConfig (EGL10 egl, EGLDisplay display) {
+        setEGLConfigChooser(new EGLConfigChooser()
+        {
+             public EGLConfig chooseConfig (EGL10 egl, EGLDisplay display)
+             {
+                Log.v("EGL","Choose config...");
+                int alpha = ::if WIN_ALPHA_BUFFER:: 8 ::else:: 0 ::end::;
                 int depth = ::if WIN_DEPTH_BUFFER:: 16 ::else:: 0 ::end::;
                 int stencil = ::if WIN_STENCIL_BUFFER:: 8 ::else:: 0 ::end::;
 
@@ -98,6 +110,7 @@ class MainView extends GLSurfaceView {
                 {
                    int[] attrs = { EGL10.EGL_DEPTH_SIZE, depth,
                                    EGL10.EGL_STENCIL_SIZE, stencil,
+                                   EGL10.EGL_ALPHA_SIZE, alpha,
                                    EGL10.EGL_SAMPLE_BUFFERS, 1 /* true */,
                                    EGL10.EGL_SAMPLES, ::WIN_ANTIALIASING::,
                                    EGL10.EGL_RENDERABLE_TYPE, renderType,
@@ -114,6 +127,7 @@ class MainView extends GLSurfaceView {
                    {
                       int[] attrs_aa2 = { EGL10.EGL_DEPTH_SIZE, depth,
                                       EGL10.EGL_STENCIL_SIZE, stencil,
+                                      EGL10.EGL_ALPHA_SIZE, alpha,
                                       EGL10.EGL_SAMPLE_BUFFERS, 1 /* true */,
                                       EGL10.EGL_SAMPLES, 2,
                                       EGL10.EGL_RENDERABLE_TYPE, renderType,
@@ -135,6 +149,7 @@ class MainView extends GLSurfaceView {
 
                    int[] attrs_aanv = { EGL10.EGL_DEPTH_SIZE, depth,
                                       EGL10.EGL_STENCIL_SIZE, stencil,
+                                      EGL10.EGL_ALPHA_SIZE, alpha,
                                       EGL_COVERAGE_BUFFERS_NV, 1 /* true */,
                                       EGL_COVERAGE_SAMPLES_NV, 2,  // always 5 in practice on tegra 2
                                       EGL10.EGL_RENDERABLE_TYPE, renderType,
@@ -150,6 +165,7 @@ class MainView extends GLSurfaceView {
                 // Try just specifying just depth and stencil
                 int[] attrs1 = { EGL10.EGL_DEPTH_SIZE, depth,
                                 EGL10.EGL_STENCIL_SIZE, stencil,
+                                EGL10.EGL_ALPHA_SIZE, alpha,
                                 EGL10.EGL_RENDERABLE_TYPE, renderType,
                                 EGL10.EGL_NONE };
 
@@ -169,17 +185,14 @@ class MainView extends GLSurfaceView {
              }
         });
         mActivity = inActivity;
-		  mRefreshView = this;
+        mRefreshView = this;
         setFocusable(true);
         setFocusableInTouchMode(true);
         setRenderer(new Renderer(this));
-		  setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
        //Log.v("VIEW", "present on system: " + InputDevice.getDeviceIds());
-      for (int i = 0; i < 4; i++) {
-        //device = InputDevice.getDevice(i);
-        //if (device != null) { Log.v("VIEW", "id of controller is: " + i + " and identification is: " + device.getName());}
-      }
     }
+
 
    static final int etTouchBegin = 15;
    static final int etTouchMove  = 16;
@@ -187,67 +200,82 @@ class MainView extends GLSurfaceView {
    static final int etTouchTap   = 18;
 
    static final int resTerminate = -1;
-	java.util.Timer mTimer = new java.util.Timer();
-	int mTimerID = 0;
+   java.util.Timer mTimer = new java.util.Timer();
+   int mTimerID = 0;
 
+   public void setTranslucent(boolean inTranslucent)
+   {
+      if (inTranslucent!=translucent)
+      {
+         ::if !(WIN_ALPHA_BUFFER)::
+         if (inTranslucent)
+            Log.w("EGL","Setting translucent without defining window alpha");
+         ::end::
+         translucent = inTranslucent;
+         getHolder().setFormat(
+             inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.RGB_565 );
+      }
+   }
 
-   public void HandleResult(int inCode) {
+   public void HandleResult(int inCode)
+   {
        if (inCode==resTerminate)
        {
           //Log.v("VIEW","Terminate Request.");
           mActivity.finish();
           return;
        }
-		 double wake = NME.getNextWake();
-		 final MainView me = this;
-		 if (wake<=0)
-	         queueEvent(new Runnable(){ public void run() { me.onPoll(); } } );
-		 else
-		 {
-		    final int tid = ++mTimerID;
-			 Date end = new Date();
-			 end.setTime( end.getTime() + (int)(wake * 1000) );
-			 mTimer.schedule( new java.util.TimerTask(){ public void run()
-			    {
-				    if (tid==me.mTimerID)
-				       me.queuePoll();
-				 } }, end );
-		 }
-		    
+       double wake = NME.getNextWake();
+       final MainView me = this;
+       if (wake<=0)
+            queueEvent(new Runnable(){ public void run() { me.onPoll(); } } );
+       else
+       {
+          final int tid = ++mTimerID;
+          Date end = new Date();
+          end.setTime( end.getTime() + (int)(wake * 1000) );
+          mTimer.schedule( new java.util.TimerTask(){ public void run()
+             {
+                if (tid==me.mTimerID)
+                   me.queuePoll();
+             } }, end );
+       }
    }
 
    void sendActivity(final int inActivity)
    {
-	   queueEvent(new Runnable(){ public void run() { NME.onActivity(inActivity); } } );
+      queueEvent(new Runnable(){ public void run() { NME.onActivity(inActivity); } } );
    }
 
-	void queuePoll()
-	{
-		final MainView me = this;
-	   queueEvent(new Runnable(){ public void run() { me.onPoll(); } } );
-	}
+   void queuePoll()
+   {
+      final MainView me = this;
+      queueEvent(new Runnable(){ public void run() { me.onPoll(); } } );
+   }
 
-	void onPoll()
-	{
-	   HandleResult( NME.onPoll() );
-	}
+   void onPoll()
+   {
+      HandleResult( NME.onPoll() );
+   }
 
    // Called diectly by NME...
-	static public void renderNow()
-	{
+   static public void renderNow()
+   {
      //Log.v("VIEW","renderNow!!!");
-	  mRefreshView.requestRender();
-	}
+     mRefreshView.requestRender();
+   }
 
    @Override
-   public boolean onTouchEvent(final MotionEvent ev) {
+   public boolean onTouchEvent(final MotionEvent ev)
+   {
        final MainView me = this;
 
        final int action = ev.getAction();
 
        int type = -1;
 
-       switch (action & MotionEvent.ACTION_MASK) {
+       switch (action & MotionEvent.ACTION_MASK)
+       {
           case MotionEvent.ACTION_DOWN: type = etTouchBegin; break;
           case MotionEvent.ACTION_POINTER_DOWN: type = etTouchBegin; break;
           case MotionEvent.ACTION_MOVE: type = etTouchMove; break;
@@ -266,7 +294,8 @@ class MainView extends GLSurfaceView {
        //if (type!=etTouchMove)
        //   Log.e("VIEW","onTouchEvent " + ev.toString() );
 
-       for (int i = 0; i < ev.getPointerCount(); i++) {
+       for(int i = 0; i < ev.getPointerCount(); i++)
+       {
            // Log.e("VIEW","onTouchEvent " + type + " x " + ev.getPointerCount() );
            final int id = ev.getPointerId(i);
            final float x = ev.getX(i);
@@ -277,7 +306,7 @@ class MainView extends GLSurfaceView {
               //Log.e("VIEW","  " + i + "]  type=" + t + " id="+ id + " idx="+ idx +" " + x + ", "+ y + "," + sizeX + "," + sizeY);
            if (type==etTouchMove || i==idx)
            {
-	           queueEvent(new Runnable(){
+              queueEvent(new Runnable(){
                  public void run() { me.HandleResult( NME.onTouch(t,x,y,id,sizeX,sizeY) ); }
                  });
            }
@@ -287,7 +316,8 @@ class MainView extends GLSurfaceView {
 
 
     @Override
-    public boolean onTrackballEvent(final MotionEvent ev) {
+    public boolean onTrackballEvent(final MotionEvent ev)
+    {
        final MainView me = this;
        queueEvent(new Runnable(){
           public void run() {
@@ -298,7 +328,8 @@ class MainView extends GLSurfaceView {
        return false;
     }
 
-    public int translateKey(int inCode, KeyEvent event) {
+    public int translateKey(int inCode, KeyEvent event)
+    {
        switch(inCode)
        {
           case KeyEvent.KEYCODE_DPAD_CENTER: return 13; /* Fake ENTER */
@@ -307,7 +338,7 @@ class MainView extends GLSurfaceView {
           case KeyEvent.KEYCODE_DPAD_UP: return 38;
           case KeyEvent.KEYCODE_DPAD_DOWN: return 40;
           case KeyEvent.KEYCODE_BACK: return 27; /* Fake Escape */
-		  case KeyEvent.KEYCODE_MENU: return 0x01000012; /* Fake MENU */
+          case KeyEvent.KEYCODE_MENU: return 0x01000012; /* Fake MENU */
           //case KeyEvent.KEYCODE_DPAD_CENTER: return 13; // Fake ENTER
           //case KeyEvent.KEYCODE_DPAD_LEFT: return 1;//37;
           //case KeyEvent.KEYCODE_DPAD_RIGHT: return 2;//39;
@@ -329,7 +360,8 @@ class MainView extends GLSurfaceView {
     }
 
     @Override
-    public boolean onKeyDown(final int inKeyCode, KeyEvent event) {
+    public boolean onKeyDown(final int inKeyCode, KeyEvent event)
+    {
          // Log.e("VIEW","onKeyDown " + inKeyCode);
           Log.v("VIEW", "device of event is " + event.getDeviceId());
           Log.v("VIEW","onKeyDown " + inKeyCode);
@@ -350,14 +382,16 @@ class MainView extends GLSurfaceView {
 
 
     @Override
-    public boolean onKeyUp(final int inKeyCode, KeyEvent event) {
+    public boolean onKeyUp(final int inKeyCode, KeyEvent event)
+    {
          //Log.v("VIEW","onKeyUp " + inKeyCode);
           Log.v("VIEW", "device of event is " + event.getDeviceId());
          Log.v("VIEW","onKeyUp " + inKeyCode);
          final MainView me = this;
          final int keyCode = translateKey(inKeyCode,event);
          final int deviceId = event.getDeviceId();
-         if (keyCode!=0) {
+         if (keyCode!=0)
+         {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:
                  public void run() {
@@ -370,24 +404,29 @@ class MainView extends GLSurfaceView {
      }
 
 
-    private static class Renderer implements GLSurfaceView.Renderer {
+    private static class Renderer implements GLSurfaceView.Renderer
+    {
         MainView mMainView;
 
         public Renderer(MainView inView) { mMainView = inView; }
 
-        public void onDrawFrame(GL10 gl) {
+        public void onDrawFrame(GL10 gl)
+        {
             //Log.v("VIEW","onDrawFrame !");
             mMainView.HandleResult( NME.onRender() );
             Sound.checkSoundCompletion();
             //Log.v("VIEW","onDrawFrame DONE!");
         }
 
-        public void onSurfaceChanged(GL10 gl, int width, int height) {
+        public void onSurfaceChanged(GL10 gl, int width, int height)
+        {
             //Log.v("VIEW","onSurfaceChanged " + width +"," + height);
             mMainView.HandleResult( NME.onResize(width,height) );
         }
 
-        public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        public void onSurfaceCreated(GL10 gl, EGLConfig config)
+        {
+            Log.v("VIEW","onSurfaceCreated");
             // Do nothing.
         }
     }

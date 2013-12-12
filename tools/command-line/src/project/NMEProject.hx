@@ -95,7 +95,24 @@ class NMEProject
 
       defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
       defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: 11, url: "" }
-      defaultWindow = { width: 800, height: 600, parameters: "{}", background: 0xFFFFFF, fps: 30, hardware: true, resizable: true, borderless: false, orientation: Orientation.AUTO, vsync: false, fullscreen: false, antialiasing: 0, allowShaders: true, requireShaders: false, depthBuffer: false, stencilBuffer: false }
+      defaultWindow = { width: 800,
+                        height: 600,
+                        parameters: "{}",
+                        background: 0xFFFFFF,
+                        fps: 30,
+                        hardware: true,
+                        resizable: true,
+                        borderless: false,
+                        orientation: Orientation.AUTO,
+                        vsync: false,
+                        fullscreen: false,
+                        antialiasing: 0,
+                        allowShaders: true,
+                        requireShaders: false,
+                        depthBuffer: false,
+                        stencilBuffer: false,
+                        alphaBuffer: false,
+                        }
 
       switch(target) 
       {
@@ -637,6 +654,7 @@ class NMEProject
       context.WIN_REQUIRE_SHADERS = window.requireShaders;
       context.WIN_DEPTH_BUFFER = window.depthBuffer;
       context.WIN_STENCIL_BUFFER = window.stencilBuffer;
+      context.WIN_ALPHA_BUFFER = window.alphaBuffer;
       context.COMPONENT = getComponent();
 
       if (certificate != null) 

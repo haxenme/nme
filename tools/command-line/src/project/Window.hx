@@ -16,4 +16,5 @@ typedef Window =
    @:optional var requireShaders:Bool;
    @:optional var depthBuffer:Bool;
    @:optional var stencilBuffer:Bool;
+   @:optional var alphaBuffer:Bool;
 }

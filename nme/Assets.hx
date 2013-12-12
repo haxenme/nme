@@ -302,9 +302,7 @@ class Assets
             return null;
          }
 
-         #if (!flash && !js)
          return  haxe.Resource.getString(i.path);
-         #end
       }
 
       var bytes = getBytes(id,useCache);

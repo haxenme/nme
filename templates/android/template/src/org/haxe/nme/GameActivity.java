@@ -12,7 +12,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -22,7 +21,12 @@ import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
 import android.view.View;
 import android.view.Window;
+import android.widget.FrameLayout;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.widget.VideoView;
+import android.net.Uri;
 import dalvik.system.DexClassLoader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,7 +62,9 @@ public class GameActivity extends Activity implements SensorEventListener
    static SensorManager sensorManager;
    
    public Handler mHandler;
-   MainView mView;
+   FrameLayout    mContainer;
+   int            mBackground;
+   MainView       mView;
    
    private static float[] accelData = new float[3];
    private static int bufferedDisplayOrientation = -1;
@@ -77,6 +83,7 @@ public class GameActivity extends Activity implements SensorEventListener
       mContext = this;
       mHandler = new Handler();
       mAssets = getAssets();
+      mBackground = 0;
       
       _sound = new Sound(getApplication());
       //getResources().getAssets();
@@ -93,8 +100,14 @@ public class GameActivity extends Activity implements SensorEventListener
       System.loadLibrary("::name::");::end::
       org.haxe.HXCPP.run("ApplicationMain");
       
-      mView = new MainView(getApplication(), this);
-      setContentView(mView);
+
+      mContainer = new FrameLayout(getApplication());
+
+      mView = new MainView(getApplication(), this, false);
+
+
+      mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
+      setContentView(mContainer);
       
       sensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
       
@@ -105,9 +118,37 @@ public class GameActivity extends Activity implements SensorEventListener
       }
    }
 
-   public static void createStageVideo(String inURL)
+   public void createStageVideoSync(String inURL)
    {
       Log.d(TAG,"Create stage video:" + inURL);
+      mView.setTranslucent(true);
+      VideoView video = new VideoView(this);
+      mContainer.addView( video,  new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
+      Uri uri = Uri.parse(inURL);
+      video.setVideoURI(uri);
+      video.start();
+   }
+
+   public static void createStageVideo(final String inURL)
+   {
+      final GameActivity a = activity;
+      queueRunnable( new Runnable() { @Override public void run() {
+          a.createStageVideoSync(inURL);
+         } });
+   }
+
+   public void setBackgroundSync(int inVal)
+   {
+      mBackground = inVal;
+      Log.d(TAG,"Set background " + inVal);
+   }
+
+   public static void setBackground(final int inVal)
+   {
+      final GameActivity a = activity;
+      queueRunnable( new Runnable() { @Override public void run() {
+          a.setBackgroundSync(inVal);
+         } });
    }
    
    
@@ -193,9 +234,10 @@ public class GameActivity extends Activity implements SensorEventListener
       return activity.mView;
    }
 
-   public void queueRunnable(java.lang.Runnable runnable)
+   public static void queueRunnable(java.lang.Runnable runnable)
    {
-      Log.e(TAG, "queueing...");
+      activity.mHandler.post(runnable);
+
    }
 
    public static AssetManager getAssetManager()

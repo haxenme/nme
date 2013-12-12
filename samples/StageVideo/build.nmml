@@ -3,7 +3,7 @@
   
   <meta
      title="NME Application"
-     package="org.haxe.nme"
+     package="org.haxe.nme.stagevideo"
      version="1.0.0"
      company="nme" 
   />
@@ -23,6 +23,7 @@
      require_shaders="true"
      resizable="true"
      hardware="true"
+     alphaBuffer="true"
   />
   
   <source path="src" />

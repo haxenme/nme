@@ -199,6 +199,8 @@ public:
       mDownX = 0;
       mDownY = 0;
 
+      mSentBG = 0x000000;
+
       normalOrientation = 0;
        
    }
@@ -241,6 +243,25 @@ public:
          video = new AndroidVideo(this);
 
       return video;
+   }
+
+   uint32 getBackgroundMask()
+   {
+      return video ? 0x00ffffff : 0xffffffff;
+   }
+
+
+   void setOpaqueBackground(uint32 inBG)
+   {
+      Stage::setOpaqueBackground(inBG);
+      if (mSentBG != (inBG & 0xffffff) )
+      {
+         mSentBG = inBG & 0xffffff;
+         JNIEnv *env = GetEnv();
+         jclass cls = FindClass("org/haxe/nme/GameActivity");
+         jmethodID setBackground = env->GetStaticMethodID(cls,"setBackground","(I)V" );
+         env->CallStaticVoidMethod(cls, setBackground, str );
+      }
    }
 
 
@@ -413,6 +434,7 @@ public:
 
    bool mMultiTouch;
    int  mSingleTouchID;
+   int  mSentBG;
   
    double mDX;
    double mDY;

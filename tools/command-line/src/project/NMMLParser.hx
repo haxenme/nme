@@ -221,7 +221,9 @@ class NMMLParser extends NMEProject
 
    private function formatAttributeName(name:String):String 
    {
-      var segments = name.toLowerCase().split("-");
+      var segments = name.split("_").join("-").toLowerCase().split("-");
+      if (segments.length==1)
+         return name;
 
       for(i in 1...segments.length) 
       {
@@ -1163,6 +1165,10 @@ class NMMLParser extends NMEProject
                if (Reflect.hasField(window, name)) 
                {
                   Reflect.setField(window, name, value == "true");
+               }
+               else
+               {
+                  LogHelper.error("Unknown window field: " + name);
                }
          }
       }
