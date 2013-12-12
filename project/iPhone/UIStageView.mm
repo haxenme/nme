@@ -1708,8 +1708,14 @@ bool nmeIsMain = true;
    return mask;
 }
 
+- (void) setInstance
+{
+   // May be overriden
+}
+
 - (void)loadView
 {
+   [self setInstance];
    //printf("loadView...\n");
    nmeStage = new NMEStage([[UIScreen mainScreen] bounds]);
    self.view = nmeStage->getRootView();
