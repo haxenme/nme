@@ -159,7 +159,7 @@ public:
    double getDPIScale() { return nmeView->dpiScale; }
 
 
-   StageVideo *createStageVideo();
+   StageVideo *createStageVideo(void *);
    void       onVideoPlay();
    CGRect     getViewBounds();
    void       setOpaqueBackground(uint32 inBG);
