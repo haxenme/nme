@@ -39,7 +39,17 @@ import java.lang.Math;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class GameActivity extends Activity implements SensorEventListener
+::if ANDROIDVIEW::
+import android.app.Fragment;
+::end::
+
+public class GameActivity extends
+::if ANDROIDVIEW::
+Fragment
+::else::
+Activity
+::end::
+implements SensorEventListener
 {
    static final String TAG = "GameActivity";
 
@@ -58,7 +68,7 @@ public class GameActivity extends Activity implements SensorEventListener
    
    static GameActivity activity;
    static AssetManager mAssets;
-   static Context mContext;
+   static Activity mContext;
    static DisplayMetrics metrics;
    static HashMap<String, Class> mLoadedClasses = new HashMap<String, Class>();
    static SensorManager sensorManager;
@@ -87,26 +97,33 @@ public class GameActivity extends Activity implements SensorEventListener
    public NMEVideoView   mVideoView;
 
 
-   protected void onCreate(Bundle state)
+   public void onCreate(Bundle state)
    {
       super.onCreate(state);
 
       //Log.d(TAG,"==== onCreate =====");
       
       activity = this;
+      ::if ANDROIDVIEW::
+      mContext = getActivity();
+      mAssets = null;
+      _sound = null;
+      ::else::
       mContext = this;
-      mHandler = new Handler();
       mAssets = getAssets();
-      mBackground = 0;
-      
       _sound = new Sound(getApplication());
-      //getResources().getAssets();
-      
       requestWindowFeature(Window.FEATURE_NO_TITLE);
       getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
       
+      ::end::
+
+      mHandler = new Handler();
+      mBackground = 0;
+      
+      //getResources().getAssets();
+      
       metrics = new DisplayMetrics();
-      getWindowManager().getDefaultDisplay().getMetrics(metrics);
+      mContext.getWindowManager().getDefaultDisplay().getMetrics(metrics);
       
       // Pre-load these, so the C++ knows where to find them
       
@@ -115,9 +132,9 @@ public class GameActivity extends Activity implements SensorEventListener
       org.haxe.HXCPP.run("ApplicationMain");
       
 
-      mContainer = new RelativeLayout(this);
+      mContainer = new RelativeLayout(mContext);
 
-      mView = new MainView(getApplication(), this, false);
+      mView = new MainView(mContext, this, false);
 
       mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
 

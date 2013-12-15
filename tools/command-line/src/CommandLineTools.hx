@@ -10,6 +10,7 @@ import platforms.FlashPlatform;
 import platforms.HTML5Platform;
 import platforms.IOSPlatform;
 import platforms.IOSView;
+import platforms.AndroidView;
 import platforms.Platform;
 import platforms.LinuxPlatform;
 import platforms.MacPlatform;
@@ -61,6 +62,9 @@ class CommandLineTools
 
          case Platform.IOSVIEW:
             platform = new IOSView(project.getComponent());
+
+         case Platform.ANDROIDVIEW:
+            platform = new AndroidView();
 
          case Platform.IOS:
             platform = new IOSPlatform();
@@ -593,6 +597,11 @@ class CommandLineTools
             targetFlags.set("iosview", "");
             target = Platform.IOSVIEW;
 
+         case "androidview":
+            targetFlags.set("android", "");
+            targetFlags.set("androidview", "");
+            target = Platform.ANDROIDVIEW;
+
          case "iphonesim":
             target = Platform.IOS;
             targetFlags.set("simulator", "");
@@ -646,62 +655,8 @@ class CommandLineTools
       {
          project = new NMMLParser(Path.withoutDirectory(projectFile), userDefines, includePaths);
 
-      } else if (Path.extension(projectFile) == "hx") 
-      {
-         var path = FileSystem.fullPath(Path.withoutDirectory(projectFile));
-         var name = Path.withoutDirectory(Path.withoutExtension(projectFile));
-
-         var tempFile = PathHelper.getTemporaryFile(".n");
-
-         ProcessHelper.runCommand("", "haxe", [ name, "-main", "NMEProject", "-neko", tempFile, "-cp", nme + "/tools/project", "-cp", nme + "/tools/helpers", "-cp", nme + "/tools/command-line", "-lib", "nme", "-lib", "xfl", "-lib", "swf", "-lib", "svg", "--remap", "flash:nme" ]);
-
-         var process = new Process("neko", [ FileSystem.fullPath(tempFile), name, NMEProject._command, Std.string(NMEProject._debug), Std.string(NMEProject._target), Serializer.run(NMEProject._targetFlags), Serializer.run(NMEProject._templatePaths) ]);
-         var output = process.stdout.readAll().toString();
-         var error = process.stderr.readAll().toString();
-         process.exitCode();
-         process.close();
-
-         try 
-         {
-            var unserializer = new Unserializer(output);
-            unserializer.setResolver(cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass });
-            project = unserializer.unserialize();
-
-         } catch(e:Dynamic) {}
-
-         FileSystem.deleteFile(tempFile);
-
-         if (project != null) 
-         {
-            for(haxelib in project.haxelibs) 
-            {
-               var path = PathHelper.getHaxelib(haxelib);
-
-               if (FileSystem.exists(path + "/include.nmml")) 
-               {
-                  var includeProject = new NMMLParser(path + "/include.nmml");
-
-                  for(ndll in includeProject.ndlls) 
-                  {
-                     if (ndll.haxelib == null) 
-                     {
-                        ndll.haxelib = haxelib;
-                     }
-                  }
-
-                  includeProject.sources.push(path);
-                  project.merge(includeProject);
-               }
-            }
-
-            project.command = command;
-            project.debug = debug;
-            project.target = target;
-            project.targetFlags = targetFlags;
-            project.templatePaths = [ nme + "/templates", nme + "/tools/command-line" ].concat(project.templatePaths);
-         }
       }
-
+      
       if (project == null) 
       {
          LogHelper.error("You must have a \"project.nmml\" file or specify another NME project file when using the '" + command + "' command");
@@ -785,7 +740,8 @@ class CommandLineTools
       // Better way to do this?
       switch(project.target) 
       {
-         case Platform.ANDROID, Platform.IOS, Platform.BLACKBERRY, Platform.IOSVIEW:
+         case Platform.ANDROID, Platform.IOS, Platform.BLACKBERRY,
+              Platform.IOSVIEW, Platform.ANDROIDVIEW:
 
             getBuildNumber(project);
 

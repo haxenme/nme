@@ -12,6 +12,7 @@ class Platform
    public static inline var MAC = "MAC";
    public static inline var WINDOWS = "WINDOWS";
    public static inline var WEBOS = "WEBOS";
+   public static inline var ANDROIDVIEW = "ANDROIDVIEW";
 
 
    public static inline var TYPE_DESKTOP = "DESKTOP";

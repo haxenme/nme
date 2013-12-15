@@ -162,9 +162,11 @@ class AndroidPlatform extends Platform
 
       var android_platform = Sys.getEnv("ANDROID_SDK_PLATFORM");
       if (android_platform!=null && android_platform.length>0)
-         context.ANDROID_PLATFORM = android_platform;
+         context.ANDROID_SDK_PLATFORM = android_platform;
       else
-         context.ANDROID_PLATFORM = "android-8";
+         context.ANDROID_SDK_PLATFORM = "android-8";
+
+      context.ANDROID_API_LEVEL = 8;
 
       var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi" ];
       var iconSizes = [ 36, 48, 72, 96 ];
