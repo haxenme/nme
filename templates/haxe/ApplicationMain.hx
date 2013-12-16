@@ -34,6 +34,12 @@ class ApplicationMain
    
    public static function main()
    {
+      #if cpp
+      ::if MEGATRACE::
+         cpp.vm.ExecutionTrace.traceLines();
+      ::end::
+      #end
+
       #if nme
       nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
 

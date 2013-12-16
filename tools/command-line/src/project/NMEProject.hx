@@ -18,6 +18,7 @@ class NMEProject
    public var command:String;
    public var config:PlatformConfig;
    public var debug:Bool;
+   public var megaTrace:Bool;
    public var dependencies:Array<String>;
    public var environment:StringMap<String>;
    public var haxedefs:StringMap<Dynamic>;
@@ -51,6 +52,7 @@ class NMEProject
 
    public static var _command:String;
    public static var _debug:Bool;
+   public static var _megaTrace:Bool = false;
    public static var _target:String;
    public static var _targetFlags:StringMap<String>;
    public static var _templatePaths:Array<String>;
@@ -89,6 +91,7 @@ class NMEProject
       command = _command;
       config = new PlatformConfig();
       debug = _debug;
+      megaTrace = _megaTrace;
       target = _target;
       targetFlags = StringMapHelper.copy(_targetFlags);
       templatePaths = _templatePaths.copy();
@@ -136,13 +139,14 @@ class NMEProject
             if (target == Platform.IOS || target==Platform.IOSVIEW) 
             {
                architectures = [ Architecture.ARMV7 ];
-               if (target==Platform.IOSVIEW) 
-                  embedAssets = true;
             }
             else
             {
                architectures = [ Architecture.ARMV6 ];
             }
+
+            if (target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW) 
+               embedAssets = true;
 
             defaultWindow.width = 0;
             defaultWindow.height = 0;
@@ -528,9 +532,10 @@ class NMEProject
       {
          if (embedAssets)
          {
+             asset.resourceName = asset.flatName;
             //already done in iosview
-            //var absPath = sys.FileSystem.fullPath(asset.sourcePath);
-            //haxeflags.push("-resource " + absPath  + "@" + asset.id );
+            var absPath = sys.FileSystem.fullPath(asset.sourcePath);
+            haxeflags.push("-resource " + absPath  + "@" + asset.flatName );
             context.assets.push(asset);
          }
          else if (asset.type != AssetType.TEMPLATE) 
@@ -577,6 +582,9 @@ class NMEProject
       {
          compilerFlags.push("-cp " + source);
       }
+
+      if (megaTrace)
+         haxedefs.set("HXCPP_DEBUGGER","");
 
       for(key in haxedefs.keys()) 
       {
@@ -640,6 +648,7 @@ class NMEProject
       }
 
       context.DEBUG = debug;
+      context.MEGATRACE = megaTrace;
       context.SWF_VERSION = app.swfVersion;
       context.PRELOADER_NAME = app.preloader;
       context.WIN_BACKGROUND = window.background;

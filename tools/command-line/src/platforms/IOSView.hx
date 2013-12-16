@@ -122,9 +122,6 @@ class IOSView extends Platform
       }
 
 
-      for(asset in project.assets) 
-         asset.resourceName = asset.flatName;
-
       valid_archs = new Array<String>();
       var armv6 = false;
       var armv7 = false;
@@ -201,12 +198,7 @@ class IOSView extends Platform
       context.IOS_COMPILER = project.config.ios.compiler;
       context.IOS_LINKER_FLAGS = project.config.ios.linkerFlags.split(" ").join(", ");
 
-      var resourceCommand = new Array<String>();
-      for(asset in project.assets) 
-      {
-          resourceCommand.push( "\n-resource " +  PathHelper.relocatePath(asset.sourcePath,buildDir) + "@" + asset.flatName );
-      }
-      context.RESOURCES = resourceCommand.join("");
+      context.RESOURCES = "";
 
       //updateIcon();
       //updateLaunchImage();

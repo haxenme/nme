@@ -101,21 +101,21 @@ implements SensorEventListener
    {
       super.onCreate(state);
 
-      //Log.d(TAG,"==== onCreate =====");
+      Log.d(TAG,"==== onCreate ===== " + this);
       
       activity = this;
       ::if ANDROIDVIEW::
       mContext = getActivity();
       mAssets = null;
-      _sound = null;
+      //setRetainInstance(true);
       ::else::
       mContext = this;
       mAssets = getAssets();
-      _sound = new Sound(getApplication());
       requestWindowFeature(Window.FEATURE_NO_TITLE);
       getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-      
       ::end::
+
+      _sound = new Sound(mContext);
 
       mHandler = new Handler();
       mBackground = 0;
@@ -156,6 +156,13 @@ implements SensorEventListener
    ::if ANDROIDVIEW::
    public View onCreateView(android.view.LayoutInflater inflater, ViewGroup group, Bundle saved)
    {
+      // Check to see if we are being recreated - need to remove from old view...
+      if (mContainer.getParent()!=null)
+      {
+         Log.v(TAG,"Recycle container view");
+         ViewGroup parent = (ViewGroup)mContainer.getParent();
+         parent.removeView(mContainer);
+      }
       return mContainer;
    }
    ::end::
@@ -328,14 +335,16 @@ implements SensorEventListener
    
    public void doResume()
    {   
-      //Log.d(TAG,"====== doResume ========");
-      mView.setZOrderMediaOverlay(true);
-      mView.onResume();
+      Log.d(TAG,"====== doResume ========");
+      if (mView!=null)
+      {
+         mView.setZOrderMediaOverlay(true);
+         mView.onResume();
+         mView.sendActivity(NME.ACTIVATE);
+      }
       
-      _sound.doResume();
-
-      mView.sendActivity(NME.ACTIVATE);
-
+      if (_sound!=null)
+         _sound.doResume();
 
       if (mVideoView!=null)
       {
@@ -537,6 +546,7 @@ implements SensorEventListener
    {
       loadNewSensorData(event);
       
+      ::if !(ANDROIDVIEW)::
       if (accelData != null && magnetData != null)
       {
          boolean foundRotationMatrix = SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix, accelData, magnetData);
@@ -549,6 +559,7 @@ implements SensorEventListener
       
       NME.onDeviceOrientationUpdate(prepareDeviceOrientation());
       NME.onNormalOrientationFound(bufferedNormalOrientation);
+      ::end::
    }
 
   

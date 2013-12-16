@@ -12,9 +12,9 @@ class AndroidView extends Platform
 
    public function new() { super(); }
 
-   function getDest()     { return project.app.path + "/androidview"; }
-   function getBuildDir() { return project.app.path + "/android/build"; }
-   function getObjDir() { return project.app.path + "/android/viewobj"; }
+   function getDest()     { return project.app.path + "/androidview/sdk"; }
+   function getBuildDir() { return project.app.path + "/androidview/build"; }
+   function getObjDir() { return project.app.path + "/androidview/obj"; }
 
    override public function build(project:NMEProject):Void 
    {
@@ -31,6 +31,9 @@ class AndroidView extends Platform
       FileHelper.copyIfNewer( getObjDir() + "/libApplicationMain" + (project.debug ? "-debug" : "") + ".so", arm5);
 
       AndroidHelper.build(project, getBuildDir());
+
+      var jarName = project.app.file + "_sdk.jar";
+      FileHelper.copyIfNewer( getBuildDir() + "/bin/classes.jar", destination +"/libs/" + jarName);
    }
 
    override public function clean(project:NMEProject):Void 
@@ -114,9 +117,11 @@ class AndroidView extends Platform
       FileHelper.copyFileTemplate(project.templatePaths, "android/template/AndroidManifest.xml", srcBuild+"/AndroidManifest.xml", context);
       FileHelper.copyFileTemplate(project.templatePaths, "android/template/default.properties", srcBuild+"/project.properties", context);
 
-      //FileHelper.recursiveCopyTemplate(project.templatePaths, "android-view", srcBuild, context);
-      FileHelper.copyFileTemplate(project.templatePaths, "android/MainActivity.java", packageDirectory + "/MainActivity.java", context);
+      FileHelper.recursiveCopyTemplate(project.templatePaths, "android-view/src", srcBuild+"/src");
+
       FileHelper.recursiveCopyTemplate(project.templatePaths, "haxe", project.app.path + "/android/haxe", context);
       FileHelper.recursiveCopyTemplate(project.templatePaths, "android/hxml", project.app.path + "/android/haxe", context);
+
+      FileHelper.recursiveCopyTemplate(project.templatePaths, "android-view/sdk", getDest() );
    }
 }

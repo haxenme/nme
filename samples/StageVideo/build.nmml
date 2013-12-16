@@ -27,6 +27,8 @@
   />
   
   <source path="src" />
+
+  <templatePath name="templates" />
   
   <haxelib name="nme" />
 

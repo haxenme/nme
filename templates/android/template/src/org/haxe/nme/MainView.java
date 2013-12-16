@@ -424,7 +424,8 @@ class MainView extends GLSurfaceView {
 
         public void onSurfaceChanged(GL10 gl, int width, int height)
         {
-            //Log.v("VIEW","onSurfaceChanged " + width +"," + height);
+            Log.v("VIEW","onSurfaceChanged " + width +"," + height);
+            Log.v("VIEW", "Thread = " + java.lang.Thread.currentThread().getId() );
             mMainView.HandleResult( NME.onResize(width,height) );
             GameActivity a = GameActivity.activity;
             if (a!=null)

@@ -30,6 +30,7 @@ class CommandLineTools
    private static var architectures:Array<Architecture>;
    private static var command:String;
    private static var debug:Bool;
+   private static var megaTrace:Bool;
    private static var sources:Array<String>;
    private static var haxelibs:Array<Haxelib>;
    private static var haxedefs:Array<String>;
@@ -319,6 +320,7 @@ class CommandLineTools
       Sys.println("");
       Sys.println("  -D : Specify a define to use when processing other commands");
       Sys.println("  -debug : Use debug configuration instead of release");
+      Sys.println("  -megatrace : Add maximum debugging");
       Sys.println("  -verbose : Print additional information(when available)");
       Sys.println("  -clean : Add a \"clean\" action before running the current command");
       Sys.println("  -xml : Generate XML type information, useful for documentation");
@@ -642,7 +644,8 @@ class CommandLineTools
       }
 
       NMEProject._command = command;
-      NMEProject._debug = debug;
+      NMEProject._debug = debug || megaTrace;
+      NMEProject._megaTrace = megaTrace;
       NMEProject._target = target;
       NMEProject._targetFlags = targetFlags;
       NMEProject._templatePaths = [ nme + "/templates", nme + "/tools/command-line" ];
@@ -991,16 +994,21 @@ class CommandLineTools
          } else if (argument == "-args") 
          {
             catchArguments = true;
-
-         } else if (argument == "-notrace") 
+         }
+         else if (argument == "-notrace") 
          {
             traceEnabled = false;
-
-         } else if (argument == "-debug") 
+         }
+         else if (argument == "-debug") 
          {
             debug = true;
+         }
+         else if (argument == "-megatrace") 
+         {
+            megaTrace = true;
+         }
 
-         } else if (command.length == 0) 
+         else if (command.length == 0) 
          {
             command = argument;
 

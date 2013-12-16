@@ -87,30 +87,6 @@ class AndroidHelper
 
    public static function trace(project:NMEProject, debug:Bool):Void 
    {
-      // Use -DFULL_LOGCAT or  <set name="FULL_LOGCAT" /> if you do not want to filter log messages
-      if (project.environment.exists("FULL_LOGCAT") || LogHelper.verbose) 
-      {
-         ProcessHelper.runCommand(adbPath, adbName, [ "logcat", "-c" ]);
-         ProcessHelper.runCommand(adbPath, adbName, [ "logcat" ]);
-
-      } else if (debug) 
-      {
-         var filter = "*:E";
-         var includeTags = [ "NME", "Main", "GameActivity", "GLThread", "trace" ];
-
-         for(tag in includeTags) 
-         {
-            filter += " " + tag + ":D";
-         }
-
-         Sys.println(filter);
-
-         ProcessHelper.runCommand(adbPath, adbName, [ "logcat", filter ]);
-      }
-      else
-      {
-         ProcessHelper.runCommand(adbPath, adbName, [ "logcat", "*:S trace:I" ]);
-      }
    }
 
    public static function uninstall(packageName:String):Void 
