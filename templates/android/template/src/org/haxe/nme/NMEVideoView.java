@@ -63,7 +63,7 @@ public class NMEVideoView extends VideoView implements
 
    public NMEVideoView(GameActivity inActiviy,HaxeObject inHandler)
    {
-      super(inActiviy);
+      super(inActiviy.mContext);
       handler = inHandler;
       activity = inActiviy;
 

@@ -138,16 +138,28 @@ implements SensorEventListener
 
       mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
 
-      setContentView(mContainer);
       
-      sensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
+      sensorManager = (SensorManager)mContext.getSystemService(Context.SENSOR_SERVICE);
       
       if (sensorManager != null)
       {
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_GAME);
       }
+
+
+      ::if !(ANDROIDVIEW)::
+      setContentView(mContainer);
+      ::end::
    }
+
+   ::if ANDROIDVIEW::
+   public View onCreateView(android.view.LayoutInflater inflater, ViewGroup group, Bundle saved)
+   {
+      return mContainer;
+   }
+   ::end::
+
 
   
 
@@ -287,7 +299,7 @@ implements SensorEventListener
    
    public static void clearUserPreference(String inId)
    {
-      SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE, MODE_PRIVATE);
+      SharedPreferences prefs = mContext.getSharedPreferences(GLOBAL_PREF_FILE, Activity.MODE_PRIVATE);
       SharedPreferences.Editor prefEditor = prefs.edit();
       prefEditor.putString(inId, "");
       prefEditor.commit();
@@ -331,12 +343,15 @@ implements SensorEventListener
          mContainer.removeView(mVideoView);
          mContainer.removeView(mView);
 
-         mContainer = new RelativeLayout(this);
+         mContainer = new RelativeLayout(mContext);
          mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
          RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
          videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
          mContainer.addView( mVideoView, 0, videoLayout );
+
+         ::if !(ANDROIDVIEW)::
          setContentView(mContainer);
+         ::end::
 
          mVideoView.nmeResume();
       }
@@ -347,6 +362,13 @@ implements SensorEventListener
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_GAME);
       }
+   }
+
+   public void onNMEFinish()
+   {
+      ::if !(ANDROIDVIEW)::
+      finish();
+      ::end::
    }
    
    
@@ -440,9 +462,10 @@ implements SensorEventListener
    
    public static String getUserPreference(String inId)
    {
-      SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE, MODE_PRIVATE);
+      SharedPreferences prefs = mContext.getSharedPreferences(GLOBAL_PREF_FILE, Activity.MODE_PRIVATE);
       return prefs.getString(inId, "");
    }
+
    
    
    public static void launchBrowser(String inURL)
@@ -451,7 +474,7 @@ implements SensorEventListener
       
       try
       {
-         activity.startActivity(browserIntent);
+         mContext.startActivity(browserIntent);
       }
       catch (Exception e)
       {
@@ -485,7 +508,7 @@ implements SensorEventListener
    }
    
    
-   @Override protected void onDestroy()
+   @Override public void onDestroy()
    {
       // TODO: Wait for result?
       Log.d(TAG,"onDestroy");
@@ -497,14 +520,14 @@ implements SensorEventListener
    }
    
    
-   @Override protected void onPause()
+   @Override public void onPause()
    {
       doPause();
       super.onPause();
    }
    
    
-   @Override protected void onResume()
+   @Override public void onResume()
    {
       doResume();
       super.onResume();
@@ -528,13 +551,7 @@ implements SensorEventListener
       NME.onNormalOrientationFound(bufferedNormalOrientation);
    }
 
-   
-   public static void popView()
-   {
-      activity.setContentView(activity.mView);
-      activity.doResume();
-   }
-   
+  
    
    public static void postUICallback(final long inHandle)
    {
@@ -550,7 +567,7 @@ implements SensorEventListener
    
    private int prepareDeviceOrientation()
    {
-      int rawOrientation = getWindow().getWindowManager().getDefaultDisplay().getOrientation();
+      int rawOrientation = mContext.getWindowManager().getDefaultDisplay().getOrientation();
       
       if (rawOrientation != bufferedDisplayOrientation)
       {
@@ -651,16 +668,23 @@ implements SensorEventListener
    }
    
    
+   ::if !(ANDROIDVIEW)::
    public static void pushView(View inView)
    {
       activity.doPause();
       activity.setContentView(inView);
    }
+   public static void popView()
+   {
+      activity.setContentView(activity.mView);
+      activity.doResume();
+   }
+   ::end::
    
    
    public static void setUserPreference(String inId, String inPreference)
    {
-      SharedPreferences prefs = activity.getSharedPreferences(GLOBAL_PREF_FILE, MODE_PRIVATE);
+      SharedPreferences prefs = mContext.getSharedPreferences(GLOBAL_PREF_FILE, Activity.MODE_PRIVATE);
       SharedPreferences.Editor prefEditor = prefs.edit();
       prefEditor.putString(inId, inPreference);
       prefEditor.commit();
@@ -669,7 +693,7 @@ implements SensorEventListener
    
    public static void showKeyboard(boolean show)
    {
-      InputMethodManager mgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+      InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
       mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
       
       if (show)
@@ -684,7 +708,7 @@ implements SensorEventListener
    
    public static void vibrate(int period, int duration)
    {
-      Vibrator v = (Vibrator)activity.getSystemService(Context.VIBRATOR_SERVICE);
+      Vibrator v = (Vibrator)mContext.getSystemService(Context.VIBRATOR_SERVICE);
       
       if (period == 0)
       {

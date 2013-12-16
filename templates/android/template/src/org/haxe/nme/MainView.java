@@ -226,7 +226,7 @@ class MainView extends GLSurfaceView {
        if (inCode==resTerminate)
        {
           //Log.v("VIEW","Terminate Request.");
-          mActivity.finish();
+          mActivity.onNMEFinish();
           return;
        }
        double wake = NME.getNextWake();
