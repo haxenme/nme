@@ -273,6 +273,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 #elif defined(__APPLE__)
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
+// printf("Looking for font %s...", inName.c_str() );
 
 #ifdef IPHONEOS
 #define FONT_BASE "/System/Library/Fonts/Cache/"
@@ -280,29 +281,60 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 #define FONT_BASE "/Library/Fonts/"
 #endif
 
-   if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
-      outFile = FONT_BASE "Georgia.ttf";
-   else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"helvetica.ttf"))
-      outFile = FONT_BASE "Arial Black.ttf"; // Helvetica.dfont does not render
-   else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf"))
-      outFile = FONT_BASE "Courier New.ttf";
-   else if (!strcasecmp(inName.c_str(),"arial.ttf"))
-      outFile = FONT_BASE "Arial Black.ttf";
-   else
+   outFile = FONT_BASE + inName;
+   FILE *file = fopen(outFile.c_str(),"rb");
+   if (file)
    {
-      outFile = FONT_BASE + inName;
+      //printf("Found actual file %s\n", outFile.c_str());
+      fclose(file);
       return true;
-      //VLOG("Unfound font: %s\n",inName.c_str());
-      return false;
    }
 
-   return true;
+
+
+   const char *serifFonts[] = { "Georgia.ttf", "Times.ttf", "Times New Roman.ttf", 0 };
+   const char *sansFonts[] = { "Arial Black.ttf", "Arial.ttf", "Helvetica.ttf", 0 };
+   const char *fixedFonts[] = { "Courier New.ttf", "Courier.ttf", 0 };
+
+   const char **test = 0;
+
+   if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
+      test = serifFonts;
+   else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"helvetica.ttf"))
+      test = sansFonts;
+   else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf"))
+      test = fixedFonts;
+   else if (!strcasecmp(inName.c_str(),"arial.ttf"))
+      test = sansFonts;
+
+   if (test)
+   {
+      while(*test)
+      {
+         outFile = FONT_BASE + std::string(*test);
+
+         //printf("Try %s\n", outFile.c_str());
+
+	 FILE *file = fopen(outFile.c_str(),"rb");
+	 if (file)
+	 {
+	    //printf("Found sub file %s\n", outFile.c_str());
+	    fclose(file);
+	    return true;
+	 }
+         test++;
+      }
+   }
+
+   return false;
 }
 #else
 
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
-   if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times")) {
+   if (!strcasecmp(inName.c_str(),"_serif") ||
+       !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
+   {
       
       #if defined (ANDROID)
          outFile = "/system/fonts/DroidSerif-Regular.ttf";
@@ -314,7 +346,10 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
       #endif
       
-   } else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"arial.ttf") || !strcasecmp(inName.c_str(),"arial")) {
+   }
+   else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"arial.ttf") ||
+              !strcasecmp(inName.c_str(),"arial") || !strcasecmp(inName.c_str(),"sans-serif") )
+   {
       
       #if defined (ANDROID)
          outFile = "/system/fonts/DroidSans.ttf";
@@ -326,8 +361,9 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
       #endif
       
-   } else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf") || !strcasecmp(inName.c_str(),"courier")) {
-      
+   }
+   else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf") || !strcasecmp(inName.c_str(),"courier"))
+   {
       #if defined (ANDROID)
          outFile = "/system/fonts/DroidSansMono.ttf";
       #elif defined (WEBOS)
@@ -338,18 +374,20 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
       #endif
       
-   } else {
-      
+   }
+   else
+   {
       #ifdef ANDROID
-       __android_log_print(ANDROID_LOG_INFO, "GetFontFile1", "Could not load font %s.",
-          inName.c_str() );
+       //__android_log_print(ANDROID_LOG_INFO, "GetFontFile", "Could not load font %s.", inName.c_str() );
        #endif
       
       //printf("Unfound font: %s\n",inName.c_str());
       return false;
-      
    }
 
+   #ifdef ANDROID
+    //__android_log_print(ANDROID_LOG_INFO, "GetFontFile", "mapped '%s' to '%s'.", inName.c_str(), outFile.c_str());
+   #endif
    return true;
 }
 #endif
