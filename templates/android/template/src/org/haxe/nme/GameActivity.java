@@ -66,7 +66,7 @@ implements SensorEventListener
    private static final int DEVICE_ROTATION_180 = 2;
    private static final int DEVICE_ROTATION_270 = 3;
    
-   static GameActivity activity;
+   protected static GameActivity activity;
    static AssetManager mAssets;
    static Activity mContext;
    static DisplayMetrics metrics;
@@ -139,6 +139,8 @@ implements SensorEventListener
       mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
 
       
+      /*
+       weak ref instances?
       sensorManager = (SensorManager)mContext.getSystemService(Context.SENSOR_SERVICE);
       
       if (sensorManager != null)
@@ -146,6 +148,7 @@ implements SensorEventListener
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_GAME);
       }
+      */
 
 
       ::if !(ANDROIDVIEW)::
@@ -315,27 +318,27 @@ implements SensorEventListener
    
    public void doPause()
    {
-      //Log.d(TAG,"====== doPause ========");
+      Log.d(TAG,"====== doPause ========");
       _sound.doPause();
 
-      //if (mVideoView!=null)
-      //   mVideoView.nmeSuspend();
-
       mView.sendActivity(NME.DEACTIVATE);
+
       mView.onPause();
 
       if (mVideoView!=null)
          mVideoView.nmeSuspend();
       
+      /*
       if (sensorManager != null)
       {
          sensorManager.unregisterListener(this);
       }
+      */
    }
    
    public void doResume()
    {   
-      Log.d(TAG,"====== doResume ========");
+      Log.d(TAG,"====== doResume ======== " + mView );
       if (mView!=null)
       {
          mView.setZOrderMediaOverlay(true);
@@ -352,7 +355,6 @@ implements SensorEventListener
          mContainer.removeView(mVideoView);
          mContainer.removeView(mView);
 
-         mContainer = new RelativeLayout(mContext);
          mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
          RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
          videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
@@ -366,11 +368,13 @@ implements SensorEventListener
       }
 
 
+      /*
       if (sensorManager != null)
       {
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_GAME);
       }
+      */
    }
 
    public void onNMEFinish()
@@ -499,13 +503,15 @@ implements SensorEventListener
       
       if (type == Sensor.TYPE_ACCELEROMETER)
       {
-         accelData = event.values.clone();
-         NME.onAccelerate(-accelData[0], -accelData[1], accelData[2]);
+         // this should not be done on the gui thread
+         //accelData = event.values.clone();
+         //NME.onAccelerate(-accelData[0], -accelData[1], accelData[2]);
       }
       
       if (type == Sensor.TYPE_MAGNETIC_FIELD)
       {
-         magnetData = event.values.clone();
+         // this should not be done on the gui thread
+         //magnetData = event.values.clone();
          //Log.d("GameActivity","new mag: " + magnetData[0] + ", " + magnetData[1] + ", " + magnetData[2]);
       }
    }
@@ -539,6 +545,7 @@ implements SensorEventListener
    @Override public void onResume()
    {
       doResume();
+      Log.d(TAG,"super resume");
       super.onResume();
    }
    
@@ -553,12 +560,14 @@ implements SensorEventListener
          if (foundRotationMatrix)
          {
             SensorManager.getOrientation(rotationMatrix, orientData);
-            NME.onOrientationUpdate(orientData[0], orientData[1], orientData[2]);
+            // this should not be done on the gui thread
+            // NME.onOrientationUpdate(orientData[0], orientData[1], orientData[2]);
          }
       }
       
-      NME.onDeviceOrientationUpdate(prepareDeviceOrientation());
-      NME.onNormalOrientationFound(bufferedNormalOrientation);
+      // this should not be done on the gui thread
+      //NME.onDeviceOrientationUpdate(prepareDeviceOrientation());
+      //NME.onNormalOrientationFound(bufferedNormalOrientation);
       ::end::
    }
 

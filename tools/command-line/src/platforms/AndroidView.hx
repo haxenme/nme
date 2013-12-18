@@ -96,7 +96,7 @@ class AndroidView extends Platform
       context.ANDROID_INSTALL_LOCATION = project.config.android.installLocation;
 
       context.ANDROIDVIEW = true;
-      context.ANDROID_API_LEVEL = 11;
+      context.ANDROID_API_LEVEL = AndroidHelper.getApiLevel(project,11);
 
       var packageDirectory = project.meta.packageName;
 

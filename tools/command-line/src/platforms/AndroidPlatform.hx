@@ -160,13 +160,18 @@ class AndroidPlatform extends Platform
       context.CPP_DIR = project.app.path + "/android/obj";
       context.ANDROID_INSTALL_LOCATION = project.config.android.installLocation;
 
-      var android_platform = Sys.getEnv("ANDROID_SDK_PLATFORM");
+      var android_platform = project.environment.get("ANDROID_SDK_PLATFORM");
+      var apiLevel:Null<Int> = 0;
       if (android_platform!=null && android_platform.length>0)
-         context.ANDROID_SDK_PLATFORM = android_platform;
-      else
-         context.ANDROID_SDK_PLATFORM = "android-8";
+      { 
+         if (android_platform.substr(0,8)=="android-")
+            android_platform = android_platform.substr(8);
+         apiLevel = Std.parseInt(android_platform);
+      }
 
-      context.ANDROID_API_LEVEL = 8;
+      if (apiLevel<8 || apiLevel==null) apiLevel = 8;
+
+      context.ANDROID_API_LEVEL = AndroidHelper.getApiLevel(project, apiLevel);
 
       var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi" ];
       var iconSizes = [ 36, 48, 72, 96 ];

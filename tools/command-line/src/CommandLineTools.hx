@@ -597,11 +597,15 @@ class CommandLineTools
          case "iosview":
             targetFlags.set("ios", "");
             targetFlags.set("iosview", "");
+            targetFlags.set("nativeview", "");
+            haxedefs.push("nativeview");
             target = Platform.IOSVIEW;
 
          case "androidview":
             targetFlags.set("android", "");
             targetFlags.set("androidview", "");
+            targetFlags.set("nativeview", "");
+            haxedefs.push("nativeview");
             target = Platform.ANDROIDVIEW;
 
          case "iphonesim":

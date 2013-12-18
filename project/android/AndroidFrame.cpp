@@ -11,7 +11,6 @@
 #include <android/log.h>
 #include "AndroidCommon.h"
 
-#include <assert.h>
 #include <sys/types.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -561,9 +560,19 @@ AAsset *AndroidGetAsset(const char *inResource)
       return 0;
    
    jobject assetManager = (jobject)env->CallStaticObjectMethod(cls, mid);
-   assert(0 != assetManager);
+   if (assetManager==0)
+   {
+      //LOG("Could not find assetManager for asset %s", inResource);
+      return 0;
+   }
+
    AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
-   assert(0 != mgr);
+   if (mgr==0)
+   {
+      LOG("Could not create assetManager for asset %s", inResource);
+      return 0;
+   }
+
    return AAssetManager_open(mgr, inResource, AASSET_MODE_UNKNOWN);
 }
 
@@ -615,7 +624,8 @@ FileInfo AndroidGetAssetFD(const char *inResource)
    if (asset)
    {
       info.fd = AAsset_openFileDescriptor(asset, &info.offset, &info.length);
-      assert(0 <= fd);
+      if (info.fd <=0 )
+         LOG("Bad asset : %s", inResource);
       AAsset_close(asset);
    }
    

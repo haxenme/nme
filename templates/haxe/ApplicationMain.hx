@@ -36,7 +36,7 @@ class ApplicationMain
    {
       #if cpp
       ::if MEGATRACE::
-         cpp.vm.ExecutionTrace.traceLines();
+      untyped __global__.__hxcpp_execution_trace(2);
       ::end::
       #end
 

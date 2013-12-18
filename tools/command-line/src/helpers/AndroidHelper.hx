@@ -44,6 +44,31 @@ class AndroidHelper
       ProcessHelper.runCommand(projectDirectory, ant, [ build ]);
    }
 
+   public static function getApiLevel(project:NMEProject, inMinimum:Int) : Int
+   { 
+      var result = inMinimum;
+      if (project.environment.exists("ANDROID_SDK"))
+         try
+         {
+            var best = 999999;
+            var dir = project.environment.get("ANDROID_SDK");
+            for(file in FileSystem.readDirectory(dir+"/platforms"))
+            {
+               if (file.substr(0,8)=="android-")
+               {
+                  var val = Std.parseInt(file.substr(8));
+                  if (val>=inMinimum && val<best)
+                  {
+                     result = val;
+                     best = val;
+                  }
+               }
+            }
+         } catch(e:Dynamic){}
+
+     return result;
+   }
+
    private static function getADB(project:NMEProject):Void 
    {
       adbPath = project.environment.get("ANDROID_SDK") + "/tools/";
