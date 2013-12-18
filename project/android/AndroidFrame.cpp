@@ -683,159 +683,121 @@ bool GetAcceleration(double& outX, double& outY, double& outZ) {
 extern "C"
 {
 
-#ifdef __GNUC__
-  #define JAVA_EXPORT __attribute__ ((visibility("default"))) JNIEXPORT
-#else
-  #define JAVA_EXPORT JNIEXPORT
-#endif
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
-   __android_log_print(ANDROID_LOG_INFO, "Resize", "%p  %d,%d", nme::sFrame, width, height);
+   AutoHaxe haxe("onResize");
    if (nme::sFrame)
       nme::sFrame->onResize(width,height);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onRender");
    //double t0 = nme::GetTimeStamp();
    //__android_log_print(ANDROID_LOG_INFO, "NME", "NME onRender: %p", nme::sStage );
    if (nme::sStage)
       nme::sStage->OnRender();
    //__android_log_print(ANDROID_LOG_INFO, "NME", "Haxe Time: %f", nme::GetTimeStamp()-t0);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onNormalOrientationFound(JNIEnv * env, jobject obj, jint orientation)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onOrientation");
    if (nme::sStage)
       nme::sStage->OnNormalOrientationFound(orientation);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onDeviceOrientationUpdate(JNIEnv * env, jobject obj, jint orientation)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onDeviceOrientation");
    if (nme::sStage)
       nme::sStage->OnDeviceOrientationUpdate(orientation);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onOrientationUpdate(JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onUpdateOrientation");
    if (nme::sStage)
       nme::sStage->OnOrientationUpdate(x,y,z);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onAccelerate(JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onAcceration");
    if (nme::sStage)
       nme::sStage->OnAccelerate(x,y,z);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id, jfloat sizeX, jfloat sizeY)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onTouch");
    if (nme::sStage)
       nme::sStage->OnTouch(type,x,y,id,sizeX,sizeY);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject obj, jfloat dx, jfloat dy)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onTrackball");
    if (nme::sStage)
       nme::sStage->OnTrackball(dx,dy);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int code, bool down)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onKey");
    if (nme::sStage)
       nme::sStage->OnKey(code,down);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyChange(JNIEnv * env, jobject obj, int deviceId, int code, bool down)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onJoy");
    if (nme::sStage)
       nme::sStage->OnJoy(deviceId,code,down);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyMotion(JNIEnv * env, jobject obj, int deviceId, int axis, float value)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onJoyMotion");
    if (nme::sStage)
       nme::sStage->OnJoyMotion(deviceId,axis,value);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onPoll");
    if (nme::sStage)
       nme::sStage->OnPoll();
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
 JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobject obj)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onGetNextWake");
    if (nme::sStage)
-	{
-      double delta = nme::sStage->GetNextWake()-nme::GetTimeStamp();
-      gc_set_top_of_stack(0,true);
-      return delta;
-	}
-   gc_set_top_of_stack(0,true);
+      return nme::sStage->GetNextWake()-nme::GetTimeStamp();
    return 3600*100000;
 }
 
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject obj, int inVal)
 {
-   int top = 0;
-   gc_set_top_of_stack(&top,true);
+   AutoHaxe haxe("onActivity");
    if (nme::sStage)
       nme::sStage->onActivityEvent(inVal);
-   gc_set_top_of_stack(0,true);
    return nme::GetResult();
 }
 
