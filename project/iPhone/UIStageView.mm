@@ -1029,6 +1029,9 @@ class IOSVideo : public StageVideo
    bool                    playing;
    bool                    stopped;
 
+   double                  seekPending;
+   double                  timeAtLastSeek;
+
 public:
    IOSVideo(NMEStage *inStage,double inPointScale)
    {
@@ -1044,6 +1047,8 @@ public:
       active = true;
       playing = false;
       stopped = false;
+      seekPending = -999;
+      timeAtLastSeek = 0;
       printf("New video\n");
    }
 
@@ -1130,13 +1135,25 @@ public:
       destroy();
    }
    
+   void sendSeekStatus(int inCode, double inRequest)
+   {
+      int top = 0;
+      gc_set_top_of_stack(&top,false);
+
+      int seekFromId =  val_id("seekFrom");
+      alloc_field( mOwner.get(), seekFromId, alloc_float(inRequest) );
+      int codeId =  val_id("seekCode");
+      alloc_field( mOwner.get(), codeId, alloc_int(inCode) );
+ 
+      int f =  val_id("_native_on_seek");
+      val_ocall0(mOwner.get(), f);
+   }
 
    void sendMeta()
    {
       int top = 0;
       gc_set_top_of_stack(&top,false);
 
-      value args[] = {  alloc_int(videoWidth), alloc_int(videoHeight), alloc_float(duration) };
       int widthId =  val_id("videoWidth");
       alloc_field( mOwner.get(), widthId, alloc_int(videoWidth) );
       int heightId =  val_id("videoHeight");
@@ -1167,6 +1184,11 @@ public:
    void seek(double inTime)
    {
       printf("video: seek %f\n", inTime);
+      if (seekPending<0)
+      {
+         timeAtLastSeek = player.currentPlaybackTime;
+         seekPending = inTime;
+      }
       player.currentPlaybackTime = inTime;
    }
 
@@ -1261,8 +1283,20 @@ public:
       */
    }
 
+   void onPoll()
+   {
+      if (player && seekPending>=0 && player.currentPlaybackTime != timeAtLastSeek )
+      if (seekPending>=0)
+      {
+         double val = seekPending;
+         seekPending = -9999;
+         sendSeekStatus(0,val);
+      }
+   }
+
    void onBufferingStateChange()
    { 
+      //printf("onBufferingStateChange %d\n", player.loadState);
       switch(player.loadState)
       {
          case MPMovieLoadStateUnknown: break;
@@ -1274,10 +1308,11 @@ public:
     
    void onPlaybackStateChange()
    { 
+      //printf("State changed %d\n", player.playbackState);
       switch(player.playbackState)
       {
          case MPMoviePlaybackStateStopped: break;
-         case MPMoviePlaybackStatePlaying: break;
+         case MPMoviePlaybackStatePlaying:
          case MPMoviePlaybackStatePaused: break;
          case MPMoviePlaybackStateInterrupted: break;
          case MPMoviePlaybackStateSeekingForward: break;
@@ -1305,6 +1340,7 @@ public:
    
    void onPreparedStateChanged()
    { 
+      printf("onPreparedStateChanged\n");
    }
     
    void onFinished()
@@ -1612,6 +1648,9 @@ void NMEStage::OnEvent(Event &inEvt)
 {
    int top = 0;
    gc_set_top_of_stack(&top,false);
+
+   if (inEvt.type==etPoll && video)
+      video->onPoll();
 
    if ((inEvt.type==etActivate || inEvt.type==etDeactivate) && video)
       video->setActive(inEvt.type==etActivate);

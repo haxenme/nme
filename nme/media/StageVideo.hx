@@ -9,6 +9,8 @@ import nme.geom.Rectangle;
 import nme.net.NetStream;
 import nme.display.Stage;
 import nme.Loader;
+import nme.events.NetStatusEvent;
+
 
 class StageVideo extends EventDispatcher
 {
@@ -28,6 +30,9 @@ class StageVideo extends EventDispatcher
 
    inline static var PAUSE_LEN = -3;
    inline static var ALL_LEN = -1;
+
+   private var seekFrom:Float;
+   private var seekCode:Int;
 
    var nmeHandle:Dynamic;
    var nmePan:Point;
@@ -250,6 +255,21 @@ class StageVideo extends EventDispatcher
          }
       }
    }
+
+   @:keep private function _native_on_seek()
+   {
+      if (nmeNetStream!=null)
+      {
+          var code = seekCode==0 ?  "NetStream.Seek.Notify" : "";
+          if (code!="")
+          {
+             var info:Dynamic = { code:code, seekPoint:seekFrom };
+             var event = new NetStatusEvent(NetStatusEvent.NET_STATUS,false,false,info);
+             nmeNetStream.dispatchEvent(event);
+          }
+      }
+   }
+
 
 
 

@@ -104,6 +104,7 @@ class Main extends Sprite
           stream.client = client;
 
           stream.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);
+          stream.addEventListener(NetStatusEvent.NET_STATUS,netStatusHandler); 
  
           //video.viewPort = new nme.geom.Rectangle(0,0,500,500);
           video.addEventListener(StageVideoEvent.RENDER_STATE, onRenderState);
@@ -270,6 +271,9 @@ class Main extends Sprite
              
          case "NetStream.Publish.BadName":
             trace("Please check the name of the publishing stream" );
+
+         case "NetStream.Seek.Notify":
+            trace("Seek complete");
       }
    }
 
