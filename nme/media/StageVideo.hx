@@ -270,6 +270,12 @@ class StageVideo extends EventDispatcher
       }
    }
 
+   @:keep private function _native_on_seek_data(inCode:Int, inWhen:Float)
+   {
+      seekCode = inCode;
+      seekFrom = inWhen;
+      _native_on_seek();
+   }
 
 
 

@@ -45,6 +45,7 @@ public class NMEVideoView extends VideoView implements
         MediaPlayer.OnCompletionListener,
         MediaPlayer.OnErrorListener,
         MediaPlayer.OnInfoListener,
+        MediaPlayer.OnSeekCompleteListener,
         MediaPlayer.OnPreparedListener
 {
    static final String TAG = "NMEVideoView";
@@ -61,6 +62,8 @@ public class NMEVideoView extends VideoView implements
    boolean susPlaying = false;
    int susPosition = 0;
 
+   double seekPending;
+
    public NMEVideoView(GameActivity inActiviy,HaxeObject inHandler)
    {
       super(inActiviy.mContext);
@@ -71,6 +74,7 @@ public class NMEVideoView extends VideoView implements
       setOnErrorListener(this);
       // API 17 - setOnInfoListener(this);
       setOnPreparedListener(this);
+      seekPending = -999;
    }
 
    public void nmeSuspend()
@@ -115,14 +119,26 @@ public class NMEVideoView extends VideoView implements
       Log.d(TAG,"onPrepared");
       mPreparedMp = mp;
       mPreparedMp.setVolume(volume, volume);
+      mPreparedMp.setOnSeekCompleteListener(this);
       videoWidth = mp.getVideoWidth();
       videoHeight = mp.getVideoHeight();
-
- 
 
       Log.d(TAG," size: " + videoWidth + "x" + videoHeight );
       activity.setVideoLayout();
       sendMetaDataAsync();
+   }
+   public void onSeekComplete(MediaPlayer mp)
+   {
+      if (seekPending>=0)
+      {
+         final double val = seekPending;
+         seekPending = -999;
+
+         final NMEVideoView me = this;
+         GameActivity.activity.getMainView().queueEvent(new Runnable(){ public void run() {
+            me.sendSeekCompleteSync(0,val);
+       }});
+      }
    }
 
    public void setVolumeSync(double inVal)
@@ -143,12 +159,23 @@ public class NMEVideoView extends VideoView implements
          start();
    }
 
-   public static void nmeSeek(double inTo)
+   public void doSeek(double inTo)
    {
       Log.d(TAG,"seek " + inTo);
-      NMEVideoView vv = GameActivity.activity.mVideoView;
-      if (vv!=null)
-         vv.seekTo((int)(inTo*1000.0));
+
+      if (seekPending<0)
+         seekPending = inTo;
+      seekTo((int)(inTo*1000.0));
+   }
+
+   public static void nmeSeek(final double inTo)
+   {
+      final GameActivity a = GameActivity.activity;
+      a.queueRunnable( new Runnable() { @Override public void run() {
+          if (a.mVideoView!=null)
+          {
+             a.mVideoView.doSeek(inTo);
+          } } } );
    }
 
    public static void nmeSetVolume(final double inTo)
@@ -246,6 +273,11 @@ public class NMEVideoView extends VideoView implements
       if (vv!=null)
          return vv.getCurrentPosition() * 0.001;
       return 0.0;
+   }
+
+   public void sendSeekCompleteSync(int inVal, double inTime)
+   {
+      handler.call2("_native_on_seek_data", inVal, inTime );
    }
 
    public void sendMetaDataSync()
