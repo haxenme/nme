@@ -406,6 +406,13 @@ implements SensorEventListener
 
    }
 
+   public void sendToView(java.lang.Runnable runnable)
+   {
+      if (mView!=null)
+         mView.queueEvent(runnable);
+   }
+
+
    public static AssetManager getAssetManager()
    {
       return mAssets;
