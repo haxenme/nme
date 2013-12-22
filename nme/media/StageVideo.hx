@@ -24,12 +24,37 @@ class StageVideo extends EventDispatcher
    public var pan(get_pan,set_pan) : Point;
    public var zoom(get_zoom,set_zoom) : Point;
 
+   inline static var playComplete = "NetStream.Play.Complete"; // Not ios
+   inline static var playSwitch = "NetStream.Play.Switch";
+   inline static var playTransitionComplete = "NetStream.Play.TransitionComplete";
+   //inline static var noSupportedTrackFound = "NetStream.Play.NoSupportedTrackFound"; // Not ios
+   //inline static var fileStructureInvalid = "NetStream.Play.FileStructureInvalid"; // Not ios
+   inline static var playStreamNotFound = "NetStream.Play.StreamNotFound"; // Not ios
+   inline static var playFailed = "NetStream.Play.Failed";  // Not ios
+
+   inline static var seekFailed = "NetStream.Seek.Failed";  // not seekable?
+   inline static var seekNotify = "NetStream.Seek.Notify";
+   inline static var seekInvalidTime = "NetStream.Seek.InvalidTime";  // details contains last valid time
+
+   inline static var failed = "NetStream.Failed"; // Other
+
    inline static var PAUSE = 0;
    inline static var RESUME = 1;
    inline static var TOGGLE = 2;
 
    inline static var PAUSE_LEN = -3;
    inline static var ALL_LEN = -1;
+
+   inline static var PLAY_STATUS_COMPLETE = 0;
+   inline static var PLAY_STATUS_SWITCH = 1;
+   inline static var PLAY_STATUS_TRANSITION = 2;
+   inline static var PLAY_STATUS_ERROR = 3;
+   inline static var PLAY_STATUS_NOT_STARTED = 4;
+
+   inline static var SEEK_FINISHED_OK = 0;
+   inline static var SEEK_FINISHED_EARLY = 1;
+   inline static var SEEK_FINISHED_ERROR = 2;
+
 
    private var seekFrom:Float;
    private var seekCode:Int;
@@ -248,10 +273,29 @@ class StageVideo extends EventDispatcher
          var client = nmeNetStream.client;
          if (client!=null && client.onPlayStatus!=null)
          {
-             var code = inStatus==0 ?  "NetStream.Play.Complete" :
-                        inStatus==1 ? "NetStream.Play.Switch" :
-                        "NetStream.Play.TransitionComplete";
-             client.onPlayStatus(code);
+             switch(inStatus)
+             {
+                 case PLAY_STATUS_COMPLETE :
+                    client.onPlayStatus(playComplete);
+                 case PLAY_STATUS_SWITCH :
+                    client.onPlayStatus(playSwitch);
+                 case PLAY_STATUS_TRANSITION :
+                    client.onPlayStatus(playTransitionComplete);
+             }
+         }
+
+         var info:Dynamic = null;
+         switch(inStatus)
+         {
+              case PLAY_STATUS_NOT_STARTED :
+                info = { code:playStreamNotFound  };
+              case PLAY_STATUS_ERROR :
+                info = { code:playFailed  };
+         }
+         if (info!=null)
+         {
+            var event = new NetStatusEvent(NetStatusEvent.NET_STATUS,false,false,info);
+            nmeNetStream.dispatchEvent(event);
          }
       }
    }
@@ -260,10 +304,19 @@ class StageVideo extends EventDispatcher
    {
       if (nmeNetStream!=null)
       {
-          var code = seekCode==0 ?  "NetStream.Seek.Notify" : "";
-          if (code!="")
+          var info:Dynamic = null;
+          switch(seekCode)
           {
-             var info:Dynamic = { code:code, seekPoint:seekFrom };
+             case SEEK_FINISHED_OK:
+                info = { code:seekNotify, seekPoint:seekFrom };
+             case SEEK_FINISHED_EARLY:
+                info = { code:seekInvalidTime, details:seekFrom };
+             case SEEK_FINISHED_ERROR:
+                info = { code:seekFailed, seekPoint:seekFrom };
+          }
+
+          if (info!=null)
+          {
              var event = new NetStatusEvent(NetStatusEvent.NET_STATUS,false,false,info);
              nmeNetStream.dispatchEvent(event);
           }

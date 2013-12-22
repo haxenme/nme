@@ -64,6 +64,18 @@ public class NMEVideoView extends VideoView implements
 
    double seekPending;
 
+   final static int PLAY_STATUS_COMPLETE = 0;
+   final static int PLAY_STATUS_SWITCH = 1;
+   final static int PLAY_STATUS_TRANSITION = 2;
+   final static int PLAY_STATUS_ERROR = 3;
+   final static int PLAY_STATUS_NOT_STARTED = 4;
+
+   final static int SEEK_FINISHED_OK = 0;
+   final static int SEEK_FINISHED_EARLY = 1;
+   final static int SEEK_FINISHED_ERROR = 2;
+
+
+
    public NMEVideoView(GameActivity inActiviy,HaxeObject inHandler)
    {
       super(inActiviy.mContext);
@@ -99,12 +111,30 @@ public class NMEVideoView extends VideoView implements
    public void onCompletion(MediaPlayer mp)
    {
       Log.d(TAG,"onComplete!");
-      sendStatusCode(0);
+      if (seekPending>=0)
+      {
+         seekPending = -999;
+         sendSeekStatus(SEEK_FINISHED_EARLY,duration);
+      }
+      sendStatusCode(PLAY_STATUS_COMPLETE);
    }
 
    public boolean onError(MediaPlayer mp, int what, int extra)
    {
       Log.d(TAG,"onError!");
+      if (seekPending>=0)
+      {
+         double val = seekPending;
+         seekPending = -999;
+         sendSeekStatus(SEEK_FINISHED_ERROR,val);
+      }
+
+
+      if (mPreparedMp==null)
+         sendStatusCode(PLAY_STATUS_NOT_STARTED);
+      else
+         sendStatusCode(PLAY_STATUS_ERROR);
+ 
       return false;
    }
 
@@ -127,17 +157,22 @@ public class NMEVideoView extends VideoView implements
       activity.setVideoLayout();
       sendMetaDataAsync();
    }
+
+   public void sendSeekStatus(final int inCode, final double inValue)
+   {
+         final NMEVideoView me = this;
+         GameActivity.activity.getMainView().queueEvent(new Runnable(){ public void run() {
+            me.sendSeekCompleteSync(inCode,inValue);
+       }});
+   }
+
    public void onSeekComplete(MediaPlayer mp)
    {
       if (seekPending>=0)
       {
          final double val = seekPending;
          seekPending = -999;
-
-         final NMEVideoView me = this;
-         GameActivity.activity.getMainView().queueEvent(new Runnable(){ public void run() {
-            me.sendSeekCompleteSync(0,val);
-       }});
+         sendSeekStatus(SEEK_FINISHED_OK, val);
       }
    }
 

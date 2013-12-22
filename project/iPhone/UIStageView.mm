@@ -1028,6 +1028,7 @@ class IOSVideo : public StageVideo
    bool                    active;
    bool                    playing;
    bool                    stopped;
+   bool                    seenPrepared;
 
    double                  seekPending;
    double                  timeAtLastSeek;
@@ -1049,6 +1050,7 @@ public:
       stopped = false;
       seekPending = -999;
       timeAtLastSeek = 0;
+      seenPrepared = false;
       printf("New video\n");
    }
 
@@ -1116,10 +1118,14 @@ public:
       [[player view] setFrame:viewport];
 
 
+      seenPrepared = false;
+      seekPending = -999;
+
       if (inLength== PAUSE_LEN)
       {
          printf("Init paused...");
          [player prepareToPlay];
+         playing = false;
       }
       else
       {
@@ -1286,11 +1292,10 @@ public:
    void onPoll()
    {
       if (player && seekPending>=0 && player.currentPlaybackTime != timeAtLastSeek )
-      if (seekPending>=0)
       {
          double val = seekPending;
          seekPending = -9999;
-         sendSeekStatus(0,val);
+         sendSeekStatus(SEEK_FINISHED_OK,val);
       }
    }
 
@@ -1341,11 +1346,43 @@ public:
    void onPreparedStateChanged()
    { 
       printf("onPreparedStateChanged\n");
+      if (player.isPreparedToPlay)
+        seenPrepared = true;
    }
     
-   void onFinished()
+   void onFinished(int reason)
    { 
-      sendState( PLAY_STATUS_COMPLETE );
+
+      if (reason == MPMovieFinishReasonPlaybackEnded)
+      {
+         // movie finished playin
+         if (seekPending>=0)
+         {
+            seekPending = -999;
+            sendSeekStatus(SEEK_FINISHED_EARLY,duration);
+         }
+         sendState( PLAY_STATUS_COMPLETE );
+      }
+      else if (reason == MPMovieFinishReasonUserExited)
+      {
+         //user hit the done button - is this complete?
+         sendState( PLAY_STATUS_COMPLETE );
+      }
+      else if (reason == MPMovieFinishReasonPlaybackError)
+      {
+         //error
+         if (seekPending>=0)
+         {
+            double val = seekPending;
+            seekPending = -999;
+            sendSeekStatus(SEEK_FINISHED_ERROR,val);
+         }
+         if (seenPrepared)
+            sendState( PLAY_STATUS_NOT_STARTED );
+         else
+            sendState( PLAY_STATUS_ERROR );
+      }
+
    }
     
 
@@ -1365,7 +1402,8 @@ public:
 -(void)moviePlayBackDidFinish:(NSNotification*)notification
 {
    printf("moviePlayBackDidFinish\n");
-   video->onFinished();
+   int reason = [[[notification userInfo] valueForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey] intValue];
+   video->onFinished(reason);
 }
 
 -(void)loadStateDidChange:(NSNotification *)notification
