@@ -296,17 +296,20 @@ public:
          Vertices &tex_coords = arrays.mTexCoords;
          bool persp = arrays.mFlags & HardwareArrays::PERSPECTIVE;
          
-         if ( !arrays.mViewport.empty() ) {
-            SetViewport( Rect( arrays.mViewport[ 0 ], arrays.mViewport[ 1 ], arrays.mViewport[ 2 ], arrays.mViewport[ 3 ] ) );   
-         }
-         
-         if ( arrays.mFlags & HardwareArrays::BM_ADD ) {
-           glBlendFunc( GL_SRC_ALPHA, GL_ONE );
-		 } else if (  arrays.mFlags & HardwareArrays::BM_MULTIPLY ) {
-           glBlendFunc( GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-		 } else if (  arrays.mFlags & HardwareArrays::BM_SCREEN ) {
+         if (arrays.mFlags & HardwareArrays::BM_ADD )
+         {
+            glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+		   }
+         else if (arrays.mFlags & HardwareArrays::BM_MULTIPLY )
+         {
+            glBlendFunc( GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+		   }
+         else if (arrays.mFlags & HardwareArrays::BM_SCREEN )
+         {
            glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
-         } else {
+         }
+         else
+         {
            #ifdef NME_PREMULTIPLIED_ALPHA
            glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
            #else
