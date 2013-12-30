@@ -1047,7 +1047,7 @@ public:
       duration = 0;
       active = true;
       playing = false;
-      stopped = false;
+      stopped = true;
       seekPending = -999;
       timeAtLastSeek = 0;
       seenPrepared = false;
@@ -1078,8 +1078,15 @@ public:
       controls to the existing view hierarchy.
       */
   
-      stopped = false;
+      if (!stopped && player)
+      {
+         printf("Stop player\n");
+         [player stop];
+         stopped = true;
+      }
+
       lastUrl = inUrl;
+      bool isLocal = true;
       std::string local = gAssetBase + lastUrl;
    
       NSString *str = [[NSString alloc] initWithUTF8String:local.c_str()];
@@ -1090,23 +1097,23 @@ public:
       // Treat as absolute url...
       if (localUrl==nil)
       {
+         isLocal = false;
          localUrl = [[NSURL alloc] initWithString:[[NSString alloc] initWithUTF8String:inUrl ] ];
       }
 
-      printf("Loading : %s\n", [[localUrl absoluteString] UTF8String]);
+      // TODO - isLocal for loca file, not asset (http?)
 
+      printf("Loading : %s(%s)\n", [[localUrl absoluteString] UTF8String], isLocal?"local":"streaming");
 
       if (player==0)
       {
-         player = [[MPMoviePlayerController alloc] initWithContentURL:localUrl];
+         player = [[MPMoviePlayerController alloc] init];
          player.controlStyle = MPMovieControlStyleNone;
          handler = [[PlayerHandler alloc] initWithVideo:this player:player ];
       }
-      else
-      {
-         player.contentURL = localUrl;
 
-      }
+      player.movieSourceType = isLocal ? MPMovieSourceTypeFile : MPMovieSourceTypeStreaming;
+      player.contentURL = localUrl;
 
       stage->onVideoPlay();
 
@@ -1118,6 +1125,7 @@ public:
       [[player view] setFrame:viewport];
 
 
+      stopped = false;
       videoWidth = 0;
       videoHeight = 0;
       duration = 0;
@@ -1284,7 +1292,7 @@ public:
    {
       printf("video: destroy\n");
       lastUrl = "";
-      if (player)
+      if (player && !stopped)
       {
          printf("STOP\n");
          stopped = true;
