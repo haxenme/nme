@@ -1113,11 +1113,14 @@ public:
       if (!vpIsSet)
          viewport = stage->getViewBounds();
 
-      printf("Player size %fx%f\n", viewport.size.width, viewport.size.height );
+      //printf("Player viewport %fx%f\n", viewport.size.width, viewport.size.height );
 
       [[player view] setFrame:viewport];
 
 
+      videoWidth = 0;
+      videoHeight = 0;
+      duration = 0;
       seenPrepared = false;
       seekPending = -999;
 
@@ -1237,9 +1240,13 @@ public:
       if (!stopped)
       {
          if (playing && active)
+         {
             [player play];
+         }
          else
+         {
             [player pause];
+         }
       }
    }
 
@@ -1299,8 +1306,23 @@ public:
       }
    }
 
+   void checkSize()
+   {
+      CGSize size = player.naturalSize;
+      int w = (int)size.width;
+      int h = (int)size.height;
+      if (w!=videoWidth || h!=videoHeight)
+      {
+         videoWidth = w;
+         videoHeight = h;
+         if (duration>0)
+            sendMeta();
+      }
+   }
+
    void onBufferingStateChange()
    { 
+      checkSize();
       //printf("onBufferingStateChange %d\n", player.loadState);
       switch(player.loadState)
       {
@@ -1313,6 +1335,7 @@ public:
     
    void onPlaybackStateChange()
    { 
+      checkSize();
       //printf("State changed %d\n", player.playbackState);
       switch(player.playbackState)
       {
@@ -1338,14 +1361,18 @@ public:
    void onMovieDurationAvailable()
    {
       duration = player.duration;
+      printf("onMovieDurationAvailable %f (%dx%d)\n", duration, videoWidth, videoHeight);
+ 
       if (videoWidth>0)
-        sendMeta();
+         sendMeta();
+      else
+         checkSize();
    }
 
    
    void onPreparedStateChanged()
    { 
-      printf("onPreparedStateChanged\n");
+      checkSize();
       if (player.isPreparedToPlay)
         seenPrepared = true;
    }
@@ -1370,6 +1397,7 @@ public:
       }
       else if (reason == MPMovieFinishReasonPlaybackError)
       {
+         lastUrl = "";
          //error
          if (seekPending>=0)
          {
