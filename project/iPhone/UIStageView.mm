@@ -1047,7 +1047,7 @@ public:
       duration = 0;
       active = true;
       playing = false;
-      stopped = false;
+      stopped = true;
       seekPending = -999;
       timeAtLastSeek = 0;
       seenPrepared = false;
@@ -1078,8 +1078,15 @@ public:
       controls to the existing view hierarchy.
       */
   
-      stopped = false;
+      if (!stopped && player)
+      {
+         printf("Stop player\n");
+         [player stop];
+         stopped = true;
+      }
+
       lastUrl = inUrl;
+      bool isLocal = true;
       std::string local = gAssetBase + lastUrl;
    
       NSString *str = [[NSString alloc] initWithUTF8String:local.c_str()];
@@ -1090,34 +1097,38 @@ public:
       // Treat as absolute url...
       if (localUrl==nil)
       {
+         isLocal = false;
          localUrl = [[NSURL alloc] initWithString:[[NSString alloc] initWithUTF8String:inUrl ] ];
       }
 
-      printf("Loading : %s\n", [[localUrl absoluteString] UTF8String]);
+      // TODO - isLocal for loca file, not asset (http?)
 
+      printf("Loading : %s(%s)\n", [[localUrl absoluteString] UTF8String], isLocal?"local":"streaming");
 
       if (player==0)
       {
-         player = [[MPMoviePlayerController alloc] initWithContentURL:localUrl];
+         player = [[MPMoviePlayerController alloc] init];
          player.controlStyle = MPMovieControlStyleNone;
          handler = [[PlayerHandler alloc] initWithVideo:this player:player ];
       }
-      else
-      {
-         player.contentURL = localUrl;
 
-      }
+      player.movieSourceType = isLocal ? MPMovieSourceTypeFile : MPMovieSourceTypeStreaming;
+      player.contentURL = localUrl;
 
       stage->onVideoPlay();
 
       if (!vpIsSet)
          viewport = stage->getViewBounds();
 
-      printf("Player size %fx%f\n", viewport.size.width, viewport.size.height );
+      //printf("Player viewport %fx%f\n", viewport.size.width, viewport.size.height );
 
       [[player view] setFrame:viewport];
 
 
+      stopped = false;
+      videoWidth = 0;
+      videoHeight = 0;
+      duration = 0;
       seenPrepared = false;
       seekPending = -999;
 
@@ -1237,9 +1248,13 @@ public:
       if (!stopped)
       {
          if (playing && active)
+         {
             [player play];
+         }
          else
+         {
             [player pause];
+         }
       }
    }
 
@@ -1277,7 +1292,7 @@ public:
    {
       printf("video: destroy\n");
       lastUrl = "";
-      if (player)
+      if (player && !stopped)
       {
          printf("STOP\n");
          stopped = true;
@@ -1299,8 +1314,23 @@ public:
       }
    }
 
+   void checkSize()
+   {
+      CGSize size = player.naturalSize;
+      int w = (int)size.width;
+      int h = (int)size.height;
+      if (w!=videoWidth || h!=videoHeight)
+      {
+         videoWidth = w;
+         videoHeight = h;
+         if (duration>0)
+            sendMeta();
+      }
+   }
+
    void onBufferingStateChange()
    { 
+      checkSize();
       //printf("onBufferingStateChange %d\n", player.loadState);
       switch(player.loadState)
       {
@@ -1313,6 +1343,7 @@ public:
     
    void onPlaybackStateChange()
    { 
+      checkSize();
       //printf("State changed %d\n", player.playbackState);
       switch(player.playbackState)
       {
@@ -1338,14 +1369,18 @@ public:
    void onMovieDurationAvailable()
    {
       duration = player.duration;
+      printf("onMovieDurationAvailable %f (%dx%d)\n", duration, videoWidth, videoHeight);
+ 
       if (videoWidth>0)
-        sendMeta();
+         sendMeta();
+      else
+         checkSize();
    }
 
    
    void onPreparedStateChanged()
    { 
-      printf("onPreparedStateChanged\n");
+      checkSize();
       if (player.isPreparedToPlay)
         seenPrepared = true;
    }
@@ -1370,6 +1405,7 @@ public:
       }
       else if (reason == MPMovieFinishReasonPlaybackError)
       {
+         lastUrl = "";
          //error
          if (seekPending>=0)
          {
