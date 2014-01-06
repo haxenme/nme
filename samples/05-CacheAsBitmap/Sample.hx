@@ -63,11 +63,12 @@ public function new()
    var ratios = [ 0, 255 ];
    var mtx = new Matrix();
    // Define positive quadrant ...
+   var focal = -0.9;
    mtx.createGradientBox(100,100, 0, 0,0);
    gfx.beginGradientFill(GradientType.RADIAL,
                        colours, alphas, ratios, mtx, SpreadMethod.REPEAT,
                        InterpolationMethod.LINEAR_RGB,
-                       -0.9 );
+                       focal );
    gfx.drawRect(0,0,100,100);
    addChild(circle);
 

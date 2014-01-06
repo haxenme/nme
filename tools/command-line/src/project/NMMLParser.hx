@@ -1168,7 +1168,7 @@ class NMMLParser extends NMEProject
                }
                else
                {
-                  LogHelper.error("Unknown window field: " + name);
+                  //LogHelper.error("Unknown window field: " + name);
                }
          }
       }

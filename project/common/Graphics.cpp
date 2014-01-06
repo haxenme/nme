@@ -600,56 +600,27 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 {
    Flush();
    
-   #ifdef NME_DIRECTFB
-   
-   for(int i=0;i<mJobs.size();i++)
-   {
-      GraphicsJob &job = mJobs[i];
-      
-      if (!job.mHardwareRenderer /*&& !job.mSoftwareRenderer*/)
-         job.mHardwareRenderer = Renderer::CreateHardware(job,*mPathData,*inTarget.mHardware);
-      
-      //if (!job.mSoftwareRenderer)
-         //job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
-      
-      if (inState.mPhase==rpHitTest)
-      {
-         if (job.mHardwareRenderer && job.mSoftwareRenderer->Hits(inState))
-         {
-            return true;
-         }
-         /*else if (job.mSoftwareRenderer && job.mSoftwareRenderer->Hits(inState))
-         {
-            return true;
-         }*/
-      }
-      else
-      {
-         if (job.mHardwareRenderer)
-            job.mHardwareRenderer->Render(inTarget,inState);
-         //else
-            //job.mSoftwareRenderer->Render(inTarget,inState);
-      }
-   }
-   
-   #else
-   
    if (inTarget.IsHardware())
    {
       if (!mHardwareData)
          mHardwareData = new HardwareData();
+      else if (!mHardwareData->isScaleOk(inState))
+      {
+         mHardwareData->clear();
+         mBuiltHardware = 0;
+      }
       
       while(mBuiltHardware<mJobs.size())
       {
-         BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData,*inTarget.mHardware);
+         BuildHardwareJob(mJobs[mBuiltHardware++],*mPathData,*mHardwareData,*inTarget.mHardware,inState);
       }
       
-      if (mHardwareData->mCalls.size())
+      if (mHardwareData && !mHardwareData->mElements.empty())
       {
          if (inState.mPhase==rpHitTest)
-            return inTarget.mHardware->Hits(inState,mHardwareData->mCalls);
+            return inTarget.mHardware->Hits(inState,*mHardwareData);
          else
-            inTarget.mHardware->Render(inState,mHardwareData->mCalls);
+            inTarget.mHardware->Render(inState,*mHardwareData);
       }
    }
    else
@@ -670,8 +641,6 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
       }
    }
    
-   #endif
-
    return false;
 }
 

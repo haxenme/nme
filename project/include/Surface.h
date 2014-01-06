@@ -6,6 +6,8 @@
 #include <ByteArray.h>
 #include <Filters.h>
 
+#include "Hardware.h"
+
 // ---- Surface API --------------
 
 namespace nme

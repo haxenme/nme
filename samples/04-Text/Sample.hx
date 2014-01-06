@@ -36,10 +36,9 @@ class MyFont extends NMEFont
    // Implementation should override
    override public function getGlyphInfo(inChar:Int) : NMEGlyphInfo
    {
-      switch(inChar)
+      if (inChar==A_CODE || inChar==B_CODE || inChar==C_CODE)
       {
-         case A_CODE, B_CODE, C_CODE:
-            return { width:height, height:height, advance:height + 2, offsetX:0, offsetY:0 };
+         return { width:height, height:height, advance:height + 2, offsetX:0, offsetY:0 };
       }
       return null;
    }
@@ -50,23 +49,24 @@ class MyFont extends NMEFont
       var gfx = shape.graphics;
       gfx.lineStyle(1,0x0000ff);
       var h = height * 0.05;
-      switch(inChar)
+      if (inChar==A_CODE)
       {
-         case A_CODE:
            gfx.moveTo(h*2, h*18);
            gfx.lineTo(h*10,h*2);
            gfx.lineTo(h*18,h*18);
            gfx.lineStyle(1,0xff0000);
            gfx.moveTo(h*5, h*10);
            gfx.lineTo(h*15,h*10);
-
-         case B_CODE:
+      }
+      else if (inChar==B_CODE)
+      {
            gfx.drawRect(h*2,h*2,h*16,h*16);
            gfx.moveTo(h*2,h*10);
            gfx.lineStyle(1,0xff0000);
            gfx.lineTo(h*18,h*10);
-
-         case C_CODE:
+      }
+      else if (inChar==C_CODE)
+      {
            gfx.moveTo(h*18,h*2);
            gfx.lineTo(h*2 ,h*2);
            gfx.lineTo(h*2 ,h*18);
@@ -90,8 +90,8 @@ class Sample
 
    public function new()
    {
-      var bytes = ApplicationMain.getAsset("Sample.hx");
-      Run( bytes.asString() );
+      var str = nme.Assets.getString("Sample.hx");
+      Run(str);
 
       #if !flash
 

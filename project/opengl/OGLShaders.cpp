@@ -1,5 +1,4 @@
 #include "./OGL.h"
-#ifdef ALLOW_OGL2
 
 #ifdef HX_MAXOS
   #include <OpenGL/glext.h>
@@ -13,15 +12,24 @@ const float one_on_255 = 1.0/255.0;
 class OGLProg : public GPUProg
 {
 public:
-   OGLProg(const char *inVertProg, const char *inFragProg)
+   OGLProg(const std::string &inVertProg, const std::string &inFragProg)
    {
       mVertProg = inVertProg;
       mFragProg = inFragProg;
       mVertId = 0;
       mFragId = 0;
-	  mTexCoordSlot = -1;
-      mTextureSlot = -1;
+
+      mImageSlot = -1;
       mColourTransform = 0;
+
+      vertexSlot = -1;
+      textureSlot = -1;
+      normalSlot = -1;
+      colourSlot = -1;
+
+      //printf("%s", inVertProg.c_str());
+      //printf("%s", inFragProg.c_str());
+
       recreate();
    }
 
@@ -32,15 +40,6 @@ public:
    {
       const char *source = inShader;
       GLuint shader = glCreateShader(inType);
-
-      #ifdef NME_GLES
-      std::string sourceBuf;
-      if (inType == GL_FRAGMENT_SHADER)
-      {
-         sourceBuf = std::string("precision mediump float;\n") + inShader;
-         source = sourceBuf.c_str();
-      }
-      #endif
 
       glShaderSource(shader,1,&source,0);
       glCompileShader(shader);
@@ -77,10 +76,10 @@ public:
       mContextVersion = gTextureContextVersion;
       mProgramId = 0;
 
-      mVertId = createShader(GL_VERTEX_SHADER,mVertProg);
+      mVertId = createShader(GL_VERTEX_SHADER,mVertProg.c_str());
       if (!mVertId)
          return;
-      mFragId = createShader(GL_FRAGMENT_SHADER,mFragProg);
+      mFragId = createShader(GL_FRAGMENT_SHADER,mFragProg.c_str());
       if (!mFragId)
          return;
 
@@ -116,8 +115,8 @@ public:
           char *log = new char[logLen];
           glGetProgramInfoLog(mProgramId, logLen, &logLen, log);
           ELOG("----");
-          ELOG("VERT: %s", mVertProg);
-          ELOG("FRAG: %s", mFragProg);
+          ELOG("VERT: %s", mVertProg.c_str());
+          ELOG("FRAG: %s", mFragProg.c_str());
           ELOG("ERROR:\n%s\n", log);
           delete [] log;
       }
@@ -129,17 +128,23 @@ public:
       }
 
 
-      mVertexSlot = glGetAttribLocation(mProgramId, "aVertex");
-      mTexCoordSlot = glGetAttribLocation(mProgramId, "aTexCoord");
+      vertexSlot = glGetAttribLocation(mProgramId, "aVertex");
+      textureSlot = glGetAttribLocation(mProgramId, "aTexCoord");
+      colourSlot = glGetAttribLocation(mProgramId, "aColourArray");
+      normalSlot = glGetAttribLocation(mProgramId, "aNormal");
+
       mTransformSlot = glGetUniformLocation(mProgramId, "uTransform");
-      mTintSlot = glGetUniformLocation(mProgramId, "uTint");
-      mColourArraySlot = glGetAttribLocation(mProgramId, "aColourArray");
-      mTextureSlot = glGetUniformLocation(mProgramId, "uImage0");
+      mImageSlot = glGetUniformLocation(mProgramId, "uImage0");
       mColourOffsetSlot = glGetUniformLocation(mProgramId, "uColourOffset");
       mColourScaleSlot = glGetUniformLocation(mProgramId, "uColourScale");
       mFXSlot = glGetUniformLocation(mProgramId, "mFX");
       mASlot = glGetUniformLocation(mProgramId, "mA");
       mOn2ASlot = glGetUniformLocation(mProgramId, "mOn2A");
+
+      
+      glUseProgram(mProgramId);
+      if (mImageSlot>=0)
+         glUniform1i(mImageSlot,0);
    }
 
    virtual bool bind()
@@ -154,123 +159,73 @@ public:
       return true;
    }
 
-   void setPositionData(const float *inData, bool inIsPerspective)
+   void disableSlots()
    {
-      glVertexAttribPointer(mVertexSlot, inIsPerspective ? 4 : 2 , GL_FLOAT, GL_FALSE, 0, inData);
-      glEnableVertexAttribArray(mVertexSlot);
-   }
+      if (vertexSlot>=0)
+         glDisableVertexAttribArray(vertexSlot);
 
-   void setTexCoordData(const float *inData)
-   {
-      if (inData)
-      {
-		 glVertexAttribPointer(mTexCoordSlot, 2, GL_FLOAT, GL_FALSE, 0, inData);
-		 glEnableVertexAttribArray(mTexCoordSlot);
-         glUniform1i(mTextureSlot,0);
-      }
-   }
+      if (normalSlot>=0)
+         glDisableVertexAttribArray(normalSlot);
 
-   void setColourData(const int *inData)
-   {
-      if (inData && mColourArraySlot>=0)
-      {
-         glVertexAttribPointer(mColourArraySlot, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, inData);
-         glEnableVertexAttribArray(mColourArraySlot);
-      }
-      else if (mColourArraySlot>=0)
-      {
-         glDisableVertexAttribArray(mColourArraySlot);
-      }
-   }
-
-   void finishDrawing()
-   {
-      if (mColourArraySlot>=0)
-         glDisableVertexAttribArray(mColourArraySlot);
+      if (colourSlot>=0)
+         glDisableVertexAttribArray(colourSlot);
       
-      if (mTexCoordSlot>=0)
-         glDisableVertexAttribArray(mTexCoordSlot);
-      
-      if (mVertexSlot>=0)
-         glDisableVertexAttribArray(mVertexSlot);
+      if (textureSlot>=0)
+         glDisableVertexAttribArray(textureSlot);
    }
 
-   void setColourTransform(const ColorTransform *inTransform)
+   void setColourTransform(const ColorTransform *inTransform, uint32 inColor)
    {
-      mColourTransform = inTransform;
+      float rf, gf, bf, af;
+      if (inColor==0xffffffff)
+      {
+         rf = gf = bf = af = 1.0;
+      }
+      else
+      {
+         rf = ( (inColor>>16) & 0xff ) * one_on_255;
+         gf = ( (inColor>>8 ) & 0xff ) * one_on_255;
+         bf = ( (inColor    ) & 0xff ) * one_on_255;
+         af = ( (inColor>>24) & 0xff ) * one_on_255;
+      }
+
       if (inTransform && !inTransform->IsIdentity())
       {
           if (mColourOffsetSlot>=0)
              glUniform4f(mColourOffsetSlot,
-                      #ifdef NME_PREMULTIPLIED_ALPHA
-                      inTransform->redOffset*one_on_255*inTransform->alphaMultiplier,
-                      inTransform->greenOffset*one_on_255*inTransform->alphaMultiplier,
-                      inTransform->blueOffset*one_on_255*inTransform->alphaMultiplier,
-                      #else
                       inTransform->redOffset*one_on_255,
                       inTransform->greenOffset*one_on_255,
                       inTransform->blueOffset*one_on_255,
-                      #endif
                       inTransform->alphaOffset*one_on_255);
+
           if (mColourScaleSlot>=0)
              glUniform4f(mColourScaleSlot,
-                      #ifdef NME_PREMULTIPLIED_ALPHA
-                      inTransform->redMultiplier*inTransform->alphaMultiplier,
-                      inTransform->greenMultiplier*inTransform->alphaMultiplier,
-                      inTransform->blueMultiplier*inTransform->alphaMultiplier,
-                      #else
-                      inTransform->redMultiplier,
-                      inTransform->greenMultiplier,
-                      inTransform->blueMultiplier,
-                      #endif
-                      inTransform->alphaMultiplier);
-          /*
-             printf("offset %d = %f %f %f %f\n",mColourOffsetSlot,
-                      inTransform->redOffset,
-                      inTransform->greenOffset,
-                      inTransform->blueOffset,
-                      inTransform->alphaOffset);
-             printf("scale %d = %f %f %f %f\n",mColourScaleSlot,
-                      inTransform->redMultiplier,
-                      inTransform->greenMultiplier,
-                      inTransform->blueMultiplier,
-                      inTransform->alphaMultiplier);
-          */
+                      inTransform->redMultiplier * rf,
+                      inTransform->greenMultiplier * gf,
+                      inTransform->blueMultiplier * bf,
+                      inTransform->alphaMultiplier * af);
       }
       else
       {
          if (mColourOffsetSlot>=0)
             glUniform4f(mColourOffsetSlot,0,0,0,0);
+
          if (mColourScaleSlot>=0)
-            glUniform4f(mColourScaleSlot,1,1,1,1);
+         {
+            glUniform4f(mColourScaleSlot,rf,gf,bf,af);
+         }
       }
    }
 
    int  getTextureSlot()
    {
-      return mTextureSlot;
+      return mImageSlot;
    }
 
 
    void setTransform(const Trans4x4 &inTrans)
    {
       glUniformMatrix4fv(mTransformSlot, 1, 0, inTrans[0]);
-   }
-
-   void setTint(unsigned int inColour)
-   {
-      if (mTintSlot>=0)
-      {
-         float a = ((inColour >> 24) & 0xff) * one_on_255;
-         float c0 = ((inColour >> 16) & 0xff) * one_on_255;
-         float c1 = ((inColour >> 8) & 0xff) * one_on_255;
-         float c2 = (inColour & 0xff) * one_on_255;
-         #ifdef NME_PREMULTIPLIED_ALPHA
-         glUniform4f(mTintSlot, c0*a, c1*a, c2*a, a);
-         #else
-         glUniform4f(mTintSlot, c0, c1, c2, a);
-         #endif
-      }
    }
 
    virtual void setGradientFocus(float inFocus)
@@ -293,234 +248,177 @@ public:
       }
    }
 
-   const char *mVertProg;
-   const char *mFragProg;
+   std::string mVertProg;
+   std::string mFragProg;
    GLuint     mProgramId;
    GLuint     mVertId;
    GLuint     mFragId;
    int        mContextVersion;
    const ColorTransform *mColourTransform;
 
-   GLint     mVertexSlot;
-   GLint     mTextureSlot;
-   GLint     mTexCoordSlot;
 
+   // int vertexSlot;
+   // int textureSlot;
+   // int normalSlot;
+   // int colourSlot;
+
+   GLint     mImageSlot;
    GLint     mColourArraySlot;
    GLint     mColourScaleSlot;
    GLint     mColourOffsetSlot;
    GLint     mTransformSlot;
-   GLint     mTintSlot;
    GLint     mASlot;
    GLint     mFXSlot;
    GLint     mOn2ASlot;
 };
 
-const char *gSolidVert = 
-"uniform mat4 uTransform;\n"
-"attribute vec4 aVertex;\n"
-"void main(void)\n"
-"{\n"
-"   gl_Position = aVertex * uTransform;\n"
-"}";
-
-const char *gColourVert =
-"uniform mat4 uTransform;\n"
-"attribute vec4 aVertex;\n"
-"attribute vec4 aColourArray;\n"
-"varying vec4 vColourArray;\n"
-"void main(void)\n"
-"{\n"
-"   vColourArray = aColourArray;\n"
-"   gl_Position = aVertex * uTransform;\n"
-"}";
-
-
-const char *gTextureVert =
-"uniform mat4 uTransform;\n"
-"attribute vec4 aVertex;\n"
-"attribute vec2 aTexCoord;\n"
-"varying vec2 vTexCoord;\n"
-"void main(void)\n"
-"{\n"
-"   vTexCoord = aTexCoord;\n"
-"   gl_Position = aVertex * uTransform;\n"
-"}";
-
-
-const char *gTextureColourVert =
-"uniform mat4 uTransform;\n"
-"attribute vec4 aColourArray;\n"
-"attribute vec4 aVertex;\n"
-"attribute vec2 aTexCoord;\n"
-"varying vec2   vTexCoord;\n"
-"varying vec4  vColourArray;\n"
-"void main(void)\n"
-"{\n"
-"   vColourArray = aColourArray;\n"
-"   vTexCoord = aTexCoord;\n"
-"   gl_Position = aVertex * uTransform;\n"
-"}";
-
-
-
-const char *gSolidFrag = 
-"uniform vec4 uTint;\n"
-"void main(void)\n"
-"{\n"
-"   gl_FragColor = uTint;\n"
-"}\n";
-
-const char *gColourFrag =
-"varying vec4 vColourArray;\n"
-"void main(void)\n"
-"{\n"
-"   gl_FragColor = vColourArray;\n"
-"}\n";
-
-
-const char *gColourTransFrag =
-"varying vec4 vColourArray;\n"
-"uniform vec4 uColourScale;\n"
-"uniform vec4 uColourOffset;\n"
-"void main(void)\n"
-"{\n"
-"   gl_FragColor = vColourArray*uColourScale+uColourOffset;\n"
-"}\n";
-
-
-
-const char *gBitmapAlphaFrag =
-"varying vec2 vTexCoord;\n"
-"uniform sampler2D uImage0;\n"
-"uniform vec4 uTint;\n"
-"void main(void)\n"
-"{\n"
-#ifdef NME_PREMULTIPLIED_ALPHA
-"   gl_FragColor.rgb = uTint.rgb*texture2D(uImage0,vTexCoord).a;\n"
-#else
-"   gl_FragColor.rgb = uTint.rgb;\n"
-#endif
-"   gl_FragColor.a = texture2D(uImage0,vTexCoord).a*uTint.a;\n"
-"}\n";
-
-
-const char *gBitmapFrag =
-"varying vec2 vTexCoord;\n"
-"uniform sampler2D uImage0;\n"
-"uniform vec4 uTint;\n"
-"void main(void)\n"
-"{\n"
-"   gl_FragColor = texture2D(uImage0,vTexCoord)*uTint;\n"
-"}\n";
-
-
-const char *gTextureFrag =
-"varying vec2 vTexCoord;\n"
-"uniform sampler2D uImage0;\n"
-"void main(void)\n"
-"{\n"
-"   gl_FragColor = texture2D(uImage0,vTexCoord);\n"
-"}\n";
-
-
-const char *gRadialTextureFrag =
-"varying vec2 vTexCoord;\n"
-"uniform sampler2D uImage0;\n"
-"void main(void)\n"
-"{\n"
-"   float rad = sqrt(vTexCoord.x*vTexCoord.x + vTexCoord.y*vTexCoord.y);\n"
-"   gl_FragColor = texture2D(uImage0,vec2(rad,0));\n"
-"}\n";
-
-
-const char *gRadialFocusTextureFrag =
-"varying vec2 vTexCoord;\n"
-"uniform sampler2D uImage0;\n"
-"uniform float mA;\n"
-"uniform float mFX;\n"
-"uniform float mOn2A;\n"
-"void main(void)\n"
-"{\n"
-"   float GX = vTexCoord.x - mFX;\n"
-"   float C = GX*GX + vTexCoord.y*vTexCoord.y;\n"
-"   float B = 2.0*GX * mFX;\n"
-"   float det =B*B - mA*C;\n"
-"   float rad;\n"
-"   if (det<0.0)\n"
-"      rad = -B * mOn2A;\n"
-"   else\n"
-"      rad = (-B - sqrt(det)) * mOn2A;"
-"   gl_FragColor = texture2D(uImage0,vec2(rad,0));\n"
-"}\n";
-
-
-const char *gTextureColourFrag =
-"uniform sampler2D uImage0;\n"
-"varying vec2 vTexCoord;\n"
-"varying vec4 vColourArray;\n"
-"void main(void)\n"
-"{\n"
-#ifdef NME_PREMULTIPLIED_ALPHA
-"   gl_FragColor.rgb = texture2D(uImage0,vTexCoord).rgb * vColourArray.rgb * vColourArray.a;\n"
-"   gl_FragColor.a = texture2D(uImage0,vTexCoord).a * vColourArray.a;\n"
-#else
-"   gl_FragColor = texture2D(uImage0,vTexCoord) * vColourArray;\n"
-#endif
-"}\n";
-
-
-
-const char *gTextureTransFrag =
-"varying vec2 vTexCoord;\n"
-"uniform sampler2D uImage0;\n"
-"uniform vec4 uColourScale;\n"
-"uniform vec4 uColourOffset;\n"
-"void main(void)\n"
-"{\n"
-"   gl_FragColor = texture2D(uImage0,vTexCoord) * uColourScale + uColourOffset;\n"
-"}\n";
-
-
-
-
-GPUProg *GPUProg::create(GPUProgID inID)
+GPUProg *GPUProg::create(unsigned int inID)
 {
-   switch(inID)
+   std::string vertexVars =
+      "uniform mat4   uTransform;\n"
+      "attribute vec4 aVertex;\n";
+   std::string vertexProg =
+      "   gl_Position = aVertex * uTransform;\n";
+   std::string pixelVars = "";
+   std::string pixelProlog = "";
+
+   #ifdef NME_GLES
+   pixelVars = std::string("precision mediump float;\n");
+   #endif
+
+
+
+   std::string fragColour = "";
+   if (inID & PROG_TINT)
    {
-      case gpuSolid:
-         return new OGLProg( gSolidVert, gSolidFrag );
-      case gpuColourTransform:
-         return new OGLProg( gColourVert, gColourTransFrag );
-      case gpuColour:
-         return new OGLProg( gColourVert, gColourFrag );
-      case gpuRadialGradient:
-         return new OGLProg( gTextureVert, gRadialTextureFrag );
-      case gpuRadialFocusGradient:
-         return new OGLProg( gTextureVert, gRadialFocusTextureFrag );
-      case gpuTexture:
-         return new OGLProg( gTextureVert, gTextureFrag );
-      case gpuTextureColourArray:
-         return new OGLProg( gTextureColourVert, gTextureColourFrag );
-      case gpuTextureTransform:
-         return new OGLProg( gTextureVert, gTextureTransFrag );
-      case gpuBitmap:
-         return new OGLProg( gTextureVert, gBitmapFrag );
-      case gpuBitmapAlpha:
-         return new OGLProg( gTextureVert, gBitmapAlphaFrag );
-      default:
-        break;
+      pixelVars += "uniform vec4 uColourScale;\n";
+      fragColour = "uColourScale";
    }
-   return 0;
+
+   if (inID & PROG_COLOUR_OFFSET)
+   {
+       pixelVars += "uniform vec4 uColourOffset;\n";
+   }
+
+
+   if (inID & PROG_COLOUR_PER_VERTEX)
+   {
+      vertexVars +=
+        "attribute vec4 aColourArray;\n"
+        "varying vec4 vColourArray;\n";
+      vertexProg =
+        "   vColourArray = aColourArray;\n" + vertexProg;
+      pixelVars +=
+        "varying vec4 vColourArray;\n";
+
+      if (fragColour!="")
+         fragColour += "*";
+      fragColour += "vColourArray";
+   }
+
+
+   if (inID & PROG_TEXTURE)
+   {
+      vertexVars +=
+        "attribute vec2 aTexCoord;\n"
+        "varying vec2 vTexCoord;\n";
+
+      vertexProg =
+        "   vTexCoord = aTexCoord;\n" + vertexProg;
+
+      pixelVars +=
+        "uniform sampler2D uImage0;\n"
+        "varying vec2 vTexCoord;\n";
+
+      if (!(inID & PROG_RADIAL))
+      {
+         if (fragColour!="")
+            fragColour += "*";
+
+         if (inID & PROG_ALPHA_TEXTURE)
+            fragColour += "vec4(1,1,1,texture2D(uImage0,vTexCoord).a)";
+         else
+            fragColour += "texture2D(uImage0,vTexCoord)";
+      }
+   }
+
+   if (inID & PROG_RADIAL)
+   {
+      if (inID & PROG_RADIAL_FOCUS)
+      {
+         pixelVars +=
+            "uniform float mA;\n"
+            "uniform float mFX;\n"
+            "uniform float mOn2A;\n";
+
+         pixelProlog = 
+            "   float GX = vTexCoord.x - mFX;\n"
+            "   float C = GX*GX + vTexCoord.y*vTexCoord.y;\n"
+            "   float B = 2.0*GX * mFX;\n"
+            "   float det =B*B - mA*C;\n"
+            "   float rad;\n"
+            "   if (det<0.0)\n"
+            "      rad = -B * mOn2A;\n"
+            "   else\n"
+            "      rad = (-B - sqrt(det)) * mOn2A;\n";
+      }
+      else
+      {
+         pixelProlog = 
+             "   float rad = sqrt(vTexCoord.x*vTexCoord.x + vTexCoord.y*vTexCoord.y);\n";
+      }
+
+      if (fragColour!="")
+         fragColour += "*";
+      fragColour += "texture2D(uImage0,vec2(rad,0))";
+   }
+
+
+   if (inID & PROG_NORMAL_DATA)
+   {
+      vertexVars +=
+        "attribute vec2 aNormal;\n"
+        "varying vec2 vNormal;\n";
+
+      vertexProg =
+        "   vNormal = aNormal;\n" + vertexProg;
+
+      pixelVars +=
+        "varying vec2 vNormal;\n";
+   }
+
+   std::string vertexShader = 
+      vertexVars + 
+      "void main()\n"
+      "{\n" +
+         vertexProg +
+      "}\n";
+
+   if (fragColour=="")
+      fragColour = "vec4(1,1,1,1)";
+
+   if ( inID & PROG_COLOUR_OFFSET )
+      fragColour = fragColour + "+ uColourOffset";
+
+   if ( inID & PROG_NORMAL_DATA )
+   {
+      fragColour = "(" + fragColour + ") * vec4(1,1,1, min(vNormal.x-abs(vNormal.y),1.0) )";
+   }
+ 
+
+   std::string pixelShader =
+      pixelVars +
+      "void main()\n"
+      "{\n" +
+         pixelProlog +
+         "   gl_FragColor = " + fragColour + ";\n" +
+      "}\n";
+
+   return new OGLProg(vertexShader, pixelShader);
 }
+ 
+
 
 } // end namespace nme
 
-#else
-
-namespace nme
-{
-GPUProg *GPUProg::create(GPUProgID inID) { return 0; }
-}
-
-#endif
 

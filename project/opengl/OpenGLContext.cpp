@@ -11,7 +11,6 @@
 
 
 int sgDrawCount = 0;
-int sgBufferCount = 0;
 int sgDrawBitmap = 0;
 
 
@@ -19,6 +18,7 @@ namespace nme
 {
 
 const double one_on_255 = 1.0/255.0;
+const double one_on_256 = 1.0/256.0;
 
 static GLuint sgOpenglType[] =
   { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP, GL_POINTS, GL_LINES };
@@ -41,6 +41,7 @@ HardwareContext* nme::HardwareContext::current = NULL;
 class OGLContext : public HardwareContext
 {
 public:
+
    OGLContext(WinDC inDC, GLCtx inOGLCtx)
    {
       HardwareContext::current = this;
@@ -49,28 +50,40 @@ public:
       mWidth = 0;
       mHeight = 0;
       mLineWidth = -1;
-      mPointsToo = true;
-      mBitmapSurface = 0;
       mBitmapTexture = 0;
-      mUsingBitmapMatrix = false;
       mLineScaleNormal = -1;
       mLineScaleV = -1;
       mLineScaleH = -1;
-      mPointSmooth = true;
-      mColourArrayEnabled = false;
       mThreadId = GetThreadId();
-      const char *str = (const char *)glGetString(GL_VENDOR);
-      if (str && !strncmp(str,"Intel",5))
-         mPointSmooth = false;
       #if defined(NME_GLES)
       mQuality = sqLow;
       #else
       mQuality = sqBest;
       #endif
+
+      for(int i=0;i<PROG_COUNT;i++)
+         mProg[i] = 0;
+      for(int i=0;i<4;i++)
+         for(int j=0;j<4;j++)
+            mBitmapTrans[i][j] = mTrans[i][j] = i==j;
+
+      mBitmapBuffer.mElements.resize(1);
+      DrawElement &e = mBitmapBuffer.mElements[0];
+      memset(&e,0,sizeof(DrawElement));
+      e.mCount = 0;
+      e.mFlags = DRAW_HAS_TEX;
+      e.mPrimType = ptTriangles;
+      e.mVertexOffset = 0;
+      e.mColour = 0xff000000;
+      e.mTexOffset = sizeof(float)*2;
+      e.mStride = sizeof(float)*4;
    }
    ~OGLContext()
    {
+      for(int i=0;i<PROG_COUNT;i++)
+         delete mProg[i];
    }
+
 
    void DestroyNativeTexture(void *inNativeTexture)
    {
@@ -82,6 +95,15 @@ public:
       }
       else
          glDeleteTextures(1,&tid);
+   }
+
+
+   void DestroyVbo(unsigned int inVbo)
+   {
+      if ( !IsMainThread() )
+	      mZombieVbos.push_back(inVbo);
+      else
+         glDeleteBuffers(1,&inVbo);
    }
 
 
@@ -119,53 +141,12 @@ public:
       }
       else
       {
-         #ifndef NME_FORCE_GLES2
-         // TODO: Clear with a rect
-         // TODO: Need replacement call for GLES2
-         glColor4f(red, green, blue, alpha );
-
-         glMatrixMode(GL_MODELVIEW);
-         glPushMatrix();
-         glLoadIdentity();
-         glMatrixMode(GL_PROJECTION);
-         glPushMatrix();
-         glLoadIdentity();
-
-
-         glDisable(GL_TEXTURE_2D);
-         static GLfloat rect[4][2] = { { -2,-2 }, { 2,-2 }, { 2, 2 }, {-2, 2 } };
-         glVertexPointer(2, GL_FLOAT, 0, rect[0]);
-         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-         glPopMatrix();
-         glMatrixMode(GL_MODELVIEW);
-         glPopMatrix();
-         #else
          //printf(" - partial clear\n");
-         #endif
       }
 
 
       if (r!=mViewport)
          glViewport(mViewport.x, mHeight-mViewport.y1(), mViewport.w, mViewport.h);
-   }
-
-   virtual void setOrtho(float x0,float x1, float y0, float y1)
-   {
-      #ifndef NME_FORCE_GLES2
-      glMatrixMode(GL_PROJECTION);
-      glLoadIdentity();
-      #if defined(NME_GLES)
-      glOrthof
-      #else
-      glOrtho
-      #endif
-            //(0,inRect.w, inRect.h,0, -1, 1);
-         (x0,x1,y0,y1, -1, 1);
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();
-      #endif
-      mModelView = Matrix();
    }
 
    void SetViewport(const Rect &inRect)
@@ -197,49 +178,34 @@ public:
             mZombieTextures.resize(0);
          }
 
+         if (mZombieVbos.size())
+         {
+            glDeleteTextures(mZombieVbos.size(),&mZombieVbos[0]);
+            mZombieVbos.resize(0);
+         }
+
+
          // Force dirty
          mViewport.w = -1;
          SetViewport(inRect);
 
-         glEnable(GL_BLEND);
-         #ifdef NME_PREMULTIPLIED_ALPHA
-         glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
-         #else
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-         #endif
 
-         #ifdef WEBOS
+         glEnable(GL_BLEND);
+
+        #ifdef WEBOS
          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
          #endif
 
-         #ifndef NME_FORCE_GLES2
-         if (mQuality>=sqHigh)
-         {
-            if (mPointSmooth)
-               glEnable(GL_POINT_SMOOTH);
-         }
-         if (mQuality>=sqBest)
-            glEnable(GL_LINE_SMOOTH);
-         #endif
          mLineWidth = 99999;
 
          // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
          sgDrawCount = 0;
          sgDrawBitmap = 0;
-         sgBufferCount = 0;
-         OnBeginRender();
       }
    }
    void EndRender()
    {
 
-   }
-
-   virtual void OnBeginRender()
-   {
-      #ifndef NME_FORCE_GLES2
-      glEnableClientState(GL_VERTEX_ARRAY);
-      #endif
    }
 
 
@@ -254,25 +220,12 @@ public:
       #endif
    }
 
-   virtual void CombineModelView(const Matrix &inModelView)
-   {
-      #ifndef NME_FORCE_GLES2
-      // Do not combine ModelView and Projection in fixed-function
-      float matrix[] =
-      {
-         mModelView.m00, mModelView.m10, 0, 0,
-         mModelView.m01, mModelView.m11, 0, 0,
-         0,           0,           1, 0,
-         mModelView.mtx, mModelView.mty, 0, 1
-      };
-      glLoadMatrixf(matrix);
-      #endif
-   }
 
-
-   void Render(const RenderState &inState, const HardwareCalls &inCalls )
+   void Render(const RenderState &inState, const HardwareData &inData )
    {
-      glEnable( GL_BLEND );
+      if (!inData.mArray.size())
+         return;
+
       SetViewport(inState.mClipRect);
 
       if (mModelView!=*inState.mTransform.mMatrix)
@@ -283,397 +236,282 @@ public:
          mLineScaleH = -1;
          mLineScaleNormal = -1;
       }
+      const ColorTransform *ctrans = inState.mColourTransform;
+      if (ctrans && ctrans->IsIdentity())
+         ctrans = 0;
 
-      uint32 last_col = 0;
-      for(int c=0;c<inCalls.size();c++)
+      RenderData(inData,ctrans,mTrans);
+   }
+
+   void RenderData(const HardwareData &inData, const ColorTransform *ctrans,const Trans4x4 &inTrans)
+   {
+      const uint8 *data = 0;
+      if (inData.mVertexBo)
       {
-         HardwareArrays &arrays = *inCalls[c];
-         DrawElements &elements = arrays.mElements;
-         if (elements.empty())
-            continue;
-
-         Vertices &vert = arrays.mVertices;
-         Vertices &tex_coords = arrays.mTexCoords;
-         bool persp = arrays.mFlags & HardwareArrays::PERSPECTIVE;
-         
-         if (arrays.mFlags & HardwareArrays::BM_ADD )
-         {
-            glBlendFunc( GL_SRC_ALPHA, GL_ONE );
-		   }
-         else if (arrays.mFlags & HardwareArrays::BM_MULTIPLY )
-         {
-            glBlendFunc( GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-		   }
-         else if (arrays.mFlags & HardwareArrays::BM_SCREEN )
-         {
-           glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
-         }
-         else
-         {
-           #ifdef NME_PREMULTIPLIED_ALPHA
-           glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-           #else
-           glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
-           #endif 
-         }
-         
-         #ifdef NME_USE_VBO
-         {
-            if (!arrays.mVertexBO)
-            {
-               glGenBuffers(1,&arrays.mVertexBO);
-               glBindBuffer(GL_ARRAY_BUFFER, arrays.mVertexBO);
-               glBufferData(GL_ARRAY_BUFFER,sizeof(float)*(persp ?4:2)*vert.size(),
-                              &vert[0].x, GL_STATIC_DRAW);
-            }
-            else
-               glBindBuffer(GL_ARRAY_BUFFER, arrays.mVertexBO);
-            glVertexPointer(persp ? 4 : 2,GL_FLOAT,0,0);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-         }
-         else
-         #endif
-         {
-            SetPositionData(&vert[0].x,persp);
-         }
-
-         Texture *boundTexture = 0;
-         bool tex = arrays.mSurface && tex_coords.size();
-         if (tex)
-         {
-            boundTexture = arrays.mSurface->GetOrCreateTexture(*this);
-            SetTexture(arrays.mSurface,&tex_coords[0].x);
-            last_col = -1;
-            SetModulatingTransform(inState.mColourTransform);
-            if (arrays.mFlags & HardwareArrays::RADIAL )
-            {
-               float focus = ((arrays.mFlags & HardwareArrays::FOCAL_MASK)>>8) / 256.0;
-               if (arrays.mFlags & HardwareArrays::FOCAL_SIGN)
-                  focus = -focus;
-               SetRadialGradient(true, focus );
-            }
-            else
-               SetRadialGradient(0,0);
-         }
-         else
-         {
-            boundTexture = 0;
-            SetTexture(0,0);
-            SetModulatingTransform(0);
-         }
-
-         if (arrays.mColours.size() == vert.size() )
-         {
-            SetColourArray(&arrays.mColours[0]);
-            SetModulatingTransform(inState.mColourTransform);
-         }
-         else
-            SetColourArray(0);
-
-   
-         int n = elements.size();
-         if (!PrepareDrawing())
-            n = 0;
-
-         sgBufferCount++;
-         for(int e=0;e<n;e++)
-         {
-            DrawElement draw = elements[e];
-
-            if (boundTexture)
-            {
-               boundTexture->BindFlags(draw.mBitmapRepeat,draw.mBitmapSmooth);
-               #ifdef NME_DITHER
-               if (!inSmooth)
-                  glDisable(GL_DITHER);
-               #endif
-            }
-            else
-            {
-                int col = inState.mColourTransform->Transform(draw.mColour);
-                if (c==0 || last_col!=col)
-                {
-                    last_col = col; 
-                    SetSolidColour(col);
-                }
-            }
-            
-   
-            if ( (draw.mPrimType == ptLineStrip || draw.mPrimType==ptPoints || draw.mPrimType==ptLines) && draw.mCount>1)
-            {
-               if (draw.mWidth<0)
-                  SetLineWidth(1.0);
-               else if (draw.mWidth==0)
-                  SetLineWidth(0.0);
-               else
-                  switch(draw.mScaleMode)
-                  {
-                     case ssmNone: SetLineWidth(draw.mWidth); break;
-                     case ssmNormal:
-                     case ssmOpenGL:
-                        if (mLineScaleNormal<0)
-                           mLineScaleNormal =
-                              sqrt( 0.5*( mModelView.m00*mModelView.m00 + mModelView.m01*mModelView.m01 +
-                                          mModelView.m10*mModelView.m10 + mModelView.m11*mModelView.m11 ) );
-                        SetLineWidth(draw.mWidth*mLineScaleNormal);
-                        break;
-                     case ssmVertical:
-                        if (mLineScaleV<0)
-                           mLineScaleV =
-                              sqrt( mModelView.m00*mModelView.m00 + mModelView.m01*mModelView.m01 );
-                        SetLineWidth(draw.mWidth*mLineScaleV);
-                        break;
-
-                     case ssmHorizontal:
-                        if (mLineScaleH<0)
-                           mLineScaleH =
-                              sqrt( mModelView.m10*mModelView.m10 + mModelView.m11*mModelView.m11 );
-                        SetLineWidth(draw.mWidth*mLineScaleH);
-                        break;
-                  }
-
-               if (mPointsToo && mLineWidth>1.5 && draw.mPrimType!=ptLines )
-                  glDrawArrays(GL_POINTS, draw.mFirst, draw.mCount );
-            }
-   
-            //printf("glDrawArrays %d : %d x %d\n", draw.mPrimType, draw.mFirst, draw.mCount );
-
-            sgDrawCount++;
-            glDrawArrays(sgOpenglType[draw.mPrimType], draw.mFirst, draw.mCount );
-
-            #ifdef NME_DITHER
-            if (boundTexture && !draw.mBitmapSmooth)
-               glEnable(GL_DITHER);
-            #endif
-         }
-         FinishDrawing();
-      }
-   }
-
-   virtual void SetRadialGradient(bool inIsRadial, float inFocus)
-   {
-   }
-
-   virtual bool PrepareDrawing()
-   {
-      return true;
-   }
-
-   virtual void FinishDrawing()
-   {
-      SetColourArray(0);
-   }
-
-   virtual void SetSolidColour(unsigned int col)
-   {
-       #ifndef NME_FORCE_GLES2
-       float a = (float) ((col >> 24) & 0xFF) * one_on_255;
-       float c0 = (float) ((col >> 16) & 0xFF) * one_on_255;
-       float c1 = (float) ((col >> 8) & 0xFF) * one_on_255;
-       float c2 = (float) (col & 0xFF) * one_on_255;
-       #ifdef NME_PREMULTIPLIED_ALPHA
-       glColor4f(c0*a,c1*a,c2*a,a);
-       #else
-       glColor4f(c0,c1,c2,a);
-       #endif
-       #endif
-   }
-
-   virtual void SetTexture(Surface *inSurface,const float *inTexCoords)
-   {
-      #ifndef NME_FORCE_GLES2
-      if (!inSurface)
-      {
-         glDisable(GL_TEXTURE_2D);
-         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+         glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
       }
       else
       {
-         glEnable(GL_TEXTURE_2D);
-         inSurface->Bind(*this,0);
-         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-         glTexCoordPointer(2,GL_FLOAT,0,inTexCoords);
+         data = &inData.mArray[0];
+         inData.mRendersWithoutVbo++;
+         if (inData.mRendersWithoutVbo>4)
+         {
+            glGenBuffers(1,&inData.mVertexBo);
+            inData.mVboOwner = this;
+            IncRef();
+            glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
+            // printf("VBO DATA %d\n", inData.mArray.size());
+            glBufferData(GL_ARRAY_BUFFER, inData.mArray.size(), data, GL_STATIC_DRAW);
+            data = 0;
+         }
       }
-      #endif
-   }
 
-   virtual void SetPositionData(const float *inData,bool inPerspective)
-   {
-      #ifndef NME_FORCE_GLES2
-      glVertexPointer(inPerspective ? 4 : 2,GL_FLOAT,0,inData);
-      #endif
-   }
-
-   virtual void SetModulatingTransform(const ColorTransform *inTransform)
-   {
-      #ifndef NME_FORCE_GLES2
-      if (inTransform)
-         #ifdef NME_PREMULTIPLIED_ALPHA
-         glColor4f( inTransform->redMultiplier*inTransform->alphaMultiplier,
-                    inTransform->greenMultiplier*inTransform->alphaMultiplier,
-                    inTransform->blueMultiplier*inTransform->alphaMultiplier,
-                    inTransform->alphaMultiplier);
-         #else
-         glColor4f( inTransform->redMultiplier,
-                    inTransform->greenMultiplier,
-                    inTransform->blueMultiplier,
-                    inTransform->alphaMultiplier);
-         #endif
-      #endif
-   }
-
-   virtual void SetColourArray(const int *inData)
-   {
-      #ifndef NME_FORCE_GLES2
-      if (inData)
+      GPUProg *lastProg = 0;
+ 
+      for(int e=0;e<inData.mElements.size();e++)
       {
-         mColourArrayEnabled = true;
-         glEnableClientState(GL_COLOR_ARRAY);
-         glColorPointer(4,GL_UNSIGNED_BYTE,0,inData);
+         const DrawElement &element = inData.mElements[e];
+         int n = element.mCount;
+         if (!n)
+            continue;
+
+         switch(element.mBlendMode)
+         {
+            case bmAdd:
+               glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+               break;
+            case bmMultiply:
+               glBlendFunc( GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+               break;
+            case bmScreen:
+               glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+               break;
+            default:
+               glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		   }
+
+         int progId = 0;
+         if ((element.mFlags & DRAW_HAS_TEX) && element.mSurface)
+         {
+            progId |= PROG_TEXTURE;
+            if (element.mSurface->BytesPP()==1)
+               progId |= PROG_ALPHA_TEXTURE;
+         }
+
+         if (element.mFlags & DRAW_HAS_COLOUR)
+            progId |= PROG_COLOUR_PER_VERTEX;
+
+         if (element.mFlags & DRAW_HAS_NORMAL)
+            progId |= PROG_NORMAL_DATA;
+
+         if (element.mFlags & DRAW_RADIAL)
+         {
+            progId |= PROG_RADIAL;
+            if (element.mRadialPos!=0)
+               progId |= PROG_RADIAL_FOCUS;
+         }
+
+         if (ctrans || element.mColour != 0xffffffff)
+         {
+            progId |= PROG_TINT;
+            if (ctrans && ctrans->HasOffset())
+               progId |= PROG_COLOUR_OFFSET;
+         }
+
+         bool persp = element.mFlags & DRAW_HAS_PERSPECTIVE;
+
+         GPUProg *prog = mProg[progId];
+         if (!prog)
+             mProg[progId] = prog = GPUProg::create(progId);
+         if (!prog)
+            continue;
+
+         if (prog!=lastProg)
+         {
+            if (lastProg)
+               lastProg->disableSlots();
+
+            prog->bind();
+            prog->setTransform(inTrans);
+            lastProg = prog;
+         }
+
+         int stride = element.mStride;
+         if (prog->vertexSlot >= 0)
+         {
+            glVertexAttribPointer(prog->vertexSlot, persp ? 4 : 2 , GL_FLOAT, GL_FALSE, stride,
+                data + element.mVertexOffset);
+            glEnableVertexAttribArray(prog->vertexSlot);
+         }
+
+         if (prog->textureSlot >= 0)
+         {
+            glVertexAttribPointer(prog->textureSlot,  2 , GL_FLOAT, GL_FALSE, stride,
+                data + element.mTexOffset);
+            glEnableVertexAttribArray(prog->textureSlot);
+
+            if (element.mSurface)
+            {
+               Texture *boundTexture = element.mSurface->GetOrCreateTexture(*this);
+               element.mSurface->Bind(*this,0);
+               boundTexture->BindFlags(element.mFlags & DRAW_BMP_REPEAT,element.mFlags & DRAW_BMP_SMOOTH);
+            }
+         }
+
+         if (prog->colourSlot >= 0)
+         {
+            glVertexAttribPointer(prog->colourSlot, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride,
+                data + element.mColourOffset);
+            glEnableVertexAttribArray(prog->colourSlot);
+         }
+
+         if (prog->normalSlot >= 0)
+         {
+            glVertexAttribPointer(prog->normalSlot, 2, GL_FLOAT, GL_FALSE, stride,
+                data + element.mNormalOffset);
+            glEnableVertexAttribArray(prog->normalSlot);
+         }
+
+         if (element.mFlags & DRAW_RADIAL)
+         {
+            prog->setGradientFocus(element.mRadialPos * one_on_256);
+         }
+
+         if (progId & (PROG_TINT | PROG_COLOUR_OFFSET) )
+         {
+            prog->setColourTransform(ctrans, element.mColour );
+         }
+
+         if ( (element.mPrimType == ptLineStrip || element.mPrimType==ptPoints || element.mPrimType==ptLines)
+                 && element.mCount>1)
+         {
+            if (element.mWidth<0)
+               SetLineWidth(1.0);
+            else if (element.mWidth==0)
+               SetLineWidth(0.0);
+            else
+               switch(element.mScaleMode)
+               {
+                  case ssmNone: SetLineWidth(element.mWidth); break;
+                  case ssmNormal:
+                  case ssmOpenGL:
+                     if (mLineScaleNormal<0)
+                        mLineScaleNormal =
+                           sqrt( 0.5*( mModelView.m00*mModelView.m00 + mModelView.m01*mModelView.m01 +
+                                          mModelView.m10*mModelView.m10 + mModelView.m11*mModelView.m11 ) );
+                     SetLineWidth(element.mWidth*mLineScaleNormal);
+                     break;
+                  case ssmVertical:
+                     if (mLineScaleV<0)
+                        mLineScaleV =
+                           sqrt( mModelView.m00*mModelView.m00 + mModelView.m01*mModelView.m01 );
+                     SetLineWidth(element.mWidth*mLineScaleV);
+                     break;
+
+                  case ssmHorizontal:
+                     if (mLineScaleH<0)
+                        mLineScaleH =
+                           sqrt( mModelView.m10*mModelView.m10 + mModelView.m11*mModelView.m11 );
+                     SetLineWidth(element.mWidth*mLineScaleH);
+                     break;
+               }
+         }
+   
+            //printf("glDrawArrays %d : %d x %d\n", element.mPrimType, element.mFirst, element.mCount );
+
+         sgDrawCount++;
+         glDrawArrays(sgOpenglType[element.mPrimType], 0, element.mCount );
       }
-      else if (mColourArrayEnabled)
-      {
-         mColourArrayEnabled = false;
-         glDisableClientState(GL_COLOR_ARRAY);
-      }
-      #endif
+
+      if (lastProg)
+        lastProg->disableSlots();
+
+      if (inData.mVertexBo)
+         glBindBuffer(GL_ARRAY_BUFFER,0);
    }
 
-   virtual void PushBitmapMatrix()
-   {
-      #ifndef NME_FORCE_GLES2
-      glPushMatrix();
-      glLoadIdentity();
-      #endif
-   }
 
-   virtual void PopBitmapMatrix()
-   {
-      #ifndef NME_FORCE_GLES2
-      glPopMatrix();
-      #endif
-   }
-
-   virtual void PrepareBitmapRender()
-   {
-      #ifndef NME_FORCE_GLES2
-      float a = (float) ((mTint >> 24) & 0xFF) *one_on_255;
-      float c0 = (float) ((mTint >> 16) & 0xFF) *one_on_255;
-      float c1 = (float) ((mTint >> 8) & 0xFF) *one_on_255;
-      float c2 = (float) (mTint & 0xFF) *one_on_255;
-      #ifdef NME_PREMULTIPLIED_ALPHA
-      glColor4f(c0*a,c1*a,c2*a,a);
-      #else
-      glColor4f(c0,c1,c2,a);
-      #endif
-      glEnable(GL_TEXTURE_2D);
-      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      #ifdef NME_DITHER
-      if (!inSmooth)
-        glDisable(GL_DITHER);
-      #endif
-      #endif
-   }
-
-   virtual void FinishBitmapRender()
-   {
-      glDisable(GL_TEXTURE_2D);
-      #ifdef NME_DITHER
-      glEnable(GL_DITHER);
-      #endif
-   }
 
 
    void BeginBitmapRender(Surface *inSurface,uint32 inTint,bool inRepeat,bool inSmooth)
    {
-      if (!mUsingBitmapMatrix)
-      {
-         mUsingBitmapMatrix = true;
-         PushBitmapMatrix();
-      }
+      mBitmapBuffer.mArray.resize(0);
+      mBitmapBuffer.mRendersWithoutVbo = -999;
+      DrawElement &e = mBitmapBuffer.mElements[0];
+      e.mCount = 0;
 
-      if (mBitmapSurface==inSurface && mTint==inTint)
-         return;
+      e.mColour = inTint;
+      if (e.mSurface)
+         e.mSurface->DecRef();
 
-      mTint = inTint;
-      mBitmapSurface = inSurface;
-      inSurface->Bind(*this,0);
+      e.mSurface = inSurface;
+
+      e.mSurface->IncRef();
+      e.mFlags = (e.mFlags & ~(DRAW_BMP_REPEAT|DRAW_BMP_SMOOTH) );
+      if (inRepeat)
+         e.mFlags |= DRAW_BMP_REPEAT;
+      if (inSmooth)
+         e.mFlags |= DRAW_BMP_SMOOTH;
+
       mBitmapTexture = inSurface->GetOrCreateTexture(*this);
-      mBitmapTexture->BindFlags(inRepeat,inSmooth);
-
-      PrepareBitmapRender();
    }
 
    void RenderBitmap(const Rect &inSrc, int inX, int inY)
    {
-      UserPoint vertex[4];
-      UserPoint tex[4];
+      DrawElement &e = mBitmapBuffer.mElements[0];
+      mBitmapBuffer.mArray.resize( (e.mCount+6) * e.mStride );
+      UserPoint *p = (UserPoint *)&mBitmapBuffer.mArray[e.mCount*e.mStride];
+      e.mCount+=6;
       
+      UserPoint corners[4];
+      UserPoint tex[4];
       for(int i=0;i<4;i++)
       {
-         UserPoint t(inSrc.x + ((i&1)?inSrc.w:0), inSrc.y + ((i>1)?inSrc.h:0) ); 
-         tex[i] = mBitmapTexture->PixelToTex(t);
-         vertex[i] =  UserPoint(inX + ((i&1)?inSrc.w:0), inY + ((i>1)?inSrc.h:0) ); 
+         corners[i] =  UserPoint(inX + ((i&1)?inSrc.w:0), inY + ((i>1)?inSrc.h:0) ); 
+         tex[i] = mBitmapTexture->PixelToTex(UserPoint(inSrc.x + ((i&1)?inSrc.w:0), inSrc.y + ((i>1)?inSrc.h:0) )); 
       }
+      *p++ = corners[0];
+      *p++ = tex[0];
+      *p++ = corners[1];
+      *p++ = tex[1];
+      *p++ = corners[2];
+      *p++ = tex[2];
 
-      SetBitmapData(&vertex[0].x,&tex[0].x);
-
-      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-      sgDrawBitmap++;
+      *p++ = corners[1];
+      *p++ = tex[1];
+      *p++ = corners[2];
+      *p++ = tex[2];
+      *p++ = corners[3];
+      *p++ = tex[3];
    }
    
-   virtual void SetBitmapData(const float *inPos, const float *inTex)
-   {
-      #ifndef NME_FORCE_GLES2
-      glVertexPointer(2,GL_FLOAT,0,inPos);
-      glTexCoordPointer(2,GL_FLOAT,0,inTex);
-      #endif
-   }
 
    void EndBitmapRender()
    {
-      if (mUsingBitmapMatrix)
+      DrawElement &e = mBitmapBuffer.mElements[0];
+
+      if (e.mCount)
       {
-         mUsingBitmapMatrix = false;
-         PopBitmapMatrix();
+         RenderData(mBitmapBuffer,0,mBitmapTrans);
+         e.mCount = 0;
       }
 
+      if (e.mSurface)
+      {
+         e.mSurface->DecRef();
+         e.mSurface = 0;
+      }
+      mBitmapBuffer.mArray.resize(0);
       mBitmapTexture = 0;
-      mBitmapSurface = 0;
-      FinishBitmapRender();
    }
 
-   void SetLineWidth(double inWidth)
+   inline void SetLineWidth(double inWidth)
    {
       if (inWidth!=mLineWidth)
       {
-         double w = inWidth;
-         #ifndef NME_FORCE_GLES2
-         if (mQuality>=sqBest)
-         {
-            if (w>1)
-               glDisable(GL_LINE_SMOOTH);
-            else
-            {
-               w = 1;
-               if (inWidth==0)
-               {
-                  glDisable(GL_LINE_SMOOTH);
-               }
-               else
-                  glEnable(GL_LINE_SMOOTH);
-            }
-         }
-         #endif
-
+         // TODO mQuality -> tessellate_lines/tessellate_lines_aa
          mLineWidth = inWidth;
-         glLineWidth(w);
-         
-         // TODO: Need replacement call for GLES2?
-         #ifndef NME_FORCE_GLES2
-         if (mPointsToo)
-            glPointSize(inWidth);
-         #endif
+         glLineWidth(inWidth);
       }
    }
 
@@ -686,91 +524,16 @@ public:
 
    void SetQuality(StageQuality inQ)
    {
-      #ifndef NME_FORCE_GLES2
-      inQ = sqMedium;
       if (inQ!=mQuality)
       {
          mQuality = inQ;
-         if (mQuality>=sqHigh)
-         {
-            if (mPointSmooth)
-               glEnable(GL_POINT_SMOOTH);
-         }
-         else
-            glDisable(GL_POINT_SMOOTH);
-
-         if (mQuality>=sqBest)
-            glEnable(GL_LINE_SMOOTH);
-         else
-            glDisable(GL_LINE_SMOOTH);
          mLineWidth = 99999;
       }
-      #endif
    }
 
-   Matrix mModelView;
-   ThreadId mThreadId;
-
-   double mLineScaleV;
-   double mLineScaleH;
-   double mLineScaleNormal;
-   StageQuality mQuality;
 
 
-   Rect mViewport;
-   WinDC mDC;
-   GLCtx mOGLCtx;
-   uint32 mTint;
-   int mWidth,mHeight;
-   bool   mColourArrayEnabled;
-   bool   mPointsToo;
-   bool   mPointSmooth;
-   bool   mUsingBitmapMatrix;
-   double mLineWidth;
-   Surface *mBitmapSurface;
-   Texture *mBitmapTexture;
-   
-   QuickVec<GLuint> mZombieTextures;
-};
-
-#ifdef NME_USE_VBO
-void ReleaseVertexBufferObject(unsigned int inVBO)
-{
-   if (glDeleteBuffers)
-      glDeleteBuffers(1,&inVBO);
-}
-#endif
-
-
-
-
-// --- OGL2 -------------------------------------------------------------------
-
-class OGL2Context : public OGLContext
-{
-public:
-   OGL2Context(WinDC inDC, GLCtx inOGLCtx) : OGLContext(inDC,inOGLCtx)
-   {
-      mIsRadial = false;
-      for(int i=0;i<gpuSIZE;i++)
-         mProg[i] = 0;
-      for(int i=0;i<4;i++)
-         for(int j=0;j<4;j++)
-            mBitmapTrans[i][j] = mTrans[i][j] = i==j;
-      //mBitmapTrans[2][2] = 0.0;
-   }
-   ~OGL2Context()
-   {
-      for(int i=0;i<gpuSIZE;i++)
-         delete mProg[i];
-   }
-
-   void OnBeginRender()
-   {
-      // Do nothing
-   }
-
-   virtual void setOrtho(float x0,float x1, float y0, float y1)
+   void setOrtho(float x0,float x1, float y0, float y1)
    {
       mScaleX = 2.0/(x1-x0);
       mScaleY = 2.0/(y1-y0);
@@ -786,7 +549,7 @@ public:
       CombineModelView(mModelView);
    } 
 
-   virtual void CombineModelView(const Matrix &inModelView)
+   void CombineModelView(const Matrix &inModelView)
    {
       mTrans[0][0] = inModelView.m00 * mScaleX;
       mTrans[0][1] = inModelView.m01 * mScaleX;
@@ -799,166 +562,32 @@ public:
       mTrans[1][3] = inModelView.mty * mScaleY + mOffsetY;
    }
 
-   virtual void SetTexture(Surface *inSurface,const float *inTexCoords)
-   {
-      mTextureSurface = inSurface;
-      mTexCoords = inTexCoords;
-   }
-
-   virtual void SetPositionData(const float *inData,bool inPerspective)
-   {
-      mPosition = inData;
-      mPositionPerspective = inPerspective;
-   }
-
-
-   virtual void SetModulatingTransform(const ColorTransform *inTransform)
-   {
-      mColourTransform = inTransform;
-   }
-
-   virtual void SetColourArray(const int *inData)
-   {
-      mColourArray = inData;
-   }
-
-   virtual bool PrepareDrawing()
-   {
-      GPUProgID id = gpuNone; 
-      if (mTexCoords)
-      {
-         if (mIsRadial)
-         {
-            if (mRadialFocus!=0)
-               id = gpuRadialFocusGradient;
-            else
-               id = gpuRadialGradient;
-         }
-         else if (mColourTransform && !mColourTransform->IsIdentity())
-            id = gpuTextureTransform;
-         else if (mColourArray)
-            id = gpuTextureColourArray;
-         else
-            id = gpuTexture;
-      }
-      else
-      {
-         if (mColourArray)
-         {
-            if (mColourTransform && !mColourTransform->IsIdentity())
-               id = gpuColourTransform;
-            else
-               id = gpuColour;
-         }
-         else
-            id = gpuSolid;
-      }
-
-      if (id==gpuNone)
-         return false;
-
-      if (!mProg[id])
-         mProg[id] = GPUProg::create(id);
-
-      if (!mProg[id])
-         return false;
-
-      GPUProg *prog = mProg[id];
-      mCurrentProg = prog;
-      prog->bind();
-
-
-      prog->setPositionData(mPosition,mPositionPerspective);
-      prog->setTransform(mTrans);
-      if (mTexCoords)
-      {
-         prog->setTexCoordData(mTexCoords);
-         mTextureSurface->Bind(*this,0);
-      }
-      if (mColourArray)
-         prog->setColourData(mColourArray);
-      
-      if (mColourTransform)
-         prog->setColourTransform(mColourTransform);
-
-      if (id==gpuRadialFocusGradient)
-         prog->setGradientFocus(mRadialFocus);
-
-      return true;
-   }
-
-   virtual void SetBitmapData(const float *inPos, const float *inTex)
-   {
-      mCurrentProg->setPositionData(inPos,false);
-      mCurrentProg->setTexCoordData(inTex);
-   }
 
 
 
-   virtual void FinishDrawing()
-   {
-      if (mCurrentProg)
-         mCurrentProg->finishDrawing();
-   }
+   int mWidth,mHeight;
+   Matrix mModelView;
+   ThreadId mThreadId;
+
+   double mLineScaleV;
+   double mLineScaleH;
+   double mLineScaleNormal;
+   StageQuality mQuality;
 
 
-   virtual void SetSolidColour(unsigned int col)
-   {
-      if (mCurrentProg)
-         mCurrentProg->setTint(col);
-   }
+   Rect mViewport;
+   WinDC mDC;
+   GLCtx mOGLCtx;
 
+   HardwareData mBitmapBuffer;
+   Texture *mBitmapTexture;
 
-   virtual void PushBitmapMatrix() { }
+   double mLineWidth;
+   
+   QuickVec<GLuint> mZombieTextures;
+   QuickVec<GLuint> mZombieVbos;
 
-   virtual void PopBitmapMatrix() { }
-
-
-   virtual void PrepareBitmapRender()
-   {
-      GPUProgID id = mBitmapSurface->BytesPP() == 1 ? gpuBitmapAlpha : gpuBitmap;
-      if (!mProg[id])
-         mProg[id] = GPUProg::create(id);
-      mCurrentProg = mProg[id];
-      if (!mCurrentProg)
-         return;
-
-      mCurrentProg->bind();
-      mCurrentProg->setTint(mTint);
-      mBitmapSurface->Bind(*this,0);
-      mCurrentProg->setTransform(mBitmapTrans);
-      // TODO: Need replacement call for GLES2
-      //#ifndef NME_FORCE_GLES2
-      //glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      //#endif
-   }
-
-   virtual void FinishBitmapRender()
-   {
-      // TODO: Need replacement call for GLES2
-      //#ifndef NME_FORCE_GLES2
-      //glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-      //#endif
-   }
-
-   virtual void SetRadialGradient(bool inIsRadial, float inFocus)
-   {
-      mIsRadial = inIsRadial;
-      mRadialFocus = inFocus;
-   }
-
-
-   const float *mPosition;
-   bool  mPositionPerspective;
-   bool  mIsRadial;
-   float mRadialFocus;
-   Surface   *mTextureSurface;
-   const int *mColourArray;
-   const float *mTexCoords;
-   const ColorTransform *mColourTransform;
-
-   GPUProg *mCurrentProg;
-   GPUProg *mProg[gpuSIZE];
+   GPUProg *mProg[PROG_COUNT];
 
    double mScaleX;
    double mOffsetX;
@@ -971,7 +600,10 @@ public:
 
 
 
+
 // ----------------------------------------------------------------------------
+
+
 
 
 void InitExtensions()
@@ -999,73 +631,14 @@ void InitExtensions()
 }
 
 
-bool HasShaderSupport()
-{
-   int glMajor = 1;
-   int glMinor = 0;
-   bool shaders = false;
-   
-   const char *version = (const char *)glGetString(GL_VERSION);
-   
-   //printf("GL_VERSION: %s\n", version);
-   
-   #ifdef NME_GLES
-   glMajor = version[10];
-   glMinor = version[12];
-   #else
-   if (version)
-   {
-      sscanf(version, "%d.%d", &glMajor, &glMinor);
-   }
-   #endif
-   
-   if (glMajor == 1)
-   {
-      const char *ext = (const char *)glGetString(GL_EXTENSIONS);
-      if (ext && strstr(ext, "GL_ARB_shading_language_100"))
-      {
-         shaders = true;
-      }
-   }
-   else if (glMajor >= 2)
-   {
-      shaders = true;
-   }
-   
-   #ifdef ANDROID
-   ELOG("VERSION %s (%c), pipeline = %s", version, version==0 ? '?' : version[10], shaders ? "programmable" : "fixed");
-   #endif
-   
-   return shaders;
-}
 
 
 HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders)
 {
-   HardwareContext *ctx;
-   
-   #if defined(ANDROID) || defined(BLACKBERRY) || defined(IPHONE) || defined(WEBOS)
-   #ifdef NME_FORCE_GLES2
-   //printf ("Force GLES2\n");
-   shaders = true;
-   #elif defined(NME_FORCE_GLES1)
-   //printf ("Force GLES1\n");
-   shaders = false;
-   #endif
-   #endif
-   
-   if (shaders && HasShaderSupport())
-   {
-      //printf("Using OGL2\n");
-      ctx = new OGL2Context( (WinDC)inWindow, (GLCtx)inGLCtx );
-   }
-   else
-   {
-      //printf("Using OGL1\n");
-      ctx = new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
-   }
+   HardwareContext *ctx = new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
 
    InitExtensions();
+
    return ctx;
 }
 

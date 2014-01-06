@@ -26,7 +26,7 @@ class Sample extends Sprite
       draw(target);
 
       addChild(target);
-      var data:BitmapData = ApplicationMain.getAsset(Assets.image_jpg);
+      var data:BitmapData = ApplicationMain.getAsset("Image.jpg");
       var bmp = new Bitmap(data);
       bmp.alpha = 0.5;
       bmp.x = 50;

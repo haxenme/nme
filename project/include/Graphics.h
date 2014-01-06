@@ -489,111 +489,9 @@ struct RenderState
 };
 
 
-void ResetHardwareContext();
+class HardwareData;
+class HardwareContext;
 
-
-
-enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip, ptPoints, ptLines };
-
-struct DrawElement
-{
-   uint8    mPrimType;
-   bool     mBitmapRepeat;
-   bool     mBitmapSmooth;
-   int      mFirst;
-   int      mCount;
-   uint32   mColour;
-   float    mWidth;
-   StrokeScaleMode mScaleMode;
-};
-
-typedef QuickVec<DrawElement> DrawElements;
-typedef QuickVec<UserPoint>   Vertices;
-typedef QuickVec<UserPoint>   TexCoords;
-typedef QuickVec<int>         Colours;
-
-void ReleaseVertexBufferObject(unsigned int inVBO);
-
-void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys);
-
-struct HardwareArrays
-{
-   enum
-   {
-     BM_ADD      = 0x00000001,
-     PERSPECTIVE = 0x00000002,
-     RADIAL      = 0x00000004,
-     BM_MULTIPLY = 0x00000008,
-     BM_SCREEN   = 0x00000010,
-
-     FOCAL_MASK  = 0x0000ff00,
-     FOCAL_SIGN  = 0x00010000,
-   };
-
-   HardwareArrays(Surface *inSurface,unsigned int inFlags);
-   ~HardwareArrays();
-   bool ColourMatch(bool inWantColour);
-
-
-   DrawElements mElements;
-   Vertices     mVertices;
-   TexCoords    mTexCoords;
-	Colours      mColours;
-   Surface      *mSurface;
-   unsigned int mFlags;
-   //unsigned int mVertexBO;
-};
-
-typedef QuickVec<HardwareArrays *> HardwareCalls;
-
-class HardwareData
-{
-public:
-   ~HardwareData();
-
-   HardwareArrays &GetArrays(Surface *inSurface,bool inWithColour,unsigned int inFlags);
-
-   HardwareCalls mCalls;
-   
-};
-
-
-class HardwareContext : public Object
-{
-public:
-   static HardwareContext *current;
-   static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders);
-   static HardwareContext *CreateDX11(void *inDevice, void *inContext);
-   static HardwareContext *CreateDirectFB(void *inDFB, void *inSurface);
-
-   // Could be common to multiple implementations...
-   virtual bool Hits(const RenderState &inState, const HardwareCalls &inCalls );
-
-   virtual void SetWindowSize(int inWidth,int inHeight)=0;
-   virtual void SetQuality(StageQuality inQuality)=0;
-   virtual void BeginRender(const Rect &inRect,bool inForHitTest)=0;
-   virtual void EndRender()=0;
-   virtual void SetViewport(const Rect &inRect)=0;
-   virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
-   virtual void Flip() = 0;
-
-   virtual int Width() const = 0;
-   virtual int Height() const = 0;
-
-
-   virtual class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags)=0;
-   virtual void Render(const RenderState &inState, const HardwareCalls &inCalls )=0;
-   virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0,bool inRepeat=true,bool inSmooth=true)=0;
-   virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
-   virtual void EndBitmapRender()=0;
-
-   virtual void DestroyNativeTexture(void *inNativeTexture)=0;
-};
-
-extern HardwareContext *gDirectRenderContext;
-
-void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,
-                      HardwareData &ioData, HardwareContext &inHardware);
 
 int UpToPower2(int inX);
 inline int IsPower2(unsigned int inX) { return (inX & (inX-1))==0; }
@@ -639,10 +537,6 @@ public:
 
    virtual bool Hits(const RenderState &inState) { return false; }
    
-   #ifdef NME_DIRECTFB
-   static Renderer *CreateHardware(const class GraphicsJob &inJob,const GraphicsPath &inPath,HardwareContext &inHardware);
-   #endif
-   
    static Renderer *CreateSoftware(const class GraphicsJob &inJob,const GraphicsPath &inPath);
 
 protected:
@@ -660,9 +554,6 @@ struct GraphicsJob
    GraphicsStroke  *mStroke;
    IGraphicsFill   *mFill;
    GraphicsTrianglePath  *mTriangles;
-   #ifdef NME_DIRECTFB
-   class Renderer  *mHardwareRenderer;
-   #endif
    class Renderer  *mSoftwareRenderer;
    int             mCommand0;
    int             mData0;
