@@ -988,19 +988,13 @@ public:
       {
          if (first)
          {
-            left.push_back(CurveEdge(p0+back,t));
-            right.push_back(CurveEdge(p0+back,t));
-
-            left.push_back(CurveEdge(p0+back-perp,t+0.5));
-            right.push_back(CurveEdge(p0+back+perp,t+0.5));
+            left.push_back(CurveEdge(p0+back-perp,t));
+            right.push_back(CurveEdge(p0+back+perp,t));
          }
          else
          {
-            left.push_back(CurveEdge(p0-perp,t));
-            right.push_back(CurveEdge(p0+perp,t));
-
-            left.push_back(CurveEdge(p0+back-perp,t+0.5));
-            right.push_back(CurveEdge(p0+back+perp,t+0.5));
+            left.push_back(CurveEdge(p0+back-perp,t));
+            right.push_back(CurveEdge(p0+back+perp,t));
          }
       }
       else
@@ -1087,7 +1081,9 @@ public:
              //printf("Dup next_dir\n");
           }
           else
+          {
              next_dir = inPath[1].getDir0(p).Normalized();
+          }
 
 
           UserPoint perp0(-dir0.y*mPerpLen, dir0.x*mPerpLen);
@@ -1356,6 +1352,18 @@ public:
          CalcTexCoords();
 
       PushElement();
+
+      int extra = added * mElement.mStride;
+
+      if (mElement.mNormalOffset)
+         mElement.mNormalOffset += extra;
+      if (mElement.mVertexOffset)
+         mElement.mVertexOffset += extra;
+      if (mElement.mTexOffset)
+         mElement.mTexOffset += extra;
+      if (mElement.mColourOffset)
+         mElement.mColourOffset += extra;
+      mElement.mCount = 0;
    }
 
 
@@ -1385,7 +1393,9 @@ public:
                }
 
                if (strip.size()>1)
+               {
                   AddStrip(strip,false);
+               }
 
                strip.resize(0);
                strip.push_back(Segment(*point));
@@ -1410,7 +1420,6 @@ public:
                {
                   AddStrip(strip,true);
                   strip.resize(0);
-                  first = *point;
                }
                
                prev = *point;
@@ -1429,11 +1438,10 @@ public:
                   strip.push_back(Segment(point[1],point[0]));
 
                   // Implicit loop closing...
-                  if (strip.size()>2 && point[1]==first)
+                  if (strip.size()>=2 && point[1]==first)
                   {
                      AddStrip(strip,true);
                      strip.resize(0);
-                     first = point[1];
                   }
 
                   prev = point[1];
