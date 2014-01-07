@@ -1029,6 +1029,7 @@ class IOSVideo : public StageVideo
    bool                    playing;
    bool                    stopped;
    bool                    seenPrepared;
+   bool                    sentMeta;
 
    double                  seekPending;
    double                  timeAtLastSeek;
@@ -1044,6 +1045,7 @@ public:
       handler = 0;
       videoWidth = 0;
       videoHeight = 0;
+      sentMeta = false;
       duration = 0;
       active = true;
       playing = false;
@@ -1128,6 +1130,7 @@ public:
       stopped = false;
       videoWidth = 0;
       videoHeight = 0;
+      sentMeta = false;
       duration = 0;
       seenPrepared = false;
       seekPending = -999;
@@ -1168,6 +1171,7 @@ public:
 
    void sendMeta()
    {
+      sentMeta = true;
       int top = 0;
       gc_set_top_of_stack(&top,false);
 
@@ -1314,16 +1318,21 @@ public:
       }
    }
 
-   void checkSize()
+   void checkSize(bool inIgnoreDuration=false)
    {
       CGSize size = player.naturalSize;
       int w = (int)size.width;
       int h = (int)size.height;
-      if (w!=videoWidth || h!=videoHeight)
+      if (duration==0 && player)
+      {
+         duration = player.duration;
+      }
+
+      if (w!=videoWidth || h!=videoHeight || !sentMeta)
       {
          videoWidth = w;
          videoHeight = h;
-         if (duration>0)
+         if (duration>0 || inIgnoreDuration)
             sendMeta();
       }
    }
@@ -1347,8 +1356,13 @@ public:
       //printf("State changed %d\n", player.playbackState);
       switch(player.playbackState)
       {
-         case MPMoviePlaybackStateStopped: break;
+         case MPMoviePlaybackStateStopped:
+            sendState( PLAY_STATUS_STOPPED );
+            break;
          case MPMoviePlaybackStatePlaying:
+            checkSize(true);
+            sendState( PLAY_STATUS_STARTED );
+            break;
          case MPMoviePlaybackStatePaused: break;
          case MPMoviePlaybackStateInterrupted: break;
          case MPMoviePlaybackStateSeekingForward: break;
@@ -1361,6 +1375,10 @@ public:
       CGSize size = player.naturalSize;
       videoWidth = size.width;
       videoHeight = size.height;
+      if (duration==0 && player)
+      {
+         duration = player.duration;
+      }
       if (duration>0)
         sendMeta();
    }

@@ -27,6 +27,8 @@ class StageVideo extends EventDispatcher
    inline static var playComplete = "NetStream.Play.Complete"; // Not ios
    inline static var playSwitch = "NetStream.Play.Switch";
    inline static var playTransitionComplete = "NetStream.Play.TransitionComplete";
+   inline static var playStart = "NetStream.Play.Start";
+   inline static var playStop = "NetStream.Play.Stop";
    //inline static var noSupportedTrackFound = "NetStream.Play.NoSupportedTrackFound"; // Not ios
    //inline static var fileStructureInvalid = "NetStream.Play.FileStructureInvalid"; // Not ios
    inline static var playStreamNotFound = "NetStream.Play.StreamNotFound"; // Not ios
@@ -50,6 +52,8 @@ class StageVideo extends EventDispatcher
    inline static var PLAY_STATUS_TRANSITION = 2;
    inline static var PLAY_STATUS_ERROR = 3;
    inline static var PLAY_STATUS_NOT_STARTED = 4;
+   inline static var PLAY_STATUS_STARTED = 5;
+   inline static var PLAY_STATUS_STOPPED = 6;
 
    inline static var SEEK_FINISHED_OK = 0;
    inline static var SEEK_FINISHED_EARLY = 1;
@@ -291,6 +295,17 @@ class StageVideo extends EventDispatcher
                 info = { code:playStreamNotFound  };
               case PLAY_STATUS_ERROR :
                 info = { code:playFailed  };
+              case PLAY_STATUS_STARTED :
+                info = { code:playStart  };
+              case PLAY_STATUS_STOPPED :
+                info = { code:playStop  };
+
+              case PLAY_STATUS_COMPLETE :
+                 info = { code:playComplete };
+              case PLAY_STATUS_SWITCH :
+                 info = { code:playSwitch };
+              case PLAY_STATUS_TRANSITION :
+                 info = { code:playTransitionComplete };
          }
          if (info!=null)
          {
