@@ -1,4 +1,9 @@
 <xml>
+   <!-- Require Android 2.3+ -->
+   <set name="PLATFORM" value="android-9" if="android" />
+   <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
+
+
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
    <!-- 
       Build with:
@@ -16,6 +21,8 @@
    <!-- Where to find static libraries/includes -->
    <set name="NME_STATE" value="${haxelib:nme-state}" unless="NME_STATE" />
    
+
+
    <!--
       What SDL to use?
       For desktop, use version 2.
@@ -97,6 +104,7 @@
          <file name="iPhone/UIDeviceHardware.mm"/>
          <!-- <file name="iPhone/SurfaceIO.mm"/> -->
          <file name="openal/OpenALSound.cpp" />
+         <file name="common/Audio.cpp" />
          <file name="iPhone/Sound.mm"/>
          <file name="iPhone/NativeFont.mm"/>
          <file name="iPhone/System.mm"/>
@@ -191,7 +199,7 @@
       <file name="common/CURL.cpp" unless="nocurl"/>
       <file name="common/Lzma.cpp"/>
       <file name="common/Thread.cpp"/>
-      <file name="common/Audio.cpp" if="openal"/>
+      <!--<file name="common/Audio.cpp" if="openal"/>-->
       <file name="video/TheoraVideo.cpp" if="theora" />
       <file name="empty/Video.cpp" unless="theora" />
       
@@ -274,10 +282,15 @@
 
 
          <section unless="NME_SDL_SYSTEM">
-            <lib name="${PRELIB}vorbis${POSTLIB}" />
-            <lib name="${PRELIB}ogg${POSTLIB}" />
-            <lib name="${PRELIB}theora${POSTLIB}" />
-            <lib name="${PRELIB}curl${NME_SSL_EXTRA}${POSTLIB}" />
+            <section if="NME_SDL2">
+               <lib name="${PRELIB}vorbis${POSTLIB}" />
+               <lib name="${PRELIB}ogg${POSTLIB}" />
+               <lib name="${PRELIB}theora${POSTLIB}" />
+            </section>
+
+            <section if="NME_CURL">
+               <lib name="${PRELIB}curl${NME_SSL_EXTRA}${POSTLIB}" />
+            </section>
 
             <lib name="${PRELIB}freetype${POSTLIB}"/>
             <lib name="${PRELIB}jpeg${POSTLIB}" />

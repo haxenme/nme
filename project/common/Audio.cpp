@@ -145,6 +145,10 @@ namespace nme
 			{
 				return eAF_wav;
 			}
+			if (len>4 && CompareBuffer(buff, "MThd", 4))
+			{
+				return eAF_mid;
+			}
 			return eAF_unknown;
 		}
 		
@@ -159,6 +163,8 @@ namespace nme
 				return eAF_wav;
 			else if (extension.compare("mp3") == 0)
 				return eAF_mp3;
+			else if (extension.compare("mid") == 0)
+				return eAF_mid;
 			
 			AudioFormat format = eAF_unknown;
 			

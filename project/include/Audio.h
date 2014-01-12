@@ -59,6 +59,7 @@ namespace nme
 		eAF_ogg,
 		eAF_wav,
 		eAF_mp3,
+		eAF_mid,
 		eAF_count
 	};
 	

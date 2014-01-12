@@ -41,6 +41,9 @@ class Sound : public Object
 public:
    static Sound *Create(const std::string &inFilename, bool inForceMusic);
    static Sound *Create(float *inData, int len, bool inForceMusic);
+   static Sound *CreateOpenAl(const std::string &inFilename, bool inForceMusic);
+   static Sound *CreateOpenAl(float *inData, int len);
+
    static void Suspend();
    static void Resume();
 
