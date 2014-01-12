@@ -33,7 +33,12 @@ int InitSDL()
 		
 	sgInitCalled = true;
 	
-	int err = SDL_Init(SDL_INIT_VIDEO /*| SDL_INIT_AUDIO*/ | SDL_INIT_TIMER);
+   #ifdef NME_MIXER
+   int audioFlag = SDL_INIT_AUDIO;
+   #else
+   int audioFlag = 0;
+   #endif
+	int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
 	
 	if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0)
 	{
@@ -1087,7 +1092,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	
 	//SDL_EnableUNICODE(1);
 	//SDL_EnableKeyRepeat(500,30);
-	//gSDLIsInit = true;
+	gSDLIsInit = true;
 
 	#ifdef NME_MIXER
 	#ifdef HX_WINDOWS
@@ -1103,7 +1108,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	if (Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize) != 0)
 	{
 		fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
-		//gSDLIsInit = false;
+		gSDLIsInit = false;
 	}
 	#endif
 	

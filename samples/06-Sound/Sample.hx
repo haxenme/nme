@@ -1,4 +1,3 @@
-#if nme
 import nme.Lib;
 import nme.display.Sprite;
 import nme.display.Bitmap;
@@ -7,16 +6,7 @@ import nme.media.Sound;
 import nme.net.URLRequest;
 import nme.events.MouseEvent;
 import nme.events.Event;
-#else
-import flash.Lib;
-import flash.display.Sprite;
-import flash.display.Bitmap;
-import flash.display.BitmapData;
-import flash.media.Sound;
-import flash.net.URLRequest;
-import flash.events.MouseEvent;
-import flash.events.Event;
-#end
+import nme.Assets;
 
 import nme.events.SampleDataEvent;
 
@@ -36,18 +26,18 @@ class Bang extends Bitmap
 
       if (mImage==null)
       {
-         mImage = ApplicationMain.getAsset("Data/bang.png");
+         mImage = Assets.getBitmapData("Data/bang.png");
          mOffX = -Math.round(mImage.width/2);
          mOffY = -Math.round(mImage.height/2);
 
          // Can only play 1 mp3 at a time...
-         mSound1 = ApplicationMain.getAsset("Data/drum.ogg");
+         mSound1 = Assets.getSound("Data/drum.ogg");
          if (mSound1==null)
             trace("WARNING: Data/drumm.ogg failed to load");
-         mSound2 = ApplicationMain.getAsset("Data/drums.ogg");
+         mSound2 = Assets.getSound("Data/drums.ogg");
          if (mSound2==null)
             trace("WARNING: Data/drums.ogg failed to load");
-         mSound3 = ApplicationMain.getAsset("Data/bass.wav");
+         mSound3 = Assets.getSound("Data/bass.wav");
          if (mSound3==null)
             trace("WARNING: Data/bass.wav failed to load");
       }
@@ -99,24 +89,14 @@ class Sample extends Sprite
       Lib.current.stage.addChild(this);
 
       var bmp = new Bitmap();
-      bmp.bitmapData = ApplicationMain.getAsset("Data/drum_kit.jpg");
+      bmp.bitmapData = Assets.getBitmapData("Data/drum_kit.jpg");
       addChild(bmp);
 
       mPrevLeftVolume = mLeftVolume = 1.0;
       mPrevRightVolume = mRightVolume = 1.0;
       mFrequency = 0.05;
 
-      var sound_name = "music";
-      var sound:Sound = ApplicationMain.getAsset(sound_name);
-      if (sound==null)
-      {
-         trace("WARNING: " + sound_name + " failed to load");
-      }
-      else
-      {
-         var channel = sound.play(0,-1);
-         channel.addEventListener( Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
-      }
+      playMusic("rock");
 
       mBuzzStart = new Sprite();
       var gfx = mBuzzStart.graphics;
@@ -142,6 +122,26 @@ class Sample extends Sprite
       stage.addEventListener( MouseEvent.MOUSE_DOWN, onClick );
       stage.addEventListener( MouseEvent.MOUSE_MOVE, onMove );
    }
+
+   function playMusic(inId:String)
+   {
+      var sound:Sound = Assets.getMusic(inId);
+      if (sound==null)
+      {
+         trace("WARNING: " + inId + " could not load asset");
+      }
+      else
+      {
+         var channel = sound.play(0,1);
+         channel.addEventListener( Event.SOUND_COMPLETE, function(_)
+            {
+               var next = inId=="rock" ? "classical" : "rock";
+               trace("Complete - play " + next);
+               playMusic(next);
+            } );
+      }
+   }
+
 
    public function onFillData(dataEvent:SampleDataEvent)
    {
@@ -220,10 +220,7 @@ class Sample extends Sprite
    {
       mDown = false;
    }
-
-   public static function main()
-   {
-      new Sample();
-   }
-
 }
+
+
+

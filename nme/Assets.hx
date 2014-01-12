@@ -73,7 +73,8 @@ class Assets
 
    public static function badType(id:String, type:String)
    {
-      trace("[nme.Assets] resource '" + id + "' is not of type " + type);
+      var i = getInfo(id);
+      trace("[nme.Assets] resource '" + id + "' is not of type " + type + " it is " + i.type);
    }
 
    public static function hasBitmapData(id:String):Bool 
@@ -291,7 +292,7 @@ class Assets
          noId(id,"Sound");
          return null;
       }
-      if (i.type != SOUND || i.type!=MUSIC)
+      if (i.type!=SOUND && i.type!=MUSIC)
       {
          badType(id,"Sound");
          return null;
@@ -317,6 +318,23 @@ class Assets
 
       return sound;
    }
+
+   public static function getMusic(id:String,?useCache:Null<Bool>):Sound 
+   {
+      var i = getInfo(id);
+      if (i==null)
+      {
+         noId(id,"Music");
+         return null;
+      }
+      if (i.type!=MUSIC)
+      {
+         badType(id,"Music");
+         return null;
+      }
+      return getSound(id,useCache);
+   }
+
 
    public static function hasText(id:String) { return hasBytes(id); }
    public static function hasString(id:String) {

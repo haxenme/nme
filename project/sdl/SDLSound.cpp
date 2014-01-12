@@ -23,6 +23,8 @@ bool sDoneMusic = false;
 enum { STEREO_SAMPLES = 2 };
 
 unsigned int  sSoundPos = 0;
+double        sLastMusicUpdate = 0;
+double        sMusicFrequency = 0;
 
 void onChannelDone(int inChannel)
 {
@@ -39,6 +41,16 @@ void onMusicDone()
 void  onPostMix(void *udata, Uint8 *stream, int len)
 {
    sSoundPos += len / sizeof(short) / STEREO_SAMPLES ;
+   sLastMusicUpdate = GetTimeStamp();
+}
+
+int getMixerTime(int inTime0)
+{
+   double now = GetTimeStamp();
+   if (now>sLastMusicUpdate+1)
+      return sSoundPos;
+
+   return (sSoundPos-inTime0) + (int)( (now - sLastMusicUpdate)*sMusicFrequency );
 }
 
 
@@ -118,6 +130,10 @@ public:
       if (mChannels!=2)
          ELOG("Warning - channe mismatch    %d",mChannels);
 
+      if (sMusicFrequency==0)
+      {
+         sMusicFrequency = mFrequency;
+      }
 
       mChunk = 0;
       mDynamicBuffer = new short[BUF_SIZE * STEREO_SAMPLES];
@@ -129,8 +145,10 @@ public:
       mDynamicChunk.alen = BUF_SIZE * sizeof(short) * STEREO_SAMPLES; // bytes
       mDynamicChunk.volume = MIX_MAX_VOLUME;
       mDynamicFillPos = 0;
-      mDynamicStartPos = 0;
+      mSoundPos0 = 0;
       mDynamicDataDue = 0;
+
+      mBufferAheadSamples = 0;//mFrequency / 20; // 50ms buffer
 
       // Allocate myself a channel
       for(int i=0;i<sMaxChannels;i++)
@@ -145,27 +163,27 @@ public:
 
       if (mChannel>=0)
       {
-         FillBuffer(inBytes);
+         FillBuffer(inBytes,true);
          // Just once ...
          if (mDynamicFillPos<1024)
          {
-            mDynamicDone = true;
+            mDynamicRequestPending = true;
             mDynamicChunk.alen = mDynamicFillPos * sizeof(short) * STEREO_SAMPLES;
             Mix_PlayChannel( mChannel , &mDynamicChunk,  0 );
          }
          else
          {
-            mDynamicDone = false;
+            mDynamicRequestPending = false;
             // TODO: Lock?
             Mix_PlayChannel( mChannel , &mDynamicChunk,  -1 );
-            mDynamicStartPos = sSoundPos;
          }
+         mSoundPos0 = getMixerTime(0);
 
          Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
       }
    }
 
-   void FillBuffer(const ByteArray &inBytes)
+   void FillBuffer(const ByteArray &inBytes,bool inFirst)
    {
       int time_samples = inBytes.Size()/sizeof(float)/STEREO_SAMPLES;
       const float *buffer = (const float *)inBytes.Bytes();
@@ -178,25 +196,27 @@ public:
          mDynamicBuffer[ (mono_pos<<1) + 1 ] = *buffer++ * ((1<<15)-1);
       }
 
-      if (mDynamicFillPos<(sSoundPos-mDynamicStartPos))
-         ELOG("Too slow - FillBuffer %d / %d)", mDynamicFillPos, (sSoundPos-mDynamicStartPos) );
+      int soundTime = getMixerTime(mSoundPos0);
+
+      if (mDynamicFillPos<soundTime && !inFirst)
+         ELOG("Too slow - FillBuffer %d / %d)", mDynamicFillPos, soundTime );
       mDynamicFillPos += time_samples;
-      if (time_samples<1024 && !mDynamicDone)
+      if (time_samples<1024 && !mDynamicRequestPending)
       {
-         mDynamicDone = true;
+         mDynamicRequestPending = true;
          for(int i=0;i<2048;i++)
          {
             int mono_pos =  (i+mDynamicFillPos) & MASK;
             mDynamicBuffer[ mono_pos<<1 ] = 0;
             mDynamicBuffer[ (mono_pos<<1) + 1 ] = 0;
          }
-            
-         int samples_left = (int)mDynamicFillPos - (int)(sSoundPos-mDynamicStartPos);
+
+         int samples_left = (int)mDynamicFillPos - (int)(soundTime);
          int ticks_left = samples_left*1000/44100;
          //printf("Expire in %d (%d)\n", samples_left, ticks_left );
-		 #ifndef EMSCRIPTEN
+         #ifndef EMSCRIPTEN
          Mix_ExpireChannel(mChannel, ticks_left>0 ? ticks_left : 1 );
-		 #endif
+         #endif
       }
    }
  
@@ -244,16 +264,17 @@ public:
 
    double getDataPosition()
    {
-      return (sSoundPos-mDynamicStartPos)*1000.0/mFrequency;
+      return getMixerTime(mSoundPos0)*1000.0/mFrequency;
    }
    bool needsData()
    {
-      if (!mDynamicBuffer || mDynamicDone)
+      if (!mDynamicBuffer || mDynamicRequestPending)
          return false;
 
-      if (mDynamicDataDue<=sSoundPos)
+      int soundTime = getMixerTime( mSoundPos0 );
+      if (mDynamicDataDue<=soundTime + mBufferAheadSamples)
       {
-         mDynamicDone = true;
+         mDynamicRequestPending = true;
          return true;
       }
 
@@ -263,9 +284,10 @@ public:
 
    void addData(const ByteArray &inBytes)
    {
-      mDynamicDone = false;
-      mDynamicDataDue = mDynamicFillPos + mDynamicStartPos;
-      FillBuffer(inBytes);
+      mDynamicRequestPending = false;
+      int soundTime = getMixerTime(mSoundPos0);
+      mDynamicDataDue = mDynamicFillPos;
+      FillBuffer(inBytes,false);
    }
 
 
@@ -276,12 +298,13 @@ public:
    Mix_Chunk mDynamicChunk;
    short    *mDynamicBuffer;
    unsigned int  mDynamicFillPos;
-   unsigned int  mDynamicStartPos;
-   unsigned int  mDynamicDataDue;
-   bool      mDynamicDone;
+   unsigned int  mSoundPos0;
+   int       mDynamicDataDue;
+   bool      mDynamicRequestPending;
    int       mFrequency;
    Uint16    mFormat;
    int       mChannels;
+   int       mBufferAheadSamples;
 };
 
 SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
@@ -473,7 +496,11 @@ public:
       IncRef();
       
       #ifndef EMSCRIPTEN
+      #ifdef NME_SDL2
+      mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(inData, len),false);
+      #else
       mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(inData, len));
+      #endif
       if ( mMusic == NULL )
       {
          mError = SDL_GetError();

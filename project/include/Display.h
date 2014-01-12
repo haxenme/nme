@@ -21,6 +21,7 @@ enum
 extern unsigned int gDisplayRefCounting;
 
 extern bool gSDLIsInit;
+extern int  gSDLMixerFreq;
 
 enum EventType
 {
