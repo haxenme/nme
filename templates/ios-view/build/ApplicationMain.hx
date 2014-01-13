@@ -21,10 +21,6 @@ class ApplicationDocument extends ::APP_MAIN::
 
 @:buildXml("
 <files id='__lib__'>
-<compilerflag value='-Iinclude'/>
-  <file name='src/__lib__.cpp'>
-   <depend name='include/ApplicationMain.h'/>
-  </file>
   <file name='FrameworkInterface.mm'>
   </file>
 </files>
