@@ -1249,7 +1249,7 @@ public:
 
    void setState()
    {
-      if (!stopped)
+      if (!stopped && player!=nil)
       {
          if (playing && active)
          {
@@ -1296,6 +1296,9 @@ public:
    {
       printf("video: destroy\n");
       lastUrl = "";
+      videoWidth = 0;
+      videoHeight = 0;
+      duration = 0;
       if (player && !stopped)
       {
          printf("STOP\n");
@@ -1328,7 +1331,7 @@ public:
          duration = player.duration;
       }
 
-      if (w!=videoWidth || h!=videoHeight || !sentMeta)
+      if (w!=videoWidth || h!=videoHeight || (!sentMeta && w && h))
       {
          videoWidth = w;
          videoHeight = h;
@@ -1357,14 +1360,21 @@ public:
       switch(player.playbackState)
       {
          case MPMoviePlaybackStateStopped:
-            sendState( PLAY_STATUS_STOPPED );
+            if (!stopped)
+            {
+               stopped = true;
+               sendState( PLAY_STATUS_STOPPED );
+            }
             break;
          case MPMoviePlaybackStatePlaying:
+            printf("MPMoviePlaybackStatePlaying\n");
             checkSize(true);
             sendState( PLAY_STATUS_STARTED );
             break;
          case MPMoviePlaybackStatePaused: break;
-         case MPMoviePlaybackStateInterrupted: break;
+         case MPMoviePlaybackStateInterrupted:
+            printf("Interrupted");
+            break;
          case MPMoviePlaybackStateSeekingForward: break;
          case MPMoviePlaybackStateSeekingBackward:break;
       }
@@ -1420,10 +1430,16 @@ public:
       {
          //user hit the done button - is this complete?
          sendState( PLAY_STATUS_COMPLETE );
+         stopped = true;
       }
       else if (reason == MPMovieFinishReasonPlaybackError)
       {
          lastUrl = "";
+         stopped = true;
+         videoWidth = 0;
+         videoHeight = 0;
+         duration = 0;
+
          //error
          if (seekPending>=0)
          {
