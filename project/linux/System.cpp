@@ -42,7 +42,7 @@ namespace nme {
 		
 	}
 	
-	#ifdef SDL_OGL
+	#if defined(SDL_OGL) && defined(USE_X11)
 	double CapabilitiesGetScreenDPI() {
 		double xres, yres;
 		Display *dpy;
