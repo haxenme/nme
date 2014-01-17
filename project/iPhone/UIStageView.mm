@@ -1360,13 +1360,11 @@ public:
       switch(player.playbackState)
       {
          case MPMoviePlaybackStateStopped:
-            if (!stopped)
-            {
-               stopped = true;
-               sendState( PLAY_STATUS_STOPPED );
-            }
+            printf("MPMoviePlaybackStateStopped\n");
+            sendState( PLAY_STATUS_STOPPED );
             break;
          case MPMoviePlaybackStatePlaying:
+
             printf("MPMoviePlaybackStatePlaying\n");
             checkSize(true);
             sendState( PLAY_STATUS_STARTED );
@@ -1415,6 +1413,13 @@ public:
     
    void onFinished(int reason)
    { 
+      printf("on Finished\n");
+      // force stop to avoid loop
+      if(!stopped){
+        printf("force stop\n");
+        [player stop];
+        stopped = true;
+      }
 
       if (reason == MPMovieFinishReasonPlaybackEnded)
       {
@@ -1424,18 +1429,18 @@ public:
             seekPending = -999;
             sendSeekStatus(SEEK_FINISHED_EARLY,duration);
          }
+         
          sendState( PLAY_STATUS_COMPLETE );
       }
       else if (reason == MPMovieFinishReasonUserExited)
       {
          //user hit the done button - is this complete?
          sendState( PLAY_STATUS_COMPLETE );
-         stopped = true;
       }
       else if (reason == MPMovieFinishReasonPlaybackError)
       {
          lastUrl = "";
-         stopped = true;
+         //stopped = true;
          videoWidth = 0;
          videoHeight = 0;
          duration = 0;
@@ -1448,9 +1453,13 @@ public:
             sendSeekStatus(SEEK_FINISHED_ERROR,val);
          }
          if (seenPrepared)
+         {
             sendState( PLAY_STATUS_NOT_STARTED );
+         }
          else
+          {
             sendState( PLAY_STATUS_ERROR );
+          }
       }
 
    }
