@@ -1361,11 +1361,7 @@ public:
       {
          case MPMoviePlaybackStateStopped:
             printf("MPMoviePlaybackStateStopped\n");
-            if (!stopped)
-            {
-               stopped = true;
-               sendState( PLAY_STATUS_STOPPED );
-            }
+            sendState( PLAY_STATUS_STOPPED );
             break;
          case MPMoviePlaybackStatePlaying:
 
@@ -2127,3 +2123,4 @@ void nme_app_set_active(bool inActive)
 
 
 }
+
