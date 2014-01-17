@@ -268,6 +268,7 @@
          <section if="NME_SDL2">
             <lib name="${PRELIB}SDL2${POSTLIB}" />
             <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
+            <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
          </section>
 
 
@@ -361,6 +362,7 @@
 
          <section if="linux">
             <lib name="-ldl" />
+            <lib name="-Lsupport/linux64" if="HXCPP_M64"/>
             <lib name="-lGL" unless="rpi"/>
             <lib name="-lpthread" />
          </section>
