@@ -1368,6 +1368,7 @@ public:
             }
             break;
          case MPMoviePlaybackStatePlaying:
+
             printf("MPMoviePlaybackStatePlaying\n");
             checkSize(true);
             sendState( PLAY_STATUS_STARTED );
