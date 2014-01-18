@@ -366,6 +366,7 @@
             <lib name="-Lsupport/linux32" unless="HXCPP_M64"/>
             <lib name="-lGL" unless="rpi"/>
             <lib name="-lpthread" />
+            <lib name="-lrt" />
          </section>
       
          <section if="winrt">

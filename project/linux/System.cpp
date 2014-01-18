@@ -2,9 +2,23 @@
 #include <string>
 #include <stdlib.h>
 #include <clocale>
-
+#include <sys/select.h>
 
 using namespace std;
+
+
+// Implement this to avoid gcc library dll hell
+extern "C"
+unsigned long int __fdelt_chk (unsigned long int d)
+{
+  if (d >= FD_SETSIZE)
+  {
+     printf("Select - bad fd.\n");
+     return 0;
+  }
+
+  return d / __NFDBITS;
+}
 
 
 namespace nme {
