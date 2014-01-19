@@ -268,7 +268,7 @@
          <section if="NME_SDL2">
             <lib name="${PRELIB}SDL2${POSTLIB}" />
             <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
-            <lib name="${PRELIB}modplug${POSTLIB}" if="linux" />
+            <lib name="${PRELIB}modplug${POSTLIB}"  />
             <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
          </section>
 
