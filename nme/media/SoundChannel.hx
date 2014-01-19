@@ -83,20 +83,21 @@ class SoundChannel extends EventDispatcher
       return nmeIncompleteList.length > 0;
    }
 
-   /** @private */ public static function nmePollComplete() {
+   public static function nmePollComplete()
+   {
       if (nmeIncompleteList.length > 0) 
       {
-         var incomplete = new Array<SoundChannel>();
+         var incomplete = nmeIncompleteList;
+         nmeIncompleteList = new Array<SoundChannel>();
 
-         for(channel in nmeIncompleteList) 
+         for(channel in incomplete) 
          {
             if (!channel.nmeCheckComplete()) 
             {
-               incomplete.push(channel);
+               nmeIncompleteList.push(channel);
             }
          }
 
-         nmeIncompleteList = incomplete;
       }
    }
 
