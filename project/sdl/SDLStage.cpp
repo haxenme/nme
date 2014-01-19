@@ -1051,7 +1051,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(500,30);
 
-   gSDLIsInit = true;
+   gSDLAudioState = sdlOpen;
 
    #ifdef NME_MIXER
    
@@ -1078,7 +1078,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    if ( Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize)!= 0 )
    {
       fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
-      gSDLIsInit = false;
+      gSDLAudioState = sdaError;
    }
    #endif
 
@@ -1245,7 +1245,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       {
          fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
          inOnFrame(0);
-         gSDLIsInit = false;
+         gSDLAudioState = sdaError;
          return;
       }
    }

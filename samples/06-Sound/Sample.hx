@@ -79,6 +79,8 @@ class Sample extends Sprite
    var mPrevRightVolume:Float;
    var mBuzzStart:Sprite;
    var mBuzz:Sound;
+   static var canPlayMid = true;
+   static var canPlayFile = true;
 
    public function new()
    {
@@ -121,10 +123,15 @@ class Sample extends Sprite
       stage.addEventListener( MouseEvent.MOUSE_UP, onUp );
       stage.addEventListener( MouseEvent.MOUSE_DOWN, onClick );
       stage.addEventListener( MouseEvent.MOUSE_MOVE, onMove );
+      stage.addEventListener( Event.DEACTIVATE, onMove );
    }
 
    function playMusic(inId:String)
    {
+      if (inId=="rock" && !canPlayFile)
+         return;
+      if (inId=="classical" && !canPlayMid)
+         return;
       var sound:Sound = Assets.getMusic(inId);
       if (sound==null)
       {
@@ -133,12 +140,31 @@ class Sample extends Sprite
       else
       {
          var channel = sound.play(0,1);
-         channel.addEventListener( Event.SOUND_COMPLETE, function(_)
+         if (channel==null)
+         {
+            trace("Could not play '" + inId + "' on this system.");
+            if (inId=="rock")
+               canPlayFile = false;
+            else if (inId=="classical")
+               canPlayMid = false;
+
+             var next = inId=="rock" ? "classical" : "rock";
+             playMusic(next);
+         }
+         else
+         {
+           channel.addEventListener( Event.SOUND_COMPLETE, function(_)
             {
-               var next = inId=="rock" ? "classical" : "rock";
-               trace("Complete - play " + next);
-               playMusic(next);
+               var next = inId=="rock" && canPlayMid ? "classical" :
+                           canPlayFile ? "rock" :
+                           "";
+               if (next!="")
+               {
+                  trace("Complete - play " + next);
+                  playMusic(next);
+               }
             } );
+         }
       }
    }
 

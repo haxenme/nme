@@ -16,7 +16,7 @@ class SoundChannel extends EventDispatcher
    /** @private */ public static var nmeDynamicSoundCount = 0;
    private static var nmeIncompleteList = new Array<SoundChannel>();
 
-   /** @private */ private var nmeHandle:Dynamic;
+   /** @private */ public var nmeHandle:Dynamic;
    /** @private */ private var nmeTransform:SoundTransform;
    /** @private */ public var nmeDataProvider:EventDispatcher;
    public function new(inSoundHandle:Dynamic, startTime:Float, loops:Int, sndTransform:SoundTransform) 

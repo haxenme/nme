@@ -20,7 +20,7 @@ class Sound extends EventDispatcher
    public var length(get_length, null):Float;
    public var url(default, null):String;
 
-   /** @private */ private var nmeHandle:Dynamic;
+   /** @private */ public var nmeHandle:Dynamic;
    /** @private */ private var nmeLoading:Bool;
    /** @private */ private var nmeDynamicSound:Bool;
    public function new(?stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false) 
@@ -179,12 +179,16 @@ class Sound extends EventDispatcher
          nmeHandle = null;
          return result;
 
-      } else 
+      }
+      else 
       {
          if (nmeHandle == null || nmeLoading)
             return null;
 
-         return new SoundChannel(nmeHandle, startTime, loops, sndTransform);
+         var result = new SoundChannel(nmeHandle, startTime, loops, sndTransform);
+         if (result.nmeHandle==null)
+            return null;
+         return result;
       }
    }
 

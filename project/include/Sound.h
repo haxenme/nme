@@ -9,6 +9,16 @@
 namespace nme
 {
 
+enum SDLAudioState
+{
+   sdaNotInit = 0,
+   sdaOpen = 1,
+   sdaClosed = 2,
+   sdaError = 3,
+};
+
+extern SDLAudioState gSDLAudioState;
+
 struct SoundTransform
 {
    SoundTransform() : pan(0), volume(1.0) { }

@@ -5,6 +5,7 @@
 #include <ExternalInterface.h>
 #include <KeyCodes.h>
 #include <map>
+#include <Sound.h>
 
 #ifdef NME_MIXER
 #include <SDL_mixer.h>
@@ -1092,9 +1093,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	
 	//SDL_EnableUNICODE(1);
 	//SDL_EnableKeyRepeat(500,30);
-	gSDLIsInit = true;
 
 	#ifdef NME_MIXER
+
+	gSDLAudioState = sdaOpen;
+
 	#ifdef HX_WINDOWS
 	int chunksize = 2048;
 	#else
@@ -1108,7 +1111,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 	if (Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize) != 0)
 	{
 		fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
-		gSDLIsInit = false;
+		gSDLAudioState = sdaError;
 	}
 	#endif
 	
@@ -1439,6 +1442,7 @@ void ResumeAnimation() {}
 void StopAnimation()
 {
 	#ifdef NME_MIXER
+        gSDLAudioState = sdaClosed;
 	Mix_CloseAudio();
 	#endif
 	sgDead = true;

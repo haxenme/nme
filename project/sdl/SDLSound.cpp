@@ -2,14 +2,14 @@
 #include <Display.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
-
+#include <Sound.h>
 #include <hx/Thread.h>
 
 
 namespace nme
 {
 
-bool gSDLIsInit = false;
+SDLAudioState gSDLAudioState = sdaNotInit;
 
 class SDLSoundChannel;
 
@@ -56,11 +56,14 @@ int getMixerTime(int inTime0)
 
 static bool Init()
 {
-   if (!gSDLIsInit)
+   if (gSDLAudioState==sdaNotInit)
    {
       ELOG("Please init Stage before creating sound.");
       return false;
    }
+   if (gSDLAudioState!=sdaOpen)
+     return false;
+
 
    if (!sChannelsInit)
    {
@@ -114,8 +117,10 @@ public:
 
       if (mChannel>=0)
       {
-         Mix_PlayChannel( mChannel , mChunk, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 );
-         Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
+         if (Mix_PlayChannel( mChannel , mChunk, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 )<0)
+            onChannelDone(mChannel);
+         else
+            Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
          // Mix_SetPanning
       }
    }
@@ -169,17 +174,22 @@ public:
          {
             mDynamicRequestPending = true;
             mDynamicChunk.alen = mDynamicFillPos * sizeof(short) * STEREO_SAMPLES;
-            Mix_PlayChannel( mChannel , &mDynamicChunk,  0 );
+            if (Mix_PlayChannel( mChannel , &mDynamicChunk,  0 ))
+              onChannelDone(mChannel);
          }
          else
          {
             mDynamicRequestPending = false;
             // TODO: Lock?
-            Mix_PlayChannel( mChannel , &mDynamicChunk,  -1 );
+            if (Mix_PlayChannel( mChannel , &mDynamicChunk,  -1 )<0)
+              onChannelDone(mChannel);
          }
-         mSoundPos0 = getMixerTime(0);
+         if (!sDoneChannel[mChannel])
+         {
+            mSoundPos0 = getMixerTime(0);
 
-         Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
+            Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
+         }
       }
    }
 
@@ -406,9 +416,13 @@ public:
 		 mStartTime = SDL_GetTicks ();
 		 mLength = 0;
          IncRef();
-         Mix_PlayMusic( mMusic, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 );
-         Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
-         if (inStartTime > 0)
+
+         if (Mix_PlayMusic( mMusic, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 )<0)
+            onMusicDone();
+         else
+         {
+            Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
+            if (inStartTime > 0)
 		 {
 			 // this is causing crash errors
 			 
@@ -418,6 +432,7 @@ public:
 			 //mStartTime = SDL_GetTicks () - inStartTime;
 		 }
          // Mix_SetPanning not available for music
+         }
       }
    }
    ~SDLMusicChannel()
