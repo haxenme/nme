@@ -55,6 +55,7 @@ class Lib
 
    public static function close() 
    {
+      Stage.nmeQuitting = true;
       var close = Loader.load("nme_close", 0);
       close();
    }

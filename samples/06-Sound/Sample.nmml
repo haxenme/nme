@@ -45,6 +45,6 @@
   <ndll name="zlib" />
   <ndll name="nme" haxelib="nme" />
 
-  <haxedef name="no_console" />
+  <!--<haxedef name="no_console" />-->
 
 </project>

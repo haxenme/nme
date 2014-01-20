@@ -123,7 +123,6 @@ class Sample extends Sprite
       stage.addEventListener( MouseEvent.MOUSE_UP, onUp );
       stage.addEventListener( MouseEvent.MOUSE_DOWN, onClick );
       stage.addEventListener( MouseEvent.MOUSE_MOVE, onMove );
-      stage.addEventListener( Event.DEACTIVATE, onMove );
    }
 
    function playMusic(inId:String)

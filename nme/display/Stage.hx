@@ -79,6 +79,8 @@ class Stage extends DisplayObjectContainer
    private static var sDownEvents = [ "mouseDown", "middleMouseDown", "rightMouseDown" ];
    private static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
 
+   public static var nmeQuitting = false;
+
    /** @private */ private var nmeJoyAxisData:#if haxe3 Map <Int, #else IntHash <#end Array <Float>>;
    /** @private */ private var nmeDragBounds:Rectangle;
    /** @private */ private var nmeDragObject:Sprite;
@@ -315,7 +317,7 @@ class Stage extends DisplayObjectContainer
 
          case 10: // etQuit
             if (onQuit != null)
-               untyped onQuit();
+               onQuit();
 
          case 11: // etFocus
             nmeOnFocus(inEvent);
@@ -727,7 +729,11 @@ class Stage extends DisplayObjectContainer
       }
    }
 
-   /** @private */ public function nmePollTimers() {
+   public function nmePollTimers()
+   {
+      if (nmeQuitting)
+        return;
+
       //trace("poll");
       Timer.nmeCheckTimers();
       SoundChannel.nmePollComplete();

@@ -3,7 +3,7 @@
   
   <meta
      title="NME Application"
-     package="org.haxe.nme"
+     package="org.haxe.nme.nmml"
      version="1.0.0"
      company="nme" 
   />
