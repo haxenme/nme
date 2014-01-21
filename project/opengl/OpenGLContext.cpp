@@ -275,24 +275,14 @@ public:
          if (!n)
             continue;
 
-         switch(element.mBlendMode)
-         {
-            case bmAdd:
-               glBlendFunc( GL_SRC_ALPHA, GL_ONE );
-               break;
-            case bmMultiply:
-               glBlendFunc( GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-               break;
-            case bmScreen:
-               glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
-               break;
-            default:
-               glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		   }
+ 
 
          int progId = 0;
+         bool premAlpha = false;
          if ((element.mFlags & DRAW_HAS_TEX) && element.mSurface)
          {
+            if (element.mSurface->GetFlags() & SURF_FLAGS_USE_PREMULTIPLIED_ALPHA)
+               premAlpha = true;
             progId |= PROG_TEXTURE;
             if (element.mSurface->BytesPP()==1)
                progId |= PROG_ALPHA_TEXTURE;
@@ -325,6 +315,22 @@ public:
              mProg[progId] = prog = GPUProg::create(progId);
          if (!prog)
             continue;
+
+         switch(element.mBlendMode)
+         {
+            case bmAdd:
+               glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+               break;
+            case bmMultiply:
+               glBlendFunc( GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+               break;
+            case bmScreen:
+               glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+               break;
+            default:
+               glBlendFunc(premAlpha ? GL_ONE : GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         }
+
 
          if (prog!=lastProg)
          {

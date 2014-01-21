@@ -64,8 +64,19 @@ void RGBA_to_RGBA4444(uint8 *outDest, const uint8 *inSrc, int inPixels)
                  ( (src[3]>>4)          );
        src += 4;
    }
-}               
+}
 
+static int *sAlpha16Table = 0;
+int * getAlpha16Table()
+{
+   if (sAlpha16Table==0)
+   {
+      sAlpha16Table = new int[256];
+      for(int a=0;a<256;a++)
+         sAlpha16Table[a] = a*(1<<16)/255;
+   }
+   return sAlpha16Table;
+}
 
 
 class OGLTexture : public Texture
@@ -78,18 +89,23 @@ public:
       mDirtyRect = Rect(0,0);
       mContextVersion = gTextureContextVersion;
 
-      bool non_po2 = NonPO2Supported(true && (inFlags & SURF_FLAGS_NOT_REPEAT_IF_NON_PO2));
+      bool non_po2 = NonPO2Supported(inFlags & SURF_FLAGS_NOT_REPEAT_IF_NON_PO2);
       //printf("Using non-power-of-2 texture %d\n",non_po2);
-            
+
       int w = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);
       int h = non_po2 ? mPixelHeight : UpToPower2(mPixelHeight);
       mCanRepeat = IsPower2(w) && IsPower2(h);
-      
+
       //__android_log_print(ANDROID_LOG_ERROR, "NME",  "NewTexure %d %d", w, h);
 
       mTextureWidth = w;
       mTextureHeight = h;
-      bool copy_required = inSurface->GetBase() && (w!=mPixelWidth || h!=mPixelHeight);
+      bool usePreAlpha = inFlags & SURF_FLAGS_USE_PREMULTIPLIED_ALPHA;
+      bool hasPreAlpha = inFlags & SURF_FLAGS_HAS_PREMULTIPLIED_ALPHA;
+      int *multiplyAlpha = usePreAlpha && !hasPreAlpha ? getAlpha16Table() : 0;
+
+      bool copy_required = inSurface->GetBase() &&
+           (w!=mPixelWidth || h!=mPixelHeight || multiplyAlpha );
 
       Surface *load = inSurface;
 
@@ -99,7 +115,6 @@ public:
       int pixels = GL_UNSIGNED_BYTE;
       int gpuFormat = inSurface->GPUFormat();
 
-      
       if (!inSurface->GetBase() )
       {
          if (gpuFormat!=fmt)
@@ -125,18 +140,38 @@ public:
          for(int y=0;y<mPixelHeight;y++)
             RGBX_to_RGB565(buffer+y*mTextureWidth*2, inSurface->Row(y),mPixelWidth);
       }
-      else if  (w!=mPixelWidth || h!=mPixelHeight)
+      else if (copy_required)
       {
          int pw = inSurface->Format()==pfAlpha ? 1 : 4;
          buffer = (uint8 *)malloc(pw * mTextureWidth * mTextureHeight);
+
          for(int y=0;y<mPixelHeight;y++)
          {
              const uint8 *src = inSurface->Row(y);
              uint8 *b= buffer + mTextureWidth*pw*y;
-             memcpy(b,src,mPixelWidth*pw);
+             if (multiplyAlpha)
+             {
+                for(int x=0;x<mPixelWidth;x++)
+                {
+                   int a16 = multiplyAlpha[src[3]];
+                   b[0] = (src[0]*a16)>>16;
+                   b[1] = (src[1]*a16)>>16;
+                   b[2] = (src[2]*a16)>>16;
+                   b[3] = src[3];
+                   b+=4;
+                   src+=4;
+                }
+             }
+             else
+             {
+                memcpy(b,src,mPixelWidth*pw);
+                b+=mPixelWidth*pw;
+             }
+             // Duplucate last pixel to help with bilinear interp...
              if (w>mPixelWidth)
-                memcpy(b+mPixelWidth*pw,buffer+(mPixelWidth-1)*pw,pw);
+                memcpy(b,buffer+(mPixelWidth-1)*pw,pw);
          }
+         // Duplucate last row to help with bilinear interp...
          if (h!=mPixelHeight)
          {
             uint8 *b= buffer + mTextureWidth*pw*mPixelHeight;
@@ -148,19 +183,6 @@ public:
       {
          buffer = (uint8 *)inSurface->Row(0);
       }
-      
-      #ifdef NME_PREMULTIPLIED_ALPHA
-      if (store_format != GL_ALPHA)
-      {
-         for (int i=0;i<mTextureWidth*mTextureHeight*4;i+=4)
-         {
-            float a = buffer[i+3]/255.0;
-            buffer[i] = int(buffer[i]*a);
-            buffer[i+1] = int(buffer[i+1]*a);
-            buffer[i+2] = int(buffer[i+2]*a);
-         }
-      }
-      #endif
 
 
       glGenTextures(1, &mTextureID);
@@ -181,18 +203,9 @@ public:
       mSmooth = true;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      // TODO: Need replacement call for GLES2?
-      #ifdef GPH
-      glTexEnvx(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-      #endif
-	  
-	  #ifndef NME_FORCE_GLES2
-      glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-      #endif
-
 
       //int err = glGetError();
-	  //printf ("GL texture error: %i", err);
+      //printf ("GL texture error: %i", err);
    }
    ~OGLTexture()
    {

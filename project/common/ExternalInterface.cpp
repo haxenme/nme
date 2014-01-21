@@ -3161,6 +3161,32 @@ value nme_bitmap_data_height(value inHandle)
 }
 DEFINE_PRIM(nme_bitmap_data_height,1);
 
+value nme_bitmap_data_get_prem_alpha(value inHandle)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+      return alloc_bool(surface->GetFlags() & SURF_FLAGS_USE_PREMULTIPLIED_ALPHA);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_get_prem_alpha,1);
+
+value nme_bitmap_data_set_prem_alpha(value inHandle,value inVal)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+   {
+      bool use = val_bool(inVal) && (surface->Format()<pfAlpha);
+      if (use)
+         surface->SetFlags( surface->GetFlags() | SURF_FLAGS_USE_PREMULTIPLIED_ALPHA );
+      else
+         surface->SetFlags( surface->GetFlags() & ~SURF_FLAGS_USE_PREMULTIPLIED_ALPHA );
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_set_prem_alpha,2);
+
+
+
 value nme_bitmap_data_clear(value inHandle,value inRGB)
 {
    Surface *surface;

@@ -36,11 +36,12 @@ class BitmapData implements IBitmapDrawable
    public var rect(get_rect, null):Rectangle;
    public var transparent(get_transparent, null):Bool;
    public var width(get_width, null):Int;
+   public var premultipliedAlpha(get_premultipliedAlpha, set_premultipliedAlpha):Bool;
    
    private var nmeTransparent:Bool;
 
    /** @private */ public var nmeHandle:Dynamic;
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:BitmapInt32, ?inGPUMode:Null<Bool>) 
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:BitmapInt32, ?inGPUMode:Null<Int>) 
    {
       var fill_col:Int;
       var fill_alpha:Int;
@@ -532,11 +533,13 @@ class BitmapData implements IBitmapDrawable
       nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
    }
 
+   /*
    public function perlinNoise(baseX:Float, baseY:Float, numOctaves:Int, randomSeed:Int, stitch:Bool, fractalNoise:Bool, channelOptions:Int = 7, grayScale:Bool = false, ?offsets:Array<Point>):Void 
    {
       var perlin = new OptimizedPerlin(randomSeed, numOctaves);
       perlin.fill(this, baseX, baseY, 0);
    }
+   */
 
    public function scroll(inDX:Int, inDY:Int) 
    {
@@ -607,6 +610,12 @@ class BitmapData implements IBitmapDrawable
    private function get_width():Int { return nme_bitmap_data_width(nmeHandle); }
    private function get_height():Int { return nme_bitmap_data_height(nmeHandle); }
    private function get_transparent():Bool { return nmeTransparent; /*nme_bitmap_data_get_transparent(nmeHandle);*/ }
+   private function get_premultipliedAlpha():Bool { return nme_bitmap_data_get_prem_alpha(nmeHandle); }
+   private function set_premultipliedAlpha(inVal:Bool):Bool
+   {
+      nme_bitmap_data_set_prem_alpha(nmeHandle,inVal);
+      return inVal;
+   }
 
    // Native Methods
    private static var nme_bitmap_data_create = Loader.load("nme_bitmap_data_create", -1);
@@ -648,8 +657,11 @@ class BitmapData implements IBitmapDrawable
    private static var nme_bitmap_data_dump_bits = Loader.load("nme_bitmap_data_dump_bits", 1);
    private static var nme_bitmap_data_noise = Loader.load("nme_bitmap_data_noise", -1);
    private static var nme_bitmap_data_flood_fill = Loader.load("nme_bitmap_data_flood_fill", 4);
+   private static var nme_bitmap_data_get_prem_alpha = Loader.load("nme_bitmap_data_get_prem_alpha", 1);
+   private static var nme_bitmap_data_set_prem_alpha = Loader.load("nme_bitmap_data_set_prem_alpha", 2);
 }
 
+/*
 class OptimizedPerlin 
 {
    private static var P = [
@@ -872,6 +884,7 @@ class OptimizedPerlin
       #end
    }
 }
+*/
 
 #else
 typedef BitmapData = flash.display.BitmapData;
