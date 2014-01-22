@@ -1,4 +1,6 @@
 
+* Improve android timing loop
+* Some initial work on premultiplied alpha
 * Add androidview support
 * Add iosview support
 * Improve JNI class handling
