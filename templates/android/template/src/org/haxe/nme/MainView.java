@@ -31,7 +31,7 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
-import java.util.Date;
+import java.util.TimerTask;
 
 /**
  * A simple GLSurfaceView sub-class that demonstrate how to perform
@@ -57,10 +57,20 @@ class MainView extends GLSurfaceView {
    boolean  translucent;
    static MainView mRefreshView;
 
+   boolean isPollImminent;
+   Runnable pollMe;
+   TimerTask pendingTimer;
+
   //private InputDevice device;
     public MainView(Context context,GameActivity inActivity, boolean inTranslucent)
     {
        super(context);
+
+       isPollImminent = false;
+       final MainView me = this;
+       pollMe = new Runnable() {
+           @Override public void run() { me.onPoll(); }
+       };
 
        translucent = inTranslucent;
        getHolder().setFormat(
@@ -221,6 +231,7 @@ class MainView extends GLSurfaceView {
       }
    }
 
+   // Haxe thread
    public void HandleResult(int inCode)
    {
        if (inCode==resTerminate)
@@ -230,20 +241,33 @@ class MainView extends GLSurfaceView {
           return;
        }
        double wake = NME.getNextWake();
-       final MainView me = this;
-       if (wake<=0)
-            queueEvent(new Runnable(){ public void run() { me.onPoll(); } } );
+       int delayMs = (int)(wake * 1000);
+
+
+       if (delayMs<=1)
+          queuePoll();
        else
        {
-          final int tid = ++mTimerID;
-          Date end = new Date();
-          end.setTime( end.getTime() + (int)(wake * 1000) );
-          mTimer.schedule( new java.util.TimerTask(){ public void run()
-             {
-                if (tid==me.mTimerID)
-                   me.queuePoll();
-             } }, end );
+          if (pendingTimer!=null)
+             pendingTimer.cancel();
+
+          final MainView me = this;
+          pendingTimer = new TimerTask() {
+              @Override public void run() {
+                 me.queuePoll();
+              }
+          };
+
+          mTimer.schedule(pendingTimer,delayMs);
        }
+   }
+
+
+   // Haxe thread...
+   void onPoll()
+   {
+      isPollImminent = false;
+      HandleResult( NME.onPoll() );
    }
 
    void sendActivity(final int inActivity)
@@ -251,16 +275,16 @@ class MainView extends GLSurfaceView {
       queueEvent(new Runnable(){ public void run() { NME.onActivity(inActivity); } } );
    }
 
+   // Gui (timer) thread
    void queuePoll()
    {
-      final MainView me = this;
-      queueEvent(new Runnable(){ public void run() { me.onPoll(); } } );
+      if (!isPollImminent)
+      {
+         isPollImminent = true;
+         queueEvent(pollMe);
+      }
    }
 
-   void onPoll()
-   {
-      HandleResult( NME.onPoll() );
-   }
 
    // Called diectly by NME...
    static public void renderNow()
