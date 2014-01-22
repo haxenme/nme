@@ -109,7 +109,7 @@ class Main extends Sprite
           //video.viewPort = new nme.geom.Rectangle(0,0,500,500);
           video.addEventListener(StageVideoEvent.RENDER_STATE, onRenderState);
           video.attachNetStream(stream);
-          stream.play("http://download.wavetlan.com/SVV/Media/HTTP/H264/Talkinghead_Media/H264_test1_Talkinghead_mp4_480x360.mp4");
+          stream.play("http://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
 
           // Seems flash needs this?
           addEventListener(nme.events.Event.ENTER_FRAME, function(_) { stream.bytesLoaded; } );
