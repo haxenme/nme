@@ -288,7 +288,7 @@ public:
          glPixelStorei(GL_UNPACK_ROW_LENGTH, inSurface->Width());
          glTexSubImage2D(GL_TEXTURE_2D, 0,
             x0, y0,
-            dw, dy,
+            dw, dh,
             store_format, GL_UNSIGNED_BYTE,
             p0);
          glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
