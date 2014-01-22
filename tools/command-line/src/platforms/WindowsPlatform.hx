@@ -12,15 +12,24 @@ class WindowsPlatform extends Platform
    private var targetDirectory:String;
    private var useNeko:Bool;
 
-   public function new()
+   public function new(inProject:NMEProject)
    {
-      super();
+      super(inProject);
+
+      targetDirectory = project.app.path + "/windows/cpp";
+
+      if (project.targetFlags.exists("neko") || project.target != PlatformHelper.hostPlatform) 
+      {
+         targetDirectory = project.app.path + "/windows/neko";
+         useNeko = true;
+      }
+
+      applicationDirectory = targetDirectory + "/bin/";
+      executablePath = applicationDirectory + "/" + project.app.file + ".exe";
    }
 
-   override public function build(project:NMEProject):Void 
+   override public function build():Void 
    {
-      initialize(project);
-
       var hxml = targetDirectory + "/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
 
       PathHelper.mkdir(targetDirectory);
@@ -44,26 +53,22 @@ class WindowsPlatform extends Platform
       }
    }
 
-   override public function clean(project:NMEProject):Void 
+   override public function clean():Void 
    {
-      initialize(project);
-
       if (FileSystem.exists(targetDirectory)) 
       {
          PathHelper.removeDirectory(targetDirectory);
       }
    }
 
-   override public function display(project:NMEProject):Void 
+   override public function display():Void 
    {
-      initialize(project);
-
       var hxml = PathHelper.findTemplate(project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
       var template = new Template(File.getContent(hxml));
-      Sys.println(template.execute(generateContext(project)));
+      Sys.println(template.execute(generateContext()));
    }
 
-   override private function generateContext(project:NMEProject):Dynamic 
+   override private function generateContext():Dynamic 
    {
       var context = project.templateContext;
 
@@ -74,33 +79,16 @@ class WindowsPlatform extends Platform
       return context;
    }
 
-   override private function initialize(project:NMEProject):Void 
-   {
-      targetDirectory = project.app.path + "/windows/cpp";
-
-      if (project.targetFlags.exists("neko") || project.target != PlatformHelper.hostPlatform) 
-      {
-         targetDirectory = project.app.path + "/windows/neko";
-         useNeko = true;
-      }
-
-      applicationDirectory = targetDirectory + "/bin/";
-      executablePath = applicationDirectory + "/" + project.app.file + ".exe";
-   }
-
-   override public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(arguments:Array<String>):Void 
    {
       if (project.target == PlatformHelper.hostPlatform) 
       {
-         initialize(project);
          ProcessHelper.runCommand(applicationDirectory, Path.withoutDirectory(executablePath), arguments);
       }
    }
 
-   override public function update(project:NMEProject):Void 
+   override public function update():Void 
    {
-      project = project.clone();
-
       if (!project.environment.exists("SHOW_CONSOLE")) 
       {
          project.haxedefs.set("no_console", 1);
@@ -111,9 +99,7 @@ class WindowsPlatform extends Platform
          project.haxeflags.push("-xml " + targetDirectory + "/types.xml");
       }
 
-      initialize(project);
-
-      var context = generateContext(project);
+      var context = generateContext();
 
       PathHelper.mkdir(targetDirectory);
       PathHelper.mkdir(targetDirectory + "/obj");

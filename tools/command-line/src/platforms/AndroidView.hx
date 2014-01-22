@@ -5,21 +5,19 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
-class AndroidView extends Platform
+class AndroidView extends AndroidPlatform
 {
-   var project : NMEProject;
-
-
-   public function new() { super(); }
+   public function new(inProject:NMEProject)
+   {
+      super(inProject);
+   }
 
    function getDest()     { return project.app.path + "/androidview/sdk"; }
    function getBuildDir() { return project.app.path + "/androidview/build"; }
    function getObjDir() { return project.app.path + "/androidview/obj"; }
 
-   override public function build(project:NMEProject):Void 
+   override public function build():Void 
    {
-      initialize(project);
-
       var destination = getDest();
 
       var hxml = project.app.path + "/android/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
@@ -30,13 +28,13 @@ class AndroidView extends Platform
 
       FileHelper.copyIfNewer( getObjDir() + "/libApplicationMain" + (project.debug ? "-debug" : "") + ".so", arm5);
 
-      AndroidHelper.build(project, getBuildDir());
+      runBuild(getBuildDir());
 
       var jarName = project.app.file + "_sdk.jar";
       FileHelper.copyIfNewer( getBuildDir() + "/bin/classes.jar", destination +"/libs/" + jarName);
    }
 
-   override public function clean(project:NMEProject):Void 
+   override public function clean():Void 
    {
       var targetPath = project.app.path + "/androidview";
 
@@ -46,7 +44,7 @@ class AndroidView extends Platform
       }
    }
 
-   override public function display(project:NMEProject):Void 
+   override public function display():Void 
    {
       var hxml = PathHelper.findTemplate(project.templatePaths, "android/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
 
@@ -57,37 +55,14 @@ class AndroidView extends Platform
       Sys.println(template.execute(context));
    }
 
-   override public function install(project:NMEProject):Void { }
+   override public function install():Void { }
 
-   override private function initialize(inProject:NMEProject):Void 
+   override public function run(arguments:Array<String>):Void 
    {
-      project = inProject;
-      AndroidHelper.initialize(project);
    }
 
-   override public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function update():Void 
    {
-      initialize(project);
-   }
-
-   override public function trace(project:NMEProject):Void 
-   {
-      initialize(project);
-      AndroidHelper.trace(project, project.debug);
-   }
-
-   override public function uninstall(project:NMEProject):Void 
-   {
-      initialize(project);
-      AndroidHelper.uninstall(project.meta.packageName);
-   }
-
-   override public function update(project:NMEProject):Void 
-   {
-      project = project.clone();
-
-      initialize(project);
-
       var destination = getDest();
 
       var context = project.templateContext;
@@ -96,7 +71,7 @@ class AndroidView extends Platform
       context.ANDROID_INSTALL_LOCATION = project.config.android.installLocation;
 
       context.ANDROIDVIEW = true;
-      context.ANDROID_API_LEVEL = AndroidHelper.getApiLevel(project,11);
+      context.ANDROID_API_LEVEL = getApiLevel(11);
 
       var packageDirectory = project.meta.packageName;
 

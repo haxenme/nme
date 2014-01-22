@@ -45,56 +45,50 @@ class NMEProject
 
    private var baseTemplateContext:Dynamic;
 
+   public var localDefines:haxe.ds.StringMap<Dynamic>;
+   public var includePaths:Array<String>;
+
 
    private var defaultApp:ApplicationData;
    private var defaultMeta:MetaData;
    private var defaultWindow:Window;
 
-   public static var _command:String;
-   public static var _debug:Bool;
-   public static var _megaTrace:Bool = false;
-   public static var _target:String;
-   public static var _targetFlags:StringMap<String>;
-   public static var _templatePaths:Array<String>;
+   //public static var _command:String;
+   //public static var _debug:Bool;
+   //public static var _megaTrace:Bool = false;
+   //public static var _target:String;
+   //public static var _targetFlags:StringMap<String>;
+   //public static var _templatePaths:Array<String>;
 
    private static var initialized:Bool;
 
-   public static function main() 
-   {
-      var args = Sys.args();
-
-      if (args.length > 1) 
-      {
-         NMEProject._command = args[1];
-         NMEProject._debug = (args[2] == "true");
-         NMEProject._target = args[3];
-         NMEProject._targetFlags = Unserializer.run(args[4]);
-         NMEProject._templatePaths = Unserializer.run(args[5]);
-      }
-
-      initialize();
-
-      var classRef = Type.resolveClass(args[0]);
-      var instance = Type.createInstance(classRef, []);
-
-      Sys.print(Serializer.run(instance));
-   }
-
    public function new() 
    {
-      initialize();
-
       baseTemplateContext = {};
       component = null;
       embedAssets = false;
       openflCompat = true;
-      command = _command;
       config = new PlatformConfig();
+
+      debug = false;
+      megaTrace = false;
+      target = "";
+      targetFlags = new StringMap<String>();
+      templatePaths = [];
+
+      environment = Sys.environment();
+      localDefines = new StringMap<String>();
+      for(key in environment.keys())
+         Reflect.setField(baseTemplateContext, key, environment.get(key));
+
+
+      /*
       debug = _debug;
       megaTrace = _megaTrace;
       target = _target;
       targetFlags = StringMapHelper.copy(_targetFlags);
       templatePaths = _templatePaths.copy();
+      */
 
       defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
       defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: 11, url: "" }
@@ -116,6 +110,101 @@ class NMEProject
                         stencilBuffer: false,
                         alphaBuffer: false,
                         }
+
+ 
+
+      meta = {};
+      app = {};
+      window = {};
+
+      ObjectHelper.copyFields(defaultMeta, meta);
+      ObjectHelper.copyFields(defaultApp, app);
+      ObjectHelper.copyFields(defaultWindow, window);
+
+      assets = new Array<Asset>();
+      dependencies = new Array<String>();
+      haxedefs = new StringMap<Dynamic>();
+      haxeflags = new Array<String>();
+      macros = new Array<String>();
+      haxelibs = new Array<Haxelib>();
+      icons = new Array<Icon>();
+      javaPaths = new Array<String>();
+      libraries = new Array<Library>();
+      ndlls = new Array<NDLL>();
+      sources = new Array<String>();
+      splashScreens = new Array<SplashScreen>();
+   }
+
+   public function setCommand(inCommand:String)
+   {
+      command = inCommand;
+      if (command != null) 
+         localDefines.set(command.toLowerCase(), "1");
+   }
+
+   public function setPlatform(inPlatform:String):Void 
+   {
+      platformType = inPlatform;
+      switch(platformType) 
+      {
+         case Platform.TYPE_MOBILE:
+            localDefines.set("mobile", "1");
+         case Platform.TYPE_DESKTOP:
+            localDefines.set("desktop", "1");
+         case Platform.TYPE_WEB:
+            localDefines.set("web", "1");
+      }
+
+      if (targetFlags.exists("cpp")) 
+         localDefines.set("cpp", "1");
+      else if (targetFlags.exists("neko")) 
+         localDefines.set("neko", "1");
+
+      if (target==Platform.IOSVIEW)
+         localDefines.set("ios", "1");
+
+      localDefines.set("haxe3", "1");
+
+      localDefines.set(target.toLowerCase(), "1");
+   }
+
+   public function setTarget(inTargetName:String)
+   {
+      switch(inTargetName) 
+      {
+         case "cpp":
+            target = host;
+            targetFlags.set("cpp", "");
+
+         case "neko":
+            target = host;
+            targetFlags.set("neko", "");
+
+         case "iphone", "iphoneos":
+            target = Platform.IOS;
+
+         case "iosview":
+            targetFlags.set("ios", "");
+            targetFlags.set("iosview", "");
+            targetFlags.set("nativeview", "");
+            haxedefs.set("nativeview","1");
+            target = Platform.IOSVIEW;
+
+         case "androidview":
+            targetFlags.set("android", "");
+            targetFlags.set("androidview", "");
+            targetFlags.set("nativeview", "");
+            haxedefs.set("nativeview","1");
+            target = Platform.ANDROIDVIEW;
+
+         case "iphonesim":
+            target = Platform.IOS;
+            targetFlags.set("simulator", "");
+
+         default:
+            target = inTargetName.toUpperCase();
+      }
+
 
       switch(target) 
       {
@@ -165,30 +254,9 @@ class NMEProject
                architectures = [ Architecture.X86 ];
             }
       }
-
-      meta = {};
-      app = {};
-      window = {};
-
-      ObjectHelper.copyFields(defaultMeta, meta);
-      ObjectHelper.copyFields(defaultApp, app);
-      ObjectHelper.copyFields(defaultWindow, window);
-
-      assets = new Array<Asset>();
-      dependencies = new Array<String>();
-      environment = Sys.environment();
-      haxedefs = new StringMap<Dynamic>();
-      haxeflags = new Array<String>();
-      macros = new Array<String>();
-      haxelibs = new Array<Haxelib>();
-      icons = new Array<Icon>();
-      javaPaths = new Array<String>();
-      libraries = new Array<Library>();
-      ndlls = new Array<NDLL>();
-      sources = new Array<String>();
-      splashScreens = new Array<SplashScreen>();
    }
 
+/*
    public function clone():NMEProject 
    {
       var project = new NMEProject();
@@ -274,59 +342,15 @@ class NMEProject
 
       return project;
    }
+   */
 
-   private function filter(text:String, include:Array<String> = null, exclude:Array<String> = null):Bool 
-   {
-      if (include == null) 
-      {
-         include = [ "*" ];
-      }
-
-      if (exclude == null) 
-      {
-         exclude = [];
-      }
-
-      for(filter in exclude) 
-      {
-         if (filter != "") 
-         {
-            filter = StringTools.replace(filter, ".", "\\.");
-            filter = StringTools.replace(filter, "*", ".*");
-
-            var regexp = new EReg("^" + filter, "i");
-
-            if (regexp.match(text)) 
-            {
-               return false;
-            }
-         }
-      }
-
-      for(filter in include) 
-      {
-         if (filter != "") 
-         {
-            filter = StringTools.replace(filter, ".", "\\.");
-            filter = StringTools.replace(filter, "*", ".*");
-
-            var regexp = new EReg("^" + filter, "i");
-
-            if (regexp.match(text)) 
-            {
-               return true;
-            }
-         }
-      }
-
-      return false;
-   }
 
    public function include(path:String):Void 
    {
       // extend project file somehow?
    }
 
+/*
    public function includeAssets(path:String, rename:String = null, include:Array<String> = null, exclude:Array<String> = null):Void 
    {
       if (include == null) 
@@ -389,28 +413,6 @@ class NMEProject
       }
    }
 
-   private static function initialize():Void 
-   {
-      if (!initialized) 
-      {
-         if (_target == null) 
-         {
-            _target = PlatformHelper.hostPlatform;
-         }
-
-         if (_targetFlags == null) 
-         {
-            _targetFlags = new StringMap<String>();
-         }
-
-         if (_templatePaths == null) 
-         {
-            _templatePaths = new Array<String>();
-         }
-
-         initialized = true;
-      }
-   }
 
    public function merge(project:NMEProject):Void 
    {
@@ -446,22 +448,7 @@ class NMEProject
       }
    }
 
-   public function path(value:String):Void 
-   {
-      if (host == Platform.WINDOWS) 
-      {
-         setenv("PATH", value + ";" + Sys.getEnv("PATH"));
-      }
-      else
-      {
-         setenv("PATH", value + ":" + Sys.getEnv("PATH"));
-      }
-   }
-
-   public function setenv(name:String, value:String):Void 
-   {
-      Sys.putEnv(name, value);
-   }
+*/
 
    // Getters & Setters
    private function get_host():String 
@@ -479,6 +466,10 @@ class NMEProject
    private function get_templateContext():Dynamic 
    {
       var context:Dynamic = baseTemplateContext;
+
+
+       for(key in localDefines.keys())
+         Reflect.setField(context, key, localDefines.get(key));
 
       if (app == null) app = { };
       if (meta == null) meta = { };

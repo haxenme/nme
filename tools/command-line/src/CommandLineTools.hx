@@ -5,21 +5,17 @@ import haxe.Unserializer;
 import haxe.io.Path;
 import haxe.rtti.Meta;
 import platforms.AndroidPlatform;
-import platforms.BlackBerryPlatform;
 import platforms.FlashPlatform;
-import platforms.HTML5Platform;
 import platforms.IOSPlatform;
 import platforms.IOSView;
 import platforms.AndroidView;
 import platforms.Platform;
 import platforms.LinuxPlatform;
 import platforms.MacPlatform;
-import platforms.WebOSPlatform;
 import platforms.WindowsPlatform;
 import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
-import utils.PlatformSetup;
 import NMEProject;
 
 class CommandLineTools 
@@ -27,9 +23,15 @@ class CommandLineTools
    public static var nme:String;
 
    private static var additionalArguments:Array<String>;
-   private static var architectures:Array<Architecture>;
    private static var command:String;
    private static var debug:Bool;
+   private static var words:Array<String>;
+   private static var traceEnabled:Bool;
+   private static var host = PlatformHelper.hostPlatform;
+   private static var nmeVersion:String;
+
+/*
+   private static var architectures:Array<Architecture>;
    private static var megaTrace:Bool;
    private static var sources:Array<String>;
    private static var haxelibs:Array<Haxelib>;
@@ -40,15 +42,13 @@ class CommandLineTools
    private static var project:NMEProject;
    private static var projectDefines:StringMap<String>;
    private static var targetFlags:StringMap<String>;
-   private static var traceEnabled:Bool;
    private static var userDefines:StringMap<Dynamic>;
-   private static var version:String;
-   private static var words:Array<String>;
-   private static var host = PlatformHelper.hostPlatform;
+*/
 
-   private static function buildProject() 
+   private static function buildProject(project:NMEProject) 
    {
-      var project = initializeProject();
+      loadProject(project);
+
       var platform:Platform = null;
 
       LogHelper.info("", "Using target platform: " + project.target);
@@ -56,37 +56,28 @@ class CommandLineTools
       switch(project.target) 
       {
          case Platform.ANDROID:
-            platform = new AndroidPlatform();
-
-         case Platform.BLACKBERRY:
-            platform = new BlackBerryPlatform();
+            platform = new AndroidPlatform(project);
 
          case Platform.IOSVIEW:
-            platform = new IOSView(project.getComponent());
+            platform = new IOSView(project,project.getComponent());
 
          case Platform.ANDROIDVIEW:
-            platform = new AndroidView();
+            platform = new AndroidView(project);
 
          case Platform.IOS:
-            platform = new IOSPlatform();
-
-         case Platform.WEBOS:
-            platform = new WebOSPlatform();
+            platform = new IOSPlatform(project);
 
          case Platform.WINDOWS:
-            platform = new WindowsPlatform();
+            platform = new WindowsPlatform(project);
 
          case Platform.MAC:
-            platform = new MacPlatform();
+            platform = new MacPlatform(project);
 
          case Platform.LINUX:
-            platform = new LinuxPlatform();
+            platform = new LinuxPlatform(project);
 
          case Platform.FLASH:
-            platform = new FlashPlatform();
-
-         case Platform.HTML5:
-            platform = new HTML5Platform();
+            platform = new FlashPlatform(project);
       }
 
       if (platform != null) 
@@ -95,37 +86,37 @@ class CommandLineTools
 
          if (command == "display") 
          {
-            platform.display(project);
+            platform.display();
          }
 
-         if (command == "clean" || targetFlags.exists("clean")) 
+         if (command == "clean" || project.targetFlags.exists("clean")) 
          {
             LogHelper.info("", "\nRunning command: CLEAN");
-            platform.clean(project);
+            platform.clean();
          }
 
          if (command == "update" || command == "build" || command == "test") 
          {
             LogHelper.info("", "\nRunning command: UPDATE");
-            platform.update(project);
+            platform.update();
          }
 
          if (command == "build" || command == "test") 
          {
             LogHelper.info("", "\nRunning command: BUILD");
-            platform.build(project);
+            platform.build();
          }
 
          if (command == "install" || command == "run" || command == "test") 
          {
             LogHelper.info("", "\nRunning command: INSTALL");
-            platform.install(project);
+            platform.install();
          }
 
          if (command == "run" || command == "rerun" || command == "test") 
          {
             LogHelper.info("", "\nRunning command: RUN");
-            platform.run(project, additionalArguments);
+            platform.run(additionalArguments);
          }
 
          if (command == "test" || command == "trace") 
@@ -133,7 +124,7 @@ class CommandLineTools
             if (traceEnabled || command == "trace") 
             {
                LogHelper.info("", "\nRunning command: TRACE");
-               platform.trace(project);
+               platform.trace();
             }
          }
       }
@@ -178,10 +169,13 @@ class CommandLineTools
             context.company = company;
             context.file = StringTools.replace(title, " ", "");
 
+
+            /*
             for(define in userDefines.keys()) 
             {
                Reflect.setField(context, define, userDefines.get(define));
             }
+            */
 
             PathHelper.mkdir(title);
             FileHelper.recursiveCopyTemplate([ nme + "/templates/default" ], "project", title, context);
@@ -277,7 +271,6 @@ class CommandLineTools
       displayInfo();
 
       Sys.println("");
-      //Sys.println(" Usage : nme setup(target)");
       Sys.println(" Usage : nme help");
       Sys.println(" Usage : nme [clean|update|build|run|test|display] <project>(target) [options]");
       Sys.println(" Usage : nme create project <package> [options]");
@@ -290,7 +283,6 @@ class CommandLineTools
       Sys.println("");
       Sys.println(" Commands : ");
       Sys.println("");
-      //Sys.println("  setup : Setup NME or a specific target");
       Sys.println("  help : Show this information");
       Sys.println("  clean : Remove the target build directory if it exists");
       Sys.println("  update : Copy assets for the specified project/target");
@@ -306,14 +298,11 @@ class CommandLineTools
       Sys.println(" Targets : ");
       Sys.println("");
       Sys.println("  android : Create Google Android applications");
-      Sys.println("  blackberry : Create BlackBerry applications");
       //Sys.println("  cpp : Create application for the system you are compiling on");
       Sys.println("  flash : Create SWF applications for Adobe Flash Player");
-      //Sys.println("  html5 : Create HTML5 canvas applications");
       Sys.println("  ios : Create Apple iOS applications");
       Sys.println("  linux : Create Linux applications");
       Sys.println("  mac : Create Apple Mac OS X applications");
-      //Sys.println("  webos : Create HP webOS applications");
       Sys.println("  windows : Create Microsoft Windows applications");
       Sys.println("");
       Sys.println(" Options : ");
@@ -328,7 +317,7 @@ class CommandLineTools
       Sys.println("  [linux] -64 : Compile for 64-bit instead of 32-bit");
       Sys.println("  [android] -arm7 : Compile for arm-7a and arm5");
       Sys.println("  [android] -arm7-only : Compile for arm-7a for testing");
-      Sys.println("  [ios|blackberry] -simulator : Build/test for the device simulator");
+      Sys.println("  [ios] -simulator : Build/test for the device simulator");
       Sys.println("  [ios] -simulator -ipad : Build/test for the iPad Simulator");
       //Sys.println("  [flash] -web : Generate web template files");
       //Sys.println("  [flash] -chrome : Generate Google Chrome app template files");
@@ -350,12 +339,12 @@ class CommandLineTools
       Sys.println("|             |");
       Sys.println("|_____________|");
       Sys.println("");
-      Sys.println("NME Command-Line Tools(" + version + " @ '" + nme + "')");
+      Sys.println("NME Command-Line Tools(" + nmeVersion + " @ '" + nme + "')");
 
       if (showHint) 
       {
          //if (!FileSystem.exits(
-         Sys.println("Use \"nme setup\" to configure NME or \"nme help\" for more commands");
+         Sys.println("Use \"nme help\" for more commands");
       }
    }
 
@@ -440,7 +429,7 @@ class CommandLineTools
       }
    }
 
-   public static function getHXCPPConfig():NMEProject 
+   public static function getHXCPPConfig(project:NMEProject) : Void
    {
       var environment = Sys.environment();
       var config = "";
@@ -480,14 +469,12 @@ class CommandLineTools
       {
          LogHelper.info("", "Reading HXCPP config: " + config);
 
-         return new NMMLParser(config);
+         new NMMLParser(project,config);
       }
       else
       {
          LogHelper.warn("", "Could not read HXCPP config: " + config);
       }
-
-      return null;
    }
 
    private static function getVersion():String 
@@ -540,9 +527,9 @@ class CommandLineTools
    }
    #end
 
-   private static function initializeProject():NMEProject 
+   static function loadProject(project:NMEProject)
    {
-      LogHelper.info("", "Initializing project...");
+      LogHelper.info("", "Loading project...");
 
       var projectFile = "";
       var targetName = "";
@@ -552,15 +539,10 @@ class CommandLineTools
          if (FileSystem.exists(words[0])) 
          {
             if (FileSystem.isDirectory(words[0])) 
-            {
                projectFile = findProjectFile(words[0]);
-            }
             else
-            {
                projectFile = words[0];
-            }
          }
-
          targetName = words[1].toLowerCase();
       }
       else
@@ -569,123 +551,69 @@ class CommandLineTools
          targetName = words[0].toLowerCase();
       }
 
+
       if (projectFile == "") 
       {
          LogHelper.error("You must have a \"project.nmml\" file or specify another valid project file when using the '" + command + "' command");
          return null;
       }
       else
-      {
          LogHelper.info("", "Using project file: " + projectFile);
-      }
 
-      var target = null;
+      project.haxedefs.set("nme_install_tool", 1);
+      project.haxedefs.set("nme_ver", nmeVersion);
+      project.haxedefs.set("nme" + nmeVersion.split(".")[0], 1);
 
-      switch(targetName) 
-      {
-         case "cpp":
-            target = host;
-            targetFlags.set("cpp", "");
+      project.setTarget(targetName);
 
-         case "neko":
-            target = host;
-            targetFlags.set("neko", "");
-
-         case "iphone", "iphoneos":
-            target = Platform.IOS;
-
-         case "iosview":
-            targetFlags.set("ios", "");
-            targetFlags.set("iosview", "");
-            targetFlags.set("nativeview", "");
-            haxedefs.push("nativeview");
-            target = Platform.IOSVIEW;
-
-         case "androidview":
-            targetFlags.set("android", "");
-            targetFlags.set("androidview", "");
-            targetFlags.set("nativeview", "");
-            haxedefs.push("nativeview");
-            target = Platform.ANDROIDVIEW;
-
-         case "iphonesim":
-            target = Platform.IOS;
-            targetFlags.set("simulator", "");
-
-         default:
-            try 
-            {
-               target = targetName.toUpperCase();
-            }
-            catch(e:Dynamic) 
-            {
-               LogHelper.error("\"" + targetName + "\" is an unknown target");
-            }
-      }
-
-      var config = getHXCPPConfig();
+      getHXCPPConfig(project);
 
       if (host == Platform.WINDOWS) 
       {
-         if (config != null && config.environment.exists("JAVA_HOME")) 
-         {
-            Sys.putEnv("JAVA_HOME", config.environment.get("JAVA_HOME"));
-         }
+         if (project.environment.exists("JAVA_HOME")) 
+            Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
 
          if (Sys.getEnv("JAVA_HOME") != null) 
          {
             var javaPath = PathHelper.combine(Sys.getEnv("JAVA_HOME"), "bin");
 
             if (host == Platform.WINDOWS) 
-            {
                Sys.putEnv("PATH", javaPath + ";" + Sys.getEnv("PATH"));
-            }
             else
-            {
                Sys.putEnv("PATH", javaPath + ":" + Sys.getEnv("PATH"));
-            }
          }
       }
 
-      NMEProject._command = command;
-      NMEProject._debug = debug || megaTrace;
-      NMEProject._megaTrace = megaTrace;
-      NMEProject._target = target;
-      NMEProject._targetFlags = targetFlags;
-      NMEProject._templatePaths = [ nme + "/templates", nme + "/tools/command-line" ];
+      project.templatePaths.push( nme + "/templates" );
+
+
+      //NMEProject._command = command;
+      //NMEProject._debug = debug || megaTrace;
+      //NMEProject._megaTrace = megaTrace;
+      //NMEProject._target = target;
+      //NMEProject._targetFlags = targetFlags;
+      //NMEProject._templatePaths = [ nme + "/templates", nme + "/tools/command-line" ];
 
       try { Sys.setCwd(Path.directory(projectFile)); } catch(e:Dynamic) {}
 
-      var project:NMEProject = null;
-
       if (Path.extension(projectFile) == "nmml" || Path.extension(projectFile) == "xml") 
       {
-         project = new NMMLParser(Path.withoutDirectory(projectFile), userDefines, includePaths);
-
+         new NMMLParser(project,Path.withoutDirectory(projectFile));
       }
-      
-      if (project == null) 
+      else
       {
          LogHelper.error("You must have a \"project.nmml\" file or specify another NME project file when using the '" + command + "' command");
          return null;
       }
 
-      project.merge(config);
 
-      if (architectures.length > 0) 
-      {
-         project.architectures = architectures;
-      }
+      //project.haxeflags = project.haxeflags.concat(haxeflags);
+      //project.macros = project.macros.concat(macros);
+      //project.haxelibs = project.haxelibs.concat(haxelibs);
+      //project.sources = project.sources.concat(sources);
 
-      project.haxeflags = project.haxeflags.concat(haxeflags);
-      project.macros = project.macros.concat(macros);
-      project.haxelibs = project.haxelibs.concat(haxelibs);
-      project.sources = project.sources.concat(sources);
 
-      project.haxedefs.set("nme_install_tool", 1);
-      project.haxedefs.set("nme_ver", version);
-      project.haxedefs.set("nme" + version.split(".")[0], 1);
-
+      /*
       for(haxedef in haxedefs) 
       {
          if (!project.haxedefs.exists(haxedef)) 
@@ -738,16 +666,15 @@ class CommandLineTools
             }
          }
       }
+      */
 
-      StringMapHelper.copyKeys(userDefines, project.haxedefs);
-
-      SWFHelper.preprocess(project);
-      XFLHelper.preprocess(project);
+      //SWFHelper.preprocess(project);
+      //XFLHelper.preprocess(project);
 
       // Better way to do this?
       switch(project.target) 
       {
-         case Platform.ANDROID, Platform.IOS, Platform.BLACKBERRY,
+         case Platform.ANDROID, Platform.IOS,
               Platform.IOSVIEW, Platform.ANDROIDVIEW:
 
             getBuildNumber(project);
@@ -772,9 +699,15 @@ class CommandLineTools
 
    public static function main():Void 
    {
+      var project = new NMEProject( );
+
+      traceEnabled = true;
       additionalArguments = new Array<String>();
-      architectures = new Array<Architecture>();
+
       command = "";
+
+/*
+      architectures = new Array<Architecture>();
       debug = false;
       sources = new Array<String>();
       haxelibs = new Array<Haxelib>();
@@ -784,8 +717,9 @@ class CommandLineTools
       includePaths = new Array<String>();
       projectDefines = new StringMap<String>();
       targetFlags = new StringMap<String>();
-      traceEnabled = true;
       userDefines = new StringMap<Dynamic>();
+*/
+
       words = new Array<String>();
 
 
@@ -801,8 +735,9 @@ class CommandLineTools
       }
 
 
-      processArguments();
-      version = getVersion();
+      processArguments(project);
+
+      nmeVersion = getVersion();
 
       if (LogHelper.verbose) 
       {
@@ -817,9 +752,6 @@ class CommandLineTools
 
          case "help":
             displayHelp();
-
-         case "setup":
-            platformSetup();
 
          case "document":
             document();
@@ -838,7 +770,7 @@ class CommandLineTools
                return;
             }
 
-            buildProject();
+            buildProject(project);
 
          case "installer", "copy-if-newer":
 
@@ -849,18 +781,15 @@ class CommandLineTools
       }
    }
 
-   private static function processArguments():Void 
+   private static function processArguments(project:NMEProject):Void 
    {
       var arguments = Sys.args();
 
       nme = PathHelper.getHaxelib(new Haxelib("nme"));
 
       var lastCharacter = nme.substr( -1, 1);
-
       if (lastCharacter == "/" || lastCharacter == "\\") 
-      {
          nme = nme.substr(0, -1);
-      }
 
       if (arguments.length > 0) 
       {
@@ -868,7 +797,6 @@ class CommandLineTools
          // the last argument is the project directory and the
          // path to NME is the current working directory 
          var lastArgument = "";
-
          for(i in 0...arguments.length) 
          {
             lastArgument = arguments.pop();
@@ -876,16 +804,13 @@ class CommandLineTools
          }
 
          lastArgument = new Path(lastArgument).toString();
-
-         if (((StringTools.endsWith(lastArgument, "/") && lastArgument != "/") || StringTools.endsWith(lastArgument, "\\")) && !StringTools.endsWith(lastArgument, ":\\")) 
-         {
+         if (((StringTools.endsWith(lastArgument, "/") && lastArgument != "/") ||
+               StringTools.endsWith(lastArgument, "\\")) &&
+               !StringTools.endsWith(lastArgument, ":\\")) 
             lastArgument = lastArgument.substr(0, lastArgument.length - 1);
-         }
 
          if (FileSystem.exists(lastArgument) && FileSystem.isDirectory(lastArgument)) 
-         {
             Sys.setCwd(lastArgument);
-         }
       }
 
       var catchArguments = false;
@@ -897,47 +822,35 @@ class CommandLineTools
 
          if (catchHaxeFlag) 
          {
-            haxeflags.push(argument);
+            project.haxeflags.push(argument);
             catchHaxeFlag = false;
-
-         } else if (catchArguments) 
-         {
+         }
+         else if (catchArguments) 
             additionalArguments.push(argument);
-
-         } else if (equals > 0) 
+         else if (equals > 0) 
          {
             var argValue = argument.substr(equals + 1);
             // if quotes remain on the argValue we need to strip them off
             // otherwise the compiler really dislikes the result!
             var r = ~/^['"](.*)['"]$/;
             if (r.match(argValue)) 
-            {
                argValue = r.matched(1);
-            }
 
             if (argument.substr(0, 2) == "-D") 
-            {
-               userDefines.set(argument.substr(2, equals - 2), argValue);
-
-            } else if (argument.substr(0, 2) == "--") 
+               project.haxedefs.set(argument.substr(2, equals - 2), argValue);
+            else if (argument.substr(0, 2) == "--") 
             {
                // this won't work because it assumes there is only ever one of these.
                //projectDefines.set(argument.substr(2, equals - 2), argValue);
                var field = argument.substr(2, equals - 2);
 
                if (field == "haxedef") 
-               {
-                  haxedefs.push(argValue);
-
-               } else if (field == "haxeflag") 
-               {
-                  haxeflags.push(argValue);
-
-               } else if (field == "macro") 
-               {
-                  macros.push(StringTools.replace(argument, "macro=", "macro "));
-
-               } else if (field == "haxelib") 
+                  project.haxedefs.set(argValue,"1");
+               else if (field == "haxeflag") 
+                  project.haxeflags.push(argValue);
+               else if (field == "macro") 
+                  project.macros.push(StringTools.replace(argument, "macro=", "macro "));
+               else if (field == "haxelib") 
                {
                   var name = argValue;
                   var version = "";
@@ -948,111 +861,67 @@ class CommandLineTools
                      name = name.substr(0, name.indexOf(":"));
                   }
 
-                  haxelibs.push(new Haxelib(name, version));
-
-               } else if (field == "source") 
-               {
-                  sources.push(argValue);
+                  project.haxelibs.push(new Haxelib(name, version));
                }
+               else if (field == "source") 
+                  project.sources.push(argValue);
                else
-               {
-                  projectDefines.set(field, argValue);
-               }
+                  project.localDefines.set(field, argValue);
             }
             else
-            {
-               userDefines.set(argument.substr(0, equals), argValue);
-            }
+               project.haxedefs.set(argument.substr(0, equals), argValue);
 
-         } else if (argument.substr(0, 4) == "-arm") 
+         }
+         else if (argument.substr(0, 4) == "-arm") 
          {
             var name = argument.substr(1).toUpperCase();
             var value = Type.createEnum(Architecture, name);
 
             if (value != null) 
-            {
-               architectures.push(value);
-            }
-
-         } else if (argument == "-64") 
+               project.architectures.push(value);
+         }
+         else if (argument == "-64") 
+            project.architectures.push(Architecture.X64);
+         else if (argument == "-32") 
+            project.architectures.push(Architecture.X86);
+         else if (argument.substr(0, 2) == "-D") 
+            project.haxedefs.set(argument.substr(2), "");
+         else if (argument.substr(0, 2) == "-l") 
+            project.includePaths.push(argument.substr(2));
+         else if (argument == "-v" || argument == "-verbose") 
          {
-            architectures.push(Architecture.X64);
-
-         } else if (argument == "-32") 
-         {
-            architectures.push(Architecture.X86);
-
-         } else if (argument.substr(0, 2) == "-D") 
-         {
-            userDefines.set(argument.substr(2), "");
-
-         } else if (argument.substr(0, 2) == "-l") 
-         {
-            includePaths.push(argument.substr(2));
-
-         } else if (argument == "-v" || argument == "-verbose") 
-         {
-            haxeflags.push("-v");
+            project.haxeflags.push("-v");
             LogHelper.verbose = true;
-
-         } else if (argument == "-args") 
-         {
+         }
+         else if (argument == "-args") 
             catchArguments = true;
-         }
          else if (argument == "-notrace") 
-         {
             traceEnabled = false;
-         }
          else if (argument == "-debug") 
-         {
             debug = true;
-         }
          else if (argument == "-megatrace") 
-         {
-            megaTrace = true;
-         }
-
+            project.megaTrace = true;
          else if (command.length == 0) 
-         {
             command = argument;
-
-         } else if (argument.substr(0, 1) == "-") 
+         else if (argument.substr(0, 1) == "-") 
          {
             if (argument.substr(1, 1) == "-") 
             {
-               haxeflags.push(argument);
-
+               project.haxeflags.push(argument);
                if (argument == "--remap" || argument == "--connect") 
-               {
                   catchHaxeFlag = true;
-               }
             }
             else
-            {
-               targetFlags.set(argument.substr(1), "");
-            }
+               project.targetFlags.set(argument.substr(1), "");
          }
          else
          {
             words.push(argument);
          }
       }
-   }
 
-   private static function platformSetup():Void 
-   {
-      if (words.length == 0) 
-      {
-         PlatformSetup.run();
-
-      } else if (words.length == 1) 
-      {
-         PlatformSetup.run(words[0]);
-      }
-      else
-      {
-         LogHelper.error("Incorrect number of arguments for command 'setup'");
-         return;
-      }
+      project.setCommand(command);
    }
 }
+
+

@@ -11,16 +11,16 @@ class IOSView extends Platform
    var component:String;
    var valid_archs:Array<String>;
 
-   public function new(inComponent:String)
+   public function new(inProject:NMEProject, inComponent:String)
    {
-      super();
+      super(inProject);
       component = inComponent;
    }
 
 
-   override public function build(project:NMEProject):Void 
+   override public function build():Void 
    {
-      var context = generateContext(project);
+      var context = generateContext();
 
       var nmeLib = new Haxelib("nme");
 
@@ -65,7 +65,7 @@ class IOSView extends Platform
       ProcessHelper.runCommand(buildDir, "make", [] );
    }
 
-   override public function clean(project:NMEProject):Void 
+   override public function clean():Void 
    {
       #if false
       var targetPath = project.app.path + "/ios";
@@ -77,7 +77,7 @@ class IOSView extends Platform
       #end
    }
 
-   override public function display(project:NMEProject):Void 
+   override public function display():Void 
    {
       #if false
       var hxml = PathHelper.findTemplate(project.templatePaths, "iphone/PROJ/haxe/Build.hxml");
@@ -86,10 +86,8 @@ class IOSView extends Platform
       #end
    }
 
-   override private function generateContext(project:NMEProject):Dynamic 
+   override private function generateContext():Dynamic 
    {
-      project = project.clone();
-
       var targetDirectory = PathHelper.combine(project.app.path, "ios");
       var name = project.app.file;
       var outputDirectory = '$targetDirectory/$name/';
@@ -205,18 +203,16 @@ class IOSView extends Platform
       return context;
    }
 
-   override public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(arguments:Array<String>):Void 
    {
       #if false
       IOSHelper.launch(project, PathHelper.combine(project.app.path, "ios"));
       #end
    }
 
-   override public function update(project:NMEProject):Void 
+   override public function update():Void 
    {
       #if false
-      project = project.clone();
-
       var nmeLib = new Haxelib("nme");
 
       //for(asset in project.assets) 

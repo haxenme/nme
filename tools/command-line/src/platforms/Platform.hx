@@ -22,11 +22,14 @@ class Platform
    public var platform(get,null):String;
    public var type(get,null):String;
 
-   public function new()
+   public var project:NMEProject;
+
+   public function new(inProject:NMEProject)
    {
+      project = inProject;
    }
 
-   private function generateContext(project:NMEProject):Dynamic 
+   private function generateContext():Dynamic 
    {
       return {};
    }
@@ -41,40 +44,36 @@ class Platform
       return null;
    }
 
-   private function initialize(project:NMEProject):Void 
+
+   public function build()
    {
    }
 
-
-   public function build(project:NMEProject)
+   public function clean()
    {
    }
 
-   public function clean(project:NMEProject)
+   public function display()
    {
    }
 
-   public function display(project:NMEProject)
+   public function install()
    {
    }
 
-   public function install(project:NMEProject)
+   public function run(arguments:Array<String>)
    {
    }
 
-   public function run(project:NMEProject, arguments:Array<String>)
+   public function trace()
    {
    }
 
-   public function trace(project:NMEProject)
+   public function uninstall()
    {
    }
 
-   public function uninstall(project:NMEProject)
-   {
-   }
-
-   public function update(project:NMEProject)
+   public function update()
    {
    }
 }

@@ -5,14 +5,87 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
+class AndroidHelper 
+{
+   private static var adbName:String;
+   private static var adbPath:String;
+
+
+
+   private static function getADB(project:NMEProject):Void 
+   {
+      adbPath = project.environment.get("ANDROID_SDK") + "/tools/";
+      adbName = "adb";
+
+      if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+      {
+         adbName += ".exe";
+      }
+
+      if (!FileSystem.exists(adbPath + adbName)) 
+      {
+         adbPath = project.environment.get("ANDROID_SDK") + "/platform-tools/";
+      }
+
+      if (PlatformHelper.hostPlatform != Platform.WINDOWS) 
+      {
+         adbName = "./" + adbName;
+      }
+   }
+
+   public static function initialize(project:NMEProject):Void 
+   {
+      getADB(project);
+
+      if (project.environment.exists("JAVA_HOME")) 
+      {
+         Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
+      }
+   }
+
+   public static function install(targetPath:String):Void 
+   {
+      ProcessHelper.runCommand(adbPath, adbName, [ "install", "-r", targetPath ]);
+   }
+
+   public static function run(activityName:String):Void 
+   {
+      ProcessHelper.runCommand(adbPath, adbName, [ "shell", "am", "start", "-a", "android.intent.action.MAIN", "-n", activityName ]);
+   }
+
+   public static function trace(project:NMEProject, debug:Bool):Void 
+   {
+   }
+
+   public static function uninstall(packageName:String):Void 
+   {
+      ProcessHelper.runCommand(adbPath, adbName, [ "uninstall", packageName ]);
+   }
+}
+
+
+
+
+
+
+
 class AndroidPlatform extends Platform
 {
-   public function new() { super(); }
-
-   override public function build(project:NMEProject):Void 
+   public function new(inProject:NMEProject)
    {
-      initialize(project);
+      super(inProject);
 
+
+      if (!project.environment.exists("ANDROID_SETUP")) 
+      {
+         LogHelper.error("You need to run \"nme setup android\" before you can use the Android target (or set ANDROID_SETUP manually)");
+      }
+
+      AndroidHelper.initialize(project);
+   }
+
+   override public function build():Void 
+   {
       var destination = project.app.path + "/android/bin";
       var hxml = project.app.path + "/android/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
 
@@ -45,10 +118,73 @@ class AndroidPlatform extends Platform
          }
       }
 
-      AndroidHelper.build(project, destination);
+      runBuild(destination);
    }
 
-   override public function clean(project:NMEProject):Void 
+
+   public function getApiLevel(inMinimum:Int) : Int
+   { 
+      var result = inMinimum;
+      if (project.environment.exists("ANDROID_SDK"))
+         try
+         {
+            var best = 999999;
+            var dir = project.environment.get("ANDROID_SDK");
+            for(file in FileSystem.readDirectory(dir+"/platforms"))
+            {
+               if (file.substr(0,8)=="android-")
+               {
+                  var val = Std.parseInt(file.substr(8));
+                  if (val>=inMinimum && val<best)
+                  {
+                     result = val;
+                     best = val;
+                  }
+               }
+            }
+         } catch(e:Dynamic){}
+
+     return result;
+   }
+
+
+   public function runBuild(projectDirectory:String):Void 
+   {
+      if (project.environment.exists("ANDROID_SDK")) 
+      {
+         Sys.putEnv("ANDROID_SDK", project.environment.get("ANDROID_SDK"));
+      }
+
+      var ant = project.environment.get("ANT_HOME");
+
+      if (ant == null || ant == "") 
+      {
+         ant = "ant";
+      }
+      else
+      {
+         ant += "/bin/ant";
+      }
+
+      var build = "debug";
+
+      if (project.certificate != null) 
+      {
+         build = "release";
+      }
+
+      // Fix bug in Android build system, force compile
+      var buildProperties = projectDirectory + "/bin/build.prop";
+
+      if (FileSystem.exists(buildProperties)) 
+      {
+         FileSystem.deleteFile(buildProperties);
+      }
+
+      ProcessHelper.runCommand(projectDirectory, ant, [ build ]);
+   }
+
+   override public function clean():Void 
    {
       var targetPath = project.app.path + "/android";
 
@@ -58,7 +194,7 @@ class AndroidPlatform extends Platform
       }
    }
 
-   override public function display(project:NMEProject):Void 
+   override public function display():Void 
    {
       var hxml = PathHelper.findTemplate(project.templatePaths, "android/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
 
@@ -69,10 +205,8 @@ class AndroidPlatform extends Platform
       Sys.println(template.execute(context));
    }
 
-   override public function install(project:NMEProject):Void 
+   override public function install():Void 
    {
-      initialize(project);
-
       var build = "debug";
 
       if (project.certificate != null) 
@@ -83,43 +217,23 @@ class AndroidPlatform extends Platform
       AndroidHelper.install(FileSystem.fullPath(project.app.path) + "/android/bin/bin/" + project.app.file + "-" + build + ".apk");
    }
 
-   override private function initialize(project:NMEProject):Void 
+   override public function run(arguments:Array<String>):Void 
    {
-      if (!project.environment.exists("ANDROID_SETUP")) 
-      {
-         LogHelper.error("You need to run \"nme setup android\" before you can use the Android target (or set ANDROID_SETUP manually)");
-      }
-
-      AndroidHelper.initialize(project);
-   }
-
-   override public function run(project:NMEProject, arguments:Array<String>):Void 
-   {
-      initialize(project);
-
       AndroidHelper.run(project.meta.packageName + "/" + project.meta.packageName + ".MainActivity");
    }
 
-   override public function trace(project:NMEProject):Void 
+   override public function trace():Void 
    {
-      initialize(project);
-
       AndroidHelper.trace(project, project.debug);
    }
 
-   override public function uninstall(project:NMEProject):Void 
+   override public function uninstall():Void 
    {
-      initialize(project);
-
       AndroidHelper.uninstall(project.meta.packageName);
    }
 
-   override public function update(project:NMEProject):Void 
+   override public function update():Void 
    {
-      project = project.clone();
-
-      initialize(project);
-
       var destination = project.app.path + "/android/bin/";
       PathHelper.mkdir(destination);
       PathHelper.mkdir(destination + "/res/drawable-ldpi/");
@@ -171,7 +285,7 @@ class AndroidPlatform extends Platform
 
       if (apiLevel<8 || apiLevel==null) apiLevel = 8;
 
-      context.ANDROID_API_LEVEL = AndroidHelper.getApiLevel(project, apiLevel);
+      context.ANDROID_API_LEVEL = getApiLevel(apiLevel);
 
       var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi" ];
       var iconSizes = [ 36, 48, 72, 96 ];

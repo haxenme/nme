@@ -15,76 +15,10 @@ class LinuxPlatform extends Platform
    private var targetDirectory:String;
    private var useNeko:Bool;
 
-   public function new()
+   public function new(inProject:NMEProject)
    {
-      super();
-   }
+      super(inProject);
 
-   override public function build(project:NMEProject):Void 
-   {
-      initialize(project);
-
-      var hxml = targetDirectory + "/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
-
-      PathHelper.mkdir(targetDirectory);
-      ProcessHelper.runCommand("", "haxe", [ hxml ]);
-
-      if (useNeko) 
-      {
-         NekoHelper.createExecutable(project.templatePaths, "linux" + (is64 ? "64" : ""), targetDirectory + "/obj/ApplicationMain.n", executablePath);
-         NekoHelper.copyLibraries(project.templatePaths, "linux" + (is64 ? "64" : ""), applicationDirectory);
-      }
-      else
-      {
-         FileHelper.copyFile(targetDirectory + "/obj/ApplicationMain" + (project.debug ? "-debug" : ""), executablePath);
-      }
-
-      if (PlatformHelper.hostPlatform != Platform.WINDOWS) 
-      {
-         ProcessHelper.runCommand("", "chmod", [ "755", executablePath ]);
-      }
-   }
-
-   override public function clean(project:NMEProject):Void 
-   {
-      initialize(project);
-
-      if (FileSystem.exists(targetDirectory)) 
-      {
-         PathHelper.removeDirectory(targetDirectory);
-      }
-   }
-
-   override public function display(project:NMEProject):Void 
-   {
-      initialize(project);
-
-      var hxml = PathHelper.findTemplate(project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
-      var template = new Template(File.getContent(hxml));
-      Sys.println(template.execute(generateContext(project)));
-   }
-
-   override private function generateContext(project:NMEProject):Dynamic 
-   {
-      var project = project.clone();
-
-      if (isRaspberryPi) 
-      {
-         project.haxedefs.set("rpi", 1);
-      }
-
-      var context = project.templateContext;
-
-      context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
-      context.CPP_DIR = targetDirectory + "/obj/";
-      context.BUILD_DIR = project.app.path + "/linux" + (is64 ? "64" : "") + (isRaspberryPi ? "-rpi" : "");
-      context.WIN_ALLOW_SHADERS = false;
-
-      return context;
-   }
-
-   override private function initialize(project:NMEProject):Void 
-   {
       for(architecture in project.architectures) 
       {
          if (architecture == Architecture.X64) 
@@ -121,22 +55,76 @@ class LinuxPlatform extends Platform
       targetDirectory = project.app.path + "/linux" + (is64 ? "64" : "") + (isRaspberryPi ? "-rpi" : "") + "/" + (useNeko ? "neko" : "cpp");
       applicationDirectory = targetDirectory + "/bin/";
       executablePath = applicationDirectory + "/" + project.app.file;
+
+
+
    }
 
-   override public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function build():Void 
+   {
+      var hxml = targetDirectory + "/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
+
+      PathHelper.mkdir(targetDirectory);
+      ProcessHelper.runCommand("", "haxe", [ hxml ]);
+
+      if (useNeko) 
+      {
+         NekoHelper.createExecutable(project.templatePaths, "linux" + (is64 ? "64" : ""), targetDirectory + "/obj/ApplicationMain.n", executablePath);
+         NekoHelper.copyLibraries(project.templatePaths, "linux" + (is64 ? "64" : ""), applicationDirectory);
+      }
+      else
+      {
+         FileHelper.copyFile(targetDirectory + "/obj/ApplicationMain" + (project.debug ? "-debug" : ""), executablePath);
+      }
+
+      if (PlatformHelper.hostPlatform != Platform.WINDOWS) 
+      {
+         ProcessHelper.runCommand("", "chmod", [ "755", executablePath ]);
+      }
+   }
+
+   override public function clean():Void 
+   {
+      if (FileSystem.exists(targetDirectory)) 
+      {
+         PathHelper.removeDirectory(targetDirectory);
+      }
+   }
+
+   override public function display():Void 
+   {
+      var hxml = PathHelper.findTemplate(project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
+      var template = new Template(File.getContent(hxml));
+      Sys.println(template.execute(generateContext()));
+   }
+
+   override private function generateContext():Dynamic 
+   {
+      if (isRaspberryPi) 
+      {
+         project.haxedefs.set("rpi", 1);
+      }
+
+      var context = project.templateContext;
+
+      context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
+      context.CPP_DIR = targetDirectory + "/obj/";
+      context.BUILD_DIR = project.app.path + "/linux" + (is64 ? "64" : "") + (isRaspberryPi ? "-rpi" : "");
+      context.WIN_ALLOW_SHADERS = false;
+
+      return context;
+   }
+
+   override public function run(arguments:Array<String>):Void 
    {
       if (project.target == PlatformHelper.hostPlatform) 
       {
-         initialize(project);
          ProcessHelper.runCommand(applicationDirectory, "./" + Path.withoutDirectory(executablePath), arguments);
       }
    }
 
-   override public function update(project:NMEProject):Void 
+   override public function update():Void 
    {
-      project = project.clone();
-      initialize(project);
-
       if (is64) 
       {
          project.haxedefs.set("HXCPP_M64", 1);
@@ -147,7 +135,7 @@ class LinuxPlatform extends Platform
          project.haxeflags.push("-xml " + targetDirectory + "/types.xml");
       }
 
-      var context = generateContext(project);
+      var context = generateContext();
 
       PathHelper.mkdir(targetDirectory);
       PathHelper.mkdir(targetDirectory + "/obj");

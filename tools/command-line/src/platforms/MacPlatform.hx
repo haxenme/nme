@@ -14,15 +14,26 @@ class MacPlatform extends Platform
    private var targetDirectory:String;
    private var useNeko:Bool;
 
-   public function new()
+   public function new(inProject:NMEProject)
    {
-      super();
+      super(inProject);
+
+      targetDirectory = project.app.path + "/mac/cpp";
+
+      if (project.targetFlags.exists("neko") || project.target != PlatformHelper.hostPlatform) 
+      {
+         targetDirectory = project.app.path + "/mac/neko";
+         useNeko = true;
+      }
+
+      applicationDirectory = targetDirectory + "/bin/" + project.app.file + ".app";
+      contentDirectory = applicationDirectory + "/Contents/Resources";
+      executableDirectory = applicationDirectory + "/Contents/MacOS";
+      executablePath = executableDirectory + "/" + project.app.file;
    }
 
-   override public function build(project:NMEProject):Void 
+   override public function build():Void 
    {
-      initialize(project);
-
       var hxml = targetDirectory + "/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
 
       PathHelper.mkdir(targetDirectory);
@@ -44,26 +55,22 @@ class MacPlatform extends Platform
       }
    }
 
-   override public function clean(project:NMEProject):Void 
+   override public function clean():Void 
    {
-      initialize(project);
-
       if (FileSystem.exists(targetDirectory)) 
       {
          PathHelper.removeDirectory(targetDirectory);
       }
    }
 
-   override public function display(project:NMEProject):Void 
+   override public function display():Void 
    {
-      initialize(project);
-
       var hxml = PathHelper.findTemplate(project.templatePaths, (useNeko ? "neko" : "cpp") + "/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
       var template = new Template(File.getContent(hxml));
-      Sys.println(template.execute(generateContext(project)));
+      Sys.println(template.execute(generateContext()));
    }
 
-   override private function generateContext(project:NMEProject):Dynamic 
+   override private function generateContext():Dynamic 
    {
       var context = project.templateContext;
       context.NEKO_FILE = targetDirectory + "/obj/ApplicationMain.n";
@@ -73,41 +80,22 @@ class MacPlatform extends Platform
       return context;
    }
 
-   override private function initialize(project:NMEProject):Void 
-   {
-      targetDirectory = project.app.path + "/mac/cpp";
-
-      if (project.targetFlags.exists("neko") || project.target != PlatformHelper.hostPlatform) 
-      {
-         targetDirectory = project.app.path + "/mac/neko";
-         useNeko = true;
-      }
-
-      applicationDirectory = targetDirectory + "/bin/" + project.app.file + ".app";
-      contentDirectory = applicationDirectory + "/Contents/Resources";
-      executableDirectory = applicationDirectory + "/Contents/MacOS";
-      executablePath = executableDirectory + "/" + project.app.file;
-   }
-
-   override public function run(project:NMEProject, arguments:Array<String>):Void 
+   override public function run(arguments:Array<String>):Void 
    {
       if (project.target == PlatformHelper.hostPlatform) 
       {
-         initialize(project);
          ProcessHelper.runCommand(executableDirectory, "./" + Path.withoutDirectory(executablePath), arguments);
       }
    }
 
-   override public function update(project:NMEProject):Void 
+   override public function update():Void 
    {
-      initialize(project);
-
       if (project.targetFlags.exists("xml")) 
       {
          project.haxeflags.push("-xml " + targetDirectory + "/types.xml");
       }
 
-      var context = generateContext(project);
+      var context = generateContext();
 
       PathHelper.mkdir(targetDirectory);
       PathHelper.mkdir(targetDirectory + "/obj");
