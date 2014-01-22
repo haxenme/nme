@@ -60,6 +60,7 @@ class MainView extends GLSurfaceView {
    boolean isPollImminent;
    Runnable pollMe;
    TimerTask pendingTimer;
+   boolean renderPending = false;
 
   //private InputDevice device;
     public MainView(Context context,GameActivity inActivity, boolean inTranslucent)
@@ -240,9 +241,13 @@ class MainView extends GLSurfaceView {
           mActivity.onNMEFinish();
           return;
        }
+
+
        double wake = NME.getNextWake();
        int delayMs = (int)(wake * 1000);
 
+       if (renderPending && delayMs<5)
+          delayMs = 5;
 
        if (delayMs<=1)
           queuePoll();
@@ -290,6 +295,7 @@ class MainView extends GLSurfaceView {
    static public void renderNow()
    {
      //Log.v("VIEW","renderNow!!!");
+     mRefreshView.renderPending = true;
      mRefreshView.requestRender();
    }
 
@@ -440,6 +446,7 @@ class MainView extends GLSurfaceView {
 
         public void onDrawFrame(GL10 gl)
         {
+            mMainView.renderPending = false;
             //Log.v("VIEW","onDrawFrame !");
             mMainView.HandleResult( NME.onRender() );
             Sound.checkSoundCompletion();
