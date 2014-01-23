@@ -4,7 +4,7 @@ import haxe.io.Path;
 import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
-import PlatformConfig;
+import NMEProject;
 
 import haxe.io.Path;
 import sys.io.Process;
@@ -227,8 +227,11 @@ class IOSHelper
 
 class IOSPlatform extends Platform
 {
+   var armv6:Bool;
+   var armv7:Bool;
    public function new(inProject:NMEProject)
    {
+      armv6 = armv7 = false;
       super(inProject);
    }
 
@@ -263,9 +266,14 @@ class IOSPlatform extends Platform
       Sys.println(template.execute(generateContext()));
    }
 
+   function getHaxeBase()
+   {
+      return  "ios/" + project.app.file + "/haxe";
+   }
+
    override private function generateContext():Dynamic 
    {
-      project.classPaths = PathHelper.relocatePaths(project.classPaths, PathHelper.combine(project.app.path, "ios/" + project.app.file + "/haxe"));
+      project.classPaths = PathHelper.relocatePaths(project.classPaths, PathHelper.combine(project.app.path, getHaxeBase() ));
 
       if (project.targetFlags.exists("xml")) 
       {
@@ -290,22 +298,20 @@ class IOSPlatform extends Platform
 
      
       var valid_archs = new Array<String>();
-      var armv6 = false;
-      var armv7 = false;
+      armv6 = false;
+      armv7 = false;
       var architectures = project.architectures;
 
-      if (architectures == null || architectures.length == 0) 
+      var config = project.iosConfig;
+
+      if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 )
       {
-         architectures = [ Architecture.ARMV7 ];
+         if (config.deployment < 5) 
+            ArrayHelper.addUnique(architectures, Architecture.ARMV6);
       }
 
-      if (project.config.ios.device == IOSConfigDevice.UNIVERSAL || project.config.ios.device == IOSConfigDevice.IPHONE) 
-      {
-         if (project.config.ios.deployment < 5) 
-         {
-            ArrayHelper.addUnique(architectures, Architecture.ARMV6);
-         }
-      }
+      if (architectures.length == 0) 
+         architectures.push( Architecture.ARMV7 );
 
       for(architecture in project.architectures) 
       {
@@ -334,16 +340,21 @@ class IOSPlatform extends Platform
       context.REQUIRED_CAPABILITY = requiredCapabilities;
       context.ARMV6 = armv6;
       context.ARMV7 = armv7;
-      context.TARGET_DEVICES = switch(project.config.ios.device) { case UNIVERSAL: "1,2"; case IPHONE : "1"; case IPAD : "2"; }
-      context.DEPLOYMENT = project.config.ios.deployment;
+      context.TARGET_DEVICES = switch(config.deviceConfig)
+      {
+        case IOSConfig.IPHONE : "1";
+        case IOSConfig.IPAD : "2";
+        case _ : "1,2";
+      }
+      context.DEPLOYMENT = config.deployment;
 
-      if (project.config.ios.compiler == "llvm" || project.config.ios.compiler == "clang") 
+      if (config.compiler == "llvm" || config.compiler == "clang") 
       {
          context.OBJC_ARC = true;
       }
 
-      context.IOS_COMPILER = project.config.ios.compiler;
-      context.IOS_LINKER_FLAGS = project.config.ios.linkerFlags.split(" ").join(", ");
+      context.IOS_COMPILER = config.compiler;
+      context.IOS_LINKER_FLAGS = config.linkerFlags.split(" ").join(", ");
 
       switch(project.window.orientation) 
       {
@@ -379,7 +390,7 @@ class IOSPlatform extends Platform
       }
 
       context.HXML_PATH = PathHelper.findTemplate(project.templatePaths, "ios/PROJ/haxe/Build.hxml");
-      context.PRERENDERED_ICON = project.config.ios.prerenderedIcon;
+      context.PRERENDERED_ICON = config.prerenderedIcon;
 
       /*var assets = new Array<Asset>();
       for(asset in project.assets) 

@@ -9,6 +9,38 @@ import platforms.Platform;
 typedef StringMap<T> = Map<String, T>;
 typedef IntMap<T> = Map<Int, T>;
 
+class AndroidConfig
+{
+   public var installLocation:String;
+
+   public function new()
+   {
+      installLocation = "preferExternal";
+   }
+}
+
+class IOSConfig
+{
+   inline public static var IPHONE     = 0x01;
+   inline public static var IPAD       = 0x02;
+   inline public static var UNIVERSAL  = 0x03;
+
+   public var compiler:String;
+   public var deployment:Float;
+   public var deviceConfig:Int;
+   public var linkerFlags:String;
+   public var prerenderedIcon:Bool;
+
+   public function new()
+   {
+      compiler =  "clang";
+      deployment =  4.0;
+      deviceConfig =  UNIVERSAL;
+      linkerFlags =  "";
+      prerenderedIcon =  false;
+   }
+}
+
 class NMEProject 
 {
    public var app:ApplicationData;
@@ -20,7 +52,8 @@ class NMEProject
    public var splashScreens:Array<SplashScreen>;
 
    // ios/android build parameters
-   public var config:PlatformConfig;
+   public var iosConfig:IOSConfig;
+   public var androidConfig:AndroidConfig;
 
    // Defines
    public var localDefines:haxe.ds.StringMap<Dynamic>;
@@ -67,7 +100,8 @@ class NMEProject
       baseTemplateContext = {};
       embedAssets = false;
       openflCompat = true;
-      config = new PlatformConfig();
+      iosConfig = new IOSConfig();
+      androidConfig = new AndroidConfig();
 
       debug = false;
       megaTrace = false;
@@ -230,8 +264,6 @@ class NMEProject
 
        for(key in localDefines.keys())
          Reflect.setField(context, key, localDefines.get(key));
-
-      config.populate();
 
       for(field in Reflect.fields(app)) 
       {

@@ -4,12 +4,10 @@ import haxe.io.Path;
 import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
-import PlatformConfig;
 
-class IOSView extends Platform
+class IOSView extends IOSPlatform
 {
    var component:String;
-   var valid_archs:Array<String>;
 
    public function new(inProject:NMEProject)
    {
@@ -86,72 +84,24 @@ class IOSView extends Platform
       #end
    }
 
+   override function getHaxeBase()
+   {
+      return  "ios/build";
+   }
+
    override private function generateContext():Dynamic 
    {
       var targetDirectory = PathHelper.combine(project.app.path, "ios");
       var name = project.app.file;
       var outputDirectory = '$targetDirectory/$name/';
- 
 
-      project.classPaths = PathHelper.relocatePaths(project.classPaths, PathHelper.combine(project.app.path, "ios/build"));
-
-      if (project.targetFlags.exists("xml")) 
-      {
-         project.haxeflags.push("-xml " + project.app.path + "/ios/types.xml");
-      }
- 
       if (project.debug)
          project.haxeflags.push("-debug");
  
 
-      var context = project.templateContext;
+      var context = super.generateContext();
 
-      context.OBJC_ARC = false;
       context.COMPONENT = component;
-
-      context.linkedLibraries = [];
-
-      for(dependency in project.dependencies) 
-      {
-         if (!StringTools.endsWith(dependency, ".framework")) 
-         {
-            context.linkedLibraries.push(dependency);
-         }
-      }
-
-
-      valid_archs = new Array<String>();
-      var armv6 = false;
-      var armv7 = false;
-      var architectures = project.architectures;
-
-      if (architectures == null || architectures.length == 0) 
-      {
-         architectures = [ Architecture.ARMV7, Architecture.ARMV7 ];
-      }
-
-      if (project.config.ios.device == IOSConfigDevice.UNIVERSAL || project.config.ios.device == IOSConfigDevice.IPHONE) 
-      {
-         if (project.config.ios.deployment < 5) 
-         {
-            ArrayHelper.addUnique(architectures, Architecture.ARMV6);
-         }
-      }
-
-      for(architecture in project.architectures) 
-      {
-         switch(architecture) 
-         {
-            case ARMV6: valid_archs.push("armv6"); armv6 = true;
-            case ARMV7: valid_archs.push("armv7"); armv7 = true;
-            default:
-         }
-      }
-
-      context.CURRENT_ARCHS = "( " + valid_archs.join(",") + ") ";
-
-      valid_archs.push("i386");
-
 
       var libExts = new Array<String>();
       if (armv6) libExts.push(".iphoneos.a");
@@ -174,27 +124,13 @@ class IOSView extends Platform
             }
          }
       }
-
-   
-      var buildDir = PathHelper.combine(project.app.path, "ios/build");
-      context.VALID_ARCHS = valid_archs.join(" ");
       context.APP_LIBS = appLibs.join(" ");
-      context.THUMB_SUPPORT = armv6 ? "GCC_THUMB_SUPPORT = NO;" : "";
+
+      var buildDir = PathHelper.combine(project.app.path, "ios/build");
+
       //context.DEST_PATH = PathHelper.relocatePath('$outputDirectory/Versions/A/$name', buildDir);
       context.DEST_PATH = PathHelper.relocatePath('$outputDirectory/lib$name.a', buildDir);
-      context.ARMV6 = armv6;
-      context.ARMV7 = armv7;
       context.CLASS_NAME = name;
-      context.TARGET_DEVICES = switch(project.config.ios.device) { case UNIVERSAL: "1,2"; case IPHONE : "1"; case IPAD : "2"; }
-      context.DEPLOYMENT = project.config.ios.deployment;
-
-      if (project.config.ios.compiler == "llvm" || project.config.ios.compiler == "clang") 
-      {
-         context.OBJC_ARC = true;
-      }
-
-      context.IOS_COMPILER = project.config.ios.compiler;
-      context.IOS_LINKER_FLAGS = project.config.ios.linkerFlags.split(" ").join(", ");
 
       context.RESOURCES = "";
 
@@ -219,8 +155,6 @@ class IOSView extends Platform
       //   asset.resourceName = asset.flatName;
 
       var context = generateContext(project);
-
-      trace(valid_archs);
 
       var targetDirectory = PathHelper.combine(project.app.path, "ios");
       var projectDirectory = targetDirectory + "/" + project.app.file + "/";

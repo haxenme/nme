@@ -5,7 +5,6 @@ import haxe.xml.Fast;
 import sys.io.File;
 import sys.FileSystem;
 import NMEProject;
-import PlatformConfig;
 import platforms.Platform;
 
 class NMMLParser
@@ -563,8 +562,8 @@ class NMMLParser
                   {
                      case "BUILD_DIR": project.app.path = value;
                      case "SWF_VERSION": project.app.swfVersion = Std.parseFloat(value);
-                     case "PRERENDERED_ICON": project.config.ios.prerenderedIcon = (value == "true");
-                     case "ANDROID_INSTALL_LOCATION": project.config.android.installLocation = value;
+                     case "PRERENDERED_ICON": project.iosConfig.prerenderedIcon = (value == "true");
+                     case "ANDROID_INSTALL_LOCATION": project.androidConfig.installLocation = value;
                   }
 
                   project.localDefines.set(name, value);
@@ -920,7 +919,7 @@ class NMMLParser
                         var deployment = Std.parseFloat(substitute(element.att.deployment));
 
                         // If it is specified, assume the dev knows what he is doing!
-                        project.config.ios.deployment = deployment;
+                        project.iosConfig.deployment = deployment;
                      }
 
                      if (element.has.binaries) 
@@ -948,22 +947,27 @@ class NMMLParser
 
                      if (element.has.devices) 
                      {
-                        project.config.ios.device = Reflect.field(IOSConfigDevice, substitute(element.att.devices).toUpperCase());
+                        switch(substitute(element.att.devices).toUpperCase())
+                        {
+                           case "UNIVERSAL" : project.iosConfig.deviceConfig = IOSConfig.UNIVERSAL;
+                           case "IPHONE" : project.iosConfig.deviceConfig = IOSConfig.IPHONE;
+                           case "IPAD" : project.iosConfig.deviceConfig = IOSConfig.IPAD;
+                        }
                      }
 
                      if (element.has.compiler) 
                      {
-                        project.config.ios.compiler = substitute(element.att.compiler);
+                        project.iosConfig.compiler = substitute(element.att.compiler);
                      }
 
                      if (element.has.resolve("prerendered-icon")) 
                      {
-                        project.config.ios.prerenderedIcon = (substitute(element.att.resolve("prerendered-icon")) == "true");
+                        project.iosConfig.prerenderedIcon = (substitute(element.att.resolve("prerendered-icon")) == "true");
                      }
 
                      if (element.has.resolve("linker-flags")) 
                      {
-                        project.config.ios.linkerFlags = substitute(element.att.resolve("linker-flags"));
+                        project.iosConfig.linkerFlags = substitute(element.att.resolve("linker-flags"));
                      }
                   }
             }

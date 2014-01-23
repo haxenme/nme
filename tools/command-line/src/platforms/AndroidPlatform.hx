@@ -5,72 +5,12 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
-class AndroidHelper 
-{
-   private static var adbName:String;
-   private static var adbPath:String;
-
-
-
-   private static function getADB(project:NMEProject):Void 
-   {
-      adbPath = project.environment.get("ANDROID_SDK") + "/tools/";
-      adbName = "adb";
-
-      if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
-      {
-         adbName += ".exe";
-      }
-
-      if (!FileSystem.exists(adbPath + adbName)) 
-      {
-         adbPath = project.environment.get("ANDROID_SDK") + "/platform-tools/";
-      }
-
-      if (PlatformHelper.hostPlatform != Platform.WINDOWS) 
-      {
-         adbName = "./" + adbName;
-      }
-   }
-
-   public static function initialize(project:NMEProject):Void 
-   {
-      getADB(project);
-
-      if (project.environment.exists("JAVA_HOME")) 
-      {
-         Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
-      }
-   }
-
-   public static function install(targetPath:String):Void 
-   {
-      ProcessHelper.runCommand(adbPath, adbName, [ "install", "-r", targetPath ]);
-   }
-
-   public static function run(activityName:String):Void 
-   {
-      ProcessHelper.runCommand(adbPath, adbName, [ "shell", "am", "start", "-a", "android.intent.action.MAIN", "-n", activityName ]);
-   }
-
-   public static function trace(project:NMEProject, debug:Bool):Void 
-   {
-   }
-
-   public static function uninstall(packageName:String):Void 
-   {
-      ProcessHelper.runCommand(adbPath, adbName, [ "uninstall", packageName ]);
-   }
-}
-
-
-
-
-
-
 
 class AndroidPlatform extends Platform
 {
+   var adbName:String;
+
+
    public function new(inProject:NMEProject)
    {
       super(inProject);
@@ -81,8 +21,27 @@ class AndroidPlatform extends Platform
          LogHelper.error("You need to run \"nme setup android\" before you can use the Android target (or set ANDROID_SETUP manually)");
       }
 
-      AndroidHelper.initialize(project);
+
+      adbName = "adb";
+      if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+         adbName += ".exe";
+
+      var test = project.environment.get("ANDROID_SDK") + "/tools/" + adbName;
+      if (FileSystem.exists(test))
+         adbName = test;
+      else
+      {
+         var test = project.environment.get("ANDROID_SDK") + "/platform-tools/" + adbName;
+         if (FileSystem.exists(test))
+            adbName = test;
+         // Hmm - use relative path and hope it works
+      }
+
+      if (project.environment.exists("JAVA_HOME")) 
+         Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
    }
+
+
 
    override public function build():Void 
    {
@@ -119,6 +78,10 @@ class AndroidPlatform extends Platform
       }
 
       runBuild(destination);
+   }
+
+   private static function getAdb()
+   {
    }
 
 
@@ -210,26 +173,31 @@ class AndroidPlatform extends Platform
       var build = "debug";
 
       if (project.certificate != null) 
-      {
          build = "release";
-      }
 
-      AndroidHelper.install(FileSystem.fullPath(project.app.path) + "/android/bin/bin/" + project.app.file + "-" + build + ".apk");
+      var targetPath = FileSystem.fullPath(project.app.path) + "/android/bin/bin/" +
+                         project.app.file + "-" + build + ".apk";
+
+      ProcessHelper.runCommand("", adbName, [ "install", "-r", targetPath ]);
    }
 
    override public function run(arguments:Array<String>):Void 
    {
-      AndroidHelper.run(project.app.packageName + "/" + project.app.packageName + ".MainActivity");
+      var activityName = project.app.packageName + "/" + project.app.packageName + ".MainActivity";
+
+      ProcessHelper.runCommand("", adbName, [ "shell", "am", "start", "-a", "android.intent.action.MAIN", "-n", activityName ]);
+
    }
 
    override public function trace():Void 
    {
-      AndroidHelper.trace(project, project.debug);
+      ProcessHelper.runCommand("", adbName, [ "logcat", "-c" ]);
+      ProcessHelper.runCommand("", adbName, [ "logcat" ]);
    }
 
    override public function uninstall():Void 
    {
-      AndroidHelper.uninstall(project.app.packageName);
+      ProcessHelper.runCommand("", adbName, [ "uninstall", project.app.packageName ]);
    }
 
    override public function update():Void 
@@ -269,7 +237,7 @@ class AndroidPlatform extends Platform
       var context = project.templateContext;
 
       context.CPP_DIR = project.app.path + "/android/obj";
-      context.ANDROID_INSTALL_LOCATION = project.config.android.installLocation;
+      context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
 
       var android_platform = project.environment.get("ANDROID_SDK_PLATFORM");
       var apiLevel:Null<Int> = 0;

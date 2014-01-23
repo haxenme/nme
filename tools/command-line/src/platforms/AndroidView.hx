@@ -68,7 +68,7 @@ class AndroidView extends AndroidPlatform
       var context = project.templateContext;
 
       context.CPP_DIR = getObjDir();
-      context.ANDROID_INSTALL_LOCATION = project.config.android.installLocation;
+      context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
 
       context.ANDROIDVIEW = true;
       context.ANDROID_API_LEVEL = getApiLevel(11);
