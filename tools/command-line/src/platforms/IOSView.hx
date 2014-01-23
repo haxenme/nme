@@ -11,10 +11,10 @@ class IOSView extends Platform
    var component:String;
    var valid_archs:Array<String>;
 
-   public function new(inProject:NMEProject, inComponent:String)
+   public function new(inProject:NMEProject)
    {
       super(inProject);
-      component = inComponent;
+      component = inProject.app.file;
    }
 
 
@@ -93,7 +93,7 @@ class IOSView extends Platform
       var outputDirectory = '$targetDirectory/$name/';
  
 
-      project.sources = PathHelper.relocatePaths(project.sources, PathHelper.combine(project.app.path, "ios/build"));
+      project.classPaths = PathHelper.relocatePaths(project.classPaths, PathHelper.combine(project.app.path, "ios/build"));
 
       if (project.targetFlags.exists("xml")) 
       {

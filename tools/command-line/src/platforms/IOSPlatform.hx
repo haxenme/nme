@@ -265,7 +265,7 @@ class IOSPlatform extends Platform
 
    override private function generateContext():Dynamic 
    {
-      project.sources = PathHelper.relocatePaths(project.sources, PathHelper.combine(project.app.path, "ios/" + project.app.file + "/haxe"));
+      project.classPaths = PathHelper.relocatePaths(project.classPaths, PathHelper.combine(project.app.path, "ios/" + project.app.file + "/haxe"));
 
       if (project.targetFlags.exists("xml")) 
       {

@@ -646,7 +646,7 @@ class NMMLParser
                      new NMMLParser(project,path);
                      var dir = Path.directory(path);
                      if (dir != "")
-                        project.sources.push(dir);
+                        project.classPaths.push(dir);
                   }
                   else if (!element.has.noerror) 
                   {
@@ -656,12 +656,6 @@ class NMMLParser
                case "app", "meta":
                   parseAppElement(element);
 
-
-               case "component":
-                  if (!element.has.name) 
-                     LogHelper.error("Component required name element");
-                  else
-                     project.component =  substitute(element.att.name);
 
                case "java":
 
@@ -695,7 +689,7 @@ class NMMLParser
                   if (FileSystem.exists(path + "/include.xml")) 
                   {
                      new NMMLParser(project, path + "/include.xml", haxelib);
-                     project.sources.push(path);
+                     project.classPaths.push(path);
                   }
 
                   project.haxelibs.push(haxelib);
@@ -846,7 +840,7 @@ class NMMLParser
                      path = PathHelper.combine(extensionPath, substitute(element.att.name));
                   }
 
-                  project.sources.push(path);
+                  project.classPaths.push(path);
 
                case "extension":
 
@@ -869,23 +863,6 @@ class NMMLParser
 
                case "assets":
                   parseAssetsElement(element, extensionPath);
-
-               case "library", "swf":
-
-                  var path = PathHelper.combine(extensionPath, substitute(element.att.path));
-                  var name = "";
-
-                  if (element.has.name) 
-                  {
-                     name = element.att.name;
-                  }
-
-                  if (element.has.id) 
-                  {
-                     name = element.att.id;
-                  }
-
-                  project.libraries.push(new Library(path, name));
 
                case "ssl":
 

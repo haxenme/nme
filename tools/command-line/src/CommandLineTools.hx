@@ -44,7 +44,7 @@ class CommandLineTools
             platform = new AndroidPlatform(project);
 
          case Platform.IOSVIEW:
-            platform = new IOSView(project,project.getComponent());
+            platform = new IOSView(project);
 
          case Platform.ANDROIDVIEW:
             platform = new AndroidView(project);
@@ -748,8 +748,8 @@ class CommandLineTools
 
                   project.haxelibs.push(new Haxelib(name, version));
                }
-               else if (field == "source") 
-                  project.sources.push(argValue);
+               else if (field == "source" || field=="cp" ) 
+                  project.classPaths.push(argValue);
                else
                   project.localDefines.set(field, argValue);
             }

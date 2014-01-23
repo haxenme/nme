@@ -11,48 +11,60 @@ typedef IntMap<T> = Map<Int, T>;
 
 class NMEProject 
 {
-   public var window:Window;
    public var app:ApplicationData;
-
+   public var window:Window;
    public var architectures:Array<Architecture>;
    public var assets:Array<Asset>;
-   public var certificate:Keystore;
-   public var command:String;
+   public var ndlls:Array<NDLL>;
+   public var icons:Array<Icon>;
+   public var splashScreens:Array<SplashScreen>;
+
+   // ios/android build parameters
    public var config:PlatformConfig;
-   public var debug:Bool;
-   public var megaTrace:Bool;
-   public var dependencies:Array<String>;
+
+   // Defines
+   public var localDefines:haxe.ds.StringMap<Dynamic>;
    public var environment:StringMap<String>;
+   public var targetFlags:StringMap<String>;
+
+   // For building haxe command line
    public var haxedefs:StringMap<Dynamic>;
    public var haxeflags:Array<String>;
-   public var macros:Array<String>;
    public var haxelibs:Array<Haxelib>;
-   public var host(get_host, null):String;
-   public var icons:Array<Icon>;
-   public var javaPaths:Array<String>;
-   public var libraries:Array<Library>;
-   public var ndlls:Array<NDLL>;
-   public var platformType:String;
-   public var sources:Array<String>;
-   public var splashScreens:Array<SplashScreen>;
-   public var target:String;
-   public var targetFlags:StringMap<String>;
-   public var templateContext(get_templateContext, null):Dynamic;
+   public var classPaths:Array<String>;
+   public var macros:Array<String>;
+
+   // For <include> elements
+   public var includePaths:Array<String>;
+   // For bulding projects
    public var templatePaths:Array<String>;
-   public var component:String;
+
+   // Currently for adding frameworks to ios project
+   public var dependencies:Array<String>;
+   // Additional files to be copied into andoird project
+   public var javaPaths:Array<String>;
+   // Android signing certificate
+   public var certificate:Keystore;
+
+   // Flags
    public var embedAssets:Bool;
    public var openflCompat:Bool;
+   public var debug:Bool;
+   public var megaTrace:Bool;
+
+   // Exported into project for use in project files
+   public var platformType:String;
+   public var command:String;
+   public var target:String;
 
    private var baseTemplateContext:Dynamic;
+   public var templateContext(get_templateContext, null):Dynamic;
 
-   public var localDefines:haxe.ds.StringMap<Dynamic>;
-   public var includePaths:Array<String>;
 
 
    public function new() 
    {
       baseTemplateContext = {};
-      component = null;
       embedAssets = false;
       openflCompat = true;
       config = new PlatformConfig();
@@ -80,9 +92,8 @@ class NMEProject
       haxelibs = new Array<Haxelib>();
       icons = new Array<Icon>();
       javaPaths = new Array<String>();
-      libraries = new Array<Library>();
       ndlls = new Array<NDLL>();
-      sources = new Array<String>();
+      classPaths = new Array<String>();
       splashScreens = new Array<SplashScreen>();
    }
 
@@ -124,11 +135,11 @@ class NMEProject
       switch(inTargetName) 
       {
          case "cpp":
-            target = host;
+            target = PlatformHelper.hostPlatform;
             targetFlags.set("cpp", "");
 
          case "neko":
-            target = host;
+            target = PlatformHelper.hostPlatform;
             targetFlags.set("neko", "");
 
          case "iphone", "iphoneos":
@@ -212,20 +223,6 @@ class NMEProject
       // extend project file somehow?
    }
 
-
-   // Getters & Setters
-   private function get_host():String 
-   {
-      return PlatformHelper.hostPlatform;
-   }
-
-   public function getComponent()
-   {
-      if (component==null)
-         return app.file;
-      return component;
-   }
-
    private function get_templateContext():Dynamic 
    {
       var context:Dynamic = baseTemplateContext;
@@ -273,7 +270,7 @@ class NMEProject
 
       for(asset in assets) 
       {
-         if (embedAssets)
+         if (embedAssets || asset.embed)
          {
             asset.resourceName = asset.flatName;
             var absPath = sys.FileSystem.fullPath(asset.sourcePath);
@@ -281,16 +278,6 @@ class NMEProject
          }
 
          context.assets.push(asset);
-      }
-
-      context.libraries = new Array<Dynamic>();
-
-      for(library in libraries) 
-      {
-         var libraryData:Dynamic = { };
-         ObjectHelper.copyFields(library, libraryData);
-         libraryData.type = Std.string(library.type).toLowerCase();
-         context.libraries.push(libraryData);
       }
 
       Reflect.setField(context, "ndlls", ndlls);
@@ -313,9 +300,9 @@ class NMEProject
          Reflect.setField(context, "LIB_" + haxelib.name.toUpperCase(), true);
       }
 
-      for(source in sources) 
+      for(cp in classPaths) 
       {
-         compilerFlags.push("-cp " + source);
+         compilerFlags.push("-cp " + cp);
       }
 
       if (megaTrace)
@@ -395,7 +382,6 @@ class NMEProject
       context.WIN_DEPTH_BUFFER = window.depthBuffer;
       context.WIN_STENCIL_BUFFER = window.stencilBuffer;
       context.WIN_ALPHA_BUFFER = window.alphaBuffer;
-      context.COMPONENT = getComponent();
 
       if (certificate != null) 
       {
