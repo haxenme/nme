@@ -135,7 +135,7 @@ public class NMEVideoView extends VideoView implements
       else
          sendStatusCode(PLAY_STATUS_ERROR);
  
-      return false;
+      return true;
    }
 
    public boolean onInfo(MediaPlayer mp, int what, int extra)
