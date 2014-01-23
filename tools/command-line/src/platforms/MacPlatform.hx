@@ -117,15 +117,10 @@ class MacPlatform extends Platform
 
       for(asset in project.assets) 
       {
-         if (asset.type != AssetType.TEMPLATE) 
+         if (!asset.embed)
          {
             PathHelper.mkdir(Path.directory(contentDirectory + "/" + asset.targetPath));
             FileHelper.copyAssetIfNewer(asset, contentDirectory + "/" + asset.targetPath);
-         }
-         else
-         {
-            PathHelper.mkdir(Path.directory(targetDirectory + "/" + asset.targetPath));
-            FileHelper.copyAsset(asset, targetDirectory + "/" + asset.targetPath, context);
          }
       }
    }

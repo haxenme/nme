@@ -248,8 +248,20 @@ class NMMLParser
                project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
 
             case "preloader":
-
                project.app.preloader = substitute(element.att.preloader);
+
+            case "package", "packageName", "package-name":
+               project.app.packageName = substitute(element.att.resolve(attribute));
+
+            case "title", "description", "version", "company", "company-id", "build-number", "companyId", "buildNumber":
+
+               var value = substitute(element.att.resolve(attribute));
+
+               project.localDefines.set("APP_" + StringTools.replace(attribute, "-", "_").toUpperCase(), value);
+
+               var name = formatAttributeName(attribute);
+
+               Reflect.setField(project.app, name, value);
 
             default:
 
@@ -257,24 +269,13 @@ class NMMLParser
                var name = formatAttributeName(attribute);
                var value = substitute(element.att.resolve(attribute));
 
-               if (attribute == "package") 
-               {
-                  name = "packageName";
-               }
-
                if (Reflect.hasField(project.app, name)) 
-               {
                   Reflect.setField(project.app, name, value);
-
-               } else if (Reflect.hasField(project.meta, name)) 
-               {
-                  Reflect.setField(project.meta, name, value);
-               }
          }
       }
    }
 
-   private function parseAssetsElement(element:Fast, basePath:String = "", isTemplate:Bool = false):Void 
+   private function parseAssetsElement(element:Fast, basePath:String = ""):Void 
    {
       var path = "";
       var embed = "";
@@ -314,11 +315,7 @@ class NMMLParser
 
 
 
-      if (isTemplate) 
-      {
-         type = AssetType.TEMPLATE;
-
-      } else if (element.has.type) 
+      if (element.has.type) 
       {
          type = Reflect.field(AssetType, substitute(element.att.type).toUpperCase());
       }
@@ -401,10 +398,6 @@ class NMMLParser
                      case FONT:
 
                         include = "*.otf|*.ttf";
-
-                     case TEMPLATE:
-
-                        include = "*";
 
                      default:
 
@@ -525,33 +518,6 @@ class NMMLParser
 
                project.assets.push(asset);
             }
-         }
-      }
-   }
-
-   private function parseMetaElement(element:Fast):Void 
-   {
-      for(attribute in element.x.attributes()) 
-      {
-         switch(attribute) 
-         {
-            case "title", "description", "package", "version", "company", "company-id", "build-number":
-
-               var value = substitute(element.att.resolve(attribute));
-
-               project.localDefines.set("APP_" + StringTools.replace(attribute, "-", "_").toUpperCase(), value);
-
-               var name = formatAttributeName(attribute);
-
-               if (attribute == "package") 
-               {
-                  name = "packageName";
-               }
-
-               if (Reflect.hasField(project.meta, name)) 
-               {
-                  Reflect.setField(project.meta, name, value);
-               }
          }
       }
    }
@@ -687,13 +653,9 @@ class NMMLParser
                      LogHelper.error("Could not find include file \"" + path + "\"");
                   }
 
-               case "meta":
-
-                  parseMetaElement(element);
-
-               case "app":
-
+               case "app", "meta":
                   parseAppElement(element);
+
 
                case "component":
                   if (!element.has.name) 
@@ -929,28 +891,7 @@ class NMMLParser
 
                   //if (wantSslCertificate())
                      //parseSsl(element);
-               case "template":
-
-                  if (element.has.path) 
-                  {
-                     var path = PathHelper.combine(extensionPath, substitute(element.att.path));
-
-                     if (FileSystem.exists(path) && !FileSystem.isDirectory(path)) 
-                     {
-                        parseAssetsElement(element, extensionPath, true);
-                     }
-                     else
-                     {
-                        project.templatePaths.remove(path);
-                        project.templatePaths.push(path);
-                     }
-                  }
-                  else
-                  {
-                     parseAssetsElement(element, extensionPath, true);
-                  }
-
-               case "templatePath":
+               case "template", "templatePath":
 
                   var path = PathHelper.combine(extensionPath, substitute(element.att.name));
 

@@ -123,15 +123,10 @@ class WindowsPlatform extends Platform
 
       for(asset in project.assets) 
       {
-         if (asset.type != AssetType.TEMPLATE) 
+         if (!asset.embed)
          {
             PathHelper.mkdir(Path.directory(PathHelper.combine(applicationDirectory, asset.targetPath)));
             FileHelper.copyAssetIfNewer(asset, PathHelper.combine(applicationDirectory, asset.targetPath));
-         }
-         else
-         {
-            PathHelper.mkdir(Path.directory(PathHelper.combine(applicationDirectory, asset.targetPath)));
-            FileHelper.copyAsset(asset, PathHelper.combine(applicationDirectory, asset.targetPath), context);
          }
       }
    }

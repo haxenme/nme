@@ -161,15 +161,10 @@ class LinuxPlatform extends Platform
       //context.HAS_ICON = IconHelper.createIcon(project.icons, 256, 256, PathHelper.combine(applicationDirectory, "icon.png"));
       for(asset in project.assets) 
       {
-         if (asset.type != AssetType.TEMPLATE) 
+         if (!asset.embed)
          {
             PathHelper.mkdir(Path.directory(applicationDirectory + "/" + asset.targetPath));
             FileHelper.copyAssetIfNewer(asset, applicationDirectory + "/" + asset.targetPath);
-         }
-         else
-         {
-            PathHelper.mkdir(Path.directory(applicationDirectory + "/" + asset.targetPath));
-            FileHelper.copyAsset(asset, applicationDirectory + "/" + asset.targetPath, context);
          }
       }
    }

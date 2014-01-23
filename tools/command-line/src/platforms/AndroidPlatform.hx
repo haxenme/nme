@@ -219,7 +219,7 @@ class AndroidPlatform extends Platform
 
    override public function run(arguments:Array<String>):Void 
    {
-      AndroidHelper.run(project.meta.packageName + "/" + project.meta.packageName + ".MainActivity");
+      AndroidHelper.run(project.app.packageName + "/" + project.app.packageName + ".MainActivity");
    }
 
    override public function trace():Void 
@@ -229,7 +229,7 @@ class AndroidPlatform extends Platform
 
    override public function uninstall():Void 
    {
-      AndroidHelper.uninstall(project.meta.packageName);
+      AndroidHelper.uninstall(project.app.packageName);
    }
 
    override public function update():Void 
@@ -243,8 +243,6 @@ class AndroidPlatform extends Platform
 
       for(asset in project.assets) 
       {
-         if (asset.type != AssetType.TEMPLATE) 
-         {
             var targetPath = "";
 
             switch(asset.type) 
@@ -261,7 +259,6 @@ class AndroidPlatform extends Platform
             }
 
             FileHelper.copyAssetIfNewer(asset, targetPath);
-         }
       }
 
       if (project.targetFlags.exists("xml")) 
@@ -300,7 +297,7 @@ class AndroidPlatform extends Platform
 
       IconHelper.createIcon(project.icons, 732, 412, destination + "/res/drawable-xhdpi/ouya_icon.png");
 
-      var packageDirectory = project.meta.packageName;
+      var packageDirectory = project.app.packageName;
       packageDirectory = destination + "/src/" + packageDirectory.split(".").join("/");
       PathHelper.mkdir(packageDirectory);
 
@@ -340,14 +337,5 @@ class AndroidPlatform extends Platform
       FileHelper.copyFileTemplate(project.templatePaths, "android/MainActivity.java", packageDirectory + "/MainActivity.java", context);
       FileHelper.recursiveCopyTemplate(project.templatePaths, "haxe", project.app.path + "/android/haxe", context);
       FileHelper.recursiveCopyTemplate(project.templatePaths, "android/hxml", project.app.path + "/android/haxe", context);
-
-      for(asset in project.assets) 
-      {
-         if (asset.type == AssetType.TEMPLATE) 
-         {
-            PathHelper.mkdir(Path.directory(destination + asset.targetPath));
-            FileHelper.copyAsset(asset, destination + asset.targetPath, context);
-         }
-      }
    }
 }

@@ -495,17 +495,9 @@ class IOSPlatform extends Platform
 
       for(asset in project.assets) 
       {
-         if (asset.type != AssetType.TEMPLATE) 
-         {
-            PathHelper.mkdir(Path.directory(projectDirectory + "/assets/" + asset.flatName));
-            FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "/assets/" + asset.flatName);
-            FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "haxe/" + asset.sourcePath);
-         }
-         else
-         {
-            PathHelper.mkdir(Path.directory(projectDirectory + "/" + asset.targetPath));
-            FileHelper.copyAsset(asset, projectDirectory + "/" + asset.targetPath, context);
-         }
+         PathHelper.mkdir(Path.directory(projectDirectory + "/assets/" + asset.flatName));
+         FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "/assets/" + asset.flatName);
+         FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "haxe/" + asset.sourcePath);
       }
 
         if (project.command == "update" && PlatformHelper.hostPlatform == Platform.MAC) 

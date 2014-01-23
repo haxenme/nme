@@ -11,7 +11,6 @@ typedef IntMap<T> = Map<Int, T>;
 
 class NMEProject 
 {
-   public var meta:MetaData;
    public var window:Window;
    public var app:ApplicationData;
 
@@ -69,7 +68,6 @@ class NMEProject
       for(key in environment.keys())
          Reflect.setField(baseTemplateContext, key, environment.get(key));
 
-      meta = new MetaData();
       app = new ApplicationData();
       window = new Window();
 
@@ -209,164 +207,11 @@ class NMEProject
       }
    }
 
-/*
-   public function clone():NMEProject 
-   {
-      var project = new NMEProject();
-
-      ObjectHelper.copyFields(baseTemplateContext, project.baseTemplateContext);
-      ObjectHelper.copyFields(app, project.app);
-      project.architectures = architectures.copy();
-
-      for(asset in assets) 
-      {
-         project.assets.push(asset.clone());
-      }
-
-      if (certificate != null) 
-      {
-         project.certificate = certificate.clone();
-      }
-
-      project.command = command;
-      project.config = config.clone();
-      project.debug = debug;
-      project.dependencies = dependencies.copy();
-      project.component = component;
-      project.embedAssets = embedAssets;
-      project.openflCompat = openflCompat;
-
-      for(key in environment.keys()) 
-      {
-         project.environment.set(key, environment.get(key));
-      }
-
-      for(key in haxedefs.keys()) 
-      {
-         project.haxedefs.set(key, haxedefs.get(key));
-      }
-
-      project.haxeflags = haxeflags.copy();
-
-      project.macros = macros.copy();
-
-      for(haxelib in haxelibs) 
-      {
-         project.haxelibs.push(haxelib.clone());
-      }
-
-      for(icon in icons) 
-      {
-         project.icons.push(icon.clone());
-      }
-
-      project.javaPaths = javaPaths.copy();
-
-      for(library in libraries) 
-      {
-         project.libraries.push(library.clone());
-      }
-
-      ObjectHelper.copyFields(meta, project.meta);
-
-      for(ndll in ndlls) 
-      {
-         project.ndlls.push(ndll.clone());
-      }
-
-      project.platformType = platformType;
-      project.sources = sources.copy();
-
-      for(splashScreen in splashScreens) 
-      {
-         project.splashScreens.push(splashScreen.clone());
-      }
-
-      project.target = target;
-
-      for(key in targetFlags.keys()) 
-      {
-         project.targetFlags.set(key, targetFlags.get(key));
-      }
-
-      project.templatePaths = templatePaths.copy();
-
-      ObjectHelper.copyFields(window, project.window);
-
-      return project;
-   }
-   */
-
-
    public function include(path:String):Void 
    {
       // extend project file somehow?
    }
 
-/*
-   public function includeAssets(path:String, rename:String = null, include:Array<String> = null, exclude:Array<String> = null):Void 
-   {
-      if (include == null) 
-      {
-         include = [ "*" ];
-      }
-
-      if (exclude == null) 
-      {
-         exclude = [];
-      }
-
-      exclude = exclude.concat([ ".*", "cvs", "thumbs.db", "desktop.ini", "*.hash" ]);
-
-      if (path == "") 
-      {
-         return;
-      }
-
-      var targetPath = "";
-
-      if (rename != null) 
-      {
-         targetPath = rename;
-      }
-      else
-      {
-         targetPath = path;
-      }
-
-      if (!FileSystem.exists(path)) 
-      {
-         LogHelper.error("Could not find asset path \"" + path + "\"");
-         return;
-      }
-
-      var files = FileSystem.readDirectory(path);
-
-      if (targetPath != "") 
-      {
-         targetPath += "/";
-      }
-
-      for(file in files) 
-      {
-         if (FileSystem.isDirectory(path + "/" + file)) 
-         {
-            if (filter(file, [ "*" ], exclude)) 
-            {
-               includeAssets(path + "/" + file, targetPath + file, include, exclude);
-            }
-         }
-         else
-         {
-            if (filter(file, include, exclude)) 
-            {
-               assets.push(new Asset(path + "/" + file, targetPath + file));
-            }
-         }
-      }
-   }
-
-*/
 
    // Getters & Setters
    private function get_host():String 
@@ -406,18 +251,15 @@ class NMEProject
       }
 
 
-      for(field in Reflect.fields(meta)) 
-      {
-         Reflect.setField(context, "APP_" + StringHelper.formatUppercaseVariable(field), Reflect.field(meta, field));
-         Reflect.setField(context, "META_" + StringHelper.formatUppercaseVariable(field), Reflect.field(meta, field));
-      }
+      for(field in Reflect.fields(app)) 
+         Reflect.setField(context, "APP_" + StringHelper.formatUppercaseVariable(field), Reflect.field(app, field));
 
-      context.APP_PACKAGE = context.META_PACKAGE = meta.packageName;
+
+      context.APP_PACKAGE = app.packageName;
 
       for(field in Reflect.fields(window)) 
-      {
          Reflect.setField(context, "WIN_" + StringHelper.formatUppercaseVariable(field), Reflect.field(window, field));
-      }
+
 
       for(haxeflag in haxeflags) 
       {
@@ -433,20 +275,12 @@ class NMEProject
       {
          if (embedAssets)
          {
-             asset.resourceName = asset.flatName;
-            //already done in iosview
+            asset.resourceName = asset.flatName;
             var absPath = sys.FileSystem.fullPath(asset.sourcePath);
             haxeflags.push("-resource " + absPath  + "@" + asset.flatName );
-            context.assets.push(asset);
          }
-         else if (asset.type != AssetType.TEMPLATE) 
-         {
-            //var embeddedAsset:Dynamic = { };
-            //ObjectHelper.copyFields(asset, embeddedAsset);
-            //embeddedAsset.type = Std.string(asset.type);
-            //context.assets.push(embeddedAsset);
-            context.assets.push(asset);
-         }
+
+         context.assets.push(asset);
       }
 
       context.libraries = new Array<Dynamic>();

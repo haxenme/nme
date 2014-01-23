@@ -30,21 +30,6 @@ class CommandLineTools
    private static var host = PlatformHelper.hostPlatform;
    private static var nmeVersion:String;
 
-/*
-   private static var architectures:Array<Architecture>;
-   private static var megaTrace:Bool;
-   private static var sources:Array<String>;
-   private static var haxelibs:Array<Haxelib>;
-   private static var haxedefs:Array<String>;
-   private static var haxeflags:Array<String>;
-   private static var macros:Array<String>;
-   private static var includePaths:Array<String>;
-   private static var project:NMEProject;
-   private static var projectDefines:StringMap<String>;
-   private static var targetFlags:StringMap<String>;
-   private static var userDefines:StringMap<Dynamic>;
-*/
-
    private static function buildProject(project:NMEProject) 
    {
       loadProject(project);
@@ -274,12 +259,8 @@ class CommandLineTools
       Sys.println(" Usage : nme help");
       Sys.println(" Usage : nme [clean|update|build|run|test|display] <project>(target) [options]");
       Sys.println(" Usage : nme create project <package> [options]");
-      //Sys.println(" Usage : nme create extension <name>");
       Sys.println(" Usage : nme create <sample>");
       Sys.println(" Usage : nme rebuild <extension>(targets)");
-      //Sys.println(" Usage : nme document <project>(target)");
-      //Sys.println(" Usage : nme generate <args> [options]");
-      //Sys.println(" Usage : nme new file.nmml name1=value1 name2=value2 ...");
       Sys.println("");
       Sys.println(" Commands : ");
       Sys.println("");
@@ -291,19 +272,16 @@ class CommandLineTools
       Sys.println("  test : Update, build and run in one command");
       Sys.println("  display : Display information for the specified project/target");
       Sys.println("  create : Create a new project or extension using templates");
-      //Sys.println("  rebuild : Recompile native binaries for extensions");
-      //Sys.println("  document : Generate documentation using haxedoc");
-      //Sys.println("  generate : Tools to help create source code automatically");
       Sys.println("");
       Sys.println(" Targets : ");
       Sys.println("");
-      Sys.println("  android : Create Google Android applications");
-      //Sys.println("  cpp : Create application for the system you are compiling on");
-      Sys.println("  flash : Create SWF applications for Adobe Flash Player");
-      Sys.println("  ios : Create Apple iOS applications");
-      Sys.println("  linux : Create Linux applications");
-      Sys.println("  mac : Create Apple Mac OS X applications");
-      Sys.println("  windows : Create Microsoft Windows applications");
+      Sys.println("  cpp         : Create applications, for host system (linux,mac,windows)");
+      Sys.println("  android     : Create Google Android applications");
+      Sys.println("  ios         : Create Apple iOS applications");
+      Sys.println("  androidview : Create library files for inclusion in Google Android applications");
+      Sys.println("  iosview     : Create library files for inclusion in Apple iOS applications");
+      Sys.println("  flash       : Create SWF applications for Adobe Flash Player");
+      Sys.println("  neko        : Create application for rapid testing on host system");
       Sys.println("");
       Sys.println(" Options : ");
       Sys.println("");
@@ -319,12 +297,6 @@ class CommandLineTools
       Sys.println("  [android] -arm7-only : Compile for arm-7a for testing");
       Sys.println("  [ios] -simulator : Build/test for the device simulator");
       Sys.println("  [ios] -simulator -ipad : Build/test for the iPad Simulator");
-      //Sys.println("  [flash] -web : Generate web template files");
-      //Sys.println("  [flash] -chrome : Generate Google Chrome app template files");
-      //Sys.println("  [flash] -opera : Generate an Opera Widget");
-      Sys.println("  (display) -hxml : Print HXML information for the project");
-      Sys.println("  (display) -nmml : Print NMML information for the project");
-      //Sys.println("  (generate) -java-externs : Generate Haxe classes from compiled Java");
       Sys.println("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
    }
 
@@ -395,7 +367,7 @@ class CommandLineTools
 
    private static function getBuildNumber(project:NMEProject, increment:Bool = true):Void 
    {
-      if (project.meta.buildNumber == "1") 
+      if (project.app.buildNumber == "1") 
       {
          var versionFile = PathHelper.combine(project.app.path, ".build");
          var version = 1;
@@ -417,7 +389,7 @@ class CommandLineTools
             }
          }
 
-         project.meta.buildNumber = Std.string(version);
+         project.app.buildNumber = Std.string(version);
 
          try 
          {
@@ -586,14 +558,6 @@ class CommandLineTools
 
       project.templatePaths.push( nme + "/templates" );
 
-
-      //NMEProject._command = command;
-      //NMEProject._debug = debug || megaTrace;
-      //NMEProject._megaTrace = megaTrace;
-      //NMEProject._target = target;
-      //NMEProject._targetFlags = targetFlags;
-      //NMEProject._templatePaths = [ nme + "/templates", nme + "/tools/command-line" ];
-
       try { Sys.setCwd(Path.directory(projectFile)); } catch(e:Dynamic) {}
 
       if (Path.extension(projectFile) == "nmml" || Path.extension(projectFile) == "xml") 
@@ -605,71 +569,6 @@ class CommandLineTools
          LogHelper.error("You must have a \"project.nmml\" file or specify another NME project file when using the '" + command + "' command");
          return null;
       }
-
-
-      //project.haxeflags = project.haxeflags.concat(haxeflags);
-      //project.macros = project.macros.concat(macros);
-      //project.haxelibs = project.haxelibs.concat(haxelibs);
-      //project.sources = project.sources.concat(sources);
-
-
-      /*
-      for(haxedef in haxedefs) 
-      {
-         if (!project.haxedefs.exists(haxedef)) 
-         {
-            project.haxedefs.set(haxedef, 1);
-         }
-      }
-
-      for(key in projectDefines.keys()) 
-      {
-         var components = key.split("-");
-         var field = components.shift().toLowerCase();
-         var attribute = "";
-
-         if (components.length > 0) 
-         {
-            for(i in 1...components.length) 
-            {
-               components[i] = components[i].substr(0, 1).toUpperCase() + components[i].substr(1).toLowerCase();
-            }
-
-            attribute = components.join("");
-         }
-
-         if (field == "template" && attribute == "path") 
-         {
-            project.templatePaths.push(projectDefines.get(key));
-         }
-         else
-         {
-            if (Reflect.hasField(project, field)) 
-            {
-               var fieldValue = Reflect.field(project, field);
-
-               if (Reflect.hasField(fieldValue, attribute)) 
-               {
-                  if (Std.is(Reflect.field(fieldValue, attribute), String)) 
-                  {
-                     Reflect.setField(fieldValue, attribute, projectDefines.get(key));
-
-                  } else if (Std.is(Reflect.field(fieldValue, attribute), Float)) 
-                  {
-                     Reflect.setField(fieldValue, attribute, Std.parseFloat(projectDefines.get(key)));
-
-                  } else if (Std.is(Reflect.field(fieldValue, attribute), Bool)) 
-                  {
-                     Reflect.setField(fieldValue, attribute, (projectDefines.get(key).toLowerCase() == "true" || projectDefines.get(key) == "1"));
-                  }
-               }
-            }
-         }
-      }
-      */
-
-      //SWFHelper.preprocess(project);
-      //XFLHelper.preprocess(project);
 
       // Better way to do this?
       switch(project.target) 
@@ -705,20 +604,6 @@ class CommandLineTools
       additionalArguments = new Array<String>();
 
       command = "";
-
-/*
-      architectures = new Array<Architecture>();
-      debug = false;
-      sources = new Array<String>();
-      haxelibs = new Array<Haxelib>();
-      haxedefs = new Array<String>();
-      haxeflags = new Array<String>();
-      macros = new Array<String>();
-      includePaths = new Array<String>();
-      projectDefines = new StringMap<String>();
-      targetFlags = new StringMap<String>();
-      userDefines = new StringMap<Dynamic>();
-*/
 
       words = new Array<String>();
 
@@ -900,7 +785,7 @@ class CommandLineTools
          else if (argument == "-debug") 
             debug = true;
          else if (argument == "-megatrace") 
-            project.megaTrace = true;
+            project.megaTrace = project.debug = debug = true;
          else if (command.length == 0) 
             command = argument;
          else if (argument.substr(0, 1) == "-") 

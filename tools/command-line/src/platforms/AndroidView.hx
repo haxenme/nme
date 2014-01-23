@@ -73,7 +73,7 @@ class AndroidView extends AndroidPlatform
       context.ANDROIDVIEW = true;
       context.ANDROID_API_LEVEL = getApiLevel(11);
 
-      var packageDirectory = project.meta.packageName;
+      var packageDirectory = project.app.packageName;
 
       var srcBuild =  getBuildDir();
 

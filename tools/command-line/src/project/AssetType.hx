@@ -5,6 +5,6 @@ enum AssetType
    IMAGE;
    MUSIC;
    SOUND;
-   TEMPLATE;
    TEXT;
 }
+

@@ -417,7 +417,7 @@ class FlashHelper
 
                   for(asset in assets) 
                   {
-                     if (asset.type != AssetType.TEMPLATE && embedAsset(asset, packageName, new_tags)) 
+                     if (embedAsset(asset, packageName, new_tags)) 
                      {
                         inserted = true;
                      }
@@ -610,7 +610,7 @@ class FlashPlatform extends Platform
 
       for(asset in project.assets) 
       {
-         if (asset.type == AssetType.TEMPLATE || asset.embed != true || !usesNME) 
+         if (!asset.embed || !usesNME) 
          {
             PathHelper.mkdir(Path.directory(destination + asset.targetPath));
             FileHelper.copyAsset(asset, destination + asset.targetPath, context);
