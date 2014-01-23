@@ -697,21 +697,24 @@ class NMMLParser
                case "ndll":
 
                   var name = substitute(element.att.name);
-                  var haxelib = null;
+                  if (!Lambda.exists(project.ndlls,function(n) return n.name==name))
+                  {
+                     var haxelib = null;
 
-                  if (element.has.haxelib) 
-                     haxelib = new Haxelib(substitute(element.att.haxelib));
+                     if (element.has.haxelib) 
+                        haxelib = new Haxelib(substitute(element.att.haxelib));
 
-                  if (haxelib == null && (name == "std" || name == "regexp" || name == "zlib")) 
-                     haxelib = new Haxelib("hxcpp");
+                     if (haxelib == null && (name == "std" || name == "regexp" || name == "zlib")) 
+                        haxelib = new Haxelib("hxcpp");
 
-                  if (haxelib==null)
-                     haxelib = defaultLib;
+                     if (haxelib==null)
+                        haxelib = defaultLib;
 
-                  var register = !element.has.register || substitute(element.att.register)!="false";
-                  var ndll = new NDLL(name, haxelib,register);
-                  ndll.extensionPath = extensionPath;
-                  project.ndlls.push(ndll);
+                     var register = !element.has.register || substitute(element.att.register)!="false";
+                     var ndll = new NDLL(name, haxelib,register);
+                     ndll.extensionPath = extensionPath;
+                     project.ndlls.push(ndll);
+                  }
 
                case "launchImage":
 
