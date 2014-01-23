@@ -1,10 +1,22 @@
-typedef MetaData = 
+
+class MetaData
 {
-   @:optional var buildNumber:String;
-   @:optional var company:String;
-   @:optional var companyID:String;
-   @:optional var description:String;
-   @:optional var packageName:String;
-   @:optional var title:String;
-   @:optional var version:String;
+   public var buildNumber:String;
+   public var company:String;
+   public var companyID:String;
+   public var description:String;
+   public var packageName:String;
+   public var title:String;
+   public var version:String;
+
+   public function new()
+   {
+      title = "MyApplication";
+      description = "";
+      packageName = "com.example.myapp";
+      version = "1.0.0";
+      company = "Example, Inc.";
+      buildNumber = "1";
+      companyID = "";
+   }
 }

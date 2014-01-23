@@ -1,20 +1,42 @@
-typedef Window = 
+
+class Window
 {
-   @:optional var width:Int;
-   @:optional var height:Int;
-   @:optional var background:Int;
-   @:optional var parameters:String;
-   @:optional var fps:Int;
-   @:optional var hardware:Bool;
-   @:optional var resizable:Bool;
-   @:optional var borderless:Bool;
-   @:optional var vsync:Bool;
-   @:optional var fullscreen:Bool;
-   @:optional var antialiasing:Int;
-   @:optional var orientation:Orientation;
-   @:optional var allowShaders:Bool;
-   @:optional var requireShaders:Bool;
-   @:optional var depthBuffer:Bool;
-   @:optional var stencilBuffer:Bool;
-   @:optional var alphaBuffer:Bool;
+   public var width:Int;
+   public var height:Int;
+   public var background:Int;
+   public var parameters:String;
+   public var fps:Int;
+   public var hardware:Bool;
+   public var resizable:Bool;
+   public var borderless:Bool;
+   public var vsync:Bool;
+   public var fullscreen:Bool;
+   public var antialiasing:Int;
+   public var orientation:Orientation;
+   public var allowShaders:Bool;
+   public var requireShaders:Bool;
+   public var depthBuffer:Bool;
+   public var stencilBuffer:Bool;
+   public var alphaBuffer:Bool;
+
+   public function new()
+   {
+      width = 800;
+      height = 600;
+      parameters = "{}";
+      background = 0xFFFFFF;
+      fps = 30;
+      hardware = true;
+      resizable = true;
+      borderless = false;
+      orientation = Orientation.AUTO;
+      vsync = false;
+      fullscreen = false;
+      antialiasing = 0;
+      allowShaders = true;
+      requireShaders = false;
+      depthBuffer = false;
+      stencilBuffer = false;
+      alphaBuffer = false;
+   }
 }

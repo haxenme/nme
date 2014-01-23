@@ -11,7 +11,10 @@ typedef IntMap<T> = Map<Int, T>;
 
 class NMEProject 
 {
+   public var meta:MetaData;
+   public var window:Window;
    public var app:ApplicationData;
+
    public var architectures:Array<Architecture>;
    public var assets:Array<Asset>;
    public var certificate:Keystore;
@@ -29,7 +32,6 @@ class NMEProject
    public var icons:Array<Icon>;
    public var javaPaths:Array<String>;
    public var libraries:Array<Library>;
-   public var meta:MetaData;
    public var ndlls:Array<NDLL>;
    public var platformType:String;
    public var sources:Array<String>;
@@ -38,7 +40,6 @@ class NMEProject
    public var targetFlags:StringMap<String>;
    public var templateContext(get_templateContext, null):Dynamic;
    public var templatePaths:Array<String>;
-   public var window:Window;
    public var component:String;
    public var embedAssets:Bool;
    public var openflCompat:Bool;
@@ -48,19 +49,6 @@ class NMEProject
    public var localDefines:haxe.ds.StringMap<Dynamic>;
    public var includePaths:Array<String>;
 
-
-   private var defaultApp:ApplicationData;
-   private var defaultMeta:MetaData;
-   private var defaultWindow:Window;
-
-   //public static var _command:String;
-   //public static var _debug:Bool;
-   //public static var _megaTrace:Bool = false;
-   //public static var _target:String;
-   //public static var _targetFlags:StringMap<String>;
-   //public static var _templatePaths:Array<String>;
-
-   private static var initialized:Bool;
 
    public function new() 
    {
@@ -81,45 +69,10 @@ class NMEProject
       for(key in environment.keys())
          Reflect.setField(baseTemplateContext, key, environment.get(key));
 
+      meta = new MetaData();
+      app = new ApplicationData();
+      window = new Window();
 
-      /*
-      debug = _debug;
-      megaTrace = _megaTrace;
-      target = _target;
-      targetFlags = StringMapHelper.copy(_targetFlags);
-      templatePaths = _templatePaths.copy();
-      */
-
-      defaultMeta = { title: "MyApplication", description: "", packageName: "com.example.myapp", version: "1.0.0", company: "Example, Inc.", buildNumber: "1", companyID: "" }
-      defaultApp = { main: "Main", file: "MyApplication", path: "bin", preloader: "NMEPreloader", swfVersion: 11, url: "" }
-      defaultWindow = { width: 800,
-                        height: 600,
-                        parameters: "{}",
-                        background: 0xFFFFFF,
-                        fps: 30,
-                        hardware: true,
-                        resizable: true,
-                        borderless: false,
-                        orientation: Orientation.AUTO,
-                        vsync: false,
-                        fullscreen: false,
-                        antialiasing: 0,
-                        allowShaders: true,
-                        requireShaders: false,
-                        depthBuffer: false,
-                        stencilBuffer: false,
-                        alphaBuffer: false,
-                        }
-
- 
-
-      meta = {};
-      app = {};
-      window = {};
-
-      ObjectHelper.copyFields(defaultMeta, meta);
-      ObjectHelper.copyFields(defaultApp, app);
-      ObjectHelper.copyFields(defaultWindow, window);
 
       assets = new Array<Asset>();
       dependencies = new Array<String>();
@@ -218,7 +171,7 @@ class NMEProject
             platformType = Platform.TYPE_WEB;
             architectures = [];
 
-            defaultWindow.fps = 0;
+            window.fps = 0;
 
          case Platform.ANDROID, Platform.BLACKBERRY, Platform.IOS,
               Platform.IOSVIEW, Platform.WEBOS, Platform.ANDROIDVIEW:
@@ -237,9 +190,9 @@ class NMEProject
             if (target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW) 
                embedAssets = true;
 
-            defaultWindow.width = 0;
-            defaultWindow.height = 0;
-            defaultWindow.fullscreen = true;
+            window.width = 0;
+            window.height = 0;
+            window.fullscreen = true;
 
          case Platform.WINDOWS, Platform.MAC, Platform.LINUX:
 
@@ -413,41 +366,6 @@ class NMEProject
       }
    }
 
-
-   public function merge(project:NMEProject):Void 
-   {
-      if (project != null) 
-      {
-         ObjectHelper.copyUniqueFields(project.meta, meta, project.defaultMeta);
-         ObjectHelper.copyUniqueFields(project.app, app, project.defaultApp);
-         ObjectHelper.copyUniqueFields(project.window, window, project.defaultWindow);
-
-         StringMapHelper.copyUniqueKeys(project.environment, environment);
-         StringMapHelper.copyUniqueKeys(project.haxedefs, haxedefs);
-
-         ObjectHelper.copyUniqueFields(project.certificate, certificate, null);
-         config.merge(project.config);
-
-         if (project.embedAssets)
-            embedAssets = true;
-         if (!project.openflCompat)
-            openflCompat = false;
-         if (component==null) component = project.component;
-         assets = ArrayHelper.concatUnique(assets, project.assets);
-         dependencies = ArrayHelper.concatUnique(dependencies, project.dependencies);
-         haxeflags = ArrayHelper.concatUnique(haxeflags, project.haxeflags);
-         macros = ArrayHelper.concatUnique(macros, project.macros);         
-         haxelibs = ArrayHelper.concatUnique(haxelibs, project.haxelibs);
-         icons = ArrayHelper.concatUnique(icons, project.icons);
-         javaPaths = ArrayHelper.concatUnique(javaPaths, project.javaPaths);
-         libraries = ArrayHelper.concatUnique(libraries, project.libraries);
-         ndlls = ArrayHelper.concatUnique(ndlls, project.ndlls);
-         sources = ArrayHelper.concatUnique(sources, project.sources);
-         splashScreens = ArrayHelper.concatUnique(splashScreens, project.splashScreens);
-         templatePaths = ArrayHelper.concatUnique(templatePaths, project.templatePaths);
-      }
-   }
-
 */
 
    // Getters & Setters
@@ -470,14 +388,6 @@ class NMEProject
 
        for(key in localDefines.keys())
          Reflect.setField(context, key, localDefines.get(key));
-
-      if (app == null) app = { };
-      if (meta == null) meta = { };
-      if (window == null) window = { };
-
-      ObjectHelper.copyMissingFields(defaultApp, app);
-      ObjectHelper.copyMissingFields(defaultMeta, meta);
-      ObjectHelper.copyMissingFields(defaultWindow, window);
 
       config.populate();
 
@@ -610,11 +520,6 @@ class NMEProject
       }
 
       var main = app.main;
-
-      if (main == null) 
-      {
-         main = defaultApp.main;
-      }
 
       var indexOfPeriod = main.lastIndexOf(".");
 
