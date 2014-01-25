@@ -45,7 +45,7 @@ import java.util.TimerTask;
  *   an EGLConfig that supports 2.0. This is done by providing a config
  *   specification to eglChooseConfig() that has the attribute
  *   EGL10.ELG_RENDERABLE_TYPE containing the EGL_OPENGL_ES2_BIT flag
- *   set. See ConfigChooser class definition below.
+    *   set. See ConfigChooser class definition below.
  *
  * - The class must select the surface's format, then choose an EGLConfig
  *   that matches it exactly (with regards to red/green/blue/alpha channels
@@ -81,26 +81,38 @@ class MainView extends GLSurfaceView {
         int eglVersion = 1;
         setZOrderMediaOverlay(true);
 
-        // See if version 2 is supported?
-        if (::WIN_ALLOW_SHADERS:: || ::WIN_REQUIRE_SHADERS:: )
+        /*
+         Testing different layer types
+        try
         {
-           EGL10 egl = (EGL10)EGLContext.getEGL();
-           EGLDisplay display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
-           int[] version = new int[2];
-           egl.eglInitialize(display, version);
-           EGLConfig[] v2_configs = new EGLConfig[1];
-           int[] num_config = new int[1];
-           int[] attrs = { EGL10.EGL_RENDERABLE_TYPE, 4 /*EGL_OPENGL_ES2_BIT*/, EGL10.EGL_NONE };
-           egl.eglChooseConfig(display, attrs, v2_configs, 1, num_config);
-           //Log.v("EGL","v2 configs : " + num_config[0]);
-           if (num_config[0]==1)
-           {
-              eglVersion = 2;
-              setEGLContextClientVersion(2); 
-           }
+           java.lang.reflect.Method setLayerTypeMethod= getClass().getDeclaredMethod(
+              "setLayerType",java.lang.Integer.class, android.graphics.Paint.class );
+           int type = 0; // LAYER_TYPE_NONE
+           // int type = 1; // LAYER_TYPE_SOFTWARE
+           // int type = 2; // LAYER_TYPE_HARDWARE
+
+           setLayerTypeMethod.invoke(this, new java.lang.Integer(type), (android.graphics.Paint)null);
+           Log.v("VIEW","setLayerType to " + type);
+        } catch (java.lang.Exception e){
+           Log.v("VIEW","Error calling setLayerType ignored " + e);
+        }
+        */
+
+        EGL10 egl = (EGL10)EGLContext.getEGL();
+        EGLDisplay display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
+        int[] version = new int[2];
+        egl.eglInitialize(display, version);
+        EGLConfig[] v2_configs = new EGLConfig[1];
+        int[] num_config = new int[1];
+        int[] attrs = { EGL10.EGL_RENDERABLE_TYPE, 4 /*EGL_OPENGL_ES2_BIT*/, EGL10.EGL_NONE };
+        egl.eglChooseConfig(display, attrs, v2_configs, 1, num_config);
+        //Log.v("EGL","v2 configs : " + num_config[0]);
+        if (num_config[0]!=1)
+        {
+           Log.e("VIEW", "OpenglES 2.0 apparently not supported.");
         }
 
-        final int renderType = eglVersion==1 ? 0x01 : 0x04;
+        final int renderType =  0x04;
 
 
         setEGLConfigChooser(new EGLConfigChooser()
