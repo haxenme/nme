@@ -1034,6 +1034,9 @@ class IOSVideo : public StageVideo
    double                  seekPending;
    double                  timeAtLastSeek;
 
+   bool                    pendingStateDelayed;
+   int                     pendingState;
+
 public:
    IOSVideo(NMEStage *inStage,double inPointScale)
    {
@@ -1053,6 +1056,8 @@ public:
       seekPending = -999;
       timeAtLastSeek = 0;
       seenPrepared = false;
+      pendingStateDelayed = false;
+      pendingState = 0;
       printf("New video\n");
    }
 
@@ -1065,13 +1070,15 @@ public:
 
    void play(const char *inUrl, double inStart, double inLength)
    {
-      printf("video: play %s %f %f\n", inUrl, inStart, inLength);
+      printf("VIDEO: play %s %f %f\n", inUrl, inStart, inLength);
 
       if (inUrl==lastUrl)
       {
          printf("Replay\n");
          return;
       }
+
+      printf("VIDEO: load %s\n", inUrl);
  
       /*
       Create a MPMoviePlayerController movie object for the specified URL and add movie notification
@@ -1082,7 +1089,7 @@ public:
   
       if (!stopped && player)
       {
-         printf("Stop player\n");
+         printf("VIDEO: Stop player before play\n");
          [player stop];
          stopped = true;
       }
@@ -1143,7 +1150,7 @@ public:
       }
       else
       {
-         printf("Play\n");
+         printf("Init playing\n");
          playing = true;
          setState();
       }
@@ -1186,6 +1193,12 @@ public:
       val_ocall0(mOwner.get(), f);
    }
 
+   void sendStateDelayed(int inState)
+   {
+      pendingState = inState;
+      pendingStateDelayed = true;
+   }
+
    void sendState(int inState)
    {
       int top = 0;
@@ -1204,7 +1217,7 @@ public:
 
    void seek(double inTime)
    {
-      printf("video: seek %f\n", inTime);
+      printf("VIDEO: seek %f\n", inTime);
       if (seekPending<0)
       {
          timeAtLastSeek = player.currentPlaybackTime;
@@ -1233,7 +1246,7 @@ public:
 
    void setViewport(double x, double y, double width, double height)
    {
-      //printf("video: setviewport %f %f %f %f\n",x,y, width,height);
+      //printf("VIDEO: setviewport %f %f %f %f\n",x,y, width,height);
       vpIsSet = true;
       viewport = CGRectMake(x*pointScale,y*pointScale,width*pointScale,height*pointScale);
       if (player)
@@ -1253,10 +1266,12 @@ public:
       {
          if (playing && active)
          {
+            printf("> PLAY\n");
             [player play];
          }
          else
          {
+            printf("> PAUSE\n");
             [player pause];
          }
       }
@@ -1264,21 +1279,21 @@ public:
 
    void pause()
    {
-      printf("video: pause\n");
+      printf("VIDEO: pause\n");
       playing = false;
       setState();
    }
 
    void resume()
    {
-      printf("video: resume\n");
+      printf("VIDEO: resume\n");
       playing = true;
       setState();
    }
 
    void togglePause()
    {
-      printf("video: togglePause\n");
+      printf("VIDEO: togglePause\n");
       playing = !playing;
       setState();
    }
@@ -1319,6 +1334,12 @@ public:
          seekPending = -9999;
          sendSeekStatus(SEEK_FINISHED_OK,val);
       }
+
+      if (pendingStateDelayed)
+      {
+         pendingStateDelayed = false;
+         sendState(pendingState);
+      }
    }
 
    void checkSize(bool inIgnoreDuration=false)
@@ -1343,7 +1364,7 @@ public:
    void onBufferingStateChange()
    { 
       checkSize();
-      //printf("onBufferingStateChange %d\n", player.loadState);
+      printf("onBufferingStateChange %d\n", player.loadState);
       switch(player.loadState)
       {
          case MPMovieLoadStateUnknown: break;
@@ -1361,13 +1382,13 @@ public:
       {
          case MPMoviePlaybackStateStopped:
             printf("MPMoviePlaybackStateStopped\n");
-            sendState( PLAY_STATUS_STOPPED );
+            sendStateDelayed( PLAY_STATUS_STOPPED );
             break;
          case MPMoviePlaybackStatePlaying:
 
             printf("MPMoviePlaybackStatePlaying\n");
             checkSize(true);
-            sendState( PLAY_STATUS_STARTED );
+            sendStateDelayed( PLAY_STATUS_STARTED );
             break;
          case MPMoviePlaybackStatePaused: break;
          case MPMoviePlaybackStateInterrupted:
@@ -1413,37 +1434,39 @@ public:
     
    void onFinished(int reason)
    { 
-      printf("on Finished\n");
+      printf("on Finished %d\n",reason);
       // force stop to avoid loop
-      if(!stopped){
-        printf("force stop\n");
-        [player stop];
-        stopped = true;
+      if(!stopped)
+      {
+         printf("force stop\n");
+         [player stop];
+         stopped = true;
+         lastUrl = "";
+         videoWidth = 0;
+         videoHeight = 0;
+         duration = 0;
       }
 
       if (reason == MPMovieFinishReasonPlaybackEnded)
       {
+         printf("playback ended\n");
          // movie finished playin
          if (seekPending>=0)
          {
             seekPending = -999;
             sendSeekStatus(SEEK_FINISHED_EARLY,duration);
          }
-         
-         sendState( PLAY_STATUS_COMPLETE );
+         sendStateDelayed( PLAY_STATUS_COMPLETE );
       }
       else if (reason == MPMovieFinishReasonUserExited)
       {
+         printf("playback cancelled\n");
          //user hit the done button - is this complete?
-         sendState( PLAY_STATUS_COMPLETE );
+         sendStateDelayed( PLAY_STATUS_COMPLETE );
       }
       else if (reason == MPMovieFinishReasonPlaybackError)
       {
-         lastUrl = "";
-         //stopped = true;
-         videoWidth = 0;
-         videoHeight = 0;
-         duration = 0;
+         printf("playback error\n");
 
          //error
          if (seekPending>=0)
@@ -1454,16 +1477,14 @@ public:
          }
          if (seenPrepared)
          {
-            sendState( PLAY_STATUS_NOT_STARTED );
+            sendStateDelayed( PLAY_STATUS_NOT_STARTED );
          }
          else
           {
-            sendState( PLAY_STATUS_ERROR );
+            sendStateDelayed( PLAY_STATUS_ERROR );
           }
       }
-
    }
-    
 
 };
 
