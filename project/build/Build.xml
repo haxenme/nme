@@ -60,58 +60,62 @@
       For android use java (todo - opensl?)
    -->
 
+   <!-- Built relative to "bin" -->
+   <set name="SRC_DIR" value="../src" />
+   <set name="INC_DIR" value="../include" />
+   <set name="SUP_DIR" value="../support" />
+   <set name="OUT_DIR" value="../../ndll" />
    
    
    <files id="main">
-      <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I${INC_DIR}"/>
       <file name="Test.cpp"/>
    </files>
    
    
    <files id="nme">
-      <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I${INC_DIR}"/>
 
 
       <section if="windows">
-         <file name="windows/GDIFont.cpp"/>
-         <file name="windows/System.cpp" />
+         <file name="${SRC_DIR}/windows/GDIFont.cpp"/>
+         <file name="${SRC_DIR}/windows/System.cpp" />
       </section>
 
       <section if="linux">
          <compilerflag value="-Wno-conversion" if="linux"/>
-         <file name="linux/NativeFont.cpp"/>
-         <file name="linux/System.cpp"/>
+         <file name="${SRC_DIR}/linux/NativeFont.cpp"/>
+         <file name="${SRC_DIR}/linux/System.cpp"/>
       </section>
 
       <section if="macos">
-         <compilerflag value="-Iinclude"/>
-         <compilerflag value="-Iopenal"/>
-         <file name="mac/NSFont.cpp"/>
-         <file name="mac/MacBoot.m" />
-         <file name="mac/System.mm"/>
-         <file name="cocoa/FileManager.mm"/>
-         <!-- <file name="openal/OpenALSound.cpp" /> -->
+         <compilerflag value="-I${SRC_DIR}/openal"/>
+         <file name="${SRC_DIR}/mac/NSFont.cpp"/>
+         <file name="${SRC_DIR}/mac/MacBoot.m" />
+         <file name="${SRC_DIR}/mac/System.mm"/>
+         <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
+         <!-- <file name="${SRC_DIR}/openal/OpenALSound.cpp" /> -->
       </section>
 
       <section if="iphone">
-         <file name="iPhone/UIStageView.mm"/>
-         <file name="iPhone/UIDeviceHardware.mm"/>
-         <!-- <file name="iPhone/SurfaceIO.mm"/> -->
-         <file name="openal/OpenALSound.cpp" />
-         <file name="common/Audio.cpp" />
-         <file name="iPhone/Sound.mm"/>
-         <file name="iPhone/NativeFont.mm"/>
-         <file name="iPhone/System.mm"/>
-         <file name="cocoa/FileManager.mm"/>
+         <file name="${SRC_DIR}/iPhone/UIStageView.mm"/>
+         <file name="${SRC_DIR}/iPhone/UIDeviceHardware.mm"/>
+         <!-- <file name="${SRC_DIR}/iPhone/SurfaceIO.mm"/> -->
+         <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
+         <file name="${SRC_DIR}/common/Audio.cpp" />
+         <file name="${SRC_DIR}/iPhone/Sound.mm"/>
+         <file name="${SRC_DIR}/iPhone/NativeFont.mm"/>
+         <file name="${SRC_DIR}/iPhone/System.mm"/>
+         <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
       </section>
 
       <section if="android">
-         <file name="android/AndroidCommon.cpp" />
-         <file name="android/AndroidSound.cpp"/>
-         <file name="android/AndroidFont.cpp"/>
-         <file name="android/AndroidFrame.cpp"/>
-         <file name="android/JNI.cpp"/>
-         <file name="android/System.cpp"/>
+         <file name="${SRC_DIR}/android/AndroidCommon.cpp" />
+         <file name="${SRC_DIR}/android/AndroidSound.cpp"/>
+         <file name="${SRC_DIR}/android/AndroidFont.cpp"/>
+         <file name="${SRC_DIR}/android/AndroidFrame.cpp"/>
+         <file name="${SRC_DIR}/android/JNI.cpp"/>
+         <file name="${SRC_DIR}/android/System.cpp"/>
       </section>
 
       <section if="rpi">
@@ -125,14 +129,14 @@
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
         <compilerflag value="-DNME_MIXER" />
-        <file name="sdl/SDLSound.cpp"/>
-        <file name="sdl/SDLStage.cpp"/>
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp"/>
+        <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>
 
       <section if="NME_SDL2">
         <compilerflag value="-I${NME_STATE}/include/SDL2" />
-        <file name="sdl/SDLSound.cpp"/>
-        <file name="sdl2/SDL2Stage.cpp"/>
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp"/>
+        <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <compilerflag value="-DSDL_OGL" />
         <compilerflag value="-DNME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
@@ -143,73 +147,73 @@
       </section>
 
       <section if="NME_OGL">
-         <file name="opengl/OpenGLContext.cpp" />
-         <file name="opengl/OGLTexture.cpp" />
-         <file name="opengl/OGLShaders.cpp" />
-         <file name="opengl/OGLExport.cpp" />
-         <file name="opengl/Egl.cpp" if="nmeegl"/>
+         <file name="${SRC_DIR}/opengl/OpenGLContext.cpp" />
+         <file name="${SRC_DIR}/opengl/OGLTexture.cpp" />
+         <file name="${SRC_DIR}/opengl/OGLShaders.cpp" />
+         <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
+         <file name="${SRC_DIR}/opengl/Egl.cpp" if="nmeegl"/>
       </section>
 
 
 
-      <compilerflag value="-Iinclude/xcompile" if="xcompile" />
+      <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
       <compilerflag value="-I${NME_STATE}/include" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
 
 
-      <file name="common/Surface.cpp"/>
-      <file name="common/Utils.cpp"/>
-      <file name="common/Geom.cpp"/>
-      <file name="common/Graphics.cpp"/>
-      <file name="common/GraphicsData.cpp"/>
-      <file name="common/Matrix.cpp"/>
-      <file name="common/CachedExtent.cpp"/>
-      <file name="common/TextField.cpp"/>
-      <file name="common/Font.cpp"/>
-      <file name="common/FreeType.cpp" />
-      <file name="common/Tilesheet.cpp"/>
-      <file name="common/Display.cpp"/>
-      <file name="common/ColorTransform.cpp"/>
-      <file name="common/Hardware.cpp" />
-      <file name="common/Tessellate.cpp"/>
-      <file name="common/Filters.cpp"/>
-      <file name="common/ExternalInterface.cpp"/>
-      <file name="common/Cursors.cpp"/>
-      <file name="common/Input.cpp" unless="iphone" />
-      <file name="common/SurfaceIO.cpp" unless="sdl_image" />
-      <file name="common/ManagedStage.cpp" unless="winrt" />
-      <file name="common/CURL.cpp" unless="nocurl"/>
-      <file name="common/Lzma.cpp"/>
-      <file name="common/Thread.cpp"/>
+      <file name="${SRC_DIR}/common/Surface.cpp"/>
+      <file name="${SRC_DIR}/common/Utils.cpp"/>
+      <file name="${SRC_DIR}/common/Geom.cpp"/>
+      <file name="${SRC_DIR}/common/Graphics.cpp"/>
+      <file name="${SRC_DIR}/common/GraphicsData.cpp"/>
+      <file name="${SRC_DIR}/common/Matrix.cpp"/>
+      <file name="${SRC_DIR}/common/CachedExtent.cpp"/>
+      <file name="${SRC_DIR}/common/TextField.cpp"/>
+      <file name="${SRC_DIR}/common/Font.cpp"/>
+      <file name="${SRC_DIR}/common/FreeType.cpp" />
+      <file name="${SRC_DIR}/common/Tilesheet.cpp"/>
+      <file name="${SRC_DIR}/common/Display.cpp"/>
+      <file name="${SRC_DIR}/common/ColorTransform.cpp"/>
+      <file name="${SRC_DIR}/common/Hardware.cpp" />
+      <file name="${SRC_DIR}/common/Tessellate.cpp"/>
+      <file name="${SRC_DIR}/common/Filters.cpp"/>
+      <file name="${SRC_DIR}/common/ExternalInterface.cpp"/>
+      <file name="${SRC_DIR}/common/Cursors.cpp"/>
+      <file name="${SRC_DIR}/common/Input.cpp" unless="iphone" />
+      <file name="${SRC_DIR}/common/SurfaceIO.cpp" unless="sdl_image" />
+      <file name="${SRC_DIR}/common/ManagedStage.cpp" unless="winrt" />
+      <file name="${SRC_DIR}/common/CURL.cpp" unless="nocurl"/>
+      <file name="${SRC_DIR}/common/Lzma.cpp"/>
+      <file name="${SRC_DIR}/common/Thread.cpp"/>
       <!--<file name="common/Audio.cpp" if="openal"/>-->
-      <file name="video/TheoraVideo.cpp" if="theora" />
-      <file name="empty/Video.cpp" unless="theora" />
+      <file name="${SRC_DIR}/video/TheoraVideo.cpp" if="theora" />
+      <file name="${SRC_DIR}/empty/Video.cpp" unless="theora" />
       
-      <file name="common/XML/tinystr.cpp"/>
-      <file name="common/XML/tinyxml.cpp"/>
-      <file name="common/XML/tinyxmlerror.cpp"/>
-      <file name="common/XML/tinyxmlparser.cpp"/>
+      <file name="${SRC_DIR}/common/XML/tinystr.cpp"/>
+      <file name="${SRC_DIR}/common/XML/tinyxml.cpp"/>
+      <file name="${SRC_DIR}/common/XML/tinyxmlerror.cpp"/>
+      <file name="${SRC_DIR}/common/XML/tinyxmlparser.cpp"/>
       
-      <file name="software-renderer/AlphaMask.cpp"/>
-      <file name="software-renderer/BitmapFill.cpp"/>
-      <file name="software-renderer/BitmapFillPerspective.cpp"/>
-      <file name="software-renderer/GradientFill.cpp"/>
-      <file name="software-renderer/LineRender.cpp"/>
-      <file name="software-renderer/PointRenderer.cpp"/>
-      <file name="software-renderer/PolygonRender.cpp"/>
-      <file name="software-renderer/SoftwareRenderer.cpp"/>
-      <file name="software-renderer/SolidFill.cpp"/>
-      <file name="software-renderer/SolidRender.cpp"/>
-      <file name="software-renderer/TileRenderer.cpp"/>
-      <file name="software-renderer/TriangleRender.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/AlphaMask.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/BitmapFill.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/BitmapFillPerspective.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/GradientFill.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/LineRender.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/PointRenderer.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/PolygonRender.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/SoftwareRenderer.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/SolidFill.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/SolidRender.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/TileRenderer.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/TriangleRender.cpp"/>
      
 
    
-      <file name="lzma/LzFind.c" />
-      <file name="lzma/LzmaDec.c" />
-      <file name="lzma/LzmaEnc.c" />
-      <file name="lzma/LzFindMt.c" if="windows" />
-      <file name="lzma/Threads.c" if="windows" />
+      <file name="${SRC_DIR}/lzma/LzFind.c" />
+      <file name="${SRC_DIR}/lzma/LzmaDec.c" />
+      <file name="${SRC_DIR}/lzma/LzmaEnc.c" />
+      <file name="${SRC_DIR}/lzma/LzFindMt.c" if="windows" />
+      <file name="${SRC_DIR}/lzma/Threads.c" if="windows" />
    </files>
    
 
@@ -228,7 +232,7 @@
 
    <target id="NDLL" output="${LIBPREFIX}nme${LIBEXTRA}" tool="linker" toolid="${NME_LINKER}">
 
-      <outdir name="../ndll/${BINDIR}" />
+      <outdir name="${OUT_DIR}/${BINDIR}" />
       <ext value=".ndll" unless="NME_STATIC_LINK"/>
       <ext value=".so" if="android"/>
 
@@ -320,7 +324,7 @@
             <lib name="user32.lib" />
             <lib name="kernel32.lib" />
             <lib name="advapi32.lib" />
-            <lib name="support/windows/dxguid.lib"/>
+            <lib name="${SUP_DIR}/windows/dxguid.lib"/>
             <lib name="winmm.lib" />
             <lib name="imm32.lib"  />
             <lib name="ole32.lib" />
