@@ -13,6 +13,4 @@
 	<ndll name="ogg" register="false" if="ios" />
 	<ndll name="vorbis" register="false" if="ios" />
 	
-	<templatePath name="templates" />
-	
 </extension>

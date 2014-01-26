@@ -138,32 +138,6 @@ class NMEProject
          localDefines.set(command.toLowerCase(), "1");
    }
 
-   public function setPlatform(inPlatform:String):Void 
-   {
-      platformType = inPlatform;
-      switch(platformType) 
-      {
-         case Platform.TYPE_MOBILE:
-            localDefines.set("mobile", "1");
-         case Platform.TYPE_DESKTOP:
-            localDefines.set("desktop", "1");
-         case Platform.TYPE_WEB:
-            localDefines.set("web", "1");
-      }
-
-      if (targetFlags.exists("cpp")) 
-         localDefines.set("cpp", "1");
-      else if (targetFlags.exists("neko")) 
-         localDefines.set("neko", "1");
-
-      if (target==Platform.IOSVIEW)
-         localDefines.set("ios", "1");
-
-      localDefines.set("haxe3", "1");
-
-      localDefines.set(target.toLowerCase(), "1");
-   }
-
    public function setTarget(inTargetName:String)
    {
       switch(inTargetName) 
@@ -196,6 +170,10 @@ class NMEProject
          case "iphonesim":
             target = Platform.IOS;
             targetFlags.set("simulator", "");
+
+         case "android":
+            target = Platform.ANDROID;
+            targetFlags.set("android", "");
 
          default:
             target = inTargetName.toUpperCase();
@@ -250,6 +228,23 @@ class NMEProject
                architectures = [ Architecture.X86 ];
             }
       }
+
+      switch(platformType) 
+      {
+         case Platform.TYPE_MOBILE:
+            localDefines.set("mobile", "1");
+         case Platform.TYPE_DESKTOP:
+            localDefines.set("desktop", "1");
+         case Platform.TYPE_WEB:
+            localDefines.set("web", "1");
+      }
+
+      for(key in targetFlags.keys())
+         localDefines.set(key,targetFlags.get(key));
+
+      localDefines.set("haxe3", "1");
+
+      localDefines.set(target.toLowerCase(), "1");
    }
 
    public function include(path:String):Void 
