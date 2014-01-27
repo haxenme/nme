@@ -185,7 +185,8 @@ class IOSHelper
             applicationPath = workingDirectory + "/build/" + configuration + "-iphoneos/" + project.app.file + ".app";
          }
 
-            var launcher = PathHelper.findTemplate(project.templatePaths, "bin/fruitstrap");
+            var launcher = CommandLineTools.nme +  "/tools/command-line/bin/fruitstrap";
+            //var launcher = PathHelper.findTemplate(project.templatePaths, "bin/fruitstrap");
            Sys.command("chmod", [ "+x", launcher ]);
 
            if (project.debug) 
