@@ -78,7 +78,6 @@ class MainView extends GLSurfaceView {
           inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.RGB_565 );
 
 
-        int eglVersion = 1;
         setZOrderMediaOverlay(true);
 
         /*
@@ -108,18 +107,19 @@ class MainView extends GLSurfaceView {
         egl.eglChooseConfig(display, attrs, v2_configs, 1, num_config);
         //Log.v("EGL","v2 configs : " + num_config[0]);
         if (num_config[0]!=1)
-        {
            Log.e("VIEW", "OpenglES 2.0 apparently not supported.");
-        }
+        else
+           Log.e("VIEW", "Using OpenglES 2.0");
 
         final int renderType =  0x04;
+        setEGLContextClientVersion(2);
 
 
         setEGLConfigChooser(new EGLConfigChooser()
         {
              public EGLConfig chooseConfig (EGL10 egl, EGLDisplay display)
              {
-                Log.v("EGL","Choose config...");
+                Log.v("EGL","Choose config (2).");
                 int alpha = ::if WIN_ALPHA_BUFFER:: 8 ::else:: 0 ::end::;
                 int depth = ::if WIN_DEPTH_BUFFER:: 16 ::else:: 0 ::end::;
                 int stencil = ::if WIN_STENCIL_BUFFER:: 8 ::else:: 0 ::end::;
