@@ -35,7 +35,6 @@ class Assets
    public static inline var STRONG_CACHE = 2;
 
    public static var info = new Map<String,AssetInfo>();
-   public static var useResources = false;
    public static var cacheMode:Int = WEAK_CACHE;
 
    //public static var id(get_id, null):Array<String>;
@@ -155,7 +154,7 @@ class Assets
          #elseif js
          cast(ApplicationMain.loaders.get(i.path).contentLoaderInfo.content, Bitmap).bitmapData
          #else
-         useResources ? BitmapData.loadFromBytes( getResource(i.path) ) :  BitmapData.load(i.path)
+         i.isResource ? BitmapData.loadFromBytes( getResource(i.path) ) :  BitmapData.load(i.path)
          #end
       ;
       trySetCache(i,useCache,data);
@@ -191,7 +190,7 @@ class Assets
       }
 
       var data:ByteArray = null;
-      if (useResources)
+      if (i.isResource)
       {
          data = getResource(i.path);
       }
@@ -349,17 +348,15 @@ class Assets
     */
    public static function getText(id:String,?useCache:Null<Bool>):String 
    {
-      if (useResources)
+      var i = getInfo(id);
+      if (i==null)
       {
-         var i = getInfo(id);
-         if (i==null)
-         {
-            noId(id,"String");
-            return null;
-         }
-
-         return  haxe.Resource.getString(i.path);
+         noId(id,"String");
+         return null;
       }
+
+      if (i.isResource)
+         return haxe.Resource.getString(i.path);
 
       var bytes = getBytes(id,useCache);
 

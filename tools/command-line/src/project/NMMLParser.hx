@@ -24,14 +24,10 @@ class NMMLParser
    private function filter(text:String, include:Array<String> = null, exclude:Array<String> = null):Bool 
    {
       if (include == null) 
-      {
          include = [ "*" ];
-      }
 
       if (exclude == null) 
-      {
          exclude = [];
-      }
 
       for(filter in exclude) 
       {
@@ -59,9 +55,7 @@ class NMMLParser
             var regexp = new EReg("^" + filter, "i");
 
             if (regexp.match(text)) 
-            {
                return true;
-            }
          }
       }
 
@@ -72,13 +66,9 @@ class NMMLParser
    public function path(value:String):Void 
    {
       if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
-      {
          setenv("PATH", value + ";" + Sys.getEnv("PATH"));
-      }
       else
-      {
          setenv("PATH", value + ":" + Sys.getEnv("PATH"));
-      }
    }
 
    public function setenv(name:String, value:String):Void 
@@ -146,19 +136,13 @@ class NMMLParser
       if (section != "") 
       {
          if (element.name != "section") 
-         {
             return false;
-         }
 
          if (!element.has.id) 
-         {
             return false;
-         }
 
          if (element.att.id != section) 
-         {
             return false;
-         }
       }
 
       return true;
@@ -167,9 +151,7 @@ class NMMLParser
    private function findIncludeFile(base:String):String 
    {
       if (base == "") 
-      {
          return "";
-      }
 
       if (base.substr(0, 1) != "/" && base.substr(0, 1) != "\\") 
       {
@@ -182,13 +164,9 @@ class NMMLParser
                if (FileSystem.exists(includePath)) 
                {
                   if (FileSystem.exists(includePath + "/include.xml")) 
-                  {
                      return includePath + "/include.xml";
-                  }
                   else
-                  {
                      return includePath;
-                  }
                }
             }
          }
@@ -197,13 +175,9 @@ class NMMLParser
       if (FileSystem.exists(base)) 
       {
          if (FileSystem.exists(base + "/include.xml")) 
-         {
             return base + "/include.xml";
-         }
          else
-         {
             return base;
-         }
       }
 
       return "";
@@ -216,9 +190,7 @@ class NMMLParser
          return name;
 
       for(i in 1...segments.length) 
-      {
          segments[i] = segments[i].substr(0, 1).toUpperCase() + segments[i].substr(1);
-      }
 
       return segments.join("");
    }
@@ -230,20 +202,15 @@ class NMMLParser
          switch(attribute) 
          {
             case "path":
-
                project.app.path = substitute(element.att.path);
 
             case "min-swf-version":
-
                var version = Std.parseFloat(substitute(element.att.resolve("min-swf-version")));
 
                if (version > project.app.swfVersion) 
-               {
                   project.app.swfVersion = version;
-               }
 
             case "swf-version":
-
                project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
 
             case "preloader":
@@ -276,8 +243,8 @@ class NMMLParser
 
    private function parseAssetsElement(element:Fast, basePath:String = ""):Void 
    {
-      var path = "";
-      var embed = "";
+      var path = basePath;
+      var embed = project.embedAssets;
       var targetPath = "";
       var glyphs = null;
       var type = null;
@@ -286,42 +253,40 @@ class NMMLParser
       if (element.has.path) 
       {
          path = basePath + substitute(element.att.path);
+
+         if (element.has.rename) 
+            targetPath = substitute(element.att.rename);
+         else
+            targetPath = path;
+      }
+      else if (element.has.from)
+      {
+         path = basePath + substitute(element.att.from);
+
+         if (element.has.rename) 
+            targetPath = substitute(element.att.rename);
+         else
+            targetPath = "";
       }
 
       if (element.has.embed) 
-      {
-         embed = substitute(element.att.embed);
-      }
+         embed = embed || parseBool(substitute(element.att.embed));
 
-      if (element.has.rename) 
-      {
-         targetPath = substitute(element.att.rename);
-      }
-      else
-      {
-         targetPath = path;
-      }
+      Log.verbose("Assets from " + path + " to virtual directory '" + targetPath + "'");
 
       if (element.has.glyphs) 
-      {
          glyphs = substitute(element.att.glyphs);
-      }
 
       if (element.has.recurse) 
-      {
          recurse = parseBool(element.att.recurse);
-      }
-
-
 
       if (element.has.type) 
-      {
          type = Reflect.field(AssetType, substitute(element.att.type).toUpperCase());
-      }
 
-      if (path == "" && (element.has.include || element.has.exclude || type != null )) 
+
+      if (path=="" && (element.has.include || element.has.exclude || type!=null )) 
       {
-         LogHelper.error("In order to use 'include' or 'exclude' on <asset /> nodes, you must specify also specify a 'path' attribute");
+         Log.error("In order to use 'include' or 'exclude' on <asset /> nodes, you must specify also specify a 'path' attribute");
          return;
 
       }
@@ -329,13 +294,11 @@ class NMMLParser
       {
          // Empty element
          if (path == "") 
-         {
             return;
-         }
 
          if (!FileSystem.exists(path)) 
          {
-            LogHelper.error("Could not find asset path \"" + path + "\"");
+            Log.error("Could not find asset path \"" + path + "\"");
             return;
          }
 
@@ -344,19 +307,16 @@ class NMMLParser
             var id = "";
 
             if (element.has.id) 
-            {
                id = substitute(element.att.id);
-            }
 
-            var asset = new Asset(path, targetPath, type);
+            var asset = new Asset(path, targetPath, type, embed);
             asset.id = id;
 
             if (glyphs != null) 
-            {
                asset.glyphs = glyphs;
-            }
 
             project.assets.push(asset);
+            Log.verbose("  " + asset);
          }
          else
          {
@@ -364,9 +324,7 @@ class NMMLParser
             var include = "";
 
             if (element.has.exclude) 
-            {
                exclude += "|" + element.att.exclude;
-            }
 
             if (element.has.include) 
             {
@@ -383,23 +341,18 @@ class NMMLParser
                   switch(type) 
                   {
                      case IMAGE:
-
                         include = "*.jpg|*.jpeg|*.png|*.gif";
 
                      case SOUND:
-
                         include = "*.wav|*.ogg";
 
                      case MUSIC:
-
                         include = "*.mp2|*.mp3";
 
                      case FONT:
-
                         include = "*.otf|*.ttf";
 
                      default:
-
                         include = "*";
                   }
                }
@@ -411,14 +364,10 @@ class NMMLParser
       else
       {
          if (path != "") 
-         {
             path += "/";
-         }
 
          if (targetPath != "") 
-         {
             targetPath += "/";
-         }
 
          for(childElement in element.elements) 
          {
@@ -433,52 +382,37 @@ class NMMLParser
                var childGlyphs = glyphs;
 
                if (childElement.has.rename) 
-               {
                   childTargetPath = childElement.att.rename;
-               }
 
                if (childElement.has.embed) 
-               {
-                  childEmbed = substitute(childElement.att.embed);
-               }
+                  childEmbed =  parseBool(substitute(childElement.att.embed)) || project.embedAssets;
 
                if (childElement.has.glyphs) 
-               {
                   childGlyphs = substitute(childElement.att.glyphs);
-               }
 
                switch(childElement.name) 
                {
                   case "image", "sound", "music", "font", "template":
-
                      childType = Reflect.field(AssetType, childElement.name.toUpperCase());
 
                   default:
 
                      if (childElement.has.type) 
-                     {
                         childType = Reflect.field(AssetType, childElement.att.type.toUpperCase());
-                     }
                }
 
                var id = "";
-
                if (childElement.has.id) 
-               {
                   id = substitute(childElement.att.id);
-               }
                else if (childElement.has.name) 
-               {
                   id = substitute(childElement.att.name);
-               }
 
-               var asset = new Asset(path + childPath, targetPath + childTargetPath, childType);
+
+               var asset = new Asset(path + childPath, targetPath + childTargetPath, childType, childEmbed);
                asset.id = id;
 
                if (childGlyphs != null) 
-               {
                   asset.glyphs = childGlyphs;
-               }
 
                project.assets.push(asset);
             }
@@ -486,34 +420,28 @@ class NMMLParser
       }
    }
 
-   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:String, glyphs:String, recursive:Bool):Void 
+   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:Bool, glyphs:String, recursive:Bool):Void 
    {
       var files = FileSystem.readDirectory(path);
 
       if (targetPath != "") 
-      {
          targetPath += "/";
-      }
 
       for(file in files) 
       {
          if (FileSystem.isDirectory(path + "/" + file) && recursive) 
          {
             if (filter(file, [ "*" ], exclude.split("|"))) 
-            {
                parseAssetsElementDirectory(path + "/" + file, targetPath + file, include, exclude, type, embed, glyphs, true);
-            }
          }
          else
          {
             if (filter(file, include.split("|"), exclude.split("|"))) 
             {
-               var asset = new Asset(path + "/" + file, targetPath + file, type);
+               var asset = new Asset(path + "/" + file, targetPath + file, type, embed);
 
                if (glyphs != null) 
-               {
                   asset.glyphs = glyphs;
-               }
 
                project.assets.push(asset);
             }
@@ -524,19 +452,13 @@ class NMMLParser
    private function parseOutputElement(element:Fast):Void 
    {
       if (element.has.name) 
-      {
          project.app.file = substitute(element.att.name);
-      }
 
       if (element.has.path) 
-      {
          project.app.path = substitute(element.att.path);
-      }
 
       if (element.has.resolve("swf-version")) 
-      {
          project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
-      }
    }
 
    private function parseXML(xml:Fast, section:String, extensionPath:String = ""):Void 
@@ -575,17 +497,12 @@ class NMMLParser
                   project.environment.remove(element.att.name);
 
                case "setenv":
-
                   var value = "";
 
                   if (element.has.value) 
-                  {
                      value = substitute(element.att.value);
-                  }
                   else
-                  {
                      value = "1";
-                  }
 
                   var name = element.att.name;
 
@@ -594,25 +511,18 @@ class NMMLParser
                   setenv(name, value);
 
                case "error":
-
-                  LogHelper.error(substitute(element.att.value));
+                  Log.error(substitute(element.att.value));
 
                case "echo":
-
                   Sys.println(substitute(element.att.value));
 
                case "path":
-
                   var value = "";
 
                   if (element.has.value) 
-                  {
                      value = substitute(element.att.value);
-                  }
                   else
-                  {
                      value = substitute(element.att.name);
-                  }
 
                   /*if (defines.get("HOST") == "windows") {
                      Sys.putEnv("PATH", value + ";" + Sys.getEnv("PATH"));
@@ -649,7 +559,7 @@ class NMMLParser
                   }
                   else if (!element.has.noerror) 
                   {
-                     LogHelper.error("Could not find include file \"" + path + "\"");
+                     Log.error("Could not find include file \"" + path + "\"");
                   }
 
                case "app", "meta":
@@ -657,7 +567,6 @@ class NMMLParser
 
 
                case "java":
-
                   project.javaPaths.push(PathHelper.combine(extensionPath, substitute(element.att.path)));
 
                case "haxelib":
@@ -743,27 +652,18 @@ class NMMLParser
                   launchImages.push(new LaunchImage(name, width, height));*/
 
                   var name:String = "";
-
                   if (element.has.path) 
-                  {
                      name = substitute(element.att.path);
-                  }
                   else
-                  {
                      name = substitute(element.att.name);
-                  }
 
                   var splashScreen = new SplashScreen(name);
 
                   if (element.has.width) 
-                  {
                      splashScreen.width = Std.parseInt(substitute(element.att.width));
-                  }
 
                   if (element.has.height) 
-                  {
                      splashScreen.height = Std.parseInt(substitute(element.att.height));
-                  }
 
                   project.splashScreens.push(splashScreen);
 
@@ -802,46 +702,30 @@ class NMMLParser
                   var name = "";
 
                   if (element.has.path) 
-                  {
                      name = substitute(element.att.path);
-                  }
                   else
-                  {
                      name = substitute(element.att.name);
-                  }
 
                   var icon = new Icon(name);
 
                   if (element.has.size) 
-                  {
                      icon.size = icon.width = icon.height = Std.parseInt(substitute(element.att.size));
-                  }
 
                   if (element.has.width) 
-                  {
                      icon.width = Std.parseInt(substitute(element.att.width));
-                  }
 
                   if (element.has.height) 
-                  {
                      icon.height = Std.parseInt(substitute(element.att.height));
-                  }
 
                   project.icons.push(icon);
 
                case "source", "classpath":
-
                   var path = "";
 
                   if (element.has.path) 
-                  {
                      path = PathHelper.combine(extensionPath, substitute(element.att.path));
-                  }
                   else
-                  {
                      path = PathHelper.combine(extensionPath, substitute(element.att.name));
-                  }
-
                   project.classPaths.push(path);
 
                case "extension":
@@ -878,20 +762,16 @@ class NMMLParser
                   project.templatePaths.push(path);
 
                case "preloader":
-
                   // deprecated
                   project.app.preloader = substitute(element.att.name);
 
                case "output":
-
                   parseOutputElement(element);
 
                case "section":
-
                   parseXML(element, "");
 
                case "certificate":
-
                   project.certificate = new Keystore(substitute(element.att.path));
 
                   if (element.has.type) 
@@ -929,17 +809,14 @@ class NMMLParser
                         switch(binaries) 
                         {
                            case "fat":
-
                               ArrayHelper.addUnique(project.architectures, Architecture.ARMV6);
                               ArrayHelper.addUnique(project.architectures, Architecture.ARMV7);
 
                            case "armv6":
-
                               ArrayHelper.addUnique(project.architectures, Architecture.ARMV6);
                               project.architectures.remove(Architecture.ARMV7);
 
                            case "armv7":
-
                               ArrayHelper.addUnique(project.architectures, Architecture.ARMV7);
                               project.architectures.remove(Architecture.ARMV6);
                         }
@@ -956,19 +833,13 @@ class NMMLParser
                      }
 
                      if (element.has.compiler) 
-                     {
                         project.iosConfig.compiler = substitute(element.att.compiler);
-                     }
 
                      if (element.has.resolve("prerendered-icon")) 
-                     {
                         project.iosConfig.prerenderedIcon = (substitute(element.att.resolve("prerendered-icon")) == "true");
-                     }
 
                      if (element.has.resolve("linker-flags")) 
-                     {
                         project.iosConfig.linkerFlags = substitute(element.att.resolve("linker-flags"));
-                     }
                   }
             }
          }
@@ -985,48 +856,30 @@ class NMMLParser
          switch(name) 
          {
             case "background":
-
                value = StringTools.replace(value, "#", "");
-
                if (value.indexOf("0x") == -1) 
-               {
                   value = "0x" + value;
-               }
-
                project.window.background = Std.parseInt(value);
 
             case "orientation":
-
                var orientation = Reflect.field(Orientation, Std.string(value).toUpperCase());
-
                if (orientation != null) 
-               {
                   project.window.orientation = orientation;
-               }
 
             case "height", "width", "fps", "antialiasing":
-
                if (Reflect.hasField(project.window, name)) 
-               {
                   Reflect.setField(project.window, name, Std.parseInt(value));
-               }
 
             case "parameters":
-
                if (Reflect.hasField(project.window, name)) 
-               {
                   Reflect.setField(project.window, name, Std.string(value));
-               }
 
             default:
-
                if (Reflect.hasField(project.window, name)) 
-               {
                   Reflect.setField(project.window, name, value == "true");
-               }
                else
                {
-                  //LogHelper.error("Unknown window field: " + name);
+                  //Log.error("Unknown window field: " + name);
                }
          }
       }
@@ -1044,7 +897,7 @@ class NMMLParser
 
       } catch(e:Dynamic) 
       {
-         LogHelper.error("\"" + projectFile + "\" contains invalid XML data", e);
+         Log.error("\"" + projectFile + "\" contains invalid XML data", e);
       }
 
       parseXML(xml, "", extensionPath);

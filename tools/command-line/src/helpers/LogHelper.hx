@@ -9,7 +9,7 @@ import NMEProject;
 class LogHelper 
 {
    public static var mute:Bool;
-   public static var verbose:Bool = false;
+   public static var mVerbose:Bool = false;
    private static var sentWarnings = new StringMap<Bool>();
 
    public static function error(message:String, verboseMessage:String = "", e:Dynamic = null):Void 
@@ -20,7 +20,7 @@ class LogHelper
          var log = nme_error_output==null ? Sys.print : nme_error_output;
          try 
          {
-            if (verbose && verboseMessage != "") 
+            if (mVerbose && verboseMessage != "") 
             {
                log("Error: " + verboseMessage + "\n");
             }
@@ -33,7 +33,7 @@ class LogHelper
       }
       #end
 
-      if (verbose && e != null) 
+      if (mVerbose && e != null) 
       {
          Lib.rethrow(e);
       }
@@ -41,23 +41,25 @@ class LogHelper
       Sys.exit(1);
    }
 
+   public static function verbose(message:String):Void 
+   {
+      if (mVerbose)
+         Sys.println(message);
+   }
+
    public static function info(message:String, verboseMessage:String = ""):Void 
    {
-      if (verbose && verboseMessage != "") 
-      {
+      if (mVerbose && verboseMessage != "") 
          Sys.println(verboseMessage);
-
-      } else if (message != "") 
-      {
+      else if (message != "") 
          Sys.println(message);
-      }
    }
 
    public static function warn(message:String, verboseMessage:String = "", allowRepeat:Bool = false):Void 
    {
       var output = "";
 
-      if (verbose && verboseMessage != "") 
+      if (mVerbose && verboseMessage != "") 
       {
          output = "Warning: " + verboseMessage;
 

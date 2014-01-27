@@ -36,7 +36,7 @@ class CommandLineTools
 
       var platform:Platform = null;
 
-      LogHelper.info("", "Using target platform: " + project.target);
+      Log.verbose("Using target platform: " + project.target);
 
       switch(project.target) 
       {
@@ -76,31 +76,31 @@ class CommandLineTools
 
          if (command == "clean" || project.targetFlags.exists("clean")) 
          {
-            LogHelper.info("", "\nRunning command: CLEAN");
+            Log.verbose("\nRunning command: CLEAN");
             platform.clean();
          }
 
          if (command == "update" || command == "build" || command == "test") 
          {
-            LogHelper.info("", "\nRunning command: UPDATE");
+            Log.verbose("\nRunning command: UPDATE");
             platform.update();
          }
 
          if (command == "build" || command == "test") 
          {
-            LogHelper.info("", "\nRunning command: BUILD");
+            Log.verbose("\nRunning command: BUILD");
             platform.build();
          }
 
          if (command == "install" || command == "run" || command == "test") 
          {
-            LogHelper.info("", "\nRunning command: INSTALL");
+            Log.verbose("\nRunning command: INSTALL");
             platform.install();
          }
 
          if (command == "run" || command == "rerun" || command == "test") 
          {
-            LogHelper.info("", "\nRunning command: RUN");
+            Log.verbose("\nRunning command: RUN");
             platform.run(additionalArguments);
          }
 
@@ -108,7 +108,7 @@ class CommandLineTools
          {
             if (traceEnabled || command == "trace") 
             {
-               LogHelper.info("", "\nRunning command: TRACE");
+               Log.verbose("\nRunning command: TRACE");
                platform.trace();
             }
          }
@@ -219,7 +219,7 @@ class CommandLineTools
             }
             else
             {
-               LogHelper.error("Could not find sample project \"" + sampleName + "\"");
+               Log.error("Could not find sample project \"" + sampleName + "\"");
             }
          }
       }
@@ -289,6 +289,7 @@ class CommandLineTools
       Sys.println("  -debug : Use debug configuration instead of release");
       Sys.println("  -megatrace : Add maximum debugging");
       Sys.println("  -verbose : Print additional information(when available)");
+      Sys.println("  -vverbose : very berbose - includes haxe verbose mode");
       Sys.println("  -clean : Add a \"clean\" action before running the current command");
       Sys.println("  -xml : Generate XML type information, useful for documentation");
       Sys.println("  [windows|mac|linux] -neko : Build with Neko instead of C++");
@@ -424,7 +425,7 @@ class CommandLineTools
          }
          else
          {
-            LogHelper.warn("HXCPP config might be missing(Environment has no \"HOME\" variable)");
+            Log.warn("HXCPP config might be missing(Environment has no \"HOME\" variable)");
 
             return null;
          }
@@ -439,13 +440,13 @@ class CommandLineTools
 
       if (FileSystem.exists(config)) 
       {
-         LogHelper.info("", "Reading HXCPP config: " + config);
+         Log.verbose("Reading HXCPP config: " + config);
 
          new NMMLParser(project,config);
       }
       else
       {
-         LogHelper.warn("", "Could not read HXCPP config: " + config);
+         Log.warn("", "Could not read HXCPP config: " + config);
       }
    }
 
@@ -501,7 +502,7 @@ class CommandLineTools
 
    static function loadProject(project:NMEProject)
    {
-      LogHelper.info("", "Loading project...");
+      Log.verbose("Loading project...");
 
       var projectFile = "";
       var targetName = "";
@@ -526,11 +527,11 @@ class CommandLineTools
 
       if (projectFile == "") 
       {
-         LogHelper.error("You must have a \"project.nmml\" file or specify another valid project file when using the '" + command + "' command");
+         Log.error("You must have a \"project.nmml\" file or specify another valid project file when using the '" + command + "' command");
          return null;
       }
       else
-         LogHelper.info("", "Using project file: " + projectFile);
+         Log.verbose("Using project file: " + projectFile);
 
       project.haxedefs.set("nme_install_tool", 1);
       project.haxedefs.set("nme_ver", nmeVersion);
@@ -566,7 +567,7 @@ class CommandLineTools
       }
       else
       {
-         LogHelper.error("You must have a \"project.nmml\" file or specify another NME project file when using the '" + command + "' command");
+         Log.error("You must have a \"project.nmml\" file or specify another NME project file when using the '" + command + "' command");
          return null;
       }
 
@@ -624,7 +625,7 @@ class CommandLineTools
 
       nmeVersion = getVersion();
 
-      if (LogHelper.verbose) 
+      if (Log.mVerbose) 
       {
          displayInfo();
          Sys.println("");
@@ -651,7 +652,7 @@ class CommandLineTools
 
             if (words.length < 1 || words.length > 2) 
             {
-               LogHelper.error("Incorrect number of arguments for command '" + command + "'");
+               Log.error("Incorrect number of arguments for command '" + command + "'");
                return;
             }
 
@@ -662,7 +663,7 @@ class CommandLineTools
             // deprecated?
          default:
 
-            LogHelper.error("'" + command + "' is not a valid command");
+            Log.error("'" + command + "' is not a valid command");
       }
    }
 
@@ -775,8 +776,12 @@ class CommandLineTools
             project.includePaths.push(argument.substr(2));
          else if (argument == "-v" || argument == "-verbose") 
          {
+            Log.mVerbose = true;
+         }
+         else if (argument == "-vv" || argument == "-vverbose") 
+         {
             project.haxeflags.push("-v");
-            LogHelper.verbose = true;
+            Log.mVerbose = true;
          }
          else if (argument == "-args") 
             catchArguments = true;

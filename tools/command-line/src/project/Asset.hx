@@ -17,19 +17,15 @@ class Asset
    public var targetPath:String;
    public var type:AssetType;
 
-   public function new(path:String = "", rename:String = "", type:AssetType = null, embed:Bool = true) 
+   public function new(path:String = "", rename:String = "", type:AssetType, embed:Bool) 
    {
       this.embed = embed;
       sourcePath = path;
 
       if (rename == "") 
-      {
          targetPath = path;
-      }
       else
-      {
          targetPath = rename;
-      }
 
       id = targetPath;
       resourceName = targetPath;
@@ -44,47 +40,30 @@ class Asset
          switch(extension.toLowerCase()) 
          {
             case "jpg", "jpeg", "png", "gif":
-
                this.type = AssetType.IMAGE;
 
             case "otf", "ttf":
-
                this.type = AssetType.FONT;
 
             case "wav", "ogg":
-
                this.type = AssetType.SOUND;
 
             case "mp3", "mp2":
-
                this.type = AssetType.MUSIC;
 
             case "text", "txt", "json", "xml", "svg", "css":
-
                this.type = AssetType.TEXT;
 
             default:
-
                if (path != "" && FileHelper.isText(path)) 
-               {
                   this.type = AssetType.TEXT;
-               }
                else
-               {
                   this.type = AssetType.BINARY;
-               }
          }
       }
       else
       {
          this.type = type;
       }
-   }
-
-   public function clone():Asset 
-   {
-      var asset = new Asset();
-      ObjectHelper.copyFields(this, asset);
-      return asset;
    }
 }

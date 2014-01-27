@@ -11,11 +11,10 @@ class AssetData
    public static function create():Void
    {
       var info = Assets.info;
-      Assets.useResources = ::EMBED_ASSETS::;
 
       ::if (assets != null)::
       ::foreach assets::
-      info.set("::id::", new AssetInfo("::resourceName::",AssetType.::type::, "nme.NME_::flatName::"));::end::
+      info.set("::id::", new AssetInfo("::resourceName::",AssetType.::type::,::embed::,"nme.NME_::flatName::"));::end::
       ::end::
    }
 }

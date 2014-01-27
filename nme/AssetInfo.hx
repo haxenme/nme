@@ -8,12 +8,14 @@ class AssetInfo
    public var className:String;
    public var type:AssetType;
    public var cache:WeakRef<Dynamic>;
+   public var isResource:Bool;
 
-   public function new(inPath:String, inType:AssetType, ?inClassName:String)
+   public function new(inPath:String, inType:AssetType, inIsResource:Bool, ?inClassName:String)
    {
       path = inPath;
       type = inType;
       className = inClassName;
+      isResource = inIsResource;
    }
 
    public function getCache() : Dynamic

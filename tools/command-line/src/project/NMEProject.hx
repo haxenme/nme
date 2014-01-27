@@ -200,13 +200,9 @@ class NMEProject
             platformType = Platform.TYPE_MOBILE;
 
             if (target == Platform.IOS || target==Platform.IOSVIEW) 
-            {
                architectures = [ Architecture.ARMV7 ];
-            }
             else
-            {
                architectures = [ Architecture.ARMV6 ];
-            }
 
             if (target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW) 
                embedAssets = true;
@@ -288,9 +284,7 @@ class NMEProject
       for(haxeflag in haxeflags) 
       {
          if (StringTools.startsWith(haxeflag, "-lib")) 
-         {
             Reflect.setField(context, "LIB_" + haxeflag.substr(5).toUpperCase(), "true");
-         }
       }
 
       context.assets = new Array<Dynamic>();
@@ -318,19 +312,14 @@ class NMEProject
          var name = haxelib.name;
 
          if (haxelib.version != "") 
-         {
             name += ":" + haxelib.version;
-         }
 
          compilerFlags.push("-lib " + name);
-
          Reflect.setField(context, "LIB_" + haxelib.name.toUpperCase(), true);
       }
 
       for(cp in classPaths) 
-      {
          compilerFlags.push("-cp " + cp);
-      }
 
       if (megaTrace)
          haxedefs.set("HXCPP_DEBUGGER","");
@@ -339,14 +328,10 @@ class NMEProject
       {
          var value = haxedefs.get(key);
 
-         if (#if !haxe3 true || #end value == null || value == "") 
-         {
+         if (value == null || value == "") 
             compilerFlags.push("-D " + key);
-         }
          else
-         {
             compilerFlags.push("-D " + key + "=" + value);
-         }
       }
 
       if (target != Platform.FLASH) 
@@ -359,13 +344,9 @@ class NMEProject
       compilerFlags = compilerFlags.concat(macros);
 
       if (compilerFlags.length == 0) 
-      {
          context.HAXE_FLAGS = "";
-      }
       else
-      {
          context.HAXE_FLAGS = "\n" + compilerFlags.join("\n");
-      }
 
       var main = app.main;
 
@@ -381,9 +362,7 @@ class NMEProject
          var path = PathHelper.combine(templatePath, hxml);
 
          if (FileSystem.exists(path)) 
-         {
             context.HXML_PATH = path;
-         }
       }
 
       for(field in Reflect.fields(context)) 
@@ -400,9 +379,7 @@ class NMEProject
       context.WIN_ORIENTATION = "";
 
       if (window.orientation == Orientation.LANDSCAPE || window.orientation == Orientation.PORTRAIT) 
-      {
          context.WIN_ORIENTATION = Std.string(window.orientation).toLowerCase();
-      }
 
       context.WIN_ALLOW_SHADERS = window.allowShaders;
       context.WIN_REQUIRE_SHADERS = window.requireShaders;
@@ -415,27 +392,17 @@ class NMEProject
          context.KEY_STORE = PathHelper.tryFullPath(certificate.path);
 
          if (certificate.password != null) 
-         {
             context.KEY_STORE_PASSWORD = certificate.password;
-         }
 
          if (certificate.alias != null) 
-         {
             context.KEY_STORE_ALIAS = certificate.alias;
-
-         } else if (certificate.path != null) 
-         {
+         else if (certificate.path != null) 
             context.KEY_STORE_ALIAS = Path.withoutExtension(Path.withoutDirectory(certificate.path));
-         }
 
          if (certificate.aliasPassword != null) 
-         {
             context.KEY_STORE_ALIAS_PASSWORD = certificate.aliasPassword;
-
-         } else if (certificate.password != null) 
-         {
+         else if (certificate.password != null) 
             context.KEY_STORE_ALIAS_PASSWORD = certificate.password;
-         }
       }
 
       return context;
