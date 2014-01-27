@@ -49,7 +49,12 @@ class Assets
    {
       var bytes = haxe.Resource.getBytes(inName);
       if (bytes==null)
-         trace("[nme.Assets] missing resource '" + inName + "'");
+      {
+         trace("[nme.Assets] missing binary resource '" + inName + "'");
+         for(key in info.keys())
+            trace(" " + key + " -> " + info.get(key).path + " " + info.get(key).isResource );
+         trace("---");
+      }
       if (bytes==null)
          return null;
       #if flash
@@ -59,6 +64,7 @@ class Assets
       #end
    }
 
+
    public static function trySetCache(info:AssetInfo, useCache:Null<Bool>, data:Dynamic)
    {
       if (useCache!=false && (useCache==true || cacheMode!=UNCACHED))
@@ -67,13 +73,16 @@ class Assets
 
    public static function noId(id:String, type:String)
    {
-      trace("[nme.Assets] missing resource '" + id + "' of type " + type);
+      trace("[nme.Assets] missing asset '" + id + "' of type " + type);
+      for(key in info.keys())
+         trace(" " + key + " -> " + info.get(key).path );
+      trace("---");
    }
 
    public static function badType(id:String, type:String)
    {
       var i = getInfo(id);
-      trace("[nme.Assets] resource '" + id + "' is not of type " + type + " it is " + i.type);
+      trace("[nme.Assets] asset '" + id + "' is not of type " + type + " it is " + i.type);
    }
 
    public static function hasBitmapData(id:String):Bool 

@@ -140,11 +140,10 @@ class IOSHelper
       initialize(project);
 
       var configuration = "Release";
+      if (project.debug) 
+         configuration = "Debug";
 
-        if (project.debug) 
-        {
-            configuration = "Debug";
-        }
+      Log.verbose("Configuration :  " + configuration);
 
       if (project.targetFlags.exists("simulator")) 
       {
@@ -162,9 +161,7 @@ class IOSHelper
          var family = "iphone";
 
          if (project.targetFlags.exists("ipad")) 
-         {
             family = "ipad";
-         }
 
          //var launcher = PathHelper.findTemplate(project.templatePaths, "bin/ios-sim");
          var launcher = CommandLineTools.nme +  "/tools/command-line/bin/ios-sim";
@@ -177,13 +174,11 @@ class IOSHelper
          var applicationPath = "";
 
          if (Path.extension(workingDirectory) == "app" || Path.extension(workingDirectory) == "ipa") 
-         {
             applicationPath = workingDirectory;
-         }
          else
-         {
             applicationPath = workingDirectory + "/build/" + configuration + "-iphoneos/" + project.app.file + ".app";
-         }
+
+         Log.verbose("Application path " + applicationPath);
 
             var launcher = CommandLineTools.nme +  "/tools/command-line/bin/fruitstrap";
             //var launcher = PathHelper.findTemplate(project.templatePaths, "bin/fruitstrap");

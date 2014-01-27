@@ -788,7 +788,9 @@ class CommandLineTools
          else if (argument == "-notrace") 
             traceEnabled = false;
          else if (argument == "-debug") 
-            debug = true;
+         {
+            project.debug = debug = true;
+         }
          else if (argument == "-megatrace") 
             project.megaTrace = project.debug = debug = true;
          else if (command.length == 0) 
