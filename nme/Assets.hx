@@ -363,7 +363,9 @@ class Assets
       if (bytes == null) 
          return null;
 
-      return bytes.readUTFBytes(bytes.length);
+      var result = bytes.readUTFBytes(bytes.length);
+      //trace(result);
+      return result;
    }
    public static function getString(id:String,?useCache:Null<Bool>):String 
    {

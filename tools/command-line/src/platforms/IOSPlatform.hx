@@ -166,7 +166,8 @@ class IOSHelper
             family = "ipad";
          }
 
-         var launcher = PathHelper.findTemplate(project.templatePaths, "bin/ios-sim");
+         //var launcher = PathHelper.findTemplate(project.templatePaths, "bin/ios-sim");
+         var launcher = CommandLineTools.nme +  "/tools/command-line/bin/ios-sim";
          Sys.command("chmod", [ "+x", launcher ]);
 
          ProcessHelper.runCommand("", launcher, [ "launch", FileSystem.fullPath(applicationPath), "--sdk", project.environment.get("IPHONE_VER"), "--family", family ] );
@@ -420,9 +421,8 @@ class IOSPlatform extends Platform
       //project.ndlls.push(new NDLL("jpeg", nmeLib, false));
       //project.ndlls.push(new NDLL("freetype", nmeLib, false));
 
-      if (!project.embedAssets)
-         for(asset in project.assets) 
-            asset.resourceName = asset.flatName;
+      for(asset in project.assets) 
+         asset.resourceName = asset.flatName;
 
       var context = generateContext();
 
@@ -506,9 +506,12 @@ class IOSPlatform extends Platform
 
       for(asset in project.assets) 
       {
-         PathHelper.mkdir(Path.directory(projectDirectory + "/assets/" + asset.flatName));
-         FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "/assets/" + asset.flatName);
-         FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "haxe/" + asset.sourcePath);
+         if (!asset.embed)
+         {
+            PathHelper.mkdir(Path.directory(projectDirectory + "/assets/" + asset.flatName));
+            FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "/assets/" + asset.flatName);
+            FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "haxe/" + asset.sourcePath);
+         }
       }
 
         if (project.command == "update" && PlatformHelper.hostPlatform == Platform.MAC) 
