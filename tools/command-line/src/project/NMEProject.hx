@@ -34,7 +34,7 @@ class IOSConfig
    public function new()
    {
       compiler =  "clang";
-      deployment =  4.0;
+      deployment =  5.1;
       deviceConfig =  UNIVERSAL;
       linkerFlags =  "";
       prerenderedIcon =  false;
