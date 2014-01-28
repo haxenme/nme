@@ -87,6 +87,10 @@ public class NMEVideoView extends VideoView implements
       // API 17 - setOnInfoListener(this);
       setOnPreparedListener(this);
       seekPending = -999;
+
+      //setLayerType(View.LAYER_TYPE_NONE, null);
+      //setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+      //setLayerType(View.LAYER_TYPE_HARDWARE, null);
    }
 
    public void nmeSuspend()

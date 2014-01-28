@@ -85,24 +85,20 @@ class AndroidPlatform extends Platform
    }
 
 
-   public function getApiLevel(inMinimum:Int) : Int
+   public function getMaxApiLevel(inMinimum:Int) : Int
    { 
       var result = inMinimum;
       if (project.environment.exists("ANDROID_SDK"))
          try
          {
-            var best = 999999;
             var dir = project.environment.get("ANDROID_SDK");
             for(file in FileSystem.readDirectory(dir+"/platforms"))
             {
                if (file.substr(0,8)=="android-")
                {
                   var val = Std.parseInt(file.substr(8));
-                  if (val>=inMinimum && val<best)
-                  {
+                  if (val>result)
                      result = val;
-                     best = val;
-                  }
                }
             }
          } catch(e:Dynamic){}
@@ -238,19 +234,25 @@ class AndroidPlatform extends Platform
 
       context.CPP_DIR = project.app.path + "/android/obj";
       context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
+      context.DEBUGGABLE = project.debug;
+      context.appHeader = project.androidConfig.appHeader;
+      context.appActivity = project.androidConfig.appActivity;
+      context.appIntent = project.androidConfig.appIntent;
+      context.appPermission = project.androidConfig.appPermission;
 
-      var android_platform = project.environment.get("ANDROID_SDK_PLATFORM");
-      var apiLevel:Null<Int> = 0;
-      if (android_platform!=null && android_platform.length>0)
-      { 
-         if (android_platform.substr(0,8)=="android-")
-            android_platform = android_platform.substr(8);
-         apiLevel = Std.parseInt(android_platform);
-      }
 
-      if (apiLevel<8 || apiLevel==null) apiLevel = 8;
+      // Will not install on devices less than this ....
+      context.ANDROID_MIN_API_LEVEL = project.androidConfig.minApiLevel;
 
-      context.ANDROID_API_LEVEL = getApiLevel(apiLevel);
+      // Features we have tested and will use if available
+      context.ANDROID_TARGET_API_LEVEL = project.androidConfig.targetApiLevel==null ?
+           getMaxApiLevel(project.androidConfig.minApiLevel) : project.androidConfig.targetApiLevel;
+
+      if (context.ANDROID_TARGET_API_LEVEL < context.ANDROID_MIN_API_LEVEL)
+         context.ANDROID_TARGET_API_LEVEL = context.ANDROID_MIN_API_LEVEL;
+
+      // SDK to use for building, that we have installed
+      context.ANDROID_BUILD_API_LEVEL = getMaxApiLevel(project.androidConfig.minApiLevel);
 
       var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi" ];
       var iconSizes = [ 36, 48, 72, 96 ];

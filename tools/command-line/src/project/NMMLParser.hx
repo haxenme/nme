@@ -449,6 +449,48 @@ class NMMLParser
       }
    }
 
+   private function parseAndroidElement(element:Fast):Void 
+   {
+      if (element.has.minApiLevel) 
+         project.androidConfig.minApiLevel = Std.parseInt(substitute(element.att.minApiLevel));
+
+      if (element.has.targetApiLevel) 
+         project.androidConfig.targetApiLevel = Std.parseInt(substitute(element.att.targetApi));
+
+      if (element.has.buildApiLevel) 
+         project.androidConfig.buildApiLevel = Std.parseInt(substitute(element.att.buildApiLevel));
+
+      if (element.has.installLocation) 
+         project.androidConfig.installLocation = substitute(element.att.installLocation);
+
+      for(childElement in element.elements) 
+      {
+         if (isValidElement(childElement, ""))
+         {
+            var value = substitute(childElement.att.value);
+            switch(childElement.name) 
+            {
+               case "appHeader":
+                  project.androidConfig.appHeader.push(value);
+
+               case "appActivity":
+                  project.androidConfig.appActivity.push(value);
+
+               case "appPermission":
+                  project.androidConfig.appPermission.push(value);
+
+               case "appIntent":
+                  project.androidConfig.appIntent.push(value);
+
+               default:
+                  Log.error("Unknown android attribute " + childElement.name);
+            }
+         }
+      }
+   }
+
+
+
    private function parseOutputElement(element:Fast):Void 
    {
       if (element.has.name) 
@@ -764,6 +806,9 @@ class NMMLParser
                case "preloader":
                   // deprecated
                   project.app.preloader = substitute(element.att.name);
+
+               case "android":
+                  parseAndroidElement(element);
 
                case "output":
                   parseOutputElement(element);

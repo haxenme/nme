@@ -12,10 +12,22 @@ typedef IntMap<T> = Map<Int, T>;
 class AndroidConfig
 {
    public var installLocation:String;
+   public var minApiLevel:Int;
+   public var targetApiLevel:Null<Int>;
+   public var buildApiLevel:Null<Int>;
+   public var appHeader:Array<String>;
+   public var appIntent:Array<String>;
+   public var appActivity:Array<String>;
+   public var appPermission:Array<String>;
 
    public function new()
    {
       installLocation = "preferExternal";
+      minApiLevel = 8;
+      appHeader = [];
+      appIntent = [];
+      appActivity = [];
+      appPermission = [];
    }
 }
 

@@ -65,13 +65,15 @@ class AndroidView extends AndroidPlatform
    {
       var destination = getDest();
 
+      if (project.androidConfig.minApiLevel<11)
+         project.androidConfig.minApiLevel = 11;
+
       var context = project.templateContext;
 
       context.CPP_DIR = getObjDir();
       context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
 
       context.ANDROIDVIEW = true;
-      context.ANDROID_API_LEVEL = getApiLevel(11);
 
       var packageDirectory = project.app.packageName;
 

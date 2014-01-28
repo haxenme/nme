@@ -24,6 +24,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.app.Activity;
 import android.graphics.PixelFormat;
+import android.view.View;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -80,22 +81,9 @@ class MainView extends GLSurfaceView {
 
         setZOrderMediaOverlay(true);
 
-        /*
-         Testing different layer types
-        try
-        {
-           java.lang.reflect.Method setLayerTypeMethod= getClass().getDeclaredMethod(
-              "setLayerType",java.lang.Integer.class, android.graphics.Paint.class );
-           int type = 0; // LAYER_TYPE_NONE
-           // int type = 1; // LAYER_TYPE_SOFTWARE
-           // int type = 2; // LAYER_TYPE_HARDWARE
-
-           setLayerTypeMethod.invoke(this, new java.lang.Integer(type), (android.graphics.Paint)null);
-           Log.v("VIEW","setLayerType to " + type);
-        } catch (java.lang.Exception e){
-           Log.v("VIEW","Error calling setLayerType ignored " + e);
-        }
-        */
+        //setLayerType(View.LAYER_TYPE_NONE, null);
+        //setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        //setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
         EGL10 egl = (EGL10)EGLContext.getEGL();
         EGLDisplay display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
