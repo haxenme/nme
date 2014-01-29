@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="::ANDROID_INSTALL_LOCATION::" android:versionCode="::APP_BUILD_NUMBER::" android:versionName="::APP_VERSION::" package="::APP_PACKAGE::">
 
-	<application android:label="::APP_TITLE::" ::if (DEBUGGABLE)::android:debuggable="true":: ::if (HAS_ICON):: android:icon="@drawable/icon"::end::
+	<application android:label="::APP_TITLE::" ::if (DEBUGGABLE):: android:debuggable="true" ::end:: ::if (HAS_ICON):: android:icon="@drawable/icon"::end::
    ::foreach appHeader:: ::__current__:: ::end::
    >
 		
