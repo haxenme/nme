@@ -455,7 +455,7 @@ class NMMLParser
          project.androidConfig.minApiLevel = Std.parseInt(substitute(element.att.minApiLevel));
 
       if (element.has.targetApiLevel) 
-         project.androidConfig.targetApiLevel = Std.parseInt(substitute(element.att.targetApi));
+         project.androidConfig.targetApiLevel = Std.parseInt(substitute(element.att.targetApiLevel));
 
       if (element.has.buildApiLevel) 
          project.androidConfig.buildApiLevel = Std.parseInt(substitute(element.att.buildApiLevel));
