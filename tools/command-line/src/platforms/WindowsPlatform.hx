@@ -48,7 +48,8 @@ class WindowsPlatform extends Platform
 
          if (IconHelper.createWindowsIcon(project.icons, iconPath)) 
          {
-            ProcessHelper.runCommand("", PathHelper.findTemplate(project.templatePaths, "bin/ReplaceVistaIcon.exe"), [ executablePath, iconPath ], true, true);
+            var replaceVI = CommandLineTools.nme + "/tools/command-line/bin/ReplaceVistaIcon.exe";
+            ProcessHelper.runCommand("", replaceVI , [ executablePath, iconPath ], true, true);
          }
       }
    }
