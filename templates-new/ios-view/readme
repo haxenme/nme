@@ -1,0 +1,26 @@
+
+New tabbed view application
+-----------------------------
+
+
+* Remove the "SecondViewController" .m .h from the project (to trash)
+
+* Drag in the SDK folder (Copy items to destination groups folder = YES)
+  * Create groups for added folders
+
+* In each of the story board files,
+   change the "Custom Class" property of the controller object from "SecondViewController" to "StageVideo" (SDK name)
+   - you may also want to untick the "Extend Edges : Under Top Bars/Under Bottom Bars" n the layout tab.
+
+* Select the project in the folder view, then "Build Phases"
+
+  In the "Link with binaries" section, hit it "+" and add the frameworks
+   +  AVFoundation
+   +  OpenAl
+   +  MediaPlayer
+
+
+* Select Build Settings
+   *  Apple LLVM 5.0 - language c++
+      > C++ standard library - set to libstdc++ (GNU C++ standard library)
+
