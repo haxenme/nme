@@ -867,30 +867,31 @@ DEFINE_PRIM(nme_set_icon,1);
 
 // --- nme.system.Capabilities -----------------------------------------------------
 
-value nme_capabilities_get_screen_resolutions () {
-   
+value nme_sys_get_exe_name()
+{
+   return alloc_string( GetExeName().c_str() );
+}
 
+DEFINE_PRIM( nme_sys_get_exe_name, 0 );
+
+
+
+value nme_capabilities_get_screen_resolutions ()
+{
    //Only really makes sense on PC platforms
    #if defined( HX_WINDOWS ) || defined( HX_MACOS )
-   
-      
       QuickVec<int>* res = CapabilitiesGetScreenResolutions();
       
       value result = alloc_array( res->size());
-      
-            for(int i=0;i<res->size();i++) {
-               int outres = (*res)[ i ];
-               val_array_set_i(result,i,alloc_int( outres ) );
-      
+      for(int i=0;i<res->size();i++)
+      {
+          int outres = (*res)[ i ];
+          val_array_set_i(result,i,alloc_int( outres ) );
       }
    
       return result;
-   
    #endif
-   
    return alloc_null();
-   
-   
 }
 
 DEFINE_PRIM( nme_capabilities_get_screen_resolutions, 0 );

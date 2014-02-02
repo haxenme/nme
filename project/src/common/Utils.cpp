@@ -14,6 +14,7 @@ typedef uint64_t __int64;
 
 #ifdef HX_MACOS
 #include <mach/mach_time.h>  
+#include <mach-o/dyld.h>
 #include <CoreServices/CoreServices.h>
 #endif
 
@@ -84,6 +85,23 @@ ByteArray ByteArray::FromFile(const char *inFilename)
 }
 #endif
 
+
+std::string GetExeName()
+{
+   #ifdef HX_WINDOWS
+   //return GetModuleHandle(0);
+   #elif defined(HX_LINUX)
+   // 
+   #elif defined(HX_MACOS)
+   char path[1024] = "";
+   uint32_t size = sizeof(path);
+   _NSGetExecutablePath(path, &size);
+   char absPath[1024] = "";
+   realpath(path,absPath);
+   return absPath;
+   #endif
+   return "";
+}
 
 
 

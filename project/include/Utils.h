@@ -186,6 +186,10 @@ namespace nme {
 
 #endif
 
+
+std::string GetExeName();
+
+
 std::string WideToUTF8(const WString &inWideString);
 
 double GetTimeStamp();
