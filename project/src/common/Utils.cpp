@@ -89,7 +89,9 @@ ByteArray ByteArray::FromFile(const char *inFilename)
 std::string GetExeName()
 {
    #ifdef HX_WINDOWS
-   //return GetModuleHandle(0);
+   char path[MAX_PATH] = "";
+   GetModuleFileName(0,path,MAX_PATH);
+   return path;
    #elif defined(HX_LINUX)
    // 
    #elif defined(HX_MACOS)

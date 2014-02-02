@@ -107,7 +107,7 @@ class Builder
                case "android":
                   validArchs.set("armv5", ["-Dandroid"] );
                   validArchs.set("armv7", ["-Dandroid", "-DHXCPP_ARMV7" ] );
-                  //validArchs.set("x86", ["-Dandroid"] );
+                  validArchs.set("x86", ["-Dandroid", "-DHXCPP_X86" ] );
             }
 
             var valid = new Array<String>();
