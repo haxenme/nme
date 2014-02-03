@@ -21,6 +21,17 @@ class ApplicationDocument extends ::APP_MAIN::
 }
 #end
 
+
+
+#if iosview
+@:buildXml("
+<files id='__lib__'>
+  <file name='FrameworkInterface.mm'>
+  </file>
+</files>
+")
+#end
+
 class ApplicationMain
 {
 
@@ -53,10 +64,10 @@ class ApplicationMain
       {
          ::if (WIN_ORIENTATION == "portrait")::
          return (orientation == nme.display.Stage.OrientationPortrait ||
-                 orientation == nme.display.Stage.OrientationPortraitUpsideDown)
+                 orientation == nme.display.Stage.OrientationPortraitUpsideDown);
          ::elseif (WIN_ORIENTATION == "landscape")::
          return (orientation == nme.display.Stage.OrientationLandscapeLeft ||
-                 orientation == nme.display.Stage.OrientationLandscapeRight)
+                 orientation == nme.display.Stage.OrientationLandscapeRight);
          ::else::
          return true;
          ::end::

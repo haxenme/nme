@@ -466,7 +466,6 @@ class IOSPlatform extends Platform
       copyTemplate("ios/PROJ/PROJ-Info.plist", projectDirectory + "/" + project.app.file + "-Info.plist");
       copyTemplate("ios/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch");
       copyTemplateDir("ios/PROJ.xcodeproj", targetDir + "/" + project.app.file + ".xcodeproj");
-      PathHelper.mkdir(projectDirectory + "/assets");
 
       if (project.command == "update" && PlatformHelper.hostPlatform == Platform.MAC) 
          ProcessHelper.runCommand("", "open", [ targetDir + "/" + project.app.file + ".xcodeproj" ] );
