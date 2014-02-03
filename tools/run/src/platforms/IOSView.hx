@@ -21,6 +21,7 @@ class IOSView extends IOSPlatform
    override public function updateBuildDir():Void 
    {
       super.updateBuildDir();
+      PathHelper.mkdir(haxeDir+"/cpp");
       copyTemplate("ios-view/FrameworkInterface.mm", haxeDir+"/cpp/FrameworkInterface.mm");
       copyTemplate("ios-view/HEADER.h",  haxeDir+"/cpp/FrameworkHeader.h" );
    }
