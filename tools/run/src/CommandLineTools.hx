@@ -28,6 +28,7 @@ class CommandLineTools
       var platform:Platform = null;
 
       Log.verbose("Using target platform: " + project.target);
+      Log.verbose("Using command : " + project.command);
 
       switch(project.target) 
       {
@@ -82,8 +83,11 @@ class CommandLineTools
             Log.verbose("\nRunning command: BUILD");
             platform.runHaxe();
             platform.copyBinary();
-            platform.buildPackage();
-            platform.postBuild();
+            if (command!="xcode")
+            {
+               platform.buildPackage();
+               platform.postBuild();
+            }
          }
 
          if (command == "install" || command == "run" || command == "test") 
@@ -108,6 +112,7 @@ class CommandLineTools
                platform.trace();
             }
          }
+         Log.verbose("NME done.");
       }
    }
 
@@ -296,17 +301,20 @@ class CommandLineTools
       Sys.println("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
    }
 
-   private static function displayInfo(showHint:Bool = false):Void 
+   private static function displayInfo(showHint:Bool = false, forXcode:Bool = false):Void 
    {
-      Sys.println(" _____________");
-      Sys.println("|             |");
-      Sys.println("|__  _  __  __|");
-      Sys.println("|  \\| \\/  ||__|");
-      Sys.println("|\\  \\  \\ /||__|");
-      Sys.println("|_|\\_|\\/|_||__|");
-      Sys.println("|             |");
-      Sys.println("|_____________|");
-      Sys.println("");
+      if (!forXcode) // Does not show up so well in xcode
+      {
+         Sys.println(" _____________");
+         Sys.println("|             |");
+         Sys.println("|__  _  __  __|");
+         Sys.println("|  \\| \\/  ||__|");
+         Sys.println("|\\  \\  \\ /||__|");
+         Sys.println("|_|\\_|\\/|_||__|");
+         Sys.println("|             |");
+         Sys.println("|_____________|");
+         Sys.println("");
+      }
       Sys.println("NME Command-Line Tools(" + nmeVersion + " @ '" + nme + "')");
 
       if (showHint) 
@@ -623,9 +631,9 @@ class CommandLineTools
 
       nmeVersion = getVersion();
 
-      if (Log.mVerbose) 
+      if (Log.mVerbose && command!="") 
       {
-         displayInfo();
+         displayInfo(false, command=="xcode");
          Sys.println("");
       }
 

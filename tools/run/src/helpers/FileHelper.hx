@@ -19,13 +19,9 @@ class FileHelper
       else
       {
          if (Std.is(asset.data, Bytes)) 
-         {
             File.saveBytes(destination, cast asset.data);
-         }
          else
-         {
             File.saveContent(destination, Std.string(asset.data));
-         }
       }
    }
 
@@ -34,20 +30,14 @@ class FileHelper
       if (asset.sourcePath != "") 
       {
          if (isNewer(asset.sourcePath, destination)) 
-         {
             copyFile(asset.sourcePath, destination);
-         }
       }
       else
       {
          if (Std.is(asset.data, Bytes)) 
-         {
             File.saveBytes(destination, cast asset.data);
-         }
          else
-         {
             File.saveContent(destination, Std.string(asset.data));
-         }
       }
    }
 
@@ -74,14 +64,21 @@ class FileHelper
           extension == "nmml" ||
           isText(source))) 
           {
-         LogHelper.info("", " - Copying template file: " + source + " -> " + destination);
-
          var fileContents:String = File.getContent(source);
          var template:Template = new Template(fileContents);
          var result:String = template.execute(context);
-         var fileOutput:FileOutput = File.write(destination, true);
-         fileOutput.writeString(result);
-         fileOutput.close();
+
+         if (FileSystem.exists(destination) && File.getContent(destination)==result)
+         {
+            //Log.verbose(" - already current " +  destination);
+         }
+         else
+         {
+            Log.verbose(" - Copying template file: " + source + " -> " + destination);
+            var fileOutput:FileOutput = File.write(destination, true);
+            fileOutput.writeString(result);
+            fileOutput.close();
+         }
       }
       else
       {
