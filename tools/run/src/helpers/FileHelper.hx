@@ -66,7 +66,7 @@ class FileHelper
           {
          var fileContents:String = File.getContent(source);
          var template:Template = new Template(fileContents);
-         var result:String = template.execute(context);
+         var result:String = template.execute(context, context.MACROS);
 
          if (FileSystem.exists(destination) && File.getContent(destination)==result)
          {

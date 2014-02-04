@@ -9,3 +9,4 @@
 -lib format
 -lib svg
 --remap flash:nme
+-debug

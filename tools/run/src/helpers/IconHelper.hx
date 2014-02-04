@@ -19,20 +19,26 @@ class IconHelper
       PathHelper.mkdir(Path.directory(targetPath));
       var icon = findMatch(icons, width, height);
 
-      if (icon != null && Path.extension(icon.path) == "png") 
+      try
       {
-         FileHelper.copyFile(icon.path, targetPath);
-         return true;
-      }
-      else
-      {
-         var bitmapData = getIconBitmap(icons, width, height);
-
-         if (bitmapData != null) 
+         if (icon != null && Path.extension(icon.path) == "png") 
          {
-            File.saveBytes(targetPath, bitmapData.encode("png"));
+            FileHelper.copyFile(icon.path, targetPath);
             return true;
          }
+         else
+         {
+            var bitmapData = getIconBitmap(icons, width, height);
+            if (bitmapData != null) 
+            {
+               File.saveBytes(targetPath, bitmapData.encode("png"));
+               return true;
+            }
+         }
+      }
+      catch(e:Dynamic)
+      {
+         Log.error("Could not save icon " + targetPath + " : " + e);
       }
 
       return false;
@@ -288,6 +294,8 @@ class IconHelper
 
    private static function getIconBitmap(icons:Array<Icon>, width:Int, height:Int, backgroundColor:BitmapInt32 = null):BitmapData 
    {
+      if (width<1 || height<1)
+         Log.error("Bad icon size request");
       var icon = findMatch(icons, width, height);
       var exactMatch = true;
 
@@ -318,15 +326,28 @@ class IconHelper
             if (exactMatch ) 
             {
                bitmapData = BitmapData.load(icon.path);
+               if (bitmapData.width==0 || bitmapData.height==0)
+                   Log.error("Invalid icon image " + icon.path );
             }
             else
             {
                bitmapData = ImageHelper.resizeBitmapData(BitmapData.load(icon.path), width, height);
+               if (bitmapData.width==0 || bitmapData.height==0)
+                   Log.error("Invalid icon image resize " + icon.path );
             }
 
          case "svg":
 
-            bitmapData = ImageHelper.rasterizeSVG(new SVG(File.getContent(icon.path)), width, height, backgroundColor);
+            var content  = File.getContent(icon.path);
+            if (content==null || content.length<1)
+               Log.error("Invalid svg getContent " + icon.path );
+            var svg = new SVG(content);
+            if (svg.data.width==0 || svg.data.height==0)
+               Log.error("Invalid svg data " + icon.path );
+
+            bitmapData = ImageHelper.rasterizeSVG(svg, width, height, backgroundColor);
+            if (bitmapData.width<1 || bitmapData.height<1)
+               Log.error("Invalid svg resterize " + width + "x" + height );
       }
 
       return bitmapData;

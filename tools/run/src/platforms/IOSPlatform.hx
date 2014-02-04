@@ -361,6 +361,10 @@ class IOSPlatform extends Platform
       context.IOS_COMPILER = config.compiler;
       context.IOS_LINKER_FLAGS = config.linkerFlags.split(" ").join(", ");
 
+      context.MACROS = {};
+      context.MACROS.launchImage = createLaunchImage;
+      context.MACROS.appIcon = createAppIcon;
+
       switch(project.window.orientation) 
       {
          case PORTRAIT:
@@ -440,6 +444,55 @@ class IOSPlatform extends Platform
       IOSHelper.launch(project, targetDir);
    }
 
+   function createLaunchImage( resolve : String -> Dynamic, width : Int, height : Int)
+   {
+      Log.verbose("createLaunchImage " + width + "x" + height);
+
+      var name = "LaunchImage" + width + "x" + height + ".png";
+      var dest = getOutputDir() + "/Images.xcassets/LaunchImage.launchimage/" + name;
+
+
+      var ok = true;
+
+      try
+      {
+         if (!FileSystem.exists(dest))
+         {
+            var bitmapData = new nme.display.BitmapData(width, height,
+                 false, (0xFF << 24) | (project.window.background & 0xFFFFFF));
+            File.saveBytes(dest, bitmapData.encode("png"));
+         }
+      }
+      catch(e:Dynamic)
+      {
+         Log.error("Could not save launch image " + dest + " : " + e);
+      }
+
+      if (ok)
+         return ", 'filename':'" + name + "'";
+      else
+         return "";
+
+
+   }
+
+   function createAppIcon( resolve : String -> Dynamic, size:Int ) : String
+   {
+      Log.verbose("createAppIcon " + size + "x" + size);
+
+      var name = "AppIcon" + size + "x" + size + ".png";
+      var dest = getOutputDir() + "/Images.xcassets/AppIcon.appiconset/" + name;
+
+      var ok = true;
+      if (!FileSystem.exists(dest))
+         ok = IconHelper.createIcon(project.icons, size,size, dest);
+      if (ok)
+         return ", 'filename':'" + name + "'";
+      else
+         return "";
+   }
+
+
    override public function updateOutputDir():Void 
    {
       var nmeLib = new Haxelib("nme");
@@ -448,55 +501,14 @@ class IOSPlatform extends Platform
 
       PathHelper.mkdir(targetDir);
 
-     var iconNames = [ "Icon.png", "Icon@2x.png", "Icon-60.png", "Icon-60@2x.png", "Icon-72.png", "Icon-72@2x.png", "Icon-76.png", "Icon-76@2x.png" ];
-     var iconSizes = [ 57, 114, 60, 120, 72, 144, 76, 152 ];
 
-     context.HAS_ICON = true;
-
-     for (i in 0...iconNames.length)
-     {
-         if (!IconHelper.createIcon(project.icons, iconSizes[i], iconSizes[i], PathHelper.combine(projectDirectory, iconNames[i])))
-            context.HAS_ICON = false;
-     }
-
-      var splashScreenNames = [ "Default.png", "Default@2x.png", "Default-568h@2x.png", "Default-Portrait.png",
-                                "Default-Landscape.png", "Default-Portrait@2x.png", "Default-Landscape@2x.png" ];
-      var splashScreenWidth = [ 320, 640, 640, 768, 1024, 1536, 2048 ];
-      var splashScreenHeight = [ 480, 960, 1136, 1024, 768, 2048, 1536 ];
-
-      for (i in 0...splashScreenNames.length)
-      {
-         var width = splashScreenWidth[i];
-         var height = splashScreenHeight[i];
-         var match = false;
-
-         for(splashScreen in project.splashScreens)
-         {
-            if (splashScreen.width == width && splashScreen.height == height && Path.extension(splashScreen.path) == "png")
-            {
-               FileHelper.copyIfNewer(splashScreen.path, PathHelper.combine(projectDirectory, splashScreenNames[i]));
-               match = true;
-               break;
-            }
-         }
-
-         if (!match)
-         {
-            var dest = PathHelper.combine(projectDirectory, splashScreenNames[i]);
-            if (!FileSystem.exists(dest))
-            {
-               var bitmapData = new nme.display.BitmapData(width, height, false, (0xFF << 24) | (project.window.background & 0xFFFFFF));
-               File.saveBytes(dest, bitmapData.encode("png"));
-            }
-         }
-      }
-      context.HAS_LAUNCH_IMAGE = true;
 
 
       // Do not update if we are running from inside xcode
       if (project.command!="xcode")
       {
          copyTemplateDir("ios/PROJ/Classes", projectDirectory + "/Classes");
+         copyTemplateDir("ios/PROJ/Images.xcassets", projectDirectory + "/Images.xcassets");
          copyTemplate("ios/PROJ/PROJ-Entitlements.plist", projectDirectory + "/" + project.app.file + "-Entitlements.plist");
          copyTemplate("ios/PROJ/PROJ-Info.plist", projectDirectory + "/" + project.app.file + "-Info.plist");
          copyTemplate("ios/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch");
