@@ -304,6 +304,7 @@ class IOSPlatform extends Platform
       context.HAS_LAUNCH_IMAGE = false;
       context.OBJC_ARC = false;
       context.PROJECT_DIRECTORY = Sys.getCwd();
+      context.APP_FILE = project.app.file;
 
       context.linkedLibraries = [];
 
@@ -334,6 +335,7 @@ class IOSPlatform extends Platform
 
       context.VALID_ARCHS = valid_archs.join(" ");
       context.THUMB_SUPPORT = hasArch(ARMV6) ? "GCC_THUMB_SUPPORT = NO;" : "";
+      context.KEY_STORE_IDENTITY = "iPhone Developer";
 
       var requiredCapabilities = [];
 

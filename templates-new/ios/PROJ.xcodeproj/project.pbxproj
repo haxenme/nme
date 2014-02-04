@@ -31,16 +31,17 @@
 		1EF0A83A000000001C000015 /* Icon-76@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000015 /* Icon-76@2x.png */; };
 		::end::
 		::if (HAS_LAUNCH_IMAGE)::
-		1EF0A83A000000001C000005 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000005 /* Default.png */; };
-		1EF0A83A000000001C000006 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000006 /* Default@2x.png */; };
-		1EF0A83A000000001C000007 /* Default-Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000007 /* Default-Portrait.png */; };
-		1EF0A83A000000001C000008 /* Default-Portrait@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000008 /* Default-Portrait@2x.png */; };
-		1EF0A83A000000001C000009 /* Default-Landscape.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000009 /* Default-Landscape.png */; };
-		1EF0A83A000000001C000010 /* Default-Landscape@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000010 /* Default-Landscape@2x.png */; };
-		1EF0A83A000000001C000011 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000011 /* Default-568h@2x.png */; };
+		1EF0A83A000000001C000005 /* Default.png */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000005 /* Default.png */; };
+		1EF0A83A000000001C000006 /* Default@2x.png */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000006 /* Default@2x.png */; };
+		1EF0A83A000000001C000007 /* Default-Portrait.png */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000007 /* Default-Portrait.png */; };
+		1EF0A83A000000001C000008 /* Default-Portrait@2x.png */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000008 /* Default-Portrait@2x.png */; };
+		1EF0A83A000000001C000009 /* Default-Landscape.png */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000009 /* Default-Landscape.png */; };
+		1EF0A83A000000001C000010 /* Default-Landscape@2x.png */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000010 /* Default-Landscape@2x.png */; };
+		1EF0A83A000000001C000011 /* Default-568h@2x.png */ = {isa = PBXBuildFile; fileRef = 1EF0A83900000001C0000011 /* Default-568h@2x.png */; };
 		::end::
 
 		1EF0A83A121ADB8E003F2F59 /* Main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E003F2F59 /* Main.mm */; };
+      1EF0A83B121ADB8E003F2F59 /* haxe in Sources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5141E8B5D0048F3C7 /* haxe */; };
 		::ADDL_PBX_BUILD_FILE::
 
 /* End PBXBuildFile section */
@@ -69,7 +70,7 @@
 		1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1EEEBAFF121BE2B30048A9DF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-      		::if (HAS_ICON)::
+     	::if (HAS_ICON)::
         1EF0A83900000001C0000001 = {isa = PBXFileReference; lastKnownFileType = image.png; path = "::APP_FILE::/Icon.png"; sourceTree = SOURCE_ROOT; };
         1EF0A83900000001C0000002 = {isa = PBXFileReference; lastKnownFileType = image.png; path = "::APP_FILE::/Icon@2x.png"; sourceTree = SOURCE_ROOT; };
         1EF0A83900000001C0000003 = {isa = PBXFileReference; lastKnownFileType = image.png; path = "::APP_FILE::/Icon-72.png"; sourceTree = SOURCE_ROOT; };
@@ -90,8 +91,9 @@
 		::end::
 
         1EF0A839121ADB8E003F2F59 /* Main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Main.mm; path = "::APP_FILE::/Classes/Main.mm"; sourceTree = SOURCE_ROOT; };
-
+        1E2E17A5141E8B5D0048F3C7 /* haxe */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "::APP_FILE::/haxe/build"; sourceTree = SOURCE_ROOT; };
 		::ADDL_PBX_FILE_REFERENCE::
+
 
 		8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "::APP_FILE::/::APP_FILE::-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -173,6 +175,7 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+	        1E2E17A5141E8B5D0048F3C7 /* haxe */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -182,7 +185,7 @@
 			children = (
                 8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */,
                 1E2E17A5131E8B5D0048F3C7 /* assets */,
-             ::if (HAS_ICON)::
+            ::if (HAS_ICON)::
                 1EF0A83900000001C0000001 /* Icon.png */,
                 1EF0A83900000001C0000002 /* Icon@2x.png */,
                 1EF0A83900000001C0000003 /* Icon-72.png */,
@@ -269,7 +272,7 @@
 			buildActionMask = 2147483647;
 			files = (
                 1E2E17AD131E8B5D0048F3C7 /* assets in Resources */,
-          ::if (HAS_ICON)::
+            ::if (HAS_ICON)::
                 1EF0A83A000000001C000001 /* Icon.png */,
                 1EF0A83A000000001C000002 /* Icon@2x.png */,
                 1EF0A83A000000001C000003 /* Icon-72.png */,
@@ -324,7 +327,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				::end::
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "::KEY_STORE_IDENTITY::";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -355,7 +358,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				::end::
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "::KEY_STORE_IDENTITY::";
 				/* COMPRESS_PNG_FILES = NO; */
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
