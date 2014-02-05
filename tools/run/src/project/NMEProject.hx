@@ -36,7 +36,7 @@ class IOSConfig
    inline public static var UNIVERSAL  = 0x03;
 
    public var compiler:String;
-   public var deployment:Float;
+   public var deployment:String;
    public var deviceConfig:Int;
    public var linkerFlags:String;
    public var prerenderedIcon:Bool;
@@ -44,7 +44,7 @@ class IOSConfig
    public function new()
    {
       compiler =  "clang";
-      deployment =  5.1;
+      deployment =  "5.1.1";
       deviceConfig =  UNIVERSAL;
       linkerFlags =  "";
       prerenderedIcon =  false;

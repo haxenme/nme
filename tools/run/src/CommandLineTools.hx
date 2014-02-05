@@ -24,7 +24,6 @@ class CommandLineTools
    {
       loadProject(project);
 
-      Sys.putEnv("NME_ALREADY_BUILDING","BUILDING");
       var platform:Platform = null;
 
       Log.verbose("Using target platform: " + project.target);

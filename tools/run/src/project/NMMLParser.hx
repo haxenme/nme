@@ -843,7 +843,7 @@ class NMMLParser
                   {
                      if (element.has.deployment) 
                      {
-                        var deployment = Std.parseFloat(substitute(element.att.deployment));
+                        var deployment = substitute(element.att.deployment);
 
                         // If it is specified, assume the dev knows what he is doing!
                         project.iosConfig.deployment = deployment;

@@ -76,28 +76,28 @@
       "idiom" : "ipad",
       "extent" : "full-screen",
       "scale" : "1x"
-      $$launchImage(768,1004)
+      $$launchImage(768,1024)
     },
     {
       "orientation" : "landscape",
       "idiom" : "ipad",
       "extent" : "full-screen",
       "scale" : "1x"
-      $$launchImage(1024,748)
+      $$launchImage(1024,768)
     },
     {
       "orientation" : "portrait",
       "idiom" : "ipad",
       "extent" : "full-screen",
       "scale" : "2x"
-      $$launchImage(1536,2008)
+      $$launchImage(1536,2048)
     },
     {
       "orientation" : "landscape",
       "idiom" : "ipad",
       "extent" : "full-screen",
       "scale" : "2x"
-      $$launchImage(2048,1496)
+      $$launchImage(2048,1536)
     }
   ],
   "info" : {

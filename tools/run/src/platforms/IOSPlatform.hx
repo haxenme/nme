@@ -234,7 +234,7 @@ class IOSPlatform extends Platform
       var architectures = project.architectures;
       var config = project.iosConfig;
       // If we support iphones with deployment < 5, we must support armv6 ...
-      if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && config.deployment<5)
+      if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && Std.parseFloat(config.deployment)<5)
           ArrayHelper.addUnique(architectures, Architecture.ARMV6);
       else
           ArrayHelper.addUnique(architectures, Architecture.ARMV7);
@@ -282,6 +282,9 @@ class IOSPlatform extends Platform
 
    override public function buildPackage():Void 
    {
+      // Prevent re-entry
+      Sys.putEnv("NME_ALREADY_BUILDING","BUILDING");
+
       IOSHelper.xcodeBuild(project, targetDir);
 
       if (buildV6 || buildV7)
@@ -444,8 +447,10 @@ class IOSPlatform extends Platform
       IOSHelper.launch(project, targetDir);
    }
 
-   function createLaunchImage( resolve : String -> Dynamic, width : Int, height : Int)
+   function createLaunchImage( resolve : String -> Dynamic, widthStr:String, heightStr:String)
    {
+      var width = Std.parseInt(widthStr);
+      var height = Std.parseInt(heightStr);
       Log.verbose("createLaunchImage " + width + "x" + height);
 
       var name = "LaunchImage" + width + "x" + height + ".png";
@@ -469,15 +474,16 @@ class IOSPlatform extends Platform
       }
 
       if (ok)
-         return ", 'filename':'" + name + "'";
+         return ", \"filename\":\"" + name + "\"";
       else
          return "";
 
 
    }
 
-   function createAppIcon( resolve : String -> Dynamic, size:Int ) : String
+   function createAppIcon( resolve : String -> Dynamic, sizeStr:String ) : String
    {
+      var size = Std.parseInt(sizeStr);
       Log.verbose("createAppIcon " + size + "x" + size);
 
       var name = "AppIcon" + size + "x" + size + ".png";
@@ -487,7 +493,7 @@ class IOSPlatform extends Platform
       if (!FileSystem.exists(dest))
          ok = IconHelper.createIcon(project.icons, size,size, dest);
       if (ok)
-         return ", 'filename':'" + name + "'";
+         return ", \"filename\":\"" + name + "\"";
       else
          return "";
    }
