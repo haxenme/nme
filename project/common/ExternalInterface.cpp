@@ -863,7 +863,7 @@ value nme_capabilities_get_screen_resolutions () {
    
 
    //Only really makes sense on PC platforms
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS )
+	#if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
    
       
       QuickVec<int>* res = CapabilitiesGetScreenResolutions();
@@ -887,6 +887,33 @@ value nme_capabilities_get_screen_resolutions () {
 
 DEFINE_PRIM( nme_capabilities_get_screen_resolutions, 0 );
 
+value nme_capabilities_get_screen_modes () {
+  //Only really makes sense on PC platforms
+  #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
+  
+    
+    QuickVec<ScreenMode>* modes = CapabilitiesGetScreenModes();
+    
+    value result = alloc_array( modes->size() * 4 );
+    
+    for(int i=0;i<modes->size();i++) {
+      ScreenMode mode = (*modes)[ i ];
+      val_array_set_i(result,i * 4 + 0,alloc_int( mode.width ) );
+      val_array_set_i(result,i * 4 + 1,alloc_int( mode.height ) );
+      val_array_set_i(result,i * 4 + 2,alloc_int( mode.refreshRate ) );
+      val_array_set_i(result,i * 4 + 3,alloc_int( (int)mode.format ) );
+    }
+  
+    return result;
+  
+  #endif
+  
+  return alloc_null();
+  
+  
+}
+
+DEFINE_PRIM( nme_capabilities_get_screen_modes, 0 );
 
 value nme_capabilities_get_pixel_aspect_ratio () {
    
@@ -1042,6 +1069,45 @@ value nme_get_frame_stage(value inValue)
 }
 DEFINE_PRIM(nme_get_frame_stage,1);
 
+
+void nme_set_resolution(value inValue, value inWidth, value inHeight)
+{
+  int h = val_int(inHeight);
+  int w = val_int(inWidth);
+  Frame *frame;
+  if (!AbstractToObject(inValue,frame)){
+    return;
+  }
+  frame->GetStage()->SetResolution(w,h);
+}
+DEFINE_PRIM(nme_set_resolution,3);
+
+void nme_set_screenmode(value inValue, value inWidth, value inHeight, value inRefresh, value inFormat)
+{
+  ScreenMode mode;
+  mode.width = val_int(inWidth);
+  mode.height = val_int(inHeight);
+  mode.refreshRate = val_int(inRefresh);
+  mode.format = (ScreenFormat)val_int(inFormat);
+  Frame *frame;
+  if (!AbstractToObject(inValue,frame)){
+    return;
+  }
+
+  frame->GetStage()->SetScreenMode(mode);
+}
+DEFINE_PRIM(nme_set_screenmode,5);
+
+void nme_set_fullscreen(value inValue, value inFull)
+{
+  bool full = val_bool(inFull);
+  Frame *frame;
+  if (!AbstractToObject(inValue,frame)){
+    return;
+  }
+  frame->GetStage()->setDisplayState(full ? sdsFullscreenInteractive : sdsNormal);
+}
+DEFINE_PRIM(nme_set_fullscreen,2);
 
 AutoGCRoot *sOnCreateCallback = 0;
 
