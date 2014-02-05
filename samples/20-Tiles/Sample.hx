@@ -155,7 +155,7 @@ class Sample extends Sprite
       gfx.endFill();
       gfx.moveTo(32,32);
       gfx.lineTo(62,32);
-      var bmp = new BitmapData(64,64,true,#if neko { rgb:0, a:0 } #else 0x00000000 #end );
+      var bmp = new BitmapData(64,64,true,0x00000000 );
       bmp.draw(shape);
 
       tilesheet = new Tilesheet(bmp);
