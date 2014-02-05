@@ -83,6 +83,7 @@ namespace nme { int gFixedOrientation = -1; }
 
 @property (readonly, nonatomic, getter=isAnimating) BOOL animating;
 @property (nonatomic) NSInteger animationFrameInterval;
+@property (nonatomic, retain, readwrite) id keyboardObserver;
 
 - (void) myInit;
 - (void) drawView:(id)sender;
@@ -866,6 +867,7 @@ public:
 @implementation UIStageView
 
 @synthesize animating;
+@synthesize keyboardObserver = _keyboardObserver;
 @dynamic animationFrameInterval;
 
 // You must implement this method
@@ -1214,10 +1216,21 @@ public:
 	     [self addSubview: mTextField];
 
           }
+          if (!self.keyboardObserver) {
+               self.keyboardObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIKeyboardWillHideNotification object:nil queue:nil usingBlock:^(NSNotification* notification) {
+                   printf("Got a notify.\n");
+                   mStage->SetFocusObject(0);
+                   [self enableKeyboard:NO];
+                }];
+             }
           [mTextField becomeFirstResponder];
        }
        else
        {
+          if (self.keyboardObserver) {
+             [[NSNotificationCenter defaultCenter] removeObserver:self.keyboardObserver];
+             self.keyboardObserver = nil;
+          }
           [mTextField resignFirstResponder];
        }
    }
