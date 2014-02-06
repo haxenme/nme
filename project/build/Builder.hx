@@ -12,6 +12,19 @@ class Builder
       Sys.println("            (none specified = all valid architectures");
       Sys.println("  -D...   : defines passed to hxcpp build system");
    }
+   static function getDefault()
+   {
+      var sys = Sys.systemName();
+      if (new EReg("window", "i").match(sys))
+         return "windows";
+      else if (new EReg("linux", "i").match(sys))
+         return "linux";
+      else if (new EReg("mac", "i").match(sys))
+         return "mac";
+      else
+         throw "Unknown host system: " + sys;
+      return "";
+   }
 
    public static function main()
    {
@@ -23,22 +36,11 @@ class Builder
 
       try
       {
-         if (args.length<1)
-            throw "";
-
          for(arg in args)
          {
             if (arg=="default")
             {
-               var sys = Sys.systemName();
-               if (new EReg("window", "i").match(sys))
-                  arg = "windows";
-               else if (new EReg("linux", "i").match(sys))
-                  arg = "linux";
-               else if (new EReg("mac", "i").match(sys))
-                  arg = "mac";
-               else
-                  throw "Unknown host system: " + sys;
+               arg = getDefault();
             }
 
             switch(arg)
@@ -64,7 +66,13 @@ class Builder
          }
 
          if (targets.length==0)
-            throw "No target specified";
+         {
+            var target = getDefault();
+            targets.push(target);
+            showUsage();
+            Sys.println("\nusing default =" + target);
+         }
+
          if ( Lambda.exists(targets, function(x)return x=="clean"))
          {
             try
