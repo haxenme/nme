@@ -230,6 +230,7 @@ class IOSPlatform extends Platform
       for(asset in project.assets) 
          asset.resourceName = asset.flatName;
       project.haxeflags.push("-cpp cpp");
+      project.haxeflags.push("-D HXCPP_CPP11");
 
       var architectures = project.architectures;
       var config = project.iosConfig;

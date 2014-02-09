@@ -652,6 +652,7 @@ class NMMLParser
                   if (!Lambda.exists(project.ndlls,function(n) return n.name==name))
                   {
                      var haxelib = null;
+                     var isStatic = project.target == Platform.IOS || project.target == Platform.IOSVIEW;
 
                      if (element.has.haxelib) 
                         haxelib = new Haxelib(substitute(element.att.haxelib));
@@ -663,7 +664,7 @@ class NMMLParser
                         haxelib = defaultLib;
 
                      var register = !element.has.register || substitute(element.att.register)!="false";
-                     var ndll = new NDLL(name, haxelib,register);
+                     var ndll = new NDLL(name, haxelib,register,isStatic);
                      ndll.extensionPath = extensionPath;
                      project.ndlls.push(ndll);
                   }

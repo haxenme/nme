@@ -53,6 +53,7 @@ class Platform
    public function get_type() : String { return null; }
    public function getBinName() : String { return ""; }
    public function getNdllExt() : String { return ".ndll"; }
+   public function getLibExt() : String { return ".a"; }
    public function getNdllPrefix() : String { return ""; }
    public function getOutputExtra() : String { return ""; }
    public function getOutputDir() { return targetDir + "/" + project.app.file; }
@@ -140,14 +141,18 @@ class Platform
          var ext = getNdllExt();
          var dir = "/ndll/" + binName + "/";
          var srcProject = PathHelper.getHaxelib(ndll.haxelib);
+
          var src = srcProject + "/ndll/" + binName + "/" + pref + ndll.name + archSuffix + ext;
 
-         if (ndll.haxelib.name=="hxcpp")
+         if (ndll.isStatic && !useNeko)
+         {
+            var ext = getLibExt();
+            src = srcProject + "/lib/" + binName + "/lib" + ndll.name + archSuffix + ext;
+         }
+         else if (ndll.haxelib.name=="hxcpp")
          {
             if (useNeko)
-            {
                src = NekoHelper.getNekoDir() + "/" + pref + ndll.name + archSuffix + ext;
-            }
             else
             {
                ext = getNativeDllExt();

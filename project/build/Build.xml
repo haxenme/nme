@@ -2,6 +2,7 @@
    <!-- Require Android 2.3+ -->
    <set name="PLATFORM" value="android-9" if="android" />
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
+   <set name="HXCPP_CPP11" value="1" if="iphone"/>
 
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
@@ -64,7 +65,7 @@
    <set name="SRC_DIR" value="../src" />
    <set name="INC_DIR" value="../include" />
    <set name="SUP_DIR" value="../support" />
-   <set name="OUT_DIR" value="../../ndll" />
+   <set name="OUT_DIR" value="../../${DESTDIR}" />
    
    
    <files id="main">

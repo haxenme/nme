@@ -409,7 +409,8 @@ class PathHelper
       }
       else if (ndll.haxelib.name == "hxcpp") 
       {
-         return combine(getHaxelib(ndll.haxelib), "bin/" + directoryName + "/" + filename);
+         var dir = ndll.isStatic ? "lib/" : "bin/";
+         return combine(getHaxelib(ndll.haxelib), dir + directoryName + "/" + filename);
       }
       else if (ndll.haxelib.name == "nme") 
       {
