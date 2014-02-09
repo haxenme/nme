@@ -218,11 +218,6 @@
    </files>
    
 
-   <set name="NME_STATIC_LINK" value="1" if="iphone"/>
-
-   <set name="NME_LINKER" value="dll" />
-   <set name="NME_LINKER" value="static_link" if="NME_STATIC_LINK" />
-
    <set name="SLIBEXT" value=".lib" if="windows"/>
    <set name="SLIBEXT" value=".a" unless="windows"/>
    <set name="PRELIB" value="${NME_STATE}/lib/${BINDIR}/lib" />
@@ -231,41 +226,23 @@
 
 
 
-   <target id="NDLL" output="${LIBPREFIX}nme${LIBEXTRA}" tool="linker" toolid="${NME_LINKER}">
+   <target id="NDLL" output="${LIBPREFIX}nme${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
 
       <outdir name="${OUT_DIR}/${BINDIR}" />
-      <ext value=".ndll" unless="NME_STATIC_LINK"/>
-      <ext value=".so" if="android"/>
 
       <flag value="-NODEFAULTLIB:LIBCMT" if="winrt"/>
 
       <files id="nme"/>
 
-
-      <section unless="NME_STATIC_LINK">
-
-         <!-- <lib name="${PRELIB}libfreetype${LIBEXTRA}${SLIBEXT}" if="iphone"/> -->
          <lib name="${PRELIB}freetype${POSTLIB}" />
          <lib name="${PRELIB}jpeg${POSTLIB}" />
          <lib name="${PRELIB}png${POSTLIB}" />
-
-         
 
          <section if="NME_SDL2">
             <lib name="${PRELIB}SDL2${POSTLIB}" />
             <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
             <lib name="${PRELIB}modplug${POSTLIB}"  />
             <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
-         </section>
-
-
-         <section if="NME_SDL_SYSTEM">
-            <lib name="-lSDL" />
-            <lib name="-lcurl" />
-            <lib name="-lpng" />
-            <lib name="-ljpeg" />
-            <lib name="-lfreetype" />
-            <lib name="-lz" />
          </section>
 
 
@@ -285,6 +262,27 @@
             <lib name="${PRELIB}png${POSTLIB}" />
 
             <lib name="${PRELIB}z${POSTLIB}" unless="android"/>
+         </section>
+
+
+      <section unless="static_link">
+
+         <ext value=".ndll" />
+         <ext value=".so" />
+
+         <!-- <lib name="${PRELIB}libfreetype${LIBEXTRA}${SLIBEXT}" if="iphone"/> -->
+
+         <section if="NME_SDL_SYSTEM">
+            <lib name="-lSDL" />
+            <lib name="-lcurl" />
+            <lib name="-lpng" />
+            <lib name="-ljpeg" />
+            <lib name="-lfreetype" />
+            <lib name="-lz" />
+         </section>
+
+
+         <section unless="NME_SDL_SYSTEM">
             <lib name="-lz" if="android"/>
          </section>
 
@@ -306,10 +304,10 @@
 
 
          <section if="android">
-            <lib name="-ldl" if="android"/>
-            <lib name="-landroid" if="android"/>
-            <lib name="-lGLESv2" if="android"/>
-            <lib name="-lz" if="android"/>
+            <lib name="-ldl" />
+            <lib name="-landroid" />
+            <lib name="-lGLESv2" />
+            <lib name="-lz" />
          </section>
 
          <section if="rpi">

@@ -249,6 +249,13 @@ class NMEProject
       localDefines.set(target.toLowerCase(), "1");
    }
 
+   public function hasTargetFlag(inFlag:String)
+   {
+      return targetFlags.exists(inFlag);
+   }
+
+   public function isNeko() { return hasTargetFlag("neko"); }
+
    public function include(path:String):Void 
    {
       // extend project file somehow?

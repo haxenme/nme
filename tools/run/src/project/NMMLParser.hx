@@ -653,15 +653,24 @@ class NMMLParser
                   {
                      var haxelib = null;
                      var isStatic = project.target == Platform.IOS || project.target == Platform.IOSVIEW;
+                     if (element.has.resolve("static"))
+                        isStatic = parseBool(element.att.resolve("static"));
+
+                     if (project.isNeko())
+                        isStatic = false;
 
                      if (element.has.haxelib) 
                         haxelib = new Haxelib(substitute(element.att.haxelib));
 
-                     if (haxelib == null && (name == "std" || name == "regexp" || name == "zlib")) 
+                     if (haxelib == null && (name == "std" || name == "regexp" || name == "zlib" ||
+                         name=="sqlite" || name=="mysql5" )) 
                         haxelib = new Haxelib("hxcpp");
 
                      if (haxelib==null)
                         haxelib = defaultLib;
+
+                     if (!Lambda.exists(project.haxelibs,function(h) return h.name==haxelib.name))
+                        project.haxelibs.push(haxelib);
 
                      var register = !element.has.register || substitute(element.att.register)!="false";
                      var ndll = new NDLL(name, haxelib,register,isStatic);

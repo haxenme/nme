@@ -5,12 +5,14 @@ class Builder
 {
    static function showUsage()
    {
-      Sys.println("Usage : neko builder.n targets [arch] [-debug] [-D...]");
-      Sys.println("  targets : clean, ios, android, windows, linux, mac,");
+      Sys.println("Usage : neko builder.n [target ...] [arch] [-debug] [-verbose] [-D...]");
+      Sys.println("  target  : clean, ios, android, windows, linux, mac, ios-legacy");
+      Sys.println("          : static-android, static-windows, static-linux, static-mac,");
       Sys.println("            default (=current system)");
       Sys.println("  arch    : -armv5 -armv6 -armv7 -arm64 -x86 -m32 -m64");
       Sys.println("            (none specified = all valid architectures");
       Sys.println("  -D...   : defines passed to hxcpp build system");
+      Sys.println(" Specify target or 'default' to remove this message");
    }
    static function getDefault()
    {
@@ -45,9 +47,26 @@ class Builder
 
             switch(arg)
             {
-               case "clean", "ios", "android", "windows", "linux", "mac":
+               case "clean":
                   if (!Lambda.exists(targets, function(x)return x==arg))
                      targets.push(arg);
+
+               case "ios", "android", "windows", "linux", "mac":
+                  var stat = "static-" + arg;
+                  if (!Lambda.exists(targets, function(x)return x==stat))
+                     targets.push(stat);
+                  var dyn = arg;
+                  if (!Lambda.exists(targets, function(x)return x==dyn))
+                     targets.push(dyn);
+
+               case "static-ios", "static-android", "static-windows", "static-linux", "static-mac" :
+                  if (!Lambda.exists(targets, function(x)return x==arg))
+                     targets.push(arg);
+
+               case "ios-legacy", "android-ndll", "windows-ndll", "linux-ndll", "mac-ndll" :
+                  var target = arg.split("-")[0];
+                  if (!Lambda.exists(targets, function(x)return x==target))
+                     targets.push(target);
 
                case "-armv5", "-armv6", "-armv7", "-arm64", "-x86", "-m32", "-m64":
                   var arch = arg.substr(1);
@@ -73,7 +92,7 @@ class Builder
             Sys.println("\nusing default =" + target);
          }
 
-         if ( Lambda.exists(targets, function(x)return x=="clean"))
+         if ( targets.remove("clean"))
          {
             try
             {
@@ -84,7 +103,7 @@ class Builder
                Sys.println("Could not remove 'bin' directory");
                return;
             }
-            if (targets.length==1) // Just clean
+            if (targets.length==0) // Just clean
                return;
          }
 
@@ -97,26 +116,38 @@ class Builder
          for(target in targets)
          {
             var validArchs = new Map<String, Array<String>>();
+            var isStatic = false;
+            if (target.substr(0,7)=="static-")
+            {
+               isStatic = true;
+               target = target.substr(7);
+            }
+            var staticFlag = isStatic ? "-Dstatic_link" : "";
+            if (target=="ios" && isStatic)
+               staticFlag = "-DHXCPP_CPP11";
+
             switch(target)
             {
                case "linux", "mac":
-                  validArchs.set("m32", ["-D"+target, "-DHXCPP_M32"] );
-                  validArchs.set("m64", ["-D"+target, "-DHXCPP_M64"] );
+                  validArchs.set("m32", ["-D"+target, "-DHXCPP_M32", staticFlag] );
+                  validArchs.set("m64", ["-D"+target, "-DHXCPP_M64", staticFlag] );
 
                case "windows":
-                  validArchs.set("m32", ["-D"+target, "-DHXCPP_M32"] );
+                  validArchs.set("m32", ["-D"+target, "-DHXCPP_M32", staticFlag] );
 
                case "ios":
-                  validArchs.set("armv6", ["-Diphoneos"] );
-                  validArchs.set("armv7", ["-Diphoneos", "-DHXCPP_ARMV7"] );
+                  validArchs.set("armv6", ["-Diphoneos", staticFlag] );
+                  validArchs.set("armv7", ["-Diphoneos", "-DHXCPP_ARMV7", staticFlag] );
                   //validArchs.push("armv64");
-                  validArchs.set("x86", ["-Diphonesim"] );
+                  validArchs.set("x86", ["-Diphonesim", staticFlag] );
 
                case "android":
-                  validArchs.set("armv5", ["-Dandroid"] );
-                  validArchs.set("armv7", ["-Dandroid", "-DHXCPP_ARMV7" ] );
-                  validArchs.set("x86", ["-Dandroid", "-DHXCPP_X86" ] );
+                  validArchs.set("armv5", ["-Dandroid", staticFlag] );
+                  validArchs.set("armv7", ["-Dandroid", "-DHXCPP_ARMV7", staticFlag ] );
+                  validArchs.set("x86", ["-Dandroid", "-DHXCPP_X86", staticFlag ] );
             }
+
+
 
             var valid = new Array<String>();
             for(key in validArchs.keys())

@@ -5,6 +5,8 @@ import nme.Assets;
 import wx.Assets;
 #end
 
+::foreach ndlls::::importStatic::::end::
+
 
 #if (nme && !waxe && !cocktail && !Cocktail)
 class ApplicationDocument extends ::APP_MAIN::
@@ -12,10 +14,8 @@ class ApplicationDocument extends ::APP_MAIN::
    public function new()
    {
       if (Std.is(this, nme.display.DisplayObject))
-      {
          nme.Lib.current.addChild(cast this);
-      }
-      
+
       super();
    }
 }
@@ -76,7 +76,7 @@ class ApplicationMain
       #end
    
       var hasMain = false;
-      for (methodName in Type.getClassFields(::APP_MAIN::))
+      for(methodName in Type.getClassFields(::APP_MAIN::))
          if (methodName == "main")
          {
             hasMain = true;

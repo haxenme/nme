@@ -146,8 +146,9 @@ class Platform
 
          if (ndll.isStatic && !useNeko)
          {
-            var ext = getLibExt();
-            src = srcProject + "/lib/" + binName + "/lib" + ndll.name + archSuffix + ext;
+            continue;
+            // var ext = getLibExt();
+            // src = srcProject + "/lib/" + binName + "/lib" + ndll.name + archSuffix + ext;
          }
          else if (ndll.haxelib.name=="hxcpp")
          {

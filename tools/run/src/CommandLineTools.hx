@@ -584,7 +584,7 @@ class CommandLineTools
          default:
       }
 
-      project.templatePaths.push( nme + "/templates-new" );
+      project.templatePaths.push( nme + "/templates" );
 
       return project;
    }
