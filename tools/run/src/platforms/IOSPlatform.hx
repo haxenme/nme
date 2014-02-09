@@ -554,6 +554,8 @@ class IOSPlatform extends Platform
                var releaseLib = PathHelper.getLibraryPath(ndll, "iPhone", "lib", libExt);
                var releaseDest = projectDirectory + "/lib/" + arch + "/lib" + ndll.name + ".a";
 
+               trace(releaseLib);
+               trace(releaseDest);
                FileHelper.copyIfNewer(releaseLib, releaseDest);
             }
          }

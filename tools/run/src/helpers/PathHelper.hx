@@ -414,16 +414,19 @@ class PathHelper
       }
       else if (ndll.haxelib.name == "nme") 
       {
-         var path = combine(getHaxelib(ndll.haxelib), "ndll/" + directoryName + "/" + filename);
+         var dir = ndll.isStatic ? "lib/" : "ndll/";
+         var path = combine(getHaxelib(ndll.haxelib), dir + directoryName + "/" + filename);
 
+         /*
          if (!FileSystem.exists(path)) 
          {
             try
             {
-               path = combine(getHaxelib(new Haxelib("nme-state")), "lib/" + directoryName + "/" + filename);
+               var nmeState = combine(getHaxelib(new Haxelib("nme-state")), "lib/" + directoryName + "/" + filename);
             }
             catch(e:Dynamic) { trace(e); }
          }
+         */
 
          return path;
       }

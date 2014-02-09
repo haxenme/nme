@@ -55,9 +55,12 @@ class Builder
                   var stat = "static-" + arg;
                   if (!Lambda.exists(targets, function(x)return x==stat))
                      targets.push(stat);
-                  var dyn = arg;
-                  if (!Lambda.exists(targets, function(x)return x==dyn))
-                     targets.push(dyn);
+                  if (arg!="ios")
+                  {
+                     var dyn = arg;
+                     if (!Lambda.exists(targets, function(x)return x==dyn))
+                        targets.push(dyn);
+                  }
 
                case "static-ios", "static-android", "static-windows", "static-linux", "static-mac" :
                   if (!Lambda.exists(targets, function(x)return x==arg))
@@ -123,7 +126,7 @@ class Builder
                target = target.substr(7);
             }
             var staticFlag = isStatic ? "-Dstatic_link" : "";
-            if (target=="ios" && isStatic)
+            if (target=="ios")
                staticFlag = "-DHXCPP_CPP11";
 
             switch(target)

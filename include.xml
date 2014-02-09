@@ -5,13 +5,5 @@
 	<ndll name="regexp" static="1" />
 	<ndll name="zlib" static="1" />
 	<ndll name="nme" static="1" />
-   <section if="ios">
-	   <ndll name="curl_ssl" register="false" />
-	   <ndll name="png" register="false" />
-	   <ndll name="jpeg" register="false"  />
-	   <ndll name="freetype" register="false" />
-	   <ndll name="ogg" register="false" />
-	   <ndll name="vorbis" register="false" />
-   </section>
 	
 </extension>
