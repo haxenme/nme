@@ -19,13 +19,9 @@ class FileHelper
       else
       {
          if (Std.is(asset.data, Bytes)) 
-         {
             File.saveBytes(destination, cast asset.data);
-         }
          else
-         {
             File.saveContent(destination, Std.string(asset.data));
-         }
       }
    }
 
@@ -34,20 +30,14 @@ class FileHelper
       if (asset.sourcePath != "") 
       {
          if (isNewer(asset.sourcePath, destination)) 
-         {
             copyFile(asset.sourcePath, destination);
-         }
       }
       else
       {
          if (Std.is(asset.data, Bytes)) 
-         {
             File.saveBytes(destination, cast asset.data);
-         }
          else
-         {
             File.saveContent(destination, Std.string(asset.data));
-         }
       }
    }
 
@@ -74,14 +64,21 @@ class FileHelper
           extension == "nmml" ||
           isText(source))) 
           {
-         LogHelper.info("", " - Copying template file: " + source + " -> " + destination);
-
          var fileContents:String = File.getContent(source);
          var template:Template = new Template(fileContents);
-         var result:String = template.execute(context);
-         var fileOutput:FileOutput = File.write(destination, true);
-         fileOutput.writeString(result);
-         fileOutput.close();
+         var result:String = template.execute(context, context.MACROS);
+
+         if (FileSystem.exists(destination) && File.getContent(destination)==result)
+         {
+            //Log.verbose(" - already current " +  destination);
+         }
+         else
+         {
+            Log.verbose(" - Copying template file: " + source + " -> " + destination);
+            var fileOutput:FileOutput = File.write(destination, true);
+            fileOutput.writeString(result);
+            fileOutput.close();
+         }
       }
       else
       {
@@ -115,29 +112,7 @@ class FileHelper
 
    public static function copyLibrary(ndll:NDLL, directoryName:String, namePrefix:String, nameSuffix:String, targetDirectory:String, allowDebug:Bool = false, targetSuffix:String = null) 
    {
-      var path = PathHelper.getLibraryPath(ndll, directoryName, namePrefix, nameSuffix, allowDebug);
 
-      if (FileSystem.exists(path)) 
-      {
-         var targetPath = PathHelper.combine(targetDirectory, namePrefix + ndll.name);
-
-         if (targetSuffix != null) 
-         {
-            targetPath += targetSuffix;
-         }
-         else
-         {
-            targetPath += nameSuffix;
-         }
-
-         PathHelper.mkdir(targetDirectory);
-         LogHelper.info("", " - Copying library file: " + path + " -> " + targetPath);
-         File.copy(path, targetPath);
-      }
-      else
-      {
-         LogHelper.error("Source path \"" + path + "\" does not exist");
-      }
    }
 
    public static function recursiveCopy(source:String, destination:String, context:Dynamic = null, process:Bool = true) 

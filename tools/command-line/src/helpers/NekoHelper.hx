@@ -4,14 +4,24 @@ import sys.io.File;
 
 class NekoHelper 
 {
-   public static function copyLibraries(templatePaths:Array<String>, platformName:String, targetPath:String) 
+   static var exe:String = null;
+   public static function getNekoExe()
    {
-      FileHelper.recursiveCopyTemplate(templatePaths, "neko/ndll/" + platformName, targetPath);
+      if (exe==null)
+         exe = nme.system.System.exeName;
+      return exe;
    }
 
-   public static function createExecutable(templatePaths:Array<String>, platformName:String, source:String, target:String):Void 
+   public static function getNekoDir()
    {
-      var executablePath = PathHelper.findTemplate(templatePaths, "neko/bin/neko-" + platformName);
+      var neko = nme.system.System.exeName;
+      return haxe.io.Path.directory(neko);
+   }
+   
+
+   public static function createExecutable(source:String, target:String):Void 
+   {
+      var executablePath = getNekoExe();
       var executable = File.getBytes(executablePath);
       var sourceContents = File.getBytes(source);
 
@@ -19,11 +29,7 @@ class NekoHelper
       output.write(executable);
       output.write(sourceContents);
       output.writeString("NEKO");
-      #if haxe3
-      output.writeInt32 (executable.length);
-      #else
-      output.writeInt31 (executable.length);
-      #end
+      output.writeInt32(executable.length);
       output.close();
    }
 }

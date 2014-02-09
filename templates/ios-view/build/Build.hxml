@@ -1,4 +1,0 @@
--main ApplicationMain ::HAXE_FLAGS:: ::RESOURCES::
--D iphone
--D ios
---remap flash:nme

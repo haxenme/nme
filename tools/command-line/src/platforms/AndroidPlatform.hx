@@ -9,17 +9,39 @@ import sys.FileSystem;
 class AndroidPlatform extends Platform
 {
    var adbName:String;
+   var buildV5:Bool;
+   var buildV7:Bool;
+   var buildX86:Bool;
 
 
    public function new(inProject:NMEProject)
    {
       super(inProject);
 
+      buildV5 = buildV7 = buildX86 = false;
 
-      if (!project.environment.exists("ANDROID_SETUP")) 
+      var archs = project.architectures;
+      var isSim =  project.targetFlags.exists("androidsim");
+      if (isSim)
+         ArrayHelper.addUnique(archs, Architecture.X86);
+      if (archs.length<1)
+         archs.push(Architecture.ARMV5);
+      Log.verbose("Valid archs :" + archs );
+
+      if (!isSim)
       {
-         LogHelper.error("You need to run \"nme setup android\" before you can use the Android target (or set ANDROID_SETUP manually)");
+         buildV5 = hasArch(ARMV5);
+         buildV7 = hasArch(ARMV7);
       }
+      buildX86 = hasArch(X86);
+
+
+      if (!buildV5)
+         PathHelper.removeDirectory(getOutputDir() + "/libs/armeabi");
+      if (!buildV7)
+         PathHelper.removeDirectory(getOutputDir() + "/libs/armeabi-v7a");
+      if (!buildX86)
+         PathHelper.removeDirectory(getOutputDir() + "/libs/x86");
 
 
       adbName = "adb";
@@ -39,50 +61,98 @@ class AndroidPlatform extends Platform
 
       if (project.environment.exists("JAVA_HOME")) 
          Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
-   }
 
+      project.haxeflags.push("-cpp cpp");
 
-
-   override public function build():Void 
-   {
-      var destination = project.app.path + "/android/bin";
-      var hxml = project.app.path + "/android/haxe/" + (project.debug ? "debug" : "release") + ".hxml";
-
-      var arm5 = project.app.path + "/android/bin/libs/armeabi/libApplicationMain.so";
-      var arm7 = project.app.path + "/android/bin/libs/armeabi-v7a/libApplicationMain.so";
-
-      if (ArrayHelper.containsValue(project.architectures, Architecture.ARMV6)) 
+      for(asset in project.assets) 
       {
-         ProcessHelper.runCommand("", "haxe", [ hxml ] );
-         FileHelper.copyIfNewer(project.app.path + "/android/obj/libApplicationMain" + (project.debug ? "-debug" : "") + ".so", arm5);
-      }
-      else
-      {
-         if (FileSystem.exists(arm5)) 
+         if (!asset.embed)
          {
-            FileSystem.deleteFile(arm5);
+            var targetPath = "";
+            switch(asset.type) 
+            {
+               case SOUND, MUSIC:
+                  asset.resourceName = asset.id;
+                  asset.targetPath =  "res/raw/" + asset.flatName + "." + Path.extension(asset.targetPath);
+
+               default:
+                  asset.resourceName = asset.flatName;
+                  asset.targetPath = "assets/" + asset.resourceName;
+            }
          }
       }
-
-      if (ArrayHelper.containsValue(project.architectures, Architecture.ARMV7)) 
-      {
-         ProcessHelper.runCommand("", "haxe", [ hxml, "-D", "HXCPP_ARMV7" ] );
-         FileHelper.copyIfNewer(project.app.path + "/android/obj/libApplicationMain-7" + (project.debug ? "-debug" : "") + ".so", arm7);
-      }
-      else
-      {
-         if (FileSystem.exists(arm7)) 
-         {
-            FileSystem.deleteFile(arm7);
-         }
-      }
-
-      runBuild(destination);
    }
 
-   private static function getAdb()
+
+   override public function getPlatformDir() : String
    {
+      return "android";
    }
+
+   override public function getBinName() : String { return "Android"; }
+   override public function getNdllExt() : String { return ".so"; }
+   override public function getNdllPrefix() : String { return "lib"; }
+
+
+
+
+   override public function runHaxe()
+   {
+      var args = project.debug ? ["build.hxml","-debug"] : ["build.hxml"];
+
+      if (buildV5)
+         ProcessHelper.runCommand(haxeDir, "haxe", args);
+
+      if (buildV7)
+         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "HXCPP_ARMV7"]) );
+
+      if (buildX86)
+         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "HXCPP_X86"]) );
+   }
+
+
+   override public function copyBinary():Void 
+   {
+      var dbg = project.debug ? "-debug" : "";
+
+      if (buildV5)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + ".so",
+                getOutputDir() + "/libs/armeabi/libApplicationMain.so");
+
+      if (buildV7)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-v7.so",
+                getOutputDir() + "/libs/armeabi-v7a/libApplicationMain.so" );
+
+      if (buildX86)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-x86.so",
+                getOutputDir() + "/libs/x86/libApplicationMain.so" );
+   }
+
+
+   override function generateContext(context:Dynamic) : Void
+   {
+      context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
+      context.DEBUGGABLE = project.debug;
+      context.appHeader = project.androidConfig.appHeader;
+      context.appActivity = project.androidConfig.appActivity;
+      context.appIntent = project.androidConfig.appIntent;
+      context.appPermission = project.androidConfig.appPermission;
+
+
+      // Will not install on devices less than this ....
+      context.ANDROID_MIN_API_LEVEL = project.androidConfig.minApiLevel;
+
+      // Features we have tested and will use if available
+      context.ANDROID_TARGET_API_LEVEL = project.androidConfig.targetApiLevel==null ?
+           getMaxApiLevel(project.androidConfig.minApiLevel) : project.androidConfig.targetApiLevel;
+
+      if (context.ANDROID_TARGET_API_LEVEL < context.ANDROID_MIN_API_LEVEL)
+         context.ANDROID_TARGET_API_LEVEL = context.ANDROID_MIN_API_LEVEL;
+
+      // SDK to use for building, that we have installed
+      context.ANDROID_BUILD_API_LEVEL = getMaxApiLevel(project.androidConfig.minApiLevel);
+   }
+
 
 
    public function getMaxApiLevel(inMinimum:Int) : Int
@@ -107,72 +177,39 @@ class AndroidPlatform extends Platform
    }
 
 
-   public function runBuild(projectDirectory:String):Void 
+   override public function buildPackage():Void 
    {
       if (project.environment.exists("ANDROID_SDK")) 
-      {
          Sys.putEnv("ANDROID_SDK", project.environment.get("ANDROID_SDK"));
-      }
 
       var ant = project.environment.get("ANT_HOME");
-
       if (ant == null || ant == "") 
-      {
          ant = "ant";
-      }
       else
-      {
          ant += "/bin/ant";
-      }
 
       var build = "debug";
-
       if (project.certificate != null) 
-      {
          build = "release";
-      }
 
       // Fix bug in Android build system, force compile
-      var buildProperties = projectDirectory + "/bin/build.prop";
-
+      var outputDir = getOutputDir();
+      var buildProperties = outputDir + "/bin/build.prop";
       if (FileSystem.exists(buildProperties)) 
-      {
          FileSystem.deleteFile(buildProperties);
-      }
 
-      ProcessHelper.runCommand(projectDirectory, ant, [ build ]);
+      ProcessHelper.runCommand(outputDir, ant, [ build ]);
    }
 
-   override public function clean():Void 
-   {
-      var targetPath = project.app.path + "/android";
-
-      if (FileSystem.exists(targetPath)) 
-      {
-         PathHelper.removeDirectory(targetPath);
-      }
-   }
-
-   override public function display():Void 
-   {
-      var hxml = PathHelper.findTemplate(project.templatePaths, "android/hxml/" + (project.debug ? "debug" : "release") + ".hxml");
-
-      var context = project.templateContext;
-      context.CPP_DIR = project.app.path + "/android/obj";
-
-      var template = new Template(File.getContent(hxml));
-      Sys.println(template.execute(context));
-   }
 
    override public function install():Void 
    {
       var build = "debug";
-
       if (project.certificate != null) 
          build = "release";
 
-      var targetPath = FileSystem.fullPath(project.app.path) + "/android/bin/bin/" +
-                         project.app.file + "-" + build + ".apk";
+      var outputDir = getOutputDir();
+      var targetPath = FileSystem.fullPath(outputDir) + "/bin/" + project.app.file + "-" + build + ".apk";
 
       ProcessHelper.runCommand("", adbName, [ "install", "-r", targetPath ]);
    }
@@ -196,63 +233,28 @@ class AndroidPlatform extends Platform
       ProcessHelper.runCommand("", adbName, [ "uninstall", project.app.packageName ]);
    }
 
-   override public function update():Void 
+   override public function updateLibs()
    {
-      var destination = project.app.path + "/android/bin/";
-      PathHelper.mkdir(destination);
+      if (buildV5)
+         updateLibArch( getOutputDir() + "/libs/armeabi", "" );
+      if (buildV7)
+         updateLibArch( getOutputDir() + "/libs/armeabi-v7a", "-v7" );
+      if (buildX86)
+         updateLibArch( getOutputDir() + "/libs/x86", "-x86" );
+   }
+
+
+   override public function getOutputExtra() { return "android/PROJ"; }
+
+   override public function updateOutputDir():Void 
+   {
+      super.updateOutputDir();
+
+      var destination = getOutputDir();
       PathHelper.mkdir(destination + "/res/drawable-ldpi/");
       PathHelper.mkdir(destination + "/res/drawable-mdpi/");
       PathHelper.mkdir(destination + "/res/drawable-hdpi/");
       PathHelper.mkdir(destination + "/res/drawable-xhdpi/");
-
-      for(asset in project.assets) 
-      {
-            var targetPath = "";
-
-            switch(asset.type) 
-            {
-               case SOUND, MUSIC:
-
-                  asset.resourceName = asset.id;
-                  targetPath = destination + "/res/raw/" + asset.flatName + "." + Path.extension(asset.targetPath);
-
-               default:
-
-                  asset.resourceName = asset.flatName;
-                  targetPath = destination + "/assets/" + asset.resourceName;
-            }
-
-            FileHelper.copyAssetIfNewer(asset, targetPath);
-      }
-
-      if (project.targetFlags.exists("xml")) 
-      {
-         project.haxeflags.push("-xml " + project.app.path + "/android/types.xml");
-      }
-
-      var context = project.templateContext;
-
-      context.CPP_DIR = project.app.path + "/android/obj";
-      context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
-      context.DEBUGGABLE = project.debug;
-      context.appHeader = project.androidConfig.appHeader;
-      context.appActivity = project.androidConfig.appActivity;
-      context.appIntent = project.androidConfig.appIntent;
-      context.appPermission = project.androidConfig.appPermission;
-
-
-      // Will not install on devices less than this ....
-      context.ANDROID_MIN_API_LEVEL = project.androidConfig.minApiLevel;
-
-      // Features we have tested and will use if available
-      context.ANDROID_TARGET_API_LEVEL = project.androidConfig.targetApiLevel==null ?
-           getMaxApiLevel(project.androidConfig.minApiLevel) : project.androidConfig.targetApiLevel;
-
-      if (context.ANDROID_TARGET_API_LEVEL < context.ANDROID_MIN_API_LEVEL)
-         context.ANDROID_TARGET_API_LEVEL = context.ANDROID_MIN_API_LEVEL;
-
-      // SDK to use for building, that we have installed
-      context.ANDROID_BUILD_API_LEVEL = getMaxApiLevel(project.androidConfig.minApiLevel);
 
       var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi" ];
       var iconSizes = [ 36, 48, 72, 96 ];
@@ -260,9 +262,7 @@ class AndroidPlatform extends Platform
       for(i in 0...iconTypes.length) 
       {
          if (IconHelper.createIcon(project.icons, iconSizes[i], iconSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/icon.png")) 
-         {
             context.HAS_ICON = true;
-         }
       }
 
       IconHelper.createIcon(project.icons, 732, 412, destination + "/res/drawable-xhdpi/ouya_icon.png");
@@ -270,42 +270,23 @@ class AndroidPlatform extends Platform
       var packageDirectory = project.app.packageName;
       packageDirectory = destination + "/src/" + packageDirectory.split(".").join("/");
       PathHelper.mkdir(packageDirectory);
-
-      //SWFHelper.generateSWFClasses(project, project.app.path + "/android/haxe");
-      for(ndll in project.ndlls) 
-      {
-         FileHelper.copyLibrary(ndll, "Android", "lib", ".so", destination + "/libs/armeabi", project.debug);
-      }
+      copyTemplate("android/MainActivity.java", packageDirectory + "/MainActivity.java");
 
       for(javaPath in project.javaPaths) 
       {
          try 
          {
             if (FileSystem.isDirectory(javaPath)) 
-            {
                FileHelper.recursiveCopy(javaPath, destination + "/src", context, true);
-            }
             else
             {
                if (Path.extension(javaPath) == "jar") 
-               {
                   FileHelper.copyIfNewer(javaPath, destination + "/libs/" + Path.withoutDirectory(javaPath));
-               }
                else
-               {
                   FileHelper.copyIfNewer(javaPath, destination + "/src/" + Path.withoutDirectory(javaPath));
-               }
             }
-
          } catch(e:Dynamic) {}
-
-         //   throw"Could not find javaPath " + javaPath +" required by extension."; 
-         //}
       }
-
-      FileHelper.recursiveCopyTemplate(project.templatePaths, "android/template", destination, context);
-      FileHelper.copyFileTemplate(project.templatePaths, "android/MainActivity.java", packageDirectory + "/MainActivity.java", context);
-      FileHelper.recursiveCopyTemplate(project.templatePaths, "haxe", project.app.path + "/android/haxe", context);
-      FileHelper.recursiveCopyTemplate(project.templatePaths, "android/hxml", project.app.path + "/android/haxe", context);
    }
+
 }

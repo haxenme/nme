@@ -1,8 +1,6 @@
 package;
 
 import haxe.io.Path;
-import haxe.Serializer;
-import haxe.Unserializer;
 import sys.FileSystem;
 import platforms.Platform;
 
@@ -38,7 +36,7 @@ class IOSConfig
    inline public static var UNIVERSAL  = 0x03;
 
    public var compiler:String;
-   public var deployment:Float;
+   public var deployment:String;
    public var deviceConfig:Int;
    public var linkerFlags:String;
    public var prerenderedIcon:Bool;
@@ -46,7 +44,7 @@ class IOSConfig
    public function new()
    {
       compiler =  "clang";
-      deployment =  5.1;
+      deployment =  "5.1.1";
       deviceConfig =  UNIVERSAL;
       linkerFlags =  "";
       prerenderedIcon =  false;
@@ -103,7 +101,6 @@ class NMEProject
    public var target:String;
 
    private var baseTemplateContext:Dynamic;
-   public var templateContext(get_templateContext, null):Dynamic;
 
 
 
@@ -162,8 +159,14 @@ class NMEProject
             target = PlatformHelper.hostPlatform;
             targetFlags.set("neko", "");
 
+         case "ios":
+            target = Platform.IOS;
+            targetFlags.set("iphonesim", "");
+            targetFlags.set("iphoneos", "");
+
          case "iphone", "iphoneos":
             target = Platform.IOS;
+            targetFlags.set("iphoneos", "");
 
          case "iosview":
             targetFlags.set("ios", "");
@@ -187,6 +190,11 @@ class NMEProject
             target = Platform.ANDROID;
             targetFlags.set("android", "");
 
+         case "androidsim":
+            target = Platform.ANDROID;
+            targetFlags.set("android", "");
+            targetFlags.set("androidsim", "");
+
          default:
             target = inTargetName.toUpperCase();
       }
@@ -199,22 +207,12 @@ class NMEProject
             platformType = Platform.TYPE_WEB;
             architectures = [];
 
-         case Platform.HTML5:
-
-            platformType = Platform.TYPE_WEB;
-            architectures = [];
-
-            window.fps = 0;
-
-         case Platform.ANDROID, Platform.BLACKBERRY, Platform.IOS,
-              Platform.IOSVIEW, Platform.WEBOS, Platform.ANDROIDVIEW:
+         case Platform.ANDROID, Platform.IOS,
+              Platform.IOSVIEW, Platform.ANDROIDVIEW:
 
             platformType = Platform.TYPE_MOBILE;
 
-            if (target == Platform.IOS || target==Platform.IOSVIEW) 
-               architectures = [ Architecture.ARMV7 ];
-            else
-               architectures = [ Architecture.ARMV6 ];
+            architectures = [  ];
 
             if (target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW) 
                embedAssets = true;
@@ -228,13 +226,9 @@ class NMEProject
             platformType = Platform.TYPE_DESKTOP;
 
             if (target == Platform.LINUX) 
-            {
                architectures = [ PlatformHelper.hostArchitecture ];
-            }
             else
-            {
                architectures = [ Architecture.X86 ];
-            }
       }
 
       switch(platformType) 
@@ -260,10 +254,9 @@ class NMEProject
       // extend project file somehow?
    }
 
-   private function get_templateContext():Dynamic 
+   public function getContext(inBuildDir:String):Dynamic 
    {
       var context:Dynamic = baseTemplateContext;
-
 
        for(key in localDefines.keys())
          Reflect.setField(context, key, localDefines.get(key));
@@ -273,7 +266,7 @@ class NMEProject
          Reflect.setField(context, "APP_" + StringHelper.formatUppercaseVariable(field), Reflect.field(app, field));
       }
 
-      context.BUILD_DIR = app.path;
+      context.BUILD_DIR = app.binDir;
       context.EMBED_ASSETS = embedAssets ? "true" : "false";
       context.OPENFL_COMPAT = openflCompat ? "true" : "false";
       if (openflCompat)
@@ -306,8 +299,8 @@ class NMEProject
          if (embedAssets || asset.embed)
          {
             asset.resourceName = asset.flatName;
-            var absPath = sys.FileSystem.fullPath(asset.sourcePath);
-            haxeflags.push("-resource " + absPath  + "@" + asset.flatName );
+            var relPath = PathHelper.relocatePath(asset.sourcePath, inBuildDir);
+            haxeflags.push("-resource " + relPath  + "@" + asset.flatName );
          }
 
          context.assets.push(asset);
@@ -331,7 +324,8 @@ class NMEProject
       }
 
       for(cp in classPaths) 
-         compilerFlags.push("-cp " + cp);
+         compilerFlags.push("-cp " + PathHelper.relocatePath(cp, inBuildDir) );
+      compilerFlags.push("-cp " + PathHelper.relocatePath(".", inBuildDir) );
 
       if (megaTrace)
          haxedefs.set("HXCPP_DEBUGGER","");
@@ -352,6 +346,7 @@ class NMEProject
       }
 
       compilerFlags.push("-D " + platformType.toLowerCase());
+
       compilerFlags = compilerFlags.concat(haxeflags);
       compilerFlags = compilerFlags.concat(macros);
 
@@ -366,21 +361,6 @@ class NMEProject
 
       context.APP_MAIN_PACKAGE = main.substr(0, indexOfPeriod + 1);
       context.APP_MAIN_CLASS = main.substr(indexOfPeriod + 1);
-
-      var hxml = Std.string(target).toLowerCase() + "/hxml/" + (debug ? "debug" : "release") + ".hxml";
-
-      for(templatePath in templatePaths) 
-      {
-         var path = PathHelper.combine(templatePath, hxml);
-
-         if (FileSystem.exists(path)) 
-            context.HXML_PATH = path;
-      }
-
-      for(field in Reflect.fields(context)) 
-      {
-         //Sys.println("context." + field + " = " + Reflect.field(context, field));
-      }
 
       context.DEBUG = debug;
       context.MEGATRACE = megaTrace;
@@ -416,7 +396,6 @@ class NMEProject
          else if (certificate.password != null) 
             context.KEY_STORE_ALIAS_PASSWORD = certificate.password;
       }
-
       return context;
    }
 }

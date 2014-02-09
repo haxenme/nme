@@ -14,23 +14,19 @@ class IOSHelper
 {
    private static var initialized = false;
 
-   public static function build(project:NMEProject, workingDirectory:String, additionalArguments:Array<String> = null):Void 
+   public static function xcodeBuild(project:NMEProject, workingDirectory:String, additionalArguments:Array<String> = null):Void 
    {
       initialize(project);
 
       var platformName = "iphoneos";
 
         if (project.targetFlags.exists("simulator")) 
-        {
             platformName = "iphonesimulator";
-        }
 
         var configuration = "Release";
 
         if (project.debug) 
-        {
             configuration = "Debug";
-        }
 
         var iphoneVersion = project.environment.get("IPHONE_VER");
         var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
@@ -42,9 +38,7 @@ class IOSHelper
         }
 
         if (additionalArguments != null) 
-        {
            commands = commands.concat(additionalArguments);
-        }
 
         ProcessHelper.runCommand(workingDirectory, "xcodebuild", commands);
         //ProcessHelper.runCommand(workingDirectory + "/" + project , "xcodebuild", commands);
@@ -224,119 +218,137 @@ class IOSHelper
 
 class IOSPlatform extends Platform
 {
-   var armv6:Bool;
-   var armv7:Bool;
+   var buildV6:Bool;
+   var buildV7:Bool;
+   var buildI386:Bool;
+  
+
    public function new(inProject:NMEProject)
    {
-      armv6 = armv7 = false;
       super(inProject);
-   }
 
-   override public function build():Void 
-   {
-      var targetDirectory = PathHelper.combine(project.app.path, "ios");
+      for(asset in project.assets) 
+         asset.resourceName = asset.flatName;
+      project.haxeflags.push("-cpp cpp");
+      project.haxeflags.push("-D HXCPP_CPP11");
 
-      IOSHelper.build(project, project.app.path + "/ios");
+      var architectures = project.architectures;
+      var config = project.iosConfig;
+      // If we support iphones with deployment < 5, we must support armv6 ...
+      if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && Std.parseFloat(config.deployment)<5)
+          ArrayHelper.addUnique(architectures, Architecture.ARMV6);
+      else
+          ArrayHelper.addUnique(architectures, Architecture.ARMV7);
 
-        if (!project.targetFlags.exists("simulator")) 
-        {
-            var entitlements = targetDirectory + "/" + project.app.file + "/" + project.app.file + "-Entitlements.plist";
+      ArrayHelper.addUnique(architectures, Architecture.I386);
+   
+      buildV6 = buildV7 = buildI386 = false;
 
-            IOSHelper.sign(project, targetDirectory + "/bin", entitlements);
-        }
-   }
-
-   override public function clean():Void 
-   {
-      var targetPath = project.app.path + "/ios";
-
-      if (FileSystem.exists(targetPath)) 
+      if (project.command == "xcode")
       {
-         PathHelper.removeDirectory(targetPath);
+         var arch = project.localDefines.get("xcodearch");
+         Log.verbose("Target flags: " + arch );
+         switch(arch)
+         {
+            case "i386":
+                buildI386 = true;
+            case "armv6":
+                if (hasArch(Architecture.ARMV6))
+                   Log.error("Armv6 not supported");
+                buildV6 = true;
+            case "armv7":
+                if (hasArch(Architecture.ARMV6))
+                   Log.error("Armv6 not supported");
+                buildV7 = true;
+            default:
+                Log.error("Unknown arch " + arch);
+         }
+      }
+      else
+      {
+         var build = project.targetFlags;
+         Log.verbose("Target flags: " + build);
+
+         if (build.exists("simulator") || build.exists("ios") ) 
+            buildI386 = true;
+
+         if (build.exists("iphoneos") || build.exists("ios")) 
+         {
+            buildV6 = hasArch(Architecture.ARMV6);
+            buildV7 = hasArch(Architecture.ARMV7);
+         }
+      }
+      Log.verbose("Valid Archs: " + architectures );
+   }
+
+   override public function buildPackage():Void 
+   {
+      // Prevent re-entry
+      Sys.putEnv("NME_ALREADY_BUILDING","BUILDING");
+
+      IOSHelper.xcodeBuild(project, targetDir);
+
+      if (buildV6 || buildV7)
+      {
+          var entitlements = targetDir + "/" + project.app.file + "/" + project.app.file + "-Entitlements.plist";
+
+          IOSHelper.sign(project, targetDir + "/bin", entitlements);
       }
    }
 
-   override public function display():Void 
+   override public function getBinName() : String { return "iPhone"; }
+   override public function getAssetDir() { return getOutputDir() + "/assets"; }
+   override public function getPlatformDir() : String { return "ios"; }
+
+
+   override private function generateContext(context:Dynamic)
    {
-      var hxml = PathHelper.findTemplate(project.templatePaths, "ios/PROJ/haxe/Build.hxml");
-      var template = new Template(File.getContent(hxml));
-      Sys.println(template.execute(generateContext()));
-   }
-
-   function getHaxeBase()
-   {
-      return  "ios/" + project.app.file + "/haxe";
-   }
-
-   override private function generateContext():Dynamic 
-   {
-      project.classPaths = PathHelper.relocatePaths(project.classPaths, PathHelper.combine(project.app.path, getHaxeBase() ));
-
-      if (project.targetFlags.exists("xml")) 
-      {
-         project.haxeflags.push("-xml " + project.app.path + "/ios/types.xml");
-      }
-
-      var context = project.templateContext;
 
       context.HAS_ICON = false;
       context.HAS_LAUNCH_IMAGE = false;
       context.OBJC_ARC = false;
+      context.PROJECT_DIRECTORY = Sys.getCwd();
+      context.APP_FILE = project.app.file;
 
       context.linkedLibraries = [];
 
       for(dependency in project.dependencies) 
       {
          if (!StringTools.endsWith(dependency, ".framework")) 
-         {
             context.linkedLibraries.push(dependency);
-         }
       }
 
      
       var valid_archs = new Array<String>();
-      armv6 = false;
-      armv7 = false;
-      var architectures = project.architectures;
+      var current_archs = new Array<String>();
 
       var config = project.iosConfig;
-
-      if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 )
-      {
-         if (config.deployment < 5) 
-            ArrayHelper.addUnique(architectures, Architecture.ARMV6);
-      }
-
-      if (architectures.length == 0) 
-         architectures.push( Architecture.ARMV7 );
 
       for(architecture in project.architectures) 
       {
          switch(architecture) 
          {
-            case ARMV6: valid_archs.push("armv6"); armv6 = true;
-            case ARMV7: valid_archs.push("armv7"); armv7 = true;
+            case ARMV6: valid_archs.push("armv6"); current_archs.push("armv6");
+            case ARMV7: valid_archs.push("armv7"); current_archs.push("armv7");
+            case I386: valid_archs.push("i386");
             default:
          }
       }
 
-      context.CURRENT_ARCHS = "( " + valid_archs.join(",") + ") ";
-
-      valid_archs.push("i386");
+      context.CURRENT_ARCHS = "( " + current_archs.join(",") + ") ";
 
       context.VALID_ARCHS = valid_archs.join(" ");
-      context.THUMB_SUPPORT = armv6 ? "GCC_THUMB_SUPPORT = NO;" : "";
+      context.THUMB_SUPPORT = hasArch(ARMV6) ? "GCC_THUMB_SUPPORT = NO;" : "";
+      context.KEY_STORE_IDENTITY = "iPhone Developer";
 
       var requiredCapabilities = [];
 
-      if (armv7 && !armv6) 
-      {
+      if (hasArch(ARMV7) && !hasArch(ARMV6)) 
          requiredCapabilities.push( { name: "armv7", value: true } );
-      }
 
       context.REQUIRED_CAPABILITY = requiredCapabilities;
-      context.ARMV6 = armv6;
-      context.ARMV7 = armv7;
+      context.ARMV6 = hasArch(ARMV6);
+      context.ARMV7 = hasArch(ARMV7);
       context.TARGET_DEVICES = switch(config.deviceConfig)
       {
         case IOSConfig.IPHONE : "1";
@@ -352,6 +364,10 @@ class IOSPlatform extends Platform
 
       context.IOS_COMPILER = config.compiler;
       context.IOS_LINKER_FLAGS = config.linkerFlags.split(" ").join(", ");
+
+      context.MACROS = {};
+      context.MACROS.launchImage = createLaunchImage;
+      context.MACROS.appIcon = createAppIcon;
 
       switch(project.window.orientation) 
       {
@@ -386,78 +402,134 @@ class IOSPlatform extends Platform
          }
       }
 
-      context.HXML_PATH = PathHelper.findTemplate(project.templatePaths, "ios/PROJ/haxe/Build.hxml");
       context.PRERENDERED_ICON = config.prerenderedIcon;
-
-      /*var assets = new Array<Asset>();
-      for(asset in project.assets) 
-      {
-         var newAsset = asset.clone();
-
-         assets.push();
-
-      }*/
 
       //updateIcon();
       //updateLaunchImage();
-      return context;
    }
+
+
+   override public function runHaxe()
+   {
+      var args = project.debug ? ["build.hxml","-debug"] : ["build.hxml"];
+
+      if (buildV6)
+         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "HXCPP_ARMV6", "-D", "iphoneos"]));
+
+      if (buildV7)
+         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
+
+      if (buildI386)
+         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "iphonesim"]));
+   }
+
+
+   override public function copyBinary():Void 
+   {
+      var dbg = project.debug ? "-debug" : "";
+      var projectDirectory = getOutputDir();
+
+      if (buildV6)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphoneos.a",
+                      projectDirectory + "/lib/armv6" + dbg + "/libApplicationMain.a" );
+
+      if (buildV7)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphoneos-v7.a",
+                      projectDirectory + "/lib/armv7" + dbg + "/libApplicationMain.a" );
+
+      if (buildI386)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphonesim.a",
+                      projectDirectory + "/lib/i386" + dbg + "/libApplicationMain.a" );
+   }
+
 
    override public function run(arguments:Array<String>):Void 
    {
-      IOSHelper.launch(project, PathHelper.combine(project.app.path, "ios"));
+      IOSHelper.launch(project, targetDir);
    }
 
-   override public function update():Void 
+   function createLaunchImage( resolve : String -> Dynamic, widthStr:String, heightStr:String)
+   {
+      var width = Std.parseInt(widthStr);
+      var height = Std.parseInt(heightStr);
+      Log.verbose("createLaunchImage " + width + "x" + height);
+
+      var name = "LaunchImage" + width + "x" + height + ".png";
+      var dest = getOutputDir() + "/Images.xcassets/LaunchImage.launchimage/" + name;
+
+
+      var ok = true;
+
+      try
+      {
+         if (!FileSystem.exists(dest))
+         {
+            var bitmapData = new nme.display.BitmapData(width, height,
+                 false, (0xFF << 24) | (project.window.background & 0xFFFFFF));
+            File.saveBytes(dest, bitmapData.encode("png"));
+         }
+      }
+      catch(e:Dynamic)
+      {
+         Log.error("Could not save launch image " + dest + " : " + e);
+      }
+
+      if (ok)
+         return ", \"filename\":\"" + name + "\"";
+      else
+         return "";
+
+
+   }
+
+   function createAppIcon( resolve : String -> Dynamic, sizeStr:String ) : String
+   {
+      var size = Std.parseInt(sizeStr);
+      Log.verbose("createAppIcon " + size + "x" + size);
+
+      var name = "AppIcon" + size + "x" + size + ".png";
+      var dest = getOutputDir() + "/Images.xcassets/AppIcon.appiconset/" + name;
+
+      var ok = true;
+      if (!FileSystem.exists(dest))
+         ok = IconHelper.createIcon(project.icons, size,size, dest);
+      if (ok)
+         return ", \"filename\":\"" + name + "\"";
+      else
+         return "";
+   }
+
+
+   override public function updateOutputDir():Void 
    {
       var nmeLib = new Haxelib("nme");
 
-      //project.ndlls.push(new NDLL("curl_ssl", nmeLib, false));
-      //project.ndlls.push(new NDLL("png", nmeLib, false));
-      //project.ndlls.push(new NDLL("jpeg", nmeLib, false));
-      //project.ndlls.push(new NDLL("freetype", nmeLib, false));
+      var projectDirectory = getOutputDir();
 
-      for(asset in project.assets) 
-         asset.resourceName = asset.flatName;
+      PathHelper.mkdir(targetDir);
 
-      var context = generateContext();
 
-      var targetDirectory = PathHelper.combine(project.app.path, "ios");
-      var projectDirectory = targetDirectory + "/" + project.app.file + "/";
 
-      PathHelper.mkdir(targetDirectory);
-      PathHelper.mkdir(projectDirectory);
-      PathHelper.mkdir(projectDirectory + "/haxe");
-      PathHelper.mkdir(projectDirectory + "/haxe/nme/installer");
 
-      var iconNames = [ "Icon.png", "Icon@2x.png", "Icon-72.png", "Icon-72@2x.png" ];
-      var iconSizes = [ 57, 114, 72, 144 ];
-
-      context.HAS_ICON = true;
-
-      for(i in 0...iconNames.length) 
+      // Do not update if we are running from inside xcode
+      if (project.command!="xcode")
       {
-         if (!IconHelper.createIcon(project.icons, iconSizes[i], iconSizes[i], PathHelper.combine(projectDirectory, iconNames[i]))) 
-         {
-            context.HAS_ICON = false;
-         }
+         copyTemplateDir("ios/PROJ/Classes", projectDirectory + "/Classes");
+         copyTemplateDir("ios/PROJ/Images.xcassets", projectDirectory + "/Images.xcassets");
+         copyTemplate("ios/PROJ/PROJ-Entitlements.plist", projectDirectory + "/" + project.app.file + "-Entitlements.plist");
+         copyTemplate("ios/PROJ/PROJ-Info.plist", projectDirectory + "/" + project.app.file + "-Info.plist");
+         copyTemplate("ios/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch");
+         copyTemplateDir("ios/PROJ.xcodeproj", targetDir + "/" + project.app.file + ".xcodeproj");
       }
 
-      for(splashScreen in project.splashScreens) 
-      {
-         FileHelper.copyFile(splashScreen.path, PathHelper.combine(projectDirectory, Path.withoutDirectory(splashScreen.path)));
-         context.HAS_LAUNCH_IMAGE = true;
-      }
+      if (project.command == "update" && PlatformHelper.hostPlatform == Platform.MAC) 
+         ProcessHelper.runCommand("", "open", [ targetDir + "/" + project.app.file + ".xcodeproj" ] );
+   }
 
-      FileHelper.copyFileTemplate(project.templatePaths, "haxe/nme/AssetData.hx", projectDirectory + "/haxe/nme/AssetData.hx", context);
-      FileHelper.recursiveCopyTemplate(project.templatePaths, "ios/PROJ/haxe", projectDirectory + "/haxe", context);
-      FileHelper.recursiveCopyTemplate(project.templatePaths, "ios/PROJ/Classes", projectDirectory + "/Classes", context);
-      FileHelper.copyFileTemplate(project.templatePaths, "ios/PROJ/PROJ-Entitlements.plist", projectDirectory + "/" + project.app.file + "-Entitlements.plist", context);
-      FileHelper.copyFileTemplate(project.templatePaths, "ios/PROJ/PROJ-Info.plist", projectDirectory + "/" + project.app.file + "-Info.plist", context);
-      FileHelper.copyFileTemplate(project.templatePaths, "ios/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch", context);
-      FileHelper.recursiveCopyTemplate(project.templatePaths, "ios/PROJ.xcodeproj", targetDirectory + "/" + project.app.file + ".xcodeproj", context);
+   override public function updateLibs()
+   {
+      var projectDirectory = getOutputDir();
 
-      //SWFHelper.generateSWFClasses(project, projectDirectory + "/haxe");
       PathHelper.mkdir(projectDirectory + "/lib");
 
       for(archID in 0...3) 
@@ -480,41 +552,14 @@ class IOSPlatform extends Platform
             if (ndll.haxelib != null) 
             {
                var releaseLib = PathHelper.getLibraryPath(ndll, "iPhone", "lib", libExt);
-               var debugLib = PathHelper.getLibraryPath(ndll, "iPhone", "lib", libExt);
                var releaseDest = projectDirectory + "/lib/" + arch + "/lib" + ndll.name + ".a";
-               var debugDest = projectDirectory + "/lib/" + arch + "-debug/lib" + ndll.name + ".a";
 
                FileHelper.copyIfNewer(releaseLib, releaseDest);
-
-               if (FileSystem.exists(debugLib)) 
-               {
-                  FileHelper.copyIfNewer(debugLib, debugDest);
-
-               } else if (FileSystem.exists(debugDest)) 
-               {
-                  FileSystem.deleteFile(debugDest);
-               }
             }
          }
       }
-
-      PathHelper.mkdir(projectDirectory + "/assets");
-
-      for(asset in project.assets) 
-      {
-         if (!asset.embed)
-         {
-            PathHelper.mkdir(Path.directory(projectDirectory + "/assets/" + asset.flatName));
-            FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "/assets/" + asset.flatName);
-            FileHelper.copyIfNewer(asset.sourcePath, projectDirectory + "haxe/" + asset.sourcePath);
-         }
-      }
-
-        if (project.command == "update" && PlatformHelper.hostPlatform == Platform.MAC) 
-        {
-            ProcessHelper.runCommand("", "open", [ targetDirectory + "/" + project.app.file + ".xcodeproj" ] );
-        }
    }
+
 
    /*private function updateLaunchImage() {
       var destination = buildDirectory + "/ios";

@@ -87,7 +87,8 @@ class PathHelper
 
       if (matches.length > 0) 
       {
-         return matches[matches.length - 1];
+         return matches[0];
+         //return matches[matches.length - 1];
       }
 
       return null;
@@ -398,26 +399,18 @@ class PathHelper
    private static function searchForLibrary(ndll:NDLL, directoryName:String, filename:String):String 
    {
       if (ndll.path != null && ndll.path != "") 
-      {
          return ndll.path;
-
-      }
       else if (ndll.haxelib == null) 
       {
          if (ndll.extensionPath != null && ndll.extensionPath != "") 
-         {
             return combine(ndll.extensionPath, "ndll/" + directoryName + "/" + filename);
-         }
          else
-         {
             return filename;
-         }
-
       }
       else if (ndll.haxelib.name == "hxcpp") 
       {
-         return combine(getHaxelib(ndll.haxelib), "bin/" + directoryName + "/" + filename);
-
+         var dir = ndll.isStatic ? "lib/" : "bin/";
+         return combine(getHaxelib(ndll.haxelib), dir + directoryName + "/" + filename);
       }
       else if (ndll.haxelib.name == "nme") 
       {
@@ -429,18 +422,13 @@ class PathHelper
             {
                path = combine(getHaxelib(new Haxelib("nme-state")), "lib/" + directoryName + "/" + filename);
             }
-            catch(e:Dynamic)
-            {
-               trace(e);
-            }
+            catch(e:Dynamic) { trace(e); }
          }
 
          return path;
       }
       else
-      {
          return combine(getHaxelib(ndll.haxelib), "ndll/" + directoryName + "/" + filename);
-      }
    }
 
    public static function tryFullPath(path:String):String 

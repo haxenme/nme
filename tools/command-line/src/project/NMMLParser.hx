@@ -202,7 +202,9 @@ class NMMLParser
          switch(attribute) 
          {
             case "path":
-               project.app.path = substitute(element.att.path);
+               project.app.binDir = substitute(element.att.path);
+            case "bin":
+               project.app.binDir = substitute(element.att.bin);
 
             case "min-swf-version":
                var version = Std.parseFloat(substitute(element.att.resolve("min-swf-version")));
@@ -497,7 +499,7 @@ class NMMLParser
          project.app.file = substitute(element.att.name);
 
       if (element.has.path) 
-         project.app.path = substitute(element.att.path);
+         project.app.binDir = substitute(element.att.path);
 
       if (element.has.resolve("swf-version")) 
          project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
@@ -524,7 +526,7 @@ class NMMLParser
 
                   switch(name) 
                   {
-                     case "BUILD_DIR": project.app.path = value;
+                     case "BUILD_DIR": project.app.binDir = value;
                      case "SWF_VERSION": project.app.swfVersion = Std.parseFloat(value);
                      case "PRERENDERED_ICON": project.iosConfig.prerenderedIcon = (value == "true");
                      case "ANDROID_INSTALL_LOCATION": project.androidConfig.installLocation = value;
@@ -650,6 +652,7 @@ class NMMLParser
                   if (!Lambda.exists(project.ndlls,function(n) return n.name==name))
                   {
                      var haxelib = null;
+                     var isStatic = project.target == Platform.IOS || project.target == Platform.IOSVIEW;
 
                      if (element.has.haxelib) 
                         haxelib = new Haxelib(substitute(element.att.haxelib));
@@ -661,7 +664,7 @@ class NMMLParser
                         haxelib = defaultLib;
 
                      var register = !element.has.register || substitute(element.att.register)!="false";
-                     var ndll = new NDLL(name, haxelib,register);
+                     var ndll = new NDLL(name, haxelib,register,isStatic);
                      ndll.extensionPath = extensionPath;
                      project.ndlls.push(ndll);
                   }
@@ -841,7 +844,7 @@ class NMMLParser
                   {
                      if (element.has.deployment) 
                      {
-                        var deployment = Std.parseFloat(substitute(element.att.deployment));
+                        var deployment = substitute(element.att.deployment);
 
                         // If it is specified, assume the dev knows what he is doing!
                         project.iosConfig.deployment = deployment;

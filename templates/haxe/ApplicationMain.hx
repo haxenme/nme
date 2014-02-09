@@ -21,6 +21,17 @@ class ApplicationDocument extends ::APP_MAIN::
 }
 #end
 
+
+
+#if iosview
+@:buildXml("
+<files id='__lib__'>
+  <file name='FrameworkInterface.mm'>
+  </file>
+</files>
+")
+#end
+
 class ApplicationMain
 {
 
@@ -48,24 +59,33 @@ class ApplicationMain
       ::if (sslCaCert != "")::
       nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
       ::end::
+
+      nme.display.Stage.shouldRotateInterface = function(orientation:Int):Bool
+      {
+         ::if (WIN_ORIENTATION == "portrait")::
+         return (orientation == nme.display.Stage.OrientationPortrait ||
+                 orientation == nme.display.Stage.OrientationPortraitUpsideDown);
+         ::elseif (WIN_ORIENTATION == "landscape")::
+         return (orientation == nme.display.Stage.OrientationLandscapeLeft ||
+                 orientation == nme.display.Stage.OrientationLandscapeRight);
+         ::else::
+         return true;
+         ::end::
+      }
+
       #end
    
       var hasMain = false;
       for (methodName in Type.getClassFields(::APP_MAIN::))
-      {
          if (methodName == "main")
          {
             hasMain = true;
             break;
          }
-      }
-
    
       #if waxe
       if (hasMain)
-      {
          Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
-      }
       else
          wx.App.boot(function()
          {
@@ -86,10 +106,9 @@ class ApplicationMain
                frame.shown = true;
             }
          });
-         #else
+      #else
       
-         nme.Lib.create(function()
-         { 
+      nme.Lib.create(function() { 
             //if ((::WIN_WIDTH:: == 0 && ::WIN_HEIGHT:: == 0) || ::WIN_FULLSCREEN::)
             //{
                nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
@@ -99,9 +118,7 @@ class ApplicationMain
             
             
             if (hasMain)
-            {
                Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
-            }
             else
             {
                #if (nme && !waxe && !cocktail && !Cocktail)
@@ -115,8 +132,7 @@ class ApplicationMain
          ::WIN_FPS::, 
          ::WIN_BACKGROUND::,
          (::WIN_HARDWARE:: ? nme.Lib.HARDWARE : 0) |
-         (::WIN_ALLOW_SHADERS:: ? nme.Lib.ALLOW_SHADERS : 0) |
-         (::WIN_REQUIRE_SHADERS:: ? nme.Lib.REQUIRE_SHADERS : 0) |
+         nme.Lib.ALLOW_SHADERS | nme.Lib.REQUIRE_SHADERS |
          (::WIN_DEPTH_BUFFER:: ? nme.Lib.DEPTH_BUFFER : 0) |
          (::WIN_STENCIL_BUFFER:: ? nme.Lib.STENCIL_BUFFER : 0) |
          (::WIN_RESIZABLE:: ? nme.Lib.RESIZABLE : 0) |

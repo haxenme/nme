@@ -9,7 +9,7 @@ class ApplicationData
    public var preloader:String;
 
    // Build directory base
-   public var path:String;
+   public var binDir:String;
 
    // The build package name - this is the android process name
    // Should have at least 3 parts, like a.b.c
@@ -42,7 +42,7 @@ class ApplicationData
       companyID = "";
 
       main = "Main";
-      path = "bin";
+      binDir = "bin";
       preloader = "NMEPreloader";
       swfVersion = 11;
       url = "";

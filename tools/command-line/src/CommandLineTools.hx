@@ -1,22 +1,12 @@
 package;
 
-import haxe.Serializer;
-import haxe.Unserializer;
 import haxe.io.Path;
-import haxe.rtti.Meta;
-import platforms.AndroidPlatform;
-import platforms.FlashPlatform;
-import platforms.IOSPlatform;
-import platforms.IOSView;
-import platforms.AndroidView;
-import platforms.Platform;
-import platforms.LinuxPlatform;
-import platforms.MacPlatform;
-import platforms.WindowsPlatform;
 import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
+import platforms.Platform;
 import NMEProject;
+
 
 class CommandLineTools 
 {
@@ -26,7 +16,7 @@ class CommandLineTools
    private static var command:String;
    private static var debug:Bool;
    private static var words:Array<String>;
-   private static var traceEnabled:Bool;
+   private static var traceEnabled:Null<Bool>;
    private static var host = PlatformHelper.hostPlatform;
    private static var nmeVersion:String;
 
@@ -37,42 +27,39 @@ class CommandLineTools
       var platform:Platform = null;
 
       Log.verbose("Using target platform: " + project.target);
+      Log.verbose("Using command : " + project.command);
 
       switch(project.target) 
       {
          case Platform.ANDROID:
-            platform = new AndroidPlatform(project);
+            platform = new platforms.AndroidPlatform(project);
 
          case Platform.IOSVIEW:
-            platform = new IOSView(project);
+            platform = new platforms.IOSView(project);
 
          case Platform.ANDROIDVIEW:
-            platform = new AndroidView(project);
+            platform = new platforms.AndroidView(project);
 
          case Platform.IOS:
-            platform = new IOSPlatform(project);
+            platform = new platforms.IOSPlatform(project);
 
          case Platform.WINDOWS:
-            platform = new WindowsPlatform(project);
+            platform = new platforms.WindowsPlatform(project);
 
          case Platform.MAC:
-            platform = new MacPlatform(project);
+            platform = new platforms.MacPlatform(project);
 
          case Platform.LINUX:
-            platform = new LinuxPlatform(project);
+            platform = new platforms.LinuxPlatform(project);
 
          case Platform.FLASH:
-            platform = new FlashPlatform(project);
+            platform = new platforms.FlashPlatform(project);
       }
-
       if (platform != null) 
       {
-         var command = project.command.toLowerCase();
+         platform.init();
 
-         if (command == "display") 
-         {
-            platform.display();
-         }
+         var command = project.command.toLowerCase();
 
          if (command == "clean" || project.targetFlags.exists("clean")) 
          {
@@ -80,16 +67,26 @@ class CommandLineTools
             platform.clean();
          }
 
-         if (command == "update" || command == "build" || command == "test") 
+         if (command == "update" || command == "build" || command == "test" || command=="xcode") 
          {
             Log.verbose("\nRunning command: UPDATE");
-            platform.update();
+            platform.updateBuildDir();
+            platform.updateOutputDir();
+            platform.updateAssets();
+            platform.updateLibs();
+            platform.updateExtra();
          }
 
-         if (command == "build" || command == "test") 
+         if (command == "build" || command == "test" || command=="xcode") 
          {
             Log.verbose("\nRunning command: BUILD");
-            platform.build();
+            platform.runHaxe();
+            platform.copyBinary();
+            if (command!="xcode")
+            {
+               platform.buildPackage();
+               platform.postBuild();
+            }
          }
 
          if (command == "install" || command == "run" || command == "test") 
@@ -106,12 +103,15 @@ class CommandLineTools
 
          if (command == "test" || command == "trace") 
          {
+            if (traceEnabled==null)
+              traceEnabled = platform.type == Platform.TYPE_MOBILE;
             if (traceEnabled || command == "trace") 
             {
                Log.verbose("\nRunning command: TRACE");
                platform.trace();
             }
          }
+         Log.verbose("NME done.");
       }
    }
 
@@ -257,7 +257,7 @@ class CommandLineTools
 
       Sys.println("");
       Sys.println(" Usage : nme help");
-      Sys.println(" Usage : nme [clean|update|build|run|test|display] <project>(target) [options]");
+      Sys.println(" Usage : nme [clean|update|build|run|test] <project>(target) [options]");
       Sys.println(" Usage : nme create project <package> [options]");
       Sys.println(" Usage : nme create <sample>");
       Sys.println(" Usage : nme rebuild <extension>(targets)");
@@ -270,7 +270,6 @@ class CommandLineTools
       Sys.println("  build : Compile and package for the specified project/target");
       Sys.println("  run : Install and run for the specified project/target");
       Sys.println("  test : Update, build and run in one command");
-      Sys.println("  display : Display information for the specified project/target");
       Sys.println("  create : Create a new project or extension using templates");
       Sys.println("");
       Sys.println(" Targets : ");
@@ -301,17 +300,20 @@ class CommandLineTools
       Sys.println("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
    }
 
-   private static function displayInfo(showHint:Bool = false):Void 
+   private static function displayInfo(showHint:Bool = false, forXcode:Bool = false):Void 
    {
-      Sys.println(" _____________");
-      Sys.println("|             |");
-      Sys.println("|__  _  __  __|");
-      Sys.println("|  \\| \\/  ||__|");
-      Sys.println("|\\  \\  \\ /||__|");
-      Sys.println("|_|\\_|\\/|_||__|");
-      Sys.println("|             |");
-      Sys.println("|_____________|");
-      Sys.println("");
+      if (!forXcode) // Does not show up so well in xcode
+      {
+         Sys.println(" _____________");
+         Sys.println("|             |");
+         Sys.println("|__  _  __  __|");
+         Sys.println("|  \\| \\/  ||__|");
+         Sys.println("|\\  \\  \\ /||__|");
+         Sys.println("|_|\\_|\\/|_||__|");
+         Sys.println("|             |");
+         Sys.println("|_____________|");
+         Sys.println("");
+      }
       Sys.println("NME Command-Line Tools(" + nmeVersion + " @ '" + nme + "')");
 
       if (showHint) 
@@ -370,10 +372,10 @@ class CommandLineTools
    {
       if (project.app.buildNumber == "1") 
       {
-         var versionFile = PathHelper.combine(project.app.path, ".build");
+         var versionFile = PathHelper.combine(project.app.binDir, ".build");
          var version = 1;
 
-         PathHelper.mkdir(project.app.path);
+         PathHelper.mkdir(project.app.binDir);
 
          if (FileSystem.exists(versionFile)) 
          {
@@ -557,13 +559,13 @@ class CommandLineTools
          }
       }
 
-      project.templatePaths.push( nme + "/templates" );
-
       try { Sys.setCwd(Path.directory(projectFile)); } catch(e:Dynamic) {}
 
       if (Path.extension(projectFile) == "nmml" || Path.extension(projectFile) == "xml") 
       {
-         new NMMLParser(project,Path.withoutDirectory(projectFile));
+         var projFile = Path.withoutDirectory(projectFile);
+         new NMMLParser(project,projFile);
+         project.localDefines.set("PROJECT_FILE", projFile);
       }
       else
       {
@@ -581,6 +583,8 @@ class CommandLineTools
 
          default:
       }
+
+      project.templatePaths.push( nme + "/templates-new" );
 
       return project;
    }
@@ -601,7 +605,8 @@ class CommandLineTools
    {
       var project = new NMEProject( );
 
-      traceEnabled = true;
+      traceEnabled = null;
+
       additionalArguments = new Array<String>();
 
       command = "";
@@ -625,9 +630,9 @@ class CommandLineTools
 
       nmeVersion = getVersion();
 
-      if (Log.mVerbose) 
+      if (Log.mVerbose && command!="") 
       {
-         displayInfo();
+         displayInfo(false, command=="xcode");
          Sys.println("");
       }
 
@@ -648,7 +653,13 @@ class CommandLineTools
          case "create":
             createTemplate();
 
-         case "clean", "update", "display", "build", "run", "rerun", "install", "uninstall", "trace", "test":
+         case "xcode":
+            if (Sys.getEnv("NME_ALREADY_BUILDING")=="BUILDING")
+               Sys.println("...already building");
+            else
+               buildProject(project);
+
+         case "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test":
 
             if (words.length < 1 || words.length > 2) 
             {
@@ -751,12 +762,18 @@ class CommandLineTools
                }
                else if (field == "source" || field=="cp" ) 
                   project.classPaths.push(argValue);
+               else if (field == "xcodeconfig" ) 
+               {
+                  if (argValue=="Debug")
+                     project.debug = debug = true;
+               }
                else
                   project.localDefines.set(field, argValue);
             }
             else
+            {
                project.haxedefs.set(argument.substr(0, equals), argValue);
-
+            }
          }
          else if (argument.substr(0, 4) == "-arm") 
          {
