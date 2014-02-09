@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="::ANDROID_INSTALL_LOCATION::" android:versionCode="::APP_BUILD_NUMBER::" android:versionName="::APP_VERSION::" package="::APP_PACKAGE::">
+
+	<application android:label="::APP_TITLE::" ::if (DEBUGGABLE):: android:debuggable="true" ::end:: ::if (HAS_ICON):: android:icon="@drawable/icon"::end::
+   ::foreach appHeader:: ::__current__:: ::end::
+   >
+		
+		<uses-feature android:glEsVersion="0x00020000" android:required="true" />
+		
+		<activity android:name="MainActivity" android:label="::APP_TITLE::" android:configChanges="keyboard|keyboardHidden|orientation"::if (WIN_ORIENTATION!=""):: android:screenOrientation="::WIN_ORIENTATION::"::end::
+      ::foreach appActivity:: ::__current__:: ::end::
+      >
+			
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+				<category android:name="ouya.intent.category.GAME"/>
+            ::foreach appIntent:: <category android:name="::__current__::"/> ::end::
+			</intent-filter>
+			
+		</activity>
+		
+	</application>
+
+   <uses-sdk android:minSdkVersion="::ANDROID_MIN_API_LEVEL::"
+             android:targetSdkVersion="::ANDROID_TARGET_API_LEVEL::"
+             />
+
+	
+   ::foreach appPermission:: <uses-permission android:name="::__current__::" /> ::end::
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	
+</manifest> 
