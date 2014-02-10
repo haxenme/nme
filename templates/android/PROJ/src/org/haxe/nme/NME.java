@@ -7,7 +7,7 @@ public class NME {
 
      static {
          ::if (DEBUG):: Log.v("HXCPP","Boot nme.."); ::end::
-         System.loadLibrary("nme");
+         ::if (!STATIC_NME)::System.loadLibrary("nme");::end::
          ::if (DEBUG):: Log.v("HXCPP","Boot nme done"); ::end::
      }
 

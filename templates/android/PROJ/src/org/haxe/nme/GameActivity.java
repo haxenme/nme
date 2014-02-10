@@ -127,9 +127,9 @@ implements SensorEventListener
       
       // Pre-load these, so the C++ knows where to find them
       
-      ::foreach ndlls::
+      ::foreach ndlls:: ::if (!isStatic)::
       ::if (DEBUG)::Log.v(TAG,"Loading ::name::...");::end::
-      System.loadLibrary("::name::");::end::
+      System.loadLibrary("::name::");::end::::end::
       org.haxe.HXCPP.run("ApplicationMain");
       
 

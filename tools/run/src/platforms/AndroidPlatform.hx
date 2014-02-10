@@ -133,6 +133,14 @@ class AndroidPlatform extends Platform
    {
       context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
       context.DEBUGGABLE = project.debug;
+
+      var staticNme = false;
+      for(ndll in project.ndlls)
+         if (ndll.name=="nme" && ndll.isStatic)
+            staticNme = true;
+      context.STATIC_NME = staticNme;
+
+
       context.appHeader = project.androidConfig.appHeader;
       context.appActivity = project.androidConfig.appActivity;
       context.appIntent = project.androidConfig.appIntent;
