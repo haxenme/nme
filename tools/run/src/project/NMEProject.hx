@@ -195,9 +195,13 @@ class NMEProject
             targetFlags.set("android", "");
             targetFlags.set("androidsim", "");
 
-         default:
+         case "windows", "mac", "linux":
             target = inTargetName.toUpperCase();
+
+         default:
+            Log.error("Unknown target : " + inTargetName);
       }
+
 
 
       switch(target) 
@@ -229,6 +233,9 @@ class NMEProject
                architectures = [ PlatformHelper.hostArchitecture ];
             else
                architectures = [ Architecture.X86 ];
+
+         default:
+            Log.error("Unknown platform target : " + inTargetName);
       }
 
       switch(platformType) 
@@ -241,12 +248,20 @@ class NMEProject
             localDefines.set("web", "1");
       }
 
+      Log.verbose("Platform type: " + platformType);
+
+
       for(key in targetFlags.keys())
          localDefines.set(key,targetFlags.get(key));
 
       localDefines.set("haxe3", "1");
 
       localDefines.set(target.toLowerCase(), "1");
+   }
+
+   public function addArch(arch:Architecture)
+   {
+      ArrayHelper.addUnique(architectures, arch);
    }
 
    public function hasTargetFlag(inFlag:String)

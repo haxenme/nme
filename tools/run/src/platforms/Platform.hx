@@ -20,7 +20,6 @@ class Platform
    public static inline var TYPE_MOBILE = "MOBILE";
 
    public var platform(get,null):String;
-   public var type(get,null):String;
 
    var project:NMEProject;
    var targetDir:String;
@@ -50,7 +49,6 @@ class Platform
    function generateContext(context:Dynamic) : Void { }
    public function getPlatformDir() : String { return null; }
    public function get_platform() : String { return null; }
-   public function get_type() : String { return null; }
    public function getBinName() : String { return ""; }
    public function getNdllExt() : String { return ".ndll"; }
    public function getLibExt() : String { return ".a"; }

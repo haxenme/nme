@@ -848,6 +848,24 @@ class NMMLParser
                case "dependency":
                   project.dependencies.push(substitute(element.att.name));
 
+               case "arch":
+                  var arch = substitute(element.att.value);
+                  switch(arch)
+                  {
+                     case "armv5":
+                         project.addArch( Architecture.ARMV5);
+                     case "armv6":
+                         project.addArch( Architecture.ARMV6);
+                     case "armv7":
+                         project.addArch( Architecture.ARMV7);
+                     case "x86":
+                         project.addArch( Architecture.X86);
+                     case "i386":
+                         project.addArch( Architecture.I386);
+                     default:
+                         Log.error("Unvalid architecture : " + arch);
+                  }
+
                case "ios":
                   if (project.target == Platform.IOS || project.target == Platform.IOSVIEW ) 
                   {
@@ -866,16 +884,14 @@ class NMMLParser
                         switch(binaries) 
                         {
                            case "fat":
-                              ArrayHelper.addUnique(project.architectures, Architecture.ARMV6);
-                              ArrayHelper.addUnique(project.architectures, Architecture.ARMV7);
+                              project.addArch( Architecture.ARMV6);
+                              project.addArch( Architecture.ARMV7);
 
                            case "armv6":
-                              ArrayHelper.addUnique(project.architectures, Architecture.ARMV6);
-                              project.architectures.remove(Architecture.ARMV7);
+                              project.addArch( Architecture.ARMV6);
 
                            case "armv7":
-                              ArrayHelper.addUnique(project.architectures, Architecture.ARMV7);
-                              project.architectures.remove(Architecture.ARMV6);
+                              project.addArch( Architecture.ARMV7);
                         }
                      }
 

@@ -104,7 +104,7 @@ class CommandLineTools
          if (command == "test" || command == "trace") 
          {
             if (traceEnabled==null)
-              traceEnabled = platform.type == Platform.TYPE_MOBILE;
+              traceEnabled = project.platformType == Platform.TYPE_MOBILE;
             if (traceEnabled || command == "trace") 
             {
                Log.verbose("\nRunning command: TRACE");
@@ -326,17 +326,11 @@ class CommandLineTools
    private static function findProjectFile(path:String):String 
    {
       if (FileSystem.exists(PathHelper.combine(path, "Project.hx"))) 
-      {
          return PathHelper.combine(path, "Project.hx");
-
-      } else if (FileSystem.exists(PathHelper.combine(path, "project.nmml"))) 
-      {
+      else if (FileSystem.exists(PathHelper.combine(path, "project.nmml"))) 
          return PathHelper.combine(path, "project.nmml");
-
-      } else if (FileSystem.exists(PathHelper.combine(path, "project.xml"))) 
-      {
+      else if (FileSystem.exists(PathHelper.combine(path, "project.xml"))) 
          return PathHelper.combine(path, "project.xml");
-      }
       else
       {
          var files = FileSystem.readDirectory(path);
@@ -380,15 +374,11 @@ class CommandLineTools
          if (FileSystem.exists(versionFile)) 
          {
             var previousVersion = Std.parseInt(File.getBytes(versionFile).toString());
-
             if (previousVersion != null) 
             {
                version = previousVersion;
-
                if (increment) 
-               {
                   version ++;
-               }
             }
          }
 
@@ -418,13 +408,9 @@ class CommandLineTools
          var home = "";
 
          if (environment.exists("HOME")) 
-         {
             home = environment.get("HOME");
-
-         } else if (environment.exists("USERPROFILE")) 
-         {
+         else if (environment.exists("USERPROFILE")) 
             home = environment.get("USERPROFILE");
-         }
          else
          {
             Log.warn("HXCPP config might be missing(Environment has no \"HOME\" variable)");
@@ -467,35 +453,24 @@ class CommandLineTools
       switch(PlatformHelper.hostPlatform) 
       {
          case WINDOWS:
-
             untyped $loader.path = $array(path + "Windows/", $loader.path);
 
          case MAC:
-
             untyped $loader.path = $array(path + "Mac/", $loader.path);
 
          case LINUX:
-
             var arguments = Sys.args();
             var raspberryPi = false;
 
             for(argument in arguments) 
-            {
                if (argument == "-rpi") raspberryPi = true;
-            }
 
             if (raspberryPi) 
-            {
                untyped $loader.path = $array(path + "RPi/", $loader.path);
-
-            } else if (PlatformHelper.hostArchitecture == Architecture.X64) 
-            {
+            else if (PlatformHelper.hostArchitecture == Architecture.X64) 
                untyped $loader.path = $array(path + "Linux64/", $loader.path);
-            }
             else
-            {
                untyped $loader.path = $array(path + "Linux/", $loader.path);
-            }
 
          default:
       }
