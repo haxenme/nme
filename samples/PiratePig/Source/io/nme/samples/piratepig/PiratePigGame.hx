@@ -162,7 +162,7 @@ class PiratePigGame extends Sprite {
 		Lib.current.stage.addEventListener (MouseEvent.MOUSE_UP, stage_onMouseUp);
 		addChild (TileContainer);
 		
-		IntroSound = Assets.getSound ("soundTheme");
+		IntroSound = Assets.getMusic ("soundTheme");
 		Sound3 = Assets.getSound ("sound3");
 		Sound4 = Assets.getSound ("sound4");
 		Sound5 = Assets.getSound ("sound5");

@@ -25,7 +25,7 @@
 		<sound path="5.mp3" id="sound5" />
 		<music path="theme.mp3" id="soundTheme" />
 	</assets>
-	
+
 	<assets path="Assets/sounds" rename="sounds" unless="web">
 		<sound path="3.wav" id="sound3" />
 		<sound path="4.wav" id="sound4" />

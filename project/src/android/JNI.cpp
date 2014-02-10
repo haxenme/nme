@@ -41,7 +41,7 @@ jmethodID HaxeObject_create;
 jfieldID __haxeHandle;
 
 
-void CheckException(JNIEnv *env, bool inThrow=true)
+void CheckException(JNIEnv *env, bool inThrow)
 {
    jthrowable exc = env->ExceptionOccurred();
    if (exc)

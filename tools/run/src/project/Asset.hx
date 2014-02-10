@@ -16,6 +16,8 @@ class Asset
    public var sourcePath:String;
    public var targetPath:String;
    public var type:AssetType;
+   public var isSound:Bool;
+   public var isMusic:Bool;
 
    public function new(path:String = "", rename:String = "", type:AssetType, embed:Bool) 
    {
@@ -28,6 +30,8 @@ class Asset
          targetPath = rename;
 
       id = targetPath;
+      isSound = type==SOUND;
+      isMusic = type==MUSIC;
       resourceName = targetPath;
       flatName = StringHelper.getFlatName(targetPath);
       format = Path.extension(path).toLowerCase();

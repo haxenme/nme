@@ -35,5 +35,6 @@ struct AutoHaxe
 
 JNIEnv *GetEnv();
 jclass FindClass(const char *className);
+void CheckException(JNIEnv *env, bool inThrow=true);
 
 #endif
