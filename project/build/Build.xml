@@ -256,10 +256,6 @@
                <lib name="${PRELIB}curl${NME_SSL_EXTRA}${POSTLIB}" />
             </section>
 
-            <lib name="${PRELIB}freetype${POSTLIB}"/>
-            <lib name="${PRELIB}jpeg${POSTLIB}" />
-            <lib name="${PRELIB}png${POSTLIB}" />
-
             <lib name="${PRELIB}z${POSTLIB}" unless="android"/>
          </section>
 
