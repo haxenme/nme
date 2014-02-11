@@ -5,7 +5,9 @@ import nme.Assets;
 import wx.Assets;
 #end
 
+#if cpp
 ::foreach ndlls::::importStatic::::end::
+#end
 
 
 #if (nme && !waxe && !cocktail && !Cocktail)
@@ -51,7 +53,11 @@ class ApplicationMain
       ::end::
       #end
 
-      #if nme
+      #if flash
+
+      nme.AssetData.create();
+
+      #elseif nme
       nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
 
       nme.AssetData.create();
@@ -83,7 +89,21 @@ class ApplicationMain
             break;
          }
    
-      #if waxe
+      #if flash
+
+          if (hasMain)
+               Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+            else
+            {
+               #if (nme && !waxe && !cocktail && !Cocktail)
+               new ApplicationDocument();
+               #else
+               Type.createInstance(::APP_MAIN::, []);
+               #end
+            }
+
+
+      #elseif waxe
       if (hasMain)
          Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
       else
@@ -107,7 +127,6 @@ class ApplicationMain
             }
          });
       #else
-      
       nme.Lib.create(function() { 
             //if ((::WIN_WIDTH:: == 0 && ::WIN_HEIGHT:: == 0) || ::WIN_FULLSCREEN::)
             //{

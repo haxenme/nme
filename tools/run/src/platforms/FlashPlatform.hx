@@ -24,6 +24,7 @@ class FlashPlatform extends Platform
    public function new(inProject:NMEProject)
    {
       super(inProject);
+      inProject.haxeflags.push("-swf ApplicationMain.swf");
    }
 
 /*
@@ -80,13 +81,12 @@ class FlashPlatform extends Platform
       }
       else
       {
-         var destination = targetDir + "/bin";
          var targetPath = project.app.file + ".swf";
 
          if (project.targetFlags.exists("web")) 
             targetPath = "index.html";
 
-         FlashHelper.run(project, destination, targetPath);
+         FlashHelper.run(project, getOutputDir(), targetPath);
       }
    }
 
@@ -567,6 +567,7 @@ class FlashHelper
             player = Sys.getEnv("FLASH_PLAYER_EXE");
          }
       }
+      Log.verbose(targetPath + " " + player);
 
       ProcessHelper.openFile(workingDirectory, targetPath, player);
    }

@@ -95,6 +95,7 @@ class ProcessHelper
          command = StringTools.replace(command, ",", "^,");
       }
 
+
       if (safeExecute) 
       {
          try 
@@ -146,7 +147,7 @@ class ProcessHelper
          }
       }
 
-      LogHelper.info("", " - Running command: " + command + argString);
+      Log.verbose(" - Running command: " + command + argString);
 
       var result:Dynamic = Sys.command(command, args);
 

@@ -73,4 +73,38 @@ class WeakRef<T>
    #end
 }
 
+#elseif flash
+
+import flash.utils.Dictionary;
+
+class WeakRef<T> 
+{
+   var value:T;
+   public function new(inObject:T, inMakeWeak:Bool = true) 
+   {
+      value = inObject;
+   }
+   public function get():T 
+   {
+      return value;
+   }
+  /*
+   var dict:Dictionary;
+   public function new(inObject:T, inMakeWeak:Bool = true) 
+   {
+      dict = new Dictionary(inMakeWeak);
+      dict[inObject] = 1;
+   }
+
+   public function get():T 
+   {
+      for(key in dict.keys())
+         return key;
+      return null;
+   }
+   */
+
+}
+
+
 #end

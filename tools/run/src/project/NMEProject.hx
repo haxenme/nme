@@ -195,11 +195,16 @@ class NMEProject
             targetFlags.set("android", "");
             targetFlags.set("androidsim", "");
 
-         case "windows", "mac", "linux":
+         case "windows", "mac", "linux", "flash":
             target = inTargetName.toUpperCase();
 
          default:
             Log.error("Unknown target : " + inTargetName);
+      }
+
+      if (target!=Platform.FLASH)
+      {
+          haxeflags.push("--remap flash:nme");
       }
 
 

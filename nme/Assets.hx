@@ -159,7 +159,7 @@ class Assets
  
       var data =
          #if flash
-         cast(Type.createInstance(i.className, []), BitmapData)
+         cast(Type.createInstance(Type.resolveClass(i.className), []), BitmapData)
          #elseif js
          cast(ApplicationMain.loaders.get(i.path).contentLoaderInfo.content, Bitmap).bitmapData
          #else
@@ -206,7 +206,7 @@ class Assets
       else
       {
          #if flash
-         data = Type.createInstance(i.className, []);
+         data = Type.createInstance(Type.resolveClass(i.className), []);
          #elseif js
          var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
          data:ByteArray = null;
@@ -267,7 +267,7 @@ class Assets
 
       var font = 
          #if (flash || js)
-         cast(Type.createInstance(i.className,[]), Font)
+         cast(Type.createInstance(Type.resolveClass(i.className),[]), Font)
          #else
          new Font(i.path)
          #end
@@ -314,7 +314,7 @@ class Assets
 
       var sound =
             #if flash
-            cast(Type.createInstance(i.className, []), Sound)
+            cast(Type.createInstance(Type.resolveClass(i.className), []), Sound)
             #elseif js
             new Sound(new URLRequest(i.path))
             #else
