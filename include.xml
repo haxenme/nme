@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension>
 	
-	<ndll name="std" static="1" />
-	<ndll name="regexp" static="1" />
-	<ndll name="zlib" static="1" />
-	<ndll name="nme" static="1" />
+	<ndll name="std"  />
+	<ndll name="regexp" />
+	<ndll name="zlib"  />
+	<ndll name="nme"  />
 	
 </extension>
