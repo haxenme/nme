@@ -55,7 +55,6 @@ class NMEProject
 {
    public var app:ApplicationData;
    public var window:Window;
-   public var preloader:String;
    public var architectures:Array<Architecture>;
    public var assets:Array<Asset>;
    public var ndlls:Array<NDLL>;
@@ -394,7 +393,8 @@ class NMEProject
       context.DEBUG = debug;
       context.MEGATRACE = megaTrace;
       context.SWF_VERSION = app.swfVersion;
-      context.PRELOADER_NAME = app.preloader;
+      if (app.preloader!=null && app.preloader!="")
+         context.PRELOADER_NAME = app.preloader;
       context.WIN_BACKGROUND = window.background;
       context.WIN_FULLSCREEN = window.fullscreen;
       context.WIN_ORIENTATION = "";

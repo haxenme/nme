@@ -90,6 +90,8 @@ class ApplicationMain
          }
    
       #if flash
+      flash.Lib.current.stage.align = flash.display.StageAlign.TOP_LEFT;
+      flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
 
       var load = function()
       {
@@ -104,8 +106,8 @@ class ApplicationMain
                #end
             }
        };
-       ::if (PRELOADER!=null)::
-       new ::PRELOADER::(::WIN_WIDTH::, ::WIN_HEIGHT::, ::WIN_BACKGROUND::, load);
+       ::if (PRELOADER_NAME!=null)::
+       new ::PRELOADER_NAME::(::WIN_WIDTH::, ::WIN_HEIGHT::, ::WIN_BACKGROUND::, load);
        ::else::
        load();
        ::end::

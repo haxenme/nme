@@ -27,6 +27,15 @@ class FlashPlatform extends Platform
    {
       super(inProject);
       inProject.haxeflags.push("-swf ApplicationMain.swf");
+      var w = project.window.width;
+      if (w<1) w=800;
+      var h = project.window.height;
+      if (h<1) w=600;
+      var fps = project.window.fps;
+      var col =  StringTools.hex(project.window.background);
+      var swfVersion = project.app.swfVersion;
+      inProject.haxeflags.push('-swf-header $w:$h:$fps:$col');
+      inProject.haxeflags.push('-swf-version $swfVersion');
 
       hasEmbed = false;
       for(asset in project.assets) 
@@ -55,7 +64,10 @@ class FlashPlatform extends Platform
       FileHelper.copyFile(haxeDir + "/ApplicationMain.swf", swf );
 
       if (hasEmbed) 
-         FlashHelper.embedAssets(swf, project.assets, "nme.", project.preloader!=null);
+      {
+         var hasPreloader = project.app.preloader!="";
+         FlashHelper.embedAssets(swf, project.assets, "nme.", hasPreloader);
+      }
 
       /*
       if (project.targetFlags.exists("web") || project.app.url != "") 

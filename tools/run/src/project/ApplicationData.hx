@@ -43,7 +43,7 @@ class ApplicationData
 
       main = "Main";
       binDir = "bin";
-      preloader = "NMEPreloader";
+      preloader = "nme.preloader.Basic";
       swfVersion = 11;
       url = "";
    }
