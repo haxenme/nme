@@ -91,6 +91,8 @@ class ApplicationMain
    
       #if flash
 
+      var load = function()
+      {
           if (hasMain)
                Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
             else
@@ -101,6 +103,12 @@ class ApplicationMain
                Type.createInstance(::APP_MAIN::, []);
                #end
             }
+       };
+       ::if (PRELOADER!=null)::
+       new ::PRELOADER::(::WIN_WIDTH::, ::WIN_HEIGHT::, ::WIN_BACKGROUND::, load);
+       ::else::
+       load();
+       ::end::
 
 
       #elseif waxe

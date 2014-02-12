@@ -55,6 +55,7 @@ class NMEProject
 {
    public var app:ApplicationData;
    public var window:Window;
+   public var preloader:String;
    public var architectures:Array<Architecture>;
    public var assets:Array<Asset>;
    public var ndlls:Array<NDLL>;
@@ -324,7 +325,7 @@ class NMEProject
 
       for(asset in assets) 
       {
-         if (embedAssets || asset.embed)
+         if ( (embedAssets || asset.embed) && target!=Platform.FLASH ) 
          {
             asset.resourceName = asset.flatName;
             var relPath = PathHelper.relocatePath(asset.sourcePath, inBuildDir);

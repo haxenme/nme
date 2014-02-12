@@ -55,7 +55,7 @@ class FlashPlatform extends Platform
       FileHelper.copyFile(haxeDir + "/ApplicationMain.swf", swf );
 
       if (hasEmbed) 
-         FlashHelper.embedAssets(swf, project.assets, "nme.");
+         FlashHelper.embedAssets(swf, project.assets, "nme.", project.preloader!=null);
 
       /*
       if (project.targetFlags.exists("web") || project.app.url != "") 
@@ -493,7 +493,7 @@ class FlashHelper
    }
 
 
-   public static function embedAssets(targetPath:String, assets:Array<Asset>, packageName:String = ""):Void 
+   public static function embedAssets(targetPath:String, assets:Array<Asset>, packageName:String, hasPreloader:Bool):Void 
    {
       try 
       {
@@ -513,7 +513,8 @@ class FlashHelper
 
                if (name == "TShowFrame" && !inserted && assets.length > 0) 
                {
-                  new_tags.push(TShowFrame);
+                  if (hasPreloader)
+                     new_tags.push(TShowFrame);
 
                   for(asset in assets) 
                   {
