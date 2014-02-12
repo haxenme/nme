@@ -9,7 +9,7 @@ class AssetData
 
       ::if (assets != null)::
       ::foreach assets::
-      info.set("::id::", new AssetInfo("::resourceName::",AssetType.::type::,::embed::,::className::));::end::
+      info.set("::id::", new AssetInfo("::resourceName::",AssetType.::type::,::isResource::,::className::));::end::
       ::end::
    }
 }

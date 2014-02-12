@@ -53,6 +53,7 @@ class FlashPlatform extends Platform
             }
             asset.flatName = asset.flatName.substr(0,1).toUpperCase() + asset.flatName.substr(1);
             asset.className = "\"nme." + asset.flatName + "\"";
+            asset.isResource = false;
          }
       }
    }

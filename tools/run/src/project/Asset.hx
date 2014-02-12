@@ -6,6 +6,7 @@ class Asset
 {
    public var data:Dynamic;
    public var embed:Bool;
+   public var isResource:Bool;
    public var flatName:String;
    public var format:String;
    public var glyphs:String;
@@ -22,9 +23,10 @@ class Asset
    public var isMusic:Bool;
    public var isImage:Bool;
 
-   public function new(path:String = "", rename:String = "", inType:AssetType, embed:Bool) 
+   public function new(path:String = "", rename:String = "", inType:AssetType, inEmbed:Bool) 
    {
-      this.embed = embed;
+      embed = inEmbed;
+      isResource = embed;
       sourcePath = path;
 
       if (rename == "") 
