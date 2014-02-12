@@ -215,6 +215,7 @@ class NMEProject
 
             platformType = Platform.TYPE_WEB;
             architectures = [];
+            embedAssets = true;
 
          case Platform.ANDROID, Platform.IOS,
               Platform.IOSVIEW, Platform.ANDROIDVIEW:

@@ -129,6 +129,13 @@ class Assets
       return result;
    }
 
+   static function makeBitmapData(inClassName:String): BitmapData
+   {
+      var cls:Class<Dynamic> = Type.resolveClass(inClassName);
+      if (cls==null)
+        throw("Invalid class : " + inClassName);
+      return Type.createInstance(cls, []);
+   }
 
    /**
     * Gets an instance of an embedded bitmap
@@ -159,7 +166,7 @@ class Assets
  
       var data =
          #if flash
-         cast(Type.createInstance(Type.resolveClass(i.className), []), BitmapData)
+         makeBitmapData(i.className)
          #elseif js
          cast(ApplicationMain.loaders.get(i.path).contentLoaderInfo.content, Bitmap).bitmapData
          #else

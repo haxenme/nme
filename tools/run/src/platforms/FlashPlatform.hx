@@ -21,32 +21,50 @@ import sys.io.FileSeek;
 
 class FlashPlatform extends Platform
 {
+   var hasEmbed:Bool;
+
    public function new(inProject:NMEProject)
    {
       super(inProject);
       inProject.haxeflags.push("-swf ApplicationMain.swf");
+
+      hasEmbed = false;
+      for(asset in project.assets) 
+      {
+         if (asset.embed)
+         {
+            hasEmbed = true;
+            switch(asset.type) 
+            {
+               case AssetType.MUSIC : asset.flashClass = "flash.media.Sound";
+               case AssetType.SOUND : asset.flashClass = "flash.media.Sound";
+               case AssetType.IMAGE : asset.flashClass = "Error - Constructor mismatch";
+               case AssetType.FONT : asset.flashClass = "flash.text.Font";
+               default: asset.flashClass = "nme.utils.ByteArray";
+            }
+            asset.flatName = asset.flatName.substr(0,1).toUpperCase() + asset.flatName.substr(1);
+            asset.className = "\"nme." + asset.flatName + "\"";
+         }
+      }
    }
 
-/*
-   override public function build():Void 
+
+   override public function copyBinary():Void 
    {
-      var usesNME = false;
-      for(haxelib in project.haxelibs) 
-         if (haxelib.name == "nme") 
-            usesNME = true;
+      var swf = getOutputDir() + "/" + project.app.file + ".swf";
+      FileHelper.copyFile(haxeDir + "/ApplicationMain.swf", swf );
 
-      if (usesNME) 
-      {
-         FlashHelper.embedAssets(destination + "/" + project.app.file + ".swf", project.assets, "nme.");
-      }
+      if (hasEmbed) 
+         FlashHelper.embedAssets(swf, project.assets, "nme.");
 
+      /*
       if (project.targetFlags.exists("web") || project.app.url != "") 
       {
          PathHelper.mkdir(destination);
          FileHelper.recursiveCopyTemplate(project.templatePaths, "flash/templates/web", destination, context);
       }
+      */
    }
-*/
 
    override public function getPlatformDir() : String
    {
@@ -56,21 +74,6 @@ class FlashPlatform extends Platform
    override function generateContext(context:Dynamic)
    {
       context.WIN_FLASHBACKGROUND = StringTools.hex(project.window.background);
-      var assets:Array<Dynamic> = cast context.assets;
-
-      for(asset in assets) 
-      {
-         var assetType:AssetType = Reflect.field(AssetType, asset.type.toUpperCase());
-
-         switch(assetType) 
-         {
-            case MUSIC : asset.flashClass = "nme.media.Sound";
-            case SOUND : asset.flashClass = "nme.media.Sound";
-            case IMAGE : asset.flashClass = "nme.display.BitmapData";
-            case FONT : asset.flashClass = "nme.text.Font";
-            default: asset.flashClass = "nme.utils.ByteArray";
-         }
-      }
    }
 
    override public function run( arguments:Array<String>):Void 
@@ -90,10 +93,6 @@ class FlashPlatform extends Platform
       }
    }
 
-   override public function copyBinary():Void 
-   {
-      FileHelper.copyFile(haxeDir + "/ApplicationMain.swf",  getOutputDir() + "/" + project.app.file + ".swf");
-   }
 
    /*private function getIcon(size:Int, targetPath:String):Void {
       var icon = icons.findIcon(size, size);
@@ -135,7 +134,7 @@ class FlashHelper
          return false;
       }
 
-      LogHelper.info("", " - Embedding asset: [" + type + "] " + name);
+      Log.verbose(" - Embedding asset: [" + type + "] " + name);
 
       var cid = nextAssetID();
 
@@ -488,7 +487,7 @@ class FlashHelper
          outTags.push(TBinaryData(cid, bytes));
       }
 
-      outTags.push(TSymbolClass( [ { cid:cid, className: packageName + "NME_" + flatName } ] ));
+      outTags.push(TSymbolClass( [ { cid:cid, className: packageName + flatName } ] ));
 
       return true;
    }

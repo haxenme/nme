@@ -15,11 +15,14 @@ class Asset
    public var resourceName:String;
    public var sourcePath:String;
    public var targetPath:String;
+   public var flashClass:String;
+   public var className:String;
    public var type:AssetType;
    public var isSound:Bool;
    public var isMusic:Bool;
+   public var isImage:Bool;
 
-   public function new(path:String = "", rename:String = "", type:AssetType, embed:Bool) 
+   public function new(path:String = "", rename:String = "", inType:AssetType, embed:Bool) 
    {
       this.embed = embed;
       sourcePath = path;
@@ -30,44 +33,46 @@ class Asset
          targetPath = rename;
 
       id = targetPath;
-      isSound = type==SOUND;
-      isMusic = type==MUSIC;
       resourceName = targetPath;
       flatName = StringHelper.getFlatName(targetPath);
       format = Path.extension(path).toLowerCase();
       glyphs = "32-255";
 
-      if (type == null) 
+      if (inType == null) 
       {
          var extension = Path.extension(path);
 
          switch(extension.toLowerCase()) 
          {
             case "jpg", "jpeg", "png", "gif":
-               this.type = AssetType.IMAGE;
+               type = AssetType.IMAGE;
 
             case "otf", "ttf":
-               this.type = AssetType.FONT;
+               type = AssetType.FONT;
 
             case "wav", "ogg":
-               this.type = AssetType.SOUND;
+               type = AssetType.SOUND;
 
             case "mp3", "mp2":
-               this.type = AssetType.MUSIC;
+               type = AssetType.MUSIC;
 
             case "text", "txt", "json", "xml", "svg", "css":
-               this.type = AssetType.TEXT;
+               type = AssetType.TEXT;
 
             default:
                if (path != "" && FileHelper.isText(path)) 
-                  this.type = AssetType.TEXT;
+                  type = AssetType.TEXT;
                else
-                  this.type = AssetType.BINARY;
+                  type = AssetType.BINARY;
          }
       }
       else
       {
-         this.type = type;
+         type = inType;
       }
+
+      isSound = type==SOUND;
+      isMusic = type==MUSIC;
+      isImage = type==IMAGE;
    }
 }
