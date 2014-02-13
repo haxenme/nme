@@ -388,23 +388,6 @@ class Assets
        return getText(id,useCache);
    }
 
-
-   // Getters & Setters
-   /*
-   private static function get_id():Array<String> 
-   {
-      initialize();
-
-      var ids = [];
-
-      for(key in AssetData.type.keys()) 
-      {
-         ids.push(key);
-      }
-
-      return ids;
-   }
-   */
 }
 
 

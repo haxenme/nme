@@ -1,5 +1,14 @@
 package nme;
 
+#if (waxe && !nme)
+import wx.Assets;
+import wx.AssetInfo;
+import wx.AssetType;
+#else
+import nme.Assets;
+import nme.AssetInfo;
+import nme.AssetType;
+#end
 
 class AssetData
 {
@@ -14,8 +23,9 @@ class AssetData
    }
 }
 
+#if flash
 ::foreach assets::::if (embed)::::if (isImage)::class ::flatName:: extends flash.display.BitmapData { public function new()super(0,0); }::else::class ::flatName:: extends ::flashClass:: { }::end::::end::
 ::end::
-
+#end
 
 
