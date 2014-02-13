@@ -67,7 +67,6 @@
    <set name="SUP_DIR" value="../support" />
    <set name="OUT_DIR" value="../../${NDLLDIR}" />
    
-   
    <files id="main">
       <compilerflag value="-I${INC_DIR}"/>
       <file name="Test.cpp"/>
@@ -263,7 +262,6 @@
       <section unless="static_link">
 
          <ext value=".ndll" />
-         <ext value=".so" />
 
          <!-- <lib name="${PRELIB}libfreetype${LIBEXTRA}${SLIBEXT}" if="iphone"/> -->
 
