@@ -9,7 +9,7 @@ using namespace std;
 
 // Implement this to avoid gcc library dll hell
 extern "C"
-unsigned long int __fdelt_chk (unsigned long int d)
+long int __fdelt_chk (long int d)
 {
   if (d >= FD_SETSIZE)
   {

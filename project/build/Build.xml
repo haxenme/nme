@@ -330,11 +330,11 @@
 
          <section if="linux">
             <lib name="-ldl" />
-            <lib name="-Lsupport/linux64" if="HXCPP_M64"/>
-            <lib name="-Lsupport/linux32" unless="HXCPP_M64"/>
-            <lib name="-lGL" unless="rpi"/>
+            <lib name="-L${SUP_DIR}/linux64" if="HXCPP_M64"/>
+            <lib name="-L${SUP_DIR}/linux32" unless="HXCPP_M64"/>
             <lib name="-lpthread" />
             <lib name="-lrt" />
+            <lib name="-lGL" unless="rpi"/>
          </section>
       
          <section if="winrt">

@@ -138,6 +138,7 @@ class NMEProject
       ndlls = new Array<NDLL>();
       classPaths = new Array<String>();
       splashScreens = new Array<SplashScreen>();
+      architectures = [];
    }
 
    public function setCommand(inCommand:String)
@@ -214,15 +215,12 @@ class NMEProject
          case Platform.FLASH:
 
             platformType = Platform.TYPE_WEB;
-            architectures = [];
             embedAssets = true;
 
          case Platform.ANDROID, Platform.IOS,
               Platform.IOSVIEW, Platform.ANDROIDVIEW:
 
             platformType = Platform.TYPE_MOBILE;
-
-            architectures = [  ];
 
             if (target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW) 
                embedAssets = true;
@@ -235,10 +233,13 @@ class NMEProject
 
             platformType = Platform.TYPE_DESKTOP;
 
-            if (target == Platform.LINUX) 
-               architectures = [ PlatformHelper.hostArchitecture ];
-            else
-               architectures = [ Architecture.X86 ];
+            if (architectures.length==0)
+            {
+               if (target == Platform.LINUX) 
+                  architectures = [ PlatformHelper.hostArchitecture ];
+               else
+                  architectures = [ Architecture.X86 ];
+            }
 
          default:
             Log.error("Unknown platform target : " + inTargetName);

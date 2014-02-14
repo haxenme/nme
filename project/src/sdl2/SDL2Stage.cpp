@@ -1198,7 +1198,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders));
       
    }
-   
+
    
 /*#if defined(IPHONE) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
    sdl_flags |= SDL_NOFRAME;

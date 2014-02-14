@@ -37,10 +37,11 @@ class LinuxPlatform extends DesktopPlatform
          }
       }
 
+      super(inProject);
+
       if (is64) 
          project.haxedefs.set("HXCPP_M64", 1);
 
-      super(inProject);
 
       applicationDirectory = getOutputDir();
       executablePath = applicationDirectory + "/" + project.app.file;
@@ -55,19 +56,17 @@ class LinuxPlatform extends DesktopPlatform
    }
    override public function getBinName() : String { return isRaspberryPi ? "RPi" : (is64 ? "Linux64" : "Linux"); }
 
-
+   override public function getNativeDllExt() { return ".dso"; }
 
    override public function copyBinary():Void 
    {
-     FileHelper.copyFile(haxeDir + "/cpp/ApplicationMain" + (project.debug ? "-debug" : "") + ".exe", executablePath);
-
       if (useNeko) 
       {
          NekoHelper.createExecutable(haxeDir + "/ApplicationMain.n", executablePath);
       }
       else
       {
-         FileHelper.copyFile(haxeDir + "/obj/ApplicationMain" + (project.debug ? "-debug" : ""), executablePath);
+         FileHelper.copyFile(haxeDir + "/cpp/ApplicationMain" + (project.debug ? "-debug" : ""), executablePath);
       }
 
       ProcessHelper.runCommand("", "chmod", [ "755", executablePath ]);
