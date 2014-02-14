@@ -1079,6 +1079,16 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    bool resizable = (inFlags & wfResizable) != 0;
    bool borderless = (inFlags & wfBorderless) != 0;
    bool vsync = (inFlags & wfVSync) != 0;
+
+   #ifdef HX_LINUX
+   if (opengl)
+   {
+      if (!InitOGLFunctions())
+        opengl = false;
+   }
+   #endif
+
+
    
    sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
 

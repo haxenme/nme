@@ -15,11 +15,13 @@
 #include <ByteArray.h>
 #include "OGL.h"
 
-using namespace nme;
 
 #define INT(a) val_int(arg[a])
 
 // --- General -------------------------------------------
+
+namespace nme
+{
 
 
 value nme_gl_get_error()
@@ -1689,7 +1691,7 @@ value nme_gl_get_tex_parameter(value inTarget,value inPname)
 DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
-
+}
 
 extern "C" int nme_oglexport_register_prims() { return 0; }
 

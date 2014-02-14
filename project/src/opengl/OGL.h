@@ -3,54 +3,39 @@
 
 #if defined(BLACKBERRY) || defined(ANDROID) || defined(WEBOS) || defined(GPH) || defined(RASPBERRYPI) || defined(EMSCRIPTEN)
 
-#define NME_GLES
+   #define NME_GLES
 
-#ifdef NME_FORCE_GLES1
-
-#include <GLES/gl.h>
-#include <GLES/glext.h>
-
-#else
-
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#define ALLOW_OGL2
-#define NME_FORCE_GLES2
-
-#endif
+   #include <GLES2/gl2.h>
+   #include <GLES2/gl2ext.h>
 
 #elif defined(IPHONE)
 
-#include <OpenGLES/ES1/gl.h>
-#include <OpenGLES/ES1/glext.h>
-#include <OpenGLES/ES2/gl.h>
-#include <OpenGLES/ES2/glext.h>
-#define ALLOW_OGL2
+   #include <OpenGLES/ES1/gl.h>
+   #include <OpenGLES/ES1/glext.h>
+   #include <OpenGLES/ES2/gl.h>
+   #include <OpenGLES/ES2/glext.h>
 
-//typedef CAEAGLLayer *WinDC;
-//typedef EAGLContext *GLCtx;
-#define NME_GLES
+   //typedef CAEAGLLayer *WinDC;
+   //typedef EAGLContext *GLCtx;
+   #define NME_GLES
 
 #elif !defined(HX_WINDOWS)
 
-// Mac/Linux....
+ // Mac/Linux....
+
+  #if defined HX_LINUX
+  #define NEED_EXTENSIONS
+  #define DYNAMIC_OGL
+  #endif
 
 
-#ifdef SDL_OGL
+  #ifdef SDL_OGL
 
-#define GL_GLEXT_PROTOTYPES
-#include <SDL_opengl.h>
-#define FORCE_NON_PO2
+  #define GL_GLEXT_PROTOTYPES
+  #include <SDL_opengl.h>
+  #define FORCE_NON_PO2
 
-#else
-
-#include <GLFW/glfw3.h>
-
-#endif
-
-#ifndef HX_LINUX
-#define ALLOW_OGL2
-#endif
+  #endif
 
   #ifdef HX_MACOS
   #define glBindFramebuffer glBindFramebufferEXT
@@ -77,18 +62,7 @@
 //#define FORCE_NON_PO2
 typedef ptrdiff_t GLsizeiptrARB;
 #define NEED_EXTENSIONS
-
-
-#define ALLOW_OGL2
-
-#ifdef SDL_OGL
 #include <SDL_opengl.h>
-#endif
-
-#ifdef GLFW_OGL
-#include <GL/glext.h>
-#include <GLFW/glfw3.h>
-#endif
 
 #endif
 
@@ -161,18 +135,9 @@ typedef void *GLCtx;
 #define GL_LINE_SMOOTH  0x0B20
 #endif
 
-
-
-#ifdef GPH
-#define NME_DITHER
-#endif
-
 #include <Graphics.h>
 #include <Surface.h>
 
-#ifdef HX_MACOS
-#define ALLOW_OGL2
-#endif
 
 
 #ifdef NEED_EXTENSIONS

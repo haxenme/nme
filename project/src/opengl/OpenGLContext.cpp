@@ -1,6 +1,10 @@
 #include "./OGL.h"
 #include <NMEThread.h>
 
+#if HX_LINUX
+#include <dlfcn.h>
+#endif
+
 
 #ifdef NEED_EXTENSIONS
 #define DEFINE_EXTENSION
@@ -610,30 +614,37 @@ public:
 // ----------------------------------------------------------------------------
 
 
+void * gOGLLibraryHandle = 0;
 
-
-void InitExtensions()
+bool InitOGLFunctions()
 {
    static bool extentions_init = false;
+   static bool result = true;
    if (!extentions_init)
    {
       extentions_init = true;
-      #ifdef HX_WINDOWS
-      #ifndef SDL_OGL
-      #ifndef GLFW_OGL
+      #if defined(HX_WINDOWS) && !defined(SDL_OGL)
          wglMakeCurrent( (WinDC)inWindow,(GLCtx)inGLCtx);
       #endif
-      #endif
 
+      #ifdef HX_LINUX
+      const char *path = "libGL.so";
+      gOGLLibraryHandle = dlopen(path, RTLD_NOW|RTLD_GLOBAL);
+      if (!gOGLLibraryHandle)
+      {
+         //printf("Could not load %s (%s)\n",path, dlerror());
+         result = false;
+         return result;
+      }
+      #endif
 
       #ifdef NEED_EXTENSIONS
-      #define GET_EXTENSION
-      #include "OGLExtensions.h"
-      #undef DEFINE_EXTENSION
-      #endif
-
+         #define GET_EXTENSION
+         #include "OGLExtensions.h"
+         #undef DEFINE_EXTENSION
       #endif
    }
+   return result;
 }
 
 
@@ -641,9 +652,10 @@ void InitExtensions()
 
 HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders)
 {
-   HardwareContext *ctx = new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
+   if (!InitOGLFunctions())
+      return 0;
 
-   InitExtensions();
+   HardwareContext *ctx = new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
 
    return ctx;
 }

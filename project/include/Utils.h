@@ -67,6 +67,8 @@ inline void DontLog(const char *inFormat,...) { }
 namespace nme
 {
 
+bool InitOGLFunctions();
+
 extern std::string gAssetBase;
 extern std::string gCompany;
 extern std::string gPackage;

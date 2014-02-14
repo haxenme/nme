@@ -7,19 +7,6 @@
 using namespace std;
 
 
-// Implement this to avoid gcc library dll hell
-extern "C"
-long int __fdelt_chk (long int d)
-{
-  if (d >= FD_SETSIZE)
-  {
-     printf("Select - bad fd.\n");
-     return 0;
-  }
-
-  return d / __NFDBITS;
-}
-
 
 namespace nme {
 	
