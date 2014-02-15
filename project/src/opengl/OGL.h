@@ -19,25 +19,21 @@
    //typedef EAGLContext *GLCtx;
    #define NME_GLES
 
-#elif !defined(HX_WINDOWS)
+#elif defined(HX_LINUX)
 
- // Mac/Linux....
-
-  #if defined HX_LINUX
   #define NEED_EXTENSIONS
   #define DYNAMIC_OGL
-  #endif
-
-
-  #ifdef SDL_OGL
 
   #define GL_GLEXT_PROTOTYPES
   #include <SDL_opengl.h>
   #define FORCE_NON_PO2
 
-  #endif
+#elif defined(HX_MACOS)
 
-  #ifdef HX_MACOS
+  #define GL_GLEXT_PROTOTYPES
+  #include <SDL_opengl.h>
+  #define FORCE_NON_PO2
+
   #define glBindFramebuffer glBindFramebufferEXT
   #define glBindRenderbuffer glBindRenderbufferEXT
   #define glGenFramebuffers glGenFramebuffersEXT
@@ -52,9 +48,8 @@
   #define glGetRenderbufferParameteriv glGetRenderbufferParameterivEXT
   #define glIsFramebuffer glIsFramebufferEXT
   #define glIsRenderbuffer glIsRenderbufferEXT
-  #endif
 
-#else
+#elif defined(HX_WINDOWS)
 
 // Windows ....
 #include <windows.h>
@@ -141,9 +136,12 @@ typedef void *GLCtx;
 
 
 #ifdef NEED_EXTENSIONS
-#define DECLARE_EXTENSION
-#include "OGLExtensions.h"
-#undef DECLARE_EXTENSION
+   #define DECLARE_EXTENSION
+   #include "OGLExtensions.h"
+   #undef DECLARE_EXTENSION
+   #define CHECK_EXT(x) x
+#else
+   #define CHECK_EXT(x) true
 #endif
 
 namespace nme
