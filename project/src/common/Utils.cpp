@@ -1,15 +1,19 @@
 #include <Utils.h>
 
 #ifdef HX_WINDOWS
-#include <windows.h>
-#include <Shlobj.h>
-#include <time.h>
+  #include <windows.h>
+  #include <Shlobj.h>
+  #include <time.h>
 #else
-#include <sys/time.h>
-#include <stdint.h>
-#ifndef EMSCRIPTEN
-typedef uint64_t __int64;
-#endif
+  #include <sys/time.h>
+  #include <stdint.h>
+  #ifdef HX_LINUX
+    #include<unistd.h>
+    #include<stdio.h>
+  #endif
+  #ifndef EMSCRIPTEN
+    typedef uint64_t __int64;
+  #endif
 #endif
 
 #ifdef HX_MACOS
@@ -89,18 +93,27 @@ ByteArray ByteArray::FromFile(const char *inFilename)
 std::string GetExeName()
 {
    #ifdef HX_WINDOWS
-   char path[MAX_PATH] = "";
-   GetModuleFileName(0,path,MAX_PATH);
-   return path;
-   #elif defined(HX_LINUX)
-   // 
+     char path[MAX_PATH] = "";
+     GetModuleFileName(0,path,MAX_PATH);
+     return path;
    #elif defined(HX_MACOS)
-   char path[1024] = "";
-   uint32_t size = sizeof(path);
-   _NSGetExecutablePath(path, &size);
-   char absPath[1024] = "";
-   realpath(path,absPath);
-   return absPath;
+     char path[1024] = "";
+     uint32_t size = sizeof(path);
+     _NSGetExecutablePath(path, &size);
+     char absPath[1024] = "";
+     realpath(path,absPath);
+     return absPath;
+   #elif defined(HX_LINUX)
+     char path[1024];
+     char link[1024];
+     pid_t pid = getpid();
+     sprintf(path,"/proc/%d/exe",pid);
+     int len = readlink(path,link,1024);
+     if (len>0 && len<1023)
+     {
+        link[len] = '\0';
+        return link;
+     }
    #endif
    return "";
 }
