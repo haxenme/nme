@@ -252,17 +252,30 @@ public:
       const uint8 *data = 0;
       if (inData.mVertexBo)
       {
-         glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
+         if (inData.mContextId!=gTextureContextVersion)
+         {
+            if (inData.mVboOwner)
+               inData.mVboOwner->DecRef();
+            inData.mVboOwner = 0;
+            // Create one right away...
+            inData.mRendersWithoutVbo = 5;
+            inData.mVertexBo = 0;
+            inData.mContextId = 0;
+         }
+         else
+            glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
       }
-      else
+
+      if (!inData.mVertexBo)
       {
          data = &inData.mArray[0];
          inData.mRendersWithoutVbo++;
-         if (false && inData.mRendersWithoutVbo>4)
+         if ( inData.mRendersWithoutVbo>4)
          {
             glGenBuffers(1,&inData.mVertexBo);
             inData.mVboOwner = this;
             IncRef();
+            inData.mContextId = gTextureContextVersion;
             glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
             // printf("VBO DATA %d\n", inData.mArray.size());
             glBufferData(GL_ARRAY_BUFFER, inData.mArray.size(), data, GL_STATIC_DRAW);

@@ -263,6 +263,7 @@
       <section unless="static_link">
 
          <ext value=".ndll" />
+         <ext value=".so" if="android" />
 
          <!-- <lib name="${PRELIB}libfreetype${LIBEXTRA}${SLIBEXT}" if="iphone"/> -->
 
