@@ -102,7 +102,7 @@ class Graphics
       nme_gfx_draw_path(nmeHandle, commands, data, winding == GraphicsPathWinding.EVEN_ODD);
    }
 
-   /** @private */ public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0):Void {
+   public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0):Void {
       beginBitmapFill(sheet.nmeBitmap, null, false, inSmooth);
 
       if (inSmooth)

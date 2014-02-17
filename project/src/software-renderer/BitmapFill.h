@@ -15,9 +15,7 @@ enum { EDGE_CLAMP, EDGE_REPEAT, EDGE_POW2 };
 
 #define GET_PIXEL_POINTERS \
          int frac_x = (mPos.x & 0xff00) >> 8; \
-         int frac_nx = 0x100 - frac_x; \
-         int frac_y = (mPos.y & 0xffff); \
-         int frac_ny = 0x10000 - frac_y; \
+         int frac_y = (mPos.y & 0xff00) >> 8; \
  \
             if (EDGE == EDGE_CLAMP) \
             { \
@@ -116,8 +114,7 @@ public:
       Matrix mapper = inMatrix;
       mapper = mapper.Mult(mBitmap->matrix);
       mMapper = mapper.Inverse();
-      //mMapper.Scale(mWidth/1638.4,mHeight/1638.4);
-      //mMapper.Translate(0.5,0.5);
+      adjustSubpixelMapper();
 
       mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
       mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
@@ -207,7 +204,7 @@ public:
          }
       }
 
-      mMapper.Translate(0.5,0.5);
+      adjustSubpixelMapper();
 
       if (!mPerspective || inComponents<3)
       {
@@ -216,6 +213,19 @@ public:
       }
    }
 
+   void adjustSubpixelMapper()
+   {
+      //  Tex =  mMapper * screen
+      //  But, screen is sampled at centre, so Tex = mMapper * (screenCorner + (0.5,0.5))
+      //  Then interpolation uses tex as source-coord, but a tex value of 0.5 should map to centre of src pixel 0, so
+      //   src-coord = mMapper * (screenCorner + (0.5,0.5)) - (0.5,0.5)
+      
+      mMapper.mtx += (mMapper.m00 + mMapper.m01)*0.5 - 0.5;
+      mMapper.mty += (mMapper.m10 + mMapper.m11)*0.5 - 0.5;
+
+      if (mPerspective)
+         mW0 += (mWX + mWY)*0.5;
+   }
 
 
    const uint8 *mBase;
@@ -275,63 +285,30 @@ public:
             mPos.y += mDPyDX;
          }
          
+         int y0c0 = (p00.c0<<8) + (p01.c0-p00.c0) * frac_x;
+         int y1c0 = (p10.c0<<8) + (p11.c0-p10.c0) * frac_x;
+         result.c0 = ((y0c0<<8) + (y1c0-y0c0) * frac_y)>>16;
+
+         int y0c1 = (p00.c1<<8) + (p01.c1-p00.c1) * frac_x;
+         int y1c1 = (p10.c1<<8) + (p11.c1-p10.c1) * frac_x;
+         result.c1 = ((y0c1<<8) + (y1c1-y0c1) * frac_y)>>16;
+
+         int y0c2 = (p00.c2<<8) + (p01.c2-p00.c2) * frac_x;
+         int y1c2 = (p10.c2<<8) + (p11.c2-p10.c2) * frac_x;
+         result.c2 = ((y0c2<<8) + (y1c2-y0c2) * frac_y)>>16;
+
          if (HAS_ALPHA)
          {
-            bool p0_visible = (p00.a > 0 && p01.a > 0);
-            bool p1_visible = (p10.a > 0 && p11.a > 0);
-            if (p0_visible && p1_visible)
-            {
-               result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
-                  ( p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
-               result.c1 = ( (p00.c1*frac_nx + p01.c1*frac_x)*frac_ny +
-                  ( p10.c1*frac_nx + p11.c1*frac_x)*frac_y ) >> 24;
-               result.c2 = ( (p00.c2*frac_nx + p01.c2*frac_x)*frac_ny +
-                  ( p10.c2*frac_nx + p11.c2*frac_x)*frac_y ) >> 24;
-               result.a = ( (p00.a*frac_nx + p01.a*frac_x)*frac_ny +
-                  ( p10.a*frac_nx + p11.a*frac_x)*frac_y ) >> 24;
-            }
-            else if (p0_visible)
-            {
-               result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
-                  ( p00.c0*frac_nx + p01.c0*frac_x)*frac_y ) >> 24;
-               result.c1 = ( (p00.c1*frac_nx + p01.c1*frac_x)*frac_ny +
-                  ( p00.c1*frac_nx + p01.c1*frac_x)*frac_y ) >> 24;
-               result.c2 = ( (p00.c2*frac_nx + p01.c2*frac_x)*frac_ny +
-                  ( p00.c2*frac_nx + p01.c2*frac_x)*frac_y ) >> 24;
-               result.a = ( (p00.a*frac_nx + p01.a*frac_x)*frac_ny +
-                  ( p10.a*frac_nx + p11.a*frac_x)*frac_y ) >> 24;
-            }
-            else if (p1_visible)
-            {
-               result.c0 = ( (p10.c0*frac_nx + p11.c0*frac_x)*frac_ny +
-                  ( p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
-               result.c1 = ( (p10.c1*frac_nx + p11.c1*frac_x)*frac_ny +
-                  ( p10.c1*frac_nx + p11.c1*frac_x)*frac_y ) >> 24;
-               result.c2 = ( (p10.c2*frac_nx + p11.c2*frac_x)*frac_ny +
-                  ( p10.c2*frac_nx + p11.c2*frac_x)*frac_y ) >> 24;
-               result.a = ( (p00.a*frac_nx + p01.a*frac_x)*frac_ny +
-                  ( p10.a*frac_nx + p11.a*frac_x)*frac_y ) >> 24;
-            }
-            else
-            {
-               result.c0 = 0;
-               result.c1 = 0;
-               result.c2 = 0;
-               result.a = 0;
-            }
+            int y0a = (p00.a<<8) + (p01.a-p00.a) * frac_x;
+            int y1a = (p10.a<<8) + (p11.a-p10.a) * frac_x;
+            result.a = ((y0a<<8) + (y1a-y0a) * frac_y)>>16;
          }
          else
          {
-            result.c0 = ( (p00.c0*frac_nx + p01.c0*frac_x)*frac_ny +
-               ( p10.c0*frac_nx + p11.c0*frac_x)*frac_y ) >> 24;
-            result.c1 = ( (p00.c1*frac_nx + p01.c1*frac_x)*frac_ny +
-               ( p10.c1*frac_nx + p11.c1*frac_x)*frac_y ) >> 24;
-            result.c2 = ( (p00.c2*frac_nx + p01.c2*frac_x)*frac_ny +
-               ( p10.c2*frac_nx + p11.c2*frac_x)*frac_y ) >> 24;
             result.a = 255;
-            
          }
          return result;
+
       }
       else
       {
@@ -347,8 +324,8 @@ public:
 
    inline void SetPos(int inSX,int inSY)
    {
-      double x = inSX+0.5;
-      double y = inSY+0.5;
+      double x = inSX;
+      double y = inSY;
       if (PERSP)
       {
          mTX = mMapper.m00*x + mMapper.m01*y + mMapper.mtx;

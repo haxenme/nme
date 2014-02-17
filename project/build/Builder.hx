@@ -62,6 +62,11 @@ class Builder
                         targets.push(dyn);
                   }
 
+               case "ndll-android", "ndll-windows", "ndll-linux", "ndll-mac":
+                     var dyn = arg.substr(5);
+                     if (!Lambda.exists(targets, function(x)return x==dyn))
+                        targets.push(dyn);
+
                case "static-ios", "static-android", "static-windows", "static-linux", "static-mac" :
                   if (!Lambda.exists(targets, function(x)return x==arg))
                      targets.push(arg);
