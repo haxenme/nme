@@ -219,7 +219,7 @@ public:
 
    void Bind(class Surface *inSurface,int inSlot)
    {
-      if (inSlot>=0 && glActiveTexture)
+      if (inSlot>=0 && CHECK_EXT(glActiveTexture))
       {
          glActiveTexture(GL_TEXTURE0 + inSlot);
       }
