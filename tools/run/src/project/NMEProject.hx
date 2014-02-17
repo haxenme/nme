@@ -119,6 +119,8 @@ class NMEProject
       templatePaths = [];
 
       environment = Sys.environment();
+      if (environment.exists("ANDROID_SERIAL"))
+         targetFlags.set("device", environment.get("ANDROID_SERIAL"));
       localDefines = new StringMap<String>();
       for(key in environment.keys())
          Reflect.setField(baseTemplateContext, key, environment.get(key));

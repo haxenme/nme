@@ -9,6 +9,7 @@ import sys.FileSystem;
 class AndroidPlatform extends Platform
 {
    var adbName:String;
+   var adbFlags:Array<String>;
    var buildV5:Bool;
    var buildV7:Bool;
    var buildX86:Bool;
@@ -58,6 +59,14 @@ class AndroidPlatform extends Platform
             adbName = test;
          // Hmm - use relative path and hope it works
       }
+
+      adbFlags = [];
+      if (project.targetFlags.exists("device"))
+         adbFlags = [ "-s", project.targetFlags.get("device") ];
+      else if (project.targetFlags.exists("androidsim"))
+         adbFlags = [ "-e" ];
+      else
+         adbFlags = [ "-d" ];
 
       if (project.environment.exists("JAVA_HOME")) 
          Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
@@ -219,26 +228,26 @@ class AndroidPlatform extends Platform
       var outputDir = getOutputDir();
       var targetPath = FileSystem.fullPath(outputDir) + "/bin/" + project.app.file + "-" + build + ".apk";
 
-      ProcessHelper.runCommand("", adbName, [ "install", "-r", targetPath ]);
+      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "install", "-r", targetPath ]) );
    }
 
    override public function run(arguments:Array<String>):Void 
    {
       var activityName = project.app.packageName + "/" + project.app.packageName + ".MainActivity";
 
-      ProcessHelper.runCommand("", adbName, [ "shell", "am", "start", "-a", "android.intent.action.MAIN", "-n", activityName ]);
+      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "shell", "am", "start", "-a", "android.intent.action.MAIN", "-n", activityName ]));
 
    }
 
    override public function trace():Void 
    {
-      ProcessHelper.runCommand("", adbName, [ "logcat", "-c" ]);
-      ProcessHelper.runCommand("", adbName, [ "logcat" ]);
+      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat", "-c" ]));
+      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat" ]));
    }
 
    override public function uninstall():Void 
    {
-      ProcessHelper.runCommand("", adbName, [ "uninstall", project.app.packageName ]);
+      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "uninstall", project.app.packageName ]));
    }
 
    override public function updateLibs()

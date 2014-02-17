@@ -257,10 +257,7 @@ class CommandLineTools
 
       Sys.println("");
       Sys.println(" Usage : nme help");
-      Sys.println(" Usage : nme [clean|update|build|run|test] <project>(target) [options]");
-      Sys.println(" Usage : nme create project <package> [options]");
-      Sys.println(" Usage : nme create <sample>");
-      Sys.println(" Usage : nme rebuild <extension>(targets)");
+      Sys.println(" Usage : nme [clean|update|build|run|test] <project> (target) [options]");
       Sys.println("");
       Sys.println(" Commands : ");
       Sys.println("");
@@ -281,6 +278,9 @@ class CommandLineTools
       Sys.println("  iosview     : Create library files for inclusion in Apple iOS applications");
       Sys.println("  flash       : Create SWF applications for Adobe Flash Player");
       Sys.println("  neko        : Create application for rapid testing on host system");
+      Sys.println("  iphone      : ios + device debugging");
+      Sys.println("  iphonesim   : ios + simulator");
+      Sys.println("  androidsim  : android + simulator");
       Sys.println("");
       Sys.println(" Options : ");
       Sys.println("");
@@ -290,11 +290,8 @@ class CommandLineTools
       Sys.println("  -verbose : Print additional information(when available)");
       Sys.println("  -vverbose : very berbose - includes haxe verbose mode");
       Sys.println("  -clean : Add a \"clean\" action before running the current command");
-      Sys.println("  -xml : Generate XML type information, useful for documentation");
-      Sys.println("  [windows|mac|linux] -neko : Build with Neko instead of C++");
-      Sys.println("  [linux] -64 : Compile for 64-bit instead of 32-bit");
-      Sys.println("  [android] -arm7 : Compile for arm-7a and arm5");
-      Sys.println("  [android] -arm7-only : Compile for arm-7a for testing");
+      Sys.println("  [mac/linux] -32 -64 : Compile for 32-bit or 64-bit instead of default");
+      Sys.println("  [android] -device=serialnumber : specify serial number");
       Sys.println("  [ios] -simulator : Build/test for the device simulator");
       Sys.println("  [ios] -simulator -ipad : Build/test for the iPad Simulator");
       Sys.println("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
@@ -325,10 +322,10 @@ class CommandLineTools
 
    private static function findProjectFile(path:String):String 
    {
-      if (FileSystem.exists(PathHelper.combine(path, "Project.hx"))) 
-         return PathHelper.combine(path, "Project.hx");
-      else if (FileSystem.exists(PathHelper.combine(path, "project.nmml"))) 
+      if (FileSystem.exists(PathHelper.combine(path, "project.nmml"))) 
          return PathHelper.combine(path, "project.nmml");
+      else if (FileSystem.exists(PathHelper.combine(path, "build.nmml"))) 
+         return PathHelper.combine(path, "build.nmml");
       else if (FileSystem.exists(PathHelper.combine(path, "project.xml"))) 
          return PathHelper.combine(path, "project.xml");
       else
@@ -339,20 +336,12 @@ class CommandLineTools
          for(file in files) 
          {
             var path = PathHelper.combine(path, file);
-
-            if (FileSystem.exists(path) && !FileSystem.isDirectory(path)) 
-            {
-               if ((Path.extension(file) == "nmml" && file != "include.nmml") || Path.extension(file) == "hx") 
-               {
-                  matches.push(path);
-               }
-            }
+            if (FileSystem.exists(path) && !FileSystem.isDirectory(path) && Path.extension(file) == "nmml")
+               matches.push(path);
          }
 
-         if (matches.length > 0) 
-         {
+         if (matches.length==1)
             return matches[0];
-         }
       }
 
       return "";
@@ -710,6 +699,8 @@ class CommandLineTools
 
             if (argument.substr(0, 2) == "-D") 
                project.haxedefs.set(argument.substr(2, equals - 2), argValue);
+            else if (argument.substr(0, equals) == "-device") 
+               project.targetFlags.set("device",argValue);
             else if (argument.substr(0, 2) == "--") 
             {
                // this won't work because it assumes there is only ever one of these.
