@@ -1,12 +1,12 @@
 {
   "name": "nme",
-  "url": "http://www.nme.io",
+  "url": "http://nmehost.com/",
   "license": "MIT",
-  "tags": [ "cpp", "neko" ],
+  "tags": [ "cpp", "neko", "nme", "opengl", "sdl", "android", "ios"  ],
   "description": "NME provides a backend for native iOS, Android, Windows, Mac and Linux applications, using a Flash-similar API",
   "version": "5.0.0",
   "binaryversion": "15",
-  "releasenote": "see changes.txt",
+  "releasenote": "see Changes.md",
   "contributors": [ "gamehaxe" ],
   "dependencies": {}
 }
