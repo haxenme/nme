@@ -5,7 +5,7 @@ package nme;
 <target id='haxe'>
   <lib name='${haxelib:nme}/lib/${BINDIR}/libnme${LIBEXTRA}${LIBEXT}'/>
 </target>
-<include name='${haxelib:nme}/lib/OsLink.xml'/>
+<include name='${haxelib:nme}/lib/NmeLink.xml'/>
 ")
 @:keep class StaticNme
 {
