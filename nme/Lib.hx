@@ -234,6 +234,7 @@ class Lib
    private static var nme_pause_animation = Loader.load("nme_pause_animation", 0);
    private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
    private static var nme_get_ndll_version = Loader.load("nme_get_ndll_version", 0);
+   private static var nme_get_nme_state_version = Loader.load("nme_get_ndll_version", 0);
 }
 
 #else

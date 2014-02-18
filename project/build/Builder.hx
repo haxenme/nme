@@ -5,13 +5,15 @@ class Builder
 {
    static function showUsage()
    {
-      Sys.println("Usage : neko builder.n [target ...] [arch] [-debug] [-verbose] [-D...]");
-      Sys.println("  target  : clean, ios, android, windows, linux, mac, ios-legacy");
-      Sys.println("          : static-android, static-windows, static-linux, static-mac,");
+      Sys.println("Usage : neko build.n [clean] [[link-]target[-arch][-arch] ...] [-debug] [-verbose] [-D...]");
+      Sys.println("  target  : ios, android, windows, linux, mac, ios-legacy");
       Sys.println("            default (=current system)");
+      Sys.println("  link    : ndll- or static-");
+      Sys.println("            (none specified = both link types");
       Sys.println("  arch    : -armv5 -armv6 -armv7 -arm64 -x86 -m32 -m64");
       Sys.println("            (none specified = all valid architectures");
       Sys.println("  -D...   : defines passed to hxcpp build system");
+      Sys.println(" eg: neko build.n clean ndll-mac-m32-m64 = build both mac ndlls");
       Sys.println(" Specify target or 'default' to remove this message");
    }
    static function getDefault()
@@ -31,55 +33,48 @@ class Builder
    public static function main()
    {
       var args = Sys.args();
-      var targets = new Array<String>();
-      var archs = new Array<String>();
+      var targets = new Map<String, Array<String>>();
       var buildArgs = new Array<String>();
       var debug = false;
 
       try
       {
+         var clean = false;
+         var defaultTarget = true;
          for(arg in args)
          {
-            if (arg=="default")
+            var parts = arg.split("-");
+            var linkStatic = true;
+            var linkNdll = true;
+            if (parts[0]=="static")
             {
-               arg = getDefault();
+               linkNdll = false;
+               parts.shift();
+            }
+            else if (parts[0]=="ndll")
+            {
+               linkStatic = false;
+               parts.shift();
             }
 
-            switch(arg)
+            var target = parts.shift();
+            if (target=="default")
+               target = getDefault();
+
+            switch(target)
             {
                case "clean":
-                  if (!Lambda.exists(targets, function(x)return x==arg))
-                     targets.push(arg);
+                  clean = true;
 
                case "ios", "android", "windows", "linux", "mac":
-                  var stat = "static-" + arg;
-                  if (!Lambda.exists(targets, function(x)return x==stat))
-                     targets.push(stat);
-                  if (arg!="ios")
+                  defaultTarget = false;
+                  if (linkStatic)
                   {
-                     var dyn = arg;
-                     if (!Lambda.exists(targets, function(x)return x==dyn))
-                        targets.push(dyn);
+                     var stat = "static-" + target;
+                     targets.set(stat, parts);
                   }
-
-               case "ndll-android", "ndll-windows", "ndll-linux", "ndll-mac":
-                     var dyn = arg.substr(5);
-                     if (!Lambda.exists(targets, function(x)return x==dyn))
-                        targets.push(dyn);
-
-               case "static-ios", "static-android", "static-windows", "static-linux", "static-mac" :
-                  if (!Lambda.exists(targets, function(x)return x==arg))
-                     targets.push(arg);
-
-               case "ios-legacy", "android-ndll", "windows-ndll", "linux-ndll", "mac-ndll" :
-                  var target = arg.split("-")[0];
-                  if (!Lambda.exists(targets, function(x)return x==target))
-                     targets.push(target);
-
-               case "-armv5", "-armv6", "-armv7", "-arm64", "-x86", "-m32", "-m64":
-                  var arch = arg.substr(1);
-                  if (!Lambda.exists(archs, function(x)return x==arch))
-                     archs.push(arch);
+                  if (linkNdll && target!="ios")
+                     targets.set(target, parts);
 
                case "-debug":
                   debug = true;
@@ -92,15 +87,16 @@ class Builder
             }
          }
 
-         if (targets.length==0)
+         if (defaultTarget)
          {
             var target = getDefault();
-            targets.push(target);
+            targets.set(target,[]);
+            targets.set("static-" +target,[]);
             showUsage();
-            Sys.println("\nusing default =" + target);
+            Sys.println("\nUsing default = " + target);
          }
 
-         if ( targets.remove("clean"))
+         if ( clean )
          {
             try
             {
@@ -111,7 +107,7 @@ class Builder
                Sys.println("Could not remove 'bin' directory");
                return;
             }
-            if (targets.length==0) // Just clean
+            if (defaultTarget) // Just clean
                return;
          }
 
@@ -121,8 +117,9 @@ class Builder
 
          Sys.setCwd("bin");
 
-         for(target in targets)
+         for(target in targets.keys())
          {
+            var archs = targets.get(target);
             var validArchs = new Map<String, Array<String>>();
             var isStatic = false;
             if (target.substr(0,7)=="static-")
@@ -156,7 +153,6 @@ class Builder
             }
 
 
-
             var valid = new Array<String>();
             for(key in validArchs.keys())
                valid.push(key);
@@ -172,6 +168,7 @@ class Builder
                   flags = flags.concat(buildArgs);
                   var args = ["run", "hxcpp", "Build.xml"].concat(flags);
 
+                  Sys.println('\nBuild $target, link=' + (isStatic?"lib":"ndll")+' arch=$arch');
                   Sys.println("haxelib " + args.join(" ")); 
                   if (Sys.command("haxelib",args)!=0)
                   {

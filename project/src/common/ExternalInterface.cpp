@@ -30,6 +30,7 @@
 #include <NMEThread.h>
 #include <StageVideo.h>
 #include <NmeBinVersion.h>
+#include <NmeStateVersion.h>
 
 
 #ifdef min
@@ -638,6 +639,12 @@ value nme_get_ndll_version()
    return alloc_int( NME_BINARY_VERSION );
 }
 DEFINE_PRIM(nme_get_ndll_version,0);
+
+value nme_get_nme_state_version()
+{
+   return alloc_string( NME_STATE_VERSION );
+}
+DEFINE_PRIM(nme_get_nme_state_version,0);
 
 
 
