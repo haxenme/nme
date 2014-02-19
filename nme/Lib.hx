@@ -224,7 +224,7 @@ class Lib
 
    static public function get_build():String { return Version.name; }
    static public function get_ndllVersion():Int { return nme_get_ndll_version(); }
-   static public function get_nmeStateVersion():Int { return nme_get_nme_state_version(); }
+   static public function get_nmeStateVersion():String { return nme_get_nme_state_version(); }
 
    // Native Methods
    #if android
