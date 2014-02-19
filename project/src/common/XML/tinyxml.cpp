@@ -24,7 +24,8 @@ distribution.
 
 #include <ctype.h>
 
-#ifdef TIXML_USE_STL
+
+#ifdef TIXML_USE_STL_STREAM
 #include <sstream>
 #include <iostream>
 #endif
@@ -694,7 +695,7 @@ void TiXmlElement::SetAttribute( const wchar_t * name, int val )
 }
 
 
-#ifdef TIXML_USE_STL
+#ifdef TIXML_USE_STL_STREAM
 void TiXmlElement::SetAttribute( const std::wstring& name, int val )
 {	
    std::wostringstream oss;
@@ -1535,7 +1536,7 @@ const TiXmlAttribute* TiXmlAttributeSet::Find( const wchar_t* name ) const
 	return 0;
 }
 
-#ifdef TIXML_USE_STL	
+#ifdef TIXML_USE_STL_STREAM
 std::wistream& operator>> (std::wistream & in, TiXmlNode & base)
 {
 	TIXML_STRING tag;
@@ -1548,7 +1549,7 @@ std::wistream& operator>> (std::wistream & in, TiXmlNode & base)
 #endif
 	
 
-#ifdef TIXML_USE_STL
+#ifdef TIXML_USE_STL_STREAM
 std::wostream& operator<< (std::wostream & out, const TiXmlNode & base)
 {
 	TiXmlPrinter printer;

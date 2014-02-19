@@ -47,8 +47,11 @@ distribution.
 
 #ifdef TIXML_USE_STL
 	#include <string>
- 	#include <iostream>
-	#include <sstream>
+
+   #ifdef TIXML_USE_STL_STREAM
+ 	   #include <iostream>
+	   #include <sstream>
+   #endif
 	#define TIXML_STRING		std::wstring
 #else
 	#include "tinystr.h"
@@ -294,7 +297,7 @@ protected:
 		return false;	// Again, only truly correct for English/Latin...but usually works.
 	}*/
 
-	#ifdef TIXML_USE_STL
+	#ifdef TIXML_USE_STL_STREAM
 	static bool	StreamWhiteSpace( std::wistream * in, TIXML_STRING * tag );
 	static bool StreamTo( std::wistream * in, int character, TIXML_STRING * tag );
 	#endif
@@ -400,7 +403,7 @@ class TiXmlNode : public TiXmlBase
 	friend class TiXmlElement;
 
 public:
-	#ifdef TIXML_USE_STL	
+	#ifdef TIXML_USE_STL_STREAM	
 
 	    /** An input stream operator, for every class. Tolerant of newlines and
 		    formatting, but doesn't expect them.
@@ -718,7 +721,7 @@ protected:
 	// and the assignment operator.
 	void CopyTo( TiXmlNode* target ) const;
 
-	#ifdef TIXML_USE_STL
+	#ifdef TIXML_USE_STL_STREAM
 	    // The real work of the input operator.
 	virtual void StreamIn( std::wistream* in, TIXML_STRING* tag ) = 0;
 	#endif
@@ -973,7 +976,7 @@ public:
 		return result;
 	}
 
-    #ifdef TIXML_USE_STL
+    #ifdef TIXML_USE_STL_STREAM
 	/** Template form of the attribute query which will try to read the
 		attribute into the specified type. Very easy, very powerful, but
 		be careful to make sure to call this with the correct type.
@@ -1108,7 +1111,7 @@ protected:
 	void ClearThis();	// like clear, but initializes 'this' object as well
 
 	// Used to be public [internal use]
-	#ifdef TIXML_USE_STL
+	#ifdef TIXML_USE_STL_STREAM
 	virtual void StreamIn( std::wistream * in, TIXML_STRING * tag );
 	#endif
 	/*	[internal use]
@@ -1160,7 +1163,7 @@ protected:
 	void CopyTo( TiXmlComment* target ) const;
 
 	// used to be public
-	#ifdef TIXML_USE_STL
+	#ifdef TIXML_USE_STL_STREAM
 	virtual void StreamIn( std::wistream * in, TIXML_STRING * tag );
 	#endif
 //	virtual void StreamOut( TIXML_OSTREAM * out ) const;
@@ -1226,7 +1229,7 @@ protected :
 
 	bool Blank() const;	// returns true if all white space and new lines
 	// [internal use]
-	#ifdef TIXML_USE_STL
+	#ifdef TIXML_USE_STL_STREAM
 	virtual void StreamIn( std::wistream * in, TIXML_STRING * tag );
 	#endif
 
@@ -1298,7 +1301,7 @@ public:
 protected:
 	void CopyTo( TiXmlDeclaration* target ) const;
 	// used to be public
-	#ifdef TIXML_USE_STL
+	#ifdef TIXML_USE_STL_STREAM
 	virtual void StreamIn( std::wistream * in, TIXML_STRING * tag );
 	#endif
 
@@ -1343,7 +1346,7 @@ public:
 protected:
 	void CopyTo( TiXmlUnknown* target ) const;
 
-	#ifdef TIXML_USE_STL
+	#ifdef TIXML_USE_STL_STREAM
 	virtual void StreamIn( std::wistream * in, TIXML_STRING * tag );
 	#endif
 
@@ -1505,7 +1508,7 @@ public:
 protected :
 	// [internal use]
 	virtual TiXmlNode* Clone() const;
-	#ifdef TIXML_USE_STL
+	#ifdef TIXML_USE_STL_STREAM
 	virtual void StreamIn( std::wistream * in, TIXML_STRING * tag );
 	#endif
 
