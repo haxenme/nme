@@ -224,9 +224,7 @@
    <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
 
 
-
-
-   <target id="NDLL" output="${LIBPREFIX}nme${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
+   <target id="NDLL" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
 
       <outdir name="${OUT_DIR}/${BINDIR}" />
 
