@@ -86,7 +86,6 @@
          <compilerflag value="-Wno-conversion" if="linux"/>
          <file name="${SRC_DIR}/linux/NativeFont.cpp"/>
          <file name="${SRC_DIR}/linux/System.cpp"/>
-         <file name="${SRC_DIR}/linux/SystemHack.c"/>
       </section>
 
       <section if="macos">
@@ -329,6 +328,7 @@
          </section>
 
          <section if="linux">
+            <lib name="${HXCPP}/lib/${BINDIR}/liblinuxcompat.a" />
             <lib name="-lpthread" />
             <lib name="-lrt" />
          </section>

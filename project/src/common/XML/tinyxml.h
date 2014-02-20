@@ -87,6 +87,10 @@ distribution.
 	#endif
 #endif	
 
+#ifndef _MSC_VER
+#include <cwctype>
+#endif
+
 class TiXmlDocument;
 class TiXmlElement;
 class TiXmlComment;
