@@ -530,6 +530,7 @@ class CommandLineTools
          var projFile = Path.withoutDirectory(projectFile);
          new NMMLParser(project,projFile);
          project.localDefines.set("PROJECT_FILE", projFile);
+         project.processStdLibs();
       }
       else
       {

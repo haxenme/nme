@@ -400,38 +400,17 @@ class PathHelper
    {
       if (ndll.path != null && ndll.path != "") 
          return ndll.path;
-      else if (ndll.haxelib == null) 
-      {
-         if (ndll.extensionPath != null && ndll.extensionPath != "") 
-            return combine(ndll.extensionPath, "ndll/" + directoryName + "/" + filename);
-         else
-            return filename;
-      }
       else if (ndll.haxelib.name == "hxcpp") 
       {
          var dir = ndll.isStatic ? "lib/" : "bin/";
          return combine(getHaxelib(ndll.haxelib), dir + directoryName + "/" + filename);
       }
-      else if (ndll.haxelib.name == "nme") 
+      else
       {
          var dir = ndll.isStatic ? "lib/" : "ndll/";
          var path = combine(getHaxelib(ndll.haxelib), dir + directoryName + "/" + filename);
-
-         /*
-         if (!FileSystem.exists(path)) 
-         {
-            try
-            {
-               var nmeState = combine(getHaxelib(new Haxelib("nme-state")), "lib/" + directoryName + "/" + filename);
-            }
-            catch(e:Dynamic) { trace(e); }
-         }
-         */
-
          return path;
       }
-      else
-         return combine(getHaxelib(ndll.haxelib), "ndll/" + directoryName + "/" + filename);
    }
 
    public static function tryFullPath(path:String):String 

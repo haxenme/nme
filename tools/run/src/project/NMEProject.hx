@@ -60,6 +60,9 @@ class NMEProject
    public var ndlls:Array<NDLL>;
    public var icons:Array<Icon>;
    public var splashScreens:Array<SplashScreen>;
+   public var optionalStaticLink:Bool;
+   public var staticLink:Bool;
+   public var stdLibs:Bool;
 
    // ios/android build parameters
    public var iosConfig:IOSConfig;
@@ -141,6 +144,9 @@ class NMEProject
       classPaths = new Array<String>();
       splashScreens = new Array<SplashScreen>();
       architectures = [];
+      staticLink = false;
+      stdLibs = true;
+      optionalStaticLink = true;
    }
 
    public function setCommand(inCommand:String)
@@ -160,6 +166,8 @@ class NMEProject
 
          case "neko":
             target = PlatformHelper.hostPlatform;
+            staticLink = false;
+            optionalStaticLink = false;
             targetFlags.set("neko", "");
 
          case "ios":
@@ -205,6 +213,11 @@ class NMEProject
             Log.error("Unknown target : " + inTargetName);
       }
 
+      if (target==Platform.IOS || target==Platform.IOSVIEW)
+      {
+         optionalStaticLink = false;
+         staticLink = true;
+      }
       if (target!=Platform.FLASH)
       {
           haxeflags.push("--remap flash:nme");
@@ -283,6 +296,38 @@ class NMEProject
    public function include(path:String):Void 
    {
       // extend project file somehow?
+   }
+
+   public function findNdll(inName:String) : NDLL
+   {
+      return Lambda.find(ndlls,function(n) return n.name==inName);
+   }
+
+   public function findHaxelib(inName:String) : Haxelib
+   {
+      return Lambda.find(haxelibs,function(h) return h.name==inName);
+   }
+
+   public function processStdLibs()
+   {
+      if (stdLibs)
+      {
+         for(lib in ["std", "zlib", "regexp"])
+         {
+            if (findNdll(lib)==null)
+            {
+               var haxelib = findHaxelib("hxcpp");
+               if (haxelib == null)
+               {
+                  haxelib = new Haxelib("hxcpp");
+                  haxelibs.push(haxelib);
+               }
+
+               var ndll = new NDLL(lib, haxelib, staticLink);
+               ndlls.push(ndll);
+            }
+         }
+      }
    }
 
    public function getContext(inBuildDir:String):Dynamic 

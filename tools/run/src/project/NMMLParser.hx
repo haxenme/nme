@@ -10,14 +10,12 @@ import platforms.Platform;
 class NMMLParser
 {
    var project:NMEProject;
-   var defaultLib:Haxelib;
 
    static var varMatch = new EReg("\\${(.*?)}", "");
 
-   public function new(inProject:NMEProject, path:String,?inDefaultLib:Haxelib)
+   public function new(inProject:NMEProject, path:String )
    {
       project = inProject;
-      defaultLib = inDefaultLib;
       process(path);
    }
 
@@ -609,72 +607,68 @@ class NMMLParser
                case "app", "meta":
                   parseAppElement(element);
 
+               case "staticlink":
+                  if (project.optionalStaticLink)
+                     project.staticLink = element.has.value ? parseBool(substitute(element.att.value)) : true;
+
+               case "stdlibs":
+                  project.stdLibs = element.has.value ? parseBool(substitute(element.att.value)) : true;
 
                case "java":
                   project.javaPaths.push(PathHelper.combine(extensionPath, substitute(element.att.path)));
 
                case "haxelib":
 
-                  /*var name:String = substitute(element.att.name);
-                  compilerFlags.push("-lib " + name);
-
-                  var path = Utils.getHaxelib(name);
-
-                  if (FileSystem.exists(path + "/include.xml")) 
-                  {
-                     var xml:Fast = new Fast(Xml.parse(File.getContent(path + "/include.xml")).firstElement());
-                     parseXML(xml, "", path + "/");
-
-                  }*/
-
                   var name = substitute(element.att.name);
                   var version = "";
 
                   if (element.has.version) 
-                  {
                      version = substitute(element.att.version);
-                  }
 
                   var haxelib = new Haxelib(name, version);
                   var path = PathHelper.getHaxelib(haxelib);
 
-                  if (FileSystem.exists(path + "/include.xml")) 
-                  {
-                     new NMMLParser(project, path + "/include.xml", haxelib);
-                     project.classPaths.push(path);
-                  }
+                  if (FileSystem.exists(path + "/nme.xml")) 
+                     new NMMLParser(project, path + "/nme.xml");
 
                   project.haxelibs.push(haxelib);
 
-               case "ndll":
+               case "ndll", "lib":
 
                   var name = substitute(element.att.name);
-                  if (!Lambda.exists(project.ndlls,function(n) return n.name==name))
+                  var existing = project.findNdll(name);
+                  var isStatic = project.staticLink;
+                  if (project.optionalStaticLink && element.has.resolve("static"))
+                     isStatic = parseBool(element.att.resolve("static"));
+
+                  if (existing!=null)
                   {
-                     var haxelib = null;
-                     var isStatic = project.target == Platform.IOS || project.target == Platform.IOSVIEW;
                      if (element.has.resolve("static"))
-                        isStatic = parseBool(element.att.resolve("static"));
+                        existing.isStatic = isStatic;
+                  }
+                  else
+                  {
+                     var haxelibName = "";
+                     if (element.has.haxelib)
+                        haxelibName = substitute(element.att.haxelib);
 
-                     if (project.isNeko())
-                        isStatic = false;
+                     if (haxelibName == "")
+                     {
+                        if ( (name == "std" || name == "regexp" || name == "zlib" ||
+                             name=="sqlite" || name=="mysql5" )) 
+                           haxelibName = "hxcpp";
+                        else
+                           haxelibName = name;
+                     }
 
-                     if (element.has.haxelib) 
-                        haxelib = new Haxelib(substitute(element.att.haxelib));
-
-                     if (haxelib == null && (name == "std" || name == "regexp" || name == "zlib" ||
-                         name=="sqlite" || name=="mysql5" )) 
-                        haxelib = new Haxelib("hxcpp");
-
-                     if (haxelib==null)
-                        haxelib = defaultLib;
-
-                     if (!Lambda.exists(project.haxelibs,function(h) return h.name==haxelib.name))
+                     var haxelib = project.findHaxelib(haxelibName);
+                     if (haxelib == null)
+                     {
+                        haxelib = new Haxelib(haxelibName);
                         project.haxelibs.push(haxelib);
+                     }
 
-                     var register = !element.has.register || substitute(element.att.register)!="false";
-                     var ndll = new NDLL(name, haxelib,register,isStatic);
-                     ndll.extensionPath = extensionPath;
+                     var ndll = new NDLL(name, haxelib, isStatic);
                      project.ndlls.push(ndll);
                   }
 

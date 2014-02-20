@@ -132,6 +132,8 @@ static int sgIDsInit = false;
 
 extern "C" void InitIDs()
 {
+   if (sgIDsInit)
+      return;
    sgIDsInit = true;
    _id_type = val_id("type");
    _id_x = val_id("x");
@@ -1083,8 +1085,7 @@ DEFINE_PRIM(nme_set_package,4);
 
 value nme_create_main_frame(value *arg, int nargs)
 {
-   if (!sgIDsInit)
-      InitIDs();
+   InitIDs();
    enum { aCallback, aWidth, aHeight, aFlags, aTitle, aIcon, aSIZE };
 
    sOnCreateCallback = new AutoGCRoot(arg[aCallback]);
@@ -4344,6 +4345,7 @@ extern "C" int nme_oglexport_register_prims();
 
 extern "C" int nme_register_prims()
 {
+   InitIDs();
    #ifdef STATIC_LINK
    nme_oglexport_register_prims();
    #endif

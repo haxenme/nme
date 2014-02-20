@@ -4,19 +4,16 @@ import sys.FileSystem;
 
 class NDLL 
 {
-   public var extensionPath:String;
    public var haxelib:Haxelib;
    public var name:String;
    public var path:String;
-   public var registerStatics:Bool;
    public var isStatic:Bool;
    public var importStatic:String;
 
-   public function new(name:String, haxelib:Haxelib = null, registerStatics:Bool = true,inIsStatic=true) 
+   public function new(inName:String, inHaxelib:Haxelib, inIsStatic:Bool) 
    {
-      this.name = name;
-      this.haxelib = haxelib;
-      this.registerStatics = registerStatics;
+      name = inName;
+      haxelib = inHaxelib;
       isStatic = inIsStatic;
       importStatic="";
       if (isStatic)
