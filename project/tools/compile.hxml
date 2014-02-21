@@ -1,2 +1,3 @@
--main Builder 
+-lib hxcpp
+-main hxcpp.Builder 
 -neko ../build.n
