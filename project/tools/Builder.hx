@@ -13,7 +13,7 @@ class Builder
       Sys.println("  arch    : -armv5 -armv6 -armv7 -arm64 -x86 -m32 -m64");
       Sys.println("            (none specified = all valid architectures");
       Sys.println("  -D...   : defines passed to hxcpp build system");
-      Sys.println(" eg: neko build.n clean ndll-mac-m32-m64 = build both mac ndlls");
+      Sys.println(" eg: neko build.n clean ndll-mac-m32-m64 = rebuild both mac ndlls");
       Sys.println(" Specify target or 'default' to remove this message");
    }
    static function getDefault()
@@ -36,6 +36,7 @@ class Builder
       var targets = new Map<String, Array<String>>();
       var buildArgs = new Array<String>();
       var debug = false;
+      var verbose = false;
 
       try
       {
@@ -43,6 +44,24 @@ class Builder
          var defaultTarget = true;
          for(arg in args)
          {
+            if (arg=="-debug")
+            {
+               debug = true;
+               continue;
+            }
+            else if (arg=="-v" || arg=="-verbose")
+            {
+               verbose = true;
+               Sys.putEnv("HXCPP_VERBOSE", "1");
+               continue;
+            }
+            if (arg=="clean")
+            {
+               clean = true;
+               continue;
+            }
+
+
             var parts = arg.split("-");
             var linkStatic = true;
             var linkNdll = true;
@@ -63,9 +82,6 @@ class Builder
 
             switch(target)
             {
-               case "clean":
-                  clean = true;
-
                case "ios", "android", "windows", "linux", "mac":
                   defaultTarget = false;
                   if (linkStatic)
@@ -76,15 +92,29 @@ class Builder
                   if (linkNdll && target!="ios")
                      targets.set(target, parts);
 
-               case "-debug":
-                  debug = true;
-
                default:
                   if (arg.substr(0,2)=="-D")
                      buildArgs.push(arg);
                   else
                      throw "Unknown arg '" + arg + "'";
             }
+         }
+
+         if ( clean )
+         {
+            try
+            {
+               if (verbose)
+                  Sys.println("delete obj...");
+              deleteRecurse("obj");
+            }
+            catch(e:Dynamic)
+            {
+               Sys.println("Could not remove 'obj' directory");
+               return;
+            }
+            if (defaultTarget) // Just clean
+               return;
          }
 
          if (defaultTarget)
@@ -96,26 +126,6 @@ class Builder
             Sys.println("\nUsing default = " + target);
          }
 
-         if ( clean )
-         {
-            try
-            {
-              deleteRecurse("bin");
-            }
-            catch(e:Dynamic)
-            {
-               Sys.println("Could not remove 'bin' directory");
-               return;
-            }
-            if (defaultTarget) // Just clean
-               return;
-         }
-
-         if (!FileSystem.exists("bin"))
-            FileSystem.createDirectory("bin");
-         sys.io.File.copy("build/Build.xml", "bin/Build.xml" );
-
-         Sys.setCwd("bin");
 
          for(target in targets.keys())
          {

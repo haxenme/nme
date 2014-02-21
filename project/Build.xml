@@ -62,10 +62,10 @@
    -->
 
    <!-- Built relative to "bin" -->
-   <set name="SRC_DIR" value="../src" />
-   <set name="INC_DIR" value="../include" />
-   <set name="SUP_DIR" value="../support" />
-   <set name="OUT_DIR" value="../../${NDLLDIR}" />
+   <set name="SRC_DIR" value="src" />
+   <set name="INC_DIR" value="include" />
+   <set name="SUP_DIR" value="support" />
+   <set name="OUT_DIR" value="../${NDLLDIR}" />
    
    <files id="main">
       <compilerflag value="-I${INC_DIR}"/>
