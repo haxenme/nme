@@ -552,6 +552,9 @@ class NMMLParser
                   project.environment.set(name, value);
                   setenv(name, value);
 
+               case "iosViewTestDir":
+                  project.iosConfig.iosViewTestDir = substitute(element.att.name);
+
                case "error":
                   Log.error(substitute(element.att.value));
 
@@ -617,7 +620,8 @@ class NMMLParser
                case "java":
                   project.javaPaths.push(PathHelper.combine(extensionPath, substitute(element.att.path)));
 
-               case "haxelib":
+               case "ndll", "lib", "haxelib":
+                  var allowMissingNdll = element.name!="ndll";
 
                   var name = substitute(element.att.name);
                   var version = "";
@@ -625,17 +629,7 @@ class NMMLParser
                   if (element.has.version) 
                      version = substitute(element.att.version);
 
-                  var haxelib = new Haxelib(name, version);
-                  var path = PathHelper.getHaxelib(haxelib);
 
-                  if (FileSystem.exists(path + "/nme.xml")) 
-                     new NMMLParser(project, path + "/nme.xml");
-
-                  project.haxelibs.push(haxelib);
-
-               case "ndll", "lib":
-
-                  var name = substitute(element.att.name);
                   var existing = project.findNdll(name);
                   var isStatic = project.staticLink;
                   if (project.optionalStaticLink && element.has.resolve("static"))
@@ -664,12 +658,20 @@ class NMMLParser
                      var haxelib = project.findHaxelib(haxelibName);
                      if (haxelib == null)
                      {
-                        haxelib = new Haxelib(haxelibName);
+                        haxelib = new Haxelib(haxelibName,version);
                         project.haxelibs.push(haxelib);
                      }
 
-                     var ndll = new NDLL(name, haxelib, isStatic);
-                     project.ndlls.push(ndll);
+                     var path = PathHelper.getHaxelib(haxelib);
+                     Log.verbose("Adding " + haxelibName + "@" + path);
+                     if (FileSystem.exists(path + "/nme.xml")) 
+                        new NMMLParser(project, path + "/nme.xml");
+
+                     if (!allowMissingNdll || FileSystem.exists(path+"/ndll") )
+                     {
+                        var ndll = new NDLL(name, haxelib, isStatic);
+                        project.ndlls.push(ndll);
+                     }
                   }
 
                case "launchImage":

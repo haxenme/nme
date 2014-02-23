@@ -242,6 +242,11 @@
             <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
          </section>
 
+         <section if="iphone">
+            <lib name="${PRELIB}vorbis${POSTLIB}" />
+            <lib name="${PRELIB}ogg${POSTLIB}" />
+         </section>
+
          <section unless="NME_SDL_SYSTEM">
             <section if="NME_SDL2">
                <lib name="${PRELIB}vorbis${POSTLIB}" />

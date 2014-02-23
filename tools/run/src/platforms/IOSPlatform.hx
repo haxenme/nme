@@ -442,7 +442,6 @@ class IOSPlatform extends Platform
                       projectDirectory + "/lib/i386" + dbg + "/libApplicationMain.a" );
    }
 
-
    override public function run(arguments:Array<String>):Void 
    {
       IOSHelper.launch(project, targetDir);

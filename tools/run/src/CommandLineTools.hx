@@ -92,6 +92,7 @@ class CommandLineTools
          if (command == "install" || command == "run" || command == "test") 
          {
             Log.verbose("\nRunning command: INSTALL");
+            platform.prepareTest();
             platform.install();
          }
 
@@ -760,11 +761,13 @@ class CommandLineTools
             project.includePaths.push(argument.substr(2));
          else if (argument == "-v" || argument == "-verbose") 
          {
+            Sys.putEnv("HXCPP_VERBOSE","1");
             Log.mVerbose = true;
          }
          else if (argument == "-vv" || argument == "-vverbose") 
          {
             project.haxeflags.push("-v");
+            Sys.putEnv("HXCPP_VERBOSE","1");
             Log.mVerbose = true;
          }
          else if (argument == "-args") 

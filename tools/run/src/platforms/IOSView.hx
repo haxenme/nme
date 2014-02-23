@@ -8,6 +8,7 @@ import sys.FileSystem;
 class IOSView extends IOSPlatform
 {
    var component:String;
+   var testDir:String;
 
    public function new(inProject:NMEProject)
    {
@@ -30,7 +31,11 @@ class IOSView extends IOSPlatform
    {
    }
 
-   override public function run(arguments:Array<String>):Void { }
+   override public function run(arguments:Array<String>):Void
+   {
+      if (PlatformHelper.hostPlatform == Platform.MAC && testDir!=null)
+         ProcessHelper.runCommand("", "open", [ testDir + "/" + "IosViewTestApp.xcodeproj" ]);
+   }
 
    override public function updateLibs() { }
 
@@ -49,6 +54,18 @@ class IOSView extends IOSPlatform
      copyTemplate("ios-view/CLASS.mm",  sdk+"/"+name + ".mm" );
    }
 
+   override public function prepareTest()
+   {
+      testDir = project.iosConfig.iosViewTestDir;
+      if (testDir=="")
+      {
+         testDir = targetDir + "/IosViewTestApp";
+         copyTemplateDir("ios-view-test/IosViewTestApp", testDir);
+      }
+      var sdk = getOutputDir();
+      FileHelper.recursiveCopy(sdk,testDir + "/" + project.app.file);
+   }
+
    override public function buildPackage():Void 
    {
       var libExts = new Array<String>();
@@ -56,19 +73,21 @@ class IOSView extends IOSPlatform
       if (buildV7) libExts.push(".iphoneos-v7.a");
       if (buildI386) libExts.push(".iphonesim.a");
 
-
+     
       var appLibs = new Array<String>();
       var dbg = project.debug ? "-debug" : "";
       for(ext in libExts)
       {
          appLibs.push(targetDir + "/haxe/cpp/ApplicationMain" + dbg + ext);
 
+         /*
          for(ndll in project.ndlls) 
             if (ndll.haxelib != null) 
             {
                var releaseLib = PathHelper.getLibraryPath(ndll, "iPhone", "lib", ext);
                appLibs.push(releaseLib);
             }
+        */
       }
 
       var dest = getOutputDir() + "/lib" + project.app.file + ".a";

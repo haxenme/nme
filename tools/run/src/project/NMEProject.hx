@@ -40,6 +40,7 @@ class IOSConfig
    public var deviceConfig:Int;
    public var linkerFlags:String;
    public var prerenderedIcon:Bool;
+   public var iosViewTestDir:String;
 
    public function new()
    {
@@ -47,6 +48,7 @@ class IOSConfig
       deployment =  "5.1.1";
       deviceConfig =  UNIVERSAL;
       linkerFlags =  "";
+      iosViewTestDir =  "";
       prerenderedIcon =  false;
    }
 }
@@ -179,14 +181,14 @@ class NMEProject
             target = Platform.IOS;
             targetFlags.set("iphoneos", "");
 
-         case "iosview":
+         case "iosview", "ios-view":
             targetFlags.set("ios", "");
             targetFlags.set("iosview", "");
             targetFlags.set("nativeview", "");
             haxedefs.set("nativeview","1");
             target = Platform.IOSVIEW;
 
-         case "androidview":
+         case "androidview", "android-view":
             targetFlags.set("android", "");
             targetFlags.set("androidview", "");
             targetFlags.set("nativeview", "");
@@ -300,12 +302,20 @@ class NMEProject
 
    public function findNdll(inName:String) : NDLL
    {
-      return Lambda.find(ndlls,function(n) return n.name==inName);
+      //return Lambda.find(ndlls,function(n) return n.name==inName);
+      for(ndll in ndlls)
+         if (ndll.name==inName)
+            return ndll;
+      return null;
    }
 
    public function findHaxelib(inName:String) : Haxelib
    {
-      return Lambda.find(haxelibs,function(h) return h.name==inName);
+      //return Lambda.find(haxelibs,function(h) return h.name==inName);
+      for(haxelib in haxelibs)
+         if (haxelib.name==inName)
+             return haxelib;
+      return null;
    }
 
    public function processStdLibs()

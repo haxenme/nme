@@ -84,6 +84,7 @@ class Platform
 
    public function display() { }
    public function install() { }
+   public function prepareTest() { }
    public function run(arguments:Array<String>) { }
    public function trace() { }
    public function uninstall() { }
