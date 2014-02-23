@@ -107,7 +107,8 @@ class AndroidPlatform extends Platform
 
    override public function runHaxe()
    {
-      var args = project.debug ? ["build.hxml","-debug"] : ["build.hxml"];
+      var args = project.debug ? ["build.hxml","-debug","-D", "android"] :
+                                 ["build.hxml", "-D", "android" ];
 
       if (buildV5)
          ProcessHelper.runCommand(haxeDir, "haxe", args);

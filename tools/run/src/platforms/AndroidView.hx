@@ -16,22 +16,33 @@ class AndroidView extends AndroidPlatform
 
    override private function generateContext(context:Dynamic)
    {
+      super.generateContext(context);
       context.ANDROIDVIEW = true;
    }
 
    override public function getOutputDir() { return targetDir + "/project"; }
    override public function getPlatformDir() : String { return "android-view"; }
    override public function getLibDir() { return getSdkDir() + "/libs/armeabi"; }
-
+   //override public function getOutputExtra() { return ""; }
    function getSdkDir()     { return targetDir + "/" + project.app.file; }
 
    override public function copyBinary():Void
    {
       var sdk = getSdkDir();
-      var buildDir = getOutputDir();
 
-      var arm5 = sdk + "/libs/armeabi/libApplicationMain.so";
-      FileHelper.copyIfNewer( buildDir + "/cpp/libApplicationMain" + (project.debug ? "-debug" : "") + ".so", arm5);
+      var dbg = project.debug ? "-debug" : "";
+
+      if (buildV5)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + ".so",
+                sdk + "/libs/armeabi/libApplicationMain.so");
+
+      if (buildV7)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-v7.so",
+                sdk + "/libs/armeabi-v7a/libApplicationMain.so" );
+
+      if (buildX86)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-x86.so",
+                sdk + "/libs/x86/libApplicationMain.so" );
    }
 
 
@@ -40,8 +51,17 @@ class AndroidView extends AndroidPlatform
       var sdk = getSdkDir();
       var buildDir = getOutputDir();
 
-      var jarName = project.app.file + "_sdk.jar";
-      FileHelper.copyIfNewer( buildDir + "/bin/classes.jar", sdk +"/libs/" + jarName);
+      PathHelper.mkdir(sdk+"/libs");
+      var jarName = sdk + "/libs/" + project.app.file + "_sdk.jar";
+      //FileHelper.copyIfNewer( buildDir + "/bin/classes.jar", sdk +"/libs/" + jarName);
+
+      var jarExe = Sys.getEnv("JAVA_HOME");
+      if (jarExe==null || jarExe=="")
+         jarExe = "jar";
+      else
+         jarExe += "/bin/jar";
+
+      ProcessHelper.runCommand("", jarExe, [ "cvf", jarName, "-C", buildDir+"/bin/classes", "."]);
 
       copyTemplateDir("android-view/sdk", sdk );
    }

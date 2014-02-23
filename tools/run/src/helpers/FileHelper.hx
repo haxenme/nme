@@ -66,18 +66,26 @@ class FileHelper
           {
          var fileContents:String = File.getContent(source);
          var template:Template = new Template(fileContents);
-         var result:String = template.execute(context, context.MACROS);
 
-         if (FileSystem.exists(destination) && File.getContent(destination)==result)
+         try
          {
-            //Log.verbose(" - already current " +  destination);
+            var result = template.execute(context, context.MACROS);
+
+            if (FileSystem.exists(destination) && File.getContent(destination)==result)
+            {
+               //Log.verbose(" - already current " +  destination);
+            }
+            else
+            {
+               Log.verbose(" - Copying template file: " + source + " -> " + destination);
+               var fileOutput:FileOutput = File.write(destination, true);
+               fileOutput.writeString(result);
+               fileOutput.close();
+            }
          }
-         else
+         catch(e:Dynamic)
          {
-            Log.verbose(" - Copying template file: " + source + " -> " + destination);
-            var fileOutput:FileOutput = File.write(destination, true);
-            fileOutput.writeString(result);
-            fileOutput.close();
+            Log.error("Error processing " + source + " : " + e);
          }
       }
       else
