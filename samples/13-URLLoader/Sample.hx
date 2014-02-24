@@ -25,8 +25,7 @@ class Sample extends Sprite {
 		  flash.Lib.current.addChild(this);
 
         //var request:URLRequest = new URLRequest("http://www.w3schools.com/xml/cd_catalog.xml");
-        //var request:URLRequest = new URLRequest("https://twitter.com/");
-        var request:URLRequest = new URLRequest("http://www.wat.tv/get/web/10976809?token=43d6414eb8f675b4c04b8c7b24b41908/529cb0b6&domain=www.wat.tv&refererURL=www.wat.tv&revision=04.00.284%0A&synd=0&helios=1&context=playerWat&pub=7&country=FR&sitepage=WAT%2Ftv%2Ft%2Fcatchup%2Ftf1%2Fno-limit-tf1&lieu=wat&playerContext=CONTEXT_WAT&getURL=1&version=WIN%2011,9,900,152");
+        var request:URLRequest = new URLRequest("https://twitter.com/");
         #if !flash
         request.basicAuth("basic","basic");
         request.cookieString = "name=value";
