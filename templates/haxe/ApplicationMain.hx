@@ -15,8 +15,11 @@ class ApplicationDocument extends ::APP_MAIN::
 {
    public function new()
    {
+      ApplicationMain.setAndroidViewHaxeObject(this);
       if (Std.is(this, nme.display.DisplayObject))
+      {
          nme.Lib.current.addChild(cast this);
+      }
 
       super();
    }
@@ -153,7 +156,8 @@ class ApplicationMain
                #if (nme && !waxe && !cocktail && !Cocktail)
                new ApplicationDocument();
                #else
-               Type.createInstance(::APP_MAIN::, []);
+               var instance = Type.createInstance(::APP_MAIN::, []);
+               setAndroidViewHaxeObject(instance);
                #end
             }
          },
@@ -177,6 +181,20 @@ class ApplicationMain
       );
       #end
       
+   }
+
+   public static function setAndroidViewHaxeObject(inObj:Dynamic)
+   {
+      #if androidview
+      try
+      {
+         var setHaxeObject = nme.JNI.createStaticMethod("::CLASS_PACKAGE::.::CLASS_NAME::Base",
+              "setHaxeCallbackObject", "(Lorg/haxe/nme/HaxeObject;)V", true, true );
+         if (setHaxeObject!=null)
+            setHaxeObject([inObj]);
+      }
+      catch(e:Dynamic) {  }
+      #end
    }
 
    public static function getAsset(inName:String) : Dynamic

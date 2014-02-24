@@ -553,7 +553,13 @@ class NMMLParser
                   setenv(name, value);
 
                case "iosViewTestDir":
-                  project.iosConfig.iosViewTestDir = substitute(element.att.name);
+                  project.iosConfig.viewTestDir = substitute(element.att.name);
+
+               case "androidViewTestDir":
+                  project.androidConfig.viewTestDir = substitute(element.att.name);
+
+               case "androidViewPackageName":
+                  project.androidConfig.viewPackageName = substitute(element.att.name);
 
                case "error":
                   Log.error(substitute(element.att.value));

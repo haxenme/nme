@@ -34,7 +34,7 @@ struct AutoHaxe
 };
 
 JNIEnv *GetEnv();
-jclass FindClass(const char *className);
+jclass FindClass(const char *className,bool inQuiet = false);
 void CheckException(JNIEnv *env, bool inThrow=true);
 
 #endif

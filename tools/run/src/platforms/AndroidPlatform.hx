@@ -63,7 +63,7 @@ class AndroidPlatform extends Platform
       adbFlags = [];
       if (project.targetFlags.exists("device"))
          adbFlags = [ "-s", project.targetFlags.get("device") ];
-      else if (project.targetFlags.exists("androidsim"))
+      else if (project.targetFlags.exists("androidsim") || project.targetFlags.exists("e"))
          adbFlags = [ "-e" ];
       else
          adbFlags = [ "-d" ];
@@ -195,7 +195,7 @@ class AndroidPlatform extends Platform
    }
 
 
-   override public function buildPackage():Void 
+   public function androidBuild(outputDir:String):Void 
    {
       if (project.environment.exists("ANDROID_SDK")) 
          Sys.putEnv("ANDROID_SDK", project.environment.get("ANDROID_SDK"));
@@ -211,7 +211,6 @@ class AndroidPlatform extends Platform
          build = "release";
 
       // Fix bug in Android build system, force compile
-      var outputDir = getOutputDir();
       var buildProperties = outputDir + "/bin/build.prop";
       if (FileSystem.exists(buildProperties)) 
          FileSystem.deleteFile(buildProperties);
@@ -219,6 +218,10 @@ class AndroidPlatform extends Platform
       ProcessHelper.runCommand(outputDir, ant, [ build ]);
    }
 
+   override public function buildPackage():Void 
+   {
+      androidBuild( getOutputDir() );
+   }
 
    override public function install():Void 
    {
@@ -264,6 +267,16 @@ class AndroidPlatform extends Platform
 
    override public function getOutputExtra() { return "android/PROJ"; }
 
+   function addV4CompatLib(inDest:String)
+   {
+      var lib = project.environment.get("ANDROID_SDK") +
+         "/extras/android/compatibility/v4/android-support-v4.jar";
+      if (FileSystem.exists(lib))
+         FileHelper.copyIfNewer(lib, inDest + "/libs/android-support-v4.jar");
+      else
+         Log.verbose("Could not find " + lib);
+   }
+
    override public function updateOutputDir():Void 
    {
       super.updateOutputDir();
@@ -305,6 +318,7 @@ class AndroidPlatform extends Platform
             }
          } catch(e:Dynamic) {}
       }
+      addV4CompatLib(getOutputDir());
    }
 
 }

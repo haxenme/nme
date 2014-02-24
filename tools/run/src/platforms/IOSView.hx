@@ -56,7 +56,7 @@ class IOSView extends IOSPlatform
 
    override public function prepareTest()
    {
-      testDir = project.iosConfig.iosViewTestDir;
+      testDir = project.iosConfig.viewTestDir;
       if (testDir=="")
       {
          testDir = targetDir + "/IosViewTestApp";

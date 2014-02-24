@@ -12,7 +12,7 @@ class ApplicationData
    public var binDir:String;
 
    // The build package name - this is the android process name
-   // Should have at least 3 parts, like a.b.c
+   // Should have at least 3 parts, like a.b.c.  It should uniquely identify your app
    public var packageName:String;
    // Shows up in title bar
    public var title:String;

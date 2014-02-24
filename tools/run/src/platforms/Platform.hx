@@ -89,9 +89,9 @@ class Platform
    public function trace() { }
    public function uninstall() { }
 
-   public function copyTemplateDir(from:String, to:String)
+   public function copyTemplateDir(from:String, to:String, warnIfNotFound = true) : Bool
    {
-      FileHelper.recursiveCopyTemplate(project.templatePaths, from, to, context);
+      return FileHelper.recursiveCopyTemplate(project.templatePaths, from, to, context, true, warnIfNotFound);
    }
    public function copyTemplate(from:String, to:String)
    {

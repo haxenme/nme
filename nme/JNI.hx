@@ -45,11 +45,18 @@ class JNI
     * @param   useArray      Whether the method should accept multiple parameters, or a single array with the parameters to pass to Java
     * @return      A method that calls Java. The first parameter is a handle for the Java object instance, the rest are passed into the method as arguments
     */
-   public static function createMemberMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic 
+   public static function createMemberMethod(className:String, memberName:String, signature:String, useArray:Bool = false, quietFail:Bool = false):Dynamic 
    {
       init();
 
-      var method = new JNIMethod(nme_jni_create_method(className, memberName, signature, false));
+      var handle = nme_jni_create_method(className, memberName, signature, false, quietFail);
+      if (handle==null)
+      {
+         if (quietFail)
+            return null;
+         throw "Could not find member function " + memberName;
+      }
+      var method = new JNIMethod(handle);
       return method.getMemberMethod(useArray);
    }
 
@@ -61,16 +68,23 @@ class JNI
     * @param   useArray      Whether the method should accept multiple parameters, or a single array with the parameters to pass to Java
     * @return      A method that calls Java. Each argument is passed into the Java method as arguments
     */
-   public static function createStaticMethod(className:String, memberName:String, signature:String, useArray:Bool = false):Dynamic 
+   public static function createStaticMethod(className:String, memberName:String, signature:String, useArray:Bool = false, quietFail:Bool):Dynamic 
    {
       init();
 
-      var method = new JNIMethod(nme_jni_create_method(className, memberName, signature, true));
+      var handle = nme_jni_create_method(className, memberName, signature, true, quietFail);
+      if (handle==null)
+      {
+         if (quietFail)
+            return null;
+         throw "Could not find static function " + memberName;
+      }
+      var method = new JNIMethod(handle);
       return method.getStaticMethod(useArray);
    }
 
    // Native Methods
-   private static var nme_jni_create_method = Loader.load("nme_jni_create_method", 4);
+   private static var nme_jni_create_method = Loader.load("nme_jni_create_method", 5);
 }
 
 class JNIMethod 
@@ -96,25 +110,17 @@ class JNIMethod
    public function getMemberMethod(useArray:Bool):Dynamic 
    {
       if (useArray) 
-      {
          return callMember;
-
-      } else 
-      {
+      else 
          return Reflect.makeVarArgs(callMember);
-      }
    }
 
    public function getStaticMethod(useArray:Bool):Dynamic 
    {
       if (useArray) 
-      {
          return callStatic;
-
-      } else 
-      {
+      else 
          return  Reflect.makeVarArgs(callStatic);
-      }
    }
 
    // Native Methods

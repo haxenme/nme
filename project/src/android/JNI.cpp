@@ -949,7 +949,7 @@ struct JNIMethod : public nme::Object
 {
    enum { MAX = 20 };
 
-   JNIMethod(value inClass, value inMethod, value inSignature,bool inStatic)
+   JNIMethod(value inClass, value inMethod, value inSignature,bool inStatic, bool inQuiet)
    {
       JNIEnv *env = GetEnv();
       JNIInit(env);
@@ -964,25 +964,46 @@ struct JNIMethod : public nme::Object
 
 
       jclass tmp  = env->FindClass(val_string(inClass));
-      mClass = (jclass)env->NewGlobalRef(tmp);
-      env->DeleteLocalRef(tmp);
-
-      const char *signature = val_string(inSignature);
-      if (mClass)
+      if (tmp)
       {
+         mClass = (jclass)env->NewGlobalRef(tmp);
+         env->DeleteLocalRef(tmp);
+
+         const char *signature = val_string(inSignature);
          if (inStatic && !mIsConstructor)
             mMethod = env->GetStaticMethodID(mClass, method, signature);
          else
             mMethod = env->GetMethodID(mClass, method, signature);
-      }
-      if (Ok())
-      {
-         bool ok = ParseSignature(signature);
-         if (!ok)
+
+         if (inQuiet)
          {
-            ELOG("Bad signature %s.", signature);
-            mMethod = 0;
+            jthrowable exc = env->ExceptionOccurred();
+            if (exc)
+               env->ExceptionClear();
          }
+         else
+            CheckException(env);
+
+         if (Ok())
+         {
+            bool ok = ParseSignature(signature);
+            if (!ok)
+            {
+               ELOG("Bad signature %s.", signature);
+               mMethod = 0;
+            }
+         }
+      }
+      else
+      {
+         if (inQuiet)
+         {
+            jthrowable exc = env->ExceptionOccurred();
+            if (exc)
+               env->ExceptionClear();
+         }
+         else
+              CheckException(env);
       }
    }
 
@@ -1164,16 +1185,18 @@ struct JNIMethod : public nme::Object
 };
 
 
-value nme_jni_create_method(value inClass, value inMethod, value inSig,value inStatic)
+value nme_jni_create_method(value inClass, value inMethod, value inSig,value inStatic, value inQuiet)
 {
-   JNIMethod *method = new JNIMethod(inClass,inMethod,inSig,val_bool(inStatic) );
+   bool quiet = val_bool(inQuiet);
+   JNIMethod *method = new JNIMethod(inClass,inMethod,inSig,val_bool(inStatic), quiet );
    if (method->Ok())
       return ObjectToAbstract(method);
-   ELOG("nme_jni_create_method - failed");
+   if (!quiet)
+      ELOG("nme_jni_create_method - failed");
    delete method;
    return alloc_null();
 }
-DEFINE_PRIM(nme_jni_create_method,4);
+DEFINE_PRIM(nme_jni_create_method,5);
 
 
 value nme_jni_call_static(value inMethod, value inArgs)

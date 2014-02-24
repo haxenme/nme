@@ -17,6 +17,9 @@ class AndroidConfig
    public var appIntent:Array<String>;
    public var appActivity:Array<String>;
    public var appPermission:Array<String>;
+   // Where to put source code when genrating a package
+   public var viewPackageName:String;
+   public var viewTestDir:String;
 
    public function new()
    {
@@ -26,6 +29,8 @@ class AndroidConfig
       appIntent = [];
       appActivity = [];
       appPermission = [];
+      viewPackageName = "com.nmehost";
+      viewTestDir = "";
    }
 }
 
@@ -40,7 +45,7 @@ class IOSConfig
    public var deviceConfig:Int;
    public var linkerFlags:String;
    public var prerenderedIcon:Bool;
-   public var iosViewTestDir:String;
+   public var viewTestDir:String;
 
    public function new()
    {
@@ -48,7 +53,7 @@ class IOSConfig
       deployment =  "5.1.1";
       deviceConfig =  UNIVERSAL;
       linkerFlags =  "";
-      iosViewTestDir =  "";
+      viewTestDir =  "";
       prerenderedIcon =  false;
    }
 }
@@ -186,6 +191,7 @@ class NMEProject
             targetFlags.set("iosview", "");
             targetFlags.set("nativeview", "");
             haxedefs.set("nativeview","1");
+            haxedefs.set("iosview","1");
             target = Platform.IOSVIEW;
 
          case "androidview", "android-view":
@@ -193,6 +199,7 @@ class NMEProject
             targetFlags.set("androidview", "");
             targetFlags.set("nativeview", "");
             haxedefs.set("nativeview","1");
+            haxedefs.set("androidview","1");
             target = Platform.ANDROIDVIEW;
 
          case "iphonesim":

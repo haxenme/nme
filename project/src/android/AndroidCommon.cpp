@@ -23,7 +23,7 @@ JNIEnv *GetEnv()
     return env;
 }
 
-jclass FindClass(const char *className)
+jclass FindClass(const char *className,bool inQuiet)
 {
     std::string cppClassName(className);
     jclass ret;
@@ -35,6 +35,18 @@ jclass FindClass(const char *className)
     {
         JNIEnv *env = GetEnv();
         jclass tmp = env->FindClass(className);
+        if (!tmp)
+        {
+           if (inQuiet)
+           {
+              jthrowable exc = env->ExceptionOccurred();
+              if (exc)
+                 env->ExceptionClear();
+           }
+           else
+              CheckException(env);
+           return 0;
+        }
         ret = (jclass)env->NewGlobalRef(tmp);
         jClassCache[cppClassName] = ret;
         env->DeleteLocalRef(tmp);
