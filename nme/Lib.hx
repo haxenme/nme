@@ -53,6 +53,7 @@ class Lib
    static public var build(get, null):String;
    static public var ndllVersion(get, null):Int;
    static public var nmeStateVersion(get, null):String;
+   static public var bits(get, null):Int;
 
    public static function close() 
    {
@@ -225,6 +226,7 @@ class Lib
    static public function get_build():String { return Version.name; }
    static public function get_ndllVersion():Int { return nme_get_ndll_version(); }
    static public function get_nmeStateVersion():String { return nme_get_nme_state_version(); }
+   static public function get_bits():Int { return nme_get_bits(); }
 
    // Native Methods
    #if android
@@ -237,6 +239,7 @@ class Lib
    private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
    private static var nme_get_ndll_version = Loader.load("nme_get_ndll_version", 0);
    private static var nme_get_nme_state_version = Loader.load("nme_get_ndll_version", 0);
+   private static var nme_get_bits = Loader.load("nme_get_bits", 0);
 }
 
 #else

@@ -17,46 +17,15 @@ class PlatformHelper
       {
          switch(hostPlatform) 
          {
-            case Platform.WINDOWS:
-
-               var architecture = Sys.getEnv("PROCESSOR_ARCHITEW6432");
-
-               if (architecture != null && architecture.indexOf("64") > -1) 
-               {
-                  _hostArchitecture = Architecture.X64;
-               }
-               else
-               {
-                  _hostArchitecture = Architecture.X86;
-               }
-
-            case Platform.LINUX:
-
-               var process = new Process("uname", [ "-m" ]);
-               var output = process.stdout.readAll().toString();
-               var error = process.stderr.readAll().toString();
-               process.exitCode();
-               process.close();
-
-               if (output.indexOf("64") > -1) 
-               {
-                  _hostArchitecture = Architecture.X64;
-               }
-               else
-               {
-                  _hostArchitecture = Architecture.X86;
-               }
-
-            case Platform.MAC:
-
-               _hostArchitecture = Architecture.X86;
+            case Platform.WINDOWS, Platform.LINUX, Platform.MAC:
+               var bits = nme.Lib.bits;
+               _hostArchitecture = bits==64 ? Architecture.X64 : Architecture.X86;
 
             default:
-
                _hostArchitecture = Architecture.ARMV6;
          }
 
-         LogHelper.info("", " - Detected host architecture: " + StringHelper.formatEnum(_hostArchitecture));
+         Log.verbose(" - Detected host architecture: " + StringHelper.formatEnum(_hostArchitecture));
       }
 
       return _hostArchitecture;

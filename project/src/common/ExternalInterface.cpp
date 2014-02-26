@@ -648,6 +648,13 @@ value nme_get_nme_state_version()
 }
 DEFINE_PRIM(nme_get_nme_state_version,0);
 
+value nme_get_bits()
+{
+   return alloc_int( sizeof(void *) * 8 );
+}
+DEFINE_PRIM(nme_get_bits,0);
+
+
 
 
 

@@ -29,7 +29,7 @@ class Sample extends Sprite {
         #if !flash
         request.basicAuth("basic","basic");
         request.cookieString = "name=value";
-        request.verbose = true;
+        //request.verbose = true;
         #end
         loader = new URLLoader();
         loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
@@ -60,7 +60,10 @@ class Sample extends Sprite {
         xmlTextField.autoSize = TextFieldAutoSize.LEFT;
 
         addChild(xmlTextField);
-/*
+
+        //var t0 = haxe.Timer.stamp();
+        //addEventListener( Event.ENTER_FRAME, function(_) trace( haxe.Timer.stamp()-t0 ) );
+
         var image_loader = new flash.display.Loader();
         image_loader.contentLoaderInfo.addEventListener(flash.events.Event.COMPLETE, function(_) {
             var bmp:flash.display.Bitmap = cast image_loader.content;
@@ -69,8 +72,10 @@ class Sample extends Sprite {
 
         var request:URLRequest = new URLRequest("http://upload.wikimedia.org/wikipedia/en/7/72/Example-serious.jpg");
         image_loader.load(request);
-        image_loader.x = 180;
+        image_loader.x = 10;
         image_loader.y = 180;
+        image_loader.scaleX = 0.1;
+        image_loader.scaleY = 0.1;
         addChild(image_loader);
 
         var post = new URLRequest("http://www.snee.com/xml/crud/posttest.cgi");
@@ -80,7 +85,7 @@ class Sample extends Sprite {
         vars.submit = "1";
         post.method = URLRequestMethod.POST;
         post.data = vars;
-        post.verbose = true;
+        //post.verbose = true;
         var postLoad = new URLLoader();
         postLoad.addEventListener(Event.COMPLETE, function(_) {
            postTextField.htmlText = postLoad.data.toString();
@@ -93,7 +98,7 @@ class Sample extends Sprite {
         {
             trace("A SecurityError has occurred.");
         }
-*/
+
     }
 
 	 function onProgress(event:ProgressEvent)

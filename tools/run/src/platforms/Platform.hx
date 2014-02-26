@@ -33,9 +33,12 @@ class Platform
       project = inProject;
       useNeko = project.targetFlags.exists("neko");
       is64 = false;
-      for(architecture in project.architectures) 
-         if (architecture == Architecture.X64) 
-            is64 = true;
+      if (useNeko)
+         is64 = nme.Lib.bits == 64;
+      else
+         for(architecture in project.architectures) 
+            if (architecture == Architecture.X64) 
+               is64 = true;
       targetDir = project.app.binDir + "/" + getPlatformDir();
       haxeDir = targetDir + "/haxe";
    }
