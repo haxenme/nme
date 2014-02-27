@@ -630,6 +630,11 @@ class NMMLParser
                   var allowMissingNdll = element.name!="ndll";
 
                   var name = substitute(element.att.name);
+                  if (name=="openfl")
+                  {
+                     name = "nme";
+                     Log.verbose("Using nme instead of openfl");
+                  }
                   var version = "";
 
                   if (element.has.version) 
@@ -679,6 +684,10 @@ class NMMLParser
                         project.ndlls.push(ndll);
                      }
                   }
+
+                  // flixel depends on lime, so lime gets same priority as flixel - we want nme with greater priority
+                  if (name=="flixel")
+                     project.raiseLib("nme");
 
                case "launchImage":
 

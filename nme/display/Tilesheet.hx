@@ -16,6 +16,10 @@ class Tilesheet
    public static inline var TILE_BLEND_NORMAL = 0x00000000;
    public static inline var TILE_BLEND_ADD = 0x00010000;
 
+   // TODO
+   public static inline var TILE_BLEND_SCREEN = 0x00000000;
+   public static inline var TILE_BLEND_MULTIPLY = 0x00000000;
+
    /** @private */ public var nmeBitmap:BitmapData;
    /** @private */ public var nmeHandle:Dynamic;
    public function new(inImage:BitmapData) 

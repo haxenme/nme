@@ -230,6 +230,7 @@ class NMEProject
       if (target!=Platform.FLASH)
       {
           haxeflags.push("--remap flash:nme");
+          haxeflags.push("--remap lime:nme");
       }
 
 
@@ -324,6 +325,20 @@ class NMEProject
              return haxelib;
       return null;
    }
+
+   public function raiseLib(inName:String)
+   {
+      for(i in 0...haxelibs.length)
+         if (haxelibs[i].name==inName)
+         {
+             var lib =  haxelibs.splice(i,1);
+             haxelibs = haxelibs.concat(lib);
+             return;
+         }
+   }
+
+
+
 
    public function processStdLibs()
    {

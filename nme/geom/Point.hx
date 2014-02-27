@@ -22,6 +22,12 @@ class Point
    {
       return new Point(x, y);
    }
+   public function setTo(inX:Float, inY:Float):Point 
+   {
+      x = inX;
+      y = inY;
+      return this;
+   }
 
    public function copyFrom(sourcePoint:Point):Void
    {
