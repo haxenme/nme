@@ -94,6 +94,13 @@ class Stage extends DisplayObjectContainer
    /** @private */ private var nmeLastRender:Float;
    /** @private */ private var nmeMouseOverObjects:Array<InteractiveObject>;
    /** @private */ private var nmeTouchInfo:#if haxe3 Map <Int, #else IntHash <#end TouchInfo>;
+
+   #if cpp
+   var nmeCollectionLock:cpp.vm.Lock;
+   var nmeCollectionAgency:cpp.vm.Thread;
+   #end
+
+
    public function new(inHandle:Dynamic, inWidth:Int, inHeight:Int) 
    {
       super(inHandle, "Stage");
@@ -124,6 +131,20 @@ class Stage extends DisplayObjectContainer
       #end
       stageVideos = new Vector<StageVideo>(1);
       stageVideos[0] = new StageVideo(this);
+
+      #if cpp
+      if (false)
+      {
+         nmeCollectionLock = new cpp.vm.Lock();
+         nmeCollectionAgency = cpp.vm.Thread.create( function() {
+           while(true)
+           {
+              nmeCollectionLock.wait();
+              cpp.vm.Gc.run(true);
+           }
+           } );
+      }
+      #end
    }
 
    public static dynamic function getOrientation():Int 
@@ -756,6 +777,16 @@ class Stage extends DisplayObjectContainer
          nmeBroadcast(new Event(Event.RENDER));
       }
 
+      #if cpp
+      if (nmeCollectionAgency!=null)
+      {
+         cpp.vm.Gc.enterGCFreeZone();
+         nmeCollectionLock.release();
+         nme_render_stage(nmeHandle);
+         cpp.vm.Gc.exitGCFreeZone();
+      }
+      else
+      #end
       nme_render_stage(nmeHandle);
    }
 
