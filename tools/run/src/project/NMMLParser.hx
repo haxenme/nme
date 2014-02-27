@@ -181,7 +181,7 @@ class NMMLParser
       return "";
    }
 
-   private function formatAttributeName(name:String):String 
+   public static function formatAttributeName(name:String):String 
    {
       var segments = name.split("_").join("-").toLowerCase().split("-");
       if (segments.length==1)

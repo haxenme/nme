@@ -5,24 +5,38 @@ import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
 import platforms.Platform;
+import nme.system.System;
 import NMEProject;
 
 
 class CommandLineTools 
 {
-   public static var nme:String;
+   public static var nme(default,null):String;
 
-   private static var additionalArguments:Array<String>;
-   private static var command:String;
-   private static var debug:Bool;
-   private static var words:Array<String>;
-   private static var traceEnabled:Null<Bool>;
-   private static var host = PlatformHelper.hostPlatform;
-   private static var nmeVersion:String;
+   static var additionalArguments:Array<String>;
+   static var command:String;
+   static var assumedTest:Bool = false;
+   static var debug:Bool;
+   static var forceFlag:Bool = false;
+   static var words:Array<String>;
+   static var traceEnabled:Null<Bool>;
+   static var host = PlatformHelper.hostPlatform;
+   static var nmeVersion:String;
+
+   static var allTargets = 
+          [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
+            "androidview", "android-view", "iphonesim", "android", "androidsim",
+            "windows", "mac", "linux", "flash" ];
+   static var allCommands = 
+          [ "help", "setup", "document", "generate", "create", "xcode",
+             "installer", "copy-if-newer",
+            "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test" ];
+
 
    private static function buildProject(project:NMEProject) 
    {
-      loadProject(project);
+      if (!loadProject(project))
+         return;
 
       var platform:Platform = null;
 
@@ -248,6 +262,67 @@ class CommandLineTools
       }
    }
 
+   private static function setup():Void 
+   {
+      if (PlatformHelper.hostPlatform==Platform.WINDOWS)
+      {
+         var haxePath:String = Sys.getEnv("HAXEPATH");
+         if (haxePath==null || haxePath=="")
+         {
+            var nekoPath = System.exeName;
+            var parts = nekoPath.split("\\");
+            if (parts.length>3 && parts[parts.length-2]=="neko")
+               haxePath = parts.slice(0,parts.length-2).join("\\") + "\\haxe";
+            else
+               haxePath = "C:\\HaxeToolkit\\haxe\\";
+         }
+
+         var target = haxePath + "\\nme.bat";
+         var source = nme + "/tools/run/bin/nme.bat";
+
+         if (!forceFlag && FileSystem.exists(target))
+         {
+            Sys.println("NME appears to be setup already.  Use '-f' to force reinstall");
+         }
+         else
+         {
+            try
+            {
+               File.copy(source,target);
+               Sys.println("Wrote " + target);
+            }
+            catch(e:Dynamic)
+            {
+              Log.error("Could not write " + target + " :" + e);
+            }
+         }
+      }
+      else
+      {
+         var source = nme + "/tools/run/bin/nme.sh";
+         var target = "/usr/bin/nme";
+
+         if (!forceFlag && FileSystem.exists(target))
+         {
+            Sys.println("NME appears to be setup already.  Use '-f' to force reinstall");
+         }
+         else
+         {
+            try
+            {
+               Sys.command("sudo", ["cp", source, target]);
+               Sys.command("sudo", ["chmod", "755", target]);
+            } catch (e:Dynamic) { }
+
+            if (!FileSystem.exists(target))
+               Log.error("NME setup failed - could not write " + target);
+            else
+               Sys.println("Wrote " + target);
+         }
+      }
+   }
+
+
    private static function document():Void 
    {
    }
@@ -258,7 +333,7 @@ class CommandLineTools
 
       Sys.println("");
       Sys.println(" Usage : nme help");
-      Sys.println(" Usage : nme [clean|update|build|run|test] <project> (target) [options]");
+      Sys.println(" Usage : nme [setup|clean|update|build|run|test] <project> (target) [options]");
       Sys.println("");
       Sys.println(" Commands : ");
       Sys.println("");
@@ -269,6 +344,7 @@ class CommandLineTools
       Sys.println("  run : Install and run for the specified project/target");
       Sys.println("  test : Update, build and run in one command");
       Sys.println("  create : Create a new project or extension using templates");
+      Sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
       Sys.println("");
       Sys.println(" Targets : ");
       Sys.println("");
@@ -289,6 +365,7 @@ class CommandLineTools
       Sys.println("  -debug : Use debug configuration instead of release");
       Sys.println("  -megatrace : Add maximum debugging");
       Sys.println("  -verbose : Print additional information(when available)");
+      Sys.println("  -f : force setup re-write");
       Sys.println("  -vverbose : very berbose - includes haxe verbose mode");
       Sys.println("  -clean : Add a \"clean\" action before running the current command");
       Sys.println("  [mac/linux] -32 -64 : Compile for 32-bit or 64-bit instead of default");
@@ -329,20 +406,32 @@ class CommandLineTools
          return PathHelper.combine(path, "build.nmml");
       else if (FileSystem.exists(PathHelper.combine(path, "project.xml"))) 
          return PathHelper.combine(path, "project.xml");
+      else if (FileSystem.exists(PathHelper.combine(path, "Project.xml"))) 
+         return PathHelper.combine(path, "Project.xml");
       else
       {
          var files = FileSystem.readDirectory(path);
-         var matches = [];
+         var projs = [];
+         var haxes = [];
 
          for(file in files) 
          {
             var path = PathHelper.combine(path, file);
-            if (FileSystem.exists(path) && !FileSystem.isDirectory(path) && Path.extension(file) == "nmml")
-               matches.push(path);
+            if (FileSystem.exists(path) && !FileSystem.isDirectory(path))
+            {
+               var ext = Path.extension(file);
+               if (ext=="nmml" || ext=="xml")
+                  projs.push(path);
+               else if (ext=="hx")
+                  haxes.push(path);
+            }
          }
 
-         if (matches.length==1)
-            return matches[0];
+         if (projs.length==1)
+            return projs[0];
+
+         if (projs.length==0 && haxes.length==1)
+            return haxes[0];
       }
 
       return "";
@@ -467,14 +556,33 @@ class CommandLineTools
    }
    #end
 
-   static function loadProject(project:NMEProject)
+   static function loadProject(project:NMEProject) : Bool
    {
       Log.verbose("Loading project...");
 
       var projectFile = "";
       var targetName = "";
 
-      if (words.length == 2) 
+      for(w in 0...words.length)
+      {
+         var test = words[w].toLowerCase();
+         if (isTarget(test))
+         {
+            targetName = test;
+            words.splice(w,1);
+            break;
+         }
+      }
+
+      if (targetName=="")
+      {
+         if (words.length>1)
+            Log.error("No valid target supplied. Try : " + allTargets.join(","));
+
+         targetName = "cpp";
+      }
+
+      if (words.length>0)
       {
          if (FileSystem.exists(words[0])) 
          {
@@ -483,19 +591,17 @@ class CommandLineTools
             else
                projectFile = words[0];
          }
-         targetName = words[1].toLowerCase();
       }
       else
-      {
          projectFile = findProjectFile(Sys.getCwd());
-         targetName = words[0].toLowerCase();
-      }
 
 
       if (projectFile == "") 
       {
+         if (assumedTest && words.length==0)
+            return false;
+
          Log.error("You must have a \"project.nmml\" file or specify another valid project file when using the '" + command + "' command");
-         return null;
       }
       else
          Log.verbose("Using project file: " + projectFile);
@@ -526,18 +632,24 @@ class CommandLineTools
 
       try { Sys.setCwd(Path.directory(projectFile)); } catch(e:Dynamic) {}
 
-      if (Path.extension(projectFile) == "nmml" || Path.extension(projectFile) == "xml") 
+      var ext =  Path.extension(projectFile);
+      var projFile = Path.withoutDirectory(projectFile);
+      if (ext == "nmml" || ext == "xml") 
       {
-         var projFile = Path.withoutDirectory(projectFile);
          new NMMLParser(project,projFile);
-         project.localDefines.set("PROJECT_FILE", projFile);
-         project.processStdLibs();
+      }
+      else if (ext=="hx")
+      {
+         new HxParser(project,projFile);
       }
       else
       {
-         Log.error("You must have a \"project.nmml\" file or specify another NME project file when using the '" + command + "' command");
-         return null;
+         Log.error(projectFile + " does not appear be a project file.");
+         return false;
       }
+
+      project.localDefines.set("PROJECT_FILE", projFile);
+      project.processStdLibs();
 
       // Better way to do this?
       switch(project.target) 
@@ -552,7 +664,7 @@ class CommandLineTools
 
       project.templatePaths.push( nme + "/templates" );
 
-      return project;
+      return true;
    }
 
    private static function resolveClass(name:String):Class<Dynamic> 
@@ -566,6 +678,26 @@ class CommandLineTools
          return Type.resolveClass(name);
       }
    }
+
+   public static function isCommand(inCommand:String)
+   {
+      for(c in allCommands)
+         if (c==inCommand)
+            return true;
+      return false;
+   }
+
+
+   public static function isTarget(inTarget:String)
+   {
+
+      for(t in allTargets)
+         if (t==inTarget)
+            return true;
+      return false;
+   }
+
+
 
    public static function main():Void 
    {
@@ -610,6 +742,9 @@ class CommandLineTools
          case "help":
             displayHelp();
 
+         case "setup":
+            setup();
+
          case "document":
             document();
 
@@ -627,7 +762,7 @@ class CommandLineTools
 
          case "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test":
 
-            if (words.length < 1 || words.length > 2) 
+            if (words.length > 2) 
             {
                Log.error("Incorrect number of arguments for command '" + command + "'");
                return;
@@ -654,6 +789,7 @@ class CommandLineTools
       if (lastCharacter == "/" || lastCharacter == "\\") 
          nme = nme.substr(0, -1);
 
+
       if (arguments.length > 0) 
       {
          // When the command-line tools are called from haxelib, 
@@ -676,21 +812,15 @@ class CommandLineTools
             Sys.setCwd(lastArgument);
       }
 
-      var catchArguments = false;
-      var catchHaxeFlag = false;
+      command = "";
 
-      for(argument in arguments) 
+      var argIdx = 0;
+      while(argIdx < arguments.length)
       {
-         var equals = argument.indexOf("=");
+         var argument = arguments[argIdx++];
 
-         if (catchHaxeFlag) 
-         {
-            project.haxeflags.push(argument);
-            catchHaxeFlag = false;
-         }
-         else if (catchArguments) 
-            additionalArguments.push(argument);
-         else if (equals > 0) 
+         var equals = argument.indexOf("=");
+         if (equals > 0) 
          {
             var argValue = argument.substr(equals + 1);
             // if quotes remain on the argValue we need to strip them off
@@ -743,60 +873,91 @@ class CommandLineTools
                project.haxedefs.set(argument.substr(0, equals), argValue);
             }
          }
-         else if (argument.substr(0, 4) == "-arm") 
-         {
-            var name = argument.substr(1).toUpperCase();
-            var value = Type.createEnum(Architecture, name);
-
-            if (value != null) 
-               project.architectures.push(value);
-         }
-         else if (argument == "-64") 
-            project.architectures.push(Architecture.X64);
-         else if (argument == "-32") 
-            project.architectures.push(Architecture.X86);
-         else if (argument.substr(0, 2) == "-D") 
-            project.haxedefs.set(argument.substr(2), "");
-         else if (argument.substr(0, 2) == "-l") 
-            project.includePaths.push(argument.substr(2));
-         else if (argument == "-v" || argument == "-verbose") 
-         {
-            Sys.putEnv("HXCPP_VERBOSE","1");
-            Log.mVerbose = true;
-         }
-         else if (argument == "-vv" || argument == "-vverbose") 
-         {
-            project.haxeflags.push("-v");
-            Sys.putEnv("HXCPP_VERBOSE","1");
-            Log.mVerbose = true;
-         }
-         else if (argument == "-args") 
-            catchArguments = true;
-         else if (argument == "-notrace") 
-            traceEnabled = false;
-         else if (argument == "-debug") 
-         {
-            project.debug = debug = true;
-         }
-         else if (argument == "-megatrace") 
-            project.megaTrace = project.debug = debug = true;
-         else if (command.length == 0) 
-            command = argument;
          else if (argument.substr(0, 1) == "-") 
          {
             if (argument.substr(1, 1) == "-") 
             {
                project.haxeflags.push(argument);
                if (argument == "--remap" || argument == "--connect") 
-                  catchHaxeFlag = true;
+               {
+                  project.haxeflags.push(argument);
+                  project.haxeflags.push(arguments[argIdx++]);
+               }
             }
+            else if (argument.substr(0, 4) == "-arm") 
+            {
+               var name = argument.substr(1).toUpperCase();
+               var value = Type.createEnum(Architecture, name);
+
+               if (value != null) 
+                  project.architectures.push(value);
+            }
+            else if (argument == "-64") 
+               project.architectures.push(Architecture.X64);
+
+            else if (argument == "-32") 
+               project.architectures.push(Architecture.X86);
+
+            else if (argument.substr(0, 2) == "-D") 
+               project.haxedefs.set(argument.substr(2), "");
+
+            else if (argument.substr(0, 2) == "-l") 
+               project.includePaths.push(argument.substr(2));
+
+            else if (argument == "-f")
+               forceFlag = true;
+
+            else if (argument == "-v" || argument == "-verbose") 
+            {
+               Sys.putEnv("HXCPP_VERBOSE","1");
+               Log.mVerbose = true;
+            }
+            else if (argument == "-vv" || argument == "-vverbose") 
+            {
+               project.haxeflags.push("-v");
+               Sys.putEnv("HXCPP_VERBOSE","1");
+               Log.mVerbose = true;
+            }
+            else if (argument == "-args")
+            {
+               while(argIdx < arguments.length)
+                   additionalArguments.push(arguments[argIdx++]);
+            }
+            else if (argument == "-notrace") 
+               traceEnabled = false;
+
+            else if (argument == "-debug") 
+            {
+               project.debug = debug = true;
+            }
+            else if (argument == "-megatrace") 
+               project.megaTrace = project.debug = debug = true;
+
             else
                project.targetFlags.set(argument.substr(1), "");
          }
+         // No '-'
          else
          {
             words.push(argument);
          }
+      }
+
+      for(w in 0...words.length)
+      {
+         if (isCommand(words[w]))
+         {
+            command = words[w];
+            words.splice(w,1);
+            break;
+         }
+      }
+
+      if (command=="")
+      {
+         displayInfo(true);
+         command = "test";
+         assumedTest = true;
       }
 
       project.setCommand(command);
