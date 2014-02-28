@@ -49,6 +49,34 @@ int InitSDL()
    return err;
 }
 
+static void openAudio()
+{
+   gSDLAudioState = sdaOpen;
+
+   #ifdef HX_WINDOWS
+   int chunksize = 2048;
+   #else
+   int chunksize = 4096;
+   #endif
+   
+   int frequency = 44100;
+   //int frequency = MIX_DEFAULT_FREQUENCY //22050
+   //The default frequency would have less latency, but is incompatible with the average MP3 file
+   
+   if (Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize) != 0)
+   {
+      fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
+      gSDLAudioState = sdaError;
+   }
+}
+
+void InitSDLAudio()
+{
+   SDL_Init(SDL_INIT_AUDIO);
+   openAudio();
+}
+
+
 
 class SDLSurf : public Surface
 {
@@ -1105,24 +1133,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    //SDL_EnableKeyRepeat(500,30);
 
    #ifdef NME_MIXER
-
-   gSDLAudioState = sdaOpen;
-
-   #ifdef HX_WINDOWS
-   int chunksize = 2048;
-   #else
-   int chunksize = 4096;
-   #endif
-   
-   int frequency = 44100;
-   //int frequency = MIX_DEFAULT_FREQUENCY //22050
-   //The default frequency would have less latency, but is incompatible with the average MP3 file
-   
-   if (Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize) != 0)
-   {
-      fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
-      gSDLAudioState = sdaError;
-   }
+   openAudio();
    #endif
    
    if (SDL_GetNumVideoDisplays() > 0)

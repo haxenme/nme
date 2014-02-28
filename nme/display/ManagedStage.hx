@@ -83,9 +83,17 @@ class ManagedStage extends Stage
    {
    }
 
+   public static function initSdlAudio()
+   {
+       nme_init_sdl_audio();
+   }
+
+
    // Native Methods
    private static var nme_managed_stage_create = Loader.load("nme_managed_stage_create", 3);
    private static var nme_managed_stage_pump_event = Loader.load("nme_managed_stage_pump_event", 2);
+   private static var nme_init_sdl_audio = Loader.load("nme_init_sdl_audio", 0);
+
 }
 
 #end

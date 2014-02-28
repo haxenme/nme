@@ -1057,6 +1057,17 @@ value nme_stage_set_fixed_orientation(value inValue)
 }
 DEFINE_PRIM(nme_stage_set_fixed_orientation,1);
 
+
+value nme_init_sdl_audio( )
+{
+   #if defined(HX_WINDOWS) || defined(HX_LINUX) || defined(HX_MACOS)
+   if (gSDLAudioState==sdaNotInit)
+      InitSDLAudio();
+   #endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_init_sdl_audio,0);
+
 value nme_get_frame_stage(value inValue)
 {
    Frame *frame;

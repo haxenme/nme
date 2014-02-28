@@ -84,6 +84,10 @@ class ApplicationMain
 
       #elseif waxe
 
+      #if nme
+      nme.display.ManagedStage.initSdlAudio();
+      #end
+
       if (ApplicationBoot.canCallMain())
          ApplicationBoot.createInstance();
       else

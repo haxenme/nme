@@ -19,6 +19,8 @@ enum SDLAudioState
 
 extern SDLAudioState gSDLAudioState;
 
+void InitSDLAudio();
+
 struct SoundTransform
 {
    SoundTransform() : pan(0), volume(1.0) { }
