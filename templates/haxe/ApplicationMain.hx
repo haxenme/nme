@@ -10,23 +10,6 @@ import wx.Assets;
 #end
 
 
-#if (nme && !waxe && !cocktail && !Cocktail)
-class ApplicationDocument extends ::APP_MAIN::
-{
-   public function new()
-   {
-      ApplicationMain.setAndroidViewHaxeObject(this);
-      if (Std.is(this, nme.display.DisplayObject))
-      {
-         nme.Lib.current.addChild(cast this);
-      }
-
-      super();
-   }
-}
-#end
-
-
 
 #if iosview
 @:buildXml("
@@ -99,21 +82,15 @@ class ApplicationMain
       var load = function()
       {
           if (hasMain)
-               Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
-            else
-            {
-               #if (nme && !waxe && !cocktail && !Cocktail)
-               new ApplicationDocument();
-               #else
-               Type.createInstance(::APP_MAIN::, []);
-               #end
-            }
-       };
-       ::if (PRELOADER_NAME!=null)::
-       new ::PRELOADER_NAME::(::WIN_WIDTH::, ::WIN_HEIGHT::, ::WIN_BACKGROUND::, load);
-       ::else::
-       load();
-       ::end::
+             Reflect.callMethod(::APP_MAIN::, Reflect.field(::APP_MAIN::, "main"), []);
+          else
+             ApplicationBoot.createInstance();
+      };
+      ::if (PRELOADER_NAME!=null)::
+         new ::PRELOADER_NAME::(::WIN_WIDTH::, ::WIN_HEIGHT::, ::WIN_BACKGROUND::, load);
+      ::else::
+         load();
+      ::end::
 
 
       #elseif waxe
@@ -127,12 +104,15 @@ class ApplicationMain
             ::else::
             frame = wx.Frame.create(null, null, "::APP_TITLE::", null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
             ::end::
+
+
             #if nme
-            var stage = wx.NMEStage.create(frame, null, null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+               wx.NMEStage.create(frame, null, null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+               ApplicationBoot.createInstance();
+            #else
+               Type.createInstance(::APP_MAIN::, []);
             #end
-            
-            Type.createInstance(::APP_MAIN::, []);
-            
+
             if (autoShowFrame)
             {
                wx.App.setTopWindow(frame);
@@ -152,14 +132,7 @@ class ApplicationMain
             if (hasMain)
                Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
             else
-            {
-               #if (nme && !waxe && !cocktail && !Cocktail)
-               new ApplicationDocument();
-               #else
-               var instance = Type.createInstance(::APP_MAIN::, []);
-               setAndroidViewHaxeObject(instance);
-               #end
-            }
+               ApplicationBoot.createInstance();
          },
          ::WIN_WIDTH::, ::WIN_HEIGHT::, 
          ::WIN_FPS::, 

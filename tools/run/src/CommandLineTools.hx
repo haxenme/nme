@@ -901,6 +901,9 @@ class CommandLineTools
             else if (argument.substr(0, 2) == "-D") 
                project.haxedefs.set(argument.substr(2), "");
 
+            else if (argument == "-lib") 
+               project.addLib(arguments[argIdx++],"lib");
+
             else if (argument.substr(0, 2) == "-l") 
                project.includePaths.push(argument.substr(2));
 

@@ -627,67 +627,22 @@ class NMMLParser
                   project.javaPaths.push(PathHelper.combine(extensionPath, substitute(element.att.path)));
 
                case "ndll", "lib", "haxelib":
-                  var allowMissingNdll = element.name!="ndll";
-
                   var name = substitute(element.att.name);
-                  if (name=="openfl")
-                  {
-                     name = "nme";
-                     Log.verbose("Using nme instead of openfl");
-                  }
                   var version = "";
 
                   if (element.has.version) 
                      version = substitute(element.att.version);
 
+                  var haxelibName = "";
+                  if (element.has.haxelib)
+                     haxelibName = substitute(element.att.haxelib);
 
-                  var existing = project.findNdll(name);
-                  var isStatic = project.staticLink;
-                  if (project.optionalStaticLink && element.has.resolve("static"))
-                     isStatic = parseBool(element.att.resolve("static"));
+                  var isStatic:Null<Bool> = null;
+                  if (element.has.resolve("static"))
+                      isStatic = parseBool(element.att.resolve("static"));
 
-                  if (existing!=null)
-                  {
-                     if (element.has.resolve("static"))
-                        existing.isStatic = isStatic;
-                  }
-                  else
-                  {
-                     var haxelibName = "";
-                     if (element.has.haxelib)
-                        haxelibName = substitute(element.att.haxelib);
-
-                     if (haxelibName == "")
-                     {
-                        if ( (name == "std" || name == "regexp" || name == "zlib" ||
-                             name=="sqlite" || name=="mysql5" )) 
-                           haxelibName = "hxcpp";
-                        else
-                           haxelibName = name;
-                     }
-
-                     var haxelib = project.findHaxelib(haxelibName);
-                     if (haxelib == null)
-                     {
-                        haxelib = new Haxelib(haxelibName,version);
-                        project.haxelibs.push(haxelib);
-                     }
-
-                     var path = PathHelper.getHaxelib(haxelib);
-                     Log.verbose("Adding " + haxelibName + "@" + path);
-                     if (FileSystem.exists(path + "/nme.xml")) 
-                        new NMMLParser(project, path + "/nme.xml");
-
-                     if (!allowMissingNdll || FileSystem.exists(path+"/ndll") )
-                     {
-                        var ndll = new NDLL(name, haxelib, isStatic);
-                        project.ndlls.push(ndll);
-                     }
-                  }
-
-                  // flixel depends on lime, so lime gets same priority as flixel - we want nme with greater priority
-                  if (name=="flixel")
-                     project.raiseLib("nme");
+                  project.addLib(name, element.name, haxelibName, version,isStatic);
+ 
 
                case "launchImage":
 

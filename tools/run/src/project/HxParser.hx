@@ -20,6 +20,7 @@ class HxParser
       var file = new Path(path).file;
       project.app.file = file;
       project.app.title = file;
+      project.app.main = file;
       project.app.packageName = "com.nme." + file.toLowerCase();
 
       var haxelib = new Haxelib("nme");
