@@ -88,9 +88,9 @@ class ApplicationMain
          ApplicationBoot.createInstance();
       else
       {
-         #if nme
          wx.App.boot(function()
          {
+            #if nme
             var size = { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: };
             ::if (APP_FRAME != null)::
                frame = wx.::APP_FRAME::.create(null, null, "::APP_TITLE::", null, size);
@@ -101,7 +101,6 @@ class ApplicationMain
 
                wx.NMEStage.create(frame, null, null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
 
-            // If it is not nme, and it does not have a main, this should fail
             ApplicationBoot.createInstance();
 
             if (autoShowFrame)
@@ -109,8 +108,10 @@ class ApplicationMain
                wx.App.setTopWindow(frame);
                frame.shown = true;
             }
+            #else
+            ApplicationBoot.createInstance();
+            #end
          });
-         #end
       }
       #else
       nme.Lib.create(function() { 
