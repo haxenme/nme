@@ -67,25 +67,14 @@ class ApplicationMain
 
       #end
    
-      var hasMain = false;
-      for(methodName in Type.getClassFields(::APP_MAIN::))
-         if (methodName == "main")
-         {
-            hasMain = true;
-            break;
-         }
+
    
       #if flash
       flash.Lib.current.stage.align = flash.display.StageAlign.TOP_LEFT;
       flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
 
-      var load = function()
-      {
-          if (hasMain)
-             Reflect.callMethod(::APP_MAIN::, Reflect.field(::APP_MAIN::, "main"), []);
-          else
-             ApplicationBoot.createInstance();
-      };
+      var load = function() ApplicationBoot.createInstance();
+
       ::if (PRELOADER_NAME!=null)::
          new ::PRELOADER_NAME::(::WIN_WIDTH::, ::WIN_HEIGHT::, ::WIN_BACKGROUND::, load);
       ::else::
@@ -94,24 +83,26 @@ class ApplicationMain
 
 
       #elseif waxe
-      if (hasMain)
-         Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
+
+      if (ApplicationBoot.canCallMain())
+         ApplicationBoot.createInstance();
       else
+      {
+         #if nme
          wx.App.boot(function()
          {
+            var size = { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: };
             ::if (APP_FRAME != null)::
-            frame = wx.::APP_FRAME::.create(null, null, "::APP_TITLE::", null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+               frame = wx.::APP_FRAME::.create(null, null, "::APP_TITLE::", null, size);
             ::else::
-            frame = wx.Frame.create(null, null, "::APP_TITLE::", null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+               frame = wx.Frame.create(null, null, "::APP_TITLE::", null, size);
             ::end::
 
 
-            #if nme
                wx.NMEStage.create(frame, null, null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
-               ApplicationBoot.createInstance();
-            #else
-               Type.createInstance(::APP_MAIN::, []);
-            #end
+
+            // If it is not nme, and it does not have a main, this should fail
+            ApplicationBoot.createInstance();
 
             if (autoShowFrame)
             {
@@ -119,20 +110,14 @@ class ApplicationMain
                frame.shown = true;
             }
          });
+         #end
+      }
       #else
       nme.Lib.create(function() { 
-            //if ((::WIN_WIDTH:: == 0 && ::WIN_HEIGHT:: == 0) || ::WIN_FULLSCREEN::)
-            //{
-               nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
-               nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
-               nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
-            //}
-            
-            
-            if (hasMain)
-               Reflect.callMethod (::APP_MAIN::, Reflect.field (::APP_MAIN::, "main"), []);
-            else
-               ApplicationBoot.createInstance();
+            nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
+            nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
+            nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
+            ApplicationBoot.createInstance();
          },
          ::WIN_WIDTH::, ::WIN_HEIGHT::, 
          ::WIN_FPS::, 
