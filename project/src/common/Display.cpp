@@ -13,6 +13,8 @@
 namespace nme
 {
 
+bool gNmeRenderGcFree = false;
+
 unsigned int gDisplayRefCounting = drDisplayChildRefs;
 static int sgDisplayObjID = 0;
 
@@ -672,7 +674,14 @@ void DirectRenderer::Render( const RenderTarget &inTarget, const RenderState &in
       gDirectRenderContext = inTarget.mHardware;
       Rect clip = inState.mClipRect;
       clip.y = inTarget.mHardware->Height() - clip.y - clip.h;
-      onRender(renderHandle,clip,inState.mTransform);
+      if (gNmeRenderGcFree)
+      {
+         gc_exit_blocking();
+         onRender(renderHandle,clip,inState.mTransform);
+         gc_enter_blocking();
+      }
+      else
+         onRender(renderHandle,clip,inState.mTransform);
       gDirectRenderContext = 0;
    }
 }

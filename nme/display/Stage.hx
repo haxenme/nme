@@ -26,6 +26,10 @@ import nme.Loader;
 import nme.Vector;
 import nme.events.StageVideoAvailabilityEvent;
 
+#if cpp
+import cpp.vm.Gc;
+#end
+
 
 class Stage extends DisplayObjectContainer 
 {
@@ -96,8 +100,14 @@ class Stage extends DisplayObjectContainer
    /** @private */ private var nmeTouchInfo:#if haxe3 Map <Int, #else IntHash <#end TouchInfo>;
 
    #if cpp
+   var nmePreemptiveGcFreq:Int;
+   var nmePreemptiveGcSince:Int;
    var nmeCollectionLock:cpp.vm.Lock;
    var nmeCollectionAgency:cpp.vm.Thread;
+   var nmeFrameAlloc:Array<Int>;
+   var nmeLastCurrentMemory:Int;
+   var nmeLastPreempt:Bool;
+   var nmeFrameMemIndex:Int;
    #end
 
 
@@ -133,18 +143,14 @@ class Stage extends DisplayObjectContainer
       stageVideos[0] = new StageVideo(this);
 
       #if cpp
-      if (false)
-      {
-         nmeCollectionLock = new cpp.vm.Lock();
-         nmeCollectionAgency = cpp.vm.Thread.create( function() {
-           while(true)
-           {
-              nmeCollectionLock.wait();
-              cpp.vm.Gc.run(true);
-           }
-           } );
-      }
+      nmePreemptiveGcFreq = 0;
+      nmePreemptiveGcSince = 0;
+      nmeLastCurrentMemory = 0;
+      nmeLastPreempt = false;
+      nmeFrameMemIndex = 0;
       #end
+
+
    }
 
    public static dynamic function getOrientation():Int 
@@ -778,14 +784,69 @@ class Stage extends DisplayObjectContainer
       }
 
       #if cpp
-      if (nmeCollectionAgency!=null)
+      var rendered = false;
+      if (nmeCollectionAgency!=null && nmePreemptiveGcFreq!=0)
       {
-         cpp.vm.Gc.enterGCFreeZone();
-         nmeCollectionLock.release();
-         nme_render_stage(nmeHandle);
-         cpp.vm.Gc.exitGCFreeZone();
+         nmePreemptiveGcSince++;
+         var preempt = nmePreemptiveGcSince>=nmePreemptiveGcFreq;
+
+         #if (hxcpp_api_level >= 310)
+         // Smart preemptive
+         if (nmePreemptiveGcFreq<0)
+         {
+            if (nmeFrameAlloc==null)
+               nmeFrameAlloc = [];
+
+            var current = Gc.memInfo(Gc.MEM_INFO_CURRENT);
+            if (nmeLastCurrentMemory>0)
+            {
+               var frameAlloc = current - nmeLastCurrentMemory;
+               if (frameAlloc>=0)
+               {
+                  nmeFrameAlloc[nmeFrameMemIndex++] = frameAlloc;
+                  if (nmeFrameMemIndex>10)
+                     nmeFrameMemIndex = 0;
+               }
+               else if (!nmeLastPreempt)
+               {
+                  //trace("Missed alloc!");
+               }
+            }
+            nmeLastCurrentMemory = current;
+
+            if (nmeFrameAlloc.length>0)
+            {
+               var sum = 0;
+               for(f in nmeFrameAlloc)
+                  sum += f;
+
+               var reserved =Gc.memInfo(Gc.MEM_INFO_RESERVED);
+               preempt = sum * 1.2 /nmeFrameAlloc.length + current > reserved;
+            }
+            else
+               preempt = false;
+         }
+         #end
+
+         nmeLastPreempt = preempt;
+         if (preempt)
+         {
+            //trace("preempt");
+            nmePreemptiveGcSince = 0;
+            rendered = true;
+            nme_set_render_gc_free(true);
+            Gc.enterGCFreeZone();
+            nmeCollectionLock.release();
+            nme_render_stage(nmeHandle);
+            Gc.exitGCFreeZone();
+            nme_set_render_gc_free(false);
+         }
+         else
+         {
+            //trace("frame");
+         }
       }
-      else
+      if (!rendered)
       #end
       nme_render_stage(nmeHandle);
    }
@@ -851,6 +912,34 @@ class Stage extends DisplayObjectContainer
 
       return next_wake;
    }
+
+   public function setPreemtiveGcFrequency(inFrames:Int)
+   {
+      #if cpp
+      #if !(hxcpp_api_level>=310)
+      if (inFrames<0)
+         inFrames = 0;
+      #end
+      nmePreemptiveGcSince = 0;
+      nmePreemptiveGcFreq = inFrames;
+      if (nmeCollectionLock==null && inFrames!=0)
+      {
+         nmeCollectionLock = new cpp.vm.Lock();
+         nmeCollectionAgency = cpp.vm.Thread.create( function() {
+           while(true)
+           {
+              nmeCollectionLock.wait();
+              Gc.run(false);
+           }
+           } );
+      }
+      #end
+   }
+   public function setSmartPreemtiveGc()
+   {
+      setPreemtiveGcFrequency(-1);
+   }
+
    
    public function resize (width:Int, height:Int):Void {
       
@@ -981,6 +1070,7 @@ class Stage extends DisplayObjectContainer
    // Native Methods
    private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler", 4);
    private static var nme_render_stage = Loader.load("nme_render_stage", 1);
+   private static var nme_set_render_gc_free = Loader.load("nme_set_render_gc_free", 1);
    private static var nme_stage_get_focus_id = Loader.load("nme_stage_get_focus_id", 1);
    private static var nme_stage_set_focus = Loader.load("nme_stage_set_focus", 3);
    private static var nme_stage_get_focus_rect = Loader.load("nme_stage_get_focus_rect", 1);

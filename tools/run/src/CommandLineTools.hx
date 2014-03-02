@@ -562,6 +562,7 @@ class CommandLineTools
 
       var projectFile = "";
       var targetName = "";
+      var explicitProjectFile = false;
 
       for(w in 0...words.length)
       {
@@ -589,7 +590,10 @@ class CommandLineTools
             if (FileSystem.isDirectory(words[0])) 
                projectFile = findProjectFile(words[0]);
             else
+            {
+               explicitProjectFile = true;
                projectFile = words[0];
+            }
          }
       }
       else
@@ -644,8 +648,25 @@ class CommandLineTools
       }
       else
       {
-         Log.error(projectFile + " does not appear be a project file.");
-         return false;
+         var loaded = false;
+         if (explicitProjectFile)
+         {
+            try
+            {
+               new NMMLParser(project,projFile);
+               loaded = true;
+            }
+            catch(e:Dynamic)
+            {
+               Log.warn(e);
+            }
+         }
+
+         if (!loaded)
+         {
+            Log.error(projectFile + " does not appear be a project file.");
+            return false;
+         }
       }
 
       project.localDefines.set("PROJECT_FILE", projFile);

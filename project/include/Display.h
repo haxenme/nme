@@ -20,6 +20,7 @@ enum
 
 extern unsigned int gDisplayRefCounting;
 
+extern bool gNmeRenderGcFree;
 extern bool gSDLIsInit;
 extern int  gSDLMixerFreq;
 

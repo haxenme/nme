@@ -352,6 +352,13 @@ class NMEProject
          version="";
          Log.verbose("Using nme instead of openfl");
       }
+      if (name=="lime")
+      {
+         name = "nme";
+         version="";
+         Log.verbose("Using nme instead of lime");
+      }
+
 
       var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
 

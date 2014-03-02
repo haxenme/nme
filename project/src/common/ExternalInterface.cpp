@@ -1238,6 +1238,14 @@ value nme_render_stage(value inStage)
 
 DEFINE_PRIM(nme_render_stage,1);
 
+value nme_set_render_gc_free(value inGcFree)
+{
+   gNmeRenderGcFree = val_bool(inGcFree);
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_set_render_gc_free,1);
+
 
 value nme_stage_resize_window(value inStage, value inWidth, value inHeight)
 {
