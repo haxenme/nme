@@ -3,7 +3,7 @@ package nme.geom;
 
 class Point 
 {
-   public var length(get_length, null):Float;
+   public var length(get_length, never):Float;
    public var x:Float;
    public var y:Float;
 
