@@ -158,7 +158,7 @@ class IOSHelper
             family = "ipad";
 
          //var launcher = PathHelper.findTemplate(project.templatePaths, "bin/ios-sim");
-         var launcher = CommandLineTools.nme +  "/tools/command-line/bin/ios-sim";
+         var launcher = CommandLineTools.nme +  "/tools/run/bin/ios-sim";
          Sys.command("chmod", [ "+x", launcher ]);
 
          ProcessHelper.runCommand("", launcher, [ "launch", FileSystem.fullPath(applicationPath), "--sdk", project.environment.get("IPHONE_VER"), "--family", family ] );
@@ -174,7 +174,7 @@ class IOSHelper
 
          Log.verbose("Application path " + applicationPath);
 
-            var launcher = CommandLineTools.nme +  "/tools/command-line/bin/fruitstrap";
+            var launcher = CommandLineTools.nme +  "/tools/run/bin/fruitstrap";
             //var launcher = PathHelper.findTemplate(project.templatePaths, "bin/fruitstrap");
            Sys.command("chmod", [ "+x", launcher ]);
 
