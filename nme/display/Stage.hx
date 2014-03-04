@@ -41,12 +41,19 @@ class Stage extends DisplayObjectContainer
     */
    public static var nmeEarlyWakeup = 0.005;
 
-   public static var OrientationPortrait = 1;
-   public static var OrientationPortraitUpsideDown = 2;
-   public static var OrientationLandscapeRight = 3;
-   public static var OrientationLandscapeLeft = 4;
-   public static var OrientationFaceUp = 5;
-   public static var OrientationFaceDown = 6;
+   public static inline var OrientationPortrait = 1;
+   public static inline var OrientationPortraitUpsideDown = 2;
+   public static inline var OrientationLandscapeRight = 3;
+   public static inline var OrientationLandscapeLeft = 4;
+   public static inline var OrientationFaceUp = 5;
+   public static inline var OrientationFaceDown = 6;
+
+   // For setting 'fixed' orientation...
+   public static inline var OrientationPortraitAny = 7;
+   public static inline var OrientationLandscapeAny = 8;
+   public static inline var OrientationAny = 9;
+
+   public static inline var OrientationUseFunction = -1;
 
    public var active(default, null):Bool;
    public var align(get_align, set_align):StageAlign;
@@ -957,12 +964,13 @@ class Stage extends DisplayObjectContainer
       
    }
 
+      // If you set this, you don't need to set the 'shouldRotateInterface' function.
    public static function setFixedOrientation(inOrientation:Int) 
    {
-      // If you set this, you don't need to set the 'shouldRotateInterface' function.
       nme_stage_set_fixed_orientation(inOrientation);
    }
 
+   // You will need to call "setFixedOrientation(OrientationUseFunction)" before this takes effect...
    public static dynamic function shouldRotateInterface(inOrientation:Int):Bool 
    {
       return inOrientation == OrientationPortrait;

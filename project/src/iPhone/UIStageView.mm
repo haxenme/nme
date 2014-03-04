@@ -311,7 +311,7 @@ static std::string nmeTitle;
 
 - (void) setupStageLayer:(NMEStage *)inStage
 {
-   printf("--- NMEView layer ----\n");
+   //printf("--- NMEView layer ----\n");
    mStage = inStage;
 
    defaultFramebuffer = 0;
@@ -390,7 +390,7 @@ static std::string nmeTitle;
 
 - (void)didMoveToWindow
 {
-   printf("didMoveToWindow %p\n", self.window);
+   //printf("didMoveToWindow %p\n", self.window);
    nme_app_set_active(self.window!=nil);
 }
 
@@ -975,7 +975,7 @@ static std::string nmeTitle;
    [EAGLContext setCurrentContext:mOGLContext];
    [self destroyOGLFramebuffer];
    [self createOGLFramebuffer];
-   printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
+   //printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
 
    mHardwareContext->SetWindowSize(backingWidth,backingHeight);
 
@@ -1058,7 +1058,7 @@ public:
       seenPrepared = false;
       pendingStateDelayed = false;
       pendingState = 0;
-      printf("New video\n");
+      //printf("New video\n");
    }
 
    UIView *getPlayerView()
@@ -1074,11 +1074,11 @@ public:
 
       if (inUrl==lastUrl)
       {
-         printf("Replay\n");
+         //printf("Replay\n");
          return;
       }
 
-      printf("VIDEO: load %s\n", inUrl);
+      //printf("VIDEO: load %s\n", inUrl);
  
       /*
       Create a MPMoviePlayerController movie object for the specified URL and add movie notification
@@ -1089,7 +1089,7 @@ public:
   
       if (!stopped && player)
       {
-         printf("VIDEO: Stop player before play\n");
+         //printf("VIDEO: Stop player before play\n");
          [player stop];
          stopped = true;
       }
@@ -1112,7 +1112,7 @@ public:
 
       // TODO - isLocal for loca file, not asset (http?)
 
-      printf("Loading : %s(%s)\n", [[localUrl absoluteString] UTF8String], isLocal?"local":"streaming");
+      //printf("Loading : %s(%s)\n", [[localUrl absoluteString] UTF8String], isLocal?"local":"streaming");
 
       if (player==0)
       {
@@ -1144,13 +1144,13 @@ public:
 
       if (inLength== PAUSE_LEN)
       {
-         printf("Init paused...");
+         //printf("Init paused...");
          [player prepareToPlay];
          playing = false;
       }
       else
       {
-         printf("Init playing\n");
+         //printf("Init playing\n");
          playing = true;
          setState();
       }
@@ -1158,7 +1158,7 @@ public:
 
    ~IOSVideo()
    {
-      printf("~IOSVideo\n");
+      //printf("~IOSVideo\n");
       destroy();
    }
    
@@ -1211,13 +1211,13 @@ public:
    void setActive(bool inActive)
    {
       active = inActive;
-      printf("Video set active %d\n", inActive);
+      //printf("Video set active %d\n", inActive);
       setState();
    }
 
    void seek(double inTime)
    {
-      printf("VIDEO: seek %f\n", inTime);
+      //printf("VIDEO: seek %f\n", inTime);
       if (seekPending<0)
       {
          timeAtLastSeek = player.currentPlaybackTime;
@@ -1228,17 +1228,17 @@ public:
 
    void setPan(double x, double y)
    {
-      printf("video: setPan %f %f\n",x,y);
+      //printf("video: setPan %f %f\n",x,y);
    }
 
    void setZoom(double x, double y)
    {
-      printf("video: setZoom %f %f\n",x,y);
+      //printf("video: setZoom %f %f\n",x,y);
    }
 
    void setSoundTransform(double inVolume, double inPosition)
    {
-      printf("video: setSoundTransform music %f %f\n", inVolume, inPosition);
+      //printf("video: setSoundTransform music %f %f\n", inVolume, inPosition);
       // does this work?
       MPMusicPlayerController* musicPlayer = [MPMusicPlayerController iPodMusicPlayer];
       musicPlayer.volume = inVolume;
@@ -1266,12 +1266,12 @@ public:
       {
          if (playing && active)
          {
-            printf("> PLAY\n");
+            //printf("> PLAY\n");
             [player play];
          }
          else
          {
-            printf("> PAUSE\n");
+            //printf("> PAUSE\n");
             [player pause];
          }
       }
@@ -1279,21 +1279,21 @@ public:
 
    void pause()
    {
-      printf("VIDEO: pause\n");
+      //printf("VIDEO: pause\n");
       playing = false;
       setState();
    }
 
    void resume()
    {
-      printf("VIDEO: resume\n");
+      //printf("VIDEO: resume\n");
       playing = true;
       setState();
    }
 
    void togglePause()
    {
-      printf("VIDEO: togglePause\n");
+      //printf("VIDEO: togglePause\n");
       playing = !playing;
       setState();
    }
@@ -1309,14 +1309,14 @@ public:
 
    void destroy()
    {
-      printf("video: destroy\n");
+      //printf("video: destroy\n");
       lastUrl = "";
       videoWidth = 0;
       videoHeight = 0;
       duration = 0;
       if (player && !stopped)
       {
-         printf("STOP\n");
+         //printf("STOP\n");
          stopped = true;
          [player stop];
       }
@@ -1364,7 +1364,7 @@ public:
    void onBufferingStateChange()
    { 
       checkSize();
-      printf("onBufferingStateChange %d\n", player.loadState);
+      //printf("onBufferingStateChange %d\n", player.loadState);
       switch(player.loadState)
       {
          case MPMovieLoadStateUnknown: break;
@@ -1381,18 +1381,18 @@ public:
       switch(player.playbackState)
       {
          case MPMoviePlaybackStateStopped:
-            printf("MPMoviePlaybackStateStopped\n");
+            //printf("MPMoviePlaybackStateStopped\n");
             sendStateDelayed( PLAY_STATUS_STOPPED );
             break;
          case MPMoviePlaybackStatePlaying:
 
-            printf("MPMoviePlaybackStatePlaying\n");
+            //printf("MPMoviePlaybackStatePlaying\n");
             checkSize(true);
             sendStateDelayed( PLAY_STATUS_STARTED );
             break;
          case MPMoviePlaybackStatePaused: break;
          case MPMoviePlaybackStateInterrupted:
-            printf("Interrupted");
+            //printf("Interrupted");
             break;
          case MPMoviePlaybackStateSeekingForward: break;
          case MPMoviePlaybackStateSeekingBackward:break;
@@ -1501,40 +1501,40 @@ public:
 
 -(void)moviePlayBackDidFinish:(NSNotification*)notification
 {
-   printf("moviePlayBackDidFinish\n");
+   //printf("moviePlayBackDidFinish\n");
    int reason = [[[notification userInfo] valueForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey] intValue];
    video->onFinished(reason);
 }
 
 -(void)loadStateDidChange:(NSNotification *)notification
 {
-   printf("loadStateDidChange\n");
+   //printf("loadStateDidChange\n");
    video->onBufferingStateChange();
 }
 
 -(void)moviePlayBackStateDidChange:(NSNotification*)notification
 {
-   printf("moviePlayBackStateDidChange\n");
+   //printf("moviePlayBackStateDidChange\n");
    video->onPlaybackStateChange();
 }
 
 -(void)mediaIsPreparedToPlayDidChange:(NSNotification*)notification
 {
-   printf("mediaIsPreparedToPlayDidChange\n");
+   //printf("mediaIsPreparedToPlayDidChange\n");
    video->onPreparedStateChanged();
 }
 
 
 -(void)movieDurationAvailable:(NSNotification*)notification
 {
-   printf("movieDurationAvailable\n");
+   //printf("movieDurationAvailable\n");
    video->onMovieDurationAvailable();
 }
 
 
 -(void)sizeAvailable:(NSNotification*)notification
 {
-   printf("sizeAvailable\n");
+   //printf("sizeAvailable\n");
    video->onSizeAvailable();
 }
 
@@ -1602,7 +1602,7 @@ double sgWakeUp = 0.0;
 NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
 {
    video = 0;
-   printf("New NMEStage\n");
+   //printf("New NMEStage\n");
 
    sgNmeStage = this;
 
@@ -1650,6 +1650,7 @@ NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
 void NMEStage::setOpaqueBackground(uint32 inBG)
 {
    Stage::setOpaqueBackground(inBG);
+   wantOpaqueBg = (inBG & 0xff000000) != 0;
    if (!haveOpaqueBg || !wantOpaqueBg)
    {
       double r = ((opaqueBackground>>16) & 0xff) / 255.0;
@@ -1657,11 +1658,13 @@ void NMEStage::setOpaqueBackground(uint32 inBG)
       double b = ((opaqueBackground    ) & 0xff) / 255.0;
       container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
    }
+   if (wantOpaqueBg!=haveOpaqueBg)
+      recreateNmeView();
 }
 
 void NMEStage::recreateNmeView()
 {
-   printf("===== recreateNmeView =====\n");
+   //printf("===== recreateNmeView =====\n");
    [nmeView tearDown];
    #ifndef OBJC_ARC
    // Should do it here
@@ -1692,6 +1695,8 @@ void NMEStage::recreateNmeView()
       container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
    }
    ResetHardwareContext();
+   Event evt(etContextLost);
+   OnEvent(evt);
 }
 
 void NMEStage::updateSize(int inWidth, int inHeight)
@@ -1829,7 +1834,29 @@ bool nmeIsMain = true;
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
    if (gFixedOrientation >= 0)
-      return interfaceOrientation == gFixedOrientation;
+   {
+      enum {
+         OrientationPortrait = 1,
+         OrientationPortraitUpsideDown = 2,
+         OrientationLandscapeRight = 3,
+         OrientationLandscapeLeft = 4,
+         OrientationFaceUp = 5,
+         OrientationFaceDown = 6,
+         OrientationPortraitAny = 7,
+         OrientationLandscapeAny = 8,
+         OrientationAny = 9,
+      };
+
+      if (interfaceOrientation == gFixedOrientation)
+         return true;
+      if (gFixedOrientation==OrientationAny)
+         return true;
+      if (gFixedOrientation==OrientationPortraitAny)
+         return interfaceOrientation==OrientationPortrait || interfaceOrientation==OrientationPortraitUpsideDown;
+      if (gFixedOrientation==OrientationLandscapeAny)
+         return interfaceOrientation==OrientationLandscapeLeft || interfaceOrientation==OrientationLandscapeRight;
+      return false;
+   }
    Event evt(etShouldRotate);
    evt.value = interfaceOrientation;
    nmeStage->OnEvent(evt);
@@ -2022,7 +2049,6 @@ void StartAnimation()
 {
    if (sgAnimationController)
    {
-printf("StartAnimation %p\n", sgAnimationController );
       [sgAnimationController startAnimation];
    }
 }
@@ -2057,7 +2083,6 @@ void SetNextWakeUp(double inWakeUp)
 void CreateMainFrame(FrameCreationCallback inCallback,
    int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, Surface *inIcon )
 {
-printf("CreateMainFrame with callback!\n");
    nmeTitle= inTitle;
    sOnFrame = inCallback;
    int argc = 0;// *_NSGetArgc();

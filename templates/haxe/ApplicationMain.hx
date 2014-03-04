@@ -52,19 +52,14 @@ class ApplicationMain
       nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
       ::end::
 
-      nme.display.Stage.shouldRotateInterface = function(orientation:Int):Bool
-      {
-         ::if (WIN_ORIENTATION == "portrait")::
-         return (orientation == nme.display.Stage.OrientationPortrait ||
-                 orientation == nme.display.Stage.OrientationPortraitUpsideDown);
-         ::elseif (WIN_ORIENTATION == "landscape")::
-         return (orientation == nme.display.Stage.OrientationLandscapeLeft ||
-                 orientation == nme.display.Stage.OrientationLandscapeRight);
-         ::else::
-         return true;
-         ::end::
-      }
-
+      ::if (WIN_ORIENTATION == "portrait")::
+      nme.display.Stage.setFixedOrientation( nme.display.Stage.OrientationPortraitAny );
+      ::elseif (WIN_ORIENTATION == "landscape")::
+      nme.display.Stage.setFixedOrientation( nme.display.Stage.OrientationLandscapeAny );
+      ::else::
+      nme.display.Stage.setFixedOrientation( nme.display.Stage.OrientationAny );
+      ::end::
+      
       #end
    
 
