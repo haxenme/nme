@@ -217,7 +217,7 @@ public:
       mDownX = 0;
       mDownY = 0;
 
-      mSentBG = 0x000000;
+      mBackground = 0xff000000;
 
       normalOrientation = 0;
        
@@ -265,20 +265,20 @@ public:
 
    uint32 getBackgroundMask()
    {
-      return video ? 0x00ffffff : 0xffffffff;
+      return mBackground | 0xffffff;
    }
 
 
    void setOpaqueBackground(uint32 inBG)
    {
       Stage::setOpaqueBackground(inBG);
-      if (mSentBG != (inBG & 0xffffff) )
+      if (mBackground != inBG)
       {
-         mSentBG = inBG & 0xffffff;
+         mBackground = inBG;
          JNIEnv *env = GetEnv();
          jclass cls = FindClass("org/haxe/nme/GameActivity");
          jmethodID setBackground = env->GetStaticMethodID(cls,"setBackground","(I)V" );
-         env->CallStaticVoidMethod(cls, setBackground, mSentBG );
+         env->CallStaticVoidMethod(cls, setBackground, mBackground );
       }
    }
 
@@ -459,7 +459,7 @@ public:
 
    bool mMultiTouch;
    int  mSingleTouchID;
-   int  mSentBG;
+   uint32  mBackground;
   
    double mDX;
    double mDY;

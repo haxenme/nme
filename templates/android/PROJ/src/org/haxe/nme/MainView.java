@@ -107,8 +107,8 @@ class MainView extends GLSurfaceView {
         {
              public EGLConfig chooseConfig (EGL10 egl, EGLDisplay display)
              {
-                Log.v("EGL","Choose config (2).");
-                int alpha = ::if WIN_ALPHA_BUFFER:: 8 ::else:: 0 ::end::;
+                Log.v("EGL","Choose config (2) " + translucent);
+                int alpha = translucent ? 8 : 0;
                 int depth = ::if WIN_DEPTH_BUFFER:: 16 ::else:: 0 ::end::;
                 int stencil = ::if WIN_STENCIL_BUFFER:: 8 ::else:: 0 ::end::;
 
@@ -222,13 +222,23 @@ class MainView extends GLSurfaceView {
    {
       if (inTranslucent!=translucent)
       {
+         /*
          ::if !(WIN_ALPHA_BUFFER)::
          if (inTranslucent)
             Log.w("EGL","Setting translucent without defining window alpha");
          ::end::
+         */
          translucent = inTranslucent;
          getHolder().setFormat(
              inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.RGB_565 );
+
+
+         //Log.w("EGL","pause for translucent...");
+         onPause();
+         //Log.w("EGL","resume...");
+         onResume();
+         //Log.w("EGL","Done");
+         //public void setPreserveEGLContextOnPause (boolean preserveOnPause)
       }
    }
 

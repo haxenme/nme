@@ -118,7 +118,11 @@ implements SensorEventListener
       _sound = new Sound(mContext);
 
       mHandler = new Handler();
-      mBackground = 0;
+      ::if (WIN_ALPHA_BUFFER)::
+      mBackground = 0x00000000;
+      ::else::
+      mBackground = 0xff000000;
+      ::end::
       
       //getResources().getAssets();
       
@@ -135,7 +139,7 @@ implements SensorEventListener
 
       mContainer = new RelativeLayout(mContext);
 
-      mView = new MainView(mContext, this, false);
+      mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
 
       mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
 
@@ -267,7 +271,8 @@ implements SensorEventListener
    public void setBackgroundSync(int inVal)
    {
       mBackground = inVal;
-      //Log.d(TAG,"Set background " + inVal);
+      if (mView!=null)
+         mView.setTranslucent( (mBackground&0xff000000)==0 || mVideoView!=null );
    }
 
    public static void setBackground(final int inVal)
