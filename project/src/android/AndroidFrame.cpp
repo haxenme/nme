@@ -309,11 +309,18 @@ public:
    }
    void Resize(int inWidth,int inHeight)
    {
-      ResetHardwareContext();
       mHardwareContext->SetWindowSize(inWidth,inHeight);
       Event evt(etResize, inWidth, inHeight);
       HandleEvent(evt);
    }
+   void OnContextLost()
+   {
+      //__android_log_print(ANDROID_LOG_INFO, "NME", "OnContextLost, ResetHardwareContext...");
+      ResetHardwareContext();
+      Event evt(etContextLost);
+      HandleEvent(evt);
+   }
+
 
    void OnKey(int inCode, bool inDown)
    {
@@ -500,6 +507,15 @@ public:
       return sStage;
    }
 
+   void onContextLost()
+   {
+      if (sStage)
+      {
+         sStage->OnContextLost();
+      }
+   }
+
+
    void onResize(int inWidth, int inHeight)
    {
       if (!sStage)
@@ -512,7 +528,6 @@ public:
       }
       else
       {
-         ResetHardwareContext();
          sStage->Resize(inWidth,inHeight);
       }
    }
@@ -683,6 +698,7 @@ bool GetAcceleration(double& outX, double& outY, double& outZ) {
 extern "C"
 {
 
+static bool nmeContextIsLost = false;
 
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
 {
@@ -693,9 +709,33 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj
 }
 
 
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onContextLost(JNIEnv * env, jobject obj)
+{
+   // Delay the result to just prior to render - docs seem to say you should
+   //  do it here, but I seem to be missing something
+   nmeContextIsLost = true;
+
+   /*
+   AutoHaxe haxe("onContextLost");
+   __android_log_print(ANDROID_LOG_INFO, "NME", "NME onContextLost !: %p", nme::sFrame );
+   if (nme::sFrame)
+      nme::sFrame->onContextLost();
+      */
+   return 0;
+}
+
+
+
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
 {
    AutoHaxe haxe("onRender");
+   if (nmeContextIsLost)
+   {
+      nmeContextIsLost = false;
+      if (nme::sFrame)
+         nme::sFrame->onContextLost();
+   }
+
    //double t0 = nme::GetTimeStamp();
    //__android_log_print(ANDROID_LOG_INFO, "NME", "NME onRender: %p", nme::sStage );
    if (nme::sStage)

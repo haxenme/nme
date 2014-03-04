@@ -455,17 +455,24 @@ class MainView extends GLSurfaceView {
 
         public void onSurfaceChanged(GL10 gl, int width, int height)
         {
-            Log.v("VIEW","onSurfaceChanged " + width +"," + height);
-            Log.v("VIEW", "Thread = " + java.lang.Thread.currentThread().getId() );
-            mMainView.HandleResult( NME.onResize(width,height) );
-            GameActivity a = GameActivity.activity;
-            if (a!=null)
-               GameActivity.activity.onResizeAsync(width,height);
+           ::if (DEBUG)::
+           Log.v("VIEW","onSurfaceChanged " + width +"," + height);
+           Log.v("VIEW", "Thread = " + java.lang.Thread.currentThread().getId() );
+           ::end::
+
+           mMainView.HandleResult( NME.onResize(width,height) );
+           GameActivity a = GameActivity.activity;
+           if (a!=null)
+              GameActivity.activity.onResizeAsync(width,height);
         }
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config)
         {
-            //Log.v("VIEW","onSurfaceCreated");
+           ::if (DEBUG)::
+           Log.v("VIEW","onSurfaceCreated");
+           Log.v("VIEW", "Thread = " + java.lang.Thread.currentThread().getId() );
+           ::end::
+           mMainView.HandleResult( NME.onContextLost() );
         }
     }
 }

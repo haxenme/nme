@@ -413,6 +413,9 @@ class Stage extends DisplayObjectContainer
          case 29: // etSysWM
             nmeOnSysWM(inEvent);
 
+         case 30: // etContextLost
+            nmeOnContextLost(inEvent);
+
          // TODO: user, sys_wm, sound_finished
       }
 
@@ -716,6 +719,13 @@ class Stage extends DisplayObjectContainer
       var evt = new SystemEvent(SystemEvent.SYSTEM, false, false, inEvent.value);
       nmeDispatchEvent(evt);
    }
+
+   private function nmeOnContextLost(inEvent:Dynamic) 
+   {
+      var evt = new Event(Event.CONTEXT3D_LOST);
+      nmeBroadcast(evt);
+   }
+
 
    /** @private */ private function nmeOnTouch(inEvent:Dynamic, inType:String, touchInfo:TouchInfo) {
       var stack = new Array<InteractiveObject>();
