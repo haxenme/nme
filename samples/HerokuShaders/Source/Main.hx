@@ -82,7 +82,11 @@ class Main extends Sprite {
    private var startTime:Dynamic;
    private var vertexPosition:Dynamic;
    private var view:OpenGLView;
+
    var bump:Bool;
+   var mx:Float;
+   var my:Float;
+   
    
    
    public function new ()
@@ -90,16 +94,47 @@ class Main extends Sprite {
       super();
 
       bump = false;
+      mx = 0.1;
+      my = 0.1;
+
+       
 
       if (OpenGLView.isSupported)
       {
          view = new OpenGLView();
-          loadData();
+         loadData();
          addEventListener( nme.events.Event.CONTEXT3D_LOST, function(_) reload() );
-         stage.addEventListener( nme.events.MouseEvent.MOUSE_DOWN, function(_) bump=true );
+         /*
+         Test destroying the context...
+
+         var trans = false;
+         stage.addEventListener( nme.events.MouseEvent.MOUSE_DOWN, function(_)
+           {
+              trans = !trans;
+              if (trans)
+                 stage.opaqueBackground = null;
+              else
+                 stage.opaqueBackground = 0x00ff00;
+           }  );
+          */
+         stage.addEventListener( nme.events.MouseEvent.MOUSE_MOVE, function(evt)
+           {
+              mx = (evt.stageX / stage.stageWidth)*2-1;
+              my = (evt.stageY / stage.stageHeight)*2-1;
+           } );
          view.render = renderView;
          addChild(view);
       }
+
+      /*
+       You can mix with normal graphics
+
+      var s = new Sprite();
+      var gfx = s.graphics;
+      gfx.beginFill(0xff0000);
+      gfx.drawCircle(100,100,100);
+      addChild(s);
+      */
    }
 
    function reload()
@@ -125,7 +160,14 @@ class Main extends Sprite {
       currentIndex = 0;
       buffer = GL.createBuffer();
       GL.bindBuffer(GL.ARRAY_BUFFER, buffer);
-      GL.bufferData(GL.ARRAY_BUFFER, new Float32Array ([ -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0 ]), GL.STATIC_DRAW);
+      GL.bufferData(GL.ARRAY_BUFFER, new Float32Array (
+              [ -0.9, -1.0,
+                1.0, -1.0,
+                -0.9, 0.9,
+
+                1.0, -1.0,
+                1.0, 0.9,
+                -0.9, 0.9 ]), GL.STATIC_DRAW);
       compile();
    }
    
@@ -172,10 +214,8 @@ class Main extends Sprite {
       GL.useProgram(currentProgram);
 
       positionAttribute = GL.getAttribLocation(currentProgram, "surfacePosAttrib");
-      GL.enableVertexAttribArray(positionAttribute);
-
       vertexPosition = GL.getAttribLocation(currentProgram, "position");
-      GL.enableVertexAttribArray(vertexPosition);
+
 
       timeUniform = GL.getUniformLocation(program, "time");
       mouseUniform = GL.getUniformLocation(program, "mouse");
@@ -220,7 +260,6 @@ class Main extends Sprite {
 
    private function renderView(rect:Rectangle):Void
    {
-
       GL.viewport(Std.int(rect.x), Std.int(rect.y), Std.int(rect.width), Std.int(rect.height));
 
       if (currentProgram == null)
@@ -231,19 +270,19 @@ class Main extends Sprite {
       GL.useProgram(currentProgram);
 
       GL.uniform1f(timeUniform, time / 1000);
-      //GL.uniform2f mouseUniform, (Lib.current.stage.mouseX / Lib.current.stage.stageWidth) * 2 - 1, (Lib.current.stage.mouseY / Lib.current.stage.stageHeight) * 2 - 1);
-      GL.uniform2f(mouseUniform, 0.1, 0.1);
+      GL.uniform2f(mouseUniform, mx, my );
       GL.uniform2f(resolutionUniform, rect.width, rect.height);
       GL.uniform1i(backbufferUniform, 0 );
       GL.uniform2f(surfaceSizeUniform, rect.width, rect.height);
 
       GL.bindBuffer(GL.ARRAY_BUFFER, buffer);
+      GL.enableVertexAttribArray(positionAttribute);
+      GL.enableVertexAttribArray(vertexPosition);
       GL.vertexAttribPointer(positionAttribute, 2, GL.FLOAT, false, 0, 0);
       GL.vertexAttribPointer(vertexPosition, 2, GL.FLOAT, false, 0, 0);
 
-      GL.clearColor(0, 0, 0, 1);
-      GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT );
       GL.drawArrays(GL.TRIANGLES, 0, 6);
+      GL.bindBuffer(GL.ARRAY_BUFFER, null);
 
       if ( (time > maxTime || bump) && fragmentShaders.length > 1)
       {
