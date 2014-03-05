@@ -14,6 +14,7 @@
 #include <ExternalInterface.h>
 #include <ByteArray.h>
 #include "OGL.h"
+#include "Utils.h"
 
 
 #define INT(a) val_int(arg[a])
@@ -22,6 +23,137 @@
 
 namespace nme
 {
+
+enum ResoType
+{
+   resoNone, //0
+   resoBuffer, //1
+   resoTexture, //2
+   resoShader, //3
+   resoProgram, //4
+   resoFramebuffer, //5
+   resoRenderbuffer, //6
+};
+
+// #define CHECK_ERROR
+
+const char *sDebugName = "init";
+struct DebugFunc
+{
+   DebugFunc(const char *inName)
+   {
+      sDebugName = inName;
+      #ifdef CHECK_ERROR
+      int err = glGetError();
+      if (err)
+         ELOG("Error %d prior to %s", err, inName);
+      #endif
+   }
+   ~DebugFunc()
+   {
+      #ifdef CHECK_ERROR
+      int err = glGetError();
+      if (err)
+         ELOG("Error %d in %s", err, sDebugName);
+      #endif
+
+      sDebugName=0;
+   }
+};
+#define DBGFUNC(x) DebugFunc _f(x);
+
+class NmeResource : public nme::Object
+{
+public:
+   NmeResource(int inId, ResoType inType)
+   {
+      id= inId;
+      type = inType;
+      contextVersion = gTextureContextVersion;
+   }
+   virtual ~NmeResource()
+   {
+      release();
+   }
+   void release()
+   {
+      HardwareContext *ctx = HardwareContext::current;
+      if (ctx && id && contextVersion==gTextureContextVersion)
+      {
+         switch(type)
+         {
+            case resoNone:
+               break;
+            case resoBuffer:
+               ctx->DestroyVbo(id);
+               break;
+            case resoTexture:
+               ctx->DestroyTexture(id);
+               break;
+            case resoShader:
+               ctx->DestroyShader(id);
+               break;
+            case resoProgram:
+               ctx->DestroyProgram(id);
+               break;
+            case resoFramebuffer:
+               ctx->DestroyFramebuffer(id);
+               break;
+            case resoRenderbuffer:
+               ctx->DestroyRenderbuffer(id);
+               break;
+         }
+      }
+      type = resoNone;
+      id = 0;
+   }
+   bool is(ResoType inType)
+   {
+      return id && type==inType && contextVersion==gTextureContextVersion;
+   }
+
+   int id;
+   int contextVersion;
+   ResoType type;
+};
+
+value createResource(unsigned int inResource, ResoType inType)
+{
+   value result = ObjectToAbstract( new NmeResource(inResource,inType) );
+   return result;
+}
+
+void releaseResource(value inValue)
+{
+   NmeResource *resource = 0;
+   if (AbstractToObject(inValue,resource))
+      resource->release();
+}
+
+unsigned int getResource(value inResource, ResoType inType)
+{
+   NmeResource *resource = 0;
+   if (AbstractToObject(inResource,resource))
+   {
+      if (resource->is(inType))
+      {
+         if (sDebugName && !resource->id)
+            ELOG("Warning old resource %d in %s", inType, sDebugName);
+         return resource->id;
+      }
+   }
+
+   if (sDebugName)
+      ELOG("Warning bad resource %p(%p) (%d but is %d) in %s", resource, inResource, inType, resource?resource->type: -1, sDebugName);
+   return 0;
+
+}
+
+value isResource(value inValue, ResoType inType)
+{
+   return alloc_bool( getResource(inValue,inType) );
+}
+
 
 
 value nme_gl_get_error()
@@ -299,31 +431,76 @@ DEFINE_PRIM(nme_gl_get_parameter,1);
 
 // --- Is -------------------------------------------
 
-#define GL_IS(name,Name) \
-   value nme_gl_is_##name(value val) { return alloc_bool(glIs##Name(val_int(val))); } \
+#define GL_IS(name,type) \
+   value nme_gl_is_##name(value val) { return isResource(val,type); } \
    DEFINE_PRIM(nme_gl_is_##name,1);
 
-GL_IS(buffer,Buffer)
-GL_IS(enabled,Enabled)
-GL_IS(program,Program)
-//GL_IS(framebuffer,Framebuffer)
-//GL_IS(renderbuffer,Renderbuffer)
+GL_IS(buffer,resoBuffer)
+GL_IS(program,resoProgram)
+GL_IS(renderbuffer,resoRenderbuffer)
+GL_IS(framebuffer,resoFramebuffer)
+GL_IS(shader,resoShader)
+GL_IS(texture,resoTexture)
 
-value nme_gl_is_framebuffer(value val)
-{ 
-   if (CHECK_EXT(glIsFramebuffer)) return alloc_bool(glIsFramebuffer(val_int(val)));
-  return alloc_bool(false);
+value nme_gl_is_enabled(value val)
+{
+   return alloc_bool( glIsEnabled( val_int(val) ) );
 }
-DEFINE_PRIM(nme_gl_is_framebuffer,1);
+DEFINE_PRIM(nme_gl_is_enabled,1);
 
-value nme_gl_is_renderbuffer(value val) { 
-  if (CHECK_EXT(glIsRenderbuffer)) return alloc_bool(glIsRenderbuffer(val_int(val)));
-  return alloc_bool(false);
+
+// --- Delete -------------------------------------------
+
+#define GL_DELETE_RESO(name) \
+   value nme_gl_delete_##name(value val) { releaseResource(val); return alloc_null(); } \
+   DEFINE_PRIM(nme_gl_delete_##name,1);
+
+GL_DELETE_RESO(texture)
+GL_DELETE_RESO(shader)
+GL_DELETE_RESO(program)
+GL_DELETE_RESO(framebuffer)
+GL_DELETE_RESO(renderbuffer)
+GL_DELETE_RESO(buffer)
+
+// --- Create -------------------------------------------
+
+
+value nme_gl_create_program()
+{
+   DBGFUNC("createProgram");
+   return createResource(glCreateProgram(),resoProgram);
 }
-DEFINE_PRIM(nme_gl_is_renderbuffer,1);
+DEFINE_PRIM(nme_gl_create_program,0);
 
-GL_IS(shader,Shader)
-GL_IS(texture,Texture)
+value nme_gl_create_shader(value inType)
+{
+   DBGFUNC("createShader");
+   return createResource(glCreateShader(val_int(inType)),resoShader);
+}
+DEFINE_PRIM(nme_gl_create_shader,1);
+
+
+#define GL_GEN_RESO(name,gen,type) \
+   value nme_gl_create_##name(value val) { \
+      DBGFUNC("create" #name); \
+      GLuint id=0; gen(1,&id); \
+      return createResource(id,type); \
+   } \
+   DEFINE_PRIM(nme_gl_create_##name,0);
+
+GL_GEN_RESO(texture,glGenTextures,resoTexture)
+GL_GEN_RESO(buffer,glGenBuffers,resoBuffer)
+
+#define GL_GEN_RESO_CHK(name,gen,type) \
+   value nme_gl_create_##name(value val) { \
+      if (!CHECK_EXT(gen)) return alloc_null(); \
+      DBGFUNC("create" #name); \
+      GLuint id=0; gen(1,&id); return createResource(id,type); } \
+   DEFINE_PRIM(nme_gl_create_##name,0);
+
+GL_GEN_RESO(framebuffer,glGenFramebuffers,resoFramebuffer)
+GL_GEN_RESO(render_buffer,glGenRenderbuffers,resoRenderbuffer)
+
 
 // --- Stencil -------------------------------------------
 
@@ -424,18 +601,11 @@ DEFINE_PRIM(nme_gl_blend_func_separate,4);
 
 // --- Program -------------------------------------------
 
-value nme_gl_create_program()
-{
-   int result = glCreateProgram();
-   return alloc_int(result);
-}
-DEFINE_PRIM(nme_gl_create_program,0);
-
-
 value nme_gl_link_program(value inId)
 {
-   int id = val_int(inId);
-   glLinkProgram(id);
+   DBGFUNC("linkProgram");
+   int prog = getResource(inId,resoProgram);
+   glLinkProgram(prog);
 
    return alloc_null();
 }
@@ -444,8 +614,10 @@ DEFINE_PRIM(nme_gl_link_program,1);
 
 value nme_gl_validate_program(value inId)
 {
-   int id = val_int(inId);
-   glValidateProgram(id);
+   DBGFUNC("validateProgram");
+   int id = getResource(inId,resoProgram);
+   if (id)
+     glValidateProgram(id);
 
    return alloc_null();
 }
@@ -454,27 +626,20 @@ DEFINE_PRIM(nme_gl_validate_program,1);
 
 value nme_gl_get_program_info_log(value inId)
 {
+   DBGFUNC("getProgramInfoLog");
    char buf[1024];
-   int id = val_int(inId);
+   int id = getResource(inId,resoProgram);
    glGetProgramInfoLog(id,1024,0,buf);
    return alloc_string(buf);
 }
 DEFINE_PRIM(nme_gl_get_program_info_log,1);
 
 
-value nme_gl_delete_program(value inId)
-{
-   int id = val_int(inId);
-   glDeleteProgram(id);
-
-   return alloc_null();
-}
-DEFINE_PRIM(nme_gl_delete_program,1);
-
 
 value nme_gl_bind_attrib_location(value inId,value inSlot,value inName)
 {
-   int id = val_int(inId);
+   DBGFUNC("bindAttribLocation");
+   int id = getResource(inId,resoProgram);
    glBindAttribLocation(id,val_int(inSlot),val_string(inName));
    return alloc_null();
 }
@@ -485,7 +650,8 @@ DEFINE_PRIM(nme_gl_bind_attrib_location,3);
 
 value nme_gl_get_attrib_location(value inId,value inName)
 {
-   int id = val_int(inId);
+   DBGFUNC("getAttribLocation");
+   int id = getResource(inId,resoProgram);
    return alloc_int(glGetAttribLocation(id,val_string(inName)));
 }
 DEFINE_PRIM(nme_gl_get_attrib_location,2);
@@ -493,7 +659,8 @@ DEFINE_PRIM(nme_gl_get_attrib_location,2);
 
 value nme_gl_get_uniform_location(value inId,value inName)
 {
-   int id = val_int(inId);
+   DBGFUNC("getUniformLocation");
+   int id = getResource(inId,resoProgram);
    return alloc_int(glGetUniformLocation(id,val_string(inName)));
 }
 DEFINE_PRIM(nme_gl_get_uniform_location,2);
@@ -501,7 +668,8 @@ DEFINE_PRIM(nme_gl_get_uniform_location,2);
 
 value nme_gl_get_uniform(value inId,value inLocation)
 {
-   int id = val_int(inId);
+   DBGFUNC("getUniform");
+   int id = getResource(inId,resoProgram);
    int loc = val_int(inLocation); 
 
    char buf[1];
@@ -594,7 +762,8 @@ DEFINE_PRIM(nme_gl_get_uniform,2);
 
 value nme_gl_get_program_parameter(value inId,value inName)
 {
-   int id = val_int(inId);
+   DBGFUNC("getProgramParameter");
+   int id = getResource(inId,resoProgram);
    int result = 0;
    glGetProgramiv(id, val_int(inName), &result);
    return alloc_int(result);
@@ -604,7 +773,8 @@ DEFINE_PRIM(nme_gl_get_program_parameter,2);
 
 value nme_gl_use_program(value inId)
 {
-   int id = val_int(inId);
+   DBGFUNC("useProgram");
+   int id = getResource(inId,resoProgram);
    glUseProgram(id);
    return alloc_null();
 }
@@ -613,7 +783,8 @@ DEFINE_PRIM(nme_gl_use_program,1);
 
 value nme_gl_get_active_attrib(value inProg, value inIndex)
 {
-   int id = val_int(inProg);
+   DBGFUNC("getActiveAttrib");
+   int id = getResource(inProg,resoProgram);
    value result = alloc_empty_object( );
 
    char buf[1024];
@@ -634,7 +805,8 @@ DEFINE_PRIM(nme_gl_get_active_attrib,2);
 
 value nme_gl_get_active_uniform(value inProg, value inIndex)
 {
-   int id = val_int(inProg);
+   DBGFUNC("getActiveUniform");
+   int id = getResource(inProg,resoProgram);
 
    char buf[1024];
    GLsizei outLen = 1024;
@@ -974,26 +1146,11 @@ DEFINE_PRIM(nme_gl_vertex_attrib4fv,2);
 // --- Shader -------------------------------------------
 
 
-value nme_gl_create_shader(value inType)
-{
-    return alloc_int(glCreateShader(val_int(inType)));
-}
-DEFINE_PRIM(nme_gl_create_shader,1);
-
-
-value nme_gl_delete_shader(value inId)
-{
-   int id = val_int(inId);
-   glDeleteShader(id);
-
-   return alloc_null();
-}
-DEFINE_PRIM(nme_gl_delete_shader,1);
-
 
 value nme_gl_shader_source(value inId,value inSource)
 {
-   int id = val_int(inId);
+   DBGFUNC("shaderSource");
+   int id = getResource(inId,resoShader);
    const char *source = val_string(inSource);
    #ifdef NME_GLES
    // TODO - do something better here
@@ -1011,7 +1168,11 @@ DEFINE_PRIM(nme_gl_shader_source,2);
 
 value nme_gl_attach_shader(value inProg,value inShader)
 {
-   glAttachShader(val_int(inProg),val_int(inShader));
+   DBGFUNC("attachShader");
+   int prog = getResource(inProg,resoProgram);
+   int shader = getResource(inShader,resoShader);
+
+   glAttachShader(prog, shader);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_attach_shader,2);
@@ -1019,7 +1180,10 @@ DEFINE_PRIM(nme_gl_attach_shader,2);
 
 value nme_gl_detach_shader(value inProg,value inShader)
 {
-   glDetachShader(val_int(inProg),val_int(inShader));
+   DBGFUNC("detachShader");
+   int prog = getResource(inProg,resoProgram);
+   int shader = getResource(inShader,resoShader);
+   glDetachShader(prog,shader);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_detach_shader,2);
@@ -1028,7 +1192,8 @@ DEFINE_PRIM(nme_gl_detach_shader,2);
 
 value nme_gl_compile_shader(value inId)
 {
-   int id = val_int(inId);
+   DBGFUNC("compileShader");
+   int id = getResource(inId,resoShader);
    glCompileShader(id);
 
    return alloc_null();
@@ -1038,7 +1203,8 @@ DEFINE_PRIM(nme_gl_compile_shader,1);
 
 value nme_gl_get_shader_parameter(value inId,value inName)
 {
-   int id = val_int(inId);
+   DBGFUNC("getShaderParameter");
+   int id = getResource(inId,resoShader);
    int result = 0;
    glGetShaderiv(id,val_int(inName), & result);
    return alloc_int(result);
@@ -1048,7 +1214,8 @@ DEFINE_PRIM(nme_gl_get_shader_parameter,2);
 
 value nme_gl_get_shader_info_log(value inId)
 {
-   int id = val_int(inId);
+   DBGFUNC("getShaderInfoLog");
+   int id = getResource(inId,resoShader);
    char buf[1024] = "";
    glGetShaderInfoLog(id,1024,0,buf);
 
@@ -1059,7 +1226,8 @@ DEFINE_PRIM(nme_gl_get_shader_info_log,1);
 
 value nme_gl_get_shader_source(value inId)
 {
-   int id = val_int(inId);
+   DBGFUNC("getShaderSource");
+   int id = getResource(inId,resoShader);
 
    int len = 0;
    glGetShaderiv(id,GL_SHADER_SOURCE_LENGTH,&len);
@@ -1079,10 +1247,12 @@ DEFINE_PRIM(nme_gl_get_shader_source,1);
 
 value nme_gl_get_shader_precision_format(value inShader,value inPrec)
 {
+   DBGFUNC("getShaderPrecisionFormat");
    #ifdef NME_GLES
    int range[2];
    int precision;
-   glGetShaderPrecisionFormat(val_int(inShader), val_int(inPrec), range, &precision);
+   int id = getResource(inShader,resoShader);
+   glGetShaderPrecisionFormat(id, val_int(inPrec), range, &precision);
 
    value result = alloc_empty_object( );
    alloc_field(result,val_id("rangeMin"),alloc_int(range[0]));
@@ -1102,27 +1272,11 @@ DEFINE_PRIM(nme_gl_get_shader_precision_format,2);
 // --- Buffer -------------------------------------------
 
 
-value nme_gl_create_buffer()
-{
-   GLuint buffers;
-   glGenBuffers(1,&buffers);
-   return alloc_int(buffers);
-}
-DEFINE_PRIM(nme_gl_create_buffer,0);
-
-
-value nme_gl_delete_buffer(value inId)
-{
-   GLuint id = val_int(inId);
-   glDeleteBuffers(1,&id);
-   return alloc_null();
-}
-DEFINE_PRIM(nme_gl_delete_buffer,1);
-
-
 value nme_gl_bind_buffer(value inTarget, value inId )
 {
-   glBindBuffer(val_int(inTarget),val_int(inId));
+   DBGFUNC("bindBuffer");
+   int id = getResource(inId,resoBuffer);
+   glBindBuffer(val_int(inTarget),id);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_buffer,2);
@@ -1130,6 +1284,7 @@ DEFINE_PRIM(nme_gl_bind_buffer,2);
 
 value nme_gl_buffer_data(value inTarget, value inByteBuffer, value inStart, value inLen, value inUsage)
 {
+   DBGFUNC("bufferData");
    int len = val_int(inLen);
    int start = val_int(inStart);
 
@@ -1149,6 +1304,7 @@ DEFINE_PRIM(nme_gl_buffer_data,5);
 
 value nme_gl_buffer_sub_data(value inTarget, value inOffset, value inByteBuffer, value inStart, value inLen)
 {
+   DBGFUNC("bufferSubData");
    int len = val_int(inLen);
    int start = val_int(inStart);
 
@@ -1246,74 +1402,91 @@ DEFINE_PRIM(nme_gl_get_buffer_parameter,2);
 
 value nme_gl_bind_framebuffer(value target, value framebuffer)
 {
-   if (CHECK_EXT(glBindFramebuffer)) glBindFramebuffer(val_int(target), val_int(framebuffer) );
+   DBGFUNC("bindFramebuffer");
+   if (CHECK_EXT(glBindFramebuffer))
+   {
+      int id = getResource(framebuffer,resoFramebuffer);
+      glBindFramebuffer(val_int(target), id );
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_framebuffer,2);
 
 value nme_gl_bind_renderbuffer(value target, value renderbuffer)
 {
-   if (CHECK_EXT(glBindRenderbuffer)) glBindRenderbuffer(val_int(target),val_int(renderbuffer));
+   DBGFUNC("bindRenderbuffer");
+   if (CHECK_EXT(glBindRenderbuffer))
+   {
+      int id = getResource(renderbuffer,resoRenderbuffer);
+      glBindRenderbuffer(val_int(target),id);
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_renderbuffer,2);
 
-value nme_gl_create_framebuffer( )
-{
-   GLuint id = 0;
-   if (CHECK_EXT(glGenFramebuffers)) glGenFramebuffers(1,&id);
-   return alloc_int(id);
-}
-DEFINE_PRIM(nme_gl_create_framebuffer,0);
-
-value nme_gl_create_render_buffer( )
-{
-   GLuint id = 0;
-   if (CHECK_EXT(glGenRenderbuffers)) glGenRenderbuffers(1,&id);
-   return alloc_int(id);
-}
-DEFINE_PRIM(nme_gl_create_render_buffer,0);
-
 value nme_gl_framebuffer_renderbuffer(value target, value attachment, value renderbuffertarget, value renderbuffer)
 {
-   if (CHECK_EXT(glFramebufferRenderbuffer)) glFramebufferRenderbuffer(val_int(target), val_int(attachment), val_int(renderbuffertarget), val_int(renderbuffer) );
+   DBGFUNC("framebufferRenderBuffer");
+   if (CHECK_EXT(glFramebufferRenderbuffer))
+   {
+      int id = getResource(renderbuffer,resoRenderbuffer);
+      glFramebufferRenderbuffer(val_int(target), val_int(attachment), val_int(renderbuffertarget), id );
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_framebuffer_renderbuffer,4);
 
+
 value nme_gl_framebuffer_texture2D(value target, value attachment, value textarget, value texture, value level)
 {
-   if (CHECK_EXT(glFramebufferTexture2D)) glFramebufferTexture2D( val_int(target), val_int(attachment), val_int(textarget), val_int(texture), val_int(level) );
+   DBGFUNC("framebufferTexture2D");
+   if (CHECK_EXT(glFramebufferTexture2D))
+   {
+      int tId = val_is_int(texture) ? val_int(texture) : getResource(texture,resoTexture);
+      glFramebufferTexture2D( val_int(target), val_int(attachment), val_int(textarget), tId, val_int(level) );
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_framebuffer_texture2D,5);
 
 value nme_gl_renderbuffer_storage(value target, value internalFormat, value width, value height)
 {
-   if (CHECK_EXT(glRenderbufferStorage)) glRenderbufferStorage( val_int(target), val_int(internalFormat), val_int(width), val_int(height) );
+   DBGFUNC("framebufferStorage");
+   if (CHECK_EXT(glRenderbufferStorage))
+   {
+      glRenderbufferStorage( val_int(target), val_int(internalFormat), val_int(width), val_int(height) );
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_renderbuffer_storage,4);
 
 value nme_gl_check_framebuffer_status(value inTarget)
 {
-   if (CHECK_EXT(glCheckFramebufferStatus)) return alloc_int( glCheckFramebufferStatus(val_int(inTarget)));
+   DBGFUNC("framebufferStatus");
+   if (CHECK_EXT(glCheckFramebufferStatus))
+   {
+      return alloc_int( glCheckFramebufferStatus(val_int(inTarget)));
+   }
    return alloc_int(0);
 }
 DEFINE_PRIM(nme_gl_check_framebuffer_status,1);
 
 value nme_gl_get_framebuffer_attachment_parameter(value target, value attachment, value pname)
 {
+   DBGFUNC("framebufferAttachmentParameter");
    GLint result = 0;
-   if (CHECK_EXT(glGetFramebufferAttachmentParameteriv)) glGetFramebufferAttachmentParameteriv( val_int(target), val_int(attachment), val_int(pname), &result);
+   if (CHECK_EXT(glGetFramebufferAttachmentParameteriv))
+      glGetFramebufferAttachmentParameteriv( val_int(target), val_int(attachment), val_int(pname), &result);
    return alloc_int(result);
 }
 DEFINE_PRIM(nme_gl_get_framebuffer_attachment_parameter,3);
 
 value nme_gl_get_render_buffer_parameter(value target, value pname)
 {
+   DBGFUNC("getRenderbufferParameter");
    int result = 0;
-   if (CHECK_EXT(glGetRenderbufferParameteriv)) glGetRenderbufferParameteriv(val_int(target), val_int(pname), &result);
+   if (CHECK_EXT(glGetRenderbufferParameteriv))
+      glGetRenderbufferParameteriv(val_int(target), val_int(pname), &result);
    return alloc_int(result);
 }
 DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
@@ -1323,6 +1496,7 @@ DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
 
 value nme_gl_draw_arrays(value inMode, value inFirst, value inCount)
 {
+   DBGFUNC("drawArrays");
    glDrawArrays( val_int(inMode), val_int(inFirst), val_int(inCount) );
    return alloc_null();
 }
@@ -1331,6 +1505,7 @@ DEFINE_PRIM(nme_gl_draw_arrays,3);
 
 value nme_gl_draw_elements(value inMode, value inCount, value inType, value inOffset)
 {
+   DBGFUNC("drawElements");
    glDrawElements( val_int(inMode), val_int(inCount), val_int(inType), (void *)(intptr_t)val_int(inOffset) );
    return alloc_null();
 }
@@ -1461,14 +1636,6 @@ DEFINE_PRIM(nme_gl_sample_coverage,2);
 
 // --- Texture -------------------------------------------
 
-value nme_gl_create_texture()
-{
-   unsigned int id = 0;
-   glGenTextures(1,&id);
-   return alloc_int(id);
-}
-DEFINE_PRIM(nme_gl_create_texture,0);
-
 value nme_gl_active_texture(value inSlot)
 {
    glActiveTexture( val_int(inSlot) );
@@ -1477,24 +1644,19 @@ value nme_gl_active_texture(value inSlot)
 DEFINE_PRIM(nme_gl_active_texture,1);
 
 
-value nme_gl_delete_texture(value inId)
-{
-   GLuint id = val_int(inId);
-   glDeleteTextures(1,&id);
-   return alloc_null();
-}
-DEFINE_PRIM(nme_gl_delete_texture,1);
-
 
 value nme_gl_bind_texture(value inTarget, value inTexture)
 {
-   glBindTexture(val_int(inTarget), val_int(inTexture) );
+   DBGFUNC("bindTexture");
+   int tid = val_is_int(inTexture) ? val_int(inTexture) : getResource(inTexture,resoTexture);
+   glBindTexture(val_int(inTarget), tid );
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_texture,2);
 
 value nme_gl_bind_bitmap_data_texture(value inBitmapData)
 {
+   DBGFUNC("bindBitmapData");
    Surface  *surface;
    if (AbstractToObject(inBitmapData,surface) )
    {
@@ -1516,6 +1678,7 @@ DEFINE_PRIM(nme_gl_bind_bitmap_data_texture,1);
 
 value nme_gl_tex_image_2d(value *arg, int argCount)
 {
+   DBGFUNC("texImage2D");
    enum { aTarget, aLevel, aInternal, aWidth, aHeight, aBorder, aFormat, aType, aBuffer, aOffset };
 
    unsigned char *data = 0;
@@ -1536,6 +1699,7 @@ DEFINE_PRIM_MULT(nme_gl_tex_image_2d);
    
 value nme_gl_tex_sub_image_2d(value *arg, int argCount)
 {
+   DBGFUNC("texSubImage2D");
    enum { aTarget, aLevel, aXOffset, aYOffset, aWidth, aHeight, aFormat, aType, aBuffer, aOffset };
 
    unsigned char *data = 0;
@@ -1557,6 +1721,7 @@ DEFINE_PRIM_MULT(nme_gl_tex_sub_image_2d);
 
 value nme_gl_compressed_tex_image_2d(value *arg, int argCount)
 {
+   DBGFUNC("ompressedTexImage2D");
    enum { aTarget, aLevel, aInternal, aWidth, aHeight, aBorder, aBuffer, aOffset };
 
    unsigned char *data = 0;
@@ -1580,6 +1745,7 @@ DEFINE_PRIM_MULT(nme_gl_compressed_tex_image_2d);
 
 value nme_gl_compressed_tex_sub_image_2d(value *arg, int argCount)
 {
+   DBGFUNC("compressedTexSubImage2D");
    enum { aTarget, aLevel, aXOffset, aYOffset, aWidth, aHeight, aFormat, aBuffer, aOffset };
 
    unsigned char *data = 0;
@@ -1623,6 +1789,7 @@ DEFINE_PRIM(nme_gl_tex_parameteri,3);
 
 value nme_gl_copy_tex_image_2d(value *arg, int argCount)
 {
+   DBGFUNC("copyTexImage2d");
    enum { aTarget, aLevel, aInternalFormat, aX, aY, aWidth, aHeight, aBorder };
 
    glCopyTexImage2D( INT(aTarget), INT(aLevel), INT(aInternalFormat),
@@ -1634,6 +1801,7 @@ DEFINE_PRIM_MULT(nme_gl_copy_tex_image_2d);
 
 value nme_gl_copy_tex_sub_image_2d(value *arg, int argCount)
 {
+   DBGFUNC("copyTexSubImage2d");
    enum { aTarget, aLevel, aXOffset, aYOffset, aX, aY, aWidth, aHeight };
 
    glCopyTexSubImage2D( INT(aTarget), INT(aLevel), INT(aXOffset), INT(aYOffset),
@@ -1646,7 +1814,9 @@ DEFINE_PRIM_MULT(nme_gl_copy_tex_sub_image_2d);
 
 value nme_gl_generate_mipmap(value inTarget)
 {
-   if (CHECK_EXT(glGenerateMipmap)) glGenerateMipmap(val_int(inTarget));
+   DBGFUNC("generateMipmap");
+   if (CHECK_EXT(glGenerateMipmap))
+      glGenerateMipmap(val_int(inTarget));
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_generate_mipmap,1);

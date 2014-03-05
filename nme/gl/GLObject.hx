@@ -3,7 +3,7 @@ package nme.gl;
 
 class GLObject 
 {
-   public var id(default, null):Dynamic;
+   public var id:Dynamic;
    public var invalidated(get_invalidated, null):Bool;
    public var valid(get_valid, null):Bool;
 

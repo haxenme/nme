@@ -28,18 +28,22 @@ static GLuint sgOpenglType[] =
   { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP, GL_POINTS, GL_LINES };
 
 
-void ResetHardwareContext()
-{
-   //__android_log_print(ANDROID_LOG_ERROR, "NME", "ResetHardwareContext");
-   gTextureContextVersion++;
-}
-
 
 
 // --- HardwareContext Interface ---------------------------------------------------------
 
 
 HardwareContext* nme::HardwareContext::current = NULL;
+
+
+void ResetHardwareContext()
+{
+   //__android_log_print(ANDROID_LOG_ERROR, "NME", "ResetHardwareContext");
+   gTextureContextVersion++;
+   if (HardwareContext::current)
+      HardwareContext::current->OnContextLost();
+}
+
 
 
 class OGLContext : public HardwareContext
@@ -59,6 +63,7 @@ public:
       mLineScaleV = -1;
       mLineScaleH = -1;
       mThreadId = GetThreadId();
+      mHasZombie = false;
       #if defined(NME_GLES)
       mQuality = sqLow;
       #else
@@ -89,27 +94,88 @@ public:
    }
 
 
+
    void DestroyNativeTexture(void *inNativeTexture)
    {
       GLuint tid = (GLuint)(size_t)inNativeTexture;
-      if ( !IsMainThread() )
-      {
-         //printf("Warning - leaking texture %d", tid );
-		 mZombieTextures.push_back(tid);
-      }
-      else
-         glDeleteTextures(1,&tid);
+      DestroyTexture(tid);
    }
 
+   void DestroyTexture(unsigned int inTex)
+   {
+      if ( !IsMainThread() )
+      {
+         mHasZombie = true;
+         mZombieTextures.push_back(inTex);
+      }
+      else
+         glDeleteTextures(1,&inTex);
+   }
 
    void DestroyVbo(unsigned int inVbo)
    {
       if ( !IsMainThread() )
-	      mZombieVbos.push_back(inVbo);
+      {
+         mHasZombie = true;
+         mZombieVbos.push_back(inVbo);
+      }
       else
          glDeleteBuffers(1,&inVbo);
    }
 
+   void DestroyProgram(unsigned int inProg)
+   {
+      if ( !IsMainThread() )
+      {
+         mHasZombie = true;
+         mZombiePrograms.push_back(inProg);
+      }
+      else
+         glDeleteProgram(inProg);
+   }
+   void DestroyShader(unsigned int inShader)
+   {
+      if ( !IsMainThread() )
+      {
+         mHasZombie = true;
+         mZombieShaders.push_back(inShader);
+      }
+      else
+         glDeleteShader(inShader);
+   }
+   void DestroyFramebuffer(unsigned int inBuffer)
+   {
+      if ( !IsMainThread() )
+      {
+         mHasZombie = true;
+         mZombieFramebuffers.push_back(inBuffer);
+      }
+      else
+         glDeleteFramebuffers(1,&inBuffer);
+   }
+
+   void DestroyRenderbuffer(unsigned int inBuffer)
+   {
+      if ( !IsMainThread() )
+      {
+         mHasZombie = true;
+         mZombieRenderbuffers.push_back(inBuffer);
+      }
+      else
+         glDeleteRenderbuffers(1,&inBuffer);
+   }
+
+
+   void OnContextLost()
+   {
+      mZombieTextures.resize(0);
+      mZombieVbos.resize(0);
+      mZombiePrograms.resize(0);
+      mZombieShaders.resize(0);
+      mZombieFramebuffers.resize(0);
+      mZombieRenderbuffers.resize(0);
+      mHasZombie = false;
+   }
 
    void SetWindowSize(int inWidth,int inHeight)
    {
@@ -175,17 +241,47 @@ public:
          #endif
          #endif
          #endif
-		 
-         if (mZombieTextures.size())
-         {
-            glDeleteTextures(mZombieTextures.size(),&mZombieTextures[0]);
-            mZombieTextures.resize(0);
-         }
 
-         if (mZombieVbos.size())
+         if (mHasZombie)
          {
-            glDeleteTextures(mZombieVbos.size(),&mZombieVbos[0]);
-            mZombieVbos.resize(0);
+            mHasZombie = false;
+            if (mZombieTextures.size())
+            {
+               glDeleteTextures(mZombieTextures.size(),&mZombieTextures[0]);
+               mZombieTextures.resize(0);
+            }
+
+            if (mZombieVbos.size())
+            {
+               glDeleteTextures(mZombieVbos.size(),&mZombieVbos[0]);
+               mZombieVbos.resize(0);
+            }
+
+            if (mZombiePrograms.size())
+            {
+               for(int i=0;i<mZombiePrograms.size();i++)
+                  glDeleteProgram(mZombiePrograms[i]);
+               mZombiePrograms.resize(0);
+            }
+
+            if (mZombieShaders.size())
+            {
+               for(int i=0;i<mZombieShaders.size();i++)
+                  glDeleteShader(mZombieShaders[i]);
+               mZombieShaders.resize(0);
+            }
+
+            if (mZombieFramebuffers.size())
+            {
+               glDeleteFramebuffers(mZombieFramebuffers.size(),&mZombieFramebuffers[0]);
+               mZombieFramebuffers.resize(0);
+            }
+
+            if (mZombieRenderbuffers.size())
+            {
+               glDeleteRenderbuffers(mZombieRenderbuffers.size(),&mZombieRenderbuffers[0]);
+               mZombieRenderbuffers.resize(0);
+            }
          }
 
 
@@ -607,8 +703,14 @@ public:
 
    double mLineWidth;
    
+   // TODO - mutex in case finalizer is run from thread
+   bool             mHasZombie;
    QuickVec<GLuint> mZombieTextures;
    QuickVec<GLuint> mZombieVbos;
+   QuickVec<GLuint> mZombiePrograms;
+   QuickVec<GLuint> mZombieShaders;
+   QuickVec<GLuint> mZombieFramebuffers;
+   QuickVec<GLuint> mZombieRenderbuffers;
 
    GPUProg *mProg[PROG_COUNT];
 

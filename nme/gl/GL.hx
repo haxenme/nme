@@ -452,22 +452,22 @@ class GL
 
    public static function bindBuffer(target:Int, buffer:GLBuffer):Void 
    {
-      nme_gl_bind_buffer(target, buffer == null ? 0 : buffer.id);
+      nme_gl_bind_buffer(target, buffer == null ? null : buffer.id);
    }
 
    public static function bindFramebuffer(target:Int, framebuffer:GLFramebuffer):Void 
    {
-      nme_gl_bind_framebuffer(target, framebuffer == null ? 0 : framebuffer.id);
+      nme_gl_bind_framebuffer(target, framebuffer == null ? null : framebuffer.id);
    }
 
    public static function bindRenderbuffer(target:Int, renderbuffer:GLRenderbuffer):Void 
    {
-      nme_gl_bind_renderbuffer(target, renderbuffer == null ? 0 : renderbuffer.id);
+      nme_gl_bind_renderbuffer(target, renderbuffer == null ? null : renderbuffer.id);
    }
 
    public static function bindTexture(target:Int, texture:GLTexture):Void 
    {
-      nme_gl_bind_texture(target, texture == null ? 0 : texture.id);
+      nme_gl_bind_texture(target, texture == null ? null : texture.id);
    }
 
    public static function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void 
@@ -834,7 +834,7 @@ class GL
 
    public static function isBuffer(buffer:GLBuffer):Bool 
    {
-      return buffer != null && buffer.id > 0 && nme_gl_is_buffer(buffer.id);
+      return buffer != null && nme_gl_is_buffer(buffer.id);
    }
 
    // This is non-static
@@ -846,27 +846,27 @@ class GL
 
    public static function isFramebuffer(framebuffer:GLFramebuffer):Bool 
    {
-      return framebuffer != null && framebuffer.id > 0 && nme_gl_is_framebuffer(framebuffer.id);
+      return framebuffer != null && nme_gl_is_framebuffer(framebuffer.id);
    }
 
    public static function isProgram(program:GLProgram):Bool 
    {
-      return program != null && program.id > 0 && nme_gl_is_program(program.id);
+      return program != null && nme_gl_is_program(program.id);
    }
 
    public static function isRenderbuffer(renderbuffer:GLRenderbuffer):Bool 
    {
-      return renderbuffer != null && renderbuffer.id > 0 && nme_gl_is_renderbuffer(renderbuffer.id);
+      return renderbuffer != null && nme_gl_is_renderbuffer(renderbuffer.id);
    }
 
    public static function isShader(shader:GLShader):Bool 
    {
-      return shader != null && shader.id > 0 && nme_gl_is_shader(shader.id);
+      return shader != null && nme_gl_is_shader(shader.id);
    }
 
    public static function isTexture(texture:GLTexture):Bool 
    {
-      return texture != null && texture.id > 0 && nme_gl_is_texture(texture.id);
+      return texture != null && nme_gl_is_texture(texture.id);
    }
 
    public static function lineWidth(width:Float):Void 
@@ -1078,7 +1078,7 @@ class GL
 
    public static function useProgram(program:GLProgram):Void 
    {
-      nme_gl_use_program(program == null ? 0 : program.id);
+      nme_gl_use_program(program == null ? null : program.id);
    }
 
    public static function validateProgram(program:GLProgram):Void 

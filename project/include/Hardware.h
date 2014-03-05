@@ -106,8 +106,14 @@ public:
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
    virtual void EndBitmapRender()=0;
 
+   virtual void OnContextLost() = 0;
    virtual void DestroyNativeTexture(void *inNativeTexture)=0;
+   virtual void DestroyTexture(unsigned int inTex)=0;
    virtual void DestroyVbo(unsigned int inVbo)=0;
+   virtual void DestroyProgram(unsigned int inProg)=0;
+   virtual void DestroyShader(unsigned int inShader)=0;
+   virtual void DestroyFramebuffer(unsigned int inBuffer)=0;
+   virtual void DestroyRenderbuffer(unsigned int inBuffer)=0;
 };
 
 extern HardwareContext *gDirectRenderContext;

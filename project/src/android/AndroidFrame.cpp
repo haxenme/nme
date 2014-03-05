@@ -720,7 +720,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onContextLost(JNIEnv * env, jobjec
    __android_log_print(ANDROID_LOG_INFO, "NME", "NME onContextLost !: %p", nme::sFrame );
    if (nme::sFrame)
       nme::sFrame->onContextLost();
-      */
+   */
    return 0;
 }
 
