@@ -672,6 +672,7 @@ void DirectRenderer::Render( const RenderTarget &inTarget, const RenderState &in
    if (inState.mPhase==rpRender && inTarget.IsHardware())
    {
       gDirectRenderContext = inTarget.mHardware;
+      gDirectRenderContext->BeginDirectRender();
       Rect clip = inState.mClipRect;
       clip.y = inTarget.mHardware->Height() - clip.y - clip.h;
       if (gNmeRenderGcFree)
@@ -682,6 +683,7 @@ void DirectRenderer::Render( const RenderTarget &inTarget, const RenderState &in
       }
       else
          onRender(renderHandle,clip,inState.mTransform);
+      gDirectRenderContext->EndDirectRender();
       gDirectRenderContext = 0;
    }
 }

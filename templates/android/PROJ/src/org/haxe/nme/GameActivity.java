@@ -268,11 +268,41 @@ implements SensorEventListener
          } });
    }
 
+   void applyTranslucent(boolean inTrans)
+   {
+      if (mView!=null)
+         mContainer.removeView(mView);
+
+      if (mVideoView!=null)
+         mContainer.removeView(mVideoView);
+
+     mView.setTranslucent(inTrans);
+
+     if (mView!=null)
+        mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
+
+     if (mVideoView!=null)
+     {
+        RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
+
+        videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        mContainer.addView( mVideoView, 0, videoLayout );
+     }
+
+     ::if !(ANDROIDVIEW)::
+     setContentView(mContainer);
+     ::end::
+
+   }
+
+
    public void setBackgroundSync(int inVal)
    {
       mBackground = inVal;
-      if (mView!=null)
-         mView.setTranslucent( (mBackground&0xff000000)==0 || mVideoView!=null );
+      boolean trans = (mBackground&0xff000000)==0 || mVideoView!=null;
+      if (trans!=mView.translucent)
+         mView.setTranslucent(trans);
+         //applyTranslucent(trans);
    }
 
    public static void setBackground(final int inVal)

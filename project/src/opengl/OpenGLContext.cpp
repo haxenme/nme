@@ -204,6 +204,7 @@ public:
       red *= alpha;
       green *= alpha;
       blue *= alpha;
+
       if (r==Rect(mWidth,mHeight))
       {
          glClearColor(red, green, blue, alpha );
@@ -318,6 +319,17 @@ public:
       #endif
       #endif
       #endif
+   }
+
+   void BeginDirectRender()
+   {
+      gDirectMaxAttribArray = 0;
+   }
+
+   void EndDirectRender()
+   {
+      for(int i=0;i<gDirectMaxAttribArray;i++)
+         glDisableVertexAttribArray(i);
    }
 
 

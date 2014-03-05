@@ -19,10 +19,13 @@
 
 #define INT(a) val_int(arg[a])
 
+
 // --- General -------------------------------------------
 
 namespace nme
 {
+
+int gDirectMaxAttribArray = 0;
 
 enum ResoType
 {
@@ -132,6 +135,9 @@ void releaseResource(value inValue)
 
 unsigned int getResource(value inResource, ResoType inType)
 {
+   if (val_is_null(inResource))
+      return 0;
+
    NmeResource *resource = 0;
    if (AbstractToObject(inResource,resource))
    {
@@ -1360,7 +1366,10 @@ DEFINE_PRIM_MULT(nme_gl_vertex_attrib_pointer);
 
 value nme_gl_enable_vertex_attrib_array(value inIndex)
 {
-   glEnableVertexAttribArray(val_int(inIndex));
+   int index = val_int(inIndex);
+   if (index>gDirectMaxAttribArray)
+      gDirectMaxAttribArray = index;
+   glEnableVertexAttribArray(index);
    return alloc_null();
 }
 

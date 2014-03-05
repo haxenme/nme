@@ -1651,20 +1651,21 @@ void NMEStage::setOpaqueBackground(uint32 inBG)
 {
    Stage::setOpaqueBackground(inBG);
    wantOpaqueBg = (inBG & 0xff000000) != 0;
-   if (!haveOpaqueBg || !wantOpaqueBg)
+
+   if (wantOpaqueBg!=haveOpaqueBg)
+      recreateNmeView();
+   else if (playerView)
    {
       double r = ((opaqueBackground>>16) & 0xff) / 255.0;
       double g = ((opaqueBackground>>8 ) & 0xff) / 255.0;
       double b = ((opaqueBackground    ) & 0xff) / 255.0;
       container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
    }
-   if (wantOpaqueBg!=haveOpaqueBg)
-      recreateNmeView();
 }
 
 void NMEStage::recreateNmeView()
 {
-   //printf("===== recreateNmeView =====\n");
+   printf("===== recreateNmeView ===== %d\n",wantOpaqueBg);
    [nmeView tearDown];
    #ifndef OBJC_ARC
    // Should do it here
@@ -1683,12 +1684,14 @@ void NMEStage::recreateNmeView()
 
    haveOpaqueBg = wantOpaqueBg;
 
-   if (haveOpaqueBg)
+   if (!playerView)
    {
+      // No underlay required...
       container.backgroundColor = nil;
    }
    else
    {
+      // add underlay to go under video
       double r = ((opaqueBackground>>16) & 0xff) / 255.0;
       double g = ((opaqueBackground>>8 ) & 0xff) / 255.0;
       double b = ((opaqueBackground    ) & 0xff) / 255.0;
@@ -1712,7 +1715,7 @@ void NMEStage::updateSize(int inWidth, int inHeight)
  
 uint32 NMEStage::getBackgroundMask()
 {
-   return playerView ? 0x00ffffff : 0xffffffff;
+   return wantOpaqueBg ? 0xffffffff : 0x00ffffff;
 }
 
 CGRect NMEStage::getViewBounds()

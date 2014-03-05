@@ -218,26 +218,25 @@ class MainView extends GLSurfaceView {
    java.util.Timer mTimer = new java.util.Timer();
    int mTimerID = 0;
 
+
    public void setTranslucent(boolean inTranslucent)
    {
       if (inTranslucent!=translucent)
       {
-         /*
-         ::if !(WIN_ALPHA_BUFFER)::
-         if (inTranslucent)
-            Log.w("EGL","Setting translucent without defining window alpha");
-         ::end::
-         */
+         Log.w("EGL","Pause...");
+         onPause();
+         Log.w("EGL","Set...");
+         
          translucent = inTranslucent;
          getHolder().setFormat(
              inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.RGB_565 );
 
+         setZOrderMediaOverlay(true);
 
-         //Log.w("EGL","pause for translucent...");
-         onPause();
-         //Log.w("EGL","resume...");
+         Log.w("EGL","Resume...");
          onResume();
-         //Log.w("EGL","Done");
+
+         Log.w("EGL","Done");
          //public void setPreserveEGLContextOnPause (boolean preserveOnPause)
       }
    }
@@ -478,6 +477,8 @@ class MainView extends GLSurfaceView {
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config)
         {
+           mMainView.isPollImminent = false;
+           mMainView.renderPending = false;
            ::if (DEBUG)::
            Log.v("VIEW","onSurfaceCreated");
            Log.v("VIEW", "Thread = " + java.lang.Thread.currentThread().getId() );

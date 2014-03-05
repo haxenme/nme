@@ -141,6 +141,8 @@ class ApplicationMain
       
    }
 
+   @:keep function keepMe() { Reflect.callMethod(null,null,null); }
+
    public static function setAndroidViewHaxeObject(inObj:Dynamic)
    {
       #if androidview

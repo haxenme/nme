@@ -713,14 +713,12 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onContextLost(JNIEnv * env, jobjec
 {
    // Delay the result to just prior to render - docs seem to say you should
    //  do it here, but I seem to be missing something
-   nmeContextIsLost = true;
+   //nmeContextIsLost = true;
 
-   /*
    AutoHaxe haxe("onContextLost");
    __android_log_print(ANDROID_LOG_INFO, "NME", "NME onContextLost !: %p", nme::sFrame );
    if (nme::sFrame)
       nme::sFrame->onContextLost();
-   */
    return 0;
 }
 
@@ -731,6 +729,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj
    AutoHaxe haxe("onRender");
    if (nmeContextIsLost)
    {
+      LOG("Send on lost");
       nmeContextIsLost = false;
       if (nme::sFrame)
          nme::sFrame->onContextLost();

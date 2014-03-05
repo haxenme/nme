@@ -106,6 +106,10 @@ public:
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
    virtual void EndBitmapRender()=0;
 
+   virtual void BeginDirectRender()=0;
+   virtual void EndDirectRender()=0;
+
+
    virtual void OnContextLost() = 0;
    virtual void DestroyNativeTexture(void *inNativeTexture)=0;
    virtual void DestroyTexture(unsigned int inTex)=0;
@@ -117,6 +121,7 @@ public:
 };
 
 extern HardwareContext *gDirectRenderContext;
+extern int gDirectMaxAttribArray;
 
 void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,
                       HardwareData &ioData, HardwareContext &inHardware,const RenderState &inState);
