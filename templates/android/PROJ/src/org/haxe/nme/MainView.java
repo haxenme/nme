@@ -76,7 +76,7 @@ class MainView extends GLSurfaceView {
 
        translucent = inTranslucent;
        getHolder().setFormat(
-          inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.RGB_565 );
+          translucent ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE );
 
 
         setZOrderMediaOverlay(true);
@@ -181,7 +181,7 @@ class MainView extends GLSurfaceView {
                                 EGL10.EGL_NONE };
 
                 egl.eglChooseConfig(display, attrs1, configs, 1, num_config);
-                Log.v("EGL","Matched depth + stencil : " + num_config[0]);
+                Log.v("EGL","Matched depth + stencil : " + num_config[0] + "(" + alpha + ")" );
                 if (num_config[0]==1)
                    return configs[0];
 
@@ -223,21 +223,21 @@ class MainView extends GLSurfaceView {
    {
       if (inTranslucent!=translucent)
       {
-         Log.w("EGL","Pause...");
-         onPause();
-         Log.w("EGL","Set...");
-         
          translucent = inTranslucent;
+
+         // Seems to be some funky timing issue - but three times is a charm?
+         onPause();
          getHolder().setFormat(
-             inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.RGB_565 );
+             inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE );
 
-         setZOrderMediaOverlay(true);
+         getHolder().setFormat(
+             !inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE );
 
-         Log.w("EGL","Resume...");
+         getHolder().setFormat(
+             inTranslucent ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE );
          onResume();
 
-         Log.w("EGL","Done");
-         //public void setPreserveEGLContextOnPause (boolean preserveOnPause)
+         setZOrderMediaOverlay(true);
       }
    }
 

@@ -268,6 +268,7 @@ implements SensorEventListener
          } });
    }
 
+   /*
    void applyTranslucent(boolean inTrans)
    {
       if (mView!=null)
@@ -294,6 +295,7 @@ implements SensorEventListener
      ::end::
 
    }
+   */
 
 
    public void setBackgroundSync(int inVal)

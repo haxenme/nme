@@ -265,7 +265,7 @@ public:
 
    uint32 getBackgroundMask()
    {
-      return mBackground | 0xffffff;
+      return video ? 0x00ffffff :  (mBackground|0xffffff);
    }
 
 
@@ -716,7 +716,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onContextLost(JNIEnv * env, jobjec
    //nmeContextIsLost = true;
 
    AutoHaxe haxe("onContextLost");
-   __android_log_print(ANDROID_LOG_INFO, "NME", "NME onContextLost !: %p", nme::sFrame );
+   //__android_log_print(ANDROID_LOG_INFO, "NME", "NME onContextLost !: %p", nme::sFrame );
    if (nme::sFrame)
       nme::sFrame->onContextLost();
    return 0;

@@ -12,6 +12,7 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="com.nmehost.androidviewtestapp.MainActivity"
+           android:configChanges="keyboard|keyboardHidden|orientation|screenSize"::if (WIN_ORIENTATION!=""):: android:screenOrientation="::WIN_ORIENTATION::"::end::
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

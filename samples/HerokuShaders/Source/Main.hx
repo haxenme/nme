@@ -96,7 +96,6 @@ class Main extends Sprite {
       bump = false;
       mx = 0.1;
       my = 0.1;
-
        
 
       if (OpenGLView.isSupported)
@@ -104,19 +103,7 @@ class Main extends Sprite {
          view = new OpenGLView();
          loadData();
          addEventListener( nme.events.Event.CONTEXT3D_LOST, function(_) reload() );
-         /*
-         Test destroying the context...
 
-         var trans = false;
-         stage.addEventListener( nme.events.MouseEvent.MOUSE_DOWN, function(_)
-           {
-              trans = !trans;
-              if (trans)
-                 stage.opaqueBackground = null;
-              else
-                 stage.opaqueBackground = 0x00ff00;
-           }  );
-          */
          stage.addEventListener( nme.events.MouseEvent.MOUSE_MOVE, function(evt)
            {
               mx = (evt.stageX / stage.stageWidth)*2-1;
@@ -126,15 +113,7 @@ class Main extends Sprite {
          addChild(view);
       }
 
-      /*
-       You can mix with normal graphics
-
-      var s = new Sprite();
-      var gfx = s.graphics;
-      gfx.beginFill(0xff0000);
-      gfx.drawCircle(100,100,100);
-      addChild(s);
-      */
+      addChild(new nme.display.FPS(10,10,0xff00ff));
    }
 
    function reload()
@@ -161,13 +140,13 @@ class Main extends Sprite {
       buffer = GL.createBuffer();
       GL.bindBuffer(GL.ARRAY_BUFFER, buffer);
       GL.bufferData(GL.ARRAY_BUFFER, new Float32Array (
-              [ -0.9, -1.0,
+              [ -1.0, -1.0,
                 1.0, -1.0,
-                -0.9, 0.9,
+                -1.0, 1.0,
 
                 1.0, -1.0,
-                1.0, 0.9,
-                -0.9, 0.9 ]), GL.STATIC_DRAW);
+                1.0, 1.0,
+                -1.0, 1.0 ]), GL.STATIC_DRAW);
       compile();
    }
    
