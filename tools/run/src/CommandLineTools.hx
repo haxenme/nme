@@ -81,6 +81,12 @@ class CommandLineTools
             platform.clean();
          }
 
+         if (command == "uninstall" )
+         {
+            Log.verbose("\nRunning command: UNINSTALL");
+            platform.uninstall();
+         }
+
          if (command == "update" || command == "build" || command == "test" || command=="xcode") 
          {
             Log.verbose("\nRunning command: UPDATE");
