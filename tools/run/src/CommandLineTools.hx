@@ -18,6 +18,7 @@ class CommandLineTools
    static var assumedTest:Bool = false;
    static var debug:Bool;
    static var forceFlag:Bool = false;
+   static var staticFlag:Bool = false;
    static var words:Array<String>;
    static var traceEnabled:Null<Bool>;
    static var host = PlatformHelper.hostPlatform;
@@ -622,6 +623,9 @@ class CommandLineTools
 
       project.setTarget(targetName);
 
+      if (staticFlag && project.optionalStaticLink)
+         project.staticLink = true;
+
       getHXCPPConfig(project);
 
       if (host == Platform.WINDOWS) 
@@ -753,7 +757,6 @@ class CommandLineTools
 
       processArguments(project);
 
-      nmeVersion = getVersion();
 
       if (Log.mVerbose && command!="") 
       {
@@ -816,6 +819,7 @@ class CommandLineTools
       if (lastCharacter == "/" || lastCharacter == "\\") 
          nme = nme.substr(0, -1);
 
+      nmeVersion = getVersion();
 
       if (arguments.length > 0) 
       {
@@ -929,7 +933,10 @@ class CommandLineTools
                project.haxedefs.set(argument.substr(2), "");
 
             else if (argument == "-lib") 
-               project.addLib(arguments[argIdx++],"lib");
+               project.addLib(arguments[argIdx++],"lib","","",staticFlag?true:null);
+
+            else if (argument == "-static" || argument=="-s") 
+               staticFlag = true;
 
             else if (argument.substr(0, 2) == "-l") 
                project.includePaths.push(argument.substr(2));
