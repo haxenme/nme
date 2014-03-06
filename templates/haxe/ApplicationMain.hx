@@ -89,7 +89,6 @@ class ApplicationMain
       {
          wx.App.boot(function()
          {
-            #if nme
             var size = { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: };
             ::if (APP_FRAME != null)::
                frame = wx.::APP_FRAME::.create(null, null, "::APP_TITLE::", null, size);
@@ -98,7 +97,9 @@ class ApplicationMain
             ::end::
 
 
-               wx.NMEStage.create(frame, null, null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+            #if nme
+            wx.NMEStage.create(frame, null, null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+            #end
 
             ApplicationBoot.createInstance();
 
@@ -107,9 +108,6 @@ class ApplicationMain
                wx.App.setTopWindow(frame);
                frame.shown = true;
             }
-            #else
-            ApplicationBoot.createInstance();
-            #end
          });
       }
       #else
