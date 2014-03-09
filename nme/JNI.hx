@@ -68,7 +68,7 @@ class JNI
     * @param   useArray      Whether the method should accept multiple parameters, or a single array with the parameters to pass to Java
     * @return      A method that calls Java. Each argument is passed into the Java method as arguments
     */
-   public static function createStaticMethod(className:String, memberName:String, signature:String, useArray:Bool = false, quietFail:Bool):Dynamic 
+   public static function createStaticMethod(className:String, memberName:String, signature:String, useArray:Bool = false, quietFail:Bool=false):Dynamic 
    {
       init();
 
