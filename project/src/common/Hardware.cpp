@@ -1627,14 +1627,6 @@ HardwareData::~HardwareData()
          mElements[i].mSurface->DecRef();
 }
 
-// --- Texture -----------------------------
-void Texture::Dirty(const Rect &inRect)
-{
-   if (!mDirtyRect.HasPixels())
-      mDirtyRect = inRect;
-   else
-      mDirtyRect = mDirtyRect.Union(inRect);
-}
 
 // --- HardwareRenderer -----------------------------
 

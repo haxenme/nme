@@ -81,6 +81,18 @@ int * getAlpha16Table()
 
 class OGLTexture : public Texture
 {
+   Rect mDirtyRect;
+   int  mContextVersion;
+   GLuint mTextureID;
+   bool mCanRepeat;
+   bool mRepeat;
+   bool mSmooth;
+   int mPixelWidth;
+   int mPixelHeight;
+   int mTextureWidth;
+   int mTextureHeight;
+
+
 public:
    OGLTexture(Surface *inSurface,unsigned int inFlags)
    {
@@ -217,7 +229,7 @@ public:
       }
    }
 
-   void Bind(class Surface *inSurface,int inSlot)
+   void Bind(class ImageBuffer *inSurface,int inSlot)
    {
       if (inSlot>=0 && CHECK_EXT(glActiveTexture))
       {
@@ -347,16 +359,15 @@ public:
       return UserPoint(inTex.x*mPixelWidth/mTextureWidth, inTex.y*mPixelHeight/mTextureHeight);
    }
 
+   void Dirty(const Rect &inRect)
+   {
+      if (!mDirtyRect.HasPixels())
+         mDirtyRect = inRect;
+      else
+         mDirtyRect = mDirtyRect.Union(inRect);
+   }
 
-
-   GLuint mTextureID;
-   bool mCanRepeat;
-   bool mRepeat;
-   bool mSmooth;
-   int mPixelWidth;
-   int mPixelHeight;
-   int mTextureWidth;
-   int mTextureHeight;
+   bool IsCurrentVersion() { return mContextVersion==gTextureContextVersion; }
 };
 
 

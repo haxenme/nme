@@ -28,20 +28,16 @@ enum
 class Texture
 {
 public:
-   Texture() : mContextVersion(gTextureContextVersion) { }
    virtual ~Texture() {};
-   virtual void Bind(class Surface *inSurface,int inSlot)=0;
+
+   virtual void Bind(class ImageBuffer *inImage,int inSlot)=0;
    virtual void BindFlags(bool inRepeat,bool inSmooth)=0;
    virtual UserPoint PixelToTex(const UserPoint &inPixels)=0;
    virtual UserPoint TexToPaddedTex(const UserPoint &inPixels)=0;
-
-   void Dirty(const Rect &inRect);
-   bool IsDirty() { return mDirtyRect.HasPixels(); }
-   bool IsCurrentVersion() { return mContextVersion==gTextureContextVersion; }
-
-   Rect mDirtyRect;
-   int  mContextVersion;
+   virtual void Dirty(const Rect &inRect) = 0;
+   virtual bool IsCurrentVersion() = 0;
 };
+
 
 class ImageBuffer : public Object
 {
@@ -60,6 +56,8 @@ public:
    virtual int Version() const  = 0;
    virtual Texture *GetTexture()  = 0;
    virtual Texture *GetOrCreateTexture(HardwareContext &inHardware) = 0;
+
+   inline const uint8 *Row(int inY) const { return GetBase() + GetStride()*inY; }
 };
 
 class Surface : public ImageBuffer
@@ -90,7 +88,6 @@ public:
    virtual void unmultiplyAlpha() { }
 
    int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
-   const uint8 *Row(int inY) const { return GetBase() + GetStride()*inY; }
 
    virtual RenderTarget BeginRender(const Rect &inRect,bool inForHitTest=false)=0;
    virtual void EndRender()=0;
