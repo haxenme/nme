@@ -76,7 +76,7 @@ public:
          GraphicsBitmapFill *bmp = inJob.mFill->AsBitmapFill();
          mElement.mSurface = bmp->bitmapData->IncRef();
 
-         mTexture = mElement.mSurface->GetOrCreateTexture(inHardware);
+         mTexture = mElement.mSurface->GetTexture(&inHardware);
          if (bmp->smooth)
             mElement.mFlags |= DRAW_BMP_SMOOTH;
          tile_mode = true;
@@ -292,7 +292,7 @@ public:
             GraphicsBitmapFill *bmp = inFill->AsBitmapFill();
             mTextureMapper = bmp->matrix.Inverse();
             mElement.mSurface = bmp->bitmapData->IncRef();
-            mTexture = mElement.mSurface->GetOrCreateTexture(inHardware);
+            mTexture = mElement.mSurface->GetTexture(&inHardware);
             if (bmp->repeat)
                mElement.mFlags |= DRAW_BMP_REPEAT;
             if (bmp->smooth)

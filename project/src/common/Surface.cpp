@@ -54,18 +54,18 @@ void Surface::Bind(HardwareContext &inHardware,int inSlot)
    if (!mTexture)
       mTexture = inHardware.CreateTexture(this,mFlags);
 
-   mTexture->Bind(this,inSlot);
+   mTexture->Bind(inSlot);
 }
 
-Texture *Surface::GetOrCreateTexture(HardwareContext &inHardware)
+Texture *Surface::GetTexture(HardwareContext *inHardware,int inPlane)
 {
    if (mTexture && !mTexture->IsCurrentVersion())
    {
       delete mTexture;
       mTexture = 0;
    }
-   if (!mTexture)
-      mTexture = inHardware.CreateTexture(this,mFlags);
+   if (!mTexture && inHardware)
+      mTexture = inHardware->CreateTexture(this,mFlags);
    return mTexture;
 }
 
@@ -136,11 +136,11 @@ void SimpleSurface::createHardwareSurface() {
    if ( nme::HardwareRenderer::current == NULL )
       printf( "Null Hardware Context" );
    else
-       GetOrCreateTexture( *nme::HardwareRenderer::current );
+       GetTexture( nme::HardwareRenderer::current );
    
 }
 
-void SimpleSurface::dumpBits()
+void SimpleSurface::MakeTextureOnly()
 { 
    if(mBase)
    {
@@ -1167,6 +1167,23 @@ void SimpleSurface::dispose()
       mBase = NULL;
    }
 }
+
+uint8  *SimpleSurface::Edit(const Rect *inRect, int inPlane)
+{
+   if (!mBase)
+      return 0;
+
+   Rect r = inRect ? inRect->Intersect( Rect(0,0,mWidth,mHeight) ) : Rect(0,0,mWidth,mHeight);
+   if (mTexture)
+      mTexture->Dirty(r);
+   mVersion++;
+      return mBase;
+}
+
+void SimpleSurface::Commit(int inPlane)
+{
+}
+
 
 RenderTarget SimpleSurface::BeginRender(const Rect &inRect,bool inForHitTest)
 {

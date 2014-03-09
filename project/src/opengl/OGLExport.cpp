@@ -1674,9 +1674,9 @@ value nme_gl_bind_bitmap_data_texture(value inBitmapData)
          ctx = nme::HardwareRenderer::current;
       if (ctx)
       {
-         Texture *texture = surface->GetOrCreateTexture(*gDirectRenderContext);
+         Texture *texture = surface->GetTexture(gDirectRenderContext);
          if (texture)
-            texture->Bind(surface,-1);
+            texture->Bind(-1);
       }
    }
 

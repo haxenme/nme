@@ -7,6 +7,8 @@
 #include <Filters.h>
 
 #include "Hardware.h"
+#include <nme/Texture.h>
+#include <nme/ImageBuffer.h>
 
 // ---- Surface API --------------
 
@@ -18,53 +20,14 @@ void HintColourOrder(bool inRedFirst);
 
 extern int gTextureContextVersion;
 
-enum
-{
-   SURF_FLAGS_NOT_REPEAT_IF_NON_PO2    = 0x0001,
-   SURF_FLAGS_USE_PREMULTIPLIED_ALPHA  = 0x0002,
-   SURF_FLAGS_HAS_PREMULTIPLIED_ALPHA  = 0x0004,
-};
-
-class Texture
-{
-public:
-   virtual ~Texture() {};
-
-   virtual void Bind(class ImageBuffer *inImage,int inSlot)=0;
-   virtual void BindFlags(bool inRepeat,bool inSmooth)=0;
-   virtual UserPoint PixelToTex(const UserPoint &inPixels)=0;
-   virtual UserPoint TexToPaddedTex(const UserPoint &inPixels)=0;
-   virtual void Dirty(const Rect &inRect) = 0;
-   virtual bool IsCurrentVersion() = 0;
-};
 
 
-class ImageBuffer : public Object
-{
-protected: // Use 'DecRef'
-   virtual       ~ImageBuffer() { };
-public:
-   virtual int Width() const =0;
-   virtual int Height() const =0;
-   virtual unsigned int GetFlags() const = 0;
-   virtual void SetFlags(unsigned int inFlags) = 0;
-   virtual PixelFormat Format()  const = 0;
-   virtual const uint8 *GetBase() const = 0;
-   virtual int GetStride() const = 0;
-   virtual int BytesPP() const =0;
-   virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
-   virtual int Version() const  = 0;
-   virtual Texture *GetTexture()  = 0;
-   virtual Texture *GetOrCreateTexture(HardwareContext &inHardware) = 0;
-
-   inline const uint8 *Row(int inY) const { return GetBase() + GetStride()*inY; }
-};
 
 class Surface : public ImageBuffer
 {
 public:
    // Non-PO2 will generate dodgy repeating anyhow...
-   Surface() : mTexture(0), mVersion(0), mFlags(SURF_FLAGS_NOT_REPEAT_IF_NON_PO2), mAllowTrans(true) { };
+   Surface() : mTexture(0), mVersion(0), mFlags(surfNotRepeatIfNonPO2), mAllowTrans(true) { };
 
    // Implementation depends on platform.
    static Surface *Load(const OSChar *inFilename);
@@ -78,12 +41,13 @@ public:
    virtual int         GPUFormat() const { return Format(); }
    virtual bool GetAllowTrans() const { return mAllowTrans; }
    virtual void SetAllowTrans(bool inAllowTrans) { mAllowTrans = inAllowTrans; }
+   virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
 
    virtual void Zero() { Clear(0); }
    virtual void createHardwareSurface() { }
    virtual void destroyHardwareSurface() { }
    virtual void dispose() { }
-   virtual void dumpBits() { /*printf("Dumping bits from Surface\n");*/  }
+   virtual void MakeTextureOnly() { /*printf("Dumping bits from Surface\n");*/  }
    virtual void setGPUFormat( PixelFormat pf ) {}
    virtual void unmultiplyAlpha() { }
 
@@ -98,11 +62,11 @@ public:
    virtual void StretchTo(const RenderTarget &outTarget,
                           const Rect &inSrcRect, const DRect &inDestRect) const = 0;
    virtual void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
-									 int inPosX, int inPosY,
-									 int inSrcChannel, int inDestChannel ) const = 0;
+                            int inPosX, int inPosY,
+                            int inSrcChannel, int inDestChannel ) const = 0;
 
-   Texture *GetTexture() { return mTexture; }
-   Texture *GetOrCreateTexture(HardwareContext &inHardware);
+   Texture *GetTexture(HardwareContext *inHardware,int inPlane=0);
+
    void Bind(HardwareContext &inHardware,int inSlot=0);
 
    virtual Surface *clone() { return 0; }
@@ -119,6 +83,8 @@ public:
    virtual void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter) { }
 
    virtual void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale) { }
+
+   void OnChanged() { mVersion++; }
 
    int Version() const  { return mVersion; }
 
@@ -151,9 +117,15 @@ class SimpleSurface : public Surface
 public:
    SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4,int inGPUPixelFormat=-1);
 
-   int Width() const  { return mWidth; }
-   int Height() const  { return mHeight; }
    PixelFormat Format() const  { return mPixelFormat; }
+
+   int Width(int inPlane=0) const  { return inPlane==0 ? mWidth : 0; }
+   int Height(int inPlane=0) const  { return inPlane==0 ? mHeight : 0; }
+   const uint8 *GetBase(int inPlane=0) const { return inPlane==0 ? mBase : 0; }
+   uint8       *Edit(const Rect *inRect, int inPlane=0);
+   void        Commit(int inPlane=0);
+   int GetStride(int inPlane=0) const { return inPlane==0 ? mStride : 0; }
+
    int         GPUFormat() const  { return mGPUPixelFormat; }
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
@@ -169,16 +141,14 @@ public:
    virtual void StretchTo(const RenderTarget &outTarget,
                           const Rect &inSrcRect, const DRect &inDestRect) const;
 
-	virtual void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
-									 int inPosX, int inPosY,
-									 int inSrcChannel, int inDestChannel ) const;
+   virtual void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
+                            int inPosX, int inPosY,
+                            int inSrcChannel, int inDestChannel ) const;
 
    virtual void colorTransform(const Rect &inRect, ColorTransform &inTransform);
    virtual void setGPUFormat( PixelFormat pf ) { mGPUPixelFormat = pf; }
    void unmultiplyAlpha();
    
-   const uint8 *GetBase() const { return mBase; }
-   int GetStride() const { return mStride; }
    Surface *clone();
    void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false, bool inLittleEndian=false);
    void setPixels(const Rect &inRect,const uint32 *intPixels,bool inIgnoreOrder=false, bool inLittleEndian=false);
@@ -192,7 +162,7 @@ public:
    void destroyHardwareSurface();
    void dispose();
    
-   void dumpBits();
+   void MakeTextureOnly();
 
 
 protected:
@@ -214,11 +184,16 @@ class HardwareSurface : public Surface
 public:
    HardwareSurface(HardwareRenderer *inContext);
 
-   int Width() const { return mHardware->Width(); }
-   int Height() const { return mHardware->Height(); }
    PixelFormat Format()  const { return pfHardware; }
-   const uint8 *GetBase() const { return 0; }
-   int GetStride() const { return 0; }
+
+   int Width(int _=0) const { return mHardware->Width(); }
+   int Height(int _=0) const { return mHardware->Height(); }
+   const uint8 *GetBase(int _=0) const { return 0; }
+   uint8       *Edit(const Rect *inRect=0, int inPlane=0) { return 0; }
+   void        Commit(int inPlane=0) { }
+   int GetStride(int _=0) const { return 0; }
+
+
    void Clear(uint32 inColour,const Rect *inRect=0) { mHardware->Clear(inColour,inRect); }
    RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
    {
@@ -231,13 +206,13 @@ public:
    }
 
    void BlitTo(const RenderTarget &outTarget, const Rect &inSrcRect,int inPosX, int inPosY,
-                       BlendMode inBlend, const BitmapCache *inMask,
-                       uint32 inTint ) const { }
+               BlendMode inBlend, const BitmapCache *inMask,
+               uint32 inTint ) const { }
    void StretchTo(const RenderTarget &outTarget,
-                          const Rect &inSrcRect, const DRect &inDestRect) const { }
-	void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
-									 int inPosX, int inPosY,
-									 int inSrcChannel, int inDestChannel ) const  { }
+               const Rect &inSrcRect, const DRect &inDestRect) const { }
+   void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
+               int inPosX, int inPosY,
+               int inSrcChannel, int inDestChannel ) const  { }
 
    Surface *clone();
    void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false);

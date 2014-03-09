@@ -1,6 +1,12 @@
 #ifndef NME_RECT_H
 #define NME_RECT_H
 
+#include <algorithm>
+
+#ifdef min
+#undef min
+#undef max
+#endif
 
 namespace nme
 {

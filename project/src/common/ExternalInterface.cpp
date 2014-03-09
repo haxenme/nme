@@ -31,6 +31,7 @@
 #include <StageVideo.h>
 #include <NmeBinVersion.h>
 #include <NmeStateVersion.h>
+#include <nme/NmeApi.h>
 
 
 #ifdef min
@@ -128,6 +129,8 @@ static int _id_descent;
 
 vkind gObjectKind;
 
+NmeApi gNmeApi;
+
 static int sgIDsInit = false;
 
 extern "C" void InitIDs()
@@ -216,7 +219,7 @@ extern "C" void InitIDs()
    _id_ascent = val_id("ascent");
    _id_descent = val_id("descent");
 
-   gObjectKind = alloc_kind();
+   kind_share(&gObjectKind,"nme::Object");
 }
 
 DEFINE_ENTRY_POINT(InitIDs)
@@ -3200,7 +3203,7 @@ value nme_bitmap_data_get_prem_alpha(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_bool(surface->GetFlags() & SURF_FLAGS_USE_PREMULTIPLIED_ALPHA);
+      return alloc_bool(surface->GetFlags() & surfUsePremultiliedAlpha);
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_prem_alpha,1);
@@ -3212,9 +3215,9 @@ value nme_bitmap_data_set_prem_alpha(value inHandle,value inVal)
    {
       bool use = val_bool(inVal) && (surface->Format()<pfAlpha);
       if (use)
-         surface->SetFlags( surface->GetFlags() | SURF_FLAGS_USE_PREMULTIPLIED_ALPHA );
+         surface->SetFlags( surface->GetFlags() | surfUsePremultiliedAlpha );
       else
-         surface->SetFlags( surface->GetFlags() & ~SURF_FLAGS_USE_PREMULTIPLIED_ALPHA );
+         surface->SetFlags( surface->GetFlags() & ~surfUsePremultiliedAlpha );
    }
    return alloc_null();
 }
@@ -3849,7 +3852,7 @@ value nme_bitmap_data_dump_bits(value inSurface)
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
-      surf->dumpBits();
+      surf->MakeTextureOnly();
    }
    return alloc_null();
 }

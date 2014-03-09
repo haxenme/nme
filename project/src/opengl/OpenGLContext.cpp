@@ -407,7 +407,7 @@ public:
          bool premAlpha = false;
          if ((element.mFlags & DRAW_HAS_TEX) && element.mSurface)
          {
-            if (element.mSurface->GetFlags() & SURF_FLAGS_USE_PREMULTIPLIED_ALPHA)
+            if (element.mSurface->GetFlags() & surfUsePremultiliedAlpha)
                premAlpha = true;
             progId |= PROG_TEXTURE;
             if (element.mSurface->BytesPP()==1)
@@ -484,7 +484,7 @@ public:
 
             if (element.mSurface)
             {
-               Texture *boundTexture = element.mSurface->GetOrCreateTexture(*this);
+               Texture *boundTexture = element.mSurface->GetTexture(this);
                element.mSurface->Bind(*this,0);
                boundTexture->BindFlags(element.mFlags & DRAW_BMP_REPEAT,element.mFlags & DRAW_BMP_SMOOTH);
             }
@@ -585,7 +585,7 @@ public:
       if (inSmooth)
          e.mFlags |= DRAW_BMP_SMOOTH;
 
-      mBitmapTexture = inSurface->GetOrCreateTexture(*this);
+      mBitmapTexture = inSurface->GetTexture(this);
    }
 
    void RenderBitmap(const Rect &inSrc, int inX, int inY)

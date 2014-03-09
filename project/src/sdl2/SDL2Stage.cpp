@@ -92,8 +92,9 @@ public:
          SDL_FreeSurface(mSurf);
    }
 
-   int Width() const { return mSurf->w; }
-   int Height() const { return mSurf->h; }
+
+   int Width(int) const { return mSurf->w; }
+   int Height(int) const { return mSurf->h; }
    PixelFormat Format() const
    {
       #ifdef EMSCRIPTEN
@@ -105,8 +106,8 @@ public:
          return swap ? pfARGBSwap : pfARGB;
       return swap ? pfXRGBSwap : pfXRGB;
    }
-   const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
-   int GetStride() const { return mSurf->pitch; }
+   const uint8 *GetBase(int) const { return (const uint8 *)mSurf->pixels; }
+   int GetStride(int) const { return mSurf->pitch; }
 
    void Clear(uint32 inColour,const Rect *inRect)
    {
@@ -125,12 +126,25 @@ public:
             inColour>>16, inColour>>8, inColour, inColour>>24 )  );
    }
 
+   uint8 *Edit(const Rect *inRect, int inPlane)
+   {
+      if (SDL_MUSTLOCK(mSurf))
+         SDL_LockSurface(mSurf);
+
+      return (uint8 *)mSurf->pixels;
+   }
+   void Commit(int inPlane)
+   {
+      if (SDL_MUSTLOCK(mSurf))
+         SDL_UnlockSurface(mSurf);
+   }
+
    RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
    {
       mLockedForHitTest = inForHitTest;
       if (SDL_MUSTLOCK(mSurf) && !mLockedForHitTest)
          SDL_LockSurface(mSurf);
-      return RenderTarget(Rect(Width(),Height()), Format(),
+      return RenderTarget(Rect(Width(0),Height(0)), Format(),
          (uint8 *)mSurf->pixels, mSurf->pitch);
    }
    void EndRender()

@@ -91,17 +91,21 @@ class OGLTexture : public Texture
    int mPixelHeight;
    int mTextureWidth;
    int mTextureHeight;
+   Surface *mSurface;
 
 
 public:
    OGLTexture(Surface *inSurface,unsigned int inFlags)
    {
-      mPixelWidth = inSurface->Width();
-      mPixelHeight = inSurface->Height();
+      // No reference count since the surface should outlive us
+      mSurface = inSurface;
+
+      mPixelWidth = mSurface->Width();
+      mPixelHeight = mSurface->Height();
       mDirtyRect = Rect(0,0);
       mContextVersion = gTextureContextVersion;
 
-      bool non_po2 = NonPO2Supported(inFlags & SURF_FLAGS_NOT_REPEAT_IF_NON_PO2);
+      bool non_po2 = NonPO2Supported(inFlags & surfNotRepeatIfNonPO2);
       //printf("Using non-power-of-2 texture %d\n",non_po2);
 
       int w = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);
@@ -112,22 +116,22 @@ public:
 
       mTextureWidth = w;
       mTextureHeight = h;
-      bool usePreAlpha = inFlags & SURF_FLAGS_USE_PREMULTIPLIED_ALPHA;
-      bool hasPreAlpha = inFlags & SURF_FLAGS_HAS_PREMULTIPLIED_ALPHA;
+      bool usePreAlpha = inFlags & surfUsePremultiliedAlpha;
+      bool hasPreAlpha = inFlags & surfHasPremultiliedAlpha;
       int *multiplyAlpha = usePreAlpha && !hasPreAlpha ? getAlpha16Table() : 0;
 
-      bool copy_required = inSurface->GetBase() &&
+      bool copy_required = mSurface->GetBase() &&
            (w!=mPixelWidth || h!=mPixelHeight || multiplyAlpha );
 
-      Surface *load = inSurface;
+      Surface *load = mSurface;
 
       uint8 *buffer = 0;
-      PixelFormat fmt = inSurface->Format();
+      PixelFormat fmt = mSurface->Format();
       GLuint store_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
       int pixels = GL_UNSIGNED_BYTE;
-      int gpuFormat = inSurface->GPUFormat();
+      int gpuFormat = mSurface->GPUFormat();
 
-      if (!inSurface->GetBase() )
+      if (!mSurface->GetBase() )
       {
          if (gpuFormat!=fmt)
             switch(gpuFormat)
@@ -143,23 +147,23 @@ public:
          pixels = GL_UNSIGNED_SHORT_4_4_4_4;
          buffer = (uint8 *)malloc( mTextureWidth * mTextureHeight * 2 );
          for(int y=0;y<mPixelHeight;y++)
-            RGBA_to_RGBA4444(buffer+y*mTextureWidth*2, inSurface->Row(y),mPixelWidth);
+            RGBA_to_RGBA4444(buffer+y*mTextureWidth*2, mSurface->Row(y),mPixelWidth);
       }
       else if ( gpuFormat == pfRGB565 )
       {
          pixels = GL_UNSIGNED_SHORT_5_6_5;
          buffer = (uint8 *)malloc( mTextureWidth * mTextureHeight * 2 );
          for(int y=0;y<mPixelHeight;y++)
-            RGBX_to_RGB565(buffer+y*mTextureWidth*2, inSurface->Row(y),mPixelWidth);
+            RGBX_to_RGB565(buffer+y*mTextureWidth*2, mSurface->Row(y),mPixelWidth);
       }
       else if (copy_required)
       {
-         int pw = inSurface->Format()==pfAlpha ? 1 : 4;
+         int pw = mSurface->Format()==pfAlpha ? 1 : 4;
          buffer = (uint8 *)malloc(pw * mTextureWidth * mTextureHeight);
 
          for(int y=0;y<mPixelHeight;y++)
          {
-             const uint8 *src = inSurface->Row(y);
+             const uint8 *src = mSurface->Row(y);
              uint8 *b= buffer + mTextureWidth*pw*y;
              if (multiplyAlpha)
              {
@@ -193,7 +197,7 @@ public:
       }
       else
       {
-         buffer = (uint8 *)inSurface->Row(0);
+         buffer = (uint8 *)mSurface->Row(0);
       }
 
 
@@ -208,7 +212,7 @@ public:
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, store_format, pixels, buffer);
 
-      if (buffer && buffer!=inSurface->Row(0))
+      if (buffer && buffer!=mSurface->Row(0))
          free(buffer);
 
 
@@ -229,7 +233,7 @@ public:
       }
    }
 
-   void Bind(class ImageBuffer *inSurface,int inSlot)
+   void Bind(int inSlot)
    {
       if (inSlot>=0 && CHECK_EXT(glActiveTexture))
       {
@@ -239,15 +243,15 @@ public:
       if (gTextureContextVersion!=mContextVersion)
       {
          mContextVersion = gTextureContextVersion;
-         mDirtyRect = Rect(inSurface->Width(),inSurface->Height());
+         mDirtyRect = Rect(mSurface->Width(),mSurface->Height());
       }
-      if (inSurface->GetBase() && mDirtyRect.HasPixels())
+      if (mSurface->GetBase() && mDirtyRect.HasPixels())
       {
          //__android_log_print(ANDROID_LOG_INFO, "NME", "UpdateDirtyRect! %d %d",
              //mPixelWidth, mPixelHeight);
 
-         PixelFormat fmt = inSurface->Format();
-         int pw = inSurface->BytesPP();
+         PixelFormat fmt = mSurface->Format();
+         int pw = fmt == GL_ALPHA ? 1 : 4;
          GLuint store_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
          glGetError();
 
@@ -262,30 +266,30 @@ public:
          if (pw==1)
          {
             // Make unpack align a multiple of 4 ...
-            if (inSurface->Width()>3)
+            if (mSurface->Width()>3)
             {
                dw = (dw + 3) & ~3;
-               if (x0+dw>inSurface->Width())
-                  x0 = inSurface->Width()-dw;
+               if (x0+dw>mSurface->Width())
+                  x0 = mSurface->Width()-dw;
             }
 
-            const uint8 *p0 = inSurface->Row(y0) + x0*pw;
+            const uint8 *p0 = mSurface->Row(y0) + x0*pw;
             buffer = (uint8 *)malloc(pw * dw * dh);
             for(int y=0;y<dh;y++)
             {
                memcpy(buffer + y*dw, p0, dw);
-               p0 += inSurface->GetStride();
+               p0 += mSurface->GetStride();
             }
          }
          else
          {
             // TODO: pre-alpha ?
             buffer = (uint8 *)malloc(pw * dw * dh);
-            const uint8 *p0 = inSurface->Row(y0) + x0*pw;
+            const uint8 *p0 = mSurface->Row(y0) + x0*pw;
             for(int y=0;y<mDirtyRect.h;y++)
             {
                memcpy(buffer + y*dw*pw, p0, dw*pw);
-               p0 += inSurface->GetStride();
+               p0 += mSurface->GetStride();
             }
          }
 
@@ -296,8 +300,8 @@ public:
             buffer );
          free(buffer);
          #else
-         const uint8 *p0 = inSurface->Row(y0) + x0*pw;
-         glPixelStorei(GL_UNPACK_ROW_LENGTH, inSurface->Width());
+         const uint8 *p0 = mSurface->Row(y0) + x0*pw;
+         glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
          glTexSubImage2D(GL_TEXTURE_2D, 0,
             x0, y0,
             dw, dh,
