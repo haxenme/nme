@@ -104,10 +104,11 @@ class Main extends Sprite {
          loadData();
          addEventListener( nme.events.Event.CONTEXT3D_LOST, function(_) reload() );
 
+         stage.addEventListener( nme.events.MouseEvent.MOUSE_DOWN, function(_) bump=true );
          stage.addEventListener( nme.events.MouseEvent.MOUSE_MOVE, function(evt)
            {
-              mx = (evt.stageX / stage.stageWidth)*2-1;
-              my = (evt.stageY / stage.stageHeight)*2-1;
+              mx = (evt.stageX / stage.stageWidth);
+              my = 1-(evt.stageY / stage.stageHeight);
            } );
          view.render = renderView;
          addChild(view);
