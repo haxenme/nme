@@ -12,7 +12,7 @@
 #endif
 
 #include <Sound.h>
-#include <QuickVec.h>
+#include <nme/QuickVec.h>
 #include <Utils.h>
 #include <Audio.h>
 

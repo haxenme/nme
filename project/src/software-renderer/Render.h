@@ -2,7 +2,7 @@
 #define INTERNAL_RENDER_H
 
 #include "AlphaMask.h"
-#include <Pixel.h>
+#include <nme/Pixel.h>
 
 
 

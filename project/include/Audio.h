@@ -1,7 +1,7 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#include <QuickVec.h>
+#include <nme/QuickVec.h>
 #include <Sound.h>
 #include <Utils.h>
 

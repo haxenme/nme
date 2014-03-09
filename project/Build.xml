@@ -64,6 +64,7 @@
    <!-- Built relative to "bin" -->
    <set name="SRC_DIR" value="src" />
    <set name="INC_DIR" value="include" />
+   <set name="NME_INC_DIR" value="../include" />
    <set name="SUP_DIR" value="support" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
    
@@ -74,6 +75,7 @@
    
    
    <files id="nme">
+      <compilerflag value="-I${NME_INC_DIR}"/>
       <compilerflag value="-I${INC_DIR}"/>
 
 

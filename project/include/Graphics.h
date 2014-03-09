@@ -2,10 +2,10 @@
 #define NME_GRAPHICS_H
 
 #include <Object.h>
-#include <QuickVec.h>
+#include <nme/QuickVec.h>
 #include <Matrix.h>
 #include <Scale9.h>
-#include <Pixel.h>
+#include <nme/Pixel.h>
 
 typedef unsigned int uint32;
 typedef unsigned char uint8;

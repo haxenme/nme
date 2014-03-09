@@ -4,7 +4,7 @@
 #include <hx/CFFI.h>
 #include <string>
 #include <vector>
-#include <QuickVec.h>
+#include <nme/QuickVec.h>
 
 
 #ifdef BLACKBERRY

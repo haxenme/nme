@@ -1,7 +1,7 @@
 #include <Graphics.h>
 #include <Display.h>
 #include <Surface.h>
-#include <Pixel.h>
+#include <nme/Pixel.h>
 
 namespace nme
 {

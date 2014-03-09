@@ -16,8 +16,8 @@ void DoDelete(T &item)
 template<typename T>
 void DoDelete(T *&item)
 {
-	delete item;
-	item = 0;
+   delete item;
+   item = 0;
 }
 
 
@@ -56,52 +56,52 @@ public:
    }
    int Mem() const { return mAlloc * sizeof(T_); }
    QuickVec(const T_ *inData,int inLen)
-	{
+   {
       mPtr = QBUF_SIZE_==0 ? 0 : mQBuf;
       mAlloc = QBufSize;
       mSize = 0;
 
-		resize(inLen);
-		memcpy(mPtr,inData,sizeof(T_)*inLen);
-	}
+      resize(inLen);
+      memcpy(mPtr,inData,sizeof(T_)*inLen);
+   }
    QuickVec(int inLen)
-	{
+   {
       mPtr = QBUF_SIZE_==0 ? 0 : mQBuf;
       mAlloc = QBufSize;
       mSize = 0;
 
-		resize(inLen);
-	}
+      resize(inLen);
+   }
    ~QuickVec()
    {
       if (QBUF_SIZE_==0 || mPtr!=mQBuf)
-			if (mPtr)
+         if (mPtr)
             free(mPtr);
    }
-	void clear()
-	{
-		if (QBUF_SIZE_==0)
-		{
-			if (mPtr)
-				free(mPtr);
-			mPtr = 0;
-			mAlloc = 0;
-		}
-		else if (mPtr!=mQBuf)
-		{
-			free(mPtr);
-			mPtr = mQBuf;
-			mAlloc = QBufSize;
-		}
-		mSize = 0;
-	}
+   void clear()
+   {
+      if (QBUF_SIZE_==0)
+      {
+         if (mPtr)
+            free(mPtr);
+         mPtr = 0;
+         mAlloc = 0;
+      }
+      else if (mPtr!=mQBuf)
+      {
+         free(mPtr);
+         mPtr = mQBuf;
+         mAlloc = QBufSize;
+      }
+      mSize = 0;
+   }
 
-	void Set(const T_ *inData,int inN)
-	{
-		resize(inN);
-		if (inN)
-			memcpy(mPtr,inData,inN*sizeof(T_));
-	}
+   void Set(const T_ *inData,int inN)
+   {
+      resize(inN);
+      if (inN)
+         memcpy(mPtr,inData,inN*sizeof(T_));
+   }
    void Zero()
    {
       if (mPtr && mSize)
@@ -109,7 +109,7 @@ public:
    }
 
    // This assumes the values in the array are sorted.
-	template<typename X_, typename D_>
+   template<typename X_, typename D_>
    void Change(X_ inValue,D_ inDiff)
    {
       if (mSize==0)
@@ -121,10 +121,10 @@ public:
       // Before/at start
       if (mPtr[0]==inValue)
       {
-			mPtr[0] += inDiff;
-		}
-		else if (mPtr[0]>inValue)
-		{
+         mPtr[0] += inDiff;
+      }
+      else if (mPtr[0]>inValue)
+      {
          InsertAt(0, T_(inValue,inDiff) );
       }
       else
@@ -134,9 +134,9 @@ public:
          if (mPtr[last]==inValue)
          {
             mPtr[last] += inDiff;
-			}
-			else if (mPtr[last]<inValue)
-			{
+         }
+         else if (mPtr[last]<inValue)
+         {
             Grow();
             mPtr[mSize] = T_(inValue,inDiff);
             ++mSize;
@@ -238,10 +238,10 @@ public:
          }
          else
          {
-				if (mAlloc)
+            if (mAlloc)
                mAlloc *= 2;
-				else
-					mAlloc = 16;
+            else
+               mAlloc = 16;
             mPtr = (T_*)realloc(mPtr, sizeof(T_)*mAlloc);
          }
       }
@@ -303,17 +303,17 @@ public:
       mSize -= inLast-inFirst;
    }
    void erase(int inFirst,int inLen)
-	{
-		if (inFirst>mSize || inFirst<0)
-			return;
-		if (inFirst+inLen>=mSize || inLen<0)
-			resize(inFirst);
-		else
-		{
+   {
+      if (inFirst>mSize || inFirst<0)
+         return;
+      if (inFirst+inLen>=mSize || inLen<0)
+         resize(inFirst);
+      else
+      {
          memmove(mPtr + inFirst, mPtr + inFirst + inLen, (mSize-inFirst-inLen) * sizeof(T_) );
          mSize -= inLen;
-		}
-	}
+      }
+   }
 
    inline void InsertAt(int inPos,const T_ &inValue)
    {
@@ -323,11 +323,11 @@ public:
       ++mSize;
    }
 
-	inline void InsertAt(int inPos,const T_ *inValues,int inN)
+   inline void InsertAt(int inPos,const T_ *inValues,int inN)
    {
-		resize(mSize+inN);
+      resize(mSize+inN);
       memmove(mPtr + inPos + inN, mPtr + inPos, (mSize-inPos-inN) * sizeof(T_) );
-		memcpy(mPtr+inPos,inValues,inN*sizeof(T_));
+      memcpy(mPtr+inPos,inValues,inN*sizeof(T_));
    }
    
    bool operator == (const QuickVec<T_,QBUF_SIZE_> &inRHS) { return (*mPtr == *(inRHS.mPtr)); }
@@ -346,11 +346,11 @@ public:
    inline const_iterator end() const { return mPtr + mSize; }
    void swap( QuickVec<T_,QBUF_SIZE_> &inRHS )
    {
-		if (QBUF_SIZE_==0)
-		{
+      if (QBUF_SIZE_==0)
+      {
          std::swap(mPtr,inRHS.mPtr);
-		}
-		else if (mPtr!=mQBuf)
+      }
+      else if (mPtr!=mQBuf)
       {
          // Both "real" pointers - just swap them
          if (inRHS.mPtr!=inRHS.mQBuf)
@@ -411,30 +411,30 @@ public:
          mPtr = (T_ *)(mAlloc ? malloc( mAlloc * sizeof(T_)) : 0);
       }
       mSize = inRHS.mSize;
-		if (mSize)
+      if (mSize)
          memcpy(mPtr,inRHS.mPtr,mSize*sizeof(T_));
       return *this;
    }
-	void DeleteAll()
-	{
-      for(int i=0;i<mSize;i++)
-			DoDelete( mPtr[i] );
-		resize(0);
-	}
-
-	void append(const QuickVec<T_> &inOther)
-	{
-		int s = mSize;
-		resize(mSize+inOther.mSize);
-		for(int i=0;i<inOther.mSize;i++)
-			mPtr[s+i] = inOther[i];
-	}
-	void append(const T_ *inOther,int inLen)
+   void DeleteAll()
    {
-		int s = mSize;
-		resize(mSize+inLen);
-		for(int i=0;i<inLen;i++)
-			mPtr[s+i] = inOther[i];
+      for(int i=0;i<mSize;i++)
+         DoDelete( mPtr[i] );
+      resize(0);
+   }
+
+   void append(const QuickVec<T_> &inOther)
+   {
+      int s = mSize;
+      resize(mSize+inOther.mSize);
+      for(int i=0;i<inOther.mSize;i++)
+         mPtr[s+i] = inOther[i];
+   }
+   void append(const T_ *inOther,int inLen)
+   {
+      int s = mSize;
+      resize(mSize+inLen);
+      for(int i=0;i<inLen;i++)
+         mPtr[s+i] = inOther[i];
    }
 
    T_  *mPtr;

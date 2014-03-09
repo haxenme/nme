@@ -1,6 +1,6 @@
 #include "PolygonRender.h"
 
-#include "QuickVec.h"
+#include <nme/QuickVec.h>
 
 
 

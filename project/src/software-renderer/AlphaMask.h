@@ -4,7 +4,7 @@
 
 #include <Geom.h>
 #include <Graphics.h>
-#include <QuickVec.h>
+#include <nme/QuickVec.h>
 #include <vector>
 
 
