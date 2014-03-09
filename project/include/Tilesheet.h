@@ -2,7 +2,7 @@
 #define NME_TILESHEET_H
 
 #include <Graphics.h>
-#include <Object.h>
+#include <nme/Object.h>
 
 namespace nme
 {

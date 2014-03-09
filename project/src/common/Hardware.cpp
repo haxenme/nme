@@ -45,7 +45,7 @@ class HardwareBuilder
 {
 public:
    HardwareBuilder(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,
-                   HardwareContext &inHardware, const RenderState &inState) : data(ioData)
+                   HardwareRenderer &inHardware, const RenderState &inState) : data(ioData)
    {
       mTexture = 0;
 
@@ -245,7 +245,7 @@ public:
    }
 
   
-   bool SetFill(IGraphicsFill *inFill,HardwareContext &inHardware)
+   bool SetFill(IGraphicsFill *inFill,HardwareRenderer &inHardware)
    {
       mGradFlags = 0;
       if (mElement.mSurface)
@@ -1488,7 +1488,7 @@ public:
 };
 
 void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,
-                   HardwareContext &inHardware)
+                   HardwareRenderer &inHardware)
 {
    DrawElement elem;
 
@@ -1548,7 +1548,7 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 }
 
 void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,
-                      HardwareContext &inHardware, const RenderState &inState)
+                      HardwareRenderer &inHardware, const RenderState &inState)
 {
    ioData.releaseVbo();
 
@@ -1636,7 +1636,7 @@ void Texture::Dirty(const Rect &inRect)
       mDirtyRect = mDirtyRect.Union(inRect);
 }
 
-// --- HardwareContext -----------------------------
+// --- HardwareRenderer -----------------------------
 
 
 // Cache line thickness transforms...
@@ -1687,7 +1687,7 @@ inline bool HitTri(const UserPoint &base, const UserPoint &_v0, const UserPoint 
 
 
 
-bool HardwareContext::Hits(const RenderState &inState, const HardwareData &inData )
+bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inData )
 {
    if (inState.mClipRect.w!=1 || inState.mClipRect.h!=1)
       return false;

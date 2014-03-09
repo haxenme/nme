@@ -1,7 +1,7 @@
 #ifndef NME_URL_H
 #define NME_URL_H
 
-#include "Object.h"
+#include <nme/Object.h>
 #include "ByteArray.h"
 #include <vector>
 #include <string>

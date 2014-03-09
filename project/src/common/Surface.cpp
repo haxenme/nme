@@ -133,10 +133,10 @@ void SimpleSurface::destroyHardwareSurface() {
 
 void SimpleSurface::createHardwareSurface() {
 
-   if ( nme::HardwareContext::current == NULL )
+   if ( nme::HardwareRenderer::current == NULL )
       printf( "Null Hardware Context" );
    else
-       GetOrCreateTexture( *nme::HardwareContext::current );
+       GetOrCreateTexture( *nme::HardwareRenderer::current );
    
 }
 
@@ -1707,7 +1707,7 @@ void SimpleSurface::unmultiplyAlpha()
 
 // --- HardwareSurface -------------------------------------------------------------
 
-HardwareSurface::HardwareSurface(HardwareContext *inContext)
+HardwareSurface::HardwareSurface(HardwareRenderer *inContext)
 {
    mHardware = inContext;
    mHardware->IncRef();

@@ -17,7 +17,7 @@ static Stage *sgStage = 0;
 
 ManagedStage::ManagedStage(int inWidth,int inHeight,int inFlags)
 {
-   mHardwareContext = 0;
+   mHardwareRenderer = 0;
    mHardwareSurface = 0;
    mCursor = curPointer;
    mIsHardware = true;
@@ -28,16 +28,16 @@ ManagedStage::ManagedStage(int inWidth,int inHeight,int inFlags)
 
    sgStage = this;
 
-   mHardwareContext = HardwareContext::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
-   mHardwareContext->IncRef();
-   mHardwareSurface = new HardwareSurface(mHardwareContext);
+   mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
+   mHardwareRenderer->IncRef();
+   mHardwareSurface = new HardwareSurface(mHardwareRenderer);
    mHardwareSurface->IncRef();
 }
 
 ManagedStage::~ManagedStage()
 {
-   if (mHardwareContext)
-      mHardwareContext->DecRef();
+   if (mHardwareRenderer)
+      mHardwareRenderer->DecRef();
    if (mHardwareSurface)
       mHardwareSurface->DecRef();
 }
@@ -53,7 +53,7 @@ void ManagedStage::SetActiveSize(int inW,int inH)
 {
    mActiveWidth = inW;
    mActiveHeight = inH;
-   mHardwareContext->SetWindowSize(inW,inH);
+   mHardwareRenderer->SetWindowSize(inW,inH);
 
    Event event(etResize,inW,inH);
    Stage::HandleEvent(event);

@@ -85,7 +85,7 @@ class NMEStage;
    GLint           backingWidth;
    GLint           backingHeight;
    HardwareSurface *mHardwareSurface;
-   HardwareContext *mHardwareContext;
+   HardwareRenderer *mHardwareRenderer;
 }
 
 
@@ -317,7 +317,7 @@ static std::string nmeTitle;
    defaultFramebuffer = 0;
    colorRenderbuffer = 0;
    depthStencilBuffer = 0;
-   mHardwareContext = 0;
+   mHardwareRenderer = 0;
    mHardwareSurface = 0;
    mLayer = 0;
    mOGLContext = 0;
@@ -376,14 +376,14 @@ static std::string nmeTitle;
    [self createOGLFramebuffer];
 
    #ifndef OBJC_ARC
-   mHardwareContext = HardwareContext::CreateOpenGL(mLayer, mOGLContext, sgAllowShaders);
+   mHardwareRenderer = HardwareRenderer::CreateOpenGL(mLayer, mOGLContext, sgAllowShaders);
    #else
-   mHardwareContext = HardwareContext::CreateOpenGL((__bridge void *)mLayer, (__bridge void *)mOGLContext, sgAllowShaders);
+   mHardwareRenderer = HardwareRenderer::CreateOpenGL((__bridge void *)mLayer, (__bridge void *)mOGLContext, sgAllowShaders);
    #endif
-   mHardwareContext->IncRef();
-   mHardwareContext->SetWindowSize(backingWidth, backingHeight);
+   mHardwareRenderer->IncRef();
+   mHardwareRenderer->SetWindowSize(backingWidth, backingHeight);
 
-   mHardwareSurface = new HardwareSurface(mHardwareContext);
+   mHardwareSurface = new HardwareSurface(mHardwareRenderer);
    mHardwareSurface->IncRef();
 }
 
@@ -895,10 +895,10 @@ static std::string nmeTitle;
       mHardwareSurface->DecRef();
       mHardwareSurface = 0;
    }
-   if (mHardwareContext)
+   if (mHardwareRenderer)
    {
-      mHardwareContext->DecRef();
-      mHardwareContext = 0;
+      mHardwareRenderer->DecRef();
+      mHardwareRenderer = 0;
    }
 
    [self destroyOGLFramebuffer];
@@ -977,7 +977,7 @@ static std::string nmeTitle;
    [self createOGLFramebuffer];
    //printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
 
-   mHardwareContext->SetWindowSize(backingWidth,backingHeight);
+   mHardwareRenderer->SetWindowSize(backingWidth,backingHeight);
 
    mStage->OnOGLResize(backingWidth,backingHeight);
 }

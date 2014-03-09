@@ -1,7 +1,7 @@
 #ifndef NME_DISPLAY_H
 #define NME_DISPLAY_H
 
-#include <Object.h>
+#include <nme/Object.h>
 #include <Utils.h>
 #include <Geom.h>
 #include <Graphics.h>
@@ -506,6 +506,7 @@ public:
 
 class HardwareSurface;
 class HardwareContext;
+class HardwareRenderer;
 
 class ManagedStage : public Stage
 {
@@ -514,7 +515,7 @@ public:
    ~ManagedStage();
 
    void SetCursor(Cursor inCursor);
-   bool isOpenGL() const { return mHardwareContext; }
+   bool isOpenGL() const { return mHardwareRenderer; }
    Surface *GetPrimarySurface();
 
    int Width() { return mActiveWidth; }
@@ -534,7 +535,7 @@ protected:
    int             mActiveWidth;
    int             mActiveHeight;
    HardwareSurface *mHardwareSurface;
-   HardwareContext *mHardwareContext;
+   HardwareRenderer *mHardwareRenderer;
    bool            mIsHardware;
    Cursor          mCursor;
 };

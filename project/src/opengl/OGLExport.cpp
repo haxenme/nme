@@ -80,7 +80,7 @@ public:
    }
    void release()
    {
-      HardwareContext *ctx = HardwareContext::current;
+      HardwareRenderer *ctx = HardwareRenderer::current;
       if (ctx && id && contextVersion==gTextureContextVersion)
       {
          switch(type)
@@ -1669,9 +1669,9 @@ value nme_gl_bind_bitmap_data_texture(value inBitmapData)
    Surface  *surface;
    if (AbstractToObject(inBitmapData,surface) )
    {
-      HardwareContext *ctx = gDirectRenderContext;
+      HardwareRenderer *ctx = gDirectRenderContext;
       if (!ctx)
-         ctx = nme::HardwareContext::current;
+         ctx = nme::HardwareRenderer::current;
       if (ctx)
       {
          Texture *texture = surface->GetOrCreateTexture(*gDirectRenderContext);

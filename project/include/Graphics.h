@@ -1,7 +1,7 @@
 #ifndef NME_GRAPHICS_H
 #define NME_GRAPHICS_H
 
-#include <Object.h>
+#include <nme/Object.h>
 #include <nme/QuickVec.h>
 #include <Matrix.h>
 #include <Scale9.h>
@@ -490,7 +490,7 @@ struct RenderState
 
 
 class HardwareData;
-class HardwareContext;
+class HardwareRenderer;
 
 
 int UpToPower2(int inX);
@@ -500,7 +500,7 @@ inline int IsPower2(unsigned int inX) { return (inX & (inX-1))==0; }
 struct RenderTarget
 {
    RenderTarget(const Rect &inRect,PixelFormat inFormat,uint8 *inPtr, int inStride);
-   RenderTarget(const Rect &inRect,HardwareContext *inContext);
+   RenderTarget(const Rect &inRect,HardwareRenderer *inHardware);
    RenderTarget();
 
    bool IsHardware() const { return mHardware; }
@@ -522,7 +522,7 @@ struct RenderTarget
    uint8 *Row(int inRow) const { return mSoftPtr+mSoftStride*inRow; }
 
    // Hardware target - RenderTarget does not hold reference on HardwareContext
-   HardwareContext *mHardware;
+   HardwareRenderer *mHardware;
 };
 
 

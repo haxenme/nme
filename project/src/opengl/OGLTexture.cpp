@@ -209,11 +209,11 @@ public:
    }
    ~OGLTexture()
    {
-      if (mTextureID && mContextVersion==gTextureContextVersion && HardwareContext::current)
+      if (mTextureID && mContextVersion==gTextureContextVersion && HardwareRenderer::current)
       {
          //__android_log_print(ANDROID_LOG_ERROR, "NME", "DeleteTexture %d (%dx%d)",
            //mTextureID, mPixelWidth, mPixelHeight);
-         HardwareContext::current->DestroyNativeTexture((void *)(size_t)mTextureID);
+         HardwareRenderer::current->DestroyNativeTexture((void *)(size_t)mTextureID);
       }
    }
 

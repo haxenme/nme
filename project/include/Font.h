@@ -1,7 +1,7 @@
 #ifndef NME_FONT_H
 #define NME_FONT_H
 
-#include <Object.h>
+#include <nme/Object.h>
 #include <Utils.h>
 #include <Graphics.h>
 #include <Tilesheet.h>

@@ -69,7 +69,7 @@ public:
    float           mMinScale;
    float           mMaxScale;
 
-   mutable HardwareContext *mVboOwner;
+   mutable class HardwareRenderer *mVboOwner;
    mutable int             mRendersWithoutVbo;
    mutable unsigned int    mVertexBo;
    mutable int             mContextId;
@@ -80,10 +80,22 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
 class HardwareContext : public Object
 {
+protected:
+   ~HardwareContext() {}
 public:
-   static HardwareContext *current;
-   static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders);
-   static HardwareContext *CreateDX11(void *inDevice, void *inContext);
+   virtual bool IsOpenGL() const = 0;
+   virtual class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags)=0;
+
+};
+
+class HardwareRenderer : public HardwareContext
+{
+public:
+   static HardwareRenderer *current;
+   static HardwareRenderer *CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders);
+   static HardwareRenderer *CreateDX11(void *inDevice, void *inContext);
+
+   virtual void OnContextLost() = 0;
 
    // Could be common to multiple implementations...
    virtual bool Hits(const RenderState &inState, const HardwareData &inData );
@@ -100,7 +112,6 @@ public:
    virtual int Height() const = 0;
 
 
-   virtual class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags)=0;
    virtual void Render(const RenderState &inState, const HardwareData &inData )=0;
    virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0,bool inRepeat=true,bool inSmooth=true)=0;
    virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
@@ -110,7 +121,6 @@ public:
    virtual void EndDirectRender()=0;
 
 
-   virtual void OnContextLost() = 0;
    virtual void DestroyNativeTexture(void *inNativeTexture)=0;
    virtual void DestroyTexture(unsigned int inTex)=0;
    virtual void DestroyVbo(unsigned int inVbo)=0;
@@ -118,13 +128,14 @@ public:
    virtual void DestroyShader(unsigned int inShader)=0;
    virtual void DestroyFramebuffer(unsigned int inBuffer)=0;
    virtual void DestroyRenderbuffer(unsigned int inBuffer)=0;
+
 };
 
-extern HardwareContext *gDirectRenderContext;
+extern HardwareRenderer *gDirectRenderContext;
 extern int gDirectMaxAttribArray;
 
 void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,
-                      HardwareData &ioData, HardwareContext &inHardware,const RenderState &inState);
+                      HardwareData &ioData, HardwareRenderer &inHardware,const RenderState &inState);
 
 
 } // end namespace nme

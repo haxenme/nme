@@ -1418,7 +1418,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    mHasCaret = caret;
 
 
-   HardwareContext *hardware = inTarget.IsHardware() ? inTarget.mHardware : 0;
+   HardwareRenderer *hardware = inTarget.IsHardware() ? inTarget.mHardware : 0;
 
    RenderTarget clipped;
    if (hardware)

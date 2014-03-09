@@ -10,24 +10,28 @@ namespace nme
 template<typename T_>
 struct Extent2D
 {
-   Extent2D() : mValidX(false), mValidY(false)
-   {
-      mMinX = mMinY = mMaxX = mMaxY = 0;
-   }
+   T_ minX,maxX;
+   T_ minY,maxY;
+   bool validX,validY;
 
+
+   Extent2D() : validX(false), validY(false)
+   {
+      minX = minY = maxX = maxY = 0;
+   }
 
    template<typename P_>
    inline void AddX(P_ inX)
    {
-      if (mValidX)
+      if (validX)
       {
-         if (inX<mMinX) mMinX = (T_)inX;
-         else if (inX>mMaxX) mMaxX = (T_)inX;
+         if (inX<minX) minX = (T_)inX;
+         else if (inX>maxX) maxX = (T_)inX;
       }
       else
       {
-         mMinX = mMaxX = (T_)inX;
-         mValidX = true;
+         minX = maxX = (T_)inX;
+         validX = true;
       }
 
    }
@@ -35,15 +39,15 @@ struct Extent2D
    template<typename P_>
    inline void AddY(P_ inY)
    {
-      if (mValidY)
+      if (validY)
       {
-         if (inY<mMinY) mMinY = (T_)inY;
-         else if (inY>mMaxY) mMaxY = (T_)inY;
+         if (inY<minY) minY = (T_)inY;
+         else if (inY>maxY) maxY = (T_)inY;
       }
       else
       {
-         mMinY = mMaxY = (T_)inY;
-         mValidY = true;
+         minY = maxY = (T_)inY;
+         validY = true;
       }
    }
 
@@ -64,73 +68,73 @@ struct Extent2D
 
    inline void Add(const Extent2D<T_> &inExtent)
    {
-      if (inExtent.mValidX)
+      if (inExtent.validX)
       {
-         AddX(inExtent.mMinX);
-         AddX(inExtent.mMaxX);
+         AddX(inExtent.minX);
+         AddX(inExtent.maxX);
       }
-      if (inExtent.mValidY)
+      if (inExtent.validY)
       {
-         AddY(inExtent.mMinY);
-         AddY(inExtent.mMaxY);
+         AddY(inExtent.minY);
+         AddY(inExtent.maxY);
       }
    }
 
    bool Intersect(T_ inX0,T_ inY0, T_ inX1, T_ inY1)
    {
-      if (!mValidX)
+      if (!validX)
       {
-         mMinX = inX0;
-         mMaxX = inX1;
-         mValidX = true;
+         minX = inX0;
+         maxX = inX1;
+         validX = true;
       }
       else
       {
-         if (inX0 > mMinX) mMinX = inX0;
-         if (inX1 < mMaxX) mMaxX = inX1;
+         if (inX0 > minX) minX = inX0;
+         if (inX1 < maxX) maxX = inX1;
       }
-      if (!mValidY)
+      if (!validY)
       {
-         mMinY = inY0;
-         mMaxY = inY1;
-         mValidY = true;
+         minY = inY0;
+         maxY = inY1;
+         validY = true;
       }
       else
       {
-         if (inY0 > mMinY) mMinY = inY0;
-         if (inY1 < mMaxY) mMaxY = inY1;
+         if (inY0 > minY) minY = inY0;
+         if (inY1 < maxY) maxY = inY1;
       }
-      return mMinX<mMaxX && mMinY<mMaxY;
+      return minX<maxX && minY<maxY;
    }
 
    template<typename O_>
    bool Contains(const O_ &inOther) const
    {
-      return mValidX && mValidY && inOther.x>=mMinX && inOther.x<mMaxX &&
-             inOther.y>=mMinY && inOther.y<mMaxY;
+      return validX && validY && inOther.x>=minX && inOther.x<maxX &&
+             inOther.y>=minY && inOther.y<maxY;
    }
 
 
    void Translate(int inTX,int inTY)
    {
-      mMinX += inTX;
-      mMaxX += inTX;
-      mMinY += inTY;
-      mMaxY += inTY;
+      minX += inTX;
+      maxX += inTX;
+      minY += inTY;
+      maxY += inTY;
    }
 
    void Transform(double inSX, double inSY, double inTX, double inTY)
    {
-      mMinX = inTX + inSX*(mMinX);
-      mMaxX = inTX + inSX*(mMaxX);
-      mMinY = inTY + inSY*(mMinY);
-      mMaxY = inTY + inSY*(mMaxY);
+      minX = inTX + inSX*(minX);
+      maxX = inTX + inSX*(maxX);
+      minY = inTY + inSY*(minY);
+      maxY = inTY + inSY*(maxY);
    }
 
    TRect<T_> Rect() const
    {
       if (!Valid()) return TRect<T_>(0,0,0,0);
-      return TRect<T_>(mMinX,mMinY,mMaxX,mMaxY,true);
+      return TRect<T_>(minX,minY,maxX,maxY,true);
    }
 
    template<typename RECT>
@@ -142,21 +146,16 @@ struct Extent2D
           return false;
        }
 
-       outRect = RECT(mMinX,mMinY,mMaxX+inExtraX,mMaxY+inExtraY,true);
+       outRect = RECT(minX,minY,maxX+inExtraX,maxY+inExtraY,true);
        return true;
    }
 
+   inline bool Valid() const { return validX && validY; }
+   void Invalidate() { validX = validY = false; }
 
+   T_ Width() const { return maxX-minX; }
+   T_ Height() const { return maxY-minY; }
 
-   inline bool Valid() const { return mValidX && mValidY; }
-   void Invalidate() { mValidX = mValidY = false; }
-
-   T_ Width() const { return mMaxX-mMinX; }
-   T_ Height() const { return mMaxY-mMinY; }
-
-   T_ mMinX,mMaxX;
-   T_ mMinY,mMaxY;
-   bool mValidX,mValidY;
 };
 
 typedef Extent2D<int> Extent2DI;

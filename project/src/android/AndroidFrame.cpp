@@ -202,10 +202,10 @@ class AndroidStage : public Stage
 public:
    AndroidStage(int inWidth,int inHeight,int inFlags) : Stage(true)
    {
-      mHardwareContext = HardwareContext::CreateOpenGL(0, 0, inFlags & (wfAllowShaders|wfRequireShaders));
-      mHardwareContext->IncRef();
-      mHardwareContext->SetWindowSize(inWidth,inHeight);
-      mHardwareSurface = new HardwareSurface(mHardwareContext);
+      mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, inFlags & (wfAllowShaders|wfRequireShaders));
+      mHardwareRenderer->IncRef();
+      mHardwareRenderer->SetWindowSize(inWidth,inHeight);
+      mHardwareSurface = new HardwareSurface(mHardwareRenderer);
       mHardwareSurface->IncRef();
       mMultiTouch = true;
       mSingleTouchID = NO_TOUCH;
@@ -225,7 +225,7 @@ public:
    ~AndroidStage()
    {
       mHardwareSurface->DecRef();
-      mHardwareContext->DecRef();
+      mHardwareRenderer->DecRef();
    }
 
    void Flip() { }
@@ -309,7 +309,7 @@ public:
    }
    void Resize(int inWidth,int inHeight)
    {
-      mHardwareContext->SetWindowSize(inWidth,inHeight);
+      mHardwareRenderer->SetWindowSize(inWidth,inHeight);
       Event evt(etResize, inWidth, inHeight);
       HandleEvent(evt);
    }
@@ -477,7 +477,7 @@ public:
    double mDownX;
    double mDownY;
 
-   HardwareContext *mHardwareContext;
+   HardwareRenderer *mHardwareRenderer;
    HardwareSurface *mHardwareSurface;
 };
 

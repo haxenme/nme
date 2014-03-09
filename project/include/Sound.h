@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "Object.h"
+#include <nme/Object.h>
 #include "ByteArray.h"
 
 namespace nme

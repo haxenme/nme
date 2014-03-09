@@ -736,13 +736,13 @@ RenderTarget::RenderTarget(const Rect &inRect,PixelFormat inFormat,uint8 *inPtr,
    mHardware = 0;
 }
 
-RenderTarget::RenderTarget(const Rect &inRect,HardwareContext *inContext)
+RenderTarget::RenderTarget(const Rect &inRect,HardwareRenderer *inHardware)
 {
    mRect = inRect;
    mPixelFormat = pfHardware;
    mSoftPtr = 0;
    mSoftStride = 0;
-   mHardware = inContext;
+   mHardware = inHardware;
 }
 
 RenderTarget::RenderTarget() : mRect(0,0)

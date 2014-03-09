@@ -30,29 +30,29 @@ static GLuint sgOpenglType[] =
 
 
 
-// --- HardwareContext Interface ---------------------------------------------------------
+// --- HardwareRenderer Interface ---------------------------------------------------------
 
 
-HardwareContext* nme::HardwareContext::current = NULL;
+HardwareRenderer* nme::HardwareRenderer::current = NULL;
 
 
 void ResetHardwareContext()
 {
    //__android_log_print(ANDROID_LOG_ERROR, "NME", "ResetHardwareContext");
    gTextureContextVersion++;
-   if (HardwareContext::current)
-      HardwareContext::current->OnContextLost();
+   if (HardwareRenderer::current)
+      HardwareRenderer::current->OnContextLost();
 }
 
 
 
-class OGLContext : public HardwareContext
+class OGLContext : public HardwareRenderer
 {
 public:
 
    OGLContext(WinDC inDC, GLCtx inOGLCtx)
    {
-      HardwareContext::current = this;
+      HardwareRenderer::current = this;
       mDC = inDC;
       mOGLCtx = inOGLCtx;
       mWidth = 0;
@@ -92,6 +92,7 @@ public:
       for(int i=0;i<PROG_COUNT;i++)
          delete mProg[i];
    }
+   bool IsOpenGL() const { return true; }
 
 
 
@@ -777,12 +778,12 @@ bool InitOGLFunctions()
 
 
 
-HardwareContext *HardwareContext::CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders)
+HardwareRenderer *HardwareRenderer::CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders)
 {
    if (!InitOGLFunctions())
       return 0;
 
-   HardwareContext *ctx = new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
+   HardwareRenderer *ctx = new OGLContext( (WinDC)inWindow, (GLCtx)inGLCtx );
 
    return ctx;
 }

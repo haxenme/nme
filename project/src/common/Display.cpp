@@ -665,7 +665,7 @@ void DisplayObject::Unfocus()
 
 // --- DirectRenderer ------------------------------------------------
 
-HardwareContext *gDirectRenderContext = 0;
+HardwareRenderer *gDirectRenderContext = 0;
 
 void DirectRenderer::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
@@ -1114,7 +1114,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             extent.Add( full.Apply( (((c&1)>0) ? rect.w :0), (((c&2)>0) ? rect.h :0) ) );
 
 
-         Rect screen_rect(extent.mMinX,extent.mMinY, extent.mMaxX, extent.mMaxY, true );
+         Rect screen_rect(extent.minX,extent.minY, extent.maxX, extent.maxY, true );
 
          full.TranslateData(-obj->scrollRect.x, -obj->scrollRect.y );
 

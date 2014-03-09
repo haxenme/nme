@@ -43,7 +43,26 @@ public:
    int  mContextVersion;
 };
 
-class Surface : public Object
+class ImageBuffer : public Object
+{
+protected: // Use 'DecRef'
+   virtual       ~ImageBuffer() { };
+public:
+   virtual int Width() const =0;
+   virtual int Height() const =0;
+   virtual unsigned int GetFlags() const = 0;
+   virtual void SetFlags(unsigned int inFlags) = 0;
+   virtual PixelFormat Format()  const = 0;
+   virtual const uint8 *GetBase() const = 0;
+   virtual int GetStride() const = 0;
+   virtual int BytesPP() const =0;
+   virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
+   virtual int Version() const  = 0;
+   virtual Texture *GetTexture()  = 0;
+   virtual Texture *GetOrCreateTexture(HardwareContext &inHardware) = 0;
+};
+
+class Surface : public ImageBuffer
 {
 public:
    // Non-PO2 will generate dodgy repeating anyhow...
@@ -56,18 +75,12 @@ public:
 
    Surface *IncRef() { mRefCount++; return this; }
 
-   virtual int Width() const =0;
-   virtual int Height() const =0;
    virtual unsigned int GetFlags() const { return mFlags; }
    virtual void SetFlags(unsigned int inFlags) { mFlags = inFlags; }
-   virtual PixelFormat Format()  const = 0;
    virtual int         GPUFormat() const { return Format(); }
-   virtual const uint8 *GetBase() const = 0;
-   virtual int GetStride() const = 0;
    virtual bool GetAllowTrans() const { return mAllowTrans; }
    virtual void SetAllowTrans(bool inAllowTrans) { mAllowTrans = inAllowTrans; }
 
-   virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void Zero() { Clear(0); }
    virtual void createHardwareSurface() { }
    virtual void destroyHardwareSurface() { }
@@ -111,6 +124,7 @@ public:
    virtual void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale) { }
 
    int Version() const  { return mVersion; }
+
 
 protected:
    mutable int   mVersion;
@@ -201,7 +215,7 @@ private:
 class HardwareSurface : public Surface
 {
 public:
-   HardwareSurface(HardwareContext *inContext);
+   HardwareSurface(HardwareRenderer *inContext);
 
    int Width() const { return mHardware->Width(); }
    int Height() const { return mHardware->Height(); }
@@ -235,7 +249,7 @@ public:
    protected:
       ~HardwareSurface();
    private:
-      HardwareContext *mHardware;
+      HardwareRenderer *mHardware;
 };
 
 

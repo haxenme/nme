@@ -231,7 +231,7 @@ public:
       
       if (mIsOpenGL)
       {
-         mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgIsOGL2);
+         mOpenGLContext = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
          mOpenGLContext->IncRef();
          //mOpenGLContext->SetWindowSize(inSurface->w, inSurface->h);
          mOpenGLContext->SetWindowSize(mWidth, mHeight);
@@ -542,7 +542,7 @@ public:
    }
    
    
-   HardwareContext *mOpenGLContext;
+   HardwareRenderer *mOpenGLContext;
    SDL_Window *mSDLWindow;
    SDL_Renderer *mSDLRenderer;
    Surface     *mPrimarySurface;

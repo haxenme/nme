@@ -3,7 +3,7 @@
 
 #include <hx/CFFI.h>
 
-#include <Object.h>
+#include <nme/Object.h>
 
 
 namespace nme
