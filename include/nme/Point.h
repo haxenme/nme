@@ -1,6 +1,8 @@
 #ifndef NME_POINT_H
 #define NME_POINT_H
 
+#include <math.h>
+
 namespace nme
 {
 

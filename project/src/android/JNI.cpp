@@ -1,4 +1,4 @@
-#include <ExternalInterface.h>
+#include <nme/NmeCffi.h>
 #include <Utils.h>
 #include <jni.h>
 #include <pthread.h>

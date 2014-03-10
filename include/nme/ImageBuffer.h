@@ -16,7 +16,7 @@ enum
 };
 
 
-class ImageBuffer : public Object
+class ImageBuffer : public ApiObject
 {
 protected: // Use 'DecRef'
    virtual       ~ImageBuffer() { };

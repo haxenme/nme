@@ -11,7 +11,7 @@
 #include <android/log.h>
 #endif
 
-#include <ExternalInterface.h>
+#include <nme/NmeCffi.h>
 #include <ByteArray.h>
 #include "OGL.h"
 #include "Utils.h"

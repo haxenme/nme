@@ -1,7 +1,7 @@
 #ifndef STAGE_VIDEO_H
 #define STAGE_VIDEO_H
 
-#include <ExternalInterface.h>
+#include <nme/NmeCffi.h>
 
 namespace nme
 {

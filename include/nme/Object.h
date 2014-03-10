@@ -23,13 +23,21 @@ public:
    int GetRefCount() { return mRefCount; }
 
    virtual int getApiVersion() { return NME_API_VERSION; }
-   virtual NmeApi *getApi() { return &gNmeApi; }
 
    virtual ImageBuffer *asImageBuffer() { return 0; }
 
 
    int mRefCount;
 };
+
+class ApiObject : public Object
+{
+public:
+   ApiObject(bool inInitialRef=0) : Object(inInitialRef) { }
+
+   virtual NmeApi *getApi() { return &gNmeApi; }
+};
+
 
 } // end namespace nme
 

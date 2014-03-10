@@ -2,7 +2,7 @@
 #include <Utils.h>
 #include <SDL.h>
 #include <Surface.h>
-#include <ExternalInterface.h>
+#include <nme/NmeCffi.h>
 #include <KeyCodes.h>
 #include <map>
 #include <Sound.h>

@@ -251,7 +251,7 @@ public:
              //mPixelWidth, mPixelHeight);
 
          PixelFormat fmt = mSurface->Format();
-         int pw = fmt == GL_ALPHA ? 1 : 4;
+         int pw = fmt == pfAlpha ? 1 : 4;
          GLuint store_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
          glGetError();
 

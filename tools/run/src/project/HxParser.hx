@@ -37,7 +37,7 @@ class HxParser
       try
       {
          var content = File.getContent(inFilename);
-         var metaMatch = ~/^\s*\/\/\s*nme:\s+(\S*)\s*=(.*)/;
+         var metaMatch = ~/^\s*\/\/\s*nme:\s*(\S*)\s*=(.*)/;
          var quotes = ~/^"(.*)"$/;
          for(line in content.split("\n"))
          {
@@ -67,6 +67,10 @@ class HxParser
            project.app.binDir = value;
         case "bin":
            project.app.binDir = value;
+        case "lib":
+           project.addLib(value,"lib");
+        case "ndll":
+           project.addLib(value,"ndll");
 
         case "min-swf-version":
            var version = Std.parseFloat(value);

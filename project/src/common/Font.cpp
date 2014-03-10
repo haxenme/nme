@@ -7,7 +7,7 @@
 // Include neko glue....
 #define NEKO_COMPATIBLE
 #endif
-#include <ExternalInterface.h>
+#include <nme/NmeCffi.h>
 
 
 namespace nme
