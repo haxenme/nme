@@ -30,6 +30,7 @@ class Event
    public static var TAB_ENABLED_CHANGE = "tabEnabledChange";
    public static var TAB_INDEX_CHANGE = "tabIndexChange";
    public static var UNLOAD = "unload";
+   public static var VIDEO_FRAME = "videoFrame";
 
    public var bubbles(get_bubbles, never):Bool;
    public var cancelable(get_cancelable, never):Bool;
