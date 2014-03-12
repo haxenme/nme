@@ -12,7 +12,6 @@ class NmeApi
 {
 public:
     virtual int getApiVersion() { return NME_API_VERSION; }
-    virtual bool getC0IsRed() { return gC0IsRed; }
 };
 
 extern NmeApi gNmeApi;

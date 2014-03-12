@@ -9,152 +9,42 @@
 namespace nme
 {
 
-extern bool gC0IsRed;
 
-
+// 0xAARRGGBB
 enum PixelFormat
 {
    pfXRGB         = 0x00,
    pfARGB         = 0x01,
-   pfXRGBSwap     = 0x02,
-   pfARGBSwap     = 0x03,
-   pfAlpha        = 0x04,
+   pfAlpha        = 0x03,
    pfHardware     = 0x10,
    pfARGB4444     = 0x11,
    pfRGB565       = 0x12,
    
    pfHasAlpha     = 0x01,
-   pfSwapRB       = 0x02,
 };
 
 
 typedef unsigned char Uint8;
 
 
-
 struct ARGB
 {
    inline ARGB() { }
-   inline ARGB(int inRGBA)
-   {
-      c1 = (inRGBA>>8) & 0xff;
-      if (gC0IsRed)
-      {
-         c0 = (inRGBA>>16) & 0xff;
-         c2 = (inRGBA) & 0xff;
-      }
-      else
-      {
-         c2 = (inRGBA>>16) & 0xff;
-         c0 = (inRGBA) & 0xff;
-      }
-      a = (inRGBA>>24);
-   }
-   inline ARGB(int inRGB,int inA)
-   {
-      c1 = (inRGB>>8) & 0xff;
-      if (gC0IsRed)
-      {
-         c0 = (inRGB>>16) & 0xff;
-         c2 = (inRGB) & 0xff;
-      }
-      else
-      {
-         c2 = (inRGB>>16) & 0xff;
-         c0 = (inRGB) & 0xff;
-      }
-      a = inA;
-   }
+   inline ARGB(int inRGBA) { ival = inRGBA; }
+   inline ARGB(int inRGB,int inA) { ival = (inRGB & 0xffffff) | (inA<<24); }
    inline ARGB(int inRGB,float inA)
    {
-      c1 = (inRGB>>8) & 0xff;
-      if (gC0IsRed)
-      {
-         c0 = (inRGB>>16) & 0xff;
-         c2 = (inRGB) & 0xff;
-      }
-      else
-      {
-         c2 = (inRGB>>16) & 0xff;
-         c0 = (inRGB) & 0xff;
-      }
+      ival = (inRGB & 0xffffff);
       int alpha = 255.9 * inA;
       a = alpha<0 ? 0 : alpha >255 ? 255 : alpha;
    }
 
-   inline int ToInt() const
-   {
-      if (gC0IsRed)
-         return (ival & 0xff00ff00) | (c0<<16) | c2;
-
-      return ival;
-   }
-
-   inline ARGB Swapped() const
-   {
-      ARGB result(*this);
-      result.ival = SwappedIVal();
-      return result;
-   }
-
-   inline int SwappedIVal() const
-         { return (ival & 0xff00ff00) |  ((ival&0xff)<<16) | ( (ival&0xff0000)>>16) ; }
-
-   static inline int Swap(int inVal)
-         { return (inVal & 0xff00ff00) |  ((inVal&0xff)<<16) | ( (inVal&0xff0000)>>16) ; }
-
-
+   inline int ToInt() const { return ival; }
    inline void Set(int inVal) { ival = inVal; }
+   inline void SetRGB(int inVal) { ival = inVal | 0xff000000; }
+   inline void SetRGBA(int inVal) { ival = inVal; }
 
-   inline void SetRGB(int inVal)
-   {
-      c1 = (inVal>>8) & 0xff;
-      if (gC0IsRed)
-      {
-         c0 = (inVal>>16) & 0xff;
-         c2 = (inVal) & 0xff;
-      }
-      else
-      {
-         c0 = (inVal) & 0xff;
-         c2 = (inVal>>16) & 0xff;
-      }
-      a = 255;
-   }
-   inline void SetRGBA(int inVal)
-   {
-      c1 = (inVal>>8) & 0xff;
-      if (gC0IsRed)
-      {
-         c0 = (inVal>>16) & 0xff;
-         c2 = (inVal) & 0xff;
-      }
-      else
-      {
-         c0 = (inVal>>16) & 0xff;
-         c2 = (inVal) & 0xff;
-      }
-      a = (inVal>>24);
-   }
-
-   inline void SetSwapRGB(const ARGB &inRGB)
-   {
-      c0 = inRGB.c2;
-      c1 = inRGB.c1;
-      c2 = inRGB.c0;
-   }
-   inline void SetSwapRGBA(const ARGB &inRGB)
-   {
-      c0 = inRGB.c2;
-      c1 = inRGB.c1;
-      c2 = inRGB.c0;
-      a = inRGB.a;
-   }
-
-   void SwapRB() { Uint8 tmp = c2; c2 = c0; c0 = tmp; }
-
-
-   template<bool SWAP_RB,bool DEST_ALPHA>
+   template<bool DEST_ALPHA>
    inline void Blend(const ARGB &inVal)
    {
       int A = inVal.a + (inVal.a>>7);
@@ -163,50 +53,24 @@ struct ARGB
          // Replace if input is full, or we are empty
          if (A>250 || (DEST_ALPHA && a<5) )
          {
-            if (SWAP_RB)
-            {
-               if (DEST_ALPHA)
-                  SetSwapRGBA(inVal);
-               else
-                  SetSwapRGB(inVal);
-            }
-            else
-               ival = inVal.ival;
+            ival = inVal.ival;
          }
          // Our alpha is implicitly 256 ...
          else if (!DEST_ALPHA)
          {
             int f = 256-A;
-            if (SWAP_RB)
-            {
-               c0 = (A*inVal.c2 + f*c0)>>8;
-               c1 = (A*inVal.c1 + f*c1)>>8;
-               c2 = (A*inVal.c0 + f*c2)>>8;
-            }
-            else
-            {
-               c0 = (A*inVal.c0 + f*c0)>>8;
-               c1 = (A*inVal.c1 + f*c1)>>8;
-               c2 = (A*inVal.c2 + f*c2)>>8;
-            }
+            r = (A*inVal.r + f*r)>>8;
+            g = (A*inVal.g + f*g)>>8;
+            b = (A*inVal.b + f*b)>>8;
          }
          else
          {
             int alpha16 = ((a + A)<<8) - a*A;
             int f = (256-A) * a;
             A<<=8;
-            if (SWAP_RB)
-            {
-               c0 = (A*inVal.c2 + f*c0)/alpha16;
-               c1 = (A*inVal.c1 + f*c1)/alpha16;
-               c2 = (A*inVal.c0 + f*c2)/alpha16;
-            }
-            else
-            {
-               c0 = (A*inVal.c0 + f*c0)/alpha16;
-               c1 = (A*inVal.c1 + f*c1)/alpha16;
-               c2 = (A*inVal.c2 + f*c2)/alpha16;
-            }
+            r = (A*inVal.r + f*r)/alpha16;
+            g = (A*inVal.g + f*g)/alpha16;
+            b = (A*inVal.b + f*b)/alpha16;
             a = alpha16>>8;
          }
       }
@@ -217,9 +81,9 @@ struct ARGB
    {
       int A = inVal.a + (inVal.a>>7);
       int f = (256-A);
-      c0 = (A*inVal.c0 + f*c0)>>8;
-      c1 = (A*inVal.c1 + f*c1)>>8;
-      c2 = (A*inVal.c2 + f*c2)>>8;
+      b = (A*inVal.b + f*b)>>8;
+      g = (A*inVal.g + f*g)>>8;
+      r = (A*inVal.r + f*r)>>8;
    }
 
    inline void QBlendA(ARGB inVal)
@@ -228,23 +92,18 @@ struct ARGB
       int alpha16 = ((a + A)<<8) - a*A;
       int f = (256-A) * a;
       A<<=8;
-      c0 = (A*inVal.c0 + f*c0)/alpha16;
-      c1 = (A*inVal.c1 + f*c1)/alpha16;
-      c2 = (A*inVal.c2 + f*c2)/alpha16;
+      b = (A*inVal.b + f*b)/alpha16;
+      g = (A*inVal.g + f*g)/alpha16;
+      r = (A*inVal.r + f*r)/alpha16;
       a = alpha16>>8;
    }
 
-
-
-   inline void TBlend_00(const ARGB &inVal) { Blend<false,false>(inVal); }
-   inline void TBlend_01(const ARGB &inVal) { Blend<false,true >(inVal); }
-   inline void TBlend_10(const ARGB &inVal) { Blend<true ,false>(inVal); }
-   inline void TBlend_11(const ARGB &inVal) { Blend<true ,true >(inVal); }
-
+   inline void TBlend_0(const ARGB &inVal) { Blend<false>(inVal); }
+   inline void TBlend_1(const ARGB &inVal) { Blend<true >(inVal); }
 
    union
    {
-      struct { Uint8 c0,c1,c2,a; };
+      struct { Uint8 b,g,r,a; };
       unsigned int  ival;
    };
 };

@@ -91,7 +91,7 @@ public:
          ARGB *src = sgDIBBits + (sgDIB_H - 1 - y)*sgDIB_W;
          uint8  *dest = (uint8 *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
 		   for(int x=0;x<outTarget.mRect.w;x++)
-				*dest++= sGammaLUT[(src++)->c1];
+				*dest++= sGammaLUT[(src++)->g];
 		}
 
 	}

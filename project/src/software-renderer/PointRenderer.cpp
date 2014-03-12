@@ -91,12 +91,10 @@ public:
       int x1 = visible_pixels.x1();
       int y1 = visible_pixels.y1();
 
-      bool swap = gC0IsRed != (bool)(inTarget.mPixelFormat & pfSwapRB);
-      //bool alpha = (inTarget.mPixelFormat & pfHasAlpha);
 
       if (!mHasColours)
       {
-         int val = swap ? mCol.SwappedIVal() : mCol.ival;
+         int val =  mCol.ival;
          // 100% alpha...
          if ( ( (val & 0xff000000) == 0xff000000 ) || (inTarget.mPixelFormat & pfHasAlpha) )
          {
@@ -114,7 +112,7 @@ public:
          }
          else
          {
-            ARGB argb = swap ? mCol.Swapped() : mCol;
+            ARGB argb = mCol;
 
             for(int i=0;i<mTransformed.size();i++)
             {
@@ -141,7 +139,7 @@ public:
                {
                   int ty = point.y;
                   if (y0<=ty && ty<y1)
-                     ((ARGB *)inTarget.Row(ty))[tx].QBlendA( swap? argb[i] : argb[i].Swapped() );
+                     ((ARGB *)inTarget.Row(ty))[tx].QBlendA(argb[i]);
                }
             }
          else
@@ -153,7 +151,7 @@ public:
                {
                   int ty = point.y;
                   if (y0<=ty && ty<y1)
-                     ((ARGB *)inTarget.Row(ty))[tx].QBlend( swap? argb[i].Swapped() : argb[i] );
+                     ((ARGB *)inTarget.Row(ty))[tx].QBlend( argb[i] );
                }
             }
       }

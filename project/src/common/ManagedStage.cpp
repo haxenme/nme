@@ -21,7 +21,6 @@ ManagedStage::ManagedStage(int inWidth,int inHeight,int inFlags)
    mHardwareSurface = 0;
    mCursor = curPointer;
    mIsHardware = true;
-   HintColourOrder(mIsHardware);
    mActiveWidth = inWidth;
    mActiveHeight = inHeight;
    SetNominalSize(inWidth,inHeight);

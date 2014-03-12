@@ -119,12 +119,12 @@ public:
 
    PixelFormat Format() const  { return mPixelFormat; }
 
-   int Width(int inPlane=0) const  { return inPlane==0 ? mWidth : 0; }
-   int Height(int inPlane=0) const  { return inPlane==0 ? mHeight : 0; }
-   const uint8 *GetBase(int inPlane=0) const { return inPlane==0 ? mBase : 0; }
-   uint8       *Edit(const Rect *inRect, int inPlane=0);
-   void        Commit(int inPlane=0);
-   int GetStride(int inPlane=0) const { return inPlane==0 ? mStride : 0; }
+   int Width() const  { return mWidth; }
+   int Height() const  { return mHeight; }
+   const uint8 *GetBase() const { return mBase; }
+   uint8       *Edit(const Rect *inRect);
+   void        Commit() { };
+   int GetStride() const { return mStride; }
 
    int         GPUFormat() const  { return mGPUPixelFormat; }
    void Clear(uint32 inColour,const Rect *inRect);
@@ -186,12 +186,12 @@ public:
 
    PixelFormat Format()  const { return pfHardware; }
 
-   int Width(int _=0) const { return mHardware->Width(); }
-   int Height(int _=0) const { return mHardware->Height(); }
-   const uint8 *GetBase(int _=0) const { return 0; }
-   uint8       *Edit(const Rect *inRect=0, int inPlane=0) { return 0; }
-   void        Commit(int inPlane=0) { }
-   int GetStride(int _=0) const { return 0; }
+   int Width() const { return mHardware->Width(); }
+   int Height() const { return mHardware->Height(); }
+   const uint8 *GetBase() const { return 0; }
+   uint8       *Edit(const Rect *inRect=0) { return 0; }
+   void        Commit() { }
+   int GetStride() const { return 0; }
 
 
    void Clear(uint32 inColour,const Rect *inRect=0) { mHardware->Clear(inColour,inRect); }

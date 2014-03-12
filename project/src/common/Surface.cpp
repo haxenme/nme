@@ -8,33 +8,6 @@ namespace nme
 int gTextureContextVersion = 1;
 
 
-bool sgColourOrderSet = false;
-
-// 32 bit colours will either be
-//
-// 0xAARRGGBB  (argb = format used when "int" is passes)
-// 0xAABBGGRR  (b-r "swapped" - like windows bitmaps )
-//
-// And the ARGB structure is { uint8 c0,c1,c2,alpha }
-// In little-endian land, this is 0x alpha c2 c1 c0,
-//  "gC0IsRed" then means red is the LSB, ie "abgr" format.
-
-#ifdef IPHONE
-bool gC0IsRed = true;
-#else
-bool gC0IsRed = true;
-#endif
-
-void HintColourOrder(bool inRedFirst)
-{
-   if (!sgColourOrderSet)
-   {
-      sgColourOrderSet = true;
-      gC0IsRed = inRedFirst;
-   }
-}
-
-
 // --- Surface -------------------------------------------------------
 
 
@@ -239,11 +212,6 @@ struct ImageSource
    }
    inline const Pixel &Next() const { return *mPos++; }
 
-   bool ShouldSwap(PixelFormat inFormat) const
-   {
-      return (inFormat & pfSwapRB) != (mFormat & pfSwapRB);
-   }
-
 
    mutable const PIXEL *mPos;
    int   mStride;
@@ -263,9 +231,9 @@ struct TintSource
       mStride = inStride;
       mCol = ARGB(inCol);
       a0 = mCol.a; if (a0>127) a0++;
-      c0 = mCol.c0; if (c0>127) c0++;
-      c1 = mCol.c1; if (c1>127) c1++;
-      c2 = mCol.c2; if (c2>127) c2++;
+      r = mCol.r; if (r>127) r++;
+      g = mCol.g; if (g>127) g++;
+      b = mCol.b; if (b>127) b++;
       mFormat = inFormat;
 
       if (inFormat==pfAlpha)
@@ -275,9 +243,6 @@ struct TintSource
       }
       else
       {
-         if (gC0IsRed == (bool)(inFormat & pfSwapRB))
-            std::swap(c0,c2);
-
          ARGB tmp;
          mComponentOffset = (uint8 *)&tmp.a - (uint8 *)&tmp;
          mPixelStride = 4;
@@ -299,9 +264,9 @@ struct TintSource
       {
          ARGB col = *(ARGB *)(mPos);
          mCol.a =   (a0*col.a)>>8;
-         mCol.c0 =  (c0*col.c0)>>8;
-         mCol.c1 =  (c1*col.c1)>>8;
-         mCol.c2 =  (c2*col.c2)>>8;
+         mCol.r =  (r*col.r)>>8;
+         mCol.g =  (g*col.g)>>8;
+         mCol.b =  (b*col.b)>>8;
       }
       else
       {
@@ -310,25 +275,11 @@ struct TintSource
       mPos+=mPixelStride;
       return mCol;
    }
-   bool ShouldSwap(PixelFormat inFormat) const
-   {
-      if (TINT_RGB)
-      {
-         return (inFormat & pfSwapRB) != (mFormat & pfSwapRB );
-      }
-      else
-      {
-         // In the alpha case, the order will be in the "natural" way (ie, c0 according to platform)
-         if (inFormat & pfSwapRB)
-            mCol.SwapRB();
-         return false;
-      }
-   }
 
    int a0;
-   int c0;
-   int c1;
-   int c2;
+   int r;
+   int g;
+   int b;
    PixelFormat mFormat;
    mutable ARGB mCol;
    mutable const uint8 *mPos;
@@ -359,7 +310,7 @@ struct ImageDest
 };
 
 
-template<bool SWAP_RB, bool DEST_ALPHA, typename DEST, typename SRC, typename MASK>
+template<bool DEST_ALPHA, typename DEST, typename SRC, typename MASK>
 void TTBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
             int inX, int inY, const Rect &inSrcRect)
 {
@@ -370,16 +321,12 @@ void TTBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
       inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
       for(int x=0;x<inSrcRect.w;x++)
       #ifdef HX_WINDOWS
-         outDest.Next().Blend<SWAP_RB,DEST_ALPHA>(inMask.Mask(inSrc.Next()));
+         outDest.Next().Blend<DEST_ALPHA>(inMask.Mask(inSrc.Next()));
       #else
-         if (!SWAP_RB && !DEST_ALPHA)
-            outDest.Next().TBlend_00(inMask.Mask(inSrc.Next()));
-         else if (!SWAP_RB && DEST_ALPHA)
-            outDest.Next().TBlend_01(inMask.Mask(inSrc.Next()));
-         else if (SWAP_RB && !DEST_ALPHA)
-            outDest.Next().TBlend_10(inMask.Mask(inSrc.Next()));
+         if (!DEST_ALPHA)
+            outDest.Next().TBlend_0(inMask.Mask(inSrc.Next()));
          else
-            outDest.Next().TBlend_11(inMask.Mask(inSrc.Next()));
+            outDest.Next().TBlend_1(inMask.Mask(inSrc.Next()));
       #endif
    }
 }
@@ -388,23 +335,12 @@ template<typename DEST, typename SRC, typename MASK>
 void TBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
             int inX, int inY, const Rect &inSrcRect)
 {
-   bool swap = inSrc.ShouldSwap(outDest.Format());
    bool dest_alpha = outDest.Format() & pfHasAlpha;
 
-      if (swap)
-      {
-         if (dest_alpha)
-            TTBlit<true,true,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect);
-         else
-            TTBlit<true,false,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect);
-      }
-      else
-      {
-         if (dest_alpha)
-            TTBlit<false,true,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect);
-         else
-            TTBlit<false,false,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect);
-      }
+   if (dest_alpha)
+      TTBlit<true,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect);
+   else
+      TTBlit<false,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect);
 }
 
 
@@ -437,26 +373,25 @@ static int init_clamp = InitClamp();
 
 typedef void (*BlendFunc)(ARGB &ioDest, ARGB inSrc);
 
-template<bool SWAP, bool DEST_ALPHA,typename FUNC>
+template<bool DEST_ALPHA,typename FUNC>
 inline void BlendFuncWithAlpha(ARGB &ioDest, ARGB &inSrc,FUNC F)
 {
    if (inSrc.a==0)
       return;
-   if (SWAP) inSrc.SwapRB();
    ARGB val = inSrc;
    if (!DEST_ALPHA || ioDest.a>0)
    {
-      F(val.c0,ioDest.c0);
-      F(val.c1,ioDest.c1);
-      F(val.c2,ioDest.c2);
+      F(val.r,ioDest.r);
+      F(val.g,ioDest.g);
+      F(val.b,ioDest.b);
    }
    if (DEST_ALPHA && ioDest.a<255)
    {
       int A = ioDest.a + (ioDest.a>>7);
       int A_ = 256-A;
-      val.c0 = (val.c0 *A + inSrc.c0*A_)>>8;
-      val.c1 = (val.c1 *A + inSrc.c1*A_)>>8;
-      val.c2 = (val.c2 *A + inSrc.c2*A_)>>8;
+      val.r = (val.r *A + inSrc.r*A_)>>8;
+      val.g = (val.g *A + inSrc.g*A_)>>8;
+      val.b = (val.b *A + inSrc.b*A_)>>8;
    }
    if (val.a==255)
    {
@@ -479,8 +414,8 @@ struct DoMult
      { ioVal = (inDest * ( ioVal + (ioVal>>7)))>>8; }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void MultiplyFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoMult()); }
+template<bool DEST_ALPHA> void MultiplyFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoMult()); }
 
 // --- Screen -----
 
@@ -490,8 +425,8 @@ struct DoScreen
      { ioVal = 255 - (((255 - inDest) * ( 256 - ioVal - (ioVal>>7)))>>8); }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void ScreenFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoScreen()); }
+template<bool DEST_ALPHA> void ScreenFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoScreen()); }
 
 // --- Lighten -----
 
@@ -501,8 +436,8 @@ struct DoLighten
    { if (inDest > ioVal ) ioVal = inDest; }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void LightenFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoLighten()); }
+template<bool DEST_ALPHA> void LightenFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoLighten()); }
 
 // --- Darken -----
 
@@ -512,8 +447,8 @@ struct DoDarken
    { if (inDest < ioVal ) ioVal = inDest; }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void DarkenFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoDarken()); }
+template<bool DEST_ALPHA> void DarkenFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoDarken()); }
 
 // --- Difference -----
 
@@ -523,8 +458,8 @@ struct DoDifference
    { if (inDest < ioVal ) ioVal -= inDest; else ioVal = inDest-ioVal; }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void DifferenceFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoDifference()); }
+template<bool DEST_ALPHA> void DifferenceFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoDifference()); }
 
 // --- Add -----
 
@@ -534,8 +469,8 @@ struct DoAdd
    { ioVal = sgClamp0255[ioVal+inDest]; }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void AddFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoAdd()); }
+template< bool DEST_ALPHA> void AddFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoAdd()); }
 
 // --- Subtract -----
 
@@ -545,8 +480,8 @@ struct DoSubtract
    { ioVal = sgClamp0255[inDest-ioVal]; }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void SubtractFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoSubtract()); }
+template<bool DEST_ALPHA> void SubtractFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoSubtract()); }
 
 // --- Invert -----
 
@@ -556,12 +491,12 @@ struct DoInvert
    { ioVal = 255 - inDest; }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void InvertFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<false,DEST_ALPHA>(ioDest,inSrc,DoInvert()); }
+template< bool DEST_ALPHA> void InvertFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoInvert()); }
 
 // --- Alpha -----
 
-template<bool SWAP, bool DEST_ALPHA> void AlphaFunc(ARGB &ioDest, ARGB inSrc)
+template<bool DEST_ALPHA> void AlphaFunc(ARGB &ioDest, ARGB inSrc)
 {
    if (DEST_ALPHA)
       ioDest.a = (ioDest.a * ( inSrc.a + (inSrc.a>>7))) >> 8;
@@ -569,7 +504,7 @@ template<bool SWAP, bool DEST_ALPHA> void AlphaFunc(ARGB &ioDest, ARGB inSrc)
 
 // --- Erase -----
 
-template<bool SWAP, bool DEST_ALPHA> void EraseFunc(ARGB &ioDest, ARGB inSrc)
+template< bool DEST_ALPHA> void EraseFunc(ARGB &ioDest, ARGB inSrc)
 {
    if (DEST_ALPHA)
       ioDest.a = (ioDest.a * ( 256-inSrc.a - (inSrc.a>>7))) >> 8;
@@ -583,8 +518,8 @@ struct DoOverlay
    { if (inDest>127) DoScreen()(ioVal,inDest); else DoMult()(ioVal,inDest); }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void OverlayFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoOverlay()); }
+template<bool DEST_ALPHA> void OverlayFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoOverlay()); }
 
 // --- HardLight -----
 
@@ -594,40 +529,31 @@ struct DoHardLight
    { if (ioVal>127) DoScreen()(ioVal,inDest); else DoMult()(ioVal,inDest); }
 };
 
-template<bool SWAP, bool DEST_ALPHA> void HardLightFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<SWAP,DEST_ALPHA>(ioDest,inSrc,DoHardLight()); }
+template<bool DEST_ALPHA> void HardLightFunc(ARGB &ioDest, ARGB inSrc)
+   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoHardLight()); }
 
 // -- Set ---------
 
-template<bool SWAP, bool DEST_ALPHA> void CopyFunc(ARGB &ioDest, ARGB inSrc)
+template<bool DEST_ALPHA> void CopyFunc(ARGB &ioDest, ARGB inSrc)
 {
    ioDest = inSrc;
 }
 
 // -- Inner ---------
 
-template<bool SWAP, bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
+template<bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
 {
    int A = inSrc.a;
    if (A)
    {
-      if (SWAP)
-      {
-         ioDest.c2 += ((inSrc.c0 - ioDest.c0)*A)>>8;
-         ioDest.c1 += ((inSrc.c1 - ioDest.c1)*A)>>8;
-         ioDest.c0 += ((inSrc.c2 - ioDest.c2)*A)>>8;
-      }
-      else
-      {
-         ioDest.c0 += ((inSrc.c0 - ioDest.c0)*A)>>8;
-         ioDest.c1 += ((inSrc.c1 - ioDest.c1)*A)>>8;
-         ioDest.c2 += ((inSrc.c2 - ioDest.c2)*A)>>8;
-      }
+      ioDest.r += ((inSrc.r - ioDest.r)*A)>>8;
+      ioDest.g += ((inSrc.g - ioDest.g)*A)>>8;
+      ioDest.b += ((inSrc.b - ioDest.b)*A)>>8;
    }
 }
 
 
-#define BLEND_METHOD(blend) blend<false,false>, blend<false,true>, blend<true,false>, blend<true,true>,
+#define BLEND_METHOD(blend) blend<false>, blend<true>,
 
 BlendFunc sgBlendFuncs[] = 
 {
@@ -653,10 +579,9 @@ template<typename MASK,typename SOURCE>
 void TBlitBlend( const ImageDest<ARGB> &outDest, SOURCE &inSrc,const MASK &inMask,
             int inX, int inY, const Rect &inSrcRect, BlendMode inMode)
 {
-   bool swap = inSrc.ShouldSwap(outDest.Format());
    bool dest_alpha = outDest.Format() & pfHasAlpha;
 
-   BlendFunc blend = sgBlendFuncs[inMode*4 + ( swap ? 2 : 0) + (dest_alpha?1:0)];
+   BlendFunc blend = sgBlendFuncs[inMode*2 + (dest_alpha?1:0)];
 
    for(int y=0;y<inSrcRect.h;y++)
    {
@@ -836,9 +761,9 @@ void SimpleSurface::colorTransform(const Rect &inRect, ColorTransform &inTransfo
       return;
 
    const uint8 *ta = inTransform.GetAlphaLUT();
-   const uint8 *t0 = inTransform.GetC0LUT();
-   const uint8 *t1 = inTransform.GetC1LUT();
-   const uint8 *t2 = inTransform.GetC2LUT();
+   const uint8 *tr = inTransform.GetRLUT();
+   const uint8 *tg = inTransform.GetGLUT();
+   const uint8 *tb = inTransform.GetBLUT();
 
    RenderTarget target = BeginRender(inRect,false);
 
@@ -848,9 +773,9 @@ void SimpleSurface::colorTransform(const Rect &inRect, ColorTransform &inTransfo
       ARGB *rgb = ((ARGB *)target.Row(y+r.y)) + r.x;
       for(int x=0;x<r.w;x++)
       {
-         rgb->c0 = t0[rgb->c0];
-         rgb->c1 = t1[rgb->c1];
-         rgb->c2 = t2[rgb->c2];
+         rgb->r = tr[rgb->r];
+         rgb->g = tg[rgb->g];
+         rgb->b = tb[rgb->b];
          rgb->a = ta[rgb->a];
          rgb++;
       }
@@ -900,17 +825,15 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
       int dx = inPosX + src_rect.x;
       int dy = inPosY + src_rect.y;
 
-      bool c0_red = gC0IsRed != ( (mPixelFormat & pfSwapRB) != 0);
       int src_ch = inSrcChannel==CHAN_ALPHA ? 3 :
-                   inSrcChannel==CHAN_BLUE  ? (c0_red ? 2 : 0) :
+                   inSrcChannel==CHAN_RED   ? 2 :
                    inSrcChannel==CHAN_GREEN ? 1 :
-                   (c0_red ? 0 : 2);
+                                              0;
 
-      c0_red = gC0IsRed != ( (outTarget.Format() & pfSwapRB) != 0);
       int dest_ch = inDestChannel==CHAN_ALPHA ? 3 :
-                   inDestChannel==CHAN_BLUE  ? (c0_red ? 2 : 0) :
-                   inDestChannel==CHAN_GREEN ? 1 :
-                   (c0_red ? 0 : 2);
+                    inDestChannel==CHAN_RED   ? 2 :
+                    inDestChannel==CHAN_GREEN ? 1 :
+                                                0;
 
 
       for(int y=0;y<src_rect.h;y++)
@@ -940,9 +863,9 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 }
 
 
-template<bool SWAP,bool SRC_ALPHA,bool DEST_ALPHA>
+template<bool SRC_ALPHA,bool DEST_ALPHA>
 void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
-                     const Rect &inSrcRect, const DRect &inDestRect)
+                const Rect &inSrcRect, const DRect &inDestRect)
 {
    Rect irect( inDestRect.x+0.5, inDestRect.y+0.5, inDestRect.x1()+0.5, inDestRect.y1()+0.5, true);
    Rect out = irect.Intersect(outTarget.mRect);
@@ -975,7 +898,6 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
       {
          ARGB s(src[sx>>16]);
          sx+=dsx_dx;
-         if (SWAP) s.SwapRB();
          if (!SRC_ALPHA)
          {
             if (DEST_ALPHA)
@@ -1027,20 +949,19 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
          ARGB s10(src1[x_]);
          ARGB s11(src1[x_+1]);
 
-         int c0_0 = s00.c0 + (((s01.c0-s00.c0)*x_frac) >> 16);
-         int c0_1 = s10.c0 + (((s11.c0-s10.c0)*x_frac) >> 16);
-         s.c0 = c0_0 + (((c0_1-c0_0)*y_frac) >> 16);
+         int c0_0 = s00.r + (((s01.r-s00.r)*x_frac) >> 16);
+         int c0_1 = s10.r + (((s11.r-s10.r)*x_frac) >> 16);
+         s.r = c0_0 + (((c0_1-c0_0)*y_frac) >> 16);
 
-         int c1_0 = s00.c1 + (((s01.c1-s00.c1)*x_frac) >> 16);
-         int c1_1 = s10.c1 + (((s11.c1-s10.c1)*x_frac) >> 16);
-         s.c1 = c1_0 + (((c1_1-c1_0)*y_frac) >> 16);
+         int c1_0 = s00.g + (((s01.g-s00.g)*x_frac) >> 16);
+         int c1_1 = s10.g + (((s11.g-s10.g)*x_frac) >> 16);
+         s.g = c1_0 + (((c1_1-c1_0)*y_frac) >> 16);
 
-         int c2_0 = s00.c2 + (((s01.c2-s00.c2)*x_frac) >> 16);
-         int c2_1 = s10.c2 + (((s11.c2-s10.c2)*x_frac) >> 16);
-         s.c2 = c2_0 + (((c2_1-c2_0)*y_frac) >> 16);
+         int c2_0 = s00.b + (((s01.b-s00.b)*x_frac) >> 16);
+         int c2_1 = s10.b + (((s11.b-s10.b)*x_frac) >> 16);
+         s.b = c2_0 + (((c2_1-c2_0)*y_frac) >> 16);
 
          sx+=dsx_dx;
-         if (SWAP) s.SwapRB();
          if (!SRC_ALPHA)
          {
             *dest++ = s;
@@ -1072,43 +993,22 @@ void SimpleSurface::StretchTo(const RenderTarget &outTarget,
    if (mPixelFormat==pfAlpha || outTarget.mPixelFormat==pfAlpha)
       return;
 
-   bool swap = (outTarget.mPixelFormat & pfSwapRB) != (mPixelFormat & pfSwapRB);
    bool dest_has_alpha = outTarget.mPixelFormat & pfHasAlpha;
    bool src_has_alpha = mPixelFormat &  pfHasAlpha;
 
-   if (swap)
+   if (src_has_alpha)
    {
-      if (src_has_alpha)
-      {
-         if (dest_has_alpha)
-            TStretchTo<true,true,true>(this,outTarget,inSrcRect,inDestRect);
-         else
-            TStretchTo<true,true,false>(this,outTarget,inSrcRect,inDestRect);
-      }
+      if (dest_has_alpha)
+         TStretchTo<true,true>(this,outTarget,inSrcRect,inDestRect);
       else
-      {
-         if (dest_has_alpha)
-            TStretchTo<true,false,true>(this,outTarget,inSrcRect,inDestRect);
-         else
-            TStretchTo<true,false,false>(this,outTarget,inSrcRect,inDestRect);
-      }
+         TStretchTo<true,false>(this,outTarget,inSrcRect,inDestRect);
    }
    else
    {
-      if (src_has_alpha)
-      {
-         if (dest_has_alpha)
-            TStretchTo<false,true,true>(this,outTarget,inSrcRect,inDestRect);
-         else
-            TStretchTo<false,true,false>(this,outTarget,inSrcRect,inDestRect);
-      }
+      if (dest_has_alpha)
+         TStretchTo<false,true>(this,outTarget,inSrcRect,inDestRect);
       else
-      {
-         if (dest_has_alpha)
-            TStretchTo<false,false,true>(this,outTarget,inSrcRect,inDestRect);
-         else
-            TStretchTo<false,false,false>(this,outTarget,inSrcRect,inDestRect);
-      }
+         TStretchTo<false,false>(this,outTarget,inSrcRect,inDestRect);
    }
 }
 
@@ -1124,9 +1024,6 @@ void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
       memset(mBase, rgb.a,mStride*mHeight);
       return;
    }
-
-   if (mPixelFormat & pfSwapRB)
-      rgb.SwapRB();
 
    int x0 = inRect ? inRect->x  : 0;
    int x1 = inRect ? inRect->x1()  : Width();
@@ -1168,7 +1065,7 @@ void SimpleSurface::dispose()
    }
 }
 
-uint8  *SimpleSurface::Edit(const Rect *inRect, int inPlane)
+uint8  *SimpleSurface::Edit(const Rect *inRect)
 {
    if (!mBase)
       return 0;
@@ -1180,9 +1077,6 @@ uint8  *SimpleSurface::Edit(const Rect *inRect, int inPlane)
       return mBase;
 }
 
-void SimpleSurface::Commit(int inPlane)
-{
-}
 
 
 RenderTarget SimpleSurface::BeginRender(const Rect &inRect,bool inForHitTest)
@@ -1213,14 +1107,12 @@ Surface *SimpleSurface::clone()
    return copy;
 }
 
-void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder,
-      bool inLittleEndian)
+void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder, bool inLittleEndian)
 {
    if (!mBase)
       return;
 
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
-   bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
 
    for(int y=0;y<r.h;y++)
    {
@@ -1230,63 +1122,23 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
          for(int x=0;x<r.w;x++)
             *outPixels++ = (*src++) << 24;
       }
-      else if (inIgnoreOrder)
+      else if (inIgnoreOrder || inLittleEndian)
       {
          memcpy(outPixels,src,r.w*4);
          outPixels+=r.w;
       }
       else
       {
-         uint8 *a = src + 3;
+         uint8 *a = src;
          uint8 *pix = (uint8 *)outPixels;
 
-         
-         // IO in little endian
-         if (inLittleEndian)
+         for(int x=0;x<r.w;x++)
          {
-            if (!swap)
-            {
-               memcpy(pix,src,r.w*sizeof(int));
-               src+=r.w*sizeof(int);
-            }
-            else
-            {
-               for(int x=0;x<r.w;x++)
-               {
-                  *pix++ = src[2];
-                  *pix++ = src[1];
-                  *pix++ = src[0];
-                  *pix++ = src[3];
-                  src+=4;
-               }
-            }
-         }
-         // Must output big-endian, while memory is stored little-endian
-         else
-         {
-            a = src;
-            if (!swap)
-            {
-               for(int x=0;x<r.w;x++)
-               {
-                  *pix++ = src[3];
-                  *pix++ = src[2];
-                  *pix++ = src[1];
-                  *pix++ = src[0];
-                  src+=4;
-               }
-            }
-            else
-            {
-               for(int x=0;x<r.w;x++)
-               {
-                  *pix++ = src[3];
-                  *pix++ = src[0];
-                  *pix++ = src[1];
-                  *pix++ = src[2];
-                  src+=4;
-               }
-            }
+            *pix++ = src[3];
+            *pix++ = src[2];
+            *pix++ = src[1];
+            *pix++ = src[0];
+            src+=4;
          }
          outPixels += r.w;
 
@@ -1316,13 +1168,6 @@ void SimpleSurface::getColorBoundsRect(int inMask, int inCol, bool inFind, Rect 
       return;
    }
 
-   bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
-   if (swap)
-   {
-       inMask = ARGB::Swap( inMask );
-       inCol = ARGB::Swap( inCol );
-   }
-  
    int min_x = w + 1;
    int max_x = -1;
    int min_y = h + 1;
@@ -1361,7 +1206,6 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       mTexture->Dirty(r);
 
    const uint8 *src = (const uint8 *)inPixels;
-   bool swap  = ((bool)(mPixelFormat & pfSwapRB) != gC0IsRed);
    
    if (mAllowTrans && mPixelFormat==pfXRGB)
       mPixelFormat=pfARGB;
@@ -1397,8 +1241,6 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       {
          if (inLittleEndian)
          {
-            if (!swap)
-            {
                if (mAllowTrans)
                {
                   memcpy(dest,src,r.w*sizeof(int));
@@ -1415,23 +1257,9 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                      src+=4;
                   }
                }
-            }
-            else
-            {
-               for(int x=0;x<r.w;x++)
-               {
-                  *dest++ = src[2];
-                  *dest++ = src[1];
-                  *dest++ = src[0];
-                  *dest++ = mAllowTrans ? src[3] : 0xff;
-                  src+=4;
-               }
-            }
          }
          else
          {
-            if (!swap)
-            {
                for(int x=0;x<r.w;x++)
                {
                   *dest++ = src[3];
@@ -1440,18 +1268,6 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                   *dest++ = mAllowTrans ? src[0] : 0xff;
                   src+=4;
                }
-            }
-            else
-            {
-               for(int x=0;x<r.w;x++)
-               {
-                  *dest++ = src[1];
-                  *dest++ = src[2];
-                  *dest++ = src[3];
-                  *dest++ = mAllowTrans ? src[0] : 0xff;
-                  src+=4;
-               }
-            }
          }
       }
    }
@@ -1465,10 +1281,7 @@ uint32 SimpleSurface::getPixel(int inX,int inY)
    if (mPixelFormat==pfAlpha)
       return mBase[inY*mStride + inX]<<24;
 
-   if ( (bool)(mPixelFormat & pfSwapRB) == gC0IsRed )
-      return ((uint32 *)(mBase + inY*mStride))[inX];
-
-   return ARGB::Swap( ((int *)(mBase + inY*mStride))[inX] );
+   return ((int *)(mBase + inY*mStride))[inX];
 }
 
 void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
@@ -1486,21 +1299,15 @@ void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
          mPixelFormat=pfARGB;
       if (mPixelFormat==pfAlpha)
          mBase[inY*mStride + inX] = inRGBA >> 24;
-      else if ( (bool)(mPixelFormat & pfSwapRB) == gC0IsRed )
-         ((uint32 *)(mBase + inY*mStride))[inX] = inRGBA;
       else
-         ((int *)(mBase + inY*mStride))[inX] = ARGB::Swap(inRGBA);
+         ((uint32 *)(mBase + inY*mStride))[inX] = inRGBA;
    }
    else
    {
       if (mPixelFormat!=pfAlpha)
       {
          int &pixel = ((int *)(mBase + inY*mStride))[inX];
-         inRGBA = (inRGBA & 0xffffff) | (pixel & 0xff000000);
-         if ( (bool)(mPixelFormat & pfSwapRB) == gC0IsRed )
-            pixel = inRGBA;
-         else
-            pixel = ARGB::Swap(inRGBA);
+         pixel = (inRGBA & 0xffffff) | (pixel & 0xff000000);
       }
    }
 }
@@ -1622,6 +1429,8 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
    RenderTarget target = BeginRender(Rect(0,0,mWidth,mHeight),false);
    ARGB tmpRgb;
 
+   int range = high - low + 1;
+
    for (int y=0;y<mHeight;y++)
    {
       ARGB *rgb = ((ARGB *)target.Row(y));
@@ -1629,55 +1438,32 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
       {
          if (grayScale)
          {
-            tmpRgb.c0 = tmpRgb.c1 = tmpRgb.c2 = low + generator() % (high - low + 1);
+            tmpRgb.r = tmpRgb.g = tmpRgb.b = low + generator() % (high - low + 1);
          }
          else
          {
             if (channelOptions & CHAN_RED)
-            {
-               tmpRgb.c2 = low + generator() % (high - low + 1);
-            }
+               tmpRgb.r = low + generator() % range;
             else
-            {
-               tmpRgb.c2 = 0;
-            }
+               tmpRgb.r = 0;
 
             if (channelOptions & CHAN_GREEN)
-            {
-               tmpRgb.c1 = low + generator() % (high - low + 1);
-            }
+               tmpRgb.g = low + generator() % range;
             else
-            {
-               tmpRgb.c1 = 0;
-            }
+               tmpRgb.g = 0;
 
             if (channelOptions & CHAN_BLUE)
-            {
-               tmpRgb.c0 = low + generator() % (high - low + 1);
-            }
+               tmpRgb.b = low + generator() % range;
             else
-            {
-               tmpRgb.c0 = 0;
-            }
+               tmpRgb.b = 0;
          }
 
          if (channelOptions & CHAN_ALPHA)
-         {
-            tmpRgb.a = low + generator() % (high - low + 1);
-         }
+            tmpRgb.a = low + generator() % range;
          else
-         {
             tmpRgb.a = 255;
-         }
 
-         if ((bool)(mPixelFormat & pfSwapRB) == gC0IsRed)
-         {
-            *rgb = tmpRgb;
-         }
-         else
-         {
-            rgb->SetSwapRGBA(tmpRgb);
-         }
+         *rgb = tmpRgb;
 
          rgb++;
       }

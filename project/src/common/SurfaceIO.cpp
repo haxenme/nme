@@ -168,9 +168,6 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
 
    row_buf = (uint8 *)malloc(cinfo.output_width * 3);
 
-   int c0_idx = gC0IsRed ? 0 : 2;
-   int c1_idx = 2-c0_idx;
-
    while (cinfo.output_scanline < cinfo.output_height)
    {
       uint8 * src = row_buf;
@@ -181,9 +178,9 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
       uint8 *end = dest + cinfo.output_width*4;
       while (dest<end)
       {
-         dest[0] = src[c0_idx];
+         dest[0] = src[2];
          dest[1] = src[1];
-         dest[2] = src[c1_idx];
+         dest[2] = src[0];
          dest[3] = 0xff;
          dest+=4;
          src+=3;
@@ -290,9 +287,6 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
  
    JSAMPROW row_pointer = &row_buf[0];
 
-   int c0_idx = gC0IsRed ? 0 : 2;
-   int c1_idx = 2-c0_idx;
- 
    /* main code to write jpeg data */
    while (cinfo.next_scanline < cinfo.image_height)
    {
@@ -301,9 +295,9 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
 
       for(int x=0;x<w;x++)
       {
-         dest[0] = src[c0_idx];
+         dest[0] = src[2];
          dest[1] = src[1];
-         dest[2] = src[c1_idx];
+         dest[2] = src[0];
          dest+=3;
          src+=4;
       }
@@ -414,8 +408,7 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
    if (bit_depth == 16)
       png_set_strip_16(png_ptr);
 
-   if (!gC0IsRed)
-      png_set_bgr(png_ptr);
+   png_set_bgr(png_ptr);
 
    result = new SimpleSurface(width,height, (has_alpha) ? pfARGB : pfXRGB);
    result->IncRef();
@@ -482,10 +475,9 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
 
    png_write_info(png_ptr, info_ptr);
 
-   bool swap = (gC0IsRed == (((inSurface->Format() & pfSwapRB ))>0) );
    bool do_alpha = color_type==PNG_COLOR_TYPE_RGBA;
    
-   if (!swap && do_alpha)
+   if (do_alpha)
    {
       QuickVec<png_bytep> row_pointers(h);
       for(int y=0;y<h;y++)
@@ -502,18 +494,9 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
          const uint8 *src = (const uint8 *)inSurface->Row(y);
          for(int x=0;x<w;x++)
          {
-            if (swap)
-            {
-               buf[0] = src[2];
-               buf[1] = src[1];
-               buf[2] = src[0];
-            }
-            else
-            {
-               buf[0] = src[0];
-               buf[1] = src[1];
-               buf[2] = src[2];
-            }
+            buf[0] = src[0];
+            buf[1] = src[1];
+            buf[2] = src[2];
             src+=3;
             buf+=3;
             if (do_alpha)

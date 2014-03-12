@@ -268,7 +268,7 @@ public:
             int w = mGradReflect ? 512 : 256;
             mElement.mSurface = new SimpleSurface(w,1,pfARGB);
             mElement.mSurface->IncRef();
-            grad->FillArray( (ARGB *)mElement.mSurface->GetBase(), false);
+            grad->FillArray( (ARGB *)mElement.mSurface->GetBase() );
 
             if (grad->spreadMethod!=smPad)
                mElement.mFlags |= DRAW_BMP_REPEAT;

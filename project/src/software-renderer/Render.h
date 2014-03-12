@@ -58,20 +58,20 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
                   int alpha = (run->mAlpha * (*m++))>>8;
 
                   if (SOURCE_::HasAlpha)
-						{
-							alpha -= (alpha>>7);
-						   if (DEST_::HasAlpha)
+                  {
+                     alpha -= (alpha>>7);
+                     if (DEST_::HasAlpha)
                          inBlend.BlendAlpha( outDest,inSource,alpha );
                      else
                          inBlend.BlendNoAlpha( outDest,inSource,alpha );
-						}
-						else
-						{
-						   if (DEST_::HasAlpha)
+                  }
+                  else
+                  {
+                     if (DEST_::HasAlpha)
                          inBlend.BlendAlphaFull( outDest,inSource,alpha );
                      else
                          inBlend.BlendNoAlphaFull( outDest,inSource,alpha );
-						}
+                  }
                }
                ++run;
             }
@@ -90,23 +90,23 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
                inSource.SetPos(x0,y);
                int alpha = run->mAlpha;
                if (!SOURCE_::HasAlpha)
-						alpha -= (alpha>>7);
+                  alpha -= (alpha>>7);
 
                while(x0++<x1)
                   if (SOURCE_::HasAlpha)
-						{
-						   if (DEST_::HasAlpha)
+                  {
+                     if (DEST_::HasAlpha)
                          inBlend.BlendAlpha( outDest,inSource,alpha );
                      else
                          inBlend.BlendNoAlpha( outDest,inSource,alpha );
-						}
-						else
-						{
-						   if (DEST_::HasAlpha)
+                  }
+                  else
+                  {
+                     if (DEST_::HasAlpha)
                          inBlend.BlendAlphaFull( outDest,inSource,alpha );
                      else
                          inBlend.BlendNoAlphaFull( outDest,inSource,alpha );
-						}
+                  }
                ++run;
             }
          }
@@ -135,51 +135,51 @@ struct DestSurface32
 
 
 
-template<bool SWAP_RB,bool ALPHA_LUT=false,bool COLOUR_LUT=false>
+template<bool ALPHA_LUT=false,bool COLOUR_LUT=false>
 struct NormalBlender
 {
-	const uint8 *mAlpha_LUT;
-	const uint8 *mC0_LUT;
-	const uint8 *mC1_LUT;
-	const uint8 *mC2_LUT;
+   const uint8 *mAlpha_LUT;
+   const uint8 *mR_LUT;
+   const uint8 *mG_LUT;
+   const uint8 *mB_LUT;
 
-	NormalBlender(const RenderState &inState,bool inSwapRB=false)
-	{
-		if (ALPHA_LUT)
+   NormalBlender(const RenderState &inState)
+   {
+      if (ALPHA_LUT)
          mAlpha_LUT = inState.mAlpha_LUT;
-		if (COLOUR_LUT)
-		{
-			mC0_LUT = inSwapRB ? inState.mC2_LUT : inState.mC0_LUT;
-			mC1_LUT = inState.mC1_LUT;
-			mC2_LUT = inSwapRB ? inState.mC0_LUT : inState.mC2_LUT;
-		}
-	}
+      if (COLOUR_LUT)
+      {
+         mR_LUT = inState.mR_LUT;
+         mG_LUT = inState.mG_LUT;
+         mB_LUT = inState.mB_LUT;
+      }
+   }
    template<bool DEST_ALPHA,bool SRC_ALPHA,typename DEST, typename SRC>
    void Blend(DEST &inDest, SRC &inSrc,int inAlpha) const
    {
       ARGB src = inSrc.GetInc();
-		if (SRC_ALPHA)
-		{
-			if (ALPHA_LUT)
-				src.a = mAlpha_LUT[ (src.a * inAlpha)>>8 ];
-			else
-				src.a = (src.a * inAlpha)>>8;
-		}
-		else
-		{
-			if (ALPHA_LUT)
-				src.a = mAlpha_LUT[ inAlpha ];
-			else
-				src.a = inAlpha;
-		}
-		if (COLOUR_LUT)
-		{
-			src.c0 = mC0_LUT[src.c0];
-			src.c1 = mC1_LUT[src.c1];
-			src.c2 = mC2_LUT[src.c2];
-		}
+      if (SRC_ALPHA)
+      {
+         if (ALPHA_LUT)
+            src.a = mAlpha_LUT[ (src.a * inAlpha)>>8 ];
+         else
+            src.a = (src.a * inAlpha)>>8;
+      }
+      else
+      {
+         if (ALPHA_LUT)
+            src.a = mAlpha_LUT[ inAlpha ];
+         else
+            src.a = inAlpha;
+      }
+      if (COLOUR_LUT)
+      {
+         src.r = mR_LUT[src.r];
+         src.g = mG_LUT[src.g];
+         src.b = mB_LUT[src.b];
+      }
       ARGB dest = inDest.Get();
-      dest.Blend<SWAP_RB,DEST_ALPHA>(src);
+      dest.Blend<DEST_ALPHA>(src);
       inDest.SetInc(dest);
    }
    template<typename DEST, typename SRC>
@@ -192,7 +192,7 @@ struct NormalBlender
    {
        Blend<true,true>(inDest,inSrc,inAlpha);
    }
-	template<typename DEST, typename SRC>
+   template<typename DEST, typename SRC>
    void BlendNoAlphaFull(DEST &inDest, SRC &inSrc,int inAlpha) const
    {
        Blend<false,false>(inDest,inSrc,inAlpha);
@@ -210,7 +210,7 @@ struct NormalBlender
 
 template<typename SOURCE_,typename BLEND_>
 void RenderBlend(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest,
-				const BLEND_ &inBlend, const RenderState &inState, int inTX, int inTY)
+            const BLEND_ &inBlend, const RenderState &inState, int inTX, int inTY)
 {
    if (inDest.mPixelFormat & pfHasAlpha)
    {
@@ -225,36 +225,24 @@ void RenderBlend(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget
 }
 
 
-#define RENDER(SWAP_RB,ALPHA_TRANS,COL_TRANS) \
-   RenderBlend(inAlpha,inSource, inDest, NormalBlender<SWAP_RB,ALPHA_TRANS,COL_TRANS>(inState), inState, inTX, inTY)
+#define RENDER(ALPHA_TRANS,COL_TRANS) \
+   RenderBlend(inAlpha,inSource, inDest, NormalBlender<ALPHA_TRANS,COL_TRANS>(inState), inState, inTX, inTY)
 
-template<bool SWAP_RB_,typename SOURCE_>
-void RenderSwap(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest,
-				const RenderState &inState, int inTX, int inTY)
-{
-	if (inState.HasAlphaLUT() && inState.HasColourLUT())
-		RENDER(SWAP_RB_,true,true);
-	else if (inState.HasAlphaLUT() && !inState.HasColourLUT())
-		RENDER(SWAP_RB_,true,false);
-	else if (!inState.HasAlphaLUT() && inState.HasColourLUT())
-		RENDER(SWAP_RB_,false,true);
-	else
-		RENDER(SWAP_RB_,false,false);
-}
 
 
 template<typename SOURCE_>
 void Render(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest,
-				bool inSwapRB, const RenderState &inState, int inTX, int inTY)
+            const RenderState &inState, int inTX, int inTY)
 {
-   if (inSwapRB)
-   {
-		RenderSwap<true>(inAlpha,inSource,inDest,inState,inTX,inTY);
-   }
+
+   if (inState.HasAlphaLUT() && inState.HasColourLUT())
+      RENDER(true,true);
+   else if (inState.HasAlphaLUT() && !inState.HasColourLUT())
+      RENDER(true,false);
+   else if (!inState.HasAlphaLUT() && inState.HasColourLUT())
+      RENDER(false,true);
    else
-   {
-		RenderSwap<false>(inAlpha,inSource,inDest,inState,inTX,inTY);
-   }
+      RENDER(false,false);
 }
 
 } // end namespace nme

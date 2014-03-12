@@ -28,12 +28,12 @@ public:
    virtual int  Version() const  = 0;
    virtual void OnChanged() = 0;
 
-   virtual int                  Width(int inPlane=0) const =0;
-   virtual int                  Height(int inPlane=0) const =0;
-   virtual const unsigned char *GetBase(int inPlane=0) const = 0;
-   virtual int                  GetStride(int inPlane=0) const = 0;
-   virtual unsigned char        *Edit(const Rect *inRect, int inPlane=0) = 0;
-   virtual void                 Commit(int inPlane=0) = 0;
+   virtual int                  Width() const =0;
+   virtual int                  Height() const =0;
+   virtual const unsigned char *GetBase() const = 0;
+   virtual int                  GetStride() const = 0;
+   virtual unsigned char        *Edit(const Rect *inRect=0) = 0;
+   virtual void                 Commit() = 0;
 
    virtual Texture *GetTexture(class HardwareContext *inContext=0,int inPlane=0) = 0;
    virtual void  MakeTextureOnly() = 0;

@@ -120,9 +120,9 @@ void BlurFilter::GetFilteredObjectRect(Rect &ioRect,int inPass) const
 void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inFilterLeft,
              ARGB *inDest, int inDD, int inDestW, int inFilterSize,int inPixelsLeft)
 {
-   int sc0 = 0;
-   int sc1 = 0;
-   int sc2 = 0;
+   int sr = 0;
+   int sg = 0;
+   int sb = 0;
    int sa = 0;
 
    // loop over destination pixels with kernel    -xxx+
@@ -136,9 +136,9 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inFilterLeft,
    {
       int a = s->a;
       sa+=a;
-      sc0+= s->c0 * a;
-      sc1+= s->c1 * a;
-      sc2+= s->c2 * a;
+      sr+= s->r * a;
+      sg+= s->g * a;
+      sb+= s->b * a;
    }
    for(int x=0;x<inDestW; x++)
    {
@@ -156,9 +156,9 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inFilterLeft,
          dest->ival = 0;
       else
       {
-         dest->c0 = sc0/sa;
-         dest->c1 = sc1/sa;
-         dest->c2 = sc2/sa;
+         dest->r = sr/sa;
+         dest->g = sg/sa;
+         dest->b = sb/sa;
          dest->a = sa/inFilterSize;
       }
 
@@ -166,18 +166,18 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inFilterLeft,
       {
          int a = src->a;
          sa+=a;
-         sc0+= src->c0 * a;
-         sc1+= src->c1 * a;
-         sc2+= src->c2 * a;
+         sr+= src->r * a;
+         sg+= src->g * a;
+         sb+= src->b * a;
       }
 
       if (prev>=first)
       {
          int a = prev->a;
          sa-=a;
-         sc0-= prev->c0 * a;
-         sc1-= prev->c1 * a;
-         sc2-= prev->c2 * a;
+         sr-= prev->r * a;
+         sg-= prev->g * a;
+         sb-= prev->b * a;
       }
 
 
@@ -335,10 +335,10 @@ void ColorMatrixFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint
       ARGB *dest = (ARGB *)target.Row(y);
       for(int x=0;x<w;x++)
       {
-		 dest -> a = (mMatrix[15] * src -> c0) + (mMatrix[16] * src -> c1) + (mMatrix[17] * src -> c2) + (mMatrix[18] * src -> a) + mMatrix[19];
-		 dest -> c0 = (mMatrix[0]  * src -> c0) + (mMatrix[1]  * src -> c1) + (mMatrix[2]  * src -> c2) + (mMatrix[3]  * src -> a) + mMatrix[4];
-		 dest -> c1 = (mMatrix[5]  * src -> c0) + (mMatrix[6]  * src -> c1) + (mMatrix[7]  * src -> c2) + (mMatrix[8]  * src -> a) + mMatrix[9];
-		 dest -> c2 = (mMatrix[10] * src -> c0) + (mMatrix[11] * src -> c1) + (mMatrix[12] * src -> c2) + (mMatrix[13] * src -> a) + mMatrix[14];
+		 dest -> a = (mMatrix[15] * src -> r) + (mMatrix[16] * src -> g) + (mMatrix[17] * src -> b) + (mMatrix[18] * src -> a) + mMatrix[19];
+		 dest -> r = (mMatrix[0]  * src -> r) + (mMatrix[1]  * src -> g) + (mMatrix[2]  * src -> b) + (mMatrix[3]  * src -> a) + mMatrix[4];
+		 dest -> g = (mMatrix[5]  * src -> r) + (mMatrix[6]  * src -> g) + (mMatrix[7]  * src -> b) + (mMatrix[8]  * src -> a) + mMatrix[9];
+		 dest -> b = (mMatrix[10] * src -> r) + (mMatrix[11] * src -> g) + (mMatrix[12] * src -> b) + (mMatrix[13] * src -> a) + mMatrix[14];
          src++;
          dest++;
       }
@@ -381,19 +381,19 @@ DropShadowFilter::DropShadowFilter(int inQuality, int inBlurX, int inBlurY,
 
 void ShadowRect(const RenderTarget &inTarget, const Rect &inRect, int inCol,int inStrength)
 {
-   Rect r = inTarget.mRect.Intersect(inRect);
+   Rect rect = inTarget.mRect.Intersect(inRect);
    int a = ((inCol >> 24 ) + (inCol>>31))*inStrength>>8;
-   int c0 = inCol & 0xff;
-   int c1 = (inCol>>8) & 0xff;
-   int c2 = (inCol>>16) & 0xff;
-   for(int y=0;y<r.h;y++)
+   int r = inCol & 0xff;
+   int g = (inCol>>8) & 0xff;
+   int b = (inCol>>16) & 0xff;
+   for(int y=0;y<rect.h;y++)
    {
-      ARGB *argb = ( (ARGB *)inTarget.Row(y+r.y)) + r.x;
-      for(int x=0;x<r.w;x++)
+      ARGB *argb = ( (ARGB *)inTarget.Row(y+rect.y)) + rect.x;
+      for(int x=0;x<rect.w;x++)
       {
-         argb->c0 += ((c0-argb->c0)*a)>>8;
-         argb->c1 += ((c1-argb->c1)*a)>>8;
-         argb->c2 += ((c2-argb->c2)*a)>>8;
+         argb->r += ((r-argb->r)*a)>>8;
+         argb->g += ((g-argb->g)*a)>>8;
+         argb->b += ((b-argb->b)*a)>>8;
          argb++;
       }
    }
@@ -487,8 +487,7 @@ void DropShadowFilter::Apply(const Surface *inSrc,Surface *outDest,ImagePoint in
    ImagePoint blur_pos = offset + ImagePoint(mTX,mTY) - inDiff;
    int a = mAlpha;
 
-   bool swap = gC0IsRed != (bool)(target.mPixelFormat & pfSwapRB);
-   int scol = swap ? ARGB::Swap(mCol) : mCol;
+   int scol = mCol;
    Rect src(inSrc0.x,inSrc0.y,inSrc->Width(),inSrc->Height());
 
    if (mInner )

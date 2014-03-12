@@ -19,7 +19,6 @@ namespace nme
 			int n = inFill->spreadMethod == smReflect ? 512 : 256;
 			mColours = new ARGB[n];
 			mMask =  n - 1;
-			mIsSwapped = false;
 			mIsInit = false;
 			mPad =  inFill->spreadMethod == smPad;
 			mRadial = false;
@@ -55,34 +54,15 @@ namespace nme
 			else
 				mDGXDX = (int)(mMapper.m00 * (1 << 23) + 0.5);
 			
-			bool want_swapped = inTarget.mPixelFormat & pfSwapRB;
-			
 			if (!mIsInit)
-				InitArray(want_swapped);
-			else if (want_swapped != mIsSwapped)
-				SwapArray();
+				InitArray();
 			
 			DoRender(mAlphaMask, inTarget, inState, inTX, inTY);
 		}
 		
-		
-		void SwapArray()
+		void InitArray()
 		{
-			int n = mMask + 1;
-			
-			for (int i = 0; i < n; i++)
-			{
-				ARGB &col = mColours[i];
-				std::swap(col.c0, col.c1);
-			}
-			mIsSwapped = !mIsSwapped;
-		}
-		
-		
-		void InitArray(bool inSwap)
-		{
-			mIsSwapped = inSwap;
-			mGrad->FillArray(mColours, inSwap);
+			mGrad->FillArray(mColours);
 			mIsInit = true;
 		}
 		
@@ -148,7 +128,7 @@ namespace nme
 		
 		void DoRender(const AlphaMask &inMask, const RenderTarget &inTarget, const RenderState &inState, int inTX, int inTY)
 		{
-			RenderSwap<false>(inMask, *this, inTarget, inState, inTX, inTY);
+			Render(inMask, *this, inTarget, inState, inTX, inTY);
 		}
 		
 	};
@@ -293,7 +273,7 @@ namespace nme
 		{
 			// TODO: This is not quite correct for gradients - need to transform & SATURATE the
 			//  stop colours - not the resulting ramp.
-			RenderSwap<false>(inMask, *this, inTarget, inState, inTX, inTY);
+			Render(inMask, *this, inTarget, inState, inTX, inTY);
 		}
 		
 		

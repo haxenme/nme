@@ -93,21 +93,11 @@ public:
    }
 
 
-   int Width(int) const { return mSurf->w; }
-   int Height(int) const { return mSurf->h; }
-   PixelFormat Format() const
-   {
-      #ifdef EMSCRIPTEN
-      uint8 swap = 0;
-      #else
-      uint8 swap = mSurf->format->Bshift; // is 0 on argb
-      #endif
-      if (mSurf->format->Amask)
-         return swap ? pfARGBSwap : pfARGB;
-      return swap ? pfXRGBSwap : pfXRGB;
-   }
-   const uint8 *GetBase(int) const { return (const uint8 *)mSurf->pixels; }
-   int GetStride(int) const { return mSurf->pitch; }
+   int Width() const { return mSurf->w; }
+   int Height() const { return mSurf->h; }
+   PixelFormat Format() const { return pfXRGB; }
+   const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
+   int GetStride() const { return mSurf->pitch; }
 
    void Clear(uint32 inColour,const Rect *inRect)
    {
@@ -126,14 +116,14 @@ public:
             inColour>>16, inColour>>8, inColour, inColour>>24 )  );
    }
 
-   uint8 *Edit(const Rect *inRect, int inPlane)
+   uint8 *Edit(const Rect *inRect)
    {
       if (SDL_MUSTLOCK(mSurf))
          SDL_LockSurface(mSurf);
 
       return (uint8 *)mSurf->pixels;
    }
-   void Commit(int inPlane)
+   void Commit()
    {
       if (SDL_MUSTLOCK(mSurf))
          SDL_UnlockSurface(mSurf);
@@ -144,7 +134,7 @@ public:
       mLockedForHitTest = inForHitTest;
       if (SDL_MUSTLOCK(mSurf) && !mLockedForHitTest)
          SDL_LockSurface(mSurf);
-      return RenderTarget(Rect(Width(0),Height(0)), Format(),
+      return RenderTarget(Rect(Width(),Height()), Format(),
          (uint8 *)mSurf->pixels, mSurf->pitch);
    }
    void EndRender()
@@ -176,6 +166,7 @@ public:
 };
 
 
+/*
 SDL_Surface *SurfaceToSDL(Surface *inSurface)
 {
    int swap =  (gC0IsRed!=(bool)(inSurface->Format()&pfSwapRB)) ? 0xff00ff : 0;
@@ -185,6 +176,7 @@ SDL_Surface *SurfaceToSDL(Surface *inSurface)
              0x00ff0000^swap, 0x0000ff00,
              0x000000ff^swap, 0xff000000 );
 }
+*/
 
 SDL_Cursor *CreateCursor(const char *image[],int inHotX,int inHotY)
 {

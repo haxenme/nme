@@ -22,12 +22,9 @@ public:
    void Fill(const AlphaMask &mAlphaMask,int inTX,int inTY,
        const RenderTarget &inTarget,const RenderState &inState)
 	{
-		if (inTarget.mPixelFormat & pfSwapRB)
-			mFillRGB.SetSwapRGBA(mRGB);
-		else
-			mFillRGB = mRGB;
+		mFillRGB = mRGB;
 
-		RenderSwap<false>( mAlphaMask, *this, inTarget,  inState, inTX,inTY );
+		Render( mAlphaMask, *this, inTarget,  inState, inTX,inTY );
 	}
 
 	ARGB mRGB;

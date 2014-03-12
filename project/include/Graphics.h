@@ -158,7 +158,7 @@ public:
    {
       mStops.push_back( GradStop(inRGB, inAlpha, inRatio) );
    }
-   void FillArray(ARGB *outColours, bool inSwap);
+   void FillArray(ARGB *outColours);
 
 
    GraphicsDataType GetType() { return gdtGradientFill; }
@@ -378,9 +378,9 @@ public:
 
 
    const uint8 *GetAlphaLUT() const;
-   const uint8 *GetC0LUT() const;
-   const uint8 *GetC1LUT() const;
-   const uint8 *GetC2LUT() const;
+   const uint8 *GetRLUT() const;
+   const uint8 *GetGLUT() const;
+   const uint8 *GetBLUT() const;
 
    double redMultiplier, redOffset;
    double greenMultiplier, greenOffset;
@@ -465,12 +465,12 @@ struct RenderState
 
    // Colour transform
    bool HasAlphaLUT() const { return mAlpha_LUT; }
-   bool HasColourLUT() const { return mC0_LUT; }
+   bool HasColourLUT() const { return mR_LUT; }
 
    const ColorTransform *mColourTransform;
-   const uint8 *mC0_LUT;
-   const uint8 *mC1_LUT;
-   const uint8 *mC2_LUT;
+   const uint8 *mR_LUT;
+   const uint8 *mG_LUT;
+   const uint8 *mB_LUT;
    const uint8 *mAlpha_LUT;
 
    // Viewport

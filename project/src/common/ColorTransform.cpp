@@ -124,25 +124,19 @@ const uint8 *ColorTransform::GetAlphaLUT() const
 	return GetLUT(alphaMultiplier,alphaOffset);
 }
 
-const uint8 *ColorTransform::GetC0LUT() const
+const uint8 *ColorTransform::GetRLUT() const
 {
-	if (gC0IsRed)
-	   return GetLUT(redMultiplier,redOffset);
-	else
-	   return GetLUT(blueMultiplier,blueOffset);
+	return GetLUT(redMultiplier,redOffset);
 }
 
-const uint8 *ColorTransform::GetC1LUT() const
+const uint8 *ColorTransform::GetGLUT() const
 {
 	return GetLUT(greenMultiplier,greenOffset);
 }
 
-const uint8 *ColorTransform::GetC2LUT() const
+const uint8 *ColorTransform::GetBLUT() const
 {
-	if (gC0IsRed)
-	   return GetLUT(blueMultiplier,blueOffset);
-	else
-	   return GetLUT(redMultiplier,redOffset);
+	return GetLUT(blueMultiplier,blueOffset);
 }
 
 

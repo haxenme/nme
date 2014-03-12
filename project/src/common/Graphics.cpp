@@ -668,9 +668,9 @@ RenderState::RenderState(Surface *inSurface,int inAA)
    mMask = 0;
    mPhase = rpRender;
    mAlpha_LUT = 0;
-   mC0_LUT = 0;
-   mC1_LUT = 0;
-   mC2_LUT = 0;
+   mR_LUT = 0;
+   mG_LUT = 0;
+   mB_LUT = 0;
    mColourTransform = &sgIdentityColourTransform;
    mRoundSizeToPOW2 = false;
    mHitResult = 0;
@@ -695,9 +695,9 @@ void RenderState::CombineColourTransform(const RenderState &inState,
    {
       mColourTransform = inState.mColourTransform;
       mAlpha_LUT = inState.mAlpha_LUT;
-      mC0_LUT = inState.mC0_LUT;
-      mC1_LUT = inState.mC1_LUT;
-      mC2_LUT = inState.mC2_LUT;
+      mR_LUT = inState.mR_LUT;
+      mG_LUT = inState.mG_LUT;
+      mB_LUT = inState.mB_LUT;
       return;
    }
 
@@ -706,15 +706,15 @@ void RenderState::CombineColourTransform(const RenderState &inState,
 
    if (mColourTransform->IsIdentityColour())
    {
-      mC0_LUT = 0;
-      mC1_LUT = 0;
-      mC2_LUT = 0;
+      mR_LUT = 0;
+      mG_LUT = 0;
+      mB_LUT = 0;
    }
    else
    {
-      mC0_LUT = mColourTransform->GetC0LUT();
-      mC1_LUT = mColourTransform->GetC1LUT();
-      mC2_LUT = mColourTransform->GetC2LUT();
+      mR_LUT = mColourTransform->GetRLUT();
+      mG_LUT = mColourTransform->GetGLUT();
+      mB_LUT = mColourTransform->GetBLUT();
    }
 
    if (mColourTransform->IsIdentityAlpha())
@@ -781,8 +781,6 @@ void RenderTarget::Clear(uint32 inColour, const Rect &inRect) const
    else
    {
       ARGB rgb(inColour);
-      if ( mPixelFormat&pfSwapRB)
-         rgb.SwapRB();
       if (!(mPixelFormat & pfHasAlpha))
          rgb.a = 255;
 
@@ -890,7 +888,7 @@ static void GetLinearLookups(int **outToLinear, int **outFromLinear)
 }
 
 
-void GraphicsGradientFill::FillArray(ARGB *outColours, bool inSwap)
+void GraphicsGradientFill::FillArray(ARGB *outColours)
 {
    int *ToLinear = 0;
    int *FromLinear = 0;
@@ -924,43 +922,27 @@ void GraphicsGradientFill::FillArray(ARGB *outColours, bool inSwap)
             int da = mStops[k+1].mARGB.a - c0.a;
             if (ToLinear)
             {
-               int dc0 = ToLinear[mStops[k+1].mARGB.c0] - ToLinear[c0.c0];
-               int dc1 = ToLinear[mStops[k+1].mARGB.c1] - ToLinear[c0.c1];
-               int dc2 = ToLinear[mStops[k+1].mARGB.c2] - ToLinear[c0.c2];
+               int dr = ToLinear[mStops[k+1].mARGB.r] - ToLinear[c0.r];
+               int dg = ToLinear[mStops[k+1].mARGB.g] - ToLinear[c0.g];
+               int db = ToLinear[mStops[k+1].mARGB.b] - ToLinear[c0.b];
                for(i=p0;i<p1;i++)
                {
-                  outColours[i].c1= FromLinear[ ToLinear[c0.c1] + dc1*(i-p0)/diff];
-                  if (inSwap)
-                  {
-                     outColours[i].c2= FromLinear[ ToLinear[c0.c0] + dc0*(i-p0)/diff];
-                     outColours[i].c0= FromLinear[ ToLinear[c0.c2] + dc2*(i-p0)/diff];
-                  }
-                  else
-                  {
-                     outColours[i].c0= FromLinear[ ToLinear[c0.c0] + dc0*(i-p0)/diff];
-                     outColours[i].c2= FromLinear[ ToLinear[c0.c2] + dc2*(i-p0)/diff];
-                  }
+                  outColours[i].r= FromLinear[ ToLinear[c0.r] + dr*(i-p0)/diff];
+                  outColours[i].g= FromLinear[ ToLinear[c0.g] + dg*(i-p0)/diff];
+                  outColours[i].b= FromLinear[ ToLinear[c0.b] + db*(i-p0)/diff];
                   outColours[i].a = FromLinear[ ToLinear[c0.a] + da*(i-p0)/diff];
                }
             }
             else
             {
-               int dc0 = mStops[k+1].mARGB.c0 - c0.c0;
-               int dc1 = mStops[k+1].mARGB.c1 - c0.c1;
-               int dc2 = mStops[k+1].mARGB.c2 - c0.c2;
+               int dr = mStops[k+1].mARGB.r - c0.r;
+               int dg = mStops[k+1].mARGB.g - c0.g;
+               int db = mStops[k+1].mARGB.b - c0.b;
                for(i=p0;i<p1;i++)
                {
-                  outColours[i].c1 = c0.c1 + dc1*(i-p0)/diff;
-                  if (inSwap)
-                  {
-                     outColours[i].c2 = c0.c0 + dc0*(i-p0)/diff;
-                     outColours[i].c0 = c0.c2 + dc2*(i-p0)/diff;
-                  }
-                  else
-                  {
-                     outColours[i].c0 = c0.c0 + dc0*(i-p0)/diff;
-                     outColours[i].c2 = c0.c2 + dc2*(i-p0)/diff;
-                  }
+                  outColours[i].r = c0.r + dr*(i-p0)/diff;
+                  outColours[i].g = c0.g + dg*(i-p0)/diff;
+                  outColours[i].b = c0.b + db*(i-p0)/diff;
                   outColours[i].a = c0.a + da*(i-p0)/diff;
                }
             }

@@ -285,17 +285,17 @@ public:
             mPos.y += mDPyDX;
          }
          
-         int y0c0 = (p00.c0<<8) + (p01.c0-p00.c0) * frac_x;
-         int y1c0 = (p10.c0<<8) + (p11.c0-p10.c0) * frac_x;
-         result.c0 = ((y0c0<<8) + (y1c0-y0c0) * frac_y)>>16;
+         int y0r = (p00.r<<8) + (p01.r-p00.r) * frac_x;
+         int y1r = (p10.r<<8) + (p11.r-p10.r) * frac_x;
+         result.r = ((y0r<<8) + (y1r-y0r) * frac_y)>>16;
 
-         int y0c1 = (p00.c1<<8) + (p01.c1-p00.c1) * frac_x;
-         int y1c1 = (p10.c1<<8) + (p11.c1-p10.c1) * frac_x;
-         result.c1 = ((y0c1<<8) + (y1c1-y0c1) * frac_y)>>16;
+         int y0g = (p00.g<<8) + (p01.g-p00.g) * frac_x;
+         int y1g = (p10.g<<8) + (p11.g-p10.g) * frac_x;
+         result.g = ((y0g<<8) + (y1g-y0g) * frac_y)>>16;
 
-         int y0c2 = (p00.c2<<8) + (p01.c2-p00.c2) * frac_x;
-         int y1c2 = (p10.c2<<8) + (p11.c2-p10.c2) * frac_x;
-         result.c2 = ((y0c2<<8) + (y1c2-y0c2) * frac_y)>>16;
+         int y0b = (p00.b<<8) + (p01.b-p00.b) * frac_x;
+         int y1b = (p10.b<<8) + (p11.b-p10.b) * frac_x;
+         result.b = ((y0b<<8) + (y1b-y0b) * frac_y)>>16;
 
          if (HAS_ALPHA)
          {
@@ -347,8 +347,7 @@ public:
          return;
       SetupMatrix(*inState.mTransform.mMatrix);
 
-      bool swap =  (inTarget.mPixelFormat & pfSwapRB) != (mBitmap->bitmapData->Format() & pfSwapRB);
-      Render( mAlphaMask, *this, inTarget, swap, inState, inTX,inTY );
+      Render( mAlphaMask, *this, inTarget, inState, inTX,inTY );
    }
 
 };

@@ -1,9 +1,24 @@
 #include "./OGL.h"
 
+// 0xAARRGGBB
+#ifdef ANDROID
+#define ARGB_STORE GL_BGRA_EXT
+#define ARGB_PIXEL GL_BGRA_EXT
+#elif defined IPHONE
+// TODO - check
+#define ARGB_STORE GL_BGRA_EXT
+#define ARGB_PIXEL GL_BGRA
+#else
+#define ARGB_STORE GL_RGBA
+#define ARGB_PIXEL GL_BGRA
+#endif
+
+//Constant Value:  32993 
+
 namespace nme
 {
 
-
+bool gC0IsRed = true;
 
 bool gFullNPO2Support = false;
 bool gPartialNPO2Support = false;
@@ -127,7 +142,8 @@ public:
 
       uint8 *buffer = 0;
       PixelFormat fmt = mSurface->Format();
-      GLuint store_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
+      GLuint store_format = fmt==pfAlpha ? GL_ALPHA : ARGB_STORE;
+      GLuint pixel_format = fmt==pfAlpha ? GL_ALPHA : ARGB_PIXEL;
       int pixels = GL_UNSIGNED_BYTE;
       int gpuFormat = mSurface->GPUFormat();
 
@@ -210,7 +226,7 @@ public:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
 
 
-      glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, store_format, pixels, buffer);
+      glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, pixel_format, pixels, buffer);
 
       if (buffer && buffer!=mSurface->Row(0))
          free(buffer);
@@ -252,7 +268,7 @@ public:
 
          PixelFormat fmt = mSurface->Format();
          int pw = fmt == pfAlpha ? 1 : 4;
-         GLuint store_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
+         GLuint pixel_format = fmt==pfAlpha ? GL_ALPHA : GL_BGRA_EXT;
          glGetError();
 
          int x0 = mDirtyRect.x;
@@ -296,7 +312,7 @@ public:
          glTexSubImage2D(GL_TEXTURE_2D, 0,
             x0, y0,
             dw, dh, 
-            store_format, GL_UNSIGNED_BYTE,
+            pixel_format, GL_UNSIGNED_BYTE,
             buffer );
          free(buffer);
          #else
@@ -305,7 +321,7 @@ public:
          glTexSubImage2D(GL_TEXTURE_2D, 0,
             x0, y0,
             dw, dh,
-            store_format, GL_UNSIGNED_BYTE,
+            ARGB_PIXEL, GL_UNSIGNED_BYTE,
             p0);
          glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
          #endif

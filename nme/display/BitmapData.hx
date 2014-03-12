@@ -9,11 +9,8 @@ import nme.geom.ColorTransform;
 import nme.filters.BitmapFilter;
 import nme.utils.ByteArray;
 import nme.Loader;
-#if (haxe3 && (!neko || !neko_v1))
+
 typedef BitmapInt32 = Int;
-#else
-import nme.display.BitmapInt32;
-#end
 
 class BitmapData implements IBitmapDrawable 
 {
@@ -106,11 +103,7 @@ class BitmapData implements IBitmapDrawable
 
    public static inline function createColor(inRGB:Int, inAlpha:Int = 0xFF):BitmapInt32 
    {
-      #if (neko && (!haxe3 || neko_v1))
-      return { rgb: inRGB, a: inAlpha };
-      #else
       return inRGB |(inAlpha << 24);
-      #end
    }
 
    #if cpp
@@ -147,20 +140,12 @@ class BitmapData implements IBitmapDrawable
 
    public static inline function extractAlpha(v:BitmapInt32):Int 
    {
-      #if (neko && (!haxe3 || neko_v1))
-      return v.a;
-      #else
       return v >>> 24;
-      #end
    }
 
    public static inline function extractColor(v:BitmapInt32):Int 
    {
-      #if (neko && (!haxe3 || neko_v1))
-      return v.rgb;
-      #else
       return v & 0xFFFFFF;
-      #end
    }
 
    public function fillRect(rect:Rectangle, inColour:BitmapInt32):Void 
@@ -177,11 +162,7 @@ class BitmapData implements IBitmapDrawable
 
    static inline function sameValue(a:BitmapInt32, b:BitmapInt32)
    {
-      #if (neko && (!haxe3 || neko_v1))
-      return a.rgb == b.rgb && a.a == b.a;
-      #else
       return a==b;
-      #end
    }
    
    public function floodFill(x:Int, y:Int, color:BitmapInt32):Void
@@ -444,11 +425,7 @@ class BitmapData implements IBitmapDrawable
 
    public function getPixel32(x:Int, y:Int):BitmapInt32 
    {
-      #if (neko && (!haxe3 || neko_v1))
-      return nme_bitmap_data_get_pixel_rgba(nmeHandle, x, y);
-      #else
       return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
-      #end
    }
 
    public function getPixels(rect:Rectangle):ByteArray 
@@ -631,7 +608,6 @@ class BitmapData implements IBitmapDrawable
    private static var nme_bitmap_data_get_pixels = Loader.load("nme_bitmap_data_get_pixels", 2);
    private static var nme_bitmap_data_get_pixel = Loader.load("nme_bitmap_data_get_pixel", 3);
    private static var nme_bitmap_data_get_pixel32 = Loader.load("nme_bitmap_data_get_pixel32", 3);
-   private static var nme_bitmap_data_get_pixel_rgba = Loader.load("nme_bitmap_data_get_pixel_rgba", 3);
    #if cpp
    private static var nme_bitmap_data_get_array = Loader.load("nme_bitmap_data_get_array", 3);
    #end
