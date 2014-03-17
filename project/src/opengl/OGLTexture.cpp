@@ -268,7 +268,6 @@ public:
 
          PixelFormat fmt = mSurface->Format();
          int pw = fmt == pfAlpha ? 1 : 4;
-         GLuint pixel_format = fmt==pfAlpha ? GL_ALPHA : GL_BGRA_EXT;
          glGetError();
 
          int x0 = mDirtyRect.x;
@@ -277,6 +276,8 @@ public:
          int dh = mDirtyRect.h;
 
          #if defined(NME_GLES)
+
+         GLuint pixel_format = fmt==pfAlpha ? GL_ALPHA : GL_BGRA_EXT;
 
          uint8 *buffer = 0;
          if (pw==1)
@@ -316,12 +317,15 @@ public:
             buffer );
          free(buffer);
          #else
+
+         GLuint pixel_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
+
          const uint8 *p0 = mSurface->Row(y0) + x0*pw;
          glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
          glTexSubImage2D(GL_TEXTURE_2D, 0,
             x0, y0,
             dw, dh,
-            ARGB_PIXEL, GL_UNSIGNED_BYTE,
+            pixel_format, GL_UNSIGNED_BYTE,
             p0);
          glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
          #endif
