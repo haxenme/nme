@@ -117,7 +117,8 @@ class PathHelper
    }
 
    static var libMap = new Map<String,String>();
-   public static function getHaxelib(haxelib:Haxelib):String 
+
+   public static function getHaxelib(haxelib:Haxelib,inAllowFail:Bool = false):String 
    {
       var name = haxelib.name;
 
@@ -151,7 +152,7 @@ class PathHelper
          {
             var line = proc.stdout.readLine();
 
-            if (line.substr(0,11)=="Library nme") 
+            if (line.substr(0,8)=="Library ") 
             {
                result = "";
                stupidHaxelib = true;
@@ -160,7 +161,8 @@ class PathHelper
             else if (line.substr(0, 1) != "-")
             {
                result = line;
-               break;
+               // Dont't break - dependincies listed first?
+               //break;
             }
          }
 
@@ -182,9 +184,15 @@ class PathHelper
                {
                   var current = ~/\[(dev:)?(.*)\]/;
                   if (current.match(line))
+                  {
                      result = current.matched(2);
+                  }
                   else
+                  {
+                     if (inAllowFail)
+                        return null;
                      LogHelper.error("Could not find haxelib \"" + haxelib.name + "\", nothing is current?");
+                  }
 
                   break;
                }
@@ -195,6 +203,8 @@ class PathHelper
 
       if (result == "") 
       {
+         if (inAllowFail)
+            return null;
          LogHelper.error("Could not find haxelib \"" + haxelib.name + "\", does it need to be installed?");
       }
       else

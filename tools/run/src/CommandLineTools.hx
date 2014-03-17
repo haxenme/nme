@@ -19,6 +19,7 @@ class CommandLineTools
    static var debug:Bool;
    static var forceFlag:Bool = false;
    static var staticFlag:Bool = false;
+   static var cloneInDir:String = "";
    static var words:Array<String>;
    static var traceEnabled:Null<Bool>;
    static var host = PlatformHelper.hostPlatform;
@@ -29,7 +30,7 @@ class CommandLineTools
             "androidview", "android-view", "iphonesim", "android", "androidsim",
             "windows", "mac", "linux", "flash" ];
    static var allCommands = 
-          [ "help", "setup", "document", "generate", "create", "xcode",
+          [ "help", "setup", "document", "generate", "create", "xcode", "clone",
              "installer", "copy-if-newer",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test" ];
 
@@ -135,6 +136,113 @@ class CommandLineTools
          }
          Log.verbose("NME done.");
       }
+   }
+
+   static function showCloneHelp()
+   {
+      Sys.println("nme clone [-in local-dir] - clone a project [into given directory]");
+      Sys.println("   nme clone directory - from given directory");
+      Sys.println("   nme clone nme-sample - clone nme sample");
+      Sys.println("   nme clone haxelib - list samples in given haxelib");
+      Sys.println("   nme clone haxelib:directory - sample from given haxelib directory");
+      Sys.println("   nme clone haxelib:sample-name - named sample from given haxelib");
+      Sys.println("");
+
+      showSamples("NME",nme);
+      //var joint = Log.mVerbose ? "\n" : ", ";
+   }
+
+   static function getSamples(dir:String)
+   {
+      var subDirs = ["/samples", ""];
+      for(subDir in subDirs)
+      {
+         var test = dir + subDir;
+         if (FileSystem.exists(test) && FileSystem.isDirectory(test))
+            return Sample.fromDir(test);
+      }
+      return new Array<Sample>();
+   }
+
+   static function showSamples(name:String, dir:String)
+   {
+      var samples = getSamples(dir);
+
+      var joint = "\n ";
+      Sys.println(name + " samples: " + joint + samples.join(joint) );
+   }
+
+   static function cloneSample(samples:Array<Sample>, name:String)
+   {
+      var nameLen = name.length;
+      for(sample in samples)
+      {
+         if (name==sample.name ||
+              (nameLen<sample.name.length && nameLen>=sample.short.length &&
+                  name==sample.name.substr(0, nameLen) ) )
+         {
+            doClone(sample.path);
+            return;
+         }
+      }
+
+
+      var joint = "\n ";
+      Sys.println("Valid samples: " + joint + samples.join(joint) );
+      Log.error("Could not find unique sample " + name);
+   }
+
+
+   static function doClone(dir:String)
+   {
+      trace("Found project in " + dir );
+   }
+
+   static function cloneProject()
+   {
+     if (words.length==0)
+        showCloneHelp();
+     else
+     {
+        var arg = words[0];
+        if (FileSystem.exists(arg) && FileSystem.isDirectory(arg))
+        {
+           doClone(arg);
+           return;
+        }
+
+        var parts = words.length>1 ? words : words[0].split(":");
+        if (parts.length>1)
+        {
+           var path = PathHelper.getHaxelib(new Haxelib(parts[0]),true);
+           if (path==null)
+           {
+              Log.error("Could not find haxelib " + parts[0]);
+           }
+           if (parts[1]=="")
+              showSamples(parts[0], path );
+           else
+           {
+              var samples = getSamples(path);
+              if (samples.length<1)
+                 Log.error("Could not find samples in " + path);
+              cloneSample(samples,parts[1]);
+           }
+           return;
+        }
+
+        // maybe it is an nme sample or a haxelib ...
+        var path = PathHelper.getHaxelib(new Haxelib(words[0]),true);
+        if (path!=null)
+            showSamples(words[0],path);
+        else
+        {
+           var samples = getSamples(nme);
+           if (samples.length<1)
+               Log.error("Could not find nme samples");
+           cloneSample(samples,words[0]);
+        }
+     }
    }
 
    private static function createTemplate() 
@@ -350,6 +458,7 @@ class CommandLineTools
       Sys.println("  build : Compile and package for the specified project/target");
       Sys.println("  run : Install and run for the specified project/target");
       Sys.println("  test : Update, build and run in one command");
+      Sys.println("  clone : Copy an existing sample or project");
       Sys.println("  create : Create a new project or extension using templates");
       Sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
       Sys.println("");
@@ -781,6 +890,9 @@ class CommandLineTools
          case "generate":
             generate();
 
+         case "clone":
+            cloneProject();
+
          case "create":
             createTemplate();
 
@@ -925,6 +1037,9 @@ class CommandLineTools
             }
             else if (argument == "-64") 
                project.architectures.push(Architecture.X64);
+
+            else if (argument == "-in") 
+               cloneInDir = arguments[argIdx++];
 
             else if (argument == "-32") 
                project.architectures.push(Architecture.X86);
