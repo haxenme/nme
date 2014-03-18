@@ -258,9 +258,44 @@ class PathHelper
       return path;
    }
 
+   public static function normalise(path:String):String 
+   {
+      path = path.split("\\").join("/");
+      var parts = path.split("/");
+      var first = 0;
+      while(first<parts.length)
+      {
+         if (parts[first]==".")
+         {
+            parts.splice(first,1);
+         }
+         else if (parts[first]=="..")
+            first++;
+         else
+         {
+            var changed = false;
+            var test = first+1;
+            while(test<parts.length)
+            {
+               if (parts[test]==".." && parts[test-1]!="..")
+               {
+                  parts.splice(test-1,2);
+                  changed = true;
+                  break;
+               }
+               test++;
+            }
+            if (!changed)
+               break;
+         }
+      }
+      return parts.join("/");
+   }
+
    public static function isAbsolute(path:String):Bool 
    {
-      if (StringTools.startsWith(path, "/") || StringTools.startsWith(path, "\\")) 
+      if (StringTools.startsWith(path, "/") || StringTools.startsWith(path, "\\") ||
+            path.substr(1,1)==':' ) 
       {
          return true;
       }
@@ -324,9 +359,9 @@ class PathHelper
       // this should be improved for target directories that are outside the current working path
       if (isAbsolute(path) || targetDirectory == "") 
       {
-         return path;
-
-      } else if (isAbsolute(targetDirectory)) 
+         return normalise(path);
+      }
+      else if (isAbsolute(targetDirectory)) 
       {
          return FileSystem.fullPath(path);
       }
@@ -341,14 +376,12 @@ class PathHelper
             switch(splitTarget.shift()) 
             {
                case ".":
-
                   // ignore
-               case "..":
 
+               case "..":
                   directories--;
 
                default:
-
                   directories++;
             }
          }
@@ -360,7 +393,7 @@ class PathHelper
             adjust += "../";
          }
 
-         return adjust + path;
+         return normalise(adjust + path);
       }
    }
 

@@ -71,7 +71,7 @@ class AndroidPlatform extends Platform
       if (project.environment.exists("JAVA_HOME")) 
          Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
 
-      project.haxeflags.push("-cpp cpp");
+      project.haxeflags.push('-cpp $haxeDir/cpp');
 
       for(asset in project.assets) 
       {
@@ -107,17 +107,17 @@ class AndroidPlatform extends Platform
 
    override public function runHaxe()
    {
-      var args = project.debug ? ["build.hxml","-debug","-D", "android"] :
-                                 ["build.hxml", "-D", "android" ];
+      var args = project.debug ? ['$haxeDir/build.hxml',"-debug","-D", "android"] :
+                                 ['$haxeDir/build.hxml', "-D", "android" ];
 
       if (buildV5)
-         ProcessHelper.runCommand(haxeDir, "haxe", args);
+         ProcessHelper.runCommand("", "haxe", args);
 
       if (buildV7)
-         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "HXCPP_ARMV7"]) );
+         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV7"]) );
 
       if (buildX86)
-         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "HXCPP_X86"]) );
+         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_X86"]) );
    }
 
 

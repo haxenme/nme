@@ -229,7 +229,7 @@ class IOSPlatform extends Platform
 
       for(asset in project.assets) 
          asset.resourceName = asset.flatName;
-      project.haxeflags.push("-cpp cpp");
+      project.haxeflags.push('-cpp $haxeDir/cpp');
       project.haxeflags.push("-D HXCPP_CPP11");
 
       var architectures = project.architectures;
@@ -411,16 +411,16 @@ class IOSPlatform extends Platform
 
    override public function runHaxe()
    {
-      var args = project.debug ? ["build.hxml","-debug"] : ["build.hxml"];
+      var args = project.debug ? ['$haxeDir/build.hxml',"-debug"] : ['$haxeDir/build.hxml'];
 
       if (buildV6)
-         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "HXCPP_ARMV6", "-D", "iphoneos"]));
+         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV6", "-D", "iphoneos"]));
 
       if (buildV7)
-         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
+         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
 
       if (buildI386)
-         ProcessHelper.runCommand(haxeDir, "haxe", args.concat(["-D", "iphonesim"]));
+         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim"]));
    }
 
 

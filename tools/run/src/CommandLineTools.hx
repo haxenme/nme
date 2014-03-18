@@ -19,19 +19,20 @@ class CommandLineTools
    static var debug:Bool;
    static var forceFlag:Bool = false;
    static var staticFlag:Bool = false;
-   static var cloneInDir:String = "";
+   static var sampleInDir:String = "";
    static var words:Array<String>;
    static var traceEnabled:Null<Bool>;
    static var host = PlatformHelper.hostPlatform;
    static var nmeVersion:String;
+   static var binDirOverride:String = "";
 
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
             "windows", "mac", "linux", "flash" ];
    static var allCommands = 
-          [ "help", "setup", "document", "generate", "create", "xcode", "clone",
-             "installer", "copy-if-newer",
+          [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
+             "installer", "copy-if-newer", "tidy",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test" ];
 
 
@@ -44,6 +45,11 @@ class CommandLineTools
 
       Log.verbose("Using target platform: " + project.target);
       Log.verbose("Using command : " + project.command);
+      if (binDirOverride!="")
+      {
+         project.setBinDir(binDirOverride);
+         Log.verbose("Overriding bin directory : " + binDirOverride);
+      }
 
       switch(project.target) 
       {
@@ -76,6 +82,13 @@ class CommandLineTools
          platform.init();
 
          var command = project.command.toLowerCase();
+
+         if (command == "tidy" || project.targetFlags.exists("tidy") ||
+             command == "clean" || project.targetFlags.exists("clean")) 
+         {
+            Log.verbose("\nRunning command: TIDY");
+            platform.tidy();
+         }
 
          if (command == "clean" || project.targetFlags.exists("clean")) 
          {
@@ -138,14 +151,18 @@ class CommandLineTools
       }
    }
 
-   static function showCloneHelp()
+   static function showSampleHelp(inMode:String)
    {
-      Sys.println("nme clone [-in local-dir] - clone a project [into given directory]");
-      Sys.println("   nme clone directory - from given directory");
-      Sys.println("   nme clone nme-sample - clone nme sample");
-      Sys.println("   nme clone haxelib - list samples in given haxelib");
-      Sys.println("   nme clone haxelib:directory - sample from given haxelib directory");
-      Sys.println("   nme clone haxelib:sample-name - named sample from given haxelib");
+      if (inMode=="demo")
+         Sys.println("nme demo [target] - build given sample [with given target]");
+      else
+         Sys.println("nme clone [-in local-dir] - clone a project [into given directory]");
+
+      Sys.println('   nme $inMode directory - from given directory');
+      Sys.println('   nme $inMode nme-sample - $inMode nme sample');
+      Sys.println('   nme $inMode haxelib - list samples in given haxelib');
+      Sys.println('   nme $inMode haxelib:directory - sample from given haxelib directory');
+      Sys.println('   nme $inMode haxelib:sample-name - named sample from given haxelib');
       Sys.println("");
 
       showSamples("NME",nme);
@@ -172,7 +189,7 @@ class CommandLineTools
       Sys.println(name + " samples: " + joint + samples.join(joint) );
    }
 
-   static function cloneSample(samples:Array<Sample>, name:String)
+   static function findSample(samples:Array<Sample>, name:String, target:String )
    {
       var nameLen = name.length;
       for(sample in samples)
@@ -181,7 +198,7 @@ class CommandLineTools
               (nameLen<sample.name.length && nameLen>=sample.short.length &&
                   name==sample.name.substr(0, nameLen) ) )
          {
-            doClone(sample.path);
+            doSample(sample.path,target);
             return;
          }
       }
@@ -193,21 +210,80 @@ class CommandLineTools
    }
 
 
-   static function doClone(dir:String)
+   static function doSample(dir:String,sampleTarget:String)
    {
-      trace("Found project in " + dir );
+      if (sampleInDir=="")
+      {
+         var path = new haxe.io.Path(dir);
+         sampleInDir = path.file;
+      }
+
+      if (command=="demo")
+      {
+         if (!PathHelper.isAbsolute(sampleInDir))
+            sampleInDir = PathHelper.normalise(FileSystem.fullPath(Sys.getCwd()+ "/" + sampleInDir));
+         Log.verbose("Building sample " + dir + " in " + sampleInDir); 
+         var args = ["run","nme","test","-bin", sampleInDir ];
+         if (Log.mVerbose)
+            args.push("-v");
+         if (debug)
+            args.push("-debug");
+         if (sampleTarget!="")
+         {
+            Sys.println("Create demo " + dir + " for target " + sampleTarget);
+            args.push(sampleTarget);
+         }
+         else
+         {
+            Sys.println("Create demo " + dir + " using default target");
+         }
+         ProcessHelper.runCommand(dir, "haxelib", args);
+      }
+      else
+      {
+         Sys.println("Clone " + dir + " in " + sampleInDir); 
+         FileHelper.recursiveCopy(dir, sampleInDir);
+
+         var relocation = FileSystem.fullPath(dir);
+         try
+         {
+           File.saveContent(sampleInDir+"/relocation.dir", relocation);
+         }
+         catch(e:Dynamic)
+         {
+            Log.error("Could not save relocation.dir:" + e);
+         }
+
+         if (sampleTarget!="")
+         {
+            var args = ["run","nme","test",sampleTarget ];
+            if (Log.mVerbose)
+               args.push("-v");
+            if (debug)
+               args.push("-debug");
+
+            Sys.println("Test " + sampleInDir + " using target " + sampleTarget);
+            ProcessHelper.runCommand(sampleInDir, "haxelib", args);
+         }
+      }
    }
 
-   static function cloneProject()
+   static function processSample(inMode:String)
    {
-     if (words.length==0)
-        showCloneHelp();
-     else
-     {
+      var target="";
+      if (words.length>1 && isTarget(words[words.length-1]))
+         target = words.pop();
+
+      if (words.length==0)
+        showSampleHelp(inMode);
+      else
+      {
+
         var arg = words[0];
+
         if (FileSystem.exists(arg) && FileSystem.isDirectory(arg))
         {
-           doClone(arg);
+           doSample(arg,target);
            return;
         }
 
@@ -226,7 +302,7 @@ class CommandLineTools
               var samples = getSamples(path);
               if (samples.length<1)
                  Log.error("Could not find samples in " + path);
-              cloneSample(samples,parts[1]);
+              findSample(samples,parts[1],target);
            }
            return;
         }
@@ -240,7 +316,7 @@ class CommandLineTools
            var samples = getSamples(nme);
            if (samples.length<1)
                Log.error("Could not find nme samples");
-           cloneSample(samples,words[0]);
+           findSample(samples,words[0],target);
         }
      }
    }
@@ -453,12 +529,14 @@ class CommandLineTools
       Sys.println(" Commands : ");
       Sys.println("");
       Sys.println("  help : Show this information");
-      Sys.println("  clean : Remove the target build directory if it exists");
+      Sys.println("  tidy : Remove the target build directory if it exists");
+      Sys.println("  clean : Remove the target build directory and cpp obj files");
       Sys.println("  update : Copy assets for the specified project/target");
       Sys.println("  build : Compile and package for the specified project/target");
       Sys.println("  run : Install and run for the specified project/target");
       Sys.println("  test : Update, build and run in one command");
       Sys.println("  clone : Copy an existing sample or project");
+      Sys.println("  demo :  Run an existing sample or project");
       Sys.println("  create : Create a new project or extension using templates");
       Sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
       Sys.println("");
@@ -483,7 +561,9 @@ class CommandLineTools
       Sys.println("  -verbose : Print additional information(when available)");
       Sys.println("  -f : force setup re-write");
       Sys.println("  -vverbose : very berbose - includes haxe verbose mode");
-      Sys.println("  -clean : Add a \"clean\" action before running the current command");
+      Sys.println("  -tidy : remove ouput files");
+      Sys.println("  -clean : remove output files and c++ obj file store");
+      Sys.println("  -bin directory: put generated binaries in different directory");
       Sys.println("  [mac/linux] -32 -64 : Compile for 32-bit or 64-bit instead of default");
       Sys.println("  [android] -device=serialnumber : specify serial number");
       Sys.println("  [ios] -simulator : Build/test for the device simulator");
@@ -726,6 +806,8 @@ class CommandLineTools
       else
          Log.verbose("Using project file: " + projectFile);
 
+      project.checkRelocation( new Path(projectFile).dir );
+
       project.haxedefs.set("nme_install_tool", 1);
       project.haxedefs.set("nme_ver", nmeVersion);
       project.haxedefs.set("nme" + nmeVersion.split(".")[0], 1);
@@ -891,7 +973,10 @@ class CommandLineTools
             generate();
 
          case "clone":
-            cloneProject();
+            processSample("clone");
+
+         case "demo":
+            processSample("demo");
 
          case "create":
             createTemplate();
@@ -902,7 +987,7 @@ class CommandLineTools
             else
                buildProject(project);
 
-         case "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test":
+         case "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test", "tidy":
 
             if (words.length > 2) 
             {
@@ -1027,6 +1112,9 @@ class CommandLineTools
                   project.haxeflags.push(arguments[argIdx++]);
                }
             }
+            else if (argument == "-bin") 
+               binDirOverride = arguments[argIdx++];
+
             else if (argument.substr(0, 4) == "-arm") 
             {
                var name = argument.substr(1).toUpperCase();
@@ -1039,7 +1127,7 @@ class CommandLineTools
                project.architectures.push(Architecture.X64);
 
             else if (argument == "-in") 
-               cloneInDir = arguments[argIdx++];
+               sampleInDir = arguments[argIdx++];
 
             else if (argument == "-32") 
                project.architectures.push(Architecture.X86);

@@ -73,16 +73,27 @@ class Platform
 
    public function runHaxe()
    {
-      var args = project.debug ? ["build.hxml","-debug"] : ["build.hxml"];
+      var args = [haxeDir + "/build.hxml"];
+      if (project.debug)
+         args.push("-debug");
 
-      ProcessHelper.runCommand(haxeDir, "haxe", args);
+      ProcessHelper.runCommand("", "haxe", args);
    }
 
    public function copyBinary() { }
+   public function tidy()
+   {
+      var dir =  getOutputDir();
+      Log.verbose(" clean " + dir);
+      if (FileSystem.exists(dir))
+         PathHelper.removeDirectory(dir);
+   }
+
    public function clean()
    {
+      Log.verbose(" clean " + targetDir);
       if (FileSystem.exists(targetDir)) 
-         PathHelper.removeDirectory(targetDir);
+         PathHelper.removeDirectory(haxeDir);
    }
 
    public function display() { }

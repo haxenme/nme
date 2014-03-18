@@ -70,6 +70,7 @@ class NMEProject
    public var optionalStaticLink:Bool;
    public var staticLink:Bool;
    public var stdLibs:Bool;
+   public var relocationDir:String;
 
    // ios/android build parameters
    public var iosConfig:IOSConfig;
@@ -126,6 +127,7 @@ class NMEProject
       debug = false;
       megaTrace = false;
       target = "";
+      relocationDir = "";
       targetFlags = new StringMap<String>();
       templatePaths = [];
 
@@ -164,6 +166,11 @@ class NMEProject
       command = inCommand;
       if (command != null) 
          localDefines.set(command.toLowerCase(), "1");
+   }
+
+   public function setBinDir(inDir:String)
+   {
+      app.binDir = inDir;
    }
 
    public function setTarget(inTargetName:String)
@@ -294,6 +301,34 @@ class NMEProject
       localDefines.set("haxe3", "1");
 
       localDefines.set(target.toLowerCase(), "1");
+   }
+
+   public function checkRelocation(inDir:String)
+   {
+      var file =  inDir+"/relocation.dir";
+      try {
+         var content = sys.io.File.getContent(file);
+         if (content!="")
+         {
+            relocationDir = content.split("\n")[0];
+            Log.verbose("Using relocation directory: " + relocationDir);
+         }
+      }
+      catch(e:Dynamic) { }
+   }
+
+   public function relocatePath(inPath:String):String
+   {
+      if (relocationDir!="" && inPath.substr(0,2)=="..")
+      {
+         var test = PathHelper.normalise(relocationDir + "/" + inPath);
+         if (FileSystem.exists(test))
+         {
+            Log.verbose("Relocated " + inPath + " to " + test);
+            return test;
+         }
+      }
+      return inPath;
    }
 
    public function addArch(arch:Architecture)
@@ -471,8 +506,9 @@ class NMEProject
          if ( (embedAssets || asset.embed) && target!=Platform.FLASH ) 
          {
             asset.resourceName = asset.flatName;
-            var relPath = PathHelper.relocatePath(asset.sourcePath, inBuildDir);
-            haxeflags.push("-resource " + relPath  + "@" + asset.flatName );
+            //var relPath = PathHelper.relocatePath(asset.sourcePath, inBuildDir);
+            //haxeflags.push("-resource " + relPath  + "@" + asset.flatName );
+            haxeflags.push("-resource " + asset.sourcePath  + "@" + asset.flatName );
          }
 
          context.assets.push(asset);
@@ -495,9 +531,12 @@ class NMEProject
          Reflect.setField(context, "LIB_" + haxelib.name.toUpperCase(), true);
       }
 
+      //for(cp in classPaths) 
+      //   compilerFlags.push("-cp " + PathHelper.relocatePath(cp, inBuildDir) );
       for(cp in classPaths) 
-         compilerFlags.push("-cp " + PathHelper.relocatePath(cp, inBuildDir) );
-      compilerFlags.push("-cp " + PathHelper.relocatePath(".", inBuildDir) );
+         compilerFlags.push("-cp " + cp );
+
+      compilerFlags.push("-cp " + inBuildDir );
 
       if (megaTrace)
          haxedefs.set("HXCPP_DEBUGGER","");

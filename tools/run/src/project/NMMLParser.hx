@@ -269,6 +269,8 @@ class NMMLParser
             targetPath = "";
       }
 
+      path = project.relocatePath(path);
+
       if (element.has.embed) 
          embed = embed || parseBool(substitute(element.att.embed));
 
@@ -746,7 +748,7 @@ class NMMLParser
                      path = PathHelper.combine(extensionPath, substitute(element.att.path));
                   else
                      path = PathHelper.combine(extensionPath, substitute(element.att.name));
-                  project.classPaths.push(path);
+                  project.classPaths.push( project.relocatePath(path) );
 
                case "extension":
 

@@ -26,7 +26,7 @@ class FlashPlatform extends Platform
    public function new(inProject:NMEProject)
    {
       super(inProject);
-      inProject.haxeflags.push("-swf ApplicationMain.swf");
+      inProject.haxeflags.push('-swf $haxeDir/ApplicationMain.swf');
       var w = project.window.width;
       if (w<1) w=800;
       var h = project.window.height;

@@ -13,8 +13,8 @@ class DesktopPlatform extends Platform
       super(inProject);
 
       if (useNeko)
-         project.haxeflags.push("-neko ApplicationMain.n");
+         project.haxeflags.push('-neko $haxeDir/ApplicationMain.n');
      else
-         project.haxeflags.push("-cpp cpp");
+         project.haxeflags.push('-cpp $haxeDir/cpp');
    }
 }
