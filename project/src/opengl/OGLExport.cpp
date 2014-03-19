@@ -38,6 +38,67 @@ enum ResoType
    resoRenderbuffer, //6
 };
 
+
+struct NmeFloats
+{
+   int   floatCount;
+   bool  deleteData;
+   float *data;
+
+   NmeFloats(value inArray)
+   {
+      floatCount = 0;
+      data = 0;
+      deleteData = false;
+
+      if (val_is_array(inArray))
+      {
+         floatCount = val_array_size(inArray);
+         float *f = val_array_float(inArray);
+         if (f)
+            data = f;
+         else
+         {
+            data = new float[floatCount];
+            deleteData = true;
+
+            double *d = val_array_double(inArray);
+            if (d)
+            {
+               for(int f=0;f<floatCount;f++)
+                  data[f] = d[f];
+            }
+            else
+            {
+               int *i = val_array_int(inArray);
+               if (i)
+               {
+                  for(int f=0;f<floatCount;f++)
+                     data[f] = i[f];
+               }
+               else
+               {
+                  for(int f=0;f<floatCount;f++)
+                     data[f] = val_number( val_array_i(inArray,f) );
+               }
+            }
+         }
+      }
+      else
+      {
+         ByteArray bytes(inArray);
+         data = (float *)bytes.Bytes();
+         floatCount = bytes.Size()/sizeof(float);
+      }
+   }
+   ~NmeFloats()
+   {
+      if (deleteData)
+         delete [] data;
+   }
+};
+
+
 // #define CHECK_ERROR
 
 const char *sDebugName = "init";
@@ -840,19 +901,18 @@ value nme_gl_uniform_matrix(value inLocation, value inTranspose, value inBytes,v
    int count = val_int(inCount);
    ByteArray bytes(inBytes);
    int size = bytes.Size();
+   int floats = size/sizeof(float);
 
-   if (size>=count*4*4)
-   {
-      const float *data = (float *)bytes.Bytes();
+   const float *data = (float *)bytes.Bytes();
 
-      bool trans = val_bool(inTranspose);
-      if (count==2)
-         glUniformMatrix2fv(loc,1,trans,data);
-      else if (count==3)
-         glUniformMatrix3fv(loc,1,trans,data);
-      else if (count==4)
-         glUniformMatrix4fv(loc,1,trans,data);
-   }
+   bool trans = val_bool(inTranspose);
+   if (count==2)
+      glUniformMatrix2fv(loc, floats/4 ,trans,data);
+   else if (count==3)
+      glUniformMatrix3fv(loc, floats/9 ,trans,data);
+   else if (count==4)
+      glUniformMatrix4fv(loc, floats/16 ,trans,data);
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_uniform_matrix,4);
@@ -948,17 +1008,9 @@ DEFINE_PRIM(nme_gl_uniform4iv,2);
 
 value nme_gl_uniform1fv(value inLocation,value inArray)
 {
-   float *f = val_array_float(inArray);
-   if (f)
-      glUniform1fv(val_int(inLocation),1,f);
-   else
-   {
-      double *d = val_array_double(inArray);
-      if (d)
-         glUniform1f(val_int(inLocation),d[0]);
-      else
-         nme_gl_uniform1f(inLocation,val_array_i(inArray,0));
-   }
+   NmeFloats floats(inArray);
+   if (floats.floatCount>0)
+      glUniform1fv(val_int(inLocation),floats.floatCount,floats.data);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_uniform1fv,2);
@@ -967,17 +1019,9 @@ DEFINE_PRIM(nme_gl_uniform1fv,2);
 
 value nme_gl_uniform2fv(value inLocation,value inArray)
 {
-   float *f = val_array_float(inArray);
-   if (f)
-      glUniform2fv(val_int(inLocation),1,f);
-   else
-   {
-      double *d = val_array_double(inArray);
-      if (d)
-         glUniform2f(val_int(inLocation),d[0],d[1]);
-      else
-         nme_gl_uniform2f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1));
-   }
+   NmeFloats floats(inArray);
+   if (floats.floatCount>1)
+      glUniform2fv(val_int(inLocation),floats.floatCount/2,floats.data);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_uniform2fv,2);
@@ -986,17 +1030,9 @@ DEFINE_PRIM(nme_gl_uniform2fv,2);
 
 value nme_gl_uniform3fv(value inLocation,value inArray)
 {
-   float *f = val_array_float(inArray);
-   if (f)
-      glUniform3fv(val_int(inLocation),1,f);
-   else
-   {
-      double *d = val_array_double(inArray);
-      if (d)
-         glUniform3f(val_int(inLocation),d[0],d[1],d[2]);
-      else
-         nme_gl_uniform3f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2));
-   }
+   NmeFloats floats(inArray);
+   if (floats.floatCount>2)
+      glUniform3fv(val_int(inLocation),floats.floatCount/3,floats.data);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_uniform3fv,2);
@@ -1005,17 +1041,9 @@ DEFINE_PRIM(nme_gl_uniform3fv,2);
 
 value nme_gl_uniform4fv(value inLocation,value inArray)
 {
-   float *f = val_array_float(inArray);
-   if (f)
-      glUniform4fv(val_int(inLocation),1,f);
-   else
-   {
-      double *d = val_array_double(inArray);
-      if (d)
-         glUniform4f(val_int(inLocation),d[0],d[1],d[2],d[3]);
-      else
-         nme_gl_uniform4f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2),val_array_i(inArray,3));
-   }
+   NmeFloats floats(inArray);
+   if (floats.floatCount>3)
+      glUniform4fv(val_int(inLocation),floats.floatCount/4,floats.data);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_uniform4fv,2);
@@ -1063,21 +1091,12 @@ DEFINE_PRIM(nme_gl_vertex_attrib4f,5);
 
 
 
-
 value nme_gl_vertex_attrib1fv(value inLocation,value inArray)
 {
    #ifndef EMSCRIPTEN
-   float *f = val_array_float(inArray);
-   if (f)
-      glVertexAttrib1fv(val_int(inLocation),f);
-   else
-   {
-      double *d = val_array_double(inArray);
-      if (d)
-         glVertexAttrib1f(val_int(inLocation),d[0]);
-      else
-         nme_gl_vertex_attrib1f(inLocation,val_array_i(inArray,0));
-   }
+   NmeFloats floats(inArray);
+   if (floats.data)
+      glVertexAttrib1fv(val_int(inLocation),floats.data);
    #endif
    return alloc_null();
 }
@@ -1088,17 +1107,9 @@ DEFINE_PRIM(nme_gl_vertex_attrib1fv,2);
 value nme_gl_vertex_attrib2fv(value inLocation,value inArray)
 {
    #ifndef EMSCRIPTEN
-   float *f = val_array_float(inArray);
-   if (f)
-      glVertexAttrib2fv(val_int(inLocation),f);
-   else
-   {
-      double *d = val_array_double(inArray);
-      if (d)
-         glVertexAttrib2f(val_int(inLocation),d[0],d[1]);
-      else
-         nme_gl_vertex_attrib2f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1));
-   }
+   NmeFloats floats(inArray);
+   if (floats.data)
+      glVertexAttrib2fv(val_int(inLocation),floats.data);
    #endif
    return alloc_null();
 }
@@ -1109,17 +1120,9 @@ DEFINE_PRIM(nme_gl_vertex_attrib2fv,2);
 value nme_gl_vertex_attrib3fv(value inLocation,value inArray)
 {
    #ifndef EMSCRIPTEN
-   float *f = val_array_float(inArray);
-   if (f)
-      glVertexAttrib3fv(val_int(inLocation),f);
-   else
-   {
-      double *d = val_array_double(inArray);
-      if (d)
-         glVertexAttrib3f(val_int(inLocation),d[0],d[1],d[2]);
-      else
-         nme_gl_vertex_attrib3f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2));
-   }
+   NmeFloats floats(inArray);
+   if (floats.data)
+      glVertexAttrib3fv(val_int(inLocation),floats.data);
    #endif
    return alloc_null();
 }
@@ -1130,17 +1133,9 @@ DEFINE_PRIM(nme_gl_vertex_attrib3fv,2);
 value nme_gl_vertex_attrib4fv(value inLocation,value inArray)
 {
    #ifndef EMSCRIPTEN
-   float *f = val_array_float(inArray);
-   if (f)
-      glVertexAttrib4fv(val_int(inLocation),f);
-   else
-   {
-      double *d = val_array_double(inArray);
-      if (d)
-         glVertexAttrib4f(val_int(inLocation),d[0],d[1],d[2],d[3]);
-      else
-         nme_gl_vertex_attrib4f(inLocation,val_array_i(inArray,0),val_array_i(inArray,1),val_array_i(inArray,2),val_array_i(inArray,3));
-   }
+   NmeFloats floats(inArray);
+   if (floats.data)
+      glVertexAttrib4fv(val_int(inLocation),floats.data);
    #endif
    return alloc_null();
 }

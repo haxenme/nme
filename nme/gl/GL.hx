@@ -11,6 +11,18 @@ import nme.geom.Matrix3D;
 import nme.Lib;
 import nme.Loader;
 
+abstract NmeFloats(Dynamic)
+{
+   public inline function new(d:Dynamic) this = d;
+   @:to inline function toDynamic() return this;
+   @:from inline static function fromFloat32Array( f:Float32Array )
+        return new NmeFloats(f.getByteBuffer());
+   @:from inline static function fromArrayFloat( f:Array<Float> )
+        return new NmeFloats(f);
+}
+
+
+
 class GL 
 {
    /* ClearBufferMask */
@@ -981,7 +993,7 @@ class GL
       nme_gl_uniform1f(location, x);
    }
 
-   public static function uniform1fv(location:GLUniformLocation, x:Array<Float>):Void 
+   public static function uniform1fv(location:GLUniformLocation, x:NmeFloats):Void 
    {
       nme_gl_uniform1fv(location, x);
    }
@@ -1001,7 +1013,7 @@ class GL
       nme_gl_uniform2f(location, x, y);
    }
 
-   public static function uniform2fv(location:GLUniformLocation, v:Array<Float>):Void 
+   public static function uniform2fv(location:GLUniformLocation, v:NmeFloats):Void 
    {
       nme_gl_uniform2fv(location, v);
    }
@@ -1021,7 +1033,7 @@ class GL
       nme_gl_uniform3f(location, x, y, z);
    }
 
-   public static function uniform3fv(location:GLUniformLocation, v:Array<Float>):Void 
+   public static function uniform3fv(location:GLUniformLocation, v:NmeFloats):Void 
    {
       nme_gl_uniform3fv(location, v);
    }
@@ -1041,7 +1053,7 @@ class GL
       nme_gl_uniform4f(location, x, y, z, w);
    }
 
-   public static function uniform4fv(location:GLUniformLocation, v:Array<Float>):Void 
+   public static function uniform4fv(location:GLUniformLocation, v:NmeFloats):Void 
    {
       nme_gl_uniform4fv(location, v);
    }
@@ -1091,7 +1103,7 @@ class GL
       nme_gl_vertex_attrib1f(indx, x);
    }
 
-   public static function vertexAttrib1fv(indx:Int, values:Array<Float>):Void 
+   public static function vertexAttrib1fv(indx:Int, values:NmeFloats):Void 
    {
       nme_gl_vertex_attrib1fv(indx, values);
    }
@@ -1101,7 +1113,7 @@ class GL
       nme_gl_vertex_attrib2f(indx, x, y);
    }
 
-   public static function vertexAttrib2fv(indx:Int, values:Array<Float>):Void 
+   public static function vertexAttrib2fv(indx:Int, values:NmeFloats):Void 
    {
       nme_gl_vertex_attrib2fv(indx, values);
    }
@@ -1111,7 +1123,7 @@ class GL
       nme_gl_vertex_attrib3f(indx, x, y, z);
    }
 
-   public static function vertexAttrib3fv(indx:Int, values:Array<Float>):Void 
+   public static function vertexAttrib3fv(indx:Int, values:NmeFloats):Void 
    {
       nme_gl_vertex_attrib3fv(indx, values);
    }
@@ -1121,7 +1133,7 @@ class GL
       nme_gl_vertex_attrib4f(indx, x, y, z, w);
    }
 
-   public static function vertexAttrib4fv(indx:Int, values:Array<Float>):Void 
+   public static function vertexAttrib4fv(indx:Int, values:NmeFloats):Void 
    {
       nme_gl_vertex_attrib4fv(indx, values);
    }
