@@ -232,6 +232,8 @@ class NMEProject
             Log.error("Unknown target : " + inTargetName);
       }
 
+      targetFlags.set("target_" + target.toString().toLowerCase() , "");
+
       if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW)
       {
          optionalStaticLink = false;

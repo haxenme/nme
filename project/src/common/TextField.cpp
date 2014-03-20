@@ -934,6 +934,53 @@ WString TextField::getHTMLText()
 }
 
 
+// Not sure why I need these now?
+int MySSCAND(const wchar_t *inStr, int *outValue)
+{
+   #if ANDROID
+   int sign = 1;
+   int result = 0;
+   const wchar_t *oStr = inStr;
+   if (*inStr=='-' || *inStr=='+')
+   {
+      sign = *inStr=='-' ? -1 : 1;
+      inStr++;
+   }
+   while(*inStr>='0' && *inStr<='9')
+   {
+      result = result * 10 + *inStr-'0';
+      inStr++;
+   }
+   *outValue = result * sign;
+   return inStr>oStr;
+   #else
+   return TIXML_SSCANF(inStr, "%d", outValue);
+   #endif
+}
+
+
+int MySSCANHex(const wchar_t *inStr, int *outValue)
+{
+   #if ANDROID
+   int result = 0;
+   const wchar_t *oStr = inStr;
+   while( (*inStr>='0' && *inStr<='9') ||
+           (*inStr>='a' && *inStr<='f') ||
+            (*inStr>='A' && *inStr<='F')  )
+   {
+      result = result * 16;
+      if (*inStr>='0' && *inStr<='9') result += *inStr-'0';
+      if (*inStr>='a' && *inStr<='f') result += *inStr-'a' + 10;
+      if (*inStr>='A' && *inStr<='F') result += *inStr-'A' + 10;
+      inStr++;
+   }
+   *outValue = result;
+   return inStr>oStr;
+   #else
+   return TIXML_SSCANF(inStr, "%x", outValue);
+   #endif
+}
+
 void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCharCount)
 {
    for(const TiXmlNode *child = inNode->FirstChild(); child; child = child->NextSibling() )
@@ -967,7 +1014,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                   if (att->NameTStr()==L"color" && val[0]=='#')
                   {
                      int col;
-                     if (TIXML_SSCANF(val+1,L"%x",&col))
+                     if (MySSCANHex(val+1,&col))
                      {
                         fmt = fmt->COW();
                         fmt->color = col;
@@ -980,8 +1027,8 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                   }
                   else if (att->NameTStr()==L"size")
                   {
-                     int size;
-                     if (TIXML_SSCANF(att->Value(),L"%d",&size))
+                     int size=0;
+                     if (MySSCAND(val,&size))
                      {
                         fmt = fmt->COW();
                         if (val[0]=='-' || val[0]=='+')
