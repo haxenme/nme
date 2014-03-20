@@ -134,7 +134,7 @@ struct NullMask
    inline void SetPos(int inX,int inY) const { }
    inline const uint8 &MaskAlpha(const uint8 &inAlpha) const { return inAlpha; }
    inline const uint8 &MaskAlpha(const ARGB &inRGB) const { return inRGB.a; }
-   inline const ARGB Mask(const uint8 &inAlpha) const { ARGB r; r.a=inAlpha; return r; }
+   inline const ARGB Mask(const uint8 &inAlpha) const { return ARGB( inAlpha<<24 ); }
    inline const ARGB &Mask(const ARGB &inRGB) const { return inRGB; }
 };
 
@@ -175,8 +175,7 @@ struct ImageMask
    }
    inline ARGB Mask(const uint8 &inA) const
    {
-      ARGB argb;
-      argb.a = (inA * (*mRow) ) >> 8;
+      ARGB argb( ((inA * (*mRow) ) >> 8) << 24 );
       mRow += mPixelStride;
       return argb;
    }
@@ -557,8 +556,8 @@ template<bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
 
 BlendFunc sgBlendFuncs[] = 
 {
-   0, 0, 0, 0, // Normal
-   0, 0, 0, 0, // Layer
+   0, 0,  // Normal
+   0, 0,  // Layer
    BLEND_METHOD(MultiplyFunc)
    BLEND_METHOD(ScreenFunc)
    BLEND_METHOD(LightenFunc)

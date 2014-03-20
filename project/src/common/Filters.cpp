@@ -383,9 +383,9 @@ void ShadowRect(const RenderTarget &inTarget, const Rect &inRect, int inCol,int 
 {
    Rect rect = inTarget.mRect.Intersect(inRect);
    int a = ((inCol >> 24 ) + (inCol>>31))*inStrength>>8;
-   int r = inCol & 0xff;
+   int r = (inCol>>16) & 0xff;
    int g = (inCol>>8) & 0xff;
-   int b = (inCol>>16) & 0xff;
+   int b = inCol & 0xff;
    for(int y=0;y<rect.h;y++)
    {
       ARGB *argb = ( (ARGB *)inTarget.Row(y+rect.y)) + rect.x;
