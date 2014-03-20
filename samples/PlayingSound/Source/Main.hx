@@ -54,7 +54,8 @@ class Main extends Sprite {
 		var sound = Assets.getSound ("assets/stars.mp3");
 		
 		channel = sound.play (position);
-		channel.addEventListener (Event.SOUND_COMPLETE, channel_onSoundComplete);
+      if (channel!=null)
+		   channel.addEventListener (Event.SOUND_COMPLETE, channel_onSoundComplete);
 		
 		Actuate.tween (Fill, 3, { alpha: 1 } );
 		

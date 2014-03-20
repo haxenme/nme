@@ -1,5 +1,5 @@
-import flash.display.Sprite;
-import flash.text.TextField;
+import nme.display.Sprite;
+import nme.text.TextField;
 
 class Sample extends Sprite
 {
@@ -23,7 +23,7 @@ class Sample extends Sprite
       addChild(url);
 
       go = new TextField();
-      go.htmlText = "<font size='24'>GO!</font>";
+      go.htmlText = "<font size='18' color='0x00ff00'>GO!</font>";
       go.width = 45;
       go.height = 28;
       go.x = 240;
@@ -33,23 +33,6 @@ class Sample extends Sprite
       go.selectable = false;
       go.addEventListener(flash.events.MouseEvent.CLICK,function(_) { launchWeb(); });
       addChild(go);
-
-      test();
-   }
-
-   function test()
-   {
-      trace("Test create ....");
-      var t = nme.Test.create(this);
-      trace("Test call ....");
-      t.callMe(16.0);
-      trace("Test done.");
-   }
-
-   function square(inVal:Float)
-   {
-      trace("in square function:" + inVal);
-      return inVal*inVal;
    }
 
    function launchWeb()
@@ -64,9 +47,5 @@ class Sample extends Sprite
          nme.Lib.postUICallback( function() { launch(dest); } );
    }
 
-   public static function main()
-   {
-      new Sample();
-   }
 }
 

@@ -20,7 +20,7 @@ class Toast
    {
       if (_show_func==null)
          _show_func=nme.JNI.createMemberMethod("android.widget.Toast","show","()V");
-      nme.JNI.callMember(_show_func,__jobject,[]);
+      return nme.JNI.callMember(_show_func,__jobject,[]);
    }
 
    static var _cancel_func:Dynamic;
@@ -28,7 +28,7 @@ class Toast
    {
       if (_cancel_func==null)
          _cancel_func=nme.JNI.createMemberMethod("android.widget.Toast","cancel","()V");
-      nme.JNI.callMember(_cancel_func,__jobject,[]);
+      return nme.JNI.callMember(_cancel_func,__jobject,[]);
    }
 
    static var _setView_func:Dynamic;
@@ -36,7 +36,7 @@ class Toast
    {
       if (_setView_func==null)
          _setView_func=nme.JNI.createMemberMethod("android.widget.Toast","setView","(Landroid/view/View;)V");
-      nme.JNI.callMember(_setView_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setView_func,__jobject,[arg0]);
    }
 
    static var _getView_func:Dynamic;
@@ -52,7 +52,7 @@ class Toast
    {
       if (_setDuration_func==null)
          _setDuration_func=nme.JNI.createMemberMethod("android.widget.Toast","setDuration","(I)V");
-      nme.JNI.callMember(_setDuration_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setDuration_func,__jobject,[arg0]);
    }
 
    static var _getDuration_func:Dynamic;
@@ -68,7 +68,7 @@ class Toast
    {
       if (_setMargin_func==null)
          _setMargin_func=nme.JNI.createMemberMethod("android.widget.Toast","setMargin","(FF)V");
-      nme.JNI.callMember(_setMargin_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_setMargin_func,__jobject,[arg0,arg1]);
    }
 
    static var _getHorizontalMargin_func:Dynamic;
@@ -92,7 +92,7 @@ class Toast
    {
       if (_setGravity_func==null)
          _setGravity_func=nme.JNI.createMemberMethod("android.widget.Toast","setGravity","(III)V");
-      nme.JNI.callMember(_setGravity_func,__jobject,[arg0,arg1,arg2]);
+      return nme.JNI.callMember(_setGravity_func,__jobject,[arg0,arg1,arg2]);
    }
 
    static var _getGravity_func:Dynamic;
@@ -140,7 +140,7 @@ class Toast
    {
       if (_setText_func==null)
          _setText_func=nme.JNI.createMemberMethod("android.widget.Toast","setText","(I)V");
-      nme.JNI.callMember(_setText_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setText_func,__jobject,[arg0]);
    }
 
    static var _setText1_func:Dynamic;
@@ -148,7 +148,7 @@ class Toast
    {
       if (_setText1_func==null)
          _setText1_func=nme.JNI.createMemberMethod("android.widget.Toast","setText","(Ljava/lang/CharSequence;)V");
-      nme.JNI.callMember(_setText1_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setText1_func,__jobject,[arg0]);
    }
 
 }

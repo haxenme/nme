@@ -40,7 +40,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setIntent_func==null)
          _setIntent_func=nme.JNI.createMemberMethod("android.app.Activity","setIntent","(Landroid/content/Intent;)V");
-      nme.JNI.callMember(_setIntent_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setIntent_func,__jobject,[arg0]);
    }
 
    static var _getApplication_func:Dynamic;
@@ -128,7 +128,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onConfigurationChanged_func==null)
          _onConfigurationChanged_func=nme.JNI.createMemberMethod("android.app.Activity","onConfigurationChanged","(Landroid/content/res/Configuration;)V");
-      nme.JNI.callMember(_onConfigurationChanged_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_onConfigurationChanged_func,__jobject,[arg0]);
    }
 
    static var _getChangingConfigurations_func:Dynamic;
@@ -160,7 +160,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onLowMemory_func==null)
          _onLowMemory_func=nme.JNI.createMemberMethod("android.app.Activity","onLowMemory","()V");
-      nme.JNI.callMember(_onLowMemory_func,__jobject,[]);
+      return nme.JNI.callMember(_onLowMemory_func,__jobject,[]);
    }
 
    static var _managedQuery_func:Dynamic;
@@ -176,7 +176,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_startManagingCursor_func==null)
          _startManagingCursor_func=nme.JNI.createMemberMethod("android.app.Activity","startManagingCursor","(Landroid/database/Cursor;)V");
-      nme.JNI.callMember(_startManagingCursor_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_startManagingCursor_func,__jobject,[arg0]);
    }
 
    static var _stopManagingCursor_func:Dynamic;
@@ -184,7 +184,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_stopManagingCursor_func==null)
          _stopManagingCursor_func=nme.JNI.createMemberMethod("android.app.Activity","stopManagingCursor","(Landroid/database/Cursor;)V");
-      nme.JNI.callMember(_stopManagingCursor_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_stopManagingCursor_func,__jobject,[arg0]);
    }
 
    static var _setPersistent_func:Dynamic;
@@ -192,7 +192,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setPersistent_func==null)
          _setPersistent_func=nme.JNI.createMemberMethod("android.app.Activity","setPersistent","(Z)V");
-      nme.JNI.callMember(_setPersistent_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setPersistent_func,__jobject,[arg0]);
    }
 
    static var _findViewById_func:Dynamic;
@@ -208,7 +208,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setContentView_func==null)
          _setContentView_func=nme.JNI.createMemberMethod("android.app.Activity","setContentView","(I)V");
-      nme.JNI.callMember(_setContentView_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setContentView_func,__jobject,[arg0]);
    }
 
    static var _setContentView1_func:Dynamic;
@@ -216,7 +216,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setContentView1_func==null)
          _setContentView1_func=nme.JNI.createMemberMethod("android.app.Activity","setContentView","(Landroid/view/View;)V");
-      nme.JNI.callMember(_setContentView1_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setContentView1_func,__jobject,[arg0]);
    }
 
    static var _setContentView2_func:Dynamic;
@@ -224,7 +224,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setContentView2_func==null)
          _setContentView2_func=nme.JNI.createMemberMethod("android.app.Activity","setContentView","(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V");
-      nme.JNI.callMember(_setContentView2_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_setContentView2_func,__jobject,[arg0,arg1]);
    }
 
    static var _addContentView_func:Dynamic;
@@ -232,7 +232,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_addContentView_func==null)
          _addContentView_func=nme.JNI.createMemberMethod("android.app.Activity","addContentView","(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V");
-      nme.JNI.callMember(_addContentView_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_addContentView_func,__jobject,[arg0,arg1]);
    }
 
    static var _setDefaultKeyMode_func:Dynamic;
@@ -240,7 +240,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setDefaultKeyMode_func==null)
          _setDefaultKeyMode_func=nme.JNI.createMemberMethod("android.app.Activity","setDefaultKeyMode","(I)V");
-      nme.JNI.callMember(_setDefaultKeyMode_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setDefaultKeyMode_func,__jobject,[arg0]);
    }
 
    static var _onKeyDown_func:Dynamic;
@@ -280,7 +280,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onBackPressed_func==null)
          _onBackPressed_func=nme.JNI.createMemberMethod("android.app.Activity","onBackPressed","()V");
-      nme.JNI.callMember(_onBackPressed_func,__jobject,[]);
+      return nme.JNI.callMember(_onBackPressed_func,__jobject,[]);
    }
 
    static var _onTouchEvent_func:Dynamic;
@@ -304,7 +304,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onUserInteraction_func==null)
          _onUserInteraction_func=nme.JNI.createMemberMethod("android.app.Activity","onUserInteraction","()V");
-      nme.JNI.callMember(_onUserInteraction_func,__jobject,[]);
+      return nme.JNI.callMember(_onUserInteraction_func,__jobject,[]);
    }
 
    static var _onWindowAttributesChanged_func:Dynamic;
@@ -312,7 +312,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onWindowAttributesChanged_func==null)
          _onWindowAttributesChanged_func=nme.JNI.createMemberMethod("android.app.Activity","onWindowAttributesChanged","(Landroid/view/WindowManager$LayoutParams;)V");
-      nme.JNI.callMember(_onWindowAttributesChanged_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_onWindowAttributesChanged_func,__jobject,[arg0]);
    }
 
    static var _onContentChanged_func:Dynamic;
@@ -320,7 +320,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onContentChanged_func==null)
          _onContentChanged_func=nme.JNI.createMemberMethod("android.app.Activity","onContentChanged","()V");
-      nme.JNI.callMember(_onContentChanged_func,__jobject,[]);
+      return nme.JNI.callMember(_onContentChanged_func,__jobject,[]);
    }
 
    static var _onWindowFocusChanged_func:Dynamic;
@@ -328,7 +328,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onWindowFocusChanged_func==null)
          _onWindowFocusChanged_func=nme.JNI.createMemberMethod("android.app.Activity","onWindowFocusChanged","(Z)V");
-      nme.JNI.callMember(_onWindowFocusChanged_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_onWindowFocusChanged_func,__jobject,[arg0]);
    }
 
    static var _onAttachedToWindow_func:Dynamic;
@@ -336,7 +336,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onAttachedToWindow_func==null)
          _onAttachedToWindow_func=nme.JNI.createMemberMethod("android.app.Activity","onAttachedToWindow","()V");
-      nme.JNI.callMember(_onAttachedToWindow_func,__jobject,[]);
+      return nme.JNI.callMember(_onAttachedToWindow_func,__jobject,[]);
    }
 
    static var _onDetachedFromWindow_func:Dynamic;
@@ -344,7 +344,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onDetachedFromWindow_func==null)
          _onDetachedFromWindow_func=nme.JNI.createMemberMethod("android.app.Activity","onDetachedFromWindow","()V");
-      nme.JNI.callMember(_onDetachedFromWindow_func,__jobject,[]);
+      return nme.JNI.callMember(_onDetachedFromWindow_func,__jobject,[]);
    }
 
    static var _hasWindowFocus_func:Dynamic;
@@ -432,7 +432,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onPanelClosed_func==null)
          _onPanelClosed_func=nme.JNI.createMemberMethod("android.app.Activity","onPanelClosed","(ILandroid/view/Menu;)V");
-      nme.JNI.callMember(_onPanelClosed_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_onPanelClosed_func,__jobject,[arg0,arg1]);
    }
 
    static var _onCreateOptionsMenu_func:Dynamic;
@@ -464,7 +464,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onOptionsMenuClosed_func==null)
          _onOptionsMenuClosed_func=nme.JNI.createMemberMethod("android.app.Activity","onOptionsMenuClosed","(Landroid/view/Menu;)V");
-      nme.JNI.callMember(_onOptionsMenuClosed_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_onOptionsMenuClosed_func,__jobject,[arg0]);
    }
 
    static var _openOptionsMenu_func:Dynamic;
@@ -472,7 +472,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_openOptionsMenu_func==null)
          _openOptionsMenu_func=nme.JNI.createMemberMethod("android.app.Activity","openOptionsMenu","()V");
-      nme.JNI.callMember(_openOptionsMenu_func,__jobject,[]);
+      return nme.JNI.callMember(_openOptionsMenu_func,__jobject,[]);
    }
 
    static var _closeOptionsMenu_func:Dynamic;
@@ -480,7 +480,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_closeOptionsMenu_func==null)
          _closeOptionsMenu_func=nme.JNI.createMemberMethod("android.app.Activity","closeOptionsMenu","()V");
-      nme.JNI.callMember(_closeOptionsMenu_func,__jobject,[]);
+      return nme.JNI.callMember(_closeOptionsMenu_func,__jobject,[]);
    }
 
    static var _onCreateContextMenu_func:Dynamic;
@@ -488,7 +488,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onCreateContextMenu_func==null)
          _onCreateContextMenu_func=nme.JNI.createMemberMethod("android.app.Activity","onCreateContextMenu","(Landroid/view/ContextMenu;Landroid/view/View;Landroid/view/ContextMenu$ContextMenuInfo;)V");
-      nme.JNI.callMember(_onCreateContextMenu_func,__jobject,[arg0,arg1,arg2]);
+      return nme.JNI.callMember(_onCreateContextMenu_func,__jobject,[arg0,arg1,arg2]);
    }
 
    static var _registerForContextMenu_func:Dynamic;
@@ -496,7 +496,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_registerForContextMenu_func==null)
          _registerForContextMenu_func=nme.JNI.createMemberMethod("android.app.Activity","registerForContextMenu","(Landroid/view/View;)V");
-      nme.JNI.callMember(_registerForContextMenu_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_registerForContextMenu_func,__jobject,[arg0]);
    }
 
    static var _unregisterForContextMenu_func:Dynamic;
@@ -504,7 +504,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_unregisterForContextMenu_func==null)
          _unregisterForContextMenu_func=nme.JNI.createMemberMethod("android.app.Activity","unregisterForContextMenu","(Landroid/view/View;)V");
-      nme.JNI.callMember(_unregisterForContextMenu_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_unregisterForContextMenu_func,__jobject,[arg0]);
    }
 
    static var _openContextMenu_func:Dynamic;
@@ -512,7 +512,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_openContextMenu_func==null)
          _openContextMenu_func=nme.JNI.createMemberMethod("android.app.Activity","openContextMenu","(Landroid/view/View;)V");
-      nme.JNI.callMember(_openContextMenu_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_openContextMenu_func,__jobject,[arg0]);
    }
 
    static var _closeContextMenu_func:Dynamic;
@@ -520,7 +520,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_closeContextMenu_func==null)
          _closeContextMenu_func=nme.JNI.createMemberMethod("android.app.Activity","closeContextMenu","()V");
-      nme.JNI.callMember(_closeContextMenu_func,__jobject,[]);
+      return nme.JNI.callMember(_closeContextMenu_func,__jobject,[]);
    }
 
    static var _onContextItemSelected_func:Dynamic;
@@ -536,7 +536,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_onContextMenuClosed_func==null)
          _onContextMenuClosed_func=nme.JNI.createMemberMethod("android.app.Activity","onContextMenuClosed","(Landroid/view/Menu;)V");
-      nme.JNI.callMember(_onContextMenuClosed_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_onContextMenuClosed_func,__jobject,[arg0]);
    }
 
    static var _showDialog_func:Dynamic;
@@ -544,7 +544,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_showDialog_func==null)
          _showDialog_func=nme.JNI.createMemberMethod("android.app.Activity","showDialog","(I)V");
-      nme.JNI.callMember(_showDialog_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_showDialog_func,__jobject,[arg0]);
    }
 
    static var _showDialog1_func:Dynamic;
@@ -560,7 +560,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_dismissDialog_func==null)
          _dismissDialog_func=nme.JNI.createMemberMethod("android.app.Activity","dismissDialog","(I)V");
-      nme.JNI.callMember(_dismissDialog_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_dismissDialog_func,__jobject,[arg0]);
    }
 
    static var _removeDialog_func:Dynamic;
@@ -568,7 +568,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_removeDialog_func==null)
          _removeDialog_func=nme.JNI.createMemberMethod("android.app.Activity","removeDialog","(I)V");
-      nme.JNI.callMember(_removeDialog_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_removeDialog_func,__jobject,[arg0]);
    }
 
    static var _onSearchRequested_func:Dynamic;
@@ -584,7 +584,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_startSearch_func==null)
          _startSearch_func=nme.JNI.createMemberMethod("android.app.Activity","startSearch","(Ljava/lang/String;ZLandroid/os/Bundle;Z)V");
-      nme.JNI.callMember(_startSearch_func,__jobject,[arg0,arg1,arg2,arg3]);
+      return nme.JNI.callMember(_startSearch_func,__jobject,[arg0,arg1,arg2,arg3]);
    }
 
    static var _triggerSearch_func:Dynamic;
@@ -592,7 +592,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_triggerSearch_func==null)
          _triggerSearch_func=nme.JNI.createMemberMethod("android.app.Activity","triggerSearch","(Ljava/lang/String;Landroid/os/Bundle;)V");
-      nme.JNI.callMember(_triggerSearch_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_triggerSearch_func,__jobject,[arg0,arg1]);
    }
 
    static var _takeKeyEvents_func:Dynamic;
@@ -600,7 +600,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_takeKeyEvents_func==null)
          _takeKeyEvents_func=nme.JNI.createMemberMethod("android.app.Activity","takeKeyEvents","(Z)V");
-      nme.JNI.callMember(_takeKeyEvents_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_takeKeyEvents_func,__jobject,[arg0]);
    }
 
    static var _requestWindowFeature_func:Dynamic;
@@ -616,7 +616,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setFeatureDrawableResource_func==null)
          _setFeatureDrawableResource_func=nme.JNI.createMemberMethod("android.app.Activity","setFeatureDrawableResource","(II)V");
-      nme.JNI.callMember(_setFeatureDrawableResource_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_setFeatureDrawableResource_func,__jobject,[arg0,arg1]);
    }
 
    static var _setFeatureDrawableUri_func:Dynamic;
@@ -624,7 +624,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setFeatureDrawableUri_func==null)
          _setFeatureDrawableUri_func=nme.JNI.createMemberMethod("android.app.Activity","setFeatureDrawableUri","(ILandroid/net/Uri;)V");
-      nme.JNI.callMember(_setFeatureDrawableUri_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_setFeatureDrawableUri_func,__jobject,[arg0,arg1]);
    }
 
    static var _setFeatureDrawable_func:Dynamic;
@@ -632,7 +632,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setFeatureDrawable_func==null)
          _setFeatureDrawable_func=nme.JNI.createMemberMethod("android.app.Activity","setFeatureDrawable","(ILandroid/graphics/drawable/Drawable;)V");
-      nme.JNI.callMember(_setFeatureDrawable_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_setFeatureDrawable_func,__jobject,[arg0,arg1]);
    }
 
    static var _setFeatureDrawableAlpha_func:Dynamic;
@@ -640,7 +640,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setFeatureDrawableAlpha_func==null)
          _setFeatureDrawableAlpha_func=nme.JNI.createMemberMethod("android.app.Activity","setFeatureDrawableAlpha","(II)V");
-      nme.JNI.callMember(_setFeatureDrawableAlpha_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_setFeatureDrawableAlpha_func,__jobject,[arg0,arg1]);
    }
 
    static var _getLayoutInflater_func:Dynamic;
@@ -664,7 +664,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_startActivityForResult_func==null)
          _startActivityForResult_func=nme.JNI.createMemberMethod("android.app.Activity","startActivityForResult","(Landroid/content/Intent;I)V");
-      nme.JNI.callMember(_startActivityForResult_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_startActivityForResult_func,__jobject,[arg0,arg1]);
    }
 
    static var _startIntentSenderForResult_func:Dynamic;
@@ -672,7 +672,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_startIntentSenderForResult_func==null)
          _startIntentSenderForResult_func=nme.JNI.createMemberMethod("android.app.Activity","startIntentSenderForResult","(Landroid/content/IntentSender;ILandroid/content/Intent;III)V");
-      nme.JNI.callMember(_startIntentSenderForResult_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5]);
+      return nme.JNI.callMember(_startIntentSenderForResult_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5]);
    }
 
    static var _startActivity_func:Dynamic;
@@ -680,7 +680,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_startActivity_func==null)
          _startActivity_func=nme.JNI.createMemberMethod("android.app.Activity","startActivity","(Landroid/content/Intent;)V");
-      nme.JNI.callMember(_startActivity_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_startActivity_func,__jobject,[arg0]);
    }
 
    static var _startIntentSender_func:Dynamic;
@@ -688,7 +688,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_startIntentSender_func==null)
          _startIntentSender_func=nme.JNI.createMemberMethod("android.app.Activity","startIntentSender","(Landroid/content/IntentSender;Landroid/content/Intent;III)V");
-      nme.JNI.callMember(_startIntentSender_func,__jobject,[arg0,arg1,arg2,arg3,arg4]);
+      return nme.JNI.callMember(_startIntentSender_func,__jobject,[arg0,arg1,arg2,arg3,arg4]);
    }
 
    static var _startActivityIfNeeded_func:Dynamic;
@@ -712,7 +712,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_startActivityFromChild_func==null)
          _startActivityFromChild_func=nme.JNI.createMemberMethod("android.app.Activity","startActivityFromChild","(Landroid/app/Activity;Landroid/content/Intent;I)V");
-      nme.JNI.callMember(_startActivityFromChild_func,__jobject,[arg0,arg1,arg2]);
+      return nme.JNI.callMember(_startActivityFromChild_func,__jobject,[arg0,arg1,arg2]);
    }
 
    static var _startIntentSenderFromChild_func:Dynamic;
@@ -720,7 +720,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_startIntentSenderFromChild_func==null)
          _startIntentSenderFromChild_func=nme.JNI.createMemberMethod("android.app.Activity","startIntentSenderFromChild","(Landroid/app/Activity;Landroid/content/IntentSender;ILandroid/content/Intent;III)V");
-      nme.JNI.callMember(_startIntentSenderFromChild_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5,arg6]);
+      return nme.JNI.callMember(_startIntentSenderFromChild_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5,arg6]);
    }
 
    static var _overridePendingTransition_func:Dynamic;
@@ -728,7 +728,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_overridePendingTransition_func==null)
          _overridePendingTransition_func=nme.JNI.createMemberMethod("android.app.Activity","overridePendingTransition","(II)V");
-      nme.JNI.callMember(_overridePendingTransition_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_overridePendingTransition_func,__jobject,[arg0,arg1]);
    }
 
    static var _setResult_func:Dynamic;
@@ -736,7 +736,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setResult_func==null)
          _setResult_func=nme.JNI.createMemberMethod("android.app.Activity","setResult","(I)V");
-      nme.JNI.callMember(_setResult_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setResult_func,__jobject,[arg0]);
    }
 
    static var _setResult1_func:Dynamic;
@@ -744,7 +744,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setResult1_func==null)
          _setResult1_func=nme.JNI.createMemberMethod("android.app.Activity","setResult","(ILandroid/content/Intent;)V");
-      nme.JNI.callMember(_setResult1_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_setResult1_func,__jobject,[arg0,arg1]);
    }
 
    static var _getCallingPackage_func:Dynamic;
@@ -768,7 +768,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setVisible_func==null)
          _setVisible_func=nme.JNI.createMemberMethod("android.app.Activity","setVisible","(Z)V");
-      nme.JNI.callMember(_setVisible_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setVisible_func,__jobject,[arg0]);
    }
 
    static var _isFinishing_func:Dynamic;
@@ -784,7 +784,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_finish_func==null)
          _finish_func=nme.JNI.createMemberMethod("android.app.Activity","finish","()V");
-      nme.JNI.callMember(_finish_func,__jobject,[]);
+      return nme.JNI.callMember(_finish_func,__jobject,[]);
    }
 
    static var _finishFromChild_func:Dynamic;
@@ -792,7 +792,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_finishFromChild_func==null)
          _finishFromChild_func=nme.JNI.createMemberMethod("android.app.Activity","finishFromChild","(Landroid/app/Activity;)V");
-      nme.JNI.callMember(_finishFromChild_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_finishFromChild_func,__jobject,[arg0]);
    }
 
    static var _finishActivity_func:Dynamic;
@@ -800,7 +800,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_finishActivity_func==null)
          _finishActivity_func=nme.JNI.createMemberMethod("android.app.Activity","finishActivity","(I)V");
-      nme.JNI.callMember(_finishActivity_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_finishActivity_func,__jobject,[arg0]);
    }
 
    static var _finishActivityFromChild_func:Dynamic;
@@ -808,7 +808,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_finishActivityFromChild_func==null)
          _finishActivityFromChild_func=nme.JNI.createMemberMethod("android.app.Activity","finishActivityFromChild","(Landroid/app/Activity;I)V");
-      nme.JNI.callMember(_finishActivityFromChild_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_finishActivityFromChild_func,__jobject,[arg0,arg1]);
    }
 
    static var _createPendingResult_func:Dynamic;
@@ -824,7 +824,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setRequestedOrientation_func==null)
          _setRequestedOrientation_func=nme.JNI.createMemberMethod("android.app.Activity","setRequestedOrientation","(I)V");
-      nme.JNI.callMember(_setRequestedOrientation_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setRequestedOrientation_func,__jobject,[arg0]);
    }
 
    static var _getRequestedOrientation_func:Dynamic;
@@ -896,7 +896,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setTitle_func==null)
          _setTitle_func=nme.JNI.createMemberMethod("android.app.Activity","setTitle","(Ljava/lang/CharSequence;)V");
-      nme.JNI.callMember(_setTitle_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setTitle_func,__jobject,[arg0]);
    }
 
    static var _setTitle1_func:Dynamic;
@@ -904,7 +904,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setTitle1_func==null)
          _setTitle1_func=nme.JNI.createMemberMethod("android.app.Activity","setTitle","(I)V");
-      nme.JNI.callMember(_setTitle1_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setTitle1_func,__jobject,[arg0]);
    }
 
    static var _setTitleColor_func:Dynamic;
@@ -912,7 +912,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setTitleColor_func==null)
          _setTitleColor_func=nme.JNI.createMemberMethod("android.app.Activity","setTitleColor","(I)V");
-      nme.JNI.callMember(_setTitleColor_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setTitleColor_func,__jobject,[arg0]);
    }
 
    static var _getTitle_func:Dynamic;
@@ -936,7 +936,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setProgressBarVisibility_func==null)
          _setProgressBarVisibility_func=nme.JNI.createMemberMethod("android.app.Activity","setProgressBarVisibility","(Z)V");
-      nme.JNI.callMember(_setProgressBarVisibility_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setProgressBarVisibility_func,__jobject,[arg0]);
    }
 
    static var _setProgressBarIndeterminateVisibility_func:Dynamic;
@@ -944,7 +944,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setProgressBarIndeterminateVisibility_func==null)
          _setProgressBarIndeterminateVisibility_func=nme.JNI.createMemberMethod("android.app.Activity","setProgressBarIndeterminateVisibility","(Z)V");
-      nme.JNI.callMember(_setProgressBarIndeterminateVisibility_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setProgressBarIndeterminateVisibility_func,__jobject,[arg0]);
    }
 
    static var _setProgressBarIndeterminate_func:Dynamic;
@@ -952,7 +952,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setProgressBarIndeterminate_func==null)
          _setProgressBarIndeterminate_func=nme.JNI.createMemberMethod("android.app.Activity","setProgressBarIndeterminate","(Z)V");
-      nme.JNI.callMember(_setProgressBarIndeterminate_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setProgressBarIndeterminate_func,__jobject,[arg0]);
    }
 
    static var _setProgress_func:Dynamic;
@@ -960,7 +960,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setProgress_func==null)
          _setProgress_func=nme.JNI.createMemberMethod("android.app.Activity","setProgress","(I)V");
-      nme.JNI.callMember(_setProgress_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setProgress_func,__jobject,[arg0]);
    }
 
    static var _setSecondaryProgress_func:Dynamic;
@@ -968,7 +968,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setSecondaryProgress_func==null)
          _setSecondaryProgress_func=nme.JNI.createMemberMethod("android.app.Activity","setSecondaryProgress","(I)V");
-      nme.JNI.callMember(_setSecondaryProgress_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setSecondaryProgress_func,__jobject,[arg0]);
    }
 
    static var _setVolumeControlStream_func:Dynamic;
@@ -976,7 +976,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_setVolumeControlStream_func==null)
          _setVolumeControlStream_func=nme.JNI.createMemberMethod("android.app.Activity","setVolumeControlStream","(I)V");
-      nme.JNI.callMember(_setVolumeControlStream_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setVolumeControlStream_func,__jobject,[arg0]);
    }
 
    static var _getVolumeControlStream_func:Dynamic;
@@ -992,7 +992,7 @@ class Activity extends android.view.ContextThemeWrapper
    {
       if (_runOnUiThread_func==null)
          _runOnUiThread_func=nme.JNI.createMemberMethod("android.app.Activity","runOnUiThread","(Ljava/lang/Runnable;)V");
-      nme.JNI.callMember(_runOnUiThread_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_runOnUiThread_func,__jobject,[arg0]);
    }
 
    static var _onCreateView_func:Dynamic;

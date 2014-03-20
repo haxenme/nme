@@ -22,7 +22,7 @@
 	/>
 
   <haxelib name="nme" />
-  <extension name="WebView" path="WebView" />
+  <templatePath name="templates" />
 
   <ndll name="std" />
   <ndll name="regexp" />
