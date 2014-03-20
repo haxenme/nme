@@ -87,13 +87,22 @@ class HxParser
         case "package", "packageName", "package-name":
            project.app.packageName = value;
 
+        case "classPath", "classpath":
+           project.classPaths.push(value);
+
+        case "asset":
+           var asset = new Asset(value, value, null, true);
+           project.assets.push(asset);
+
+        case "background", "width", "height", "fps", "vsync", "hardware", "depthBuffer", "stencilBuffer", "alphaBuffer":
+            project.localDefines.set("WIN_" + key.toUpperCase(), value);
+            Reflect.setField(project.window, key, value);
+
+
         case "title", "description", "version", "company", "company-id", "build-number", "companyId", "buildNumber":
-
-               project.localDefines.set("APP_" + StringTools.replace(key, "-", "_").toUpperCase(), value);
-
-               var name = NMMLParser.formatAttributeName(key);
-
-               Reflect.setField(project.app, name, value);
+            project.localDefines.set("APP_" + StringTools.replace(key, "-", "_").toUpperCase(), value);
+            var name = NMMLParser.formatAttributeName(key);
+            Reflect.setField(project.app, name, value);
        }
    }
 

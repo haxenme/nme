@@ -318,7 +318,7 @@ public:
          free(buffer);
          #else
 
-         GLuint pixel_format = fmt==pfAlpha ? GL_ALPHA : GL_RGBA;
+         GLuint pixel_format = fmt==pfAlpha ? GL_ALPHA : ARGB_PIXEL;
 
          const uint8 *p0 = mSurface->Row(y0) + x0*pw;
          glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
