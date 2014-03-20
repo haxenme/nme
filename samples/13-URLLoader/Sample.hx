@@ -1,16 +1,16 @@
-import flash.Lib;
-import flash.display.Sprite;
-import flash.events.Event;
-import flash.net.URLLoader;
-import flash.net.URLRequest;
-import flash.text.TextField;
-import flash.text.TextFieldAutoSize;
-import flash.events.IOErrorEvent;
-import flash.events.ProgressEvent;
-import flash.errors.SecurityError;
-import flash.errors.TypeError;
-import flash.net.URLVariables;
-import flash.net.URLRequestMethod;
+import nme.Lib;
+import nme.display.Sprite;
+import nme.events.Event;
+import nme.net.URLLoader;
+import nme.net.URLRequest;
+import nme.text.TextField;
+import nme.text.TextFieldAutoSize;
+import nme.events.IOErrorEvent;
+import nme.events.ProgressEvent;
+import nme.errors.SecurityError;
+import nme.errors.TypeError;
+import nme.net.URLVariables;
+import nme.net.URLRequestMethod;
 
   
 class Sample extends Sprite {
@@ -74,8 +74,8 @@ class Sample extends Sprite {
         image_loader.load(request);
         image_loader.x = 10;
         image_loader.y = 180;
-        image_loader.scaleX = 0.1;
-        image_loader.scaleY = 0.1;
+        image_loader.scaleX = 0.5;
+        image_loader.scaleY = 0.5;
         addChild(image_loader);
 
         var post = new URLRequest("http://www.snee.com/xml/crud/posttest.cgi");

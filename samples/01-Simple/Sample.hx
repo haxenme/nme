@@ -1,14 +1,14 @@
-import flash.Lib;
-import flash.events.MouseEvent;
-import flash.events.Event;
-import flash.display.DisplayObject;
-import flash.display.IGraphicsData;
-import flash.display.BitmapData;
-import flash.display.Bitmap;
-import flash.display.GradientType;
-import flash.display.Sprite;
-import flash.display.StageDisplayState;
-import flash.geom.Matrix;
+import nme.Lib;
+import nme.events.MouseEvent;
+import nme.events.Event;
+import nme.display.DisplayObject;
+import nme.display.IGraphicsData;
+import nme.display.BitmapData;
+import nme.display.Bitmap;
+import nme.display.GradientType;
+import nme.display.Sprite;
+import nme.display.StageDisplayState;
+import nme.geom.Matrix;
 
 class Sample extends Sprite
 {

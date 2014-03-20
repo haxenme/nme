@@ -1,18 +1,18 @@
-import flash.display.Sprite;
-import flash.events.Event;
-import flash.geom.Rectangle;
-import flash.display.Bitmap;
-import flash.display.BitmapData;
-import flash.display.DisplayObject;
-import flash.display.Graphics;
-import flash.display.GradientType;
-import flash.Lib;
-import flash.display.Shape;
-import flash.text.TextField;
-import flash.geom.Matrix;
-import flash.geom.Transform;
-import flash.geom.ColorTransform;
-import flash.events.MouseEvent;
+import nme.display.Sprite;
+import nme.events.Event;
+import nme.geom.Rectangle;
+import nme.display.Bitmap;
+import nme.display.BitmapData;
+import nme.display.DisplayObject;
+import nme.display.Graphics;
+import nme.display.GradientType;
+import nme.Lib;
+import nme.display.Shape;
+import nme.text.TextField;
+import nme.geom.Matrix;
+import nme.geom.Transform;
+import nme.geom.ColorTransform;
+import nme.events.MouseEvent;
 
 
 class Sample extends Sprite 
@@ -86,9 +86,11 @@ class Sample extends Sprite
    }
 
 
+   #if !nme_install_tool
    public static function main()
    {
       new Sample();
    }
+   #end
 }
 

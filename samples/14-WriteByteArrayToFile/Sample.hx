@@ -13,7 +13,7 @@ class Sample extends nme.display.Sprite
 {
    public function new()
    {
-   super();
+          super();
 
           var ba:nme.utils.ByteArray = nme.utils.ByteArray.readFile("Data/README.txt");
           trace("length: " + ba.length);
@@ -32,11 +32,5 @@ class Sample extends nme.display.Sprite
           trace("length: " + ba2.length);
           var dkdkd2:String = ba2.asString();
           trace("file contents: " + dkdkd2);
-
-   }
-
-   public static function main()
-   {
-      new Sample();
    }
 }

@@ -1,4 +1,3 @@
-#if !flash
 import nme.display.Sprite;
 import nme.events.Event;
 import nme.geom.Rectangle;
@@ -6,16 +5,6 @@ import nme.display.BitmapData;
 import nme.display.Graphics;
 import nme.display.TriangleCulling;
 import nme.Lib;
-#else
-import flash.display.Sprite;
-import flash.events.Event;
-import flash.geom.Rectangle;
-import flash.display.BitmapData;
-import flash.display.Graphics;
-import flash.display.TriangleCulling;
-import flash.Lib;
-#end
-
 
 
 class Sample extends Sprite 
@@ -29,7 +18,6 @@ class Sample extends Sprite
    public function new()
    {
       super();
-      Lib.current.addChild(this);
       addChild(s0 = new Sprite());
       addChild(s1 = new Sprite());
       addChild(s2 = new Sprite());
@@ -42,20 +30,7 @@ class Sample extends Sprite
       s1.x = s3.x = 550/2;
       s2.y = s3.y = 400/2;
 
-      #if !flash
-		onLoaded(BitmapData.load("../03-Bitmaps/Image.jpg"));
-		#else
-       var loader = new flash.display.Loader();
-       var me = this;
-       loader.contentLoaderInfo.addEventListener(flash.events.Event.COMPLETE,
-          function(e:flash.events.Event)
-             {
-             var obj:flash.display.Bitmap = untyped loader.content;
-             me.onLoaded(obj.bitmapData);
-             }
-          );
-       loader.load(new flash.net.URLRequest("../03-Bitmaps/Image.jpg"));
-		#end
+		onLoaded( nme.Assets.getBitmapData("Image.jpg") );
    }
 
 	function onLoaded(inData:BitmapData)
@@ -149,21 +124,6 @@ class Sample extends Sprite
       #end
 
    }
-
-   private function onEnterFrame( event: Event ): Void
-   {
-   }
-
-public static function main()
-{
-#if !flash
-   nme.Lib.create(function(){new Sample();},550,400,60,0xffeeee,
-        (1*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
-#else
-   new Sample();
-#end
-}
-
 
 }
 

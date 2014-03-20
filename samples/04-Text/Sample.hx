@@ -17,6 +17,8 @@ import nme.filters.BitmapFilter;
 import nme.display.Shape;
 import common.Scrollbar;
 
+// nme:classPath=../
+// nme:asset=Sample.hx
 
 #if !flash
 import nme.text.NMEFont;
@@ -234,6 +236,7 @@ class Sample
       inObj.addEventListener(FocusEvent.KEY_FOCUS_CHANGE, traceEvent );
       inObj.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE, traceEvent );
    }
+
 
    public static function main()
    {

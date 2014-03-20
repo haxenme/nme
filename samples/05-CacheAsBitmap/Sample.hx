@@ -1,24 +1,3 @@
-#if flash
-import flash.Lib;
-import flash.events.MouseEvent;
-import flash.display.DisplayObject;
-import flash.display.Shape;
-import flash.display.Sprite;
-import flash.display.Bitmap;
-import flash.display.BitmapData;
-import flash.display.IGraphicsData;
-import flash.geom.Matrix;
-import flash.events.Event;
-
-import flash.display.CapsStyle;
-import flash.display.GradientType;
-import flash.display.JointStyle;
-import flash.display.SpreadMethod;
-import flash.display.LineScaleMode;
-import flash.display.InterpolationMethod;
-import flash.filters.BitmapFilter;
-import flash.filters.DropShadowFilter;
-#else
 import nme.Lib;
 import nme.events.MouseEvent;
 import nme.display.DisplayObject;
@@ -38,7 +17,6 @@ import nme.display.LineScaleMode;
 import nme.display.InterpolationMethod;
 import nme.filters.BitmapFilter;
 import nme.filters.DropShadowFilter;
-#end
 
 
 class Sample extends Sprite
@@ -147,6 +125,7 @@ function CreateStrip(inMethod:InterpolationMethod)
 }
 
 
+#if !nme_install_tool
 public static function main()
 {
 #if flash
@@ -155,5 +134,6 @@ public static function main()
    Lib.create(function() new Sample(),320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
 #end
 }
+#end
 
 }

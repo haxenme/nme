@@ -1,18 +1,3 @@
-#if flash
-import flash.Lib;
-import flash.events.MouseEvent;
-import flash.events.Event;
-import flash.display.DisplayObject;
-import flash.display.BitmapData;
-import flash.display.Loader;
-import flash.display.Sprite;
-import flash.display.Shape;
-import flash.display.Bitmap;
-import flash.geom.Matrix;
-import flash.geom.Rectangle;
-import flash.utils.ByteArray;
-import flash.net.URLRequest;
-#else
 import nme.Lib;
 import nme.events.MouseEvent;
 import nme.events.Event;
@@ -26,6 +11,9 @@ import nme.geom.Matrix;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
 import nme.net.URLRequest;
+
+#if nme_install_tool
+#error "This sample shows how to use resources without the nme tool."
 #end
 
 

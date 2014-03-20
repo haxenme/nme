@@ -1,31 +1,33 @@
-import flash.Lib;
-import flash.events.MouseEvent;
-import flash.events.Event;
-import flash.display.DisplayObject;
-import flash.display.IGraphicsData;
-import flash.display.BitmapData;
-import flash.display.Bitmap;
-import flash.display.GradientType;
-import flash.display.Sprite;
-import flash.display.StageDisplayState;
-import flash.geom.Matrix;
+import nme.Lib;
+import nme.events.MouseEvent;
+import nme.events.Event;
+import nme.display.DisplayObject;
+import nme.display.IGraphicsData;
+import nme.display.BitmapData;
+import nme.display.Bitmap;
+import nme.display.GradientType;
+import nme.display.Sprite;
+import nme.display.StageDisplayState;
+import nme.geom.Matrix;
 
-import flash.text.TextField;
-import flash.text.TextFormatAlign;
+import nme.text.TextField;
+import nme.text.TextFormatAlign;
 
 
 
-import flash.display.DisplayObject;
-import flash.display.Shape;
-import flash.display.SimpleButton;
+import nme.display.DisplayObject;
+import nme.display.Shape;
+import nme.display.SimpleButton;
 
-class CustomSimpleButton extends SimpleButton {
+class CustomSimpleButton extends SimpleButton
+{
     private static var upColor:Int   = 0xFFCC00;
     private static var overColor:Int = 0xCCFF00;
     private static var downColor:Int = 0x00CCFF;
     private static var size:Int      = 80;
 
-    public function new() {
+    public function new()
+    {
         super();
         downState      = new ButtonDisplayState(downColor, size);
         overState      = new ButtonDisplayState(overColor, size);
@@ -37,7 +39,8 @@ class CustomSimpleButton extends SimpleButton {
     }
 }
 
-class ButtonDisplayState extends Shape {
+class ButtonDisplayState extends Shape
+{
     private var bgColor:Int;
     private var size:Int;
 
@@ -60,34 +63,28 @@ class ButtonDisplayState extends Shape {
 
 class Sample extends Sprite
 {
-public function new()
-{
-   super();
-   Lib.current.addChild(this);
-
-   var but = new CustomSimpleButton();
-   but.addEventListener(MouseEvent.MOUSE_DOWN,onButtonDown,false,100);
-   Lib.current.stage.addEventListener(MouseEvent.MOUSE_DOWN,onStageDown);
+   public function new()
+   {
+      super();
    
-   addChild(but);
-}
+      var but = new CustomSimpleButton();
+      but.addEventListener(MouseEvent.MOUSE_DOWN,onButtonDown,false,100);
+      Lib.current.stage.addEventListener(MouseEvent.MOUSE_DOWN,onStageDown);
+   
+      addChild(but);
+   }
 
-private function onStageDown(e:MouseEvent):Void
-{
-	trace("stage received down event.");
-}
+   private function onStageDown(e:MouseEvent):Void
+   {
+	   trace("stage received down event.");
+   }
 
-private function onButtonDown(e:MouseEvent):Void
-{
-	trace("button received down event: should cancel stage.");
-	e.stopPropagation();
-	e.stopImmediatePropagation();
-}
+   private function onButtonDown(e:MouseEvent):Void
+   {
+	   trace("button received down event: should cancel stage.");
+	   e.stopPropagation();
+	   e.stopImmediatePropagation();
+   }
 
-
-public static function main()
-{
-   new Sample();
-}
 
 }

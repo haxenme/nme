@@ -1,9 +1,9 @@
-import flash.Lib;
-import flash.text.TextField;
-import flash.display.Sprite;
-import flash.net.URLRequest;
-import flash.events.MouseEvent;
-import flash.events.Event;
+import nme.Lib;
+import nme.text.TextField;
+import nme.display.Sprite;
+import nme.net.URLRequest;
+import nme.events.MouseEvent;
+import nme.events.Event;
 
 
 class Sample extends Sprite
@@ -12,9 +12,7 @@ class Sample extends Sprite
    {
       super();
 
-      Lib.current.stage.addChild(this);
-
-      var label:TextField=new TextField();
+     var label:TextField=new TextField();
 	  label.width=800;
 	  label.text="Click to open google!";
 	  addChild(label);
@@ -24,11 +22,6 @@ class Sample extends Sprite
    public function onClick(inEvent:MouseEvent)
    {
 		Lib.getURL(new URLRequest("http://www.google.com"));
-   }
-
-   public static function main()
-   {
-      new Sample();
    }
 
 }
