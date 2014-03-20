@@ -954,7 +954,7 @@ int MySSCAND(const wchar_t *inStr, int *outValue)
    *outValue = result * sign;
    return inStr>oStr;
    #else
-   return TIXML_SSCANF(inStr, "%d", outValue);
+   return TIXML_SSCANF(inStr, L"%d", outValue);
    #endif
 }
 
@@ -977,7 +977,7 @@ int MySSCANHex(const wchar_t *inStr, int *outValue)
    *outValue = result;
    return inStr>oStr;
    #else
-   return TIXML_SSCANF(inStr, "%x", outValue);
+   return TIXML_SSCANF(inStr, L"%x", outValue);
    #endif
 }
 
