@@ -171,14 +171,20 @@ class CommandLineTools
 
    static function getSamples(dir:String)
    {
+      var result = new Array<Sample>();
+
       var subDirs = ["/samples", ""];
       for(subDir in subDirs)
       {
          var test = dir + subDir;
          if (FileSystem.exists(test) && FileSystem.isDirectory(test))
-            return Sample.fromDir(test);
+         {
+            if ( Sample.fromDir(test,result) )
+               break;
+         }
       }
-      return new Array<Sample>();
+
+      return result;
    }
 
    static function showSamples(name:String, dir:String)
@@ -197,6 +203,18 @@ class CommandLineTools
          if (name==sample.name ||
               (nameLen<sample.name.length && nameLen>=sample.short.length &&
                   name==sample.name.substr(0, nameLen) ) )
+         {
+            doSample(sample.path,target);
+            return;
+         }
+      }
+      // Once more, ignoring case...
+      var lower = name.toLowerCase();
+      for(sample in samples)
+      {
+         if (lower==sample.name ||
+              (nameLen<sample.name.length && nameLen>=sample.short.length &&
+                  lower==sample.name.substr(0, nameLen).toLowerCase() ) )
          {
             doSample(sample.path,target);
             return;
@@ -290,13 +308,14 @@ class CommandLineTools
         var parts = words.length>1 ? words : words[0].split(":");
         if (parts.length>1)
         {
-           var path = PathHelper.getHaxelib(new Haxelib(parts[0]),true);
+           var name = Sample.projectOf(parts[0]);
+           var path = PathHelper.getHaxelib(new Haxelib(name),true);
            if (path==null)
            {
-              Log.error("Could not find haxelib " + parts[0]);
+              Log.error("Could not find haxelib " + name);
            }
            if (parts[1]=="")
-              showSamples(parts[0], path );
+              showSamples(name, path );
            else
            {
               var samples = getSamples(path);
@@ -308,9 +327,10 @@ class CommandLineTools
         }
 
         // maybe it is an nme sample or a haxelib ...
-        var path = PathHelper.getHaxelib(new Haxelib(words[0]),true);
+        var name = Sample.projectOf(words[0]);
+        var path = PathHelper.getHaxelib(new Haxelib(name),true);
         if (path!=null)
-            showSamples(words[0],path);
+            showSamples(name,path);
         else
         {
            var samples = getSamples(nme);

@@ -252,12 +252,13 @@ class NMMLParser
 
       if (element.has.path) 
       {
-         path = basePath + substitute(element.att.path);
+         var namedPath = substitute(element.att.path);
+         path = basePath + namedPath;
 
          if (element.has.rename) 
             targetPath = substitute(element.att.rename);
          else
-            targetPath = path;
+            targetPath = namedPath;
       }
       else if (element.has.from)
       {

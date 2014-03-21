@@ -1,4 +1,5 @@
 import sys.FileSystem;
+import haxe.io.Path;
 
 
 class Sample
@@ -7,11 +8,11 @@ class Sample
    public var name:String;
    public var short:String;
 
-   public function new(inPath:String, inName:String, inShort:String="")
+   public function new(inPath:String, inName:String, inPrefix:String)
    {
       path = inPath;
-      name = inName;
-      short = inShort;
+      name = inName + (inPrefix==null ? "" : "   (" + inPrefix + ")");
+      short = "";
    }
 
    public function toString()
@@ -49,9 +50,50 @@ class Sample
       short = name;
    }
 
-   public static function fromDir(inDir:String)
+   public static function projectOf(inBase:String)
    {
-      var result = new Array<Sample>();
+      switch(inBase)
+      {
+         case "openfl" : return "openfl-samples";
+         case "flixel" : return "flixel-demos";
+         default: return inBase;
+      }
+   }
+
+   public static function looksLikeSampleDir(inDir:String) : Bool
+   {
+      var hxCount = 0;
+      try
+      {
+         for(file in FileSystem.readDirectory(inDir))
+         {
+            var lower =  file.toLowerCase();
+            if (lower.substr(0,1)=="." || lower == "common" || lower=="assets"
+                  || lower=="include.xml" || lower=="extension.xml" )
+               continue;
+
+            var path = inDir + "/" + file;
+            if (!FileSystem.isDirectory(path))
+            {
+               var ext = new Path(lower).ext;
+               if (ext=="nmml" || ext=="xml")
+               {
+                  return true;
+                  }
+               if (ext=="hx")
+                  hxCount++;
+            }
+         }
+      }
+      catch(e:Dynamic) { }
+
+      return hxCount==1;
+   }
+
+
+   public static function fromDir(inDir:String, result:Array<Sample>, ?inPrefix:String ) : Bool
+   {
+      var subDirs = new Array<String>();
 
       try
       {
@@ -62,17 +104,31 @@ class Sample
                continue;
             var path = inDir + "/" + file;
             if (FileSystem.isDirectory(path))
-               result.push( new Sample(path,file) );
+            {
+               if (looksLikeSampleDir(path))
+                  result.push( new Sample(path,file,inPrefix) );
+               else
+                  subDirs.push(path);
+            }
+
          }
       }
       catch(e:Dynamic) { }
 
-      if (result.length>0)
-         result.sort( function(a,b) return a.name > b.name ? 1 : -1 );
 
-      for(r in result)
-         r.makeShort(result);
+      if (inPrefix==null)
+      {
+         if (result.length==0)
+            for(dir in subDirs)
+               fromDir(dir, result, new Path(dir).file);
 
-      return result;
+         if (result.length>0)
+            result.sort( function(a,b) return a.name > b.name ? 1 : -1 );
+
+         for(r in result)
+            r.makeShort(result);
+      }
+
+      return result.length>0;
    }
 }

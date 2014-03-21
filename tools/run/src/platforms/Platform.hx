@@ -135,12 +135,18 @@ class Platform
       PathHelper.mkdir(base);
       for(asset in project.assets) 
       {
+         var target = catPaths(base, asset.targetPath );
          if (!asset.embed)
          {
-            PathHelper.mkdir(Path.directory(base + "/" + asset.targetPath));
-            FileHelper.copyAssetIfNewer(asset, base + "/" + asset.targetPath);
+            PathHelper.mkdir(Path.directory(target));
+            FileHelper.copyAssetIfNewer(asset, target);
          }
       }
+   }
+
+   public function catPaths(inBase:String, inExtra:String)
+   {
+      return PathHelper.combine(inBase,inExtra);
    }
 
    public function updateLibArch(libDir:String, archSuffix:String)

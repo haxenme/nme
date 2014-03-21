@@ -425,8 +425,8 @@ class NMEProject
 
          var path = PathHelper.getHaxelib(haxelib);
          Log.verbose("Adding " + haxelibName + "@" + path);
-         if (FileSystem.exists(path + "/nme.xml")) 
-            new NMMLParser(this, path + "/nme.xml");
+         if (FileSystem.exists(path + "/include.xml")) 
+            new NMMLParser(this, path + "/include.xml");
 
          if (!isFlash && (!allowMissingNdll || FileSystem.exists(path+"/ndll") ))
          {
