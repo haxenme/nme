@@ -130,6 +130,7 @@ class PathHelper
 
       try 
       {
+         var seenMinusD = false;
          while(true) 
          {
             var line = proc.stdout.readLine();
@@ -140,11 +141,15 @@ class PathHelper
                stupidHaxelib = true;
                break;
             }
+            else if (line == "-D " + name)
+            {
+               // Found the -D -> last match was good
+               break;
+            }
             else if (line.substr(0, 1) != "-")
             {
                result = line;
-               // Dont't break - dependincies listed first?
-               //break;
+               // Dont't break - might be a dependency
             }
          }
 

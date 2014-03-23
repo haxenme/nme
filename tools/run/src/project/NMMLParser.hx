@@ -69,6 +69,11 @@ class NMMLParser
          setenv("PATH", value + ":" + Sys.getEnv("PATH"));
    }
 
+   function combine(a:String, b:String)
+   {
+      return PathHelper.combine(a,b);
+   }
+
    public function setenv(name:String, value:String):Void 
    {
       Sys.putEnv(name, value);
@@ -597,11 +602,11 @@ class NMMLParser
                   {
                      var subPath = substitute(element.att.path);
                      if (subPath == "") subPath = element.att.path;
-                     path = findIncludeFile(PathHelper.combine(extensionPath, subPath));
+                     path = findIncludeFile(combine(extensionPath, subPath));
                   }
                   else
                   {
-                     path = findIncludeFile(PathHelper.combine(extensionPath, substitute(element.att.name)));
+                     path = findIncludeFile(combine(extensionPath, substitute(element.att.name)));
                   }
 
                   if (path != null && path != "" && FileSystem.exists(path)) 
@@ -627,7 +632,7 @@ class NMMLParser
                   project.stdLibs = element.has.value ? parseBool(substitute(element.att.value)) : true;
 
                case "java":
-                  project.javaPaths.push(PathHelper.combine(extensionPath, substitute(element.att.path)));
+                  project.javaPaths.push(combine(extensionPath, substitute(element.att.path)));
 
                case "ndll", "lib", "haxelib":
                   var name = substitute(element.att.name);
@@ -691,43 +696,14 @@ class NMMLParser
                   project.splashScreens.push(splashScreen);
 
                case "icon":
-
-                  /*var name:String = "";
-                  if (element.has.path) 
-                  {
-                     name = substitute(element.att.path);
-                  }
-                  else
-                  {
-                     name = substitute(element.att.name);
-                  }
-
-                  var width:String = "";
-                  var height:String = "";
-
-                  if (element.has.size) 
-                  {
-                     width = height = substitute(element.att.size);
-                  }
-
-                  if (element.has.width) 
-                  {
-                     width = substitute(element.att.width);
-                  }
-
-                  if (element.has.height) 
-                  {
-                     height = substitute(element.att.height);
-                  }
-
-                  icons.add(new Icon(name, width, height));*/
-
                   var name = "";
 
                   if (element.has.path) 
                      name = substitute(element.att.path);
                   else
                      name = substitute(element.att.name);
+
+                  name = project.relocatePath(combine(extensionPath,name));
 
                   var icon = new Icon(name);
 
@@ -746,9 +722,9 @@ class NMMLParser
                   var path = "";
 
                   if (element.has.path) 
-                     path = PathHelper.combine(extensionPath, substitute(element.att.path));
+                     path = combine(extensionPath, substitute(element.att.path));
                   else
-                     path = PathHelper.combine(extensionPath, substitute(element.att.name));
+                     path = combine(extensionPath, substitute(element.att.name));
                   project.classPaths.push( project.relocatePath(path) );
 
                case "extension":
@@ -779,7 +755,7 @@ class NMMLParser
                      //parseSsl(element);
                case "template", "templatePath":
 
-                  var path = PathHelper.combine(extensionPath, substitute(element.att.name));
+                  var path = combine(extensionPath, substitute(element.att.name));
 
                   project.templatePaths.remove(path);
                   project.templatePaths.push(path);
