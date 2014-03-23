@@ -421,17 +421,17 @@ class NMEProject
          {
             haxelib = new Haxelib(haxelibName,version);
             haxelibs.push(haxelib);
-         }
 
-         var path = PathHelper.getHaxelib(haxelib);
-         Log.verbose("Adding " + haxelibName + "@" + path);
-         if (FileSystem.exists(path + "/include.xml")) 
-            new NMMLParser(this, path + "/include.xml");
+            var path = PathHelper.getHaxelib(haxelib);
+            Log.verbose("Adding " + haxelibName + "@" + path);
+            if (FileSystem.exists(path + "/include.xml")) 
+               new NMMLParser(this, path + "/include.xml");
 
-         if (!isFlash && (!allowMissingNdll || FileSystem.exists(path+"/ndll") ))
-         {
-            var ndll = new NDLL(name, haxelib, isStatic);
-            ndlls.push(ndll);
+            if (!isFlash && (!allowMissingNdll || FileSystem.exists(path+"/ndll") ))
+            {
+               var ndll = new NDLL(name, haxelib, isStatic);
+               ndlls.push(ndll);
+            }
          }
       }
 

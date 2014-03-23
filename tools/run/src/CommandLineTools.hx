@@ -239,7 +239,7 @@ class CommandLineTools
       if (command=="demo")
       {
          if (!PathHelper.isAbsolute(sampleInDir))
-            sampleInDir = PathHelper.normalise(FileSystem.fullPath(Sys.getCwd()+ "/" + sampleInDir));
+            sampleInDir = PathHelper.normalise(Sys.getCwd()+ "/" + sampleInDir);
          Log.verbose("Building sample " + dir + " in " + sampleInDir); 
          var args = ["run","nme","test","-bin", sampleInDir ];
          if (Log.mVerbose)
