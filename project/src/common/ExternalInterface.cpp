@@ -3170,7 +3170,7 @@ value nme_bitmap_data_width(value inHandle)
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
       return alloc_int(surface->Width());
-   return alloc_null();
+   return alloc_int(0);
 }
 DEFINE_PRIM(nme_bitmap_data_width,1);
 
@@ -3179,7 +3179,7 @@ value nme_bitmap_data_height(value inHandle)
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
       return alloc_int(surface->Height());
-   return alloc_null();
+   return alloc_int(0);
 }
 DEFINE_PRIM(nme_bitmap_data_height,1);
 

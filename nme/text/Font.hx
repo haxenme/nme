@@ -6,6 +6,7 @@ import nme.display.Stage;
 import nme.utils.ByteArray;
 import nme.Loader;
 
+@:autoBuild(nme.macros.Embed.embedAsset("NME_font_",":font"))
 class Font 
 {
    public var fontName(default, null):String;
@@ -20,11 +21,12 @@ class Font
       if (inFilename == "")
       {
          var fontClass = Type.getClass(this);
-         if (Reflect.hasField(fontClass, "resourceName")) {
-            var bytes = ByteArray.fromBytes (Resource.getBytes(Reflect.field(fontClass, "resourceName")));
+         if (Reflect.hasField(fontClass, "resourceName"))
+         {
+            var bytes = ByteArray.fromBytes(Resource.getBytes(Reflect.field(fontClass, "resourceName")));
             var details = loadBytes(bytes);
-			fontName = details.family_name;
-			if (details.is_bold && details.is_italic)
+            fontName = details.family_name;
+            if (details.is_bold && details.is_italic)
             {
                fontStyle = FontStyle.BOLD_ITALIC;
             }
@@ -40,14 +42,16 @@ class Font
             {
                fontStyle = FontStyle.REGULAR;
             }
-			fontType = FontType.EMBEDDED;
-         } else {
-            var className = Type.getClassName(Type.getClass(this));
-            fontName = className.split(".").pop();
-			fontStyle = FontStyle.REGULAR;
             fontType = FontType.EMBEDDED;
          }
-	  }
+         else
+         {
+            var className = Type.getClassName(Type.getClass(this));
+            fontName = className.split(".").pop();
+            fontStyle = FontStyle.REGULAR;
+            fontType = FontType.EMBEDDED;
+         }
+      }
       else
       {
          fontName = inFilename;

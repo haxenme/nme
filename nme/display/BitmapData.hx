@@ -12,6 +12,7 @@ import nme.Loader;
 
 typedef BitmapInt32 = Int;
 
+@:autoBuild(nme.macros.Embed.embedAsset("NME_bitmap_",":bitmap"))
 class BitmapData implements IBitmapDrawable 
 {
    public static var CLEAR = createColor(0, 0);
@@ -58,6 +59,14 @@ class BitmapData implements IBitmapDrawable
       if (inWidth < 1 || inHeight < 1) 
       {
          nmeHandle = null;
+
+         // Check for embedded resource...
+         var className = Type.getClass(this);
+         if (Reflect.hasField(className, "resourceName"))
+         {
+            var resoName = Reflect.field(className, "resourceName");
+            nmeLoadFromBytes(ByteArray.fromBytes(haxe.Resource.getBytes(resoName)), null);
+         }
       }
       else 
       {
@@ -486,7 +495,7 @@ class BitmapData implements IBitmapDrawable
    public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):BitmapData 
    {
       var result = new BitmapData(0, 0);
-	  result.nmeLoadFromBytes(inBytes, inRawAlpha);
+      result.nmeLoadFromBytes(inBytes, inRawAlpha);
       return result;
    }
 
