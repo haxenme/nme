@@ -1,4 +1,5 @@
 
+* Allow embed on Bitmap, Font and Sound assets
 * Get samples working better
 * Impove the 'quick compile' options for nme
 * Start on factoring out stable header files (not complete yet)
