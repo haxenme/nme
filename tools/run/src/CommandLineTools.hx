@@ -6,6 +6,7 @@ import sys.io.Process;
 import sys.FileSystem;
 import platforms.Platform;
 import nme.system.System;
+import nme.net.SharedObject;
 import NMEProject;
 
 
@@ -25,6 +26,9 @@ class CommandLineTools
    static var host = PlatformHelper.hostPlatform;
    static var nmeVersion:String;
    static var binDirOverride:String = "";
+   static var store:SharedObject;
+   static var storeData:Dynamic;
+
 
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
@@ -32,8 +36,11 @@ class CommandLineTools
             "windows", "mac", "linux", "flash" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
-             "installer", "copy-if-newer", "tidy",
+             "installer", "copy-if-newer", "tidy", "set", "unset",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test" ];
+   static var setNames =  [ "target", "bin", "command" ];
+   static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run" ];
+   static var quickSetNames =  [ "debug", "verbose" ];
 
 
    private static function buildProject(project:NMEProject) 
@@ -230,16 +237,24 @@ class CommandLineTools
 
    static function doSample(dir:String,sampleTarget:String)
    {
-      if (sampleInDir=="")
-      {
-         var path = new haxe.io.Path(dir);
-         sampleInDir = path.file;
-      }
+ 
 
       if (command=="demo")
       {
+         if (sampleInDir=="")
+         {
+            if (binDirOverride!="")
+               sampleInDir = binDirOverride;
+            else
+            {
+               var path = new haxe.io.Path(dir);
+               sampleInDir = path.file;
+            }
+         }
+
          if (!PathHelper.isAbsolute(sampleInDir))
             sampleInDir = PathHelper.normalise(Sys.getCwd()+ "/" + sampleInDir);
+
          Log.verbose("Building sample " + dir + " in " + sampleInDir); 
          var args = ["run","nme","test","-bin", sampleInDir ];
          if (Log.mVerbose)
@@ -259,6 +274,12 @@ class CommandLineTools
       }
       else
       {
+         if (sampleInDir=="")
+         {
+            var path = new haxe.io.Path(dir);
+            sampleInDir = path.file;
+         }
+
          Sys.println("Clone " + dir + " in " + sampleInDir); 
          FileHelper.recursiveCopy(dir, sampleInDir);
 
@@ -796,7 +817,16 @@ class CommandLineTools
          if (words.length>1)
             Log.error("No valid target supplied. Try : " + allTargets.join(","));
 
-         targetName = "cpp";
+         if (storeData.target!=null)
+         {
+            targetName = storeData.target;
+            Log.verbose('Using target "$targetName" from settings');
+         }
+         else
+         {
+            targetName = "cpp";
+            Log.verbose('Using default target "$targetName"');
+         }
       }
 
       if (words.length>0)
@@ -921,22 +951,63 @@ class CommandLineTools
       }
    }
 
-   public static function isCommand(inCommand:String)
+   public static function isIn(array:Array<String>,inValue:String)
    {
-      for(c in allCommands)
-         if (c==inCommand)
+      for(a in array)
+         if (a==inValue)
             return true;
       return false;
+
    }
 
+   public static function isCommand(inCommand:String)
+   {
+      return isIn(allCommands,inCommand);
+   }
 
    public static function isTarget(inTarget:String)
    {
+      return isIn(allTargets,inTarget);
+   }
 
-      for(t in allTargets)
-         if (t==inTarget)
-            return true;
-      return false;
+
+   public static function setValue()
+   {
+      if (words.length==2 || isIn(setNames,words[0]))
+      {
+         Reflect.setField(storeData, words[0], words[1]);
+         store.flush();
+      }
+      else if (words.length==1 || isIn(quickSetNames,words[0]))
+      {
+         Reflect.setField(storeData, words[0], true);
+         store.flush();
+      }
+      else
+      {
+         Sys.println("Usage : nme set name [value]");
+         for(n in 0...setNames.length)
+         {
+            Sys.println(" " + setNames[n] + " = " + setNamesHelp[n]);
+         }
+         for(name in quickSetNames)
+            Sys.println(' $name');
+      }
+   }
+
+
+   public static function unsetValue()
+   {
+      if (words.length!=1 || !(isIn(setNames,words[0]) || isIn(quickSetNames,words[0])) )
+      {
+         Sys.println("Usage : nme unset name");
+         Sys.println(" name : " + setNames.concat(quickSetNames).join(",") );
+      }
+      else
+      {
+         Reflect.deleteField(storeData, words[0]);
+         store.flush();
+      }
    }
 
 
@@ -952,6 +1023,22 @@ class CommandLineTools
       command = "";
 
       words = new Array<String>();
+
+      store = SharedObject.getLocal("nme-run");
+      storeData = store.data;
+
+      if (storeData.verbose!=null)
+      {
+         Sys.putEnv("HXCPP_VERBOSE","1");
+         Log.mVerbose = true;
+         Log.verbose("Using verbose option from setting");
+      }
+
+      if (storeData.debug!=null)
+      {
+         project.debug = debug = true;
+         Log.verbose("Using debug option from setting");
+      }
 
 
       // Haxelib bug
@@ -969,6 +1056,7 @@ class CommandLineTools
       processArguments(project);
 
 
+
       if (Log.mVerbose && command!="") 
       {
          displayInfo(false, command=="xcode");
@@ -982,6 +1070,12 @@ class CommandLineTools
 
          case "help":
             displayHelp();
+
+         case "set":
+            setValue();
+
+         case "unset":
+            unsetValue();
 
          case "setup":
             setup();
@@ -1211,6 +1305,18 @@ class CommandLineTools
             words.splice(w,1);
             break;
          }
+      }
+
+      if (command=="" && storeData.command!=null)
+      {
+         command = storeData.command;
+         Log.verbose('Using command "$command" from settings');
+      }
+
+      if (binDirOverride=="" && storeData.bin!=null)
+      {
+         binDirOverride = storeData.bin;
+         Log.verbose('Using binDir "$binDirOverride" from settings');
       }
 
       if (command=="")

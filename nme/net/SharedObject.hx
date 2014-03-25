@@ -1,8 +1,6 @@
 package nme.net;
 #if (cpp || neko)
 
-#if haxe3
-
 import sys.FileSystem;
 import sys.io.File;
 import sys.io.FileInput;
@@ -10,28 +8,6 @@ import sys.io.FileOutput;
 import haxe.io.Path;
 import Sys;
 import nme.Loader;
-
-#elseif cpp
-
-import cpp.FileSystem;
-import cpp.io.File;
-import cpp.io.FileInput;
-import cpp.io.FileOutput;
-import cpp.io.Path;
-import cpp.Sys;
-import nme.Loader;
-
-#elseif neko
-
-import neko.FileSystem;
-import neko.io.File;
-import neko.io.FileInput;
-import neko.io.FileOutput;
-import neko.io.Path;
-import neko.Sys;
-import nme.Loader;
-
-#end
 
 import haxe.Serializer;
 import haxe.Unserializer;
@@ -42,15 +18,17 @@ class SharedObject extends EventDispatcher
 {
    public var data(default, null):Dynamic;
 
-   /** @private */ private var localPath:String;
-   /** @private */ private var name:String;
-   private function new(name:String, localPath:String, data:Dynamic) 
+   public var realPath(get,never):String;
+
+   /** @private */ public var localPath(default,null):String;
+   /** @private */ public var name(default,null):String;
+   private function new(inName:String, inLocalPath:String, inData:Dynamic) 
    {
       super();
 
-      this.name = name;
-      this.localPath = localPath;
-      this.data = data;
+      name = inName;
+      localPath = inLocalPath;
+      data = inData;
    }
 
    public function clear():Void 
@@ -61,7 +39,7 @@ class SharedObject extends EventDispatcher
 
       #else
 
-         var filePath = getFilePath(name, localPath);
+         var filePath = realPath;
 
          if (FileSystem.exists(filePath)) 
          {
@@ -127,7 +105,7 @@ class SharedObject extends EventDispatcher
 
       #else
 
-         var filePath = getFilePath(name, localPath);
+         var filePath = realPath;
          var folderPath = Path.directory(filePath);
 
          if (!FileSystem.exists(folderPath)) 
@@ -151,6 +129,15 @@ class SharedObject extends EventDispatcher
       path +=  "/" + localPath + "/" + name + ".sol";
 
       return path;
+   }
+
+   function get_realPath():String 
+   {
+      #if (iphone || android)
+      return "";
+      #else
+      return getFilePath(name,localPath);
+      #end
    }
 
    public static function getLocal(name:String, ?localPath:String, secure:Bool = false):SharedObject 
@@ -217,7 +204,7 @@ class SharedObject extends EventDispatcher
    {
 	   if (data != null)
 	   {
-		   Reflect.setField (data, propertyName, value);
+		   Reflect.setField(data, propertyName, value);
 	   }
    }
 
