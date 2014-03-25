@@ -326,14 +326,21 @@ void ColorMatrixFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint
 {
    int w = outDest->Width();
    int h = outDest->Height();
+   int sw = inSrc->Width();
+   int sh = inSrc->Height();
+   
+   //outDest->Zero();
+   
+   int filter_w = std::min(sw,w);
+   int filter_h = std::min(sh,h);
    
    AutoSurfaceRender render(outDest);
    const RenderTarget &target = render.Target();
-   for(int y=0;y<h;y++)
+   for(int y=0;y<filter_h;y++)
    {
       ARGB *src = (ARGB *)inSrc -> Row(y);
       ARGB *dest = (ARGB *)target.Row(y);
-      for(int x=0;x<w;x++)
+      for(int x=0;x<filter_w;x++)
       {
 		 dest -> a = (mMatrix[15] * src -> r) + (mMatrix[16] * src -> g) + (mMatrix[17] * src -> b) + (mMatrix[18] * src -> a) + mMatrix[19];
 		 dest -> r = (mMatrix[0]  * src -> r) + (mMatrix[1]  * src -> g) + (mMatrix[2]  * src -> b) + (mMatrix[3]  * src -> a) + mMatrix[4];
