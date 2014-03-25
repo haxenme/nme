@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <clocale>
 #include <sys/select.h>
+#ifdef USE_X11
+#include <X11/Xlib.h>
+#endif
+
 
 using namespace std;
 
