@@ -15,7 +15,7 @@
  * HTTP redirects
  */
 
-namespace lime
+namespace nme
 {
 
 

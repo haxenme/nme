@@ -96,14 +96,9 @@ public:
    int Height() const { return mSurf->h; }
    PixelFormat Format() const
    {
-      #ifdef EMSCRIPTEN
-      uint8 swap = 0;
-      #else
-      uint8 swap = mSurf->format->Bshift; // is 0 on argb
-      #endif
       if (mSurf->format->Amask)
-         return swap ? pfARGBSwap : pfARGB;
-      return swap ? pfXRGBSwap : pfXRGB;
+         return pfARGB;
+      return pfXRGB;
    }
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }
