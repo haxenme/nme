@@ -1,9 +1,12 @@
 #include <Utils.h>
 
 #ifdef HX_WINDOWS
-  #include <windows.h>
-  #include <Shlobj.h>
-  #include <time.h>
+#include <windows.h>
+#include <Shlobj.h>
+#include <time.h>
+#elif defined(EPPC)
+#include <time.h>
+#include <stdint.h>
 #else
   #include <sys/time.h>
   #include <stdint.h>
@@ -24,6 +27,10 @@
 
 #ifdef ANDROID
 #include <android/log.h>
+#endif
+
+#ifdef TIZEN
+#include <FSystem.h>
 #endif
 
 #ifdef IPHONE
@@ -247,6 +254,10 @@ double  GetTimeStamp()
         if( gettimeofday(&tv,NULL) )
           return 0;
         double t =  ( tv.tv_sec + ((double)tv.tv_usec) / 1000000.0 );
+   #elif defined(EPPC)
+		time_t tod;
+		time(&tod);
+		double t = (double)tod;
    #else
 	    struct timespec ts;
        clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -405,6 +416,20 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	{
 		outDir = "shared/documents";
 	}
+#elif defined(TIZEN)
+   if (inDir == DIR_APP)
+   {
+      outDir = "../";
+   }
+   else if (inDir == DIR_STORAGE)
+   {
+      outDir = "../data";
+   }
+   else if (inDir == DIR_USER || inDir == DIR_DOCS || inDir == DIR_DESKTOP)
+   {
+      std::wstring dir = std::wstring (Tizen::System::Environment::GetExternalStoragePath ().GetPointer ());
+      outDir = std::string (dir.begin (), dir.end ());
+   }
 #elif defined(WEBOS)
 	if (inDir == DIR_APP)
 	{

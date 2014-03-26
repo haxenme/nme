@@ -357,6 +357,12 @@ public:
          // Calling this recreates the gl context and we loose all our textures and
          // display lists. So Work around it.
          gTextureContextVersion++;
+         
+         if (mIsOpenGL)
+         {
+            Event contextLost(etRenderContextLost);
+            ProcessEvent(contextLost);
+         }
  
          mSDLSurface = SDL_SetVideoMode(inWidth, inHeight, 32, mFlags);
   
@@ -379,6 +385,9 @@ public:
             mOpenGLContext->IncRef();
             mPrimarySurface->DecRef();
             mPrimarySurface = new HardwareSurface(mOpenGLContext);
+            
+            Event contextRestored(etRenderContextRestored);
+            ProcessEvent(contextRestored);
          }
          else
          {
@@ -410,6 +419,12 @@ public:
          // Calling this recreates the gl context and we loose all our textures and
          // display lists. So Work around it.
          gTextureContextVersion++;
+         
+         if (mIsOpenGL)
+         {
+            Event contextLost(etRenderContextLost);
+            ProcessEvent(contextLost);
+         }
 
          int w = mIsFullscreen ? sgDesktopWidth : mWidth;
          int h = mIsFullscreen ? sgDesktopHeight : mHeight;
@@ -438,6 +453,9 @@ public:
             mOpenGLContext->IncRef();
             mPrimarySurface->DecRef();
             mPrimarySurface = new HardwareSurface(mOpenGLContext);
+            
+            Event contextRestored(etRenderContextRestored);
+            ProcessEvent(contextRestored);
          }
          else
          {
@@ -663,6 +681,14 @@ public:
 
    double mDownX;
    double mDownY;
+   
+   const char *getJoystickName(int id) {
+      #if !defined(BLACKBERRY) && !defined(EMSCRIPTEN)
+      return SDL_JoystickNameForIndex(id);
+      #else
+      return "";
+      #endif
+   }
 
    Surface *GetPrimarySurface()
    {

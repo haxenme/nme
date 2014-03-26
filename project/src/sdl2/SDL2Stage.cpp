@@ -91,11 +91,15 @@ public:
       if (mDelete)
          SDL_FreeSurface(mSurf);
    }
-
-
+   
    int Width() const { return mSurf->w; }
    int Height() const { return mSurf->h; }
-   PixelFormat Format() const { return pfXRGB; }
+   PixelFormat Format() const
+   {
+      if (mSurf->format->Amask)
+         return pfARGB;
+      return pfXRGB;
+   }
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }
 
@@ -366,7 +370,148 @@ public:
          }
       }
    }
+
+
+   void SetResolution(int inWidth, int inHeight)
+   {
+      fprintf(stderr, "SetResolution %i %i\n", inWidth, inHeight);
+      SDL_DisplayMode mode;
+      SDL_GetCurrentDisplayMode(0, &mode);
+      fprintf(stderr, "Current %i %i\n", mode.w, mode.h);
+      mode.w = inWidth;
+      mode.h = inHeight;
+      SDL_SetWindowFullscreen(mSDLWindow, 0);
+      SDL_SetWindowDisplayMode(mSDLWindow, &mode);
+      SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN);
+   }
    
+
+   void SetScreenMode(ScreenMode m)
+   {
+      if (m.width <= 1 || m.height <= 1)
+      {
+         //fprintf(stderr, "Stop calling me\n");
+         return;
+      }
+      SDL_DisplayMode mode;
+      mode.w = m.width;
+      mode.h = m.height;
+      mode.refresh_rate = m.refreshRate;
+      switch (m.format) {
+      case PIXELFORMAT_UNKNOWN:
+         mode.format = SDL_PIXELFORMAT_UNKNOWN;
+         break;
+      case PIXELFORMAT_INDEX1LSB:
+         mode.format = SDL_PIXELFORMAT_INDEX1LSB;
+         break;
+      case PIXELFORMAT_INDEX1MSB:
+         mode.format = SDL_PIXELFORMAT_INDEX1MSB;
+         break;
+      case PIXELFORMAT_INDEX4LSB:
+         mode.format = SDL_PIXELFORMAT_INDEX4LSB;
+         break;
+      case PIXELFORMAT_INDEX4MSB:
+         mode.format = SDL_PIXELFORMAT_INDEX4MSB;
+         break;
+      case PIXELFORMAT_INDEX8:
+         mode.format = SDL_PIXELFORMAT_INDEX8;
+         break;
+      case PIXELFORMAT_RGB332:
+         mode.format = SDL_PIXELFORMAT_RGB332;
+         break;
+      case PIXELFORMAT_RGB444:
+         mode.format = SDL_PIXELFORMAT_RGB444;
+         break;
+      case PIXELFORMAT_RGB555:
+         mode.format = SDL_PIXELFORMAT_RGB555;
+         break;
+      case PIXELFORMAT_BGR555:
+         mode.format = SDL_PIXELFORMAT_BGR555;
+         break;
+      case PIXELFORMAT_ARGB4444:
+         mode.format = SDL_PIXELFORMAT_ARGB4444;
+         break;
+      case PIXELFORMAT_RGBA4444:
+         mode.format = SDL_PIXELFORMAT_RGBA4444;
+         break;
+      case PIXELFORMAT_ABGR4444:
+         mode.format = SDL_PIXELFORMAT_ABGR4444;
+         break;
+      case PIXELFORMAT_BGRA4444:
+         mode.format = SDL_PIXELFORMAT_BGRA4444;
+         break;
+      case PIXELFORMAT_ARGB1555:
+         mode.format = SDL_PIXELFORMAT_ARGB1555;
+         break;
+      case PIXELFORMAT_RGBA5551:
+         mode.format = SDL_PIXELFORMAT_RGBA5551;
+         break;
+      case PIXELFORMAT_ABGR1555:
+         mode.format = SDL_PIXELFORMAT_ABGR1555;
+         break;
+      case PIXELFORMAT_BGRA5551:
+         mode.format = SDL_PIXELFORMAT_BGRA5551;
+         break;
+      case PIXELFORMAT_RGB565:
+         mode.format = SDL_PIXELFORMAT_RGB565;
+         break;
+      case PIXELFORMAT_BGR565:
+         mode.format = SDL_PIXELFORMAT_BGR565;
+         break;
+      case PIXELFORMAT_RGB24:
+         mode.format = SDL_PIXELFORMAT_RGB24;
+         break;
+      case PIXELFORMAT_BGR24:
+         mode.format = SDL_PIXELFORMAT_BGR24;
+         break;
+      case PIXELFORMAT_RGB888:
+         mode.format = SDL_PIXELFORMAT_RGB888;
+         break;
+      case PIXELFORMAT_RGBX8888:
+         mode.format = SDL_PIXELFORMAT_RGBX8888;
+         break;
+      case PIXELFORMAT_BGR888:
+         mode.format = SDL_PIXELFORMAT_BGR888;
+         break;
+      case PIXELFORMAT_BGRX8888:
+         mode.format = SDL_PIXELFORMAT_BGRX8888;
+         break;
+      case PIXELFORMAT_ARGB8888:
+         mode.format = SDL_PIXELFORMAT_ARGB8888;
+         break;
+      case PIXELFORMAT_RGBA8888:
+         mode.format = SDL_PIXELFORMAT_RGBA8888;
+         break;
+      case PIXELFORMAT_ABGR8888:
+         mode.format = SDL_PIXELFORMAT_ABGR8888;
+         break;
+      case PIXELFORMAT_BGRA8888:
+         mode.format = SDL_PIXELFORMAT_BGRA8888;
+         break;
+      case PIXELFORMAT_ARGB2101010:
+         mode.format = SDL_PIXELFORMAT_ARGB2101010;
+         break;
+      case PIXELFORMAT_YV12:
+         mode.format = SDL_PIXELFORMAT_YV12;
+         break;
+      case PIXELFORMAT_IYUV:
+         mode.format = SDL_PIXELFORMAT_IYUV;
+         break;
+      case PIXELFORMAT_YUY2:
+         mode.format = SDL_PIXELFORMAT_YUY2;
+         break;
+      case PIXELFORMAT_UYVY:
+         mode.format = SDL_PIXELFORMAT_UYVY;
+         break;
+      case PIXELFORMAT_YVYU:
+         mode.format = SDL_PIXELFORMAT_YVYU;
+         break;
+      }
+      SDL_SetWindowFullscreen(mSDLWindow, 0);
+      SDL_SetWindowDisplayMode(mSDLWindow, &mode);
+      SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN);
+   }
+    
    
    bool isOpenGL() const { return mOpenGLContext; }
    
@@ -486,7 +631,7 @@ public:
         if (inLock != mLockCursor) 
         {
            mLockCursor = inLock;
-           SDL_SetRelativeMouseMode( inLock ? SDL_FALSE : SDL_TRUE );
+           SDL_SetRelativeMouseMode( inLock ? SDL_TRUE : SDL_FALSE );
         }
     }
    
@@ -540,6 +685,10 @@ public:
 
    double mDownX;
    double mDownY;
+   
+   const char *getJoystickName(int id) {
+      return SDL_JoystickNameForIndex(id);
+   }
    
    
    Surface *GetPrimarySurface()
@@ -635,7 +784,10 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 SDLFrame *sgSDLFrame = 0;
 #ifndef EMSCRIPTEN
-SDL_Joystick *sgJoystick = 0;
+SDL_Joystick *sgJoystick;
+QuickVec<SDL_Joystick *> sgJoysticks;
+QuickVec<int> sgJoysticksId;
+QuickVec<int> sgJoysticksIndex;
 #endif
 
 
@@ -700,27 +852,47 @@ int SDLKeyToFlash(int inKey,bool &outRight)
       case SDLK_KP_ENTER:
          return keyENTER;
       
+      SDL_TRANS(AMPERSAND)
+      SDL_TRANS(APPLICATION)
+      SDL_TRANS(ASTERISK)
+      SDL_TRANS(AT)
       SDL_TRANS(BACKQUOTE)
       SDL_TRANS(BACKSLASH)
       SDL_TRANS(BACKSPACE)
+      SDL_TRANS(CARET)
+      SDL_TRANS(COLON)
       SDL_TRANS(COMMA)
       SDL_TRANS(DELETE)
+      SDL_TRANS(DOLLAR)
       SDL_TRANS(DOWN)
       SDL_TRANS(END)
       SDL_TRANS(ESCAPE)
+      SDL_TRANS(EXCLAIM)
+      SDL_TRANS(GREATER)
+      SDL_TRANS(HASH)
       SDL_TRANS(HOME)
       SDL_TRANS(INSERT)
       SDL_TRANS(LEFT)
       SDL_TRANS(LEFTBRACKET)
+      SDL_TRANS(LEFTPAREN)
+      SDL_TRANS(LESS)
       SDL_TRANS(MINUS)
+      SDL_TRANS(NUMLOCKCLEAR)
+      SDL_TRANS(PAUSE)
+      SDL_TRANS(PERCENT)
       SDL_TRANS(PERIOD)
+      SDL_TRANS(PRINTSCREEN)
+      SDL_TRANS(QUESTION)
       SDL_TRANS(QUOTE)
       SDL_TRANS(RIGHT)
       SDL_TRANS(RIGHTBRACKET)
+      SDL_TRANS(RIGHTPAREN)
+      SDL_TRANS(SCROLLLOCK)
       SDL_TRANS(SEMICOLON)
       SDL_TRANS(SLASH)
       SDL_TRANS(SPACE)
       SDL_TRANS(TAB)
+      SDL_TRANS(UNDERSCORE)
       SDL_TRANS(UP)
       SDL_TRANS(F13)
       SDL_TRANS(F14)
@@ -983,8 +1155,19 @@ void ProcessEvent(SDL_Event &inEvent)
          }
       }
       case SDL_MOUSEMOTION:
-      {
-         Event mouse(etMouseMove, inEvent.motion.x, inEvent.motion.y);
+      {  
+            //default to 0
+         int deltaX = 0;
+         int deltaY = 0;
+
+            //but if we are locking the cursor,
+            //pass the delta in as well through as deltaX
+         if(SDL_GetRelativeMouseMode()) {
+            SDL_GetRelativeMouseState( &deltaX, &deltaY );
+         }
+
+            //int inValue=0, int inID=0, int inFlags=0, float inScaleX=1,float inScaleY=1, int inDeltaX=0,int inDeltaY=0
+         Event mouse(etMouseMove, inEvent.motion.x, inEvent.motion.y, 0, 0, 0, 1.0f, 1.0f, deltaX, deltaY);
          #if defined(WEBOS) || defined(BLACKBERRY)
          mouse.value = inEvent.motion.which;
          mouse.flags |= efLeftDown;
@@ -1090,7 +1273,12 @@ void ProcessEvent(SDL_Event &inEvent)
          Event joystick(etJoyButtonUp);
          joystick.id = inEvent.jbutton.which;
          joystick.code = inEvent.jbutton.button;
-         sgSDLFrame->ProcessEvent(joystick);
+         for (int i = 0; i < sgJoysticksId.size(); i++) { //if SDL_JOYDEVICEREMOVED is triggered, up is fired on all buttons, so we need to counter the effect
+            if (sgJoysticksId[i] == joystick.id) {
+               sgSDLFrame->ProcessEvent(joystick);
+               break;
+            }
+          }
          break;
       }
       case SDL_JOYHATMOTION:
@@ -1102,6 +1290,44 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(joystick);
          break;
       }
+      case SDL_JOYDEVICEADDED:
+         {
+         int joyId = -1;
+         for (int i = 0; i < sgJoysticksId.size(); i++) {
+            if (sgJoysticksIndex[i] == i) {
+               joyId = i;
+               break;
+            }
+         }
+         if (joyId == -1) {
+         Event joystick(etJoyDeviceAdded);
+            sgJoystick = SDL_JoystickOpen(inEvent.jdevice.which); //which: joystick device index
+            joystick.id = SDL_JoystickInstanceID(sgJoystick);
+            sgJoysticks.push_back(sgJoystick);
+            sgJoysticksId.push_back(joystick.id);
+            sgJoysticksIndex.push_back(inEvent.jdevice.which);
+            sgSDLFrame->ProcessEvent(joystick);
+         }
+          break;
+         }
+         case SDL_JOYDEVICEREMOVED:
+         {
+          Event joystick(etJoyDeviceRemoved);
+          joystick.id = inEvent.jdevice.which; //which: instance id
+          int j = 0;
+          for (int i = 0; i < sgJoysticksId.size(); i++) {
+            if (sgJoysticksId[i] == joystick.id) {
+               SDL_JoystickClose(sgJoysticks[i]);
+               break;   
+            }
+            j++;
+          }
+          sgJoysticksId.erase(j,1);
+          sgJoysticks.erase(j,1);
+          sgJoysticksIndex.erase(j,1);
+          sgSDLFrame->ProcessEvent(joystick);
+          break;
+       }
    }
 };
 
@@ -1150,12 +1376,12 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       sgDesktopHeight = currentMode.h;
    }
    
-   int windowFlags = 0;
+   int windowFlags, requestWindowFlags = 0;
    
-   if (opengl) windowFlags |= SDL_WINDOW_OPENGL;
-   if (resizable) windowFlags |= SDL_WINDOW_RESIZABLE;
-   if (borderless) windowFlags |= SDL_WINDOW_BORDERLESS;
-   if (fullscreen) windowFlags |= SDL_WINDOW_FULLSCREEN; //SDL_WINDOW_FULLSCREEN_DESKTOP;
+   if (opengl) requestWindowFlags |= SDL_WINDOW_OPENGL;
+   if (resizable) requestWindowFlags |= SDL_WINDOW_RESIZABLE;
+   if (borderless) requestWindowFlags |= SDL_WINDOW_BORDERLESS;
+   if (fullscreen) requestWindowFlags |= SDL_WINDOW_FULLSCREEN; //SDL_WINDOW_FULLSCREEN_DESKTOP;
    
    if (opengl)
    {
@@ -1191,41 +1417,66 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    int setHeight = fullscreen ? sgDesktopHeight : inHeight;
    #endif
    
-   SDL_Window *window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, setWidth, setHeight, windowFlags);
-   
-   if (!window) return;
-   windowFlags = SDL_GetWindowFlags (window);
-   
-   if (fullscreen) {
+   SDL_Window *window = NULL;
+   SDL_Renderer *renderer = NULL;
+
+   while (!window || !renderer) 
+   {
+      // if there's an old window around from a failed attempt, destroy it
+      if (window) 
+      {
+         SDL_DestroyWindow(window);
+         window = NULL;
+      }
+
+      window = SDL_CreateWindow (inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, setWidth, setHeight, requestWindowFlags);
       
-      sgWindowRect = Rect(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, inWidth, inHeight);
-      
-   }
-   
-   int renderFlags = 0;
-   
-   if (opengl) renderFlags |= SDL_RENDERER_ACCELERATED;
-   if (vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
-   
-   SDL_Renderer *renderer = SDL_CreateRenderer (window, -1, renderFlags);
-   
-   if (!renderer && opengl) {
-      
-      opengl = false;
-      renderFlags &= ~SDL_RENDERER_ACCELERATED;
-      
+      // retrieve the actual window flags (as opposed to the requested ones)
+      windowFlags = SDL_GetWindowFlags (window);
+      if (fullscreen) sgWindowRect = Rect(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, inWidth, inHeight);
+
+      int renderFlags = 0;
+      if (opengl) renderFlags |= SDL_RENDERER_ACCELERATED;
+      if (vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
+
       renderer = SDL_CreateRenderer (window, -1, renderFlags);
       
-   }
-   
-   if (!renderer) return;
-   
-   if (opengl) {
+      if (opengl) sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders));
       
-      sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders));
-      
+      if (!renderer && (inFlags & wfHW_AA_HIRES || inFlags & wfHW_AA)) {
+         // if no window was created and AA was enabled, disable AA and try again
+         fprintf(stderr, "Multisampling is not available. Retrying without. (%s)\n", SDL_GetError());
+         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, false);
+         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+         inFlags &= ~wfHW_AA_HIRES;
+         inFlags &= ~wfHW_AA;
+      }
+      else if (!renderer && opengl) 
+      {
+         // if opengl is enabled and no window was created, disable it and try again
+         fprintf(stderr, "OpenGL is not available. Retrying without. (%s)\n", SDL_GetError());
+         opengl = false;
+         renderFlags &= ~SDL_RENDERER_ACCELERATED;
+      }
+      else 
+      {
+         // no more things to try, break out of the loop
+         break;
+      }
    }
 
+   if (!window)
+   {
+      fprintf(stderr, "Failed to create SDL window: %s\n", SDL_GetError());
+      return;
+   }  
+   
+   if (!renderer)
+   {
+      fprintf(stderr, "Failed to create SDL renderer: %s\n", SDL_GetError());
+      return;
+   }
+   
    
 /*#if defined(IPHONE) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
    sdl_flags |= SDL_NOFRAME;
@@ -1386,19 +1637,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    #endif
    
    HintColourOrder( is_opengl || screen->format->Rmask==0xff );
-*/
-   
-   int numJoysticks = SDL_NumJoysticks();
-   
-   if (sgJoystickEnabled && numJoysticks > 0)
-   {
-      for (int i = 0; i < numJoysticks; i++)
-      {
-         sgJoystick = SDL_JoystickOpen(i);
-      }
-      SDL_JoystickEventState(SDL_TRUE);
-   }
-   
+*/ 
    int width, height;
    if (windowFlags & SDL_WINDOW_FULLSCREEN || windowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP)
    {
@@ -1416,6 +1655,21 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    
    sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, width, height);
    inOnFrame(sgSDLFrame);
+
+   int numJoysticks = SDL_NumJoysticks();
+   if (sgJoystickEnabled && numJoysticks > 0) {
+      SDL_JoystickEventState(SDL_TRUE);
+      for (int i = 0; i < numJoysticks; i++) {
+         sgJoystick = SDL_JoystickOpen(i);
+         Event joystick(etJoyDeviceAdded);
+         joystick.id = SDL_JoystickInstanceID(sgJoystick);
+         sgJoysticks.push_back(sgJoystick);
+         sgJoysticksId.push_back(joystick.id);
+         sgJoysticksIndex.push_back(i);
+         sgSDLFrame->ProcessEvent(joystick);
+      }
+   }
+   
    StartAnimation();
 }
 
@@ -1446,6 +1700,138 @@ QuickVec<int>* CapabilitiesGetScreenResolutions()
    
    return out;
 }
+
+
+QuickVec<ScreenMode>* CapabilitiesGetScreenModes()
+{
+   InitSDL();
+   QuickVec<ScreenMode> *out = new QuickVec<ScreenMode>();
+
+   int numModes = SDL_GetNumDisplayModes(0);
+   SDL_DisplayMode mode;
+
+   for (int i = 0; i < numModes; i++)
+   {
+      SDL_GetDisplayMode(0, i, &mode);
+      ScreenMode screenMode;
+      screenMode.width = mode.w;
+      screenMode.height = mode.h;
+      switch (mode.format) {
+      case SDL_PIXELFORMAT_UNKNOWN:
+         screenMode.format = PIXELFORMAT_UNKNOWN;
+         break;
+      case SDL_PIXELFORMAT_INDEX1LSB:
+         screenMode.format = PIXELFORMAT_INDEX1LSB;
+         break;
+      case SDL_PIXELFORMAT_INDEX1MSB:
+         screenMode.format = PIXELFORMAT_INDEX1MSB;
+         break;
+      case SDL_PIXELFORMAT_INDEX4LSB:
+         screenMode.format = PIXELFORMAT_INDEX4LSB;
+         break;
+      case SDL_PIXELFORMAT_INDEX4MSB:
+         screenMode.format = PIXELFORMAT_INDEX4MSB;
+         break;
+      case SDL_PIXELFORMAT_INDEX8:
+         screenMode.format = PIXELFORMAT_INDEX8;
+         break;
+      case SDL_PIXELFORMAT_RGB332:
+         screenMode.format = PIXELFORMAT_RGB332;
+         break;
+      case SDL_PIXELFORMAT_RGB444:
+         screenMode.format = PIXELFORMAT_RGB444;
+         break;
+      case SDL_PIXELFORMAT_RGB555:
+         screenMode.format = PIXELFORMAT_RGB555;
+         break;
+      case SDL_PIXELFORMAT_BGR555:
+         screenMode.format = PIXELFORMAT_BGR555;
+         break;
+      case SDL_PIXELFORMAT_ARGB4444:
+         screenMode.format = PIXELFORMAT_ARGB4444;
+         break;
+      case SDL_PIXELFORMAT_RGBA4444:
+         screenMode.format = PIXELFORMAT_RGBA4444;
+         break;
+      case SDL_PIXELFORMAT_ABGR4444:
+         screenMode.format = PIXELFORMAT_ABGR4444;
+         break;
+      case SDL_PIXELFORMAT_BGRA4444:
+         screenMode.format = PIXELFORMAT_BGRA4444;
+         break;
+      case SDL_PIXELFORMAT_ARGB1555:
+         screenMode.format = PIXELFORMAT_ARGB1555;
+         break;
+      case SDL_PIXELFORMAT_RGBA5551:
+         screenMode.format = PIXELFORMAT_RGBA5551;
+         break;
+      case SDL_PIXELFORMAT_ABGR1555:
+         screenMode.format = PIXELFORMAT_ABGR1555;
+         break;
+      case SDL_PIXELFORMAT_BGRA5551:
+         screenMode.format = PIXELFORMAT_BGRA5551;
+         break;
+      case SDL_PIXELFORMAT_RGB565:
+         screenMode.format = PIXELFORMAT_RGB565;
+         break;
+      case SDL_PIXELFORMAT_BGR565:
+         screenMode.format = PIXELFORMAT_BGR565;
+         break;
+      case SDL_PIXELFORMAT_RGB24:
+         screenMode.format = PIXELFORMAT_RGB24;
+         break;
+      case SDL_PIXELFORMAT_BGR24:
+         screenMode.format = PIXELFORMAT_BGR24;
+         break;
+      case SDL_PIXELFORMAT_RGB888:
+         screenMode.format = PIXELFORMAT_RGB888;
+         break;
+      case SDL_PIXELFORMAT_RGBX8888:
+         screenMode.format = PIXELFORMAT_RGBX8888;
+         break;
+      case SDL_PIXELFORMAT_BGR888:
+         screenMode.format = PIXELFORMAT_BGR888;
+         break;
+      case SDL_PIXELFORMAT_BGRX8888:
+         screenMode.format = PIXELFORMAT_BGRX8888;
+         break;
+      case SDL_PIXELFORMAT_ARGB8888:
+         screenMode.format = PIXELFORMAT_ARGB8888;
+         break;
+      case SDL_PIXELFORMAT_RGBA8888:
+         screenMode.format = PIXELFORMAT_RGBA8888;
+         break;
+      case SDL_PIXELFORMAT_ABGR8888:
+         screenMode.format = PIXELFORMAT_ABGR8888;
+         break;
+      case SDL_PIXELFORMAT_BGRA8888:
+         screenMode.format = PIXELFORMAT_BGRA8888;
+         break;
+      case SDL_PIXELFORMAT_ARGB2101010:
+         screenMode.format = PIXELFORMAT_ARGB2101010;
+         break;
+      case SDL_PIXELFORMAT_YV12:
+         screenMode.format = PIXELFORMAT_YV12;
+         break;
+      case SDL_PIXELFORMAT_IYUV:
+         screenMode.format = PIXELFORMAT_IYUV;
+         break;
+      case SDL_PIXELFORMAT_YUY2:
+         screenMode.format = PIXELFORMAT_YUY2;
+         break;
+      case SDL_PIXELFORMAT_UYVY:
+         screenMode.format = PIXELFORMAT_UYVY;
+         break;
+      case SDL_PIXELFORMAT_YVYU:
+         screenMode.format = PIXELFORMAT_YVYU;
+         break;
+      }
+      screenMode.refreshRate = mode.refresh_rate;
+      out->push_back(screenMode);
+   }
+
+   return out;
+ }
 
 
 double CapabilitiesGetScreenResolutionX()

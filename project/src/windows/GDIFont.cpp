@@ -132,7 +132,8 @@ int CALLBACK MyEnumFontFunc(
 
 FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
 {
-   int height = (int)( 0.5 + inFormat.size*inScale );
+   //The height needs to be >=1, 0 causes the font mapper to use the default height
+   int height = (int)std::max(( 0.5 + inFormat.size*inScale ), 1.0);
 	LOGFONTW desc;
 	memset(&desc,0,sizeof(desc));
 

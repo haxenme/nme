@@ -1,27 +1,42 @@
+#ifdef TIZEN
+
+#include <FGraphicsOpengl2.h>
+using namespace Tizen::Graphics::Opengl;
+
+#else
+
 #include <EGL/egl.h>
 #include <GLES/gl.h>
+#include <X11/Xlib.h>
+
+#endif
+
 #include <stdio.h>
 #include "Egl.h"
 
 // Seems this does not work on raspberry pi....
 //#define X11_EGL
 
+#ifdef RASPBERRYPI
 #ifndef X11_EGL
 #include "bcm_host.h"
-
 static EGL_DISPMANX_WINDOW_T gNativewindow;
-#else
-#include <X11/Xlib.h>
-Display   *g_x11Display = NULL;
+#endif
 #endif
 
 EGLDisplay g_eglDisplay = 0;
 EGLConfig  g_eglConfig = 0;
 EGLContext g_eglContext = 0;
 EGLSurface g_eglSurface = 0;
+#ifdef X11_EGL
+Display   *g_x11Display = NULL;
+#endif
 void      *g_Window = 0;
 int        g_eglVersion = 1;
 
+#ifdef TIZEN
+#include <FBase.h>
+#endif
 
 void nmeEGLDestroy()
 {
@@ -42,15 +57,19 @@ void nmeEGLSwapBuffers()
    eglSwapBuffers(g_eglDisplay, g_eglSurface);
 }
 
-bool nmeEGLResize(void *inX11Window, int &ioWidth, int &ioHeight)
+bool nmeEGLResize(void *inWindow, int &ioWidth, int &ioHeight)
 {
    nmeEGLDestroy();
 
    //printf("eglCreateWindowSurface %p %p %p\n", g_eglDisplay, g_eglConfig, inX11Window);
  
-   #ifdef X11_EGL
+   // create an EGL window surface
+   uint32_t width = ioWidth;
+   uint32_t height = ioHeight;
+   
+   #if defined(X11_EGL) || defined(TIZEN)
    g_eglSurface = eglCreateWindowSurface(g_eglDisplay,
-          g_eglConfig, (EGLNativeWindowType)inX11Window, 0);
+          g_eglConfig, (EGLNativeWindowType)inWindow, 0);
    #else
 
 
@@ -59,10 +78,6 @@ bool nmeEGLResize(void *inX11Window, int &ioWidth, int &ioHeight)
    DISPMANX_UPDATE_HANDLE_T dispman_update;
    VC_RECT_T dst_rect;
    VC_RECT_T src_rect;
-
-   // create an EGL window surface
-   uint32_t width = ioWidth;
-   uint32_t height = ioHeight;
   
    #if 0
    int success = graphics_get_display_size(0 /* LCD */, &width, &height);
@@ -115,7 +130,7 @@ bool nmeEGLResize(void *inX11Window, int &ioWidth, int &ioHeight)
 
      // Use GLES version 1.x
    EGLint contextParams[] = {EGL_CONTEXT_CLIENT_VERSION, g_eglVersion, EGL_NONE};
-   g_eglContext = eglCreateContext(g_eglDisplay, g_eglConfig, NULL, NULL);
+   g_eglContext = eglCreateContext(g_eglDisplay, g_eglConfig, EGL_NO_CONTEXT, contextParams);
    if (g_eglContext == EGL_NO_CONTEXT)
    {
       printf("Unable to create GLES context!\n");
@@ -133,7 +148,7 @@ bool nmeEGLResize(void *inX11Window, int &ioWidth, int &ioHeight)
 }
 
 
-bool nmeEGLCreate(void *inX11Window, int &ioWidth, int &ioHeight,
+bool nmeEGLCreate(void *inWindow, int &ioWidth, int &ioHeight,
                 int inOGLESVersion,
                 int inDepthBits,
                 int inStencilBits,
@@ -158,36 +173,47 @@ bool nmeEGLCreate(void *inX11Window, int &ioWidth, int &ioHeight,
    }
 
    #else
-
+   
+   #ifdef RASPBERRYPI
    bcm_host_init();
+   #endif
 
    g_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
    #endif
 
    // Initialise egl
-   if (!eglInitialize(g_eglDisplay, NULL, NULL))
+   if (!eglInitialize(g_eglDisplay, NULL, NULL) || eglGetError() != EGL_SUCCESS)
    {
       printf("Unable to initialise EGL display.\n");
       return false;
    }
  
    // Find a matching config
+   
+   int renderType = (inOGLESVersion > 1 ? EGL_OPENGL_ES2_BIT : EGL_OPENGL_ES_BIT);
 
    EGLint attribs[] ={
+      #ifdef RASPBERRYPI
       EGL_RED_SIZE,             5,
       EGL_GREEN_SIZE,           6,
       EGL_BLUE_SIZE,            5,
+      #else
+      EGL_RED_SIZE,             8,
+      EGL_GREEN_SIZE,           8,
+      EGL_BLUE_SIZE,            8,
+      EGL_ALPHA_SIZE,            8,
+      #endif
       EGL_DEPTH_SIZE,           inDepthBits,
       EGL_SURFACE_TYPE,         EGL_WINDOW_BIT,
-      EGL_RENDERABLE_TYPE,      EGL_OPENGL_ES_BIT,
+      EGL_RENDERABLE_TYPE,      renderType,
       EGL_BIND_TO_TEXTURE_RGBA, EGL_TRUE,
       EGL_NONE
       };
 
 
    EGLint numConfigsOut = 0;
-   if (eglChooseConfig(g_eglDisplay, attribs, &g_eglConfig, 1, &numConfigsOut) != EGL_TRUE || numConfigsOut == 0)
+   if (eglChooseConfig(g_eglDisplay, attribs, &g_eglConfig, 1, &numConfigsOut) != EGL_TRUE || numConfigsOut == 0 || eglGetError() != EGL_SUCCESS)
    {
       printf("Unable to find appropriate EGL config.\n");
       return false;
@@ -195,5 +221,5 @@ bool nmeEGLCreate(void *inX11Window, int &ioWidth, int &ioHeight,
 
    g_eglVersion = inOGLESVersion;
 
-   return nmeEGLResize(inX11Window, ioWidth, ioHeight);
+   return nmeEGLResize(inWindow, ioWidth, ioHeight);
 }

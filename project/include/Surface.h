@@ -49,6 +49,7 @@ public:
    virtual void dispose() { }
    virtual void MakeTextureOnly() { /*printf("Dumping bits from Surface\n");*/  }
    virtual void setGPUFormat( PixelFormat pf ) {}
+   virtual void multiplyAlpha () {}
    virtual void unmultiplyAlpha() { }
 
    int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }

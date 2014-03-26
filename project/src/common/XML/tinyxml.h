@@ -291,8 +291,12 @@ protected:
 
 	static const wchar_t* SkipWhiteSpace( const wchar_t*, TiXmlEncoding encoding );
 	inline static bool IsWhiteSpace( wchar_t c )		
-	{ 
+	{
+		#ifdef EPPC
+		return ( isspace( (wchar_t) c ) || c == '\n' || c == '\r' );
+		#else
 		return ( iswspace( (wchar_t) c ) || c == '\n' || c == '\r' );
+		#endif
 	}
 	/*inline static bool IsWhiteSpace( int c )
 	{

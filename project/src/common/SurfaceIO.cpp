@@ -396,7 +396,9 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
        &interlace_type, NULL, NULL);
 
    bool has_alpha = color_type== PNG_COLOR_TYPE_GRAY_ALPHA ||
-                    color_type==PNG_COLOR_TYPE_RGB_ALPHA;
+                    color_type==PNG_COLOR_TYPE_RGB_ALPHA ||
+                    png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS);
+   
    /* Add filler (or alpha) byte (before/after each RGB triplet) */
    png_set_expand(png_ptr);
    png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);

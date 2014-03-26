@@ -641,7 +641,7 @@ void DisplayObject::ClearFilters()
 
 void DisplayObject::Focus()
 {
-#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS) || defined(BLACKBERRY)
+#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS) || defined(BLACKBERRY) || defined(TIZEN)
   if (needsSoftKeyboard)
   {
      Stage *stage = getStage();
@@ -653,7 +653,7 @@ void DisplayObject::Focus()
 
 void DisplayObject::Unfocus()
 {
-#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS) || defined(BLACKBERRY)
+#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS) || defined(BLACKBERRY) || defined(TIZEN)
   if (needsSoftKeyboard)
   {
      Stage *stage = getStage();
@@ -1639,7 +1639,7 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    displayState = sdsNormal;
    align = saTopLeft;
 
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
    quality = sqLow;
    #else
    quality = sqBest;
@@ -1764,7 +1764,7 @@ void Stage::HandleEvent(Event &inEvent)
          mFocusObject->OnKey(inEvent);
       #ifdef ANDROID
       // Non-cancelled back key ...
-      if (inEvent.result==0 && inEvent.code==27 && inEvent.type == etKeyUp)
+      if (inEvent.result==0 && inEvent.value==27 && inEvent.type == etKeyUp)
       {
           StopAnimation();
       }
@@ -1848,7 +1848,7 @@ void Stage::HandleEvent(Event &inEvent)
       {
          if (hit_obj->WantsFocus())
             SetFocusObject(hit_obj,fsMouse);
-         #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
+         #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
          else
          {
             EnablePopupKeyboard(false);
@@ -1866,7 +1866,7 @@ void Stage::HandleEvent(Event &inEvent)
          }
       }
    }
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
    else if (inEvent.type==etMouseClick ||  inEvent.type==etMouseDown ||
          (inEvent.type==etTouchBegin && (inEvent.flags & efPrimaryTouch) ))
    {

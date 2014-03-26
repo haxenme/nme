@@ -8,6 +8,12 @@
    #include <GLES2/gl2.h>
    #include <GLES2/gl2ext.h>
 
+#elif defined(TIZEN)
+   
+   #define NME_GLES	
+   
+   #include <gl2.h>
+
 #elif defined(IPHONE)
 
    #include <OpenGLES/ES1/gl.h>
@@ -37,7 +43,9 @@
   #define glBindFramebuffer glBindFramebufferEXT
   #define glBindRenderbuffer glBindRenderbufferEXT
   #define glGenFramebuffers glGenFramebuffersEXT
+  #define glDeleteFramebuffers glDeleteFramebuffersEXT
   #define glGenRenderbuffers glGenRenderbuffersEXT
+  #define glDeleteRenderbuffers glDeleteRenderbuffersEXT
   #define glFramebufferRenderbuffer glFramebufferRenderbufferEXT
   #define glFramebufferTexture2D glFramebufferTexture2DEXT
   #define glRenderbufferStorage glRenderbufferStorageEXT
