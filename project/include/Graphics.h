@@ -537,6 +537,10 @@ public:
 
    virtual bool Hits(const RenderState &inState) { return false; }
    
+   #ifdef LIME_DIRECTFB
+   static Renderer *CreateHardware(const class GraphicsJob &inJob,const GraphicsPath &inPath,HardwareContext &inHardware);
+   #endif
+   
    static Renderer *CreateSoftware(const class GraphicsJob &inJob,const GraphicsPath &inPath);
 
 protected:
@@ -554,6 +558,9 @@ struct GraphicsJob
    GraphicsStroke  *mStroke;
    IGraphicsFill   *mFill;
    GraphicsTrianglePath  *mTriangles;
+   #ifdef LIME_DIRECTFB
+   class Renderer  *mHardwareRenderer;
+   #endif
    class Renderer  *mSoftwareRenderer;
    int             mCommand0;
    int             mData0;
