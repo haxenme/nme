@@ -1387,6 +1387,9 @@ DEFINE_PRIM(nme_stage_get_joystick_name,2);
 
 DO_STAGE_PROP(focus_rect,FocusRect,alloc_bool,val_bool)
 DO_STAGE_PROP(scale_mode,ScaleMode,alloc_int,val_int)
+#ifdef NME_S3D
+DO_STAGE_PROP(autos3d,AutoS3D,alloc_bool,val_bool)
+#endif
 DO_STAGE_PROP(align,Align,alloc_int,val_int)
 DO_STAGE_PROP(quality,Quality,alloc_int,val_int)
 DO_STAGE_PROP(display_state,DisplayState,alloc_int,val_int)
@@ -2088,6 +2091,9 @@ DEFINE_PRIM(nme_display_object_dismiss_soft_keyboard,1);
 
 DO_DISPLAY_PROP(x,X,alloc_float,val_number)
 DO_DISPLAY_PROP(y,Y,alloc_float,val_number)
+#ifdef NME_S3D
+DO_DISPLAY_PROP(z,Z,alloc_float,val_number)
+#endif
 DO_DISPLAY_PROP(scale_x,ScaleX,alloc_float,val_number)
 DO_DISPLAY_PROP(scale_y,ScaleY,alloc_float,val_number)
 DO_DISPLAY_PROP(rotation,Rotation,alloc_float,val_number)

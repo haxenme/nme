@@ -7,7 +7,7 @@
 #include <nme/QuickVec.h>
 #include <Utils.h>
 
-#include <Audio.h>
+#include "OpenALSound.h"
 
 
 @interface AVAudioPlayerChannelDelegate : NSObject <AVAudioPlayerDelegate>  {
@@ -427,9 +427,17 @@ namespace nme
         
         AudioFormat type = Audio::determineFormatFromFile(fileURL);
         
-        if (type == eAF_ogg || (type!=eAF_mid && !inForceMusic) )
+        if (type == eAF_ogg || !inForceMusic)
         {
-            return Sound::CreateOpenAl(inFilename,inForceMusic);
+            if (!OpenALInit())
+                return 0;
+            
+            OpenALSound *sound = new OpenALSound(inFilename, inForceMusic);
+            
+            if (sound->ok ())
+               return sound;
+            else
+               return 0;
         }
         else
         {
@@ -461,7 +469,14 @@ namespace nme
         }
         else
         {
-            return Sound::CreateOpenAl(inData,len);
+            if (!OpenALInit())
+                return 0;
+            OpenALSound *sound = new OpenALSound(inData, len);
+            
+            if (sound->ok ())
+               return sound;
+            else
+               return 0;
         }
     }
     

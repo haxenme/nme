@@ -168,6 +168,10 @@ public:
    void   setX(double inValue);
    double getY();
    void   setY(double inValue);
+   #ifdef NME_S3D
+   double getZ();
+   void   setZ(double inValue);
+   #endif
    virtual double getHeight();
    virtual void   setHeight(double inValue);
    virtual double getWidth();
@@ -317,6 +321,9 @@ protected:
    // Decomp
    double x;
    double y;
+   #ifdef NME_S3D
+   double z;
+   #endif
    double scaleX;
    double scaleY;
    double rotation;
@@ -452,6 +459,10 @@ public:
    Matrix GetFullMatrix(bool inStageScaling);
    bool FinishEditOnEnter();
 
+   #ifdef NME_S3D
+   void setAutoS3D(bool enabled) { autos3d = enabled; }
+   bool getAutoS3D() const { return autos3d; }
+   #endif
    void setFocusRect(bool inVal) { focusRect = inVal; }
    bool getFocusRect() const { return focusRect; }
    UserPoint getMousePos() const { return mLastMousePos; }
@@ -485,6 +496,9 @@ protected:
    EventHandler mHandler;
    void         *mHandlerData;
    bool         focusRect;
+   #ifdef NME_S3D
+   bool         autos3d;
+   #endif
    UserPoint    mLastMousePos;
    StageScaleMode scaleMode;
    StageAlign     align;

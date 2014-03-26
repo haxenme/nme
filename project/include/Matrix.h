@@ -12,6 +12,9 @@ public:
    Matrix(double inSX=1,double inSY=1, double inTX=0, double inTY=0) :
        m00(inSX), m01(0), mtx(inTX),
        m10(0), m11(inSY), mty(inTY)
+       #ifdef NME_S3D
+       , mtz(0)
+       #endif
    {
    }
 
@@ -79,6 +82,9 @@ public:
 
    double m00, m01, mtx;
    double m10, m11, mty;
+   #ifdef NME_S3D
+   double mtz;
+   #endif
 };
 
 

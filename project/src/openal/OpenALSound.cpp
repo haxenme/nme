@@ -1,176 +1,9 @@
-#if defined(HX_MACOS) || defined(IPHONE)
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>
-#endif
+#include "OpenALSound.h"
 
-#ifdef ANDROID
-#include <android_openal_funcs.h>
-#include <ByteArray.h>
-#endif
+#include <math.h>
 
-#include <Sound.h>
-#include <nme/QuickVec.h>
-#include <Utils.h>
-#include <Audio.h>
-
-#include <vorbis/vorbisfile.h>
-
-typedef unsigned char uint8;
-
-#define STREAM_BUFFER_SIZE (4096 * 4)
-
-namespace nme
+namespace lime
 {
-
-
-class OpenALChannel;
-
-
-   static ALCdevice  *sgDevice = 0;
-   static ALCcontext *sgContext = 0;
-   static QuickVec<intptr_t> sgOpenChannels;
-
-   static bool openal_is_init = false;
-
-   static bool OpenALInit()
-   {
-      //LOG_SOUND("Sound.mm OpenALInit()");
-      
-      if (!openal_is_init)
-      {
-         openal_is_init = true;
-         sgDevice = alcOpenDevice(0); // select the "preferred device"
-         if (sgDevice)
-         {
-            sgContext=alcCreateContext(sgDevice,0);
-            alcMakeContextCurrent(sgContext);
-         }
-         sgOpenChannels = QuickVec<intptr_t>();
-      }
-      return sgContext;
-   }
-   
-   
-   //Ogg specific stream implementation
-   class AudioStream_Ogg : public AudioStream {
-       
-       public:
-
-           void open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform);
-           void release();
-           bool playback();
-           bool playing();
-           bool update();
-           void setTransform(const SoundTransform &inTransform);
-           double getPosition();
-           double setPosition(const float &inFloat);
-           double getLeft();
-           double getRight();
-           void suspend();
-           void resume();
-           bool isActive();
-
-       protected:
-
-           bool stream( ALuint buffer );
-           void empty();
-           void start();
-           void check();
-           std::string errorString(int code);
-
-       private:
-
-           FILE*           oggFile;
-           OggVorbis_File  oggStream;
-           vorbis_info*    vorbisInfo;
-           vorbis_comment* vorbisComment;
-
-           ALuint buffers[2];
-           ALuint source;
-           ALenum format;
-           
-           std::string mPath;
-           int mStartTime;
-           int mLoops;
-           bool mSuspend;
-           bool mIsValid;
-           #ifdef ANDROID
-           FileInfo mInfo;
-           #endif
-   };
-
-
-   class OpenALChannel : public SoundChannel
-   {
-      public:
-         OpenALChannel(Object *inSound, ALuint inBufferID, int startTime, int inLoops, const SoundTransform &inTransform);
-         OpenALChannel(Object *inSound, AudioStream *inStream, int startTime, int inLoops, const SoundTransform &inTransform);
-         OpenALChannel(const ByteArray &inBytes,const SoundTransform &inTransform);
-         void QueueBuffer(ALuint inBuffer, const ByteArray &inBytes);
-         void unqueueBuffers();
-         bool needsData();
-         void addData(const ByteArray &inBytes);
-         bool isComplete();
-         double getLeft();
-         double getRight();
-         double setPosition(const float &inFloat);
-         double getPosition();
-         void setTransform(const SoundTransform &inTransform);
-         void stop();
-         void suspend();
-         void resume();
-         
-      protected:
-         ~OpenALChannel();
-         Object *mSound;
-         ALuint mSourceID;
-         short  *mSampleBuffer;
-         bool   mDynamicDone;
-         ALuint mDynamicStackSize;
-         ALuint mDynamicStack[2];
-         ALuint mDynamicBuffer[2];
-         AudioStream *mStream;
-         int mStartTime;
-         int mLoops;
-         bool mUseStream;
-         enum { STEREO_SAMPLES = 2 };
-         bool mWasPlaying;
-      
-   };
-
-
-   class OpenALSound : public Sound
-   {
-      public:
-         OpenALSound(const std::string &inFilename, bool stream);
-         OpenALSound(float *inData, int len);
-         double getLength();
-         void getID3Value(const std::string &inKey, std::string &outValue);
-         int getBytesLoaded();
-         int getBytesTotal();
-         bool ok();
-         std::string getError();
-         void close();
-         SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform);
-         
-      protected:
-         ~OpenALSound();
-         ALint bufferSize;
-         ALint frequency;
-         ALint bitsPerSample;
-         ALint channels;
-
-         ALuint mBufferID;
-         bool mIsStream;
-         std::string mStreamPath;
-         std::string mError;
-         
-   };
-   
-   
    
    OpenALChannel::OpenALChannel(Object *inSound, ALuint inBufferID, int startTime, int inLoops, const SoundTransform &inTransform)
    {
@@ -185,9 +18,12 @@ class OpenALChannel;
       mWasPlaying = false;
       mSampleBuffer = 0;
       float seek = 0;
-      int size = 0;
+      mSize = 0;
       mStream = 0;
       mUseStream = false;
+      
+      mStartTime = startTime;
+      mLoops = inLoops;
       
       if (inBufferID>0)
       {
@@ -210,7 +46,8 @@ class OpenALChannel;
          // set some basic source prefs
          alSourcef(mSourceID, AL_PITCH, 1.0f);
          alSourcef(mSourceID, AL_GAIN, inTransform.volume);
-         alSource3f(mSourceID, AL_POSITION, inTransform.pan * 1, 0, 0);
+         alSource3f(mSourceID, AL_POSITION, (float) cos((inTransform.pan - 1) * (1.5707)), 0, (float) sin((inTransform.pan + 1) * (1.5707)));
+
          // TODO: not right!
          //if (inLoops>1)
             //alSourcei(mSourceID, AL_LOOPING, AL_TRUE);
@@ -218,19 +55,22 @@ class OpenALChannel;
          if (startTime > 0)
          {
             ALint bits, channels, freq;
-            alGetBufferi(inBufferID, AL_SIZE, &size);
+            alGetBufferi(inBufferID, AL_SIZE, &mSize);
             alGetBufferi(inBufferID, AL_BITS, &bits);
             alGetBufferi(inBufferID, AL_CHANNELS, &channels);
             alGetBufferi(inBufferID, AL_FREQUENCY, &freq);
-            int length = (ALfloat)((ALuint)size/channels/(bits/8)) / (ALfloat)freq;
-            seek = (startTime * 0.001) / length;
+            mLength = (ALfloat)((ALuint)mSize/channels/(bits/8)) / (ALfloat)freq;
+            seek = (startTime * 0.001) / mLength;
          }
          
          if (seek < 1)
          {
             //alSourceQueueBuffers(mSourceID, 1, &inBufferID);
             alSourcePlay(mSourceID);
-            alSourcef(mSourceID, AL_BYTE_OFFSET, seek * size);
+            if (seek != 0)
+            {
+               alSourcef(mSourceID, AL_BYTE_OFFSET, seek * mSize);
+            }
          }
          
          mWasPlaying = true;
@@ -304,7 +144,7 @@ class OpenALChannel;
          // set some basic source prefs
          alSourcef(mSourceID, AL_PITCH, 1.0f);
          alSourcef(mSourceID, AL_GAIN, inTransform.volume);
-         alSource3f(mSourceID, AL_POSITION, inTransform.pan * 1, 0, 0);
+         alSource3f(mSourceID, AL_POSITION, (float) cos((inTransform.pan - 1) * (1.5707)), 0, (float) sin((inTransform.pan + 1) * (1.5707)));
          
          alSourcePlay(mSourceID);
       }
@@ -459,8 +299,31 @@ class OpenALChannel;
        */
       if(state == AL_STOPPED)
       {
+         if (mLoops > 0)
+         {   
+            float seek = 0;
+            
+            if (mStartTime > 0)
+            {
+               seek = (mStartTime * 0.001) / mLength;
+            }
+            
+            if (seek < 1)
+            {
+               //alSourceQueueBuffers(mSourceID, 1, &inBufferID);
+               alSourcePlay(mSourceID);
+               alSourcef(mSourceID, AL_BYTE_OFFSET, seek * mSize);
+            }
+            
+            mLoops --;
+            
+            return false;
+         }
+         else
+         {
+            return true;
+         }
          //LOG_SOUND("OpenALChannel isComplete() returning true");
-         return true;
       }
       else
       {
@@ -619,6 +482,15 @@ class OpenALChannel;
             alSourcePlay(mSourceID);
          }
       }
+   }
+   
+   
+   SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
+   {
+      if (!OpenALInit())
+         return 0;
+      
+      return new OpenALChannel(inBytes, inTransform);
    }
    
    
@@ -857,10 +729,10 @@ class OpenALChannel;
       //LOG_SOUND("OpenALSound openChannel()"); 
       if (mIsStream)
       {
-         AudioStream_Ogg *oggStream = new AudioStream_Ogg();
-         if (oggStream) oggStream->open(mStreamPath.c_str(), startTime, loops, inTransform);
+         AudioStream_Ogg *audioStream = new AudioStream_Ogg();
+         if (audioStream) audioStream->open(mStreamPath.c_str(), startTime, loops, inTransform);
          
-         return new OpenALChannel(this, oggStream, startTime, loops, inTransform);
+         return new OpenALChannel(this, audioStream, startTime, loops, inTransform);
       }
       else
       {
@@ -877,17 +749,29 @@ class OpenALChannel;
          return 0;
       
       //Return a reference
+      OpenALSound *sound;
+      
       #ifdef ANDROID
       if (!inForceMusic)
       {
          ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
-         return new OpenALSound((float*)bytes.Bytes(), bytes.Size());
+         sound = new OpenALSound((float*)bytes.Bytes(), bytes.Size());
       }
+      else
+      {
+         sound = new OpenALSound(inFilename, inForceMusic);
+      }
+      #else
+      sound = new OpenALSound(inFilename, inForceMusic);
       #endif
-      return new OpenALSound(inFilename, inForceMusic);
+      
+      if (sound->ok ())
+         return sound;
+      else
+         return 0;
    }
    
-  
+   
    Sound *Sound::Create(float *inData, int len, bool inForceMusic)
    {
       //Always check if openal is intitialized
@@ -895,40 +779,14 @@ class OpenALChannel;
          return 0;
 
       //Return a reference
-      return new OpenALSound(inData, len);
+      OpenALSound *sound = new OpenALSound(inData, len);
+      
+      if (sound->ok ())
+         return sound;
+      else
+         return 0;
    }
    #endif
-
- 
-   SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
-   {
-      if (!OpenALInit())
-         return 0;
-      
-      return new OpenALChannel(inBytes, inTransform);
-   }
-
-   Sound *Sound::CreateOpenAl(float *inData, int len)
-   {
-      //Always check if openal is intitialized
-      if (!OpenALInit())
-         return 0;
-
-      //Return a reference
-      return new OpenALSound(inData, len);
-   }
-
-   Sound *Sound::CreateOpenAl(const std::string &inFilename, bool inForceMusic)
-   {
-      //Always check if openal is intitialized
-      if (!OpenALInit())
-         return 0;
-
-      //Return a reference
-      return new OpenALSound(inFilename,inForceMusic);
-   }
-   
-
    
    
    void Sound::Suspend()
@@ -984,19 +842,30 @@ class OpenALChannel;
    
    //Ogg Audio Stream implementation
    void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
-
+        
         int result;
         mPath = std::string(path.c_str());
         mStartTime = startTime;
         mLoops = inLoops;
         mIsValid = true;
+		mSuspend = false;
         
         #ifdef ANDROID
+        
         mInfo = AndroidGetAssetFD(path.c_str());
         oggFile = fdopen(mInfo.fd, "rb");
         fseek(oggFile, mInfo.offset, 0);
+        
+        ov_callbacks callbacks;
+        callbacks.read_func = &lime::AudioStream_Ogg::read_func;
+        callbacks.seek_func = &lime::AudioStream_Ogg::seek_func;
+        callbacks.close_func = &lime::AudioStream_Ogg::close_func;
+        callbacks.tell_func = &lime::AudioStream_Ogg::tell_func;
+        
         #else
+        
         oggFile = fopen(path.c_str(), "rb");
+        
         #endif
         
         if(!oggFile) {
@@ -1005,21 +874,29 @@ class OpenALChannel;
             mIsValid = false;
             return;
         }
+		
+		oggStream = new OggVorbis_File();
         
-        result = ov_open(oggFile, &oggStream, NULL, 0);
+        #ifdef ANDROID
+        result = ov_open_callbacks(this, oggStream, NULL, 0, callbacks);
+        #else
+        result = ov_open(oggFile, oggStream, NULL, 0);
+        #endif
          
         if(result < 0) {
-
+			
             fclose(oggFile);
-
+			   oggFile = 0;
+			
             //throw std::string("Could not open Ogg stream. ") + errorString(result);
-            LOG_SOUND("Could not open Ogg stream %s",errorString(result).c_str());
+            LOG_SOUND("Could not open Ogg stream.");
+            //LOG_SOUND(errorString(result).c_str());
             mIsValid = false;
             return;
         }
 
-        vorbisInfo = ov_info(&oggStream, -1);
-        vorbisComment = ov_comment(&oggStream, -1);
+        vorbisInfo = ov_info(oggStream, -1);
+        vorbisComment = ov_comment(oggStream, -1);
 
         if(vorbisInfo->channels == 1) {
             format = AL_FORMAT_MONO16;
@@ -1030,7 +907,7 @@ class OpenALChannel;
         if (startTime != 0)
         {
           double seek = startTime * 0.001;
-          ov_time_seek(&oggStream, seek);
+          ov_time_seek(oggStream, seek);
         }
         
         alGenBuffers(2, buffers);
@@ -1050,24 +927,25 @@ class OpenALChannel;
 
    void AudioStream_Ogg::release() {
       
-      if (mIsValid) {
-         
-         alSourceStop(source);
-         empty();
+	  if (source) {
+		  alSourceStop(source);
+		  empty();
          alDeleteSources(1, &source);
          check();
          alDeleteBuffers(2, buffers);
          check();
-         
-         ov_clear(&oggStream);
-         //delete &oggStream;
-         //fclose(oggFile);
-         
-         oggFile = 0;
-         source = 0;
-         mIsValid = false;
-         
-      }
+		 
+		 source = 0;
+	  }
+	  
+	  if (oggStream) {
+		 ov_clear(oggStream);
+		 delete oggStream;
+		 oggStream = 0;
+		 oggFile = 0;
+	  }
+	  
+	  mIsValid = false;
       
    } //release
    
@@ -1108,7 +986,7 @@ class OpenALChannel;
        if (mSuspend) return true;
        if (!mIsValid) return false;
       
-       int processed;
+       int processed = 0;
        bool active = true;
 
        alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
@@ -1116,28 +994,28 @@ class OpenALChannel;
        while(processed--) {
 
            ALuint buffer;
-           
            alSourceUnqueueBuffers(source, 1, &buffer);
-           check();
-           if (!mIsValid) return false;
+           alGetError();
            
-           active = stream(buffer);
-           
-           alSourceQueueBuffers(source, 1, &buffer);
-           check();
-           if (!mIsValid) return false;
+           if (buffer)
+           {
+              active = stream(buffer);
+              
+              alSourceQueueBuffers(source, 1, &buffer);
+              check();
+           }
        }
        
        if (active && !playing())
          alSourcePlay(source);
        
-       if (!active && mLoops > 0)
+       /*if (!active && mLoops > 0)
        {
          mLoops --;
          double seek = mStartTime * 0.001;
-         ov_time_seek(&oggStream, seek);
-         active = true;
-       }
+         ov_time_seek(oggStream, seek);
+         return update();
+       }*/
        
        return active;
 
@@ -1147,29 +1025,25 @@ class OpenALChannel;
    bool AudioStream_Ogg::stream( ALuint buffer ) {
       
        if (mSuspend) return true;
-       
+       //LOG_SOUND("STREAM\n");
        char pcm[STREAM_BUFFER_SIZE];
        int  size = 0;
        int  section;
        int  result;
        
-       int maxSize = STREAM_BUFFER_SIZE;
-       
-       #ifdef ANDROID
-       int remainingBytes = mInfo.length - ov_raw_tell(&oggStream) + mInfo.offset;
-       if (maxSize > remainingBytes)
-       { 
-          maxSize = remainingBytes;  
-       }
-       #endif
-
-       while(size < maxSize) {
-           result = ov_read(&oggStream, pcm + size, maxSize - size, 0, 2, 1, &section);
+       while (size < STREAM_BUFFER_SIZE) {
+           result = ov_read(oggStream, pcm + size, STREAM_BUFFER_SIZE - size, 0, 2, 1, &section);
            if(result > 0)
                size += result;
            else
                if(result < 0) {
+
+                  if ( mLoops > 0 ) {
+                     mLoops --;
+                     ov_time_seek(oggStream, 0);
+                  }else{
                    break;
+                  }
                    //LOG_SOUND ("Result is less than 0");
                    //throw errorString(result);
                }
@@ -1177,8 +1051,16 @@ class OpenALChannel;
                    break;
        }
        if(size <= 0) {
-           alSourceStop(source);
-           return false;
+         if ( mLoops > 0 ) {
+            mLoops --;
+            ov_time_seek(oggStream, 0);
+            return stream( buffer );
+         }else{
+            alSourceStop(source);
+            return false;
+         }
+           
+           
       }
       
        alBufferData(buffer, format, pcm, size, vorbisInfo->rate);
@@ -1265,7 +1147,7 @@ class OpenALChannel;
       if (!mSuspend)
       {
          double seek = inFloat * 0.001;
-         ov_time_seek(&oggStream, seek);
+         ov_time_seek(oggStream, seek);
       }
       return inFloat;
    }
@@ -1279,7 +1161,7 @@ class OpenALChannel;
       }
       else
       {
-         double pos = ov_time_tell(&oggStream);
+         double pos = ov_time_tell(oggStream);
          return pos * 1000.0;
       }
    }
@@ -1290,7 +1172,8 @@ class OpenALChannel;
       if (!mSuspend)
       {
          alSourcef(source, AL_GAIN, inTransform.volume);
-         alSource3f(source, AL_POSITION, inTransform.pan * 1, 0, 0);
+             //magic number : Half PI 
+         alSource3f(source, AL_POSITION, (float) cos((inTransform.pan - 1) * (1.5707)), 0, (float) sin((inTransform.pan + 1) * (1.5707)));
       }
    }
    
@@ -1326,7 +1209,6 @@ class OpenALChannel;
       if (mSuspend) return true;
       //#endif
       //playback();
-      
       return (mIsValid && playing());
    }
 

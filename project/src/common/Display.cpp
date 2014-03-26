@@ -28,6 +28,9 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    mGfx = 0;
    mDirtyFlags = 0;
    x = y = 0;
+   #ifdef NME_S3D
+   z = 0;
+   #endif
    scaleX = scaleY = 1.0;
    rotation = 0;
    visible = true;
@@ -333,6 +336,9 @@ Matrix &DisplayObject::GetLocalMatrix()
       mLocalMatrix.m11 = c*scaleY;
       mLocalMatrix.mtx = x;
       mLocalMatrix.mty = y;
+      #ifdef NME_S3D
+      mLocalMatrix.mtz = z;
+      #endif
    }
    return mLocalMatrix;
 }
@@ -353,6 +359,9 @@ void DisplayObject::UpdateDecomp()
       mDirtyFlags ^= dirtDecomp;
       x = mLocalMatrix.mtx;
       y = mLocalMatrix.mty;
+      #ifdef NME_S3D
+      z = mLocalMatrix.mtz;
+      #endif
       scaleX = sqrt( mLocalMatrix.m00*mLocalMatrix.m00 +
                      mLocalMatrix.m10*mLocalMatrix.m10 );
       scaleY = sqrt( mLocalMatrix.m01*mLocalMatrix.m01 +
@@ -535,6 +544,27 @@ void DisplayObject::setScaleY(double inValue)
       DirtyCache();
    }
 }
+
+#ifdef NME_S3D
+
+double DisplayObject::getZ()
+{
+   UpdateDecomp();
+   return z;
+}
+
+void DisplayObject::setZ(double inValue)
+{
+   UpdateDecomp();
+   if (z!=inValue)
+   {
+      mDirtyFlags |= dirtLocalMatrix;
+      z = inValue;
+      DirtyCache(true);
+   }
+}
+
+#endif
 
 void DisplayObject::setScale9Grid(const DRect &inRect)
 {
@@ -1638,6 +1668,9 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    mNextWake = 0.0;
    displayState = sdsNormal;
    align = saTopLeft;
+   #ifdef NME_S3D
+   autos3d = true;
+   #endif
 
    #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
    quality = sqLow;
@@ -2030,6 +2063,9 @@ void Stage::RenderStage()
 {
    ColorTransform::TidyCache();
    AutoStageRender render(this,opaqueBackground);
+   
+   #ifndef NME_S3D
+
    if (render.Target().IsHardware())
       render.Target().mHardware->SetQuality(quality);
 
@@ -2045,6 +2081,45 @@ void Stage::RenderStage()
 
    state.mPhase = rpRender;
    Render(render.Target(),state);
+
+   #else
+   
+   S3DEye start = EYE_MIDDLE;
+   S3DEye end = EYE_MIDDLE;
+   if(autos3d && S3D::GetEnabled()) {
+
+      start = EYE_LEFT;
+      end = EYE_RIGHT;
+      
+   }
+
+   for(int eye = start; eye <= end; eye++) {
+
+      render.Target().mHardware->SetS3DEye(eye);
+
+      if (render.Target().IsHardware())
+         render.Target().mHardware->SetQuality(quality);
+
+      RenderState state(0, GetAA() );
+
+      state.mTransform.mMatrix = &mStageScale;
+
+      state.mClipRect = Rect( render.Width(), render.Height() );
+
+      state.mPhase = rpBitmap;
+      state.mRoundSizeToPOW2 = render.Target().IsHardware();
+      Render(render.Target(),state);
+
+      state.mPhase = rpRender;
+      Render(render.Target(),state);
+      
+   }
+
+   if(autos3d && S3D::GetEnabled()) {
+      render.Target().mHardware->EndS3DRender();
+   }
+   
+   #endif
 
    // Clear alpha masks
 }
