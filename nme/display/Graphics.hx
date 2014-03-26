@@ -102,7 +102,7 @@ class Graphics
       nme_gfx_draw_path(nmeHandle, commands, data, winding == GraphicsPathWinding.EVEN_ODD);
    }
 
-   /** @private */ public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0):Void {
+   public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0):Void {
       beginBitmapFill(sheet.nmeBitmap, null, false, inSmooth);
 
       if (inSmooth)
@@ -111,10 +111,10 @@ class Graphics
       nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, inXYID, inFlags);
    }
 
-   public function drawTriangles(vertices:Array<Float>, ?indices:Array<Int>, ?uvtData:Array<Float>, ?culling:TriangleCulling, ?colours:Array<Int>, blendMode:Int = 0, viewport:Array<Float> = null) 
+   public function drawTriangles(vertices:Array<Float>, ?indices:Array<Int>, ?uvtData:Array<Float>, ?culling:TriangleCulling, ?colours:Array<Int>, blendMode:Int = 0) 
    {
       var cull:Int = culling == null ? 0 : Type.enumIndex(culling) - 1;
-      nme_gfx_draw_triangles(nmeHandle, vertices, indices, uvtData, cull, colours, blendMode, viewport);
+      nme_gfx_draw_triangles(nmeHandle, vertices, indices, uvtData, cull, colours, blendMode);
    }
 
    public function endFill() 

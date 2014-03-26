@@ -3,7 +3,7 @@
 
 #include "Utils.h"
 #include "Graphics.h"
-#include "QuickVec.h"
+#include <nme/QuickVec.h>
 #include "Font.h"
 #include "Display.h"
 

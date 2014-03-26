@@ -1,14 +1,14 @@
-import flash.Lib;
-import flash.events.MouseEvent;
-import flash.events.Event;
-import flash.display.DisplayObject;
-import flash.display.IGraphicsData;
-import flash.display.BitmapData;
-import flash.display.Bitmap;
-import flash.display.GradientType;
-import flash.display.Sprite;
-import flash.display.StageDisplayState;
-import flash.geom.Matrix;
+import nme.Lib;
+import nme.events.MouseEvent;
+import nme.events.Event;
+import nme.display.DisplayObject;
+import nme.display.IGraphicsData;
+import nme.display.BitmapData;
+import nme.display.Bitmap;
+import nme.display.GradientType;
+import nme.display.Sprite;
+import nme.display.StageDisplayState;
+import nme.geom.Matrix;
 
 class Sample extends Sprite
 {
@@ -27,11 +27,7 @@ public function new()
 
    stage.frameRate = 60;
       
-   #if neko
-   var bd = new BitmapData(100,100,true,flash.display.BitmapData.createColor(0xcccccc,0xcc));
-   #else
    var bd = new BitmapData(100,100,true,0xcccccccc);
-   #end
    bd.draw(sp);
       
    var bm = new Bitmap(bd);
@@ -62,19 +58,19 @@ function OnKey(event)
 {
    switch(event.charCode)
    {
-       case "1".charCodeAt(0):
+       case "1".code:
           stage.quality = flash.display.StageQuality.LOW;
-       case "2".charCodeAt(0):
+       case "2".code:
           stage.quality = flash.display.StageQuality.MEDIUM;
-       case "3".charCodeAt(0):
+       case "3".code:
           stage.quality = flash.display.StageQuality.HIGH;
-       case "4".charCodeAt(0):
+       case "4".code:
           stage.quality = flash.display.StageQuality.BEST;
 
        #if nme
-       case "q".charCodeAt(0): flash.Lib.close();
+       case "q".code: flash.Lib.close();
        #end
-       case "f".charCodeAt(0):
+       case "f".code:
           stage.displayState = (stage.displayState==StageDisplayState.NORMAL) ?
               StageDisplayState.FULL_SCREEN : StageDisplayState.NORMAL;
    }

@@ -1,7 +1,7 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#include <QuickVec.h>
+#include <nme/QuickVec.h>
 #include <Sound.h>
 #include <Utils.h>
 
@@ -59,6 +59,7 @@ namespace nme
 		eAF_ogg,
 		eAF_wav,
 		eAF_mp3,
+		eAF_mid,
 		eAF_count
 	};
 	

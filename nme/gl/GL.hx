@@ -11,6 +11,18 @@ import nme.geom.Matrix3D;
 import nme.Lib;
 import nme.Loader;
 
+abstract NmeFloats(Dynamic)
+{
+   public inline function new(d:Dynamic) this = d;
+   @:to inline function toDynamic() return this;
+   @:from inline static function fromFloat32Array( f:Float32Array )
+        return new NmeFloats(f.getByteBuffer());
+   @:from inline static function fromArrayFloat( f:Array<Float> )
+        return new NmeFloats(f);
+}
+
+
+
 class GL 
 {
    /* ClearBufferMask */
@@ -452,22 +464,22 @@ class GL
 
    public static function bindBuffer(target:Int, buffer:GLBuffer):Void 
    {
-      nme_gl_bind_buffer(target, buffer == null ? 0 : buffer.id);
+      nme_gl_bind_buffer(target, buffer == null ? null : buffer.id);
    }
 
    public static function bindFramebuffer(target:Int, framebuffer:GLFramebuffer):Void 
    {
-      nme_gl_bind_framebuffer(target, framebuffer == null ? 0 : framebuffer.id);
+      nme_gl_bind_framebuffer(target, framebuffer == null ? null : framebuffer.id);
    }
 
    public static function bindRenderbuffer(target:Int, renderbuffer:GLRenderbuffer):Void 
    {
-      nme_gl_bind_renderbuffer(target, renderbuffer == null ? 0 : renderbuffer.id);
+      nme_gl_bind_renderbuffer(target, renderbuffer == null ? null : renderbuffer.id);
    }
 
    public static function bindTexture(target:Int, texture:GLTexture):Void 
    {
-      nme_gl_bind_texture(target, texture == null ? 0 : texture.id);
+      nme_gl_bind_texture(target, texture == null ? null : texture.id);
    }
 
    public static function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void 
@@ -834,7 +846,7 @@ class GL
 
    public static function isBuffer(buffer:GLBuffer):Bool 
    {
-      return buffer != null && buffer.id > 0 && nme_gl_is_buffer(buffer.id);
+      return buffer != null && nme_gl_is_buffer(buffer.id);
    }
 
    // This is non-static
@@ -846,27 +858,27 @@ class GL
 
    public static function isFramebuffer(framebuffer:GLFramebuffer):Bool 
    {
-      return framebuffer != null && framebuffer.id > 0 && nme_gl_is_framebuffer(framebuffer.id);
+      return framebuffer != null && nme_gl_is_framebuffer(framebuffer.id);
    }
 
    public static function isProgram(program:GLProgram):Bool 
    {
-      return program != null && program.id > 0 && nme_gl_is_program(program.id);
+      return program != null && nme_gl_is_program(program.id);
    }
 
    public static function isRenderbuffer(renderbuffer:GLRenderbuffer):Bool 
    {
-      return renderbuffer != null && renderbuffer.id > 0 && nme_gl_is_renderbuffer(renderbuffer.id);
+      return renderbuffer != null && nme_gl_is_renderbuffer(renderbuffer.id);
    }
 
    public static function isShader(shader:GLShader):Bool 
    {
-      return shader != null && shader.id > 0 && nme_gl_is_shader(shader.id);
+      return shader != null && nme_gl_is_shader(shader.id);
    }
 
    public static function isTexture(texture:GLTexture):Bool 
    {
-      return texture != null && texture.id > 0 && nme_gl_is_texture(texture.id);
+      return texture != null && nme_gl_is_texture(texture.id);
    }
 
    public static function lineWidth(width:Float):Void 
@@ -981,7 +993,7 @@ class GL
       nme_gl_uniform1f(location, x);
    }
 
-   public static function uniform1fv(location:GLUniformLocation, x:Array<Float>):Void 
+   public static function uniform1fv(location:GLUniformLocation, x:NmeFloats):Void 
    {
       nme_gl_uniform1fv(location, x);
    }
@@ -1001,7 +1013,7 @@ class GL
       nme_gl_uniform2f(location, x, y);
    }
 
-   public static function uniform2fv(location:GLUniformLocation, v:Array<Float>):Void 
+   public static function uniform2fv(location:GLUniformLocation, v:NmeFloats):Void 
    {
       nme_gl_uniform2fv(location, v);
    }
@@ -1021,7 +1033,7 @@ class GL
       nme_gl_uniform3f(location, x, y, z);
    }
 
-   public static function uniform3fv(location:GLUniformLocation, v:Array<Float>):Void 
+   public static function uniform3fv(location:GLUniformLocation, v:NmeFloats):Void 
    {
       nme_gl_uniform3fv(location, v);
    }
@@ -1041,7 +1053,7 @@ class GL
       nme_gl_uniform4f(location, x, y, z, w);
    }
 
-   public static function uniform4fv(location:GLUniformLocation, v:Array<Float>):Void 
+   public static function uniform4fv(location:GLUniformLocation, v:NmeFloats):Void 
    {
       nme_gl_uniform4fv(location, v);
    }
@@ -1078,7 +1090,7 @@ class GL
 
    public static function useProgram(program:GLProgram):Void 
    {
-      nme_gl_use_program(program == null ? 0 : program.id);
+      nme_gl_use_program(program == null ? null : program.id);
    }
 
    public static function validateProgram(program:GLProgram):Void 
@@ -1091,7 +1103,7 @@ class GL
       nme_gl_vertex_attrib1f(indx, x);
    }
 
-   public static function vertexAttrib1fv(indx:Int, values:Array<Float>):Void 
+   public static function vertexAttrib1fv(indx:Int, values:NmeFloats):Void 
    {
       nme_gl_vertex_attrib1fv(indx, values);
    }
@@ -1101,7 +1113,7 @@ class GL
       nme_gl_vertex_attrib2f(indx, x, y);
    }
 
-   public static function vertexAttrib2fv(indx:Int, values:Array<Float>):Void 
+   public static function vertexAttrib2fv(indx:Int, values:NmeFloats):Void 
    {
       nme_gl_vertex_attrib2fv(indx, values);
    }
@@ -1111,7 +1123,7 @@ class GL
       nme_gl_vertex_attrib3f(indx, x, y, z);
    }
 
-   public static function vertexAttrib3fv(indx:Int, values:Array<Float>):Void 
+   public static function vertexAttrib3fv(indx:Int, values:NmeFloats):Void 
    {
       nme_gl_vertex_attrib3fv(indx, values);
    }
@@ -1121,7 +1133,7 @@ class GL
       nme_gl_vertex_attrib4f(indx, x, y, z, w);
    }
 
-   public static function vertexAttrib4fv(indx:Int, values:Array<Float>):Void 
+   public static function vertexAttrib4fv(indx:Int, values:NmeFloats):Void 
    {
       nme_gl_vertex_attrib4fv(indx, values);
    }

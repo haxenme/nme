@@ -12,6 +12,7 @@ class Event
    public static var COMPLETE = "complete";
    public static var CONNECT = "connect";
    public static var CONTEXT3D_CREATE = "context3DCreate";
+   public static var CONTEXT3D_LOST = "context3DLost";
    public static var DEACTIVATE = "deactivate";
    public static var ENTER_FRAME = "enterFrame";
    public static var ID3 = "id3";
@@ -29,6 +30,7 @@ class Event
    public static var TAB_ENABLED_CHANGE = "tabEnabledChange";
    public static var TAB_INDEX_CHANGE = "tabIndexChange";
    public static var UNLOAD = "unload";
+   public static var VIDEO_FRAME = "videoFrame";
 
    public var bubbles(get_bubbles, never):Bool;
    public var cancelable(get_cancelable, never):Bool;

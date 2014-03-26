@@ -8,6 +8,7 @@ class System
 {
    public static var deviceID(get_deviceID, null):String;
    public static var totalMemory(get_totalMemory, null):Int;
+   public static var exeName(get_exeName, null):String;
 
    static public function exit(?inCode:Int) 
    {
@@ -41,6 +42,12 @@ class System
       #else
          #error "System not supported on this target"
       #end
+   }
+
+   private static function get_exeName():String
+   {
+      var func = Loader.load("nme_sys_get_exe_name", 0);
+      return func();
    }
 
    // Native Methods

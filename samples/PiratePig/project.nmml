@@ -4,8 +4,7 @@
 	<meta title="Pirate Pig" package="io.nme.samples.piratepig" version="1.0.0" company="NME" />
 	<app path="Export" file="PiratePig" main="io.nme.samples.piratepig.PiratePig" />
 	
-	<window width="800" height="600" if="desktop" />
-	<window width="0" height="0" if="html5" />
+	<window width="600" height="800" />
 	
 	<source path="Source" />
 	
@@ -25,7 +24,7 @@
 		<sound path="5.mp3" id="sound5" />
 		<music path="theme.mp3" id="soundTheme" />
 	</assets>
-	
+
 	<assets path="Assets/sounds" rename="sounds" unless="web">
 		<sound path="3.wav" id="sound3" />
 		<sound path="4.wav" id="sound4" />

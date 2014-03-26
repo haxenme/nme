@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+  <meta
+     title="NME Application"
+     package="org.haxe.nme.triangles"
+     version="1.0.0"
+     company="nme" 
+  />
+  
+  <app
+     file="Application" 
+     main="Sample"
+  />
+  
+  <window
+     width="640" 
+     height="480" 
+     orientation="landscape" 
+     fps="60"
+     background="0xffffff"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+  />
+  
+  <assets from="../03-Bitmaps/" embed="true" >
+     <asset name="Image.jpg" />
+  </assets>
+  
+  <haxelib name="nme" />
+  
+</project>

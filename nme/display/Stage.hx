@@ -8,6 +8,7 @@ import nme.ui.Keyboard;
 #if stage3d
 import nme.display.Stage3D;
 #end
+import nme.media.StageVideo;
 
 import nme.events.JoystickEvent;
 import nme.events.MouseEvent;
@@ -23,6 +24,11 @@ import nme.media.SoundChannel;
 import nme.net.URLLoader;
 import nme.Loader;
 import nme.Vector;
+import nme.events.StageVideoAvailabilityEvent;
+
+#if cpp
+import cpp.vm.Gc;
+#end
 
 
 class Stage extends DisplayObjectContainer 
@@ -35,12 +41,19 @@ class Stage extends DisplayObjectContainer
     */
    public static var nmeEarlyWakeup = 0.005;
 
-   public static var OrientationPortrait = 1;
-   public static var OrientationPortraitUpsideDown = 2;
-   public static var OrientationLandscapeRight = 3;
-   public static var OrientationLandscapeLeft = 4;
-   public static var OrientationFaceUp = 5;
-   public static var OrientationFaceDown = 6;
+   public static inline var OrientationPortrait = 1;
+   public static inline var OrientationPortraitUpsideDown = 2;
+   public static inline var OrientationLandscapeRight = 3;
+   public static inline var OrientationLandscapeLeft = 4;
+   public static inline var OrientationFaceUp = 5;
+   public static inline var OrientationFaceDown = 6;
+
+   // For setting 'fixed' orientation...
+   public static inline var OrientationPortraitAny = 7;
+   public static inline var OrientationLandscapeAny = 8;
+   public static inline var OrientationAny = 9;
+
+   public static inline var OrientationUseFunction = -1;
 
    public var active(default, null):Bool;
    public var align(get_align, set_align):StageAlign;
@@ -62,6 +75,7 @@ class Stage extends DisplayObjectContainer
    #if stage3d
    public var stage3Ds:Vector<Stage3D>;
    #end
+   public var stageVideos:Vector<StageVideo>;
 
    private static var efLeftDown = 0x0001;
    private static var efShiftDown = 0x0002;
@@ -76,6 +90,8 @@ class Stage extends DisplayObjectContainer
    private static var sDownEvents = [ "mouseDown", "middleMouseDown", "rightMouseDown" ];
    private static var sUpEvents = [ "mouseUp", "middleMouseUp", "rightMouseUp" ];
 
+   public static var nmeQuitting = false;
+
    /** @private */ private var nmeJoyAxisData:#if haxe3 Map <Int, #else IntHash <#end Array <Float>>;
    /** @private */ private var nmeDragBounds:Rectangle;
    /** @private */ private var nmeDragObject:Sprite;
@@ -89,6 +105,19 @@ class Stage extends DisplayObjectContainer
    /** @private */ private var nmeLastRender:Float;
    /** @private */ private var nmeMouseOverObjects:Array<InteractiveObject>;
    /** @private */ private var nmeTouchInfo:#if haxe3 Map <Int, #else IntHash <#end TouchInfo>;
+
+   #if cpp
+   var nmePreemptiveGcFreq:Int;
+   var nmePreemptiveGcSince:Int;
+   var nmeCollectionLock:cpp.vm.Lock;
+   var nmeCollectionAgency:cpp.vm.Thread;
+   var nmeFrameAlloc:Array<Int>;
+   var nmeLastCurrentMemory:Int;
+   var nmeLastPreempt:Bool;
+   var nmeFrameMemIndex:Int;
+   #end
+
+
    public function new(inHandle:Dynamic, inWidth:Int, inHeight:Int) 
    {
       super(inHandle, "Stage");
@@ -117,6 +146,18 @@ class Stage extends DisplayObjectContainer
       stage3Ds = new Vector();
       stage3Ds.push(new Stage3D());
       #end
+      stageVideos = new Vector<StageVideo>(1);
+      stageVideos[0] = new StageVideo(this);
+
+      #if cpp
+      nmePreemptiveGcFreq = 0;
+      nmePreemptiveGcSince = 0;
+      nmeLastCurrentMemory = 0;
+      nmeLastPreempt = false;
+      nmeFrameMemIndex = 0;
+      #end
+
+
    }
 
    public static dynamic function getOrientation():Int 
@@ -132,6 +173,13 @@ class Stage extends DisplayObjectContainer
    public function invalidate():Void 
    {
       nmeInvalid = true;
+   }
+
+   override public function addEventListener(type:String, listener:Dynamic->Void, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void 
+   {
+       super.addEventListener(type, listener, useCapture, priority, useWeakReference);
+       if (type==StageVideoAvailabilityEvent.STAGE_VIDEO_AVAILABILITY)
+          dispatchEvent( new StageVideoAvailabilityEvent(StageVideoAvailabilityEvent.STAGE_VIDEO_AVAILABILITY,false,false,"available") );
    }
 
    /** @private */ private function nmeCheckFocusInOuts(inEvent:Dynamic, inStack:Array<InteractiveObject>)
@@ -262,8 +310,10 @@ class Stage extends DisplayObjectContainer
 	  #end
    }
 
-   /** @private */ private function nmeDoProcessStageEvent(inEvent:Dynamic):Float {
+   /** @private */ private function nmeDoProcessStageEvent(inEvent:Dynamic):Float
+   {
       var result = 0.0;
+      try {
       //if (inEvent.type!=9) trace("Stage Event : " + inEvent);
       var type:Int = Std.int(Reflect.field(inEvent, "type"));
 
@@ -301,7 +351,7 @@ class Stage extends DisplayObjectContainer
 
          case 10: // etQuit
             if (onQuit != null)
-               untyped onQuit();
+               onQuit();
 
          case 11: // etFocus
             nmeOnFocus(inEvent);
@@ -370,10 +420,22 @@ class Stage extends DisplayObjectContainer
          case 29: // etSysWM
             nmeOnSysWM(inEvent);
 
+         case 30: // etContextLost
+            nmeOnContextLost(inEvent);
+
          // TODO: user, sys_wm, sound_finished
       }
 
       result = nmeUpdateNextWake();
+
+      }
+      catch(e:Dynamic)
+      {
+        var stack = haxe.CallStack.exceptionStack();
+        trace(e);
+        trace(haxe.CallStack.toString(stack));
+        throw(e);
+      }
 
       return result;
    }
@@ -424,6 +486,18 @@ class Stage extends DisplayObjectContainer
 
       return inOtherTimers;
    }
+
+   override private function set_opaqueBackground(inBG:Null<Int>):Null<Int> 
+   {
+      if (inBG == null)
+         DisplayObject.nme_display_object_set_bg(nmeHandle, 0);
+      else
+         DisplayObject.nme_display_object_set_bg(nmeHandle, inBG | 0xff000000);
+
+      return inBG;
+   }
+
+
 
    /** @private */ private function nmeOnChange(inEvent) {
       var obj:DisplayObject = nmeFindByID(inEvent.id);
@@ -653,6 +727,13 @@ class Stage extends DisplayObjectContainer
       nmeDispatchEvent(evt);
    }
 
+   private function nmeOnContextLost(inEvent:Dynamic) 
+   {
+      var evt = new Event(Event.CONTEXT3D_LOST);
+      nmeBroadcast(evt);
+   }
+
+
    /** @private */ private function nmeOnTouch(inEvent:Dynamic, inType:String, touchInfo:TouchInfo) {
       var stack = new Array<InteractiveObject>();
       var obj:DisplayObject = nmeFindByID(inEvent.id);
@@ -692,7 +773,11 @@ class Stage extends DisplayObjectContainer
       }
    }
 
-   /** @private */ public function nmePollTimers() {
+   public function nmePollTimers()
+   {
+      if (nmeQuitting)
+        return;
+
       //trace("poll");
       Timer.nmeCheckTimers();
       SoundChannel.nmePollComplete();
@@ -715,6 +800,71 @@ class Stage extends DisplayObjectContainer
          nmeBroadcast(new Event(Event.RENDER));
       }
 
+      #if cpp
+      var rendered = false;
+      if (nmeCollectionAgency!=null && nmePreemptiveGcFreq!=0)
+      {
+         nmePreemptiveGcSince++;
+         var preempt = nmePreemptiveGcSince>=nmePreemptiveGcFreq;
+
+         #if (hxcpp_api_level >= 310)
+         // Smart preemptive
+         if (nmePreemptiveGcFreq<0)
+         {
+            if (nmeFrameAlloc==null)
+               nmeFrameAlloc = [];
+
+            var current = Gc.memInfo(Gc.MEM_INFO_CURRENT);
+            if (nmeLastCurrentMemory>0)
+            {
+               var frameAlloc = current - nmeLastCurrentMemory;
+               if (frameAlloc>=0)
+               {
+                  nmeFrameAlloc[nmeFrameMemIndex++] = frameAlloc;
+                  if (nmeFrameMemIndex>10)
+                     nmeFrameMemIndex = 0;
+               }
+               else if (!nmeLastPreempt)
+               {
+                  //trace("Missed alloc!");
+               }
+            }
+            nmeLastCurrentMemory = current;
+
+            if (nmeFrameAlloc.length>0)
+            {
+               var sum = 0;
+               for(f in nmeFrameAlloc)
+                  sum += f;
+
+               var reserved =Gc.memInfo(Gc.MEM_INFO_RESERVED);
+               preempt = sum * 1.2 /nmeFrameAlloc.length + current > reserved;
+            }
+            else
+               preempt = false;
+         }
+         #end
+
+         nmeLastPreempt = preempt;
+         if (preempt)
+         {
+            //trace("preempt");
+            nmePreemptiveGcSince = 0;
+            rendered = true;
+            nme_set_render_gc_free(true);
+            Gc.enterGCFreeZone();
+            nmeCollectionLock.release();
+            nme_render_stage(nmeHandle);
+            Gc.exitGCFreeZone();
+            nme_set_render_gc_free(false);
+         }
+         else
+         {
+            //trace("frame");
+         }
+      }
+      if (!rendered)
+      #end
       nme_render_stage(nmeHandle);
    }
 
@@ -779,6 +929,34 @@ class Stage extends DisplayObjectContainer
 
       return next_wake;
    }
+
+   public function setPreemtiveGcFrequency(inFrames:Int)
+   {
+      #if cpp
+      #if !(hxcpp_api_level>=310)
+      if (inFrames<0)
+         inFrames = 0;
+      #end
+      nmePreemptiveGcSince = 0;
+      nmePreemptiveGcFreq = inFrames;
+      if (nmeCollectionLock==null && inFrames!=0)
+      {
+         nmeCollectionLock = new cpp.vm.Lock();
+         nmeCollectionAgency = cpp.vm.Thread.create( function() {
+           while(true)
+           {
+              nmeCollectionLock.wait();
+              Gc.run(false);
+           }
+           } );
+      }
+      #end
+   }
+   public function setSmartPreemtiveGc()
+   {
+      setPreemtiveGcFrequency(-1);
+   }
+
    
    public function resize (width:Int, height:Int):Void {
       
@@ -786,12 +964,13 @@ class Stage extends DisplayObjectContainer
       
    }
 
+      // If you set this, you don't need to set the 'shouldRotateInterface' function.
    public static function setFixedOrientation(inOrientation:Int) 
    {
-      // If you set this, you don't need to set the 'shouldRotateInterface' function.
       nme_stage_set_fixed_orientation(inOrientation);
    }
 
+   // You will need to call "setFixedOrientation(OrientationUseFunction)" before this takes effect...
    public static dynamic function shouldRotateInterface(inOrientation:Int):Bool 
    {
       return inOrientation == OrientationPortrait;
@@ -909,6 +1088,7 @@ class Stage extends DisplayObjectContainer
    // Native Methods
    private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler", 4);
    private static var nme_render_stage = Loader.load("nme_render_stage", 1);
+   private static var nme_set_render_gc_free = Loader.load("nme_set_render_gc_free", 1);
    private static var nme_stage_get_focus_id = Loader.load("nme_stage_get_focus_id", 1);
    private static var nme_stage_set_focus = Loader.load("nme_stage_set_focus", 3);
    private static var nme_stage_get_focus_rect = Loader.load("nme_stage_get_focus_rect", 1);

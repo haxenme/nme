@@ -1,7 +1,6 @@
 package ;
 
 import nme.display.Sprite;
-import nme.RGB;
 import nme.display.OpenGLView;
 import nme.display.BitmapData;
 import nme.gl.GL;
@@ -283,7 +282,7 @@ class ColourBlend extends ProgramPosTexExtra
 
    override public function createTexture()
    {
-      bmp = new BitmapData(64,64,false,RGB.WHITE);
+      bmp = new BitmapData(64,64,false,0xffffff);
    }
    override public function fillTexture()
    {

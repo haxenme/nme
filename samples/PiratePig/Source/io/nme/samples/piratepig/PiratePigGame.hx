@@ -58,7 +58,7 @@ class PiratePigGame extends Sprite {
 	
 	
 	private function addTile (row:Int, column:Int, animate:Bool = true):Void {
-		
+	
 		var tile = null;
 		var type = Math.round (Math.random () * (tileImages.length - 1));
 		
@@ -162,7 +162,7 @@ class PiratePigGame extends Sprite {
 		Lib.current.stage.addEventListener (MouseEvent.MOUSE_UP, stage_onMouseUp);
 		addChild (TileContainer);
 		
-		IntroSound = Assets.getSound ("soundTheme");
+		IntroSound = Assets.getMusic ("soundTheme");
 		Sound3 = Assets.getSound ("sound3");
 		Sound4 = Assets.getSound ("sound4");
 		Sound5 = Assets.getSound ("sound5");

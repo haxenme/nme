@@ -1,22 +1,9 @@
 package nme;
-#if (!haxe3)
-
 
 #if flash
 typedef Vector<T> = flash.Vector<T>;
 #else
-typedef Vector<T> = Array<T>;
-#end
-
-
-#else
-
-
-#if flash
-private typedef VectorData<T> = flash.Vector<T>;
-#else
 private typedef VectorData<T> = Array<T>;
-#end
 
 
 @:arrayAccess abstract Vector<T>(VectorData<T>) {
@@ -258,38 +245,6 @@ private typedef VectorData<T> = Array<T>;
 }
 
 
-#if flash
-private class VectorIter<T> {
-	
-	
-	private var index:Int;
-    private var vector:flash.Vector<T>;
-	
-	
-    public function new(vector:flash.Vector<T>) {
-		
-		index = 0;
-        this.vector = vector;
-		
-    }
-	
-	
-    public function hasNext() {
-		
-        return (index < vector.length - 1);
-		
-    }
-	
-	
-    public function next() {
-		
-        return vector[index++];
-		
-    }
-	
-	
-}
 #end
 
 
-#end

@@ -1,9 +1,9 @@
-import flash.display.BitmapData;
-import flash.display.Bitmap;
-import flash.display.Sprite;
-import flash.geom.Rectangle;
-import flash.utils.ByteArray;
-import flash.Memory;
+import nme.display.BitmapData;
+import nme.display.Bitmap;
+import nme.display.Sprite;
+import nme.geom.Rectangle;
+import nme.utils.ByteArray;
+import nme.Memory;
 
 class Sample extends Sprite
 {
@@ -13,7 +13,6 @@ class Sample extends Sprite
    function new()
    {
       super();
-      flash.Lib.current.addChild(this);
 
       mBitmap = ApplicationMain.getAsset("image1.jpg");
 
@@ -169,9 +168,5 @@ class Sample extends Sprite
    }
    
 
-   public static function main()
-   {
-      new Sample();
-   }
 }
 

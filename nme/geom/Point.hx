@@ -3,7 +3,7 @@ package nme.geom;
 
 class Point 
 {
-   public var length(get_length, null):Float;
+   public var length(get_length, never):Float;
    public var x:Float;
    public var y:Float;
 
@@ -21,6 +21,12 @@ class Point
    public function clone():Point 
    {
       return new Point(x, y);
+   }
+   public function setTo(inX:Float, inY:Float):Point 
+   {
+      x = inX;
+      y = inY;
+      return this;
    }
 
    public function copyFrom(sourcePoint:Point):Void

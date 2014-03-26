@@ -20,7 +20,7 @@ class Loader extends Sprite
 
    /** @private */ private var nmeImage:BitmapData;
    #if swf
-   /** @private */ private var nmeSWF:format.SWF;
+   /** @private */ //private var nmeSWF:format.SWF;
    #end
    public function new() 
    {
@@ -36,14 +36,6 @@ class Loader extends Sprite
       if (inBytes == null)
          return false;
       
-      //#if swf
-      //try {
-         //nmeSWF = new format.SWF(inBytes);
-         //content = nmeSWF.createMovieClip();
-         //return true;
-      //} catch(e:Dynamic) {}
-      //#end
-
       try 
       {
          nmeImage = BitmapData.loadFromBytes(inBytes);

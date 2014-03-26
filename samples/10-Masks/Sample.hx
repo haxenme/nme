@@ -1,4 +1,3 @@
-#if !flash
 import nme.display.Sprite;
 import nme.events.Event;
 import nme.geom.Rectangle;
@@ -11,21 +10,8 @@ import nme.geom.Matrix;
 import nme.events.MouseEvent;
 import nme.filters.GlowFilter;
 import nme.filters.BitmapFilter;
-#else
-import flash.display.Sprite;
-import flash.events.Event;
-import flash.geom.Rectangle;
-import flash.display.BitmapData;
-import flash.display.Graphics;
-import flash.Lib;
-import flash.display.Shape;
-import flash.text.TextField;
-import flash.geom.Matrix;
-import flash.events.MouseEvent;
-import flash.filters.GlowFilter;
-import flash.filters.BitmapFilter;
-#end
 
+// nme:classPath=..
 import common.Scrollbar;
 
 
@@ -123,6 +109,7 @@ class Sample extends Sprite
        mask_obj.stopDrag();
    }
 
+   #if !nme_install_tool
 	public static function main()
 	{
 	#if !flash
@@ -132,6 +119,7 @@ class Sample extends Sprite
 		new Sample();
 	#end
 	}
+   #end
 
 
 }

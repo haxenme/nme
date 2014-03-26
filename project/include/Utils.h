@@ -4,7 +4,7 @@
 #include <hx/CFFI.h>
 #include <string>
 #include <vector>
-#include <QuickVec.h>
+#include <nme/QuickVec.h>
 
 
 #ifdef BLACKBERRY
@@ -66,6 +66,8 @@ inline void DontLog(const char *inFormat,...) { }
 
 namespace nme
 {
+
+bool InitOGLFunctions();
 
 extern std::string gAssetBase;
 extern std::string gCompany;
@@ -185,6 +187,10 @@ namespace nme {
 #endif
 
 #endif
+
+
+std::string GetExeName();
+
 
 std::string WideToUTF8(const WString &inWideString);
 

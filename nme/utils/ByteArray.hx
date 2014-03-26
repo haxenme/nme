@@ -79,7 +79,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       var slen = function(inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
 
       var init = Loader.load("nme_byte_array_init", 4);
-      init(factory, slen, resize, bytes);
+      if (init!=null)
+         init(factory, slen, resize, bytes);
    }
    #end
 

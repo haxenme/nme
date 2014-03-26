@@ -13,7 +13,7 @@ import nme.ui.Multitouch;
 
 class Sample extends Sprite
 {
-   var colourHash:IntHash<Int>;
+   var colourHash:Map<Int,Int>;
    var mBitmap:BitmapData;
    var mMultiTouch:Bool;
    
@@ -28,7 +28,7 @@ class Sample extends Sprite
       trace("Using multi-touch : " + mMultiTouch);
       mBitmap = new BitmapData(320,480);
       addChild(new Bitmap(mBitmap));
-      colourHash = new IntHash<Int>();
+      colourHash = new Map<Int,Int>();
    
       var me = this;
       var cols = [ 0xff0000, 0x00ff00, 0x0000ff ];
@@ -87,11 +87,6 @@ class Sample extends Sprite
    function OnUp(event)
    {
       colourHash.remove(mMultiTouch ? event.touchPointID : 0);
-   }
-   
-   public static function main()
-   {
-      new Sample();
    }
    
 }

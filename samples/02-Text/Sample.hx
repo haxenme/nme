@@ -3,7 +3,7 @@ import nme.Lib;
 class Sample
 {
 
-public static function main()
+public function new()
 {
    var gfx = Lib.current.graphics;
    gfx.beginFill(0x000000);

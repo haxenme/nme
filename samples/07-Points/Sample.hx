@@ -11,6 +11,7 @@ import nme.text.TextFormat;
  * Based on code by Joa Ebert
  */
 
+// nme:background=0x404040
 
 class Particle 
 {
@@ -181,11 +182,13 @@ class Sample extends Sprite
 
    }
 
+#if !nme_install_tool
 public static function main()
 {
    nme.Lib.create(function(){new Sample();},550,400,60,0x202040,
         (1*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
 }
+#end
 
 
 }

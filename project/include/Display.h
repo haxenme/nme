@@ -1,7 +1,7 @@
 #ifndef NME_DISPLAY_H
 #define NME_DISPLAY_H
 
-#include <Object.h>
+#include <nme/Object.h>
 #include <Utils.h>
 #include <Geom.h>
 #include <Graphics.h>
@@ -20,7 +20,9 @@ enum
 
 extern unsigned int gDisplayRefCounting;
 
+extern bool gNmeRenderGcFree;
 extern bool gSDLIsInit;
+extern int  gSDLMixerFreq;
 
 enum EventType
 {
@@ -60,6 +62,8 @@ enum EventType
    etJoyButtonUp, // 28
    
    etSysWM, //29
+
+   etContextLost, // 30
 };
 
 enum EventFlags
@@ -83,6 +87,7 @@ enum EventResult
 {
    erOk,
    erCancel,
+   erSpecial,
 };
 
 struct Event
@@ -434,6 +439,8 @@ public:
    virtual void setMultitouchActive(bool inActive) {  }
    virtual bool getMultitouchActive() {  return false; }
 
+   virtual uint32 getBackgroundMask() { return 0xffffffff; }
+
    Matrix GetFullMatrix(bool inStageScaling);
    bool FinishEditOnEnter();
 
@@ -456,6 +463,8 @@ public:
 
    void RemovingFromStage(DisplayObject *inObject);
    Stage  *getStage() { return this; }
+
+   virtual class StageVideo *createStageVideo(void *) { return 0; }
 
 
    DisplayObject *GetFocusObject() { return mFocusObject; }
@@ -497,6 +506,7 @@ public:
 
 class HardwareSurface;
 class HardwareContext;
+class HardwareRenderer;
 
 class ManagedStage : public Stage
 {
@@ -505,7 +515,7 @@ public:
    ~ManagedStage();
 
    void SetCursor(Cursor inCursor);
-   bool isOpenGL() const { return mHardwareContext; }
+   bool isOpenGL() const { return mHardwareRenderer; }
    Surface *GetPrimarySurface();
 
    int Width() { return mActiveWidth; }
@@ -525,7 +535,7 @@ protected:
    int             mActiveWidth;
    int             mActiveHeight;
    HardwareSurface *mHardwareSurface;
-   HardwareContext *mHardwareContext;
+   HardwareRenderer *mHardwareRenderer;
    bool            mIsHardware;
    Cursor          mCursor;
 };

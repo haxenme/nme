@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+  <meta
+     title="NME Application"
+     package="org.haxe.nme.stagevideo"
+     version="1.0.0"
+     company="nme" 
+  />
+  
+  <app
+     file="StageVideo" 
+     main="Main"
+  />
+
+  
+  <window
+     width="640" 
+     height="480" 
+     orientation="any" 
+     fps="60"
+     background="0x000040"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+     alphaBuffer="true"
+  />
+  
+  <source path="src" />
+
+  <templatePath name="templates" />
+  
+  <haxelib name="nme" />
+
+  <haxedef name="network-sandbox" if="flash"/>
+
+  <assets path="assets">
+    <image name="buttons.png" id="buttons" />
+  </assets>
+  
+</project>

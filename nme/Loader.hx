@@ -11,6 +11,7 @@ import sys.io.Process;
 class Loader 
 {
    private static var moduleInit = false;
+   private static var foundNdll = false;
    private static var moduleName = "";
 
    #if (iphone || android || emscripten)
@@ -60,6 +61,8 @@ class Loader
    {
       if (moduleInit) 
       {
+         if (!foundNdll)
+            return null;
          return Lib.load(moduleName, func, args);
       }
 
@@ -110,6 +113,8 @@ class Loader
 
       loaderTrace("Result : " + result );
 
+      foundNdll = result!=null;
+
       #if neko
       loadNekoAPI();
       #end
@@ -127,8 +132,13 @@ class Loader
          loaderTrace("Found nekoapi @ " + moduleName);
          init(function(s) return new String(s), function(len:Int) { var r = []; if (len > 0) r[len - 1] = null; return r; }, null, true, false);
 
-      } else
+      }
+      else
+      {
+         #if !ndll_silent_fail
          throw("Could not find NekoAPI interface.");
+         #end
+      }
    }
    #end
 

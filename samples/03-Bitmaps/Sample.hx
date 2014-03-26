@@ -1,18 +1,3 @@
-#if flash
-import flash.Lib;
-import flash.events.MouseEvent;
-import flash.events.Event;
-import flash.display.DisplayObject;
-import flash.display.BitmapData;
-import flash.display.Loader;
-import flash.display.Sprite;
-import flash.display.Shape;
-import flash.display.Bitmap;
-import flash.geom.Matrix;
-import flash.geom.Rectangle;
-import flash.utils.ByteArray;
-import flash.net.URLRequest;
-#else
 import nme.Lib;
 import nme.events.MouseEvent;
 import nme.events.Event;
@@ -26,6 +11,9 @@ import nme.geom.Matrix;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
 import nme.net.URLRequest;
+
+#if nme_install_tool
+#error "This sample shows how to use resources without the nme tool."
 #end
 
 
@@ -50,7 +38,7 @@ public function new(image1:BitmapData, image2:BitmapData, image3:BitmapData)
    for(y in 0...100)
       for(x in 0...50)
          dest.setPixel32(x,y,dest.getPixel32(99-x,y));
-   var col = #if neko { rgb:0xff0000, a:0x80 } #else 0x80ff0000 #end;
+   var col = 0xffff0000;
    for(i in 0...100)
       dest.setPixel32(i,i,col);
 

@@ -22,18 +22,18 @@ public:
    {
       mActive = true;
 
-      double fixed_x0 = inGrid.x - inExt.mMinX;
-      double fixed_x1 = inExt.mMaxX - inGrid.x1();
+      double fixed_x0 = inGrid.x - inExt.minX;
+      double fixed_x1 = inExt.maxX - inGrid.x1();
       X0 = inGrid.x;
       X1 = inGrid.x1();
-      X1Off = inExt.mMaxX*inSX - fixed_x1 - X1;
+      X1Off = inExt.maxX*inSX - fixed_x1 - X1;
       SX = inGrid.w ? (inExt.Width()*inSX - fixed_x0 - fixed_x1)/inGrid.w : 0;
 
-      double fixed_y0 = inGrid.y - inExt.mMinY;
-      double fixed_y1 = inExt.mMaxY - inGrid.y1();
+      double fixed_y0 = inGrid.y - inExt.minY;
+      double fixed_y1 = inExt.maxY - inGrid.y1();
       Y0 = inGrid.y;
       Y1 = inGrid.y1();
-      Y1Off = inExt.mMaxY*inSY - fixed_y1 - Y1;
+      Y1Off = inExt.maxY*inSY - fixed_y1 - Y1;
       SY = inGrid.h ? (inExt.Height()*inSY - fixed_y0 - fixed_y1)/inGrid.h : 0;
    }
    void Deactivate() { mActive = false; }
@@ -69,14 +69,14 @@ public:
    Matrix GetFillMatrix(const Extent2DF &inExtent)
    {
       // The mapping of the edges should remain unchanged ...
-      double x0 = TransX(inExtent.mMinX);
-      double x1 = TransX(inExtent.mMaxX);
-      double y0 = TransY(inExtent.mMinY);
-      double y1 = TransY(inExtent.mMaxY);
+      double x0 = TransX(inExtent.minX);
+      double x1 = TransX(inExtent.maxX);
+      double y0 = TransY(inExtent.minY);
+      double y1 = TransY(inExtent.maxY);
       double w = inExtent.Width();
       double h = inExtent.Height();
       Matrix result;
-      result.mtx = -inExtent.mMinX;
+      result.mtx = -inExtent.minX;
       if (w!=0)
       {
          double s = (x1-x0)/w;
@@ -85,7 +85,7 @@ public:
       }
       result.mtx += x0;
 
-      result.mty = -inExtent.mMinY;
+      result.mty = -inExtent.minY;
       if (h!=0)
       {
          double s = (y1-y0)/h;

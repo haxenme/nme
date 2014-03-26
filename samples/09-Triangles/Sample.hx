@@ -1,4 +1,3 @@
-#if !flash
 import nme.display.Sprite;
 import nme.events.Event;
 import nme.geom.Rectangle;
@@ -6,16 +5,6 @@ import nme.display.BitmapData;
 import nme.display.Graphics;
 import nme.display.TriangleCulling;
 import nme.Lib;
-#else
-import flash.display.Sprite;
-import flash.events.Event;
-import flash.geom.Rectangle;
-import flash.display.BitmapData;
-import flash.display.Graphics;
-import flash.display.TriangleCulling;
-import flash.Lib;
-#end
-
 
 
 class Sample extends Sprite 
@@ -24,35 +13,24 @@ class Sample extends Sprite
    var s0:Sprite;
    var s1:Sprite;
    var s2:Sprite;
+   var s3:Sprite;
 
    public function new()
    {
       super();
-      Lib.current.addChild(this);
       addChild(s0 = new Sprite());
       addChild(s1 = new Sprite());
       addChild(s2 = new Sprite());
+      addChild(s3 = new Sprite());
 
       s0.scaleX = s0.scaleY = 0.5;
       s1.scaleX = s1.scaleY = 0.5;
       s2.scaleX = s2.scaleY = 0.5;
-      s1.x = 550/2;
-      s2.y = 400/2;
+      s3.scaleX = s3.scaleY = 0.5;
+      s1.x = s3.x = 550/2;
+      s2.y = s3.y = 400/2;
 
-      #if !flash
-		onLoaded(BitmapData.load("../03-Bitmaps/Image.jpg"));
-		#else
-       var loader = new flash.display.Loader();
-       var me = this;
-       loader.contentLoaderInfo.addEventListener(flash.events.Event.COMPLETE,
-          function(e:flash.events.Event)
-             {
-             var obj:flash.display.Bitmap = untyped loader.content;
-             me.onLoaded(obj.bitmapData);
-             }
-          );
-       loader.load(new flash.net.URLRequest("../03-Bitmaps/Image.jpg"));
-		#end
+		onLoaded( nme.Assets.getBitmapData("Image.jpg") );
    }
 
 	function onLoaded(inData:BitmapData)
@@ -99,13 +77,10 @@ class Sample extends Sprite
 		  300.0*sx, 200.0*sy, w1,
 		  300.0*sx, 000.0*sy, w1  ];
 
-      #if cpp
 		var cols = [ 0xffff0000,
                    0xff00ff00,
                    0xff0000ff,
                    0xffffffff ];
-      #end
-
 		var gfx = s0.graphics;
       gfx.clear();
 		gfx.beginBitmapFill(inData);
@@ -118,12 +93,17 @@ class Sample extends Sprite
 		gfx.lineStyle(4,0x0000ff);
       drawTriangles(gfx, vertices, indices, tex_uv );
 
-      #if cpp
+      #if (cpp||neko)
 		var gfx = s2.graphics;
       gfx.clear();
-		gfx.beginFill(0x000000);
 		gfx.lineStyle(4,0x808080);
       drawTriangles(gfx, vertices, indices, null, null, cols );
+
+		var gfx = s3.graphics;
+      gfx.clear();
+		gfx.beginBitmapFill(inData);
+		gfx.lineStyle(4,0x808080);
+      drawTriangles(gfx, vertices, indices, tex_uvt, null, cols );
       #end
    }
 
@@ -144,21 +124,6 @@ class Sample extends Sprite
       #end
 
    }
-
-   private function onEnterFrame( event: Event ): Void
-   {
-   }
-
-public static function main()
-{
-#if !flash
-   nme.Lib.create(function(){new Sample();},550,400,60,0xffeeee,
-        (1*nme.Lib.HARDWARE) | nme.Lib.RESIZABLE);
-#else
-   new Sample();
-#end
-}
-
 
 }
 

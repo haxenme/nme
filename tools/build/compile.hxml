@@ -1,0 +1,3 @@
+-lib hxcpp
+-main hxcpp.Builder 
+-neko ../../project/build.n

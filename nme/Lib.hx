@@ -50,13 +50,19 @@ class Lib
    static public var file(default, null):String;
    static public var silentRecreate:Bool = false;
 
+   static public var build(get, null):String;
+   static public var ndllVersion(get, null):Int;
+   static public var nmeStateVersion(get, null):String;
+   static public var bits(get, null):Int;
+
    public static function close() 
    {
+      Stage.nmeQuitting = true;
       var close = Loader.load("nme_close", 0);
       close();
    }
 
-   public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0, inColour:Int = 0xffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData, ?inStageClass:Class<nme.display.Stage>) 
+   public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0, inColour:Int = 0xffffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData, ?inStageClass:Class<nme.display.Stage>) 
    {
       if (sIsInit) 
       {
@@ -85,7 +91,7 @@ class Lib
 
          Lib.nmeStage =
             stageClass==null ? new Stage(stage_handle, inWidth, inHeight) :
-             Type.createInstance (stageClass, [stage_handle, inWidth, inHeight]);
+             Type.createInstance(stageClass, [stage_handle, inWidth, inHeight]);
 
          Lib.nmeStage.frameRate = inFrameRate;
          Lib.nmeStage.opaqueBackground = inColour;
@@ -217,6 +223,11 @@ class Lib
       return nmeStage;
    }
 
+   static public function get_build():String { return Version.name; }
+   static public function get_ndllVersion():Int { return nme_get_ndll_version(); }
+   static public function get_nmeStateVersion():String { return nme_get_nme_state_version(); }
+   static public function get_bits():Int { return nme_get_bits(); }
+
    // Native Methods
    #if android
    private static var nme_post_ui_callback = Loader.load("nme_post_ui_callback", 1);
@@ -226,6 +237,9 @@ class Lib
    private static var nme_get_url = Loader.load("nme_get_url", 1);
    private static var nme_pause_animation = Loader.load("nme_pause_animation", 0);
    private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
+   private static var nme_get_ndll_version = Loader.load("nme_get_ndll_version", 0);
+   private static var nme_get_nme_state_version = Loader.load("nme_get_ndll_version", 0);
+   private static var nme_get_bits = Loader.load("nme_get_bits", 0);
 }
 
 #else

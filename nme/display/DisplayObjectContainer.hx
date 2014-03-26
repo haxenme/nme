@@ -94,11 +94,13 @@ class DisplayObjectContainer extends InteractiveObject
       {
          setChildIndex(child, nmeChildren.length - 1);
 
-      } else 
+      }
+      else 
       {
          child.nmeSetParent(this);
          nmeChildren.push(child);
-         nme_doc_add_child(nmeHandle, child.nmeHandle);
+         if (child.nmeHandle!=null)
+            nme_doc_add_child(nmeHandle, child.nmeHandle);
       }
    }
 

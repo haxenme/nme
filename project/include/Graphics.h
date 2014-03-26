@@ -1,11 +1,11 @@
 #ifndef NME_GRAPHICS_H
 #define NME_GRAPHICS_H
 
-#include <Object.h>
-#include <QuickVec.h>
+#include <nme/Object.h>
+#include <nme/QuickVec.h>
 #include <Matrix.h>
 #include <Scale9.h>
-#include <Pixel.h>
+#include <nme/Pixel.h>
 
 typedef unsigned int uint32;
 typedef unsigned char uint8;
@@ -158,7 +158,7 @@ public:
    {
       mStops.push_back( GradStop(inRGB, inAlpha, inRatio) );
    }
-   void FillArray(ARGB *outColours, bool inSwap);
+   void FillArray(ARGB *outColours);
 
 
    GraphicsDataType GetType() { return gdtGradientFill; }
@@ -306,7 +306,7 @@ public:
             const QuickVec<int> &inIndixes,
             const QuickVec<float> &inUVT, int inCull,
             const QuickVec<int> &inColours,
-            int blendMode, const QuickVec<float,4> &inViewport );
+            int blendMode );
 
    VertexType       mType;
    int              mTriangleCount;
@@ -314,7 +314,6 @@ public:
    QuickVec<float>  mUVT;
    QuickVec<uint32> mColours;
    int mBlendMode;
-   QuickVec<float,4> mViewport;
 };
 
 // ----------------------------------------------------------------------
@@ -379,9 +378,9 @@ public:
 
 
    const uint8 *GetAlphaLUT() const;
-   const uint8 *GetC0LUT() const;
-   const uint8 *GetC1LUT() const;
-   const uint8 *GetC2LUT() const;
+   const uint8 *GetRLUT() const;
+   const uint8 *GetGLUT() const;
+   const uint8 *GetBLUT() const;
 
    double redMultiplier, redOffset;
    double greenMultiplier, greenOffset;
@@ -466,12 +465,12 @@ struct RenderState
 
    // Colour transform
    bool HasAlphaLUT() const { return mAlpha_LUT; }
-   bool HasColourLUT() const { return mC0_LUT; }
+   bool HasColourLUT() const { return mR_LUT; }
 
    const ColorTransform *mColourTransform;
-   const uint8 *mC0_LUT;
-   const uint8 *mC1_LUT;
-   const uint8 *mC2_LUT;
+   const uint8 *mR_LUT;
+   const uint8 *mG_LUT;
+   const uint8 *mB_LUT;
    const uint8 *mAlpha_LUT;
 
    // Viewport
@@ -490,112 +489,9 @@ struct RenderState
 };
 
 
-void ResetHardwareContext();
+class HardwareData;
+class HardwareRenderer;
 
-
-
-enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip, ptPoints, ptLines };
-
-struct DrawElement
-{
-   uint8    mPrimType;
-   bool     mBitmapRepeat;
-   bool     mBitmapSmooth;
-   int      mFirst;
-   int      mCount;
-   uint32   mColour;
-   float    mWidth;
-   StrokeScaleMode mScaleMode;
-};
-
-typedef QuickVec<DrawElement> DrawElements;
-typedef QuickVec<UserPoint>   Vertices;
-typedef QuickVec<UserPoint>   TexCoords;
-typedef QuickVec<int>         Colours;
-
-void ReleaseVertexBufferObject(unsigned int inVBO);
-
-void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys);
-
-struct HardwareArrays
-{
-   enum
-   {
-     BM_ADD      = 0x00000001,
-     PERSPECTIVE = 0x00000002,
-     RADIAL      = 0x00000004,
-     BM_MULTIPLY = 0x00000008,
-     BM_SCREEN   = 0x00000010,
-
-     FOCAL_MASK  = 0x0000ff00,
-     FOCAL_SIGN  = 0x00010000,
-   };
-
-   HardwareArrays(Surface *inSurface,unsigned int inFlags);
-   ~HardwareArrays();
-   bool ColourMatch(bool inWantColour);
-
-
-   DrawElements mElements;
-   Vertices     mVertices;
-   TexCoords    mTexCoords;
-	Colours      mColours;
-   QuickVec<float,4> mViewport;
-   Surface      *mSurface;
-   unsigned int mFlags;
-   //unsigned int mVertexBO;
-};
-
-typedef QuickVec<HardwareArrays *> HardwareCalls;
-
-class HardwareData
-{
-public:
-   ~HardwareData();
-
-   HardwareArrays &GetArrays(Surface *inSurface,bool inWithColour,unsigned int inFlags);
-
-   HardwareCalls mCalls;
-   
-};
-
-
-class HardwareContext : public Object
-{
-public:
-   static HardwareContext *current;
-   static HardwareContext *CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders);
-   static HardwareContext *CreateDX11(void *inDevice, void *inContext);
-   static HardwareContext *CreateDirectFB(void *inDFB, void *inSurface);
-
-   // Could be common to multiple implementations...
-   virtual bool Hits(const RenderState &inState, const HardwareCalls &inCalls );
-
-   virtual void SetWindowSize(int inWidth,int inHeight)=0;
-   virtual void SetQuality(StageQuality inQuality)=0;
-   virtual void BeginRender(const Rect &inRect,bool inForHitTest)=0;
-   virtual void EndRender()=0;
-   virtual void SetViewport(const Rect &inRect)=0;
-   virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
-   virtual void Flip() = 0;
-
-   virtual int Width() const = 0;
-   virtual int Height() const = 0;
-
-
-   virtual class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags)=0;
-   virtual void Render(const RenderState &inState, const HardwareCalls &inCalls )=0;
-   virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0,bool inRepeat=true,bool inSmooth=true)=0;
-   virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
-   virtual void EndBitmapRender()=0;
-
-   virtual void DestroyNativeTexture(void *inNativeTexture)=0;
-};
-
-extern HardwareContext *gDirectRenderContext;
-
-void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,
-                      HardwareData &ioData, HardwareContext &inHardware);
 
 int UpToPower2(int inX);
 inline int IsPower2(unsigned int inX) { return (inX & (inX-1))==0; }
@@ -604,7 +500,7 @@ inline int IsPower2(unsigned int inX) { return (inX & (inX-1))==0; }
 struct RenderTarget
 {
    RenderTarget(const Rect &inRect,PixelFormat inFormat,uint8 *inPtr, int inStride);
-   RenderTarget(const Rect &inRect,HardwareContext *inContext);
+   RenderTarget(const Rect &inRect,HardwareRenderer *inHardware);
    RenderTarget();
 
    bool IsHardware() const { return mHardware; }
@@ -626,7 +522,7 @@ struct RenderTarget
    uint8 *Row(int inRow) const { return mSoftPtr+mSoftStride*inRow; }
 
    // Hardware target - RenderTarget does not hold reference on HardwareContext
-   HardwareContext *mHardware;
+   HardwareRenderer *mHardware;
 };
 
 
@@ -640,10 +536,6 @@ public:
    virtual bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent, bool inIncludeStroke) = 0;
 
    virtual bool Hits(const RenderState &inState) { return false; }
-   
-   #ifdef NME_DIRECTFB
-   static Renderer *CreateHardware(const class GraphicsJob &inJob,const GraphicsPath &inPath,HardwareContext &inHardware);
-   #endif
    
    static Renderer *CreateSoftware(const class GraphicsJob &inJob,const GraphicsPath &inPath);
 
@@ -662,9 +554,6 @@ struct GraphicsJob
    GraphicsStroke  *mStroke;
    IGraphicsFill   *mFill;
    GraphicsTrianglePath  *mTriangles;
-   #ifdef NME_DIRECTFB
-   class Renderer  *mHardwareRenderer;
-   #endif
    class Renderer  *mSoftwareRenderer;
    int             mCommand0;
    int             mData0;
@@ -730,7 +619,7 @@ public:
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff, double inSize=-1.0 );
    void drawTriangles(const QuickVec<float> &inXYs, const QuickVec<int> &inIndixes,
             const QuickVec<float> &inUVT, int inCull, const QuickVec<int> &inColours,
-            int blendMode, const QuickVec<float,4> &inViewport );
+            int blendMode );
 
    const Extent2DF &GetExtent0(double inRotation);
    bool  HitTest(const UserPoint &inPoint);

@@ -1,626 +1,356 @@
 <xml>
-   
-   <set name="GCC_THIN_ARCHIVE" value="1" if="iphone"/>
-   <set name="GCC_THIN_ARCHIVE" value="1" if="emscripten"/>
-   <set name="debug" value="debug" if ="fulldebug" />
-   
-   <set name="PLATFORM" value="android-9" if="android" unless="PLATFORM" />
-   
+   <!-- Require Android 2.3+ -->
+   <set name="PLATFORM" value="android-9" if="android" />
+   <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
+   <set name="HXCPP_CPP11" value="1" />
+
+
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
+   <!-- 
+      Build with:
+         -Diphonesim              -> build i386 version
+         -Diphoneos               -> build armv6
+         -Diphoneos -DHXCPP_ARMV7 -> build armv7
+         -Dandroid                -> build android armv5
+         -Dandroid  -DHXCPP_ARMV7 -> build android armv7
+         -Dandroid  -DHXCPP_X86   -> build android x86
+         - no defines             -> build current OS
+         -DHXCPP_M64              -> build current OS, 64 but version
+         -Ddebug                  -> Used in combination with above for debug
+   -->
 
-   <set name="HXCPP_M32" value="1" unless="HXCPP_M64" />
+   <!-- Where to find static libraries/includes -->
+   <set name="NME_STATE" value="${haxelib:nme-state}" unless="NME_STATE" />
    
-   <set name="iphonesim" value="1" if="ios" />
-   <set name="iphoneos" value="1" if="ios" unless="simulator" />
-   <set name="win_desktop" value="1" if="windows" unless="winrt"/>
-   
-   <set name="NME_DEV" value="${haxelib:nmedev}" unless="NME_DEV" />
-   <set name="NME_DEV" value="${SDL_STATIC}" if="SDL_STATIC" />
-   
-   <set name="has_window" value="1" if="NME_SDL" />
-   <set name="has_window" value="1" if="NME_SDL2" />
-   <set name="has_window" value="1" if="NME_GLFW" />
-   <set name="has_window" value="1" if="NME_DIRECTFB" />
-   <set name="sdl" value="1" if="NME_SDL" />
-   <set name="sdl2" value="1" if="NME_SDL2" />
-   <set name="glfw" value="1" if="NME_GLFW" />
-   <set name="directfb" value="1" if="NME_DIRECTFB" />
-   
-   <set name="sdl" value="1" if="rpi" unless="has_window" />
-   <set name="has_window" value="1" if="sdl" />
-   
-   <set name="sdl2" value="1" if="win_desktop" unless="has_window" />
-   <set name="sdl2" value="1" if="macos" unless="has_window" />
-   <set name="sdl2" value="1" if="linux" unless="has_window" />
-   <set name="sdl" value="1" if="blackberry" unless="has_window" />
-   <set name="sdl" value="1" if="emscripten" unless="has_window" />
-   <!-- <set name="mac64" value="1" if="macos" unless="HXCPP_M32" />
-   <set name="sdl2" value="1" if="mac64" unless="has_window" />
-   <unset name="sdl" if="mac64" unless="has_window" /> -->
-   <set name="has_window" value="1" if="sdl" />
-   <set name="has_window" value="1" if="sdl2" />
-   <set name="has_window" value="1" if="glfw" />
-   <set name="has_window" value="1" if="directfb" />
-   
-   <set name="ogl" value="1" if="glfw"/>
-   <set name="ogl" value="1" if="sdl"/>
-   <set name="ogl" value="1" if="sdl2"/>
-   <set name="ogl" value="1" if="gph"/>
-   <set name="ogl" value="1" if="iphone"/>
-   <set name="ogl" value="1" if="android"/>
-   <set name="nmeegl" value="1" if="rpi"/>
-   
-   <set name="nocurl" value="1" if="winrt"/>
-   <set name="nocurl" value="1" if="emscripten"/>
-   <!-- <set name="nocurl" value="1" if="macos" unless="HXCPP_M32" /> -->
-   <set name="nocurl" value="1" if="directfb" />
-   
-   <!-- <set name="NME_FORCE_GLES1" value="1" if="iphone" /> -->
-   
-   <set name="sdl_image" value="1" if="emscripten" />
-   
-   <set name="ogl_shaders" value="1" unless="NME_FORCE_GLES1" />
-   
-   <set name="openal" value="1" if="NME_OPENAL" />
-   <set name="openal" value="1" if="android" />
-   <set name="openal" value="1" if="iphone" />
-   <set name="has_sound" value="1" if="sdl" />
-   <set name="has_sound" value="1" if="openal" />
-   <set name="openal" value="1" if="sdl2" unless="has_sound" />
-   <set name="noopenal" value="1" unless="openal" />
-   <set name="has_sound" value="1" if="sdl2" />
-   
-   <set name="mobile" value="1" if="iphone"/>
-   <set name="mobile" value="1" if="android"/>
-   <set name="mobile" value="1" if="webos"/>
-   <set name="mobile" value="1" if="blackberry"/>
-   <set name="mobile" value="1" if="gph"/>
-   
-   <set name="ssl" value="1" unless="nossl"/>
-   <set name="ssl_extra" value="_ssl" if="ssl"/>
-   
-   
-   <files id="win_desktop">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${NME_DEV}/include"/>
-      <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" />
-      <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
-      <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
-      <compilerflag value="-Iopenal"/>
-      <file name="windows/GDIFont.cpp"/>
-      <file name="windows/System.cpp" />
-      <!-- Use SDL on windows too ? -->
-      <!-- <file name="windows/SimpleFrame.cpp" unless="sdl"/> -->
-      <!-- <file name="sdl/SDLSound.cpp" unless="sdl"/> -->
-      <file name="empty/Sound.cpp" if="glfw" unless="openal" />
-      <file name="openal/OpenALSound.cpp" if="openal"/>
-      <compilerflag value="-DAL_LIBTYPE_STATIC" if="openal"/>
 
-   </files>
-   
-   
-   <files id="winrt_shaders">
-      <hlsl name="winrt\\SimplePixelShader.hlsl" profile="ps_4_0" variable="gPixelShader" target="winrt\\shaders\\SimplePixelShader.h"/>
-      <hlsl name="winrt\\SimpleVertexShader.hlsl" profile="vs_4_0" variable="gVertexShader" target="winrt\\shaders\\SimpleVertexShader.h"/>
-      <file name="winrt/ShaderData.cpp" />
-   </files>
-   
-   
-   <files id="winrt">
-      <compilerflag value="-Iinclude"/>
-      <file name="winrt/WinRTStage.cpp" />
-      <file name="winrt/DX11Context.cpp" />
-      <file name="winrt/DX11Font.cpp" />
-      <file name="winrt/System.cpp" />
-      <file name="winrt/MediaFoundation.cpp" />
-      <file name="winrt/Direct3DBase.cpp" />
-      <file name="winrt/URL.cpp" />
-   </files>
-   
-   
-   <files id="linux">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-Iopenal" if="openal" />
-      <compilerflag value="-I${NME_DEV}/include" />
-      <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
-      <compilerflag value="-DSDL_OGL" if="sdl"/>
-      <file name="linux/NativeFont.cpp"/>
-      <file name="linux/System.cpp"/>
-      <file name="empty/URL.cpp" if="nocurl" />
-      <file name="empty/Sound.cpp" if="noopenal" />
-      <!-- <file name="empty/HardwareContext.cpp" unless="has_window" /> -->
-      <file name="openal/OpenALSound.cpp" if="openal" />
-      
-   </files>
-   
-   
-   <files id="gph">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/include"/>
-      <compilerflag value="-I${GPH_ROOT}/include" if="gph"/>
-      <compilerflag value="-I${GPH_ROOT}/include/freetype2" if="gph"/>
-      <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
-      <file name="linux/NativeFont.cpp"/>
-      <file name="dge/DGEStage.cpp"/>
-      <file name="dge/DGESound.cpp"/>
-      
-   </files>
-   
-   
-   <files id="iphone">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${NME_DEV}/include"/>
-      <compilerflag value="-Iopenal"/>
-      <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
-      <file name="iPhone/UIStageView.mm"/>
-      <file name="iPhone/UIDeviceHardware.mm"/>
-      <!-- <file name="iPhone/SurfaceIO.mm"/> -->
-      <file name="openal/OpenALSound.cpp" />
-      <file name="iPhone/Sound.mm"/>
-      <file name="iPhone/NativeFont.mm"/>
-      <file name="iPhone/System.mm"/>
-      <file name="cocoa/FileManager.mm"/>
-      
-   </files>
-   
-   
-   <files id="android">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${NME_DEV}/include"/>
-      <compilerflag value="-I${NME_DEV}/include/openal" if="openal" />
-      <compilerflag value="-Iopenal"/>
-      <file name="android/AndroidCommon.cpp" />
-      <file name="android/AndroidSound.cpp" unless="openal"/>
-      <file name="android/AndroidFont.cpp"/>
-      <file name="android/AndroidFrame.cpp"/>
-      <file name="android/JNI.cpp"/>
-      <file name="android/System.cpp"/>
-      <file name="openal/OpenALSound.cpp" if="openal"/>
-      <compilerflag value="-DAL_LIBTYPE_STATIC" if="openal"/>
-      
-   </files>
-   
-   <files id="emscripten">
-      
-      <compilerflag value="-Iinclude"/>
-      <file name="linux/NativeFont.cpp"/>
-      <file name="emscripten/System.cpp"/>
-      
-   </files>
-   
-   
-   <set name="dynamic_sdl" value="1" if="webos"/>
-   
-   <files id="webos">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${PalmPDK}/include/SDL" />
-      <compilerflag value="-I${NME_DEV}/include"/>
-      <file name="linux/NativeFont.cpp"/>
-      <file name="webOS/System.cpp"/>
-      
-   </files>
-   
-   
-   <files id="blackberry">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${QNX_TARGET}/usr/include" />
-      <compilerflag value="-I${NME_DEV}/include"/>
-      <file name="linux/NativeFont.cpp"/>
-      <file name="blackberry/System.cpp"/>
-      
-   </files>
-   
+
+   <!--
+      What SDL to use?
+      For desktop, use version 2.
+      For ios/android, not needed. 
+      For rpi, and other systems, use installed 1.0
+   -->
+   <set name="NME_SDL_SYSTEM" value="1" if="rpi" />
+   <set name="NME_SDL2" value="1" if="windows" />
+   <set name="NME_SDL2" value="1" if="linux" unless="NME_SDL_SYSTEM" />
+   <set name="NME_SDL2" value="1"  if="macos" />
+
+   <set name="NME_SDL_ANY" value="1"  if="NME_SDL_SYSTEM" />
+   <set name="NME_SDL_ANY" value="1"  if="NME_SDL2" />
+
+   <!-- Use opengl backend ? -->
+   <set name="NME_OGL" value="1" />
+   <unset name="NME_OGL" if="winrt" />
+
+   <!-- For systems that do not create the egl context for us -->
+   <set name="NME_EGL" value="1" if="rpi"/>
+
+   <!-- Do we need to implement curl in NME -->
+   <set name="NME_CURL" value="1" />
+   <unset name="NME_CURL" if="winrt" />
+
+   <!-- And allow https ? -->
+   <set name="NME_SSL" value="1" />
+   <set name="NME_SSL_EXTRA" value="_ssl" if="NME_SSL"/>
+
+ 
+   <!--
+      What audio backend it use?
+      For windows, linux, use SDL_mixer
+      For ios/mac  use core audio + openal
+      For android use java (todo - opensl?)
+   -->
+
+   <!-- Built relative to "bin" -->
+   <set name="SRC_DIR" value="src" />
+   <set name="INC_DIR" value="include" />
+   <set name="NME_INC_DIR" value="../include" />
+   <set name="SUP_DIR" value="support" />
+   <set name="OUT_DIR" value="../${NDLLDIR}" />
    
    <files id="main">
-      
-      <compilerflag value="-Iinclude"/>
+      <compilerflag value="-I${INC_DIR}"/>
       <file name="Test.cpp"/>
-      
    </files>
    
    
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/Mac${M64}/" if="macos"/>
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/Windows/" if="windows" unless="winrt"/>
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/WinRTx86/" if="winrt"/>
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/webOS/" if="webos" />
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/Linux${M64}/" if="linux"/>
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/RPi/" if="rpi"/>
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/Android/" if="android"/>
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/iPhone/" if="iphone"/>
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/BlackBerry/" if="blackberry"/>
-   <set name="THIRDPARTY_LIBS" value="${NME_DEV}/lib/Emscripten/" if="emscripten"/>
-   <set name="THIRDPARTY_LIBS" value="${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/lib/" if="gph"/>
+   <files id="nme">
+      <compilerflag value="-I${NME_INC_DIR}"/>
+      <compilerflag value="-I${INC_DIR}"/>
+
+
+      <section if="windows">
+         <file name="${SRC_DIR}/windows/GDIFont.cpp"/>
+         <file name="${SRC_DIR}/windows/System.cpp" />
+      </section>
+
+      <section if="linux">
+         <compilerflag value="-Wno-conversion" if="linux"/>
+         <file name="${SRC_DIR}/linux/NativeFont.cpp"/>
+         <file name="${SRC_DIR}/linux/System.cpp"/>
+      </section>
+
+      <section if="macos">
+         <compilerflag value="-I${SRC_DIR}/openal"/>
+         <file name="${SRC_DIR}/mac/NSFont.cpp"/>
+         <file name="${SRC_DIR}/mac/MacBoot.m" />
+         <file name="${SRC_DIR}/mac/System.mm"/>
+         <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
+         <!-- <file name="${SRC_DIR}/openal/OpenALSound.cpp" /> -->
+      </section>
+
+      <section if="iphone">
+         <file name="${SRC_DIR}/iPhone/UIStageView.mm"/>
+         <file name="${SRC_DIR}/iPhone/UIDeviceHardware.mm"/>
+         <!-- <file name="${SRC_DIR}/iPhone/SurfaceIO.mm"/> -->
+         <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
+         <file name="${SRC_DIR}/common/Audio.cpp" />
+         <file name="${SRC_DIR}/iPhone/Sound.mm"/>
+         <file name="${SRC_DIR}/iPhone/NativeFont.mm"/>
+         <file name="${SRC_DIR}/iPhone/System.mm"/>
+         <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
+      </section>
+
+      <section if="android">
+         <file name="${SRC_DIR}/android/AndroidCommon.cpp" />
+         <file name="${SRC_DIR}/android/AndroidSound.cpp"/>
+         <file name="${SRC_DIR}/android/AndroidFont.cpp"/>
+         <file name="${SRC_DIR}/android/AndroidFrame.cpp"/>
+         <file name="${SRC_DIR}/android/JNI.cpp"/>
+         <file name="${SRC_DIR}/android/System.cpp"/>
+      </section>
+
+      <section if="rpi">
+         <compilerflag value="-I/opt/vc/include" />
+         <compilerflag value="-I/opt/vc/include/interface/vcos/pthreads/" />
+      </section>
+
+
+      <section if="NME_SDL_SYSTEM">
+        <compilerflag value="-I/opt/local/include" if="macos" />
+        <compilerflag value="-I/usr/include/SDL" if="linux" />
+        <compilerflag value="-DDYNAMIC_SDL" />
+        <compilerflag value="-DNME_MIXER" />
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp"/>
+        <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
+      </section>
+
+      <section if="NME_SDL2">
+        <compilerflag value="-I${NME_STATE}/include/SDL2" />
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp"/>
+        <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
+        <compilerflag value="-DSDL_OGL" />
+        <compilerflag value="-DNME_MIXER" />
+        <compilerflag value="-DNME_SDL2" />
+      </section>
+
+      <section if="NME_CURL">
+         <compilerflag value="-DNME_CURL_SSL" if="NME_SSL"/>
+      </section>
+
+      <section if="NME_OGL">
+         <file name="${SRC_DIR}/opengl/OpenGLContext.cpp" />
+         <file name="${SRC_DIR}/opengl/OGLTexture.cpp" />
+         <file name="${SRC_DIR}/opengl/OGLShaders.cpp" />
+         <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
+         <file name="${SRC_DIR}/opengl/Egl.cpp" if="nmeegl"/>
+      </section>
+
+
+
+      <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
+      <compilerflag value="-I${NME_STATE}/include" />
+      <compilerflag value="-D_7ZIP_ST" unless="windows"/>
+
+
+      <file name="${SRC_DIR}/common/Surface.cpp"/>
+      <file name="${SRC_DIR}/common/Utils.cpp"/>
+      <file name="${SRC_DIR}/common/Geom.cpp"/>
+      <file name="${SRC_DIR}/common/Graphics.cpp"/>
+      <file name="${SRC_DIR}/common/GraphicsData.cpp"/>
+      <file name="${SRC_DIR}/common/Matrix.cpp"/>
+      <file name="${SRC_DIR}/common/CachedExtent.cpp"/>
+      <file name="${SRC_DIR}/common/TextField.cpp"/>
+      <file name="${SRC_DIR}/common/Font.cpp"/>
+      <file name="${SRC_DIR}/common/FreeType.cpp" />
+      <file name="${SRC_DIR}/common/Tilesheet.cpp"/>
+      <file name="${SRC_DIR}/common/Display.cpp"/>
+      <file name="${SRC_DIR}/common/ColorTransform.cpp"/>
+      <file name="${SRC_DIR}/common/Hardware.cpp" />
+      <file name="${SRC_DIR}/common/Tessellate.cpp"/>
+      <file name="${SRC_DIR}/common/Filters.cpp"/>
+      <file name="${SRC_DIR}/common/ExternalInterface.cpp"/>
+      <file name="${SRC_DIR}/common/Cursors.cpp"/>
+      <file name="${SRC_DIR}/common/Input.cpp" unless="iphone" />
+      <file name="${SRC_DIR}/common/SurfaceIO.cpp" unless="sdl_image" />
+      <file name="${SRC_DIR}/common/ManagedStage.cpp" unless="winrt" />
+      <file name="${SRC_DIR}/common/CURL.cpp" unless="nocurl"/>
+      <file name="${SRC_DIR}/common/Lzma.cpp"/>
+      <file name="${SRC_DIR}/common/Thread.cpp"/>
+      <!--<file name="common/Audio.cpp" if="openal"/>-->
+      <file name="${SRC_DIR}/video/TheoraVideo.cpp" if="theora" />
+      <file name="${SRC_DIR}/empty/Video.cpp" unless="theora" />
+      
+      <file name="${SRC_DIR}/common/XML/tinystr.cpp"/>
+      <file name="${SRC_DIR}/common/XML/tinyxml.cpp"/>
+      <file name="${SRC_DIR}/common/XML/tinyxmlerror.cpp"/>
+      <file name="${SRC_DIR}/common/XML/tinyxmlparser.cpp"/>
+      
+      <file name="${SRC_DIR}/software-renderer/AlphaMask.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/BitmapFill.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/BitmapFillPerspective.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/GradientFill.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/LineRender.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/PointRenderer.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/PolygonRender.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/SoftwareRenderer.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/SolidFill.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/SolidRender.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/TileRenderer.cpp"/>
+      <file name="${SRC_DIR}/software-renderer/TriangleRender.cpp"/>
+     
+
    
+      <file name="${SRC_DIR}/lzma/LzFind.c" />
+      <file name="${SRC_DIR}/lzma/LzmaDec.c" />
+      <file name="${SRC_DIR}/lzma/LzmaEnc.c" />
+      <file name="${SRC_DIR}/lzma/LzFindMt.c" if="windows" />
+      <file name="${SRC_DIR}/lzma/Threads.c" if="windows" />
+   </files>
+   
+
    <set name="SLIBEXT" value=".lib" if="windows"/>
    <set name="SLIBEXT" value=".a" unless="windows"/>
-   <set name="SLIBEXT" value=".so" if="webos"/>
-   <set name="SLIBEXT" value=".a" if="emscripten"/>
-   
-   
-   <files id="common">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
-      <compilerflag value="-I${NME_DEV}/include" unless="gph"/>
-      <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
-      <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" unless="dynamic_sdl"/>
-      <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
-      <compilerflag value="-I${GPH_ROOT}/gcc-4.2.4-glibc-2.7-eabi/arm-gph-linux-gnueabi/sys-root/usr/include" if="gph"/>
-      <compilerflag value="-I/opt/vc/include" if="rpi"/>
-      <compilerflag value="-I/opt/vc/include/interface/vcos/pthreads/" if="rpi"/>
-      <compilerflag value="-I${GPH_ROOT}/include/freetype2" if="gph"/>
-      <compilerflag value="-I${GPH_ROOT}/DGE/include" if="gph"/>
-      <compilerflag value="-I${QNX_TARGET}/usr/include" if="blackberry"/>
-      <!-- <compilerflag value="-I${QNX_TARGET}/usr/include/GLES" if="blackberry"/> -->
-      <compilerflag value="-I${QNX_TARGET}/usr/include/GLES2" if="blackberry"/>
-      <compilerflag value="-DNME_DIRECTFB" if="directfb"/>
-      <compilerflag value="-DSDL_OGL" if="sdl"/>
-      <compilerflag value="-DSDL_OGL" if="sdl2"/>
-      <compilerflag value="-DGLFW_OGL" if="glfw"/>
-      <compilerflag value="-DNME_CURL_SSL" if="ssl" unless="nocurl"/>
-      <compilerflag value="-DNME_FORCE_GLES1" if="NME_FORCE_GLES1"/>
-      <compilerflag value="-DNME_PREMULTIPLIED_ALPHA" if="NME_PREMULTIPLIED_ALPHA"/>
-      <compilerflag value="-Wno-conversion" if="linux"/>
-      
-      <file name="common/Surface.cpp"/>
-      <file name="common/Utils.cpp"/>
-      <file name="common/Geom.cpp"/>
-      <file name="common/Graphics.cpp"/>
-      <file name="common/GraphicsData.cpp"/>
-      <file name="common/Matrix.cpp"/>
-      <file name="common/CachedExtent.cpp"/>
-      <file name="common/TextField.cpp"/>
-      <file name="common/Font.cpp"/>
-      <file name="common/FreeType.cpp" />
-      <file name="common/Tilesheet.cpp"/>
-      <file name="common/Display.cpp"/>
-      <file name="common/ColorTransform.cpp"/>
-      <file name="common/Hardware.cpp" unless="directfb"/>
-      <file name="common/Tessellate.cpp"/>
-      <file name="common/Filters.cpp"/>
-      <file name="common/ExternalInterface.cpp"/>
-      <file name="common/Cursors.cpp"/>
-      <file name="common/Input.cpp" unless="iphone" />
-      <file name="common/SurfaceIO.cpp" unless="sdl_image" />
-      <file name="common/ManagedStage.cpp" unless="winrt" />
-      <file name="common/CURL.cpp" unless="nocurl"/>
-      <file name="common/Lzma.cpp"/>
-      <file name="common/Thread.cpp"/>
-      <file name="common/Audio.cpp" if="openal"/>
-      <file name="video/TheoraVideo.cpp" if="theora" />
-      <file name="empty/Video.cpp" unless="theora" />
-      
-      <file name="common/XML/tinystr.cpp"/>
-      <file name="common/XML/tinyxml.cpp"/>
-      <file name="common/XML/tinyxmlerror.cpp"/>
-      <file name="common/XML/tinyxmlparser.cpp"/>
-      
-      <file name="software-renderer/AlphaMask.cpp"/>
-      <file name="software-renderer/BitmapFill.cpp"/>
-      <file name="software-renderer/BitmapFillPerspective.cpp"/>
-      <file name="software-renderer/GradientFill.cpp"/>
-      <file name="software-renderer/LineRender.cpp"/>
-      <file name="software-renderer/PointRenderer.cpp"/>
-      <file name="software-renderer/PolygonRender.cpp"/>
-      <file name="software-renderer/SoftwareRenderer.cpp"/>
-      <file name="software-renderer/SolidFill.cpp"/>
-      <file name="software-renderer/SolidRender.cpp"/>
-      <file name="software-renderer/TileRenderer.cpp"/>
-      <file name="software-renderer/TriangleRender.cpp"/>
-      
-      <file name="opengl/OpenGLContext.cpp" if="ogl"/>
-      <file name="opengl/OGLTexture.cpp" if="ogl"/>
-      <file name="opengl/OGLShaders.cpp" if="ogl"/>
-      <file name="opengl/OGLExport.cpp" if="ogl"/>
-      <file name="opengl/Egl.cpp" if="nmeegl"/>
-   </files>
-   
-   <files id="common_lzma">
-      <compilerflag value="-D_7ZIP_ST" unless="win_desktop"/>
-      
-      <file name="lzma/LzFind.c" />
-      <file name="lzma/LzmaDec.c" />
-      <file name="lzma/LzmaEnc.c" />
-      <file name="lzma/LzFindMt.c" if="win_desktop" />
-      <file name="lzma/Threads.c" if="win_desktop" />
-   </files>
-   
-   <set name="tool" value="exe" unless="iphone"/>
-   <set name="tool" value="static_link" if="iphone"/>
-   <set name="tool" value="static_link" if="emscripten"/>
-   
-   <set name="ARM_ARCH" value="-v7" if="HXCPP_ARMV7" />
-   
-   <set name="ndll-tool" value="dll" unless="iphone"/>
-   <set name="ndll-tool" value="static_link" if="iphone"/>
-   <set name="ndll-tool" value="static_link" if="emscripten"/>
-   <set name="name_extra" value=".iphonesim" if="iphonesim"/>
-   <set name="name_extra" value=".iphoneos${ARM_ARCH}" if="iphoneos"/>
-   <set name="name_extra" value="-v7" if="android" />
-   <set name="name_extra" value="" if="android" unless="HXCPP_ARMV7" />
-   
-   <set name="name_extra" value="-x86" if="simulator" unless="iphonesim" />
-   <set name="ndll_name_extra" value="${name_extra}" unless="android" />
-   
-   <set name="debug_extra" value="-debug" if="fulldebug" />
-   
-   <!-- <section if="fulldebug" >
-      <set name="name_extra" value=".debug"/>
-      <set name="name_extra" value=".debug-x86" if="simulator" unless="iphonesim" />
-      <set name="name_extra" value=".debug.iphoneos${IOS_ARCH}" if="iphoneos"/>
-      <set name="name_extra" value=".debug.iphonesim" if="iphonesim"/>
-   </section> -->
-   
-   <set name="no_thirdparty_extras" value="1" if="iphone"/>
-   <set name="no_thirdparty_extras" value="1" if="emscripten"/>
-   <set name="no_thirdparty_extras" value="1" if="gph"/>
-   
-   <set name="sdl_static" value="1" unless="mobile"/>
-   <unset name="sdl_static" if="emscripten" />
-   <unset name="sdl_static" unless="sdl" />
-   <set name="sdl_static" value="1" if="blackberry"/>
-   <unset name="sdl_static" if="dynamic_sdl"/>
-   <unset name="sdl_static" if="winrt"/>
-   <set name="no_thirdparty_extras" value="1" if="dynamic_sdl"/>
-   
-   <set name="sdl_dynamic_path" value="-L/opt/local/lib" if="macos" />
-   <set name="sdl_dynamic_include1" value="-I/opt/local/include" if="macos" />
-   <set name="sdl_dynamic_include2" value="-I/opt/local/include/SDL-hidden" if="macos" />
-   <set name="sdl_dynamic_include1" value="-I${PalmPDK}/include/SDL" if="webos" />
-   <set name="sdl_dynamic_include1" value="-I/usr/include/SDL" if="linux" />
-   
-   
-   <files id="sdl">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${PalmPDK}/include/SDL" if="webos" />
-      <compilerflag value="-I${NME_DEV}/include" if="sdl_static"/>
-      <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl_static"/>
-      <compilerflag value="-I${NME_DEV}/include" if="webos"/>
-      <compilerflag value="${sdl_dynamic_include1}" if="dynamic_sdl"/>
-      <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
-      <compilerflag value="-DDYNAMIC_SDL" if="dynamic_sdl" />
-      <compilerflag value="-DNME_MIXER" />
-      <compilerflag value="-DSDL_IMAGE" if="sdl_image" />
-      <file name="sdl/SDLStage.cpp"/>
-      <file name="sdl/SDLSound.cpp" unless="openal"/>
-      
-   </files>
-   
-   
-   <files id="sdl2">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${NME_DEV}/include"/>
-      <compilerflag value="-I${NME_DEV}/include/SDL2"/>
-      <!-- <compilerflag value="-DNME_MIXER" /> -->
-      <file name="sdl2/SDL2Stage.cpp"/>
-      <!-- <file name="sdl/SDLSound.cpp" unless="openal"/> -->
-      <file name="empty/Sound.cpp" unless="openal" />
-      
-   </files>
-   
-   
-   <files id="glfw">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${NME_DEV}/include"/>
-      <file name="glfw/GLFWStage.cpp"/>
-      
-   </files>
-   
-   
-   <files id="directfb">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I/usr/include/directfb" />
-      <compilerflag value="-I${NME_DEV}/include"/>
-      <compilerflag value="-DNME_DIRECTFB"/>
-      
-      <file name="directfb/DirectFBHardware.cpp"/>
-      <file name="directfb/DirectFBStage.cpp"/>
-      
-   </files>
-   
-   
-   <files id="mac">
-      
-      <compilerflag value="-Iinclude"/>
-      <compilerflag value="-I${NME_DEV}/include" />
-      <compilerflag value="-I${NME_DEV}/include/SDL12" if="sdl" />
-      <compilerflag value="-I${NME_DEV}/include/SDL2" if="sdl2" />
-      <compilerflag value="${sdl_dynamic_include2}" if="dynamic_sdl"/>
-      <compilerflag value="-Iopenal"/>
-      <file name="mac/NSFont.cpp"/>
-      <file name="mac/MacBoot.m" />
-      <file name="empty/URL.cpp" if="nocurl" />
-      <file name="empty/Sound.cpp" unless="has_sound" />
-      <file name="empty/Stage.cpp" unless="has_window" />
-      <file name="empty/HardwareContext.cpp" unless="has_window" />
-      <file name="mac/System.mm"/>
-      <file name="cocoa/FileManager.mm"/>
-      <file name="openal/OpenALSound.cpp" if="openal"/>
-         
-   </files>
-   
-   
-   <set name="name_prefix" value="lib" if="iphone" />
-   
-   
-   <target id="NDLL" output="${name_prefix}nme${debug_extra}${ndll_name_extra}" tool="linker" toolid="${ndll-tool}">
-      
-      <outdir name="../ndll/${BINDIR}" />
-      <ext value=".ndll" unless="mobile"/>
-      <ext value=".a" if="emscripten"/>
-      <ext value=".ndll" if="gph"/>
-      
+   <set name="PRELIB" value="${NME_STATE}/lib/${BINDIR}/lib" />
+   <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
+
+
+   <target id="NDLL" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
+
+      <outdir name="${OUT_DIR}/${BINDIR}" />
+
       <flag value="-NODEFAULTLIB:LIBCMT" if="winrt"/>
-      <flag value="-NODEFAULTLIB:LIBCMT" if="glfw"/>
+
+      <files id="nme"/>
+
+         <lib name="${PRELIB}freetype${POSTLIB}" />
+         <lib name="${PRELIB}jpeg${POSTLIB}" />
+         <lib name="${PRELIB}png${POSTLIB}" />
+
+         <section if="NME_SDL2">
+            <lib name="${PRELIB}SDL2${POSTLIB}" />
+            <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
+            <lib name="${PRELIB}modplug${POSTLIB}"  />
+            <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
+         </section>
+
+         <section if="iphone">
+            <lib name="${PRELIB}vorbis${POSTLIB}" />
+            <lib name="${PRELIB}ogg${POSTLIB}" />
+         </section>
+
+         <section unless="NME_SDL_SYSTEM">
+            <section if="NME_SDL2">
+               <lib name="${PRELIB}vorbis${POSTLIB}" />
+               <lib name="${PRELIB}ogg${POSTLIB}" />
+               <lib name="${PRELIB}theora${POSTLIB}" />
+            </section>
+
+            <section if="NME_CURL">
+               <lib name="${PRELIB}curl${NME_SSL_EXTRA}${POSTLIB}" />
+            </section>
+
+            <lib name="${PRELIB}z${POSTLIB}" unless="android"/>
+         </section>
+
+
+      <section unless="static_link">
+
+         <ext value=".ndll" />
+         <ext value=".so" if="android" />
+
+         <!-- <lib name="${PRELIB}libfreetype${LIBEXTRA}${SLIBEXT}" if="iphone"/> -->
+
+         <section if="NME_SDL_SYSTEM">
+            <lib name="-lSDL" />
+            <lib name="-lcurl" />
+            <lib name="-lpng" />
+            <lib name="-ljpeg" />
+            <lib name="-lfreetype" />
+            <lib name="-lz" />
+         </section>
+
+
+         <section unless="NME_SDL_SYSTEM">
+            <lib name="-lz" if="android"/>
+         </section>
+
+         <section if="macos">
+            <vflag name="-framework" value="IOKit" />
+            <vflag name="-framework" value="Foundation" />
+            <!-- <vflag name="-framework" value="AVFoundation" if="macos"/> -->
+            <vflag name="-framework" value="CoreAudio" />
+            <vflag name="-framework" value="Carbon" />
+            <vflag name="-framework" value="AudioToolbox" />
+            <vflag name="-framework" value="AudioUnit" />
+            <vflag name="-framework" value="ForceFeedback" />
+            <vflag name="-framework" value="Cocoa" />
+            <vflag name="-framework" value="OpenGL" />
+            <vflag name="-framework" value="QuickTime" />
+            <vflag name="-framework" value="AppKit" />
+            <vflag name="-framework" value="OpenAL"/>
+         </section>
+
+
+         <section if="android">
+            <lib name="-ldl" />
+            <lib name="-landroid" />
+            <lib name="-lGLESv2" />
+            <lib name="-lz" />
+         </section>
+
+         <section if="rpi">
+            <lib name="/opt/vc/lib/libGLESv2.so" />
+            <lib name="/opt/vc/lib/libEGL.so" />
+            <lib name="/opt/vc/lib/libbcm_host.so" />
+         </section>
       
-      <files id="common"/>
-      <files id="common_lzma"/>
-      <files id="win_desktop" if="win_desktop"/>
-      <files id="winrt_shaders" if="winrt"/>
-      <files id="winrt" if="winrt"/>
-      <files id="iphone" if="iphone"/>
-      <files id="mac" if="macos"/>
-      <files id="linux" if="linux"/>
-      <files id="gph" if="gph"/>
-      <files id="sdl" if="sdl"/>
-      <files id="sdl2" if="sdl2"/>
-      <files id="glfw" if="glfw"/>
-      <files id="directfb" if="directfb" />
-      <files id="android" if="android"/>
-      <files id="webos" if="webos"/>
-      <files id="blackberry" if="blackberry"/>
-      <files id="emscripten" if="emscripten"/>
       
-      <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" if="iphone"/>
-      <lib name="${THIRDPARTY_LIBS}libfreetype${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
-      <lib name="${THIRDPARTY_LIBS}libjpeg${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
-      <lib name="${THIRDPARTY_LIBS}libpng${name_extra}${SLIBEXT}" unless="no_thirdparty_extras"/>
-      <lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="windows"/>
-      <lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="macos" unless="dynamic_sdl"/>
-      <lib name="${THIRDPARTY_LIBS}libz${name_extra}${SLIBEXT}" if="linux" unless="dynamic_sdl"/>
+         <section if="windows">
+            <lib name="gdi32.lib" />
+            <lib name="opengl32.lib" />
+            <lib name="user32.lib" />
+            <lib name="kernel32.lib" />
+            <lib name="advapi32.lib" />
+            <lib name="${SUP_DIR}/windows/dxguid.lib"/>
+            <lib name="winmm.lib" />
+            <lib name="imm32.lib"  />
+            <lib name="ole32.lib" />
+            <lib name="oleaut32.lib" />
+            <lib name="version.lib" />
+            <lib name="ws2_32.lib"  />
+            <lib name="wldap32.lib" />
+            <lib name="shell32.lib" />
+            <lib name="comdlg32.lib" />
+         </section>
+
+         <section if="linux">
+            <lib name="${HXCPP}/lib/${BINDIR}/liblinuxcompat.a" />
+            <lib name="-lpthread" />
+            <lib name="-lrt" />
+         </section>
       
-      <lib name="${THIRDPARTY_LIBS}libSDL_mixer${name_extra}${SLIBEXT}" if="sdl" unless="dynamic_sdl" />
-      <lib name="${THIRDPARTY_LIBS}libSDL_image${name_extra}${SLIBEXT}" if="sdl_image" unless="emscripten" />
-      <lib name="${THIRDPARTY_LIBS}libSDL${name_extra}${SLIBEXT}" if="sdl_static" unless="blackberry" />
-      <lib name="${THIRDPARTY_LIBS}libSDL2${name_extra}${SLIBEXT}" if="sdl2" />
-      <!-- <lib name="${THIRDPARTY_LIBS}libSDL2main${name_extra}${SLIBEXT}" if="windows" unless="sdl" /> -->
-      <!-- <lib name="${THIRDPARTY_LIBS}libopenal${name_extra}${SLIBEXT}" if="android" unless="noopenal"/> -->
-      <lib name="${THIRDPARTY_LIBS}libopenal${name_extra}${SLIBEXT}" if="linux" unless="noopenal"/>
-      <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="sdl_static"/>
-      <lib name="${THIRDPARTY_LIBS}libvorbis${name_extra}${SLIBEXT}" if="openal" unless="sdl_static" />
-      <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="sdl_static"/>
-      <lib name="${THIRDPARTY_LIBS}libogg${name_extra}${SLIBEXT}" if="openal" unless="sdl_static" />
-      <lib name="${THIRDPARTY_LIBS}libtheora${name_extra}${SLIBEXT}" if="theora" unless="sdl_static" />
-      <lib name="${THIRDPARTY_LIBS}libsmpeg${name_extra}${SLIBEXT}" if="sdl_static"/>
-      <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl_static" unless="iphone"/>
-      <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="sdl2"/>
-      <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="glfw"/>
-      <lib name="${THIRDPARTY_LIBS}libcurl${ssl_extra}${name_extra}${SLIBEXT}" if="android"/>
-      <lib name="${THIRDPARTY_LIBS}libglfw3${name_extra}${SLIBEXT}" if="glfw"/>
+         <section if="winrt">
+            <lib name="D3D11.lib" />
+         </section>
       
-      <lib name="-L${THIRDPARTY_LIBS}" if="linux"/>
-      <lib name="-lrt" if="linux" unless="noopenal" />
-      <!-- <lib name="-lopenal" if="linux" unless="noopenal" /> -->
-      
-      <lib name="-L${THIRDPARTY_LIBS}" if="webos"/>
-      <lib name="-L../ndll/BlackBerry" if="blackberry"/>
-      
-      <lib name="-lSDL" if="dynamic_sdl"/>
-      <!-- <lib name="-lSDL_image" if="sdl_image" unless="sdl_static"/> -->
-      <lib name="-lSDL_mixer" if="dynamic_sdl"/>
-      <lib name="-lvorbis" if="dynamic_sdl" unless="webos"/>
-      <lib name="-logg" if="dynamic_sdl" unless="webos"/>
-      <lib name="-lsmpeg" if="dynamic_sdl" unless="webos"/>
-      <!--<lib name="-lfreetype" if="dynamic_sdl" unless="webos"/>
-      <lib name="${THIRDPARTY_LIBS}libfreetype.a" if="webos"/>-->
-      <lib name="${THIRDPARTY_LIBS}libfreetype.a" if="dynamic_sdl"/>
-      
-      <lib name="-lcurl" if="dynamic_sdl" unless="nocurl"/>
-      <lib name="-lpng" if="dynamic_sdl"/>
-      <lib name="-ljpeg" if="dynamic_sdl"/>
-      <lib name="-lz" if="dynamic_sdl"/>
-      
-      <flag value="${sdl_dynamic_path}" if="dynamic_sdl"/>
-      
-      <vflag name="-framework" value="IOKit" if="macos"/>
-      <vflag name="-framework" value="Foundation" if="macos"/>
-      <!-- <vflag name="-framework" value="AVFoundation" if="macos"/> -->
-      <vflag name="-framework" value="CoreAudio" if="macos"/>
-      <vflag name="-framework" value="Carbon" if="macos"/>
-      <vflag name="-framework" value="AudioToolbox" if="macos"/>
-      <vflag name="-framework" value="AudioUnit" if="macos"/>
-      <vflag name="-framework" value="ForceFeedback" if="macos"/>
-      <vflag name="-framework" value="Cocoa" if="macos"/>
-      <vflag name="-framework" value="OpenGL" if="macos"/>
-      <vflag name="-framework" value="QuickTime" if="macos" unless="HXCPP_M64"/>
-      <vflag name="-framework" value="AppKit" if="macos"/>
-      <vflag name="-framework" value="OpenAL" if="macos" unless="noopenal"/>
-      
-      <lib name="-ldl" if="android"/>
-      <lib name="-landroid" if="android"/>
-      <lib name="-lGLESv1_CM" if="android" unless="ogl_shaders"/>
-      <lib name="-lGLESv2" if="android"/>
-      <lib name="-lz" if="android"/>
-      <lib name="-L../ndll/Android" if="android" unless="noopenal"/>
-      <lib name="-lopenal" if="android" unless="noopenal"/>
-      
-      <lib name="-lGLES_CM" if="webos" unless="ogl_shaders"/>
-      <lib name="-lGLESv2" if="webos"/>
-      <lib name="-lpdl" if="webos"/>
-      
-      <lib name="-lSDL${name_extra}" if="blackberry"/>
-      
-      <lib name="-lbps" if="blackberry"/>
-      <lib name="-lscreen" if="blackberry"/>
-      <lib name="-lEGL" if="blackberry"/>
-      
-      <!-- <lib name="-lGLESv1_CM" if="blackberry"/> -->
-      <lib name="-lGLESv2" if="blackberry" />
-      
-      <lib name="-ldirectfb" if="directfb" />
-      
-      <lib name="/opt/vc/lib/libGLESv1_CM.so" if="rpi" unless="ogl_shaders"/>
-      <lib name="/opt/vc/lib/libGLESv2.so" if="rpi"/>
-      <lib name="/opt/vc/lib/libEGL.so" if="rpi"/>
-      <lib name="/opt/vc/lib/libbcm_host.so" if="rpi"/>
-      
-      <lib name="-lm" if="blackberry"/>
-      <lib name="-lsocket" if="blackberry"/>
-      
-      <lib name="gdi32.lib" if="win_desktop" />
-      <lib name="opengl32.lib" if="win_desktop" />
-      <lib name="${THIRDPARTY_LIBS}libOpenAL32${SLIBEXT}" if="windows" unless="noopenal"/>
-      <!-- <lib name="${THIRDPARTY_LIBS}libOpenAL32_dynamic${SLIBEXT}" if="openal_link_dynamic"/> -->
-      <lib name="user32.lib" if="win_desktop"/>
-      <lib name="kernel32.lib" if="win_desktop" unless="sdl2"/>
-      <lib name="advapi32.lib" if="win_desktop" unless="sdl2"/>
-      <lib name="${THIRDPARTY_LIBS}dxguid.lib" if="win_desktop"/>
-      <lib name="winmm.lib" if="win_desktop"/>
-      <lib name="imm32.lib" if="win_desktop" />
-      <lib name="ole32.lib" if="win_desktop" unless="noopenal"/>
-      <lib name="oleaut32.lib" if="win_desktop" unless="noopenal" />
-      <lib name="version.lib" if="win_desktop" />
-      <lib name="ws2_32.lib" if="win_desktop" unless="sdl2"/>
-      <lib name="wldap32.lib" if="win_desktop"/>
-      <lib name="shell32.lib" if="win_desktop"/>
-      <lib name="comdlg32.lib" if="win_desktop"/>
-      <lib name="-ldl" if="linux"/>
-      <lib name="-lGL" if="linux" unless="rpi"/>
-      <lib name="-lpthread" if="linux"/>
-      
-      <lib name="D3D11.lib" if="winrt"/>
-      
-      <flag value="-L${GPH_ROOT}/DGE/lib/target" if="gph"/>
-      <lib name="-ldge20" if="gph"/>
-      <lib name="-ldgx20" if="gph"/>
-      <lib name="-lopengles_lite" if="gph"/>
-      <lib name="-lfreetype" if="gph"/>
-      <lib name="-lopenal11" if="gph"/>
-      <lib name="-lopenalut11" if="gph"/>
-      <lib name="-lts" if="gph"/>
-      <lib name="-lpthread" if="gph"/>
-      <lib name="-lpng" if="gph"/>
-      <lib name="-ljpeg" if="gph"/>
-      <lib name="-lz" if="gph"/>
-      
+      </section>
+
    </target>
    
    
    <target id="default">
-      
-      <target id="NDLL"/>
-      
+     <target id="NDLL"/>
    </target>
    
    

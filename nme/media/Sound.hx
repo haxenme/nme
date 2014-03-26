@@ -11,6 +11,7 @@ import nme.errors.Error;
 import nme.utils.ByteArray;
 import nme.utils.Endian;
 
+@:autoBuild(nme.macros.Embed.embedAsset("NME_sound_",":sound"))
 class Sound extends EventDispatcher 
 {
    public var bytesLoaded(default, null):Int;
@@ -20,16 +21,26 @@ class Sound extends EventDispatcher
    public var length(get_length, null):Float;
    public var url(default, null):String;
 
-   /** @private */ private var nmeHandle:Dynamic;
+   /** @private */ public var nmeHandle:Dynamic;
    /** @private */ private var nmeLoading:Bool;
    /** @private */ private var nmeDynamicSound:Bool;
    public function new(?stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false) 
    {
       super();
 
+      if (stream==null)
+      {
+         var className = Type.getClass(this);
+         if (Reflect.hasField(className, "resourceName"))
+         {
+            stream = new URLRequest(Reflect.field(className, "resourceName"));
+            forcePlayAsMusic = true;
+         }
+      }
+
       bytesLoaded = bytesTotal = 0;
       nmeLoading = false;
-         nmeDynamicSound = false;
+      nmeDynamicSound = false;
 
       if (stream != null)
          load(stream, context, forcePlayAsMusic);
@@ -179,12 +190,16 @@ class Sound extends EventDispatcher
          nmeHandle = null;
          return result;
 
-      } else 
+      }
+      else 
       {
          if (nmeHandle == null || nmeLoading)
             return null;
 
-         return new SoundChannel(nmeHandle, startTime, loops, sndTransform);
+         var result = new SoundChannel(nmeHandle, startTime, loops, sndTransform);
+         if (result.nmeHandle==null)
+            return null;
+         return result;
       }
    }
 

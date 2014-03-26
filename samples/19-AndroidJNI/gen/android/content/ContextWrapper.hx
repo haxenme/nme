@@ -72,7 +72,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_setTheme_func==null)
          _setTheme_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","setTheme","(I)V");
-      nme.JNI.callMember(_setTheme_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setTheme_func,__jobject,[arg0]);
    }
 
    static var _getTheme_func:Dynamic;
@@ -280,7 +280,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_setWallpaper_func==null)
          _setWallpaper_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","setWallpaper","(Landroid/graphics/Bitmap;)V");
-      nme.JNI.callMember(_setWallpaper_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setWallpaper_func,__jobject,[arg0]);
    }
 
    static var _setWallpaper1_func:Dynamic;
@@ -288,7 +288,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_setWallpaper1_func==null)
          _setWallpaper1_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","setWallpaper","(Ljava/io/InputStream;)V");
-      nme.JNI.callMember(_setWallpaper1_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setWallpaper1_func,__jobject,[arg0]);
    }
 
    static var _clearWallpaper_func:Dynamic;
@@ -296,7 +296,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_clearWallpaper_func==null)
          _clearWallpaper_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","clearWallpaper","()V");
-      nme.JNI.callMember(_clearWallpaper_func,__jobject,[]);
+      return nme.JNI.callMember(_clearWallpaper_func,__jobject,[]);
    }
 
    static var _startActivity_func:Dynamic;
@@ -304,7 +304,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_startActivity_func==null)
          _startActivity_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","startActivity","(Landroid/content/Intent;)V");
-      nme.JNI.callMember(_startActivity_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_startActivity_func,__jobject,[arg0]);
    }
 
    static var _startIntentSender_func:Dynamic;
@@ -312,7 +312,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_startIntentSender_func==null)
          _startIntentSender_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","startIntentSender","(Landroid/content/IntentSender;Landroid/content/Intent;III)V");
-      nme.JNI.callMember(_startIntentSender_func,__jobject,[arg0,arg1,arg2,arg3,arg4]);
+      return nme.JNI.callMember(_startIntentSender_func,__jobject,[arg0,arg1,arg2,arg3,arg4]);
    }
 
    static var _sendBroadcast_func:Dynamic;
@@ -320,7 +320,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_sendBroadcast_func==null)
          _sendBroadcast_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","sendBroadcast","(Landroid/content/Intent;)V");
-      nme.JNI.callMember(_sendBroadcast_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_sendBroadcast_func,__jobject,[arg0]);
    }
 
    static var _sendBroadcast1_func:Dynamic;
@@ -328,7 +328,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_sendBroadcast1_func==null)
          _sendBroadcast1_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","sendBroadcast","(Landroid/content/Intent;Ljava/lang/String;)V");
-      nme.JNI.callMember(_sendBroadcast1_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_sendBroadcast1_func,__jobject,[arg0,arg1]);
    }
 
    static var _sendOrderedBroadcast_func:Dynamic;
@@ -336,7 +336,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_sendOrderedBroadcast_func==null)
          _sendOrderedBroadcast_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","sendOrderedBroadcast","(Landroid/content/Intent;Ljava/lang/String;)V");
-      nme.JNI.callMember(_sendOrderedBroadcast_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_sendOrderedBroadcast_func,__jobject,[arg0,arg1]);
    }
 
    static var _sendOrderedBroadcast1_func:Dynamic;
@@ -344,7 +344,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_sendOrderedBroadcast1_func==null)
          _sendOrderedBroadcast1_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","sendOrderedBroadcast","(Landroid/content/Intent;Ljava/lang/String;Landroid/content/BroadcastReceiver;Landroid/os/Handler;ILjava/lang/String;Landroid/os/Bundle;)V");
-      nme.JNI.callMember(_sendOrderedBroadcast1_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5,arg6]);
+      return nme.JNI.callMember(_sendOrderedBroadcast1_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5,arg6]);
    }
 
    static var _sendStickyBroadcast_func:Dynamic;
@@ -352,7 +352,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_sendStickyBroadcast_func==null)
          _sendStickyBroadcast_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","sendStickyBroadcast","(Landroid/content/Intent;)V");
-      nme.JNI.callMember(_sendStickyBroadcast_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_sendStickyBroadcast_func,__jobject,[arg0]);
    }
 
    static var _sendStickyOrderedBroadcast_func:Dynamic;
@@ -360,7 +360,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_sendStickyOrderedBroadcast_func==null)
          _sendStickyOrderedBroadcast_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","sendStickyOrderedBroadcast","(Landroid/content/Intent;Landroid/content/BroadcastReceiver;Landroid/os/Handler;ILjava/lang/String;Landroid/os/Bundle;)V");
-      nme.JNI.callMember(_sendStickyOrderedBroadcast_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5]);
+      return nme.JNI.callMember(_sendStickyOrderedBroadcast_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5]);
    }
 
    static var _removeStickyBroadcast_func:Dynamic;
@@ -368,7 +368,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_removeStickyBroadcast_func==null)
          _removeStickyBroadcast_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","removeStickyBroadcast","(Landroid/content/Intent;)V");
-      nme.JNI.callMember(_removeStickyBroadcast_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_removeStickyBroadcast_func,__jobject,[arg0]);
    }
 
    static var _registerReceiver_func:Dynamic;
@@ -392,7 +392,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_unregisterReceiver_func==null)
          _unregisterReceiver_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","unregisterReceiver","(Landroid/content/BroadcastReceiver;)V");
-      nme.JNI.callMember(_unregisterReceiver_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_unregisterReceiver_func,__jobject,[arg0]);
    }
 
    static var _startService_func:Dynamic;
@@ -424,7 +424,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_unbindService_func==null)
          _unbindService_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","unbindService","(Landroid/content/ServiceConnection;)V");
-      nme.JNI.callMember(_unbindService_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_unbindService_func,__jobject,[arg0]);
    }
 
    static var _startInstrumentation_func:Dynamic;
@@ -472,7 +472,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_enforcePermission_func==null)
          _enforcePermission_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","enforcePermission","(Ljava/lang/String;IILjava/lang/String;)V");
-      nme.JNI.callMember(_enforcePermission_func,__jobject,[arg0,arg1,arg2,arg3]);
+      return nme.JNI.callMember(_enforcePermission_func,__jobject,[arg0,arg1,arg2,arg3]);
    }
 
    static var _enforceCallingPermission_func:Dynamic;
@@ -480,7 +480,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_enforceCallingPermission_func==null)
          _enforceCallingPermission_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","enforceCallingPermission","(Ljava/lang/String;Ljava/lang/String;)V");
-      nme.JNI.callMember(_enforceCallingPermission_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_enforceCallingPermission_func,__jobject,[arg0,arg1]);
    }
 
    static var _enforceCallingOrSelfPermission_func:Dynamic;
@@ -488,7 +488,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_enforceCallingOrSelfPermission_func==null)
          _enforceCallingOrSelfPermission_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","enforceCallingOrSelfPermission","(Ljava/lang/String;Ljava/lang/String;)V");
-      nme.JNI.callMember(_enforceCallingOrSelfPermission_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_enforceCallingOrSelfPermission_func,__jobject,[arg0,arg1]);
    }
 
    static var _grantUriPermission_func:Dynamic;
@@ -496,7 +496,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_grantUriPermission_func==null)
          _grantUriPermission_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","grantUriPermission","(Ljava/lang/String;Landroid/net/Uri;I)V");
-      nme.JNI.callMember(_grantUriPermission_func,__jobject,[arg0,arg1,arg2]);
+      return nme.JNI.callMember(_grantUriPermission_func,__jobject,[arg0,arg1,arg2]);
    }
 
    static var _revokeUriPermission_func:Dynamic;
@@ -504,7 +504,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_revokeUriPermission_func==null)
          _revokeUriPermission_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","revokeUriPermission","(Landroid/net/Uri;I)V");
-      nme.JNI.callMember(_revokeUriPermission_func,__jobject,[arg0,arg1]);
+      return nme.JNI.callMember(_revokeUriPermission_func,__jobject,[arg0,arg1]);
    }
 
    static var _checkUriPermission_func:Dynamic;
@@ -544,7 +544,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_enforceUriPermission_func==null)
          _enforceUriPermission_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","enforceUriPermission","(Landroid/net/Uri;IIILjava/lang/String;)V");
-      nme.JNI.callMember(_enforceUriPermission_func,__jobject,[arg0,arg1,arg2,arg3,arg4]);
+      return nme.JNI.callMember(_enforceUriPermission_func,__jobject,[arg0,arg1,arg2,arg3,arg4]);
    }
 
    static var _enforceCallingUriPermission_func:Dynamic;
@@ -552,7 +552,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_enforceCallingUriPermission_func==null)
          _enforceCallingUriPermission_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","enforceCallingUriPermission","(Landroid/net/Uri;ILjava/lang/String;)V");
-      nme.JNI.callMember(_enforceCallingUriPermission_func,__jobject,[arg0,arg1,arg2]);
+      return nme.JNI.callMember(_enforceCallingUriPermission_func,__jobject,[arg0,arg1,arg2]);
    }
 
    static var _enforceCallingOrSelfUriPermission_func:Dynamic;
@@ -560,7 +560,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_enforceCallingOrSelfUriPermission_func==null)
          _enforceCallingOrSelfUriPermission_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","enforceCallingOrSelfUriPermission","(Landroid/net/Uri;ILjava/lang/String;)V");
-      nme.JNI.callMember(_enforceCallingOrSelfUriPermission_func,__jobject,[arg0,arg1,arg2]);
+      return nme.JNI.callMember(_enforceCallingOrSelfUriPermission_func,__jobject,[arg0,arg1,arg2]);
    }
 
    static var _enforceUriPermission1_func:Dynamic;
@@ -568,7 +568,7 @@ class ContextWrapper extends android.content.Context
    {
       if (_enforceUriPermission1_func==null)
          _enforceUriPermission1_func=nme.JNI.createMemberMethod("android.content.ContextWrapper","enforceUriPermission","(Landroid/net/Uri;Ljava/lang/String;Ljava/lang/String;IIILjava/lang/String;)V");
-      nme.JNI.callMember(_enforceUriPermission1_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5,arg6]);
+      return nme.JNI.callMember(_enforceUriPermission1_func,__jobject,[arg0,arg1,arg2,arg3,arg4,arg5,arg6]);
    }
 
    static var _createPackageContext_func:Dynamic;

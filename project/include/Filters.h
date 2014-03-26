@@ -1,7 +1,7 @@
 #ifndef FILTERS_H
 #define FILTERS_H
 
-#include "QuickVec.h"
+#include <nme/QuickVec.h>
 #include "Geom.h"
 
 namespace nme

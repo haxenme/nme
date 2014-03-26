@@ -24,7 +24,7 @@ class ContextThemeWrapper extends android.content.ContextWrapper
    {
       if (_setTheme_func==null)
          _setTheme_func=nme.JNI.createMemberMethod("android.view.ContextThemeWrapper","setTheme","(I)V");
-      nme.JNI.callMember(_setTheme_func,__jobject,[arg0]);
+      return nme.JNI.callMember(_setTheme_func,__jobject,[arg0]);
    }
 
    static var _getTheme_func:Dynamic;

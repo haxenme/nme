@@ -16,7 +16,7 @@ class GameActivity extends android.app.Activity
    {
       if (_showKeyboard_func==null)
          _showKeyboard_func=nme.JNI.createStaticMethod("org.haxe.nme.GameActivity","showKeyboard","(Z)V");
-      nme.JNI.callStatic(_showKeyboard_func,[arg0]);
+      return nme.JNI.callStatic(_showKeyboard_func,[arg0]);
    }
 
    static var _getResource_func:Dynamic;
@@ -72,7 +72,7 @@ class GameActivity extends android.app.Activity
    {
       if (_postUICallback_func==null)
          _postUICallback_func=nme.JNI.createStaticMethod("org.haxe.nme.GameActivity","postUICallback","(J)V");
-      nme.JNI.callStatic(_postUICallback_func,[arg0]);
+      return nme.JNI.callStatic(_postUICallback_func,[arg0]);
    }
 
    static var _launchBrowser_func:Dynamic;
@@ -80,7 +80,7 @@ class GameActivity extends android.app.Activity
    {
       if (_launchBrowser_func==null)
          _launchBrowser_func=nme.JNI.createStaticMethod("org.haxe.nme.GameActivity","launchBrowser","(Ljava/lang/String;)V");
-      nme.JNI.callStatic(_launchBrowser_func,[arg0]);
+      return nme.JNI.callStatic(_launchBrowser_func,[arg0]);
    }
 
    static var _getUserPreference_func:Dynamic;
@@ -96,7 +96,7 @@ class GameActivity extends android.app.Activity
    {
       if (_setUserPreference_func==null)
          _setUserPreference_func=nme.JNI.createStaticMethod("org.haxe.nme.GameActivity","setUserPreference","(Ljava/lang/String;Ljava/lang/String;)V");
-      nme.JNI.callStatic(_setUserPreference_func,[arg0,arg1]);
+      return nme.JNI.callStatic(_setUserPreference_func,[arg0,arg1]);
    }
 
    static var _clearUserPreference_func:Dynamic;
@@ -104,7 +104,7 @@ class GameActivity extends android.app.Activity
    {
       if (_clearUserPreference_func==null)
          _clearUserPreference_func=nme.JNI.createStaticMethod("org.haxe.nme.GameActivity","clearUserPreference","(Ljava/lang/String;)V");
-      nme.JNI.callStatic(_clearUserPreference_func,[arg0]);
+      return nme.JNI.callStatic(_clearUserPreference_func,[arg0]);
    }
 
    static var _playMusic1_func:Dynamic;
@@ -112,7 +112,7 @@ class GameActivity extends android.app.Activity
    {
       if (_playMusic1_func==null)
          _playMusic1_func=nme.JNI.createStaticMethod("org.haxe.nme.GameActivity","playMusic","(Ljava/lang/String;)V");
-      nme.JNI.callStatic(_playMusic1_func,[arg0]);
+      return nme.JNI.callStatic(_playMusic1_func,[arg0]);
    }
 
 }

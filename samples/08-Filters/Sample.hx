@@ -1,16 +1,16 @@
-import flash.display.Graphics;
-import flash.display.Sprite;
-import flash.display.Shape;
-import flash.geom.Rectangle;
+import nme.display.Graphics;
+import nme.display.Sprite;
+import nme.display.Shape;
+import nme.geom.Rectangle;
 
-import flash.display.DisplayObject;
-import flash.geom.Matrix;
-import flash.events.Event;
-import flash.events.MouseEvent;
+import nme.display.DisplayObject;
+import nme.geom.Matrix;
+import nme.events.Event;
+import nme.events.MouseEvent;
 
-import flash.Lib;
+import nme.Lib;
 
-import flash.filters.BlurFilter;
+import nme.filters.BlurFilter;
 
 
 class Sample extends Sprite
@@ -21,6 +21,7 @@ class Sample extends Sprite
    public function new()
    {
       super();
+      // This is not needed in the nme_install_tool case, but does not hurt
       flash.Lib.current.addChild(this);
 
       small_objs = [];
@@ -95,14 +96,16 @@ class Sample extends Sprite
       // scene.x = Std.int(scene.x + 1) & 0x1ff;
    }
 
-public static function main()
-{
-#if flash
-   new Sample();
-#else
-   Lib.create(function(){new Sample();},640,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
-#end
-}
+   #if !nme_install_tool
+   public static function main()
+   {
+   #if flash
+      new Sample();
+   #else
+      Lib.create(function(){new Sample();},640,480,60,0xccccff,(0*Lib.HARDWARE) | Lib.RESIZABLE);
+   #end
+   }
+   #end
 
 
 }
