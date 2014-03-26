@@ -363,13 +363,14 @@ value nme_gl_get_parameter(value pname_val)
          ints = 4;
          break;
 
-      case GL_ARRAY_BUFFER_BINDING:
-      case GL_CURRENT_PROGRAM:
-      case GL_ELEMENT_ARRAY_BUFFER_BINDING:
-      case GL_FRAMEBUFFER_BINDING:
-      case GL_RENDERBUFFER_BINDING:
-      case GL_TEXTURE_BINDING_2D:
-      case GL_TEXTURE_BINDING_CUBE_MAP:
+      // case GL_ARRAY_BUFFER_BINDING  WebGLBuffer
+      // case GL_CURRENT_PROGRAM  WebGLProgram
+      // case GL_ELEMENT_ARRAY_BUFFER_BINDING  WebGLBuffer
+      // case GL_FRAMEBUFFER_BINDING  WebGLFramebuffer
+      // case GL_RENDERBUFFER_BINDING  WebGLRenderbuffer
+      // case GL_TEXTURE_BINDING_2D  WebGLTexture
+      // case GL_TEXTURE_BINDING_CUBE_MAP  WebGLTexture
+
       case GL_DEPTH_CLEAR_VALUE:
       case GL_LINE_WIDTH:
       case GL_POLYGON_OFFSET_FACTOR:
@@ -1607,13 +1608,6 @@ value nme_gl_depth_range(value inNear, value inFar)
 }
 DEFINE_PRIM(nme_gl_depth_range,2);
 
-
-value lime_gl_cull_face(value mode)
-{
-   glCullFace(val_int(mode));
-   return alloc_null();
-}
-DEFINE_PRIM(lime_gl_cull_face,1);
 
 
 value nme_gl_polygon_offset(value factor, value units)

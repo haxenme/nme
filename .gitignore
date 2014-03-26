@@ -6,8 +6,12 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
+*.ndll
 
 # Compiled Static libraries
 *.lai
 *.la
 *.a
+
+# Untracked directories
+obj/

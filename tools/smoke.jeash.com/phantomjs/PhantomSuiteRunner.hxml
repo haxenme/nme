@@ -1,4 +1,0 @@
--js PhantomSuiteRunner.js 
--main PhantomSuiteRunner
--lib utest 
--lib pdiff-hx
