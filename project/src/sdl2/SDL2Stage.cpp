@@ -51,6 +51,7 @@ int InitSDL()
 
 static void openAudio()
 {
+   #ifdef NME_MIXER
    gSDLAudioState = sdaOpen;
 
    #ifdef HX_WINDOWS
@@ -68,6 +69,7 @@ static void openAudio()
       fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
       gSDLAudioState = sdaError;
    }
+   #endif
 }
 
 void InitSDLAudio()
