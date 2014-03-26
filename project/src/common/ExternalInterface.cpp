@@ -47,8 +47,10 @@ static int _id_type;
 static int _id_x;
 static int _id_y;
 static int _id_z;
-static int _id_sx;
-static int _id_sy;
+static int _id_scaleX;
+static int _id_scaleY;
+static int _id_deltaX;
+static int _id_deltaY;
 static int _id_width;
 static int _id_height;
 static int _id_length;
@@ -142,8 +144,10 @@ extern "C" void InitIDs()
    _id_x = val_id("x");
    _id_y = val_id("y");
    _id_z = val_id("z");
-   _id_sx = val_id("sx");
-   _id_sy = val_id("sy");
+   _id_scaleX = val_id("scaleX");
+   _id_scaleY = val_id("scaleY");
+   _id_deltaX = val_id("deltaX");
+   _id_deltaY = val_id("deltaY");
    _id_width = val_id("width");
    _id_height = val_id("height");
    _id_length = val_id("length");
@@ -757,6 +761,18 @@ value nme_byte_array_read_file(value inFilename)
 DEFINE_PRIM(nme_byte_array_read_file,1);
 
 
+value nme_byte_array_get_native_pointer(value inByteArray)
+{
+   ByteArray bytes (inByteArray);
+   if (!val_is_null (bytes.mValue))
+   {
+      return alloc_int((intptr_t)bytes.Bytes ());
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_byte_array_get_native_pointer,1);
+
+
 struct ByteData
 {
    uint8 *data;
@@ -882,7 +898,7 @@ DEFINE_PRIM( nme_sys_get_exe_name, 0 );
 value nme_capabilities_get_screen_resolutions ()
 {
    //Only really makes sense on PC platforms
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS )
+   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
       QuickVec<int>* res = CapabilitiesGetScreenResolutions();
       
       value result = alloc_array( res->size());
@@ -898,6 +914,37 @@ value nme_capabilities_get_screen_resolutions ()
 }
 
 DEFINE_PRIM( nme_capabilities_get_screen_resolutions, 0 );
+
+
+value nme_capabilities_get_screen_modes () {
+
+
+   //Only really makes sense on PC platforms
+   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
+
+
+      QuickVec<ScreenMode>* modes = CapabilitiesGetScreenModes();
+
+      value result = alloc_array( modes->size() * 4 );
+
+      for(int i=0;i<modes->size();i++) {
+         ScreenMode mode = (*modes)[ i ];
+         val_array_set_i(result,i * 4 + 0,alloc_int( mode.width ) );
+         val_array_set_i(result,i * 4 + 1,alloc_int( mode.height ) );
+         val_array_set_i(result,i * 4 + 2,alloc_int( mode.refreshRate ) );
+         val_array_set_i(result,i * 4 + 3,alloc_int( (int)mode.format ) );
+      }
+    
+      return result;
+    
+    #endif
+  
+    return alloc_null();
+  
+  
+}
+
+DEFINE_PRIM( nme_capabilities_get_screen_modes, 0 );
 
 
 value nme_capabilities_get_pixel_aspect_ratio () {
@@ -1005,7 +1052,7 @@ DEFINE_PRIM(nme_haptic_vibrate,2);
 // --- SharedObject ----------------------------------------------------------------------
 value nme_set_user_preference(value inId,value inValue)
 {
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
       bool result=SetUserPreference(val_string(inId),val_string(inValue));
       return alloc_bool(result);
    #endif
@@ -1015,7 +1062,7 @@ DEFINE_PRIM(nme_set_user_preference,2);
 
 value nme_get_user_preference(value inId)
 {
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
       std::string result=GetUserPreference(val_string(inId));
       return alloc_string(result.c_str());
    #endif
@@ -1025,7 +1072,7 @@ DEFINE_PRIM(nme_get_user_preference,1);
 
 value nme_clear_user_preference(value inId)
 {
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
       bool result=ClearUserPreference(val_string(inId));
       return alloc_bool(result);
    #endif
@@ -1037,7 +1084,7 @@ DEFINE_PRIM(nme_clear_user_preference,1);
 
 value nme_stage_set_fixed_orientation(value inValue)
 {
-#ifdef IPHONE
+#if defined(IPHONE) || defined(TIZEN)
    gFixedOrientation = val_int(inValue);
 #endif
    return alloc_null();
@@ -1188,8 +1235,10 @@ void external_handler( nme::Event &ioEvent, void *inUserData )
    alloc_field(o,_id_flags,alloc_int(ioEvent.flags));
    alloc_field(o,_id_code,alloc_int(ioEvent.code));
    alloc_field(o,_id_result,alloc_int(ioEvent.result));
-   alloc_field(o,_id_sx,alloc_float(ioEvent.sx));
-   alloc_field(o,_id_sy,alloc_float(ioEvent.sy));
+   alloc_field(o,_id_scaleX,alloc_float(ioEvent.scaleX));
+   alloc_field(o,_id_scaleY,alloc_float(ioEvent.scaleY));
+   alloc_field(o,_id_deltaX,alloc_float(ioEvent.deltaX));
+   alloc_field(o,_id_deltaY,alloc_float(ioEvent.deltaY));
    val_call1(handler->get(), o);
    ioEvent.result = (EventResult)val_int( val_field(o,_id_result) );
 }
@@ -1240,12 +1289,58 @@ value nme_stage_resize_window(value inStage, value inWidth, value inHeight)
    Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
-      stage->ResizeWindow(val_int(inHeight), val_int(inWidth));
+      stage->ResizeWindow(val_int(inWidth), val_int(inHeight));
    }
    #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_stage_resize_window,3);
+
+
+value nme_stage_set_resolution(value inStage, value inWidth, value inHeight)
+{
+   #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      stage->SetResolution(val_int(inWidth), val_int(inHeight));
+   }
+   #endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_set_resolution,3);
+
+
+value nme_stage_set_screenmode(value inStage, value inWidth, value inHeight, value inRefresh, value inFormat)
+{printf("nme_stage_set_screenmode");
+   #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
+   Stage *stage;
+   if (AbstractToObject(inStage,stage)){
+      ScreenMode mode;
+      mode.width = val_int(inWidth);
+      mode.height = val_int(inHeight);
+      mode.refreshRate = val_int(inRefresh);
+      mode.format = (ScreenFormat)val_int(inFormat);
+      stage->SetScreenMode(mode);
+   }
+   #endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_set_screenmode,5);
+
+
+value nme_stage_set_fullscreen(value inStage, value inFull)
+{
+   #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      stage->setDisplayState(val_bool(inFull) ? sdsFullscreenInteractive : sdsNormal);
+   }
+   #endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_set_fullscreen,2);
 
 
 value nme_stage_get_focus_id(value inValue)
@@ -1275,6 +1370,20 @@ value nme_stage_set_focus(value inStage,value inObject,value inDirection)
    return alloc_null();
 }
 DEFINE_PRIM(nme_stage_set_focus,3);
+
+value nme_stage_get_joystick_name(value inStage, value inId)
+{
+   #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      const char *joystickName = stage->getJoystickName(val_int(inId));
+      if (joystickName != NULL) return alloc_string(joystickName);
+   }
+   #endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_get_joystick_name,2);
 
 DO_STAGE_PROP(focus_rect,FocusRect,alloc_bool,val_bool)
 DO_STAGE_PROP(scale_mode,ScaleMode,alloc_int,val_int)
@@ -2490,7 +2599,7 @@ value nme_gfx_draw_datum(value inGfx,value inDatum)
 }
 DEFINE_PRIM(nme_gfx_draw_datum,2);
 
-value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
+value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,value inDataSize)
 {
    Graphics *gfx;
    Tilesheet *sheet;
@@ -2549,7 +2658,9 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
       if (flags & TILE_ALPHA)
          components++;
 
-      int n = val_array_size(inXYIDs)/components;
+      int n = val_int(inDataSize);
+      if (n < 0) n = val_array_size(inXYIDs);
+      n /= components;
       double *vals = val_array_double(inXYIDs);
       float *fvals = val_array_float(inXYIDs);
       int max = sheet->Tiles();
@@ -2670,7 +2781,7 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_gfx_draw_tiles,4);
+DEFINE_PRIM(nme_gfx_draw_tiles,5);
 
 
 static bool sNekoLutInit = false;
@@ -3298,10 +3409,11 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
       return alloc_null();
 
    Surface *surface = Surface::LoadFromBytes(bytes.data,bytes.length);
-   surface->SetAllowTrans(true);
+   
    
    if (surface)
    {
+      surface->SetAllowTrans(true);	
       if (!val_is_null(inAlphaBytes))
       {
          ByteData alphabytes;
@@ -3747,6 +3859,18 @@ value nme_bitmap_data_unmultiply_alpha(value inSurface)
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_unmultiply_alpha,1);
+
+
+value nme_bitmap_data_multiply_alpha(value inSurface)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      surf->multiplyAlpha();
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_bitmap_data_multiply_alpha,1);
 
 
 value nme_render_surface_to_surface(value* arg, int nargs)
