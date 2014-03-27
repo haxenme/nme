@@ -91,8 +91,13 @@ struct JNIType
       switch(element)
       {
          case jniObjectString: name += "java/lang/String"; break;
+         #ifdef HX_LIME
          case jniObjectHaxe: name += "org/haxe/nme/HaxeObject"; break;
          case jniValueObject: name += "org/haxe/nme/Value"; break;
+         #else
+         case jniObjectHaxe: name += "org/haxe/nme/HaxeObject"; break;
+         case jniValueObject: name += "org/haxe/nme/Value"; break;
+         #endif
 
          case jniUnknown:
          case jniObject: name += "java/lang/Object"; break;
@@ -197,14 +202,26 @@ void JNIInit(JNIEnv *env)
 {
    if (sInit)
       return;
+   #ifdef HX_LIME
+   GameActivity = FindClass("org/haxe/lime/GameActivity");
+   #else
    GameActivity = FindClass("org/haxe/nme/GameActivity");
+   #endif
    postUICallback = env->GetStaticMethodID(GameActivity, "postUICallback", "(J)V");
 
    ObjectClass = FindClass("java/lang/Object");
+   #ifdef HX_LIME
+   ValueObject = FindClass("org/haxe/lime/Value");
+   #else
    ValueObject = FindClass("org/haxe/nme/Value");
+   #endif
 
    HaxeObject   = JNIType(jniObjectHaxe,0).getClass(env);
+   #ifdef HX_LIME
+   HaxeObject_create = env->GetStaticMethodID(HaxeObject, "create", "(J)Lorg/haxe/lime/HaxeObject;");
+   #else
    HaxeObject_create = env->GetStaticMethodID(HaxeObject, "create", "(J)Lorg/haxe/nme/HaxeObject;");
+   #endif
    __haxeHandle = env->GetFieldID(HaxeObject, "__haxeHandle", "J");
 
    JNIType::init(env);
@@ -377,7 +394,8 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
       {
          for(int i=0;i<jniELEMENTS;i++)
          {
-            if (inEnv->IsSameObject(JNIType::elementClass[i],cls) )
+            if (JNIType::elementClass[i]==0) continue;
+            if (inEnv->IsSameObject(cls,JNIType::elementClass[i]))
             {
                inType = JNIType((JNIElement)i,0);
                break;
@@ -388,7 +406,8 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
          {
             for(int i=0;i<jniELEMENTS;i++)
             {
-               if (cls==JNIType::elementArrayClass[i])
+               if (JNIType::elementArrayClass[i]==0) continue;
+               if (inEnv->IsSameObject(cls,JNIType::elementArrayClass[i]))
                {
                  inType = JNIType((JNIElement)i,1);
                   break;
@@ -518,7 +537,11 @@ const char *JNIParseType(const char *inStr, JNIType &outType,int inDepth=0)
             if (!strncmp(src,"java/lang/String;",17) ||
                 !strncmp(src,"java/lang/CharSequence;",23)  )
                outType = JNIType(jniObjectString,inDepth);
+            #ifdef HX_LIME
+            else if (!strncmp(src,"org/haxe/lime/HaxeObject;",24))
+            #else
             else if (!strncmp(src,"org/haxe/nme/HaxeObject;",24))
+            #endif
                outType = JNIType(jniObjectHaxe,inDepth);
             else
                outType = JNIType(jniObject,inDepth);
@@ -620,6 +643,12 @@ bool HaxeToJNI(JNIEnv *inEnv, value inValue, JNIType inType, jvalue &out)
                jobject obj = 0;
                if (!AbstractToJObject(inValue,obj))
                {
+                  if (val_is_string(inValue))
+                  {
+                    out.l = inEnv->NewStringUTF(val_string(inValue));
+                    return true;
+                  }
+
                   ELOG("HaxeToJNI : jniObject not an object %p", inValue);
                   return false;
                }
@@ -1159,7 +1188,7 @@ struct JNIMethod : public nme::Object
             result = alloc_int(env->CallShortMethodA(inObject, mMethod, jargs));
             break;
          case jniInt:
-            result = alloc_int(env->CallIntMethodA(mClass, mMethod, jargs));
+            result = alloc_int(env->CallIntMethodA(inObject, mMethod, jargs));
             break;
          case jniLong:
             result = alloc_int(env->CallLongMethodA(inObject, mMethod, jargs));
@@ -1235,7 +1264,7 @@ DEFINE_PRIM(nme_jni_call_member,3);
 value nme_jni_get_env()
 {
    JNIEnv *env = GetEnv();
-   return alloc_int((int)env);
+   return alloc_int((intptr_t)env);
 }
 DEFINE_PRIM(nme_jni_get_env,0);
 
@@ -1280,7 +1309,11 @@ DEFINE_PRIM(nme_post_ui_callback,1);
 extern "C"
 {
 
+#ifdef HX_LIME
+JAVA_EXPORT void JNICALL Java_org_haxe_lime_Lime_onCallback(JNIEnv * env, jobject obj, jlong handle)
+#else
 JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onCallback(JNIEnv * env, jobject obj, jlong handle)
+#endif
 {
    AutoHaxe haxe("onCallback");
 
@@ -1292,7 +1325,11 @@ JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onCallback(JNIEnv * env, jobject 
 }
 
 
+#ifdef HX_LIME
+JAVA_EXPORT jobject JNICALL Java_org_haxe_lime_Lime_releaseReference(JNIEnv * env, jobject obj, jlong handle)
+#else
 JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_releaseReference(JNIEnv * env, jobject obj, jlong handle)
+#endif
 {
    AutoHaxe haxe("releaseReference");
    value val = (value)handle;
@@ -1320,7 +1357,11 @@ value CallHaxe(JNIEnv * env, jobject obj, jlong handle, jstring function, jobjec
 
 
 
+#ifdef HX_LIME
+JAVA_EXPORT jobject JNICALL Java_org_haxe_lime_Lime_callObjectFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
+#else
 JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_callObjectFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
+#endif
 {
    AutoHaxe haxe("callObject");
 
@@ -1343,7 +1384,11 @@ JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_callObjectFunction(JNIEnv * en
 }
 
 
+#ifdef HX_LIME
+JAVA_EXPORT jdouble JNICALL Java_org_haxe_lime_Lime_callNumericFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
+#else
 JAVA_EXPORT jdouble JNICALL Java_org_haxe_nme_NME_callNumericFunction(JNIEnv * env, jobject obj, jlong handle, jstring function, jobject args)
+#endif
 {
    AutoHaxe haxe("callNumeric");
 
