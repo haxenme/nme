@@ -245,6 +245,9 @@ public:
 
    StageVideo *createStageVideo(void *inOwner)
    {
+      #ifdef HX_LIME
+      return 0;
+      #else
       if (!video)
       {
          JNIEnv *env = GetEnv();
@@ -261,6 +264,7 @@ public:
       }
 
       return video;
+      #endif
    }
 
    uint32 getBackgroundMask()
@@ -272,6 +276,7 @@ public:
    void setOpaqueBackground(uint32 inBG)
    {
       Stage::setOpaqueBackground(inBG);
+      #ifndef HX_LIME
       if (mBackground != inBG)
       {
          mBackground = inBG;
@@ -280,6 +285,7 @@ public:
          jmethodID setBackground = env->GetStaticMethodID(cls,"setBackground","(I)V" );
          env->CallStaticVoidMethod(cls, setBackground, mBackground );
       }
+      #endif
    }
 
 
@@ -321,13 +327,19 @@ public:
       HandleEvent(evt);
    }
 
+   void OnContextRestored()
+   {
+      //__android_log_print(ANDROID_LOG_INFO, "NME", "OnContextRestored");
+      Event evt(etRenderContextRestored);
+      HandleEvent(etRenderContextRestored);
+   }
 
-   void OnKey(int inCode, bool inDown)
+   void OnKey(int inKeyCode, int inCharCode, bool inDown)
    {
       //__android_log_print(ANDROID_LOG_INFO, "NME", "OnKey %d %d", inCode, inDown);
       Event key( inDown ? etKeyDown : etKeyUp );
-      key.code = inCode;
-      key.value = inCode;
+      key.code = inCharCode;
+      key.value = inKeyCode;
       HandleEvent(key);
    }
 
@@ -393,8 +405,8 @@ public:
                }
                mouse.value = inID;
                
-               mouse.sx = sizeX;
-               mouse.sy = sizeY;
+               mouse.scaleX = sizeX;
+               mouse.scaleY = sizeY;
 
                //if (inType==etTouchBegin)
                   //ELOG("DOWN %d %f,%f (%s) %f,%f", inID, inX, inY, (mouse.flags & efPrimaryTouch) ? "P":"S", sizeX, sizeY );
@@ -443,7 +455,11 @@ public:
    void EnablePopupKeyboard(bool inEnable)
    {
       JNIEnv *env = GetEnv();
+      #ifdef HX_LIME
+      jclass cls = FindClass("org/haxe/lime/GameActivity");
+      #else
       jclass cls = FindClass("org/haxe/nme/GameActivity");
+      #endif
       jmethodID mid = env->GetStaticMethodID(cls, "showKeyboard", "(Z)V");
       if (mid == 0)
         return;
@@ -515,6 +531,14 @@ public:
       }
    }
 
+   void onContextRestored()
+   {
+      if (sStage)
+      {
+         sStage->OnContextRestored();
+      }
+   }
+
 
    void onResize(int inWidth, int inHeight)
    {
@@ -569,7 +593,11 @@ void StopAnimation()
 AAsset *AndroidGetAsset(const char *inResource)
 {
    JNIEnv *env = GetEnv();
+   #ifdef HX_LIME
+   jclass cls = FindClass("org/haxe/lime/GameActivity");
+   #else
    jclass cls = FindClass("org/haxe/nme/GameActivity");
+   #endif
    jmethodID mid = env->GetStaticMethodID(cls, "getAssetManager", "()Landroid/content/res/AssetManager;");
    if (mid == 0)
       return 0;
@@ -608,7 +636,11 @@ ByteArray AndroidGetAssetBytes(const char *inResource)
    
    /*JNIEnv *env = GetEnv();
    
+   #ifdef HX_LIME
+   jclass cls = FindClass("org/haxe/lime/GameActivity");
+   #else
    jclass cls = FindClass("org/haxe/nme/GameActivity");
+   #endif
    jmethodID mid = env->GetStaticMethodID(cls, "getResource", "(Ljava/lang/String;)[B");
    if (mid == 0)
       return 0;
@@ -650,7 +682,11 @@ FileInfo AndroidGetAssetFD(const char *inResource)
 void AndroidRequestRender()
 {
     JNIEnv *env = GetEnv();
+    #ifdef HX_LIME
+    jclass cls = FindClass("org/haxe/lime/MainView");
+    #else
     jclass cls = FindClass("org/haxe/nme/MainView");
+    #endif
     jmethodID mid = env->GetStaticMethodID(cls, "renderNow", "()V");
     if (mid == 0)
         return;
@@ -671,7 +707,7 @@ int GetNormalOrientation() {
 	return 0;
 }
 
-int GetOrientation(double& outX, double& outY, double& outZ) {
+bool GetOrientation(double& outX, double& outY, double& outZ) {
 	if (sStage) {
 		outX = sStage->mOrientationX;
 		outY = sStage->mOrientationY;
@@ -700,7 +736,11 @@ extern "C"
 
 static bool nmeContextIsLost = false;
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj,  jint width, jint height)
+#endif
 {
    AutoHaxe haxe("onResize");
    if (nme::sFrame)
@@ -709,11 +749,15 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onResize(JNIEnv * env, jobject obj
 }
 
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onContextLost(JNIEnv * env, jobject obj)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onContextLost(JNIEnv * env, jobject obj)
+#endif
 {
    // Delay the result to just prior to render - docs seem to say you should
    //  do it here, but I seem to be missing something
-   //nmeContextIsLost = true;
+   nmeContextIsLost = true;
 
    AutoHaxe haxe("onContextLost");
    //__android_log_print(ANDROID_LOG_INFO, "NME", "NME onContextLost !: %p", nme::sFrame );
@@ -724,7 +768,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onContextLost(JNIEnv * env, jobjec
 
 
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onRender(JNIEnv * env, jobject obj)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj)
+#endif
 {
    AutoHaxe haxe("onRender");
    if (nmeContextIsLost)
@@ -732,7 +780,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj
       LOG("Send on lost");
       nmeContextIsLost = false;
       if (nme::sFrame)
-         nme::sFrame->onContextLost();
+         nme::sFrame->onContextRestored();
    }
 
    //double t0 = nme::GetTimeStamp();
@@ -743,7 +791,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onRender(JNIEnv * env, jobject obj
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onNormalOrientationFound(JNIEnv * env, jobject obj, jint orientation)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onNormalOrientationFound(JNIEnv * env, jobject obj, jint orientation)
+#endif
 {
    AutoHaxe haxe("onOrientation");
    if (nme::sStage)
@@ -751,7 +803,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onNormalOrientationFound(JNIEnv * 
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onDeviceOrientationUpdate(JNIEnv * env, jobject obj, jint orientation)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onDeviceOrientationUpdate(JNIEnv * env, jobject obj, jint orientation)
+#endif
 {
    AutoHaxe haxe("onDeviceOrientation");
    if (nme::sStage)
@@ -759,7 +815,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onDeviceOrientationUpdate(JNIEnv *
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onOrientationUpdate(JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onOrientationUpdate(JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z)
+#endif
 {
    AutoHaxe haxe("onUpdateOrientation");
    if (nme::sStage)
@@ -767,7 +827,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onOrientationUpdate(JNIEnv * env, 
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onAccelerate(JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onAccelerate(JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z)
+#endif
 {
    AutoHaxe haxe("onAcceration");
    if (nme::sStage)
@@ -775,7 +839,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onAccelerate(JNIEnv * env, jobject
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id, jfloat sizeX, jfloat sizeY)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj, jint type, jfloat x, jfloat y, jint id, jfloat sizeX, jfloat sizeY)
+#endif
 {
    AutoHaxe haxe("onTouch");
    if (nme::sStage)
@@ -783,7 +851,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTouch(JNIEnv * env, jobject obj,
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onTrackball(JNIEnv * env, jobject obj, jfloat dx, jfloat dy)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject obj, jfloat dx, jfloat dy)
+#endif
 {
    AutoHaxe haxe("onTrackball");
    if (nme::sStage)
@@ -791,7 +863,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject 
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onKeyChange(JNIEnv * env, jobject obj, int keyCode, int charCode, bool down)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int code, bool down)
+#endif
 {
    AutoHaxe haxe("onKey");
    if (nme::sStage)
@@ -799,7 +875,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject 
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onJoyChange(JNIEnv * env, jobject obj, int deviceId, int code, bool down)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyChange(JNIEnv * env, jobject obj, int deviceId, int code, bool down)
+#endif
 {
    AutoHaxe haxe("onJoy");
    if (nme::sStage)
@@ -807,7 +887,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyChange(JNIEnv * env, jobject 
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onJoyMotion(JNIEnv * env, jobject obj, int deviceId, int axis, float value)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyMotion(JNIEnv * env, jobject obj, int deviceId, int axis, float value)
+#endif
 {
    AutoHaxe haxe("onJoyMotion");
    if (nme::sStage)
@@ -815,7 +899,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyMotion(JNIEnv * env, jobject 
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onPoll(JNIEnv * env, jobject obj)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
+#endif
 {
    AutoHaxe haxe("onPoll");
    if (nme::sStage)
@@ -823,7 +911,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onPoll(JNIEnv * env, jobject obj)
    return nme::GetResult();
 }
 
+#ifdef HX_LIME
+JAVA_EXPORT double JNICALL Java_org_haxe_lime_Lime_getNextWake(JNIEnv * env, jobject obj)
+#else
 JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobject obj)
+#endif
 {
    AutoHaxe haxe("onGetNextWake");
    if (nme::sStage)
@@ -832,7 +924,11 @@ JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobje
 }
 
 
+#ifdef HX_LIME
+JAVA_EXPORT int JNICALL Java_org_haxe_lime_Lime_onActivity(JNIEnv * env, jobject obj, int inVal)
+#else
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject obj, int inVal)
+#endif
 {
    AutoHaxe haxe("onActivity");
    if (nme::sStage)
