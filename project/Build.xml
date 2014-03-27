@@ -3,6 +3,7 @@
    <set name="PLATFORM" value="android-9" if="android" />
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
    <set name="HXCPP_CPP11" value="1" />
+   <set name="debug" value="debug" if="HX_LIME fulldebug" />
 
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
@@ -233,9 +234,9 @@
    
    <set name="LIBNAME" value="nme" unless="HX_LIME" />
    <set name="LIBNAME" value="lime" if="HX_LIME" />
+   <set name="DEBUGEXTRA" value="-debug" if="HX_LIME fulldebug" />
 
-
-   <target id="NDLL" output="${LIBPREFIX}${LIBNAME}${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
+   <target id="NDLL" output="${LIBPREFIX}${LIBNAME}${MSVC_LIB_VERSION}${DEBUGEXTRA}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
 
       <outdir name="${OUT_DIR}/${BINDIR}" />
 
