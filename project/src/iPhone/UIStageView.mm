@@ -1698,7 +1698,7 @@ void NMEStage::recreateNmeView()
       container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
    }
    ResetHardwareContext();
-   Event evt(etContextLost);
+   Event evt(etRenderContextLost);
    OnEvent(evt);
 }
 

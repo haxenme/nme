@@ -323,7 +323,7 @@ public:
    {
       //__android_log_print(ANDROID_LOG_INFO, "NME", "OnContextLost, ResetHardwareContext...");
       ResetHardwareContext();
-      Event evt(etContextLost);
+      Event evt(etRenderContextLost);
       HandleEvent(evt);
    }
 
@@ -331,7 +331,7 @@ public:
    {
       //__android_log_print(ANDROID_LOG_INFO, "NME", "OnContextRestored");
       Event evt(etRenderContextRestored);
-      HandleEvent(etRenderContextRestored);
+      HandleEvent(evt);
    }
 
    void OnKey(int inKeyCode, int inCharCode, bool inDown)
@@ -870,8 +870,13 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject 
 #endif
 {
    AutoHaxe haxe("onKey");
+   #ifdef HX_LIME
    if (nme::sStage)
-      nme::sStage->OnKey(code,down);
+      nme::sStage->OnKey(keyCode,charCode,down);
+   #else
+   if (nme::sStage)
+      nme::sStage->OnKey(code,code,down);
+   #endif
    return nme::GetResult();
 }
 
