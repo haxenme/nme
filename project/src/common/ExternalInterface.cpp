@@ -652,6 +652,8 @@ AutoGCRoot *gByteArrayLen = 0;
 AutoGCRoot *gByteArrayResize = 0;
 AutoGCRoot *gByteArrayBytes = 0;
 
+AutoGCRoot *gResourceFactory = 0;
+
 value nme_byte_array_init(value inFactory, value inLen, value inResize, value inBytes)
 {
    gByteArrayCreate = new AutoGCRoot(inFactory);
@@ -661,6 +663,16 @@ value nme_byte_array_init(value inFactory, value inLen, value inResize, value in
    return alloc_null();
 }
 DEFINE_PRIM(nme_byte_array_init,4);
+
+
+value nme_set_resource_factory(value inFactory)
+{
+   gResourceFactory = new AutoGCRoot(inFactory);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_set_resource_factory,1);
+
+
 
 ByteArray::ByteArray(int inSize)
 {
@@ -718,6 +730,17 @@ unsigned char *ByteArray::Bytes()
    }
    return (unsigned char *)buffer_data(buf);
 }
+
+
+ByteArray::ByteArray(const char *inResourceName)
+{
+   mValue = 0;
+   if (gResourceFactory)
+   {
+      mValue = val_call1(gResourceFactory->get(),alloc_string(inResourceName));
+   }
+}
+
 
 // --------------------
 

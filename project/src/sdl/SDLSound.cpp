@@ -509,6 +509,7 @@ class SDLMusic : public Sound
 {
    bool loaded;
    std::string filename;
+   std::vector<unsigned char> reso;
 
 public:
    SDLMusic(const std::string &inFilename)
@@ -537,7 +538,26 @@ public:
       #endif
 
       mMusic = Mix_LoadMUS(name);
-      if ( mMusic == NULL )
+
+      #ifndef EMSCRIPTEN
+      if (!mMusic)
+      {
+         ByteArray resource(filename.c_str());
+         if (resource.Ok())
+         {
+            int n = resource.Size();
+            if (n>0)
+            {
+               reso.resize(n);
+               memcpy(&reso[0], resource.Bytes(), n);
+               mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(&reso[0], resource.Size()),false);
+            }
+         }
+      }
+      #endif
+
+
+      if (!mMusic)
       {
          mError = SDL_GetError();
          ELOG("Error in music %s (%s)", mError.c_str(), name );

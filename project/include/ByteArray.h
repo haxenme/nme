@@ -18,6 +18,7 @@ struct ByteArray
    ByteArray();
    ByteArray(struct _value *Value);
    ByteArray(const QuickVec<unsigned char>  &inValue);
+   ByteArray(const char *inResourceName);
 
    void          Resize(int inSize);
    int           Size() const;
