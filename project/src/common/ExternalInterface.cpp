@@ -738,6 +738,8 @@ ByteArray::ByteArray(const char *inResourceName)
    if (gResourceFactory)
    {
       mValue = val_call1(gResourceFactory->get(),alloc_string(inResourceName));
+      if (val_is_null(mValue))
+         mValue = 0;
    }
 }
 
