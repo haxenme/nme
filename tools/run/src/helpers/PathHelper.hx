@@ -300,9 +300,15 @@ class PathHelper
       directory = StringTools.replace(directory, "\\", "/");
       var total = "";
 
-      if (directory.substr(0, 1) == "/") 
+      if (directory.substr(0, 2) == "//") 
+      {
+         total = "//";
+         directory = directory.substr(2);
+      }
+      else if (directory.substr(0, 1) == "/") 
       {
          total = "/";
+         directory = directory.substr(1);
       }
 
       var parts = directory.split("/");
@@ -315,16 +321,15 @@ class PathHelper
          parts.shift();
       }
 
+      var first = true;
       for(part in parts) 
       {
          if (part != "." && part != "") 
          {
-            if (total != "") 
-            {
+            if (!first)
                total += "/";
-            }
-
             total += part;
+            first = false;
 
             if (!FileSystem.exists(total)) 
             {
