@@ -62,10 +62,13 @@
    -->
 
    <!-- Built relative to "bin" -->
-   <set name="SRC_DIR" value="src" />
-   <set name="INC_DIR" value="include" />
-   <set name="NME_INC_DIR" value="../include" />
-   <set name="SUP_DIR" value="support" />
+   <set name="NME_ROOT" value="" unless="HX_LIME" />
+   <set name="NME_ROOT" value="${haxelib:nme}/project/" if="HX_LIME" />
+   
+   <set name="SRC_DIR" value="${NME_ROOT}src" />
+   <set name="INC_DIR" value="${NME_ROOT}include" />
+   <set name="NME_INC_DIR" value="${NME_ROOT}../include" />
+   <set name="SUP_DIR" value="${NME_ROOT}support" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
    
    <files id="main">
@@ -161,6 +164,9 @@
       <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
       <compilerflag value="-I${NME_STATE}/include" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
+      
+      
+      <compilerflag value="-DHX_LIME" if="HX_LIME" />
 
 
       <file name="${SRC_DIR}/common/Surface.cpp"/>
@@ -223,9 +229,13 @@
    <set name="SLIBEXT" value=".a" unless="windows"/>
    <set name="PRELIB" value="${NME_STATE}/lib/${BINDIR}/lib" />
    <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
+   
+   
+   <set name="LIBNAME" value="nme" unless="HX_LIME" />
+   <set name="LIBNAME" value="lime" if="HX_LIME" />
 
 
-   <target id="NDLL" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
+   <target id="NDLL" output="${LIBPREFIX}${LIBNAME}${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
 
       <outdir name="${OUT_DIR}/${BINDIR}" />
 
