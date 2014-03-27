@@ -168,7 +168,7 @@
       
       
       <compilerflag value="-DHX_LIME" if="HX_LIME" />
-
+      <file name="src/ExternalInterface.cpp" if="HX_LIME" />
 
       <file name="${SRC_DIR}/common/Surface.cpp"/>
       <file name="${SRC_DIR}/common/Utils.cpp"/>

@@ -102,13 +102,13 @@ class Graphics
       nme_gfx_draw_path(nmeHandle, commands, data, winding == GraphicsPathWinding.EVEN_ODD);
    }
 
-   public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0):Void {
+   public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0, inCount:Int = -1):Void {
       beginBitmapFill(sheet.nmeBitmap, null, false, inSmooth);
 
       if (inSmooth)
          inFlags |= TILE_SMOOTH;
 
-      nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, inXYID, inFlags);
+      nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, inXYID, inFlags, inCount);
    }
 
    public function drawTriangles(vertices:Array<Float>, ?indices:Array<Int>, ?uvtData:Array<Float>, ?culling:TriangleCulling, ?colours:Array<Int>, blendMode:Int = 0) 
@@ -180,7 +180,7 @@ class Graphics
    private static var nme_gfx_draw_datum = Loader.load("nme_gfx_draw_datum", 2);
    private static var nme_gfx_draw_rect = Loader.load("nme_gfx_draw_rect", 5);
    private static var nme_gfx_draw_path = Loader.load("nme_gfx_draw_path", 4);
-   private static var nme_gfx_draw_tiles = Loader.load("nme_gfx_draw_tiles", 4);
+   private static var nme_gfx_draw_tiles = Loader.load("nme_gfx_draw_tiles", 5);
    private static var nme_gfx_draw_points = Loader.load("nme_gfx_draw_points", -1);
    private static var nme_gfx_draw_round_rect = Loader.load("nme_gfx_draw_round_rect", -1);
    private static var nme_gfx_draw_triangles = Loader.load("nme_gfx_draw_triangles", -1);
