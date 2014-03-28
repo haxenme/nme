@@ -128,7 +128,11 @@ public:
    virtual void DestroyShader(unsigned int inShader)=0;
    virtual void DestroyFramebuffer(unsigned int inBuffer)=0;
    virtual void DestroyRenderbuffer(unsigned int inBuffer)=0;
-
+   
+   #ifdef NME_S3D
+   virtual void EndS3DRender()=0;
+   virtual void SetS3DEye(int eye)=0;
+   #endif
 };
 
 extern HardwareRenderer *gDirectRenderContext;

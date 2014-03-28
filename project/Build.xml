@@ -3,7 +3,7 @@
    <set name="PLATFORM" value="android-9" if="android" />
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
    <set name="HXCPP_CPP11" value="1" />
-   <set name="debug" value="debug" if="HX_LIME fulldebug" />
+   <set name="debug" value="debug" if="lime fulldebug" />
 
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
@@ -63,8 +63,8 @@
    -->
 
    <!-- Built relative to "bin" -->
-   <set name="NME_ROOT" value="" unless="HX_LIME" />
-   <set name="NME_ROOT" value="${haxelib:nme}/project/" if="HX_LIME" />
+   <set name="NME_ROOT" value="" unless="lime" />
+   <set name="NME_ROOT" value="${haxelib:nme}/project/" if="lime" />
    
    <set name="SRC_DIR" value="${NME_ROOT}src" />
    <set name="INC_DIR" value="${NME_ROOT}include" />
@@ -122,7 +122,7 @@
          <file name="${SRC_DIR}/android/AndroidFrame.cpp"/>
          <file name="${SRC_DIR}/android/JNI.cpp"/>
          <file name="${SRC_DIR}/android/System.cpp"/>
-         <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="HX_LIME" />
+         <!-- <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="lime" /> -->
       </section>
 
       <section if="rpi">
@@ -159,7 +159,6 @@
          <file name="${SRC_DIR}/opengl/OGLShaders.cpp" />
          <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
          <file name="${SRC_DIR}/opengl/Egl.cpp" if="nmeegl"/>
-         <file name="${SRC_DIR}/opengl/OpenGLS3D.cpp" if="HX_LIME android"/>
       </section>
 
 
@@ -169,11 +168,11 @@
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
       
       
-      <compilerflag value="-DHX_LIME" if="HX_LIME" />
-      <compilerflag value="-DNME_S3D" if="HX_LIME" />
+      <compilerflag value="-DHX_LIME" if="lime" />
+      <!-- <compilerflag value="-DNME_S3D" if="lime" /> -->
       
-      <file name="src/ExternalInterface.cpp" if="HX_LIME" />
-      <file name="${SRC_DIR}/empty/S3D.cpp" if="HX_LIME" unless="android" />
+      <file name="src/ExternalInterface.cpp" if="lime" />
+      <!-- <file name="${SRC_DIR}/empty/S3D.cpp" if="lime" unless="android" /> -->
 
 
       <file name="${SRC_DIR}/common/Surface.cpp"/>
@@ -238,9 +237,9 @@
    <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
    
    
-   <set name="LIBNAME" value="nme" unless="HX_LIME" />
-   <set name="LIBNAME" value="lime" if="HX_LIME" />
-   <set name="DEBUGEXTRA" value="-debug" if="HX_LIME fulldebug" />
+   <set name="LIBNAME" value="nme" unless="lime" />
+   <set name="LIBNAME" value="lime" if="lime" />
+   <set name="DEBUGEXTRA" value="-debug" if="lime fulldebug" />
 
    <target id="NDLL" output="${LIBPREFIX}${LIBNAME}${MSVC_LIB_VERSION}${DEBUGEXTRA}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
 

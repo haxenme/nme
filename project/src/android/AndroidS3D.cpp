@@ -1,7 +1,7 @@
 #include <hx/CFFI.h>
 
-#include <renderer/common/S3D.h>
-#include <Object.h>
+#include <S3D.h>
+#include <nme/Object.h>
 
 #include <fstream>
 

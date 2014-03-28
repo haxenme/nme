@@ -406,10 +406,10 @@ Sound *Sound::Create(float *inData, int len, bool inForceMusic)
 #undef LOGV
 #undef LOGE
 
-#define LOGV(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "lime::AndroidSound", msg, ## args)
-#define LOGE(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "lime::AndroidSound", msg, ## args)
+#define LOGV(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "nme::AndroidSound", msg, ## args)
+#define LOGE(msg,args...) __android_log_print(ANDROID_LOG_ERROR, "nme::AndroidSound", msg, ## args)
 
-namespace lime
+namespace nme
 {
 	class AndroidSoundChannel : public SoundChannel
 	{

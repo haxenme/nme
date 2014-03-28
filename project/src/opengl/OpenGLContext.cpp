@@ -35,6 +35,10 @@ static GLuint sgOpenglType[] =
 
 HardwareRenderer* nme::HardwareRenderer::current = NULL;
 
+#ifdef NME_S3D
+class OpenGLS3D;
+#endif
+
 
 void ResetHardwareContext()
 {
@@ -86,6 +90,10 @@ public:
       e.mColour = 0xff000000;
       e.mTexOffset = sizeof(float)*2;
       e.mStride = sizeof(float)*4;
+      
+      #if defined(NME_S3D) && defined(ANDROID)
+      mS3D.Init ();
+      #endif
    }
    ~OGLContext()
    {
@@ -185,7 +193,10 @@ public:
       #ifdef ANDROID
       //__android_log_print(ANDROID_LOG_ERROR, "NME", "SetWindowSize %d %d", inWidth, inHeight);
       #endif
-
+      
+      #if defined(NME_S3D) && defined(ANDROID)
+      mS3D.Resize (inWidth, inHeight);
+      #endif
    }
 
    int Width() const { return mWidth; }
@@ -683,6 +694,35 @@ public:
 
    void CombineModelView(const Matrix &inModelView)
    {
+      #ifdef NME_S3D
+      
+      #ifdef ANDROID
+      float eyeOffset = mS3D.GetEyeOffset ();
+      #else
+      float eyeOffset = 0;
+      #endif
+
+      mTrans[0][0] = inModelView.m00 * mScaleX;
+      mTrans[0][1] = inModelView.m01 * mScaleX;
+      mTrans[0][2] = 0;
+      mTrans[0][3] = (inModelView.mtx + eyeOffset) * mScaleX + mOffsetX;
+
+      mTrans[1][0] = inModelView.m10 * mScaleY;
+      mTrans[1][1] = inModelView.m11 * mScaleY;
+      mTrans[1][2] = 0;
+      mTrans[1][3] = inModelView.mty * mScaleY + mOffsetY;
+
+      mTrans[2][0] = 0;
+      mTrans[2][1] = 0;
+      mTrans[2][2] = -1;
+      mTrans[2][3] = inModelView.mtz;
+      
+      #ifdef ANDROID
+      mS3D.FocusEye (mTrans);
+      #endif
+      
+      #else
+      
       mTrans[0][0] = inModelView.m00 * mScaleX;
       mTrans[0][1] = inModelView.m01 * mScaleX;
       mTrans[0][2] = 0;
@@ -692,7 +732,26 @@ public:
       mTrans[1][1] = inModelView.m11 * mScaleY;
       mTrans[1][2] = 0;
       mTrans[1][3] = inModelView.mty * mScaleY + mOffsetY;
+      
+      #endif
    }
+   
+   #ifdef NME_S3D
+   void EndS3DRender()
+   {
+      setOrtho(0, mWidth, 0, mHeight);
+      #ifdef ANDROID
+      mS3D.EndS3DRender(mWidth, mHeight, mTrans);
+      #endif
+   }
+   
+   void SetS3DEye(int eye)
+   {
+      #ifdef ANDROID
+      mS3D.SetS3DEye(eye);
+      #endif
+   }
+   #endif
 
 
 
@@ -734,9 +793,75 @@ public:
 
    Trans4x4 mTrans;
    Trans4x4 mBitmapTrans;
+   
+   #if defined(NME_S3D)
+   OpenGLS3D mS3D;
+   #endif
 };
 
 
+#ifdef NME_S3D
+
+value nme_gl_s3d_set_focal_length (value length)
+{
+
+   OGLContext* ctx = dynamic_cast<OGLContext*> (HardwareRenderer::current);
+   if (ctx) {
+
+      ctx->mS3D.mFocalLength = val_float (length);
+
+   }
+   
+   return alloc_null ();
+}
+DEFINE_PRIM (nme_gl_s3d_set_focal_length,1);
+
+value nme_gl_s3d_get_focal_length ()
+{
+
+   OGLContext* ctx = dynamic_cast<OGLContext*> (HardwareRenderer::current);
+   if (ctx) {
+
+      return alloc_float (ctx->mS3D.mFocalLength);
+
+   }
+
+   return alloc_null ();
+
+}
+DEFINE_PRIM (nme_gl_s3d_get_focal_length,0);
+
+value nme_gl_s3d_set_eye_separation (value separation)
+{
+
+   OGLContext* ctx = dynamic_cast<OGLContext*> (HardwareRenderer::current);
+   if (ctx) {
+
+      ctx->mS3D.mEyeSeparation = val_float (separation);
+
+   }
+   
+   return alloc_null ();
+
+}
+DEFINE_PRIM (nme_gl_s3d_set_eye_separation,1);
+
+value nme_gl_s3d_get_eye_separation ()
+{
+
+   OGLContext* ctx = dynamic_cast<OGLContext*> (HardwareRenderer::current);
+   if (ctx) {
+
+      return alloc_float (ctx->mS3D.mEyeSeparation);
+
+   }
+
+   return alloc_null ();
+
+}
+DEFINE_PRIM (nme_gl_s3d_get_eye_separation,0);
+
+#endif
 
 
 // ----------------------------------------------------------------------------
