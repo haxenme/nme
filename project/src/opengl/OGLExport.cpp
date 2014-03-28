@@ -1428,6 +1428,14 @@ value nme_gl_bind_renderbuffer(value target, value renderbuffer)
 }
 DEFINE_PRIM(nme_gl_bind_renderbuffer,2);
 
+value nme_gl_delete_render_buffer(value target)
+{
+   GLuint id = val_int(target);
+   if (&glDeleteRenderbuffers) glDeleteRenderbuffers(1, &id);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_delete_render_buffer,1);
+
 value nme_gl_framebuffer_renderbuffer(value target, value attachment, value renderbuffertarget, value renderbuffer)
 {
    DBGFUNC("framebufferRenderBuffer");
@@ -1607,6 +1615,14 @@ value nme_gl_depth_range(value inNear, value inFar)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_depth_range,2);
+
+
+value nme_gl_cull_face(value mode)
+{
+   glCullFace(val_int(mode));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_cull_face,1);
 
 
 
