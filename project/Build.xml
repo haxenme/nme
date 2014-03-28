@@ -53,7 +53,7 @@
    <!-- And allow https ? -->
    <set name="NME_SSL" value="1" />
    <set name="NME_SSL_EXTRA" value="_ssl" if="NME_SSL"/>
-
+ 
  
    <!--
       What audio backend it use?
@@ -122,6 +122,7 @@
          <file name="${SRC_DIR}/android/AndroidFrame.cpp"/>
          <file name="${SRC_DIR}/android/JNI.cpp"/>
          <file name="${SRC_DIR}/android/System.cpp"/>
+         <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="HX_LIME" />
       </section>
 
       <section if="rpi">
@@ -158,6 +159,7 @@
          <file name="${SRC_DIR}/opengl/OGLShaders.cpp" />
          <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
          <file name="${SRC_DIR}/opengl/Egl.cpp" if="nmeegl"/>
+         <file name="${SRC_DIR}/opengl/OpenGLS3D.cpp" if="HX_LIME android"/>
       </section>
 
 
@@ -168,7 +170,11 @@
       
       
       <compilerflag value="-DHX_LIME" if="HX_LIME" />
+      <compilerflag value="-DNME_S3D" if="HX_LIME" />
+      
       <file name="src/ExternalInterface.cpp" if="HX_LIME" />
+      <file name="${SRC_DIR}/empty/S3D.cpp" if="HX_LIME" unless="android" />
+
 
       <file name="${SRC_DIR}/common/Surface.cpp"/>
       <file name="${SRC_DIR}/common/Utils.cpp"/>

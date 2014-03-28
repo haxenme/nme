@@ -548,7 +548,7 @@ DEFINE_PRIM(nme_gl_create_shader,1);
 
 
 #define GL_GEN_RESO(name,gen,type) \
-   value nme_gl_create_##name(value val) { \
+   value nme_gl_create_##name() { \
       DBGFUNC("create" #name); \
       GLuint id=0; gen(1,&id); \
       return createResource(id,type); \
@@ -559,7 +559,7 @@ GL_GEN_RESO(texture,glGenTextures,resoTexture)
 GL_GEN_RESO(buffer,glGenBuffers,resoBuffer)
 
 #define GL_GEN_RESO_CHK(name,gen,type) \
-   value nme_gl_create_##name(value val) { \
+   value nme_gl_create_##name() { \
       if (!CHECK_EXT(gen)) return alloc_null(); \
       DBGFUNC("create" #name); \
       GLuint id=0; gen(1,&id); return createResource(id,type); } \
@@ -1616,6 +1616,25 @@ value nme_gl_polygon_offset(value factor, value units)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_polygon_offset,2);
+
+
+value nme_gl_read_pixels(value *arg, int argCount)
+{
+   enum { aX, aY, aWidth, aHeight, aFormat, aType, aBuffer, aOffset };
+
+   unsigned char *data = 0;
+   ByteArray bytes( arg[aBuffer] );
+   if (bytes.mValue)
+      data = bytes.Bytes() + val_int(arg[aOffset]);
+
+   glReadPixels( INT(aX), INT(aY),
+                    INT(aWidth),   INT(aHeight),
+                    INT(aFormat),  INT(aType),
+                    data );
+
+   return alloc_null();
+}
+DEFINE_PRIM_MULT(nme_gl_read_pixels);
 
 
 value nme_gl_pixel_storei(value pname, value param)

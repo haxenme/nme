@@ -1,8 +1,8 @@
-#include <renderer/common/S3D.h>
+#include <S3D.h>
 #include <hx/CFFI.h>
-#include <Object.h>
+#include <nme/Object.h>
 
-namespace lime {
+namespace nme {
 namespace S3D {
 
 void SetEnabled (bool enabled) { }
@@ -11,24 +11,24 @@ bool GetEnabled () { return false; }
 bool IsSupported () { return false; }
 
 
-value lime_get_s3d_enabled () {
+value nme_get_s3d_enabled () {
     return alloc_bool (S3D::GetEnabled ());
 }
-DEFINE_PRIM (lime_get_s3d_enabled, 0);
+DEFINE_PRIM (nme_get_s3d_enabled, 0);
 
 
-value lime_set_s3d_enabled (value enabled) {
+value nme_set_s3d_enabled (value enabled) {
     S3D::SetEnabled (val_bool (enabled));
     return alloc_null ();
 }
-DEFINE_PRIM (lime_set_s3d_enabled, 1);
+DEFINE_PRIM (nme_set_s3d_enabled, 1);
 
 
-value lime_get_s3d_supported () {
+value nme_get_s3d_supported () {
     return alloc_bool (S3D::IsSupported ());
 }
-DEFINE_PRIM (lime_get_s3d_supported, 0);
+DEFINE_PRIM (nme_get_s3d_supported, 0);
 
 
 } // end namespace S3D
-} // end namespace lime
+} // end namespace nme

@@ -2064,7 +2064,7 @@ void Stage::RenderStage()
    ColorTransform::TidyCache();
    AutoStageRender render(this,opaqueBackground);
    
-   #ifndef NME_S3D
+   #if !defined(NME_S3D) || !defined(ANDROID)
 
    if (render.Target().IsHardware())
       render.Target().mHardware->SetQuality(quality);

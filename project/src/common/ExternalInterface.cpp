@@ -1168,7 +1168,7 @@ value nme_terminate()
 }
 DEFINE_PRIM(nme_terminate,0);
 
-value nme_close( value force )
+value nme_close()
 {
    StopAnimation();
    return alloc_null();
@@ -3335,7 +3335,7 @@ value nme_bitmap_data_clear(value inHandle,value inRGB)
 }
 DEFINE_PRIM(nme_bitmap_data_clear,2);
 
-value nme_bitmap_data_get_transparent(value inHandle,value inRGB)
+value nme_bitmap_data_get_transparent(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
@@ -3352,7 +3352,7 @@ value nme_bitmap_data_set_flags(value inHandle,value inFlags)
       surface->SetFlags(val_int(inFlags));
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_set_flags,1);
+DEFINE_PRIM(nme_bitmap_data_set_flags,2);
 
 
 

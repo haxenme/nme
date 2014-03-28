@@ -637,7 +637,7 @@ class BitmapData implements IBitmapDrawable
    private static var nme_bitmap_data_height = Loader.load("nme_bitmap_data_height", 1);
    private static var nme_bitmap_data_width = Loader.load("nme_bitmap_data_width", 1);
    private static var nme_bitmap_data_get_transparent = Loader.load("nme_bitmap_data_get_transparent", 1);
-   private static var nme_bitmap_data_set_flags = Loader.load("nme_bitmap_data_set_flags", 1);
+   private static var nme_bitmap_data_set_flags = Loader.load("nme_bitmap_data_set_flags", 2);
    private static var nme_bitmap_data_encode = Loader.load("nme_bitmap_data_encode", 3);
    private static var nme_bitmap_data_dump_bits = Loader.load("nme_bitmap_data_dump_bits", 1);
    private static var nme_bitmap_data_noise = Loader.load("nme_bitmap_data_noise", -1);
