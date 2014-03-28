@@ -328,16 +328,32 @@ SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform
 
 class SDLSound : public Sound
 {
+   std::string filename;
+   bool        loaded;
+
 public:
    SDLSound(const std::string &inFilename)
    {
       IncRef();
+      filename = inFilename;
+      mChunk = 0;
+      loaded = false;
 
+      if (gSDLAudioState!=sdaNotInit)
+      {
+          if (Init())
+             loadChunk();
+      }
+   }
+
+   void loadChunk()
+   {
+      loaded = true;
       #ifdef HX_MACOS
       char name[1024];
-      GetBundleFilename(inFilename.c_str(),name,1024);
+      GetBundleFilename(filename.c_str(),name,1024);
       #else
-      const char *name = inFilename.c_str();
+      const char *name = filename.c_str();
       #endif
 
       mChunk = Mix_LoadWAV(name);
@@ -350,6 +366,7 @@ public:
    
    SDLSound(float *inData, int len)
    {
+      loaded = true;
       IncRef();
       
       #ifndef EMSCRIPTEN
@@ -380,6 +397,8 @@ public:
    // Will return with one ref...
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
    {
+      if (!loaded)
+         loadChunk();
       if (!mChunk)
          return 0;
       return new SDLSoundChannel(this,mChunk,startTime, loops,inTransform);
@@ -440,6 +459,8 @@ public:
       mSound->DecRef();
    }
 
+
+ 
    void CheckDone()
    {
       if (mPlaying && (sDoneMusic || (sUsedMusic!=this)) )
@@ -486,20 +507,57 @@ public:
 
 class SDLMusic : public Sound
 {
+   bool loaded;
+   std::string filename;
+   std::vector<unsigned char> reso;
+
 public:
    SDLMusic(const std::string &inFilename)
    {
-      IncRef();
+      filename = inFilename;
+      loaded = false;
 
+      IncRef();
+      if (gSDLAudioState!=sdaNotInit)
+      {
+         if (Init())
+            loadMusic();
+         else
+            DecRef();
+      }
+   }
+
+   void loadMusic()
+   {
+      loaded = true;
       #ifdef HX_MACOS
       char name[1024];
-      GetBundleFilename(inFilename.c_str(),name,1024);
+      GetBundleFilename(filename.c_str(),name,1024);
       #else
-      const char *name = inFilename.c_str();
+      const char *name = filename.c_str();
       #endif
 
       mMusic = Mix_LoadMUS(name);
-      if ( mMusic == NULL )
+
+      #ifndef EMSCRIPTEN
+      if (!mMusic)
+      {
+         ByteArray resource(filename.c_str());
+         if (resource.Ok())
+         {
+            int n = resource.Size();
+            if (n>0)
+            {
+               reso.resize(n);
+               memcpy(&reso[0], resource.Bytes(), n);
+               mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(&reso[0], resource.Size()),false);
+            }
+         }
+      }
+      #endif
+
+
+      if (!mMusic)
       {
          mError = SDL_GetError();
          ELOG("Error in music %s (%s)", mError.c_str(), name );
@@ -509,6 +567,7 @@ public:
    SDLMusic(float *inData, int len)
    {
       IncRef();
+      loaded = true;
       
       #ifndef EMSCRIPTEN
       #ifdef NME_SDL2
@@ -537,6 +596,8 @@ public:
    // Will return with one ref...
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
    {
+      if (!loaded)
+         loadMusic();
       if (!mMusic)
          return 0;
       return new SDLMusicChannel(this,mMusic,startTime, loops,inTransform);
@@ -556,8 +617,6 @@ public:
 
 Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
 {
-   if (!Init())
-      return 0;
    Sound *sound = inForceMusic ? 0 :  new SDLSound(inFilename);
    if (!sound || !sound->ok())
    {
@@ -568,8 +627,6 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
 }
 
 Sound *Sound::Create(float *inData, int len, bool inForceMusic) {
-   if (!Init())
-      return 0;
    Sound *sound = inForceMusic ? 0 :  new SDLSound(inData, len);
    if (!sound || !sound->ok())
    {

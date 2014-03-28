@@ -388,6 +388,16 @@ class Assets
        return getText(id,useCache);
    }
 
+   private static var initResources:Dynamic = (function() {
+       var nme_set_resource_factory = nme.Loader.load("nme_set_resource_factory", 1);
+       nme_set_resource_factory(function(s) {
+         var reso = haxe.Resource.getBytes(s);
+         if (reso==null) return null;
+         return ByteArray.fromBytes(reso);
+         });
+      return null; } ) ();
+
+
 }
 
 

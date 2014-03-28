@@ -55,7 +55,7 @@ class CommandLineTools
       if (binDirOverride!="")
       {
          project.setBinDir(binDirOverride);
-         Log.verbose("Overriding bin directory : " + binDirOverride);
+         Log.verbose("Overriding bin directory : " + project.app.binDir);
       }
 
       switch(project.target) 
