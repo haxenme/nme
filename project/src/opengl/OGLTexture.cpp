@@ -1,7 +1,7 @@
 #include "./OGL.h"
 
 // 0xAARRGGBB
-#ifdef ANDROID
+#if defined(ANDROID)
 #define ARGB_STORE GL_BGRA_EXT
 #define ARGB_PIXEL GL_BGRA_EXT
 #elif defined IPHONE
@@ -277,7 +277,7 @@ public:
 
          #if defined(NME_GLES)
 
-         GLuint pixel_format = fmt==pfAlpha ? GL_ALPHA : GL_BGRA_EXT;
+         GLuint pixel_format = fmt==pfAlpha ? GL_ALPHA : ARGB_STORE;
 
          uint8 *buffer = 0;
          if (pw==1)

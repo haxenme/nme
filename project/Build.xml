@@ -125,6 +125,16 @@
          <!-- <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="lime" /> -->
       </section>
 
+      <section id="tizen">
+         <compilerflag value="-I${TIZEN_PLATFORM}/usr/include/osp"/>
+         <compilerflag value="-D_APP_LOG" />
+         <file name="${SRC_DIR}/linux/NativeFont.cpp"/>
+         <file name="${SRC_DIR}/tizen/TizenApplication.cpp"/>
+         <file name="${SRC_DIR}/tizen/TizenStage.cpp"/>
+         <file name="${SRC_DIR}/tizen/TizenFrame.cpp"/>
+         <file name="${SRC_DIR}/tizen/System.cpp" />
+      </section>
+
       <section if="rpi">
          <compilerflag value="-I/opt/vc/include" />
          <compilerflag value="-I/opt/vc/include/interface/vcos/pthreads/" />
@@ -160,6 +170,14 @@
          <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
          <file name="${SRC_DIR}/opengl/Egl.cpp" if="nmeegl"/>
       </section>
+      
+      
+      <section if="lime">
+         <compilerflag value="-DHX_LIME" if="lime" />
+         <!-- <compilerflag value="-DNME_S3D" if="lime" /> -->
+         <file name="src/ExternalInterface.cpp" if="lime" />
+         <!-- <file name="${SRC_DIR}/empty/S3D.cpp" if="lime" unless="android" /> -->
+      </section>
 
 
 
@@ -167,12 +185,6 @@
       <compilerflag value="-I${NME_STATE}/include" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
       
-      
-      <compilerflag value="-DHX_LIME" if="lime" />
-      <!-- <compilerflag value="-DNME_S3D" if="lime" /> -->
-      
-      <file name="src/ExternalInterface.cpp" if="lime" />
-      <!-- <file name="${SRC_DIR}/empty/S3D.cpp" if="lime" unless="android" /> -->
 
 
       <file name="${SRC_DIR}/common/Surface.cpp"/>

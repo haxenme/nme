@@ -1,12 +1,11 @@
-#include "platform/tizen/TizenStage.h"
-#include "platform/tizen/TizenFrame.h"
-#include "renderer/common/HardwareSurface.h"
-#include "renderer/opengl/Egl.h"
+#include "./TizenStage.h"
+#include "./TizenFrame.h"
+#include "../opengl/Egl.h"
 #include <FBase.h>
 
 
-namespace lime {
-	
+namespace nme {
+	 
 	
 	TizenStage::TizenStage (int inWidth, int inHeight) {
 		
@@ -27,7 +26,7 @@ namespace lime {
 		//if (mIsFullscreen)
 		//	displayState = sdsFullscreenInteractive;
 		
-		mOpenGLContext = HardwareContext::CreateOpenGL (0, 0, true);
+		mOpenGLContext = HardwareRenderer::CreateOpenGL (0, 0, true);
 		mOpenGLContext->IncRef ();
 		mOpenGLContext->SetWindowSize (inWidth, inHeight);
 		
@@ -56,7 +55,7 @@ namespace lime {
 		
 		//AppLog ("Flip!");
 		
-		limeEGLSwapBuffers ();
+		nmeEGLSwapBuffers ();
 		
 	}
 	

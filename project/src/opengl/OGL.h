@@ -13,6 +13,7 @@
    #define NME_GLES	
    
    #include <gl2.h>
+   #include <gl2ext.h>
 
 #elif defined(IPHONE)
 
