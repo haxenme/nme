@@ -24,7 +24,6 @@
    <set name="NME_STATE" value="${haxelib:nme-state}" unless="NME_STATE" />
    
 
-
    <!--
       What SDL to use?
       For desktop, use version 2.
@@ -32,6 +31,8 @@
       For rpi, and other systems, use installed 1.0
    -->
    <set name="NME_SDL_SYSTEM" value="1" if="rpi" />
+   <set name="NME_SDL_SYSTEM" value="1" if="blackberry" />
+   <set name="NME_SDL_SYSTEM" value="1" if="webos" />
    <set name="NME_SDL2" value="1" if="windows" />
    <set name="NME_SDL2" value="1" if="linux" unless="NME_SDL_SYSTEM" />
    <set name="NME_SDL2" value="1"  if="macos" />
@@ -45,6 +46,7 @@
 
    <!-- For systems that do not create the egl context for us -->
    <set name="NME_EGL" value="1" if="rpi"/>
+   <set name="NME_EGL" value="1" if="tizen"/>
 
    <!-- Do we need to implement curl in NME -->
    <set name="NME_CURL" value="1" />
@@ -125,7 +127,7 @@
          <!-- <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="lime" /> -->
       </section>
 
-      <section id="tizen">
+      <section if="tizen">
          <compilerflag value="-I${TIZEN_PLATFORM}/usr/include/osp"/>
          <compilerflag value="-D_APP_LOG" />
          <file name="${SRC_DIR}/linux/NativeFont.cpp"/>
@@ -133,6 +135,12 @@
          <file name="${SRC_DIR}/tizen/TizenStage.cpp"/>
          <file name="${SRC_DIR}/tizen/TizenFrame.cpp"/>
          <file name="${SRC_DIR}/tizen/System.cpp" />
+      </section>
+
+      <section if="blackberry">
+         <compilerflag value="-I${QNX_TARGET}/usr/include" />
+         <file name="${SRC_DIR}/linux/NativeFont.cpp"/>
+         <file name="${SRC_DIR}/blackberry/System.cpp"/>
       </section>
 
       <section if="rpi">
@@ -335,6 +343,48 @@
             <lib name="-landroid" />
             <lib name="-lGLESv2" />
             <lib name="-lz" />
+         </section>
+         
+         <section if="blackberry">
+            <!-- <lib name="-lSDL${LIBEXTRA}" /> -->
+            <lib name="-lbps" />
+            <lib name="-lscreen" />
+            <lib name="-lEGL" />
+            <lib name="-lGLESv2" />
+            <lib name="-lm" />
+            <lib name="-lsocket" />
+         </section>
+         
+         <section if="tizen">
+            <lib name="-losp-uifw" />
+            <lib name="-losp-appfw" />
+            <lib name="-losp-image" />
+            <lib name="-losp-ime" />
+            <lib name="-losp-json" />
+            <lib name="-losp-net" />
+            <lib name="-losp-content" />
+            <lib name="-losp-locations" />
+            <lib name="-losp-telephony" />
+            <lib name="-losp-uix" />
+            <lib name="-losp-media" />
+            <lib name="-losp-messaging" />
+            <lib name="-losp-web" />
+            <lib name="-losp-social" />
+            <lib name="-losp-wifi" />
+            <lib name="-losp-bluetooth" />
+            <lib name="-losp-nfc" />
+            <lib name="-losp-face" />
+            <lib name="-losp-secure-element" />
+            <lib name="-losp-speech-tts" />
+            <lib name="-losp-speech-stt" />
+            <lib name="-losp-shell" />
+            <lib name="-losp-shell-core" />
+            <lib name="-losp-vision" />
+            <lib name="-lxml2" />
+            <lib name="-lalut" />
+            <lib name="-lopenal" />
+            <lib name="-losp-compat" />
+            <lib name="-lrt" />
          </section>
 
          <section if="rpi">
