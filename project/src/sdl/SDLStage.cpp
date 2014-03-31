@@ -5,6 +5,7 @@
 #include <nme/NmeCffi.h>
 #include <KeyCodes.h>
 #include <map>
+#include <Sound.h>
 
 #ifdef BLACKBERRY
 #include <SDL_syswm.h>
@@ -137,14 +138,9 @@ public:
    int Height() const  { return mSurf->h; }
    PixelFormat Format()  const
    {
-      #ifdef EMSCRIPTEN
-      uint8 swap = 0;
-      #else
-      uint8 swap = mSurf->format->Bshift; // is 0 on argb
-      #endif
       if (mSurf->flags & SDL_SRCALPHA)
-         return swap ? pfARGBSwap : pfARGB;
-      return swap ? pfXRGBSwap : pfXRGB;
+         return pfARGB;
+      return pfXRGB;
    }
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }
@@ -164,6 +160,19 @@ public:
 
       SDL_FillRect(mSurf,rect_ptr,SDL_MapRGBA(mSurf->format,
             inColour>>16, inColour>>8, inColour, inColour>>24 )  );
+   }
+   
+   uint8 *Edit(const Rect *inRect)
+   {
+      if (SDL_MUSTLOCK(mSurf))
+         SDL_LockSurface(mSurf);
+
+      return (uint8 *)mSurf->pixels;
+   }
+   void Commit()
+   {
+      if (SDL_MUSTLOCK(mSurf))
+         SDL_UnlockSurface(mSurf);
    }
 
    RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
@@ -204,12 +213,11 @@ public:
 
 SDL_Surface *SurfaceToSDL(Surface *inSurface)
 {
-   int swap =  (gC0IsRed!=(bool)(inSurface->Format()&pfSwapRB)) ? 0xff00ff : 0;
    return SDL_CreateRGBSurfaceFrom((void *)inSurface->Row(0),
              inSurface->Width(), inSurface->Height(),
              32, inSurface->Width()*4,
-             0x00ff0000^swap, 0x0000ff00,
-             0x000000ff^swap, 0xff000000 );
+             0x00ff0000, 0x0000ff00,
+             0x000000ff, 0xff000000 );
 }
 
 
@@ -306,7 +314,7 @@ public:
 
       if (mIsOpenGL)
       {
-         mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgIsOGL2);
+         mOpenGLContext = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
          mOpenGLContext->IncRef();
          mOpenGLContext->SetWindowSize(inSurface->w, inSurface->h);
          mPrimarySurface = new HardwareSurface(mOpenGLContext);
@@ -380,7 +388,7 @@ public:
 
             //nme_resize_id ++;
             mOpenGLContext->DecRef();
-            mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgIsOGL2);
+            mOpenGLContext = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
             mOpenGLContext->SetWindowSize(inWidth, inHeight);
             mOpenGLContext->IncRef();
             mPrimarySurface->DecRef();
@@ -448,7 +456,7 @@ public:
          {
             //nme_resize_id ++;
             mOpenGLContext->DecRef();
-            mOpenGLContext = HardwareContext::CreateOpenGL(0, 0, sgIsOGL2);
+            mOpenGLContext = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
             mOpenGLContext->SetWindowSize(w, h);
             mOpenGLContext->IncRef();
             mPrimarySurface->DecRef();
@@ -695,7 +703,7 @@ public:
       return mPrimarySurface;
    }
 
-   HardwareContext *mOpenGLContext;
+   HardwareRenderer *mOpenGLContext;
    SDL_Surface *mSDLSurface;
    Surface     *mPrimarySurface;
    double       mFrameRate;
@@ -1077,7 +1085,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(500,30);
 
-   gSDLAudioState = sdlOpen;
+   //gSDLAudioState = sdlOpen;
 
    #ifdef NME_MIXER
    

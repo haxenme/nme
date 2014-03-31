@@ -35,10 +35,10 @@
    <set name="NME_SDL_SYSTEM" value="1" if="webos" />
    <set name="NME_SDL2" value="1" if="windows" />
    <set name="NME_SDL2" value="1" if="linux" unless="NME_SDL_SYSTEM" />
-   <set name="NME_SDL2" value="1"  if="macos" />
+   <set name="NME_SDL2" value="1" if="macos" />
 
-   <set name="NME_SDL_ANY" value="1"  if="NME_SDL_SYSTEM" />
-   <set name="NME_SDL_ANY" value="1"  if="NME_SDL2" />
+   <set name="NME_SDL_ANY" value="1" if="NME_SDL_SYSTEM" />
+   <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
 
    <!-- Use opengl backend ? -->
    <set name="NME_OGL" value="1" />
@@ -152,8 +152,10 @@
       <section if="NME_SDL_SYSTEM">
         <compilerflag value="-I/opt/local/include" if="macos" />
         <compilerflag value="-I/usr/include/SDL" if="linux" />
+        <compilerflag value="-I${NME_DEV}/include/SDL12" if="blackberry" />
         <compilerflag value="-DDYNAMIC_SDL" />
         <compilerflag value="-DNME_MIXER" />
+        <compilerflag value="-DNME_SDL12" unless="NME_SDL2" />
         <file name="${SRC_DIR}/sdl/SDLSound.cpp"/>
         <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>
@@ -307,7 +309,7 @@
 
          <!-- <lib name="${PRELIB}libfreetype${LIBEXTRA}${SLIBEXT}" if="iphone"/> -->
 
-         <section if="NME_SDL_SYSTEM">
+         <section if="NME_SDL_SYSTEM" unless="blackberry">
             <lib name="-lSDL" />
             <lib name="-lcurl" />
             <lib name="-lpng" />
@@ -346,7 +348,8 @@
          </section>
          
          <section if="blackberry">
-            <!-- <lib name="-lSDL${LIBEXTRA}" /> -->
+            <lib name="-lSDL${LIBEXTRA}" />
+            <lib name="-L../ndll/BlackBerry" />
             <lib name="-lbps" />
             <lib name="-lscreen" />
             <lib name="-lEGL" />

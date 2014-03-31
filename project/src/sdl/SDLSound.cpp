@@ -6,6 +6,7 @@
 #include <hx/Thread.h>
 
 
+
 namespace nme
 {
 
@@ -550,7 +551,11 @@ public:
             {
                reso.resize(n);
                memcpy(&reso[0], resource.Bytes(), n);
+               #ifndef NME_SDL12
                mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(&reso[0], resource.Size()),false);
+               #else
+               mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(&reso[0], resource.Size()));
+               #endif
             }
          }
       }
