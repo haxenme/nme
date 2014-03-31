@@ -21,6 +21,8 @@ namespace nme {
 	
 	void CreateMainFrame (FrameCreationCallback inOnFrame, int inWidth, int inHeight, unsigned int inFlags, const char *inTitle, Surface *inIcon) {
 		
+		AppLog("CreateMainFrame\n");
+		
 		sgCallback = inOnFrame;
 		sgWidth = inWidth;
 		sgHeight = inHeight;

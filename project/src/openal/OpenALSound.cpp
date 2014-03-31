@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-namespace lime
+namespace nme
 {
    
    OpenALChannel::OpenALChannel(Object *inSound, ALuint inBufferID, int startTime, int inLoops, const SoundTransform &inTransform)

@@ -16,7 +16,7 @@
 #endif
 
 #include <Sound.h>
-#include <QuickVec.h>
+#include <nme/QuickVec.h>
 #include <Utils.h>
 #include <Audio.h>
 
@@ -26,7 +26,7 @@ typedef unsigned char uint8;
 
 #define STREAM_BUFFER_SIZE (4096 * 8)
 
-namespace lime
+namespace nme
 {
 
 

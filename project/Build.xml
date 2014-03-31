@@ -135,6 +135,7 @@
          <file name="${SRC_DIR}/tizen/TizenStage.cpp"/>
          <file name="${SRC_DIR}/tizen/TizenFrame.cpp"/>
          <file name="${SRC_DIR}/tizen/System.cpp" />
+         <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
       </section>
 
       <section if="blackberry">
@@ -178,7 +179,7 @@
          <file name="${SRC_DIR}/opengl/OGLTexture.cpp" />
          <file name="${SRC_DIR}/opengl/OGLShaders.cpp" />
          <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
-         <file name="${SRC_DIR}/opengl/Egl.cpp" if="nmeegl"/>
+         <file name="${SRC_DIR}/opengl/Egl.cpp" if="NME_EGL"/>
       </section>
       
       
@@ -323,10 +324,6 @@
             <lib name="-lz" />
          </section>
 
-
-         <section unless="NME_SDL_SYSTEM">
-            <lib name="-lz" if="android"/>
-         </section>
 
          <section if="macos">
             <vflag name="-framework" value="IOKit" />
