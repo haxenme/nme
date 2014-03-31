@@ -138,7 +138,6 @@
       </section>
 
       <section if="blackberry">
-         <compilerflag value="-I${QNX_TARGET}/usr/include" />
          <file name="${SRC_DIR}/linux/NativeFont.cpp"/>
          <file name="${SRC_DIR}/blackberry/System.cpp"/>
       </section>
