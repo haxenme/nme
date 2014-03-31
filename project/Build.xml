@@ -21,7 +21,7 @@
    -->
 
    <!-- Where to find static libraries/includes -->
-   <set name="NME_STATE" value="${haxelib:nme-state}" unless="NME_STATE" />
+   <set name="NME_DEV" value="${haxelib:nme-dev}" unless="NME_DEV" />
    
 
    <!--
@@ -159,7 +159,7 @@
       </section>
 
       <section if="NME_SDL2">
-        <compilerflag value="-I${NME_STATE}/include/SDL2" />
+        <compilerflag value="-I${NME_DEV}/include/SDL2" />
         <file name="${SRC_DIR}/sdl/SDLSound.cpp"/>
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <compilerflag value="-DSDL_OGL" />
@@ -190,7 +190,7 @@
 
 
       <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
-      <compilerflag value="-I${NME_STATE}/include" />
+      <compilerflag value="-I${NME_DEV}/include" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
       
 
@@ -253,7 +253,7 @@
 
    <set name="SLIBEXT" value=".lib" if="windows"/>
    <set name="SLIBEXT" value=".a" unless="windows"/>
-   <set name="PRELIB" value="${NME_STATE}/lib/${BINDIR}/lib" />
+   <set name="PRELIB" value="${NME_DEV}/lib/${BINDIR}/lib" />
    <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
    
    
