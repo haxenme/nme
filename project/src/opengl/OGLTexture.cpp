@@ -4,9 +4,12 @@
 #if defined(ANDROID)
 #define ARGB_STORE GL_BGRA_EXT
 #define ARGB_PIXEL GL_BGRA_EXT
-#elif defined IPHONE
+#elif defined(IPHONE)
 // TODO - check
 #define ARGB_STORE GL_BGRA_EXT
+#define ARGB_PIXEL GL_BGRA
+#elif defined(BLACKBERRY)
+#define ARGB_STORE GL_BGRA
 #define ARGB_PIXEL GL_BGRA
 #else
 #define ARGB_STORE GL_RGBA
@@ -237,7 +240,7 @@ public:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
       //int err = glGetError();
-      //printf ("GL texture error: %i", err);
+      //printf ("GL texture error: %i\n", err);
    }
    ~OGLTexture()
    {
