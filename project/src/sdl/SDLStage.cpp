@@ -311,7 +311,7 @@ public:
       mIsFullscreen =  (mFlags & SDL_FULLSCREEN);
       if (mIsFullscreen)
          displayState = sdsFullscreenInteractive;
-
+      
       if (mIsOpenGL)
       {
          mOpenGLContext = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
@@ -1279,7 +1279,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       {
          fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
          inOnFrame(0);
+         #ifdef NME_MIXER
          gSDLAudioState = sdaError;
+         #endif
          return;
       }
    }
@@ -1304,7 +1306,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
 
 
-   HintColourOrder( is_opengl || screen->format->Rmask==0xff );
+  // HintColourOrder( is_opengl || screen->format->Rmask==0xff );
 
    #ifdef WEBOS
    PDL_ScreenTimeoutEnable(PDL_TRUE);

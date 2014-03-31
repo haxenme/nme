@@ -154,9 +154,10 @@
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-I${NME_DEV}/include/SDL12" if="blackberry" />
         <compilerflag value="-DDYNAMIC_SDL" />
-        <compilerflag value="-DNME_MIXER" />
+        <compilerflag value="-DNME_MIXER" unless="blackberry"/>
         <compilerflag value="-DNME_SDL12" unless="NME_SDL2" />
-        <file name="${SRC_DIR}/sdl/SDLSound.cpp"/>
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="blackberry"/>
+        <file name="${SRC_DIR}/empty/Sound.cpp" if="blackberry" />
         <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>
 
@@ -286,7 +287,12 @@
             <lib name="${PRELIB}vorbis${POSTLIB}" />
             <lib name="${PRELIB}ogg${POSTLIB}" />
          </section>
-
+         
+         <section if="blackberry">
+            <lib name="${PRELIB}vorbis${POSTLIB}" />
+            <lib name="${PRELIB}ogg${POSTLIB}" />
+         </section>
+         
          <section unless="NME_SDL_SYSTEM">
             <section if="NME_SDL2">
                <lib name="${PRELIB}vorbis${POSTLIB}" />
@@ -304,8 +310,8 @@
 
       <section unless="static_link">
 
-         <ext value=".ndll" />
-         <ext value=".so" if="android" />
+         <ext value=".so" />
+         <ext value=".ndll" if="windows || mac || linux" />
 
          <!-- <lib name="${PRELIB}libfreetype${LIBEXTRA}${SLIBEXT}" if="iphone"/> -->
 
@@ -348,8 +354,8 @@
          </section>
          
          <section if="blackberry">
-            <lib name="-lSDL${LIBEXTRA}" />
             <lib name="-L../ndll/BlackBerry" />
+            <lib name="-lSDL${LIBEXTRA}" />
             <lib name="-lbps" />
             <lib name="-lscreen" />
             <lib name="-lEGL" />
