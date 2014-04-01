@@ -63,6 +63,8 @@
       For ios/mac  use core audio + openal
       For android use java (todo - opensl?)
    -->
+   <set name="NME_OPENAL" value="1" if="lime" />
+   <set name="NME_OPENAL" value="1" if="iphone" />
 
    <!-- Built relative to "bin" -->
    <set name="NME_ROOT" value="" unless="lime" />
@@ -102,15 +104,12 @@
          <file name="${SRC_DIR}/mac/MacBoot.m" />
          <file name="${SRC_DIR}/mac/System.mm"/>
          <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
-         <!-- <file name="${SRC_DIR}/openal/OpenALSound.cpp" /> -->
       </section>
 
       <section if="iphone">
          <file name="${SRC_DIR}/iPhone/UIStageView.mm"/>
          <file name="${SRC_DIR}/iPhone/UIDeviceHardware.mm"/>
          <!-- <file name="${SRC_DIR}/iPhone/SurfaceIO.mm"/> -->
-         <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
-         <file name="${SRC_DIR}/common/Audio.cpp" />
          <file name="${SRC_DIR}/iPhone/Sound.mm"/>
          <file name="${SRC_DIR}/iPhone/NativeFont.mm"/>
          <file name="${SRC_DIR}/iPhone/System.mm"/>
@@ -135,7 +134,6 @@
          <file name="${SRC_DIR}/tizen/TizenStage.cpp"/>
          <file name="${SRC_DIR}/tizen/TizenFrame.cpp"/>
          <file name="${SRC_DIR}/tizen/System.cpp" />
-         <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
       </section>
 
       <section if="blackberry">
@@ -154,19 +152,18 @@
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-I${NME_DEV}/include/SDL12" if="blackberry" />
         <compilerflag value="-DDYNAMIC_SDL" />
-        <compilerflag value="-DNME_MIXER" unless="blackberry"/>
+        <compilerflag value="-DNME_MIXER" unless="NME_OPENAL"/>
         <compilerflag value="-DNME_SDL12" unless="NME_SDL2" />
-        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="blackberry"/>
-        <file name="${SRC_DIR}/empty/Sound.cpp" if="blackberry" />
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="NME_OPENAL"/>
         <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>
 
       <section if="NME_SDL2">
         <compilerflag value="-I${NME_DEV}/include/SDL2" />
-        <file name="${SRC_DIR}/sdl/SDLSound.cpp"/>
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="NME_OPENAL"/>
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <compilerflag value="-DSDL_OGL" />
-        <compilerflag value="-DNME_MIXER" />
+        <compilerflag value="-DNME_MIXER" unless="NME_OPENAL" />
         <compilerflag value="-DNME_SDL2" />
       </section>
 
@@ -180,6 +177,11 @@
          <file name="${SRC_DIR}/opengl/OGLShaders.cpp" />
          <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
          <file name="${SRC_DIR}/opengl/Egl.cpp" if="NME_EGL"/>
+      </section>
+      
+      <section if="NME_OPENAL">
+         <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
+         <file name="${SRC_DIR}/common/Audio.cpp" />
       </section>
       
       
@@ -278,7 +280,7 @@
 
          <section if="NME_SDL2">
             <lib name="${PRELIB}SDL2${POSTLIB}" />
-            <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
+            <lib name="${PRELIB}SDL2_mixer${POSTLIB}" unless="NME_OPENAL" />
             <lib name="${PRELIB}modplug${POSTLIB}"  />
             <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
          </section>
@@ -305,6 +307,10 @@
             </section>
 
             <lib name="${PRELIB}z${POSTLIB}" unless="android"/>
+         </section>
+         
+         <section if="NME_OPENAL">
+            <lib name="${PRELIB}openal${POSTLIB}" if="windows || mac || linux"/>
          </section>
 
 

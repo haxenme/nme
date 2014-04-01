@@ -1119,7 +1119,7 @@ DEFINE_PRIM(nme_stage_set_fixed_orientation,1);
 
 value nme_init_sdl_audio( )
 {
-   #if defined(HX_WINDOWS) || defined(HX_LINUX) || defined(HX_MACOS)
+   #if defined(NME_MIXER)
    if (gSDLAudioState==sdaNotInit)
       InitSDLAudio();
    #endif
