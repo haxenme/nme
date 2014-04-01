@@ -14,10 +14,9 @@ before_install:
 - sudo ln -s /usr/lib/haxe/haxelib /usr/bin/haxelib
 - mkdir ~/haxelib
 - haxelib setup ~/haxelib
-- git clone https://github.com/openfl/hxcpp ~/hxcpp --depth 1
+- git clone https://github.com/HaxeFoundation/hxcpp ~/hxcpp --depth 1
 - haxelib dev hxcpp ~/hxcpp
-- neko ~/hxcpp/project/build.n default
-- git clone https://github.com/openfl/nme-dev ~/nme-dev --depth 1
+- git clone https://github.com/haxenme/nme-dev ~/nme-dev --depth 1
 - haxelib dev nme-dev ~/nme-dev
 - haxelib dev nme $(pwd)
 script:
