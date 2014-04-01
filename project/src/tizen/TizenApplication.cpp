@@ -21,8 +21,6 @@ namespace nme {
 	
 	void CreateMainFrame (FrameCreationCallback inOnFrame, int inWidth, int inHeight, unsigned int inFlags, const char *inTitle, Surface *inIcon) {
 		
-		AppLog("CreateMainFrame\n");
-		
 		sgCallback = inOnFrame;
 		sgWidth = inWidth;
 		sgHeight = inHeight;
@@ -344,6 +342,10 @@ namespace nme {
 			key.flags |= efLocationRight;
 		
 		sgTizenFrame->HandleEvent(key);
+		
+		// Non-cancelled back button
+		if (key.value == 157 && key.result != 1)
+			Terminate ();
 	}
 	
 	

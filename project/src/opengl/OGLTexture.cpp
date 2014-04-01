@@ -8,7 +8,7 @@
 // TODO - check
 #define ARGB_STORE GL_BGRA_EXT
 #define ARGB_PIXEL GL_BGRA
-#elif defined(BLACKBERRY)
+#elif defined(NME_GLES)
 #define ARGB_STORE GL_BGRA
 #define ARGB_PIXEL GL_BGRA
 #else
