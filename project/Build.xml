@@ -281,22 +281,18 @@
          <section if="NME_SDL2">
             <lib name="${PRELIB}SDL2${POSTLIB}" />
             <lib name="${PRELIB}SDL2_mixer${POSTLIB}" unless="NME_OPENAL" />
-            <lib name="${PRELIB}modplug${POSTLIB}"  />
+            <lib name="${PRELIB}modplug${POSTLIB}" unless="NME_OPENAL" />
             <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
          </section>
 
-         <section if="iphone">
-            <lib name="${PRELIB}vorbis${POSTLIB}" />
-            <lib name="${PRELIB}ogg${POSTLIB}" />
-         </section>
-         
-         <section if="blackberry">
+         <section if="NME_OPENAL">
+            <lib name="${PRELIB}openal${POSTLIB}" if="windows || mac || linux"/>
             <lib name="${PRELIB}vorbis${POSTLIB}" />
             <lib name="${PRELIB}ogg${POSTLIB}" />
          </section>
          
          <section unless="NME_SDL_SYSTEM">
-            <section if="NME_SDL2">
+            <section if="NME_SDL2" unless="NME_OPENAL">
                <lib name="${PRELIB}vorbis${POSTLIB}" />
                <lib name="${PRELIB}ogg${POSTLIB}" />
                <lib name="${PRELIB}theora${POSTLIB}" />
@@ -307,10 +303,6 @@
             </section>
 
             <lib name="${PRELIB}z${POSTLIB}" unless="android"/>
-         </section>
-         
-         <section if="NME_OPENAL">
-            <lib name="${PRELIB}openal${POSTLIB}" if="windows || mac || linux"/>
          </section>
 
 
@@ -358,6 +350,7 @@
          <section if="blackberry">
             <lib name="-L../ndll/BlackBerry" />
             <lib name="-lSDL${LIBEXTRA}" />
+            <lib name="-lOpenAL${LIBEXTRA}" />
             <lib name="-lbps" />
             <lib name="-lscreen" />
             <lib name="-lEGL" />
