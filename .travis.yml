@@ -20,6 +20,8 @@ before_install:
 - git clone https://github.com/haxenme/nme-dev ~/nme-dev --depth 1
 - haxelib dev nme-dev ~/nme-dev
 - haxelib dev nme $(pwd)
+- cd ~/hxcpp/project
+- neko build.n linux-m64
 script:
 - cd ~/nme-dev/project
 - neko build.n linux-m64
