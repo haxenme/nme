@@ -23,5 +23,5 @@ before_install:
 script:
 - cd ~/nme-dev/project
 - neko build.n linux-m64
-- cd $(pwd)/project
+- cd $TRAVIS_BUILD_DIR/project
 - neko build.n linux-m64
