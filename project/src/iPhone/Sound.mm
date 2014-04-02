@@ -7,7 +7,7 @@
 #include <nme/QuickVec.h>
 #include <Utils.h>
 
-#include "OpenALSound.h"
+#include "../openal/OpenALSound.h"
 
 
 @interface AVAudioPlayerChannelDelegate : NSObject <AVAudioPlayerDelegate>  {

@@ -99,7 +99,6 @@
       </section>
 
       <section if="macos">
-         <compilerflag value="-I${SRC_DIR}/openal"/>
          <file name="${SRC_DIR}/mac/NSFont.cpp"/>
          <file name="${SRC_DIR}/mac/MacBoot.m" />
          <file name="${SRC_DIR}/mac/System.mm"/>
