@@ -11,7 +11,20 @@
 #endif
 
 #ifdef ANDROID
-#include <android_openal_funcs.h>
+#include <jni.h>
+
+typedef struct {
+  void (*alc_android_suspend)();
+  void (*alc_android_resume)();
+  void (*alc_android_set_java_vm)(JavaVM*);
+} AndroidOpenALFuncs;
+AndroidOpenALFuncs androidOpenALFuncs;
+
+extern "C" {
+  ALC_API void       ALC_APIENTRY alcSuspend(void);
+  ALC_API void       ALC_APIENTRY alcResume(void);
+}
+
 #include <ByteArray.h>
 #endif
 

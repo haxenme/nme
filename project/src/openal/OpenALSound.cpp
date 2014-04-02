@@ -857,10 +857,10 @@ namespace nme
         fseek(oggFile, mInfo.offset, 0);
         
         ov_callbacks callbacks;
-        callbacks.read_func = &lime::AudioStream_Ogg::read_func;
-        callbacks.seek_func = &lime::AudioStream_Ogg::seek_func;
-        callbacks.close_func = &lime::AudioStream_Ogg::close_func;
-        callbacks.tell_func = &lime::AudioStream_Ogg::tell_func;
+        callbacks.read_func = &nme::AudioStream_Ogg::read_func;
+        callbacks.seek_func = &nme::AudioStream_Ogg::seek_func;
+        callbacks.close_func = &nme::AudioStream_Ogg::close_func;
+        callbacks.tell_func = &nme::AudioStream_Ogg::tell_func;
         
         #else
         

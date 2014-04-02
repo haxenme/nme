@@ -590,33 +590,42 @@ void StopAnimation()
    sCloseActivity = true;
 }
 
+AAssetManager* androidAssetManager = 0;
+jclass androidAssetManagerRef = 0;
+
 AAsset *AndroidGetAsset(const char *inResource)
 {
-   JNIEnv *env = GetEnv();
-   #ifdef HX_LIME
-   jclass cls = FindClass("org/haxe/lime/GameActivity");
-   #else
-   jclass cls = FindClass("org/haxe/nme/GameActivity");
-   #endif
-   jmethodID mid = env->GetStaticMethodID(cls, "getAssetManager", "()Landroid/content/res/AssetManager;");
-   if (mid == 0)
-      return 0;
-   
-   jobject assetManager = (jobject)env->CallStaticObjectMethod(cls, mid);
-   if (assetManager==0)
+   if (!androidAssetManager)
    {
-      //LOG("Could not find assetManager for asset %s", inResource);
-      return 0;
+      JNIEnv *env = GetEnv();
+      #ifdef HX_LIME
+      jclass cls = FindClass("org/haxe/lime/GameActivity");
+      #else
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
+      #endif
+      jmethodID mid = env->GetStaticMethodID(cls, "getAssetManager", "()Landroid/content/res/AssetManager;");
+      if (mid == 0)
+         return 0;
+      
+      jobject assetManager = (jobject)env->CallStaticObjectMethod(cls, mid);
+      if (assetManager==0)
+      {
+         //LOG("Could not find assetManager for asset %s", inResource);
+         return 0;
+      }
+      
+      androidAssetManager = AAssetManager_fromJava(env, assetManager);
+      if (androidAssetManager==0)
+      {
+         LOG("Could not create assetManager for asset %s", inResource);
+         return 0;
+      }
+      
+      androidAssetManagerRef = (jclass)env->NewGlobalRef(assetManager);
+      env->DeleteLocalRef(assetManager);
    }
 
-   AAssetManager* mgr = AAssetManager_fromJava(env, assetManager);
-   if (mgr==0)
-   {
-      LOG("Could not create assetManager for asset %s", inResource);
-      return 0;
-   }
-
-   return AAssetManager_open(mgr, inResource, AASSET_MODE_UNKNOWN);
+   return AAssetManager_open(androidAssetManager, inResource, AASSET_MODE_UNKNOWN);
 }
 
 ByteArray AndroidGetAssetBytes(const char *inResource)
