@@ -22,6 +22,6 @@ before_install:
 - haxelib dev nme $(pwd)
 script:
 - cd ~/nme-dev/project
-- neko build.n default
+- neko build.n linux-m64
 - cd $(pwd)/project
-- neko build.n default
+- neko build.n linux-m64
