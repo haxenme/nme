@@ -179,6 +179,7 @@
       </section>
       
       <section if="NME_OPENAL">
+         <compilerflag value="-DAL_LIBTYPE_STATIC=1" if="windows || mac || linux" />
          <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
          <file name="${SRC_DIR}/common/Audio.cpp" />
       </section>
