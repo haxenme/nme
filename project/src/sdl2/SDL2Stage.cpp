@@ -1155,6 +1155,9 @@ void ProcessEvent(SDL_Event &inEvent)
             }
             default: break;
          }
+         
+         break;
+         
       }
       case SDL_MOUSEMOTION:
       {  
