@@ -76,6 +76,9 @@
    <set name="SUP_DIR" value="${NME_ROOT}support" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
    
+   <set name="OUT_DIR" value="../ndll" if="lime" />
+   
+   
    <files id="main">
       <compilerflag value="-I${INC_DIR}"/>
       <file name="Test.cpp"/>
