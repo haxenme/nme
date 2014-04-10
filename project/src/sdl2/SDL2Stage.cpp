@@ -1220,6 +1220,7 @@ void ProcessEvent(SDL_Event &inEvent)
          AddModStates(mouse.flags);
             //and done.
          sgSDLFrame->ProcessEvent(mouse);
+         break;
       }
       case SDL_KEYDOWN:
       case SDL_KEYUP:
@@ -1296,16 +1297,19 @@ void ProcessEvent(SDL_Event &inEvent)
          break;
       }
       case SDL_JOYDEVICEADDED:
-         {
+      {
          int joyId = -1;
-         for (int i = 0; i < sgJoysticksId.size(); i++) {
-            if (sgJoysticksIndex[i] == i) {
+         for (int i = 0; i < sgJoysticksId.size(); i++)
+         {
+            if (sgJoysticksIndex[i] == i)
+            {
                joyId = i;
                break;
             }
          }
-         if (joyId == -1) {
-         Event joystick(etJoyDeviceAdded);
+         if (joyId == -1)
+         {
+            Event joystick(etJoyDeviceAdded);
             sgJoystick = SDL_JoystickOpen(inEvent.jdevice.which); //which: joystick device index
             joystick.id = SDL_JoystickInstanceID(sgJoystick);
             sgJoysticks.push_back(sgJoystick);
@@ -1313,26 +1317,28 @@ void ProcessEvent(SDL_Event &inEvent)
             sgJoysticksIndex.push_back(inEvent.jdevice.which);
             sgSDLFrame->ProcessEvent(joystick);
          }
-          break;
-         }
-         case SDL_JOYDEVICEREMOVED:
+         break;
+      }
+      case SDL_JOYDEVICEREMOVED:
+      {
+         Event joystick(etJoyDeviceRemoved);
+         joystick.id = inEvent.jdevice.which; //which: instance id
+         int j = 0;
+         for (int i = 0; i < sgJoysticksId.size(); i++)
          {
-          Event joystick(etJoyDeviceRemoved);
-          joystick.id = inEvent.jdevice.which; //which: instance id
-          int j = 0;
-          for (int i = 0; i < sgJoysticksId.size(); i++) {
-            if (sgJoysticksId[i] == joystick.id) {
+            if (sgJoysticksId[i] == joystick.id)
+            {
                SDL_JoystickClose(sgJoysticks[i]);
                break;   
             }
             j++;
-          }
-          sgJoysticksId.erase(j,1);
-          sgJoysticks.erase(j,1);
-          sgJoysticksIndex.erase(j,1);
-          sgSDLFrame->ProcessEvent(joystick);
-          break;
-       }
+         }
+         sgJoysticksId.erase(j,1);
+         sgJoysticks.erase(j,1);
+         sgJoysticksIndex.erase(j,1);
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
+      }
    }
 };
 
