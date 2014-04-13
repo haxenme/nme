@@ -1,7 +1,7 @@
 #include "./OGL.h"
 
 // 0xAARRGGBB
-#if defined(ANDROID)
+#if defined(ANDROID) || defined(EMSCRIPTEN)
 #define ARGB_STORE GL_BGRA_EXT
 #define ARGB_PIXEL GL_BGRA_EXT
 #elif defined(IPHONE)
