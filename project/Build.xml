@@ -51,6 +51,7 @@
    <!-- Do we need to implement curl in NME -->
    <set name="NME_CURL" value="1" />
    <unset name="NME_CURL" if="winrt" />
+   <unset name="NME_CURL" if="emscripten" />
 
    <!-- And allow https ? -->
    <set name="NME_SSL" value="1" />
@@ -224,7 +225,7 @@
       <file name="${SRC_DIR}/common/Input.cpp" unless="iphone" />
       <file name="${SRC_DIR}/common/SurfaceIO.cpp" unless="sdl_image" />
       <file name="${SRC_DIR}/common/ManagedStage.cpp" unless="winrt" />
-      <file name="${SRC_DIR}/common/CURL.cpp" unless="nocurl"/>
+      <file name="${SRC_DIR}/common/CURL.cpp" if="NME_CURL"/>
       <file name="${SRC_DIR}/common/Lzma.cpp"/>
       <file name="${SRC_DIR}/common/Thread.cpp"/>
       <!--<file name="common/Audio.cpp" if="openal"/>-->
