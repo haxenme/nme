@@ -479,14 +479,14 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
 
    bool do_alpha = color_type==PNG_COLOR_TYPE_RGBA;
    
-   if (do_alpha)
+   /*if (do_alpha)
    {
       QuickVec<png_bytep> row_pointers(h);
       for(int y=0;y<h;y++)
          row_pointers[y] = (png_bytep)inSurface->Row(y);
       png_write_image(png_ptr, &row_pointers[0]);
    }
-   else
+   else*/
    {
       QuickVec<uint8> row_data(w*4);
       png_bytep row = &row_data[0];
@@ -496,9 +496,9 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
          const uint8 *src = (const uint8 *)inSurface->Row(y);
          for(int x=0;x<w;x++)
          {
-            buf[0] = src[0];
+            buf[0] = src[2];
             buf[1] = src[1];
-            buf[2] = src[2];
+            buf[2] = src[0];
             src+=3;
             buf+=3;
             if (do_alpha)
