@@ -56,7 +56,7 @@ class URLLoader : public Object
       virtual const char *getErrorMessage()=0;
       virtual ByteArray releaseData()=0;
       virtual void     getCookies( std::vector<std::string> &outCookies )=0;
-      virtual QuickVec<std::string> getResponseHeaders()=0;
+      virtual void getResponseHeaders( std::vector<std::string> &outHeaders )=0;
 };
 
 }

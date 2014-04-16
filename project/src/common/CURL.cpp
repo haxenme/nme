@@ -39,7 +39,7 @@ public:
    int mHttpCode;
    char mErrorBuf[CURL_ERROR_SIZE];
    QuickVec<unsigned char> mBytes;
-   QuickVec<std::string> mResponseHeaders;
+   std::vector<std::string> mResponseHeaders;
 
    size_t         mBufferRemaining;
    unsigned char *mBufferPos;
@@ -306,9 +306,13 @@ public:
       }
    }
    
-   QuickVec<std::string> getResponseHeaders()
+   void getResponseHeaders( std::vector<std::string> &outHeaders )
    {
-      return mResponseHeaders;
+      for(std::vector<int>::size_type i = 0; i != mResponseHeaders.size(); i++)
+      {
+         std::string value = mResponseHeaders[i];
+         outHeaders.push_back(value);
+      }
    }
       
 

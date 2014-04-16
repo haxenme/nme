@@ -4459,7 +4459,8 @@ value nme_curl_get_headers(value inLoader)
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
-      QuickVec<std::string> responseHeaders = loader->getResponseHeaders(); 
+      std::vector<std::string> responseHeaders;
+      loader->getResponseHeaders(responseHeaders);
       int size = responseHeaders.size();
       value result = alloc_array(size);
       for(int i=0;i<size;i++)
