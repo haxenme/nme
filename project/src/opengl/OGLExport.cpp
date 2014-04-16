@@ -1222,7 +1222,7 @@ value nme_gl_get_shader_info_log(value inId)
    glGetShaderiv(id, GL_INFO_LOG_LENGTH, &len);
    
    if (len==0)
-      return alloc_null();
+      return alloc_string("");
    len++;
    char *buf = new char[len+1];
    
