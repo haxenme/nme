@@ -21,6 +21,7 @@ class URLRequest
    public var contentType:String;
    public var data:Dynamic;
    public var credentials:String;
+   public var followRedirects:Bool;
 
    /** @private */ public var __bytes:ByteArray;
    /** @private */ public var nmeBytes(get, set):ByteArray;
@@ -38,6 +39,7 @@ class URLRequest
       authType = 0;
       contentType = "application/x-www-form-urlencoded";
       credentials = "";
+      followRedirects = true;
    }
 
    public function basicAuth(inUser:String, inPasswd:String) 

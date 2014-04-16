@@ -115,6 +115,7 @@ static int _id_authType;
 static int _id_credentials;
 static int _id_cookieString;
 static int _id_verbose;
+static int _id_followRedirects;
 
 static int _id_method;
 static int _id_requestHeaders;
@@ -212,6 +213,8 @@ extern "C" void InitIDs()
    _id_credentials = val_id("credentials");
    _id_cookieString = val_id("cookieString");
    _id_verbose = val_id("verbose");
+   _id_followRedirects = val_id("followRedirects");
+   
    _id_method = val_id("method");
    _id_requestHeaders = val_id("requestHeaders");
    _id_name = val_id("name");
@@ -4449,6 +4452,24 @@ value nme_curl_get_cookies(value inLoader)
    return alloc_array(0);
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);
+
+value nme_curl_get_headers(value inLoader)
+{
+   #ifndef EMSCRIPTEN
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      QuickVec<std::string> responseHeaders = loader->getResponseHeaders(); 
+      int size = responseHeaders.size();
+      value result = alloc_array(size);
+      for(int i=0;i<size;i++)
+         val_array_set_i(result,i,alloc_string_len(responseHeaders[i].c_str(),responseHeaders[i].length()));
+      return result;
+   }
+   #endif
+   return alloc_array(0);
+}
+DEFINE_PRIM(nme_curl_get_headers,1);
 
 value nme_lzma_encode(value input_value)
 {

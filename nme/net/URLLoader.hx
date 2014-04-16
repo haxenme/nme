@@ -158,7 +158,18 @@ class URLLoader extends EventDispatcher
    }
 
    /** @private */ private function dispatchHTTPStatus(code:Int):Void {
-      dispatchEvent(new HTTPStatusEvent(HTTPStatusEvent.HTTP_STATUS, false, false, code));
+      
+      var evt = new HTTPStatusEvent (HTTPStatusEvent.HTTP_STATUS, false, false, code);
+      var headers:Array<String> = lime_curl_get_headers(__handle);
+      
+      for(h in headers)
+      {
+         var idx = h.indexOf(": ");
+         if(idx > 0)
+            o.responseHeaders.push(new URLRequestHeader(h.substr(0, idx), h.substr(idx + 2, h.length - idx - 4)));
+      }
+      
+      dispatchEvent (evt);
    }
 
    /** @private */ private function update() {
@@ -225,6 +236,7 @@ class URLLoader extends EventDispatcher
    private static var nme_curl_get_error_message = Loader.load("nme_curl_get_error_message", 1);
    private static var nme_curl_get_data = Loader.load("nme_curl_get_data", 1);
    private static var nme_curl_get_cookies = Loader.load("nme_curl_get_cookies", 1);
+   private static var nme_curl_get_headers = Loader.load("nme_curl_get_headers", 1);
    private static var nme_curl_initialize = Loader.load("nme_curl_initialize", 1);
 }
 

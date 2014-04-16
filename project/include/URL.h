@@ -13,11 +13,11 @@ namespace nme
 
 enum URLState
 {
-	urlInvalid,
-	urlInit,
-	urlLoading,
-	urlComplete,
-	urlError,
+   urlInvalid,
+   urlInit,
+   urlLoading,
+   urlComplete,
+   urlError,
 };
 
 struct URLRequestHeader
@@ -36,25 +36,27 @@ struct URLRequest
    const char *contentType;
    ByteArray  postData;
    bool       debug;
+   bool       followRedirects;
    QuickVec<URLRequestHeader> headers; 
 };
 
 class URLLoader : public Object
 {
-	public:
-		static URLLoader *create(URLRequest &inRequest);
+   public:
+      static URLLoader *create(URLRequest &inRequest);
 
-		static bool processAll();
-		static void initialize(const char *inCACertFilePath);
+      static bool processAll();
+      static void initialize(const char *inCACertFilePath);
 
-		virtual ~URLLoader() { };
-		virtual URLState getState()=0;
-		virtual int      bytesLoaded()=0;
-		virtual int      bytesTotal()=0;
-		virtual int      getHttpCode()=0;
-		virtual const char *getErrorMessage()=0;
-		virtual ByteArray releaseData()=0;
+      virtual ~URLLoader() { };
+      virtual URLState getState()=0;
+      virtual int      bytesLoaded()=0;
+      virtual int      bytesTotal()=0;
+      virtual int      getHttpCode()=0;
+      virtual const char *getErrorMessage()=0;
+      virtual ByteArray releaseData()=0;
       virtual void     getCookies( std::vector<std::string> &outCookies )=0;
+      virtual QuickVec<std::string> getResponseHeaders()=0;
 };
 
 }
