@@ -457,9 +457,13 @@ namespace nme
 				return false;
 			}
 			
+			long int currentHead = 0;
 			bool foundFormat = false;
 			while (!foundFormat)
 			{
+				// Save the current position indicator of the stream
+				currentHead = ftell(f);
+				
 				//Read in the 2nd chunk for the wave info
 				result = fread(&wave_format, sizeof(WAVE_Format), 1, f);
 				
@@ -506,7 +510,10 @@ namespace nme
 				wave_data.subChunkID[2] != 't' ||
 				wave_data.subChunkID[3] != 'a')
 				{
-					fseek(f, wave_data.subChunkSize, SEEK_CUR);
+					//fseek(f, wave_data.subChunkSize, SEEK_CUR);
+					//fseek(f, wave_data.subChunkSize, SEEK_CUR);
+					// Goto next chunk.
+					fseek(f, currentHead + sizeof(WAVE_Data) + wave_format.subChunkSize, SEEK_SET);
 				}
 				else
 				{
