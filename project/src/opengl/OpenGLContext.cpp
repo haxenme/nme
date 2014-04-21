@@ -12,6 +12,10 @@
 #undef DEFINE_EXTENSION
 #endif
 
+#ifdef NME_S3D
+#include "OpenGLS3D.h"
+#endif
+
 
 
 int sgDrawCount = 0;
@@ -34,10 +38,6 @@ static GLuint sgOpenglType[] =
 
 
 HardwareRenderer* nme::HardwareRenderer::current = NULL;
-
-#ifdef NME_S3D
-class OpenGLS3D;
-#endif
 
 
 void ResetHardwareContext()

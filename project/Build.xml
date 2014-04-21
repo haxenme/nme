@@ -56,8 +56,9 @@
    <!-- And allow https ? -->
    <set name="NME_SSL" value="1" />
    <set name="NME_SSL_EXTRA" value="_ssl" if="NME_SSL"/>
- 
- 
+   
+   <set name="NME_S3D" value="1" if="lime" />
+   
    <!--
       What audio backend it use?
       For windows, linux, use SDL_mixer
@@ -126,7 +127,7 @@
          <file name="${SRC_DIR}/android/AndroidFrame.cpp"/>
          <file name="${SRC_DIR}/android/JNI.cpp"/>
          <file name="${SRC_DIR}/android/System.cpp"/>
-         <!-- <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="lime" /> -->
+         <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="NME_S3D" />
       </section>
 
       <section if="tizen">
@@ -179,7 +180,8 @@
          <file name="${SRC_DIR}/opengl/OGLTexture.cpp" />
          <file name="${SRC_DIR}/opengl/OGLShaders.cpp" />
          <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
-         <file name="${SRC_DIR}/opengl/Egl.cpp" if="NME_EGL"/>
+         <file name="${SRC_DIR}/opengl/Egl.cpp" if="NME_EGL" />
+         <file name="${SRC_DIR}/opengl/OpenGLS3D.cpp" if="NME_S3D" />
       </section>
       
       <section if="NME_OPENAL">
@@ -191,9 +193,9 @@
       
       <section if="lime">
          <compilerflag value="-DHX_LIME" if="lime" />
-         <!-- <compilerflag value="-DNME_S3D" if="lime" /> -->
+         <compilerflag value="-DNME_S3D" if="NME_S3D" />
          <file name="src/ExternalInterface.cpp" if="lime" />
-         <!-- <file name="${SRC_DIR}/empty/S3D.cpp" if="lime" unless="android" /> -->
+         <file name="${SRC_DIR}/empty/S3D.cpp" if="NME_S3D" unless="android" />
       </section>
 
 
