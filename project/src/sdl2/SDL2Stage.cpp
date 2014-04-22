@@ -370,6 +370,8 @@ public:
             SDL_SetWindowPosition(mSDLWindow, sgWindowRect.x, sgWindowRect.y);
             #endif
          }
+         
+         SDL_ShowCursor(mShowCursor);
       }
    }
 
