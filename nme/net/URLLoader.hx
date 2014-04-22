@@ -160,13 +160,13 @@ class URLLoader extends EventDispatcher
    /** @private */ private function dispatchHTTPStatus(code:Int):Void {
       
       var evt = new HTTPStatusEvent (HTTPStatusEvent.HTTP_STATUS, false, false, code);
-      var headers:Array<String> = lime_curl_get_headers(__handle);
+      var headers:Array<String> = nme_curl_get_headers(nmeHandle);
       
       for(h in headers)
       {
          var idx = h.indexOf(": ");
          if(idx > 0)
-            o.responseHeaders.push(new URLRequestHeader(h.substr(0, idx), h.substr(idx + 2, h.length - idx - 4)));
+            evt.responseHeaders.push(new URLRequestHeader(h.substr(0, idx), h.substr(idx + 2, h.length - idx - 4)));
       }
       
       dispatchEvent (evt);
