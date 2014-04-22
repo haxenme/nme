@@ -638,7 +638,8 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
             }
          }
       }
-      ConvertOutlineToTriangles(subInfo[first].first, size,triangles);
+      if (first>=0)
+         ConvertOutlineToTriangles(subInfo[first].first, size,triangles);
    }
 
    ioOutline.swap(triangles);

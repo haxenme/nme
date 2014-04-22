@@ -125,7 +125,7 @@ public:
             mElement.mStride += sizeof(float)*2.0;
             mAlphaAA = true;
          }
-     }
+      }
       else
       {
          tessellate_lines = false;
@@ -655,6 +655,8 @@ public:
          if (!isConvex)
             ConvertOutlineToTriangles(inOutline,inSubPolys);
       }
+      if (inOutline.size()<3)
+         return;
 
 
       mElement.mVertexOffset = data.mArray.size();
@@ -766,9 +768,9 @@ public:
          }
       }
 
-      if (!outline.empty())
+      int n = outline.size();
+      if (n>1)
       {
-         int n = outline.size();
          if (sub_poly_start.empty() || sub_poly_start.last()!=n)
             sub_poly_start.push_back(n);
          AddPolygon(outline,sub_poly_start);
