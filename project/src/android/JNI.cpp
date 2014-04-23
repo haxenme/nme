@@ -92,8 +92,8 @@ struct JNIType
       {
          case jniObjectString: name += "java/lang/String"; break;
          #ifdef HX_LIME
-         case jniObjectHaxe: name += "org/haxe/nme/HaxeObject"; break;
-         case jniValueObject: name += "org/haxe/nme/Value"; break;
+         case jniObjectHaxe: name += "org/haxe/lime/HaxeObject"; break;
+         case jniValueObject: name += "org/haxe/lime/Value"; break;
          #else
          case jniObjectHaxe: name += "org/haxe/nme/HaxeObject"; break;
          case jniValueObject: name += "org/haxe/nme/Value"; break;
