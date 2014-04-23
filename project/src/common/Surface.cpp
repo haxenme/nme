@@ -54,6 +54,11 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
    mTexture = 0;
    mPixelFormat = inPixelFormat;
    mGPUPixelFormat = inPixelFormat;
+   
+   #ifdef NME_PREMULTIPLIED_ALPHA
+   if (mPixelFormat != pfAlpha)
+      mFlags |= surfUsePremultipliedAlpha;
+   #endif
 
    if (inGPUFormat==-1)
    {

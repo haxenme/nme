@@ -1297,8 +1297,6 @@ ImagePoint TextField::GetCursorPos()
 
 void TextField::BuildBackground()
 {
-   // Disable temporarily for premultiplied alpha to prevent crash
-   #ifndef NME_PREMULTIPLIED_ALPHA
    Graphics &gfx = GetGraphics();
    if (mGfxDirty)
    {
@@ -1354,7 +1352,6 @@ void TextField::BuildBackground()
       }
       mGfxDirty = false;
    }
-   #endif
 }
 
 bool TextField::CaretOn()
@@ -1372,8 +1369,6 @@ bool TextField::IsCacheDirty()
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   // Disable temporarily for premultiplied alpha to prevent crash
-   #ifndef NME_PREMULTIPLIED_ALPHA
    if (inTarget.mPixelFormat==pfAlpha || inState.mPhase==rpBitmap)
       return;
 
@@ -1538,7 +1533,6 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    if (hardwareSurface)
       hardware->EndBitmapRender();
-   #endif
 }
 
 void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke)
@@ -1546,8 +1540,6 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
    Layout(*inTrans.mMatrix);
 
 
-   // Disable temporarily for premultiplied alpha to prevent crash
-   #ifndef NME_PREMULTIPLIED_ALPHA
    if (inForBitmap && !border && !background)
    {
       Rect r = mActiveRect.Rotated(mLayoutRotation).
@@ -1561,7 +1553,6 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
       return DisplayObject::GetExtent(inTrans,outExt,inForBitmap,inIncludeStroke);
    }
    else
-   #endif
    {
       for(int corner=0;corner<4;corner++)
       {
