@@ -191,16 +191,28 @@ void OGLProg::setColourTransform(const ColorTransform *inTransform, uint32 inCol
    {
        if (mColourOffsetSlot>=0)
           glUniform4f(mColourOffsetSlot,
+                   #ifdef NME_PREMULTIPLIED_ALPHA
+                   inTransform->redOffset*one_on_255*inTransform->alphaMultiplier,
+                   inTransform->greenOffset*one_on_255*inTransform->alphaMultiplier,
+                   inTransform->blueOffset*one_on_255*inTransform->alphaMultiplier,
+                   #else
                    inTransform->redOffset*one_on_255,
                    inTransform->greenOffset*one_on_255,
                    inTransform->blueOffset*one_on_255,
+                   #endif
                    inTransform->alphaOffset*one_on_255);
 
        if (mColourScaleSlot>=0)
           glUniform4f(mColourScaleSlot,
+                   #ifdef NME_PREMULTIPLIED_ALPHA
+                   inTransform->redMultiplier * inTransform->alphaMultiplier * rf,
+                   inTransform->greenMultiplier * inTransform->alphaMultiplier * gf,
+                   inTransform->blueMultiplier * inTransform->alphaMultiplier * bf,
+                   #else
                    inTransform->redMultiplier * rf,
                    inTransform->greenMultiplier * gf,
                    inTransform->blueMultiplier * bf,
+                   #endif
                    inTransform->alphaMultiplier * af);
    }
    else

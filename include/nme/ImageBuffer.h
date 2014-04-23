@@ -11,8 +11,8 @@ namespace nme
 enum
 {
    surfNotRepeatIfNonPO2    = 0x0001,
-   surfUsePremultiliedAlpha = 0x0002,
-   surfHasPremultiliedAlpha = 0x0004,
+   surfUsePremultipliedAlpha = 0x0002,
+   surfHasPremultipliedAlpha = 0x0004,
 };
 
 

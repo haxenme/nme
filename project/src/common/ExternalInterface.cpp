@@ -3332,7 +3332,7 @@ value nme_bitmap_data_get_prem_alpha(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_bool(surface->GetFlags() & surfUsePremultiliedAlpha);
+      return alloc_bool(surface->GetFlags() & surfUsePremultipliedAlpha);
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_prem_alpha,1);
@@ -3344,9 +3344,9 @@ value nme_bitmap_data_set_prem_alpha(value inHandle,value inVal)
    {
       bool use = val_bool(inVal) && (surface->Format()<pfAlpha);
       if (use)
-         surface->SetFlags( surface->GetFlags() | surfUsePremultiliedAlpha );
+         surface->SetFlags( surface->GetFlags() | surfUsePremultipliedAlpha );
       else
-         surface->SetFlags( surface->GetFlags() & ~surfUsePremultiliedAlpha );
+         surface->SetFlags( surface->GetFlags() & ~surfUsePremultipliedAlpha );
    }
    return alloc_null();
 }

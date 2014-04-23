@@ -27,7 +27,11 @@ class Surface : public ImageBuffer
 {
 public:
    // Non-PO2 will generate dodgy repeating anyhow...
+   #ifdef NME_PREMULTIPLIED_ALPHA
+   Surface() : mTexture(0), mVersion(0), mFlags(surfNotRepeatIfNonPO2 | surfUsePremultipliedAlpha), mAllowTrans(true) { };
+   #else
    Surface() : mTexture(0), mVersion(0), mFlags(surfNotRepeatIfNonPO2), mAllowTrans(true) { };
+   #endif
 
    // Implementation depends on platform.
    static Surface *Load(const OSChar *inFilename);

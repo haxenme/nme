@@ -418,7 +418,7 @@ public:
          bool premAlpha = false;
          if ((element.mFlags & DRAW_HAS_TEX) && element.mSurface)
          {
-            if (element.mSurface->GetFlags() & surfUsePremultiliedAlpha)
+            if (element.mSurface->GetFlags() & surfUsePremultipliedAlpha)
                premAlpha = true;
             progId |= PROG_TEXTURE;
             if (element.mSurface->BytesPP()==1)

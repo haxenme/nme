@@ -134,8 +134,8 @@ public:
 
       mTextureWidth = w;
       mTextureHeight = h;
-      bool usePreAlpha = inFlags & surfUsePremultiliedAlpha;
-      bool hasPreAlpha = inFlags & surfHasPremultiliedAlpha;
+      bool usePreAlpha = inFlags & surfUsePremultipliedAlpha;
+      bool hasPreAlpha = inFlags & surfHasPremultipliedAlpha;
       int *multiplyAlpha = usePreAlpha && !hasPreAlpha ? getAlpha16Table() : 0;
 
       bool copy_required = mSurface->GetBase() &&
