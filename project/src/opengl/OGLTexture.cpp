@@ -5,8 +5,7 @@
 #define ARGB_STORE GL_BGRA_EXT
 #define ARGB_PIXEL GL_BGRA_EXT
 #elif defined(IPHONE)
-// TODO - check
-#define ARGB_STORE GL_BGRA_EXT
+#define ARGB_STORE GL_RGBA
 #define ARGB_PIXEL GL_BGRA
 #elif defined(NME_GLES)
 #define ARGB_STORE GL_BGRA

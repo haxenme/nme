@@ -1707,7 +1707,11 @@ NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
 void NMEStage::setOpaqueBackground(uint32 inBG)
 {
    Stage::setOpaqueBackground(inBG);
+   #ifdef HX_LIME
+   wantOpaqueBg = true;
+   #else
    wantOpaqueBg = (inBG & 0xff000000) != 0;
+   #endif
 
    if (wantOpaqueBg!=haveOpaqueBg)
       recreateNmeView();
@@ -2041,7 +2045,7 @@ bool nmeIsMain = true;
 @synthesize window;
 @synthesize controller;
 
-- (void) applicationDidFinishLaunching:(UIApplication *)application
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
    UIWindow *win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
    window = win;
@@ -2054,6 +2058,7 @@ bool nmeIsMain = true;
    [win addSubview:c.view];
    self.window.rootViewController = c;
    sOnFrame( new IOSViewFrame(c->nmeStage) );
+   return YES;
 }
 
 - (void) applicationWillResignActive:(UIApplication *)application
@@ -2148,7 +2153,8 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    int argc = 0;// *_NSGetArgc();
    char **argv = 0;// *_NSGetArgv();
 
-   sgAllowShaders = ( inFlags & wfAllowShaders );
+   //sgAllowShaders = ( inFlags & wfAllowShaders );
+   sgAllowShaders = true;
    sgHasDepthBuffer = ( inFlags & wfDepthBuffer );
    sgHasStencilBuffer = ( inFlags & wfStencilBuffer );
    sgEnableMSAA2 = ( inFlags & wfHW_AA );
