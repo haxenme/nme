@@ -484,7 +484,7 @@ bool TextField::CaptureDown(Event &inEvent)
 {
    if (selectable || isInput)
    {
-      if (selectable)
+      if (selectable && isInput)
          getStage()->EnablePopupKeyboard(true);
 
       UserPoint point = TargetToRect(GetFullMatrix(true), UserPoint( inEvent.x, inEvent.y) );
