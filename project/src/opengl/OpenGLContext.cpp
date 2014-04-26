@@ -881,8 +881,9 @@ bool InitOGLFunctions()
       #endif
 
       #ifdef HX_LINUX
-      const char *path = "libGL.so";
-      gOGLLibraryHandle = dlopen(path, RTLD_NOW|RTLD_GLOBAL);
+      gOGLLibraryHandle = dlopen("libGL.so.1", RTLD_NOW|RTLD_GLOBAL);
+      if (!gOGLLibraryHandle)
+         gOGLLibraryHandle = dlopen("libGL.so", RTLD_NOW|RTLD_GLOBAL);
       if (!gOGLLibraryHandle)
       {
          //printf("Could not load %s (%s)\n",path, dlerror());
