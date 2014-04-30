@@ -144,9 +144,11 @@ FILE *OpenOverwrite(const char *inName)
 @end
 #endif
 
+
 @interface SDLApplication : NSApplication
 @end
 
+#ifndef NME_SDL2
 @implementation SDLApplication
 /* Invoked from the Quit menu item */
 - (void)terminate:(id)sender
@@ -157,6 +159,7 @@ FILE *OpenOverwrite(const char *inName)
     SDL_PushEvent(&event);
 }
 @end
+#endif
 
 /* The main class of the application, the application's delegate */
 @implementation SDLMain

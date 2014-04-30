@@ -15,3 +15,6 @@
 
 # Untracked directories
 obj/
+
+# Miscellaneous
+all_objs
