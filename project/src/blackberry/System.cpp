@@ -13,7 +13,7 @@
 #include <bps/orientation.h>
 #include <bps/bps.h>
 
-namespace lime {
+namespace nme {
 	
 	
 	std::string CapabilitiesGetLanguage () {

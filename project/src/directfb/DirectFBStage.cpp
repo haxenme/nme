@@ -6,7 +6,7 @@
 #include <KeyCodes.h>
 
 
-namespace lime
+namespace nme
 {
 
 

@@ -600,7 +600,7 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 {
    Flush();
    
-   #ifdef LIME_DIRECTFB
+   #ifdef NME_DIRECTFB
    
    for(int i=0;i<mJobs.size();i++)
    {
