@@ -1,4 +1,6 @@
 
+* Moved to haxenme repo
+--------------------------
 * Allow embed on Bitmap, Font and Sound assets
 * Get samples working better
 * Impove the 'quick compile' options for nme
