@@ -1,14 +1,17 @@
 
 * Moved to haxenme repo
+5.1
 --------------------------
+
 * Allow embed on Bitmap, Font and Sound assets
 * Get samples working better
 * Impove the 'quick compile' options for nme
 * Start on factoring out stable header files (not complete yet)
 * OpengGl fixes - allow multiple attributes for uniformfv, uniformMatricfv and vertextAttribfv
 * Big internal change to pixel format, but nothing outwardly visible (hopefully)
-
+5.0
 --------------------------
+
 * Refactor assets so the mostly live outside the template code, and allow embed/not embed to mix
 * Fix CURL stall with https
 * Refactored IOS UIView code to allow separate application controller
