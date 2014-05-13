@@ -42,6 +42,8 @@
 
 namespace nme
 {
+void InitCamera();
+
 
 static int _id_type;
 static int _id_x;
@@ -133,6 +135,7 @@ static int _id_descent;
 vkind gObjectKind;
 
 NmeApi gNmeApi;
+
 
 static int sgIDsInit = false;
 
@@ -227,6 +230,10 @@ extern "C" void InitIDs()
    _id_descent = val_id("descent");
 
    kind_share(&gObjectKind,"nme::Object");
+
+   #ifndef HX_LIME
+   InitCamera();
+   #endif
 }
 
 DEFINE_ENTRY_POINT(InitIDs)

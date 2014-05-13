@@ -67,6 +67,7 @@
    -->
    <set name="NME_OPENAL" value="1" if="lime" />
    <set name="NME_OPENAL" value="1" if="iphone" />
+   <set name="NME_CAMERA" value="1" unless="lime" />
 
    <!-- Built relative to "bin" -->
    <set name="NME_ROOT" value="" unless="lime" />
@@ -93,6 +94,7 @@
 
 
       <section if="windows">
+         <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />
          <file name="${SRC_DIR}/windows/GDIFont.cpp"/>
          <file name="${SRC_DIR}/windows/System.cpp" />
       </section>
@@ -104,6 +106,7 @@
       </section>
 
       <section if="macos">
+         <file name="${SRC_DIR}/apple/CaptureDevice.mm" if="NME_CAMERA" />
          <file name="${SRC_DIR}/mac/NSFont.cpp"/>
          <file name="${SRC_DIR}/mac/MacBoot.m" />
          <file name="${SRC_DIR}/mac/System.mm"/>
@@ -231,6 +234,7 @@
       <file name="${SRC_DIR}/common/CURL.cpp" if="NME_CURL"/>
       <file name="${SRC_DIR}/common/Lzma.cpp"/>
       <file name="${SRC_DIR}/common/Thread.cpp"/>
+      <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
       <!--<file name="common/Audio.cpp" if="openal"/>-->
       <file name="${SRC_DIR}/video/TheoraVideo.cpp" if="theora" />
       <file name="${SRC_DIR}/empty/Video.cpp" unless="theora" />
@@ -333,7 +337,6 @@
          <section if="macos">
             <vflag name="-framework" value="IOKit" />
             <vflag name="-framework" value="Foundation" />
-            <!-- <vflag name="-framework" value="AVFoundation" if="macos"/> -->
             <vflag name="-framework" value="CoreAudio" />
             <vflag name="-framework" value="Carbon" />
             <vflag name="-framework" value="AudioToolbox" />
@@ -344,6 +347,9 @@
             <vflag name="-framework" value="QuickTime" />
             <vflag name="-framework" value="AppKit" />
             <vflag name="-framework" value="OpenAL"/>
+            <vflag name="-framework" value="AVFoundation" if="NME_CAMERA"/>
+            <vflag name="-framework" value="CoreMedia" if="NME_CAMERA"/>
+            <vflag name="-framework" value="CoreVideo" if="NME_CAMERA"/>
          </section>
 
 
