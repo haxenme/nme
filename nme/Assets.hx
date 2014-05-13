@@ -388,6 +388,7 @@ class Assets
        return getText(id,useCache);
    }
 
+  #if !flash
    private static var initResources:Dynamic = (function() {
        var nme_set_resource_factory = nme.Loader.load("nme_set_resource_factory", 1);
        nme_set_resource_factory(function(s) {
@@ -396,6 +397,7 @@ class Assets
          return ByteArray.fromBytes(reso);
          });
       return null; } ) ();
+  #end
 
 
 }
