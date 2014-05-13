@@ -52,6 +52,14 @@ class Main extends Sprite
       setBmpSize();
 
       /*
+      #if cpp
+      var native = nme.native.ImageBuffer.fromBitmapData(camera.bitmapData);
+      if (native!=null)
+         trace(native.value.Width() + "x" + native.value.Height());
+      #end
+      */
+
+      /*
       var s = new Sprite();
       addChild(s);
       s.graphics.beginBitmapFill(camera.bitmapData);

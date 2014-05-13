@@ -12,7 +12,7 @@ class Camera extends nme.events.EventDispatcher
 
    static var cameraMap:Map<String,Camera>;
 
-   var    nmeHandle:Dynamic;
+   public var nmeHandle:Dynamic;
    public var bitmapData(default,null):BitmapData;
    public var errorString(default,null):String;
    public var width(default,null):Int;

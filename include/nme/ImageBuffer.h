@@ -3,6 +3,7 @@
 
 #include "Texture.h"
 #include "Pixel.h"
+#include "Object.h"
 
 namespace nme
 {
@@ -34,6 +35,12 @@ public:
    virtual int                  GetStride() const = 0;
    virtual unsigned char        *Edit(const Rect *inRect=0) = 0;
    virtual void                 Commit() = 0;
+
+   inline  unsigned char        *EditRect(int inX0, int inY0, int inW, int inH)
+   {
+      Rect rect(inX0, inY0, inW, inH);
+      return Edit(&rect);
+   }
 
    virtual Texture *GetTexture(class HardwareContext *inContext=0,int inPlane=0) = 0;
    virtual void  MakeTextureOnly() = 0;
