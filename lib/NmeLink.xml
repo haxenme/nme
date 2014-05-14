@@ -15,6 +15,9 @@
             <vflag name="-framework" value="QuickTime" />
             <vflag name="-framework" value="AppKit" />
             <vflag name="-framework" value="OpenAL"/>
+            <vflag name="-framework" value="AVFoundation" />
+            <vflag name="-framework" value="CoreMedia" />
+            <vflag name="-framework" value="CoreVideo" />
          </section>
 
          <section if="android">
