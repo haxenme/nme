@@ -76,14 +76,14 @@ public:
    {
       mKeepGoing = true;
       InitializeCriticalSection(&mCritSec);
-      printf("Create CaptureDevice %s...\n", inName);
+      //printf("Create CaptureDevice %s...\n", inName);
       _beginthread( startThread, 0, this);
    }
 
 
    static void __cdecl startThread(void *inThis)
    {
-      printf("Run....\n");
+      //printf("Run....\n");
       ((CaptureDevice *)inThis)->runThread();
    }
 
@@ -173,7 +173,7 @@ public:
                {
                 while(!Found && (S_OK == pins->Next(1, &pP, &n)))
                   {
-                     printf("FOund pin\n");
+                     //printf("Found pin\n");
                      if(S_OK == pP->QueryPinInfo(&pinInfo))
                      {
                         if(pinInfo.dir == PINDIR_INPUT)
@@ -188,17 +188,19 @@ public:
                                  #define CAT(x) \
                                  if(guid == x) \
                                  { \
-                                    printf("Pin is " #x "\n"); \
                                     fMatch = true; \
                                  }
                                  CAT(PIN_CATEGORY_ANALOGVIDEOIN);
                                  CAT(logitech);
 
                                  if (!fMatch)
-                                   printf("unknown Pin category\n");
+                                 {
+                                   //printf("unknown Pin category\n");
+                                   //printf("using anyhow!\n");
+                                   fMatch = true;
+                                 }
                               }
-                              else
-                                 printf("Pin has unknown category\n");
+                              //else printf("Pin has unknown category\n");
                               pKs->Release();
                            }
 
@@ -207,7 +209,7 @@ public:
                               Found = TRUE;
                               bDevCheck = Found;
                               nAnalogCount++;
-                              printf("Matched!\n");
+                              //printf("Matched!\n");
                               break;
                            }
 
@@ -243,7 +245,7 @@ public:
        hr = pMoniker->GetDisplayName(NULL, NULL, &strMonikerName);
        if (FAILED(hr))
           return setError("Could not get device name");
-       printf("Capture from %S\n", strMonikerName);
+       //printf("Capture from %S\n", strMonikerName);
 
        // Create a bind context needed for working with the moniker
        IBindCtx *pContext=0;
@@ -409,7 +411,7 @@ public:
 
             while (SUCCEEDED(media_event->GetEvent(&evCode, &evParam1, &evParam2, 0)))
             {
-               printf("Got event %d\n",evCode);
+               //printf("Got event %d\n",evCode);
                media_event->FreeEventParams(evCode, evParam1, evParam2);
             }
 
