@@ -200,9 +200,12 @@ class Assets
       }
       if (useCache!=false)
       {
-         var val = i.getCache();
+         var val:ByteArray = i.getCache();
          if (val!=null)
+         {
+            val.position = 0;
             return val;
+         }
       }
 
       var data:ByteArray = null;
