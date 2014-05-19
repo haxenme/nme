@@ -400,6 +400,9 @@ class Assets
   #end
 
 
+  public static function initialize() {}
+
+
 }
 
 
