@@ -6,6 +6,7 @@ import sys.io.Process;
 import sys.FileSystem;
 import platforms.Platform;
 import nme.system.System;
+import nme.Loader;
 import nme.net.SharedObject;
 import NMEProject;
 
@@ -1010,10 +1011,39 @@ class CommandLineTools
       }
    }
 
+   static function buildNdll()
+   {
+      Sys.println("The binary nme.ndll is not distrubuted with source code, and is not built for your system yet.");
+      while(true)
+      {
+         Sys.print("Would you like to build it now Y/n ? >");
+         var result = Sys.stdin().readLine();
+         if (result.substr(0,1).toLowerCase()=="n")
+            return;
+         if (result.substr(0,1).toLowerCase()=="y" || result=="")
+         {
+            Sys.println("Update nme-dev...");
+            ProcessHelper.runCommand("", "haxelib", ["update","nme-dev"]);
+            Sys.println("Build binaries...");
+            ProcessHelper.runCommand(nme + "/project", "neko", ["build.n"] );
+            Sys.println("\nPlease re-run nme");
+            return;
+         }
+      }
+   }
+
 
 
    public static function main():Void 
    {
+      nme = PathHelper.getHaxelib(new Haxelib("nme"));
+
+      if (!Loader.foundNdll)
+      {
+         buildNdll();
+         return;
+      }
+
       var project = new NMEProject( );
 
       traceEnabled = null;
@@ -1123,8 +1153,6 @@ class CommandLineTools
    private static function processArguments(project:NMEProject):Void 
    {
       var arguments = Sys.args();
-
-      nme = PathHelper.getHaxelib(new Haxelib("nme"));
 
       var lastCharacter = nme.substr( -1, 1);
       if (lastCharacter == "/" || lastCharacter == "\\") 

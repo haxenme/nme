@@ -10,8 +10,8 @@ import sys.io.Process;
 
 class Loader 
 {
+   public static var foundNdll = false;
    private static var moduleInit = false;
-   private static var foundNdll = false;
    private static var moduleName = "";
 
    #if (iphone || android || emscripten)
