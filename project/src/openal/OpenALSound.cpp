@@ -675,7 +675,7 @@ namespace nme
          double result = ((double)bufferSize) / (frequency * channels * (bitsPerSample/8) );
          
          //LOG_SOUND("OpenALSound getLength returning %f", toBeReturned);
-         return result;
+         return result * 1000;
       }
    }
    
