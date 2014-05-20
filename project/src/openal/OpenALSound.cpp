@@ -668,7 +668,14 @@ namespace nme
    {
       if (mIsStream)
       {
-         return 100;
+         AudioStream_Ogg *audioStream = new AudioStream_Ogg();
+         if (audioStream)
+         {
+            int length = audioStream->getLength(mStreamPath.c_str());
+            audioStream->release();
+            return length * 1000;
+         }
+         return 0;
       }
       else
       {
@@ -841,6 +848,60 @@ namespace nme
    
    
    //Ogg Audio Stream implementation
+   int AudioStream_Ogg::getLength(const std::string &path) {
+        
+        int result;
+        mPath = std::string(path.c_str());
+        
+        #ifdef ANDROID
+        
+        mInfo = AndroidGetAssetFD(path.c_str());
+        oggFile = fdopen(mInfo.fd, "rb");
+        fseek(oggFile, mInfo.offset, 0);
+        
+        ov_callbacks callbacks;
+        callbacks.read_func = &nme::AudioStream_Ogg::read_func;
+        callbacks.seek_func = &nme::AudioStream_Ogg::seek_func;
+        callbacks.close_func = &nme::AudioStream_Ogg::close_func;
+        callbacks.tell_func = &nme::AudioStream_Ogg::tell_func;
+        
+        #else
+        
+        oggFile = fopen(path.c_str(), "rb");
+        
+        #endif
+        
+        if(!oggFile) {
+            //throw std::string("Could not open Ogg file.");
+            LOG_SOUND("Could not open Ogg file.");
+            mIsValid = false;
+            return 0;
+        }
+      
+      oggStream = new OggVorbis_File();
+        
+        #ifdef ANDROID
+        result = ov_open_callbacks(this, oggStream, NULL, 0, callbacks);
+        #else
+        result = ov_open(oggFile, oggStream, NULL, 0);
+        #endif
+         
+        if(result < 0) {
+         
+            fclose(oggFile);
+            oggFile = 0;
+         
+            //throw std::string("Could not open Ogg stream. ") + errorString(result);
+            LOG_SOUND("Could not open Ogg stream.");
+            //LOG_SOUND(errorString(result).c_str());
+            mIsValid = false;
+            return 0;
+        }
+        
+        return ov_time_total(oggStream, -1);
+   }
+   
+   
    void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
         
         int result;
@@ -848,7 +909,7 @@ namespace nme
         mStartTime = startTime;
         mLoops = inLoops;
         mIsValid = true;
-		mSuspend = false;
+        mSuspend = false;
         
         #ifdef ANDROID
         
@@ -874,8 +935,8 @@ namespace nme
             mIsValid = false;
             return;
         }
-		
-		oggStream = new OggVorbis_File();
+        
+        oggStream = new OggVorbis_File();
         
         #ifdef ANDROID
         result = ov_open_callbacks(this, oggStream, NULL, 0, callbacks);
@@ -884,10 +945,10 @@ namespace nme
         #endif
          
         if(result < 0) {
-			
+         
             fclose(oggFile);
-			   oggFile = 0;
-			
+            oggFile = 0;
+         
             //throw std::string("Could not open Ogg stream. ") + errorString(result);
             LOG_SOUND("Could not open Ogg stream.");
             //LOG_SOUND(errorString(result).c_str());
@@ -927,25 +988,25 @@ namespace nme
 
    void AudioStream_Ogg::release() {
       
-	  if (source) {
-		  alSourceStop(source);
-		  empty();
+      if (source) {
+         alSourceStop(source);
+         empty();
          alDeleteSources(1, &source);
          check();
          alDeleteBuffers(2, buffers);
          check();
-		 
-		 source = 0;
-	  }
-	  
-	  if (oggStream) {
-		 ov_clear(oggStream);
-		 delete oggStream;
-		 oggStream = 0;
-		 oggFile = 0;
-	  }
-	  
-	  mIsValid = false;
+         
+         source = 0;
+     }
+     
+     if (oggStream) {
+         ov_clear(oggStream);
+         delete oggStream;
+         oggStream = 0;
+         openggFile = 0;
+     }
+     
+     mIsValid = false;
       
    } //release
    
