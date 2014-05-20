@@ -1003,7 +1003,7 @@ namespace nme
          ov_clear(oggStream);
          delete oggStream;
          oggStream = 0;
-         openggFile = 0;
+         oggFile = 0;
      }
      
      mIsValid = false;
