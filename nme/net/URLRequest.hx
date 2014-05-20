@@ -13,6 +13,7 @@ class URLRequest
    public static inline var AUTH_DIGEST_ANY = 0x000f;
 
    public var url:String;
+   public var userAgent:String;
    public var requestHeaders:Array<URLRequestHeader>;
    public var authType:Int;
    public var cookieString:String;
