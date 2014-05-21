@@ -1,4 +1,5 @@
 
+* Fixed font/texture bug
 * Add Camera API
 * Moved to haxenme repo
 5.1
