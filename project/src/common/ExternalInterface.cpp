@@ -95,6 +95,7 @@ static int _id_tabStops;
 static int _id_target;
 static int _id_underline;
 static int _id_url;
+static int _id_userAgent;
 static int _id_error;
 static int _id_state;
 static int _id_bytesTotal;
@@ -194,6 +195,7 @@ extern "C" void InitIDs()
    _id_target = val_id("target");
    _id_underline = val_id("underline");
    _id_url = val_id("url");
+   _id_userAgent = val_id("userAgent");
    _id_error = val_id("error");
    _id_bytesTotal = val_id("bytesTotal");
    _id_state = val_id("state");
@@ -562,6 +564,7 @@ void ToValue(value &outVal,const ColorTransform &inTrans)
 void FromValue(value obj, URLRequest &request)
 {
    request.url = val_string( val_field(obj, _id_url) );
+   request.userAgent = val_string( val_field(obj, _id_userAgent) );
    request.authType = val_field_numeric(obj, _id_authType );
    request.credentials = val_string( val_field(obj, _id_credentials) );
    request.cookies = val_string( val_field(obj, _id_cookieString) );

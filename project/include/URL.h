@@ -29,6 +29,7 @@ struct URLRequestHeader
 struct URLRequest
 {
    const char *url;
+   const char *userAgent;
    int        authType;
    const char *credentials;
    const char *cookies;
