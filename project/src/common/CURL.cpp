@@ -167,7 +167,8 @@ public:
 
       /* some servers don't like requests that are made without a user-agent
          field, so we provide one */
-      curl_easy_setopt(mHandle, CURLOPT_USERAGENT, r.userAgent != 0 ? r.userAgent : "libcurl-agent/1.0");
+      const char* userAgent = strcmp(r.userAgent, "") ? r.userAgent : "libcurl-agent/1.0";
+      curl_easy_setopt(mHandle, CURLOPT_USERAGENT, userAgent);
 
       mState = urlLoading;
 
