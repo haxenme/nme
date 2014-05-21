@@ -22,7 +22,7 @@ JNIEnv *GetEnv()
     JNIEnv *env;
     int getEnvStat = _vm->GetEnv((void**)&env, JNI_VERSION_1_4);
     if (getEnvStat == JNI_EDETACHED) {
-        LOGE("GetEnv: not attached");
+        //LOGE("GetEnv: not attached");
         if (_vm->AttachCurrentThread(&env, 0) != 0) {
             LOGE("Failed to attach");
         }
