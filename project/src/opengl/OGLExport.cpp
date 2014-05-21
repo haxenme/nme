@@ -38,6 +38,21 @@ enum ResoType
    resoRenderbuffer, //6
 };
 
+const char *getTypeString(int inType)
+{
+   switch(inType)
+   {
+      case resoNone: return "None";
+      case resoBuffer: return "Buffer";
+      case resoTexture: return "Texture";
+      case resoShader: return "Shader";
+      case resoProgram: return "Program";
+      case resoFramebuffer: return "Framebuffer";
+      case resoRenderbuffer: return "Renderbuffer";
+   }
+   return "Unknown";
+}
+
 
 struct NmeFloats
 {
@@ -211,7 +226,29 @@ unsigned int getResource(value inResource, ResoType inType)
    }
 
    if (sDebugName)
-      ELOG("Warning bad resource %p(%p) (%d but is %d) in %s", resource, inResource, inType, resource?resource->type: -1, sDebugName);
+   {
+      if (!resource)
+      {
+         ELOG("Warning: provided object if not a resource in %s", sDebugName);
+      }
+      else if (!resource->id)
+      {
+         ELOG("Warning: resource has id 0 in %s", sDebugName);
+      }
+      else if (resource->contextVersion!=gTextureContextVersion)
+      {
+         ELOG("Warning: %s resource is from old context in %s", getTypeString(inType), sDebugName);
+      }
+      else if (resource->type!=inType)
+      {
+         ELOG("Warning: wrong resource type in %s (wanted %s, got %s)", sDebugName, getTypeString(inType), getTypeString(resource->type));
+      }
+      else
+      {
+         ELOG("Warning: Unknown resource error in %s", sDebugName);
+      }
+   }
+
    return 0;
 
 }
