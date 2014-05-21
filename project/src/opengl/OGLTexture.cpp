@@ -227,18 +227,17 @@ public:
       //  mTextureID, mPixelWidth, mPixelHeight);
       glBindTexture(GL_TEXTURE_2D,mTextureID);
       mRepeat = mCanRepeat;
+      mSmooth = true;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, pixel_format, pixels, buffer);
 
       if (buffer && buffer!=mSurface->Row(0))
          free(buffer);
 
-      mSmooth = true;
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
       //int err = glGetError();
       //printf ("GL texture error: %i\n", err);
@@ -255,14 +254,15 @@ public:
 
    void Bind(int inSlot)
    {
-
       if (inSlot>=0 && CHECK_EXT(glActiveTexture))
       {
          glActiveTexture(GL_TEXTURE0 + inSlot);
       }
       glBindTexture(GL_TEXTURE_2D,mTextureID);
+
       if (gTextureContextVersion!=mContextVersion)
       {
+         ELOG("######## Error stale texture");
          mContextVersion = gTextureContextVersion;
          mDirtyRect = Rect(mSurface->Width(),mSurface->Height());
       }
@@ -338,9 +338,8 @@ public:
                      p0 += mSurface->GetStride();
                   }
                }
-   
             }
-   
+
             glTexSubImage2D(GL_TEXTURE_2D, 0,
                x0, y0,
                dw, dh, 

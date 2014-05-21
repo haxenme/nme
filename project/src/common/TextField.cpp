@@ -939,7 +939,7 @@ WString TextField::getHTMLText()
 // Not sure why I need these now?
 int MySSCAND(const wchar_t *inStr, int *outValue)
 {
-   #if ANDROID
+   #ifdef ANDROID
    int sign = 1;
    int result = 0;
    const wchar_t *oStr = inStr;
@@ -963,7 +963,7 @@ int MySSCAND(const wchar_t *inStr, int *outValue)
 
 int MySSCANHex(const wchar_t *inStr, int *outValue)
 {
-   #if ANDROID
+   #ifdef ANDROID
    int result = 0;
    const wchar_t *oStr = inStr;
    while( (*inStr>='0' && *inStr<='9') ||
