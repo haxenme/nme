@@ -1129,9 +1129,19 @@ void ProcessEvent(SDL_Event &inEvent)
                sgSDLFrame->ProcessEvent(resize);
                break;
             }
-            //case SDL_WINDOWEVENT_MINIMIZED: break;
+            case SDL_WINDOWEVENT_MINIMIZED:
+            {
+               Event deactivate(etDeactivate);
+               sgSDLFrame->ProcessEvent(deactivate);
+               break;
+            }
             //case SDL_WINDOWEVENT_MAXIMIZED: break;
-            //case SDL_WINDOWEVENT_RESTORED: break;
+            case SDL_WINDOWEVENT_RESTORED:
+            {
+               Event activate(etActivate);
+               sgSDLFrame->ProcessEvent(activate);
+               break;
+            }
             //case SDL_WINDOWEVENT_ENTER: break;
             //case SDL_WINDOWEVENT_LEAVE: break;
             case SDL_WINDOWEVENT_FOCUS_GAINED:
