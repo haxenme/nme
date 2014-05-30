@@ -107,5 +107,7 @@ namespace nme
 		);
 		
 		buffer_append_sub(output_buffer, (const char *)output_buffer_data, output_buffer_size);
+		
+		free(output_buffer_data);
 	}
 }
