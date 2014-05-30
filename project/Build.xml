@@ -315,6 +315,12 @@
 
             <lib name="${PRELIB}z${POSTLIB}" unless="android"/>
          </section>
+ 
+         <section if="blackberry">
+            <section if="NME_CURL">
+               <lib name="${PRELIB}curl${NME_SSL_EXTRA}${POSTLIB}" />
+            </section>
+         </section>
 
 
       <section unless="static_link">
@@ -372,6 +378,7 @@
             <lib name="-lGLESv2" />
             <lib name="-lm" />
             <lib name="-lsocket" />
+            <lib name="-lz" />
          </section>
          
          <section if="tizen">
