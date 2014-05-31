@@ -207,7 +207,7 @@
       <compilerflag value="-I${NME_DEV}/include" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
       <compilerflag value="-DNME_PREMULTIPLIED_ALPHA" if="NME_PREMULTIPLIED_ALPHA" />
-      
+      <compilerflag value="-DNME_BUILDING_LIB" />
 
 
       <file name="${SRC_DIR}/common/Surface.cpp"/>

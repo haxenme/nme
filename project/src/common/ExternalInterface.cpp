@@ -1298,6 +1298,57 @@ value nme_set_stage_handler(value inStage,value inHandler,value inNomWidth, valu
 
 DEFINE_PRIM(nme_set_stage_handler,4);
 
+Stage *sgNativeHandlerStage = 0;
+
+void external_handler_native( nme::Event &ioEvent, void *inUserData )
+{
+   AutoGCRoot *handler = (AutoGCRoot *)inUserData;
+   if (ioEvent.type == etDestroyHandler)
+   {
+      delete handler;
+      return;
+   }
+
+   static AutoGCRoot *dynamicEvent = 0;
+   static nme::Event eventData;
+   static vkind eventKind;
+   if (dynamicEvent==0)
+   {
+      kind_share(&eventKind,"nme::Event");
+      value eventHolder = alloc_abstract(eventKind,&eventData);
+      dynamicEvent = new AutoGCRoot(eventHolder);
+   }
+
+   eventData = ioEvent;
+   eventData.pollTime = GetTimeStamp();
+
+   val_call1(handler->get(), dynamicEvent->get());
+
+   ioEvent.result = eventData.result;
+
+   sgNativeHandlerStage->SetNextWakeDelay(eventData.pollTime);
+}
+
+
+value nme_set_stage_handler_native(value inStage,value inHandler,value inNomWidth, value inNomHeight)
+{
+   Stage *stage;
+   if (!AbstractToObject(inStage,stage))
+      return alloc_null();
+
+   sgNativeHandlerStage = stage;
+
+   AutoGCRoot *data = new AutoGCRoot(inHandler);
+
+   stage->SetNominalSize(val_int(inNomWidth), val_int(inNomHeight) );
+   stage->SetEventHandler(external_handler_native,data);
+
+   return alloc_null();
+}
+
+DEFINE_PRIM(nme_set_stage_handler_native,4);
+
+
 
 value nme_render_stage(value inStage)
 {
