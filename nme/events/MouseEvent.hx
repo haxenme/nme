@@ -3,6 +3,7 @@ package nme.events;
 
 import nme.display.InteractiveObject;
 import nme.geom.Point;
+import nme.app.AppEvent;
 
 class MouseEvent extends Event 
 {
@@ -63,7 +64,7 @@ class MouseEvent extends Event
       return new MouseEvent(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount);
    }
 
-   /** @private */ public static function nmeCreate(inType:String, inEvent:Dynamic, inLocal:Point, inTarget:InteractiveObject) {
+   /** @private */ public static function nmeCreate(inType:String, inEvent:AppEvent, inLocal:Point, inTarget:InteractiveObject) {
       var flags : Int = inEvent.flags;
       var evt = new MouseEvent(inType, true, true, inLocal.x, inLocal.y, null,(flags & efCtrlDown) != 0,(flags & efAltDown) != 0,(flags & efShiftDown) != 0,(flags & efLeftDown) != 0, 0, 0);
       evt.stageX = inEvent.x;

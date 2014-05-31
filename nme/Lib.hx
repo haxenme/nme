@@ -2,115 +2,95 @@ package nme;
 #if (cpp || neko)
 
 import haxe.Timer;
-import nme.display.BitmapData;
+import nme.bare.Surface;
+import nme.app.Window;
 import nme.display.ManagedStage;
 import nme.display.MovieClip;
 import nme.display.Stage;
 import nme.net.URLRequest;
 import nme.Lib;
 import nme.Loader;
+import nme.app.Application;
 
-#if haxe3
 import Sys;
-#else
-#if cpp
-import cpp.Sys;
-#else
-import neko.Sys;
-#end
-#end
 
 class Lib 
 {
-   static public var FULLSCREEN      = 0x0001;
-   static public var BORDERLESS      = 0x0002;
-   static public var RESIZABLE       = 0x0004;
-   static public var HARDWARE        = 0x0008;
-   static public var VSYNC           = 0x0010;
-   static public var HW_AA           = 0x0020;
-   static public var HW_AA_HIRES     = 0x0060;
-   static public var ALLOW_SHADERS   = 0x0080;
-   static public var REQUIRE_SHADERS = 0x0100;
-   static public var DEPTH_BUFFER    = 0x0200;
-   static public var STENCIL_BUFFER  = 0x0400;
-
-   public static var current(get_current, null):MovieClip;
-   public static var initHeight(default, null):Int;
-   public static var initWidth(default, null):Int;
-   public static var stage(get_stage, null):Stage;
+   // stage specific calls...
+   public static var stage(get, never):Stage;
+   public static var current(get, never):MovieClip;
 
    private static var nmeCurrent:MovieClip = null;
-   private static var nmeMainFrame:Dynamic = null;
    private static var nmeStage:Stage = null;
-   private static var sIsInit = false;
 
-   static public var company(default, null):String;
-   static public var version(default, null):String;
-   static public var packageName(default, null):String;
-   static public var file(default, null):String;
-   static public var silentRecreate:Bool = false;
+   // Wrapper to Application class
+   public static var FULLSCREEN      = Application.FULLSCREEN;
+   public static var BORDERLESS      = Application.BORDERLESS;
+   public static var RESIZABLE       = Application.RESIZABLE;
+   public static var HARDWARE        = Application.HARDWARE;
+   public static var VSYNC           = Application.VSYNC;
+   public static var HW_AA           = Application.HW_AA;
+   public static var HW_AA_HIRES     = Application.HW_AA_HIRES;
+   public static var ALLOW_SHADERS   = 0;
+   public static var REQUIRE_SHADERS = 0;
+   public static var DEPTH_BUFFER    = Application.DEPTH_BUFFER;
+   public static var STENCIL_BUFFER  = Application.STENCIL_BUFFER;
 
-   static public var build(get, null):String;
-   static public var ndllVersion(get, null):Int;
-   static public var nmeStateVersion(get, null):String;
-   static public var bits(get, null):Int;
+   public static var initHeight(get, never):Int;
+   public static var initWidth(get, never):Int;
 
-   public static function close() 
+   public static var company(get, never):String;
+   public static var version(get, never):String;
+   public static var packageName(get, never):String;
+   public static var file(get, never):String;
+
+   public static var build(get, never):String;
+   public static var ndllVersion(get, never):Int;
+   public static var nmeStateVersion(get, never):String;
+   public static var bits(get, never):Int;
+   public static var silentRecreate(get,set):Bool;
+
+
+
+   public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int,
+              inFrameRate:Float = 60.0, inColour:Int = 0xffffffff, inFlags:Int = 0x0f,
+              inTitle:String = "NME", ?inIcon:Surface, ?inDummy:Dynamic) 
    {
-      Stage.nmeQuitting = true;
-      var close = Loader.load("nme_close", 0);
-      close();
-   }
+      var params = {
+         width:inWidth,
+         height:inHeight,
+         flags:inFlags,
+         title:inTitle,
+         icon:inIcon
+      };
 
-   public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int, inFrameRate:Float = 60.0, inColour:Int = 0xffffffff, inFlags:Int = 0x0f, inTitle:String = "NME", ?inIcon:BitmapData, ?inStageClass:Class<nme.display.Stage>) 
-   {
-      if (sIsInit) 
-      {
-         if (silentRecreate) 
+
+      Application.createWindow(function(inWindow:Window) {
+         try
          {
+            Lib.nmeStage = new Stage(inWindow);
+            Lib.nmeStage.frameRate = inFrameRate;
+            Lib.nmeStage.opaqueBackground = inColour;
+            Application.onQuit = Application.close;
+
+            if (nmeCurrent != null) // Already created...
+               Lib.nmeStage.addChild(nmeCurrent);
+
             inOnLoaded();
-            return;
+         }
+         catch(e:Dynamic)
+         {
+            trace("Error creating window: " +  e);
          }
 
-         throw("nme.Lib.create called multiple times. This function is automatically called by the project code.");
-      }
-
-      sIsInit = true;
-      initWidth = inWidth;
-      initHeight = inHeight;
-
-      var stageClass = inStageClass;
-
-      var create_main_frame = Loader.load("nme_create_main_frame", -1);
-
-      create_main_frame(function(inFrameHandle:Dynamic) 
-      {
-         #if android try { #end
-         nmeMainFrame = inFrameHandle;
-         var stage_handle = nme_get_frame_stage(nmeMainFrame);
-
-         Lib.nmeStage =
-            stageClass==null ? new Stage(stage_handle, inWidth, inHeight) :
-             Type.createInstance(stageClass, [stage_handle, inWidth, inHeight]);
-
-         Lib.nmeStage.frameRate = inFrameRate;
-         Lib.nmeStage.opaqueBackground = inColour;
-         Lib.nmeStage.onQuit = close;
-
-         if (nmeCurrent != null) // Already created...
-            Lib.nmeStage.addChild(nmeCurrent);
-
-         inOnLoaded();
-         #if android } catch(e:Dynamic) { trace("ERROR: " +  e); } #end
-
-      },
-      inWidth, inHeight, inFlags, inTitle, inIcon == null ? null : inIcon.nmeHandle);
+      }, params );
    }
+
 
    public static function createManagedStage(inWidth:Int, inHeight:Int, inFlags:Int = 0) 
    {
-      initWidth = inWidth;
-      initHeight = inHeight;
+      Application.initWidth = inWidth;
+      Application.initHeight = inHeight;
 
       var result = new ManagedStage(inWidth, inHeight, inFlags);
       nmeStage = result;
@@ -118,89 +98,20 @@ class Lib
       return result;
    }
 
-   public static function exit() 
+
+   // haxe flash compat
+   public static function getURL(url:URLRequest, ?target:String):Void 
    {
-      var quit = stage.onQuit;
-
-      if (quit != null) 
-      {
-         #if android
-         if (quit == close) 
-         {
-            Sys.exit(0);
-         }
-         #end
-
-         quit();
-      }
+      url.launchBrowser();
    }
 
-   public static function forceClose() 
-   {
-      // Terminates the process straight away, bypassing graceful shutdown
-      var terminate = Loader.load("nme_terminate", 0);
-      terminate();
-   }
-
-   static public function getTimer():Int 
+   public static function getTimer():Int 
    {
       // Be careful not to blow precision, since storing ms since 1970 can overflow...
       return Std.int(Timer.stamp() * 1000.0);
    }
 
-   public static function getURL(url:URLRequest, ?target:String):Void 
-   {
-      nme_get_url(url.url);
-   }
 
-   /** @private */ public static function nmeSetCurrentStage(inStage:Stage) {
-      nmeStage = inStage;
-   }
-
-   public static function pause() 
-   {
-      nme_pause_animation();
-   }
-
-   public static function postUICallback(inCallback:Void->Void) 
-   {
-      #if android
-      nme_post_ui_callback(inCallback);
-      #else
-      // May still be worth posting event to come back with the next UI event loop...
-      // (or use timer?)
-      inCallback();
-      #end
-   }
-
-   public static function resume() 
-   {
-      nme_resume_animation();
-   }
-
-   // Is this still used?
-   //static public function setAssetBase(inBase:String)
-   //{
-     //nme_set_asset_base(inBase);
-   //}
-   //private static var nme_set_asset_base = Loader.load("nme_set_asset_base", 1);
-   public static function setIcon(path:String) 
-   {
-      //Useful only on SDL platforms. Sets the title bar's icon, based on the path given.
-      var set_icon = Loader.load("nme_set_icon", 1);
-      set_icon(path);
-   }
-
-   public static function setPackage(inCompany:String, inFile:String, inPack:String, inVersion:String) 
-   {
-      company = inCompany;
-      file = inFile;
-      packageName = inPack;
-      version = inVersion;
-
-      nme_set_package(inCompany, inFile, inPack, inVersion);
-   }
-   
    // Getters & Setters
    static function get_current():MovieClip 
    {
@@ -223,23 +134,41 @@ class Lib
       return nmeStage;
    }
 
-   static public function get_build():String { return Version.name; }
-   static public function get_ndllVersion():Int { return nme_get_ndll_version(); }
-   static public function get_nmeStateVersion():String { return nme_get_nme_state_version(); }
-   static public function get_bits():Int { return nme_get_bits(); }
+   public static function nmeSetCurrentStage(inStage:Stage)
+   {
+      nmeStage = inStage;
+   }
+
+   // Delegate to app for old programs ..
+   public static var close = Application.close;
+   public static var exit = Application.exit;
+   public static var forceClose = Application.forceClose;
+
+   public static var pause = Application.pause;
+   public static var postUICallback = Application.postUICallback;
+   public static var resume = Application.resume;
+   public static var setPackage = Application.setPackage;
+   public static var setIcon = Application.setIcon;
+
+   
+   public static function get_initWidth() return Application.initWidth;
+   public static function get_initHeight() return Application.initHeight;
+
+   public static function get_company() return Application.company;
+   public static function get_version() return Application.version;
+   public static function get_packageName() return Application.packageName;
+   public static function get_file() return Application.file;
+
+   public static function get_build() return Application.get_build();
+   public static function get_ndllVersion() return Application.get_ndllVersion();
+   public static function get_nmeStateVersion() return Application.get_nmeStateVersion();
+   public static function get_bits() return Application.get_bits();
+
+   public static function get_silentRecreate() return Application.silentRecreate;
+   public static function set_silentRecreate(inVal:Bool) { Application.silentRecreate=inVal; return inVal; }
 
    // Native Methods
-   #if android
-   private static var nme_post_ui_callback = Loader.load("nme_post_ui_callback", 1);
-   #end
-   private static var nme_set_package = Loader.load("nme_set_package", 4);
    private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
-   private static var nme_get_url = Loader.load("nme_get_url", 1);
-   private static var nme_pause_animation = Loader.load("nme_pause_animation", 0);
-   private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
-   private static var nme_get_ndll_version = Loader.load("nme_get_ndll_version", 0);
-   private static var nme_get_nme_state_version = Loader.load("nme_get_ndll_version", 0);
-   private static var nme_get_bits = Loader.load("nme_get_bits", 0);
 }
 
 #else

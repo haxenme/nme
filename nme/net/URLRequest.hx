@@ -43,6 +43,12 @@ class URLRequest
       followRedirects = true;
    }
 
+   public function launchBrowser():Void 
+   {
+      nme_get_url(url);
+   }
+
+
    public function basicAuth(inUser:String, inPasswd:String) 
    {
       authType = AUTH_BASIC;
@@ -55,7 +61,8 @@ class URLRequest
       credentials = inUser + ":" + inPasswd;
    }
 
-   /** @private */ public function nmePrepare() {
+   /** @private */ public function nmePrepare()
+   {
       if (data == null) 
       {
          nmeBytes = new ByteArray();
@@ -96,6 +103,8 @@ class URLRequest
    
    private function get_nmeBytes():ByteArray { return __bytes; }
    private function set_nmeBytes(value:ByteArray):ByteArray { return __bytes = value; }
+
+   private static var nme_get_url = Loader.load("nme_get_url", 1);
 }
 
 #else

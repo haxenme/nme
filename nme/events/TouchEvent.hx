@@ -3,6 +3,7 @@ package nme.events;
 
 import nme.display.InteractiveObject;
 import nme.geom.Point;
+import nme.app.AppEvent;
 
 class TouchEvent extends MouseEvent 
 {
@@ -31,7 +32,7 @@ class TouchEvent extends MouseEvent
       sizeY = in_sizeY;
    }
 
-   public static function nmeCreate(inType:String, inEvent:Dynamic, inLocal:Point, inTarget:InteractiveObject, sizeX:Float, sizeY:Float) 
+   public static function nmeCreate(inType:String, inEvent:AppEvent, inLocal:Point, inTarget:InteractiveObject, sizeX:Float, sizeY:Float) 
    {
       var flags : Int = inEvent.flags;
       var evt = new TouchEvent(inType, true, false, inLocal.x, inLocal.y, sizeX, sizeY, null,(flags & MouseEvent.efCtrlDown) != 0,(flags & MouseEvent.efAltDown) != 0,(flags & MouseEvent.efShiftDown) != 0,(flags & MouseEvent.efLeftDown) != 0, 0, 0);
