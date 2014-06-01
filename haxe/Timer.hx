@@ -127,7 +127,7 @@ class Timer
       // Convert everything to seconds...
       mTime = inTimeMs*0.001;
       sRunningTimers.push(this);
-      mFireAt = stamp() + inTimeMs;
+      mFireAt = stamp() + mTime;
       mRunning = true;
    }
 
