@@ -1126,6 +1126,7 @@ class CommandLineTools
             createTemplate();
 
          case "xcode":
+            Sys.putEnv("HXCPP_NO_COLOUR","1");
             if (Sys.getEnv("NME_ALREADY_BUILDING")=="BUILDING")
                Sys.println("...already building");
             else
