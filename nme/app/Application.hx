@@ -92,6 +92,7 @@ class Application
             onQuit = close;
             nmeFrameHandle = inFrameHandle;
             nmeWindow = new Window(nmeFrameHandle,initWidth,initHeight);
+            nmeWindow.setBackground(inParams.color);
             inOnLoaded(nmeWindow);
          }, initWidth, initHeight, flags, title, icon );
    }

@@ -681,6 +681,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    override private function set_opaqueBackground(inBG:Null<Int>):Null<Int> 
    {
+      window.setBackground(inBG);
       if (inBG == null)
          DisplayObject.nme_display_object_set_bg(nmeHandle, 0);
       else

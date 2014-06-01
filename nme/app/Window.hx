@@ -16,6 +16,7 @@ class Window
    public var scaleMode(get, set):StageScaleMode;
    public var height(get, null):Int;
    public var width(get, null):Int;
+   public var autoClear:Bool;
 
 
    // Set this to handle events...
@@ -31,6 +32,7 @@ class Window
       appEventHandler = null;
       active = true;
       invalidFramePending = false;
+      autoClear = true;
 
       nmeHandle = nme_get_frame_stage(inFrameHandle);
       nme_set_stage_handler(nmeHandle, nmeProcessWindowEvent, inWidth, inHeight);
@@ -46,10 +48,23 @@ class Window
       #end
    }
 
+   public function setBackground(inBackground:Null<Int>) : Void
+   {
+      if (inBackground == null)
+         nme_display_object_set_bg(nmeHandle, 0);
+      else
+         nme_display_object_set_bg(nmeHandle, inBackground | 0xff000000);
+   }
+
+
    public function onNewFrame():Void
    {
       if (shouldRenderNow())
+      {
+         beginRender();
          appEventHandler.onRender(RenderFrameReady);
+         endRender();
+      }
       else
       {
          // On android, we must wait for the redraw before rendering.
@@ -62,7 +77,11 @@ class Window
    public function onInvalidFrame():Void
    {
       if (shouldRenderNow())
+      {
+         beginRender();
          appEventHandler.onRender(RenderInvalid);
+         endRender();
+      }
       else
       {
          // On android, we must wait for the redraw before rendering.
@@ -70,6 +89,7 @@ class Window
          invalidFramePending = true;
       }
    }
+
 
    function nmeProcessWindowEvent(inEvent:Dynamic)
    {
@@ -111,7 +131,11 @@ class Window
             case EventId.Resize:
                appEventHandler.onResize(event.x, event.y);
                if (shouldRenderNow())
+               {
+                  beginRender();
                   appEventHandler.onRender(RenderDirty);
+                  endRender();
+               }
    
             case EventId.Quit:
                if (Application.onQuit != null)
@@ -124,6 +148,7 @@ class Window
                // Removed
    
             case EventId.Redraw:
+               beginRender();
                if (invalidFramePending)
                {
                   invalidFramePending = false;
@@ -135,7 +160,10 @@ class Window
                   appEventHandler.onRender(RenderFrameReady);
                }
                else
+               {
                   appEventHandler.onRender(RenderDirty);
+               }
+               endRender();
    
             case EventId.TouchBegin:
                appEventHandler.onTouch(event,EventName.TOUCH_BEGIN);
@@ -207,6 +235,9 @@ class Window
         throw(e);
       }
    }
+
+   function beginRender() nme_stage_begin_render(nmeHandle,autoClear);
+   function endRender() nme_stage_end_render(nmeHandle);
 
 
    public function get_align():StageAlign 
@@ -305,8 +336,11 @@ class Window
    private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);
    private static var nme_stage_get_normal_orientation = Loader.load("nme_stage_get_normal_orientation", 0);
    private static var nme_stage_set_next_wake = Loader.load("nme_stage_set_next_wake", 2);
+   private static var nme_stage_begin_render = Loader.load("nme_stage_begin_render", 2);
+   private static var nme_stage_end_render = Loader.load("nme_stage_end_render", 1);
 
    private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
+   private static var nme_display_object_set_bg = Loader.load("nme_display_object_set_bg", 2);
 
    #if (cpp && hxcpp_api_level>=311)
    private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler_native", 4);

@@ -20,6 +20,7 @@ class NmeApplication implements IAppEventHandler implements IPollClient
       ApplicationMain.setAndroidViewHaxeObject(this);
       #end
       window = inWindow;
+      window.appEventHandler = this;
       width = inWindow.width;
       height = inWindow.width;
       fullViewport = [0,0,width,height];

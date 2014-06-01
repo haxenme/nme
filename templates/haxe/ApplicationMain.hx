@@ -149,9 +149,9 @@ class ApplicationMain
                   ApplicationBoot.createInstance();
                },
                ::WIN_WIDTH::, ::WIN_HEIGHT::, 
-               flags,
                ::WIN_FPS::, 
                ::WIN_BACKGROUND::,
+               flags,
                "::APP_TITLE::"
                ::if (WIN_ICON!=null)::
                , getAsset("::WIN_ICON::")

@@ -61,6 +61,7 @@ class Lib
          height:inHeight,
          flags:inFlags,
          title:inTitle,
+         color:inColour,
          icon:inIcon
       };
 
