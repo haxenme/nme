@@ -1349,19 +1349,41 @@ value nme_set_stage_handler_native(value inStage,value inHandler,value inNomWidt
 DEFINE_PRIM(nme_set_stage_handler_native,4);
 
 
+value nme_stage_begin_render(value inStage,value inClear)
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+      stage->BeginRenderStage(val_bool(inClear));
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_begin_render,2);
+
+
 
 value nme_render_stage(value inStage)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
-   {
       stage->RenderStage();
-   }
-
    return alloc_null();
 }
 
 DEFINE_PRIM(nme_render_stage,1);
+
+
+
+value nme_stage_end_render(value inStage)
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+      stage->EndRenderStage();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_end_render,1);
+
+
+
+
 
 value nme_set_render_gc_free(value inGcFree)
 {

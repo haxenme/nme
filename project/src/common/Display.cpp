@@ -2064,6 +2064,8 @@ int Stage::GetAA()
 }
 
 
+#ifdef HX_LIME // {
+
 void Stage::RenderStage()
 {
    ColorTransform::TidyCache();
@@ -2129,6 +2131,49 @@ void Stage::RenderStage()
 
    // Clear alpha masks
 }
+void Stage::BeginRenderStage(bool) { }
+void Stage::EndRenderStage() { }
+
+#else  // } nme(not lime) split render stage into 3 phases .. {
+
+void Stage::BeginRenderStage(bool inClear)
+{
+   Surface *surface = GetPrimarySurface();
+   currentTarget = surface->BeginRender( Rect(surface->Width(),surface->Height()),false );
+   if (inClear)
+      surface->Clear( (opaqueBackground | 0xff000000) & getBackgroundMask() );
+}
+
+void Stage::RenderStage()
+{
+   ColorTransform::TidyCache();
+   
+   if (currentTarget.IsHardware())
+      currentTarget.mHardware->SetQuality(quality);
+
+   RenderState state(0, GetAA() );
+
+   state.mTransform.mMatrix = &mStageScale;
+
+   state.mClipRect = Rect( currentTarget.Width(), currentTarget.Height() );
+
+   state.mPhase = rpBitmap;
+   state.mRoundSizeToPOW2 = currentTarget.IsHardware();
+   Render(currentTarget,state);
+
+   state.mPhase = rpRender;
+   Render(currentTarget,state);
+}
+
+void Stage::EndRenderStage()
+{
+   currentTarget = RenderTarget();
+   GetPrimarySurface()->EndRender();
+   Flip();
+}
+
+ 
+#endif // }
 
 double Stage::getStageWidth()
 {

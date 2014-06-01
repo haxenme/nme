@@ -346,7 +346,9 @@ public:
    virtual Surface *GetPrimarySurface() = 0;
    virtual void PollNow() { }
 
+   virtual void BeginRenderStage(bool inDoClear);
    virtual void RenderStage();
+   virtual void EndRenderStage();
    virtual void ResizeWindow(int inWidth, int inHeight) {};
 
    virtual bool isOpenGL() const = 0;
@@ -420,6 +422,7 @@ protected:
    StageAlign     align;
    StageQuality   quality;
    StageDisplayState   displayState;
+   RenderTarget   currentTarget;
 
    Matrix         mStageScale;
 
