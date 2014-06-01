@@ -19,6 +19,17 @@ typedef WindowParams = {
 
 class Application 
 {
+   public static inline var OrientationPortrait = 1;
+   public static inline var OrientationPortraitUpsideDown = 2;
+   public static inline var OrientationLandscapeRight = 3;
+   public static inline var OrientationLandscapeLeft = 4;
+   public static inline var OrientationFaceUp = 5;
+   public static inline var OrientationFaceDown = 6;
+   public static inline var OrientationPortraitAny = 7;
+   public static inline var OrientationLandscapeAny = 8;
+   public static inline var OrientationAny = 9;
+
+
    public inline static var FULLSCREEN      = 0x0001;
    public inline static var BORDERLESS      = 0x0002;
    public inline static var RESIZABLE       = 0x0004;
@@ -36,6 +47,7 @@ class Application
 
    public static var initHeight:Int;
    public static var initWidth:Int;
+   public static var initFrameRate:Float;
 
    public static var company(default, null):String;
    public static var version(default, null):String;
@@ -47,13 +59,13 @@ class Application
    public static var nmeStateVersion(get, null):String;
    public static var bits(get, null):Int;
 
-   public static var onQuit:Void -> Void; 
+   public static var onQuit:Void -> Void = close;
    public static var nmeQuitting = false;
 
    static var pollClientList:Array<IPollClient>;
 
 
-   public static function createWindow(inOnLoaded:Dynamic->Void, inParams:WindowParams)
+   public static function createWindow(inOnLoaded:Window->Void, inParams:WindowParams)
    {
       if (sIsInit) 
       {
@@ -69,6 +81,7 @@ class Application
       sIsInit = true;
       initWidth = inParams.width==null ? 640 : inParams.width;
       initHeight = inParams.height==null ? 480 : inParams.height;
+      initFrameRate = inParams.fps==null ? 60 : inParams.fps;
       var flags = inParams.flags==null ? 0x0f : inParams.flags;
       var title = inParams.title==null ? "NME" : inParams.title;
       var icon = inParams.icon==null ? null : inParams.icon.nmeHandle;
@@ -90,12 +103,17 @@ class Application
       close();
    }
 
-   public static function addPollClient(client:IPollClient)
+   public static function addPollClient(client:IPollClient,inAtEnd:Bool = false)
    {
       if (pollClientList==null)
          pollClientList = [];
-      pollClientList.push(client);
+      // Inset at beginning so frame update happens last
+      if (inAtEnd)
+         pollClientList.push(client);
+      else
+         pollClientList.insert(0,client);
    }
+
 
    public static function pollClients(timestamp:Float) : Void
    {
@@ -109,22 +127,26 @@ class Application
 
    public static function getNextWake(timestamp:Float) : Float
    {
-      var nextWake = -1.0;
+      var nextWake = 1e30;
+
       if (pollClientList!=null && !nmeQuitting)
       {
          for(client in pollClientList)
          {
-             var wake = client.getNextWake(timestamp);
-             if (wake>=0)
-             {
-                if (nextWake<0 || wake<nextWake)
-                   nextWake = wake;
-             }
+             var wake = client.getNextWake(nextWake,timestamp);
+             if (wake<=0)
+                return 0;
+             if (wake < nextWake)
+                nextWake = wake;
          }
       }
       return nextWake;
    }
 
+   public static function setFixedOrientation(inOrientation:Int):Void
+   {
+      nme_stage_set_fixed_orientation(inOrientation);
+   }
 
    public static function exit() 
    {
@@ -207,6 +229,7 @@ class Application
    private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
    private static var nme_get_ndll_version = Loader.load("nme_get_ndll_version", 0);
    private static var nme_get_nme_state_version = Loader.load("nme_get_ndll_version", 0);
+   private static var nme_stage_set_fixed_orientation = Loader.load("nme_stage_set_fixed_orientation", 1);
    private static var nme_get_bits = Loader.load("nme_get_bits", 0);
 }
 

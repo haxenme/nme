@@ -44,7 +44,7 @@ class ApplicationMain
       nme.AssetData.create();
 
       #elseif nme
-      nme.Lib.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
+      nme.app.Application.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
 
       nme.AssetData.create();
 
@@ -52,14 +52,16 @@ class ApplicationMain
       nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
       ::end::
 
-      ::if (WIN_ORIENTATION == "portrait")::
-      nme.display.Stage.setFixedOrientation( nme.display.Stage.OrientationPortraitAny );
-      ::elseif (WIN_ORIENTATION == "landscape")::
-      nme.display.Stage.setFixedOrientation( nme.display.Stage.OrientationLandscapeAny );
-      ::else::
-      nme.display.Stage.setFixedOrientation( nme.display.Stage.OrientationAny );
-      ::end::
-      
+      nme.app.Application.setFixedOrientation(
+         ::if (WIN_ORIENTATION == "portrait")::
+            nme.app.Application.OrientationPortraitAny
+         ::elseif (WIN_ORIENTATION == "landscape")::
+            nme.app.Application.OrientationLandscapeAny
+         ::else::
+            nme.app.Application.OrientationAny
+          ::end::
+      );
+
       #end
    
 
@@ -111,32 +113,53 @@ class ApplicationMain
          });
       }
       #else
-      nme.Lib.create(function() { 
-            nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
-            nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
-            nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
-            ApplicationBoot.createInstance();
-         },
-         ::WIN_WIDTH::, ::WIN_HEIGHT::, 
-         ::WIN_FPS::, 
-         ::WIN_BACKGROUND::,
-         (::WIN_HARDWARE:: ? nme.Lib.HARDWARE : 0) |
-         nme.Lib.ALLOW_SHADERS | nme.Lib.REQUIRE_SHADERS |
-         (::WIN_DEPTH_BUFFER:: ? nme.Lib.DEPTH_BUFFER : 0) |
-         (::WIN_STENCIL_BUFFER:: ? nme.Lib.STENCIL_BUFFER : 0) |
-         (::WIN_RESIZABLE:: ? nme.Lib.RESIZABLE : 0) |
-         (::WIN_BORDERLESS:: ? nme.Lib.BORDERLESS : 0) |
-         (::WIN_VSYNC:: ? nme.Lib.VSYNC : 0) |
-         (::WIN_FULLSCREEN:: ? nme.Lib.FULLSCREEN : 0) |
-         (::WIN_ANTIALIASING:: == 4 ? nme.Lib.HW_AA_HIRES : 0) |
-         (::WIN_ANTIALIASING:: == 2 ? nme.Lib.HW_AA : 0),
-         "::APP_TITLE::"
-         ::if (WIN_ICON!=null)::
-         , getAsset("::WIN_ICON::")
-         ::end::
-      );
+         var flags:Int = 
+            (::WIN_HARDWARE:: ? nme.app.Application.HARDWARE : 0) |
+            (::WIN_DEPTH_BUFFER:: ? nme.app.Application.DEPTH_BUFFER : 0) |
+            (::WIN_STENCIL_BUFFER:: ? nme.app.Application.STENCIL_BUFFER : 0) |
+            (::WIN_RESIZABLE:: ? nme.app.Application.RESIZABLE : 0) |
+            (::WIN_BORDERLESS:: ? nme.app.Application.BORDERLESS : 0) |
+            (::WIN_VSYNC:: ? nme.app.Application.VSYNC : 0) |
+            (::WIN_FULLSCREEN:: ? nme.app.Application.FULLSCREEN : 0) |
+            (::WIN_ANTIALIASING:: == 4 ? nme.app.Application.HW_AA_HIRES : 0) |
+            (::WIN_ANTIALIASING:: == 2 ? nme.app.Application.HW_AA : 0);
+
+
+         #if nme_application
+
+            var params = { flags : flags,
+               fps : ::WIN_FPS:: * 1.0,
+               color : ::WIN_BACKGROUND::,
+               width : ::WIN_WIDTH::,
+               height : ::WIN_HEIGHT::,
+               title : "::APP_TITLE::",
+               icon  : Assets.info.get("::WIN_ICON::")==null ? null : getAsset("::WIN_ICON::")
+            };
+
+            nme.app.Application.createWindow(function(window:nme.app.Window) {
+               new ::APP_MAIN::(window);
+            }, params );
+
+         #else
+
+            nme.Lib.create(function() { 
+                  nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
+                  nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
+                  nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
+                  ApplicationBoot.createInstance();
+               },
+               ::WIN_WIDTH::, ::WIN_HEIGHT::, 
+               flags,
+               ::WIN_FPS::, 
+               ::WIN_BACKGROUND::,
+               "::APP_TITLE::"
+               ::if (WIN_ICON!=null)::
+               , getAsset("::WIN_ICON::")
+               ::end::
+            );
+
+         #end
       #end
-      
    }
 
    @:keep function keepMe() { Reflect.callMethod(null,null,null); }

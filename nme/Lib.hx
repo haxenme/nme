@@ -71,7 +71,6 @@ class Lib
             Lib.nmeStage = new Stage(inWindow);
             Lib.nmeStage.frameRate = inFrameRate;
             Lib.nmeStage.opaqueBackground = inColour;
-            Application.onQuit = Application.close;
 
             if (nmeCurrent != null) // Already created...
                Lib.nmeStage.addChild(nmeCurrent);

@@ -1,11 +1,13 @@
 package nme.display;
-#if (cpp || neko)
+#if !flash
 
 import haxe.Timer;
 import nme.app.Application;
 import nme.app.Window;
 import nme.app.EventId;
 import nme.app.AppEvent;
+import nme.app.FrameTimer;
+import nme.app.RenderReason;
 import nme.display.DisplayObjectContainer;
 import nme.ui.Keyboard;
 
@@ -67,7 +69,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var displayState(get, set):StageDisplayState;
    public var dpiScale(get, never):Float;
    public var focus(get, set):InteractiveObject;
-   public var frameRate(default, set): Float;
+   public var frameRate(get, set): Float;
    public var onQuit(get,set):Void -> Void; 
    public var isOpenGL(get, never):Bool;
    // Is this used?  Could not tell where "event.down" is being set, therefore this would appear useless
@@ -106,12 +108,14 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private var nmeDragOffsetY:Float;
    private var nmeFocusOverObjects:Array<InteractiveObject>;
    private var nmeFramePeriod:Float;
-   private var nmeInvalid:Bool;
    private var nmeLastClickTime:Float;
    private var nmeLastDown:Array<InteractiveObject>;
    private var nmeLastRender:Float;
    private var nmeMouseOverObjects:Array<InteractiveObject>;
    private var nmeTouchInfo:Map<Int,TouchInfo>;
+   private var nmeFrameTimer:FrameTimer;
+   private var nmeEnterFrameEvent:Event;
+   private var nmeRenderEvent:Event;
 
    #if cpp
    var nmePreemptiveGcFreq:Int;
@@ -127,6 +131,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public function new(inWindow:Window)
    {
+      nmeEnterFrameEvent = new Event(Event.ENTER_FRAME);
+      nmeRenderEvent = new Event(Event.RENDER);
+
       window = inWindow;
       super(window.nmeHandle, "Stage");
 
@@ -138,13 +145,12 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       {
          window.appEventHandler = this;
          Application.addPollClient(this);
+         nmeFrameTimer = new FrameTimer(window, Application.initFrameRate);
       }
 
-      nmeInvalid = false;
       nmeLastRender = 0;
       nmeLastDown = [];
       nmeLastClickTime = 0.0;
-      this.frameRate = 100;
 	   nmeTouchInfo = new Map<Int,TouchInfo>();
       nmeJoyAxisData = new Map<Int,Array<Float>>();
 
@@ -178,7 +184,8 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public function invalidate():Void 
    {
-      nmeInvalid = true;
+      if (nmeFrameTimer!=null)
+         nmeFrameTimer.invalidate();
    }
 
    function get_onQuit() return Application.onQuit;
@@ -269,21 +276,6 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
 
       return true;
-   }
-
-   private function nmeCheckRender()
-   {
-      //trace("nmeCheckRender " + frameRate);
-      if (frameRate > 0) 
-      {
-         var now = Timer.stamp();
-         if (now >= nmeLastRender + nmeFramePeriod) 
-         {
-            nmeLastRender = now;
-            if (window.shouldRenderNow())
-               nmeRender(true);
-         }
-      }
    }
 
    // --- IAppEventHandler ----
@@ -443,9 +435,83 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeDispatchEvent(evt);
    }
 
-   public function onRender(fromNewFrame:Bool):Void
+   public function onRender(reason:RenderReason)
    {
-      nmeRender(fromNewFrame);
+      switch(reason)
+      {
+         case RenderFrameReady:
+             nmeBroadcast(nmeEnterFrameEvent);
+         case RenderInvalid:
+             nmeBroadcast(nmeRenderEvent);
+         case RenderDirty:
+      }
+
+      #if cpp
+      var rendered = false;
+      if (nmeCollectionAgency!=null && nmePreemptiveGcFreq!=0)
+      {
+         nmePreemptiveGcSince++;
+         var preempt = nmePreemptiveGcSince>=nmePreemptiveGcFreq;
+
+         #if (hxcpp_api_level >= 310)
+         // Smart preemptive
+         if (nmePreemptiveGcFreq<0)
+         {
+            if (nmeFrameAlloc==null)
+               nmeFrameAlloc = [];
+
+            var current = Gc.memInfo(Gc.MEM_INFO_CURRENT);
+            if (nmeLastCurrentMemory>0)
+            {
+               var frameAlloc = current - nmeLastCurrentMemory;
+               if (frameAlloc>=0)
+               {
+                  nmeFrameAlloc[nmeFrameMemIndex++] = frameAlloc;
+                  if (nmeFrameMemIndex>10)
+                     nmeFrameMemIndex = 0;
+               }
+               else if (!nmeLastPreempt)
+               {
+                  //trace("Missed alloc!");
+               }
+            }
+            nmeLastCurrentMemory = current;
+
+            if (nmeFrameAlloc.length>0)
+            {
+               var sum = 0;
+               for(f in nmeFrameAlloc)
+                  sum += f;
+
+               var reserved =Gc.memInfo(Gc.MEM_INFO_RESERVED);
+               preempt = sum * 1.2 /nmeFrameAlloc.length + current > reserved;
+            }
+            else
+               preempt = false;
+         }
+         #end
+
+         nmeLastPreempt = preempt;
+         if (preempt)
+         {
+            //trace("preempt");
+            nmePreemptiveGcSince = 0;
+            rendered = true;
+            nme_set_render_gc_free(true);
+            Gc.enterGCFreeZone();
+            nmeCollectionLock.release();
+            nme_render_stage(nmeHandle);
+            Gc.exitGCFreeZone();
+            nme_set_render_gc_free(false);
+         }
+         else
+         {
+            //trace("frame");
+         }
+      }
+      if (!rendered)
+      #end
+      nme_render_stage(nmeHandle);
    }
 
    public function onDisplayObjectFocus(inEvent:AppEvent):Void
@@ -668,113 +734,29 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public function onPoll(inTimestamp:Float)
    {
       //trace("poll");
-      Timer.nmeCheckTimers();
       SoundChannel.nmePollComplete();
       URLLoader.nmePollData();
-      nmeCheckRender();
    }
 
-   public function getNextWake(inTimestamp:Float) : Float
+   public function getNextWake(inDefaultWake:Float, inTimestamp:Float) : Float
    {
-      var next_wake = Timer.nmeNextWake(315000000.0);
+      var wake = inDefaultWake;
 
-      if (next_wake > 0.001 && SoundChannel.nmeDynamicSoundCount > 0)
-         next_wake = 0.001;
+      if (wake>0.001 && SoundChannel.nmeDynamicSoundCount > 0)
+         wake = 0.001;
 
-      if (next_wake > 0.02 && (SoundChannel.nmeCompletePending() || URLLoader.nmeLoadPending())) 
+      if (wake > 0.02 && (SoundChannel.nmeCompletePending() || URLLoader.nmeLoadPending())) 
       {
-         next_wake =(active || !pauseWhenDeactivated) ? 0.020 : 0.500;
+         wake =(active || !pauseWhenDeactivated) ? 0.020 : 0.500;
       }
 
-      next_wake = nmeNextFrameDue(next_wake,inTimestamp);
-
-      return next_wake;
+      return wake;
    }
 
    // ------------------
 
-   public function nmeRender(inSendEnterFrame:Bool)
-   {
-      if (!active)
-         return;
-
-      //trace("Render");
-      if (inSendEnterFrame) 
-      {
-         nmeBroadcast(new Event(Event.ENTER_FRAME));
-
-      } if (nmeInvalid) 
-      {
-         nmeInvalid = false;
-         nmeBroadcast(new Event(Event.RENDER));
-      }
-
-      #if cpp
-      var rendered = false;
-      if (nmeCollectionAgency!=null && nmePreemptiveGcFreq!=0)
-      {
-         nmePreemptiveGcSince++;
-         var preempt = nmePreemptiveGcSince>=nmePreemptiveGcFreq;
-
-         #if (hxcpp_api_level >= 310)
-         // Smart preemptive
-         if (nmePreemptiveGcFreq<0)
-         {
-            if (nmeFrameAlloc==null)
-               nmeFrameAlloc = [];
-
-            var current = Gc.memInfo(Gc.MEM_INFO_CURRENT);
-            if (nmeLastCurrentMemory>0)
-            {
-               var frameAlloc = current - nmeLastCurrentMemory;
-               if (frameAlloc>=0)
-               {
-                  nmeFrameAlloc[nmeFrameMemIndex++] = frameAlloc;
-                  if (nmeFrameMemIndex>10)
-                     nmeFrameMemIndex = 0;
-               }
-               else if (!nmeLastPreempt)
-               {
-                  //trace("Missed alloc!");
-               }
-            }
-            nmeLastCurrentMemory = current;
-
-            if (nmeFrameAlloc.length>0)
-            {
-               var sum = 0;
-               for(f in nmeFrameAlloc)
-                  sum += f;
-
-               var reserved =Gc.memInfo(Gc.MEM_INFO_RESERVED);
-               preempt = sum * 1.2 /nmeFrameAlloc.length + current > reserved;
-            }
-            else
-               preempt = false;
-         }
-         #end
-
-         nmeLastPreempt = preempt;
-         if (preempt)
-         {
-            //trace("preempt");
-            nmePreemptiveGcSince = 0;
-            rendered = true;
-            nme_set_render_gc_free(true);
-            Gc.enterGCFreeZone();
-            nmeCollectionLock.release();
-            nme_render_stage(nmeHandle);
-            Gc.exitGCFreeZone();
-            nme_set_render_gc_free(false);
-         }
-         else
-         {
-            //trace("frame");
-         }
-      }
-      if (!rendered)
-      #end
-      nme_render_stage(nmeHandle);
+   public function nmeRender()
+   { 
    }
 
    /** @private */ public function nmeStartDrag(sprite:Sprite, lockCenter:Bool, bounds:Rectangle):Void {
@@ -834,19 +816,14 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       setPreemtiveGcFrequency(-1);
    }
 
-   
-
-      // If you set this, you don't need to set the 'shouldRotateInterface' function.
-   public static function setFixedOrientation(inOrientation:Int) 
+   public static function setFixedOrientation(inOrientation:Int):Void
    {
-      nme_stage_set_fixed_orientation(inOrientation);
+      Application.setFixedOrientation(inOrientation);
    }
 
-   // You will need to call "setFixedOrientation(OrientationUseFunction)" before this takes effect...
-   public static dynamic function shouldRotateInterface(inOrientation:Int):Bool 
-   {
-      return inOrientation == OrientationPortrait;
-   }
+
+   // Ignored - use Application.setFixedOrientation instead.
+   public static dynamic function shouldRotateInterface(inOrientation:Int):Bool { return true; }
 
    public function showCursor(inShow:Bool) 
    {
@@ -872,10 +849,11 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    private function set_frameRate(inRate:Float):Float 
    {
-      frameRate = inRate;
-      nmeFramePeriod = frameRate <= 0 ? frameRate : 1.0 / frameRate;
+      if (nmeFrameTimer!=null)
+        nmeFrameTimer.fps = inRate;
       return inRate;
    }
+   private function get_frameRate():Float return nmeFrameTimer==null ? 0 : nmeFrameTimer.fps;
 
 
    private override function get_stage():Stage 
@@ -915,7 +893,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private static var nme_stage_request_render = Loader.load("nme_stage_request_render", 0);
    private static var nme_stage_resize_window = Loader.load("nme_stage_resize_window", 3);
    private static var nme_stage_show_cursor = Loader.load("nme_stage_show_cursor", 2);
-   private static var nme_stage_set_fixed_orientation = Loader.load("nme_stage_set_fixed_orientation", 1);
+  
    private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);
    private static var nme_stage_get_normal_orientation = Loader.load("nme_stage_get_normal_orientation", 0);
 }

@@ -3,6 +3,7 @@ package nme.display;
 
 import nme.Loader;
 import nme.app.Window;
+import nme.app.RenderReason;
 
 class ManagedStage extends Stage 
 {
@@ -62,10 +63,10 @@ class ManagedStage extends Stage
    }
    */
 
-   override public function nmeRender(inSendEnterFrame:Bool)
+   override public function onRender(inReason:RenderReason)
    {
       beginRender();
-      super.nmeRender(inSendEnterFrame);
+      super.onRender(inReason);
       endRender();
    }
 

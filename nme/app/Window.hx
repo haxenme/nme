@@ -23,11 +23,14 @@ class Window
 
 
    public var nmeHandle(default,null):Dynamic;
+   var enterFramePending:Bool;
+   var invalidFramePending:Bool;
 
    public function new(inFrameHandle:Dynamic,inWidth:Int,inHeight:Int)
    {
       appEventHandler = null;
       active = true;
+      invalidFramePending = false;
 
       nmeHandle = nme_get_frame_stage(inFrameHandle);
       nme_set_stage_handler(nmeHandle, nmeProcessWindowEvent, inWidth, inHeight);
@@ -43,6 +46,30 @@ class Window
       #end
    }
 
+   public function onNewFrame():Void
+   {
+      if (shouldRenderNow())
+         appEventHandler.onRender(RenderFrameReady);
+      else
+      {
+         // On android, we must wait for the redraw before rendering.
+         // Set the flag se we don't have more enterframes than render
+         enterFramePending = true;
+      }
+   }
+
+
+   public function onInvalidFrame():Void
+   {
+      if (shouldRenderNow())
+         appEventHandler.onRender(RenderInvalid);
+      else
+      {
+         // On android, we must wait for the redraw before rendering.
+         // Set the flag se we don't have more enterframes than render
+         invalidFramePending = true;
+      }
+   }
 
    function nmeProcessWindowEvent(inEvent:Dynamic)
    {
@@ -84,7 +111,7 @@ class Window
             case EventId.Resize:
                appEventHandler.onResize(event.x, event.y);
                if (shouldRenderNow())
-                  appEventHandler.onRender(false);
+                  appEventHandler.onRender(RenderDirty);
    
             case EventId.Quit:
                if (Application.onQuit != null)
@@ -94,11 +121,21 @@ class Window
                appEventHandler.onDisplayObjectFocus(event);
    
             case EventId.ShouldRotate:
-               if (appEventHandler.onRotateRequest(event.value))
-                  event.result = 2;
+               // Removed
    
             case EventId.Redraw:
-               appEventHandler.onRender(true);
+               if (invalidFramePending)
+               {
+                  invalidFramePending = false;
+                  appEventHandler.onRender(RenderInvalid);
+               }
+               else if (enterFramePending)
+               {
+                  enterFramePending = false;
+                  appEventHandler.onRender(RenderFrameReady);
+               }
+               else
+                  appEventHandler.onRender(RenderDirty);
    
             case EventId.TouchBegin:
                appEventHandler.onTouch(event,EventName.TOUCH_BEGIN);
