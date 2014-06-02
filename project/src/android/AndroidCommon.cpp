@@ -62,6 +62,17 @@ jclass FindClass(const char *className,bool inQuiet)
     return ret;
 }
 
+std::string JStringToStdString(JNIEnv *env, jstring inString, bool inReleaseLocalRef)
+{
+   const char *c_ptr = env->GetStringUTFChars(inString, 0);
+   std::string result(c_ptr);
+   env->ReleaseStringUTFChars(inString, c_ptr);
+   if (inReleaseLocalRef)
+      env->DeleteLocalRef(inString);
+   return result;
+}
+
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
     _vm = vm;
@@ -70,4 +81,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     return  JNI_VERSION_1_4;                    // the required JNI version
     
 }
+
+
 

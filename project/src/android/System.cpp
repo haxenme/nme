@@ -94,10 +94,7 @@ namespace nme {
 		if(mid == 0)
 			return std::string("");
 		jstring jLang = (jstring) env->CallStaticObjectMethod(cls, mid);
-		const char *nativeLang = env->GetStringUTFChars(jLang, 0);
-		std::string result(nativeLang);
-		env->ReleaseStringUTFChars(jLang, nativeLang);
-		return result;
+      return JStringToStdString(env,jLang,true);
 	}
 	
 	void HapticVibrate (int period, int duration)
@@ -127,8 +124,8 @@ namespace nme {
 			return false;
 
 		jstring str = env->NewStringUTF( inUtf8URL );
-
 		env->CallStaticVoidMethod(cls, mid, str );
+      env->DeleteLocalRef(str);
 		return true;
 
 	}
@@ -151,10 +148,7 @@ namespace nme {
 		jstring jInId = env->NewStringUTF(inId);
 		jstring jPref = (jstring) env->CallStaticObjectMethod(cls, mid, jInId);
 		env->DeleteLocalRef(jInId);
-		const char *nativePref = env->GetStringUTFChars(jPref, 0);
-		std::string result(nativePref);
-		env->ReleaseStringUTFChars(jPref, nativePref);
-		return result;	
+      return JStringToStdString(env,jPref,true);
 	}
 	
 	bool SetUserPreference(const char *inId, const char *inPreference)
@@ -192,6 +186,7 @@ namespace nme {
 		
 		jstring jInId = env->NewStringUTF( inId );
 		env->CallStaticVoidMethod(cls, mid, jInId );
+		env->DeleteLocalRef(jInId);
 		return true;
 	}
 

@@ -891,7 +891,6 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private static var nme_stage_set_focus = Loader.load("nme_stage_set_focus", 3);
    private static var nme_stage_get_focus_rect = Loader.load("nme_stage_get_focus_rect", 1);
    private static var nme_stage_set_focus_rect = Loader.load("nme_stage_set_focus_rect", 2);
-   private static var nme_stage_request_render = Loader.load("nme_stage_request_render", 0);
    private static var nme_stage_resize_window = Loader.load("nme_stage_resize_window", 3);
    private static var nme_stage_show_cursor = Loader.load("nme_stage_show_cursor", 2);
   

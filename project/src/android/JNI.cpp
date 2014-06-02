@@ -500,7 +500,12 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
          {
            jmethodID mid = inEnv->GetMethodID(cls,"toString","()V");
            if (mid)
-              return JStringToHaxe(inEnv, inEnv->CallObjectMethod(cls,mid) );
+           {
+              jstring str = (jstring)inEnv->CallObjectMethod(cls,mid);
+              value result = JStringToHaxe(inEnv,str);
+              inEnv->DeleteLocalRef(str);
+              return result;
+           }
          }
       }
    }

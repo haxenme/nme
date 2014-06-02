@@ -342,6 +342,9 @@ class Window
    private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
    private static var nme_display_object_set_bg = Loader.load("nme_display_object_set_bg", 2);
 
+   #if android
+   private static var nme_stage_request_render = Loader.load("nme_stage_request_render", 0);
+   #end
    #if (cpp && hxcpp_api_level>=311)
    private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler_native", 4);
    #else
