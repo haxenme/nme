@@ -572,6 +572,7 @@ void FromValue(value obj, URLRequest &request)
    request.contentType = val_string( val_field(obj, _id_contentType) );
    request.debug = val_field_numeric( obj, _id_verbose );
    request.postData = ByteArray( val_field(obj,_id___bytes) );
+   request.followRedirects = val_field_numeric( obj, _id_followRedirects ); 
 
    // headers
   if (!val_is_null(val_field(obj, _id_requestHeaders)) && val_array_size(val_field(obj, _id_requestHeaders)) )
