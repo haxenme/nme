@@ -569,6 +569,12 @@ void TextField::Drag(Event &inEvent)
 
 void TextField::EndDrag(Event &inEvent)
 {
+
+}
+
+void TextField::OnScrollWheel(int inDirection)
+{
+   setScrollV(scrollV + inDirection);
 }
 
 void TextField::OnChange()

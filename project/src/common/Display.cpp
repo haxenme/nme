@@ -2,6 +2,8 @@
 #include <Surface.h>
 #include <math.h>
 
+#include "TextField.h"
+
 #ifndef M_PI
 #define M_PI 3.1415926535897932385
 #endif
@@ -1902,6 +1904,12 @@ void Stage::HandleEvent(Event &inEvent)
             hit_obj->IncRef();
             mMouseDownObject = hit_obj;
          }
+      }
+      if (inEvent.type==etMouseUp && (inEvent.value==3 || inEvent.value==4) )
+      {
+         TextField *text =  dynamic_cast<TextField *>(hit_obj);
+         if (text && text->mouseWheelEnabled)
+            text->OnScrollWheel(inEvent.value==3 ? -1 : 1);
       }
    }
    #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
