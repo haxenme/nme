@@ -592,13 +592,29 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
             while(data.length < inEvent.code) 
                data.push(0);
-
+            
+            var cachedAxisData:String = '';
+            if (nmeJoyAxisData.exists(inEvent.id)) cachedAxisData = nmeJoyAxisData.get(inEvent.id).toString();
             data[inEvent.code] = value;
-
-            evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2]);
-            evt.axis = data.copy();
-
-            nmeJoyAxisData.set(inEvent.id, data);
+            if (nmeJoyAxisData.exists(inEvent.id))
+            {
+		nmeJoyAxisData.set(inEvent.id, data);
+		if (nmeJoyAxisData.get(inEvent.id).toString() == cachedAxisData)
+		{ //check if anything has changed from previous registered state. If not, dismiss the event
+		   return;
+		}
+		else
+		{
+		   evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2]);
+		   evt.axis = data.copy();
+		}
+	     }
+	     else
+	     {
+		nmeJoyAxisData.set(inEvent.id, data);
+		evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2]);
+		evt.axis = data.copy();
+	     }
 
          case JoystickEvent.BALL_MOVE:
             evt = new JoystickEvent(inType, false, false, inEvent.id,  inEvent.code, inEvent.x, inEvent.y);
