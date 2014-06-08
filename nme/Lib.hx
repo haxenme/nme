@@ -11,6 +11,7 @@ import nme.net.URLRequest;
 import nme.Lib;
 import nme.Loader;
 import nme.app.Application;
+import haxe.CallStack;
 
 import Sys;
 
@@ -80,7 +81,8 @@ class Lib
          }
          catch(e:Dynamic)
          {
-            trace("Error creating window: " +  e);
+            var stack = CallStack.toString(CallStack.exceptionStack());
+            trace("Error creating window: (" + params + ")\n"+e+stack);
          }
 
       }, params );
