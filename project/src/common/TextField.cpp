@@ -1387,7 +1387,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    RenderState state(inState);
 
-   Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleH);
+   Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleV);
    state.mClipRect = r.Intersect(inState.mClipRect);
 
    if (inState.mMask)
