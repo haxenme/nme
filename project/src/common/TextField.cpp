@@ -1558,17 +1558,6 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
       BuildBackground();
       return DisplayObject::GetExtent(inTrans,outExt,inForBitmap,inIncludeStroke);
    }
-   else
-   {
-      for(int corner=0;corner<4;corner++)
-      {
-         //UserPoint pos((corner & 1) ? boundsWidth*mLayoutScaleH : 0,
-         //              (corner & 2) ? boundsHeight*mLayoutScaleV : 0);
-         UserPoint pos((corner & 1) ? mActiveRect.x1() : mActiveRect.x,
-                       (corner & 2) ? mActiveRect.y1() : mActiveRect.y);
-         outExt.Add( RectToTarget(*inTrans.mMatrix,pos) );
-      }
-   }
 }
 
 
