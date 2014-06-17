@@ -1702,12 +1702,13 @@ void TextField::Layout(const Matrix &inMatrix)
    mCharPos.resize(0);
 
    int gap = (int)(2.0*mLayoutScaleH+0.5);
+   int verticalGap = (int)(2.0*mLayoutScaleV+0.5);
    Line line;
    int char_count = 0;
    textHeight = 0;
    textWidth = 0;
    int x6 = gap << 6;
-   int y = gap;
+   int y = verticalGap;
    line.mY0 = y;
    mLastUpDownX = -1;
    int max_x = boundsWidth * mLayoutScaleH - gap;
@@ -1826,7 +1827,7 @@ void TextField::Layout(const Matrix &inMatrix)
       mLines.push_back(line);
    }
 
-   textHeight = y + gap;
+   textHeight = y + verticalGap;
 
    int max_y = boundsHeight * mLayoutScaleV;
    if (autoSize != asNone)
@@ -1862,7 +1863,7 @@ void TextField::Layout(const Matrix &inMatrix)
    //  therefore how many lines we can scroll...
    if (textHeight>max_y && mLines.size()>1)
    {
-      int window_height = max_y-3*gap;
+      int window_height = max_y-3*verticalGap;
       int line = mLines.size()-1;
       int lines_height = mLines[line].mMetrics.height;
       while( line < window_height && line>0 )
