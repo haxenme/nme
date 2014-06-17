@@ -1904,6 +1904,8 @@ void TextField::Layout(const Matrix &inMatrix)
    }
 
    mLinesDirty = false;
+   mGfxDirty = true;
+   DirtyCache();
    int n = mCharPos.size();
    mSelectMin = std::min(mSelectMin,n);
    mSelectMax = std::min(mSelectMax,n);
