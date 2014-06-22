@@ -252,7 +252,7 @@ public:
       else
       {
          mOpenGLContext = 0;
-         mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+         mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
          if (!mSoftwareSurface)
          {
             fprintf(stderr, "Could not create SDL surface : %s\n", SDL_GetError());
@@ -308,7 +308,7 @@ public:
          SDL_FreeSurface(mSoftwareSurface);
          SDL_DestroyTexture(mSoftwareTexture);
          
-         mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+         mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
          if (!mSoftwareSurface)
          {
             fprintf(stderr, "Could not create SDL surface : %s\n", SDL_GetError());
