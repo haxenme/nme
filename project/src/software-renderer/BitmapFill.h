@@ -103,6 +103,7 @@ public:
       mStride = mBitmap->bitmapData->GetStride();
       mMapped = false;
       mPerspective = false;
+      mBilinearAdjust = 0;
    }
 
 
@@ -217,11 +218,12 @@ public:
    {
       //  Tex =  mMapper * screen
       //  But, screen is sampled at centre, so Tex = mMapper * (screenCorner + (0.5,0.5))
-      //  Then interpolation uses tex as source-coord, but a tex value of 0.5 should map to centre of src pixel 0, so
-      //   src-coord = mMapper * (screenCorner + (0.5,0.5)) - (0.5,0.5)
+
+      //  For bilinear-interp, a tex value of 0.5 should map to the beginning of the range between pixel 0 and pixel 1
+      //   so an adjustment of  - (0.5,0.5) is subtracted to make this a truncation operation
       
-      mMapper.mtx += (mMapper.m00 + mMapper.m01)*0.5 - 0.5;
-      mMapper.mty += (mMapper.m10 + mMapper.m11)*0.5 - 0.5;
+      mMapper.mtx += (mMapper.m00 + mMapper.m01)*0.5 - mBilinearAdjust;
+      mMapper.mty += (mMapper.m10 + mMapper.m11)*0.5 - mBilinearAdjust;
 
       if (mPerspective)
          mW0 += (mWX + mWY)*0.5;
@@ -242,6 +244,7 @@ public:
    bool mPerspective;
    double mWX, mWY, mW0;
    double mTX, mTY, mTW;
+   double mBilinearAdjust;
    Matrix mMapper;
    GraphicsBitmapFill *mBitmap;
 };
@@ -256,6 +259,7 @@ public:
    BitmapFiller(GraphicsBitmapFill *inFill) : BitmapFillerBase(inFill)
    {
       mPerspective = PERSP;
+      mBilinearAdjust = SMOOTH ? 0.5 : 0.0;
    }
 
    ARGB GetInc( )
