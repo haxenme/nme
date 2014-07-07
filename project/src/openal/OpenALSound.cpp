@@ -405,7 +405,7 @@ namespace nme
       else
       {
          alSourcef(mSourceID, AL_GAIN, inTransform.volume);
-         alSource3f(mSourceID, AL_POSITION, inTransform.pan * 1, 0, 0);
+         alSource3f(mSourceID, AL_POSITION, (float) cos((inTransform.pan - 1) * (1.5707)), 0, (float) sin((inTransform.pan + 1) * (1.5707)));
       }
    }
    
