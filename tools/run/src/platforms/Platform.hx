@@ -13,6 +13,7 @@ class Platform
    public static inline var MAC = "MAC";
    public static inline var WINDOWS = "WINDOWS";
    public static inline var ANDROIDVIEW = "ANDROIDVIEW";
+   public static inline var CPPIA = "CPPIA";
 
 
    public static inline var TYPE_WEB = "WEB";
@@ -61,6 +62,7 @@ class Platform
    public function getAssetDir() { return getOutputDir(); }
    public function getExeDir() { return getOutputDir(); }
    public function getLibDir() { return getExeDir(); }
+   public function getHaxeTemplateDir() { return "haxe"; }
    public function getNativeDllExt() { return ".so"; }
    public function getArchSuffix() { return ""; }
    public function postBuild() { }
@@ -117,7 +119,7 @@ class Platform
       PathHelper.mkdir(targetDir);
       PathHelper.mkdir(haxeDir);
 
-      copyTemplateDir("haxe", haxeDir );
+      copyTemplateDir( getHaxeTemplateDir(), haxeDir );
    }
 
    public function updateOutputDir()
@@ -151,9 +153,12 @@ class Platform
 
    public function updateLibArch(libDir:String, archSuffix:String)
    {
+      var binName = getBinName();
+      if (binName==null)
+         return;
+
       PathHelper.mkdir(libDir);
 
-      var binName = getBinName();
       var pref = getNdllPrefix();
       for(ndll in project.ndlls) 
       {

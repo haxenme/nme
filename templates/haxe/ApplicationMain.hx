@@ -112,6 +112,8 @@ class ApplicationMain
             }
          });
       }
+      #elseif cppia
+       ApplicationBoot.createInstance();
       #else
          var flags:Int = 
             (::WIN_HARDWARE:: ? nme.app.Application.HARDWARE : 0) |

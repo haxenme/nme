@@ -34,7 +34,7 @@ class CommandLineTools
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
-            "windows", "mac", "linux", "flash" ];
+            "windows", "mac", "linux", "flash", "cppia" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset",
@@ -84,6 +84,9 @@ class CommandLineTools
 
          case Platform.FLASH:
             platform = new platforms.FlashPlatform(project);
+
+         case Platform.CPPIA:
+            platform = new platforms.CppiaPlatform(project);
       }
       if (platform != null) 
       {

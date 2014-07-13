@@ -181,6 +181,14 @@ class NMEProject
             target = PlatformHelper.hostPlatform;
             targetFlags.set("cpp", "");
 
+         case "cppia":
+            target = Platform.CPPIA;
+            targetFlags.set("cpp", "");
+            targetFlags.set("cppia", "");
+            haxedefs.set("cppia","");
+            addLib("cppia-vm", "lib");
+            macros.push("--macro cppia.Vm.vmImport()");
+
          case "neko":
             target = PlatformHelper.hostPlatform;
             staticLink = false;
@@ -255,6 +263,11 @@ class NMEProject
 
             platformType = Platform.TYPE_WEB;
             embedAssets = true;
+
+         case Platform.CPPIA:
+            platformType = Platform.TYPE_WEB;
+            embedAssets = false;
+
 
          case Platform.ANDROID, Platform.IOS,
               Platform.IOSVIEW, Platform.ANDROIDVIEW:
