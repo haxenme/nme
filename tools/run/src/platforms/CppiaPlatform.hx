@@ -33,7 +33,13 @@ class CppiaPlatform extends Platform
 
    override public function run(arguments:Array<String>):Void 
    {
-      trace("Run " + applicationDirectory);
+      var host = project.getDef("CPPIA_HOST");
+      if (host==null)
+      {
+         Log.error("Please define CPPIA_HOST to run the application");
+      }
+      var fullPath =  FileSystem.fullPath('$applicationDirectory/ScriptMain.cppia');
+      ProcessHelper.runCommand("", host, [fullPath].concat(arguments));
    }
 }
 

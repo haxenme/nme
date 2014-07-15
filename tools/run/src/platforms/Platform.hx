@@ -19,6 +19,7 @@ class Platform
    public static inline var TYPE_WEB = "WEB";
    public static inline var TYPE_DESKTOP = "DESKTOP";
    public static inline var TYPE_MOBILE = "MOBILE";
+   public static inline var TYPE_SCRIPT = "SCRIPT";
 
    public var platform(get,null):String;
 

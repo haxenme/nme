@@ -187,6 +187,9 @@ class NMEProject
             targetFlags.set("cppia", "");
             haxedefs.set("cppia","");
             addLib("cppia-vm", "lib");
+            var cp = getDef("CPPIA_CLASSPATH");
+            if (cp!=null)
+               classPaths.push(cp);
             macros.push("--macro cppia.Vm.vmImport()");
 
          case "neko":
@@ -265,7 +268,7 @@ class NMEProject
             embedAssets = true;
 
          case Platform.CPPIA:
-            platformType = Platform.TYPE_WEB;
+            platformType = Platform.TYPE_SCRIPT;
             embedAssets = false;
 
 
@@ -305,6 +308,8 @@ class NMEProject
             localDefines.set("desktop", "1");
          case Platform.TYPE_WEB:
             localDefines.set("web", "1");
+         case Platform.TYPE_SCRIPT:
+            localDefines.set("script", "1");
       }
 
       Log.verbose("Platform type: " + platformType);
@@ -316,6 +321,17 @@ class NMEProject
       localDefines.set("haxe3", "1");
 
       localDefines.set(target.toLowerCase(), "1");
+   }
+
+   public function hasDef(inName:String)
+   {
+      return localDefines.exists(inName) || environment.exists(inName);
+   }
+   public function getDef(inName:String)
+   {
+      if (localDefines.exists(inName))
+         return localDefines.get(inName);
+      return environment.get(inName);
    }
 
    public function checkRelocation(inDir:String)

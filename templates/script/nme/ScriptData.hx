@@ -12,14 +12,24 @@ import nme.AssetType;
 
 class ScriptData
 {
+   public var resourceBase = "";
+
    public static function create():Void
    {
       var info = Assets.info;
 
       ::if (assets != null)::
       ::foreach assets::
-      info.set("::id::", new AssetInfo("::resourceName::",AssetType.::type::,::isResource::,::className::));::end::
+      info.set("::id::", createScriptAsset("::resourceName::",AssetType.::type::,::isResource::,::className::));::end::
       ::end::
+   }
+
+   public static function createScriptAsset(inPath:String, inType:AssetType, isResource:Bool, className:String)
+   {
+      if (!isResource)
+         inPath = Assets.scriptBase + inPath;
+
+      return new AssetInfo(inPath,inType,isResource,className);
    }
 }
 

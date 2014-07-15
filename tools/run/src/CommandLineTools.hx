@@ -39,8 +39,8 @@ class CommandLineTools
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test" ];
-   static var setNames =  [ "target", "bin", "command" ];
-   static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run" ];
+   static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath" ];
+   static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia" ];
    static var quickSetNames =  [ "debug", "verbose" ];
 
 
@@ -1072,6 +1072,10 @@ class CommandLineTools
          project.debug = debug = true;
          Log.verbose("Using debug option from setting");
       }
+      if (storeData.cppiaClassPath!=null)
+         project.localDefines.set("CPPIA_CLASSPATH", storeData.cppiaClassPath);
+      if (storeData.cppiaHost!=null)
+         project.localDefines.set("CPPIA_HOST", storeData.cppiaHost);
 
 
       // Haxelib bug

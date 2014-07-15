@@ -37,6 +37,8 @@ class Assets
    public static var info = new Map<String,AssetInfo>();
    public static var cacheMode:Int = WEAK_CACHE;
 
+   public static var scriptBase = "";
+
    //public static var id(get_id, null):Array<String>;
 
    public static function getAssetPath(inName:String) : String
