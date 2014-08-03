@@ -14,6 +14,8 @@ class Window
    public var isOpenGL(get, null):Bool;
    public var quality(get, set):StageQuality;
    public var scaleMode(get, set):StageScaleMode;
+   public var x(get, null):Int;
+   public var y(get, null):Int;
    public var height(get, null):Int;
    public var width(get, null):Int;
    public var autoClear:Bool;
@@ -300,6 +302,17 @@ class Window
       return inMode;
    }
 
+   public function get_x():Int 
+   {
+      return nme_stage_get_window_x(nmeHandle);
+   }
+
+   public function get_y():Int 
+   {
+      return nme_stage_get_window_y(nmeHandle);
+   }
+
+
 
    public function get_height():Int 
    {
@@ -316,6 +329,13 @@ class Window
    {
       nme_stage_resize_window(nmeHandle, width, height);
    }
+
+
+   public function setPosition(x:Int, y:Int):Void
+   {
+      nme_stage_set_window_position(nmeHandle, x, y);
+   }
+
 
 
    private static var nme_stage_resize_window = Loader.load("nme_stage_resize_window", 3);
@@ -335,6 +355,9 @@ class Window
    private static var nme_stage_set_fixed_orientation = Loader.load("nme_stage_set_fixed_orientation", 1);
    private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);
    private static var nme_stage_get_normal_orientation = Loader.load("nme_stage_get_normal_orientation", 0);
+   private static var nme_stage_set_window_position = Loader.load("nme_stage_set_window_position", 3);
+   private static var nme_stage_get_window_x = Loader.load("nme_stage_get_window_x", 1);
+   private static var nme_stage_get_window_y = Loader.load("nme_stage_get_window_y", 1);
    private static var nme_stage_set_next_wake = Loader.load("nme_stage_set_next_wake", 2);
    private static var nme_stage_begin_render = Loader.load("nme_stage_begin_render", 2);
    private static var nme_stage_end_render = Loader.load("nme_stage_end_render", 1);
