@@ -205,9 +205,10 @@ public:
    void SetPutBuffer(const unsigned char *inBuffer, size_t inLen)
    {
       mPutBuffer = new unsigned char[inLen];
-      mBufferRemaining = 0;
+      mBufferRemaining = inLen;
       mBufferPos = mPutBuffer;
       memcpy(mPutBuffer,inBuffer,inLen);
+      curl_easy_setopt(mHandle, CURLOPT_READDATA, this);
       curl_easy_setopt(mHandle, CURLOPT_READFUNCTION, SReadFunc);
       curl_easy_setopt(mHandle, CURLOPT_INFILESIZE, inLen);
    }
