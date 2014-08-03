@@ -32,6 +32,7 @@
 #include <NmeBinVersion.h>
 #include <NmeStateVersion.h>
 #include <nme/NmeApi.h>
+#include <hx/CFFIPrime.h>
 
 
 #ifdef min
@@ -631,8 +632,8 @@ value nme_time_stamp()
 {
    return alloc_float( GetTimeStamp() );
 }
-DEFINE_PRIM(nme_time_stamp,0);
 
+DEFINE_PRIM(nme_time_stamp,0)
 
 value nme_error_output(value message)
 {
@@ -1568,6 +1569,33 @@ value nme_stage_set_cursor_position_in_window( value inStage, value inX, value i
    return alloc_null();
 }
 DEFINE_PRIM(nme_stage_set_cursor_position_in_window,3);
+
+
+value nme_stage_get_window_x( value inStage )
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      return alloc_int(stage->GetWindowX());
+   }
+   return alloc_int(0);
+}
+DEFINE_PRIM(nme_stage_get_window_x,1);
+
+
+value nme_stage_get_window_y( value inStage )
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      return alloc_int(stage->GetWindowY());
+   }
+   return alloc_int(0);
+}
+DEFINE_PRIM(nme_stage_get_window_y,1);
+
+
+
 
 value nme_stage_set_window_position( value inStage, value inX, value inY ) {
 

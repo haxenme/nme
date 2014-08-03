@@ -650,7 +650,24 @@ public:
     {
       SDL_SetWindowPosition( mSDLWindow, inX, inY );
     }   
-   
+ 
+   int GetWindowX() 
+   {
+      int x = 0;
+      int y = 0;
+      SDL_GetWindowPosition(mSDLWindow, &x, &y);
+      return x;
+   }   
+ 
+  
+   int GetWindowY() 
+   {
+      int x = 0;
+      int y = 0;
+      SDL_GetWindowPosition(mSDLWindow, &x, &y);
+      return y;
+   }   
+
    
    void EnablePopupKeyboard(bool enabled)
    {
