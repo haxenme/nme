@@ -117,7 +117,7 @@ class MainView extends GLSurfaceView {
 
 
                 // Try as specified - aa
-                if (::WIN_ANTIALIASING:: > 1)
+                if (::WIN_ANTIALIASING:: >= 1)
                 {
                    int[] attrs = { EGL10.EGL_DEPTH_SIZE, depth,
                                    EGL10.EGL_STENCIL_SIZE, stencil,
