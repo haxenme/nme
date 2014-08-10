@@ -44,6 +44,19 @@ class System
       #end
    }
 
+   public static function systemName() : String
+   {
+      #if android
+      return "android";
+      #elseif iphone
+      return "ios";
+      #elsif "js"
+      return "js";
+      #else
+      return Sys.systemName().toLowerCase();
+      #end
+   }
+
    private static function get_exeName():String
    {
       var func = Loader.load("nme_sys_get_exe_name", 0);
