@@ -40,14 +40,14 @@ class LinuxPlatform extends DesktopPlatform
       super(inProject);
 
       if (is64) 
-         project.haxedefs.set("HXCPP_M64", 1);
+         project.haxedefs.set("HXCPP_M64", "1");
 
 
       applicationDirectory = getOutputDir();
       executablePath = applicationDirectory + "/" + project.app.file;
 
       if (isRaspberryPi) 
-         project.haxedefs.set("rpi", 1);
+         project.haxedefs.set("rpi", "1");
    }
 
    override public function getPlatformDir() : String

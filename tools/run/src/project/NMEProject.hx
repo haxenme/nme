@@ -4,7 +4,6 @@ import haxe.io.Path;
 import sys.FileSystem;
 import platforms.Platform;
 
-typedef StringMap<T> = Map<String, T>;
 typedef IntMap<T> = Map<Int, T>;
 
 class AndroidConfig
@@ -77,12 +76,12 @@ class NMEProject
    public var androidConfig:AndroidConfig;
 
    // Defines
-   public var localDefines:haxe.ds.StringMap<Dynamic>;
-   public var environment:StringMap<String>;
-   public var targetFlags:StringMap<String>;
+   public var localDefines:Map<String,String>;
+   public var environment:Map<String,String>;
+   public var targetFlags:Map<String,String>;
 
    // For building haxe command line
-   public var haxedefs:StringMap<Dynamic>;
+   public var haxedefs:Map<String, String>;
    public var haxeflags:Array<String>;
    public var haxelibs:Array<Haxelib>;
    public var classPaths:Array<String>;
@@ -128,13 +127,13 @@ class NMEProject
       megaTrace = false;
       target = "";
       relocationDir = "";
-      targetFlags = new StringMap<String>();
+      targetFlags = new Map<String,String>();
       templatePaths = [];
 
       environment = Sys.environment();
       if (environment.exists("ANDROID_SERIAL"))
          targetFlags.set("device", environment.get("ANDROID_SERIAL"));
-      localDefines = new StringMap<String>();
+      localDefines = new Map<String,String>();
       for(key in environment.keys())
          Reflect.setField(baseTemplateContext, key, environment.get(key));
 
@@ -144,7 +143,7 @@ class NMEProject
 
       assets = new Array<Asset>();
       dependencies = new Array<String>();
-      haxedefs = new StringMap<Dynamic>();
+      haxedefs = new Map<String,String>();
       haxeflags = new Array<String>();
       macros = new Array<String>();
       haxelibs = new Array<Haxelib>();
@@ -327,7 +326,7 @@ class NMEProject
    {
       return localDefines.exists(inName) || environment.exists(inName);
    }
-   public function getDef(inName:String)
+   public function getDef(inName:String):String
    {
       if (localDefines.exists(inName))
          return localDefines.get(inName);

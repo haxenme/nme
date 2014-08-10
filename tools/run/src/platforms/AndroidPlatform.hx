@@ -8,8 +8,6 @@ import sys.FileSystem;
 
 class AndroidPlatform extends Platform
 {
-   var adbName:String;
-   var adbFlags:Array<String>;
    var buildV5:Bool;
    var buildV7:Bool;
    var buildX86:Bool;
@@ -44,29 +42,7 @@ class AndroidPlatform extends Platform
       if (!buildX86)
          PathHelper.removeDirectory(getOutputDir() + "/libs/x86");
 
-
-      adbName = "adb";
-      if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
-         adbName += ".exe";
-
-      var test = project.environment.get("ANDROID_SDK") + "/tools/" + adbName;
-      if (FileSystem.exists(test))
-         adbName = test;
-      else
-      {
-         var test = project.environment.get("ANDROID_SDK") + "/platform-tools/" + adbName;
-         if (FileSystem.exists(test))
-            adbName = test;
-         // Hmm - use relative path and hope it works
-      }
-
-      adbFlags = [];
-      if (project.targetFlags.exists("device"))
-         adbFlags = [ "-s", project.targetFlags.get("device") ];
-      else if (project.targetFlags.exists("androidsim") || project.targetFlags.exists("e"))
-         adbFlags = [ "-e" ];
-      else
-         adbFlags = [ "-d" ];
+      setupAdb();
 
       if (project.environment.exists("JAVA_HOME")) 
          Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
@@ -91,6 +67,8 @@ class AndroidPlatform extends Platform
          }
       }
    }
+
+
 
 
    override public function getPlatformDir() : String

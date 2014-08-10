@@ -132,6 +132,7 @@ class CommandLineTools
             {
                platform.buildPackage();
                platform.postBuild();
+               platform.deploy();
             }
          }
 
@@ -862,9 +863,9 @@ class CommandLineTools
 
       project.checkRelocation( new Path(projectFile).dir );
 
-      project.haxedefs.set("nme_install_tool", 1);
+      project.haxedefs.set("nme_install_tool", "1");
       project.haxedefs.set("nme_ver", nmeVersion);
-      project.haxedefs.set("nme" + nmeVersion.split(".")[0], 1);
+      project.haxedefs.set("nme" + nmeVersion.split(".")[0], "1");
 
       project.setTarget(targetName);
 
@@ -1248,7 +1249,7 @@ class CommandLineTools
             }
             else
             {
-               project.haxedefs.set(argument.substr(0, equals), argValue);
+               project.localDefines.set(argument.substr(0, equals), argValue);
             }
          }
          else if (argument.substr(0, 1) == "-") 

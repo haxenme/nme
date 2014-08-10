@@ -41,7 +41,8 @@ class FileHelper
       }
    }
 
-   public static function copyFile(source:String, destination:String, context:Dynamic = null, process:Bool = true) 
+   public static function copyFile(source:String, destination:String, ?context:{?MACROS:Dynamic}, process:Bool = true,
+      ?onFile:String->Void) 
    {
       var extension = Path.extension(source);
 
@@ -82,6 +83,8 @@ class FileHelper
                fileOutput.writeString(result);
                fileOutput.close();
             }
+            if (onFile!=null)
+               onFile(destination);
          }
          catch(e:Dynamic)
          {
@@ -90,17 +93,19 @@ class FileHelper
       }
       else
       {
+         if (onFile!=null)
+            onFile(destination);
          copyIfNewer(source, destination);
       }
    }
 
-   public static function copyFileTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true) 
+   public static function copyFileTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true, ?onFile:String->Void) 
    {
       var path = PathHelper.findTemplate(templatePaths, source);
 
       if (path != null) 
       {
-         copyFile(path, destination, context, process);
+         copyFile(path, destination, context, process,onFile);
       }
    }
 
@@ -123,7 +128,8 @@ class FileHelper
 
    }
 
-   public static function recursiveCopy(source:String, destination:String, context:Dynamic = null, process:Bool = true) 
+   public static function recursiveCopy(source:String, destination:String, context:Dynamic = null, process:Bool = true,
+      ?onFile:String->Void) 
    {
       PathHelper.mkdir(destination);
 
@@ -152,19 +158,21 @@ class FileHelper
             else
             {
                copyFile(itemSource, itemDestination, context, process);
+               if (onFile!=null)
+                  onFile(itemDestination);
             }
          }
       }
    }
 
-   public static function recursiveCopyTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true,warn=true) 
+   public static function recursiveCopyTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true,warn=true, ?onFile:String->Void) 
    {
       var paths = PathHelper.findTemplates(templatePaths, source, warn);
       if (paths.length==0)
          return false;
 
       for(path in paths) 
-         recursiveCopy(path, destination, context, process);
+         recursiveCopy(path, destination, context, process, onFile);
 
       return true;
    }

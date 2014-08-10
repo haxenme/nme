@@ -23,16 +23,35 @@ class CppiaPlatform extends Platform
    override public function getNativeDllExt() { return null; }
    override public function getLibExt() { return null; }
    override public function getHaxeTemplateDir() { return "script"; }
+   override public function getAssetDir() { return getOutputDir()+"/assets"; }
 
 
    override public function copyBinary():Void 
    {
      FileHelper.copyFile('$haxeDir/ScriptMain.cppia',
-                        '$applicationDirectory/ScriptMain.cppia');
+                        '$applicationDirectory/ScriptMain.cppia', addOutput);
    }
+
+   override public function updateOutputDir():Void 
+   {
+      super.updateOutputDir();
+
+      var destination = getOutputDir();
+      var icon = IconHelper.getSvgIcon(project.icons);
+      if (icon!=null)
+      {
+         FileHelper.copyFile(icon, destination + "/icon.svg", addOutput);
+      }
+      else
+         IconHelper.createIcon(project.icons, 128, 128, destination + "/icon.png", addOutput);
+   }
+
 
    override public function run(arguments:Array<String>):Void 
    {
+      var deploy = project.getDef("deploy");
+
+
       var host = project.getDef("CPPIA_HOST");
       if (host==null)
       {

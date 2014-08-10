@@ -8,6 +8,7 @@ import sys.FileSystem;
 class WindowsPlatform extends DesktopPlatform
 {
    private var applicationDirectory:String;
+   private var executableFile:String;
    private var executablePath:String;
 
    public function new(inProject:NMEProject)
@@ -15,10 +16,12 @@ class WindowsPlatform extends DesktopPlatform
       super(inProject);
 
       applicationDirectory = getOutputDir();
-      executablePath = applicationDirectory + "/" + project.app.file + ".exe";
+      executableFile = project.app.file + ".exe";
+      executablePath = applicationDirectory + "/" + executableFile;
+      outputFiles.push(executableFile);
 
       if (!project.environment.exists("SHOW_CONSOLE")) 
-         project.haxedefs.set("no_console", 1);
+         project.haxedefs.set("no_console", "1");
    }
 
    override public function getPlatformDir() : String { return useNeko ? "windows-neko" : "windows"; }
@@ -37,10 +40,12 @@ class WindowsPlatform extends DesktopPlatform
       {
          FileHelper.copyFile(haxeDir + "/cpp/ApplicationMain" + (project.debug ? "-debug" : "") + ".exe", executablePath);
 
-         var iconPath = PathHelper.combine(applicationDirectory, "icon.ico");
+         var ico = "icon.ico";
+         var iconPath = PathHelper.combine(applicationDirectory, ico);
 
          if (IconHelper.createWindowsIcon(project.icons, iconPath)) 
          {
+            outputFiles.push(ico);
             var replaceVI = CommandLineTools.nme + "/tools/run/bin/ReplaceVistaIcon.exe";
             ProcessHelper.runCommand("", replaceVI , [ executablePath, iconPath ], true, true);
          }

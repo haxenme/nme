@@ -10,7 +10,7 @@ class LogHelper
 {
    public static var mute:Bool;
    public static var mVerbose:Bool = false;
-   private static var sentWarnings = new StringMap<Bool>();
+   private static var sentWarnings = new Map<String,Bool>();
 
    public static function error(message:String, verboseMessage:String = "", e:Dynamic = null):Void 
    {

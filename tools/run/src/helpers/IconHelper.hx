@@ -14,7 +14,8 @@ import sys.FileSystem;
 
 class IconHelper 
 {
-   public static function createIcon(icons:Array<Icon>, width:Int, height:Int, targetPath:String):Bool 
+   public static function createIcon(icons:Array<Icon>, width:Int, height:Int, targetPath:String,
+      ?onFile:String->Void):Bool 
    {
       PathHelper.mkdir(Path.directory(targetPath));
       var icon = findMatch(icons, width, height);
@@ -23,7 +24,7 @@ class IconHelper
       {
          if (icon != null && Path.extension(icon.path) == "png") 
          {
-            FileHelper.copyFile(icon.path, targetPath);
+            FileHelper.copyFile(icon.path, targetPath, onFile);
             return true;
          }
          else
@@ -32,6 +33,8 @@ class IconHelper
             if (bitmapData != null) 
             {
                File.saveBytes(targetPath, bitmapData.encode("png"));
+               if (onFile!=null)
+                  onFile(targetPath);
                return true;
             }
          }
@@ -42,6 +45,14 @@ class IconHelper
       }
 
       return false;
+   }
+
+   public static function getSvgIcon(icons:Array<Icon>) : String
+   {
+      for(icon in icons)
+         if (Path.extension(icon.path)=="svg")
+            return icon.path;
+      return null;
    }
 
    public static function createMacIcon(icons:Array<Icon>, targetPath:String):Bool 
