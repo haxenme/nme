@@ -993,10 +993,13 @@ class CommandLineTools
          Sys.println("Usage : nme set name [value]");
          for(n in 0...setNames.length)
          {
-            Sys.println(" " + setNames[n] + " = " + setNamesHelp[n]);
+            Sys.println(" " + setNames[n] + " : " + setNamesHelp[n]);
+            Sys.println("    = " + Reflect.field(storeData, setNames[n]) );
          }
          for(name in quickSetNames)
-            Sys.println(' $name');
+         {
+            Sys.println(' $name [' + (Reflect.field(storeData,name)==null ? "not set" : "set") + ']' );
+         }
       }
    }
 
