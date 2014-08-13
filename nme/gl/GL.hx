@@ -5,6 +5,7 @@ import nme.display.BitmapData;
 import nme.utils.ArrayBuffer;
 import nme.utils.ByteArray;
 import nme.utils.Float32Array;
+import nme.utils.Int32Array;
 import nme.utils.IMemoryRange;
 import nme.utils.ArrayBufferView;
 import nme.geom.Matrix3D;
@@ -20,6 +21,18 @@ abstract NmeFloats(Dynamic)
    @:from inline static function fromArrayFloat( f:Array<Float> )
         return new NmeFloats(f);
 }
+
+
+abstract NmeInts(Dynamic)
+{
+   public inline function new(d:Dynamic) this = d;
+   @:to inline function toDynamic() return this;
+   @:from inline static function fromInt32Array( f:Int32Array )
+        return new NmeInts(f.getByteBuffer());
+   @:from inline static function fromArrayInt( f:Array<Int> )
+        return new NmeInts(f);
+}
+
 
 
 
@@ -1003,7 +1016,7 @@ class GL
       nme_gl_uniform1i(location, x);
    }
 
-   public static function uniform1iv(location:GLUniformLocation, v:Array<Int>):Void 
+   public static function uniform1iv(location:GLUniformLocation, v:NmeInts):Void 
    {
       nme_gl_uniform1iv(location, v);
    }
@@ -1023,7 +1036,7 @@ class GL
       nme_gl_uniform2i(location, x, y);
    }
 
-   public static function uniform2iv(location:GLUniformLocation, v:Array<Int>):Void 
+   public static function uniform2iv(location:GLUniformLocation, v:NmeInts):Void 
    {
       nme_gl_uniform2iv(location, v);
    }
@@ -1043,7 +1056,7 @@ class GL
       nme_gl_uniform3i(location, x, y, z);
    }
 
-   public static function uniform3iv(location:GLUniformLocation, v:Array<Int>):Void 
+   public static function uniform3iv(location:GLUniformLocation, v:NmeInts):Void 
    {
       nme_gl_uniform3iv(location, v);
    }
@@ -1063,7 +1076,7 @@ class GL
       nme_gl_uniform4i(location, x, y, z, w);
    }
 
-   public static function uniform4iv(location:GLUniformLocation, v:Array<Int>):Void 
+   public static function uniform4iv(location:GLUniformLocation, v:NmeInts):Void 
    {
       nme_gl_uniform4iv(location, v);
    }
