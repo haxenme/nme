@@ -2,6 +2,8 @@ package platforms;
 
 import sys.FileSystem;
 import haxe.io.Path;
+import sys.net.Host;
+import sys.net.Socket;
 
 class Platform
 {
@@ -148,6 +150,49 @@ class Platform
 
    public function install() { }
 
+   public function bye(socket:Socket)
+   {
+      var toSocket = socket.output;
+      var message = "bye";
+      toSocket.writeInt32(message.length);
+      toSocket.writeString(message);
+   }
+   public function sendRun(socket:Socket, inAppName:String)
+   {
+      var toSocket = socket.output;
+      var message = "run";
+      toSocket.writeInt32(message.length);
+      toSocket.writeString(message);
+
+      toSocket.writeInt32(inAppName.length);
+      toSocket.writeString(inAppName);
+   }
+
+   public function transfer(socket:Socket, from:String, to:String)
+   {
+      var toSocket = socket.output;
+      var file = sys.io.File.getBytes(from);
+      if (file==null)
+         Log.error("Could not open " + from);
+      Log.verbose("Sending " + to + "(" + file.length + ")");
+      var message = "put";
+      toSocket.writeInt32(message.length);
+      toSocket.writeString(message);
+
+      toSocket.writeInt32(to.length);
+      toSocket.writeString(to);
+
+      toSocket.writeInt32(file.length);
+      toSocket.write(file);
+
+      var fromSocket = socket.input;
+      var len = fromSocket.readInt32();
+      var result = fromSocket.readString(len);
+      if (result!="ok")
+         Log.error("Error sending " + from + " : " + result);
+      Log.verbose(result);
+   }
+
    public function deploy()
    {
       var deploy = project.getDef("deploy");
@@ -164,6 +209,27 @@ class Platform
             {
                Log.verbose("adb push " + file);
                ProcessHelper.runCommand(from,adbName, adbFlags.concat(["push", file, to+"/"+file]) );
+            }
+         }
+         else if (deploy.substr(0,4)=="net:")
+         {
+            var host = new Host(deploy.substr(4));
+            Log.verbose("Connect to host " + host);
+            var socket = new Socket();
+            try
+            {
+               socket.connect(host, 0xacad);
+
+               var to = project.app.file;
+               for(file in outputFiles)
+                  transfer(socket, from+"/"+file, to+"/"+file);
+               sendRun(socket, project.app.file);
+               bye(socket);
+               socket.close();
+            }
+            catch(e:Dynamic)
+            {
+               Log.error("Could not connect to " + deploy + " : " + e );
             }
          }
          else
