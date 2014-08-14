@@ -945,6 +945,7 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject o
 #endif
 {
    AutoHaxe haxe("onActivity");
+   JNIInit(env);
    if (nme::sStage)
       nme::sStage->onActivityEvent(inVal);
    return nme::GetResult();

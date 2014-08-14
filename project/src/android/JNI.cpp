@@ -691,9 +691,7 @@ struct JNIField : public nme::Object
       
       const char *field = val_string(inField);
       
-      jclass tmp  = env->FindClass(val_string(inClass));
-      mClass = (jclass)env->NewGlobalRef(tmp);
-      env->DeleteLocalRef(tmp);
+      mClass  = FindClass(val_string(inClass));
       const char *signature = val_string(inSignature);
       if (mClass)
       {
@@ -715,7 +713,6 @@ struct JNIField : public nme::Object
    
    ~JNIField()
    {
-      GetEnv()->DeleteGlobalRef(mClass);
    }
 
    bool ParseSignature(const char *inSig)
@@ -997,12 +994,10 @@ struct JNIMethod : public nme::Object
       mIsConstructor = !strncmp(method,"<init>",6);
 
 
-      jclass tmp  = env->FindClass(val_string(inClass));
-      if (tmp)
-      {
-         mClass = (jclass)env->NewGlobalRef(tmp);
-         env->DeleteLocalRef(tmp);
+      mClass = FindClass(val_string(inClass),inQuiet);
 
+      if (mClass)
+      {
          const char *signature = val_string(inSignature);
          if (inStatic && !mIsConstructor)
             mMethod = env->GetStaticMethodID(mClass, method, signature);
@@ -1028,22 +1023,10 @@ struct JNIMethod : public nme::Object
             }
          }
       }
-      else
-      {
-         if (inQuiet)
-         {
-            jthrowable exc = env->ExceptionOccurred();
-            if (exc)
-               env->ExceptionClear();
-         }
-         else
-              CheckException(env);
-      }
    }
 
    ~JNIMethod()
    {
-      GetEnv()->DeleteGlobalRef(mClass);
    }
 
    bool HaxeToJNIArgs(JNIEnv *inEnv, value inArray, jvalue *outValues)
