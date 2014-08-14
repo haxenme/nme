@@ -132,8 +132,13 @@ class CommandLineTools
             {
                platform.buildPackage();
                platform.postBuild();
-               platform.deploy();
             }
+         }
+
+         if (command == "build" || command == "run" || command=="test") 
+         {
+            if (platform.deploy(command!="build"))
+               command = "build";
          }
 
          if (command == "install" || command == "run" || command == "test") 

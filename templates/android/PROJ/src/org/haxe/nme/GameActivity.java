@@ -2,6 +2,8 @@ package org.haxe.nme;
 
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -38,6 +40,7 @@ import java.lang.reflect.Constructor;
 import java.lang.Math;
 import java.util.HashMap;
 import java.util.Locale;
+import org.haxe.nme.Value;
 
 ::if ANDROIDVIEW::
 import android.app.Fragment;
@@ -745,7 +748,19 @@ implements SensorEventListener
       activity.doResume();
    }
    ::end::
-   
+
+   public void restartProcessInst()
+   {
+      AlarmManager alm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+      alm.set(AlarmManager.RTC, System.currentTimeMillis() + 1000,
+          PendingIntent.getActivity(this, 0, new Intent(this, this.getClass()), 0));
+   }
+
+   public static void restartProcess()
+   {
+      activity.restartProcessInst();
+   }
+         
    
    public static void setUserPreference(String inId, String inPreference)
    {

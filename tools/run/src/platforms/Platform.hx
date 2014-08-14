@@ -150,6 +150,13 @@ class Platform
 
    public function install() { }
 
+   public function getResult(socket:Socket) : String
+   {
+      var fromSocket = socket.input;
+      var len = fromSocket.readInt32();
+      return fromSocket.readString(len);
+   }
+
    public function bye(socket:Socket)
    {
       var toSocket = socket.output;
@@ -157,7 +164,7 @@ class Platform
       toSocket.writeInt32(message.length);
       toSocket.writeString(message);
    }
-   public function sendRun(socket:Socket, inAppName:String)
+   public function sendRun(socket:Socket, inAppName:String) : Bool
    {
       var toSocket = socket.output;
       var message = "run";
@@ -166,6 +173,15 @@ class Platform
 
       toSocket.writeInt32(inAppName.length);
       toSocket.writeString(inAppName);
+
+      var result = getResult(socket);
+      if (result=="ok")
+         return true;
+      if (result=="restart")
+         return false;
+
+      Log.error("Unknown run result:" + result);
+      return false;
    }
 
    public function transfer(socket:Socket, from:String, to:String)
@@ -185,15 +201,13 @@ class Platform
       toSocket.writeInt32(file.length);
       toSocket.write(file);
 
-      var fromSocket = socket.input;
-      var len = fromSocket.readInt32();
-      var result = fromSocket.readString(len);
+      var result = getResult(socket);
       if (result!="ok")
          Log.error("Error sending " + from + " : " + result);
       Log.verbose(result);
    }
 
-   public function deploy()
+   public function deploy(inAndRun:Bool) : Bool
    {
       var deploy = project.getDef("deploy");
       if (deploy!=null)
@@ -223,9 +237,12 @@ class Platform
                var to = project.app.file;
                for(file in outputFiles)
                   transfer(socket, from+"/"+file, to+"/"+file);
-               sendRun(socket, project.app.file);
-               bye(socket);
+
+               var ran = inAndRun && sendRun(socket, project.app.file);
+               if (!ran || !inAndRun)
+                  bye(socket);
                socket.close();
+               return inAndRun;
             }
             catch(e:Dynamic)
             {
@@ -243,6 +260,7 @@ class Platform
 
          }
       }
+      return false;
    }
 
    public function prepareTest() { }
