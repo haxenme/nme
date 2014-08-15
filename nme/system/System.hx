@@ -1,8 +1,12 @@
 package nme.system;
+
 #if (cpp || neko)
 
 import nme.Lib;
 import nme.Loader;
+#if android
+import nme.JNI;
+#end
 
 class System 
 {
@@ -62,6 +66,29 @@ class System
       var func = Loader.load("nme_sys_get_exe_name", 0);
       return func();
    }
+
+   #if android
+   public static function restart() : Void
+   {
+      var restart = JNI.createStaticMethod("org/haxe/nme/GameActivity", "restartProcess", "()V");
+      if (restart==null)
+          throw "Could not find restart function";
+      restart();
+   }
+   #end
+
+   public static function getLocalIpAddress() : String
+   {
+      #if android
+      var func = JNI.createStaticMethod("org/haxe/nme/GameActivity", "getLocalIpAddress", "()Ljava/lang/String;");
+      if (func==null)
+          throw "Could not find getLocalIpAddress function";
+      return func();
+      #else
+      return sys.net.Host.localhost();
+      #end
+   }
+
 
    // Native Methods
    private static var nme_get_unique_device_identifier = Loader.load("nme_get_unique_device_identifier", 0);

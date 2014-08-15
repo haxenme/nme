@@ -41,6 +41,10 @@ import java.lang.Math;
 import java.util.HashMap;
 import java.util.Locale;
 import org.haxe.nme.Value;
+import java.net.NetworkInterface;
+import java.net.InetAddress;
+import java.net.Inet4Address;
+import java.util.Enumeration;
 
 ::if ANDROIDVIEW::
 import android.app.Fragment;
@@ -748,6 +752,43 @@ implements SensorEventListener
       activity.doResume();
    }
    ::end::
+
+
+   /*
+      Requires
+      <appPermission value="android.permission.INTERNET" />
+      <appPermission value="android.permission.ACCESS_WIFI_STATE" />
+   */
+   public static String getLocalIpAddress()
+   {
+      String result = "127.0.0.1";
+      try
+      {
+         for(Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
+            en.hasMoreElements();)
+         {
+            NetworkInterface intf = en.nextElement();
+            for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses();
+               enumIpAddr.hasMoreElements();)
+            {
+               InetAddress inetAddress = enumIpAddr.nextElement();
+               //Log.e("Try local", inetAddress.getHostAddress());
+               if (!inetAddress.isLoopbackAddress())
+               {
+                  if (inetAddress instanceof Inet4Address)
+                     result = inetAddress.getHostAddress();
+               }
+            }
+         }
+      }
+      catch (Exception ex)
+      {
+         Log.e("Could not get local address", ex.toString());
+      }
+      return result;
+   }
+
+
 
    public void restartProcessInst()
    {
