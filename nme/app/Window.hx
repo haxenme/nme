@@ -64,13 +64,13 @@ class Window
       if (shouldRenderNow())
       {
          beginRender();
-         appEventHandler.onRender(RenderFrameReady);
+         appEventHandler.onRender(true);
          endRender();
       }
       else
       {
          // On android, we must wait for the redraw before rendering.
-         // Set the flag se we don't have more enterframes than render
+         // Set the flag so we don't have more enterframes than render
          enterFramePending = true;
       }
    }
@@ -81,7 +81,7 @@ class Window
       if (shouldRenderNow())
       {
          beginRender();
-         appEventHandler.onRender(RenderInvalid);
+         appEventHandler.onRender(false);
          endRender();
       }
       else
@@ -135,7 +135,7 @@ class Window
                if (shouldRenderNow())
                {
                   beginRender();
-                  appEventHandler.onRender(RenderDirty);
+                  appEventHandler.onRender(false);
                   endRender();
                }
    
@@ -151,20 +151,10 @@ class Window
    
             case EventId.Redraw:
                beginRender();
-               if (invalidFramePending)
-               {
-                  invalidFramePending = false;
-                  appEventHandler.onRender(RenderInvalid);
-               }
-               else if (enterFramePending)
-               {
-                  enterFramePending = false;
-                  appEventHandler.onRender(RenderFrameReady);
-               }
-               else
-               {
-                  appEventHandler.onRender(RenderDirty);
-               }
+               var wasTimed = enterFramePending;
+               invalidFramePending = false;
+               enterFramePending = false;
+               appEventHandler.onRender(wasTimed);
                endRender();
    
             case EventId.TouchBegin:

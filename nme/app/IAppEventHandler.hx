@@ -2,7 +2,7 @@ package nme.app;
 
 interface IAppEventHandler
 {
-   public function onRender(reason:RenderReason):Void;
+   public function onRender(inTimed:Bool):Void;
    public function onKey(event:AppEvent, type:String):Void;
    public function onMouse(event:AppEvent, type:String, inFromMouse:Bool):Void;
    public function onTouch(event:AppEvent, type:String):Void;

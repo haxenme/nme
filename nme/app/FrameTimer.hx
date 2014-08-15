@@ -29,16 +29,18 @@ class FrameTimer implements IPollClient
    {
       if (window.active)
       {
-         if (invalid)
-         {
-            invalid = false;
-            window.onInvalidFrame();
-         }
-         else if (fps>0 && timestamp >= lastRender + framePeriod - 0.0005 ) 
+         var wasInvalid =invalid;
+         invalid = false;
+         if (fps>0 && timestamp >= lastRender + framePeriod - 0.0005 ) 
          {
             lastRender = timestamp;
             window.onNewFrame();
          }
+         else if (wasInvalid)
+         {
+            window.onInvalidFrame();
+         }
+
       }
    }
 

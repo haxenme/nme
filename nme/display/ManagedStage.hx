@@ -63,10 +63,10 @@ class ManagedStage extends Stage
    }
    */
 
-   override public function onRender(inReason:RenderReason)
+   override public function onRender(inTimed:Bool)
    {
       beginRender();
-      super.onRender(inReason);
+      super.onRender(inTimed);
       endRender();
    }
 

@@ -81,6 +81,8 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var stageHeight(get, never):Int;
    public var stageWidth(get, never):Int;
 
+   var invalid:Bool;
+
    #if stage3d
    public var stage3Ds:Vector<Stage3D>;
    #end
@@ -135,6 +137,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeRenderEvent = new Event(Event.RENDER);
 
       window = inWindow;
+      invalid = false;
       super(window.nmeHandle, "Stage");
 
       nmeMouseOverObjects = [];
@@ -184,6 +187,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public function invalidate():Void 
    {
+      invalid=true;
       if (nmeFrameTimer!=null)
          nmeFrameTimer.invalidate();
    }
@@ -435,15 +439,15 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeDispatchEvent(evt);
    }
 
-   public function onRender(reason:RenderReason)
+   public function onRender(inFrameDue:Bool)
    {
-      switch(reason)
+      if (inFrameDue)
+         nmeBroadcast(nmeEnterFrameEvent);
+
+      if (invalid)
       {
-         case RenderFrameReady:
-             nmeBroadcast(nmeEnterFrameEvent);
-         case RenderInvalid:
-             nmeBroadcast(nmeRenderEvent);
-         case RenderDirty:
+         invalid = false;
+         nmeBroadcast(nmeRenderEvent);
       }
 
       #if cpp
