@@ -3,7 +3,6 @@ package nme.display;
 
 import nme.Loader;
 import nme.app.Window;
-import nme.app.RenderReason;
 
 class ManagedStage extends Stage 
 {

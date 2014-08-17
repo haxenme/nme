@@ -7,7 +7,6 @@ import nme.app.Window;
 import nme.app.EventId;
 import nme.app.AppEvent;
 import nme.app.FrameTimer;
-import nme.app.RenderReason;
 import nme.display.DisplayObjectContainer;
 import nme.ui.Keyboard;
 

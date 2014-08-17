@@ -1807,7 +1807,10 @@ void StartAnimation()
       }
 
       // Poll if due
-      int waitMs = (int)((nextWake - GetTimeStamp())*1000.0 + 0.5);
+      double dWaitMs = (nextWake - GetTimeStamp())*1000.0 + 0.5;
+      if (dWaitMs>1000000)
+         dWaitMs = 1000000;
+      int waitMs = (int)dWaitMs;
       if (waitMs<=0)
       {
          Event poll(etPoll);
