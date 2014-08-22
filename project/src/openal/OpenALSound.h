@@ -187,6 +187,7 @@ class OpenALChannel;
          double setPosition(const float &inFloat);
          double getPosition();
          void setTransform(const SoundTransform &inTransform);
+         void setPitch(const float &inFloat);
          void stop();
          void suspend();
          void resume();
