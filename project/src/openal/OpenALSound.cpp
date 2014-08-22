@@ -408,8 +408,15 @@ namespace nme
          alSource3f(mSourceID, AL_POSITION, (float) cos((inTransform.pan - 1) * (1.5707)), 0, (float) sin((inTransform.pan + 1) * (1.5707)));
       }
    }
-   
-   
+
+   void OpenALChannel::setPitch(const float &inFloat)
+   {
+      if (!mUseStream)
+      {
+         alSourcef(mSourceID, AL_PITCH, inFloat);
+      }
+   }
+
    void OpenALChannel::stop()
    {
       if (mUseStream)
