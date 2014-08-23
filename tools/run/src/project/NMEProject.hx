@@ -108,6 +108,7 @@ class NMEProject
 
    // Exported into project for use in project files
    public var platformType:String;
+   public var ndllCheckDir:String;
    public var command:String;
    public var target:String;
 
@@ -129,6 +130,7 @@ class NMEProject
       relocationDir = "";
       targetFlags = new Map<String,String>();
       templatePaths = [];
+      ndllCheckDir = "";
 
       environment = Sys.environment();
       if (environment.exists("ANDROID_SERIAL"))
@@ -241,6 +243,11 @@ class NMEProject
          default:
             Log.error("Unknown target : " + inTargetName);
       }
+
+      if (target==Platform.ANDROID || target==Platform.ANDROIDVIEW)
+         ndllCheckDir = "/Android";
+      else if (target==Platform.IOSVIEW || target==Platform.IOS)
+         ndllCheckDir = "/iPhone";
 
       targetFlags.set("target_" + target.toString().toLowerCase() , "");
 
@@ -455,7 +462,7 @@ class NMEProject
             if (FileSystem.exists(path + "/include.xml")) 
                new NMMLParser(this, path + "/include.xml");
 
-            if (!isFlash && (!allowMissingNdll || FileSystem.exists(path+"/ndll") ))
+            if (!isFlash && (!allowMissingNdll || FileSystem.exists(path+"/ndll"+ndllCheckDir) ))
             {
                var ndll = new NDLL(name, haxelib, isStatic);
                ndlls.push(ndll);
