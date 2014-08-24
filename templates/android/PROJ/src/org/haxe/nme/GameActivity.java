@@ -38,13 +38,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.Math;
+import java.lang.Runnable;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.ArrayList;
 import org.haxe.nme.Value;
 import java.net.NetworkInterface;
 import java.net.InetAddress;
 import java.net.Inet4Address;
 import java.util.Enumeration;
+import android.util.SparseArray;
 
 ::if ANDROIDVIEW::
 import android.app.Fragment;
@@ -91,6 +94,8 @@ implements SensorEventListener
    int            videoW = 0;
    int            videoH = 0;
 
+   ArrayList<Runnable> mOnDestroyListeners;
+   static SparseArray<IActivityResult> sResultHandler = new SparseArray<IActivityResult>();
    
    private static float[] accelData = new float[3];
    private static int bufferedDisplayOrientation = -1;
@@ -448,7 +453,6 @@ implements SensorEventListener
    public static void queueRunnable(java.lang.Runnable runnable)
    {
       activity.mHandler.post(runnable);
-
    }
 
    public void sendToView(java.lang.Runnable runnable)
@@ -462,7 +466,30 @@ implements SensorEventListener
    {
       return mAssets;
    }
+
+   public void addResultHandler(int inRequestCode, IActivityResult inHandler)
+   {
+      sResultHandler.put(inRequestCode, inHandler);
+   }
+
+   public void addResultHandler(int inRequestCode, final HaxeObject inHandler)
+   {
+      addResultHandler( inRequestCode, new IActivityResult() {
+         @Override public void onActivityResult(int inCode, Intent inData)
+         {
+            inHandler.call2("onActivityResult", inCode, inData);
+         } } );
+   }
    
+   @Override public void onActivityResult(int requestCode, int resultCode, Intent data)
+   {
+      IActivityResult handler = sResultHandler.get(requestCode);
+      if (handler!=null)
+      {
+         sResultHandler.delete(requestCode);
+         handler.onActivityResult(resultCode, data);
+      }
+   }
    
    public static byte[] getResource(String inResource)
    {
@@ -573,12 +600,23 @@ implements SensorEventListener
    {
       
    }
+
+   public void addOnDestoryListener(Runnable listener)
+   {
+      if (mOnDestroyListeners==null)
+        mOnDestroyListeners = new ArrayList<Runnable>();
+      mOnDestroyListeners.add(listener);
+   }
    
    
    @Override public void onDestroy()
    {
       // TODO: Wait for result?
       Log.d(TAG,"onDestroy");
+      if (mOnDestroyListeners!=null)
+         for(Runnable listener : mOnDestroyListeners)
+            listener.run();
+      mOnDestroyListeners = null;
       mView.sendActivity(NME.DESTROY);
       if (mVideoView!=null)
          mVideoView.stopPlayback();
