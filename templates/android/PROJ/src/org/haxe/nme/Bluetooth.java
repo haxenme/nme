@@ -12,8 +12,13 @@ import java.io.Closeable;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
+import java.io.IOException;
+import android.os.ParcelUuid;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 
@@ -29,24 +34,67 @@ public class Bluetooth
    static final int SCANNING = 1;
    static final int NO_PAIRED_DEVICES = 2;
 
-   BluetoothAdapter mBluetoothAdapter;
 
-   public Bluetooth(BluetoothAdapter inAdapter)
+   private static final UUID SerialUuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+
+   static BluetoothAdapter sBluetoothAdapter;
+   static HashMap<String,BluetoothDevice> sDeviceMap = new HashMap<String,BluetoothDevice>();
+
+   BluetoothDevice mDevice;
+   BluetoothSocket mSocket;
+
+   public Bluetooth(String inName)
    {
-      mBluetoothAdapter = inAdapter;
-   }
+      sBluetoothAdapter.cancelDiscovery();
 
-   public boolean isEnabled()
-   {
-      return mBluetoothAdapter!=null && mBluetoothAdapter.isEnabled();
-   }
-
-
-   public void getDevices()
-   {
-      if (mBluetoothAdapter!=null)
+      mDevice = sDeviceMap.get(inName);
+      if (mDevice!=null)
       {
-         if (!mBluetoothAdapter.isEnabled())
+         // Get a BluetoothSocket to connect with the given BluetoothDevice
+         try {
+            mSocket = mDevice.createRfcommSocketToServiceRecord(SerialUuid);
+         } catch (IOException e)
+         {
+            Log.e(TAG,"Error opening bluetooth "+e);
+         }
+      }
+
+      if (mSocket!=null)
+      {
+         try
+         {
+            // Connect the device through the socket. This will block
+            // until it succeeds or throws an exception
+            mSocket.connect();
+         }
+         catch (IOException connectException)
+         {
+            Log.e(TAG,"Error connecting bluetooth "+connectException);
+            // Unable to connect; close the socket and get out
+            try {
+                mSocket.close();
+            } catch (IOException closeException) { }
+            mSocket = null;
+        }
+      }
+      Log.e(TAG,"Connected " + (mSocket!=null) );
+   }
+
+   public static boolean isEnabled()
+   {
+      return sBluetoothAdapter!=null && sBluetoothAdapter.isEnabled();
+   }
+
+
+   public static void getDevices()
+   {
+      if (sBluetoothAdapter==null)
+         sBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+      if (sBluetoothAdapter!=null)
+      {
+         if (!sBluetoothAdapter.isEnabled())
          {
             Log.e(TAG,"Enable bluetooth...");
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -60,7 +108,7 @@ public class Bluetooth
       }
    }
 
-   void postDevices(final HaxeObject inHandler,final int inState, final String[] inDevices)
+   static void postDevices(final HaxeObject inHandler,final int inState, final String[] inDevices)
    {
       GameActivity activity = GameActivity.getInstance();
       activity.sendToView( new Runnable() { @Override public void run()
@@ -71,7 +119,7 @@ public class Bluetooth
       );
    }
 
-   void scanDevices(final HaxeObject inHandler)
+   static void scanDevices(final HaxeObject inHandler)
    {
       postDevices(inHandler, SCANNING , null );
 
@@ -93,7 +141,8 @@ public class Bluetooth
                 Log.e(TAG,"Found device " + device.getName() );
                 // If it's already paired, skip it
                 //if (device.getBondState() != BluetoothDevice.BOND_BONDED
-                    scannedDevices.add(device.getName() + ":" + device.getAddress());
+                    scannedDevices.add(device.getName());
+                sDeviceMap.put(device.getName(), device );
             // When discovery is finished send the devices...
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                Log.e(TAG,"Finished discovery");
@@ -110,7 +159,7 @@ public class Bluetooth
        };
        receiverRef[0] = receiver;
 
-       mBluetoothAdapter.cancelDiscovery();
+       sBluetoothAdapter.cancelDiscovery();
  
        // Register for broadcasts when a device is discovered
        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -133,13 +182,13 @@ public class Bluetooth
     
        // Unregister broadcast listeners
 
-       mBluetoothAdapter.startDiscovery();
+       sBluetoothAdapter.startDiscovery();
 
    }
 
-   void sendDevices(HaxeObject inHandler)
+   static void sendDevices(HaxeObject inHandler)
    {
-      Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+      Set<BluetoothDevice> pairedDevices = sBluetoothAdapter.getBondedDevices();
       String [] result = null;
 
       // If there are paired devices
@@ -152,22 +201,25 @@ public class Bluetooth
           // Loop through paired devices
           for (BluetoothDevice device : pairedDevices)
           {
-              // Add the name and address to an array adapter to show in a ListView
-              result[idx++] = device.getName() + ":" + device.getAddress();
+             // Add the name and address to an array adapter to show in a ListView
+             result[idx++] = device.getName();// + "\n" + device.getAddress();
+             sDeviceMap.put(device.getName(), device );
           }
       }
 
       postDevices(inHandler, pairedDevices.size()==0 ? NO_PAIRED_DEVICES : BLUETOOTH_OK, result);
    }
 
-   public void getDeviceListAsync(final HaxeObject inHandler,final boolean inFullScan)
+   public static void getDeviceListAsync(final HaxeObject inHandler,final boolean inFullScan)
    {
-      final Bluetooth me = this;
-      if (mBluetoothAdapter==null)
+      if (sBluetoothAdapter==null)
+         sBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+      if (sBluetoothAdapter==null)
       {
           postDevices(inHandler,NO_BLUETOOTH, null);
       }
-      if (!mBluetoothAdapter.isEnabled())
+      if (!sBluetoothAdapter.isEnabled())
       {
          Log.e(TAG,"Enable bluetooth...");
          Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -179,34 +231,32 @@ public class Bluetooth
                if (inCode==android.app.Activity.RESULT_OK)
                {
                   if (inFullScan)
-                     me.scanDevices(inHandler);
+                     scanDevices(inHandler);
                   else
-                     me.sendDevices(inHandler);
+                     sendDevices(inHandler);
                }
                else
-                  me.postDevices(inHandler,BLUETOOTH_DISABLED, null);
+                  postDevices(inHandler,BLUETOOTH_DISABLED, null);
             }});
          activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
       }
       else
       {
          if (inFullScan)
-            me.scanDevices(inHandler);
+            scanDevices(inHandler);
          else
-            me.sendDevices(inHandler);
+            sendDevices(inHandler);
       }
    }
 
 
 
-   public static Bluetooth create()
+   public static Bluetooth create(String inDeviceName)
    {
-       Log.e(TAG, "getAdapter...");
-       BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-       Log.e(TAG, "Found adapter : " + bluetoothAdapter );
-       if (bluetoothAdapter==null)
-          return null;
-       return new Bluetooth(bluetoothAdapter);
+      if (sBluetoothAdapter==null)
+         sBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+      return new Bluetooth(inDeviceName);
    }
 
 }
