@@ -35,6 +35,7 @@ static bool sInit = false;
 jclass GameActivity;
 jclass ObjectClass;
 jmethodID postUICallback;
+jmethodID isArrayClass;
 jclass HaxeObject;
 jclass ValueObject;
 jmethodID HaxeObject_create;
@@ -52,6 +53,45 @@ void CheckException(JNIEnv *env, bool inThrow)
         val_throw(alloc_string("JNI Exception"));
    }
 }
+
+std::string ClassNameOf(JNIEnv *inEnv,jclass inObject)
+{
+   if (inObject==0)
+   {
+      return "NULL";
+   }
+   else
+   {
+      jclass classClass = FindClass("java/lang/Class");
+      jmethodID mid_getName = inEnv->GetMethodID(classClass, "getName", "()Ljava/lang/String;");
+      jstring name = (jstring)inEnv->CallObjectMethod(inObject, mid_getName);
+      jthrowable exc = inEnv->ExceptionOccurred();
+      if (exc)
+        inEnv->ExceptionClear();
+
+      jboolean is_copy;
+      const char *utf8 = inEnv->GetStringUTFChars( name, &is_copy);
+      std::string result = utf8;
+      inEnv->ReleaseStringUTFChars(name,utf8);
+      inEnv->DeleteLocalRef(name);
+      return result;
+   }
+}
+
+
+std::string ClassOf(JNIEnv *inEnv,jobject inObject)
+{
+   if (inObject==0)
+   {
+      return "NULL";
+   }
+   else
+   {
+      jclass cls = inEnv->GetObjectClass(inObject);
+      return ClassNameOf(inEnv, cls);
+   }
+}
+
 
 
 struct JNIType
@@ -166,10 +206,12 @@ struct JNIType
       for(int i=0;i<jniELEMENTS;i++)
       {
          JNIType type((JNIElement)i,1);
+
          if (i==jniVoid)
             elementArrayClass[i] = 0;
          else
             elementArrayClass[i] = type.getClass(inEnv);
+
          if (i<jniPODStart)
             elementClass[i] = JNIType((JNIElement)i,0).getClass(inEnv);
          else
@@ -223,6 +265,9 @@ void JNIInit(JNIEnv *env)
    HaxeObject_create = env->GetStaticMethodID(HaxeObject, "create", "(J)Lorg/haxe/nme/HaxeObject;");
    #endif
    __haxeHandle = env->GetFieldID(HaxeObject, "__haxeHandle", "J");
+
+   jclass classClass = FindClass("java/lang/Class");
+   isArrayClass = env->GetMethodID(classClass, "isArray", "()Z");
 
    JNIType::init(env);
 
@@ -380,6 +425,40 @@ value JObjectToHaxeObject(JNIEnv *env,jobject inObject)
    }\
    break;
 
+
+void DebugObject(JNIEnv *inEnv,const char *inMessage, jobject inObject)
+{
+   if (inObject==0)
+   {
+      ELOG("%s : null", inMessage);
+   }
+   else
+   {
+      jclass cls = inEnv->GetObjectClass(inObject);
+      jmethodID mid = inEnv->GetMethodID(cls,"toString","()V");
+      jthrowable exc = inEnv->ExceptionOccurred();
+      if (exc)
+         inEnv->ExceptionClear();
+
+      CheckException(inEnv,false);
+      if (mid)
+      {
+         jstring str = (jstring)inEnv->CallObjectMethod(cls,mid);
+
+         jboolean is_copy;
+         const char *utf8 = inEnv->GetStringUTFChars( str, &is_copy);
+         ELOG("%s : '%s'",inMessage, utf8);
+         inEnv->ReleaseStringUTFChars(str,utf8);
+         inEnv->DeleteLocalRef(str);
+      }
+      else
+      {
+        ELOG("%s : no toString in class '%s'",inMessage, ClassOf(inEnv,inObject).c_str());
+      }
+   }
+}
+
+
 value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
 {
    if (inObject==0)
@@ -406,13 +485,20 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
          {
             for(int i=0;i<jniELEMENTS;i++)
             {
-               if (JNIType::elementArrayClass[i]==0) continue;
+               if (JNIType::elementArrayClass[i]==0)
+                  continue;
                if (inEnv->IsSameObject(cls,JNIType::elementArrayClass[i]))
                {
-                 inType = JNIType((JNIElement)i,1);
+                  inType = JNIType((JNIElement)i,1);
                   break;
                }
             }
+         }
+
+         if (inType.isUnknownType())
+         {
+            if (inEnv->CallBooleanMethod(cls,isArrayClass))
+               inType = JNIType(jniUnknown,1);
          }
       }
 
@@ -463,49 +549,53 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
       }
       return result;
    }
-   else switch(inType.element)
+   else
    {
-      case jniObject:
-         {
-         JNIObject *obj = new JNIObject(inObject);
-         return ObjectToAbstract(obj);
-         }
-      case jniObjectHaxe:
-     
-         return JObjectToHaxeObject(inEnv,inObject);
-      case jniObjectString:
-         return JStringToHaxe(inEnv,inObject);
-      case jniVoid: return alloc_null();
-
-      case jniBoolean:
-          return alloc_bool(inEnv->CallBooleanMethod(inObject, JNIType::elementGetValue[jniBoolean]));
-
-      case jniChar:
-          return alloc_int(inEnv->CallCharMethod(inObject, JNIType::elementGetValue[jniChar]));
-
-      case jniShort:
-      case jniByte:
-      case jniInt:
-      case jniLong:
-      case jniFloat:
-      case jniDouble:
-      case jniValueObject:
-          return alloc_float(inEnv->CallDoubleMethod(inObject, JNIType::elementGetValue[inType.element] ) );
-
-
-      default:
+      switch(inType.element)
       {
-         jclass cls = inEnv->GetObjectClass(inObject);
-         if (cls)
+         case jniObject:
+            {
+            JNIObject *obj = new JNIObject(inObject);
+            return ObjectToAbstract(obj);
+            }
+         case jniObjectHaxe:
+     
+            return JObjectToHaxeObject(inEnv,inObject);
+         case jniObjectString:
+      
+            return JStringToHaxe(inEnv,inObject);
+         case jniVoid: return alloc_null();
+
+         case jniBoolean:
+             return alloc_bool(inEnv->CallBooleanMethod(inObject, JNIType::elementGetValue[jniBoolean]));
+
+         case jniChar:
+             return alloc_int(inEnv->CallCharMethod(inObject, JNIType::elementGetValue[jniChar]));
+
+         case jniShort:
+         case jniByte:
+         case jniInt:
+         case jniLong:
+         case jniFloat:
+         case jniDouble:
+         case jniValueObject:
+             return alloc_float(inEnv->CallDoubleMethod(inObject, JNIType::elementGetValue[inType.element] ) );
+
+
+         default:
          {
-           jmethodID mid = inEnv->GetMethodID(cls,"toString","()V");
-           if (mid)
-           {
-              jstring str = (jstring)inEnv->CallObjectMethod(cls,mid);
-              value result = JStringToHaxe(inEnv,str);
-              inEnv->DeleteLocalRef(str);
-              return result;
-           }
+            jclass cls = inEnv->GetObjectClass(inObject);
+            if (cls)
+            {
+              jmethodID mid = inEnv->GetMethodID(cls,"toString","()V");
+              if (mid)
+              {
+                 jstring str = (jstring)inEnv->CallObjectMethod(cls,mid);
+                 value result = JStringToHaxe(inEnv,str);
+                 inEnv->DeleteLocalRef(str);
+                 return result;
+              }
+            }
          }
       }
    }
