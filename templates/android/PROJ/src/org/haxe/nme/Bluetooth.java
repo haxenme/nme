@@ -43,6 +43,10 @@ public class Bluetooth
 
    BluetoothDevice mDevice;
    BluetoothSocket mSocket;
+   InputStream mInput;
+   OutputStream mOutput;
+   byte [] mBuffer;
+   
 
    public Bluetooth(String inName)
    {
@@ -67,6 +71,8 @@ public class Bluetooth
             // Connect the device through the socket. This will block
             // until it succeeds or throws an exception
             mSocket.connect();
+            mInput = mSocket.getInputStream();
+            mOutput = mSocket.getOutputStream();
          }
          catch (IOException connectException)
          {
@@ -249,6 +255,75 @@ public class Bluetooth
       }
    }
 
+
+   public int writeBytes(String buffer)
+   {
+      try
+      {
+         mOutput.write(buffer.getBytes());
+         return buffer.length();
+      } catch(IOException e) { }
+      return 0;
+   }
+
+   public String readBytes(int length)
+   {
+      if (mBuffer==null || mBuffer.length<length)
+         mBuffer = new byte[length];
+
+      try
+      {
+         mInput.read(mBuffer, 0, length);
+         return new String(mBuffer,0,length);
+      } catch(IOException e) { }
+      return null;
+   }
+
+   public boolean writeByte(int inByte)
+   {
+      try
+      {
+         mOutput.write(inByte);
+         return true;
+      } catch(IOException e) { }
+      return false;
+   }
+
+   public int readByte()
+   {
+      try
+      {
+         return mInput.read();
+      } catch(IOException e) { }
+      return 0;
+   }
+
+   public void flush(boolean flushIn, boolean flushOut)
+   {
+      // nothing?
+   }
+
+   public int available()
+   {
+      try
+      {
+         return mInput.available();
+      } catch(IOException e) { }
+      return 0;
+   }
+
+   public int close()
+   {
+      try
+      {
+         mInput.close();
+         mOutput.close();
+         mSocket.close();
+      } catch(IOException e) { }
+      return 1;
+   }
+
+   public boolean ok() { return mSocket!=null; }
 
 
    public static Bluetooth create(String inDeviceName)

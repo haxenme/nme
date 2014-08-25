@@ -33,6 +33,9 @@ class Bluetooth
 
       handle = create(inPortName);
 
+      if (!okFunc(handle))
+        throw "Could not open bluetooth connection";
+
       isSetup = true;
    }
 
@@ -51,26 +54,52 @@ class Bluetooth
 
    public function writeBytes(buffer:String):Int
    {
-      return 0;
+      return writeBytesFunc(handle,buffer);
    }
 
-   public function readBytes(length:Int):String return "";
+   public function readBytes(length:Int):String
+   {
+      return readBytesFunc(handle,length);
+   }
 
-   public function writeByte(byte:Int):Bool return false;
+   public function writeByte(byte:Int):Bool
+   {
+      return writeByteFunc(handle,byte);
+   }
 
-   public function readByte():Int return 0;
+   public function readByte():Int
+   {
+      return readByteFunc(handle);
+   }
 
-   public function flush(?flushIn:Bool = false, ?flushOut = false):Void return;
+   public function flush(?flushIn:Bool = false, ?flushOut = false):Void
+   {
+      //flushFunc(handle,flushIn,flushOut);
+   }
 
-   public function available():Int return 0;
+   public function available():Int
+   {
+      return availableFunc(handle);
+   }
 
    public function close():Int
    {
-      return 0;
+      var result =  closeFunc(handle);
+      handle = null;
+      return result;
    }
 
    static var create = JNI.createStaticMethod("org.haxe.nme.Bluetooth", "create", "(Ljava/lang/String;)Lorg/haxe/nme/Bluetooth;");
    static var getDevices = JNI.createStaticMethod("org.haxe.nme.Bluetooth", "getDevices", "()V");
    static var devicesAsync = JNI.createStaticMethod("org.haxe.nme.Bluetooth", "getDeviceListAsync", "(Lorg/haxe/nme/HaxeObject;Z)V");
+
+   static var okFunc = JNI.createMemberMethod("org.haxe.nme.Bluetooth", "ok", "()Z");
+   static var writeBytesFunc = JNI.createMemberMethod("org.haxe.nme.Bluetooth", "writeBytes", "(Ljava/lang/String;)I");
+   static var readBytesFunc = JNI.createMemberMethod("org.haxe.nme.Bluetooth", "readBytes", "(I)Ljava/lang/String;");
+   static var writeByteFunc = JNI.createMemberMethod("org.haxe.nme.Bluetooth", "writeByte", "(I)Z");
+   static var readByteFunc = JNI.createMemberMethod("org.haxe.nme.Bluetooth", "readByte", "()I");
+   static var flushFunc = JNI.createMemberMethod("org.haxe.nme.Bluetooth", "flush", "(ZZ)V");
+   static var availableFunc = JNI.createMemberMethod("org.haxe.nme.Bluetooth", "available", "()I");
+   static var closeFunc = JNI.createMemberMethod("org.haxe.nme.Bluetooth", "close", "()I");
 }
 
