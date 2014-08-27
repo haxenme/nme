@@ -15,6 +15,22 @@ class FileFilter
      extension = inExtension;
      macType = inMacType;
    }
+ 
+   // Includes the "." or may be empty string
+   public function getBestExtension()
+   {
+      for(m in match)
+      {
+         if (m!=".*" && m.substr(0,1)==".")
+            return m;
+      }
+      for(m in match)
+      {
+         if (m!=".*")
+            return "." + m;
+      }
+      return "";
+   }
 
    function set_extension(inExtension:String)
    {
@@ -33,6 +49,8 @@ class FileFilter
       var flen = filename.length;
       for(m in match)
       {
+         if (m==".*")
+            return true;
          if (m.length <= flen && filename.substr(flen-m.length)==m)
             return true;
       }
