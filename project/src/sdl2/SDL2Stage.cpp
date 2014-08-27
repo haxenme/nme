@@ -1805,6 +1805,7 @@ void StartAnimation()
             break;
          nextWake = sgSDLFrame->GetStage()->GetNextWake();
       }
+ 
 
       // Poll if due
       double dWaitMs = (nextWake - GetTimeStamp())*1000.0 + 0.5;
@@ -1822,19 +1823,27 @@ void StartAnimation()
       // Kill some time
       else
       {
-         // Windows will oversleep 10ms for any positive number here...
-         #ifdef HX_WINDOWS
-         if (waitMs>10)
-            SDL_Delay(1);
+         if (sgSDLFrame->mStage->IsCacheDirty())
+         {
+            Event redraw(etRedraw);
+            sgSDLFrame->ProcessEvent(redraw);
+         }
          else
-            SDL_Delay(0);
-         #else
-         // TODO - check this is ok for other targets...
-         if (waitMs>10)
-            SDL_Delay(10);
-         else if (waitMs>1)
-            SDL_Delay(waitMs-1);
-         #endif
+         {
+            // Windows will oversleep 10ms for any positive number here...
+            #ifdef HX_WINDOWS
+            if (waitMs>10)
+               SDL_Delay(1);
+            else
+               SDL_Delay(0);
+            #else
+            // TODO - check this is ok for other targets...
+            if (waitMs>10)
+               SDL_Delay(10);
+            else if (waitMs>1)
+               SDL_Delay(waitMs-1);
+            #endif
+         }
       }
    }
 #else

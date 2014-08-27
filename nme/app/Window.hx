@@ -27,13 +27,11 @@ class Window
 
    public var nmeHandle(default,null):Dynamic;
    var enterFramePending:Bool;
-   var invalidFramePending:Bool;
 
    public function new(inFrameHandle:Dynamic,inWidth:Int,inHeight:Int)
    {
       appEventHandler = null;
       active = true;
-      invalidFramePending = false;
       autoClear = true;
 
       nmeHandle = nme_get_frame_stage(inFrameHandle);
@@ -87,8 +85,6 @@ class Window
       else
       {
          // On android, we must wait for the redraw before rendering.
-         // Set the flag se we don't have more enterframes than render
-         invalidFramePending = true;
       }
    }
 
@@ -152,7 +148,6 @@ class Window
             case EventId.Redraw:
                beginRender();
                var wasTimed = enterFramePending;
-               invalidFramePending = false;
                enterFramePending = false;
                appEventHandler.onRender(wasTimed);
                endRender();

@@ -2177,6 +2177,7 @@ void Stage::EndRenderStage()
 {
    currentTarget = RenderTarget();
    GetPrimarySurface()->EndRender();
+   ClearCacheDirty();
    Flip();
 }
 
