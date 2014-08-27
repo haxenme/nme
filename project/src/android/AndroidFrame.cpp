@@ -933,7 +933,16 @@ JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobje
 {
    AutoHaxe haxe("onGetNextWake");
    if (nme::sStage)
+   {
+      #ifndef HX_LIME
+      if (nme::sStage->IsCacheDirty())
+      {
+         nme::AndroidRequestRender();
+         return 0;
+      }
+      #endif
       return nme::sStage->GetNextWake()-nme::GetTimeStamp();
+   }
    return 3600*100000;
 }
 
