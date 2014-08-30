@@ -1823,7 +1823,7 @@ void StartAnimation()
       // Kill some time
       else
       {
-         if (sgSDLFrame->mStage->IsCacheDirty())
+         if (sgSDLFrame->mStage->BuildCache())
          {
             Event redraw(etRedraw);
             sgSDLFrame->ProcessEvent(redraw);

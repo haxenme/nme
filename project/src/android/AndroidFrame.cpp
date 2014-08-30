@@ -935,7 +935,7 @@ JAVA_EXPORT double JNICALL Java_org_haxe_nme_NME_getNextWake(JNIEnv * env, jobje
    if (nme::sStage)
    {
       #ifndef HX_LIME
-      if (nme::sStage->IsCacheDirty())
+      if (nme::sStage->BuildCache())
       {
          nme::AndroidRequestRender();
          return 0;

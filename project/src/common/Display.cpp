@@ -243,6 +243,10 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
             inState.mHitResult = mParent;
       }
    }
+   else if (inState.mPhase==rpBitmap && inState.mWasDirtyPtr && !*inState.mWasDirtyPtr)
+   {
+      *inState.mWasDirtyPtr = DisplayObject::IsCacheDirty();
+   }
 }
 
 
@@ -833,8 +837,8 @@ void SimpleButton::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool in
 
 bool SimpleButton::IsCacheDirty()
 {
-   for(int i=0;i<stateSIZE;i++)
-      if (mState[i] && mState[i]->IsCacheDirty())
+   DisplayObject *obj = mState[mMouseState];
+   if (obj && obj->IsCacheDirty())
          return true;
    return DisplayObject::IsCacheDirty();
 }
@@ -843,16 +847,17 @@ bool SimpleButton::IsCacheDirty()
 void SimpleButton::ClearCacheDirty()
 {
    DisplayObject::ClearCacheDirty();
-   for(int i=0;i<stateSIZE;i++)
-      if (mState[i])
-         mState[i]->ClearCacheDirty();
+   DisplayObject *obj = mState[mMouseState];
+   if (obj)
+      obj->ClearCacheDirty();
+   DisplayObject::ClearCacheDirty();
 }
 
 bool SimpleButton::NonNormalBlendChild()
 {
-   for(int i=0;i<stateSIZE;i++)
-      if (mState[i] && mState[i]->NonNormalBlendChild())
-         return true;
+   DisplayObject *obj = mState[mMouseState];
+   if (obj)
+      return obj->NonNormalBlendChild();
    return false;
 }
 
@@ -1236,6 +1241,8 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                   continue;
                else
                {
+                  if (state.mWasDirtyPtr)
+                     *state.mWasDirtyPtr = true;
                   obj->SetBitmapCache(0);
                }
             }
@@ -1243,6 +1250,9 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             // Ok, build bitmap cache...
             if (visible_bitmap.HasPixels())
             {
+               if (state.mWasDirtyPtr)
+                  *state.mWasDirtyPtr = true;
+
                /*
                printf("object rect %d,%d %dx%d\n", rect.x, rect.y, rect.w, rect.h);
                printf("filtered rect %d,%d %dx%d\n", filtered.x, filtered.y, filtered.w, filtered.h);
@@ -2155,7 +2165,7 @@ void Stage::BeginRenderStage(bool inClear)
 void Stage::RenderStage()
 {
    ColorTransform::TidyCache();
-   
+
    if (currentTarget.IsHardware())
       currentTarget.mHardware->SetQuality(quality);
 
@@ -2179,6 +2189,23 @@ void Stage::EndRenderStage()
    GetPrimarySurface()->EndRender();
    ClearCacheDirty();
    Flip();
+}
+
+bool Stage::BuildCache()
+{
+   Surface *surface = GetPrimarySurface();
+   RenderState state(surface, GetAA() );
+   state.mTransform.mMatrix = &mStageScale;
+   bool wasDirty = false;
+   state.mWasDirtyPtr = &wasDirty;
+
+   state.mPhase = rpBitmap;
+
+   RenderTarget target(state.mClipRect, surface->GetHardwareRenderer());
+   state.mRoundSizeToPOW2 = surface->GetHardwareRenderer();
+   Render(target,state);
+
+   return wasDirty;
 }
 
  

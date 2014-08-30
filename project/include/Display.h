@@ -376,6 +376,7 @@ public:
 
    Matrix GetFullMatrix(bool inStageScaling);
    bool FinishEditOnEnter();
+   bool BuildCache();
 
    #ifdef NME_S3D
    void setAutoS3D(bool enabled) { autos3d = enabled; }

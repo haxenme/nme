@@ -1363,11 +1363,12 @@ void TextField::BuildBackground()
 bool TextField::CaretOn()
 {
    Stage *s = getStage();
-   return  s && isInput && (( (int)(GetTimeStamp()*3)) & 1) && s->GetFocusObject()==this;
+   return (s && isInput && s->GetFocusObject()==this && (( (int)(GetTimeStamp()*3)) & 1));
 }
 
 bool TextField::IsCacheDirty()
 {
+   //if (mGfxDirty) BuildBackground();
    return DisplayObject::IsCacheDirty() || mGfxDirty || mLinesDirty || (CaretOn()!=mHasCaret);
 }
 
@@ -1375,6 +1376,10 @@ bool TextField::IsCacheDirty()
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
+   if (inState.mPhase==rpBitmap && inState.mWasDirtyPtr)
+   {
+      *inState.mWasDirtyPtr = IsCacheDirty();
+   }
    if (inTarget.mPixelFormat==pfAlpha || inState.mPhase==rpBitmap)
       return;
 
