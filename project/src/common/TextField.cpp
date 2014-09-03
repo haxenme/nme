@@ -1376,7 +1376,7 @@ bool TextField::IsCacheDirty()
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   if (inState.mPhase==rpBitmap && inState.mWasDirtyPtr)
+   if (inState.mPhase==rpBitmap && inState.mWasDirtyPtr && !*inState.mWasDirtyPtr)
    {
       *inState.mWasDirtyPtr = IsCacheDirty();
    }
