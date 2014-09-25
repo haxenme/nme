@@ -117,6 +117,8 @@ private typedef VectorData<T> = Array<T>;
 	
 	
 	public function toString():String {
+		if(this == null)
+            		return "null";
 		
 		return this.toString();
 		
