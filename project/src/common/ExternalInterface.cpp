@@ -4540,7 +4540,8 @@ value nme_curl_get_data(value inLoader)
    if (AbstractToObject(inLoader,loader))
    {
       ByteArray b = loader->releaseData();
-      return b.mValue;
+      if (b.mValue)
+         return b.mValue;
    }
    #endif
    return alloc_null();
