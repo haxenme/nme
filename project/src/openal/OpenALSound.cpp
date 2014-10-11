@@ -847,8 +847,16 @@ namespace nme
    }
    
    
+   void Sound::Shutdown()
+   {
+      OpenALClose();
+   }
+   
+   
    //Ogg Audio Stream implementation
    int AudioStream_Ogg::getLength(const std::string &path) {
+        
+        if (openal_is_shutdown) return 0;
         
         int result;
         mPath = std::string(path.c_str());
@@ -904,6 +912,8 @@ namespace nme
    
    void AudioStream_Ogg::open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform) {
         
+        if (openal_is_shutdown) return;
+   
         int result;
         mPath = std::string(path.c_str());
         mStartTime = startTime;
@@ -988,6 +998,8 @@ namespace nme
 
    void AudioStream_Ogg::release() {
       
+      if (openal_is_shutdown) return;
+      
       if (source) {
          alSourceStop(source);
          empty();
@@ -1012,7 +1024,9 @@ namespace nme
    
    
    bool AudioStream_Ogg::playback() {
-
+      
+      if (openal_is_shutdown) return false;
+      
       if(playing()) {
            return true;
       }
@@ -1034,7 +1048,9 @@ namespace nme
    
    
    bool AudioStream_Ogg::playing() {
-      
+       
+       if (openal_is_shutdown) return false;
+       
        ALint state;
        alGetSourcei(source, AL_SOURCE_STATE, &state);
        return (state == AL_PLAYING);
@@ -1043,7 +1059,8 @@ namespace nme
    
    
    bool AudioStream_Ogg::update() {
-      
+       
+       if (openal_is_shutdown) return false;
        if (mSuspend) return true;
        if (!mIsValid) return false;
       
@@ -1085,6 +1102,8 @@ namespace nme
    
    bool AudioStream_Ogg::stream( ALuint buffer ) {
       
+       if (openal_is_shutdown) return false;
+       
        if (mSuspend) return true;
        //LOG_SOUND("STREAM\n");
        char pcm[STREAM_BUFFER_SIZE];
@@ -1133,6 +1152,8 @@ namespace nme
 
     void AudioStream_Ogg::empty() {
 
+      if (openal_is_shutdown) return;
+      
       int queued;
     
       alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
@@ -1149,6 +1170,9 @@ namespace nme
 
     void AudioStream_Ogg::check()
     {
+
+      if (openal_is_shutdown) return;
+      
       int error = alGetError();
 
       if(error != AL_NO_ERROR) {

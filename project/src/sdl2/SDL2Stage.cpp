@@ -1750,6 +1750,8 @@ void StopAnimation()
       gSDLAudioState = sdaClosed;
       Mix_CloseAudio();
    }
+   #else
+   Sound::Shutdown();
    #endif
    sgDead = true;
 }

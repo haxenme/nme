@@ -51,10 +51,12 @@ class OpenALChannel;
    static QuickVec<intptr_t> sgOpenChannels;
 
    static bool openal_is_init = false;
+   static bool openal_is_shutdown = false;
 
    static bool OpenALInit()
    {
       //LOG_SOUND("Sound.mm OpenALInit()");
+      if (openal_is_shutdown) return false;
       
       if (!openal_is_init)
       {
@@ -68,6 +70,18 @@ class OpenALChannel;
          sgOpenChannels = QuickVec<intptr_t>();
       }
       return sgContext;
+   }
+   
+   static bool OpenALClose()
+   {
+      if (openal_is_init && !openal_is_shutdown)
+      {
+         openal_is_shutdown = true;
+         alcMakeContextCurrent(0);
+         if (sgContext) alcDestroyContext(sgContext);
+         if (sgDevice) alcCloseDevice(sgDevice);
+      }
+      return true;
    }
    
    

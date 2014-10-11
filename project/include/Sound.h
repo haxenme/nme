@@ -58,6 +58,7 @@ public:
 
    static void Suspend();
    static void Resume();
+   static void Shutdown();
 
    virtual void getID3Value(const std::string &inKey, std::string &outValue)
    {
