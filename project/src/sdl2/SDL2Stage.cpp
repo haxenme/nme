@@ -23,6 +23,7 @@ static bool sgInitCalled = false;
 static bool sgJoystickEnabled = false;
 static int  sgShaderFlags = 0;
 static bool sgIsOGL2 = false;
+const int sgJoystickDeadZone = 1000;
 
 enum { NO_TOUCH = -1 };
 
@@ -809,6 +810,7 @@ SDL_Joystick *sgJoystick;
 QuickVec<SDL_Joystick *> sgJoysticks;
 QuickVec<int> sgJoysticksId;
 QuickVec<int> sgJoysticksIndex;
+std::map<int, std::map<int, int> > sgJoysticksAxisMap;
 #endif
 
 
@@ -1280,6 +1282,28 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_JOYAXISMOTION:
       {
+         if (sgJoysticksAxisMap[inEvent.jaxis.which].empty())
+         {
+            sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] = inEvent.jaxis.value;
+         }
+         else if (sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] == inEvent.jaxis.value)
+         {
+            break;
+         }
+         if (inEvent.jaxis.value > -sgJoystickDeadZone && inEvent.jaxis.value < sgJoystickDeadZone)
+         {
+            if (sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] != 0)
+            {
+               sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] = 0;
+               Event joystick(etJoyAxisMove);
+               joystick.id = inEvent.jaxis.which;
+               joystick.code = inEvent.jaxis.axis;
+               joystick.value = 0;
+               sgSDLFrame->ProcessEvent(joystick);
+            }
+            break;
+         }
+         sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] = inEvent.jaxis.value;
          Event joystick(etJoyAxisMove);
          joystick.id = inEvent.jaxis.which;
          joystick.code = inEvent.jaxis.axis;
