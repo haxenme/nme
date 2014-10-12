@@ -89,7 +89,8 @@ class OpenALChannel;
    class AudioStream_Ogg : public AudioStream {
        
        public:
-
+           
+           AudioStream_Ogg();
            void open(const std::string &path, int startTime, int inLoops, const SoundTransform &inTransform);
            void release();
            bool playback();
@@ -248,6 +249,7 @@ class OpenALChannel;
          ALint channels;
 
          ALuint mBufferID;
+         double mTotalTime;
          bool mIsStream;
          std::string mStreamPath;
          std::string mError;

@@ -499,6 +499,7 @@ namespace nme
       IncRef();
       mBufferID = 0;
       mIsStream = false;
+      mTotalTime = -1;
       
       #ifdef HX_MACOS
       char fileURL[1024];
@@ -666,24 +667,32 @@ namespace nme
    
    double OpenALSound::getLength()
    {
-      if (mIsStream)
+      if (mTotalTime == -1)
       {
-         AudioStream_Ogg *audioStream = new AudioStream_Ogg();
-         if (audioStream)
+         if (mIsStream)
          {
-            int length = audioStream->getLength(mStreamPath.c_str());
-            audioStream->release();
-            return length * 1000;
+            AudioStream_Ogg *audioStream = new AudioStream_Ogg();
+            if (audioStream)
+            {
+               int length = audioStream->getLength(mStreamPath.c_str());
+               audioStream->release();
+               mTotalTime = length * 1000;
+               delete audioStream;
+            }
+            else
+            {
+               mTotalTime = 0;
+            }
          }
-         return 0;
+         else
+         {
+            double result = ((double)bufferSize) / (frequency * channels * (bitsPerSample/8) );
+            
+            //LOG_SOUND("OpenALSound getLength returning %f", toBeReturned);
+            mTotalTime = result * 1000;
+         }
       }
-      else
-      {
-         double result = ((double)bufferSize) / (frequency * channels * (bitsPerSample/8) );
-         
-         //LOG_SOUND("OpenALSound getLength returning %f", toBeReturned);
-         return result * 1000;
-      }
+      return mTotalTime;
    }
    
    
@@ -854,12 +863,26 @@ namespace nme
    
    
    //Ogg Audio Stream implementation
+   AudioStream_Ogg::AudioStream_Ogg() {
+         
+      source = 0;
+      mIsValid = false;
+      mSuspend = false;
+      oggFile = 0;
+      oggStream = 0;
+      mLoops = 0;
+      mStartTime = 0;
+      
+   }
+   
+   
    int AudioStream_Ogg::getLength(const std::string &path) {
         
         if (openal_is_shutdown) return 0;
         
         int result;
         mPath = std::string(path.c_str());
+        mIsValid = true;
         
         #ifdef ANDROID
         
@@ -885,15 +908,15 @@ namespace nme
             mIsValid = false;
             return 0;
         }
-      
-      oggStream = new OggVorbis_File();
+        
+        oggStream = new OggVorbis_File();
         
         #ifdef ANDROID
         result = ov_open_callbacks(this, oggStream, NULL, 0, callbacks);
         #else
         result = ov_open(oggFile, oggStream, NULL, 0);
         #endif
-         
+        
         if(result < 0) {
          
             fclose(oggFile);
