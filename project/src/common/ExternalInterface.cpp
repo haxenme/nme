@@ -133,6 +133,7 @@ static int _id_matrix;
 static int _id_ascent;
 static int _id_descent;
 
+static Rect _tile_rect;
 
 vkind gObjectKind;
 
@@ -233,6 +234,8 @@ extern "C" void InitIDs()
    _id_descent = val_id("descent");
 
    kind_share(&gObjectKind,"nme::Object");
+   
+   _tile_rect = Rect(0, 0, 1, 1);
 
    #ifndef HX_LIME
    InitCamera();
@@ -2758,6 +2761,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
         TILE_RGB      = 0x0004,
         TILE_ALPHA    = 0x0008,
         TILE_TRANS_2x2= 0x0010,
+        TILE_RECT     = 0x0020,
+        TILE_ORIGIN   = 0x0040,
         TILE_SMOOTH   = 0x1000,
 
         TILE_BLEND_ADD   = 0x10000,
@@ -2783,10 +2788,20 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
 
       bool smooth = flags & TILE_SMOOTH;
       gfx->beginTiles(&sheet->GetSurface(), smooth, blend);
+	  
+	  bool useRect = flags & TILE_RECT;
+	  bool useOrigin = flags & TILE_ORIGIN;
 
       int components = 3;
       int scale_pos = 3;
       int rot_pos = 3;
+	  
+	  if (useRect)
+	  {
+		  components = useOrigin ? 8 : 6;
+		  scale_pos = useOrigin ? 8 : 6;
+		  rot_pos = useOrigin ? 8 : 6;
+	  }
 
       if (flags & TILE_TRANS_2x2)
          components+=4;
@@ -2818,36 +2833,102 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
       double x;
       double y;
       value *val_ptr = val_array_value(inXYIDs);
+	  
+	  Rect r = _tile_rect;
+	  
+	  double ox;
+      double oy;
 
       for(int i=0;i<n;i++)
       {
-         if (vals)
+         ox = 0.0;
+		 oy = 0.0;
+		  
+		 if (vals)
          {
             x = vals[0];
             y = vals[1];
-            id =vals[2];
+			
+			if (useRect)
+			{
+				r.x = vals[2];
+			    r.y = vals[3];
+			    r.w = vals[4];
+			    r.h = vals[5];
+				
+				if (useOrigin)
+			    {
+					ox = vals[6];
+			    	oy = vals[7];
+				}
+			}
+			else
+			{
+				id =vals[2];
+			}
          }
          else if (fvals)
          {
-            x = fvals[0];
-            y = fvals[1];
-            id =fvals[2];
+             x = fvals[0];
+             y = fvals[1];
+			
+			if (useRect)
+			{
+				 r.x = fvals[2];
+			     r.y = fvals[3];
+			     r.w = fvals[4];
+			     r.h = fvals[5];
+				 
+				 if (useOrigin)
+			     {
+					ox = fvals[6];
+			    	oy = fvals[7];
+				 }
+			}
+			else
+			{
+				 id =fvals[2];
+			}
          }
          else
          {
-            x = val_number(val_ptr[0]);
-            y = val_number(val_ptr[1]);
-            id =val_number(val_ptr[2]);
+             x = val_number(val_ptr[0]);
+             y = val_number(val_ptr[1]);
+			
+			if (useRect)
+			{
+				 r.x = val_number(val_ptr[2]);
+                 r.y = val_number(val_ptr[3]);
+                 r.w = val_number(val_ptr[4]);
+                 r.h = val_number(val_ptr[5]);
+				 
+				 if (useOrigin)
+				 {
+					 ox = val_number(val_ptr[6]);
+                     oy = val_number(val_ptr[7]);
+				 }
+			}
+			else
+			{
+				 id =val_number(val_ptr[2]);
+			}
          }
-         if (id>=0 && id<max)
+         if ((id>=0 && id<max) || useRect)
          {
-            const Tile &tile =  sheet->GetTile(id);
-
-            double ox = tile.mOx;
-            double oy = tile.mOy;
-            const Rect &r = tile.mRect;
-            int pos = 3;
-
+             int pos = 3;
+			 
+			 if (useRect)
+			 {
+				 pos = useOrigin ? 8 : 6;
+			 }
+			 else
+			 {
+				 const Tile &tile =  sheet->GetTile(id);
+                 ox = tile.mOx;
+                 oy = tile.mOy;
+                 r = tile.mRect;
+			 }
+			 
             if (trans_2x2)
             {
                if (flags & TILE_TRANS_2x2)
@@ -2927,8 +3008,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_gfx_draw_tiles,5);
 
+DEFINE_PRIM(nme_gfx_draw_tiles,5);
 
 static bool sNekoLutInit = false;
 static int sNekoLut[256];

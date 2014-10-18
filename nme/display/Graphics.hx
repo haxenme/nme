@@ -11,6 +11,8 @@ class Graphics
    public static inline var TILE_RGB = 0x0004;
    public static inline var TILE_ALPHA = 0x0008;
    public static inline var TILE_TRANS_2x2 = 0x0010; // Will ignore scale and rotation....
+   public static inline var TILE_RECT = 0x0020;		// won't use tile ids
+   public static inline var TILE_ORIGIN = 0x0040;
    private static inline var TILE_SMOOTH = 0x1000;
    public static inline var TILE_BLEND_NORMAL   = 0x00000000;
    public static inline var TILE_BLEND_ADD      = 0x00010000;
@@ -107,10 +109,10 @@ class Graphics
 
       if (inSmooth)
          inFlags |= TILE_SMOOTH;
-
+		
       nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, inXYID, inFlags, inCount);
    }
-
+   
    public function drawTriangles(vertices:Array<Float>, ?indices:Array<Int>, ?uvtData:Array<Float>, ?culling:TriangleCulling, ?colours:Array<Int>, blendMode:Int = 0) 
    {
       var cull:Int = culling == null ? 0 : Type.enumIndex(culling) - 1;
