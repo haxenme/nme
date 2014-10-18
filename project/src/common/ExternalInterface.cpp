@@ -2762,6 +2762,7 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
         TILE_ALPHA    = 0x0008,
         TILE_TRANS_2x2= 0x0010,
         TILE_RECT     = 0x0020,
+        TILE_ORIGIN   = 0x0040,
         TILE_SMOOTH   = 0x1000,
 
         TILE_BLEND_ADD   = 0x10000,
@@ -2789,10 +2790,18 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
       gfx->beginTiles(&sheet->GetSurface(), smooth, blend);
 	  
 	  bool useRect = flags & TILE_RECT;
+	  bool useOrigin = flags & TILE_ORIGIN;
 
-      int components = useRect ? 8 : 3;
-      int scale_pos = useRect? 8 : 3;
-      int rot_pos = useRect ? 8 : 3;
+      int components = 3;
+      int scale_pos = 3;
+      int rot_pos = 3;
+	  
+	  if (useRect)
+	  {
+		  components = useOrigin ? 8 : 6;
+		  scale_pos = useOrigin ? 8 : 6;
+		  rot_pos = useOrigin ? 8 : 6;
+	  }
 
       if (flags & TILE_TRANS_2x2)
          components+=4;
@@ -2832,7 +2841,10 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
 
       for(int i=0;i<n;i++)
       {
-         if (vals)
+         ox = 0.0;
+		 oy = 0.0;
+		  
+		 if (vals)
          {
             x = vals[0];
             y = vals[1];
@@ -2843,8 +2855,12 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
 			    r.y = vals[3];
 			    r.w = vals[4];
 			    r.h = vals[5];
-			    ox = vals[6];
-			    oy = vals[7];
+				
+				if (useOrigin)
+			    {
+					ox = vals[6];
+			    	oy = vals[7];
+				}
 			}
 			else
 			{
@@ -2862,8 +2878,12 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
 			     r.y = fvals[3];
 			     r.w = fvals[4];
 			     r.h = fvals[5];
-			     ox = fvals[6];
-			     oy = fvals[7];
+				 
+				 if (useOrigin)
+			     {
+					ox = fvals[6];
+			    	oy = fvals[7];
+				 }
 			}
 			else
 			{
@@ -2881,8 +2901,12 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
                  r.y = val_number(val_ptr[3]);
                  r.w = val_number(val_ptr[4]);
                  r.h = val_number(val_ptr[5]);
-                 ox = val_number(val_ptr[6]);
-                 oy = val_number(val_ptr[7]);
+				 
+				 if (useOrigin)
+				 {
+					 ox = val_number(val_ptr[6]);
+                     oy = val_number(val_ptr[7]);
+				 }
 			}
 			else
 			{
@@ -2895,7 +2919,7 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
 			 
 			 if (useRect)
 			 {
-				 pos = 8;
+				 pos = useOrigin ? 8 : 6;
 			 }
 			 else
 			 {
