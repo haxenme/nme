@@ -16,8 +16,10 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float>
    public var BYTES_PER_ELEMENT(default, null):Int;
    public var length(default, null):Int;
 
-   // Constrctor: length, array, float[], ArrayBuffer + start + len
-   public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>)
+   // Constrctor: ElementCount,
+   //             Array , startElement, elementCount
+   //             ArrayBuffer, startByte, elementCount
+   public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inElements:Null<Int>)
    {
       BYTES_PER_ELEMENT = 4;
 
@@ -28,8 +30,8 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float>
       else if (Std.is(inBufferOrArray,Array))
       {
          var floats:Array<Float> = inBufferOrArray;
-         if (inLen != null)
-            length = inLen;
+         if (inElements != null)
+            length = inElements;
          else
             length = floats.length - inStart;
 
@@ -51,7 +53,7 @@ class Float32Array extends ArrayBufferView, implements ArrayAccess<Float>
       }
       else
       {
-         super(inBufferOrArray, inStart, inLen);
+         super(inBufferOrArray, inStart, inElements!=null ? inElements*4 : null);
          if ((byteLength & 0x03) > 0)
             throw("Invalid array size");
          length = byteLength >> 2;

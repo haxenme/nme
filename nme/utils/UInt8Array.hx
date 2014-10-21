@@ -15,8 +15,10 @@ class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int>
    public var BYTES_PER_ELEMENT(default, null):Int;
    public var length(default, null):Int;
 
-   // Constrctor: length, array, int[], ArrayBuffer + start + len
-   public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inLen:Null<Int>)
+   // Constrctor: ElementCount,
+   //             Array , startElement, elementCount
+   //             ArrayBuffer, startByte, elementCount
+   public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inElements:Null<Int>)
    {
       BYTES_PER_ELEMENT = 1;
 
@@ -27,8 +29,8 @@ class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int>
       else if (Std.is(inBufferOrArray,Array))
       {
          var ints:Array<Int> = inBufferOrArray;
-         if (inLen != null)
-            length = inLen;
+         if (inElements != null)
+            length = inElements;
          else
             length = ints.length - inStart;
 
@@ -49,7 +51,7 @@ class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int>
       }
       else
       {
-         super(inBufferOrArray, inStart, inLen);
+         super(inBufferOrArray, inStart, inElements);
          length = byteLength;
       }
    }
