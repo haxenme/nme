@@ -213,14 +213,15 @@ class Window
          nme_stage_set_next_wake(nmeHandle,nextWake);
          #end
       }
+      #if cpp
       catch(e:Dynamic)
       {
-        var stack = haxe.CallStack.exceptionStack();
-        trace(e);
-        trace(haxe.CallStack.toString(stack));
-        event.pollTime = 0;
-        throw(e);
+         var stack = haxe.CallStack.exceptionStack();
+         trace("Exception: " + e+"\n" + haxe.CallStack.toString(stack));
+         event.pollTime = 0;
+         untyped __cpp__("hx::CriticalError({0})", "Unhandled exception:" + e);
       }
+      #end
    }
 
    function beginRender() nme_stage_begin_render(nmeHandle,autoClear);
