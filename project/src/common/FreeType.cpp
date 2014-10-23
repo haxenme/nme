@@ -623,13 +623,17 @@ wchar_t *get_familyname_from_sfnt_name(FT_Face face)
       sfnt_name_index = 0;
       while (sfnt_name_index < num_sfnt_names)
       {
-         if (!FT_Get_Sfnt_Name(face, sfnt_name_index++, (FT_SfntName *)&sfnt_name))
+         if (!FT_Get_Sfnt_Name(face, sfnt_name_index++, (FT_SfntName *)&sfnt_name) && sfnt_name.name_id == TT_NAME_ID_FULL_NAME)
          {
-            //if((sfnt_name.name_id == TT_NAME_ID_FONT_FAMILY) &&
-            if((sfnt_name.name_id == 4) &&
-               //(sfnt_name.language_id == GetUserDefaultLCID()) &&
-               (sfnt_name.platform_id == TT_PLATFORM_MICROSOFT) &&
-               (sfnt_name.encoding_id == TT_MS_ID_UNICODE_CS))
+            if (sfnt_name.platform_id == TT_PLATFORM_MACINTOSH)
+            {
+               len = sfnt_name.string_len;
+               family_name = new wchar_t[len + 1];
+               mbstowcs(&family_name[0], &reinterpret_cast<const char*>(sfnt_name.string)[0], len);
+               family_name[len] = L'\0';
+               return family_name;
+            }
+            else if ((sfnt_name.platform_id == TT_PLATFORM_MICROSOFT) && (sfnt_name.encoding_id == TT_MS_ID_UNICODE_CS))
             {
                /* Note that most fonts contains a Unicode charmap using
                   TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS.
@@ -652,7 +656,7 @@ wchar_t *get_familyname_from_sfnt_name(FT_Face face)
                {
                   family_name[i] = ((wchar_t)sfnt_name.string[i*2 + 1]) | (((wchar_t)sfnt_name.string[i*2]) << 8);
                }
-               family_name[len] = 0;
+               family_name[len] = L'\0';
                return family_name;
             }
          }
