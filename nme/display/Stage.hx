@@ -30,6 +30,7 @@ import nme.net.URLLoader;
 import nme.Loader;
 import nme.Vector;
 import nme.events.StageVideoAvailabilityEvent;
+import haxe.CallStack;
 
 #if cpp
 import cpp.vm.Gc;
@@ -410,6 +411,13 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
          nmeLastDown[button] = null;
       }
+   }
+
+   public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void
+   {
+      trace("Exception: " + exception+"\n" + haxe.CallStack.toString(stack));
+      trace("\n\n\n===Terminating===\n.");
+      throw "Unhandled exception:" + exception;
    }
  
 

@@ -1,4 +1,5 @@
 package nme.app;
+import haxe.CallStack;
 
 interface IAppEventHandler
 {
@@ -14,6 +15,7 @@ interface IAppEventHandler
    public function onJoystick(event:AppEvent, type:String):Void;
    public function onSysMessage(event:AppEvent):Void;
    public function onContextLost():Void;
+   public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void;
 }
 
 

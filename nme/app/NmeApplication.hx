@@ -3,6 +3,7 @@ package nme.app;
 import haxe.Timer;
 import nme.app.Application;
 import nme.app.FrameTimer;
+import haxe.CallStack;
 
 
 class NmeApplication implements IAppEventHandler implements IPollClient
@@ -113,6 +114,12 @@ class NmeApplication implements IAppEventHandler implements IPollClient
    {
    }
 
-
+   public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void
+   {
+      trace("Exception: " + exception+"\n" + haxe.CallStack.toString(stack));
+      trace("\n\n\n===Terminating===\n.");
+      throw "Unhandled exception:" + exception;
+   }
 }
+
 
