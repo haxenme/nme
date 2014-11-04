@@ -1,5 +1,5 @@
 
-Float32Array/UInt16Array/Int32Array - meaning of third parameter has changed to match JS behaviour.  Please check if this affects you.
+* Float32Array/UInt16Array/Int32Array - meaning of third parameter has changed to match JS behaviour.  Please check if this affects you.
 
 --------------------------
 * Fixed font/texture bug
