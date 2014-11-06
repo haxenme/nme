@@ -1147,9 +1147,14 @@ DEFINE_PRIM(nme_init_sdl_audio,0);
 
 value nme_get_frame_stage(value inValue)
 {
+   Stage *stage;
+   if (AbstractToObject(inValue,stage))
+      return inValue;
+
    Frame *frame;
    if (!AbstractToObject(inValue,frame))
       return alloc_null();
+   
 
    return ObjectToAbstract(frame->GetStage());
 }

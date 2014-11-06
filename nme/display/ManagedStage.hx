@@ -38,17 +38,11 @@ class ManagedStage extends Stage
 
    public function new(inWidth:Int, inHeight:Int, inFlags:Int = 0) 
    {
-      var managedWindow = new Window( nme_managed_stage_create(inWidth, inHeight, inFlags), inWidth, inHeight );
+      var managedStage = nme_managed_stage_create(inWidth, inHeight, inFlags);
+      var managedWindow = new Window( managedStage, inWidth, inHeight );
       super(managedWindow);
    }
 
-   dynamic public function beginRender() 
-   {
-   }
-
-   dynamic public function endRender() 
-   {
-   }
 
    /*
    override function nmeProcessStageEvent(inEvent:Dynamic):Float 
@@ -60,14 +54,8 @@ class ManagedStage extends Stage
 
       return wake;
    }
-   */
 
-   override public function onRender(inTimed:Bool)
-   {
-      beginRender();
-      super.onRender(inTimed);
-      endRender();
-   }
+   */
 
    public function pumpEvent(inEvent:Dynamic) 
    {

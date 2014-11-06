@@ -20,6 +20,9 @@ class Window
    public var width(get, null):Int;
    public var autoClear:Bool;
 
+   // For extennal window management
+   public var renderRequest:Void->Void;
+   public var nextWakeHandler:Float->Void;
 
    // Set this to handle events...
    public var appEventHandler:IAppEventHandler;
@@ -33,19 +36,25 @@ class Window
       appEventHandler = null;
       active = true;
       autoClear = true;
+ 
 
+      #if android
+      renderRequest = Loader.load("nme_stage_request_render", 0);
+      #else
+      renderRequest = null;
+      #end
+ 
       nmeHandle = nme_get_frame_stage(inFrameHandle);
       nme_set_stage_handler(nmeHandle, nmeProcessWindowEvent, inWidth, inHeight);
    }
 
    public function shouldRenderNow() : Bool
    {
-      #if android
-      nme_stage_request_render();
+      if (renderRequest==null)
+         return true;
+
+      renderRequest();
       return false;
-      #else
-      return true;
-      #end
    }
 
    public function setBackground(inBackground:Null<Int>) : Void
@@ -207,6 +216,9 @@ class Window
 
 
          var nextWake = Application.getNextWake(event.pollTime);
+         if (nextWakeHandler!=null)
+            nextWakeHandler(nextWake);
+
          #if (cpp && hxcpp_api_level>=311)
          event.pollTime = nextWake;
          #else
@@ -221,8 +233,14 @@ class Window
       }
    }
 
-   function beginRender() nme_stage_begin_render(nmeHandle,autoClear);
-   function endRender() nme_stage_end_render(nmeHandle);
+   public function beginRender()
+   {
+      nme_stage_begin_render(nmeHandle,autoClear);
+   }
+   public function endRender()
+   {
+      nme_stage_end_render(nmeHandle);
+   }
 
 
    public function get_align():StageAlign 
@@ -348,9 +366,6 @@ class Window
    private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
    private static var nme_display_object_set_bg = Loader.load("nme_display_object_set_bg", 2);
 
-   #if android
-   private static var nme_stage_request_render = Loader.load("nme_stage_request_render", 0);
-   #end
    #if (cpp && hxcpp_api_level>=311)
    private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler_native", 4);
    #else
