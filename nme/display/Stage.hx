@@ -193,6 +193,12 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          nmeFrameTimer.invalidate();
    }
 
+   public function isDisplayListDirty() : Bool
+   {
+      var result:Bool =  nme_stage_check_cache(nmeHandle);
+      return result;
+   }
+
    function get_onQuit() return Application.onQuit;
    function set_onQuit(val) { Application.onQuit=val; return val; }
 
@@ -907,6 +913,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
   
    private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);
    private static var nme_stage_get_normal_orientation = Loader.load("nme_stage_get_normal_orientation", 0);
+   private static var nme_stage_check_cache = Loader.load("nme_stage_check_cache", 1);
 }
 
 class TouchInfo 

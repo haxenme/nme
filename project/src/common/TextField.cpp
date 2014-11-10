@@ -1376,10 +1376,24 @@ bool TextField::IsCacheDirty()
 
 void TextField::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   if (inState.mPhase==rpBitmap && inState.mWasDirtyPtr && !*inState.mWasDirtyPtr)
+   if (inState.mPhase==rpBitmap && inState.mWasDirtyPtr && !*inState.mWasDirtyPtr && IsCacheDirty())
    {
-      *inState.mWasDirtyPtr = IsCacheDirty();
+      const Matrix &matrix = *inState.mTransform.mMatrix;
+      Layout(matrix);
+
+      RenderState state(inState);
+
+      Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleH);
+      state.mClipRect = r.Intersect(inState.mClipRect);
+
+      if (inState.mMask)
+         state.mClipRect = inState.mClipRect.Intersect(
+               inState.mMask->GetRect().Translated(-inState.mTargetOffset) );
+
+      *inState.mWasDirtyPtr =  state.mClipRect.HasPixels();
+      return;
    }
+
    if (inTarget.mPixelFormat==pfAlpha || inState.mPhase==rpBitmap)
       return;
 

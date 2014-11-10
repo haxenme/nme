@@ -1391,6 +1391,16 @@ value nme_stage_end_render(value inStage)
 }
 DEFINE_PRIM(nme_stage_end_render,1);
 
+value nme_stage_check_cache(value inStage)
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+      return alloc_bool(stage->BuildCache());
+   return alloc_null();
+}
+DEFINE_PRIM(nme_stage_check_cache,1);
+
+
 
 
 
