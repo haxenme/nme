@@ -2191,6 +2191,8 @@ void Stage::EndRenderStage()
    Flip();
 }
 
+#endif // }
+
 bool Stage::BuildCache()
 {
    Surface *surface = GetPrimarySurface();
@@ -2207,9 +2209,6 @@ bool Stage::BuildCache()
 
    return wasDirty;
 }
-
- 
-#endif // }
 
 double Stage::getStageWidth()
 {
