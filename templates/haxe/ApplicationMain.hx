@@ -39,6 +39,7 @@ class ApplicationMain
       ::end::
       #end
 
+
       #if flash
 
       nme.AssetData.create();
@@ -98,9 +99,22 @@ class ApplicationMain
                frame = wx.Frame.create(null, null, "::APP_TITLE::", null, size);
             ::end::
 
-
             #if nme
-            wx.NMEStage.create(frame, null, null, { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: });
+            wx.NMEStage.create(frame, null, null,
+               {
+                  width: ::WIN_WIDTH::,
+                  height: ::WIN_HEIGHT::,
+                  fullscreen: ::WIN_FULLSCREEN::,
+                  stencilBuffer: ::WIN_STENCIL_BUFFER::,
+                  depthBuffer: ::WIN_DEPTH_BUFFER::,
+                  antiAliasing: ::WIN_ANTIALIASING::,
+                  resizable: ::WIN_RESIZABLE::,
+                  vsync: ::WIN_VSYNC::,
+                  fps : ::WIN_FPS:: * 1.0,
+                  color : ::WIN_BACKGROUND::,
+                  title : "::APP_TITLE::",
+                  icon  : Assets.info.get("::WIN_ICON::")==null ? null : getAsset("::WIN_ICON::")
+               });
             #end
 
             ApplicationBoot.createInstance();

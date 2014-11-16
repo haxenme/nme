@@ -80,7 +80,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var stageFocusRect(get, set):Bool;
    public var stageHeight(get, never):Int;
    public var stageWidth(get, never):Int;
-   public var renderRequest(get,set):Void->Void;
+   public var renderRequest(get,set):Void->Bool;
 
    var invalid:Bool;
 
@@ -898,8 +898,8 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private function get_stageHeight():Int return window.height;
    private function get_stageWidth():Int return window.width;
    private function get_isOpenGL():Bool return window.get_isOpenGL();
-   private function get_renderRequest():Void->Void return window.renderRequest;
-   private function set_renderRequest(f:Void->Void):Void->Void return window.renderRequest = f;
+   private function get_renderRequest():Void->Bool return window.renderRequest;
+   private function set_renderRequest(f:Void->Bool):Void->Bool return window.renderRequest = f;
 
    // Native Methods
    private static var nme_render_stage = Loader.load("nme_render_stage", 1);

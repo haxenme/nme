@@ -21,8 +21,10 @@ class Window
    public var autoClear:Bool;
 
    // For extennal window management
-   public var renderRequest:Void->Void;
+   public var renderRequest:Void->Bool;
    public var nextWakeHandler:Float->Void;
+   public var beginRenderImmediate:Void->Void;
+   public var endRenderImmediate:Void->Void;
 
    // Set this to handle events...
    public var appEventHandler:IAppEventHandler;
@@ -53,8 +55,7 @@ class Window
       if (renderRequest==null)
          return true;
 
-      renderRequest();
-      return false;
+      return renderRequest() == true;
    }
 
    public function setBackground(inBackground:Null<Int>) : Void
@@ -70,9 +71,13 @@ class Window
    {
       if (shouldRenderNow())
       {
+         if (beginRenderImmediate!=null)
+            beginRenderImmediate();
          beginRender();
          appEventHandler.onRender(true);
          endRender();
+         if (endRenderImmediate!=null)
+            endRenderImmediate();
       }
       else
       {
@@ -87,9 +92,13 @@ class Window
    {
       if (shouldRenderNow())
       {
+         if (beginRenderImmediate!=null)
+            beginRenderImmediate();
          beginRender();
          appEventHandler.onRender(false);
          endRender();
+         if (endRenderImmediate!=null)
+            endRenderImmediate();
       }
       else
       {
@@ -139,9 +148,13 @@ class Window
                appEventHandler.onResize(event.x, event.y);
                if (shouldRenderNow())
                {
+                  if (beginRenderImmediate!=null)
+                     beginRenderImmediate();
                   beginRender();
                   appEventHandler.onRender(false);
                   endRender();
+                  if (endRenderImmediate!=null)
+                     endRenderImmediate();
                }
    
             case EventId.Quit:
