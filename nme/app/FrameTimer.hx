@@ -8,6 +8,8 @@ class FrameTimer implements IPollClient
    public var framePeriod(default,null):Float;
    public var window:Window;
    public var invalid:Bool;
+   public var catchup:Bool;
+   public var offTarget:Float;
 
    public function new(inWindow:Window, inFps:Float)
    {
@@ -15,6 +17,8 @@ class FrameTimer implements IPollClient
       lastRender = 0.0;
       window = inWindow;
       invalid = false;
+      catchup = true;
+      offTarget = 0.0;
       Application.addPollClient(this,true);
    }
 
@@ -31,8 +35,19 @@ class FrameTimer implements IPollClient
       {
          var wasInvalid =invalid;
          invalid = false;
-         if (fps>0 && timestamp >= lastRender + framePeriod - 0.0005 ) 
+         if (fps>0 && timestamp >= lastRender - offTarget + framePeriod - 0.0005 ) 
          {
+            if (catchup)
+            {
+               offTarget = timestamp-(lastRender+framePeriod);
+               if (offTarget>framePeriod)
+                  offTarget = framePeriod;
+               if (offTarget<-framePeriod)
+                  offTarget = -framePeriod;
+            }
+            else
+                offTarget = 0.0;
+
             lastRender = timestamp;
             window.onNewFrame();
          }
