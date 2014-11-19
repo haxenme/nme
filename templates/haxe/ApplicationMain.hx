@@ -100,7 +100,7 @@ class ApplicationMain
             ::end::
 
             #if nme
-            wx.NMEStage.create(frame, null, null,
+               wx.NMEStage.create(frame, null, null,
                {
                   width: ::WIN_WIDTH::,
                   height: ::WIN_HEIGHT::,
@@ -115,16 +115,22 @@ class ApplicationMain
                   title : "::APP_TITLE::",
                   icon  : Assets.info.get("::WIN_ICON::")==null ? null : getAsset("::WIN_ICON::")
                });
+
+               // Show frame before creating instance so context is good.
+               frame.shown = true;
+               ApplicationBoot.createInstance();
+               wx.App.setTopWindow(frame);
+   
+            #else
+               ApplicationBoot.createInstance();
+               if (autoShowFrame)
+               {
+                  wx.App.setTopWindow(frame);
+                  frame.shown = true;
+               }
             #end
 
-            ApplicationBoot.createInstance();
-
-            if (autoShowFrame)
-            {
-               wx.App.setTopWindow(frame);
-               frame.shown = true;
-            }
-         });
+        });
       }
       #elseif cppia
        ApplicationBoot.createInstance();
