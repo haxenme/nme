@@ -3,6 +3,7 @@ import nme.display.Bitmap;
 import nme.display.Sprite;
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;
+import nme.Assets;
 import nme.Memory;
 
 class Sample extends Sprite
@@ -14,7 +15,7 @@ class Sample extends Sprite
    {
       super();
 
-      mBitmap = ApplicationMain.getAsset("image1.jpg");
+      mBitmap = Assets.getBitmapData("image1.jpg");
 
       mDisplay = new Bitmap(mBitmap);
       addChild(mDisplay);
@@ -34,7 +35,7 @@ class Sample extends Sprite
          cycleColours();
 
       pass++;
-      #if neko
+      #if (neko || cppia)
       if (pass==40)
       #else
       if (pass==500)
@@ -43,9 +44,9 @@ class Sample extends Sprite
          pass = 0;
          demo = 1-demo;
          if (demo==0)
-            mBitmap = ApplicationMain.getAsset("image2.png");
+            mBitmap = Assets.getBitmapData("image2.png");
          else
-            mBitmap = ApplicationMain.getAsset("image1.jpg");
+            mBitmap = Assets.getBitmapData("image1.jpg");
          mDisplay.bitmapData = mBitmap;
       }
    }
@@ -74,6 +75,8 @@ class Sample extends Sprite
    }
 
 
+   static var tTot = 0.0;
+   static var tCount = 0;
    function gameOfLifeByteArray()
    {
       var w = mBitmap.width;
@@ -142,12 +145,46 @@ class Sample extends Sprite
       next[pixels.length-1] = 0;
 
 
+      var t0 = haxe.Timer.stamp();
       var idx = 0;
+      var w_ = w-1;
+      var h_ = h-1;
       for(y in 0...h)
          for(x in 0...w)
          {
              var alive = (pixels[idx] & 0xff) < 128;
              var total = 0;
+
+             // Unroll loop
+             #if true
+             if (y>0)
+             {
+                var idx0 = idx - w;
+                if (x>0 && (pixels[ idx0 -1 ] & 0xff) < 128 )
+                   total++;
+                if ((pixels[ idx0 ] & 0xff) < 128 )
+                   total++;
+                if (x<w_ && (pixels[ idx0 +1 ] & 0xff) < 128 )
+                   total++;
+             }
+
+             if (x>0 && (pixels[ idx - 1] & 0xff) < 128 )
+                total++;
+             if (x<w_ && (pixels[ idx +1 ] & 0xff) < 128 )
+                total++;
+
+             if (y<h_)
+             {
+                var idx0 = idx + w;
+                if (x>0 && (pixels[ idx0 -1 ] & 0xff) < 128 )
+                   total++;
+                if ((pixels[ idx0 ] & 0xff) < 128 )
+                   total++;
+                if (x<w_ && (pixels[ idx0 +1 ] & 0xff) < 128 )
+                   total++;
+             }
+             #else
+
              for(dy in -1...2)
                 for(dx in -1...2)
                 {
@@ -160,11 +197,16 @@ class Sample extends Sprite
                          total++;
                    }
                 }
+             #end
 
              next[idx] = (alive && (total==2||total==3)) || ((!alive) && total==3)  ? 0xff000000 : 0xffffffff; 
              idx++;
          }
       mBitmap.setVector(r,next);
+      var t = haxe.Timer.stamp()-t0;
+      tTot += t;
+      tCount ++;
+      //trace("Time: " + t + " : " + (tTot/tCount));
    }
    
 
