@@ -378,10 +378,6 @@ public:
    bool FinishEditOnEnter();
    bool BuildCache();
 
-   #ifdef NME_S3D
-   void setAutoS3D(bool enabled) { autos3d = enabled; }
-   bool getAutoS3D() const { return autos3d; }
-   #endif
    void setFocusRect(bool inVal) { focusRect = inVal; }
    bool getFocusRect() const { return focusRect; }
    UserPoint getMousePos() const { return mLastMousePos; }
@@ -415,9 +411,6 @@ protected:
    EventHandler mHandler;
    void         *mHandlerData;
    bool         focusRect;
-   #ifdef NME_S3D
-   bool         autos3d;
-   #endif
    UserPoint    mLastMousePos;
    StageScaleMode scaleMode;
    StageAlign     align;

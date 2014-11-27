@@ -3,7 +3,6 @@
    <set name="PLATFORM" value="android-9" if="android" />
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
    <set name="HXCPP_CPP11" value="1" />
-   <set name="debug" value="debug" if="lime fulldebug" />
 
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
@@ -57,29 +56,23 @@
    <set name="NME_SSL" value="1" />
    <set name="NME_SSL_EXTRA" value="_ssl" if="NME_SSL"/>
    
-   <set name="NME_S3D" value="1" if="lime" />
-   
    <!--
       What audio backend it use?
       For windows, linux, use SDL_mixer
       For ios/mac  use core audio + openal
       For android use java (todo - opensl?)
    -->
-   <set name="NME_OPENAL" value="1" if="lime" />
    <set name="NME_OPENAL" value="1" if="iphone" />
-   <set name="NME_CAMERA" value="1" unless="lime" />
+   <set name="NME_CAMERA" value="1" />
 
    <!-- Built relative to "bin" -->
-   <set name="NME_ROOT" value="" unless="lime" />
-   <set name="NME_ROOT" value="${haxelib:nme}/project/" if="lime" />
+   <set name="NME_ROOT" value="" />
    
    <set name="SRC_DIR" value="${NME_ROOT}src" />
    <set name="INC_DIR" value="${NME_ROOT}include" />
    <set name="NME_INC_DIR" value="${NME_ROOT}../include" />
    <set name="SUP_DIR" value="${NME_ROOT}support" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
-   
-   <set name="OUT_DIR" value="../ndll" if="lime" />
    
    
    <files id="main">
@@ -125,7 +118,7 @@
 
       <section if="android">
          <file name="${SRC_DIR}/android/AndroidCommon.cpp" />
-         <file name="${SRC_DIR}/android/AndroidSound.cpp" unless="NME_OPENAL"/>
+         <file name="${SRC_DIR}/android/AndroidSound.cpp" />
          <file name="${SRC_DIR}/android/AndroidFont.cpp"/>
          <file name="${SRC_DIR}/android/AndroidFrame.cpp"/>
          <file name="${SRC_DIR}/android/JNI.cpp"/>
@@ -159,18 +152,18 @@
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-I${NME_DEV}/include/SDL12" if="blackberry" />
         <compilerflag value="-DDYNAMIC_SDL" />
-        <compilerflag value="-DNME_MIXER" unless="NME_OPENAL"/>
+        <compilerflag value="-DNME_MIXER" />
         <compilerflag value="-DNME_SDL12" unless="NME_SDL2" />
-        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="NME_OPENAL"/>
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp" />
         <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>
 
       <section if="NME_SDL2">
         <compilerflag value="-I${NME_DEV}/include/SDL2" />
-        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="NME_OPENAL"/>
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp" />
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <compilerflag value="-DSDL_OGL" />
-        <compilerflag value="-DNME_MIXER" unless="NME_OPENAL" />
+        <compilerflag value="-DNME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
       </section>
 
@@ -188,21 +181,11 @@
       </section>
       
       <section if="NME_OPENAL">
-         <compilerflag value="-DAL_LIBTYPE_STATIC=1" if="windows || mac || linux" />
          <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
          <file name="${SRC_DIR}/common/Audio.cpp" />
       </section>
       
       
-      <section if="lime">
-         <compilerflag value="-DHX_LIME" if="lime" />
-         <compilerflag value="-DNME_S3D" if="NME_S3D" />
-         <file name="src/ExternalInterface.cpp" if="lime" />
-         <file name="${SRC_DIR}/empty/S3D.cpp" if="NME_S3D" unless="android" />
-      </section>
-
-
-
       <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
       <compilerflag value="-I${NME_DEV}/include" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
@@ -222,6 +205,8 @@
       <file name="${SRC_DIR}/common/FreeType.cpp" />
       <file name="${SRC_DIR}/common/Tilesheet.cpp"/>
       <file name="${SRC_DIR}/common/Display.cpp"/>
+      <file name="${SRC_DIR}/common/Stage.cpp"/>
+      <file name="${SRC_DIR}/common/BitmapCache.cpp"/>
       <file name="${SRC_DIR}/common/ColorTransform.cpp"/>
       <file name="${SRC_DIR}/common/Hardware.cpp" />
       <file name="${SRC_DIR}/common/Tessellate.cpp"/>
@@ -273,11 +258,7 @@
    <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
    
    
-   <set name="LIBNAME" value="nme" unless="lime" />
-   <set name="LIBNAME" value="lime" if="lime" />
-   <set name="DEBUGEXTRA" value="-debug" if="lime fulldebug" />
-
-   <target id="NDLL" output="${LIBPREFIX}${LIBNAME}${MSVC_LIB_VERSION}${DEBUGEXTRA}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
+   <target id="NDLL" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
 
       <outdir name="${OUT_DIR}/${BINDIR}" />
 
@@ -291,23 +272,20 @@
 
          <section if="NME_SDL2">
             <lib name="${PRELIB}SDL2${POSTLIB}" />
-            <lib name="${PRELIB}SDL2_mixer${POSTLIB}" unless="NME_OPENAL" />
-            <lib name="${PRELIB}modplug${POSTLIB}" unless="NME_OPENAL" />
+            <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
+            <lib name="${PRELIB}modplug${POSTLIB}" />
             <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
          </section>
 
          <section if="NME_OPENAL">
-            <lib name="${PRELIB}openal${POSTLIB}" if="windows || mac || linux"/>
             <lib name="${PRELIB}vorbis${POSTLIB}" />
             <lib name="${PRELIB}ogg${POSTLIB}" />
          </section>
          
          <section unless="NME_SDL_SYSTEM">
-            <section if="NME_SDL2" unless="NME_OPENAL">
-               <lib name="${PRELIB}vorbis${POSTLIB}" />
-               <lib name="${PRELIB}ogg${POSTLIB}" />
-               <lib name="${PRELIB}theora${POSTLIB}" />
-            </section>
+            <lib name="${PRELIB}vorbis${POSTLIB}" />
+            <lib name="${PRELIB}ogg${POSTLIB}" />
+            <lib name="${PRELIB}theora${POSTLIB}" if="theora" />
 
             <section if="NME_CURL">
                <lib name="${PRELIB}curl${NME_SSL_EXTRA}${POSTLIB}" />
@@ -360,8 +338,6 @@
 
 
          <section if="android">
-            <lib name="-L../ndll/Android" if="NME_OPENAL"/>
-            <lib name="-lopenal" if="NME_OPENAL"/>
             <lib name="-ldl" />
             <lib name="-landroid" />
             <lib name="-lGLESv2" />
