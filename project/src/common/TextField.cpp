@@ -129,7 +129,7 @@ double TextField::getHeight()
 
    return ext.Height();
 }
- 
+
 
 
 void TextField::setHeight(double inHeight)
@@ -178,12 +178,12 @@ void TextField::SplitGroup(int inGroup,int inPos)
 TextFormat *TextField::getTextFormat(int inStart,int inEnd)
 {
    TextFormat *commonFormat = NULL;
-   
+
    for(int i=0;i<mCharGroups.size();i++)
    {
       CharGroup *charGroup = mCharGroups[i];
       TextFormat *format = charGroup->mFormat;
-      
+
       if (commonFormat == NULL)
       {
          commonFormat = new TextFormat (*format);
@@ -234,21 +234,21 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
 {
    if (!inFmt)
       return;
-   
+
    Layout();
-   
+
    int max = mCharPos.size();
-   
+
    if (inStart<0)
    {
       inStart = 0;
-	  inEnd = max;
+     inEnd = max;
    }
    else if (inEnd<0)
    {
       inEnd = inStart + 1;
    }
-   
+
    if (inEnd>max) inEnd = max;
 
    if (inEnd<=inStart)
@@ -456,6 +456,9 @@ int TextField::PointToChar(int inX,int inY)
          for(int c=0; c<line.mChars;c++)
             if (mCharPos[line.mChar0 + c].x>inX)
                return c==0 ? line.mChar0 : line.mChar0+c-1;
+         if (line.mChars &&  inX<mCharPos[line.mChar0].x+line.mMetrics.width)
+            return line.mChar0 + line.mChars-1;
+
          return line.mChar0 + line.mChars;
       }
    }
@@ -547,15 +550,15 @@ void TextField::Drag(Event &inEvent)
          mSelectMin = pos;
          mSelectMax = mSelectDownChar;
       }
-		if (point.x>mActiveRect.x1())
+      if (point.x>mActiveRect.x1())
       {
-			scrollH+=(point.x-mActiveRect.x1());
+         scrollH+=(point.x-mActiveRect.x1());
          if (scrollH>maxScrollH)
             scrollH = maxScrollH;
       }
-		else if (point.x<mActiveRect.x)
+      else if (point.x<mActiveRect.x)
       {
-			scrollH-=(mActiveRect.x-point.x);
+         scrollH-=(mActiveRect.x-point.x);
          if (scrollH<0)
            scrollH = 0;
       }
@@ -613,7 +616,7 @@ void TextField::OnKey(Event &inEvent)
             ShowCaret();
             OnChange();
             return;
-         
+
          case keyDELETE:
             if (mSelectMin<mSelectMax)
             {
@@ -707,8 +710,8 @@ void TextField::OnKey(Event &inEvent)
 
 void TextField::ShowCaret(bool inFromDrag)
 {
-	if (!CaretOn())
-		return;
+   if (!CaretOn())
+      return;
    ImagePoint pos(0,0);
    bool changed = false;
 
@@ -720,29 +723,29 @@ void TextField::ShowCaret(bool inFromDrag)
       pos.y = mLines[ mLines.size() -1].mY0;
    }
 
-	//printf("Pos %dx%d\n", pos.x, pos.y);
+   //printf("Pos %dx%d\n", pos.x, pos.y);
 
    if (pos.x-scrollH >= mActiveRect.w)
    {
       changed = true;
       scrollH = pos.x - mActiveRect.w + 1;
    }
-	// When dragging, allow caret to be hidden off to the left
+   // When dragging, allow caret to be hidden off to the left
    else if (pos.x-scrollH < 0 && !inFromDrag)
    {
       changed = true;
       scrollH = pos.x;
    }
-	if (scrollH>maxScrollH)
-	{
-		scrollH = maxScrollH;
-		changed = true;
-	}
-	else if (scrollH<0)
-	{
-		scrollH = 0;
-		changed = true;
-	}
+   if (scrollH>maxScrollH)
+   {
+      scrollH = maxScrollH;
+      changed = true;
+   }
+   else if (scrollH<0)
+   {
+      scrollH = 0;
+      changed = true;
+   }
 
    if (scrollV<1)
    {
@@ -751,19 +754,19 @@ void TextField::ShowCaret(bool inFromDrag)
    }
 
 
-	if (scrollV <= mLines.size())
-	{
-		if (pos.y-mLines[scrollV-1].mY0 >= mActiveRect.h)
-		{
-			changed = true;
-			scrollV++;
-		}
-		else if (scrollV>1 && pos.y<mLines[scrollV-1].mY0)
-		{
-			scrollV--;
-			changed = true;
-		}
-	}
+   if (scrollV <= mLines.size())
+   {
+      if (pos.y-mLines[scrollV-1].mY0 >= mActiveRect.h)
+      {
+         changed = true;
+         scrollV++;
+      }
+      else if (scrollV>1 && pos.y<mLines[scrollV-1].mY0)
+      {
+         scrollV--;
+         changed = true;
+      }
+   }
 
 
    if (scrollH<0)
@@ -807,7 +810,7 @@ void TextField::Clear()
 
 Cursor TextField::GetCursor()
 {
-	return selectable ? (Cursor)(curTextSelect0 + mLayoutRotation) : curPointer;
+   return selectable ? (Cursor)(curTextSelect0 + mLayoutRotation) : curPointer;
 }
 
 
@@ -837,107 +840,107 @@ WString TextField::getHTMLText()
 {
    WString result;
    TextFormat *cacheFormat = NULL;
-   
+
    bool inAlign = false;
    bool inFontTag = false;
    bool inBoldTag = false;
    bool inItalicTag = false;
    bool inUnderlineTag = false;
-   
+
    for(int i=0;i<mCharGroups.size();i++)
    {
-	  CharGroup *charGroup = mCharGroups[i];
-	  TextFormat *format = charGroup->mFormat;
-	  
-	  if (format != cacheFormat)
-	  {
-		  if (inUnderlineTag && !format->underline)
-		  {
-		  	 result += L"</u>";
-		  	 inAlign = false;
-		  }
-		  
-		  if (inItalicTag && !format->italic)
-		  {
-			  result += L"</i>";
-			  inItalicTag = false;
-		  }
-		  
-		  if (inBoldTag && !format->bold)
-		  {
-			  result += L"</b>";
-			  inBoldTag = false;
-		  }
-		  
-		  if (inFontTag && (WString (format->font).compare (cacheFormat->font) != 0 || format->color != cacheFormat->color || format->size != cacheFormat->size))
-		  {
-			  result += L"</font>";
-			  inFontTag = false;
-		  }
-		  
-		  if (inAlign && format->align != cacheFormat->align)
-		  {
-			  result += L"</p>";
-			  inAlign = false;
-		  }
-	  }
-	  
-	  if (!inAlign && format->align != tfaLeft)
-	  {
-		  result += L"<p align=\"";
-		  
-		  switch(format->align)
-		  {
+     CharGroup *charGroup = mCharGroups[i];
+     TextFormat *format = charGroup->mFormat;
+
+     if (format != cacheFormat)
+     {
+        if (inUnderlineTag && !format->underline)
+        {
+            result += L"</u>";
+            inAlign = false;
+        }
+
+        if (inItalicTag && !format->italic)
+        {
+           result += L"</i>";
+           inItalicTag = false;
+        }
+
+        if (inBoldTag && !format->bold)
+        {
+           result += L"</b>";
+           inBoldTag = false;
+        }
+
+        if (inFontTag && (WString (format->font).compare (cacheFormat->font) != 0 || format->color != cacheFormat->color || format->size != cacheFormat->size))
+        {
+           result += L"</font>";
+           inFontTag = false;
+        }
+
+        if (inAlign && format->align != cacheFormat->align)
+        {
+           result += L"</p>";
+           inAlign = false;
+        }
+     }
+
+     if (!inAlign && format->align != tfaLeft)
+     {
+        result += L"<p align=\"";
+
+        switch(format->align)
+        {
            case tfaLeft: break;
            case tfaCenter: result += L"center"; break;
-			  case tfaRight: result += L"right"; break;
-			  case tfaJustify: result += L"justify"; break;
-		  }
-		  
-		  result += L"\">";
-		  inAlign = true;
-	  }
-	  
-	  if (!inFontTag)
-	  {
-		  result += L"<font color=\"#";
-		  result += ColorToWide(format->color);
-		  result += L"\" face=\"";
-		  result += format->font;
-		  result += L"\" size=\"";
-		  result += IntToWide(format->size);
-		  result += L"\">";
-		  inFontTag = true;
-	  }
-	  
-	  if (!inBoldTag && format->bold)
-	  {
-		  result += L"<b>";
-		  inBoldTag = true;
-	  }
-	  
-	  if (!inItalicTag && format->italic)
-	  {
-		  result += L"<i>";
-		  inItalicTag = true;
-	  }
-	  
-	  if (!inUnderlineTag && format->underline)
-	  {
-		  result += L"<u>";
-		  inUnderlineTag = true;
-	  }
-	  
-	   result += WString(charGroup->mString.mPtr, charGroup->Chars());
-	   cacheFormat = format;
+           case tfaRight: result += L"right"; break;
+           case tfaJustify: result += L"justify"; break;
+        }
+
+        result += L"\">";
+        inAlign = true;
+     }
+
+     if (!inFontTag)
+     {
+        result += L"<font color=\"#";
+        result += ColorToWide(format->color);
+        result += L"\" face=\"";
+        result += format->font;
+        result += L"\" size=\"";
+        result += IntToWide(format->size);
+        result += L"\">";
+        inFontTag = true;
+     }
+
+     if (!inBoldTag && format->bold)
+     {
+        result += L"<b>";
+        inBoldTag = true;
+     }
+
+     if (!inItalicTag && format->italic)
+     {
+        result += L"<i>";
+        inItalicTag = true;
+     }
+
+     if (!inUnderlineTag && format->underline)
+     {
+        result += L"<u>";
+        inUnderlineTag = true;
+     }
+
+      result += WString(charGroup->mString.mPtr, charGroup->Chars());
+      cacheFormat = format;
    }
-   
+
    if (inUnderlineTag) result += L"</u>";
    if (inItalicTag) result += L"</i>";
    if (inBoldTag) result += L"</b>";
    if (inFontTag) result += L"</font>";
    if (inAlign) result += L"</p>";
-   
+
    return result;
 }
 
@@ -1482,7 +1485,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             }
 
             ImagePoint pos = GetCursorPos() - scroll;
-           
+
             rect_to_target.TranslateData(pos.x,pos.y);
             mCaretGfx->Render(inTarget,state);
          }
@@ -1777,11 +1780,11 @@ void TextField::Layout(const Matrix &inMatrix)
          {
             if (!IsWord(ch) || (line.mChars>2 && !IsWord(g.mString[cid-2]))  )
             {
-			   #ifdef EPPC
+            #ifdef EPPC
                if ( (ch<255 && isspace(ch)) || line.mChars==1)
-			   #else
+            #else
                if ( (ch<255 && iswspace(ch)) || line.mChars==1)
-			   #endif
+            #endif
                {
                   last_word_cid = cid;
                   last_word_line_chars = line.mChars;
@@ -1793,7 +1796,7 @@ void TextField::Layout(const Matrix &inMatrix)
                }
                last_word_x6 = x6;
             }
-   
+
             if (ch=='\n' || ch=='\r')
             {
                // New line ...
@@ -1804,7 +1807,7 @@ void TextField::Layout(const Matrix &inMatrix)
                continue;
             }
          }
-   
+
          int ox6 = x6;
          if (displayAsPassword)
             ch = gPasswordChar;
