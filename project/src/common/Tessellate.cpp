@@ -530,6 +530,19 @@ struct SubInfo
         if (p->p.y > y1) y1 = p->p.y;
      }
    }
+
+   void set(const UserPoint &inSortPos, int inP0, int inSize)
+   {
+      sortPos = inSortPos;
+      p0 = inP0;
+      size = inSize;
+   }
+
+   bool operator <(const SubInfo &inOther) const
+   {
+      return sortPos < inOther.sortPos;
+   }
+
    bool contains(UserPoint inP)
    {
       return inP.x>=x0 && inP.x<=x1 && inP.y>=y0 && inP.y<=y1;
@@ -541,6 +554,7 @@ struct SubInfo
    bool       is_internal;
    int        p0;
    int        size;
+   UserPoint  sortPos;
    float      x0,x1;
    float      y0,y1;
 };
@@ -552,17 +566,25 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    if (subs<1)
       return;
 
-   QuickVec<SubInfo> subInfo;
+   QuickVec<SubInfo> subInfo(subs);
+   int p0 = 0;
+   for(int i=0;i<subs;i++)
+   {
+      subInfo[i].set(ioOutline[p0],p0,inSubPolys[i]-p0);
+      p0 = inSubPolys[i];
+   }
+   std::sort(subInfo.begin(), subInfo.end());
+
+
+
    QuickVec<EdgePoint> edges(ioOutline.size());
    int index = 0;
    int groupId = 0;
 
    for(int sub=0;sub<subs;sub++)
    {
-      SubInfo info;
+      SubInfo &info = subInfo[sub];
 
-      info.p0 = sub>0?inSubPolys[sub-1]:0;
-      info.size = inSubPolys[sub] - info.p0;
       if (ioOutline[info.p0] == ioOutline[info.p0+info.size-1])
          info.size--;
 
@@ -579,7 +601,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
          bool reverse = area < 0;
          int  parent = -1;
 
-         for(int prev=subInfo.size()-1; prev>=0 && parent==-1; prev--)
+         for(int prev=sub-1; prev>=0 && parent==-1; prev--)
          {
             if (subInfo[prev].contains(p[0]))
             {
@@ -611,8 +633,6 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
          if (sub<subs-1)
             info.calcExtent();
          index += info.size;
-
-         subInfo.push_back(info);
       }
    }
 

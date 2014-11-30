@@ -611,6 +611,30 @@ public:
       PushElement();
    }
 
+   
+   void PushTriangleWireframe(const Vertices &inV)
+   {
+      ReserveArrays(inV.size()*2);
+
+      //printf("PushVertices %d\n", inV.size());
+
+      UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
+      for(int i=0;i<inV.size();i+=3)
+      {
+         *v = inV[i]; Next(v);
+         *v = inV[i+1]; Next(v);
+         *v = inV[i+1]; Next(v);
+         *v = inV[i+2]; Next(v);
+         *v = inV[i+2]; Next(v);
+         *v = inV[i]; Next(v);
+      }
+
+      if (mElement.mSurface)
+         CalcTexCoords();
+
+      PushElement();
+   }
+
 
 
    #define FLAT 0.000001
