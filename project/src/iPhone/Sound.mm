@@ -227,7 +227,10 @@ namespace nme
             theActualPlayer.currentTime = inFloat / 1000;
             return inFloat;
         }
-
+        void setPitch(const float &inFloat) {
+            LOG_SOUND("AVAudioPlayerChannel setPitch()");
+            [theActualPlayer setPitch: inFloat];
+        }
         void setTransform(const SoundTransform &inTransform) {
             LOG_SOUND("AVAudioPlayerChannel setTransform()");
             if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
