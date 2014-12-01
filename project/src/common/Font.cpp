@@ -212,7 +212,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
          {
             int rows = mPixelHeight > 128 ? 1 : mPixelHeight > 64 ? 2 : mPixelHeight>32 ? 4 : 5;
             int h = 4;
-            while(h<mPixelHeight*rows)
+            while(h<orig_h*rows)
                h*=2;
             int w = h;
             while(w<orig_w)
@@ -256,6 +256,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
       else
       {
          SimpleSurface *buf = new SimpleSurface(orig_w,orig_h,pfAlpha,true);
+         printf("New surface %dx%d\n", orig_w, orig_h);
          buf->IncRef();
          {
          AutoSurfaceRender renderer(buf);
