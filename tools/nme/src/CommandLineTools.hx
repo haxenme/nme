@@ -520,7 +520,7 @@ class CommandLineTools
          }
 
          var target = haxePath + "\\nme.bat";
-         var source = nme + "/tools/run/bin/nme.bat";
+         var source = nme + "/tools/nme/bin/nme.bat";
 
          if (!forceFlag && FileSystem.exists(target))
          {
@@ -541,7 +541,7 @@ class CommandLineTools
       }
       else
       {
-         var source = nme + "/tools/run/bin/nme.sh";
+         var source = nme + "/tools/nme/bin/nme.sh";
          var target = "/usr/bin/nme";
 
          if (!forceFlag && FileSystem.exists(target))
