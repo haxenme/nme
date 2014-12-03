@@ -60,7 +60,8 @@ class RunMain
          oldDir = Sys.getCwd();
          Sys.setCwd(dir);
       }
-      Sys.command(command,args);
+      if (Sys.command(command,args)!=0)
+         throw "Error running " + command + " " + args.join(" ");
       if (oldDir!="")
          Sys.setCwd(oldDir);
    }
