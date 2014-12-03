@@ -861,7 +861,7 @@ public:
    }
 
 
-   void removeLoops(QuickVec<CurveEdge> &curve,int startPoint,float turningPoint)
+   void removeLoops(QuickVec<CurveEdge> &curve,int startPoint,float turningPoint,int *inAdjustStart=0)
    {
       for(int i=startPoint;i<curve.size()-2;i++)
       {
@@ -870,6 +870,8 @@ public:
          UserPoint dp = p1-p0;
          if (fabs(dp.x) + fabs(dp.y) < 0.001)
          {
+            if (inAdjustStart && *inAdjustStart>i)
+               (*inAdjustStart)--;
             curve.erase(i,1);
             i--;
             continue;
@@ -929,6 +931,12 @@ public:
                            // replace c[i+1] with p, and erase upto and including c[j]
                            p1 = p;
                            curve.EraseAt(i+2,j+1);
+                           if (inAdjustStart)
+                           {
+                              int &a = *inAdjustStart;
+                              if (a>i)
+                                 a = i;
+                           }
                            break;
                         }
                      }
@@ -1236,8 +1244,8 @@ public:
 
           float turnLeft = seg.isCurve() ? segJoinLeft - 0.66 : 0;
           float turnRight = seg.isCurve() ? segJoinRight - 0.66 : 0;
-          removeLoops(leftCurve,prevSegLeft,turnLeft);
-          removeLoops(rightCurve,prevSegRight,turnRight);
+          removeLoops(leftCurve,prevSegLeft,turnLeft,&segStartLeft);
+          removeLoops(rightCurve,prevSegRight,turnRight,&segStartRight);
 
           prevSegLeft = segStartLeft;
           prevSegRight = segStartRight;
