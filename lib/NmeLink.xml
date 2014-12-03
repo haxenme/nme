@@ -35,21 +35,21 @@
       
       
          <section if="windows">
-            <lib name="gdi32.lib" />
-            <lib name="opengl32.lib" />
-            <lib name="user32.lib" />
-            <lib name="kernel32.lib" />
-            <lib name="advapi32.lib" />
+            <lib name="-lgdi32" />
+            <lib name="-lopengl32" />
+            <lib name="-luser32" />
+            <lib name="-lkernel32" />
+            <lib name="-ladvapi32" />
             <lib name="${haxelib:nme}/project/support/windows/dxguid.lib"/>
-            <lib name="winmm.lib" />
-            <lib name="imm32.lib"  />
-            <lib name="ole32.lib" />
-            <lib name="oleaut32.lib" />
-            <lib name="version.lib" />
-            <lib name="ws2_32.lib"  />
-            <lib name="wldap32.lib" />
-            <lib name="shell32.lib" />
-            <lib name="comdlg32.lib" />
+            <lib name="-lwinmm" />
+            <lib name="-limm32"  />
+            <lib name="-lole32" />
+            <lib name="-loleaut32" />
+            <lib name="-lversion" />
+            <lib name="-lws2_32"  />
+            <lib name="-lwldap32" />
+            <lib name="-lshell32" />
+            <lib name="-lcomdlg32" />
          </section>
 
          <section if="linux">
