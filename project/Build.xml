@@ -341,6 +341,7 @@
             <lib name="-ldl" />
             <lib name="-landroid" />
             <lib name="-lGLESv2" />
+            <lib name="-lEGL" />
             <lib name="-lz" />
          </section>
          

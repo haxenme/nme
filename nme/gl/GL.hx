@@ -617,6 +617,7 @@ class GL
 
    public static function cullFace(mode:Int):Void 
    {
+     nme_gl_cull_face(mode);
    }
 
    public static function deleteBuffer(buffer:GLBuffer):Void 
@@ -627,6 +628,8 @@ class GL
 
    public static function deleteFramebuffer(framebuffer:GLFramebuffer):Void 
    {
+      nme_gl_delete_framebuffer(framebuffer.id);
+      framebuffer.invalidate();
    }
 
    public static function deleteProgram(program:GLProgram):Void 
@@ -637,6 +640,8 @@ class GL
 
    public static function deleteRenderbuffer(renderbuffer:GLRenderbuffer):Void 
    {
+      nme_gl_delete_renderbuffer(renderbuffer.id);
+      renderbuffer.invalidate();
    }
 
    public static function deleteShader(shader:GLShader):Void 
@@ -771,8 +776,7 @@ class GL
 
    public static function getExtension(name:String):Dynamic 
    {
-      // Hmmm
-      return null;
+      return nme_gl_get_extension(name);
    }
 
    public static function getFramebufferAttachmentParameter(target:Int, attachment:Int, pname:Int):Dynamic 
@@ -1199,8 +1203,11 @@ class GL
    private static var nme_gl_create_render_buffer = load("nme_gl_create_render_buffer", 0);
    private static var nme_gl_create_shader = load("nme_gl_create_shader", 1);
    private static var nme_gl_create_texture = load("nme_gl_create_texture", 0);
+   private static var nme_gl_cull_face = load("nme_gl_cull_face", 1);
    private static var nme_gl_delete_buffer = load("nme_gl_delete_buffer", 1);
+   private static var nme_gl_delete_framebuffer = load("nme_gl_delete_framebuffer", 1);
    private static var nme_gl_delete_program = load("nme_gl_delete_program", 1);
+   private static var nme_gl_delete_renderbuffer = load("nme_gl_delete_renderbuffer", 1);
    private static var nme_gl_delete_shader = load("nme_gl_delete_shader", 1);
    private static var nme_gl_delete_texture = load("nme_gl_delete_texture", 1);
    private static var nme_gl_depth_func = load("nme_gl_depth_func", 1);
@@ -1225,6 +1232,7 @@ class GL
    private static var nme_gl_get_buffer_paramerter = load("nme_gl_get_buffer_paramerter", 2);
    private static var nme_gl_get_context_attributes = load("nme_gl_get_context_attributes", 0);
    private static var nme_gl_get_error = load("nme_gl_get_error", 0);
+   private static var nme_gl_get_extension = load("nme_gl_get_extension", 1);
    private static var nme_gl_get_framebuffer_attachment_parameter = load("nme_gl_get_framebuffer_attachment_parameter", 3);
    private static var nme_gl_get_parameter = load("nme_gl_get_parameter", 1);
    private static var nme_gl_get_program_info_log = load("nme_gl_get_program_info_log", 1);
