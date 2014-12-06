@@ -9,7 +9,7 @@
 
 #ifdef ANDROID
 #include <android/log.h>
-#include <egl/egl.h>
+#include <EGL/egl.h>
 #endif
 
 #include <nme/NmeCffi.h>
