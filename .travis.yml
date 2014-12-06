@@ -17,13 +17,14 @@ before_install:
 - haxelib setup ~/haxelib
 - git clone https://github.com/HaxeFoundation/hxcpp ~/hxcpp --depth 1
 - haxelib dev hxcpp ~/hxcpp
-- git clone https://github.com/haxenme/nme-dev ~/nme-dev --depth 1
-- haxelib dev nme-dev ~/nme-dev
+- cd ~/hxcpp/tools/hxcpp
+- haxe compile.hxml
+- cd ~/hxcpp/tools/run
+- haxe compile.hxml
 - haxelib dev nme $(pwd)
 - cd ~/hxcpp/project
 - neko build.n linux-m64
+- haxelib install nme-dev
 script:
-- cd ~/nme-dev/project
-- neko build.n linux-m64
 - cd $TRAVIS_BUILD_DIR/project
 - neko build.n linux-m64
