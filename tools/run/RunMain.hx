@@ -14,8 +14,8 @@ class RunMain
       log(" 2. Rebuild the main command-line tool, this can be done with:");
       log("     cd tools/nme");
       log("     haxe compile.hxml");
-      log("   Note: this requires the 'svg' and 'format' libraries, which can be installed with:");
-      log("     haxelib install svg");
+      log("   Note: this requires the 'gm2d' and 'format' libraries, which can be installed with:");
+      log("     haxelib install gm2d");
       log("     haxelib install format");
       while(true)
       {
@@ -43,8 +43,8 @@ class RunMain
       run("","haxelib", [ "install","nme-dev"]);
       log("Building binaries...");
       run("project","neko", [ "build.n"]);
-      log("Installing svg...");
-      run("","haxelib", [ "install","svg"]);
+      log("Installing gm2d...");
+      run("","haxelib", [ "install","gm2d"]);
       log("Installing format...");
       run("","haxelib", [ "install","format"]);
       log("Compiling nme tool...");

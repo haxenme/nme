@@ -7,6 +7,6 @@
 -D nme
 -D ndll_silent_fail
 -lib format
--lib svg
+-lib gm2d
 --remap flash:nme
 -debug

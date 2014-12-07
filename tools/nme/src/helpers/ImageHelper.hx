@@ -1,11 +1,14 @@
-import format.SVG;
+import gm2d.svg.Svg;
+import gm2d.svg.SvgRenderer;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
 import nme.display.Shape;
+import nme.geom.Rectangle;
+import nme.geom.Matrix;
 
 class ImageHelper 
 {
-   public static function rasterizeSVG(svg:SVG, width:Int, height:Int, backgroundColor:BitmapInt32 = null):BitmapData 
+   public static function rasterizeSVG(svg:Svg, width:Int, height:Int, backgroundColor:Int = null):BitmapData 
    {
       if (backgroundColor == null) 
       {
@@ -13,7 +16,11 @@ class ImageHelper
       }
 
       var shape = new Shape();
-      svg.render(shape.graphics, 0, 0, width, height);
+      var renderer = new SvgRenderer(svg);
+      var matrix = new Matrix();
+      var scale = Math.min( width/svg.width, height/svg.height );
+      matrix.a = matrix.d = scale;
+      renderer.render(shape.graphics, matrix,null,null,width,height);
 
       var bitmapData = new BitmapData(width, height, true, backgroundColor);
       bitmapData.draw(shape);

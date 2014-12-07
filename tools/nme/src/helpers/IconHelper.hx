@@ -1,6 +1,6 @@
 package;
 
-import format.SVG;
+import gm2d.svg.Svg;
 import haxe.io.Bytes;
 import haxe.io.BytesOutput;
 import haxe.io.Path;
@@ -132,7 +132,7 @@ class IconHelper
 
    public static function createWindowsIcon(icons:Array<Icon>, targetPath:String):Bool 
    {
-      var sizes = [ 16, 24, 32, 48, 64, 128, 256 ];
+      var sizes = [ 16, 24, 32, 40, 48, 64, 96, 128, 256 ];
       var bmps = new Array<BitmapData>();
 
       var data_pos = 6;
@@ -303,7 +303,7 @@ class IconHelper
       return match;
    }
 
-   private static function getIconBitmap(icons:Array<Icon>, width:Int, height:Int, backgroundColor:BitmapInt32 = null):BitmapData 
+   private static function getIconBitmap(icons:Array<Icon>, width:Int, height:Int, backgroundColor:Int = null):BitmapData 
    {
       if (width<1 || height<1)
          Log.error("Bad icon size request");
@@ -352,8 +352,8 @@ class IconHelper
             var content  = File.getContent(icon.path);
             if (content==null || content.length<1)
                Log.error("Invalid svg getContent " + icon.path );
-            var svg = new SVG(content);
-            if (svg.data.width==0 || svg.data.height==0)
+            var svg = new Svg(Xml.parse(content));
+            if (svg.width==0 || svg.height==0)
                Log.error("Invalid svg data " + icon.path );
 
             bitmapData = ImageHelper.rasterizeSVG(svg, width, height, backgroundColor);
