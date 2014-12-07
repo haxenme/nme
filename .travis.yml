@@ -15,13 +15,13 @@ before_install:
 - sudo ln -s /usr/lib/haxe/haxelib /usr/bin/haxelib
 - mkdir ~/haxelib
 - haxelib setup ~/haxelib
+- haxelib dev nme $(pwd)
 - git clone https://github.com/HaxeFoundation/hxcpp ~/hxcpp --depth 1
 - haxelib dev hxcpp ~/hxcpp
 - cd ~/hxcpp/tools/hxcpp
 - haxe compile.hxml
 - cd ~/hxcpp/tools/run
 - haxe compile.hxml
-- haxelib dev nme $(pwd)
 - cd ~/hxcpp/project
 - neko build.n linux-m64
 - haxelib install nme-dev
