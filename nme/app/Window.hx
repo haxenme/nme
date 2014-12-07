@@ -115,7 +115,7 @@ class Window
       var event:AppEvent = inEvent;
       try
       {
-         #if !(cpp && hxcpp_api_level>=311)
+         #if !(cpp && hxcpp_api_level>=312)
          inEvent.pollTime = haxe.Timer.stamp();
          #end
 
@@ -232,7 +232,7 @@ class Window
          if (nextWakeHandler!=null)
             nextWakeHandler(nextWake);
 
-         #if (cpp && hxcpp_api_level>=311)
+         #if (cpp && hxcpp_api_level>=312)
          event.pollTime = nextWake;
          #else
          nme_stage_set_next_wake(nmeHandle,nextWake);
@@ -379,7 +379,7 @@ class Window
    private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
    private static var nme_display_object_set_bg = Loader.load("nme_display_object_set_bg", 2);
 
-   #if (cpp && hxcpp_api_level>=311)
+   #if (cpp && hxcpp_api_level>=312)
    private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler_native", 4);
    #else
    private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler", 4);

@@ -1,6 +1,6 @@
 package nme.app;
 
-#if (cpp && hxcpp_api_level>=311)
+#if (cpp && hxcpp_api_level>=312)
 import nme.native.NativeEvent;
 
 abstract AppEvent(cpp.Pointer<NativeEvent>) from cpp.Pointer<NativeEvent>
