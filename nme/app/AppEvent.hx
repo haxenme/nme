@@ -19,21 +19,21 @@ abstract AppEvent(cpp.Pointer<NativeEvent>) from cpp.Pointer<NativeEvent>
    public var deltaY(get,never):Float;
    public var pollTime(get,set):Float;
 
-   inline function get_type():Int return this.value.type;
-   inline function get_x():Int return this.value.x;
-   inline function get_y():Int return this.value.y;
-   inline function get_value():Int return this.value.value;
-   inline function get_code():Int return this.value.code;
-   inline function get_id():Int return this.value.id;
-   inline function get_flags():Int return this.value.flags;
-   inline function get_result():Int return this.value.result;
+   inline function get_type():Int return this.ref.type;
+   inline function get_x():Int return this.ref.x;
+   inline function get_y():Int return this.ref.y;
+   inline function get_value():Int return this.ref.value;
+   inline function get_code():Int return this.ref.code;
+   inline function get_id():Int return this.ref.id;
+   inline function get_flags():Int return this.ref.flags;
+   inline function get_result():Int return this.ref.result;
    inline function set_result(inResult:Int):Int return this.ref.result = inResult;
-   inline function get_sx():Float return this.value.scaleX;
-   inline function get_sy():Float return this.value.scaleY;
-   inline function get_deltaX():Float return this.value.deltaX;
-   inline function get_deltaY():Float return this.value.deltaY;
-   inline function get_pollTime():Float return this.value.pollTime;
-   inline function set_pollTime(inWake:Float):Float return this.value.pollTime = inWake;
+   inline function get_sx():Float return this.ref.scaleX;
+   inline function get_sy():Float return this.ref.scaleY;
+   inline function get_deltaX():Float return this.ref.deltaX;
+   inline function get_deltaY():Float return this.ref.deltaY;
+   inline function get_pollTime():Float return this.ref.pollTime;
+   inline function set_pollTime(inWake:Float):Float return this.ref.pollTime = inWake;
 }
 
 #else
