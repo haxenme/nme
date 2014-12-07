@@ -3,6 +3,9 @@
 *.lo
 *.o
 
+# vi temp
+*.swp
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
@@ -15,6 +18,16 @@
 
 # Untracked directories
 obj/
+Export/
+bin/
+lib/*/
+
+#this one ise not under source control
+nme.n
+
+# Created files
+tests/RunAll.n
+tests/import-all
 
 # Miscellaneous
 all_objs

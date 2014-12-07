@@ -26,5 +26,9 @@ before_install:
 - neko build.n linux-m64
 - haxelib install nme-dev
 script:
+- cd $TRAVIS_BUILD_DIR/tools/nme
+- haxe compile.hxml
 - cd $TRAVIS_BUILD_DIR/project
 - neko build.n linux-m64
+- cd $TRAVIS_BUILD_DIR/tests
+- haxe -x RunAll

@@ -11,7 +11,6 @@ import nme.filters.BitmapFilter;
 import nme.utils.ByteArray;
 import nme.Loader;
 
-typedef BitmapInt32 = Int;
 
 @:autoBuild(nme.macros.Embed.embedAsset("NME_bitmap_",":bitmap"))
 class BitmapData extends Surface implements IBitmapDrawable 
@@ -32,7 +31,7 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
 
 
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:BitmapInt32, ?inGPUMode:Null<Int>) 
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:Int, ?inGPUMode:Null<Int>) 
    {
       super(inWidth, inHeight, inFillRGBA, inGPUMode );
 
@@ -60,7 +59,7 @@ class BitmapData extends Surface implements IBitmapDrawable
       return bm;
    }
 
-   public static inline function createColor(inRGB:Int, inAlpha:Int = 0xFF):BitmapInt32 
+   public static inline function createColor(inRGB:Int, inAlpha:Int = 0xFF):Int 
    {
       return inRGB |(inAlpha << 24);
    }
@@ -71,12 +70,12 @@ class BitmapData extends Surface implements IBitmapDrawable
    }
 
 
-   public static inline function extractAlpha(v:BitmapInt32):Int { return v >>> 24; }
+   public static inline function extractAlpha(v:Int):Int { return v >>> 24; }
 
-   public static inline function extractColor(v:BitmapInt32):Int { return v & 0xFFFFFF; }
+   public static inline function extractColor(v:Int):Int { return v & 0xFFFFFF; }
 
 
-   static inline function sameValue(a:BitmapInt32, b:BitmapInt32)
+   static inline function sameValue(a:Int, b:Int)
    {
       return a==b;
    }
