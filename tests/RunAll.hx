@@ -25,7 +25,7 @@ class RunAll
 
    static function filter(inName:String):Bool
    {
-      return inName!="android";
+      return inName!="android" && inName!="native";
    }
 
    public static function main()
