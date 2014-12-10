@@ -35,9 +35,9 @@ struct TileData
       {
          UserPoint rg = inPoint[0];
          UserPoint ba = inPoint[1];
-         mColour = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
+         mColour = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))<<16) |
                    ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
-                   ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
+                   ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))) |
                    ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
       }
    }
@@ -250,11 +250,20 @@ public:
                uvt[4] = (data.mRect.x + data.mRect.w) * bmp_scale_x;
                uvt[5] = (data.mRect.y + data.mRect.h) * bmp_scale_y;
                mFiller->SetMapping(p,uvt,2);
-               
+
                // Can render straight to surface ....
                if (!offscreen_buffer)
                {
-                  if (data.mHasTrans && !just_alpha)
+                  if (s->Format()==pfAlpha)
+                  {
+                     if (data.mHasColour)
+                     {
+                        ARGB col = inState.mColourTransform->Transform(data.mColour|0xff000000);
+                        mFiller->SetTint(col);
+                     }
+                     mFiller->Fill(*alpha,0,0,inTarget,inState);
+                  }
+                  else if (data.mHasTrans && !just_alpha)
                   {
                      ColorTransform buf;
                      RenderState col_state(inState);
@@ -277,6 +286,14 @@ public:
                   {
                   AutoSurfaceRender tmp_render(tmp);
                   const RenderTarget &target = tmp_render.Target();
+
+                  if (s->Format()==pfAlpha && data.mHasColour)
+                  {
+                     ARGB col = inState.mColourTransform->Transform(data.mColour|0xff000000);
+                     mFiller->SetTint(col);
+                  }
+
+
                   mFiller->Fill(*alpha,0,0,target,inState);
                   }
 
