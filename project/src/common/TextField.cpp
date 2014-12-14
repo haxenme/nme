@@ -1409,7 +1409,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    RenderState state(inState);
 
-   Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleH);
+   Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleV);
    state.mClipRect = r.Intersect(inState.mClipRect);
 
    if (inState.mMask)
@@ -1580,17 +1580,6 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
       BuildBackground();
       return DisplayObject::GetExtent(inTrans,outExt,inForBitmap,inIncludeStroke);
    }
-   else
-   {
-      for(int corner=0;corner<4;corner++)
-      {
-         //UserPoint pos((corner & 1) ? boundsWidth*mLayoutScaleH : 0,
-         //              (corner & 2) ? boundsHeight*mLayoutScaleV : 0);
-         UserPoint pos((corner & 1) ? mActiveRect.x1() : mActiveRect.x,
-                       (corner & 2) ? mActiveRect.y1() : mActiveRect.y);
-         outExt.Add( RectToTarget(*inTrans.mMatrix,pos) );
-      }
-   }
 }
 
 
@@ -1735,12 +1724,13 @@ void TextField::Layout(const Matrix &inMatrix)
    mCharPos.resize(0);
 
    int gap = (int)(2.0*mLayoutScaleH+0.5);
+   int verticalGap = (int)(2.0*mLayoutScaleV+0.5);
    Line line;
    int char_count = 0;
    textHeight = 0;
    textWidth = 0;
    int x6 = gap << 6;
-   int y = gap;
+   int y = verticalGap;
    line.mY0 = y;
    mLastUpDownX = -1;
    int max_x = boundsWidth * mLayoutScaleH - gap;
@@ -1859,7 +1849,7 @@ void TextField::Layout(const Matrix &inMatrix)
       mLines.push_back(line);
    }
 
-   textHeight = y + gap;
+   textHeight = y + verticalGap;
 
    int max_y = boundsHeight * mLayoutScaleV;
    if (autoSize != asNone)
@@ -1895,7 +1885,7 @@ void TextField::Layout(const Matrix &inMatrix)
    //  therefore how many lines we can scroll...
    if (textHeight>max_y && mLines.size()>1)
    {
-      int window_height = max_y-3*gap;
+      int window_height = max_y-3*verticalGap;
       int line = mLines.size()-1;
       int lines_height = mLines[line].mMetrics.height;
       while( line < window_height && line>0 )
@@ -1936,6 +1926,8 @@ void TextField::Layout(const Matrix &inMatrix)
    }
 
    mLinesDirty = false;
+   mGfxDirty = true;
+   DirtyCache();
    int n = mCharPos.size();
    mSelectMin = std::min(mSelectMin,n);
    mSelectMax = std::min(mSelectMax,n);
