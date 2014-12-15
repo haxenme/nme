@@ -116,30 +116,30 @@ class Sample
 
       var f1 = createBox(inContents,true);
       Lib.current.addChild(f1);
-		f1.x = 10;
-		f1.y = 10;
+      f1.x = 10;
+      f1.y = 10;
 
       var f2 = createBox(inContents,false);
       Lib.current.addChild(f2);
-		#if !flash
+      #if !flash
       f2.x = 400;
       f2.y = 100;
       f2.rotation = 90;
-		#else
-		f1.x = 40;
-		f1.y = 40;
-		#end
+      #else
+      f1.x = 40;
+      f1.y = 40;
+      #end
 
       var f3 = createBox(inContents,true);
       Lib.current.addChild(f3);
-		#if !flash
+      #if !flash
       f3.x = 200;
       f3.y = 400;
-      f3.rotation = 270;
-		#else
-		f1.x = 70;
-		f1.y = 70;
-		#end
+      f3.rotation = 45;
+      #else
+      f1.x = 70;
+      f1.y = 70;
+      #end
    }
 
    function createBox(inContents:String,inBG:Bool)
@@ -164,18 +164,18 @@ class Sample
       tf.y = 30;
       tf.width = 160;
       tf.height = 260;
-		if (inBG)
-		{
+      if (inBG)
+      {
          tf.border = true;
          tf.borderColor = 0x000000;
          tf.background = true;
          tf.backgroundColor = 0xffffff;
-		}
+      }
       tf.multiline = true;
       tf.text = inContents;
       frame.addChild(tf);
 
-		var glow = new GlowFilter(0xff0000,0.5, 3,3, 1,1, false,false);
+      var glow = new GlowFilter(0xff0000,0.5, 3,3, 1,1, false,false);
       var f = new Array<BitmapFilter>();
       f.push(glow);
       tf.filters = f;
