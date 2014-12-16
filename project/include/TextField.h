@@ -41,6 +41,8 @@ public:
    void setIsInput(bool inIsInput);
    AutoSizeMode getAutoSize() { return autoSize; }
    void  setAutoSize(int inAutoSize);
+   void modifyLocalMatrix(Matrix &ioMatrix);
+
 
    int   getCaretIndex() { return caretIndex; }
    int   getMaxScrollH() { Layout(); return maxScrollH; }
@@ -137,6 +139,7 @@ public:
    double fontToLocal;
 
    // Local coordinates
+   double  explicitWidth;
    double  fieldWidth;
    double  fieldHeight;
    double  textWidth;

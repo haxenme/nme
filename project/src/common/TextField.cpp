@@ -55,6 +55,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    mTilesDirty = false;
    mCaretDirty = true;
    fieldWidth = 100.0;
+   explicitWidth = fieldWidth;
    fieldHeight = 100.0;
    //mActiveRect = Rect(100,100);
    mFontsDirty = false;
@@ -109,6 +110,7 @@ double TextField::getHeight()
 
 void TextField::setWidth(double inWidth)
 {
+   explicitWidth = inWidth;
    if (autoSize==asNone || wordWrap)
    {
       if (scaleX!=0)
@@ -118,6 +120,7 @@ void TextField::setWidth(double inWidth)
       mLinesDirty = true;
       mGfxDirty = true;
    }
+   mDirtyFlags |= dirtLocalMatrix;
 }
 
 void TextField::setHeight(double inHeight)
@@ -134,6 +137,18 @@ void TextField::setHeight(double inHeight)
       mGfxDirty = true;
    }
 }
+
+void TextField::modifyLocalMatrix(Matrix &ioMatrix)
+{
+   if ( (autoSize==asCenter || autoSize==asRight) && !multiline )
+   {
+      if (autoSize==asCenter)
+         ioMatrix.mtx -= (fieldWidth-explicitWidth) * 0.5;
+      else
+         ioMatrix.mtx -= (fieldWidth-explicitWidth);
+   }
+}
+
 
 
 const TextFormat *TextField::getDefaultTextFormat()
@@ -351,10 +366,14 @@ void TextField::setWordWrap(bool inWordWrap)
 
 void TextField::setAutoSize(int inAutoSize)
 {
-   autoSize = (AutoSizeMode)inAutoSize;
-   mLinesDirty = true;
-   mGfxDirty = true;
-   DirtyCache();
+   if (inAutoSize!=autoSize)
+   {
+      autoSize = (AutoSizeMode)inAutoSize;
+      mLinesDirty = true;
+      mGfxDirty = true;
+      mDirtyFlags |= dirtLocalMatrix;
+      DirtyCache();
+   }
 }
 
 double TextField::getTextHeight()
@@ -1776,13 +1795,16 @@ void TextField::Layout(const Matrix &inMatrix)
       return;
 
    double font6ToLocalX = fontToLocal/64.0;
-   double fontToLocalY = fontToLocal;
 
    mLines.resize(0);
    mCharPos.resize(0);
 
    if (scaleX==0 || scaleY==0)
       return;
+
+
+   double oldW = fieldWidth;
+   double oldH = fieldHeight;
 
    Line line;
    int char_count = 0;
@@ -2001,6 +2023,9 @@ void TextField::Layout(const Matrix &inMatrix)
             }
       }
    }
+
+   if ( (fieldWidth!=oldW || fieldHeight!=oldH) && (autoSize==asRight || autoSize==asCenter))
+      mDirtyFlags |= dirtLocalMatrix;
 
    mLinesDirty = false;
    mTilesDirty = true;

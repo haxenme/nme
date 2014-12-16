@@ -294,7 +294,8 @@ void DisplayObject::DirtyCache(bool inParentOnly)
 Matrix DisplayObject::GetFullMatrix(bool inStageScaling)
 {
    if (mParent)
-     return mParent->GetFullMatrix(inStageScaling).Mult(GetLocalMatrix().Translated(-scrollRect.x,-scrollRect.y));
+     return mParent->GetFullMatrix(inStageScaling).Mult(GetLocalMatrix().
+                Translated(-scrollRect.x,-scrollRect.y));
    return GetLocalMatrix().Translated(-scrollRect.x,-scrollRect.y);
 }
 
@@ -344,6 +345,7 @@ Matrix &DisplayObject::GetLocalMatrix()
       #ifdef NME_S3D
       mLocalMatrix.mtz = z;
       #endif
+      modifyLocalMatrix(mLocalMatrix);
    }
    return mLocalMatrix;
 }
