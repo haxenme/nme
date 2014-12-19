@@ -64,7 +64,11 @@
 #include <windows.h>
 #include <gl/GL.h>
 //#define FORCE_NON_PO2
+#ifdef __MINGW32__
+#include <stddef.h>
+#endif
 typedef ptrdiff_t GLsizeiptrARB;
+
 #define NEED_EXTENSIONS
 #include <SDL_opengl.h>
 

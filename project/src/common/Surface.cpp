@@ -324,7 +324,7 @@ void TTBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
       inMask.SetPos(inX , inY + y );
       inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
       for(int x=0;x<inSrcRect.w;x++)
-      #ifdef HX_WINDOWS
+      #if defined(HX_WINDOWS) && !defined(__MINGW32__)
          outDest.Next().Blend<DEST_ALPHA>(inMask.Mask(inSrc.Next()));
       #else
          if (!DEST_ALPHA)

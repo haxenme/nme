@@ -1,6 +1,11 @@
 #include <windows.h>
 #include <shlobj.h> 
 
+// TODO
+#ifdef __MINGW32__
+WINBASEAPI LANGID WINAPI GetSystemDefaultUILanguage(void);
+#endif
+
 #include <stdio.h>
 #include <string>
 #include <vector>
