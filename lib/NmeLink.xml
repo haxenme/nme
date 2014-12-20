@@ -51,6 +51,7 @@
                <lib name="-lwldap32" />
                <lib name="-lshell32" />
                <lib name="-lcomdlg32" />
+               <lib name="-luuid" />
             </section>
             <section unless="HXCPP_MINGW">
                <lib name="gdi32.lib" />

@@ -254,8 +254,10 @@
 
    <set name="SLIBEXT" value=".lib" if="windows"/>
    <set name="SLIBEXT" value=".a" unless="windows"/>
+   <set name="SLIBEXT" value=".a" if="mingw"/>
    <set name="PRELIB" value="${NME_DEV}/lib/${BINDIR}/lib" />
    <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
+   <set name="no_shared_libs" value="1" if="mingw"/>
    
    
    <target id="NDLL" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
@@ -275,6 +277,7 @@
             <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
             <lib name="${PRELIB}modplug${POSTLIB}" />
             <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
+            <lib name="-luuid" if="mingw" unless="static_link" />
          </section>
 
          <section if="NME_OPENAL">

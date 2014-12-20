@@ -879,8 +879,16 @@ class CommandLineTools
 
       getHXCPPConfig(project);
 
+         trace(host);
       if (host == Platform.WINDOWS) 
       {
+         if (targetName=="cpp" && project.hasDef("HXCPP_MINGW"))
+         {
+            project.staticLink = true;
+            project.haxedefs.set("no_shared_libs","1");
+            trace("SET haxedefs");
+         }
+
          if (project.environment.exists("JAVA_HOME")) 
             Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
 

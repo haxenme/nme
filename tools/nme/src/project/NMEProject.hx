@@ -331,7 +331,7 @@ class NMEProject
 
    public function hasDef(inName:String)
    {
-      return localDefines.exists(inName) || environment.exists(inName);
+      return localDefines.exists(inName) || environment.exists(inName) || haxedefs.exists(inName);
    }
    public function getDef(inName:String):String
    {

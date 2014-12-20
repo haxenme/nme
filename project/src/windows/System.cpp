@@ -1,11 +1,6 @@
 #include <windows.h>
 #include <shlobj.h> 
 
-// TODO
-#ifdef __MINGW32__
-WINBASEAPI LANGID WINAPI GetSystemDefaultUILanguage(void);
-#endif
-
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -22,6 +17,13 @@ namespace nme {
 	std::string CapabilitiesGetLanguage()
 	{
 		char locale[8];
+      #ifdef __MINGW32__
+      typedef WINBASEAPI LANGID WINAPI (*GetSystemDefaultUILanguageFunc)();
+      GetSystemDefaultUILanguageFunc GetSystemDefaultUILanguage = 
+         (GetSystemDefaultUILanguageFunc)GetProcAddress( LoadLibraryA("kernel32.dll"), "GetSystemDefaultUILanguage");
+      if (!GetSystemDefaultUILanguage)
+         return "en";
+      #endif
 		int lang_len = GetLocaleInfo(GetSystemDefaultUILanguage(), LOCALE_SISO639LANGNAME, locale, sizeof(locale));
 		return std::string(locale, lang_len);
 	}
