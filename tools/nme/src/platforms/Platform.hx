@@ -56,8 +56,10 @@ class Platform
    {
       var base = getOutputDir() + "/";
       var l = base.length;
-      if (inFile.substr(0,l)!=base)
+      if (inFile.substr(0,l)!=base && inFile.substr(inFile.length-8)!=".pbxproj")
+      {
          Log.error( inFile + " does not appear to be under " + base );
+      }
       outputFiles.push( inFile.substr(l) );
    }
 
