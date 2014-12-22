@@ -806,10 +806,14 @@ class NMMLParser
                          project.addArch( Architecture.ARMV6);
                      case "armv7":
                          project.addArch( Architecture.ARMV7);
+                     case "arm64":
+                         project.addArch( Architecture.ARM64);
                      case "x86":
                          project.addArch( Architecture.X86);
                      case "i386":
                          project.addArch( Architecture.I386);
+                     case "x86_64":
+                         project.addArch( Architecture.X86_64);
                      default:
                          Log.error("Unvalid architecture : " + arch);
                   }
@@ -832,14 +836,18 @@ class NMMLParser
                         switch(binaries) 
                         {
                            case "fat":
-                              project.addArch( Architecture.ARMV6);
+                              //project.addArch( Architecture.ARMV6);
                               project.addArch( Architecture.ARMV7);
+                              project.addArch( Architecture.ARM64);
 
                            case "armv6":
                               project.addArch( Architecture.ARMV6);
 
                            case "armv7":
                               project.addArch( Architecture.ARMV7);
+
+                           case "arm64":
+                              project.addArch( Architecture.ARM64);
                         }
                      }
 

@@ -220,7 +220,9 @@ class IOSPlatform extends Platform
 {
    var buildV6:Bool;
    var buildV7:Bool;
+   var buildArm64:Bool;
    var buildI386:Bool;
+   var buildX86_64:Bool;
   
 
    public function new(inProject:NMEProject)
@@ -239,11 +241,14 @@ class IOSPlatform extends Platform
       if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && Std.parseFloat(config.deployment)<5)
           ArrayHelper.addUnique(architectures, Architecture.ARMV6);
       else
+      {
           ArrayHelper.addUnique(architectures, Architecture.ARMV7);
+          ArrayHelper.addUnique(architectures, Architecture.ARM64);
+      }
 
       ArrayHelper.addUnique(architectures, Architecture.I386);
    
-      buildV6 = buildV7 = buildI386 = false;
+      buildV6 = buildV7 = buildI386 = buildArm64 = buildX86_64 = false;
 
       if (project.command == "xcode")
       {
@@ -253,15 +258,24 @@ class IOSPlatform extends Platform
          {
             case "i386":
                 buildI386 = true;
+            case "x86_64":
+                buildX86_64 = true;
             case "armv6":
-                if (hasArch(Architecture.ARMV6))
+                if (!hasArch(Architecture.ARMV6))
                    Log.error("Armv6 not supported");
                 buildV6 = true;
             case "armv7":
-                if (hasArch(Architecture.ARMV6))
+                if (!hasArch(Architecture.ARMV6))
                    Log.error("Armv6 not supported");
                 buildV7 = true;
+            case "arm64":
+                if (!hasArch(Architecture.ARM64))
+                   Log.error("Arm64 not supported");
+                buildArm64 = true;
             default:
+                trace("Locals :" + project.localDefines);
+                trace("Env :" + project.environment);
+                trace("Sys :" + Sys.environment());
                 Log.error("Unknown arch " + arch);
          }
       }
@@ -277,6 +291,7 @@ class IOSPlatform extends Platform
          {
             buildV6 = hasArch(Architecture.ARMV6);
             buildV7 = hasArch(Architecture.ARMV7);
+            buildArm64 = hasArch(Architecture.ARM64);
          }
       }
       Log.verbose("Valid Archs: " + architectures );
@@ -289,7 +304,7 @@ class IOSPlatform extends Platform
 
       IOSHelper.xcodeBuild(project, targetDir);
 
-      if (buildV6 || buildV7)
+      if (buildV6 || buildV7 || buildArm64)
       {
           var entitlements = targetDir + "/" + project.app.file + "/" + project.app.file + "-Entitlements.plist";
 
@@ -331,6 +346,8 @@ class IOSPlatform extends Platform
          {
             case ARMV6: valid_archs.push("armv6"); current_archs.push("armv6");
             case ARMV7: valid_archs.push("armv7"); current_archs.push("armv7");
+            case ARM64: valid_archs.push("arm64"); current_archs.push("arm64");
+            case X86_64: valid_archs.push("X86_64"); current_archs.push("x86_64");
             case I386: valid_archs.push("i386");
             default:
          }
@@ -420,8 +437,14 @@ class IOSPlatform extends Platform
       if (buildV7)
          ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
 
+      if (buildArm64)
+         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARM64", "-D", "iphoneos" ]));
+
       if (buildI386)
          ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim"]));
+
+      if (buildX86_64)
+         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim", "-D", "HXCPP_M64"]));
    }
 
 
@@ -438,9 +461,17 @@ class IOSPlatform extends Platform
          FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphoneos-v7.a",
                       projectDirectory + "/lib/armv7" + dbg + "/libApplicationMain.a" );
 
+      if (buildArm64)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphoneos-64.a",
+                      projectDirectory + "/lib/arm64" + dbg + "/libApplicationMain.a" );
+
       if (buildI386)
          FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphonesim.a",
                       projectDirectory + "/lib/i386" + dbg + "/libApplicationMain.a" );
+
+      if (buildX86_64)
+         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphonesim-64.a",
+                      projectDirectory + "/lib/x86_64" + dbg + "/libApplicationMain.a" );
    }
 
    override public function run(arguments:Array<String>):Void 
@@ -532,9 +563,9 @@ class IOSPlatform extends Platform
 
       PathHelper.mkdir(projectDirectory + "/lib");
 
-      for(archID in 0...3) 
+      for(archID in 0...5) 
       {
-         var arch = [ "armv6", "armv7", "i386" ][archID];
+         var arch = [ "armv6", "armv7", "i386", "arm64", "x86_64" ][archID];
 
          if (arch == "armv6" && !context.ARMV6)
             continue;
@@ -542,7 +573,10 @@ class IOSPlatform extends Platform
          if (arch == "armv7" && !context.ARMV7)
             continue;
 
-         var libExt = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a" ][archID];
+         if (arch == "arm64" && !context.ARM64)
+            continue;
+
+         var libExt = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a", ".iphoneos-64.a", ".iphonesim-64.a"  ][archID];
 
          PathHelper.mkdir(projectDirectory + "/lib/" + arch);
          PathHelper.mkdir(projectDirectory + "/lib/" + arch + "-debug");
