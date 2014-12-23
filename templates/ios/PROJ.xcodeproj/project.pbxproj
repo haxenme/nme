@@ -68,8 +68,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				::if ARMV6::1EF0A888121AE2F0003F2F59 /* lib/ApplicationMain.a in lib */,::end::
-				::if ARMV7::1EF0A888121AE2F0003F2F5A /* lib/ApplicationMain-v7.a in lib */,::end::
 				1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */,
 				1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */,
 				1EEEBAA5121AF2210048A9DF /* OpenGLES.framework in Frameworks */,
@@ -369,9 +367,9 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/::APP_FILE::/lib/armv7\"",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=armv64]" = (
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
 					"$(inherited)",
-					"\"$(SRCROOT)/::APP_FILE::/lib/armv64\"",
+					"\"$(SRCROOT)/::APP_FILE::/lib/arm64\"",
 				);
 				"LIBRARY_SEARCH_PATHS[arch=i386]" = (
 					"$(inherited)",

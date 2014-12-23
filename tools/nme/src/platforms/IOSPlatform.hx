@@ -252,31 +252,33 @@ class IOSPlatform extends Platform
 
       if (project.command == "xcode")
       {
-         var arch = project.localDefines.get("xcodearch");
-         Log.verbose("Target flags: " + arch );
-         switch(arch)
+         for(arch in project.localDefines.get("xcodearch").split(" "))
          {
-            case "i386":
-                buildI386 = true;
-            case "x86_64":
-                buildX86_64 = true;
-            case "armv6":
-                if (!hasArch(Architecture.ARMV6))
-                   Log.error("Armv6 not supported");
-                buildV6 = true;
-            case "armv7":
-                if (!hasArch(Architecture.ARMV6))
-                   Log.error("Armv6 not supported");
-                buildV7 = true;
-            case "arm64":
-                if (!hasArch(Architecture.ARM64))
-                   Log.error("Arm64 not supported");
-                buildArm64 = true;
-            default:
-                trace("Locals :" + project.localDefines);
-                trace("Env :" + project.environment);
-                trace("Sys :" + Sys.environment());
-                Log.error("Unknown arch " + arch);
+            Log.verbose("Target flags: " + arch );
+            switch(arch)
+            {
+               case "i386":
+                   buildI386 = true;
+               case "x86_64":
+                   buildX86_64 = true;
+               case "armv6":
+                   if (!hasArch(Architecture.ARMV6))
+                      Log.error("Armv6 not supported");
+                   buildV6 = true;
+               case "armv7":
+                   if (!hasArch(Architecture.ARMV7))
+                      Log.error("Armv6 not supported");
+                   buildV7 = true;
+               case "arm64":
+                   if (!hasArch(Architecture.ARM64))
+                      Log.error("Arm64 not supported");
+                   buildArm64 = true;
+               default:
+                   trace("Locals :" + project.localDefines);
+                   trace("Env :" + project.environment);
+                   trace("Sys :" + Sys.environment());
+                   Log.error("Unknown arch " + arch);
+             }
          }
       }
       else
