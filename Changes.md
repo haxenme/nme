@@ -1,4 +1,17 @@
 
+* Separated from Lime project
+* Fixed sub-pixel offset for nearest mode
+* Added options for handling unhandled exceptions
+* Added bluetooth functions for android
+* Added lldb options for starting with debug
+* Some work on frame-rate control, including working at 0 frames-per-second
+* Better integraion with waxe
+* Some minor tesselation improvements
+* Added some missing implementations in OGLExport
+* Nme tool is now linked against gm2d, not svg
+* Reworked text rendering to use drawTiles - allows rotated font rendering
+* Added mingw support
+* Added ios8 + 64 bit suport
 * Float32Array/UInt16Array/Int32Array - meaning of third parameter has changed to match JS behaviour.  Please check if this affects you.
 
 --------------------------
