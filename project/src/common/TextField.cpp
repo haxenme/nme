@@ -1414,8 +1414,8 @@ bool TextField::IsCacheDirty()
 
 void  TextField::toScreenGrid(UserPoint &ioPoint, const Matrix &inMatrix)
 {
-   ioPoint.x = (int)((ioPoint.x-inMatrix.mtx)*fontScale+0.5)*fontToLocal+inMatrix.mtx;
-   ioPoint.y = (int)((ioPoint.y-inMatrix.mty)*fontScale+0.5)*fontToLocal+inMatrix.mty;
+   ioPoint.x = (floor(ioPoint.x-inMatrix.mtx)*fontScale+0.5)*fontToLocal+inMatrix.mtx;
+   ioPoint.y = (floor(ioPoint.y-inMatrix.mty)*fontScale+0.5)*fontToLocal+inMatrix.mty;
 }
 
 
