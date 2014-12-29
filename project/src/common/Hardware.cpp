@@ -6,7 +6,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-
 namespace nme
 {
 
@@ -633,6 +632,8 @@ public:
          CalcTexCoords();
 
       PushElement();
+
+      data.mElements.last().mPrimType = ptLines;
    }
 
 
@@ -640,6 +641,8 @@ public:
    #define FLAT 0.000001
    void AddPolygon(Vertices &inOutline,const QuickVec<int> &inSubPolys)
    {
+      bool showTriangles = false;
+
       if (mSolidMode && inOutline.size()<3)
          return;
 
@@ -677,7 +680,10 @@ public:
             }
          }
          if (!isConvex)
+         {
             ConvertOutlineToTriangles(inOutline,inSubPolys);
+            //showTriangles = true;
+         }
       }
       if (inOutline.size()<3)
          return;
@@ -687,10 +693,17 @@ public:
       if (mElement.mSurface)
          mElement.mTexOffset = mElement.mVertexOffset + 2*sizeof(float);
 
-      PushVertices(inOutline);
+      if (showTriangles)
+      {
+         PushTriangleWireframe(inOutline);
+      }
+      else
+      {
+         PushVertices(inOutline);
 
-      if (!isConvex)
-         data.mElements.last().mPrimType = ptTriangles;
+         if (!isConvex)
+            data.mElements.last().mPrimType = ptTriangles;
+      }
    }
 
 

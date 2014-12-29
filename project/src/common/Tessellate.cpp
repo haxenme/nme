@@ -264,8 +264,9 @@ bool FindDiag(ConcaveSet &concaveSet,EdgePoint *&p1,EdgePoint *&p2)
 }
 
 
+void ConvertPolyToTriangles(Vertices &inVertices, Vertices &outTriangles,int inDepth);
 
-void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles)
+void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles,int inDepth=0)
 {
    outTriangles.reserve( outTriangles.size() + (size-2)*3);
 
@@ -322,33 +323,33 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
          */
          break;
       }
-      else if (size>2 )
+      else if (size>4 )
       {
          break;
 
          EdgePoint *b1=0,*b2=0;
          //printf("Diag %d ?\n",size);
          if ( FindDiag(concaveHead,b1,b2))
-         {
+         {  
+            #if 0
             // Call recursively...
-            /*
-            Vertices loop1;
-            loop1.reserve(size);
-            EdgePoint *p;
-            for(p=b1;p!=b2;p=p->next)
-               loop1.push_back(p->p);
-            loop1.push_back(p->p);
+            Vertices loop;
+            loop.reserve(size);
+            for(EdgePoint *p=b1;p!=b2;p=p->next)
+               loop.push_back(p->p);
+            loop.push_back(b2->p);
+            int s1 = loop.size();
+            ConvertPolyToTriangles(loop,outTriangles,inDepth);
 
-            ConvertOutlineToTriangles(loop1,outTriangles);
+            loop.resize(0);
+            for(EdgePoint *p=b2;p!=b1;p=p->next)
+               loop.push_back(p->p);
+            loop.push_back(b1->p);
+            int s2 = loop.size();
+            ConvertPolyToTriangles(loop,outTriangles,inDepth);
+            #endif
 
-
-            Vertices loop2;
-            loop2.reserve(size);
-            for(p=b2;p!=b1;p=p->next)
-               loop2.push_back(p->p);
-            loop2.push_back(p->p);
-            ConvertOutlineToTriangles(loop2,outTriangles);
-            */
+            break;
          }
          else
          {
@@ -395,6 +396,20 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
          }
       }
    }
+}
+
+
+void ConvertPolyToTriangles(Vertices &inVertices, Vertices &outTriangles,int inDepth)
+{
+   int s = inVertices.size();
+   if (s<3)
+      return;
+
+   QuickVec<EdgePoint> edges(s);
+   for(int i=0;i<s;i++)
+      edges[i].init(inVertices[i], &edges[ (i+s-1)%s ], &edges[ (i+1)%s ]);
+
+   ConvertOutlineToTriangles(&edges[0],s,outTriangles,inDepth+1);
 }
 
 // --- External interface ----------
@@ -479,28 +494,41 @@ void AddSubPoly(EdgePoint *outEdge, UserPoint *inP, int inN,bool inReverse)
 */
 
 
+
+
 void LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
 {
    double best = 1e39;
-   EdgePoint *bestIn = inInner;
-   EdgePoint *bestOut = inOuter;
+   EdgePoint *bestIn = 0;
+   EdgePoint *bestOut = 0;
 
+   // Holes are sorted left-to-right, and connected to the left, to avoid
+   //  connecting holes with lines that might go through other holes
    // This is not technically correct - it needs to find a connection that
    //  does not intersect with any of the line-segments.
    for(EdgePoint *in = inInner;  ; )
    {
       for(EdgePoint *out = inOuter; ; )
       {
-         double dist = in->p.Dist2(out->p);
-         if (dist<best)
+         if (in->p.x > out->p.x)
          {
-            best = dist;
-            bestIn = in;
-            bestOut = out;
+            double dist = in->p.Dist2(out->p);
+            if (dist<best)
+            {
+               best = dist;
+               bestIn = in;
+               bestOut = out;
+            }
          }
          out = out->next; if (out==inOuter) break;
       }
       in = in->next; if (in==inInner) break;
+   }
+
+   if (!bestIn)
+   {
+      //printf("Could not link hole\n");
+      return;
    }
 
    inBuffer[0] = *bestOut;
@@ -518,46 +546,77 @@ void LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
 
 struct SubInfo
 {
-   void calcExtent()
+   void set(int inP0, int inSize, UserPoint *inVertices)
    {
-     x0 = x1 = first->p.x;
-     y0 = y1 = first->p.y;
-     for(EdgePoint *p = first->next; p!=first; p = p->next )
-     {
-        if (p->p.x < x0) x0 = p->p.x;
-        if (p->p.x > x1) x1 = p->p.x;
-        if (p->p.y < y0) y0 = p->p.y;
-        if (p->p.y > y1) y1 = p->p.y;
-     }
-   }
-
-   void set(const UserPoint &inSortPos, int inP0, int inSize)
-   {
-      sortPos = inSortPos;
       p0 = inP0;
       size = inSize;
+      vertices = inVertices + p0;
+
+      x0 = x1 = vertices[0].x;
+      y0 = y1 = vertices[0].y;
+      for(int i=1;i<size;i++)
+      {
+         UserPoint &p = vertices[i];
+         if (p.x < x0) x0 = p.x;
+         if (p.x > x1) x1 = p.x;
+         if (p.y < y0) y0 = p.y;
+         if (p.y > y1) y1 = p.y;
+      }
    }
 
    bool operator <(const SubInfo &inOther) const
    {
-      return sortPos < inOther.sortPos;
+      // Extents not overlap - call it even
+      if (x1 <= inOther.x0 || x0>=inOther.x1 || y1 <= inOther.y0 || y0>=inOther.y1 )
+         return false;
+
+      bool allOtherInExtent = true;
+      for(int i=0;i<inOther.size;i++)
+         if (!contains(inOther.vertices[i]))
+         {
+            allOtherInExtent = false;
+            break;
+         }
+
+      bool allInOtherExtent = true;
+      for(int i=0;i<size;i++)
+         if (!inOther.contains(vertices[i]))
+         {
+            allInOtherExtent = false;
+            break;
+         }
+      if (allOtherInExtent != allInOtherExtent)
+      {
+         // This is less than (parent-to) other
+         return allOtherInExtent;
+      }
+
+      // Extents overlap - even.  Possibly some situation here?
+      //if (allInOtherExtent) printf("HUH?");
+
+      return false;
    }
 
-   bool contains(UserPoint inP)
+   bool contains(const UserPoint inP) const
    {
       return inP.x>=x0 && inP.x<=x1 && inP.y>=y0 && inP.y<=y1;
    }
 
+   UserPoint *vertices;
    EdgePoint *first;
    EdgePoint  link[2];
    int        group;
    bool       is_internal;
    int        p0;
    int        size;
-   UserPoint  sortPos;
    float      x0,x1;
    float      y0,y1;
 };
+
+bool sortLeft(SubInfo *a, SubInfo *b)
+{
+   return a->x0 < b->x0;
+}
 
 void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys)
 {
@@ -567,12 +626,20 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
       return;
 
    QuickVec<SubInfo> subInfo(subs);
+   int bigSubs = 0;
    int p0 = 0;
    for(int i=0;i<subs;i++)
    {
-      subInfo[i].set(ioOutline[p0],p0,inSubPolys[i]-p0);
+      int size = inSubPolys[i]-p0;
+      if (size>2 && ioOutline[p0] == ioOutline[p0+size-1])
+         size--;
+
+      if (size>2)
+         subInfo[bigSubs++].set(p0,size, &ioOutline[0]);
+
       p0 = inSubPolys[i];
    }
+   subInfo.resize(subs=bigSubs);
    std::sort(subInfo.begin(), subInfo.end());
 
 
@@ -585,11 +652,6 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    {
       SubInfo &info = subInfo[sub];
 
-      if (ioOutline[info.p0] == ioOutline[info.p0+info.size-1])
-         info.size--;
-
-      if (info.size>2)
-      {
          UserPoint *p = &ioOutline[info.p0];
          double area = 0.0;
          for(int i=2;i<info.size;i++)
@@ -630,10 +692,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
          info.first = &edges[index];
          AddSubPoly(info.first,p,info.size,reverse!=info.is_internal);
-         if (sub<subs-1)
-            info.calcExtent();
          index += info.size;
-      }
    }
 
    Vertices triangles;
@@ -641,6 +700,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    {
       int first = -1;
       int size = 0;
+      QuickVec<SubInfo *> holes;
       for(int sub=0;sub<subInfo.size();sub++)
       {
          SubInfo &info = subInfo[sub];
@@ -653,13 +713,26 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
             }
             else
             {
-               LinkSubPolys(subInfo[first].first,info.first, info.link);
-               size += info.size + 2;
+               holes.push_back(&info);
             }
          }
       }
       if (first>=0)
+      {
+         int holeCount = holes.size();
+         if (holeCount)
+         {
+            std::sort(holes.begin(), holes.end(), sortLeft);
+
+            for(int h=0;h<holeCount;h++)
+            {
+               SubInfo &info = *holes[h];
+               LinkSubPolys(subInfo[first].first,info.first, info.link);
+               size += info.size + 2;
+            }
+         }
          ConvertOutlineToTriangles(subInfo[first].first, size,triangles);
+      }
    }
 
    ioOutline.swap(triangles);
