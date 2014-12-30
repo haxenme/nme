@@ -164,7 +164,12 @@ public:
          UserPoint corner(data.mPos);
          UserPoint pos = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
 
-         if ( (is_stretch || data.mHasTrans) )
+         if (s->Format()==pfAlpha && !is_stretch && mBlendMode==bmNormal && data.mHasColour /* integer co-ordinate?*/ )
+         {
+            unsigned int col = inState.mColourTransform->Transform(data.mColour|0xff000000);
+            s->BlitTo(inTarget, data.mRect, (int)(pos.x), (int)(pos.y), blend, 0, col);
+         }
+         else if ( (is_stretch || data.mHasTrans) )
          {
             // Can use stretch if there is no skew and no colour transform...
             if (!data.mHasColour && (!data.mHasTrans) &&  mBlendMode==bmNormal )
@@ -236,8 +241,8 @@ public:
                SpanRect *span = new SpanRect(alpha_rect,aa);
                for(int i=0;i<4;i++)
                   span->Line00(
-                       Fixed10( p[i].x + 0.5 , p[i].y + 0.5  ),
-                       Fixed10( p[(i+1)&3].x + 0.5 , p[(i+1)&3].y + 0.5 ) );
+                       Fixed10( p[i].x, p[i].y  ),
+                       Fixed10( p[(i+1)&3].x, p[(i+1)&3].y) );
                
                AlphaMask *alpha = span->CreateMask(inState.mTransform,tile_alpha);
                delete span;
