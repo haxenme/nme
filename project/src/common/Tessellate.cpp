@@ -2,8 +2,17 @@
 #include <stdio.h>
 #include <Hardware.h>
 
+//#define USE_POLY2TRI
+
+#ifdef USE_POLY2TRI
+#include "poly2tri/Poly2Tri.h"
+#endif
+
 namespace nme
 {
+
+const double INSIDE_TOL = 1e-12;
+
 
 struct ConcaveInfo
 {
@@ -84,11 +93,17 @@ struct ConcaveSet
 
       double denom = v1.Cross(v2);
 
-      if (denom==0.0)  // flat triangle 
+      // Should already be checked with 'isConcave'
+      if (denom<0)
+         return false;
+
+      if (denom<INSIDE_TOL)  // flat triangle 
       {
          //printf(" -> flat\n");
          return true;
       }
+
+      denom -= INSIDE_TOL;
 
       UserPoint min = p;
       if (next.x<min.x) min.x=next.x;
@@ -105,16 +120,17 @@ struct ConcaveSet
       for(ConcaveInfo *info = head.nextConcave; info!=&head; info = info->nextConcave)
       {
          UserPoint &concave = ((T *)info)->p;
-         if (concave.x<min.x || concave.y<min.y || concave.x>max.x || concave.y>max.y)
+         if (concave.x<min.x || concave.y<min.y || concave.x>max.x || concave.y>max.y ||
+               concave==next || concave==prev )
             continue;
 
          UserPoint v( concave - p );
          double a = v.Cross(v2);
-         if (a>=0 && a<denom)
+         if (a>INSIDE_TOL && a<denom)
          {
             double b = v1.Cross(v);
             // Ear contains concave point?
-            if (b>=0.0 && (a+b)<denom && (a+b)>=0)
+            if (b>INSIDE_TOL && (a+b)<denom && (a+b)>INSIDE_TOL)
                return false;
          }
       }
@@ -171,102 +187,7 @@ bool IsEar(ConcaveSet &concaveSet,EdgePoint *pi)
 
 }
 
-bool Intersect(UserPoint dir,UserPoint p0,UserPoint p1)
-{
-   // Test for simple overlap first ?
-   if (dir==p0 || dir==p1)
-      return true;
-
-   UserPoint v = p1-p0;
-   double denom = dir.Cross(v);
-   if (denom==0) // parallel - co-linear or not
-   {
-      if (p0.Cross(dir)!=0.0) // p0 is not on dir ...
-         return false;
-
-      // co-linear - find closest point on +ve direction on line ...
-      double b[2];
-      if (dir.x==0)
-      {
-         b[0] = (double)p0.y/(double)dir.y;
-         b[1] = (double)p1.y/(double)dir.y;
-      }
-      else
-      {
-         b[0] = (double)p0.x/(double)dir.x;
-         b[1] = (double)p1.x/(double)dir.x;
-      }
-
-      int point;
-      if (b[0]>=0 && b[1]>=0)
-         point = b[1]<b[0];
-      else if (b[0]>=0)
-         point = 0;
-      else if (b[1]>=0)
-         point = 1;
-      else
-         point = b[1]>b[0];
-      
-      return(b[point]>=0 && b[point]<=1.0);
-   }
-
-   double beta = p0.Cross(v)/denom;
-   if (beta<0.0 || beta>1.0)
-      return(false);
-
-   // Test alpha ...
-   double alpha = p0.Cross(dir)/denom;
-   return(alpha>=0 && alpha<=1.0);
-}
-
-bool FindDiag(ConcaveSet &concaveSet,EdgePoint *&p1,EdgePoint *&p2)
-{
-   for(ConcaveSet::iterator it = concaveSet.begin(); it!=concaveSet.end(); ++it)
-   {
-      EdgePoint *p = it.value<EdgePoint *>();
-
-      UserPoint corner = p->p;
-      UserPoint v1( p->prev->p - corner ); 
-      UserPoint v2( p->next->p - corner );
-      for(EdgePoint *other=p->next; ;  )
-      {
-         UserPoint v( other->p-corner );
-         double a = v.Cross(v2);
-         double b = v1.Cross(v);
-         if (a>=0.0 && b>=0.0)
-         {
-            // Found candidate, check for intersections ...
-            EdgePoint *l=p->prev;
-            for( ;l!=other->next;l=l->prev)
-               if (Intersect(v,l->p-corner,l->prev->p-corner))
-                  break;
-            if (l==other->next)
-            {
-               EdgePoint *r=p->next;
-               for(;l!=other->prev;r=r->next)
-                  if (Intersect(v,r->p-corner,r->next->p-corner))
-                     break;
-               if (r==other->prev)
-               {
-                  // found !
-                  p1 = p;
-                  p2 = other;
-                  return true;
-               }
-            }
-         }
-         other = other->next;
-         if (other == p->prev)
-            break;
-      }
-   }
-   return(false);
-}
-
-
-void ConvertPolyToTriangles(Vertices &inVertices, Vertices &outTriangles,int inDepth);
-
-void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles,int inDepth=0)
+void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles)
 {
    outTriangles.reserve( outTriangles.size() + (size-2)*3);
 
@@ -281,145 +202,41 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
    EdgePoint *pi= head;
    EdgePoint *p_end = pi->prev;
 
-   while(size>2)
+   while( pi!=p_end && size>2)
    {
-      while( pi!=p_end && size>2)
+      if ( IsEar(concaveHead,pi) )
       {
-         if ( IsEar(concaveHead,pi) )
-         {
-            // Have ear triangle - yay - clip it
-            outTriangles.push_back(pi->prev->p);
-            outTriangles.push_back(pi->p);
-            outTriangles.push_back(pi->next->p);
+         // Have ear triangle - yay - clip it
+         outTriangles.push_back(pi->prev->p);
+         outTriangles.push_back(pi->p);
+         outTriangles.push_back(pi->next->p);
 
-            //printf("  ear : %f,%f %f,%f %f,%f\n", pi->prev->p.x, pi->prev->p.y,
-                   //pi->p.x, pi->p.y,
-                   //pi->next->p.x, pi->next->p.y );
+         //printf("  ear : %f,%f %f,%f %f,%f\n", pi->prev->p.x, pi->prev->p.y,
+                //pi->p.x, pi->p.y,
+                //pi->next->p.x, pi->next->p.y );
 
-            concaveHead.setConcave(pi,false);
-            pi->unlink();
-            // Have we become concave or convex ?
-            pi->next->calcConcave(concaveHead);
-            // Has the previous one become convex ?
-            pi->prev->calcConcave(concaveHead);
+         concaveHead.setConcave(pi,false);
+         pi->unlink();
+         // Have we become concave or convex ?
+         pi->next->calcConcave(concaveHead);
+         // Has the previous one become convex ?
+         pi->prev->calcConcave(concaveHead);
 
-            // Take a step back and try again...
-            pi = pi->prev;
-            p_end = pi->prev;
+         // Take a step back and try again...
+         pi = pi->prev;
+         p_end = pi->prev;
 
-            size --;
-         }
-         else
-            pi = pi->next;
+         size --;
       }
-
-      if (size==3)
-      {
-         /*
-         printf("Triangle : %f,%f  %f,%f  %f,%f\n",
-                pi->prev->p.x, pi->prev->p.y,
-                pi->p.x, pi->p.y,
-                pi->next->p.x, pi->next->p.y );
-         */
-         break;
-      }
-      else if (size>4 )
-      {
-         break;
-
-         EdgePoint *b1=0,*b2=0;
-         //printf("Diag %d ?\n",size);
-         if ( FindDiag(concaveHead,b1,b2))
-         {  
-            #if 0
-            // Call recursively...
-            Vertices loop;
-            loop.reserve(size);
-            for(EdgePoint *p=b1;p!=b2;p=p->next)
-               loop.push_back(p->p);
-            loop.push_back(b2->p);
-            int s1 = loop.size();
-            ConvertPolyToTriangles(loop,outTriangles,inDepth);
-
-            loop.resize(0);
-            for(EdgePoint *p=b2;p!=b1;p=p->next)
-               loop.push_back(p->p);
-            loop.push_back(b1->p);
-            int s2 = loop.size();
-            ConvertPolyToTriangles(loop,outTriangles,inDepth);
-            #endif
-
-            break;
-         }
-         else
-         {
-            #if 1
-            //printf("No diag?\n");
-            break;
-            #else
-            // Hmmm look for "least concave" point ...
-            pi = p0->next->next;
-            double best_val = -1e99;
-            EdgePoint *least_concave = 0;
-            double smallest_val = 1e99;
-            EdgePoint *smallest = 0;
-            while(pi!=p0)
-            {
-               if (concave_points.find(pi->prev)!=concave_points.end())
-               {
-                  double cross = pi->Cross();
-                  if (cross>best_val)
-                  {
-                     best_val = cross;
-                     least_concave = pi;
-                  }
-               }
-               else if (!least_concave)
-               {
-                  double cross = pi->Cross();
-                  if (cross<smallest_val)
-                  {
-                     smallest_val = cross;
-                     smallest = pi;
-                  }
-               }
-               pi = pi->next;
-            }
-
-            if (least_concave)
-               pi = least_concave;
-            else
-               pi = smallest;
-
-            force_ear = true;
-            #endif
-         }
-      }
+      else
+         pi = pi->next;
    }
 }
 
 
-void ConvertPolyToTriangles(Vertices &inVertices, Vertices &outTriangles,int inDepth)
-{
-   int s = inVertices.size();
-   if (s<3)
-      return;
-
-   QuickVec<EdgePoint> edges(s);
-   for(int i=0;i<s;i++)
-      edges[i].init(inVertices[i], &edges[ (i+s-1)%s ], &edges[ (i+1)%s ]);
-
-   ConvertOutlineToTriangles(&edges[0],s,outTriangles,inDepth+1);
-}
 
 // --- External interface ----------
 
-void ReverseSubPoly(UserPoint *ioPtr,int inN)
-{
-   int half = inN>>1;
-   for(int i=0;i<half;i++)
-      std::swap(ioPtr[i],ioPtr[inN-i]);
-}
 
 enum PIPResult { PIP_NO, PIP_YES, PIP_MAYBE };
 
@@ -496,40 +313,90 @@ void AddSubPoly(EdgePoint *outEdge, UserPoint *inP, int inN,bool inReverse)
 
 
 
-void LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
+int LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
 {
-   double best = 1e39;
-   EdgePoint *bestIn = 0;
-   EdgePoint *bestOut = 0;
+   int count = 0;
 
    // Holes are sorted left-to-right, and connected to the left, to avoid
    //  connecting holes with lines that might go through other holes
-   // This is not technically correct - it needs to find a connection that
-   //  does not intersect with any of the line-segments.
+   //
+   //  Find left-most inner(hole) point
+   EdgePoint *bestIn = inInner;
+   double leftX = bestIn->p.x;
    for(EdgePoint *in = inInner;  ; )
    {
-      for(EdgePoint *out = inOuter; ; )
+      count++;
+      if (in->p.x < leftX)
       {
-         if (in->p.x > out->p.x)
-         {
-            double dist = in->p.Dist2(out->p);
-            if (dist<best)
-            {
-               best = dist;
-               bestIn = in;
-               bestOut = out;
-            }
-         }
-         out = out->next; if (out==inOuter) break;
+         leftX = in->p.x;
+         bestIn = in;
       }
       in = in->next; if (in==inInner) break;
    }
+   double leftY = bestIn->p.y;
 
-   if (!bestIn)
+   // Now, shoot ray left to find outer intersection
+
+   double closestX = -1e39;
+   double bestAlpha = 0.0;
+   EdgePoint *bestOut = 0;
+   EdgePoint *e0 = inOuter;
+   for(EdgePoint *e0 = inOuter;  ; )
+   {
+      if ( fabs(e0->p.y-leftY) < 0.0001 )
+      {
+         if (e0->p.x<=leftX && e0->p.x>closestX)
+         {
+            bestOut = e0;
+            closestX = e0->p.x;
+            bestAlpha = 0.0;
+         }
+      }
+      else if ( ( (e0->p.y<leftY) && (e0->next->p.y>leftY) ) ||
+                  (e0->p.y>leftY) && (e0->next->p.y<leftY) )
+      {
+         if (e0->p.x < leftX || e0->next->p.x<leftX)
+         {
+            double alpha = fabs( e0->p.y - leftY ) / fabs( e0->p.y - e0->next->p.y);
+            double x = e0->p.x + (e0->next->p.x-e0->p.x) * alpha;
+            if (x<=leftX && x>closestX)
+            {
+               closestX = x;
+               bestOut = e0;
+               bestAlpha = alpha;
+            }
+         }
+      }
+
+      e0 = e0->next;
+      if (e0==inOuter)
+         break;
+   }
+
+   if (!bestOut)
    {
       //printf("Could not link hole\n");
-      return;
+      return 0;
    }
+
+   if (bestAlpha>0.9999)
+   {
+      bestOut = bestOut->next;
+   }
+   else if (bestAlpha>0.0001)
+   {
+      // Insert node into outline
+      EdgePoint *b = inBuffer + 2;
+      b->init( UserPoint(closestX,bestOut->p.y + ( bestOut->next->p.y- bestOut->p.y) * bestAlpha),
+                bestOut, bestOut->next );
+
+      bestOut->next->prev = b;
+      bestOut->next = b;
+
+      bestOut = b;
+      count ++;
+   }
+
 
    inBuffer[0] = *bestOut;
    inBuffer[1] = *bestIn;
@@ -542,6 +409,8 @@ void LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
    bestIn->prev->next = bestIn;
    inBuffer[0].prev = bestIn;
    inBuffer[0].next->prev = inBuffer;
+
+   return count+2;
 }
 
 struct SubInfo
@@ -604,7 +473,7 @@ struct SubInfo
 
    UserPoint *vertices;
    EdgePoint *first;
-   EdgePoint  link[2];
+   EdgePoint  link[3];
    int        group;
    bool       is_internal;
    int        p0;
@@ -696,10 +565,12 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    }
 
    Vertices triangles;
+
    for(int group=0;group<groupId;group++)
    {
       int first = -1;
       int size = 0;
+      int totalSize = 0;
       QuickVec<SubInfo *> holes;
       for(int sub=0;sub<subInfo.size();sub++)
       {
@@ -709,10 +580,11 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
             if (first<0)
             {
                first = sub;
-               size = info.size;
+               totalSize = size = info.size;
             }
             else
             {
+               totalSize += info.size;
                holes.push_back(&info);
             }
          }
@@ -720,18 +592,55 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
       if (first>=0)
       {
          int holeCount = holes.size();
-         if (holeCount)
-         {
-            std::sort(holes.begin(), holes.end(), sortLeft);
+
+         #ifdef USE_POLY2TRI
+            p2t::Poly2Tri *poly2Tri = p2t::Poly2Tri::create();
+
+            std::vector< p2t::Point> pointBuffer(totalSize);
+            UserPoint *p = subInfo[first].vertices;
+            int p0 = 0;
+            for(int i=0;i<size;i++)
+               pointBuffer[i].set( p[i].x, p[i].y );
+            poly2Tri->AddSubPoly(&pointBuffer[0],size);
+            p0 += size;
 
             for(int h=0;h<holeCount;h++)
             {
-               SubInfo &info = *holes[h];
-               LinkSubPolys(subInfo[first].first,info.first, info.link);
-               size += info.size + 2;
+               SubInfo &poly = *holes[h];
+               int size = poly.size;
+               UserPoint *p = poly.vertices;
+               for(int i=0;i<size;i++)
+                  pointBuffer[p0+i].set( p[i].x, p[i].y );
+
+               poly2Tri->AddSubPoly(&pointBuffer[p0],size);
+               p0 += size;
             }
-         }
-         ConvertOutlineToTriangles(subInfo[first].first, size,triangles);
+
+            const std::vector< p2t::Triangle* > &tris = poly2Tri->Triangulate();
+
+            for(int i=0;i<tris.size();i++)
+            {
+               p2t::Triangle *tri = tris[i];
+               triangles.push_back( *tri->GetPoint(0) );
+               triangles.push_back( *tri->GetPoint(1) );
+               triangles.push_back( *tri->GetPoint(2) );
+            }
+
+            delete poly2Tri;
+
+         #else
+            if (holeCount)
+            {
+               std::sort(holes.begin(), holes.end(), sortLeft);
+
+               for(int h=0;h<holeCount;h++)
+               {
+                  SubInfo &info = *holes[h];
+                  size += LinkSubPolys(subInfo[first].first,info.first, info.link);
+               }
+            }
+            ConvertOutlineToTriangles(subInfo[first].first, size,triangles);
+         #endif
       }
    }
 

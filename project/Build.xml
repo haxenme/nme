@@ -193,6 +193,7 @@
       <compilerflag value="-DNME_BUILDING_LIB" />
 
 
+
       <file name="${SRC_DIR}/common/Surface.cpp"/>
       <file name="${SRC_DIR}/common/Utils.cpp"/>
       <file name="${SRC_DIR}/common/Geom.cpp"/>
@@ -242,6 +243,9 @@
       <file name="${SRC_DIR}/software-renderer/TileRenderer.cpp"/>
       <file name="${SRC_DIR}/software-renderer/TriangleRender.cpp"/>
      
+      <!-- You will need this if you want USE_POLY2TRI in Tesselate.cpp
+      <file name="${SRC_DIR}/common/poly2tri/Poly2Tri.cpp" />
+      -->
 
    
       <file name="${SRC_DIR}/lzma/LzFind.c" />

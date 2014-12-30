@@ -610,6 +610,26 @@ public:
       PushElement();
    }
 
+   void PushOutline(const Vertices &inV)
+   {
+      ReserveArrays(inV.size()+1);
+
+      //printf("PushVertices %d\n", inV.size());
+
+      UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
+      for(int i=0;i<inV.size();i++)
+      {
+         *v = inV[i]; Next(v);
+      }
+
+      if (mElement.mSurface)
+         CalcTexCoords();
+
+      PushElement();
+
+      data.mElements.last().mPrimType = ptLines;
+   }
+
    
    void PushTriangleWireframe(const Vertices &inV)
    {
@@ -696,6 +716,7 @@ public:
       if (showTriangles)
       {
          PushTriangleWireframe(inOutline);
+         //PushOutline(inOutline);
       }
       else
       {
