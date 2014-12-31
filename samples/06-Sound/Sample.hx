@@ -116,6 +116,7 @@ class Sample extends Sprite
       mBuzzStart.addChild(text);
       mBuzzStart.x = 200;
       mBuzzStart.y = 10;
+      mPhase0 = 0;
 
       mBuzz = new Sound();
       mBuzz.addEventListener( SampleDataEvent.SAMPLE_DATA, onFillData );

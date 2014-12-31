@@ -30,21 +30,21 @@ class Sample extends Sprite
       s1.x = s3.x = 550/2;
       s2.y = s3.y = 400/2;
 
-		onLoaded( nme.Assets.getBitmapData("Image.jpg") );
+      onLoaded( nme.Assets.getBitmapData("Image.jpg") );
    }
 
-	function onLoaded(inData:BitmapData)
-	{
+   function onLoaded(inData:BitmapData)
+   {
       var me = this;
       t0 = haxe.Timer.stamp();
       stage.addEventListener( Event.ENTER_FRAME, function(_) { me.doUpdate(inData); } );
-	}
+   }
 
-	function doUpdate(inData:BitmapData)
-	{
+   function doUpdate(inData:BitmapData)
+   {
 
-		var sx = 1.0/inData.width;
-		var sy = 1.0/inData.height;
+      var sx = 1.0/inData.width;
+      var sy = 1.0/inData.height;
 
       var theta = (haxe.Timer.stamp()-t0);
       var cos = Math.cos(theta);
@@ -55,54 +55,54 @@ class Sample extends Sprite
 
       var x0 = 200;
       var y0 = 200;
-		var vertices = [
-		  x0 + 100*cos*w0,  y0  -100*w0,
-		  x0 + 100*cos*w0,  y0  +100*w0,
-		  x0 - 100*cos*w1,  y0  +100*w1,
-		  x0 - 100*cos*w1,  y0  -100*w1];
+      var vertices = [
+        x0 + 100*cos*w0,  y0  -100*w0,
+        x0 + 100*cos*w0,  y0  +100*w0,
+        x0 - 100*cos*w1,  y0  +100*w1,
+        x0 - 100*cos*w1,  y0  -100*w1];
 
-		var indices = [
-		   0, 1, 2,
-			2, 3, 0 ];
+      var indices = [
+         0, 1, 2,
+         2, 3, 0 ];
 
-		var tex_uv = [
-		  100.0*sx, 000.0*sy,
-		  100.0*sx, 200.0*sy,
-		  300.0*sx, 200.0*sy,
-		  300.0*sx, 000.0*sy  ];
+      var tex_uv = [
+        100.0*sx, 0.0,
+        100.0*sx, 200.0*sy,
+        300.0*sx, 200.0*sy,
+        300.0*sx, 0.0  ];
 
-		var tex_uvt = [
-		  100.0*sx, 000.0*sy, w0,
-		  100.0*sx, 200.0*sy, w0,
-		  300.0*sx, 200.0*sy, w1,
-		  300.0*sx, 000.0*sy, w1  ];
+      var tex_uvt = [
+        100.0*sx, 0.0, w0,
+        100.0*sx, 200.0*sy, w0,
+        300.0*sx, 200.0*sy, w1,
+        300.0*sx, 0.0, w1  ];
 
-		var cols = [ 0xffff0000,
+      var cols = [ 0xffff0000,
                    0xff00ff00,
                    0xff0000ff,
                    0xffffffff ];
-		var gfx = s0.graphics;
+      var gfx = s0.graphics;
       gfx.clear();
-		gfx.beginBitmapFill(inData);
-		gfx.lineStyle(4,0x0000ff);
+      gfx.beginBitmapFill(inData);
+      gfx.lineStyle(4,0x0000ff);
       drawTriangles(gfx, vertices, indices, tex_uvt );
 
-		var gfx = s1.graphics;
+      var gfx = s1.graphics;
       gfx.clear();
-		gfx.beginBitmapFill(inData);
-		gfx.lineStyle(4,0x0000ff);
+      gfx.beginBitmapFill(inData);
+      gfx.lineStyle(4,0x0000ff);
       drawTriangles(gfx, vertices, indices, tex_uv );
 
       #if (cpp||neko)
-		var gfx = s2.graphics;
+      var gfx = s2.graphics;
       gfx.clear();
-		gfx.lineStyle(4,0x808080);
+      gfx.lineStyle(4,0x808080);
       drawTriangles(gfx, vertices, indices, null, null, cols );
 
-		var gfx = s3.graphics;
+      var gfx = s3.graphics;
       gfx.clear();
-		gfx.beginBitmapFill(inData);
-		gfx.lineStyle(4,0x808080);
+      gfx.beginBitmapFill(inData);
+      gfx.lineStyle(4,0x808080);
       drawTriangles(gfx, vertices, indices, tex_uvt, null, cols );
       #end
    }

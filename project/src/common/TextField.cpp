@@ -1760,14 +1760,16 @@ void TextField::InsertString(WString &inString)
    Layout(GetFullMatrix(true));
 }
 
+#ifdef EPPC
+   #define iswspace(x) isspace(x)
+#endif
+
+
 static bool IsWord(int inCh)
 {
-  #ifdef EPPC
-  return (!isspace(inCh));
-  #else
-  return (!iswspace(inCh));
-  #endif
   //return inCh<255 && (iswalpha(inCh) || isdigit(inCh) || inCh=='_');
+  // TODO - other breaks?
+  return !iswspace(inCh) && inCh!='-';
 }
 
 // Combine x,y scaling with rotation to calculate pixel coordinates for
@@ -1856,13 +1858,9 @@ void TextField::Layout(const Matrix &inMatrix)
 
          if (!displayAsPassword && !iswalpha(ch) && !isdigit(ch) && ch!='_' && ch!=';' && ch!='.' && ch!=',' && ch!='"' && ch!=':' && ch!='\'' && ch!='!' && ch!='?')
          {
-            if (!IsWord(ch) || (line.mChars>2 && !IsWord(g.mString[cid-2]))  )
+            if (!IsWord(ch) || (cid>=2 && !IsWord(g.mString[cid-2]))  )
             {
-            #ifdef EPPC
-               if ( (ch<255 && isspace(ch)) || line.mChars==1)
-            #else
-               if ( (ch<255 && iswspace(ch)) || line.mChars==1)
-            #endif
+               if ( (ch<255 && !IsWord(ch)) || line.mChars==1)
                {
                   last_word_cid = cid;
                   last_word_line_chars = line.mChars;

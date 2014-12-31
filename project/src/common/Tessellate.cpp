@@ -115,21 +115,17 @@ struct ConcaveSet
    typedef std::multiset<UserPoint> PointSet;
    PointSet points;
 
-   void set(EdgePoint *edge, bool inConcave)
+   void add(EdgePoint *edge)
    {
-      // Already set?
-      if (edge->isConcave == inConcave)
-         return;
-
-      edge->isConcave = inConcave;
-      if (inConcave)
-         points.insert(edge->p);
-      else
-         points.erase(edge->p);
+      edge->isConcave = true;
+      points.insert(edge->p);
    }
 
-   int size() { return points.size(); }
-
+   void remove(EdgePoint *edge)
+   {
+      edge->isConcave = false;
+      points.erase(edge->p);
+   }
 
    bool isEar(EdgePoint *edge)
    {
@@ -172,7 +168,8 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
 
    for(EdgePoint *p = head; ; )
    {
-      concaveSet.set(p,p->calcConcave());
+      if (p->calcConcave())
+         concaveSet.add(p);
       p = p->next; if (p==head) break;
    }
 
@@ -193,11 +190,13 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
                 //pi->next->p.x, pi->next->p.y );
 
          pi->unlink();
-         concaveSet.set(pi,false);
-         // Have we become concave or convex ?
-         concaveSet.set(pi->next, pi->next->calcConcave());
-         // Has the previous one become convex ?
-         concaveSet.set(pi->prev,pi->prev->calcConcave());
+
+         // Has it stopped being concave?
+         if (pi->next->isConcave && !pi->next->calcConcave())
+            concaveSet.remove(pi->next); 
+         // Has it stopped being concave?
+         if (pi->prev->isConcave && !pi->prev->calcConcave())
+            concaveSet.remove(pi->prev);
 
          // Take a step back and try again...
          pi = pi->prev;
