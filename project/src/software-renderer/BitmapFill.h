@@ -226,7 +226,7 @@ public:
             mPos.y += mDPyDX;
          }
 
-         if (AlphaMode==FillAlphaIs)
+         if ((FillAlphaMode)AlphaMode==FillAlphaIs)
          {
             int a00,a01,a10,a11;
 
@@ -348,7 +348,7 @@ public:
             int y1b = (p10.b<<8) + (p11.b-p10.b) * frac_x;
             result.b = ((y0b<<8) + (y1b-y0b) * frac_y)>>16;
 
-            if (AlphaMode==FillAlphaHas)
+            if ((FillAlphaMode)AlphaMode==FillAlphaHas)
             {
                int y0a = (p00.a<<8) + (p01.a-p00.a) * frac_x;
                int y1a = (p10.a<<8) + (p11.a-p10.a) * frac_x;
@@ -389,7 +389,7 @@ public:
             y = y % mHeight; if (y<0) y+=mHeight;
          }
 
-         if (AlphaMode==FillAlphaIs)
+         if ((FillAlphaMode)AlphaMode==FillAlphaIs)
          {
             ARGB result(mTint);
             result.a = *( mBase + y*mStride + x);

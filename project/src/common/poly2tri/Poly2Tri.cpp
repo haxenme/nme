@@ -452,7 +452,7 @@ public:
    */
 
    // Triangulate simple polygon with holes
-   void Sweep::Triangulate(SweepContext& tcx)
+   void Triangulate(SweepContext& tcx)
    {
      tcx.InitTriangulation();
      tcx.CreateAdvancingFront();
@@ -1092,7 +1092,7 @@ private:
      return false;
    }
 
-   void Sweep::FillEdgeEvent(SweepContext& tcx, Edge* edge, Node* node)
+   void FillEdgeEvent(SweepContext& tcx, Edge* edge, Node* node)
    {
      if (tcx.edge_event.right) {
        FillRightAboveEdgeEvent(tcx, edge, node);

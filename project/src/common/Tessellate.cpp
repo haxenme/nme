@@ -1,6 +1,7 @@
 #include <Graphics.h>
 #include <stdio.h>
 #include <Hardware.h>
+#include <set>
 
 //#define USE_POLY2TRI
 
@@ -14,146 +15,87 @@ namespace nme
 const double INSIDE_TOL = 1e-12;
 
 
-struct ConcaveInfo
+
+
+
+struct TriSearch
 {
-   ConcaveInfo()
+   UserPoint next;
+   UserPoint prev;
+   UserPoint min;
+   UserPoint max;
+   UserPoint p;
+   UserPoint v1;
+   UserPoint v2;
+   double    denom;
+   bool      isFlat;
+   bool      isConcave;
+
+   TriSearch(const UserPoint &inP0, const UserPoint &inPrev, const UserPoint &inNext)
    {
-      prevConcave = 0;
-      nextConcave = 0;
-   }
-   void init()
-   {
-      prevConcave = 0;
-      nextConcave = 0;
-   }
-   void makeHead()
-   {
-      prevConcave = nextConcave = this;
-   }
+      p = inP0;
+      next = inNext;
+      prev = inPrev;
+      v1 = next - p;
+      v2 = prev - p;
 
-   ConcaveInfo *prevConcave;
-   ConcaveInfo *nextConcave;
-};
+      denom = v1.Cross(v2);
 
+      isConcave = denom<0;
 
-struct ConcaveSet
-{
-   ConcaveInfo head;
-
-   ConcaveSet()
-   {
-      head.makeHead();
-   }
-
-   struct iterator
-   {
-      ConcaveInfo *info;
-
-      inline iterator(ConcaveInfo *inInfo) : info(inInfo) { }
-      inline void operator++() { info = info->nextConcave; }
-      inline bool operator!=(const iterator &inRhs) { return info!=inRhs.info; }
-
-      template<typename T>
-      inline T value() { return (T)info; }
-   };
-
-   void setConcave(ConcaveInfo *info, bool inConcave)
-   {
-      // Already set?
-      if ((bool)(info->nextConcave) == inConcave)
-         return;
-
-      if (inConcave)
+      if (!isConcave)
       {
-          info->nextConcave = head.nextConcave;
-          head.nextConcave = info;
-          info->prevConcave = info->nextConcave->prevConcave;
-          info->nextConcave->prevConcave = info;
-      }
-      else
-      {
-         info->prevConcave->nextConcave = info->nextConcave;
-         info->nextConcave->prevConcave = info->prevConcave;
-         info->nextConcave =0;
-         info->prevConcave =0;
-      }
-   }
+         isFlat = denom<INSIDE_TOL;  // flat triangle 
 
-   iterator begin() { return head.nextConcave; }
-   iterator end() { return &head; }
-   bool empty() const { return head.nextConcave == &head; }
-
-
-
-   template<typename T>
-   bool isEar(UserPoint next, UserPoint p, UserPoint prev)
-   {
-      UserPoint v1( next - p );
-      UserPoint v2( prev - p );
-
-      double denom = v1.Cross(v2);
-
-      // Should already be checked with 'isConcave'
-      if (denom<0)
-         return false;
-
-      if (denom<INSIDE_TOL)  // flat triangle 
-      {
-         //printf(" -> flat\n");
-         return true;
-      }
-
-      denom -= INSIDE_TOL;
-
-      UserPoint min = p;
-      if (next.x<min.x) min.x=next.x;
-      if (next.y<min.y) min.y=next.y;
-      if (prev.x<min.x) min.x=prev.x;
-      if (prev.y<min.y) min.y=prev.y;
-      UserPoint max = p;
-      if (next.x>max.x) max.x=next.x;
-      if (next.y>max.y) max.y=next.y;
-      if (prev.x>max.x) max.x=prev.x;
-      if (prev.y>max.y) max.y=prev.y;
-
-      // TODO - speed this up
-      for(ConcaveInfo *info = head.nextConcave; info!=&head; info = info->nextConcave)
-      {
-         UserPoint &concave = ((T *)info)->p;
-         if (concave.x<min.x || concave.y<min.y || concave.x>max.x || concave.y>max.y ||
-               concave==next || concave==prev )
-            continue;
-
-         UserPoint v( concave - p );
-         double a = v.Cross(v2);
-         if (a>INSIDE_TOL && a<denom)
+         if (!isFlat)
          {
-            double b = v1.Cross(v);
-            // Ear contains concave point?
-            if (b>INSIDE_TOL && (a+b)<denom && (a+b)>INSIDE_TOL)
-               return false;
+            denom -= INSIDE_TOL;
+
+            min = p;
+            if (next.x<min.x) min.x=next.x;
+            if (next.y<min.y) min.y=next.y;
+            if (prev.x<min.x) min.x=prev.x;
+            if (prev.y<min.y) min.y=prev.y;
+            max = p;
+            if (next.x>max.x) max.x=next.x;
+            if (next.y>max.y) max.y=next.y;
+            if (prev.x>max.x) max.x=prev.x;
+            if (prev.y>max.y) max.y=prev.y;
          }
       }
-
-      return true;
    }
 
+   inline bool pointInTri(UserPoint concave)
+   {
+      UserPoint v( concave - p );
+      double a = v.Cross(v2);
+      if (a>INSIDE_TOL && a<denom)
+      {
+         double b = v1.Cross(v);
+         // Ear contains concave point?
+         return (b>INSIDE_TOL && (a+b)<denom && (a+b)>INSIDE_TOL);
+      }
+      return false;
+   }
 };
 
-struct EdgePoint : public ConcaveInfo
+
+
+
+struct EdgePoint
 {
    UserPoint p;
    EdgePoint *prev;
    EdgePoint *next;
+   bool      isConcave;
 
    void init(const UserPoint &inPoint,EdgePoint *inPrev, EdgePoint *inNext)
    {
       p = inPoint;
       next = inNext;
       prev = inPrev;
-      ConcaveInfo::init();
+      isConcave = false;
    }
-   inline bool isConcave() const { return nextConcave; }
 
    void unlink()
    {
@@ -161,41 +103,76 @@ struct EdgePoint : public ConcaveInfo
       next->prev = prev;
    }
 
-   void calcConcave(ConcaveSet &ioConcave)
+   bool calcConcave()
    {
-      ioConcave.setConcave(this,Cross()>0.0);
+      return (prev->p - p).Cross(next->p - p) > 0.0;
    }
-
-   double Cross()
-   {
-      return (prev->p - p).Cross(next->p - p);
-   }
-
-   //bool convex() { return(Cross()<0.0); }
 };
 
 
-bool IsEar(ConcaveSet &concaveSet,EdgePoint *pi)
+struct ConcaveSet
 {
-   if (concaveSet.empty())
+   typedef std::multiset<UserPoint> PointSet;
+   PointSet points;
+
+   void set(EdgePoint *edge, bool inConcave)
+   {
+      // Already set?
+      if (edge->isConcave == inConcave)
+         return;
+
+      edge->isConcave = inConcave;
+      if (inConcave)
+         points.insert(edge->p);
+      else
+         points.erase(edge->p);
+   }
+
+   int size() { return points.size(); }
+
+
+   bool isEar(EdgePoint *edge)
+   {
+      if (points.empty())
+         return true;
+
+      if (edge->isConcave)
+         return false;
+
+      TriSearch test(edge->p, edge->prev->p, edge->next->p);
+      if (test.isConcave)
+         return false;
+      if (test.isFlat)
+         return true;
+
+      // TODO - maybe some quadtree style structure
+      PointSet::const_iterator p = points.lower_bound(test.min);
+      PointSet::const_iterator last = points.upper_bound(test.max);
+      for( ; p!=last; ++p )
+      {
+         UserPoint concave = *p;
+         // Y-bounds should be good since they are sorted by Y
+         if (concave.x<test.min.x || concave.x>test.max.x )
+            continue;
+
+         if (test.pointInTri(concave))
+            return false;
+      }
+
       return true;
+   }
+};
 
-   if (pi->isConcave())
-      return false;
-
-   return concaveSet.isEar<EdgePoint>(pi->next->p, pi->p, pi->prev->p);
-
-}
 
 void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles)
 {
    outTriangles.reserve( outTriangles.size() + (size-2)*3);
 
-   ConcaveSet concaveHead;
+   ConcaveSet concaveSet;
 
    for(EdgePoint *p = head; ; )
    {
-      p->calcConcave(concaveHead);
+      concaveSet.set(p,p->calcConcave());
       p = p->next; if (p==head) break;
    }
 
@@ -204,7 +181,7 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
 
    while( pi!=p_end && size>2)
    {
-      if ( IsEar(concaveHead,pi) )
+      if ( concaveSet.isEar(pi) )
       {
          // Have ear triangle - yay - clip it
          outTriangles.push_back(pi->prev->p);
@@ -215,12 +192,12 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
                 //pi->p.x, pi->p.y,
                 //pi->next->p.x, pi->next->p.y );
 
-         concaveHead.setConcave(pi,false);
          pi->unlink();
+         concaveSet.set(pi,false);
          // Have we become concave or convex ?
-         pi->next->calcConcave(concaveHead);
+         concaveSet.set(pi->next, pi->next->calcConcave());
          // Has the previous one become convex ?
-         pi->prev->calcConcave(concaveHead);
+         concaveSet.set(pi->prev,pi->prev->calcConcave());
 
          // Take a step back and try again...
          pi = pi->prev;
