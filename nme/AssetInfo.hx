@@ -18,6 +18,11 @@ class AssetInfo
       isResource = inIsResource;
    }
 
+   public function uncache()
+   {
+      cache = null;
+   }
+
    public function getCache() : Dynamic
    {
       if (cache==null)

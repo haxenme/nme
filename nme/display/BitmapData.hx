@@ -52,7 +52,7 @@ class BitmapData extends Surface implements IBitmapDrawable
       nme_bitmap_data_apply_filter(nmeHandle, sourceBitmapData.nmeHandle, sourceRect, destPoint, filter);
    }
 
-   override public function clone():Surface 
+   override public function clone():BitmapData 
    {
       var bm = new BitmapData(0, 0, transparent);
       bm.nmeHandle = Surface.nme_bitmap_data_clone(nmeHandle);

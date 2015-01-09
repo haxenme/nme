@@ -1,4 +1,6 @@
 
+* Better Flixel support
+--------------------------
 * Separated from Lime project
 * Fixed sub-pixel offset for nearest mode
 * Added options for handling unhandled exceptions

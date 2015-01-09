@@ -28,6 +28,13 @@ import nme.AssetInfo;
  * in the project file.</p>
  */
 
+
+class Cache
+{
+   public function new() { }
+   public function removeBitmapData(inId:String) Assets.removeBitmapData(inId);
+}
+
 class Assets 
 {
    public static inline var UNCACHED = 0;
@@ -38,6 +45,8 @@ class Assets
    public static var cacheMode:Int = WEAK_CACHE;
 
    public static var scriptBase = "";
+
+   public static var cache = new Cache();
 
    //public static var id(get_id, null):Array<String>;
 
@@ -64,6 +73,28 @@ class Assets
       #else
       return ByteArray.fromBytes(bytes);
       #end
+   }
+
+   public static function list(?inFilter:AssetType)
+   {
+      if (inFilter==null)
+         return info.keys();
+
+      var result = new Array<String>();
+      for(id in info.keys())
+      {
+         var asset = info.get(id);
+         if (asset.type==inFilter)
+            result.push(id);
+      }
+      return result.iterator();
+   }
+
+   public static function removeBitmapData(inId:String)
+   {
+      var i = getInfo(inId);
+      if (i!=null)
+         i.uncache();
    }
 
 

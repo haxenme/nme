@@ -515,7 +515,7 @@ class NMEProject
       context.OPENFL_COMPAT = openflCompat ? "true" : "false";
       if (openflCompat)
       {
-         haxedefs.set("openfl","nme");
+         haxedefs.set("openfl","2.1.6");
          haxeflags.push("--remap openfl:nme");
       }
 
