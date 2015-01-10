@@ -53,7 +53,10 @@ class Surface
       {
          var flags = HARDWARE;
 
-         if (inTransparent) flags |= TRANSPARENT;
+         if (inTransparent)
+            flags |= TRANSPARENT;
+         else
+            fill_alpha = 0xff;
 
          nmeHandle = nme_bitmap_data_create(inWidth, inHeight, flags, fill_col, fill_alpha, inGPUMode);
       }
