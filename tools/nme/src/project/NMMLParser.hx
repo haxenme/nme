@@ -938,7 +938,7 @@ class NMMLParser
 
       while(varMatch.match(newString)) 
       {
-         newString = project.localDefines.get(varMatch.matched(1));
+         newString = project.getDef(varMatch.matched(1));
 
          if (newString == null) 
          {
