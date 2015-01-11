@@ -1,4 +1,6 @@
 
+* Fixed android-view linking with EGL
+* Fix alpha for non-transparent bitmaps
 * Better Flixel support
 --------------------------
 * Separated from Lime project

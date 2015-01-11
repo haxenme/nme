@@ -56,7 +56,7 @@ class Platform
    {
       var base = getOutputDir() + "/";
       var l = base.length;
-      if (inFile.substr(0,l)!=base && inFile.substr(inFile.length-8)!=".pbxproj")
+      if (inFile.substr(0,l)!=base && inFile.substr(inFile.length-8)!=".pbxproj" && inFile.indexOf("android-view")<0)
       {
          Log.error( inFile + " does not appear to be under " + base );
       }

@@ -444,6 +444,14 @@ implements SensorEventListener
    {
       return activity;
    }
+
+   ::if !ANDROIDVIEW::
+   public Activity getActivity()
+   {
+      return this;
+   }
+   ::end::
+
    
    public static MainView getMainView()
    {
@@ -830,9 +838,11 @@ implements SensorEventListener
 
    public void restartProcessInst()
    {
+      ::if !ANDROIDVIEW::
       AlarmManager alm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
       alm.set(AlarmManager.RTC, System.currentTimeMillis() + 1000,
           PendingIntent.getActivity(this, 0, new Intent(this, this.getClass()), 0));
+      ::end::
    }
 
    public static void restartProcess()

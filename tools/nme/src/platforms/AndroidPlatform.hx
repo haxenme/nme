@@ -249,10 +249,14 @@ class AndroidPlatform extends Platform
    {
       var lib = project.environment.get("ANDROID_SDK") +
          "/extras/android/compatibility/v4/android-support-v4.jar";
+      if (!FileSystem.exists(lib))
+         lib = project.environment.get("ANDROID_SDK") +
+            "/extras/android/support/v4/android-support-v4.jar";
+
       if (FileSystem.exists(lib))
          FileHelper.copyIfNewer(lib, inDest + "/libs/android-support-v4.jar");
       else
-         Log.verbose("Could not find " + lib);
+         Log.error("Could not find " + lib);
    }
 
    override public function updateOutputDir():Void 

@@ -21,6 +21,7 @@ import java.io.IOException;
 import android.os.ParcelUuid;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+import android.app.Activity;
 
 
 public class Bluetooth
@@ -132,7 +133,7 @@ public class Bluetooth
       final ArrayList<String> scannedDevices = new ArrayList<String>();
 
       final BroadcastReceiver[] receiverRef = new BroadcastReceiver [1];
-      final GameActivity activity = GameActivity.getInstance();
+      final Activity activity = GameActivity.getInstance().getActivity();
 
       // The BroadcastReceiver that listens for discovered devices/scan done events
       final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -175,7 +176,7 @@ public class Bluetooth
        filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
        activity.registerReceiver(receiver, filter);
 
-       activity.addOnDestoryListener( new Runnable() {
+       GameActivity.getInstance().addOnDestoryListener( new Runnable() {
           @Override public void run() {
              Log.e(TAG,"onDestroy");
              if (receiverRef[0]!=null)
@@ -244,7 +245,7 @@ public class Bluetooth
                else
                   postDevices(inHandler,BLUETOOTH_DISABLED, null);
             }});
-         activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+         activity.getActivity().startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
       }
       else
       {
