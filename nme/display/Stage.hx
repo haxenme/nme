@@ -81,6 +81,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var stageHeight(get, never):Int;
    public var stageWidth(get, never):Int;
    public var renderRequest(get,set):Void->Bool;
+   public var color(get,set):Int;
 
    var invalid:Bool;
 
@@ -707,6 +708,20 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
       return inBG;
    }
+
+   private function set_color(inColor:Int):Int
+   {
+      set_opaqueBackground(inColor);
+      return inColor;
+   }
+ 
+
+   private function get_color():Int
+   {
+      var col = opaqueBackground;
+      return col==null ? 0 : col;
+   }
+
 
 
    function nmeOnTouch(inEvent:AppEvent, inType:String, touchInfo:TouchInfo)

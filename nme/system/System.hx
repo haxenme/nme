@@ -8,10 +8,15 @@ import nme.Loader;
 import nme.JNI;
 #end
 
+#if cpp
+import cpp.vm.Gc;
+#end
+
 class System 
 {
    public static var deviceID(get_deviceID, null):String;
    public static var totalMemory(get_totalMemory, null):Int;
+   public static var totalMemoryNumber(get_totalMemoryNumber, null):Float;
    public static var exeName(get_exeName, null):String;
 
    static public function exit(?inCode:Int) 
@@ -45,6 +50,21 @@ class System
          return untyped __js_get_heap_memory();
       #else
          #error "System not supported on this target"
+      #end
+   }
+
+   private static function get_totalMemoryNumber():Float 
+   {
+      return totalMemory;
+   }
+
+   public static function pauseForGCIfCollectionImminent(imminence:Float = 0.75):Void
+   { 
+      #if cpp
+        var current = Gc.memInfo(Gc.MEM_INFO_CURRENT);
+        var reserved =Gc.memInfo(Gc.MEM_INFO_RESERVED);
+        if (current > reserved*imminence)
+           Gc.run(true);
       #end
    }
 
