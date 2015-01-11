@@ -141,7 +141,7 @@ class PathHelper
                stupidHaxelib = true;
                break;
             }
-            else if (line == "-D " + name)
+            else if (line == "-D " + name || line.indexOf('-D $name=')==0)
             {
                // Found the -D -> last match was good
                break;
