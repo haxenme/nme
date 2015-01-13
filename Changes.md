@@ -1,4 +1,5 @@
 
+* Use alternate serif font on Android 5
 * Fixed android-view linking with EGL
 * Fix alpha for non-transparent bitmaps
 * Better Flixel support
