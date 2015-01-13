@@ -11,6 +11,7 @@ class FPS extends TextField
 {
 	
 	private var times:Array<Float>;
+   public var currentFPS(get,never):Float;
 	
 	
 	public function new(inX:Float = 10.0, inY:Float = 10.0, inCol:Int = 0x000000)
@@ -29,6 +30,11 @@ class FPS extends TextField
 		addEventListener(Event.ENTER_FRAME, onEnter);
 	}
 	
+
+   function get_currentFPS() : Float
+   {
+      return times.length;
+   }
 	
 	
 	// Event Handlers

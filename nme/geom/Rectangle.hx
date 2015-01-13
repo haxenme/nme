@@ -23,6 +23,14 @@ class Rectangle
       height = inHeight == null ? 0 : inHeight;
    }
 
+   public function setTo(inX:Float, inY:Float, inWidth:Float, inHeight:Float):Void 
+   {
+      x = inX;
+      y = inY;
+      width = inWidth;
+      height = inHeight;
+   }
+
    public function clone():Rectangle 
    {
       return new Rectangle(x, y, width, height);
