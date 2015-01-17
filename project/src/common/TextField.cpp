@@ -1256,6 +1256,9 @@ WString TextField::getLineText(int inLine)
       return L"";
    Line &line = mLines[inLine];
 
+   if (line.mChars==0)
+      return L"";
+      
    int g0 = GroupFromChar(line.mChar0);
    int g1 = GroupFromChar(line.mChar0 + line.mChars-1);
 
