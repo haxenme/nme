@@ -705,7 +705,7 @@ public:
             //showTriangles = true;
          }
       }
-      if (inOutline.size()<3)
+      if (mSolidMode && inOutline.size()<3)
          return;
 
 

@@ -155,6 +155,7 @@ public:
    void OnKey(Event &inEvent);
    void OnScrollWheel(int inDirection);
    void DeleteSelection();
+   void ClearSelection();
    void DeleteChars(int inFirst,int inEnd);
    void InsertString(WString &ioString);
    void ShowCaret(bool inFromDrag=false);

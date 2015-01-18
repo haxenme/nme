@@ -654,6 +654,9 @@ void TextField::OnKey(Event &inEvent)
          case keyDOWN:
             if (mSelectKeyDown<0 && shift)
                mSelectKeyDown = caretIndex;
+            if (!shift)
+               ClearSelection();
+
             switch(inEvent.value)
             {
                case keyLEFT: if (caretIndex>0) caretIndex--; break;
@@ -1509,7 +1512,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             double height = mLines[line].mMetrics.height;
             if (pos.y+height <= fieldHeight-GAP+1)
             {
-               mCaretGfx->lineStyle(0, 0x000000 ,1.0, false, ssmOpenGL  );
+               mCaretGfx->lineStyle(1, 0x000000 ,1.0, false, ssmOpenGL  );
                mCaretGfx->moveTo(pos.x,pos.y);
                mCaretGfx->lineTo(pos.x,pos.y+height);
             }
@@ -1709,6 +1712,17 @@ void TextField::DeleteChars(int inFirst,int inEnd)
       mLinesDirty = true;
       mGfxDirty = true;
       Layout(GetFullMatrix(true));
+   }
+}
+
+void TextField::ClearSelection()
+{
+   if (mSelectMin!=mSelectMax)
+   {
+      mSelectMin = mSelectMax = 0;
+      mTilesDirty = true;
+      mCaretDirty = true;
+      mGfxDirty = true;
    }
 }
 

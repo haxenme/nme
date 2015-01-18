@@ -1,4 +1,7 @@
 
+* Fix ios-view
+* Fix TextField cursor
+--------------------------
 * Use alternate serif font on Android 5
 * Fixed android-view linking with EGL
 * Fix alpha for non-transparent bitmaps
