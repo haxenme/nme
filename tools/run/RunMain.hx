@@ -74,6 +74,14 @@ class RunMain
       }
       catch(e:Dynamic)
       {
+         var s = Std.string(e);
+         var notFound = "Module not found";
+         if (s.indexOf(notFound)<0)
+         {
+            //trace("====="+s);
+            neko.Lib.rethrow(e);
+         }
+
       }
       return false;
    }
