@@ -246,7 +246,7 @@ class IOSPlatform extends Platform
           ArrayHelper.addUnique(architectures, Architecture.ARM64);
       }
 
-      ArrayHelper.addUnique(architectures, Architecture.I386);
+      ArrayHelper.addUnique(architectures, Architecture.X86_64);
    
       buildV6 = buildV7 = buildI386 = buildArm64 = buildX86_64 = false;
 
@@ -287,7 +287,7 @@ class IOSPlatform extends Platform
          Log.verbose("Target flags: " + build);
 
          if (build.exists("simulator") || build.exists("ios") ) 
-            buildI386 = true;
+            buildX86_64 = true;
 
          if (build.exists("iphoneos") || build.exists("ios")) 
          {

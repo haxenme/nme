@@ -72,8 +72,9 @@ class IOSView extends IOSPlatform
       if (buildV6) libExts.push(".iphoneos.a");
       if (buildV7) libExts.push(".iphoneos-v7.a");
       if (buildI386) libExts.push(".iphonesim.a");
+      if (buildArm64) libExts.push(".iphoneos-64.a");
+      if (buildX86_64) libExts.push(".iphonesim-64.a");
 
-     
       var appLibs = new Array<String>();
       var dbg = project.debug ? "-debug" : "";
       for(ext in libExts)
