@@ -814,15 +814,16 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
    bool set_255 = (inSrcChannel==CHAN_ALPHA && !(mPixelFormat & pfHasAlpha) );
 
 
-   // Translate inSrcRect src_rect to dest ...
-   Rect src_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
-   // clip ...
+   // Start with unclipped dest rect
+   Rect src_rect(inSrcRect.x+inPosX,inSrcRect.x+inPosY, inSrcRect.w, inSrcRect.h );
+   // Clip to dest size...
    src_rect = src_rect.Intersect(outTarget.mRect);
 
-   // translate back to source-coordinates ...
-   src_rect.Translate(inSrcRect.x-inPosX, inSrcRect.y-inPosY);
-   // clip to origial rect...
-   src_rect = src_rect.Intersect( inSrcRect );
+   // Translate back to source-coordinates ...
+   src_rect.Translate(-inPosX, -inPosY);
+
+   // Clip to actual source rect...
+   src_rect = src_rect.Intersect( Rect(0,0,Width(),Height() ) );
 
    if (src_rect.HasPixels())
    {
