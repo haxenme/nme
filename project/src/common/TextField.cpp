@@ -2150,11 +2150,12 @@ CharGroup::~CharGroup()
 bool CharGroup::UpdateFont(double inScale,bool inNative)
 {
    int h = 0.5 + inScale*mFormat->size;
-   if (!mFont || h!=mFontHeight || mFont->IsNative()!=inNative )
+   if (!mFont || h!=mFontHeight )
    {
-      if (mFont)
-         mFont->DecRef();
+      Font *oldFont = mFont;
       mFont = Font::Create(*mFormat,inScale,inNative,true);
+      if (oldFont)
+         oldFont->DecRef();
       mFontHeight = h;
       return true;
    }
