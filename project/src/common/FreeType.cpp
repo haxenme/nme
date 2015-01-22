@@ -11,6 +11,7 @@
 #include FT_BITMAP_H
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
+#include <freetype/ftoutln.h>
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -61,9 +62,44 @@ public:
    bool LoadBitmap(int inChar)
    {
       int idx = FT_Get_Char_Index( mFace, inChar );
-      int err = FT_Load_Glyph( mFace, idx, NME_FREETYPE_FLAGS  );
+
+      int renderFlags = FT_LOAD_DEFAULT;
+      //if (!(mTransform & (ffItalic|ffBold) ))
+         renderFlags |= FT_LOAD_FORCE_AUTOHINT;
+
+      int err = FT_Load_Glyph( mFace, idx, renderFlags  );
       if (err)
          return false;
+
+      bool emboldened = false;
+      if (mTransform & ffItalic)
+      {
+         if ( mFace->glyph->format == FT_GLYPH_FORMAT_OUTLINE )
+         {
+            FT_Outline*  outline = &mFace->glyph->outline;
+
+            FT_Matrix    transform;
+            transform.xx = 0x10000L;
+            transform.yx = 0x00000L;
+            transform.xy = 0x06000L;
+            transform.yy = 0x10000L;
+
+            FT_Outline_Transform( outline, &transform );
+         }
+      }
+
+      if (mTransform & ffBold)
+      {
+         if ( mFace->glyph->format == FT_GLYPH_FORMAT_OUTLINE )
+         {
+            emboldened = true;
+            FT_Outline*  outline = &mFace->glyph->outline;
+            FT_Outline_Embolden( outline, 1<<6 );
+         }
+      }
+
+
+
 
       FT_Render_Mode mode = FT_RENDER_MODE_NORMAL;
       // mode = FT_RENDER_MODE_MONO;
@@ -75,12 +111,18 @@ public:
       #ifndef GPH
       if (mTransform & ffBold)
       {
-         FT_GlyphSlot_Own_Bitmap(mFace->glyph);
-         FT_Bitmap_Embolden(sgLibrary, &mFace->glyph->bitmap, 1<<6, 0);
+         if ( mFace->glyph->format != FT_GLYPH_FORMAT_OUTLINE && !emboldened)
+         {
+            FT_GlyphSlot_Own_Bitmap(mFace->glyph);
+            FT_Bitmap_Embolden(sgLibrary, &mFace->glyph->bitmap, 1<<6, 0);
+         }
       }
       #endif
       return true;
    }
+
+   int getUnderlineOffset() { return 1; }
+   int getUnderlineHeight() { return getUnderlineOffset(); }
 
 
    bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
@@ -94,6 +136,15 @@ public:
       FT_Bitmap &bitmap = mFace->glyph->bitmap;
       outW = bitmap.width;
       outH = bitmap.rows;
+
+      if (mTransform & ffUnderline)
+      {
+         int underlineY0 = mFace->glyph->bitmap_top + getUnderlineOffset();
+         int underlineY1 = underlineY0 + getUnderlineHeight();
+         if (outH<underlineY1)
+            outH = underlineY1;
+      }
+
       outAdvance = (mFace->glyph->advance.x);
       return true;
    }
@@ -104,36 +155,63 @@ public:
       if (!LoadBitmap(inChar))
          return;
 
+      int underlineY0 = -1;
+      int underlineY1 = -1;
+
       FT_Bitmap &bitmap = mFace->glyph->bitmap;
       int w = bitmap.width;
       int h = bitmap.rows;
+
+
+      if (mTransform & ffUnderline)
+      {
+         underlineY0 = mFace->glyph->bitmap_top + getUnderlineOffset();
+         underlineY1 = underlineY0 + getUnderlineHeight();
+      }
+
+      if (h<underlineY1)
+         h = underlineY1;
+
       if (w>outTarget.mRect.w || h>outTarget.mRect.h)
          return;
 
       for(int r=0;r<h;r++)
       {
-         unsigned char *row = bitmap.buffer + r*bitmap.pitch;
          uint8  *dest = (uint8 *)outTarget.Row(r + outTarget.mRect.y) + outTarget.mRect.x;
 
-         if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
+         int underline = (r>=underlineY0 && r<underlineY1) ? 0xff : 0;
+
+         if (r<bitmap.rows)
          {
-            int bit = 0;
-            int data = 0;
-            for(int x=0;x<outTarget.mRect.w;x++)
+            unsigned char *row = bitmap.buffer + r*bitmap.pitch;
+            if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
             {
-               if (!bit)
+               int bit = 0;
+               int data = 0;
+               for(int x=0;x<outTarget.mRect.w;x++)
                {
-                  bit = 128;
-                  data = *row++;
+                  if (!bit)
+                  {
+                     bit = 128;
+                     data = *row++;
+                  }
+                  *dest++ =  (underline || (data & bit)) ? 0xff: 0x00;
+                  bit >>= 1;
                }
-               *dest++ =  (data & bit) ? 0xff: 0x00;
-               bit >>= 1;
+            }
+            else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
+            {
+               for(int x=0;x<w;x++)
+                  *dest ++ = *row++ | underline;
             }
          }
-         else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
+         else if (r>=underlineY0 && r<underlineY1)
          {
-            for(int x=0;x<w;x++)
-               *dest ++ = *row++;
+            memset( dest, 0xff, bitmap.pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
+         }
+         else
+         {
+            memset( dest, 0x00, bitmap.pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
          }
       }
    }
@@ -253,18 +331,17 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
    
    std::string name = inName;
    
-   if (!strcasecmp(inName.c_str(),"_serif")) {
-      
+   if (!strcasecmp(inName.c_str(),"_serif"))
+   {
       name = "georgia.ttf";
-      
-   } else if (!strcasecmp(inName.c_str(),"_sans")) {
-      
+   }
+   else if (!strcasecmp(inName.c_str(),"_sans"))
+   {
       name = "arial.ttf";
-      
-   } else if (!strcasecmp(inName.c_str(),"_typewriter")) {
-      
+   }
+   else if (!strcasecmp(inName.c_str(),"_typewriter"))
+   {
       name = "cour.ttf";
-      
    }
    
    _TCHAR win_path[2 * MAX_PATH];
@@ -511,6 +588,8 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Aut
       transform |= ffBold;
    if ( !(face->style_flags & ffItalic) && inFormat.italic )
       transform |= ffItalic;
+   if ( inFormat.underline )
+      transform |= ffUnderline;
    return new FreeTypeFont(face,height,transform,pBuffer);
 }
 

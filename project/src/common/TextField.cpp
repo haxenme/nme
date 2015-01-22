@@ -178,6 +178,7 @@ void TextField::SplitGroup(int inGroup,int inPos)
    extra.mFormat = group.mFormat;
    extra.mFormat->IncRef();
    extra.mFontHeight = group.mFontHeight;
+   extra.mFlags = group.mFlags;
    extra.mFont = group.mFont;
    extra.mFont->IncRef();
    extra.mChar0 = group.mChar0 + inPos;
@@ -492,6 +493,15 @@ int TextField::PointToChar(UserPoint inPoint) const
                return line.mChar0+c;
          }
 
+         if (line.mChars>0 )
+         {
+            int cidx = line.mChar0 + line.mChars - 1;
+            int g = GroupFromChar(cidx);
+            int g_pos =  cidx - mCharGroups[g]->mChar0;
+            wchar_t ch = mCharGroups[g]->mString.mPtr[g_pos];
+            if (ch=='\n')
+               return line.mChar0 + line.mChars -1;
+         }
          return line.mChar0 + line.mChars;
       }
    }
@@ -827,6 +837,7 @@ void TextField::setText(const WString &inString)
    chars->mFormat = defaultTextFormat->IncRef();
    chars->mFont = 0;
    chars->mFontHeight = 0;
+   chars->mFlags = 0;
    mCharGroups.push_back(chars);
    mLinesDirty = true;
    mFontsDirty = true;
@@ -1008,6 +1019,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
          chars->mFormat = inFormat->IncRef();
          chars->mFont = 0;
          chars->mFontHeight = 0;
+         chars->mFlags = 0;
          chars->mString.Set(text->Value(), wcslen( text->Value() ));
          ioCharCount += chars->Chars();
 
@@ -1093,6 +1105,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                   chars->mFormat = inFormat->IncRef();
                   chars->mFont = 0;
                   chars->mFontHeight = 0;
+                  chars->mFlags = 0;
                   chars->mString.push_back('\n');
                   ioCharCount++;
                   mCharGroups.push_back(chars);
@@ -1114,6 +1127,7 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
                      chars->mFormat = inFormat->IncRef();
                      chars->mFont = 0;
                      chars->mFontHeight = 0;
+                     chars->mFlags = 0;
                      chars->mString.push_back('\n');
                      ioCharCount++;
                      mCharGroups.push_back(chars);
@@ -1174,7 +1188,7 @@ void TextField::setHTMLText(const WString &inString)
 }
 
 
-int TextField::LineFromChar(int inChar)
+int TextField::LineFromChar(int inChar) const
 {
    int min = 0;
    int max = mLines.size();
@@ -1190,13 +1204,13 @@ int TextField::LineFromChar(int inChar)
    return min;
 }
 
-int TextField::GroupFromChar(int inChar)
+int TextField::GroupFromChar(int inChar) const
 {
    if (mCharGroups.empty()) return 0;
 
    int min = 0;
    int max = mCharGroups.size();
-   CharGroup &last = *mCharGroups[max-1];
+   const CharGroup &last = *mCharGroups[max-1];
    if (inChar>=last.mChar0)
    {
       if (inChar>=last.mChar0 + last.Chars())
@@ -2150,13 +2164,17 @@ CharGroup::~CharGroup()
 bool CharGroup::UpdateFont(double inScale,bool inNative)
 {
    int h = 0.5 + inScale*mFormat->size;
-   if (!mFont || h!=mFontHeight )
+   int flags = (mFormat->bold.Get() ? 1 : 0 ) |
+               (mFormat->italic.Get() ? 2 : 0 ) |
+               (mFormat->underline.Get() ? 4 : 0 );
+   if (!mFont || h!=mFontHeight || mFlags!=flags )
    {
       Font *oldFont = mFont;
       mFont = Font::Create(*mFormat,inScale,inNative,true);
       if (oldFont)
          oldFont->DecRef();
       mFontHeight = h;
+      mFlags=flags;
       return true;
    }
    return false;
