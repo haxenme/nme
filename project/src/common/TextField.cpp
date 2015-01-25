@@ -113,10 +113,7 @@ void TextField::setWidth(double inWidth)
    explicitWidth = inWidth;
    if (autoSize==asNone || wordWrap)
    {
-      if (scaleX!=0)
-         fieldWidth = inWidth/scaleX;
-      else
-         fieldWidth = 0.0;
+      fieldWidth = inWidth;
       mLinesDirty = true;
       mGfxDirty = true;
    }
@@ -127,28 +124,23 @@ void TextField::setHeight(double inHeight)
 {
    if (autoSize==asNone)
    {
-      if (scaleY!=0)
-         fieldHeight = inHeight/scaleY;
-      else
-         fieldHeight = 0.0;
-
       fieldHeight = inHeight;
       mLinesDirty = true;
       mGfxDirty = true;
    }
 }
 
+
 void TextField::modifyLocalMatrix(Matrix &ioMatrix)
 {
    if ( (autoSize==asCenter || autoSize==asRight) && !multiline )
    {
       if (autoSize==asCenter)
-         ioMatrix.mtx -= (fieldWidth-explicitWidth) * 0.5;
+         ioMatrix.mtx += (fieldWidth-GAP*2) * scaleX* 0.5;
       else
-         ioMatrix.mtx -= (fieldWidth-explicitWidth);
+         ioMatrix.mtx += (fieldWidth-GAP*2) * scaleX;
    }
 }
-
 
 
 const TextFormat *TextField::getDefaultTextFormat()
@@ -360,6 +352,7 @@ void TextField::setMultiline(bool inMultiline)
 void TextField::setWordWrap(bool inWordWrap)
 {
    wordWrap = inWordWrap;
+   setWidth(explicitWidth);
    mLinesDirty = true;
    mGfxDirty = true;
    DirtyCache();
@@ -1834,9 +1827,10 @@ void TextField::Layout(const Matrix &inMatrix)
    mLines.resize(0);
    mCharPos.resize(0);
 
+   textHeight = 0;
+   textWidth = 0;
    if (scaleX==0 || scaleY==0)
       return;
-
 
    double oldW = fieldWidth;
    double oldH = fieldHeight;
@@ -1847,8 +1841,6 @@ void TextField::Layout(const Matrix &inMatrix)
    double charY = 0;
    line.mY0 = charY;
    mLastUpDownX = -1;
-   textHeight = 0;
-   textWidth = 0;
    double max_x = autoSize!=asNone && !wordWrap ? 1e30 : fieldWidth - GAP*2.0;
    if (max_x<1)
       max_x = 1;
@@ -1963,8 +1955,6 @@ void TextField::Layout(const Matrix &inMatrix)
          if (screenGrid)
             right = ((int)((right*fontScale+0.999)))*fontToLocal;
          line.mMetrics.width = right;
-         if (right>textWidth)
-            textWidth = right;
       }
    }
 
@@ -1983,6 +1973,13 @@ void TextField::Layout(const Matrix &inMatrix)
       }
       charY += line.mMetrics.height;
       mLines.push_back(line);
+   }
+
+   for(int i=0;i<mLines.size();i++)
+   {
+      double right = mLines[i].mMetrics.width;
+      if (right>textWidth)
+         textWidth = right;
    }
 
    textHeight = charY;
