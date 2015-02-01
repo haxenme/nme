@@ -1785,30 +1785,6 @@ void StopAnimation()
 static SDL_TimerID sgTimerID = 0;
 
 
-#ifdef HX_LIME
-bool sgTimerActive = false;
-
-Uint32 OnTimer(Uint32 interval, void *)
-{
-   // Ping off an event - any event will force the frame check.
-   SDL_Event event;
-   SDL_UserEvent userevent;
-   /* In this example, our callback pushes an SDL_USEREVENT event
-   into the queue, and causes ourself to be called again at the
-   same interval: */
-   userevent.type = SDL_USEREVENT;
-   userevent.code = 0;
-   userevent.data1 = NULL;
-   userevent.data2 = NULL;
-   event.type = SDL_USEREVENT;
-   event.user = userevent;
-   sgTimerActive = false;
-   sgTimerID = 0;
-   SDL_PushEvent(&event);
-   return 0;
-}
-#endif
-
 
 #ifndef SDL_NOEVENT
 #define SDL_NOEVENT -1;
@@ -1817,7 +1793,6 @@ Uint32 OnTimer(Uint32 interval, void *)
 
 void StartAnimation()
 {
-#ifndef HX_LIME
    SDL_Event event;
    event.type = SDL_NOEVENT;
 
@@ -1873,53 +1848,7 @@ void StartAnimation()
          }
       }
    }
-#else
-   SDL_Event event;
-   bool firstTime = true;
-   while(!sgDead)
-   {
-      event.type = SDL_NOEVENT;
-      while (!sgDead && (firstTime || SDL_WaitEvent(&event)))
-      {
-         firstTime = false;
-         if (sgTimerActive && sgTimerID)
-         {
-            SDL_RemoveTimer(sgTimerID);
-            sgTimerActive = false;
-            sgTimerID = 0;
-         }
-         
-         ProcessEvent(event);
-         if (sgDead) break;
-         event.type = SDL_NOEVENT;
-         
-         while (SDL_PollEvent(&event))
-         {
-            ProcessEvent (event);
-            if (sgDead) break;
-            event.type = -1;
-         }
-         
-         Event poll(etPoll);
-         sgSDLFrame->ProcessEvent(poll);
-         
-         if (sgDead) break;
-         
-         double next = sgSDLFrame->GetStage()->GetNextWake() - GetTimeStamp();
-         
-         if (next > 0.001)
-         {
-            int snooze = next*1000.0;
-            sgTimerActive = true;
-            sgTimerID = SDL_AddTimer(snooze, OnTimer, 0);
-         }
-         else
-         {
-            OnTimer(0, 0);
-         }
-      }
-   }
-#endif
+
    Event deactivate(etDeactivate);
    sgSDLFrame->ProcessEvent(deactivate);
    

@@ -237,9 +237,7 @@ extern "C" void InitIDs()
    
    _tile_rect = Rect(0, 0, 1, 1);
 
-   #ifndef HX_LIME
    InitCamera();
-   #endif
 }
 
 DEFINE_ENTRY_POINT(InitIDs)

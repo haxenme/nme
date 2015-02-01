@@ -19,11 +19,7 @@ namespace nme {
 	double CapabilitiesGetPixelAspectRatio () {
 		
 		JNIEnv *env = GetEnv();
-        #ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetPixelAspectRatio", "()D");
 		if (mid == 0)
 			return 1;
@@ -36,11 +32,7 @@ namespace nme {
 	double CapabilitiesGetScreenDPI () {
 		
 		JNIEnv *env = GetEnv();
-		#ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetScreenDPI", "()D");
 		if (mid == 0)
 			return 1;
@@ -53,11 +45,7 @@ namespace nme {
 	double CapabilitiesGetScreenResolutionX () {
 		
 		JNIEnv *env = GetEnv();
-		#ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetScreenResolutionX", "()D");
 		if (mid == 0)
 			return 1;
@@ -70,11 +58,7 @@ namespace nme {
 	double CapabilitiesGetScreenResolutionY () {
 		
 		JNIEnv *env = GetEnv();
-		#ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetScreenResolutionY", "()D");
 		if (mid == 0)
 			return 1;
@@ -85,11 +69,7 @@ namespace nme {
 	
 	std::string CapabilitiesGetLanguage() {
 		JNIEnv *env = GetEnv();
-		#ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "CapabilitiesGetLanguage", "()Ljava/lang/String;");
 		if(mid == 0)
 			return std::string("");
@@ -100,11 +80,7 @@ namespace nme {
 	void HapticVibrate (int period, int duration)
 	{
 		JNIEnv *env = GetEnv();
-		#ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "vibrate", "(II)V");
 		if (mid > 0)
 			env->CallStaticVoidMethod(cls, mid, period, duration);	
@@ -114,11 +90,7 @@ namespace nme {
 	bool LaunchBrowser(const char *inUtf8URL)
 	{
 	   JNIEnv *env = GetEnv();
-		#ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "launchBrowser", "(Ljava/lang/String;)V");
 		if (mid == 0)
 			return false;
@@ -134,11 +106,7 @@ namespace nme {
 	std::string GetUserPreference(const char *inId)
 	{
 	   JNIEnv *env = GetEnv();
-		#ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "getUserPreference", "(Ljava/lang/String;)Ljava/lang/String;");
 		if (mid == 0)
 		{
@@ -154,11 +122,7 @@ namespace nme {
 	bool SetUserPreference(const char *inId, const char *inPreference)
 	{
 	   JNIEnv *env = GetEnv();
-		#ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "setUserPreference", "(Ljava/lang/String;Ljava/lang/String;)V");
 		if (mid == 0)
 			return false;
@@ -175,11 +139,7 @@ namespace nme {
 	bool ClearUserPreference(const char *inId)
 	{
 	   JNIEnv *env = GetEnv();
-		#ifdef HX_LIME
-		jclass cls = FindClass("org/haxe/lime/GameActivity");
-        #else
-        jclass cls = FindClass("org/haxe/nme/GameActivity");
-        #endif
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "clearUserPreference", "(Ljava/lang/String;)V");
 		if (mid == 0)
 			return false;
