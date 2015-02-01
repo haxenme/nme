@@ -899,9 +899,99 @@ public:
    }
 
 
+
+   void cleanCurve(Curves &curve,bool inLoop)
+   {
+      double perp2 = mPerpLen*mPerpLen*4.0;
+
+      for(int startPoint=0; startPoint<curve.size()-3;startPoint++)
+      {
+         const UserPoint &p0 = curve[startPoint].p;
+         UserPoint &p1 = curve[startPoint+1].p;
+         UserPoint dp = p1-p0;
+         // Merge....
+         if (fabs(dp.x) + fabs(dp.y) < 0.001)
+         {
+            curve.erase(startPoint,1);
+            // will be incremented again
+            startPoint--;
+            continue;
+         }
+
+         float minX = std::min(p0.x,p1.x);
+         float maxX = std::max(p0.x,p1.x);
+         float minY = std::min(p0.y,p1.y);
+         float maxY = std::max(p0.y,p1.y);
+
+
+         for(int testPoint = startPoint+2; testPoint<curve.size()-1; testPoint++)
+         {
+            const UserPoint &l0 = curve[testPoint].p;
+
+            // TODO - should be distance to line
+            if (l0.Dist2(p0) > perp2 && l0.Dist2(p1) > perp2 )
+               break;
+
+            const UserPoint &l1 = curve[testPoint+1].p;
+            if ( (l0.x<minX && l1.x<minX) ||
+                 (l0.x>maxX && l1.x>maxX) ||
+                 (l0.y<minY && l1.y<minY) ||
+                 (l0.y>maxY && l1.y>maxY) )
+              continue;
+
+            UserPoint dl = l1-l0;
+            // Solve p0.x + a dp.x = l0.x + b dl.x
+            //       p0.y + a dp.y = l0.y + b dl.y
+
+            // Solve p0.x*dp.y + a dp.x*dp.y = l0.x*dp.y + b dl.x*dp.y
+            //       p0.y*dp.x + a dp.y*dp.x = l0.y*dp.x + b dl.y*dp.x
+            //    p0 x dp - l0 x dp = b dl x dp
+            //    (p0-l0) x dp = b dl x dp
+            double denom = dl.Cross(dp);
+            if (denom!=0.0)
+            {
+               double b = (p0-l0).Cross(dp)/denom;
+               if (b>=0 && b<=1.0)
+               {
+                  double a =  (fabs(dp.x) > fabs(dp.y)) ? (l0.x + b*dl.x - p0.x)/dp.x :
+                                                          (l0.y + b*dl.y - p0.y)/dp.y;
+                  //if (a>=0 && a<=1) equals case?
+                  {
+                     if (a>0 && a<1 && b>0 && b<1)
+                     {
+                        UserPoint p = p0 + dp*a;
+                        // Remove the loop 
+                        //   c[startPoint]
+                        //    p  <- new point between c[startPoint] and c[startPoint+1]
+                        //    c[startPoint+1]
+                        //    c[startPoint+2]
+                        //    ...
+                        //    c[testPoint]
+                        //    p  <- new point between c[testPoint] and c[testPoint+1]
+                        //    c[testPoint+1]
+                        {
+                           // replace c[startPoint+1] with p, and erase upto and including c[testPoint]
+                           p1 = p;
+                           curve.EraseAt(startPoint+2,testPoint+1);
+                           // Try again...
+                           startPoint--;
+                           break;
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+
+
+
+
+
    void removeLoops(QuickVec<CurveEdge> &curve,int startPoint,float turningPoint,int *inAdjustStart=0)
    {
-      if (DEBUG_KEEP_LOOPS)
+      if (DEBUG_KEEP_LOOPS!=0)
          return;
 
       for(int i=startPoint;i<curve.size()-2;i++)
@@ -1300,6 +1390,12 @@ public:
 
       removeLoops(leftCurve,prevSegLeft,0);
       removeLoops(rightCurve,prevSegRight,0);
+
+      if (DEBUG_KEEP_LOOPS==2)
+      {
+         cleanCurve(leftCurve,inLoop);
+         cleanCurve(rightCurve,inLoop);
+      }
 
 
       if (leftCurve.size()<2 || rightCurve.size()<2)
