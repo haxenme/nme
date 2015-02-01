@@ -6,8 +6,12 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+
 namespace nme
 {
+
+enum { DEBUG_KEEP_LOOPS     = 0 };
+enum { DEBUG_FAT_LINES      = 0 };
 
 
 struct CurveEdge
@@ -115,7 +119,7 @@ public:
             mElement.mWidth = 1.0/mScale;
          }
  
-         if (alphaAA)
+         if (alphaAA && !DEBUG_FAT_LINES)
          {
             mPerpLen += 0.5/mScale;
             mElement.mWidth += 1.0/mScale;
@@ -897,6 +901,9 @@ public:
 
    void removeLoops(QuickVec<CurveEdge> &curve,int startPoint,float turningPoint,int *inAdjustStart=0)
    {
+      if (DEBUG_KEEP_LOOPS)
+         return;
+
       for(int i=startPoint;i<curve.size()-2;i++)
       {
          const UserPoint &p0 = curve[i].p;
@@ -1301,7 +1308,41 @@ public:
       bool useTriStrip = true;
       bool keepTriSense = true;
 
+
+      if (DEBUG_FAT_LINES)
+      {
+         for(int side=0; side<2; side++)
+         {
+            Curves &curve = side==0 ? leftCurve : rightCurve;
+
+            int n = curve.size();
+
+            ReserveArrays(n);
+
+            UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
+
+            for(int i=0;i<n;i++)
+            {
+               *v = curve[i].p;
+               Next(v);
+            }
+            
+            if (mElement.mSurface)
+               CalcTexCoords();
+
+            PushElement();
+            data.mElements.last().mPrimType = ptLineStrip;
+
+            mElement.mVertexOffset = data.mArray.size();
+            mElement.mCount = 0;
+         }
+
+         return;
+      }
+
       data.mArray.reserve( mElement.mVertexOffset + (leftCurve.size() + rightCurve.size()) * mElement.mStride * (useTriStrip?2:3) );
+
+
 
       UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *normal = (mElement.mFlags & DRAW_HAS_NORMAL) ? (UserPoint *)&data.mArray[mElement.mNormalOffset] : 0;
