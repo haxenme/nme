@@ -4213,12 +4213,14 @@ DEFINE_PRIM(nme_bitmap_data_dump_bits,1);
 
 value nme_video_create(value inWidth, value inHeight)
 {
+   /*
    Video *video = Video::Create( val_int(inWidth), val_int(inHeight) );
    if (video)
    {
       value result = ObjectToAbstract(video);
       return result;
    }
+   */
    return alloc_null();
 }
 DEFINE_PRIM(nme_video_create,2);
