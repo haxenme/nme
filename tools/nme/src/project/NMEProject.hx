@@ -418,6 +418,8 @@ class NMEProject
    {
       var allowMissingNdll = type!="ndll";
 
+      Log.verbose("Add library " + name + " type=" + type + " haxelib=" + haxelibName);
+
       if (name=="openfl")
       {
          name = "nme";
@@ -459,12 +461,14 @@ class NMEProject
 
             var path = PathHelper.getHaxelib(haxelib);
             Log.verbose("Adding " + haxelibName + "@" + path);
-            if (FileSystem.exists(path + "/include.xml")) 
+            if (FileSystem.exists(path + "/include.nmml")) 
+               new NMMLParser(this, path + "/include.nmml");
+            else if (FileSystem.exists(path + "/include.xml")) 
                new NMMLParser(this, path + "/include.xml");
 
             if (!isFlash && (!allowMissingNdll || FileSystem.exists(path+"/ndll"+ndllCheckDir) ))
             {
-               var ndll = new NDLL(name, haxelib, isStatic);
+               var ndll = new NDLL(name, haxelib, isStatic, allowMissingNdll);
                ndlls.push(ndll);
             }
          }
@@ -491,7 +495,7 @@ class NMEProject
                   haxelibs.push(haxelib);
                }
 
-               var ndll = new NDLL(lib, haxelib, staticLink);
+               var ndll = new NDLL(lib, haxelib, staticLink, false);
                ndlls.push(ndll);
             }
          }
@@ -559,12 +563,8 @@ class NMEProject
 
       for(haxelib in haxelibs) 
       {
-         var name = haxelib.name;
-
-         if (haxelib.version != "") 
-            name += ":" + haxelib.version;
-
-         compilerFlags.push("-lib " + name);
+ 
+         haxelib.addLibraryFlags(compilerFlags);
          Reflect.setField(context, "LIB_" + haxelib.name.toUpperCase(), true);
       }
 

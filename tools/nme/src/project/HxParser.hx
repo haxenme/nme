@@ -26,7 +26,7 @@ class HxParser
       var haxelib = new Haxelib("nme");
       project.haxelibs.push(haxelib);
 
-      var ndll = new NDLL("nme", haxelib, true);
+      var ndll = new NDLL("nme", haxelib, true, false);
       project.ndlls.push(ndll);
 
       process(path);

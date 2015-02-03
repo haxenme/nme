@@ -728,7 +728,9 @@ class NMMLParser
                      path = combine(extensionPath, substitute(element.att.path));
                   else
                      path = combine(extensionPath, substitute(element.att.name));
-                  project.classPaths.push( project.relocatePath(path) );
+                  var fullPath = project.relocatePath(path);
+                  project.classPaths.push( fullPath );
+                  Log.verbose("Adding class path " + fullPath);
 
                case "extension":
 
@@ -916,6 +918,7 @@ class NMMLParser
 
    public function process(projectFile:String):Void 
    {
+      Log.verbose("Parse " + projectFile + "...");
       var xml = null;
       var extensionPath = "";
 

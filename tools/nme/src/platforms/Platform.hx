@@ -364,6 +364,10 @@ class Platform
             LogHelper.info("", " - Copying library file: " + src + " -> " + dest);
             FileHelper.copyIfNewer(src, dest);
          }
+         else if (ndll.allowMissing)
+         {
+            LogHelper.verbose("Source path \"" + src + "\" does not exist - ignoring");
+         }
          else
          {
             LogHelper.error("Source path \"" + src + "\" does not exist");

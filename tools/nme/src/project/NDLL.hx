@@ -9,13 +9,15 @@ class NDLL
    public var path:String;
    public var isStatic:Bool;
    public var importStatic:String;
+   public var allowMissing:Bool;
 
-   public function new(inName:String, inHaxelib:Haxelib, inIsStatic:Bool) 
+   public function new(inName:String, inHaxelib:Haxelib, inIsStatic:Bool, inAllowMissing:Bool) 
    {
       name = inName;
       haxelib = inHaxelib;
       isStatic = inIsStatic;
       importStatic="";
+      allowMissing = inAllowMissing;
       if (isStatic)
       {
          importStatic = "import " + haxelib.name + ".Static" +

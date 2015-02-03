@@ -11,6 +11,52 @@ class Haxelib
       this.version = version;
    }
 
+
+   public function addLibraryFlags(outFlags:Array<String>)
+   {
+      var lib = name;
+
+      if (version != "")
+         lib += ":" + version;
+      var paths = PathHelper.getHaxelibPath(lib);
+
+      // Hmmm
+      if (paths.length==0)
+         outFlags.push("-lib " + lib);
+      else
+      {
+         var soFar = new Array<String>();
+         for(line in paths)
+         {
+            if (line.substr(0,2)=="-D")
+            {
+               var lib = line.substr(3).split("=")[0];
+               Log.verbose("Adding library flags for " + lib);
+               if (lib!="openfl" && lib!="lime")
+               {
+                  soFar.push(line);
+                  for(s in soFar)
+                    outFlags.push(s);
+               }
+               soFar = new Array<String>();
+            }
+            else if (line.substr(0,1)=="-")
+            {
+               // Ignore
+            }
+            else if (line.substr(0,8)=="Library ") 
+            {
+               // Hmmm
+            }
+            else
+            {
+               soFar.push("-cp " + line);
+            }
+         }
+      }
+   }
+
+
    public function clone():Haxelib 
    {
       var haxelib = new Haxelib(name, version);

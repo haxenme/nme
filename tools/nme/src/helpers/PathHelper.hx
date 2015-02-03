@@ -100,6 +100,27 @@ class PathHelper
 
    static var libMap = new Map<String,String>();
 
+   public static function getHaxelibPath(inNameVersion:String)
+   {
+      var result = new Array<String>();
+
+      var proc = new Process(combine(Sys.getEnv("HAXEPATH"), "haxelib"), [ "path", inNameVersion ]);
+
+      try 
+      {
+         while(true) 
+         {
+            var line = proc.stdout.readLine();
+            result.push(line);
+         }
+
+      } catch(e:Dynamic) { };
+
+      proc.close();
+
+      return result;
+   }
+
    public static function getHaxelib(haxelib:Haxelib,inAllowFail:Bool = false):String 
    {
       var name = haxelib.name;
@@ -124,38 +145,30 @@ class PathHelper
          }
       }
 
-      var proc = new Process(combine(Sys.getEnv("HAXEPATH"), "haxelib"), [ "path", name ]);
+      var haxelibPath = getHaxelibPath(name);
       var result = "";
       var stupidHaxelib = false;
+      var seenMinusD = false;
 
-      try 
+      for(line in haxelibPath)
       {
-         var seenMinusD = false;
-         while(true) 
+         if (line.substr(0,8)=="Library ") 
          {
-            var line = proc.stdout.readLine();
-
-            if (line.substr(0,8)=="Library ") 
-            {
-               result = "";
-               stupidHaxelib = true;
-               break;
-            }
-            else if (line == "-D " + name || line.indexOf('-D $name=')==0)
-            {
-               // Found the -D -> last match was good
-               break;
-            }
-            else if (line.substr(0, 1) != "-")
-            {
-               result = line;
-               // Dont't break - might be a dependency
-            }
+            result = "";
+            stupidHaxelib = true;
+            break;
          }
-
-      } catch(e:Dynamic) { };
-
-      proc.close();
+         else if (line == "-D " + name || line.indexOf('-D $name=')==0)
+         {
+            // Found the -D -> last match was good
+            break;
+         }
+         else if (line.substr(0, 1) != "-")
+         {
+            result = line;
+            // Dont't break - might be a dependency
+         }
+      }
 
 
       if (stupidHaxelib)
