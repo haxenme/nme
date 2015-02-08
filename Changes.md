@@ -1,4 +1,5 @@
 
+* Improve fat-line rendering
 * Fix ios-view
 * Fix TextField cursor
 --------------------------
