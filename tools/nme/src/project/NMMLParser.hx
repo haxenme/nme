@@ -280,8 +280,6 @@ class NMMLParser
       if (element.has.embed) 
          embed = embed || parseBool(substitute(element.att.embed));
 
-      Log.verbose("Assets from " + path + " to virtual directory '" + targetPath + "'");
-
       if (element.has.glyphs) 
          glyphs = substitute(element.att.glyphs);
 
@@ -318,16 +316,19 @@ class NMMLParser
                id = substitute(element.att.id);
 
             var asset = new Asset(path, targetPath, type, embed);
-            asset.id = id;
+            if (id!="")
+               asset.id = id;
 
             if (glyphs != null) 
                asset.glyphs = glyphs;
 
             project.assets.push(asset);
-            Log.verbose("  " + asset);
+            Log.verbose("Asset from " + path + " " + asset.type);
          }
          else
          {
+            Log.verbose("Assets from " + path + " to virtual directory '" + targetPath + "'");
+
             var exclude = ".*|cvs|thumbs.db|desktop.ini|*.hash";
             var include = "";
 
