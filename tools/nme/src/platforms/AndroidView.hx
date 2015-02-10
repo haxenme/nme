@@ -25,6 +25,7 @@ class AndroidView extends AndroidPlatform
       context.ANDROIDVIEW = true;
       context.CLASS_PACKAGE = project.androidConfig.viewPackageName;
       context.CLASS_NAME = project.app.file;
+      context.GAME_ACTIVITY_BASE = project.androidConfig.gameActivityViewBase;
    }
 
    override public function getOutputDir() { return targetDir + "/project"; }

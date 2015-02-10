@@ -49,16 +49,8 @@ import java.net.Inet4Address;
 import java.util.Enumeration;
 import android.util.SparseArray;
 
-::if ANDROIDVIEW::
-import android.app.Fragment;
-::end::
 
-public class GameActivity extends
-::if ANDROIDVIEW::
-Fragment
-::else::
-Activity
-::end::
+public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
 {
    static final String TAG = "GameActivity";

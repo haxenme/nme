@@ -128,7 +128,6 @@ class AndroidPlatform extends Platform
             staticNme = true;
       context.STATIC_NME = staticNme;
 
-
       context.appHeader = project.androidConfig.appHeader;
       context.appActivity = project.androidConfig.appActivity;
       context.appIntent = project.androidConfig.appIntent;
@@ -147,6 +146,7 @@ class AndroidPlatform extends Platform
 
       // SDK to use for building, that we have installed
       context.ANDROID_BUILD_API_LEVEL = getMaxApiLevel(project.androidConfig.minApiLevel);
+      context.GAME_ACTIVITY_BASE = project.androidConfig.gameActivityViewBase;
    }
 
 

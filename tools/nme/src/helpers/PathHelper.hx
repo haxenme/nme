@@ -69,8 +69,8 @@ class PathHelper
 
       if (matches.length > 0) 
       {
-         return matches[0];
-         //return matches[matches.length - 1];
+         //return matches[0];
+         return matches[matches.length - 1];
       }
 
       return null;
@@ -97,6 +97,7 @@ class PathHelper
 
       return matches;
    }
+
 
    static var libMap = new Map<String,String>();
 

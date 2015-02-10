@@ -491,6 +491,12 @@ class NMMLParser
                case "appIntent":
                   project.androidConfig.appIntent.push(value);
 
+               case "gameActivityViewBase":
+                  project.androidConfig.gameActivityViewBase = value;
+
+               case "gameActivityBase":
+                  project.androidConfig.gameActivityBase = value;
+
                default:
                   Log.error("Unknown android attribute " + childElement.name);
             }

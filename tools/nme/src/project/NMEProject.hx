@@ -19,6 +19,8 @@ class AndroidConfig
    // Where to put source code when genrating a package
    public var viewPackageName:String;
    public var viewTestDir:String;
+   public var gameActivityBase:String;
+   public var gameActivityViewBase:String;
 
    public function new()
    {
@@ -30,6 +32,8 @@ class AndroidConfig
       appPermission = [];
       viewPackageName = "com.nmehost";
       viewTestDir = "";
+      gameActivityBase = "Activity";
+      gameActivityViewBase = "android.app.Fragment";
    }
 }
 
@@ -222,6 +226,7 @@ class NMEProject
             targetFlags.set("nativeview", "");
             haxedefs.set("nativeview","1");
             haxedefs.set("androidview","1");
+            androidConfig.gameActivityBase = "android.app.Fragment";
             target = Platform.ANDROIDVIEW;
 
          case "iphonesim":

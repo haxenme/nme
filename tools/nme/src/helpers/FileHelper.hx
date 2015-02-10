@@ -42,9 +42,10 @@ class FileHelper
    }
 
    public static function copyFile(source:String, destination:String, ?context:{?MACROS:Dynamic}, process:Bool = true,
-      ?onFile:String->Void) 
+      ?onFile:String->Void) : Bool
    {
       var extension = Path.extension(source);
+      var copied = false;
 
       if (process && context != null && 
             (extension == "xml" ||
@@ -82,6 +83,7 @@ class FileHelper
                var fileOutput:FileOutput = File.write(destination, true);
                fileOutput.writeString(result);
                fileOutput.close();
+               copied = true;
             }
             if (onFile!=null)
                onFile(destination);
@@ -95,8 +97,10 @@ class FileHelper
       {
          if (onFile!=null)
             onFile(destination);
-         copyIfNewer(source, destination);
+         copied = copyIfNewer(source, destination);
       }
+
+      return copied;
    }
 
    public static function copyFileTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true, ?onFile:String->Void) 
@@ -109,18 +113,19 @@ class FileHelper
       }
    }
 
-   public static function copyIfNewer(source:String, destination:String) 
+   public static function copyIfNewer(source:String, destination:String) : Bool
    {
       //allFiles.push(destination);
       if (!isNewer(source, destination)) 
       {
-         return;
+         return false;
       }
 
       PathHelper.mkdir(Path.directory(destination));
 
       LogHelper.info("", " - Copying file: " + source + " -> " + destination);
       File.copy(source, destination);
+      return true;
    }
 
    public static function copyLibrary(ndll:NDLL, directoryName:String, namePrefix:String, nameSuffix:String, targetDirectory:String, allowDebug:Bool = false, targetSuffix:String = null) 
@@ -165,16 +170,67 @@ class FileHelper
       }
    }
 
-   public static function recursiveCopyTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true,warn=true, ?onFile:String->Void) 
+   public static function recursiveCopyTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true,warn=true, ?onFile:String->Void)
    {
-      var paths = PathHelper.findTemplates(templatePaths, source, warn);
-      if (paths.length==0)
+      PathHelper.mkdir(destination);
+
+      var files:Map<String,String> = null;
+      var ignored = new Map<String,String>();
+
+      for(path in templatePaths)
+      {
+         try 
+         {
+            var dir = FileSystem.readDirectory(path+"/"+source);
+
+            if (files==null)
+                files=new Map<String,String>();
+
+            for(file in dir)
+               if (file.substr(0, 1) != ".") 
+               {
+                  if (!files.exists(file))
+                     files.set(file, path);
+                  else
+                     ignored.set(file, path);
+               }
+
+         } catch(e:Dynamic) { }
+      }
+
+      if (files==null)
+      {
+         if (warn)
+            LogHelper.error("Could not find any source directory \"" + source + "\" in " + templatePaths);
          return false;
+      }
 
-      for(path in paths) 
-         recursiveCopy(path, destination, context, process, onFile);
+      var copiedFile = false;
+      for(file in files.keys()) 
+      {
+         copiedFile = true;
+         var itemDestination:String = destination + "/" + file;
+         var itemSource:String = files.get(file) + "/" + source + "/" + file;
 
-      return true;
+         if (FileSystem.isDirectory(itemSource)) 
+         {
+            recursiveCopyTemplate(templatePaths, source + "/" + file, destination + "/" + file, context, process, false, onFile );
+         }
+         else
+         {
+            if (copyFile(itemSource, itemDestination, context, process))
+            {
+               var notCopied = ignored.get(file);
+               if (notCopied!=null)
+                  Log.verbose("  ignored " + file + " from " + notCopied);
+            }
+
+            if (onFile!=null)
+               onFile(itemDestination);
+         }
+      }
+
+      return copiedFile;
    }
 
    public static function isNewer(source:String, destination:String):Bool 
