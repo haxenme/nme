@@ -31,3 +31,4 @@ tests/import-all
 
 # Miscellaneous
 all_objs
+*.pdb
