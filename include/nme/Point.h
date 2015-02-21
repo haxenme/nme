@@ -64,6 +64,8 @@ struct Point2D
       { return x*inRHS.x + y*inRHS.y; }
    inline double Dist2(const Point2D &inRHS) const
       { return (*this-inRHS).Norm2(); }
+   inline double Dist(const Point2D &inRHS) const
+      { return (*this-inRHS).Norm(); }
    Point2D &SetLength(double inLen)
    {
       double norm = Norm();

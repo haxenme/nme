@@ -42,6 +42,8 @@ class Assets
    public static inline var STRONG_CACHE = 2;
 
    public static var info = new Map<String,AssetInfo>();
+   public static var pathMapper = new Map<String,String>();
+   public static var byteFactory = new Map<String,Void->ByteArray>();
    public static var cacheMode:Int = WEAK_CACHE;
 
    public static var scriptBase = "";
@@ -197,15 +199,25 @@ class Assets
             return val;
       }
  
-      var data =
-         #if flash
-         makeBitmapData(i.className)
-         #elseif js
-         cast(ApplicationMain.loaders.get(i.path).contentLoaderInfo.content, Bitmap).bitmapData
-         #else
-         i.isResource ? BitmapData.loadFromBytes( getResource(i.path) ) :  BitmapData.load(i.path)
-         #end
-      ;
+      #if flash
+         var data = makeBitmapData(i.className);
+      #elseif js
+         var data = cast(ApplicationMain.loaders.get(i.path).contentLoaderInfo.content, Bitmap).bitmapData;
+      #else
+         var data:BitmapData = null;
+         if (i.isResource)
+            data = BitmapData.loadFromBytes( getResource(i.path) );
+         else
+         {
+            var filename = i.path;
+            if (pathMapper.exists(filename))
+               filename = pathMapper.get(filename);
+            if (byteFactory.exists(filename))
+               data = BitmapData.loadFromBytes( byteFactory.get(filename)() );
+            else
+               data = BitmapData.load(filename);
+         }
+      #end
       trySetCache(i,useCache,data);
       return data;
    }
@@ -249,22 +261,28 @@ class Assets
       else
       {
          #if flash
-         data = Type.createInstance(Type.resolveClass(i.className), []);
+            data = Type.createInstance(Type.resolveClass(i.className), []);
          #elseif js
-         var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
-         data:ByteArray = null;
-         if (Std.is(asset, String)) 
-         {
-            bytes = new ByteArray();
-            bytes.writeUTFBytes(asset);
-         }
-         else if (!Std.is(data, ByteArray)) 
-         {
-            badType(is,"Bytes");
-            return null;
-         }
+            var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
+            data:ByteArray = null;
+            if (Std.is(asset, String)) 
+            {
+               bytes = new ByteArray();
+               bytes.writeUTFBytes(asset);
+            }
+            else if (!Std.is(data, ByteArray)) 
+            {
+               badType(is,"Bytes");
+               return null;
+            }
          #else
-         data = ByteArray.readFile(i.path);
+            var filename = i.path;
+            if (pathMapper.exists(filename))
+               filename = pathMapper.get(filename);
+            if (byteFactory.exists(filename))
+               data = byteFactory.get(filename)();
+            else
+               data = ByteArray.readFile(filename);
          #end
       }
 

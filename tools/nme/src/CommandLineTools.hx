@@ -34,7 +34,7 @@ class CommandLineTools
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
-            "windows", "mac", "linux", "flash", "cppia" ];
+            "windows", "mac", "linux", "flash", "cppia", "nme" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset",
@@ -87,6 +87,9 @@ class CommandLineTools
 
          case Platform.CPPIA:
             platform = new platforms.CppiaPlatform(project);
+
+         case Platform.NME:
+            platform = new platforms.NmePlatform(project);
       }
       if (platform != null) 
       {
@@ -113,7 +116,7 @@ class CommandLineTools
             platform.uninstall();
          }
 
-         if (command == "update" || command == "build" || command == "test" || command=="xcode") 
+         if (command == "update" || command == "build" || command == "test" || command=="xcode" || command=="installer") 
          {
             Log.verbose("\nRunning command: UPDATE");
             platform.updateBuildDir();
@@ -123,7 +126,7 @@ class CommandLineTools
             platform.updateExtra();
          }
 
-         if (command == "build" || command == "test" || command=="xcode") 
+         if (command == "build" || command == "test" || command=="xcode" || command=="installer") 
          {
             Log.verbose("\nRunning command: BUILD");
             platform.runHaxe();
@@ -133,6 +136,11 @@ class CommandLineTools
                platform.buildPackage();
                platform.postBuild();
             }
+         }
+
+         if (command == "installer") 
+         {
+            platform.createInstaller();
          }
 
          if (command == "build" || command == "run" || command=="test") 
@@ -1154,7 +1162,7 @@ class CommandLineTools
             else
                buildProject(project);
 
-         case "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test", "tidy":
+         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy":
 
             if (words.length > 2) 
             {
@@ -1164,9 +1172,9 @@ class CommandLineTools
 
             buildProject(project);
 
-         case "installer", "copy-if-newer":
-
+         case "copy-if-newer":
             // deprecated?
+
          default:
 
             Log.error("'" + command + "' is not a valid command");

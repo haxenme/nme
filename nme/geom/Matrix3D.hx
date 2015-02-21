@@ -84,138 +84,138 @@ class Matrix3D
       return new Matrix3D(this.rawData.copy());
    }
 
-	public function copyColumnFrom (column:Int, vector3D:Vector3D):Void {
-		
-		switch( column ) {
-		
-			case 0:
-				rawData[ 0 ] = vector3D.x;
-				rawData[ 1 ] = vector3D.y;
-				rawData[ 2 ] = vector3D.z;
-				rawData[ 3 ] = vector3D.w;
-			case 1:
-				rawData[ 4 ] = vector3D.x;
-				rawData[ 5 ] = vector3D.y;
-				rawData[ 6 ] = vector3D.z;
-				rawData[ 7 ] = vector3D.w;
-			case 2:
-				rawData[ 8 ] = vector3D.x;
-				rawData[ 9 ] = vector3D.y;
-				rawData[ 10 ] = vector3D.z;
-				rawData[ 11 ] = vector3D.w;
-			case 3:
-				rawData[ 12 ] = vector3D.x;
-				rawData[ 13 ] = vector3D.y;
-				rawData[ 14 ] = vector3D.z;
-				rawData[ 15 ] = vector3D.w;
-			default:
-				throw ( "Error, Column " + column + " out of bounds [0, ..., 3]");
-		}
-		
-	}
-	
-	
-	public function copyColumnTo (column:Int, vector3D:Vector3D):Void {
+   public function copyColumnFrom (column:Int, vector3D:Vector3D):Void {
+      
+      switch( column ) {
+      
+         case 0:
+            rawData[ 0 ] = vector3D.x;
+            rawData[ 1 ] = vector3D.y;
+            rawData[ 2 ] = vector3D.z;
+            rawData[ 3 ] = vector3D.w;
+         case 1:
+            rawData[ 4 ] = vector3D.x;
+            rawData[ 5 ] = vector3D.y;
+            rawData[ 6 ] = vector3D.z;
+            rawData[ 7 ] = vector3D.w;
+         case 2:
+            rawData[ 8 ] = vector3D.x;
+            rawData[ 9 ] = vector3D.y;
+            rawData[ 10 ] = vector3D.z;
+            rawData[ 11 ] = vector3D.w;
+         case 3:
+            rawData[ 12 ] = vector3D.x;
+            rawData[ 13 ] = vector3D.y;
+            rawData[ 14 ] = vector3D.z;
+            rawData[ 15 ] = vector3D.w;
+         default:
+            throw ( "Error, Column " + column + " out of bounds [0, ..., 3]");
+      }
+      
+   }
+   
+   
+   public function copyColumnTo (column:Int, vector3D:Vector3D):Void {
 
-		switch( column )
-		{
-			case 0:
-				vector3D.x = rawData[ 0 ];
-				vector3D.y = rawData[ 1 ];
-				vector3D.z = rawData[ 2 ];
-				vector3D.w = rawData[ 3 ];
-			case 1:
-				vector3D.x = rawData[ 4 ];
-				vector3D.y = rawData[ 5 ];
-				vector3D.z = rawData[ 6 ];
-				vector3D.w = rawData[ 7 ];
-			case 2:
-				vector3D.x = rawData[ 8 ];
-				vector3D.y = rawData[ 9 ];
-				vector3D.z = rawData[ 10 ];
-				vector3D.w = rawData[ 11 ];
-			case 3:
-				vector3D.x = rawData[ 12 ];
-				vector3D.y = rawData[ 13 ];
-				vector3D.z = rawData[ 14 ];
-				vector3D.w = rawData[ 15 ];
-			default:
-				throw ( "Error, Column " + column + " out of bounds [0, ..., 3]");
-		}
-		
-	}
-
-
-	public function copyFrom (other:Matrix3D):Void {
-
-		rawData = other.rawData.copy();
-
-	}
-
-	public function copyRawDataFrom( vector:Vector<Float>, index:UInt = 0, transpose:Bool = false ) {
-		
-		if ( transpose )
-			this.transpose();
-	  
-		var l : UInt = vector.length - index;
-		for ( c in 0...l )
-			rawData[c] = vector[c+index];
-	  
-		if ( transpose )
-			this.transpose();
-
-	}
+      switch( column )
+      {
+         case 0:
+            vector3D.x = rawData[ 0 ];
+            vector3D.y = rawData[ 1 ];
+            vector3D.z = rawData[ 2 ];
+            vector3D.w = rawData[ 3 ];
+         case 1:
+            vector3D.x = rawData[ 4 ];
+            vector3D.y = rawData[ 5 ];
+            vector3D.z = rawData[ 6 ];
+            vector3D.w = rawData[ 7 ];
+         case 2:
+            vector3D.x = rawData[ 8 ];
+            vector3D.y = rawData[ 9 ];
+            vector3D.z = rawData[ 10 ];
+            vector3D.w = rawData[ 11 ];
+         case 3:
+            vector3D.x = rawData[ 12 ];
+            vector3D.y = rawData[ 13 ];
+            vector3D.z = rawData[ 14 ];
+            vector3D.w = rawData[ 15 ];
+         default:
+            throw ( "Error, Column " + column + " out of bounds [0, ..., 3]");
+      }
+      
+   }
 
 
-	public function copyRawDataTo( vector:Vector<Float>, index:UInt = 0, transpose:Bool = false ) {
+   public function copyFrom (other:Matrix3D):Void {
 
-		if ( transpose )
-		   this.transpose();
+      rawData = other.rawData.copy();
 
-		var l : UInt = rawData.length;
-		for ( c in 0...l )
-			vector[c + index ] = rawData[c];
-		
-		if ( transpose )
-			this.transpose();
+   }
 
-	}
+   public function copyRawDataFrom( vector:Vector<Float>, index:UInt = 0, transpose:Bool = false ) {
+      
+      if ( transpose )
+         this.transpose();
+     
+      var l : UInt = vector.length - index;
+      for ( c in 0...l )
+         rawData[c] = vector[c+index];
+     
+      if ( transpose )
+         this.transpose();
+
+   }
 
 
-	public function copyRowFrom( row:UInt, vector3D:Vector3D ) {
+   public function copyRawDataTo( vector:Vector<Float>, index:UInt = 0, transpose:Bool = false ) {
 
-		switch( row ) {
+      if ( transpose )
+         this.transpose();
 
-			case 0:
-				rawData[ 0 ] = vector3D.x;
-				rawData[ 4 ] = vector3D.y;
-				rawData[ 8 ] = vector3D.z;
-				rawData[ 12 ] = vector3D.w;
-			
-			case 1:
-				rawData[ 1 ] = vector3D.x;
-				rawData[ 5 ] = vector3D.y;
-				rawData[ 9 ] = vector3D.z;
-				rawData[ 13 ] = vector3D.w;
-			
-			case 2:
-				rawData[ 2 ] = vector3D.x;
-				rawData[ 6 ] = vector3D.y;
-				rawData[ 10 ] = vector3D.z;
-				rawData[ 14 ] = vector3D.w;
-			
-			case 3:
-				rawData[ 3 ] = vector3D.x;
-				rawData[ 7 ] = vector3D.y;
-				rawData[ 11 ] = vector3D.z;
-				rawData[ 15 ] = vector3D.w;
-			
-			default:
-				throw ( "Error, Row " + row + " out of bounds [0, ..., 3]");
-		}
-		
-	}
-	
+      var l : UInt = rawData.length;
+      for ( c in 0...l )
+         vector[c + index ] = rawData[c];
+      
+      if ( transpose )
+         this.transpose();
+
+   }
+
+
+   public function copyRowFrom( row:UInt, vector3D:Vector3D ) {
+
+      switch( row ) {
+
+         case 0:
+            rawData[ 0 ] = vector3D.x;
+            rawData[ 4 ] = vector3D.y;
+            rawData[ 8 ] = vector3D.z;
+            rawData[ 12 ] = vector3D.w;
+         
+         case 1:
+            rawData[ 1 ] = vector3D.x;
+            rawData[ 5 ] = vector3D.y;
+            rawData[ 9 ] = vector3D.z;
+            rawData[ 13 ] = vector3D.w;
+         
+         case 2:
+            rawData[ 2 ] = vector3D.x;
+            rawData[ 6 ] = vector3D.y;
+            rawData[ 10 ] = vector3D.z;
+            rawData[ 14 ] = vector3D.w;
+         
+         case 3:
+            rawData[ 3 ] = vector3D.x;
+            rawData[ 7 ] = vector3D.y;
+            rawData[ 11 ] = vector3D.z;
+            rawData[ 15 ] = vector3D.w;
+         
+         default:
+            throw ( "Error, Row " + row + " out of bounds [0, ..., 3]");
+      }
+      
+   }
+   
 
 
 
