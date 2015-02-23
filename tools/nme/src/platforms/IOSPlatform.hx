@@ -369,6 +369,7 @@ class IOSPlatform extends Platform
       context.REQUIRED_CAPABILITY = requiredCapabilities;
       context.ARMV6 = hasArch(ARMV6);
       context.ARMV7 = hasArch(ARMV7);
+      context.ARM64 = hasArch(ARM64);
       context.TARGET_DEVICES = switch(config.deviceConfig)
       {
         case IOSConfig.IPHONE : "1";
