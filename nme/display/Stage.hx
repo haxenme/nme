@@ -439,6 +439,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          var touchInfo = new TouchInfo();
          nmeTouchInfo.set(inEvent.value, touchInfo);
          nmeOnTouch(inEvent, TouchEvent.TOUCH_BEGIN, touchInfo);
+         return;
       }
 
       var touchInfo = nmeTouchInfo.get(inEvent.value);
