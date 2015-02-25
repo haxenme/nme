@@ -29,7 +29,7 @@
   
   <classpath name="." />
   <haxelib name="nme" />
-  <icon name="../common/nme.svg" />
+  <icon name="nme.svg" />
 
 
   <ndll name="std" />

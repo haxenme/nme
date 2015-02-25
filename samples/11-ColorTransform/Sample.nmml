@@ -23,7 +23,7 @@
   
   <classpath name="." />
   <haxelib name="nme" />
-  <icon name="../common/nme.svg" />
+  <icon name="nme.svg" />
 
   <assets path="../03-Bitmaps">
      <image name="Image.jpg" />
