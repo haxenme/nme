@@ -24,7 +24,7 @@
      hardware="true"
   />
   
-  <icon name="../common/nme.svg" />
+  <icon name="nme.svg" />
   <source path="src" />
   
   <haxelib name="nme" />
