@@ -66,10 +66,6 @@ function OnKey(event)
           stage.quality = flash.display.StageQuality.HIGH;
        case "4".code:
           stage.quality = flash.display.StageQuality.BEST;
-
-       #if nme
-       case "q".code: flash.Lib.close();
-       #end
        case "f".code:
           stage.displayState = (stage.displayState==StageDisplayState.NORMAL) ?
               StageDisplayState.FULL_SCREEN : StageDisplayState.NORMAL;
@@ -79,11 +75,7 @@ function OnKey(event)
 
 public static function main()
 {
-#if flash
    new Sample();
-#else
-   Lib.create(function(){new Sample();},320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
-#end
 }
 
 }
