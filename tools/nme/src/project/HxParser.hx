@@ -99,7 +99,14 @@ class HxParser
            var asset = new Asset(value, value, null, true);
            project.assets.push(asset);
 
-        case "background", "width", "height", "fps", "vsync", "hardware", "depthBuffer", "stencilBuffer", "alphaBuffer":
+        case "background":
+            value = StringTools.replace(value, "#", "");
+            if (value.indexOf("0x") == -1) 
+                value = "0x" + value;
+            project.window.background = Std.parseInt(value);
+            project.localDefines.set("WIN_" + key.toUpperCase(), Std.string(project.window.background));
+
+        case "width", "height", "fps", "vsync", "hardware", "depthBuffer", "stencilBuffer", "alphaBuffer":
             project.localDefines.set("WIN_" + key.toUpperCase(), value);
             Reflect.setField(project.window, key, value);
 

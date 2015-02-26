@@ -13,13 +13,14 @@ import nme.geom.Matrix;
 class Sample extends Sprite
 {
 
+// nme: background=0xCCCCFF
+
 public function new()
 {
    super();
    Lib.current.addChild(this);
-   #if nme
    Lib.current.addChild(new nme.display.FPS() );
-   #end
+
    var sp = new Sprite();
    sp.graphics.beginFill(0,1);
    sp.graphics.drawCircle(50,50,50);
@@ -45,7 +46,7 @@ public function new()
    addChild(shape);
 
 
-   stage.addEventListener(flash.events.KeyboardEvent.KEY_DOWN, OnKey );
+   stage.addEventListener(nme.events.KeyboardEvent.KEY_DOWN, OnKey );
 
    stage.addEventListener(Event.ENTER_FRAME, function(_) { shape.rotation+=360/60/60; } );
    stage.addEventListener(MouseEvent.MOUSE_MOVE, function(e:MouseEvent) {
@@ -59,31 +60,21 @@ function OnKey(event)
    switch(event.charCode)
    {
        case "1".code:
-          stage.quality = flash.display.StageQuality.LOW;
+          stage.quality = nme.display.StageQuality.LOW;
        case "2".code:
-          stage.quality = flash.display.StageQuality.MEDIUM;
+          stage.quality = nme.display.StageQuality.MEDIUM;
        case "3".code:
-          stage.quality = flash.display.StageQuality.HIGH;
+          stage.quality = nme.display.StageQuality.HIGH;
        case "4".code:
-          stage.quality = flash.display.StageQuality.BEST;
+          stage.quality = nme.display.StageQuality.BEST;
 
-       #if nme
-       case "q".code: flash.Lib.close();
+       #if !flash
+       case "q".code: nme.Lib.close();
        #end
        case "f".code:
           stage.displayState = (stage.displayState==StageDisplayState.NORMAL) ?
               StageDisplayState.FULL_SCREEN : StageDisplayState.NORMAL;
    }
-}
-
-
-public static function main()
-{
-#if flash
-   new Sample();
-#else
-   Lib.create(function(){new Sample();},320,480,60,0xccccff,(1*Lib.HARDWARE) | Lib.RESIZABLE);
-#end
 }
 
 }

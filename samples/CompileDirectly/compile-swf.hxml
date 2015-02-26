@@ -1,3 +1,4 @@
 -main Sample
 -swf Sample.swf
 -swf-header 320:480:60:ccccff
+--remap nme:flash
