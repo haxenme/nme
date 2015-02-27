@@ -62,12 +62,6 @@ class NMEStage;
    bool     multisamplingEnabled;
 
    CAEAGLLayer      *mLayer;
-
-  // The OpenGL names for the framebuffer and renderbuffer used to render to this view
-   GLuint          defaultFramebuffer;
-   GLuint          colorRenderbuffer;
-   GLuint          depthStencilBuffer;
-
    //[ddc] antialiasing code taken from:
    // http://www.gandogames.com/2010/07/tutorial-using-anti-aliasing-msaa-in-the-iphone/
    // http://is.gd/oHLipb
@@ -85,6 +79,14 @@ class NMEStage;
    bool           mMultiTouch;
    int            mPrimaryTouchHash;
    double         dpiScale;
+
+
+  // The OpenGL names for the framebuffer and renderbuffer used to render to this view
+   GLuint          defaultFramebuffer;
+   GLuint          colorRenderbuffer;
+   GLuint          depthStencilBuffer;
+
+
 
    // The pixel dimensions of the CAEAGLLayer
    EAGLContext     *mOGLContext;
@@ -164,6 +166,9 @@ public:
    void SetCursor(nme::Cursor) { /* No cursors on iPhone ! */ }
    void EnablePopupKeyboard(bool inEnable);
    double getDPIScale() { return nmeView->dpiScale; }
+
+   int getWindowFrameBufferId() { return nmeView->defaultFramebuffer; };
+
 
 
    StageVideo *createStageVideo(void *);

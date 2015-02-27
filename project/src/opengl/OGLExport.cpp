@@ -13,6 +13,7 @@
 #endif
 
 #include <nme/NmeCffi.h>
+#include <Display.h>
 #include <ByteArray.h>
 #include "OGL.h"
 #include "Utils.h"
@@ -1526,6 +1527,17 @@ value nme_gl_bind_framebuffer(value target, value framebuffer)
    if (CHECK_EXT(glBindFramebuffer))
    {
       int id = getResource(framebuffer,resoFramebuffer);
+      #ifdef IPHONE
+      if (id==0)
+      {
+         Stage *stage =  Stage::GetCurrent();
+         if (stage)
+         {
+            id = stage->getWindowFrameBufferId();
+            //printf("BindFrameBuffer - using window buffer %d instead\n", id);
+         }
+      } 
+      #endif
       glBindFramebuffer(val_int(target), id );
    }
    return alloc_null();

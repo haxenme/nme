@@ -353,6 +353,7 @@ public:
    virtual void ResizeWindow(int inWidth, int inHeight) {};
 
    virtual bool isOpenGL() const = 0;
+   virtual int getWindowFrameBufferId() { return 0; };
 
    void SetEventHandler(EventHandler inHander,void *inUserData);
    void SetNominalSize(int inWidth,int inHeight);
