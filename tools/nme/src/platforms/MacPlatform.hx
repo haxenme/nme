@@ -56,7 +56,7 @@ class MacPlatform extends DesktopPlatform
    override public function run(arguments:Array<String>):Void 
    {
       var exe =  Path.withoutDirectory(executablePath);
-      if (project.hasDef("lldb"))
+      if (wantLldb())
          ProcessHelper.runCommand(executableDirectory, "lldb", [exe].concat(arguments) );
       else
          ProcessHelper.runCommand(executableDirectory, "./" + exe, arguments);

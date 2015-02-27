@@ -5,7 +5,7 @@
  *
  */
 
-#include <stdio.h>
+#import <Foundation/Foundation.h>
 
 extern "C" const char *hxRunLibrary();
 extern "C" void hxcpp_set_top_of_stack();
@@ -18,6 +18,7 @@ extern "C" void hxcpp_set_top_of_stack();
    
 extern "C" int main(int argc, char *argv[])   
 {
+   NSLog(@"Launching ::APP_PACKAGE::");
    //printf("Starting ...\n" );
    hxcpp_set_top_of_stack();
 

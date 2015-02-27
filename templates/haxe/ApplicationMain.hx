@@ -45,6 +45,11 @@ class ApplicationMain
       nme.AssetData.create();
 
       #elseif nme
+
+      ::if REDIRECT_TRACE::
+      nme.Lib.redirectTrace();
+      ::end::
+
       nme.app.Application.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
 
       nme.AssetData.create();

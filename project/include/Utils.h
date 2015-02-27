@@ -77,8 +77,11 @@ inline void DontLog(const char *inFormat,...) { }
 
 
 
+
 namespace nme
 {
+
+extern void nmeLog(const char *inMessage);
 
 bool InitOGLFunctions();
 

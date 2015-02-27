@@ -671,6 +671,20 @@ value nme_get_bits()
 DEFINE_PRIM(nme_get_bits,0);
 
 
+value nme_log(value inMessage)
+{
+   const char *message = val_string(inMessage);
+   #ifdef IPHONE
+      nmeLog(message);
+   #else
+      printf("%s\n",message);
+   #endif
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_log,1);
+
+
 
 
 

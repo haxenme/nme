@@ -35,6 +35,13 @@ namespace nme { int gFixedOrientation = -1; }
 
 // viewWillDisappear
 
+#ifdef HXCPP_DEBUG
+   #define APP_LOG NSLog
+#else
+   #define APP_LOG(x) { }
+#endif
+
+
 #ifndef IPHONESIM
 CMMotionManager *sgCmManager = 0;
 #endif
@@ -212,6 +219,7 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
 - (id) initWithStage:(NMEStage *)inStage
 {
+   APP_LOG(@"initWithStage");
    animationFrameInterval = 1;
    stage = inStage;
 
@@ -225,6 +233,7 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 
 - (void) startAnimation
 {
+   APP_LOG(@"startAnimation");
    if (!animating)
    {
       displayLink.paused = NO;
@@ -296,6 +305,7 @@ static std::string nmeTitle;
 // For when we init programatically...
 - (id) initWithFrame:(CGRect)frame
 {    
+   APP_LOG(@"initWithFrame");
    if ((self = [super initWithFrame:frame]))
    {
       dpiScale = 1.0;
@@ -311,6 +321,7 @@ static std::string nmeTitle;
 
 - (void) setupStageLayer:(NMEStage *)inStage
 {
+   APP_LOG(@"setupStageLayer");
    //printf("--- NMEView layer ----\n");
    mStage = inStage;
 
@@ -684,6 +695,7 @@ static std::string nmeTitle;
 
 - (void) createOGLFramebuffer
 {
+   APP_LOG(@"createOGLFramebuffer");
    // Create default framebuffer object.
    // The backing will be allocated for the current layer in -resizeFromLayer
    if (sgAllowShaders)
@@ -1657,6 +1669,7 @@ double sgWakeUp = 0.0;
 
 NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
 {
+   APP_LOG(@"new NMEStage");
    video = 0;
    //printf("New NMEStage\n");
 
@@ -1982,6 +1995,7 @@ bool nmeIsMain = true;
 
 - (void)loadView
 {
+   APP_LOG(@"loadView");
    [self setInstance];
    //printf("loadView...\n");
    nmeStage = new NMEStage([[UIScreen mainScreen] bounds]);
@@ -1999,6 +2013,7 @@ bool nmeIsMain = true;
 
 - (void)viewDidAppear:(BOOL)animated
 {
+   APP_LOG(@"viewDidAppear");
    CGRect bounds = self.view.bounds;
  
 
@@ -2017,6 +2032,7 @@ bool nmeIsMain = true;
 
 - (void)didReceiveMemoryWarning
 {
+   APP_LOG(@"didReceiveMemoryWarning");
 }
 
 
@@ -2046,6 +2062,7 @@ bool nmeIsMain = true;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+   APP_LOG(@"application start");
    UIWindow *win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
    window = win;
    [window makeKeyAndVisible];
@@ -2060,24 +2077,39 @@ bool nmeIsMain = true;
    return YES;
 }
 
+- (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+   APP_LOG(@"willFinishLaunchingWithOptions");
+   return YES;
+}
+
 - (void) applicationWillResignActive:(UIApplication *)application
 {
    nme_app_set_active(false);
 }
 
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+   APP_LOG(@"applicationDidEnterBackground");
+}
+
 - (void) applicationDidBecomeActive:(UIApplication *)application
 {
+   APP_LOG(@"applicationDidBecomeActive");
    nme_app_set_active(true);
 }
 
 - (void) applicationWillTerminate:(UIApplication *)application
 {
+   APP_LOG(@"applicationWillTerminate");
    nme_app_set_active(false);
 }
 
 #ifndef OBJC_ARC
 - (void) dealloc
 {
+   APP_LOG(@"NMEAppDelegate dealloc");
+   nme_app_set_active(false);
    [window release];
    [controller release];
    [super dealloc];
@@ -2147,6 +2179,7 @@ void SetNextWakeUp(double inWakeUp)
 void CreateMainFrame(FrameCreationCallback inCallback,
    int inWidth,int inHeight,unsigned int inFlags, const char *inTitle, Surface *inIcon )
 {
+   APP_LOG(@"CreateMainFrame");
    nmeTitle= inTitle;
    sOnFrame = inCallback;
    int argc = 0;// *_NSGetArgc();

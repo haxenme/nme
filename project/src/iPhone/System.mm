@@ -5,6 +5,12 @@
 namespace nme
 {
 
+void nmeLog(const char *inMessage)
+{
+   NSLog(@"%s", inMessage);
+}
+
+
 bool LaunchBrowser(const char *inUtf8URL)
 {
 	#ifndef OBJC_ARC

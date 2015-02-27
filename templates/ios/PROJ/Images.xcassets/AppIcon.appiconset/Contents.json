@@ -34,6 +34,12 @@
       $$appIcon(120)
     },
     {
+      "idiom" : "iphone",
+      "size" : "60x60",
+      "scale" : "3x"
+      $$appIcon(180)
+    },
+    {
       "idiom" : "ipad",
       "size" : "29x29",
       "scale" : "1x"

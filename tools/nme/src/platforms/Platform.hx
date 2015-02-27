@@ -90,7 +90,10 @@ class Platform
    public function getArchSuffix() { return ""; }
    public function postBuild() { }
 
-
+   public function wantLldb() : Bool
+   {
+      return project.hasDef("lldb");
+   }
 
    public function setupAdb()
    {

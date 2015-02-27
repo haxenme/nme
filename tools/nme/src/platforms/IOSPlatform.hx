@@ -10,224 +10,29 @@ import haxe.io.Path;
 import sys.io.Process;
 import sys.FileSystem;
 
-class IOSHelper 
-{
-   private static var initialized = false;
-
-   public static function xcodeBuild(project:NMEProject, workingDirectory:String, additionalArguments:Array<String> = null):Void 
-   {
-      initialize(project);
-
-      var platformName = "iphoneos";
-
-        if (project.targetFlags.exists("simulator")) 
-            platformName = "iphonesimulator";
-
-        var configuration = "Release";
-
-        if (project.debug) 
-            configuration = "Debug";
-
-        var iphoneVersion = project.environment.get("IPHONE_VER");
-        var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
-
-        if (project.targetFlags.exists("simulator")) 
-        {
-            commands.push("-arch");
-            commands.push("i386");
-        }
-
-        if (additionalArguments != null) 
-           commands = commands.concat(additionalArguments);
-
-        ProcessHelper.runCommand(workingDirectory, "xcodebuild", commands);
-        //ProcessHelper.runCommand(workingDirectory + "/" + project , "xcodebuild", commands);
-   }
-
-   public static function getSDKDirectory(project:NMEProject):String 
-   {
-      initialize(project);
-
-      var platformName = "iPhoneOS";
-
-      if (project.targetFlags.exists("simulator")) 
-      {
-         platformName = "iPhoneSimulator";
-      }
-
-      var process = new Process("xcode-select", [ "--print-path" ]);
-      var directory = process.stdout.readLine();
-      process.close();
-
-      if (directory == "" || directory.indexOf("Run xcode-select") > -1) 
-      {
-         directory = "/Applications/Xcode.app/Contents/Developer";
-      }
-
-      directory += "/Platforms/" + platformName + ".platform/Developer/SDKs/" + platformName + project.environment.get("IPHONE_VER") + ".sdk";
-      return directory;
-   }
-
-   private static function getIOSVersion(project:NMEProject):Void 
-   {
-      if (!project.environment.exists("IPHONE_VER")) 
-      {
-         if (!project.environment.exists("DEVELOPER_DIR")) 
-         {
-              var proc = new Process("xcode-select", ["--print-path"]);
-              var developer_dir = proc.stdout.readLine();
-              proc.close();
-              project.environment.set("DEVELOPER_DIR", developer_dir);
-          }
-         var dev_path = project.environment.get("DEVELOPER_DIR") + "/Platforms/iPhoneOS.platform/Developer/SDKs";
-
-         if (FileSystem.exists(dev_path)) 
-         {
-            var best = "";
-               var files = FileSystem.readDirectory(dev_path);
-               var extract_version = ~/^iPhoneOS(.*).sdk$/;
-
-               for(file in files) 
-               {
-               if (extract_version.match(file)) 
-               {
-                  var ver = extract_version.matched(1);
-                        if (ver > best)
-                           best = ver;
-                     }
-               }
-
-               if (best != "")
-                     project.environment.set("IPHONE_VER", best);
-         }
-         }
-   }
-
-   public static function getProvisioningFile():String 
-   {
-      var path = PathHelper.expand("~/Library/MobileDevice/Provisioning Profiles");
-      var files = FileSystem.readDirectory(path);
-
-      for(file in files) 
-      {
-         if (Path.extension(file) == "mobileprovision") 
-         {
-            return path + "/" + file;
-         }
-      }
-
-      return "";
-   }
-
-   private static function initialize(project:NMEProject):Void 
-   {
-      if (!initialized) 
-      {
-         getIOSVersion(project);
-
-         initialized = true;
-      }
-   }
-
-   public static function launch(project:NMEProject, workingDirectory:String):Void 
-   {
-      initialize(project);
-
-      var configuration = "Release";
-      if (project.debug) 
-         configuration = "Debug";
-
-      Log.verbose("Configuration :  " + configuration);
-
-      if (project.targetFlags.exists("simulator")) 
-      {
-         var applicationPath = "";
-
-         if (Path.extension(workingDirectory) == "app" || Path.extension(workingDirectory) == "ipa") 
-         {
-            applicationPath = workingDirectory;
-         }
-         else
-         {
-            applicationPath = workingDirectory + "/build/" + configuration + "-iphonesimulator/" + project.app.file + ".app";
-         }
-
-         var family = "iphone";
-
-         if (project.targetFlags.exists("ipad")) 
-            family = "ipad";
-
-         //var launcher = PathHelper.findTemplate(project.templatePaths, "bin/ios-sim");
-         var launcher = CommandLineTools.nme +  "/tools/nme/bin/ios-sim";
-         Sys.command("chmod", [ "+x", launcher ]);
-
-         ProcessHelper.runCommand("", launcher, [ "launch", FileSystem.fullPath(applicationPath), "--sdk", project.environment.get("IPHONE_VER"), "--family", family ] );
-      }
-      else
-      {
-         var applicationPath = "";
-
-         if (Path.extension(workingDirectory) == "app" || Path.extension(workingDirectory) == "ipa") 
-            applicationPath = workingDirectory;
-         else
-            applicationPath = workingDirectory + "/build/" + configuration + "-iphoneos/" + project.app.file + ".app";
-
-         Log.verbose("Application path " + applicationPath);
-
-            var launcher = CommandLineTools.nme +  "/tools/nme/bin/fruitstrap";
-            //var launcher = PathHelper.findTemplate(project.templatePaths, "bin/fruitstrap");
-           Sys.command("chmod", [ "+x", launcher ]);
-
-           if (project.debug) 
-           {
-               ProcessHelper.runCommand("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath(applicationPath) ]);
-           }
-           else
-           {
-               ProcessHelper.runCommand("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath(applicationPath) ]);
-           }
-      }
-   }
-
-   public static function sign(project:NMEProject, workingDirectory:String, entitlementsPath:String):Void 
-   {
-      initialize(project);
-
-        var configuration = "Release";
-
-        if (project.debug) 
-        {
-            configuration = "Debug";
-        }
-
-        var commands = [ "-s", "iPhone Developer" ];
-
-        if (entitlementsPath != null) 
-        {
-           commands.push("--entitlements");
-           commands.push(entitlementsPath);
-        }
-
-        var applicationPath = "build/" + configuration + "-iphoneos/" + project.app.file + ".app";
-        commands.push(applicationPath);
-
-        ProcessHelper.runCommand(workingDirectory, "codesign", commands, true, true);
-   }
-}
 
 
 class IOSPlatform extends Platform
 {
+   private static var initialized = false;
+
    var buildV6:Bool;
    var buildV7:Bool;
    var buildArm64:Bool;
    var buildI386:Bool;
    var buildX86_64:Bool;
+
+   var simulatorUid:String;
+   var launchPid:Int;
+   var redirectTrace:Bool;
   
 
    public function new(inProject:NMEProject)
    {
       super(inProject);
+
+      launchPid = 0;
+      redirectTrace = false;
 
       for(asset in project.assets) 
          asset.resourceName = asset.targetPath = asset.flatName;
@@ -267,7 +72,7 @@ class IOSPlatform extends Platform
                    buildV6 = true;
                case "armv7":
                    if (!hasArch(Architecture.ARMV7))
-                      Log.error("Armv6 not supported");
+                      Log.error("Armv7 not supported");
                    buildV7 = true;
                case "arm64":
                    if (!hasArch(Architecture.ARM64))
@@ -286,8 +91,20 @@ class IOSPlatform extends Platform
          var build = project.targetFlags;
          Log.verbose("Target flags: " + build);
 
-         if (build.exists("simulator") || build.exists("ios") ) 
-            buildX86_64 = true;
+         if (build.exists("simulator") ) // || build.exists("ios") ) 
+         {
+            redirectTrace = true;
+            if (crankUpSimulatorIs64())
+            {
+               ArrayHelper.addUnique(architectures, Architecture.ARM64);
+               buildX86_64 = true;
+            }
+            else
+            {
+               ArrayHelper.addUnique(architectures, Architecture.I386);
+               buildI386 = true;
+            }
+         }
 
          if (build.exists("iphoneos") || build.exists("ios")) 
          {
@@ -304,13 +121,13 @@ class IOSPlatform extends Platform
       // Prevent re-entry
       Sys.putEnv("NME_ALREADY_BUILDING","BUILDING");
 
-      IOSHelper.xcodeBuild(project, targetDir);
+      xcodeBuild(project, targetDir);
 
       if (buildV6 || buildV7 || buildArm64)
       {
           var entitlements = targetDir + "/" + project.app.file + "/" + project.app.file + "-Entitlements.plist";
 
-          IOSHelper.sign(project, targetDir + "/bin", entitlements);
+          sign(project, targetDir + "/bin", entitlements);
       }
    }
 
@@ -327,6 +144,7 @@ class IOSPlatform extends Platform
       context.OBJC_ARC = false;
       context.PROJECT_DIRECTORY = Sys.getCwd();
       context.APP_FILE = project.app.file;
+      context.REDIRECT_TRACE = redirectTrace;
 
       context.linkedLibraries = [];
 
@@ -349,7 +167,7 @@ class IOSPlatform extends Platform
             case ARMV6: valid_archs.push("armv6"); current_archs.push("armv6");
             case ARMV7: valid_archs.push("armv7"); current_archs.push("armv7");
             case ARM64: valid_archs.push("arm64"); current_archs.push("arm64");
-            case X86_64: valid_archs.push("X86_64"); current_archs.push("x86_64");
+            case X86_64: valid_archs.push("x86_64"); current_archs.push("x86_64");
             case I386: valid_archs.push("i386");
             default:
          }
@@ -429,6 +247,23 @@ class IOSPlatform extends Platform
       //updateLaunchImage();
    }
 
+   override public function trace()
+   {
+      if (wantLldb() && launchPid>0)
+      {
+         Sys.println("lldb use - 'continue'/'c' to finish launching");
+         Sys.println("         - 'process interrupt' to force break");
+         Sys.println("         - 'bt' for back trace/callstack");
+         Sys.println("         - 'kill' to kill process");
+         Sys.println("         - 'quit' to quit");
+         Sys.command("lldb", [ "-p", launchPid+"" ] );
+      }
+      else if (simulatorUid!=null && simulatorUid!="")
+      {
+         Sys.command("tail", [ "-f", "~/Library/Logs/CoreSimulator/" + simulatorUid + "/system.log"] );
+      }
+   }
+
 
    override public function runHaxe()
    {
@@ -450,36 +285,40 @@ class IOSPlatform extends Platform
          ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim", "-D", "HXCPP_M64"]));
    }
 
+   function copyApplicationMain(end:String, arch:String)
+   {
+      var projectDirectory = getOutputDir();
+      var file = haxeDir + "/cpp/libApplicationMain" + end;
+      if (!FileSystem.exists(file))
+         file =  haxeDir + "/cpp/ApplicationMain" + end;
+
+      FileHelper.copyIfNewer(file, projectDirectory + "/lib/" + arch + "/libApplicationMain.a" );
+   }
+
 
    override public function copyBinary():Void 
    {
       var dbg = project.debug ? "-debug" : "";
-      var projectDirectory = getOutputDir();
 
       if (buildV6)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphoneos.a",
-                      projectDirectory + "/lib/armv6" + dbg + "/libApplicationMain.a" );
+         copyApplicationMain(dbg + ".iphoneos.a", "armv6" + dbg);
 
       if (buildV7)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphoneos-v7.a",
-                      projectDirectory + "/lib/armv7" + dbg + "/libApplicationMain.a" );
+         copyApplicationMain(dbg + ".iphoneos-v7.a", "armv7" + dbg);
 
       if (buildArm64)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphoneos-64.a",
-                      projectDirectory + "/lib/arm64" + dbg + "/libApplicationMain.a" );
+         copyApplicationMain(dbg + ".iphoneos-6a.a", "armv64" + dbg);
 
       if (buildI386)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphonesim.a",
-                      projectDirectory + "/lib/i386" + dbg + "/libApplicationMain.a" );
+         copyApplicationMain(dbg + ".iphonesim.a", "i386" + dbg);
 
       if (buildX86_64)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/ApplicationMain" + dbg + ".iphonesim-64.a",
-                      projectDirectory + "/lib/x86_64" + dbg + "/libApplicationMain.a" );
+         copyApplicationMain(dbg + ".iphonesim-64.a", "x86_64" + dbg);
    }
 
    override public function run(arguments:Array<String>):Void 
    {
-      IOSHelper.launch(project, targetDir);
+      launch(project, targetDir);
    }
 
    function createLaunchImage( resolve : String -> Dynamic, widthStr:String, heightStr:String)
@@ -598,6 +437,333 @@ class IOSPlatform extends Platform
          }
       }
    }
+
+
+
+
+
+   public function xcodeBuild(project:NMEProject, workingDirectory:String, additionalArguments:Array<String> = null):Void 
+   {
+      initialize(project);
+
+      var platformName = "iphoneos";
+
+        var configuration = "Release";
+        if (project.debug) 
+            configuration = "Debug";
+
+        var sim64 = true;
+        if (project.targetFlags.exists("simulator")) 
+            platformName = "iphonesimulator";
+
+        var iphoneVersion = project.environment.get("IPHONE_VER");
+        var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
+
+        if (project.targetFlags.exists("simulator")) 
+        {
+            commands.push("-arch");
+            commands.push(buildX86_64 ? "x86_64" : "i386" );
+        }
+
+        if (additionalArguments != null) 
+           commands = commands.concat(additionalArguments);
+
+        ProcessHelper.runCommand(workingDirectory, "xcodebuild", commands);
+        //ProcessHelper.runCommand(workingDirectory + "/" + project , "xcodebuild", commands);
+   }
+
+   function waitBooted()
+   {
+      for(attempt in 0...30)
+      {
+         var sims = ProcessHelper.getOutput("xcrun", ["simctl", "list", "devices"]);
+         var seenUid = false;
+         for(sim in sims)
+         {
+            if (sim.indexOf("Booted")>=0)
+            {
+               Log.verbose("Found booted device " + sim);
+               return;
+            }
+            if (sim.indexOf(simulatorUid)>=0)
+              seenUid = true;
+         }
+         if (!seenUid)
+            Log.error("Target simulator " + simulatorUid + " is missing from " + sims.join(","));
+
+         Sys.println("Waiting for simulator to boot ...");
+         Sys.sleep(1);
+      }
+      Log.error("Time out waiting for simultor to boot");
+   }
+
+   // Returns whether 64 bit is wanted
+   public function crankUpSimulatorIs64() : Bool
+   {
+      var sims = ProcessHelper.getOutput("xcrun", ["simctl", "list", "devices"]);
+      var foundSim = "";
+      var foundUid = "";
+      var isBooted = false;
+      var allSims = new Array<String>();
+      var allUids = new Array<String>();
+
+      for(sim in sims)
+      {
+         var extractSim = ~/^\s*(.*) \((.*)\) \((.*)\)/;
+         if (extractSim.match(sim))
+         {
+            var name = extractSim.matched(1);
+            var uid = extractSim.matched(2);
+            var status = extractSim.matched(3);
+            Log.verbose(' Found simulator "$name" status="$status"');
+            allSims.push(name);
+            allUids.push(uid);
+            if (status=="Booted")
+            {
+               Log.verbose("Found booted simulator " + name);
+               foundSim = name;
+               isBooted = true;
+               foundUid = uid;
+            }
+         }
+      }
+
+      if (allSims.length==0)
+         Log.error("Could not find simulator list from 'xcrun simctl list devices'");
+
+      if (foundSim=="")
+      {
+         var sought = project.getDef("iosdevice");
+         if (sought==null || sought=="")
+         {
+            sought = "iPhone";
+            Log.verbose("Seeking default device 'iPhone' - specify device with iosdevice='...' from :" + allSims.join(","));
+         }
+
+         var l = sought.length;
+         for(sid in 0...allSims.length)
+         {
+            var s = allSims[sid];
+            // Find the one most down the list...
+            if (s.substr(0,l).toLowerCase() == sought.toLowerCase() || sought==allUids[sid])
+            {
+               foundSim = s;
+               foundUid = allUids[sid];
+            }
+         }
+
+         if (foundSim=="")
+         {
+            foundSim = allSims[ allSims.length-1 ];
+            foundUid = allUids[ allUids.length-1 ];
+         }
+      }
+
+      simulatorUid = foundUid;
+      Log.verbose("Using simulator : " + foundSim + "/" + simulatorUid);
+
+      if (!isBooted)
+      {
+         Log.verbose("Start simulator...");
+         Sys.command("open", [ "-a", "iOS Simulator", "--args", "-CurrentDeviceUDID", foundUid]);
+      }
+
+      switch(foundSim)
+      {
+         case "iPhone 4s", "iPhone 5", "iPhone 5s", "iPad 2", "iPad Air":
+            Log.verbose("Using 32bit simulator");
+            return false;
+         default:
+            Log.verbose("Using default 64bit simulator");
+            return true;
+      }
+   }
+
+   public function getSDKDirectory(project:NMEProject):String 
+   {
+      initialize(project);
+
+      var platformName = "iPhoneOS";
+
+      if (project.targetFlags.exists("simulator")) 
+      {
+         platformName = "iPhoneSimulator";
+      }
+
+      var process = new Process("xcode-select", [ "--print-path" ]);
+      var directory = process.stdout.readLine();
+      process.close();
+
+      if (directory == "" || directory.indexOf("Run xcode-select") > -1) 
+      {
+         directory = "/Applications/Xcode.app/Contents/Developer";
+      }
+
+      directory += "/Platforms/" + platformName + ".platform/Developer/SDKs/" + platformName + project.environment.get("IPHONE_VER") + ".sdk";
+      return directory;
+   }
+
+   private function getIOSVersion(project:NMEProject):Void 
+   {
+      if (!project.environment.exists("IPHONE_VER")) 
+      {
+         if (!project.environment.exists("DEVELOPER_DIR")) 
+         {
+              var proc = new Process("xcode-select", ["--print-path"]);
+              var developer_dir = proc.stdout.readLine();
+              proc.close();
+              project.environment.set("DEVELOPER_DIR", developer_dir);
+          }
+         var dev_path = project.environment.get("DEVELOPER_DIR") + "/Platforms/iPhoneOS.platform/Developer/SDKs";
+
+         if (FileSystem.exists(dev_path)) 
+         {
+            var best = "";
+               var files = FileSystem.readDirectory(dev_path);
+               var extract_version = ~/^iPhoneOS(.*).sdk$/;
+
+               for(file in files) 
+               {
+               if (extract_version.match(file)) 
+               {
+                  var ver = extract_version.matched(1);
+                        if (ver > best)
+                           best = ver;
+                     }
+               }
+
+               if (best != "")
+                     project.environment.set("IPHONE_VER", best);
+         }
+         }
+   }
+
+   public function getProvisioningFile():String 
+   {
+      var path = PathHelper.expand("~/Library/MobileDevice/Provisioning Profiles");
+      var files = FileSystem.readDirectory(path);
+
+      for(file in files) 
+      {
+         if (Path.extension(file) == "mobileprovision") 
+         {
+            return path + "/" + file;
+         }
+      }
+
+      return "";
+   }
+
+   private function initialize(project:NMEProject):Void 
+   {
+      if (!initialized) 
+      {
+         getIOSVersion(project);
+
+         initialized = true;
+      }
+   }
+
+   public function launch(project:NMEProject, workingDirectory:String):Void 
+   {
+      initialize(project);
+
+      var configuration = "Release";
+      if (project.debug) 
+         configuration = "Debug";
+
+      Log.verbose("Configuration :  " + configuration);
+
+      if (project.targetFlags.exists("simulator")) 
+      {
+         var applicationPath = "";
+
+         if (Path.extension(workingDirectory) == "app" || Path.extension(workingDirectory) == "ipa") 
+         {
+            applicationPath = workingDirectory;
+         }
+         else
+         {
+            applicationPath = workingDirectory + "/build/" + configuration + "-iphonesimulator/" + project.app.file + ".app";
+         }
+
+         Log.verbose("Boot simulator...");
+         waitBooted();
+
+         Log.verbose("Uninstall old versions ...");
+         ProcessHelper.runCommand("", "xcrun", ["simctl", "uninstall", "booted", applicationPath ], true, true);
+
+         Log.verbose("Install app...");
+         ProcessHelper.runCommand("", "xcrun", ["simctl", "install", "booted", applicationPath ]);
+        
+         Log.verbose("Launch " + project.app.packageName + " ...");
+         var args = ["simctl", "launch", "booted", project.app.packageName ];
+         if (wantLldb())
+            args.insert(2, "-w");
+         var lines = ProcessHelper.getOutput("xcrun", args);
+         var procIdMatch = ~/: (\d+)/;
+         if (lines.length!=1 || !procIdMatch.match(lines[0]))
+            Log.verbose("Could not determine process Id of started application (" + lines + ")" );
+         else
+         {
+            launchPid = Std.parseInt(procIdMatch.matched(1));
+            Log.verbose("Launched pid=" + launchPid );
+         }
+      }
+      else
+      {
+         var applicationPath = "";
+
+         if (Path.extension(workingDirectory) == "app" || Path.extension(workingDirectory) == "ipa") 
+            applicationPath = workingDirectory;
+         else
+            applicationPath = workingDirectory + "/build/" + configuration + "-iphoneos/" + project.app.file + ".app";
+
+         Log.verbose("Application path " + applicationPath);
+
+            var launcher = CommandLineTools.nme +  "/tools/nme/bin/fruitstrap";
+            //var launcher = PathHelper.findTemplate(project.templatePaths, "bin/fruitstrap");
+           Sys.command("chmod", [ "+x", launcher ]);
+
+           if (project.debug) 
+           {
+               ProcessHelper.runCommand("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath(applicationPath) ]);
+           }
+           else
+           {
+               ProcessHelper.runCommand("", launcher, [ "install", "--debug", "--timeout", "5", "--bundle", FileSystem.fullPath(applicationPath) ]);
+           }
+      }
+   }
+
+   public function sign(project:NMEProject, workingDirectory:String, entitlementsPath:String):Void 
+   {
+        initialize(project);
+
+        var configuration = "Release";
+
+        if (project.debug) 
+        {
+            configuration = "Debug";
+        }
+
+        var commands = [ "-s", "iPhone Developer" ];
+
+        if (entitlementsPath != null) 
+        {
+           commands.push("--entitlements");
+           commands.push(entitlementsPath);
+        }
+
+        var applicationPath = "build/" + configuration + "-iphoneos/" + project.app.file + ".app";
+        commands.push(applicationPath);
+
+        ProcessHelper.runCommand(workingDirectory, "codesign", commands, true, true);
+   }
+
+
+
+
 
 
    /*private function updateLaunchImage() {

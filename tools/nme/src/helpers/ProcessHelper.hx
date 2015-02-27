@@ -2,10 +2,32 @@ package;
 
 import haxe.io.Path;
 import sys.FileSystem;
+import sys.io.Process;
 import platforms.Platform;
 
 class ProcessHelper 
 {
+   public static function getOutput(command:String, args:Array<String>) : Array<String>
+   {
+      var result = new Array<String>();
+
+      Log.verbose(" " + command + " " + args.join(" ") );
+
+      var process:Process = null;
+      try
+      {
+         process = new Process(command, args);
+         while(true)
+            result.push( process.stdout.readLine() );
+      }
+      catch(e:Dynamic) { }
+
+      if (process!=null)
+         process.close();
+
+      return result;
+   }
+
    public static function openFile(workingDirectory:String, targetPath:String, executable:String = ""):Void 
    {
       if (executable == null) 
@@ -147,7 +169,7 @@ class ProcessHelper
          }
       }
 
-      Log.verbose(" - Running command: " + command + argString);
+      Log.verbose(" " + command + argString);
 
       var result:Dynamic = Sys.command(command, args);
 

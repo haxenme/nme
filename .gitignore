@@ -3,6 +3,10 @@
 *.lo
 *.o
 
+# compiled haxe code
+*.swf
+*.n
+
 # vi temp
 *.swp
 
@@ -28,6 +32,7 @@ nme.n
 # Created files
 tests/RunAll.n
 tests/import-all
+out.txt
 
 # Miscellaneous
 all_objs

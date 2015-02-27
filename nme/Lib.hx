@@ -88,6 +88,21 @@ class Lib
       }, params );
    }
 
+   public static function log(str:String)
+   {
+      nme_log(str);
+   }
+
+   public static function redirectTrace()
+   {
+      haxe.Log.trace = function( v : Dynamic, ?infos : haxe.PosInfos )  {
+         if (infos==null)
+            log( Std.string(v) );
+         else
+            log( infos.fileName + ":" + infos.lineNumber + ": " + v);
+      }
+   }
+
 
    public static function createManagedStage(inWidth:Int, inHeight:Int, inFlags:Int = 0) 
    {
@@ -171,6 +186,7 @@ class Lib
 
    // Native Methods
    private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
+   private static var nme_log = Loader.load("nme_log", 1);
 }
 
 #else
