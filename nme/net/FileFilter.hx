@@ -2,6 +2,7 @@ package nme.net;
 
 import StringTools;
 
+@:nativeProperty
 class FileFilter
 {
    public var description:String;

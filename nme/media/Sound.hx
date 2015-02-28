@@ -11,6 +11,7 @@ import nme.errors.Error;
 import nme.utils.ByteArray;
 import nme.utils.Endian;
 
+@:nativeProperty
 @:autoBuild(nme.macros.Embed.embedAsset("NME_sound_",":sound"))
 class Sound extends EventDispatcher 
 {

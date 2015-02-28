@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class TimerEvent extends Event 
 {
    public static var TIMER:String = "timer";

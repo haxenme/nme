@@ -15,6 +15,7 @@ import haxe.CallStack;
 
 import Sys;
 
+@:nativeProperty
 class Lib 
 {
    // stage specific calls...

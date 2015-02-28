@@ -4,6 +4,7 @@ package nme.display;
 import nme.geom.Matrix;
 import nme.Loader;
 
+@:nativeProperty
 class GraphicsBitmapFill extends IGraphicsData 
 {
    public function new(bitmapData:BitmapData = null, matrix:Matrix = null, repeat:Bool = true, smooth:Bool = false) 

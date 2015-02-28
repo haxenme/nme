@@ -1,6 +1,7 @@
 package nme.filters;
 #if (cpp || neko)
 
+@:nativeProperty
 class ColorMatrixFilter extends BitmapFilter 
 {
    /** @private */ private var matrix:Array<Float>;

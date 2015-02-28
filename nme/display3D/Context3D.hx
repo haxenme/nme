@@ -17,6 +17,7 @@ import nme.utils.ByteArray;
 import nme.Lib;
 import flash.Vector;
 
+@:nativeProperty
 class Context3D 
 {
    public var driverInfo(default, null):String; // TODO

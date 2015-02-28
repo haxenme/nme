@@ -4,6 +4,7 @@ package nme.media;
 import nme.Loader;
 import nme.display.DisplayObject;
 
+@:nativeProperty
 class Video extends DisplayObject
 {
    public var smoothing(default, set_smoothing):Bool;

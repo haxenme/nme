@@ -3,6 +3,7 @@ package nme.display;
 
 import nme.geom.Rectangle;
 
+@:nativeProperty
 class Sprite extends DisplayObjectContainer 
 {
    public var buttonMode:Bool; // ignored right now

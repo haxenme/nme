@@ -5,6 +5,7 @@ import nme.gl.GL;
 import nme.gl.GLProgram;
 import nme.gl.GLShader;
 
+@:nativeProperty
 class Program3D 
 {
    public var glProgram:GLProgram;

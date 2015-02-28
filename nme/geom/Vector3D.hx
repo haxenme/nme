@@ -1,6 +1,7 @@
 package nme.geom;
 #if (cpp || neko)
 
+@:nativeProperty
 class Vector3D 
 {
    public static var X_AXIS(get_X_AXIS, null):Vector3D;

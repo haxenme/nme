@@ -5,6 +5,7 @@ import nme.display.StageDisplayState;
 import nme.display.StageQuality;
 import nme.display.StageScaleMode;
 
+@:nativeProperty
 class Window 
 {
    public var active(default, default):Bool;

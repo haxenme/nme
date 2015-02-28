@@ -3,6 +3,7 @@ package nme.geom;
 
 import nme.Vector;
 
+@:nativeProperty
 class Matrix3D 
 {
    public var determinant(get_determinant, null):Float;

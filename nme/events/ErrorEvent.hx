@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class ErrorEvent extends TextEvent 
 {
    public static var ERROR:String = "error";

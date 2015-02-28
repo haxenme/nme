@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class ProgressEvent extends Event 
 {
    public static inline var PROGRESS = "progress";

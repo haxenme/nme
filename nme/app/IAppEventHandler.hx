@@ -1,6 +1,7 @@
 package nme.app;
 import haxe.CallStack;
 
+@:nativeProperty
 interface IAppEventHandler
 {
    public function onRender(inTimed:Bool):Void;

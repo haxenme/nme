@@ -1,6 +1,7 @@
 package nme.display;
 #if (cpp || neko)
 
+@:nativeProperty
 class BitmapDataChannel 
 {
    static public inline var ALPHA = 0x0008;

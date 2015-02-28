@@ -1,6 +1,6 @@
 package nme.app;
 
-
+@:nativeProperty
 class FrameTimer implements IPollClient
 {
    public var fps(default,set):Float;

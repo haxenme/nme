@@ -35,7 +35,7 @@ abstract NmeInts(Dynamic)
 
 
 
-
+@:nativeProperty
 class GL 
 {
    /* ClearBufferMask */

@@ -5,6 +5,7 @@ import nme.display.InteractiveObject;
 import nme.geom.Point;
 import nme.app.AppEvent;
 
+@:nativeProperty
 class TouchEvent extends MouseEvent 
 {
    public static var TOUCH_BEGIN:String = "touchBegin";

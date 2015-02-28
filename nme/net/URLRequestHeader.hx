@@ -1,6 +1,7 @@
 package nme.net;
 #if (cpp || neko)
 
+@:nativeProperty
 class URLRequestHeader 
 {
    public var name:String;

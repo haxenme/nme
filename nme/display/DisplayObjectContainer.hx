@@ -7,6 +7,7 @@ import nme.geom.Point;
 import nme.errors.RangeError;
 import nme.Loader;
 
+@:nativeProperty
 class DisplayObjectContainer extends InteractiveObject 
 {
    public var mouseChildren(get_mouseChildren, set_mouseChildren):Bool;

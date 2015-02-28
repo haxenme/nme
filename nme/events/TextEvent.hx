@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class TextEvent extends Event 
 {
    public static var LINK:String = "link";

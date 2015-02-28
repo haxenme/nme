@@ -1,5 +1,6 @@
 package nme.app;
 
+@:nativeProperty
 class EventName
 {
    public static inline var KEY_DOWN = "keyDown";

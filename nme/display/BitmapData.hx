@@ -13,6 +13,7 @@ import nme.Loader;
 
 
 @:autoBuild(nme.macros.Embed.embedAsset("NME_bitmap_",":bitmap"))
+@:nativeProperty
 class BitmapData extends Surface implements IBitmapDrawable 
 {
    public static var CLEAR = createColor(0, 0);

@@ -8,6 +8,7 @@ import nme.net.URLRequest;
 import nme.net.URLLoaderDataFormat;
 import nme.utils.ByteArray;
 
+@:nativeProperty
 class LoaderInfo extends URLLoader 
 {
    public var bytes(get_bytes, null):ByteArray;

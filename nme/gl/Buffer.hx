@@ -2,6 +2,7 @@ package nme.gl;
 
 import nme.utils.Float32Array;
 
+@:nativeProperty
 class Buffer
 {
    var buffer:GLBuffer;

@@ -3,7 +3,7 @@ package nme.preloader;
 import nme.display.Sprite;
 import nme.events.Event;
 
-
+@:nativeProperty
 class Basic extends Sprite
 {
    private var outline:Sprite;

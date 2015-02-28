@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class KeyboardEvent extends Event 
 {
    public static var KEY_DOWN = "keyDown";

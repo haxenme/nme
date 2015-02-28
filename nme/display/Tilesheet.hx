@@ -6,6 +6,7 @@ import nme.geom.Point;
 import nme.geom.Rectangle;
 import nme.Loader;
 
+@:nativeProperty
 class Tilesheet 
 {
    public static inline var TILE_SCALE = 0x0001;

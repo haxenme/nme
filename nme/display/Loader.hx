@@ -13,6 +13,7 @@ import nme.events.IOErrorEvent;
 import nme.system.LoaderContext;
 import nme.utils.ByteArray;
 
+@:nativeProperty
 class Loader extends Sprite 
 {
    public var content(default, null):DisplayObject;

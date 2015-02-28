@@ -3,6 +3,7 @@ package nme.display;
 
 import nme.Loader;
 
+@:nativeProperty
 class InteractiveObject extends DisplayObject 
 {
    public var doubleClickEnabled:Bool;

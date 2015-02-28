@@ -4,6 +4,7 @@ package nme.utils;
 import nme.geom.Matrix3D;
 
 #if haxe3
+@:nativeProperty
 class Float32Array extends ArrayBufferView implements ArrayAccess<Float> 
 {
 #else

@@ -3,6 +3,7 @@ package nme.display;
 
 import nme.Loader;
 
+@:nativeProperty
 class GraphicsEndFill extends IGraphicsData 
 {
    public function new() 

@@ -3,6 +3,7 @@ package nme.events;
 
 import nme.utils.ByteArray;
 
+@:nativeProperty
 class SampleDataEvent extends Event 
 {
    public static var SAMPLE_DATA:String = "sampleData";

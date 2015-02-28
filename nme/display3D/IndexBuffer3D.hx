@@ -7,6 +7,7 @@ import nme.utils.Int16Array;
 import nme.utils.ByteArray;
 import flash.Vector;
 
+@:nativeProperty
 class IndexBuffer3D 
 {
    public var glBuffer:GLBuffer;

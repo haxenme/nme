@@ -3,6 +3,7 @@ package nme.ui;
 
 import nme.Loader;
 
+@:nativeProperty
 class Accelerometer 
 {
    public static function get():Acceleration 

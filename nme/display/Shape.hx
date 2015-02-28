@@ -1,6 +1,7 @@
 package nme.display;
 #if (cpp || neko)
 
+@:nativeProperty
 class Shape extends DisplayObject 
 {
    public function new() 

@@ -1,6 +1,8 @@
 package nme.display3D;
 import nme.geom.Rectangle;
 import nme.display3D.Context3D;
+
+@:nativeProperty
 class Context3DUtils {
 
     /**

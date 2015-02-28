@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class EventPhase 
 {
    public static var CAPTURING_PHASE = 0;

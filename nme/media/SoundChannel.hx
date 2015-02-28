@@ -6,6 +6,7 @@ import nme.events.EventDispatcher;
 import nme.events.SampleDataEvent;
 import nme.Loader;
 
+@:nativeProperty
 class SoundChannel extends EventDispatcher 
 {
    public var leftPeak(get_leftPeak, null):Float;

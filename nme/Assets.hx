@@ -35,6 +35,7 @@ class Cache
    public function removeBitmapData(inId:String) Assets.removeBitmapData(inId);
 }
 
+@:nativeProperty
 class Assets 
 {
    public static inline var UNCACHED = 0;

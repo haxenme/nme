@@ -1,6 +1,7 @@
 package nme.media;
 #if (cpp || neko)
 
+@:nativeProperty
 class ID3Info 
 {
    public var album:String;

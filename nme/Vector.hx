@@ -5,7 +5,7 @@ typedef Vector<T> = flash.Vector<T>;
 #else
 private typedef VectorData<T> = Array<T>;
 
-
+@:nativeProperty
 @:arrayAccess abstract Vector<T>(VectorData<T>) {
 	
 	

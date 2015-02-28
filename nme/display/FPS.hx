@@ -6,7 +6,7 @@ import nme.events.Event;
 import nme.text.TextField;
 import nme.text.TextFormat;
 
-
+@:nativeProperty
 class FPS extends TextField
 {
 	

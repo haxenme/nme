@@ -2,6 +2,7 @@ package nme;
 
 import nme.utils.WeakRef;
 
+@:nativeProperty
 class AssetInfo
 {
    public var path:String;

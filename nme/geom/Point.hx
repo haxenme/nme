@@ -1,6 +1,7 @@
 package nme.geom;
 #if (cpp || neko)
 
+@:nativeProperty
 class Point 
 {
    public var length(get_length, never):Float;

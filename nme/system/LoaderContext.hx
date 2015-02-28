@@ -1,6 +1,7 @@
 package nme.system;
 #if (cpp || neko)
 
+@:nativeProperty
 class LoaderContext
 {		
 	public var allowCodeImport:Bool;

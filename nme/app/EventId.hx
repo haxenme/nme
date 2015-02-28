@@ -1,5 +1,6 @@
 package nme.app;
 
+@:nativeProperty
 class EventId
 {
    public static inline var Unknown =  0;

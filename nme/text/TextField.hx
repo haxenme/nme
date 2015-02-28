@@ -4,6 +4,7 @@ package nme.text;
 import nme.display.InteractiveObject;
 import nme.Loader;
 
+@:nativeProperty
 class TextField extends InteractiveObject 
 {
    public var antiAliasType:AntiAliasType;

@@ -1,6 +1,7 @@
 package nme.gl;
 #if (cpp || neko)
 
+@:nativeProperty
 class GLObject 
 {
    public var id:Dynamic;

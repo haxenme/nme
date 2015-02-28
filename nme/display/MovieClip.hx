@@ -1,6 +1,7 @@
 package nme.display;
 #if (cpp || neko)
 
+@:nativeProperty
 class MovieClip extends Sprite 
 {
    public var currentFrame(get_currentFrame, null):Int;

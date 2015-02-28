@@ -5,6 +5,7 @@ import nme.display.BitmapData;
 import nme.events.StatusEvent;
 import nme.events.Event;
 
+@:nativeProperty
 class Camera extends nme.events.EventDispatcher
 {
    public static inline var CAMERA_UNMUTED = "Camera.unmuted";

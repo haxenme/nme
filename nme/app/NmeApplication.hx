@@ -5,7 +5,7 @@ import nme.app.Application;
 import nme.app.FrameTimer;
 import haxe.CallStack;
 
-
+@:nativeProperty
 class NmeApplication implements IAppEventHandler implements IPollClient
 {
    public var width(default,null):Int;

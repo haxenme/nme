@@ -4,6 +4,7 @@ package nme.display;
 import nme.geom.Matrix;
 import nme.Loader;
 
+@:nativeProperty
 class Graphics 
 {
    public static inline var TILE_SCALE = 0x0001;

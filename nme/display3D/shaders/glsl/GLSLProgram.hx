@@ -5,6 +5,8 @@ import nme.display3D.textures.Texture;
 import nme.geom.Matrix3D;
 import nme.display3D.Program3D;
 import nme.display3D.Context3D;
+
+@:nativeProperty
 class GLSLProgram {
 
     private var context3D : Context3D;

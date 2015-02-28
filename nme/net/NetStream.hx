@@ -4,6 +4,7 @@ package nme.net;
 import nme.media.StageVideo;
 import nme.media.SoundTransform;
 
+@:nativeProperty
 class NetStream extends nme.events.EventDispatcher
 {
    inline static var CONNECT_TO_FMS : String = "connectToFMS";

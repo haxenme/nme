@@ -1,6 +1,7 @@
 package nme.geom;
 #if (cpp || neko)
 
+@:nativeProperty
 class ColorTransform 
 {
    public var alphaMultiplier:Float;

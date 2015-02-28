@@ -4,6 +4,7 @@ package nme.filesystem;
 import nme.events.EventDispatcher;
 import nme.Loader;
 
+@:nativeProperty
 class StorageVolumeInfo extends EventDispatcher 
 {
    public static inline var isSupported = true;

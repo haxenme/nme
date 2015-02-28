@@ -7,7 +7,7 @@ import nme.utils.WeakRef;
 
 
 
-
+@:nativeProperty
 class Listener 
 {
    public var mID:Int;

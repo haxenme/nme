@@ -19,6 +19,7 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
+@:nativeProperty
 class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput implements IMemoryRange implements IDataOutput
 {
 

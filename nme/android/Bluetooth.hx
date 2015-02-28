@@ -2,6 +2,7 @@ package nme.android;
 
 import nme.JNI;
 
+@:nativeProperty
 class BluetoothDeviceCallback
 {
    var onDevices:Int->Array<String>->Void;
@@ -9,6 +10,7 @@ class BluetoothDeviceCallback
    public function setDevicesAsync(inCode:Int, inDevices:Array<String>) onDevices(inCode,inDevices);
 }
 
+@:nativeProperty
 class Bluetooth
 {
    // ASync return codes

@@ -3,6 +3,7 @@ package nme.display;
 
 import nme.Loader;
 
+@:nativeProperty
 class SimpleButton extends InteractiveObject 
 {
    public var downState(default, set_downState):DisplayObject;

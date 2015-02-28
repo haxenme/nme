@@ -1,6 +1,7 @@
 package nme.gl;
 #if (cpp || neko)
 
+@:nativeProperty
 class GLProgram extends GLObject 
 {
    public var shaders:Array<GLShader>;

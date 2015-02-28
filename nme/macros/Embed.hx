@@ -5,6 +5,7 @@ import haxe.macro.Expr;
 import haxe.macro.Type;
 import sys.io.File;
 
+@:nativeProperty
 class Embed
 {
    public static macro function embedAsset(inPrefix:String,inMetaName:String) :Array<Field> 

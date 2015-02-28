@@ -4,6 +4,7 @@ package nme.net;
 
 import nme.events.NetStatusEvent;
 
+@:nativeProperty
 class NetConnection extends nme.events.EventDispatcher
 {
    public static inline var defaultObjectEncoding : Int = 0;

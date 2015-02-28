@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class SystemEvent extends Event 
 {
    public static var SYSTEM:String = "system";

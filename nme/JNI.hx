@@ -10,6 +10,7 @@ import haxe.BaseCode;
 #end
 import nme.Loader;
 
+@:nativeProperty
 class JNI 
 {
    static var isInit = false;

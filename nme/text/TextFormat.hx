@@ -1,6 +1,7 @@
 package nme.text;
 #if (cpp || neko)
 
+@:nativeProperty
 class TextFormat 
 {
    public var align:String;

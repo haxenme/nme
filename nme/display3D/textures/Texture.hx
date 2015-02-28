@@ -10,6 +10,7 @@ import nme.utils.ArrayBuffer;
 import nme.utils.ByteArray;
 import nme.utils.UInt8Array;
 
+@:nativeProperty
 class Texture extends TextureBase 
 {
    public var width : Int;

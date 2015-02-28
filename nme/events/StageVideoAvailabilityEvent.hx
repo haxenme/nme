@@ -1,5 +1,6 @@
 package nme.events;
 
+@:nativeProperty
 class StageVideoAvailabilityEvent extends Event
 {
    public var availability(default,null) : String;

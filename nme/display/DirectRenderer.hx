@@ -5,6 +5,7 @@ import nme.Loader;
 import nme.events.Event;
 import nme.geom.Rectangle;
 
+@:nativeProperty
 class DirectRenderer extends DisplayObject 
 {
    public function new(inType:String = "DirectRenderer") 

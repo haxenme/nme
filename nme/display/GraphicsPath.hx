@@ -3,6 +3,7 @@ package nme.display;
 
 import nme.Loader;
 
+@:nativeProperty
 class GraphicsPath extends IGraphicsData 
 {
    public var commands(get_commands, set_commands):Array<Int>;

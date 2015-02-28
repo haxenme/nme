@@ -7,7 +7,7 @@ import nme.display3D.VertexBuffer3D;
 import nme.display3D.Context3DVertexBufferFormat;
 import nme.display3D.Context3DProgramType;
 
-
+@:nativeProperty
 class GLSLVertexShader extends GLSLShader{
 
     public function new(glslSource : String,

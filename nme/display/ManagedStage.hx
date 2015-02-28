@@ -4,6 +4,7 @@ package nme.display;
 import nme.Loader;
 import nme.app.Window;
 
+@:nativeProperty
 class ManagedStage extends Stage 
 {
    static inline public var etUnknown = 0;

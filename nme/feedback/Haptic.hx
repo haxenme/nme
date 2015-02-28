@@ -3,6 +3,7 @@ package nme.feedback;
 
 import nme.Loader;
 
+@:nativeProperty
 class Haptic 
 {
    public static function vibrate(period:Int = 0, duration:Int = 1000):Void 

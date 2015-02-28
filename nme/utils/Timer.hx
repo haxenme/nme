@@ -5,6 +5,7 @@ import nme.errors.Error;
 import nme.events.EventDispatcher;
 import nme.events.TimerEvent;
 
+@:nativeProperty
 class Timer extends EventDispatcher 
 {
    public var currentCount:Int;

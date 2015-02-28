@@ -6,6 +6,7 @@ import nme.display.Stage;
 import nme.utils.ByteArray;
 import nme.Loader;
 
+@:nativeProperty
 @:autoBuild(nme.macros.Embed.embedAsset("NME_font_",":font"))
 class Font 
 {

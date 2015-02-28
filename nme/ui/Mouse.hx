@@ -3,6 +3,7 @@ package nme.ui;
 
 import nme.Lib;
 
+@:nativeProperty
 class Mouse 
 {
    public static function hide() 

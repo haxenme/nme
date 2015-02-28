@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class SecurityErrorEvent extends ErrorEvent 
 {
    public static inline var SECURITY_ERROR = "securityError";

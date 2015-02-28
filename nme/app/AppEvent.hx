@@ -3,6 +3,7 @@ package nme.app;
 #if (cpp && hxcpp_api_level>=312)
 import nme.native.NativeEvent;
 
+@:nativeProperty
 abstract AppEvent(cpp.Pointer<NativeEvent>) from cpp.Pointer<NativeEvent>
 {
    public var type(get,never) : Int;

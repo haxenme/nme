@@ -17,6 +17,7 @@ typedef WindowParams = {
     ? icon         : Surface,
 };
 
+@:nativeProperty
 class Application 
 {
    public static inline var OrientationPortrait = 1;

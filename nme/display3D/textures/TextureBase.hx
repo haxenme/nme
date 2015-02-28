@@ -8,6 +8,7 @@ import nme.gl.GL;
 import nme.gl.GLTexture;
 import nme.events.EventDispatcher;
 
+@:nativeProperty
 class TextureBase extends EventDispatcher 
 {
     public var glTexture:GLTexture;

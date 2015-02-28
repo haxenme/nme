@@ -14,6 +14,7 @@ import haxe.Unserializer;
 import haxe.io.Eof;
 import nme.events.EventDispatcher;
 
+@:nativeProperty
 class SharedObject extends EventDispatcher 
 {
    public var data(default, null):Dynamic;

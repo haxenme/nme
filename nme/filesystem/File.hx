@@ -8,6 +8,7 @@ import nme.Loader;
 import nme.JNI;
 #end
 
+@:nativeProperty
 class File 
 {
    public static var applicationDirectory(get_applicationDirectory, null):File;

@@ -1,6 +1,7 @@
 package nme.filters;
 #if (cpp || neko)
 
+@:nativeProperty
 class BitmapFilter 
 {
    /** @private */ private var type:String;

@@ -1,5 +1,6 @@
 package nme.app;
 
+@:nativeProperty
 interface IPollClient
 {
    public function onPoll(timestamp:Float):Void;

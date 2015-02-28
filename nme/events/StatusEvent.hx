@@ -2,6 +2,7 @@ package nme.events;
 
 #if (cpp||neko)
 
+@:nativeProperty
 class StatusEvent extends Event
 {
    public static inline var STATUS = "status";

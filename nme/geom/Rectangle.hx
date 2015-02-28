@@ -1,6 +1,7 @@
 package nme.geom;
 #if (cpp || neko)
 
+@:nativeProperty
 class Rectangle 
 {
    public var bottom(get_bottom, set_bottom):Float;

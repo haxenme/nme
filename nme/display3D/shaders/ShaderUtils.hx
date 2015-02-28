@@ -9,6 +9,7 @@ import com.adobe.utils.AGALMiniAssembler;
 
 import nme.display3D.Context3DProgramType;
 
+@:nativeProperty
 class ShaderUtils{
 
     inline public static function createShader (type: Context3DProgramType, shaderSource:String): nme.display3D.shaders.Shader {

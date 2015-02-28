@@ -1,6 +1,7 @@
 package nme.ui;
 #if (cpp || neko)
 
+@:nativeProperty
 class Keyboard 
 {
    public static var A:Int = 65;

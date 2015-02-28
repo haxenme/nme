@@ -7,6 +7,7 @@ import nme.events.EventDispatcher;
 import nme.Loader;
 import haxe.Timer;
 
+@:nativeProperty
 class Accelerometer extends EventDispatcher 
 {
    public static var isSupported(get_isSupported, null):Bool;

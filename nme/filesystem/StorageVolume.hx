@@ -1,6 +1,7 @@
 package nme.filesystem;
 #if (cpp || neko)
 
+@:nativeProperty
 class StorageVolume 
 {
    public var drive(default, null):String;

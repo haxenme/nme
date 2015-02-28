@@ -1,6 +1,7 @@
 package nme.net;
 #if (cpp || neko)
 
+@:nativeProperty
 class URLVariables implements Dynamic 
 {
    public function new(?inEncoded:String) 

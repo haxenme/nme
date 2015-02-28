@@ -1,6 +1,7 @@
 package nme.display;
 #if (cpp || neko)
 
+@:nativeProperty
 class GraphicsPathWinding 
 {
    public static inline var EVEN_ODD:String = "evenOdd";

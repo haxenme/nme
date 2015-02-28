@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class Event 
 {
    public static var ACTIVATE = "activate";

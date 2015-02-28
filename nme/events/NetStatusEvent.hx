@@ -2,6 +2,7 @@ package nme.events;
 
 #if (cpp||neko)
 
+@:nativeProperty
 class NetStatusEvent extends Event
 {
 	public static inline var NET_STATUS = "netStatus";

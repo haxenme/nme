@@ -3,6 +3,7 @@ package nme.net;
 
 import nme.utils.ByteArray;
 
+@:nativeProperty
 class URLRequest 
 {
    public static inline var AUTH_BASIC = 0x0001;

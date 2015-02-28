@@ -1,6 +1,7 @@
 package nme.filters;
 #if (cpp || neko)
 
+@:nativeProperty
 class DropShadowFilter extends BitmapFilter 
 {
    /** @private */ private var alpha:Float;

@@ -3,6 +3,7 @@ package nme.events;
 
 import nme.events.Event;
 
+@:nativeProperty
 class AccelerometerEvent extends Event 
 {
    public static var UPDATE:String;

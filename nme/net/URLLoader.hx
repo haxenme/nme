@@ -22,6 +22,7 @@ import cpp.io.File;
 #end
 #end
 
+@:nativeProperty
 class URLLoader extends EventDispatcher 
 {
    public var bytesLoaded(default, null):Int;

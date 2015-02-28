@@ -36,7 +36,7 @@ import haxe.CallStack;
 import cpp.vm.Gc;
 #end
 
-
+@:nativeProperty
 class Stage extends DisplayObjectContainer implements nme.app.IPollClient implements nme.app.IAppEventHandler
 {
    /**

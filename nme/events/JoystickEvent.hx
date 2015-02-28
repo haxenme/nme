@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class JoystickEvent extends Event 
 {
    public static inline var AXIS_MOVE:String = "axisMove";

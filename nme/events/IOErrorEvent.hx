@@ -1,6 +1,7 @@
 package nme.events;
 #if (cpp || neko)
 
+@:nativeProperty
 class IOErrorEvent extends ErrorEvent 
 {
    public static var IO_ERROR = "ioError";

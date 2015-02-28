@@ -6,6 +6,7 @@ import nme.events.ErrorEvent;
 import nme.events.Event;
 import nme.events.EventDispatcher;
 
+@:nativeProperty
 class Stage3D extends EventDispatcher 
 {
    public var context3D:Context3D;

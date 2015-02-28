@@ -2,6 +2,7 @@ package nme.events;
 
 #if (cpp||neko)
 
+@:nativeProperty
 class StageVideoEvent extends Event
 {
 	public static inline var RENDER_STATE = "renderState";

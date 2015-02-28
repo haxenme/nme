@@ -2,6 +2,7 @@ package nme.utils;
 
 #if (cpp || neko)
 
+@:nativeProperty
 class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> 
 {
    static public inline var SBYTES_PER_ELEMENT = 2;

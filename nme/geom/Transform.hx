@@ -3,6 +3,7 @@ package nme.geom;
 
 import nme.display.DisplayObject;
 
+@:nativeProperty
 class Transform 
 {
    public var colorTransform(get_colorTransform, set_colorTransform):ColorTransform;

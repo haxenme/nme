@@ -5,6 +5,7 @@ import nme.display.InteractiveObject;
 import nme.geom.Point;
 import nme.app.AppEvent;
 
+@:nativeProperty
 class MouseEvent extends Event 
 {
    public static var DOUBLE_CLICK:String = "doubleClick";

@@ -1,6 +1,7 @@
 package nme.display;
 #if (cpp || neko)
 
+@:nativeProperty
 class GraphicsPathCommand 
 {
    public static inline var NO_OP = 0;

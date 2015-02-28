@@ -5,6 +5,8 @@ import nme.Loader;
 import nme.gl.GL;
 import nme.geom.Matrix3D;
 //import nme.gl.GLInstance;
+
+@:nativeProperty
 class OpenGLView extends DirectRenderer 
 {
    public static inline var CONTEXT_LOST = "glcontextlost";

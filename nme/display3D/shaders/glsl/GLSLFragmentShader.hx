@@ -6,6 +6,7 @@ import nme.geom.Matrix3D;
 import nme.display3D.Context3D;
 import nme.display3D.Context3DProgramType;
 
+@:nativeProperty
 class GLSLFragmentShader extends GLSLShader{
 
     #if (cpp || neko || js)

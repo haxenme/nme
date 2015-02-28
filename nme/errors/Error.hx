@@ -1,6 +1,7 @@
 package nme.errors;
 #if (cpp || neko)
 
+@:nativeProperty
 class Error 
 {
    public var errorID:Int;

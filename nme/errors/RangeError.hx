@@ -1,6 +1,7 @@
 package nme.errors;
 #if (cpp || neko)
 
+@:nativeProperty
 class RangeError extends Error 
 {
    public function new(inMessage:String = "") 

@@ -3,6 +3,7 @@ package nme.display;
 
 import nme.Loader;
 
+@:nativeProperty
 class GraphicsStroke extends IGraphicsData 
 {
    public function new(thickness:Null < Float > = null, pixelHinting:Bool = false, ?scaleMode:LineScaleMode, ?caps:CapsStyle, ?joints:JointStyle, miterLimit:Float = 3, fill:IGraphicsData /* flash uses IGraphicsFill */ = null) 

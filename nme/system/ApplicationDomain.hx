@@ -1,6 +1,7 @@
 package nme.system;
 #if (cpp || neko)
 
+@:nativeProperty
 class ApplicationDomain
 {
 	public static var currentDomain(default, null) = new ApplicationDomain(null);

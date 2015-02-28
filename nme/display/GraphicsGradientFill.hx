@@ -4,6 +4,7 @@ package nme.display;
 import nme.geom.Matrix;
 import nme.Loader;
 
+@:nativeProperty
 class GraphicsGradientFill extends IGraphicsData 
 {
    public function new(type:GradientType = null, colors:Array<Int> = null, alphas:Array<Float> = null, ratios:Array<Float> = null, matrix:Matrix = null, spreadMethod:SpreadMethod = null, interpolationMethod:InterpolationMethod = null, focalPointRatio:Float = 0):Void 

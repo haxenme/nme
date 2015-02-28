@@ -2,6 +2,7 @@ package nme.events;
 
 #if (cpp||neko)
 
+@:nativeProperty
 class AsyncErrorEvent extends ErrorEvent
 {
 	public static var ASYNC_ERROR  = "asyncError";

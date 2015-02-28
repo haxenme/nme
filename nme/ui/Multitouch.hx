@@ -5,6 +5,7 @@ import nme.ui.MultitouchInputMode;
 import nme.Lib;
 import nme.Loader;
 
+@:nativeProperty
 class Multitouch 
 {
    public static var inputMode(get_inputMode, set_inputMode):MultitouchInputMode;

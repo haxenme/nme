@@ -1,5 +1,6 @@
 package nme.media;
 
+@:nativeProperty
 class VideoStatus
 {
 	public static inline var ACCELERATED = "accelerated";

@@ -7,6 +7,7 @@ import nme.Loader;
 typedef Hash<T> = haxe.ds.StringMap<T>;
 #end
 
+@:nativeProperty
 class ExternalInterface 
 {
    public static var available(get_available, null):Bool;

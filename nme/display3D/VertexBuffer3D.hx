@@ -7,6 +7,7 @@ import nme.utils.Float32Array;
 import nme.utils.ByteArray;
 import flash.Vector;
 
+@:nativeProperty
 class VertexBuffer3D 
 {
    public var data32PerVertex:Int;

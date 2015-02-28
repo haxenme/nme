@@ -7,6 +7,7 @@ import nme.display.BitmapData;
 typedef Hash<T> = haxe.ds.StringMap<T>;
 #end
 
+@:nativeProperty
 class NMEFont 
 {
    static var factories = new Hash<NMEFontFactory>();

@@ -5,6 +5,7 @@ package nme.utils;
 import haxe.io.BytesData;
 #end
 
+@:nativeProperty
 class ArrayBufferView implements IMemoryRange 
 {
    public var buffer(default, null):ByteArray;

@@ -12,6 +12,7 @@ import nme.JNI;
 import cpp.vm.Gc;
 #end
 
+@:nativeProperty
 class System 
 {
    public static var deviceID(get_deviceID, null):String;

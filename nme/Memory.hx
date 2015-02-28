@@ -8,6 +8,7 @@ import nme.utils.ByteArray;
 import neko.Lib;
 #end
 
+@:nativeProperty
 class Memory 
 {
    #if neko

@@ -13,6 +13,7 @@ import nme.geom.Point;
 import nme.filters.BitmapFilter;
 import nme.Loader;
 
+@:nativeProperty
 class DisplayObject extends EventDispatcher implements IBitmapDrawable 
 {
    public var alpha(get_alpha, set_alpha):Float;

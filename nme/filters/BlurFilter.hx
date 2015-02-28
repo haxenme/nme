@@ -1,6 +1,7 @@
 package nme.filters;
 #if (cpp || neko)
 
+@:nativeProperty
 class BlurFilter extends BitmapFilter 
 {
    /** @private */ private var blurX:Float;

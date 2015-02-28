@@ -7,6 +7,7 @@ import nme.utils.ByteArray;
 import nme.gl.GL;
 import nme.gl.GLTexture;
 
+@:nativeProperty
 class CubeTexture extends TextureBase 
 {
     public var size : Int;

@@ -7,6 +7,8 @@ package nme.geom;
                                [  c   d ]
                                [  tx  ty]
 */
+
+@:nativeProperty
 class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end 
 {
    public var a:Float;

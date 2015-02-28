@@ -10,6 +10,7 @@ import nme.Loader;
 
 typedef BitmapInt32 = Int;
 
+@:nativeProperty
 class Surface
 {
    public inline static var PNG = "png";

@@ -3,6 +3,7 @@ package nme.display;
 
 import nme.Loader;
 
+@:nativeProperty
 class GraphicsSolidFill extends IGraphicsData 
 {
    public function new(color:Int = 0, alpha:Float = 1.0) 

@@ -6,6 +6,7 @@ import nme.gl.GL;
 import nme.gl.GLTexture;
 import nme.utils.ByteArray;
 
+@:nativeProperty
 class RectangleTexture extends TextureBase 
 {
     public function new(glTexture:GLTexture) 

@@ -3,6 +3,7 @@ package nme.system;
 
 import nme.Loader;
 
+@:nativeProperty
 class Capabilities 
 {
    public static var pixelAspectRatio(get_pixelAspectRatio, null):Float;

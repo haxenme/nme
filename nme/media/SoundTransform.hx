@@ -1,6 +1,7 @@
 package nme.media;
 #if (cpp || neko)
 
+@:nativeProperty
 class SoundTransform 
 {
    public var pan:Float;

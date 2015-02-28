@@ -3,6 +3,7 @@ package nme.events;
 
 import nme.display.InteractiveObject;
 
+@:nativeProperty
 class FocusEvent extends Event 
 {
    static public var FOCUS_IN = "focusIn";

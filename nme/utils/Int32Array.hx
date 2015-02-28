@@ -1,6 +1,7 @@
 package nme.utils;
 #if (cpp || neko)
 
+@:nativeProperty
 @:arrayAccess
 class Int32Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> 
 {

@@ -8,6 +8,7 @@ import cpp.Lib;
 #end
 import sys.io.Process;
 
+@:nativeProperty
 class Loader 
 {
    public static var foundNdll = false;

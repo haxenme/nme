@@ -1,6 +1,7 @@
 package nme.gl;
 #if (cpp || neko)
 
+@:nativeProperty
 class GLFramebuffer extends GLObject 
 {
    public function new(inVersion:Int, inId:Dynamic) 

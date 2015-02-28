@@ -11,7 +11,7 @@ import nme.display.Stage;
 import nme.Loader;
 import nme.events.NetStatusEvent;
 
-
+@:nativeProperty
 class StageVideo extends EventDispatcher
 {
    public var colorSpaces(get_colorSpaces,null) : Vector<String>;

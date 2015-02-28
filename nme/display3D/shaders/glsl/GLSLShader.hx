@@ -32,6 +32,7 @@ typedef AgalInfoData = {
 
 typedef Constant = Array<Float>;
 
+@:nativeProperty
 class AgalInfo{
     public var types : StringMap<String>;
     public var consts : StringMap<Constant>;
