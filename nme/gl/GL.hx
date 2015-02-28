@@ -477,22 +477,22 @@ class GL
 
    public static function bindBuffer(target:Int, buffer:GLBuffer):Void 
    {
-      nme_gl_bind_buffer(target, buffer == null ? null : buffer.id);
+      nme_gl_bind_buffer(target, buffer);
    }
 
    public static function bindFramebuffer(target:Int, framebuffer:GLFramebuffer):Void 
    {
-      nme_gl_bind_framebuffer(target, framebuffer == null ? null : framebuffer.id);
+      nme_gl_bind_framebuffer(target, framebuffer);
    }
 
    public static function bindRenderbuffer(target:Int, renderbuffer:GLRenderbuffer):Void 
    {
-      nme_gl_bind_renderbuffer(target, renderbuffer == null ? null : renderbuffer.id);
+      nme_gl_bind_renderbuffer(target, renderbuffer);
    }
 
    public static function bindTexture(target:Int, texture:GLTexture):Void 
    {
-      nme_gl_bind_texture(target, texture == null ? null : texture.id);
+      nme_gl_bind_texture(target, texture);
    }
 
    public static function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void 
@@ -908,7 +908,7 @@ class GL
       nme_gl_link_program(program.id);
    }
 
-   private static function load(inName:String, inArgCount:Int):Dynamic 
+   public static function load(inName:String, inArgCount:Int):Dynamic 
    {
       try 
       {
@@ -1107,7 +1107,7 @@ class GL
 
    public static function useProgram(program:GLProgram):Void 
    {
-      nme_gl_use_program(program == null ? null : program.id);
+      nme_gl_use_program(program);
    }
 
    public static function validateProgram(program:GLProgram):Void 

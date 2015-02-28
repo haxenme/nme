@@ -27,6 +27,9 @@
 namespace nme
 {
 
+extern int _id_id;
+
+
 int gDirectMaxAttribArray = 0;
 
 enum ResoType
@@ -159,6 +162,74 @@ struct NmeInts
    }
 };
 
+struct AutoGCRootInit : public AutoGCRoot
+{
+   AutoGCRootInit() : AutoGCRoot(alloc_null()) { }
+};
+
+struct BoundTexture
+{
+   BoundTexture() : isCubeMap(false) { }
+
+   void set(value inValue, bool inIsCube) { id.set(inValue); isCubeMap = inIsCube; }
+
+   AutoGCRootInit id;
+   bool           isCubeMap;
+};
+
+struct GLCurrentData
+{
+   GLCurrentData()
+   {
+      maxTextureUnits = 0;
+      glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
+      // Hmmm
+      if (maxTextureUnits<8)
+         maxTextureUnits = 8;
+      activeTexture = 0;
+      textureBinding = new BoundTexture[maxTextureUnits];
+   }
+   ~GLCurrentData()
+   {
+      delete [] textureBinding;
+   }
+
+   void setCurrentTextureSlot(int inSlot)
+   {
+      activeTexture = inSlot;
+   }
+   void setTexture(value inTexture, bool inIsCube)
+   {
+      if (activeTexture>=0 && activeTexture<maxTextureUnits)
+         textureBinding[activeTexture].set(inTexture,inIsCube);
+   }
+   value getTexture(bool wantCube)
+   {
+      if (activeTexture>=0 && activeTexture<maxTextureUnits && textureBinding[activeTexture].isCubeMap==wantCube)
+         return textureBinding[activeTexture].id.get();
+
+      return alloc_null();
+   }
+
+   int            maxTextureUnits;
+   int            activeTexture;
+   BoundTexture   *textureBinding;
+
+   AutoGCRootInit arrayBufferBinding;
+   AutoGCRootInit elementArrayBufferBinding;
+   AutoGCRootInit currentProgram;
+   AutoGCRootInit framebufferBinding;
+   AutoGCRootInit renderbufferBinding;
+};
+
+// TODO - TLS
+static GLCurrentData *sGLCurrentData = 0;
+GLCurrentData *getGLCurrentData()
+{
+   if (!sGLCurrentData)
+     sGLCurrentData = new GLCurrentData();
+   return sGLCurrentData;
+}
 
 
 
@@ -298,7 +369,13 @@ unsigned int getResource(value inResource, ResoType inType)
    }
 
    return 0;
+}
 
+unsigned int getResourceId(value inResource, ResoType inType)
+{
+   if (val_is_null(inResource))
+      return 0;
+   return getResource(val_field(inResource,_id_id), inType);
 }
 
 value isResource(value inValue, ResoType inType)
@@ -479,13 +556,27 @@ value nme_gl_get_parameter(value pname_val)
          ints = 4;
          break;
 
-      // case GL_ARRAY_BUFFER_BINDING  WebGLBuffer
-      // case GL_CURRENT_PROGRAM  WebGLProgram
-      // case GL_ELEMENT_ARRAY_BUFFER_BINDING  WebGLBuffer
-      // case GL_FRAMEBUFFER_BINDING  WebGLFramebuffer
-      // case GL_RENDERBUFFER_BINDING  WebGLRenderbuffer
-      // case GL_TEXTURE_BINDING_2D  WebGLTexture
-      // case GL_TEXTURE_BINDING_CUBE_MAP  WebGLTexture
+      case GL_ARRAY_BUFFER_BINDING:
+         return getGLCurrentData()->arrayBufferBinding.get();
+
+      case GL_CURRENT_PROGRAM:
+         return getGLCurrentData()->currentProgram.get();
+
+      case GL_ELEMENT_ARRAY_BUFFER_BINDING:
+         return getGLCurrentData()->elementArrayBufferBinding.get();
+
+      case GL_FRAMEBUFFER_BINDING:
+         return getGLCurrentData()->framebufferBinding.get();
+
+      case GL_RENDERBUFFER_BINDING:
+         return getGLCurrentData()->renderbufferBinding.get();
+
+      case GL_TEXTURE_BINDING_2D:
+         return getGLCurrentData()->getTexture(false);
+
+      case GL_TEXTURE_BINDING_CUBE_MAP:
+         return getGLCurrentData()->getTexture(true);
+
 
       case GL_DEPTH_CLEAR_VALUE:
       case GL_LINE_WIDTH:
@@ -611,6 +702,17 @@ value nme_gl_get_parameter(value pname_val)
 }
 DEFINE_PRIM(nme_gl_get_parameter,1);
 
+
+// --- Id -------------------------------------------
+value nme_gl_resource_id(value inResource)
+{
+   NmeResource *resource = 0;
+   if (AbstractToObject(inResource,resource))
+      return alloc_int(resource->id);
+
+    return alloc_int(0);
+}
+DEFINE_PRIM(nme_gl_resource_id,1);
 
 // --- Is -------------------------------------------
 
@@ -957,7 +1059,8 @@ DEFINE_PRIM(nme_gl_get_program_parameter,2);
 value nme_gl_use_program(value inId)
 {
    DBGFUNC("useProgram");
-   int id = getResource(inId,resoProgram);
+   getGLCurrentData()->currentProgram.set(inId);
+   int id = getResourceId(inId,resoProgram);
    glUseProgram(id);
    return alloc_null();
 }
@@ -1393,8 +1496,14 @@ DEFINE_PRIM(nme_gl_get_shader_precision_format,2);
 value nme_gl_bind_buffer(value inTarget, value inId )
 {
    DBGFUNC("bindBuffer");
-   int id = getResource(inId,resoBuffer);
-   glBindBuffer(val_int(inTarget),id);
+   int id = getResourceId(inId,resoBuffer);
+   int target = val_int(inTarget);
+   if (target==GL_ARRAY_BUFFER)
+      getGLCurrentData()->arrayBufferBinding.set(inId);
+   else if (target==GL_ELEMENT_ARRAY_BUFFER)
+      getGLCurrentData()->elementArrayBufferBinding.set(inId);
+
+   glBindBuffer(target,id);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_buffer,2);
@@ -1526,7 +1635,8 @@ value nme_gl_bind_framebuffer(value target, value framebuffer)
    DBGFUNC("bindFramebuffer");
    if (CHECK_EXT(glBindFramebuffer))
    {
-      int id = getResource(framebuffer,resoFramebuffer);
+      getGLCurrentData()->framebufferBinding.set(framebuffer);
+      int id = getResourceId(framebuffer,resoFramebuffer);
       #ifdef IPHONE
       if (id==0)
       {
@@ -1549,7 +1659,8 @@ value nme_gl_bind_renderbuffer(value target, value renderbuffer)
    DBGFUNC("bindRenderbuffer");
    if (CHECK_EXT(glBindRenderbuffer))
    {
-      int id = getResource(renderbuffer,resoRenderbuffer);
+      getGLCurrentData()->renderbufferBinding.set(renderbuffer);
+      int id = getResourceId(renderbuffer,resoRenderbuffer);
       glBindRenderbuffer(val_int(target),id);
    }
    return alloc_null();
@@ -1805,7 +1916,9 @@ DEFINE_PRIM(nme_gl_sample_coverage,2);
 
 value nme_gl_active_texture(value inSlot)
 {
-   glActiveTexture( val_int(inSlot) );
+   int slot = val_int(inSlot);
+   getGLCurrentData()->setCurrentTextureSlot( slot - GL_TEXTURE0 );
+   glActiveTexture(slot);
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_active_texture,1);
@@ -1815,7 +1928,28 @@ DEFINE_PRIM(nme_gl_active_texture,1);
 value nme_gl_bind_texture(value inTarget, value inTexture)
 {
    DBGFUNC("bindTexture");
-   int tid = val_is_int(inTexture) ? val_int(inTexture) : getResource(inTexture,resoTexture);
+   int tid = 0;
+   int target = val_int(inTarget);
+   if (target!=GL_TEXTURE_2D && target!=GL_TEXTURE_CUBE_MAP)
+   {
+      ELOG("Warning invalid texture target %d", target);
+      return alloc_null();
+   }
+
+   value glObject = 0;
+
+   if (val_is_int(inTexture))
+   {
+      tid = val_int(inTexture);
+   }
+   else
+   {
+      glObject = inTexture;
+      tid = getResourceId(inTexture,resoTexture);
+   }
+
+   getGLCurrentData()->setTexture(glObject, target==GL_TEXTURE_CUBE_MAP);
+
    glBindTexture(val_int(inTarget), tid );
    return alloc_null();
 }

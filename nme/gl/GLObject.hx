@@ -37,7 +37,7 @@ class GLObject
 
    public function toString():String 
    {
-      return getType() + "(" + id + ")";
+      return getType() + "(" + nme_gl_resource_id(id) + ")";
    }
 
    // Getters & Setters
@@ -50,6 +50,10 @@ class GLObject
    {
       return isValid();
    }
+
+
+   private static var nme_gl_resource_id = GL.load("nme_gl_resource_id", 1);
+
 }
 
 #end

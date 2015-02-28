@@ -45,6 +45,8 @@ namespace nme
 {
 void InitCamera();
 
+// Not static
+int _id_id=0;
 
 static int _id_type;
 static int _id_x;
@@ -58,7 +60,6 @@ static int _id_width;
 static int _id_height;
 static int _id_length;
 static int _id_value;
-static int _id_id;
 static int _id_flags;
 static int _id_result;
 static int _id_code;
