@@ -1,3 +1,6 @@
+import cpp.cppia.HostClasses;
+
+
 class ScriptMain
 {
    public static function main()

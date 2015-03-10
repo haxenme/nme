@@ -26,10 +26,10 @@
 	</assets>
 
 	<assets path="Assets/sounds" rename="sounds" unless="web">
-		<sound path="3.wav" id="sound3" />
-		<sound path="4.wav" id="sound4" />
-		<sound path="5.wav" id="sound5" />
-		<music path="theme.mp3" id="soundTheme" />
+		<sound path="3.ogg" id="sound3" />
+		<sound path="4.ogg" id="sound4" />
+		<sound path="5.ogg" id="sound5" />
+		<music path="theme.ogg" id="soundTheme" />
 	</assets>
 	
 	<section if="release-sign">

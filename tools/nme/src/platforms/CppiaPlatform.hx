@@ -49,9 +49,6 @@ class CppiaPlatform extends Platform
 
    override public function run(arguments:Array<String>):Void 
    {
-      var deploy = project.getDef("deploy");
-
-
       var host = project.getDef("CPPIA_HOST");
       if (host==null)
       {

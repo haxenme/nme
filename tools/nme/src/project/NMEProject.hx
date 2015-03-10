@@ -342,7 +342,9 @@ class NMEProject
    {
       if (localDefines.exists(inName))
          return localDefines.get(inName);
-      return environment.get(inName);
+      if (environment.exists(inName))
+         return environment.get(inName);
+      return haxedefs.get(inName);
    }
 
    public function checkRelocation(inDir:String)

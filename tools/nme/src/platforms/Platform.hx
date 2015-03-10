@@ -33,6 +33,9 @@ class Platform
    var is64:Bool;
    var context:Dynamic;
    var outputFiles:Array<String>;
+   var manifest:String;
+   var md5s:Map<String,String>;
+   var remoteMd5s:Map<String,String>;
    var adbName:String;
    var adbFlags:Array<String>;
 
@@ -64,7 +67,6 @@ class Platform
       {
          Log.warn( inFile + " does not appear to be under " + base );
       }
- 
    }
 
    public function init()
@@ -161,6 +163,38 @@ class Platform
 
    public function createInstaller() { }
 
+   public function addManifest()
+   {
+      try
+      {
+         if (manifest==null)
+         {
+            md5s = new Map<String, String>();
+
+            var from = getOutputDir();
+            var lines = new Array<String>();
+            lines.push("name|" + project.app.title);
+            lines.push("developer|" + project.app.company);
+            for(filename in outputFiles)
+            {
+                var file = sys.io.File.getBytes(from+"/"+filename);
+                var md5 = haxe.crypto.Md5.make(file).toHex();
+                md5s.set(filename,md5);
+                lines.push("file|" + md5 + "|" + filename );
+            }
+            manifest = lines.join("\n");
+            var manifestName = getOutputDir() + "/manifest.txt";
+            sys.io.File.saveContent(manifestName, manifest);
+            outputFiles.push("manifest.txt");
+            Log.verbose("Created manifest : " + manifestName);
+         }
+      }
+      catch(e:Dynamic)
+      {
+         Log.error("Error creating manifest " + e);
+      }
+   }
+
    public function getResult(socket:Socket) : String
    {
       var fromSocket = socket.input;
@@ -218,9 +252,48 @@ class Platform
       Log.verbose(result);
    }
 
+   public function pullFile(socket:Socket, from:String) : haxe.io.Bytes
+   {
+      var toSocket = socket.output;
+      var message = "pull";
+      toSocket.writeInt32(message.length);
+      toSocket.writeString(message);
+
+      toSocket.writeInt32(from.length);
+      toSocket.writeString(from);
+
+
+      var fromSocket = socket.input;
+      var len = fromSocket.readInt32();
+      if (len==-1)
+         return null;
+
+      var bytes = haxe.io.Bytes.alloc(len);
+      fromSocket.readBytes(bytes,0,len);
+      Log.verbose("Pulled " + from + " bytes: " + bytes.length );
+      return bytes;
+   }
+
+   public function parseMd5s(inFile:String)
+   {
+      var result = new Map<String, String>();
+      for(line in inFile.split("\n"))
+      {
+         var parts = line.split("|");
+         if (parts[0]=="file")
+            result.set(parts[2],parts[1]);
+      }
+      return result;
+   }
+
+
+
    public function deploy(inAndRun:Bool) : Bool
    {
+      addManifest();
+
       var deploy = project.getDef("deploy");
+      Log.verbose("Deployment target " + deploy );
       if (deploy!=null)
       {
          var from = getOutputDir();
@@ -228,8 +301,7 @@ class Platform
          if (deploy.substr(0,4)=="adb:")
          {
             setupAdb();
-            var to = deploy.substr(4) + "/" + project.app.file;
-            trace(outputFiles);
+            var to = deploy.substr(4) + "/" + project.app.packageName;
             for(file in outputFiles)
             {
                Log.verbose("adb push " + file);
@@ -245,9 +317,20 @@ class Platform
             {
                socket.connect(host, 0xacad);
 
-               var to = project.app.file;
+               var to = project.app.packageName;
+
+               var manifest = project.hasDef("forcedeploy") ? null :  pullFile(socket, to+"/manifest.txt");
+               if (manifest!=null)
+                  remoteMd5s = parseMd5s(manifest.toString());
+
                for(file in outputFiles)
-                  transfer(socket, from+"/"+file, to+"/"+file);
+               {
+                  var remote = remoteMd5s==null ? null : remoteMd5s.get(file);
+                  if (remote==null || remote!=md5s.get(file))
+                     transfer(socket, from+"/"+file, to+"/"+file);
+                  else
+                     Log.verbose("Already deployed " + file);
+               }
 
                var ran = inAndRun && sendRun(socket, project.app.file);
                if (!ran || !inAndRun)
