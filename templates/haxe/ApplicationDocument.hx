@@ -17,7 +17,10 @@ class ApplicationDocument extends ::APP_MAIN::
 
       #if nme
       if (added!=null && added.stage!=null)
+      {
          added.dispatchEvent(new nme.events.Event(nme.events.Event.ADDED_TO_STAGE, false, false));
+         added.dispatchEvent(new nme.events.Event(nme.events.Event.ADDED, false, false));
+      }
       #end
    }
 }
