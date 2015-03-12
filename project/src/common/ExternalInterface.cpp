@@ -603,6 +603,15 @@ void FromValue(value obj, URLRequest &request)
   request.headers = headers;
   }
 }
+
+void print_field(value inValue, int id, void *cookie)
+{
+   if (val_is_string(inValue))
+      printf("Field : %d = %s\n",id,val_string(inValue));
+   else
+      printf("Field : %d = %f\n",id,val_number(inValue));
+}
+
 }
 
 #define DO_PROP_READ(Obj,obj_prefix,prop,Prop,to_val) \
@@ -2002,14 +2011,10 @@ value nme_display_object_global_to_local(value inObj,value ioPoint)
 
 DEFINE_PRIM(nme_display_object_global_to_local,2);
 
-void print_field(value inObj, int id, void *cookie)
-{
-   printf("Field : %d (%s)\n",id,val_string(val_field_name(id)));
-}
 
 value nme_type(value inObj)
 {
-   val_iter_fields(inObj, print_field, 0);
+   val_iter_fields(inObj, nme::print_field, 0);
    return alloc_null();
 }
 DEFINE_PRIM(nme_type,1);
