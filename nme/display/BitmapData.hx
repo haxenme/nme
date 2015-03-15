@@ -34,7 +34,7 @@ class BitmapData extends Surface implements IBitmapDrawable
 
    public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:Int, ?inGPUMode:Null<Int>) 
    {
-      super(inWidth, inHeight, inFillRGBA, inGPUMode );
+      super(inWidth, inHeight, inTransparent, inFillRGBA, inGPUMode );
 
       if (nmeHandle==null)
       {
