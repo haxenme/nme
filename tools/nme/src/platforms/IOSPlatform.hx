@@ -307,7 +307,7 @@ class IOSPlatform extends Platform
          copyApplicationMain(dbg + ".iphoneos-v7.a", "armv7" + dbg);
 
       if (buildArm64)
-         copyApplicationMain(dbg + ".iphoneos-6a.a", "armv64" + dbg);
+         copyApplicationMain(dbg + ".iphoneos-64.a", "arm64" + dbg);
 
       if (buildI386)
          copyApplicationMain(dbg + ".iphonesim.a", "i386" + dbg);
