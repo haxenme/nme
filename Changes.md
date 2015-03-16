@@ -1,4 +1,5 @@
 
+* Tag all classes with @:nativeProperty
 * Improve fat-line rendering
 * Fix ios-view
 * Fix TextField cursor
