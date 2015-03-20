@@ -97,7 +97,10 @@ class Graphics
 
    public function drawRoundRect(inX:Float, inY:Float, inWidth:Float, inHeight:Float, inRadX:Float, ?inRadY:Float) 
    {
-      nme_gfx_draw_round_rect(nmeHandle, inX, inY, inWidth, inHeight, inRadX, inRadY == null ? inRadX : inRadY);
+      if (inRadX==0 || inRadY==0)
+         nme_gfx_draw_rect(nmeHandle, inX, inY, inWidth, inHeight);
+      else
+         nme_gfx_draw_round_rect(nmeHandle, inX, inY, inWidth, inHeight, inRadX, inRadY == null ? inRadX : inRadY);
    }
 
    public function drawPath(commands:Array<Int>, data:Array<Float>, winding:String = GraphicsPathWinding.EVEN_ODD) 

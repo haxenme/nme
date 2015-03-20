@@ -794,26 +794,27 @@ public:
             case pcCurveTo:
                {
                double len = ((last_point-point[0]).Norm() + (point[1]-point[0]).Norm()) * 0.25;
-               if (len==0)
-                  break;
-               int steps = (int)len;
-               if (steps<3) steps = 3;
-               if (steps>100) steps = 100;
-               double step = 1.0/(steps+1);
-               double t = 0;
-               for(int s=0;s<steps;s++)
+               if (len!=0)
                {
-                  t+=step;
-                  double t_ = 1.0-t;
-                  UserPoint p = last_point * (t_*t_) + point[0] * (2.0*t*t_) + point[1] * (t*t);
-                  if (outline.last()!=p)
-                     outline.push_back(p);
+                  int steps = (int)len;
+                  if (steps<3) steps = 3;
+                  if (steps>100) steps = 100;
+                  double step = 1.0/(steps+1);
+                  double t = 0;
+                  for(int s=0;s<steps;s++)
+                  {
+                     t+=step;
+                     double t_ = 1.0-t;
+                     UserPoint p = last_point * (t_*t_) + point[0] * (2.0*t*t_) + point[1] * (t*t);
+                     if (outline.last()!=p)
+                        outline.push_back(p);
+                  }
+                  last_point = point[1];
+                  if (outline.last()!=last_point)
+                      outline.push_back(last_point);
+                  points++;
                }
-               last_point = point[1];
-               if (outline.last()!=last_point)
-                   outline.push_back(last_point);
                point += 2;
-               points++;
                }
                break;
 
@@ -924,7 +925,7 @@ public:
          double dpLen = dp.x*dp.x + dp.y*dp.y;
          if (dpLen < 0.0001)
          {
-            curve.erase(startPoint,1);
+            curve.erase(std::max(startPoint,startNext),1);
             // will be incremented again
             startPoint--;
             continue;
@@ -985,6 +986,7 @@ public:
                   double a =  (fabs(dp.x) > fabs(dp.y)) ? (l0.x + b*dl.x - p0.x)/dp.x :
                                                           (l0.y + b*dl.y - p0.y)/dp.y;
                   //if (a>=0 && a<=1) equals case?
+                  if ( (a!=1 && a!=0) || (b!=1 && b!=0) )
                   {
                      if (a>=0 && a<=1)
                      {
@@ -1109,6 +1111,7 @@ public:
 
 
 
+   #if 0
    void removeLoops(QuickVec<CurveEdge> &curve,int startPoint,float turningPoint,int *inAdjustStart=0)
    {
       if (DEBUG_KEEP_LOOPS!=0)
@@ -1197,6 +1200,7 @@ public:
          }
       }
    }
+   #endif
 
 
    void AddCurveSegment(Curves &leftCurve, Curves &rightCurve,
