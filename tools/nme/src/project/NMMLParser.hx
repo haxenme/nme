@@ -805,6 +805,9 @@ class NMMLParser
                case "dependency":
                   project.dependencies.push(substitute(element.att.name));
 
+               case "engine":
+                  project.engines.set(substitute(element.att.name),
+                                      substitute(element.att.version));
                case "arch":
                   var arch = substitute(element.att.value);
                   switch(arch)

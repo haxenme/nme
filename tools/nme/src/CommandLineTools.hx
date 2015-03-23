@@ -945,6 +945,18 @@ class CommandLineTools
       }
 
       project.localDefines.set("PROJECT_FILE", projFile);
+
+      if ( (project.hasDef("scriptable") || project.target==Platform.NME || project.target==Platform.CPPIA) &&
+            project.hasDef("CPPIA_CLASSPATH"))
+      {
+         var include = project.getDef("CPPIA_CLASSPATH") + "/include.xml";
+         if (FileSystem.exists(include))
+         {
+            Log.verbose("Read from CPPIA_CLASSPATH " + include); 
+            new NMMLParser(project,include);
+         }
+      }
+
       project.processStdLibs();
 
       // Better way to do this?
@@ -1095,10 +1107,6 @@ class CommandLineTools
          project.debug = debug = true;
          Log.verbose("Using debug option from setting");
       }
-      if (storeData.cppiaClassPath!=null)
-         project.localDefines.set("CPPIA_CLASSPATH", storeData.cppiaClassPath);
-      if (storeData.cppiaHost!=null)
-         project.localDefines.set("CPPIA_HOST", storeData.cppiaHost);
 
 
       // Haxelib bug
@@ -1115,6 +1123,10 @@ class CommandLineTools
 
       processArguments(project);
 
+      if (storeData.cppiaClassPath!=null && !project.hasDef("CPPIA_CLASSPATH") )
+         project.localDefines.set("CPPIA_CLASSPATH", storeData.cppiaClassPath);
+      if (storeData.cppiaHost!=null)
+         project.localDefines.set("CPPIA_HOST", storeData.cppiaHost);
 
 
       if (Log.mVerbose && command!="") 

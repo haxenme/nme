@@ -1,6 +1,7 @@
 package platforms;
 
 import sys.FileSystem;
+import sys.io.File;
 import haxe.io.Path;
 import sys.net.Host;
 import sys.net.Socket;
@@ -33,7 +34,7 @@ class Platform
    var is64:Bool;
    var context:Dynamic;
    var outputFiles:Array<String>;
-   var manifest:String;
+   var manifest:Dynamic;
    var md5s:Map<String,String>;
    var remoteMd5s:Map<String,String>;
    var adbName:String;
@@ -163,29 +164,58 @@ class Platform
 
    public function createInstaller() { }
 
+   public function createManifestHeader(?inBody:haxe.io.Bytes, includeIcon=false)
+   {
+      var header:Dynamic = {};
+      header.name = project.app.title;
+      header.developer = project.app.company;
+      header.id = project.app.packageName;
+      header.engines = new Array<Dynamic>();
+      for(engine in project.engines.keys())
+         header.engines.push( {name:engine, version:project.engines.get(engine)} );
+
+      if (includeIcon)
+      {
+         try
+         {
+            var icon = IconHelper.getSvgIcon(project.icons);
+            if (icon!=null)
+               header.svgIcon = File.getContent(icon);
+            else
+            {
+               var iconFile = getOutputDir() + "/icon.png";
+               header.bmpIcon = haxe.crypto.Base64.encode(File.getBytes(icon));
+            }
+         }
+      }
+      return header;
+   }
+
    public function addManifest()
    {
       try
       {
          if (manifest==null)
          {
-            md5s = new Map<String, String>();
+            manifest = {};
+            manifest.header = createManifestHeader();
+            md5s = new Map<String,String>();
+
+            var headerMd5s:Dynamic = {};
 
             var from = getOutputDir();
             var lines = new Array<String>();
-            lines.push("name|" + project.app.title);
-            lines.push("developer|" + project.app.company);
             for(filename in outputFiles)
             {
                 var file = sys.io.File.getBytes(from+"/"+filename);
                 var md5 = haxe.crypto.Md5.make(file).toHex();
                 md5s.set(filename,md5);
-                lines.push("file|" + md5 + "|" + filename );
+                Reflect.setField(headerMd5s,filename,md5);
             }
-            manifest = lines.join("\n");
-            var manifestName = getOutputDir() + "/manifest.txt";
-            sys.io.File.saveContent(manifestName, manifest);
-            outputFiles.push("manifest.txt");
+            manifest.md5s = headerMd5s;
+            var manifestName = getOutputDir() + "/manifest.json";
+            sys.io.File.saveContent(manifestName, haxe.Json.stringify(manifest) );
+            outputFiles.push("manifest.json");
             Log.verbose("Created manifest : " + manifestName);
          }
       }
@@ -277,16 +307,25 @@ class Platform
    public function parseMd5s(inFile:String)
    {
       var result = new Map<String, String>();
-      for(line in inFile.split("\n"))
+      try
       {
-         var parts = line.split("|");
-         if (parts[0]=="file")
-            result.set(parts[2],parts[1]);
+         var json = haxe.Json.parse(inFile);
+         if (json!=null)
+         {
+            var md5s = json.md5s;
+            if (md5s!=null)
+               for(key in Reflect.fields(md5s))
+                  result.set(key, Reflect.field(md5s,key));
+            else
+               Log.warn("Missing md5s in manifest");
+         }
+      }
+      catch(e:Dynamic)
+      {
+         Log.warn("Invalid Json format " + e);
       }
       return result;
    }
-
-
 
    public function deploy(inAndRun:Bool) : Bool
    {
@@ -319,7 +358,7 @@ class Platform
 
                var to = project.app.packageName;
 
-               var manifest = project.hasDef("forcedeploy") ? null :  pullFile(socket, to+"/manifest.txt");
+               var manifest = project.hasDef("forcedeploy") ? null :  pullFile(socket, to+"/manifest.json");
                if (manifest!=null)
                   remoteMd5s = parseMd5s(manifest.toString());
 
@@ -332,7 +371,7 @@ class Platform
                      Log.verbose("Already deployed " + file);
                }
 
-               var ran = inAndRun && sendRun(socket, project.app.file);
+               var ran = inAndRun && sendRun(socket, project.app.packageName);
                if (!ran || !inAndRun)
                   bye(socket);
                socket.close();

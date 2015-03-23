@@ -37,6 +37,17 @@ class AndroidConfig
    }
 }
 
+class Engine
+{
+   public function new(inName:String, inVersion:String)
+   {
+      name = inName;
+      version = inVersion;
+   }
+   public var name:String;
+   public var version:String;
+}
+
 class IOSConfig
 {
    inline public static var IPHONE     = 0x01;
@@ -74,6 +85,7 @@ class NMEProject
    public var staticLink:Bool;
    public var stdLibs:Bool;
    public var relocationDir:String;
+   public var engines:Map<String, String>;
 
    // ios/android build parameters
    public var iosConfig:IOSConfig;
@@ -135,6 +147,7 @@ class NMEProject
       targetFlags = new Map<String,String>();
       templatePaths = [];
       ndllCheckDir = "";
+      engines = new Map<String,String>();
 
       environment = Sys.environment();
       if (environment.exists("ANDROID_SERIAL"))
@@ -191,11 +204,10 @@ class NMEProject
             targetFlags.set("cpp", "");
             targetFlags.set("cppia", "");
             haxedefs.set("cppia","");
-            addLib("cppia-vm", "lib");
             var cp = getDef("CPPIA_CLASSPATH");
             if (cp!=null)
                classPaths.push(cp);
-            macros.push("--macro cppia.Vm.vmImport()");
+            macros.push("--macro cpp.cppia.HostClasses.include()");
 
          case "neko":
             target = PlatformHelper.hostPlatform;
@@ -536,6 +548,10 @@ class NMEProject
 
 
       context.APP_PACKAGE = app.packageName;
+      var engineArray = new Array<Dynamic>();
+      for(key in engines.keys())
+         engineArray.push( {name:key, version:engines.get(key) } );
+      context.ENGINES = engineArray;
 
       for(field in Reflect.fields(window)) 
          Reflect.setField(context, "WIN_" + StringHelper.formatUppercaseVariable(field), Reflect.field(window, field));

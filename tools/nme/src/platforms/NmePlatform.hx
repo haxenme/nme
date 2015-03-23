@@ -44,6 +44,10 @@ class NmePlatform extends CppiaPlatform
       var zipfileBytes = bytesOutput.getBytes();
       // Save the zipped file to disc
       var filename = getOutputDir() + "/" + project.app.file + ".nme";
+
+      //var outfile = File.openOut();
+      //var header = createManifestHeader(zipfileBytes, true);
+
       var file = File.write(filename, true);
       file.write(zipfileBytes);
       file.close();

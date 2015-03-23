@@ -22,6 +22,10 @@ import wx.Assets;
 
 class ApplicationMain
 {
+   static public var engines : Array<Dynamic> = [
+      ::foreach ENGINES:: { name: "::name::", version:"::version::" }, ::end::
+   ];
+
 
    #if waxe
    static public var frame : wx.Frame;
