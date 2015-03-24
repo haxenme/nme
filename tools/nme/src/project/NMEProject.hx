@@ -199,8 +199,8 @@ class NMEProject
             target = PlatformHelper.hostPlatform;
             targetFlags.set("cpp", "");
 
-         case "cppia","nme":
-            target = inTargetName=="nme" ? Platform.NME : Platform.CPPIA;
+         case "cppia":
+            target = Platform.CPPIA;
             targetFlags.set("cpp", "");
             targetFlags.set("cppia", "");
             haxedefs.set("cppia","");
@@ -290,7 +290,7 @@ class NMEProject
             platformType = Platform.TYPE_WEB;
             embedAssets = true;
 
-         case Platform.CPPIA, Platform.NME:
+         case Platform.CPPIA:
             platformType = Platform.TYPE_SCRIPT;
             embedAssets = false;
 

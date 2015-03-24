@@ -1,5 +1,6 @@
 package nme.script;
 import nme.utils.ByteArray;
+import haxe.io.Bytes;
 
 using StringTools;
 
@@ -22,8 +23,23 @@ class Nme
    }
 
 
-   public static function runInput(input:haxe.io.BytesInput)
+   public static function runInput(input:haxe.io.Input, ?verify:Dynamic->Bytes->Void)
    {
+      var magic = input.readString(4);
+      if (magic!="NME!")
+         throw "NME - bad magic";
+      input.bigEndian = false;
+      var headerLen = input.readInt32();
+      var zipLen = input.readInt32();
+      var header = haxe.Json.parse( input.readString(headerLen) );
+
+      if (verify!=null)
+      {
+         var bytes = input.readBytes(zipLen);
+         verify(header, bytes);
+         input = new haxe.io.BytesInput(bytes);
+      }
+
       var zip = new haxe.zip.Reader( input );
       var entries = zip.read();
       var script:String = null;
@@ -58,16 +74,17 @@ class Nme
       #end
    }
 
-   public static function runFile(inFilename:String)
+   public static function runFile(inFilename:String,?verify:Dynamic->Bytes->Void)
    {
       #if (cpp && !cppia)
       if (inFilename.endsWith(".nme"))
       {
          var bytes = sys.io.File.getBytes(inFilename);
-         runInput( new haxe.io.BytesInput(bytes) );
+         runInput( new haxe.io.BytesInput(bytes), verify );
       }
       else
       {
+         nme.Assets.scriptBase = haxe.io.Path.directory(inFilename) + "/assets/";
          var contents = sys.io.File.getContent(inFilename);
          cpp.cppia.Host.run(contents);
       }

@@ -17,7 +17,6 @@ class Platform
    public static inline var WINDOWS = "WINDOWS";
    public static inline var ANDROIDVIEW = "ANDROIDVIEW";
    public static inline var CPPIA = "CPPIA";
-   public static inline var NME = "NME";
 
 
    public static inline var TYPE_WEB = "WEB";

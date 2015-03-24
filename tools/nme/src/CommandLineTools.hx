@@ -9,6 +9,7 @@ import nme.system.System;
 import nme.Loader;
 import nme.net.SharedObject;
 import NMEProject;
+using StringTools;
 
 
 class CommandLineTools 
@@ -34,7 +35,7 @@ class CommandLineTools
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
-            "windows", "mac", "linux", "flash", "cppia", "nme" ];
+            "windows", "mac", "linux", "flash", "cppia" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset",
@@ -87,10 +88,8 @@ class CommandLineTools
 
          case Platform.CPPIA:
             platform = new platforms.CppiaPlatform(project);
-
-         case Platform.NME:
-            platform = new platforms.NmePlatform(project);
       }
+
       if (platform != null) 
       {
          platform.init();
@@ -946,8 +945,7 @@ class CommandLineTools
 
       project.localDefines.set("PROJECT_FILE", projFile);
 
-      if ( (project.hasDef("scriptable") || project.target==Platform.NME || project.target==Platform.CPPIA) &&
-            project.hasDef("CPPIA_CLASSPATH"))
+      if ( (project.hasDef("scriptable") || project.target==Platform.CPPIA) && project.hasDef("CPPIA_CLASSPATH"))
       {
          var include = project.getDef("CPPIA_CLASSPATH") + "/include.xml";
          if (FileSystem.exists(include))
@@ -1070,6 +1068,21 @@ class CommandLineTools
       }
    }
 
+   public static function runNme(project:NMEProject)
+   {
+      if (words.length!=1)
+         Log.error("Expected nme file.nme [-args extra args]");
+
+      var host = project.getDef("CPPIA_HOST");
+      if (host==null)
+      {
+         Log.error("Please define CPPIA_HOST to run the application");
+      }
+      var fullPath =  FileSystem.fullPath(words[0]);
+
+      ProcessHelper.runCommand("", host, [fullPath].concat(additionalArguments));
+   }
+
 
 
    public static function main():Void 
@@ -1139,6 +1152,9 @@ class CommandLineTools
       {
          case "":
             displayInfo(true);
+
+         case "nme":
+            runNme(project);
 
          case "help":
             displayHelp();
@@ -1368,6 +1384,7 @@ class CommandLineTools
          }
       }
 
+
       for(w in 0...words.length)
       {
          if (isCommand(words[w]))
@@ -1377,6 +1394,9 @@ class CommandLineTools
             break;
          }
       }
+
+      if (command=="" && words.length==1 && words[0].endsWith(".nme"))
+         command = "nme";
 
       if (command=="" && storeData.command!=null)
       {

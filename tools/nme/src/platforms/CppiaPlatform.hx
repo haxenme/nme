@@ -5,6 +5,7 @@ import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
 
+
 class CppiaPlatform extends Platform
 {
    private var applicationDirectory:String;
@@ -57,6 +58,57 @@ class CppiaPlatform extends Platform
       var fullPath =  FileSystem.fullPath('$applicationDirectory/ScriptMain.cppia');
       ProcessHelper.runCommand("", host, [fullPath].concat(arguments));
    }
+
+
+   override public function createInstaller()
+   {
+      var dir = getOutputDir();
+      var bytesOutput = new haxe.io.BytesOutput();
+      var writer = new haxe.zip.Writer(bytesOutput);
+
+      var entries:List<haxe.zip.Entry> = new List();
+      for(file in outputFiles)
+      {
+         var src = dir + "/" + file;
+         var bytes = sys.io.File.getBytes(src);
+         // Add our text data entry:
+         var entry =
+           {
+               fileName : file,
+               fileSize : bytes.length,
+               fileTime : Date.now(),
+               compressed : false,
+               dataSize : 0,
+               data : bytes,
+               crc32 : haxe.crypto.Crc32.make(bytes),
+               extraFields : new List()
+           };
+         haxe.zip.Tools.compress(entry,5);
+         entries.add(entry);
+      }
+      writer.write(entries);
+
+      // Grab the zipped file from the output stream
+      var zipfileBytes = bytesOutput.getBytes();
+      // Save the zipped file to disc
+      var filename = getOutputDir() + "/" + project.app.file + ".nme";
+
+      var outfile = sys.io.File.write(filename,true);
+      outfile.bigEndian = false;
+      outfile.writeString("NME!");
+      var header = haxe.Json.stringify( createManifestHeader(zipfileBytes, true) );
+      outfile.writeInt32(header.length);
+      outfile.writeInt32(zipfileBytes.length);
+      outfile.writeString(header);
+      outfile.writeBytes(zipfileBytes,0,zipfileBytes.length);
+      outfile.close();
+
+      Log.verbose("Wrote " + filename + " data=" + zipfileBytes.length);
+   }
+
+
+
+
 }
 
 
