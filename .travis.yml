@@ -24,9 +24,9 @@ before_install:
 - haxe compile.hxml
 - cd ~/hxcpp/project
 - neko build.n linux-m64
-- haxelib install nme-dev
-- haxelib install format
-- haxelib install gm2d
+- haxelib -notimeout install nme-dev
+- haxelib -notimeout install format
+- haxelib -notimeout install gm2d
 script:
 - cd $TRAVIS_BUILD_DIR/tools/nme
 - haxe compile.hxml
