@@ -35,7 +35,8 @@ class Nme
 
       if (verify!=null)
       {
-         var bytes = input.readBytes(zipLen);
+         var bytes = haxe.io.Bytes.alloc(zipLen);
+         input.readBytes(bytes,0,zipLen);
          verify(header, bytes);
          input = new haxe.io.BytesInput(bytes);
       }
@@ -66,11 +67,13 @@ class Nme
          }
       }
       #if (cpp && !cppia)
-      if (script==null)
-         throw "Could not find script in input";
-      cpp.cppia.Host.run(script);
+         if (script==null)
+            throw "Could not find script in input";
+         #if (hxcpp_api_level>=320)
+            cpp.cppia.Host.run(script);
+         #end
       #else
-      throw "Script not available on this platform";
+         throw "Script not available on this platform";
       #end
    }
 
@@ -86,7 +89,9 @@ class Nme
       {
          nme.Assets.scriptBase = haxe.io.Path.directory(inFilename) + "/assets/";
          var contents = sys.io.File.getContent(inFilename);
+         #if (hxcpp_api_level>=320)
          cpp.cppia.Host.run(contents);
+         #end
       }
       #else
       throw "Script not available on this platform";
@@ -96,14 +101,16 @@ class Nme
    public static function runResource(?inResource:String)
    {
       #if (cpp && !cppia)
-      if (inResource==null)
-          inResource = "ScriptMain.cppia";
-      var script = nme.Assets.getString(inResource);
-      if (script==null)
-         throw "Could not find resource script " + inResource;
-      cpp.cppia.Host.run(script);
+         if (inResource==null)
+             inResource = "ScriptMain.cppia";
+         var script = nme.Assets.getString(inResource);
+         if (script==null)
+            throw "Could not find resource script " + inResource;
+         #if (hxcpp_api_level>=320)
+            cpp.cppia.Host.run(script);
+         #end
       #else
-      throw "Script not available on this platform";
+         throw "Script not available on this platform";
       #end
    }
 }
