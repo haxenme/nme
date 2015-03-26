@@ -20,8 +20,9 @@ class NDLL
       allowMissing = inAllowMissing;
       if (isStatic)
       {
+         var importName = name == "mysql5" ? "mysql" : name;
          importStatic = "import " + haxelib.name + ".Static" +
-            name.substr(0,1).toUpperCase()  + name.substr(1) + ";\n";
+            importName.substr(0,1).toUpperCase()  + importName.substr(1) + ";\n";
       }
    }
 

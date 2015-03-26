@@ -75,7 +75,7 @@ class System
       return "android";
       #elseif iphone
       return "ios";
-      #elsif "js"
+      #elseif js
       return "js";
       #else
       return Sys.systemName().toLowerCase();
@@ -105,6 +105,8 @@ class System
       if (func==null)
           throw "Could not find getLocalIpAddress function";
       return func();
+      #elseif iphone
+      return nme_get_local_ip_address();
       #else
       return sys.net.Host.localhost();
       #end
@@ -113,6 +115,9 @@ class System
 
    // Native Methods
    private static var nme_get_unique_device_identifier = Loader.load("nme_get_unique_device_identifier", 0);
+   #if iphone
+   private static var nme_get_local_ip_address = Loader.load("nme_get_local_ip_address", 0);
+   #end
 }
 
 #else

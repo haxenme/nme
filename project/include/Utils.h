@@ -92,6 +92,7 @@ extern std::string gVersion;
 extern std::string gFile;
 
 const std::string GetUniqueDeviceIdentifier();
+std::string GetLocalIPAddress();
 const std::string &GetResourcePath();
 
 

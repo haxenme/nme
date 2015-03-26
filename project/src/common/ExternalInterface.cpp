@@ -946,6 +946,17 @@ value nme_get_unique_device_identifier()
 }
 DEFINE_PRIM(nme_get_unique_device_identifier,0);
 
+value nme_get_local_ip_address()
+{
+#if defined(IPHONE)
+  return alloc_string(GetLocalIPAddress().c_str());
+#else
+  return alloc_null();
+#endif
+}
+DEFINE_PRIM(nme_get_local_ip_address,0);
+
+
 
 
 value nme_set_icon( value path ) {

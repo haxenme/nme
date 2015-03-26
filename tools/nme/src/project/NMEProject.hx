@@ -217,11 +217,13 @@ class NMEProject
 
          case "ios":
             target = Platform.IOS;
+            haxedefs.set("iphone", "1");
             targetFlags.set("iphonesim", "");
             targetFlags.set("iphoneos", "");
 
          case "iphone", "iphoneos":
             target = Platform.IOS;
+            haxedefs.set("iphone", "1");
             targetFlags.set("iphoneos", "");
 
          case "iosview", "ios-view":
@@ -230,6 +232,7 @@ class NMEProject
             targetFlags.set("nativeview", "");
             haxedefs.set("nativeview","1");
             haxedefs.set("iosview","1");
+            haxedefs.set("iphone", "1");
             target = Platform.IOSVIEW;
 
          case "androidview", "android-view":
@@ -243,6 +246,7 @@ class NMEProject
 
          case "iphonesim":
             target = Platform.IOS;
+            haxedefs.set("iphone", "1");
             targetFlags.set("simulator", "");
 
          case "android":
@@ -473,10 +477,13 @@ class NMEProject
          }
 
          var haxelib = findHaxelib(haxelibName);
-         if (haxelib == null)
+         if (haxelib == null || haxelibName=="hxcpp" )
          {
-            haxelib = new Haxelib(haxelibName,version);
-            haxelibs.push(haxelib);
+            if (haxelib==null)
+            {
+               haxelib = new Haxelib(haxelibName,version);
+               haxelibs.push(haxelib);
+            }
 
             var path = PathHelper.getHaxelib(haxelib);
             Log.verbose("Adding " + haxelibName + "@" + path);
@@ -485,7 +492,10 @@ class NMEProject
             else if (FileSystem.exists(path + "/include.xml")) 
                new NMMLParser(this, path + "/include.xml");
 
-            if (!isFlash && (!allowMissingNdll || FileSystem.exists(path+"/ndll"+ndllCheckDir) ))
+            var ndllPart = haxelibName=="hxcpp" ? "/bin" : "/ndll";
+            if (isStatic)
+               ndllPart = "/lib";
+            if (!isFlash && (!allowMissingNdll || FileSystem.exists(path+ndllPart+ndllCheckDir) ))
             {
                var ndll = new NDLL(name, haxelib, isStatic, allowMissingNdll);
                ndlls.push(ndll);

@@ -229,7 +229,7 @@ class Server
    {
       var hostName = nme.system.System.getLocalIpAddress();
       var host = new sys.net.Host(hostName);
-      log(" Listening on " + host);
+      log(" Listening on " + host + " (" + hostName + ")");
       connectionStatus = "Create socket";
       socket = new Socket();
       try

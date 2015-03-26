@@ -1,6 +1,8 @@
 //#include <ApplicationServices/ApplicationServices.h>
 #import <UIKit/UIKit.h>
 #include <Utils.h>
+#import <ifaddrs.h>
+#import <arpa/inet.h>
 
 namespace nme
 {
@@ -9,6 +11,39 @@ void nmeLog(const char *inMessage)
 {
    NSLog(@"%s", inMessage);
 }
+
+std::string GetLocalIPAddress()
+{
+    std::string result = "localhost";
+    struct ifaddrs *interfaces = 0;
+    struct ifaddrs *temp_addr = 0;
+    int success = 0;
+    // retrieve the current interfaces - returns 0 on success
+    success = getifaddrs(&interfaces);
+    if (success == 0)
+    {
+       // Loop through linked list of interfaces
+       temp_addr = interfaces;
+       while(temp_addr)
+       {
+          if (temp_addr->ifa_addr->sa_family == AF_INET)
+          {
+             // Check if interface is en0 which is the wifi connection on the iPhone
+             std::string aName = temp_addr->ifa_name;
+             if (aName=="en0")
+             {
+                // Get NSString from C String
+                result = inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr);               
+                break;
+             }
+          }
+          temp_addr = temp_addr->ifa_next;
+       }
+    }
+    // Free memory
+    freeifaddrs(interfaces);
+    return result;
+} 
 
 
 bool LaunchBrowser(const char *inUtf8URL)
