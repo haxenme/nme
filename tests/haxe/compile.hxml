@@ -1,0 +1,4 @@
+-cpp bin
+-cp ../../../nme
+-main TestMain
+-D HXCPP_M64
