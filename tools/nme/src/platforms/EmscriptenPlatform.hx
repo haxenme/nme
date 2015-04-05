@@ -12,6 +12,7 @@ class EmscriptenPlatform extends DesktopPlatform
    private var executablePath:String;
    private var ext:String;
    private var sdkPath:String;
+   private var python:String;
 
    public function new(inProject:NMEProject)
    {
@@ -49,16 +50,23 @@ class EmscriptenPlatform extends DesktopPlatform
    override public function run(arguments:Array<String>):Void 
    {
       var command = sdkPath==null ? "emrun" : sdkPath + "/emrun";
-      ProcessHelper.runCommand(applicationDirectory, command, [Path.withoutDirectory(executablePath)].concat(arguments) );
+      if (python!=null)
+      {
+         PathHelper.addExePath( haxe.io.Path.directory(python) );
+         ProcessHelper.runCommand(applicationDirectory, "python", [command].concat([Path.withoutDirectory(executablePath)]).concat(arguments) );
+      }
+      else
+         ProcessHelper.runCommand(applicationDirectory, command, [Path.withoutDirectory(executablePath)].concat(arguments) );
    }
 
    public function setupSdk()
    {
-      if (project.hasDef("EMSCRIPTEN_SDK"))
-      {
+      var hasSdk = project.hasDef("EMSCRIPTEN_SDK");
+      if (hasSdk)
          sdkPath = project.getDef("EMSCRIPTEN_SDK");
-         return;
-      }
+      var hasPython = project.hasDef("EMSCRIPTEN_PYTHON");
+      if (hasPython)
+         python = project.getDef("EMSCRIPTEN_PYTHON");
 
       var home = CommandLineTools.home;
       var file = home + "/.emscripten";
@@ -73,10 +81,13 @@ class EmscriptenPlatform extends DesktopPlatform
             {
                var name = value.matched(1);
                var val= value.matched(2);
-               if (name=="EMSCRIPTEN_ROOT")
+               if (!hasSdk && name=="EMSCRIPTEN_ROOT")
                {
                   sdkPath=val;
-                  return;
+               }
+               if (!hasPython && name=="PYTHON")
+               {
+                  python=val;
                }
             }
          }

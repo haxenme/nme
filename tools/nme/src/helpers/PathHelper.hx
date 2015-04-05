@@ -462,6 +462,14 @@ class PathHelper
       }
    }
 
+   public static function addExePath(path:String)
+   {
+      var sep = PlatformHelper.hostPlatform == Platform.WINDOWS ? ";" : ":";
+      var add = path + sep + Sys.getEnv("PATH");
+      Sys.putEnv("PATH", add);
+   }
+
+
    public static function tryFullPath(path:String):String 
    {
       try 
