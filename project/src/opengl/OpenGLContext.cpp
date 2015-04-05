@@ -413,8 +413,10 @@ public:
       if (!inData.mVertexBo)
       {
          data = &inData.mArray[0];
+         #ifndef EMSCRIPTEN
          inData.mRendersWithoutVbo++;
          if ( inData.mRendersWithoutVbo>4)
+         #endif
          {
             glGenBuffers(1,&inData.mVertexBo);
             inData.mVboOwner = this;

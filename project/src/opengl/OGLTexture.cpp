@@ -1,9 +1,16 @@
 #include "./OGL.h"
 
+#define SWAP_RB 0
+
 // 0xAARRGGBB
-#if defined(ANDROID) || defined(EMSCRIPTEN)
+#if defined(ANDROID)
    #define ARGB_STORE GL_BGRA_EXT
    #define ARGB_PIXEL GL_BGRA_EXT
+#elif defined(EMSCRIPTEN)
+   #undef SWAP_RB
+   #define SWAP_RB 1
+   #define ARGB_STORE GL_RGBA
+   #define ARGB_PIXEL GL_RGBA
 #elif defined(IPHONE)
    #define ARGB_STORE GL_RGBA
    #define ARGB_PIXEL GL_BGRA
@@ -140,7 +147,7 @@ public:
       int *multiplyAlpha = mMultiplyAlphaOnLoad ? getAlpha16Table() : 0;
 
       bool copy_required = mSurface->GetBase() &&
-           (w!=mPixelWidth || h!=mPixelHeight || multiplyAlpha );
+           (w!=mPixelWidth || h!=mPixelHeight || multiplyAlpha || SWAP_RB );
 
       Surface *load = mSurface;
 
@@ -190,9 +197,19 @@ public:
                 for(int x=0;x<mPixelWidth;x++)
                 {
                    int a16 = multiplyAlpha[src[3]];
-                   b[0] = (src[0]*a16)>>16;
-                   b[1] = (src[1]*a16)>>16;
-                   b[2] = (src[2]*a16)>>16;
+                   if (SWAP_RB)
+                   {
+                      b[0] = (src[2]*a16)>>16;
+                      b[1] = (src[1]*a16)>>16;
+                      b[2] = (src[0]*a16)>>16;
+                   }
+                   else
+                   {
+                      b[0] = (src[0]*a16)>>16;
+                      b[1] = (src[1]*a16)>>16;
+                      b[2] = (src[2]*a16)>>16;
+                   }
+       
                    b[3] = src[3];
                    b+=4;
                    src+=4;
@@ -200,7 +217,20 @@ public:
              }
              else
              {
-                memcpy(b,src,mPixelWidth*pw);
+                if (SWAP_RB)
+                {
+                   for(int x=0;x<mPixelWidth;x++)
+                   {
+                      b[0] = src[2];
+                      b[1] = src[1];
+                      b[2] = src[0];
+                      b[3] = src[3];
+                      b+=4;
+                      src+=4;
+                   }
+                }
+                else
+                   memcpy(b,src,mPixelWidth*pw);
                 b+=mPixelWidth*pw;
              }
              // Duplucate last pixel to help with bilinear interp...
@@ -285,6 +315,9 @@ public:
          #if defined(NME_GLES)
          needsCopy = true;
          #endif
+			if (SWAP_RB && pw==4)
+            needsCopy = true;
+
 
          if (needsCopy)
          {
@@ -320,12 +353,37 @@ public:
                   uint8 *dest = buffer + y*dw*pw;
                   if (multiplyAlpha && pw==4)
                   {
+                     if (SWAP_RB)
+                        for(int x=0;x<dw;x++)
+                        {
+                           int a16 = multiplyAlpha[p0[3]];
+                           dest[0] = (p0[2]*a16)>>16;
+                           dest[1] = (p0[1]*a16)>>16;
+                           dest[2] = (p0[0]*a16)>>16;
+                           dest[3] = p0[3];
+                           dest+=4;
+                           p0+=4;
+                        }
+                     else
+                        for(int x=0;x<dw;x++)
+                        {
+                           int a16 = multiplyAlpha[p0[3]];
+                           dest[0] = (p0[0]*a16)>>16;
+                           dest[1] = (p0[1]*a16)>>16;
+                           dest[2] = (p0[2]*a16)>>16;
+                           dest[3] = p0[3];
+                           dest+=4;
+                           p0+=4;
+                        }
+                     p0 += mSurface->GetStride() - dw*4;
+                  }
+                  else if (SWAP_RB && pw==4)
+                  {
                      for(int x=0;x<dw;x++)
                      {
-                        int a16 = multiplyAlpha[p0[3]];
-                        dest[0] = (p0[0]*a16)>>16;
-                        dest[1] = (p0[1]*a16)>>16;
-                        dest[2] = (p0[2]*a16)>>16;
+                        dest[0] = p0[2];
+                        dest[1] = p0[1];
+                        dest[2] = p0[0];
                         dest[3] = p0[3];
                         dest+=4;
                         p0+=4;

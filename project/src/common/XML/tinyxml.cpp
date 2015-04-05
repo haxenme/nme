@@ -1197,6 +1197,12 @@ void TiXmlAttribute::Print( FILE* cfile, int /*depth*/, TIXML_STRING* str ) cons
 	}
 }
 
+#ifdef EMSCRIPTEN
+int swscanf(const wchar_t* s, const wchar_t* format, ...)
+{
+   return 0;
+}
+#endif
 
 int TiXmlAttribute::QueryIntValue( int* ival ) const
 {

@@ -209,6 +209,12 @@ class NMEProject
                classPaths.push(cp);
             macros.push("--macro cpp.cppia.HostClasses.include()");
 
+         case "emscripten":
+            target = Platform.EMSCRIPTEN;
+            targetFlags.set("emscripten", "");
+            staticLink = true;
+            haxedefs.set("emscripten","1");
+
          case "neko":
             target = PlatformHelper.hostPlatform;
             staticLink = false;
@@ -298,6 +304,9 @@ class NMEProject
             platformType = Platform.TYPE_SCRIPT;
             embedAssets = false;
 
+         case Platform.EMSCRIPTEN:
+            platformType = Platform.TYPE_WEB;
+            embedAssets = true;
 
          case Platform.ANDROID, Platform.IOS,
               Platform.IOSVIEW, Platform.ANDROIDVIEW:

@@ -15,6 +15,7 @@ using StringTools;
 class CommandLineTools 
 {
    public static var nme(default,null):String;
+   public static var home:String;
 
    static var additionalArguments:Array<String>;
    static var command:String;
@@ -35,7 +36,7 @@ class CommandLineTools
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
-            "windows", "mac", "linux", "flash", "cppia" ];
+            "windows", "mac", "linux", "flash", "cppia", "emscripten" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset",
@@ -88,6 +89,9 @@ class CommandLineTools
 
          case Platform.CPPIA:
             platform = new platforms.CppiaPlatform(project);
+
+         case Platform.EMSCRIPTEN:
+            platform = new platforms.EmscriptenPlatform(project);
       }
 
       if (platform != null) 
@@ -738,7 +742,7 @@ class CommandLineTools
       }
       else
       {
-         var home = "";
+         home = "";
 
          if (environment.exists("HOME")) 
             home = environment.get("HOME");
