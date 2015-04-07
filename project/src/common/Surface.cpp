@@ -815,7 +815,7 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 
 
    // Start with unclipped dest rect
-   Rect src_rect(inSrcRect.x+inPosX,inSrcRect.x+inPosY, inSrcRect.w, inSrcRect.h );
+   Rect src_rect(inSrcRect.x+inPosX,inSrcRect.y+inPosY, inSrcRect.w, inSrcRect.h );
    // Clip to dest size...
    src_rect = src_rect.Intersect(outTarget.mRect);
 
@@ -827,9 +827,6 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 
    if (src_rect.HasPixels())
    {
-      int dx = inPosX + src_rect.x;
-      int dy = inPosY + src_rect.y;
-
       int src_ch = inSrcChannel==CHAN_ALPHA ? 3 :
                    inSrcChannel==CHAN_RED   ? 2 :
                    inSrcChannel==CHAN_GREEN ? 1 :
@@ -843,7 +840,7 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 
       for(int y=0;y<src_rect.h;y++)
       {
-         uint8 *d = outTarget.Row(y+dy) + dx* 4 + dest_ch;
+         uint8 *d = outTarget.Row(y+inPosY) + inPosX* 4 + dest_ch;
          if (set_255)
          {
             for(int x=0;x<src_rect.w;x++)
