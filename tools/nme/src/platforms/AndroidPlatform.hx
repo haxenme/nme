@@ -146,9 +146,29 @@ class AndroidPlatform extends Platform
 
       // SDK to use for building, that we have installed
       context.ANDROID_BUILD_API_LEVEL = getMaxApiLevel(project.androidConfig.minApiLevel);
+      context.ANDROID_TARGET_SDK_VERSION = getMaxApiLevel(project.androidConfig.minApiLevel);
+
       context.GAME_ACTIVITY_BASE = project.androidConfig.gameActivityBase;
+
+      var extensions = new Array<String>();
+      for( k in project.androidConfig.extensions.keys())
+         extensions.push(k);
+      context.ANDROID_EXTENSIONS =extensions;
+
+      context.ANDROID_LIBRARY_PROJECTS = [];
+      var idx = 1;
+      for(k in project.dependencies.keys())
+      {
+         var lib = project.dependencies.get(k);
+         if (lib.isAndroidProject())
+            context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:getAndroidProject(lib)} );
+      }
    }
 
+   public function getAndroidProject(inDep:Dependency)
+   {
+      return "deps/" + inDep.makeUniqueName();
+   }
 
 
    public function getMaxApiLevel(inMinimum:Int) : Int
@@ -301,6 +321,13 @@ class AndroidPlatform extends Platform
          } catch(e:Dynamic) {}
       }
       addV4CompatLib(getOutputDir());
+
+      for(k in project.dependencies.keys())
+      {
+         var lib = project.dependencies.get(k);
+         if (lib.isAndroidProject())
+            FileHelper.recursiveCopy( lib.getFilename(), getOutputDir()+"/"+getAndroidProject(lib), context, true);
+      }
    }
 
 }

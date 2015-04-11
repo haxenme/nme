@@ -21,6 +21,7 @@ class AndroidConfig
    public var viewTestDir:String;
    public var gameActivityBase:String;
    public var gameActivityViewBase:String;
+   public var extensions:Map<String,Bool>;
 
    public function new()
    {
@@ -34,6 +35,7 @@ class AndroidConfig
       viewTestDir = "";
       gameActivityBase = "Activity";
       gameActivityViewBase = "android.app.Fragment";
+      extensions = new Map<String,Bool>();
    }
 }
 
@@ -108,8 +110,8 @@ class NMEProject
    // For bulding projects
    public var templatePaths:Array<String>;
 
-   // Currently for adding frameworks to ios project
-   public var dependencies:Array<String>;
+   // Currently for adding frameworks to ios project, or android library projects
+   public var dependencies:Map<String,Dependency>;
    // Additional files to be copied into andoird project
    public var javaPaths:Array<String>;
    // Android signing certificate
@@ -161,7 +163,7 @@ class NMEProject
 
 
       assets = new Array<Asset>();
-      dependencies = new Array<String>();
+      dependencies = new Map<String,Dependency>();
       haxedefs = new Map<String,String>();
       haxeflags = new Array<String>();
       macros = new Array<String>();

@@ -25,6 +25,7 @@ class IOSPlatform extends Platform
    var simulatorUid:String;
    var launchPid:Int;
    var redirectTrace:Bool;
+   var linkedLibraries:Array<String>;
   
 
    public function new(inProject:NMEProject)
@@ -146,15 +147,16 @@ class IOSPlatform extends Platform
       context.APP_FILE = project.app.file;
       context.REDIRECT_TRACE = redirectTrace;
 
-      context.linkedLibraries = [];
 
       for(dependency in project.dependencies) 
-      {
-         if (!StringTools.endsWith(dependency, ".framework")) 
-            context.linkedLibraries.push(dependency);
-      }
+         if (dependency.isFramework())
+         {
+            var filename = dependency.getFramework();
+            linkedLibraries.push(filename);
+         }
 
-     
+      context.linkedLibraries = linkedLibraries;
+
       var valid_archs = new Array<String>();
       var current_archs = new Array<String>();
 
@@ -228,18 +230,17 @@ class IOSPlatform extends Platform
       context.ADDL_PBX_FRAMEWORK_GROUP = "";
 
       for(dependency in project.dependencies) 
-      {
-         if (Path.extension(dependency) == "framework") 
-         {
-            var frameworkID = "11C0000000000018" + StringHelper.getUniqueID();
-            var fileID = "11C0000000000018" + StringHelper.getUniqueID();
+        if (dependency.isFramework())
+        {
+           var lib = dependency.getFramework();
+           var frameworkID = "11C0000000000018" + StringHelper.getUniqueID();
+           var fileID = "11C0000000000018" + StringHelper.getUniqueID();
 
-            context.ADDL_PBX_BUILD_FILE += "      " + frameworkID + " /* " + dependency + " in Frameworks */ = {isa = PBXBuildFile; fileRef = " + fileID + " /* " + dependency + " */; };\n";
-            context.ADDL_PBX_FILE_REFERENCE += "      " + fileID + " /* " + dependency + " */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = " + dependency + "; path = System/Library/Frameworks/" + dependency + "; sourceTree = SDKROOT; };\n";
-            context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += "            " + frameworkID + " /* " + dependency + " in Frameworks */,\n";
-            context.ADDL_PBX_FRAMEWORK_GROUP += "            " + fileID + " /* " + dependency + " */,\n";
-         }
-      }
+           context.ADDL_PBX_BUILD_FILE += '      $frameworkID /* $lib in Frameworks */ = {isa = PBXBuildFile; fileRef = $fileID /* $lib */; };\n';
+           context.ADDL_PBX_FILE_REFERENCE += '      $fileID  /* $lib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = $lib ; path = System/Library/Frameworks/$lib ; sourceTree = SDKROOT; };\n';
+           context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += '            $frameworkID /* $lib in Frameworks */,\n';
+           context.ADDL_PBX_FRAMEWORK_GROUP += '            $fileID /* $lib */,\n';
+        }
 
       context.PRERENDERED_ICON = config.prerenderedIcon;
 

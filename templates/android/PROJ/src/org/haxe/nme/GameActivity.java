@@ -47,8 +47,10 @@ import java.net.NetworkInterface;
 import java.net.InetAddress;
 import java.net.Inet4Address;
 import java.util.Enumeration;
+import java.util.List;
 import android.util.SparseArray;
-
+import org.haxe.extension.Extension;
+import android.os.Build;
 
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
@@ -74,6 +76,7 @@ implements SensorEventListener
    static DisplayMetrics metrics;
    static HashMap<String, Class> mLoadedClasses = new HashMap<String, Class>();
    static SensorManager sensorManager;
+   private static List<Extension> extensions;
    
    public Handler mHandler;
    RelativeLayout mContainer;
@@ -133,6 +136,12 @@ implements SensorEventListener
       metrics = new DisplayMetrics();
       mContext.getWindowManager().getDefaultDisplay().getMetrics(metrics);
       
+      Extension.assetManager = mAssets;
+      Extension.callbackHandler = mHandler;
+      Extension.mainActivity = this;
+      Extension.mainContext = this;
+      Extension.packageName = getApplicationContext().getPackageName();
+
       // Pre-load these, so the C++ knows where to find them
       
       ::foreach ndlls:: ::if (!isStatic)::
@@ -144,6 +153,7 @@ implements SensorEventListener
       mContainer = new RelativeLayout(mContext);
 
       mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
+      Extension.mainView = mView;
 
       mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
 
@@ -163,6 +173,16 @@ implements SensorEventListener
       ::if !(ANDROIDVIEW)::
       setContentView(mContainer);
       ::end::
+
+     if (extensions == null)
+     {
+         extensions = new ArrayList<Extension> ();
+         ::foreach ANDROID_EXTENSIONS::
+         extensions.add (new ::__current__:: ());::end::
+     }
+
+     for(Extension extension : extensions)
+        extension.onCreate(state);
    }
 
    ::if ANDROIDVIEW::
@@ -489,6 +509,10 @@ implements SensorEventListener
          sResultHandler.delete(requestCode);
          handler.onActivityResult(resultCode, data);
       }
+      else
+         for(Extension extension : extensions)
+            if (!extension.onActivityResult(requestCode, resultCode, data) )
+               return;
    }
    
    public static byte[] getResource(String inResource)
@@ -616,6 +640,9 @@ implements SensorEventListener
       if (mOnDestroyListeners!=null)
          for(Runnable listener : mOnDestroyListeners)
             listener.run();
+
+      for(Extension extension : extensions)
+         extension.onDestroy();
       mOnDestroyListeners = null;
       mView.sendActivity(NME.DESTROY);
       if (mVideoView!=null)
@@ -623,21 +650,92 @@ implements SensorEventListener
       activity = null;
       super.onDestroy();
    }
-   
-   
+
+   @Override public void onLowMemory()
+   {
+      super.onLowMemory ();
+      for(Extension extension : extensions)
+         extension.onLowMemory();
+   }
+
+
+   @Override protected void onNewIntent(final Intent intent)
+   {
+      for(Extension extension : extensions)
+         extension.onNewIntent(intent);
+      super.onNewIntent (intent);
+   }
+
+
    @Override public void onPause()
    {
       doPause();
+      for(Extension extension : extensions)
+         extension.onPause();
       super.onPause();
    }
-   
-   
+
+   @Override public void onRestart()
+   {
+      super.onRestart();
+      for(Extension extension : extensions)
+         extension.onRestart();
+   }
+
+
    @Override public void onResume()
    {
       doResume();
       Log.d(TAG,"super resume");
       super.onResume();
+      for(Extension extension : extensions)
+         extension.onResume();
    }
+
+   @Override protected void onStart()
+   {
+      super.onStart();
+
+      ::if WIN_FULLSCREEN::::if (ANDROID_TARGET_SDK_VERSION >= 16)::
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+      {
+         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN);
+      }
+      ::end::::end::
+
+      for(Extension extension : extensions)
+         extension.onStart();
+   }
+
+   @Override protected void onStop ()
+   {
+      super.onStop ();
+
+      for(Extension extension : extensions)
+         extension.onStop();
+   }
+
+
+   public static void registerExtension(Extension extension)
+   {
+      if (extensions.indexOf(extension) == -1)
+         extensions.add(extension);
+   }
+
+
+   ::if (ANDROID_TARGET_SDK_VERSION >= 14)::
+   @Override public void onTrimMemory(int level)
+   {
+      if (Build.VERSION.SDK_INT >= 14)
+      {
+         super.onTrimMemory(level);
+         for (Extension extension : extensions)
+            extension.onTrimMemory(level);
+      }
+   }
+   ::end::
+
+
    
    @Override public void onSensorChanged(SensorEvent event)
    {

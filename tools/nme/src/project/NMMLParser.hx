@@ -472,6 +472,10 @@ class NMMLParser
       if (element.has.installLocation) 
          project.androidConfig.installLocation = substitute(element.att.installLocation);
 
+      if (element.has.extension)
+         project.androidConfig.extensions.set(substitute(element.att.extension),true);
+
+
       for(childElement in element.elements) 
       {
          if (isValidElement(childElement, ""))
@@ -518,7 +522,7 @@ class NMMLParser
          project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
    }
 
-   private function parseXML(xml:Fast, section:String, extensionPath:String = ""):Void 
+   private function parseXML(xml:Fast, section:String, extensionPath:String):Void 
    {
       for(element in xml.elements) 
       {
@@ -783,7 +787,7 @@ class NMMLParser
                   parseOutputElement(element);
 
                case "section":
-                  parseXML(element, "");
+                  parseXML(element, "", extensionPath);
 
                case "certificate":
                   project.certificate = new Keystore(substitute(element.att.path));
@@ -803,7 +807,12 @@ class NMMLParser
                      project.certificate.aliasPassword = substitute(element.att.alias_password);
 
                case "dependency":
-                  project.dependencies.push(substitute(element.att.name));
+                  var name = element.has.name ? substitute(element.att.name) : "";
+                  var path = element.has.path ? substitute(element.att.path) : "";
+                  var key = name!="" ? name : path;
+                  if (key=="")
+                     Log.error("dependency node should have a name and/or a path");
+                  project.dependencies.set(key, new Dependency(name,path,extensionPath));
 
                case "engine":
                   project.engines.set(substitute(element.att.name),
