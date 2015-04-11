@@ -148,6 +148,7 @@ class IOSPlatform extends Platform
       context.REDIRECT_TRACE = redirectTrace;
 
 
+      linkedLibraries = [];
       for(dependency in project.dependencies) 
          if (dependency.isFramework())
          {
