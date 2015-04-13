@@ -32,21 +32,21 @@ class Surface
    private var nmeTransparent:Bool;
 
 
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:BitmapInt32, ?inGPUMode:Null<Int>) 
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:BitmapInt32, ?inGPUMode:Null<Int>)
    {
       var fill_col:Int;
       var fill_alpha:Int;
       nmeTransparent = inTransparent;
 
-      if (inFillRGBA == null) 
+      if (inFillARGB == null)
       {
          fill_col = 0xffffff;
          fill_alpha = 0xff;
       }
       else 
       {
-         fill_col = inFillRGBA & 0xffffff;
-         fill_alpha = inFillRGBA >>> 24;
+         fill_col = inFillARGB & 0xffffff;
+         fill_alpha = inFillARGB >>> 24;
       }
 
       nmeHandle = null;
