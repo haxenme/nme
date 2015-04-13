@@ -32,9 +32,9 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
 
 
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillRGBA:Int, ?inGPUMode:Null<Int>) 
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, ?inGPUMode:Null<Int>)
    {
-      super(inWidth, inHeight, inTransparent, inFillRGBA, inGPUMode );
+      super(inWidth, inHeight, inTransparent, inFillARGB, inGPUMode );
 
       if (nmeHandle==null)
       {
