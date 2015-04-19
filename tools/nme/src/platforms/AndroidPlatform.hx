@@ -305,6 +305,22 @@ class AndroidPlatform extends Platform
       PathHelper.mkdir(packageDirectory);
       copyTemplate("android/MainActivity.java", packageDirectory + "/MainActivity.java");
 
+      var movedFiles = [ "src/org/haxe/nme/HaxeObject.java",
+                         "src/org/haxe/nme/Value.java",
+                         "src/org/haxe/nme/NME.java",
+                         "bin/classes/org/haxe/nme/HaxeObject.class",
+                         "bin/classes/org/haxe/nme/Value.class",
+                         "bin/classes/org/haxe/nme/NME.class" ];
+      for(moved in movedFiles)
+      {
+         var file = destination + "/" + moved;
+         if (FileSystem.exists(file))
+         {
+            Log.verbose("Remove legacy file " + file);
+            FileSystem.deleteFile(file);
+         }
+      }
+
       for(javaPath in project.javaPaths) 
       {
          try 

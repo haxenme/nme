@@ -89,6 +89,17 @@ class Lib
       }, params );
    }
 
+   public static function load(library:String, method:String, args:Int = 0):Dynamic
+   {
+      #if neko
+      return neko.Lib.load(library,method,args);
+      #elseif cpp
+      return cpp.Lib.load(library,method,args);
+      #end
+      return null;
+   }
+
+
    public static function log(str:String)
    {
       nme_log(str);

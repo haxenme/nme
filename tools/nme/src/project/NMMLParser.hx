@@ -771,10 +771,23 @@ class NMMLParser
                      //parseSsl(element);
                case "template", "templatePath":
 
-                  var path = combine(extensionPath, substitute(element.att.name));
+                  var path = "";
+                  if (element.has.name)
+                     path = combine(extensionPath, substitute(element.att.name));
+                  else if (element.has.path)
+                     path = combine(extensionPath, substitute(element.att.path));
+                  else
+                     Log.error("Template should have either a 'name' or a 'path'");
 
-                  project.templatePaths.remove(path);
-                  project.templatePaths.push(path);
+                  if (element.has.rename)
+                  {
+                     project.templateCopies.push( new TemplateCopy(path, substitute(element.att.rename) ) );
+                  }
+                  else
+                  {
+                     project.templatePaths.remove(path);
+                     project.templatePaths.push(path);
+                  }
 
                case "preloader":
                   // deprecated
@@ -808,11 +821,14 @@ class NMMLParser
 
                case "dependency":
                   var name = element.has.name ? substitute(element.att.name) : "";
-                  var path = element.has.path ? substitute(element.att.path) : "";
-                  var key = name!="" ? name : path;
-                  if (key=="")
-                     Log.error("dependency node should have a name and/or a path");
-                  project.dependencies.set(key, new Dependency(name,path,extensionPath));
+                  if (name!="QuartzCore.framework")
+                  {
+                     var path = element.has.path ? substitute(element.att.path) : "";
+                     var key = name!="" ? name : path;
+                     if (key=="")
+                        Log.error("dependency node should have a name and/or a path");
+                     project.dependencies.set(key, new Dependency(name,path,extensionPath));
+                  }
 
                case "engine":
                   project.engines.set(substitute(element.att.name),

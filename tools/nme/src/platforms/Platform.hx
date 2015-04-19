@@ -417,6 +417,8 @@ class Platform
       PathHelper.mkdir(haxeDir);
 
       copyTemplateDir( getHaxeTemplateDir(), haxeDir, true, false );
+      for(path in project.templateCopies)
+         FileHelper.copyFile(path.from, getOutputDir() + "/" + path.to );
    }
 
    public function updateOutputDir()

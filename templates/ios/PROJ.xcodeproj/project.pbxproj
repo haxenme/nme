@@ -338,9 +338,9 @@
 					"\"$(SRCROOT)/::APP_FILE::/lib/x86_64\"",
 				);
 		        OTHER_LDFLAGS = (
-					::foreach ndlls:: "-l::name::",
+					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
-					::foreach linkedLibraries:: "-l::__current__::",
+					::foreach linkedLibraries:: "::__current__::",
 					::end::
 					"-lApplicationMain",
 					::IOS_LINKER_FLAGS::
@@ -383,7 +383,7 @@
 				OTHER_LDFLAGS = (
 					::foreach ndlls:: "-l::name::",
 					::end::
-					::foreach linkedLibraries:: "-l::__current__::",
+					::foreach linkedLibraries:: "::__current__::",
 					::end::
 					"-lApplicationMain",
 					::IOS_LINKER_FLAGS::

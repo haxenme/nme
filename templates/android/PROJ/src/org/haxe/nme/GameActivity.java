@@ -503,6 +503,7 @@ implements SensorEventListener
    
    @Override public void onActivityResult(int requestCode, int resultCode, Intent data)
    {
+      Log.d(TAG,"onActivityResult");
       IActivityResult handler = sResultHandler.get(requestCode);
       if (handler!=null)
       {
@@ -661,6 +662,7 @@ implements SensorEventListener
 
    @Override protected void onNewIntent(final Intent intent)
    {
+      Log.d(TAG,"onNewIntent");
       for(Extension extension : extensions)
          extension.onNewIntent(intent);
       super.onNewIntent (intent);

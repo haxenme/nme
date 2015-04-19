@@ -109,6 +109,7 @@ class NMEProject
    public var includePaths:Array<String>;
    // For bulding projects
    public var templatePaths:Array<String>;
+   public var templateCopies:Array<TemplateCopy>;
 
    // Currently for adding frameworks to ios project, or android library projects
    public var dependencies:Map<String,Dependency>;
@@ -148,6 +149,7 @@ class NMEProject
       relocationDir = "";
       targetFlags = new Map<String,String>();
       templatePaths = [];
+      templateCopies = [];
       ndllCheckDir = "";
       engines = new Map<String,String>();
 
@@ -473,8 +475,10 @@ class NMEProject
       var existing = findNdll(name);
       if (existing!=null)
       {
-         if (inStatic!=null)
-            existing.isStatic = isStatic;
+         if (!allowMissingNdll)
+            existing.allowMissing = false;
+         if (inStatic)
+            existing.setStatic();
       }
       else
       {
@@ -506,7 +510,10 @@ class NMEProject
             var ndllPart = haxelibName=="hxcpp" ? "/bin" : "/ndll";
             if (isStatic)
                ndllPart = "/lib";
-            if (!isFlash && (!allowMissingNdll || FileSystem.exists(path+ndllPart+ndllCheckDir) ))
+
+            if (!isFlash && (!allowMissingNdll ||
+                     FileSystem.exists(path+"/ndll"+ndllCheckDir) ||
+                     FileSystem.exists(path+ndllPart+ndllCheckDir) ))
             {
                var ndll = new NDLL(name, haxelib, isStatic, allowMissingNdll);
                ndlls.push(ndll);

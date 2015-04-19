@@ -150,9 +150,9 @@ class IOSPlatform extends Platform
 
       linkedLibraries = [];
       for(dependency in project.dependencies) 
-         if (dependency.isFramework())
+         if (dependency.isLibrary())
          {
-            var filename = dependency.getFramework();
+            var filename = dependency.getFilename();
             linkedLibraries.push(filename);
          }
 
@@ -434,7 +434,10 @@ class IOSPlatform extends Platform
 
                //trace(releaseLib);
                //trace(releaseDest);
-               FileHelper.copyIfNewer(releaseLib, releaseDest);
+               if (!FileSystem.exists(releaseLib))
+                  Log.verbose("Skip non-existent library " + releaseLib );
+               else
+                  FileHelper.copyIfNewer(releaseLib, releaseDest);
             }
          }
       }

@@ -73,6 +73,9 @@ class FileHelper
          {
             var result = template.execute(context, context.MACROS);
 
+            if (extension=="java")
+               result = result.split("org.haxe.lime.GameActivity").join("org.haxe.nme.GameActivity");
+
             if (FileSystem.exists(destination) && File.getContent(destination)==result)
             {
                //Log.verbose(" - already current " +  destination);

@@ -458,6 +458,13 @@ class PathHelper
       {
          var dir = ndll.isStatic ? "lib/" : "ndll/";
          var path = combine(getHaxelib(ndll.haxelib), dir + directoryName + "/" + filename);
+         if (!FileSystem.exists(path) && ndll.isStatic)
+         {
+            var test = combine(getHaxelib(ndll.haxelib), "ndll/" + directoryName + "/" + filename);
+            if (FileSystem.exists(test))
+               path = test;
+         }
+        
          return path;
       }
    }

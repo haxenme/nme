@@ -19,7 +19,10 @@ import wx.Assets;
 </files>
 ")
 #end
-
+@:cppFileCode("
+::foreach ndlls:: ::if (registerPrim!=null):: extern \"C\" int ::registerPrim::();
+::end::::end::
+")
 class ApplicationMain
 {
    static public var engines : Array<Dynamic> = [
@@ -230,13 +233,15 @@ class ApplicationMain
    }
    
    
-   #if neko
-   public static function __init__ () {
-      
+   public static function __init__ ()
+   {
+      #if neko
       untyped $loader.path = $array ("@executable_path/", $loader.path);
-      
+      #elseif cpp
+      ::foreach ndlls:: ::if (registerPrim!=null):: untyped __cpp__("::registerPrim::()");
+::end:: ::end::
+      #end
    }
-   #end
    
    
 }

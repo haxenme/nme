@@ -26,13 +26,22 @@ class Dependency
 
    public function isFramework()
    {
-      return path.endsWith(".framework");
+      return name.endsWith(".framework");
    }
+
+   public function isLibrary()
+   {
+      return name.endsWith(".a");
+   }
+
+
 
    public function getFramework()
    {
-      return path;
+      return name;
    }
+
+
 
    public function makeUniqueName()
    {
