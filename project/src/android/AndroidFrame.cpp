@@ -21,7 +21,7 @@ extern jclass GameActivity;
 #define LOG(...) ((void)__android_log_print(ANDROID_LOG_VERBOSE, "NME", __VA_ARGS__))
 
 
-jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue);
+jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue, bool inNme);
 
 namespace nme
 {
@@ -249,7 +249,7 @@ public:
       {
          JNIEnv *env = GetEnv();
 
-         jobject handler = CreateJavaHaxeObjectRef(env, (value)inOwner);
+         jobject handler = CreateJavaHaxeObjectRef(env, (value)inOwner, true);
 
          jclass cls = FindClass("org/haxe/nme/GameActivity");
          jmethodID createVideoWindow = env->GetStaticMethodID(cls,"createStageVideo",

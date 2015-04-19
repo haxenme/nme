@@ -15,7 +15,9 @@ enum JNIElement
    jniUnknown,
    jniObjectString,
    jniObjectHaxe,
+   jniLimeObjectHaxe,
    jniValueObject,
+   jniLimeValueObject,
    jniObject,
    jniPODStart,
    jniBoolean = jniPODStart,
@@ -37,8 +39,10 @@ jclass ObjectClass;
 jmethodID postUICallback;
 jmethodID isArrayClass;
 jclass HaxeObject;
+jclass LimeHaxeObject;
 jclass ValueObject;
 jmethodID HaxeObject_create;
+jmethodID LimeHaxeObject_create;
 jfieldID __haxeHandle;
 
 
@@ -132,7 +136,9 @@ struct JNIType
       {
          case jniObjectString: name += "java/lang/String"; break;
          case jniObjectHaxe: name += "org/haxe/nme/HaxeObject"; break;
+         case jniLimeObjectHaxe: name += "org/haxe/lime/HaxeObject"; break;
          case jniValueObject: name += "org/haxe/nme/Value"; break;
+         case jniLimeValueObject: name += "org/haxe/lime/Value"; break;
 
          case jniUnknown:
          case jniObject: name += "java/lang/Object"; break;
@@ -216,6 +222,7 @@ struct JNIType
          CheckException(inEnv,false);
       }
       elementGetValue[jniValueObject] = inEnv->GetMethodID(elementClass[jniValueObject],"getDouble","()D");
+      elementGetValue[jniLimeValueObject] = elementGetValue[jniValueObject];
    }
 
 
@@ -248,6 +255,9 @@ void JNIInit(JNIEnv *env)
    HaxeObject   = JNIType(jniObjectHaxe,0).getClass(env);
    HaxeObject_create = env->GetStaticMethodID(HaxeObject, "create", "(J)Lorg/haxe/nme/HaxeObject;");
    __haxeHandle = env->GetFieldID(HaxeObject, "__haxeHandle", "J");
+
+   LimeHaxeObject   = JNIType(jniLimeObjectHaxe,0).getClass(env);
+   LimeHaxeObject_create = env->GetStaticMethodID(LimeHaxeObject, "create", "(J)Lorg/haxe/lime/HaxeObject;");
 
    jclass classClass = FindClass("java/lang/Class");
    isArrayClass = env->GetMethodID(classClass, "isArray", "()Z");
@@ -282,7 +292,7 @@ JavaHaxeReferenceMap gJavaObjects;
 bool gJavaObjectsMutexInit = false;
 pthread_mutex_t gJavaObjectsMutex;
 
-jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue)
+jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue, bool inNmeObject)
 {
    JNIInit(env);
    if (!gJavaObjectsMutexInit)
@@ -299,7 +309,9 @@ jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue)
       gJavaObjects[inValue] = new JavaHaxeReference(inValue);
    pthread_mutex_unlock(&gJavaObjectsMutex);
 
-   jobject result = env->CallStaticObjectMethod(HaxeObject, HaxeObject_create, (jlong)inValue);
+   jobject result = inNmeObject ?
+      env->CallStaticObjectMethod(HaxeObject, HaxeObject_create, (jlong)inValue) :
+      env->CallStaticObjectMethod(LimeHaxeObject, LimeHaxeObject_create, (jlong)inValue);
    jthrowable exc = env->ExceptionOccurred();
    CheckException(env);
    return result;
@@ -542,8 +554,9 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
             return ObjectToAbstract(obj);
             }
          case jniObjectHaxe:
-     
+         case jniLimeObjectHaxe:
             return JObjectToHaxeObject(inEnv,inObject);
+
          case jniObjectString:
       
             return JStringToHaxe(inEnv,inObject);
@@ -562,6 +575,7 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
          case jniFloat:
          case jniDouble:
          case jniValueObject:
+         case jniLimeValueObject:
              return alloc_float(inEnv->CallDoubleMethod(inObject, JNIType::elementGetValue[inType.element] ) );
 
 
@@ -617,6 +631,8 @@ const char *JNIParseType(const char *inStr, JNIType &outType,int inDepth=0)
                outType = JNIType(jniObjectString,inDepth);
             else if (!strncmp(src,"org/haxe/nme/HaxeObject;",24))
                outType = JNIType(jniObjectHaxe,inDepth);
+            else if (!strncmp(src,"org/haxe/lime/HaxeObject;",25))
+               outType = JNIType(jniLimeObjectHaxe,inDepth);
             else
                outType = JNIType(jniObject,inDepth);
             return inStr+1;
@@ -710,7 +726,10 @@ bool HaxeToJNI(JNIEnv *inEnv, value inValue, JNIType inType, jvalue &out)
                return true;
             }
          case jniObjectHaxe:
-            out.l = CreateJavaHaxeObjectRef(inEnv,inValue);
+            out.l = CreateJavaHaxeObjectRef(inEnv,inValue,true);
+            return true;
+         case jniLimeObjectHaxe:
+            out.l = CreateJavaHaxeObjectRef(inEnv,inValue,false);
             return true;
          case jniObject:
             {
