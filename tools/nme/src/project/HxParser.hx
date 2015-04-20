@@ -23,11 +23,7 @@ class HxParser
       project.app.main = file;
       project.app.packageName = "com.nme." + file.toLowerCase();
 
-      var haxelib = new Haxelib("nme");
-      project.haxelibs.push(haxelib);
-
-      var ndll = new NDLL("nme", haxelib, true, false);
-      project.ndlls.push(ndll);
+      project.addLib("nme","");
 
       process(path);
    }

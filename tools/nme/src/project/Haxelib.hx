@@ -11,6 +11,11 @@ class Haxelib
       this.version = version;
    }
 
+   public function getBase():String
+   {
+      return PathHelper.getHaxelib(this);
+   }
+
 
    public function addLibraryFlags(outFlags:Array<String>)
    {

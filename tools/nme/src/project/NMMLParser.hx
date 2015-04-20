@@ -509,7 +509,6 @@ class NMMLParser
    }
 
 
-
    private function parseOutputElement(element:Fast):Void 
    {
       if (element.has.name) 
@@ -648,22 +647,46 @@ class NMMLParser
                case "java":
                   project.javaPaths.push(combine(extensionPath, substitute(element.att.path)));
 
-               case "ndll", "lib", "haxelib":
-                  var name = substitute(element.att.name);
-                  var version = "";
-
-                  if (element.has.version) 
-                     version = substitute(element.att.version);
-
-                  var haxelibName = "";
-                  if (element.has.haxelib)
-                     haxelibName = substitute(element.att.haxelib);
-
+               case "ndll":
                   var isStatic:Null<Bool> = null;
                   if (element.has.resolve("static"))
                       isStatic = parseBool(element.att.resolve("static"));
+                 var name = substitute(element.att.name);
 
-                  project.addLib(name, element.name, haxelibName, version,isStatic);
+                 var haxelib = "";
+                 var version = "";
+                 if (element.has.haxelib)
+                 {
+                    haxelib = substitute(element.att.haxelib);
+                    if (element.has.version) 
+                       version = substitute(element.att.version);
+                 }
+
+                 if (haxelib == "")
+                 {
+                     if ( (name == "std" || name == "regexp" || name == "zlib" ||
+                          name=="sqlite" || name=="mysql5")) 
+                        haxelib = "hxcpp";
+                 }
+                 var base = extensionPath;
+                 if (haxelib!="")
+                 {
+                    var lib = project.addLib(haxelib,version);
+                    base = lib.getBase();
+                 }
+                 if (name!="lime" && name!="openfl")
+                    project.addNdll(name, base, isStatic, haxelib);
+
+
+
+               case "lib", "haxelib":
+                  var name = substitute(element.att.name);
+
+                  var version = "";
+                  if (element.has.version) 
+                     version = substitute(element.att.version);
+
+                  project.addLib(name,version);
  
 
                case "launchImage":

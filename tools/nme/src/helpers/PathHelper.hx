@@ -217,6 +217,7 @@ class PathHelper
       return result;
    }
 
+/*
    public static function getLibraryPath(ndll:NDLL, directoryName:String, namePrefix:String = "", nameSuffix:String = ".ndll", allowDebug:Bool = false):String 
    {
       var usingDebug = false;
@@ -235,7 +236,7 @@ class PathHelper
 
       return path;
    }
-
+*/
    public static function getTemporaryFile(extension:String = ""):String 
    {
       var path = "";
@@ -445,6 +446,7 @@ class PathHelper
       return safeName;
    }
 
+/*
    private static function searchForLibrary(ndll:NDLL, directoryName:String, filename:String):String 
    {
       if (ndll.path != null && ndll.path != "") 
@@ -468,6 +470,7 @@ class PathHelper
          return path;
       }
    }
+*/
 
    public static function addExePath(path:String)
    {

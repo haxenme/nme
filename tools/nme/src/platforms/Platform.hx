@@ -464,7 +464,7 @@ class Platform
       {
          var ext = getNdllExt();
          var dir = "/ndll/" + binName + "/";
-         var srcProject = PathHelper.getHaxelib(ndll.haxelib);
+         var srcProject = ndll.path;
 
          var src = srcProject + "/ndll/" + binName + "/" + pref + ndll.name + archSuffix + ext;
 
@@ -474,7 +474,7 @@ class Platform
             // var ext = getLibExt();
             // src = srcProject + "/lib/" + binName + "/lib" + ndll.name + archSuffix + ext;
          }
-         else if (ndll.haxelib.name=="hxcpp")
+         else if (ndll.isHxcppLib())
          {
             if (useNeko)
                src = NekoHelper.getNekoDir() + "/" + pref + ndll.name + archSuffix + ext;
@@ -493,10 +493,6 @@ class Platform
 
             LogHelper.info("", " - Copying library file: " + src + " -> " + dest);
             FileHelper.copyIfNewer(src, dest);
-         }
-         else if (ndll.allowMissing)
-         {
-            LogHelper.verbose("Source path \"" + src + "\" does not exist - ignoring");
          }
          else
          {

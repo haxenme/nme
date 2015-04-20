@@ -427,9 +427,8 @@ class IOSPlatform extends Platform
 
          for(ndll in project.ndlls) 
          {
-            if (ndll.haxelib != null) 
             {
-               var releaseLib = PathHelper.getLibraryPath(ndll, "iPhone", "lib", libExt);
+               var releaseLib = ndll.find("iPhone", "lib", libExt);
                var releaseDest = projectDirectory + "/lib/" + arch + "/lib" + ndll.name + ".a";
 
                //trace(releaseLib);

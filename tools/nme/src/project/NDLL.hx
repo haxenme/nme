@@ -4,25 +4,46 @@ import sys.FileSystem;
 
 class NDLL 
 {
-   public var haxelib:Haxelib;
    public var name:String;
    public var path:String;
    public var isStatic:Bool;
+   public var haxelibName:String;
    public var importStatic:String;
    public var registerPrim:String;
-   public var allowMissing:Bool;
 
-   public function new(inName:String, inHaxelib:Haxelib, inIsStatic:Bool, inAllowMissing:Bool) 
+   public function new(inName:String, inBasePath:String, inIsStatic:Bool, inHaxelibName:String)
    {
       name = inName;
-      haxelib = inHaxelib;
+      path = inBasePath;
       isStatic = inIsStatic;
+      haxelibName = inHaxelibName;
       importStatic="";
-      allowMissing = inAllowMissing;
       registerPrim = null;
       if (isStatic)
         setStatic();
    }
+
+   public function find(binDir:String, prefix:String, suffix:String):String 
+   {
+      if (haxelibName == "hxcpp") 
+      {
+         var dir = isStatic ? "lib/" : "bin/";
+         return path + "/" + dir + binDir + "/" + prefix + name + suffix;
+      }
+
+      var dir = isStatic ? "lib/" : "ndll/";
+      var result = path + "/" + dir + binDir + "/" + prefix + name + suffix;
+      if (!FileSystem.exists(result) && isStatic)
+      {
+         var test = path + "/ndll/" + binDir + "/" + prefix + name + suffix;
+         if (FileSystem.exists(test))
+            result = test;
+      }
+      return result;
+   }
+
+
+   public function isHxcppLib() { return haxelibName=="hxcpp"; }
 
    public function setStatic()
    {
@@ -31,10 +52,9 @@ class NDLL
       var importName = name == "mysql5" ? "mysql" : name;
       var className = "Static" + importName.substr(0,1).toUpperCase()  + importName.substr(1);
 
-      var p = PathHelper.getHaxelib(haxelib);
-      var filename =  p + "/" + haxelib.name + "/" + className + ".hx";
+      var filename =  path + "/" + haxelibName + "/" + className + ".hx";
       if (FileSystem.exists(filename))
-         importStatic = "import " + haxelib.name + "." + className + ";\n";
+         importStatic = "import " + haxelibName + "." + className + ";\n";
       else
       {
          var flatName = name;

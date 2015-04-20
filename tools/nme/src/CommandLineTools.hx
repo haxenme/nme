@@ -1341,7 +1341,10 @@ class CommandLineTools
                project.haxedefs.set(argument.substr(2), "");
 
             else if (argument == "-lib") 
-               project.addLib(arguments[argIdx++],"lib","","",staticFlag?true:null);
+            {
+               var name = arguments[argIdx++];
+               project.addLib(name);
+            }
 
             else if (argument == "-static" || argument=="-s") 
                staticFlag = true;

@@ -439,6 +439,20 @@ class NMEProject
       return null;
    }
 
+
+   function addHaxelib(inName:String, inVersion:String) : Haxelib
+   {
+      //return Lambda.find(haxelibs,function(h) return h.name==inName);
+      for(haxelib in haxelibs)
+         if (haxelib.name==inName)
+             return haxelib;
+      var haxelib = new Haxelib(inName,inVersion);
+      haxelibs.push(haxelib);
+      return haxelib;
+   }
+
+
+
    public function raiseLib(inName:String)
    {
       for(i in 0...haxelibs.length)
@@ -450,80 +464,56 @@ class NMEProject
          }
    }
 
-   public function addLib(name:String,type:String,haxelibName:String="", version:String="",?inStatic:Null<Bool>)
+   public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String)
    {
-      var allowMissingNdll = type!="ndll";
-
-      Log.verbose("Add library " + name + " type=" + type + " haxelib=" + haxelibName);
-
-      if (name=="openfl")
+      if (findNdll(name)==null)
       {
-         name = "nme";
-         version="";
-         Log.verbose("Using nme instead of openfl");
+          var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
+
+          ndlls.push( new NDLL(name, base, isStatic, inHaxelibName) );
       }
-      if (name=="lime")
+   }
+
+   public function addLib(name:String, version:String="")
+   {
+      var haxelib = findHaxelib(name);
+      if (haxelib==null)
       {
-         name = "nme";
-         version="";
-         Log.verbose("Using nme instead of lime");
-      }
+         Log.verbose("Add library " + name + ":" + version );
 
 
-      var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
-
-      var existing = findNdll(name);
-      if (existing!=null)
-      {
-         if (!allowMissingNdll)
-            existing.allowMissing = false;
-         if (inStatic)
-            existing.setStatic();
-      }
-      else
-      {
-         if (haxelibName == "")
+         if (name=="openfl")
          {
-            if ( (name == "std" || name == "regexp" || name == "zlib" ||
-                 name=="sqlite" || name=="mysql5" )) 
-               haxelibName = "hxcpp";
-            else
-               haxelibName = name;
+            name = "nme";
+            version="";
+            Log.verbose("Using nme instead of openfl");
+         }
+         if (name=="lime")
+         {
+            name = "nme";
+            version="";
+            Log.verbose("Using nme instead of lime");
          }
 
-         var haxelib = findHaxelib(haxelibName);
-         if (haxelib == null || haxelibName=="hxcpp" )
-         {
-            if (haxelib==null)
-            {
-               haxelib = new Haxelib(haxelibName,version);
-               haxelibs.push(haxelib);
-            }
+         haxelib = new Haxelib(name,version);
+         haxelibs.push(haxelib);
 
-            var path = PathHelper.getHaxelib(haxelib);
-            Log.verbose("Adding " + haxelibName + "@" + path);
-            if (FileSystem.exists(path + "/include.nmml")) 
-               new NMMLParser(this, path + "/include.nmml");
-            else if (FileSystem.exists(path + "/include.xml")) 
-               new NMMLParser(this, path + "/include.xml");
+         var path = haxelib.getBase();
+         Log.verbose("Adding " + name + "@" + path);
 
-            var ndllPart = haxelibName=="hxcpp" ? "/bin" : "/ndll";
-            if (isStatic)
-               ndllPart = "/lib";
+         if (FileSystem.exists(path + "/include.nmml")) 
+            new NMMLParser(this, path + "/include.nmml");
+         else if (FileSystem.exists(path + "/include.xml")) 
+            new NMMLParser(this, path + "/include.xml");
 
-            if (!isFlash && (!allowMissingNdll ||
-                     FileSystem.exists(path+"/ndll"+ndllCheckDir) ||
-                     FileSystem.exists(path+ndllPart+ndllCheckDir) ))
-            {
-               var ndll = new NDLL(name, haxelib, isStatic, allowMissingNdll);
-               ndlls.push(ndll);
-            }
-         }
+         // flixel depends on lime, so lime gets same priority as flixel - we want nme with greater priority
+         if (name=="flixel")
+            raiseLib("nme");
+
+         if (name=="nme")
+            addNdll("nme", haxelib.getBase(), null, "nme");
       }
-
-      // flixel depends on lime, so lime gets same priority as flixel - we want nme with greater priority
-      if (name=="flixel")
-         raiseLib("nme");
+      return haxelib;
   }
 
 
@@ -535,14 +525,8 @@ class NMEProject
          {
             if (findNdll(lib)==null)
             {
-               var haxelib = findHaxelib("hxcpp");
-               if (haxelib == null)
-               {
-                  haxelib = new Haxelib("hxcpp");
-                  haxelibs.push(haxelib);
-               }
-
-               var ndll = new NDLL(lib, haxelib, staticLink, false);
+               var haxelib = addHaxelib("hxcpp","");
+               var ndll = new NDLL(lib, haxelib.getBase(), staticLink, "hxcpp");
                ndlls.push(ndll);
             }
          }
