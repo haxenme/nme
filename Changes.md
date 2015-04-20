@@ -1,4 +1,7 @@
 
+
+* Add lime extension compatibility
+
 * Tag all classes with @:nativeProperty
 * Improve fat-line rendering
 * Fix ios-view

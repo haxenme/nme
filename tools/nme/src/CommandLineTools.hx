@@ -40,7 +40,8 @@ class CommandLineTools
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset",
-            "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test" ];
+            "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
+            "rebuild" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -601,6 +602,7 @@ class CommandLineTools
       Sys.println("  demo :  Run an existing sample or project");
       Sys.println("  create : Create a new project or extension using templates");
       Sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
+      Sys.println("  rebuild : rebuild binaries from a build.xml file'");
       Sys.println("");
       Sys.println(" Targets : ");
       Sys.println("");
@@ -1072,6 +1074,11 @@ class CommandLineTools
       }
    }
 
+   public static function rebuild(project:NMEProject)
+   {
+      new hxcpp.Builder(additionalArguments);
+   }
+
    public static function runNme(project:NMEProject)
    {
       if (words.length!=1)
@@ -1159,6 +1166,9 @@ class CommandLineTools
 
          case "nme":
             runNme(project);
+
+         case "rebuild":
+            rebuild(project);
 
          case "help":
             displayHelp();
@@ -1388,6 +1398,9 @@ class CommandLineTools
          else
          {
             words.push(argument);
+            if (argument=="rebuild")
+               while(argIdx < arguments.length)
+                  additionalArguments.push(arguments[argIdx++]);
          }
       }
 
