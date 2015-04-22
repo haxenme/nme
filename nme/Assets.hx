@@ -354,7 +354,7 @@ class Assets
     * @param   id      The ID or asset path for the sound
     * @return      A new Sound object
     */
-   public static function getSound(id:String,?useCache:Null<Bool>):Sound 
+   public static function getSound(id:String,?useCache:Null<Bool>, forceMusic=false):Sound 
    {
       var i = getInfo(id);
       if (i==null)
@@ -380,7 +380,7 @@ class Assets
             #elseif js
             new Sound(new URLRequest(i.path))
             #else
-            new Sound(new URLRequest(i.path), null, i.type == MUSIC)
+            new Sound(new URLRequest(i.path), null, i.type == MUSIC || forceMusic)
             #end
       ;
 
@@ -397,12 +397,12 @@ class Assets
          noId(id,"Music");
          return null;
       }
-      if (i.type!=MUSIC)
+      if (i.type!=MUSIC && i.type!=SOUND)
       {
          badType(id,"Music");
          return null;
       }
-      return getSound(id,useCache);
+      return getSound(id,useCache, true);
    }
 
 
