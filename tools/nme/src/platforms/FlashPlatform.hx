@@ -79,6 +79,8 @@ class FlashPlatform extends Platform
       */
    }
 
+   override public function updateLibs() { }
+
    override public function getPlatformDir() : String
    {
       return "flash";
