@@ -157,10 +157,12 @@ class AndroidPlatform extends Platform
 
       context.ANDROID_LIBRARY_PROJECTS = [];
       var idx = 1;
+      var extensionApi = "deps/extension-api";
+      context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:extensionApi} );
       for(k in project.dependencies.keys())
       {
          var lib = project.dependencies.get(k);
-         if (lib.isAndroidProject())
+         if (lib.isAndroidProject() && getAndroidProject(lib)!=extensionApi)
             context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:getAndroidProject(lib)} );
       }
    }
