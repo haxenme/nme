@@ -433,8 +433,8 @@ public:
          mPlaying = true;
          sUsedMusic = this;
          sDoneMusic = false;
-		 mStartTime = SDL_GetTicks ();
-		 mLength = 0;
+         mStartTime = SDL_GetTicks();
+         mLength = 0;
          IncRef();
 
          if (Mix_PlayMusic( mMusic, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 )<0)
@@ -443,15 +443,14 @@ public:
          {
             Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
             if (inStartTime > 0)
-		 {
-			 // this is causing crash errors
-			 
-			 //Mix_RewindMusic();
-			 //int seconds = inStartTime / 1000;
-			 //Mix_SetMusicPosition(seconds); 
-			 //mStartTime = SDL_GetTicks () - inStartTime;
-		 }
-         // Mix_SetPanning not available for music
+            {
+               // Should be 'almost' at start
+               //Mix_RewindMusic();
+               int seconds = inStartTime / 1000;
+               Mix_SetMusicPosition(seconds); 
+               mStartTime = SDL_GetTicks() - inStartTime;
+            }
+            // Mix_SetPanning not available for music
          }
       }
    }
@@ -466,7 +465,7 @@ public:
    {
       if (mPlaying && (sDoneMusic || (sUsedMusic!=this)) )
       {
-		 mLength = SDL_GetTicks () - mStartTime;
+         mLength = SDL_GetTicks () - mStartTime;
          mPlaying = false;
          if (sUsedMusic == this)
          {
