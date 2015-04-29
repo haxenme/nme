@@ -490,7 +490,8 @@ class NMMLParser
                   project.androidConfig.appActivity.push(value);
 
                case "appPermission":
-                  project.androidConfig.appPermission.push(value);
+                  project.androidConfig.appPermission.push(
+                      new AndroidPermission(value, childElement.has.required ? substitute(childElement.att.required) : "") );
 
                case "appIntent":
                   project.androidConfig.appIntent.push(value);
@@ -732,7 +733,7 @@ class NMMLParser
 
                   project.splashScreens.push(splashScreen);
 
-               case "icon":
+               case "icon", "banner":
                   var name = "";
 
                   if (element.has.path) 
@@ -753,7 +754,10 @@ class NMMLParser
                   if (element.has.height) 
                      icon.height = Std.parseInt(substitute(element.att.height));
 
-                  project.icons.push(icon);
+                  if (element.name=="banner")
+                     project.banners.push(icon);
+                  else
+                     project.icons.push(icon);
 
                case "source", "classpath":
                   var path = "";

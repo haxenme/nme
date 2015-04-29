@@ -345,6 +345,12 @@ implements SensorEventListener
       return metrics.xdpi / metrics.ydpi;
    }
    
+ 
+   public static double CapabilitiesScaledDensity()
+   {
+      return metrics.scaledDensity;
+   }
+
    
    public static double CapabilitiesGetScreenDPI()
    {

@@ -99,7 +99,6 @@ class Lib
       return null;
    }
 
-
    public static function log(str:String)
    {
       nme_log(str);

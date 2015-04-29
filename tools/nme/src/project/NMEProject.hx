@@ -15,7 +15,7 @@ class AndroidConfig
    public var appHeader:Array<String>;
    public var appIntent:Array<String>;
    public var appActivity:Array<String>;
-   public var appPermission:Array<String>;
+   public var appPermission:Array<AndroidPermission>;
    // Where to put source code when genrating a package
    public var viewPackageName:String;
    public var viewTestDir:String;
@@ -82,6 +82,7 @@ class NMEProject
    public var assets:Array<Asset>;
    public var ndlls:Array<NDLL>;
    public var icons:Array<Icon>;
+   public var banners:Array<Icon>;
    public var splashScreens:Array<SplashScreen>;
    public var optionalStaticLink:Bool;
    public var staticLink:Bool;
@@ -171,6 +172,7 @@ class NMEProject
       macros = new Array<String>();
       haxelibs = new Array<Haxelib>();
       icons = new Array<Icon>();
+      banners = new Array<Icon>();
       javaPaths = new Array<String>();
       includePaths = new Array<String>();
       ndlls = new Array<NDLL>();

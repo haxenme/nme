@@ -302,6 +302,14 @@ class AndroidPlatform extends Platform
 
       IconHelper.createIcon(project.icons, 732, 412, destination + "/res/drawable-xhdpi/ouya_icon.png");
 
+      if (project.banners.length>0)
+      {
+         // TV banner icon
+         if (IconHelper.createIcon(project.icons, 320, 180, destination + "/res/drawable-xhdpi/banner.png")) 
+           context.HAS_BANNER = true;
+      }
+       
+
       var packageDirectory = project.app.packageName;
       packageDirectory = destination + "/src/" + packageDirectory.split(".").join("/");
       PathHelper.mkdir(packageDirectory);
