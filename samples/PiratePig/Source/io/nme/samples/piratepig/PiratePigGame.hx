@@ -5,8 +5,10 @@ import motion.Actuate;
 import motion.easing.Quad;
 import nme.display.Bitmap;
 import nme.display.Sprite;
+import nme.display.Shape;
 import nme.events.Event;
 import nme.events.MouseEvent;
+import nme.events.KeyboardEvent;
 import nme.filters.BlurFilter;
 import nme.filters.DropShadowFilter;
 import nme.geom.Point;
@@ -15,6 +17,7 @@ import nme.text.TextField;
 import nme.text.TextFormat;
 import nme.text.TextFormatAlign;
 import nme.Assets;
+import nme.ui.Keyboard;
 import nme.Lib;
 
 
@@ -34,6 +37,7 @@ class PiratePigGame extends Sprite {
 	private var Sound4:Sound;
 	private var Sound5:Sound;
 	private var TileContainer:Sprite;
+	private var SelectionContainer:Shape;
 	
 	public var currentScale:Float;
 	public var currentScore:Int;
@@ -43,12 +47,20 @@ class PiratePigGame extends Sprite {
 	private var selectedTile:Tile;
 	private var tiles:Array <Array <Tile>>;
 	private var usedTiles:Array <Tile>;
+	private var cursorRow:Int;
+	private var cursorCol:Int;
+	private var cursorActive:Bool;
+	private var seenMouse:Bool;
+	private var seenKey:Bool;
 	
 	
 	public function new () {
 		
 		super ();
+
+      seenMouse = seenKey = false;
 		
+      cursorActive = true;
 		initialize ();
 		construct ();
 		
@@ -159,8 +171,11 @@ class PiratePigGame extends Sprite {
 		TileContainer.x = 14;
 		TileContainer.y = Background.y + 14;
 		TileContainer.addEventListener (MouseEvent.MOUSE_DOWN, TileContainer_onMouseDown);
+		Lib.current.stage.addEventListener (MouseEvent.MOUSE_MOVE, onMouseMove);
 		Lib.current.stage.addEventListener (MouseEvent.MOUSE_UP, stage_onMouseUp);
+		Lib.current.stage.addEventListener (KeyboardEvent.KEY_DOWN, onKey);
 		addChild (TileContainer);
+		TileContainer.addChild (SelectionContainer);
 		
 		IntroSound = Assets.getMusic ("soundTheme");
 		Sound3 = Assets.getSound ("sound3");
@@ -168,6 +183,62 @@ class PiratePigGame extends Sprite {
 		Sound5 = Assets.getSound ("sound5");
 		
 	}
+
+   function onMouseMove(_)
+   {
+      if (!seenMouse && !seenKey)
+      {
+         seenMouse = true;
+         SelectionContainer.visible = false;
+      }
+   }
+
+   function onKey(event:KeyboardEvent)
+   {
+      var code = event.keyCode;
+      var dx = 0;
+      var dy = 0;
+
+      if (!SelectionContainer.visible)
+      {
+         SelectionContainer.visible = true;
+         return;
+      }
+
+      if (code==Keyboard.LEFT)
+         dx = -1;
+      else if (code==Keyboard.RIGHT)
+         dx = 1;
+      else if (code==Keyboard.UP)
+         dy = -1;
+      else if (code==Keyboard.DOWN)
+         dy = 1;
+      else if (code==Keyboard.ENTER)
+      {
+         seenKey = true;
+         setSelection( cursorRow, cursorCol, !cursorActive);
+      }
+      else
+      {
+         SelectionContainer.visible = false;
+         return;
+      }
+
+
+      if (dx!=0 || dy!=0)
+      {
+         seenKey = true;
+         if (cursorActive)
+         {
+            if (swapTile (tiles[cursorRow][cursorCol], cursorRow+dy, cursorCol+dx ))
+            {
+               setSelection( cursorRow+dy, cursorCol+dx, false);
+            }
+         }
+         else
+            setSelection( cursorRow+dy, cursorCol+dx, cursorActive);
+      }
+   }
 	
 	
 	private function dropTiles ():Void {
@@ -331,12 +402,34 @@ class PiratePigGame extends Sprite {
 		return new Point (column * (57 + 16), row * (57 + 16));
 		
 	}
+
+   function setSelection(inRow:Int, inCol:Int, inActive:Bool)
+   {
+      if (inRow<0) inRow = 0;
+      if (inRow>=NUM_ROWS) inRow = NUM_ROWS-1;
+      if (inCol<0) inCol = 0;
+      if (inCol>=NUM_COLUMNS) inCol = NUM_COLUMNS-1;
+
+      if (inActive!=cursorActive)
+      {
+         cursorActive = inActive;
+         var gfx = SelectionContainer.graphics;
+         gfx.lineStyle( 3, cursorActive ? 0xff0000 : 0x0000ff );
+         gfx.drawRect( 0, 0, 57, 57 );
+      }
+      cursorRow = inRow;
+      cursorCol = inCol;
+      var pos = getPosition(cursorRow, cursorCol);
+      SelectionContainer.x = pos.x;
+      SelectionContainer.y = pos.y;
+   }
 	
 	
 	private function initialize ():Void {
 		
 		currentScale = 1;
 		currentScore = 0;
+
 		
 		tiles = new Array <Array <Tile>> ();
 		usedTiles = new Array <Tile> ();
@@ -357,7 +450,10 @@ class PiratePigGame extends Sprite {
 		Logo = new Bitmap (Assets.getBitmapData ("images/logo.png"));
 		Score = new TextField ();
 		TileContainer = new Sprite ();
+		SelectionContainer = new Shape ();
+      SelectionContainer.visible = true;
 		
+      setSelection((NUM_ROWS>>1) -1,(NUM_COLUMNS>>1) -1,false);
 	}
 	
 	
@@ -458,7 +554,7 @@ class PiratePigGame extends Sprite {
 	}
 	
 	
-	private function swapTile (tile:Tile, targetRow:Int, targetColumn:Int):Void {
+	private function swapTile (tile:Tile, targetRow:Int, targetColumn:Int):Bool {
 		
 		if (targetColumn >= 0 && targetColumn < NUM_COLUMNS && targetRow >= 0 && targetRow < NUM_ROWS) {
 			
@@ -482,6 +578,7 @@ class PiratePigGame extends Sprite {
 					tile.moveTo (0.3, tilePosition.x, tilePosition.y);
 					
 					needToCheckMatches = true;
+               return true;
 					
 				} else {
 					
@@ -493,6 +590,7 @@ class PiratePigGame extends Sprite {
 			}
 			
 		}
+      return false;
 		
 	}
 	

@@ -29,9 +29,8 @@ class PiratePig extends Sprite {
 		resize (Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
 		Lib.current.stage.addEventListener (Event.RESIZE, stage_onResize);
 		
-		#if android
-		Lib.current.stage.addEventListener (KeyboardEvent.KEY_UP, stage_onKeyUp);
-		#end
+		if (nme.system.System.systemName()=="android")
+		   Lib.current.stage.addEventListener (KeyboardEvent.KEY_UP, stage_onKeyUp);
 		
 	}
 	
