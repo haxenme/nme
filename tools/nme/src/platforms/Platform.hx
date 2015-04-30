@@ -327,6 +327,21 @@ class Platform
       return result;
    }
 
+   public function shell(inCommand:Array<String>)
+   {
+      var deploy = project.getDef("deploy");
+      if (deploy==null || deploy=="")
+         Log.error("You must set a deployment target to use the shell command");
+
+      var parts = deploy.split(":");
+      var protocol = parts.length>1 ? parts[0] : "script";
+      if (protocol!="script")
+         Log.error('"The shell command only works with the script protocol, not "$protocol"');
+
+      var name = parts[ parts.length-1 ];
+      trace("Connect " + name + " " + inCommand);
+   }
+ 
    public function deploy(inAndRun:Bool) : Bool
    {
       addManifest();
@@ -335,21 +350,24 @@ class Platform
       Log.verbose("Deployment target " + deploy );
       if (deploy!=null)
       {
+         var parts = deploy.split(":");
+         var protocol = parts.length>1 ? parts[0] : "script";
+         var name = parts[ parts.length-1 ];
          var from = getOutputDir();
 
-         if (deploy.substr(0,4)=="adb:")
+         if (protocol=="adb")
          {
             setupAdb();
-            var to = deploy.substr(4) + "/" + project.app.packageName;
+            var to = name + "/" + project.app.packageName;
             for(file in outputFiles)
             {
                Log.verbose("adb push " + file);
                ProcessHelper.runCommand(from,adbName, adbFlags.concat(["push", file, to+"/"+file]) );
             }
          }
-         else if (deploy.substr(0,4)=="net:")
+         else if (protocol=="script")
          {
-            var host = new Host(deploy.substr(4));
+            var host = new Host(name);
             Log.verbose("Connect to host " + host);
             var socket = new Socket();
             try
@@ -382,16 +400,17 @@ class Platform
                Log.error("Could not connect to " + deploy + " : " + e );
             }
          }
-         else
+         else if (protocol=="dir")
          {
-            var to = deploy + "/" + project.app.file;
+            var to = name + "/" + project.app.file;
             for(file in outputFiles)
             {
                Log.verbose("copy " + file);
                FileHelper.copyFile(from+"/"+file,to+"/"+file);
             }
-
          }
+         else
+            Log.error("Unknown deployment protocol, use: 'script:', 'adb:' or 'dir:'");
       }
       return false;
    }

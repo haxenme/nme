@@ -41,9 +41,9 @@ class CommandLineTools
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
-            "rebuild" ];
-   static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath" ];
-   static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia" ];
+            "rebuild", "shell" ];
+   static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy" ];
+   static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host" ];
    static var quickSetNames =  [ "debug", "verbose" ];
 
 
@@ -835,6 +835,12 @@ class CommandLineTools
          }
       }
 
+      if (targetName=="" && project.hasDef("deploy"))
+      {
+         Log.verbose('Using default deployment target "cppia"');
+         targetName = "cppia";
+      }
+
       if (targetName=="")
       {
          if (words.length>1)
@@ -1039,6 +1045,13 @@ class CommandLineTools
    }
 
 
+   public static function getValue(inValue:String) : Dynamic
+   {
+      return Reflect.field(storeData, inValue);
+   }
+
+
+
    public static function unsetValue()
    {
       if (words.length!=1 || !(isIn(setNames,words[0]) || isIn(quickSetNames,words[0])) )
@@ -1197,6 +1210,10 @@ class CommandLineTools
          case "create":
             createTemplate();
 
+         case "shell":
+            Script.shell(project.app.packageName,getValue("deploy"),additionalArguments);
+            createTemplate();
+
          case "xcode":
             Sys.putEnv("HXCPP_NO_COLOUR","1");
             if (Sys.getEnv("NME_ALREADY_BUILDING")=="BUILDING")
@@ -1315,6 +1332,13 @@ class CommandLineTools
             {
                project.localDefines.set(argument.substr(0, equals), argValue);
             }
+         }
+         else if (argument == "-deploy" || argument=="deploy") 
+         {
+            var value = getValue("deploy");
+            if (value==null)
+               Log.error("No deployment target set, use 'set deploy ...' or 'deploy=...'");
+            project.localDefines.set("deploy", value);
          }
          else if (argument.substr(0, 1) == "-") 
          {
