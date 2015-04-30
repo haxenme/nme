@@ -6,6 +6,7 @@ import nme.utils.ByteArray;
 import nme.events.Event;
 import sys.net.Host;
 import sys.net.Socket;
+import sys.FileSystem;
 import cpp.vm.Thread;
 import cpp.vm.Deque;
 import Sys;
@@ -79,6 +80,73 @@ class Server
       }
    }
 
+   function readDir(outFiles:Array<String>, dir:String, file:String, recurse:Bool)
+   {
+      var path = file=="" ? dir : dir+"/"+file;
+      if (!FileSystem.exists(path))
+      {
+         outFiles.push(" not a file - " + file);
+      }
+      else if (FileSystem.isDirectory(path))
+      {
+         try
+         {
+            var files = FileSystem.readDirectory(path);
+            if (recurse)
+               for(f in files)
+                  readDir(outFiles, dir, file=="" ? f : file + "/" + f, true);
+            else
+               for(f in files)
+                   outFiles.push(f);
+         }
+         catch(e:Dynamic)
+         {
+            outFiles.push(e);
+         }
+      }
+      else
+         outFiles.push(file);
+   }
+
+   function ls(args:Array<String>)
+   {
+      var result = new Array<String>();
+
+      var recurse = false;
+      if (args[0]=="-r")
+      {
+         recurse = true;
+         args.shift();
+      }
+
+      if (args.length==0)
+         args = [""];
+
+      for(arg in args)
+         readDir(result,directory,arg,recurse);
+
+      return result.join("\n");
+   }
+
+   function shell(inCommand:Array<String>) : String
+   {
+      var cmd = inCommand.shift();
+      switch(cmd)
+      {
+         case "help":
+            return "Commands: help, pwd, ls, kill";
+         case "pwd":
+            return directory;
+         case "ls":
+            return ls(inCommand);
+         case "kill":
+            Sys.exit(0);
+            return "Dead";
+         default:
+            return "Unkown command: " + cmd;
+      }
+   }
+
    function handleConnection(connection:Socket)
    {
       try
@@ -96,6 +164,20 @@ class Server
             if (command=="bye")
             {
                break;
+            }
+            else if (command=="shell")
+            {
+               var args = new Array<String>();
+               var argCount = fromSocket.readInt32();
+               for(i in 0...argCount)
+               {
+                  var len = fromSocket.readInt32();
+                  args.push(fromSocket.readString(len));
+               }
+
+               var result = shell(args);
+               toSocket.writeInt32(result.length);
+               toSocket.writeString(result);
             }
             else if (command=="run")
             {

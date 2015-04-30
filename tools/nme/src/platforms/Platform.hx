@@ -327,32 +327,16 @@ class Platform
       return result;
    }
 
-   public function shell(inCommand:Array<String>)
-   {
-      var deploy = project.getDef("deploy");
-      if (deploy==null || deploy=="")
-         Log.error("You must set a deployment target to use the shell command");
-
-      var parts = deploy.split(":");
-      var protocol = parts.length>1 ? parts[0] : "script";
-      if (protocol!="script")
-         Log.error('"The shell command only works with the script protocol, not "$protocol"');
-
-      var name = parts[ parts.length-1 ];
-      trace("Connect " + name + " " + inCommand);
-   }
- 
    public function deploy(inAndRun:Bool) : Bool
    {
       addManifest();
 
-      var deploy = project.getDef("deploy");
-      Log.verbose("Deployment target " + deploy );
-      if (deploy!=null)
+      var target = Script.parseDeploy(project.getDef("deploy"),false,false);
+      Log.verbose("Deployment target " + target );
+      if (target!=null)
       {
-         var parts = deploy.split(":");
-         var protocol = parts.length>1 ? parts[0] : "script";
-         var name = parts[ parts.length-1 ];
+         var protocol = target.protocol;
+         var name =target.name;
          var from = getOutputDir();
 
          if (protocol=="adb")

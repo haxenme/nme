@@ -1211,8 +1211,8 @@ class CommandLineTools
             createTemplate();
 
          case "shell":
-            Script.shell(project.app.packageName,getValue("deploy"),additionalArguments);
-            createTemplate();
+            var deploy = project.hasDef("deploy") ? project.getDef("deploy") : getValue("deploy");
+            Script.shell(project.app.packageName,deploy,additionalArguments);
 
          case "xcode":
             Sys.putEnv("HXCPP_NO_COLOUR","1");
