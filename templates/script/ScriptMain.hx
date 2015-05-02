@@ -5,6 +5,7 @@ class ScriptMain
 {
    public static function main()
    {
+      var waitForResize = false;
       #if nme
          nme.app.Application.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
 
@@ -15,8 +16,10 @@ class ScriptMain
          nme.app.Application.initHeight = ::WIN_HEIGHT::;
 
          var window = stage.window;
-         if (window.displayState==nme.display.StageDisplayState.NORMAL)
+         if (window.displayState==nme.display.StageDisplayState.NORMAL &&
+              (stage.stageWidth!=::WIN_WIDTH:: && stage.stageHeight!=::WIN_HEIGHT::) )
          {
+            waitForResize = true;
             var cx = window.x + window.width*0.5;
             var cy = window.y + window.height*0.5;
             window.resize(::WIN_WIDTH::,::WIN_HEIGHT::);
@@ -45,9 +48,18 @@ class ScriptMain
 
       #end
 
-      nme.ScriptData.create();
-   
-      ApplicationBoot.createInstance("ScriptDocument");
+      if (waitForResize)
+      {
+         haxe.Timer.delay( function() {
+            nme.ScriptData.create();
+            ApplicationBoot.createInstance("ScriptDocument");
+         }, 1 );
+      } 
+      else
+      {
+         nme.ScriptData.create();
+         ApplicationBoot.createInstance("ScriptDocument");
+      }
    }
    
 }

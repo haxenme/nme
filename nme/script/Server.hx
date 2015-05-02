@@ -17,6 +17,7 @@ using StringTools;
 class Server
 {
    public static var values = new Map<String,Dynamic>();
+   public static var functions = new Map<String,Dynamic>();
 
    public var connectedHost(default,null):String;
    public var directory(default,null):String;
@@ -365,6 +366,11 @@ class Server
             return getClasses();
 
          default:
+            var func = functions.get(cmd);
+            if (func!=null)
+            {
+               return untyped func.__Run(inCommand);
+            }
             return "Unkown command: " + cmd;
       }
    }

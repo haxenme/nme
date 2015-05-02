@@ -50,7 +50,7 @@ class CommandLineTools
 
    private static function buildProject(project:NMEProject) 
    {
-      if (!loadProject(project))
+      if (!loadProject(project,command=="script"))
          return;
 
       var platform:Platform = null;
@@ -225,7 +225,7 @@ class CommandLineTools
       Sys.println(name + " samples: " + joint + samples.join(joint) );
    }
 
-   static function findSample(samples:Array<Sample>, name:String, target:String )
+   static function findSample(project:NMEProject,samples:Array<Sample>, name:String, target:String )
    {
       var nameLen = name.length;
       for(sample in samples)
@@ -234,7 +234,7 @@ class CommandLineTools
               (nameLen<sample.name.length && nameLen>=sample.short.length &&
                   name==sample.name.substr(0, nameLen) ) )
          {
-            doSample(sample.path,target);
+            doSample(project,sample.path,target);
             return;
          }
       }
@@ -246,7 +246,7 @@ class CommandLineTools
               (nameLen<sample.name.length && nameLen>=sample.short.length &&
                   lower==sample.name.substr(0, nameLen).toLowerCase() ) )
          {
-            doSample(sample.path,target);
+            doSample(project,sample.path,target);
             return;
          }
       }
@@ -258,7 +258,7 @@ class CommandLineTools
    }
 
 
-   static function doSample(dir:String,sampleTarget:String)
+   static function doSample(project:NMEProject,dir:String,sampleTarget:String)
    {
  
 
@@ -284,6 +284,8 @@ class CommandLineTools
             args.push("-v");
          if (debug)
             args.push("-debug");
+         if (project.hasDef("deploy"))
+            args.push("deploy=" + project.getDef("deploy"));
          if (sampleTarget!="")
          {
             Sys.println("Create demo " + dir + " for target " + sampleTarget);
@@ -330,7 +332,7 @@ class CommandLineTools
       }
    }
 
-   static function processSample(inMode:String)
+   static function processSample(project:NMEProject, inMode:String)
    {
       var target="";
       if (words.length>1 && isTarget(words[words.length-1]))
@@ -345,7 +347,7 @@ class CommandLineTools
 
         if (FileSystem.exists(arg) && FileSystem.isDirectory(arg))
         {
-           doSample(arg,target);
+           doSample(project, arg,target);
            return;
         }
 
@@ -365,7 +367,7 @@ class CommandLineTools
               var samples = getSamples(path);
               if (samples.length<1)
                  Log.error("Could not find samples in " + path);
-              findSample(samples,parts[1],target);
+              findSample(project,samples,parts[1],target);
            }
            return;
         }
@@ -380,7 +382,7 @@ class CommandLineTools
            var samples = getSamples(nme);
            if (samples.length<1)
                Log.error("Could not find nme samples");
-           findSample(samples,words[0],target);
+           findSample(project,samples,words[0],target);
         }
      }
    }
@@ -817,7 +819,7 @@ class CommandLineTools
    }
    #end
 
-   static function loadProject(project:NMEProject) : Bool
+   static function loadProject(project:NMEProject,allowMissing:Bool) : Bool
    {
       Log.verbose("Loading project...");
 
@@ -878,6 +880,9 @@ class CommandLineTools
 
       if (projectFile == "") 
       {
+         if (allowMissing)
+            return true;
+
          if (assumedTest && words.length==0)
             return false;
 
@@ -1203,10 +1208,10 @@ class CommandLineTools
             generate();
 
          case "clone":
-            processSample("clone");
+            processSample(project,"clone");
 
          case "demo":
-            processSample("demo");
+            processSample(project,"demo");
 
          case "create":
             createTemplate();
