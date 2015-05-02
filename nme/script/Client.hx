@@ -1,33 +1,15 @@
+package nme.script;
+
 import sys.net.Host;
 import sys.net.Socket;
 
 
-class Script
+class Client
 {
    static var socket:Socket;
    static var toSocket:haxe.io.Output;
    static var fromSocket:haxe.io.Input;
 
-   public static function parseDeploy(inDeploy:String, inRequire:Bool, inForScript:Bool)
-   {
-      if (inDeploy==null || inDeploy=="")
-      {
-         if (inRequire)
-            Log.error("A deployment target mmust be specified with 'deploy=...' or set deploy ...");
-         return null;
-      }
-
-      var parts = inDeploy.split(":");
-      if (parts.length>2)
-         Log.error("deploy requires format [protocol:]name");
-
-      if (parts.length>1 && parts[0]!="script")
-         Log.error("A 'script:' protocol is required for this command, not " + inDeploy);
-
-      if (parts.length==1)
-          return { protocol:"script", name:inDeploy };
-      return { protocol:parts[0], name:parts[1] };
-   }
 
    public static function sendCommand(inCommand:Array<String>)
    {
@@ -72,10 +54,12 @@ class Script
                      }
                      word += line.charAt(pos++);
                   }
-                  else if (ch=='"')
-                     quotes = !quotes;
                   else
+                  {
+                     if (ch=='"')
+                        quotes = !quotes;
                      word += ch;
+                  }
 
                   if (pos==line.length)
                   {
@@ -105,13 +89,11 @@ class Script
       return ["q"];
    }
 
-   public static function shell(inPackageName:String, inHost:String, inCommand:Array<String>)
+   public static function shell( inHostName:String, inCommand:Array<String>,?inDefaultPackageName:String)
    {
-      var target = parseDeploy(inHost,true,true);
-
       try
       {
-         var host = new Host(target.name);
+         var host = new Host(inHostName);
          Log.verbose("Connect to host " + host);
 
          socket = new Socket();
@@ -119,6 +101,9 @@ class Script
          socket.connect(host, 0xacad);
          toSocket = socket.output;
          fromSocket = socket.input;
+
+         if (inDefaultPackageName!=null && inDefaultPackageName!="")
+            sendCommand(["set","package",inDefaultPackageName]);
 
          if (inCommand!=null && inCommand.length>0)
             sendCommand(inCommand);
@@ -139,7 +124,7 @@ class Script
       }
       catch(e:Dynamic)
       {
-         Log.error("Could not connect to " + inHost + " : " + e );
+         Log.error("No connection to " + inHostName + " : " + e );
       }
    }
 }

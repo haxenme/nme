@@ -16,6 +16,8 @@ using StringTools;
 
 class Server
 {
+   public static var values = new Map<String,Dynamic>();
+
    public var connectedHost(default,null):String;
    public var directory(default,null):String;
    public var restartOnScript:Bool;
@@ -23,17 +25,21 @@ class Server
    var script:String;
    var socket:Socket;
    var connectionStatus:String;
-   var doLog:String->Void;
+   var handler:IScriptHandler;
    var deque:Deque<Void->Void>;
+   var postedResults:Deque<String>;
 
-   public function new(inEngineName:String, ?inDirectory:String, ?inLog:String->Void)
+   public function new(inEngineName:String,
+                       ?inDirectory:String,
+                       ?inHandler:IScriptHandler)
    {
-      doLog = inLog;
+      handler = inHandler;
       restartOnScript = false;
       connectionStatus = "Not connected";
       connectedHost = null;
       setDir(inEngineName,inDirectory);
       deque = new Deque<Void->Void>();
+      postedResults = new Deque<String>();
    }
 
    public function pollQueue() : Void->Void
@@ -43,8 +49,8 @@ class Server
 
    function log(inString:String)
    {
-      if (doLog!=null)
-         doLog(inString);
+      if (handler!=null)
+         handler.scriptLog(inString);
    }
 
    function setDir(inEngineName:String, inDirectory:String)
@@ -128,13 +134,163 @@ class Server
       return result.join("\n");
    }
 
+   function getClasses() : String
+   {
+      #if cpp
+      var newLine = "\n";
+      untyped __cpp__("\n #ifdef HXCPP_HAS_CLASSLIST\n return __hxcpp_get_class_list()->join(newLine);\n #endif\n");
+      #end
+      return "";
+   }
+
+   function eval(value:Value):Dynamic
+   {
+      if (value==null)
+         return null;
+
+      switch(value)
+      {
+         case VMap(name): return values.get(name);
+         case VValue(value) : return value;
+         case VMember(instance,fieldName):
+            return Reflect.getProperty(eval(instance),fieldName);
+      }
+   }
+
+   function parseValue(instance:Value, inValue:String) : Value
+   {
+      if (inValue==null || inValue.length==0)
+      {
+         if (instance==null)
+            throw "Missing identifier";
+         return VValue(null);
+      }
+
+      if (inValue.length>1 && inValue.charAt(0)=="\"")
+      {
+         if (instance!=null)
+            throw "Invalid mixing of string and value";
+         if (inValue.charAt(inValue.length-1)!="\"")
+            throw "Missing string termination";
+         return VValue( inValue.substr(1, inValue.length-2) );
+      }
+
+      var parts=inValue.split(".");
+      if (instance!=null)
+      {
+         if (parts.length==1)
+         {
+            return VMember(instance,inValue);
+         }
+         var id = parts.shift();
+         return parseValue( VMember(instance,id), parts.join(".") );
+      }
+
+      if (inValue.charAt(0)=="$")
+      {
+         var id = parts.shift().substr(1);
+         if (parts.length>0)
+            return parseValue( VMap(id), parts.join(".") );
+
+         return VMap(id);
+      }
+
+
+      var className = "";
+      while(parts.length>0)
+      {
+         className += (className=="" ? "" : "." ) + parts.shift();
+         var cls = Type.resolveClass(className);
+         if (cls!=null)
+         {
+            if (parts.length==0)
+               return VValue(cls);
+            return parseValue( VValue(cls), parts.join("."));
+         }
+      }
+
+      if (inValue=="null")
+         return VValue(null);
+
+      var value = Std.parseFloat(inValue);
+      if (value!=Math.NaN)
+         return VValue( value );
+
+      // throw "unknown value :" + inValue;
+
+      return VValue(inValue);
+   }
+
+   function evalGet(inValue:Value) : String
+   {
+      try
+      {
+         return eval(inValue);
+      }
+      catch(e:Dynamic)
+      {
+         return e;
+      }
+   }
+
+   function evalSet(inTarget:Value, inValue:Value)
+   {
+      try
+      {
+         switch(inTarget)
+         {
+            case VMap(name) : values[name] = eval(inValue); return "set " + values[name];
+            case VValue(_) : return "Can't set const value";
+            case VMember(instance,fieldName):
+               if (instance==null)
+                   return "null instance";
+               var value = eval(inValue);
+               Reflect.setProperty(eval(instance), fieldName, value);
+               return "set " + value;
+         }
+      }
+      catch(e:Dynamic)
+         return e;
+   }
+
+   function evalCall(inFunc:Value, inArgs:Array<Value>)
+   {
+      try
+      {
+         #if cpp
+         var values = new Array<Dynamic>();
+         var func = eval(inFunc);
+         if (!Reflect.isFunction(func))
+            return "value is not a function";
+         for(a in inArgs)
+            values.push( eval(a) );
+         return untyped func.__Run(values);
+         #else
+         return "not supported";
+         #end
+      }
+      catch(e:Dynamic)
+         return e;
+   }
+
+   function postResult(inResult:String)
+   {
+       postedResults.push(inResult);
+   }
+
+   function waitSyncResult():String
+   {
+       return postedResults.pop(true);
+   }
+
+
    function shell(inCommand:Array<String>) : String
    {
       var cmd = inCommand.shift();
       switch(cmd)
       {
          case "help":
-            return "Commands: help, pwd, ls, kill";
+            return "Commands: help, pwd, ls, kill, set, get, classes";
          case "pwd":
             return directory;
          case "ls":
@@ -142,6 +298,72 @@ class Server
          case "kill":
             Sys.exit(0);
             return "Dead";
+         case "set","aset":
+            var async = cmd=="aset";
+            if (inCommand[0]=="" || inCommand[0]==null)
+               return "usage: set name [value]";
+            else if (handler==null && !async)
+               return "no handler";
+            else
+            {
+               try
+               {
+                  var target = parseValue(null,inCommand[0]);
+                  var value = parseValue(null,inCommand[1]);
+                  if (async)
+                     return evalSet(target,value);
+                  handler.scriptRunSync( function() postResult(evalSet(target,value)) );
+                  return waitSyncResult();
+               }
+               catch(e:Dynamic)
+                  { return Std.string(e); }
+            }
+
+         case "get","aget":
+            var async = cmd=="aget";
+            if (inCommand[0]=="" || inCommand[0]==null)
+               return "usage: set name";
+            else if (handler==null && !async)
+               return "Error: no handler";
+            else
+               try
+               {
+                  var target = parseValue(null,inCommand[0]);
+                  if (async)
+                     return evalGet(target);
+                  handler.scriptRunSync( function() postResult(evalGet(target)) );
+                  return waitSyncResult();
+               }
+               catch(e:Dynamic)
+                  { return Std.string(e); }
+
+         case "call","acall":
+            var async = cmd=="acall";
+            if (inCommand[0]=="" || inCommand[0]==null)
+               return "usage: call func arg arg ...";
+            else if (handler==null && !async)
+               return "Error: no handler";
+            else
+               try
+               {
+                  var func = parseValue(null,inCommand[0]);
+                  var args = new Array<Value>();
+                  for(i in 1...inCommand.length)
+                     args.push( parseValue(null,inCommand[1]));
+
+                  if (async)
+                     return evalCall(func,args);
+                  handler.scriptRunSync( function() postResult(evalCall(func,args)) );
+                  return waitSyncResult();
+
+               }
+               catch(e:Dynamic)
+                  { return Std.string(e); }
+
+
+         case "classes":
+            return getClasses();
+
          default:
             return "Unkown command: " + cmd;
       }

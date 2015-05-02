@@ -331,10 +331,11 @@ class Platform
    {
       addManifest();
 
-      var target = Script.parseDeploy(project.getDef("deploy"),false,false);
-      Log.verbose("Deployment target " + target );
+      var target = CommandLineTools.parseDeploy(project.getDef("deploy"),false,false);
       if (target!=null)
       {
+         Log.verbose("Deployment target " + target );
+
          var protocol = target.protocol;
          var name =target.name;
          var from = getOutputDir();

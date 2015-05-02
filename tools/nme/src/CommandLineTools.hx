@@ -8,6 +8,7 @@ import platforms.Platform;
 import nme.system.System;
 import nme.Loader;
 import nme.net.SharedObject;
+import nme.script.Client;
 import NMEProject;
 using StringTools;
 
@@ -1212,7 +1213,8 @@ class CommandLineTools
 
          case "shell":
             var deploy = project.hasDef("deploy") ? project.getDef("deploy") : getValue("deploy");
-            Script.shell(project.app.packageName,deploy,additionalArguments);
+            var parsed = parseDeploy(deploy,true,true);
+            Client.shell(parsed.name,additionalArguments,project.app.packageName);
 
          case "xcode":
             Sys.putEnv("HXCPP_NO_COLOUR","1");
@@ -1239,6 +1241,28 @@ class CommandLineTools
             Log.error("'" + command + "' is not a valid command");
       }
    }
+
+   public static function parseDeploy(inDeploy:String, inRequire:Bool, inForScript:Bool)
+   {
+      if (inDeploy==null || inDeploy=="")
+      {
+         if (inRequire)
+            Log.error("A deployment target mmust be specified with 'deploy=...' or set deploy ...");
+         return null;
+      }
+
+      var parts = inDeploy.split(":");
+      if (parts.length>2)
+         Log.error("deploy requires format [protocol:]name");
+
+      if (parts.length>1 && parts[0]!="script")
+         Log.error("A 'script:' protocol is required for this command, not " + inDeploy);
+
+      if (parts.length==1)
+          return { protocol:"script", name:inDeploy };
+      return { protocol:parts[0], name:parts[1] };
+   }
+
 
    private static function processArguments(project:NMEProject):Void 
    {
