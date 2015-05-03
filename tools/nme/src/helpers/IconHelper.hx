@@ -14,29 +14,30 @@ import sys.FileSystem;
 
 class IconHelper 
 {
-   public static function createIcon(icons:Array<Icon>, width:Int, height:Int, targetPath:String,
-      ?onFile:String->Void):Bool 
+   public static function createIcon(icons:Array<Icon>, width:Int, height:Int, targetPath:String, ?onFile:String->Void):Bool 
    {
       PathHelper.mkdir(Path.directory(targetPath));
       var icon = findMatch(icons, width, height);
 
       try
       {
-         if (icon != null && Path.extension(icon.path) == "png") 
+         if (icon!=null && Path.extension(icon.path) == "png")
          {
-            FileHelper.copyFile(icon.path, targetPath, onFile);
-            return true;
-         }
-         else
-         {
-            var bitmapData = getIconBitmap(icons, width, height);
-            if (bitmapData != null) 
+            var bitmapData = BitmapData.load(icon.path);
+            if (bitmapData.width==width && bitmapData.height==height)
             {
-               File.saveBytes(targetPath, bitmapData.encode("png"));
-               if (onFile!=null)
-                  onFile(targetPath);
+               FileHelper.copyFile(icon.path, targetPath, onFile);
                return true;
             }
+         }
+
+         var bitmapData = getIconBitmap(icons, width, height);
+         if (bitmapData != null) 
+         {
+            File.saveBytes(targetPath, bitmapData.encode("png"));
+            if (onFile!=null)
+               onFile(targetPath);
+            return true;
          }
       }
       catch(e:Dynamic)
@@ -308,7 +309,7 @@ class IconHelper
       if (width<1 || height<1)
          Log.error("Bad icon size request");
       var icon = findMatch(icons, width, height);
-      var exactMatch = true;
+      var exactMatch = icon!=null && icon.width==width && icon.height==height;
 
       if (icon == null) 
       {

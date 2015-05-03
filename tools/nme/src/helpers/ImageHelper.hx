@@ -11,9 +11,7 @@ class ImageHelper
    public static function rasterizeSVG(svg:Svg, width:Int, height:Int, backgroundColor:Int = null):BitmapData 
    {
       if (backgroundColor == null) 
-      {
-         backgroundColor = #if (!neko ||(haxe3 && !neko_v1)) 0x00FFFFFF #else { rgb: 0xFFFFFF, a: 0x00 } #end;
-      }
+         backgroundColor = 0x00FFFFFF;
 
       var shape = new Shape();
       var renderer = new SvgRenderer(svg);
@@ -31,13 +29,21 @@ class ImageHelper
    public static function resizeBitmapData(bitmapData:BitmapData, width:Int, height:Int):BitmapData 
    {
       var bitmap = new Bitmap(bitmapData);
+      var backgroundColor = 0x00FFFFFF;
 
       bitmap.smoothing = true;
-      bitmap.width = width;
-      bitmap.height = height;
 
-      var data = new BitmapData(width, height, true, #if (!neko ||(haxe3 && !neko_v1)) 0x00FFFFFF #else { rgb: 0xFFFFFF, a: 0x00 } #end);
-      data.draw(bitmap);
+      var matrix = new Matrix();
+      // Show central portion, or pad with alpha?
+      var scale = Math.max( width/bitmapData.width, height/bitmapData.height );
+      //var scale = Math.min( width/bitmapData.width, height/bitmapData.height );
+      matrix.a = scale;
+      matrix.d = scale;
+      matrix.tx = Std.int( (width - scale*bitmap.width)*0.5 );
+      matrix.ty = Std.int( (height - scale*bitmap.height)*0.5 );
+
+      var data = new BitmapData(width, height, true, backgroundColor);
+      data.draw(bitmap,matrix);
 
       return data;
    }
