@@ -16,5 +16,7 @@ class DesktopPlatform extends Platform
          project.haxeflags.push('-neko $haxeDir/ApplicationMain.n');
      else
          project.haxeflags.push('-cpp $haxeDir/cpp');
+
+     project.haxedefs.set(is64 ? "HXCPP_M64" : "HXCPP_M32",null);
    }
 }

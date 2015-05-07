@@ -50,9 +50,19 @@ class Platform
       if (useNeko)
          is64 = nme.Lib.bits == 64;
       else
-         for(architecture in project.architectures) 
-            if (architecture == Architecture.X64) 
-               is64 = true;
+      {
+         if (inProject.hasDef("HXCPP_M32"))
+         {
+         }
+         else if (inProject.hasDef("HXCPP_M64"))
+         {
+            is64 = true;
+         }
+         else
+            for(architecture in project.architectures) 
+               if (architecture == Architecture.X64) 
+                  is64 = true;
+      }
       targetDir = project.app.binDir + "/" + getPlatformDir();
       haxeDir = targetDir + "/haxe";
    }
