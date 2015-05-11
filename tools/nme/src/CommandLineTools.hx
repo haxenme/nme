@@ -1219,6 +1219,8 @@ class CommandLineTools
          case "shell":
             var deploy = project.hasDef("deploy") ? project.getDef("deploy") : getValue("deploy");
             var parsed = parseDeploy(deploy,true,true);
+            Client.log = Log.verbose;
+            Client.error = function(s) Log.error(s);
             Client.shell(parsed.name,additionalArguments,project.app.packageName);
 
          case "xcode":

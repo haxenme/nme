@@ -9,6 +9,8 @@ class Client
    static var socket:Socket;
    static var toSocket:haxe.io.Output;
    static var fromSocket:haxe.io.Input;
+   public static var log:String->Void;
+   public static var error:String->Void;
 
 
    public static function sendCommand(inCommand:Array<String>)
@@ -94,7 +96,8 @@ class Client
       try
       {
          var host = new Host(inHostName);
-         Log.verbose("Connect to host " + host);
+         if (log!=null)
+            log("Connect to host " + host);
 
          socket = new Socket();
 
@@ -124,7 +127,8 @@ class Client
       }
       catch(e:Dynamic)
       {
-         Log.error("No connection to " + inHostName + " : " + e );
+         if (error!=null)
+            error("No connection to " + inHostName + " : " + e );
       }
    }
 }
