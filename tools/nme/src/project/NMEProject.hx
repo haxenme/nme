@@ -331,12 +331,7 @@ class NMEProject
             platformType = Platform.TYPE_DESKTOP;
 
             if (architectures.length==0)
-            {
-               if (target == Platform.LINUX) 
-                  architectures = [ PlatformHelper.hostArchitecture ];
-               else
-                  architectures = [ Architecture.X86 ];
-            }
+               architectures = [ PlatformHelper.hostArchitecture ];
 
          default:
             Log.error("Unknown platform target : " + inTargetName);
