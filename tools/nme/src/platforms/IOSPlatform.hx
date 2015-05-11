@@ -148,7 +148,7 @@ class IOSPlatform extends Platform
       context.PROJECT_DIRECTORY = Sys.getCwd();
       context.APP_FILE = project.app.file;
       context.REDIRECT_TRACE = redirectTrace;
-      context.IOS_MAX_WIDTH = project.getBool("iosMaxWidth",2208);
+      context.IOS_MAX_WIDTH = project.getInt("iosMaxWidth",2208);
 
       linkedLibraries = [];
       for(dependency in project.dependencies) 
