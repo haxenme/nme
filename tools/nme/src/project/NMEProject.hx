@@ -375,6 +375,14 @@ class NMEProject
       return inDefault;
    }
 
+   public function getInt(inName:String,inDefault:Int):Int
+   {
+       if (!hasDef(inName))
+           return inDefault;
+
+       return Std.parseInt(getDef(inName));
+   }
+
    public function hasDef(inName:String)
    {
       return localDefines.exists(inName) || environment.exists(inName) || haxedefs.exists(inName);

@@ -33,6 +33,7 @@
       "scale" : "1x"
       $$launchImage(1024,768)
     },
+    ::if (IOS_MAX_WIDTH > 1136)::
     {
       "orientation" : "portrait",
       "idiom" : "ipad",
@@ -49,6 +50,7 @@
       "scale" : "2x"
       $$launchImage(2048,1536)
     },
+    ::end::
     {
       "orientation" : "portrait",
       "idiom" : "iphone",
@@ -56,6 +58,7 @@
       "scale" : "1x"
       $$launchImage(320,480)
     },
+    ::if (IOS_MAX_WIDTH > 1136)::
     {
       "orientation" : "portrait",
       "idiom" : "iphone",
@@ -65,7 +68,6 @@
       "scale" : "2x"
       $$launchImage(750,1334)
     },
-    ::if (IOS_3X_RESOLUTION)::
     {
       "orientation" : "portrait",
       "idiom" : "iphone",
@@ -113,8 +115,9 @@
       "extent" : "full-screen",
       "scale" : "1x"
       $$launchImage(1024,768)
-    },
-    {
+    }
+    ::if (IOS_MAX_WIDTH > 1136)::
+    ,{
       "orientation" : "portrait",
       "idiom" : "ipad",
       "extent" : "full-screen",
@@ -128,6 +131,7 @@
       "scale" : "2x"
       $$launchImage(2048,1536)
     }
+    ::end::
   ],
   "info" : {
     "version" : 1,
