@@ -19,7 +19,7 @@ class ScriptMain
          if (window.displayState==nme.display.StageDisplayState.NORMAL &&
               (stage.stageWidth!=::WIN_WIDTH:: && stage.stageHeight!=::WIN_HEIGHT::) )
          {
-            waitForResize = true;
+            //waitForResize = true;
             var cx = window.x + window.width*0.5;
             var cy = window.y + window.height*0.5;
             window.resize(::WIN_WIDTH::,::WIN_HEIGHT::);
@@ -53,13 +53,28 @@ class ScriptMain
          haxe.Timer.delay( function() {
             nme.ScriptData.create();
             ApplicationBoot.createInstance("ScriptDocument");
+            sendFakeResize();
          }, 1 );
       } 
       else
       {
          nme.ScriptData.create();
          ApplicationBoot.createInstance("ScriptDocument");
+         sendFakeResize();
       }
+   }
+
+   static function sendFakeResize()
+   {
+      /*
+      #if nme
+         haxe.Timer.delay( function() {
+            var stage = nme.Lib.current.stage;
+            trace("Fake resize " + stage.stageWidth + "x" +  stage.stageHeight );
+            stage.onResize( stage.stageWidth, stage.stageHeight );
+         }, 1 );
+      #end
+      */
    }
    
 }

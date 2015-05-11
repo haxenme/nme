@@ -329,6 +329,8 @@ public:
    {
       if (mIsFullscreen)
       {
+        /*
+          Ignore
          SDL_DisplayMode mode;
          SDL_GetCurrentDisplayMode(0, &mode);
          
@@ -336,6 +338,7 @@ public:
          mode.h = inHeight;
          
          SDL_SetWindowDisplayMode(mSDLWindow, &mode);
+        */
       }
       else
       {
@@ -654,7 +657,10 @@ public:
       //Note that this fires a mouse event, see the SDL_WarpMouseInWindow docs
     void SetStageWindowPosition(int inX, int inY) 
     {
-      SDL_SetWindowPosition( mSDLWindow, inX, inY );
+       if (!mIsFullscreen)
+       {
+          SDL_SetWindowPosition( mSDLWindow, inX, inY );
+       }
     }   
  
    int GetWindowX() 
@@ -716,7 +722,14 @@ public:
    const char *getJoystickName(int id) {
       return SDL_JoystickNameForIndex(id);
    }
-   
+ 
+   void setIsFullscreen(bool inIsFullscreen)
+   {
+      mIsFullscreen = inIsFullscreen;
+
+      displayState = mIsFullscreen ? sdsFullscreenInteractive : sdsNormal;
+   }
+  
    
    Surface *GetPrimarySurface()
    {
@@ -1156,17 +1169,30 @@ void ProcessEvent(SDL_Event &inEvent)
             }
             case SDL_WINDOWEVENT_MINIMIZED:
             {
+               sgSDLFrame->mStage->setIsFullscreen(false);
                Event deactivate(etDeactivate);
                sgSDLFrame->ProcessEvent(deactivate);
                break;
             }
-            //case SDL_WINDOWEVENT_MAXIMIZED: break;
+
             case SDL_WINDOWEVENT_RESTORED:
-            {
+            case SDL_WINDOWEVENT_MAXIMIZED:
+               {
+               sgSDLFrame->mStage->setIsFullscreen(inEvent.window.event==SDL_WINDOWEVENT_MAXIMIZED);
+
                Event activate(etActivate);
                sgSDLFrame->ProcessEvent(activate);
+
+               int width = 0;
+               int height = 0;
+               SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+
+               Event resize(etResize, width, height);
+               sgSDLFrame->Resize(width,height);
+               sgSDLFrame->ProcessEvent(resize);
+               }
                break;
-            }
+
             //case SDL_WINDOWEVENT_ENTER: break;
             //case SDL_WINDOWEVENT_LEAVE: break;
             case SDL_WINDOWEVENT_FOCUS_GAINED:

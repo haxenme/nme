@@ -363,7 +363,6 @@ void Stage::CalcStageScaling(double inNewWidth,double inNewHeight)
    double StageScaleY=1;
    double StageOX=0;
    double StageOY=0;
-
    if (inNewWidth<=0 || inNewHeight<=0)
       return;
 
@@ -423,7 +422,6 @@ void Stage::CalcStageScaling(double inNewWidth,double inNewHeight)
          StageOY = -extra_y/2;
          break;
    }
-
    DirtyCache();
 
    mStageScale.m00 = StageScaleX;
