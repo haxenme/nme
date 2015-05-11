@@ -360,10 +360,26 @@ class NMEProject
       localDefines.set(target.toLowerCase(), "1");
    }
 
+   public function getBool(inName:String,inDefault:Bool):Bool
+   {
+      if (!hasDef(inName))
+         return inDefault;
+
+      var value = getDef(inName);
+      if (value=="t" || value=="true" || value=="1")
+         return true;
+      if (value=="f" || value=="false" || value=="0")
+         return false;
+      Log.error('Bad boolean value for $inName, "$value"');
+
+      return inDefault;
+   }
+
    public function hasDef(inName:String)
    {
       return localDefines.exists(inName) || environment.exists(inName) || haxedefs.exists(inName);
    }
+
    public function getDef(inName:String):String
    {
       if (localDefines.exists(inName))

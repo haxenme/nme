@@ -65,6 +65,7 @@
       "scale" : "2x"
       $$launchImage(750,1334)
     },
+    ::if (IOS_3X_RESOLUTION)::
     {
       "orientation" : "portrait",
       "idiom" : "iphone",
@@ -83,6 +84,7 @@
       "scale" : "3x"
       $$launchImage(2208,1242)
     },
+    ::end::
     {
       "orientation" : "portrait",
       "idiom" : "iphone",
