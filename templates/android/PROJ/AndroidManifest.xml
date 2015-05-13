@@ -11,7 +11,9 @@
 
 		
 		<uses-feature android:glEsVersion="0x00020000" android:required="true" />
-		
+      ::foreach appFeature:: <uses-feature android:name="::feature::" android:required="::required::" />
+::end::
+
 		<activity
         android:name="MainActivity"
         android:label="::APP_TITLE::"

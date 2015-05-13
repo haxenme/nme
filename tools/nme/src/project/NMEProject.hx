@@ -16,6 +16,7 @@ class AndroidConfig
    public var appIntent:Array<String>;
    public var appActivity:Array<String>;
    public var appPermission:Array<AndroidPermission>;
+   public var appFeature:Array<AndroidFeature>;
    // Where to put source code when genrating a package
    public var viewPackageName:String;
    public var viewTestDir:String;
@@ -31,6 +32,7 @@ class AndroidConfig
       appIntent = [];
       appActivity = [];
       appPermission = [];
+      appFeature = [];
       viewPackageName = "com.nmehost";
       viewTestDir = "";
       gameActivityBase = "Activity";

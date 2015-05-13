@@ -132,6 +132,7 @@ class AndroidPlatform extends Platform
       context.appActivity = project.androidConfig.appActivity;
       context.appIntent = project.androidConfig.appIntent;
       context.appPermission = project.androidConfig.appPermission;
+      context.appFeature = project.androidConfig.appFeature;
 
 
       // Will not install on devices less than this ....

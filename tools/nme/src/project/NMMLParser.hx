@@ -10,6 +10,7 @@ import platforms.Platform;
 class NMMLParser
 {
    var project:NMEProject;
+   static var gitVersion:String = null;
 
    static var varMatch = new EReg("\\${(.*?)}", "");
 
@@ -102,7 +103,7 @@ class NMMLParser
             {
                var check = StringTools.trim(required);
 
-               if (check != "" && !project.localDefines.exists(check)) 
+               if (check != "" && !project.hasDef(check)) 
                {
                   isValid = false;
                }
@@ -493,6 +494,9 @@ class NMMLParser
                   project.androidConfig.appPermission.push(
                       new AndroidPermission(value, childElement.has.required ? substitute(childElement.att.required) : "") );
 
+               case "appFeature":
+                  project.androidConfig.appFeature.push(
+                      new AndroidFeature(value, childElement.has.required ? substitute(childElement.att.required) : "") );
                case "appIntent":
                   project.androidConfig.appIntent.push(value);
 
@@ -997,18 +1001,39 @@ class NMMLParser
       parseXML(xml, "", extensionPath);
    }
 
+   public function gitver()
+   {
+      if (gitVersion==null)
+      {
+         var output = ProcessHelper.getOutput("git", [ "rev-list", "HEAD", "--count" ]);
+         if (output.length!=1)
+            Log.error("Could not identify git version: " + output );
+         gitVersion = output[0];
+      }
+      
+      return gitVersion;
+   }
+
    private function substitute(string:String):String 
    {
       var newString = string;
 
       while(varMatch.match(newString)) 
       {
-         newString = project.getDef(varMatch.matched(1));
+         newString = varMatch.matched(1);
+
+         if (newString=="gitver:")
+            newString = gitver();
+         else
+         {
+            if (newString.indexOf(":")>=0)
+               Log.error('Unknown function in $newString');
+            newString = project.getDef(newString);
+         }
 
          if (newString == null) 
-         {
             newString = "";
-         }
+
 
          newString = varMatch.matchedLeft() + newString + varMatch.matchedRight();
       }
