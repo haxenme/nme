@@ -879,6 +879,11 @@ class NMMLParser
                      project.dependencies.set(key, new Dependency(name,path,extensionPath));
                   }
 
+                case "customIOSProperty":
+                    var key = element.has.key ? substitute(element.att.key) : "";
+                    var value = element.has.value ? substitute(element.att.value) : "";
+                    project.customIOSproperties.set(key, value);
+
                case "engine":
                   project.engines.set(substitute(element.att.name),
                                       substitute(element.att.version));
