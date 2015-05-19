@@ -69,6 +69,10 @@ class ManagedMediaPlayer
 		return -1;
 	}
 
+	public void setCurrentPosition(int position) {
+		if (mp != null)
+			mp.seekTo(position);
+	}
 	public int getCurrentPosition() {
 		if (mp != null)
 			return mp.getCurrentPosition();
@@ -368,6 +372,10 @@ public class Sound
 		}
 
 		return duration;
+	}
+
+	public static void setPosition(int position) {
+		mediaPlayer.setCurrentPosition(position);
 	}
 	
 	public static int getPosition(String inPath)
