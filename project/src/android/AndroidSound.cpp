@@ -61,7 +61,7 @@ void initJni()
       CheckException(env,false);
       jGetPosition = env->GetStaticMethodID(soundClass, "getPosition", "(Ljava/lang/String;)I");
       CheckException(env,false);
-      jSetPosition = env->GetStaticMethodID(soundClass, "setPosition", "(Ljava/lang/String;)I");
+      jSetPosition = env->GetStaticMethodID(soundClass, "setPosition", "(I)V");
       CheckException(env,false);
       jGetLeft = env->GetStaticMethodID(soundClass, "getLeft", "(Ljava/lang/String;)D");
       CheckException(env,false);
@@ -194,12 +194,6 @@ public:
       return env->CallStaticIntMethod(soundClass, jGetPosition, mJSoundPath);
    }
 
-   double setPosition(const float &inFloat)
-   {
-      JNIEnv *env = GetEnv();
-      return env->CallStaticIntMethod(soundClass, jSetPosition, mJSoundPath);
-   }
-
    double getLeft()
    {
       JNIEnv *env = GetEnv();
@@ -217,6 +211,12 @@ public:
       JNIEnv *env = GetEnv();
 
       env->CallStaticVoidMethod(soundClass, jStopMusic, mJSoundPath);
+   }
+
+   double setPosition(const float &inFloat)
+   {
+      JNIEnv *env = GetEnv();
+      return env->CallStaticIntMethod(soundClass, jSetPosition, mJSoundPath, (int)inFloat);
    }
 
    void setTransform(const SoundTransform &inTransform)
