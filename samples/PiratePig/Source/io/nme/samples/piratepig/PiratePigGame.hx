@@ -58,6 +58,7 @@ class PiratePigGame extends Sprite {
 		
 		super ();
 
+      Dbg.game = this;
       seenMouse = seenKey = false;
 		
       cursorActive = true;
@@ -529,26 +530,14 @@ class PiratePigGame extends Sprite {
 		
 		#end
 		
-		if (currentWidth > maxWidth || currentHeight > maxHeight) {
+		var maxScaleX = maxWidth / currentWidth;
+		var maxScaleY = maxHeight / currentHeight;
+
+      currentScale = Math.min(maxScaleX,maxScaleY);
+
+		scaleX = currentScale;
+		scaleY = currentScale;
 			
-			var maxScaleX = maxWidth / currentWidth;
-			var maxScaleY = maxHeight / currentHeight;
-			
-			if (maxScaleX < maxScaleY) {
-				
-				currentScale = maxScaleX;
-				
-			} else {
-				
-				currentScale = maxScaleY;
-				
-			}
-			
-			scaleX = currentScale;
-			scaleY = currentScale;
-			
-		}
-		
 		x = newWidth / 2 - (currentWidth * currentScale) / 2;
 		
 	}

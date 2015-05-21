@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
 	
-	<meta title="Pirate Pig" package="io.nme.samples.piratepig" version="1.0.0" company="NME" />
+	<meta title="Pirate Pig" package="io.nme.samples.piratepig" version="1.0.0" company="Nme/Joshua Granick" />
 	<app path="Export" file="PiratePig" main="io.nme.samples.piratepig.PiratePig" />
 	
 	<window width="600" height="800" />
