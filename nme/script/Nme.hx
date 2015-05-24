@@ -22,6 +22,35 @@ class Nme
        return result;
    }
 
+   public static function getHeader(input:haxe.io.Input)
+   {
+      var magic = input.readString(4);
+      if (magic!="NME!")
+         throw "NME - bad magic";
+      input.bigEndian = false;
+      var headerLen = input.readInt32();
+      var zipLen = input.readInt32();
+      return haxe.Json.parse( input.readString(headerLen) );
+   }
+
+
+   public static function getFileHeader(inFilename:String) : Dynamic
+   {
+      if (inFilename.endsWith(".nme"))
+      {
+         try
+         {
+            var file = sys.io.File.read(inFilename);
+            var result = getHeader(file);
+            file.close();
+            return result;
+         }
+         catch(e:Dynamic) { trace(e); }
+      }
+      return null;
+   }
+
+
 
    public static function runInput(input:haxe.io.Input, ?verify:Dynamic->Bytes->Void)
    {

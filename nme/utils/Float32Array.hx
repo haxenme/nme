@@ -3,15 +3,9 @@ package nme.utils;
 
 import nme.geom.Matrix3D;
 
-#if haxe3
 @:nativeProperty
 class Float32Array extends ArrayBufferView implements ArrayAccess<Float> 
 {
-#else
-class Float32Array extends ArrayBufferView, implements ArrayAccess<Float> 
-{
-#end
-
    static public inline var SBYTES_PER_ELEMENT = 4;
 
    public var BYTES_PER_ELEMENT(default, null):Int;

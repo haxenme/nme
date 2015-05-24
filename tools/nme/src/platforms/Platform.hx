@@ -5,6 +5,7 @@ import sys.io.File;
 import haxe.io.Path;
 import sys.net.Host;
 import sys.net.Socket;
+using StringTools;
 
 class Platform
 {
@@ -184,7 +185,7 @@ class Platform
       for(engine in project.engines.keys())
          header.engines.push( {name:engine, version:project.engines.get(engine)} );
 
-      if (includeIcon)
+      if (includeIcon && project.icons!=null && project.icons.length>0)
       {
          try
          {
@@ -196,6 +197,10 @@ class Platform
                var iconFile = getOutputDir() + "/icon.png";
                header.bmpIcon = haxe.crypto.Base64.encode(File.getBytes(icon));
             }
+         }
+         catch(e:Dynamic)
+         {
+            Log.error("Error creating icon from " + project.icons + ":" + e);
          }
       }
       return header;
@@ -395,9 +400,32 @@ class Platform
                Log.error("Could not connect to " + deploy + " : " + e );
             }
          }
-         else if (protocol=="dir")
+         else if (protocol=="nme")
          {
-            var to = name + "/" + project.app.file;
+            if (project.command!="installer")
+               Log.error("Nme deployment can only be uised with the installer command");
+            var filename = getOutputDir() + "/" + project.app.file + ".nme";
+            if (!FileSystem.exists(filename))
+               Log.error('Could not find  $filename to deploy');
+            var path = name;
+            if (!path.endsWith(".nme"))
+               path += "/" +  project.app.file + ".nme";
+            Log.verbose("deploy nme " + path);
+            FileHelper.copyFile(filename, path);
+         }
+         else if (protocol=="dir" || protocol=="bindir")
+         {
+            var arch = "";
+            if (protocol=="bindir")
+               switch(PlatformHelper.hostPlatform)
+               {
+                  case WINDOWS: arch="/Windows";
+                  case MAC: arch="/Mac";
+                  case LINUX: arch="/Linux";
+                  default:Log.error("Unkown host platform for bindir, " + PlatformHelper.hostPlatform);
+               }
+
+            var to = name + arch;
             for(file in outputFiles)
             {
                Log.verbose("copy " + file);

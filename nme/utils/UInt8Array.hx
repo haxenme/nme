@@ -1,16 +1,9 @@
 package nme.utils;
 
 #if (cpp || neko)
-
-#if haxe3
 @:nativeProperty
 class UInt8Array extends ArrayBufferView implements ArrayAccess<Int> 
 {
-#else
-class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int> 
-{
-#end
-
    static public inline var SBYTES_PER_ELEMENT = 1;
 
    public var BYTES_PER_ELEMENT(default, null):Int;
@@ -61,7 +54,7 @@ class UInt8Array extends ArrayBufferView, implements ArrayAccess<Int>
    inline public function __get(index:Int):Int { return getUInt8(index); }
 
    @:keep
-   inline public function __set(index:Int, v:Int):Void { setUInt8(index, v); }
+   inline public function __set(index:Int, v:Int):Void { setUInt8(index, v);  }
 }
 
 #end

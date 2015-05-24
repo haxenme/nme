@@ -91,6 +91,9 @@ class NMEProject
    public var stdLibs:Bool;
    public var relocationDir:String;
    public var engines:Map<String, String>;
+   public var export:String;
+   public var exportFilter:String;
+   public var exportSourceDir:String;
 
    // ios/android build parameters
    public var iosConfig:IOSConfig;
@@ -185,6 +188,7 @@ class NMEProject
       stdLibs = true;
       optionalStaticLink = true;
       isFlash = false;
+      exportFilter = "^(class|enum|interface)";
    }
 
    public function setCommand(inCommand:String)
@@ -567,6 +571,11 @@ class NMEProject
       {
          haxedefs.set("openfl","2.1.6");
          haxeflags.push("--remap openfl:nme");
+      }
+
+      if (export!=null && export!="")
+      {
+         haxedefs.set("dll_export", export);
       }
 
 

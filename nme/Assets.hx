@@ -244,6 +244,11 @@ class Assets
          noId(id,"Bytes");
          return null;
       }
+      return getBytesInfo(i,useCache);
+   }
+
+   public static function getBytesInfo(i:AssetInfo,?useCache:Null<Bool>):ByteArray 
+   {
       if (useCache!=false)
       {
          var val:ByteArray = i.getCache();
@@ -449,8 +454,13 @@ class Assets
        if (nme_set_resource_factory!=null)
            nme_set_resource_factory(function(s) {
              var reso = haxe.Resource.getBytes(s);
-             if (reso==null) return null;
-             return ByteArray.fromBytes(reso);
+             if (reso!=null)
+                 ByteArray.fromBytes(reso);
+             // Reverse lookup-by path...
+             for(asset in info)
+                if (asset.path == s)
+                   return getBytesInfo(asset);
+             return getBytes(s);
          });
       return null; } ) ();
   #end

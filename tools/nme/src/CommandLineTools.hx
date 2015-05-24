@@ -40,7 +40,7 @@ class CommandLineTools
             "windows", "mac", "linux", "flash", "cppia", "emscripten" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
-             "installer", "copy-if-newer", "tidy", "set", "unset",
+             "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
             "rebuild", "shell" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy" ];
@@ -54,6 +54,10 @@ class CommandLineTools
          return;
 
       var platform:Platform = null;
+
+
+      if (project.command=="nocompile")
+         project.haxeflags.push("-D no-compilation");
 
       Log.verbose("Using target platform: " + project.target);
       Log.verbose("Using command : " + project.command);
@@ -99,6 +103,7 @@ class CommandLineTools
       if (platform != null) 
       {
          platform.init();
+         var haxed = false;
 
          var command = project.command.toLowerCase();
 
@@ -131,10 +136,19 @@ class CommandLineTools
             platform.updateExtra();
          }
 
+         if (command == "nocompile")
+         {
+            Log.verbose("\nRunning command: NOCOMPILE");
+            platform.updateBuildDir();
+            platform.runHaxe();
+            haxed = true;
+         }
+
          if (command == "build" || command == "test" || command=="xcode" || command=="installer") 
          {
             Log.verbose("\nRunning command: BUILD");
             platform.runHaxe();
+            haxed = true;
             platform.copyBinary();
             if (command!="xcode")
             {
@@ -143,12 +157,15 @@ class CommandLineTools
             }
          }
 
+         if (project.export!=null && haxed)
+            export(project.export, project.exportFilter, project.exportSourceDir);
+
          if (command == "installer") 
          {
             platform.createInstaller();
          }
 
-         if (command == "build" || command == "run" || command=="test") 
+         if (command == "build" || command == "run" || command=="test" || command=="installer") 
          {
             if (platform.deploy(command!="build"))
                command = "build";
@@ -198,6 +215,83 @@ class CommandLineTools
       showSamples("NME",nme);
       //var joint = Log.mVerbose ? "\n" : ", ";
    }
+
+   public static function unquote(x:String) : String
+   {
+      var result:String = "";
+      while(true)
+      {
+         var slash = x.indexOf("\\");
+         if (slash<0)
+            return result + x;
+         result += x.substr(0,slash);
+         var next = x.substr(slash+1,1);
+         if (next=="n")
+            result += "\n";
+         else if (next=="s")
+            result += " ";
+         else
+            result += next;
+         x = x.substr(slash+2);
+      }
+      return null;
+   }
+
+
+   static public function export(info:String, filter:String, sourceDir:String)
+   {
+         {
+            try
+            {
+               var match = filter!="" && filter!=null ?  new EReg(filter,"") : null;
+               var fileMatch = sourceDir!="" && sourceDir!=null ? ~/^file (\S*) ([^\r]*)/ : null;
+
+               var content = File.getContent(info);
+               var result = new Array<String>();
+               var allMatched = true;
+               var sourceCount = 0;
+               var haxeStdPath = Sys.getEnv("HAXE_STD_PATH");
+               var stdFile = "file " + haxeStdPath;
+               for(line in content.split("\n"))
+               {
+                  if (match!=null && match.match(line))
+                      result.push(line);
+                  else
+                     allMatched = false;
+
+                  if (fileMatch!=null && !line.startsWith(stdFile) && fileMatch.match(line))
+                  {
+                     var dest = fileMatch.matched(1);
+                     if (PathHelper.isAbsolute(dest))
+                     {
+                        Log.verbose("Unusual absolute path destination " + dest);
+                     }
+                     else
+                     {
+                        var source = unquote(fileMatch.matched(2));
+                        FileHelper.copyIfNewer(source, sourceDir + "/" + dest);
+                        sourceCount++;
+                     }
+                  }
+               }
+               if (match!=null && !allMatched)
+               {
+                  File.saveBytes(info, haxe.io.Bytes.ofString(result.join("\n")));
+                  Log.verbose("Cleaned export file " + info);
+               }
+
+               if (sourceCount>0)
+               {
+                  Log.verbose('Exported $sourceCount files to $sourceDir');
+               }
+            }
+            catch(e:Dynamic)
+            {
+               Log.error('Error cleaning export file $info $e');
+            }
+         }
+   }
+
 
    static function getSamples(dir:String)
    {
@@ -849,7 +943,12 @@ class CommandLineTools
          if (words.length>1)
             Log.error("No valid target supplied. Try : " + allTargets.join(","));
 
-         if (storeData.target!=null)
+         if (project.command=="nocompile")
+         {
+            targetName = "cpp";
+            Log.verbose('Using default nocompile target "$targetName"');
+         }
+         else if (storeData.target!=null)
          {
             targetName = storeData.target;
             Log.verbose('Using target "$targetName" from settings');
@@ -1230,7 +1329,7 @@ class CommandLineTools
             else
                buildProject(project);
 
-         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy":
+         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile":
 
             if (words.length > 2) 
             {
@@ -1254,20 +1353,17 @@ class CommandLineTools
       if (inDeploy==null || inDeploy=="")
       {
          if (inRequire)
-            Log.error("A deployment target mmust be specified with 'deploy=...' or set deploy ...");
+            Log.error("A deployment target must be specified with 'deploy=...' or set deploy ...");
          return null;
       }
 
       var parts = inDeploy.split(":");
-      if (parts.length>2)
-         Log.error("deploy requires format [protocol:]name");
+      var protocol = parts.shift();
+      var name = parts.join(":");
 
-      if (parts.length>1 && parts[0]!="script")
-         Log.error("A 'script:' protocol is required for this command, not " + inDeploy);
-
-      if (parts.length==1)
+      if (name=="")
           return { protocol:"script", name:inDeploy };
-      return { protocol:parts[0], name:parts[1] };
+      return { protocol:protocol, name:name };
    }
 
 

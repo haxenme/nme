@@ -7,6 +7,8 @@ import sys.FileSystem;
 import NMEProject;
 import platforms.Platform;
 
+using StringTools;
+
 class NMMLParser
 {
    var project:NMEProject;
@@ -587,6 +589,14 @@ class NMMLParser
                case "error":
                   Log.error(substitute(element.att.value));
 
+               case "mkdir":
+                  var dir = substitute(element.att.name);
+                  if (dir!=null && dir!="")
+                  {
+                     Log.verbose('mkdir $dir');
+                     PathHelper.mkdir(dir);
+                  }
+
                case "echo":
                   Sys.println(substitute(element.att.value));
 
@@ -648,6 +658,14 @@ class NMMLParser
 
                case "macro":
                   project.macros.push("--macro " + substitute(element.att.value));
+
+               case "export":
+                  if (element.has.name)
+                     project.export = substitute(element.att.name);
+                  if (element.has.filter)
+                     project.exportFilter = substitute(element.att.filter);
+                  if (element.has.sourceDir)
+                     project.exportSourceDir = substitute(element.att.sourceDir);
 
                case "java":
                   project.javaPaths.push(combine(extensionPath, substitute(element.att.path)));
@@ -763,7 +781,7 @@ class NMMLParser
                   else
                      project.icons.push(icon);
 
-               case "source", "classpath":
+               case "source", "classpath", "cp", "classPath":
                   var path = "";
 
                   if (element.has.path) 
@@ -1024,10 +1042,14 @@ class NMMLParser
 
          if (newString=="gitver:")
             newString = gitver();
+         else if (newString.startsWith("haxelib:"))
+         {
+            newString = PathHelper.getHaxelib(new Haxelib(newString.substr(8)));
+         }
          else
          {
             if (newString.indexOf(":")>=0)
-               Log.error('Unknown function in $newString');
+               Log.error('Unknown function $newString');
             newString = project.getDef(newString);
          }
 
