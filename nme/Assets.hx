@@ -68,6 +68,7 @@ class Assets
          for(key in info.keys())
             trace(" " + key + " -> " + info.get(key).path + " " + info.get(key).isResource );
          trace("---");
+         trace("All resources: " +  haxe.Resource.listNames());
       }
       if (bytes==null)
          return null;
@@ -222,6 +223,7 @@ class Assets
       trySetCache(i,useCache,data);
       return data;
    }
+
 
    public static function hasBytes(id:String):Bool
    {
@@ -379,15 +381,30 @@ class Assets
             return val;
       }
 
-      var sound =
-            #if flash
-            cast(Type.createInstance(Type.resolveClass(i.className), []), Sound)
-            #elseif js
-            new Sound(new URLRequest(i.path))
-            #else
-            new Sound(new URLRequest(i.path), null, i.type == MUSIC || forceMusic)
-            #end
-      ;
+      var sound:Sound = null;
+      #if flash
+      sound = cast(Type.createInstance(Type.resolveClass(i.className), []), Sound);
+      #elseif js
+      sound = new Sound(new URLRequest(i.path));
+      #else
+      if (i.isResource)
+      {
+         sound = new Sound();
+         var bytes = nme.Assets.getBytes(id);
+         sound.loadCompressedDataFromByteArray(bytes, bytes.length,i.type == MUSIC || forceMusic);
+      }
+      else if (byteFactory.exists(i.path))
+      {
+         var bytes = byteFactory.get(i.path)();
+         sound = new Sound();
+         sound.loadCompressedDataFromByteArray(bytes, bytes.length,i.type == MUSIC || forceMusic);
+      }
+      else
+      {
+         sound = new Sound(new URLRequest(i.path), null, i.type == MUSIC || forceMusic); 
+      }
+    
+      #end
 
       trySetCache(i,useCache,sound);
 
@@ -456,10 +473,14 @@ class Assets
              var reso = haxe.Resource.getBytes(s);
              if (reso!=null)
                  ByteArray.fromBytes(reso);
+             trace("Seek " + s);
              // Reverse lookup-by path...
              for(asset in info)
+             {
+                trace(" " + asset.path);
                 if (asset.path == s)
                    return getBytesInfo(asset);
+             }
              return getBytes(s);
          });
       return null; } ) ();

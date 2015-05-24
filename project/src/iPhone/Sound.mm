@@ -289,7 +289,7 @@ namespace nme
             
             this->data = nil;
 
-            std::string path = GetResourcePath() + gAssetBase + inFilename;
+            std::string path = inFilename[0]=='/' ? inFilename : GetResourcePath() + gAssetBase + inFilename;
             NSString *ns_name = [[NSString alloc] initWithUTF8String:path.c_str()];
             NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:ns_name];
             #ifndef OBJC_ARC

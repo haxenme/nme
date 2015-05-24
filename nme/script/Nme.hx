@@ -106,11 +106,17 @@ class Nme
       #end
    }
 
+   public static function runBytes(inBytes:Bytes,?verify:Dynamic->Bytes->Void)
+   {
+       runInput( new haxe.io.BytesInput(inBytes), verify );
+   }
+
    public static function runFile(inFilename:String,?verify:Dynamic->Bytes->Void)
    {
       #if (cpp && !cppia)
       if (inFilename.endsWith(".nme"))
       {
+         nme.Assets.scriptBase = "";
          var bytes = sys.io.File.getBytes(inFilename);
          runInput( new haxe.io.BytesInput(bytes), verify );
       }
@@ -127,17 +133,48 @@ class Nme
       #end
    }
 
-   public static function runResource(?inResource:String)
+
+   public static function getBytesHeader(inBytes:Bytes) : Dynamic
+   {
+      var input = new haxe.io.BytesInput(inBytes);
+      return getHeader(input);
+   }
+
+
+   public static function getResourceHeader(inResource:String) : Dynamic
+   {
+      var bytes = haxe.Resource.getBytes(inResource);
+      if (bytes==null)
+          return null;
+
+      var input = new haxe.io.BytesInput(bytes);
+      return getHeader(input);
+   }
+
+   public static function runResource(?inResource:String,?verify:Dynamic->Bytes->Void)
    {
       #if (cpp && !cppia)
          if (inResource==null)
-             inResource = "ScriptMain.cppia";
-         var script = nme.Assets.getString(inResource);
-         if (script==null)
-            throw "Could not find resource script " + inResource;
-         #if (hxcpp_api_level>=320)
-            cpp.cppia.Host.run(script);
-         #end
+             inResource = "ScriptMain.cppia"; 
+
+         if (inResource.endsWith(".nme"))
+         {
+            var bytes = haxe.Resource.getBytes(inResource);
+            if (bytes==null)
+                return;
+            var input = new haxe.io.BytesInput(bytes);
+            nme.Assets.scriptBase = "";
+            runInput(input,verify);
+         }
+         else
+         {
+            var script = nme.Assets.getString(inResource);
+            if (script==null)
+               throw "Could not find resource script " + inResource;
+            #if (hxcpp_api_level>=320)
+               cpp.cppia.Host.run(script);
+            #end
+         }
       #else
          throw "Script not available on this platform";
       #end

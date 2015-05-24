@@ -1,5 +1,4 @@
 package nme;
-#if (android)
 
 import cpp.zip.Uncompress;
 import haxe.io.Bytes;
@@ -48,6 +47,7 @@ class JNI
     */
    public static function createMemberMethod(className:String, memberName:String, signature:String, useArray:Bool = false, quietFail:Bool = false):Dynamic 
    {
+      #if android
       init();
       className = className.split(".").join("/");
 
@@ -60,6 +60,9 @@ class JNI
       }
       var method = new JNIMethod(handle);
       return method.getMemberMethod(useArray);
+      #else
+      return null;
+      #end
    }
 
    /**
@@ -72,6 +75,7 @@ class JNI
     */
    public static function createStaticMethod(className:String, memberName:String, signature:String, useArray:Bool = false, quietFail:Bool=false):Dynamic 
    {
+      #if android
       init();
       className = className.split(".").join("/");
 
@@ -84,6 +88,9 @@ class JNI
       }
       var method = new JNIMethod(handle);
       return method.getStaticMethod(useArray);
+      #else
+      return null;
+      #end
    }
 
 
@@ -121,9 +128,15 @@ class JNI
 
 
    // Native Methods
+   #if android
    private static var nme_jni_create_method = Loader.load("nme_jni_create_method", 5);
    private static var nme_jni_call_member = Loader.load("nme_jni_call_member", 3);
    private static var nme_jni_call_static = Loader.load("nme_jni_call_static", 2);
+   #else
+   private static var nme_jni_create_method:Dynamic;
+   private static var nme_jni_call_member:Dynamic;
+   private static var nme_jni_call_static:Dynamic;
+   #end
 }
 
 class JNIMethod 
@@ -163,8 +176,12 @@ class JNIMethod
    }
 
    // Native Methods
+   #if android
    private static var nme_jni_call_member = Loader.load("nme_jni_call_member", 3);
    private static var nme_jni_call_static = Loader.load("nme_jni_call_static", 2);
+   #else
+   private static var nme_jni_call_member:Dynamic;
+   private static var nme_jni_call_static:Dynamic;
+   #end
 }
 
-#end

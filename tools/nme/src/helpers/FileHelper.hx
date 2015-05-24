@@ -7,6 +7,7 @@ import sys.io.File;
 import sys.io.FileOutput;
 import sys.FileSystem;
 import neko.Lib;
+import platforms.Platform;
 
 class FileHelper 
 {
@@ -127,7 +128,16 @@ class FileHelper
       PathHelper.mkdir(Path.directory(destination));
 
       LogHelper.info("", " - Copying file: " + source + " -> " + destination);
-      File.copy(source, destination);
+
+      // Use system copy to preserve file permissions
+      if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+      {
+         Sys.command("copy", [source, destination]);
+      }
+      else
+      {
+         Sys.command("cp", [source, destination]);
+      }
       return true;
    }
 

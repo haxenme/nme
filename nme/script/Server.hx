@@ -77,11 +77,16 @@ class Server
          if (directory==null)
          {
             var docsDir = nme.filesystem.File.documentsDirectory.nativePath;
-            directory = sys.FileSystem.fullPath( docsDir ) +  "/" + inEngineName;
+            //directory = sys.FileSystem.fullPath( docsDir ) +  "/" + inEngineName;
+            directory = docsDir +  "/" + inEngineName;
+trace("docs ->  " + docsDir);
+trace("Directory ->  " + directory);
             try
-               sys.FileSystem.createDirectory(directory)
+            {
+               sys.FileSystem.createDirectory(directory);
+            }
             catch(e:Dynamic) {
-               directory = null;
+               trace("Error creating " + directory + ":" + e);
             }
          }
       }
@@ -89,7 +94,8 @@ class Server
 
    function readDir(outFiles:Array<String>, dir:String, file:String, recurse:Bool)
    {
-      var path = file=="" ? dir : dir+"/"+file;
+      var path = file=="" ? dir :
+           (file.substr(0,1)=="/" || file.substr(0,1)=="\\" || file.substr(1,1)==":") ? file : dir+"/"+file;
       if (!FileSystem.exists(path))
       {
          outFiles.push(" not a file - " + file);

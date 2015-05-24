@@ -272,7 +272,7 @@ namespace nme
 		
 		bool loadOggSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
 		{
-			FILE *f;
+			FILE *f = 0;
 			
 			//Read the file data
 			#ifdef ANDROID
@@ -285,7 +285,7 @@ namespace nme
 			
 			if (!f)
 			{
-				LOG_SOUND("FAILED to read sound file, file pointer as null?\n");
+				LOG_SOUND("FAILED to read \"%s\" file, file pointer as null?\n",inFileURL);
 				return false;
 			}
 			

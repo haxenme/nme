@@ -403,7 +403,7 @@ class Platform
          else if (protocol=="nme")
          {
             if (project.command!="installer")
-               Log.error("Nme deployment can only be uised with the installer command");
+               Log.error("Nme deployment can only be used with the installer command");
             var filename = getOutputDir() + "/" + project.app.file + ".nme";
             if (!FileSystem.exists(filename))
                Log.error('Could not find  $filename to deploy');
@@ -419,9 +419,9 @@ class Platform
             if (protocol=="bindir")
                switch(PlatformHelper.hostPlatform)
                {
-                  case WINDOWS: arch="/Windows";
-                  case MAC: arch="/Mac";
-                  case LINUX: arch="/Linux";
+                  case WINDOWS: arch="/Windows/" + project.app.file;
+                  case MAC: arch="/Mac/" + project.app.file + ".app";
+                  case LINUX: arch="/Linux/" + project.app.file;
                   default:Log.error("Unkown host platform for bindir, " + PlatformHelper.hostPlatform);
                }
 

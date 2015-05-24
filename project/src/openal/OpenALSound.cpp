@@ -506,7 +506,7 @@ namespace nme
       GetBundleFilename(inFilename.c_str(),fileURL,1024);
       #else
       #ifdef IPHONE
-      std::string asset = GetResourcePath() + gAssetBase + inFilename;
+      std::string asset = inFilename[0]=='/' ? inFilename : GetResourcePath() + gAssetBase + inFilename;
       const char *fileURL = asset.c_str();
       #else
       const char *fileURL = inFilename.c_str();
