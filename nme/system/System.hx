@@ -88,15 +88,16 @@ class System
       return func();
    }
 
-   #if android
    public static function restart() : Void
    {
+      #if android
       var restart = JNI.createStaticMethod("org/haxe/nme/GameActivity", "restartProcess", "()V");
       if (restart==null)
           throw "Could not find restart function";
       restart();
+      #end
+      Sys.exit(0);
    }
-   #end
 
    public static function getLocalIpAddress() : String
    {

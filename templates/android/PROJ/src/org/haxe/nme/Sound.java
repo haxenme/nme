@@ -114,7 +114,7 @@ class ManagedMediaPlayer
 	}
 }
 
-public class Sound
+public class Sound implements SoundPool.OnLoadCompleteListener
 {
 	private static Context mContext;
 	private static Sound instance;
@@ -128,6 +128,7 @@ public class Sound
 	private static HashMap<Integer, Integer> mSoundId;
 	private static HashMap<Integer, Long> mSoundProgress;
 	private static HashMap<Integer, Long> mSoundDuration;
+	private static HashMap<Integer, Boolean> mSoundLoaded;
 
     public Sound(Context context)
     {
@@ -135,13 +136,21 @@ public class Sound
     		mSoundId = new HashMap<Integer, Integer>();
     		mSoundProgress = new HashMap<Integer, Long>();
     		mSoundDuration = new HashMap<Integer, Long>();
+    		mSoundLoaded = new HashMap<Integer, Boolean>();
     		mTimeStamp = System.currentTimeMillis();
 			mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
+         mSoundPool.setOnLoadCompleteListener(this);
 		}
 
     	instance = this;
     	mContext = context;
     }
+
+   public void onLoadComplete(SoundPool soundPool,int sampleId,int status)
+   {
+      Log.v("Sound","onLoadComplete " + sampleId + "=" + status);
+      mSoundLoaded.put(sampleId,true);
+   }
 	
 	public void doPause()
 	{
@@ -184,6 +193,7 @@ public class Sound
 		} else {
 			Log.v("Sound", "Resource not found: " + (-id));
 			index = mSoundPool.load(inFilename, 1);
+         mSoundLoaded.put(index,false);
 			Log.v("Sound", "Loaded index from path: " + index);
 		}
 
@@ -235,6 +245,16 @@ public class Sound
 			mSoundProgress.remove(a);
 			mSoundId.remove(inResourceID);
 		}
+
+      int tries = 0;
+      while( !mSoundLoaded.get(inResourceID) )
+      {
+		   Log.v("Sound", "wait loaded...");
+         try { java.lang.Thread.sleep(5); } catch (InterruptedException e) { break; }
+         tries++;
+         if (tries>50)
+            break;
+      }
 		
 		int streamId = mSoundPool.play(inResourceID, (float)inVolLeft, (float)inVolRight, 1, inLoop, 1.0f);
 		mSoundId.put(inResourceID, streamId);

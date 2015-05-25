@@ -8,6 +8,7 @@
 #define NEKO_COMPATIBLE
 #endif
 #include <nme/NmeCffi.h>
+#include <Utils.h>
 
 
 namespace nme
@@ -326,8 +327,11 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    
    AutoGCRoot *bytes = 0;
    FontBytesMap::iterator fbit = sgRegisteredFonts.find(WideToUTF8(inFormat.font).c_str());
+
+   ELOG("Create font %s\n", WideToUTF8(inFormat.font).c_str());
    if (fbit!=sgRegisteredFonts.end())
    {
+      ELOG("Registered!\n");
       bytes = fbit->second;
    }
    
@@ -376,6 +380,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 value nme_font_register_font(value inFontName, value inBytes)
 {
    AutoGCRoot *bytes = new AutoGCRoot(inBytes);
+   ELOG("nme_font_register_font %s!\n", val_string(inFontName) );
    sgRegisteredFonts[std::string(val_string(inFontName))] = bytes;
    return alloc_null();
 }

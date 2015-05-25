@@ -34,9 +34,8 @@ import shaders.VertexShader;
 class Main extends Sprite {
    
    
-   private static var fragmentShaders:Array<Dynamic> =
+   private static var desktopShaders:Array<Dynamic> =
    [
-   #if !mobile
       FragmentShader_6286,
       FragmentShader_6288_1,
       FragmentShader_6284_1,
@@ -57,7 +56,11 @@ class Main extends Sprite {
       FragmentShader_5359_8,
       FragmentShader_5398_8,
       FragmentShader_4278_1
-   #else
+   ];
+
+ 
+   private static var mobileShaders:Array<Dynamic> =
+   [
       FragmentShader_6284_1,
       FragmentShader_6238,
       FragmentShader_6147_1,
@@ -65,8 +68,9 @@ class Main extends Sprite {
       FragmentShader_5805_18,
       FragmentShader_5492,
       FragmentShader_5398_8
-   #end
    ];
+
+   private static var fragmentShaders:Array<Dynamic>;
    
    private static var maxTime = 7000;
    
@@ -92,6 +96,12 @@ class Main extends Sprite {
    public function new ()
    {
       super();
+
+      switch( nme.system.System.systemName())
+      {
+         case "android", "ios" : fragmentShaders = mobileShaders;
+         default: fragmentShaders = desktopShaders.concat(mobileShaders);
+      }
 
       bump = false;
       mx = 0.1;
@@ -157,11 +167,10 @@ class Main extends Sprite {
       var program = GL.createProgram ();
       var vertex = VertexShader.source;
 
-      #if desktop
       var fragment = "";
-      #else
-      var fragment = "precision mediump float;";
-      #end
+      var sys = nme.system.System.systemName();
+      if (sys=="android" || sys=="ios")
+         fragment = "precision mediump float;";
 
       fragment += fragmentShaders[currentIndex].source;
 

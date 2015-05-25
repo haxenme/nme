@@ -306,7 +306,7 @@ class AndroidPlatform extends Platform
       if (project.banners.length>0)
       {
          // TV banner icon
-         if (IconHelper.createIcon(project.icons, 320, 180, destination + "/res/drawable-xhdpi/banner.png")) 
+         if (IconHelper.createIcon(project.banners, 320, 180, destination + "/res/drawable-xhdpi/banner.png")) 
            context.HAS_BANNER = true;
       }
        

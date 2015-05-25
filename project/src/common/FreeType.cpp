@@ -2,6 +2,8 @@
 #include <Utils.h>
 #include <map>
 
+#include <Utils.h>
+
 #ifdef HX_WINRT
 #define generic userGeneric
 #endif
@@ -698,7 +700,7 @@ int outline_cubic_to(FVecPtr, FVecPtr , FVecPtr , void *user) {
    return 1;
 }
 
-wchar_t *get_familyname_from_sfnt_name(FT_Face face)
+value get_familyname_from_sfnt_name(FT_Face face)
 {
    wchar_t *family_name = NULL;
    FT_SfntName sfnt_name;
@@ -716,10 +718,7 @@ wchar_t *get_familyname_from_sfnt_name(FT_Face face)
             if (sfnt_name.platform_id == TT_PLATFORM_MACINTOSH)
             {
                len = sfnt_name.string_len;
-               family_name = new wchar_t[len + 1];
-               mbstowcs(&family_name[0], &reinterpret_cast<const char*>(sfnt_name.string)[0], len);
-               family_name[len] = L'\0';
-               return family_name;
+               return alloc_string_len((const char *)sfnt_name.string, sfnt_name.string_len);
             }
             else if ((sfnt_name.platform_id == TT_PLATFORM_MICROSOFT) && (sfnt_name.encoding_id == TT_MS_ID_UNICODE_CS))
             {
@@ -745,13 +744,15 @@ wchar_t *get_familyname_from_sfnt_name(FT_Face face)
                   family_name[i] = ((wchar_t)sfnt_name.string[i*2 + 1]) | (((wchar_t)sfnt_name.string[i*2]) << 8);
                }
                family_name[len] = L'\0';
-               return family_name;
+               value result = alloc_wstring(family_name);
+               free(family_name);
+               return result;
             }
          }
       }
    }
    
-   return NULL;
+   return 0;
 }
 
 } // end namespace
@@ -898,8 +899,8 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
       }
    }
    
-   int               num_glyphs = glyphs.size();
-   wchar_t*          family_name = get_familyname_from_sfnt_name(face);
+   int           num_glyphs = glyphs.size();
+   value         family_name = get_familyname_from_sfnt_name(face);
    
    value             ret = alloc_empty_object();
    alloc_field(ret, val_id("has_kerning"), alloc_bool(FT_HAS_KERNING(face)));
@@ -908,7 +909,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
    alloc_field(ret, val_id("is_italic"), alloc_bool(face->style_flags & FT_STYLE_FLAG_ITALIC));
    alloc_field(ret, val_id("is_bold"), alloc_bool(face->style_flags & FT_STYLE_FLAG_BOLD));
    alloc_field(ret, val_id("num_glyphs"), alloc_int(num_glyphs));
-   alloc_field(ret, val_id("family_name"), family_name == NULL ? alloc_string(face->family_name) : alloc_wstring(family_name));
+   alloc_field(ret, val_id("family_name"), family_name == 0 ? alloc_string(face->family_name) : family_name);
    alloc_field(ret, val_id("style_name"), alloc_string(face->style_name));
    alloc_field(ret, val_id("em_size"), alloc_int(face->units_per_EM));
    alloc_field(ret, val_id("ascend"), alloc_int(face->ascender));
