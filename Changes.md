@@ -1,16 +1,27 @@
 
-
+5.4
+--------------------------
+* Add Cppia/Acadnme integration
+* Added some keyboard and scaling support to PiratePig
+* Added some remote shell capabilities, via "nme shell deploy=IPADDR"
+* Allow opting-out of 3x ios images
+* Added some function notation to substitution, eg build="{gitver:}" pulls in the repo number
+* Some android sound fixes (thanks Thomas)
+* Added "nocompile" target, wich runs haxe without compiling
+* Loads sounds and fonts from resources if required
+* Allow windows to use freetype fonts too
 * Add lime extension compatibility
-
 * Tag all classes with @:nativeProperty
 * Improve fat-line rendering
 * Fix ios-view
 * Fix TextField cursor
+
 --------------------------
 * Use alternate serif font on Android 5
 * Fixed android-view linking with EGL
 * Fix alpha for non-transparent bitmaps
 * Better Flixel support
+
 --------------------------
 * Separated from Lime project
 * Fixed sub-pixel offset for nearest mode
