@@ -473,11 +473,9 @@ class Assets
              var reso = haxe.Resource.getBytes(s);
              if (reso!=null)
                  ByteArray.fromBytes(reso);
-             trace("Seek " + s);
              // Reverse lookup-by path...
              for(asset in info)
              {
-                trace(" " + asset.path);
                 if (asset.path == s)
                    return getBytesInfo(asset);
              }

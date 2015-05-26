@@ -329,18 +329,29 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
       return font;
    }
 
+   std::string fontName(WideToUTF8(inFormat.font));
 
    FontFace *face = 0;
    
    AutoGCRoot *bytes = 0;
-   FontBytesMap::iterator fbit = sgRegisteredFonts.find(WideToUTF8(inFormat.font).c_str());
+   FontBytesMap::iterator fbit = sgRegisteredFonts.find(fontName);
 
    if (fbit!=sgRegisteredFonts.end())
    {
       bytes = fbit->second;
    }
-   
-   if (bytes != NULL)
+
+   if (!bytes)
+   {
+      ByteArray resource(fontName.c_str());
+      if (resource.Ok())
+      {
+         sgRegisteredFonts[fontName] = new AutoGCRoot( resource.mValue );
+         fbit = sgRegisteredFonts.find(fontName);
+      }
+   }
+
+   if (bytes)
 	  face = FontFace::CreateFreeType(inFormat,inScale,bytes);
 
    if (!face)
