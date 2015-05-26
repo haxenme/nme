@@ -469,7 +469,11 @@ class Assets
    private static var initResources:Dynamic = (function() {
        var nme_set_resource_factory = nme.Loader.load("nme_set_resource_factory", 1);
        if (nme_set_resource_factory!=null)
+       {
+           var notFound = new Map<String,Bool>();
            nme_set_resource_factory(function(s) {
+             if (notFound.exists(s))
+                return null;
              var reso = haxe.Resource.getBytes(s);
              if (reso!=null)
                  ByteArray.fromBytes(reso);
@@ -479,8 +483,12 @@ class Assets
                 if (asset.path == s)
                    return getBytesInfo(asset);
              }
-             return getBytes(s);
+             if (hasBytes(s))
+                return getBytes(s);
+             notFound.set(s,true);
+             return null;
          });
+      }
       return null; } ) ();
   #end
 
