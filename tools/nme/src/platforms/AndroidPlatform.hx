@@ -301,7 +301,8 @@ class AndroidPlatform extends Platform
             context.HAS_ICON = true;
       }
 
-      IconHelper.createIcon(project.icons, 732, 412, destination + "/res/drawable-xhdpi/ouya_icon.png");
+      IconHelper.createIcon(project.banners!=null ? project.banners : project.icons, 732, 412,
+         destination + "/res/drawable-xhdpi/ouya_icon.png");
 
       if (project.banners.length>0)
       {

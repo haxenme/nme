@@ -16,6 +16,7 @@ class IconHelper
 {
    public static function createIcon(icons:Array<Icon>, width:Int, height:Int, targetPath:String, ?onFile:String->Void):Bool 
    {
+      var dir = Path.directory(targetPath);
       PathHelper.mkdir(Path.directory(targetPath));
       var icon = findMatch(icons, width, height);
 
@@ -50,10 +51,12 @@ class IconHelper
 
    public static function getSvgIcon(icons:Array<Icon>) : String
    {
+      // Last in, best dressed
+      var result:String = null;
       for(icon in icons)
          if (Path.extension(icon.path)=="svg")
-            return icon.path;
-      return null;
+            result = icon.path;
+      return result;
    }
 
    public static function createMacIcon(icons:Array<Icon>, targetPath:String):Bool 

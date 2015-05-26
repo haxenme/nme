@@ -43,6 +43,7 @@ enum TextFormatFlags
    ffUnderline = 0x04,
 };
 
+extern bool gNmeNativeFonts;
 
 enum AntiAliasType { aaAdvanced, aaNormal };
 enum AutoSizeMode  { asCenter, asLeft, asNone, asRight };

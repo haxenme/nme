@@ -297,7 +297,10 @@ trace("Directory ->  " + directory);
       switch(cmd)
       {
          case "help":
-            return "Commands: help, pwd, ls, kill, set, get, classes";
+            var extras = [];
+            for(k in functions.keys()) extras.push(k);
+            return "Commands: help, pwd, ls, kill, set, get, aset, aget, call, acall, classes, exit.\n"
+             + "Extras :" + extras.join(", ");
          case "pwd":
             return directory;
          case "ls":

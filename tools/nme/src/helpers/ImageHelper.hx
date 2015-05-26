@@ -16,8 +16,10 @@ class ImageHelper
       var shape = new Shape();
       var renderer = new SvgRenderer(svg);
       var matrix = new Matrix();
-      var scale = Math.min( width/svg.width, height/svg.height );
+      var scale = Math.max( width/svg.width, height/svg.height );
       matrix.a = matrix.d = scale;
+      matrix.tx = (width-svg.width*scale)*0.5;
+      matrix.ty = (height-svg.height*scale)*0.5;
       renderer.render(shape.graphics, matrix,null,null,width,height);
 
       var bitmapData = new BitmapData(width, height, true, backgroundColor);

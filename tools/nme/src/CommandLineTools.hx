@@ -42,7 +42,7 @@ class CommandLineTools
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
-            "rebuild", "shell" ];
+            "rebuild", "shell", "icon", "banner" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -938,6 +938,13 @@ class CommandLineTools
          targetName = "cppia";
       }
 
+      if (targetName=="" && (project.command=="icon" || project.command=="banner" ))
+      {
+         targetName = "cpp";
+         Log.verbose('Using default nocompile target "$targetName"');
+      }
+
+
       if (targetName=="")
       {
          if (words.length>1)
@@ -1202,14 +1209,20 @@ class CommandLineTools
       if (words.length!=1)
          Log.error("Expected nme file.nme [-args extra args]");
 
+      var fullPath =  FileSystem.fullPath(words[0]);
+
       var host = project.getDef("CPPIA_HOST");
       if (host==null)
       {
-         Log.error("Please define CPPIA_HOST to run the application");
+         var haxelib = project.getDef("CPPIA_HAXELIB");
+         if (haxelib==null)
+            haxelib = "acadnme";
+         ProcessHelper.runCommand("", "haxelib", ["run", haxelib, fullPath].concat(additionalArguments));
       }
-      var fullPath =  FileSystem.fullPath(words[0]);
-
-      ProcessHelper.runCommand("", host, [fullPath].concat(additionalArguments));
+      else
+      {
+         ProcessHelper.runCommand("", host, [fullPath].concat(additionalArguments));
+      }
    }
 
 
@@ -1342,6 +1355,12 @@ class CommandLineTools
          case "copy-if-newer":
             // deprecated?
 
+         case "icon":
+            createIcon(project,false);
+
+         case "banner":
+            createIcon(project,true);
+
          default:
 
             Log.error("'" + command + "' is not a valid command");
@@ -1364,6 +1383,34 @@ class CommandLineTools
       if (name=="")
           return { protocol:"script", name:inDeploy };
       return { protocol:protocol, name:name };
+   }
+
+   public static function createIcon(project:NMEProject, inBanner:Bool)
+   {
+      var width = 0;
+      var height = 0;
+      var name = words[0];
+      if (words.length==3)
+      {
+         width = Std.parseInt(words[1]);
+         height = Std.parseInt(words[2]);
+      }
+
+      if (width==0 || height==0 || name==null)
+         Log.error("Usage: nme icon iconname.png width height");
+
+      words.splice(0,3);
+
+      if (!loadProject(project,false))
+         Log.error("Could not load project");
+
+ 
+      var ok = IconHelper.createIcon(inBanner?project.banners:project.icons, width, height, name);
+      if (!ok)
+         Log.error('Could not create $name icon $width x $height');
+
+      Log.verbose("Created " + name + " " + width + "x" + height );
+
    }
 
 

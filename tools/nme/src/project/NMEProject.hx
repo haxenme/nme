@@ -588,6 +588,7 @@ class NMEProject
       for(key in engines.keys())
          engineArray.push( {name:key, version:engines.get(key) } );
       context.ENGINES = engineArray;
+      context.NATIVE_FONTS = getBool("nativeFonts", true);
 
       for(field in Reflect.fields(window)) 
          Reflect.setField(context, "WIN_" + StringHelper.formatUppercaseVariable(field), Reflect.field(window, field));

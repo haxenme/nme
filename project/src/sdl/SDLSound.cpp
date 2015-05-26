@@ -369,9 +369,8 @@ public:
    {
       loaded = true;
       IncRef();
-      
       #ifndef EMSCRIPTEN
-      mChunk = Mix_LoadWAV_RW(SDL_RWFromMem(inData, len), 1);
+      mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(inData, len), 1);
       if ( mChunk == NULL )
       {
          mError = SDL_GetError();
@@ -392,7 +391,7 @@ public:
       // ?
       return 0.0;
       #else
-	  return 0.0;
+      return 0.0;
       #endif
    }
    // Will return with one ref...
@@ -551,9 +550,9 @@ public:
                reso.resize(n);
                memcpy(&reso[0], resource.Bytes(), n);
                #ifndef NME_SDL12
-               mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(&reso[0], resource.Size()),false);
+               mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], resource.Size()),false);
                #else
-               mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(&reso[0], resource.Size()));
+               mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], resource.Size()));
                #endif
             }
          }
@@ -573,11 +572,14 @@ public:
       IncRef();
       loaded = true;
       
+      reso.resize(len);
+      memcpy(&reso[0], inData, len);
+
       #ifndef EMSCRIPTEN
       #ifdef NME_SDL2
-      mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(inData, len),false);
+      mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], len),false);
       #else
-      mMusic = Mix_LoadMUS_RW(SDL_RWFromMem(inData, len));
+      mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], len));
       #endif
       if ( mMusic == NULL )
       {

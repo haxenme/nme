@@ -127,15 +127,17 @@ class FileHelper
 
       PathHelper.mkdir(Path.directory(destination));
 
-      LogHelper.info("", " - Copying file: " + source + " -> " + destination);
-
       // Use system copy to preserve file permissions
       if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
       {
+         source = '"' + source.split("/").join("\\") + '"';
+         destination = '"' + destination.split("/").join("\\") + '"';
+         LogHelper.info("", " - Copying file: " + source + " -> " + destination);
          Sys.command("copy", [source, destination]);
       }
       else
       {
+         LogHelper.info("", " - Copying file: " + source + " -> " + destination);
          Sys.command("cp", [source, destination]);
       }
       return true;
@@ -256,7 +258,7 @@ class FileHelper
 
       if (FileSystem.exists(destination)) 
       {
-         if (FileSystem.stat(source).mtime.getTime() < FileSystem.stat(destination).mtime.getTime()) 
+         if (FileSystem.stat(source).mtime.getTime() <= FileSystem.stat(destination).mtime.getTime()) 
          {
             return false;
          }

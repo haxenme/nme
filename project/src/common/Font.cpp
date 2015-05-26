@@ -14,6 +14,8 @@
 namespace nme
 {
 
+bool gNmeNativeFonts = true;
+
 
 // --- CFFI font delegates to haxe to get the glyphs -----
 
@@ -278,6 +280,7 @@ struct FontInfo
 {
    FontInfo(const TextFormat &inFormat,double inScale)
    {
+      allowNative = gNmeNativeFonts;
       name = inFormat.font;
       height = (int )(inFormat.size*inScale + 0.5);
       flags = 0;
@@ -291,6 +294,7 @@ struct FontInfo
 
    bool operator<(const FontInfo &inRHS) const
    {
+      if (allowNative != inRHS.allowNative) return allowNative;
       if (name < inRHS.name) return true;
       if (name > inRHS.name) return false;
       if (height < inRHS.height) return true;
@@ -298,6 +302,7 @@ struct FontInfo
       return flags < inRHS.flags;
    }
    WString      name;
+   bool         allowNative;
    int          height;
    unsigned int flags;
 };
@@ -310,6 +315,8 @@ FontBytesMap sgRegisteredFonts;
 
 Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef)
 {
+   bool native = inNative && gNmeNativeFonts;
+
    FontInfo info(inFormat,inScale);
 
    Font *font = 0;
@@ -328,10 +335,8 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    AutoGCRoot *bytes = 0;
    FontBytesMap::iterator fbit = sgRegisteredFonts.find(WideToUTF8(inFormat.font).c_str());
 
-   ELOG("Create font %s\n", WideToUTF8(inFormat.font).c_str());
    if (fbit!=sgRegisteredFonts.end())
    {
-      ELOG("Registered!\n");
       bytes = fbit->second;
    }
    
@@ -341,13 +346,13 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    if (!face)
       face = FontFace::CreateCFFIFont(inFormat,inScale);
 
-   if (!face && inNative)
+   if (!face && native)
       face = FontFace::CreateNative(inFormat,inScale);
 
    if (!face)
       face = FontFace::CreateFreeType(inFormat,inScale,NULL);
   
-   if (!face && !inNative)
+   if (!face && !native)
       face = FontFace::CreateNative(inFormat,inScale);
  
    if (!face)
@@ -380,11 +385,29 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 value nme_font_register_font(value inFontName, value inBytes)
 {
    AutoGCRoot *bytes = new AutoGCRoot(inBytes);
-   ELOG("nme_font_register_font %s!\n", val_string(inFontName) );
    sgRegisteredFonts[std::string(val_string(inFontName))] = bytes;
    return alloc_null();
 }
 DEFINE_PRIM(nme_font_register_font,2)
+
+
+
+value nme_font_get_use_native()
+{
+   return alloc_bool(gNmeNativeFonts);
+}
+DEFINE_PRIM(nme_font_get_use_native,0)
+
+
+
+
+value nme_font_set_use_native(value inUse)
+{
+   gNmeNativeFonts = val_bool(inUse);
+   return inUse;
+}
+DEFINE_PRIM(nme_font_set_use_native,1)
+
 
 
 

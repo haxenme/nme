@@ -14,6 +14,10 @@ class CppiaPlatform extends Platform
    {
       super(inProject);
 
+      if (project.getDef("CPPIA_HAXELIB")==null)
+         project.addLib("acadnme");
+
+
       applicationDirectory = getOutputDir();
 
       project.haxeflags.push('-cpp $haxeDir/ScriptMain.cppia');
@@ -50,13 +54,19 @@ class CppiaPlatform extends Platform
 
    override public function run(arguments:Array<String>):Void 
    {
+      var fullPath =  FileSystem.fullPath('$applicationDirectory/ScriptMain.cppia');
       var host = project.getDef("CPPIA_HOST");
       if (host==null)
       {
-         Log.error("Please define CPPIA_HOST to run the application");
+         var haxelib = project.getDef("CPPIA_HAXELIB");
+         if (haxelib==null || haxelib=="")
+            haxelib = "acadnme";
+         ProcessHelper.runCommand("", "haxelib", ["run", haxelib, fullPath].concat(arguments));
       }
-      var fullPath =  FileSystem.fullPath('$applicationDirectory/ScriptMain.cppia');
-      ProcessHelper.runCommand("", host, [fullPath].concat(arguments));
+      else
+      {
+         ProcessHelper.runCommand("", host, [fullPath].concat(arguments));
+      }
    }
 
 

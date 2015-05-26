@@ -58,6 +58,7 @@ class ApplicationMain
       ::end::
 
       nme.app.Application.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
+      nme.text.Font.useNative = ::NATIVE_FONTS::;
 
       nme.AssetData.create();
 
