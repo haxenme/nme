@@ -344,6 +344,8 @@
 					::end::
 					"-lApplicationMain",
 					::IOS_LINKER_FLAGS::
+					::foreach otherLinkerFlags:: "::__current__::",
+					::end::
 				);
 			};
 			name = Debug;
