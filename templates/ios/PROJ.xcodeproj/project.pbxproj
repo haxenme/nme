@@ -381,7 +381,7 @@
 					"\"$(SRCROOT)/::APP_FILE::/lib/x86_64\"",
 				);
 				OTHER_LDFLAGS = (
-					::foreach ndlls:: "-l::name::",
+					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
 					::foreach linkedLibraries:: "::__current__::",
 					::end::
