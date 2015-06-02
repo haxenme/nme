@@ -280,6 +280,27 @@ class DisplayObjectContainer extends InteractiveObject
       throw new ArgumentError("The supplied DisplayObject must be a child of the caller.");
    }
 
+   public function removeChildren(beginIndex:Int = 0, endIndex:Int = 0x7FFFFFFF):Void {
+      if (endIndex == 0x7FFFFFFF)
+      {
+         endIndex = nmeChildren.length - 1;
+         if (endIndex < 0)
+            return;
+      }
+
+      if (beginIndex > nmeChildren.length - 1)
+         return;
+      else if (endIndex < beginIndex || beginIndex < 0 || endIndex > nmeChildren.length)
+         throw new RangeError ("The supplied index is out of bounds.");
+
+      var numRemovals = endIndex - beginIndex;
+      while (numRemovals >= 0)
+      {
+         removeChildAt (beginIndex);
+         numRemovals--;
+      }
+   }
+
    public function setChildIndex(child:DisplayObject, index:Int):Void 
    {
       nmeSetChildIndex(child, index);
