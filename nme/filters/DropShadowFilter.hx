@@ -4,17 +4,17 @@ package nme.filters;
 @:nativeProperty
 class DropShadowFilter extends BitmapFilter 
 {
-   /** @private */ private var alpha:Float;
-   /** @private */ private var angle:Float;
-   /** @private */ private var blurX:Float;
-   /** @private */ private var blurY:Float;
-   /** @private */ private var color:Int;
-   /** @private */ private var distance:Float;
-   /** @private */ private var hideObject:Bool;
-   /** @private */ private var inner:Bool;
-   /** @private */ private var knockout:Bool;
-   /** @private */ private var quality:Int;
-   /** @private */ private var strength:Float;
+   public var alpha:Float;
+   public var angle:Float;
+   public var blurX:Float;
+   public var blurY:Float;
+   public var color:Int;
+   public var distance:Float;
+   public var hideObject:Bool;
+   public var inner:Bool;
+   public var knockout:Bool;
+   public var quality:Int;
+   public var strength:Float;
    public function new(in_distance:Float = 4.0, in_angle:Float = 45.0, in_color:Int = 0, in_alpha:Float = 1.0, in_blurX:Float = 4.0, in_blurY:Float = 4.0, in_strength:Float = 1.0, in_quality:Int = 1, in_inner:Bool = false, in_knockout:Bool = false, in_hideObject:Bool = false) 
    {
       super("DropShadowFilter");
