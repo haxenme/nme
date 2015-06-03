@@ -119,6 +119,7 @@ class NMEProject
 
    // Currently for adding frameworks to ios project, or android library projects
    public var dependencies:Map<String,Dependency>;
+   public var otherLinkerFlags:Array<String>;
    // Additional files to be copied into andoird project
    public var javaPaths:Array<String>;
    // Android signing certificate
@@ -172,6 +173,7 @@ class NMEProject
 
       assets = new Array<Asset>();
       dependencies = new Map<String,Dependency>();
+      otherLinkerFlags = [];
       haxedefs = new Map<String,String>();
       haxeflags = new Array<String>();
       macros = new Array<String>();

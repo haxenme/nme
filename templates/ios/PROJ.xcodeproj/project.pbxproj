@@ -344,6 +344,8 @@
 					::end::
 					"-lApplicationMain",
 					::IOS_LINKER_FLAGS::
+					::foreach otherLinkerFlags:: "::__current__::",
+					::end::
 				);
 			};
 			name = Debug;
@@ -381,12 +383,14 @@
 					"\"$(SRCROOT)/::APP_FILE::/lib/x86_64\"",
 				);
 				OTHER_LDFLAGS = (
-					::foreach ndlls:: "-l::name::",
+					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
 					::foreach linkedLibraries:: "::__current__::",
 					::end::
 					"-lApplicationMain",
 					::IOS_LINKER_FLAGS::
+					::foreach otherLinkerFlags:: "::__current__::",
+					::end::
 				);
 			};
 			name = Release;

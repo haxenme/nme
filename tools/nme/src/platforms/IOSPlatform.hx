@@ -210,6 +210,8 @@ class IOSPlatform extends Platform
       context.IOS_COMPILER = config.compiler;
       context.IOS_LINKER_FLAGS = config.linkerFlags.split(" ").join(", ");
 
+      context.otherLinkerFlags = project.otherLinkerFlags;
+
       context.MACROS = {};
       context.MACROS.launchImage = createLaunchImage;
       context.MACROS.appIcon = createAppIcon;

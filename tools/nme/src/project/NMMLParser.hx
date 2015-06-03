@@ -879,6 +879,10 @@ class NMMLParser
                      project.dependencies.set(key, new Dependency(name,path,extensionPath));
                   }
 
+                case "otherLinkerFlags":
+                    var value = element.has.value ? substitute(element.att.value) : "";
+                    project.otherLinkerFlags.push(value);
+
                case "engine":
                   project.engines.set(substitute(element.att.name),
                                       substitute(element.att.version));
