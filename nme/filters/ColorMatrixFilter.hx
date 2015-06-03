@@ -4,7 +4,7 @@ package nme.filters;
 @:nativeProperty
 class ColorMatrixFilter extends BitmapFilter 
 {
-   /** @private */ private var matrix:Array<Float>;
+   public var matrix:Array<Float>;
    public function new(inMatrix:Array<Float>) 
    {
       super("ColorMatrixFilter");
