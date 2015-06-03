@@ -1259,7 +1259,7 @@ class CommandLineTools
 
       if (storeData.debug!=null)
       {
-         project.debug = debug = true;
+         project.setDebug(debug = true);
          Log.verbose("Using debug option from setting");
       }
 
@@ -1497,7 +1497,7 @@ class CommandLineTools
                else if (field == "xcodeconfig" ) 
                {
                   if (argValue=="Debug")
-                     project.debug = debug = true;
+                     project.setDebug(debug = true);
                }
                else
                   project.localDefines.set(field, argValue);
@@ -1584,10 +1584,10 @@ class CommandLineTools
 
             else if (argument == "-debug") 
             {
-               project.debug = debug = true;
+               project.setDebug(debug = true);
             }
-            else if (argument == "-megatrace") 
-               project.megaTrace = project.debug = debug = true;
+            else if (argument == "-megatrace")
+               project.setDebug(project.megaTrace = debug = true);
 
             else
                project.targetFlags.set(argument.substr(1), "");

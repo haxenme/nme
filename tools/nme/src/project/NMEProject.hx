@@ -191,6 +191,15 @@ class NMEProject
       exportFilter = "^(class|enum|interface)";
    }
 
+   public function setDebug(inDebug:Bool)
+   {
+      debug = inDebug;
+      if (debug)
+         localDefines.set("debug", "1");
+      else if (localDefines.exists("debug"))
+         localDefines.remove("debug");
+   }
+
    public function setCommand(inCommand:String)
    {
       command = inCommand;
