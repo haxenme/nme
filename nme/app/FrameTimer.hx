@@ -17,7 +17,7 @@ class FrameTimer implements IPollClient
       lastRender = 0.0;
       window = inWindow;
       invalid = false;
-      catchup = true;
+      catchup = false;
       offTarget = 0.0;
       Application.addPollClient(this,true);
    }
