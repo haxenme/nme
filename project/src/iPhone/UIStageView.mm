@@ -2220,7 +2220,7 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 #ifdef IPHONESIM
    return false;
 #else
-   if (!sgCmManager || sgHasAccelerometer)
+   if (!sgCmManager || !sgHasAccelerometer)
       return false;
 
    CMAcceleration a = sgCmManager.accelerometerData.acceleration;

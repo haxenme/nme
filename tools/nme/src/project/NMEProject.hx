@@ -245,7 +245,6 @@ class NMEProject
          case "ios":
             target = Platform.IOS;
             haxedefs.set("iphone", "1");
-            targetFlags.set("iphonesim", "");
             targetFlags.set("iphoneos", "");
 
          case "iphone", "iphoneos":
