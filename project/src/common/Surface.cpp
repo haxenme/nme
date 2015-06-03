@@ -813,55 +813,55 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 
    bool set_255 = (inSrcChannel==CHAN_ALPHA && !(mPixelFormat & pfHasAlpha) );
 
-
-   // Start with unclipped dest rect
-   Rect src_rect(inSrcRect.x+inPosX,inSrcRect.y+inPosY, inSrcRect.w, inSrcRect.h );
-   // Clip to dest size...
-   src_rect = src_rect.Intersect(outTarget.mRect);
-
-   // Translate back to source-coordinates ...
-   src_rect.Translate(-inPosX, -inPosY);
-
-   // Clip to actual source rect...
+   Rect src_rect(inSrcRect.x,inSrcRect.y, inSrcRect.w, inSrcRect.h );
    src_rect = src_rect.Intersect( Rect(0,0,Width(),Height() ) );
 
-   if (src_rect.HasPixels())
+   Rect dest_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
+   dest_rect = dest_rect.Intersect(outTarget.mRect);
+
+
+   int src_ch = inSrcChannel==CHAN_ALPHA ? 3 :
+                inSrcChannel==CHAN_RED   ? 2 :
+                inSrcChannel==CHAN_GREEN ? 1 :
+                                           0;
+
+   int dest_ch = inDestChannel==CHAN_ALPHA ? 3 :
+                 inDestChannel==CHAN_RED   ? 2 :
+                 inDestChannel==CHAN_GREEN ? 1 :
+                                             0;
+
+   int minW = src_rect.w;
+   if(dest_rect.w < src_rect.w)
+      minW = dest_rect.w;
+
+   int minH = src_rect.h;
+   if(dest_rect.h < src_rect.h)
+      minH = dest_rect.h;
+
+   for(int y=0;y<minH;y++)
    {
-      int src_ch = inSrcChannel==CHAN_ALPHA ? 3 :
-                   inSrcChannel==CHAN_RED   ? 2 :
-                   inSrcChannel==CHAN_GREEN ? 1 :
-                                              0;
-
-      int dest_ch = inDestChannel==CHAN_ALPHA ? 3 :
-                    inDestChannel==CHAN_RED   ? 2 :
-                    inDestChannel==CHAN_GREEN ? 1 :
-                                                0;
-
-
-      for(int y=0;y<src_rect.h;y++)
+      uint8 *d = outTarget.Row(y+dest_rect.y) + dest_rect.x* 4 + dest_ch;
+      if (set_255)
       {
-         uint8 *d = outTarget.Row(y+inPosY) + inPosX* 4 + dest_ch;
-         if (set_255)
+         for(int x=0;x<src_rect.w;x++)
          {
-            for(int x=0;x<src_rect.w;x++)
-            {
-               *d = 255;
-               d+=4;
-            }
+            *d = 255;
+            d+=4;
          }
-         else
-         {
-            const uint8 *s = Row(y+src_rect.y) + src_rect.x * 4 + src_ch;
+      }
+      else
+      {
+         const uint8 *s = Row(y+src_rect.y) + src_rect.x * 4 + src_ch;
 
-            for(int x=0;x<src_rect.w;x++)
-            {
-               *d = *s;
-               d+=4;
-               s+=4;
-            }
+         for(int x=0;x<minW;x++)
+         {
+            *d = *s;
+            d+=4;
+            s+=4;
          }
       }
    }
+
 }
 
 
