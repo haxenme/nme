@@ -264,6 +264,7 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRo
       if (bytes.Ok())
       {
          int l = bytes.Size();
+         //printf("Bytes ok, use FT_New_Memory_Face %d...\n", l);
          unsigned char *buf = (unsigned char*)malloc(l);
          memcpy(buf,bytes.Bytes(),l);
          result = FT_New_Memory_Face(sgLibrary, buf, l, inIndex, outFace);
@@ -271,9 +272,11 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRo
          // The font owns the bytes here - so we just leak (fonts are not actually cleaned)
          if (!*outFace)
             free(buf);
-         else *outBuffer = buf;
+         else
+            *outBuffer = buf;
       }
    }
+   //printf("MyNewFace done\n");
    return result;
 }
 
@@ -286,6 +289,8 @@ static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags, AutoGCR
    *outBuffer = 0;
    FT_Face face = 0;
    void* pBuffer = 0;
+   //printf("MyNewFace %s with bytes %p\n", inFace.c_str(), inBytes);
+
    MyNewFace(inFace.c_str(), 0, &face, inBytes, &pBuffer);
    if (face && inFlags!=0 && face->num_faces>1)
    {
@@ -548,8 +553,6 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
       {
          // printf("Found font in %s\n", file_name.c_str());
          font = OpenFont(file_name.c_str(),inFlags,NULL,pBuffer);
-
-         // printf("Opened : %p\n", font);
       }
    }
 

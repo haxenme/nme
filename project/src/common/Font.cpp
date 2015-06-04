@@ -330,44 +330,75 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    }
 
    std::string fontName(WideToUTF8(inFormat.font));
+   std::string seekName = fontName;
 
    FontFace *face = 0;
    
-   AutoGCRoot *bytes = 0;
-   FontBytesMap::iterator fbit = sgRegisteredFonts.find(fontName);
-
-   if (fbit!=sgRegisteredFonts.end())
+   for(int pass=0;pass<2;pass++)
    {
-      bytes = fbit->second;
-   }
-
-   if (!bytes)
-   {
-      ByteArray resource(fontName.c_str());
-      if (resource.Ok())
+      if (pass==1)
       {
-         sgRegisteredFonts[fontName] = new AutoGCRoot( resource.mValue );
-         fbit = sgRegisteredFonts.find(fontName);
+         if (!strcasecmp(fontName.c_str(),"times.ttf") ||
+             !strcasecmp(fontName.c_str(),"times"))
+            seekName = "_serif"; 
+         else if (!strcasecmp(fontName.c_str(),"arial.ttf") ||
+                  !strcasecmp(fontName.c_str(),"arial") ||
+                  !strcasecmp(fontName.c_str(),"sans-serif") )
+            seekName = "_sans"; 
+         else if (!strcasecmp(fontName.c_str(),"_typewriter") ||
+                  !strcasecmp(fontName.c_str(),"courier.ttf") ||
+                  !strcasecmp(fontName.c_str(),"courier"))
+            seekName = "_monospace"; 
+         else
+            break;
       }
+
+      AutoGCRoot *bytes = 0;
+      FontBytesMap::iterator fbit = sgRegisteredFonts.find(seekName);
+
+      if (fbit!=sgRegisteredFonts.end())
+      {
+         bytes = fbit->second;
+         //printf("Registered!\n");
+      }
+
+      if (!bytes)
+      {
+         ByteArray resource(seekName.c_str());
+         if (resource.Ok())
+         {
+            sgRegisteredFonts[fontName] = new AutoGCRoot( resource.mValue );
+            fbit = sgRegisteredFonts.find(fontName);
+            bytes = fbit->second;
+          //  printf("Found!\n");
+         }
+         //else
+         //   printf("No resource\n");
+      }
+
+      if (bytes)
+        face = FontFace::CreateFreeType(inFormat,inScale,bytes);
+
+      if (pass>0 || face)
+         break;
+
+      if ( (face = FontFace::CreateCFFIFont(inFormat,inScale)) )
+         break;
+
+      if (native)
+         if ( (face = FontFace::CreateNative(inFormat,inScale)) )
+            break;
+
+      if ( (face = FontFace::CreateFreeType(inFormat,inScale,NULL)) )
+         break;
+
+      if (!native)
+         if ( (face = FontFace::CreateNative(inFormat,inScale)) )
+            break;
    }
 
-   if (bytes)
-	  face = FontFace::CreateFreeType(inFormat,inScale,bytes);
-
    if (!face)
-      face = FontFace::CreateCFFIFont(inFormat,inScale);
-
-   if (!face && native)
-      face = FontFace::CreateNative(inFormat,inScale);
-
-   if (!face)
-      face = FontFace::CreateFreeType(inFormat,inScale,NULL);
-  
-   if (!face && !native)
-      face = FontFace::CreateNative(inFormat,inScale);
- 
-   if (!face)
-        return 0;
+       return 0;
 
    font =  new Font(face,info.height,inInitRef);
    // Store for Ron ...

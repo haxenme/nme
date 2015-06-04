@@ -89,55 +89,40 @@ class NMMLParser
       return v=="1" || v=="true" || v=="TRUE";
    }
 
+   function parseAnd(condition:String)
+   {
+      var someMatched = false;
+      for(part in condition.split(" "))
+      {
+         var check = StringTools.trim(part);
+         if (check!="")
+         {
+            if (!project.hasDef(check))
+               return false;
+            someMatched = true;
+         }
+      }
+      return someMatched;
+   }
+
+   function parseCondition(condition:String)
+   {
+      var good = false;
+      for(part in condition.split("||"))
+         if ( parseAnd(part) )
+            return true;
+      return false;
+   }
+
    private function isValidElement(element:Fast, section:String):Bool 
    {
-      if (element.x.get("if") != null) 
-      {
-         var value = element.x.get("if");
-         var optionalDefines = value.split("||");
-         var isValid = true;
+      var ifVal = element.x.get("if");
+      if (ifVal!=null && !parseCondition(ifVal))
+         return false;
 
-         for(optional in optionalDefines) 
-         {
-            var requiredDefines = optional.split(" ");
-
-            for(required in requiredDefines) 
-            {
-               var check = StringTools.trim(required);
-
-               if (check != "" && !project.hasDef(check)) 
-               {
-                  isValid = false;
-               }
-            }
-         }
-
-         return isValid;
-      }
-
-      if (element.has.unless) 
-      {
-         var value = element.att.unless;
-         var optionalDefines = value.split("||");
-         var isValid = true;
-
-         for(optional in optionalDefines) 
-         {
-            var requiredDefines = optional.split(" ");
-
-            for(required in requiredDefines) 
-            {
-               var check = StringTools.trim(required);
-
-               if (check != "" && project.localDefines.exists(check)) 
-               {
-                  isValid = false;
-               }
-            }
-         }
-
-         return isValid;
-      }
+      var unlessVal = element.x.get("unless");
+      if (unlessVal!=null && parseCondition(unlessVal))
+         return false;
 
       if (section != "") 
       {

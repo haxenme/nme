@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+<assets from="assets/fonts"  if="emscripten" unless="nofonts" >
+   <asset name="Arimo-Regular.ttf" id="_sans" embed="true"/>
+   <asset name="Tinos-Regular.ttf" id="_serif" embed="true"/>
+   <asset name="Cousine-Regular.ttf" id="_monospace" embed="true"/>
+</assets>
+
+<project/>
