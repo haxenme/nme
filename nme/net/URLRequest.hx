@@ -44,6 +44,8 @@ class URLRequest
       followRedirects = true;
    }
 
+   public function toString() return 'URLRequest($url)';
+
    public function launchBrowser():Void 
    {
       nme_get_url(url);
