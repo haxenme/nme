@@ -48,7 +48,8 @@ class SoundChannel extends EventDispatcher
          return result;
       }
 
-   /** @private */ private function nmeCheckComplete():Bool {
+   /** @private */ private function nmeCheckComplete():Bool
+   {
       if (nmeHandle != null ) 
       {
          if (nmeDataProvider != null && nme_sound_channel_needs_data(nmeHandle)) 
@@ -88,17 +89,16 @@ class SoundChannel extends EventDispatcher
    {
       if (nmeIncompleteList.length > 0) 
       {
-         var incomplete = nmeIncompleteList;
-         nmeIncompleteList = new Array<SoundChannel>();
-
-         for(channel in incomplete) 
+         var idx = 0;
+         while(idx < nmeIncompleteList.length)
          {
-            if (!channel.nmeCheckComplete()) 
-            {
-               nmeIncompleteList.push(channel);
-            }
-         }
+            var channel = nmeIncompleteList[idx];
 
+            if (channel.nmeCheckComplete()) 
+               nmeIncompleteList.splice(idx,1);
+            else
+               idx++;
+         }
       }
    }
 
