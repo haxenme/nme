@@ -1,4 +1,5 @@
 import nme.Lib;
+import nme.geom.Point;
 import nme.display.Sprite;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
@@ -124,7 +125,33 @@ class Sample extends Sprite
       stage.addEventListener( MouseEvent.MOUSE_UP, onUp );
       stage.addEventListener( MouseEvent.MOUSE_DOWN, onClick );
       stage.addEventListener( MouseEvent.MOUSE_MOVE, onMove );
+      //stage.addEventListener( Event.ENTER_FRAME, doDelay );
+      stage.addEventListener( Event.RESIZE, setScale );
+      setScale(null);
    }
+
+   function setScale(_)
+   {
+      var sW = 400;
+      var sH = 300;
+      var w = stage.stageWidth;
+      var h = stage.stageHeight;
+
+      if (w*sH < h*sW)
+      {
+         scaleX = scaleY = w/sW;
+         x = 0;
+         y = (h-scaleY*sH) * 0.5;
+      }
+      else
+      {
+         scaleX = scaleY = h/sH;
+         x = (w-scaleX*sW) * 0.5;
+         y = 0;
+      }
+   }
+
+   function doDelay(_) { Sys.sleep(1.0); }
 
    function playMusic(inId:String)
    {
@@ -239,7 +266,10 @@ class Sample extends Sprite
          channel.addEventListener( Event.SOUND_COMPLETE, function(_) { trace("Complete"); } );
       }
       else
-         addChild( new Bang( inEvent.stageX, inEvent.stageY ) );
+      {
+         var pos = globalToLocal( new Point(inEvent.stageX, inEvent.stageY ) );
+         addChild( new Bang(pos.x,pos.y) );
+      }
    }
 
    public function onUp(inEvent:MouseEvent)
