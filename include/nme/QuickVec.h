@@ -292,6 +292,16 @@ public:
    {
       return mPtr[--mSize];
    }
+   inline void qremove(T_ value)
+   {
+      for(int i=0;i<mSize;i++)
+         if (mPtr[i]==value)
+         {
+            mPtr[i] = mPtr[--mSize];
+            return;
+         }
+   }
+ 
    inline void EraseAt(int inPos)
    {
       memmove(mPtr + inPos, mPtr + inPos + 1, (mSize-inPos-1) * sizeof(T_) );
