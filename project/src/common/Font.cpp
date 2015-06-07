@@ -377,25 +377,24 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
       }
 
       if (bytes)
-        face = FontFace::CreateFreeType(inFormat,inScale,bytes);
-
-      if (pass>0 || face)
-         break;
-
-      if ( (face = FontFace::CreateCFFIFont(inFormat,inScale)) )
-         break;
-
-      if (native)
-         if ( (face = FontFace::CreateNative(inFormat,inScale)) )
+      {
+         face = FontFace::CreateFreeType(inFormat,inScale,bytes);
+         if (face)
             break;
-
-      if ( (face = FontFace::CreateFreeType(inFormat,inScale,NULL)) )
-         break;
-
-      if (!native)
-         if ( (face = FontFace::CreateNative(inFormat,inScale)) )
-            break;
+      }
    }
+
+   if (!face)
+      face = FontFace::CreateCFFIFont(inFormat,inScale);
+
+   if (native && !face)
+      face = FontFace::CreateNative(inFormat,inScale);
+
+   if (!face)
+      face = FontFace::CreateFreeType(inFormat,inScale,NULL);
+
+   if (!native && face)
+      face = FontFace::CreateNative(inFormat,inScale);
 
    if (!face)
        return 0;
