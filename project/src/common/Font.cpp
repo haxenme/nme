@@ -10,6 +10,9 @@
 #include <nme/NmeCffi.h>
 #include <Utils.h>
 
+#if defined(HX_WINDOWS)
+#define strcasecmp stricmp
+#endif
 
 namespace nme
 {
