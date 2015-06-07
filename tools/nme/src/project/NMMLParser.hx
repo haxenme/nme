@@ -606,25 +606,16 @@ class NMMLParser
 
                case "include":
 
-                  var path = "";
+                  var path = substitute(element.has.path ? element.att.path : element.att.name); 
 
-                  if (element.has.path) 
-                  {
-                     var subPath = substitute(element.att.path);
-                     if (subPath == "") subPath = element.att.path;
-                     path = findIncludeFile(combine(extensionPath, subPath));
-                  }
-                  else
-                  {
-                     path = findIncludeFile(combine(extensionPath, substitute(element.att.name)));
-                  }
+                  var include = findIncludeFile(combine(extensionPath, path));
 
-                  if (path != null && path != "" && FileSystem.exists(path)) 
+                  if (include != null && include != "" && FileSystem.exists(include)) 
                   {
-                     new NMMLParser(project,path);
-                     var dir = Path.directory(path);
+                     new NMMLParser(project,include);
+                     var dir = Path.directory(include);
                      if (dir != "")
-                        project.classPaths.push(dir);
+                        project.classPaths.push(include);
                   }
                   else if (!element.has.noerror) 
                   {
