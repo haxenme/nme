@@ -6,8 +6,7 @@
 #include <Sound.h>
 #include <nme/QuickVec.h>
 #include <Utils.h>
-
-#include "../openal/OpenALSound.h"
+#include <Audio.h>
 
 
 @interface AVAudioPlayerChannelDelegate : NSObject <AVAudioPlayerDelegate>  {
@@ -429,15 +428,15 @@ namespace nme
         
         if (type == eAF_ogg || !inForceMusic)
         {
-            if (!OpenALInit())
-                return 0;
+            Sound *sound = Sound::CreateOpenAl(inFilename, inForceMusic);
             
-            OpenALSound *sound = new OpenALSound(inFilename, inForceMusic);
-            
-            if (sound->ok ())
+            if (sound && sound->ok())
                return sound;
             else
+            {
+               delete sound;
                return 0;
+            }
         }
         else
         {
@@ -469,14 +468,15 @@ namespace nme
         }
         else
         {
-            if (!OpenALInit())
-                return 0;
-            OpenALSound *sound = new OpenALSound(inData, len);
+            Sound *sound = Sound::CreateOpenAl(inData, len);
             
-            if (sound->ok ())
+            if (sound && sound->ok())
                return sound;
             else
+            {
+               delete sound;
                return 0;
+            }
         }
     }
     

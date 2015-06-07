@@ -1,4 +1,6 @@
 
+* Use async callback to fill ogg buffers (stops sound stutter in ios)
+
 5.4
 --------------------------
 * Add Cppia/Acadnme integration

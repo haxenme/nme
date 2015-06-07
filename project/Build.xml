@@ -113,6 +113,7 @@
          <file name="${SRC_DIR}/iPhone/Sound.mm"/>
          <file name="${SRC_DIR}/iPhone/NativeFont.mm"/>
          <file name="${SRC_DIR}/iPhone/System.mm"/>
+         <file name="${SRC_DIR}/apple/Utils.mm"/>
          <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
       </section>
 
@@ -171,6 +172,7 @@
       <section if="NME_OPENAL">
          <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
          <file name="${SRC_DIR}/common/Audio.cpp" />
+         <file name="${SRC_DIR}/common/OggStream.cpp" />
       </section>
       
       

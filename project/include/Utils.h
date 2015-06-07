@@ -11,6 +11,9 @@
 #include <bps/event.h>
 #endif
 
+void NmeLog(const char *inFmt, ...);
+
+
 #ifdef ANDROID
 #include <android/log.h>
 

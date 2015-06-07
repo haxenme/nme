@@ -44,6 +44,7 @@ public:
    virtual double getDataPosition() { return 0.0; }
    virtual bool needsData() { return false; }
    virtual void addData(const ByteArray &inBytes) { }
+   virtual void asyncUpdate() { }
 };
 
 

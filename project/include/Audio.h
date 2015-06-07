@@ -10,49 +10,40 @@
 #endif
 
 
-#ifdef ANDROID
-#define LOG_SOUND(args,...) ELOG(args, ##__VA_ARGS__)
+#if 0
+   #ifdef ANDROID
+      #define LOG_SOUND(args,...) ELOG(args, ##__VA_ARGS__);
+   #elif defined(IPHONE)
+      #define LOG_SOUND(args,...) NmeLog(args, ##__VA_ARGS__);
+   #elif defined(TIZEN)
+      #include <FBase.h>
+      #define LOG_SOUND(args,...) AppLog(args, ##__VA_ARGS__);
+   #else
+      #define LOG_SOUND(args,...) printf(args, ##__VA_ARGS__);
+   #endif
 #else
-#ifdef IPHONE
-//#define LOG_SOUND(args,...) printf(args, ##__VA_ARGS__)
-#define LOG_SOUND(args...) { }
-#elif defined(TIZEN)
-#include <FBase.h>
-#define LOG_SOUND(args,...) AppLog(args, ##__VA_ARGS__)
-#else
-#define LOG_SOUND(args,...) printf(args, ##__VA_ARGS__)
+   #define LOG_SOUND(args...)  { }
 #endif
-#endif
-//#define LOG_SOUND(args...)  { }
 
 
 namespace nme
 {
-	class AudioSample
-	{
-	};
-	
 	class AudioStream
 	{
 	public:
+      static AudioStream *createOgg();
 		virtual ~AudioStream() {}
 		
-		virtual void release() = 0;
-		virtual bool playback() = 0;
-        virtual bool playing() = 0;
-		virtual bool update() = 0;
-		
-		virtual void setTransform(const SoundTransform &inTransform) = 0;
+      virtual bool open(const std::string &path, int startTime)=0;
+		virtual int getLength(const std::string &path) = 0;
 		virtual double getPosition() = 0;
 		virtual double setPosition(const float &inFloat) = 0;
-		virtual double getLeft() = 0;
-		virtual double getRight() = 0;
-		
-		virtual void suspend() = 0;
-		virtual void resume() = 0;
-		
-		virtual bool isActive() = 0;
-		
+		virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;
+		virtual void rewind() = 0;
+      virtual int getRate() = 0;
+      virtual int isStereo() = 0;
+      virtual bool isValid() = 0;
+
 	};
 	
 	enum AudioFormat
