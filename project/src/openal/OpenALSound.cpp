@@ -27,7 +27,8 @@ extern "C" {
 
 typedef unsigned char uint8;
 
-#define STREAM_BUFFER_SIZE (4096 * 8)
+
+#define MAX_STREAM_BUFFER_SIZE (45000 * 4 * 400/1000)
 
 
 namespace nme
@@ -272,9 +273,9 @@ public:
       if (mStream)
       {
          alGenBuffers(2, mDynamicBuffer);
-         check();
+         check("alGenBuffers");
          alGenSources(1, &mSourceID);
-         check();
+         check("alGenSources");
 
          alSource3f(mSourceID, AL_POSITION,        0.0, 0.0, 0.0);
          alSource3f(mSourceID, AL_VELOCITY,        0.0, 0.0, 0.0);
@@ -283,6 +284,7 @@ public:
          alSourcei (mSourceID, AL_SOURCE_RELATIVE, AL_TRUE      );
 
          setTransform(inTransform);
+         check("setTransform");
         
          primeStream();
 
@@ -368,12 +370,22 @@ public:
          return true;
 
       //LOG_SOUND("STREAM\n");
-      char pcm[STREAM_BUFFER_SIZE];
+      char pcm[MAX_STREAM_BUFFER_SIZE];
+      int bytes = ( (mStream->isStereo() ? 4 : 2) * mStream->getRate() * 400/1000 );
+      if (bytes > MAX_STREAM_BUFFER_SIZE)
+         bytes = MAX_STREAM_BUFFER_SIZE;
+      bytes = bytes & ~7;
       int size = 0;
       bool justRewound = false;
-      while(size<STREAM_BUFFER_SIZE)
+
+      // Bytes per 400ms...
+
+
+     // mSuspended->getRate
+
+      while(size<bytes)
       {
-          int filled = mStream->fillBuffer(pcm+size, STREAM_BUFFER_SIZE-size);
+          int filled = mStream->fillBuffer(pcm+size, bytes-size);
            
           if (filled <= 0)
           {
@@ -433,37 +445,54 @@ public:
          if (!playing())
             alSourcePlay(mSourceID);
       }
+      int queued = 0;
+      alGetSourcei(mSourceID, AL_BUFFERS_QUEUED, &queued);
+
+      check("primeStream");
+      LOG_SOUND("Primed %d buffers\n", queued);
    }
 
 
    void updateStream()
    {
       if (openal_is_shutdown || mStreamFinished || mSuspended || !mStream || !mStream->isValid())
+      {
+         LOG_SOUND("Dead stream.\n");
          return;
+      }
       
       bool added = false;
       int processed = 0;
       alGetSourcei(mSourceID, AL_BUFFERS_PROCESSED, &processed);
+      check("alGetSourcei processed");
 
       while(processed--)
       {
-         ALuint buffer;
+         ALuint buffer = 0;
          alSourceUnqueueBuffers(mSourceID, 1, &buffer);
-         alGetError();
+         check("alSourceUnqueueBuffers");
            
          if (buffer && streamBuffer(buffer))
            added = true;
+         else
+            LOG_SOUND("  Could not stream processed buffer %d.\n", buffer);
       }
 
       int queued = 0;
       alGetSourcei(mSourceID, AL_BUFFERS_QUEUED, &queued);
+      check("alGetSourcei queued");
       if (queued==0)
       {
          LOG_SOUND("All buffers gone, stop.");
          mStreamFinished = true;
       }
-      else if (added)
-         kickstart();
+      else
+      {
+         if (queued<2)
+            LOG_SOUND(" -> only queued %d.", queued);
+         if (added)
+            kickstart();
+      }
    }
 
    void asyncUpdate()
@@ -478,22 +507,21 @@ public:
        
       ALint state;
       alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
+      check("playing");
       return (state == AL_PLAYING);
 
    }
 
 
 
-   void check()
+   void check(const char *where)
    {
       if (openal_is_shutdown) return;
-      
       int error = alGetError();
-
       if(error != AL_NO_ERROR)
       {
          //todo : print meaningful errors instead
-         LOG_SOUND("OpenAL error was raised: %d\n", error);
+         LOG_SOUND(">>>>> OpenAL error was raised: %d in %s\n", error, where);
       }
    }
 
@@ -560,6 +588,7 @@ public:
          // This is an indication that the previous buffer finished playing before we could deliver the new buffer.
          // You will hear ugly popping noises...
          alSourcePlay(mSourceID);
+         check("Kickstart");
       }
    }
    
@@ -590,24 +619,38 @@ public:
 
       if (!openal_is_shutdown)
       {
+         check("Pre ~OpenALChannel");
          if (mSourceID)
          {
+            ALint state;
+            alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
+            if (state == AL_PLAYING)
+            {
+               alSourceStop(mSourceID);
+               check("~OpenALChannel stop");
+            }
+
             int queued;
-    
             alGetSourcei(mSourceID, AL_BUFFERS_QUEUED, &queued);
+            check("~OpenALChannel queued");
     
             while(queued--)
             {
                ALuint buffer;
                alSourceUnqueueBuffers(mSourceID, 1, &buffer);
+               check("~OpenALChannel alSourceUnqueueBuffers");
             }
 
             //LOG_SOUND("OpenALChannel destructor");
             alDeleteSources(1, &mSourceID);
+            check("~OpenALChannel alDeleteSources");
           }
 
           if (mDynamicBuffer[0])
+          {
              alDeleteBuffers(2, mDynamicBuffer);
+             check("~OpenALChannel alDeleteBuffers");
+          }
       }
 
       delete [] mSampleBuffer;
@@ -651,6 +694,7 @@ public:
       // http://www.gamedev.net/topic/410696-openal-how-to-query-if-a-source-sound-is-playing-solved/
       ALint state;
       alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
+      check("isComplete");
       /*
        Possible values of state
        AL_INITIAL
@@ -702,6 +746,7 @@ public:
          float panY=0;
          float panZ=0;
          alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
+         check("getLeft");
          return (1-panX)/2;
       }
       return 0.5;
@@ -716,6 +761,7 @@ public:
          float panY=0;
          float panZ=0;
          alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
+         check("getRight");
          return (panX+1)/2;
       }
       return 0.5;
@@ -755,6 +801,7 @@ public:
    {
       alSourcef(mSourceID, AL_GAIN, inTransform.volume);
       alSource3f(mSourceID, AL_POSITION, (float) cos((inTransform.pan - 1) * (1.5707)), 0, (float) sin((inTransform.pan + 1) * (1.5707)));
+      check("setTransform");
    }
    
    
@@ -780,6 +827,7 @@ public:
          {
             alSourceStop(mSourceID);
          }
+         check("stop");
       }
    }
    
@@ -792,6 +840,7 @@ public:
       if (state == AL_PLAYING)
       {
          alSourcePause(mSourceID);
+         check("pause for suspend");
          mWasPlaying = true;
          return;
       }
@@ -805,6 +854,7 @@ public:
       if (mWasPlaying)
       {
          alSourcePlay(mSourceID);
+         check("resume");
       }
    }
    
@@ -860,6 +910,11 @@ public:
          ALsizei freq;
          bool ok = false; 
 
+
+         int error = alGetError();
+         if(error != AL_NO_ERROR)
+            LOG_SOUND("Clearing openal error : %d\n", error);
+
             //Determine the file format before we try anything
          AudioFormat type = Audio::determineFormatFromFile(std::string(fileURL));
          switch(type) {
@@ -872,10 +927,14 @@ public:
                else
                {
                   ok = Audio::loadOggSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+                  if (!ok)
+                     LOG_SOUND("Error in Audio::loadOggSampleFromFile %s\n", fileURL);
                }
             break;
             case eAF_wav:
                ok = Audio::loadWavSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+               if (!ok)
+                  LOG_SOUND("Error loading wav %s\n", fileURL);
             break;
             default:
                LOG_SOUND("Error opening sound file, unsupported type.\n");
@@ -900,13 +959,18 @@ public:
          } //channels = 2
           
          
-         if (!ok) {
+         if (!ok)
+         {
             LOG_SOUND("Error opening sound data\n");
             mError = "Error opening sound data";
-         } else if (alGetError() != AL_NO_ERROR) {
+         }
+         else if (alGetError() != AL_NO_ERROR)
+         {
             LOG_SOUND("Error after opening sound data\n");
             mError = "Error after opening sound data";  
-         } else {
+         }
+         else
+         {
                // grab a buffer ID from openAL
             alGenBuffers(1, &mBufferID);
             
@@ -937,6 +1001,7 @@ public:
       ALsizei freq;
       bool ok = false; 
       
+      check("Pre OpenALSound");
       //Determine the file format before we try anything
       AudioFormat type = Audio::determineFormatFromBytes(inData, len);
       
@@ -967,18 +1032,19 @@ public:
       } //channels = 2
        
       
-      if (!ok) {
+      if (!ok)
+      {
          LOG_SOUND("Error opening sound data\n");
          mError = "Error opening sound data";
-      } else if (alGetError() != AL_NO_ERROR) {
-         LOG_SOUND("Error after opening sound data\n");
-         mError = "Error after opening sound data";  
-      } else {
+      }
+      else
+      {
             // grab a buffer ID from openAL
          alGenBuffers(1, &mBufferID);
          
             // load the awaiting data blob into the openAL buffer.
          alBufferData(mBufferID,format,&buffer[0],buffer.size(),freq); 
+         check("OpenALSound alBufferData");
 
             // once we have all our information loaded, get some extra flags
          alGetBufferi(mBufferID, AL_SIZE, &bufferSize);
@@ -987,8 +1053,20 @@ public:
          alGetBufferi(mBufferID, AL_BITS, &bitsPerSample); 
          
       }
+      check("Post OpenALSound");
    }
    
+   void check(const char *where)
+   {
+      if (openal_is_shutdown) return;
+      int error = alGetError();
+      if(error != AL_NO_ERROR)
+      {
+         LOG_SOUND(">>>>> OpenAL error was raised: %d in %d\n", error, where);
+      }
+   }
+
+
    
    ~OpenALSound()
    {

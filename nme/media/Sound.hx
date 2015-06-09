@@ -77,7 +77,7 @@ class Sound extends EventDispatcher
 
       if (nmeHandle == null) 
       {
-         throw("Could not load:" + stream.url);
+         throw("Could not load " + (forcePlayAsMusic ? "music" : "sound") + ":" + stream.url);
 
       } else 
       {
