@@ -13,6 +13,7 @@ class EmscriptenPlatform extends DesktopPlatform
    private var ext:String;
    private var sdkPath:String;
    private var python:String;
+   private var memFile:Bool;
 
    public function new(inProject:NMEProject)
    {
@@ -28,6 +29,15 @@ class EmscriptenPlatform extends DesktopPlatform
       project.haxeflags.push('-D exe_link');
       project.haxeflags.push('-D HXCPP_LINK_EMSCRIPTEN_EXT=$ext');
       project.haxeflags.push('-D HXCPP_LINK_EMRUN');
+      var mem = project.getInt("emscriptenMemory",64)<<20;
+      if (mem>0)
+         project.haxeflags.push('-D HXCPP_LINK_TOTAL_MEMORY=$mem');
+      else
+         project.haxeflags.push('-D HXCPP_LINK_MEMORY_GROWTH');
+
+      memFile = project.getBool("emscriptenMemFile", true);
+
+      project.haxeflags.push('-D HXCPP_LINK_MEMORY_FILE=' + (memFile?"1":"0") );
    }
 
    override public function getPlatformDir() : String { return "emscripten"; }
@@ -42,7 +52,9 @@ class EmscriptenPlatform extends DesktopPlatform
 
       FileHelper.copyFile(src + ext, executablePath);
       // Needed of O2?
-      //FileHelper.copyFile(src + ext+".mem", executablePath+".mem");
+      if (memFile)
+         FileHelper.copyFile(src + ext+".mem", executablePath+".mem");
+
       if (ext==".html")
          FileHelper.copyFile(src + ".js", applicationDirectory+"/ApplicationMain.js");
    }

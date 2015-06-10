@@ -217,7 +217,7 @@ public:
              }
              else
              {
-                if (SWAP_RB)
+                if (SWAP_RB && pw==4)
                 {
                    for(int x=0;x<mPixelWidth;x++)
                    {

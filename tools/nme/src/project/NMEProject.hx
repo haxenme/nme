@@ -376,6 +376,16 @@ class NMEProject
       localDefines.set(target.toLowerCase(), "1");
    }
 
+
+   public function getInt(inName:String,inDefault:Int):Int
+   {
+      if (!hasDef(inName))
+         return inDefault;
+
+      var value = getDef(inName);
+      return Std.parseInt(value);
+   }
+
    public function getBool(inName:String,inDefault:Bool):Bool
    {
       if (!hasDef(inName))
