@@ -141,8 +141,7 @@
         <compilerflag value="-I/opt/local/include" if="macos" />
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
-        <compilerflag value="-DNME_MIXER" unless="emscripten" />
-        <compilerflag value="-DNME_SDL12" unless="NME_SDL2" />
+        <compilerflag value="-DNME_MIXER" />
         <file name="${SRC_DIR}/sdl/SDLSound.cpp" />
         <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>

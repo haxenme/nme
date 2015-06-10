@@ -1179,7 +1179,7 @@ DEFINE_PRIM(nme_stage_set_fixed_orientation,1);
 
 value nme_init_sdl_audio( )
 {
-   #if defined(NME_MIXER)
+   #if defined(NME_MIXER) && !defined(EMSCRIPTEN)
    if (gSDLAudioState==sdaNotInit)
       InitSDLAudio();
    #endif

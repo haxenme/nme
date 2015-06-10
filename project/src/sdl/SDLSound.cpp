@@ -119,9 +119,13 @@ public:
       if (mChannel>=0)
       {
          if (Mix_PlayChannel( mChannel , mChunk, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 )<0)
+         {
             onChannelDone(mChannel);
+         }
          else
+         {
             Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
+         }
          // Mix_SetPanning
       }
    }
@@ -329,6 +333,8 @@ SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform
 
 class SDLSound : public Sound
 {
+   std::string mError;
+   Mix_Chunk *mChunk;
    std::string filename;
    bool        loaded;
 
@@ -340,16 +346,13 @@ public:
       mChunk = 0;
       loaded = false;
 
-      if (gSDLAudioState!=sdaNotInit)
-      {
-          if (Init())
-             loadChunk();
-      }
+      if (Init())
+         loadChunk();
    }
+   
 
    void loadChunk()
    {
-      loaded = true;
       #ifdef HX_MACOS
       char name[1024];
       GetBundleFilename(filename.c_str(),name,1024);
@@ -358,8 +361,28 @@ public:
       #endif
 
       mChunk = Mix_LoadWAV(name);
+      //printf("Loaded wav : %s\n", name);
+
+      if (!mChunk)
+      {
+         ByteArray resource(filename.c_str());
+         if (resource.Ok())
+         {
+            int n = resource.Size();
+            if (n>0)
+            {
+               #ifndef NME_SDL12
+               mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(resource.Bytes(),n),false);
+               #else
+               mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(resource.Bytes(),2));
+               #endif
+            }
+         }
+      }
+
       if ( mChunk == NULL )
       {
+         loaded = true;
          mError = SDL_GetError();
          // ELOG("Error %s (%s)", mError.c_str(), name );
       }
@@ -367,16 +390,19 @@ public:
    
    SDLSound(float *inData, int len)
    {
-      loaded = true;
+      loaded = false;
       IncRef();
-      #ifndef EMSCRIPTEN
-      mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(inData, len), 1);
-      if ( mChunk == NULL )
+      if (Init())
       {
-         mError = SDL_GetError();
-         // ELOG("Error %s (%s)", mError.c_str(), name );
+         mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(inData, len), 1);
+         if ( mChunk == NULL )
+         {
+            mError = SDL_GetError();
+            // ELOG("Error %s (%s)", mError.c_str(), name );
+         }
+         else
+            loaded = true;
       }
-      #endif
    }
    
    ~SDLSound()
@@ -407,10 +433,6 @@ public:
    int getBytesTotal() { return mChunk ? mChunk->alen : 0; }
    bool ok() { return mChunk; }
    std::string getError() { return mError; }
-
-
-   std::string mError;
-   Mix_Chunk *mChunk;
 };
 
 // ---  Using "Mix_Music" API ----------------------------------------------------
@@ -437,7 +459,9 @@ public:
          IncRef();
 
          if (Mix_PlayMusic( mMusic, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 )<0)
+         {
             onMusicDone();
+         }
          else
          {
             Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
@@ -446,7 +470,11 @@ public:
                // Should be 'almost' at start
                //Mix_RewindMusic();
                int seconds = inStartTime / 1000;
+               #ifndef EMSCRIPTEN
                Mix_SetMusicPosition(seconds); 
+               #else
+               inStartTime = 0;
+               #endif
                mStartTime = SDL_GetTicks() - inStartTime;
             }
             // Mix_SetPanning not available for music
@@ -515,6 +543,7 @@ public:
    {
       filename = inFilename;
       loaded = false;
+      mMusic = 0;
 
       IncRef();
       if (gSDLAudioState!=sdaNotInit)
@@ -538,7 +567,6 @@ public:
 
       mMusic = Mix_LoadMUS(name);
 
-      #ifndef EMSCRIPTEN
       if (!mMusic)
       {
          ByteArray resource(filename.c_str());
@@ -549,7 +577,7 @@ public:
             {
                reso.resize(n);
                memcpy(&reso[0], resource.Bytes(), n);
-               #ifndef NME_SDL12
+               #ifdef NME_SDL2
                mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], resource.Size()),false);
                #else
                mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], resource.Size()));
@@ -557,7 +585,6 @@ public:
             }
          }
       }
-      #endif
 
 
       if (!mMusic)
@@ -575,7 +602,6 @@ public:
       reso.resize(len);
       memcpy(&reso[0], inData, len);
 
-      #ifndef EMSCRIPTEN
       #ifdef NME_SDL2
       mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], len),false);
       #else
@@ -586,12 +612,13 @@ public:
          mError = SDL_GetError();
          ELOG("Error in music with len (%d)", len );
       }
-      #endif
    }
    ~SDLMusic()
    {
       if (mMusic)
+      {
          Mix_FreeMusic( mMusic );
+      }
    }
    double getLength()
    {

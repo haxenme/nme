@@ -66,8 +66,10 @@ public:
       int idx = FT_Get_Char_Index( mFace, inChar );
 
       int renderFlags = FT_LOAD_DEFAULT;
+      //#ifndef EMSCRIPTEN
       //if (!(mTransform & (ffItalic|ffBold) ))
          renderFlags |= FT_LOAD_FORCE_AUTOHINT;
+      //#endif
 
       int err = FT_Load_Glyph( mFace, idx, renderFlags  );
       if (err)
@@ -264,7 +266,6 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRo
       if (bytes.Ok())
       {
          int l = bytes.Size();
-         //printf("Bytes ok, use FT_New_Memory_Face %d...\n", l);
          unsigned char *buf = (unsigned char*)malloc(l);
          memcpy(buf,bytes.Bytes(),l);
          result = FT_New_Memory_Face(sgLibrary, buf, l, inIndex, outFace);
@@ -588,6 +589,7 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Aut
    FT_Set_Pixel_Sizes(face,0, height);
 
 
+
    uint32 transform = 0;
    if ( !(face->style_flags & ffBold) && inFormat.bold )
       transform |= ffBold;
@@ -595,6 +597,7 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Aut
       transform |= ffItalic;
    if ( inFormat.underline )
       transform |= ffUnderline;
+
    return new FreeTypeFont(face,height,transform,pBuffer);
 }
 

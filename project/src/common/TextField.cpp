@@ -1919,7 +1919,7 @@ void TextField::Layout(const Matrix &inMatrix)
             advance6 = 0;
          charX += advance6*font6ToLocalX;
 
-         //printf(" Char %c (%d..%d/%d,%d) %p\n", ch, ox, x, max_x, charY, g.mFont);
+         //  printf(" Char %c (%f..%f/%f) %p\n", ch, ox, max_x, charY, g.mFont);
          if ( !displayAsPassword && (wordWrap) && charX > max_x && line.mChars>1)
          {
             // No break on line so far - just back up 1 character....

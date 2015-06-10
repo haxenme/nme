@@ -1085,7 +1085,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(500,30);
 
-   //gSDLAudioState = sdlOpen;
 
    #ifdef NME_MIXER
    
@@ -1114,6 +1113,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
       gSDLAudioState = sdaError;
    }
+   else
+      gSDLAudioState = sdaOpen;
    #endif
 
 
@@ -1170,6 +1171,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    bool nmeEgl = false;
    #endif
 
+   //printf("opengl %d\n",  opengl);
    if (opengl && !nmeEgl)
    {
       int  aa_tries = (inFlags & wfHW_AA) ? ( (inFlags & wfHW_AA_HIRES) ? 2 : 1 ) : 0;
@@ -1190,13 +1192,14 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       if (!(inFlags & wfDepthBuffer))
          startingPass = 2;
 
-      int oglLevelPasses = 1;
+      int oglLevelPasses = 2;
 
       #if !defined(NME_FORCE_GLES1) && (defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN))
       // Try 2 then 1 ?
-      if ( (inFlags & wfAllowShaders) && !(inFlags & wfRequireShaders) )
          oglLevelPasses = 2;
       #endif
+
+   //printf("Leves %d\n",  oglLevelPasses);
 
       // Find config...
 
@@ -1205,8 +1208,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
          #ifdef NME_FORCE_GLES1
          int level = 1;
          #else
-         int level = (inFlags & wfRequireShaders) ? 2 : (inFlags & wfAllowShaders) ? 2-oglPass : 1;
+         int level = 2-oglPass;
          #endif
+         //printf("Try level %d\n", level );
         
    
          for(int depthPass=startingPass;depthPass<3 && !is_opengl;depthPass++)
@@ -1214,6 +1218,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
             /* Initialize the display */
             for(int aa_pass = aa_tries; aa_pass>=0 && !is_opengl; --aa_pass)
             {
+               //printf("  try aa %d\n", aa_pass);
                SDL_GL_SetAttribute(SDL_GL_RED_SIZE,  8 );
                SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8 );
                SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8 );
@@ -1245,6 +1250,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    
                sdl_flags |= SDL_OPENGL;
    			
+               //printf("set video mode %dx%d\n", use_w, use_h );
                if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
                {
                   if (depthPass==2 && aa_pass==0 && oglPass==oglLevelPasses-1)
@@ -1268,6 +1274,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
          }
       }
    }
+
+   //printf("OGL2 -> %d\n", sgIsOGL2);
  
    if (!screen)
    {

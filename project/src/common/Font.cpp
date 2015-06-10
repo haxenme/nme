@@ -396,7 +396,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    if (!face)
       face = FontFace::CreateFreeType(inFormat,inScale,NULL);
 
-   if (!native && face)
+   if (!native && !face)
       face = FontFace::CreateNative(inFormat,inScale);
 
    if (!face)
