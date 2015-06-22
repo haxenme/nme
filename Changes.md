@@ -1,4 +1,7 @@
 
+* Respect the flash meaning of mouseEnabled, and add hitEnabled to ignore hit tests
+
+--------------------------
 * Use async callback to fill ogg buffers (stops sound stutter in ios)
 
 5.4

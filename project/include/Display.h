@@ -108,6 +108,8 @@ public:
    uint32 getOpaqueBackground() { return opaqueBackground; }
    bool getMouseEnabled() { return mouseEnabled; }
    void setMouseEnabled(bool inVal) { mouseEnabled = inVal; }
+   bool getHitEnabled() { return hitEnabled; }
+   void setHitEnabled(bool inVal) { hitEnabled = inVal; }
    bool getNeedsSoftKeyboard() { return needsSoftKeyboard; }
    void setNeedsSoftKeyboard(bool inVal) { needsSoftKeyboard = inVal; }
    bool getMovesForSoftKeyboard() { return movesForSoftKeyboard; }
@@ -156,6 +158,7 @@ public:
    int     id;
    bool   visible;
    bool   mouseEnabled;
+   bool   hitEnabled;
    bool   needsSoftKeyboard;
    bool   movesForSoftKeyboard;
 

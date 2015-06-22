@@ -24,6 +24,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
    public var filters(get_filters, set_filters):Array<Dynamic>;
    public var graphics(get_graphics, null):Graphics;
    public var height(get_height, set_height):Float;
+   public var hitEnabled(get,set):Bool;
    public var loaderInfo:LoaderInfo;
    public var mask(default, set_mask):DisplayObject;
    public var mouseX(get_mouseX, null):Float;
@@ -74,6 +75,14 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
       }
 
       return result;
+   }
+
+
+   private function get_hitEnabled():Bool { return nme_display_object_get_hit_enabled(nmeHandle); }
+   private function set_hitEnabled(inVal:Bool):Bool 
+   {
+      nme_display_object_set_hit_enabled(nmeHandle, inVal);
+      return inVal;
    }
 
    public function getBounds(targetCoordinateSpace:DisplayObject):Rectangle 
@@ -601,6 +610,8 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
    private static var nme_display_object_get_pixel_bounds = Loader.load("nme_display_object_get_pixel_bounds", 2);
    private static var nme_display_object_get_bounds = Loader.load("nme_display_object_get_bounds", 4);
    private static var nme_display_object_hit_test_point = Loader.load("nme_display_object_hit_test_point", 5);
+   private static var nme_display_object_get_hit_enabled = Loader.load("nme_display_object_get_hit_enabled", 1);
+   private static var nme_display_object_set_hit_enabled = Loader.load("nme_display_object_set_hit_enabled", 2);
    private static var nme_doc_add_child = Loader.load("nme_doc_add_child", 2);
 }
 

@@ -42,6 +42,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    pixelSnapping = psNone;
    opaqueBackground = 0;
    mouseEnabled = true;
+   hitEnabled = true;
    needsSoftKeyboard = false;
    mMask = 0;
    mIsMaskCount = 0;
@@ -199,7 +200,7 @@ void DisplayObject::SetBitmapCache(BitmapCache *inCache)
 
 void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inState )
 {
-   if (inState.mPhase==rpHitTest && !mouseEnabled )
+   if (inState.mPhase==rpHitTest && !hitEnabled )
       return;
 
    if (mGfx && inState.mPhase!=rpBitmap)
@@ -218,24 +219,14 @@ void DisplayObject::Render( const RenderTarget &inTarget, const RenderState &inS
          state.mTransform.mMatrix = &unscaled;
 
          hit = mGfx->Render(inTarget,state);
-         
-         if (IsInteractive())
-            inState.mHitResult = state.mHitResult;
-         else
-            inState.mHitResult = state.mHitResult != NULL ? mParent : NULL;
       }
       else if (mGfx)
       {
          hit = mGfx->Render(inTarget,inState);
       }
 
-      if (hit)
-      {
-         if (IsInteractive())
-            inState.mHitResult = this;
-         else
-            inState.mHitResult = mParent;
-      }
+      if (hit && inState.mPhase==rpHitTest)
+         inState.mHitResult = this;
    }
    else if (inState.mPhase==rpBitmap && inState.mWasDirtyPtr && !*inState.mWasDirtyPtr)
    {
@@ -774,7 +765,7 @@ void SimpleButton::Render( const RenderTarget &inTarget, const RenderState &inSt
 {
    if (inState.mPhase==rpHitTest)
    {
-      if (!mouseEnabled)
+      if (!hitEnabled)
          return;
       if (mState[stateHitTest])
       {
@@ -1133,11 +1124,20 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
    BitmapCache *orig_mask = inState.mMask;
    if (!inState.mRecurse)
       last = first;
+
+
+   bool mouseDisabledObjectHit = false;
+
    for(int i=first; i!=last; i+=dir)
    {
       DisplayObject *obj = mChildren[i];
       //printf("Render phase = %d, parent = %d, child = %d\n", inState.mPhase, id, obj->id);
-      if (!obj->visible || (inState.mPhase!=rpCreateMask && obj->IsMask()) )
+      if (!obj->visible || (inState.mPhase!=rpCreateMask && obj->IsMask()) ||
+            (inState.mPhase==rpHitTest && !obj->hitEnabled)  )
+         continue;
+
+      // Already found a diabled one - no need to look at others
+      if (mouseDisabledObjectHit && !obj->mouseEnabled)
          continue;
 
       RenderState *obj_state = &state;
@@ -1335,93 +1335,72 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
             obj->Render(inTarget,*obj_state);
          }
       }
+      // Not rpBitmap ...
       else
       {
          if ( (obj->IsBitmapRender(inTarget.IsHardware()) && inState.mPhase!=rpHitTest) )
          {
             if (inState.mPhase==rpRender)
-            {
                obj->RenderBitmap(inTarget,*obj_state);
-            }
-            /* HitTest is done on vector, not bitmap
-            else if (inState.mPhase==rpHitTest && obj->IsBitmapRender() )
+         }
+         // Can just test the rect?
+         else if (obj->opaqueBackground && inState.mPhase==rpHitTest && !obj->scrollRect.HasPixels())
+         {
+            Rect rect = clip_state.mClipRect;
+            if ( !obj->scrollRect.HasPixels() )
             {
-                if (obj->HitBitmap(inTarget,*obj_state))
-                {
-                   inState.mHitResult = obj;
-                   return;
-                }
+               // TODO: this should actually be a rectangle rotated like the object?
+               Extent2DF screen_extent;
+               obj->GetExtent(obj_state->mTransform,screen_extent,true,true);
+               // Get bounding pixel rect
+               rect = obj_state->mTransform.GetTargetRect(screen_extent);
+
+               // Intersect with clip rect ...
+               rect = rect.Intersect(obj_state->mClipRect);
             }
-            */
+
+            if (rect.HasPixels())
+               obj_state->mHitResult = obj;
          }
          else
          {
-            if (inState.mHitResult==this && !obj->IsInteractive())
-               continue;
-            
-            if (obj->opaqueBackground)
-            {
-               Rect rect = clip_state.mClipRect;
-               if ( !obj->scrollRect.HasPixels() )
-               {
-                  // TODO: this should actually be a rectangle rotated like the object?
-                  Extent2DF screen_extent;
-                  obj->GetExtent(obj_state->mTransform,screen_extent,true,true);
-                  // Get bounding pixel rect
-                  rect = obj_state->mTransform.GetTargetRect(screen_extent);
-
-                  // Intersect with clip rect ...
-                  rect = rect.Intersect(obj_state->mClipRect);
-               }
-
-               if (rect.HasPixels())
-               {
-                  if (inState.mPhase == rpHitTest && obj->mouseEnabled)
-                  {
-                     if (obj->IsInteractive())
-                     {
-                        inState.mHitResult = obj;
-                        return;
-                     }
-                     else
-                     {
-                        inState.mHitResult = this;
-                        continue;
-					 }
-                  }
-                  else if (inState.mPhase == rpRender )
-                     inTarget.Clear(obj->opaqueBackground,rect);
-               }
-               else if (inState.mPhase == rpHitTest)
-               {
-                  continue;
-               }
-            }
-
             if (inState.mPhase==rpRender)
                obj_state->CombineColourTransform(inState,&obj->colorTransform,&col_trans);
+
             obj->Render(inTarget,*obj_state);
          }
 
-         if (obj_state->mHitResult)
+         if (obj_state->mHitResult && inState.mPhase==rpHitTest)
          {
-            if(mouseChildren && obj_state->mHitResult->mouseEnabled && obj_state->mHitResult != NULL)
-	            inState.mHitResult = obj_state->mHitResult;
-			else if(mouseEnabled)
-	            inState.mHitResult = this;
-            
-			if (inState.mHitResult!=this)
+            if (!obj_state->mHitResult->mouseEnabled)
+            {
+               // Objects underneath a mouseEnabled=false object will register the hit
+               //  first (hmm) - but if there is none, then the hit will be attributed to the
+               //  parent object (this)
+               mouseDisabledObjectHit = true;
+            }
+            else
+            {
+               inState.mHitResult = obj_state->mHitResult;
+               // Child has been hit - should we steal the hit?
+               if (!inState.mHitResult->IsInteractive() || !mouseChildren)
+                  inState.mHitResult = this;
                return;
+            }
          }
       }
    }
-   
-   if (inState.mPhase==rpHitTest && inState.mHitResult==this)
+
+   if (mouseDisabledObjectHit)
+   {
+      inState.mHitResult = this;
       return;
+   }
 
    // Render parent at beginning or end...
    if (!parent_first)
       DisplayObject::Render(inTarget,inState);
+
 }
 
 void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke)
