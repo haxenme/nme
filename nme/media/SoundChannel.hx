@@ -68,12 +68,8 @@ class SoundChannel extends EventDispatcher
          {
             nmeHandle = null;
             if (nmeDataProvider != null) 
-            {
                nmeDynamicSoundCount--;
-            }
 
-            var complete = new Event(Event.SOUND_COMPLETE);
-            dispatchEvent(complete);
             return true;
          }
       }
@@ -85,17 +81,28 @@ class SoundChannel extends EventDispatcher
       return nmeIncompleteList.length > 0;
    }
 
+   function dispatchComplete()
+   {
+      var complete = new Event(Event.SOUND_COMPLETE);
+      dispatchEvent(complete);
+   }
+
    public static function nmePollComplete()
    {
-      if (nmeIncompleteList.length > 0) 
+      var checkLength = nmeIncompleteList.length;
+      if (checkLength > 0) 
       {
          var idx = 0;
-         while(idx < nmeIncompleteList.length)
+         while(idx < checkLength)
          {
             var channel = nmeIncompleteList[idx];
 
             if (channel.nmeCheckComplete()) 
+            {
                nmeIncompleteList.splice(idx,1);
+               channel.dispatchComplete();
+               checkLength--;
+            }
             else
                idx++;
          }

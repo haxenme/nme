@@ -27,17 +27,23 @@ class ManagedMediaPlayer
 	public boolean isComplete = true;
 	public int loopsLeft = 0;
 	public boolean wasPlaying = false;
+	public String pathId;
 
-	public ManagedMediaPlayer(MediaPlayer mp, float leftVol, float rightVol, int loop) {
+	public ManagedMediaPlayer(MediaPlayer mp, float leftVol, float rightVol, int inLoops ,String inPathId) {
 		this.mp = mp;
 		setVolume(leftVol, rightVol);
 		isComplete = false;
+      pathId = inPathId;
 		final ManagedMediaPlayer mmp = this;
 
-		if (loop < 0) {
+		if (inLoops  < 0 )
+      {
 			mp.setLooping(true);
-		} else if (loop >= 0) {
-			this.loopsLeft = loop;
+		}
+      else if (inLoops  >= 0)
+      {
+			loopsLeft = inLoops ;
+
 			mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 				@Override public void onCompletion(MediaPlayer mp) {
 					if (--mmp.loopsLeft > 0) {
@@ -80,9 +86,7 @@ class ManagedMediaPlayer
 	}
 	
 	public boolean isPlaying() {
-		if (mp != null)
-			return mp.isPlaying();
-		return false;
+		return mp!=null && mp.isPlaying();
 	}
 	
 	public void pause() {
@@ -97,8 +101,14 @@ class ManagedMediaPlayer
 
 	public void stop() {
 		if (mp != null)
-			mp.stop();
-		release();
+      {
+         //Log.e("ManagedMediaPlayer", "mp.stop");
+         MediaPlayer mpTemp = mp;
+         mp = null;
+			mpTemp.stop();
+			mpTemp.release();
+      }
+      //Log.e("ManagedMediaPlayer", "mp.stopped");
 	}
 
 	public void setComplete() {
@@ -107,9 +117,11 @@ class ManagedMediaPlayer
 	}
 
 	public void release() {
+      Log.e("ManagedMediaPlayer", "release " + mp);
 		if (mp != null) {
-			mp.release();
+         MediaPlayer mpTemp = mp;
 			mp = null;
+			mpTemp.release();
 		}
 	}
 }
@@ -121,7 +133,6 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 
 	private static ManagedMediaPlayer mediaPlayer;
 	private static boolean mediaPlayerWasPlaying;
-	private static String mediaPlayerPath;
 	private static SoundPool mSoundPool;
 	// private static int mSoundPoolID = 0;
 	private static long mTimeStamp = 0;
@@ -348,7 +359,8 @@ public class Sound implements SoundPool.OnLoadCompleteListener
     	Log.i("Sound", "playMusic");
 		
 		if (mediaPlayer != null) {
-			mediaPlayer.stop ();
+			mediaPlayer.stop();
+         mediaPlayer = null;
 		}
 		
 		MediaPlayer mp = createMediaPlayer(inPath);
@@ -361,8 +373,7 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 		
 	private static int playMediaPlayer(MediaPlayer mp, final String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
 	{	
-		mediaPlayer = new ManagedMediaPlayer(mp, (float)inVolLeft, (float)inVolRight, inLoop);
-		mediaPlayerPath = inPath;
+		mediaPlayer = new ManagedMediaPlayer(mp, (float)inVolLeft, (float)inVolRight, inLoop, inPath);
 		mp.seekTo((int)inStartTime);
 		mediaPlayer.start();
 
@@ -373,15 +384,15 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 	{
 		Log.v("Sound", "stopMusic");
 		
-		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
-			mediaPlayer.stop ();
+		if (mediaPlayer != null && inPath.equals(mediaPlayer.pathId)) {
+			mediaPlayer.stop();
 		}
 	}
 	
 	public static int getDuration(String inPath)
 	{
 		int duration = -1;
-		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayer.pathId)) {
 			duration = mediaPlayer.getDuration ();
 		} else {
 			MediaPlayer mp = createMediaPlayer(inPath);
@@ -400,7 +411,7 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 	
 	public static int getPosition(String inPath)
 	{
-		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayer.pathId)) {
 			return mediaPlayer.getCurrentPosition ();
 		}
 		return -1;
@@ -408,7 +419,7 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 	
 	public static double getLeft(String inPath)
 	{
-		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayer.pathId)) {
 			return mediaPlayer.leftVol;
 		}
 
@@ -417,7 +428,7 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 	
 	public static double getRight(String inPath)
 	{
-		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayer.pathId)) {
 			return mediaPlayer.rightVol;
 		}
 
@@ -426,7 +437,7 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 	
 	public static boolean getComplete(String inPath)
 	{
-		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayer.pathId)) {
 			return mediaPlayer.isComplete;
 		}
 
@@ -435,7 +446,7 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 
 	public static void setMusicTransform(String inPath, double inVolLeft, double inVolRight)
 	{
-		if (mediaPlayer != null && inPath.equals(mediaPlayerPath)) {
+		if (mediaPlayer != null && inPath.equals(mediaPlayer.pathId)) {
 			mediaPlayer.setVolume((float)inVolLeft, (float)inVolRight);
 		}
 	}
