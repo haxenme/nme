@@ -105,7 +105,7 @@ public:
 
   
    
-   int getLength(const std::string &path)
+   double getLength(const std::string &path)
    {
         int result;
         mPath = std::string(path.c_str());
