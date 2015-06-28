@@ -590,7 +590,8 @@ class NMEProject
       if (openflCompat)
       {
          haxedefs.set("openfl","2.1.6");
-         haxedefs.set("openfl_legacy","1");
+         if (target!=Platform.FLASH ) 
+            haxedefs.set("openfl_legacy","1");
          haxeflags.push("--remap openfl:nme");
       }
 

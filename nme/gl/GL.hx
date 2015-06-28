@@ -1,16 +1,17 @@
 package nme.gl;
-#if (cpp || neko)
 
 import nme.display.BitmapData;
 import nme.utils.ArrayBuffer;
 import nme.utils.ByteArray;
-import nme.utils.Float32Array;
-import nme.utils.Int32Array;
 import nme.utils.IMemoryRange;
 import nme.utils.ArrayBufferView;
 import nme.geom.Matrix3D;
 import nme.Lib;
 import nme.Loader;
+
+#if (neko||cpp)
+import nme.utils.Float32Array;
+import nme.utils.Int32Array;
 
 abstract NmeFloats(Dynamic)
 {
@@ -32,6 +33,7 @@ abstract NmeInts(Dynamic)
    @:from inline static function fromArrayInt( f:Array<Int> )
         return new NmeInts(f);
 }
+#end
 
 
 
@@ -452,6 +454,9 @@ class GL
    public static inline var CONTEXT_LOST_WEBGL             = 0x9242;
    public static inline var UNPACK_COLORSPACE_CONVERSION_WEBGL = 0x9243;
    public static inline var BROWSER_DEFAULT_WEBGL          = 0x9244;
+
+
+   #if (neko||cpp)
 
    public static var drawingBufferHeight(get_drawingBufferHeight, null):Int;
    public static var drawingBufferWidth(get_drawingBufferWidth, null):Int;
@@ -1304,6 +1309,14 @@ class GL
    private static var nme_gl_vertex_attrib4fv = load("nme_gl_vertex_attrib4fv", 2);
    private static var nme_gl_vertex_attrib_pointer = load("nme_gl_vertex_attrib_pointer", -1);
    private static var nme_gl_viewport = load("nme_gl_viewport", 4);
+   #else // not (neko||cpp)
+
+   // Stub to get flixel to compile
+   public static function getParameter(pname:Int):Dynamic 
+   {
+      return 0;
+   }
+   #end
 }
 
 typedef ShaderPrecisionFormat = 
@@ -1314,4 +1327,3 @@ typedef ShaderPrecisionFormat =
 
 };
 
-#end
