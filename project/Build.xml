@@ -170,11 +170,8 @@
       
       <section if="NME_OPENAL">
          <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
-         <file name="${SRC_DIR}/common/Audio.cpp" />
-         <file name="${SRC_DIR}/common/OggStream.cpp" />
       </section>
-      
-      
+
       <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
       <compilerflag value="-I${NME_DEV}/include" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
@@ -211,7 +208,9 @@
       <file name="${SRC_DIR}/common/Lzma.cpp"/>
       <file name="${SRC_DIR}/common/Thread.cpp"/>
       <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
-      <!--<file name="common/Audio.cpp" if="openal"/>-->
+
+      <file name="${SRC_DIR}/common/Audio.cpp" />
+      <file name="${SRC_DIR}/common/OggStream.cpp" />
       
       <file name="${SRC_DIR}/common/XML/tinystr.cpp"/>
       <file name="${SRC_DIR}/common/XML/tinyxml.cpp"/>

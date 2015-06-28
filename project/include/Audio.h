@@ -22,7 +22,7 @@
       #define LOG_SOUND(args,...) printf(args, ##__VA_ARGS__);
    #endif
 #else
-   #define LOG_SOUND(args...)  { }
+   #define LOG_SOUND(args,...)  { }
 #endif
 
 
@@ -35,7 +35,7 @@ namespace nme
 		virtual ~AudioStream() {}
 		
       virtual bool open(const std::string &path, int startTime)=0;
-		virtual int getLength(const std::string &path) = 0;
+		virtual double getLength(const std::string &path) = 0;
 		virtual double getPosition() = 0;
 		virtual double setPosition(const float &inFloat) = 0;
 		virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;

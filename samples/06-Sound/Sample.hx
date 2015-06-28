@@ -151,7 +151,7 @@ class Sample extends Sprite
       }
    }
 
-   function doDelay(_) { Sys.sleep(1.0); }
+   //function doDelay(_) { Sys.sleep(1.0); }
 
    function playMusic(inId:String)
    {

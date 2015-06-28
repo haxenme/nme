@@ -1,3 +1,4 @@
+#include <Audio.h>
 #include <Sound.h>
 #include <Display.h>
 #include <SDL.h>
@@ -6,6 +7,7 @@
 #include <hx/Thread.h>
 
 
+using namespace nme::Audio;
 
 namespace nme
 {
@@ -412,12 +414,24 @@ public:
    }
    double getLength()
    {
-      if (mChunk==0) return 0;
+      if (mChunk==0)
+         return 0;
       #if defined(DYNAMIC_SDL) || defined(WEBOS)
-      // ?
       return 0.0;
       #else
-      return 0.0;
+
+
+      int freq = 0;
+      Uint16 format = 0;
+      int channels = 0;
+      Mix_QuerySpec(&freq, &format, &channels);
+
+      if (freq==0)
+         return 0;
+
+      int bytesPerSample = 2;
+      return (double)1000.0*mChunk->alen/(freq*channels*bytesPerSample);
+
       #endif
    }
    // Will return with one ref...
@@ -537,6 +551,7 @@ class SDLMusic : public Sound
    bool loaded;
    std::string filename;
    std::vector<unsigned char> reso;
+   double duration;
 
 public:
    SDLMusic(const std::string &inFilename)
@@ -544,6 +559,7 @@ public:
       filename = inFilename;
       loaded = false;
       mMusic = 0;
+      duration = 0;
 
       IncRef();
       if (gSDLAudioState!=sdaNotInit)
@@ -566,8 +582,17 @@ public:
       #endif
 
       mMusic = Mix_LoadMUS(name);
-
-      if (!mMusic)
+      if (mMusic)
+      {
+         AudioFormat fmt = determineFormatFromFile(name);
+         if (fmt==eAF_ogg)
+         {
+            AudioStream *s = AudioStream::createOgg();
+            duration = s->getLength(name)*1000.0;
+            delete s;
+         }
+      }
+      else
       {
          ByteArray resource(filename.c_str());
          if (resource.Ok())
@@ -582,6 +607,12 @@ public:
                #else
                mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], resource.Size()));
                #endif
+
+               if (mMusic)
+               {
+                  // TODO
+                  duration = 60000.0;
+               }
             }
          }
       }
@@ -622,9 +653,7 @@ public:
    }
    double getLength()
    {
-      if (mMusic==0) return 0;
-      // TODO:
-      return 60000;
+      return duration;
    }
    // Will return with one ref...
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
