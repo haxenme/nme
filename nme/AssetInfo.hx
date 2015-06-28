@@ -17,6 +17,10 @@ class AssetInfo
       type = inType;
       className = inClassName;
       isResource = inIsResource;
+      #if !flash
+      if (type==AssetType.FONT && isResource)
+         new nme.text.Font("",null,null, path);
+      #end
    }
 
    public function uncache()

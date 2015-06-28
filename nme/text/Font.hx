@@ -18,14 +18,17 @@ class Font
    private static var nmeRegisteredFonts = new Array<Font>();
    private static var nmeDeviceFonts: Array<Font>;
 
-   public function new(inFilename:String = "", ?inStyle:FontStyle, ?inType:FontType):Void 
+   public function new(inFilename:String = "", ?inStyle:FontStyle, ?inType:FontType, ?resourceName:String ):Void 
    {
       if (inFilename == "")
       {
          var fontClass = Type.getClass(this);
-         if (Reflect.hasField(fontClass, "resourceName"))
+         var name = resourceName!=null ? resourceName :
+                    Reflect.hasField(fontClass,"resourceName") ? Reflect.field(fontClass,"resourceName") :
+                    null;
+         if (name!=null)
          {
-            var bytes = ByteArray.fromBytes(Resource.getBytes(Reflect.field(fontClass, "resourceName")));
+            var bytes = ByteArray.fromBytes(Resource.getBytes(name));
             var details = loadBytes(bytes);
             fontName = details.family_name;
             if (details.is_bold && details.is_italic)
@@ -45,6 +48,8 @@ class Font
                fontStyle = FontStyle.REGULAR;
             }
             fontType = FontType.EMBEDDED;
+            if (resourceName!=null)
+               registerFontData(this, bytes);
          }
          else
          {
@@ -95,6 +100,15 @@ class Font
       var result = freetype_import_font("", null, 1024 * 20, inBytes);
       return result;
    }
+
+ 
+   public static function registerFontData(instance:Font, inBytes:ByteArray)
+   {
+trace("Register " + instance);
+      nme_font_register_font(instance.fontName, inBytes);
+      nmeRegisteredFonts.push(instance);
+   }
+
    
    public static function registerFont(font:Class<Font>)
    {
@@ -102,10 +116,9 @@ class Font
       if (instance != null)
       {
          if (Reflect.hasField(font, "resourceName"))
-         {
-            nme_font_register_font (instance.fontName, ByteArray.fromBytes (Resource.getBytes(Reflect.field(font, "resourceName"))));
-         }
-         nmeRegisteredFonts.push (cast instance);
+            nme_font_register_font(instance.fontName, ByteArray.fromBytes (Resource.getBytes(Reflect.field(font, "resourceName"))));
+
+         nmeRegisteredFonts.push(cast instance);
       }
    }
 
