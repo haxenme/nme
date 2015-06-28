@@ -8,21 +8,24 @@ class Basic extends Sprite
 {
    private var outline:Sprite;
    private var progress:Sprite;
+   static var winWidth = 0.0;
+   static var winHeight = 0.0;
+   static var winColour = 0xffffff;
+   static var loadedCallback = Void->Void;
    var preWidth:Float;
    var preHeight:Float;
    var backgroundColor:Int;
    var loadedCallback:Void->Void;
    
    
-   public function new(inWidth:Float, inHeight:Float, inCol:Int, inCallback:Void->Void)
+   public function new()
    {
       super();
       nme.Lib.current.addChild(this);
-      loadedCallback = inCallback;
 
-      preWidth = inWidth > 0 ? inWidth : nme.Lib.current.stage.stageHeight;
-      preHeight = inHeight > 0 ? inHeight : nme.Lib.current.stage.stageHeight;
-      backgroundColor = inCol;
+      preWidth = winWidth > 0 ? winWidth : nme.Lib.current.stage.stageHeight;
+      preHeight = winHeight > 0 ? winHeight : nme.Lib.current.stage.stageHeight;
+      backgroundColor = winColour;
 
       var r = backgroundColor >> 16 & 0xFF;
       var g = backgroundColor >> 8  & 0xFF;
@@ -58,10 +61,11 @@ class Basic extends Sprite
       stage.addEventListener( Event.ENTER_FRAME, doEnter );
    }
 
-   function doEnter(_) { onEnter(); }
+   public function doEnter(_) { onEnter(); }
 
-   function onLoaded()
+   public function onLoaded()
    {
+      stage.removeEventListener( Event.ENTER_FRAME, doEnter );
       loadedCallback();
    }
 

@@ -59,6 +59,12 @@ class Assets
       return i==null ? null : i.path;
    }
 
+   public static function addEventListener(type:String, listener:Dynamic, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void
+   {
+      //dispatcher.addEventListener (type, listener, useCapture, priority, useWeakReference);
+   }
+
+
    static function getResource(inName:String) : ByteArray
    {
       var bytes = haxe.Resource.getBytes(inName);
@@ -229,6 +235,16 @@ class Assets
    {
       var i = getInfo(id);
       return i!=null;
+   }
+
+   public static function exists(id:String,?type:AssetType):Bool
+   {
+      var i = getInfo(id);
+      if (i==null)
+         return false;
+      if (type==null)
+         return true;
+      return i.type==type;
    }
 
 

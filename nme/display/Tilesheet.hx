@@ -1,5 +1,4 @@
 package nme.display;
-#if (cpp || neko)
 
 import nme.geom.Matrix;
 import nme.geom.Point;
@@ -22,9 +21,15 @@ class Tilesheet
    // TODO
    public static inline var TILE_BLEND_SCREEN = 0x00000000;
    public static inline var TILE_BLEND_MULTIPLY = 0x00000000;
+   public static inline var TILE_BLEND_SUBTRACT = 0x00000000;
+
 
    /** @private */ public var nmeBitmap:BitmapData;
+
+   #if !flash
+
    /** @private */ public var nmeHandle:Dynamic;
+
    public function new(inImage:BitmapData) 
    {
       nmeBitmap = inImage;
@@ -44,6 +49,35 @@ class Tilesheet
    // Native Methods
    private static var nme_tilesheet_create = Loader.load("nme_tilesheet_create", 1);
    private static var nme_tilesheet_add_rect = Loader.load("nme_tilesheet_add_rect", 3);
+
+   #else
+
+   var tiles:Array<Rectangle>;
+   var centres:Array<Point>;
+
+
+   public function new(inImage:BitmapData) 
+   {
+      nmeBitmap = inImage;
+      tiles = [];
+      centres = [];
+   }
+
+   public function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int 
+   {
+      var result = tiles.length;
+      tiles.push(rectangle);
+      centres.push(centerPoint);
+      return result;
+   }
+
+   public function drawTiles(graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0, count:Int=-1):Void 
+   {
+      //TODO
+      //graphics.drawTiles(this, tileData, smooth, flags, count);
+   }
+
+
+   #end
 }
 
-#end

@@ -87,7 +87,16 @@ class ApplicationMain
       var load = function() ApplicationBoot.createInstance();
 
       ::if (PRELOADER_NAME!=null)::
-         new ::PRELOADER_NAME::(::WIN_WIDTH::, ::WIN_HEIGHT::, ::WIN_BACKGROUND::, load);
+         var cls = ::PRELOADER_NAME::;
+         if (Reflect.hasField(cls,"winWidth"))
+            Reflect.setField(cls,"winWidth",::WIN_WIDTH::);
+         if (Reflect.hasField(cls,"winHeight"))
+            Reflect.setField(cls,"winHeight",::WIN_HEIGHT::);
+         if (Reflect.hasField(cls,"winColour"))
+            Reflect.setField(cls,"winColour",::WIN_BACKGROUND::);
+         if (Reflect.hasField(cls,"loadedCallback"))
+            Reflect.setField(cls,"loadedCallback", load);
+         new ::PRELOADER_NAME::();
       ::else::
          load();
       ::end::

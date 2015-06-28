@@ -9,6 +9,8 @@ class JoystickEvent extends Event
    public static inline var BUTTON_DOWN:String = "buttonDown";
    public static inline var BUTTON_UP:String = "buttonUp";
    public static inline var HAT_MOVE:String = "hatMove";
+   public static inline var DEVICE_ADDED:String = "deviceAdded";
+   public static inline var DEVICE_REMOVED:String = "deviceRemoved";
 
    public var axis:Array<Float>;
    public var device:Int;

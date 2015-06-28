@@ -13,6 +13,8 @@ class SoundChannel extends EventDispatcher
    public var rightPeak(get_rightPeak, null):Float;
    public var position(get_position, set_position):Float;
    public var soundTransform(get_soundTransform, set_soundTransform):SoundTransform;
+   // Does not do anything...
+   public var pitch:Float;
 
    /** @private */ public static var nmeDynamicSoundCount = 0;
    private static var nmeIncompleteList = new Array<SoundChannel>();
@@ -24,6 +26,7 @@ class SoundChannel extends EventDispatcher
    {
       super();
 
+      pitch = 1.0;
       if (sndTransform != null) 
       {
          nmeTransform = sndTransform.clone();
