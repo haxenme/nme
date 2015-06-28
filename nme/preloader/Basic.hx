@@ -11,11 +11,10 @@ class Basic extends Sprite
    static var winWidth = 0.0;
    static var winHeight = 0.0;
    static var winColour = 0xffffff;
-   static var loadedCallback = Void->Void;
+   static var loadedCallback:Void->Void;
    var preWidth:Float;
    var preHeight:Float;
    var backgroundColor:Int;
-   var loadedCallback:Void->Void;
    
    
    public function new()
