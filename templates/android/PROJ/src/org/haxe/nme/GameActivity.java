@@ -157,14 +157,8 @@ implements SensorEventListener
 
       mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
 
-      
       //weak ref instances?
       sensorManager = (SensorManager)mContext.getSystemService(Context.SENSOR_SERVICE);
-      if (sensorManager != null)
-      {
-         sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
-         sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_GAME);
-      }
 
       ::if !(ANDROIDVIEW)::
       setContentView(mContainer);
@@ -392,12 +386,10 @@ implements SensorEventListener
       if (mVideoView!=null)
          mVideoView.nmeSuspend();
       
-      /*
       if (sensorManager != null)
       {
          sensorManager.unregisterListener(this);
       }
-      */
    }
    
    public void doResume()
@@ -435,7 +427,7 @@ implements SensorEventListener
       if (sensorManager != null)
       {
          sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
-         sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_GAME);
+         //sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_GAME);
       }
    }
 
@@ -608,7 +600,9 @@ implements SensorEventListener
       if (type == Sensor.TYPE_ACCELEROMETER)
       {
          // this should not be done on the gui thread
-         accelData = event.values.clone();
+         accelData[0] = event.values[0];
+         accelData[1] = event.values[1];
+         accelData[2] = event.values[2];
          NME.onAccelerate(-accelData[0], -accelData[1], accelData[2]);
       }
       
