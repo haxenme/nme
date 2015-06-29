@@ -121,7 +121,8 @@ class EventDispatcher implements IEventDispatcher
       if (list != null) 
       {
          var idx = 0;
-         while(idx < list.length) 
+         var listLength = list.length;
+         while(idx < listLength) 
          {
             var listener = list[idx];
             var isValid = listener!=null && listener.mListner.get()!=null;
@@ -130,6 +131,7 @@ class EventDispatcher implements IEventDispatcher
             {
                // Lost reference - so we can remove listener. No need to move idx...
                list.splice(idx, 1);
+               listLength = list.length;
             }
             else 
             {
