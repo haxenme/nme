@@ -1,3 +1,4 @@
+set -e
 cd ../../tools/nme
 haxe compile.hxml
 cd ../../project

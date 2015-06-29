@@ -152,7 +152,7 @@ class IOSPlatform extends Platform
 
 
       linkedLibraries = [];
-      for(dependency in project.dependencies) 
+      for(dependency in project.dependencies)
          if (dependency.isLibrary())
          {
             var filename = dependency.getFilename();
@@ -166,9 +166,9 @@ class IOSPlatform extends Platform
 
       var config = project.iosConfig;
 
-      for(architecture in project.architectures) 
+      for(architecture in project.architectures)
       {
-         switch(architecture) 
+         switch(architecture)
          {
             case ARMV6: valid_archs.push("armv6"); current_archs.push("armv6");
             case ARMV7: valid_archs.push("armv7"); current_archs.push("armv7");
@@ -185,9 +185,17 @@ class IOSPlatform extends Platform
       context.THUMB_SUPPORT = hasArch(ARMV6) ? "GCC_THUMB_SUPPORT = NO;" : "";
       context.KEY_STORE_IDENTITY = "iPhone Developer";
 
+
+      var customIOSproperties = [];
+      for(key in project.customIOSproperties.keys()) {
+          var value = project.customIOSproperties.get(key);
+          customIOSproperties.push( { key: key, value: value} );
+      }
+      context.CUSTOM_IOS_PROPERTIES = customIOSproperties;
+
       var requiredCapabilities = [];
 
-      if (hasArch(ARMV7) && !hasArch(ARMV6)) 
+      if (hasArch(ARMV7) && !hasArch(ARMV6))
          requiredCapabilities.push( { name: "armv7", value: true } );
 
       context.REQUIRED_CAPABILITY = requiredCapabilities;
@@ -202,7 +210,7 @@ class IOSPlatform extends Platform
       }
       context.DEPLOYMENT = config.deployment;
 
-      if (config.compiler == "llvm" || config.compiler == "clang") 
+      if (config.compiler == "llvm" || config.compiler == "clang")
       {
          context.OBJC_ARC = true;
       }
@@ -216,7 +224,7 @@ class IOSPlatform extends Platform
       context.MACROS.launchImage = createLaunchImage;
       context.MACROS.appIcon = createAppIcon;
 
-      switch(project.window.orientation) 
+      switch(project.window.orientation)
       {
          case PORTRAIT:
             context.IOS_APP_ORIENTATION = "<array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string></array>";
@@ -235,7 +243,7 @@ class IOSPlatform extends Platform
       context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE = "";
       context.ADDL_PBX_FRAMEWORK_GROUP = "";
 
-      for(dependency in project.dependencies) 
+      for(dependency in project.dependencies)
         if (dependency.isFramework())
         {
            var lib = dependency.getFramework();
