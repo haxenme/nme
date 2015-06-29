@@ -1,4 +1,4 @@
-
+import Array;
 class RunMain
 {
    public static function log(s:String) Sys.println(s);
@@ -41,16 +41,27 @@ class RunMain
    {
       log("Installing nme-dev...");
       run("","haxelib", [ "install","nme-dev"]);
-      log("Building binaries...");
-      run("project","neko", [ "build.n"]);
+      buildBinaries([]);
       log("Installing gm2d...");
       run("","haxelib", [ "install","gm2d"]);
       log("Installing format...");
       run("","haxelib", [ "install","format"]);
-      log("Compiling nme tool...");
-      run("tools/nme","haxe", [ "compile.hxml"]);
-      log("Initial setup complete.");
+      compileTool();
    }
+
+    public static function buildBinaries(platforms:Array<String>)
+    {
+        log("Building binaries...");
+        var args = ["build.n"].concat(platforms);
+        run("project","neko", args);
+    }
+
+    public static function compileTool()
+    {
+        log("Compiling nme tool...");
+        run("tools/nme","haxe", [ "compile.hxml"]);
+        log("Initial setup complete.");
+    }
 
    public static function run(dir:String, command:String, args:Array<String>)
    {
@@ -90,8 +101,29 @@ class RunMain
    {
       // When the command-line tools are called from haxelib, 
       // the last argument is the project directory and the
-      // path to NME is the current working directory 
-     if (!executeNme())
+      // path to NME is the current working directory
+     if(isRemake())
+         remake();
+     else if (!executeNme())
          showMessage();
+
    }
+
+    static function isRemake():Bool
+    {
+        return Sys.args()[0] == 'remake';
+    }
+
+    static function remake():Void {
+        compileTool();
+        buildBinaries(makePlatforms());
+    }
+
+    static function makePlatforms():Array<String>
+    {
+        var platforms:Array<String> = Sys.args();
+        platforms.pop();
+        platforms.shift();
+        return platforms;
+    }
 }
