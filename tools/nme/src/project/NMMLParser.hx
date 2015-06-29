@@ -858,6 +858,10 @@ class NMMLParser
                 case "otherLinkerFlags":
                     var value = element.has.value ? substitute(element.att.value) : "";
                     project.otherLinkerFlags.push(value);
+                case "customIOSProperty":
+                    var key = element.has.key ? substitute(element.att.key) : "";
+                    var value = element.has.value ? substitute(element.att.value) : "";
+                    project.customIOSproperties.set(key, value);
 
                case "engine":
                   project.engines.set(substitute(element.att.name),
