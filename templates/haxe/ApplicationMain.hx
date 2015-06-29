@@ -37,6 +37,13 @@ class ApplicationMain
    static public var nmeStage : wx.NMEStage;
    #end
    #end
+
+   
+   public static var winWidth:Float = ::WIN_WIDTH::;
+   public static var winHeight:Float = ::WIN_HEIGHT::;
+   public static var winBackground:Int = ::WIN_BACKGROUND::;
+   public static var onLoaded:Void->Void;
+
    
    public static function main()
    {
@@ -87,16 +94,10 @@ class ApplicationMain
       var load = function() ApplicationBoot.createInstance();
 
       ::if (PRELOADER_NAME!=null)::
-         var cls = ::PRELOADER_NAME::;
-         if (Reflect.hasField(cls,"winWidth"))
-            Reflect.setField(cls,"winWidth",::WIN_WIDTH::);
-         if (Reflect.hasField(cls,"winHeight"))
-            Reflect.setField(cls,"winHeight",::WIN_HEIGHT::);
-         if (Reflect.hasField(cls,"winColour"))
-            Reflect.setField(cls,"winColour",::WIN_BACKGROUND::);
-         if (Reflect.hasField(cls,"loadedCallback"))
-            Reflect.setField(cls,"loadedCallback", load);
-         new ::PRELOADER_NAME::();
+         onLoaded = load;
+         var preloader = new ::PRELOADER_NAME::();
+         preloader.onInit();
+         
       ::else::
          load();
       ::end::

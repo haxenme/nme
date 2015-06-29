@@ -8,10 +8,6 @@ class Basic extends Sprite
 {
    private var outline:Sprite;
    private var progress:Sprite;
-   static var winWidth = 0.0;
-   static var winHeight = 0.0;
-   static var winColour = 0xffffff;
-   static var loadedCallback:Void->Void;
    var preWidth:Float;
    var preHeight:Float;
    var backgroundColor:Int;
@@ -22,9 +18,9 @@ class Basic extends Sprite
       super();
       nme.Lib.current.addChild(this);
 
-      preWidth = winWidth > 0 ? winWidth : nme.Lib.current.stage.stageHeight;
-      preHeight = winHeight > 0 ? winHeight : nme.Lib.current.stage.stageHeight;
-      backgroundColor = winColour;
+      preWidth = getWidth() > 0 ? getWidth() : nme.Lib.current.stage.stageHeight;
+      preHeight = getHeight() > 0 ? getHeight() : nme.Lib.current.stage.stageHeight;
+      backgroundColor = getBackgroundColor();
 
       var r = backgroundColor >> 16 & 0xFF;
       var g = backgroundColor >> 8  & 0xFF;
@@ -57,15 +53,22 @@ class Basic extends Sprite
       addChild(progress);
       onUpdate(0,nme.Lib.current.loaderInfo.bytesTotal);
 
-      stage.addEventListener( Event.ENTER_FRAME, doEnter );
+      addEventListener( Event.ENTER_FRAME, doEnter );
    }
+
+   public function getBackgroundColor():Int return ApplicationMain.winBackground;
+   public function getWidth():Float return ApplicationMain.winWidth;
+   public function getHeight():Float return ApplicationMain.winHeight;
 
    public function doEnter(_) { onEnter(); }
 
    public function onLoaded()
    {
-      stage.removeEventListener( Event.ENTER_FRAME, doEnter );
-      loadedCallback();
+      if (parent!=null)
+         parent.removeChild(this);
+      removeEventListener( Event.ENTER_FRAME, doEnter );
+      dispatchEvent(new Event (Event.COMPLETE));
+      ApplicationMain.onLoaded();
    }
 
    function onEnter()
@@ -73,15 +76,18 @@ class Basic extends Sprite
       var loaded = nme.Lib.current.loaderInfo.bytesLoaded;
       var total = nme.Lib.current.loaderInfo.bytesTotal;
 
+
       onUpdate(loaded,total);
 
       if (loaded >= total)
-      {
-         stage.removeEventListener(Event.ENTER_FRAME, doEnter);
-         nme.Lib.current.removeChild(this);
          onLoaded();
-      }
    }
+
+   public function onInit()
+	{
+		
+	}
+
 
    function onUpdate(bytesLoaded:Int, bytesTotal:Int)
    {
