@@ -22,6 +22,9 @@
 		<key>::key::</key>
 		<string>::value::</string>
 	::end::
+	::foreach CUSTOM_BLOCKS::
+	::value::
+	::end::
 	<key>CFBundleVersion</key>
 	<string>::APP_BUILD_NUMBER::</string>
 	<key>CFBundleShortVersionString</key>

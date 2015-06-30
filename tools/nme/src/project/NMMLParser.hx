@@ -865,6 +865,9 @@ class NMMLParser
                     var value = element.has.value ? substitute(element.att.value) : "";
                     project.customIOSproperties.set(key, value);
 
+                case "customIOSBlock":
+                    var value = element.has.value ? substitute(element.att.value) : "";
+                    project.customIOSBlock.push(value);
                case "engine":
                   project.engines.set(substitute(element.att.name),
                                       substitute(element.att.version));

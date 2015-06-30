@@ -193,6 +193,13 @@ class IOSPlatform extends Platform
       }
       context.CUSTOM_IOS_PROPERTIES = customIOSproperties;
 
+      var blocks = [];
+      for (i in 0...project.customIOSBlock.length) {
+          var value = project.customIOSBlock[i];
+          blocks.push({value:value});
+      }
+      context.CUSTOM_BLOCKS = blocks;
+
       var requiredCapabilities = [];
 
       if (hasArch(ARMV7) && !hasArch(ARMV6))
