@@ -28,6 +28,50 @@
 
 namespace nme
 {
+
+class NmeSoundData;
+
+class NmeSoundStream 
+{
+public:
+   virtual ~NmeSoundStream() { }
+
+   virtual int  fillBuffer(char *outBuffer, int inRequestBytes) = 0;
+
+   virtual double getPosition() = 0;
+   virtual double setPosition(double inSeconds) = 0;
+   virtual void rewind() = 0;
+   virtual NmeSoundData *getData() = 0;
+
+   double getDuration();
+   int    getChannelSampleCount();
+   bool   isStereo();
+};
+
+
+class NmeSoundData
+{
+public:
+   static NmeSoundData *create(const std::string &inId);
+   static NmeSoundData *create(const unsigned char *inData, int inDataLength);
+   static NmeSoundData *create(const short *inData, int inChannelSamples, bool inIsStereo, int inRate);
+
+   virtual void   release() = 0;
+   virtual double getDuration() = 0;
+   virtual int    getChannelSampleCount() = 0;
+   virtual bool   isStereo() = 0;
+   // Samples/channel/second - should be 44100?
+   virtual int    getRate() = 0;
+   virtual short  *decodeAll() = 0;
+   virtual NmeSoundStream *createStream()=0;
+
+private:
+   // Call "release"
+   ~NmeSoundData() { }
+};
+
+
+
 	class AudioStream
 	{
 	public:
@@ -41,7 +85,6 @@ namespace nme
 		virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;
 		virtual void rewind() = 0;
       virtual int getRate() = 0;
-      virtual int isStereo() = 0;
       virtual bool isValid() = 0;
 
 	};
@@ -69,31 +112,6 @@ namespace nme
 		bool loadWavSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
 	}
 	
-	struct RIFF_Header
-	{
-		char chunkID[4];
-		unsigned int chunkSize; //size not including chunkSize or chunkID
-		char format[4];
-	};
-	
-	struct WAVE_Format
-	{
-		char subChunkID[4];
-		unsigned int subChunkSize;
-		short audioFormat;
-		short numChannels;
-		unsigned int sampleRate;
-		unsigned int byteRate;
-		short blockAlign;
-		short bitsPerSample;
-	};
-	
-	struct WAVE_Data
-	{
-		char subChunkID[4]; //should contain the word data
-		unsigned int subChunkSize; //Stores the size of the data block
-	};
-
 }
 
 #endif
