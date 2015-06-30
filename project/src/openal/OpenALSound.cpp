@@ -916,7 +916,7 @@ public:
             LOG_SOUND("Clearing openal error : %d\n", error);
 
             //Determine the file format before we try anything
-         AudioFormat type = Audio::determineFormatFromFile(std::string(fileURL));
+         AudioFormat type = determineFormatFromFile(std::string(fileURL));
          switch(type) {
             case eAF_ogg:
                if (inForceMusic)
@@ -926,13 +926,13 @@ public:
                }
                else
                {
-                  ok = Audio::loadOggSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+                  ok = loadOggSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
                   if (!ok)
-                     LOG_SOUND("Error in Audio::loadOggSampleFromFile %s\n", fileURL);
+                     LOG_SOUND("Error in loadOggSampleFromFile %s\n", fileURL);
                }
             break;
             case eAF_wav:
-               ok = Audio::loadWavSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
+               ok = loadWavSampleFromFile( fileURL, buffer, &_channels, &_bitsPerSample, &freq );
                if (!ok)
                   LOG_SOUND("Error loading wav %s\n", fileURL);
             break;
@@ -988,7 +988,7 @@ public:
    }
    
    
-   OpenALSound(float *inData, int len)
+   OpenALSound(const unsigned char *inData, int len)
    {
       IncRef();
       mBufferID = 0;
@@ -1003,14 +1003,14 @@ public:
       
       check("Pre OpenALSound");
       //Determine the file format before we try anything
-      AudioFormat type = Audio::determineFormatFromBytes(inData, len);
+      AudioFormat type = determineFormatFromBytes(inData, len);
       
       switch(type) {
          case eAF_ogg:
-            ok = Audio::loadOggSampleFromBytes(inData, len, buffer, &_channels, &_bitsPerSample, &freq );
+            ok = loadOggSampleFromBytes(inData, len, buffer, &_channels, &_bitsPerSample, &freq );
          break;
          case eAF_wav:
-            ok = Audio::loadWavSampleFromBytes(inData, len, buffer, &_channels, &_bitsPerSample, &freq );
+            ok = loadWavSampleFromBytes(inData, len, buffer, &_channels, &_bitsPerSample, &freq );
          break;
          default:
             LOG_SOUND("Error opening sound file, unsupported type.\n");
@@ -1201,7 +1201,7 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
    if (!inForceMusic)
    {
       ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
-      sound = new OpenALSound((float*)bytes.Bytes(), bytes.Size());
+      sound = new OpenALSound((char *)bytes.Bytes(), bytes.Size());
    }
    else
    {
@@ -1225,7 +1225,7 @@ Sound *Sound::Create(float *inData, int len, bool inForceMusic)
       return 0;
 
    //Return a reference
-   OpenALSound *sound = new OpenALSound(inData, len);
+   OpenALSound *sound = new OpenALSound((const unsigned  *)inData, len);
    
    if (sound->ok ())
       return sound;
@@ -1307,7 +1307,7 @@ Sound *Sound::CreateOpenAl(float *inData, int len)
 {
    if (!OpenALInit())
       return 0;
-   return new OpenALSound(inData, len);
+   return new OpenALSound((const unsigned char *)inData, len);
 }
 
 
