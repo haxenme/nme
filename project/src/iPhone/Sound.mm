@@ -424,7 +424,7 @@ namespace nme
             fileURL = GetResourcePath() + gAssetBase + inFilename;
         }
         
-        AudioFormat type = Audio::determineFormatFromFile(fileURL);
+        AudioFormat type = determineFormatFromFile(fileURL);
         
         if (type == eAF_ogg || !inForceMusic)
         {

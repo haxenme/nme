@@ -105,6 +105,7 @@ bool loadWavSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBu
       virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;
       virtual void rewind() = 0;
       virtual int getRate() = 0;
+      virtual int isStereo() = 0;
       virtual bool isValid() = 0;
 
    };

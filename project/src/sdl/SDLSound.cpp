@@ -7,7 +7,6 @@
 #include <hx/Thread.h>
 
 
-using namespace nme::Audio;
 
 namespace nme
 {
