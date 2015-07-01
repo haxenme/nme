@@ -30,38 +30,30 @@ namespace nme
 {
 
 class INmeSoundData;
+class INmeSoundStream;
 
-class INmeSoundStream 
+enum
 {
-public:
-   virtual ~INmeSoundStream() { }
-
-   virtual int  fillBuffer(char *outBuffer, int inRequestBytes) = 0;
-
-   virtual double getPosition() = 0;
-   virtual double setPosition(double inSeconds) = 0;
-   virtual void rewind() = 0;
-   virtual INmeSoundData *getData() = 0;
-
-   double getDuration();
-   int    getChannelSampleCount();
-   bool   getIsStereo();
+   SoundForceDecode = 0x0001,
+   SoundJustInfo    = 0x0002,
 };
 
 
 class INmeSoundData
 {
 public:
-   static INmeSoundData *create(const std::string &inId);
-   static INmeSoundData *create(const unsigned char *inData, int inDataLength);
+   static INmeSoundData *create(const std::string &inId, unsigned int inFlags=0x0000);
+   static INmeSoundData *create(const unsigned char *inData, int inDataLength, unsigned int inFlags=0x0000);
    static INmeSoundData *create(const short *inData, int inChannelSamples, bool inIsStereo, int inRate);
 
+   virtual INmeSoundData  *addRef() = 0;
    virtual void   release() = 0;
    virtual double getDuration() const = 0;
    virtual int    getChannelSampleCount() const = 0;
    virtual bool   getIsStereo() const = 0;
    // Samples/channel/second - should be 44100?
    virtual int    getRate() const = 0;
+   virtual bool   getIsDecoded() const = 0;
    virtual short  *decodeAll() = 0;
    virtual INmeSoundStream *createStream()=0;
 
@@ -69,6 +61,27 @@ protected:
    // Call "release"
    ~INmeSoundData() { }
 };
+
+
+
+class INmeSoundStream 
+{
+public:
+   virtual ~INmeSoundStream() { }
+
+   static INmeSoundStream *create(INmeSoundData *inData);
+
+   virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;
+
+   virtual double getPosition() = 0;
+   virtual void   setPosition(double inSeconds) = 0;
+   virtual void   rewind() = 0;
+   virtual double getDuration() = 0;
+   virtual int    getChannelSampleCount() = 0;
+   virtual bool   getIsStereo() = 0;
+};
+
+
 
 
 enum AudioFormat

@@ -12,6 +12,18 @@
 namespace
 {
 
+enum
+{
+   #ifdef HXCPP_BIG_ENDIAN
+   OggEndianFlag = 1,
+   #else
+   OggEndianFlag = 0,
+   #endif
+   Ogg16Bits = 2,
+   OggSigned = 1,
+};
+
+
 // === WAV ======
 
 struct RIFF_Header
@@ -286,10 +298,71 @@ namespace nme
 
 
 
+class NmeSoundStream : public INmeSoundStream 
+{
+public:
+   INmeSoundData *data;
+   int           samplePosition;
+   int           channelSampleCount;
+   int           channelCount;
+   double        sampleTime;
+
+   NmeSoundStream(INmeSoundData *inData)
+   {
+      data = inData->addRef();
+      samplePosition = 0;
+      channelSampleCount = data->getChannelSampleCount();
+      channelCount = data->getIsStereo() ? 2:1;
+      sampleTime = 1.0 / data->getRate();
+   }
+   ~NmeSoundStream()
+   {
+      data->release();
+   }
+
+   virtual int fillBuffer(char *outBuffer, int inRequestBytes)
+   {
+      return inRequestBytes;
+   }
+
+   virtual double getPosition()
+   {
+      return sampleTime * samplePosition;  // + delta
+   }
+   virtual void setPosition(double inSeconds)
+   {
+      // TODO
+   }
+
+   virtual void   rewind()
+   {
+      setPosition(0);
+   }
+
+   virtual double getDuration() { return data->getDuration(); }
+   virtual int    getChannelSampleCount() { return channelSampleCount; }
+   virtual bool   getIsStereo() { return channelCount==2; }
+
+};
+
+
+
+INmeSoundStream *INmeSoundStream::create(INmeSoundData *inData)
+{
+   return new NmeSoundStream(inData);
+}
+
+
+
+
+
+
+
 class NmeSoundData : public INmeSoundData
 {
 public:
    int refCount;
+   unsigned int flags;
    double duration;
    int    rate;
    bool   isStereo;
@@ -299,9 +372,10 @@ public:
    QuickVec<unsigned char> sourceBuffer;
    AudioFormat fileFormat;
 
-   NmeSoundData(const unsigned char *inData, int inDataLength)
+   NmeSoundData(const unsigned char *inData, int inDataLength, unsigned int inFlags)
    {
       refCount = 1;
+      flags = inFlags;
       init(0,true);
 
       fileFormat = determineFormatFromBytes(inData, inDataLength);
@@ -312,7 +386,7 @@ public:
             break;
 
          case eAF_ogg:
-            //parseOgg(inData, inDataLength);
+            parseOgg(inData, inDataLength, flags);
             break;
 
          default:
@@ -337,6 +411,11 @@ public:
       duration = rate>0 ? (double)channelSampleCount/rate : 0;
    }
 
+   INmeSoundData  *addRef()
+   {
+      refCount++;
+      return this;
+   }
 
    void release()
    {
@@ -357,23 +436,85 @@ public:
       if (parseWav(inData, inDataLength, &channelCount, &bitsPerSample, &rate, rawData, rawLength) )
       {
          bool stereo = channelCount==2;
-         if (bitsPerSample==16)
+
+         if (!(flags & SoundJustInfo))
          {
-            decodedBuffer.Set( (short *)rawData, rawLength/sizeof(short) );
+            if (bitsPerSample==16)
+            {
+               decodedBuffer.Set( (short *)rawData, rawLength/sizeof(short) );
+            }
+            else if (bitsPerSample==8)
+            {
+               decodedBuffer.resize(rawLength);
+               short *dest = decodedBuffer.mPtr;
+               const char *src = (const char  *)rawData;
+               for(int i=0;i<rawLength;i++)
+                  dest[i] = src[i]*256;
+            }
+            else
+               return;
          }
-         else if (bitsPerSample==8)
-         {
-            decodedBuffer.resize(rawLength);
-            short *dest = decodedBuffer.mPtr;
-            const char *src = (const char  *)rawData;
-            for(int i=0;i<rawLength;i++)
-               dest[i] = src[i]*256;
-         }
-         else
-            return;
 
          init( rawLength/((stereo?2:1)*sizeof(short)), stereo, rate);
-         isDecoded = true;
+
+         isDecoded = !(flags & SoundJustInfo);
+      }
+   }
+
+   void parseOgg(const unsigned char *inData, int inDataLength, unsigned int inFlags)
+   {
+      NME_OggMemoryFile memoryFile = { inData, inDataLength, 0 };
+      OggVorbis_File ovFileHandle;
+
+      if (ov_open_callbacks(&memoryFile, &ovFileHandle, NULL, 0, NmeOggApi) == 0)
+      {
+         vorbis_info *pInfo = ov_info(&ovFileHandle, -1);
+         if (pInfo)
+         {
+            int channels = pInfo->channels;
+            int rate = pInfo->rate;
+
+            ogg_int64_t samples = ov_pcm_total(&ovFileHandle,-1);
+            if (samples!=OV_EINVAL)
+            {
+               init((int)samples, channels==2, rate);
+               if (!(inFlags & SoundJustInfo))
+               {
+                  if (duration<=2.0 || (inFlags & SoundForceDecode))
+                  {
+                     isDecoded = true;
+                     decodedBuffer.resize((int)samples * isStereo?2:1 );
+                     char *buffer = (char *)decodedBuffer.ByteData();
+                     int remaining = decodedBuffer.ByteCount();
+                     int bitStream = 0;
+                     while(remaining>0)
+                     {
+                        int bytes = ov_read(&ovFileHandle, buffer, remaining, OggEndianFlag, Ogg16Bits, OggSigned, &bitStream);
+                        if (bytes<=0)
+                        {
+                           LOG_SOUND("Error decoding ogg samples");
+                           // Error !
+                           channelSampleCount = 0;
+                           isDecoded = false;
+                           break;
+                        }
+                        remaining -= bytes;
+                        buffer += bytes;
+                     }
+                  }
+                  else
+                  {
+                     sourceBuffer.Set(inData,inDataLength);
+                  }
+               }
+            }
+         }
+         else
+         {
+            LOG_SOUND("Bad Ogg file");
+         }
+
+         ov_clear(&ovFileHandle);
       }
    }
 
@@ -382,32 +523,39 @@ public:
    int    getChannelSampleCount() const { return channelSampleCount; }
    bool   getIsStereo() const { return isStereo; }
    int    getRate() const { return rate; }
+   bool   getIsDecoded() const { return isDecoded; }
 
    short *decodeAll()
    {
-      if (!isDecoded)
-      {
-      }
+      if (!isDecoded && sourceBuffer.size())
+         parseOgg(sourceBuffer.ByteData(), sourceBuffer.ByteCount(), SoundForceDecode);
+
+      if (!isDecoded || !channelSampleCount)
+         return 0;
+
       return decodedBuffer.mPtr;
    }
 
    INmeSoundStream *createStream()
    {
-      return 0;
+      if (channelSampleCount<1)
+         return 0;
+
+      return INmeSoundStream::create(this);
    }
 
 };
 
 
 
-INmeSoundData *create(const std::string &inId)
+INmeSoundData *create(const std::string &inId, unsigned int inFlags)
 {
    return 0;
 }
 
-INmeSoundData *create(const unsigned char *inData, int inDataLength)
+INmeSoundData *create(const unsigned char *inData, int inDataLength, unsigned int inFlags)
 {
-   NmeSoundData *result = new NmeSoundData(inData, inDataLength);
+   NmeSoundData *result = new NmeSoundData(inData, inDataLength, inFlags);
    if (result->getChannelSampleCount()==0)
    {
       result->release();
@@ -500,11 +648,6 @@ namespace nme
       bool loadOggSample(OggVorbis_File &oggFile, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate)
       {
          // 0 for Little-Endian, 1 for Big-Endian
-         #ifdef HXCPP_BIG_ENDIAN
-         #define BUFFER_READ_TYPE 1
-         #else
-         #define BUFFER_READ_TYPE 0
-         #endif
          
          int bitStream;
          long bytes = 1;
@@ -539,7 +682,7 @@ namespace nme
                outBuffer.resize(totalBytes + BUFFER_SIZE);
             }
             // Read up to a buffer's worth of decoded sound data
-            bytes = ov_read(&oggFile, (char*)outBuffer.begin() + totalBytes, BUFFER_SIZE, BUFFER_READ_TYPE, 2, 1, &bitStream);
+            bytes = ov_read(&oggFile, (char*)outBuffer.begin() + totalBytes, BUFFER_SIZE, OggEndianFlag, Ogg16Bits, OggSigned, &bitStream);
             totalBytes += bytes;
          }
          
@@ -547,7 +690,6 @@ namespace nme
          ov_clear(&oggFile);
          
          #undef BUFFER_SIZE
-         #undef BUFFER_READ_TYPE
          
          return true;
       }

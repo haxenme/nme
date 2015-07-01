@@ -40,6 +40,14 @@ void onMusicDone()
       sDoneMusic = true;
 }
 
+/*
+extern "C" void music_mixer(void *udata, Uint8 *stream, int len);
+void onMusic(void *udata, Uint8 *stream, int len)
+{
+   music_mixer(Mix_GetMusicHookData(), stream, len);
+}
+*/
+
 void  onPostMix(void *udata, Uint8 *stream, int len)
 {
    sSoundPos += len / sizeof(short) / STEREO_SAMPLES ;
@@ -77,6 +85,7 @@ static bool Init()
       }
       Mix_ChannelFinished(onChannelDone);
       Mix_HookMusicFinished(onMusicDone);
+      //Mix_HookMusic(onMusic,0);
       #ifndef EMSCRIPTEN
       Mix_SetPostMix(onPostMix,0);
       #endif

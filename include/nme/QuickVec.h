@@ -339,6 +339,9 @@ public:
       memmove(mPtr + inPos + inN, mPtr + inPos, (mSize-inPos-inN) * sizeof(T_) );
       memcpy(mPtr+inPos,inValues,inN*sizeof(T_));
    }
+
+   inline int ByteCount() const { return mSize*sizeof(T_); }
+   inline unsigned char *ByteData() { return (unsigned char *)mPtr; }
    
    bool operator == (const QuickVec<T_,QBUF_SIZE_> &inRHS) { return (*mPtr == *(inRHS.mPtr)); }
    bool operator != (const QuickVec<T_,QBUF_SIZE_> &inRHS) { return !(*mPtr == *(inRHS.mPtr)); }
