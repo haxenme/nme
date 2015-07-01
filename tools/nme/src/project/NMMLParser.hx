@@ -851,10 +851,13 @@ class NMMLParser
                   if (name!="QuartzCore.framework")
                   {
                      var path = element.has.path ? substitute(element.att.path) : "";
+                     var sourceTree = element.has.sourceTree ? substitute(element.att.sourceTree) : "";
                      var key = name!="" ? name : path;
                      if (key=="")
                         Log.error("dependency node should have a name and/or a path");
-                     project.dependencies.set(key, new Dependency(name,path,extensionPath));
+                      var dependency = new Dependency(name, path, extensionPath);
+                      dependency.sourceTree = sourceTree;
+                      project.dependencies.set(key, dependency);
                   }
 
                 case "otherLinkerFlags":
@@ -868,6 +871,11 @@ class NMMLParser
                 case "customIOSBlock":
                     var value = element.has.value ? substitute(element.att.value) : "";
                     project.customIOSBlock.push(value);
+                case "frameworkSearchPaths":
+                    var value = element.has.value ? substitute(element.att.value) : "";
+                    var full = FileSystem.fullPath(value);
+                    project.frameworkSearchPaths.push(full);
+
                case "engine":
                   project.engines.set(substitute(element.att.name),
                                       substitute(element.att.version));

@@ -226,6 +226,7 @@ class IOSPlatform extends Platform
       context.IOS_LINKER_FLAGS = config.linkerFlags.split(" ").join(", ");
 
       context.otherLinkerFlags = project.otherLinkerFlags;
+      context.frameworkSearchPaths = project.frameworkSearchPaths;
 
       context.MACROS = {};
       context.MACROS.launchImage = createLaunchImage;
@@ -256,9 +257,18 @@ class IOSPlatform extends Platform
            var lib = dependency.getFramework();
            var frameworkID = "11C0000000000018" + StringHelper.getUniqueID();
            var fileID = "11C0000000000018" + StringHelper.getUniqueID();
-
+           var path:String = 'System/Library/Frameworks';
+           if(dependency.path != '')
+               path = dependency.path;
+           var sourceTree:String = "SDKROOT";
+            if(dependency.sourceTree != '') {
+                sourceTree = dependency.sourceTree;
+                if(sourceTree == 'group') {
+                    sourceTree = "\"<group>\"";
+                }
+            }
            context.ADDL_PBX_BUILD_FILE += '      $frameworkID /* $lib in Frameworks */ = {isa = PBXBuildFile; fileRef = $fileID /* $lib */; };\n';
-           context.ADDL_PBX_FILE_REFERENCE += '      $fileID  /* $lib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = $lib ; path = System/Library/Frameworks/$lib ; sourceTree = SDKROOT; };\n';
+           context.ADDL_PBX_FILE_REFERENCE += '     $fileID /* $lib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = $lib; path = $path/$lib; sourceTree = $sourceTree; };\n';
            context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += '            $frameworkID /* $lib in Frameworks */,\n';
            context.ADDL_PBX_FRAMEWORK_GROUP += '            $fileID /* $lib */,\n';
         }
