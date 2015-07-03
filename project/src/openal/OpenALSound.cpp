@@ -158,10 +158,10 @@ public:
             {
                alSourcef(mSourceID, AL_BYTE_OFFSET, seek * mSize);
             }
-            clAddChannel(this,false);
          }
-
          mWasPlaying = true;
+
+         clAddChannel(this,false);
       }
       else if (mStream)
       {
@@ -503,9 +503,9 @@ public:
    
    ~OpenALChannel()
    {
+      clRemoveChannel(this);
       if (mStream)
       {
-         asyncSoundRemove(this);
          delete mStream;
          mStream = 0;
       }
@@ -552,15 +552,6 @@ public:
          mSound->DecRef();
 
       delete mStream;
-      
-      for (int i = 0; i < sgOpenChannels.size(); i++)
-      {
-         if (sgOpenChannels[i] == (intptr_t)this)
-         {
-            sgOpenChannels.erase(i, 1);
-            break;
-         }
-      }
    }
    
    
@@ -701,11 +692,12 @@ public:
    
    void stop()
    {
+      clRemoveChannel(this);
+
       if (mUseStream)
       {
          if (mStream)
          {
-            asyncSoundRemove(this);
             delete mStream;
             mStream = 0;
             mStreamFinished = true;
@@ -977,8 +969,8 @@ void Sound::Resume()
    #endif
    
    alcMakeContextCurrent(sgContext);
+
    clResumeAllChannels();
-   asyncSoundResume();
    
    alcProcessContext(sgContext);
 }

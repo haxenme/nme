@@ -1,6 +1,10 @@
 #ifdef HX_WINDOWS
 #include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/time.h>
 #endif
+
 #include <Sound.h>
 #include <Audio.h>
 
@@ -99,6 +103,8 @@ void *asyncSoundMainLoop(void *)
    asyncSoundWaiting = true;
    while(true)
    {
+      clUpdateAsyncChannelsLocked();
+
       if (clSoundSuspended || sgOpenChannels.size()==0)
       {
          // Give up the mutex until we get a signal
@@ -128,7 +134,7 @@ void *asyncSoundMainLoop(void *)
    return 0;
 }
 
-void clInit(bool inFirst, bool isAsync)
+void clInit(bool inFirst, bool inIsAsync)
 {
    if (inFirst)
    {
@@ -204,7 +210,7 @@ void clAddChannel(SoundChannel *inChannel,bool inIsAsync)
    clInit(clIsInit, inIsAsync);
    clIsInit = true;
 
-   LOG_SOUND("Add channel filler %p", inChannel);
+   LOG_SOUND("Add channel filler %p/%d", inChannel,inIsAsync);
    clLock();
    sgOpenChannels.push_back( OpenChannel(inChannel,inIsAsync) );
    if (inIsAsync)

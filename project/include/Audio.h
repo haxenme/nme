@@ -78,6 +78,8 @@ public:
    virtual bool   getIsStereo() const = 0;
    virtual bool   isValid() const { return getChannelSampleCount(); }
 
+   virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;
+
    virtual bool   needsData() const { return false; }
    virtual void   postData(const ByteArray &inData) { }
    virtual int    getSampleReadyCount() const { return 0; }
