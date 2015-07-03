@@ -156,7 +156,7 @@
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <compilerflag value="-DSDL_OGL" />
         <compilerflag value="-DNME_MIXER" unless="NME_OPENAL" />
-        <compilerflag value="-DNME_MODPLUG" if="NME_OPENAL" />
+        <compilerflag value="-DNME_MODPLUG" />
         <compilerflag value="-DNME_SDL2" />
       </section>
 
@@ -175,6 +175,7 @@
       
       <section if="NME_OPENAL">
          <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
+         <compilerflag value="-DNME_OPENAL" />
       </section>
 
       <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
@@ -214,8 +215,9 @@
       <file name="${SRC_DIR}/common/Thread.cpp"/>
       <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
 
-      <file name="${SRC_DIR}/common/Audio.cpp" />
-      <file name="${SRC_DIR}/common/OggStream.cpp" />
+      <file name="${SRC_DIR}/common/audio/Audio.cpp" />
+      <file name="${SRC_DIR}/common/audio/ChannelList.cpp" />
+      <file name="${SRC_DIR}/common/audio/OggStream.cpp" />
       
       <file name="${SRC_DIR}/common/XML/tinystr.cpp"/>
       <file name="${SRC_DIR}/common/XML/tinyxml.cpp"/>

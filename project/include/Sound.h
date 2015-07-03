@@ -21,6 +21,15 @@ extern SDLAudioState gSDLAudioState;
 
 void InitSDLAudio();
 
+// Channel lists...
+void clLock();
+void clUnlock();
+void clResumeAllChannels();
+void clSuspendAllChannels();
+class SoundChannel;
+void clAddChannel(SoundChannel *inChannel,bool inIsAsync);
+void clRemoveChannel(SoundChannel *inChannel);
+
 struct SoundTransform
 {
    SoundTransform() : pan(0), volume(1.0) { }
@@ -45,6 +54,8 @@ public:
    virtual bool needsData() { return false; }
    virtual void addData(const ByteArray &inBytes) { }
    virtual void asyncUpdate() { }
+   virtual void suspend() { }
+   virtual void resume() { }
 };
 
 

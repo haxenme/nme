@@ -236,10 +236,10 @@ public:
             mDynamicBuffer[ (mono_pos<<1) + 1 ] = 0;
          }
 
+         #ifndef EMSCRIPTEN
          int samples_left = (int)mDynamicFillPos - (int)(soundTime);
          int ticks_left = samples_left*1000/44100;
          //printf("Expire in %d (%d)\n", samples_left, ticks_left );
-         #ifndef EMSCRIPTEN
          Mix_ExpireChannel(mChannel, ticks_left>0 ? ticks_left : 1 );
          #endif
       }

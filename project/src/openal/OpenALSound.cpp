@@ -38,7 +38,7 @@ namespace nme
 
 static ALCdevice  *sgDevice = 0;
 static ALCcontext *sgContext = 0;
-static QuickVec<intptr_t> sgOpenChannels;
+
 
 bool openal_is_init = false;
 bool openal_is_shutdown = false;
@@ -57,7 +57,6 @@ bool OpenALInit()
          sgContext=alcCreateContext(sgDevice,0);
          alcMakeContextCurrent(sgContext);
       }
-      sgOpenChannels = QuickVec<intptr_t>();
    }
    return sgContext;
 }
@@ -74,102 +73,6 @@ bool OpenALClose()
    return true;
 }
 
-
-// --- Manage async sound updating --------------------------------
-
-QuickVec<SoundChannel *> sgAsyncSounds;
-pthread_mutex_t asyncSoundMutex;
-pthread_t  asyncSoundThread;
-pthread_cond_t asyncSoundWake = PTHREAD_COND_INITIALIZER;
-bool asyncSoundSuspended = false;
-bool asyncSoundMainLoopStarted = false;
-bool asyncSoundWaiting = false;
-
-void *asyncSoundMainLoop(void *)
-{
-   pthread_mutex_lock(&asyncSoundMutex);
-   asyncSoundWaiting = true;
-   while(true)
-   {
-      if (asyncSoundSuspended || sgAsyncSounds.size()==0)
-      {
-         // Give up the mutex until we get a signal
-         pthread_cond_wait( &asyncSoundWake, &asyncSoundMutex );
-      }
-      else
-      {
-         struct timeval now;
-         gettimeofday(&now,NULL);
-
-         struct timespec timeToWait;
-         timeToWait.tv_sec = now.tv_sec;
-         timeToWait.tv_nsec = (now.tv_usec+250000)*1000;
-         if (timeToWait.tv_nsec>=1000000000)
-         {
-            timeToWait.tv_nsec-=1000000000;
-            timeToWait.tv_sec++;
-         }
-
-         // Give up the mutex until we get a signal, or timeout
-         pthread_cond_timedwait( &asyncSoundWake, &asyncSoundMutex, &timeToWait );
-      }
-
-      for(int i=0;i<sgAsyncSounds.size();i++)
-         sgAsyncSounds[i]->asyncUpdate();
-   }
-   asyncSoundWaiting = false;
-   pthread_mutex_unlock(&asyncSoundMutex);
-   return 0;
-}
-
-void asyncSoundPingLocked()
-{
-   if (asyncSoundWaiting)
-      pthread_cond_signal(&asyncSoundWake);
-}
-
-
-void asyncSoundAdd(SoundChannel *inChannel)
-{
-   if (!asyncSoundMainLoopStarted)
-   {
-      asyncSoundMainLoopStarted = true;
-      pthread_mutexattr_t mta;
-      pthread_mutexattr_init(&mta);
-      pthread_mutexattr_settype(&mta, PTHREAD_MUTEX_RECURSIVE);
-      pthread_mutex_init(&asyncSoundMutex,&mta);
-
-      pthread_create(&asyncSoundThread, 0,  asyncSoundMainLoop, 0 );
-   }
-
-   LOG_SOUND("Add channel filler %p", inChannel);
-   pthread_mutex_lock(&asyncSoundMutex);
-   sgAsyncSounds.push_back(inChannel);
-   asyncSoundPingLocked();
-   pthread_mutex_unlock(&asyncSoundMutex);
-}
-
-void asyncSoundRemove(SoundChannel *inChannel)
-{
-   LOG_SOUND("Remove channel filler %p", inChannel);
-   pthread_mutex_lock(&asyncSoundMutex);
-   sgAsyncSounds.qremove(inChannel);
-   pthread_mutex_unlock(&asyncSoundMutex);
-}
-
-void asyncSoundSuspend()
-{
-   asyncSoundSuspended = true;
-}
-
-
-void asyncSoundResume()
-{
-   pthread_mutex_lock(&asyncSoundMutex);
-   asyncSoundSuspended = false;
-   asyncSoundPingLocked();
-   pthread_mutex_unlock(&asyncSoundMutex);
-}
 
 
 
@@ -255,8 +158,9 @@ public:
             {
                alSourcef(mSourceID, AL_BYTE_OFFSET, seek * mSize);
             }
+            clAddChannel(this,false);
          }
-         
+
          mWasPlaying = true;
       }
       else if (mStream)
@@ -276,7 +180,7 @@ public:
             primeStream();
             mWasPlaying = true;
 
-            asyncSoundAdd(this);
+            clAddChannel(this,true);
          }
          else
          {
@@ -284,7 +188,6 @@ public:
          }
       }
 
-      sgOpenChannels.push_back((intptr_t)this);
    }
 
    
@@ -314,9 +217,9 @@ public:
          setTransform(inTransform);
          
          alSourcePlay(mSourceID);
+
+         clAddChannel(this, !mDynamicDone);
       }
-      
-      //sgOpenChannels.push_back((intptr_t)this);
    }
 
    void init()
@@ -1052,17 +955,7 @@ void Sound::Suspend()
    if (!OpenALInit())
       return;
    
-   asyncSoundSuspend();
-
-   OpenALChannel* channel = 0;
-   for (int i = 0; i < sgOpenChannels.size(); i++)
-   {
-      channel = (OpenALChannel*)(sgOpenChannels[i]);
-      if (channel)
-      {
-         channel->suspend();
-      }
-   }
+   clSuspendAllChannels();
    
    alcMakeContextCurrent(0);
    alcSuspendContext(sgContext);
@@ -1084,17 +977,7 @@ void Sound::Resume()
    #endif
    
    alcMakeContextCurrent(sgContext);
-   
-   OpenALChannel* channel = 0;
-   for (int i = 0; i < sgOpenChannels.size(); i++)
-   {
-      channel = (OpenALChannel*)(sgOpenChannels[i]);
-      if (channel)
-      {
-         channel->resume();
-      }
-   }
-
+   clResumeAllChannels();
    asyncSoundResume();
    
    alcProcessContext(sgContext);

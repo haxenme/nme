@@ -69,8 +69,6 @@ class INmeSoundStream
 public:
    virtual ~INmeSoundStream() { }
 
-   virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;
-
    virtual double getPosition() = 0;
    virtual void   setPosition(double inSeconds) = 0;
    virtual void   rewind() = 0;
@@ -79,6 +77,11 @@ public:
    virtual int    getChannelSampleCount() const = 0;
    virtual bool   getIsStereo() const = 0;
    virtual bool   isValid() const { return getChannelSampleCount(); }
+
+   virtual bool   needsData() const { return false; }
+   virtual void   postData(const ByteArray &inData) { }
+   virtual int    getSampleReadyCount() const { return 0; }
+   virtual void   getSamples(short *outSamples, int inCount) {  }
 };
 
 

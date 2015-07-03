@@ -292,7 +292,9 @@ public:
    {
       return mPtr[--mSize];
    }
-   inline void qremove(T_ value)
+
+   template<typename RHS_>
+   inline void qremove(const RHS_ &value)
    {
       for(int i=0;i<mSize;i++)
          if (mPtr[i]==value)
