@@ -51,12 +51,12 @@ public:
    virtual double getDuration() const = 0;
    virtual int    getChannelSampleCount() const = 0;
    virtual bool   getIsStereo() const = 0;
-   // Samples/channel/second - should be 44100?
    virtual int    getRate() const = 0;
    virtual bool   getIsDecoded() const = 0;
    virtual short  *decodeAll() = 0;
    virtual INmeSoundStream *createStream()=0;
 
+   virtual bool isValid() const { return getChannelSampleCount(); }
 protected:
    // Call "release"
    ~INmeSoundData() { }
@@ -69,16 +69,16 @@ class INmeSoundStream
 public:
    virtual ~INmeSoundStream() { }
 
-   static INmeSoundStream *create(INmeSoundData *inData);
-
    virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;
 
    virtual double getPosition() = 0;
    virtual void   setPosition(double inSeconds) = 0;
    virtual void   rewind() = 0;
-   virtual double getDuration() = 0;
-   virtual int    getChannelSampleCount() = 0;
-   virtual bool   getIsStereo() = 0;
+   virtual double getDuration() const = 0;
+   virtual int    getRate() const = 0;
+   virtual int    getChannelSampleCount() const = 0;
+   virtual bool   getIsStereo() const = 0;
+   virtual bool   isValid() const { return getChannelSampleCount(); }
 };
 
 
@@ -118,7 +118,6 @@ bool loadWavSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBu
       virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;
       virtual void rewind() = 0;
       virtual int getRate() = 0;
-      virtual int isStereo() = 0;
       virtual bool isValid() = 0;
 
    };

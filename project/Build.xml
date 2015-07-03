@@ -61,6 +61,10 @@
       For android use java (todo - opensl?)
    -->
    <set name="NME_OPENAL" value="1" if="iphone" />
+
+   <!-- Use to allow testing on mac... -->
+   <!-- <set name="NME_OPENAL" value="1" if="macos" /> -->
+
    <set name="NME_CAMERA" value="1" />
 
    <!-- Built relative to "bin" -->
@@ -141,17 +145,18 @@
         <compilerflag value="-I/opt/local/include" if="macos" />
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
-        <compilerflag value="-DNME_MIXER" />
-        <file name="${SRC_DIR}/sdl/SDLSound.cpp" />
+        <compilerflag value="-DNME_MIXER" unless="NME_OPENAL" />
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="NME_OPENAL" />
         <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>
 
       <section if="NME_SDL2">
         <compilerflag value="-I${NME_DEV}/include/SDL2" />
-        <file name="${SRC_DIR}/sdl/SDLSound.cpp" />
+        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="NME_OPENAL" />
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <compilerflag value="-DSDL_OGL" />
-        <compilerflag value="-DNME_MIXER" />
+        <compilerflag value="-DNME_MIXER" unless="NME_OPENAL" />
+        <compilerflag value="-DNME_MODPLUG" if="NME_OPENAL" />
         <compilerflag value="-DNME_SDL2" />
       </section>
 
@@ -265,7 +270,7 @@
 
          <section if="NME_SDL2">
             <lib name="${PRELIB}SDL2${POSTLIB}" />
-            <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
+            <lib name="${PRELIB}SDL2_mixer${POSTLIB}" unless="NME_OPENAL"  />
             <lib name="${PRELIB}modplug${POSTLIB}" />
             <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
             <lib name="-luuid" if="mingw" unless="static_link" />

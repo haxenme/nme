@@ -5,6 +5,10 @@
 #include <iostream>
 #include <vorbis/vorbisfile.h>
 
+#ifdef NME_MODPLUG
+#include <modplug.h>
+#endif
+
 //The audio interface is to embed functions which are to be implemented in 
 //the platform specific layers. 
 
@@ -320,37 +324,86 @@ public:
       data->release();
    }
 
-   virtual int fillBuffer(char *outBuffer, int inRequestBytes)
-   {
-      return inRequestBytes;
-   }
 
    virtual double getPosition()
    {
       return sampleTime * samplePosition;  // + delta
    }
-   virtual void setPosition(double inSeconds)
-   {
-      // TODO
-   }
-
    virtual void   rewind()
    {
       setPosition(0);
    }
 
-   virtual double getDuration() { return data->getDuration(); }
-   virtual int    getChannelSampleCount() { return channelSampleCount; }
-   virtual bool   getIsStereo() { return channelCount==2; }
+   virtual int    getRate() const { return data->getRate(); }
+   virtual double getDuration() const { return data->getDuration(); }
+   virtual int    getChannelSampleCount() const { return channelSampleCount; }
+   virtual bool   getIsStereo() const { return channelCount==2; }
 
 };
 
 
 
-INmeSoundStream *INmeSoundStream::create(INmeSoundData *inData)
+class NmeSoundStreamOgg : public NmeSoundStream 
 {
-   return new NmeSoundStream(inData);
-}
+   OggVorbis_File file;
+   NME_OggMemoryFile oggData;
+   bool ok;
+   bool open;
+ 
+public:
+
+   // Data stays alive while we have a refernece to inData
+   NmeSoundStreamOgg(INmeSoundData *inSound, const unsigned char *inData, int inLength)
+     : NmeSoundStream(inSound)
+   {
+      oggData.data = inData;
+      oggData.size = inLength;
+      oggData.pos = 0;
+         
+      ok = (ov_open_callbacks(&oggData, &file, NULL, 0, NmeOggApi) == 0);
+      open = ok;
+   }
+
+   ~NmeSoundStreamOgg()
+   {
+      if (open)
+        ov_clear(&file);
+   }
+
+   bool isValid() const
+   {
+      return ok && getChannelSampleCount();
+   }
+       
+   virtual int fillBuffer(char *outBuffer, int inRequestBytes)
+   {
+      if (!ok)
+         return 0;
+
+      int bitStream = 0;
+      int remaining = inRequestBytes;
+      while(remaining>0)
+      {
+         int bytes = ov_read(&file, outBuffer, remaining, OggEndianFlag, Ogg16Bits, OggSigned, &bitStream);
+         if (bytes<=0)
+            return inRequestBytes-remaining;
+
+         remaining -= bytes;
+         outBuffer += bytes;
+      }
+ 
+      return inRequestBytes;
+   }
+
+   virtual void setPosition(double inSeconds)
+   {
+      // TODO
+   }
+};
+
+
+
+
 
 
 
@@ -388,6 +441,12 @@ public:
          case eAF_ogg:
             parseOgg(inData, inDataLength, flags);
             break;
+
+         #ifdef NME_MODPLUG
+         case eAF_mid:
+            parseMid(inData, inDataLength, flags);
+            break;
+         #endif
 
          default:
             ;
@@ -461,6 +520,80 @@ public:
       }
    }
 
+
+   #ifdef NME_MODPLUG
+   void parseMid(const unsigned char *inData, int inDataLength, unsigned int inFlags)
+   {
+      static bool modPlugInit = false;
+      static ModPlug_Settings settings;
+
+      if (!modPlugInit)
+      {
+         printf("Init modplug...\n");
+         modPlugInit = true;
+         ModPlug_GetSettings(&settings);
+         settings.mFlags=MODPLUG_ENABLE_OVERSAMPLING;
+         settings.mChannels=2;
+         settings.mBits=16;
+         settings.mFrequency=44100; /* 11025, 22050, or 44100 ? */
+         settings.mResamplingMode=MODPLUG_RESAMPLE_FIR;
+         settings.mReverbDepth=0;
+         settings.mReverbDelay=100;
+         settings.mBassAmount=0;
+         settings.mBassRange=50;
+         settings.mSurroundDepth=0;
+         settings.mSurroundDelay=10;
+         settings.mLoopCount=0;
+         ModPlug_SetSettings(&settings);
+      }
+
+printf("Open...\n");
+      ModPlugFile *modFile = ModPlug_Load(inData, inDataLength);
+printf(" got %p\n", modFile);
+      if (modFile)
+      {
+         fileFormat = eAF_mid;
+         rate = settings.mFrequency;
+         isStereo = settings.mChannels = 2;
+         channelSampleCount = ModPlug_GetLength(modFile)*44100/1000;
+         duration = ModPlug_GetLength(modFile) * 0.001;
+         
+         if (!(inFlags & SoundJustInfo))
+         {
+            if (duration<=2.0 || (inFlags & SoundForceDecode) || true )
+            {
+               isDecoded = true;
+               decodedBuffer.resize((int)channelSampleCount * (isStereo?2:1) );
+               char *buffer = (char *)decodedBuffer.ByteData();
+               int remaining = decodedBuffer.ByteCount();
+               int bitStream = 0;
+               while(remaining>0)
+               {
+                  printf("Read %d...\n", remaining);
+                  int bytes = ModPlug_Read(modFile, buffer, remaining);
+                  printf("   got %d\n", bytes );
+                  if (bytes<=0)
+                  {
+                     // Stopping early might be ok, since timing might not be 100 % accurate
+                     decodedBuffer.resize( decodedBuffer.size() - remaining/sizeof(short) );
+                     break;
+                  }
+                  remaining -= bytes;
+                  buffer += bytes;
+               }
+            }
+            else
+            {
+               sourceBuffer.Set(inData,inDataLength);
+            }
+         }
+         ModPlug_Unload(modFile);
+      }
+   }
+   #endif
+
+ 
+
    void parseOgg(const unsigned char *inData, int inDataLength, unsigned int inFlags)
    {
       NME_OggMemoryFile memoryFile = { inData, inDataLength, 0 };
@@ -480,10 +613,10 @@ public:
                init((int)samples, channels==2, rate);
                if (!(inFlags & SoundJustInfo))
                {
-                  if (duration<=2.0 || (inFlags & SoundForceDecode))
+                  if (duration<=2.0 || (inFlags & SoundForceDecode) )
                   {
                      isDecoded = true;
-                     decodedBuffer.resize((int)samples * isStereo?2:1 );
+                     decodedBuffer.resize((int)samples * (isStereo?2:1) );
                      char *buffer = (char *)decodedBuffer.ByteData();
                      int remaining = decodedBuffer.ByteCount();
                      int bitStream = 0;
@@ -539,38 +672,74 @@ public:
    INmeSoundStream *createStream()
    {
       if (channelSampleCount<1)
+      {
+         LOG_SOUND("Error creating stream - no samples");
          return 0;
+      }
 
-      return INmeSoundStream::create(this);
+      if (fileFormat==eAF_ogg)
+         return new NmeSoundStreamOgg(this, sourceBuffer.ByteData(), sourceBuffer.ByteCount());
+
+      LOG_SOUND("Error creating stream - unknown format");
+      return 0;
    }
 
 };
 
 
 
-INmeSoundData *create(const std::string &inId, unsigned int inFlags)
+INmeSoundData *INmeSoundData::create(const std::string &inId, unsigned int inFlags)
 {
-   return 0;
+   ByteArray bytes = ByteArray::FromFile(inId.c_str());
+   if (!bytes.Ok())
+      bytes = ByteArray(inId.c_str());
+   if (!bytes.Ok())
+   {
+      LOG_SOUND("Could not create sound resource %s", inId.c_str());
+      return 0;
+   }
+
+   const unsigned char *data = bytes.Bytes();
+   int length = bytes.Size();
+
+   if (!length || !data)
+   {
+      LOG_SOUND("Sound resource is invalid %s", inId.c_str());
+      return 0;
+   }
+
+   return create(data,length,inFlags);
 }
 
-INmeSoundData *create(const unsigned char *inData, int inDataLength, unsigned int inFlags)
+INmeSoundData *INmeSoundData::create(const unsigned char *inData, int inDataLength, unsigned int inFlags)
 {
    NmeSoundData *result = new NmeSoundData(inData, inDataLength, inFlags);
    if (result->getChannelSampleCount()==0)
    {
+      LOG_SOUND("Can't create sound from data - channel count is zero.");
       result->release();
       return 0;
    }
-   return 0;
+   return result;
 }
 
-INmeSoundData *create(const short *inData, int inChannelSamples, bool inIsStereo, int inRate)
+INmeSoundData *INmeSoundData::create(const short *inData, int inChannelSamples, bool inIsStereo, int inRate)
 {
    if (inChannelSamples==0)
+   {
+      LOG_SOUND("Can't create sound with no channels");
       return 0;
+   }
 
    return new NmeSoundData(inData, inChannelSamples, inIsStereo, inRate);
 }
+
+
+
+
+
+
+
 
 
 
