@@ -26,6 +26,7 @@ void clLock();
 void clUnlock();
 void clResumeAllChannels();
 void clSuspendAllChannels();
+void clShutdown();
 class SoundChannel;
 void clAddChannel(SoundChannel *inChannel,bool inIsAsync);
 void clRemoveChannel(SoundChannel *inChannel);
@@ -37,10 +38,18 @@ struct SoundTransform
    double volume;
 };
 
+enum SoundDataFormat
+{
+   sdfByte,
+   sdfShort,
+   sdfFloat,
+};
+
 class SoundChannel : public Object
 {
 public:
-   static SoundChannel *Create(const ByteArray &inBytes,const SoundTransform &inTransform);
+   static SoundChannel *CreateSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
+              SoundDataFormat inDataFormat=sdfFloat,bool inInIsStereo=true, int inRate=44100) ;
 
    virtual bool isComplete() = 0;
    virtual double getLeft() = 0;

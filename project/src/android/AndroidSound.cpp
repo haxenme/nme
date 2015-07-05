@@ -152,7 +152,9 @@ public:
    int mLoop;
 };
 
-SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
+
+SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
+    SoundDataFormat inDataFormat,bool inIsStereo, int inRate) 
 {
    return 0;
 }

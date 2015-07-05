@@ -4552,7 +4552,7 @@ value nme_sound_channel_create_dynamic(value inBytes, value inTransform)
    ByteArray bytes(inBytes);
    SoundTransform trans;
    FromValue(trans,inTransform);
-   SoundChannel *channel = SoundChannel::Create(bytes,trans);
+   SoundChannel *channel = SoundChannel::CreateSyncChannel(bytes,trans);
    if (channel)
    {
       value result = ObjectToAbstract(channel);

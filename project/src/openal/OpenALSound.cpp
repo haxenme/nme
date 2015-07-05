@@ -66,6 +66,7 @@ bool OpenALClose()
    if (openal_is_init && !openal_is_shutdown)
    {
       openal_is_shutdown = true;
+      clShutdown();
       alcMakeContextCurrent(0);
       if (sgContext) alcDestroyContext(sgContext);
       if (sgDevice) alcCloseDevice(sgDevice);
@@ -80,328 +81,52 @@ bool OpenALClose()
 // --- OpenALChannel ---------------------------------------------------
   
 
-class OpenALChannel : public SoundChannel
+
+class OpenALSourceChannel : public SoundChannel
 {
 public:
-   Object *mSound;
-   ALuint mSourceID;
-   short  *mSampleBuffer;
-   bool   mDynamicDone;
-   ALuint mDynamicStackSize;
-   ALuint mDynamicStack[2];
-   ALuint mDynamicBuffer[2];
-   INmeSoundStream *mStream;
-   int mLength;
-   int mSize;
-   int mStartTime;
-   int mLoops;
-   bool mUseStream;
-   bool mStreamFinished;
-   enum { STEREO_SAMPLES = 2 };
-   bool mWasPlaying;
-   bool mSuspended;
-   
+   Object *soundObject;
+   ALuint sourceId;
+   bool   shouldPlay;
+   bool   suspended;
+   double duration;
 
-   OpenALChannel(Object *inSound, ALuint inBufferID, INmeSoundStream *inData, int startTime, int inLoops, const SoundTransform &inTransform)
+   OpenALSourceChannel(Object *inSound, const SoundTransform &inTransform)
    {
-      init();
-      //LOG_SOUND("OpenALChannel constructor %d",inBufferID);
-      mSound = inSound;
-      mStream = inData;
-      inSound->IncRef();
+      soundObject = inSound;
+      if (soundObject)
+         soundObject->IncRef();
+      sourceId = 0;
+      duration = 0.0;
+      suspended = false;
 
-      float seek = 0;
-      mStartTime = startTime;
-      mLoops = inLoops;
-
-      // grab a source ID from openAL
-      alGenSources(1, &mSourceID);
+      alGenSources(1, &sourceId);
       check("genSource");
 
-      // set some basic source prefs
-      alSourcef(mSourceID, AL_PITCH, 1.0f);
-      alSource3f(mSourceID, AL_POSITION,        0.0, 0.0, 0.0);
-      alSource3f(mSourceID, AL_VELOCITY,        0.0, 0.0, 0.0);
-      alSource3f(mSourceID, AL_DIRECTION,       0.0, 0.0, 0.0);
-      alSourcef(mSourceID, AL_ROLLOFF_FACTOR,  0.0          );
-      alSourcei(mSourceID, AL_SOURCE_RELATIVE, AL_TRUE      );
+      alSourcef(sourceId, AL_PITCH, 1.0f);
+      alSource3f(sourceId, AL_POSITION,        0.0, 0.0, 0.0);
+      alSource3f(sourceId, AL_VELOCITY,        0.0, 0.0, 0.0);
+      alSource3f(sourceId, AL_DIRECTION,       0.0, 0.0, 0.0);
+      alSourcef(sourceId, AL_ROLLOFF_FACTOR,  0.0          );
+      alSourcei(sourceId, AL_SOURCE_RELATIVE, AL_TRUE      );
       check("setSource");
    
       setTransform(inTransform);
+      shouldPlay = false;
+   }
+
+   ~OpenALSourceChannel()
+   {
+      stop();
+   }
+
+   
+   void setTransform(const SoundTransform &inTransform)
+   {
+      alSourcef(sourceId, AL_GAIN, inTransform.volume);
+      alSource3f(sourceId, AL_POSITION, (float) cos((inTransform.pan - 1) * (1.5707)), 0, (float) sin((inTransform.pan + 1) * (1.5707)));
       check("setTransform");
- 
-
-      if (inBufferID>0)
-      {
-         alSourcei(mSourceID, AL_BUFFER, inBufferID);
-         
-         // TODO: not right!
-         //if (inLoops>1)
-            //alSourcei(mSourceID, AL_LOOPING, AL_TRUE);
-         
-         if (startTime > 0)
-         {
-            ALint bits, channels, freq;
-            alGetBufferi(inBufferID, AL_SIZE, &mSize);
-            alGetBufferi(inBufferID, AL_BITS, &bits);
-            alGetBufferi(inBufferID, AL_CHANNELS, &channels);
-            alGetBufferi(inBufferID, AL_FREQUENCY, &freq);
-            mLength = (ALfloat)((ALuint)mSize/channels/(bits/8)) / (ALfloat)freq;
-            seek = (startTime * 0.001) / mLength;
-         }
-         
-         if (seek < 1)
-         {
-            //alSourceQueueBuffers(mSourceID, 1, &inBufferID);
-            alSourcePlay(mSourceID);
-            if (seek != 0)
-            {
-               alSourcef(mSourceID, AL_BYTE_OFFSET, seek * mSize);
-            }
-         }
-         mWasPlaying = true;
-
-         clAddChannel(this,false);
-      }
-      else if (mStream)
-      {
-         int size = 0;
-         
-         mUseStream = true;
-         mStreamFinished = false;
-         
-         if (mStream)
-         {
-            alGenBuffers(2, mDynamicBuffer);
-            check("alGenBuffers");
-            alGenSources(1, &mSourceID);
-            check("alGenSources");
-   
-            primeStream();
-            mWasPlaying = true;
-
-            clAddChannel(this,true);
-         }
-         else
-         {
-            mStreamFinished = true;
-         }
-      }
-
    }
-
-   
-   // Dynamic channel
-   OpenALChannel(const ByteArray &inBytes,const SoundTransform &inTransform)
-   {
-      //LOG_SOUND("OpenALChannel dynamic %d",inBytes.Size());
-      init();
-     
-      alGenBuffers(2, mDynamicBuffer);
-      if (!mDynamicBuffer[0])
-      {
-         //LOG_SOUND("Error creating dynamic sound buffer!");
-      }
-      else
-      {
-         mSampleBuffer = new short[8192*STEREO_SAMPLES];
-         
-         // grab a source ID from openAL
-         alGenSources(1, &mSourceID); 
-         
-         QueueBuffer(mDynamicBuffer[0],inBytes);
-         
-         if (!mDynamicDone)
-            mDynamicStack[mDynamicStackSize++] = mDynamicBuffer[1];
-         
-         setTransform(inTransform);
-         
-         alSourcePlay(mSourceID);
-
-         clAddChannel(this, !mDynamicDone);
-      }
-   }
-
-   void init()
-   {
-      mSize = 0;
-      mSound = 0;
-      mSourceID = 0;
-      mUseStream = false;
-
-      mStream = 0;
-      mUseStream = false;
-      mStreamFinished = false;
-      
-      mDynamicDone = true;
-      mDynamicBuffer[0] = 0;
-      mDynamicBuffer[1] = 0;
-      mDynamicStackSize = 0;
-      mWasPlaying = true;
-      mStream = 0;
-
-      mStartTime = 0;
-      mLoops = 0;
-      mSuspended = false;
-      mSampleBuffer = 0;
-
-      mStream = 0;
-   }
- 
-
-
-   // Returns if the stream still has data.
-   bool streamBuffer( ALuint inBuffer )
-   {
-      if (openal_is_shutdown)
-         return false;
-       
-      if (mSuspended)
-         return true;
-
-      //LOG_SOUND("STREAM\n");
-      char pcm[MAX_STREAM_BUFFER_SIZE];
-      int bytes = ( (mStream->getIsStereo() ? 4 : 2) * mStream->getRate() * 400/1000 );
-      if (bytes > MAX_STREAM_BUFFER_SIZE)
-         bytes = MAX_STREAM_BUFFER_SIZE;
-      bytes = bytes & ~7;
-      int size = 0;
-      bool justRewound = false;
-
-      // Bytes per 400ms...
-
-
-     // mSuspended->getRate
-
-      while(size<bytes)
-      {
-          int filled = mStream->fillBuffer(pcm+size, bytes-size);
-           
-          if (filled <= 0)
-          {
-             if (justRewound)
-             {
-                size = 0;
-                mLoops = 0;
-                break;
-             }
-
-             if ( mLoops > 0 )
-             {
-                mLoops --;
-                LOG_SOUND(" loops->%d\n", mLoops);
-                mStream->rewind();
-                justRewound = true;
-             }
-             else
-             {
-                if (size==0)
-                   LOG_SOUND(" fill empty\n")
-                else
-                   LOG_SOUND(" fill done\n")
-                break;
-             }
-          }
-          else
-          {
-             justRewound = false;
-             size += filled;
-          }
-      }
-
-      if (size==0)
-      {
-         return false;
-      }
-      else
-      {
-         alBufferData(inBuffer, mStream->getIsStereo() ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16 , pcm, size,  mStream->getRate());
-
-         alSourceQueueBuffers(mSourceID, 1, &inBuffer );
-      }
-
-      return true;
-   }
-
-   void primeStream()
-   {
-      if (openal_is_shutdown || mSuspended || !mStream->isValid())
-         return;
-  
-      bool ok = streamBuffer(mDynamicBuffer[0]);
-      if (ok)
-      {
-         streamBuffer(mDynamicBuffer[1]);
-         if (!playing())
-            alSourcePlay(mSourceID);
-      }
-      int queued = 0;
-      alGetSourcei(mSourceID, AL_BUFFERS_QUEUED, &queued);
-
-      check("primeStream");
-      LOG_SOUND("Primed %d buffers\n", queued);
-   }
-
-
-   void updateStream()
-   {
-      if (openal_is_shutdown || mStreamFinished || mSuspended || !mStream || !mStream->isValid())
-      {
-         LOG_SOUND("Dead stream.\n");
-         return;
-      }
-      
-      bool added = false;
-      int processed = 0;
-      alGetSourcei(mSourceID, AL_BUFFERS_PROCESSED, &processed);
-      check("alGetSourcei processed");
-
-      while(processed--)
-      {
-         ALuint buffer = 0;
-         alSourceUnqueueBuffers(mSourceID, 1, &buffer);
-         check("alSourceUnqueueBuffers");
-           
-         if (buffer && streamBuffer(buffer))
-           added = true;
-         else
-            LOG_SOUND("  Could not stream processed buffer %d.\n", buffer);
-      }
-
-      int queued = 0;
-      alGetSourcei(mSourceID, AL_BUFFERS_QUEUED, &queued);
-      check("alGetSourcei queued");
-      if (queued==0)
-      {
-         LOG_SOUND("All buffers gone, stop.");
-         mStreamFinished = true;
-      }
-      else
-      {
-         if (queued<2)
-            LOG_SOUND(" -> only queued %d.", queued);
-         if (added)
-            kickstart();
-      }
-   }
-
-   void asyncUpdate()
-   {
-      updateStream();
-   }
-
-
-   bool playing()
-   {
-      if (openal_is_shutdown) return false;
-       
-      ALint state;
-      alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
-      check("playing");
-      return (state == AL_PLAYING);
-   }
-
-
 
    void check(const char *where)
    {
@@ -414,222 +139,71 @@ public:
       }
    }
 
-  
-   
-   void QueueBuffer(ALuint inBuffer, const ByteArray &inBytes)
+
+
+   bool playing()
    {
-      int time_samples = inBytes.Size()/sizeof(float)/STEREO_SAMPLES;
-      const float *buffer = (const float *)inBytes.Bytes();
-      
-      for(int i=0;i<time_samples;i++)
-      {
-         mSampleBuffer[ i<<1 ] = *buffer++ * ((1<<15)-1);
-         mSampleBuffer[ (i<<1) + 1 ] = *buffer++ * ((1<<15)-1);
-      }
-      
-      mDynamicDone = time_samples < 1024;
-      
-      alBufferData(inBuffer, AL_FORMAT_STEREO16, mSampleBuffer, time_samples*STEREO_SAMPLES*sizeof(short), 44100 );
-      
-      //LOG_SOUND("Dynamic queue buffer %d (%d)", inBuffer, time_samples );
-      alSourceQueueBuffers(mSourceID, 1, &inBuffer );
-   }
-   
-   
-   void unqueueBuffers()
-   {
-      ALint processed = 0;
-      alGetSourcei(mSourceID, AL_BUFFERS_PROCESSED, &processed);
-      //LOG_SOUND("Recover buffers : %d (%d)", processed, mDynamicStackSize);
-      if (processed)
-      {
-         alSourceUnqueueBuffers(mSourceID,processed,&mDynamicStack[mDynamicStackSize]);
-         mDynamicStackSize += processed;
-      }
-   }
-   
-   
-   bool needsData()
-   {
-      if (mUseStream || !mDynamicBuffer[0] || mDynamicDone)
+      if (openal_is_shutdown)
          return false;
-      
-      unqueueBuffers();
-      
-      //LOG_SOUND("needsData (%d)", mDynamicStackSize);
-      if (mDynamicStackSize)
-      {
-         mDynamicDone = true;
-         return true;
-      }
-      
-      return false;
-      
+       
+      ALint state;
+      alGetSourcei(sourceId, AL_SOURCE_STATE, &state);
+      check("playing");
+      return (state == AL_PLAYING);
    }
 
-   void kickstart()
+   void stop()
    {
-      ALint val = 0;
-      alGetSourcei(mSourceID, AL_SOURCE_STATE, &val);
-      if (val != AL_PLAYING)
+      shouldPlay = false;
+
+      clRemoveChannel(this);
+
+      if (!openal_is_shutdown && sourceId && playing())
       {
-         LOG_SOUND("Kickstart after stall\n");
-         // This is an indication that the previous buffer finished playing before we could deliver the new buffer.
-         // You will hear ugly popping noises...
-         alSourcePlay(mSourceID);
-         check("Kickstart");
+         alSourceStop(sourceId);
+         check("stop");
+      }
+      sourceId = 0;
+
+      if (soundObject)
+      {
+         soundObject->DecRef();
+         soundObject = 0;
       }
    }
    
    
-   void addData(const ByteArray &inBytes)
+   void suspend()
    {
-      if (!mDynamicStackSize)
+      suspended = true;
+      if (playing())
       {
-         //LOG_SOUND("Adding data with no buffers?");
+         alSourcePause(sourceId);
+         check("pause for suspend");
          return;
       }
-      mDynamicDone = false;
-      ALuint buffer = mDynamicStack[0];
-      mDynamicStack[0] = mDynamicStack[1];
-      mDynamicStackSize--;
-      QueueBuffer(buffer,inBytes);
-      
-      // Make sure it is still playing ...
-      if (!mDynamicDone && mDynamicStackSize==1)
-         kickstart();
    }
    
    
-   ~OpenALChannel()
+   void resume()
    {
-      clRemoveChannel(this);
-      if (mStream)
+      if (shouldPlay)
       {
-         delete mStream;
-         mStream = 0;
-      }
-
-      if (!openal_is_shutdown)
-      {
-         check("Pre ~OpenALChannel");
-         if (mSourceID)
-         {
-            ALint state;
-            alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
-            if (state == AL_PLAYING)
-            {
-               alSourceStop(mSourceID);
-               check("~OpenALChannel stop");
-            }
-
-            int queued;
-            alGetSourcei(mSourceID, AL_BUFFERS_QUEUED, &queued);
-            check("~OpenALChannel queued");
-    
-            while(queued--)
-            {
-               ALuint buffer;
-               alSourceUnqueueBuffers(mSourceID, 1, &buffer);
-               check("~OpenALChannel alSourceUnqueueBuffers");
-            }
-
-            //LOG_SOUND("OpenALChannel destructor");
-            alDeleteSources(1, &mSourceID);
-            check("~OpenALChannel alDeleteSources");
-          }
-
-          if (mDynamicBuffer[0])
-          {
-             alDeleteBuffers(2, mDynamicBuffer);
-             check("~OpenALChannel alDeleteBuffers");
-          }
-      }
-
-      delete [] mSampleBuffer;
-
-      if (mSound)
-         mSound->DecRef();
-
-      delete mStream;
-   }
-   
-   
-   bool isComplete()
-   {
-      if (mUseStream)
-      {
-         //updateStream();
-         if (mStreamFinished)
-            LOG_SOUND("mStreamFinished!\n");
-         return mStreamFinished;
-      }
-      
-      if (!mSourceID)
-      {
-         //LOG_SOUND("OpenALChannel isComplete() - never started!");
-         return true;
-      }
-      
-      if (!mDynamicDone)
-         return false;
-      
-      // got this hint from
-      // http://www.gamedev.net/topic/410696-openal-how-to-query-if-a-source-sound-is-playing-solved/
-      ALint state;
-      alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
-      check("isComplete");
-      /*
-       Possible values of state
-       AL_INITIAL
-       AL_STOPPED
-       AL_PLAYING
-       AL_PAUSED
-       */
-      if(state == AL_STOPPED)
-      {
-         if (mLoops > 0)
-         {   
-            float seek = 0;
-            
-            if (mStartTime > 0)
-            {
-               seek = (mStartTime * 0.001) / mLength;
-            }
-            
-            if (seek < 1)
-            {
-               //alSourceQueueBuffers(mSourceID, 1, &inBufferID);
-               alSourcePlay(mSourceID);
-               alSourcef(mSourceID, AL_BYTE_OFFSET, seek * mSize);
-            }
-            
-            mLoops --;
-            
-            return false;
-         }
-         else
-         {
-            return true;
-         }
-         //LOG_SOUND("OpenALChannel isComplete() returning true");
-      }
-      else
-      {
-         //LOG_SOUND("OpenALChannel isComplete() returning false");
-         return false;
+         alSourcePlay(sourceId);
+         check("resume");
+         suspended = false;
       }
    }
-   
+  
    
    double getLeft()  
    {
-      if (mSourceID)
+      if (sourceId)
       {
          float panX=0;
          float panY=0;
          float panZ=0;
-         alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
+         alGetSource3f(sourceId, AL_POSITION, &panX, &panY, &panZ);
          check("getLeft");
          return (1-panX)/2;
       }
@@ -639,112 +213,544 @@ public:
    
    double getRight()   
    {
-      if (mSourceID)
+      if (sourceId)
       {
          float panX=0;
          float panY=0;
          float panZ=0;
-         alGetSource3f(mSourceID, AL_POSITION, &panX, &panY, &panZ);
+         alGetSource3f(sourceId, AL_POSITION, &panX, &panY, &panZ);
          check("getRight");
          return (panX+1)/2;
       }
       return 0.5;
    }
+ 
+
    
-   
+   double getLength() { return duration*1000.0; }
+
    double setPosition(const float &inFloat)
    {
-      if (mUseStream)
-      {
-         if (mStream)
-           mStream->setPosition(inFloat);
-      }
-      else
-      {
-         alSourcef(mSourceID,AL_SEC_OFFSET,inFloat);
-      }
+      alSourcef(sourceId,AL_SEC_OFFSET,inFloat);
       return inFloat;
    }
    
    
    double getPosition() 
    {
-      if (mUseStream)
-      {
-         return mStream ? mStream->getPosition() : 0;
-      }
-      else
-      {
-         float pos = 0;
-         alGetSourcef(mSourceID, AL_SEC_OFFSET, &pos);
-         return pos * 1000.0;
-      }
+      ALfloat pos = 0;
+      alGetSourcef(sourceId, AL_SEC_OFFSET, &pos);
+      return pos * 1000.0;
    }
-   
-   
-   void setTransform(const SoundTransform &inTransform)
+ 
+
+};
+
+
+
+
+
+class OpenALBufferChannel : public OpenALSourceChannel
+{
+public:
+   ALuint bufferId;
+   ALint  byteSize;
+   int    loops;
+
+   OpenALBufferChannel(Object *inSound, const SoundTransform &inTransform, ALuint inBufferId, int startTime, int inLoops)
+      : OpenALSourceChannel(inSound, inTransform )
    {
-      alSourcef(mSourceID, AL_GAIN, inTransform.volume);
-      alSource3f(mSourceID, AL_POSITION, (float) cos((inTransform.pan - 1) * (1.5707)), 0, (float) sin((inTransform.pan + 1) * (1.5707)));
-      check("setTransform");
+      int seekBytes=0;
+
+      bufferId = inBufferId;
+      alSourcei(sourceId, AL_BUFFER, bufferId);
+      loops = inLoops>0 ? inLoops -1 : inLoops;
+
+      byteSize = 0;
+      ALint bits=8;
+      ALint channels=1;
+      ALint freq=44100;
+
+      alGetBufferi(bufferId, AL_SIZE, &byteSize);
+      alGetBufferi(bufferId, AL_BITS, &bits);
+      alGetBufferi(bufferId, AL_CHANNELS, &channels);
+      alGetBufferi(bufferId, AL_FREQUENCY, &freq);
+      duration = (double)byteSize*8/(channels*bits*freq);
+
+      bool tooMuchSeek = false;
+      if (duration && inSound)
+      {
+         seekBytes = ( (startTime*0.001)*byteSize/ duration );
+         int seekLoops = seekBytes/byteSize;
+         seekBytes -= seekLoops*byteSize;
+         if (loops>=0)
+         {
+            loops -= seekLoops;
+            if (loops<0)
+               tooMuchSeek = true;
+         }
+     
+         seekBytes & ~0x3; // 2 channels, 16 bit round
+      }
+     
+      
+      if (!tooMuchSeek)
+      {
+         shouldPlay = true;
+         alSourcePlay(sourceId);
+         if (seekBytes && seekBytes<byteSize)
+            alSourcef(sourceId, AL_BYTE_OFFSET, seekBytes);
+         clAddChannel(this, loops>0);
+      }
    }
-   
-   
+
+
+   ~OpenALBufferChannel()
+   {
+      stop();
+   }
+
    void stop()
    {
-      clRemoveChannel(this);
+      OpenALSourceChannel::stop();
+      loops = 0;
+   }
 
-      if (mUseStream)
-      {
-         if (mStream)
-         {
-            delete mStream;
-            mStream = 0;
-            mStreamFinished = true;
-            mWasPlaying = false;
-         }
-      }
-      else
-      {
-         ALint state;
-         alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
-         
-         if (state == AL_PLAYING)
-         {
-            alSourceStop(mSourceID);
-         }
-         check("stop");
-      }
-   }
-   
-   
-   void suspend()
+   void asyncUpdate()
    {
-      ALint state;
-      alGetSourcei(mSourceID, AL_SOURCE_STATE, &state);
-        
-      if (state == AL_PLAYING)
+      if (!playing() && loops!=0)
       {
-         alSourcePause(mSourceID);
-         check("pause for suspend");
-         mWasPlaying = true;
-         return;
+         alSourcef(sourceId, AL_BYTE_OFFSET, 0);
+         alSourcePlay(sourceId);
+         if (loops>0)
+            loops--;
       }
-         
-      mWasPlaying = false;
    }
-   
-   
-   void resume()
+
+   bool isComplete()
    {
-      if (mWasPlaying)
-      {
-         alSourcePlay(mSourceID);
-         check("resume");
-      }
+      return !openal_is_shutdown && !loops && !playing();
    }
-   
+
 };
+
+
+
+
+
+
+
+class OpenALDoubleBufferChannel : public OpenALSourceChannel
+{
+public:
+   ALuint  bufferIds[2];
+
+   NmeMutex bufferMutex;
+   ALuint   freeBuffers[2];
+   int      freeBufferCount;
+
+   OpenALDoubleBufferChannel(Object *inSound, const SoundTransform &inTransform)
+      : OpenALSourceChannel(inSound, inTransform )
+   {
+      bufferIds[0] = bufferIds[1] = 0;
+      freeBufferCount = 0;
+  }
+
+   void createBuffers()
+   {
+      alGenBuffers(2, bufferIds);
+      freeBuffers[ freeBufferCount++ ] = bufferIds[0];
+      freeBuffers[ freeBufferCount++ ] = bufferIds[1];
+      check("alGenBuffers");
+   }
+
+
+   void stop()
+   {
+      OpenALSourceChannel::stop();
+
+      if (openal_is_shutdown)
+         return;
+
+      if (bufferIds[0])
+         alDeleteBuffers(2, bufferIds);
+       freeBufferCount = 0;
+   }
+  
+   void unqueueBuffers()
+   {
+      int processed = 0;
+      alGetSourcei(sourceId, AL_BUFFERS_PROCESSED, &processed);
+      while(processed--)
+      {
+         ALuint buffer = 0;
+         alSourceUnqueueBuffers(sourceId, 1, &buffer);
+
+         addFreeBuffer(buffer);
+      }
+   }
+
+
+
+   ALuint getFreeBuffer()
+   {
+      if (openal_is_shutdown || suspended)
+         return 0;
+
+      int processed = 0;
+      alGetSourcei(sourceId, AL_BUFFERS_PROCESSED, &processed);
+      if (processed>0)
+      {
+         ALuint result = 0;
+         alSourceUnqueueBuffers(sourceId, 1, &result);
+         check("alGetSourcei processed");
+         return result;
+      }
+
+      NmeAutoMutex lock(bufferMutex);
+      if (freeBufferCount)
+         return freeBuffers[--freeBufferCount];
+      return 0;
+   }
+
+
+   void addFreeBuffer(ALuint inBufferId)
+   {
+      NmeAutoMutex lock(bufferMutex);
+      if (freeBufferCount<2)
+         freeBuffers[freeBufferCount++] = inBufferId;
+      else
+         LOG_SOUND("Bad freeBufferCount");
+   }
+   bool isComplete()
+   {
+      return !openal_is_shutdown && !shouldPlay;
+   }
+
+};
+
+
+
+class OpenALStreamChannel : public OpenALDoubleBufferChannel
+{
+public:
+   INmeSoundStream *stream;
+   int             loops;
+
+   OpenALStreamChannel(Object *inSound, const SoundTransform &inTransform, INmeSoundStream *inStream)
+      : OpenALDoubleBufferChannel(inSound, inTransform )
+   {
+      stream = inStream;
+   }
+
+
+   void stop()
+   {
+      OpenALDoubleBufferChannel::stop();
+      if (stream)
+      {
+         delete stream;
+         stream = 0;
+      }
+   }
+
+
+   // Returns if the stream still has data.
+   bool streamBuffer( ALuint inBuffer )
+   {
+      if (!stream)
+      {
+         return false;
+      }
+
+      //LOG_SOUND("STREAM\n");
+      char pcm[MAX_STREAM_BUFFER_SIZE];
+      int bytes = ( (stream->getIsStereo() ? 4 : 2) * stream->getRate() * 400/1000 );
+      if (bytes > MAX_STREAM_BUFFER_SIZE)
+         bytes = MAX_STREAM_BUFFER_SIZE;
+      bytes = bytes & ~7;
+      int size = 0;
+      int emptyBuffersCount = 0;
+
+      // Bytes per 400ms...
+
+      while(size<bytes)
+      {
+          int filled = stream->fillBuffer(pcm+size, bytes-size);
+           
+          if (filled <= 0)
+          {
+             if (!tryAgainOnEmptyBuffer(emptyBuffersCount++))
+                break;
+          }
+          else
+          {
+             emptyBuffersCount = 0;
+             size += filled;
+          }
+      }
+
+      if (size==0)
+      {
+         addFreeBuffer(inBuffer);
+         return false;
+      }
+
+      alBufferData(inBuffer, stream->getIsStereo() ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16 , pcm, size,  stream->getRate());
+
+      alSourceQueueBuffers(sourceId, 1, &inBuffer );
+
+      return true;
+   }
+
+   bool updateStream()
+   {
+      if (openal_is_shutdown || !shouldPlay || suspended)
+      {
+         LOG_SOUND("Dead stream.\n");
+         return false;
+      }
+
+  
+      bool added = false;
+      while(true)
+      {
+         ALuint buffer = getFreeBuffer();
+         if (!buffer)
+            break;
+         if (!streamBuffer(buffer))
+            break;
+         added = true;
+      }
+
+      if (added && !playing())
+         alSourcePlay(sourceId);
+            
+      return added;
+   }
+
+
+
+   virtual bool tryAgainOnEmptyBuffer(int inEmptyBufferCount)
+   {
+      return true;
+   }
+
+   void asyncUpdate()
+   {
+      updateStream();
+   }
+
+};
+
+
+
+
+
+class OpenALStaticStreamChannel : public OpenALStreamChannel
+{
+public:
+   int  loops;
+
+   OpenALStaticStreamChannel(Object *inSound, const SoundTransform &inTransform, INmeSoundStream *inStream, int startTime, int inLoops)
+      : OpenALStreamChannel(inSound, inTransform, inStream )
+   {
+      loops = inLoops >0 ? inLoops-1 : inLoops;
+
+      duration = stream->getDuration();
+      bool tooMuchSeek = false;
+
+      if (duration)
+      {
+         double skip = startTime * 0.001;
+         int skipLoops = (skip/duration);
+         skip -= skipLoops*duration;
+         if (loops>0)
+         {
+            loops -= skipLoops;
+            if (loops<0)
+               tooMuchSeek = true;
+         }
+    
+         if (!tooMuchSeek)
+         {
+            createBuffers();
+
+            if (skip)
+               stream->setPosition(skip);
+
+            shouldPlay = true;
+            if (updateStream())
+            {
+               clAddChannel(this,true);
+            }
+            else
+               shouldPlay = false;
+         }
+      }
+   }
+
+   bool isComplete()
+   {
+      return !openal_is_shutdown && freeBufferCount==2;
+   }
+
+
+
+   virtual bool tryAgainOnEmptyBuffer(int inEmptyBufferCount)
+   {
+      if (inEmptyBufferCount>0)
+      {
+         // Two empty buffers in a row = error
+         stop();
+         return false;
+      }
+
+	   if ( loops )
+	   {
+		   if (loops>0)
+			   loops--;
+		   LOG_SOUND(" loops->%d\n", loops);
+		   stream->rewind();
+		   return true;
+	   }
+
+		LOG_SOUND("end of static data.\n")
+      return false;
+   }
+
+
+};
+
+
+
+
+
+
+class OpenALSyncUpdateChannel : public OpenALDoubleBufferChannel
+{
+public:
+   SoundDataFormat dataFormat;
+   ALuint openAlFormat;
+   std::vector<short> convertBuffer;
+   bool syncDataPending;
+   bool noMoreData;
+   bool isStereo;
+   int  rate;
+   int  sampleSize;
+   
+
+   OpenALSyncUpdateChannel(const SoundTransform &inTransform,SoundDataFormat inFormat, bool inIsStereo, int inRate)
+      : OpenALDoubleBufferChannel(0, inTransform )
+   {
+      syncDataPending = false;
+      noMoreData = false;
+      isStereo = inIsStereo;
+      rate = inRate;
+      createBuffers();
+      shouldPlay = true;
+      dataFormat = inFormat;
+      sampleSize = 0;
+      openAlFormat = 0;
+      switch(dataFormat)
+      {
+         case sdfByte:
+            openAlFormat = isStereo ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
+            sampleSize = isStereo ? 2 : 1;
+            break;
+
+         case sdfShort:
+            openAlFormat = isStereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+            sampleSize = isStereo ? 4 : 2;
+            break;
+
+         case sdfFloat:
+            openAlFormat = isStereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+            sampleSize = isStereo ? 8 : 4;
+            break;
+      }
+      
+      clAddChannel(this, false);
+   }
+
+
+   bool needsData()
+   {
+      if (openal_is_shutdown || !shouldPlay || suspended || syncDataPending || noMoreData )
+         return false;
+
+      unqueueBuffers();
+
+      if (freeBufferCount==0)
+         return false;
+
+      return true;
+   }
+
+   bool isComplete()
+   {
+      if (openal_is_shutdown)
+         return false;
+      if (noMoreData)
+      {
+         if (freeBufferCount<2)
+            unqueueBuffers();
+         return freeBufferCount==2;
+      }
+      return false;
+   }
+
+
+   
+   void addData(const ByteArray &inBytes)
+   {
+      const unsigned char *data = inBytes.Bytes();
+      int size = inBytes.Size();
+
+      if (size>0)
+      {
+         ALuint buffer = getFreeBuffer();
+         if (!buffer)
+         {
+            // Should not have 'needsData' ?
+            LOG_SOUND("addData - no free buffer");
+            return;
+         }
+
+         if (dataFormat==sdfFloat)
+         {
+            int values = size/sizeof(float);
+            float *src = (float *)data;
+
+            convertBuffer.resize(values);
+            short *dest = &convertBuffer[0];
+            for(int v=0;v<values;v++)
+                dest[v] = src[v] * 10000;
+ 
+            alBufferData(buffer, openAlFormat, dest, values*sizeof(short), rate);
+         }
+         else
+            alBufferData(buffer, openAlFormat, data, size, rate);
+
+         alSourceQueueBuffers(sourceId, 1, &buffer );
+ 
+
+         if (!playing())
+         {
+            LOG_SOUND(" kickstart");
+            alSourcePlay(sourceId);
+         }
+      }
+
+      int samples = size/sampleSize;
+      if (samples<2048)
+         noMoreData = true;
+   }
+
+};
+
+
+
 
 // ---   OpenALSound ----------------------------
 
@@ -842,20 +848,20 @@ public:
    
    double getLength() { return duration*1000.0; }
 
-   void getID3Value(const std::string &inKey, std::string &outValue) { outValue=std::string(); }
+   void getId3Value(const std::string &inkey, std::string &outvalue) { outvalue=std::string(); }
    
    int getBytesLoaded()
    {
       int toBeReturned = ok() ? 100 : 0;
-      //LOG_SOUND("OpenALSound getBytesLoaded returning %i", toBeReturned);
+      //log_sound("openalsound getbytesloaded returning %i", tobereturned);
       return toBeReturned;
    }
    
    int getBytesTotal()
    {
-      int toBeReturned = ok() ? 100 : 0;
-      //LOG_SOUND("OpenALSound getBytesTotal returning %i", toBeReturned);
-      return toBeReturned;
+      int tobereturned = ok() ? 100 : 0;
+      //log_sound("openalsound getbytestotal returning %i", tobereturned);
+      return tobereturned;
    }
    
    
@@ -874,7 +880,17 @@ public:
    
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
    {
-      return new OpenALChannel(this, mBufferID, soundData?soundData->createStream():0, startTime, loops, inTransform);
+      if (mBufferID)
+      {
+         return new OpenALBufferChannel(this, inTransform, mBufferID, startTime, loops);
+      }
+      else if (soundData)
+      {
+         INmeSoundStream *stream = soundData->createStream();
+         if (stream)
+            return new OpenALStaticStreamChannel(this, inTransform, stream, startTime, loops);
+      }
+      return 0;
    }
 }; // end OpenALSound
    
@@ -883,12 +899,15 @@ public:
 // --- External Sound implementation -------------------
    
 
-SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
+SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
+    SoundDataFormat inDataFormat,bool inIsStereo, int inRate) 
 {
    if (!OpenALInit())
       return 0;
    
-   return new OpenALChannel(inBytes, inTransform);
+  OpenALSyncUpdateChannel *result =  new OpenALSyncUpdateChannel(inTransform, inDataFormat, inIsStereo, inRate);
+  result->addData(inBytes);
+  return result;
 }
 
   

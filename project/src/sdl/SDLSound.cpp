@@ -332,7 +332,8 @@ public:
    int       mBufferAheadSamples;
 };
 
-SoundChannel *SoundChannel::Create(const ByteArray &inBytes,const SoundTransform &inTransform)
+SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
+    SoundDataFormat inDataFormat,bool inIsStereo, int inRate) 
 {
    if (!Init())
       return 0;

@@ -1,6 +1,7 @@
 #ifdef HX_WINDOWS
 #include <windows.h>
 #else
+#include <pthread.h>
 #include <unistd.h>
 #include <sys/time.h>
 #endif
@@ -52,6 +53,7 @@ void clUpdateAsyncChannels()
 }
 
 
+bool asyncIsShutdown = false;
 
 #ifdef HX_WINDOWS
 
@@ -101,7 +103,7 @@ void *asyncSoundMainLoop(void *)
 {
    pthread_mutex_lock(&asyncSoundMutex);
    asyncSoundWaiting = true;
-   while(true)
+   while(!asyncIsShutdown)
    {
       clUpdateAsyncChannelsLocked();
 
@@ -169,7 +171,7 @@ void clLock()
 
 void clUnlock()
 {
-   pthread_mutex_lock(&asyncSoundMutex);
+   pthread_mutex_unlock(&asyncSoundMutex);
 }
 
 
@@ -178,6 +180,14 @@ void clUnlock()
 
 // --- Manage async sound updating --------------------------------
 
+void clShutdown()
+{
+   clLock();
+   sgOpenChannels.resize(0);
+   asyncIsShutdown = true;
+   clPingLocked();
+   clUnlock();
+}
 
 
 void clResumeAllChannels()
@@ -207,10 +217,11 @@ void clSuspendAllChannels()
 
 void clAddChannel(SoundChannel *inChannel,bool inIsAsync)
 {
-   clInit(clIsInit, inIsAsync);
+   clInit(!clIsInit, inIsAsync);
    clIsInit = true;
 
    LOG_SOUND("Add channel filler %p/%d", inChannel,inIsAsync);
+
    clLock();
    sgOpenChannels.push_back( OpenChannel(inChannel,inIsAsync) );
    if (inIsAsync)

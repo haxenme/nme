@@ -407,6 +407,70 @@ public:
 
 
 
+#ifdef NME_MODPLUG
+
+class NmeSoundStreamMid : public NmeSoundStream 
+{
+   ModPlugFile *modFile;
+ 
+public:
+
+   // Data stays alive while we have a refernece to inData
+   NmeSoundStreamMid(INmeSoundData *inSound, const unsigned char *inData, int inLength)
+     : NmeSoundStream(inSound)
+   {
+      modFile = ModPlug_Load(inData, inLength);
+   }
+
+   ~NmeSoundStreamMid()
+   {
+      if (modFile)
+        ModPlug_Unload(modFile);
+   }
+
+   bool isValid() const
+   {
+      return modFile && getChannelSampleCount();
+   }
+       
+   virtual int fillBuffer(char *outBuffer, int inRequestBytes)
+   {
+      if (!modFile)
+         return 0;
+
+      char *buffer = outBuffer;
+      int bitStream = 0;
+      int remaining = inRequestBytes;
+      while(remaining>0)
+      {
+         int bytes = ModPlug_Read(modFile, buffer, remaining);
+         // Stopping early might be ok, since timing might not be 100 % accurate
+         if (bytes<=0)
+            return inRequestBytes-remaining;
+
+         remaining -= bytes;
+         outBuffer += bytes;
+      }
+ 
+      return inRequestBytes;
+   }
+
+   virtual void setPosition(double inSeconds)
+   {
+      // TODO
+   }
+};
+
+#endif
+
+
+
+
+
+
+
+
+
 
 
 
@@ -547,9 +611,7 @@ public:
          ModPlug_SetSettings(&settings);
       }
 
-printf("Open...\n");
       ModPlugFile *modFile = ModPlug_Load(inData, inDataLength);
-printf(" got %p\n", modFile);
       if (modFile)
       {
          fileFormat = eAF_mid;
@@ -560,7 +622,7 @@ printf(" got %p\n", modFile);
          
          if (!(inFlags & SoundJustInfo))
          {
-            if (duration<=2.0 || (inFlags & SoundForceDecode) || true )
+            if (duration<=2.0 || (inFlags & SoundForceDecode) )
             {
                isDecoded = true;
                decodedBuffer.resize((int)channelSampleCount * (isStereo?2:1) );
@@ -569,9 +631,7 @@ printf(" got %p\n", modFile);
                int bitStream = 0;
                while(remaining>0)
                {
-                  printf("Read %d...\n", remaining);
                   int bytes = ModPlug_Read(modFile, buffer, remaining);
-                  printf("   got %d\n", bytes );
                   if (bytes<=0)
                   {
                      // Stopping early might be ok, since timing might not be 100 % accurate
@@ -679,6 +739,11 @@ printf(" got %p\n", modFile);
 
       if (fileFormat==eAF_ogg)
          return new NmeSoundStreamOgg(this, sourceBuffer.ByteData(), sourceBuffer.ByteCount());
+
+      #ifdef NME_MODPLUG
+      if (fileFormat==eAF_mid)
+         return new NmeSoundStreamMid(this, sourceBuffer.ByteData(), sourceBuffer.ByteCount());
+      #endif
 
       LOG_SOUND("Error creating stream - unknown format");
       return 0;
