@@ -63,7 +63,7 @@
    <set name="NME_OPENAL" value="1" if="iphone" />
 
    <!-- Use to allow testing on mac... -->
-   <!-- <set name="NME_OPENAL" value="1" if="macos" /> -->
+   <set name="NME_OPENAL" value="1" if="macos" />
 
    <set name="NME_CAMERA" value="1" />
 
@@ -129,6 +129,8 @@
          <file name="${SRC_DIR}/android/JNI.cpp"/>
          <file name="${SRC_DIR}/android/System.cpp"/>
          <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="NME_S3D" />
+         <!-- <file name="${SRC_DIR}/audio/OpenSlSound.cpp" /> -->
+
       </section>
 
       <section if="emscripten">
@@ -177,6 +179,8 @@
          <file name="${SRC_DIR}/audio/OpenALSound.cpp" />
          <compilerflag value="-DNME_OPENAL" />
       </section>
+
+
 
       <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
       <compilerflag value="-I${NME_DEV}/include" />

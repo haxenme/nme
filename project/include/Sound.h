@@ -49,7 +49,7 @@ class SoundChannel : public Object
 {
 public:
    static SoundChannel *CreateSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
-              SoundDataFormat inDataFormat=sdfFloat,bool inInIsStereo=true, int inRate=44100) ;
+              SoundDataFormat inDataFormat=sdfFloat,bool inIsStereo=true, int inRate=44100) ;
 
    virtual bool isComplete() = 0;
    virtual double getLeft() = 0;
