@@ -7,12 +7,23 @@
 #include <Utils.h>
 #include "Audio.h"
 #include <NmeThread.h>
+#include <dlfcn.h>
 //#include <unistd.h>
 //#include <sys/time.h>
 
 
 namespace nme
 {
+
+typedef SLresult (*slCreateEngine_func)(
+        SLObjectItf*, SLuint32, const SLEngineOption*, SLuint32,
+        const SLInterfaceID*, const SLboolean*);
+
+slCreateEngine_func slDynamicCreateEngine = 0;
+SLInterfaceID iidAndroidSampleBuffer = 0;
+SLInterfaceID iidPlay = 0;
+SLInterfaceID iidEngine = 0;
+SLInterfaceID iidVolume = 0;
 
 
 bool opensl_is_init = false;
@@ -22,14 +33,41 @@ SLObjectItf engineObject;
 SLEngineItf engineEngine = 0;
 
 
+SLInterfaceID findInterface(void *dll, const char *inName)
+{
+   SLInterfaceID *symPtr = (SLInterfaceID *)dlsym(dll,inName);
+   if (!symPtr)
+   {
+      LOG_SOUND("Could not find symbol %s", symPtr);
+      return 0;
+   }
+   return *symPtr;
+}
+
 bool OpenSlInit()
 {
-   opensl_is_shutdown = false;
+   if (!slDynamicCreateEngine)
+   {
+      void *dll = dlopen("libOpenSLES.so", RTLD_NOW);
+      if (dll)
+      {
+         slDynamicCreateEngine = (slCreateEngine_func)dlsym(dll,"slCreateEngine");
+         iidAndroidSampleBuffer = findInterface(dll, "SL_IID_ANDROIDSIMPLEBUFFERQUEUE");
+         iidPlay = findInterface(dll, "SL_IID_PLAY");
+         iidEngine = findInterface(dll, "SL_IID_ENGINE");
+         iidVolume = findInterface(dll, "SL_IID_VOLUME");
+      }
+   }
 
-   if (slCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL)==SL_RESULT_SUCCESS &&
-         (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE)==SL_BOOLEAN_FALSE &&
-           (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineEngine) == SL_RESULT_SUCCESS )
-      opensl_is_init = true;
+   if (slDynamicCreateEngine && iidAndroidSampleBuffer && iidPlay && iidEngine && iidVolume)
+   {
+      opensl_is_shutdown = false;
+
+      if (slDynamicCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL)==SL_RESULT_SUCCESS &&
+            (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE)==SL_BOOLEAN_FALSE &&
+              (*engineObject)->GetInterface(engineObject, iidEngine, &engineEngine) == SL_RESULT_SUCCESS )
+         opensl_is_init = true;
+   }
 
    return opensl_is_init;
 }
@@ -83,7 +121,7 @@ public:
       setTransform(inTransform);
       shouldPlay = false;
 
-      int slRate = inRate;
+      int slRate = inRate*1000;
       switch(inRate)
       {
          case 11025: slRate = SL_SAMPLINGRATE_11_025; break;
@@ -92,7 +130,7 @@ public:
       }
 
 
-      const SLInterfaceID ids[] = {SL_IID_VOLUME};
+      const SLInterfaceID ids[] = {iidVolume};
       const SLboolean req[] = {SL_BOOLEAN_FALSE};
       if ((*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 1, ids, req)==SL_RESULT_SUCCESS &&
             (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE)==SL_BOOLEAN_FALSE )
@@ -102,17 +140,25 @@ public:
          pcm.numChannels = 1;
          pcm.samplesPerSec = slRate;
          pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
-         pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
          pcm.channelMask = inIsStereo ? SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT : SL_SPEAKER_FRONT_CENTER;
          pcm.endianness = SL_BYTEORDER_LITTLEENDIAN;
 
-	
+         switch(inFormat)
+         {
+            case sdfByte: pcm.bitsPerSample = 8; break;
+            case sdfShort:
+            case sdfFloat:
+               pcm.bitsPerSample = 16;
+               break;
+         }
+         pcm.containerSize = pcm.bitsPerSample;
+
          // configure audio source
          // Double buffer or single buffer?
          SLDataLocator_AndroidSimpleBufferQueue loc_bufq;
          loc_bufq.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
          loc_bufq.numBuffers = inDoubleBuffer?2:1;
-		
+
          SLDataSource audioSrc = {&loc_bufq, &pcm};
  
          // configure audio sink
@@ -120,13 +166,13 @@ public:
          SLDataSink audioSnk = {&loc_outmix, NULL};
  
          // create audio player
-         const SLInterfaceID ids1[] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE};
+         const SLInterfaceID ids1[] = {iidAndroidSampleBuffer};
          const SLboolean req1[] = {SL_BOOLEAN_TRUE};
           
          if ( (*engineEngine)->CreateAudioPlayer(engineEngine, &bqPlayerObject, &audioSrc, &audioSnk, 1, ids1, req1)==SL_RESULT_SUCCESS &&
               (*bqPlayerObject)->Realize(bqPlayerObject, SL_BOOLEAN_FALSE) == SL_RESULT_SUCCESS &&
-              (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &bqPlayerPlay)==SL_RESULT_SUCCESS  &&
-              (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &bqPlayerBufferQueue)==SL_RESULT_SUCCESS &&
+              (*bqPlayerObject)->GetInterface(bqPlayerObject, iidPlay, &bqPlayerPlay)==SL_RESULT_SUCCESS  &&
+              (*bqPlayerObject)->GetInterface(bqPlayerObject, iidAndroidSampleBuffer, &bqPlayerBufferQueue)==SL_RESULT_SUCCESS &&
               (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue, sOnBufferDone, this)==SL_RESULT_SUCCESS )
          {
             shouldPlay = true;
@@ -263,6 +309,114 @@ public:
       return true;
    }
 };
+
+
+
+
+
+
+class OpenSlSyncUpdateChannel : public OpenSlSourceChannel
+{
+public:
+   SoundDataFormat dataFormat;
+   std::vector<short> convertBuffer;
+   bool syncDataPending;
+   bool noMoreData;
+   bool isStereo;
+   bool queueHungry;
+   int  rate;
+   int  sampleSize;
+   
+
+   OpenSlSyncUpdateChannel(const SoundTransform &inTransform,SoundDataFormat inFormat, bool inIsStereo, int inRate)
+      : OpenSlSourceChannel(0, inTransform, inFormat, inIsStereo, inRate, true )
+   {
+      syncDataPending = false;
+      noMoreData = false;
+      isStereo = inIsStereo;
+      dataFormat = inFormat;
+      sampleSize = 0;
+
+      if (shouldPlay)
+      {
+         switch(dataFormat)
+         {
+            case sdfByte:
+               sampleSize = isStereo ? 2 : 1;
+               break;
+
+            case sdfShort:
+               sampleSize = isStereo ? 4 : 2;
+               break;
+
+            case sdfFloat:
+               sampleSize = isStereo ? 8 : 4;
+               break;
+         }
+
+         clAddChannel(this, false);
+      }
+   }
+
+
+   void onBufferDone()
+   {
+      queueHungry = true;
+   }
+
+   bool needsData()
+   {
+      if (opensl_is_shutdown || !shouldPlay || suspended || syncDataPending || noMoreData )
+         return false;
+
+      return queueHungry;
+   }
+
+   bool isComplete()
+   {
+      if (opensl_is_shutdown)
+         return false;
+      if (noMoreData)
+         return !playing();
+
+      return false;
+   }
+
+   void addData(const ByteArray &inBytes)
+   {
+      queueHungry = false;
+      const unsigned char *data = inBytes.Bytes();
+      int size = inBytes.Size();
+
+      if (size>0)
+      {
+         if (dataFormat==sdfFloat)
+         {
+            int values = size/sizeof(float);
+            float *src = (float *)data;
+
+            convertBuffer.resize(values);
+            short *dest = &convertBuffer[0];
+            for(int v=0;v<values;v++)
+                dest[v] = src[v] * 10000;
+ 
+            queueData(dest, values*sizeof(short));
+         }
+         else
+            queueData(data, size);
+      }
+
+      int samples = size/sampleSize;
+      if (samples<2048)
+         noMoreData = true;
+   }
+
+};
+
+
+
+
+
 
 
 #if 0
@@ -643,128 +797,6 @@ public:
 
 
 
-class OpenALSyncUpdateChannel : public OpenALDoubleBufferChannel
-{
-public:
-   SoundDataFormat dataFormat;
-   ALuint openAlFormat;
-   std::vector<short> convertBuffer;
-   bool syncDataPending;
-   bool noMoreData;
-   bool isStereo;
-   int  rate;
-   int  sampleSize;
-   
-
-   OpenALSyncUpdateChannel(const SoundTransform &inTransform,SoundDataFormat inFormat, bool inIsStereo, int inRate)
-      : OpenALDoubleBufferChannel(0, inTransform )
-   {
-      syncDataPending = false;
-      noMoreData = false;
-      isStereo = inIsStereo;
-      rate = inRate;
-      createBuffers();
-      shouldPlay = true;
-      dataFormat = inFormat;
-      sampleSize = 0;
-      openAlFormat = 0;
-      switch(dataFormat)
-      {
-         case sdfByte:
-            openAlFormat = isStereo ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
-            sampleSize = isStereo ? 2 : 1;
-            break;
-
-         case sdfShort:
-            openAlFormat = isStereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-            sampleSize = isStereo ? 4 : 2;
-            break;
-
-         case sdfFloat:
-            openAlFormat = isStereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-            sampleSize = isStereo ? 8 : 4;
-            break;
-      }
-      
-      clAddChannel(this, false);
-   }
-
-
-   bool needsData()
-   {
-      if (opensl_is_shutdown || !shouldPlay || suspended || syncDataPending || noMoreData )
-         return false;
-
-      unqueueBuffers();
-
-      if (freeBufferCount==0)
-         return false;
-
-      return true;
-   }
-
-   bool isComplete()
-   {
-      if (opensl_is_shutdown)
-         return false;
-      if (noMoreData)
-      {
-         if (freeBufferCount<2)
-            unqueueBuffers();
-         return freeBufferCount==2;
-      }
-      return false;
-   }
-
-
-   
-   void addData(const ByteArray &inBytes)
-   {
-      const unsigned char *data = inBytes.Bytes();
-      int size = inBytes.Size();
-
-      if (size>0)
-      {
-         ALuint buffer = getFreeBuffer();
-         if (!buffer)
-         {
-            // Should not have 'needsData' ?
-            LOG_SOUND("addData - no free buffer");
-            return;
-         }
-
-         if (dataFormat==sdfFloat)
-         {
-            int values = size/sizeof(float);
-            float *src = (float *)data;
-
-            convertBuffer.resize(values);
-            short *dest = &convertBuffer[0];
-            for(int v=0;v<values;v++)
-                dest[v] = src[v] * 10000;
- 
-            alBufferData(buffer, openAlFormat, dest, values*sizeof(short), rate);
-         }
-         else
-            alBufferData(buffer, openAlFormat, data, size, rate);
-
-         alSourceQueueBuffers(sourceId, 1, &buffer );
- 
-
-         if (!playing())
-         {
-            LOG_SOUND(" kickstart");
-            alSourcePlay(sourceId);
-         }
-      }
-
-      int samples = size/sampleSize;
-      if (samples<2048)
-         noMoreData = true;
-   }
-
-};
-
 
 
 
@@ -923,7 +955,7 @@ SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const Sou
    if (!OpenSlInit())
       return 0;
    
-  OpenSlSourceChannel *result =  new OpenSlSourceChannel(0,inTransform, inDataFormat, inIsStereo, inRate, true);
+  OpenSlSourceChannel *result =  new OpenSlSyncUpdateChannel(inTransform, inDataFormat, inIsStereo, inRate);
   result->addData(inBytes);
   return result;
 }
