@@ -39,6 +39,18 @@ enum
 };
 
 
+
+enum AudioFormat
+{
+   eAF_unknown,
+   eAF_ogg,
+   eAF_wav,
+   eAF_mid,
+   eAF_count
+};
+
+
+
 class INmeSoundData
 {
 public:
@@ -62,12 +74,6 @@ protected:
    ~INmeSoundData() { }
 };
 
-enum NmeStreamState
-{
-   nssOk,
-   nssNeedsSyncData,
-   nssEof,
-};
 
 
 class INmeSoundStream 
@@ -85,50 +91,9 @@ public:
    virtual bool   isValid() const { return getChannelSampleCount(); }
 
    virtual int    fillBuffer(char *outBuffer, int inRequestBytes) = 0;
-   virtual NmeStreamState getDataState() const { return nssEof; }
 };
 
 
-
-
-enum AudioFormat
-{
-   eAF_unknown,
-   eAF_ogg,
-   eAF_wav,
-   eAF_mid,
-   eAF_count
-};
-
-AudioFormat determineFormatFromBytes(const unsigned char *inData, int len);
-AudioFormat determineFormatFromFile(const std::string &filename);
-
-bool loadOggSampleFromBytes(const unsigned char *inData, int len, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
-bool loadOggSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
-
-bool loadWavSampleFromBytes(const unsigned char *inData, int len, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
-bool loadWavSampleFromFile(const char *inFileURL, QuickVec<unsigned char> &outBuffer, int *channels, int *bitsPerSample, int* outSampleRate);
-
-
-
-
-   class AudioStream
-   {
-   public:
-      static AudioStream *createOgg();
-      virtual ~AudioStream() {}
-      
-      virtual bool open(const std::string &path, int startTime)=0;
-      virtual double getLength(const std::string &path) = 0;
-      virtual double getPosition() = 0;
-      virtual double setPosition(const float &inFloat) = 0;
-      virtual int fillBuffer(char *outBuffer, int inRequestBytes) = 0;
-      virtual void rewind() = 0;
-      virtual int getRate() = 0;
-      virtual bool isValid() = 0;
-
-   };
-   
 }
 
 #endif

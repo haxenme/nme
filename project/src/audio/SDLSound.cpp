@@ -593,12 +593,11 @@ public:
       mMusic = Mix_LoadMUS(name);
       if (mMusic)
       {
-         AudioFormat fmt = determineFormatFromFile(name);
-         if (fmt==eAF_ogg)
+         INmeSoundData *stream = INmeSoundData::create(name,SoundJustInfo);
+         if (stream)
          {
-            AudioStream *s = AudioStream::createOgg();
-            duration = s->getLength(name)*1000.0;
-            delete s;
+            duration = stream->getDuration() * 1000.0;
+            stream->release();
          }
       }
       else
