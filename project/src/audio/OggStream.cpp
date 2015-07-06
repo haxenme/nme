@@ -1,7 +1,7 @@
 #include <math.h>
 #include <vorbis/vorbisfile.h>
 #include <string>
-#include <Audio.h>
+#include "Audio.h"
 
 namespace nme
 {

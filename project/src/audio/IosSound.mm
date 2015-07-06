@@ -6,7 +6,7 @@
 #include <Sound.h>
 #include <nme/QuickVec.h>
 #include <Utils.h>
-#include <Audio.h>
+#include "Audio.h"
 
 
 @interface AVAudioPlayerChannelDelegate : NSObject <AVAudioPlayerDelegate>  {

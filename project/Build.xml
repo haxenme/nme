@@ -114,16 +114,16 @@
          <file name="${SRC_DIR}/iPhone/UIStageView.mm"/>
          <file name="${SRC_DIR}/iPhone/UIDeviceHardware.mm"/>
          <!-- <file name="${SRC_DIR}/iPhone/SurfaceIO.mm"/> -->
-         <file name="${SRC_DIR}/iPhone/Sound.mm"/>
          <file name="${SRC_DIR}/iPhone/NativeFont.mm"/>
          <file name="${SRC_DIR}/iPhone/System.mm"/>
          <file name="${SRC_DIR}/apple/Utils.mm"/>
          <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
+         <file name="${SRC_DIR}/audio/IosSound.mm"/>
       </section>
 
       <section if="android">
          <file name="${SRC_DIR}/android/AndroidCommon.cpp" />
-         <file name="${SRC_DIR}/android/AndroidSound.cpp" />
+         <file name="${SRC_DIR}/audio/AndroidSound.cpp" />
          <file name="${SRC_DIR}/android/AndroidFont.cpp"/>
          <file name="${SRC_DIR}/android/AndroidFrame.cpp"/>
          <file name="${SRC_DIR}/android/JNI.cpp"/>
@@ -146,13 +146,13 @@
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
         <compilerflag value="-DNME_MIXER" unless="NME_OPENAL" />
-        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="NME_OPENAL" />
+        <file name="${SRC_DIR}/audio/SDLSound.cpp" unless="NME_OPENAL" />
         <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>
 
       <section if="NME_SDL2">
         <compilerflag value="-I${NME_DEV}/include/SDL2" />
-        <file name="${SRC_DIR}/sdl/SDLSound.cpp" unless="NME_OPENAL" />
+        <file name="${SRC_DIR}/audio/SDLSound.cpp" unless="NME_OPENAL" />
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <compilerflag value="-DSDL_OGL" />
         <compilerflag value="-DNME_MIXER" unless="NME_OPENAL" />
@@ -174,7 +174,7 @@
       </section>
       
       <section if="NME_OPENAL">
-         <file name="${SRC_DIR}/openal/OpenALSound.cpp" />
+         <file name="${SRC_DIR}/audio/OpenALSound.cpp" />
          <compilerflag value="-DNME_OPENAL" />
       </section>
 
@@ -215,9 +215,9 @@
       <file name="${SRC_DIR}/common/Thread.cpp"/>
       <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
 
-      <file name="${SRC_DIR}/common/audio/Audio.cpp" />
-      <file name="${SRC_DIR}/common/audio/ChannelList.cpp" />
-      <file name="${SRC_DIR}/common/audio/OggStream.cpp" />
+      <file name="${SRC_DIR}/audio/Audio.cpp" />
+      <file name="${SRC_DIR}/audio/ChannelList.cpp" />
+      <file name="${SRC_DIR}/audio/OggStream.cpp" />
       
       <file name="${SRC_DIR}/common/XML/tinystr.cpp"/>
       <file name="${SRC_DIR}/common/XML/tinyxml.cpp"/>

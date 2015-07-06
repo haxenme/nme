@@ -64,7 +64,7 @@ struct NmeMutex
 
    void unlock()
    {
-      ReleseMutex(mutex);
+      ReleaseMutex(mutex);
    }
 };
 

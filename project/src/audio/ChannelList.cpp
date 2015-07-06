@@ -7,7 +7,7 @@
 #endif
 
 #include <Sound.h>
-#include <Audio.h>
+#include "Audio.h"
 
 
 namespace nme

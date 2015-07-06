@@ -20,7 +20,7 @@ extern "C" {
 #include <Sound.h>
 #include <nme/QuickVec.h>
 #include <Utils.h>
-#include <Audio.h>
+#include "Audio.h"
 #include <NmeThread.h>
 #include <unistd.h>
 #include <sys/time.h>
