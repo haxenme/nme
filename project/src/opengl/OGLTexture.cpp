@@ -4,8 +4,9 @@
 
 // 0xAARRGGBB
 #if defined(ANDROID)
-   #define ARGB_STORE GL_BGRA_EXT
-   #define ARGB_PIXEL GL_BGRA_EXT
+   static bool sFormatChecked = false;
+   static int ARGB_STORE = GL_BGRA_EXT;
+   static int ARGB_PIXEL = GL_BGRA_EXT;
 #elif defined(EMSCRIPTEN)
    #undef SWAP_RB
    #define SWAP_RB 1
@@ -102,6 +103,28 @@ int * getAlpha16Table()
    return sAlpha16Table;
 }
 
+#ifdef ANDROID_X86
+void checkRgbFormat()
+{
+   sFormatChecked = true;
+   char data[4];
+   glGetError();
+   GLuint tid = 0;
+   glGenTextures(1, &tid);
+   glBindTexture(GL_TEXTURE_2D,tid);
+   glTexImage2D(GL_TEXTURE_2D, 0, ARGB_STORE, 1, 1, 0, ARGB_PIXEL, GL_UNSIGNED_BYTE, data);
+   glDeleteTextures(1,&tid);
+   int err = glGetError();
+   if (err)
+   {
+      ELOG("Switching texture format for simulator");
+      ARGB_STORE = GL_RGBA;
+      ARGB_PIXEL = /*GL_BGRA*/ 0x80E1;
+   }
+   //else ELOG("Using normal texture format in simulator");
+}
+#endif
+
 
 class OGLTexture : public Texture
 {
@@ -122,6 +145,11 @@ class OGLTexture : public Texture
 public:
    OGLTexture(Surface *inSurface,unsigned int inFlags)
    {
+      #ifdef ANDROID_X86
+      if (!sFormatChecked)
+         checkRgbFormat();
+      #endif
+
       // No reference count since the surface should outlive us
       mSurface = inSurface;
 
