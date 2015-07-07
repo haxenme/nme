@@ -335,6 +335,13 @@ public:
       key.code = inCharCode;
       key.value = inKeyCode;
       HandleEvent(key);
+      
+      if(inDown) {
+         Event key( etChar );
+         key.code = inCharCode;
+         //key.value = inKeyCode;
+         HandleEvent(key);
+      }
    }
 
    void OnJoy(int inDeviceId, int inCode, bool inDown)
