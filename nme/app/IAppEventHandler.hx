@@ -5,6 +5,7 @@ import haxe.CallStack;
 interface IAppEventHandler
 {
    public function onRender(inTimed:Bool):Void;
+   public function onText(event:AppEvent, type:String):Void;
    public function onKey(event:AppEvent, type:String):Void;
    public function onMouse(event:AppEvent, type:String, inFromMouse:Bool):Void;
    public function onTouch(event:AppEvent, type:String):Void;
