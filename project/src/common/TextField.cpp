@@ -606,9 +606,24 @@ void TextField::OnChange()
 
 void TextField::OnKey(Event &inEvent)
 {
-   if (isInput && inEvent.type==etKeyDown && inEvent.code<0xffff )
+   if (isInput && (inEvent.type==etKeyDown || inEvent.type==etChar) && inEvent.code<0xffff )
    {
       int code = inEvent.code;
+      if(inEvent.type==etChar && code>27 && code<63000) {
+        DeleteSelection();
+        wchar_t str[2] = {code,0};
+        WString ws(str);
+
+        if (caretIndex<0) caretIndex = 0;
+        caretIndex = std::min(caretIndex,getLength());
+        InsertString(ws);
+        caretIndex += ws.length();
+
+        OnChange();
+        ShowCaret();
+
+        return;
+      }
       bool shift = inEvent.flags & efShiftDown;
 
       switch(inEvent.value)
