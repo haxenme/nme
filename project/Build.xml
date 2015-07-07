@@ -75,6 +75,8 @@
    <set name="NME_INC_DIR" value="${NME_ROOT}../include" />
    <set name="SUP_DIR" value="${NME_ROOT}support" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
+
+   <set name="modplug" value="1" unless="android" />
    
    
    <set name="HXCPP_OPTIM_LEVEL" value="-O2" if="emscripten" unless="debug" />
@@ -88,6 +90,8 @@
    <files id="nme">
       <compilerflag value="-I${NME_INC_DIR}"/>
       <compilerflag value="-I${INC_DIR}"/>
+
+      <compilerflag value="-DNME_MODPLUG" if="modplug" />
 
 
       <section if="windows">
@@ -147,18 +151,17 @@
         <compilerflag value="-I/opt/local/include" if="macos" />
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
-        <compilerflag value="-DNME_MIXER" unless="NME_OPENAL" />
-        <file name="${SRC_DIR}/audio/SDLSound.cpp" unless="NME_OPENAL" />
+        <compilerflag value="-DNME_MIXER" />
+        <file name="${SRC_DIR}/audio/SDLSound.cpp" />
         <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>
 
       <section if="NME_SDL2">
         <compilerflag value="-I${NME_DEV}/include/SDL2" />
-        <file name="${SRC_DIR}/audio/SDLSound.cpp" unless="NME_OPENAL" />
+        <file name="${SRC_DIR}/audio/SDLSound.cpp" />
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <compilerflag value="-DSDL_OGL" />
-        <compilerflag value="-DNME_MIXER" unless="NME_OPENAL" />
-        <compilerflag value="-DNME_MODPLUG" />
+        <compilerflag value="-DNME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
       </section>
 
@@ -221,6 +224,7 @@
 
       <file name="${SRC_DIR}/audio/Audio.cpp" />
       <file name="${SRC_DIR}/audio/ChannelList.cpp" />
+      <file name="${SRC_DIR}/audio/Sound.cpp" />
       
       <file name="${SRC_DIR}/common/XML/tinystr.cpp"/>
       <file name="${SRC_DIR}/common/XML/tinyxml.cpp"/>
@@ -275,11 +279,12 @@
 
          <section if="NME_SDL2">
             <lib name="${PRELIB}SDL2${POSTLIB}" />
-            <lib name="${PRELIB}SDL2_mixer${POSTLIB}" unless="NME_OPENAL"  />
-            <lib name="${PRELIB}modplug${POSTLIB}" />
+            <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
             <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/>
             <lib name="-luuid" if="mingw" unless="static_link" />
          </section>
+
+         <lib name="${PRELIB}modplug${POSTLIB}" if="modplug" />
 
          <section unless="NME_NATIE_SDL_SYSTEM">
             <lib name="${PRELIB}vorbis${POSTLIB}" />

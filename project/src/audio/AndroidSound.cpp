@@ -274,7 +274,7 @@ public:
       loadWithPath(inPath, inForceMusic);
    }
    
-   AndroidSound(float *inData, int len, bool inForceMusic)
+   AndroidSound(const unsigned char *inData, int len, bool inForceMusic)
    {
       JNIEnv *env = GetEnv();
 
@@ -374,13 +374,13 @@ void Sound::Resume()
 
 
 
-Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
+Sound *CreateAndroidSound(const std::string &inFilename,bool inForceMusic)
 {
    initJni();
    return new AndroidSound(inFilename, inForceMusic);
 }
 
-Sound *Sound::Create(float *inData, int len, bool inForceMusic)
+Sound *CreateAndroidSound(const unsigned char *inData, int len, bool inForceMusic)
 {
    initJni();
    return new AndroidSound(inData, len, inForceMusic);

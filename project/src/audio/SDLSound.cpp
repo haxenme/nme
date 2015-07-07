@@ -332,7 +332,7 @@ public:
    int       mBufferAheadSamples;
 };
 
-SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
+SoundChannel *CreateSdlSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
     SoundDataFormat inDataFormat,bool inIsStereo, int inRate) 
 {
    if (!Init())
@@ -399,7 +399,7 @@ public:
       }
    }
    
-   SDLSound(float *inData, int len)
+   SDLSound(const unsigned char *inData, int len)
    {
       loaded = false;
       IncRef();
@@ -633,7 +633,7 @@ public:
       }
    }
    
-   SDLMusic(float *inData, int len)
+   SDLMusic(const unsigned char *inData, int len)
    {
       IncRef();
       loaded = true;
@@ -685,9 +685,10 @@ public:
 // --- External Interface -----------------------------------------------------------
 
 
-Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
+Sound *CreateSdlSound(const std::string &inFilename,bool inForceMusic)
 {
    Sound *sound = inForceMusic ? 0 :  new SDLSound(inFilename);
+
    if (!sound || !sound->ok())
    {
       if (sound) sound->DecRef();
@@ -696,8 +697,9 @@ Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
    return sound;
 }
 
-Sound *Sound::Create(float *inData, int len, bool inForceMusic) {
-   Sound *sound = inForceMusic ? 0 :  new SDLSound(inData, len);
+Sound *CreateSdlSound(const unsigned char *inData, int len, bool inForceMusic)
+{
+   Sound *sound = inForceMusic ? 0 : new SDLSound(inData, len);
    if (!sound || !sound->ok())
    {
       if (sound) sound->DecRef();

@@ -960,7 +960,7 @@ public:
 #endif
 
 
-SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
+SoundChannel *CreateOpenSlSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
     SoundDataFormat inDataFormat,bool inIsStereo, int inRate) 
 {
    if (!OpenSlInit())

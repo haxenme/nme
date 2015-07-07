@@ -29,6 +29,28 @@
 namespace nme
 {
 
+Sound *CreateAndroidSound(const unsigned char *inData, int len, bool inForceMusic);
+Sound *CreateAndroidSound(const std::string &inFilename,bool inForceMusic);
+
+
+Sound *CreateSdlSound(const unsigned char *inData, int len, bool inForceMusic);
+Sound *CreateSdlSound(const std::string &inFilename,bool inForceMusic);
+SoundChannel *CreateSdlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
+              SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
+
+Sound *CreateAvPlayerSound(const unsigned char *inData, int len);
+Sound *CreateAvPlayerSound(const std::string &inFilename);
+
+Sound *CreateOpenAlSound(const unsigned char *inData, int len);
+SoundChannel *CreateOpenAlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
+              SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
+
+Sound *CreateOpenSlSound(const unsigned char *inData, int len);
+SoundChannel *CreateOpenSlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
+              SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
+
+
+
 class INmeSoundData;
 class INmeSoundStream;
 
@@ -46,8 +68,12 @@ enum AudioFormat
    eAF_ogg,
    eAF_wav,
    eAF_mid,
+   eAF_mp3,
    eAF_count
 };
+
+AudioFormat determineFormatFromBytes(const unsigned char *inData, int len);
+AudioFormat determineFormatFromFile(const std::string &inFilename);
 
 
 

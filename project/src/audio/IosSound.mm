@@ -308,7 +308,7 @@ namespace nme
             #endif
         }
         
-        AVAudioPlayerSound(float *inDataPtr, int inDataLen)
+        AVAudioPlayerSound(const unsigned char *inDataPtr, int inDataLen)
         {
             mFilename = "unknown";
             
@@ -397,88 +397,16 @@ namespace nme
         NSData *data;
     };
     
-    
-    Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
-    {
-        // Here we pick a Sound object based on either OpenAL or Apple's AVSoundPlayer
-        // depending on the inForceMusic flag.
-        //
-        // OpenAL has lower latency but can be expensive memory-wise when playing
-        // files more than a few seconds long, and it's not really needed anyways if there is
-        // no need to work with the uncompressed data.
-        //
-        // AVAudioPlayer has slightly higher latency and doesn't give access to uncompressed
-        // sound data, but uses "Apple's optimized pathways" and doesn't need to store
-        // uncompressed sound data in memory.
-        //
-        // By default the OpenAL implementation is picked, while AVAudioPlayer is used then
-        // inForceMusic is true.
-        
-        LOG_SOUND("Sound.mm Create()\n");
 
-        std::string fileURL;
-        
-        if (inFilename[0] == '/') {
-            fileURL = inFilename;
-        } else {
-            fileURL = GetResourcePath() + gAssetBase + inFilename;
-        }
-        
-        AudioFormat type = determineFormatFromFile(fileURL);
-        
-        if (type == eAF_ogg || !inForceMusic)
-        {
-            Sound *sound = Sound::CreateOpenAl(inFilename, inForceMusic);
-            
-            if (sound && sound->ok())
-               return sound;
-            else
-            {
-               delete sound;
-               return 0;
-            }
-        }
-        else
-        {
-            return new AVAudioPlayerSound(inFilename);
-        }
-    }
-    
-    
-    Sound *Sound::Create(float *inData, int len, bool inForceMusic)
+    Sound *CreateAvPlayerSound(const std::string &inFilename)
     {
-        // Here we pick a Sound object based on either OpenAL or Apple's AVSoundPlayer
-        // depending on the inForceMusic flag.
-        //
-        // OpenAL has lower latency but can be expensive memory-wise when playing
-        // files more than a few seconds long, and it's not really needed anyways if there is
-        // no need to work with the uncompressed data.
-        //
-        // AVAudioPlayer has slightly higher latency and doesn't give access to uncompressed
-        // sound data, but uses "Apple's optimized pathways" and doesn't need to store
-        // uncompressed sound data in memory.
-        //
-        // By default the OpenAL implementation is picked, while AVAudioPlayer is used then
-        // inForceMusic is true.
-        
-        LOG_SOUND("Sound.mm Create()\n");
-        if (inForceMusic)
-        {
-            return new AVAudioPlayerSound(inData, len);
-        }
-        else
-        {
-            Sound *sound = Sound::CreateOpenAl(inData, len);
-            
-            if (sound && sound->ok())
-               return sound;
-            else
-            {
-               delete sound;
-               return 0;
-            }
-        }
+       return new AVAudioPlayerSound(inFilename);
     }
-    
-    
+
+  
+    Sound *CreateAvPlayerSound(const unsigned char *inData, int len)
+    {
+       return new AVAudioPlayerSound(inData, len);
+    }
+  
 } // end namespace nme

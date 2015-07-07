@@ -4308,7 +4308,7 @@ DEFINE_PRIM(nme_video_set_smoothing,2);
 value nme_sound_from_file(value inFilename,value inForceMusic)
 {
    Sound *sound = val_is_null(inFilename) ? 0 :
-                  Sound::Create( val_string(inFilename), val_bool(inForceMusic) );
+                  Sound::FromFile( val_string(inFilename), val_bool(inForceMusic) );
 
    if (sound)
    {
@@ -4328,7 +4328,7 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
    if (!val_is_null(inData) && length > 0) {
       ByteArray buf = ByteArray(inData);
       //printf("I'm here! trying bytes with length %d", length);
-      sound = Sound::Create((float *)buf.Bytes(), length, val_bool(inForceMusic) );
+      sound = Sound::FromEncodedBytes(buf.Bytes(), length, val_bool(inForceMusic) );
    } else {
       val_throw(alloc_string("Empty ByteArray"));
    }

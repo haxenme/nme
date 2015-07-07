@@ -1,20 +1,5 @@
-#if defined(HX_MACOS) || defined(IPHONE)
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>
-#endif
-
-#ifdef ANDROID
-
-extern "C" {
-  ALC_API void       ALC_APIENTRY alcSuspend(void);
-  ALC_API void       ALC_APIENTRY alcResume(void);
-}
-
-#include <ByteArray.h>
-#endif
 
 #include <math.h>
 #include <Sound.h>
@@ -899,7 +884,7 @@ public:
 // --- External Sound implementation -------------------
    
 
-SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
+SoundChannel *CreateOpenAlSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
     SoundDataFormat inDataFormat,bool inIsStereo, int inRate) 
 {
    if (!OpenALInit())
@@ -912,52 +897,24 @@ SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const Sou
 
   
 
-#ifndef IPHONE
-Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
+Sound *CreateOpenAlSound(const std::string &inFilename,bool inForceMusic)
 {
    //Always check if openal is intitialized
    if (!OpenALInit())
       return 0;
    
-   //Return a reference
-   OpenALSound *sound = 0;
-   
-   #ifdef ANDROID
-   if (!inForceMusic)
-   {
-      ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
-      sound = new OpenALSound((char *)bytes.Bytes(), bytes.Size());
-   }
-   else
-   {
-      sound = new OpenALSound(inFilename, inForceMusic);
-   }
-   #else
-   sound = new OpenALSound(inFilename, inForceMusic);
-   #endif
-   
-   if (sound->ok ())
-      return sound;
-   else
-      return 0;
+   return new OpenALSound(inFilename, inForceMusic);
 }
 
 
-Sound *Sound::Create(float *inData, int len, bool inForceMusic)
+Sound *CreateOpenAlSound(const unsigned char *inData, int len)
 {
    //Always check if openal is intitialized
    if (!OpenALInit())
       return 0;
 
-   //Return a reference
-   OpenALSound *sound = new OpenALSound((const unsigned  char*)inData, len);
-   
-   if (sound->ok ())
-      return sound;
-   else
-      return 0;
+   return new OpenALSound(inData, len);
 }
-#endif
 
 
 void Sound::Suspend()
@@ -970,10 +927,6 @@ void Sound::Suspend()
    
    alcMakeContextCurrent(0);
    alcSuspendContext(sgContext);
-   
-   #ifdef ANDROID
-   alcSuspend();
-   #endif
 }
 
 
@@ -982,10 +935,6 @@ void Sound::Resume()
    //Always check if openal is initialized
    if (!OpenALInit())
       return;
-   
-   #ifdef ANDROID
-   alcResume();
-   #endif
    
    alcMakeContextCurrent(sgContext);
 
@@ -1001,20 +950,6 @@ void Sound::Shutdown()
 }
 
      
-Sound *Sound::CreateOpenAl(const std::string &inFilename, bool inForceMusic)
-{
-   if (!OpenALInit())
-      return 0;
-   return new OpenALSound(inFilename, inForceMusic);
-}
-
-Sound *Sound::CreateOpenAl(float *inData, int len)
-{
-   if (!OpenALInit())
-      return 0;
-   return new OpenALSound((const unsigned char *)inData, len);
-}
-
 
 
 } // end namespace nme

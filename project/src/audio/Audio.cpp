@@ -252,6 +252,10 @@ static ov_callbacks NmeOggApi =
 namespace nme
 {
 
+bool isMp3(const std::string &inFilename)
+{
+   return inFilename.size()>3 && inFilename.substr( inFilename.size()-3 )=="mp3";
+}
 
 
 AudioFormat determineFormatFromBytes(const unsigned char *inData, int len)
@@ -265,6 +269,25 @@ AudioFormat determineFormatFromBytes(const unsigned char *inData, int len)
    if (len>4 && SameBuffer(inData, "MThd", 4))
       return eAF_mid;
 
+   return eAF_unknown;
+}
+
+AudioFormat determineFormatFromFile(const std::string &inFilename)
+{
+   if (isMp3(inFilename))
+      return eAF_mp3;
+
+   unsigned char buf[41];
+   memset(buf,0,sizeof(buf));
+
+   FILE *file = OpenRead(inFilename.c_str());
+   if (file)
+   {
+      fread(buf, sizeof(buf), 1, file);
+      fclose(file);
+      return determineFormatFromBytes(buf,sizeof(buf));
+   }
+   
    return eAF_unknown;
 }
 
@@ -593,7 +616,6 @@ public:
 
       if (!modPlugInit)
       {
-         printf("Init modplug...\n");
          modPlugInit = true;
          ModPlug_GetSettings(&settings);
          settings.mFlags=MODPLUG_ENABLE_OVERSAMPLING;
