@@ -499,6 +499,10 @@ static std::string nmeTitle;
          key_down.value = v;
          mStage->OnEvent(key_down);
          
+         Event text_input(etChar);
+         text_input.code = c;
+         mStage->OnEvent(text_input);
+         
          Event key_up(etKeyUp);
          key_up.code = c;
          key_up.value = v;
