@@ -9,6 +9,8 @@ import nme.app.AppEvent;
 import nme.app.FrameTimer;
 import nme.display.DisplayObjectContainer;
 import nme.ui.Keyboard;
+import nme.events.TextEvent;
+import nme.text.TextField;
 
 #if stage3d
 import nme.display.Stage3D;
@@ -291,6 +293,21 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    }
 
    // --- IAppEventHandler ----
+   
+   public function onText(inEvent:AppEvent, type:String):Void
+   {
+       var obj:DisplayObject = nmeFindByID(inEvent.id);
+
+       if (obj != null && Std.is(nmeFindByID(inEvent.id), TextField)) {
+           var u = new haxe.Utf8();
+           u.addChar( inEvent.code );
+           var evt = new TextEvent(type, true, true, u.toString());
+           obj.nmeFireEvent(evt);
+
+           if (evt.nmeGetIsCancelled())
+               inEvent.result = 1;
+       }
+   }
 
    public function onKey(inEvent:AppEvent, type:String):Void
    {
