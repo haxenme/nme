@@ -13,6 +13,17 @@
 
 namespace nme
 {
+
+#ifndef HX_WINDOWS
+typedef pthread_t ThreadId;
+#else
+typedef DWORD ThreadId;
+#endif
+
+ThreadId GetThreadId();
+bool IsMainThread();
+void SetMainThread();
+
 typedef MyMutex NmeMutex;
 
 struct NmeAutoMutex

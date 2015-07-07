@@ -122,7 +122,6 @@
       </section>
 
       <section if="android">
-         <compilerflag value="-DNME_ANDROID_SIM" if="androidsim" />
          <file name="${SRC_DIR}/android/AndroidCommon.cpp" />
          <file name="${SRC_DIR}/audio/AndroidSound.cpp" />
          <file name="${SRC_DIR}/android/AndroidFont.cpp"/>
