@@ -38,9 +38,10 @@ SLInterfaceID findInterface(void *dll, const char *inName)
    SLInterfaceID *symPtr = (SLInterfaceID *)dlsym(dll,inName);
    if (!symPtr)
    {
-      LOG_SOUND("Could not find symbol %s", symPtr);
+      ELOG("Could not find symbol %s", symPtr);
       return 0;
    }
+   VLOG(" got interface %s = %d", inName, *symPtr);
    return *symPtr;
 }
 
@@ -49,9 +50,11 @@ bool OpenSlInit()
    if (!slDynamicCreateEngine)
    {
       void *dll = dlopen("libOpenSLES.so", RTLD_NOW);
+      VLOG("OpenSlInit %p", dll);
       if (dll)
       {
          slDynamicCreateEngine = (slCreateEngine_func)dlsym(dll,"slCreateEngine");
+         VLOG("OpenSlInit slDynamicCreateEngine = %p", slDynamicCreateEngine);
          iidAndroidSampleBuffer = findInterface(dll, "SL_IID_ANDROIDSIMPLEBUFFERQUEUE");
          iidPlay = findInterface(dll, "SL_IID_PLAY");
          iidEngine = findInterface(dll, "SL_IID_ENGINE");
@@ -61,6 +64,7 @@ bool OpenSlInit()
 
    if (slDynamicCreateEngine && iidAndroidSampleBuffer && iidPlay && iidEngine && iidVolume)
    {
+      ELOG("ooooo OpenSlInit Good.");
       opensl_is_shutdown = false;
 
       if (slDynamicCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL)==SL_RESULT_SUCCESS &&
@@ -68,6 +72,8 @@ bool OpenSlInit()
               (*engineObject)->GetInterface(engineObject, iidEngine, &engineEngine) == SL_RESULT_SUCCESS )
          opensl_is_init = true;
    }
+   if (!opensl_is_init)
+      ELOG("ooooo OpenSlInit Bad.");
 
    return opensl_is_init;
 }
@@ -129,15 +135,14 @@ public:
          case 44100: slRate = SL_SAMPLINGRATE_44_1; break;
       }
 
-
       const SLInterfaceID ids[] = {iidVolume};
       const SLboolean req[] = {SL_BOOLEAN_FALSE};
       if ((*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 1, ids, req)==SL_RESULT_SUCCESS &&
-            (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE)==SL_BOOLEAN_FALSE )
+            (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE)==SL_RESULT_SUCCESS )
       {
          SLDataFormat_PCM pcm;
          pcm.formatType = SL_DATAFORMAT_PCM;
-         pcm.numChannels = 1;
+         pcm.numChannels = inIsStereo ? 2 : 1;
          pcm.samplesPerSec = slRate;
          pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
          pcm.channelMask = inIsStereo ? SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT : SL_SPEAKER_FRONT_CENTER;
@@ -145,10 +150,10 @@ public:
 
          switch(inFormat)
          {
-            case sdfByte: pcm.bitsPerSample = 8; break;
+            case sdfByte: pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_8; break;
             case sdfShort:
             case sdfFloat:
-               pcm.bitsPerSample = 16;
+               pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
                break;
          }
          pcm.containerSize = pcm.bitsPerSample;
@@ -178,7 +183,11 @@ public:
             shouldPlay = true;
             play();
          }
+         else
+            ELOG("Could not create valid audio player");
       }
+      else
+         ELOG("Could not create outputMixObject");
    }
 
    void queueData(const void *inData, int inByteCount)
@@ -319,16 +328,17 @@ class OpenSlSyncUpdateChannel : public OpenSlSourceChannel
 {
 public:
    SoundDataFormat dataFormat;
-   std::vector<short> convertBuffer;
    bool syncDataPending;
    bool noMoreData;
    bool isStereo;
-   bool queueHungry;
+   volatile int activeBuffers;
    int  rate;
    int  sampleSize;
+   int  writeBuffer;
+   std::vector<unsigned char> sampleBuffer[2];
    
 
-   OpenSlSyncUpdateChannel(const SoundTransform &inTransform,SoundDataFormat inFormat, bool inIsStereo, int inRate)
+   OpenSlSyncUpdateChannel(const ByteArray &inBytes,const SoundTransform &inTransform,SoundDataFormat inFormat, bool inIsStereo, int inRate)
       : OpenSlSourceChannel(0, inTransform, inFormat, inIsStereo, inRate, true )
    {
       syncDataPending = false;
@@ -336,23 +346,19 @@ public:
       isStereo = inIsStereo;
       dataFormat = inFormat;
       sampleSize = 0;
+      activeBuffers = 0;
+      writeBuffer = 0;
 
       if (shouldPlay)
       {
          switch(dataFormat)
          {
-            case sdfByte:
-               sampleSize = isStereo ? 2 : 1;
-               break;
-
-            case sdfShort:
-               sampleSize = isStereo ? 4 : 2;
-               break;
-
-            case sdfFloat:
-               sampleSize = isStereo ? 8 : 4;
-               break;
+            case sdfByte: sampleSize = isStereo ? 2 : 1; break;
+            case sdfShort: sampleSize = isStereo ? 4 : 2; break;
+            case sdfFloat: sampleSize = isStereo ? 8 : 4; break;
          }
+
+         addData(inBytes);
 
          clAddChannel(this, false);
       }
@@ -361,7 +367,7 @@ public:
 
    void onBufferDone()
    {
-      queueHungry = true;
+      HxAtomicDec(&activeBuffers);
    }
 
    bool needsData()
@@ -369,7 +375,7 @@ public:
       if (opensl_is_shutdown || !shouldPlay || suspended || syncDataPending || noMoreData )
          return false;
 
-      return queueHungry;
+      return activeBuffers<2;
    }
 
    bool isComplete()
@@ -384,26 +390,31 @@ public:
 
    void addData(const ByteArray &inBytes)
    {
-      queueHungry = false;
       const unsigned char *data = inBytes.Bytes();
       int size = inBytes.Size();
 
       if (size>0)
       {
+         HxAtomicInc(&activeBuffers);
+
+         std::vector<unsigned char> &buffer = sampleBuffer[writeBuffer];
+         writeBuffer = !writeBuffer;
          if (dataFormat==sdfFloat)
          {
             int values = size/sizeof(float);
             float *src = (float *)data;
 
-            convertBuffer.resize(values);
-            short *dest = &convertBuffer[0];
+            buffer.resize(values*sizeof(short));
+            short *dest = (short *)&buffer[0];
             for(int v=0;v<values;v++)
-                dest[v] = src[v] * 10000;
- 
-            queueData(dest, values*sizeof(short));
+                dest[v] = src[v] * 16383.0;
          }
          else
-            queueData(data, size);
+         {
+            buffer.resize(size);
+            memcpy(&buffer[0], data, size);
+         }
+         queueData(&buffer[0], buffer.size());
       }
 
       int samples = size/sampleSize;
@@ -955,8 +966,8 @@ SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const Sou
    if (!OpenSlInit())
       return 0;
    
-  OpenSlSourceChannel *result =  new OpenSlSyncUpdateChannel(inTransform, inDataFormat, inIsStereo, inRate);
-  result->addData(inBytes);
+  OpenSlSyncUpdateChannel *result =  new OpenSlSyncUpdateChannel(inBytes, inTransform, inDataFormat, inIsStereo, inRate);
+
   return result;
 }
 

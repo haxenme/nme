@@ -122,6 +122,7 @@
       </section>
 
       <section if="android">
+         <compilerflag value="-DNME_ANDROID_SIM" if="androidsim" />
          <file name="${SRC_DIR}/android/AndroidCommon.cpp" />
          <file name="${SRC_DIR}/audio/AndroidSound.cpp" />
          <file name="${SRC_DIR}/android/AndroidFont.cpp"/>
@@ -129,7 +130,7 @@
          <file name="${SRC_DIR}/android/JNI.cpp"/>
          <file name="${SRC_DIR}/android/System.cpp"/>
          <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="NME_S3D" />
-         <!-- <file name="${SRC_DIR}/audio/OpenSlSound.cpp" /> -->
+         <file name="${SRC_DIR}/audio/OpenSlSound.cpp" />
 
       </section>
 

@@ -153,11 +153,6 @@ public:
 };
 
 
-SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
-    SoundDataFormat inDataFormat,bool inIsStereo, int inRate) 
-{
-   return 0;
-}
 
 
 class AndroidMusicChannel : public SoundChannel
@@ -390,6 +385,7 @@ Sound *Sound::Create(float *inData, int len, bool inForceMusic)
    initJni();
    return new AndroidSound(inData, len, inForceMusic);
 }
+
 
 } // end namespace name
 
