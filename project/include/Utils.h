@@ -233,7 +233,10 @@ bool ClearUserPreference(const char *inId);
 #ifdef HX_WINDOWS
 typedef wchar_t OSChar;
 #define val_os_string val_wstring
-#define OpenRead(x) _wfopen(x,L"rb")
+
+FILE *OpenRead(const char *inUtf8Name);
+FILE *OpenRead(const wchar_t *inName);
+
 #define OpenOverwrite(x) _wfopen(x,L"wb") // [ddc]
 
 #else
@@ -266,6 +269,7 @@ std::string GetExeName();
 
 
 std::string WideToUTF8(const WString &inWideString);
+WString UTF8ToWide(const std::string &inWideString);
 
 double GetTimeStamp();
 

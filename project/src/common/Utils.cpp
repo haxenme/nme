@@ -78,6 +78,19 @@ ByteArray ByteArray::FromFile(const OSChar *inFilename)
 
 
 #ifdef HX_WINDOWS
+
+FILE *OpenRead(const wchar_t *inName)
+{
+   return _wfopen(inName,L"rb");
+}
+
+FILE *OpenRead(const char *inUtf8Name)
+{
+   WString wide = UTF8ToWide(inUtf8Name);
+   return OpenRead( wide.c_str() );
+}
+
+
 ByteArray ByteArray::FromFile(const char *inFilename)
 {
    FILE *file = fopen(inFilename,"rb");
@@ -663,11 +676,53 @@ WString WString::substr(int inPos,int inLen) const
    return WString(mString+inPos,inLen);
 }
 
-
-
-
-
 #endif
+
+
+int DecodeAdvanceUTF8(const unsigned char * &ioPtr)
+{
+   int c = *ioPtr++;
+   if( c < 0x80 )
+   {
+      return c;
+   }
+   else if( c < 0xE0 )
+   {
+      return ((c & 0x3F) << 6) | ((*ioPtr++) & 0x7F);
+   }
+   else if( c < 0xF0 )
+   {
+      int c2 = *ioPtr++;
+      return  ((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | ( (*ioPtr++) & 0x7F);
+   }
+
+   int c2 = *ioPtr++;
+   int c3 = *ioPtr++;
+   return ((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 & 0x7F) << 6) | ((*ioPtr++) & 0x7F);
+}
+
+WString UTF8ToWide(const std::string &inUtf8)
+{
+   const unsigned char *ptr = (const unsigned char *)inUtf8.c_str();
+   const unsigned char *end = ptr + inUtf8.size();
+   int chars = 0;
+   while(ptr<end)
+   {
+      DecodeAdvanceUTF8(ptr);
+      chars++;
+   }
+
+   WString result;
+   result.resize(chars);
+
+   ptr = (const unsigned char *)inUtf8.c_str();
+   chars = 0;
+   while(ptr<end)
+      result[chars++] = DecodeAdvanceUTF8(ptr);
+   return result;
+}
+
+
 
 
 
