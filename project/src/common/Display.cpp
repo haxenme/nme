@@ -769,8 +769,9 @@ void SimpleButton::Render( const RenderTarget &inTarget, const RenderState &inSt
          return;
       if (mState[stateHitTest])
       {
+          DisplayObject *oldHit = inState.mHitResult;
           mState[stateHitTest]->Render(inTarget,inState);
-          if (inState.mHitResult)
+          if (inState.mHitResult && inState.mHitResult!=oldHit)
              inState.mHitResult = this;
       }
    }
