@@ -579,6 +579,15 @@ WString::WString(const wchar_t *inStr,int inLen)
    mLength = inLen;
 }
 
+
+void WString::resize(int inLength)
+{
+   delete [] mString;
+   mString = new wchar_t[inLength+1];
+   memset(mString,0,sizeof(wchar_t)*(inLength+1));
+   mLength = inLength;
+}
+
 WString::~WString()
 {
    delete [] mString;

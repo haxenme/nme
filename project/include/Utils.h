@@ -172,6 +172,7 @@ public:
 
    inline int length() const { return mLength; }
    inline int size() const { return mLength; }
+   void resize(int inLength);
    
    int compare ( const WString& str ) const { return wcscmp (mString, str.mString); };
 
