@@ -18,6 +18,7 @@ class SoundChannel extends EventDispatcher
 
    /** @private */ public static var nmeDynamicSoundCount = 0;
    private static var nmeIncompleteList = new Array<SoundChannel>();
+   private var nmeStopped:Bool;
 
    /** @private */ public var nmeHandle:Dynamic;
    /** @private */ private var nmeTransform:SoundTransform;
@@ -27,6 +28,7 @@ class SoundChannel extends EventDispatcher
       super();
 
       pitch = 1.0;
+      nmeStopped = false;
       if (sndTransform != null) 
       {
          nmeTransform = sndTransform.clone();
@@ -103,7 +105,8 @@ class SoundChannel extends EventDispatcher
             if (channel.nmeCheckComplete()) 
             {
                nmeIncompleteList.splice(idx,1);
-               channel.dispatchComplete();
+               if (!channel.nmeStopped)
+                  channel.dispatchComplete();
                checkLength--;
             }
             else
@@ -114,6 +117,7 @@ class SoundChannel extends EventDispatcher
 
    public function stop() 
    {
+      nmeStopped = true;
       nme_sound_channel_stop(nmeHandle);
       //nmeHandle = null;
       nmePollComplete();

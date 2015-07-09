@@ -111,7 +111,8 @@ public:
       mSound = inSound;
       mSound->IncRef();
       startSample = endSample = sSoundPos;
-      playing = true;
+      playing = true; 
+      loopsPending = 0;
 
       mChannel = -1;
 
@@ -122,6 +123,7 @@ public:
       {
          valid = true;
          mOffsetChunk = *mChunk;
+         mOffsetChunk.allocated = 0;
          int startBytes = (int)(inStartTime*0.001*mFrequency*sizeof(short)*STEREO_SAMPLES) & ~3;
          int startLoops = startBytes / mChunk->alen;
          if (inLoops>=0)
@@ -137,6 +139,11 @@ public:
             endSample = startSample;
             mOffsetChunk.alen -= startBytes;
             mOffsetChunk.abuf += startBytes;
+            if (startBytes)
+            {
+               loopsPending = inLoops;
+               inLoops = 0;
+            }
          }
       }
 
@@ -163,10 +170,28 @@ public:
       }
       else
       {
-         Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
-      }
-      // Mix_SetPanning
+         setTransform(inTransform);
+     }
    }
+
+   void setTransform(const SoundTransform &inTransform) 
+   {
+      if (mChannel>=0)
+      {
+         Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
+
+         int left = (1-inTransform.pan)*255;
+         if (left<0) left = 0;
+         if (left>255) left = 255;
+   
+         int right = (inTransform.pan + 1)*255;
+         if (right<0) right = 0;
+         if (right>255) right = 255;
+
+         Mix_SetPanning( mChannel, left, right );
+      }
+   }
+
 
    void initSpec()
    {
@@ -197,6 +222,7 @@ public:
       mDynamicFillPos = 0;
       mSoundPos0 = 0;
       mDynamicDataDue = 0;
+      loopsPending = 0;
 
       mBufferAheadSamples = 0;//mFrequency / 20; // 50ms buffer
 
@@ -227,7 +253,7 @@ public:
             mDynamicRequestPending = false;
             // TODO: Lock?
             if (Mix_PlayChannel( mChannel , &mDynamicChunk,  -1 )<0)
-              onChannelDone(mChannel);
+               onChannelDone(mChannel);
          }
          if (!sDoneChannel[mChannel])
          {
@@ -287,6 +313,19 @@ public:
    {
       if (mChannel>=0 && sDoneChannel[mChannel])
       {
+         if (loopsPending!=0 && mChunk)
+         {
+            mOffsetChunk.alen = mChunk->alen;
+            mOffsetChunk.abuf = mChunk->abuf;
+            if (Mix_PlayChannel( mChannel , &mOffsetChunk, loopsPending<0 ? -1 : loopsPending-1 )==0)
+            {
+               startSample = endSample = sSoundPos;
+               loopsPending = 0;
+               sDoneChannel[mChannel] = false;
+               return;
+            }
+         }
+
          sDoneChannel[mChannel] = false;
          int c = mChannel;
          mChannel = -1;
@@ -314,17 +353,13 @@ public:
 
    double getPosition()
    {
-      if (!sMusicFrequency)
+      if (!sMusicFrequency || !mChunk || !mChunk->alen)
          return 0.0;
 
-      return (playing ? sSoundPos - startSample : endSample - startSample)*1000.0/sMusicFrequency;
+      int samples = mChunk->alen / (sizeof(short)*STEREO_SAMPLES);
+      return (playing ? (sSoundPos - startSample) % samples : endSample - startSample)*1000.0/sMusicFrequency;
    }
 
-   void setTransform(const SoundTransform &inTransform) 
-   {
-      if (mChannel>=0)
-         Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
-   }
 
    double getDataPosition()
    {
@@ -359,9 +394,10 @@ public:
    Mix_Chunk *mChunk;
    int       mChannel;
 
-  int   startSample;
-  int   endSample;
-  bool  playing;
+   int   startSample;
+   int   endSample;
+   bool  playing;
+   int   loopsPending;
 
 
    Mix_Chunk mOffsetChunk;
@@ -397,6 +433,7 @@ class SDLSound : public Sound
    Uint16      format;
    int         channels;
    double      duration;
+   INmeSoundData *soundData;
 
 public:
    SDLSound(const std::string &inFilename)
@@ -409,9 +446,30 @@ public:
       format = 0;
       channels = 0;
       duration = 0.0;
+      soundData = 0;
 
       if (Init())
          loadChunk();
+   }
+
+   SDLSound(const unsigned char *inData, int len)
+   {
+      loaded = false;
+      IncRef();
+      if (Init())
+      {
+         mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(inData, len), 1);
+         onChunk();
+      }
+   }
+
+   ~SDLSound()
+   {
+      if (mChunk)
+         Mix_FreeChunk( mChunk );
+
+      if (soundData)
+         soundData->release();
    }
 
    void loadChunk()
@@ -440,6 +498,20 @@ public:
                mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(resource.Bytes(),2));
                #endif
             }
+            if (!mChunk)
+            {
+               soundData = INmeSoundData::create(resource.Bytes(),n,SoundForceDecode);
+               if (soundData)
+               {
+                  Uint8 *data = (Uint8 *)soundData->decodeAll();
+                  if (data)
+                  {
+                     int bytes = soundData->getDecodedByteCount();
+                     mChunk = Mix_QuickLoad_RAW(data, bytes);
+                  }
+               }
+               
+            }
          }
       }
 
@@ -462,23 +534,7 @@ public:
          // ELOG("Error %s (%s)", mError.c_str(), name );
       }
    }
-   
-   SDLSound(const unsigned char *inData, int len)
-   {
-      loaded = false;
-      IncRef();
-      if (Init())
-      {
-         mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(inData, len), 1);
-         onChunk();
-      }
-   }
-   
-   ~SDLSound()
-   {
-      if (mChunk)
-         Mix_FreeChunk( mChunk );
-   }
+  
    double getLength()
    {
      return duration*1000.0;
@@ -534,9 +590,8 @@ public:
             {
                // Should be 'almost' at start
                //Mix_RewindMusic();
-               int seconds = inStartTime / 1000;
                #ifndef EMSCRIPTEN
-               Mix_SetMusicPosition(seconds); 
+               Mix_SetMusicPosition(inStartTime*0.001); 
                #else
                inStartTime = 0;
                #endif
@@ -717,6 +772,7 @@ public:
    {
       if (!loaded)
          loadMusic();
+
       if (!mMusic)
          return 0;
       return new SDLMusicChannel(this,mMusic,startTime, loops,inTransform);

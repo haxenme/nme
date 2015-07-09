@@ -92,6 +92,7 @@ public:
    virtual int    getRate() const = 0;
    virtual bool   getIsDecoded() const = 0;
    virtual short  *decodeAll() = 0;
+   virtual int    getDecodedByteCount() const = 0;
    virtual INmeSoundStream *createStream()=0;
 
    virtual bool isValid() const { return getChannelSampleCount(); }

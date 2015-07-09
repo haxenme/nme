@@ -29,7 +29,9 @@
 
   <assets from="../06-Sound/Data" >
      <music name="Party_Gu-Jeremy_S-8250_hifi.mp3" id="Mp3" unless="desktop" />
+     <music name="Party_Gu-Jeremy_S-8250_hifi.ogg" id="Ogg (Music)" if="desktop" />
      <music name="classical.mid" id="Midi" unless="flash" />
+     <sound name="classical.mid" id="Midi (Snd)" unless="flash" />
      <sound name="bass.wav"  id="Wav" />
      <sound name="drums.ogg" id="Ogg" unless="flash" />
   </assets>

@@ -639,8 +639,8 @@ public:
          fileFormat = eAF_mid;
          rate = settings.mFrequency;
          isStereo = settings.mChannels = 2;
-         channelSampleCount = ModPlug_GetLength(modFile)*44100/1000;
          duration = ModPlug_GetLength(modFile) * 0.001;
+         channelSampleCount = duration*44100;
          
          if (!(inFlags & SoundJustInfo))
          {
@@ -750,6 +750,12 @@ public:
 
       return decodedBuffer.mPtr;
    }
+
+   int getDecodedByteCount() const
+   {
+      return decodedBuffer.ByteCount();
+   }
+
 
    INmeSoundStream *createStream()
    {
