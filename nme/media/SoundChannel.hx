@@ -115,7 +115,8 @@ class SoundChannel extends EventDispatcher
    public function stop() 
    {
       nme_sound_channel_stop(nmeHandle);
-      nmeHandle = null;
+      //nmeHandle = null;
+      nmePollComplete();
    }
 
    // Getters & Setters

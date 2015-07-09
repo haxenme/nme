@@ -105,15 +105,45 @@ public:
    SDLSoundChannel(Object *inSound, Mix_Chunk *inChunk, double inStartTime, int inLoops,
                   const SoundTransform &inTransform)
    {
+      initSpec();
       mChunk = inChunk;
       mDynamicBuffer = 0;
       mSound = inSound;
       mSound->IncRef();
+      startSample = endSample = sSoundPos;
+      playing = true;
 
       mChannel = -1;
 
+      bool valid = false;
+
+      mOffsetChunk.alen = 0;
+      if (mFrequency && mChunk && mChunk->alen)
+      {
+         valid = true;
+         mOffsetChunk = *mChunk;
+         int startBytes = (int)(inStartTime*0.001*mFrequency*sizeof(short)*STEREO_SAMPLES) & ~3;
+         int startLoops = startBytes / mChunk->alen;
+         if (inLoops>=0)
+         {
+            inLoops-=startLoops; 
+            if (inLoops<0)
+               valid = false;
+         }
+         startBytes = startBytes % mChunk->alen;
+         if (valid)
+         {
+            startSample -= startBytes/(sizeof(short)*STEREO_SAMPLES);
+            endSample = startSample;
+            mOffsetChunk.alen -= startBytes;
+            mOffsetChunk.abuf += startBytes;
+         }
+      }
+
+
+
       // Allocate myself a channel
-      if (mChunk)
+      if (valid)
       {
          for(int i=0;i<sMaxChannels;i++)
             if (!sUsedChannel[i])
@@ -126,21 +156,19 @@ public:
             }
       }
 
-      if (mChannel>=0)
+
+      if (mChannel<0 || Mix_PlayChannel( mChannel , &mOffsetChunk, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 )<0)
       {
-         if (Mix_PlayChannel( mChannel , mChunk, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 )<0)
-         {
-            onChannelDone(mChannel);
-         }
-         else
-         {
-            Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
-         }
-         // Mix_SetPanning
+         onChannelDone(mChannel);
       }
+      else
+      {
+         Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
+      }
+      // Mix_SetPanning
    }
 
-   SDLSoundChannel(const ByteArray &inBytes, const SoundTransform &inTransform)
+   void initSpec()
    {
       Mix_QuerySpec(&mFrequency, &mFormat, &mChannels);
       if (mFrequency!=44100)
@@ -151,10 +179,12 @@ public:
          ELOG("Warning - channe mismatch    %d",mChannels);
 
       if (sMusicFrequency==0)
-      {
          sMusicFrequency = mFrequency;
-      }
+   }
 
+   SDLSoundChannel(const ByteArray &inBytes, const SoundTransform &inTransform)
+   {
+      initSpec();
       mChunk = 0;
       mDynamicBuffer = new short[BUF_SIZE * STEREO_SAMPLES];
       memset(mDynamicBuffer,0,BUF_SIZE*sizeof(short));
@@ -262,6 +292,7 @@ public:
          mChannel = -1;
          DecRef();
          sUsedChannel[c] = 0;
+         endSample = sSoundPos;
       }
    }
 
@@ -272,15 +303,23 @@ public:
    }
    double getLeft() { return 1; }
    double getRight() { return 1; }
-   double getPosition() { return 1; }
    double setPosition(const float &inFloat) { return 1; }
    void stop() 
    {
       if (mChannel>=0)
          Mix_HaltChannel(mChannel);
-      
-      CheckDone();
+
+      //CheckDone();
    }
+
+   double getPosition()
+   {
+      if (!sMusicFrequency)
+         return 0.0;
+
+      return (playing ? sSoundPos - startSample : endSample - startSample)*1000.0/sMusicFrequency;
+   }
+
    void setTransform(const SoundTransform &inTransform) 
    {
       if (mChannel>=0)
@@ -320,6 +359,12 @@ public:
    Mix_Chunk *mChunk;
    int       mChannel;
 
+  int   startSample;
+  int   endSample;
+  bool  playing;
+
+
+   Mix_Chunk mOffsetChunk;
    Mix_Chunk mDynamicChunk;
    short    *mDynamicBuffer;
    unsigned int  mDynamicFillPos;
@@ -348,6 +393,10 @@ class SDLSound : public Sound
    Mix_Chunk *mChunk;
    std::string filename;
    bool        loaded;
+   int         frequency;
+   Uint16      format;
+   int         channels;
+   double      duration;
 
 public:
    SDLSound(const std::string &inFilename)
@@ -356,11 +405,14 @@ public:
       filename = inFilename;
       mChunk = 0;
       loaded = false;
+      frequency = 0;
+      format = 0;
+      channels = 0;
+      duration = 0.0;
 
       if (Init())
          loadChunk();
    }
-   
 
    void loadChunk()
    {
@@ -391,9 +443,21 @@ public:
          }
       }
 
-      if ( mChunk == NULL )
+      onChunk();
+   }
+
+   void onChunk()
+   {
+      loaded = true;
+      if (mChunk)
       {
-         loaded = true;
+         Mix_QuerySpec(&frequency, &format, &channels);
+         int bytes = mChunk->alen;
+         if (bytes && frequency && channels)
+            duration = (double)bytes/ (frequency*channels*sizeof(short) );
+      }
+      else
+      {
          mError = SDL_GetError();
          // ELOG("Error %s (%s)", mError.c_str(), name );
       }
@@ -406,13 +470,7 @@ public:
       if (Init())
       {
          mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(inData, len), 1);
-         if ( mChunk == NULL )
-         {
-            mError = SDL_GetError();
-            // ELOG("Error %s (%s)", mError.c_str(), name );
-         }
-         else
-            loaded = true;
+         onChunk();
       }
    }
    
@@ -423,26 +481,10 @@ public:
    }
    double getLength()
    {
-      if (mChunk==0)
-         return 0;
-      #if defined(DYNAMIC_SDL) || defined(WEBOS)
-      return 0.0;
-      #else
-
-
-      int freq = 0;
-      Uint16 format = 0;
-      int channels = 0;
-      Mix_QuerySpec(&freq, &format, &channels);
-
-      if (freq==0)
-         return 0;
-
-      int bytesPerSample = 2;
-      return (double)1000.0*mChunk->alen/(freq*channels*bytesPerSample);
-
-      #endif
+     return duration*1000.0;
+     //#if defined(DYNAMIC_SDL) || defined(WEBOS)
    }
+
    // Will return with one ref...
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
    {
@@ -509,8 +551,6 @@ public:
       mSound->DecRef();
    }
 
-
- 
    void CheckDone()
    {
       if (mPlaying && (sDoneMusic || (sUsedMusic!=this)) )
@@ -611,15 +651,24 @@ public:
                reso.resize(n);
                memcpy(&reso[0], resource.Bytes(), n);
                #ifdef NME_SDL2
-               mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], resource.Size()),false);
+               mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], reso.size()),false);
                #else
-               mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], resource.Size()));
+               mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], reso.size()));
                #endif
 
                if (mMusic)
                {
-                  // TODO
-                  duration = 60000.0;
+                  INmeSoundData *stream = INmeSoundData::create(&reso[0], reso.size(),SoundJustInfo);
+                  if (stream)
+                  {
+                     duration = stream->getDuration() * 1000.0;
+                     stream->release();
+                  }
+                  else
+                  {
+                     ELOG("Could not determine music length - assume 60");
+                     duration = 60000.0;
+                  }
                }
             }
          }

@@ -133,7 +133,7 @@ class AudioPage extends Sprite
 
       play = new SimpleButton( createPlay("up"), createPlay("over"), createPlay("down"), createPlay("up") );
       addChild(play);
-      play.addEventListener(MouseEvent.CLICK, function(_) onPlay() );
+      play.addEventListener(MouseEvent.CLICK, function(_) onPlay(0.0) );
       var s = AudioTest.getScale();
       play.y = Std.int(20*s);
       play.x = Std.int(10*s);
@@ -166,15 +166,15 @@ class AudioPage extends Sprite
       if (soundChannel!=null)
       {
          soundChannel.stop();
-         soundChannel = sound.play(inPosition*1000.0, 0, null);
+         onPlay(inPosition);
       }
    }
 
-   public function onPlay()
+   public function onPlay(inSeek:Float)
    {
       if (sound!=null)
       {
-         soundChannel = sound.play(0.0, 0, null);
+         soundChannel = sound.play(inSeek*1000.0, 0, null);
          if (soundChannel!=null)
          {
             var ch = soundChannel;
@@ -192,7 +192,10 @@ class AudioPage extends Sprite
    public function onUpdate(_)
    {
       if (soundChannel!=null)
-         slider.position = soundChannel.position*0.001;
+      {
+         var pos = soundChannel.position;
+         slider.position = pos*0.001;
+      }
    }
 
    public function onComplete(inChannel:SoundChannel)
