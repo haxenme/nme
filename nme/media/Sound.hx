@@ -25,7 +25,7 @@ class Sound extends EventDispatcher
    /** @private */ public var nmeHandle:Dynamic;
    /** @private */ private var nmeLoading:Bool;
    /** @private */ private var nmeDynamicSound:Bool;
-   public function new(?stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false) 
+   public function new(?stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false, ?inEngine:String) 
    {
       super();
 
@@ -45,6 +45,12 @@ class Sound extends EventDispatcher
 
       if (stream != null)
          load(stream, context, forcePlayAsMusic);
+   }
+
+   public function getEngine()
+   {
+      // TODO
+      return SoundEngine.getAvailableEngines()[0];
    }
 
    override public function addEventListener(type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void 
@@ -70,7 +76,7 @@ class Sound extends EventDispatcher
       nmeLoading = false;
    }
 
-   public function load(stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false) 
+   public function load(stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false, ?inEngine:String) 
    {
       bytesLoaded = bytesTotal = 0;
       nmeHandle = nme_sound_from_file(stream.url, forcePlayAsMusic);
@@ -88,7 +94,7 @@ class Sound extends EventDispatcher
       }
    }
 
-   public function loadCompressedDataFromByteArray(bytes:ByteArray, length:Int, forcePlayAsMusic:Bool = false):Void 
+   public function loadCompressedDataFromByteArray(bytes:ByteArray, length:Int, forcePlayAsMusic:Bool = false, ?inEngine:String):Void 
    {
       bytesLoaded = bytesTotal = length;
       nmeHandle = nme_sound_from_data(bytes, length, forcePlayAsMusic);
@@ -99,7 +105,7 @@ class Sound extends EventDispatcher
       }
    }
 
-   public function loadPCMFromByteArray(Bytes:ByteArray, samples:Int, format:String = "float", stereo:Bool = true, sampleRate:Float = 44100.0):Void 
+   public function loadPCMFromByteArray(Bytes:ByteArray, samples:Int, format:String = "float", stereo:Bool = true, sampleRate:Float = 44100.0, ?inEngine:String):Void 
    {
       // http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
       var wav:ByteArray = new ByteArray();
