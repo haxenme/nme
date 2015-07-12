@@ -430,21 +430,19 @@ public:
 
 
 
-#if 0
 
 
-
-
-class OpenAudioBufferChannel : public OpenAudioChannel
+class OpenSlBufferChannel : public OpenSlSourceChannel
 {
 public:
-   AudioBuffer bufferId;
    int         byteSize;
    int         loops;
 
-   OpenAudioBufferChannel(Object *inSound, const SoundTransform &inTransform, AudioBuffer &inBufferId, int startTime, int inLoops)
-      : OpenAudioChannel(inSound, inTransform )
+   OpenSlBufferChannel(Object *inSound, const SoundTransform &inTransform, INmeSoundData *inData, int startTime, int inLoops)
+      : OpenSlSourceChannel(inSound, inTransform, 
+                     sdfShort, inData->getIsStereo(), inData->getRate(), false )
    {
+      /*
       int seekToBytes=0;
 
       bufferId = inBufferId;
@@ -484,17 +482,21 @@ public:
 
          clAddChannel(this, loops>0);
       }
+      */
+      loops = inLoops;
+      queueData( inData->decodeAll(), inData->getDecodedByteCount() );
+      clAddChannel(this, loops>0);
    }
 
 
-   ~OpenAudioBufferChannel()
+   ~OpenSlBufferChannel()
    {
       stop();
    }
 
    void stop()
    {
-      OpenAudioChannel::stop();
+      OpenSlSourceChannel::stop();
       loops = 0;
    }
 
@@ -517,11 +519,12 @@ public:
 };
 
 
+#if 0
 
 
 
 
-class OpenALDoubleBufferChannel : public OpenAudioChannel
+class OpenALDoubleBufferChannel : public OpenSlChannel
 {
 public:
    ALuint  bufferIds[2];
@@ -531,7 +534,7 @@ public:
    int      freeBufferCount;
 
    OpenALDoubleBufferChannel(Object *inSound, const SoundTransform &inTransform)
-      : OpenAudioChannel(inSound, inTransform )
+      : OpenSlChannel(inSound, inTransform )
    {
       bufferIds[0] = bufferIds[1] = 0;
       freeBufferCount = 0;
@@ -548,7 +551,7 @@ public:
 
    void stop()
    {
-      OpenAudioChannel::stop();
+      OpenSlChannel::stop();
 
       if (opensl_is_shutdown)
          return;
@@ -808,6 +811,7 @@ public:
 
 
 
+#endif
 
 
 
@@ -817,31 +821,22 @@ public:
 class OpenSlSound : public Sound
 {
 public:
-   ALint bufferSize;
-   ALint frequency;
-   ALint channels;
-   int   samples;
-   ALuint mBufferID;
-   double duration;
-
    INmeSoundData *soundData;
    std::string mError;
+   double  duration;
+   int     channels;
+   int     samples;
+   int     frequency;
+   int     bufferSize;
          
-   OpenSlSound(const std::string &inFilename, bool inForceMusic)
+   OpenSlSound(const unsigned char *inData, int inLen, bool inForceMusic)
    {
-      init(INmeSoundData::create(inFilename, inForceMusic ? 0 : SoundForceDecode ));
-   }
-
-   OpenSlSound(const unsigned char *inData, int inLen)
-   {
-      init(INmeSoundData::create(inData, inLen, 0));
+		LOG_SOUND("Create OpenSlSound from data %d.\n", inLen)
+      init(INmeSoundData::create(inData, inLen, SoundForceDecode));
    }
 
    ~OpenSlSound()
    {
-      //LOG_SOUND("OpenSlSound destructor() ###################################");
-      if (mBufferID!=0)
-         alDeleteBuffers(1, &mBufferID);
       if (soundData)
          soundData->release();
    }
@@ -850,7 +845,6 @@ public:
    void init(INmeSoundData *inData)
    {
       IncRef();
-      mBufferID = 0;
 
       duration = 0.0;
       bufferSize = 0;
@@ -873,8 +867,10 @@ public:
          bufferSize = sizeof(short)*samples*channels;
          duration = soundData->getDuration();
 
+		   LOG_SOUND("Init OpenSlSound with samples %d.\n", samples)
          if (soundData->getIsDecoded())
          {
+            /*
             int format = soundData->getIsStereo() ?  AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
          
             // Transfer data to buffer
@@ -887,6 +883,7 @@ public:
             // Sucked it dry
             soundData->release();
             soundData = 0;
+            */
          }
          else
          {
@@ -895,16 +892,6 @@ public:
       }
    }
   
-   void check(const char *where)
-   {
-      if (opensl_is_shutdown) return;
-      int error = alGetError();
-      if(error != AL_NO_ERROR)
-      {
-         LOG_SOUND(">>>>> OpenAL error was raised: %d in %d\n", error, where);
-      }
-   }
-   
    double getLength() { return duration*1000.0; }
 
    void getId3Value(const std::string &inkey, std::string &outvalue) { outvalue=std::string(); }
@@ -924,7 +911,7 @@ public:
    }
    
    
-   bool ok() { return mBufferID || soundData; }
+   bool ok() { return soundData; }
    std::string getError() { return mError; }
    void close()
    {
@@ -939,15 +926,15 @@ public:
    
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
    {
-      if (mBufferID)
+      if (soundData && soundData->getIsDecoded())
       {
-         return new OpenAudioBufferChannel(this, inTransform, mBufferID, startTime, loops);
+         return new OpenSlBufferChannel(this, inTransform, soundData, startTime, loops);
       }
       else if (soundData)
       {
-         INmeSoundStream *stream = soundData->createStream();
-         if (stream)
-            return new OpenALStaticStreamChannel(this, inTransform, stream, startTime, loops);
+         //INmeSoundStream *stream = soundData->createStream();
+         //if (stream)
+         //   return new OpenALStaticStreamChannel(this, inTransform, stream, startTime, loops);
       }
       return 0;
    }
@@ -957,7 +944,6 @@ public:
 
 // --- External Sound implementation -------------------
    
-#endif
 
 
 SoundChannel *CreateOpenSlSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
@@ -971,50 +957,26 @@ SoundChannel *CreateOpenSlSyncChannel(const ByteArray &inBytes,const SoundTransf
   return result;
 }
 
+
+Sound *CreateOpenSlSound(const unsigned char *inData, int len, bool inForceMusic)
+{
+   //Always check if openal is intitialized
+   if (!OpenSlInit())
+      return 0;
+
+   //Return a reference
+   OpenSlSound *sound = new OpenSlSound(inData, len, inForceMusic);
+
+   LOG_SOUND("CreateOpenSlSound %p (%d)", sound, sound->ok() );
+   
+   if (sound->ok ())
+      return sound;
+   else
+      return 0;
+}
+
+
 #if 0
-
-Sound *Sound::Create(const std::string &inFilename,bool inForceMusic)
-{
-   //Always check if openal is intitialized
-   if (!OpenSlInit())
-      return 0;
-   
-   //Return a reference
-   OpenSlSound *sound = 0;
-   
-   if (!inForceMusic)
-   {
-      ByteArray bytes = AndroidGetAssetBytes(inFilename.c_str());
-      sound = new OpenSlSound((char *)bytes.Bytes(), bytes.Size());
-   }
-   else
-   {
-      sound = new OpenSlSound(inFilename, inForceMusic);
-   }
-   
-   if (sound->ok ())
-      return sound;
-   else
-      return 0;
-}
-
-
-Sound *Sound::Create(float *inData, int len, bool inForceMusic)
-{
-   //Always check if openal is intitialized
-   if (!OpenSlInit())
-      return 0;
-
-   //Return a reference
-   OpenSlSound *sound = new OpenSlSound((const unsigned  char*)inData, len);
-   
-   if (sound->ok ())
-      return sound;
-   else
-      return 0;
-}
-
-
 void Sound::Suspend()
 {
    //Always check if openal is initialized

@@ -375,9 +375,10 @@ class Assets
     * Gets an instance of an embedded sound
     * @usage      var sound = Assets.getSound("sound.wav");
     * @param   id      The ID or asset path for the sound
+    * @param   inEngine   Which sound engine (sdl, openal etc) to use
     * @return      A new Sound object
     */
-   public static function getSound(id:String,?useCache:Null<Bool>, forceMusic=false):Sound 
+   public static function getSound(id:String,?useCache:Null<Bool>, forceMusic=false, ?inEngine:String):Sound 
    {
       var i = getInfo(id);
       if (i==null)
@@ -407,17 +408,17 @@ class Assets
       {
          sound = new Sound();
          var bytes = nme.Assets.getBytes(id);
-         sound.loadCompressedDataFromByteArray(bytes, bytes.length,i.type == MUSIC || forceMusic);
+         sound.loadCompressedDataFromByteArray(bytes, bytes.length,i.type == MUSIC || forceMusic, inEngine);
       }
       else if (byteFactory.exists(i.path))
       {
          var bytes = byteFactory.get(i.path)();
          sound = new Sound();
-         sound.loadCompressedDataFromByteArray(bytes, bytes.length,i.type == MUSIC || forceMusic);
+         sound.loadCompressedDataFromByteArray(bytes, bytes.length,i.type == MUSIC || forceMusic, inEngine);
       }
       else
       {
-         sound = new Sound(new URLRequest(i.path), null, i.type == MUSIC || forceMusic); 
+         sound = new Sound(new URLRequest(i.path), null, i.type == MUSIC || forceMusic, inEngine); 
       }
     
       #end

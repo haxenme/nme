@@ -44,13 +44,13 @@ class Sound extends EventDispatcher
       nmeDynamicSound = false;
 
       if (stream != null)
-         load(stream, context, forcePlayAsMusic);
+         load(stream, context, forcePlayAsMusic, inEngine);
    }
 
    public function getEngine()
    {
       // TODO
-      return SoundEngine.getAvailableEngines()[0];
+      return nme_sound_get_engine(nmeHandle);
    }
 
    override public function addEventListener(type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void 
@@ -79,7 +79,7 @@ class Sound extends EventDispatcher
    public function load(stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false, ?inEngine:String) 
    {
       bytesLoaded = bytesTotal = 0;
-      nmeHandle = nme_sound_from_file(stream.url, forcePlayAsMusic);
+      nmeHandle = nme_sound_from_file(stream.url, forcePlayAsMusic, inEngine);
 
       if (nmeHandle == null) 
       {
@@ -97,7 +97,7 @@ class Sound extends EventDispatcher
    public function loadCompressedDataFromByteArray(bytes:ByteArray, length:Int, forcePlayAsMusic:Bool = false, ?inEngine:String):Void 
    {
       bytesLoaded = bytesTotal = length;
-      nmeHandle = nme_sound_from_data(bytes, length, forcePlayAsMusic);
+      nmeHandle = nme_sound_from_data(bytes, length, forcePlayAsMusic, inEngine);
 
       if (nmeHandle == null) 
       {
@@ -235,12 +235,13 @@ class Sound extends EventDispatcher
    }
 
    // Native Methods
-   private static var nme_sound_from_file = Loader.load("nme_sound_from_file", 2);
-   private static var nme_sound_from_data = Loader.load("nme_sound_from_data", 3);
+   private static var nme_sound_from_file = Loader.load("nme_sound_from_file", 3);
+   private static var nme_sound_from_data = Loader.load("nme_sound_from_data", 4);
    private static var nme_sound_get_id3 = Loader.load("nme_sound_get_id3", 2);
    private static var nme_sound_get_length = Loader.load("nme_sound_get_length", 1);
    private static var nme_sound_close = Loader.load("nme_sound_close", 1);
    private static var nme_sound_get_status = Loader.load("nme_sound_get_status", 1);
+   private static var nme_sound_get_engine = Loader.load("nme_sound_get_engine", 1);
    private static var nme_sound_channel_create_dynamic = Loader.load("nme_sound_channel_create_dynamic", 2);
 }
 

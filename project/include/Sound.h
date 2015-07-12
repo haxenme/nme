@@ -72,8 +72,8 @@ public:
 class Sound : public Object
 {
 public:
-   static Sound *FromFile(const std::string &inFilename, bool inForceMusic);
-   static Sound *FromEncodedBytes(const unsigned char *inData, int len, bool inForceMusic);
+   static Sound *FromFile(const std::string &inFilename, bool inForceMusic, const std::string &inEngine);
+   static Sound *FromEncodedBytes(const unsigned char *inData, int len, bool inForceMusic, const std::string &inEngine);
 
    static void Suspend();
    static void Resume();
@@ -90,6 +90,7 @@ public:
    virtual double getLength() = 0;
    virtual void close()  { }
    virtual SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform) = 0;
+   virtual const char *getEngine() { return "unknown"; }
 };
 
 } // end namespace nme

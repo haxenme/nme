@@ -4305,10 +4305,11 @@ DEFINE_PRIM(nme_video_set_smoothing,2);
 
 // --- Sound --------------------------------------------------
 
-value nme_sound_from_file(value inFilename,value inForceMusic)
+value nme_sound_from_file(value inFilename,value inForceMusic, value inEngine)
 {
+   std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
    Sound *sound = val_is_null(inFilename) ? 0 :
-                  Sound::FromFile( val_string(inFilename), val_bool(inForceMusic) );
+                  Sound::FromFile( val_string(inFilename), val_bool(inForceMusic), engine );
 
    if (sound)
    {
@@ -4318,17 +4319,18 @@ value nme_sound_from_file(value inFilename,value inForceMusic)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_sound_from_file,2);
+DEFINE_PRIM(nme_sound_from_file,3);
 
-value nme_sound_from_data(value inData, value inLen, value inForceMusic)
+value nme_sound_from_data(value inData, value inLen, value inForceMusic, value inEngine)
 {
    int length = val_int(inLen);
    Sound *sound;
   // printf("trying bytes with length %d", length);
    if (!val_is_null(inData) && length > 0) {
       ByteArray buf = ByteArray(inData);
+      std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
       //printf("I'm here! trying bytes with length %d", length);
-      sound = Sound::FromEncodedBytes(buf.Bytes(), length, val_bool(inForceMusic) );
+      sound = Sound::FromEncodedBytes(buf.Bytes(), length, val_bool(inForceMusic), engine );
    } else {
       val_throw(alloc_string("Empty ByteArray"));
    }
@@ -4343,7 +4345,7 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_sound_from_data, 3);
+DEFINE_PRIM(nme_sound_from_data, 4);
 
 #define GET_ID3(name) \
   sound->getID3Value(name,val); \
@@ -4405,6 +4407,21 @@ value nme_sound_get_status(value inSound)
 }
 DEFINE_PRIM(nme_sound_get_status,1);
  
+
+ 
+value nme_sound_get_engine(value inSound)
+{
+   Sound *sound;
+   if (AbstractToObject(inSound,sound))
+   {
+      return alloc_string( sound->getEngine() );
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_get_engine,1);
+ 
+
+
 // --- SoundChannel --------------------------------------------------------
 
 value nme_sound_channel_is_complete(value inChannel)

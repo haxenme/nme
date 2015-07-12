@@ -472,6 +472,8 @@ public:
          soundData->release();
    }
 
+   const char *getEngine() { return "sdl sound"; }
+
    void loadChunk()
    {
       #ifdef HX_MACOS
@@ -674,6 +676,9 @@ public:
             DecRef();
       }
    }
+
+  const char *getEngine() { return "sdl music"; }
+
 
    void loadMusic()
    {

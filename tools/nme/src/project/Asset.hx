@@ -55,7 +55,7 @@ class Asset
             case "wav", "ogg":
                type = AssetType.SOUND;
 
-            case "mp3", "mp2":
+            case "mp3", "mp2", "mid":
                type = AssetType.MUSIC;
 
             case "text", "txt", "json", "xml", "svg", "css":

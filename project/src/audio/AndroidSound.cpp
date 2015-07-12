@@ -256,9 +256,14 @@ private:
       if (!inForceMusic)
       {
          handleID = env->CallStaticIntMethod(soundClass, jGetSoundHandle, path);
+         LOGV("AndroidSound - got sound handle %d", handleID);
 
          if (handleID >= 0)
             mMode = MODE_SOUND_ID;
+      }
+      else
+      {
+         LOGV("AndroidSound - save filename '%s'", mSoundPath.c_str());
       }
 
       //env->ReleaseStringUTFChars(str, inSound.c_str() );
@@ -284,12 +289,16 @@ public:
       jstring jname = (jstring)env->CallStaticObjectMethod(soundClass, jGetSoundPathByByteArray, data);
       
       std::string inPath = std::string(env->GetStringUTFChars(jname, NULL));
+      LOGV("AndroidSound - from written path %s",inPath.c_str());
       loadWithPath(inPath, inForceMusic);
    }
    ~AndroidSound()
    {
       GetEnv()->DeleteGlobalRef(mJSoundPath);
    }
+
+   const char *getEngine() { return mMode==MODE_SOUND_ID ? "android sound" : "android music"; }
+
 
 
    void reloadSound()
@@ -300,7 +309,7 @@ public:
 
    int getBytesLoaded() { return 0; }
    int getBytesTotal() { return 0; }
-   bool ok() { return handleID >= 0; }
+   bool ok() { return handleID >= 0 || mSoundPath.size()>0; }
    std::string getError() { return ok() ? "" : "Error"; }
 
    double getLength()
@@ -317,7 +326,7 @@ public:
 
    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
    {
-      LOGV("SoundTransform openChannel...");
+      LOGV("AndroidSound openChannel %d...",mMode);
       switch (mMode)
       {
          case MODE_SOUND_ID:

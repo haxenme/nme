@@ -33,7 +33,7 @@
 -(id) initWithLoopsOffset: (int)theNumberOfLoops offset:(int)theOffset  {
     self = [super init];
     if ( self ) {
-        loops = theNumberOfLoops;
+        loops = theNumberOfLoops <= 0 ? theNumberOfLoops : theNumberOfLoops - 1;
         offset = theOffset;
         isPlaying = true;
     }
@@ -62,8 +62,10 @@
     }
     else {
         LOG_SOUND("still some loops to go, playing");
-        loops--;
-        player.currentTime = offset/1000;
+        if (loops>0)
+           loops--;
+        player.currentTime = offset;
+        //player.currentTime = 0;
         [player play];
     }
 }
@@ -134,8 +136,9 @@ namespace nme
             // on a Sound, so let's play
             LOG_SOUND("AVAudioPlayerChannel constructor - getting the player to play at offset %f", inOffset);
             theActualPlayer.currentTime = inOffset/1000;
-            if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
-                [theActualPlayer setPan: inTransform.pan];
+            theActualPlayer.pan = inTransform.pan;
+            //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+                //[theActualPlayer setPan: inTransform.pan];
             [theActualPlayer setVolume: inTransform.volume];
             [theActualPlayer play];
             
@@ -203,17 +206,19 @@ namespace nme
         
         double getLeft()  {
             LOG_SOUND("AVAudioPlayerChannel getLeft()");
-            if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])	   
+            //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])	   
             {
-                return (1-[theActualPlayer pan])/2;
+                //return (1-[theActualPlayer pan])/2;
+                return (1-theActualPlayer.pan)/2;
             }
             return 0.5;
         }
         double getRight()   {
             LOG_SOUND("AVAudioPlayerChannel getRight()");
-            if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+            //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
             {
-                return ([theActualPlayer pan] + 1)/2;
+                //return ([theActualPlayer pan] + 1)/2;
+                return (theActualPlayer.pan + 1)/2;
             }
             return 0.5;
         }
@@ -229,9 +234,10 @@ namespace nme
 
         void setTransform(const SoundTransform &inTransform) {
             LOG_SOUND("AVAudioPlayerChannel setTransform()");
-            if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+            //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
             {
-                [theActualPlayer setPan: inTransform.pan];
+                //[theActualPlayer setPan: inTransform.pan];
+                theActualPlayer.pan = inTransform.pan;
             }
             [theActualPlayer setVolume: inTransform.volume];
         }
@@ -379,6 +385,8 @@ namespace nme
         {
             LOG_SOUND("AVAudioPlayerSound close() doing nothing"); 
         }
+
+        const char *getEngine() { return "avplayer"; }
         
         // This method is called when Sound.play is called.
         SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)

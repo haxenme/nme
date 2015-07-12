@@ -418,9 +418,10 @@ public:
       return inRequestBytes;
    }
 
-   virtual void setPosition(double inSeconds)
+   virtual double setPosition(double inSeconds)
    {
-      // TODO
+      ov_time_seek(&file, inSeconds);
+      return inSeconds;
    }
 };
 
@@ -478,9 +479,10 @@ public:
       return inRequestBytes;
    }
 
-   virtual void setPosition(double inSeconds)
+   virtual double setPosition(double inSeconds)
    {
-      // TODO
+      ModPlug_Seek(modFile, inSeconds*1000.0);
+      return inSeconds;
    }
 };
 

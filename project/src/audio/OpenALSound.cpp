@@ -75,6 +75,7 @@ public:
    bool   shouldPlay;
    bool   suspended;
    double duration;
+   double t0;
 
    OpenALSourceChannel(Object *inSound, const SoundTransform &inTransform)
    {
@@ -83,6 +84,7 @@ public:
          soundObject->IncRef();
       sourceId = 0;
       duration = 0.0;
+      t0 = 0.0;
       suspended = false;
 
       alGenSources(1, &sourceId);
@@ -110,7 +112,6 @@ public:
    {
       alSourcef(sourceId, AL_GAIN, inTransform.volume);
       alSource3f(sourceId, AL_POSITION, (float) cos((inTransform.pan - 1) * (1.5707)), 0, (float) sin((inTransform.pan + 1) * (1.5707)));
-      check("setTransform");
    }
 
    void check(const char *where)
@@ -225,7 +226,7 @@ public:
    {
       ALfloat pos = 0;
       alGetSourcef(sourceId, AL_SEC_OFFSET, &pos);
-      return pos * 1000.0;
+      return (t0+pos) * 1000.0;
    }
  
 
@@ -285,7 +286,7 @@ public:
          alSourcePlay(sourceId);
          if (seekBytes && seekBytes<byteSize)
             alSourcef(sourceId, AL_BYTE_OFFSET, seekBytes);
-         clAddChannel(this, loops>0);
+         clAddChannel(this, loops!=0);
       }
    }
 
@@ -329,6 +330,7 @@ class OpenALDoubleBufferChannel : public OpenALSourceChannel
 {
 public:
    ALuint  bufferIds[2];
+   int     playedBytes;
 
    NmeMutex bufferMutex;
    ALuint   freeBuffers[2];
@@ -339,6 +341,7 @@ public:
    {
       bufferIds[0] = bufferIds[1] = 0;
       freeBufferCount = 0;
+      playedBytes = 0;
   }
 
    void createBuffers()
@@ -370,9 +373,24 @@ public:
       {
          ALuint buffer = 0;
          alSourceUnqueueBuffers(sourceId, 1, &buffer);
-
+         addBufferOffset(buffer);
          addFreeBuffer(buffer);
       }
+   }
+  
+
+   void addBufferOffset(ALuint buffer)
+   {
+      ALint bytes = 0;
+      ALint bits=8;
+      ALint channels=1;
+      ALint freq=44100;
+
+      alGetBufferi(buffer, AL_SIZE, &bytes);
+      alGetBufferi(buffer, AL_BITS, &bits);
+      alGetBufferi(buffer, AL_CHANNELS, &channels);
+      alGetBufferi(buffer, AL_FREQUENCY, &freq);
+      t0 += (double)(bytes * 8) / (channels * freq * bits);
    }
 
 
@@ -388,6 +406,7 @@ public:
       {
          ALuint result = 0;
          alSourceUnqueueBuffers(sourceId, 1, &result);
+         addBufferOffset(result);
          check("alGetSourcei processed");
          return result;
       }
@@ -562,7 +581,9 @@ public:
             createBuffers();
 
             if (skip)
-               stream->setPosition(skip);
+            {
+               t0 = stream->setPosition(skip);
+            }
 
             shouldPlay = true;
             if (updateStream())
@@ -596,6 +617,7 @@ public:
 		   if (loops>0)
 			   loops--;
 		   LOG_SOUND(" loops->%d\n", loops);
+         t0 = 0;
 		   stream->rewind();
 		   return true;
 	   }
@@ -758,9 +780,9 @@ public:
       init(INmeSoundData::create(inFilename, inForceMusic ? 0 : SoundForceDecode ));
    }
 
-   OpenALSound(const unsigned char *inData, int inLen)
+   OpenALSound(const unsigned char *inData, int inLen, bool inForceMusic)
    {
-      init(INmeSoundData::create(inData, inLen, 0));
+      init(INmeSoundData::create(inData, inLen, inForceMusic ? 0 : SoundForceDecode));
    }
 
    ~OpenALSound()
@@ -772,6 +794,7 @@ public:
          soundData->release();
    }
 
+   const char *getEngine() { return "openal"; }
 
    void init(INmeSoundData *inData)
    {
@@ -907,13 +930,13 @@ Sound *CreateOpenAlSound(const std::string &inFilename,bool inForceMusic)
 }
 
 
-Sound *CreateOpenAlSound(const unsigned char *inData, int len)
+Sound *CreateOpenAlSound(const unsigned char *inData, int len, bool inForceMusic)
 {
    //Always check if openal is intitialized
    if (!OpenALInit())
       return 0;
 
-   return new OpenALSound(inData, len);
+   return new OpenALSound(inData, len, inForceMusic);
 }
 
 

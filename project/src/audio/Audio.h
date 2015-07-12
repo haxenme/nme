@@ -41,11 +41,11 @@ SoundChannel *CreateSdlSyncChannel(const ByteArray &inData, const SoundTransform
 Sound *CreateAvPlayerSound(const unsigned char *inData, int len);
 Sound *CreateAvPlayerSound(const std::string &inFilename);
 
-Sound *CreateOpenAlSound(const unsigned char *inData, int len);
+Sound *CreateOpenAlSound(const unsigned char *inData, int len, bool inForceMusic);
 SoundChannel *CreateOpenAlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
               SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
 
-Sound *CreateOpenSlSound(const unsigned char *inData, int len);
+Sound *CreateOpenSlSound(const unsigned char *inData, int len, bool inForceMusic);
 SoundChannel *CreateOpenSlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
               SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
 
@@ -109,7 +109,7 @@ public:
    virtual ~INmeSoundStream() { }
 
    virtual double getPosition() = 0;
-   virtual void   setPosition(double inSeconds) = 0;
+   virtual double setPosition(double inSeconds) = 0;
    virtual void   rewind() = 0;
    virtual double getDuration() const = 0;
    virtual int    getRate() const = 0;

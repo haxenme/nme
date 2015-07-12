@@ -5,36 +5,46 @@
 namespace nme
 {
 
-typedef Sound *(*factory)(const unsigned char *inData, int inLen);
+typedef Sound *(*factory)(const unsigned char *inData, int inLen, bool inForceMusic);
 
-Sound *ReadAndCreate(const std::string &inFilename, factory onLoaded)
+Sound *ReadAndCreate(const std::string &inFilename, bool inForceMusic, factory onLoaded)
 {
    ByteArray data(inFilename.c_str());
    if (data.Size()>0)
-      return onLoaded( data.Bytes(), data.Size() );
+      return onLoaded( data.Bytes(), data.Size(), inForceMusic );
+   else
+     ELOG("Could not load sound file/resource %s", inFilename.c_str() );
    return 0;
 }
 
 
-Sound *Sound::FromFile(const std::string &inFilename, bool inForceMusic)
+Sound *Sound::FromFile(const std::string &inFilename, bool inForceMusic, const std::string &inEngine)
 {
    Sound *result = 0;
 
    #ifdef HX_ANDROID
 
-   result = CreateAndroidSound(inFilename,inForceMusic);
+   if (inEngine=="opensl")
+      result = ReadAndCreate(inFilename, inForceMusic, CreateOpenSlSound);
+   else
+      result = CreateAndroidSound(inFilename,inForceMusic);
 
    #elif defined(IPHONE)
 
    AudioFormat format = determineFormatFromFile(inFilename);
 
-   if (format==eAF_mp3 || (inForceMusic && format!=eAF_ogg && format!=eAF_mid ) )
+   if (format==eAF_mp3 || (inForceMusic && format!=eAF_ogg && format!=eAF_mid ) || inEngine=="avplayer"  )
       result = CreateAvPlayerSound(inFilename);
    else
-      result = ReadAndCreate(inFilename, CreateOpenAlSound);
+      result = ReadAndCreate(inFilename, inForceMusic, CreateOpenAlSound);
 
    #else
 
+     #ifdef HX_MACOS
+     if (inEngine=="openal")
+        result = ReadAndCreate(inFilename, inForceMusic, CreateOpenAlSound);
+     else
+     #endif
    result = CreateSdlSound(inFilename,inForceMusic);
 
    #endif
@@ -50,14 +60,17 @@ Sound *Sound::FromFile(const std::string &inFilename, bool inForceMusic)
    return result;
 }
 
-Sound *Sound::FromEncodedBytes(const unsigned char *inData, int inLen, bool inForceMusic)
+Sound *Sound::FromEncodedBytes(const unsigned char *inData, int inLen, bool inForceMusic, const std::string &inEngine)
 {
    Sound *result = 0;
 
    #ifdef HX_ANDROID
 
    // Maybe use opensl here ....
-   result = CreateAndroidSound(inData, inLen, inForceMusic);
+   if (inEngine=="opensl")
+      result = CreateOpenSlSound(inData, inLen, inForceMusic);
+   else
+      result = CreateAndroidSound(inData, inLen, inForceMusic);
 
    #elif defined(IPHONE)
 
@@ -72,15 +85,16 @@ Sound *Sound::FromEncodedBytes(const unsigned char *inData, int inLen, bool inFo
    if (format==eAF_mp3 || (inForceMusic && format!=eAF_ogg && format!=eAF_mid ) )
       result = CreateAvPlayerSound(inData,inLen);
    else
-      result = CreateOpenAlSound(inData, inLen);
+      result = CreateOpenAlSound(inData, inLen, inForceMusic);
 
    #else
 
+
     #ifdef HX_MACOS
     // Openal can be tested on mac
-    if (false)
+    if (inEngine=="openal")
     {
-      result = CreateOpenAlSound(inData, inLen);
+      result = CreateOpenAlSound(inData, inLen, inForceMusic);
     }
     else
     #endif

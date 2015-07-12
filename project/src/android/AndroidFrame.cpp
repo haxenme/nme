@@ -611,7 +611,14 @@ AAsset *AndroidGetAsset(const char *inResource)
       env->DeleteLocalRef(assetManager);
    }
 
-   return AAssetManager_open(androidAssetManager, inResource, AASSET_MODE_UNKNOWN);
+   AAsset *result = AAssetManager_open(androidAssetManager, inResource, AASSET_MODE_UNKNOWN);
+
+   if (!result)
+   {
+   }
+
+
+   return result;
 }
 
 ByteArray AndroidGetAssetBytes(const char *inResource)
