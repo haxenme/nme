@@ -583,17 +583,17 @@ void StopAnimation()
 AAssetManager* androidAssetManager = 0;
 jclass androidAssetManagerRef = 0;
 
+
 AAsset *AndroidGetAsset(const char *inResource)
 {
    if (!androidAssetManager)
    {
       JNIEnv *env = GetEnv();
-      jclass cls = FindClass("org/haxe/nme/GameActivity");
-      jmethodID mid = env->GetStaticMethodID(cls, "getAssetManager", "()Landroid/content/res/AssetManager;");
+      jmethodID mid = env->GetStaticMethodID(GameActivity, "getAssetManager", "()Landroid/content/res/AssetManager;");
       if (mid == 0)
          return 0;
       
-      jobject assetManager = (jobject)env->CallStaticObjectMethod(cls, mid);
+      jobject assetManager = (jobject)env->CallStaticObjectMethod(GameActivity, mid);
       if (assetManager==0)
       {
          //LOG("Could not find assetManager for asset %s", inResource);
@@ -613,11 +613,6 @@ AAsset *AndroidGetAsset(const char *inResource)
 
    AAsset *result = AAssetManager_open(androidAssetManager, inResource, AASSET_MODE_UNKNOWN);
 
-   if (!result)
-   {
-   }
-
-
    return result;
 }
 
@@ -634,27 +629,23 @@ ByteArray AndroidGetAssetBytes(const char *inResource)
       return result;
    }
    
-   return 0;
    
-   /*JNIEnv *env = GetEnv();
+   JNIEnv *env = GetEnv();
    
-   jclass cls = FindClass("org/haxe/nme/GameActivity");
-   jmethodID mid = env->GetStaticMethodID(cls, "getResource", "(Ljava/lang/String;)[B");
+   jmethodID mid = env->GetStaticMethodID(GameActivity, "getResource", "(Ljava/lang/String;)[B");
    if (mid == 0)
       return 0;
    
    jstring str = env->NewStringUTF( inResource );
-   jbyteArray bytes = (jbyteArray)env->CallStaticObjectMethod(cls, mid, str);
+   jbyteArray bytes = (jbyteArray)env->CallStaticObjectMethod(GameActivity, mid, str);
    env->DeleteLocalRef(str);
    if (bytes==0)
-   {
       return 0;
-   }
    
    jint len = env->GetArrayLength(bytes);
    ByteArray result(len);
    env->GetByteArrayRegion(bytes, (jint)0, (jint)len, (jbyte*)result.Bytes());
-   return result;*/
+   return result;
 }
 
 FileInfo AndroidGetAssetFD(const char *inResource)

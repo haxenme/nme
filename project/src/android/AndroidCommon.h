@@ -37,6 +37,7 @@ struct AutoHaxe
 JNIEnv *GetEnv();
 void JNIInit(JNIEnv *env);
 jclass FindClass(const char *className,bool inQuiet = false);
+extern jclass GameActivity;
 void CheckException(JNIEnv *env, bool inThrow=true);
 std::string JStringToStdString(JNIEnv *env, jstring inString, bool inReleaseLocalRef);
 

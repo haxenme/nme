@@ -190,6 +190,7 @@ public:
          ELOG("Could not create outputMixObject");
    }
 
+
    void queueData(const void *inData, int inByteCount)
    {
       if (bqPlayerBufferQueue)
@@ -310,7 +311,12 @@ public:
    
    double getPosition() 
    {
-      return 0 * 1000.0;
+      if ( bqPlayerPlay )
+      {
+         SLmillisecond nPositionMs = 0; 
+         (*bqPlayerPlay)->GetPosition( bqPlayerPlay, &nPositionMs ); 
+         return nPositionMs;
+      }
    }
 
    bool isComplete()
@@ -892,6 +898,8 @@ public:
       }
    }
   
+   const char *getEngine() { return "opensl"; }
+
    double getLength() { return duration*1000.0; }
 
    void getId3Value(const std::string &inkey, std::string &outvalue) { outvalue=std::string(); }
@@ -932,6 +940,7 @@ public:
       }
       else if (soundData)
       {
+         ELOG("soundData, but not decoded");
          //INmeSoundStream *stream = soundData->createStream();
          //if (stream)
          //   return new OpenALStaticStreamChannel(this, inTransform, stream, startTime, loops);

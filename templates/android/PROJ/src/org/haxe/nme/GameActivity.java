@@ -526,7 +526,17 @@ implements SensorEventListener
    {
       try
       {
-         InputStream inputStream = mAssets.open(inResource, AssetManager.ACCESS_BUFFER);
+         InputStream inputStream = null;
+
+         int id = getResourceID(inResource);
+         if (id>=0)
+         {
+            AssetFileDescriptor fd = activity.getResources().openRawResourceFd(id);
+            inputStream = fd.createInputStream();
+         }
+         else
+            inputStream = mAssets.open(inResource, AssetManager.ACCESS_BUFFER);
+
          long length = inputStream.available();
          byte[] result = new byte[(int) length];
          inputStream.read(result);
@@ -540,8 +550,8 @@ implements SensorEventListener
       
       return null;
    }
-   
-   
+ 
+    
    public static int getResourceID(String inFilename)
    {
       ::foreach assets::::if (isSound)::if (inFilename.equals("::id::")) return ::APP_PACKAGE::.R.raw.::flatName::;
