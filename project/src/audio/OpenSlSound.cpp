@@ -64,7 +64,7 @@ bool OpenSlInit()
 
    if (slDynamicCreateEngine && iidAndroidSampleBuffer && iidPlay && iidEngine && iidVolume)
    {
-      ELOG("ooooo OpenSlInit Good.");
+      LOG_SOUND("ooooo OpenSlInit Good.");
       opensl_is_shutdown = false;
 
       if (slDynamicCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL)==SL_RESULT_SUCCESS &&
@@ -73,7 +73,7 @@ bool OpenSlInit()
          opensl_is_init = true;
    }
    if (!opensl_is_init)
-      ELOG("ooooo OpenSlInit Bad.");
+      ELOG("OpenSlInit Bad.");
 
    return opensl_is_init;
 }
@@ -101,17 +101,23 @@ public:
    bool   shouldPlay;
    bool   suspended;
    double duration;
+   double t0;
+   int    frequency;
+   int    channels;
 
    SLObjectItf outputMixObject;
    SLObjectItf bqPlayerObject;
    SLPlayItf bqPlayerPlay;
    SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
+   SLSeekItf bqPlayerSeek;
    //SLEffectSendItf bqPlayerEffectSend;
 
 
    OpenSlSourceChannel(Object *inSound, const SoundTransform &inTransform,
           SoundDataFormat inFormat, bool inIsStereo, int inRate, bool inDoubleBuffer )
    {
+      frequency = inRate;
+      channels = inIsStereo ? 2 : 1;
       soundObject = inSound;
       if (soundObject)
          soundObject->IncRef();
@@ -120,7 +126,9 @@ public:
       bqPlayerObject = 0;
       bqPlayerPlay = 0;
       bqPlayerBufferQueue = 0;
+      bqPlayerSeek = 0;
 
+      t0 = 0.0;
       duration = 0.0;
       suspended = false;
 
@@ -315,7 +323,7 @@ public:
       {
          SLmillisecond nPositionMs = 0; 
          (*bqPlayerPlay)->GetPosition( bqPlayerPlay, &nPositionMs ); 
-         return nPositionMs;
+         return nPositionMs + t0*1000.0;
       }
    }
 
@@ -441,57 +449,45 @@ public:
 class OpenSlBufferChannel : public OpenSlSourceChannel
 {
 public:
-   int         byteSize;
    int         loops;
+   int         byteCount;
+   INmeSoundData *data;
 
-   OpenSlBufferChannel(Object *inSound, const SoundTransform &inTransform, INmeSoundData *inData, int startTime, int inLoops)
+
+   OpenSlBufferChannel(Object *inSound, const SoundTransform &inTransform, INmeSoundData *inData, double startTime, int inLoops)
       : OpenSlSourceChannel(inSound, inTransform, 
                      sdfShort, inData->getIsStereo(), inData->getRate(), false )
    {
-      /*
-      int seekToBytes=0;
-
-      bufferId = inBufferId;
-
-      byteSize = getBufferBytes(bufferId);
-
-      duration = getBufferDuration(bufferId);
+      data = inData;
+      duration = inData->getDuration();
+      const unsigned char *decoded = (const unsigned char *)data->decodeAll();
+      byteCount = data->getDecodedByteCount();
 
       loops = inLoops>0 ? inLoops -1 : inLoops;
+
       bool tooMuchSeek = false;
-      if (duration && inSound)
+      int  seekBytes = 0;
+      if (byteCount && startTime)
       {
-         seekToBytes = ( (startTime*0.001)*byteSize/ duration );
-         int seekLoops = seekToBytes/byteSize;
-         seekToBytes -= seekLoops*byteSize;
+         seekBytes = (int)( (startTime * 0.001) * (frequency*channels*sizeof(short))) & ~3;
+         int seekLoops = seekBytes/byteCount;
          if (loops>=0)
          {
             loops -= seekLoops;
             if (loops<0)
                tooMuchSeek = true;
          }
-     
-         seekToBytes & ~0x3; // 2 channels, 16 bit round
       }
+
+      LOG_SOUND("OpenSlSourceChannel size=%d seek=%d", byteCount, seekBytes);
      
       
       if (!tooMuchSeek)
       {
-         shouldPlay = true;
-
-         queueBuffer(bufferId);
-
-         play();
-
-         if (seekToBytes && seekToBytes<byteSize)
-            seekBytes(seekToBytes);
-
+         t0 = (double)seekBytes / (frequency*channels*sizeof(short));
+         queueData( decoded + seekBytes, byteCount - seekBytes );
          clAddChannel(this, loops>0);
       }
-      */
-      loops = inLoops;
-      queueData( inData->decodeAll(), inData->getDecodedByteCount() );
-      clAddChannel(this, loops>0);
    }
 
 
@@ -508,14 +504,24 @@ public:
 
    void asyncUpdate()
    {
-      if (!playing() && loops!=0)
+   }
+
+   void onBufferDone()
+   {
+      LOG_SOUND("onBufferDone asyncUpdate %d %d %f", playing(), loops, getPosition() );
+      t0 = 0;
+      if (loops!=0)
       {
-         rewind();
-         play();
+         queueData( data->decodeAll(), data->getDecodedByteCount() );
          if (loops>0)
             loops--;
+         if (!playing())
+            play();
+         else
+            t0 = -0.001*getPosition();
       }
    }
+
 
    bool isComplete()
    {
@@ -742,7 +748,7 @@ class OpenALStaticStreamChannel : public OpenALStreamChannel
 public:
    int  loops;
 
-   OpenALStaticStreamChannel(Object *inSound, const SoundTransform &inTransform, INmeSoundStream *inStream, int startTime, int inLoops)
+   OpenALStaticStreamChannel(Object *inSound, const SoundTransform &inTransform, INmeSoundStream *inStream, double startTime, int inLoops)
       : OpenALStreamChannel(inSound, inTransform, inStream )
    {
       loops = inLoops >0 ? inLoops-1 : inLoops;
