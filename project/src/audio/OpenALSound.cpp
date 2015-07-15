@@ -940,20 +940,17 @@ Sound *CreateOpenAlSound(const unsigned char *inData, int len, bool inForceMusic
 }
 
 
-void Sound::Suspend()
+void SuspendOpenAl()
 {
    //Always check if openal is initialized
    if (!OpenALInit())
       return;
    
-   clSuspendAllChannels();
-   
    alcMakeContextCurrent(0);
    alcSuspendContext(sgContext);
 }
 
-
-void Sound::Resume()
+void ResumeOpenAl()
 {
    //Always check if openal is initialized
    if (!OpenALInit())
@@ -961,18 +958,20 @@ void Sound::Resume()
    
    alcMakeContextCurrent(sgContext);
 
-   clResumeAllChannels();
-   
+}
+
+void PingOpenAl()
+{
    alcProcessContext(sgContext);
 }
 
-
-void Sound::Shutdown()
+void ShutdownOpenAl()
 {
    OpenALClose();
 }
 
-     
+
+
 
 
 } // end namespace nme

@@ -347,41 +347,6 @@ public:
    jstring   mJSoundPath;
 };
 
-void Sound::Suspend()
-{
-   /* TODO
-   OpenALChannel* channel = 0;
-   for (int i = 0; i < sgOpenChannels.size(); i++)
-   {
-      channel = (OpenALChannel*)(sgOpenChannels[i]);
-      if (channel)
-      {
-         channel->suspend();
-      }
-   }
-   */
-}
-
-
-void Sound::Resume()
-{
-   /* TODO
-   
-   OpenALChannel* channel = 0;
-   for (int i = 0; i < sgOpenChannels.size(); i++)
-   {
-      channel = (OpenALChannel*)(sgOpenChannels[i]);
-      if (channel)
-      {
-         channel->resume();
-      }
-   }
-   
-   alcProcessContext(sgContext);
-   */
-}
-
-
 
 Sound *CreateAndroidSound(const std::string &inFilename,bool inForceMusic)
 {

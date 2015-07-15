@@ -140,6 +140,52 @@ SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inData, const Sou
 }
 
 
+static bool sgSoundSuspended = false;
+
+void Sound::Suspend()
+{
+   if (sgSoundSuspended)
+      return;
+
+   sgSoundSuspended = true;
+
+   clSuspendAllChannels();
+
+   #ifdef NME_OPENAL
+   SuspendOpenAl();
+   #endif
+}
+
+
+void Sound::Resume()
+{
+   if (!sgSoundSuspended)
+      return;
+
+   sgSoundSuspended = false;
+
+   #ifdef NME_OPENAL
+   SuspendOpenAl();
+   #endif
+
+   clResumeAllChannels();
+
+   #ifdef NME_OPENAL
+   PingOpenAl();
+   #endif
+}
+
+
+void Sound::Shutdown()
+{
+   #ifdef NME_OPENAL
+   ShutdownOpenAl();
+   #endif
+}
+
+     
+
+
 
 }
 

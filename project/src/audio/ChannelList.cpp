@@ -192,6 +192,7 @@ void clShutdown()
 
 void clResumeAllChannels()
 {
+   ELOG("clResumeAllChannels !\n");
    if (!clIsInit)
       return;
    clLock();
@@ -205,6 +206,7 @@ void clResumeAllChannels()
 
 void clSuspendAllChannels()
 {
+   ELOG("clSuspendAllChannels !\n");
    if (!clIsInit)
       return;
    clLock();

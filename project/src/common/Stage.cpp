@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "TextField.h"
+#include "Sound.h"
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -197,6 +198,15 @@ void Stage::HandleEvent(Event &inEvent)
    if (inEvent.type==etResize)
    {
       CalcStageScaling( inEvent.x, inEvent.y);
+   }
+
+   if (inEvent.type==etActivate)
+   {
+      Sound::Resume();
+   }
+   else if (inEvent.type==etDeactivate)
+   {
+      Sound::Suspend();
    }
 
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown ||

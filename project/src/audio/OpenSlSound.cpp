@@ -109,7 +109,7 @@ public:
    SLObjectItf bqPlayerObject;
    SLPlayItf bqPlayerPlay;
    SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
-   SLSeekItf bqPlayerSeek;
+   SLVolumeItf bqPlayerVolume;
    //SLEffectSendItf bqPlayerEffectSend;
 
 
@@ -126,7 +126,7 @@ public:
       bqPlayerObject = 0;
       bqPlayerPlay = 0;
       bqPlayerBufferQueue = 0;
-      bqPlayerSeek = 0;
+      bqPlayerVolume = 0;
 
       t0 = 0.0;
       duration = 0.0;
@@ -179,13 +179,14 @@ public:
          SLDataSink audioSnk = {&loc_outmix, NULL};
  
          // create audio player
-         const SLInterfaceID ids1[] = {iidAndroidSampleBuffer};
+         const SLInterfaceID ids1[] = {iidAndroidSampleBuffer, iidVolume};
          const SLboolean req1[] = {SL_BOOLEAN_TRUE};
           
-         if ( (*engineEngine)->CreateAudioPlayer(engineEngine, &bqPlayerObject, &audioSrc, &audioSnk, 1, ids1, req1)==SL_RESULT_SUCCESS &&
+         if ( (*engineEngine)->CreateAudioPlayer(engineEngine, &bqPlayerObject, &audioSrc, &audioSnk, 2, ids1, req1)==SL_RESULT_SUCCESS &&
               (*bqPlayerObject)->Realize(bqPlayerObject, SL_BOOLEAN_FALSE) == SL_RESULT_SUCCESS &&
               (*bqPlayerObject)->GetInterface(bqPlayerObject, iidPlay, &bqPlayerPlay)==SL_RESULT_SUCCESS  &&
               (*bqPlayerObject)->GetInterface(bqPlayerObject, iidAndroidSampleBuffer, &bqPlayerBufferQueue)==SL_RESULT_SUCCESS &&
+              (*bqPlayerObject)->GetInterface(bqPlayerObject, iidVolume, &bqPlayerVolume)==SL_RESULT_SUCCESS &&
               (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue, sOnBufferDone, this)==SL_RESULT_SUCCESS )
          {
             shouldPlay = true;
@@ -230,9 +231,36 @@ public:
    }
    
 
+   float gain_to_attenuation( float gain )
+   {
+      // gain 0.7 -> -300 mdb attenuation
+      // gain 0.5 -> -600 mdb attenuation
+      // gain 0.35-> -900 mdb attenuation
+      if (gain==1)
+         return 0;
+      if (gain<0.01)
+         return SL_MILLIBEL_MIN;
+
+      return -300.0 * log(gain)/log(0.7);
+   }
+
    
    void setTransform(const SoundTransform &inTransform)
    {
+      float attenuation = gain_to_attenuation(inTransform.volume);
+
+      LOG_SOUND("setTransform %p attenuation=%f -> %f pan=%f", bqPlayerPlay, inTransform.volume, attenuation, inTransform.pan);
+      if (bqPlayerVolume)
+      {
+         (*bqPlayerVolume)->SetVolumeLevel(bqPlayerVolume, attenuation);
+
+         if (inTransform.pan!=0.0)
+         {
+            (*bqPlayerVolume)->EnableStereoPosition(bqPlayerVolume, true);
+            SLpermille value = inTransform.pan*1000;
+            (*bqPlayerVolume)->SetStereoPosition(bqPlayerVolume, value);
+         }
+      }
    }
 
    bool playing()
@@ -263,6 +291,7 @@ public:
          bqPlayerObject = 0;
          bqPlayerPlay = 0;
          bqPlayerBufferQueue = 0;
+         bqPlayerVolume = 0;
          //bqPlayerEffectSend = 0;
       }
  
@@ -273,6 +302,7 @@ public:
          outputMixObject = 0;
       }
  
+      LOG_SOUND("Stop %p!", this);
       shouldPlay = false;
 
       clRemoveChannel(this);
@@ -281,17 +311,24 @@ public:
    
    void suspend()
    {
+      LOG_SOUND("Suspend %p!", this);
       suspended = true;
-      if (playing())
+      shouldPlay = playing();
+      if (shouldPlay)
       {
+         LOG_SOUND(" -> pause");
+         (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PAUSED);
       }
    }
    
    
    void resume()
    {
+      LOG_SOUND("Resume %p (%d)!", this, shouldPlay);
       if (shouldPlay)
       {
+         LOG_SOUND(" -> play");
+         (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
       }
    }
   
@@ -989,50 +1026,6 @@ Sound *CreateOpenSlSound(const unsigned char *inData, int len, bool inForceMusic
    else
       return 0;
 }
-
-
-#if 0
-void Sound::Suspend()
-{
-   //Always check if openal is initialized
-   if (!OpenSLinit())
-      return;
-   
-   clSuspendAllChannels();
-}
-
-
-void Sound::Resume()
-{
-   //Always check if openal is initialized
-   if (!OpenSlInit())
-      return;
-   
-   clResumeAllChannels();
-}
-
-
-void Sound::Shutdown()
-{
-   OpenSlClose();
-}
-
-     
-Sound *Sound::CreateOpenSl(const std::string &inFilename, bool inForceMusic)
-{
-   if (!OpenSlInit())
-      return 0;
-   return new OpenSlSound(inFilename, inForceMusic);
-}
-
-Sound *Sound::CreateOpenSl(float *inData, int len)
-{
-   if (!OpenSlInit())
-      return 0;
-   return new OpenSlSound((const unsigned char *)inData, len);
-}
-
-#endif
 
 
 

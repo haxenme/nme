@@ -44,6 +44,10 @@ Sound *CreateAvPlayerSound(const std::string &inFilename);
 Sound *CreateOpenAlSound(const unsigned char *inData, int len, bool inForceMusic);
 SoundChannel *CreateOpenAlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
               SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
+void SuspendOpenAl();
+void ResumeOpenAl();
+void ShutdownOpenAl();
+void PingOpenAl();
 
 Sound *CreateOpenSlSound(const unsigned char *inData, int len, bool inForceMusic);
 SoundChannel *CreateOpenSlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
