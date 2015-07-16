@@ -417,13 +417,18 @@ class Platform
          {
             var arch = "";
             if (protocol=="bindir")
-               switch(PlatformHelper.hostPlatform)
+            {
+               // Cross compile
+               if (getBinName()=="Linux" || getBinName()=="Linux64")
+                  arch = "/Linux/" + project.app.file;
+               else switch(PlatformHelper.hostPlatform)
                {
                   case WINDOWS: arch="/Windows/" + project.app.file;
                   case MAC: arch="/Mac/" + project.app.file + ".app";
                   case LINUX: arch="/Linux/" + project.app.file;
                   default:Log.error("Unkown host platform for bindir, " + PlatformHelper.hostPlatform);
                }
+            }
 
             var to = name + arch;
             for(file in outputFiles)

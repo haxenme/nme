@@ -288,7 +288,11 @@ class NMEProject
             targetFlags.set("android", "");
             targetFlags.set("androidsim", "");
 
-         case "windows", "mac", "linux", "flash":
+         case "flash":
+            target = inTargetName.toUpperCase();
+
+         case "windows", "mac", "linux":
+            targetFlags.set("cpp", "1");
             target = inTargetName.toUpperCase();
 
          default:
