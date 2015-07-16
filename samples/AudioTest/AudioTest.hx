@@ -386,10 +386,7 @@ class AudioPage extends Sprite
    function onPosition(inPosition:Float)
    {
       if (soundChannel!=null)
-      {
-         soundChannel.stop();
          onPlay(inPosition);
-      }
    }
 
    public function onStop()
@@ -417,6 +414,12 @@ class AudioPage extends Sprite
 
    public function onPlay(inSeek:Float)
    {
+      if (soundChannel!=null)
+      {
+         soundChannel.stop();
+         soundChannel = null;
+      }
+
       if (sound!=null)
       {
          var extra = Std.parseInt( loops.text );

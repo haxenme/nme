@@ -154,6 +154,11 @@ void Sound::Suspend()
    #ifdef NME_OPENAL
    SuspendOpenAl();
    #endif
+
+   #ifdef NME_MIXER
+   SuspendSdlSound();
+   #endif
+
 }
 
 
@@ -165,7 +170,11 @@ void Sound::Resume()
    sgSoundSuspended = false;
 
    #ifdef NME_OPENAL
-   SuspendOpenAl();
+   ResumeOpenAl();
+   #endif
+
+   #ifdef NME_MIXER
+   ResumeSdlSound();
    #endif
 
    clResumeAllChannels();

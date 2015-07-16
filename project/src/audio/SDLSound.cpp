@@ -25,8 +25,10 @@ bool sDoneMusic = false;
 enum { STEREO_SAMPLES = 2 };
 
 unsigned int  sSoundPos = 0;
+double        sMusicT0 = 0;
 double        sLastMusicUpdate = 0;
-double        sMusicFrequency = 0;
+double        sMusicFrequency = 44100;
+bool          sSoundPaused = false;
 
 void onChannelDone(int inChannel)
 {
@@ -52,15 +54,27 @@ void  onPostMix(void *udata, Uint8 *stream, int len)
 {
    sSoundPos += len / sizeof(short) / STEREO_SAMPLES ;
    sLastMusicUpdate = GetTimeStamp();
+   if (!sMusicT0)
+      sMusicT0 = sLastMusicUpdate;
 }
 
-int getMixerTime(int inTime0)
+int getMixerSamplesSince(int inTime0)
 {
    double now = GetTimeStamp();
-   if (now>sLastMusicUpdate+1)
+   if (now>sLastMusicUpdate+0.25)
       return sSoundPos;
 
    return (sSoundPos-inTime0) + (int)( (now - sLastMusicUpdate)*sMusicFrequency );
+}
+
+double getMixerTicks()
+{
+   double delta = GetTimeStamp()-sLastMusicUpdate;
+   if (delta>0.25)
+      delta = 0;
+
+   return (sSoundPos)*1000.0/sMusicFrequency + delta*1000.0;
+
 }
 
 
@@ -257,7 +271,7 @@ public:
          }
          if (!sDoneChannel[mChannel])
          {
-            mSoundPos0 = getMixerTime(0);
+            mSoundPos0 = getMixerSamplesSince(0);
 
             Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
          }
@@ -277,7 +291,7 @@ public:
          mDynamicBuffer[ (mono_pos<<1) + 1 ] = *buffer++ * ((1<<15)-1);
       }
 
-      int soundTime = getMixerTime(mSoundPos0);
+      int soundTime = getMixerSamplesSince(mSoundPos0);
 
       if (mDynamicFillPos<soundTime && !inFirst)
          ELOG("Too slow - FillBuffer %d / %d)", mDynamicFillPos, soundTime );
@@ -346,8 +360,11 @@ public:
    void stop() 
    {
       if (mChannel>=0)
+      {
          Mix_HaltChannel(mChannel);
-
+         sDoneChannel[mChannel] = true;
+         loopsPending = 0;
+      }
       //CheckDone();
    }
 
@@ -363,14 +380,14 @@ public:
 
    double getDataPosition()
    {
-      return getMixerTime(mSoundPos0)*1000.0/mFrequency;
+      return getMixerSamplesSince(mSoundPos0)*1000.0/mFrequency;
    }
    bool needsData()
    {
       if (!mDynamicBuffer || mDynamicRequestPending)
          return false;
 
-      int soundTime = getMixerTime( mSoundPos0 );
+      int soundTime = getMixerSamplesSince( mSoundPos0 );
       if (mDynamicDataDue<=soundTime + mBufferAheadSamples)
       {
          mDynamicRequestPending = true;
@@ -384,7 +401,7 @@ public:
    void addData(const ByteArray &inBytes)
    {
       mDynamicRequestPending = false;
-      int soundTime = getMixerTime(mSoundPos0);
+      int soundTime = getMixerSamplesSince(mSoundPos0);
       mDynamicDataDue = mDynamicFillPos;
       FillBuffer(inBytes,false);
    }
@@ -564,12 +581,20 @@ public:
 class SDLMusicChannel : public SoundChannel
 {
 public:
-   SDLMusicChannel(Object *inSound, Mix_Music *inMusic, double inStartTime, int inLoops,
+   bool      mPlaying;
+   Object    *mSound;
+   int       mStartTime;
+   double    mDuration;
+   int       mStoppedLength;
+   Mix_Music *mMusic;
+
+   SDLMusicChannel(Sound *inSound, Mix_Music *inMusic, double inStartTime, int inLoops,
                   const SoundTransform &inTransform)
    {
       mMusic = inMusic;
       mSound = inSound;
       mSound->IncRef();
+      mDuration = inSound->getLength();
 
       mPlaying = false;
       if (mMusic)
@@ -577,27 +602,32 @@ public:
          mPlaying = true;
          sUsedMusic = this;
          sDoneMusic = false;
-         mStartTime = SDL_GetTicks();
-         mLength = 0;
+         mStartTime = getMixerTicks();
+         mStoppedLength = 0;
          IncRef();
 
-         if (Mix_PlayMusic( mMusic, inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1 )<0)
+         int iStartTime = inStartTime;
+         // Seems odd...
+         //int sdlLoops = inLoops<0 ? -1 : inLoops==0 ? 1 : inLoops;
+         int sdlLoops = inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1;
+         //int sdlLoops = inLoops;
+         if (Mix_PlayMusic( mMusic, sdlLoops )<0)
          {
             onMusicDone();
          }
          else
          {
             Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
-            if (inStartTime > 0)
+            if (iStartTime > 0)
             {
                // Should be 'almost' at start
                //Mix_RewindMusic();
                #ifndef EMSCRIPTEN
-               Mix_SetMusicPosition(inStartTime*0.001); 
+               Mix_SetMusicPosition(iStartTime*0.001); 
                #else
-               inStartTime = 0;
+               iStartTime = 0;
                #endif
-               mStartTime = SDL_GetTicks() - inStartTime;
+               mStartTime = getMixerTicks() - iStartTime;
             }
             // Mix_SetPanning not available for music
          }
@@ -612,7 +642,7 @@ public:
    {
       if (mPlaying && (sDoneMusic || (sUsedMusic!=this)) )
       {
-         mLength = SDL_GetTicks () - mStartTime;
+         mStoppedLength = getMixerTicks() - mStartTime;
          mPlaying = false;
          if (sUsedMusic == this)
          {
@@ -630,13 +660,30 @@ public:
    }
    double getLeft() { return 1; }
    double getRight() { return 1; }
-   double getPosition() { return mPlaying ? SDL_GetTicks() - mStartTime : mLength; }
+   double getPosition()
+   {
+      if (!mPlaying)
+         return mStoppedLength;
+      while(true)
+      {
+         double pos = getMixerTicks() - mStartTime;
+         if (mDuration>0.01 && pos>mDuration)
+            mStartTime += mDuration;
+         else
+            return pos;
+      }
+      return 0;
+   }
    double setPosition(const float &inFloat) { return 1; }
 
    void stop() 
    {
       if (mMusic)
+      {
          Mix_HaltMusic();
+         if (sUsedMusic == this)
+            sDoneMusic = true;
+      }
    }
    void setTransform(const SoundTransform &inTransform) 
    {
@@ -644,11 +691,6 @@ public:
          Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
    }
 
-   bool      mPlaying;
-   Object    *mSound;
-   int       mStartTime;
-   int       mLength;
-   Mix_Music *mMusic;
 };
 
 
@@ -726,8 +768,8 @@ public:
                   }
                   else
                   {
-                     ELOG("Could not determine music length - assume 60");
-                     duration = 60000.0;
+                     ELOG("Could not determine music length - assume large");
+                     duration = 600000000.0;
                   }
                }
             }
@@ -794,6 +836,24 @@ public:
 
 // --- External Interface -----------------------------------------------------------
 
+
+void SuspendSdlSound()
+{
+   if (gSDLAudioState!=sdaOpen)
+     return;
+
+   sSoundPaused = true;
+   SDL_PauseAudio(true);
+}
+
+void ResumeSdlSound()
+{
+   if (gSDLAudioState!=sdaOpen)
+     return;
+
+   sSoundPaused = false;
+   SDL_PauseAudio(false);
+}
 
 Sound *CreateSdlSound(const std::string &inFilename,bool inForceMusic)
 {
