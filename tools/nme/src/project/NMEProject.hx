@@ -132,6 +132,7 @@ class NMEProject
    public var debug:Bool;
    public var megaTrace:Bool;
    public var isFlash:Bool;
+   public var isHtml5:Bool;
 
    // Exported into project for use in project files
    public var platformType:String;
@@ -291,6 +292,9 @@ class NMEProject
          case "flash":
             target = inTargetName.toUpperCase();
 
+         case "html5":
+            target = inTargetName.toUpperCase();
+
          case "windows", "mac", "linux":
             targetFlags.set("cpp", "1");
             target = inTargetName.toUpperCase();
@@ -313,7 +317,8 @@ class NMEProject
       }
 
       isFlash =  target==Platform.FLASH;
-      if (!isFlash)
+      isHtml5 =  target==Platform.HTML5;
+      if (!isFlash && !isHtml5)
       {
           haxeflags.push("--remap flash:nme");
           haxeflags.push("--remap lime:nme");
@@ -324,12 +329,15 @@ class NMEProject
       switch(target) 
       {
          case Platform.FLASH:
-
             platformType = Platform.TYPE_WEB;
             embedAssets = true;
 
          case Platform.CPPIA:
             platformType = Platform.TYPE_SCRIPT;
+            embedAssets = false;
+
+         case Platform.HTML5:
+            platformType = Platform.TYPE_WEB;
             embedAssets = false;
 
          case Platform.EMSCRIPTEN:

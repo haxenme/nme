@@ -37,7 +37,7 @@ class CommandLineTools
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
-            "windows", "mac", "linux", "flash", "cppia", "emscripten" ];
+            "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
@@ -98,6 +98,9 @@ class CommandLineTools
 
          case Platform.EMSCRIPTEN:
             platform = new platforms.EmscriptenPlatform(project);
+
+         case Platform.HTML5:
+            platform = new platforms.Html5Platform(project);
       }
 
       if (platform != null) 

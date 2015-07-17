@@ -288,7 +288,7 @@ class Assets
             data = Type.createInstance(Type.resolveClass(i.className), []);
          #elseif js
             var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
-            data:ByteArray = null;
+            data = null;
             if (Std.is(asset, String)) 
             {
                bytes = new ByteArray();
