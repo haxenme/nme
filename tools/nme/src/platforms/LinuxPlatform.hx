@@ -45,6 +45,8 @@ class LinuxPlatform extends DesktopPlatform
 
       applicationDirectory = getOutputDir();
       executablePath = applicationDirectory + "/" + project.app.file;
+      addOutput(executablePath);
+
 
       if (isRaspberryPi) 
          project.haxedefs.set("rpi", "1");
