@@ -808,13 +808,23 @@ INmeSoundData *INmeSoundData::create(const std::string &inId, unsigned int inFla
 
 INmeSoundData *INmeSoundData::create(const unsigned char *inData, int inDataLength, unsigned int inFlags)
 {
-   NmeSoundData *result = new NmeSoundData(inData, inDataLength, inFlags);
+   INmeSoundData *result = new NmeSoundData(inData, inDataLength, inFlags);
    if (result->getChannelSampleCount()==0)
    {
-      LOG_SOUND("Can't create sound from data - channel count is zero.");
       result->release();
-      return 0;
+      result = 0;
+      #ifdef HX_WINDOWS
+      result = createAcm(inData, inDataLength, inFlags);
+      if (result && !result->getChannelSampleCount())
+      {
+         result->release();
+         result = 0;
+      }
+      #endif
    }
+
+   if (!result)
+      LOG_SOUND("Can't create sound from data - channel count is zero.");
    return result;
 }
 

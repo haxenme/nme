@@ -465,6 +465,8 @@ public:
       duration = 0.0;
       soundData = 0;
 
+      Mix_QuerySpec(&frequency, &format, &channels);
+
       if (Init())
          loadChunk();
    }
@@ -526,10 +528,31 @@ public:
                   if (data)
                   {
                      int bytes = soundData->getDecodedByteCount();
-                     mChunk = Mix_QuickLoad_RAW(data, bytes);
+                     if (soundData->getRate()!=frequency || !soundData->getIsStereo())
+                     {
+                        SDL_AudioCVT wavecvt;
+                        if (SDL_BuildAudioCVT(&wavecvt,
+                                format, soundData->getIsStereo() ? 2 : 1, soundData->getRate(),
+                                format, channels, frequency) >= 0)
+                        {
+                           int samplesize = 2 * sizeof(short);
+                           int sampleCount = soundData->getChannelSampleCount();
+
+                           wavecvt.len = soundData->getDecodedByteCount();
+                           wavecvt.buf = (Uint8 *)SDL_calloc(1, wavecvt.len*wavecvt.len_mult);
+                           SDL_memcpy(wavecvt.buf, data, bytes);
+                           SDL_ConvertAudio(&wavecvt);
+                           mChunk = Mix_QuickLoad_RAW(wavecvt.buf, wavecvt.len_cvt);
+                        }
+                        soundData->release();
+                        soundData = 0;
+                     }
+                     else
+                     {
+                        mChunk = Mix_QuickLoad_RAW(data, bytes);
+                     }
                   }
                }
-               
             }
          }
       }
@@ -542,7 +565,6 @@ public:
       loaded = true;
       if (mChunk)
       {
-         Mix_QuerySpec(&frequency, &format, &channels);
          int bytes = mChunk->alen;
          if (bytes && frequency && channels)
             duration = (double)bytes/ (frequency*channels*sizeof(short) );
@@ -864,6 +886,14 @@ Sound *CreateSdlSound(const std::string &inFilename,bool inForceMusic)
       if (sound) sound->DecRef();
       sound = new SDLMusic(inFilename);
    }
+   #ifdef HX_WINDOWS
+   // Try as sound after all...
+   if (inForceMusic && (!sound || !sound->ok()))
+   {
+      if (sound) sound->DecRef();
+      sound = new SDLSound(inFilename);
+   }
+   #endif
    return sound;
 }
 
@@ -875,6 +905,14 @@ Sound *CreateSdlSound(const unsigned char *inData, int len, bool inForceMusic)
       if (sound) sound->DecRef();
       sound = new SDLMusic(inData, len);
    }
+   #ifdef HX_WINDOWS
+   // Try as sound after all...
+   if (inForceMusic && (!sound || !sound->ok()))
+   {
+      if (sound) sound->DecRef();
+      sound = new SDLSound(inData, len);
+   }
+   #endif
    return sound;
 }
 

@@ -84,6 +84,8 @@ inline void DontLog(const char *inFormat,...) { }
 namespace nme
 {
 
+bool nmeCoInitialize();
+
 extern void nmeLog(const char *inMessage);
 
 bool InitOGLFunctions();

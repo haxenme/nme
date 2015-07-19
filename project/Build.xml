@@ -98,6 +98,7 @@
          <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />
          <file name="${SRC_DIR}/windows/GDIFont.cpp"/>
          <file name="${SRC_DIR}/windows/System.cpp" />
+         <file name="${SRC_DIR}/audio/WindowsAcm.cpp" />
       </section>
 
       <section if="linux">
