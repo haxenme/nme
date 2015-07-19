@@ -374,54 +374,61 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 // printf("Looking for font %s...", inName.c_str() );
 
 #ifdef IPHONEOS
-#define FONT_BASE "/System/Library/Fonts/Cache/"
+//#define FONT_BASE "/System/Library/Fonts/Cache/" before ios8.2
+const char *fontFolders[] = { "/System/Library/Fonts/Core/", "/System/Library/Fonts/AppFonts/",
+                              "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/", 0 };
 #else
-#define FONT_BASE "/Library/Fonts/"
+//#define FONT_BASE "/Library/Fonts/"
+const char *fontFolders[] = { "/Library/Fonts/", 0 };
 #endif
 
-   outFile = FONT_BASE + inName;
-   FILE *file = fopen(outFile.c_str(),"rb");
-   if (file)
+   const char **testFolder = fontFolders;
+   while(*testFolder)
    {
+    outFile = std::string(*testFolder) + inName;
+    FILE *file = fopen(outFile.c_str(),"rb");
+    if (file)
+    {
       //printf("Found actual file %s\n", outFile.c_str());
       fclose(file);
       return true;
-   }
+    }
 
+    const char *serifFonts[] = { "Georgia.ttf", "Times.ttf", "Times New Roman.ttf", 0 };
+    const char *sansFonts[] = { "Arial.ttf", "Helvetica.ttf", "Arial Black.ttf", 0 };
+    const char *fixedFonts[] = { "Courier New.ttf", "Courier.ttf", 0 };
 
+    const char **test = 0;
 
-   const char *serifFonts[] = { "Georgia.ttf", "Times.ttf", "Times New Roman.ttf", 0 };
-   const char *sansFonts[] = { "Arial Black.ttf", "Arial.ttf", "Helvetica.ttf", 0 };
-   const char *fixedFonts[] = { "Courier New.ttf", "Courier.ttf", 0 };
-
-   const char **test = 0;
-
-   if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
+    if (!strcasecmp(inName.c_str(),"_serif") || !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
       test = serifFonts;
-   else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"helvetica.ttf"))
+    else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"helvetica.ttf"))
       test = sansFonts;
-   else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf"))
+    else if (!strcasecmp(inName.c_str(),"_typewriter") || !strcasecmp(inName.c_str(),"courier.ttf"))
       test = fixedFonts;
-   else if (!strcasecmp(inName.c_str(),"arial.ttf"))
+    else if (!strcasecmp(inName.c_str(),"arial.ttf"))
       test = sansFonts;
 
-   if (test)
-   {
+    if (test)
+    {
       while(*test)
       {
-         outFile = FONT_BASE + std::string(*test);
+         outFile = std::string(*testFolder) + std::string(*test);
 
          //printf("Try %s\n", outFile.c_str());
 
-	 FILE *file = fopen(outFile.c_str(),"rb");
-	 if (file)
-	 {
-	    //printf("Found sub file %s\n", outFile.c_str());
-	    fclose(file);
-	    return true;
-	 }
+	     FILE *file = fopen(outFile.c_str(),"rb");
+	     if (file)
+	     {
+	        //printf("Found sub file %s\n", outFile.c_str());
+	        fclose(file);
+	        return true;
+	     }
          test++;
       }
+    }
+
+    testFolder++;
    }
 
    return false;
@@ -1080,24 +1087,33 @@ value nme_font_iterate_device_fonts(value inFunc)
       #endif
    
    
-      std::string fontDir = 
+      //std::string fontDir =
+      const char *fontFolders[] = {
          #if defined (ANDROID)
-            "/system/fonts/";
+            "/system/fonts/"
          #elif defined (WEBOS)
-            "/usr/share/fonts/";
+            "/usr/share/fonts/"
          #elif defined (BLACKBERRY)
-            "/usr/fonts/font_repository/";
+            "/usr/fonts/font_repository/"
          #elif defined(IPHONEOS)
-            "/System/Library/Fonts/Cache/";
+            "/System/Library/Fonts/Core/", "/System/Library/Fonts/AppFonts/",
+            "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/"
          #elif defined(__APPLE__)
-            "/Library/Fonts/";
+            "/Library/Fonts/"
          #elif defined(HX_WINDOWS)
-           std::string(win_path) + "\\Fonts\\";
+           std::string(win_path) + "\\Fonts\\"
          #else
-            "/usr/share/fonts/truetype/";
+            "/usr/share/fonts/truetype/"
          #endif
-   
-      ItererateFontDir(fontDir, inFunc, 1);
+      , 0};
+
+      const char **testFolder = fontFolders;
+      while(*testFolder)
+      {
+         std::string fontDir = std::string(*testFolder);
+         ItererateFontDir(fontDir, inFunc, 1);
+         testFolder++;
+      }
    #endif
    
    return alloc_null();
