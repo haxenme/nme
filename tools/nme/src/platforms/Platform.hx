@@ -544,7 +544,7 @@ class Platform
          }
          else
          {
-            LogHelper.error("Source path \"" + src + "\" does not exist");
+            LogHelper.error("Library source path \"" + src + "\" does not exist +(" + ndll + ")");
          }
       }
    }

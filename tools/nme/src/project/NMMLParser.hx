@@ -666,6 +666,8 @@ class NMMLParser
                      if ( (name == "std" || name == "regexp" || name == "zlib" ||
                           name=="sqlite" || name=="mysql5")) 
                         haxelib = "hxcpp";
+                     else
+                        haxelib = name;
                  }
                  var base = extensionPath;
                  if (haxelib!="")

@@ -252,7 +252,7 @@ class FileHelper
    {
       if (source == null || !FileSystem.exists(source)) 
       {
-         LogHelper.error("Source path \"" + source + "\" does not exist");
+         LogHelper.error("IsNewer - source path \"" + source + "\" does not exist");
          return false;
       }
 
