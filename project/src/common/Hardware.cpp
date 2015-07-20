@@ -86,7 +86,7 @@ public:
       else if (inJob.mFill)
       {
          mSolidMode = true;
-         mElement.mPrimType = inJob.mTriangles ? ptTriangles : ptTriangleFan;
+         mElement.mPrimType = inJob.mTriangles ? ptTriangles : ptTriangleStrip;
          mElement.mScaleMode = ssmNormal;
          if (!SetFill(inJob.mFill,inHardware))
             return;
@@ -596,14 +596,23 @@ public:
 
    void PushVertices(const Vertices &inV)
    {
-      ReserveArrays(inV.size());
+      ReserveArrays(inV.size()-1);
 
       //printf("PushVertices %d\n", inV.size());
 
       UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
-      for(int i=0;i<inV.size();i++)
+      for(int i=1;i<inV.size();i++)
       {
-         *v = inV[i];
+         int vertex;
+         if(i%2)
+         {
+            vertex = i/2;
+         }
+         else
+         {
+            vertex = inV.size() - 1 - i / 2;
+         }
+         *v = inV[vertex];
          Next(v);
       }
 
