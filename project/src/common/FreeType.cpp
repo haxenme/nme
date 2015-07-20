@@ -1084,6 +1084,7 @@ value nme_font_iterate_device_fonts(value inFunc)
       #ifdef HX_WINDOWS
       char win_path[2 * MAX_PATH];
       GetWindowsDirectory(win_path, 2*MAX_PATH);
+      strcat(win_path,"\\Fonts\\");
       #endif
    
    
@@ -1101,7 +1102,7 @@ value nme_font_iterate_device_fonts(value inFunc)
          #elif defined(__APPLE__)
             "/Library/Fonts/"
          #elif defined(HX_WINDOWS)
-           std::string(win_path) + "\\Fonts\\"
+           win_path
          #else
             "/usr/share/fonts/truetype/"
          #endif
