@@ -493,6 +493,42 @@ public:
 
    const char *getEngine() { return "sdl sound"; }
 
+   void setSoundData(INmeSoundData *inData)
+   {
+      soundData = inData;
+      Uint8 *data = (Uint8 *)soundData->decodeAll();
+      if (data)
+      {
+         int bytes = soundData->getDecodedByteCount();
+         if (soundData->getRate()!=frequency || !soundData->getIsStereo())
+         {
+            SDL_AudioCVT wavecvt;
+            if (SDL_BuildAudioCVT(&wavecvt,
+                    format, soundData->getIsStereo() ? 2 : 1, soundData->getRate(),
+                    format, channels, frequency) >= 0)
+            {
+               int samplesize = 2 * sizeof(short);
+               int sampleCount = soundData->getChannelSampleCount();
+
+               wavecvt.len = soundData->getDecodedByteCount();
+               wavecvt.buf = (Uint8 *)SDL_calloc(1, wavecvt.len*wavecvt.len_mult);
+               SDL_memcpy(wavecvt.buf, data, bytes);
+               SDL_ConvertAudio(&wavecvt);
+               mChunk = Mix_QuickLoad_RAW(wavecvt.buf, wavecvt.len_cvt);
+            }
+            soundData->release();
+            soundData = 0;
+         }
+         else
+         {
+            mChunk = Mix_QuickLoad_RAW(data, bytes);
+         }
+         if (mChunk)
+            onChunk();
+      }
+ 
+   }
+
    void loadChunk()
    {
       #ifdef HX_MACOS
@@ -503,7 +539,16 @@ public:
       #endif
 
       mChunk = Mix_LoadWAV(name);
-      //printf("Loaded wav : %s\n", name);
+      //printf("Loaded wav : %s = %p\n", name, mChunk);
+
+      #ifdef HX_MACOS
+      if (!mChunk)
+      {
+         INmeSoundData *data = INmeSoundData::createAvDecoded(name);
+         if (data)
+            setSoundData(data);
+      }
+      #endif
 
       if (!mChunk)
       {
@@ -521,39 +566,10 @@ public:
             }
             if (!mChunk)
             {
-               soundData = INmeSoundData::create(resource.Bytes(),n,SoundForceDecode);
-               if (soundData)
-               {
-                  Uint8 *data = (Uint8 *)soundData->decodeAll();
-                  if (data)
-                  {
-                     int bytes = soundData->getDecodedByteCount();
-                     if (soundData->getRate()!=frequency || !soundData->getIsStereo())
-                     {
-                        SDL_AudioCVT wavecvt;
-                        if (SDL_BuildAudioCVT(&wavecvt,
-                                format, soundData->getIsStereo() ? 2 : 1, soundData->getRate(),
-                                format, channels, frequency) >= 0)
-                        {
-                           int samplesize = 2 * sizeof(short);
-                           int sampleCount = soundData->getChannelSampleCount();
-
-                           wavecvt.len = soundData->getDecodedByteCount();
-                           wavecvt.buf = (Uint8 *)SDL_calloc(1, wavecvt.len*wavecvt.len_mult);
-                           SDL_memcpy(wavecvt.buf, data, bytes);
-                           SDL_ConvertAudio(&wavecvt);
-                           mChunk = Mix_QuickLoad_RAW(wavecvt.buf, wavecvt.len_cvt);
-                        }
-                        soundData->release();
-                        soundData = 0;
-                     }
-                     else
-                     {
-                        mChunk = Mix_QuickLoad_RAW(data, bytes);
-                     }
-                  }
-               }
-            }
+               INmeSoundData *data = INmeSoundData::create(resource.Bytes(),n,SoundForceDecode);
+               if (data)
+                  setSoundData(data);
+           }
          }
       }
 
@@ -886,7 +902,7 @@ Sound *CreateSdlSound(const std::string &inFilename,bool inForceMusic)
       if (sound) sound->DecRef();
       sound = new SDLMusic(inFilename);
    }
-   #ifdef HX_WINDOWS
+   #if defined(HX_WINDOWS) || defined(HX_MACOS)
    // Try as sound after all...
    if (inForceMusic && (!sound || !sound->ok()))
    {

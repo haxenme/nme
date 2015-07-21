@@ -112,6 +112,7 @@
          <file name="${SRC_DIR}/mac/NSFont.cpp"/>
          <file name="${SRC_DIR}/mac/MacBoot.m" />
          <file name="${SRC_DIR}/mac/System.mm"/>
+         <file name="${SRC_DIR}/audio/AvAudio.mm" />
          <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
       </section>
 
