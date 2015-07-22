@@ -20,6 +20,11 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
 //import android.view.InputDevice;
+import android.widget.TextView;
+import android.text.Editable;
+import android.widget.EditText;
+import android.text.TextWatcher;
+import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.app.Activity;
@@ -202,6 +207,52 @@ class MainView extends GLSurfaceView {
         setRenderer(new Renderer(this));
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
        //Log.v("VIEW", "present on system: " + InputDevice.getDeviceIds());
+       
+         mActivity.mKeyInTextView.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.length() > 1) {
+                    for(int i=1;i<s.length();i++){
+                        final int keyCode = s.charAt(i);
+                        if (keyCode != 0) {
+                            queueEvent(new Runnable() {
+                                // This method will be called on the rendering thread:
+                                public void run() {
+                                    me.HandleResult(NME.onKeyChange(keyCode, true));
+                                    //me.HandleResult(NME.onJoyChange(deviceId, keyCode, true));
+                                    me.HandleResult(NME.onKeyChange(keyCode, false));
+                                    //me.HandleResult(NME.onJoyChange(deviceId, keyCode, false));
+                                }
+                            });
+                        }
+                    }
+                    mActivity.mKeyInTextView.setText("*");
+                    mActivity.mKeyInTextView.setSelection(1);
+                } else if(s.length() == 0){
+                    queueEvent(new Runnable() {
+                        // This method will be called on the rendering thread:
+                        public void run() {
+                            me.HandleResult(NME.onKeyChange(8, true));
+                            //me.HandleResult(NME.onJoyChange(deviceId, keyCode, true));
+                            me.HandleResult(NME.onKeyChange(8, false));
+                            //me.HandleResult(NME.onJoyChange(deviceId, keyCode, false));
+                        }
+                    });
+                    mActivity.mKeyInTextView.setText("*");
+                    mActivity.mKeyInTextView.setSelection(1);
+                }
+            }
+        });
     }
 
    public void checkZOrder()
@@ -402,7 +453,7 @@ class MainView extends GLSurfaceView {
        return result;
     }
 
-    @Override
+    /*@Override
     public boolean onKeyDown(final int inKeyCode, KeyEvent event)
     {
          // Log.e("VIEW","onKeyDown " + inKeyCode);
@@ -444,7 +495,7 @@ class MainView extends GLSurfaceView {
              return true;
          }
          return super.onKeyDown(inKeyCode, event);
-     }
+     }*/
 
 
     private static class Renderer implements GLSurfaceView.Renderer
