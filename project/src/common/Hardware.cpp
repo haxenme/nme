@@ -596,12 +596,18 @@ public:
 
    void PushVertices(const Vertices &inV)
    {
-      ReserveArrays(inV.size()-1);
+      int size = inV.size();
+      int begin = 0;
+      if(inV[0].x == inV[1].x && inV[0].y == inV[1].y)
+      {
+         begin = 1;
+      }
+      ReserveArrays(size-begin);
 
       //printf("PushVertices %d\n", inV.size());
 
       UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
-      for(int i=1;i<inV.size();i++)
+      for(int i=begin;i<size;i++)
       {
          int vertex;
          if(i%2)
@@ -610,7 +616,7 @@ public:
          }
          else
          {
-            vertex = inV.size() - 1 - i / 2;
+            vertex = size - 1 - ( i / 2 );
          }
          *v = inV[vertex];
          Next(v);
