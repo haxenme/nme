@@ -351,6 +351,11 @@ public:
    {
       // __android_log_print(ANDROID_LOG_INFO, "NME", "Trackball %f %f", inX, inY);
    }
+   
+   void OnMouseWheel(double inX, double inY, int inEventDir) {
+       Event mouse(etMouseUp, inX, inY, inEventDir);
+       HandleEvent(mouse);
+   }
 
    void OnTouch(int inType,double inX, double inY, int inID, float sizeX, float sizeY)
    {
@@ -785,6 +790,14 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onAccelerate(JNIEnv * env, jobject
    AutoHaxe haxe("onAcceration");
    if (nme::sStage)
       nme::sStage->OnAccelerate(x,y,z);
+   return nme::GetResult();
+}
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onMouseWheel(JNIEnv * env, jobject obj, jfloat x, jfloat y, jint eventDir)
+{
+   AutoHaxe haxe("onMouseWheel");
+   if (nme::sStage)
+      nme::sStage->OnMouseWheel(x,y,eventDir);
    return nme::GetResult();
 }
 
