@@ -600,19 +600,26 @@ public:
       int begin = 0;
       if(inV[0].x == inV[1].x && inV[0].y == inV[1].y)
       {
-         begin = 1;
+         begin++;
+      }
+      if(inV[begin].x == inV[size-1].x && inV[begin].y == inV[size-1].y)
+      {
+         size--;
       }
       ReserveArrays(size-begin);
 
       //printf("PushVertices %d\n", inV.size());
 
-      UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
-      for(int i=begin;i<size;i++)
+      UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset]; 
+      *v = inV[begin];
+      Next(v);
+      begin++;
+      for(unsigned int i=0;i<(size-begin);i++)
       {
          int vertex;
          if(i%2)
          {
-            vertex = i/2;
+            vertex = begin + ( i / 2 );
          }
          else
          {
