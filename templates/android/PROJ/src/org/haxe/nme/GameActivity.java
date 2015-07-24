@@ -170,8 +170,8 @@ implements SensorEventListener
       Extension.mainView = mView;
 
       mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
-      getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);//remove keyboard at start
-      
+      //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);//remove keyboard at start
+      mView.requestFocus();
       /*
        weak ref instances?
       sensorManager = (SensorManager)mContext.getSystemService(Context.SENSOR_SERVICE);
