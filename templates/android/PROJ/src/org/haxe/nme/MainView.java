@@ -228,9 +228,9 @@ class MainView extends GLSurfaceView {
                             queueEvent(new Runnable() {
                                 // This method will be called on the rendering thread:
                                 public void run() {
-                                    me.HandleResult(NME.onKeyChange(keyCode, true));
+                                    me.HandleResult(NME.onKeyChange(keyCode, keyCode, true));
                                     //me.HandleResult(NME.onJoyChange(deviceId, keyCode, true));
-                                    me.HandleResult(NME.onKeyChange(keyCode, false));
+                                    me.HandleResult(NME.onKeyChange(keyCode, keyCode, false));
                                     //me.HandleResult(NME.onJoyChange(deviceId, keyCode, false));
                                 }
                             });
@@ -242,15 +242,47 @@ class MainView extends GLSurfaceView {
                     queueEvent(new Runnable() {
                         // This method will be called on the rendering thread:
                         public void run() {
-                            me.HandleResult(NME.onKeyChange(8, true));
+                            me.HandleResult(NME.onKeyChange(8, 8, true));
                             //me.HandleResult(NME.onJoyChange(deviceId, keyCode, true));
-                            me.HandleResult(NME.onKeyChange(8, false));
+                            me.HandleResult(NME.onKeyChange(8, 8, false));
                             //me.HandleResult(NME.onJoyChange(deviceId, keyCode, false));
                         }
                     });
                     mActivity.mKeyInTextView.setText("*");
                     mActivity.mKeyInTextView.setSelection(1);
                 }
+            }
+        });
+        
+        mActivity.mKeyInTextView.setOnKeyListener(new OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                //if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                        final int keyCodeDown = translateKey(keyCode,event);
+                        if(keyCodeDown != 0) {
+                            queueEvent(new Runnable() {
+                                // This method will be called on the rendering thread:
+                                public void run() {
+                                    me.HandleResult(NME.onKeyChange(keyCodeDown, 0, true));
+                                }
+                            });
+                            return true;
+                        }
+                    } else if(event.getAction() == KeyEvent.ACTION_UP) {
+                        final int keyCodeUp = translateKey(keyCode,event);
+                        if(keyCodeUp != 0) {
+                            queueEvent(new Runnable() {
+                                // This method will be called on the rendering thread:
+                                public void run() {
+                                    me.HandleResult(NME.onKeyChange(keyCodeUp, 0, false));
+                                }
+                            });
+                            return true;
+                        }
+                    }
+                //}
+                return false;
             }
         });
     }
@@ -441,16 +473,16 @@ class MainView extends GLSurfaceView {
           //case KeyEvent.KEYCODE_BACK: return 3;//27; // Fake Escape
           //case KeyEvent.KEYCODE_MENU: return 0x01000012; // Fake MENU
 
-          case KeyEvent.KEYCODE_DEL: return 8;
+          case KeyEvent.KEYCODE_DEL: return 0;//8;
        }
 
-       int result = event.getUnicodeChar( event.getMetaState() );
-       if (result==android.view.KeyCharacterMap.COMBINING_ACCENT)
-       {
-          // TODO:
+       //int result = event.getUnicodeChar( event.getMetaState() );
+       //if (result==android.view.KeyCharacterMap.COMBINING_ACCENT)
+       //{
+       //   // TODO:
           return 0;
-       }
-       return result;
+       //}
+       //return result;
     }
 
     /*@Override
