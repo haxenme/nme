@@ -804,11 +804,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject 
    return nme::GetResult();
 }
 
-JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int code, bool down)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int keyCode, int charCode, bool down)
 {
    AutoHaxe haxe("onKey");
    if (nme::sStage)
-      nme::sStage->OnKey(code,code,down);
+      nme::sStage->OnKey(keyCode,charCode,down);
    return nme::GetResult();
 }
 
