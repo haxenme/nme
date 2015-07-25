@@ -68,6 +68,8 @@ class MainView extends GLSurfaceView {
    TimerTask pendingTimer;
    boolean renderPending = false;
 
+   boolean ignoreTextReset = false;
+   
   //private InputDevice device;
     public MainView(Context context,GameActivity inActivity, boolean inTranslucent)
     {
@@ -208,49 +210,53 @@ class MainView extends GLSurfaceView {
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
        //Log.v("VIEW", "present on system: " + InputDevice.getDeviceIds());
        
-         mActivity.mKeyInTextView.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
+        mActivity.mKeyInTextView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count,
                                           int after) {
+                if(ignoreTextReset)return;
+                //Log.v("VIEW*","beforeTextChanged [" + s + "] " + start + " " + count + " " + after);
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-                if(s.length() > 1) {
-                    for(int i=1;i<s.length();i++){
-                        final int keyCode = s.charAt(i);
-                        if (keyCode != 0) {
-                            queueEvent(new Runnable() {
-                                // This method will be called on the rendering thread:
-                                public void run() {
-                                    me.HandleResult(NME.onKeyChange(keyCode, keyCode, true));
-                                    //me.HandleResult(NME.onJoyChange(deviceId, keyCode, true));
-                                    me.HandleResult(NME.onKeyChange(keyCode, keyCode, false));
-                                    //me.HandleResult(NME.onJoyChange(deviceId, keyCode, false));
-                                }
-                            });
-                        }
-                    }
-                    mActivity.mKeyInTextView.setText("*");
-                    mActivity.mKeyInTextView.setSelection(1);
-                } else if(s.length() == 0){
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(ignoreTextReset)return;
+                //Log.v("VIEW*","onTextChanged [" + s + "] " + start + " " + before + " " + count);
+                for(int i = 1;i <= before;i++){
                     queueEvent(new Runnable() {
                         // This method will be called on the rendering thread:
                         public void run() {
                             me.HandleResult(NME.onKeyChange(8, 8, true));
-                            //me.HandleResult(NME.onJoyChange(deviceId, keyCode, true));
                             me.HandleResult(NME.onKeyChange(8, 8, false));
-                            //me.HandleResult(NME.onJoyChange(deviceId, keyCode, false));
                         }
                     });
-                    mActivity.mKeyInTextView.setText("*");
-                    mActivity.mKeyInTextView.setSelection(1);
                 }
+                for (int i = start; i < start + count; i++) {
+                    final int keyCode = s.charAt(i);
+                    if (keyCode != 0) {
+                        queueEvent(new Runnable() {
+                            // This method will be called on the rendering thread:
+                            public void run() {
+                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, true));
+                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, false));
+                            }
+                        });
+                    }
+                }
+                ignoreTextReset = before > 1 || count > 1 || (count == 1 && s.charAt(start) == ' ');
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(!ignoreTextReset) {
+                    //Log.v("VIEW*", "afterTextChanged [" + s + "] ");
+                    if (s.length() != 1) {
+                        ignoreTextReset = true;
+                        mActivity.mKeyInTextView.setText("*");
+                        mActivity.mKeyInTextView.setSelection(1);
+                    }
+                }
+                ignoreTextReset = false;
             }
         });
         
