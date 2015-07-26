@@ -6,6 +6,11 @@ import nme.bare.Surface;
 import nme.app.Window;
 import Sys;
 
+#if cpp
+import cpp.vm.Mutex;
+#elseif neko
+import neko.vm.Mutex;
+#end
 
 typedef WindowParams = {
     ? flags        : Null<Int>,
@@ -64,6 +69,11 @@ class Application
    public static var nmeQuitting = false;
 
    static var pollClientList:Array<IPollClient>;
+   static var mainThreadJobs:Array<Void->Void> = [];
+   #if (cpp||neko)
+   static var mainThreadJobMutex = new Mutex();
+   #end
+
 
 
    public static function createWindow(inOnLoaded:Window->Void, inParams:WindowParams)
@@ -116,14 +126,34 @@ class Application
          pollClientList.insert(0,client);
    }
 
+   public static function pollThreadJobs()
+   {
+      while(!nmeQuitting && mainThreadJobs.length>0)
+      {
+         var job:Void->Void = null;
+         #if ((cpp||neko) && !emscripten)
+         mainThreadJobMutex.acquire();
+         job = mainThreadJobs.shift();
+         mainThreadJobMutex.release();
+         #else
+         job = mainThreadJobs.shift();
+         #end
+         if (job!=null)
+            job();
+      }
+   }
 
    public static function pollClients(timestamp:Float) : Void
    {
+      if (mainThreadJobs.length>0)
+         pollThreadJobs();
       if (pollClientList!=null && !nmeQuitting)
       {
          for(client in pollClientList)
              client.onPoll(timestamp);
       }
+      if (mainThreadJobs.length>0)
+         pollThreadJobs();
    }
 
 
@@ -177,14 +207,23 @@ class Application
       nme_pause_animation();
    }
 
+   public static function runOnMainThread(inCallback:Void->Void) 
+   {
+      #if ((cpp||neko) && !emscripten)
+      mainThreadJobMutex.acquire();
+      mainThreadJobs.push(inCallback);
+      mainThreadJobMutex.release();
+      #else
+      mainThreadJobs.push(inCallback);
+      #end
+   }
+
    public static function postUICallback(inCallback:Void->Void) 
    {
       #if android
       nme_post_ui_callback(inCallback);
       #else
-      // May still be worth posting event to come back with the next UI event loop...
-      // (or use timer?)
-      inCallback();
+      runOnMainThread(inCallback);
       #end
    }
 

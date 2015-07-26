@@ -1840,25 +1840,22 @@ void StartAnimation()
          ProcessEvent(event);
          if (sgDead)
             break;
-         nextWake = sgSDLFrame->GetStage()->GetNextWake();
       }
  
+      // Poll
+      Event poll(etPoll);
+      sgSDLFrame->ProcessEvent(poll);
+      nextWake = sgSDLFrame->GetStage()->GetNextWake();
+      if (sgDead)
+         break;
 
-      // Poll if due
       double dWaitMs = (nextWake - GetTimeStamp())*1000.0 + 0.5;
       if (dWaitMs>1000000)
          dWaitMs = 1000000;
       int waitMs = (int)dWaitMs;
-      if (waitMs<=0)
-      {
-         Event poll(etPoll);
-         sgSDLFrame->ProcessEvent(poll);
-         nextWake = sgSDLFrame->GetStage()->GetNextWake();
-         if (sgDead)
-            break;
-      }
+
       // Kill some time
-      else
+      if (waitMs>0)
       {
          if (sgSDLFrame->mStage->BuildCache())
          {
