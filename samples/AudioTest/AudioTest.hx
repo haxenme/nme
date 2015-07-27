@@ -184,75 +184,38 @@ class EngineBut extends Sprite
 }
 
 
-
-class AudioPage extends Sprite
+class AudioPageBase extends Sprite
 {
-   var asset:String;
-   var slider:Slider;
-   var durationText:TextField;
-   var sound:Sound;
    var soundChannel:SoundChannel;
-   var listening:Bool;
-   var loopLabel:TextField;
+   var play:SimpleButton;
+   var stop:SimpleButton;
    var panLabel:TextField;
    var panSlider:Slider;
    var volumeLabel:TextField;
    var volumeSlider:Slider;
-   var loops:TextField;
-   var loopButs:Array<DisplayObject> = [];
-   var play:SimpleButton;
-   var stop:SimpleButton;
-   var engineButs : Array<EngineBut> = [];
-   var forceMusic:Bool;
+   public function layout(inWidth:Float, inHeight:Float) { }
 
-   public function new(inAsset:String)
-   { 
+   public function new(inName:String)
+   {
       super();
-      name = asset = inAsset;
-      forceMusic = inAsset.indexOf("Music")>=0;
+      name = inName;
 
-      listening = false;
-
-      var s = AudioTest.getScale();
-
-      for(engine in SoundEngine.getAvailableEngines())
-      {
-         var e = new EngineBut(engine, setEngine);
-         addChild(e);
-         engineButs.push(e);
-      }
 
       play = new SimpleButton( createPlay("up"), createPlay("over"), createPlay("down"), createPlay("up") );
       var s = AudioTest.getScale();
       addChild(play);
-      play.addEventListener(MouseEvent.CLICK, function(_) onPlay(slider.position) );
 
       stop = new SimpleButton( createStop("up"), createStop("over"), createStop("down"), createStop("up") );
       addChild(stop);
       stop.addEventListener(MouseEvent.CLICK, function(_) onStop() );
    
-
-      slider = new Slider();
-      slider.onPosition = onPosition;
-      addChild(slider);
-
-      durationText = new TextField();
       var fmt = new TextFormat();
       fmt.color = 0xa0a0a0;
       fmt.font = "_sans";
       fmt.size = 10 * s;
       fmt.align = TextFormatAlign.RIGHT;
-      durationText.defaultTextFormat = fmt;
-      durationText.mouseEnabled = false;
-      addChild(durationText);
 
-      loopLabel = new TextField();
-      fmt.size = 16*s;
-      loopLabel.defaultTextFormat = fmt;
-      loopLabel.text = "Loops";
-      loopLabel.mouseEnabled = false;
-      //loopLabel.border = true;
-      addChild(loopLabel);
+
 
       panLabel = new TextField();
       fmt.size = 16*s;
@@ -286,6 +249,137 @@ class AudioPage extends Sprite
       volumeSlider.onPosition = onTransform;
       addChild(volumeSlider);
 
+
+
+   }
+
+
+   public function onStop()
+   {
+      if (soundChannel!=null)
+      {
+         soundChannel.stop();
+         soundChannel = null;
+      }
+   }
+
+
+
+   function createPlay(state:String)
+   {
+      var shape = new Shape();
+
+      var gfx = shape.graphics;
+      gfx.lineStyle(3,0xa0a0a0);
+      gfx.beginFill(state=="up" ? 0xffffff :
+                    state=="down" ? 0xeeeeee :
+                    0xeeeeff );
+ 
+      var s = AudioTest.getScale();
+      gfx.drawCircle( 40*s,   40*s, 40*s );
+      gfx.beginFill( 0xffffff);
+      gfx.moveTo( (40-10)*s, (40-20)*s );
+      gfx.lineTo( (40-10)*s, (40+20)*s );
+      gfx.lineTo( (40+20)*s, (40)*s );
+      gfx.lineTo( (40-10)*s, (40-20)*s );
+      return shape;
+   }
+
+
+   function createStop(state:String)
+   {
+      var shape = new Shape();
+
+      var gfx = shape.graphics;
+      gfx.lineStyle(3,0xa0a0a0);
+      gfx.beginFill(state=="up" ? 0xffffff :
+                    state=="down" ? 0xeeeeee :
+                    0xeeeeff );
+ 
+      var s = AudioTest.getScale();
+      gfx.drawCircle( 40*s,   40*s, 40*s );
+
+      gfx.beginFill( 0xffffff);
+      gfx.drawRect( (40-15)*s, (40-15)*s, 30*s, 30*s );
+      return shape;
+   }
+
+
+   function onTransform(_)
+   {
+      if (soundChannel!=null)
+         soundChannel.soundTransform = getTransform();
+   }
+
+   public function getTransform()
+   {
+      var transform = new SoundTransform();
+      transform.pan = (panSlider.position -0.5) * 2.0;
+      transform.volume = volumeSlider.position;
+      return transform;
+   }
+
+
+}
+
+
+
+
+class AudioPage extends AudioPageBase
+{
+   var asset:String;
+   var slider:Slider;
+   var durationText:TextField;
+   var sound:Sound;
+   var listening:Bool;
+   var loopLabel:TextField;
+   var loops:TextField;
+   var loopButs:Array<DisplayObject> = [];
+   var engineButs : Array<EngineBut> = [];
+   var forceMusic:Bool;
+
+   public function new(inAsset:String)
+   { 
+      super(inAsset);
+      asset = inAsset;
+      forceMusic = inAsset.indexOf("Music")>=0;
+
+
+      listening = false;
+
+      var s = AudioTest.getScale();
+
+      for(engine in SoundEngine.getAvailableEngines())
+      {
+         var e = new EngineBut(engine, setEngine);
+         addChild(e);
+         engineButs.push(e);
+      }
+
+
+      slider = new Slider();
+      slider.onPosition = onPosition;
+      addChild(slider);
+
+      play.addEventListener(MouseEvent.CLICK, function(_) onPlay(slider.position) );
+
+      durationText = new TextField();
+      var fmt = new TextFormat();
+      fmt.color = 0xa0a0a0;
+      fmt.font = "_sans";
+      fmt.size = 10 * s;
+      fmt.align = TextFormatAlign.RIGHT;
+      durationText.defaultTextFormat = fmt;
+      durationText.mouseEnabled = false;
+      addChild(durationText);
+
+      loopLabel = new TextField();
+      fmt.size = 16*s;
+      loopLabel.defaultTextFormat = fmt;
+      loopLabel.text = "Loops";
+      loopLabel.mouseEnabled = false;
+      //loopLabel.border = true;
+      addChild(loopLabel);
 
 
       loops = new TextField();
@@ -389,28 +483,7 @@ class AudioPage extends Sprite
          onPlay(inPosition);
    }
 
-   public function onStop()
-   {
-      if (soundChannel!=null)
-      {
-         soundChannel.stop();
-         soundChannel = null;
-      }
-   }
 
-   function onTransform(_)
-   {
-      if (soundChannel!=null)
-         soundChannel.soundTransform = getTransform();
-   }
-
-   public function getTransform()
-   {
-      var transform = new SoundTransform();
-      transform.pan = (panSlider.position -0.5) * 2.0;
-      transform.volume = volumeSlider.position;
-      return transform;
-   }
 
    public function onPlay(inSeek:Float)
    {
@@ -463,48 +536,8 @@ class AudioPage extends Sprite
    }
 
 
-   function createPlay(state:String)
-   {
-      var shape = new Shape();
 
-      var gfx = shape.graphics;
-      gfx.lineStyle(3,0xa0a0a0);
-      gfx.beginFill(state=="up" ? 0xffffff :
-                    state=="down" ? 0xeeeeee :
-                    0xeeeeff );
- 
-      var s = AudioTest.getScale();
-      gfx.drawCircle( 40*s,   40*s, 40*s );
-      gfx.beginFill( 0xffffff);
-      gfx.moveTo( (40-10)*s, (40-20)*s );
-      gfx.lineTo( (40-10)*s, (40+20)*s );
-      gfx.lineTo( (40+20)*s, (40)*s );
-      gfx.lineTo( (40-10)*s, (40-20)*s );
-      return shape;
-   }
-
-
-   function createStop(state:String)
-   {
-      var shape = new Shape();
-
-      var gfx = shape.graphics;
-      gfx.lineStyle(3,0xa0a0a0);
-      gfx.beginFill(state=="up" ? 0xffffff :
-                    state=="down" ? 0xeeeeee :
-                    0xeeeeff );
- 
-      var s = AudioTest.getScale();
-      gfx.drawCircle( 40*s,   40*s, 40*s );
-
-      gfx.beginFill( 0xffffff);
-      gfx.drawRect( (40-15)*s, (40-15)*s, 30*s, 30*s );
-      return shape;
-   }
-
-
-
-   public function layout(inWidth:Float, inHeight:Float)
+   override public function layout(inWidth:Float, inHeight:Float)
    {
       var s = AudioTest.getScale();
       var y0 = Std.int(40*s);
@@ -575,6 +608,59 @@ class AudioPage extends Sprite
    }
 }
 
+
+class DynamicAudio extends AudioPageBase
+{
+   var sync:Bool;
+
+   public function new(inName:String)
+   {
+      super(inName);
+
+      sync = name=="Sync";
+
+   }
+
+
+   override public function layout(inWidth:Float, inHeight:Float)
+   {
+      var s = AudioTest.getScale();
+      var y0 = Std.int(40*s);
+
+      play.y = y0+Std.int(20*s);
+      play.x = Std.int(10*s);
+      stop.y = y0+Std.int(20*s);
+      stop.x = Std.int(100*s);
+
+      var lx = Std.int(160*s);
+      var ly = y0+Std.int(24*s);
+
+      panLabel.x = lx;
+      panLabel.y = ly;
+      panLabel.width = volumeLabel.width = Std.int(100*s);
+      panLabel.height = volumeLabel.height = Std.int(25*s);
+
+
+      panSlider.x = panLabel.x + panLabel.width + 4;
+      var y = panLabel.y;
+      var h = panLabel.height;
+      panSlider.y = y + Std.int( (h - 20*s) * 0.5);
+      panSlider.layout( Std.int(180*s), Std.int(20*s) );
+
+      volumeLabel.x = panLabel.x;
+      volumeLabel.y = panLabel.y + panLabel.height;
+
+      volumeSlider.x = volumeLabel.x + volumeLabel.width + 4;
+      var y = volumeLabel.y;
+      var h = volumeLabel.height;
+      volumeSlider.y = y + Std.int( (h - 20*s) * 0.5);
+      volumeSlider.layout( Std.int(180*s), Std.int(20*s) );
+
+   }
+
+}
+
+
 class AudioTest extends Sprite
 {
    static var pageNames = [ "Ogg", "Ogg (Music)", "Midi", "Midi (Music)", "Mp3", "Mp3 (Music)", "Sync", "Async" ];
@@ -582,8 +668,8 @@ class AudioTest extends Sprite
    var currentName:String;
    var titles:Array<TextField> = [];
    var tabs:Array<Sprite> = [];
-   var pages:Array<AudioPage> = [];
-   var currentPage:AudioPage;
+   var pages:Array<AudioPageBase> = [];
+   var currentPage:AudioPageBase;
    var textFormatBg:TextFormat;
    var textFormatFg:TextFormat;
    var textFormatDisabled:TextFormat;
@@ -612,6 +698,8 @@ class AudioTest extends Sprite
 
          if (Assets.exists(page))
             pages.push( new AudioPage(page) );
+         else
+            pages.push( new DynamicAudio(page) );
       }
 
       stage.addEventListener( Event.RESIZE, function(_) layout() );
