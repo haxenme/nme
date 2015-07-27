@@ -98,7 +98,8 @@
          <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />
          <file name="${SRC_DIR}/windows/GDIFont.cpp"/>
          <file name="${SRC_DIR}/windows/System.cpp" />
-         <file name="${SRC_DIR}/audio/WindowsAcm.cpp" />
+         <file name="${SRC_DIR}/audio/WindowsAcm.cpp" unless="mingw" />
+         <compilerflag value="-DNME_NO_WINACM" if="mingw" />
       </section>
 
       <section if="linux">

@@ -813,7 +813,7 @@ INmeSoundData *INmeSoundData::create(const unsigned char *inData, int inDataLeng
    {
       result->release();
       result = 0;
-      #ifdef HX_WINDOWS
+      #if defined(HX_WINDOWS) && !defined(NME_NO_WINACM)
       result = createAcm(inData, inDataLength, inFlags);
       if (result && !result->getChannelSampleCount())
       {
