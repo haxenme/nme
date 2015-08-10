@@ -1570,6 +1570,7 @@ class CommandLineTools
             {
                Sys.putEnv("HXCPP_VERBOSE","1");
                Log.mVerbose = true;
+               project.haxeflags.push("--times");
             }
             else if (argument == "-vv" || argument == "-vverbose") 
             {

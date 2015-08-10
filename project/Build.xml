@@ -281,28 +281,28 @@
       <files id="nme"/>
 
          <section if="new_link" >
-            <files id="freetype"/>
-            <files id="jpeg"/>
-            <files id="png"/>
+            <files id="freetype" asLibrary="1" />
+            <files id="jpeg" asLibrary="1" />
+            <files id="png" asLibrary="1" />
 
 
             <section if="NME_SDL2">
-               <files id="sdl2"/>
-               <files id="sdl2_mixer"/>
+               <files id="sdl2" asLibrary="1" />
+               <files id="sdl2_mixer" asLibrary="1" />
                <lib name="-luuid" if="mingw" unless="static_link" />
             </section>
 
-            <files id="modplug" if="modplug" />
+            <files id="modplug" if="modplug"  asLibrary="1" />
 
             <section unless="NME_NATIE_SDL_SYSTEM">
-               <files id="vorbis" />
-               <files id="ogg" />
+               <files id="vorbis"  asLibrary="1" />
+               <files id="ogg"  asLibrary="1" />
 
                <section if="NME_CURL">
-                  <files id="curl" />
+                  <files id="curl"  asLibrary="1" />
                </section>
 
-               <files id="zlib" />
+               <files id="zlib"  asLibrary="1" />
             </section>
          </section>
 
