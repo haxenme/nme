@@ -78,12 +78,67 @@
 
    <set name="modplug" value="1" unless="android" />
    
+   <!-- <set name="new_link" value="1" /> -->
+ 
+   <section if="new_link" >
+      <set name="curl_ssl" value="1" />
+      <import name="${NME_DEV}/project/import-all.xml" />
+   </section>
+
    
    <set name="HXCPP_OPTIM_LEVEL" value="-O2" if="emscripten" unless="debug" />
 
    <files id="main">
       <compilerflag value="-I${INC_DIR}"/>
       <file name="Test.cpp"/>
+   </files>
+
+   <files id="nme-headers">
+      <depend name="include/ByteArray.h" />
+      <depend name="include/CachedExtent.h" />
+      <depend name="include/Camera.h" />
+      <depend name="include/Display.h" />
+      <depend name="include/Filters.h" />
+      <depend name="include/Font.h" />
+      <depend name="include/Geom.h" />
+      <depend name="include/Graphics.h" />
+      <depend name="include/Hardware.h" />
+      <depend name="include/Input.h" />
+      <depend name="include/KeyCodes.h" />
+      <depend name="include/Lzma.h" />
+      <depend name="include/Matrix.h" />
+      <depend name="include/NMEThread.h" />
+      <depend name="include/NmeBinVersion.h" />
+      <depend name="include/NmeVersion.h" />
+      <depend name="include/S3DEye.h" />
+      <depend name="include/Scale9.h" />
+      <depend name="include/Sound.h" />
+      <depend name="include/StageVideo.h" />
+      <depend name="include/Surface.h" />
+      <depend name="include/TextField.h" />
+      <depend name="include/Tilesheet.h" />
+      <depend name="include/URL.h" />
+      <depend name="include/Utils.h" />
+      <depend name="include/Video.h" />
+
+
+      <depend name="../nme/include/Event.h" />
+      <depend name="../nme/include/Extent.h" />
+      <depend name="../nme/include/FixedPoint.h" />
+      <depend name="../nme/include/ImageBuffer.h" />
+      <depend name="../nme/include/NmeApi.h" />
+      <depend name="../nme/include/NmeCffi.h" />
+      <depend name="../nme/include/Object.h" />
+      <depend name="../nme/include/Pixel.h" />
+      <depend name="../nme/include/Point.h" />
+      <depend name="../nme/include/QuickVec.h" />
+      <depend name="../nme/include/Rect.h" />
+      <depend name="../nme/include/Texture.h" />
+
+      <depend name="${HXCPP}/include/hx/CFFI.h"/>
+      <depend name="${HXCPP}/include/hx/CFFIAPI.h"/>
+      <depend name="${HXCPP}/include/hx/CFFILoader.h"/>
+
    </files>
    
    
@@ -93,6 +148,13 @@
 
       <compilerflag value="-DNME_MODPLUG" if="modplug" />
 
+      <cache value="1" />
+
+      <section if="new_link" >
+         <depend files="nme-headers"/>
+         <depend files="nme-dev-headers"/>
+         <depend files="hxcpp-depends"/>
+      </section>
 
       <section if="windows">
          <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />
@@ -266,12 +328,7 @@
    <set name="PRELIB" value="${NME_DEV}/lib/${BINDIR}/lib" />
    <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
    <set name="no_shared_libs" value="1" if="mingw"/>
-   
-   <section if="new_link" >
-      <set name="curl_ssl" value="1" />
-      <include name="${NME_DEV}/project/import-all.xml" />
-   </section>
-   
+     
    <target id="NDLL" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
 
       <outdir name="${OUT_DIR}/${BINDIR}" />
