@@ -122,18 +122,18 @@
       <depend name="include/Video.h" />
 
 
-      <depend name="../nme/include/Event.h" />
-      <depend name="../nme/include/Extent.h" />
-      <depend name="../nme/include/FixedPoint.h" />
-      <depend name="../nme/include/ImageBuffer.h" />
-      <depend name="../nme/include/NmeApi.h" />
-      <depend name="../nme/include/NmeCffi.h" />
-      <depend name="../nme/include/Object.h" />
-      <depend name="../nme/include/Pixel.h" />
-      <depend name="../nme/include/Point.h" />
-      <depend name="../nme/include/QuickVec.h" />
-      <depend name="../nme/include/Rect.h" />
-      <depend name="../nme/include/Texture.h" />
+      <depend name="../include/nme/Event.h" />
+      <depend name="../include/nme/Extent.h" />
+      <depend name="../include/nme/FixedPoint.h" />
+      <depend name="../include/nme/ImageBuffer.h" />
+      <depend name="../include/nme/NmeApi.h" />
+      <depend name="../include/nme/NmeCffi.h" />
+      <depend name="../include/nme/Object.h" />
+      <depend name="../include/nme/Pixel.h" />
+      <depend name="../include/nme/Point.h" />
+      <depend name="../include/nme/QuickVec.h" />
+      <depend name="../include/nme/Rect.h" />
+      <depend name="../include/nme/Texture.h" />
 
       <depend name="${HXCPP}/include/hx/CFFI.h"/>
       <depend name="${HXCPP}/include/hx/CFFIAPI.h"/>
@@ -147,6 +147,7 @@
       <compilerflag value="-I${INC_DIR}"/>
 
       <compilerflag value="-DNME_MODPLUG" if="modplug" />
+      <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
 
       <cache value="1" />
 
@@ -329,7 +330,7 @@
    <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
    <set name="no_shared_libs" value="1" if="mingw"/>
      
-   <target id="NDLL" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
+   <target id="nme-target" >
 
       <outdir name="${OUT_DIR}/${BINDIR}" />
 
@@ -475,6 +476,9 @@
 
    </target>
    
+   <target id="NDLL" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
+     <merge id="nme-target"/>
+   </target>
    
    <target id="default">
      <target id="NDLL"/>
