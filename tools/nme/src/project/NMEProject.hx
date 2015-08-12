@@ -519,11 +519,16 @@ class NMEProject
 
    public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String)
    {
-      if (findNdll(name)==null)
+      var ndll =  findNdll(name);
+      if (ndll==null)
       {
           var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
 
           ndlls.push( new NDLL(name, base, isStatic, inHaxelibName) );
+      }
+      else if (inStatic && optionalStaticLink)
+      {
+          ndll.setStatic();
       }
    }
 
