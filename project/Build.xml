@@ -74,6 +74,7 @@
    <set name="INC_DIR" value="${NME_ROOT}include" />
    <set name="NME_INC_DIR" value="${NME_ROOT}../include" />
    <set name="SUP_DIR" value="${NME_ROOT}support" />
+   <set name="SUP_DIR" value="${this_dir}/support" if="this_dir" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
 
    <set name="modplug" value="1" unless="android" />
