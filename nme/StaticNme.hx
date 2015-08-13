@@ -1,14 +1,8 @@
 package nme;
 
-@:cppFileCode( 'extern "C" void nme_register_prims();')
+@:cppFileCode('extern "C" void nme_register_prims();')
 #if new_link
-@:buildXml("
-<set name='NME_STATIC_LINK' value='1' />
-<import name='${haxelib:nme}/project/Build.xml'/>
-<target id='haxe'>
-  <merge id='nme-target'/>
-</target>
-")
+@:build(nme.macros.BuildXml.importRelative("../../project/Build.xml"))
 #else
 @:buildXml("
 <target id='haxe'>
