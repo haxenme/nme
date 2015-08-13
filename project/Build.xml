@@ -330,9 +330,12 @@
    <set name="PRELIB" value="${NME_DEV}/lib/${BINDIR}/lib" />
    <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
    <set name="no_shared_libs" value="1" if="mingw"/>
-     
-   <target id="nme-target" >
 
+
+   <set name="target-id" value="NDLL" />
+   <set name="target-id" value="nme-target" if="NME_STATIC_LINK" />
+
+   <target id="${target-id}" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
       <outdir name="${OUT_DIR}/${BINDIR}" />
 
       <flag value="-NODEFAULTLIB:LIBCMT" if="winrt"/>
@@ -477,9 +480,6 @@
 
    </target>
    
-   <target id="NDLL" output="${LIBPREFIX}nme${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
-     <merge id="nme-target"/>
-   </target>
    
    <target id="default">
      <target id="NDLL"/>
