@@ -20,6 +20,11 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
 //import android.view.InputDevice;
+import android.widget.TextView;
+import android.text.Editable;
+import android.widget.EditText;
+import android.text.TextWatcher;
+import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.app.Activity;
@@ -63,6 +68,8 @@ class MainView extends GLSurfaceView {
    TimerTask pendingTimer;
    boolean renderPending = false;
 
+   boolean ignoreTextReset = false;
+   
   //private InputDevice device;
     public MainView(Context context,GameActivity inActivity, boolean inTranslucent)
     {
@@ -202,6 +209,88 @@ class MainView extends GLSurfaceView {
         setRenderer(new Renderer(this));
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
        //Log.v("VIEW", "present on system: " + InputDevice.getDeviceIds());
+       
+        mActivity.mKeyInTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+                if(ignoreTextReset)return;
+                //Log.v("VIEW*","beforeTextChanged [" + s + "] " + start + " " + count + " " + after);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(ignoreTextReset)return;
+                //Log.v("VIEW*","onTextChanged [" + s + "] " + start + " " + before + " " + count);
+                for(int i = 1;i <= before;i++){
+                    queueEvent(new Runnable() {
+                        // This method will be called on the rendering thread:
+                        public void run() {
+                            me.HandleResult(NME.onKeyChange(8, 8, true));
+                            me.HandleResult(NME.onKeyChange(8, 8, false));
+                        }
+                    });
+                }
+                for (int i = start; i < start + count; i++) {
+                    final int keyCode = s.charAt(i);
+                    if (keyCode != 0) {
+                        queueEvent(new Runnable() {
+                            // This method will be called on the rendering thread:
+                            public void run() {
+                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, true));
+                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, false));
+                            }
+                        });
+                    }
+                }
+                ignoreTextReset = before > 1 || count > 1 || (count == 1 && s.charAt(start) == ' ');
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(!ignoreTextReset) {
+                    //Log.v("VIEW*", "afterTextChanged [" + s + "] ");
+                    if (s.length() != 1) {
+                        ignoreTextReset = true;
+                        mActivity.mKeyInTextView.setText("*");
+                        mActivity.mKeyInTextView.setSelection(1);
+                    }
+                }
+                ignoreTextReset = false;
+            }
+        });
+        
+        mActivity.mKeyInTextView.setOnKeyListener(new OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                //if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                        final int keyCodeDown = translateKey(keyCode,event);
+                        if(keyCodeDown != 0) {
+                            queueEvent(new Runnable() {
+                                // This method will be called on the rendering thread:
+                                public void run() {
+                                    me.HandleResult(NME.onKeyChange(keyCodeDown, 0, true));
+                                }
+                            });
+                            return true;
+                        }
+                    } else if(event.getAction() == KeyEvent.ACTION_UP) {
+                        final int keyCodeUp = translateKey(keyCode,event);
+                        if(keyCodeUp != 0) {
+                            queueEvent(new Runnable() {
+                                // This method will be called on the rendering thread:
+                                public void run() {
+                                    me.HandleResult(NME.onKeyChange(keyCodeUp, 0, false));
+                                }
+                            });
+                            return true;
+                        }
+                    }
+                //}
+                return false;
+            }
+        });
     }
 
    public void checkZOrder()
@@ -390,19 +479,19 @@ class MainView extends GLSurfaceView {
           //case KeyEvent.KEYCODE_BACK: return 3;//27; // Fake Escape
           //case KeyEvent.KEYCODE_MENU: return 0x01000012; // Fake MENU
 
-          case KeyEvent.KEYCODE_DEL: return 8;
+          case KeyEvent.KEYCODE_DEL: return 0;//8;
        }
 
-       int result = event.getUnicodeChar( event.getMetaState() );
-       if (result==android.view.KeyCharacterMap.COMBINING_ACCENT)
-       {
-          // TODO:
+       //int result = event.getUnicodeChar( event.getMetaState() );
+       //if (result==android.view.KeyCharacterMap.COMBINING_ACCENT)
+       //{
+       //   // TODO:
           return 0;
-       }
-       return result;
+       //}
+       //return result;
     }
 
-    @Override
+    /*@Override
     public boolean onKeyDown(final int inKeyCode, KeyEvent event)
     {
          // Log.e("VIEW","onKeyDown " + inKeyCode);
@@ -444,7 +533,7 @@ class MainView extends GLSurfaceView {
              return true;
          }
          return super.onKeyDown(inKeyCode, event);
-     }
+     }*/
 
 
     private static class Renderer implements GLSurfaceView.Renderer
