@@ -23,7 +23,10 @@ class ProcessHelper
       catch(e:Dynamic) { }
 
       if (process!=null)
+      {
+         var code = process.exitCode();
          process.close();
+      }
 
       return result;
    }
