@@ -98,7 +98,7 @@ class Nme
       #if (cpp && !cppia)
          if (script==null)
             throw "Could not find script in input";
-         #if (hxcpp_api_level>=320)
+         #if ((hxcpp_api_level>=320) && scriptable)
             cpp.cppia.Host.run(script);
          #end
       #else
@@ -124,7 +124,7 @@ class Nme
       {
          nme.Assets.scriptBase = haxe.io.Path.directory(inFilename) + "/assets/";
          var contents = sys.io.File.getContent(inFilename);
-         #if (hxcpp_api_level>=320)
+         #if ((hxcpp_api_level>=320) && scriptable)
          cpp.cppia.Host.run(contents);
          #end
       }
@@ -171,7 +171,7 @@ class Nme
             var script = nme.Assets.getString(inResource);
             if (script==null)
                throw "Could not find resource script " + inResource;
-            #if (hxcpp_api_level>=320)
+            #if ((hxcpp_api_level>=320) && scriptable)
                cpp.cppia.Host.run(script);
             #end
          }

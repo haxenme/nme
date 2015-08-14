@@ -63,6 +63,10 @@ class NmeApplication implements IAppEventHandler implements IPollClient
       fullViewport = [0,0,width,height];
    }
 
+   public function onText(event:AppEvent, type:String):Void
+   {
+   }
+
    public function onRender(inNewFrame:Bool):Void
    {
    }
