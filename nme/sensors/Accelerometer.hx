@@ -53,6 +53,10 @@ class Accelerometer extends EventDispatcher
       }
    }
 
+    public function removeInterval():Void {
+        timer.stop();
+    }
+
    /** @private */ private function update():Void {
       var event = new AccelerometerEvent(AccelerometerEvent.UPDATE);
 
