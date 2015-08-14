@@ -31,6 +31,8 @@ import android.widget.RelativeLayout;
 import android.view.WindowManager;
 import android.widget.VideoView;
 import android.net.Uri;
+import android.widget.EditText;
+import android.text.InputType;
 import dalvik.system.DexClassLoader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -102,7 +104,8 @@ implements SensorEventListener
    private Sound _sound;
    
    public NMEVideoView   mVideoView;
-
+   
+   public EditText mKeyInTextView;
 
    public void onCreate(Bundle state)
    {
@@ -152,10 +155,24 @@ implements SensorEventListener
 
       mContainer = new RelativeLayout(mContext);
 
+      mKeyInTextView = new EditText ( this );
+      mKeyInTextView.setText("*");
+      mKeyInTextView.setMinLines(1);
+      mKeyInTextView.setMaxLines(1);
+      mKeyInTextView.setFocusable(true);
+      mKeyInTextView.setHeight(0);
+      mKeyInTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); //text input
+      //mKeyInTextView.setImeOptions(EditorInfo.IME_ACTION_SEND);
+      mContainer.addView(mKeyInTextView);
+      mKeyInTextView.setSelection(1);
+
       mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
       Extension.mainView = mView;
 
       mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
+
+      getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);//remove keyboard at start
+      //mView.requestFocus();
 
       //weak ref instances?
       sensorManager = (SensorManager)mContext.getSystemService(Context.SENSOR_SERVICE);
@@ -963,6 +980,7 @@ implements SensorEventListener
       
       if (show)
       {
+         activity.mKeyInTextView.requestFocus();
          mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
          // On the Nexus One, SHOW_FORCED makes it impossible
          // to manually dismiss the keyboard.
