@@ -19,7 +19,7 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
-//import android.view.InputDevice;
+import android.view.InputDevice;
 import android.widget.TextView;
 import android.text.Editable;
 import android.widget.EditText;
@@ -396,6 +396,36 @@ class MainView extends GLSurfaceView {
      mRefreshView.renderPending = true;
      mRefreshView.requestRender();
    }
+   
+       public boolean onGenericMotionEvent(MotionEvent event) {
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
+            if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                //TODO: process the joystick movement...
+                return true;
+            }
+        }
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_HOVER_MOVE:
+                    //TODO process the mouse hover movement...
+                    return true;
+                case MotionEvent.ACTION_HOVER_EXIT:
+                    //TODO process the mouse exit ..
+                    return true;
+                case MotionEvent.ACTION_SCROLL:
+                    final MainView me = this;
+                    final float x = event.getRawX();
+                    final float y = event.getRawY();
+                    //previous behavior in nme was 3 for down, 4 for up
+                    final int event_dir = event.getAxisValue(MotionEvent.AXIS_VSCROLL) < 0.0f ? 4 : 3;
+                    queueEvent(new Runnable(){
+                        public void run() { me.HandleResult(NME.onMouseWheel(x,y,event_dir) ); }
+                    });
+                    return true;
+            }
+        }
+        return super.onGenericMotionEvent(event);
+    }
 
    @Override
    public boolean onTouchEvent(final MotionEvent ev)
