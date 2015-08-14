@@ -1123,7 +1123,42 @@ void AddCharCode(Event &key)
 }
 
 
-std::map<int,wchar_t> sLastUnicode;
+wchar_t *ConvertToWChar(const char *inStr, int *ioLen)
+{
+   int len = ioLen ? *ioLen : strlen(inStr);
+
+   //wchar_t *result = (wchar_t *)NewGCPrivate(0,sizeof(wchar_t)*(len+1));
+   wchar_t *result = (wchar_t *)alloc_private((len+1)*sizeof(wchar_t));
+   int l = 0;
+
+   unsigned char *b = (unsigned char *)inStr;
+   for(int i=0;i<len;)
+   {
+      int c = b[i++];
+      if (c==0) break;
+      else if( c < 0x80 )
+      {
+        result[l++] = c;
+      }
+      else if( c < 0xE0 )
+        result[l++] = ( ((c & 0x3F) << 6) | (b[i++] & 0x7F) );
+      else if( c < 0xF0 )
+      {
+        int c2 = b[i++];
+        result[l++] = ( ((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | ( b[i++] & 0x7F) );
+      }
+      else
+      {
+        int c2 = b[i++];
+        int c3 = b[i++];
+        result[l++] = ( ((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 << 6) & 0x7F) | (b[i++] & 0x7F) );
+      }
+   }
+   result[l] = '\0';
+   if (ioLen)
+      *ioLen = l;
+   return result;
+}
 
 
 void ProcessEvent(SDL_Event &inEvent)
@@ -1285,6 +1320,15 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
+        case SDL_TEXTINPUT:
+        {
+            const char *text = inEvent.text.text;
+            int unicode = ConvertToWChar(text, 0)[0];
+            Event key( etChar );
+            key.code = unicode;
+            sgSDLFrame->ProcessEvent(key);
+            break;
+        }
       case SDL_KEYDOWN:
       case SDL_KEYUP:
       {
