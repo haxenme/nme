@@ -178,7 +178,7 @@ void Stage::HandleEvent(Event &inEvent)
       }
    }
 
-   if (inEvent.type==etKeyDown || inEvent.type==etKeyUp)
+   if (inEvent.type==etKeyDown || inEvent.type==etKeyUp || inEvent.type==etChar)
    {
       inEvent.id = mFocusObject ? mFocusObject->id : id;
       if (mHandler)
