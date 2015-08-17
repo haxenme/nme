@@ -28,6 +28,7 @@ class ManagedMediaPlayer
 	public int loopsLeft = 0;
 	public boolean wasPlaying = false;
 	public String pathId;
+   final public String tag="Sound MMMP";
 
 	public ManagedMediaPlayer(MediaPlayer mp, float leftVol, float rightVol, int inLoops ,String inPathId) {
 		this.mp = mp;
@@ -35,9 +36,11 @@ class ManagedMediaPlayer
 		isComplete = false;
       pathId = inPathId;
 		final ManagedMediaPlayer mmp = this;
+      Log.v(tag, "ManagedMediaPlayer - " + inPathId + " loops " + inLoops );
 
 		if (inLoops  < 0 )
       {
+         Log.v(tag, "ManagedMediaPlayer - set looping true " );
 			mp.setLooping(true);
 		}
       else if (inLoops  >= 0)
@@ -46,9 +49,13 @@ class ManagedMediaPlayer
 
 			mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 				@Override public void onCompletion(MediaPlayer mp) {
+               Log.v(tag, "ManagedMediaPlayer - onCompletion " + mmp.loopsLeft );
 					if (--mmp.loopsLeft > 0) {
+                  double t0  = System.currentTimeMillis();
+                  Log.v(tag, "ManagedMediaPlayer - seek 0");
 						mp.seekTo(0);
 						mp.start();
+                  Log.v(tag, "ManagedMediaPlayer - start " + (System.currentTimeMillis()-t0) + "ms" );
 					} else {
 						mmp.setComplete();
 					}
@@ -58,6 +65,7 @@ class ManagedMediaPlayer
 	}
 
 	public ManagedMediaPlayer setMediaPlayer(MediaPlayer mp) {
+      Log.v(tag, "ManagedMediaPlayer - setMediaPlayer" );
 		this.mp = mp;
 		return this;
 	}
@@ -76,6 +84,7 @@ class ManagedMediaPlayer
 	}
 
 	public void setCurrentPosition(int position) {
+      Log.v(tag, "ManagedMediaPlayer - setCurrentPosition " + position );
 		if (mp != null)
 			mp.seekTo(position);
 	}
@@ -117,7 +126,7 @@ class ManagedMediaPlayer
 	}
 
 	public void release() {
-      Log.e("ManagedMediaPlayer", "release " + mp);
+      Log.e(tag, "release " + mp);
 		if (mp != null) {
          MediaPlayer mpTemp = mp;
 			mp = null;
@@ -136,18 +145,28 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 	private static SoundPool mSoundPool;
 	// private static int mSoundPoolID = 0;
 	private static long mTimeStamp = 0;
-	private static HashMap<Integer, Integer> mSoundId;
-	private static HashMap<Integer, Long> mSoundProgress;
+
+   // Already loaded soundIds...
+	private static HashMap<Integer, Integer> mResourceToSoundId;
+	private static HashMap<String, Integer> mFilenameToSoundId;
+   // Duration for given soundId
 	private static HashMap<Integer, Long> mSoundDuration;
-	private static HashMap<Integer, Boolean> mSoundLoaded;
+	private static HashMap<Integer, Boolean> mSoundIdLoaded;
+
+   // Playing StreamId static
+	private static HashMap<Integer, Long> mSoundProgress;
 
     public Sound(Context context)
     {
     	if (instance == null) {
-    		mSoundId = new HashMap<Integer, Integer>();
+    		mResourceToSoundId = new HashMap<Integer, Integer>();
+    		mFilenameToSoundId = new HashMap<String, Integer>();
+
+    		mSoundIdLoaded = new HashMap<Integer, Boolean>();
+
     		mSoundProgress = new HashMap<Integer, Long>();
     		mSoundDuration = new HashMap<Integer, Long>();
-    		mSoundLoaded = new HashMap<Integer, Boolean>();
+
     		mTimeStamp = System.currentTimeMillis();
 			mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
          mSoundPool.setOnLoadCompleteListener(this);
@@ -160,7 +179,7 @@ public class Sound implements SoundPool.OnLoadCompleteListener
    public void onLoadComplete(SoundPool soundPool,int sampleId,int status)
    {
       Log.v("Sound","onLoadComplete " + sampleId + "=" + status);
-      mSoundLoaded.put(sampleId,true);
+      mSoundIdLoaded.put(sampleId,true);
    }
 	
 	public void doPause()
@@ -189,29 +208,53 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 	 * Sound effects using SoundPool
 	 *
 	 * This allows for low latency and CPU load but sounds must be 100kB or smaller
+    *
+    *  Resturns a soundId
 	 */
 
 	public static int getSoundHandle(String inFilename)
 	{
-		int id = GameActivity.getResourceID(inFilename);
-		Log.v("Sound","Get sound handle ------" + inFilename + " = " + id);
+		int resourceId = GameActivity.getResourceID(inFilename);
+		Log.v("Sound","Get sound handle " + inFilename + " = " + resourceId);
 
-		int index;		
-		
-		if (id > 0) {
-			index = mSoundPool.load(mContext, id, 1);
-			Log.v("Sound", "Loaded index: " + index);
-		} else {
-			Log.v("Sound", "Resource not found: " + (-id));
-			index = mSoundPool.load(inFilename, 1);
-         mSoundLoaded.put(index,false);
-			Log.v("Sound", "Loaded index from path: " + index);
+		if (resourceId > 0)
+      {
+         if ( mResourceToSoundId.get(resourceId)!=null)
+         {
+			   int soundId = mResourceToSoundId.get(resourceId);
+			   //Log.v("Sound", "Already loaded " + soundId );
+            return soundId;
+         }
+
+			int soundId = mSoundPool.load(mContext, resourceId, 1);
+         mResourceToSoundId.put(resourceId, soundId);
+         mSoundIdLoaded.put(soundId,false);
+		   int duration = getDuration(resourceId);
+			Log.v("Sound", "Loaded resource " + resourceId + " to " + soundId + " duration = " + mSoundDuration);
+		   mSoundDuration.put(soundId, (long)duration);
+         return soundId;
 		}
+      else
+      {
+         if (mFilenameToSoundId.get(inFilename)!=null)
+         {
+			   int soundId = mFilenameToSoundId.get(inFilename);
+			   //Log.v("Sound", "Already loaded file " + soundId );
+            return soundId;
+         }
 
-		int duration = getDuration(inFilename);
-		mSoundDuration.put(index, (long)duration);
+			Log.v("Sound", "Resource not found, assume filesystem: " + inFilename);
+			int soundId = mSoundPool.load(inFilename, 1);
+         mFilenameToSoundId.put(inFilename, soundId);
+         // Not complete yet
+         mSoundIdLoaded.put(soundId,false);
 
-		return index;
+		   int duration = getDuration(inFilename);
+		   mSoundDuration.put(soundId, (long)duration);
+			Log.v("Sound", "Loaded sound from " + inFilename + " to " + soundId + " duration =" + duration);
+
+         return soundId;
+		}
     }
 	
 	public static String getSoundPathByByteArray(byte[] data) throws java.lang.Exception
@@ -240,25 +283,17 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 		return file.getAbsolutePath();
 	}
 	
-	public static int playSound(int inResourceID, double inVolLeft, double inVolRight, int inLoop)
+	public static int playSound(int inSoundId, double inVolLeft, double inVolRight, int inLoop)
 	{
-		Log.v("Sound", "PlaySound -----" + inResourceID);
+		Log.v("Sound", "PlaySound " + inSoundId);
 		
 		inLoop--;
 		if (inLoop < 0) {
 			inLoop = 0;
 		}
 
-		if (mSoundId.get(inResourceID) != null) {
-			//Log.v("VIEW", "Found existing sound " + inResourceID + ", stopping and removing it from progress and id check");	
-			int a = mSoundId.get(inResourceID);
-			mSoundPool.stop(a);
-			mSoundProgress.remove(a);
-			mSoundId.remove(inResourceID);
-		}
-
       int tries = 0;
-      while( !mSoundLoaded.get(inResourceID) )
+      while( !mSoundIdLoaded.get(inSoundId) )
       {
 		   Log.v("Sound", "wait loaded...");
          try { java.lang.Thread.sleep(5); } catch (InterruptedException e) { break; }
@@ -267,8 +302,7 @@ public class Sound implements SoundPool.OnLoadCompleteListener
             break;
       }
 		
-		int streamId = mSoundPool.play(inResourceID, (float)inVolLeft, (float)inVolRight, 1, inLoop, 1.0f);
-		mSoundId.put(inResourceID, streamId);
+		int streamId = mSoundPool.play(inSoundId, (float)inVolLeft, (float)inVolRight, 1, inLoop, 1.0f);
 		mSoundProgress.put(streamId, (long)0);
 		return streamId;
 	}
@@ -278,7 +312,6 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 		if (mSoundPool != null) {
 			mSoundPool.stop(inStreamID);
 			mSoundProgress.remove(inStreamID);
-			mSoundId.values().remove(inStreamID);
 		}
 	}
 
@@ -326,10 +359,13 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 
 	private static MediaPlayer createMediaPlayer(String inPath) 
 	{
+      double t0 = System.currentTimeMillis();
 		MediaPlayer mp = null;
 		int resId = getMusicHandle(inPath);
+      Log.v("Sound", "getMusicHandle " + inPath + " =" + resId);
 		if (resId < 0) {
 			if (inPath.charAt(0) == File.separatorChar) {
+           Log.v("Sound", "looks like filename");
 				try {
 		        	FileInputStream fis = new FileInputStream(new File(inPath));
 			        FileDescriptor fd = fis.getFD();
@@ -345,18 +381,21 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 		        }
 		    } else {
 				Uri uri = Uri.parse(inPath);
+           Log.v("Sound", "looks like uri " + uri);
 				mp = MediaPlayer.create(mContext, uri);
 		    }
 		} else {
+         Log.v("Sound", "looks like resource " + resId);
 			mp = MediaPlayer.create(mContext, resId);
 		}
 
+		Log.v("Sound", "Created media player " + mp + " : " + (System.currentTimeMillis()-t0) + "ms" );
 		return mp;
 	}
 
 	public static int playMusic(String inPath, double inVolLeft, double inVolRight, int inLoop, double inStartTime)
     {
-    	Log.i("Sound", "playMusic");
+    	Log.i("Sound", "playMusic " + inPath + " x" + inLoop);
 		
 		if (mediaPlayer != null) {
 			mediaPlayer.stop();
@@ -404,6 +443,20 @@ public class Sound implements SoundPool.OnLoadCompleteListener
 
 		return duration;
 	}
+
+	
+	public static int getDuration(int inResourceId)
+	{
+		int duration = -1;
+		MediaPlayer mp = MediaPlayer.create(mContext, inResourceId);
+		if (mp != null)
+      {
+			duration = mp.getDuration();
+			mp.release();
+		}
+		return duration;
+	}
+
 
 	public static void setPosition(int position) {
 		mediaPlayer.setCurrentPosition(position);

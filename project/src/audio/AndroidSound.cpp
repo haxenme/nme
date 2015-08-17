@@ -83,18 +83,18 @@ void initJni()
 class AndroidSoundChannel : public SoundChannel
 {
 public:
-   AndroidSoundChannel(Object *inSound, int inHandle, double startTime, int loops, const SoundTransform &inTransform)
+   AndroidSoundChannel(Object *inSound, int inSoundId, double startTime, int loops, const SoundTransform &inTransform)
    {
-      LOGV("Android Sound Channel create, in handle, %d",inHandle);
+      LOGV("Android Sound Channel create, in handle, %d",inSoundId);
       JNIEnv *env = GetEnv();
       mStreamID = -1;
       mSound = inSound;
-      mSoundHandle = inHandle;
+      mSoundHandle = inSoundId;
       mLoop = (loops < 1) ? 1 : loops;
       inSound->IncRef();
-      if (inHandle >= 0)
+      if (inSoundId >= 0)
       {
-         mStreamID = env->CallStaticIntMethod(soundClass, jPlaySound, inHandle, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), mLoop );
+         mStreamID = env->CallStaticIntMethod(soundClass, jPlaySound, inSoundId, inTransform.volume*((1-inTransform.pan)/2), inTransform.volume*((inTransform.pan+1)/2), mLoop );
       }
       CheckException(env,false);
     }
@@ -246,7 +246,7 @@ private:
       IncRef();
 
       mMode = MODE_UNKNOWN;
-      handleID = -1;
+      soundPoolId = -1;
       mLength = 0;
       mSoundPath = inPath;
 
@@ -255,10 +255,10 @@ private:
 
       if (!inForceMusic)
       {
-         handleID = env->CallStaticIntMethod(soundClass, jGetSoundHandle, path);
-         LOGV("AndroidSound - got sound handle %d", handleID);
+         soundPoolId = env->CallStaticIntMethod(soundClass, jGetSoundHandle, path);
+         LOGV("AndroidSound - got sound handle %d", soundPoolId);
 
-         if (handleID >= 0)
+         if (soundPoolId >= 0)
             mMode = MODE_SOUND_ID;
       }
       else
@@ -268,7 +268,7 @@ private:
 
       //env->ReleaseStringUTFChars(str, inSound.c_str() );
 
-      if (handleID < 0)
+      if (soundPoolId < 0)
          mMode = MODE_MUSIC_PATH;
    }
 
@@ -304,12 +304,12 @@ public:
    void reloadSound()
    {
       JNIEnv *env = GetEnv();
-      handleID = env->CallStaticIntMethod(soundClass, jGetSoundHandle, mJSoundPath);
+      soundPoolId = env->CallStaticIntMethod(soundClass, jGetSoundHandle, mJSoundPath);
    }
 
    int getBytesLoaded() { return 0; }
    int getBytesTotal() { return 0; }
-   bool ok() { return handleID >= 0 || mSoundPath.size()>0; }
+   bool ok() { return soundPoolId >= 0 || mSoundPath.size()>0; }
    std::string getError() { return ok() ? "" : "Error"; }
 
    double getLength()
@@ -330,7 +330,7 @@ public:
       switch (mMode)
       {
          case MODE_SOUND_ID:
-            return new AndroidSoundChannel(this, handleID, startTime, loops, inTransform);
+            return new AndroidSoundChannel(this, soundPoolId, startTime, loops, inTransform);
             break;
          case MODE_MUSIC_PATH:
          default:
@@ -339,7 +339,7 @@ public:
       }
    }
 
-   int handleID;
+   int soundPoolId;
    int mLength;
    // int mManagerID;
    std::string mSoundPath;
