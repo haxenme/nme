@@ -371,34 +371,66 @@ public:
 };
 
 
+class OpenSlDoubleBufferChannel : public OpenSlSourceChannel
+{
+public:
+
+   std::vector<unsigned char> sampleBuffer[2];
+   volatile int activeBuffers;
+   int  writeBuffer;
+
+
+
+   OpenSlDoubleBufferChannel(Object *inSound,const SoundTransform &inTransform,SoundDataFormat inFormat, bool inIsStereo, int inRate)
+      : OpenSlSourceChannel(inSound, inTransform, inFormat, inIsStereo, inRate, true )
+   {
+      LOG_SOUND("Create doubleBUffer channel");
+      activeBuffers = 0;
+      writeBuffer = 0;
+   }
+
+   void onBufferDone()
+   {
+      HxAtomicDec(&activeBuffers);
+   }
+
+
+   std::vector<unsigned char> &allocBuffer()
+   {
+      HxAtomicInc(&activeBuffers);
+      LOG_SOUND("Writing to buffer %d/%d", writeBuffer, activeBuffers);
+      std::vector<unsigned char> & result = sampleBuffer[writeBuffer];
+      writeBuffer = !writeBuffer;
+      return result;
+   }
+
+};
 
 
 
 
-class OpenSlSyncUpdateChannel : public OpenSlSourceChannel
+
+
+
+class OpenSlSyncUpdateChannel : public OpenSlDoubleBufferChannel
 {
 public:
    SoundDataFormat dataFormat;
    bool syncDataPending;
    bool noMoreData;
    bool isStereo;
-   volatile int activeBuffers;
-   int  rate;
    int  sampleSize;
-   int  writeBuffer;
-   std::vector<unsigned char> sampleBuffer[2];
+
    
 
    OpenSlSyncUpdateChannel(const ByteArray &inBytes,const SoundTransform &inTransform,SoundDataFormat inFormat, bool inIsStereo, int inRate)
-      : OpenSlSourceChannel(0, inTransform, inFormat, inIsStereo, inRate, true )
+      : OpenSlDoubleBufferChannel(0, inTransform, inFormat, inIsStereo, inRate  )
    {
       syncDataPending = false;
       noMoreData = false;
       isStereo = inIsStereo;
       dataFormat = inFormat;
       sampleSize = 0;
-      activeBuffers = 0;
-      writeBuffer = 0;
 
       if (shouldPlay)
       {
@@ -416,10 +448,6 @@ public:
    }
 
 
-   void onBufferDone()
-   {
-      HxAtomicDec(&activeBuffers);
-   }
 
    bool needsData()
    {
@@ -446,10 +474,7 @@ public:
 
       if (size>0)
       {
-         HxAtomicInc(&activeBuffers);
-
-         std::vector<unsigned char> &buffer = sampleBuffer[writeBuffer];
-         writeBuffer = !writeBuffer;
+         std::vector<unsigned char> &buffer = allocBuffer();
          if (dataFormat==sdfFloat)
          {
             int values = size/sizeof(float);
@@ -474,7 +499,6 @@ public:
    }
 
 };
-
 
 
 
@@ -568,118 +592,66 @@ public:
 };
 
 
-#if 0
 
 
 
 
-class OpenALDoubleBufferChannel : public OpenSlChannel
-{
-public:
-   ALuint  bufferIds[2];
-
-   NmeMutex bufferMutex;
-   ALuint   freeBuffers[2];
-   int      freeBufferCount;
-
-   OpenALDoubleBufferChannel(Object *inSound, const SoundTransform &inTransform)
-      : OpenSlChannel(inSound, inTransform )
-   {
-      bufferIds[0] = bufferIds[1] = 0;
-      freeBufferCount = 0;
-  }
-
-   void createBuffers()
-   {
-      alGenBuffers(2, bufferIds);
-      freeBuffers[ freeBufferCount++ ] = bufferIds[0];
-      freeBuffers[ freeBufferCount++ ] = bufferIds[1];
-      check("alGenBuffers");
-   }
-
-
-   void stop()
-   {
-      OpenSlChannel::stop();
-
-      if (opensl_is_shutdown)
-         return;
-
-      if (bufferIds[0])
-         alDeleteBuffers(2, bufferIds);
-       freeBufferCount = 0;
-   }
-  
-   void unqueueBuffers()
-   {
-      int processed = 0;
-      alGetSourcei(sourceId, AL_BUFFERS_PROCESSED, &processed);
-      while(processed--)
-      {
-         ALuint buffer = 0;
-         alSourceUnqueueBuffers(sourceId, 1, &buffer);
-
-         addFreeBuffer(buffer);
-      }
-   }
-
-
-
-   ALuint getFreeBuffer()
-   {
-      if (opensl_is_shutdown || suspended)
-         return 0;
-
-      int processed = 0;
-      alGetSourcei(sourceId, AL_BUFFERS_PROCESSED, &processed);
-      if (processed>0)
-      {
-         ALuint result = 0;
-         alSourceUnqueueBuffers(sourceId, 1, &result);
-         check("alGetSourcei processed");
-         return result;
-      }
-
-      NmeAutoMutex lock(bufferMutex);
-      if (freeBufferCount)
-         return freeBuffers[--freeBufferCount];
-      return 0;
-   }
-
-
-   void addFreeBuffer(ALuint inBufferId)
-   {
-      NmeAutoMutex lock(bufferMutex);
-      if (freeBufferCount<2)
-         freeBuffers[freeBufferCount++] = inBufferId;
-      else
-         LOG_SOUND("Bad freeBufferCount");
-   }
-   bool isComplete()
-   {
-      return !opensl_is_shutdown && !shouldPlay;
-   }
-
-};
-
-
-
-class OpenALStreamChannel : public OpenALDoubleBufferChannel
+class OpenSlStreamChannel : public OpenSlDoubleBufferChannel
 {
 public:
    INmeSoundStream *stream;
    int             loops;
+   bool            priming;
 
-   OpenALStreamChannel(Object *inSound, const SoundTransform &inTransform, INmeSoundStream *inStream)
-      : OpenALDoubleBufferChannel(inSound, inTransform )
+   OpenSlStreamChannel(Object *inSound, const SoundTransform &inTransform, INmeSoundStream *inStream, int startTime, int inLoops)
+      : OpenSlDoubleBufferChannel(inSound, inTransform, sdfShort, inStream->getIsStereo(), inStream->getRate()  )
    {
       stream = inStream;
+
+      loops = inLoops >0 ? inLoops-1 : inLoops;
+      duration = stream->getDuration();
+      bool tooMuchSeek = false;
+
+      duration = stream->getDuration();
+      LOG_SOUND("Play stream duration %f, start %d", duration, startTime);
+      if (duration)
+      {
+         double skip = startTime * 0.001;
+         int skipLoops = (skip/duration);
+         skip -= skipLoops*duration;
+         if (loops>0)
+         {
+            loops -= skipLoops;
+            if (loops<0)
+               tooMuchSeek = true;
+         }
+    
+         if (!tooMuchSeek)
+         {
+            if (skip)
+            {
+               t0 = stream->setPosition(skip);
+            }
+
+            priming = true;
+            LOG_SOUND("Priming 0...");
+            streamBuffer();
+            if (shouldPlay)
+            {
+               LOG_SOUND("Priming 1...");
+               streamBuffer();
+            }
+            LOG_SOUND("Priming done");
+            priming = false;
+         }
+      }
    }
 
 
    void stop()
    {
-      OpenALDoubleBufferChannel::stop();
+      LOG_SOUND("Stop streaming sound");
+      OpenSlDoubleBufferChannel::stop();
       if (stream)
       {
          delete stream;
@@ -687,34 +659,39 @@ public:
       }
    }
 
+   void onBufferDone()
+   {
+      HxAtomicDec(&activeBuffers);
+      LOG_SOUND("onBufferDone -> %d", activeBuffers);
+      if (!priming)
+         streamBuffer();
+   }
 
    // Returns if the stream still has data.
-   bool streamBuffer( ALuint inBuffer )
+   void streamBuffer()
    {
-      if (!stream)
-      {
-         return false;
-      }
+      if (!shouldPlay || !stream || opensl_is_shutdown)
+         return;
 
-      //LOG_SOUND("STREAM\n");
-      char pcm[MAX_STREAM_BUFFER_SIZE];
-      int bytes = ( (stream->getIsStereo() ? 4 : 2) * stream->getRate() * 400/1000 );
-      if (bytes > MAX_STREAM_BUFFER_SIZE)
-         bytes = MAX_STREAM_BUFFER_SIZE;
-      bytes = bytes & ~7;
+      LOG_SOUND("Fill buffer...");
+
+      std::vector<unsigned char> &buffer = allocBuffer();
+      int bytes = ( (stream->getIsStereo() ? 4 : 2) * stream->getRate() * 250/1000 ) & ~7;
+      buffer.resize(bytes);
       int size = 0;
       int emptyBuffersCount = 0;
 
-      // Bytes per 400ms...
-
       while(size<bytes)
       {
-          int filled = stream->fillBuffer(pcm+size, bytes-size);
+          int filled = stream->fillBuffer((char *)&buffer[size], bytes-size);
            
           if (filled <= 0)
           {
              if (!tryAgainOnEmptyBuffer(emptyBuffersCount++))
+             {
+                LOG_SOUND("Stream empty");
                 break;
+             }
           }
           else
           {
@@ -724,59 +701,41 @@ public:
       }
 
       if (size==0)
-      {
-         addFreeBuffer(inBuffer);
-         return false;
-      }
+         return;
 
-      alBufferData(inBuffer, stream->getIsStereo() ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16 , pcm, size,  stream->getRate());
+      LOG_SOUND("Filled %d bytes", size);
 
-      alSourceQueueBuffers(sourceId, 1, &inBuffer );
-
-      return true;
-   }
-
-   bool updateStream()
-   {
-      if (opensl_is_shutdown || !shouldPlay || suspended)
-      {
-         LOG_SOUND("Dead stream.\n");
-         return false;
-      }
-
-  
-      bool added = false;
-      while(true)
-      {
-         ALuint buffer = getFreeBuffer();
-         if (!buffer)
-            break;
-         if (!streamBuffer(buffer))
-            break;
-         added = true;
-      }
-
-      if (added && !playing())
-         alSourcePlay(sourceId);
-            
-      return added;
+      queueData( &buffer[0], size );
    }
 
 
 
    virtual bool tryAgainOnEmptyBuffer(int inEmptyBufferCount)
    {
-      return true;
-   }
+      if (inEmptyBufferCount>0)
+      {
+         // Two empty buffers in a row = error
+         stop();
+         return false;
+      }
 
-   void asyncUpdate()
-   {
-      updateStream();
+	   if ( loops )
+	   {
+		   if (loops>0)
+			   loops--;
+		   LOG_SOUND(" loops->%d\n", loops);
+		   stream->rewind();
+		   return true;
+	   }
+
+		LOG_SOUND("end of static data.\n")
+      return false;
    }
 
 };
 
 
+#if 0
 
 
 
@@ -881,7 +840,7 @@ public:
    OpenSlSound(const unsigned char *inData, int inLen, bool inForceMusic)
    {
 		LOG_SOUND("Create OpenSlSound from data %d.\n", inLen)
-      init(INmeSoundData::create(inData, inLen, SoundForceDecode));
+      init(INmeSoundData::create(inData, inLen, inForceMusic ? 0 : SoundForceDecode));
    }
 
    ~OpenSlSound()
@@ -917,27 +876,6 @@ public:
          duration = soundData->getDuration();
 
 		   LOG_SOUND("Init OpenSlSound with samples %d.\n", samples)
-         if (soundData->getIsDecoded())
-         {
-            /*
-            int format = soundData->getIsStereo() ?  AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-         
-            // Transfer data to buffer
-            alGenBuffers(1, &mBufferID);
-            alBufferData(mBufferID,format,
-                 soundData->decodeAll(),
-                 bufferSize,
-                 frequency); 
-
-            // Sucked it dry
-            soundData->release();
-            soundData = 0;
-            */
-         }
-         else
-         {
-            // Streaming...
-         }
       }
    }
   
@@ -984,9 +922,9 @@ public:
       else if (soundData)
       {
          ELOG("soundData, but not decoded");
-         //INmeSoundStream *stream = soundData->createStream();
-         //if (stream)
-         //   return new OpenALStaticStreamChannel(this, inTransform, stream, startTime, loops);
+         INmeSoundStream *stream = soundData->createStream();
+         if (stream)
+            return new OpenSlStreamChannel(this, inTransform, stream, startTime, loops);
       }
       return 0;
    }
@@ -1021,10 +959,11 @@ Sound *CreateOpenSlSound(const unsigned char *inData, int len, bool inForceMusic
 
    LOG_SOUND("CreateOpenSlSound %p (%d)", sound, sound->ok() );
    
-   if (sound->ok ())
+   if (sound->ok())
       return sound;
-   else
-      return 0;
+
+   sound->DecRef();
+   return 0;
 }
 
 
