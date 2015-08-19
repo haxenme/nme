@@ -13,6 +13,7 @@ import nme.media.Sound;
 import nme.media.SoundChannel;
 import nme.media.SoundTransform;
 import nme.Assets;
+import nme.events.SampleDataEvent;
 
 using nme.media.SoundEngine;
 
@@ -608,17 +609,131 @@ class AudioPage extends AudioPageBase
    }
 }
 
+class Key extends Sprite
+{
+   public function new(inWidth, inHeight, inCol0, inCol1, inKey:Int, inOnKey)
+   {
+      super();
+      render(inWidth, inHeight, inCol0);
+      addEventListener(MouseEvent.MOUSE_DOWN, function(_) {
+         render(inWidth, inHeight, inCol1);
+         inOnKey(inKey, true);
+      });
+      addEventListener(MouseEvent.MOUSE_UP, function(_) {
+         render(inWidth, inHeight, inCol0);
+         inOnKey(inKey, false);
+      });
+   }
+
+   function render(inWidth, inHeight, inCol)
+   {
+      var gfx = graphics;
+      gfx.clear();
+      gfx.lineStyle(1,0x000000);
+      gfx.beginFill(inCol);
+      gfx.drawRect(0,0,inWidth,inHeight);
+   }
+}
+
+class Keyboard extends Sprite
+{
+   static var octave = [ 440.000, 466.164, 493.883, 523.251, 554.365,
+                     587.330, 622.254, 659.255, 698.456, 739.989, 783.991, 830.609 ];
+   static var isWhite = [ true, false, true, true, false, true, false, true, true,
+                      false, true, false ];
+
+
+
+   public function new(inWidth:Float, inHeight:Float, s:Float, inOnKey:Int->Bool->Void)
+   {
+      super();
+      var gfx = graphics;
+
+      var k0 = 21;
+      var k1 = 53;
+      var x = 0;
+      var w = Std.int(30*s);
+      gfx.lineStyle(1,0x000000);
+      gfx.beginFill(0xffffff);
+
+      for(k in k0...k1)
+      {
+         var base = (k-49+120)%12;
+         if (isWhite[base])
+         {
+            var key = new Key(w,200*s, 0xffffff, 0xe0e0ff, k, inOnKey);
+            key.x = x;
+            addChildAt(key,0);
+            x += w;
+         }
+         else
+         {
+            var key = new Key(w*0.5,80*s, 0x000000, 0x000080, k, inOnKey);
+            key.x = x-w*0.25;
+            addChild(key);
+         }
+      }
+   }
+
+    public static function keyFrequency(k:Int)
+    {
+       var base = (k-49+120)%12;
+       var freq = octave[base];
+       while(k<49)
+       {
+          freq *= 0.5;
+          k += 12;
+       }
+       while(k>=49+12)
+       {
+          freq *= 2;
+          k-=12;
+       }
+       return freq;
+    }
+
+
+}
+
 
 class DynamicAudio extends AudioPageBase
 {
    var sync:Bool;
+   var keyboard:Keyboard;
+   var frequency:Array<Float>;
+   var wasDown:Array<Bool>;
+   var isDown:Array<Bool>;
+   var phase0:Float;
+   var sound:Sound;
+
 
    public function new(inName:String)
    {
       super(inName);
 
-      sync = name=="Sync";
+      frequency = [];
+      isDown = [];
+      wasDown = [];
+      for(k in 1...89)
+      {
+         frequency[k] = Keyboard.keyFrequency(k)*2*Math.PI/44100;
+         wasDown[k] = false;
+         isDown[k] = false;
+      }
 
+      sync = name=="Sync";
+      phase0 = 0;
+
+      sound = new Sound();
+      sound.addEventListener( SampleDataEvent.SAMPLE_DATA, onFillData );
+
+      play.addEventListener(MouseEvent.CLICK, function(_) onPlay() );
+   }
+
+   function onPlay()
+   {
+      onStop();
+      soundChannel = sound.play();
    }
 
 
@@ -656,8 +771,61 @@ class DynamicAudio extends AudioPageBase
       volumeSlider.y = y + Std.int( (h - 20*s) * 0.5);
       volumeSlider.layout( Std.int(180*s), Std.int(20*s) );
 
+      if (keyboard!=null)
+         removeChild(keyboard);
+
+      var ky = Std.int(160*s);
+      keyboard = new Keyboard(inWidth-play.x,inHeight-ky,s,onKey);
+      addChild(keyboard);
+      keyboard.x = play.x;
+      keyboard.y = ky;
    }
 
+   public function onKey(key:Int, state:Bool)
+   {
+       isDown[key] = state;
+   }
+
+
+   public function onFillData(dataEvent:SampleDataEvent)
+   {
+      var size = 2048;
+      var data = dataEvent.data;
+
+      var down = new Array<Int>();
+      var finishList = new Array<Int>();
+      for(k in 0...isDown.length)
+         if (isDown[k])
+            down.push(k);
+         else if (wasDown[k])
+            finishList.push(k);
+
+      for(s in 0...size)
+      {
+         var total = 0.0;
+         for(d in down)
+         {
+            if (s<100 && !wasDown[d])
+               total += Math.sin((phase0 + s)*frequency[d]) * s*0.01;
+            else
+               total += Math.sin((phase0 + s)*frequency[d]);
+         }
+         if (s<100)
+         {
+            for(d in finishList)
+               total += Math.sin((phase0 + s)*frequency[d]) * (1-s*0.01);
+         }
+         data.writeFloat(total);
+         data.writeFloat(total);
+      }
+
+      for(k in 0...isDown.length)
+         wasDown[k] = false;
+      for(d in down)
+         wasDown[d] = true;
+
+      phase0 += size;
+   }
 }
 
 
