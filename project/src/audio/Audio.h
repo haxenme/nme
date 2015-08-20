@@ -37,6 +37,7 @@ Sound *CreateSdlSound(const unsigned char *inData, int len, bool inForceMusic);
 Sound *CreateSdlSound(const std::string &inFilename,bool inForceMusic);
 SoundChannel *CreateSdlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
               SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
+SoundChannel *CreateSdlAsyncChannel( SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback);
 void SuspendSdlSound();
 void ResumeSdlSound();
 

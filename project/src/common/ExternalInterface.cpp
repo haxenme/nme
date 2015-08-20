@@ -4583,10 +4583,31 @@ DEFINE_PRIM(nme_sound_channel_create_dynamic,2);
 
 // --- Async Sound -----------------------------------------------
 
+void SoundChannel::PerformAsyncCallback(void *inCallback)
+{
+   AutoGCRoot *agc = (AutoGCRoot *)inCallback;
+   val_call0(agc->get());
+}
+
+
+void SoundChannel::DestroyAsyncCallback(void *inCallback)
+{
+   AutoGCRoot *agc = (AutoGCRoot *)inCallback;
+   delete agc;
+}
+
+
 
 value nme_sound_channel_create_async(value inRate, value inIsStereo, value inFormat, value inCallback, value inEngine)
 {
-   SoundChannel *channel = 0;
+   int rateId = val_int(inRate);
+   int rate = rateId==0 ? 11025 : rateId==1 ? 22050 : 44100;
+   int fmtId = val_int(inFormat);
+   SoundDataFormat fmt = fmt==0 ? sdfByte : fmt==1 ? sdfShort : sdfFloat;
+   std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
+   SoundChannel *channel = SoundChannel::CreateAsyncChannel(
+                   fmt, val_bool(inIsStereo),rate, new AutoGCRoot(inCallback), engine );
+
    if (channel)
    {
       value result = ObjectToAbstract(channel);
@@ -4604,7 +4625,7 @@ value nme_sound_channel_post_buffer(value inChannel, value inBytes)
    if (AbstractToObject(inChannel,channel))
    {
       ByteArray bytes(inBytes);
-      //channel->postBuffer(bytes);
+      channel->addData(bytes);
    }
    return alloc_null();
 }

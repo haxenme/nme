@@ -51,6 +51,11 @@ public:
    static SoundChannel *CreateSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
               SoundDataFormat inDataFormat=sdfFloat,bool inIsStereo=true, int inRate=44100) ;
 
+   static SoundChannel *CreateAsyncChannel(SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback, const std::string &inEngine );
+
+   static void PerformAsyncCallback(void *inCallback);
+   static void DestroyAsyncCallback(void *inCallback);
+
    virtual bool isComplete() = 0;
    virtual double getLeft() = 0;
    virtual double getRight() = 0;

@@ -115,11 +115,45 @@ class SDLSoundChannel : public SoundChannel
 {
   enum { BUF_SIZE = (1<<17) };
 
+   int       mFrequency;
+   Uint16    mFormat;
+   int       mChannels;
+
+
+   int                mAsyncFrequency;
+   SoundDataFormat    mAsyncFormat;
+   int                mAsyncChannels;
+   int                mAsyncBytesPerSample;
+
+   Object    *mSound;
+   Mix_Chunk *mChunk;
+   int       mChannel;
+
+   void      *mCallback;
+   bool      hasAsyncBuffer;
+   bool      isAsyncMode;
+
+   int   startSample;
+   int   endSample;
+   bool  playing;
+   int   loopsPending;
+
+
+   Mix_Chunk mOffsetChunk;
+   Mix_Chunk mDynamicChunk;
+   short    *mDynamicBuffer;
+   unsigned int  mDynamicFillPos;
+   unsigned int  mSoundPos0;
+   int       mDynamicDataDue;
+   bool      mDynamicRequestPending;
+   int       mBufferAheadSamples;
+
+
 public:
    SDLSoundChannel(Object *inSound, Mix_Chunk *inChunk, double inStartTime, int inLoops,
                   const SoundTransform &inTransform)
    {
-      initSpec();
+      init();
       mChunk = inChunk;
       mDynamicBuffer = 0;
       mSound = inSound;
@@ -166,15 +200,7 @@ public:
       // Allocate myself a channel
       if (valid)
       {
-         for(int i=0;i<sMaxChannels;i++)
-            if (!sUsedChannel[i])
-            {
-               IncRef();
-               sDoneChannel[i] = false;
-               sUsedChannel[i] = true;
-               mChannel = i;
-               break;
-            }
+         allocChannel();
       }
 
 
@@ -188,41 +214,10 @@ public:
      }
    }
 
-   void setTransform(const SoundTransform &inTransform) 
-   {
-      if (mChannel>=0)
-      {
-         Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
-
-         int left = (1-inTransform.pan)*255;
-         if (left<0) left = 0;
-         if (left>255) left = 255;
-   
-         int right = (inTransform.pan + 1)*255;
-         if (right<0) right = 0;
-         if (right>255) right = 255;
-
-         Mix_SetPanning( mChannel, left, right );
-      }
-   }
-
-
-   void initSpec()
-   {
-      Mix_QuerySpec(&mFrequency, &mFormat, &mChannels);
-      if (mFrequency!=44100)
-         ELOG("Warning - Frequency mismatch %d",mFrequency);
-      if (mFormat!=32784)
-         ELOG("Warning - Format mismatch    %d",mFormat);
-      if (mChannels!=2)
-         ELOG("Warning - channe mismatch    %d",mChannels);
-
-      if (sMusicFrequency==0)
-         sMusicFrequency = mFrequency;
-   }
 
    SDLSoundChannel(const ByteArray &inBytes, const SoundTransform &inTransform)
    {
+      init();
       initSpec();
       mChunk = 0;
       mDynamicBuffer = new short[BUF_SIZE * STEREO_SAMPLES];
@@ -241,15 +236,7 @@ public:
       mBufferAheadSamples = 0;//mFrequency / 20; // 50ms buffer
 
       // Allocate myself a channel
-      for(int i=0;i<sMaxChannels;i++)
-         if (!sUsedChannel[i])
-         {
-            IncRef();
-            sDoneChannel[i] = false;
-            sUsedChannel[i] = true;
-            mChannel = i;
-            break;
-         }
+      allocChannel();
 
       if (mChannel>=0)
       {
@@ -275,6 +262,114 @@ public:
 
             Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
          }
+      }
+   }
+
+   // Async channel
+   SDLSoundChannel( SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback)
+   {
+      init();
+      isAsyncMode = true;
+      mAsyncFrequency = inRate;
+      mAsyncChannels = inIsStereo ? 2 : 1;
+      mAsyncFormat = inDataFormat;
+
+      mDynamicBuffer = new short[BUF_SIZE * STEREO_SAMPLES];
+      memset(mDynamicBuffer,0,BUF_SIZE*sizeof(short));
+      mSound = 0;
+      mChannel = -1;
+      mDynamicChunk.allocated = 0;
+      mDynamicChunk.abuf = (Uint8 *)mDynamicBuffer;
+      mDynamicChunk.alen = BUF_SIZE * sizeof(short) * STEREO_SAMPLES; // bytes
+      mDynamicChunk.volume = MIX_MAX_VOLUME;
+      mDynamicFillPos = 0;
+      mSoundPos0 = 0;
+      mDynamicDataDue = 0;
+      loopsPending = 0;
+
+      mAsyncBytesPerSample = mAsyncChannels * (mAsyncFormat==sdfByte ? 1 : mAsyncFormat==sdfShort ? 2 : 4);
+
+      allocChannel();
+
+      // Wait for data
+   }
+
+
+   void allocChannel()
+   {
+      // Allocate myself a channel
+      for(int i=0;i<sMaxChannels;i++)
+         if (!sUsedChannel[i])
+         {
+            IncRef();
+            sDoneChannel[i] = false;
+            sUsedChannel[i] = true;
+            mChannel = i;
+            break;
+         }
+   }
+
+   void init()
+   {
+      mSound = 0;
+      mChunk = 0;
+      mChannel = -1;
+      mCallback = 0;
+
+      startSample = 0;
+      endSample = 0;
+      playing = false;
+      loopsPending = 0;
+
+      mDynamicBuffer = 0;
+      mDynamicFillPos = 0;
+      mSoundPos0 = 0;
+      mDynamicDataDue = 0;
+      mDynamicRequestPending = 0;
+      mFrequency = 0;
+      mFormat = 0;
+      mChannels = 0;
+      mBufferAheadSamples = 0;
+
+      mAsyncFrequency = 0;
+      mAsyncFormat = sdfShort;
+      mAsyncChannels = 0;
+
+
+      hasAsyncBuffer = false;
+      isAsyncMode = false;
+   }
+
+
+   void initSpec()
+   {
+      Mix_QuerySpec(&mFrequency, &mFormat, &mChannels);
+      if (mFrequency!=44100)
+         ELOG("Warning - Frequency mismatch %d",mFrequency);
+      if (mFormat!=32784)
+         ELOG("Warning - Format mismatch    %d",mFormat);
+      if (mChannels!=2)
+         ELOG("Warning - channe mismatch    %d",mChannels);
+
+      if (sMusicFrequency==0)
+         sMusicFrequency = mFrequency;
+   }
+
+   void setTransform(const SoundTransform &inTransform) 
+   {
+      if (mChannel>=0)
+      {
+         Mix_Volume( mChannel, inTransform.volume*MIX_MAX_VOLUME );
+
+         int left = (1-inTransform.pan)*255;
+         if (left<0) left = 0;
+         if (left>255) left = 255;
+   
+         int right = (inTransform.pan + 1)*255;
+         if (right<0) right = 0;
+         if (right>255) right = 255;
+
+         Mix_SetPanning( mChannel, left, right );
       }
    }
 
@@ -314,10 +409,96 @@ public:
          #endif
       }
    }
+
+   inline void SetDest(short &outDest, const short &inSrc) { outDest = inSrc; }
+   inline void SetDest(short &outDest, const float &inSrc) { outDest = inSrc*32575.0f; }
+   inline void SetDest(short &outDest, const unsigned char &inSrc) { outDest = (inSrc<<8)-(255<<7); }
+
+   template<bool STEREO,int SCALE, typename SAMPLE>
+   void TTAddAsyncSamplesType(const SAMPLE *inBuffer, int inSamples)
+   {
+      short *dest = mDynamicBuffer + (mDynamicFillPos<<1);
+      for(int i=0;i<inSamples;i++)
+      {
+         SetDest(*dest++,*inBuffer++);
+         if (STEREO)
+            SetDest(*dest++,*inBuffer++);
+         else
+            { dest[1] = dest[0]; dest++; }
+
+         // TODO - better scaling
+         if (SCALE>1)
+         {
+            dest[0] = dest[-2];
+            dest[1] = dest[-1];
+            dest+=2;
+            if (SCALE>2)
+            {
+               dest[0] = dest[-2];
+               dest[1] = dest[-1];
+               dest[2] = dest[-2];
+               dest[3] = dest[-1];
+               dest+=4;
+            }
+         }
+      }
+   }
+
+   template<bool STEREO,int SCALE>
+   void TTAddAsyncSamples(const unsigned char *inBuffer, int inSamples)
+   {
+      if (mAsyncFormat==sdfShort)
+         TTAddAsyncSamplesType<STEREO,SCALE>( (const short *)inBuffer, inSamples);
+      else if (mAsyncFormat==sdfByte)
+         TTAddAsyncSamplesType<STEREO,SCALE>( (const unsigned char *)inBuffer, inSamples);
+      else
+         TTAddAsyncSamplesType<STEREO,SCALE>( (float *)inBuffer, inSamples);
+   }
+
+   template<bool STEREO>
+   void TAddAsyncSamples(const unsigned char *inBuffer, int inSamples)
+   {
+      if (mAsyncFrequency==11025)
+         TTAddAsyncSamples<STEREO,4>(inBuffer,inSamples);
+      else if (mAsyncFrequency==22050)
+         TTAddAsyncSamples<STEREO,2>(inBuffer,inSamples);
+      else if (mAsyncFrequency==44100)
+         TTAddAsyncSamples<STEREO,1>(inBuffer,inSamples);
+   }
+
+   void addAsyncSamples(const unsigned char *inBuffer, int inSamples)
+   {
+      if (mChannels==2)
+         TAddAsyncSamples<true>(inBuffer, inSamples);
+      else
+         TAddAsyncSamples<false>(inBuffer, inSamples);
+
+      mDynamicFillPos = (mDynamicFillPos + inSamples) & (BUF_SIZE-1);
+   }
+
+
+   void FillBufferAsync(const ByteArray &inBytes)
+   {
+      int timeSamples = inBytes.Size()/mAsyncBytesPerSample;
+      bool last = timeSamples<1024;
+      const unsigned char *buffer = (const unsigned char *)inBytes.Bytes();
+
+      int timesRemaining = BUF_SIZE-mDynamicFillPos;
+
+      int add = timesRemaining < timeSamples ? timesRemaining : timeSamples;
+      // Handle circular buffer
+      addAsyncSamples( buffer, add);
+      timeSamples -= add;
+      if (timeSamples)
+         addAsyncSamples( buffer + add*mAsyncBytesPerSample, timeSamples);
+   }
  
    ~SDLSoundChannel()
    {
       delete [] mDynamicBuffer;
+
+      if (mCallback)
+         DestroyAsyncCallback(mCallback);
 
       if (mSound)
          mSound->DecRef();
@@ -384,7 +565,7 @@ public:
    }
    bool needsData()
    {
-      if (!mDynamicBuffer || mDynamicRequestPending)
+      if (!mDynamicBuffer || mDynamicRequestPending || isAsyncMode)
          return false;
 
       int soundTime = getMixerSamplesSince( mSoundPos0 );
@@ -400,34 +581,33 @@ public:
 
    void addData(const ByteArray &inBytes)
    {
-      mDynamicRequestPending = false;
-      int soundTime = getMixerSamplesSince(mSoundPos0);
-      mDynamicDataDue = mDynamicFillPos;
-      FillBuffer(inBytes,false);
+      if (isAsyncMode)
+      {
+         if (mChannel<0)
+            return;
+         if (!hasAsyncBuffer)
+            mSoundPos0 = getMixerSamplesSince(0);
+         FillBufferAsync(inBytes);
+         if (!hasAsyncBuffer)
+         {
+            hasAsyncBuffer = true;
+            if (Mix_PlayChannel( mChannel , &mDynamicChunk,  0 ))
+            {
+               onChannelDone(mChannel);
+               mChannel = -1;
+            }
+         }
+      }
+      else
+      {
+         mDynamicRequestPending = false;
+         int soundTime = getMixerSamplesSince(mSoundPos0);
+         mDynamicDataDue = mDynamicFillPos;
+         FillBuffer(inBytes,false);
+      }
    }
 
 
-   Object    *mSound;
-   Mix_Chunk *mChunk;
-   int       mChannel;
-
-   int   startSample;
-   int   endSample;
-   bool  playing;
-   int   loopsPending;
-
-
-   Mix_Chunk mOffsetChunk;
-   Mix_Chunk mDynamicChunk;
-   short    *mDynamicBuffer;
-   unsigned int  mDynamicFillPos;
-   unsigned int  mSoundPos0;
-   int       mDynamicDataDue;
-   bool      mDynamicRequestPending;
-   int       mFrequency;
-   Uint16    mFormat;
-   int       mChannels;
-   int       mBufferAheadSamples;
 };
 
 SoundChannel *CreateSdlSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
@@ -436,6 +616,14 @@ SoundChannel *CreateSdlSyncChannel(const ByteArray &inBytes,const SoundTransform
    if (!Init())
       return 0;
    return new SDLSoundChannel(inBytes,inTransform);
+}
+
+
+SoundChannel *CreateSdlAsyncChannel( SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback)
+{
+   if (!Init())
+      return 0;
+   return new SDLSoundChannel(inDataFormat, inIsStereo, inRate, inCallback);
 }
 
 

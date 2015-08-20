@@ -140,6 +140,35 @@ SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inData, const Sou
 }
 
 
+SoundChannel *SoundChannel::CreateAsyncChannel(SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback,
+                                               const std::string &inEngine)
+
+{
+   SoundChannel *result = 0;
+   #ifdef HX_ANDROID
+
+
+   #elif defined(IPHONE)
+
+
+   #else
+
+   result = CreateSdlAsyncChannel(inDataFormat, inIsStereo, inRate, inCallback);
+
+   #endif
+
+   if (!result)
+   {
+      ELOG("Error creating sync sound ");
+      DestroyAsyncCallback(inCallback);
+   }
+
+   return result;
+}
+
+
+
+
 static bool sgSoundSuspended = false;
 
 void Sound::Suspend()
