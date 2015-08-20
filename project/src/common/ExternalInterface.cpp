@@ -4580,6 +4580,39 @@ value nme_sound_channel_create_dynamic(value inBytes, value inTransform)
 DEFINE_PRIM(nme_sound_channel_create_dynamic,2);
 
 
+
+// --- Async Sound -----------------------------------------------
+
+
+value nme_sound_channel_create_async(value inRate, value inIsStereo, value inFormat, value inCallback, value inEngine)
+{
+   SoundChannel *channel = 0;
+   if (channel)
+   {
+      value result = ObjectToAbstract(channel);
+      return result;
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_create_async,5);
+
+
+
+value nme_sound_channel_post_buffer(value inChannel, value inBytes)
+{
+   SoundChannel *channel;
+   if (AbstractToObject(inChannel,channel))
+   {
+      ByteArray bytes(inBytes);
+      //channel->postBuffer(bytes);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_sound_channel_post_buffer,2);
+
+
+
+
 // --- Tilesheet -----------------------------------------------
 
 value nme_tilesheet_create(value inSurface)

@@ -41,6 +41,17 @@ class SoundChannel extends EventDispatcher
          nmeIncompleteList.push(this);
    }
 
+
+   public static function createAsync(inRate:SampleRate, inIsStereo:Bool, sampleFormat:AudioSampleFormat, asyncDataRequired:Void->Void, ?inEngine:String) : SoundChannel
+   {
+      var handle = nme_sound_channel_create_async(Type.enumIndex(inRate), inIsStereo, Type.enumIndex(sampleFormat), asyncDataRequired, inEngine);
+      if (handle==null)
+         return null;
+
+      return new SoundChannel(handle, 0, 0, null);
+   }
+
+
    public static function createDynamic(inSoundHandle:Dynamic, sndTransform:SoundTransform, dataProvider:EventDispatcher) 
    {
       var result = new SoundChannel(null, 0, 0, sndTransform);
@@ -51,7 +62,13 @@ class SoundChannel extends EventDispatcher
          nmeDynamicSoundCount ++;
 
          return result;
-      }
+   }
+
+   public function postBuffer(inData:nme.utils.ByteArray)
+   {
+      if (nmeHandle!=null)
+         nme_sound_channel_post_buffer(nmeHandle, inData);
+   }
 
    /** @private */ private function nmeCheckComplete():Bool
    {
@@ -147,6 +164,7 @@ class SoundChannel extends EventDispatcher
       return inTransform;
    }
 
+
    // Native Methods
    private static var nme_sound_channel_is_complete = Loader.load("nme_sound_channel_is_complete", 1);
    private static var nme_sound_channel_get_left = Loader.load("nme_sound_channel_get_left", 1);
@@ -159,6 +177,8 @@ class SoundChannel extends EventDispatcher
    private static var nme_sound_channel_set_transform = Loader.load("nme_sound_channel_set_transform", 2);
    private static var nme_sound_channel_needs_data = Loader.load("nme_sound_channel_needs_data", 1);
    private static var nme_sound_channel_add_data = Loader.load("nme_sound_channel_add_data", 2);
+   private static var nme_sound_channel_create_async = Loader.load("nme_sound_channel_create_async", 5);
+   private static var nme_sound_channel_post_buffer = Loader.load("nme_sound_channel_post_buffer", 2);
 }
 
 #else

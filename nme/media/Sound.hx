@@ -46,7 +46,6 @@ class Sound extends EventDispatcher
       if (stream != null)
          load(stream, context, forcePlayAsMusic, inEngine);
    }
-
    public function getEngine()
    {
       // TODO

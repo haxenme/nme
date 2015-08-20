@@ -631,7 +631,7 @@ class Key extends Sprite
       gfx.clear();
       gfx.lineStyle(1,0x000000);
       gfx.beginFill(inCol);
-      gfx.drawRect(0,0,inWidth,inHeight);
+      gfx.drawRect(0.5,0.5,inWidth,inHeight);
    }
 }
 
@@ -705,6 +705,8 @@ class DynamicAudio extends AudioPageBase
    var isDown:Array<Bool>;
    var phase0:Float;
    var sound:Sound;
+   var volLeft:Float;
+   var volRight:Float;
 
 
    public function new(inName:String)
@@ -723,6 +725,8 @@ class DynamicAudio extends AudioPageBase
 
       sync = name=="Sync";
       phase0 = 0;
+      volLeft = 0.5;
+      volRight = 0.5;
 
       sound = new Sound();
       sound.addEventListener( SampleDataEvent.SAMPLE_DATA, onFillData );
@@ -761,6 +765,7 @@ class DynamicAudio extends AudioPageBase
       var h = panLabel.height;
       panSlider.y = y + Std.int( (h - 20*s) * 0.5);
       panSlider.layout( Std.int(180*s), Std.int(20*s) );
+      panSlider.onPosition = setVolume;
 
       volumeLabel.x = panLabel.x;
       volumeLabel.y = panLabel.y + panLabel.height;
@@ -770,6 +775,7 @@ class DynamicAudio extends AudioPageBase
       var h = volumeLabel.height;
       volumeSlider.y = y + Std.int( (h - 20*s) * 0.5);
       volumeSlider.layout( Std.int(180*s), Std.int(20*s) );
+      volumeSlider.onPosition = setVolume;
 
       if (keyboard!=null)
          removeChild(keyboard);
@@ -779,6 +785,12 @@ class DynamicAudio extends AudioPageBase
       addChild(keyboard);
       keyboard.x = play.x;
       keyboard.y = ky;
+   }
+
+   public function setVolume(_)
+   {
+      volLeft =  (1-panSlider.position) * volumeSlider.position*0.5;
+      volRight =  (panSlider.position) * volumeSlider.position*0.5;
    }
 
    public function onKey(key:Int, state:Bool)
@@ -800,6 +812,7 @@ class DynamicAudio extends AudioPageBase
          else if (wasDown[k])
             finishList.push(k);
 
+
       for(s in 0...size)
       {
          var total = 0.0;
@@ -815,8 +828,10 @@ class DynamicAudio extends AudioPageBase
             for(d in finishList)
                total += Math.sin((phase0 + s)*frequency[d]) * (1-s*0.01);
          }
-         data.writeFloat(total);
-         data.writeFloat(total);
+         var left = total * volLeft;
+         data.writeFloat(left<-0.999 ? -0.999 : left>0.999 ? 0.999 : left);
+         var right = total * volRight;
+         data.writeFloat(right<-0.999 ? -0.999 : right>0.999 ? 0.999 : right);
       }
 
       for(k in 0...isDown.length)
