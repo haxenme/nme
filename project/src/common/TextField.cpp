@@ -638,8 +638,8 @@ void TextField::OnKey(Event &inEvent)
                DeleteChars(caretIndex-1,caretIndex);
                caretIndex--;
             }
-            else if (mCharGroups.size())
-               DeleteChars(0,1);
+            else return;//if (mCharGroups.size())
+               //DeleteChars(0,1);
             ShowCaret();
             OnChange();
             return;
@@ -652,7 +652,8 @@ void TextField::OnKey(Event &inEvent)
             else if (caretIndex<getLength())
             {
                DeleteChars(caretIndex,caretIndex+1);
-            }
+            } else 
+               return;
             mCaretDirty = true;
             ShowCaret();
             OnChange();
