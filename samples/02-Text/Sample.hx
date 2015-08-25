@@ -61,6 +61,22 @@ public function new()
       text.htmlText = "<font size='36'>Hello !</font>";
       Lib.current.addChild(text);
    }
+
+   var input = new nme.text.TextField();
+   input.x = 20 + 2*120;
+   input.y = 10;
+   input.type = nme.text.TextFieldType.INPUT;
+   input.wordWrap = true;
+   input.multiline = true;
+   input.width = 240;
+   input.height = 300;
+   input.text = "Input";
+   input.border = true;
+   input.borderColor = 0x000000;
+   input.background = true;
+   input.backgroundColor = 0xf0f0ff;
+   Lib.current.addChild(input);
+
 }
 
 }

@@ -603,135 +603,141 @@ void TextField::OnChange()
    }
 }
 
+void TextField::AddCharacter(int inCharCode)
+{
+   DeleteSelection();
+   wchar_t str[2] = {inCharCode,0};
+   WString ws(str);
+
+   if (caretIndex<0)
+      caretIndex = 0;
+   caretIndex = std::min(caretIndex,getLength());
+   InsertString(ws);
+   caretIndex += ws.length();
+
+   OnChange();
+   ShowCaret();
+}
+
+
 
 void TextField::OnKey(Event &inEvent)
 {
    if (isInput && (inEvent.type==etKeyDown || inEvent.type==etChar) && inEvent.code<0xffff )
    {
       int code = inEvent.code;
-      if(inEvent.type==etChar && code>27 && code<63000) {
-        DeleteSelection();
-        wchar_t str[2] = {code,0};
-        WString ws(str);
+      bool isPrintChar = (code>27 && code<63000);
 
-        if (caretIndex<0) caretIndex = 0;
-        caretIndex = std::min(caretIndex,getLength());
-        InsertString(ws);
-        caretIndex += ws.length();
-
-        OnChange();
-        ShowCaret();
-
-        return;
-      }
-      bool shift = inEvent.flags & efShiftDown;
-
-      switch(inEvent.value)
+      if (isPrintChar)
       {
-         case keyBACKSPACE:
-            if (mSelectMin<mSelectMax)
-            {
-               DeleteSelection();
-            }
-            else if (caretIndex>0)
-            {
-               DeleteChars(caretIndex-1,caretIndex);
-               caretIndex--;
-            }
-            else if (mCharGroups.size())
-               DeleteChars(0,1);
-            ShowCaret();
-            OnChange();
+         // Use etChar, not etKeyDown for printable characters
+         if (inEvent.type==etKeyDown)
             return;
 
-         case keyDELETE:
-            if (mSelectMin<mSelectMax)
-            {
-               DeleteSelection();
-            }
-            else if (caretIndex<getLength())
-            {
-               DeleteChars(caretIndex,caretIndex+1);
-            }
-            mCaretDirty = true;
-            ShowCaret();
-            OnChange();
-            return;
-
-         case keySHIFT:
-            mSelectKeyDown = -1;
-            mGfxDirty = true;
-            return;
-
-         case keyRIGHT:
-         case keyLEFT:
-         case keyHOME:
-         case keyEND:
-            mLastUpDownX = -1;
-         case keyUP:
-         case keyDOWN:
-            if (mSelectKeyDown<0 && shift)
-               mSelectKeyDown = caretIndex;
-            if (!shift)
-               ClearSelection();
-
-            switch(inEvent.value)
-            {
-               case keyLEFT: if (caretIndex>0) caretIndex--; break;
-               case keyRIGHT: if (caretIndex<mCharPos.size()) caretIndex++; break;
-               case keyHOME: caretIndex = 0; break;
-               case keyEND: caretIndex = getLength(); break;
-               case keyUP:
-               case keyDOWN:
-               {
-                  int l= LineFromChar(caretIndex);
-                  //printf("caret line : %d\n",l);
-                  if (l==0 && inEvent.value==keyUP) return;
-                  if (l==mLines.size()-1 && inEvent.value==keyDOWN) return;
-                  l += (inEvent.value==keyUP) ? -1 : 1;
-                  Line &line = mLines[l];
-                  if (mLastUpDownX<0)
-                     mLastUpDownX  = GetCursorPos().x + 1;
-                  int c;
-                  for(c=0; c<line.mChars;c++)
-                     if (mCharPos[line.mChar0 + c].x>mLastUpDownX)
-                        break;
-                  caretIndex =  c==0 ? line.mChar0 : line.mChar0+c-1;
-                  OnChange();
-                  break;
-               }
-            }
-
-            if (mSelectKeyDown>=0)
-            {
-               mSelectMin = std::min(mSelectKeyDown,caretIndex);
-               mSelectMax = std::max(mSelectKeyDown,caretIndex);
-               mGfxDirty = true;
-               mTilesDirty = true;
-               mCaretDirty = true;
-            }
-            ShowCaret();
-            return;
-
-         // TODO: top/bottom
-
-         case keyENTER:
-            code = '\n';
-            break;
+         AddCharacter(code);
       }
-
-      if ( (multiline && code=='\n') || (code>27 && code<63000))
+      else
       {
-         if (shift && code > 96 && code < 123)
+         // Use etKeyDown, not etChar for special characters
+         if (!isPrintChar && inEvent.type==etChar)
+            return;
+
+         bool shift = inEvent.flags & efShiftDown;
+
+         switch(inEvent.value)
          {
-            code -= 32;
+            case keyBACKSPACE:
+               if (mSelectMin<mSelectMax)
+               {
+                  DeleteSelection();
+               }
+               else if (caretIndex>0)
+               {
+                  DeleteChars(caretIndex-1,caretIndex);
+                  caretIndex--;
+               }
+               else if (mCharGroups.size())
+                  DeleteChars(0,1);
+               ShowCaret();
+               OnChange();
+               return;
+
+            case keyDELETE:
+               if (mSelectMin<mSelectMax)
+               {
+                  DeleteSelection();
+               }
+               else if (caretIndex<getLength())
+               {
+                  DeleteChars(caretIndex,caretIndex+1);
+               }
+               mCaretDirty = true;
+               ShowCaret();
+               OnChange();
+               return;
+
+            case keySHIFT:
+               mSelectKeyDown = -1;
+               mGfxDirty = true;
+               return;
+
+            case keyRIGHT:
+            case keyLEFT:
+            case keyHOME:
+            case keyEND:
+               mLastUpDownX = -1;
+            case keyUP:
+            case keyDOWN:
+               if (mSelectKeyDown<0 && shift)
+                  mSelectKeyDown = caretIndex;
+               if (!shift)
+                  ClearSelection();
+
+               switch(inEvent.value)
+               {
+                  case keyLEFT: if (caretIndex>0) caretIndex--; break;
+                  case keyRIGHT: if (caretIndex<mCharPos.size()) caretIndex++; break;
+                  case keyHOME: caretIndex = 0; break;
+                  case keyEND: caretIndex = getLength(); break;
+                  case keyUP:
+                  case keyDOWN:
+                  {
+                     int l= LineFromChar(caretIndex);
+                     //printf("caret line : %d\n",l);
+                     if (l==0 && inEvent.value==keyUP) return;
+                     if (l==mLines.size()-1 && inEvent.value==keyDOWN) return;
+                     l += (inEvent.value==keyUP) ? -1 : 1;
+                     Line &line = mLines[l];
+                     if (mLastUpDownX<0)
+                        mLastUpDownX  = GetCursorPos().x + 1;
+                     int c;
+                     for(c=0; c<line.mChars;c++)
+                        if (mCharPos[line.mChar0 + c].x>mLastUpDownX)
+                           break;
+                     caretIndex =  c==0 ? line.mChar0 : line.mChar0+c-1;
+                     OnChange();
+                     break;
+                  }
+               }
+
+               if (mSelectKeyDown>=0)
+               {
+                  mSelectMin = std::min(mSelectKeyDown,caretIndex);
+                  mSelectMax = std::max(mSelectKeyDown,caretIndex);
+                  mGfxDirty = true;
+                  mTilesDirty = true;
+                  mCaretDirty = true;
+               }
+               ShowCaret();
+               return;
+
+            // TODO: top/bottom
+
+            case keyENTER:
+               if (multiline)
+                  AddCharacter('\n');
+               break;
          }
-         DeleteSelection();
-         wchar_t str[2] = {code,0};
-         WString ws(str);
-         InsertString(ws);
-         OnChange();
-         ShowCaret();
       }
    }
    else

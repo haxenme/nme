@@ -163,6 +163,7 @@ public:
    void InsertString(WString &ioString);
    void ShowCaret(bool inFromDrag=false);
    bool FinishEditOnEnter();
+   void AddCharacter(int inCharCode);
 
    bool CaretOn();
    bool IsCacheDirty();
