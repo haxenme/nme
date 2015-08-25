@@ -613,7 +613,6 @@ void TextField::AddCharacter(int inCharCode)
       caretIndex = 0;
    caretIndex = std::min(caretIndex,getLength());
    InsertString(ws);
-   caretIndex += ws.length();
 
    OnChange();
    ShowCaret();
