@@ -6,6 +6,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#define TILE_QUADS
+
 namespace nme
 {
 
@@ -201,10 +203,12 @@ public:
          int cc = inJob.mCommandCount;
          int tiles = 0;
 
+         unsigned int allFlags = 0xff;
          for(int i=0;i<cc;i++)
          {
             if (cmd[i] & pcTile)
             {
+               allFlags &= cmd[i];
                tiles++;
                if (cmd[i] & pcTile_Col_Bit)
                   has_colour = true;
@@ -225,7 +229,13 @@ public:
             mElement.mColour = 0xffffffff;
          }
 
+         #ifdef TILE_QUADS
+         mElement.mPrimType = (allFlags & pcTile_Full_Image_Bit) ? ptQuadsFull : ptQuads;
+         ReserveArrays(tiles*4);
+         #else
          ReserveArrays(tiles*6);
+         #endif
+
 
          AddTiles(cmd,cc, &inPath.data[inJob.mData0], tiles);
       }
@@ -445,7 +455,8 @@ public:
   void AddTiles(const uint8* inCommands, int inCount, const float *inData, int inTiles)
   {
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
-      UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
+      bool fullTile = mElement.mPrimType == ptQuadsFull;
+      UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !fullTile ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
       int *colours = (mElement.mFlags & DRAW_HAS_COLOUR) ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
 
       UserPoint *point = (UserPoint *)inData;
@@ -490,6 +501,16 @@ public:
                UserPoint p3(pos.x + size.y*trans_y.x,
                             pos.y + size.y*trans_y.y );
 
+               #ifdef TILE_QUADS
+               *vertices = ( pos );
+               Next(vertices);
+               *vertices = ( p1 );
+               Next(vertices);
+               *vertices = ( p3 );
+               Next(vertices);
+               *vertices = ( p2 );
+               Next(vertices);
+               #else
                *vertices = ( pos );
                Next(vertices);
                *vertices = ( p1 );
@@ -502,11 +523,22 @@ public:
                Next(vertices);
                *vertices = ( p3 );
                Next(vertices);
+               #endif
             }
             else
             {
                UserPoint p1(pos.x + size.x, pos.y + size.y);
 
+               #ifdef TILE_QUADS
+               *vertices = (pos);
+               Next(vertices);
+               *vertices = UserPoint(p1.x,pos.y);
+               Next(vertices);
+               *vertices = UserPoint(pos.x,p1.y);
+               Next(vertices);
+               *vertices = p1;
+               Next(vertices);
+               #else
                *vertices = (pos);
                Next(vertices);
                *vertices = UserPoint(p1.x,pos.y);
@@ -519,22 +551,37 @@ public:
                Next(vertices);
                *vertices = UserPoint(pos.x,p1.y);
                Next(vertices);
+               #endif
             }
 
 
-            *tex = tex0;
-            Next(tex);
-            *tex = UserPoint(tex1.x,tex0.y);
-            Next(tex);
-            *tex = tex1;
-            Next(tex);
-            *tex = tex0;
-            Next(tex);
-            *tex = tex1;
-            Next(tex);
-            *tex = UserPoint(tex0.x,tex1.y);
-            Next(tex);
-
+            if (!fullTile)
+            {
+               #ifdef TILE_QUADS
+               *tex = tex0;
+               Next(tex);
+               *tex = UserPoint(tex1.x,tex0.y);
+               Next(tex);
+               *tex = UserPoint(tex0.x,tex1.y);
+               Next(tex);
+               *tex = tex1;
+               Next(tex);
+               #else
+               *tex = tex0;
+               Next(tex);
+               *tex = UserPoint(tex1.x,tex0.y);
+               Next(tex);
+               *tex = tex1;
+               Next(tex);
+               *tex = tex0;
+               Next(tex);
+               *tex = tex1;
+               Next(tex);
+               *tex = UserPoint(tex0.x,tex1.y);
+               Next(tex);
+               #endif
+            }
+   
             if (inCommands[i]&pcTile_Col_Bit)
             {
                UserPoint rg = *point++;
@@ -559,17 +606,24 @@ public:
                Next(colours);
                *colours = ( col );
                Next(colours);
+
+               #ifndef TILE_QUADS
                *colours = ( col );
                Next(colours);
                *colours = ( col );
                Next(colours);
+               #endif
             }
          }
          else
             point += gCommandDataSize[ inCommands[i] ];
       }
 
+      #ifdef TILE_QUADS
+      mElement.mCount = inTiles*4;
+      #else
       mElement.mCount = inTiles*6;
+      #endif
       if (mElement.mCount>0)
          PushElement();
    }

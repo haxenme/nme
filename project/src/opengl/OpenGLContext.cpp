@@ -29,7 +29,7 @@ const double one_on_255 = 1.0/255.0;
 const double one_on_256 = 1.0/256.0;
 
 static GLuint sgOpenglType[] =
-  { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP, GL_POINTS, GL_LINES };
+  { GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES, GL_LINE_STRIP, GL_POINTS, GL_LINES, 0, 0 /* Quads / Full */ };
 
 
 void ReloadExtentions();
@@ -70,6 +70,8 @@ public:
       mThreadId = GetThreadId();
       mHasZombie = false;
       mContextId = gTextureContextVersion;
+      mQuadsBuffer = 0;
+      mFullTexCoordsBuffer = 0;
       #if defined(NME_GLES)
       mQuality = sqLow;
       #else
@@ -334,6 +336,8 @@ public:
    {
       mContextId = gTextureContextVersion;
       mThreadId = GetThreadId();
+      mQuadsBuffer = 0;
+      mFullTexCoordsBuffer = 0;
       mHasZombie = false;
       mZombieTextures.resize(0);
       mZombieVbos.resize(0);
@@ -430,6 +434,7 @@ public:
       }
 
       GPUProg *lastProg = 0;
+      bool rebind = false;
  
       for(int e=0;e<inData.mElements.size();e++)
       {
@@ -438,7 +443,11 @@ public:
          if (!n)
             continue;
 
- 
+         if (rebind && inData.mVertexBo)
+         {
+            glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
+            rebind = false;
+         }
 
          int progId = 0;
          bool premAlpha = false;
@@ -513,20 +522,6 @@ public:
             glEnableVertexAttribArray(prog->vertexSlot);
          }
 
-         if (prog->textureSlot >= 0)
-         {
-            glVertexAttribPointer(prog->textureSlot,  2 , GL_FLOAT, GL_FALSE, stride,
-                data + element.mTexOffset);
-            glEnableVertexAttribArray(prog->textureSlot);
-
-            if (element.mSurface)
-            {
-               Texture *boundTexture = element.mSurface->GetTexture(this);
-               element.mSurface->Bind(*this,0);
-               boundTexture->BindFlags(element.mFlags & DRAW_BMP_REPEAT,element.mFlags & DRAW_BMP_SMOOTH);
-            }
-         }
-
          if (prog->colourSlot >= 0)
          {
             glVertexAttribPointer(prog->colourSlot, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride,
@@ -540,6 +535,33 @@ public:
                 data + element.mNormalOffset);
             glEnableVertexAttribArray(prog->normalSlot);
          }
+
+
+         if (prog->textureSlot >= 0)
+         {
+            if (element.mPrimType==ptQuadsFull)
+            {
+               BindFullQuadTextures(element.mCount);
+               glVertexAttribPointer(prog->textureSlot, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), 0);
+               if (data)
+                  glBindBuffer(GL_ARRAY_BUFFER, 0);
+               else
+                  rebind = true;
+            }
+            else
+               glVertexAttribPointer(prog->textureSlot,  2 , GL_FLOAT, GL_FALSE, stride, data + element.mTexOffset);
+
+            glEnableVertexAttribArray(prog->textureSlot);
+
+            if (element.mSurface)
+            {
+               Texture *boundTexture = element.mSurface->GetTexture(this);
+               element.mSurface->Bind(*this,0);
+               boundTexture->BindFlags(element.mFlags & DRAW_BMP_REPEAT,element.mFlags & DRAW_BMP_SMOOTH);
+            }
+         }
+
+
 
          if (element.mFlags & DRAW_RADIAL)
          {
@@ -589,7 +611,15 @@ public:
             //printf("glDrawArrays %d : %d x %d\n", element.mPrimType, element.mFirst, element.mCount );
 
          sgDrawCount++;
-         glDrawArrays(sgOpenglType[element.mPrimType], 0, element.mCount );
+         
+         if (element.mPrimType==ptQuads || element.mPrimType==ptQuadsFull)
+         {
+            BindQuadsBufferIndices(element.mCount);
+            glDrawElements(GL_TRIANGLES, element.mCount*3/2, mQuadsBufferType, 0 );
+         }
+         else
+            glDrawArrays(sgOpenglType[element.mPrimType], 0, element.mCount );
+
       }
 
       if (lastProg)
@@ -597,6 +627,90 @@ public:
 
       if (inData.mVertexBo)
          glBindBuffer(GL_ARRAY_BUFFER,0);
+   }
+
+   void BindFullQuadTextures(int inVertexCount)
+   {
+      int quadCount = inVertexCount/4;
+      if (mFullTexCoordsBuffer==0 || mFullTexCoordsSize<quadCount)
+      {
+         if (quadCount<256)
+            quadCount = 256;
+ 
+         if (mFullTexCoordsBuffer==0)
+            glGenBuffers(1,&mFullTexCoordsBuffer);
+
+         mFullTexCoordsSize = quadCount;
+         glBindBuffer(GL_ARRAY_BUFFER, mFullTexCoordsBuffer);
+
+         std::vector<float> tex(quadCount*2*4);
+         int idx = 0;
+         for(int i=0;i<quadCount;i++)
+         {
+            tex[idx++] = 0.0; tex[idx++] = 0.0;
+            tex[idx++] = 1.0; tex[idx++] = 0.0;
+            tex[idx++] = 0.0; tex[idx++] = 1.0;
+            tex[idx++] = 1.0; tex[idx++] = 1.0;
+         }
+         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*tex.size(), &tex[0], GL_STATIC_DRAW);
+      }
+      else
+         glBindBuffer(GL_ARRAY_BUFFER, mFullTexCoordsBuffer);
+   }
+
+   void BindQuadsBufferIndices(int inVertexCount)
+   {
+      int quadCount = inVertexCount/4;
+      if (mQuadsBuffer==0 || mQuadsBufferSize<quadCount)
+      {
+         if (mQuadsBuffer==0)
+            glGenBuffers(1,&mQuadsBuffer);
+
+         if (quadCount<256)
+            quadCount = 256;
+
+         mQuadsBufferSize = quadCount;
+         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mQuadsBuffer);
+
+         if (quadCount*4<65536)
+         {
+            mQuadsBufferType = GL_UNSIGNED_SHORT;
+            std::vector<unsigned short> data(quadCount*6);
+            int idx = 0;
+            int v0 = 0;
+            for(int i=0;i<quadCount;i++)
+            {
+               data[idx++] = v0;
+               data[idx++] = v0+1;
+               data[idx++] = v0+2;
+               data[idx++] = v0+1;
+               data[idx++] = v0+3;
+               data[idx++] = v0+2;
+               v0 += 4;
+            }
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short)*data.size(), &data[0], GL_STATIC_DRAW);
+         }
+         else
+         {
+            mQuadsBufferType = GL_UNSIGNED_INT;
+            std::vector<unsigned int> data(quadCount*6);
+            int idx = 0;
+            int v0 = 0;
+            for(int i=0;i<quadCount;i++)
+            {
+               data[idx++] = v0;
+               data[idx++] = v0+1;
+               data[idx++] = v0+2;
+               data[idx++] = v0+1;
+               data[idx++] = v0+3;
+               data[idx++] = v0+2;
+               v0 += 4;
+            }
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*data.size(), &data[0], GL_STATIC_DRAW);
+         }
+      }
+      else
+         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mQuadsBuffer);
    }
 
 
@@ -817,6 +931,14 @@ public:
    double mOffsetX;
    double mScaleY;
    double mOffsetY;
+
+   GLuint mFullTexCoordsBuffer;
+   GLuint mFullTexCoordsSize;
+
+   GLuint mQuadsBuffer;
+   GLenum mQuadsBufferSize;
+   GLenum mQuadsBufferType;
+
 
    Trans4x4 mTrans;
    Trans4x4 mBitmapTrans;

@@ -10,7 +10,7 @@ void ResetHardwareContext();
 
 typedef QuickVec<UserPoint>   Vertices;
 
-enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip, ptPoints, ptLines };
+enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip, ptPoints, ptLines, ptQuads, ptQuadsFull };
 
 enum
 {
