@@ -19,10 +19,20 @@ struct TileData
 
    TileData(){}
 
-   TileData(const UserPoint *inPoint,int inFlags)
-      : mPos(*inPoint), mRect(inPoint[1].x, inPoint[1].y, inPoint[2].x, inPoint[2].y)
+   inline TileData(const UserPoint *inPoint,int inFlags, int inWidth, int inHeight)
+      : mPos(*inPoint)
    {
-      inPoint += 3;
+      if (inFlags & pcTile_Full_Image_Bit)
+      {
+         mRect = Rect(0,0,inWidth,inHeight);
+         inPoint += 1;
+      }
+      else
+      {
+         mRect = Rect(inPoint[1].x, inPoint[1].y, inPoint[2].x, inPoint[2].y);
+         inPoint += 3;
+      }
+
       mHasTrans =  (inFlags & pcTile_Trans_Bit);
       if (mHasTrans)
       {
@@ -60,39 +70,22 @@ public:
       mFill = inJob.mFill->AsBitmapFill();
       mFill->IncRef();
       mFiller = Filler::Create(mFill);
+      int w = mFill->bitmapData->Width();
+      int h = mFill->bitmapData->Height();
       const UserPoint *point = (const UserPoint *)&inPath.data[inJob.mData0];
       int n = inJob.mCommandCount;
       for(int j=0; j<n; j++)
       {
          int c = (inPath.commands[j+inJob.mCommand0]);
-         switch(c)
+         if (c & pcTile)
          {
-            case pcBlendModeAdd:
-               mBlendMode = bmAdd;
-               break;
-            case pcWideMoveTo:
-            case pcWideLineTo:
-            case pcCurveTo:
-                  point++;
-            case pcMoveTo:
-            case pcBeginAt:
-            case pcLineTo:
-                  point++;
-                  break;
-            case pcTile:
-            case pcTileTrans:
-            case pcTileCol:
-            case pcTileTransCol:
-                  {
-                     TileData data(point,c);
-                     mTileData.push_back(data);
-                     point+=3;
-                     if (c & pcTile_Trans_Bit)
-                        point+=2;
-                     if (c & pcTile_Col_Bit)
-                        point+=2;
-                  }
+            TileData data(point,c,w,h);
+            mTileData.push_back(data);
          }
+         else if (c==pcBlendModeAdd)
+            mBlendMode = bmAdd;
+
+         point += gCommandDataSize[c];
       }
    }
    

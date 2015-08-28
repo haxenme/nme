@@ -397,10 +397,8 @@ public:
                   }
                }
                break;
-            case pcTile: point+=3; break;
-            case pcTileTrans: point+=4; break;
-            case pcTileCol: point+=5; break;
-            case pcTileTransCol: point+=6; break;
+            default:
+               point += gCommandDataSize[ mCommands[i] ];
          }
       }
       

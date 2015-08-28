@@ -103,10 +103,9 @@ public:
                   point += 2;
                   points++;
                   break;
-                  case pcTile: points+=3; break;
-                  case pcTileTrans: points+=4; break;
-                  case pcTileCol: points+=5; break;
-                  case pcTileTransCol: points+=6; break;
+
+               default:
+                  points += gCommandDataSize[ mCommands[i] ];
             }
          }
          if (last_point!=last_move)

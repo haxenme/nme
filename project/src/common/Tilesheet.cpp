@@ -7,79 +7,93 @@ namespace nme
 
 Tilesheet::Tilesheet(int inWidth,int inHeight,PixelFormat inFormat, bool inInitRef) : Object(inInitRef)
 {
-	mCurrentX = 0;
-	mCurrentY = 0;
-	mMaxHeight = 0;
-	mSheet = new SimpleSurface(inWidth,inHeight,inFormat);
+   mCurrentX = 0;
+   mCurrentY = 0;
+   mMaxHeight = 0;
+   mSheet = new SimpleSurface(inWidth,inHeight,inFormat);
    mSheet->IncRef();
 }
 
 Tilesheet::Tilesheet(Surface *inSurface,bool inInitRef) : Object(inInitRef)
 {
-	mCurrentX = 0;
-	mCurrentY = 0;
-	mMaxHeight = 0;
-	mSheet = inSurface->IncRef();
+   mCurrentX = 0;
+   mCurrentY = 0;
+   mMaxHeight = 0;
+   mSheet = inSurface->IncRef();
 
 }
 
 
 Tilesheet::~Tilesheet()
 {
-	mSheet->DecRef();
+   mSheet->DecRef();
 }
 
 int Tilesheet::AllocRect(int inW,int inH,float inOx, float inOy,bool inAlphaBorder)
 {
-	Tile tile;
-	tile.mOx = inOx;
-	tile.mOy = inOy;
-	tile.mSurface = mSheet;
+   Tile tile;
+   tile.mOx = inOx;
+   tile.mOy = inOy;
+   tile.mSurface = mSheet;
 
-	// does it fit on the current row ?
+   // does it fit on the current row ?
    int cx = mCurrentX;
    if (inAlphaBorder && cx>0)
       cx++;
    int cy = mCurrentY;
    if (inAlphaBorder && cy>0)
       cy++;
-	if (cx + inW <= mSheet->Width() && cy + inH < mSheet->Height())
-	{
-		tile.mRect = Rect(cx, cy, inW, inH);
-		int result = mTiles.size();
-		mTiles.push_back(tile);
-		mCurrentX = cx+inW;
-		mMaxHeight = std::max(mMaxHeight,inH+cy-mCurrentY);
-		return result;
-	}
-	// No - go to next row
-	mCurrentY += mMaxHeight;
-	mCurrentX = 0;
-	mMaxHeight = 0;
-	if (inW>mSheet->Width() || mCurrentY + inH > mSheet->Height())
-		return -1;
+   if (cx + inW <= mSheet->Width() && cy + inH < mSheet->Height())
+   {
+      tile.mRect = Rect(cx, cy, inW, inH);
+      tile.mFRect = FRect(cx, cy, inW, inH);
+      int result = mTiles.size();
+      mTiles.push_back(tile);
+      mCurrentX = cx+inW;
+      mMaxHeight = std::max(mMaxHeight,inH+cy-mCurrentY);
+      return result;
+   }
+   // No - go to next row
+   mCurrentY += mMaxHeight;
+   mCurrentX = 0;
+   mMaxHeight = 0;
+   if (inW>mSheet->Width() || mCurrentY + inH > mSheet->Height())
+      return -1;
 
-	tile.mRect = Rect(mCurrentX, mCurrentY, inW, inH);
-	int result = mTiles.size();
-	mTiles.push_back(tile);
-	mCurrentX += inW;
-	mMaxHeight = std::max(mMaxHeight,inH);
-	return result;
+   tile.mRect = Rect(mCurrentX, mCurrentY, inW, inH);
+   tile.mFRect = FRect(mCurrentX, mCurrentY, inW, inH);
+   int result = mTiles.size();
+   mTiles.push_back(tile);
+   mCurrentX += inW;
+   mMaxHeight = std::max(mMaxHeight,inH);
+   return result;
 }
 
 int Tilesheet::addTileRect(const Rect &inRect,float inOx, float inOy)
 {
    Tile tile;
-	tile.mOx = inOx;
-	tile.mOy = inOy;
-	tile.mRect = inRect;
-	tile.mSurface = mSheet;
+   tile.mOx = inOx;
+   tile.mOy = inOy;
+   tile.mRect = inRect;
+   tile.mFRect.x = inRect.x;
+   tile.mFRect.y = inRect.y;
+   tile.mFRect.w = inRect.w;
+   tile.mFRect.h = inRect.h;
+   tile.mSurface = mSheet;
 
    int result = mTiles.size();
    mTiles.push_back(tile);
    return result;
 }
 
+bool Tilesheet::IsSingleTileImage()
+{
+   if  (mTiles.size()!=1)
+      return false;
+   const Tile &tile = mTiles[0];
+   return tile.mOx==0 && tile.mOy==0 && tile.mRect.x==0 &&  tile.mRect.y==0 &&
+          tile.mRect.w==mSheet->Width() && tile.mRect.h==mSheet->Height();
+}
 
 
 } // end namespace nme

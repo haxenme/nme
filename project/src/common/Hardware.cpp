@@ -203,13 +203,12 @@ public:
 
          for(int i=0;i<cc;i++)
          {
-            if (cmd[i] == pcTileCol || cmd[i]==pcTileTransCol)
+            if (cmd[i] & pcTile)
             {
-               has_colour = true;
                tiles++;
-            }
-            else if (cmd[i] == pcTile || cmd[i]==pcTileTrans)
-               tiles++;
+               if (cmd[i] & pcTile_Col_Bit)
+                  has_colour = true;
+            } 
             else if (cmd[i] == pcBlendModeAdd)
                mElement.mBlendMode = bmAdd;
             else if (cmd[i] == pcBlendModeMultiply)
@@ -451,114 +450,123 @@ public:
 
       UserPoint *point = (UserPoint *)inData;
 
+      UserPoint pos;
+      UserPoint p1;
+      UserPoint p2;
+      UserPoint p3;
+
+      UserPoint tex0(0,0);
+      UserPoint tex1(1,1);
+      UserPoint size(mTexture->GetWidth(),mTexture->GetHeight());
+      float texScaleX = size.x ? 1.0/size.x : 1;
+      float texScaleY = size.y ? 1.0/size.y : 1;
+
+
       for(int i=0;i<inCount;i++)
       {
-         switch(inCommands[i])
+         if (inCommands[i] & pcTile)
          {
-            case pcBeginAt: case pcMoveTo: case pcLineTo:
-               point++;
-               break;
-            case pcCurveTo:
-               point+=2;
-               break;
+            pos = *point++;
 
-            case pcTile:
-            case pcTileTrans:
-            case pcTileCol:
-            case pcTileTransCol:
-               {
-                  UserPoint pos(point[0]);
-                  UserPoint tex_pos(point[1]);
-                  UserPoint size(point[2]);
-                  point += 3;
-              
-                  if (inCommands[i]&pcTile_Trans_Bit)
-                  {
-                     UserPoint trans_x = *point++;
-                     UserPoint trans_y = *point++;
+            if (!(inCommands[i] & pcTile_Full_Image_Bit))
+            {
+               tex0.x = point[0].x * texScaleX;
+               tex0.y = point[0].y * texScaleY;
+               size = point[1];
+               tex1.x = tex0.x + size.x*texScaleX;
+               tex1.y = tex0.y + size.y*texScaleY;
+               point += 2;
+            }
 
-                     UserPoint p1(pos.x + size.x*trans_x.x,
-                                  pos.y + size.x*trans_x.y);
-                     UserPoint p2(pos.x + size.x*trans_x.x + size.y*trans_y.x,
-                                  pos.y + size.x*trans_x.y + size.y*trans_y.y );
-                     UserPoint p3(pos.x + size.y*trans_y.x,
-                                  pos.y + size.y*trans_y.y );
+            if (inCommands[i]&pcTile_Trans_Bit)
+            {
+               UserPoint trans_x = *point++;
+               UserPoint trans_y = *point++;
 
-                     *vertices = ( pos );
-                     Next(vertices);
-                     *vertices = ( p1 );
-                     Next(vertices);
-                     *vertices = ( p2 );
-                     Next(vertices);
-                     *vertices = ( pos) ;
-                     Next(vertices);
-                     *vertices = ( p2 );
-                     Next(vertices);
-                     *vertices = ( p3 );
-                     Next(vertices);
-                  }
-                  else
-                  {
-                     *vertices = (pos);
-                     Next(vertices);
-                     *vertices = ( UserPoint(pos.x+size.x,pos.y) );
-                     Next(vertices);
-                     *vertices = ( UserPoint(pos.x+size.x,pos.y+size.y) );
-                     Next(vertices);
-                     *vertices = (pos);
-                     Next(vertices);
-                     *vertices = ( UserPoint(pos.x+size.x,pos.y+size.y) );
-                     Next(vertices);
-                     *vertices = ( UserPoint(pos.x,pos.y+size.y) );
-                     Next(vertices);
-                  }
+               UserPoint p1(pos.x + size.x*trans_x.x,
+                            pos.y + size.x*trans_x.y);
+               UserPoint p2(pos.x + size.x*trans_x.x + size.y*trans_y.x,
+                            pos.y + size.x*trans_x.y + size.y*trans_y.y );
+               UserPoint p3(pos.x + size.y*trans_y.x,
+                            pos.y + size.y*trans_y.y );
+
+               *vertices = ( pos );
+               Next(vertices);
+               *vertices = ( p1 );
+               Next(vertices);
+               *vertices = ( p2 );
+               Next(vertices);
+               *vertices = ( pos) ;
+               Next(vertices);
+               *vertices = ( p2 );
+               Next(vertices);
+               *vertices = ( p3 );
+               Next(vertices);
+            }
+            else
+            {
+               UserPoint p1(pos.x + size.x, pos.y + size.y);
+
+               *vertices = (pos);
+               Next(vertices);
+               *vertices = UserPoint(p1.x,pos.y);
+               Next(vertices);
+               *vertices = p1;
+               Next(vertices);
+               *vertices = (pos);
+               Next(vertices);
+               *vertices = p1;
+               Next(vertices);
+               *vertices = UserPoint(pos.x,p1.y);
+               Next(vertices);
+            }
 
 
-                  pos = tex_pos;
-                  *tex = ( mTexture->PixelToTex(pos) );
-                  Next(tex);
-                  *tex = ( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y)) );
-                  Next(tex);
-                  *tex = ( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
-                  Next(tex);
-                  *tex = ( mTexture->PixelToTex(pos) );
-                  Next(tex);
-                  *tex = ( mTexture->PixelToTex(UserPoint(pos.x+size.x,pos.y+size.y)) );
-                  Next(tex);
-                  *tex = ( mTexture->PixelToTex(UserPoint(pos.x,pos.y+size.y)) );
-                  Next(tex);
+            *tex = tex0;
+            Next(tex);
+            *tex = UserPoint(tex1.x,tex0.y);
+            Next(tex);
+            *tex = tex1;
+            Next(tex);
+            *tex = tex0;
+            Next(tex);
+            *tex = tex1;
+            Next(tex);
+            *tex = UserPoint(tex0.x,tex1.y);
+            Next(tex);
 
-                  if (inCommands[i]&pcTile_Col_Bit)
-                  {
-                     UserPoint rg = *point++;
-                     UserPoint ba = *point++;
-                     #ifdef BLACKBERRY
-                     uint32 col = ((int)(rg.x*255)) |
-                                  (((int)(rg.y*255))<<8) |
-                                  (((int)(ba.x*255))<<16) |
-                                  (((int)(ba.y*255))<<24);
-                     #else
-                     uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
-                                  ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
-                                  ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
-                                  ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
-                     #endif
+            if (inCommands[i]&pcTile_Col_Bit)
+            {
+               UserPoint rg = *point++;
+               UserPoint ba = *point++;
+               #ifdef BLACKBERRY
+               uint32 col = ((int)(rg.x*255)) |
+                            (((int)(rg.y*255))<<8) |
+                            (((int)(ba.x*255))<<16) |
+                            (((int)(ba.y*255))<<24);
+               #else
+               uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
+                            ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
+                            ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
+                            ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
+               #endif
 
-                     *colours = ( col );
-                     Next(colours);
-                     *colours = ( col );
-                     Next(colours);
-                     *colours = ( col );
-                     Next(colours);
-                     *colours = ( col );
-                     Next(colours);
-                     *colours = ( col );
-                     Next(colours);
-                     *colours = ( col );
-                     Next(colours);
-                  }
-               }
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+            }
          }
+         else
+            point += gCommandDataSize[ inCommands[i] ];
       }
 
       mElement.mCount = inTiles*6;
@@ -818,15 +826,8 @@ public:
                }
                break;
 
-            case pcTile:
-            case pcTileTrans:
-            case pcTileCol:
-            case pcTileTransCol:
-               point += 3;
-               if (inCommands[i]&pcTile_Trans_Bit)
-                  point+=2;
-               if (inCommands[i]&pcTile_Col_Bit)
-                  point+=2;
+            default:
+               points += gCommandDataSize[ inCommands[i] ];
          }
       }
 
@@ -1779,7 +1780,7 @@ public:
       for(int i=0;i<inCount;i++)
       {
          switch(inCommands[i])
-            {
+         {
             case pcWideMoveTo:
                point++;
             case pcBeginAt:
@@ -1846,10 +1847,8 @@ public:
                   point +=2;
               }
                break;
-            case pcTile: point+=3; break;
-            case pcTileTrans: point+=4; break;
-            case pcTileCol: point+=5; break;
-            case pcTileTransCol: point+=6; break;
+            default:
+               point += gCommandDataSize[ inCommands[i] ];
          }
       }
 

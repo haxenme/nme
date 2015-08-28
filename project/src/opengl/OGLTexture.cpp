@@ -310,6 +310,10 @@ public:
       }
    }
 
+   int GetWidth() { return mTextureWidth; }
+   int GetHeight() { return mTextureHeight; }
+
+
    void Bind(int inSlot)
    {
       if (inSlot>=0 && CHECK_EXT(glActiveTexture))

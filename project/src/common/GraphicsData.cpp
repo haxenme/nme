@@ -5,6 +5,43 @@ namespace nme
 
 // --- GraphicsPath ------------------------------------------
 
+int gCommandDataSize[256];
+bool sCommandDataInit = false;
+
+GraphicsPath::GraphicsPath() : winding(wrOddEven)
+{
+   if (!sCommandDataInit)
+   {
+      sCommandDataInit = true;
+      for(int i=0;i<256;i++)
+      {
+         switch(i)
+         {
+            case pcBeginAt:
+            case pcMoveTo:
+            case pcLineTo:
+               gCommandDataSize[i] = 1;
+               break;
+            case pcCurveTo:
+               gCommandDataSize[i] = 2;
+               break;
+            default:
+               if (i & pcTile)
+               {
+                  gCommandDataSize[i] = (i & pcTile_Full_Image_Bit) ? 1 : 3;
+                  if (i&pcTile_Trans_Bit)
+                     gCommandDataSize[i]+=2;
+                  if (i&pcTile_Col_Bit)
+                     gCommandDataSize[i]+=2;
+               }
+               else
+                  gCommandDataSize[i] = 0;
+         }
+      }
+   }
+}
+
+
 void GraphicsPath::initPosition(const UserPoint &inPoint)
 {
    commands.push_back(pcBeginAt);
@@ -84,33 +121,47 @@ void GraphicsPath::wideMoveTo(float x, float y)
 	data.push_back(y);
 }
 
+
+
 void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inTrans,float *inRGBA)
 {
-	data.push_back(x);
-	data.push_back(y);
-	data.push_back(inTileRect.x);
-	data.push_back(inTileRect.y);
-	data.push_back(inTileRect.w);
-	data.push_back(inTileRect.h);
+   data.push_back(x);
+   data.push_back(y);
+   data.push_back(inTileRect.x);
+   data.push_back(inTileRect.y);
+   data.push_back(inTileRect.w);
+   data.push_back(inTileRect.h);
    int command = pcTile;
    if (inTrans)
    {
       command |= pcTile_Trans_Bit;
-	   data.push_back(inTrans[0]);
-	   data.push_back(inTrans[1]);
-	   data.push_back(inTrans[2]);
-	   data.push_back(inTrans[3]);
+      data.push_back(inTrans[0]);
+      data.push_back(inTrans[1]);
+      data.push_back(inTrans[2]);
+      data.push_back(inTrans[3]);
    }
    if (inRGBA)
    {
       command |= pcTile_Col_Bit;
-	   data.push_back(inRGBA[0]);
-	   data.push_back(inRGBA[1]);
-	   data.push_back(inRGBA[2]);
-	   data.push_back(inRGBA[3]);
+      data.push_back(inRGBA[0]);
+      data.push_back(inRGBA[1]);
+      data.push_back(inRGBA[2]);
+      data.push_back(inRGBA[3]);
    }
-	commands.push_back((PathCommand)command);
+   commands.push_back((PathCommand)command);
 }
+
+void GraphicsPath::reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour)
+{
+   commands.reserve( commands.size() + inN );
+   int points = inFullImage ? 1 : 3;
+   if (inTrans2x2)
+      points += 2;
+   if (inHasColour)
+      points += 2;
+   data.reserve( data.size() + inN*points*2 );
+}
+
 
 void GraphicsPath::closeLine(int inCommand0, int inData0)
 {

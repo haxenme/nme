@@ -16,6 +16,8 @@ public:
 
    virtual UserPoint PixelToTex(const UserPoint &inPixels)=0;
    virtual UserPoint TexToPaddedTex(const UserPoint &inPixels)=0;
+   virtual int GetWidth() = 0;
+   virtual int GetHeight() = 0;
 
    virtual void Bind(int inSlot)=0;
    virtual void BindFlags(bool inRepeat,bool inSmooth)=0;

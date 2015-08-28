@@ -125,6 +125,7 @@ struct TRect
 
 typedef TRect<int>    Rect;
 typedef TRect<double> DRect;
+typedef TRect<float>  FRect;
 
 
 

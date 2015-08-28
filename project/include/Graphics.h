@@ -253,17 +253,18 @@ enum PathCommand
    pcPointsXY  = 9,
    pcPointsXYRGBA  = 11,
 
-   pcTile           = 0x10,
-   pcTile_Trans_Bit = 0x01,
-   pcTile_Col_Bit   = 0x02,
-   pcTileTrans      = 0x11,
-   pcTileCol        = 0x12,
-   pcTileTransCol   = 0x13,
+   pcTile                 = 0x10,
+   pcTile_Trans_Bit       = 0x01,
+   pcTile_Col_Bit         = 0x02,
+   pcTile_Full_Image_Bit  = 0x04,
+
 
    pcBlendModeAdd   = 0x20,
    pcBlendModeMultiply   = 0x21,
    pcBlendModeScreen   = 0x22,
 };
+
+extern int gCommandDataSize[256];
 
 enum WindingRule { wrOddEven, wrNonZero };
 
@@ -274,7 +275,7 @@ public:
    GraphicsPath *AsPath() { return this; }
    bool empty() const { return commands.empty(); }
 
-   GraphicsPath() : winding(wrOddEven) { }
+   GraphicsPath();
    QuickVec<uint8> commands;
    QuickVec<float> data;
    WindingRule     winding;
@@ -292,6 +293,62 @@ public:
    void elementBlendMode(int inMode);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs);
    void closeLine(int inCommand0, int inData0);
+
+   void reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour);
+   // You must reserveTiles before calling these
+   inline void qimage(float x, float y, float *inTrans,float *inRGBA)
+   {
+      data.qpush(x);
+      data.qpush(y);
+      int command = pcTile | pcTile_Full_Image_Bit;
+      if (inTrans)
+      {
+         command |= pcTile_Trans_Bit;
+         data.qpush(inTrans[0]);
+         data.qpush(inTrans[1]);
+         data.qpush(inTrans[2]);
+         data.qpush(inTrans[3]);
+      }
+      if (inRGBA)
+      {
+         command |= pcTile_Col_Bit;
+         data.qpush(inRGBA[0]);
+         data.qpush(inRGBA[1]);
+         data.qpush(inRGBA[2]);
+         data.qpush(inRGBA[3]);
+      }
+      commands.qpush((PathCommand)command);
+   }
+
+   inline void qtile(float x, float y, const FRect *inTileRect,float *inTrans,float *inRGBA)
+   {
+      data.qpush(x);
+      data.qpush(y);
+      data.qpush(inTileRect->x);
+      data.qpush(inTileRect->y);
+      data.qpush(inTileRect->w);
+      data.qpush(inTileRect->h);
+      int command = pcTile;
+      if (inTrans)
+      {
+         command |= pcTile_Trans_Bit;
+         data.qpush(inTrans[0]);
+         data.qpush(inTrans[1]);
+         data.qpush(inTrans[2]);
+         data.qpush(inTrans[3]);
+      }
+      if (inRGBA)
+      {
+         command |= pcTile_Col_Bit;
+         data.qpush(inRGBA[0]);
+         data.qpush(inRGBA[1]);
+         data.qpush(inRGBA[2]);
+         data.qpush(inRGBA[3]);
+      }
+      commands.qpush((PathCommand)command);
+   }
+
+
 };
 
 
@@ -634,6 +691,8 @@ public:
 
    bool empty() const { return !mPathData || mPathData->empty(); }
    void removeOwner(DisplayObject *inOwner) { if (mOwner==inOwner) mOwner = 0; }
+
+   inline GraphicsPath      *getPath() { return mPathData; }
 
    int Version() const;
 

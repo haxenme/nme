@@ -134,7 +134,7 @@ static int _id_matrix;
 static int _id_ascent;
 static int _id_descent;
 
-static Rect _tile_rect;
+static FRect _tile_rect;
 
 vkind gObjectKind;
 
@@ -236,7 +236,7 @@ extern "C" void InitIDs()
 
    kind_share(&gObjectKind,"nme::Object");
    
-   _tile_rect = Rect(0, 0, 1, 1);
+   _tile_rect = FRect(0, 0, 1, 1);
 
    InitCamera();
 }
@@ -2802,28 +2802,262 @@ value nme_gfx_draw_datum(value inGfx,value inDatum)
 }
 DEFINE_PRIM(nme_gfx_draw_datum,2);
 
+
+enum
+{
+  TILE_SCALE    = 0x0001,
+  TILE_ROTATION = 0x0002,
+  TILE_RGB      = 0x0004,
+  TILE_ALPHA    = 0x0008,
+  TILE_TRANS_2x2= 0x0010,
+  TILE_RECT     = 0x0020,
+  TILE_ORIGIN   = 0x0040,
+  TILE_SMOOTH   = 0x1000,
+
+  TILE_BLEND_ADD   = 0x10000,
+  TILE_BLEND_MULTIPLY   = 0x20000,
+  TILE_BLEND_SCREEN   = 0x40000,
+  TILE_BLEND_MASK  = 0xf0000,
+
+
+  TILE_RECT_TILE          = 0,
+  TILE_RECT_GIVEN         = 1,
+  TILE_RECT_ORIGIN_GIVEN  = 2,
+  TILE_RECT_FULL          = 3,
+};
+
+
+
+
+inline float TToFloat( const float &f ) { return f; }
+inline double TToFloat( const double &f ) { return f; }
+inline double TToFloat( const value &v ) { return val_number(v); }
+
+template<typename FLOAT,int RECTMODE, int TRANS, int COL>
+void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues)
+{
+   int max = inSheet->Tiles();
+   float rgba_buf[] = { 1, 1, 1, 1 };
+   float trans_2x2_buf[] = { 1, 0, 0, 1 };
+
+   float *rgba = COL ? rgba_buf : 0;
+   float *trans_2x2 = TRANS ? trans_2x2_buf : 0;
+   float ox = 0.0f;
+   float oy = 0.0f;
+   int badIdSkip = 0;
+   if (RECTMODE==TILE_RECT_TILE)
+   {
+      if (TRANS & TILE_TRANS_2x2)
+         badIdSkip += 4;
+      if (TRANS & TILE_ROTATION)
+         badIdSkip++;
+      if (TRANS & TILE_SCALE)
+         badIdSkip++;
+      if (COL & TILE_RGB)
+         badIdSkip+=3;
+      if (COL & TILE_ALPHA)
+         badIdSkip++;
+   }
+
+
+   FRect rectBuf(_tile_rect);
+   const FRect *r = &rectBuf;
+
+   inPath->reserveTiles(inN, RECTMODE==TILE_RECT_FULL, TRANS!=0, COL!=0);
+
+   const FLOAT *v = inValues;
+   for(int i=0;i<inN;i++)
+   {
+      float x = TToFloat(*v++);
+      float y = TToFloat(*v++);
+
+      if (RECTMODE==TILE_RECT_GIVEN || RECTMODE==TILE_RECT_ORIGIN_GIVEN)
+      {
+         rectBuf.x = TToFloat(*v++);
+         rectBuf.y = TToFloat(*v++);
+         rectBuf.w = TToFloat(*v++);
+         rectBuf.h = TToFloat(*v++);
+
+         if (RECTMODE==TILE_RECT_ORIGIN_GIVEN)
+         {
+            ox = TToFloat(*v++);
+            oy = TToFloat(*v++);
+         }
+      }
+      else if (RECTMODE==TILE_RECT_FULL)
+      {
+         // Skip id
+         v++;
+      }
+      else
+      {
+         int id = TToFloat(*v++);
+         if (id<0 || id>=max)
+         {
+            v+=badIdSkip;
+            continue;
+         }
+
+         const Tile &tile =  inSheet->GetTile(id);
+         ox = tile.mOx;
+         oy = tile.mOy;
+         r = &tile.mFRect;
+      }
+
+      if (TRANS & TILE_TRANS_2x2)
+      {
+         trans_2x2[0] = TToFloat(*v++);
+         trans_2x2[1] = TToFloat(*v++);
+         trans_2x2[2] = TToFloat(*v++);
+         trans_2x2[3] = TToFloat(*v++);
+      }
+      else if (TRANS)
+      {
+         if (TRANS & TILE_SCALE)
+         {
+            double scale = TToFloat(*v++);
+
+            if (TRANS & TILE_ROTATION)
+            {
+               double theta = TToFloat(*v++);
+               trans_2x2[0] = scale*cos(theta);
+               trans_2x2[1] = scale*sin(theta);
+            }
+            else
+            {
+               trans_2x2[0] = scale;
+            }
+         }
+         else if (TRANS & TILE_ROTATION)
+         {
+            double theta = TToFloat(*v++);
+            trans_2x2[0] = cos(theta);
+            trans_2x2[1] = sin(theta);
+         }
+
+         trans_2x2[2] = -trans_2x2[1];
+         trans_2x2[3] = trans_2x2[0];
+      }
+
+      if (RECTMODE!=TILE_RECT_FULL)
+      {
+         if (TRANS)
+         {
+            x-= ox*trans_2x2[0] + oy*trans_2x2[2];
+            y-= ox*trans_2x2[1] + oy*trans_2x2[3];
+         }
+         else
+         {
+            x-=ox;
+            y-=oy;
+         }
+      }
+
+      if (COL & TILE_RGB)
+      {
+         rgba[0] = TToFloat(*v++);
+         rgba[1] = TToFloat(*v++);
+         rgba[2] = TToFloat(*v++);
+      }
+
+      if (COL & TILE_ALPHA)
+         rgba[3] = TToFloat(*v++);
+
+      if (RECTMODE==TILE_RECT_FULL)
+      {
+         if (TRANS)
+         {
+            if (COL)
+               inPath->qimage(x,y,trans_2x2,rgba);
+            else
+               inPath->qimage(x,y,trans_2x2,0);
+         }
+         else if (COL)
+            inPath->qimage(x,y,0,rgba);
+         else
+            inPath->qimage(x,y,0,0);
+      }
+      else
+      {
+         if (TRANS)
+         {
+            if (COL)
+               inPath->qtile(x,y,r,trans_2x2,rgba);
+            else
+               inPath->qtile(x,y,r,trans_2x2,0);
+         }
+         else if (COL)
+            inPath->qtile(x,y,r,0,rgba);
+         else
+            inPath->qtile(x,y,r,0,0);
+      }
+   }
+   /*
+   if (!inPath->commands.verify() || !inPath->data.verify())
+      printf("Something has gone horribly wrong\n");
+   */
+}
+
+
+template<typename FLOAT,int RECTMODE, int TRANS>
+void TAddTilesTrans( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags)
+{
+   if (inFlags & TILE_RGB)
+   {
+      if (inFlags & TILE_ALPHA)
+         TAddTilesCol<FLOAT, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA>( inPath, inSheet, inN, inValues);
+      else
+         TAddTilesCol<FLOAT, RECTMODE, TRANS, TILE_RGB>( inPath, inSheet, inN, inValues);
+   }
+   else if (inFlags & TILE_ALPHA)
+      TAddTilesCol<FLOAT, RECTMODE, TRANS, TILE_ALPHA>( inPath, inSheet, inN, inValues);
+   else
+      TAddTilesCol<FLOAT, RECTMODE, TRANS, 0>( inPath, inSheet, inN, inValues);
+}
+
+template<typename FLOAT,int RECTMODE>
+void TAddTilesRect( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags)
+{
+   if ( inFlags & TILE_TRANS_2x2 )
+      TAddTilesTrans<FLOAT,RECTMODE, TILE_TRANS_2x2>( inPath, inSheet, inN, inValues, inFlags);
+   else if (inFlags & TILE_SCALE)
+   {
+       if (inFlags & TILE_ROTATION)
+          TAddTilesTrans<FLOAT,RECTMODE, TILE_SCALE | TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
+       else
+          TAddTilesTrans<FLOAT,RECTMODE, TILE_SCALE>( inPath, inSheet, inN, inValues, inFlags);
+   }
+   else if (inFlags & TILE_ROTATION)
+      TAddTilesTrans<FLOAT,RECTMODE, TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
+   else
+      TAddTilesTrans<FLOAT,RECTMODE, 0>( inPath, inSheet, inN, inValues, inFlags);
+}
+
+template<typename FLOAT>
+void TAddTiles( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags, bool inFullImage)
+{
+   if (inFullImage)
+      TAddTilesRect<FLOAT, TILE_RECT_FULL>( inPath, inSheet, inN, inValues, inFlags );
+   else if (inFlags & TILE_RECT)
+   {
+      if (inFlags & TILE_ORIGIN)
+         TAddTilesRect<FLOAT, TILE_RECT_ORIGIN_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
+      else
+         TAddTilesRect<FLOAT, TILE_RECT_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
+   }
+   else
+      TAddTilesRect<FLOAT, TILE_RECT_TILE >( inPath, inSheet, inN, inValues, inFlags );
+}
+
+
+
+
 value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,value inDataSize)
 {
    Graphics *gfx;
    Tilesheet *sheet;
    if (AbstractToObject(inGfx,gfx) && AbstractToObject(inSheet,sheet))
    {
-      enum
-      {
-        TILE_SCALE    = 0x0001,
-        TILE_ROTATION = 0x0002,
-        TILE_RGB      = 0x0004,
-        TILE_ALPHA    = 0x0008,
-        TILE_TRANS_2x2= 0x0010,
-        TILE_RECT     = 0x0020,
-        TILE_ORIGIN   = 0x0040,
-        TILE_SMOOTH   = 0x1000,
-
-        TILE_BLEND_ADD   = 0x10000,
-        TILE_BLEND_MULTIPLY   = 0x20000,
-        TILE_BLEND_SCREEN   = 0x40000,
-        TILE_BLEND_MASK  = 0xf0000,
-      };
 
       int  flags = val_int(inFlags);
       BlendMode blend = bmNormal;
@@ -2842,29 +3076,22 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
 
       bool smooth = flags & TILE_SMOOTH;
       gfx->beginTiles(&sheet->GetSurface(), smooth, blend);
-	  
-	  bool useRect = flags & TILE_RECT;
-	  bool useOrigin = flags & TILE_ORIGIN;
+
+      bool useRect = flags & TILE_RECT;
+      bool useOrigin = flags & TILE_ORIGIN;
+      bool fullImage = !useOrigin && !useRect && sheet->IsSingleTileImage();
+
 
       int components = 3;
-      int scale_pos = 3;
-      int rot_pos = 3;
-	  
-	  if (useRect)
-	  {
-		  components = useOrigin ? 8 : 6;
-		  scale_pos = useOrigin ? 8 : 6;
-		  rot_pos = useOrigin ? 8 : 6;
-	  }
+      if (useRect)
+         components = useOrigin ? 8 : 6;
 
       if (flags & TILE_TRANS_2x2)
          components+=4;
       else
       {
-         scale_pos = components;
          if (flags & TILE_SCALE)
             components++;
-         rot_pos = components;
          if (flags & TILE_ROTATION)
             components++;
       }
@@ -2876,189 +3103,23 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
       int n = val_int(inDataSize);
       if (n < 0) n = val_array_size(inXYIDs);
       n /= components;
-      double *vals = val_array_double(inXYIDs);
-      float *fvals = val_array_float(inXYIDs);
-      int max = sheet->Tiles();
-      float rgba_buf[] = { 1, 1, 1, 1 };
-      float trans_2x2_buf[] = { 1, 0, 0, 1 };
-      float *rgba = (flags & ( TILE_RGB | TILE_ALPHA)) ? rgba_buf : 0;
-      float *trans_2x2 = (flags & ( TILE_TRANS_2x2 | TILE_SCALE | TILE_ROTATION )) ? trans_2x2_buf : 0;
-      int id;
-      double x;
-      double y;
-      value *val_ptr = val_array_value(inXYIDs);
-	  
-	  Rect r = _tile_rect;
-	  
-	  double ox;
-      double oy;
 
-      for(int i=0;i<n;i++)
+      double *vals = val_array_double(inXYIDs);
+      if (vals)
+         TAddTiles( gfx->getPath(), sheet, n, vals, flags, fullImage );
+      else
       {
-         ox = 0.0;
-		 oy = 0.0;
-		  
-		 if (vals)
-         {
-            x = vals[0];
-            y = vals[1];
-			
-			if (useRect)
-			{
-				r.x = vals[2];
-			    r.y = vals[3];
-			    r.w = vals[4];
-			    r.h = vals[5];
-				
-				if (useOrigin)
-			    {
-					ox = vals[6];
-			    	oy = vals[7];
-				}
-			}
-			else
-			{
-				id =vals[2];
-			}
-         }
-         else if (fvals)
-         {
-             x = fvals[0];
-             y = fvals[1];
-			
-			if (useRect)
-			{
-				 r.x = fvals[2];
-			     r.y = fvals[3];
-			     r.w = fvals[4];
-			     r.h = fvals[5];
-				 
-				 if (useOrigin)
-			     {
-					ox = fvals[6];
-			    	oy = fvals[7];
-				 }
-			}
-			else
-			{
-				 id =fvals[2];
-			}
-         }
+         float *fvals = val_array_float(inXYIDs);
+         if (fvals)
+            TAddTiles( gfx->getPath(), sheet, n, fvals, flags, fullImage );
          else
          {
-             x = val_number(val_ptr[0]);
-             y = val_number(val_ptr[1]);
-			
-			if (useRect)
-			{
-				 r.x = val_number(val_ptr[2]);
-                 r.y = val_number(val_ptr[3]);
-                 r.w = val_number(val_ptr[4]);
-                 r.h = val_number(val_ptr[5]);
-				 
-				 if (useOrigin)
-				 {
-					 ox = val_number(val_ptr[6]);
-                     oy = val_number(val_ptr[7]);
-				 }
-			}
-			else
-			{
-				 id =val_number(val_ptr[2]);
-			}
-         }
-         if ((id>=0 && id<max) || useRect)
-         {
-             int pos = 3;
-			 
-			 if (useRect)
-			 {
-				 pos = useOrigin ? 8 : 6;
-			 }
-			 else
-			 {
-				 const Tile &tile =  sheet->GetTile(id);
-                 ox = tile.mOx;
-                 oy = tile.mOy;
-                 r = tile.mRect;
-			 }
-			 
-            if (trans_2x2)
-            {
-               if (flags & TILE_TRANS_2x2)
-               {
-                  trans_2x2[0] = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
-                  trans_2x2[1] = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
-                  trans_2x2[2] = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
-                  trans_2x2[3] = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
-               }
-               else if (trans_2x2)
-               {
-                  double scale = 1.0;
-                  double cos_theta = 1.0;
-                  double sin_theta = 0.0;
-
-                  if (flags & TILE_SCALE)
-                     scale = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
-
-                  if (flags & TILE_ROTATION)
-                  {
-                     double theta = vals?vals[pos++] : fvals?fvals[pos++] : val_number(val_ptr[pos++]);
-                     cos_theta = cos(theta);
-                     sin_theta = sin(theta);
-                  }
-
-                  trans_2x2[0] = scale*cos_theta;
-                  trans_2x2[1] = scale*sin_theta;
-                  trans_2x2[2] = -trans_2x2[1];
-                  trans_2x2[3] = trans_2x2[0];
-               }
-               double ox_ = ox*trans_2x2[0] + oy*trans_2x2[2];
-                      oy  = ox*trans_2x2[1] + oy*trans_2x2[3];
-               ox = ox_;
-            }
-
-            if (flags & TILE_RGB)
-            {
-               if (vals)
-               {
-                  rgba[0] = vals[pos++];
-                  rgba[1] = vals[pos++];
-                  rgba[2] = vals[pos++];
-               }
-               else if (fvals)
-               {
-                  rgba[0] = fvals[pos++];
-                  rgba[1] = fvals[pos++];
-                  rgba[2] = fvals[pos++];
-               }
-               else
-               {
-                  rgba[0] = val_number(val_ptr[pos++]);
-                  rgba[1] = val_number(val_ptr[pos++]);
-                  rgba[2] = val_number(val_ptr[pos++]);
-               }
-            }
-
-            if (flags & TILE_ALPHA)
-            {
-               if (vals)
-                  rgba[3] = vals[pos++];
-               else if (fvals)
-                  rgba[3] = fvals[pos++];
-               else
-                  rgba[3] = val_number(val_ptr[pos++]);
-            }
-
-            gfx->tile(x-ox,y-oy,r,trans_2x2,rgba);
-            if (vals)
-               vals+=components;
-            else if (fvals)
-               fvals+=components;
-            else
-               val_ptr += components;
+            value *val_ptr = val_array_value(inXYIDs);
+            if (val_ptr)
+               TAddTiles( gfx->getPath(), sheet, n, val_ptr, flags, fullImage );
          }
       }
+
    }
    return alloc_null();
 }
@@ -3694,7 +3755,7 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
    
    if (surface)
    {
-      surface->SetAllowTrans(true);	
+      surface->SetAllowTrans(true);   
       if (!val_is_null(inAlphaBytes))
       {
          ByteData alphabytes;
@@ -4603,7 +4664,7 @@ value nme_sound_channel_create_async(value inRate, value inIsStereo, value inFor
    int rateId = val_int(inRate);
    int rate = rateId==0 ? 11025 : rateId==1 ? 22050 : 44100;
    int fmtId = val_int(inFormat);
-   SoundDataFormat fmt = fmt==0 ? sdfByte : fmt==1 ? sdfShort : sdfFloat;
+   SoundDataFormat fmt = fmtId==0 ? sdfByte : fmtId==1 ? sdfShort : sdfFloat;
    std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
    SoundChannel *channel = SoundChannel::CreateAsyncChannel(
                    fmt, val_bool(inIsStereo),rate, new AutoGCRoot(inCallback), engine );

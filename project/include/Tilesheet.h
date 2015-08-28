@@ -9,10 +9,11 @@ namespace nme
 
 struct Tile
 {
-	float   mOx;
-	float   mOy;
-	Rect    mRect;
-	Surface *mSurface;
+   float   mOx;
+   float   mOy;
+   Rect    mRect;
+   FRect   mFRect;
+   Surface *mSurface;
 };
 
 class Tilesheet : public Object
@@ -21,23 +22,24 @@ public:
    Tilesheet(int inWidth,int inHeight,PixelFormat inFormat,bool inInitRef=false);
    Tilesheet(Surface *inSurface,bool inInitRef=false);
 
-	Tilesheet *IncRef() { Object::IncRef(); return this; }
+   Tilesheet *IncRef() { Object::IncRef(); return this; }
 
-	int AllocRect(int inW,int inH,float inOx = 0, float inOy = 0,bool inAlphaBorder=false);
+   int AllocRect(int inW,int inH,float inOx = 0, float inOy = 0,bool inAlphaBorder=false);
    int addTileRect(const Rect &inRect,float inOx=0, float inOy=0);
-	const Tile &GetTile(int inID) { return mTiles[inID]; }
-	Surface &GetSurface() { return *mSheet; }
-	int Tiles() const { return mTiles.size(); }
+   const Tile &GetTile(int inID) { return mTiles[inID]; }
+   Surface &GetSurface() { return *mSheet; }
+   int Tiles() const { return mTiles.size(); }
+   bool IsSingleTileImage();
 
 private:
-	~Tilesheet();
+   ~Tilesheet();
 
-	int  mCurrentX;
-	int  mCurrentY;
-	int  mMaxHeight;
+   int  mCurrentX;
+   int  mCurrentY;
+   int  mMaxHeight;
 
-	QuickVec<Tile> mTiles;
-	Surface        *mSheet;
+   QuickVec<Tile> mTiles;
+   Surface        *mSheet;
 };
 
 

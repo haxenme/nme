@@ -283,6 +283,12 @@ public:
       }
       mSize = inSize;
    }
+
+   inline void qpush(const T_ &inVal)
+   {
+      mPtr[mSize++] = inVal;
+   }
+
    inline void push_back(const T_ &inVal)
    {
       Grow();
@@ -450,6 +456,10 @@ public:
       resize(mSize+inLen);
       for(int i=0;i<inLen;i++)
          mPtr[s+i] = inOther[i];
+   }
+   bool verify()
+   {
+      return mSize<=mAlloc;
    }
 
    T_  *mPtr;
