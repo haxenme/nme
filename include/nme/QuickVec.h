@@ -457,10 +457,8 @@ public:
       for(int i=0;i<inLen;i++)
          mPtr[s+i] = inOther[i];
    }
-   bool verify()
-   {
-      return mSize<=mAlloc;
-   }
+
+   // bool verify() { return mSize<=mAlloc; }
 
    T_  *mPtr;
    T_  mQBuf[QBufSize==0?1:QBufSize];
