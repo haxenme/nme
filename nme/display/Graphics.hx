@@ -7,13 +7,14 @@ import nme.Loader;
 @:nativeProperty
 class Graphics 
 {
-   public static inline var TILE_SCALE = 0x0001;
+   public static inline var TILE_SCALE   = 0x0001;
    public static inline var TILE_ROTATION = 0x0002;
-   public static inline var TILE_RGB = 0x0004;
-   public static inline var TILE_ALPHA = 0x0008;
+   public static inline var TILE_RGB     = 0x0004;
+   public static inline var TILE_ALPHA   = 0x0008;
    public static inline var TILE_TRANS_2x2 = 0x0010; // Will ignore scale and rotation....
-   public static inline var TILE_RECT = 0x0020;		// won't use tile ids
-   public static inline var TILE_ORIGIN = 0x0040;
+   public static inline var TILE_RECT    = 0x0020;		// won't use tile ids
+   public static inline var TILE_ORIGIN  = 0x0040;
+   public static inline var TILE_NO_ID   = 0x0040;  // Assume ID0
    private static inline var TILE_SMOOTH = 0x1000;
    public static inline var TILE_BLEND_NORMAL   = 0x00000000;
    public static inline var TILE_BLEND_ADD      = 0x00010000;
@@ -108,7 +109,7 @@ class Graphics
       nme_gfx_draw_path(nmeHandle, commands, data, winding == GraphicsPathWinding.EVEN_ODD);
    }
 
-   public function drawTiles(sheet:Tilesheet, inXYID:Array<Float>, inSmooth:Bool = false, inFlags:Int = 0, inCount:Int = -1):Void {
+   public function drawTiles(sheet:Tilesheet, inXYID:nme.utils.Floats3264, inSmooth:Bool = false, inFlags:Int = 0, inCount:Int = -1):Void {
       beginBitmapFill(sheet.nmeBitmap, null, false, inSmooth);
 
       if (inSmooth)

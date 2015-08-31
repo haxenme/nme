@@ -2812,6 +2812,7 @@ enum
   TILE_TRANS_2x2= 0x0010,
   TILE_RECT     = 0x0020,
   TILE_ORIGIN   = 0x0040,
+  TILE_NO_ID    = 0x0080,
   TILE_SMOOTH   = 0x1000,
 
   TILE_BLEND_ADD   = 0x10000,
@@ -2824,6 +2825,8 @@ enum
   TILE_RECT_GIVEN         = 1,
   TILE_RECT_ORIGIN_GIVEN  = 2,
   TILE_RECT_FULL          = 3,
+  TILE_RECT_FULL_NO_ID    = 4,
+  TILE_RECT_ID_0          = 5,
 };
 
 
@@ -2863,7 +2866,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
    FRect rectBuf(_tile_rect);
    const FRect *r = &rectBuf;
 
-   inPath->reserveTiles(inN, RECTMODE==TILE_RECT_FULL, TRANS!=0, COL!=0);
+   inPath->reserveTiles(inN, RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID, TRANS!=0, COL!=0);
 
    const FLOAT *v = inValues;
    for(int i=0;i<inN;i++)
@@ -2884,6 +2887,10 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
             oy = TToFloat(*v++);
          }
       }
+      else if (RECTMODE==TILE_RECT_FULL_NO_ID)
+      {
+          // Ok!
+      }
       else if (RECTMODE==TILE_RECT_FULL)
       {
          // Skip id
@@ -2891,11 +2898,18 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
       }
       else
       {
-         int id = TToFloat(*v++);
-         if (id<0 || id>=max)
+         int id;
+
+         if (RECTMODE==TILE_RECT_ID_0)
+            id = 0;
+         else
          {
-            v+=badIdSkip;
-            continue;
+            id = TToFloat(*v++);
+            if (id<0 || id>=max)
+            {
+               v+=badIdSkip;
+               continue;
+            }
          }
 
          const Tile &tile =  inSheet->GetTile(id);
@@ -2939,7 +2953,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
          trans_2x2[3] = trans_2x2[0];
       }
 
-      if (RECTMODE!=TILE_RECT_FULL)
+      if (RECTMODE!=TILE_RECT_FULL && RECTMODE!=TILE_RECT_FULL_NO_ID)
       {
          if (TRANS)
          {
@@ -2963,7 +2977,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
       if (COL & TILE_ALPHA)
          rgba[3] = TToFloat(*v++);
 
-      if (RECTMODE==TILE_RECT_FULL)
+      if (RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID)
       {
          if (TRANS)
          {
@@ -3037,7 +3051,16 @@ template<typename FLOAT>
 void TAddTiles( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags, bool inFullImage)
 {
    if (inFullImage)
-      TAddTilesRect<FLOAT, TILE_RECT_FULL>( inPath, inSheet, inN, inValues, inFlags );
+   {
+      if (inFlags & TILE_NO_ID)
+         TAddTilesRect<FLOAT, TILE_RECT_FULL_NO_ID>( inPath, inSheet, inN, inValues, inFlags );
+      else
+         TAddTilesRect<FLOAT, TILE_RECT_FULL>( inPath, inSheet, inN, inValues, inFlags );
+   }
+   else if (inFlags & TILE_NO_ID)
+   {
+      TAddTilesRect<FLOAT, TILE_RECT_ID_0>( inPath, inSheet, inN, inValues, inFlags );
+   }
    else if (inFlags & TILE_RECT)
    {
       if (inFlags & TILE_ORIGIN)
@@ -3075,14 +3098,14 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
       }
 
       bool smooth = flags & TILE_SMOOTH;
-      gfx->beginTiles(&sheet->GetSurface(), smooth, blend);
 
       bool useRect = flags & TILE_RECT;
       bool useOrigin = flags & TILE_ORIGIN;
+      bool noId = flags & TILE_NO_ID;
       bool fullImage = !useOrigin && !useRect && sheet->IsSingleTileImage();
 
 
-      int components = 3;
+      int components = noId ? 2 : 3;
       if (useRect)
          components = useOrigin ? 8 : 6;
 
@@ -3100,27 +3123,41 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
       if (flags & TILE_ALPHA)
          components++;
 
+
       int n = val_int(inDataSize);
       if (n < 0) n = val_array_size(inXYIDs);
       n /= components;
 
-      double *vals = val_array_double(inXYIDs);
-      if (vals)
-         TAddTiles( gfx->getPath(), sheet, n, vals, flags, fullImage );
-      else
+      if (n)
       {
-         float *fvals = val_array_float(inXYIDs);
-         if (fvals)
-            TAddTiles( gfx->getPath(), sheet, n, fvals, flags, fullImage );
+         int tileFlags = pcTile;
+         if (fullImage)
+            tileFlags |= pcTile_Full_Image_Bit;
+         if (flags & (TILE_SCALE | TILE_ROTATION | TILE_TRANS_2x2 ) )
+            tileFlags |= pcTile_Trans_Bit;
+         if (flags & (TILE_RGB | TILE_ALPHA) )
+            tileFlags |= pcTile_Col_Bit;
+
+         gfx->beginTiles(&sheet->GetSurface(), smooth, blend, tileFlags, n);
+
+         double *vals = val_array_double(inXYIDs);
+         if (vals)
+            TAddTiles( gfx->getPath(), sheet, n, vals, flags, fullImage );
          else
          {
-            value *val_ptr = val_array_value(inXYIDs);
-            if (val_ptr)
-               TAddTiles( gfx->getPath(), sheet, n, val_ptr, flags, fullImage );
+            float *fvals = val_array_float(inXYIDs);
+            if (fvals)
+               TAddTiles( gfx->getPath(), sheet, n, fvals, flags, fullImage );
+            else
+            {
+               value *val_ptr = val_array_value(inXYIDs);
+               if (val_ptr)
+                  TAddTiles( gfx->getPath(), sheet, n, val_ptr, flags, fullImage );
+            }
          }
       }
-
    }
+
    return alloc_null();
 }
 

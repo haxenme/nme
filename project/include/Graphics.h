@@ -273,7 +273,7 @@ class GraphicsPath : public IGraphicsPath
 {
 public:
    GraphicsPath *AsPath() { return this; }
-   bool empty() const { return commands.empty(); }
+   bool empty() const { return commands.empty() && data.empty(); }
 
    GraphicsPath();
    QuickVec<uint8> commands;
@@ -300,10 +300,8 @@ public:
    {
       data.qpush(x);
       data.qpush(y);
-      int command = pcTile | pcTile_Full_Image_Bit;
       if (inTrans)
       {
-         command |= pcTile_Trans_Bit;
          data.qpush(inTrans[0]);
          data.qpush(inTrans[1]);
          data.qpush(inTrans[2]);
@@ -311,13 +309,11 @@ public:
       }
       if (inRGBA)
       {
-         command |= pcTile_Col_Bit;
          data.qpush(inRGBA[0]);
          data.qpush(inRGBA[1]);
          data.qpush(inRGBA[2]);
          data.qpush(inRGBA[3]);
       }
-      commands.qpush((PathCommand)command);
    }
 
    inline void qtile(float x, float y, const FRect *inTileRect,float *inTrans,float *inRGBA)
@@ -328,10 +324,8 @@ public:
       data.qpush(inTileRect->y);
       data.qpush(inTileRect->w);
       data.qpush(inTileRect->h);
-      int command = pcTile;
       if (inTrans)
       {
-         command |= pcTile_Trans_Bit;
          data.qpush(inTrans[0]);
          data.qpush(inTrans[1]);
          data.qpush(inTrans[2]);
@@ -339,13 +333,11 @@ public:
       }
       if (inRGBA)
       {
-         command |= pcTile_Col_Bit;
          data.qpush(inRGBA[0]);
          data.qpush(inRGBA[1]);
          data.qpush(inRGBA[2]);
          data.qpush(inRGBA[3]);
       }
-      commands.qpush((PathCommand)command);
    }
 
 
@@ -622,10 +614,16 @@ struct GraphicsJob
    class Renderer  *mSoftwareRenderer;
    int             mCommand0;
    int             mData0;
-   int             mCommandCount;
+   union
+   {
+      int             mCommandCount;
+      int             mTileCount;
+   };
    int             mDataCount;
    bool            mIsTileJob;
    bool            mIsPointJob;
+   unsigned char   mTileMode;
+   unsigned char   mBlendMode;
 };
 
 
@@ -639,7 +637,7 @@ public:
    Graphics(DisplayObject *inOwner, bool inInitRef = false);
    ~Graphics();
 
-   void clear();
+   void clear(bool inForceHardwareFree=false);
 
    Extent2DF GetSoftwareExtent(const Transform &inTransform,bool inIncludeStroke);
 
@@ -678,7 +676,8 @@ public:
 		mVersion++;
    }
    void drawRoundRect(float x,float  y,float  width,float  height,float  ellipseWidth,float  ellipseHeight);
-   void beginTiles(Surface *inSurface,bool inSmooth=false,int inBlendMode=0);
+   void beginTiles(Surface *inSurface,bool inSmooth=false,int inBlendMode=0,
+              int inTileFlags = pcTile | pcTile_Trans_Bit | pcTile_Col_Bit, int inCount=0 );
    void endTiles();
    void tile(float x, float y, const Rect &inTileRect, float *inTrans,float *inColour);
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs, unsigned int inDefaultRGBA=0xffffffff, double inSize=-1.0 );
@@ -709,6 +708,7 @@ private:
    int                       mConvertedJobs;
    int                       mMeasuredJobs;
    int                       mBuiltHardware;
+   int                       mClearCount;
 
    GraphicsPath              *mPathData;
    HardwareData              *mHardwareData;

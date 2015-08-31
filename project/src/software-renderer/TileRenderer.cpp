@@ -66,26 +66,30 @@ public:
 
    TileRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath)
    {
-      mBlendMode = bmNormal;
       mFill = inJob.mFill->AsBitmapFill();
       mFill->IncRef();
       mFiller = Filler::Create(mFill);
       int w = mFill->bitmapData->Width();
       int h = mFill->bitmapData->Height();
       const UserPoint *point = (const UserPoint *)&inPath.data[inJob.mData0];
-      int n = inJob.mCommandCount;
-      for(int j=0; j<n; j++)
-      {
-         int c = (inPath.commands[j+inJob.mCommand0]);
-         if (c & pcTile)
-         {
-            TileData data(point,c,w,h);
-            mTileData.push_back(data);
-         }
-         else if (c==pcBlendModeAdd)
-            mBlendMode = bmAdd;
+      mTileData.reserve( inJob.mTileCount );
+      mBlendMode = bmNormal;
+      if (inJob.mBlendMode==pcBlendModeAdd)
+         mBlendMode = bmAdd;
 
-         point += gCommandDataSize[c];
+      int size = (inJob.mTileMode & pcTile_Full_Image_Bit) ? 1 : 3;
+      if (inJob.mTileMode & pcTile_Trans_Bit)
+         size+=2;
+      if (inJob.mTileMode & pcTile_Col_Bit)
+         size+=2;
+
+
+      for(int j=0; j<inJob.mTileCount; j++)
+      {
+         TileData data(point, inJob.mTileMode ,w,h);
+         mTileData.push_back(data);
+
+         point += size;
       }
    }
    

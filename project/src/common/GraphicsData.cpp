@@ -26,16 +26,7 @@ GraphicsPath::GraphicsPath() : winding(wrOddEven)
                gCommandDataSize[i] = 2;
                break;
             default:
-               if (i & pcTile)
-               {
-                  gCommandDataSize[i] = (i & pcTile_Full_Image_Bit) ? 1 : 3;
-                  if (i&pcTile_Trans_Bit)
-                     gCommandDataSize[i]+=2;
-                  if (i&pcTile_Col_Bit)
-                     gCommandDataSize[i]+=2;
-               }
-               else
-                  gCommandDataSize[i] = 0;
+               gCommandDataSize[i] = 0;
          }
       }
    }
@@ -131,10 +122,8 @@ void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inTrans,
    data.push_back(inTileRect.y);
    data.push_back(inTileRect.w);
    data.push_back(inTileRect.h);
-   int command = pcTile;
    if (inTrans)
    {
-      command |= pcTile_Trans_Bit;
       data.push_back(inTrans[0]);
       data.push_back(inTrans[1]);
       data.push_back(inTrans[2]);
@@ -142,13 +131,11 @@ void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inTrans,
    }
    if (inRGBA)
    {
-      command |= pcTile_Col_Bit;
       data.push_back(inRGBA[0]);
       data.push_back(inRGBA[1]);
       data.push_back(inRGBA[2]);
       data.push_back(inRGBA[3]);
    }
-   commands.push_back((PathCommand)command);
 }
 
 void GraphicsPath::reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour)

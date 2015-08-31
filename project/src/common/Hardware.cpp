@@ -6,7 +6,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define TILE_QUADS
 
 namespace nme
 {
@@ -198,46 +197,25 @@ public:
       }
       else if (tile_mode)
       {
-         bool has_colour = false;
-         const uint8 *cmd = &inPath.commands[inJob.mCommand0];
-         int cc = inJob.mCommandCount;
-         int tiles = 0;
+         int tiles = inJob.mTileCount;
+         int mode = inJob.mTileMode;
 
-         unsigned int allFlags = 0xff;
-         for(int i=0;i<cc;i++)
+         if (tiles)
          {
-            if (cmd[i] & pcTile)
+            mElement.mBlendMode = inJob.mBlendMode;
+            if (mode & pcTile_Col_Bit)
             {
-               allFlags &= cmd[i];
-               tiles++;
-               if (cmd[i] & pcTile_Col_Bit)
-                  has_colour = true;
-            } 
-            else if (cmd[i] == pcBlendModeAdd)
-               mElement.mBlendMode = bmAdd;
-            else if (cmd[i] == pcBlendModeMultiply)
-               mElement.mBlendMode = bmMultiply;
-            else if (cmd[i] == pcBlendModeScreen)
-               mElement.mBlendMode = bmScreen;
+               mElement.mColourOffset = mElement.mVertexOffset + mElement.mStride;
+               mElement.mStride += sizeof(int);
+               mElement.mFlags |= DRAW_HAS_COLOUR;
+               mElement.mColour = 0xffffffff;
+            }
+   
+            mElement.mPrimType = (mode & pcTile_Full_Image_Bit) ? ptQuadsFull : ptQuads;
+            ReserveArrays(tiles*4);
+   
+            AddTiles(mode, &inPath.data[inJob.mData0], tiles);
          }
-
-         if (has_colour)
-         {
-            mElement.mColourOffset = mElement.mVertexOffset + mElement.mStride;
-            mElement.mStride += sizeof(int);
-            mElement.mFlags |= DRAW_HAS_COLOUR;
-            mElement.mColour = 0xffffffff;
-         }
-
-         #ifdef TILE_QUADS
-         mElement.mPrimType = (allFlags & pcTile_Full_Image_Bit) ? ptQuadsFull : ptQuads;
-         ReserveArrays(tiles*4);
-         #else
-         ReserveArrays(tiles*6);
-         #endif
-
-
-         AddTiles(cmd,cc, &inPath.data[inJob.mData0], tiles);
       }
       else if (tessellate_lines && !mSolidMode)
       {
@@ -452,12 +430,13 @@ public:
    }
 
 
-  void AddTiles(const uint8* inCommands, int inCount, const float *inData, int inTiles)
-  {
+   template<bool FULL, bool COL, bool TRANS>
+   void TAddTiles(const float *inData, int inTiles)
+   {
+
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
-      bool fullTile = mElement.mPrimType == ptQuadsFull;
-      UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !fullTile ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
-      int *colours = (mElement.mFlags & DRAW_HAS_COLOUR) ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
+      UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
+      int *colours = COL ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
 
       UserPoint *point = (UserPoint *)inData;
 
@@ -473,159 +452,123 @@ public:
       float texScaleY = size.y ? 1.0/size.y : 1;
 
 
-      for(int i=0;i<inCount;i++)
+      for(int i=0;i<inTiles;i++)
       {
-         if (inCommands[i] & pcTile)
+         pos = *point++;
+
+         if (!FULL)
          {
-            pos = *point++;
+            tex0.x = point[0].x * texScaleX;
+            tex0.y = point[0].y * texScaleY;
+            size = point[1];
+            tex1.x = tex0.x + size.x*texScaleX;
+            tex1.y = tex0.y + size.y*texScaleY;
+            point += 2;
+         }
 
-            if (!(inCommands[i] & pcTile_Full_Image_Bit))
-            {
-               tex0.x = point[0].x * texScaleX;
-               tex0.y = point[0].y * texScaleY;
-               size = point[1];
-               tex1.x = tex0.x + size.x*texScaleX;
-               tex1.y = tex0.y + size.y*texScaleY;
-               point += 2;
-            }
+         if (TRANS)
+         {
+            UserPoint trans_x = *point++;
+            UserPoint trans_y = *point++;
 
-            if (inCommands[i]&pcTile_Trans_Bit)
-            {
-               UserPoint trans_x = *point++;
-               UserPoint trans_y = *point++;
+            UserPoint p1(pos.x + size.x*trans_x.x,
+                         pos.y + size.x*trans_x.y);
+            UserPoint p2(pos.x + size.x*trans_x.x + size.y*trans_y.x,
+                         pos.y + size.x*trans_x.y + size.y*trans_y.y );
+            UserPoint p3(pos.x + size.y*trans_y.x,
+                         pos.y + size.y*trans_y.y );
 
-               UserPoint p1(pos.x + size.x*trans_x.x,
-                            pos.y + size.x*trans_x.y);
-               UserPoint p2(pos.x + size.x*trans_x.x + size.y*trans_y.x,
-                            pos.y + size.x*trans_x.y + size.y*trans_y.y );
-               UserPoint p3(pos.x + size.y*trans_y.x,
-                            pos.y + size.y*trans_y.y );
-
-               #ifdef TILE_QUADS
-               *vertices = ( pos );
-               Next(vertices);
-               *vertices = ( p1 );
-               Next(vertices);
-               *vertices = ( p3 );
-               Next(vertices);
-               *vertices = ( p2 );
-               Next(vertices);
-               #else
-               *vertices = ( pos );
-               Next(vertices);
-               *vertices = ( p1 );
-               Next(vertices);
-               *vertices = ( p2 );
-               Next(vertices);
-               *vertices = ( pos) ;
-               Next(vertices);
-               *vertices = ( p2 );
-               Next(vertices);
-               *vertices = ( p3 );
-               Next(vertices);
-               #endif
-            }
-            else
-            {
-               UserPoint p1(pos.x + size.x, pos.y + size.y);
-
-               #ifdef TILE_QUADS
-               *vertices = (pos);
-               Next(vertices);
-               *vertices = UserPoint(p1.x,pos.y);
-               Next(vertices);
-               *vertices = UserPoint(pos.x,p1.y);
-               Next(vertices);
-               *vertices = p1;
-               Next(vertices);
-               #else
-               *vertices = (pos);
-               Next(vertices);
-               *vertices = UserPoint(p1.x,pos.y);
-               Next(vertices);
-               *vertices = p1;
-               Next(vertices);
-               *vertices = (pos);
-               Next(vertices);
-               *vertices = p1;
-               Next(vertices);
-               *vertices = UserPoint(pos.x,p1.y);
-               Next(vertices);
-               #endif
-            }
-
-
-            if (!fullTile)
-            {
-               #ifdef TILE_QUADS
-               *tex = tex0;
-               Next(tex);
-               *tex = UserPoint(tex1.x,tex0.y);
-               Next(tex);
-               *tex = UserPoint(tex0.x,tex1.y);
-               Next(tex);
-               *tex = tex1;
-               Next(tex);
-               #else
-               *tex = tex0;
-               Next(tex);
-               *tex = UserPoint(tex1.x,tex0.y);
-               Next(tex);
-               *tex = tex1;
-               Next(tex);
-               *tex = tex0;
-               Next(tex);
-               *tex = tex1;
-               Next(tex);
-               *tex = UserPoint(tex0.x,tex1.y);
-               Next(tex);
-               #endif
-            }
-   
-            if (inCommands[i]&pcTile_Col_Bit)
-            {
-               UserPoint rg = *point++;
-               UserPoint ba = *point++;
-               #ifdef BLACKBERRY
-               uint32 col = ((int)(rg.x*255)) |
-                            (((int)(rg.y*255))<<8) |
-                            (((int)(ba.x*255))<<16) |
-                            (((int)(ba.y*255))<<24);
-               #else
-               uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
-                            ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
-                            ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
-                            ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
-               #endif
-
-               *colours = ( col );
-               Next(colours);
-               *colours = ( col );
-               Next(colours);
-               *colours = ( col );
-               Next(colours);
-               *colours = ( col );
-               Next(colours);
-
-               #ifndef TILE_QUADS
-               *colours = ( col );
-               Next(colours);
-               *colours = ( col );
-               Next(colours);
-               #endif
-            }
+            *vertices = ( pos );
+            Next(vertices);
+            *vertices = ( p1 );
+            Next(vertices);
+            *vertices = ( p3 );
+            Next(vertices);
+            *vertices = ( p2 );
+            Next(vertices);
          }
          else
-            point += gCommandDataSize[ inCommands[i] ];
-      }
+         {
+            UserPoint p1(pos.x + size.x, pos.y + size.y);
 
-      #ifdef TILE_QUADS
+            *vertices = (pos);
+            Next(vertices);
+            *vertices = UserPoint(p1.x,pos.y);
+            Next(vertices);
+            *vertices = UserPoint(pos.x,p1.y);
+            Next(vertices);
+            *vertices = p1;
+            Next(vertices);
+         }
+
+
+         if (!FULL)
+         {
+            *tex = tex0;
+            Next(tex);
+            *tex = UserPoint(tex1.x,tex0.y);
+            Next(tex);
+            *tex = UserPoint(tex0.x,tex1.y);
+            Next(tex);
+            *tex = tex1;
+            Next(tex);
+         }
+
+         if (COL)
+         {
+            UserPoint rg = *point++;
+            UserPoint ba = *point++;
+            #ifdef BLACKBERRY
+            uint32 col = ((int)(rg.x*255)) |
+                         (((int)(rg.y*255))<<8) |
+                         (((int)(ba.x*255))<<16) |
+                         (((int)(ba.y*255))<<24);
+            #else
+            uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
+                         ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
+                         ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
+                         ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
+            #endif
+
+            *colours = ( col );
+            Next(colours);
+            *colours = ( col );
+            Next(colours);
+            *colours = ( col );
+            Next(colours);
+            *colours = ( col );
+            Next(colours);
+         }
+      }
+   }
+
+
+   void AddTiles(int inMode, const float *inData, int inTiles)
+   {
+       bool fullTile =  inMode & pcTile_Full_Image_Bit;
+       bool hasColour = inMode & pcTile_Col_Bit;
+       bool hasTrans =  inMode & pcTile_Trans_Bit;
+
+       if      (!fullTile && !hasColour && !hasTrans)
+          TAddTiles<false,false,false>(inData, inTiles);
+       else if (!fullTile && !hasColour && hasTrans)
+          TAddTiles<false,false,true>(inData, inTiles);
+       else if (!fullTile && hasColour && !hasTrans)
+          TAddTiles<false,true,false>(inData, inTiles);
+       else if (!fullTile && hasColour && hasTrans)
+          TAddTiles<false,true,true>(inData, inTiles);
+       else if (fullTile && !hasColour && !hasTrans)
+          TAddTiles<true,false,false>(inData, inTiles);
+       else if (fullTile && !hasColour && hasTrans)
+          TAddTiles<true,false,true>(inData, inTiles);
+       else if (fullTile && hasColour && !hasTrans)
+          TAddTiles<true,true,false>(inData, inTiles);
+       else if (fullTile && hasColour && hasTrans)
+          TAddTiles<true,true,true>(inData, inTiles);
+
       mElement.mCount = inTiles*4;
-      #else
-      mElement.mCount = inTiles*6;
-      #endif
-      if (mElement.mCount>0)
-         PushElement();
+
+      PushElement();
    }
 
    void PushElement()

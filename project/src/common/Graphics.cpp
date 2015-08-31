@@ -25,6 +25,7 @@ Graphics::Graphics(DisplayObject *inOwner,bool inInitRef) : Object(inInitRef)
    mBuiltHardware = 0;
    mTileJob.mIsTileJob = true;
    mMeasuredJobs = 0;
+   mClearCount = 0;
    mVersion = 0;
    mOwner = inOwner;
 }
@@ -38,7 +39,7 @@ Graphics::~Graphics()
 }
 
 
-void Graphics::clear()
+void Graphics::clear(bool inForceFreeHardware)
 {
    mFillJob.clear();
    mLineJob.clear();
@@ -51,9 +52,17 @@ void Graphics::clear()
 
    if (mHardwareData)
    {
-      delete mHardwareData;
-      mHardwareData = 0;
+      if (inForceFreeHardware || mClearCount<4)
+      {
+         delete mHardwareData;
+         mHardwareData = 0;
+      }
+      else
+         mHardwareData->clear();
+      if (!inForceFreeHardware)
+         mClearCount++;
    }
+
    mPathData->clear();
 
    mExtent0 = Extent2DF();
@@ -318,7 +327,7 @@ void Graphics::endTiles()
    }
 }
 
-void Graphics::beginTiles(Surface *bitmapData,bool inSmooth,int inBlendMode)
+void Graphics::beginTiles(Surface *bitmapData,bool inSmooth,int inBlendMode, int inMode, int inCount)
 {
    endFill();
    lineStyle(-1);
@@ -327,7 +336,9 @@ void Graphics::beginTiles(Surface *bitmapData,bool inSmooth,int inBlendMode)
       mTileJob.mFill->DecRef();
    mTileJob.mFill = new GraphicsBitmapFill(bitmapData,Matrix(),false,inSmooth);
    mTileJob.mFill->IncRef();
-   mPathData->elementBlendMode(inBlendMode);
+   mTileJob.mBlendMode = inBlendMode;
+   mTileJob.mTileCount = inCount;
+   mTileJob.mTileMode = inMode;
 }
 
 void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
@@ -403,6 +414,7 @@ void Graphics::arcTo(float cx, float cy, float x, float y)
 
 void Graphics::tile(float x, float y, const Rect &inTileRect,float *inTrans,float *inRGBA)
 {
+   mTileJob.mTileCount++;
    mPathData->tile(x,y,inTileRect,inTrans,inRGBA);
 }
 
@@ -480,11 +492,10 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
 
    if (inTile)
    {
-      if (mTileJob.mFill && mTileJob.mCommand0 <n)
+      if (mTileJob.mFill && mTileJob.mTileCount>0)
       {
          mTileJob.mFill->IncRef();
          mTileJob.mDataCount = d-mTileJob.mData0;
-         mTileJob.mCommandCount = n-mTileJob.mCommand0;
          mTileJob.mIsTileJob = true;
          mJobs.push_back(mTileJob);
       }
@@ -549,7 +560,7 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
 
    if (inTile)
    {
-      mTileJob.mCommand0 = n;
+      mTileJob.mTileCount = 0;
       mTileJob.mData0 = d;
    }
 
