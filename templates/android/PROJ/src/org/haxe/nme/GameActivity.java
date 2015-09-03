@@ -980,7 +980,7 @@ implements SensorEventListener
       
       if (show)
       {
-         activity.mKeyInTextView.requestFocus();
+         //activity.mKeyInTextView.requestFocus();
          mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
          // On the Nexus One, SHOW_FORCED makes it impossible
          // to manually dismiss the keyboard.
