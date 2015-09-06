@@ -102,7 +102,7 @@ class Surface
 
    public function dispose() 
    {
-      nme_bitmap_data_dump_bits(nmeHandle);
+      nme_bitmap_data_dispose(nmeHandle);
       nmeHandle = null;
    }
 
@@ -315,6 +315,7 @@ class Surface
    private static var nme_bitmap_data_set_flags = Loader.load("nme_bitmap_data_set_flags", 2);
    private static var nme_bitmap_data_encode = Loader.load("nme_bitmap_data_encode", 3);
    private static var nme_bitmap_data_dump_bits = Loader.load("nme_bitmap_data_dump_bits", 1);
+   private static var nme_bitmap_data_dispose = Loader.load("nme_bitmap_data_dispose", 1);
    private static var nme_bitmap_data_noise = Loader.load("nme_bitmap_data_noise", -1);
    private static var nme_bitmap_data_flood_fill = Loader.load("nme_bitmap_data_flood_fill", 4);
    private static var nme_bitmap_data_get_prem_alpha = Loader.load("nme_bitmap_data_get_prem_alpha", 1);
