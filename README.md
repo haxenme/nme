@@ -14,7 +14,10 @@ Native Media Engine
 Make sure you have installed [Haxe](http://www.haxe.org).
 
 To get the latest released NME version, install via haxelib:  
-`haxelib install nme`
+```
+haxelib install nme
+haxelib run nme setup
+`
 
 Alternative: To install the current git version:  
 `haxelib git nme https://github.com/haxenme/nme.git`
