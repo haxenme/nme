@@ -1,4 +1,19 @@
 
+5.5
+--------------------------
+
+* Speedups for the tile display list
+* BitmapData.dispose now fully clears resources
+* Fix font finding for ios 8.2+
+* Added android mouse wheel support (thanks codeservice)
+* Restore text event to allow non-keycode input (thanks codeservice)
+* Fixed for Bitmap.copyChannel bounds (thanks Thomas)
+* Allow custom iOS properties (thanks Thomas)
+* Allow selection of sound engine where appropriate - eg SDL vs openAl on mac, android vs Opensl
+* Added mp3 decoding for windows (post XP) and mac
+* Added AudioTest sample
+* Add Opensl sound backend for android
+* Refactor sound support to use common code between sound engines.
 * Respect the flash meaning of mouseEnabled, and add hitEnabled to ignore hit tests
 
 --------------------------
