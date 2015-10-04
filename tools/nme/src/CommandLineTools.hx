@@ -13,6 +13,13 @@ import NMEProject;
 using StringTools;
 
 
+
+class Fs
+{
+   public static function getDocs() return nme.filesystem.File.documentsDirectory.nativePath;
+   public static function getDesktop() return nme.filesystem.File.desktopDirectory.nativePath;
+}
+
 class CommandLineTools 
 {
    public static var nme(default,null):String;
@@ -1448,6 +1455,9 @@ class CommandLineTools
          if (FileSystem.exists(lastArgument) && FileSystem.isDirectory(lastArgument)) 
             Sys.setCwd(lastArgument);
       }
+
+      project.localDefines.set("DOCS", Fs.getDocs());
+      project.localDefines.set("DESKTOP", Fs.getDesktop());
 
       command = "";
 
