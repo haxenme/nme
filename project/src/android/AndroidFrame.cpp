@@ -361,6 +361,7 @@ public:
    
    void OnMouseWheel(double inX, double inY, int inEventDir) {
        Event mouse(etMouseUp, inX, inY, inEventDir);
+       mouse.deltaY = inEventDir==3 ? 1 : -1;
        HandleEvent(mouse);
    }
 

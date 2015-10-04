@@ -301,7 +301,7 @@ void Stage::HandleEvent(Event &inEvent)
       {
          TextField *text =  dynamic_cast<TextField *>(hit_obj);
          if (text && text->mouseWheelEnabled)
-            text->OnScrollWheel(inEvent.value==3 ? -1 : 1);
+            text->OnScrollWheel(-inEvent.deltaY);
       }
    }
    #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)

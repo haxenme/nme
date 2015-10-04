@@ -1305,7 +1305,7 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_MOUSEWHEEL: 
       {   
-            //previous behavior in nme was 3 for down, 4 for up
+            //previous behavior in nme was fake button 3 for down, 4 for up
          int event_dir = (inEvent.wheel.y > 0) ? 3 : 4;
             //space to get the current mouse position, to make sure the values are sane
          int _x = 0; 
@@ -1314,6 +1314,8 @@ void ProcessEvent(SDL_Event &inEvent)
          SDL_GetMouseState(&_x,&_y);
             //create the event
          Event mouse(etMouseUp, _x, _y, event_dir);
+         mouse.deltaX = inEvent.wheel.x;
+         mouse.deltaY = inEvent.wheel.y;
             //add flags for modifier keys
          AddModStates(mouse.flags);
             //and done.
