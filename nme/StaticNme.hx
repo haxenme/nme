@@ -6,7 +6,7 @@ package nme;
 #else
 @:buildXml("
 <target id='haxe'>
-  <lib name='${haxelib:nme}/lib/${BINDIR}/libnme{MSVC_VER}${LIBEXTRA}${LIBEXT}'/>
+  <lib name='${haxelib:nme}/lib/${BINDIR}/libnme${LIBEXTRA}${LIBEXT}'/>
 </target>
 <include name='${haxelib:nme}/lib/NmeLink.xml'/>
 ")

@@ -2,6 +2,7 @@
 5.5
 --------------------------
 
+* Separate static binaries for msvc 19
 * Speedups for the tile display list
 * BitmapData.dispose now fully clears resources
 * Fix font finding for ios 8.2+
