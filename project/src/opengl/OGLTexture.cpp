@@ -4,7 +4,11 @@
 
 // 0xAARRGGBB
 #if defined(ANDROID)
-   static bool sFormatChecked = false;
+   #ifdef ANDROID_X86
+      #undef SWAP_RB
+      static bool SWAP_RB = false;
+      static bool sFormatChecked = false;
+   #endif
    static int ARGB_STORE = GL_BGRA_EXT;
    static int ARGB_PIXEL = GL_BGRA_EXT;
 #elif defined(EMSCRIPTEN)
@@ -46,15 +50,15 @@ bool NonPO2Supported(bool inNotRepeating)
    {
       tried = true;
       const char* extensions = (char*) glGetString(GL_EXTENSIONS);
-	  
-	  gFullNPO2Support = strstr(extensions, "ARB_texture_non_power_of_two") != 0;
-	  
-	  if (!gFullNPO2Support)
-	  {
-		  gPartialNPO2Support = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
-	  }
+     
+     gFullNPO2Support = strstr(extensions, "ARB_texture_non_power_of_two") != 0;
+     
+     if (!gFullNPO2Support)
+     {
+        gPartialNPO2Support = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
+     }
       
-	  
+     
       //printf("Full non-PO2 support : %d\n", gFullNPO2Support);
       //printf("Partial non-PO2 support : %d\n", gPartialNPO2Support);
    }
@@ -113,14 +117,23 @@ void checkRgbFormat()
    glGenTextures(1, &tid);
    glBindTexture(GL_TEXTURE_2D,tid);
    glTexImage2D(GL_TEXTURE_2D, 0, ARGB_STORE, 1, 1, 0, ARGB_PIXEL, GL_UNSIGNED_BYTE, data);
-   glDeleteTextures(1,&tid);
    int err = glGetError();
    if (err)
    {
       ELOG("Switching texture format for simulator");
       ARGB_STORE = GL_RGBA;
       ARGB_PIXEL = /*GL_BGRA*/ 0x80E1;
+
+      glTexImage2D(GL_TEXTURE_2D, 0, ARGB_STORE, 1, 1, 0, ARGB_PIXEL, GL_UNSIGNED_BYTE, data);
+      if (glGetError())
+      {
+         ELOG("Fall back to software colour transform");
+         ARGB_STORE = GL_RGBA;
+         ARGB_PIXEL = GL_RGBA;
+         SWAP_RB = true;
+      }
    }
+   glDeleteTextures(1,&tid);
    //else ELOG("Using normal texture format in simulator");
 }
 #endif
@@ -347,7 +360,7 @@ public:
          #if defined(NME_GLES)
          needsCopy = true;
          #endif
-			if (SWAP_RB && pw==4)
+         if (SWAP_RB && pw==4)
             needsCopy = true;
 
 
@@ -452,10 +465,10 @@ public:
             glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
             #endif
          }
-            int err = glGetError();
-         if (err != GL_NO_ERROR) {
-          ELOG("GL Error: %d %dx%d", err, mDirtyRect.w, mDirtyRect.h);
-         }
+
+         int err = glGetError();
+         if (err != GL_NO_ERROR)
+            ELOG("GL Error: %d %dx%d", err, mDirtyRect.w, mDirtyRect.h);
          mDirtyRect = Rect();
       }
    }
