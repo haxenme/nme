@@ -438,7 +438,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
    }
 
-   public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void
+   dynamic public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void
    {
       trace("Exception: " + exception+"\n" + haxe.CallStack.toString(stack));
       trace("\n\n\n===Terminating===\n.");
