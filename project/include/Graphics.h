@@ -637,7 +637,7 @@ public:
    Graphics(DisplayObject *inOwner, bool inInitRef = false);
    ~Graphics();
 
-   void clear(bool inForceHardwareFree=false);
+   void clear();
 
    Extent2DF GetSoftwareExtent(const Transform &inTransform,bool inIncludeStroke);
 
@@ -708,7 +708,6 @@ private:
    int                       mConvertedJobs;
    int                       mMeasuredJobs;
    int                       mBuiltHardware;
-   int                       mClearCount;
 
    GraphicsPath              *mPathData;
    HardwareData              *mHardwareData;

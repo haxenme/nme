@@ -25,7 +25,6 @@ Graphics::Graphics(DisplayObject *inOwner,bool inInitRef) : Object(inInitRef)
    mBuiltHardware = 0;
    mTileJob.mIsTileJob = true;
    mMeasuredJobs = 0;
-   mClearCount = 0;
    mVersion = 0;
    mOwner = inOwner;
 }
@@ -39,7 +38,7 @@ Graphics::~Graphics()
 }
 
 
-void Graphics::clear(bool inForceFreeHardware)
+void Graphics::clear()
 {
    mFillJob.clear();
    mLineJob.clear();
@@ -52,15 +51,8 @@ void Graphics::clear(bool inForceFreeHardware)
 
    if (mHardwareData)
    {
-      if (inForceFreeHardware || mClearCount<4)
-      {
-         delete mHardwareData;
-         mHardwareData = 0;
-      }
-      else
-         mHardwareData->clear();
-      if (!inForceFreeHardware)
-         mClearCount++;
+     delete mHardwareData;
+     mHardwareData = 0;
    }
 
    mPathData->clear();
