@@ -2001,6 +2001,10 @@ bool HardwareData::isScaleOk(const RenderState &inState) const
 void HardwareData::clear()
 {
    releaseVbo();
+   for(int i=0;i<mElements.size();i++)
+      if (mElements[i].mSurface)
+         mElements[i].mSurface->DecRef();
+
    mArray.resize(0);
    mElements.resize(0);
    mMinScale = mMaxScale = 0.0;
@@ -2008,10 +2012,7 @@ void HardwareData::clear()
 
 HardwareData::~HardwareData()
 {
-   releaseVbo();
-   for(int i=0;i<mElements.size();i++)
-      if (mElements[i].mSurface)
-         mElements[i].mSurface->DecRef();
+   clear();
 }
 
 
