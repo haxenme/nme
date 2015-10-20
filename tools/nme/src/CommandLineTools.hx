@@ -661,7 +661,7 @@ class CommandLineTools
       else
       {
          var source = nme + "/tools/nme/bin/nme.sh";
-         var target = "/usr/bin/nme";
+         var target = "/usr/local/bin/nme";
 
          if (!forceFlag && FileSystem.exists(target))
          {
