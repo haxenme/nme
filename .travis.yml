@@ -32,6 +32,9 @@ script:
 - haxe compile.hxml
 - cd $TRAVIS_BUILD_DIR/project
 - neko build.n linux-m64
+- cd $TRAVIS_BUILD_DIR/tools/nme
+- haxe test.hxml
+- neko bin/TestMain.n linux-m64
 - cd $TRAVIS_BUILD_DIR/tests
 - haxe -x RunAll
 - cd $TRAVIS_BUILD_DIR/tests/haxe
