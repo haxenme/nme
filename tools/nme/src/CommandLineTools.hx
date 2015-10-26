@@ -909,7 +909,7 @@ class CommandLineTools
             untyped $loader.path = $array(path + "Mac/", $loader.path);
 
          case LINUX:
-            var arguments = Sys.args();
+            var arguments = sys.args();
             var raspberryPi = false;
 
             for(argument in arguments) 
@@ -1435,7 +1435,7 @@ class CommandLineTools
 
    private static function processArguments(project:NMEProject):Void 
    {
-      var arguments = Sys.args();
+      var arguments = sys.args();
 
       var lastCharacter = nme.substr( -1, 1);
       if (lastCharacter == "/" || lastCharacter == "\\") 

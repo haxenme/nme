@@ -1,13 +1,12 @@
 package;
-import std.MockSys;
+import helper.CommandLineToolsHelper;
 class TestToolRuns extends haxe.unit.TestCase
 {
-    var sys:MockSys;
+    var clt:CommandLineToolsHelper;
 
     public function testRuns() {
-        sys = new MockSys();
-        CommandLineTools.sys = sys;
-        CommandLineTools.main();
+        clt = new CommandLineToolsHelper();
+        clt.run();
         assertTrue(true);
     }
 }
