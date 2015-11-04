@@ -375,8 +375,9 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 
 #ifdef IPHONEOS
 //#define FONT_BASE "/System/Library/Fonts/Cache/" before ios8.2
-const char *fontFolders[] = { "/System/Library/Fonts/Core/", "/System/Library/Fonts/AppFonts/",
-                              "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/", 0 };
+const char *fontFolders[] = { "/System/Library/Fonts/CoreAddition/", "/System/Library/Fonts/Core/", "/System/Library/Fonts/CoreUI/",
+			      "/System/Library/Fonts/AppFonts/", "/System/Library/Fonts/LanguageSupport/", "/System/Library/Fonts/Watch/",
+			      "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/", 0 };
 #else
 //#define FONT_BASE "/Library/Fonts/"
 const char *fontFolders[] = { "/Library/Fonts/", 0 };
@@ -396,7 +397,7 @@ const char *fontFolders[] = { "/Library/Fonts/", 0 };
 
     const char *serifFonts[] = { "Georgia.ttf", "Times.ttf", "Times New Roman.ttf", 0 };
     const char *sansFonts[] = { "Arial.ttf", "Helvetica.ttf", "Arial Black.ttf", 0 };
-    const char *fixedFonts[] = { "Courier New.ttf", "Courier.ttf", 0 };
+    const char *fixedFonts[] = { "Courier New.ttf", "CourierNew.ttf", "Courier.ttf", 0 };
 
     const char **test = 0;
 
@@ -1097,8 +1098,9 @@ value nme_font_iterate_device_fonts(value inFunc)
          #elif defined (BLACKBERRY)
             "/usr/fonts/font_repository/"
          #elif defined(IPHONEOS)
-            "/System/Library/Fonts/Core/", "/System/Library/Fonts/AppFonts/",
-            "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/"
+            "/System/Library/Fonts/CoreAddition/", "/System/Library/Fonts/Core/", "/System/Library/Fonts/CoreUI/",
+	    "/System/Library/Fonts/AppFonts/", "/System/Library/Fonts/LanguageSupport/", "/System/Library/Fonts/Watch/",
+	    "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/"
          #elif defined(__APPLE__)
             "/Library/Fonts/"
          #elif defined(HX_WINDOWS)
