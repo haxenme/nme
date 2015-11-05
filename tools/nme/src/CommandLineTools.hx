@@ -661,7 +661,7 @@ class CommandLineTools
       else
       {
          var source = nme + "/tools/nme/bin/nme.sh";
-         var target = "/usr/bin/nme";
+         var target = "/usr/local/bin/nme";
 
          if (!forceFlag && FileSystem.exists(target))
          {
@@ -710,6 +710,7 @@ class CommandLineTools
       Sys.println("  create : Create a new project or extension using templates");
       Sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
       Sys.println("  rebuild : rebuild binaries from a build.xml file'");
+      Sys.println("  remake : rebuild nme tool and build nme project binaries for targets'");
       Sys.println("");
       Sys.println(" Targets : ");
       Sys.println("");

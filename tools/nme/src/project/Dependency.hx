@@ -6,6 +6,7 @@ class Dependency
    public var name:String;
    public var path:String;
    public var baseDir:String;
+   public var sourceTree:String;
 
    public function new(inName:String, inPath:String, inBaseDir:String)
    {

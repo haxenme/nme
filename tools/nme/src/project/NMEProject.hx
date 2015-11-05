@@ -121,6 +121,8 @@ class NMEProject
    public var dependencies:Map<String,Dependency>;
    public var otherLinkerFlags:Array<String>;
    public var customIOSproperties:Map<String,String>;
+   public var frameworkSearchPaths:Array<String>;
+   public var customIOSBlock:Array<String>;
    // Additional files to be copied into andoird project
    public var javaPaths:Array<String>;
    // Android signing certificate
@@ -177,6 +179,8 @@ class NMEProject
       dependencies = new Map<String,Dependency>();
       otherLinkerFlags = [];
       customIOSproperties = new Map<String, String>();
+      customIOSBlock = [];
+      frameworkSearchPaths = [];
       haxedefs = new Map<String,String>();
       haxeflags = new Array<String>();
       macros = new Array<String>();

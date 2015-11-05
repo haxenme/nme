@@ -64,6 +64,8 @@ class MainView extends GLSurfaceView {
    static MainView mRefreshView;
 
    boolean isPollImminent;
+   boolean deactivated;
+   boolean onPaused;
    Runnable pollMe;
    TimerTask pendingTimer;
    boolean renderPending = false;
@@ -428,6 +430,20 @@ class MainView extends GLSurfaceView {
     }
 
    @Override
+   public void onPause () {
+       Log.v("NME","onPause");
+       deactivated = true;
+   }
+
+   @Override
+   public void onResume () {
+       Log.v("NME","onResume");
+       deactivated = false;
+       onPaused = false;
+       super.onResume();
+   }
+
+   @Override
    public boolean onTouchEvent(final MotionEvent ev)
    {
        final MainView me = this;
@@ -574,11 +590,17 @@ class MainView extends GLSurfaceView {
 
         public void onDrawFrame(GL10 gl)
         {
-            mMainView.renderPending = false;
-            //Log.v("VIEW","onDrawFrame !");
-            mMainView.HandleResult( NME.onRender() );
-            Sound.checkSoundCompletion();
-            //Log.v("VIEW","onDrawFrame DONE!");
+            if(mMainView.deactivated) {
+                if(mMainView.onPaused) {
+                    mMainView.onPaused = true;
+                    mMainView.onPause();
+                }
+            }
+            else {
+                mMainView.renderPending = false;
+                mMainView.HandleResult( NME.onRender() );
+                Sound.checkSoundCompletion();
+            }
         }
 
         public void onSurfaceChanged(GL10 gl, int width, int height)

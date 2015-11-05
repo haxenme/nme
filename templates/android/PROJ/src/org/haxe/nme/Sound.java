@@ -114,7 +114,6 @@ class ManagedMediaPlayer
          //Log.e("ManagedMediaPlayer", "mp.stop");
          MediaPlayer mpTemp = mp;
          mp = null;
-			mpTemp.stop();
 			mpTemp.release();
       }
       //Log.e("ManagedMediaPlayer", "mp.stopped");
