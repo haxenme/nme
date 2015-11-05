@@ -1,4 +1,16 @@
 
+* More hide-and-seek with ios font locations (thanks codeservice)
+* Updated bin location for El Capitan
+* Turn off BITCODE in nme projects by default
+* Correctly interpret ndll name in extension
+* Allow custom intp.plist blocks on ios. (eg, facebook integration)
+* Pause and resume the android rendering in response to system messages
+* Simplify frame timer logic by default
+* Allow multiple scroll steps per mouse wheel click
+ Thanks Thomas
+* Fix texture lean when clearing HardwareData
+* Fix android colour format on some simulators
+
 5.5
 --------------------------
 
