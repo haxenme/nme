@@ -321,7 +321,8 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       {
          var value = inEvent.value;
 
-         if (value >= 96 && value <= 122) value -= 32;
+         // This messes with function keys on SDL - why is this here?
+         //if (value >= 96 && value <= 122) value -= 32;
 
          var obj = stack[0];
          var flags:Int = inEvent.flags;
