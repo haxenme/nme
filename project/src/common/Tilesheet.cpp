@@ -91,8 +91,19 @@ bool Tilesheet::IsSingleTileImage()
    if  (mTiles.size()!=1)
       return false;
    const Tile &tile = mTiles[0];
-   return tile.mOx==0 && tile.mOy==0 && tile.mRect.x==0 &&  tile.mRect.y==0 &&
-          tile.mRect.w==mSheet->Width() && tile.mRect.h==mSheet->Height();
+   if ( tile.mOx==0 && tile.mOy==0 && tile.mRect.x==0 &&  tile.mRect.y==0 &&
+          tile.mRect.w==mSheet->Width() && tile.mRect.h==mSheet->Height())
+   {
+
+      #if defined(HX_LINUX) || defined(HX_MACOS) || defined(HX_WINDOWS)
+      return true;
+      #else
+      // Only supported if we are sure texture coordinates will be (0,0) (1,1) - power of 2
+      return  ! ((tile.mRect.w-1) & (tile.mRect.w)) &&
+              ! ((tile.mRect.h-1) & (tile.mRect.h));
+      #endif
+   }
+   return false;
 }
 
 
