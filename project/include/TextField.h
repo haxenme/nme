@@ -159,6 +159,8 @@ public:
    void OnScrollWheel(int inDirection);
    void DeleteSelection();
    void ClearSelection();
+   void CopySelection();
+   void PasteSelection();
    void DeleteChars(int inFirst,int inEnd);
    void InsertString(WString &ioString);
    void ShowCaret(bool inFromDrag=false);

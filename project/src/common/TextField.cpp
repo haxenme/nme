@@ -21,6 +21,8 @@ int gPasswordChar = 42; // *
 
 static const double GAP = 2.0;
 
+static WString sCopyBuffer;
+
 TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    alwaysShowSelection(false),
    antiAliasType(aaNormal),
@@ -606,7 +608,7 @@ void TextField::OnChange()
 void TextField::AddCharacter(int inCharCode)
 {
    DeleteSelection();
-   wchar_t str[2] = {inCharCode,0};
+   wchar_t str[2] = {(wchar_t)inCharCode,0};
    WString ws(str);
 
    if (caretIndex<0)
@@ -618,14 +620,19 @@ void TextField::AddCharacter(int inCharCode)
    ShowCaret();
 }
 
+void TextField::PasteSelection()
+{
+   InsertString(sCopyBuffer);
+}
 
 
 void TextField::OnKey(Event &inEvent)
 {
    if (isInput && (inEvent.type==etKeyDown || inEvent.type==etChar) && inEvent.code<0xffff )
    {
+      bool ctrl = inEvent.flags & efCtrlDown;
       int code = inEvent.code;
-      bool isPrintChar = (code>27 && code<63000);
+      bool isPrintChar = (code>31 && code<63000) && code!=127 && !ctrl;
 
       if (isPrintChar)
       {
@@ -642,9 +649,38 @@ void TextField::OnKey(Event &inEvent)
             return;
 
          bool shift = inEvent.flags & efShiftDown;
+         int value = inEvent.value;
+         if (value==keyINSERT && shift)
+            value = keyV;
 
-         switch(inEvent.value)
+         switch(value)
          {
+            case keyX:
+               if (mSelectMin<mSelectMax)
+               {
+                  CopySelection();
+                  DeleteSelection();
+                  mCaretDirty = true;
+                  ShowCaret();
+                  OnChange();
+               }
+               return;
+
+            case keyC:
+               if (mSelectMin<mSelectMax)
+                  CopySelection();
+               return;
+
+            case keyV:
+               if (mSelectMin<mSelectMax)
+                  DeleteSelection();
+               PasteSelection();
+               mCaretDirty = true;
+               ShowCaret();
+               OnChange();
+               return;
+
+
             case keyBACKSPACE:
                if (mSelectMin<mSelectMax)
                {
@@ -664,6 +700,8 @@ void TextField::OnKey(Event &inEvent)
             case keyDELETE:
                if (mSelectMin<mSelectMax)
                {
+                  if (shift)
+                     CopySelection();
                   DeleteSelection();
                }
                else if (caretIndex<getLength())
@@ -696,8 +734,28 @@ void TextField::OnKey(Event &inEvent)
                {
                   case keyLEFT: if (caretIndex>0) caretIndex--; break;
                   case keyRIGHT: if (caretIndex<mCharPos.size()) caretIndex++; break;
-                  case keyHOME: caretIndex = 0; break;
-                  case keyEND: caretIndex = getLength(); break;
+                  case keyHOME:
+                    if ( (inEvent.flags & efCtrlDown) || mLines.size()<2)
+                       caretIndex = 0;
+                    else
+                    {
+                       int l= LineFromChar(caretIndex);
+                       Line &line = mLines[l];
+                       caretIndex = line.mChar0;
+                    }
+                    break;
+
+                  case keyEND:
+                    if ( (inEvent.flags & efCtrlDown) || mLines.size()<2)
+                       caretIndex = getLength();
+                    else
+                    {
+                       int l= LineFromChar(caretIndex);
+                       Line &line = mLines[l];
+                       caretIndex = line.mChar0 + (line.mChars>0?line.mChars-1:0);
+                    }
+                    break;
+
                   case keyUP:
                   case keyDOWN:
                   {
@@ -1575,7 +1633,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
          float white[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
          float groupColour[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-         float trans_2x2[4] = { fontToLocal, 0.0f, 0.0f, fontToLocal };
+         float trans_2x2[4] = { (float)fontToLocal, 0.0f, 0.0f, (float)fontToLocal };
          for(int g=0;g<mCharGroups.size();g++)
          {
             CharGroup &group = *mCharGroups[g];
@@ -1751,6 +1809,34 @@ void TextField::ClearSelection()
       mCaretDirty = true;
       mGfxDirty = true;
    }
+}
+
+void TextField::CopySelection()
+{
+   if (mSelectMin>=mSelectMax)
+      sCopyBuffer = WString();
+   else
+   {
+      int g0 = GroupFromChar(mSelectMin);
+      int g1 = GroupFromChar(mSelectMax-1);
+
+      int g0_pos = mSelectMin - mCharGroups[g0]->mChar0;
+      wchar_t *g0_first = mCharGroups[g0]->mString.mPtr + g0_pos;
+      if (g0==g1)
+         sCopyBuffer = WString(g0_first, g0_first + (mSelectMax-mSelectMin) );
+      else
+      {
+         sCopyBuffer = WString(g0_first,mCharGroups[g0]->mString.size() - g0_pos );
+         for(int g=g0+1;g<g1;g++)
+         {
+            CharGroup &group = *mCharGroups[g];
+            sCopyBuffer += WString( group.mString.mPtr, group.mString.size() );
+         }
+         CharGroup &group = *mCharGroups[g1];
+         sCopyBuffer += WString( group.mString.mPtr, group.mString.mPtr + mSelectMax - group.mChar0 );
+      }
+   }
+
 }
 
 void TextField::DeleteSelection()

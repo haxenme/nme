@@ -1004,20 +1004,6 @@ void AddCharCode(Event &key)
             foundCode = false;
             break;
       }
-      
-      if (!foundCode)
-      {
-         if (key.value >= 48 && key.value <= 57)
-         {
-            key.code = key.value;
-            foundCode = true;
-         }
-         else if (key.value >= 65 && key.value <= 90)
-         {
-            key.code = key.value + 32;
-            foundCode = true;
-         }
-      }
    }
    else
    {
@@ -1082,20 +1068,19 @@ void AddCharCode(Event &key)
             foundCode = false;
             break;
       }
-      
-      if (!foundCode)
-      {
-         if (key.value >= 65 && key.value <= 90)
-         {
-            key.code = key.value;
-            foundCode = true;
-         }
-      }
    }
    
    if (!foundCode)
    {
-      if (key.value >= 96 && key.value <= 105)
+      if (key.value >= 48 && key.value <= 57)
+      {
+         key.code = key.value;
+      }
+      else if (key.value >= 65 && key.value <= 90)
+      {
+         key.code = key.value;
+      }
+      else if (key.value >= 96 && key.value <= 105)
       {
          key.code = key.value - 48;
       }
