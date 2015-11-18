@@ -3569,6 +3569,21 @@ value nme_text_field_get_line_metrics(value inText,value inIndex,value outMetric
 DEFINE_PRIM(nme_text_field_get_line_metrics,3);
 
 
+value nme_text_field_get_char_boundaries(value inText,value inIndex,value outBounds)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      Rect rect = text->getCharBoundaries(val_int(inIndex));
+      ToValue(outBounds,rect);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_text_field_get_char_boundaries,3);
+
+
+
+
 #define TEXT_PROP_GET(prop,Prop,to_val) \
 value nme_text_field_get_##prop(value inHandle) \
 { \

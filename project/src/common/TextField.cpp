@@ -1031,6 +1031,22 @@ WString TextField::getHTMLText()
    return result;
 }
 
+Rect TextField::getCharBoundaries(int inCharIndex)
+{
+   if (inCharIndex>=0 && inCharIndex<mCharPos.size())
+   {
+      UserPoint p = mCharPos[ inCharIndex ];
+      Line &line = mLines[LineFromChar(inCharIndex)];
+      int height = line.mMetrics.height;
+      int linePos = inCharIndex - line.mChar0;
+      int width = line.mChars>linePos ? mCharPos[ inCharIndex+1 ].x - p.x : line.mMetrics.width - p.x; 
+      return Rect(p.x, p.y, width, height);
+   }
+
+   return Rect(0,0,0,0);
+}
+
+
 
 // Not sure why I need these now?
 int MySSCAND(const wchar_t *inStr, int *outValue)

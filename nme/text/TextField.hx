@@ -3,6 +3,7 @@ package nme.text;
 
 import nme.display.InteractiveObject;
 import nme.Loader;
+import nme.geom.Rectangle;
 
 @:nativeProperty
 class TextField extends InteractiveObject 
@@ -39,8 +40,8 @@ class TextField extends InteractiveObject
    {
       var handle = nme_text_field_create();
       super(handle, "TextField");
-	  gridFitType = GridFitType.PIXEL;
-	  sharpness = 0;
+     gridFitType = GridFitType.PIXEL;
+     sharpness = 0;
    }
 
    public function appendText(newText:String):Void 
@@ -58,11 +59,11 @@ class TextField extends InteractiveObject
       return nme_text_field_get_line_text(nmeHandle, lineIndex);
    }
 
-        public function getLineMetrics(lineIndex:Int):TextLineMetrics 
-        {
-                var result: TextLineMetrics = new TextLineMetrics();
-                nme_text_field_get_line_metrics(nmeHandle, lineIndex, result);
-                return result;
+   public function getLineMetrics(lineIndex:Int):TextLineMetrics 
+   {
+      var result: TextLineMetrics = new TextLineMetrics();
+      nme_text_field_get_line_metrics(nmeHandle, lineIndex, result);
+      return result;
    }
    
    public function getTextFormat(beginIndex:Int = -1, endIndex:Int = -1):TextFormat 
@@ -71,6 +72,13 @@ class TextField extends InteractiveObject
       nme_text_field_get_text_format(nmeHandle, result, beginIndex, endIndex);
       return result;
    } 
+
+   public function getCharBoundaries(charIndex:Int):Rectangle
+   {
+      var result = new Rectangle();
+      nme_text_field_get_char_boundaries(nmeHandle, charIndex, result);
+      return result;
+   }
 
    public function setSelection(beginIndex:Int, endIndex:Int):Void 
    {
@@ -175,6 +183,7 @@ class TextField extends InteractiveObject
    private static var nme_text_field_get_line_offset = Loader.load("nme_text_field_get_line_offset", 2);
    private static var nme_text_field_get_embed_fonts = Loader.load("nme_text_field_get_embed_fonts", 1);
    private static var nme_text_field_set_embed_fonts = Loader.load("nme_text_field_set_embed_fonts", 2);
+   private static var nme_text_field_get_char_boundaries = Loader.load("nme_text_field_get_char_boundaries", 3);
 }
 
 #else
