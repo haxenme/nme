@@ -1839,7 +1839,7 @@ void TextField::CopySelection()
       int g0_pos = mSelectMin - mCharGroups[g0]->mChar0;
       wchar_t *g0_first = mCharGroups[g0]->mString.mPtr + g0_pos;
       if (g0==g1)
-         sCopyBuffer = WString(g0_first, g0_first + (mSelectMax-mSelectMin) );
+         sCopyBuffer = WString(g0_first, mSelectMax-mSelectMin );
       else
       {
          sCopyBuffer = WString(g0_first,mCharGroups[g0]->mString.size() - g0_pos );
@@ -1849,7 +1849,7 @@ void TextField::CopySelection()
             sCopyBuffer += WString( group.mString.mPtr, group.mString.size() );
          }
          CharGroup &group = *mCharGroups[g1];
-         sCopyBuffer += WString( group.mString.mPtr, group.mString.mPtr + mSelectMax - group.mChar0 );
+         sCopyBuffer += WString( group.mString.mPtr,  mSelectMax - group.mChar0 );
       }
    }
 
