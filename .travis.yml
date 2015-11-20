@@ -1,18 +1,18 @@
-language: c++
+language: objective-c
 before_install:
-- wget -c http://nekovm.org/_media/neko-2.0.0-linux64.tar.gz
-- sudo mkdir /usr/lib/neko
-- sudo tar xvzf neko-2.0.0-linux64.tar.gz -C /usr/lib/neko --strip-components=1
-- sudo ln -s /usr/lib/neko/neko /usr/bin/neko
-- sudo ln -s /usr/lib/neko/nekoc /usr/bin/nekoc
-- sudo ln -s /usr/lib/neko/nekotools /usr/bin/nekotools
-- sudo ln -s /usr/lib/neko/libneko.so /usr/lib/libneko.so
-- sudo apt-get -y install libgc-dev
-- wget -c http://haxe.org/file/haxe-3.2.0-linux64.tar.gz
-- sudo mkdir /usr/lib/haxe
-- sudo tar xvzf haxe-3.2.0-linux64.tar.gz -C /usr/lib/haxe --strip-components=1
-- sudo ln -s /usr/lib/haxe/haxe /usr/bin/haxe
-- sudo ln -s /usr/lib/haxe/haxelib /usr/bin/haxelib
+- wget -c http://nekovm.org/media/neko-2.0.0-osx64.tar.gz
+- sudo mkdir /usr/local/lib/neko
+- sudo tar xvzf neko-2.0.0-osx64.tar.gz -C /usr/local/lib/neko --strip-components=1
+- sudo ln -s /usr/local/lib/neko/neko /usr/local/bin/neko
+- sudo ln -s /usr/local/lib/neko/nekoc /usr/local/bin/nekoc
+- sudo ln -s /usr/local/lib/neko/nekotools /usr/local/bin/nekotools
+- sudo ln -s /usr/local/lib/neko/libneko.so /usr/local/lib/libneko.so
+- sudo ln -s /usr/local/lib/neko/libneko.dylib /usr/local/lib/libneko.dylib
+- wget -c http://haxe.org/website-content/downloads/3.2.1/downloads/haxe-3.2.1-osx.tar.gz
+- sudo mkdir /usr/local/lib/haxe
+- sudo tar xvzf haxe-3.2.1-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
+- sudo ln -s /usr/local/lib/haxe/haxe /usr/bin/haxe
+- sudo ln -s /usr/local/lib/haxe/haxelib /usr/bin/haxelib
 - mkdir ~/haxelib
 - haxelib setup ~/haxelib
 - haxelib dev nme $(pwd)
@@ -23,7 +23,7 @@ before_install:
 - cd ~/hxcpp/tools/run
 - haxe compile.hxml
 - cd ~/hxcpp/project
-- neko build.n linux-m64
+- neko build.n
 - haxelib -notimeout install nme-dev
 - haxelib -notimeout install format
 - haxelib -notimeout install gm2d
@@ -31,7 +31,11 @@ script:
 - cd $TRAVIS_BUILD_DIR/tools/nme
 - haxe compile.hxml
 - cd $TRAVIS_BUILD_DIR/project
-- neko build.n linux-m64
+- neko build.n
+- cd $TRAVIS_BUILD_DIR/tools/nme
+- haxelib run nme setup
+- haxe test.hxml
+- neko bin/TestMain.n
 - cd $TRAVIS_BUILD_DIR/tests
 - haxe -x RunAll
 - cd $TRAVIS_BUILD_DIR/tests/haxe

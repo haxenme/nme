@@ -1,5 +1,7 @@
 package;
 
+import std.RealSys;
+import std.SysProxy;
 import haxe.io.Path;
 import sys.io.File;
 import sys.io.Process;
@@ -24,6 +26,7 @@ class CommandLineTools
 {
    public static var nme(default,null):String;
    public static var home:String;
+   public static var sys:SysProxy;
 
    static var additionalArguments:Array<String>;
    static var command:String;
@@ -211,16 +214,16 @@ class CommandLineTools
    static function showSampleHelp(inMode:String)
    {
       if (inMode=="demo")
-         Sys.println("nme demo [target] - build given sample [with given target]");
+         sys.println("nme demo [target] - build given sample [with given target]");
       else
-         Sys.println("nme clone [-in local-dir] - clone a project [into given directory]");
+         sys.println("nme clone [-in local-dir] - clone a project [into given directory]");
 
-      Sys.println('   nme $inMode directory - from given directory');
-      Sys.println('   nme $inMode nme-sample - $inMode nme sample');
-      Sys.println('   nme $inMode haxelib - list samples in given haxelib');
-      Sys.println('   nme $inMode haxelib:directory - sample from given haxelib directory');
-      Sys.println('   nme $inMode haxelib:sample-name - named sample from given haxelib');
-      Sys.println("");
+      sys.println('   nme $inMode directory - from given directory');
+      sys.println('   nme $inMode nme-sample - $inMode nme sample');
+      sys.println('   nme $inMode haxelib - list samples in given haxelib');
+      sys.println('   nme $inMode haxelib:directory - sample from given haxelib directory');
+      sys.println('   nme $inMode haxelib:sample-name - named sample from given haxelib');
+      sys.println("");
 
       showSamples("NME",nme);
       //var joint = Log.mVerbose ? "\n" : ", ";
@@ -326,7 +329,7 @@ class CommandLineTools
       var samples = getSamples(dir);
 
       var joint = "\n ";
-      Sys.println(name + " samples: " + joint + samples.join(joint) );
+      sys.println(name + " samples: " + joint + samples.join(joint) );
    }
 
    static function findSample(project:NMEProject,samples:Array<Sample>, name:String, target:String )
@@ -357,7 +360,7 @@ class CommandLineTools
 
 
       var joint = "\n ";
-      Sys.println("Valid samples: " + joint + samples.join(joint) );
+      sys.println("Valid samples: " + joint + samples.join(joint) );
       Log.error("Could not find unique sample " + name);
    }
 
@@ -392,12 +395,12 @@ class CommandLineTools
             args.push("deploy=" + project.getDef("deploy"));
          if (sampleTarget!="")
          {
-            Sys.println("Create demo " + dir + " for target " + sampleTarget);
+            sys.println("Create demo " + dir + " for target " + sampleTarget);
             args.push(sampleTarget);
          }
          else
          {
-            Sys.println("Create demo " + dir + " using default target");
+            sys.println("Create demo " + dir + " using default target");
          }
          ProcessHelper.runCommand(dir, "haxelib", args);
       }
@@ -409,7 +412,7 @@ class CommandLineTools
             sampleInDir = path.file;
          }
 
-         Sys.println("Clone " + dir + " in " + sampleInDir); 
+         sys.println("Clone " + dir + " in " + sampleInDir);
          FileHelper.recursiveCopy(dir, sampleInDir);
 
          var relocation = FileSystem.fullPath(dir);
@@ -430,7 +433,7 @@ class CommandLineTools
             if (debug)
                args.push("-debug");
 
-            Sys.println("Test " + sampleInDir + " using target " + sampleTarget);
+            sys.println("Test " + sampleInDir + " using target " + sampleTarget);
             ProcessHelper.runCommand(sampleInDir, "haxelib", args);
          }
       }
@@ -601,23 +604,23 @@ class CommandLineTools
       }
       else
       {
-         Sys.println("You must specify 'project' or a sample name when using the 'create' command.");
-         Sys.println("");
-         Sys.println("Usage: ");
-         Sys.println("");
-         Sys.println(" nme create project \"com.package.name\" \"Company Name\"");
-         Sys.println(" nme create extension \"ExtensionName\"");
-         Sys.println(" nme create SampleName");
-         Sys.println("");
-         Sys.println("");
-         Sys.println("Available samples:");
-         Sys.println("");
+         sys.println("You must specify 'project' or a sample name when using the 'create' command.");
+         sys.println("");
+         sys.println("Usage: ");
+         sys.println("");
+         sys.println(" nme create project \"com.package.name\" \"Company Name\"");
+         sys.println(" nme create extension \"ExtensionName\"");
+         sys.println(" nme create SampleName");
+         sys.println("");
+         sys.println("");
+         sys.println("Available samples:");
+         sys.println("");
 
          for(name in FileSystem.readDirectory(nme + "/samples")) 
          {
             if (FileSystem.isDirectory(nme + "/samples/" + name)) 
             {
-               Sys.println(" - " + name);
+               sys.println(" - " + name);
             }
          }
       }
@@ -643,14 +646,14 @@ class CommandLineTools
 
          if (!forceFlag && FileSystem.exists(target))
          {
-            Sys.println("NME appears to be setup already.  Use '-f' to force reinstall");
+            sys.println("NME appears to be setup already.  Use '-f' to force reinstall");
          }
          else
          {
             try
             {
                File.copy(source,target);
-               Sys.println("Wrote " + target);
+               sys.println("Wrote " + target);
             }
             catch(e:Dynamic)
             {
@@ -665,7 +668,7 @@ class CommandLineTools
 
          if (!forceFlag && FileSystem.exists(target))
          {
-            Sys.println("NME appears to be setup already.  Use '-f' to force reinstall");
+            sys.println("NME appears to be setup already.  Use '-f' to force reinstall");
          }
          else
          {
@@ -678,7 +681,7 @@ class CommandLineTools
             if (!FileSystem.exists(target))
                Log.error("NME setup failed - could not write " + target);
             else
-               Sys.println("Wrote " + target);
+               sys.println("Wrote " + target);
          }
       }
    }
@@ -692,77 +695,77 @@ class CommandLineTools
    {
       displayInfo();
 
-      Sys.println("");
-      Sys.println(" Usage : nme help");
-      Sys.println(" Usage : nme [setup|clean|update|build|run|test] <project> (target) [options]");
-      Sys.println("");
-      Sys.println(" Commands : ");
-      Sys.println("");
-      Sys.println("  help : Show this information");
-      Sys.println("  tidy : Remove the target build directory if it exists");
-      Sys.println("  clean : Remove the target build directory and cpp obj files");
-      Sys.println("  update : Copy assets for the specified project/target");
-      Sys.println("  build : Compile and package for the specified project/target");
-      Sys.println("  run : Install and run for the specified project/target");
-      Sys.println("  test : Update, build and run in one command");
-      Sys.println("  clone : Copy an existing sample or project");
-      Sys.println("  demo :  Run an existing sample or project");
-      Sys.println("  create : Create a new project or extension using templates");
-      Sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
-      Sys.println("  rebuild : rebuild binaries from a build.xml file'");
-      Sys.println("  remake : rebuild nme tool and build nme project binaries for targets'");
-      Sys.println("");
-      Sys.println(" Targets : ");
-      Sys.println("");
-      Sys.println("  cpp         : Create applications, for host system (linux,mac,windows)");
-      Sys.println("  android     : Create Google Android applications");
-      Sys.println("  ios         : Create Apple iOS applications");
-      Sys.println("  androidview : Create library files for inclusion in Google Android applications");
-      Sys.println("  iosview     : Create library files for inclusion in Apple iOS applications");
-      Sys.println("  flash       : Create SWF applications for Adobe Flash Player");
-      Sys.println("  neko        : Create application for rapid testing on host system");
-      Sys.println("  iphone      : ios + device debugging");
-      Sys.println("  iphonesim   : ios + simulator");
-      Sys.println("  androidsim  : android + simulator");
-      Sys.println("");
-      Sys.println(" Options : ");
-      Sys.println("");
-      Sys.println("  -D : Specify a define to use when processing other commands");
-      Sys.println("  -debug : Use debug configuration instead of release");
-      Sys.println("  -megatrace : Add maximum debugging");
-      Sys.println("  -verbose : Print additional information(when available)");
-      Sys.println("  -f : force setup re-write");
-      Sys.println("  -vverbose : very berbose - includes haxe verbose mode");
-      Sys.println("  -tidy : remove ouput files");
-      Sys.println("  -clean : remove output files and c++ obj file store");
-      Sys.println("  -bin directory: put generated binaries in different directory");
-      Sys.println("  [mac/linux] -32 -64 : Compile for 32-bit or 64-bit instead of default");
-      Sys.println("  [android] -device=serialnumber : specify serial number");
-      Sys.println("  [ios] -simulator : Build/test for the device simulator");
-      Sys.println("  [ios] -simulator -ipad : Build/test for the iPad Simulator");
-      Sys.println("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
+      sys.println("");
+      sys.println(" Usage : nme help");
+      sys.println(" Usage : nme [setup|clean|update|build|run|test] <project> (target) [options]");
+      sys.println("");
+      sys.println(" Commands : ");
+      sys.println("");
+      sys.println("  help : Show this information");
+      sys.println("  tidy : Remove the target build directory if it exists");
+      sys.println("  clean : Remove the target build directory and cpp obj files");
+      sys.println("  update : Copy assets for the specified project/target");
+      sys.println("  build : Compile and package for the specified project/target");
+      sys.println("  run : Install and run for the specified project/target");
+      sys.println("  test : Update, build and run in one command");
+      sys.println("  clone : Copy an existing sample or project");
+      sys.println("  demo :  Run an existing sample or project");
+      sys.println("  create : Create a new project or extension using templates");
+      sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
+      sys.println("  rebuild : rebuild binaries from a build.xml file'");
+      sys.println("  remake : rebuild nme tool and build nme project binaries for targets'");
+      sys.println("");
+      sys.println(" Targets : ");
+      sys.println("");
+      sys.println("  cpp         : Create applications, for host system (linux,mac,windows)");
+      sys.println("  android     : Create Google Android applications");
+      sys.println("  ios         : Create Apple iOS applications");
+      sys.println("  androidview : Create library files for inclusion in Google Android applications");
+      sys.println("  iosview     : Create library files for inclusion in Apple iOS applications");
+      sys.println("  flash       : Create SWF applications for Adobe Flash Player");
+      sys.println("  neko        : Create application for rapid testing on host system");
+      sys.println("  iphone      : ios + device debugging");
+      sys.println("  iphonesim   : ios + simulator");
+      sys.println("  androidsim  : android + simulator");
+      sys.println("");
+      sys.println(" Options : ");
+      sys.println("");
+      sys.println("  -D : Specify a define to use when processing other commands");
+      sys.println("  -debug : Use debug configuration instead of release");
+      sys.println("  -megatrace : Add maximum debugging");
+      sys.println("  -verbose : Print additional information(when available)");
+      sys.println("  -f : force setup re-write");
+      sys.println("  -vverbose : very berbose - includes haxe verbose mode");
+      sys.println("  -tidy : remove ouput files");
+      sys.println("  -clean : remove output files and c++ obj file store");
+      sys.println("  -bin directory: put generated binaries in different directory");
+      sys.println("  [mac/linux] -32 -64 : Compile for 32-bit or 64-bit instead of default");
+      sys.println("  [android] -device=serialnumber : specify serial number");
+      sys.println("  [ios] -simulator : Build/test for the device simulator");
+      sys.println("  [ios] -simulator -ipad : Build/test for the iPad Simulator");
+      sys.println("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
    }
 
    private static function displayInfo(showHint:Bool = false, forXcode:Bool = false):Void 
    {
       if (!forXcode) // Does not show up so well in xcode
       {
-         Sys.println(" _____________");
-         Sys.println("|             |");
-         Sys.println("|__  _  __  __|");
-         Sys.println("|  \\| \\/  ||__|");
-         Sys.println("|\\  \\  \\ /||__|");
-         Sys.println("|_|\\_|\\/|_||__|");
-         Sys.println("|             |");
-         Sys.println("|_____________|");
-         Sys.println("");
+         sys.println(" _____________");
+         sys.println("|             |");
+         sys.println("|__  _  __  __|");
+         sys.println("|  \\| \\/  ||__|");
+         sys.println("|\\  \\  \\ /||__|");
+         sys.println("|_|\\_|\\/|_||__|");
+         sys.println("|             |");
+         sys.println("|_____________|");
+         sys.println("");
       }
-      Sys.println("NME Command-Line Tools(" + nmeVersion + " @ '" + nme + "')");
+      sys.println("NME Command-Line Tools(" + nmeVersion + " @ '" + nme + "')");
 
       if (showHint) 
       {
          //if (!FileSystem.exits(
-         Sys.println("Use \"nme help\" for more commands");
+         sys.println("Use \"nme help\" for more commands");
       }
    }
 
@@ -906,7 +909,7 @@ class CommandLineTools
             untyped $loader.path = $array(path + "Mac/", $loader.path);
 
          case LINUX:
-            var arguments = Sys.args();
+            var arguments = sys.args();
             var raspberryPi = false;
 
             for(argument in arguments) 
@@ -1154,15 +1157,15 @@ class CommandLineTools
       }
       else
       {
-         Sys.println("Usage : nme set name [value]");
+         sys.println("Usage : nme set name [value]");
          for(n in 0...setNames.length)
          {
-            Sys.println(" " + setNames[n] + " : " + setNamesHelp[n]);
-            Sys.println("    = " + Reflect.field(storeData, setNames[n]) );
+            sys.println(" " + setNames[n] + " : " + setNamesHelp[n]);
+            sys.println("    = " + Reflect.field(storeData, setNames[n]) );
          }
          for(name in quickSetNames)
          {
-            Sys.println(' $name [' + (Reflect.field(storeData,name)==null ? "not set" : "set") + ']' );
+            sys.println(' $name [' + (Reflect.field(storeData,name)==null ? "not set" : "set") + ']' );
          }
       }
    }
@@ -1179,8 +1182,8 @@ class CommandLineTools
    {
       if (words.length!=1 || !(isIn(setNames,words[0]) || isIn(quickSetNames,words[0])) )
       {
-         Sys.println("Usage : nme unset name");
-         Sys.println(" name : " + setNames.concat(quickSetNames).join(",") );
+         sys.println("Usage : nme unset name");
+         sys.println(" name : " + setNames.concat(quickSetNames).join(",") );
       }
       else
       {
@@ -1191,7 +1194,7 @@ class CommandLineTools
 
    static function buildNdll()
    {
-      Sys.println("The binary nme.ndll is not distrubuted with source code, and is not built for your system yet.");
+      sys.println("The binary nme.ndll is not distrubuted with source code, and is not built for your system yet.");
       while(true)
       {
          Sys.print("Would you like to build it now Y/n ? >");
@@ -1200,11 +1203,11 @@ class CommandLineTools
             return;
          if (result.substr(0,1).toLowerCase()=="y" || result=="")
          {
-            Sys.println("Update nme-dev...");
+            sys.println("Update nme-dev...");
             ProcessHelper.runCommand("", "haxelib", ["update","nme-dev"]);
-            Sys.println("Build binaries...");
+            sys.println("Build binaries...");
             ProcessHelper.runCommand(nme + "/project", "neko", ["build.n"] );
-            Sys.println("\nPlease re-run nme");
+            sys.println("\nPlease re-run nme");
             return;
          }
       }
@@ -1236,10 +1239,15 @@ class CommandLineTools
       }
    }
 
-
+   public static function init():Void {
+      sys = new RealSys();
+   }
 
    public static function main():Void 
    {
+      if(sys == null)
+          init();
+
       nme = PathHelper.getHaxelib(new Haxelib("nme"));
 
       if (!Loader.foundNdll)
@@ -1298,7 +1306,7 @@ class CommandLineTools
       if (Log.mVerbose && command!="") 
       {
          displayInfo(false, command=="xcode");
-         Sys.println("");
+         sys.println("");
       }
 
       switch(command) 
@@ -1349,7 +1357,7 @@ class CommandLineTools
          case "xcode":
             Sys.putEnv("HXCPP_NO_COLOUR","1");
             if (Sys.getEnv("NME_ALREADY_BUILDING")=="BUILDING")
-               Sys.println("...already building");
+               sys.println("...already building");
             else
                buildProject(project);
 
@@ -1427,7 +1435,7 @@ class CommandLineTools
 
    private static function processArguments(project:NMEProject):Void 
    {
-      var arguments = Sys.args();
+      var arguments = sys.args();
 
       var lastCharacter = nme.substr( -1, 1);
       if (lastCharacter == "/" || lastCharacter == "\\") 
