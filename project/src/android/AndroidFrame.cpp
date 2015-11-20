@@ -320,7 +320,7 @@ public:
       HandleEvent(evt);
    }
 
-   void OnKey(int inKeyCode, int inCharCode, bool inDown)
+   void OnKey(int inKeyCode, int inCharCode, bool inDown, bool isChar)
    {
       //__android_log_print(ANDROID_LOG_INFO, "NME", "OnKey %d %d", inCode, inDown);
       Event key( inDown ? etKeyDown : etKeyUp );
@@ -328,7 +328,7 @@ public:
       key.value = inKeyCode;
       HandleEvent(key);
       
-      if(inDown) {
+      if(isChar) {//if(inDown) {
          Event key( etChar );
          key.code = inCharCode;
          //key.value = inKeyCode;
@@ -825,11 +825,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject 
    return nme::GetResult();
 }
 
-JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int keyCode, int charCode, bool down)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int keyCode, int charCode, bool down, bool isChar)
 {
    AutoHaxe haxe("onKey");
    if (nme::sStage)
-      nme::sStage->OnKey(keyCode,charCode,down);
+      nme::sStage->OnKey(keyCode,charCode,down,isChar);
    return nme::GetResult();
 }
 
