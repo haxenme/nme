@@ -52,7 +52,7 @@
 		1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1EEEBAFF121BE2B30048A9DF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 
-        1E3B11C11854877600E698A8 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ::APP_FILE::/Images.xcassets; sourceTree = "<group>"; };
+        1E3B11C11854877600E698A8 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "::APP_FILE::/Images.xcassets"; sourceTree = "<group>"; };
 		
         1EF0A839121ADB8E003F2F59 /* Main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.mm; name = Main.mm; path = "::APP_FILE::/Classes/Main.mm"; sourceTree = SOURCE_ROOT; };
         1E2E17A5141E8B5D0048F3C7 /* haxe */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "haxe"; sourceTree = SOURCE_ROOT; };
