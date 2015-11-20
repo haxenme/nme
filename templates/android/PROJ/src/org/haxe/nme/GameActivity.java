@@ -975,8 +975,8 @@ implements SensorEventListener
    
    public static void showKeyboard(boolean show)
    {
-      InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-      mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
+      InputMethodManager mgr = (InputMethodManager)mContext.getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+      mgr.hideSoftInputFromWindow(mContext.getWindow().getDecorView().getWindowToken(), 0);
       
       if (show)
       {
