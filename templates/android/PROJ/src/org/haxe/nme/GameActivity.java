@@ -395,7 +395,7 @@ implements SensorEventListener
    {
       Log.d(TAG,"====== doPause ========");
       _sound.doPause();
-
+      showKeyboard(false);
       mView.sendActivity(NME.DEACTIVATE);
 
       mView.onPause();
