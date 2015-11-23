@@ -31,7 +31,8 @@ class Window
    // Set this to handle events...
    public var appEventHandler:IAppEventHandler;
 
-   public var onKey:Int -> Int -> Int -> Void;
+   //public var onKey:Int -> Int -> Int -> Void;
+   public var onText: AppEvent -> Void;
 
    public var nmeHandle(default,null):Dynamic;
    var enterFramePending:Bool;
@@ -128,8 +129,10 @@ class Window
                Application.pollClients(event.pollTime);
    
             case EventId.Char: // Ignore
-                if (onKey != null)
-                    untyped onKey(event.code, event.value, event.flags);
+                //if (onKey != null)
+                //     untyped onKey(event.code, event.value, event.flags);
+                if (onText != null)
+                    untyped onText(event);
                 appEventHandler.onText(event, TextEvent.TEXT_INPUT);
 
             case EventId.KeyDown:
