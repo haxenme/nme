@@ -2,6 +2,7 @@ package nme.app;
 
 #if (cpp && hxcpp_api_level>=312)
 import nme.native.NativeEvent;
+using cpp.NativeString;
 
 @:nativeProperty
 abstract AppEvent(cpp.Pointer<NativeEvent>) from cpp.Pointer<NativeEvent>
@@ -19,6 +20,7 @@ abstract AppEvent(cpp.Pointer<NativeEvent>) from cpp.Pointer<NativeEvent>
    public var deltaX(get,never):Float;
    public var deltaY(get,never):Float;
    public var pollTime(get,set):Float;
+   public var text(get,set):String;
 
    inline function get_type():Int return this.ref.type;
    inline function get_x():Int return this.ref.x;
@@ -35,6 +37,13 @@ abstract AppEvent(cpp.Pointer<NativeEvent>) from cpp.Pointer<NativeEvent>
    inline function get_deltaY():Float return this.ref.deltaY;
    inline function get_pollTime():Float return this.ref.pollTime;
    inline function set_pollTime(inWake:Float):Float return this.ref.pollTime = inWake;
+   inline function get_text():String return  untyped __cpp__("(String({0},{1}).dup())",this.ref.utf8Text,this.ref.utf8Length);
+   inline function set_text(inText:String):String
+   {
+      this.ref.utf8Text = inText.raw();
+      this.ref.utf8Length = inText.length;
+      return inText;
+   }
 }
 
 #else
@@ -53,6 +62,7 @@ typedef AppEvent =
    var deltaX:Float;
    var deltaY:Float;
    var pollTime:Float;
+   var text:String;
 }
 #end
 

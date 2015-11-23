@@ -33,7 +33,7 @@ public:
    bool isFontCompatible(const WString &inFont, const WString &inStyle);
    void replaceSelectedText(const WString &inText);
    void replaceText(int inBeginIndex, int inEndIndex, const WString &inText);
-   int  setSelection(int inFirst, int inLast);
+   void setSelection(int inFirst, int inLast);
    void setTextFormat(TextFormat *inFormat,int inFirstChar=-1, int inLastChar = -1);
    bool getSelectable() { return selectable; }
    void setSelectable(bool inSelectable) { selectable = inSelectable; }

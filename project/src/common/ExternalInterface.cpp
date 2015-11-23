@@ -63,6 +63,7 @@ static int _id_value;
 static int _id_flags;
 static int _id_result;
 static int _id_code;
+static int _id_text;
 static int _id_a;
 static int _id_b;
 static int _id_c;
@@ -164,6 +165,7 @@ extern "C" void InitIDs()
    _id_flags = val_id("flags");
    _id_result = val_id("result");
    _id_code = val_id("code");
+   _id_text = val_id("text");
    _id_a = val_id("a");
    _id_b = val_id("b");
    _id_c = val_id("c");
@@ -1329,6 +1331,11 @@ void external_handler( nme::Event &ioEvent, void *inUserData )
    alloc_field(o,_id_scaleY,alloc_float(ioEvent.scaleY));
    alloc_field(o,_id_deltaX,alloc_float(ioEvent.deltaX));
    alloc_field(o,_id_deltaY,alloc_float(ioEvent.deltaY));
+   if (ioEvent.utf8Text && ioEvent.utf8Length)
+      alloc_field(o,_id_text, alloc_string_len(ioEvent.utf8Text,ioEvent.utf8Length) );
+   else
+      alloc_field(o,_id_text,alloc_null());
+
    val_call1(handler->get(), o);
    ioEvent.result = (EventResult)val_int( val_field(o,_id_result) );
 }
@@ -1485,7 +1492,7 @@ DEFINE_PRIM(nme_stage_set_resolution,3);
 
 
 value nme_stage_set_screenmode(value inStage, value inWidth, value inHeight, value inRefresh, value inFormat)
-{printf("nme_stage_set_screenmode");
+{
    #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
    Stage *stage;
    if (AbstractToObject(inStage,stage)){
@@ -3582,6 +3589,15 @@ value nme_text_field_get_char_boundaries(value inText,value inIndex,value outBou
 DEFINE_PRIM(nme_text_field_get_char_boundaries,3);
 
 
+value nme_text_field_set_selection(value inText, value inStart, value inEnd)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+      text->setSelection(val_int(inStart), val_int(inEnd));
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_text_field_set_selection,3);
 
 
 #define TEXT_PROP_GET(prop,Prop,to_val) \
@@ -3635,6 +3651,8 @@ TEXT_PROP_GET(text_height,TextHeight,alloc_float);
 TEXT_PROP_GET(max_scroll_h,MaxScrollH,alloc_int);
 TEXT_PROP_GET(max_scroll_v,MaxScrollV,alloc_int);
 TEXT_PROP_GET(bottom_scroll_v,BottomScrollV,alloc_int);
+TEXT_PROP_GET(selection_begin_index,SelectionBeginIndex,alloc_int);
+TEXT_PROP_GET(selection_end_index,SelectionEndIndex,alloc_int);
 TEXT_PROP(scroll_h,ScrollH,alloc_int,val_int);
 TEXT_PROP(scroll_v,ScrollV,alloc_int,val_int);
 TEXT_PROP_GET(num_lines,NumLines,alloc_int);

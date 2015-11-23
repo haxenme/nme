@@ -21,6 +21,8 @@ extern class NativeEvent
    public var deltaX:Float;
    public var deltaY:Float;
    public var pollTime:Float;
+   public var utf8Text:cpp.RawConstPointer<cpp.Char>;
+   public var utf8Length:Int;
 }
 
 

@@ -23,6 +23,8 @@ class TextField extends InteractiveObject
    public var maxChars(get_maxChars, set_maxChars):Int;
    public var maxScrollH(get_maxScrollH, null):Int;
    public var maxScrollV(get_maxScrollV, null):Int;
+   public var selectionBeginIndex(get_selectionBeginIndex, null):Int;
+   public var selectionEndIndex(get_selectionEndIndex, null):Int;
    public var multiline(get_multiline, set_multiline):Bool;
    public var numLines(get_numLines, null):Int;
    public var scrollH(get_scrollH, set_scrollH):Int;
@@ -82,7 +84,7 @@ class TextField extends InteractiveObject
 
    public function setSelection(beginIndex:Int, endIndex:Int):Void 
    {
-      // ignored right now
+      nme_text_field_set_selection(nmeHandle, beginIndex, endIndex);
    }
 
    public function setTextFormat(format:TextFormat, beginIndex:Int = -1, endIndex:Int = -1):Void 
@@ -123,6 +125,8 @@ class TextField extends InteractiveObject
    private function set_scrollV(inVal:Int):Int { nme_text_field_set_scroll_v(nmeHandle, inVal); return inVal; }
    private function get_selectable():Bool { return nme_text_field_get_selectable(nmeHandle); }
    private function set_selectable(inSel:Bool):Bool { nme_text_field_set_selectable(nmeHandle, inSel); return inSel; }
+   private function get_selectionBeginIndex():Int { return nme_text_field_get_selection_begin_index(nmeHandle); }
+   private function get_selectionEndIndex():Int { return nme_text_field_get_selection_end_index(nmeHandle); }
    private function get_text():String { return nme_text_field_get_text(nmeHandle); }
    private function set_text(inText:String):String { nme_text_field_set_text(nmeHandle, inText); return inText; }
    private function get_textColor():Int { return nme_text_field_get_text_color(nmeHandle); }
@@ -184,6 +188,9 @@ class TextField extends InteractiveObject
    private static var nme_text_field_get_embed_fonts = Loader.load("nme_text_field_get_embed_fonts", 1);
    private static var nme_text_field_set_embed_fonts = Loader.load("nme_text_field_set_embed_fonts", 2);
    private static var nme_text_field_get_char_boundaries = Loader.load("nme_text_field_get_char_boundaries", 3);
+   private static var nme_text_field_get_selection_begin_index = Loader.load("nme_text_field_get_selection_begin_index", 1);
+   private static var nme_text_field_get_selection_end_index = Loader.load("nme_text_field_get_selection_end_index", 1);
+   private static var nme_text_field_set_selection = Loader.load("nme_text_field_set_selection", 3);
 }
 
 #else

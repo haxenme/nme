@@ -505,6 +505,29 @@ int TextField::PointToChar(UserPoint inPoint) const
 }
 
 
+void TextField::setSelection(int inStartIndex, int inEndIndex)
+{
+   if (mLinesDirty)
+      Layout();
+
+   mSelectMin = inStartIndex;
+   if (mSelectMin<0)
+      mSelectMin = 0;
+   int l = getLength();
+   if (mSelectMin>l)
+      mSelectMin = l;
+   mSelectMax = inEndIndex;
+   if (mSelectMax<mSelectMin)
+      mSelectMax = mSelectMin;
+   if (mSelectMax>l)
+      mSelectMax = l;
+   caretIndex = mSelectMax;
+
+   mCaretDirty = true;
+   mGfxDirty = true;
+   DirtyCache();
+}
+
 
 int TextField::getSelectionBeginIndex()
 {
@@ -622,6 +645,19 @@ void TextField::AddCharacter(int inCharCode)
 
 void TextField::PasteSelection()
 {
+   Stage *stage = getStage();
+   if (stage)
+   {
+      std::string utf8 = WideToUTF8(sCopyBuffer);
+
+      Event onText(etChar);
+      onText.utf8Text = utf8.c_str();
+      onText.utf8Length = utf8.size();
+      onText.id = id;
+
+      stage->HandleEvent(onText);
+   }
+
    InsertString(sCopyBuffer);
 }
 
@@ -725,58 +761,74 @@ void TextField::OnKey(Event &inEvent)
                mLastUpDownX = -1;
             case keyUP:
             case keyDOWN:
+               {
                if (mSelectKeyDown<0 && shift)
                   mSelectKeyDown = caretIndex;
-               if (!shift)
-                  ClearSelection();
 
-               switch(inEvent.value)
+               bool usedKey = false;
+               if (!shift && mSelectMin<mSelectMax)
                {
-                  case keyLEFT: if (caretIndex>0) caretIndex--; break;
-                  case keyRIGHT: if (caretIndex<mCharPos.size()) caretIndex++; break;
-                  case keyHOME:
-                    if ( (inEvent.flags & efCtrlDown) || mLines.size()<2)
-                       caretIndex = 0;
-                    else
-                    {
-                       int l= LineFromChar(caretIndex);
-                       Line &line = mLines[l];
-                       caretIndex = line.mChar0;
-                    }
-                    break;
-
-                  case keyEND:
-                    if ( (inEvent.flags & efCtrlDown) || mLines.size()<2)
-                       caretIndex = getLength();
-                    else
-                    {
-                       int l= LineFromChar(caretIndex);
-                       Line &line = mLines[l];
-                       caretIndex = line.mChar0 + (line.mChars>0?line.mChars-1:0);
-                    }
-                    break;
-
-                  case keyUP:
-                  case keyDOWN:
+                  if (inEvent.value==keyLEFT)
                   {
-                     int l= LineFromChar(caretIndex);
-                     //printf("caret line : %d\n",l);
-                     if (l==0 && inEvent.value==keyUP) return;
-                     if (l==mLines.size()-1 && inEvent.value==keyDOWN) return;
-                     l += (inEvent.value==keyUP) ? -1 : 1;
-                     Line &line = mLines[l];
-                     if (mLastUpDownX<0)
-                        mLastUpDownX  = GetCursorPos().x + 1;
-                     int c;
-                     for(c=0; c<line.mChars;c++)
-                        if (mCharPos[line.mChar0 + c].x>mLastUpDownX)
-                           break;
-                     caretIndex =  c==0 ? line.mChar0 : line.mChar0+c-1;
-                     OnChange();
-                     break;
+                     caretIndex = mSelectMin;
+                     usedKey = true;
                   }
+                  if (inEvent.value==keyRIGHT)
+                  {
+                     caretIndex = mSelectMax;
+                     usedKey = true;
+                  }
+                  ClearSelection();
                }
 
+               if (!usedKey)
+                  switch(inEvent.value)
+                  {
+                     case keyLEFT: if (caretIndex>0) caretIndex--; break;
+                     case keyRIGHT: if (caretIndex<mCharPos.size()) caretIndex++; break;
+                     case keyHOME:
+                       if ( (inEvent.flags & efCtrlDown) || mLines.size()<2)
+                          caretIndex = 0;
+                       else
+                       {
+                          int l= LineFromChar(caretIndex);
+                          Line &line = mLines[l];
+                          caretIndex = line.mChar0;
+                       }
+                       break;
+   
+                     case keyEND:
+                       if ( (inEvent.flags & efCtrlDown) || mLines.size()<2)
+                          caretIndex = getLength();
+                       else
+                       {
+                          int l= LineFromChar(caretIndex);
+                          Line &line = mLines[l];
+                          caretIndex = line.mChar0 + (line.mChars>0?line.mChars-1:0);
+                       }
+                       break;
+   
+                     case keyUP:
+                     case keyDOWN:
+                     {
+                        int l= LineFromChar(caretIndex);
+                        //printf("caret line : %d\n",l);
+                        if (l==0 && inEvent.value==keyUP) return;
+                        if (l==mLines.size()-1 && inEvent.value==keyDOWN) return;
+                        l += (inEvent.value==keyUP) ? -1 : 1;
+                        Line &line = mLines[l];
+                        if (mLastUpDownX<0)
+                           mLastUpDownX  = GetCursorPos().x + 1;
+                        int c;
+                        for(c=0; c<line.mChars;c++)
+                           if (mCharPos[line.mChar0 + c].x>mLastUpDownX)
+                              break;
+                        caretIndex =  c==0 ? line.mChar0 : line.mChar0+c-1;
+                        OnChange();
+                        break;
+                     }
+                  }
+   
                if (mSelectKeyDown>=0)
                {
                   mSelectMin = std::min(mSelectKeyDown,caretIndex);
@@ -787,6 +839,7 @@ void TextField::OnKey(Event &inEvent)
                }
                ShowCaret();
                return;
+               }
 
             // TODO: top/bottom
 

@@ -75,7 +75,7 @@ enum EventResult
 struct Event
 {
    Event(EventType inType=etUnknown,int inX=0,int inY=0,int inValue=0,int inID=0,int inFlags=0,float inScaleX=1,float inScaleY=1,int inDeltaX=0,int inDeltaY=0):
-        type(inType), x(inX), y(inY), value(inValue), id(inID), flags(inFlags), result(erOk), scaleX(inScaleX), scaleY(inScaleY), deltaX(inDeltaX), deltaY(inDeltaY), pollTime(0)
+        type(inType), x(inX), y(inY), value(inValue), id(inID), flags(inFlags), result(erOk), scaleX(inScaleX), scaleY(inScaleY), deltaX(inDeltaX), deltaY(inDeltaY), pollTime(0), code(0), utf8Text(0), utf8Length(0)
    {
    }
 
@@ -97,6 +97,10 @@ struct Event
    float       scaleX, scaleY;
    int         deltaX, deltaY;
    double      pollTime;
+
+   const char  *utf8Text;
+   int         utf8Length;
+
 };
 
 } // end namespace nme
