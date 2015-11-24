@@ -160,6 +160,7 @@ void TextField::setDefaultTextFormat(TextFormat *inFmt)
    textColor = defaultTextFormat->color;
    mLinesDirty = true;
    mGfxDirty = true;
+   mCaretDirty = true;
    if (mCharGroups.empty() || (mCharGroups.size() == 1 && mCharGroups[0]->Chars() == 0))
       setText(L"");
 }
@@ -1666,9 +1667,12 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             double height = mLines[line].mMetrics.height;
             if (pos.y+height <= fieldHeight-GAP+1)
             {
-               mCaretGfx->lineStyle(1, 0x000000 ,1.0, false, ssmOpenGL  );
-               mCaretGfx->moveTo(pos.x,pos.y);
-               mCaretGfx->lineTo(pos.x,pos.y+height);
+               CharGroup &group = *mCharGroups[GroupFromChar(caretIndex)];
+               ARGB tint = group.mFormat->color(textColor);
+
+               mCaretGfx->lineStyle(1, tint.ToInt() | 0xff000000 ,1.0, false, ssmOpenGL  );
+               mCaretGfx->moveTo(pos.x+0.5,pos.y);
+               mCaretGfx->lineTo(pos.x+0.5,pos.y+height);
             }
          }
       }

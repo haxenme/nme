@@ -623,7 +623,7 @@ public:
          {
          // TODO: Rotated
          if (sTextCursor==0)
-            sTextCursor = CreateCursor(sTextCursorData,2,13);
+            sTextCursor = CreateCursor(sTextCursorData,3,13);
          SDL_SetCursor(sTextCursor);
          }
       }
