@@ -291,6 +291,7 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
    mLinesDirty = true;
    mFontsDirty = true;
    mGfxDirty = true;
+   mCaretDirty = true;
 }
 
 
@@ -804,8 +805,13 @@ void TextField::OnKey(Event &inEvent)
                        else
                        {
                           int l= LineFromChar(caretIndex);
-                          Line &line = mLines[l];
-                          caretIndex = line.mChar0 + (line.mChars>0?line.mChars-1:0);
+                          if (l==mLines.size()-1)
+                             caretIndex = getLength();
+                          else
+                          {
+                             Line &line = mLines[l];
+                             caretIndex = line.mChar0 + (line.mChars>0?line.mChars-1:0);
+                          }
                        }
                        break;
    
@@ -1667,10 +1673,17 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             double height = mLines[line].mMetrics.height;
             if (pos.y+height <= fieldHeight-GAP+1)
             {
-               CharGroup &group = *mCharGroups[GroupFromChar(caretIndex)];
-               ARGB tint = group.mFormat->color(textColor);
-
-               mCaretGfx->lineStyle(1, tint.ToInt() | 0xff000000 ,1.0, false, ssmOpenGL  );
+               int gId = GroupFromChar(caretIndex);
+               if (gId>=0 && gId<mCharGroups.size())
+               {
+                  CharGroup &group = *mCharGroups[GroupFromChar(caretIndex)];
+                  ARGB tint = group.mFormat->color(textColor);
+                  mCaretGfx->lineStyle(1, tint.ToInt(),1.0, false, ssmOpenGL  );
+               }
+               else
+               {
+                  mCaretGfx->lineStyle(1, textColor ,1.0, false, ssmOpenGL  );
+               }
                mCaretGfx->moveTo(pos.x+0.5,pos.y);
                mCaretGfx->lineTo(pos.x+0.5,pos.y+height);
             }
@@ -2365,22 +2378,22 @@ void CharGroup::ApplyFormat(TextFormat *inFormat)
    inFormat->bold.Apply(mFormat->bold);
    inFormat->bullet.Apply(mFormat->bullet);
    inFormat->color.Apply(mFormat->color);
-   
-   Font* cacheFont = mFont;
-   WString cacheFontName = mFormat->font.Get();
-   
-   inFormat->font.Apply(mFormat->font);
-   
-   if (cacheFontName != mFormat->font.Get())
+   inFormat->italic.Apply(mFormat->italic);
+   inFormat->underline.Apply(mFormat->underline);
+
+   if (inFormat->font.Get() != mFormat->font.Get())
    {
+      inFormat->font.Apply(mFormat->font);
+      mFontHeight = -1;
+      Font* cacheFont = mFont;
       mFont = 0;
       mFontHeight = 0;
       mFlags = 0;
-      if (cacheFont) cacheFont->DecRef();
+      if (cacheFont)
+         cacheFont->DecRef();
    }
    
    inFormat->indent.Apply(mFormat->indent);
-   inFormat->italic.Apply(mFormat->italic);
    inFormat->kerning.Apply(mFormat->kerning);
    inFormat->leading.Apply(mFormat->leading);
    inFormat->leftMargin.Apply(mFormat->leftMargin);
@@ -2389,7 +2402,6 @@ void CharGroup::ApplyFormat(TextFormat *inFormat)
    inFormat->size.Apply(mFormat->size);
    inFormat->tabStops.Apply(mFormat->tabStops);
    inFormat->target.Apply(mFormat->target);
-   inFormat->underline.Apply(mFormat->underline);
    inFormat->url.Apply(mFormat->url);
 }
 
