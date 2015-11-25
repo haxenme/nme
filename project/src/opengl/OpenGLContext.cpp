@@ -665,9 +665,14 @@ public:
       {
          if (mQuadsBuffer==0)
             glGenBuffers(1,&mQuadsBuffer);
+         else
+         {
+            // Seems to be a bug in intel driver that kills some calls if we do not flush here
+            glFlush();
+         }
 
-         if (quadCount<256)
-            quadCount = 256;
+         if (quadCount< 4096)
+            quadCount = 4096;
 
          mQuadsBufferSize = quadCount;
          glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mQuadsBuffer);
