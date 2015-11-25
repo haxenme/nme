@@ -333,13 +333,22 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    }
 
    std::string fontName(WideToUTF8(inFormat.font));
-   std::string seekName = fontName;
 
    FontFace *face = 0;
    
-   for(int pass=0;pass<2;pass++)
+   int pass0 = inFormat.bold || inFormat.italic ? 0 : 1;
+    
+   for(int pass=pass0;pass<3;pass++)
    {
-      if (pass==1)
+      std::string seekName = fontName;
+      if (pass==0)
+      {
+          if (inFormat.bold)
+              seekName += " Bold";
+          if (inFormat.italic)
+              seekName += " Italic";
+      }
+      else if (pass==2)
       {
          if (!strcasecmp(fontName.c_str(),"times.ttf") ||
              !strcasecmp(fontName.c_str(),"times"))
@@ -370,8 +379,8 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
          ByteArray resource(seekName.c_str());
          if (resource.Ok())
          {
-            sgRegisteredFonts[fontName] = new AutoGCRoot( resource.mValue );
-            fbit = sgRegisteredFonts.find(fontName);
+            sgRegisteredFonts[seekName] = new AutoGCRoot( resource.mValue );
+            fbit = sgRegisteredFonts.find(seekName);
             bytes = fbit->second;
           //  printf("Found!\n");
          }
@@ -381,7 +390,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 
       if (bytes)
       {
-         face = FontFace::CreateFreeType(inFormat,inScale,bytes);
+         face = FontFace::CreateFreeType(inFormat,inScale,bytes,pass==0 ? seekName : "");
          if (face)
             break;
       }
@@ -394,7 +403,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
       face = FontFace::CreateNative(inFormat,inScale);
 
    if (!face)
-      face = FontFace::CreateFreeType(inFormat,inScale,NULL);
+      face = FontFace::CreateFreeType(inFormat,inScale,NULL,"");
 
    if (!native && !face)
       face = FontFace::CreateNative(inFormat,inScale);

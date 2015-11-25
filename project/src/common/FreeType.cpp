@@ -165,8 +165,7 @@ public:
       FT_Bitmap &bitmap = mFace->glyph->bitmap;
       int w = bitmap.width;
       int h = bitmap.rows;
-
-
+ 
       if (mTransform & ffUnderline)
       {
          underlineY0 = mFace->glyph->bitmap_top + getUnderlineOffset();
@@ -290,7 +289,7 @@ static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags, AutoGCR
    *outBuffer = 0;
    FT_Face face = 0;
    void* pBuffer = 0;
-   //printf("MyNewFace %s with bytes %p\n", inFace.c_str(), inBytes);
+   // printf("MyNewFace %s with bytes %p\n", inFace.c_str(), inBytes);
 
    MyNewFace(inFace.c_str(), 0, &face, inBytes, &pBuffer);
    if (face && inFlags!=0 && face->num_faces>1)
@@ -352,11 +351,26 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
       name = "cour.ttf";
    }
    
+   // TODO - wchar version
    _TCHAR win_path[2 * MAX_PATH];
    GetWindowsDirectory(win_path, 2*MAX_PATH);
    outFile = std::string(win_path) + "\\Fonts\\" + name;
+   FILE *file = fopen(outFile.c_str(),"rb");
+   if (file)
+   {
+      fclose(file);
+      return true;
+   }
 
-   return true;
+   outFile += ".ttf";
+   file = fopen(outFile.c_str(),"rb");
+   if (file)
+   {
+      fclose(file);
+      return true;
+   }
+
+   return false;
 }
 
 
@@ -371,8 +385,6 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 #elif defined(__APPLE__)
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
-// printf("Looking for font %s...", inName.c_str() );
-
 #ifdef IPHONEOS
 //#define FONT_BASE "/System/Library/Fonts/Cache/" before ios8.2
 const char *fontFolders[] = { "/System/Library/Fonts/CoreAddition/", "/System/Library/Fonts/Core/", "/System/Library/Fonts/CoreUI/",
@@ -386,14 +398,42 @@ const char *fontFolders[] = { "/Library/Fonts/", 0 };
    const char **testFolder = fontFolders;
    while(*testFolder)
    {
-    outFile = std::string(*testFolder) + inName;
+    std::string base = std::string(*testFolder) + inName;
+    outFile = base + inName;
     FILE *file = fopen(outFile.c_str(),"rb");
     if (file)
     {
-      //printf("Found actual file %s\n", outFile.c_str());
       fclose(file);
       return true;
     }
+
+    outFile = base + ".ttf";
+    file = fopen(outFile.c_str(),"rb");
+    if (file)
+    {
+      fclose(file);
+      return true;
+    }
+
+
+    #ifdef HX_MACOS
+    outFile = base + ".otf";
+    file = fopen(outFile.c_str(),"rb");
+    if (file)
+    {
+      fclose(file);
+      return true;
+    }
+
+    outFile = base + ".ttc";
+    file = fopen(outFile.c_str(),"rb");
+    if (file)
+    {
+      fclose(file);
+      return true;
+    }
+    #endif
+
 
     const char *serifFonts[] = { "Georgia.ttf", "Times.ttf", "Times New Roman.ttf", 0 };
     const char *sansFonts[] = { "Arial.ttf", "Helvetica.ttf", "Arial Black.ttf", 0 };
@@ -543,10 +583,12 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
 {
    std::string fname = inFontName;
    
+   /*
    #ifndef ANDROID
    if (fname.find(".") == std::string::npos && fname.find("_") == std::string::npos)
       fname += ".ttf";
    #endif
+   */
      
    FT_Face font = OpenFont(fname,inFlags,inBytes, pBuffer);
 
@@ -556,11 +598,12 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
 
       #if HX_MACOS
       font = OpenFont(ToAssetName(fname).c_str(),inFlags,NULL,pBuffer);
+      if (!font)
+         font = OpenFont(ToAssetName(fname+".ttf").c_str(),inFlags,NULL,pBuffer);
       #endif
 
       if (font==0 && GetFontFile(fname,file_name))
       {
-         // printf("Found font in %s\n", file_name.c_str());
          font = OpenFont(file_name.c_str(),inFlags,NULL,pBuffer);
       }
    }
@@ -572,7 +615,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
 
 
 
-FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes)
+FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes, const std::string &inCombinedName)
 {
    if (!sgLibrary)
      FT_Init_FreeType( &sgLibrary );
@@ -580,13 +623,16 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Aut
       return 0;
 
    FT_Face face = 0;
-   std::string str = WideToUTF8(inFormat.font);
+   std::string str = inCombinedName=="" ? WideToUTF8(inFormat.font) : inCombinedName;
 
    uint32 flags = 0;
-   if (inFormat.bold)
-      flags |= ffBold;
-   if (inFormat.italic)
-      flags |= ffItalic;
+   if (inCombinedName=="")
+   {
+      if (inFormat.bold)
+         flags |= ffBold;
+      if (inFormat.italic)
+         flags |= ffItalic;
+   }
    
    void* pBuffer = 0;
    face = FindFont(str,flags,inBytes,&pBuffer);
@@ -599,10 +645,13 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Aut
 
 
    uint32 transform = 0;
-   if ( !(face->style_flags & ffBold) && inFormat.bold )
-      transform |= ffBold;
-   if ( !(face->style_flags & ffItalic) && inFormat.italic )
-      transform |= ffItalic;
+   if (inCombinedName=="")
+   {
+      if ( !(face->style_flags & ffBold) && inFormat.bold )
+         transform |= ffBold;
+      if ( !(face->style_flags & ffItalic) && inFormat.italic )
+         transform |= ffItalic;
+   }
    if ( inFormat.underline )
       transform |= ffUnderline;
 
