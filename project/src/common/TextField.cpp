@@ -645,27 +645,37 @@ void TextField::AddCharacter(int inCharCode)
    ShowCaret();
 }
 
+std::string ReplaceString(std::string subject, const std::string& search,
+                          const std::string& replace) {
+    size_t pos = 0;
+    while ((pos = subject.find(search, pos)) != std::string::npos) {
+         subject.replace(pos, search.length(), replace);
+         pos += replace.length();
+    }
+    return subject;
+}
+
 void TextField::PasteSelection()
 {
+   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
+   std::string utf8 = ReplaceString(GetClipboardText(), "\r\n", "\n");
+   #else
+   std::string utf8 = WideToUTF8(sCopyBuffer);
+   #endif
+
    Stage *stage = getStage();
    if (stage)
    {
       Event onText(etChar);
-      #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
-      onText.utf8Text = GetClipboardText();
-      onText.utf8Length = onText.utf8Text ? strlen(onText.utf8Text) : 0;
-      #else
-      std::string utf8 = WideToUTF8(sCopyBuffer);
       onText.utf8Text = utf8.c_str();
       onText.utf8Length = utf8.size();
-      #endif
       onText.id = id;
 
       stage->HandleEvent(onText);
    }
 
    #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
-   InsertString(UTF8ToWide(GetClipboardText()));
+   InsertString(UTF8ToWide(utf8.c_str()));
    #else
    InsertString(sCopyBuffer);
    #endif
