@@ -1948,20 +1948,23 @@ void TextField::DeleteSelection()
    mGfxDirty = true;
 }
 
-void TextField::InsertString(WString &inString)
+void TextField::InsertString(const WString &inString)
 {
+   if (maxChars>0)
+   {
+      int n = mCharPos.size();
+      if (n+inString.size()>maxChars)
+      {
+         if (n<maxChars)
+            InsertString( inString.substr(0, maxChars-n) );
+         return;
+      }
+   }
+
    if (caretIndex<0)
       caretIndex = 0;
    caretIndex = std::min(caretIndex,getLength());
 
-   if (maxChars>0)
-   {
-      int n = mCharPos.size();
-      if (inString.size()+n>maxChars)
-         inString = inString.substr(0, maxChars-n);
-      if (inString.size()<1)
-         return;
-   }
 
    if (caretIndex==0)
    {
