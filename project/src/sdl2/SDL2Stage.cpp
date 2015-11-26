@@ -1920,5 +1920,19 @@ void StartAnimation()
    SDL_Quit();
 }
 
+void SetClipboardText(const char* text)
+{
+    SDL_SetClipboardText(text);
+}
+
+bool HasClipboardText()
+{
+    return SDL_HasClipboardText();
+}
+
+char* GetClipboardText()
+{
+    return SDL_GetClipboardText();
+}
 
 }
