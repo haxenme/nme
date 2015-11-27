@@ -162,7 +162,7 @@ public:
    void CopySelection();
    void PasteSelection();
    void DeleteChars(int inFirst,int inEnd);
-   void InsertString(WString &ioString);
+   void InsertString(const WString &ioString);
    void ShowCaret(bool inFromDrag=false);
    bool FinishEditOnEnter();
    void AddCharacter(int inCharCode);

@@ -236,7 +236,7 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	  #ifndef OBJC_ARC
 	  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	  #endif
-      NSUInteger dir_lut[] = { 0, 0, NSDesktopDirectory, NSDocumentDirectory, NSUserDirectory,0  };
+      NSSearchPathDirectory dir_lut[] = { NSDesktopDirectory, NSDesktopDirectory, NSDesktopDirectory, NSDocumentDirectory, NSUserDirectory,NSDesktopDirectory  };
       NSArray *paths = NSSearchPathForDirectoriesInDomains(dir_lut[inDir], NSUserDomainMask, YES);
       if (paths && [paths count]>0)
       {
