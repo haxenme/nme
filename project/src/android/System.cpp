@@ -154,5 +154,39 @@ namespace nme {
 	std::string FileDialogFolder( const std::string &title, const std::string &text ) { return ""; }
 	std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { return ""; }
 	std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { return ""; }
+	
+	bool SetClipboardText(const char* text) {
+        JNIEnv *env = GetEnv();
+        jclass cls = FindClass("org/haxe/nme/GameActivity");
+        jmethodID mid = env->GetStaticMethodID(cls, "setClipboardText", "(Ljava/lang/String;)Z");
+        if (mid == 0)
+            return false;
+
+        jstring jtext = env->NewStringUTF( text );
+        bool result = env->CallStaticBooleanMethod (cls, mid, jtext);
+        env->DeleteLocalRef(jtext);
+        return result;
+    }
+
+    bool HasClipboardText(){
+        JNIEnv *env = GetEnv();
+        jclass cls = FindClass("org/haxe/nme/GameActivity");
+        jmethodID mid = env->GetStaticMethodID(cls, "hasClipboardText", "()Z");
+        if (mid == 0)
+            return false;
+
+        return env->CallStaticBooleanMethod (cls, mid);
+    }
+
+    const char* GetClipboardText(){
+        JNIEnv *env = GetEnv();
+        jclass cls = FindClass("org/haxe/nme/GameActivity");
+        jmethodID mid = env->GetStaticMethodID(cls, "getClipboardText", "()Ljava/lang/String;");
+        if (mid == 0)
+            return std::string("").c_str();
+
+        jstring jPref = (jstring) env->CallStaticObjectMethod(cls, mid);
+        return JStringToStdString(env,jPref,true).c_str();
+    }
 
 }
