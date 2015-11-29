@@ -21,8 +21,6 @@ int gPasswordChar = 42; // *
 
 static const double GAP = 2.0;
 
-static WString sCopyBuffer;
-
 TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    alwaysShowSelection(false),
    antiAliasType(aaNormal),
@@ -651,24 +649,14 @@ void TextField::PasteSelection()
    if (stage)
    {
       Event onText(etChar);
-      #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
       onText.utf8Text = GetClipboardText();
       onText.utf8Length = onText.utf8Text ? strlen(onText.utf8Text) : 0;
-      #else
-      std::string utf8 = WideToUTF8(sCopyBuffer);
-      onText.utf8Text = utf8.c_str();
-      onText.utf8Length = utf8.size();
-      #endif
       onText.id = id;
 
       stage->HandleEvent(onText);
    }
 
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
    InsertString(UTF8ToWide(GetClipboardText()));
-   #else
-   InsertString(sCopyBuffer);
-   #endif
 }
 
 
@@ -1907,6 +1895,7 @@ void TextField::ClearSelection()
 
 void TextField::CopySelection()
 {
+   static WString sCopyBuffer;
    if (mSelectMin>=mSelectMax)
       sCopyBuffer = WString();
    else
@@ -1930,9 +1919,7 @@ void TextField::CopySelection()
          sCopyBuffer += WString( group.mString.mPtr,  mSelectMax - group.mChar0 );
       }
    }
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
    SetClipboardText(WideToUTF8(sCopyBuffer).c_str());
-   #endif
 }
 
 void TextField::DeleteSelection()
