@@ -214,11 +214,11 @@ double CapabilitiesGetScreenResolutionX ();
 double CapabilitiesGetScreenResolutionY ();
 QuickVec<int>* CapabilitiesGetScreenResolutions ();
 QuickVec<ScreenMode>* CapabilitiesGetScreenModes ();
-#if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
-void SetClipboardText(const char* text);
+
+bool SetClipboardText(const char* text);
 bool HasClipboardText();
-char* GetClipboardText();
-#endif
+const char* GetClipboardText();
+
 std::string CapabilitiesGetLanguage();
 
 std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes );
