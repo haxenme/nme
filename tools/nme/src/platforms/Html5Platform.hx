@@ -55,7 +55,7 @@ class Html5Platform extends Platform
    override public function run(arguments:Array<String>):Void 
    {
       var fullPath =  FileSystem.fullPath('$applicationDirectory/index.html');
-      new nme.net.URLRequest(fullPath).launchBrowser();
+      new nme.net.URLRequest("file://" + fullPath).launchBrowser();
    }
 }
 
