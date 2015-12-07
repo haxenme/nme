@@ -1,5 +1,5 @@
 package nme.text;
-#if (cpp || neko)
+#if (!flash)
 
 @:fakeEnum(String) enum FontStyle 
 {

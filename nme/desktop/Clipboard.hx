@@ -1,6 +1,6 @@
 package nme.desktop;
 
-#if (cpp || neko)
+#if (!flash)
 import nme.Loader;
 
 @:nativeProperty

@@ -1,6 +1,6 @@
 package nme.desktop;
 
-#if (cpp || neko)
+#if (!flash)
 enum ClipboardFormats {
 	AIR_PREFIX;
 	BITMAP_FORMAT;

@@ -2,7 +2,7 @@ package nme.display3D.shaders;
 
 #if flash
 typedef Shader = flash.utils.ByteArray;
-#elseif (cpp || neko)
+#elseif (!flash)
 import nme.gl.GL;
 typedef Shader = nme.gl.GLShader;
 #elseif js

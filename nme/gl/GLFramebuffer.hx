@@ -1,5 +1,5 @@
 package nme.gl;
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class GLFramebuffer extends GLObject 

@@ -1,5 +1,5 @@
 package nme.display;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.errors.ArgumentError;
 import nme.events.Event;

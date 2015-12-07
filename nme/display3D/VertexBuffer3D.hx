@@ -1,5 +1,5 @@
 package nme.display3D;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.gl.GL;
 import nme.gl.GLBuffer;

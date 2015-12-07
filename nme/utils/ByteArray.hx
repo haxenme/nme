@@ -1,5 +1,5 @@
 package nme.utils;
-#if (cpp || neko)
+#if (!flash)
 
 import haxe.io.Bytes;
 import haxe.io.BytesData;
@@ -12,7 +12,7 @@ import neko.Lib;
 import neko.zip.Compress;
 import neko.zip.Uncompress;
 import neko.zip.Flush;
-#else
+#elseif cpp
 import cpp.Lib;
 import cpp.zip.Compress;
 import cpp.zip.Uncompress;
@@ -29,21 +29,25 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public var position:Int;
    public var byteLength(get_byteLength,null):Int;
 
-   #if neko
+   #if (html5||neko)
    /** @private */ private var alloced:Int;
    #end
 
-   public function new(inSize = 0) 
+   public function new(inSize:Int = 0) 
    {
       bigEndian = true;
       position = 0;
 
       if (inSize >= 0) 
       {
-         #if neko
+         #if (neko)
          alloced = inSize < 16 ? 16 : inSize;
          var bytes = untyped __dollar__smake(alloced);
          super(inSize, bytes);
+         #elseif (html5)
+         alloced = inSize < 16 ? 16 : inSize;
+         var bytes = new BytesData(alloced);
+         super(bytes);
          #else
          var data = new BytesData();
          if (inSize > 0)
@@ -65,7 +69,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #end
    }
 
-   #if !no_nme_io
+   #if (!no_nme_io && (cpp||neko))
    /** @private */ static function __init__() {
       var factory = function(inLen:Int) { return new ByteArray(inLen); };
       var resize = function(inArray:ByteArray, inLen:Int) 
@@ -113,6 +117,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       length = 0;
    }
 
+   #if !html5
    public function compress(algorithm:CompressionAlgorithm = null) 
    {
       #if neko
@@ -155,17 +160,27 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    {
       compress(CompressionAlgorithm.DEFLATE);
    }
+   #end
 
    /** @private */ private function ensureElem(inSize:Int, inUpdateLenght:Bool) {
       var len = inSize + 1;
 
-      #if neko
+      #if (html5||neko)
       if (alloced < len) 
       {
          alloced =((len+1) * 3) >> 1;
+         #if neko
          var new_b = untyped __dollar__smake(alloced);
          untyped __dollar__sblit(new_b, 0, b, 0, length);
          b = new_b;
+         #else
+         var new_b = new BytesData(alloced);
+         var dest = new js.html.Uint8Array(new_b);
+         for(i in 0...len)
+            dest[i] = b[i];
+         b = dest;
+         length = alloced;
+         #end
       }
       #else
       if (b.length < len)
@@ -189,10 +204,12 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public function getByteBuffer():ByteArray { return this; }
    public function getStart():Int { return 0; }
 
+   #if !html5
    public function inflate() 
    {
       uncompress(CompressionAlgorithm.DEFLATE);
    }
+   #end
    
    private inline function nmeFromBytes(inBytes:Bytes):Void
    {
@@ -244,6 +261,12 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (position + 8 > length)
          ThrowEOFi();
 
+      #if html5
+      var p = position;
+      position += 8;
+      return getDouble(p);
+      #else
+
       #if neko
       var bytes = new Bytes(8, untyped __dollar__ssub(b, position, 8));
       #elseif cpp
@@ -252,6 +275,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
       position += 8;
       return _double_of_bytes(bytes.b, bigEndian);
+      #end
    }
 
    #if !no_nme_io
@@ -266,6 +290,11 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (position + 4 > length)
          ThrowEOFi();
 
+      #if html5
+      var p = position;
+      position += 4;
+      return getFloat(p);
+      #else
       #if neko
       var bytes = new Bytes(4, untyped __dollar__ssub(b, position, 4));
       #elseif cpp
@@ -274,6 +303,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
       position += 4;
       return _float_of_bytes(bytes.b, bigEndian);
+      #end
    }
 
    public function readInt():Int 
@@ -345,6 +375,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       var result:String="";
       untyped __global__.__hxcpp_string_of_bytes(b, result, p, inLen);
       return result;
+      #elseif html5
+      return getString(p,inLen);
       #end
    }
 
@@ -393,6 +425,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       return 0;
    }
 
+   #if !html5
    public function uncompress(algorithm:CompressionAlgorithm = null):Void 
    {
       if (algorithm == null) algorithm = CompressionAlgorithm.GZIP;
@@ -432,6 +465,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       alloced = length;
       #end
    }
+   #end
 
    /** @private */ inline function write_uncheck(inByte:Int) {
       #if cpp
@@ -477,6 +511,13 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
    public function writeDouble(x:Float) 
    {
+      #if html5
+      var end = position + 8;
+      ensureElem(end - 1, true);
+      setDouble(position,x);
+      position += 8;
+      #else
+
       #if neko
       var bytes = new Bytes(8, _double_bytes(x, bigEndian));
       #elseif cpp
@@ -484,6 +525,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #end
 
       writeHaxeBytes(bytes,0,0);
+      #end
    }
 
    #if !no_nme_io
@@ -495,6 +537,13 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
    public function writeFloat(x:Float) 
    {
+      #if html5
+      var end = position + 4;
+      ensureElem(end - 1, true);
+      setFloat(position,x);
+      position += 4;
+      #else
+
       #if neko
       var bytes = new Bytes(4, _float_bytes(x, bigEndian));
       #elseif cpp
@@ -502,6 +551,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #end
 
       writeHaxeBytes(bytes,0,0);
+      #end
    }
 
    public function writeInt(value:Int) 

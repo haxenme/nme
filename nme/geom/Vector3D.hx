@@ -1,5 +1,5 @@
 package nme.geom;
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class Vector3D 

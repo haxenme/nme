@@ -1,6 +1,6 @@
 package nme.events;
 
-#if (cpp||neko)
+#if (!flash)
 
 @:nativeProperty
 class AsyncErrorEvent extends ErrorEvent

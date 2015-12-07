@@ -210,7 +210,9 @@ class Assets
       #if flash
          var data = makeBitmapData(i.className);
       #elseif js
-         var data = cast(ApplicationMain.loaders.get(i.path).contentLoaderInfo.content, Bitmap).bitmapData;
+         var data:BitmapData = null;
+         // TODO
+         //var data = cast(ApplicationMain.loaders.get(i.path).contentLoaderInfo.content, Bitmap).bitmapData;
       #else
          var data:BitmapData = null;
          if (i.isResource)
@@ -287,6 +289,8 @@ class Assets
          #if flash
             data = Type.createInstance(Type.resolveClass(i.className), []);
          #elseif js
+            return null;
+            /*
             var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
             data = null;
             if (Std.is(asset, String)) 
@@ -299,6 +303,7 @@ class Assets
                badType(is,"Bytes");
                return null;
             }
+            */
          #else
             var filename = i.path;
             if (pathMapper.exists(filename))

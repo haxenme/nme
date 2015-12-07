@@ -1,5 +1,5 @@
 package nme.geom;
-#if (cpp || neko)
+#if !flash
 
 /*
   Contrary to any adobe documentation , points transform with:

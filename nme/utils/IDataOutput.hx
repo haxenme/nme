@@ -1,5 +1,5 @@
 package nme.utils;
-#if (cpp || neko)
+#if (!flash)
 
 interface IDataOutput 
 {

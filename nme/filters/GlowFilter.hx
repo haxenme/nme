@@ -1,5 +1,5 @@
 package nme.filters;
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class GlowFilter extends DropShadowFilter 

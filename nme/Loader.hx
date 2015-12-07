@@ -182,4 +182,13 @@ class Loader
    #end
 }
 
+#elseif (html5)
+class Loader 
+{
+   public static function load(func:String, args:Int):Dynamic 
+   {
+      return function() trace(func);
+   }
+}
+
 #end

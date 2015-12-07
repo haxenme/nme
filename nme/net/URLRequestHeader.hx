@@ -1,5 +1,5 @@
 package nme.net;
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class URLRequestHeader 

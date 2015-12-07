@@ -1,6 +1,6 @@
 package nme.media;
 
-#if (cpp||neko)
+#if (!flash)
 
 import nme.events.EventDispatcher;
 import nme.Vector;

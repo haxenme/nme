@@ -1,5 +1,5 @@
 package nme.events;
-#if (cpp || neko)
+#if !flash
 
 interface IEventDispatcher 
 {

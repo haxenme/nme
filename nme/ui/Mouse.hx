@@ -1,5 +1,5 @@
 package nme.ui;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.Lib;
 

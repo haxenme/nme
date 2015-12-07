@@ -1,6 +1,6 @@
 package nme.display3D.shaders;
 
-#if (cpp || neko || js)
+#if (!flash || js)
 import nme.gl.GL;
 #elseif flash
 import flash.utils.ByteArray;
@@ -20,7 +20,7 @@ class ShaderUtils{
 		assembler.assemble (cast(type,String), shaderSource);
 		return assembler.agalcode;
 
-		#elseif (cpp || neko || js)
+		#elseif (!flash || js)
 
 		var glType : Int;
         switch(type){
