@@ -721,6 +721,7 @@ class NMEProject
       if (app.preloader!=null && app.preloader!="")
          context.PRELOADER_NAME = app.preloader;
       context.WIN_BACKGROUND = window.background;
+      context.HTML_BACKGROUND = "#" + StringTools.hex(window.background,6);
       context.WIN_FULLSCREEN = window.fullscreen;
       context.WIN_ORIENTATION = "";
 

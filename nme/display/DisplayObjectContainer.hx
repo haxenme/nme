@@ -15,7 +15,7 @@ class DisplayObjectContainer extends InteractiveObject
    public var tabChildren(get_tabChildren, set_tabChildren):Bool;
    //public var textSnapshot(get_textSnapshot, null):TextSnapshot; // not implemented
    /** @private */ private var nmeChildren:Array<DisplayObject>;
-   public function new(inHandle:Dynamic, inType:String) 
+   public function new(inHandle:NativeHandle, inType:String) 
    {
       super(inHandle, inType);
       nmeChildren = [];

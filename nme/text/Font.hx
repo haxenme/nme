@@ -122,12 +122,17 @@ trace("Register " + instance);
       }
    }
 
+   #if (cpp||neko)
    static function get_useNative():Bool return nme_font_get_use_native();
    static function set_useNative(inVal:Bool):Bool return nme_font_set_use_native(inVal);
 
    // Native Methods
    private static var nme_font_set_use_native = Loader.load("nme_font_set_use_native", 1);
    private static var nme_font_get_use_native = Loader.load("nme_font_get_use_native", 0);
+   #else
+   static function get_useNative():Bool return false;
+   static function set_useNative(inVal:Bool):Bool return false;
+   #end
    private static var freetype_import_font = Loader.load("freetype_import_font", 4);
    private static var nme_font_register_font = Loader.load("nme_font_register_font", 2);
    private static var nme_font_iterate_device_fonts = Loader.load("nme_font_iterate_device_fonts", 1);

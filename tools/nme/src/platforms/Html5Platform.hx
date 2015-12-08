@@ -31,7 +31,7 @@ class Html5Platform extends Platform
    override public function copyBinary():Void 
    {
      FileHelper.copyFile('$haxeDir/ApplicationMain.js',
-                        '$applicationDirectory/ApplicationMain.js', addOutput);
+                        '$applicationDirectory/${project.app.file}.js', addOutput);
    }
 
    override public function getOutputExtra() return "html5";

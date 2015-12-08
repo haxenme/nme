@@ -185,9 +185,15 @@ class Loader
 #elseif (html5)
 class Loader 
 {
+   static var html5Implementation:Dynamic;
    public static function load(func:String, args:Int):Dynamic 
    {
-      return function() trace(func);
+      if (html5Implementation==null)
+         html5Implementation = nme.html5.Lib.init();
+      var val = Reflect.field(html5Implementation, func);
+      if (val==null)
+         return function() trace(func + " not implemented");
+      return val;
    }
 }
 
