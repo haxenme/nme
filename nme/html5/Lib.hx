@@ -13,6 +13,8 @@ class Lib
       var functions = {};
 
       merge(functions,App);
+      merge(functions,DisplayObject);
+      merge(functions,Graphics);
 
       return functions;
    }
