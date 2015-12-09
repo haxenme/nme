@@ -18,7 +18,7 @@ class App
 
    public static function nme_get_frame_stage(win:js.html.Window)
    {
-      return win.document.getElementById("stage");
+      return new DisplayObject(win.document.getElementById("stage"));
    }
 
    public static function nme_set_stage_handler(nmeHandle:js.html.Element, handler:Dynamic->Dynamic, inWidth:Int, inHeight:Int)

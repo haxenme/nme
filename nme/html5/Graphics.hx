@@ -9,28 +9,29 @@ class Graphics
    private var svgNs = "http://www.w3.org/2000/svg";  
 
    var svg:SVGElement;
-   var fillColour:Null<Int>;
-   var fillAlpha:Float;
+   var fill:String;
 
    public function new(inSvg:SVGElement)
    {
       svg = inSvg;
+      // TODO - get this right
+      svg.setAttribute("width","400");
+      svg.setAttribute("height","400");
    }
 
    public function beginFill(inColour:Int, inAlpha:Float)
    {
-      fillColour = inColour;
-      fillAlpha = inAlpha;
+      fill = "#" + StringTools.hex(inColour,6);
    }
 
    public function drawRect(inX:Float, inY:Float, inWidth:Float, inHeight:Float)
    {
       var rect:RectElement = cast Browser.document.createElementNS(svgNs,"rect"); 
-      rect.setAttribute('x', Std.string(inX) );
-      rect.setAttribute('y', Std.string(inY) );
-      rect.setAttribute('width', Std.string(inWidth) );
-      rect.setAttribute('height', Std.string(inHeight) );
-      rect.setAttribute('fill', "#" + StringTools.hex(fillColour,6) );
+      rect.setAttribute('x', untyped inX );
+      rect.setAttribute('y', untyped inY );
+      rect.setAttribute('width', untyped inWidth );
+      rect.setAttribute('height', untyped inHeight );
+      rect.setAttribute('fill', fill);
       svg.appendChild(rect);
    }
 

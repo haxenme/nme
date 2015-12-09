@@ -5,5 +5,5 @@ typedef NativeHandle = Dynamic;
 #elseif neko
 typedef NativeHandle = Dynamic;
 #elseif html5
-typedef NativeHandle = js.html.Element;
+typedef NativeHandle = nme.html5.DisplayObject;
 #end
