@@ -684,6 +684,7 @@ public:
    void drawTriangles(const QuickVec<float> &inXYs, const QuickVec<int> &inIndixes,
             const QuickVec<float> &inUVT, int inCull, const QuickVec<int> &inColours,
             int blendMode );
+   void close();
 
    const Extent2DF &GetExtent0(double inRotation);
    bool  HitTest(const UserPoint &inPoint);

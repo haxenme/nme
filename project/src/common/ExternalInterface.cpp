@@ -2535,6 +2535,17 @@ value nme_gfx_clear(value inGfx)
 }
 DEFINE_PRIM(nme_gfx_clear,1);
 
+value nme_gfx_close(value inGfx)
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+      gfx->close();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_close,1);
+
+
+
 value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
 {
    Graphics *gfx;

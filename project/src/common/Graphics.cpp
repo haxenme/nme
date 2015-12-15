@@ -167,6 +167,12 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    OnChanged();
 }
 
+void Graphics::close()
+{
+   Flush();
+}
+
+
 void Graphics::drawPath(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData,
            WindingRule inWinding )
 {
