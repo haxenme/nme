@@ -78,6 +78,7 @@ implements SensorEventListener
    static DisplayMetrics metrics;
    static HashMap<String, Class> mLoadedClasses = new HashMap<String, Class>();
    static SensorManager sensorManager;
+   static android.text.ClipboardManager mClipboard;
    private static List<Extension> extensions;
    
    public Handler mHandler;
@@ -144,6 +145,8 @@ implements SensorEventListener
       Extension.mainActivity = this;
       Extension.mainContext = this;
       Extension.packageName = getApplicationContext().getPackageName();
+      
+      mClipboard = (android.text.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
 
       // Pre-load these, so the C++ knows where to find them
       
@@ -390,6 +393,58 @@ implements SensorEventListener
       prefEditor.commit();
    }
    
+   public static boolean setClipboardText(String text) {
+        try {
+            int sdk = android.os.Build.VERSION.SDK_INT;
+            if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB)
+                mClipboard.setText(text);
+            else {
+                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mClipboard;
+                android.content.ClipData clip = android.content.ClipData
+                    .newPlainText("label", text);
+                clipboard.setPrimaryClip(clip);
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+   }
+
+   public static boolean hasClipboardText() {
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB)
+            return mClipboard.getText() != null;
+        else {
+            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mClipboard;
+
+            if (!(clipboard.hasPrimaryClip()))
+                return false;
+
+            if (!(clipboard.getPrimaryClipDescription().hasMimeType(android.content.ClipDescription.MIMETYPE_TEXT_PLAIN)))
+                return false;
+
+            android.content.ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+                return item.getText() != null;
+        }
+   }
+
+   public static String getClipboardText() {
+       int sdk = android.os.Build.VERSION.SDK_INT;
+       if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB)
+           return mClipboard.getText().toString();
+       else {
+           android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mClipboard;
+
+           if (!(clipboard.hasPrimaryClip()))
+               return "";
+
+           if (!(clipboard.getPrimaryClipDescription().hasMimeType(android.content.ClipDescription.MIMETYPE_TEXT_PLAIN)))
+               return "";
+
+           android.content.ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+           return item.getText() != null ? item.getText().toString() : "";
+       }
+   }
    
    public void doPause()
    {
