@@ -14,13 +14,12 @@
 #ifdef HX_WINDOWS
 #include <SDL_syswm.h>
 #include <Windows.h>
+#include <Utils.h>
 #endif
 
 
 namespace nme
 {
-   
-
 static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
 static Rect sgWindowRect = Rect(0, 0, 0, 0);
@@ -1930,9 +1929,46 @@ bool HasClipboardText()
     return SDL_HasClipboardText();
 }
 
-char* GetClipboardText()
+const char *GetClipboardText()
 {
-    return SDL_GetClipboardText();
+   const char *clipboardText = SDL_GetClipboardText();
+   #ifdef HX_WINDOWS
+   if (clipboardText)
+   {
+      int origLen = strlen(clipboardText);
+      const unsigned char *ptr = (const unsigned char *)clipboardText;
+      const unsigned char *end = ptr + origLen;
+      int bufferSize = 0;
+      while(ptr<end)
+      {
+         const unsigned char *charStart = ptr;
+         int code = DecodeAdvanceUTF8(ptr);
+         if (code!='\r')
+            bufferSize += ptr-charStart;
+      }
+
+      if (bufferSize<origLen)
+      {
+         static std::vector<unsigned char> utf8Buffer;
+
+         utf8Buffer.resize(bufferSize + 1);
+         ptr = (const unsigned char *)clipboardText;
+         int bufferPos = 0;
+         while(ptr<end)
+         {
+            const unsigned char *charStart = ptr;
+            int code = DecodeAdvanceUTF8(ptr);
+            if (code!='\r')
+               while(charStart<ptr)
+                  utf8Buffer[bufferPos++] = *charStart++;
+         }
+         utf8Buffer[bufferPos] = '\0';
+         clipboardText = (const char *)&utf8Buffer[0];
+      }
+   }
+   #endif
+
+   return clipboardText;
 }
 
 }

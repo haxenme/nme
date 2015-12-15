@@ -201,6 +201,8 @@ private:
 typedef std::wstring WString;
 #endif
 
+int DecodeAdvanceUTF8(const unsigned char * &ioPtr);
+
 WString IntToWide(int value);
 WString ColorToWide(int value);
 
@@ -217,7 +219,7 @@ QuickVec<ScreenMode>* CapabilitiesGetScreenModes ();
 #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
 void SetClipboardText(const char* text);
 bool HasClipboardText();
-char* GetClipboardText();
+const char* GetClipboardText();
 #endif
 std::string CapabilitiesGetLanguage();
 
