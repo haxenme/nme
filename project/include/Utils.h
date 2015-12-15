@@ -216,7 +216,7 @@ double CapabilitiesGetScreenResolutionX ();
 double CapabilitiesGetScreenResolutionY ();
 QuickVec<int>* CapabilitiesGetScreenResolutions ();
 QuickVec<ScreenMode>* CapabilitiesGetScreenModes ();
-void SetClipboardText(const char* text);
+bool SetClipboardText(const char* text);
 bool HasClipboardText();
 const char* GetClipboardText();
 std::string CapabilitiesGetLanguage();
