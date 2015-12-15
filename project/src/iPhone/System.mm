@@ -281,6 +281,29 @@ FILE *OpenOverwrite(const char *inName)
     return result;
 }
 
+bool SetClipboardText(const char* text) {
+    @try {
+        NSString *str = [[NSString alloc] initWithUTF8String:text];
+        UIPasteboard *appPasteBoard = [UIPasteboard generalPasteboard];
+        appPasteBoard.persistent = YES;
+        [appPasteBoard setString: str];
+        return true;
+    }
+    @catch (NSException *exception) {
+        return false;
+    }
+}
 
+bool HasClipboardText(){
+    UIPasteboard *appPasteBoard = [UIPasteboard generalPasteboard];
+    NSString *textCopied = [appPasteBoard string];
+    return [textCopied length] != 0;
+}
+
+const char* GetClipboardText(){
+    UIPasteboard *appPasteBoard = [UIPasteboard generalPasteboard];
+    NSString *textCopied = [appPasteBoard string];
+    return [textCopied UTF8String];
+}
 
 }
