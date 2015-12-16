@@ -62,11 +62,8 @@ class Clipboard {
             }
         } else {
             return switch (format) {
-                case HTML_FORMAT, RICH_TEXT_FORMAT, TEXT_FORMAT: {
-                    var result: String = nme_desktop_clipboard_get_clipboard_text();
-                    if(result != null) result = result.split("\r\n").join('\n');
-                    return result;
-                } default: null;
+                case HTML_FORMAT, RICH_TEXT_FORMAT, TEXT_FORMAT: nme_desktop_clipboard_get_clipboard_text();
+                default: null;
             }
         }
     }
