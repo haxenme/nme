@@ -24,7 +24,7 @@ class AssetData
 }
 
 #if flash
-::foreach assets::::if (embed)::::if (isImage)::class ::flatName:: extends flash.display.BitmapData { public function new()super(0,0); }::else::class ::flatName:: extends ::flashClass:: { }::end::::end::
+::foreach assets::::if (embed)::@:keep ::if (isImage)::class ::flatName:: extends flash.display.BitmapData { public function new()super(0,0); }::else::class ::flatName:: extends ::flashClass:: { }::end::::end::
 ::end::
 #end
 
