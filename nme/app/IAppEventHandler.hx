@@ -17,6 +17,7 @@ interface IAppEventHandler
    public function onJoystick(event:AppEvent, type:String):Void;
    public function onSysMessage(event:AppEvent):Void;
    public function onContextLost():Void;
+   public function onScroll(event:AppEvent):Void;
    public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void;
 }
 
