@@ -10,6 +10,7 @@ class Sample extends Sprite
 {
    var mDisplay:Bitmap;
    var mBitmap:BitmapData;
+   var cachedPixels:nme.utils.ByteArray;
 
    function new()
    {
@@ -21,6 +22,18 @@ class Sample extends Sprite
       addChild(mDisplay);
 
       stage.addEventListener(flash.events.Event.ENTER_FRAME, updateBitmap);
+      stage.addEventListener(flash.events.Event.RESIZE, function(_) updateScale);
+      updateScale();
+   }
+
+   function updateScale()
+   {
+     if (stage!=null)
+     {
+        var sx = stage.stageWidth / mBitmap.width;
+        var sy = stage.stageHeight / mBitmap.height;
+        mDisplay.scaleX = mDisplay.scaleY= Math.min(sx,sy);
+     }
    }
 
    static var pass = 0;
@@ -48,7 +61,10 @@ class Sample extends Sprite
          else
             mBitmap = Assets.getBitmapData("image1.jpg");
          mDisplay.bitmapData = mBitmap;
+         cachedPixels = null;
+         updateScale();
       }
+
    }
 
    function cycleColours()
@@ -57,7 +73,9 @@ class Sample extends Sprite
       var h = mBitmap.height;
       var r = new Rectangle(0,0,w,h);
 
-      var pixels = mBitmap.getPixels(r);
+      if (cachedPixels==null)
+        cachedPixels = mBitmap.getPixels(r);
+      var pixels = cachedPixels;
 
       Memory.select(pixels);
       var idx = 0;

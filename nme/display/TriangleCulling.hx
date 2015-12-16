@@ -1,5 +1,5 @@
 package nme.display;
-#if (cpp || neko)
+#if (!flash)
 
 // The order of this enum is important
 enum TriangleCulling 

@@ -1,5 +1,5 @@
 package nme.media;
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class SoundTransform 

@@ -31,14 +31,17 @@ class Html5Platform extends Platform
    override public function copyBinary():Void 
    {
      FileHelper.copyFile('$haxeDir/ApplicationMain.js',
-                        '$applicationDirectory/ApplicationMain.js', addOutput);
+                        '$applicationDirectory/${project.app.file}.js', addOutput);
    }
+
+   override public function getOutputExtra() return "html5";
 
    override public function updateOutputDir():Void 
    {
       super.updateOutputDir();
 
       var destination = getOutputDir();
+
       var icon = IconHelper.getSvgIcon(project.icons);
       if (icon!=null)
       {
@@ -51,8 +54,8 @@ class Html5Platform extends Platform
 
    override public function run(arguments:Array<String>):Void 
    {
-      var fullPath =  FileSystem.fullPath('$applicationDirectory/ApplicationMain.js');
-      trace("TODO " + fullPath);
+      var fullPath =  FileSystem.fullPath('$applicationDirectory/index.html');
+      new nme.net.URLRequest("file://" + fullPath).launchBrowser();
    }
 }
 

@@ -1,5 +1,5 @@
 package nme.display3D.textures;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.geom.Rectangle;
 import nme.utils.ByteArray;

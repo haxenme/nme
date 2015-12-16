@@ -1,6 +1,6 @@
 package nme.utils;
 
-#if (cpp || neko)
+#if (!flash)
 @:nativeProperty
 class UInt8Array extends ArrayBufferView implements ArrayAccess<Int> 
 {

@@ -1,5 +1,5 @@
 package nme.net;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.events.Event;
 import nme.events.EventDispatcher;
@@ -9,17 +9,15 @@ import nme.events.HTTPStatusEvent;
 import nme.utils.ByteArray;
 import nme.Loader;
 
-#if haxe3
-import sys.FileSystem;
-import sys.io.File;
+#if html5
+// ok
 #else
-#if neko
+#elseif neko
 import neko.FileSystem;
 import neko.io.File;
 #else
 import cpp.FileSystem;
 import cpp.io.File;
-#end
 #end
 
 @:nativeProperty

@@ -1,6 +1,6 @@
 package nme.desktop;
 
-#if (cpp || neko)
+#if (!flash)
 import nme.Loader;
 
 @:nativeProperty
@@ -88,7 +88,7 @@ class Clipboard {
         }
     }
 
-    public function setData(format : ClipboardFormats, data : Dynamic, serializable : Bool = true) {
+    public function setData(format : ClipboardFormats, data : Dynamic, serializable : Bool = true): Bool {
         if (!_systemClipboard) {
             switch (format) {
                 case HTML_FORMAT:
@@ -106,8 +106,7 @@ class Clipboard {
         } else {
             switch (format) {
                 case HTML_FORMAT, RICH_TEXT_FORMAT, TEXT_FORMAT:
-                    nme_desktop_clipboard_set_clipboard_text(data);
-                    return true;
+                    return nme_desktop_clipboard_set_clipboard_text(data);
                 default:
                     return false;
             }

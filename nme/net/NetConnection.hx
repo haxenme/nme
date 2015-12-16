@@ -1,6 +1,6 @@
 package nme.net;
 
-#if (cpp||neko)
+#if (!flash)
 
 import nme.events.NetStatusEvent;
 

@@ -69,7 +69,7 @@ class GLSLShader {
 
 
     public function new(type : Context3DProgramType, glslSource : String,
-    #if (cpp || neko || js)
+    #if (!flash || js)
     ?
     #elseif glsl2agal
     ?
@@ -77,7 +77,7 @@ class GLSLShader {
     agalInfoJson : String) {
 
         this.type = type;
-        #if (cpp || neko || js)
+        #if (!flash || js)
             nativeShader = ShaderUtils.createShader(type,glslSource);
         #elseif flash
 
@@ -102,7 +102,7 @@ class GLSLShader {
         #if flash
         var registerIndex = getRegisterIndexForUniform(name);
         context3D.setProgramConstantsFromMatrix(type, registerIndex, matrix, transposedMatrix);
-        #elseif (cpp || neko || js)
+        #elseif (!flash || js)
         context3D.setGLSLProgramConstantsFromMatrix(name, matrix, transposedMatrix);
         #end
     }
@@ -112,7 +112,7 @@ class GLSLShader {
         #if flash
         var registerIndex = getRegisterIndexForUniform(name);
         context3D.setProgramConstantsFromByteArray(type, registerIndex, 1, data, byteArrayOffset);
-        #elseif (cpp || neko || js)
+        #elseif (!flash || js)
         context3D.setGLSLProgramConstantsFromByteArray(name, data, byteArrayOffset);
         #end
 
@@ -124,7 +124,7 @@ class GLSLShader {
         #if flash
         var registerIndex = getRegisterIndexForUniform(name);
         context3D.setProgramConstantsFromVector(type, registerIndex, vector, 1);
-        #elseif (cpp || neko || js)
+        #elseif (!flash || js)
         context3D.setGLSLProgramConstantsFromVector4(name, vector);
         #end
     }

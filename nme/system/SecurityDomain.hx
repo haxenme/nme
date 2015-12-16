@@ -1,5 +1,5 @@
 package nme.system;
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class SecurityDomain

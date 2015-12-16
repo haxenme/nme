@@ -1,5 +1,5 @@
 package nme.filesystem;
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class StorageVolume 

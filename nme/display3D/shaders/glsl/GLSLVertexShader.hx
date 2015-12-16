@@ -11,7 +11,7 @@ import nme.display3D.Context3DProgramType;
 class GLSLVertexShader extends GLSLShader{
 
     public function new(glslSource : String,
-    #if (cpp || neko || js)
+    #if (!flash || js)
     ?
     #elseif glsl2agal
     ?
@@ -24,7 +24,7 @@ class GLSLVertexShader extends GLSLShader{
         #if flash
         var registerIndex = getRegisterIndexForVarying(name);
         context3D.setVertexBufferAt(registerIndex, vertexBuffer, bufferOffset, format);
-        #elseif (cpp || neko || js)
+        #elseif (!flash || js)
         context3D.setGLSLVertexBufferAt(name, vertexBuffer, bufferOffset, format);
         #end
     }

@@ -1,5 +1,5 @@
 package nme.errors;
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class RangeError extends Error 

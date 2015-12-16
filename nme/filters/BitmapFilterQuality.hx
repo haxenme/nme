@@ -1,5 +1,5 @@
 package nme.filters;
-#if (cpp || neko)
+#if (!flash)
 
 class BitmapFilterQuality 
 {

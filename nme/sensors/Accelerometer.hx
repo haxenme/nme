@@ -1,5 +1,5 @@
 package nme.sensors;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.errors.ArgumentError;
 import nme.events.AccelerometerEvent;

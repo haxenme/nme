@@ -1,5 +1,5 @@
 package nme.display;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.display.DisplayObject;
 import nme.display.PixelSnapping;

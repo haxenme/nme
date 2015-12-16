@@ -1,5 +1,5 @@
 package nme;
-#if (cpp || neko)
+#if (!flash)
 
 import haxe.Timer;
 import nme.bare.Surface;

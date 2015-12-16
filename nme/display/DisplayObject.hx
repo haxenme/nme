@@ -1,5 +1,5 @@
 package nme.display;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.events.Event;
 import nme.events.EventDispatcher;
@@ -44,14 +44,14 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
    public var x(get_x, set_x):Float;
    public var y(get_y, set_y):Float;
 
-   /** @private */ public var nmeHandle:Dynamic;
+   /** @private */ public var nmeHandle:NativeHandle;
    /** @private */   private var nmeFilters:Array<Dynamic>;
    /** @private */   private var nmeGraphicsCache:Graphics;
    /** @private */   private var nmeID:Int;
    /** @private */   private var nmeParent:DisplayObjectContainer;
    /** @private */   private var nmeScale9Grid:Rectangle;
    /** @private */   private var nmeScrollRect:Rectangle;
-   public function new(inHandle:Dynamic, inType:String) 
+   public function new(inHandle:NativeHandle, inType:String) 
    {
       nmeHandle = inHandle;
       if (nmeParent!=null)

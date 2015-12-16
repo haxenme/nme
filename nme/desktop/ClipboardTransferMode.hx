@@ -1,6 +1,6 @@
 package nme.desktop;
 
-#if (cpp || neko)
+#if (!flash)
 enum ClipboardTransferMode {
 	CLONE_ONLY;
 	CLONE_PREFERRED;

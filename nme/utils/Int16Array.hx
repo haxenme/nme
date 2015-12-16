@@ -1,6 +1,6 @@
 package nme.utils;
 
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> 

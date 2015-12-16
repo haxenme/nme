@@ -1,5 +1,5 @@
 package nme.display;
-#if (cpp || neko)
+#if (!flash)
 
 import haxe.io.Bytes;
 import nme.bare.Surface;

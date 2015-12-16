@@ -1,5 +1,5 @@
 package nme.net;
-#if (cpp || neko)
+#if (!flash)
 
 import sys.FileSystem;
 import sys.io.File;

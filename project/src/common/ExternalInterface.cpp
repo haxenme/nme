@@ -1071,28 +1071,17 @@ DEFINE_PRIM (nme_capabilities_get_language, 0);
 
 // ---  nme.desktop.Clipboard -----------------------------------------------------
 value nme_desktop_clipboard_set_clipboard_text(value inText) {
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
-   SetClipboardText(val_string(inText));
-   #endif
-   return alloc_null();
+   return alloc_bool(SetClipboardText(val_string(inText)));
 }
 DEFINE_PRIM (nme_desktop_clipboard_set_clipboard_text, 1);
 
 value nme_desktop_clipboard_has_clipboard_text() {
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
    return alloc_bool(HasClipboardText());
-   #else
-   return alloc_bool(false);
-   #endif
 }
 DEFINE_PRIM (nme_desktop_clipboard_has_clipboard_text, 0);
 
 value nme_desktop_clipboard_get_clipboard_text() {
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
    return alloc_string(GetClipboardText());
-   #else
-   return alloc_null(false);
-   #endif
 }
 DEFINE_PRIM (nme_desktop_clipboard_get_clipboard_text, 0);
 
@@ -2545,6 +2534,17 @@ value nme_gfx_clear(value inGfx)
    return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_clear,1);
+
+value nme_gfx_close(value inGfx)
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+      gfx->close();
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gfx_close,1);
+
+
 
 value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
 {

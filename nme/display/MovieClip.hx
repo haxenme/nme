@@ -1,5 +1,5 @@
 package nme.display;
-#if (cpp || neko)
+#if (!flash)
 
 @:nativeProperty
 class MovieClip extends Sprite 

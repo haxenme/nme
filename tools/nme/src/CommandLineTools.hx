@@ -52,7 +52,7 @@ class CommandLineTools
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
-            "rebuild", "shell", "icon", "banner" ];
+            "rebuild", "shell", "icon", "banner", "serve" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -1346,6 +1346,11 @@ class CommandLineTools
 
          case "create":
             createTemplate();
+
+         case "serve":
+            var server = new nme.net.http.Server(function(a,b) { } );
+            server.listen(8080);
+            server.untilDeath();
 
          case "shell":
             var deploy = project.hasDef("deploy") ? project.getDef("deploy") : getValue("deploy");

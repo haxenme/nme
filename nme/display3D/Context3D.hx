@@ -1,5 +1,5 @@
 package nme.display3D;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.utils.Float32Array;
 import nme.display3D.textures.CubeTexture;

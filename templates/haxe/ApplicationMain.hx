@@ -73,15 +73,17 @@ class ApplicationMain
       nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
       ::end::
 
-      nme.app.Application.setFixedOrientation(
-         ::if (WIN_ORIENTATION == "portrait")::
-            nme.app.Application.OrientationPortraitAny
-         ::elseif (WIN_ORIENTATION == "landscape")::
-            nme.app.Application.OrientationLandscapeAny
-         ::else::
-            nme.app.Application.OrientationAny
-          ::end::
-      );
+      #if (cpp||neko)
+         nme.app.Application.setFixedOrientation(
+            ::if (WIN_ORIENTATION == "portrait")::
+               nme.app.Application.OrientationPortraitAny
+            ::elseif (WIN_ORIENTATION == "landscape")::
+               nme.app.Application.OrientationLandscapeAny
+            ::else::
+               nme.app.Application.OrientationAny
+             ::end::
+        );
+      #end
 
       #end
    

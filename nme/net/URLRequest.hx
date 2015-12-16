@@ -1,5 +1,5 @@
 package nme.net;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.utils.ByteArray;
 

@@ -1,6 +1,6 @@
 package nme.system;
 
-#if (cpp || neko)
+#if (!flash)
 
 import nme.Lib;
 import nme.Loader;

@@ -1,5 +1,5 @@
 package nme.display3D.textures;
-#if (cpp || neko)
+#if (!flash)
 
 using nme.display.BitmapData;
 

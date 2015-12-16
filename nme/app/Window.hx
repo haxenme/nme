@@ -33,7 +33,7 @@ class Window
 
    public var onKey:Int -> Int -> Int -> Void;
 
-   public var nmeHandle(default,null):Dynamic;
+   public var nmeHandle(default,null):nme.display.NativeHandle;
    var enterFramePending:Bool;
 
    public function new(inFrameHandle:Dynamic,inWidth:Int,inHeight:Int)

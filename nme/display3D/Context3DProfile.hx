@@ -1,5 +1,5 @@
 package nme.display3D;
-#if (cpp || neko)
+#if (!flash)
 
 enum Context3DProfile 
 {

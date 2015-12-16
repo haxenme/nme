@@ -1,5 +1,5 @@
 package nme.media;
-#if (cpp || neko)
+#if (!flash)
 
 import nme.events.IEventDispatcher;
 import nme.events.EventDispatcher;

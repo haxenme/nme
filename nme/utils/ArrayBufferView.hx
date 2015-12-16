@@ -1,5 +1,5 @@
 package nme.utils;
-#if (cpp || neko)
+#if (!flash)
 
 #if cpp
 import haxe.io.BytesData;
