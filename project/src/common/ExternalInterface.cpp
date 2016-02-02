@@ -143,6 +143,14 @@ NmeApi gNmeApi;
 
 
 static int sgIDsInit = false;
+static int sgRenderingCount = 0;
+#if 1
+#define CHECK_ACCESS(where)
+#else
+#define CHECK_ACCESS(where) \
+   if(sgRenderingCount) \
+     { ELOG("Error calling gfx api '%s' while rendering.",where); }
+#endif
 
 extern "C" void InitIDs()
 {
@@ -1428,6 +1436,7 @@ value nme_stage_begin_render(value inStage,value inClear)
    Stage *stage;
    if (AbstractToObject(inStage,stage))
       stage->BeginRenderStage(val_bool(inClear));
+   sgRenderingCount++;
    return alloc_null();
 }
 DEFINE_PRIM(nme_stage_begin_render,2);
@@ -1451,6 +1460,7 @@ value nme_stage_end_render(value inStage)
    Stage *stage;
    if (AbstractToObject(inStage,stage))
       stage->EndRenderStage();
+   sgRenderingCount--;
    return alloc_null();
 }
 DEFINE_PRIM(nme_stage_end_render,1);
@@ -2428,6 +2438,7 @@ value nme_doc_add_child(value inParent, value inChild)
    DisplayObject *child;
    if (AbstractToObject(inParent,parent) && AbstractToObject(inChild,child))
    {
+      CHECK_ACCESS("nme_doc_add_child");
       parent->addChild(child);
    }
    return alloc_null();
@@ -2440,6 +2451,7 @@ value nme_doc_swap_children(value inParent, value inChild0, value inChild1)
    DisplayObjectContainer *parent;
    if (AbstractToObject(inParent,parent))
    {
+      CHECK_ACCESS("nme_doc_swap_children");
       parent->swapChildrenAt(val_int(inChild0), val_int(inChild1) );
    }
    return alloc_null();
@@ -2452,6 +2464,7 @@ value nme_doc_remove_child(value inParent, value inPos)
    DisplayObjectContainer *parent;
    if (AbstractToObject(inParent,parent))
    {
+      CHECK_ACCESS("nme_doc_remove_child");
       parent->removeChildAt(val_int(inPos));
    }
    return alloc_null();
@@ -2464,6 +2477,7 @@ value nme_doc_set_child_index(value inParent, value inChild, value inPos)
    DisplayObject *child;
    if (AbstractToObject(inParent,parent) && AbstractToObject(inChild,child))
    {
+      CHECK_ACCESS("nme_doc_set_child_index");
       parent->setChildIndex(child,val_int(inPos));
    }
    return alloc_null();
@@ -2530,7 +2544,10 @@ value nme_gfx_clear(value inGfx)
 {
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
+   {
+      CHECK_ACCESS("nme_gfx_clear");
       gfx->clear();
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_clear,1);
@@ -2539,7 +2556,10 @@ value nme_gfx_close(value inGfx)
 {
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
+   {
+      CHECK_ACCESS("nme_gfx_close");
       gfx->close();
+   }
    return alloc_null();
 }
 DEFINE_PRIM(nme_gfx_close,1);
@@ -2551,6 +2571,7 @@ value nme_gfx_begin_fill(value inGfx,value inColour, value inAlpha)
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
+      CHECK_ACCESS("nme_gfx_begin_fill");
       gfx->beginFill( val_int(inColour), val_number(inAlpha) );
    }
    return alloc_null();
@@ -2568,6 +2589,7 @@ void nme_gfx_begin_set_bitmap_fill(value inGfx,value inBMP, value inMatrix,
    {
       Matrix matrix;
       FromValue(matrix,inMatrix);
+      CHECK_ACCESS("nme_gfx_begin_set_bitmap_fill");
 
       GraphicsBitmapFill *fill = new GraphicsBitmapFill(surface,matrix,val_bool(inRepeat), val_bool(inSmooth));
       fill->setIsSolidStyle(inForSolid);
@@ -2580,6 +2602,7 @@ void nme_gfx_begin_set_bitmap_fill(value inGfx,value inBMP, value inMatrix,
 value nme_gfx_begin_bitmap_fill(value inGfx,value inBMP, value inMatrix,
      value inRepeat, value inSmooth)
 {
+   CHECK_ACCESS("nme_gfx_begin_bitmap_fill");
    nme_gfx_begin_set_bitmap_fill(inGfx,inBMP,inMatrix,inRepeat,inSmooth,true);
    return alloc_null();
 }
@@ -2603,6 +2626,7 @@ void nme_gfx_begin_set_gradient_fill(value *arg, int args, bool inForSolid)
    Graphics *gfx;
    if (AbstractToObject(arg[aGfx],gfx))
    {
+      CHECK_ACCESS("nme_gfx_begin_set_gradient_fill");
       Matrix matrix;
       FromValue(matrix,arg[aMatrix]);
       GraphicsGradientFill *grad = new GraphicsGradientFill(val_int(arg[aType]), 
@@ -2626,6 +2650,7 @@ void nme_gfx_begin_set_gradient_fill(value *arg, int args, bool inForSolid)
 
 value nme_gfx_begin_gradient_fill(value *arg, int args)
 {
+   CHECK_ACCESS("nme_gfx_begin_gradient_fill");
    nme_gfx_begin_set_gradient_fill(arg,args, true);
    return alloc_null();
 }
@@ -2633,6 +2658,7 @@ DEFINE_PRIM_MULT(nme_gfx_begin_gradient_fill)
 
 value nme_gfx_line_gradient_fill(value *arg, int args)
 {
+   CHECK_ACCESS("nme_gfx_line_gradient_fill");
    nme_gfx_begin_set_gradient_fill(arg,args, false);
    return alloc_null();
 }
@@ -2658,6 +2684,7 @@ value nme_gfx_line_style(value* arg, int nargs)
    Graphics *gfx;
    if (AbstractToObject(arg[argGfx],gfx))
    {
+      CHECK_ACCESS("nme_gfx_line_style");
       double thickness = -1;
       if (!val_is_null(arg[argThickness]))
       {
@@ -2685,6 +2712,7 @@ value nme_gfx_move_to(value inGfx,value inX, value inY)
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
+      CHECK_ACCESS("nme_gfx_move_to");
       gfx->moveTo( val_number(inX), val_number(inY) );
    }
    return alloc_null();
@@ -2696,6 +2724,7 @@ value nme_gfx_line_to(value inGfx,value inX, value inY)
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
+      CHECK_ACCESS("nme_gfx_line_to");
       gfx->lineTo( val_number(inX), val_number(inY) );
    }
    return alloc_null();
@@ -2707,6 +2736,7 @@ value nme_gfx_curve_to(value inGfx,value inCX, value inCY, value inX, value inY)
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
+      CHECK_ACCESS("nme_gfx_curve_to");
       gfx->curveTo( val_number(inCX), val_number(inCY), val_number(inX), val_number(inY) );
    }
    return alloc_null();
@@ -2718,6 +2748,7 @@ value nme_gfx_arc_to(value inGfx,value inCX, value inCY, value inX, value inY)
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
+      CHECK_ACCESS("nme_gfx_arc_to");
       gfx->arcTo( val_number(inCX), val_number(inCY), val_number(inX), val_number(inY) );
    }
    return alloc_null();
@@ -2729,6 +2760,7 @@ value nme_gfx_draw_ellipse(value inGfx,value inX, value inY, value inWidth, valu
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
+      CHECK_ACCESS("nme_gfx_draw_ellipse");
       gfx->drawEllipse( val_number(inX), val_number(inY), val_number(inWidth), val_number(inHeight) );
    }
    return alloc_null();
@@ -2740,6 +2772,7 @@ value nme_gfx_draw_rect(value inGfx,value inX, value inY, value inWidth, value i
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
+      CHECK_ACCESS("nme_gfx_draw_rect");
       gfx->drawRect( val_number(inX), val_number(inY), val_number(inWidth), val_number(inHeight) );
    }
    return alloc_null();
@@ -2751,6 +2784,7 @@ value nme_gfx_draw_path(value inGfx, value inCommands, value inData, value inWin
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
+      CHECK_ACCESS("nme_gfx_draw_path");
       QuickVec<uint8> commands;
       QuickVec<float> data;
       
@@ -2772,6 +2806,7 @@ value nme_gfx_draw_round_rect(value *arg, int args)
    Graphics *gfx;
    if (AbstractToObject(arg[aGfx],gfx))
    {
+      CHECK_ACCESS("nme_gfx_draw_round_rect");
       gfx->drawRoundRect( val_number(arg[aX]), val_number(arg[aY]), val_number(arg[aW]), val_number(arg[aH]), val_number(arg[aRx]), val_number(arg[aRy]) );
    }
    return alloc_null();
@@ -2786,6 +2821,7 @@ value nme_gfx_draw_triangles(value *arg, int args )
    Graphics *gfx;
    if (AbstractToObject(arg[aGfx],gfx))
    {
+      CHECK_ACCESS("nme_gfx_draw_triangles");
       QuickVec<float> vertices;
       QuickVec<int> indices;
       QuickVec<float> uvt;
@@ -2809,6 +2845,7 @@ value nme_gfx_draw_data(value inGfx,value inData)
    Graphics *gfx;
    if (AbstractToObject(inGfx,gfx))
    {
+      CHECK_ACCESS("nme_gfx_draw_data");
       int n = val_array_size(inData);
       for(int i=0;i<n;i++)
       {
@@ -3114,7 +3151,7 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
    Tilesheet *sheet;
    if (AbstractToObject(inGfx,gfx) && AbstractToObject(inSheet,sheet))
    {
-
+      CHECK_ACCESS("nme_gfx_draw_tiles");
       int  flags = val_int(inFlags);
       BlendMode blend = bmNormal;
       switch(flags & TILE_BLEND_MASK)
