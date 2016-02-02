@@ -24,6 +24,8 @@ class Rectangle
       height = inHeight == null ? 0 : inHeight;
    }
 
+   public function toString() return 'Rectangle($x,$y $width' + 'x$height)';
+
    public function setTo(inX:Float, inY:Float, inWidth:Float, inHeight:Float):Void 
    {
       x = inX;
