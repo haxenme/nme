@@ -336,7 +336,7 @@
    <set name="target-id" value="nme-target" if="NME_STATIC_LINK" />
 
    <set name="NME_SUFFIX" value="${HX_TARGET_SUFFIX}" if="HX_TARGET_SUFFIX" />
-   <set name="NME_SUFFIX" value="${LIBPREFIX}" unless="HX_TARGET_SUFFIX" />
+   <set name="NME_SUFFIX" value="${LIBSUFFIX}" unless="HX_TARGET_SUFFIX" />
 
    <target id="${target-id}" output="${LIBPREFIX}nme${NME_SUFFIX}" tool="linker" toolid="${STD_MODULE_LINK}">
       <outdir name="${OUT_DIR}/${BINDIR}" />

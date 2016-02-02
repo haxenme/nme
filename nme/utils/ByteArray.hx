@@ -19,6 +19,8 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
+typedef ByteArrayData = ByteArray;
+
 @:nativeProperty
 class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput implements IMemoryRange implements IDataOutput
 {
@@ -28,6 +30,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public var endian(get_endian, set_endian):String;
    public var position:Int;
    public var byteLength(get_byteLength,null):Int;
+   public var __length(get,set):Int;
 
    #if (html5||neko)
    /** @private */ private var alloced:Int;
@@ -56,6 +59,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          #end
       }
    }
+
+   inline public function get___length() return length;
+   inline public function set___length(inLength:Int) return setLength(inLength);
+   inline public function __resize(inLength:Int) ensureElem(inLength-1,true);
 
    @:keep
    inline public function __get(pos:Int):Int 
@@ -380,11 +387,11 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #end
    }
 
-   public function setLength(inLength:Int):Void 
+   public function setLength(inLength:Int): Int 
    {
       if (inLength > 0)
          ensureElem(inLength - 1, false);
-      length = inLength;
+      return length = inLength;
    }
 
    // ArrayBuffer interface

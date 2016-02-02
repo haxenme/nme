@@ -70,6 +70,8 @@ class BitmapData extends Surface implements IBitmapDrawable
       source.nmeDrawToSurface(nmeHandle, matrix, colorTransform, Std.string(blendMode), clipRect, smoothing);
    }
 
+   // BitmapData are currently stored unmultiplied on nme
+   public inline function unmultiplyAlpha() { }
 
    public static inline function extractAlpha(v:Int):Int { return v >>> 24; }
 
