@@ -1436,7 +1436,6 @@ value nme_stage_begin_render(value inStage,value inClear)
    Stage *stage;
    if (AbstractToObject(inStage,stage))
       stage->BeginRenderStage(val_bool(inClear));
-   sgRenderingCount++;
    return alloc_null();
 }
 DEFINE_PRIM(nme_stage_begin_render,2);
@@ -1447,7 +1446,11 @@ value nme_render_stage(value inStage)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
+   {
+      sgRenderingCount++;
       stage->RenderStage();
+      sgRenderingCount--;
+   }
    return alloc_null();
 }
 
@@ -1460,7 +1463,6 @@ value nme_stage_end_render(value inStage)
    Stage *stage;
    if (AbstractToObject(inStage,stage))
       stage->EndRenderStage();
-   sgRenderingCount--;
    return alloc_null();
 }
 DEFINE_PRIM(nme_stage_end_render,1);
