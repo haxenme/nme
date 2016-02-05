@@ -510,6 +510,30 @@ class Assets
       return [ id.substr(0,split), id.substr(split+1) ];
    }
 
+   public static function loadLibrary(inLibName:String, onLoad:AssetLib->Void)
+   {
+      if (loadedLibraries.exists(inLibName))
+      {
+         onLoad( loadedLibraries.get(inLibName) );
+         return;
+      }
+
+      var libInfo = info.get(inLibName);
+      if (libInfo==null)
+         throw "[nme.Assets] Unnkown library " + inLibName;
+
+      var type = Std.string(libInfo.type);
+      var factory = libraryFactories.get(type);
+      if (factory==null)
+         throw("[nme.Assets] missing library handler for '" + inLibName + "' of type " + type);
+
+      factory(inLibName).load(function(lib) {
+         loadedLibraries.set(inLibName,lib);
+         onLoad(lib);
+      } );
+   }
+
+
    public static function getLoadedLibrary(inLibName:String) : AssetLib
    {
       if (!loadedLibraries.exists(inLibName))
