@@ -2,6 +2,7 @@ package nme;
 
 import nme.display.Bitmap;
 import nme.display.BitmapData;
+import nme.display.MovieClip;
 import nme.media.Sound;
 import nme.net.URLRequest;
 import nme.text.Font;
@@ -35,6 +36,13 @@ class Cache
    public function removeBitmapData(inId:String) Assets.removeBitmapData(inId);
 }
 
+typedef AssetLibrary = nme.AssetLib;
+typedef AssetLibFactory = String -> nme.AssetLib;
+
+
+
+
+
 @:nativeProperty
 class Assets 
 {
@@ -45,6 +53,8 @@ class Assets
    public static var info = new Map<String,AssetInfo>();
    public static var pathMapper = new Map<String,String>();
    public static var byteFactory = new Map<String,Void->ByteArray>();
+   public static var libraryFactories = new Map<String,AssetLibFactory>();
+   public static var loadedLibraries = new Map<String,AssetLib>();
    public static var cacheMode:Int = WEAK_CACHE;
 
    public static var scriptBase = "";
@@ -52,6 +62,11 @@ class Assets
    public static var cache = new Cache();
 
    //public static var id(get_id, null):Array<String>;
+
+   public static function addLibraryFactory(inType:AssetType, inFactory:AssetLibFactory)
+   {
+      libraryFactories.set(Std.string(inType), inFactory);
+   }
 
    public static function getAssetPath(inName:String) : String
    {
@@ -485,6 +500,53 @@ class Assets
    public static function getString(id:String,?useCache:Null<Bool>):String 
    {
        return getText(id,useCache);
+   }
+
+   public static function parseLibId(id:String)
+   {
+      var split = id.indexOf(":");
+      if (split<0)
+         return null;
+      return [ id.substr(0,split), id.substr(split+1) ];
+   }
+
+   public static function getLoadedLibrary(inLibName:String) : AssetLib
+   {
+      if (!loadedLibraries.exists(inLibName))
+      {
+         var libInfo = info.get(inLibName);
+         if (libInfo==null)
+         {
+            noId(inLibName,"Library");
+            return null;
+         }
+
+         var type = Std.string(libInfo.type);
+         var factory = libraryFactories.get(type);
+         if (factory==null)
+         {
+            trace("[nme.Assets] missing library handler for '" + inLibName + "' of type " + type);
+            return null;
+         }
+
+         factory(inLibName).load(function(lib) loadedLibraries.set(inLibName,lib) );
+      }
+
+      return loadedLibraries.get(inLibName);
+   }
+
+   public static function getMovieClip(id:String):MovieClip
+   {
+      var libId = parseLibId(id);
+      if (libId!=null)
+      {
+         var lib = getLoadedLibrary(libId[0]);
+         if (lib==null)
+            return null;
+         return lib.getMovieClip(libId[1]);
+      }
+
+      return null;
    }
 
   #if (cpp||neko)

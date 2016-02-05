@@ -1093,7 +1093,7 @@ class CommandLineTools
          }
       }
 
-      project.processStdLibs();
+      project.processLibs();
 
       // Better way to do this?
       switch(project.target) 

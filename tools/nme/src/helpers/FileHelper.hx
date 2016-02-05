@@ -117,6 +117,34 @@ class FileHelper
       }
    }
 
+   // Paste here to avoid version issues
+   #if neko
+   private static var sys_command = neko.Lib.load("std","sys_command",1);
+   public static function neko_command( cmd : String, ?args : Array<String> ) : Int
+   {
+      if (args == null)
+      {
+         return sys_command(untyped cmd.__s);
+      }
+      else if (PlatformHelper.hostPlatform == Platform.WINDOWS)
+      {
+          cmd = [
+             for (a in [StringTools.replace(cmd, "/", "\\")].concat(args))
+                 StringTools.quoteWinArg(a, true)
+          ].join(" ");
+          return sys_command(untyped cmd.__s);
+      }
+      else
+      {
+          cmd = [cmd].concat(args).map(StringTools.quoteUnixArg).join(" ");
+          return sys_command(untyped cmd.__s);
+      }
+   }
+   #else
+   public static function neko_command( cmd : String, ?args : Array<String> ) : Int
+      return Sys.command(cmd, args);
+   #end
+
    public static function copyIfNewer(source:String, destination:String) : Bool
    {
       //allFiles.push(destination);
@@ -130,15 +158,15 @@ class FileHelper
       // Use system copy to preserve file permissions
       if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
       {
-         source = '"' + source.split("/").join("\\") + '"';
-         destination = '"' + destination.split("/").join("\\") + '"';
+         source = source.split("/").join("\\");
+         destination = destination.split("/").join("\\");
          LogHelper.info("", " - Copying file: " + source + " -> " + destination);
-         Sys.command("copy", [source, destination]);
+         neko_command("copy", [source, destination]);
       }
       else
       {
          LogHelper.info("", " - Copying file: " + source + " -> " + destination);
-         Sys.command("cp", [source, destination]);
+         neko_command("cp", [source, destination]);
       }
       return true;
    }

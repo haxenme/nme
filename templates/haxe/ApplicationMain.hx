@@ -235,10 +235,11 @@ class ApplicationMain
          return cached;
       switch(i.type)
       {
-         case BINARY, TEXT: return Assets.getBytes(inName);
+         case BINARY, TEXT, SWF: return Assets.getBytes(inName);
          case FONT: return Assets.getFont(inName);
          case IMAGE: return Assets.getBitmapData(inName);
          case MUSIC, SOUND: return Assets.getSound(inName);
+         case MOVIE_CLIP: return null;
       }
 
       throw "Unknown asset type: " + i.type;

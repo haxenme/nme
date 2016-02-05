@@ -2,6 +2,9 @@ package;
 
 import haxe.io.Path;
 
+
+
+
 class Asset 
 {
    public var data:Dynamic;
@@ -22,6 +25,7 @@ class Asset
    public var isSound:Bool;
    public var isMusic:Bool;
    public var isImage:Bool;
+   public var isLibrary:Bool;
 
    public function new(path:String = "", rename:String = "", inType:AssetType, inEmbed:Bool) 
    {
@@ -58,6 +62,9 @@ class Asset
             case "mp3", "mp2", "mid":
                type = AssetType.MUSIC;
 
+            case "swf":
+               type = AssetType.SWF;
+
             case "text", "txt", "json", "xml", "svg", "css":
                type = AssetType.TEXT;
 
@@ -76,5 +83,6 @@ class Asset
       isSound = type==SOUND;
       isMusic = type==MUSIC;
       isImage = type==IMAGE;
+      isLibrary = type==SWF;
    }
 }

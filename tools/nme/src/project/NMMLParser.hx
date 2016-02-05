@@ -792,6 +792,25 @@ class NMMLParser
                case "assets":
                   parseAssetsElement(element, extensionPath);
 
+               case "library":
+                  if (element.has.path)
+                  {
+                     var name = substitute(element.att.path);
+                     var id = element.has.id ? substitute(element.att.id) : new Path(name).file;
+                     var path = project.relocatePath(name);
+                     var embed = project.embedAssets;
+                     if (element.has.embed) 
+                        embed = embed || parseBool(substitute(element.att.embed));
+
+                     var asset = new Asset(path, id, null, embed);
+                     //asset.id = id;
+                     project.assets.push(asset);
+                  }
+                  else
+                  {
+                     Log.verbose("Ignoring library handler definition.");
+                  }
+
                case "ssl":
 
                   //if (wantSslCertificate())

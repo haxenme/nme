@@ -123,6 +123,8 @@ class NMEProject
    public var customIOSproperties:Map<String,String>;
    public var frameworkSearchPaths:Array<String>;
    public var customIOSBlock:Array<String>;
+   // For decoding assets
+   public var libraryHandlers:Map<String,String>;
    // Additional files to be copied into andoird project
    public var javaPaths:Array<String>;
    // Android signing certificate
@@ -163,6 +165,7 @@ class NMEProject
       templateCopies = [];
       ndllCheckDir = "";
       engines = new Map<String,String>();
+      libraryHandlers = new Map<String,String>();
 
       environment = Sys.environment();
       if (environment.exists("ANDROID_SERIAL"))
@@ -563,6 +566,7 @@ class NMEProject
          var path = haxelib.getBase();
          Log.verbose("Adding " + name + "@" + path);
 
+trace(path);
          if (FileSystem.exists(path + "/include.nmml")) 
             new NMMLParser(this, path + "/include.nmml");
          else if (FileSystem.exists(path + "/include.xml")) 
@@ -579,8 +583,24 @@ class NMEProject
   }
 
 
-   public function processStdLibs()
+   public function processLibs()
    {
+      var needsSwfHandler = false;
+
+      for(asset in assets)
+      {
+         if (asset.type == SWF)
+            needsSwfHandler = true;
+      }
+
+      if (needsSwfHandler && !libraryHandlers.exists("SWF"))
+      {
+         Log.verbose("Using default swf handler");
+         libraryHandlers.set("SWF","format.swf.SWFLibrary");
+         addLib("swf");
+      }
+
+
       if (stdLibs && !isFlash)
       {
          for(lib in ["std", "zlib", "regexp"])
@@ -593,6 +613,7 @@ class NMEProject
             }
          }
       }
+
    }
 
    public function getContext(inBuildDir:String):Dynamic 
@@ -658,6 +679,13 @@ class NMEProject
          }
 
          context.assets.push(asset);
+      }
+
+      var handlers = new Array<Dynamic>();
+      context.libraryHandlers = handlers;
+      for(h in libraryHandlers.keys())
+      {
+         handlers.push({ type:h, handler:libraryHandlers.get(h) } );
       }
 
       Reflect.setField(context, "ndlls", ndlls);
