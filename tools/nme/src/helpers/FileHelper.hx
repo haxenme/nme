@@ -8,6 +8,7 @@ import sys.io.FileOutput;
 import sys.FileSystem;
 import neko.Lib;
 import platforms.Platform;
+using StringTools;
 
 class FileHelper 
 {
@@ -256,8 +257,8 @@ public static function quoteUnixArg(argument:String):String {
       // Use system copy to preserve file permissions
       if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
       {
-         source = source.split("/").join("\\");
-         destination = destination.split("/").join("\\");
+         source = source.split("/").join("\\").replace("\\\\","\\");
+         destination = destination.split("/").join("\\").replace("\\\\","\\");
          LogHelper.info("", " - Copying file: " + source + " -> " + destination);
          neko_command("copy", [source, destination]);
       }
