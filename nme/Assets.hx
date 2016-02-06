@@ -73,6 +73,7 @@ class Assets
       var i = getInfo(inName);
       return i==null ? null : i.path;
    }
+   inline public static function getPath(inName:String) return getAssetPath(inName);
 
    public static function addEventListener(type:String, listener:Dynamic, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void
    {
@@ -97,6 +98,18 @@ class Assets
       return bytes.getData();
       #else
       return ByteArray.fromBytes(bytes);
+      #end
+   }
+
+   public static function isLocal(inId:String, inType:AssetType)
+   {
+      var i = getInfo(inId);
+      if (i==null)
+         return false;
+      #if flash
+      return i.isResource || Type.resolveClass(i.className)!=null;
+      #else
+      return true;
       #end
    }
 

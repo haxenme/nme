@@ -595,9 +595,17 @@ trace(path);
 
       if (needsSwfHandler && !libraryHandlers.exists("SWF"))
       {
-         Log.verbose("Using default swf handler");
-         libraryHandlers.set("SWF","format.swf.SWFLibrary");
-         addLib("swf");
+         if (hasDef("flash"))
+         {
+            Log.verbose("Using default flash swf handler");
+            libraryHandlers.set("SWF","nme.swf.SwfAssetLib");
+         }
+         else
+         {
+            Log.verbose("Using default native swf handler");
+            libraryHandlers.set("SWF","format.swf.SWFLibrary");
+            addLib("swf");
+         }
       }
 
 

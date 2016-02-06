@@ -7,20 +7,16 @@ import nme.display.StageScaleMode;
 import nme.Assets;
 
 
-class NyanCat extends Sprite {
-	
-	
-	public function new () {
-		
-		super ();
-		
-		var cat = Assets.getMovieClip ("library:NyanCatAnimation");
-		addChild (cat);
-		
-		//var theme = Assets.getSound ("assets/Nyan Cat Theme.mp3");
-		//theme.play (0, -1);
-		
-	}
-	
-	
+class NyanCat extends Sprite
+{
+   public function new()
+   {
+      super ();
+      Assets.loadLibrary("library", function(lib) {
+         var cat = lib.getMovieClip("NyanCatAnimation");
+         addChild(cat);
+      } );
+      //var theme = Assets.getSound ("assets/Nyan Cat Theme.mp3");
+      //theme.play (0, -1);
+   }
 }
