@@ -518,21 +518,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
    public function writeDouble(x:Float) 
    {
-      #if html5
       var end = position + 8;
       ensureElem(end - 1, true);
       setDouble(position,x);
       position += 8;
-      #else
-
-      #if neko
-      var bytes = new Bytes(8, _double_bytes(x, bigEndian));
-      #elseif cpp
-      var bytes = Bytes.ofData(_double_bytes(x, bigEndian));
-      #end
-
-      writeHaxeBytes(bytes,0,0);
-      #end
    }
 
    #if !no_nme_io
@@ -544,21 +533,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
    public function writeFloat(x:Float) 
    {
-      #if html5
       var end = position + 4;
       ensureElem(end - 1, true);
       setFloat(position,x);
       position += 4;
-      #else
-
-      #if neko
-      var bytes = new Bytes(4, _float_bytes(x, bigEndian));
-      #elseif cpp
-      var bytes = Bytes.ofData(_float_bytes(x, bigEndian));
-      #end
-
-      writeHaxeBytes(bytes,0,0);
-      #end
    }
 
    public function writeInt(value:Int) 
