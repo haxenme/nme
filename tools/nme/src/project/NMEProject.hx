@@ -566,7 +566,6 @@ class NMEProject
          var path = haxelib.getBase();
          Log.verbose("Adding " + name + "@" + path);
 
-trace(path);
          if (FileSystem.exists(path + "/include.nmml")) 
             new NMMLParser(this, path + "/include.nmml");
          else if (FileSystem.exists(path + "/include.xml")) 
@@ -645,6 +644,7 @@ trace(path);
          if (target!=Platform.FLASH ) 
             haxedefs.set("openfl_legacy","1");
          haxeflags.push("--remap openfl:nme");
+         addLib("nme","");
       }
 
       if (export!=null && export!="")

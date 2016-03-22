@@ -119,7 +119,7 @@ class FileHelper
    }
 
    // Paste here to avoid version issues
-   #if neko
+   #if disabled
 
 
 public static function quoteUnixArg(argument:String):String {

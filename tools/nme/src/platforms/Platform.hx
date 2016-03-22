@@ -184,7 +184,10 @@ class Platform
       header.id = project.app.packageName;
       header.engines = new Array<Dynamic>();
       for(engine in project.engines.keys())
-         header.engines.push( {name:engine, version:project.engines.get(engine)} );
+      {
+         var e = {name:engine, version:project.engines.get(engine)};
+         header.engines.push(e);
+      }
 
       if (includeIcon && project.icons!=null && project.icons.length>0)
       {

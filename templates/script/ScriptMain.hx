@@ -3,6 +3,10 @@ import cpp.cppia.HostClasses;
 
 class ScriptMain
 {
+   public static var winBackground = ::WIN_BACKGROUND::;
+   public static var winWidth = ::WIN_WIDTH::;
+   public static var winHeight = ::WIN_HEIGHT::;
+
    public static function main()
    {
       var waitForResize = false;
@@ -65,6 +69,8 @@ class ScriptMain
          sendFakeResize();
       }
    }
+
+   public static function onLoaded() { }
 
    static function sendFakeResize()
    {
