@@ -257,8 +257,8 @@ public static function quoteUnixArg(argument:String):String {
       // Use system copy to preserve file permissions
       if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
       {
-         source = source.split("/").join("\\").replace("\\\\","\\");
-         destination = destination.split("/").join("\\").replace("\\\\","\\");
+         source = '"' + source.split("/").join("\\").replace("\\\\","\\") + '"';
+         destination = '"' + destination.split("/").join("\\").replace("\\\\","\\") + '"';
          LogHelper.info("", " - Copying file: " + source + " -> " + destination);
          neko_command("copy", [source, destination]);
       }
