@@ -291,9 +291,11 @@ class AndroidPlatform extends Platform
       PathHelper.mkdir(destination + "/res/drawable-mdpi/");
       PathHelper.mkdir(destination + "/res/drawable-hdpi/");
       PathHelper.mkdir(destination + "/res/drawable-xhdpi/");
+      PathHelper.mkdir(destination + "/res/drawable-xxhdpi/");
+      PathHelper.mkdir(destination + "/res/drawable-xxxhdpi/");
 
-      var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi" ];
-      var iconSizes = [ 36, 48, 72, 96 ];
+      var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi" ];
+      var iconSizes = [ 36, 48, 72, 96, 144, 192 ];
 
       for(i in 0...iconTypes.length) 
       {
