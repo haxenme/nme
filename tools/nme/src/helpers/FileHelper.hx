@@ -118,132 +118,6 @@ class FileHelper
       }
    }
 
-   // Paste here to avoid version issues
-   #if disabled
-
-
-public static function quoteUnixArg(argument:String):String {
-      // Based on cpython's shlex.quote().
-      // https://hg.python.org/cpython/file/a3f076d4f54f/Lib/shlex.py#l278
-
-      if (argument == "")
-         return "''";
-
-      if (!~/[^a-zA-Z0-9_@%+=:,.\/-]/.match(argument))
-         return argument;
-
-      // use single quotes, and put single quotes into double quotes
-      // the string $'b is then quoted as '$'"'"'b'
-      return "'" + StringTools.replace(argument, "'", "'\"'\"'") + "'";
-   }
-
-   /**
-      Character codes of the characters that will be escaped by `quoteWinArg(_, true)`.
-   */
-   public static var winMetaCharacters = [" ".code, "(".code, ")".code, "%".code, "!".code, "^".code, "\"".code, "<".code, ">".code, "&".code, "|".code, "\n".code, "\r".code];
-
-   /**
-      Returns a String that can be used as a single command line argument
-      on Windows.
-      The input will be quoted, or escaped if necessary, such that the output
-      will be parsed as a single argument using the rule specified in
-      http://msdn.microsoft.com/en-us/library/ms880421
-
-      Examples:
-      ```
-      quoteWinArg("abc") == "abc";
-      quoteWinArg("ab c") == '"ab c"';
-      ```
-   */
-   public static function quoteWinArg(argument:String, escapeMetaCharacters:Bool):String {
-      // If there is no space, tab, back-slash, or double-quotes, and it is not an empty string.
-      if (!~/^[^ \t\\"]+$/.match(argument)) {
-         
-         // Based on cpython's subprocess.list2cmdline().
-         // https://hg.python.org/cpython/file/50741316dd3a/Lib/subprocess.py#l620
-
-         var result = new StringBuf();
-         var needquote = argument.indexOf(" ") != -1 || argument.indexOf("\t") != -1 || argument == "";
-
-         if (needquote)
-            result.add('"');
-
-         var bs_buf = new StringBuf();
-         for (i in 0...argument.length) {
-            switch (argument.charCodeAt(i)) {
-               case "\\".code:
-                  // Don't know if we need to double yet.
-                  bs_buf.add("\\");
-               case '"'.code:
-                  // Double backslashes.
-                  var bs = bs_buf.toString();
-                  result.add(bs);
-                  result.add(bs);
-                  bs_buf = new StringBuf();
-                  result.add('\\"');
-               case c:
-                  // Normal char
-                  if (bs_buf.length > 0) {
-                     result.add(bs_buf.toString());
-                     bs_buf = new StringBuf();
-                  }
-                  result.addChar(c);
-            }
-         }
-
-         // Add remaining backslashes, if any.
-         result.add(bs_buf.toString());
-
-         if (needquote) {
-            result.add(bs_buf.toString());
-            result.add('"');
-         }
-
-         argument = result.toString();
-      }
-
-      if (escapeMetaCharacters) {
-         var result = new StringBuf();
-         for (i in 0...argument.length) {
-            var c = argument.charCodeAt(i);
-            if (winMetaCharacters.indexOf(c) >= 0) {
-               result.addChar("^".code);
-            }
-            result.addChar(c);
-         }
-         return result.toString();
-      } else {
-         return argument;
-      }
-   }
-
-
-   private static var sys_command = neko.Lib.load("std","sys_command",1);
-   public static function neko_command( cmd : String, ?args : Array<String> ) : Int
-   {
-      if (args == null)
-      {
-         return sys_command(untyped cmd.__s);
-      }
-      else if (PlatformHelper.hostPlatform == Platform.WINDOWS)
-      {
-          cmd = [
-             for (a in [StringTools.replace(cmd, "/", "\\")].concat(args))
-                 quoteWinArg(a, true)
-          ].join(" ");
-          return sys_command(untyped cmd.__s);
-      }
-      else
-      {
-          cmd = [cmd].concat(args).map(quoteUnixArg).join(" ");
-          return sys_command(untyped cmd.__s);
-      }
-   }
-   #else
-   public static function neko_command( cmd : String, ?args : Array<String> ) : Int
-      return Sys.command(cmd, args);
-   #end
-
    public static function copyIfNewer(source:String, destination:String) : Bool
    {
       //allFiles.push(destination);
@@ -257,15 +131,17 @@ public static function quoteUnixArg(argument:String):String {
       // Use system copy to preserve file permissions
       if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
       {
-         source = source.split("/").join("\\").replace("\\\\","\\");
-         destination = destination.split("/").join("\\").replace("\\\\","\\");
+         var quote = #if (haxe_ver >= 3.300) "" #else "\"" #end;
+
+         source = quote + source.split("/").join("\\").replace("\\\\","\\") + quote;
+         destination = quote + destination.split("/").join("\\").replace("\\\\","\\") + quote;
          LogHelper.info("", " - Copying file: " + source + " -> " + destination);
-         neko_command("copy", [source, destination]);
+         Sys.command("copy", [source, destination]);
       }
       else
       {
          LogHelper.info("", " - Copying file: " + source + " -> " + destination);
-         neko_command("cp", [source, destination]);
+         Sys.command("cp", [source, destination]);
       }
       return true;
    }
