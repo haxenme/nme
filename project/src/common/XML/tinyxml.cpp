@@ -614,7 +614,7 @@ const wchar_t* TiXmlElement::Attribute( const wchar_t* name, double* d ) const
 	{
 		if ( s ) {
 			//*d = _wtof( s );
-			TIXML_SSCANF( s, L"%f", d );
+			TIXML_SSCANF( s, L"%lf", d );
 		}
 		else {
 			*d = 0;
@@ -632,7 +632,7 @@ const std::wstring* TiXmlElement::Attribute( const std::wstring& name, double* d
 	{
 		if ( s ) {
 			//*d = _wtof( s->c_str() );
-			TIXML_SSCANF( s->c_str(), L"%f", d );
+			TIXML_SSCANF( s->c_str(), L"%lf", d );
 		}
 		else {
 			*d = 0;
@@ -1243,17 +1243,17 @@ void TiXmlAttribute::SetDoubleValue( double _value )
 int TiXmlAttribute::IntValue() const
 {
 	//return _wtoi (fvalue.c_str ());
-	int* i = 0;
-	TIXML_SSCANF( fvalue.c_str (), L"%d", i );
-	return *i;
+	int i = 0;
+	TIXML_SSCANF( fvalue.c_str (), L"%d", &i );
+	return i;
 }
 
 double  TiXmlAttribute::DoubleValue() const
 {
 	//return _wtof (fvalue.c_str ());
-	double* d = 0;
-    TIXML_SSCANF( fvalue.c_str (), L"%f", d );
-    return *d;
+	double d = 0;
+    TIXML_SSCANF( fvalue.c_str (), L"%lf", &d );
+    return d;
 }
 
 
