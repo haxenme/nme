@@ -1538,13 +1538,21 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
       }
    }
+
+   double dpiScale = CapabilitiesGetScreenDPI()/96.0;
+   int targetW = dpiScale<1.5 ? inWidth : dpiScale*inWidth;
+   if (targetW>sgDesktopWidth)
+      targetW = sgDesktopWidth;
+   int targetH = dpiScale<1.5 ? inHeight : dpiScale*inHeight;
+   if (targetH>sgDesktopHeight)
+      targetH = sgDesktopHeight;
    
    #ifdef HX_LINUX
-   int setWidth = inWidth;
-   int setHeight = inHeight;
+   int setWidth = targetW;
+   int setHeight = targetH;
    #else
-   int setWidth = fullscreen ? sgDesktopWidth : inWidth;
-   int setHeight = fullscreen ? sgDesktopHeight : inHeight;
+   int setWidth = fullscreen ? sgDesktopWidth : targetW;
+   int setHeight = fullscreen ? sgDesktopHeight : targetH;
    #endif
    
    SDL_Window *window = NULL;
