@@ -143,7 +143,7 @@
    </files>
    
    
-   <files id="nme">
+   <files id="nme" tags="" >
       <compilerflag value="-I${NME_INC_DIR}"/>
       <compilerflag value="-I${INC_DIR}"/>
 
@@ -279,7 +279,7 @@
       <file name="${SRC_DIR}/common/Hardware.cpp" />
       <file name="${SRC_DIR}/common/Tessellate.cpp"/>
       <file name="${SRC_DIR}/common/Filters.cpp"/>
-      <file name="${SRC_DIR}/common/ExternalInterface.cpp"/>
+      <file name="${SRC_DIR}/common/ExternalInterface.cpp" tags="static" />
       <file name="${SRC_DIR}/common/Cursors.cpp"/>
       <file name="${SRC_DIR}/common/Input.cpp" unless="iphone" />
       <file name="${SRC_DIR}/common/SurfaceIO.cpp" unless="sdl_image" />
