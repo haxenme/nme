@@ -275,7 +275,11 @@ class CommandLineTools
                   if (fileMatch!=null && !line.startsWith(stdFile) && fileMatch.match(line))
                   {
                      var dest = fileMatch.matched(1);
-                     if (PathHelper.isAbsolute(dest))
+                     if (dest=="?")
+                     {
+                        // ignore odd hxcpp output
+                     }
+                     else if (PathHelper.isAbsolute(dest))
                      {
                         Log.verbose("Unusual absolute path destination " + dest);
                      }
@@ -1594,7 +1598,13 @@ class CommandLineTools
             {
                Sys.putEnv("HXCPP_VERBOSE","1");
                Log.mVerbose = true;
-               project.haxeflags.push("--times");
+               if (project.haxeflags.indexOf("--times")<0)
+                  project.haxeflags.push("--times");
+            }
+            else if (argument == "-times") 
+            {
+               if (project.haxeflags.indexOf("--times")<0)
+                  project.haxeflags.push("--times");
             }
             else if (argument == "-vv" || argument == "-vverbose") 
             {

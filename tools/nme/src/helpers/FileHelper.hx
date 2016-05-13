@@ -136,12 +136,16 @@ class FileHelper
          source = quote + source.split("/").join("\\").replace("\\\\","\\") + quote;
          destination = quote + destination.split("/").join("\\").replace("\\\\","\\") + quote;
          LogHelper.info("", " - Copying file: " + source + " -> " + destination);
-         Sys.command("copy", [source, destination]);
+         var code = Sys.command("cmd", ["/c", "copy",  source, destination, ">nul" ]);
+         if (code!=0)
+            Log.error('Could not copy $source to $destination');
       }
       else
       {
          LogHelper.info("", " - Copying file: " + source + " -> " + destination);
-         Sys.command("cp", [source, destination]);
+         var code = Sys.command("cp", [source, destination]);
+         if (code!=0)
+            Log.error('Could not copy $source to $destination');
       }
       return true;
    }
