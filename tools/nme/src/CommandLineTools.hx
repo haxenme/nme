@@ -884,7 +884,7 @@ class CommandLineTools
       {
          Log.verbose("Reading HXCPP config: " + config);
 
-         new NMMLParser(project,config);
+         new NMMLParser(project,config,false);
       }
       else
       {
@@ -1056,7 +1056,7 @@ class CommandLineTools
       var projFile = Path.withoutDirectory(projectFile);
       if (ext == "nmml" || ext == "xml") 
       {
-         new NMMLParser(project,projFile);
+         new NMMLParser(project,projFile,true);
       }
       else if (ext=="hx")
       {
@@ -1069,7 +1069,7 @@ class CommandLineTools
          {
             try
             {
-               new NMMLParser(project,projFile);
+               new NMMLParser(project,projFile,true);
                loaded = true;
             }
             catch(e:Dynamic)
@@ -1093,7 +1093,7 @@ class CommandLineTools
          if (FileSystem.exists(include))
          {
             Log.verbose("Read from CPPIA_CLASSPATH " + include); 
-            new NMMLParser(project,include);
+            new NMMLParser(project,include,true);
          }
       }
 

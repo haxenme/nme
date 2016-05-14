@@ -16,10 +16,10 @@ class NMMLParser
 
    static var varMatch = new EReg("\\${(.*?)}", "");
 
-   public function new(inProject:NMEProject, path:String )
+   public function new(inProject:NMEProject, path:String, inWarnUnknown )
    {
       project = inProject;
-      process(path);
+      process(path,inWarnUnknown);
    }
 
    private function filter(text:String, include:Array<String> = null, exclude:Array<String> = null):Bool 
@@ -513,7 +513,7 @@ class NMMLParser
          project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
    }
 
-   private function parseXML(xml:Fast, section:String, extensionPath:String):Void 
+   private function parseXML(xml:Fast, section:String, extensionPath:String, inWarnUnknown):Void 
    {
       for(element in xml.elements) 
       {
@@ -612,7 +612,7 @@ class NMMLParser
 
                   if (include != null && include != "" && FileSystem.exists(include)) 
                   {
-                     new NMMLParser(project,include);
+                     new NMMLParser(project,include, inWarnUnknown);
                      var dir = Path.directory(include);
                      if (dir != "")
                         project.classPaths.push(include);
@@ -846,7 +846,7 @@ class NMMLParser
                   parseOutputElement(element);
 
                case "section":
-                  parseXML(element, "", extensionPath);
+                  parseXML(element, "", extensionPath, inWarnUnknown);
 
                case "certificate":
                   project.certificate = new Keystore(substitute(element.att.path));
@@ -972,6 +972,9 @@ class NMMLParser
                      if (element.has.resolve("linker-flags")) 
                         project.iosConfig.linkerFlags = substitute(element.att.resolve("linker-flags"));
                   }
+               default:
+                  if (inWarnUnknown)
+                     Log.verbose("UNKNOWN project element " + element.name );
             }
          }
       }
@@ -1016,7 +1019,7 @@ class NMMLParser
       }
    }
 
-   public function process(projectFile:String):Void 
+   public function process(projectFile:String, inWarnUnkown:Bool):Void 
    {
       Log.verbose("Parse " + projectFile + "...");
       var xml = null;
@@ -1032,7 +1035,7 @@ class NMMLParser
          Log.error("\"" + projectFile + "\" contains invalid XML data", e);
       }
 
-      parseXML(xml, "", extensionPath);
+      parseXML(xml, "", extensionPath, inWarnUnkown);
    }
 
    public function gitver()

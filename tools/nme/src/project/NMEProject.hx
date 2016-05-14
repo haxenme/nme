@@ -567,9 +567,9 @@ class NMEProject
          Log.verbose("Adding " + name + "@" + path);
 
          if (FileSystem.exists(path + "/include.nmml")) 
-            new NMMLParser(this, path + "/include.nmml");
+            new NMMLParser(this, path + "/include.nmml", true);
          else if (FileSystem.exists(path + "/include.xml")) 
-            new NMMLParser(this, path + "/include.xml");
+            new NMMLParser(this, path + "/include.xml", true);
 
          // flixel depends on lime, so lime gets same priority as flixel - we want nme with greater priority
          if (name=="flixel")
