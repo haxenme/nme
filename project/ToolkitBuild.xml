@@ -20,8 +20,6 @@
    -->
 
    <!-- Where to find static libraries/includes -->
-   <set name="NME_DEV" value="${haxelib:nme-dev}" unless="NME_DEV" />
-   <set name="NATIVE_TOOLKIT_PATH" value="c:/Users/Hugh/dev/native-toolkit" />
    <set name="NATIVE_TOOLKIT_PATH" value="${haxelib:nme-native-toolkit}" unless="NATIVE_TOOLKIT_PATH" />
 
 
@@ -31,13 +29,13 @@
       For ios/android, not needed. 
       For rpi, and other systems, use installed 1.0
    -->
-   <set name="NME_NATIE_SDL_SYSTEM" value="1" if="rpi" />
-   <set name="NME_NATIE_SDL_SYSTEM" value="1" if="emscripten" />
+   <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="rpi" />
+   <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="emscripten" />
    <set name="NME_SDL2" value="1" if="windows" />
-   <set name="NME_SDL2" value="1" if="linux" unless="NME_NATIE_SDL_SYSTEM" />
+   <set name="NME_SDL2" value="1" if="linux" unless="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL2" value="1" if="macos" />
 
-   <set name="NME_SDL_ANY" value="1" if="NME_NATIE_SDL_SYSTEM" />
+   <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
 
    <!-- Use opengl backend ? -->
@@ -83,13 +81,20 @@
    
    <!-- <set name="new_link" value="1" /> -->
  
-   <section if="new_link" >
-      <set name="curl_ssl" value="1" />
-      <import name="${NME_DEV}/project/import-all.xml" />
-   </section>
-
-   
    <set name="HXCPP_OPTIM_LEVEL" value="-O2" if="emscripten" unless="debug" />
+
+
+   <include name="${NATIVE_TOOLKIT_PATH}/ogg/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/vorbis/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/jpeg/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/png/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/zlib/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/freetype/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/sdl/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
+
 
    <files id="main">
       <compilerflag value="-I${INC_DIR}"/>
@@ -156,7 +161,7 @@
 
       <section if="new_link" >
          <depend files="nme-headers"/>
-         <depend files="nme-dev-headers"/>
+         <!-- <depend files="nme-dev-headers"/> -->
          <depend files="hxcpp-depends"/>
       </section>
 
@@ -216,7 +221,7 @@
       </section>
 
 
-      <section if="NME_NATIE_SDL_SYSTEM">
+      <section if="NME_NATIVE_SDL_SYSTEM">
         <compilerflag value="-I/opt/local/include" if="macos" />
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
@@ -226,9 +231,19 @@
       </section>
 
       <section if="NME_SDL2">
-        <compilerflag value="-I${NME_DEV}/include/SDL2" />
         <file name="${SRC_DIR}/audio/SDLSound.cpp" />
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl-mixer" />
+        <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/jpeg"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/png"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/curl/include"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/vorbis/include"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/ogg/include"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/modplug"/>
         <compilerflag value="-DSDL_OGL" />
         <compilerflag value="-DNME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
@@ -255,11 +270,11 @@
 
 
       <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
-      <compilerflag value="-I${NME_DEV}/include" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
       <!--<compilerflag value="-DNME_PREMULTIPLIED_ALPHA" unless="NME_NOT_PREMULTIPLIED_ALPHA" />-->
       <compilerflag value="-DNME_PREMULTIPLIED_ALPHA" if="NME_PREMULTIPLIED_ALPHA" />
       <compilerflag value="-DNME_BUILDING_LIB" />
+      <compilerflag value="-DNME_TOOLKIT_BUILD" />
 
 
 
@@ -325,30 +340,11 @@
       <file name="${SRC_DIR}/lzma/Threads.c" if="windows" />
    </files>
    
-
-   <set name="SLIBEXT" value=".lib" if="windows"/>
-   <set name="SLIBEXT" value=".a" unless="windows"/>
-   <set name="SLIBEXT" value=".a" if="mingw"/>
-   <set name="PRELIB" value="${NME_DEV}/lib/${BINDIR}/lib" />
-   <set name="POSTLIB" value="${LIBEXTRA}${SLIBEXT}" />
-   <set name="no_shared_libs" value="1" if="mingw"/>
-
-
    <set name="target-id" value="NDLL" />
    <set name="target-id" value="nme-target" if="NME_STATIC_LINK" />
 
    <set name="NME_SUFFIX" value="${HX_TARGET_SUFFIX}" if="HX_TARGET_SUFFIX" />
    <set name="NME_SUFFIX" value="${LIBSUFFIX}" unless="HX_TARGET_SUFFIX" />
-
-   <include name="${NATIVE_TOOLKIT_PATH}/ogg/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/vorbis/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/jpeg/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/png/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/zlib/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/freetype/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/sdl/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
 
    <target id="${target-id}" output="${LIBPREFIX}nme${NME_SUFFIX}" tool="linker" toolid="${STD_MODULE_LINK}">
       <outdir name="${OUT_DIR}/${BINDIR}" />
@@ -358,16 +354,14 @@
       <files id="nme"/>
 
          <section unless="new_link" >
-            <!--<files id="native-toolkit-freetype" unless="emscripten" />-->
+            <files id="native-toolkit-freetype" />
 
             <section if="NME_SDL2">
-               <!-- <lib name="${PRELIB}SDL2${POSTLIB}" /> -->
-               <lib name="${PRELIB}SDL2_mixer${POSTLIB}" />
-               <!-- <lib name="${PRELIB}SDL2${POSTLIB}" if="linux"/> -->
                <lib name="-luuid" if="mingw" unless="static_link" />
             </section>
 
-            <section unless="NME_NATIE_SDL_SYSTEM">
+            <section unless="NME_NATIVE_SDL_SYSTEM">
+               <files id="native-toolkit-sdl-mixer"   />
                <files id="native-toolkit-sdl"   />
                <files id="native-toolkit-ogg"   />
                <files id="native-toolkit-vorbis" />
@@ -390,10 +384,8 @@
          <ext value=".so" />
          <ext value=".ndll" if="windows || mac || linux" />
 
-         <!-- <lib name="${PRELIB}libfreetype${LIBEXTRA}${SLIBEXT}" if="iphone"/> -->
 
-
-         <section if="NME_NATIE_SDL_SYSTEM" >
+         <section if="NME_NATIVE_SDL_SYSTEM" >
             <lib name="-lSDL" />
             <lib name="-lcurl" />
             <lib name="-lpng" />

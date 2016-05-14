@@ -314,7 +314,11 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg)
 {
+   #ifdef NME_TOOLKIT_BUILD
+   longjmp( png_jmpbuf(png_ptr), 1);
+   #else
    longjmp(png_ptr->jmpbuf, 1);
+   #endif
 }
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) { }
 static void user_read_data_fn(png_structp png_ptr, png_bytep data, png_size_t length)

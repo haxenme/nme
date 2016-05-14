@@ -13,7 +13,12 @@
 #include FT_BITMAP_H
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
+
+#ifdef NME_TOOLKIT_BUILD
+#include <ftoutln.h>
+#else
 #include <freetype/ftoutln.h>
+#endif
 
 #ifdef ANDROID
 #include <android/log.h>

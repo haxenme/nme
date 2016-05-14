@@ -70,7 +70,11 @@
 typedef ptrdiff_t GLsizeiptrARB;
 
 #define NEED_EXTENSIONS
+#define GL_GLEXT_PROTOTYPES
 #include <SDL_opengl.h>
+#ifdef NME_TOOLKIT_BUILD
+#include <SDL_opengl_glext.h>
+#endif
 
 #endif
 

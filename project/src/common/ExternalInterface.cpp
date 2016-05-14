@@ -30,7 +30,9 @@
 #include <NMEThread.h>
 #include <StageVideo.h>
 #include <NmeBinVersion.h>
+#ifndef NME_TOOLKIT_BUILD
 #include <NmeStateVersion.h>
+#endif
 #include <nme/NmeApi.h>
 #include <hx/CFFIPrime.h>
 
@@ -680,7 +682,11 @@ DEFINE_PRIM(nme_get_ndll_version,0);
 
 value nme_get_nme_state_version()
 {
+   #ifdef NME_TOOLKIT_BUILD
+   return alloc_string( "toolkit" );
+   #else
    return alloc_string( NME_STATE_VERSION );
+   #endif
 }
 DEFINE_PRIM(nme_get_nme_state_version,0);
 
