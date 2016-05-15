@@ -527,7 +527,12 @@ class NMEProject
    public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String)
    {
       var ndll =  findNdll(name);
-      if (ndll==null)
+      if (CommandLineTools.toolkit && (name=="nme" || name=="std" || name=="regexp" ||
+          name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) )
+      {
+         Log.verbose("Skip ndll " + name + " for toolkit link" );
+      }
+      else if (ndll==null)
       {
           var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
 
@@ -608,7 +613,7 @@ class NMEProject
       }
 
 
-      if (stdLibs && !isFlash)
+      if (stdLibs && !isFlash && !CommandLineTools.toolkit)
       {
          for(lib in ["std", "zlib", "regexp"])
          {

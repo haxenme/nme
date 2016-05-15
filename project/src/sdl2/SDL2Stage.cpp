@@ -1581,7 +1581,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          if (SDL_GetWindowWMInfo(window, &wminfo) == 1)
          {
             HWND hwnd = wminfo.info.win.window;
+            #ifdef HXCPP_M64
+            ::SetClassLongPtrA(hwnd, GCLP_HICON, reinterpret_cast<LONG_PTR>(icon));
+            #else
             ::SetClassLong(hwnd, GCL_HICON, reinterpret_cast<LONG>(icon));
+            #endif
          }
       }
       #endif

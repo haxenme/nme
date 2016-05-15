@@ -27,6 +27,7 @@ class CommandLineTools
    public static var nme(default,null):String;
    public static var home:String;
    public static var sys:SysProxy;
+   public static var toolkit:Bool = false;
 
    static var additionalArguments:Array<String>;
    static var command:String;
@@ -1576,6 +1577,11 @@ class CommandLineTools
             else if (argument == "-32") 
                project.architectures.push(Architecture.X86);
 
+            else if (argument=="-toolkit" || argument=="-Dtoolkit")
+            {
+               toolkit = true;
+               project.haxedefs.set("toolkit", "");
+            }
             else if (argument.substr(0, 2) == "-D") 
                project.haxedefs.set(argument.substr(2), "");
 

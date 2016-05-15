@@ -53,6 +53,7 @@
    <!-- And allow https ? -->
    <set name="NME_SSL" value="1" />
    <set name="NME_SSL_EXTRA" value="_ssl" if="NME_SSL"/>
+   <set name="NATIVE_TOOLKIT_CURL_SSL" value="1" if="NME_SSL" />
    
    <!--
       What audio backend it use?
@@ -220,6 +221,14 @@
          <compilerflag value="-I/opt/vc/include/interface/vcos/pthreads/" />
       </section>
 
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype"/>
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/jpeg"/>
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/png"/>
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/vorbis/include"/>
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/ogg/include"/>
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/modplug" if="modplug" />
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/curl/include" if="NME_CURL" />
 
       <section if="NME_NATIVE_SDL_SYSTEM">
         <compilerflag value="-I/opt/local/include" if="macos" />
@@ -236,14 +245,6 @@
         <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
         <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl-mixer" />
         <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype"/>
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/jpeg"/>
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/png"/>
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/curl/include"/>
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/vorbis/include"/>
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/ogg/include"/>
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/modplug"/>
         <compilerflag value="-DSDL_OGL" />
         <compilerflag value="-DNME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
@@ -363,11 +364,13 @@
       </section>
 
       <section unless="NME_NATIVE_SDL_SYSTEM">
-         <files id="native-toolkit-sdl-mixer"   />
-         <files id="native-toolkit-sdl"   />
+         <section if="NME_SDL_ANY" >
+            <files id="native-toolkit-sdl-mixer"  />
+            <files id="native-toolkit-sdl"   />
+            <files id="native-toolkit-modplug" if="modplug" />
+         </section>
          <files id="native-toolkit-ogg"   />
          <files id="native-toolkit-vorbis" />
-         <files id="native-toolkit-modplug" if="modplug" />
          <files id="native-toolkit-jpeg" />
          <files id="native-toolkit-png" />
          <files id="native-toolkit-zlib" />
