@@ -13,6 +13,10 @@ import nme.Loader;
 import nme.app.Application;
 import haxe.CallStack;
 
+#if (toolkit && cpp && !cppia)
+import nme.StaticNme;
+#end
+
 import Sys;
 
 @:nativeProperty

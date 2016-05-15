@@ -340,11 +340,14 @@
       <file name="${SRC_DIR}/lzma/Threads.c" if="windows" />
    </files>
    
-   <set name="target-id" value="NDLL" />
+   <set name="target-id" value="NDLL" unless="NME_STATIC_LINK" />
    <set name="target-id" value="nme-target" if="NME_STATIC_LINK" />
 
    <set name="NME_SUFFIX" value="${HX_TARGET_SUFFIX}" if="HX_TARGET_SUFFIX" />
    <set name="NME_SUFFIX" value="${LIBSUFFIX}" unless="HX_TARGET_SUFFIX" />
+
+   <set name="HXCPP_LINK_NO_ZLIB" value="1" />
+
 
    <target id="${target-id}" output="${LIBPREFIX}nme${NME_SUFFIX}" tool="linker" toolid="${STD_MODULE_LINK}">
       <outdir name="${OUT_DIR}/${BINDIR}" />
@@ -353,34 +356,27 @@
 
       <files id="nme"/>
 
-         <section unless="new_link" >
-            <files id="native-toolkit-freetype" />
+      <files id="native-toolkit-freetype" />
 
-            <section if="NME_SDL2">
-               <lib name="-luuid" if="mingw" unless="static_link" />
-            </section>
+      <section if="NME_SDL2">
+         <lib name="-luuid" if="mingw" unless="static_link" />
+      </section>
 
-            <section unless="NME_NATIVE_SDL_SYSTEM">
-               <files id="native-toolkit-sdl-mixer"   />
-               <files id="native-toolkit-sdl"   />
-               <files id="native-toolkit-ogg"   />
-               <files id="native-toolkit-vorbis" />
-               <files id="native-toolkit-modplug" if="modplug" />
-               <files id="native-toolkit-jpeg" />
-               <files id="native-toolkit-png" />
-               <files id="native-toolkit-zlib" />
-
-               <section if="NME_CURL">
-                  <files id="native-toolkit-curl" />
-               </section>
-
-            </section>
+      <section unless="NME_NATIVE_SDL_SYSTEM">
+         <files id="native-toolkit-sdl-mixer"   />
+         <files id="native-toolkit-sdl"   />
+         <files id="native-toolkit-ogg"   />
+         <files id="native-toolkit-vorbis" />
+         <files id="native-toolkit-modplug" if="modplug" />
+         <files id="native-toolkit-jpeg" />
+         <files id="native-toolkit-png" />
+         <files id="native-toolkit-zlib" />
+         <section if="NME_CURL">
+            <files id="native-toolkit-curl" />
          </section>
- 
-
+      </section>
 
       <section unless="static_link">
-
          <ext value=".so" />
          <ext value=".ndll" if="windows || mac || linux" />
 
@@ -461,8 +457,7 @@
 
    </target>
    
-   
-   <target id="default">
+   <target id="default" unless="NME_STATIC_LINK" >
      <target id="NDLL"/>
    </target>
    

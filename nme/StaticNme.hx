@@ -1,8 +1,8 @@
 package nme;
 
 @:cppFileCode('extern "C" void nme_register_prims();')
-#if new_link
-@:build(nme.macros.BuildXml.importRelative("../../project/Build.xml"))
+#if toolkit
+@:build(nme.macros.BuildXml.importRelative("../../project/ToolkitBuild.xml"))
 #else
 @:buildXml("
 <target id='haxe'>
