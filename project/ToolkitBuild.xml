@@ -93,8 +93,8 @@
    <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/freetype/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
+   <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" />
 
 
    <files id="main">
@@ -159,12 +159,10 @@
       <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
 
       <cache value="1" />
+      <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
 
-      <section if="new_link" >
-         <depend files="nme-headers"/>
-         <!-- <depend files="nme-dev-headers"/> -->
-         <depend files="hxcpp-depends"/>
-      </section>
+      <depend files="nme-headers"/>
+      <depend files="hxcpp-depends"/>
 
       <section if="windows">
          <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />
@@ -230,6 +228,14 @@
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/modplug" if="modplug" />
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/curl/include" if="NME_CURL" />
 
+      <depend files="native-toolkit-freetype-depends" />
+      <depend files="native-toolkit-jpeg-depends" />
+      <depend files="native-toolkit-png-depends" />
+      <depend files="native-toolkit-vorbis-depends" />
+      <depend files="native-toolkit-ogg-depends" />
+      <depend files="native-toolkit-modplug-depends" if="modplug" />
+      <depend files="native-toolkit-curl-depends" if="NME_CURL" />
+
       <section if="NME_NATIVE_SDL_SYSTEM">
         <compilerflag value="-I/opt/local/include" if="macos" />
         <compilerflag value="-I/usr/include/SDL" if="linux" />
@@ -248,6 +254,8 @@
         <compilerflag value="-DSDL_OGL" />
         <compilerflag value="-DNME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
+        <depend files="native-toolkit-sdl-depends" />
+        <depend files="native-toolkit-sdl-mixer-depends" />
       </section>
 
       <section if="NME_CURL">
