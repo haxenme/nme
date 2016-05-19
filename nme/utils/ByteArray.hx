@@ -276,12 +276,13 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
       #if neko
       var bytes = new Bytes(8, untyped __dollar__ssub(b, position, 8));
-      #elseif cpp
-      var bytes = new Bytes(8, b.slice(position, position + 8));
-      #end
-
       position += 8;
       return _double_of_bytes(bytes.b, bigEndian);
+      #elseif cpp
+      var result:Float =  untyped __hxcpp_memory_get_double(b, position);
+      position += 8;
+      return result;
+      #end
       #end
    }
 
@@ -304,12 +305,14 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #else
       #if neko
       var bytes = new Bytes(4, untyped __dollar__ssub(b, position, 4));
-      #elseif cpp
-      var bytes = new Bytes(4, b.slice(position, position + 4));
-      #end
-
       position += 4;
       return _float_of_bytes(bytes.b, bigEndian);
+      #elseif cpp
+      var result:Float =  untyped __hxcpp_memory_get_float(b, position);
+      position += 4;
+      return result;
+      #end
+
       #end
    }
 
@@ -612,10 +615,11 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    private function set_endian(s:String):String { bigEndian =(s == Endian.BIG_ENDIAN); return s; }
 
    // Native Methods
-   /** @private */ private static var _double_bytes = Lib.load("std", "double_bytes", 2);
+   #if neko
    /** @private */ private static var _double_of_bytes = Lib.load("std", "double_of_bytes", 2);
-   /** @private */ private static var _float_bytes = Lib.load("std", "float_bytes", 2);
    /** @private */ private static var _float_of_bytes = Lib.load("std", "float_of_bytes", 2);
+   #end
+
    #if !no_nme_io
    private static var nme_byte_array_overwrite_file = Loader.load("nme_byte_array_overwrite_file", 2);
    private static var nme_byte_array_read_file = Loader.load("nme_byte_array_read_file", 1);

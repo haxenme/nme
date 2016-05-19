@@ -1397,6 +1397,24 @@ QuickVec<int>*  CapabilitiesGetScreenResolutions() {
 	
 }
 
+
+bool SetClipboardText(const char* text)
+{
+   return false;
+   //return SDL_SetClipboardText(text);
+}
+
+bool HasClipboardText()
+{
+   return false;
+   //return SDL_HasClipboardText();
+}
+
+const char *GetClipboardText()
+{
+   return 0;
+}
+
 #ifndef BLACKBERRY
 
 double CapabilitiesGetScreenResolutionX() {

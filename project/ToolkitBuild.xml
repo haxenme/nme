@@ -78,7 +78,7 @@
    <set name="SUP_DIR" value="${this_dir}/support" if="this_dir" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
 
-   <set name="modplug" value="1" unless="android" />
+   <set name="modplug" value="1" unless="android||emscripten" />
    
    <!-- <set name="new_link" value="1" /> -->
  
@@ -377,6 +377,7 @@
             <files id="native-toolkit-sdl"   />
             <files id="native-toolkit-modplug" if="modplug" />
          </section>
+      </section>
          <files id="native-toolkit-ogg"   />
          <files id="native-toolkit-vorbis" />
          <files id="native-toolkit-jpeg" />
@@ -385,7 +386,6 @@
          <section if="NME_CURL">
             <files id="native-toolkit-curl" />
          </section>
-      </section>
 
       <section unless="static_link">
          <ext value=".so" />
@@ -394,12 +394,12 @@
 
          <section if="NME_NATIVE_SDL_SYSTEM" >
             <lib name="-lSDL" />
-            <lib name="-lcurl" />
+         </section>
+            <!--<lib name="-lcurl" />
             <lib name="-lpng" />
             <lib name="-ljpeg" />
             <lib name="-lfreetype" />
-            <lib name="-lz" />
-         </section>
+            <lib name="-lz" /> -->
 
 
          <section if="macos">

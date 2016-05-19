@@ -1,6 +1,6 @@
 package nme;
 
-@:cppFileCode('extern "C" void nme_register_prims();')
+@:cppFileCode('extern "C" int nme_register_prims();')
 #if toolkit
 @:build(nme.macros.BuildXml.importRelative("../../project/ToolkitBuild.xml"))
 #else

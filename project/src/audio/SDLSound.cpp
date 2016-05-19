@@ -683,6 +683,8 @@ public:
 
    void setSoundData(INmeSoundData *inData)
    {
+      #ifndef EMSCRIPTEN
+      // TODO
       soundData = inData;
       Uint8 *data = (Uint8 *)soundData->decodeAll();
       if (data)
@@ -714,7 +716,7 @@ public:
          if (mChunk)
             onChunk();
       }
- 
+      #endif
    }
 
    void loadChunk()
