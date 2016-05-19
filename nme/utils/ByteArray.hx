@@ -279,7 +279,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       position += 8;
       return _double_of_bytes(bytes.b, bigEndian);
       #elseif cpp
-      var result:Float =  untyped __hxcpp_memory_get_double(b, position);
+      var result:Float =  untyped __global__.__hxcpp_memory_get_double(b, position);
       position += 8;
       return result;
       #end
@@ -308,7 +308,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       position += 4;
       return _float_of_bytes(bytes.b, bigEndian);
       #elseif cpp
-      var result:Float =  untyped __hxcpp_memory_get_float(b, position);
+      var result:Float =  untyped __global__.__hxcpp_memory_get_float(b, position);
       position += 4;
       return result;
       #end
