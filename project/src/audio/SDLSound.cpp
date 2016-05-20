@@ -764,7 +764,9 @@ public:
             {
                INmeSoundData *data = INmeSoundData::create(resource.Bytes(),n,SoundForceDecode);
                if (data)
+               {
                   setSoundData(data);
+               }
            }
          }
       }
@@ -1014,7 +1016,7 @@ public:
       if (!mMusic)
       {
          mError = SDL_GetError();
-         ELOG("Error in music %s (%s)", mError.c_str(), name );
+         //ELOG("Error in music %s (%s)", mError.c_str(), name );
       }
    }
    
