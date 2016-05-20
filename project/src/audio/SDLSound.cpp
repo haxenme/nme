@@ -645,16 +645,8 @@ class SDLSound : public Sound
 public:
    SDLSound(const std::string &inFilename)
    {
-      IncRef();
+      initSound();
       filename = inFilename;
-      mChunk = 0;
-      loaded = false;
-      frequency = 0;
-      format = 0;
-      channels = 0;
-      duration = 0.0;
-      soundData = 0;
-
       Mix_QuerySpec(&frequency, &format, &channels);
 
       if (Init())
@@ -663,13 +655,25 @@ public:
 
    SDLSound(const unsigned char *inData, int len)
    {
-      loaded = false;
-      IncRef();
+      initSound();
       if (Init())
       {
          mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(inData, len), 1);
          onChunk();
       }
+   }
+
+   void initSound()
+   {
+      IncRef();
+      mChunk = 0;
+      loaded = false;
+      frequency = 0;
+      format = 0;
+      channels = 0;
+      duration = 0.0;
+      soundData = 0;
+      Mix_QuerySpec(&frequency, &format, &channels);
    }
 
    ~SDLSound()
