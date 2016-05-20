@@ -154,6 +154,7 @@ public:
                   const SoundTransform &inTransform)
    {
       init();
+      initSpec();
       mChunk = inChunk;
       mDynamicBuffer = 0;
       mSound = inSound;
@@ -269,6 +270,7 @@ public:
    SDLSoundChannel( SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback)
    {
       init();
+      initSpec();
       isAsyncMode = true;
       mAsyncFrequency = inRate;
       mAsyncChannels = inIsStereo ? 2 : 1;

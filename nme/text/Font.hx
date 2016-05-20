@@ -104,7 +104,6 @@ class Font
  
    public static function registerFontData(instance:Font, inBytes:ByteArray)
    {
-trace("Register " + instance);
       nme_font_register_font(instance.fontName, inBytes);
       nmeRegisteredFonts.push(instance);
    }

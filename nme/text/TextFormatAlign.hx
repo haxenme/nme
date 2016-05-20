@@ -4,10 +4,10 @@ package nme.text;
 @:nativeProperty
 class TextFormatAlign 
 {
-   public static var LEFT = "left";
-   public static var RIGHT = "right";
-   public static var CENTER = "center";
-   public static var JUSTIFY = "justify";
+   public static inline var LEFT = "left";
+   public static inline var RIGHT = "right";
+   public static inline var CENTER = "center";
+   public static inline var JUSTIFY = "justify";
 }
 
 #else

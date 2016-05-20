@@ -647,7 +647,10 @@ class NMEProject
       {
          haxedefs.set("openfl","2.1.6");
          if (target!=Platform.FLASH ) 
+         {
             haxedefs.set("openfl_legacy","1");
+            haxedefs.set("lime_legacy","1");
+         }
          haxeflags.push("--remap openfl:nme");
          addLib("nme","");
       }
