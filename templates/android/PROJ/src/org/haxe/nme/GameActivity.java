@@ -71,7 +71,7 @@ implements SensorEventListener
    private static final int DEVICE_ROTATION_90 = 1;
    private static final int DEVICE_ROTATION_180 = 2;
    private static final int DEVICE_ROTATION_270 = 3;
-   
+
    protected static GameActivity activity;
    static AssetManager mAssets;
    static Activity mContext;
@@ -100,7 +100,7 @@ implements SensorEventListener
    private static int bufferedNormalOrientation = -1;
    private static float[] inclinationMatrix = new float[16];
    private static float[] magnetData = new float[3];
-   private static float[] orientData = new float[3];
+   //private static float[] orientData = new float[3];
    private static float[] rotationMatrix = new float[16];
    private Sound _sound;
    
@@ -155,7 +155,6 @@ implements SensorEventListener
       System.loadLibrary("::name::");::end::::end::
       org.haxe.HXCPP.run("ApplicationMain");
       
-
       mContainer = new RelativeLayout(mContext);
 
       mKeyInTextView = new EditText ( this );
@@ -166,8 +165,11 @@ implements SensorEventListener
       mKeyInTextView.setHeight(0);
       mKeyInTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); //text input
       //mKeyInTextView.setImeOptions(EditorInfo.IME_ACTION_SEND);
-      mContainer.addView(mKeyInTextView);
       mKeyInTextView.setSelection(1);
+      mContainer.addView(mKeyInTextView);
+
+
+
 
       mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
       Extension.mainView = mView;
@@ -480,9 +482,11 @@ implements SensorEventListener
       if (mVideoView!=null)
       {
          // Need to rebuild the container to get the video to sit under the view - odd?
+         mContainer.removeView(mKeyInTextView);
          mContainer.removeView(mVideoView);
          mContainer.removeView(mView);
 
+         mContainer.addView(mKeyInTextView);
          mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
          RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
          videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
@@ -681,10 +685,10 @@ implements SensorEventListener
       
       if (type == Sensor.TYPE_ACCELEROMETER)
       {
-         // this should not be done on the gui thread
          accelData[0] = event.values[0];
          accelData[1] = event.values[1];
          accelData[2] = event.values[2];
+         // Store value in NME
          NME.onAccelerate(-accelData[0], -accelData[1], accelData[2]);
       }
       
@@ -835,23 +839,8 @@ implements SensorEventListener
    @Override public void onSensorChanged(SensorEvent event)
    {
       loadNewSensorData(event);
-      
-      ::if !(ANDROIDVIEW)::
-      if (accelData != null && magnetData != null)
-      {
-         boolean foundRotationMatrix = SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix, accelData, magnetData);
-         if (foundRotationMatrix)
-         {
-            SensorManager.getOrientation(rotationMatrix, orientData);
-            // this should not be done on the gui thread
-            // NME.onOrientationUpdate(orientData[0], orientData[1], orientData[2]);
-         }
-      }
-      
       // this should not be done on the gui thread
       //NME.onDeviceOrientationUpdate(prepareDeviceOrientation());
-      //NME.onNormalOrientationFound(bufferedNormalOrientation);
-      ::end::
    }
 
   
@@ -979,6 +968,7 @@ implements SensorEventListener
    }
    public static void popView()
    {
+      // mContainer?
       activity.setContentView(activity.mView);
       activity.doResume();
    }
@@ -1045,19 +1035,23 @@ implements SensorEventListener
    }
    
    
-   public static void showKeyboard(boolean show)
+   public static void showKeyboard(final boolean show)
    {
-      InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-      mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
-      
-      if (show)
-      {
-         //activity.mKeyInTextView.requestFocus();
-         mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-         // On the Nexus One, SHOW_FORCED makes it impossible
-         // to manually dismiss the keyboard.
-         // On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
-      }
+      activity.mHandler.post(new Runnable() {
+         @Override public void run()
+         {
+         InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+         mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
+         
+         if (show)
+         {
+            activity.mKeyInTextView.requestFocus();
+            mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            // On the Nexus One, SHOW_FORCED makes it impossible
+            // to manually dismiss the keyboard.
+            // On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
+         }
+      }} );
    }
    
    

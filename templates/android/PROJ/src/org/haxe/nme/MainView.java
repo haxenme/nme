@@ -217,13 +217,13 @@ class MainView extends GLSurfaceView {
             public void beforeTextChanged(CharSequence s, int start, int count,
                                           int after) {
                 if(ignoreTextReset)return;
-                //Log.v("VIEW*","beforeTextChanged [" + s + "] " + start + " " + count + " " + after);
+                // Log.v("VIEW*","beforeTextChanged [" + s + "] " + start + " " + count + " " + after);
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if(ignoreTextReset)return;
-                //Log.v("VIEW*","onTextChanged [" + s + "] " + start + " " + before + " " + count);
+                // Log.v("VIEW*","onTextChanged [" + s + "] " + start + " " + before + " " + count);
                 for(int i = 1;i <= before;i++){
                     queueEvent(new Runnable() {
                         // This method will be called on the rendering thread:
@@ -251,7 +251,7 @@ class MainView extends GLSurfaceView {
             @Override
             public void afterTextChanged(Editable s) {
                 if(!ignoreTextReset) {
-                    //Log.v("VIEW*", "afterTextChanged [" + s + "] ");
+                    // Log.v("VIEW*", "afterTextChanged [" + s + "] ");
                     if (s.length() != 1) {
                         ignoreTextReset = true;
                         mActivity.mKeyInTextView.setText("*");
@@ -267,7 +267,7 @@ class MainView extends GLSurfaceView {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 //if (keyCode == KeyEvent.KEYCODE_ENTER) {
                     if(event.getAction() == KeyEvent.ACTION_DOWN) {
-                        final int keyCodeDown = translateKey(keyCode,event);
+                        final int keyCodeDown = translateKey(keyCode,event,false);
                         if(keyCodeDown != 0) {
                             queueEvent(new Runnable() {
                                 // This method will be called on the rendering thread:
@@ -278,7 +278,7 @@ class MainView extends GLSurfaceView {
                             return true;
                         }
                     } else if(event.getAction() == KeyEvent.ACTION_UP) {
-                        final int keyCodeUp = translateKey(keyCode,event);
+                        final int keyCodeUp = translateKey(keyCode,event,false);
                         if(keyCodeUp != 0) {
                             queueEvent(new Runnable() {
                                 // This method will be called on the rendering thread:
@@ -506,7 +506,7 @@ class MainView extends GLSurfaceView {
        return false;
     }
 
-    public int translateKey(int inCode, KeyEvent event)
+    public int translateKey(int inCode, KeyEvent event,boolean inTranslateUnicode)
     {
        switch(inCode)
        {
@@ -517,40 +517,40 @@ class MainView extends GLSurfaceView {
           case KeyEvent.KEYCODE_DPAD_DOWN: return 40;
           case KeyEvent.KEYCODE_BACK: return 27; /* Fake Escape */
           case KeyEvent.KEYCODE_MENU: return 0x01000012; /* Fake MENU */
-          //case KeyEvent.KEYCODE_DPAD_CENTER: return 13; // Fake ENTER
-          //case KeyEvent.KEYCODE_DPAD_LEFT: return 1;//37;
-          //case KeyEvent.KEYCODE_DPAD_RIGHT: return 2;//39;
-          //case KeyEvent.KEYCODE_DPAD_UP: return 3;//38;
-          //case KeyEvent.KEYCODE_DPAD_DOWN: return 4;//40;
-          //case KeyEvent.KEYCODE_BACK: return 3;//27; // Fake Escape
-          //case KeyEvent.KEYCODE_MENU: return 0x01000012; // Fake MENU
 
-          case KeyEvent.KEYCODE_DEL: return 0;//8;
+          case KeyEvent.KEYCODE_ENTER: return 13; /* Fake MENU */
+
+          case KeyEvent.KEYCODE_DEL: return inTranslateUnicode ? 8 : 0;//8;
        }
 
-       //int result = event.getUnicodeChar( event.getMetaState() );
-       //if (result==android.view.KeyCharacterMap.COMBINING_ACCENT)
-       //{
-       //   // TODO:
-          return 0;
-       //}
-       //return result;
+       if (inTranslateUnicode)
+       {
+          int result = event.getUnicodeChar( event.getMetaState() );
+          if (result==android.view.KeyCharacterMap.COMBINING_ACCENT)
+          {
+             //TODO:
+             return 0;
+          }
+          return result;
+       }
+
+       return 0;
     }
 
-    /*@Override
+    @Override
     public boolean onKeyDown(final int inKeyCode, KeyEvent event)
     {
          // Log.e("VIEW","onKeyDown " + inKeyCode);
           Log.v("VIEW", "device of event is " + event.getDeviceId());
-          Log.v("VIEW","onKeyDown " + inKeyCode);
          final MainView me = this;
-         final int keyCode = translateKey(inKeyCode,event);
+         final int keyCode = translateKey(inKeyCode,event,true);
+          Log.v("VIEW","onKeyDown " + inKeyCode + "->" + keyCode);
          final int deviceId = event.getDeviceId();
          if (keyCode!=0) {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:
                  public void run() {
-                     me.HandleResult(NME.onKeyChange(keyCode,true));
+                     me.HandleResult(NME.onKeyChange(keyCode,keyCode,true,true));
                      me.HandleResult(NME.onJoyChange(deviceId,keyCode,true));
                  }});
              return true;
@@ -564,22 +564,22 @@ class MainView extends GLSurfaceView {
     {
          //Log.v("VIEW","onKeyUp " + inKeyCode);
           Log.v("VIEW", "device of event is " + event.getDeviceId());
-         Log.v("VIEW","onKeyUp " + inKeyCode);
          final MainView me = this;
-         final int keyCode = translateKey(inKeyCode,event);
+         final int keyCode = translateKey(inKeyCode,event,true);
+         Log.v("VIEW","onKeyUp " + inKeyCode + "->" + keyCode);
          final int deviceId = event.getDeviceId();
          if (keyCode!=0)
          {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:
                  public void run() {
-                     me.HandleResult(NME.onKeyChange(keyCode,false));
+                     me.HandleResult(NME.onKeyChange(keyCode,keyCode,false,false));
                      me.HandleResult(NME.onJoyChange(deviceId,keyCode,false));
                  }});
              return true;
          }
          return super.onKeyDown(inKeyCode, event);
-     }*/
+     }
 
 
     private static class Renderer implements GLSurfaceView.Renderer
