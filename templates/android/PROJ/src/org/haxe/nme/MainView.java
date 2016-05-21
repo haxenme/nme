@@ -228,8 +228,8 @@ class MainView extends GLSurfaceView {
                     queueEvent(new Runnable() {
                         // This method will be called on the rendering thread:
                         public void run() {
-                            me.HandleResult(NME.onKeyChange(8, 8, true));
-                            me.HandleResult(NME.onKeyChange(8, 8, false));
+                            me.HandleResult(NME.onKeyChange(8, 8, true, false));
+                            me.HandleResult(NME.onKeyChange(8, 8, false, false));
                         }
                     });
                 }
@@ -239,8 +239,8 @@ class MainView extends GLSurfaceView {
                         queueEvent(new Runnable() {
                             // This method will be called on the rendering thread:
                             public void run() {
-                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, true));
-                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, false));
+                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, true, keyCode == 10 ? false : true));
+                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, false, false));
                             }
                         });
                     }
@@ -272,7 +272,7 @@ class MainView extends GLSurfaceView {
                             queueEvent(new Runnable() {
                                 // This method will be called on the rendering thread:
                                 public void run() {
-                                    me.HandleResult(NME.onKeyChange(keyCodeDown, 0, true));
+                                    me.HandleResult(NME.onKeyChange(keyCodeDown, 0, true, false));
                                 }
                             });
                             return true;
@@ -283,7 +283,7 @@ class MainView extends GLSurfaceView {
                             queueEvent(new Runnable() {
                                 // This method will be called on the rendering thread:
                                 public void run() {
-                                    me.HandleResult(NME.onKeyChange(keyCodeUp, 0, false));
+                                    me.HandleResult(NME.onKeyChange(keyCodeUp, 0, false, false));
                                 }
                             });
                             return true;
