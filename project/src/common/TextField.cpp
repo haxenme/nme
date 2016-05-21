@@ -416,6 +416,14 @@ void TextField::setScrollH(int inScrollH)
 
    if (oldPos!=scrollH)
    {
+      Stage *stage = getStage();
+      if (stage)
+      {
+        Event scroll(etScroll);
+        scroll.id = getID();
+        stage->HandleEvent(scroll);
+      }
+
       mTilesDirty = true;
       mCaretDirty = true;
       mGfxDirty = true;
@@ -445,6 +453,14 @@ void TextField::setScrollVClearSel(int inScrollV,bool inClearSel)
       }
 
       scrollV = inScrollV;
+
+      Stage *stage = getStage();
+      if (stage)
+      {
+          Event scroll(etScroll);
+          scroll.id = getID();
+          stage->HandleEvent(scroll);
+      }
 
       mTilesDirty = true;
       mCaretDirty = true;

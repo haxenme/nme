@@ -609,6 +609,13 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          obj.nmeFireEvent(new Event(Event.CHANGE));
    }
 
+   public function onScroll(inEvent:AppEvent):Void
+   {
+      var obj:DisplayObject = nmeFindByID(inEvent.id);
+      if (obj != null)
+         obj.nmeFireEvent(new Event(Event.SCROLL));
+   }
+
    public function onActive(inActive:Bool):Void
    {
       // trace("nmeSetActive : " + inActive);

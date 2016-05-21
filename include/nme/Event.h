@@ -47,6 +47,8 @@ enum EventType
    
    etRenderContextLost, // 32
    etRenderContextRestored, // 33
+
+   etScroll, // 34
 };
 
 enum EventFlags
