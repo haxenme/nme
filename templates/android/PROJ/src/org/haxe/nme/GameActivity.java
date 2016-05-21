@@ -164,7 +164,7 @@ implements SensorEventListener
       mKeyInTextView.setMaxLines(1);
       mKeyInTextView.setFocusable(true);
       mKeyInTextView.setHeight(0);
-      mKeyInTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); //text input
+      mKeyInTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); //text input
       //mKeyInTextView.setImeOptions(EditorInfo.IME_ACTION_SEND);
       mContainer.addView(mKeyInTextView);
       mKeyInTextView.setSelection(1);
