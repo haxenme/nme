@@ -1582,6 +1582,18 @@ class CommandLineTools
                toolkit = true;
                project.haxedefs.set("toolkit", "");
             }
+            else if (argument=="-toolkit-debug" || argument=="-Dtoolkit-debug")
+            {
+               toolkit = true;
+               project.haxedefs.set("toolkit", "");
+               project.localDefines.set("NATIVE_TOOLKIT_OPTIM_TAG", "debug");
+            }
+            else if (argument=="-toolkit-release" || argument=="-Dtoolkit-release")
+            {
+               toolkit = true;
+               project.haxedefs.set("toolkit", "");
+               project.localDefines.set("NATIVE_TOOLKIT_OPTIM_TAG", "release");
+            }
             else if (argument.substr(0, 2) == "-D") 
                project.haxedefs.set(argument.substr(2), "");
 
@@ -1646,6 +1658,8 @@ class CommandLineTools
          }
       }
 
+      if (toolkit)
+         project.localDefines.set("STATIC_NME","1");
 
       for(w in 0...words.length)
       {

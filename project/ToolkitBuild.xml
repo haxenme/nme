@@ -156,7 +156,7 @@
       <compilerflag value="-I${INC_DIR}"/>
 
       <compilerflag value="-DNME_MODPLUG" if="modplug" />
-      <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
+      <compilerflag value="-DSTATIC_LINK" />
 
       <cache value="1" />
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
