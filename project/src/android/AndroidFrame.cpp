@@ -336,6 +336,7 @@ public:
       }
    }
 
+
    void OnJoy(int inDeviceId, int inCode, bool inDown)
    {
       //__android_log_print(ANDROID_LOG_INFO, "NME", "OnJoy %d %d %d", inDeviceId, inCode, inDown);
@@ -451,15 +452,32 @@ public:
       //__android_log_print(ANDROID_LOG_INFO, "NME", "Accelerometer %f %f %f", inX, inY, inZ);
    }
 
-   void EnablePopupKeyboard(bool inEnable)
+   void PopupKeyboard(PopupKeyboardMode inMode,WString *inValue)
    {
       JNIEnv *env = GetEnv();
       jclass cls = FindClass("org/haxe/nme/GameActivity");
-      jmethodID mid = env->GetStaticMethodID(cls, "showKeyboard", "(Z)V");
+      jstring str = 0;
+      if (inValue)
+      {
+         std::string cstr = WideToUTF8(*inValue);
+         str = env->NewStringUTF( cstr.c_str() );
+      }
+      jmethodID mid = env->GetStaticMethodID(cls, "popupKeyboard", "(ILjava/lang/String;)V");
       if (mid == 0)
         return;
 
-      env->CallStaticVoidMethod(cls, mid, (jboolean) inEnable);
+      env->CallStaticVoidMethod(cls, mid, (int)inMode, str);
+   }
+
+   void SetPopupTextSelection(int inSel0, int inSel1)
+   {
+      JNIEnv *env = GetEnv();
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = env->GetStaticMethodID(cls, "setPopupSelection", "(II)V");
+      if (mid == 0)
+        return;
+
+      env->CallStaticVoidMethod(cls, mid, inSel0, inSel1);
    }
 
    bool getMultitouchSupported() { return true; }
@@ -830,6 +848,18 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject 
    AutoHaxe haxe("onKey");
    if (nme::sStage)
       nme::sStage->OnKey(keyCode,charCode,down,isChar);
+   return nme::GetResult();
+}
+
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onText(JNIEnv * env, jobject obj, jstring inText, int inReplacePos, int inReplaceLen)
+{
+   AutoHaxe haxe("onText");
+   if (nme::sStage)
+   {
+      std::string text = JStringToStdString(env, inText, false);
+      nme::sStage->onTextFieldText(text,inReplacePos,inReplaceLen);
+   }
    return nme::GetResult();
 }
 

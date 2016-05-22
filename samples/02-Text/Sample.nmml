@@ -18,7 +18,6 @@
     <window
       width="${WIDTH}"
       height="${HEIGHT}"
-      orientation="landscape"
       fps="60"
       background="0xffffff"
       resizable="true"

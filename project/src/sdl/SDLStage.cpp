@@ -628,13 +628,13 @@ public:
       SDL_WarpMouse( inX, inY );
    }
    
-   void EnablePopupKeyboard (bool enabled) {
+   void PopupKeyboard(PopupKeyboardMode inMode, WString *) {
       
       #ifdef WEBOS
       
       if (PDL_GetPDKVersion () >= 300) {
          
-         if (enabled) {
+         if (inMode) {
             
             PDL_SetKeyboardState (PDL_TRUE);
             
@@ -650,7 +650,7 @@ public:
 	  
 	  #ifdef BLACKBERRY
       
-      if (enabled) {
+      if (inMode) {
          
          virtualkeyboard_show();
          

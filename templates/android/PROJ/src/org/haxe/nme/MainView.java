@@ -216,47 +216,65 @@ class MainView extends GLSurfaceView {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count,
                                           int after) {
-                if(ignoreTextReset)return;
+                if(ignoreTextReset)
+                   return;
                 // Log.v("VIEW*","beforeTextChanged [" + s + "] " + start + " " + count + " " + after);
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(ignoreTextReset)return;
-                // Log.v("VIEW*","onTextChanged [" + s + "] " + start + " " + before + " " + count);
-                for(int i = 1;i <= before;i++){
-                    queueEvent(new Runnable() {
-                        // This method will be called on the rendering thread:
-                        public void run() {
-                            me.HandleResult(NME.onKeyChange(8, 8, true, false));
-                            me.HandleResult(NME.onKeyChange(8, 8, false, false));
+            public void onTextChanged(final CharSequence s, final int start, final int before, final int count)
+            {
+               if (GameActivity.activity.mTextUpdateLockout)
+               {
+                  //Log.v("VIEW*","Ignore init text " + s);
+                  return;
+               }
+               if(ignoreTextReset)
+                  return;
+               //Log.v("VIEW*","onTextChanged [" + s + "] " + start + " " + before + " " + count);
+               queueEvent(new Runnable() {
+                  public void run() {
+                     if (GameActivity.activity.mIncrementalText)
+                      {
+                        for(int i = 1;i <= before;i++)
+                        {
+                           // This method will be called on the rendering thread:
+                           me.HandleResult(NME.onKeyChange(8, 8, true, false));
+                           me.HandleResult(NME.onKeyChange(8, 8, false, false));
                         }
-                    });
-                }
-                for (int i = start; i < start + count; i++) {
-                    final int keyCode = s.charAt(i);
-                    if (keyCode != 0) {
-                        queueEvent(new Runnable() {
-                            // This method will be called on the rendering thread:
-                            public void run() {
-                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, true, keyCode == 10 ? false : true));
-                                me.HandleResult(NME.onKeyChange(keyCode, keyCode, false, false));
-                            }
-                        });
-                    }
-                }
-                ignoreTextReset = before > 1 || count > 1 || (count == 1 && s.charAt(start) == ' ');
+                        for (int i = start; i < start + count; i++)
+                        {
+                           int keyCode = s.charAt(i);
+                           if (keyCode != 0)
+                            {
+                              me.HandleResult(NME.onKeyChange(keyCode, keyCode, true, keyCode == 10 ? false : true));
+                              me.HandleResult(NME.onKeyChange(keyCode, keyCode, false, false));
+                           }
+                        }
+                     }
+                     else
+                     {
+                        String replace = count==0 ? "" : s.subSequence(start,start+count).toString();
+                        //Log.v("VIEW*","replaced " + replace + " at  " + start + " (delete =" + before + ")" );
+                        me.HandleResult(NME.onText(replace,start,start+before));
+                     }
+               } } );
+
+               ignoreTextReset = before > 1 || count > 1 || (count == 1 && s.charAt(start) == ' ');
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(!ignoreTextReset) {
-                    // Log.v("VIEW*", "afterTextChanged [" + s + "] ");
-                    if (s.length() != 1) {
-                        ignoreTextReset = true;
-                        mActivity.mKeyInTextView.setText("*");
-                        mActivity.mKeyInTextView.setSelection(1);
-                    }
+                if (GameActivity.activity.mIncrementalText)
+                {
+                   if(!ignoreTextReset) {
+                       // Log.v("VIEW*", "afterTextChanged [" + s + "] ");
+                       if (s.length() != 1) {
+                           ignoreTextReset = true;
+                           mActivity.mKeyInTextView.setText("*");
+                           mActivity.mKeyInTextView.setSelection(1);
+                       }
+                   }
                 }
                 ignoreTextReset = false;
             }
@@ -265,6 +283,8 @@ class MainView extends GLSurfaceView {
         mActivity.mKeyInTextView.setOnKeyListener(new OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (mActivity.mIncrementalText)
+                {
                 //if (keyCode == KeyEvent.KEYCODE_ENTER) {
                     if(event.getAction() == KeyEvent.ACTION_DOWN) {
                         final int keyCodeDown = translateKey(keyCode,event,false);
@@ -290,6 +310,7 @@ class MainView extends GLSurfaceView {
                         }
                     }
                 //}
+                }
                 return false;
             }
         });
@@ -544,7 +565,7 @@ class MainView extends GLSurfaceView {
           Log.v("VIEW", "device of event is " + event.getDeviceId());
          final MainView me = this;
          final int keyCode = translateKey(inKeyCode,event,true);
-          Log.v("VIEW","onKeyDown " + inKeyCode + "->" + keyCode);
+         // Log.v("VIEW","onKeyDown " + inKeyCode + "->" + keyCode);
          final int deviceId = event.getDeviceId();
          if (keyCode!=0) {
              queueEvent(new Runnable() {
@@ -566,7 +587,7 @@ class MainView extends GLSurfaceView {
           Log.v("VIEW", "device of event is " + event.getDeviceId());
          final MainView me = this;
          final int keyCode = translateKey(inKeyCode,event,true);
-         Log.v("VIEW","onKeyUp " + inKeyCode + "->" + keyCode);
+         // Log.v("VIEW","onKeyUp " + inKeyCode + "->" + keyCode);
          final int deviceId = event.getDeviceId();
          if (keyCode!=0)
          {

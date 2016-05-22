@@ -680,11 +680,6 @@ public:
    }   
 
    
-   void EnablePopupKeyboard(bool enabled)
-   {
-      
-   }
-   
    
    bool getMultitouchSupported()
    { 

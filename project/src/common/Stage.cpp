@@ -283,7 +283,7 @@ void Stage::HandleEvent(Event &inEvent)
          #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
          else
          {
-            EnablePopupKeyboard(false);
+            PopupKeyboard(pkmOff);
             SetFocusObject(0,fsMouse);
          }
          #endif
@@ -308,7 +308,7 @@ void Stage::HandleEvent(Event &inEvent)
    else if (inEvent.type==etMouseClick ||  inEvent.type==etMouseDown ||
          (inEvent.type==etTouchBegin && (inEvent.flags & efPrimaryTouch) ))
    {
-      EnablePopupKeyboard(false);
+      PopupKeyboard(pkmOff);
       SetFocusObject(0);
    }
    #endif
@@ -316,6 +316,16 @@ void Stage::HandleEvent(Event &inEvent)
    
    if (hit_obj)
       hit_obj->DecRef();
+}
+
+void Stage::onTextFieldText(const std::string &inText, int inPos0, int inPos1)
+{
+   if (mFocusObject)
+   {
+      TextField *field = dynamic_cast<TextField *>(mFocusObject);
+      if (field)
+         field->onTextUpdate(inText, inPos0, inPos1);
+   }
 }
 
 void Stage::setOpaqueBackground(uint32 inBG)

@@ -674,7 +674,7 @@ void DisplayObject::Focus()
   {
      Stage *stage = getStage();
      if (stage)
-        stage->EnablePopupKeyboard(true);
+        stage->PopupKeyboard(pkmDumb);
   }
 #endif
 }
@@ -686,7 +686,7 @@ void DisplayObject::Unfocus()
   {
      Stage *stage = getStage();
      if (stage)
-        stage->EnablePopupKeyboard(false);
+        stage->PopupKeyboard(pkmOff);
   }
 #endif
 }

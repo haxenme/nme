@@ -542,6 +542,33 @@ void TextField::setSelection(int inStartIndex, int inEndIndex)
    mCaretDirty = true;
    mGfxDirty = true;
    DirtyCache();
+
+   SyncSelection();
+}
+
+void TextField::SyncSelection()
+{
+   Stage *stage = getStage();
+   if (stage && stage->GetFocusObject()==this)
+   {
+      if (mSelectMin<mSelectMax)
+         stage->SetPopupTextSelection(mSelectMin, mSelectMax);
+      else
+         stage->SetPopupTextSelection(caretIndex,caretIndex);
+   }
+}
+
+
+void TextField::Focus()
+{
+#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS) || defined(BLACKBERRY) || defined(TIZEN)
+  if (needsSoftKeyboard)
+  {
+     WString value = getText();
+     getStage()->PopupKeyboard(pkmSmart,&value);
+     SyncSelection();
+  }
+#endif
 }
 
 
@@ -564,9 +591,6 @@ bool TextField::CaptureDown(Event &inEvent)
 {
    if (selectable || isInput)
    {
-      if (selectable && isInput)
-         getStage()->EnablePopupKeyboard(true);
-
       UserPoint point = GlobalToLocal(UserPoint( inEvent.x, inEvent.y));
       int pos = PointToChar(point);
       caretIndex = pos;
@@ -579,6 +603,14 @@ bool TextField::CaptureDown(Event &inEvent)
          mGfxDirty = true;
          DirtyCache();
       }
+
+      if (selectable && isInput)
+      {
+         WString value = getText();
+         getStage()->PopupKeyboard(pkmSmart,&value);
+         SyncSelection();
+      }
+
    }
    return true;
 }
@@ -620,6 +652,7 @@ void TextField::Drag(Event &inEvent)
       mTilesDirty = true;
       mCaretDirty = true;
       DirtyCache();
+      SyncSelection();
    }
 }
 
@@ -674,6 +707,31 @@ void TextField::PasteSelection()
 
    InsertString(UTF8ToWide(GetClipboardText()));
 }
+
+void TextField::onTextUpdate(const std::string &inText, int inPos0, int inPos1)
+{
+   if (inPos1>inPos0)
+   {
+      mSelectMin = inPos0;
+      mSelectMax = inPos1;
+      DeleteSelection();
+   }
+   else
+      caretIndex = inPos0;
+
+   Stage *stage = getStage();
+   if (stage)
+   {
+      Event onText(etChar);
+      onText.utf8Text = inText.c_str();
+      onText.utf8Length = inText.size();
+      onText.id = getID();
+      stage->HandleEvent(onText);
+   }
+
+   InsertString(UTF8ToWide(inText));
+}
+
 
 
 void TextField::OnKey(Event &inEvent)

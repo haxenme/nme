@@ -164,7 +164,7 @@ public:
    bool isOpenGL() const { return nmeView->mOGLContext; }
    Surface *GetPrimarySurface() { return nmeView->mHardwareSurface; }
    void SetCursor(nme::Cursor) { /* No cursors on iPhone ! */ }
-   void EnablePopupKeyboard(bool inEnable);
+   void PopupKeyboard(PopupKeyboardMode inEnable,WString *);
    double getDPIScale() { return nmeView->dpiScale; }
 
    int getWindowFrameBufferId() { return nmeView->defaultFramebuffer; };
@@ -1836,10 +1836,10 @@ NMEStage::~NMEStage()
   [nmeView tearDown];
 }
 
-void NMEStage::EnablePopupKeyboard(bool inEnable)
+void NMEStage::PopupKeyboard(PopupKeyboardMode inMode, WString *)
 {
-  popupEnabled = inEnable;
-  [ nmeView enableKeyboard:inEnable];
+  popupEnabled = inEnable!=pkmOff;
+  [ nmeView enableKeyboard:popupEnabled];
 }
  
 
@@ -2139,7 +2139,7 @@ bool nmeIsMain = true;
 
 void EnableKeyboard(bool inEnable)
 {
-   sgNmeStage->EnablePopupKeyboard(inEnable);
+   sgNmeStage->PopupKeyboard(inEnable ? pkmDumb : pkmOff);
 }
 
 

@@ -2296,7 +2296,7 @@ value nme_display_object_request_soft_keyboard(value inObj)
       if (stage)
       {
          // TODO: return whether it pops up
-         stage->EnablePopupKeyboard(true);
+         stage->PopupKeyboard(pkmDumb);
          return alloc_bool(true);
       }
    }
@@ -2315,7 +2315,7 @@ value nme_display_object_dismiss_soft_keyboard(value inObj)
       if (stage)
       {
          // TODO: return whether it pops up
-         stage->EnablePopupKeyboard(false);
+         stage->PopupKeyboard(pkmOff);
          return alloc_bool(true);
       }
    }

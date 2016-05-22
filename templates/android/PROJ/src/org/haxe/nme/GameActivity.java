@@ -59,6 +59,11 @@ implements SensorEventListener
 {
    static final String TAG = "GameActivity";
 
+   private static final int KEYBOARD_OFF = 0;
+   private static final int KEYBOARD_DUMB = 1;
+   private static final int KEYBOARD_SMART = 2;
+   private static final int KEYBOARD_NATIVE = 3;
+
    private static final String GLOBAL_PREF_FILE = "nmeAppPrefs";
    private static final int DEVICE_ORIENTATION_UNKNOWN = 0;
    private static final int DEVICE_ORIENTATION_PORTRAIT = 1;
@@ -107,6 +112,8 @@ implements SensorEventListener
    public NMEVideoView   mVideoView;
    
    public EditText mKeyInTextView;
+   public boolean  mTextUpdateLockout = false;
+   public boolean  mIncrementalText = true;
 
    public void onCreate(Bundle state)
    {
@@ -160,15 +167,13 @@ implements SensorEventListener
       mKeyInTextView = new EditText ( this );
       mKeyInTextView.setText("*");
       mKeyInTextView.setMinLines(1);
-      mKeyInTextView.setMaxLines(1);
+      //mKeyInTextView.setMaxLines(1);
       mKeyInTextView.setFocusable(true);
       mKeyInTextView.setHeight(0);
       mKeyInTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); //text input
       //mKeyInTextView.setImeOptions(EditorInfo.IME_ACTION_SEND);
       mKeyInTextView.setSelection(1);
       mContainer.addView(mKeyInTextView);
-
-
 
 
       mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
@@ -452,7 +457,7 @@ implements SensorEventListener
    {
       Log.d(TAG,"====== doPause ========");
       _sound.doPause();
-      showKeyboard(false);
+      popupKeyboard(0,null);
       mView.sendActivity(NME.DEACTIVATE);
 
       mView.onPause();
@@ -1035,7 +1040,7 @@ implements SensorEventListener
    }
    
    
-   public static void showKeyboard(final boolean show)
+   public static void popupKeyboard(final  int inMode, final  String inContent)
    {
       activity.mHandler.post(new Runnable() {
          @Override public void run()
@@ -1043,16 +1048,52 @@ implements SensorEventListener
          InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
          mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
          
-         if (show)
+         if (inMode!=KEYBOARD_OFF)
          {
-            activity.mKeyInTextView.requestFocus();
+            activity.mTextUpdateLockout = true;
+            activity.mIncrementalText = inContent==null;
+            if (inMode==KEYBOARD_DUMB)
+               activity.mView.requestFocus();
+            else // todo - force native control
+            {
+               activity.mKeyInTextView.requestFocus();
+               if (!activity.mIncrementalText)
+               {
+                  activity.mKeyInTextView.setText(inContent);
+               }
+               else
+               {
+                  activity.mKeyInTextView.setText("*");
+                  activity.mKeyInTextView.setSelection(1);
+               }
+            }
             mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
             // On the Nexus One, SHOW_FORCED makes it impossible
             // to manually dismiss the keyboard.
             // On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
+            activity.mTextUpdateLockout = false;
          }
       }} );
    }
+
+   
+   public static void setPopupSelection(final int inSel0, final int inSel1)
+   {
+      //Log.v("VIEW","Post setPopupSelection " + (activity.mIncrementalText ?"inc ":"smart ") + inSel0 + "..." + inSel1 );
+      activity.mHandler.post(new Runnable() {
+         @Override public void run()
+         {
+            if (!activity.mIncrementalText)
+            {
+               //Log.v("VIEW","Run setPopupSelection " + (activity.mIncrementalText ?"inc ":"smart ") + inSel0 + "..." + inSel1 );
+               if (inSel0!=inSel1)
+                  activity.mKeyInTextView.setSelection(inSel0,inSel1);
+               else
+                  activity.mKeyInTextView.setSelection(inSel0);
+            }
+         }} );
+   }
+
    
    
    public static void vibrate(int period, int duration)

@@ -157,6 +157,7 @@ public:
    void EndDrag(Event &inEvent);
    void OnKey(Event &inEvent);
    void OnScrollWheel(int inDirection);
+   void onTextUpdate(const std::string &inText, int inPos0, int inPos1);
    void DeleteSelection();
    void ClearSelection();
    void CopySelection();
@@ -169,6 +170,8 @@ public:
 
    bool CaretOn();
    bool IsCacheDirty();
+   void SyncSelection();
+   void Focus();
 
 
 
