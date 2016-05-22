@@ -1838,7 +1838,7 @@ NMEStage::~NMEStage()
 
 void NMEStage::PopupKeyboard(PopupKeyboardMode inMode, WString *)
 {
-  popupEnabled = inEnable!=pkmOff;
+  popupEnabled = inMode!=pkmOff;
   [ nmeView enableKeyboard:popupEnabled];
 }
  
@@ -2139,7 +2139,7 @@ bool nmeIsMain = true;
 
 void EnableKeyboard(bool inEnable)
 {
-   sgNmeStage->PopupKeyboard(inEnable ? pkmDumb : pkmOff);
+   sgNmeStage->PopupKeyboard(inEnable ? pkmDumb : pkmOff,0);
 }
 
 
