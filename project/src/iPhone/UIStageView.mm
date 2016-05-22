@@ -295,14 +295,10 @@ static std::string nmeTitle;
 - (id) initWithCoder:(NSCoder*)coder
 {    
    NSLog(@"NME View init with coder - not supported");
-   /*
    if ((self = [super initWithCoder:coder]))
    {
-      printf("Init with coder\n");
-      [self myInit];
-      return self;
+      //return self;
    }
-   */
    return nil;
     
 }
