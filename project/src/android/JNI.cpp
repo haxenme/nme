@@ -1345,6 +1345,8 @@ value nme_jni_get_env()
 DEFINE_PRIM(nme_jni_get_env,0);
 
 
+/*
+ Does not work on 64-bit.  Not sure if it is even used
 value nme_jni_get_jobject(value inValue)
 {
    jobject obj = 0;
@@ -1355,7 +1357,7 @@ value nme_jni_get_jobject(value inValue)
    return alloc_null();
 }
 DEFINE_PRIM(nme_jni_get_jobject,1);
-
+*/
 
 
 
