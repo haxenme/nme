@@ -136,7 +136,9 @@ class FileHelper
          source = quote + source.split("/").join("\\").replace("\\\\","\\") + quote;
          destination = quote + destination.split("/").join("\\").replace("\\\\","\\") + quote;
          LogHelper.info("", " - Copying file: " + source + " -> " + destination);
-         var code = Sys.command("cmd", ["/c", "copy",  source, destination, ">nul" ]);
+
+         var redirect = #if (haxe_ver >= 3.300) [">nul"] #else [] #end;
+         var code = Sys.command("cmd", ["/c", "copy",  source, destination].concat(redirect));
          if (code!=0)
             Log.error('Could not copy $source to $destination');
       }
