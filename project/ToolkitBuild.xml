@@ -21,7 +21,7 @@
    -->
 
    <!-- Where to find static libraries/includes -->
-   <set name="NATIVE_TOOLKIT_PATH" value="${haxelib:nme-native-toolkit}" unless="NATIVE_TOOLKIT_PATH" />
+   <set name="NATIVE_TOOLKIT_PATH" value="${haxelib:nme-toolkit}" unless="NATIVE_TOOLKIT_PATH" />
 
 
    <!--
@@ -419,6 +419,7 @@
             <vflag name="-framework" value="AVFoundation" if="NME_CAMERA"/>
             <vflag name="-framework" value="CoreMedia" if="NME_CAMERA"/>
             <vflag name="-framework" value="CoreVideo" if="NME_CAMERA"/>
+            <lib name="-liconv" />
          </section>
 
 
