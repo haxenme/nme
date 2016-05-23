@@ -29,6 +29,7 @@ class CommandLineTools
    public static var sys:SysProxy;
    public static var toolkit:Bool = false;
 
+   static var haxeVer:String = null;
    static var additionalArguments:Array<String>;
    static var command:String;
    static var assumedTest:Bool = false;
@@ -1440,6 +1441,17 @@ class CommandLineTools
 
       Log.verbose("Created " + name + " " + width + "x" + height );
 
+   }
+
+   public static function getHaxeVer()
+   {
+      if (haxeVer==null)
+      {
+         var vers = ProcessHelper.getOutput("haxe", ["-cp", nme+"/tools/haxe_ver", "--run", "HaxeVer.hx"] );
+         haxeVer = vers[0];
+      }
+
+      return haxeVer;
    }
 
 
