@@ -751,7 +751,11 @@ void TextField::OnKey(Event &inEvent)
 {
    if (isInput && (inEvent.type==etKeyDown || inEvent.type==etChar) && inEvent.code<0xffff )
    {
+      #if defined(IPHONE) || defined(HX_MACOS)
+      bool ctrl = inEvent.flags & efCommandDown;
+      #else
       bool ctrl = inEvent.flags & efCtrlDown;
+      #endif
       int code = inEvent.code;
       bool isPrintChar = (code>31 && code<63000) && code!=127 && !ctrl;
 
