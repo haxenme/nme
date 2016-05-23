@@ -1379,6 +1379,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                //  first (hmm) - but if there is none, then the hit will be attributed to the
                //  parent object (this)
                mouseDisabledObjectHit = true;
+               obj_state->mHitResult = 0;
             }
             else
             {
