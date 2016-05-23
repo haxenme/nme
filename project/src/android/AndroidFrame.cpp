@@ -863,6 +863,16 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onText(JNIEnv * env, jobject obj, 
    return nme::GetResult();
 }
 
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTextSelect(JNIEnv * env, jobject obj, int inReplacePos, int inReplaceLen)
+{
+   AutoHaxe haxe("onTextSelect");
+   if (nme::sStage)
+      nme::sStage->onTextFieldSelect(inReplacePos,inReplaceLen);
+
+   return nme::GetResult();
+}
+
 JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyChange(JNIEnv * env, jobject obj, int deviceId, int code, bool down)
 {
    AutoHaxe haxe("onJoy");

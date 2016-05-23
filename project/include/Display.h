@@ -388,6 +388,7 @@ public:
 
    virtual const char *getJoystickName(int id) { return NULL; }
    virtual void onTextFieldText(const std::string &inText, int inPos0, int inPos1);
+   virtual void onTextFieldSelect(int inPos0, int inPos1);
 
 
    Matrix GetFullMatrix(bool inStageScaling);

@@ -521,7 +521,7 @@ int TextField::PointToChar(UserPoint inPoint) const
 }
 
 
-void TextField::setSelection(int inStartIndex, int inEndIndex)
+void TextField::SetSelectionInternal(int inStartIndex, int inEndIndex)
 {
    if (mLinesDirty)
       Layout();
@@ -542,9 +542,8 @@ void TextField::setSelection(int inStartIndex, int inEndIndex)
    mCaretDirty = true;
    mGfxDirty = true;
    DirtyCache();
-
-   SyncSelection();
 }
+
 
 void TextField::SyncSelection()
 {
@@ -556,6 +555,12 @@ void TextField::SyncSelection()
       else
          stage->SetPopupTextSelection(caretIndex,caretIndex);
    }
+}
+
+void TextField::setSelection(int inStartIndex, int inEndIndex)
+{
+   SetSelectionInternal(inStartIndex, inEndIndex);
+   SyncSelection();
 }
 
 
@@ -731,6 +736,14 @@ void TextField::onTextUpdate(const std::string &inText, int inPos0, int inPos1)
 
    InsertString(UTF8ToWide(inText));
 }
+
+
+void TextField::onTextSelect(int inPos0, int inPos1)
+{
+   SetSelectionInternal(inPos0, inPos1);
+}
+
+
 
 
 

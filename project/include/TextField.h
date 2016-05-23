@@ -158,12 +158,14 @@ public:
    void OnKey(Event &inEvent);
    void OnScrollWheel(int inDirection);
    void onTextUpdate(const std::string &inText, int inPos0, int inPos1);
+   void onTextSelect(int inPos0, int inPos1);
    void DeleteSelection();
    void ClearSelection();
    void CopySelection();
    void PasteSelection();
    void DeleteChars(int inFirst,int inEnd);
    void InsertString(const WString &ioString);
+   void SetSelectionInternal(int inFirst, int inLast);
    void ShowCaret(bool inFromDrag=false);
    bool FinishEditOnEnter();
    void AddCharacter(int inCharCode);

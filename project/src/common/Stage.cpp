@@ -328,6 +328,17 @@ void Stage::onTextFieldText(const std::string &inText, int inPos0, int inPos1)
    }
 }
 
+void Stage::onTextFieldSelect(int inPos0, int inPos1)
+{
+   if (mFocusObject)
+   {
+      TextField *field = dynamic_cast<TextField *>(mFocusObject);
+      if (field)
+         field->onTextSelect(inPos0, inPos1);
+   }
+}
+
+
 void Stage::setOpaqueBackground(uint32 inBG)
 {
    opaqueBackground = inBG | 0xff000000;

@@ -32,7 +32,12 @@ import android.view.WindowManager;
 import android.widget.VideoView;
 import android.net.Uri;
 import android.widget.EditText;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.SpanWatcher;
+import android.text.Spanned;
+import android.text.Spannable;
+import android.view.KeyEvent;
 import dalvik.system.DexClassLoader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -53,6 +58,9 @@ import java.util.List;
 import android.util.SparseArray;
 import org.haxe.extension.Extension;
 import android.os.Build;
+import android.text.TextWatcher;
+
+
 
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
@@ -97,6 +105,16 @@ implements SensorEventListener
    int            videoW = 0;
    int            videoH = 0;
 
+   class NmeText extends EditText
+   {
+       GameActivity activity;
+       public NmeText(GameActivity context) { super( (Context)context);  activity=context; }
+       @Override protected void onSelectionChanged(int selStart, int selEnd) {
+          if (activity!=null)
+             activity.onSelectionChanged(selStart,selEnd);
+       }
+   }
+
    ArrayList<Runnable> mOnDestroyListeners;
    static SparseArray<IActivityResult> sResultHandler = new SparseArray<IActivityResult>();
    
@@ -114,6 +132,7 @@ implements SensorEventListener
    public EditText mKeyInTextView;
    public boolean  mTextUpdateLockout = false;
    public boolean  mIncrementalText = true;
+   boolean ignoreTextReset = false;
 
    public void onCreate(Bundle state)
    {
@@ -164,7 +183,9 @@ implements SensorEventListener
       
       mContainer = new RelativeLayout(mContext);
 
-      mKeyInTextView = new EditText ( this );
+
+      mTextUpdateLockout = true;
+      mKeyInTextView = new NmeText ( this );
       mKeyInTextView.setText("*");
       mKeyInTextView.setMinLines(1);
       //mKeyInTextView.setMaxLines(1);
@@ -174,6 +195,8 @@ implements SensorEventListener
       //mKeyInTextView.setImeOptions(EditorInfo.IME_ACTION_SEND);
       mKeyInTextView.setSelection(1);
       mContainer.addView(mKeyInTextView);
+      addTextListeners();
+      mTextUpdateLockout = false;
 
 
       mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
@@ -1085,14 +1108,161 @@ implements SensorEventListener
          {
             if (!activity.mIncrementalText)
             {
+                activity.mTextUpdateLockout = true;
                //Log.v("VIEW","Run setPopupSelection " + (activity.mIncrementalText ?"inc ":"smart ") + inSel0 + "..." + inSel1 );
                if (inSel0!=inSel1)
                   activity.mKeyInTextView.setSelection(inSel0,inSel1);
                else
                   activity.mKeyInTextView.setSelection(inSel0);
+                activity.mTextUpdateLockout = false;
             }
          }} );
    }
+
+   void onSelectionChanged(final int selStart, final int selEnd)
+   {
+      if (mTextUpdateLockout || mView==null || mIncrementalText)
+         return;
+      mView.queueEvent(new Runnable() {
+         public void run() {
+            if (mView==null)
+               return;
+            //Log.v("VIEW*","replaced " + replace + " at  " + start + " (delete =" + before + ")" );
+            mView.HandleResult(NME.onTextSelect(selStart,selEnd));
+        }
+     });
+   }
+ 
+   void addTextListeners()
+   {
+        mKeyInTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+                if(ignoreTextReset)
+                   return;
+                // Log.v("VIEW*","beforeTextChanged [" + s + "] " + start + " " + count + " " + after);
+            }
+
+            @Override
+            public void onTextChanged(final CharSequence s, final int start, final int before, final int count)
+            {
+               if (mTextUpdateLockout || mView==null)
+               {
+                  //Log.v("VIEW*","Ignore init text " + s);
+                  return;
+               }
+               if(ignoreTextReset)
+                  return;
+               //Log.v("VIEW*","onTextChanged [" + s + "] " + start + " " + before + " " + count);
+               mView.queueEvent(new Runnable() {
+                  public void run() {
+                     if (mView==null)
+                        return;
+                     if (mIncrementalText)
+                      {
+                        for(int i = 1;i <= before;i++)
+                        {
+                           // This method will be called on the rendering thread:
+                           mView.HandleResult(NME.onKeyChange(8, 8, true, false));
+                           mView.HandleResult(NME.onKeyChange(8, 8, false, false));
+                        }
+                        for (int i = start; i < start + count; i++)
+                        {
+                           int keyCode = s.charAt(i);
+                           if (keyCode != 0)
+                            {
+                              mView.HandleResult(NME.onKeyChange(keyCode, keyCode, true, keyCode == 10 ? false : true));
+                              mView.HandleResult(NME.onKeyChange(keyCode, keyCode, false, false));
+                           }
+                        }
+                     }
+                     else
+                     {
+                        String replace = count==0 ? "" : s.subSequence(start,start+count).toString();
+                        //Log.v("VIEW*","replaced " + replace + " at  " + start + " (delete =" + before + ")" );
+                        mView.HandleResult(NME.onText(replace,start,start+before));
+                     }
+               } } );
+
+               ignoreTextReset = before > 1 || count > 1 || (count == 1 && s.charAt(start) == ' ');
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (mIncrementalText)
+                {
+                   if(!ignoreTextReset) {
+                       // Log.v("VIEW*", "afterTextChanged [" + s + "] ");
+                       if (s.length() != 1) {
+                           ignoreTextReset = true;
+                           mKeyInTextView.setText("*");
+                           mKeyInTextView.setSelection(1);
+                       }
+                   }
+                }
+                ignoreTextReset = false;
+            }
+        });
+
+        
+        mKeyInTextView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (mIncrementalText && mView!=null)
+                {
+                //if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                        final int keyCodeDown = MainView.translateKey(keyCode,event,false);
+                        if(keyCodeDown != 0) {
+                            mView.queueEvent(new Runnable() {
+                                // This method will be called on the rendering thread:
+                                public void run() {
+                                   if (mView!=null)
+                                       mView.HandleResult(NME.onKeyChange(keyCodeDown, 0, true, false));
+                                }
+                            });
+                            return true;
+                        }
+                    } else if(event.getAction() == KeyEvent.ACTION_UP) {
+                        final int keyCodeUp = MainView.translateKey(keyCode,event,false);
+                        if(keyCodeUp != 0) {
+                            mView.queueEvent(new Runnable() {
+                                // This method will be called on the rendering thread:
+                                public void run() {
+                                    if (mView!=null)
+                                       mView.HandleResult(NME.onKeyChange(keyCodeUp, 0, false, false));
+                                }
+                            });
+                            return true;
+                        }
+                    }
+                //}
+                }
+                return false;
+            }
+        });
+/*
+        mKeyInTextView.getText().setSpan( new SpanWatcher() {
+           @Override
+           public void onSpanAdded(final Spannable text, final Object what, final int start, final int end) {
+              Log.v("VIEW", "onSpanAdded");
+           }
+
+           @Override
+           public void onSpanRemoved(final Spannable text, final Object what, final int start, final int end) {
+              Log.v("VIEW", "onSpanRemoved"):
+           }
+
+           @Override
+           public void onSpanChanged(final Spannable text, final Object what,final int ostart, final int oend, final int nstart, final int nend)
+           {
+              Log.v("VIEW", "onSpanChanged " + nstart + "," + nend);
+           }
+        }, 0, 0, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        */
+    }
+
 
    
    
