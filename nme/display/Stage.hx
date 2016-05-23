@@ -341,7 +341,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
                     ((flags & efLocationRight) == 0) ? 1 : 0,
                     (flags & efCtrlDown) != 0,
                     (flags & efAltDown) != 0,
-                    (flags & efShiftDown) !=0);
+                    (flags & efShiftDown) !=0,
+                    (flags & efCtrlDown) != 0,
+                    (flags & efCommandDown) != 0);
          obj.nmeFireEvent(evt);
 
          if (evt.nmeGetIsCancelled())
