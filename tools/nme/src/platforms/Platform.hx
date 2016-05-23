@@ -371,12 +371,25 @@ class Platform
          }
          else if (protocol=="script")
          {
-            var host = new Host(name);
-            Log.verbose("Connect to host " + host);
-            var socket = new Socket();
             try
             {
+               var socket = new Socket();
+               var parts = name.split("@");
+               var hostName = parts.pop();
+               var host = new Host(hostName);
+               var password = parts.join("@");
+
+               Log.verbose("Connect to host " + hostName);
+
                socket.connect(host, 0xacad);
+               if (password!="")
+               {
+                  var len = socket.input.readInt32();
+                  var hash = socket.input.readString(len);
+                  var response = haxe.crypto.Md5.encode( password + hash );
+                  socket.output.writeInt32(response.length);
+                  socket.output.writeString(response);
+               }
 
                var to = project.app.packageName;
 
@@ -401,7 +414,7 @@ class Platform
             }
             catch(e:Dynamic)
             {
-               Log.error("Could not connect to " + deploy + " : " + e );
+               Log.error("Could not connect to " + name + " : " + e );
             }
          }
          else if (protocol=="nme")
