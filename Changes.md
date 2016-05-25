@@ -1,4 +1,7 @@
+* Fix static linking flags
 
+5.6
+--------------------------
 * Added TextField onScroll event
 * Added clipboard code
 * More distinction between character(text) and raw key inputs

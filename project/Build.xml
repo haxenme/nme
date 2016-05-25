@@ -227,7 +227,7 @@
       <section if="NME_SDL2">
         <compilerflag value="-I${NME_DEV}/include/SDL2" />
         <file name="${SRC_DIR}/audio/SDLSound.cpp" />
-        <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
+        <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp" tags="static" />
         <compilerflag value="-DSDL_OGL" />
         <compilerflag value="-DNME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
@@ -241,7 +241,7 @@
          <file name="${SRC_DIR}/opengl/OpenGLContext.cpp" />
          <file name="${SRC_DIR}/opengl/OGLTexture.cpp" />
          <file name="${SRC_DIR}/opengl/OGLShaders.cpp" />
-         <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
+         <file name="${SRC_DIR}/opengl/OGLExport.cpp" tags="static"  />
          <file name="${SRC_DIR}/opengl/Egl.cpp" if="NME_EGL" />
          <file name="${SRC_DIR}/opengl/OpenGLS3D.cpp" if="NME_S3D" />
       </section>
@@ -270,10 +270,10 @@
       <file name="${SRC_DIR}/common/Matrix.cpp"/>
       <file name="${SRC_DIR}/common/CachedExtent.cpp"/>
       <file name="${SRC_DIR}/common/TextField.cpp"/>
-      <file name="${SRC_DIR}/common/Font.cpp"/>
-      <file name="${SRC_DIR}/common/FreeType.cpp" />
+      <file name="${SRC_DIR}/common/Font.cpp" tags="static" />
+      <file name="${SRC_DIR}/common/FreeType.cpp" tags="static"  />
       <file name="${SRC_DIR}/common/Tilesheet.cpp"/>
-      <file name="${SRC_DIR}/common/Display.cpp"/>
+      <file name="${SRC_DIR}/common/Display.cpp" tags="static" />
       <file name="${SRC_DIR}/common/Stage.cpp"/>
       <file name="${SRC_DIR}/common/BitmapCache.cpp"/>
       <file name="${SRC_DIR}/common/ColorTransform.cpp"/>
@@ -286,9 +286,9 @@
       <file name="${SRC_DIR}/common/SurfaceIO.cpp" unless="sdl_image" />
       <file name="${SRC_DIR}/common/ManagedStage.cpp" unless="winrt" />
       <file name="${SRC_DIR}/common/CURL.cpp" if="NME_CURL"/>
-      <file name="${SRC_DIR}/common/Lzma.cpp"/>
+      <file name="${SRC_DIR}/common/Lzma.cpp" tags="static" />
       <file name="${SRC_DIR}/common/Thread.cpp"/>
-      <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
+      <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA"  tags="static" />
 
       <file name="${SRC_DIR}/audio/Audio.cpp" />
       <file name="${SRC_DIR}/audio/ChannelList.cpp" />
