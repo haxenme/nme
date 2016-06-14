@@ -8,14 +8,14 @@ import nme.app.AppEvent;
 @:nativeProperty
 class TouchEvent extends MouseEvent 
 {
-   public static var TOUCH_BEGIN:String = "touchBegin";
-   public static var TOUCH_END:String = "touchEnd";
-   public static var TOUCH_MOVE:String = "touchMove";
-   public static var TOUCH_OUT:String = "touchOut";
-   public static var TOUCH_OVER:String = "touchOver";
-   public static var TOUCH_ROLL_OUT:String = "touchRollOut";
-   public static var TOUCH_ROLL_OVER:String = "touchRollOver";
-   public static var TOUCH_TAP:String = "touchTap";
+   public static inline var TOUCH_BEGIN:String = "touchBegin";
+   public static inline var TOUCH_END:String = "touchEnd";
+   public static inline var TOUCH_MOVE:String = "touchMove";
+   public static inline var TOUCH_OUT:String = "touchOut";
+   public static inline var TOUCH_OVER:String = "touchOver";
+   public static inline var TOUCH_ROLL_OUT:String = "touchRollOut";
+   public static inline var TOUCH_ROLL_OVER:String = "touchRollOver";
+   public static inline var TOUCH_TAP:String = "touchTap";
 
    public var isPrimaryTouchPoint:Bool;
    public var touchPointID:Int;

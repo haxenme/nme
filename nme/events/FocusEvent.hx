@@ -6,10 +6,10 @@ import nme.display.InteractiveObject;
 @:nativeProperty
 class FocusEvent extends Event 
 {
-   static public var FOCUS_IN = "focusIn";
-   static public var FOCUS_OUT = "focusOut";
-   static public var KEY_FOCUS_CHANGE = "keyFocusChange";
-   static public var MOUSE_FOCUS_CHANGE = "mouseFocusChange";
+   static public inline var FOCUS_IN = "focusIn";
+   static public inline var FOCUS_OUT = "focusOut";
+   static public inline var KEY_FOCUS_CHANGE = "keyFocusChange";
+   static public inline var MOUSE_FOCUS_CHANGE = "mouseFocusChange";
 
    public var keyCode(default, null):Int;
    public var relatedObject(default, null):InteractiveObject;

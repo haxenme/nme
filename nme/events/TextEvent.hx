@@ -4,8 +4,8 @@ package nme.events;
 @:nativeProperty
 class TextEvent extends Event 
 {
-   public static var LINK:String = "link";
-   public static var TEXT_INPUT:String = "textInput";
+   public static inline var LINK:String = "link";
+   public static inline var TEXT_INPUT:String = "textInput";
 
    public var text(default, null):String;
 
