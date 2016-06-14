@@ -6,7 +6,7 @@ import nme.net.URLRequestHeader;
 @:nativeProperty
 class HTTPStatusEvent extends Event 
 {
-   public static var HTTP_STATUS = "httpStatus";
+   public static inline var HTTP_STATUS = "httpStatus";
 
    public var status:Int;
    public var responseHeaders:Array<URLRequestHeader>;

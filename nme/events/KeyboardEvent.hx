@@ -4,8 +4,8 @@ package nme.events;
 @:nativeProperty
 class KeyboardEvent extends Event 
 {
-   public static var KEY_DOWN = "keyDown";
-   public static var KEY_UP = "keyUp";
+   public static inline var KEY_DOWN = "keyDown";
+   public static inline var KEY_UP = "keyUp";
 
    public var altKey:Bool;
    public var charCode:Int;

@@ -4,8 +4,8 @@ package nme.events;
 @:nativeProperty
 class TimerEvent extends Event 
 {
-   public static var TIMER:String = "timer";
-   public static var TIMER_COMPLETE:String = "timerComplete";
+   public static inline var TIMER:String = "timer";
+   public static inline var TIMER_COMPLETE:String = "timerComplete";
 
    public function new(type:String, bubbles:Bool = false, cancelable:Bool = false) 
    {
