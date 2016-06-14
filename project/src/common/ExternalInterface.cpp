@@ -4869,6 +4869,20 @@ value nme_tilesheet_add_rect(value inSheet,value inRect, value inHotSpot)
 }
 DEFINE_PRIM(nme_tilesheet_add_rect,3);
 
+value nme_tilesheet_get_rect(value inSheet, value inIndex, value outRect)
+{
+   Tilesheet *sheet;
+   if (AbstractToObject(inSheet,sheet))
+   {
+      int index = val_int(inIndex);
+      Tile tile = sheet->GetTile(index);
+      ToValue(outRect, tile.mRect);
+   }
+   return alloc_null();
+}
+DEFINE_PRIM(nme_tilesheet_get_rect,3);
+
+
 // --- URL ----------------------------------------------------------
 
 value nme_curl_initialize(value inCACertFilePath)
