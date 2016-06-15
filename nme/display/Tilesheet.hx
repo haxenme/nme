@@ -41,6 +41,16 @@ class Tilesheet
    {
       return nme_tilesheet_add_rect(nmeHandle, rectangle, centerPoint);
    }
+   
+   public function getTileRect(index:Int, ?result:Rectangle):Rectangle
+   {
+      if (result == null)
+      {
+        result =  new Rectangle();
+      }
+      nme_tilesheet_get_rect(nmeHandle, index, result);
+      return result;
+   }
 
    public function drawTiles(graphics:Graphics, tileData:nme.utils.Floats3264, smooth:Bool = false, flags:Int = 0, count:Int=-1):Void 
    {
@@ -50,6 +60,7 @@ class Tilesheet
    // Native Methods
    private static var nme_tilesheet_create = Loader.load("nme_tilesheet_create", 1);
    private static var nme_tilesheet_add_rect = Loader.load("nme_tilesheet_add_rect", 3);
+   private static var nme_tilesheet_get_rect = Loader.load("nme_tilesheet_get_rect", 3);
 
    #else
 
@@ -71,6 +82,12 @@ class Tilesheet
       centres.push(centerPoint);
       return result;
    }
+   
+   public function getTileRect(index:Int):Rectangle
+   {
+       return tiles[index];
+   }
+    
 
    public function drawTiles(graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0, count:Int=-1):Void 
    {
