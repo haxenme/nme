@@ -8,6 +8,9 @@
 #ifdef USE_POLY2TRI
 #include "poly2tri/Poly2Tri.h"
 #endif
+#ifdef NME_CLIPPER
+#include "clipper/clipper.hpp"
+#endif
 
 namespace nme
 {
@@ -186,8 +189,8 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
          outTriangles.push_back(pi->next->p);
 
          //printf("  ear : %f,%f %f,%f %f,%f\n", pi->prev->p.x, pi->prev->p.y,
-                //pi->p.x, pi->p.y,
-                //pi->next->p.x, pi->next->p.y );
+         //       pi->p.x, pi->p.y,
+         //       pi->next->p.x, pi->next->p.y );
 
          pi->unlink();
 
@@ -463,10 +466,114 @@ bool sortLeft(SubInfo *a, SubInfo *b)
    return a->x0 < b->x0;
 }
 
+#ifdef NME_CLIPPER
+void ClipperOutline(Vertices &ioOutline,QuickVec<int> &ioSubPolys)
+{
+   int subs = ioSubPolys.size();
+   int n = ioOutline.size();
+   if (subs<1 || n<1)
+      return;
+
+   float minX = ioOutline[0].x;
+   float maxX = minX;
+   float minY = ioOutline[0].y;
+   float maxY = minY;
+   for(int i=1;i<n;i++)
+   {
+      if (ioOutline[i].x < minX) minX = ioOutline[i].x;
+      if (ioOutline[i].x > maxX) maxX = ioOutline[i].x;
+      if (ioOutline[i].y < minY) minY = ioOutline[i].y;
+      if (ioOutline[i].y > maxY) maxY = ioOutline[i].y;
+   }
+   float diffX = maxX-minX;
+   float diffY = maxY-minY;
+   if (diffX==0 || diffY==0) return;
+   float diff = diffX > diffY ? diffX : diffY;
+   float scale = (float)(0x40000000)/diff;
+   float unscale = 1.0/scale;
+
+   ClipperLib::Clipper clipper(ClipperLib::ioStrictlySimple);
+
+   ClipperLib::Paths paths(subs);
+   int prev = 0;
+   for(int i=0;i<subs;i++)
+   {
+      ClipperLib::Path &path = paths[i];
+      int s = ioSubPolys[i] - prev;
+      path.resize(s);
+      for(int j=0;j<s;j++)
+      {
+         const UserPoint &p = ioOutline[j+prev];
+         path[j] = ClipperLib::IntPoint( (p.x-minX)*scale, (p.y-minY)*scale );
+         //printf(" %f,%f\n", p.x, p.y);
+      }
+      //printf("---\n");
+   }
+
+   try
+   {
+      clipper.AddPaths(paths, ClipperLib::ptSubject, true);
+   }
+   catch(...)
+   {
+      // Hmmm
+      return;
+   }
+
+   // TODO - winding pftEvenOdd, pftNonZero
+   ClipperLib::PolyTree solution;
+   clipper.Execute(ClipperLib::ctUnion, solution, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+
+
+   ioOutline.resize(0);
+   ioSubPolys.resize(0);
+
+   ClipperLib::PolyNode *poly = solution.GetFirst();
+   while(poly)
+   {
+      //printf("++++\n");
+      const ClipperLib::Path &path = poly->Contour;
+      for(int i=0;i<path.size();i++)
+      {
+         const ClipperLib::IntPoint &p = path[i];
+         UserPoint pos( p.X*unscale + minX, p.Y*unscale + minY );
+         //printf(" %f,%f\n", pos.x, pos.y);
+         ioOutline.push_back(pos);
+      }
+      ioSubPolys.push_back(ioOutline.size());
+
+      // TODO - we are losing some information here about holes...
+      ClipperLib::PolyNodes &children = poly->Childs;
+      for(int c=0;c<children.size();c++)
+      {
+         //printf(" ++++\n");
+         const ClipperLib::Path &path = children[c]->Contour;
+         for(int i=0;i<path.size();i++)
+         {
+            const ClipperLib::IntPoint &p = path[i];
+            UserPoint pos( p.X*unscale + minX, p.Y*unscale + minY );
+            //printf("  %f,%f\n", pos.x, pos.y);
+            ioOutline.push_back( UserPoint( p.X*unscale + minX, p.Y*unscale + minY ) );
+         }
+         ioSubPolys.push_back(ioOutline.size());
+      }
+
+      poly = poly->GetNext();
+   }
+}
+#endif
+
 void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys)
 {
+   #ifdef NME_CLIPPER
+   QuickVec<int> subPoly(inSubPolys);
+   ClipperOutline(ioOutline, subPoly);
+   #else
+   const QuickVec<int> &subPoly(inSubPolys);
+   #endif
+
    // Order polygons ...
-   int subs = inSubPolys.size();
+   int subs = subPoly.size();
    if (subs<1)
       return;
 
@@ -475,14 +582,14 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    int p0 = 0;
    for(int i=0;i<subs;i++)
    {
-      int size = inSubPolys[i]-p0;
+      int size = subPoly[i]-p0;
       if (size>2 && ioOutline[p0] == ioOutline[p0+size-1])
          size--;
 
       if (size>2)
          subInfo[bigSubs++].set(p0,size, &ioOutline[0]);
 
-      p0 = inSubPolys[i];
+      p0 = subPoly[i];
    }
    subInfo.resize(subs=bigSubs);
    std::sort(subInfo.begin(), subInfo.end());
