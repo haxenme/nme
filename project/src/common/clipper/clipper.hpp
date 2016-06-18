@@ -55,6 +55,7 @@
 #include <cstring>
 #include <cstdlib>
 //#include <ostream>
+#include <string>
 #include <functional>
 #include <queue>
 
