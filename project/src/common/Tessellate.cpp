@@ -3,9 +3,8 @@
 #include <Hardware.h>
 #include <set>
 
-//#define USE_POLY2TRI
 
-#ifdef USE_POLY2TRI
+#ifdef NME_POLY2TRI
 #include "poly2tri/Poly2Tri.h"
 #endif
 #ifdef NME_CLIPPER
@@ -100,6 +99,11 @@ struct EdgePoint
       isConcave = false;
    }
 
+   bool isDegenerate()
+   {
+      return (prev->p - p).Cross(next->p - p) == 0.0;
+   }
+
    void unlink()
    {
       prev->next = next;
@@ -163,7 +167,7 @@ struct ConcaveSet
 };
 
 
-void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles)
+void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
 {
    outTriangles.reserve( outTriangles.size() + (size-2)*3);
 
@@ -193,19 +197,52 @@ void ConvertOutlineToTriangles(EdgePoint *head, int size, Vertices &outTriangles
          //       pi->next->p.x, pi->next->p.y );
 
          pi->unlink();
+         size --;
+         if (size<3)
+            break;
+
+         EdgePoint *next = pi->next;
+         EdgePoint *prev = pi->prev;
+
+         if(next->isDegenerate())
+         {
+            if (next->isConcave)
+              concaveSet.remove(next); 
+            next->unlink();
+            next = next->next;
+            size--;
+            if (size<3)
+               break;
+         }
+         // Has it stopped being concave?
+         bool nextConcave = next->calcConcave();
+         if (next->isConcave && !nextConcave)
+            concaveSet.remove(next); 
+         // Has it stopped being concave?
+         else if (!next->isConcave && nextConcave)
+            concaveSet.add(next); 
+
+         if(prev->isDegenerate())
+         {
+            if (prev->isConcave)
+              concaveSet.remove(prev); 
+            prev->unlink();
+            prev = prev->prev;
+            size--;
+            if (size<3)
+               break;
+         }
 
          // Has it stopped being concave?
-         if (pi->next->isConcave && !pi->next->calcConcave())
-            concaveSet.remove(pi->next); 
-         // Has it stopped being concave?
-         if (pi->prev->isConcave && !pi->prev->calcConcave())
-            concaveSet.remove(pi->prev);
+         bool prevConcave = prev->calcConcave();
+         if (prev->isConcave && !prevConcave)
+            concaveSet.remove(prev);
+         else if (!prev->isConcave && prevConcave)
+            concaveSet.add(prev);
 
          // Take a step back and try again...
-         pi = pi->prev;
+         pi = prev;
          p_end = pi->prev;
-
-         size --;
       }
       else
          pi = pi->next;
@@ -250,17 +287,6 @@ PIPResult PointInPolygon(UserPoint p0, UserPoint *ioPtr,int inN)
    return (crossing & 1) ? PIP_YES : PIP_NO;
 }
 
-void AddSubPoly(EdgePoint *outEdge, UserPoint *inP, int inN,bool inReverse)
-{
-   for(int i=0;i<inN;i++)
-   {
-      int prev = (i+inN-1) % inN;
-      int next = (i+1) % inN;
-      if (inReverse)
-         std::swap(prev,next);
-      outEdge[i].init(inP[i], &outEdge[prev], &outEdge[next]);
-   }
-}
 
 /*
 
@@ -310,7 +336,8 @@ int LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
          leftX = in->p.x;
          bestIn = in;
       }
-      in = in->next; if (in==inInner) break;
+      in = in->next;
+      if (in==inInner) break;
    }
    double leftY = bestIn->p.y;
 
@@ -354,13 +381,14 @@ int LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
 
    if (!bestOut)
    {
-      //printf("Could not link hole\n");
+      printf("Could not link hole\n");
       return 0;
    }
 
    if (bestAlpha>0.9999)
    {
       bestOut = bestOut->next;
+      bestAlpha = 0;
    }
    else if (bestAlpha>0.0001)
    {
@@ -375,26 +403,88 @@ int LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
       bestOut = b;
       count ++;
    }
+   else
+      bestAlpha = 0;
+
+   if (bestAlpha==0)
+   {
+      /* Hole links to outline at a common point...
+      
+      outer            inner
+         ^ next       v prev
+         |           /
+         |         /
+         |       /
+ bestOut +     +  bestIn
+         |       \
+         |         \
+         |           \
+         ^ prev      v  next
 
 
-   inBuffer[0] = *bestOut;
-   inBuffer[1] = *bestIn;
 
-   bestOut->next = inBuffer+1;
-   inBuffer[1].prev = bestOut;
-   inBuffer[1].next->prev = inBuffer + 1;
+      outer            inner
+         ^ next   v prev
+         |       /
+         |     /
+         |   /
+ bestOut + /
+ 
 
-   bestIn->next = inBuffer;
-   bestIn->prev->next = bestIn;
-   inBuffer[0].prev = bestIn;
-   inBuffer[0].next->prev = inBuffer;
+           +  bestIn
+         |  \
+         |    \
+         |      \
+         ^ prev  v next
+
+      */
+
+      EdgePoint *prevBestOut = bestOut->prev;
+      bestOut->prev = bestIn->prev;
+      bestOut->prev->next = bestOut;
+
+      bestIn->prev = prevBestOut;
+      prevBestOut->next = bestIn;
+
+      return count;
+   }
+   else
+   {
+      inBuffer[0] = *bestOut;
+      inBuffer[1] = *bestIn;
+
+      bestOut->next = inBuffer+1;
+      inBuffer[1].prev = bestOut;
+      inBuffer[1].next->prev = inBuffer + 1;
+
+      bestIn->next = inBuffer;
+      bestIn->prev->next = bestIn;
+      inBuffer[0].prev = bestIn;
+      inBuffer[0].next->prev = inBuffer;
+   }
 
    return count+2;
 }
 
 struct SubInfo
 {
-   void set(int inP0, int inSize, UserPoint *inVertices)
+   EdgePoint *first;
+   EdgePoint  link[3];
+   int        size;
+   float      x0,x1;
+   float      y0,y1;
+
+
+   // Non-clipper method - first set the points, then sort and calculate reverse then link
+   #ifndef NME_CLIPPER
+
+   UserPoint *vertices;
+   int        group;
+   bool       is_internal;
+   int        p0;
+   
+
+   void setPolygon( int inP0, int inSize, UserPoint *inVertices)
    {
       p0 = inP0;
       size = inSize;
@@ -411,6 +501,20 @@ struct SubInfo
          if (p.y > y1) y1 = p.y;
       }
    }
+
+   void linkPolygon(EdgePoint *edgeBuffer, UserPoint *inP, int inN,bool inReverse)
+   {
+      first = edgeBuffer + 0;
+      for(int i=0;i<inN;i++)
+      {
+         int prev = (i+inN-1) % inN;
+         int next = (i+1) % inN;
+         if (inReverse)
+            std::swap(prev,next);
+         edgeBuffer[i].init(inP[i], &edgeBuffer[prev], &edgeBuffer[next]);
+      }
+   }
+
 
    bool operator <(const SubInfo &inOther) const
    {
@@ -450,26 +554,156 @@ struct SubInfo
       return inP.x>=x0 && inP.x<=x1 && inP.y>=y0 && inP.y<=y1;
    }
 
-   UserPoint *vertices;
-   EdgePoint *first;
-   EdgePoint  link[3];
-   int        group;
-   bool       is_internal;
-   int        p0;
-   int        size;
-   float      x0,x1;
-   float      y0,y1;
+
+
+   #else
+   // Clipper method - Points are already sorted - just link....
+   std::vector<EdgePoint> edgeBuffer;
+
+   void linkPolygon(const ClipperLib::IntPoint *inP, int inN, UserPoint inBase, float unscale, bool inReverse=false)
+   {
+      edgeBuffer.resize(inN);
+      size = inN;
+
+      first =&edgeBuffer[0];
+      for(int i=0;i<inN;i++)
+      {
+         int prev = (i+inN-1) % inN;
+         int next = (i+1) % inN;
+         if (inReverse)
+            std::swap(prev,next);
+
+         UserPoint p( inBase.x + inP[i].X*unscale, inBase.y+inP[i].Y*unscale );
+
+         if (i==0)
+         {
+            x0 = x1 = p.x;
+            y0 = y1 = p.y;
+         }
+         else
+         {
+            if (p.x < x0) x0 = p.x;
+            if (p.x > x1) x1 = p.x;
+            if (p.y < y0) y0 = p.y;
+            if (p.y > y1) y1 = p.y;
+         }
+
+         edgeBuffer[i].init(p,&edgeBuffer[prev], &edgeBuffer[next]);
+      }
+   }
+
+   #endif
+
+
 };
 
-bool sortLeft(SubInfo *a, SubInfo *b)
+
+
+static bool sortLeft(SubInfo *a, SubInfo *b)
 {
-   return a->x0 < b->x0;
+    return a->x0 < b->x0;
 }
 
-#ifdef NME_CLIPPER
-void ClipperOutline(Vertices &ioOutline,QuickVec<int> &ioSubPolys)
+
+
+
+void TriangulateSubPolys(SubInfo *outer, QuickVec<SubInfo *> &holes,  Vertices &outTriangles)
 {
-   int subs = ioSubPolys.size();
+   int holeCount = holes.size();
+   int size = outer->size;
+   #ifdef NME_POLY2TRI
+      int totalSize = outer->size;
+      for(int i=0;i<holes.size();i++)
+         totalSize += holes[i]->size;
+
+      p2t::Poly2Tri *poly2Tri = p2t::Poly2Tri::create();
+
+      std::vector< p2t::Point> pointBuffer(totalSize);
+      EdgePoint *p = outer->first;
+      int p0 = 0;
+      for(int i=0;i<size;i++)
+         pointBuffer[i].set( p[i].p.x, p[i].p.y );
+      poly2Tri->AddSubPoly(&pointBuffer[0],size);
+      p0 += size;
+
+      for(int h=0;h<holeCount;h++)
+      {
+         SubInfo &poly = *holes[h];
+         int size = poly.size;
+         EdgePoint *p = poly.first;
+         for(int i=0;i<size;i++)
+            pointBuffer[p0+i].set( p[i].p.x, p[i].p.y );
+
+         poly2Tri->AddSubPoly(&pointBuffer[p0],size);
+         p0 += size;
+      }
+
+      const std::vector< p2t::Triangle* > &tris = poly2Tri->Triangulate();
+
+      for(int i=0;i<tris.size();i++)
+      {
+         p2t::Triangle *tri = tris[i];
+         outTriangles.push_back( *tri->GetPoint(0) );
+         outTriangles.push_back( *tri->GetPoint(1) );
+         outTriangles.push_back( *tri->GetPoint(2) );
+      }
+
+      delete poly2Tri;
+
+   #else
+      if (holeCount)
+      {
+         std::sort(holes.begin(), holes.end(), sortLeft);
+
+         for(int h=0;h<holeCount;h++)
+         {
+            SubInfo &info = *holes[h];
+            size += LinkSubPolys(outer->first,info.first, info.link);
+         }
+      }
+      EdgePoint *p = outer->first;
+      /*
+      printf("//Full poly!\n");
+      for(int i=0;i<size;i++)
+      {
+         printf("%s(%f,%f);", i==0?"g.moveTo" : " g.lineTo", p->p.x, p->p.y);
+         p = p->next;
+      }
+      printf(" g.lineTo(%f,%f)\n;", p->p.x, p->p.y);
+      */
+      OutlineToEars(outer->first, size, outTriangles);
+   #endif
+}
+
+
+
+
+
+
+
+
+#ifdef NME_CLIPPER
+
+static void dump(const SubInfo &sub)
+{
+   const EdgePoint *p = sub.first;
+   printf("g.moveTo(%f,%f);", p->p.x, p->p.y);
+   for(int i=1;i<sub.size;i++)
+   {
+      p++;
+      printf(" g.lineTo(%f,%f);", p->p.x, p->p.y);
+   }
+   p = sub.first;
+   printf("g.lineTo(%f,%f);", p->p.x, p->p.y);
+   printf("\n");
+}
+
+// Clipper Version
+void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys)
+{
+   Vertices triangles;
+
+   int subs = inSubPolys.size();
    int n = ioOutline.size();
    if (subs<1 || n<1)
       return;
@@ -499,7 +733,7 @@ void ClipperOutline(Vertices &ioOutline,QuickVec<int> &ioSubPolys)
    for(int i=0;i<subs;i++)
    {
       ClipperLib::Path &path = paths[i];
-      int s = ioSubPolys[i] - prev;
+      int s = inSubPolys[i] - prev;
       path.resize(s);
       for(int j=0;j<s;j++)
       {
@@ -525,135 +759,144 @@ void ClipperOutline(Vertices &ioOutline,QuickVec<int> &ioSubPolys)
    clipper.Execute(ClipperLib::ctUnion, solution, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
 
 
-   ioOutline.resize(0);
-   ioSubPolys.resize(0);
-
    ClipperLib::PolyNode *poly = solution.GetFirst();
+   QuickVec<SubInfo *> empty;
    while(poly)
    {
-      //printf("++++\n");
       const ClipperLib::Path &path = poly->Contour;
-      for(int i=0;i<path.size();i++)
+      float px = path[0].X;
+      float py = path[0].Y;
+      float area = 0.0;
+      for(int i=1;i<path.size();i++)
       {
-         const ClipperLib::IntPoint &p = path[i];
-         UserPoint pos( p.X*unscale + minX, p.Y*unscale + minY );
-         //printf(" %f,%f\n", pos.x, pos.y);
-         ioOutline.push_back(pos);
+         float x = path[i].X;
+         float y = path[i].Y;
+         area += x*py - y*px;
+         px = x;
+         py = y;
       }
-      ioSubPolys.push_back(ioOutline.size());
+      float x = path[0].X;
+      float y = path[0].Y;
+      area += x*py - y*px;
+      bool reverse = area>0;
 
-      // TODO - we are losing some information here about holes...
+      SubInfo outer;
       ClipperLib::PolyNodes &children = poly->Childs;
-      for(int c=0;c<children.size();c++)
+      int kids = children.size();
+      outer.linkPolygon( &path[0], path.size(), UserPoint(minX,minY), unscale, reverse );
+      //dump(outer);
+
+      QuickVec<SubInfo> holes(kids);
+      QuickVec<SubInfo *> holesPtr(kids);
+
+      for(int c=0;c<kids;c++)
       {
-         //printf(" ++++\n");
          const ClipperLib::Path &path = children[c]->Contour;
-         for(int i=0;i<path.size();i++)
-         {
-            const ClipperLib::IntPoint &p = path[i];
-            UserPoint pos( p.X*unscale + minX, p.Y*unscale + minY );
-            //printf("  %f,%f\n", pos.x, pos.y);
-            ioOutline.push_back( UserPoint( p.X*unscale + minX, p.Y*unscale + minY ) );
-         }
-         ioSubPolys.push_back(ioOutline.size());
+         holes[c].linkPolygon( &path[0], path.size(), UserPoint(minX,minY), unscale, reverse );
+         holesPtr[c] = &holes[c];
+         //dump(holes[c]);
       }
+
+      TriangulateSubPolys(&outer, holesPtr,  triangles);
 
       poly = poly->GetNext();
    }
+
+   ioOutline.swap(triangles);
 }
-#endif
+
+#else
+
+
+
+
+
+
+// Non-clipper version
 
 void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys)
 {
-   #ifdef NME_CLIPPER
-   QuickVec<int> subPoly(inSubPolys);
-   ClipperOutline(ioOutline, subPoly);
-   #else
-   const QuickVec<int> &subPoly(inSubPolys);
-   #endif
+   Vertices triangles;
 
    // Order polygons ...
-   int subs = subPoly.size();
+   int subs = inSubPolys.size();
    if (subs<1)
       return;
+
+   QuickVec<EdgePoint> edgeBuffer(ioOutline.size());
 
    QuickVec<SubInfo> subInfo(subs);
    int bigSubs = 0;
    int p0 = 0;
    for(int i=0;i<subs;i++)
    {
-      int size = subPoly[i]-p0;
+      int size = inSubPolys[i]-p0;
       if (size>2 && ioOutline[p0] == ioOutline[p0+size-1])
          size--;
 
       if (size>2)
-         subInfo[bigSubs++].set(p0,size, &ioOutline[0]);
-
-      p0 = subPoly[i];
+         subInfo[bigSubs++].setPolygon(p0,size, &ioOutline[0]);
+      p0 = inSubPolys[i];
    }
    subInfo.resize(subs=bigSubs);
    std::sort(subInfo.begin(), subInfo.end());
 
 
 
-   QuickVec<EdgePoint> edges(ioOutline.size());
-   int index = 0;
    int groupId = 0;
+   int edgeBufferStart = 0;
 
    for(int sub=0;sub<subs;sub++)
    {
       SubInfo &info = subInfo[sub];
 
-         UserPoint *p = &ioOutline[info.p0];
-         double area = 0.0;
-         for(int i=2;i<info.size;i++)
-         {
-            UserPoint v_prev = p[i-1] - p[0];
-            UserPoint v_next = p[i] - p[0];
-            area += v_prev.Cross(v_next);
-         }
-         bool reverse = area < 0;
-         int  parent = -1;
+      UserPoint *p = &ioOutline[info.p0];
+      double area = 0.0;
+      for(int i=2;i<info.size;i++)
+      {
+         UserPoint v_prev = p[i-1] - p[0];
+         UserPoint v_next = p[i] - p[0];
+         area += v_prev.Cross(v_next);
+      }
+      bool reverse = area < 0;
+      int  parent = -1;
 
-         for(int prev=sub-1; prev>=0 && parent==-1; prev--)
+      for(int prev=sub-1; prev>=0 && parent==-1; prev--)
+      {
+         if (subInfo[prev].contains(p[0]))
          {
-            if (subInfo[prev].contains(p[0]))
+            int prev_p0 = subInfo[prev].p0;
+            int prev_size = subInfo[prev].size;
+            int inside = PIP_MAYBE;
+            for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
             {
-               int prev_p0 = subInfo[prev].p0;
-               int prev_size = subInfo[prev].size;
-               int inside = PIP_MAYBE;
-               for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
-               {
-                  inside =  PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size);
-                  if (inside==PIP_YES)
-                     parent = prev;
-               }
+               inside =  PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size);
+               if (inside==PIP_YES)
+                  parent = prev;
             }
          }
+      }
 
-         if (parent==-1 || subInfo[parent].is_internal )
-         {
-            info.group = groupId++;
-            info.is_internal = false;
-         }
-         else
-         {
-            info.group = subInfo[parent].group;
-            info.is_internal = true;
-         }
+      if (parent==-1 || subInfo[parent].is_internal )
+      {
+         info.group = groupId++;
+         info.is_internal = false;
+      }
+      else
+      {
+         info.group = subInfo[parent].group;
+         info.is_internal = true;
+      }
 
-         info.first = &edges[index];
-         AddSubPoly(info.first,p,info.size,reverse!=info.is_internal);
-         index += info.size;
+      info.linkPolygon(&edgeBuffer[edgeBufferStart],p,info.size,reverse!=info.is_internal);
+
+      edgeBufferStart += info.size;
    }
 
-   Vertices triangles;
 
    for(int group=0;group<groupId;group++)
    {
       int first = -1;
-      int size = 0;
-      int totalSize = 0;
       QuickVec<SubInfo *> holes;
       for(int sub=0;sub<subInfo.size();sub++)
       {
@@ -663,71 +906,21 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
             if (first<0)
             {
                first = sub;
-               totalSize = size = info.size;
             }
             else
             {
-               totalSize += info.size;
                holes.push_back(&info);
             }
          }
       }
       if (first>=0)
       {
-         int holeCount = holes.size();
-
-         #ifdef USE_POLY2TRI
-            p2t::Poly2Tri *poly2Tri = p2t::Poly2Tri::create();
-
-            std::vector< p2t::Point> pointBuffer(totalSize);
-            UserPoint *p = subInfo[first].vertices;
-            int p0 = 0;
-            for(int i=0;i<size;i++)
-               pointBuffer[i].set( p[i].x, p[i].y );
-            poly2Tri->AddSubPoly(&pointBuffer[0],size);
-            p0 += size;
-
-            for(int h=0;h<holeCount;h++)
-            {
-               SubInfo &poly = *holes[h];
-               int size = poly.size;
-               UserPoint *p = poly.vertices;
-               for(int i=0;i<size;i++)
-                  pointBuffer[p0+i].set( p[i].x, p[i].y );
-
-               poly2Tri->AddSubPoly(&pointBuffer[p0],size);
-               p0 += size;
-            }
-
-            const std::vector< p2t::Triangle* > &tris = poly2Tri->Triangulate();
-
-            for(int i=0;i<tris.size();i++)
-            {
-               p2t::Triangle *tri = tris[i];
-               triangles.push_back( *tri->GetPoint(0) );
-               triangles.push_back( *tri->GetPoint(1) );
-               triangles.push_back( *tri->GetPoint(2) );
-            }
-
-            delete poly2Tri;
-
-         #else
-            if (holeCount)
-            {
-               std::sort(holes.begin(), holes.end(), sortLeft);
-
-               for(int h=0;h<holeCount;h++)
-               {
-                  SubInfo &info = *holes[h];
-                  size += LinkSubPolys(subInfo[first].first,info.first, info.link);
-               }
-            }
-            ConvertOutlineToTriangles(subInfo[first].first, size,triangles);
-         #endif
+         TriangulateSubPolys(&subInfo[first], holes, triangles);
       }
    }
 
    ioOutline.swap(triangles);
 }
+#endif
 
 } // end namespace nme

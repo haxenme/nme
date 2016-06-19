@@ -159,6 +159,7 @@
       <compilerflag value="-DNME_MODPLUG" if="modplug" />
       <compilerflag value="-DSTATIC_LINK" />
       <compilerflag value="-DNME_CLIPPER" if="NME_CLIPPER" />
+      <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
 
       <cache value="1" />
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
@@ -339,9 +340,7 @@
       <file name="${SRC_DIR}/software-renderer/TileRenderer.cpp"/>
       <file name="${SRC_DIR}/software-renderer/TriangleRender.cpp"/>
      
-      <!-- You will need this if you want USE_POLY2TRI in Tesselate.cpp
-      <file name="${SRC_DIR}/common/poly2tri/Poly2Tri.cpp" />
-      -->
+      <file name="${SRC_DIR}/common/poly2tri/Poly2Tri.cpp" if="NME_POLY2TRI" />
       <file name="${SRC_DIR}/common/clipper/clipper.cpp" if="NME_CLIPPER" />
 
    
