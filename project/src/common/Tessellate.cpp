@@ -110,6 +110,12 @@ struct EdgePoint
       next->prev = prev;
    }
 
+
+   float calcCross()
+   {
+      return (prev->p - p).Cross(next->p - p);
+   }
+
    bool calcConcave()
    {
       return (prev->p - p).Cross(next->p - p) > 0.0;
@@ -175,9 +181,31 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
 
    for(EdgePoint *p = head; ; )
    {
-      if (p->calcConcave())
-         concaveSet.add(p);
-      p = p->next; if (p==head) break;
+      float cross = p->calcCross();
+      if (fabs(cross)<INSIDE_TOL && p->p.Dist2(p->next->p)<0.00001 )
+      {
+         // erase point
+         p->unlink();
+         if (p==head)
+            p = head = p->next;
+         else
+         {
+            p = p->next;
+            if (p==head)
+               break;
+         }
+      }
+      else
+      {
+         if (cross>0)
+         {
+            p->isConcave = true;
+            concaveSet.add(p);
+         }
+         p = p->next;
+         if (p==head)
+            break;
+      }
    }
 
    EdgePoint *pi= head;
@@ -204,10 +232,10 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
          EdgePoint *next = pi->next;
          EdgePoint *prev = pi->prev;
 
-         if(next->isDegenerate())
+         while(next->isDegenerate())
          {
             if (next->isConcave)
-              concaveSet.remove(next); 
+              concaveSet.remove(next);
             next->unlink();
             next = next->next;
             size--;
@@ -222,7 +250,7 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
          else if (!next->isConcave && nextConcave)
             concaveSet.add(next); 
 
-         if(prev->isDegenerate())
+         while(prev->isDegenerate())
          {
             if (prev->isConcave)
               concaveSet.remove(prev); 
@@ -239,6 +267,7 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
             concaveSet.remove(prev);
          else if (!prev->isConcave && prevConcave)
             concaveSet.add(prev);
+
 
          // Take a step back and try again...
          pi = prev;
@@ -756,7 +785,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
    // TODO - winding pftEvenOdd, pftNonZero
    ClipperLib::PolyTree solution;
-   clipper.Execute(ClipperLib::ctUnion, solution, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+   clipper.Execute(ClipperLib::ctUnion, solution, ClipperLib::pftEvenOdd, ClipperLib::pftEvenOdd);
 
 
    ClipperLib::PolyNode *poly = solution.GetFirst();
