@@ -183,7 +183,7 @@
       </section>
 
       <section if="iphone">
-         <file name="${SRC_DIR}/iPhone/UIStageView.mm"/>
+         <file name="${SRC_DIR}/iPhone/UIStageView.mm" tags="static" />
          <file name="${SRC_DIR}/iPhone/UIDeviceHardware.mm"/>
          <!-- <file name="${SRC_DIR}/iPhone/SurfaceIO.mm"/> -->
          <file name="${SRC_DIR}/iPhone/NativeFont.mm"/>
