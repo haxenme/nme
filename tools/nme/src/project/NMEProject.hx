@@ -76,6 +76,19 @@ class IOSConfig
    }
 }
 
+
+class WatchOSConfig
+{
+   public var complication:Bool = false;
+   public var notification:Bool = false;
+
+   public function new()
+   {
+   }
+}
+
+
+
 class NMEProject 
 {
    public var app:ApplicationData;
@@ -98,6 +111,7 @@ class NMEProject
    // ios/android build parameters
    public var iosConfig:IOSConfig;
    public var androidConfig:AndroidConfig;
+   public var watchOSConfig:WatchOSConfig;
 
    // Defines
    public var localDefines:Map<String,String>;
@@ -223,6 +237,7 @@ class NMEProject
    {
       app.binDir = inDir;
    }
+
 
    public function setTarget(inTargetName:String)
    {
@@ -397,6 +412,12 @@ class NMEProject
       localDefines.set(target.toLowerCase(), "1");
    }
 
+   public function makeWatchOSConfig()
+   {
+      if (watchOSConfig==null)
+         watchOSConfig = new WatchOSConfig();
+      return watchOSConfig;
+   }
 
    public function getInt(inName:String,inDefault:Int):Int
    {

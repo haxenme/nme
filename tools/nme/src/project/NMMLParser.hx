@@ -234,6 +234,11 @@ class NMMLParser
       }
    }
 
+   private function parseWatchOSElement(element:Fast):Void 
+   {
+      var watchOs = project.makeWatchOSConfig();
+   }
+
    private function parseAssetsElement(element:Fast, basePath:String = ""):Void 
    {
       var path = basePath;
@@ -791,6 +796,9 @@ class NMMLParser
 
                case "assets":
                   parseAssetsElement(element, extensionPath);
+
+               case "watchos":
+                  parseWatchOSElement(element);
 
                case "library":
                   if (element.has.path)

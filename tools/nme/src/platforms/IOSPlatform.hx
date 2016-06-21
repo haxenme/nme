@@ -149,6 +149,8 @@ class IOSPlatform extends Platform
       context.APP_FILE = project.app.file;
       context.REDIRECT_TRACE = redirectTrace;
       context.IOS_3X_RESOLUTION = project.getBool("ios3xResolution",true);
+      if (project.watchOSConfig!=null)
+         context.NME_WATCHOS = true;
 
 
       linkedLibraries = [];
@@ -425,6 +427,13 @@ class IOSPlatform extends Platform
          copyTemplate("ios/PROJ/PROJ-Info.plist", projectDirectory + "/" + project.app.file + "-Info.plist");
          copyTemplate("ios/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch");
          copyTemplateDir("ios/PROJ.xcodeproj", targetDir + "/" + project.app.file + ".xcodeproj");
+
+         var watchos = project.watchOSConfig;
+         if (watchos!=null)
+         {
+             copyTemplateDir("ios/PROJ - watchOS", targetDir + "/" + project.app.file + " - watchOS");
+             copyTemplateDir("ios/PROJ - watchOS Extension", targetDir + "/" + project.app.file + " - watchOS Extension");
+         }
       }
 
       if (project.command == "update" && PlatformHelper.hostPlatform == Platform.MAC) 
