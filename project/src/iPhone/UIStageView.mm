@@ -259,6 +259,8 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 {
    if (animating)
    {
+      if (stage->nmeView->mOGLContext && [EAGLContext currentContext] != stage->nmeView->mOGLContext)
+         [EAGLContext setCurrentContext:stage->nmeView->mOGLContext];  
       Event evt(etPoll);
       stage->OnEvent(evt);
    }
@@ -2273,6 +2275,5 @@ void nme_app_set_active(bool inActive)
 
 
 }
-
 
 
