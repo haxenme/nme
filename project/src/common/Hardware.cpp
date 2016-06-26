@@ -70,6 +70,7 @@ public:
          mScale = 0.001;
       mCurveThresh2 = 0.125/mScale/mScale;
       mFatLineCullThresh = 5.0/mScale;
+      mWinding = inPath.winding;
 
       if (inJob.mIsTileJob)
       {
@@ -709,7 +710,7 @@ public:
          }
          if (!isConvex)
          {
-            ConvertOutlineToTriangles(inOutline,inSubPolys);
+            ConvertOutlineToTriangles(inOutline,inSubPolys,mWinding);
             //showTriangles = true;
          }
       }
@@ -1872,6 +1873,7 @@ public:
    Matrix      mTextureMapper;
    StrokeCaps   mCaps;
    StrokeJoints mJoints;
+   WindingRule  mWinding;
 };
 
 void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,HardwareData &ioData,

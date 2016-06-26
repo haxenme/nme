@@ -76,7 +76,8 @@ public:
 };
 
 
-void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys);
+void NmeClipOutline(Vertices &ioOutline,QuickVec<int> &ioSubPolys, WindingRule inWinding);
+void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys,WindingRule inWinding);
 
 class HardwareContext : public Object
 {

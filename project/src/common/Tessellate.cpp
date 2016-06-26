@@ -518,6 +518,7 @@ struct SubInfo
       p0 = inP0;
       size = inSize;
       vertices = inVertices + p0;
+      is_internal = false;
 
       x0 = x1 = vertices[0].x;
       y0 = y1 = vertices[0].y;
@@ -691,15 +692,6 @@ void TriangulateSubPolys(SubInfo *outer, QuickVec<SubInfo *> &holes,  Vertices &
          }
       }
       EdgePoint *p = outer->first;
-      /*
-      printf("//Full poly!\n");
-      for(int i=0;i<size;i++)
-      {
-         printf("%s(%f,%f);", i==0?"g.moveTo" : " g.lineTo", p->p.x, p->p.y);
-         p = p->next;
-      }
-      printf(" g.lineTo(%f,%f)\n;", p->p.x, p->p.y);
-      */
       OutlineToEars(outer->first, size, outTriangles);
    #endif
 }
@@ -728,7 +720,7 @@ static void dump(const SubInfo &sub)
 }
 
 // Clipper Version
-void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys)
+void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys,WindingRule inWinding)
 {
    Vertices triangles;
 
@@ -843,15 +835,24 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
 // Non-clipper version
 
-void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys)
+void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys,WindingRule inWinding)
 {
-   Vertices triangles;
+   #ifdef NME_INTERNAL_CLIPPING
+   if (inSubPolys.size()<1)
+      return;
+   QuickVec<int> subPolys(inSubPolys);
+   NmeClipOutline(ioOutline,subPolys,inWinding);
+   #else
+   const QuickVec<int> &subPolys(inSubPolys);
+   #endif
 
-   // Order polygons ...
-   int subs = inSubPolys.size();
+   int subs = subPolys.size();
    if (subs<1)
       return;
 
+   Vertices triangles;
+
+   // Order polygons ...
    QuickVec<EdgePoint> edgeBuffer(ioOutline.size());
 
    QuickVec<SubInfo> subInfo(subs);
@@ -859,13 +860,13 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    int p0 = 0;
    for(int i=0;i<subs;i++)
    {
-      int size = inSubPolys[i]-p0;
+      int size = subPolys[i]-p0;
       if (size>2 && ioOutline[p0] == ioOutline[p0+size-1])
          size--;
 
       if (size>2)
          subInfo[bigSubs++].setPolygon(p0,size, &ioOutline[0]);
-      p0 = inSubPolys[i];
+      p0 = subPolys[i];
    }
    subInfo.resize(subs=bigSubs);
    std::sort(subInfo.begin(), subInfo.end());

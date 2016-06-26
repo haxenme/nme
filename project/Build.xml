@@ -80,8 +80,11 @@
 
    <set name="modplug" value="1" unless="android" />
    
-   <!-- Uncomment this if you want use clipper for tesselate -->
+   <!-- Uncomment this if you want use ClipperLib for tesselate -->
    <!--set name="NME_CLIPPER" value="1" /-->
+
+   <!-- Uncomment this if you want use nme's own clipper for tesselate -->
+   <!--set name="NME_INTERNAL_CLIPPING" value="1" /-->
    
    <!-- <set name="new_link" value="1" /> -->
  
@@ -154,6 +157,7 @@
       <compilerflag value="-DNME_MODPLUG" if="modplug" />
       <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
       <compilerflag value="-DNME_CLIPPER" if="NME_CLIPPER" />
+      <compilerflag value="-DNME_INTERNAL_CLIPPING" if="NME_INTERNAL_CLIPPING" />
 
       <cache value="1" />
 
@@ -320,6 +324,7 @@
       <file name="${SRC_DIR}/common/poly2tri/Poly2Tri.cpp" />
       -->
       <file name="${SRC_DIR}/common/clipper/clipper.cpp" if="NME_CLIPPER" />
+      <file name="${SRC_DIR}/common/NmeClip.cpp" if="NME_INTERNAL_CLIPPING" />
 
    
       <file name="${SRC_DIR}/lzma/LzFind.c" />
