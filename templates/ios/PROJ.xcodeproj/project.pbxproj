@@ -528,6 +528,7 @@
 				::end::
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "::KEY_STORE_IDENTITY::";
 				ENABLE_BITCODE = NO;
+	         ENABLE_TESTABILITY = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -595,6 +596,7 @@
 				GCC_PREFIX_HEADER = "::APP_FILE::/::APP_FILE::-Prefix.pch";
 				INFOPLIST_FILE = "::APP_FILE::/::APP_FILE::-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+	         PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::;
 				WRAPPER_EXTENSION = app;
 
 	            "LIBRARY_SEARCH_PATHS[arch=armv6]" = (
@@ -644,6 +646,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "::APP_FILE::/::APP_FILE::-Prefix.pch";
 				INFOPLIST_FILE = "::APP_FILE::/::APP_FILE::-Info.plist";
+	         PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 

@@ -92,6 +92,12 @@
       "size" : "76x76",
       "scale" : "2x"
       $$appIcon(152)
+    },
+    {
+      "size" : "83.5x83.5",
+      "idiom" : "ipad",
+      "scale" : "2x"
+      $$appIcon(167)
     }
   ],
   "info" : {

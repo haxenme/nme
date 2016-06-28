@@ -1,8 +1,5 @@
 //
 //  GlanceController.swift
-//  Sample16 - watchOS Extension
-//
-//  Created by Hugh Sanderson on 20/06/2016.
 //
 //
 
