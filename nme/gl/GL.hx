@@ -304,6 +304,7 @@ class GL
    /* TextureParameterName */
    public static inline var TEXTURE_MAG_FILTER             = 0x2800;
    public static inline var TEXTURE_MIN_FILTER             = 0x2801;
+   //public static inline var TEXTURE_WRAP_R                 = 0x8072;
    public static inline var TEXTURE_WRAP_S                 = 0x2802;
    public static inline var TEXTURE_WRAP_T                 = 0x2803;
 
@@ -462,311 +463,311 @@ class GL
    public static var drawingBufferWidth(get_drawingBufferWidth, null):Int;
    public static var version(get_version, null):Int;
 
-   public static function activeTexture(texture:Int):Void { nme_gl_active_texture(texture); }
+   public static inline function activeTexture(texture:Int):Void { nme_gl_active_texture(texture); }
 
-   public static function attachShader(program:GLProgram, shader:GLShader):Void 
+   public static inline function attachShader(program:GLProgram, shader:GLShader):Void
    {
       program.attach(shader);
       nme_gl_attach_shader(program.id, shader.id);
    }
 
-   public static function bindAttribLocation(program:GLProgram, index:Int, name:String):Void 
+   public static inline function bindAttribLocation(program:GLProgram, index:Int, name:String):Void
    {
       nme_gl_bind_attrib_location(program.id, index, name);
    }
 
-   public static function bindBitmapDataTexture(texture:BitmapData):Void 
+   public static inline function bindBitmapDataTexture(texture:BitmapData):Void
    {
       nme_gl_bind_bitmap_data_texture(texture.nmeHandle);
    }
 
-   public static function bindBuffer(target:Int, buffer:GLBuffer):Void 
+   public static inline function bindBuffer(target:Int, buffer:GLBuffer):Void
    {
       nme_gl_bind_buffer(target, buffer);
    }
 
-   public static function bindFramebuffer(target:Int, framebuffer:GLFramebuffer):Void 
+   public static inline function bindFramebuffer(target:Int, framebuffer:GLFramebuffer):Void
    {
       nme_gl_bind_framebuffer(target, framebuffer);
    }
 
-   public static function bindRenderbuffer(target:Int, renderbuffer:GLRenderbuffer):Void 
+   public static inline function bindRenderbuffer(target:Int, renderbuffer:GLRenderbuffer):Void
    {
       nme_gl_bind_renderbuffer(target, renderbuffer);
    }
 
-   public static function bindTexture(target:Int, texture:GLTexture):Void 
+   public static inline function bindTexture(target:Int, texture:GLTexture):Void
    {
       nme_gl_bind_texture(target, texture);
    }
 
-   public static function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void 
+   public static inline function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void
    {
       nme_gl_blend_color(red, green, blue, alpha);
    }
 
-   public static function blendEquation(mode:Int):Void 
+   public static inline function blendEquation(mode:Int):Void
    {
       nme_gl_blend_equation(mode);
    }
 
-   public static function blendEquationSeparate(modeRGB:Int, modeAlpha:Int):Void 
+   public static inline function blendEquationSeparate(modeRGB:Int, modeAlpha:Int):Void
    {
       nme_gl_blend_equation_separate(modeRGB, modeAlpha);
    }
 
-   public static function blendFunc(sfactor:Int, dfactor:Int):Void 
+   public static inline function blendFunc(sfactor:Int, dfactor:Int):Void
    {
       nme_gl_blend_func(sfactor, dfactor);
    }
 
-   public static function blendFuncSeparate(srcRGB:Int, dstRGB:Int, srcAlpha:Int, dstAlpha:Int):Void 
+   public static inline function blendFuncSeparate(srcRGB:Int, dstRGB:Int, srcAlpha:Int, dstAlpha:Int):Void
    {
       nme_gl_blend_func_separate(srcRGB, dstRGB, srcAlpha, dstAlpha);
    }
 
-   public static function bufferData(target:Int, data:IMemoryRange, usage:Int):Void 
+   public static inline function bufferData(target:Int, data:IMemoryRange, usage:Int):Void
    {
       nme_gl_buffer_data(target, data.getByteBuffer(), data.getStart(), data.getLength(), usage);
    }
 
-   public static function bufferSubData(target:Int, offset:Int, data:IMemoryRange):Void 
+   public static inline function bufferSubData(target:Int, offset:Int, data:IMemoryRange):Void
    {
       nme_gl_buffer_sub_data(target, offset, data.getByteBuffer(), data.getStart(), data.getLength());
    }
 
-   public static function checkFramebufferStatus(target:Int):Int 
+   public static inline function checkFramebufferStatus(target:Int):Int
    {
       return nme_gl_check_framebuffer_status(target);
    }
 
-   public static function clear(mask:Int):Void 
+   public static inline function clear(mask:Int):Void
    {
       nme_gl_clear(mask);
    }
 
-   public static function clearColor(red:Float, green:Float, blue:Float, alpha:Float):Void 
+   public static inline function clearColor(red:Float, green:Float, blue:Float, alpha:Float):Void
    {
       nme_gl_clear_color(red, green, blue, alpha);
    }
 
-   public static function clearDepth(depth:Float):Void 
+   public static inline function clearDepth(depth:Float):Void
    {
       nme_gl_clear_depth(depth);
    }
 
-   public static function clearStencil(s:Int):Void 
+   public static inline function clearStencil(s:Int):Void
    {
       nme_gl_clear_stencil(s);
    }
 
-   public static function colorMask(red:Bool, green:Bool, blue:Bool, alpha:Bool):Void 
+   public static inline function colorMask(red:Bool, green:Bool, blue:Bool, alpha:Bool):Void
    {
       nme_gl_color_mask(red, green, blue, alpha);
    }
 
-   public static function compileShader(shader:GLShader):Void 
+   public static inline function compileShader(shader:GLShader):Void
    {
       nme_gl_compile_shader(shader.id);
    }
 
-   public static function compressedTexImage2D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, border:Int, data:IMemoryRange):Void 
+   public static inline function compressedTexImage2D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, border:Int, data:IMemoryRange):Void
    {
       nme_gl_compressed_tex_image_2d(target, level, internalformat, width, height, border, data == null ? null : data.getByteBuffer(), data == null ? null : data.getStart());
    }
 
-   public static function compressedTexSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, data:IMemoryRange):Void 
+   public static inline function compressedTexSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, data:IMemoryRange):Void
    {
       nme_gl_compressed_tex_sub_image_2d(target, level, xoffset, yoffset, width, height, format, data == null ? null : data.getByteBuffer(), data == null ? null : data.getStart());
    }
 
-   public static function copyTexImage2D(target:Int, level:Int, internalformat:Int, x:Int, y:Int, width:Int, height:Int, border:Int):Void 
+   public static inline function copyTexImage2D(target:Int, level:Int, internalformat:Int, x:Int, y:Int, width:Int, height:Int, border:Int):Void
    {
       nme_gl_copy_tex_image_2d(target, level, internalformat, x, y, width, height, border);
    }
 
-   public static function copyTexSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, x:Int, y:Int, width:Int, height:Int):Void 
+   public static inline function copyTexSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, x:Int, y:Int, width:Int, height:Int):Void
    {
       nme_gl_copy_tex_sub_image_2d(target, level, xoffset, yoffset, x, y, width, height);
    }
 
-   public static function createBuffer():GLBuffer 
+   public static inline function createBuffer():GLBuffer
    {
       return new GLBuffer(version, nme_gl_create_buffer());
    }
 
-   public static function createFramebuffer():GLFramebuffer 
+   public static inline function createFramebuffer():GLFramebuffer
    {
       return new GLFramebuffer(version, nme_gl_create_framebuffer());
    }
 
-   public static function createProgram():GLProgram 
+   public static inline function createProgram():GLProgram
    {
       return new GLProgram(version, nme_gl_create_program());
    }
 
-   public static function createRenderbuffer():GLRenderbuffer 
+   public static inline function createRenderbuffer():GLRenderbuffer
    {
       return new GLRenderbuffer(version, nme_gl_create_render_buffer());
    }
 
-   public static function createShader(type:Int):GLShader 
+   public static inline function createShader(type:Int):GLShader
    {
       return new GLShader(version, nme_gl_create_shader(type));
    }
 
-   public static function createTexture():GLTexture 
+   public static inline function createTexture():GLTexture
    {
       return new GLTexture(version, nme_gl_create_texture());
    }
 
-   public static function cullFace(mode:Int):Void 
+   public static inline function cullFace(mode:Int):Void
    {
      nme_gl_cull_face(mode);
    }
 
-   public static function deleteBuffer(buffer:GLBuffer):Void 
+   public static inline function deleteBuffer(buffer:GLBuffer):Void
    {
       nme_gl_delete_buffer(buffer.id);
       buffer.invalidate();
    }
 
-   public static function deleteFramebuffer(framebuffer:GLFramebuffer):Void 
+   public static inline function deleteFramebuffer(framebuffer:GLFramebuffer):Void
    {
       nme_gl_delete_framebuffer(framebuffer.id);
       framebuffer.invalidate();
    }
 
-   public static function deleteProgram(program:GLProgram):Void 
+   public static inline function deleteProgram(program:GLProgram):Void
    {
       nme_gl_delete_program(program.id);
       program.invalidate();
    }
 
-   public static function deleteRenderbuffer(renderbuffer:GLRenderbuffer):Void 
+   public static inline function deleteRenderbuffer(renderbuffer:GLRenderbuffer):Void
    {
       nme_gl_delete_renderbuffer(renderbuffer.id);
       renderbuffer.invalidate();
    }
 
-   public static function deleteShader(shader:GLShader):Void 
+   public static inline function deleteShader(shader:GLShader):Void
    {
       nme_gl_delete_shader(shader.id);
       shader.invalidate();
    }
 
-   public static function deleteTexture(texture:GLTexture):Void 
+   public static inline function deleteTexture(texture:GLTexture):Void
    {
       nme_gl_delete_texture(texture.id);
       texture.invalidate();
    }
 
-   public static function depthFunc(func:Int):Void 
+   public static inline function depthFunc(func:Int):Void
    {
       nme_gl_depth_func(func);
    }
 
-   public static function depthMask(flag:Bool):Void 
+   public static inline function depthMask(flag:Bool):Void
    {
       nme_gl_depth_mask(flag);
    }
 
-   public static function depthRange(zNear:Float, zFar:Float):Void 
+   public static inline function depthRange(zNear:Float, zFar:Float):Void
    {
       nme_gl_depth_range(zNear, zFar);
    }
 
-   public static function detachShader(program:GLProgram, shader:GLShader):Void 
+   public static inline function detachShader(program:GLProgram, shader:GLShader):Void
    {
       nme_gl_detach_shader(program.id, shader.id);
    }
 
-   public static function disable(cap:Int):Void 
+   public static inline function disable(cap:Int):Void
    {
       nme_gl_disable(cap);
    }
 
-   public static function disableVertexAttribArray(index:Int):Void 
+   public static inline function disableVertexAttribArray(index:Int):Void
    {
       nme_gl_disable_vertex_attrib_array(index);
    }
 
-   public static function drawArrays(mode:Int, first:Int, count:Int):Void 
+   public static inline function drawArrays(mode:Int, first:Int, count:Int):Void
    {
       nme_gl_draw_arrays(mode, first, count);
    }
 
-   public static function drawElements(mode:Int, count:Int, type:Int, offset:Int):Void 
+   public static inline function drawElements(mode:Int, count:Int, type:Int, offset:Int):Void
    {
       nme_gl_draw_elements(mode, count, type, offset);
    }
 
-   public static function enable(cap:Int):Void 
+   public static inline function enable(cap:Int):Void
    {
       nme_gl_enable(cap);
    }
 
-   public static function enableVertexAttribArray(index:Int):Void 
+   public static inline function enableVertexAttribArray(index:Int):Void
    {
       nme_gl_enable_vertex_attrib_array(index);
    }
 
-   public static function finish():Void 
+   public static inline function finish():Void
    {
       nme_gl_finish();
    }
 
-   public static function flush():Void 
+   public static inline function flush():Void
    {
       nme_gl_flush();
    }
 
-   public static function framebufferRenderbuffer(target:Int, attachment:Int, renderbuffertarget:Int, renderbuffer:GLRenderbuffer):Void 
+   public static inline function framebufferRenderbuffer(target:Int, attachment:Int, renderbuffertarget:Int, renderbuffer:GLRenderbuffer):Void
    {
       nme_gl_framebuffer_renderbuffer(target, attachment, renderbuffertarget, renderbuffer.id);
    }
 
-   public static function framebufferTexture2D(target:Int, attachment:Int, textarget:Int, texture:GLTexture, level:Int):Void 
+   public static inline function framebufferTexture2D(target:Int, attachment:Int, textarget:Int, texture:GLTexture, level:Int):Void
    {
       nme_gl_framebuffer_texture2D(target, attachment, textarget, texture.id, level);
    }
 
-   public static function frontFace(mode:Int):Void 
+   public static inline function frontFace(mode:Int):Void
    {
       nme_gl_front_face(mode);
    }
 
-   public static function generateMipmap(target:Int):Void 
+   public static inline function generateMipmap(target:Int):Void
    {
       nme_gl_generate_mipmap(target);
    }
 
-   public static function getActiveAttrib(program:GLProgram, index:Int):GLActiveInfo 
+   public static inline function getActiveAttrib(program:GLProgram, index:Int):GLActiveInfo
    {
       return nme_gl_get_active_attrib(program.id, index);
    }
 
-   public static function getActiveUniform(program:GLProgram, index:Int):GLActiveInfo 
+   public static inline function getActiveUniform(program:GLProgram, index:Int):GLActiveInfo
    {
       return nme_gl_get_active_uniform(program.id, index);
    }
 
-   public static function getAttachedShaders(program:GLProgram):Array<GLShader> 
+   public static inline function getAttachedShaders(program:GLProgram):Array<GLShader>
    {
       return program.getShaders();
    }
 
-   public static function getAttribLocation(program:GLProgram, name:String):Int 
+   public static inline function getAttribLocation(program:GLProgram, name:String):Int
    {
       return nme_gl_get_attrib_location(program.id, name);
    }
 
-   public static function getBufferParameter(target:Int, pname:Int):Dynamic 
+   public static inline function getBufferParameter(target:Int, pname:Int):Dynamic
    {
       return nme_gl_get_buffer_paramerter(target, pname);
    }
 
-   public static function getContextAttributes():GLContextAttributes 
+   public static inline function getContextAttributes():GLContextAttributes
    {
       var base = nme_gl_get_context_attributes();
       base.premultipliedAlpha = false;
@@ -774,146 +775,146 @@ class GL
       return base;
    }
 
-   public static function getError():Int 
+   public static inline function getError():Int
    {
       return nme_gl_get_error();
    }
 
-   public static function getExtension(name:String):Dynamic 
+   public static inline function getExtension(name:String):Dynamic
    {
       return nme_gl_get_extension(name);
    }
 
-   public static function getFramebufferAttachmentParameter(target:Int, attachment:Int, pname:Int):Dynamic 
+   public static inline function getFramebufferAttachmentParameter(target:Int, attachment:Int, pname:Int):Dynamic
    {
       return nme_gl_get_framebuffer_attachment_parameter(target, attachment, pname);
    }
 
-   public static function getParameter(pname:Int):Dynamic 
+   public static inline function getParameter(pname:Int):Dynamic
    {
       return nme_gl_get_parameter(pname);
    }
 
-   public static function getProgramInfoLog(program:GLProgram):String 
+   public static inline function getProgramInfoLog(program:GLProgram):String
    {
       return nme_gl_get_program_info_log(program.id);
    }
 
-   public static function getProgramParameter(program:GLProgram, pname:Int):Int 
+   public static inline function getProgramParameter(program:GLProgram, pname:Int):Int
    {
       return nme_gl_get_program_parameter(program.id, pname);
    }
 
-   public static function getRenderbufferParameter(target:Int, pname:Int):Dynamic 
+   public static inline function getRenderbufferParameter(target:Int, pname:Int):Dynamic
    {
       return nme_gl_get_render_buffer_parameter(target, pname);
    }
 
-   public static function getShaderInfoLog(shader:GLShader):String 
+   public static inline function getShaderInfoLog(shader:GLShader):String
    {
       return nme_gl_get_shader_info_log(shader.id);
    }
 
-   public static function getShaderParameter(shader:GLShader, pname:Int):Int 
+   public static inline function getShaderParameter(shader:GLShader, pname:Int):Int
    {
       return nme_gl_get_shader_parameter(shader.id, pname);
    }
 
-   public static function getShaderPrecisionFormat(shadertype:Int, precisiontype:Int):ShaderPrecisionFormat 
+   public static inline function getShaderPrecisionFormat(shadertype:Int, precisiontype:Int):ShaderPrecisionFormat
    {
       return nme_gl_get_shader_precision_format(shadertype, precisiontype);
    }
 
-   public static function getShaderSource(shader:GLShader):String 
+   public static inline function getShaderSource(shader:GLShader):String
    {
       return nme_gl_get_shader_source(shader.id);
    }
 
-   public static function getSupportedExtensions():Array<String> 
+   public static inline function getSupportedExtensions():Array<String>
    {
       var result = new Array<String>();
       nme_gl_get_supported_extensions(result);
       return result;
    }
 
-   public static function getTexParameter(target:Int, pname:Int):Dynamic 
+   public static inline function getTexParameter(target:Int, pname:Int):Dynamic
    {
       return nme_gl_get_tex_parameter(target, pname);
    }
 
-   public static function getUniform(program:GLProgram, location:GLUniformLocation):Dynamic 
+   public static inline function getUniform(program:GLProgram, location:GLUniformLocation):Dynamic
    {
       return nme_gl_get_uniform(program.id, location);
    }
 
-   public static function getUniformLocation(program:GLProgram, name:String):Dynamic 
+   public static inline function getUniformLocation(program:GLProgram, name:String):Dynamic
    {
       return nme_gl_get_uniform_location(program.id, name);
    }
 
-   public static function getVertexAttrib(index:Int, pname:Int):Dynamic 
+   public static inline function getVertexAttrib(index:Int, pname:Int):Dynamic
    {
       return nme_gl_get_vertex_attrib(index, pname);
    }
 
-   public static function getVertexAttribOffset(index:Int, pname:Int):Int 
+   public static inline function getVertexAttribOffset(index:Int, pname:Int):Int
    {
       return nme_gl_get_vertex_attrib_offset(index, pname);
    }
 
-   public static function hint(target:Int, mode:Int):Void 
+   public static inline function hint(target:Int, mode:Int):Void
    {
       nme_gl_hint(target, mode);
    }
 
-   public static function isBuffer(buffer:GLBuffer):Bool 
+   public static inline function isBuffer(buffer:GLBuffer):Bool
    {
       return buffer != null && nme_gl_is_buffer(buffer.id);
    }
 
    // This is non-static
    // public function isContextLost():Bool { return false; }
-   public static function isEnabled(cap:Int):Bool 
+   public static inline function isEnabled(cap:Int):Bool
    {
       return nme_gl_is_enabled(cap);
    }
 
-   public static function isFramebuffer(framebuffer:GLFramebuffer):Bool 
+   public static inline function isFramebuffer(framebuffer:GLFramebuffer):Bool
    {
       return framebuffer != null && nme_gl_is_framebuffer(framebuffer.id);
    }
 
-   public static function isProgram(program:GLProgram):Bool 
+   public static inline function isProgram(program:GLProgram):Bool
    {
       return program != null && nme_gl_is_program(program.id);
    }
 
-   public static function isRenderbuffer(renderbuffer:GLRenderbuffer):Bool 
+   public static inline function isRenderbuffer(renderbuffer:GLRenderbuffer):Bool
    {
       return renderbuffer != null && nme_gl_is_renderbuffer(renderbuffer.id);
    }
 
-   public static function isShader(shader:GLShader):Bool 
+   public static inline function isShader(shader:GLShader):Bool
    {
       return shader != null && nme_gl_is_shader(shader.id);
    }
 
-   public static function isTexture(texture:GLTexture):Bool 
+   public static inline function isTexture(texture:GLTexture):Bool
    {
       return texture != null && nme_gl_is_texture(texture.id);
    }
 
-   public static function lineWidth(width:Float):Void 
+   public static inline function lineWidth(width:Float):Void
    {
       nme_gl_line_width(width);
    }
 
-   public static function linkProgram(program:GLProgram):Void 
+   public static inline function linkProgram(program:GLProgram):Void
    {
       nme_gl_link_program(program.id);
    }
 
-   public static function load(inName:String, inArgCount:Int):Dynamic 
+   public static inline function load(inName:String, inArgCount:Int):Dynamic
    {
       try 
       {
@@ -926,254 +927,254 @@ class GL
       }
    }
 
-   public static function pixelStorei(pname:Int, param:Int):Void 
+   public static inline function pixelStorei(pname:Int, param:Int):Void
    {
       nme_gl_pixel_storei(pname, param);
    }
 
-   public static function polygonOffset(factor:Float, units:Float):Void 
+   public static inline function polygonOffset(factor:Float, units:Float):Void
    {
       nme_gl_polygon_offset(factor, units);
    }
 
-   public static function readPixels(x:Int, y:Int, width:Int, height:Int, format:Int, type:Int, pixels:ByteArray):Void 
+   public static inline function readPixels(x:Int, y:Int, width:Int, height:Int, format:Int, type:Int, pixels:ByteArray):Void
    {
    }
 
-   public static function renderbufferStorage(target:Int, internalformat:Int, width:Int, height:Int):Void 
+   public static inline function renderbufferStorage(target:Int, internalformat:Int, width:Int, height:Int):Void
    {
       nme_gl_renderbuffer_storage(target, internalformat, width, height);
    }
 
-   public static function sampleCoverage(value:Float, invert:Bool):Void 
+   public static inline function sampleCoverage(value:Float, invert:Bool):Void
    {
       nme_gl_sample_coverage(value, invert);
    }
 
-   public static function scissor(x:Int, y:Int, width:Int, height:Int):Void 
+   public static inline function scissor(x:Int, y:Int, width:Int, height:Int):Void
    {
       nme_gl_scissor(x, y, width, height);
    }
 
-   public static function shaderSource(shader:GLShader, source:String):Void 
+   public static inline function shaderSource(shader:GLShader, source:String):Void
    {
       nme_gl_shader_source(shader.id, source);
    }
 
-   public static function stencilFunc(func:Int, ref:Int, mask:Int):Void 
+   public static inline function stencilFunc(func:Int, ref:Int, mask:Int):Void
    {
       nme_gl_stencil_func(func, ref, mask);
    }
 
-   public static function stencilFuncSeparate(face:Int, func:Int, ref:Int, mask:Int):Void 
+   public static inline function stencilFuncSeparate(face:Int, func:Int, ref:Int, mask:Int):Void
    {
       nme_gl_stencil_func_separate(face, func, ref, mask);
    }
 
-   public static function stencilMask(mask:Int):Void 
+   public static inline function stencilMask(mask:Int):Void
    {
       nme_gl_stencil_mask(mask);
    }
 
-   public static function stencilMaskSeparate(face:Int, mask:Int):Void 
+   public static inline function stencilMaskSeparate(face:Int, mask:Int):Void
    {
       nme_gl_stencil_mask_separate(face, mask);
    }
 
-   public static function stencilOp(fail:Int, zfail:Int, zpass:Int):Void 
+   public static inline function stencilOp(fail:Int, zfail:Int, zpass:Int):Void
    {
       nme_gl_stencil_op(fail, zfail, zpass);
    }
 
-   public static function stencilOpSeparate(face:Int, fail:Int, zfail:Int, zpass:Int):Void 
+   public static inline function stencilOpSeparate(face:Int, fail:Int, zfail:Int, zpass:Int):Void
    {
       nme_gl_stencil_op_separate(face, fail, zfail, zpass);
    }
 
-   public static function texImage2D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, border:Int, format:Int, type:Int, pixels:ArrayBufferView):Void
+   public static inline function texImage2D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, border:Int, format:Int, type:Int, pixels:ArrayBufferView):Void
    {
       nme_gl_tex_image_2d(target, level, internalformat, width, height, border, format, type, pixels == null ? null : pixels.getByteBuffer(), pixels == null ? null : pixels.getStart());
    }
 
-   public static function texParameterf(target:Int, pname:Int, param:Float):Void 
+   public static inline function texParameterf(target:Int, pname:Int, param:Float):Void
    {
       nme_gl_tex_parameterf(target, pname, param);
    }
 
-   public static function texParameteri(target:Int, pname:Int, param:Int):Void 
+   public static inline function texParameteri(target:Int, pname:Int, param:Int):Void
    {
       nme_gl_tex_parameteri(target, pname, param);
    }
 
-   public static function texSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, type:Int, pixels:ArrayBufferView):Void
+   public static inline function texSubImage2D(target:Int, level:Int, xoffset:Int, yoffset:Int, width:Int, height:Int, format:Int, type:Int, pixels:ArrayBufferView):Void
    {
       nme_gl_tex_sub_image_2d(target, level, xoffset, yoffset, width, height, format, type, pixels == null ? null : pixels.getByteBuffer(), pixels == null ? null : pixels.getStart());
    }
 
-   public static function uniform1f(location:GLUniformLocation, x:Float):Void 
+   public static inline function uniform1f(location:GLUniformLocation, x:Float):Void
    {
       nme_gl_uniform1f(location, x);
    }
 
-   public static function uniform1fv(location:GLUniformLocation, x:NmeFloats):Void 
+   public static inline function uniform1fv(location:GLUniformLocation, x:NmeFloats):Void
    {
       nme_gl_uniform1fv(location, x);
    }
 
-   public static function uniform1i(location:GLUniformLocation, x:Int):Void 
+   public static inline function uniform1i(location:GLUniformLocation, x:Int):Void
    {
       nme_gl_uniform1i(location, x);
    }
 
-   public static function uniform1iv(location:GLUniformLocation, v:NmeInts):Void 
+   public static inline function uniform1iv(location:GLUniformLocation, v:NmeInts):Void
    {
       nme_gl_uniform1iv(location, v);
    }
 
-   public static function uniform2f(location:GLUniformLocation, x:Float, y:Float):Void 
+   public static inline function uniform2f(location:GLUniformLocation, x:Float, y:Float):Void
    {
       nme_gl_uniform2f(location, x, y);
    }
 
-   public static function uniform2fv(location:GLUniformLocation, v:NmeFloats):Void 
+   public static inline function uniform2fv(location:GLUniformLocation, v:NmeFloats):Void
    {
       nme_gl_uniform2fv(location, v);
    }
 
-   public static function uniform2i(location:GLUniformLocation, x:Int, y:Int):Void 
+   public static inline function uniform2i(location:GLUniformLocation, x:Int, y:Int):Void
    {
       nme_gl_uniform2i(location, x, y);
    }
 
-   public static function uniform2iv(location:GLUniformLocation, v:NmeInts):Void 
+   public static inline function uniform2iv(location:GLUniformLocation, v:NmeInts):Void
    {
       nme_gl_uniform2iv(location, v);
    }
 
-   public static function uniform3f(location:GLUniformLocation, x:Float, y:Float, z:Float):Void 
+   public static inline function uniform3f(location:GLUniformLocation, x:Float, y:Float, z:Float):Void
    {
       nme_gl_uniform3f(location, x, y, z);
    }
 
-   public static function uniform3fv(location:GLUniformLocation, v:NmeFloats):Void 
+   public static inline function uniform3fv(location:GLUniformLocation, v:NmeFloats):Void
    {
       nme_gl_uniform3fv(location, v);
    }
 
-   public static function uniform3i(location:GLUniformLocation, x:Int, y:Int, z:Int):Void 
+   public static inline function uniform3i(location:GLUniformLocation, x:Int, y:Int, z:Int):Void
    {
       nme_gl_uniform3i(location, x, y, z);
    }
 
-   public static function uniform3iv(location:GLUniformLocation, v:NmeInts):Void 
+   public static inline function uniform3iv(location:GLUniformLocation, v:NmeInts):Void
    {
       nme_gl_uniform3iv(location, v);
    }
 
-   public static function uniform4f(location:GLUniformLocation, x:Float, y:Float, z:Float, w:Float):Void 
+   public static inline function uniform4f(location:GLUniformLocation, x:Float, y:Float, z:Float, w:Float):Void
    {
       nme_gl_uniform4f(location, x, y, z, w);
    }
 
-   public static function uniform4fv(location:GLUniformLocation, v:NmeFloats):Void 
+   public static inline function uniform4fv(location:GLUniformLocation, v:NmeFloats):Void
    {
       nme_gl_uniform4fv(location, v);
    }
 
-   public static function uniform4i(location:GLUniformLocation, x:Int, y:Int, z:Int, w:Int):Void 
+   public static inline function uniform4i(location:GLUniformLocation, x:Int, y:Int, z:Int, w:Int):Void
    {
       nme_gl_uniform4i(location, x, y, z, w);
    }
 
-   public static function uniform4iv(location:GLUniformLocation, v:NmeInts):Void 
+   public static inline function uniform4iv(location:GLUniformLocation, v:NmeInts):Void
    {
       nme_gl_uniform4iv(location, v);
    }
 
-   public static function uniformMatrix2fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void 
+   public static inline function uniformMatrix2fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void
    {
       nme_gl_uniform_matrix(location, transpose, v.getByteBuffer(), 2);
    }
 
-   public static function uniformMatrix3fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void 
+   public static inline function uniformMatrix3fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void
    {
       nme_gl_uniform_matrix(location, transpose, v.getByteBuffer(), 3);
    }
 
-   public static function uniformMatrix4fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void 
+   public static inline function uniformMatrix4fv(location:GLUniformLocation, transpose:Bool, v:Float32Array):Void
    {
       nme_gl_uniform_matrix(location, transpose, v.getByteBuffer(), 4);
    }
 
-   public static function uniformMatrix3D(location:GLUniformLocation, transpose:Bool, matrix:Matrix3D):Void 
+   public static inline function uniformMatrix3D(location:GLUniformLocation, transpose:Bool, matrix:Matrix3D):Void
    {
       nme_gl_uniform_matrix(location, transpose, Float32Array.fromMatrix(matrix).getByteBuffer() , 4);
    }
 
-   public static function useProgram(program:GLProgram):Void 
+   public static inline function useProgram(program:GLProgram):Void
    {
       nme_gl_use_program(program);
    }
 
-   public static function validateProgram(program:GLProgram):Void 
+   public static inline function validateProgram(program:GLProgram):Void
    {
       nme_gl_validate_program(program.id);
    }
 
-   public static function vertexAttrib1f(indx:Int, x:Float):Void 
+   public static inline function vertexAttrib1f(indx:Int, x:Float):Void
    {
       nme_gl_vertex_attrib1f(indx, x);
    }
 
-   public static function vertexAttrib1fv(indx:Int, values:NmeFloats):Void 
+   public static inline function vertexAttrib1fv(indx:Int, values:NmeFloats):Void
    {
       nme_gl_vertex_attrib1fv(indx, values);
    }
 
-   public static function vertexAttrib2f(indx:Int, x:Float, y:Float):Void 
+   public static inline function vertexAttrib2f(indx:Int, x:Float, y:Float):Void
    {
       nme_gl_vertex_attrib2f(indx, x, y);
    }
 
-   public static function vertexAttrib2fv(indx:Int, values:NmeFloats):Void 
+   public static inline function vertexAttrib2fv(indx:Int, values:NmeFloats):Void
    {
       nme_gl_vertex_attrib2fv(indx, values);
    }
 
-   public static function vertexAttrib3f(indx:Int, x:Float, y:Float, z:Float):Void 
+   public static inline function vertexAttrib3f(indx:Int, x:Float, y:Float, z:Float):Void
    {
       nme_gl_vertex_attrib3f(indx, x, y, z);
    }
 
-   public static function vertexAttrib3fv(indx:Int, values:NmeFloats):Void 
+   public static inline function vertexAttrib3fv(indx:Int, values:NmeFloats):Void
    {
       nme_gl_vertex_attrib3fv(indx, values);
    }
 
-   public static function vertexAttrib4f(indx:Int, x:Float, y:Float, z:Float, w:Float):Void 
+   public static inline function vertexAttrib4f(indx:Int, x:Float, y:Float, z:Float, w:Float):Void
    {
       nme_gl_vertex_attrib4f(indx, x, y, z, w);
    }
 
-   public static function vertexAttrib4fv(indx:Int, values:NmeFloats):Void 
+   public static inline function vertexAttrib4fv(indx:Int, values:NmeFloats):Void
    {
       nme_gl_vertex_attrib4fv(indx, values);
    }
 
-   public static function vertexAttribPointer(indx:Int, size:Int, type:Int, normalized:Bool, stride:Int, offset:Int):Void 
+   public static inline function vertexAttribPointer(indx:Int, size:Int, type:Int, normalized:Bool, stride:Int, offset:Int):Void
    {
       nme_gl_vertex_attrib_pointer(indx, size, type, normalized, stride, offset);
    }
 
-   public static function viewport(x:Int, y:Int, width:Int, height:Int):Void 
+   public static inline function viewport(x:Int, y:Int, width:Int, height:Int):Void
    {
       nme_gl_viewport(x, y, width, height);
    }
 
    // Getters & Setters
-   private static function get_drawingBufferHeight() { return Lib.current.stage.stageHeight; }
-   private static function get_drawingBufferWidth() { return Lib.current.stage.stageWidth; }
-   private static function get_version():Int { return nme_gl_version(); }
+   private static inline function get_drawingBufferHeight() { return Lib.current.stage.stageHeight; }
+   private static inline function get_drawingBufferWidth() { return Lib.current.stage.stageWidth; }
+   private static inline function get_version():Int { return nme_gl_version(); }
 
    // Native Methods
    private static var nme_gl_active_texture = load("nme_gl_active_texture", 1);
