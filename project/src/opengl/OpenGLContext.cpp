@@ -53,6 +53,10 @@ void ResetHardwareContext()
 
 class OGLContext : public HardwareRenderer
 {
+private:
+   bool isDepthStencil;
+   bool isDepthTest;
+   bool isCullFace;  
 public:
 
    OGLContext(WinDC inDC, GLCtx inOGLCtx)
@@ -364,12 +368,34 @@ public:
    void BeginDirectRender()
    {
       gDirectMaxAttribArray = 0;
+      if(isDepthStencil)
+        glEnable(GL_DEPTH_STENCIL);
+      if(isDepthTest)
+        glEnable(GL_DEPTH_TEST);
+      if(isCullFace)
+        glEnable(GL_CULL_FACE);
    }
 
    void EndDirectRender()
    {
+      GLboolean depthStencil;
+      glGetBooleanv(GL_DEPTH_STENCIL, &depthStencil);
+      isDepthStencil = (depthStencil == GL_TRUE);
+
+      GLboolean depthTest;
+      glGetBooleanv(GL_DEPTH_TEST, &depthTest);
+      isDepthTest = (depthTest == GL_TRUE);
+
+      GLboolean cullFace;
+      glGetBooleanv(GL_CULL_FACE, &cullFace);
+      isCullFace = (cullFace == GL_TRUE);
+
       for(int i=0;i<gDirectMaxAttribArray;i++)
          glDisableVertexAttribArray(i);
+
+      glDisable(GL_DEPTH_STENCIL);
+      glDisable(GL_DEPTH_TEST);
+      glDisable(GL_CULL_FACE);
    }
 
 
