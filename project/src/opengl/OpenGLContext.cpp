@@ -392,10 +392,13 @@ public:
 
       for(int i=0;i<gDirectMaxAttribArray;i++)
          glDisableVertexAttribArray(i);
-
-      glDisable(GL_DEPTH_STENCIL);
-      glDisable(GL_DEPTH_TEST);
-      glDisable(GL_CULL_FACE);
+         
+      if(isDepthStencil)
+        glDisable(GL_DEPTH_STENCIL);
+      if(isDepthTest)        
+        glDisable(GL_DEPTH_TEST);
+      if(isCullFace)      
+        glDisable(GL_CULL_FACE);
    }
 
 
