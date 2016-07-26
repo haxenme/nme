@@ -364,22 +364,38 @@ class IOSPlatform extends Platform
       var name = "LaunchImage" + width + "x" + height + ".png";
       var dest = getOutputDir() + "/Images.xcassets/LaunchImage.launchimage/" + name;
 
-
       var ok = true;
 
-      try
-      {
-         if (!FileSystem.exists(dest))
-         {
-            var bitmapData = new nme.display.BitmapData(width, height,
-                 false, (0xFF << 24) | (project.window.background & 0xFFFFFF));
-            File.saveBytes(dest, bitmapData.encode("png"));
-         }
+      // check to see if any launch images are defined in the project that match this size
+      for (splashScreen in project.splashScreens) {
+        if (splashScreen.width == width && splashScreen.height == height) {
+          try 
+          {
+            FileHelper.copyFile(splashScreen.path, dest);
+          }
+          catch(e:Dynamic)
+          {
+             Log.error("Could not copy launch image " + splashScreen.path + " to " + dest + " : " + e);
+          }
+          break;
+        }
       }
-      catch(e:Dynamic)
+      // if no splash exists (either preexisting or copied over) then we generate a blank image
+      if (!FileSystem.exists(dest)) 
       {
-         Log.error("Could not save launch image " + dest + " : " + e);
+        try
+        {
+          var bitmapData = new nme.display.BitmapData(width, height,
+               false, (0xFF << 24) | (project.window.background & 0xFFFFFF));
+          File.saveBytes(dest, bitmapData.encode("png"));
+        }
+        catch(e:Dynamic) 
+        {
+          ok = false;
+          Log.error("Could create empty launch image " + dest + " : " + e);
+        }
       }
+      
 
       if (ok)
          return ", \"filename\":\"" + name + "\"";
