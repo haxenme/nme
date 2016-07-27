@@ -695,7 +695,7 @@ class NMMLParser
                   project.addLib(name,version);
  
 
-               case "launchImage":
+               case "launchImage", "splashScreen":
 
                   /*var name:String = "";
                   if (element.has.path) 
