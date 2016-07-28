@@ -21,6 +21,25 @@ import cpp.zip.Flush;
 
 typedef ByteArrayData = ByteArray;
 
+@:cppFileCode('
+namespace {
+   float mangleFloat(float f) {
+      char *c = (char *)&f;
+      std::swap(c[0],c[3]);
+      std::swap(c[1],c[2]);
+      return f;
+   }
+   double mangleDouble(double d) {
+      char *c = (char *)&d;
+      std::swap(c[0],c[7]);
+      std::swap(c[1],c[6]);
+      std::swap(c[2],c[5]);
+      std::swap(c[3],c[4]);
+      return d;
+   }
+
+}
+')
 @:nativeProperty
 class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput implements IMemoryRange implements IDataOutput
 {
@@ -59,6 +78,13 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          #end
       }
    }
+
+   #if cpp
+   @:native("::mangleFloat")
+   @:extern static function mangleFloat(f:Float):Float return 0;
+   @:native("::mangleDouble")
+   @:extern static function mangleDouble(f:Float):Float return 0;
+   #end
 
    inline public function get___length() return length;
    inline public function set___length(inLength:Int) return setLength(inLength);
@@ -281,6 +307,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #elseif cpp
       var result:Float =  untyped __global__.__hxcpp_memory_get_double(b, position);
       position += 8;
+      if (bigEndian) return mangleDouble(result);
       return result;
       #end
       #end
@@ -310,6 +337,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #elseif cpp
       var result:Float =  untyped __global__.__hxcpp_memory_get_float(b, position);
       position += 4;
+      if (bigEndian) return mangleFloat(result);
       return result;
       #end
 
@@ -523,6 +551,11 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    {
       var end = position + 8;
       ensureElem(end - 1, true);
+
+      #if cpp
+      // TODO - mangle double on all platforms too?
+      if (bigEndian) x = mangleDouble(x);
+      #end
       setDouble(position,x);
       position += 8;
    }
@@ -538,6 +571,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    {
       var end = position + 4;
       ensureElem(end - 1, true);
+      #if cpp
+      // TODO - mangle floats on neko too?
+      if (bigEndian) x = mangleFloat(x);
+      #end
       setFloat(position,x);
       position += 4;
    }
