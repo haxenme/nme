@@ -13,7 +13,7 @@ private typedef VectorData<T> = Array<T>;
 	public var fixed(get, set):Bool;
 	
 	
-	public function new(?length:Int, ?fixed:Bool):Void {
+	public inline function new(?length:Int, ?fixed:Bool):Void {
 		
 		#if flash
 		this = new flash.Vector<T>(length, fixed);
@@ -24,14 +24,14 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public function concat(?a:VectorData<T>):Vector<T> {
+	public inline function concat(?a:VectorData<T>):Vector<T> {
 		
 		return cast this.concat(a);
 		
 	}
 	
 	
-	public function copy():Vector<T> {
+	public inline function copy():Vector<T> {
 		
 		#if flash
 		return cast this.concat();
@@ -42,7 +42,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public function iterator<T>():Iterator<T> {
+	public inline function iterator<T>():Iterator<T> {
 		
 		#if flash
 		return new VectorIter(this);
@@ -53,70 +53,70 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public function join(sep:String):String {
+	public inline function join(sep:String):String {
 		
 		return this.join(sep);
 		
 	}
 	
 	
-	public function pop():Null<T> {
+	public inline function pop():Null<T> {
 		
 		return this.pop();
 		
 	}
 	
 	
-	public function push(x:T):Int {
+	public inline function push(x:T):Int {
 		
 		return this.push(x);
 		
 	}
 	
 	
-	public function reverse():Void {
+	public inline function reverse():Void {
 		
 		this.reverse();
 		
 	}
 	
 	
-	public function shift():Null<T> {
+	public inline function shift():Null<T> {
 		
 		return this.shift();
 		
 	}
 	
 	
-	public function unshift(x:T):Void {
+	public inline function unshift(x:T):Void {
 		
 		this.unshift(x);
 		
 	}
 	
 	
-	public function slice(?pos:Int, ?end:Int):Vector<T> {
+	public inline function slice(?pos:Int, ?end:Int):Vector<T> {
 		
 		return cast this.slice(pos, end);
 		
 	}
 	
 	
-	public function sort(f:T -> T -> Int):Void {
+	public inline function sort(f:T -> T -> Int):Void {
 		
 		this.sort(f);
 		
 	}
 	
 	
-	public function splice(pos:Int, len:Int):Vector<T> {
+	public inline function splice(pos:Int, len:Int):Vector<T> {
 		
 		return cast this.splice(pos, len);
 		
 	}
 	
 	
-	public function toString():String {
+	public inline function toString():String {
 		if(this == null)
             		return "null";
 		
@@ -125,31 +125,39 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	public function indexOf(x:T, ?from:Int = 0):Int {
+	public inline function indexOf(x:T, ?from:Int = 0):Int {
 		
 		#if flash
 		return this.indexOf(x, from);
 		#else
+		var value = -1;
 		for (i in from...this.length) {
-			if (this[i] == x) return i;
+			if (this[i] == x) {
+                value = i;
+                break;
+            }
 		}
-		return -1;
+		return value;
 		#end
 		
 	}
 	
 	
-	public function lastIndexOf(x:T, ?from:Int = 0):Int {
+	public inline function lastIndexOf(x:T, ?from:Int = 0):Int {
 		
 		#if flash
 		return this.lastIndexOf(x, from);
 		#else
 		var i = this.length - 1;
+        var value = -1;
 		while (i >= from) {
-			if (this[i] == x) return i;
+			if (this[i] == x) {
+                value = i;
+                break;
+            }
 			i--;
 		}
-		return -1;
+		return value;
 		#end
 		
 	}
@@ -204,14 +212,14 @@ private typedef VectorData<T> = Array<T>;
 	
 	
 	
-	private function get_length():Int {
+	private inline function get_length():Int {
 		
 		return this.length;
 		
 	}
 	
 	
-	private function set_length(value:Int):Int {
+	private inline function set_length(value:Int):Int {
 		
 		#if flash
 		return this.length = value;
@@ -222,7 +230,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	private function get_fixed():Bool {
+	private inline function get_fixed():Bool {
 		
 		#if flash
 		return this.fixed;
@@ -233,7 +241,7 @@ private typedef VectorData<T> = Array<T>;
 	}
 	
 	
-	private function set_fixed(value:Bool):Bool {
+	private inline function set_fixed(value:Bool):Bool {
 		
 		#if flash
 		return this.fixed = value;
@@ -248,5 +256,3 @@ private typedef VectorData<T> = Array<T>;
 
 
 #end
-
-
