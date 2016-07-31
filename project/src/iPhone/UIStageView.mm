@@ -1837,6 +1837,29 @@ NMEStage::~NMEStage()
 void NMEStage::PopupKeyboard(PopupKeyboardMode inMode, WString *)
 {
   popupEnabled = inMode!=pkmOff;
+  if(popupEnabled){
+      DisplayObject *fobj = GetFocusObject();
+      const wchar_t *softKeyboard = 0;
+      if(fobj)
+          softKeyboard = fobj->getSoftKeyboard();
+      else
+          softKeyboard = getSoftKeyboard();
+
+      if(wcscmp(softKeyboard, L"contact") == 0)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeNamePhonePad;
+      else if(wcscmp(softKeyboard, L"punctuation") == 0)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
+      else if(wcscmp(softKeyboard, L"url") == 0)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeURL;
+      else if(wcscmp(softKeyboard, L"number") == 0)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeNumberPad;
+      else if(wcscmp(softKeyboard, L"email") == 0)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeEmailAddress;
+      else if(wcscmp(softKeyboard, L"ascii") == 0)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeASCIICapable;
+      else //default
+          nmeView->mTextField.keyboardType = UIKeyboardTypeDefault;
+  }
   [ nmeView enableKeyboard:popupEnabled];
 }
  
