@@ -10,6 +10,7 @@ class InteractiveObject extends DisplayObject
    public var mouseEnabled(get_mouseEnabled, set_mouseEnabled):Bool;
    public var moveForSoftKeyboard(get_moveForSoftKeyboard, set_moveForSoftKeyboard):Bool;
    public var needsSoftKeyboard(get_needsSoftKeyboard, set_needsSoftKeyboard):Bool;
+   public var softKeyboard(get_softKeyboard, set_softKeyboard): String;
 
    /** @private */ private var nmeMouseEnabled:Bool;
    public function new(inHandle:Dynamic, inType:String) 
@@ -60,6 +61,17 @@ class InteractiveObject extends DisplayObject
       return nme_display_object_get_needs_soft_keyboard(nmeHandle);
    }
 
+   private function get_softKeyboard(): String
+   {
+       return nme_display_object_get_soft_keyboard(nmeHandle);
+   }
+
+   private function set_softKeyboard(inVal): String
+   {
+       nme_display_object_set_soft_keyboard(nmeHandle, inVal);
+       return inVal;
+   }
+
    // Native Methods
    private static var nme_display_object_set_mouse_enabled = Loader.load("nme_display_object_set_mouse_enabled", 2);
    private static var nme_display_object_set_needs_soft_keyboard = Loader.load("nme_display_object_set_needs_soft_keyboard", 2);
@@ -67,6 +79,8 @@ class InteractiveObject extends DisplayObject
    private static var nme_display_object_set_moves_for_soft_keyboard = Loader.load("nme_display_object_set_moves_for_soft_keyboard", 2);
    private static var nme_display_object_get_moves_for_soft_keyboard = Loader.load("nme_display_object_get_moves_for_soft_keyboard", 1);
    private static var nme_display_object_request_soft_keyboard = Loader.load("nme_display_object_request_soft_keyboard", 1);
+   private static var nme_display_object_set_soft_keyboard = Loader.load("nme_display_object_set_soft_keyboard", 2);
+   private static var nme_display_object_get_soft_keyboard = Loader.load("nme_display_object_get_soft_keyboard", 1);
 }
 
 #else
