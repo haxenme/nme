@@ -462,11 +462,19 @@ public:
          std::string cstr = WideToUTF8(*inValue);
          str = env->NewStringUTF( cstr.c_str() );
       }
-      jmethodID mid = env->GetStaticMethodID(cls, "popupKeyboard", "(ILjava/lang/String;)V");
+      
+      std::string skstr;
+      DisplayObject *fobj = GetFocusObject();
+      if(fobj)
+          skstr = WideToUTF8(fobj->softKeyboard);
+      else
+          skstr = WideToUTF8(softKeyboard);
+      jstring sktype = env->NewStringUTF( skstr.c_str() );
+      jmethodID mid = env->GetStaticMethodID(cls, "popupKeyboard", "(ILjava/lang/String;Ljava/lang/String;)V");
       if (mid == 0)
         return;
 
-      env->CallStaticVoidMethod(cls, mid, (int)inMode, str);
+      env->CallStaticVoidMethod(cls, mid, (int)inMode, str, sktype);
    }
 
    void SetPopupTextSelection(int inSel0, int inSel1)
