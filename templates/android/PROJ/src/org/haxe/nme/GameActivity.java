@@ -130,6 +130,8 @@ implements SensorEventListener
    public NMEVideoView   mVideoView;
    
    public EditText mKeyInTextView;
+   public int mDefaultInputType =
+        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
    public boolean  mTextUpdateLockout = false;
    public boolean  mIncrementalText = true;
    boolean ignoreTextReset = false;
@@ -191,7 +193,7 @@ implements SensorEventListener
       //mKeyInTextView.setMaxLines(1);
       mKeyInTextView.setFocusable(true);
       mKeyInTextView.setHeight(0);
-      mKeyInTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); //text input
+      mKeyInTextView.setInputType(mDefaultInputType); //text input
       //mKeyInTextView.setImeOptions(EditorInfo.IME_ACTION_SEND);
       mKeyInTextView.setSelection(1);
       mContainer.addView(mKeyInTextView);
@@ -1063,7 +1065,7 @@ implements SensorEventListener
    }
    
    
-   public static void popupKeyboard(final  int inMode, final  String inContent)
+   public static void popupKeyboard(final  int inMode, final  String inContent, final String inType)
    {
       activity.mHandler.post(new Runnable() {
          @Override public void run()
@@ -1090,6 +1092,22 @@ implements SensorEventListener
                   activity.mKeyInTextView.setSelection(1);
                }
             }
+            
+            if ("contact".equals(inType))
+                  activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+              else if ("email".equals(inType))
+                  activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+              else if ("url".equals(inType))
+                  activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_URI);
+              else if ("number".equals(inType))
+                  activity.mKeyInTextView.setInputType(InputType.TYPE_CLASS_NUMBER);
+              else if ("punctuation".equals(inType))
+                  activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PHONETIC);
+              else if ("visible_password".equals(inType))//only on android
+                  activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+              else
+                  activity.mKeyInTextView.setInputType(activity.mDefaultInputType);
+            
             mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
             // On the Nexus One, SHOW_FORCED makes it impossible
             // to manually dismiss the keyboard.
