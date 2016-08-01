@@ -10,7 +10,7 @@ class InteractiveObject extends DisplayObject
    public var mouseEnabled(get_mouseEnabled, set_mouseEnabled):Bool;
    public var moveForSoftKeyboard(get_moveForSoftKeyboard, set_moveForSoftKeyboard):Bool;
    public var needsSoftKeyboard(get_needsSoftKeyboard, set_needsSoftKeyboard):Bool;
-   public var softKeyboard(get_softKeyboard, set_softKeyboard): String;
+   public var softKeyboard(get_softKeyboard, set_softKeyboard): Int;
 
    /** @private */ private var nmeMouseEnabled:Bool;
    public function new(inHandle:Dynamic, inType:String) 
@@ -61,12 +61,12 @@ class InteractiveObject extends DisplayObject
       return nme_display_object_get_needs_soft_keyboard(nmeHandle);
    }
 
-   private function get_softKeyboard(): String
+   private function get_softKeyboard(): Int
    {
        return nme_display_object_get_soft_keyboard(nmeHandle);
    }
 
-   private function set_softKeyboard(inVal): String
+   private function set_softKeyboard(inVal): Int
    {
        nme_display_object_set_soft_keyboard(nmeHandle, inVal);
        return inVal;
