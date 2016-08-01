@@ -482,7 +482,7 @@ implements SensorEventListener
    {
       Log.d(TAG,"====== doPause ========");
       _sound.doPause();
-      popupKeyboard(0,null);
+      popupKeyboard(0,null,0);
       mView.sendActivity(NME.DEACTIVATE);
 
       mView.onPause();
@@ -1065,7 +1065,7 @@ implements SensorEventListener
    }
    
    
-   public static void popupKeyboard(final  int inMode, final  String inContent, final String inType)
+   public static void popupKeyboard(final  int inMode, final  String inContent, final int inType)
    {
       activity.mHandler.post(new Runnable() {
          @Override public void run()
@@ -1093,17 +1093,17 @@ implements SensorEventListener
                }
             }
             
-            if ("contact".equals(inType))
+            if (inType == 1)
                   activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
-              else if ("email".equals(inType))
+              else if (inType == 2)
                   activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-              else if ("url".equals(inType))
+              else if (inType == 5)
                   activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_URI);
-              else if ("number".equals(inType))
+              else if (inType == 3)
                   activity.mKeyInTextView.setInputType(InputType.TYPE_CLASS_NUMBER);
-              else if ("punctuation".equals(inType))
+              else if (inType == 4)
                   activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PHONETIC);
-              else if ("visible_password".equals(inType))//only on android
+              else if (inType == 101)//only on android
                   activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
               else
                   activity.mKeyInTextView.setInputType(activity.mDefaultInputType);
