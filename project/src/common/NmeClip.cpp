@@ -263,7 +263,7 @@ struct SortEdge
       }
    }
 
-   bool operator<(const SortEdge &inOther)
+   bool operator<(const SortEdge &inOther) const
    {
       if (octant!=inOther.octant)
          return octant<inOther.octant;
