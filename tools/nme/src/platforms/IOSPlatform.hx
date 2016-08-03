@@ -149,7 +149,7 @@ class IOSPlatform extends Platform
       context.APP_FILE = project.app.file;
       context.REDIRECT_TRACE = redirectTrace;
       context.IOS_3X_RESOLUTION = project.getBool("ios3xResolution",true);
-      if (project.watchOSConfig!=null)
+      if (project.watchProject!=null)
          context.NME_WATCHOS = true;
 
 
@@ -444,11 +444,12 @@ class IOSPlatform extends Platform
          copyTemplate("ios/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch");
          copyTemplateDir("ios/PROJ.xcodeproj", targetDir + "/" + project.app.file + ".xcodeproj");
 
-         var watchos = project.watchOSConfig;
+         var watchos = project.watchProject;
          if (watchos!=null)
          {
-             copyTemplateDir("ios/PROJ - watchOS", targetDir + "/" + project.app.file + " - watchOS");
-             copyTemplateDir("ios/PROJ - watchOS Extension", targetDir + "/" + project.app.file + " - watchOS Extension");
+             copyTemplateDir("ios/WATCHPROJ", targetDir + "/" + watchos.app.file);
+             copyTemplateDir("ios/WATCHPROJ Extension", targetDir + "/" + watchos.app.file + " Extension");
+             copyTemplate("ios/schemes/Watch.xcscheme", targetDir + "/" + project.app.file + ".xcodeproj/xcshareddata/xcschemes/"  );
          }
       }
 

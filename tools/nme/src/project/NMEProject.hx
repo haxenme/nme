@@ -77,17 +77,6 @@ class IOSConfig
 }
 
 
-class WatchOSConfig
-{
-   public var complication:Bool = false;
-   public var notification:Bool = false;
-
-   public function new()
-   {
-   }
-}
-
-
 
 class NMEProject 
 {
@@ -111,7 +100,7 @@ class NMEProject
    // ios/android build parameters
    public var iosConfig:IOSConfig;
    public var androidConfig:AndroidConfig;
-   public var watchOSConfig:WatchOSConfig;
+   public var watchProject:NMEProject;
 
    // Defines
    public var localDefines:Map<String,String>;
@@ -414,9 +403,9 @@ class NMEProject
 
    public function makeWatchOSConfig()
    {
-      if (watchOSConfig==null)
-         watchOSConfig = new WatchOSConfig();
-      return watchOSConfig;
+      if (watchProject==null)
+         watchProject = new NMEProject();
+      return watchProject;
    }
 
    public function getInt(inName:String,inDefault:Int):Int
@@ -660,6 +649,14 @@ class NMEProject
       for(field in Reflect.fields(app)) 
       {
          Reflect.setField(context, "APP_" + StringHelper.formatUppercaseVariable(field), Reflect.field(app, field));
+      }
+
+      if (watchProject!=null)
+      {
+         for(field in Reflect.fields(watchProject.app)) 
+         {
+            Reflect.setField(context, "WATCH_" + StringHelper.formatUppercaseVariable(field), Reflect.field(watchProject.app, field));
+         }
       }
 
       context.BUILD_DIR = app.binDir;

@@ -75,7 +75,7 @@ class Platform
       var l = base.length;
      if (inFile.substr(0,l)==base)
          outputFiles.push( inFile.substr(l) );
-      else if (inFile.substr(inFile.length-8)!=".pbxproj" && inFile.indexOf("watchOS")<0 &&
+      else if (inFile.substr(inFile.length-8)!=".pbxproj" && inFile.indexOf("ios")<0 &&
             inFile.indexOf("android-view")<0 && inFile.indexOf("ios-view")<0 )
       {
          Log.warn( inFile + " does not appear to be under " + base );

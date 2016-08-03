@@ -63,9 +63,12 @@ class FileHelper
              extension == "json" ||
              extension == "cpp" ||
              extension == "mm" ||
+             extension == "m" ||
           extension == "properties" ||
+          extension == "xcscheme" ||
           extension == "hxproj" ||
           extension == "nmml" ||
+          extension == "storyboard" ||
           isText(source))) 
           {
          var fileContents:String = File.getContent(source);

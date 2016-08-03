@@ -24,10 +24,6 @@
      hardware="true"
   />
 
-  <watchos>
-    
-  </watchos>
-  
   <icon name="nme.svg" />
   <source path="src" />
   

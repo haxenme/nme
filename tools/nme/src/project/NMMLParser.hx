@@ -16,10 +16,10 @@ class NMMLParser
 
    static var varMatch = new EReg("\\${(.*?)}", "");
 
-   public function new(inProject:NMEProject, path:String, inWarnUnknown )
+   public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Fast )
    {
       project = inProject;
-      process(path,inWarnUnknown);
+      process(path,inWarnUnknown,xml);
    }
 
    private function filter(text:String, include:Array<String> = null, exclude:Array<String> = null):Bool 
@@ -234,9 +234,11 @@ class NMMLParser
       }
    }
 
-   private function parseWatchOSElement(element:Fast):Void 
+   private function parseWatchOSElement(element:Fast, extensionPath:String):Void 
    {
       var watchOs = project.makeWatchOSConfig();
+
+      new NMMLParser(watchOs, extensionPath, false, element);
    }
 
    private function parseAssetsElement(element:Fast, basePath:String = ""):Void 
@@ -798,7 +800,7 @@ class NMMLParser
                   parseAssetsElement(element, extensionPath);
 
                case "watchos":
-                  parseWatchOSElement(element);
+                  parseWatchOSElement(element, extensionPath);
 
                case "library":
                   if (element.has.path)
@@ -1027,21 +1029,26 @@ class NMMLParser
       }
    }
 
-   public function process(projectFile:String, inWarnUnkown:Bool):Void 
+   public function process(projectFile:String, inWarnUnkown:Bool,inXml:Fast):Void 
    {
       Log.verbose("Parse " + projectFile + "...");
-      var xml = null;
+      var xml = inXml;
       var extensionPath = "";
 
-      try 
+      if (xml==null)
       {
-         xml = new Fast(Xml.parse(File.getContent(projectFile)).firstElement());
-         extensionPath = Path.directory(projectFile);
-
-      } catch(e:Dynamic) 
-      {
-         Log.error("\"" + projectFile + "\" contains invalid XML data", e);
+         try 
+         {
+            xml = new Fast(Xml.parse(File.getContent(projectFile)).firstElement());
+   
+         }
+         catch(e:Dynamic) 
+         {
+            Log.error("\"" + projectFile + "\" contains invalid XML data", e);
+         }
       }
+
+      extensionPath = Path.directory(projectFile);
 
       parseXML(xml, "", extensionPath, inWarnUnkown);
    }
