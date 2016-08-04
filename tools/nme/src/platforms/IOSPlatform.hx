@@ -449,7 +449,8 @@ class IOSPlatform extends Platform
          {
              copyTemplateDir("ios/WATCHPROJ", targetDir + "/" + watchos.app.file);
              copyTemplateDir("ios/WATCHPROJ Extension", targetDir + "/" + watchos.app.file + " Extension");
-             copyTemplate("ios/schemes/Watch.xcscheme", targetDir + "/" + project.app.file + ".xcodeproj/xcshareddata/xcschemes/"  );
+             PathHelper.mkdir(targetDir + "/" + project.app.file + ".xcodeproj/xcshareddata/xcschemes"  );
+             copyTemplate("ios/schemes/Watch.xcscheme", targetDir + "/" + project.app.file + ".xcodeproj/xcshareddata/xcschemes/Watch.xcscheme"  );
          }
       }
 

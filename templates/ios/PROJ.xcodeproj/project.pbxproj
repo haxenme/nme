@@ -660,7 +660,7 @@
 				INFOPLIST_FILE = "::WATCH_FILE:: Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.haxe.nme.nmml.watchkitapp.watchkitextension;
+				PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -697,7 +697,7 @@
 				INFOPLIST_FILE = "::WATCH_FILE:: Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = org.haxe.nme.nmml.watchkitapp.watchkitextension;
+				PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -732,7 +732,7 @@
 				IBSC_MODULE = ::WATCH_FILE::_Extension;
 				INFOPLIST_FILE = "::WATCH_FILE::/Info.plist";
 				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.haxe.nme.nmml.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -769,7 +769,7 @@
 				IBSC_MODULE = ::WATCH_FILE::_Extension;
 				INFOPLIST_FILE = "::WATCH_FILE::/Info.plist";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = org.haxe.nme.nmml.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
