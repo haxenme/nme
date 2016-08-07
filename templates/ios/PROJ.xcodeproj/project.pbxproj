@@ -128,11 +128,11 @@
 		1ECD4AEA1D521CDE00ED25DA /* ::WATCH_FILE:: Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "::WATCH_FILE:: Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1ECD4AF01D521CDE00ED25DA /* PushNotificationPayload.apns */ = {isa = PBXFileReference; lastKnownFileType = text; path = PushNotificationPayload.apns; sourceTree = "<group>"; };
 		1ECD4AF11D521CDE00ED25DA /* InterfaceController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InterfaceController.h; sourceTree = "<group>"; };
-		1ECD4AF21D521CDE00ED25DA /* InterfaceController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InterfaceController.mm; sourceTree = "<group>"; };
+		1ECD4AF21D521CDE00ED25DA /* InterfaceController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.mm; path = InterfaceController.mm; sourceTree = "<group>"; };
 		1ECD4AF41D521CDE00ED25DA /* ExtensionDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExtensionDelegate.h; sourceTree = "<group>"; };
-		1ECD4AF51D521CDE00ED25DA /* ExtensionDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExtensionDelegate.mm; sourceTree = "<group>"; };
+		1ECD4AF51D521CDE00ED25DA /* ExtensionDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.mm; path = ExtensionDelegate.mm; sourceTree = "<group>"; };
 		1ECD4AF71D521CDE00ED25DA /* NotificationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificationController.h; sourceTree = "<group>"; };
-		1ECD4AF81D521CDE00ED25DA /* NotificationController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificationController.mm; sourceTree = "<group>"; };
+		1ECD4AF81D521CDE00ED25DA /* NotificationController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.mm; path = NotificationController.mm; sourceTree = "<group>"; };
 		1ECD4AFA1D521CDE00ED25DA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1ECD4AFC1D521CDE00ED25DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 	::end::
