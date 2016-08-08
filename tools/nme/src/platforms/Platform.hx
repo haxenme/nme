@@ -20,6 +20,7 @@ class Platform
    public static inline var CPPIA = "CPPIA";
    public static inline var EMSCRIPTEN = "EMSCRIPTEN";
    public static inline var HTML5 = "HTML5";
+   public static inline var WATCH = "WATCH";
 
 
    public static inline var TYPE_WEB = "WEB";

@@ -49,7 +49,8 @@ class CommandLineTools
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
-            "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5" ];
+            "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
+            "watchsimulator" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
@@ -113,6 +114,9 @@ class CommandLineTools
 
          case Platform.HTML5:
             platform = new platforms.Html5Platform(project);
+
+         case Platform.WATCH:
+            platform = new platforms.WatchPlatform(project);
       }
 
       if (platform != null) 
@@ -725,14 +729,16 @@ class CommandLineTools
       sys.println("");
       sys.println("  cpp         : Create applications, for host system (linux,mac,windows)");
       sys.println("  android     : Create Google Android applications");
-      sys.println("  ios         : Create Apple iOS applications");
       sys.println("  androidview : Create library files for inclusion in Google Android applications");
+      sys.println("  androidsim  : android + simulator");
       sys.println("  iosview     : Create library files for inclusion in Apple iOS applications");
       sys.println("  flash       : Create SWF applications for Adobe Flash Player");
       sys.println("  neko        : Create application for rapid testing on host system");
+      sys.println("  ios         : Create Apple iOS applications");
       sys.println("  iphone      : ios + device debugging");
       sys.println("  iphonesim   : ios + simulator");
-      sys.println("  androidsim  : android + simulator");
+      sys.println("  watchos     : watch extension");
+      sys.println("  watchsimulator : watch extension + simulator");
       sys.println("");
       sys.println(" Options : ");
       sys.println("");
@@ -1018,6 +1024,8 @@ class CommandLineTools
          Log.verbose("Using project file: " + projectFile);
 
       project.checkRelocation( new Path(projectFile).dir );
+      if (projectFile!=null)
+         project.setProjectFilename(projectFile);
 
       project.haxedefs.set("nme_install_tool", "1");
       project.haxedefs.set("nme_ver", nmeVersion);

@@ -9,7 +9,7 @@
   
   <app
      file="WatchApp" 
-     main="Main"
+     main="MyApp"
   />
   
   <window

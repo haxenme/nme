@@ -7,5 +7,7 @@ class MyApp extends nme.watchos.App
       super();
       trace("MyApp");
    }
+
+   public static function main() new MyApp();
 }
 

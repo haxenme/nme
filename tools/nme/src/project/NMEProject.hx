@@ -96,6 +96,7 @@ class NMEProject
    public var export:String;
    public var exportFilter:String;
    public var exportSourceDir:String;
+   public var projectFilename:String;
 
    // ios/android build parameters
    public var iosConfig:IOSConfig;
@@ -146,6 +147,7 @@ class NMEProject
    public var ndllCheckDir:String;
    public var command:String;
    public var target:String;
+   public var targetName:String;
 
    private var baseTemplateContext:Dynamic;
 
@@ -230,6 +232,7 @@ class NMEProject
 
    public function setTarget(inTargetName:String)
    {
+      targetName = inTargetName;
       switch(inTargetName) 
       {
          case "cpp":
@@ -291,6 +294,15 @@ class NMEProject
             haxedefs.set("iphone", "1");
             targetFlags.set("simulator", "");
 
+         case "watchos":
+            targetFlags.set("watchos", "");
+            target = Platform.WATCH;
+
+         case "watchsimulator":
+            targetFlags.set("watchos", "");
+            targetFlags.set("watchsimulator", "");
+            target = Platform.WATCH;
+
          case "android":
             target = Platform.ANDROID;
             targetFlags.set("android", "");
@@ -321,7 +333,7 @@ class NMEProject
 
       targetFlags.set("target_" + target.toString().toLowerCase() , "");
 
-      if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW)
+      if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW || target==Platform.WATCH)
       {
          optionalStaticLink = false;
          staticLink = true;
@@ -367,6 +379,13 @@ class NMEProject
             window.height = 0;
             window.fullscreen = true;
 
+
+         case Platform.WATCH:
+            platformType = Platform.TYPE_MOBILE;
+            window.width = 0;
+            window.height = 0;
+            window.fullscreen = true;
+
          case Platform.WINDOWS, Platform.MAC, Platform.LINUX:
 
             platformType = Platform.TYPE_DESKTOP;
@@ -401,10 +420,19 @@ class NMEProject
       localDefines.set(target.toLowerCase(), "1");
    }
 
+   public function setProjectFilename(inFilename:String)
+   {
+      projectFilename = inFilename;
+   }
+
    public function makeWatchOSConfig()
    {
       if (watchProject==null)
+      {
          watchProject = new NMEProject();
+         watchProject.setTarget(targetName);
+         watchProject.templatePaths.push( CommandLineTools.nme + "/templates/watchos" );
+      }
       return watchProject;
    }
 
@@ -690,6 +718,7 @@ class NMEProject
          engineArray.push( {name:key, version:engines.get(key) } );
       context.ENGINES = engineArray;
       context.NATIVE_FONTS = getBool("nativeFonts", true);
+      context.PROJECT_FILENAME = projectFilename==null ? "Unknown.nmml" : projectFilename;
 
       for(field in Reflect.fields(window)) 
          Reflect.setField(context, "WIN_" + StringHelper.formatUppercaseVariable(field), Reflect.field(window, field));

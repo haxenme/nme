@@ -337,6 +337,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1ECD4B001D521CDE00ED25DA /* Build configuration list for PBXNativeTarget "::WATCH_FILE:: Extension" */;
 			buildPhases = (
+            1E8B88D81D5789F5008FAA07 /* ShellScript */,
 				1ECD4AE61D521CDE00ED25DA /* Sources */,
 				1ECD4AE71D521CDE00ED25DA /* Frameworks */,
 				1ECD4AE81D521CDE00ED25DA /* Resources */,
@@ -439,6 +440,25 @@
 		};
       ::end::
 /* End PBXResourcesBuildPhase section */
+
+::if (NME_WATCHOS)::
+/* Begin PBXShellScriptBuildPhase section */
+		1E8B88D81D5789F5008FAA07 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "echo haxelib run nme xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME; haxelib run nme xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME";
+		};
+/* End PBXShellScriptBuildPhase section */
+::end::
+
 
 /* Begin PBXSourcesBuildPhase section */
 		1D60588E0D05DD3D006BFB54 /* Sources */ = {
