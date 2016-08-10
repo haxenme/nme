@@ -1,6 +1,7 @@
+#include <stdio.h>
 #include "HaxeLink.h"
 
-static HxSetHaxeCallback callback = 0;
+static HxHaxeCall callback = 0;
 static bool isBooted = 0;
    
 
@@ -16,13 +17,13 @@ class HaxeAttach
 {
    bool isAttached;
    public:
-      NativeAttach(bool inAttach=true)
+      HaxeAttach(bool inAttach=true)
       {
          isAttached = false;
          if (inAttach)
             attach();
       }
-      ~NativeAttach()
+      ~HaxeAttach()
       {
          detach();
       }

@@ -6,7 +6,10 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXBuildFile section */
+
 		::if (NME_WATCHOS)::
+      1E1FAF4C1D5B678500BE910D /* HaxeLink.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1E1FAF4A1D5B678500BE910D /* HaxeLink.cpp */; };
 		1ECD4AE21D521CDE00ED25DA /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1ECD4AE01D521CDE00ED25DA /* Interface.storyboard */; };
 		1ECD4AE41D521CDE00ED25DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1ECD4AE31D521CDE00ED25DA /* Assets.xcassets */; };
 		1ECD4AEB1D521CDE00ED25DA /* ::WATCH_FILE:: Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1ECD4AEA1D521CDE00ED25DA /* ::WATCH_FILE:: Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -17,8 +20,7 @@
 		1ECD4AFF1D521CDE00ED25DA /* ::WATCH_FILE::.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1ECD4ADE1D521CDE00ED25DA /* ::WATCH_FILE::.app */; };
       ::end::
 
-/* Begin PBXBuildFile section */
-      	1E2E17AD131E8B5D0048F3C7 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5131E8B5D0048F3C7 /* Data */; };
+    	1E2E17AD131E8B5D0048F3C7 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5131E8B5D0048F3C7 /* Data */; };
 		1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBA9A121AF1C60048A9DF /* UIKit.framework */; };
 		1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA2121AF2210048A9DF /* OpenAL.framework */; };
 		1EEEBAA5121AF2210048A9DF /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */; };
@@ -120,6 +122,8 @@
 
       
       ::if (NME_WATCHOS)::
+		1E1FAF4A1D5B678500BE910D /* HaxeLink.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HaxeLink.cpp; sourceTree = "<group>"; };
+		1E1FAF4B1D5B678500BE910D /* HaxeLink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HaxeLink.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "::APP_FILE::/::APP_FILE::-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		1ECD4ADE1D521CDE00ED25DA /* ::WATCH_FILE::.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "::WATCH_FILE::.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1ECD4AE11D521CDE00ED25DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
@@ -210,6 +214,8 @@
 		1ECD4AEE1D521CDE00ED25DA /* ::WATCH_FILE:: Extension */ = {
 			isa = PBXGroup;
 			children = (
+				1E1FAF4A1D5B678500BE910D /* HaxeLink.cpp */,
+				1E1FAF4B1D5B678500BE910D /* HaxeLink.h */,
 				1ECD4AF11D521CDE00ED25DA /* InterfaceController.h */,
 				1ECD4AF21D521CDE00ED25DA /* InterfaceController.mm */,
 				1ECD4AF41D521CDE00ED25DA /* ExtensionDelegate.h */,
@@ -476,6 +482,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1ECD4AF61D521CDE00ED25DA /* ExtensionDelegate.mm in Sources */,
+	         1E1FAF4C1D5B678500BE910D /* HaxeLink.cpp in Sources */,
 				1ECD4AF31D521CDE00ED25DA /* InterfaceController.mm in Sources */,
 				1ECD4AF91D521CDE00ED25DA /* NotificationController.mm in Sources */,
 			);
@@ -687,6 +694,26 @@
 				TARGETED_DEVICE_FAMILY = 4;
             VALID_ARCHS = "armv7k i386";
 				WATCHOS_DEPLOYMENT_TARGET = 2.2;
+
+				"LIBRARY_SEARCH_PATHS[arch=armv7k]" = (
+					"$(inherited)",
+					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/armv7k\"",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=i386]" = (
+					"$(inherited)",
+					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/i386\"",
+				);
+				OTHER_LDFLAGS = (
+					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
+					::end::
+					::foreach linkedLibraries:: "::__current__::",
+					::end::
+					"-lApplicationMain",
+					::IOS_LINKER_FLAGS::
+					::foreach otherLinkerFlags:: "::__current__::",
+					::end::
+				);
+
 			};
 			name = Debug;
 		};
@@ -723,6 +750,27 @@
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 2.2;
+
+				"LIBRARY_SEARCH_PATHS[arch=armv7k]" = (
+					"$(inherited)",
+					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/armv7k\"",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=i386]" = (
+					"$(inherited)",
+					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/i386\"",
+				);
+				OTHER_LDFLAGS = (
+					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
+					::end::
+					::foreach linkedLibraries:: "::__current__::",
+					::end::
+					"-lApplicationMain",
+					::IOS_LINKER_FLAGS::
+					::foreach otherLinkerFlags:: "::__current__::",
+					::end::
+				);
+
+
 			};
 			name = Release;
 		};

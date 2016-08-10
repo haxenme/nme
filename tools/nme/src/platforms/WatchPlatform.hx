@@ -23,10 +23,12 @@ class WatchPlatform extends Platform
    var isSimulator:Bool;
 
    var no3xResoltion:Bool;
+   var parentProject:NMEProject;
   
 
    public function new(inProject:NMEProject)
    {
+      parentProject = inProject;
       super(inProject.makeWatchOSConfig());
 
       launchPid = 0;
@@ -49,6 +51,7 @@ class WatchPlatform extends Platform
    override public function getBinName() : String { return "watchos"; }
    override public function getAssetDir() { return getOutputDir() + "/assets"; }
    override public function getPlatformDir() : String { return "watchos"; }
+   override public function getOutputDir() { return parentProject.app.binDir + "/ios/" + project.app.file + " Extension"; }
 
 
    override private function generateContext(context:Dynamic)
@@ -106,9 +109,6 @@ class WatchPlatform extends Platform
    {
       var projectDirectory = getOutputDir();
       var file = haxeDir + "/cpp/libApplicationMain" + end;
-      if (!FileSystem.exists(file))
-         file =  haxeDir + "/cpp/ApplicationMain" + end;
-
       FileHelper.copyIfNewer(file, projectDirectory + "/lib/" + arch + "/libApplicationMain.a" );
    }
 
@@ -118,9 +118,9 @@ class WatchPlatform extends Platform
       var dbg = project.debug ? "-debug" : "";
 
       if (isSimulator)
-         copyApplicationMain(dbg + ".watchsimulator.a", "watchsimulator" + dbg);
+         copyApplicationMain(dbg + ".watchsimulator.a", "i386");
       else
-         copyApplicationMain(dbg + ".watchos.a", "watchos" + dbg);
+         copyApplicationMain(dbg + ".watchos.a", "armv7k");
    }
 
 
@@ -158,6 +158,7 @@ class WatchPlatform extends Platform
       PathHelper.mkdir(projectDirectory + "/lib");
 
       var part = isSimulator ? "watchsimulator" : "watchos";
+      var arch = isSimulator ? "i386" : "armv7k";
       var libExt = "." + part + ".a";
 
       var dbg = project.debug ? "-debug" : "";
@@ -166,7 +167,7 @@ class WatchPlatform extends Platform
       for(ndll in project.ndlls) 
       {
          var releaseLib = ndll.find("watchos", "lib", libExt);
-         var releaseDest = projectDirectory + "/lib/" + part + dbg + "/lib" + ndll.name + ".a";
+         var releaseDest = projectDirectory + "/lib/" + arch + "/lib" + ndll.name + ".a";
 
          if (!FileSystem.exists(releaseLib))
             Log.verbose("Skip non-existent library " + releaseLib );

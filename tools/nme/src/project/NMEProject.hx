@@ -619,7 +619,7 @@ class NMEProject
          if (name=="flixel")
             raiseLib("nme");
 
-         if (name=="nme")
+         if (name=="nme" && !hasDef("watchos") )
             addNdll("nme", haxelib.getBase(), null, "nme");
       }
       return haxelib;

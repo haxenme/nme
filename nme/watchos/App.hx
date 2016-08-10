@@ -4,10 +4,6 @@ import nme.watchos.HaxeLink;
 @:cppFileCode("
 typedef int (*HxHaxeCall)(int inFunction, int inParam);
 void HxSetHaxeCallback( HxHaxeCall inCall );
-int HxCall(int inFunction, int inParam)
-{
-   return ::nme::watchos::App_obj::hxCallback(inFunction, inParam);
-}
 ")
 class App
 {
@@ -16,7 +12,8 @@ class App
    public function new()
    {
       theApp = this;
-      HaxeLink.setCallback( cpp.Function.nativeFromStaticFunction(hxCallback) );
+      var callback = cpp.Function.fromStaticFunction(App.hxCallback);
+      HaxeLink.setCallback( callback );
    }
 
    public function onAwake()
