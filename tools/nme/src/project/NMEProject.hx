@@ -296,11 +296,13 @@ class NMEProject
 
          case "watchos":
             targetFlags.set("watchos", "");
+            haxedefs.set("objc","1");
             target = Platform.WATCH;
 
          case "watchsimulator":
             targetFlags.set("watchos", "");
             targetFlags.set("watchsimulator", "");
+            haxedefs.set("objc","1");
             target = Platform.WATCH;
 
          case "android":
@@ -500,6 +502,11 @@ class NMEProject
          }
       }
       return inPath;
+   }
+
+   public function addClassPath(inPath:String)
+   {
+      ArrayHelper.addUnique(classPaths, inPath);
    }
 
    public function addArch(arch:Architecture)

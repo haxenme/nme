@@ -1,4 +1,4 @@
-
+import InterfaceController;
 
 class MyApp extends nme.watchos.App
 {
@@ -8,6 +8,10 @@ class MyApp extends nme.watchos.App
       trace("MyApp");
    }
 
-   public static function main() new MyApp();
+   override public function onAwake()
+   {
+      trace(InterfaceController.instance);
+      InterfaceController.instance.label0.setText("My Text!");
+   }
 }
 

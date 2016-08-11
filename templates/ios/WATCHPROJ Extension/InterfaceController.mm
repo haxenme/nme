@@ -17,8 +17,25 @@
 
 @implementation InterfaceController
 
+
+static __weak InterfaceController *theInstance = nil;
+
++ (InterfaceController *) instance {
+   return theInstance;
+}
+
+
++ (InterfaceController *) setInstance:(InterfaceController *)i {
+   theInstance = i;
+   return i;
+}
+
+
+
+
 - (void)awakeWithContext:(id)context {
     [super awakeWithContext:context];
+    InterfaceController.instance = self;
     HxCall(HxOnAwake);
 
     // Configure interface objects here.

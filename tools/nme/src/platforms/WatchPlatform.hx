@@ -40,6 +40,7 @@ class WatchPlatform extends Platform
       isSimulator = project.hasDef("watchsimulator");
       project.haxeflags.push('-cpp $haxeDir/cpp');
       project.haxeflags.push("-D HXCPP_CPP11");
+      project.addClassPath(getOutputDir());
    }
 
    override public function buildPackage():Void 

@@ -11,6 +11,8 @@
 
 @interface InterfaceController : WKInterfaceController
 
++ (InterfaceController *) instance;
+
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceGroup *mainGroup;
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceLabel *label0;
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceImage *image0;
