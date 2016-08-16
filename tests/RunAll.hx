@@ -25,7 +25,7 @@ class RunAll
 
    static function filter(inName:String):Bool
    {
-      return inName!="android" && inName!="native" && inName!="html5" && inName!="watchos" && inName!="SwfAssetLib.hx" && inName!="watchkit" && inName!="uikit";
+      return inName!="android" && inName!="native" && inName!="html5" && inName!="watchos" && inName!="SwfAssetLib.hx" && inName!="ios";
    }
 
    public static function main()

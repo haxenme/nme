@@ -1,4 +1,4 @@
-import nme.watchkit.*;
+import ios.watchkit.*;
 
 @:include("./InterfaceController.h")
 @:native("InterfaceController")

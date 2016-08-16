@@ -12,6 +12,7 @@
 
 - (void)applicationDidFinishLaunching {
     // Perform any final initialization of your application.
+
     HxCall(HxApplicationDidFinishLaunching);
 }
 

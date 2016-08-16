@@ -1,4 +1,4 @@
-package nme.watchkit;
+package ios.watchkit;
 
 import cpp.NSString;
 
