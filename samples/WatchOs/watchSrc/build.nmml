@@ -13,15 +13,10 @@
   />
   
   <window
-     width="640" 
-     height="480" 
-     orientation="landscape" 
-     fps="60"
-     background="0xeeeeee"
-     require_shaders="true"
-     resizable="true"
-     hardware="true"
+     background="0x101040"
+     ui="spritekit"
   />
+
 
   <source path="." />
   <haxedef name="annotate_source" />

@@ -150,7 +150,20 @@ class IOSPlatform extends Platform
       context.REDIRECT_TRACE = redirectTrace;
       context.IOS_3X_RESOLUTION = project.getBool("ios3xResolution",true);
       if (project.watchProject!=null)
+      {
          context.NME_WATCHOS = true;
+
+         if (project.watchProject.window.ui=="spritekit")
+             context.NME_WATCH_SPRITEKIT = true;
+
+         var col = project.watchProject.window.background;
+         context.TINT_RED = ((col>>16) & 0xff) / 0xff;
+         context.TINT_GREEN = ((col>>8) & 0xff) / 0xff;
+         context.TINT_BLUE = ((col) & 0xff) / 0xff;
+         context.TINT_ALPHA = 1;
+      }
+
+
 
 
       linkedLibraries = [];

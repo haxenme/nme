@@ -3,18 +3,17 @@ import ios.coreGraphics.*;
 
 class MyApp extends nme.watchos.App
 {
-   var cg:CGImage = null;
-
    public function new()
    {
       super();
-      trace("MyApp");
-      trace(cg);
    }
 
    override public function onAwake()
    {
       trace(InterfaceController.instance);
+      trace(InterfaceController.instance.skScene);
+
+      /*
       InterfaceController.instance.label0.setText("My Text!");
 
       //var bytes = haxe.io.Bytes.alloc(100);
@@ -32,6 +31,7 @@ class MyApp extends nme.watchos.App
       //var uiimage = ios.uikit.UIImage.imageWithData( bytes );
       trace("Set image...");
       InterfaceController.instance.image0.setImage(ios.uikit.UIImage.imageWithCGImage( cg ));
+      */
    }
 }
 

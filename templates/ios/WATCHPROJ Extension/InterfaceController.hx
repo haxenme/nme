@@ -8,6 +8,9 @@ extern class InterfaceController
    @:native("InterfaceController.instance")
    public static var instance:InterfaceController;
 
+   ::if (NME_WATCH_SPRITEKIT)::
+   public var skScene:WKInterfaceSKScene;
+   ::else::
    public var mainGroup:WKInterfaceGroup;
    public var label0:WKInterfaceLabel;
    public var image0:WKInterfaceImage;
@@ -20,6 +23,7 @@ extern class InterfaceController
    public var button2:WKInterfaceButton;
    public var button3:WKInterfaceButton;
    public var image1:WKInterfaceImage;
+   ::end::
 }
 
 

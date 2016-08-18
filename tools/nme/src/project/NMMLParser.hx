@@ -1014,7 +1014,7 @@ class NMMLParser
                if (Reflect.hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.parseInt(value));
 
-            case "parameters":
+            case "parameters", "ui":
                if (Reflect.hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.string(value));
 

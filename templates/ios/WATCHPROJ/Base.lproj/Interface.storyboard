@@ -9,6 +9,14 @@
         <scene sceneID="aou-V4-d1y">
             <objects>
                 <controller id="AgC-eL-Hgc" customClass="InterfaceController">
+                    ::if (NME_WATCH_SPRITEKIT)::
+                    <items>
+                        <spriteKitScene alignment="left" id="gWV-XT-t4d"/>
+                    </items>
+                    <connections>
+                        <outlet property="skScene" destination="gWV-XT-t4d" id="bgs-vC-xyF"/>
+                    </connections>
+                    ::else::
                     <items>
                         <group width="1" alignment="left" layout="vertical" id="KZa-L9-VaI">
                             <items>
@@ -65,6 +73,7 @@
                         <outlet property="label1" destination="eec-on-qW0" id="IIS-dr-CL7"/>
                         <outlet property="mainGroup" destination="KZa-L9-VaI" id="zhS-7s-1Vv"/>
                     </connections>
+                    ::end::
                 </controller>
             </objects>
             <point key="canvasLocation" x="220" y="344.5"/>
@@ -93,4 +102,5 @@
             <point key="canvasLocation" x="468" y="643"/>
         </scene>
     </scenes>
+    <color key="tintColor" red="::TINT_RED::" green="::TINT_GREEN::" blue="::TINT_BLUE::" alpha="::TINT_ALPHA::" colorSpace="calibratedRGB"/>
 </document>

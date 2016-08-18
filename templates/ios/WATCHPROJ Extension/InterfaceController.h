@@ -13,6 +13,10 @@
 
 + (InterfaceController *) instance;
 
+::if (NME_WATCH_SPRITEKIT)::
+@property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceSKScene *skScene;
+::else::
+
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceGroup *mainGroup;
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceLabel *label0;
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceImage *image0;
@@ -25,6 +29,8 @@
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceButton *button2;
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceButton *button3;
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceImage *image1;
+
+::end::
 
 
 @end

@@ -68,6 +68,9 @@ class WatchPlatform extends Platform
       if (project.watchProject!=null)
          context.NME_WATCHOS = true;
 
+      if (project.window.ui=="spritekit")
+         context.NME_WATCH_SPRITEKIT = true;
+
 
       linkedLibraries = [];
       for(dependency in project.dependencies)

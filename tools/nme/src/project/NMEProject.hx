@@ -730,7 +730,6 @@ class NMEProject
       for(field in Reflect.fields(window)) 
          Reflect.setField(context, "WIN_" + StringHelper.formatUppercaseVariable(field), Reflect.field(window, field));
 
-
       for(haxeflag in haxeflags) 
       {
          if (StringTools.startsWith(haxeflag, "-lib")) 
