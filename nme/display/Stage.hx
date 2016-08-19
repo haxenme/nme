@@ -350,7 +350,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
             inEvent.result = 1;
 
          #if (windows || linux)
-         if (flags & efAltDown > 0 && inEvent.result != -1 && inEvent.code == Keyboard.ENTER) 
+         if (flags & efAltDown > 0 && inEvent.result != -1 && inEvent.code == Keyboard.ENTER && type == KeyboardEvent.KEY_DOWN) 
          {
             if (displayState == StageDisplayState.NORMAL) 
                displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
