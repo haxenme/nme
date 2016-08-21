@@ -1,5 +1,7 @@
 import InterfaceController;
-import ios.coreGraphics.*;
+import ios.coregraphics.*;
+import ios.spritekit.*;
+import ios.uikit.UIColor;
 
 class MyApp extends nme.watchos.App
 {
@@ -8,11 +10,18 @@ class MyApp extends nme.watchos.App
       super();
    }
 
+   var textNode: SKLabelNode;
+
    override public function onAwake()
    {
       trace(InterfaceController.instance);
       trace(InterfaceController.instance.skScene);
+      setupGame();
+   }
 
+   public function setupGame()
+   {
+      var ic = InterfaceController.instance;
       /*
       InterfaceController.instance.label0.setText("My Text!");
 
@@ -32,6 +41,23 @@ class MyApp extends nme.watchos.App
       trace("Set image...");
       InterfaceController.instance.image0.setImage(ios.uikit.UIImage.imageWithCGImage( cg ));
       */
+
+      textNode =  SKLabelNode.withFontNamed("Headline");
+      textNode.fontColor = UIColor.withRed(1,0,1,1);
+      textNode.text = "Hi!";
+      textNode.fontSize = 45;
+      textNode.position = CGPoint.make(50,100);
+
+
+      var skScene = SKScene.withSize(ic.contentFrame.size);
+      skScene.scaleMode = SKSceneScaleMode.resizeFill;
+      skScene.addChild(textNode);
+         
+      ic.skScene.presentScene(skScene);
+
+      // Load and set the background image.
+      //let backgroundImage = UIImage(named:"art.scnassets/background.png")
+
    }
 }
 

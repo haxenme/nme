@@ -1,4 +1,4 @@
-package ios.coreGraphics;
+package ios.coregraphics;
 
 @:native("cpp::Pointer<CGColorSpace>")
 @:include("@CoreGraphics")

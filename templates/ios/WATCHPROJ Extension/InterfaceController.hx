@@ -3,7 +3,7 @@ import ios.watchkit.*;
 @:include("./InterfaceController.h")
 @:native("InterfaceController")
 @:objc
-extern class InterfaceController
+extern class InterfaceController extends WKInterfaceController
 {
    @:native("InterfaceController.instance")
    public static var instance:InterfaceController;

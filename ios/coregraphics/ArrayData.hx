@@ -1,4 +1,4 @@
-package ios.coreGraphics;
+package ios.coregraphics;
 using cpp.NativeArray;
 
 class ArrayData

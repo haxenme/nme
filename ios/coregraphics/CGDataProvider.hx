@@ -1,4 +1,4 @@
-package ios.coreGraphics;
+package ios.coregraphics;
 
 @:include("@CoreGraphics")
 @:native("cpp::Pointer<CGDataProvider>")

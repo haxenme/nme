@@ -1,4 +1,4 @@
-package ios.coreGraphics;
+package ios.coregraphics;
 
 @:native("cpp::Pointer<CGImage>")
 @:include("@CoreGraphics")
