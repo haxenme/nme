@@ -50,7 +50,7 @@ class WatchPlatform extends Platform
    }
 
    override public function getBinName() : String { return "watchos"; }
-   override public function getAssetDir() { return getOutputDir() + "/assets"; }
+   override public function getAssetDir() { return getOutputDir() + "/Assets.xcassets"; }
    override public function getPlatformDir() : String { return "watchos"; }
    override public function getOutputDir() { return parentProject.app.binDir + "/ios/" + project.app.file + " Extension"; }
 
@@ -179,6 +179,46 @@ class WatchPlatform extends Platform
             FileHelper.copyIfNewer(releaseLib, releaseDest);
       }
    }
+
+
+   override public function updateAssets()
+   {
+      var base = getAssetDir();
+      PathHelper.mkdir(base);
+      for(asset in project.assets) 
+      {
+         if (!asset.embed && asset.type==AssetType.IMAGE)
+         {
+            var imageset = base + "/" + asset.flatName + ".imageset";
+            PathHelper.mkdir(imageset);
+            var file = haxe.io.Path.withoutDirectory(asset.sourcePath);
+            FileHelper.copyAssetIfNewer(asset, imageset+"/" + file);
+            var contents = '{
+  "images" : [
+    {
+      "idiom" : "universal",
+      "filename" : "$file",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "version" : 1,
+    "author" : "xcode"
+  }
+}';
+             sys.io.File.saveContent( imageset+"/Contents.json", contents );
+         }
+      }
+   }
+
 
 
 

@@ -85,4 +85,13 @@ class Asset
       isImage = type==IMAGE;
       isLibrary = type==SWF;
    }
+
+   public function setId(inId:String)
+   {
+      if (inId!="" && inId!=null)
+      {
+         id = inId;
+         flatName = StringHelper.getFlatName(id);
+      }
+   }
 }

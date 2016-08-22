@@ -5,12 +5,14 @@ import ios.uikit.UIColor;
 
 class MyApp extends nme.watchos.App
 {
+   var textNode: SKLabelNode;
+   var spriteNode:SKSpriteNode;
+
    public function new()
    {
       super();
    }
 
-   var textNode: SKLabelNode;
 
    override public function onAwake()
    {
@@ -48,10 +50,15 @@ class MyApp extends nme.watchos.App
       textNode.fontSize = 45;
       textNode.position = CGPoint.make(50,100);
 
+      var texture = SKTexture.withImageNamed("haxe");
+      spriteNode = SKSpriteNode.withTextureSize(texture, CGSize.make(50,50) );
+      spriteNode.position = CGPoint.make(100,100);
+
 
       var skScene = SKScene.withSize(ic.contentFrame.size);
       skScene.scaleMode = SKSceneScaleMode.resizeFill;
       skScene.addChild(textNode);
+      skScene.addChild(spriteNode);
          
       ic.skScene.presentScene(skScene);
 

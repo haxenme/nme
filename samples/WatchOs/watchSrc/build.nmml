@@ -17,6 +17,13 @@
      ui="spritekit"
   />
 
+  <assets from="../../DisplayingABitmap/Assets" >
+     <image path="nme.png" id="nme"  />
+  </assets>
+  <assets >
+     <image path="haxe.png" id="haxe"  />
+  </assets>
+
 
   <source path="." />
   <haxedef name="annotate_source" />

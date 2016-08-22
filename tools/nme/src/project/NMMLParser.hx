@@ -253,7 +253,7 @@ class NMMLParser
       if (element.has.path) 
       {
          var namedPath = substitute(element.att.path);
-         path = basePath + namedPath;
+         path = PathHelper.combine(basePath,namedPath);
 
          if (element.has.rename) 
             targetPath = substitute(element.att.rename);
@@ -262,7 +262,7 @@ class NMMLParser
       }
       else if (element.has.from)
       {
-         path = basePath + substitute(element.att.from);
+         path = PathHelper.combine(basePath,substitute(element.att.from));
 
          if (element.has.rename) 
             targetPath = substitute(element.att.rename);
@@ -311,8 +311,7 @@ class NMMLParser
                id = substitute(element.att.id);
 
             var asset = new Asset(path, targetPath, type, embed);
-            if (id!="")
-               asset.id = id;
+            asset.setId(id);
 
             if (glyphs != null) 
                asset.glyphs = glyphs;
@@ -413,7 +412,7 @@ class NMMLParser
 
 
                var asset = new Asset(path + childPath, targetPath + childTargetPath, childType, childEmbed);
-               asset.id = id;
+               asset.setId(id);
 
                if (childGlyphs != null) 
                   asset.glyphs = childGlyphs;
