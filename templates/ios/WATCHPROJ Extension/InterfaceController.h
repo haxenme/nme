@@ -8,10 +8,18 @@
 
 #import <WatchKit/WatchKit.h>
 #import <Foundation/Foundation.h>
+::if (NME_WATCH_SPRITEKIT)::
+#import <SpriteKit/SpriteKit.h>
+::end::
 
-@interface InterfaceController : WKInterfaceController
+@interface InterfaceController : WKInterfaceController ::if (NME_WATCH_SPRITEKIT):: < SKSceneDelegate > ::end::
 
 + (InterfaceController *) instance;
+
+
+- (void)linkScene:(SKScene *)scene;
+
+
 
 ::if (NME_WATCH_SPRITEKIT)::
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceSKScene *skScene;

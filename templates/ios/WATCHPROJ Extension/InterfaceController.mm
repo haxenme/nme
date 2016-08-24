@@ -32,6 +32,34 @@ static __weak InterfaceController *theInstance = nil;
 
 
 
+- (void)linkScene:(SKScene *)scene {
+    scene.delegate = self;
+}
+
+
+// SKScene delegate
+- (void)update:(NSTimeInterval)currentTime forScene:(SKScene *)scene {
+
+   HxCall(HxUpdateScene, 0, currentTime,  (__bridge_retained void *) scene);
+}
+
+
+- (void)didEvaluateActionsForScene:(SKScene *)scene {
+   HxCall(HxDidEvaluateActionsForScene);
+}
+
+- (void)didSimulatePhysicsForScene:(SKScene *)scene {
+   HxCall(HxDidSimulatePhysicsForScene);
+}
+
+- (void)didApplyConstraintsForScene:(SKScene *)scene {
+   HxCall(HxDidApplyConstraintsForScene);
+}
+
+- (void)didFinishUpdateForScene:(SKScene *)scene {
+   HxCall(HxDidFinishUpdateForScene);
+}
+
 
 - (void)awakeWithContext:(id)context {
     [super awakeWithContext:context];

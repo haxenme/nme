@@ -4,6 +4,7 @@ import ios.coregraphics.CGSize;
 
 @:objc
 @:native("SKScene")
+@:include("@SpriteKit")
 extern class SKScene extends SKNode
 {
    @:native("sceneWithSize")

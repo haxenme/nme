@@ -12,7 +12,13 @@ extern class HaxeLink
    public static inline var applicationWillResignActive = 5;
    public static inline var onButton = 6;
 
+   public static inline var updateScene = 7;
+   public static inline var didEvaluateActionsForScene = 8;
+   public static inline var didSimulatePhysicsForScene = 9;
+   public static inline var didApplyConstraintsForScene = 10;
+   public static inline var didFinishUpdateForScene = 11;
+
 
    @:native("::HxSetHaxeCallback")
-   public static function setCallback( func:Callable< Int->Int->Int > ):Void;
+   public static function setCallback( func:Callable< Int->Int->Float->cpp.RawPointer<cpp.Void>->Int > ):Void;
 }

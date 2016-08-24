@@ -57,6 +57,7 @@ void HxBoot()
 {
    if (!isBooted)
    {
+      isBooted = true;
       HaxeAttach attach;
 
       const char *err = hxRunLibrary();
@@ -66,14 +67,14 @@ void HxBoot()
 }
 
 
-int HxCall(int inFunction,int inParam)
+int HxCall(int inFunction,int inIParam, double inDParam, void *inPtrParam)
 {
    HxBoot();
 
    if (callback)
    {
       HaxeAttach attach;
-      return callback(inFunction, inParam);
+      return callback(inFunction, inIParam, inDParam, inPtrParam);
    }
 
    return 0;

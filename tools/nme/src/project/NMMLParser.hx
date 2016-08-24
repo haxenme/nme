@@ -1014,8 +1014,11 @@ class NMMLParser
                   Reflect.setField(project.window, name, Std.parseInt(value));
 
             case "parameters", "ui":
+               if (name=="ui" && value=="spritekit")
+                  project.haxedefs.set("nme_spritekit", "1");
                if (Reflect.hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.string(value));
+               
 
             default:
                if (Reflect.hasField(project.window, name)) 

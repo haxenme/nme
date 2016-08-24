@@ -27,5 +27,6 @@
 
   <source path="." />
   <haxedef name="annotate_source" />
+  <haxedef name="dump" />
   
 </project>

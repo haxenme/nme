@@ -6,11 +6,25 @@ import ios.uikit.UIColor;
 class MyApp extends nme.watchos.App
 {
    var textNode: SKLabelNode;
-   var spriteNode:SKSpriteNode;
+   var haxeNode:SKSpriteNode;
+   var nmeNode:SKSpriteNode;
+   var tBase:Float;
 
    public function new()
    {
       super();
+      tBase = 0;
+      trace("New MyApp");
+      // call finalize at end ...
+      cpp.NativeGc.addFinalizable(this,false);
+   }
+
+   public function finalize():Void
+   {
+      // Release references
+      textNode = null;
+      haxeNode = null;
+      nmeNode = null;
    }
 
 
@@ -21,28 +35,31 @@ class MyApp extends nme.watchos.App
       setupGame();
    }
 
+   override public function updateScene(scene:SKScene,time:Float)
+   {
+      if (tBase==0.0)
+        tBase=time;
+
+      var t = time-tBase;
+      var phase = Math.sin(t*3);
+      var node:SKSpriteNode = null;
+      if (phase<0)
+      {
+         node = nmeNode;
+         haxeNode.hidden = true;
+      }
+      else
+      {
+         node = haxeNode;
+         nmeNode.hidden = true;
+      }
+      node.hidden = false;
+      node.setScale( Math.abs(phase) );
+   }
+
    public function setupGame()
    {
       var ic = InterfaceController.instance;
-      /*
-      InterfaceController.instance.label0.setText("My Text!");
-
-      //var bytes = haxe.io.Bytes.alloc(100);
-      //var uiimage = ios.uikit.UIImage.imageWithData( bytes );
-     
-      var data = new Array<Int>();
-      for(i in 0...80*80)
-         data[i] = 0xff00ffff;
-
-      var provider:CGDataProvider = CGDataProvider.createWithArray(data);
-      trace("Create image...");
-      cg = CGImage.create(80,80,8,32,4*80,ColorSpace.DEVICE_RGB, CGBitmapInfo.ByteOrder32Little, provider, null, true, CGColorRenderingIntent.Default);
-
-      //var bytes = haxe.io.Bytes.alloc(100);
-      //var uiimage = ios.uikit.UIImage.imageWithData( bytes );
-      trace("Set image...");
-      InterfaceController.instance.image0.setImage(ios.uikit.UIImage.imageWithCGImage( cg ));
-      */
 
       textNode =  SKLabelNode.withFontNamed("Headline");
       textNode.fontColor = UIColor.withRed(1,0,1,1);
@@ -50,16 +67,27 @@ class MyApp extends nme.watchos.App
       textNode.fontSize = 45;
       textNode.position = CGPoint.make(50,100);
 
+      var size = ic.contentFrame.size;
+      var d = size.width < size.height ? size.width : size.height;
+
       var texture = SKTexture.withImageNamed("haxe");
-      spriteNode = SKSpriteNode.withTextureSize(texture, CGSize.make(50,50) );
-      spriteNode.position = CGPoint.make(100,100);
+      haxeNode = SKSpriteNode.withTextureSize(texture, CGSize.make(d,d) );
+      haxeNode.position = CGPoint.make(size.width/2,size.height/2);
+      haxeNode.hidden = true;
+
+      var texture = SKTexture.withImageNamed("nme");
+      nmeNode = SKSpriteNode.withTextureSize(texture, CGSize.make(d,d) );
+      nmeNode.position = CGPoint.make(size.width/2,size.height/2);
 
 
-      var skScene = SKScene.withSize(ic.contentFrame.size);
+      var skScene = SKScene.withSize(size);
       skScene.scaleMode = SKSceneScaleMode.resizeFill;
-      skScene.addChild(textNode);
-      skScene.addChild(spriteNode);
+      //skScene.addChild(textNode);
+      skScene.addChild(haxeNode);
+      skScene.addChild(nmeNode);
+      ic.linkScene(skScene);
          
+      
       ic.skScene.presentScene(skScene);
 
       // Load and set the background image.
