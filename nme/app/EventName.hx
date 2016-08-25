@@ -18,7 +18,9 @@ class EventName
    public static inline var AXIS_MOVE = "axisMove";
    public static inline var BALL_MOVE = "ballMove";
    public static inline var HAT_MOVE = "hatMove";
-   public static inline var BUTTON_DOWN = "downMove";
-   public static inline var BUTTON_UP = "upMove";
+   public static inline var BUTTON_DOWN = "buttonDown";
+   public static inline var BUTTON_UP = "buttonUp";
+   public static inline var DEVICE_ADDED = "deviceAdded";
+   public static inline var DEVICE_REMOVED = "deviceRemoved";
 }
 
