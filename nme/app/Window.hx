@@ -228,6 +228,12 @@ class Window
    
             case EventId.JoyButtonUp:
                appEventHandler.onJoystick(event, EventName.BUTTON_UP);
+
+            case EventId.JoyDeviceAdded:
+               appEventHandler.onJoystick(event, EventName.DEVICE_ADDED);
+
+            case EventId.JoyDeviceRemoved:
+               appEventHandler.onJoystick(event, EventName.DEVICE_REMOVED);
    
             case EventId.SysWM:
                appEventHandler.onSysMessage(event);
