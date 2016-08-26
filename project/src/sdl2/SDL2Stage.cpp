@@ -1645,8 +1645,10 @@ void ProcessEvent(SDL_Event &inEvent)
          sgJoysticksId.erase(j,1);
          sgJoysticks.erase(j,1);
          sgJoysticksIndex.erase(j,1);
-#ifdef NME_XBOXONE_CONTROLLER
+#if defined(NME_DUALSHOCK_CONTROLLER) || defined(NME_XBOXONE_CONTROLLER)
          sgJoystickType.erase(j,1);
+#endif
+#ifdef NME_XBOXONE_CONTROLLER
          sgJoystickLeftTriggerPushed.erase(j,1);
          sgJoistickRightTriggerPushed.erase(j,1);
 #endif
