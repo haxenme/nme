@@ -1363,7 +1363,7 @@ void ProcessEvent(SDL_Event &inEvent)
             printf("Can't find device: %d\n", inEvent.jdevice.which );
             return;
          }
-         bool bIsXboxOneController = ( sgJoystickType[joyId] == 7 );
+         bool bIsXboxOneController = ( sgJoystickType[joyId] == NME_XBOXONE_CONTROLLER );
          if ( bIsXboxOneController && (inEvent.jaxis.axis == 2 || inEvent.jaxis.axis == 5 ) )
          {
             bool *triggerPushedPtr = inEvent.jaxis.axis == 2 ? &sgJoystickLeftTriggerPushed[joyId] :
@@ -1601,7 +1601,7 @@ void ProcessEvent(SDL_Event &inEvent)
                      strstr (gamepadstring, "PS3") != 0 )
             {
                 // Dualshock controller (PS3/PS4)
-                joystickType = 2;
+                joystickType = NME_DUALSHOCK_CONTROLLER;
             }
 #endif
 #ifdef NME_XBOXONE_CONTROLLER
@@ -1610,7 +1610,7 @@ void ProcessEvent(SDL_Event &inEvent)
                      strstr (gamepadstring, "XBOX One") != 0 ))
             {
                 // XboxOne controller
-                joystickType = 7;
+                joystickType = NME_XBOXONE_CONTROLLER;
             }
 #endif
             sgJoysticks.push_back(sgJoystick);
