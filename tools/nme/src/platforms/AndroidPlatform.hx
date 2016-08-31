@@ -350,7 +350,9 @@ class AndroidPlatform extends Platform
             }
          } catch(e:Dynamic) {}
       }
-      addV4CompatLib(getOutputDir());
+
+      if (project.androidConfig.minApiLevel < 14)
+         addV4CompatLib(getOutputDir());
 
       for(k in project.dependencies.keys())
       {
