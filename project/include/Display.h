@@ -416,6 +416,7 @@ public:
    Stage  *getStage() { return this; }
 
    virtual class StageVideo *createStageVideo(void *) { return 0; }
+   virtual void cleanStageVideo() {}
 
 
    DisplayObject *GetFocusObject() { return mFocusObject; }
