@@ -89,13 +89,13 @@ class AndroidPlatform extends Platform
                                  ['$haxeDir/build.hxml', "-D", "android" ];
 
       if (buildV5)
-         ProcessHelper.runCommand("", "haxe", args);
+         runHaxeWithArgs(args);
 
       if (buildV7)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV7"]) );
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV7"]) );
 
       if (buildX86)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_X86"]) );
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_X86"]) );
    }
 
 
@@ -240,13 +240,13 @@ class AndroidPlatform extends Platform
    {
       var activityName = project.app.packageName + "/" + project.app.packageName + ".MainActivity";
 
+      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat", "-c" ]));
       ProcessHelper.runCommand("", adbName, adbFlags.concat([ "shell", "am", "start", "-a", "android.intent.action.MAIN", "-n", activityName ]));
 
    }
 
    override public function trace():Void 
    {
-      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat", "-c" ]));
       ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat" ]));
    }
 

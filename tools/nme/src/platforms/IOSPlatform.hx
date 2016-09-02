@@ -330,19 +330,19 @@ class IOSPlatform extends Platform
       var args = project.debug ? ['$haxeDir/build.hxml',"-debug"] : ['$haxeDir/build.hxml'];
 
       if (buildV6)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV6", "-D", "iphoneos"]));
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV6", "-D", "iphoneos"]));
 
       if (buildV7)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
 
       if (buildArm64)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARM64", "-D", "iphoneos" ]));
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARM64", "-D", "iphoneos" ]));
 
       if (buildI386)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim"]));
+         runHaxeWithArgs(args.concat(["-D", "iphonesim"]));
 
       if (buildX86_64)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim", "-D", "HXCPP_M64"]));
+         runHaxeWithArgs(args.concat(["-D", "iphonesim", "-D", "HXCPP_M64"]));
    }
 
    function copyApplicationMain(end:String, arch:String)
