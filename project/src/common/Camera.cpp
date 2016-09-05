@@ -129,7 +129,7 @@ value nme_camera_create(value inName)
    const char *name = val_string(inName);
    printf("Create camera %s\n", name);
 
-   #if defined(HX_MACOS) || defined(HX_WINDOWS)
+   #if defined(__APPLE__) || defined(HX_WINDOWS)
    Camera *camera = CreateCamera(name);
    return ObjectToAbstract(camera);
    #else
