@@ -119,7 +119,7 @@ public:
    int  maxChars;
    bool mouseWheelEnabled;
    bool multiline;
-   WString restrict;
+   //WString restrict;
    bool selectable;
    float sharpness;
    struct StyleSheet *styleSheet;
