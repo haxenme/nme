@@ -20,7 +20,7 @@ public:
    void recreate();
    virtual bool bind();
    void disableSlots();
-   void setColourTransform(const ColorTransform *inTransform, uint32 inColor);
+   void setColourTransform(const ColorTransform *inTransform, uint32 inColor, bool inPremAlpha);
    int  getTextureSlot();
    void setTransform(const Trans4x4 &inTrans);
    virtual void setGradientFocus(float inFocus);

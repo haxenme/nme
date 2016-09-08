@@ -570,7 +570,7 @@ public:
 
          if (progId & (PROG_TINT | PROG_COLOUR_OFFSET) )
          {
-            prog->setColourTransform(ctrans, element.mColour );
+            prog->setColourTransform(ctrans, element.mColour, premAlpha );
          }
 
          if ( (element.mPrimType == ptLineStrip || element.mPrimType==ptPoints || element.mPrimType==ptLines)

@@ -55,7 +55,8 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
    mPixelFormat = inPixelFormat;
    mGPUPixelFormat = inPixelFormat;
    
-   #ifdef NME_PREMULTIPLIED_ALPHA
+   // Default to using premultiplied alpha
+   #ifndef NME_NOPREMULTIPLIED_ALPHA
    if (mPixelFormat != pfAlpha)
       mFlags |= surfUsePremultipliedAlpha;
    #endif

@@ -193,7 +193,8 @@ public:
 
    virtual void disableSlots() = 0;
    virtual void setTransform(const Trans4x4 &inTrans) = 0;
-   virtual void setColourTransform(const ColorTransform *inTransform, unsigned int inColour) = 0;
+   virtual void setColourTransform(const ColorTransform *inTransform, unsigned int inColour,
+                                    bool inPremultiplyAlpha) = 0;
    virtual void setGradientFocus(float inFocus) = 0;
 
    int vertexSlot;

@@ -438,6 +438,8 @@ public:
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
       int *colours = COL ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
+      bool premultiplyAlpha = mElement.mSurface &&
+                              (mElement.mSurface->GetFlags() & surfUsePremultipliedAlpha);
 
       UserPoint *point = (UserPoint *)inData;
 
@@ -519,6 +521,14 @@ public:
          {
             UserPoint rg = *point++;
             UserPoint ba = *point++;
+
+            if (premultiplyAlpha)
+            {
+               rg.x *= ba.y;
+               rg.y *= ba.y;
+               ba.x *= ba.y;
+            }
+
             #ifdef BLACKBERRY
             uint32 col = ((int)(rg.x*255)) |
                          (((int)(rg.y*255))<<8) |
