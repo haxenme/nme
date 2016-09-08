@@ -45,8 +45,14 @@ class IOSPlatform extends Platform
 
       var architectures = project.architectures;
       var config = project.iosConfig;
+      var deployment = Std.parseFloat(config.deployment);
+      if ( deployment<9 && project.watchProject!=null)
+      {
+         deployment = 9;
+         config.deployment="9.0";
+      }
       // If we support iphones with deployment < 5, we must support armv6 ...
-      if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && Std.parseFloat(config.deployment)<5)
+      if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && deployment<5)
           ArrayHelper.addUnique(architectures, Architecture.ARMV6);
       else
       {
@@ -141,6 +147,7 @@ class IOSPlatform extends Platform
 
    override private function generateContext(context:Dynamic)
    {
+      var config = project.iosConfig;
 
       context.HAS_ICON = false;
       context.HAS_LAUNCH_IMAGE = false;
@@ -149,12 +156,17 @@ class IOSPlatform extends Platform
       context.APP_FILE = project.app.file;
       context.REDIRECT_TRACE = redirectTrace;
       context.IOS_3X_RESOLUTION = project.getBool("ios3xResolution",true);
+      context.WATCHOS_DEPLOYMENT_TARGET = "2.2";
+
       if (project.watchProject!=null)
       {
          context.NME_WATCHOS = true;
 
          if (project.watchProject.window.ui=="spritekit")
-             context.NME_WATCH_SPRITEKIT = true;
+         {
+            context.NME_WATCH_SPRITEKIT = true;
+            context.WATCHOS_DEPLOYMENT_TARGET = "3.0";
+         }
 
          var col = project.watchProject.window.background;
          context.TINT_RED = ((col>>16) & 0xff) / 0xff;
@@ -163,7 +175,9 @@ class IOSPlatform extends Platform
          context.TINT_ALPHA = 1;
       }
 
-
+      var devTeam = project.getDef("DEVELOPMENT_TEAM");
+      if (devTeam!=null)
+          context.DEVELOPMENT_TEAM = devTeam;
 
 
       linkedLibraries = [];
@@ -179,7 +193,6 @@ class IOSPlatform extends Platform
       var valid_archs = new Array<String>();
       var current_archs = new Array<String>();
 
-      var config = project.iosConfig;
 
       for(architecture in project.architectures)
       {
@@ -317,19 +330,19 @@ class IOSPlatform extends Platform
       var args = project.debug ? ['$haxeDir/build.hxml',"-debug"] : ['$haxeDir/build.hxml'];
 
       if (buildV6)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV6", "-D", "iphoneos"]));
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV6", "-D", "iphoneos"]));
 
       if (buildV7)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
 
       if (buildArm64)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARM64", "-D", "iphoneos" ]));
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARM64", "-D", "iphoneos" ]));
 
       if (buildI386)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim"]));
+         runHaxeWithArgs(args.concat(["-D", "iphonesim"]));
 
       if (buildX86_64)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim", "-D", "HXCPP_M64"]));
+         runHaxeWithArgs(args.concat(["-D", "iphonesim", "-D", "HXCPP_M64"]));
    }
 
    function copyApplicationMain(end:String, arch:String)

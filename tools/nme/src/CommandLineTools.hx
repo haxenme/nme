@@ -50,14 +50,14 @@ class CommandLineTools
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
-            "watchsimulator" ];
+            "watchsimulator", "watchos" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
             "rebuild", "shell", "icon", "banner", "serve" ];
-   static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy" ];
-   static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host" ];
+   static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
+   static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
 
 
@@ -1315,6 +1315,8 @@ class CommandLineTools
          project.localDefines.set("CPPIA_CLASSPATH", storeData.cppiaClassPath);
       if (storeData.cppiaHost!=null)
          project.localDefines.set("CPPIA_HOST", storeData.cppiaHost);
+      if (storeData.developmentTeam!=null && !project.hasDef("DEVELOPMENT_TEAM"))
+         project.localDefines.set("DEVELOPMENT_TEAM", storeData.developmentTeam);
 
 
       if (Log.mVerbose && command!="") 

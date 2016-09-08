@@ -146,13 +146,37 @@ class Platform
       return ArrayHelper.containsValue(project.architectures, inArch);
    }
 
+   public function runHaxeWithArgs(args:Array<String>)
+   {
+      var haxeRoot = project.getDef("HAXE_ROOT");
+      if (haxeRoot!=null)
+      {
+         var haxe = haxeRoot + "/haxe";
+         if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+             haxe += ".exe";
+         var oldStdPath = Sys.getEnv("HAXE_STD_PATH");
+         Sys.putEnv("HAXE_STD_PATH", haxeRoot + "/std");
+
+         Log.verbose("Run: " + haxe + " " + args.join(" "));
+         ProcessHelper.runCommand("", haxe, args);
+
+         if (oldStdPath!=null)
+            Sys.putEnv("HAXE_STD_PATH", oldStdPath);
+      }
+      else
+      {
+         Log.verbose("Run: haxe " + args.join(" "));
+         ProcessHelper.runCommand("", "haxe", args);
+      }
+   }
+
    public function runHaxe()
    {
       var args = [haxeDir + "/build.hxml"];
       if (project.debug)
          args.push("-debug");
 
-      ProcessHelper.runCommand("", "haxe", args);
+      runHaxeWithArgs(args);
    }
 
    public function copyBinary() { }

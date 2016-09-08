@@ -106,7 +106,7 @@ class WatchPlatform extends Platform
    {
       var args = project.debug ? ['$haxeDir/build.hxml',"-debug"] : ['$haxeDir/build.hxml'];
 
-      ProcessHelper.runCommand("", "haxe", args.concat(["-D","static_link","-D", isSimulator?"watchsimulator":"watchos"]) );
+      runHaxeWithArgs(args.concat(["-D","static_link","-D", isSimulator?"watchsimulator":"watchos"]) );
    }
 
    function copyApplicationMain(end:String, arch:String)
