@@ -36,4 +36,17 @@ class ApplicationBoot
       return Context.parse("new " + inDefaultName + "()", p);
    }
 
+   macro public static function callSuper() {
+      var p = Context.currentPos();
+
+      switch(Context.getType("::APP_MAIN::"))
+      {
+         case TInst(tref,_):
+            if (tref.get().constructor != null)
+               return Context.parse("super()", p);
+
+         default:
+      }
+      return Context.parse("{}", p);
+   }
 }
