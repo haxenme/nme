@@ -1,9 +1,29 @@
 package nme;
 
 #if flash
-typedef Vector<T> = flash.Vector<T>;
+typedef VectorData<T> = flash.Vector<T>;
+
+private class VectorIterator<T> {
+	private var index:Int;
+	private var data:VectorData<T>;
+
+	public inline function new(data:VectorData<T>) {
+		index = 0;
+		this.data = data;
+	}
+
+	public function hasNext():Bool {
+		return index < data.length;
+	}
+
+	public function next():T {
+		return data[index++];
+	}
+}
+
 #else
 private typedef VectorData<T> = Array<T>;
+#end
 
 @:nativeProperty
 @:arrayAccess abstract Vector<T>(VectorData<T>) {
@@ -45,7 +65,7 @@ private typedef VectorData<T> = Array<T>;
 	public inline function iterator<T>():Iterator<T> {
 		
 		#if flash
-		return new VectorIter(this);
+		return new VectorIterator(this);
 		#else
 		return this.iterator();
 		#end
@@ -196,7 +216,11 @@ private typedef VectorData<T> = Array<T>;
     }
 	
 	
-	#if !flash
+	#if flash
+	@:to public inline function toVector<T>():flash.Vector<T> {
+		return this;
+	}
+	#else
 	@:to public inline function toArray<T>():Array<T> {
 		
 		return this;
@@ -255,4 +279,3 @@ private typedef VectorData<T> = Array<T>;
 }
 
 
-#end
