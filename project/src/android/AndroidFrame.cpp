@@ -50,7 +50,7 @@ int GetResult()
 
 class AndroidVideo : public StageVideo
 {
-   AndroidStage            *stage;
+   Stage                   *stage;
    std::string             lastUrl;
    bool                    vpIsSet;
    DRect                   viewport;
@@ -65,6 +65,7 @@ class AndroidVideo : public StageVideo
    jmethodID               startId;
    jmethodID               pauseId;
    jmethodID               stopId;
+   jmethodID               destroyId;
    jmethodID               getDurationId;
    jmethodID               getPositionId;
    jmethodID               getBufferedId;
@@ -73,10 +74,10 @@ class AndroidVideo : public StageVideo
    jmethodID               setViewportId;
 
 public:
-   AndroidVideo(JNIEnv *env, AndroidStage *inStage)
+   AndroidVideo(JNIEnv *env, Stage *inStage)
    {
       IncRef();
-      stage = inStage;
+      this->stage = inStage;
       vpIsSet = false;
       videoWidth = 0;
       videoHeight = 0;
@@ -85,6 +86,7 @@ public:
       playId = env->GetStaticMethodID(nmeVideoView, "nmePlay", "(Ljava/lang/String;DD)V");
       startId = env->GetStaticMethodID(nmeVideoView, "nmeStart", "()V");
       stopId = env->GetStaticMethodID(nmeVideoView, "nmeStop", "()V");
+      destroyId = env->GetStaticMethodID(nmeVideoView, "nmeDestroy", "()V");
       pauseId = env->GetStaticMethodID(nmeVideoView, "nmePause", "()V");
       seekId = env->GetStaticMethodID(nmeVideoView, "nmeSeek", "(D)V");
       getDurationId = env->GetStaticMethodID(nmeVideoView, "nmeGetDuration", "()D");
@@ -188,6 +190,9 @@ public:
    {
       LOG("video: destroy\n");
       lastUrl = "";
+      JNIEnv *env = GetEnv();
+      env->CallStaticVoidMethod(nmeVideoView, destroyId);
+      stage->cleanStageVideo();
    }
 
    void onFinished()
@@ -261,6 +266,11 @@ public:
       }
 
       return video;
+   }
+   
+   void cleanStageVideo() {
+       delete video;
+       video = 0;
    }
 
    uint32 getBackgroundMask()
