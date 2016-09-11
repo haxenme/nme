@@ -192,6 +192,7 @@
       </section>
 
       <section if="iphone">
+         <file name="${SRC_DIR}/apple/CaptureDevice.mm" if="NME_CAMERA" />
          <file name="${SRC_DIR}/iPhone/UIStageView.mm"/>
          <file name="${SRC_DIR}/iPhone/UIDeviceHardware.mm"/>
          <!-- <file name="${SRC_DIR}/iPhone/SurfaceIO.mm"/> -->
