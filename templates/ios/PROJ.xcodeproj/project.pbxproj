@@ -32,6 +32,8 @@
 		1EEEBAFC121BE2980048A9DF /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */; };
 		1EEEBAFE121BE2980048A9DF /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */; };
 		1EEEBB00121BE2B30048A9DF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAFF121BE2B30048A9DF /* Foundation.framework */; };
+		50C0551B1D7D0BB0005B17C7 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C0551A1D7D0BB0005B17C7 /* CoreVideo.framework */; };
+		50C0551D1D7D0E0B005B17C7 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */; };
 
 		1EF0A83A121ADB8E003F2F59 /* Main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E003F2F59 /* Main.mm */; };
       1EF0A83B121ADB8E003F2F59 /* haxe in Sources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5141E8B5D0048F3C7 /* haxe */; };
@@ -113,6 +115,8 @@
 		1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1EEEBAFF121BE2B30048A9DF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+                50C0551A1D7D0BB0005B17C7 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+                50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 
         1E3B11C11854877600E698A8 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "::APP_FILE::/Images.xcassets"; sourceTree = "<group>"; };
 		
@@ -151,6 +155,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			        50C0551B1D7D0BB0005B17C7 /* CoreVideo.framework in Frameworks */,
+			        50C0551D1D7D0E0B005B17C7 /* CoreMedia.framework in Frameworks */,
 				1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */,
 				1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */,
 				1EEEBAA5121AF2210048A9DF /* OpenGLES.framework in Frameworks */,
@@ -242,6 +248,8 @@
 		1EEEBA99121AF18B0048A9DF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+			        50C0551A1D7D0BB0005B17C7 /* CoreVideo.framework */,
+			        50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */,
 				1EEEBA9A121AF1C60048A9DF /* UIKit.framework */,
 				1EEEBAA2121AF2210048A9DF /* OpenAL.framework */,
 				1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */,
