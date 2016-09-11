@@ -23,6 +23,7 @@ import wx.Assets;
 ::foreach ndlls:: ::if (registerPrim!=null):: extern \"C\" int ::registerPrim::();
 ::end::::end::
 ")
+@:access(::APP_MAIN::)
 class ApplicationMain
 {
    static public var engines : Array<Dynamic> = [
