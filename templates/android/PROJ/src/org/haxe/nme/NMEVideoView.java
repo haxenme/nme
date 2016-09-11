@@ -274,6 +274,21 @@ public class NMEVideoView extends VideoView implements
          } });
    }
 
+   public static void nmeDestroy()
+   {
+      Log.d(TAG,"destroy");
+
+       final GameActivity a = GameActivity.activity;
+       a.queueRunnable( new Runnable() { @Override public void run() {
+           if (a.mVideoView!=null) {
+               a.mVideoView.stopPlayback();
+               a.mContainer.removeView(a.mVideoView);
+               a.mVideoView = null;
+               a.setBackgroundSync(a.mBackground);
+           }
+       } });
+   }
+
    public static void nmePause()
    {
       Log.d(TAG,"pause");
