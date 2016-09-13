@@ -9,11 +9,11 @@
 /* Begin PBXBuildFile section */
 
 		::if (NME_WATCHOS)::
-      1E1FAF4C1D5B678500BE910D /* HaxeLink.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1E1FAF4A1D5B678500BE910D /* HaxeLink.cpp */; };
 		1ECD4AE21D521CDE00ED25DA /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1ECD4AE01D521CDE00ED25DA /* Interface.storyboard */; };
 		1ECD4AE41D521CDE00ED25DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1ECD4AE31D521CDE00ED25DA /* Assets.xcassets */; };
 		1ECD4AEB1D521CDE00ED25DA /* ::WATCH_FILE:: Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1ECD4AEA1D521CDE00ED25DA /* ::WATCH_FILE:: Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1ECD4AF31D521CDE00ED25DA /* InterfaceController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1ECD4AF21D521CDE00ED25DA /* InterfaceController.mm */; };
+		1ECD4AF31D521CDE00ED25DB /* Import.m in Sources */ = {isa = PBXBuildFile; fileRef = 1ECD4AF21D521CDE00ED25DB /* Import.m */; };
 		1ECD4AF61D521CDE00ED25DA /* ExtensionDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1ECD4AF51D521CDE00ED25DA /* ExtensionDelegate.mm */; };
 		1ECD4AF91D521CDE00ED25DA /* NotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1ECD4AF81D521CDE00ED25DA /* NotificationController.mm */; };
 		1ECD4AFB1D521CDE00ED25DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1ECD4AFA1D521CDE00ED25DA /* Assets.xcassets */; };
@@ -126,8 +126,6 @@
 
       
       ::if (NME_WATCHOS)::
-		1E1FAF4A1D5B678500BE910D /* HaxeLink.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HaxeLink.cpp; sourceTree = "<group>"; };
-		1E1FAF4B1D5B678500BE910D /* HaxeLink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HaxeLink.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "::APP_FILE::/::APP_FILE::-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		1ECD4ADE1D521CDE00ED25DA /* ::WATCH_FILE::.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "::WATCH_FILE::.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1ECD4AE11D521CDE00ED25DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
@@ -137,6 +135,7 @@
 		1ECD4AF01D521CDE00ED25DA /* PushNotificationPayload.apns */ = {isa = PBXFileReference; lastKnownFileType = text; path = PushNotificationPayload.apns; sourceTree = "<group>"; };
 		1ECD4AF11D521CDE00ED25DA /* InterfaceController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InterfaceController.h; sourceTree = "<group>"; };
 		1ECD4AF21D521CDE00ED25DA /* InterfaceController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.mm; path = InterfaceController.mm; sourceTree = "<group>"; };
+		1ECD4AF21D521CDE00ED25DB /* Import.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.m; path = Import.m; sourceTree = "<group>"; };
 		1ECD4AF41D521CDE00ED25DA /* ExtensionDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExtensionDelegate.h; sourceTree = "<group>"; };
 		1ECD4AF51D521CDE00ED25DA /* ExtensionDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.mm; path = ExtensionDelegate.mm; sourceTree = "<group>"; };
 		1ECD4AF71D521CDE00ED25DA /* NotificationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificationController.h; sourceTree = "<group>"; };
@@ -220,10 +219,9 @@
 		1ECD4AEE1D521CDE00ED25DA /* ::WATCH_FILE:: Extension */ = {
 			isa = PBXGroup;
 			children = (
-				1E1FAF4A1D5B678500BE910D /* HaxeLink.cpp */,
-				1E1FAF4B1D5B678500BE910D /* HaxeLink.h */,
 				1ECD4AF11D521CDE00ED25DA /* InterfaceController.h */,
 				1ECD4AF21D521CDE00ED25DA /* InterfaceController.mm */,
+				1ECD4AF21D521CDE00ED25DB /* Import.m */,
 				1ECD4AF41D521CDE00ED25DA /* ExtensionDelegate.h */,
 				1ECD4AF51D521CDE00ED25DA /* ExtensionDelegate.mm */,
 				1ECD4AF71D521CDE00ED25DA /* NotificationController.h */,
@@ -501,8 +499,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1ECD4AF61D521CDE00ED25DA /* ExtensionDelegate.mm in Sources */,
-	         1E1FAF4C1D5B678500BE910D /* HaxeLink.cpp in Sources */,
 				1ECD4AF31D521CDE00ED25DA /* InterfaceController.mm in Sources */,
+				1ECD4AF31D521CDE00ED25DB /* Import.m in Sources */,
 				1ECD4AF91D521CDE00ED25DA /* NotificationController.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -560,7 +558,7 @@
 					::__current__::,
 				);
 				::end::
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -616,7 +614,7 @@
 					::__current__::,
 				);
 				::end::
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -697,6 +695,10 @@
 					"\"$(SRCROOT)/::APP_FILE::/lib/x86_64-debug\"",
 					"\"$(SRCROOT)/::APP_FILE::/lib/x86_64\"",
 				);
+            ::if (NME_IOS_INCLUDE)::
+            USER_HEADER_SEARCH_PATHS = "::NME_IOS_INCLUDE::";
+            ::end::
+
 		        OTHER_LDFLAGS = (
 					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
@@ -758,6 +760,21 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/i386\"",
 				);
+
+				"USER_HEADER_SEARCH_PATHS[arch=armv7k]" = (
+					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/armv7k\"",
+               "../watchos/haxe/cpp/include",
+               "::HXCPP_INCLUDE_DIR::"
+				);
+				"USER_HEADER_SEARCH_PATHS[arch=i386]" = (
+					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/i386\"",
+               "../watchos/haxe/cpp/include",
+               "::HXCPP_INCLUDE_DIR::"
+				);
+   
+            ::if (NME_WATCHOS_INCLUDE_not)::
+            USER_HEADER_SEARCH_PATHS = "::NME_WATCHOS_INCLUDE::";
+            ::end::
 				OTHER_LDFLAGS = (
 					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
@@ -814,6 +831,10 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/i386\"",
 				);
+
+            ::if (NME_WATCHOS_INCLUDE)::
+            USER_HEADER_SEARCH_PATHS = "::NME_WATCHOS_INCLUDE::";
+            ::end::
 				OTHER_LDFLAGS = (
 					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
@@ -942,6 +963,9 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/::APP_FILE::/lib/x86_64\"",
 				);
+            ::if (NME_IOS_INCLUDE)::
+            USER_HEADER_SEARCH_PATHS = "::NME_IOS_INCLUDE::";
+            ::end::
 				OTHER_LDFLAGS = (
 					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::

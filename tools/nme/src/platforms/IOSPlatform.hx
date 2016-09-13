@@ -157,10 +157,18 @@ class IOSPlatform extends Platform
       context.REDIRECT_TRACE = redirectTrace;
       context.IOS_3X_RESOLUTION = project.getBool("ios3xResolution",true);
       context.WATCHOS_DEPLOYMENT_TARGET = "2.2";
+      context.HXCPP_GEN_DIR = haxeDir + "/cpp";
+      var hxcpp = PathHelper.getHaxelib(new Haxelib("hxcpp"),true);
+      var hxcpp_include = hxcpp==null ? "" : " " + hxcpp + "/include";
+      context.HXCPP_INCLUDE_DIR = hxcpp_include;
+      context.NME_IOS_INCLUDE = 'haxe/cpp/include';
+
 
       if (project.watchProject!=null)
       {
          context.NME_WATCHOS = true;
+         context.NME_WATCHOS_INCLUDE = '../watchos/haxe/cpp/include
+${hxcpp_include}';
 
          if (project.watchProject.window.ui=="spritekit")
          {

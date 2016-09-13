@@ -1,7 +1,7 @@
 package ios.watchkit;
 import ios.spritekit.SKScene;
 
-import cpp.NSString;
+import cpp.objc.NSString;
 
 @:objc
 extern class WKInterfaceSKScene

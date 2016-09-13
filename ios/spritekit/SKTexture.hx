@@ -5,7 +5,7 @@ import ios.uikit.UIImage;
 import ios.coregraphics.CGSize;
 import ios.coregraphics.CGImage;
 import ios.coregraphics.CGRect;
-import cpp.NSString;
+import cpp.objc.NSString;
 
 @:objc
 @:native("SKTexture")

@@ -1,7 +1,7 @@
 package ios.coregraphics;
 
 @:native("cpp::Pointer<CGImage>")
-@:include("@CoreGraphics")
+@:include("CoreGraphics/CoreGraphics.h")
 extern class CGImage
 {
    @:native("CGImageCreate")

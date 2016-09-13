@@ -2,8 +2,9 @@ import InterfaceController;
 import ios.coregraphics.*;
 import ios.spritekit.*;
 import ios.uikit.UIColor;
+import ios.watchconnectivity.WCSession;
 
-class MyApp extends nme.watchos.App
+class MyApp extends nme.watchos.SpriteKitApp
 {
    var textNode: SKLabelNode;
    var haxeNode:SKSpriteNode;
@@ -30,12 +31,12 @@ class MyApp extends nme.watchos.App
 
    override public function onAwake()
    {
-      trace(InterfaceController.instance);
-      trace(InterfaceController.instance.skScene);
       setupGame();
+      super.onAwake();
    }
 
-   override public function updateScene(scene:SKScene,time:Float)
+   // SKSceneDelegate
+   override public function onUpdate(time:Float)
    {
       if (tBase==0.0)
         tBase=time;
@@ -82,13 +83,16 @@ class MyApp extends nme.watchos.App
 
       var skScene = SKScene.withSize(size);
       skScene.scaleMode = SKSceneScaleMode.resizeFill;
+      trace(skScene.delegate);
       //skScene.addChild(textNode);
       skScene.addChild(haxeNode);
       skScene.addChild(nmeNode);
-      ic.linkScene(skScene);
+      skScene.delegate = this;
          
       
       ic.skScene.presentScene(skScene);
+
+      trace(skScene.delegate);
 
       // Load and set the background image.
       //let backgroundImage = UIImage(named:"art.scnassets/background.png")

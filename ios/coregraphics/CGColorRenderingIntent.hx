@@ -1,6 +1,6 @@
 package ios.coregraphics;
 
-@:include("@CoreGraphics")
+@:include("CoreGraphics/CoreGraphics.h")
 extern class CGColorRenderingIntent
 {
    @:native("kCGRenderingIntentDefault")

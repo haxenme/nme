@@ -5,9 +5,11 @@
 //
 //
 
+#import <HxcppConfig.h>
+#import <nme/watchos/App.h>
 #import "InterfaceController.h"
-#include "HaxeLink.h"
 
+using namespace nme::watchos;
 
 @interface InterfaceController()
 @end
@@ -32,56 +34,41 @@ static __weak InterfaceController *theInstance = nil;
 
 
 
-- (void)linkScene:(SKScene *)scene {
-    scene.delegate = self;
-}
-
-
-// SKScene delegate
-- (void)update:(NSTimeInterval)currentTime forScene:(SKScene *)scene {
-
-   HxCall(HxUpdateScene, 0, currentTime,  (__bridge_retained void *) scene);
-}
-
-
-- (void)didEvaluateActionsForScene:(SKScene *)scene {
-   HxCall(HxDidEvaluateActionsForScene);
-}
-
-- (void)didSimulatePhysicsForScene:(SKScene *)scene {
-   HxCall(HxDidSimulatePhysicsForScene);
-}
-
-- (void)didApplyConstraintsForScene:(SKScene *)scene {
-   HxCall(HxDidApplyConstraintsForScene);
-}
-
-- (void)didFinishUpdateForScene:(SKScene *)scene {
-   HxCall(HxDidFinishUpdateForScene);
-}
-
-
 - (void)awakeWithContext:(id)context {
     [super awakeWithContext:context];
     InterfaceController.instance = self;
-    HxCall(HxOnAwake);
-
-    // Configure interface objects here.
+    if (App_obj::instance.mPtr)
+    {
+       hx::NativeAttach attach;
+       App_obj::instance->onAwake();
+    }
 }
 
 - (void)willActivate {
     // This method is called when watch view controller is about to be visible to user
     [super willActivate];
-    HxCall(HxWillActivate);
+    if (App_obj::instance.mPtr)
+    {
+       hx::NativeAttach attach;
+       App_obj::instance->willActivate();
+    }
 }
 
 - (void)didDeactivate {
     // This method is called when watch view controller is no longer visible
-    HxCall(HxDidActivate);
+    if (App_obj::instance.mPtr)
+    {
+       hx::NativeAttach attach;
+       App_obj::instance->didDeactivate();
+    }
     [super didDeactivate];
 }
 - (void)onButton:(int)buttonId {
-    HxCall(HxOnButton,buttonId);
+    if (App_obj::instance.mPtr)
+    {
+       hx::NativeAttach attach;
+       App_obj::instance->onButton(buttonId);
+    }
 }
 - (IBAction)onButton0 {
     [self onButton:0];

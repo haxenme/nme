@@ -2,7 +2,7 @@ package ios.spritekit;
 
 import ios.uikit.UIColor;
 import ios.coregraphics.CGSize;
-import cpp.NSString;
+import cpp.objc.NSString;
 
 @:objc
 @:native("SKSpriteNode")

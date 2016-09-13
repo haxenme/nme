@@ -3,7 +3,7 @@ package ios.uikit;
 
 @:objc
 @:native("UIColor")
-@:include("@UIKit")
+@:include("UIKit/UIKit.h")
 extern class UIColor
 {
 

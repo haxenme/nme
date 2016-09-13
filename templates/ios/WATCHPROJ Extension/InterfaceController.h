@@ -17,10 +17,6 @@
 + (InterfaceController *) instance;
 
 
-- (void)linkScene:(SKScene *)scene;
-
-
-
 ::if (NME_WATCH_SPRITEKIT)::
 @property (unsafe_unretained, nonatomic) IBOutlet WKInterfaceSKScene *skScene;
 ::else::

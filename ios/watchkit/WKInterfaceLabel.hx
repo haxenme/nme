@@ -1,6 +1,6 @@
 package ios.watchkit;
 
-import cpp.NSString;
+import cpp.objc.NSString;
 
 @:objc
 extern class WKInterfaceLabel

@@ -8,8 +8,6 @@ extern class InterfaceController extends WKInterfaceController
    @:native("InterfaceController.instance")
    public static var instance:InterfaceController;
 
-   public function linkScene(scene:ios.spritekit.SKScene):Void;
-
    ::if (NME_WATCH_SPRITEKIT)::
    public var skScene:WKInterfaceSKScene;
    ::else::

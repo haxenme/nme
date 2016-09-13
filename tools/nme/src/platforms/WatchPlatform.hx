@@ -112,8 +112,10 @@ class WatchPlatform extends Platform
    function copyApplicationMain(end:String, arch:String)
    {
       var projectDirectory = getOutputDir();
-      var file = haxeDir + "/cpp/libApplicationMain" + end;
+      var file = haxeDir + "/cpp/libApplicationMain" + end + ".a";
       FileHelper.copyIfNewer(file, projectDirectory + "/lib/" + arch + "/libApplicationMain.a" );
+      var file = haxeDir + "/cpp/HxcppConfig" + end + ".h";
+      FileHelper.copyIfNewer(file, projectDirectory + "/lib/" + arch + "/HxcppConfig.h" );
    }
 
 
@@ -122,9 +124,9 @@ class WatchPlatform extends Platform
       var dbg = project.debug ? "-debug" : "";
 
       if (isSimulator)
-         copyApplicationMain(dbg + ".watchsimulator.a", "i386");
+         copyApplicationMain(dbg + ".watchsimulator", "i386");
       else
-         copyApplicationMain(dbg + ".watchos.a", "armv7k");
+         copyApplicationMain(dbg + ".watchos", "armv7k");
    }
 
 

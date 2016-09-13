@@ -5,7 +5,7 @@ package ios.spritekit;
 extern class SKNode
 {
    public var scene(default,null):SKScene;
-   public var name:cpp.NSString;
+   public var name:cpp.objc.NSString;
 
    public var position:ios.coregraphics.CGPoint;
    public function setScale(s:Float):Void;
