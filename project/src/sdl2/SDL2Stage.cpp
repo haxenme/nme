@@ -17,6 +17,7 @@
 #include <Utils.h>
 #endif
 
+#define NME_GAMECONTROLLER
 
 namespace nme
 {
@@ -46,7 +47,11 @@ int InitSDL()
    #endif
    int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
    
+   #ifdef NME_GAMECONTROLLER
+   if (err == 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK) == 0)
+   #else
    if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0)
+   #endif
    {
       sgJoystickEnabled = true;
    }
@@ -820,6 +825,10 @@ SDLFrame *sgSDLFrame = 0;
 #ifndef EMSCRIPTEN
 SDL_Joystick *sgJoystick;
 QuickVec<SDL_Joystick *> sgJoysticks;
+#ifdef NME_GAMECONTROLLER
+SDL_GameController *sgController;
+QuickVec<SDL_GameController *> sgControllers;
+#endif
 QuickVec<int> sgJoysticksId;
 QuickVec<int> sgJoysticksIndex;
 std::map<int, std::map<int, int> > sgJoysticksAxisMap;
@@ -1337,6 +1346,118 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(key);
          break;
       }
+#ifdef NME_GAMECONTROLLER
+      case SDL_CONTROLLERAXISMOTION:
+	       {
+            if (sgJoysticksAxisMap[inEvent.caxis.which].empty())
+            {
+               sgJoysticksAxisMap[inEvent.caxis.which][inEvent.caxis.axis] = inEvent.caxis.value;
+            }
+            else if (sgJoysticksAxisMap[inEvent.caxis.which][inEvent.caxis.axis] == inEvent.caxis.value)
+            {
+               break;
+            }
+            if (inEvent.caxis.value > -sgJoystickDeadZone && inEvent.caxis.value < sgJoystickDeadZone)
+            {
+               if (sgJoysticksAxisMap[inEvent.caxis.which][inEvent.caxis.axis] != 0)
+               {
+                  sgJoysticksAxisMap[inEvent.caxis.which][inEvent.caxis.axis] = 0;
+                  Event joystick(etJoyAxisMove);
+                  joystick.id = inEvent.caxis.which;
+                  joystick.code = inEvent.caxis.axis;
+                  joystick.value = 0;
+                  sgSDLFrame->ProcessEvent(joystick);
+               }
+               break;
+            }
+            sgJoysticksAxisMap[inEvent.caxis.which][inEvent.caxis.axis] = inEvent.caxis.value;
+            Event joystick(etJoyAxisMove);
+            joystick.id = inEvent.caxis.which;
+            joystick.code = inEvent.caxis.axis;
+            joystick.value = inEvent.caxis.value;
+            sgSDLFrame->ProcessEvent(joystick);
+         break;
+      }
+
+      case SDL_CONTROLLERBUTTONDOWN:
+      {
+         Event joystick(etJoyButtonDown);
+         joystick.id = inEvent.cbutton.which;
+         joystick.code = inEvent.cbutton.button;
+         sgSDLFrame->ProcessEvent(joystick);
+         break;
+      }
+      case SDL_CONTROLLERBUTTONUP:
+      {
+         Event joystick(etJoyButtonUp);
+         joystick.id = inEvent.cbutton.which;
+         joystick.code = inEvent.cbutton.button;
+         for (int i = 0; i < sgJoysticksId.size(); i++) { //if SDL_JOYDEVICEREMOVED is triggered, up is fired on all buttons, so we need to counter the effect
+            if (sgJoysticksId[i] == joystick.id) {
+               sgSDLFrame->ProcessEvent(joystick);
+               break;
+            }
+          }
+         break;
+      }
+      case SDL_CONTROLLERDEVICEADDED:
+      {
+         int joyId = -1;
+         for (int i = 0; i < sgJoysticksId.size(); i++)
+         {
+            if (sgJoysticksIndex[i] == inEvent.cdevice.which)
+            {
+               joyId = inEvent.cdevice.which;
+               break;
+            }
+         }
+         ////if (joyId == -1)
+         {
+            Event joystick(etJoyDeviceAdded);
+             if(SDL_IsGameController(inEvent.cdevice.which))// check if it's a controller
+             {
+               sgController = SDL_GameControllerOpen(inEvent.cdevice.which); //which: controller device index
+               sgJoystick = SDL_GameControllerGetJoystick(sgController);
+               
+               if(sgJoystick != NULL)
+               {
+                  joystick.id = SDL_JoystickInstanceID(sgJoystick);
+                  //const char * gamepadstring = SDL_JoystickName( sgJoystick );
+				  //const char * mapping = SDL_GameControllerMapping( sgController );
+                  sgControllers.push_back(sgController);
+                  sgJoysticks.push_back(sgJoystick);
+                  sgJoysticksId.push_back(joystick.id);
+                  sgJoysticksIndex.push_back(inEvent.cdevice.which);
+                  sgSDLFrame->ProcessEvent(joystick);
+               }
+             }
+         }
+         break;
+      }
+      case SDL_CONTROLLERDEVICEREMOVED:
+      {
+         Event joystick(etJoyDeviceRemoved);
+         joystick.id = inEvent.cdevice.which;
+         int j = -1;
+         for (int i = 0; i < sgJoysticksId.size(); i++)
+         {
+            if (sgJoysticksId[i] == joystick.id)
+            {
+               SDL_GameControllerClose(sgControllers[i]);
+               j = i;
+               break;   
+            }
+         }
+         if( j >= 0 )
+         {
+            sgJoysticksId.erase(j,1);
+            sgJoysticks.erase(j,1);
+            sgJoysticksIndex.erase(j,1);
+            sgSDLFrame->ProcessEvent(joystick);
+         }
+         break;
+      }
+#endif
       case SDL_JOYAXISMOTION:
       {
          if (sgJoysticksAxisMap[inEvent.jaxis.which].empty())
@@ -1425,6 +1546,9 @@ void ProcessEvent(SDL_Event &inEvent)
             sgJoysticks.push_back(sgJoystick);
             sgJoysticksId.push_back(joystick.id);
             sgJoysticksIndex.push_back(inEvent.jdevice.which);
+#ifdef NME_GAMECONTROLLER
+            sgControllers.push_back(NULL);
+#endif
             sgSDLFrame->ProcessEvent(joystick);
          }
          break;
@@ -1656,6 +1780,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, width, height);
    inOnFrame(sgSDLFrame);
    int numJoysticks = SDL_NumJoysticks();
+#ifdef NME_GAMECONTROLLER
+   SDL_GameControllerEventState(SDL_TRUE);
+#endif
    SDL_JoystickEventState(SDL_TRUE);
    StartAnimation();
 }
