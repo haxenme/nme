@@ -1405,7 +1405,7 @@ void ProcessEvent(SDL_Event &inEvent)
          int joyId = -1;
          for (int i = 0; i < sgJoysticksId.size(); i++)
          {
-            if (sgJoysticksIndex[i] == inEvent.cdevice.which)
+            if (sgControllers[i]!=NULL && sgJoysticksIndex[i] == inEvent.cdevice.which)
             {
                joyId = inEvent.cdevice.which;
                break;
@@ -1427,6 +1427,7 @@ void ProcessEvent(SDL_Event &inEvent)
                   sgControllers.push_back(sgController);
                   sgJoysticks.push_back(sgJoystick);
                   sgJoysticksId.push_back(joystick.id);
+				  printf("SDL_CONTROLLERDEVICEADDED [%d] gpopen[%d]",joystick.id,sgJoysticksId.size()-1);
                   sgJoysticksIndex.push_back(inEvent.cdevice.which);
                   sgSDLFrame->ProcessEvent(joystick);
                }
@@ -1441,9 +1442,10 @@ void ProcessEvent(SDL_Event &inEvent)
          int j = -1;
          for (int i = 0; i < sgJoysticksId.size(); i++)
          {
-            if (sgJoysticksId[i] == joystick.id)
+            if (sgControllers[i]!=NULL && sgJoysticksId[i] == joystick.id)
             {
                SDL_GameControllerClose(sgControllers[i]);
+		       //printf("SDL_CONTROLLERDEVICEREMOVED gpclose[%d] close[%d]",joystick.id, i);
                j = i;
                break;   
             }
@@ -1453,6 +1455,8 @@ void ProcessEvent(SDL_Event &inEvent)
             sgJoysticksId.erase(j,1);
             sgJoysticks.erase(j,1);
             sgJoysticksIndex.erase(j,1);
+			sgControllers.erase(j,1);
+		    //printf("SDL_CONTROLLERDEVICEREMOVED[%d] ",joystick.id);
             sgSDLFrame->ProcessEvent(joystick);
          }
          break;
@@ -1532,7 +1536,11 @@ void ProcessEvent(SDL_Event &inEvent)
          int joyId = -1;
          for (int i = 0; i < sgJoysticksId.size(); i++)
          {
+#ifdef NME_GAMECONTROLLER
+            if (sgControllers[i] == NULL && sgJoysticksIndex[i] == inEvent.jdevice.which)
+#else
             if (sgJoysticksIndex[i] == inEvent.jdevice.which)
+#endif
             {
                joyId = inEvent.jdevice.which;
                break;
@@ -1546,6 +1554,7 @@ void ProcessEvent(SDL_Event &inEvent)
             sgJoysticks.push_back(sgJoystick);
             sgJoysticksId.push_back(joystick.id);
             sgJoysticksIndex.push_back(inEvent.jdevice.which);
+			//printf("SDL_JOYDEVICEADDED[%d] jopen[%d] ",inEvent.jdevice.which,sgJoysticksId.size()-1);
 #ifdef NME_GAMECONTROLLER
             sgControllers.push_back(NULL);
 #endif
@@ -1560,8 +1569,14 @@ void ProcessEvent(SDL_Event &inEvent)
          int j = 0;
          for (int i = 0; i < sgJoysticksId.size(); i++)
          {
+		    //printf("SDL_JOYDEVICEREMOVED[%d]==[%d] jclose[%d]",sgJoysticksId[i],joystick.id, i);
+#ifdef NME_GAMECONTROLLER
+            if (sgControllers[i] == NULL && sgJoysticksId[i] == joystick.id)
+#else
             if (sgJoysticksId[i] == joystick.id)
+#endif
             {
+		       //printf("SDL_JOYDEVICEREMOVED[%d] jclose[%d]",joystick.id, i);
                SDL_JoystickClose(sgJoysticks[i]);
                break;   
             }
@@ -1570,6 +1585,10 @@ void ProcessEvent(SDL_Event &inEvent)
          sgJoysticksId.erase(j,1);
          sgJoysticks.erase(j,1);
          sgJoysticksIndex.erase(j,1);
+		 //printf("SDL_JOYDEVICEREMOVED[%d] ",joystick.id);
+#ifdef NME_GAMECONTROLLER
+         sgControllers.erase(j,1);
+#endif
          sgSDLFrame->ProcessEvent(joystick);
          break;
       }
