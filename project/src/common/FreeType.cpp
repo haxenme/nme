@@ -618,7 +618,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
 }
 
 
-
+extern const char *RemapFontName(const char *inName);
 
 FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes, const std::string &inCombinedName)
 {
@@ -641,6 +641,13 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Aut
    
    void* pBuffer = 0;
    face = FindFont(str,flags,inBytes,&pBuffer);
+   if (!face)
+   {
+      const char *alternate = RemapFontName(str.c_str());
+      if (alternate)
+         face = FindFont(alternate,flags,inBytes,&pBuffer);
+   }
+
    if (!face)
       return 0;
 

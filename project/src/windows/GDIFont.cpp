@@ -158,6 +158,47 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
    desc.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE; 
    wcsncpy(desc.lfFaceName,inFormat.font(L"times").c_str(),LF_FACESIZE);
 
+
+   // Check to see if it is there....
+   for(int pass=0;pass<3;pass++)
+   {
+     // got nothing..
+     if (pass==2)
+       return 0;
+
+     if (pass==1)
+     {
+        WString name = inFormat.font(L"times").c_str();
+        for(int i=0;i<name.size();i++)
+           if (name[i]>='A' && name[i]<='Z')
+              name[i] = name[i] - 'A' + 'a';
+
+        if (name==L"serif" ||
+            name==L"\"serif\"" ||
+            name==L"_serif" ||
+            name==L"times.ttf")
+           wcsncpy(desc.lfFaceName,L"times",LF_FACESIZE);
+        else if (name==L"sans" ||
+                 name==L"\"sans\"" ||
+                 name==L"_sans" ||
+                 name==L"sans-serif" ||
+                 name==L"\"sans-serif\"" ||
+                 name==L"arial.ttf")
+           wcsncpy(desc.lfFaceName,L"arial",LF_FACESIZE);
+        else if (name==L"_monospace" ||
+                 name==L"\"monospace\"" ||
+                 name==L"_typewriter" ||
+                 name==L"courier.ttf")
+           wcsncpy(desc.lfFaceName,L"courier",LF_FACESIZE);
+        else
+           break;
+     }
+
+     int bad =  EnumFontFamiliesExW(sgFontDC, &desc, MyEnumFontFunc, 0, 0 );
+     if (!bad)
+        break;
+   }
+
    if (!sgFontDC)
    {
       sgFontDC = CreateCompatibleDC(0);
@@ -166,12 +207,6 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
       SetTextAlign( sgFontDC, TA_TOP );
    }
 
-   // Check to see if it is there....
-  int bad =  EnumFontFamiliesExW(sgFontDC, &desc, MyEnumFontFunc, 0, 0 );
-  if (bad)
-  {
-     return 0;
-  }
 
    HFONT hfont = CreateFontIndirectW( &desc );
    if (!hfont)
