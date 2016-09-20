@@ -490,10 +490,10 @@ class Platform
    public function trace() { }
    public function uninstall() { }
 
-   public function copyTemplateDir(from:String, to:String, warnIfNotFound = true, ?inForOutput=true) : Bool
+   public function copyTemplateDir(from:String, to:String, warnIfNotFound = true, ?inForOutput=true, ?inFilter:String->Bool) : Bool
    {
       return FileHelper.recursiveCopyTemplate(project.templatePaths, from, to, context, true, warnIfNotFound, 
-          inForOutput ? addOutput : null );
+          inForOutput ? addOutput : null, inFilter );
    }
    public function copyTemplate(from:String, to:String)
    {

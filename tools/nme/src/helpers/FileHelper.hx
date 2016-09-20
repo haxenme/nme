@@ -197,7 +197,7 @@ class FileHelper
       }
    }
 
-   public static function recursiveCopyTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true,warn=true, ?onFile:String->Void)
+   public static function recursiveCopyTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true,warn=true, ?onFile:String->Void, ?inFilter:String->Bool)
    {
       PathHelper.mkdir(destination);
 
@@ -214,7 +214,7 @@ class FileHelper
                 files=new Map<String,String>();
 
             for(file in dir)
-               if (file.substr(0, 1) != ".") 
+               if (file.substr(0, 1) != "." && (inFilter==null || inFilter(file) ) )
                {
                   if (!files.exists(file))
                      files.set(file, path);
@@ -241,7 +241,7 @@ class FileHelper
 
          if (FileSystem.isDirectory(itemSource)) 
          {
-            recursiveCopyTemplate(templatePaths, source + "/" + file, destination + "/" + file, context, process, false, onFile );
+            recursiveCopyTemplate(templatePaths, source + "/" + file, destination + "/" + file, context, process, false, onFile, inFilter );
          }
          else
          {

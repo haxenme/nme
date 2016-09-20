@@ -471,12 +471,16 @@ ${hxcpp_include}';
       // Do not update if we are running from inside xcode
       if (project.command!="xcode")
       {
-         copyTemplateDir("ios/PROJ/Classes", projectDirectory + "/Classes");
-         copyTemplateDir("ios/PROJ/Images.xcassets", projectDirectory + "/Images.xcassets");
          copyTemplate("ios/PROJ/PROJ-Entitlements.plist", projectDirectory + "/" + project.app.file + "-Entitlements.plist");
          copyTemplate("ios/PROJ/PROJ-Info.plist", projectDirectory + "/" + project.app.file + "-Info.plist");
          copyTemplate("ios/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch");
          copyTemplateDir("ios/PROJ.xcodeproj", targetDir + "/" + project.app.file + ".xcodeproj");
+
+         // Copy all the rest, except the "PROJ" files...
+         copyTemplateDir("ios/PROJ", projectDirectory, true, true, function(name) return name.substr(0,4)!="PROJ" );
+         //copyTemplateDir("ios/PROJ/Classes", projectDirectory + "/Classes");
+         //copyTemplateDir("ios/PROJ/Images.xcassets", projectDirectory + "/Images.xcassets");
+
 
          var watchos = project.watchProject;
          if (watchos!=null)
