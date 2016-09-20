@@ -45,13 +45,14 @@ class Haxelib
                }
                soFar = new Array<String>();
             }
-            else if (line.substr(0,1)=="-")
-            {
-               // Ignore
-            }
-            else if (line.substr(0,8)=="Library ") 
+            else if (line.substr(0,8)=="Library " || line.substr(0,3)=="-L ") 
             {
                // Hmmm
+            }
+            else if (line.substr(0,1)=="-")
+            {
+               // Add extraParam
+               soFar.push(line);
             }
             else
             {
