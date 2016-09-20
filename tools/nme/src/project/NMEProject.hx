@@ -699,7 +699,8 @@ class NMEProject
       context.OPENFL_COMPAT = openflCompat ? "true" : "false";
       if (openflCompat)
       {
-         haxedefs.set("openfl","2.1.6");
+         var oflVersion = hasDef("NME_OPENFL_VERSION") ? getDef("NME_OPENFL_VERSION") : "3.5.0";
+         haxedefs.set("openfl",oflVersion);
          if (target!=Platform.FLASH ) 
          {
             haxedefs.set("openfl_legacy","1");
