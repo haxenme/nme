@@ -1,4 +1,9 @@
 <xml>
+   <set name="ios" value="1" if="iphone" />
+   <set name="tvos" value="1" if="appletv" />
+   <set name="mac" value="1" if="macos" />
+   <set name="native_toolkit_sdl_static" value="1" if="static_link" />
+   
    <!-- Require Android 2.3+ -->
    <set name="PLATFORM" value="android-9" if="android" />
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
