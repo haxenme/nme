@@ -64,15 +64,17 @@ class IOSConfig
    public var linkerFlags:String;
    public var prerenderedIcon:Bool;
    public var viewTestDir:String;
+   public var sourceFlavour:String;
 
    public function new()
    {
       compiler =  "clang";
-      deployment =  "5.1.1";
+      deployment =  "8.0";
       deviceConfig =  UNIVERSAL;
       linkerFlags =  "";
       viewTestDir =  "";
       prerenderedIcon =  false;
+      sourceFlavour = "cpp";
    }
 }
 

@@ -972,6 +972,12 @@ class NMMLParser
                         }
                      }
 
+                     if (element.has.sourceFlavour) 
+                        project.iosConfig.sourceFlavour = substitute(element.att.sourceFlavour);
+
+                     if (element.has.sourceFlavor) 
+                        project.iosConfig.sourceFlavour = substitute(element.att.sourceFlavor);
+
                      if (element.has.compiler) 
                         project.iosConfig.compiler = substitute(element.att.compiler);
 

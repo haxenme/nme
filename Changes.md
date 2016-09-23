@@ -1,3 +1,5 @@
+
+* ios default deployment set to "8.0".  Can be overridden with the 'deployment' attribute in the ios tag.
 * Fix static linking flags
 
 5.6

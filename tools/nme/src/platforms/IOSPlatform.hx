@@ -51,6 +51,9 @@ class IOSPlatform extends Platform
          deployment = 9;
          config.deployment="9.0";
       }
+      if (config.sourceFlavour=="mm")
+         project.haxeflags.push("-D objc");
+
       // If we support iphones with deployment < 5, we must support armv6 ...
       if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && deployment<5)
           ArrayHelper.addUnique(architectures, Architecture.ARMV6);
@@ -464,8 +467,7 @@ ${hxcpp_include}';
       var projectDirectory = getOutputDir();
 
       PathHelper.mkdir(targetDir);
-
-
+      PathHelper.mkdir(projectDirectory);
 
 
       // Do not update if we are running from inside xcode

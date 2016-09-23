@@ -6,10 +6,10 @@ import cpp.objc.*;
 @:include("WatchConnectivity/WatchConnectivity.h")
 extern class WCSession
 {
-   public var delegate:Protocol<WCSessionDelegate>;
+   public static function isSupported():Bool;
+   public static function defaultSession():WCSession;
 
-   public function isSupported():Bool;
-   public var defaultSession(default,null):WCSession;
+   public var delegate:Protocol<WCSessionDelegate>;
    public function activateSession():Void;
    public var paired(default,null):Bool;
    public var watchAppInstalled(default,null):Bool;

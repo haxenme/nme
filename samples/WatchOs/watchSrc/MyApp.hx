@@ -18,6 +18,8 @@ class MyApp extends nme.watchos.SpriteKitApp
       trace("New MyApp");
       // call finalize at end ...
       cpp.NativeGc.addFinalizable(this,false);
+
+      activateWCSession();
    }
 
    public function finalize():Void
