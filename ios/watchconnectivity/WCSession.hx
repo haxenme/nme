@@ -19,22 +19,22 @@ extern class WCSession
 
 
    @:native("updateApplicationContext:error")
-   public function updateApplicationContext(applicationContext:StringIdMap,
-                                            error:cpp.Pointer<NSError> ):Bool;
+   public function updateApplicationContext(applicationContext:NSDictionary, error:cpp.RawPointer<NSError> ):Bool;
 
-   public var applicationContext(default,null):StringIdMap;
+   public var applicationContext(default,null):NSDictionary;
 
-   public var receivedApplicationContext(default,null):StringIdMap;
+   public var receivedApplicationContext(default,null):NSDictionary;
 
    @:native("sendMessage:replyHandler:errorHandler")
-   public function sendMessage(message:StringIdMap, onReply:ObjcBlock< StringIdMap->Void >, onError: ObjcBlock< NSError->Void > ):Void;
+   public function sendMessage(message:NSDictionary, onReply:ObjcBlock< NSDictionary->Void >, onError: ObjcBlock< NSError->Void > ):Void;
 
    @:native("sendMessageData:replyHandler:errorHandler")
    public function sendMessageData(data:NSData, onReply:ObjcBlock< NSData->Void >, onError: ObjcBlock< NSError->Void > ):Void;
 
+
    /*
-   public function transferCurrentComplicationUserInfo(data:StringIdMap):WCSessionUserInfoTransfer;
-   public function transferUserInfo(userInfo:StringIdMap):WCSessionUserInfoTransfer;
+   public function transferCurrentComplicationUserInfo(data:NSDictionary):WCSessionUserInfoTransfer;
+   public function transferUserInfo(userInfo:NSDictionary):WCSessionUserInfoTransfer;
    public var outstandingUserInfoTransfers:NSArray<WCSessionUserInfoTransfer>;
    */
 }

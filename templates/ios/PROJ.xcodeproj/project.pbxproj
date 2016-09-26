@@ -36,6 +36,7 @@
 		50C0551D1D7D0E0B005B17C7 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */; };
 
 		1EF0A83A121ADB8E003F2F59 /* Main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E003F2F59 /* Main.mm */; };
+		1EF0A83A121ADB8E013F2F59 /* Import.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E013F2F59 /* Main.mm */; };
       1EF0A83B121ADB8E003F2F59 /* haxe in Sources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5141E8B5D0048F3C7 /* haxe */; };
 		1E3B11C21854877600E698A8 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1E3B11C11854877600E698A8 /* Images.xcassets */; };
 
@@ -121,6 +122,7 @@
         1E3B11C11854877600E698A8 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "::APP_FILE::/Images.xcassets"; sourceTree = "<group>"; };
 		
         1EF0A839121ADB8E003F2F59 /* Main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.mm; name = Main.mm; path = "::APP_FILE::/Classes/Main.mm"; sourceTree = SOURCE_ROOT; };
+        1EF0A839121ADB8E013F2F59 /* Import.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.m; name = Import.m; path = "::APP_FILE::/Classes/Import.m"; sourceTree = SOURCE_ROOT; };
         1E2E17A5141E8B5D0048F3C7 /* haxe */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "haxe"; sourceTree = SOURCE_ROOT; };
 		::ADDL_PBX_FILE_REFERENCE::
 
@@ -189,6 +191,7 @@
 			isa = PBXGroup;
 			children = (
 				1EF0A839121ADB8E003F2F59 /* Main.mm */,
+				1EF0A839121ADB8E013F2F59 /* Import.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -489,6 +492,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1EF0A83A121ADB8E003F2F59 /* Main.mm in Sources */,
+				1EF0A83A121ADB8E013F2F59 /* Import.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -559,6 +563,7 @@
 				);
 				::end::
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ENABLE_MODULES = YES;
 				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -615,6 +620,7 @@
 				);
 				::end::
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ENABLE_MODULES = YES;
 				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -982,6 +988,7 @@
 		1EF0A880121AE1CE003F2F59 /* Debug */ = {/* Build configuration list for PBXLegacyTarget "Build Haxe" */
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -1005,6 +1012,7 @@
 		1EF0A881121AE1CE003F2F59 /* Release */ = {/* Build configuration list for PBXLegacyTarget "Build Haxe" */
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;

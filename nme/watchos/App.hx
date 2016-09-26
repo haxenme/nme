@@ -9,6 +9,8 @@ import ios.watchconnectivity.WCSessionActivationState;
 class App implements WCSessionDelegate
 {
    public static var instance(default,null):App;
+   // Keep reference to delegate
+   public static var asDelegate:cpp.objc.Protocol<WCSessionDelegate>;
 
    public function new()
    {
@@ -21,8 +23,11 @@ class App implements WCSessionDelegate
       {
           trace("Setting default");
           var session = WCSession.defaultSession();
-          session.delegate = this;
+          asDelegate = this;
+          session.delegate = asDelegate;
+          //trace("Set to "  + session.delegate );
           session.activateSession();
+          //trace("Activated");
       }
       else
          trace("WCSession not supported");
@@ -79,7 +84,7 @@ class App implements WCSessionDelegate
       trace("activationCompleted " + state);
    }
 
-   public function onContext(session:WCSession, context:StringIdMap):Void
+   public function onContext(session:WCSession, context:NSDictionary):Void
    {
       var ctx:Dynamic = context;
       trace("didReceiveApplicationContext " + ctx);

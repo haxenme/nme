@@ -289,30 +289,39 @@ ${hxcpp_include}';
       context.ADDL_PBX_FILE_REFERENCE = "";
       context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE = "";
       context.ADDL_PBX_FRAMEWORK_GROUP = "";
+      var imports = new Array<String>();
 
       for(dependency in project.dependencies)
         if (dependency.isFramework())
         {
            var lib = dependency.getFramework();
-           var frameworkID = "11C0000000000018" + StringHelper.getUniqueID();
-           var fileID = "11C0000000000018" + StringHelper.getUniqueID();
-           var path:String = 'System/Library/Frameworks';
-           if(dependency.path != '')
-               path = dependency.path;
-           var sourceTree:String = "SDKROOT";
-            if(dependency.sourceTree != '') {
-                sourceTree = dependency.sourceTree;
-                if(sourceTree == 'group') {
-                    sourceTree = "\"<group>\"";
-                }
-            }
-           context.ADDL_PBX_BUILD_FILE += '      $frameworkID /* $lib in Frameworks */ = {isa = PBXBuildFile; fileRef = $fileID /* $lib */; };\n';
-           context.ADDL_PBX_FILE_REFERENCE += '     $fileID /* $lib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = $lib; path = $path/$lib; sourceTree = $sourceTree; };\n';
-           context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += '            $frameworkID /* $lib in Frameworks */,\n';
-           context.ADDL_PBX_FRAMEWORK_GROUP += '            $fileID /* $lib */,\n';
+           if(dependency.path == '' && false)
+           {
+              imports.push( "@import " + lib.split(".framework")[0] + ";" );
+           }
+           else
+           {
+              var frameworkID = "11C0000000000018" + StringHelper.getUniqueID();
+              var fileID = "11C0000000000018" + StringHelper.getUniqueID();
+              var path:String = 'System/Library/Frameworks';
+              if(dependency.path != '')
+                  path = dependency.path;
+              var sourceTree:String = "SDKROOT";
+               if(dependency.sourceTree != '') {
+                   sourceTree = dependency.sourceTree;
+                   if(sourceTree == 'group') {
+                       sourceTree = "\"<group>\"";
+                   }
+               }
+              context.ADDL_PBX_BUILD_FILE += '      $frameworkID /* $lib in Frameworks */ = {isa = PBXBuildFile; fileRef = $fileID /* $lib */; };\n';
+              context.ADDL_PBX_FILE_REFERENCE += '     $fileID /* $lib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = $lib; path = $path/$lib; sourceTree = $sourceTree; };\n';
+              context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += '            $frameworkID /* $lib in Frameworks */,\n';
+              context.ADDL_PBX_FRAMEWORK_GROUP += '            $fileID /* $lib */,\n';
+           }
         }
 
       context.PRERENDERED_ICON = config.prerenderedIcon;
+      context.FRAMEWORK_IMPORTS = imports.join("\n");
 
       //updateIcon();
       //updateLaunchImage();

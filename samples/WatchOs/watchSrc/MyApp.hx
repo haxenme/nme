@@ -3,6 +3,7 @@ import ios.coregraphics.*;
 import ios.spritekit.*;
 import ios.uikit.UIColor;
 import ios.watchconnectivity.WCSession;
+import cpp.objc.NSDictionary;
 
 class MyApp extends nme.watchos.SpriteKitApp
 {
@@ -10,6 +11,7 @@ class MyApp extends nme.watchos.SpriteKitApp
    var haxeNode:SKSpriteNode;
    var nmeNode:SKSpriteNode;
    var tBase:Float;
+   var mode = "";
 
    public function new()
    {
@@ -30,6 +32,17 @@ class MyApp extends nme.watchos.SpriteKitApp
       nmeNode = null;
    }
 
+   override public function onContext(session:WCSession, context:NSDictionary):Void
+   {
+      var ctx:Dynamic = context;
+      trace("got message from app: " + ctx);
+      if (ctx!=null)
+      {
+         mode = ctx.mode;
+      }
+   }
+
+
 
    override public function onAwake()
    {
@@ -46,7 +59,8 @@ class MyApp extends nme.watchos.SpriteKitApp
       var t = time-tBase;
       var phase = Math.sin(t*3);
       var node:SKSpriteNode = null;
-      if (phase<0)
+      var showNme = mode=="Nme" || (mode!="Haxe" && phase<0);
+      if (showNme)
       {
          node = nmeNode;
          haxeNode.hidden = true;
@@ -56,6 +70,7 @@ class MyApp extends nme.watchos.SpriteKitApp
          node = haxeNode;
          nmeNode.hidden = true;
       }
+        
       node.hidden = false;
       node.setScale( Math.abs(phase) );
    }

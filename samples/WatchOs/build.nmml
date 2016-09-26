@@ -23,10 +23,18 @@
      resizable="true"
      hardware="true"
   />
+  <ios
+     sourceFlavour="mm"
+   />
 
+  <!--
+  <haxedef name="annotate_source" />
+  <haxedef name="dump" />
+  -->
   <watchos>
     <include path="watchSrc/build.nmml" />
   </watchos>
+  <dependency name="WatchConnectivity.framework" />
 
   <icon name="nme.svg" />
   <source path="appSrc" />

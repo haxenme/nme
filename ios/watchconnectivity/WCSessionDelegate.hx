@@ -9,7 +9,7 @@ interface WCSessionDelegate
    public function activationCompleted(s:WCSession, state:WCSessionActivationState, error:NSError) : Void;
 
    @:objcProtocol("session:didReceiveApplicationContext")
-   public function onContext(session:WCSession, context:StringIdMap):Void;
+   public function onContext(session:WCSession, context:NSDictionary):Void;
 
    // ios only
    #if iphone
