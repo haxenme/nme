@@ -26,7 +26,11 @@
 
 
   <source path="." />
+  <!--
   <haxedef name="annotate_source" />
   <haxedef name="dump" />
+  -->
+  <haxedef name="OBJC_ARC" />
+
   
 </project>

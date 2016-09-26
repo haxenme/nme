@@ -36,6 +36,7 @@
   </watchos>
   <dependency name="WatchConnectivity.framework" />
 
+  <haxedef name="OBJC_ARC" />
   <icon name="nme.svg" />
   <source path="appSrc" />
   

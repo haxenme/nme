@@ -72,6 +72,7 @@ class Button extends Sprite
 
 class Main extends Sprite #if objc implements WCSessionDelegate #end
 {
+   var asSessionDelegate:cpp.objc.Protocol<WCSessionDelegate>;
    var buttons:Array<Button> = [];
    public function new()
    {
@@ -87,11 +88,11 @@ class Main extends Sprite #if objc implements WCSessionDelegate #end
          button.y = y;
          y+= Std.int(button.height * 1.5);
       }
-      //#if objc
+      #if objc
       trace("Main app1!");
       activateWCSession();
-      //#end
-      setCurrent("Swap1");
+      #end
+      setCurrent("Swap");
    }
 
 
@@ -104,8 +105,7 @@ class Main extends Sprite #if objc implements WCSessionDelegate #end
       if (WCSession.isSupported())
       {
          var error:NSError = null;
-         var errorPtr = cpp.RawPointer.addressOf(error);
-         WCSession.defaultSession().updateApplicationContext({mode:value}, errorPtr);
+         WCSession.defaultSession().updateApplicationContext({mode:value}, cpp.RawPointer.addressOf(error) );
       }
       #end
    }
@@ -120,7 +120,8 @@ class Main extends Sprite #if objc implements WCSessionDelegate #end
           trace("Setting default");
           var session = WCSession.defaultSession();
           trace("Setting delegate");
-          session.delegate = this;
+          asSessionDelegate = this;
+          session.delegate = asSessionDelegate;
           session.activateSession();
       }
       else
