@@ -11,10 +11,39 @@
                 <controller id="AgC-eL-Hgc" customClass="InterfaceController">
                     ::if (NME_WATCH_SPRITEKIT)::
                     <items>
-                        <spriteKitScene alignment="left" id="gWV-XT-t4d"/>
+
+                        <spriteKitScene alignment="left" id="gWV-XT-t4d">
+                            <gestureRecognizers>
+                                <tapGestureRecognizer id="tvd-l1-LT5">
+                                    <connections>
+                                        <action selector="handleTap:" destination="AgC-eL-Hgc" id="niR-dN-2ax"/>
+                                    </connections>
+                                </tapGestureRecognizer>
+                                <swipeGestureRecognizer id="FmP-tJ-p7l">
+                                    <connections>
+                                        <action selector="handleSwipe:" destination="AgC-eL-Hgc" id="U4b-xz-iBW"/>
+                                    </connections>
+                                </swipeGestureRecognizer>
+                                <longPressGestureRecognizer enabled="NO" id="b8H-s8-oN2">
+                                    <connections>
+                                        <action selector="handleLongPress:" destination="AgC-eL-Hgc" id="T3s-Vg-SfN"/>
+                                    </connections>
+                                </longPressGestureRecognizer>
+                                <panGestureRecognizer enabled="NO" id="uTm-IA-kud">
+                                    <connections>
+                                        <action selector="handlePan:" destination="AgC-eL-Hgc" id="9T7-IL-DdS"/>
+                                    </connections>
+                                </panGestureRecognizer>
+                            </gestureRecognizers>
+                        </spriteKitScene>
+
                     </items>
                     <connections>
+                        <outlet property="longPressRecognizer" destination="b8H-s8-oN2" id="9mI-9G-Rcn"/>
+                        <outlet property="panRecognizer" destination="uTm-IA-kud" id="UlY-6U-OmE"/>
                         <outlet property="skScene" destination="gWV-XT-t4d" id="bgs-vC-xyF"/>
+                        <outlet property="swipeRecognizer" destination="FmP-tJ-p7l" id="TmC-Pl-fjV"/>
+                        <outlet property="tapRecognizer" destination="tvd-l1-LT5" id="MdO-kl-42s"/>
                     </connections>
                     ::else::
                     <items>

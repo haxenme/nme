@@ -4,6 +4,11 @@ import cpp.objc.*;
 import ios.watchconnectivity.WCSession;
 import ios.watchconnectivity.WCSessionDelegate;
 import ios.watchconnectivity.WCSessionActivationState;
+import ios.watchkit.WKGestureRecognizer;
+import ios.watchkit.WKPanGestureRecognizer;
+import ios.watchkit.WKLongPressGestureRecognizer;
+import ios.watchkit.WKSwipeGestureRecognizer;
+import ios.watchkit.WKTapGestureRecognizer;
 
 
 class App implements WCSessionDelegate
@@ -32,6 +37,43 @@ class App implements WCSessionDelegate
       else
          trace("WCSession not supported");
    }
+
+   public function crownDidRotate(delta:Float, rotationsPerSecond:Float)
+   {
+      trace("crownDidRotate");
+   }
+
+   public function crownDidBecomeIdle()
+   {
+      trace("crownDidBecomeIdle");
+   }
+
+   public function onSwipeState(gesture:WKSwipeGestureRecognizer)
+   {
+      trace("onSwipeState");
+   }
+
+
+   public function onTapState(gesture:WKTapGestureRecognizer)
+   {
+      if (gesture.state == WKGestureRecognizer.StateEnded)
+      {
+         var pos = gesture.locationInObject;
+         trace("TAP: " + pos.x + "," + pos.y);
+      }
+   }
+
+   public function onPanState(gesture:WKPanGestureRecognizer)
+   {
+      trace("onPanState");
+   }
+
+
+   public function onLongPressState(gesture:WKLongPressGestureRecognizer)
+   {
+      trace("onLongPressState");
+   }
+
 
 
    // From ExtensionDelegate

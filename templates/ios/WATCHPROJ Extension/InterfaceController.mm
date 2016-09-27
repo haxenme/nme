@@ -32,7 +32,25 @@ static __weak InterfaceController *theInstance = nil;
    return i;
 }
 
+#ifdef NME_SPRITEKIT
+- (void)crownDidRotate:(WKCrownSequencer *)crownSequencer rotationalDelta:(double)rotationalDelta
+{
+   if (App_obj::instance.mPtr)
+   {
+      double rps = crownSequencer.rotationsPerSecond;
+      App_obj::instance->crownDidRotate(rotationalDelta, rps);
+   }
+}
 
+- (void)crownDidBecomeIdle:(WKCrownSequencer *)crownSequencer
+{
+   if (App_obj::instance.mPtr)
+   {
+      App_obj::instance->crownDidBecomeIdle();
+   }
+}
+
+#endif
 
 - (void)awakeWithContext:(id)context {
     [super awakeWithContext:context];
@@ -47,6 +65,12 @@ static __weak InterfaceController *theInstance = nil;
 - (void)willActivate {
     // This method is called when watch view controller is about to be visible to user
     [super willActivate];
+    #ifdef NME_SPRITEKIT
+    NSLog(@"willActivate spritekit");
+    self.crownSequencer.delegate = self;
+    #else
+    NSLog(@"willActivate non-spritekit");
+    #endif
     if (App_obj::instance.mPtr)
     {
        hx::NativeAttach attach;
@@ -82,6 +106,41 @@ static __weak InterfaceController *theInstance = nil;
 - (IBAction)onButton3 {
     [self onButton:3];
 }
+
+- (IBAction)handleLongPress:(WKLongPressGestureRecognizer*)gestureRecognizer {
+    if (App_obj::instance.mPtr)
+    {
+       hx::NativeAttach attach;
+       App_obj::instance->onLongPressState(gestureRecognizer);
+    }
+}
+
+- (IBAction)handlePan:(WKPanGestureRecognizer*)gestureRecognizer {
+    if (App_obj::instance.mPtr)
+    {
+       hx::NativeAttach attach;
+       App_obj::instance->onPanState(gestureRecognizer);
+    }
+}
+
+- (IBAction)handleSwipe:(WKSwipeGestureRecognizer*)gestureRecognizer {
+    if (App_obj::instance.mPtr)
+    {
+       hx::NativeAttach attach;
+       App_obj::instance->onSwipeState(gestureRecognizer);
+    }
+}
+
+- (IBAction)handleTap:(WKTapGestureRecognizer*)gestureRecognizer {
+    // Why is this not the same as self.tapRecognizer ?
+    if (App_obj::instance.mPtr)
+    {
+       hx::NativeAttach attach;
+       App_obj::instance->onTapState(gestureRecognizer);
+    }
+}
+
+
 
 
 @end

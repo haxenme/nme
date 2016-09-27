@@ -8,6 +8,13 @@ extern class InterfaceController extends WKInterfaceController
    @:native("InterfaceController.instance")
    public static var instance:InterfaceController;
 
+   public var swipeRecognizer:WKSwipeGestureRecognizer;
+   public var tapRecognizer:WKTapGestureRecognizer;
+   public var longPressRecognizer:WKLongPressGestureRecognizer;
+   public var panRecognizer:WKPanGestureRecognizer;
+
+
+
    ::if (NME_WATCH_SPRITEKIT)::
    public var skScene:WKInterfaceSKScene;
    ::else::
