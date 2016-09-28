@@ -1,10 +1,19 @@
 package nme.watchos;
 
 import ios.spritekit.SKScene;
+import ios.spritekit.SKSceneDelegate;
 
 
-class SpriteKitApp extends App implements ios.spritekit.SKSceneDelegate
+class SpriteKitApp extends App implements SKSceneDelegate
 {
+   static var asSKDelegate: cpp.objc.Protocol<SKSceneDelegate>;
+
+   public function asSKSceneDelegate()
+   {
+      // Keep strong reference
+      asSKDelegate = this;
+      return asSKDelegate;
+   }
    public function onUpdate(time:Float) { }
 
    // SKSceneDelegate

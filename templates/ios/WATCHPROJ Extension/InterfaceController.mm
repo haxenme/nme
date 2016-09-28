@@ -38,6 +38,7 @@ static __weak InterfaceController *theInstance = nil;
    if (App_obj::instance.mPtr)
    {
       double rps = crownSequencer.rotationsPerSecond;
+      hx::NativeAttach attach;
       App_obj::instance->crownDidRotate(rotationalDelta, rps);
    }
 }
@@ -46,6 +47,7 @@ static __weak InterfaceController *theInstance = nil;
 {
    if (App_obj::instance.mPtr)
    {
+      hx::NativeAttach attach;
       App_obj::instance->crownDidBecomeIdle();
    }
 }
@@ -55,23 +57,26 @@ static __weak InterfaceController *theInstance = nil;
 - (void)awakeWithContext:(id)context {
     [super awakeWithContext:context];
     InterfaceController.instance = self;
+    #ifdef NME_SPRITEKIT
+    printf("awakeWithContext spritekit...\n");
+    self.crownSequencer.delegate = self;
+    [self.crownSequencer focus];
+    #else
+    printf("awakeWithContext non-spritekit\n");
+    #endif
+ 
     if (App_obj::instance.mPtr)
     {
        hx::NativeAttach attach;
-       App_obj::instance->onAwake();
+       Dynamic obj = _hx_objc_to_dynamic(context);
+       App_obj::instance->onAwake(obj);
     }
 }
 
 - (void)willActivate {
     // This method is called when watch view controller is about to be visible to user
     [super willActivate];
-    #ifdef NME_SPRITEKIT
-    NSLog(@"willActivate spritekit");
-    self.crownSequencer.delegate = self;
-    #else
-    NSLog(@"willActivate non-spritekit");
-    #endif
-    if (App_obj::instance.mPtr)
+   if (App_obj::instance.mPtr)
     {
        hx::NativeAttach attach;
        App_obj::instance->willActivate();

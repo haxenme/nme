@@ -97,9 +97,9 @@ class App implements WCSessionDelegate
    // From InterfaceController...
    // public static function setInterfaceController(controller:ios.watchkit.InterfaceController)
 
-   public function onAwake()
+   public function onAwake(context:Dynamic)
    {
-      trace("onAwake");
+      trace("onAwake " + context);
    }
 
    public function willActivate()

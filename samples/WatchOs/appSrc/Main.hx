@@ -17,7 +17,7 @@ class Button extends Sprite
    var textField:TextField;
    var active:Bool;
 
-   public function getScale() return Scale.getFontScale()*3;
+   public function getScale() return Scale.getFontScale()*2;
 
    public function new(inName:String, inOnClick:String->Void)
    {
@@ -66,6 +66,9 @@ class Button extends Sprite
       textField.y = (textField.height-textField.textHeight)/2;
       bg.drawRect(-1.5, -1.5, textField.width+2, textField.height+2);
 
+      // Runing at 0fps needs explicit invalidate
+      if (stage!=null)
+         stage.invalidate();
    }
 }
 
@@ -79,7 +82,7 @@ class Main extends Sprite #if objc implements WCSessionDelegate #end
       super();
       trace("Main app!");
       var y = 20.0;
-      for(choice in ["Haxe","Nme", "Swap1"])
+      for(choice in ["Haxe","Nme", "Swap"])
       {
          var button = new Button(choice, setCurrent);
          addChild(button);

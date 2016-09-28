@@ -12,6 +12,7 @@ class MyApp extends nme.watchos.SpriteKitApp
    var nmeNode:SKSpriteNode;
    var tBase:Float;
    var mode = "";
+   var rotation:Float = 0;
 
    public function new()
    {
@@ -32,23 +33,38 @@ class MyApp extends nme.watchos.SpriteKitApp
       nmeNode = null;
    }
 
+   public function setContext(context:Dynamic):Void
+   {
+      if (context!=null)
+      {
+         mode = context.mode;
+      }
+   }
+
    override public function onContext(session:WCSession, context:NSDictionary):Void
    {
       var ctx:Dynamic = context;
       trace("got message from app: " + ctx);
-      if (ctx!=null)
-      {
-         mode = ctx.mode;
-      }
+      setContext(ctx);
    }
 
 
 
-   override public function onAwake()
+   override public function onAwake(context:Dynamic)
    {
-      setupGame();
-      super.onAwake();
+      setupGame(context);
+      super.onAwake(context);
    }
+
+   override public function crownDidRotate(delta:Float, rotationsPerSecond:Float)
+   {
+      rotation += delta * 3;
+   }
+
+   override public function crownDidBecomeIdle()
+   {
+   }
+
 
    // SKSceneDelegate
    override public function onUpdate(time:Float)
@@ -73,9 +89,10 @@ class MyApp extends nme.watchos.SpriteKitApp
         
       node.hidden = false;
       node.setScale( Math.abs(phase) );
+      node.zRotation = rotation;
    }
 
-   public function setupGame()
+   public function setupGame(context:Dynamic)
    {
       var ic = InterfaceController.instance;
 
@@ -104,13 +121,14 @@ class MyApp extends nme.watchos.SpriteKitApp
       //skScene.addChild(textNode);
       skScene.addChild(haxeNode);
       skScene.addChild(nmeNode);
-      skScene.delegate = this;
+      skScene.delegate = asSKSceneDelegate();
          
       
       ic.skScene.presentScene(skScene);
 
       trace(skScene.delegate);
 
+      setContext(context);
       // Load and set the background image.
       //let backgroundImage = UIImage(named:"art.scnassets/background.png")
 
