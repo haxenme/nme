@@ -539,11 +539,55 @@ Surface *Surface::Load(const OSChar *inFilename)
       return 0;
    }
 
-   Surface *result = TryJPEG(file,0,0);
-   if (!result)
+   int len = 0;
+   while(inFilename[len])
+      len++;
+
+   bool jpegFirst = false;
+   bool pngFirst = false;
+   if (len>4)
    {
-      rewind(file);
+      // Jpeg/jpg
+      if (inFilename[len-4]=='j' || inFilename[len-4]=='J' || 
+             inFilename[len-3]=='j' || inFilename[len-4]=='J' )
+         jpegFirst = true;
+      else if (inFilename[len-3]=='p' || inFilename[len-3]=='P' )
+         pngFirst = true;
+   }
+   Surface *result = 0;
+
+   if (jpegFirst)
+   {
+      result = TryJPEG(file,0,0);
+      if (!result)
+      {
+         rewind(file);
+         result = TryPNG(file,0,0);
+      }
+   }
+   else if (pngFirst)
+   {
       result = TryPNG(file,0,0);
+      if (!result)
+      {
+         rewind(file);
+         result = TryJPEG(file,0,0);
+      }
+   }
+   else
+   {
+      signed char first = 0;
+      fread(&first,1,1,file);
+      if (first==0xff)
+      {
+         rewind(file);
+         result = TryJPEG(file,0,0);
+      }
+      else if (first==0x89)
+      {
+         rewind(file);
+         result = TryPNG(file,0,0);
+      }
    }
 
    fclose(file);
@@ -555,8 +599,10 @@ Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
    if (!inBytes || !inLen)
       return 0;
 
-   Surface *result = TryJPEG(0,inBytes,inLen);
-   if (!result)
+   Surface *result = 0;
+   if (*inBytes==0xff)
+      result = TryJPEG(0,inBytes,inLen);
+   else if (*inBytes==0x89)
       result = TryPNG(0,inBytes,inLen);
 
    return result;
