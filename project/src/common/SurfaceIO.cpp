@@ -576,7 +576,7 @@ Surface *Surface::Load(const OSChar *inFilename)
    }
    else
    {
-      signed char first = 0;
+      uint8 first = 0;
       fread(&first,1,1,file);
       if (first==0xff)
       {
