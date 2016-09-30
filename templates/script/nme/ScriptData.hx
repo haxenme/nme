@@ -16,20 +16,7 @@ class ScriptData
 
    public static function create():Void
    {
-      var info = Assets.info;
-
-      ::if (assets != null)::
-      ::foreach assets::
-      info.set("::id::", createScriptAsset("::resourceName::",AssetType.::type::,::isResource::,::className::));::end::
-      ::end::
-   }
-
-   public static function createScriptAsset(inPath:String, inType:AssetType, isResource:Bool, className:String)
-   {
-      if (!isResource)
-         inPath = Assets.scriptBase + inPath;
-
-      return new AssetInfo(inPath,inType,isResource,className);
+      Assets.loadScriptAssetList();
    }
 }
 

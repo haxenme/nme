@@ -754,6 +754,7 @@ class NMEProject
          context.assets.push(asset);
       }
 
+
       var handlers = new Array<Dynamic>();
       context.libraryHandlers = handlers;
       for(h in libraryHandlers.keys())
@@ -766,6 +767,11 @@ class NMEProject
       context.sslCaCert = "";
 
       var compilerFlags = [];
+
+      if (target == Platform.CPPIA)
+         compilerFlags.push('-resource $inBuildDir/nme/scriptassets.txt@haxe/nme/scriptassets.txt');
+      else
+         compilerFlags.push('-resource $inBuildDir/nme/assets.txt@haxe/nme/assets.txt');
 
       for(haxelib in haxelibs) 
       {

@@ -216,7 +216,7 @@ class AndroidPlatform extends Platform
       if (FileSystem.exists(buildProperties)) 
          FileSystem.deleteFile(buildProperties);
 
-      ProcessHelper.runCommand(outputDir, ant, [ build ]);
+      ProcessHelper.runCommand(outputDir, ant, [ "-v", build ]);
    }
 
    override public function buildPackage():Void 
@@ -275,11 +275,53 @@ class AndroidPlatform extends Platform
       if (!FileSystem.exists(lib))
          lib = project.environment.get("ANDROID_SDK") +
             "/extras/android/support/v4/android-support-v4.jar";
+      if (!FileSystem.exists(lib))
+      {
+         var dir = project.environment.get("ANDROID_SDK") +
+               "/extras/android/m2repository/com/android/support/support-v4";
+         if (FileSystem.exists(dir))
+         {
+            var versionMatch = ~/^(\d)+\.(\d+)\.(\d+)$/;
+            var best = 0;
+            var bestFile:String = null;
+            for(file in FileSystem.readDirectory(dir))
+            {
+               if (versionMatch.match(file))
+               {
+                  var v0 = Std.parseInt(versionMatch.matched(1));
+                  var v1 = Std.parseInt(versionMatch.matched(2));
+                  var v2 = Std.parseInt(versionMatch.matched(3));
+                  var v = v0*10000 + v1*100 + v0;
+                  if (v>best && FileSystem.exists('$dir/$file/support-v4-$file-sources.jar' ) )
+                  {
+                     best = v0;
+                     bestFile = file;
+                  }
+               }
+            }
+            if (bestFile!=null)
+            {
+               lib = '$dir/$bestFile/support-v4-$bestFile-sources.jar';
+               Log.verbose('Found support-v4 in $lib');
+            }
+         }
+      }
+
+/*
+      if (!FileSystem.exists(lib))
+      {
+         lib = CommandLineTools.nme + "/tools/nme/bin/android-support-v4.jar";
+      }
+*/
+
 
       if (FileSystem.exists(lib))
-         FileHelper.copyIfNewer(lib, inDest + "/libs/android-support-v4.jar");
+      {
+         Log.verbose("copy to " + inDest + "/android-support-v4.jar");
+         FileHelper.copyIfNewer(lib, inDest + "/android-support-v4.jar");
+      }
       else
-         Log.error("Could not find " + lib);
+         Log.error("Could not find " + lib + " - use the SDK Manager to add the dependency" );
    }
 
    override public function updateOutputDir():Void 
@@ -335,6 +377,7 @@ class AndroidPlatform extends Platform
          }
       }
 
+      var jarDir = getOutputDir()+"/deps/extension-api/libs";
       for(javaPath in project.javaPaths) 
       {
          try 
@@ -344,15 +387,15 @@ class AndroidPlatform extends Platform
             else
             {
                if (Path.extension(javaPath) == "jar") 
-                  FileHelper.copyIfNewer(javaPath, destination + "/libs/" + Path.withoutDirectory(javaPath));
+                  FileHelper.copyIfNewer(javaPath, jarDir + "/" + Path.withoutDirectory(javaPath));
                else
                   FileHelper.copyIfNewer(javaPath, destination + "/src/" + Path.withoutDirectory(javaPath));
             }
          } catch(e:Dynamic) {}
       }
 
-      if (project.androidConfig.minApiLevel < 14)
-         addV4CompatLib(getOutputDir());
+      //if (project.androidConfig.minApiLevel < 14)
+         addV4CompatLib(jarDir);
 
       for(k in project.dependencies.keys())
       {

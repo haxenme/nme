@@ -20,10 +20,7 @@ class AssetData
       Assets.addLibraryFactory( ::type::, function(id) return new ::handler::(id) );
       ::end::
 
-      ::if (assets != null)::
-      ::foreach assets::
-      info.set("::id::", new AssetInfo("::resourceName::",AssetType.::type::,::isResource::,::className::));::end::
-      ::end::
+      Assets.loadAssetList();
    }
 }
 

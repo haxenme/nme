@@ -61,6 +61,50 @@ class Assets
 
    public static var cache = new Cache();
 
+
+
+   public static function fromAssetList(assetList:String, inAddScriptBase:Bool)
+   {
+      var lines:Array<String> = null;
+      if (assetList.indexOf('\r')>=0)
+         lines = assetList.split('\r\n');
+      else
+         lines = assetList.split('\n');
+
+      var i:Int = 1;
+      while (i < lines.length-1)
+      {
+         var id:String = lines[i+0];
+         var resourceName:String = lines[i+1];
+         var type:AssetType = Type.createEnum(AssetType,lines[i+2]);
+         var isResource:Bool = lines[i+3] != 'false';
+         var className:String = lines[i+4];
+         if (className=="null")
+            className = null;
+         if (inAddScriptBase && !isResource)
+            resourceName = scriptBase + resourceName;
+
+         info.set(id, new AssetInfo(resourceName,type,isResource,className));
+         i+=5;
+      }
+   }
+
+   public static function loadAssetList()
+   {
+      var assetList = haxe.Resource.getString("haxe/nme/assets.txt");
+      if (assetList!=null)
+         fromAssetList(assetList,false);
+   }
+
+
+   public static function loadScriptAssetList()
+   {
+      var assetList = haxe.Resource.getString("haxe/nme/scriptassets.txt");
+      if (assetList!=null)
+         fromAssetList(assetList,true);
+   }
+
+
    //public static var id(get_id, null):Array<String>;
 
    public static function addLibraryFactory(inType:AssetType, inFactory:AssetLibFactory)

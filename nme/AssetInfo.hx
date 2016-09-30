@@ -23,6 +23,7 @@ class AssetInfo
       #end
    }
 
+
    public function uncache()
    {
       cache = null;
