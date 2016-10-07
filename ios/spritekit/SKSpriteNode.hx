@@ -6,6 +6,7 @@ import cpp.objc.NSString;
 
 @:objc
 @:native("SKSpriteNode")
+@:include("SpriteKit/SpriteKit.h")
 extern class SKSpriteNode extends SKNode
 {
    @:native("spriteNodeWithColor:size")
