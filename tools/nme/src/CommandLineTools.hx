@@ -728,6 +728,7 @@ class CommandLineTools
       sys.println(" Targets : ");
       sys.println("");
       sys.println("  cpp         : Create applications, for host system (linux,mac,windows)");
+      sys.println("  cppia       : Create a cppia.nme bundle, and run with host (acadnme by default)");
       sys.println("  android     : Create Google Android applications");
       sys.println("  androidview : Create library files for inclusion in Google Android applications");
       sys.println("  androidsim  : android + simulator");
@@ -1271,6 +1272,7 @@ class CommandLineTools
       }
 
       var project = new NMEProject( );
+      project.localDefines.set("NME",nme);
 
       traceEnabled = null;
 
