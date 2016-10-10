@@ -1566,7 +1566,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       
       #ifdef HX_WINDOWS
       HINSTANCE handle = ::GetModuleHandle(0);
-      HICON icon = ::LoadIcon(handle, MAKEINTRESOURCE (1));
+      HICON icon = ::LoadIcon(handle, (char *)101);
       
       if (icon)
       {
