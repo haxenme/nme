@@ -121,6 +121,10 @@ class FileHelper
       }
    }
 
+   #if neko
+   static var neko_sys_command = neko.Lib.load("std","sys_command",1);
+   #end
+
    public static function copyIfNewer(source:String, destination:String) : Bool
    {
       //allFiles.push(destination);
@@ -143,7 +147,15 @@ class FileHelper
          var redirect = #if (haxe_ver >= 3.300) [">nul"] #else [] #end;
          var code = Sys.command("cmd", ["/c", "copy",  source, destination].concat(redirect));
          if (code!=0)
+         {
+            #if (neko && haxe_ver >= 3.300) 
+               // Try plain quotes - not sure what is going wrong...
+               var cmd = 'cmd /c copy "$source" "$destination" >nul';
+               code =  neko_sys_command(untyped cmd.__s);
+               if (code!=0)
+            #end
             Log.error('Could not copy $source to $destination');
+         }
       }
       else
       {

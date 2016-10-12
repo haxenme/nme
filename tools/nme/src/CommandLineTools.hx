@@ -401,6 +401,8 @@ class CommandLineTools
             args.push("-v");
          if (debug)
             args.push("-debug");
+         if (toolkit)
+            args.push("-toolkit");
          if (project.hasDef("deploy"))
             args.push("deploy=" + project.getDef("deploy"));
          if (sampleTarget!="")
