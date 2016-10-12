@@ -9,6 +9,7 @@ import cpp.objc.NSString;
 
 @:objc
 @:native("SKTexture")
+@:include("SpriteKit/SKTexture.h")
 extern class SKTexture
 {
 
