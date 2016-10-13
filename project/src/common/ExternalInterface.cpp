@@ -3735,7 +3735,7 @@ TEXT_PROP_GET_IDX(line_offset,LineOffset,alloc_int);
 
 value nme_bitmap_data_create(value* arg, int nargs)
 {
-   enum { aWidth, aHeight, aFlags, aRGB, aA, aGPU };
+   enum { aWidth, aHeight, aFlags, aRGB, aA, aInternal };
 
    int w = val_number(arg[aWidth]);
    int h = val_number(arg[aHeight]);
@@ -3743,8 +3743,19 @@ value nme_bitmap_data_create(value* arg, int nargs)
 
    PixelFormat format = (flags & 0x01) ? pfARGB : pfXRGB;
    int gpu = -1;
-   if (!val_is_null(arg[aGPU]))
-      gpu = val_int(arg[aGPU]);
+   if (!val_is_null(arg[aInternal]))
+   {
+      int internalFormat = val_int(arg[aInternal]);
+      if (internalFormat==1 || internalFormat==2)
+         gpu = internalFormat;
+      switch(internalFormat)
+      {
+         case 1: case 2: gpu = internalFormat; break;
+         case 3: format = pfLuma; break;
+         case 4: format = pfLumaAlpha; break;
+         case 5: format = pfRGB; break;
+      }
+   }
    
    Surface *result = new SimpleSurface( w, h, format, 1, gpu );
    if (!(flags & 0x01))

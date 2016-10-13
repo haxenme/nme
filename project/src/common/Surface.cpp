@@ -54,16 +54,14 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
    mTexture = 0;
    mPixelFormat = inPixelFormat;
    mGPUPixelFormat = inPixelFormat;
-   
-   // Default to using premultiplied alpha
-   #ifndef NME_NOPREMULTIPLIED_ALPHA
-   if (mPixelFormat != pfAlpha)
-      mFlags |= surfUsePremultipliedAlpha;
-   #endif
+ 
+   int pix_size = (inPixelFormat == pfAlpha || inPixelFormat==pfLuma) ? 1 :
+                  (inPixelFormat==pfLumaAlpha) ? 2 :
+                  (inPixelFormat==pfRGB) ? 3 :
+                  4;
 
    if (inGPUFormat==-1)
    {
-      int pix_size = inPixelFormat == pfAlpha ? 1 : 4;
       if (inByteAlign>1)
       {
          mStride = inWidth * pix_size + inByteAlign -1;
@@ -1021,6 +1019,12 @@ void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
 {
    if (!mBase)
       return;
+   if (mPixelFormat==pfLuma)
+   {
+      memset(mBase, inColour & 0xff,mStride*mHeight);
+      return;
+   }
+
    ARGB rgb(inColour | ((mPixelFormat & pfHasAlpha) ? 0 : 0xFF000000));
    if (mPixelFormat==pfAlpha)
    {
@@ -1038,12 +1042,43 @@ void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
    if( y1 > Height() ) y1 = Height();
    if (x1<=x0 || y1<=y0)
       return;
-   for(int y=y0;y<y1;y++)
+   if (mPixelFormat==pfLumaAlpha)
    {
-      uint32 *ptr = (uint32 *)(mBase + y*mStride) + x0;
-      for(int x=x0;x<x1;x++)
-         *ptr++ = rgb.ival;
+      for(int y=y0;y<y1;y++)
+      {
+         int luma = rgb.luma();
+         uint8 *ptr = (mBase + y*mStride) + x0*2;
+         for(int x=x0;x<x1;x++)
+         {
+            *ptr++ = luma;
+            *ptr++ = rgb.a;
+         }
+      }
+
    }
+   else if (mPixelFormat==pfRGB)
+   {
+      for(int y=y0;y<y1;y++)
+      {
+         uint8 *ptr = (mBase + y*mStride) + x0*3;
+         for(int x=x0;x<x1;x++)
+         {
+            *ptr++ = rgb.r;
+            *ptr++ = rgb.g;
+            *ptr++ = rgb.b;
+         }
+      }
+   }
+   else
+   {
+      for(int y=y0;y<y1;y++)
+      {
+         uint32 *ptr = (uint32 *)(mBase + y*mStride) + x0;
+         for(int x=x0;x<x1;x++)
+            *ptr++ = rgb.ival;
+      }
+   }
+
    if (mTexture)
       mTexture->Dirty( Rect(x0,y0,x1-x0,y1-y0) );
 }

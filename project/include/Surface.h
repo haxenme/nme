@@ -38,7 +38,7 @@ public:
 
    virtual unsigned int GetFlags() const { return mFlags; }
    virtual void SetFlags(unsigned int inFlags) { mFlags = inFlags; }
-   virtual int         GPUFormat() const { return Format(); }
+   virtual int  GPUFormat() const { return Format(); }
    virtual bool GetAllowTrans() const { return mAllowTrans; }
    virtual void SetAllowTrans(bool inAllowTrans) { mAllowTrans = inAllowTrans; }
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
@@ -52,7 +52,7 @@ public:
    virtual void multiplyAlpha () {}
    virtual void unmultiplyAlpha() { }
 
-   int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
+   int BytesPP() const { return nme::BytesPerPixel(Format()); }
 
    virtual RenderTarget BeginRender(const Rect &inRect,bool inForHitTest=false)=0;
    virtual void EndRender()=0;
@@ -128,6 +128,7 @@ public:
    uint8       *Edit(const Rect *inRect);
    void        Commit() { };
    int GetStride() const { return mStride; }
+   int GetPlaneOffset() const { return mStride*mHeight; }
 
    int         GPUFormat() const  { return mGPUPixelFormat; }
    void Clear(uint32 inColour,const Rect *inRect);
@@ -187,7 +188,7 @@ class HardwareSurface : public Surface
 public:
    HardwareSurface(HardwareRenderer *inContext);
 
-   PixelFormat Format()  const { return pfHardware; }
+   PixelFormat Format()  const { return pfRenderBuffer; }
 
    int Width() const { return mHardware->Width(); }
    int Height() const { return mHardware->Height(); }
@@ -195,6 +196,7 @@ public:
    uint8       *Edit(const Rect *inRect=0) { return 0; }
    void        Commit() { }
    int GetStride() const { return 0; }
+   int GetPlaneOffset() const { return 0; }
 
 
    void Clear(uint32 inColour,const Rect *inRect=0) { mHardware->Clear(inColour,inRect); }

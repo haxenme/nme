@@ -10,17 +10,38 @@ namespace nme
 {
 
 
-// 0xAARRGGBB
+// Component order refers to byte-layout in memory
 enum PixelFormat
 {
-   pfXRGB         = 0x00,
-   pfARGB         = 0x01,
-   pfAlpha        = 0x03,
-   pfHardware     = 0x10,
-   pfARGB4444     = 0x11,
-   pfRGB565       = 0x12,
-   
-   pfHasAlpha     = 0x01,
+   pfNone       = 0,
+   // 3 Bytes per pixel
+   pfRGB        = 1,
+   // 0xAARRGGBB on little-endian = flash native format
+   // This can generally be loaded right into the GPU (android simulator - maybe not)
+   pfBGRA       = 2,
+   // Has the B,G,R components multiplied by A
+   pfBGRPremA   = 3,
+
+   // This format is only used to transfer data to the GPU on systems that do
+   //  not support the preferred pfBGRPremA format
+   pfRGBPremA   = 4,
+   pfRGBA       = 5,
+
+   pfAlpha      = 6,
+
+   pfRenderToCount = 7,
+
+   pfARGB4444   = 5,
+   pfRGB565     = 6,
+   pfLuma       = 7,
+   pfLumaAlpha  = 8,
+   pfECT        = 10,
+   pfRGB32f     = 11,
+   pfRGBA32f    = 12,
+   pfYUV420sp   = 13,
+   pfNV12       = 14,
+   pfOES        = 15,
+   pfRenderBuffer = 16,
 };
 
 
@@ -48,6 +69,7 @@ struct ARGB
    inline void Set(int inVal) { ival = inVal; }
    inline void SetRGB(int inVal) { ival = inVal | 0xff000000; }
    inline void SetRGBA(int inVal) { ival = inVal; }
+   inline int luma() { return (r + (g<<1) + b + 2) >> 8; }
 
    template<bool DEST_ALPHA>
    inline void Blend(const ARGB &inVal)
@@ -143,6 +165,11 @@ inline void QBlendAlpha(Uint8 &ioDest, Uint8 inSrc)
 }
 
 
+void PixelConvert(int inWidth, int inHeight,
+       PixelFormat srcFormat,  const void *srcPtr, int srcByteStride, int srcPlaneOffset,
+       PixelFormat destFormat, void *destPtr, int destByteStride, int destPlaneOffset );
+
+int BytesPerPixel(PixelFormat inFormat);
 
 
 } // end namespace nme

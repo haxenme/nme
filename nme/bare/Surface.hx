@@ -21,6 +21,9 @@ class Surface
    public static var FORMAT_8888:Int = 0;
    public static var FORMAT_4444:Int = 1; //16 bit with alpha channel
    public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
+   public static var FORMAT_LUMA:Int = 3;  //8 bit, luma
+   public static var FORMAT_LUMA_ALPHA:Int = 4;  //16 bit, luma + alpha
+   public static var FORMAT_RGB:Int = 5;  //24 bit, rgb
 
    public var height(get_height, null):Int;
    public var rect(get_rect, null):Rectangle;

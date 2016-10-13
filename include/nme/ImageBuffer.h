@@ -12,8 +12,6 @@ namespace nme
 enum
 {
    surfNotRepeatIfNonPO2    = 0x0001,
-   surfUsePremultipliedAlpha = 0x0002,
-   surfHasPremultipliedAlpha = 0x0004,
 };
 
 
@@ -33,6 +31,7 @@ public:
    virtual int                  Height() const =0;
    virtual const unsigned char *GetBase() const = 0;
    virtual int                  GetStride() const = 0;
+   virtual int                  GetPlaneOffset() const = 0;
    virtual unsigned char        *Edit(const Rect *inRect=0) = 0;
    virtual void                 Commit() = 0;
 

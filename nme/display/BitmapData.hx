@@ -30,11 +30,15 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static var FORMAT_8888:Int = 0;
    public static var FORMAT_4444:Int = 1; //16 bit with alpha channel
    public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
+   public static var FORMAT_LUMA:Int = 3;  //8 bit, luma
+   public static var FORMAT_LUMA_ALPHA:Int = 4;  //16 bit, luma + alpha
+   public static var FORMAT_RGB:Int = 5;  //24 bit, rgb
+   public static var FORMAT_YUVSP:Int = 6;  // Plane of Y followed by interleaved UV
 
 
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, ?inGPUMode:Null<Int>)
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, ?inInternalFormat:Null<Int>)
    {
-      super(inWidth, inHeight, inTransparent, inFillARGB, inGPUMode );
+      super(inWidth, inHeight, inTransparent, inFillARGB, inInternalFormat );
 
       if (nmeHandle==null)
       {
@@ -46,6 +50,11 @@ class BitmapData extends Surface implements IBitmapDrawable
             nmeLoadFromBytes(ByteArray.fromBytes(haxe.Resource.getBytes(resoName)), null);
          }
       }
+   }
+
+   public static function createGrey(width:Int, height:Int, ?inLuma:Int)
+   {
+      return new BitmapData(width, height, false, inLuma, FORMAT_LUMA);
    }
 
    public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter):Void 

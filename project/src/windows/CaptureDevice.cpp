@@ -109,6 +109,56 @@ public:
    }
 
 
+   void listDevices()
+   {
+      HRESULT hr;
+      ULONG cFetched;
+
+
+       // Create the system device enumerator
+       ICreateDevEnumPtr pDevEnum = NULL;
+       hr = CoCreateInstance (CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
+                              IID_ICreateDevEnum, (void ** ) &pDevEnum);
+       if (FAILED(hr))
+          return;
+
+      // Create an enumerator for the video capture devices
+      IEnumMonikerPtr pClassEnum = 0;
+      hr = pDevEnum->CreateClassEnumerator (CLSID_VideoInputDeviceCategory, &pClassEnum, 0);
+      if (FAILED(hr))
+         return;
+
+
+
+      IMonikerPtr moniker;
+      while (S_OK == (pClassEnum->Next (1, &moniker, &cFetched)))
+      {
+
+        IPropertyBagPtr pPropBag;
+        HRESULT hr = moniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
+        if (FAILED(hr))
+        {
+            moniker = 0;
+            continue;  
+        } 
+
+        VARIANT var;
+        VariantInit(&var);
+
+        // Get description or friendly name.
+        hr = pPropBag->Read(L"Description", &var, 0);
+        if (FAILED(hr))
+        {
+            hr = pPropBag->Read(L"FriendlyName", &var, 0);
+        }
+        if (SUCCEEDED(hr))
+        {
+            printf("%S\n", var.bstrVal);
+            VariantClear(&var); 
+        }
+
+      }
+   }
 
 
 
@@ -160,15 +210,21 @@ public:
       IMoniker *pMoniker = NULL;
       IBaseFilter *pSrc;
 
+
+      listDevices();
+
+
       //if(S_OK == (pClassEnum->Next (1, &pMoniker, &cFetched)))
       while (S_OK == (pClassEnum->Next (1, &outMoniker, &cFetched)))
       {
          pMoniker = outMoniker;
 
+
          hr = pMoniker->BindToObject(0,0,IID_IBaseFilter, (void**)&pSrc);
          if (FAILED(hr))
             return setError("Couldn't bind moniker to filter object");
          else
+         {
             outSrcFilter = pSrc;
 
                if(SUCCEEDED(pSrc->EnumPins(&pins)))
@@ -178,11 +234,10 @@ public:
                      //printf("Found pin\n");
                      if(S_OK == pP->QueryPinInfo(&pinInfo))
                      {
-                        if(pinInfo.dir == PINDIR_INPUT)
+                        if(pinInfo.dir == PINDIR_INPUT || true)
                         {
                            // is this pin an ANALOGVIDEOIN input pin?
-                           if(pP->QueryInterface(IID_IKsPropertySet,
-                              (void **)&pKs) == S_OK)
+                           if(pP->QueryInterface(IID_IKsPropertySet, (void **)&pKs) == S_OK)
                            {
                               if(pKs->Get(AMPROPSETID_Pin, AMPROPERTY_PIN_CATEGORY, NULL, 0,
                                  &guid, sizeof(GUID), &dw) == S_OK)
@@ -222,6 +277,7 @@ public:
                   }
                   pins->Release();
                }
+         }
 
          if (Found)
             break;
