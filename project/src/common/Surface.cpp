@@ -788,29 +788,27 @@ void SimpleSurface::colorTransform(const Rect &inRect, ColorTransform &inTransfo
 }
 
 
-enum
-{
-   CHAN_ALPHA = 0x0008,
-   CHAN_BLUE  = 0x0004,
-   CHAN_GREEN = 0x0002,
-   CHAN_RED   = 0x0001,
-};
+
 
 void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
                    int inPosX, int inPosY,
                    int inSrcChannel, int inDestChannel ) const
 {
-  bool src_alpha = mPixelFormat==pfAlpha;
-  bool dest_alpha = outTarget.mPixelFormat==pfAlpha;
-
-  // Flash API does not have alpha images (might be useful somewhere else?)
-   if (src_alpha || dest_alpha)
-     return;
-
-   if (inDestChannel==CHAN_ALPHA && !(outTarget.Format() & pfHasAlpha) )
+   PixelFormat destFmt = outTarget.mPixelFormat;
+   int destPos = GetPixelChannelOffset(destFmt,(PixelChannel)inDestChannel);
+   if (destPos<0)
       return;
 
-   bool set_255 = (inSrcChannel==CHAN_ALPHA && !(mPixelFormat & pfHasAlpha) );
+   PixelFormat srcFmt = mPixelFormat;
+   int srcPos =GetPixelChannelOffset(srcFmt,(PixelChannel)inSrcChannel);
+   if (srcPos==CHANNEL_OFFSET_NONE)
+      return;
+
+   int srcPw = BytesPerPixel(srcFmt);
+   int destPw = BytesPerPixel(srcFmt);
+
+
+   bool set_255 = srcPos==CHANNEL_OFFSET_VIRTUAL_ALPHA;
 
    Rect src_rect(inSrcRect.x,inSrcRect.y, inSrcRect.w, inSrcRect.h );
    src_rect = src_rect.Intersect( Rect(0,0,Width(),Height() ) );
@@ -818,16 +816,6 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
    Rect dest_rect(inPosX,inPosY, inSrcRect.w, inSrcRect.h );
    dest_rect = dest_rect.Intersect(outTarget.mRect);
 
-
-   int src_ch = inSrcChannel==CHAN_ALPHA ? 3 :
-                inSrcChannel==CHAN_RED   ? 2 :
-                inSrcChannel==CHAN_GREEN ? 1 :
-                                           0;
-
-   int dest_ch = inDestChannel==CHAN_ALPHA ? 3 :
-                 inDestChannel==CHAN_RED   ? 2 :
-                 inDestChannel==CHAN_GREEN ? 1 :
-                                             0;
 
    int minW = src_rect.w;
    if(dest_rect.w < src_rect.w)
@@ -839,28 +827,27 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 
    for(int y=0;y<minH;y++)
    {
-      uint8 *d = outTarget.Row(y+dest_rect.y) + dest_rect.x* 4 + dest_ch;
+      uint8 *d = outTarget.Row(y+dest_rect.y) + dest_rect.x*destPw + destPos;
       if (set_255)
       {
          for(int x=0;x<src_rect.w;x++)
          {
             *d = 255;
-            d+=4;
+            d+=destPw;
          }
       }
       else
       {
-         const uint8 *s = Row(y+src_rect.y) + src_rect.x * 4 + src_ch;
+         const uint8 *s = Row(y+src_rect.y) + src_rect.x * srcPw + srcPos;
 
          for(int x=0;x<minW;x++)
          {
             *d = *s;
-            d+=4;
-            s+=4;
+            d+=destPw;
+            s+=srcPw;
          }
       }
    }
-
 }
 
 

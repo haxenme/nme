@@ -31,18 +31,29 @@ enum PixelFormat
 
    pfRenderToCount = 7,
 
-   pfARGB4444   = 5,
-   pfRGB565     = 6,
-   pfLuma       = 7,
-   pfLumaAlpha  = 8,
-   pfECT        = 10,
-   pfRGB32f     = 11,
-   pfRGBA32f    = 12,
-   pfYUV420sp   = 13,
-   pfNV12       = 14,
-   pfOES        = 15,
-   pfRenderBuffer = 16,
+   pfARGB4444   = 7,
+   pfRGB565,
+   pfLuma,
+   pfLumaAlpha,
+   pfECT,
+   pfRGB32f,
+   pfRGBA32f,
+   pfYUV420sp,
+   pfNV12,
+   pfOES,
+   pfRenderBuffer,
 };
+
+enum PixelChannel
+{
+   CHAN_ALPHA = 0x0008,
+   CHAN_BLUE  = 0x0004,
+   CHAN_GREEN = 0x0002,
+   CHAN_RED   = 0x0001,
+};
+
+enum { CHANNEL_OFFSET_VIRTUAL_ALPHA = -1, CHANNEL_OFFSET_NONE = -2 };
+int GetPixelChannelOffset(PixelFormat inFormat, PixelChannel inChannel);
 
 
 typedef unsigned char Uint8;
