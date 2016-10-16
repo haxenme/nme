@@ -851,6 +851,29 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 }
 
 
+// BGRA<t/f> AlphaPixel RGB
+void SetPixel( )
+         sx+=dsx_dx;
+         if (!SRC_ALPHA)
+         {
+            if (DEST_ALPHA)
+               s.a = 255;
+            *dest++ = s;
+         }
+         else
+         {
+            if (!s.a)
+               dest++;
+            else if (s.a==255)
+               *dest++ = s;
+            else if (DEST_ALPHA)
+               dest++ ->QBlendA(s);
+            else
+               dest++ ->QBlend(s);
+         }
+
+
+
 template<bool SRC_ALPHA,bool DEST_ALPHA>
 void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
                 const Rect &inSrcRect, const DRect &inDestRect)
@@ -876,33 +899,16 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
 
    for(int y=0;y<out.h;y++)
    {
-      ARGB *dest= (ARGB *)outTarget.Row(y+out.y) + out.x;
+      DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
       int y_ = (sy0>>16);
-      const ARGB *src = (const ARGB *)inSrc->Row(y_);
+      const SRC *src = (const SRC *)inSrc->Row(y_);
       sy0+=dsy_dy;
 
       int sx = sx0;
       for(int x=0;x<out.w;x++)
       {
-         ARGB s(src[sx>>16]);
-         sx+=dsx_dx;
-         if (!SRC_ALPHA)
-         {
-            if (DEST_ALPHA)
-               s.a = 255;
-            *dest++ = s;
-         }
-         else
-         {
-            if (!s.a)
-               dest++;
-            else if (s.a==255)
-               *dest++ = s;
-            else if (DEST_ALPHA)
-               dest++ ->QBlendA(s);
-            else
-               dest++ ->QBlend(s);
-         }
+         SRC s(src[sx>>16]);
+         StretchPixel(*dest++, s);
       }
    }
 
@@ -980,6 +986,22 @@ void SimpleSurface::StretchTo(const RenderTarget &outTarget,
    // Only RGB supported
    if (mPixelFormat==pfAlpha || outTarget.mPixelFormat==pfAlpha)
       return;
+
+   switch(mPixelFormat)
+   {
+      case pfRGB:
+         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect);
+         break;
+      case pfBGRA:
+         TStretchSuraceTo<ARGB>(this, outTarget, inSrcRect, inDestRect);
+         break;
+      case pfBGRPremA:
+         TStretchSuraceTo<BGRPremA>(this, outTarget, inSrcRect, inDestRect);
+         break;
+      case pfAlpha:
+         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect);
+         break;
+   }
 
    bool dest_has_alpha = outTarget.mPixelFormat & pfHasAlpha;
    bool src_has_alpha = mPixelFormat &  pfHasAlpha;

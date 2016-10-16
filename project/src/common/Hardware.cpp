@@ -256,7 +256,7 @@ public:
          {
             mGradReflect = grad->spreadMethod == smReflect;
             int w = mGradReflect ? 512 : 256;
-            mElement.mSurface = new SimpleSurface(w,1,pfARGB);
+            mElement.mSurface = new SimpleSurface(w,1,pfBGRA);
             mElement.mSurface->IncRef();
             grad->FillArray( (ARGB *)mElement.mSurface->GetBase() );
 

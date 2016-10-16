@@ -1,6 +1,8 @@
 #ifndef NME_PIXEL_H
 #define NME_PIXEL_H
 
+#include "Rect.h"
+
 // The order or RGB or BGR is determined to the primary surface's
 //  native order - this allows most transfers to be donw without swapping R & B
 // When rendering from a source to a dest, the source is swapped to match in
@@ -13,23 +15,26 @@ namespace nme
 // Component order refers to byte-layout in memory
 enum PixelFormat
 {
-   pfNone       = 0,
+   pfNone       = -1,
+
    // 3 Bytes per pixel
-   pfRGB        = 1,
+   pfRGB        = 0,
    // 0xAARRGGBB on little-endian = flash native format
    // This can generally be loaded right into the GPU (android simulator - maybe not)
-   pfBGRA       = 2,
+   pfBGRA       = 1,
    // Has the B,G,R components multiplied by A
-   pfBGRPremA   = 3,
+   pfBGRPremA   = 2,
 
-   // This format is only used to transfer data to the GPU on systems that do
+   // 8-bit alpha
+   pfAlpha      = 3,
+
+   // The first 4 pixel formats are supported as render sources/ render distinations
+   pfRenderToCount = 4,
+
+   // These formats are only used to transfer data to the GPU on systems that do
    //  not support the preferred pfBGRPremA format
    pfRGBPremA   = 4,
    pfRGBA       = 5,
-
-   pfAlpha      = 6,
-
-   pfRenderToCount = 7,
 
    pfARGB4444   = 7,
    pfRGB565,
@@ -55,16 +60,19 @@ enum PixelChannel
 enum { CHANNEL_OFFSET_VIRTUAL_ALPHA = -1, CHANNEL_OFFSET_NONE = -2 };
 int GetPixelChannelOffset(PixelFormat inFormat, PixelChannel inChannel);
 
-
 typedef unsigned char Uint8;
 
+extern Uint8 gPremAlphaLut[256][256];
+extern Uint8 gUnPremAlphaLut[256][256];
 
-struct ARGB
+
+template<bool PREM>
+struct BGRA
 {
-   inline ARGB() { }
-   inline ARGB(int inRGBA) { ival = inRGBA; }
-   inline ARGB(int inRGB,int inA) { ival = (inRGB & 0xffffff) | (inA<<24); }
-   inline ARGB(int inRGB,float inA)
+   inline BGRA() { }
+   inline BGRA(int inRGBA) { ival = inRGBA; }
+   inline BGRA(int inRGB,int inA) { ival = (inRGB & 0xffffff) | (inA<<24); }
+   inline BGRA(int inRGB,float inA)
    {
       ival = (inRGB & 0xffffff);
       int alpha = 255.9 * inA;
@@ -82,8 +90,16 @@ struct ARGB
    inline void SetRGBA(int inVal) { ival = inVal; }
    inline int luma() { return (r + (g<<1) + b + 2) >> 8; }
 
+   inline int getAlpha() { return a; }
+   inline int getRAlpha() { return PREM ? r : gPremAlphaLut[a][r]; }
+   inline int getGAlpha() { return PREM ? g : gPremAlphaLut[a][g]; }
+   inline int getBAlpha() { return PREM ? b : gPremAlphaLut[a][b]; }
+   inline int getR() { return r; }
+   inline int getG() { return g; }
+   inline int getB() { return b; }
+
    template<bool DEST_ALPHA>
-   inline void Blend(const ARGB &inVal)
+   inline void Blend(const BGRA &inVal)
    {
       int A = inVal.a + (inVal.a>>7);
       if (A>5)
@@ -115,7 +131,7 @@ struct ARGB
    }
 
 
-   inline void QBlend(ARGB inVal)
+   inline void QBlend(BGRA inVal)
    {
       int A = inVal.a + (inVal.a>>7);
       int f = (256-A);
@@ -124,7 +140,7 @@ struct ARGB
       r = (A*inVal.r + f*r)>>8;
    }
 
-   inline void QBlendA(ARGB inVal)
+   inline void QBlendA(BGRA inVal)
    {
       int A = inVal.a + (inVal.a>>7);
       int alpha16 = ((a + A)<<8) - a*A;
@@ -136,8 +152,8 @@ struct ARGB
       a = alpha16>>8;
    }
 
-   inline void TBlend_0(const ARGB &inVal) { Blend<false>(inVal); }
-   inline void TBlend_1(const ARGB &inVal) { Blend<true >(inVal); }
+   inline void TBlend_0(const BGRA &inVal) { Blend<false>(inVal); }
+   inline void TBlend_1(const BGRA &inVal) { Blend<true >(inVal); }
 
    union
    {
@@ -145,6 +161,221 @@ struct ARGB
       unsigned int  ival;
    };
 };
+
+
+typedef BGRA<false> ARGB;
+typedef BGRA<true>  BGRPrem;
+
+
+struct RGB
+{
+   inline RGB() { }
+   inline RGB(int inRGBA)
+   {
+      r = (inRGBA>>16) & 0xff;
+      g = (inRGBA>>8) & 0xff;
+      b = inRGBA & 0xff;
+   }
+   inline int getAlpha() { return 255; }
+   inline int getRAlpha() { return r; }
+   inline int getGAlpha() { return g; }
+   inline int getBAlpha() { return b; }
+   inline int getR() { return r; }
+   inline int getG() { return g; }
+   inline int getB() { return b; }
+
+   Uint8 r,g,b;
+};
+
+
+struct AlphaPixel
+{
+   inline AlphaPixel() { }
+
+   inline int getAlpha() { return a; }
+   inline int getRAlpha() { return a; }
+   inline int getGAlpha() { return a; }
+   inline int getBAlpha() { return a; }
+   inline int getR() { return 255; }
+   inline int getG() { return 255; }
+   inline int getB() { return 255; }
+
+   Uint8 a;
+};
+
+
+// --- SetPixel ----
+
+// --- Set BGRA ---
+template<bool Prem>
+inline void SetPixel(BGRA<Prem> &outBgra, const RGB &inRgb)
+{
+   outBgra.r = inRgb.r;
+   outBgra.g = inRgb.g;
+   outBgra.b = inRgb.b;
+   outBgra.a = 255;
+}
+
+
+template<bool Prem>
+inline void SetPixel(BGRA<Prem> &outBgra, const AlphaPixel &inAlpha)
+{
+   if (Prem)
+      outBgra.r = outBgra.g = outBgra.b = 255;
+   else
+      outBgra.r = outBgra.g = outBgra.b = inAlpha.a;
+
+   outBgra.a = inAlpha.a;
+}
+
+
+template<bool Prem0, bool Prem1>
+inline void SetPixel(BGRA<Prem0> &outBgra, const BGRA<Prem1> &inBgra)
+{
+   if (Prem0==Prem1)
+      outBgra.i = inBgra.i;
+   else
+   {
+      const Uint8 *aLut = Prem0 ? gPremAlphaLut[inBgra.a] : gUnPremAlphaLut[inBgra.a];
+      outBgra.r = aLut[inBgra.r];
+      outBgra.g = aLut[inBgra.g];
+      outBgra.b = aLut[inBgra.b];
+      outBgra.a = inBgra.a;
+   }
+}
+
+// --- Set AlphaPixel ---
+template<bool Prem>
+inline void SetPixel(AlphaPixel &outA, const BGRA<Prem> &inBgra)
+{
+   outA.a = inBgra.a;
+}
+
+template<bool Prem>
+inline void SetPixel(AlphaPixel &outA, const RGB &)
+{
+   outA.a = 255;
+}
+
+
+inline void SetPixel(AlphaPixel &outA, const AlphaPixel &inA)
+{
+   outA.a = inA.a;
+}
+
+// --- Set RGB ---
+
+template<bool Prem>
+inline void SetPixel(RGB &outRgb, const BGRA<Prem> &inBgra)
+{
+   if (Prem)
+   {
+      const Uint8 *aLut = gUnPremAlphaLut[inBgra.a];
+      outRgb.r = aLut[inBgra.r];
+      outRgb.g = aLut[inBgra.g];
+      outRgb.b = aLut[inBgra.b];
+   }
+   else
+   {
+      outRgb.r = inBgra.r;
+      outRgb.g = inBgra.g;
+      outRgb.b = inBgra.b;
+   }
+}
+
+template<bool Prem>
+inline void SetPixel(RGB &outRgb, const RGB &inRgb)
+{
+   outRgb = inRgb;
+}
+
+
+inline void SetPixel(RGB &outRgb, const AlphaPixel &inA)
+{
+   outRgb.r = 255;
+   outRgb.g = 255;
+   outRgb.b = 255;
+}
+
+// --- BlendPixel ---
+// --- BGRA ---
+template<bool Prem0, typename T>
+inline void BlendPixel(BGRA<Prem0> &outBgra, const T &inPixel)
+{
+   if (inPixel.getAlpha()==0)
+   {
+      // nothing
+   }
+   else if (inPixel.getAlpha()==255)
+   {
+      SetPixel(outBgra,inPixel);
+   }
+   else
+   {
+      int notA= 256-inPixel.getAlpha();
+      outBgra.a = inPixel.getAlpha()+ ((outBgra.a*notA)>>8);
+      outBgra.r = ((outBgra.r*notA)>>8) + inPixel.getRAlpha();
+      outBgra.g = ((outBgra.g*notA)>>8) + inPixel.getGAlpha();
+      outBgra.b = ((outBgra.b*notA)>>8) + inPixel.getBAlpha();
+   }
+}
+
+template<typename T>
+inline void BlendPixel(AlphaPixel &outA, const T &inPixel)
+{
+   int notA= 256-inPixel.getAlpha();
+   outA.a = inPixel.getAlpha() + ((outA.a*notA)>>8);
+}
+
+inline void BlendPixel(AlphaPixel &outA, const RGB &)
+{
+   outA.a = 255;
+}
+
+
+template<typename T>
+inline void BlendPixel(RGB &outRgb, const T &inPixel)
+{
+   if (!inPixel.getAlpha())
+   {
+   }
+   else if (inPixel.getAlpha()==255)
+   {
+      outRgb.r = inPixel.getR();
+      outRgb.g = inPixel.getG();
+      outRgb.b = inPixel.getB();
+   }
+   else
+   {
+      int notA= 256-inPixel.getAlpha();
+      outRgb.r = ((outRgb.r*notA)>>8) + inPixel.getRAlpha();
+      outRgb.g = ((outRgb.g*notA)>>8) + inPixel.getGAlpha();
+      outRgb.b = ((outRgb.b*notA)>>8) + inPixel.getBAlpha();
+   }
+}
+
+template<bool Prem>
+inline void BlendPixel(RGB &outRgb, const RGB &inRgb)
+{
+   outRgb = inRgb;
+}
+
+
+inline void BlendPixel(RGB &outRgb, const AlphaPixel &inA)
+{
+   outRgb.r = 255;
+   outRgb.g = 255;
+   outRgb.b = 255;
+}
+
+
+
+
+
+
+
+
+
 
 
 inline void BlendAlpha(Uint8 &ioDest, Uint8 inSrc)
@@ -181,6 +412,9 @@ void PixelConvert(int inWidth, int inHeight,
        PixelFormat destFormat, void *destPtr, int destByteStride, int destPlaneOffset );
 
 int BytesPerPixel(PixelFormat inFormat);
+
+   void SetPixelRect(unsigned int inRgb, const Rect &inRect,
+                  PixelFormat inFormat, Uint8 *inPtr, int inStride);
 
 
 } // end namespace nme
