@@ -159,36 +159,19 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
    // Start decompressor.
    jpeg_start_decompress(&cinfo);
 
-   result = new SimpleSurface(cinfo.output_width, cinfo.output_height, pfXRGB);
+   result = new SimpleSurface(cinfo.output_width, cinfo.output_height, pfRGB);
    result->IncRef();
 
 
    RenderTarget target = result->BeginRender(Rect(cinfo.output_width, cinfo.output_height));
 
 
-   row_buf = (uint8 *)malloc(cinfo.output_width * 3);
-
    while (cinfo.output_scanline < cinfo.output_height)
    {
-      uint8 * src = row_buf;
       uint8 * dest = target.Row(cinfo.output_scanline);
-
-      jpeg_read_scanlines(&cinfo, &row_buf, 1);
-
-      uint8 *end = dest + cinfo.output_width*4;
-      while (dest<end)
-      {
-         dest[0] = src[2];
-         dest[1] = src[1];
-         dest[2] = src[0];
-         dest[3] = 0xff;
-         dest+=4;
-         src+=3;
-      }
+      jpeg_read_scanlines(&cinfo, &dest, 1);
    }
    result->EndRender();
-
-   free(row_buf);
 
    // Finish decompression.
    jpeg_finish_decompress(&cinfo);
@@ -404,8 +387,8 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
                     png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS);
    
    /* Add filler (or alpha) byte (before/after each RGB triplet) */
-   png_set_expand(png_ptr);
-   png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
+   //png_set_expand(png_ptr);
+   //png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
    //png_set_gray_1_2_4_to_8(png_ptr);
    png_set_palette_to_rgb(png_ptr);
    png_set_gray_to_rgb(png_ptr);
@@ -414,9 +397,10 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
    if (bit_depth == 16)
       png_set_strip_16(png_ptr);
 
-   png_set_bgr(png_ptr);
+   if (has_alpha)
+      png_set_bgr(png_ptr);
 
-   result = new SimpleSurface(width,height, (has_alpha) ? pfARGB : pfXRGB);
+   result = new SimpleSurface(width,height, has_alpha ? pfBGRA : pfRGB);
    result->IncRef();
    target = result->BeginRender(Rect(width,height));
    
@@ -472,7 +456,7 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
    int h = inSurface->Height();
 
    int bit_depth = 8;
-   int color_type = (inSurface->Format()&pfHasAlpha) ?
+   int color_type = HasAlphaChannel(inSurface->Format()) ?
                     PNG_COLOR_TYPE_RGB_ALPHA :
                     PNG_COLOR_TYPE_RGB;
    png_set_IHDR(png_ptr, info_ptr, w, h,

@@ -59,6 +59,7 @@ enum PixelChannel
 
 enum { CHANNEL_OFFSET_VIRTUAL_ALPHA = -1, CHANNEL_OFFSET_NONE = -2 };
 int GetPixelChannelOffset(PixelFormat inFormat, PixelChannel inChannel);
+inline bool HasAlphaChannel(PixelFormat inFormat) { return GetPixelChannelOffset(inFormat, CHAN_ALPHA)>=0; }
 
 typedef unsigned char Uint8;
 
@@ -164,7 +165,7 @@ struct BGRA
 
 
 typedef BGRA<false> ARGB;
-typedef BGRA<true>  BGRPrem;
+typedef BGRA<true>  BGRPremA;
 
 
 struct RGB
@@ -368,6 +369,63 @@ inline void BlendPixel(RGB &outRgb, const AlphaPixel &inA)
    outRgb.b = 255;
 }
 
+
+
+template<bool Prem>
+inline BGRA<Prem> BilinearInterp( BGRA<Prem> s00, BGRA<Prem> s10, BGRA<Prem> s01, BGRA<Prem> s11, int x_frac, int y_frac)
+{
+   BGRPremA<Prem> s;
+
+   int c0_0 = s00.r + (((s01.r-s00.r)*x_frac) >> 16);
+   int c0_1 = s10.r + (((s11.r-s10.r)*x_frac) >> 16);
+   s.r = c0_0 + (((c0_1-c0_0)*y_frac) >> 16);
+
+   int c1_0 = s00.g + (((s01.g-s00.g)*x_frac) >> 16);
+   int c1_1 = s10.g + (((s11.g-s10.g)*x_frac) >> 16);
+   s.g = c1_0 + (((c1_1-c1_0)*y_frac) >> 16);
+
+   int c2_0 = s00.b + (((s01.b-s00.b)*x_frac) >> 16);
+   int c2_1 = s10.b + (((s11.b-s10.b)*x_frac) >> 16);
+   s.b = c2_0 + (((c2_1-c2_0)*y_frac) >> 16);
+
+
+   int ca_0 = s00.a + (((s01.a-s00.a)*x_frac) >> 16);
+   int ca_1 = s10.a + (((s11.a-s10.a)*x_frac) >> 16);
+   s.a = ca_0 + (((ca_1-ca_0)*y_frac) >> 16);
+
+   return s;
+}
+
+
+inline RGB BilinearInterp( RGB s00, RGB s10, RGB s01, RGB s11, int x_frac, int y_frac)
+{
+   RGB s;
+
+   int c0_0 = s00.r + (((s01.r-s00.r)*x_frac) >> 16);
+   int c0_1 = s10.r + (((s11.r-s10.r)*x_frac) >> 16);
+   s.r = c0_0 + (((c0_1-c0_0)*y_frac) >> 16);
+
+   int c1_0 = s00.g + (((s01.g-s00.g)*x_frac) >> 16);
+   int c1_1 = s10.g + (((s11.g-s10.g)*x_frac) >> 16);
+   s.g = c1_0 + (((c1_1-c1_0)*y_frac) >> 16);
+
+   int c2_0 = s00.b + (((s01.b-s00.b)*x_frac) >> 16);
+   int c2_1 = s10.b + (((s11.b-s10.b)*x_frac) >> 16);
+   s.b = c2_0 + (((c2_1-c2_0)*y_frac) >> 16);
+
+   return s;
+}
+
+
+inline AlphaPixel BilinearInterp( AlphaPixel s00, AlphaPixel s10, AlphaPixel s01, AlphaPixel s11, int x_frac, int y_frac)
+{
+   AlphaPixel s;
+
+   int ca_0 = s00.a + (((s01.a-s00.a)*x_frac) >> 16);
+   int ca_1 = s10.a + (((s11.a-s10.a)*x_frac) >> 16);
+   s.a = ca_0 + (((ca_1-ca_0)*y_frac) >> 16);
+   return s;
+}
 
 
 

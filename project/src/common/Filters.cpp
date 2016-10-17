@@ -9,27 +9,13 @@ namespace nme
 
 Surface *ExtractAlpha(const Surface *inSurface)
 {
-   if (inSurface->Format()!=pfXRGB && inSurface->Format()!=pfARGB)
-      return 0;
-
    int w =  inSurface->Width();
    int h = inSurface->Height();
    Surface *result = new SimpleSurface(w,h,pfAlpha);
    result->IncRef();
 
    AutoSurfaceRender render(result);
-   const RenderTarget &target = render.Target();
-   for(int y=0;y<h;y++)
-   {
-      const uint8 *src = &((const ARGB *)inSurface->Row(y))->a;
-      uint8 *dest = target.Row(y);
-      for(int x=0;x<w;x++)
-      {
-         *dest = *src;
-         dest++;
-         src+=4;
-      }
-   }
+   inSurface->BlitChannel(render.Target(), Rect(0,0,w,h), 0, 0, CHAN_ALPHA, CHAN_ALPHA );
    return result;
 }
 

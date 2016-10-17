@@ -1271,7 +1271,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                if (bg && filters.size())
                    bg = 0;
                Surface *bitmap = new SimpleSurface(w, h, obj->IsBitmapRender(inTarget.IsHardware()) ?
-                         (bg ? pfXRGB : pfARGB) : pfAlpha );
+                         (bg ? pfRGB : pfBGRPremA) : pfAlpha );
                bitmap->IncRef();
 
                if (bg && obj->IsBitmapRender(inTarget.IsHardware()))

@@ -851,30 +851,7 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 }
 
 
-// BGRA<t/f> AlphaPixel RGB
-void SetPixel( )
-         sx+=dsx_dx;
-         if (!SRC_ALPHA)
-         {
-            if (DEST_ALPHA)
-               s.a = 255;
-            *dest++ = s;
-         }
-         else
-         {
-            if (!s.a)
-               dest++;
-            else if (s.a==255)
-               *dest++ = s;
-            else if (DEST_ALPHA)
-               dest++ ->QBlendA(s);
-            else
-               dest++ ->QBlend(s);
-         }
-
-
-
-template<bool SRC_ALPHA,bool DEST_ALPHA>
+template<bool SRC,bool DEST>
 void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
                 const Rect &inSrcRect, const DRect &inDestRect)
 {
@@ -906,10 +883,7 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
 
       int sx = sx0;
       for(int x=0;x<out.w;x++)
-      {
-         SRC s(src[sx>>16]);
-         StretchPixel(*dest++, s);
-      }
+         BlendPixel(*dest++, src[sx>>16]);
    }
 
    #else
@@ -921,15 +895,14 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
    int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16) - 0x8000;
    int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16) - 0x8000;
    int last_y = inSrcRect.y1()-1;
-   ARGB s;
-   s.a = 255;
+   SRC s;
    for(int y=0;y<out.h;y++)
    {
-      ARGB *dest= (ARGB *)outTarget.Row(y+out.y) + out.x;
+      DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
       int y_ = (sy0>>16);
       int y_frac = sy0 & 0xffff;
-      const ARGB *src0 = (const ARGB *)inSrc->Row(y_);
-      const ARGB *src1 = (const ARGB *)inSrc->Row(y_<last_y ? y_+1 : y_);
+      const SRC *src0 = (const SRC *)inSrc->Row(y_);
+      const SRC *src1 = (const SRC *)inSrc->Row(y_<last_y ? y_+1 : y_);
       sy0+=dsy_dy;
 
       int sx = sx0;
@@ -938,55 +911,41 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
          int x_ = sx>>16;
          int x_frac = sx & 0xffff;
 
-         ARGB s00(src0[x_]);
-         ARGB s01(src0[x_+1]);
-         ARGB s10(src1[x_]);
-         ARGB s11(src1[x_+1]);
+         SRC s = BilinearInterp( src0[x_], src0[x_+1], src1[x_], src1[x_+1], x_frac, y_frac);
 
-         int c0_0 = s00.r + (((s01.r-s00.r)*x_frac) >> 16);
-         int c0_1 = s10.r + (((s11.r-s10.r)*x_frac) >> 16);
-         s.r = c0_0 + (((c0_1-c0_0)*y_frac) >> 16);
-
-         int c1_0 = s00.g + (((s01.g-s00.g)*x_frac) >> 16);
-         int c1_1 = s10.g + (((s11.g-s10.g)*x_frac) >> 16);
-         s.g = c1_0 + (((c1_1-c1_0)*y_frac) >> 16);
-
-         int c2_0 = s00.b + (((s01.b-s00.b)*x_frac) >> 16);
-         int c2_1 = s10.b + (((s11.b-s10.b)*x_frac) >> 16);
-         s.b = c2_0 + (((c2_1-c2_0)*y_frac) >> 16);
-
+         BlendPixel(*dest, s);
+         dest++;
          sx+=dsx_dx;
-         if (!SRC_ALPHA)
-         {
-            *dest++ = s;
-         }
-         else
-         {
-            int a_x0 = s00.a + (((s01.a-s00.a)*x_frac) >> 16);
-            int a_x1 = s10.a + (((s11.a-s10.a)*x_frac) >> 16);
-            s.a = a_x0 + (((a_x1-a_x0)*y_frac) >> 16);
-
-            if (!s.a)
-               dest++;
-            else if (s.a==255)
-               *dest++ = s;
-            else if (DEST_ALPHA)
-               dest++ ->QBlendA(s);
-            else
-               dest++ ->QBlend(s);
-         }
       }
    }
    #endif
 }
 
+
+template<typename PIXEL>
+void TStretchSuraceTo(const SimpleSurface *inSurface, const RenderTarget &outTarget,
+                     const Rect &inSrcRect, const DRect &inDestRect)
+{
+   switch(outTarget.Format())
+   {
+      case pfRGB:
+         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect);
+         break;
+      case pfBGRA:
+         TStretchTo<PIXEL,ARGB>(inSurface, outTarget, inSrcRect, inDestRect);
+         break;
+      case pfBGRPremA:
+         TStretchTo<PIXEL,BGRPremA>(inSurface, outTarget, inSrcRect, inDestRect);
+         break;
+      case pfAlpha:
+         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect);
+         break;
+   }
+}
+
 void SimpleSurface::StretchTo(const RenderTarget &outTarget,
                      const Rect &inSrcRect, const DRect &inDestRect) const
 {
-   // Only RGB supported
-   if (mPixelFormat==pfAlpha || outTarget.mPixelFormat==pfAlpha)
-      return;
-
    switch(mPixelFormat)
    {
       case pfRGB:
@@ -1002,24 +961,6 @@ void SimpleSurface::StretchTo(const RenderTarget &outTarget,
          TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect);
          break;
    }
-
-   bool dest_has_alpha = outTarget.mPixelFormat & pfHasAlpha;
-   bool src_has_alpha = mPixelFormat &  pfHasAlpha;
-
-   if (src_has_alpha)
-   {
-      if (dest_has_alpha)
-         TStretchTo<true,true>(this,outTarget,inSrcRect,inDestRect);
-      else
-         TStretchTo<true,false>(this,outTarget,inSrcRect,inDestRect);
-   }
-   else
-   {
-      if (dest_has_alpha)
-         TStretchTo<false,true>(this,outTarget,inSrcRect,inDestRect);
-      else
-         TStretchTo<false,false>(this,outTarget,inSrcRect,inDestRect);
-   }
 }
 
 
@@ -1034,7 +975,7 @@ void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
       return;
    }
 
-   ARGB rgb(inColour | ((mPixelFormat & pfHasAlpha) ? 0 : 0xFF000000));
+   ARGB rgb(inColour);
    if (mPixelFormat==pfAlpha)
    {
       memset(mBase, rgb.a,mStride*mHeight);
@@ -1161,42 +1102,35 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
 
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
 
+   ARGB *argb = (ARGB *)outPixels;
    for(int y=0;y<r.h;y++)
    {
-      uint8 *src = mBase + (r.y+y)*mStride + r.x*(mPixelFormat==pfAlpha?1:4);
       if (mPixelFormat==pfAlpha)
       {
-         for(int x=0;x<r.w;x++)
-            *outPixels++ = (*src++) << 24;
-      }
-      else if (inIgnoreOrder || inLittleEndian)
-      {
-         memcpy(outPixels,src,r.w*4);
-         outPixels+=r.w;
-      }
-      else
-      {
-         uint8 *a = src;
-         uint8 *pix = (uint8 *)outPixels;
+         AlphaPixel *src = (AlphaPixel *)(mBase + (r.y+y)*mStride) + r.x;
 
          for(int x=0;x<r.w;x++)
-         {
-            *pix++ = src[3];
-            *pix++ = src[2];
-            *pix++ = src[1];
-            *pix++ = src[0];
-            src+=4;
-         }
-         outPixels += r.w;
+            SetPixel(*argb++, *src++);
+      }
+      else if (mPixelFormat==pfRGB)
+      {
+         RGB *src = (RGB *)(mBase + (r.y+y)*mStride) + r.x;
 
-         if (!(mPixelFormat & pfHasAlpha))
-         {
-            for(int x=0;x<r.w;x++)
-            {
-               *a = 255;
-               a+=4;
-            }
-         }
+         for(int x=0;x<r.w;x++)
+            SetPixel(*argb++, *src++);
+      }
+      else if (inIgnoreOrder || inLittleEndian || mPixelFormat==pfBGRA)
+      {
+         ARGB *src = (ARGB *)(mBase + (r.y+y)*mStride) + r.x;
+         memcpy(argb,src,r.w*4);
+         argb+=r.w;
+      }
+      else if (mPixelFormat==pfBGRPremA)
+      {
+         BGRPremA *src = (BGRPremA *)(mBase + (r.y+y)*mStride) + r.x;
+
+         for(int x=0;x<r.w;x++)
+            SetPixel(*argb++, *src++);
       }
    }
 }
@@ -1242,8 +1176,7 @@ void SimpleSurface::getColorBoundsRect(int inMask, int inCol, bool inFind, Rect 
 }
 
 
-void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inIgnoreOrder,
-        bool inLittleEndian)
+void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inIgnoreOrder, bool inLittleEndian)
 {
    if (!mBase)
       return;
@@ -1252,13 +1185,15 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
    if (mTexture)
       mTexture->Dirty(r);
 
-   const uint8 *src = (const uint8 *)inPixels;
-   
-   if (mAllowTrans && mPixelFormat==pfXRGB)
-      mPixelFormat=pfARGB;
-   
+   const ARGB *src = (ARGB uint8 *)inPixels;
+
+   // TODO - check alpha upgrade
    for(int y=0;y<r.h;y++)
    {
+      if (mPixelFormat==pfARGB)
+      {
+      }
+
       uint8 *dest = mBase + (r.y+y)*mStride + r.x*(mPixelFormat==pfAlpha?1:4);
       if (mPixelFormat==pfAlpha)
       {
