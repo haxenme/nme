@@ -188,6 +188,7 @@ class OGLTexture : public Texture
    int mTextureWidth;
    int mTextureHeight;
    Surface *mSurface;
+   GLuint mUploadedFormat;
 
 
 public:
@@ -200,23 +201,28 @@ public:
 
       // No reference count since the surface should outlive us
       mSurface = inSurface;
+      mUploadedFormat = 0;
 
       mPixelWidth = mSurface->Width();
       mPixelHeight = mSurface->Height();
-      mDirtyRect = Rect(0,0);
-      mContextVersion = gTextureContextVersion;
-
       bool non_po2 = NonPO2Supported(inFlags & surfNotRepeatIfNonPO2);
       //printf("Using non-power-of-2 texture %d\n",non_po2);
 
-      int w = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);
-      int h = non_po2 ? mPixelHeight : UpToPower2(mPixelHeight);
+      mTextureWidth = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);
+      mTextureWidth = non_po2 ? mPixelHeight : UpToPower2(mPixelHeight);
       mCanRepeat = IsPower2(w) && IsPower2(h);
 
-      //__android_log_print(ANDROID_LOG_ERROR, "NME",  "NewTexure %d %d", w, h);
+      mTextureID = 0;
+      glGenTextures(1, &mTextureID);
+      CreateTexture();
+   }
 
-      mTextureWidth = w;
-      mTextureHeight = h;
+   void CreateTexture()
+   {
+      mDirtyRect = Rect(0,0);
+      mContextVersion = gTextureContextVersion;
+
+      //__android_log_print(ANDROID_LOG_ERROR, "NME",  "NewTexure %d %d", w, h);
 
       uint8 *buffer = 0;
       PixelFormat fmt = mSurface->Format();
@@ -241,8 +247,6 @@ public:
          buffer = mSurface->GetBase();
 
 
-      mTextureID = 0;
-      glGenTextures(1, &mTextureID);
       // __android_log_print(ANDROID_LOG_ERROR, "NME", "CreateTexture %d (%dx%d)",
       //  mTextureID, mPixelWidth, mPixelHeight);
       glBindTexture(GL_TEXTURE_2D,mTextureID);
@@ -254,6 +258,8 @@ public:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, pixel_format, channel, buffer);
+
+      mUploadedFormat = store_format;
 
       if (copy_required)
          free(buffer);
@@ -282,15 +288,13 @@ public:
       {
          glActiveTexture(GL_TEXTURE0 + inSlot);
       }
-      glBindTexture(GL_TEXTURE_2D,mTextureID);
 
       if (gTextureContextVersion!=mContextVersion)
       {
          ELOG("######## Error stale texture");
-         mContextVersion = gTextureContextVersion;
-         mDirtyRect = Rect(mSurface->Width(),mSurface->Height());
+         CreateTexture();
       }
-      if (mSurface->GetBase() && mDirtyRect.HasPixels())
+      else if (mSurface->GetBase() && mDirtyRect.HasPixels())
       {
          //__android_log_print(ANDROID_LOG_INFO, "NME", "UpdateDirtyRect! %d %d",
              //mPixelWidth, mPixelHeight);
@@ -299,84 +303,94 @@ public:
          PixelFormat fmt = mSurface->Format();
          PixelFormat gpu = mSurface->GPUFormat();
 
-         GLuint pixel_format = getTransferOgl(gpu);
-         PixelFormat buffer_format = getTransferFormat(gpu);
-         GLenum channel= getOglChannelType(gpu);
-
-         int pw = BytesPerPixel(fmt);
-
-
-         int x0 = mDirtyRect.x;
-         int y0 = mDirtyRect.y;
-         int dw = mDirtyRect.w;
-         int dh = mDirtyRect.h;
-
-         bool copy_required = buffer_format!=fmt;
-         #if defined(NME_GLES)
-         if (!copy_required && dw!=mTextureWidth)
+         GLuint store_format = getTextureStorage(gpu);
+         if (store_format!=mUploadedFormat)
          {
-            // Formats match but width does not. Can't use GL_UNPACK_ROW_LENGTH.
-            //  Do we do the whole row, or copy?
-            if (dw>mTextureWidth/2)
-            {
-               x0 = 0;
-               dw = mTextureWidth;
-            }
-            else
-               copy_required = true;
-         }
-         #endif
-
-         if (copy_required)
-         {
-            uint8 *buffer = 0;
-            // Make unpack align a multiple of 4 ...
-            if (pw<4)
-            {
-               dw = (dw + 3) & ~3;
-               if (x0+dw > mSurface->Width())
-               {
-                  x0 = mSurface->Width()-dw;
-                  if (x0<0)
-                  {
-                     x0 = 0;
-                     dw = mSurface->Width();
-                  }
-               }
-            }
-
-            const uint8 *p0 = mSurface->Row(y0) + x0*pw;
-            buffer = (uint8 *)malloc(pw * dw * dh);
-            PixelConvert(dw,dh,
-                         fmt, p0, mSurface->GetStride(), mSurface->GetPlaneOffset(),
-                         buffer_format, buffer, dw+pw, dw*dh*pw );
-
-            glTexSubImage2D(GL_TEXTURE_2D, 0,
-               x0, y0,
-               dw, dh, 
-               pixel_format, channel,
-               buffer );
-            free(buffer);
+            CreateTexture();
          }
          else
          {
-            #ifndef NME_GLES
-            glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
-            #endif
-            glTexSubImage2D(GL_TEXTURE_2D, 0,
-               x0, y0,
-               dw, dh,
-               pixel_format, channel,
-               mSurface->Row(y0) + x0 );
-            #ifndef NME_GLES
-            glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
-            #endif
-         }
+            glBindTexture(GL_TEXTURE_2D,mTextureID);
 
-         int err = glGetError();
-         if (err != GL_NO_ERROR)
-            ELOG("GL Error: %d %dx%d", err, mDirtyRect.w, mDirtyRect.h);
-         mDirtyRect = Rect();
+            GLuint pixel_format = getTransferOgl(gpu);
+            PixelFormat buffer_format = getTransferFormat(gpu);
+            GLenum channel= getOglChannelType(gpu);
+
+            int pw = BytesPerPixel(fmt);
+
+
+            int x0 = mDirtyRect.x;
+            int y0 = mDirtyRect.y;
+            int dw = mDirtyRect.w;
+            int dh = mDirtyRect.h;
+
+            bool copy_required = buffer_format!=fmt;
+            #if defined(NME_GLES)
+            if (!copy_required && dw!=mPixelWidth)
+            {
+               // Formats match but width does not. Can't use GL_UNPACK_ROW_LENGTH.
+               //  Do we do the whole row, or copy?
+               if (dw>mPixelWidth/2)
+               {
+                  x0 = 0;
+                  dw = mPixelWidth;
+               }
+               else
+                  copy_required = true;
+            }
+            #endif
+
+            if (copy_required)
+            {
+               uint8 *buffer = 0;
+               // Make unpack align a multiple of 4 ...
+               if (pw<4)
+               {
+                  dw = (dw + 3) & ~3;
+                  if (x0+dw > mPixelWidth)
+                  {
+                     x0 = mPixelWidth-dw;
+                     if (x0<0)
+                     {
+                        x0 = 0;
+                        dw = mPixelWidth;
+                     }
+                  }
+               }
+
+               const uint8 *p0 = mSurface->Row(y0) + x0*pw;
+               buffer = (uint8 *)malloc(pw * dw * dh);
+               PixelConvert(dw,dh,
+                            fmt, p0, mSurface->GetStride(), mSurface->GetPlaneOffset(),
+                            buffer_format, buffer, dw+pw, dw*dh*pw );
+
+               glTexSubImage2D(GL_TEXTURE_2D, 0,
+                  x0, y0,
+                  dw, dh, 
+                  pixel_format, channel,
+                  buffer );
+               free(buffer);
+            }
+            else
+            {
+               #ifndef NME_GLES
+               glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
+               #endif
+               glTexSubImage2D(GL_TEXTURE_2D, 0,
+                  x0, y0,
+                  dw, dh,
+                  pixel_format, channel,
+                  mSurface->Row(y0) + x0 );
+               #ifndef NME_GLES
+               glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
+               #endif
+            }
+
+            int err = glGetError();
+            if (err != GL_NO_ERROR)
+               ELOG("GL Error: %d %dx%d", err, mDirtyRect.w, mDirtyRect.h);
+            mDirtyRect = Rect();
+         }
       }
    }
 

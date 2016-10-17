@@ -134,6 +134,8 @@ public:
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
 
+   void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0);
+
 
    RenderTarget BeginRender(const Rect &inRect,bool inForHitTest);
    void EndRender();

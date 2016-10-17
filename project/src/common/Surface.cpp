@@ -622,6 +622,10 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
    if (src_rect.HasPixels())
    {
+      if (mPixelFormat>=pfRenderToCount)
+         ChangeInternalFormat();
+
+
       bool src_alpha = mPixelFormat==pfAlpha;
       bool dest_alpha = outDest.mPixelFormat==pfAlpha;
 
@@ -851,7 +855,7 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 }
 
 
-template<bool SRC,bool DEST>
+template<typename SRC,typename DEST>
 void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
                 const Rect &inSrcRect, const DRect &inDestRect)
 {
@@ -1100,6 +1104,8 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
    if (!mBase)
       return;
 
+   // PixelConvert
+
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
 
    ARGB *argb = (ARGB *)outPixels;
@@ -1137,34 +1143,64 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
 
 void SimpleSurface::getColorBoundsRect(int inMask, int inCol, bool inFind, Rect &outRect)
 {
+   outRect = Rect();
    if (!mBase)
       return;
 
    int w = Width();
    int h = Height();
 
-   if (w==0 || h==0 || mPixelFormat==pfAlpha)
-   {
-      outRect = Rect();
+   if (w==0 || h==0 || mPixelFormat==pfAlpha || mPixelFormat>=pfRenderToCount)
       return;
-   }
+
+   if (mPixelFormat==pfRGB && (inMask&0xff000000) && (inCol&0xff000000)!=0xff000000)
+      return;
 
    int min_x = w + 1;
    int max_x = -1;
    int min_y = h + 1;
    int max_y = -1;
 
+   ARGB argb(inCol);
+   if (mPixelFormat==pfBGRPremA)
+   {
+      BGRPremA bgra;
+      SetPixel(bgra, argb);
+      argb.ival = bgra.ival;
+   }
+   argb.ival &= inMask;
+
    for(int y=0;y<h;y++)
    {
-      int *pixel = (int *)( mBase + y*mStride);
-      for(int x=0;x<w;x++)
+      if (mPixelFormat==pfRGB)
       {
-         if ( (((*pixel++)&inMask)==inCol)==inFind )
+         ARGB test;
+         RGB *rgb = (RGB *)( mBase + y*mStride);
+         for(int x=0;x<w;x++)
          {
-            if (x<min_x) min_x=x;
-            if (x>max_x) max_x=x;
-            if (y<min_y) min_y=y;
-            if (y>max_y) max_y=y;
+            SetPixel(test,*rgb++);
+            if ( ((test.ival&inMask)==inCol)==inFind )
+            {
+               if (x<min_x) min_x=x;
+               if (x>max_x) max_x=x;
+               if (y<min_y) min_y=y;
+               if (y>max_y) max_y=y;
+            }
+         }
+
+      }
+      else
+      {
+         int *pixel = (int *)( mBase + y*mStride);
+         for(int x=0;x<w;x++)
+         {
+            if ( (((*pixel++)&inMask)==inCol)==inFind )
+            {
+               if (x<min_x) min_x=x;
+               if (x>max_x) max_x=x;
+               if (y<min_y) min_y=y;
+               if (y>max_y) max_y=y;
+            }
          }
       }
    }
@@ -1185,72 +1221,51 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
    if (mTexture)
       mTexture->Dirty(r);
 
-   const ARGB *src = (ARGB uint8 *)inPixels;
+   PixelFormat convert = pfNone;
+   if (!HasAlphaChannel(mPixelFormat))
+   {
+      int n = inRect.w * inRect.h;
+      for(int i=0;i<n;i++)
+         if ((inPixels[i]&0xff000000) != 0xff000000)
+         {
+            convert = pfBGRA;
+            break;
+         }
+      if (convert==pfNone && mPixelFormat>=pfRenderToCount)
+         convert = pfRGB;
+   }
+   else if (mPixelFormat>=pfRenderToCount)
+      convert = pfBGRA;
 
-   // TODO - check alpha upgrade
+   if (convert!=pfNone)
+      ChangeInternalFormat(convert, &r);
+
+   const ARGB *src = (const ARGB *)inPixels;
+
    for(int y=0;y<r.h;y++)
    {
-      if (mPixelFormat==pfARGB)
+      if (mPixelFormat==pfBGRA)
       {
+         ARGB *dest = (ARGB *)(mBase + (r.y+y)*mStride) + r.x;
+         memcpy(dest, src, r.w*sizeof(ARGB));
       }
-
-      uint8 *dest = mBase + (r.y+y)*mStride + r.x*(mPixelFormat==pfAlpha?1:4);
-      if (mPixelFormat==pfAlpha)
+      else if (mPixelFormat==pfAlpha)
       {
+         AlphaPixel *dest = (AlphaPixel *)(mBase + (r.y+y)*mStride) + r.x;
          for(int x=0;x<r.w;x++)
-            *dest++ = (*inPixels++) >> 24;
+            SetPixel(*dest++,*src++);
       }
-      else if (inIgnoreOrder)
+      else if (mPixelFormat==pfRGB)
       {
-         if (mAllowTrans)
-         {
-            memcpy(dest,inPixels,r.w*4);
-            inPixels+=r.w;
-         }
-         else
-         {
-            for(int x=0;x<r.w;x++)
-            {
-               *dest++ = src[0];
-               *dest++ = src[1];
-               *dest++ = src[2];
-               *dest++ = 0xff;
-               src+=4;
-            }
-         }
+         RGB *dest = (RGB *)(mBase + (r.y+y)*mStride) + r.x;
+         for(int x=0;x<r.w;x++)
+            SetPixel(*dest++,*src++);
       }
-      else
+      else if (mPixelFormat==pfBGRPremA)
       {
-         if (inLittleEndian)
-         {
-               if (mAllowTrans)
-               {
-                  memcpy(dest,src,r.w*sizeof(int));
-                  src += r.w*sizeof(int);
-               }
-               else
-               {
-                  for(int x=0;x<r.w;x++)
-                  {
-                     *dest++ = src[0];
-                     *dest++ = src[1];
-                     *dest++ = src[2];
-                     *dest++ = 0xff;
-                     src+=4;
-                  }
-               }
-         }
-         else
-         {
-               for(int x=0;x<r.w;x++)
-               {
-                  *dest++ = src[3];
-                  *dest++ = src[2];
-                  *dest++ = src[1];
-                  *dest++ = mAllowTrans ? src[0] : 0xff;
-                  src+=4;
-               }
-         }
+         BGRPremA *dest = (BGRPremA *)(mBase + (r.y+y)*mStride) + r.x;
+         for(int x=0;x<r.w;x++)
+            SetPixel(*dest++,*src++);
       }
    }
 }
@@ -1260,10 +1275,31 @@ uint32 SimpleSurface::getPixel(int inX,int inY)
    if (inX<0 || inY<0 || inX>=mWidth || inY>=mHeight || !mBase)
       return 0;
 
-   if (mPixelFormat==pfAlpha)
-      return mBase[inY*mStride + inX]<<24;
+   ARGB result(0xff000000);
+   void *ptr = mBase + inY*mStride;
+   switch(mPixelFormat)
+   {
+      case pfRGB: SetPixel(result, ((RGB *)ptr)[inX]); break;
+      case pfBGRA: SetPixel(result, ((ARGB *)ptr)[inX]); break;
+      case pfBGRPremA: SetPixel(result, ((BGRPremA *)ptr)[inX]); break;
+      case pfAlpha: SetPixel(result, ((AlphaPixel *)ptr)[inX]); break;
 
-   return ((int *)(mBase + inY*mStride))[inX];
+      /* TODO
+      case pfARGB4444:
+      case pfRGB565:
+      case pfLuma:
+      case pfLumaAlpha:
+      case pfECT:
+      case pfRGB32f:
+      case pfRGBA32f:
+      case pfYUV420sp:
+      case pfNV12:
+      case pfOES:
+      */
+   }
+
+
+   return result.ival;
 }
 
 void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
@@ -1275,22 +1311,30 @@ void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
    if (mTexture)
       mTexture->Dirty(Rect(inX,inY,1,1));
 
-   if (inAlphaToo)
+   if (inAlphaToo && ((inRGBA&0xff000000)!=0xff000000) && !HasAlphaChannel(mPixelFormat) )
+      ChangeInternalFormat(pfBGRA);
+
+   ARGB value(inRGBA);
+   void *ptr = mBase + inY*mStride;
+   switch(mPixelFormat)
    {
-      if(mPixelFormat==pfXRGB)
-         mPixelFormat=pfARGB;
-      if (mPixelFormat==pfAlpha)
-         mBase[inY*mStride + inX] = inRGBA >> 24;
-      else
-         ((uint32 *)(mBase + inY*mStride))[inX] = inRGBA;
-   }
-   else
-   {
-      if (mPixelFormat!=pfAlpha)
-      {
-         int &pixel = ((int *)(mBase + inY*mStride))[inX];
-         pixel = (inRGBA & 0xffffff) | (pixel & 0xff000000);
-      }
+      case pfRGB: SetPixel(((RGB *)ptr)[inX],value); break;
+      case pfBGRA: SetPixel(((ARGB *)ptr)[inX],value); break;
+      case pfBGRPremA: SetPixel(((BGRPremA *)ptr)[inX],value); break;
+      case pfAlpha: SetPixel(((AlphaPixel *)ptr)[inX],value); break;
+
+      /* TODO
+      case pfARGB4444:
+      case pfRGB565:
+      case pfLuma:
+      case pfLumaAlpha:
+      case pfECT:
+      case pfRGB32f:
+      case pfRGBA32f:
+      case pfYUV420sp:
+      case pfNV12:
+      case pfOES:
+      */
    }
 }
 
