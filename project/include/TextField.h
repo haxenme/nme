@@ -227,6 +227,7 @@ private:
    Graphics *mTiles;
    int      mLastCaretHeight;
    int      mLastUpDownX;
+   UserPoint mLastSubpixelOffset;
 
    int mSelectMin;
    int mSelectMax;

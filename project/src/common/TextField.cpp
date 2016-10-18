@@ -1666,10 +1666,10 @@ bool TextField::IsCacheDirty()
 }
 
 
-void  TextField::toScreenGrid(UserPoint &ioPoint, const Matrix &inMatrix)
+void TextField::toScreenGrid(UserPoint &ioPoint,const Matrix &inMatrix)
 {
-   ioPoint.x = floor((ioPoint.x-inMatrix.mtx)*fontScale+0.5)*fontToLocal+inMatrix.mtx;
-   ioPoint.y = floor((ioPoint.y-inMatrix.mty)*fontScale+0.5)*fontToLocal+inMatrix.mty;
+   ioPoint.x = (floor(ioPoint.x*fontScale + inMatrix.mtx+0.5)-inMatrix.mtx)*fontToLocal;
+   ioPoint.y = (floor(ioPoint.y*fontScale + inMatrix.mty+0.5)-inMatrix.mty)*fontToLocal;
 }
 
 
@@ -1780,6 +1780,16 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    mHasCaret = caret;
 
+   if (!mTilesDirty && screenGrid)
+   {
+      UserPoint subpixelOffset( floor(matrix.mtx)-matrix.mtx, floor(matrix.mty)-matrix.mty);
+      if (subpixelOffset!=mLastSubpixelOffset)
+      {
+         mLastSubpixelOffset = subpixelOffset;
+         mTilesDirty = true;
+      }
+   }
+
    if (mTilesDirty)
    {
       mTilesDirty = false;
@@ -1849,9 +1859,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
                            UserPoint p(pos.x+tile.mOx*fontToLocal,pos.y+tile.mOy*fontToLocal);
                            if (screenGrid)
-                           {
                               toScreenGrid(p,matrix);
-                           }
 
                            double right = p.x+tile.mRect.w*fontToLocal;
                            if (right>GAP)
@@ -2104,6 +2112,10 @@ void TextField::Layout(const Matrix &inMatrix)
 
    if (!mLinesDirty)
       return;
+
+
+   if (screenGrid)
+      mLastSubpixelOffset = UserPoint( floor(inMatrix.mtx)-inMatrix.mtx, floor(inMatrix.mty)-inMatrix.mty);
 
    double font6ToLocalX = fontToLocal/64.0;
 
