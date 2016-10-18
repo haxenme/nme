@@ -70,6 +70,8 @@ extern Uint8 gUnPremAlphaLut[256][256];
 template<bool PREM>
 struct BGRA
 {
+   enum { pixelFormat = PREM ? pfBGRPremA : pfBGRA };
+
    inline BGRA() { }
    inline BGRA(int inRGBA) { ival = inRGBA; }
    inline BGRA(int inRGB,int inA) { ival = (inRGB & 0xffffff) | (inA<<24); }
@@ -170,6 +172,8 @@ typedef BGRA<true>  BGRPremA;
 
 struct RGB
 {
+   enum { pixelFormat =pfRGB };
+
    inline RGB() { }
    inline RGB(int inRGBA)
    {
@@ -191,6 +195,8 @@ struct RGB
 
 struct AlphaPixel
 {
+   enum { pixelFormat =pfAlpha };
+
    inline AlphaPixel() { }
 
    inline int getAlpha() { return a; }
@@ -234,7 +240,7 @@ template<bool Prem0, bool Prem1>
 inline void SetPixel(BGRA<Prem0> &outBgra, const BGRA<Prem1> &inBgra)
 {
    if (Prem0==Prem1)
-      outBgra.i = inBgra.i;
+      outBgra.ival = inBgra.ival;
    else
    {
       const Uint8 *aLut = Prem0 ? gPremAlphaLut[inBgra.a] : gUnPremAlphaLut[inBgra.a];
@@ -436,15 +442,12 @@ inline AlphaPixel BilinearInterp( AlphaPixel s00, AlphaPixel s10, AlphaPixel s01
 
 
 
-inline void BlendAlpha(Uint8 &ioDest, Uint8 inSrc)
+inline void BlendAlpha(Uint8 &ioDest, int inSrc)
 {
-   if (inSrc)
-   {
-      if (inSrc==255)
-         ioDest = 255;
-      else
-         ioDest = 255 - ((255 - inSrc) * (255-ioDest) >> 8);
-   }
+   if (inSrc==255)
+      ioDest = 255;
+   else if (inSrc)
+      ioDest = 255 - ((255 - inSrc) * (255-ioDest) >> 8);
 }
 
 inline void BlendAlpha(Uint8 &ioDest, const ARGB &inSrc)

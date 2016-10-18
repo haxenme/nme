@@ -165,6 +165,7 @@ struct ImageMask
    {
       mRow = (mMask.Row(inY-mOy) + mComponentOffset) + mPixelStride*(inX-mOx);
    }
+
    inline uint8 MaskAlpha(uint8 inAlpha) const
    {
       inAlpha = (inAlpha * (*mRow) ) >> 8;
@@ -177,18 +178,50 @@ struct ImageMask
       mRow += mPixelStride;
       return a;
    }
-   inline ARGB Mask(const uint8 &inA) const
+
+
+   inline AlphaPixel Mask(const AlphaPixel &inA) const
    {
-      ARGB argb( ((inA * (*mRow) ) >> 8) << 24 );
+      AlphaPixel result;
+      result.a = (inA.a * (*mRow + *mRow) )>>8;
       mRow += mPixelStride;
-      return argb;
+      return result;
    }
-   inline ARGB Mask(ARGB inRGB) const
+   inline BGRPremA Mask(const RGB &inRGB) const
    {
-      inRGB.a = (inRGB.a * (*mRow) ) >> 8;
+      BGRPremA result;
+      Uint8 *lut = gPremAlphaLut[*mRow];
+      result.r = lut[inRGB.r];
+      result.g = lut[inRGB.g];
+      result.b = lut[inRGB.b];
+      result.a = *mRow;
       mRow += mPixelStride;
-      return inRGB;
+      return result;
    }
+
+   template<bool PREM>
+   inline BGRA<PREM> Mask(const BGRA<PREM> &inBgra) const
+   {
+      BGRA<PREM> result;
+      if (PREM)
+      {
+         Uint8 *lut = gPremAlphaLut[*mRow];
+         result.r = lut[inBgra.r];
+         result.g = lut[inBgra.g];
+         result.b = lut[inBgra.b];
+         result.a = lut[inBgra.a];
+      }
+      else
+      {
+         result.ival = inBgra.ival;
+         result.a = (inBgra.a * (*mRow) ) >> 8;
+      }
+      mRow += mPixelStride;
+      return result;
+   }
+
+
+
 
    const BitmapCache &mMask;
    mutable const uint8 *mRow;
@@ -215,12 +248,21 @@ struct ImageSource
    }
    inline const Pixel &Next() const { return *mPos++; }
 
+   inline int getNextAlpha() const { return mPos++ -> a; }
+
 
    mutable const PIXEL *mPos;
    int   mStride;
    const uint8 *mBase;
    PixelFormat mFormat;
 };
+
+struct FullAlpha
+{
+   inline void SetPos(int inX,int inY) const { }
+   inline int getNextAlpha() const{ return 255; }
+};
+
 
 
 template<bool INNER,bool TINT_RGB=false>
@@ -313,8 +355,8 @@ struct ImageDest
 };
 
 
-template<bool DEST_ALPHA, typename DEST, typename SRC, typename MASK>
-void TTBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
+template<typename DEST, typename SRC, typename MASK>
+void TBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
             int inX, int inY, const Rect &inSrcRect)
 {
    for(int y=0;y<inSrcRect.h;y++)
@@ -323,27 +365,8 @@ void TTBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
       inMask.SetPos(inX , inY + y );
       inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
       for(int x=0;x<inSrcRect.w;x++)
-      #if defined(HX_WINDOWS) && !defined(__MINGW32__)
-         outDest.Next().Blend<DEST_ALPHA>(inMask.Mask(inSrc.Next()));
-      #else
-         if (!DEST_ALPHA)
-            outDest.Next().TBlend_0(inMask.Mask(inSrc.Next()));
-         else
-            outDest.Next().TBlend_1(inMask.Mask(inSrc.Next()));
-      #endif
+         BlendPixel(outDest.Next(),inMask.Mask(inSrc.Next()));
    }
-}
-
-template<typename DEST, typename SRC, typename MASK>
-void TBlit( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
-            int inX, int inY, const Rect &inSrcRect)
-{
-   bool dest_alpha = outDest.Format() & pfHasAlpha;
-
-   if (dest_alpha)
-      TTBlit<true,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect);
-   else
-      TTBlit<false,DEST,SRC,MASK>(outDest,inSrc,inMask,inX,inY,inSrcRect);
 }
 
 
@@ -358,7 +381,7 @@ void TBlitAlpha( const DEST &outDest, const SRC &inSrc,const MASK &inMask,
       inMask.SetPos(inX + inSrcRect.x, inY + y+inSrcRect.y );
       inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
       for(int x=0;x<inSrcRect.w;x++)
-         BlendAlpha(outDest.Next(),inMask.MaskAlpha(inSrc.Next()));
+         BlendAlpha(outDest.Next(),inMask.MaskAlpha(inSrc.getNextAlpha()));
    }
 
 }
@@ -555,44 +578,39 @@ template<bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
    }
 }
 
-
-#define BLEND_METHOD(blend) blend<false>, blend<true>,
-
-BlendFunc sgBlendFuncs[] = 
-{
-   0, 0,  // Normal
-   0, 0,  // Layer
-   BLEND_METHOD(MultiplyFunc)
-   BLEND_METHOD(ScreenFunc)
-   BLEND_METHOD(LightenFunc)
-   BLEND_METHOD(DarkenFunc)
-   BLEND_METHOD(DifferenceFunc)
-   BLEND_METHOD(AddFunc)
-   BLEND_METHOD(SubtractFunc)
-   BLEND_METHOD(InvertFunc)
-   BLEND_METHOD(AlphaFunc)
-   BLEND_METHOD(EraseFunc)
-   BLEND_METHOD(OverlayFunc)
-   BLEND_METHOD(HardLightFunc)
-   BLEND_METHOD(CopyFunc)
-   BLEND_METHOD(InnerFunc)
-};
-
-template<typename MASK,typename SOURCE>
-void TBlitBlend( const ImageDest<ARGB> &outDest, SOURCE &inSrc,const MASK &inMask,
+template<typename DEST, typename SOURCE, typename MASK>
+void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
             int inX, int inY, const Rect &inSrcRect, BlendMode inMode)
 {
-   bool dest_alpha = outDest.Format() & pfHasAlpha;
-
-   BlendFunc blend = sgBlendFuncs[inMode*2 + (dest_alpha?1:0)];
-
    for(int y=0;y<inSrcRect.h;y++)
    {
       outDest.SetPos(inX , inY + y );
       inMask.SetPos(inX , inY + y );
       inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
-      for(int x=0;x<inSrcRect.w;x++)
-         blend(outDest.Next(),inMask.Mask(inSrc.Next()));
+
+      #define BLEND_CASE(mode) \
+         case bm#mode: \
+            for(int x=0;x<inSrcRect.w;x++) \
+               mode#Func(outDest.Next(),inMask.Mask(inSrc.Next())); \
+            break;
+
+      switch(inMode)
+      {
+         BLEND_CASE(Multiply)
+         BLEND_CASE(Screen)
+         BLEND_CASE(Lighten)
+         BLEND_CASE(Darken)
+         BLEND_CASE(Difference)
+         BLEND_CASE(Add)
+         BLEND_CASE(Subtract)
+         BLEND_CASE(Invert)
+         BLEND_CASE(Alpha)
+         BLEND_CASE(Erase)
+         BLEND_CASE(Overlay)
+         BLEND_CASE(HardLight)
+         BLEND_CASE(Copy)
+         BLEND_CASE(Inner)
+      }
    }
 }
 
@@ -623,7 +641,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
    if (src_rect.HasPixels())
    {
       if (mPixelFormat>=pfRenderToCount)
-         ChangeInternalFormat();
+         const_cast<SimpleSurface *>(this)->ChangeInternalFormat();
 
 
       bool src_alpha = mPixelFormat==pfAlpha;
@@ -632,21 +650,23 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
       int dx = inPosX + src_rect.x - inSrcRect.x;
       int dy = inPosY + src_rect.y - inSrcRect.y;
 
-      // Check for overlap....
-      if (src_alpha==dest_alpha)
+      // Check for rendering same-surface to same-surface
+      if (mPixelFormat == outDest.mPixelFormat)
       {
-          int size_shift = src_alpha ? 0 : 2;
+          int pw = BytesPerPixel(mPixelFormat);
+          // If these are the same surface, then difference in pointers will be small enough,
+          //  otherwise x_off and y_off could be greatly different
           int d_base = (outDest.mSoftPtr-mBase);
           int y_off = d_base/mStride;
-          int x_off = (d_base-y_off*mStride) >> size_shift;
+          int x_off = (d_base-y_off*mStride)/pw;
           Rect dr(dx + x_off, dy + y_off, src_rect.w, src_rect.h);
           if (src_rect.Intersect(dr).HasPixels())
           {
               SimpleSurface sub(src_rect.w, src_rect.h, mPixelFormat);
               Rect sub_dest(0,0,src_rect.w, src_rect.h);
-              
+
               for(int y=0;y<src_rect.h;y++)
-                 memcpy((void *)sub.Row(y), Row(src_rect.y+y) + (src_rect.x<<size_shift), src_rect.w<<size_shift );
+                 memcpy((void *)sub.Row(y), Row(src_rect.y+y) + (src_rect.x*pw), src_rect.w*pw );
 
               sub.BlitTo(outDest, sub_dest, dx, dy, inBlend, 0, inTint);
               return;
@@ -662,20 +682,20 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
          if (inMask)
          {
             if (src_alpha)
-               TBlitAlpha(dest, ImageSource<uint8>(mBase,mStride,mPixelFormat),
-                     ImageMask(*inMask), dx, dy, src_rect );
+               TBlitAlpha(dest, ImageSource<AlphaPixel>(mBase,mStride,mPixelFormat), ImageMask(*inMask), dx, dy, src_rect );
+            else if (mPixelFormat==pfBGRA || mPixelFormat==pfRGBPremA)
+               TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat), ImageMask(*inMask), dx, dy, src_rect );
             else
-               TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat),
-                     ImageMask(*inMask), dx, dy, src_rect );
+               TBlitAlpha(dest, FullAlpha(), ImageMask(*inMask), dx, dy, src_rect );
          }
          else
          {
             if (src_alpha)
-               TBlitAlpha(dest, ImageSource<uint8>(mBase,mStride,mPixelFormat),
-                     NullMask(), dx, dy, src_rect );
+               TBlitAlpha(dest, ImageSource<AlphaPixel>(mBase,mStride,mPixelFormat), NullMask(), dx, dy, src_rect );
+            else if (mPixelFormat==pfBGRA || mPixelFormat==pfRGBPremA)
+               TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat), NullMask(), dx, dy, src_rect );
             else
-               TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat),
-                     NullMask(), dx, dy, src_rect );
+               TBlitAlpha(dest, FullAlpha(), NullMask(), dx, dy, src_rect );
          }
          return;
       }

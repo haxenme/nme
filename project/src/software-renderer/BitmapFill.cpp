@@ -8,11 +8,13 @@ namespace nme
    static Filler *CreateAlpha(GraphicsBitmapFill *inFill)
    {
       if (inFill->bitmapData->Format() == pfAlpha)
-        return new BitmapFiller<EDGE, SMOOTH, FillAlphaIs, false>(inFill);
-      else if (inFill->bitmapData->Format() & pfHasAlpha)
-        return new BitmapFiller<EDGE, SMOOTH, FillAlphaHas, false>(inFill);
+        return new BitmapFiller<EDGE, SMOOTH, AlphaPixel, false>(inFill);
+      else if (inFill->bitmapData->Format()==pfBGRA)
+        return new BitmapFiller<EDGE, SMOOTH, ARGB, false>(inFill);
+      else if (inFill->bitmapData->Format()==pfBGRPremA)
+        return new BitmapFiller<EDGE, SMOOTH, BGRPremA, false>(inFill);
       else
-        return new BitmapFiller<EDGE, SMOOTH, FillAlphaIgnore, false>(inFill);
+        return new BitmapFiller<EDGE, SMOOTH, RGB, false>(inFill);
    }
    
    
