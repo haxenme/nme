@@ -273,7 +273,7 @@ public:
             p11 = *(SRC *)(p+ x1); 
          }
 
-         return BilinearInterp(result, p00, p01, p10, p11, frac_x, frac_y);
+         return BilinearInterp(p00, p01, p10, p11, frac_x, frac_y);
       }
       else
       {

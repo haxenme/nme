@@ -168,7 +168,7 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat)
       case pfBGRPremA:
          return SWAP_RB ? pfRGBPremA :pfBGRPremA;
    }
-   return 0;
+   return pfRGB;
 }
 
 
@@ -209,8 +209,8 @@ public:
       //printf("Using non-power-of-2 texture %d\n",non_po2);
 
       mTextureWidth = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);
-      mTextureWidth = non_po2 ? mPixelHeight : UpToPower2(mPixelHeight);
-      mCanRepeat = IsPower2(w) && IsPower2(h);
+      mTextureHeight = non_po2 ? mPixelHeight : UpToPower2(mPixelHeight);
+      mCanRepeat = IsPower2(mTextureWidth) && IsPower2(mTextureHeight);
 
       mTextureID = 0;
       glGenTextures(1, &mTextureID);

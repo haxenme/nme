@@ -31,7 +31,7 @@ public:
    virtual int                  Height() const =0;
    virtual const unsigned char *GetBase() const = 0;
    virtual int                  GetStride() const = 0;
-   virtual int                  GetPlaneOffset() const = 0;
+   virtual int                  GetPlaneOffset() const { return 0; }
    virtual unsigned char        *Edit(const Rect *inRect=0) = 0;
    virtual void                 Commit() = 0;
 

@@ -432,16 +432,48 @@ inline void BlendFuncWithAlpha(ARGB &ioDest, ARGB &inSrc,FUNC F)
 }
 
 
+template<typename SRC, typename FUNC>
+ARGB ApplyComponent(const ARGB &d, const SRC &s, const FUNC &)
+{
+   ARGB result;
+   result.r = FUNC::comp(d.r, s.getR() );
+   result.g = FUNC::comp(d.g, s.getG() );
+   result.b = FUNC::comp(d.b, s.getB() );
+   result.a = FUNC::alpha(d.a, s.getAlpha() );
+   return result;
+}
+
+
+template<typename SRC, typename FUNC>
+BGRPremA ApplyComponent(const BGRPremA &d, const SRC &s, const FUNC &)
+{
+   BGRPremA result;
+   result.r = FUNC::comp(d.r, s.getRAlpha() );
+   result.g = FUNC::comp(d.g, s.getGAlpha() );
+   result.b = FUNC::comp(d.b, s.getBAlpha() );
+   result.a = FUNC::alpha(d.a, s.getA() );
+   return result;
+}
+
+
+template<typename SRC, typename FUNC>
+AlphaPixel ApplyComponent(const AlphaPixel &d, const SRC &s, const FUNC &)
+{
+   AlphaPixel result;
+   result.a = FUNC::alpha(d.a, s.getA());
+   return result;
+}
+
+
 // --- Multiply -----
 
-struct DoMult
+struct MultiplyHandler
 {
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-     { ioVal = (inDest * ( ioVal + (ioVal>>7)))>>8; }
+   static inline uint8 comp(uint8 a, uint8 b) { return ( (a + (a>>7)) * b ) >> 8; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return ( (a + (a>>7)) * b ) >> 8; }
 };
 
-template<bool DEST_ALPHA> void MultiplyFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoMult()); }
+
 
 // --- Screen -----
 
@@ -538,22 +570,26 @@ template< bool DEST_ALPHA> void EraseFunc(ARGB &ioDest, ARGB inSrc)
 
 // --- Overlay -----
 
+/*
 struct DoOverlay
 {
    inline void operator()(uint8 &ioVal,uint8 inDest) const
    { if (inDest>127) DoScreen()(ioVal,inDest); else DoMult()(ioVal,inDest); }
 };
+*/
 
 template<bool DEST_ALPHA> void OverlayFunc(ARGB &ioDest, ARGB inSrc)
    { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoOverlay()); }
 
 // --- HardLight -----
 
+   /*
 struct DoHardLight
 {
    inline void operator()(uint8 &ioVal,uint8 inDest) const
    { if (ioVal>127) DoScreen()(ioVal,inDest); else DoMult()(ioVal,inDest); }
 };
+*/
 
 template<bool DEST_ALPHA> void HardLightFunc(ARGB &ioDest, ARGB inSrc)
    { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoHardLight()); }
@@ -589,14 +625,18 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
       inSrc.SetPos( inSrcRect.x, inSrcRect.y + y );
 
       #define BLEND_CASE(mode) \
-         case bm#mode: \
+         case bm##mode: \
             for(int x=0;x<inSrcRect.w;x++) \
-               mode#Func(outDest.Next(),inMask.Mask(inSrc.Next())); \
+            { \
+               DEST::Pixel &dest = outDest.Next(); \
+               BlendPixel(dest,ApplyComponent(dest,inMask.Mask(inSrc.Next()),mode##Handler() ) ); \
+            } \
             break;
 
       switch(inMode)
       {
          BLEND_CASE(Multiply)
+         /*
          BLEND_CASE(Screen)
          BLEND_CASE(Lighten)
          BLEND_CASE(Darken)
@@ -610,6 +650,7 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
          BLEND_CASE(HardLight)
          BLEND_CASE(Copy)
          BLEND_CASE(Inner)
+         */
       }
    }
 }

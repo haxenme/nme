@@ -3,6 +3,10 @@
 
 #include "Rect.h"
 
+#ifdef RGB
+ #undef RGB
+#endif
+
 // The order or RGB or BGR is determined to the primary surface's
 //  native order - this allows most transfers to be donw without swapping R & B
 // When rendering from a source to a dest, the source is swapped to match in
@@ -91,15 +95,15 @@ struct BGRA
    inline void Set(int inVal) { ival = inVal; }
    inline void SetRGB(int inVal) { ival = inVal | 0xff000000; }
    inline void SetRGBA(int inVal) { ival = inVal; }
-   inline int luma() { return (r + (g<<1) + b + 2) >> 8; }
+   inline int luma() const { return (r + (g<<1) + b + 2) >> 8; }
 
-   inline int getAlpha() { return a; }
-   inline int getRAlpha() { return PREM ? r : gPremAlphaLut[a][r]; }
-   inline int getGAlpha() { return PREM ? g : gPremAlphaLut[a][g]; }
-   inline int getBAlpha() { return PREM ? b : gPremAlphaLut[a][b]; }
-   inline int getR() { return r; }
-   inline int getG() { return g; }
-   inline int getB() { return b; }
+   inline int getAlpha() const { return a; }
+   inline int getRAlpha() const { return PREM ? r : gPremAlphaLut[a][r]; }
+   inline int getGAlpha() const { return PREM ? g : gPremAlphaLut[a][g]; }
+   inline int getBAlpha() const { return PREM ? b : gPremAlphaLut[a][b]; }
+   inline int getR() const { return PREM ? gUnPremAlphaLut[a][r] : r; }
+   inline int getG() const { return PREM ? gUnPremAlphaLut[a][g] : g; }
+   inline int getB() const { return PREM ? gUnPremAlphaLut[a][b] : b; }
 
    template<bool DEST_ALPHA>
    inline void Blend(const BGRA &inVal)
@@ -181,13 +185,13 @@ struct RGB
       g = (inRGBA>>8) & 0xff;
       b = inRGBA & 0xff;
    }
-   inline int getAlpha() { return 255; }
-   inline int getRAlpha() { return r; }
-   inline int getGAlpha() { return g; }
-   inline int getBAlpha() { return b; }
-   inline int getR() { return r; }
-   inline int getG() { return g; }
-   inline int getB() { return b; }
+   inline int getAlpha() const { return 255; }
+   inline int getRAlpha() const { return r; }
+   inline int getGAlpha() const { return g; }
+   inline int getBAlpha() const { return b; }
+   inline int getR() const { return r; }
+   inline int getG() const { return g; }
+   inline int getB() const { return b; }
 
    Uint8 r,g,b;
 };
@@ -199,13 +203,13 @@ struct AlphaPixel
 
    inline AlphaPixel() { }
 
-   inline int getAlpha() { return a; }
-   inline int getRAlpha() { return a; }
-   inline int getGAlpha() { return a; }
-   inline int getBAlpha() { return a; }
-   inline int getR() { return 255; }
-   inline int getG() { return 255; }
-   inline int getB() { return 255; }
+   inline int getAlpha() const { return a; }
+   inline int getRAlpha() const { return a; }
+   inline int getGAlpha() const { return a; }
+   inline int getBAlpha() const { return a; }
+   inline int getR() const { return 255; }
+   inline int getG() const { return 255; }
+   inline int getB() const { return 255; }
 
    Uint8 a;
 };

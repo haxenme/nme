@@ -298,7 +298,7 @@ public:
                else
                {
                   // Create temp surface
-                  SimpleSurface *tmp = new SimpleSurface(visible_pixels.w,visible_pixels.h, pfARGB);
+                  SimpleSurface *tmp = new SimpleSurface(visible_pixels.w,visible_pixels.h, pfBGRA);
                   tmp->IncRef();
                   tmp->Zero();
                   {

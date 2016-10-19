@@ -3741,7 +3741,7 @@ value nme_bitmap_data_create(value* arg, int nargs)
    int h = val_number(arg[aHeight]);
    uint32 flags = val_int(arg[aFlags]);
 
-   PixelFormat format = (flags & 0x01) ? pfARGB : pfXRGB;
+   PixelFormat format = (flags & 0x01) ? pfBGRA : pfRGB;
    int gpu = -1;
    if (!val_is_null(arg[aInternal]))
    {

@@ -56,22 +56,7 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
                while(x0++<x1)
                {
                   int alpha = (run->mAlpha * (*m++))>>8;
-
-                  if (SOURCE_::HasAlpha)
-                  {
-                     alpha -= (alpha>>7);
-                     if (DEST_::HasAlpha)
-                         inBlend.BlendAlpha( outDest,inSource,alpha );
-                     else
-                         inBlend.BlendNoAlpha( outDest,inSource,alpha );
-                  }
-                  else
-                  {
-                     if (DEST_::HasAlpha)
-                         inBlend.BlendAlphaFull( outDest,inSource,alpha );
-                     else
-                         inBlend.BlendNoAlphaFull( outDest,inSource,alpha );
-                  }
+                  inBlend.blend( outDest.GetInc(),inSource.GetInc(),alpha );
                }
                ++run;
             }
@@ -89,24 +74,17 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
                outDest.SetX(x0);
                inSource.SetPos(x0,y);
                int alpha = run->mAlpha;
-               if (!SOURCE_::HasAlpha)
-                  alpha -= (alpha>>7);
+               if (alpha==256)
+               {
+                  while(x0++<x1)
+                     inBlend.blend( outDest.GetInc(),inSource.GetInc() );
+               }
+               else
+               {
+                  while(x0++<x1)
+                     inBlend.blend( outDest.GetInc(),inSource.GetInc(),alpha );
+               }
 
-               while(x0++<x1)
-                  if (SOURCE_::HasAlpha)
-                  {
-                     if (DEST_::HasAlpha)
-                         inBlend.BlendAlpha( outDest,inSource,alpha );
-                     else
-                         inBlend.BlendNoAlpha( outDest,inSource,alpha );
-                  }
-                  else
-                  {
-                     if (DEST_::HasAlpha)
-                         inBlend.BlendAlphaFull( outDest,inSource,alpha );
-                     else
-                         inBlend.BlendNoAlphaFull( outDest,inSource,alpha );
-                  }
                ++run;
             }
          }
@@ -114,97 +92,206 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
    }
 };
 
-template<bool HAS_ALPHA>
-struct DestSurface32
+template<typename DEST>
+struct DestSurface
 {
-   enum { HasAlpha = HAS_ALPHA };
+   DestSurface(const RenderTarget &inTarget) : mTarget(inTarget) { }
 
-   DestSurface32(const RenderTarget &inTarget) : mTarget(inTarget) { }
-
-   void SetRow(int inY) { mRow = (ARGB *) mTarget.Row(inY); }
+   void SetRow(int inY) { mRow = (DEST *) mTarget.Row(inY); }
    void SetX(int inX) { mPtr = mRow + inX; }
-   const ARGB Get() { return *mPtr; }
-   void SetInc( ARGB inCol ) { *mPtr++ = inCol; }
+   const DEST Get() { return *mPtr; }
+   DEST &GetInc( ) { return *mPtr++; }
    const Rect &GetRect() const { return mTarget.mRect; }
 
-   ARGB *mRow;
-   ARGB *mPtr;
+   DEST *mRow;
+   DEST *mPtr;
    const RenderTarget &mTarget;
 };
 
 
+struct NoTransform
+{
+   inline void apply(AlphaPixel &ioPixel) const { }
+   inline void apply(BGRPremA &ioPixel) const { }
+   inline void apply(ARGB  &ioPixel) const { }
+   inline void apply(RGB &ioPixel) const { }
+};
 
 
-template<bool ALPHA_LUT=false,bool COLOUR_LUT=false>
-struct NormalBlender
+struct TransformRGBA
 {
    const uint8 *mAlpha_LUT;
    const uint8 *mR_LUT;
    const uint8 *mG_LUT;
    const uint8 *mB_LUT;
 
-   NormalBlender(const RenderState &inState)
+   TransformRGBA(const RenderState &inState)
    {
-      if (ALPHA_LUT)
-         mAlpha_LUT = inState.mAlpha_LUT;
-      if (COLOUR_LUT)
-      {
-         mR_LUT = inState.mR_LUT;
-         mG_LUT = inState.mG_LUT;
-         mB_LUT = inState.mB_LUT;
-      }
+      mAlpha_LUT = inState.mAlpha_LUT;
+      mR_LUT = inState.mR_LUT;
+      mG_LUT = inState.mG_LUT;
+      mB_LUT = inState.mB_LUT;
    }
-   template<bool DEST_ALPHA,bool SRC_ALPHA,typename DEST, typename SRC>
-   void Blend(DEST &inDest, SRC &inSrc,int inAlpha) const
+ 
+   inline void apply(AlphaPixel &ioPixel) const
    {
-      ARGB src = inSrc.GetInc();
-      if (SRC_ALPHA)
+      ioPixel.a = mAlpha_LUT[ioPixel.a];
+   }
+   inline void apply(BGRPremA &ioPixel) const
+   {
+      int transA = mAlpha_LUT[ioPixel.a];
+      ioPixel.a = transA;
+      if (transA==255)
       {
-         if (ALPHA_LUT)
-            src.a = mAlpha_LUT[ (src.a * inAlpha)>>8 ];
-         else
-            src.a = (src.a * inAlpha)>>8;
+         ioPixel.r = mAlpha_LUT[ioPixel.getR()];
+         ioPixel.g = mAlpha_LUT[ioPixel.getG()];
+         ioPixel.b = mAlpha_LUT[ioPixel.getB()];
       }
       else
       {
-         if (ALPHA_LUT)
-            src.a = mAlpha_LUT[ inAlpha ];
-         else
-            src.a = inAlpha;
+         Uint8 *lut = gPremAlphaLut[transA];
+         ioPixel.r = lut[mR_LUT[ioPixel.getR()]];
+         ioPixel.g = lut[mG_LUT[ioPixel.getG()]];
+         ioPixel.b = lut[mB_LUT[ioPixel.getB()]];
       }
-      if (COLOUR_LUT)
-      {
-         src.r = mR_LUT[src.r];
-         src.g = mG_LUT[src.g];
-         src.b = mB_LUT[src.b];
-      }
-      ARGB dest = inDest.Get();
-      dest.Blend<DEST_ALPHA>(src);
-      inDest.SetInc(dest);
    }
-   template<typename DEST, typename SRC>
-   void BlendNoAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
+   inline void apply(ARGB  &ioPixel) const
    {
-       Blend<false,true>(inDest,inSrc,inAlpha);
+      ioPixel.a = mAlpha_LUT[ioPixel.a];
+      ioPixel.r = mR_LUT[ioPixel.getR()];
+      ioPixel.g = mG_LUT[ioPixel.getG()];
+      ioPixel.b = mB_LUT[ioPixel.getB()];
    }
-   template<typename DEST, typename SRC>
-   void BlendAlpha(DEST &inDest, SRC &inSrc,int inAlpha) const
+   inline void apply(RGB &ioPixel) const
    {
-       Blend<true,true>(inDest,inSrc,inAlpha);
+      ioPixel.r = mR_LUT[ioPixel.getR()];
+      ioPixel.g = mG_LUT[ioPixel.getG()];
+      ioPixel.b = mB_LUT[ioPixel.getB()];
    }
-   template<typename DEST, typename SRC>
-   void BlendNoAlphaFull(DEST &inDest, SRC &inSrc,int inAlpha) const
-   {
-       Blend<false,false>(inDest,inSrc,inAlpha);
-   }
-   template<typename DEST, typename SRC>
-   void BlendAlphaFull(DEST &inDest, SRC &inSrc,int inAlpha) const
-   {
-       Blend<true,false>(inDest,inSrc,inAlpha);
-   }
-
 };
 
+
+struct TransformRGB
+{
+   const uint8 *mR_LUT;
+   const uint8 *mG_LUT;
+   const uint8 *mB_LUT;
+
+   TransformRGB(const RenderState &inState)
+   {
+      mR_LUT = inState.mR_LUT;
+      mG_LUT = inState.mG_LUT;
+      mB_LUT = inState.mB_LUT;
+   }
+ 
+   inline void apply(AlphaPixel &ioPixel) const
+   {
+   }
+   inline void apply(BGRPremA &ioPixel) const
+   {
+      Uint8 *lut = gPremAlphaLut[ioPixel.a];
+      ioPixel.r = lut[mR_LUT[ioPixel.getR()]];
+      ioPixel.g = lut[mG_LUT[ioPixel.getG()]];
+      ioPixel.b = lut[mB_LUT[ioPixel.getB()]];
+   }
+   inline void apply(ARGB  &ioPixel) const
+   {
+      ioPixel.r = mR_LUT[ioPixel.getR()];
+      ioPixel.g = mG_LUT[ioPixel.getG()];
+      ioPixel.b = mB_LUT[ioPixel.getB()];
+   }
+   inline void apply(RGB &ioPixel) const
+   {
+      ioPixel.r = mR_LUT[ioPixel.getR()];
+      ioPixel.g = mG_LUT[ioPixel.getG()];
+      ioPixel.b = mB_LUT[ioPixel.getB()];
+   }
+};
+
+
+struct TransformA
+{
+   const uint8 *mAlpha_LUT;
+
+   TransformA(const RenderState &inState)
+   {
+      mAlpha_LUT = inState.mAlpha_LUT;
+   }
+ 
+   inline void apply(AlphaPixel &ioPixel) const
+   {
+      ioPixel.a = mAlpha_LUT[ioPixel.a];
+   }
+   inline void apply(BGRPremA &ioPixel) const
+   {
+      int transA = mAlpha_LUT[ioPixel.a];
+      if (ioPixel.a!=0)
+      {
+         ioPixel.r = ioPixel.r * transA/ioPixel.a;
+         ioPixel.g = ioPixel.g * transA/ioPixel.a;
+         ioPixel.b = ioPixel.b * transA/ioPixel.a;
+      }
+      ioPixel.a = transA;
+   }
+   inline void apply(ARGB  &ioPixel) const
+   {
+      ioPixel.a = mAlpha_LUT[ioPixel.a];
+   }
+   inline void apply(RGB &ioPixel) const
+   {
+   }
+};
+
+
+
+template<typename TRANSFORM>
+struct Blender
+{
+   TRANSFORM transform;
+
+   Blender(const TRANSFORM &inTransform) : transform(inTransform) { }
+
+   template<typename DEST, typename SRC>
+   void blend(DEST &ioDest, SRC inSrc) const
+   {
+      transform.apply(inSrc);
+      BlendPixel(ioDest, inSrc);
+   }
+
+   template<typename DEST, bool PREM>
+   void blend(DEST &ioDest, BGRA<PREM> inSrc,int inAlpha256) const
+   {
+      if (PREM)
+      {
+         inSrc.r = (inSrc.r*inAlpha256)>>8;
+         inSrc.g = (inSrc.g*inAlpha256)>>8;
+         inSrc.b = (inSrc.b*inAlpha256)>>8;
+      }
+      inSrc.a = (inSrc.a*inAlpha256)>>8;
+      transform.apply(inSrc);
+      BlendPixel(ioDest, inSrc);
+   }
+
+   template<typename DEST>
+   void blend(DEST &ioDest, RGB inSrc,int inAlpha256) const
+   {
+      ARGB argb;
+      argb.r = inSrc.r;
+      argb.g = inSrc.g;
+      argb.b = inSrc.b;
+      argb.a = inAlpha256 - (inAlpha256>>7);
+      transform.apply(argb);
+      BlendPixel(ioDest, argb);
+   }
+
+   template<typename DEST>
+   void blend(DEST &ioDest, AlphaPixel src,int inAlpha256) const
+   {
+      src.a = (src.a * inAlpha256) >> 8;
+      transform.apply(src);
+      BlendPixel(ioDest, src);
+   }
+};
 
 
 
@@ -212,21 +299,26 @@ template<typename SOURCE_,typename BLEND_>
 void RenderBlend(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest,
             const BLEND_ &inBlend, const RenderState &inState, int inTX, int inTY)
 {
-   if (inDest.mPixelFormat & pfHasAlpha)
+   switch(inDest.mPixelFormat)
    {
-      DestSurface32<true> dest(inDest);
-      DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
-   }
-   else
-   {
-      DestSurface32<false> dest(inDest);
-      DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
+      case pfAlpha:
+         DestRender(inAlpha, inSource, DestSurface<AlphaPixel>(inDest), inBlend, inState, inTX, inTY);
+         break;
+      case pfBGRA:
+         DestRender(inAlpha, inSource, DestSurface<ARGB>(inDest), inBlend, inState, inTX, inTY);
+         break;
+      case pfBGRPremA:
+         DestRender(inAlpha, inSource, DestSurface<BGRPremA>(inDest), inBlend, inState, inTX, inTY);
+         break;
+      case pfRGB:
+         DestRender(inAlpha, inSource, DestSurface<RGB>(inDest), inBlend, inState, inTX, inTY);
+         break;
    }
 }
 
 
-#define RENDER(ALPHA_TRANS,COL_TRANS) \
-   RenderBlend(inAlpha,inSource, inDest, NormalBlender<ALPHA_TRANS,COL_TRANS>(inState), inState, inTX, inTY)
+#define RENDER( BLENDER ) \
+   RenderBlend(inAlpha,inSource, inDest, BLENDER, inState, inTX, inTY)
 
 
 
@@ -234,15 +326,14 @@ template<typename SOURCE_>
 void Render(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget &inDest,
             const RenderState &inState, int inTX, int inTY)
 {
-
    if (inState.HasAlphaLUT() && inState.HasColourLUT())
-      RENDER(true,true);
+      RENDER( Blender<TransformRGBA>( TransformRGBA(inState) ) );
    else if (inState.HasAlphaLUT() && !inState.HasColourLUT())
-      RENDER(true,false);
-   else if (!inState.HasAlphaLUT() && inState.HasColourLUT())
-      RENDER(false,true);
+      RENDER( Blender<TransformA>( TransformA(inState) ));
+   else if (inState.HasAlphaLUT() && inState.HasColourLUT())
+      RENDER( Blender<TransformRGB>( TransformRGB(inState) ));
    else
-      RENDER(false,false);
+      RENDER( Blender<NoTransform>( NoTransform() ));
 }
 
 } // end namespace nme

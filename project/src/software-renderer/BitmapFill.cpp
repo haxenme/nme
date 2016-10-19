@@ -4,17 +4,17 @@
 namespace nme
 {
    
-   template<int EDGE,bool SMOOTH>
+   template<int EDGE, bool SMOOTH>
    static Filler *CreateAlpha(GraphicsBitmapFill *inFill)
    {
       if (inFill->bitmapData->Format() == pfAlpha)
-        return new BitmapFiller<EDGE, SMOOTH, AlphaPixel, false>(inFill);
+         return new BitmapFiller<EDGE, SMOOTH, AlphaPixel, false>(inFill);
       else if (inFill->bitmapData->Format()==pfBGRA)
-        return new BitmapFiller<EDGE, SMOOTH, ARGB, false>(inFill);
+         return new BitmapFiller<EDGE, SMOOTH, ARGB, false>(inFill);
       else if (inFill->bitmapData->Format()==pfBGRPremA)
-        return new BitmapFiller<EDGE, SMOOTH, BGRPremA, false>(inFill);
+         return new BitmapFiller<EDGE, SMOOTH, BGRPremA, false>(inFill);
       else
-        return new BitmapFiller<EDGE, SMOOTH, RGB, false>(inFill);
+         return new BitmapFiller<EDGE, SMOOTH, RGB, false>(inFill);
    }
    
    
@@ -22,9 +22,9 @@ namespace nme
    static Filler *CreateSmooth(GraphicsBitmapFill *inFill)
    {
       if (inFill->smooth)
-        return CreateAlpha<EDGE, true>(inFill);
+         return CreateAlpha<EDGE, true>(inFill);
       else
-        return CreateAlpha<EDGE, false>(inFill);
+         return CreateAlpha<EDGE, false>(inFill);
    }
    
    

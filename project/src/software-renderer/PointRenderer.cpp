@@ -96,7 +96,7 @@ public:
       {
          int val =  mCol.ival;
          // 100% alpha...
-         if ( ( (val & 0xff000000) == 0xff000000 ) || (inTarget.mPixelFormat & pfHasAlpha) )
+         if ( ( (val & 0xff000000) == 0xff000000 ) || HasAlphaChannel(inTarget.mPixelFormat) )
          {
             for(int i=0;i<mTransformed.size();i++)
             {
@@ -130,7 +130,7 @@ public:
       else
       {
          ARGB *argb = (ARGB *) & mData[mData0 + mTransformed.size()*2];
-         if (inTarget.mPixelFormat & pfHasAlpha)
+         if (HasAlphaChannel(inTarget.mPixelFormat))
             for(int i=0;i<mTransformed.size();i++)
             {
                const UserPoint &point = mTransformed[i];
