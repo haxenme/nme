@@ -38,11 +38,11 @@ public:
 
    virtual unsigned int GetFlags() const { return mFlags; }
    virtual void SetFlags(unsigned int inFlags) { mFlags = inFlags; }
-   virtual int  GPUFormat() const { return Format(); }
+   virtual PixelFormat  GPUFormat() const { return Format(); }
    virtual bool GetAllowTrans() const { return mAllowTrans; }
    virtual void SetAllowTrans(bool inAllowTrans) { mAllowTrans = inAllowTrans; }
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
-
+   virtual void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0) { }
    virtual void Zero() { Clear(0); }
    virtual void createHardwareSurface() { }
    virtual void destroyHardwareSurface() { }
@@ -118,7 +118,7 @@ public:
 class SimpleSurface : public Surface
 {
 public:
-   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4,int inGPUPixelFormat=-1);
+   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4,PixelFormat inGPUPixelFormat=pfNone);
 
    PixelFormat Format() const  { return mPixelFormat; }
 
@@ -130,7 +130,7 @@ public:
    int GetStride() const { return mStride; }
    int GetPlaneOffset() const { return mStride*mHeight; }
 
-   int         GPUFormat() const  { return mGPUPixelFormat; }
+   PixelFormat  GPUFormat() const  { return mGPUPixelFormat; }
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
 
@@ -175,7 +175,7 @@ protected:
    int           mWidth;
    int           mHeight;
    PixelFormat   mPixelFormat;
-   int           mGPUPixelFormat;
+   PixelFormat   mGPUPixelFormat;
    int           mStride;
    uint8         *mBase;
    ~SimpleSurface();

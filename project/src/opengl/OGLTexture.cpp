@@ -222,7 +222,7 @@ public:
       mDirtyRect = Rect(0,0);
       mContextVersion = gTextureContextVersion;
 
-      //__android_log_print(ANDROID_LOG_ERROR, "NME",  "NewTexure %d %d", w, h);
+      //__android_log_print(ANDROID_LOG_ERROR, "NME",  "NewTexure %d %d", mTextureWidth, mTextureHeight);
 
       uint8 *buffer = 0;
       PixelFormat fmt = mSurface->Format();
@@ -235,7 +235,7 @@ public:
 
       int pw = BytesPerPixel(fmt);
 
-      bool copy_required = mSurface->GetBase() && (w!=mPixelWidth || h!=mPixelHeight || buffer_format!=fmt);
+      bool copy_required = mSurface->GetBase() && (mTextureWidth!=mPixelWidth || mTextureHeight!=mPixelHeight || buffer_format!=fmt);
       if (copy_required)
       {
          buffer = (uint8 *)malloc(pw * mTextureWidth * mTextureHeight);
@@ -243,9 +243,6 @@ public:
               fmt, mSurface->GetBase(), mSurface->GetStride(), mSurface->GetPlaneOffset(),
               buffer_format, buffer, mTextureWidth*pw, pw*mTextureWidth*mTextureHeight );
       }
-      else
-         buffer = mSurface->GetBase();
-
 
       // __android_log_print(ANDROID_LOG_ERROR, "NME", "CreateTexture %d (%dx%d)",
       //  mTextureID, mPixelWidth, mPixelHeight);
@@ -257,11 +254,11 @@ public:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-      glTexImage2D(GL_TEXTURE_2D, 0, store_format, w, h, 0, pixel_format, channel, buffer);
+      glTexImage2D(GL_TEXTURE_2D, 0, store_format, mTextureWidth, mTextureHeight, 0, pixel_format, channel, buffer ? buffer : mSurface->GetBase());
 
       mUploadedFormat = store_format;
 
-      if (copy_required)
+      if (buffer)
          free(buffer);
 
       //int err = glGetError();

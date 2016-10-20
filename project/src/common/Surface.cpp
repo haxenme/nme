@@ -47,7 +47,7 @@ Texture *Surface::GetTexture(HardwareContext *inHardware,int inPlane)
 
 // --- SimpleSurface -------------------------------------------------------
 
-SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign,int inGPUFormat)
+SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign,PixelFormat inGPUFormat)
 {
    mWidth = inWidth;
    mHeight = inHeight;
@@ -55,12 +55,9 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
    mPixelFormat = inPixelFormat;
    mGPUPixelFormat = inPixelFormat;
  
-   int pix_size = (inPixelFormat == pfAlpha || inPixelFormat==pfLuma) ? 1 :
-                  (inPixelFormat==pfLumaAlpha) ? 2 :
-                  (inPixelFormat==pfRGB) ? 3 :
-                  4;
+   int pix_size = BytesPerPixel(inPixelFormat);
 
-   if (inGPUFormat==-1)
+   if (inGPUFormat==pfNone)
    {
       if (inByteAlign>1)
       {
@@ -127,7 +124,79 @@ void SimpleSurface::MakeTextureOnly()
    }
 }
 
+void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *inIgnore)
+{
+   if (!mBase)
+      return;
 
+   PixelFormat newFormat = inNewFormat;
+   // Convert to render target type...
+   if (newFormat==pfNone)
+      switch(mPixelFormat)
+      {
+         case pfLuma:  newFormat = pfRGB; break;
+         case pfLumaAlpha:  newFormat = pfBGRA; break;
+         case pfRGB32f:  newFormat = pfRGB; break;
+         case pfRGBA32f:  newFormat = pfBGRA; break;
+         case pfRGBA:  newFormat = pfBGRA; break;
+         case pfRGBPremA:  newFormat = pfBGRPremA; break;
+         case pfRGB565:  newFormat = pfRGB; break;
+         case pfARGB4444:  newFormat = pfBGRA; break;
+         default:
+           newFormat = pfRGB;
+     }
+
+   int newSize = BytesPerPixel(newFormat);
+   int newStride = mWidth * newSize;
+   unsigned char *newBuffer = mBase = new unsigned char[newStride * mHeight+1];
+   newBuffer[newStride*mHeight] = 69;
+
+   if (inIgnore==0)
+   {
+     PixelConvert(mWidth, mHeight,
+       mPixelFormat,  mBase, mStride, GetPlaneOffset(),
+       newFormat, newBuffer, newStride, 0 );
+   }
+   else
+   {
+      /*
+          TTTTTTT
+          L  X  R
+          BBBBBBB
+      */
+      Rect r = *inIgnore;
+      if (r.y>0)
+      {
+         PixelConvert(mWidth, r.y,
+           mPixelFormat,  mBase, mStride, GetPlaneOffset(),
+           newFormat, newBuffer, newStride, 0 );
+      }
+      if (r.x>0)
+      {
+         PixelConvert(r.x, r.h,
+           mPixelFormat,  mBase + mStride*r.y, mStride, GetPlaneOffset(),
+           newFormat, newBuffer + newStride*r.y, newStride, 0 );
+      }
+      if (r.x1()<mWidth)
+      {
+         int oldPw = BytesPerPixel(mPixelFormat);
+         PixelConvert(mWidth-r.x1(), r.h,
+           mPixelFormat,  mBase + mStride*r.y + r.x1()*oldPw, mStride, GetPlaneOffset(),
+           newFormat, newBuffer + newStride*r.y + r.x1()*newSize, newStride, 0 );
+      }
+
+      if (r.y1()<mHeight)
+      {
+         PixelConvert(mWidth, mHeight-r.y1(),
+           mPixelFormat,  mBase + mStride*r.y1(), mStride, GetPlaneOffset(),
+           newFormat, newBuffer + newStride*r.y1(), newStride, 0 );
+      }
+   }
+   delete [] mBase;
+   mBase = newBuffer;
+   mStride = newStride;
+   mPixelFormat = newFormat;
+}
 
 
 
@@ -1150,7 +1219,7 @@ void SimpleSurface::EndRender()
 
 Surface *SimpleSurface::clone()
 {
-   SimpleSurface *copy = new SimpleSurface(mWidth,mHeight,mPixelFormat,1,mBase?-1:0);
+   SimpleSurface *copy = new SimpleSurface(mWidth,mHeight,mPixelFormat,1,pfNone);
    if (mBase)
       for(int y=0;y<mHeight;y++)
          memcpy(copy->mBase + copy->mStride*y, mBase+mStride*y, mWidth*(mPixelFormat==pfAlpha?1:4));

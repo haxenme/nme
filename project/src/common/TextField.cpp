@@ -1824,9 +1824,9 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             if (group.Chars() && group.mFont)
             {
                ARGB tint = group.mFormat->color(textColor);
-               groupColour[0] = tint.getRedFloat();
-               groupColour[1] = tint.getGreenFloat();
-               groupColour[2] = tint.getBlueFloat();
+               groupColour[0] = tint.getR()/255.0;
+               groupColour[1] = tint.getG()/255.0;
+               groupColour[2] = tint.getB()/255.0;
                groupColour[3] = 1.0;
                for(int c=0;c<group.Chars();c++)
                {

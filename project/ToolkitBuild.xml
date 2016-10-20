@@ -315,6 +315,7 @@
       <file name="${SRC_DIR}/common/GraphicsData.cpp"/>
       <file name="${SRC_DIR}/common/Matrix.cpp"/>
       <file name="${SRC_DIR}/common/CachedExtent.cpp"/>
+      <file name="${SRC_DIR}/common/Pixels.cpp"/>
       <file name="${SRC_DIR}/common/TextField.cpp"/>
       <file name="${SRC_DIR}/common/Font.cpp"/>
       <file name="${SRC_DIR}/common/FreeType.cpp" />

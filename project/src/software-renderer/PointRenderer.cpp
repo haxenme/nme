@@ -122,7 +122,7 @@ public:
                {
                   int ty = point.y;
                   if (y0<=ty && ty<y1)
-                     ((ARGB *)inTarget.Row(ty))[tx].QBlendA(argb);
+                     BlendPixel( ((ARGB *)inTarget.Row(ty))[tx],argb);
                }
             }
          }
@@ -139,7 +139,7 @@ public:
                {
                   int ty = point.y;
                   if (y0<=ty && ty<y1)
-                     ((ARGB *)inTarget.Row(ty))[tx].QBlendA(argb[i]);
+                     BlendPixel( ((ARGB *)inTarget.Row(ty))[tx],argb[i]);
                }
             }
          else
@@ -151,7 +151,7 @@ public:
                {
                   int ty = point.y;
                   if (y0<=ty && ty<y1)
-                     ((ARGB *)inTarget.Row(ty))[tx].QBlend( argb[i] );
+                     BlendPixel( ((ARGB *)inTarget.Row(ty))[tx], argb[i] );
                }
             }
       }

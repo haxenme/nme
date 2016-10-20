@@ -3742,15 +3742,14 @@ value nme_bitmap_data_create(value* arg, int nargs)
    uint32 flags = val_int(arg[aFlags]);
 
    PixelFormat format = (flags & 0x01) ? pfBGRA : pfRGB;
-   int gpu = -1;
+   PixelFormat gpu = pfNone;
    if (!val_is_null(arg[aInternal]))
    {
       int internalFormat = val_int(arg[aInternal]);
-      if (internalFormat==1 || internalFormat==2)
-         gpu = internalFormat;
       switch(internalFormat)
       {
-         case 1: case 2: gpu = internalFormat; break;
+         case 1: gpu = pfBGRA; break;
+         case 2: gpu = pfBGRPremA; break;
          case 3: format = pfLuma; break;
          case 4: format = pfLumaAlpha; break;
          case 5: format = pfRGB; break;
@@ -3760,7 +3759,7 @@ value nme_bitmap_data_create(value* arg, int nargs)
    Surface *result = new SimpleSurface( w, h, format, 1, gpu );
    if (!(flags & 0x01))
       result->SetAllowTrans(false);
-   if (gpu==-1 && val_is_int(arg[aRGB]))
+   if (gpu==pfNone && val_is_int(arg[aRGB]))
    {
       int rgb = val_int(arg[aRGB]);
       value inA = arg[aA];
@@ -3793,7 +3792,7 @@ value nme_bitmap_data_get_prem_alpha(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_bool(surface->GetFlags() & surfUsePremultipliedAlpha);
+      return alloc_bool(surface->Format() == pfBGRPremA);
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_prem_alpha,1);
@@ -3805,9 +3804,9 @@ value nme_bitmap_data_set_prem_alpha(value inHandle,value inVal)
    {
       bool use = val_bool(inVal) && (surface->Format()<pfAlpha);
       if (use)
-         surface->SetFlags( surface->GetFlags() | surfUsePremultipliedAlpha );
+         surface->ChangeInternalFormat(pfBGRPremA);
       else
-         surface->SetFlags( surface->GetFlags() & ~surfUsePremultipliedAlpha );
+         surface->ChangeInternalFormat(pfBGRA);
    }
    return alloc_null();
 }
