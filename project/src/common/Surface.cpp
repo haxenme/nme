@@ -88,7 +88,10 @@ SimpleSurface::~SimpleSurface()
    if (mBase)
    {
       if (mBase[mStride*mHeight]!=69)
+      {
          ELOG("Image write overflow");
+         *(int *)0=0;
+      }
       delete [] mBase;
    }
 }
@@ -939,7 +942,7 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
       return;
 
    int srcPw = BytesPerPixel(srcFmt);
-   int destPw = BytesPerPixel(srcFmt);
+   int destPw = BytesPerPixel(destFmt);
 
 
    bool set_255 = srcPos==CHANNEL_OFFSET_VIRTUAL_ALPHA;
@@ -964,7 +967,7 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
       uint8 *d = outTarget.Row(y+dest_rect.y) + dest_rect.x*destPw + destPos;
       if (set_255)
       {
-         for(int x=0;x<src_rect.w;x++)
+         for(int x=0;x<minW;x++)
          {
             *d = 255;
             d+=destPw;

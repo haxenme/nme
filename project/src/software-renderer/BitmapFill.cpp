@@ -3,7 +3,6 @@
 
 namespace nme
 {
-   
    template<int EDGE, bool SMOOTH>
    static Filler *CreateAlpha(GraphicsBitmapFill *inFill)
    {
@@ -16,8 +15,8 @@ namespace nme
       else
          return new BitmapFiller<EDGE, SMOOTH, RGB, false>(inFill);
    }
-   
-   
+
+
    template<int EDGE>
    static Filler *CreateSmooth(GraphicsBitmapFill *inFill)
    {
@@ -26,8 +25,8 @@ namespace nme
       else
          return CreateAlpha<EDGE, false>(inFill);
    }
-   
-   
+
+
    Filler *Filler::Create(GraphicsBitmapFill *inFill)
    {
       if (inFill->repeat)
@@ -40,6 +39,5 @@ namespace nme
       else
         return CreateSmooth<EDGE_CLAMP>(inFill);
    }
-   
-   
 }
+

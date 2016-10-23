@@ -607,7 +607,7 @@ inline void BlendPixel(RGB &outRgb, const AlphaPixel &inA)
 
 
 template<bool Prem>
-inline BGRA<Prem> BilinearInterp( BGRA<Prem> s00, BGRA<Prem> s10, BGRA<Prem> s01, BGRA<Prem> s11, int x_frac, int y_frac)
+inline BGRA<Prem> BilinearInterp( BGRA<Prem> s00, BGRA<Prem> s01, BGRA<Prem> s10, BGRA<Prem> s11, int x_frac, int y_frac)
 {
    BGRA<Prem> s;
 
@@ -632,7 +632,7 @@ inline BGRA<Prem> BilinearInterp( BGRA<Prem> s00, BGRA<Prem> s10, BGRA<Prem> s01
 }
 
 
-inline RGB BilinearInterp( RGB s00, RGB s10, RGB s01, RGB s11, int x_frac, int y_frac)
+inline RGB BilinearInterp( RGB s00, RGB s01, RGB s10, RGB s11, int x_frac, int y_frac)
 {
    RGB s;
 
@@ -652,7 +652,7 @@ inline RGB BilinearInterp( RGB s00, RGB s10, RGB s01, RGB s11, int x_frac, int y
 }
 
 
-inline AlphaPixel BilinearInterp( AlphaPixel s00, AlphaPixel s10, AlphaPixel s01, AlphaPixel s11, int x_frac, int y_frac)
+inline AlphaPixel BilinearInterp( AlphaPixel s00, AlphaPixel s01, AlphaPixel s10, AlphaPixel s11, int x_frac, int y_frac)
 {
    AlphaPixel s;
 

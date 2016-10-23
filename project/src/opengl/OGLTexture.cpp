@@ -389,6 +389,8 @@ public:
             mDirtyRect = Rect();
          }
       }
+      else
+         glBindTexture(GL_TEXTURE_2D,mTextureID);
    }
 
    void BindFlags(bool inRepeat,bool inSmooth)
