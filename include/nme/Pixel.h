@@ -690,6 +690,11 @@ inline void BlendAlpha(Uint8 &ioDest, const ARGB &inSrc)
    }
 }
 
+template<typename SRC>
+inline void BlendAlpha(AlphaPixel &ioDest, SRC inSrc)
+{
+   BlendAlpha(ioDest.a,inSrc);
+}
 
 inline void QBlendAlpha(Uint8 &ioDest, Uint8 inSrc)
 {

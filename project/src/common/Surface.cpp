@@ -208,10 +208,12 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
 struct NullMask
 {
    inline void SetPos(int inX,int inY) const { }
-   inline const uint8 &MaskAlpha(const uint8 &inAlpha) const { return inAlpha; }
-   inline const uint8 &MaskAlpha(const ARGB &inRGB) const { return inRGB.a; }
-   inline const ARGB Mask(const uint8 &inAlpha) const { return ARGB( inAlpha<<24 ); }
-   inline const ARGB &Mask(const ARGB &inRGB) const { return inRGB; }
+   inline int MaskAlpha(int inAlpha) const { return inAlpha; }
+   inline uint8 MaskAlpha(const ARGB &inRGB) const { return inRGB.a; }
+   inline uint8 MaskAlpha(const BGRPremA &inRGB) const { return inRGB.a; }
+   inline uint8 MaskAlpha(const RGB &inRGB) const { return 255; }
+   template<typename T>
+   T Mask(T inT) const { return inT; }
 };
 
 
@@ -307,11 +309,10 @@ struct ImageSource
 {
    typedef PIXEL Pixel;
 
-   ImageSource(const uint8 *inBase, int inStride, PixelFormat inFmt)
+   ImageSource(const uint8 *inBase, int inStride)
    {
       mBase = inBase;
       mStride = inStride;
-      mFormat = inFmt;
    }
 
    inline void SetPos(int inX,int inY) const
@@ -326,7 +327,6 @@ struct ImageSource
    mutable const PIXEL *mPos;
    int   mStride;
    const uint8 *mBase;
-   PixelFormat mFormat;
 };
 
 struct FullAlpha
@@ -505,6 +505,16 @@ inline void BlendFuncWithAlpha(ARGB &ioDest, ARGB &inSrc,FUNC F)
 
 
 template<typename SRC, typename FUNC>
+RGB ApplyComponent(const RGB &d, const SRC &s, const FUNC &)
+{
+   RGB result;
+   result.r = FUNC::comp(d.r, s.getR() );
+   result.g = FUNC::comp(d.g, s.getG() );
+   result.b = FUNC::comp(d.b, s.getB() );
+   return result;
+}
+
+template<typename SRC, typename FUNC>
 ARGB ApplyComponent(const ARGB &d, const SRC &s, const FUNC &)
 {
    ARGB result;
@@ -523,7 +533,7 @@ BGRPremA ApplyComponent(const BGRPremA &d, const SRC &s, const FUNC &)
    result.r = FUNC::comp(d.r, s.getRAlpha() );
    result.g = FUNC::comp(d.g, s.getGAlpha() );
    result.b = FUNC::comp(d.b, s.getBAlpha() );
-   result.a = FUNC::alpha(d.a, s.getA() );
+   result.a = FUNC::alpha(d.a, s.getAlpha() );
    return result;
 }
 
@@ -532,7 +542,7 @@ template<typename SRC, typename FUNC>
 AlphaPixel ApplyComponent(const AlphaPixel &d, const SRC &s, const FUNC &)
 {
    AlphaPixel result;
-   result.a = FUNC::alpha(d.a, s.getA());
+   result.a = FUNC::alpha(d.a, s.getAlpha());
    return result;
 }
 
@@ -549,11 +559,13 @@ struct MultiplyHandler
 
 // --- Screen -----
 
-struct DoScreen
+struct ScreenHandler
 {
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-     { ioVal = 255 - (((255 - inDest) * ( 256 - ioVal - (ioVal>>7)))>>8); }
+   static inline uint8 comp(uint8 a, uint8 b) { return 255 - (((255 - a) * ( 256 - b - (b>>7)))>>8); }
+   static inline uint8 alpha(uint8 a, uint8 b) { return 255 - (((255 - a) * ( 256 - b - (b>>7)))>>8); }
 };
+
+
 
 template<bool DEST_ALPHA> void ScreenFunc(ARGB &ioDest, ARGB inSrc)
    { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoScreen()); }
@@ -708,8 +720,8 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
       switch(inMode)
       {
          BLEND_CASE(Multiply)
-         /*
          BLEND_CASE(Screen)
+         /*
          BLEND_CASE(Lighten)
          BLEND_CASE(Darken)
          BLEND_CASE(Difference)
@@ -728,6 +740,96 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
 }
 
 
+template<typename DEST,typename SRC>
+void TTBlitRgb(DEST &dest, SRC &src, int dx, int dy, Rect src_rect, const BitmapCache *inMask, BlendMode inBlend )
+{
+   if (inBlend==bmNormal || inBlend==bmLayer)
+   {
+      if (inMask)
+         TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
+      else
+         TBlit( dest, src, NullMask(), dx, dy, src_rect );
+   }
+   else
+   {
+      if (inMask)
+         TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, inBlend );
+      else
+         TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, inBlend );
+   }
+}
+
+
+
+
+template<typename DEST>
+void TBlitRgb(DEST &dest, int dx, int dy, const SimpleSurface *src, Rect src_rect, const BitmapCache *inMask, BlendMode inBlend, uint32 inTint )
+{
+      bool tint = inBlend==bmTinted;
+      bool tint_inner = inBlend==bmTintedInner;
+      bool tint_add = inBlend==bmTintedAdd;
+
+      bool src_alpha = src->Format()==pfAlpha;
+
+      // Blitting tint, we can ignore blend mode too (this is used for rendering text)
+      if (tint)
+      {
+         if (src_alpha)
+         {
+            TintSource<false> src(src->GetBase(),src->GetStride(),inTint,src->Format());
+            if (inMask)
+               TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
+            else
+               TBlit( dest, src, NullMask(), dx, dy, src_rect );
+         }
+         else
+         {
+            TintSource<false,true> src(src->GetBase(),src->GetStride(),inTint,src->Format());
+            if (inMask)
+               TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
+            else
+               TBlit( dest, src, NullMask(), dx, dy, src_rect );
+         }
+      }
+      else if (tint_inner)
+      {
+         TintSource<true> src(src->GetBase(),src->GetStride(),inTint,src->Format());
+
+         if (inMask)
+            TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmInner );
+         else
+            TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, bmInner );
+      }
+      else if (tint_add)
+      {
+         TintSource<false,true> src(src->GetBase(),src->GetStride(),inTint,src->Format());
+
+         if (inMask)
+            TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmAdd );
+         else
+            TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, bmAdd );
+      }
+      else
+      {
+         switch(src->Format())
+         {
+            case pfAlpha:
+               TTBlitRgb(dest, ImageSource<AlphaPixel>(src->GetBase(),src->GetStride()), dx, dy, src_rect,inMask,inBlend);
+               return;
+            case pfRGB:
+               TTBlitRgb(dest, ImageSource<RGB>(src->GetBase(),src->GetStride()), dx, dy, src_rect,inMask,inBlend);
+               return;
+            case pfBGRA:
+               TTBlitRgb(dest, ImageSource<ARGB>(src->GetBase(),src->GetStride()), dx, dy, src_rect,inMask,inBlend);
+               return;
+            case pfBGRPremA:
+               TTBlitRgb(dest, ImageSource<BGRPremA>(src->GetBase(),src->GetStride()), dx, dy, src_rect,inMask,inBlend);
+               return;
+            default:
+               ;
+         }
+      }
+}
 
 
 void SimpleSurface::BlitTo(const RenderTarget &outDest,
@@ -791,107 +893,32 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
       // Blitting to alpha image - can ignore blend mode
       if (dest_alpha)
       {
-         ImageDest<uint8> dest(outDest);
+         ImageDest<AlphaPixel> dest(outDest);
          if (inMask)
          {
             if (src_alpha)
-               TBlitAlpha(dest, ImageSource<AlphaPixel>(mBase,mStride,mPixelFormat), ImageMask(*inMask), dx, dy, src_rect );
+               TBlitAlpha(dest, ImageSource<AlphaPixel>(mBase,mStride), ImageMask(*inMask), dx, dy, src_rect );
             else if (mPixelFormat==pfBGRA || mPixelFormat==pfRGBPremA)
-               TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat), ImageMask(*inMask), dx, dy, src_rect );
+               TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride), ImageMask(*inMask), dx, dy, src_rect );
             else
                TBlitAlpha(dest, FullAlpha(), ImageMask(*inMask), dx, dy, src_rect );
          }
          else
          {
             if (src_alpha)
-               TBlitAlpha(dest, ImageSource<AlphaPixel>(mBase,mStride,mPixelFormat), NullMask(), dx, dy, src_rect );
+               TBlitAlpha(dest, ImageSource<AlphaPixel>(mBase,mStride), NullMask(), dx, dy, src_rect );
             else if (mPixelFormat==pfBGRA || mPixelFormat==pfRGBPremA)
-               TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride,mPixelFormat), NullMask(), dx, dy, src_rect );
+               TBlitAlpha(dest, ImageSource<ARGB>(mBase,mStride), NullMask(), dx, dy, src_rect );
             else
                TBlitAlpha(dest, FullAlpha(), NullMask(), dx, dy, src_rect );
          }
-         return;
       }
-
-      ImageDest<ARGB> dest(outDest);
-      bool tint = inBlend==bmTinted;
-      bool tint_inner = inBlend==bmTintedInner;
-      bool tint_add = inBlend==bmTintedAdd;
-
-      // Blitting tint, we can ignore blend mode too (this is used for rendering text)
-      if (tint)
-      {
-         if (src_alpha)
-         {
-            TintSource<false> src(mBase,mStride,inTint,mPixelFormat);
-            if (inMask)
-               TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
-            else
-               TBlit( dest, src, NullMask(), dx, dy, src_rect );
-         }
-         else
-         {
-            TintSource<false,true> src(mBase,mStride,inTint,mPixelFormat);
-            if (inMask)
-               TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
-            else
-               TBlit( dest, src, NullMask(), dx, dy, src_rect );
-         }
-      }
-      else if (tint_inner)
-      {
-         TintSource<true> src(mBase,mStride,inTint,mPixelFormat);
-
-         if (inMask)
-            TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmInner );
-         else
-            TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, bmInner );
-      }
-      else if (tint_add)
-      {
-         TintSource<false,true> src(mBase,mStride,inTint,mPixelFormat);
-
-         if (inMask)
-            TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmAdd );
-         else
-            TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, bmAdd );
-      }
-      else if (src_alpha)
-      {
-         ImageSource<uint8> src(mBase,mStride,mPixelFormat);
-         if (inBlend==bmNormal || inBlend==bmLayer)
-         {
-            if (inMask)
-               TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
-            else
-               TBlit( dest, src, NullMask(), dx, dy, src_rect );
-         }
-         else
-         {
-            if (inMask)
-               TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, inBlend );
-            else
-               TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, inBlend );
-         }
-      }
-      else
-      {
-         ImageSource<ARGB> src(mBase,mStride,mPixelFormat);
-         if (inBlend==bmNormal || inBlend==bmLayer)
-         {
-            if (inMask)
-               TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
-            else
-               TBlit( dest, src, NullMask(), dx, dy, src_rect );
-         }
-         else
-         {
-            if (inMask)
-               TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, inBlend );
-            else
-               TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, inBlend );
-         }
-      }
+      else if (outDest.Format()==pfBGRPremA)
+         TBlitRgb( ImageDest<BGRPremA>(outDest), dx, dy, this, src_rect, inMask, inBlend, inTint );
+      else if (outDest.Format()==pfBGRA)
+         TBlitRgb( ImageDest<ARGB>(outDest), dx, dy, this, src_rect, inMask, inBlend, inTint );
+      else if (outDest.Format()==pfRGB)
+         TBlitRgb( ImageDest<RGB>(outDest), dx, dy, this, src_rect, inMask, inBlend, inTint );
    }
 }
 
