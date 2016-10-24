@@ -4,6 +4,7 @@
 #include <nme/Object.h>
 #include <nme/QuickVec.h>
 #include "Utils.h"
+#include <hx/CFFI.h>
 
 namespace nme
 {
@@ -16,7 +17,7 @@ struct ByteArray
    ByteArray(int inSize);
    ByteArray(const ByteArray &inRHS);
    ByteArray();
-   ByteArray(struct _value *Value);
+   ByteArray(value Value);
    ByteArray(const QuickVec<unsigned char>  &inValue);
    ByteArray(const char *inResourceName);
 
@@ -27,7 +28,7 @@ struct ByteArray
    bool          Ok() { return mValue!=0; }
 
 
-   struct _value *mValue;
+   value mValue;
 
    static ByteArray FromFile(const OSChar *inFilename);
    #ifdef HX_WINDOWS
