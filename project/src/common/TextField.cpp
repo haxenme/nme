@@ -540,6 +540,7 @@ void TextField::SetSelectionInternal(int inStartIndex, int inEndIndex)
    caretIndex = mSelectMax;
 
    mCaretDirty = true;
+   mTilesDirty = true;
    mGfxDirty = true;
    DirtyCache();
 }
