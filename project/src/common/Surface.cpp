@@ -199,6 +199,7 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
    mBase = newBuffer;
    mStride = newStride;
    mPixelFormat = newFormat;
+   mGPUPixelFormat = mPixelFormat;
 }
 
 
@@ -1185,6 +1186,12 @@ void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
    }
    else
    {
+      if (mPixelFormat==pfBGRPremA)
+      {
+         BGRPremA prem;
+         SetPixel(prem,rgb);
+         rgb.ival = prem.ival;
+      }
       for(int y=y0;y<y1;y++)
       {
          uint32 *ptr = (uint32 *)(mBase + y*mStride) + x0;
@@ -1382,6 +1389,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       mTexture->Dirty(r);
 
    PixelFormat convert = pfNone;
+   // TODO - work out when auto-conversion is right
    if (!HasAlphaChannel(mPixelFormat))
    {
       int n = inRect.w * inRect.h;
@@ -1398,7 +1406,9 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       convert = pfBGRA;
 
    if (convert!=pfNone)
+   {
       ChangeInternalFormat(convert, &r);
+   }
 
    const ARGB *src = (const ARGB *)inPixels;
 
@@ -1408,6 +1418,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       {
          ARGB *dest = (ARGB *)(mBase + (r.y+y)*mStride) + r.x;
          memcpy(dest, src, r.w*sizeof(ARGB));
+         src+=r.w;
       }
       else if (mPixelFormat==pfAlpha)
       {

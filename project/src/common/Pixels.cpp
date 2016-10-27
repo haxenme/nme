@@ -14,10 +14,11 @@ int pixelInit()
    {
       Uint8 *prem = gPremAlphaLut[alpha];
       Uint8 *unprem = gUnPremAlphaLut[alpha];
+      int a256 = alpha + (alpha>>7);
 
       for(int r=0;r<256;r++)
       {
-         prem[r] = (r*alpha+127)/255;
+         prem[r] = (r*a256)>>8;
          unprem[r] = alpha==0 ? 0 : r>=alpha ? 255 : (r*255 + alpha/2)/alpha;
       }
    }

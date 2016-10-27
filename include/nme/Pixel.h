@@ -73,6 +73,7 @@ typedef unsigned char Uint8;
 
 extern Uint8 gPremAlphaLut[256][256];
 extern Uint8 gUnPremAlphaLut[256][256];
+extern Uint8 gOneTakeAlpha[256];
 
 
 template<bool PREM>
@@ -104,6 +105,10 @@ struct BGRA
    inline int getG() const { return PREM ? gUnPremAlphaLut[a][g] : g; }
    inline int getB() const { return PREM ? gUnPremAlphaLut[a][b] : b; }
    inline int getLuma() const { return PREM ? gUnPremAlphaLut[a][(r+(g<<1)+b)>>2] : (r+(g<<1)+b)>>2; }
+
+   inline void setRAlpha(int val) { r= PREM ? val : gUnPremAlphaLut[a][val]; }
+   inline void setGAlpha(int val) { g= PREM ? val : gUnPremAlphaLut[a][val]; }
+   inline void setBAlpha(int val) { b= PREM ? val : gUnPremAlphaLut[a][val]; }
 
    union
    {
@@ -548,11 +553,11 @@ inline void BlendPixel(BGRA<Prem0> &outBgra, const T &inPixel)
    }
    else
    {
-      int notA= 256-inPixel.getAlpha();
+      int notA= 255-inPixel.getAlpha();
       outBgra.a = inPixel.getAlpha()+ ((outBgra.a*notA)>>8);
-      outBgra.r = ((outBgra.r*notA)>>8) + inPixel.getRAlpha();
-      outBgra.g = ((outBgra.g*notA)>>8) + inPixel.getGAlpha();
-      outBgra.b = ((outBgra.b*notA)>>8) + inPixel.getBAlpha();
+      outBgra.setRAlpha( ((outBgra.getRAlpha()*notA)>>8) + inPixel.getRAlpha() );
+      outBgra.setGAlpha( ((outBgra.getGAlpha()*notA)>>8) + inPixel.getGAlpha() );
+      outBgra.setBAlpha( ((outBgra.getBAlpha()*notA)>>8) + inPixel.getBAlpha() );
    }
 }
 

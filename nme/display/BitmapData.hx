@@ -34,6 +34,7 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static var FORMAT_LUMA_ALPHA:Int = 4;  //16 bit, luma + alpha
    public static var FORMAT_RGB:Int = 5;  //24 bit, rgb
    public static var FORMAT_YUVSP:Int = 6;  // Plane of Y followed by interleaved UV
+   public static var FORMAT_BGRPremA:Int = 7;  // Plane of Y followed by interleaved UV
 
 
    public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, ?inInternalFormat:Null<Int>)
@@ -50,6 +51,10 @@ class BitmapData extends Surface implements IBitmapDrawable
             nmeLoadFromBytes(ByteArray.fromBytes(haxe.Resource.getBytes(resoName)), null);
          }
       }
+   }
+   public static function createPremultiplied(width:Int, height:Int, inRgba:Int = 0)
+   {
+      return new BitmapData(width, height, true, inRgba, FORMAT_BGRPremA);
    }
 
    public static function createGrey(width:Int, height:Int, ?inLuma:Int)
