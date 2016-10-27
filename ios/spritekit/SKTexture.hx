@@ -25,6 +25,8 @@ extern class SKTexture
    @:native("textureWithRect:inTexture")
    public static function withRect(rect:CGRect, inTexture:SKTexture):SKTexture;
 
+   public var filteringMode:SKTextureFilteringMode;
+
 }
 
 

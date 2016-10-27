@@ -19,6 +19,7 @@ extern class SKNode
 
    public function addChild(child:SKNode):Void;
    public function insertChild(child:SKNode, atIndex:Int):Void;
+   public function removeFromParent():Void;
 
 }
 
