@@ -26,6 +26,7 @@ extern class SKTexture
    public static function withRect(rect:CGRect, inTexture:SKTexture):SKTexture;
 
    public var filteringMode:SKTextureFilteringMode;
+   public var size:CGSize;
 
 }
 
