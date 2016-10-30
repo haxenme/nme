@@ -26,6 +26,7 @@ Tilesheet::Tilesheet(Surface *inSurface,bool inInitRef) : Object(inInitRef)
 
 Tilesheet::~Tilesheet()
 {
+   mTiles.DeleteAll();
    mSheet->DecRef();
 }
 
