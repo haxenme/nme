@@ -162,12 +162,23 @@ public:
    void suspend()
    {
       suspended = true;
+      if (playing())
+      {
+         alSourcePause(sourceId);
+         check("pause for suspend");
+         return;
+      }
    }
    
    
    void resume()
    {
-      suspended = false;
+      if (shouldPlay)
+      {
+         alSourcePlay(sourceId);
+         check("resume");
+         suspended = false;
+      }
    }
   
    
@@ -946,7 +957,7 @@ void ResumeOpenAl()
       return;
    
    alcMakeContextCurrent(sgContext);
-   alcProcessContext(sgContext);
+
 }
 
 void PingOpenAl()
