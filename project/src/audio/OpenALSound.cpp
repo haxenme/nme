@@ -275,7 +275,7 @@ public:
          alSourcePlay(sourceId);
          if (seekBytes && seekBytes<byteSize)
             alSourcef(sourceId, AL_BYTE_OFFSET, seekBytes);
-         clAddChannel(this, loops!=0);
+         clAddChannel(this, true);
       }
    }
 
@@ -293,12 +293,19 @@ public:
 
    void asyncUpdate()
    {
-      if (!playing() && loops!=0)
+      if (!playing())
       {
-         alSourcef(sourceId, AL_BYTE_OFFSET, 0);
-         alSourcePlay(sourceId);
-         if (loops>0)
-            loops--;
+         if (loops!=0) 
+         {
+            alSourcef(sourceId, AL_BYTE_OFFSET, 0);
+            alSourcePlay(sourceId);
+            if (loops>0) 
+               loops--;
+         }
+         else 
+         {
+            stop();
+         }
       }
    }
 
