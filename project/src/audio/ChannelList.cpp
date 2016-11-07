@@ -197,7 +197,10 @@ void clResumeAllChannels()
       return;
    clLock();
    for(int i = 0; i < sgOpenChannels.size(); i++)
-      sgOpenChannels[i].channel->resume();
+   {
+      if(!sgOpenChannels[i].channel->isComplete())
+         sgOpenChannels[i].channel->resume();
+   }
    clSoundSuspended = false;
    clPingLocked();
    clUnlock();
