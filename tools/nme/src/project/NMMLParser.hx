@@ -469,7 +469,9 @@ class NMMLParser
       if (element.has.extension)
          project.androidConfig.extensions.set(substitute(element.att.extension),true);
 
-
+      if (element.has.addV4Compat)
+         project.androidConfig.addV4Compat = element.att.addV4Compat!="false";
+ 
       for(childElement in element.elements) 
       {
          if (isValidElement(childElement, ""))
