@@ -470,7 +470,7 @@ class NMMLParser
          project.androidConfig.extensions.set(substitute(element.att.extension),true);
 
       if (element.has.addV4Compat)
-         project.androidConfig.addV4Compat = element.att.addV4Compat!="false";
+         project.androidConfig.addV4Compat = !parseBool(element.att.addV4Compat);
  
       for(childElement in element.elements) 
       {

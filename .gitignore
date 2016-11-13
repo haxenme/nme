@@ -37,3 +37,4 @@ out.txt
 # Miscellaneous
 all_objs
 *.pdb
+*.hash
