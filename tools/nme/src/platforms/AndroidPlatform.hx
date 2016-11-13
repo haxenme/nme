@@ -164,7 +164,10 @@ class AndroidPlatform extends Platform
       {
          var lib = project.dependencies.get(k);
          if (lib.isAndroidProject() && getAndroidProject(lib)!=extensionApi)
-            context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:getAndroidProject(lib)} );
+         {
+            var proj = getAndroidProject(lib);
+            context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:proj} );
+         }
       }
    }
 
@@ -395,6 +398,7 @@ class AndroidPlatform extends Platform
       }
 
       //if (project.androidConfig.minApiLevel < 14)
+      if (project.androidConfig.addV4Compat)
          addV4CompatLib(jarDir);
 
       for(k in project.dependencies.keys())
