@@ -68,6 +68,7 @@ class FileHelper
           extension == "xcscheme" ||
           extension == "hxproj" ||
           extension == "nmml" ||
+          extension == "gradle" ||
           extension == "storyboard" ||
           isText(source))) 
           {
