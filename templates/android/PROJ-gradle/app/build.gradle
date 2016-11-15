@@ -5,10 +5,10 @@ android {
     buildToolsVersion "25.0.0"
     defaultConfig {
         applicationId "::APP_PACKAGE::"
-        minSdkVersion 15
-        targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion ::ANDROID_MIN_API_LEVEL::
+        targetSdkVersion ::ANDROID_TARGET_API_LEVEL::
+        versionCode ::APP_BUILD_NUMBER::
+        versionName "::APP_VERSION::"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

@@ -7,7 +7,7 @@ import platforms.Platform;
 
 class ProcessHelper 
 {
-   public static function getOutput(command:String, args:Array<String>) : Array<String>
+   public static function getOutput(command:String, args:Array<String>, inEcho:Bool = false) : Array<String>
    {
       var result = new Array<String>();
 
@@ -18,7 +18,12 @@ class ProcessHelper
       {
          process = new Process(command, args);
          while(true)
-            result.push( process.stdout.readLine() );
+         {
+            var line = process.stdout.readLine();
+            if (inEcho)
+                Sys.println(line);
+            result.push(line);
+         }
       }
       catch(e:Dynamic) { }
 

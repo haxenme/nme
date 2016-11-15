@@ -420,7 +420,7 @@ implements SensorEventListener
       SharedPreferences prefs = mContext.getSharedPreferences(GLOBAL_PREF_FILE, Activity.MODE_PRIVATE);
       SharedPreferences.Editor prefEditor = prefs.edit();
       prefEditor.putString(inId, "");
-      prefEditor.commit();
+      prefEditor.apply();
    }
    
    public static boolean setClipboardText(String text) {
@@ -1032,7 +1032,7 @@ implements SensorEventListener
       }
       catch (Exception ex)
       {
-         Log.e("Could not get local address", ex.toString());
+         Log.e(TAG, "Could not get local address:" + ex.toString());
       }
       return result;
    }
@@ -1059,7 +1059,7 @@ implements SensorEventListener
       SharedPreferences prefs = mContext.getSharedPreferences(GLOBAL_PREF_FILE, Activity.MODE_PRIVATE);
       SharedPreferences.Editor prefEditor = prefs.edit();
       prefEditor.putString(inId, inPreference);
-      prefEditor.commit();
+      prefEditor.apply();
    }
    
    

@@ -22,8 +22,10 @@ import android.os.ParcelUuid;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.app.Activity;
+import android.annotation.SuppressLint;
 
-
+// You will need to add the permission android.permission.BLUETOOTH/BLUETOOTH_ADMIN to use this
+@SuppressLint("MissingPermission") 
 public class Bluetooth
 {
    static final String TAG = "Bluetooth";

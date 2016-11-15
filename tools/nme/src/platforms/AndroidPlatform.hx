@@ -20,7 +20,7 @@ class AndroidPlatform extends Platform
 
       buildV5 = buildV7 = buildX86 = false;
 
-      gradle = inProject.hasDef("gradle");
+      gradle = CommandLineTools.gradle;
       if (gradle)
       {
          Log.verbose("Using gradle build system");
@@ -44,12 +44,13 @@ class AndroidPlatform extends Platform
       buildX86 = hasArch(X86);
 
 
+      var libDir = getOutputLibDir();
       if (!buildV5)
-         PathHelper.removeDirectory(getAppDir() + "/libs/armeabi");
+         PathHelper.removeDirectory(libDir + "/armeabi");
       if (!buildV7)
-         PathHelper.removeDirectory(getAppDir() + "/libs/armeabi-v7a");
+         PathHelper.removeDirectory(libDir + "/armeabi-v7a");
       if (!buildX86)
-         PathHelper.removeDirectory(getAppDir() + "/libs/x86");
+         PathHelper.removeDirectory(libDir + "/x86");
 
       setupAdb();
 
@@ -80,6 +81,12 @@ class AndroidPlatform extends Platform
    public function getAppDir()
    {
       return gradle ? getOutputDir() + "/app/src/main"  : getOutputDir();
+   }
+
+
+   public function getOutputLibDir()
+   {
+      return gradle ? getOutputDir() + "/app/src/main/jniLibs"  : getOutputDir() + "/libs";
    }
 
 
@@ -118,15 +125,15 @@ class AndroidPlatform extends Platform
 
       if (buildV5)
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + ".so",
-                getAppDir() + "/libs/armeabi/libApplicationMain.so");
+                getOutputLibDir() + "/armeabi/libApplicationMain.so");
 
       if (buildV7)
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-v7.so",
-                getAppDir() + "/libs/armeabi-v7a/libApplicationMain.so" );
+                getOutputLibDir() + "/armeabi-v7a/libApplicationMain.so" );
 
       if (buildX86)
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-x86.so",
-                getAppDir() + "/libs/x86/libApplicationMain.so" );
+                getOutputLibDir() + "/x86/libApplicationMain.so" );
    }
 
 
@@ -217,17 +224,20 @@ class AndroidPlatform extends Platform
       if (project.environment.exists("ANDROID_SDK")) 
          Sys.putEnv("ANDROID_SDK", project.environment.get("ANDROID_SDK"));
 
-      var build = "debug";
-      if (project.certificate != null) 
-         build = "release";
-
       if (gradle)
       {
+         var assemble = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
+
          var exe = PlatformHelper.hostPlatform==Platform.WINDOWS ? "./gradlew.bat" : "./gradlew";
-         ProcessHelper.runCommand(outputDir, exe, [ "build" ]);
+         ProcessHelper.runCommand(outputDir, exe, [ assemble ]);
       }
       else
       {
+         var build = "debug";
+         if (project.certificate != null) 
+            build = "release";
+
+
          var ant = project.environment.get("ANT_HOME");
          if (ant == null || ant == "") 
             ant = "ant";
@@ -256,9 +266,8 @@ class AndroidPlatform extends Platform
       var outputDir = getOutputDir();
       if (gradle)
       {
-         var build = "debug";
-         if (project.certificate != null)
-            build = "release";
+         var build = (project.certificate != null) ? "release" : "debug";
+
          targetPath = FileSystem.fullPath(outputDir) + "/app/build/outputs/apk/app-" + build + ".apk";
       }
       else
@@ -270,7 +279,21 @@ class AndroidPlatform extends Platform
          targetPath = FileSystem.fullPath(outputDir) + "/bin/" + project.app.file + "-" + build + ".apk";
       }
 
-      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "install", "-r", targetPath ]) );
+
+      // Apparently an exit code is too much to ask...
+      // ProcessHelper.runCommand("", adbName, adbFlags.concat([ "install", "-r", targetPath ]) );
+      try
+      {
+         var lines = ProcessHelper.getOutput(adbName,adbFlags.concat([ "install", "-r", targetPath ]), Log.mVerbose);
+         var failure = ~/Failure/;
+         for(line in lines)
+            if (failure.match(line))
+               Log.error("Failed to install apk:"  + line);
+      }
+      catch(e:Dynamic)
+      {
+         Log.error("Could not run adb install " + e);
+      }
    }
 
    override public function run(arguments:Array<String>):Void 
@@ -294,12 +317,13 @@ class AndroidPlatform extends Platform
 
    override public function updateLibs()
    {
+      var libDir = getOutputLibDir();
       if (buildV5)
-         updateLibArch( getAppDir() + "/libs/armeabi", "" );
+         updateLibArch( libDir + "/armeabi", "" );
       if (buildV7)
-         updateLibArch( getAppDir() + "/libs/armeabi-v7a", "-v7" );
+         updateLibArch( libDir + "/armeabi-v7a", "-v7" );
       if (buildX86)
-         updateLibArch( getAppDir() + "/libs/x86", "-x86" );
+         updateLibArch( libDir + "/x86", "-x86" );
    }
 
 

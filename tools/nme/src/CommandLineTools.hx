@@ -28,6 +28,7 @@ class CommandLineTools
    public static var home:String;
    public static var sys:SysProxy;
    public static var toolkit:Bool = false;
+   public static var gradle:Bool = false;
 
    static var haxeVer:String = null;
    static var additionalArguments:Array<String>;
@@ -403,6 +404,8 @@ class CommandLineTools
             args.push("-debug");
          if (toolkit)
             args.push("-toolkit");
+         if (gradle)
+            args.push("-gradle");
          if (project.hasDef("deploy"))
             args.push("deploy=" + project.getDef("deploy"));
          if (sampleTarget!="")
@@ -1603,6 +1606,13 @@ class CommandLineTools
             else if (argument == "-32") 
                project.architectures.push(Architecture.X86);
 
+            else if (argument=="-gradle" || argument=="-Dgradle")
+            {
+               gradle = true;
+               toolkit = true;
+               project.haxedefs.set("gradle", "1");
+               project.haxedefs.set("toolkit", "");
+            }
             else if (argument=="-toolkit" || argument=="-Dtoolkit")
             {
                toolkit = true;
