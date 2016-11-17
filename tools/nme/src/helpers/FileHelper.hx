@@ -1,5 +1,6 @@
 package;
 
+import sys.io.FileInput;
 import haxe.io.Bytes;
 import haxe.io.Path;
 import haxe.Template;
@@ -299,8 +300,14 @@ class FileHelper
          return false;
       }
 
-      var input = File.read(source, true);
+      var input:FileInput = File.read(source, true);
+      var ret:Bool = calcIsText(input);
+      input.close();
+      return ret;
+   }
 
+   static function calcIsText(input:FileInput):Bool
+   {
       var numChars = 0;
       var numBytes = 0;
 
