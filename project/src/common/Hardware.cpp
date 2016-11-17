@@ -450,10 +450,30 @@ public:
 
       UserPoint tex0(0,0);
       UserPoint tex1(1,1);
-      UserPoint size(mTexture->GetWidth(),mTexture->GetHeight());
-      float texScaleX = size.x ? 1.0/size.x : 1;
-      float texScaleY = size.y ? 1.0/size.y : 1;
+      UserPoint bmpSize(mTexture->GetWidth(),mTexture->GetHeight());
+      if (bmpSize.x==0 || bmpSize.y==0)
+         bmpSize = UserPoint(1,1);
 
+      double texScaleX = 1.0/bmpSize.x;
+      double texScaleY = 1.0/bmpSize.y;
+
+      /*
+        Opengl is very clear when it comes to how pixels & textures are sampled.
+        The sampling is done at 1/2 pixel offsets, but there is still one case that causes issues.
+        When you draw the tile exactly on the 1/2 pixel offset, the geometry uses some convention
+         to decide whether to include the pixel or not.  By being consistent in its rounding direction,
+         it ensures that if two tiles touch each other, all the pixels will be drawn one way
+         or another. good. The problem is that in this case, the texture coords run exactly down the
+         crack between the pixels.  In the nearest-neighbour case, opengl must decide which texel
+         to render, using some convention.  However, sadly, this convention is not exactly the same as
+         the geometry convention.  This means that a texel inconistent with the geometry can be rendered.
+
+        To fix this we alter the tex-coords by 10-7 of a image, which means there is no "tie" in the
+         texture sampling equation, and no convetion is required.
+      */
+      #define texTol  0.0000001f
+
+      UserPoint tileSize = bmpSize;
 
       for(int i=0;i<inTiles;i++)
       {
@@ -461,12 +481,30 @@ public:
 
          if (!FULL)
          {
-            tex0.x = point[0].x * texScaleX;
-            tex0.y = point[0].y * texScaleY;
-            size = point[1];
-            tex1.x = tex0.x + size.x*texScaleX;
-            tex1.y = tex0.y + size.y*texScaleY;
-            point += 2;
+            UserPoint tileOrigin = *point++;
+            tileSize  = *point++;
+
+            if (tileSize.x<0)
+            {
+               tex0.x = (tileOrigin.x ) * texScaleX - texTol;
+               tex1.x = (tileOrigin.x + tileSize.x ) * texScaleX + texTol;
+            }
+            else
+            {
+               tex0.x = (tileOrigin.x ) * texScaleX + texTol;
+               tex1.x = (tileOrigin.x + tileSize.x ) * texScaleX - texTol;
+            }
+
+            if (tileSize.y<0)
+            {
+               tex0.y = (tileOrigin.y ) * texScaleY - texTol;
+               tex1.y = (tileOrigin.y + tileSize.y ) * texScaleY + texTol;
+            }
+            else
+            {
+               tex0.y = (tileOrigin.y ) * texScaleY + texTol;
+               tex1.y = (tileOrigin.y + tileSize.y ) * texScaleY - texTol;
+            }
          }
 
          if (TRANS)
@@ -474,12 +512,12 @@ public:
             UserPoint trans_x = *point++;
             UserPoint trans_y = *point++;
 
-            UserPoint p1(pos.x + size.x*trans_x.x,
-                         pos.y + size.x*trans_x.y);
-            UserPoint p2(pos.x + size.x*trans_x.x + size.y*trans_y.x,
-                         pos.y + size.x*trans_x.y + size.y*trans_y.y );
-            UserPoint p3(pos.x + size.y*trans_y.x,
-                         pos.y + size.y*trans_y.y );
+            UserPoint p1(pos.x + tileSize.x*trans_x.x,
+                         pos.y + tileSize.x*trans_x.y);
+            UserPoint p2(pos.x + tileSize.x*trans_x.x + tileSize.y*trans_y.x,
+                         pos.y + tileSize.x*trans_x.y + tileSize.y*trans_y.y );
+            UserPoint p3(pos.x + tileSize.y*trans_y.x,
+                         pos.y + tileSize.y*trans_y.y );
 
             *vertices = ( pos );
             Next(vertices);
@@ -492,7 +530,7 @@ public:
          }
          else
          {
-            UserPoint p1(pos.x + size.x, pos.y + size.y);
+            UserPoint p1(pos.x + tileSize.x, pos.y + tileSize.y);
 
             *vertices = (pos);
             Next(vertices);
