@@ -660,12 +660,13 @@ DEFINE_PRIM(nme_##obj_prefix##_set_##prop,2)
 using namespace nme;
 
 
-value nme_time_stamp()
+double nme_time_stamp()
 {
-   return alloc_float( GetTimeStamp() );
+   return GetTimeStamp();
 }
 
-DEFINE_PRIM(nme_time_stamp,0)
+DEFINE_PRIME0(nme_time_stamp)
+
 
 value nme_error_output(value message)
 {

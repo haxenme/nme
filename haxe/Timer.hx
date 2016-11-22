@@ -227,7 +227,7 @@ class Timer
       return nme_time_stamp();
    }
 
-   static var nme_time_stamp = nme.Loader.load ("nme_time_stamp", 0);
+   static var nme_time_stamp = nme.PrimeLoader.load("nme_time_stamp","d");
 }
 
 
