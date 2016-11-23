@@ -224,7 +224,7 @@ class Timer
 
    static public function stamp():Float
    {
-      return nme_time_stamp();
+      return nme_time_stamp.call();
    }
 
    static var nme_time_stamp = nme.PrimeLoader.load("nme_time_stamp","d");
