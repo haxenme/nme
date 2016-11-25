@@ -88,6 +88,35 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
    }
 }
 
+#ifdef HX_WINDOWS
+//Constructor For compressed textures
+SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign,int inGPUFormat, unsigned char* data, size_t texture, int size)
+{
+   mWidth = inWidth;
+   mHeight = inHeight;
+   mTexture = 0;
+   mPixelFormat = inPixelFormat;
+   mGPUPixelFormat = inPixelFormat;
+   
+   // Default to using premultiplied alpha
+   #ifndef NME_NOPREMULTIPLIED_ALPHA
+   if (mPixelFormat != pfAlpha)
+      mFlags |= surfUsePremultipliedAlpha;
+   #endif
+
+   if (inGPUFormat!=-1)
+   {
+      mStride = size;
+      mBase = data;
+
+      if (inGPUFormat!=0)
+         mGPUPixelFormat = inGPUFormat;
+
+      //createHardwareSurface();
+   }
+}
+#endif
+
 SimpleSurface::~SimpleSurface()
 {
    if (mBase)

@@ -19,6 +19,9 @@ enum PixelFormat
    pfHardware     = 0x10,
    pfARGB4444     = 0x11,
    pfRGB565       = 0x12,
+#ifdef HX_WINDOWS
+   pfDDS          = 0x20,
+#endif
    
    pfHasAlpha     = 0x01,
 };

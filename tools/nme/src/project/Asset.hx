@@ -50,7 +50,7 @@ class Asset
 
          switch(extension.toLowerCase()) 
          {
-            case "jpg", "jpeg", "png", "gif":
+            case "jpg", "jpeg", "png", "gif", "dds":
                type = AssetType.IMAGE;
 
             case "otf", "ttf":

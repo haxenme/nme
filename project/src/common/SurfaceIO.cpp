@@ -2,6 +2,45 @@
 #include <Surface.h>
 #include <ByteArray.h>
 
+//DDS
+#ifdef HX_WINDOWS
+  #ifndef MAKEFOURCC
+    #define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
+                ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |       \
+                ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24 ))
+  #endif
+const uint32_t DDS_MAGIC = 0x20534444; // "DDS "
+struct DDS_PIXELFORMAT
+{
+    uint32_t    size;
+    uint32_t    flags;
+    uint32_t    fourCC;
+    uint32_t    RGBBitCount;
+    uint32_t    RBitMask;
+    uint32_t    GBitMask;
+    uint32_t    BBitMask;
+    uint32_t    ABitMask;
+};
+#define DDS_FOURCC      0x00000004  // DDPF_FOURCC
+struct DDS_HEADER
+{
+    uint32_t        size;
+    uint32_t        flags;
+    uint32_t        height;
+    uint32_t        width;
+    uint32_t        pitchOrLinearSize;
+    uint32_t        depth; // only if DDS_HEADER_FLAGS_VOLUME is set in flags
+    uint32_t        mipMapCount;
+    uint32_t        reserved1[11];
+    DDS_PIXELFORMAT ddspf;
+    uint32_t        caps;
+    uint32_t        caps2;
+    uint32_t        caps3;
+    uint32_t        caps4;
+    uint32_t        reserved2;
+};
+#define SIZEOF_DDS_HEADER_DXT10 20
+#endif
 
 extern "C" {
 #include <jpeglib.h>
@@ -311,6 +350,95 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
 }
 
 
+#ifdef HX_WINDOWS
+static Surface *TryDDS(FILE *inFile,const uint8 *inData, int inDataLen)
+{
+   const uint8_t* bitData = nullptr;
+   size_t bitSize = 0;
+   Surface *result = 0;
+   char * buffer;
+   if(inFile)
+   {
+      std::fseek(inFile, 0L, SEEK_END);
+      inDataLen = std::ftell(inFile);
+      if (inDataLen < 1) 
+      {
+         fprintf(stderr,"Error: ftell error\n"); 
+         return (0);
+      }
+      std::fseek(inFile, 0L, SEEK_SET);
+
+
+      // allocate memory to contain the whole file:
+      buffer = (char*) malloc (sizeof(char)*inDataLen);
+      if (buffer == NULL) 
+      {
+         fprintf(stderr,"Error: Memory error\n");
+		 return (0);
+      }
+      // copy the file into the buffer:
+     size_t s = fread (buffer,1,inDataLen,inFile);
+      if (s != inDataLen)
+      {
+         fprintf(stderr,"Error: Reading error\n"); 
+         return (0);
+      }
+      inData = (const uint8 *)buffer;
+   }
+   // Validate DDS file in memory
+    if (inDataLen < (sizeof(uint32_t) + sizeof(DDS_HEADER)))
+    {
+      fprintf(stderr, "the DDS file failed to load. invalid len.\n");
+      return (0);
+    }
+    uint32_t dwMagicNumber = *(const uint32_t*)(inData);
+    if (dwMagicNumber != DDS_MAGIC)
+    {
+        fprintf(stderr, "the DDS file failed to load. invalid DDS_MAGIC. %d, %d\n", dwMagicNumber, DDS_MAGIC);
+        return (0);
+    }
+
+    auto header = reinterpret_cast<const DDS_HEADER*>(inData + sizeof(uint32_t));
+
+    // Verify header to validate DDS file
+    if (header->size != sizeof(DDS_HEADER) ||
+        header->ddspf.size != sizeof(DDS_PIXELFORMAT))
+    {
+        fprintf(stderr, "the DDS file failed to load. Verify header to validate DDS file.\n");
+        return (0);
+    }
+
+    // Check for DX10 extension
+    bool bDXT10Header = false;
+    if ((header->ddspf.flags & DDS_FOURCC) &&
+        (MAKEFOURCC('D', 'X', '1', '0') == header->ddspf.fourCC))
+    {
+        // Must be long enough for both headers and magic value
+        if (inDataLen < (sizeof(DDS_HEADER) + sizeof(uint32_t) + SIZEOF_DDS_HEADER_DXT10 /*sizeof(DDS_HEADER_DXT10)*/))
+        {
+            fprintf(stderr, "the DDS file failed to load.  Must be long enough for both headers and magic value.\n");
+            return (0);
+        }
+
+        bDXT10Header = true;
+    }
+
+   ptrdiff_t offset = sizeof(uint32_t)
+        + sizeof(DDS_HEADER)
+        + (bDXT10Header ? SIZEOF_DDS_HEADER_DXT10 /*sizeof(DDS_HEADER_DXT10)*/ : 0)
+        ;
+
+
+   result = new SimpleSurface(header->width, header->height, pfDDS, 4, pfDDS, (unsigned char *)(inData+offset), 
+      0,
+      header->width
+    );
+   result->IncRef();
+
+   return result;
+}
+#endif
+
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg)
 {
@@ -578,6 +706,14 @@ Surface *Surface::Load(const OSChar *inFilename)
    {
       uint8 first = 0;
       fread(&first,1,1,file);
+#ifdef HX_WINDOWS	  
+      if (first==0x44)
+	  {
+          rewind(file);
+          result = TryDDS(file,0,0);
+	  }
+	  else
+#endif
       if (first==0xff)
       {
          rewind(file);
@@ -604,6 +740,10 @@ Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
       result = TryJPEG(0,inBytes,inLen);
    else if (*inBytes==0x89)
       result = TryPNG(0,inBytes,inLen);
+#ifdef HX_WINDOWS
+   else if (*inBytes==0x44)
+      result = TryDDS(0,inBytes,inLen);
+#endif
 
    return result;
 }

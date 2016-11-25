@@ -344,7 +344,7 @@ class NMMLParser
                   switch(type) 
                   {
                      case IMAGE:
-                        include = "*.jpg|*.jpeg|*.png|*.gif";
+                        include = "*.jpg|*.jpeg|*.png|*.gif|*.dds";
 
                      case SOUND:
                         include = "*.wav|*.ogg";

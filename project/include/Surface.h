@@ -119,7 +119,9 @@ class SimpleSurface : public Surface
 {
 public:
    SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4,int inGPUPixelFormat=-1);
-
+#ifdef HX_WINDOWS
+   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign,int inGPUPixelFormat, unsigned char* data, size_t texture, int size);
+#endif
    PixelFormat Format() const  { return mPixelFormat; }
 
    int Width() const  { return mWidth; }

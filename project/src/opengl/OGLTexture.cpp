@@ -171,6 +171,30 @@ public:
       mDirtyRect = Rect(0,0);
       mContextVersion = gTextureContextVersion;
 
+#ifdef HX_WINDOWS
+      if( pfDDS == mSurface->GPUFormat())
+      {
+           mTextureWidth = mPixelWidth;
+           mTextureHeight = mPixelHeight;
+           mTextureID = 0;
+           glGenTextures(1, &mTextureID);
+           glBindTexture(GL_TEXTURE_2D,mTextureID);
+           mRepeat = mCanRepeat;
+           mSmooth = true;
+           uint8 * buffer = (uint8 *)mSurface->Row(0);
+           static int level = 0; //no mipmaps
+           static int nBlockSize = 16; //8 if DXT1
+           int size = ((mPixelWidth+3)/4) * ((mPixelHeight+3)/4) * nBlockSize;
+           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
+           glCompressedTexImage2D(GL_TEXTURE_2D, level,  GL_COMPRESSED_RGBA_BPTC_UNORM_ARB /*GL_COMPRESSED_RGBA_S3TC_DXT5_EXT*/, mPixelWidth, mPixelHeight,0, size, buffer);
+            return;
+      }
+#endif
+
       bool non_po2 = NonPO2Supported(inFlags & surfNotRepeatIfNonPO2);
       //printf("Using non-power-of-2 texture %d\n",non_po2);
 
