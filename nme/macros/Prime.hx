@@ -32,8 +32,10 @@ import haxe.macro.Type;
 import haxe.macro.Expr;
 #else
 import cpp.Callable;
-import cpp.Object;
-import cpp.ConstCharStar;
+#if cpp
+   import cpp.Object;
+   import cpp.ConstCharStar;
+#end
 #end
 
 
@@ -80,25 +82,6 @@ class Prime {
    }
    #end
 
-   public static function nekoInit(inModuleName:String) : Bool
-   {
-      #if neko
-      var init = neko.Lib.load(inModuleName, "neko_init", 5);
-
-      if (init != null)
-      {
-         init( function(s) return new String(s),
-               function(len:Int) { var r = []; if (len > 0) r[len - 1] = null; return r; },
-               null,
-               true,
-               false);
-         return true;
-
-      }
-      #end
-      return false;
-   }
-
 
    public static macro function load(inModule:String, inName:String, inSig:String,inAllowFail:Bool = false)
    {
@@ -123,8 +106,7 @@ class Prime {
       {
          if (argCount>5)
             argCount = -1;
-         var lazy = inAllowFail ? "loadLazy" : "load";
-         var expr = 'new cpp.Callable<$typeString>(neko.Lib.$lazy("$inModule","$inName",$argCount))';
+         var expr = 'new cpp.Callable<$typeString>(nme.Loader.load("$inName",$argCount))';
          return Context.parse( expr, Context.currentPos() );
       }
    }
