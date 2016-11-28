@@ -109,7 +109,6 @@ public:
                         pos += copySamples;
                         remaining -= copySamples;
                      }
-                     CFRelease(blockBuffer);
                   }
                   CFRelease(sampleBuffer);
 
