@@ -27,9 +27,14 @@ extern class ImageBuffer extends nme.native.Object
    public function Width() : Int;
    public function Height() : Int;
    public function GetStride() : Int;
+   // These functions tecnically return RawPointers, which can cause issues if the
+   //  compiler inlines too much code
    public function GetBase() : ConstPointer<cpp.UInt8>;
    public function Edit() : Pointer<cpp.UInt8>;
    public function EditRect(x:Int, y:Int, w:Int, h:Int) : Pointer<cpp.UInt8>;
+
+   public function Row(inRow:Int) : cpp.RawPointer<cpp.UInt8>;
+
    public function Commit():Void;
 }
 
