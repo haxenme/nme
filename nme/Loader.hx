@@ -136,7 +136,7 @@ class Loader
    public static function loaderTrace(inStr:String) 
    {
       // Problems with initialization order in cpp...
-      #if cpp
+      #if (cpp && hxcpp_api_level<331)
       var get_env = Lib.load("std", "get_env", 1);
       var debug =(get_env("NME_LOAD_DEBUG") != null);
       #else
