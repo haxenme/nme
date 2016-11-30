@@ -67,7 +67,7 @@ class LoaderInfo extends URLLoader
          case "jpg","jpeg": "image/jpeg";
          case "png": "image/png";
          case "gif": "image/gif";
-         case "DDS": "image/DDS";
+         case "dds": "image/dds";
          default:
             throw "Unrecognized file " + pendingURL;
       }
