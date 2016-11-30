@@ -258,7 +258,6 @@ public:
               internalformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
          }
 
-        fprintf(stderr, "DDS mips:%d size:%d(%d) pitchOrLinearSize:%d dx10:%s(0x%x).\n", header->mipMapCount, level, size, header->pitchOrLinearSize, bDX10Header?"TRUE":"FALSE", header->ddspf.fourCC);
          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
