@@ -83,10 +83,10 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
       mBase = 0;
       if (inGPUFormat!=0)
          mGPUPixelFormat = inGPUFormat;
-#if defined(HX_WINDOWS) || defined(NME_KTX) || defined(SWT_GNF)
+#if defined(HX_WINDOWS)
       if(inData!=NULL)
       {
-	     //create now?
+         //create now?
          mBase = inData;
          createHardwareSurface();
          //delete [] mBase; <-- crash here
