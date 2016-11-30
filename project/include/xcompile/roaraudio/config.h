@@ -1,0 +1,294 @@
+#ifdef __RABS_COMMENT__
+//config.h:
+#endif
+
+#ifndef _ROARAUDIO_CONFIG_H_
+#define _ROARAUDIO_CONFIG_H_
+
+#ifdef __RABS_COMMENT__
+/* uname:  Linux aatxe 3.2.0-37-generic #58-Ubuntu SMP Thu Jan 24 15:28:10 UTC 2013 i686 i686 i686 GNU/Linux */
+/* Date :  Sun May 5 23:56:04 UTC 2013 */
+#endif
+
+#define ROAR_VERSION_STRING "1.0beta9"
+#define ROAR_VERSION_MAJOR   1
+#define ROAR_VERSION_MINOR   0
+#define ROAR_VERSION_REV     9
+#define ROAR_VERSION_COMMON_REAL0(a,b,c) (#a "." #b "." #c)
+#define ROAR_VERSION_COMMON_REAL1(a,b,c) ROAR_VERSION_COMMON_REAL0(a,b,c)
+#define ROAR_VERSION_COMMON ROAR_VERSION_COMMON_REAL1(ROAR_VERSION_MAJOR, ROAR_VERSION_MINOR, ROAR_VERSION_REV)
+#define ROAR_VERSION_DISTRIBUTION_STRING "Debian-1.0~beta9-2"
+#define ROAR_BUILD_STAMP    "2013-05-05 23:56:04 (buildd@aatxe)"
+
+#define ROAR_DEV_VENDOR        0
+#define ROAR_DEV_VENDOR_NAME   "RoarAudio"
+#define ROAR_DEV_VENDOR_STRING "0/RoarAudio"
+
+
+#define ROAR_VORBIS_BITS      32
+
+#define ROAR_SHARED_SUFFIX ".so"
+
+#define ROAR_PREFIX         "/usr"
+#define ROAR_PREFIX_BIN     "/usr/bin/"
+#define ROAR_PREFIX_SBIN    "/usr/sbin/"
+#define ROAR_PREFIX_LIB     "/usr/lib/i386-linux-gnu"
+#define ROAR_PREFIX_INC     "/usr/include/"
+#define ROAR_PREFIX_MAN     "/usr/share/man/"
+#define ROAR_PREFIX_PC      "/usr/lib/i386-linux-gnu/pkgconfig/"
+#define ROAR_PREFIX_CKPORT  "/usr/lib/i386-linux-gnu/ckport/db/"
+#define ROAR_PREFIX_SYSCONF "/etc"
+#define ROAR_PREFIX_DEV     "/dev"
+#define ROAR_PREFIX_DOC     "/usr/share/doc/"
+#define ROAR_PREFIX_TMP     "/tmp"
+#define ROAR_PREFIX_VAR     "/var"
+#define ROAR_PREFIX_CACHE   "/var/cache/"
+#define ROAR_PREFIX_DATA    "/var/lib/"
+#define ROAR_PREFIX_LOCK    "/var/lock/"
+#define ROAR_PREFIX_LOG     "/var/log/"
+#define ROAR_PREFIX_MAIL    "/var/mail/"
+#define ROAR_PREFIX_RUN     "/var/run/"
+#define ROAR_PREFIX_SPOOL   "/var/spool/"
+#define ROAR_PREFIX_COMP_LIBS "/usr/lib/i386-linux-gnu/roaraudio/complibs/"
+#define ROAR_PREFIX_COMP_BINS "/usr/lib/i386-linux-gnu/roaraudio/compbins/"
+#define ROAR_PREFIX_PLUGINS "/usr/lib/i386-linux-gnu/roaraudio/plugins/"
+#define ROAR_PREFIX_BUILDSYSTEM "/usr/lib/i386-linux-gnu/roaraudio/build-system/"
+
+#define ROAR_SUPPORT_ALAW
+#define ROAR_SUPPORT_ALAW_RW
+#define ROAR_SUPPORT_MULAW
+#define ROAR_SUPPORT_MULAW_RW
+#define ROAR_SUPPORT_PROXY
+#define ROAR_SUPPORT_PASSWORD_API
+#define ROAR_SUPPORT_LISTEN
+#define ROAR_SUPPORT_META
+
+#define ROAR_HAVE_MAIN_ARGS
+
+#define ROAR_WITHOUT_CF_CMD
+#define ROAR_WITHOUT_DCOMP_RDTCS
+
+#define ROAR_OS_LINUX
+
+#define ROAR_HAVE_BIN_SH "sh"
+#define ROAR_HAVE_BIN_OGG123 "ogg123"
+#define ROAR_HAVE_BIN_FLAC "flac"
+#define ROAR_HAVE_BIN_TIMIDITY "timidity"
+#define ROAR_HAVE_BIN_CDPARANOIA "cdparanoia"
+#define ROAR_HAVE_BIN_GNUPLOT "gnuplot"
+#define ROAR_HAVE_BIN_SSH "ssh"
+#define ROAR_HAVE_BIN_PINENTRY "pinentry"
+#define ROAR_HAVE_BIN_SSH_ASKPASS "ssh-askpass"
+#define ROAR_HAVE_BIN_GTK_LED_ASKPASS "gtk-led-askpass"
+#define ROAR_HAVE_BIN_X11_SSH_ASKPASS "x11-ssh-askpass"
+#define ROAR_HAVE_BIN_GNOME_SSH_ASKPASS "gnome-ssh-askpass"
+#define ROAR_HAVE_BIN_GPG "gpg"
+#define ROAR_HAVE_BIN_EJECT "eject"
+
+#define ROAR_HAVE_H_STDINT
+#define ROAR_HAVE_H_STRING
+#define ROAR_HAVE_H_SYS_TYPES
+#define ROAR_HAVE_H_SYS_SOCKET
+#define ROAR_HAVE_H_SYS_TIME
+#define ROAR_HAVE_H_SYS_IOCTL
+#define ROAR_HAVE_H_SYS_STAT
+#define ROAR_HAVE_H_SYS_REBOOT
+#define ROAR_HAVE_H_TIME
+#define ROAR_HAVE_H_FCNTL
+#define ROAR_HAVE_H_UNISTD
+#define ROAR_HAVE_H_DIRENT
+#define ROAR_HAVE_H_STDLIB
+#define ROAR_HAVE_H_SIGNAL
+#define ROAR_HAVE_H_POLL
+#define ROAR_HAVE_H_ESD
+#define ROAR_HAVE_H_ICONV
+#define ROAR_HAVE_H_NETINET_IN
+#define ROAR_HAVE_H_LINUX_REBOOT
+#define ROAR_HAVE_H_DLFCN
+#define ROAR_HAVE_LIBM
+#define ROAR_HAVE_LIBRT
+#define ROAR_NEED_LIBRT
+
+#define ROAR_HAVE_ESD
+#define ROAR_HAVE_LIBAO
+#define ROAR_HAVE_LIBOGG
+#define ROAR_HAVE_LIBVORBIS
+#define ROAR_HAVE_LIBVORBISFILE
+#define ROAR_HAVE_LIBVORBISENC
+#define ROAR_HAVE_LIBSPEEX
+#define ROAR_HAVE_LIBSPEEXDSP
+#define ROAR_HAVE_LIBOGGZ
+#define ROAR_HAVE_LIBSNDFILE
+#define ROAR_HAVE_LIBFISHSOUND
+#define ROAR_HAVE_LIBSHOUT
+#define ROAR_HAVE_LIBPULSE
+#define ROAR_HAVE_LIBPULSESIMPLE
+#define ROAR_HAVE_LIBPORTAUDIO
+#define ROAR_HAVE_LIBSLP
+#define ROAR_HAVE_LIBDNET
+#define ROAR_HAVE_BSDSOCKETS
+#define ROAR_HAVE_UNIX
+#define ROAR_HAVE_IPV4
+#define ROAR_HAVE_OSS
+#define ROAR_HAVE_LIBASOUND
+#define ROAR_HAVE_LIBDL
+#define ROAR_HAVE_LIBZ
+#define ROAR_HAVE_LIBX11
+
+#define ROAR_HAVE_CELT_VERSION_UNKNOWN
+#define ROAR_HAVE_CELT_VERSION 0
+#define ROAR_HAVE_SPEEX_VERSION_1_2RC1
+#define ROAR_HAVE_SPEEX_VERSION 0
+#define ROAR_HAVE_PULSE_VERSION_3_0
+#define ROAR_HAVE_PULSE_VERSION 0
+#define ROAR_HAVE_GTK_P_2_0_VERSION_UNKNOWN
+#define ROAR_HAVE_GTK_P_2_0_VERSION 0
+#define ROAR_HAVE_FLAC_VERSION_1_2_1
+#define ROAR_HAVE_FLAC_VERSION _ROAR_MKVERSION(1, 2, 1)
+#define ROAR_HAVE_PA19_VERSION_19
+#define ROAR_HAVE_PA19_VERSION 0
+
+#define ROAR_HAVE_T_ID_T
+#define ROAR_HAVE_T_PID_T
+#define ROAR_HAVE_T_UID_T
+#define ROAR_HAVE_T_GID_T
+#define ROAR_HAVE_T_SOCKLEN_T
+#define ROAR_HAVE_T_MODE_T
+#define ROAR_HAVE_T_OFF_T
+#define ROAR_HAVE_T_SSIZE_T
+#define ROAR_HAVE_T_TIME_T
+#define ROAR_HAVE_T_SA_FAMILY_T
+
+#define ROAR_HAVE_IPV6
+#define ROAR_HAVE_U_EXIT
+#define ROAR_U_EXIT _exit
+#define ROAR_HAVE_MALLOC
+#define ROAR_HAVE_CALLOC
+#define ROAR_HAVE_REALLOC
+#define ROAR_HAVE_FREE
+#define ROAR_HAVE_STRDUP
+#define ROAR_HAVE_STRLEN
+#define ROAR_HAVE_SETENV
+#define ROAR_HAVE_PUTENV
+#define ROAR_HAVE_STRTOK_R
+#define ROAR_HAVE_QSORT
+#define ROAR_HAVE_NICE
+#define ROAR_HAVE_GETHOSTID
+#define ROAR_HAVE_GETGID
+#define ROAR_HAVE_GETUID
+#define ROAR_HAVE_SETGID
+#define ROAR_HAVE_SETUID
+#define ROAR_HAVE_SETSID
+#define ROAR_HAVE_GETPWNAM
+#define ROAR_HAVE_GETGRNAM
+#define ROAR_HAVE_GETTIMEOFDAY
+#define ROAR_HAVE_USLEEP
+#define ROAR_HAVE_SLEEP
+#define ROAR_HAVE_NANOSLEEP
+#define ROAR_HAVE_ALARM
+#define ROAR_HAVE_TIME
+#define ROAR_HAVE_CTIME
+#define ROAR_HAVE_CTIME_R
+#define ROAR_HAVE_KILL
+#define ROAR_HAVE_UNAME
+#define ROAR_HAVE_GETHOSTNAME
+#define ROAR_HAVE_SYSLOG
+#define ROAR_HAVE_OPENLOG
+#define ROAR_HAVE_CLOSELOG
+#define ROAR_HAVE_FOPEN
+#define ROAR_HAVE_FDOPEN
+#define ROAR_HAVE_FREOPEN
+#define ROAR_HAVE_FCLOSE
+#define ROAR_HAVE_FILENO
+#define ROAR_HAVE_FTELL
+#define ROAR_HAVE_FSEEK
+#define ROAR_HAVE_POPEN
+#define ROAR_HAVE_PCLOSE
+#define ROAR_HAVE_STAT
+#define ROAR_HAVE_SYSTEM
+#define ROAR_HAVE_GETSOCKNAME
+#define ROAR_HAVE_GETPEERNAME
+#define ROAR_HAVE_GETSOCKOPT
+#define ROAR_HAVE_SETSOCKOPT
+#define ROAR_HAVE_GETADDRINFO
+#define ROAR_HAVE_RAND
+#define ROAR_HAVE_RAND_R
+#define ROAR_HAVE_SRAND
+#define ROAR_HAVE_FCNTL
+#define ROAR_HAVE_POSIX_OPENPT
+#define ROAR_HAVE_GRANTPT
+#define ROAR_HAVE_UNLOCKPT
+#define ROAR_HAVE_TCGETATTR
+#define ROAR_HAVE_TCSETATTR
+#define ROAR_HAVE_CFMAKERAW
+#define ROAR_HAVE_REBOOT
+#define ROAR_HAVE_LINUX_SENDFILE
+#define ROAR_HAVE_AO_APPEND_GLOBAL_OPTION
+#define ROAR_HAVE_DLADDR
+#define ROAR_HAVE_CLOCK_GETRES
+#define ROAR_HAVE_CLOCK_GETTIME
+#define ROAR_HAVE_CLOCK_SETTIME
+#define ROAR_HAVE_CONST_CLOCK_REALTIME
+#define ROAR_HAVE_CONST_CLOCK_MONOTONIC
+#define ROAR_HAVE_CONST_CLOCK_PROCESS_CPUTIME_ID
+#define ROAR_HAVE_CONST_CLOCK_THREAD_CPUTIME_ID
+#define ROAR_HAVE_CONST_M_PI_2
+#define ROAR_HAVE_VAR_H_ERRNO
+#define ROAR_HAVE_IO_POSIX
+#define ROAR_HAVE_FS_POSIX
+#define ROAR_HAVE_CHROOT
+#define ROAR_HAVE_MLOCK
+#define ROAR_HAVE_MUNLOCK
+#define ROAR_HAVE_MLOCKALL
+#define ROAR_HAVE_MUNLOCKALL
+#define ROAR_HAVE_MMAP
+#define ROAR_HAVE_FSYNC
+#define ROAR_HAVE_FDATASYNC
+#define ROAR_FDATASYNC fdatasync
+#define ROAR_HAVE_STRCASESTR
+#define ROAR_HAVE_FOPENCOOKIE
+#define ROAR_HAVE_PIPE
+#define ROAR_HAVE_FORK
+#define ROAR_HAVE_WAIT
+#define ROAR_HAVE_SINF
+#define ROAR_HAVE_SQRTL
+#define ROAR_HAVE_INLINE
+#define ROAR_HAVE_CC_PTHREAD_OPTION
+#define ROAR_HAVE_PTHREAD
+#define ROAR_HAVE_SELECT
+#define ROAR_HAVE_H_SYS_SELECT
+#define ROAR_HAVE_SHUTDOWN
+#define ROAR_SHUTDOWN shutdown
+#define ROAR_HAVE_ACCEPT
+#define ROAR_ACCEPT accept
+#define ROAR_HAVE_GETOBJECTBYNAME
+#define ROAR_HAVE_GETSERVBYNAME
+#define ROAR_HAVE_TYPE_PA_PATH_GET_FILENAME char *
+#define ROAR_HAVE_TYPE_PA_UTF8_VALID char *
+#define ROAR_HAVE_ARG_SINK_NAME_OF_PA_CONTEXT_MOVE_SINK_INPUT_BY_NAME const char *
+#define ROAR_HAVE_ARG_SOURCE_NAME_OF_PA_CONTEXT_MOVE_SOURCE_OUTPUT_BY_NAME const char *
+#define ROAR_HAVE_ARG_VOLUME_OF_PA_STREAM_CONNECT_PLAYBACK const pa_cvolume *
+#define ROAR_HAVE_RSOUND_SAMPLESIZE_MEMBER framesize
+#define ROAR_HAVE_SAFE_OVERFLOW
+#define ROAR_NATIVE_INT64 long long int
+#define ROAR_NATIVE_UINT64 unsigned long long int
+#define ROAR_HAVE_CDROM
+#define ROAR_DEFAULT_TTY "/dev/tty"
+#define ROAR_DEFAULT_OSS_DEV "/dev/dsp"
+#define ROAR_DEFAULT_OSS_MIX_DEV "/dev/mixer"
+#define ROAR_PROC_NET_DECNET "/proc/net/decnet"
+#define ROAR_PROC_NET_DECNET_NEIGH "/proc/net/decnet_neigh"
+#define ROAR_PROC_NET_ARP "/proc/net/arp"
+#define ROAR_DEFAULT_SOCKGRP "audio"
+#define ROAR_ROOT_UID 0
+#define ROAR_NEED_GNU_SOURCE
+
+#if defined(ROAR_HAVE_LIBCELT0) && !defined(ROAR_HAVE_LIBCELT)
+#define ROAR_HAVE_LIBCELT
+#endif
+
+#endif
+
+#ifdef __RABS_COMMENT__
+End of File.
+#endif

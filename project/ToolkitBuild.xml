@@ -102,6 +102,12 @@
    <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" />
 
+   <!-- inject flags to allow cross-compiling -->
+   <files id="native-toolkit-sdl" if="xcompile" >
+      <compilerflag value="-Iinclude/xcompile" />
+      <compilerflag value="-DPATH_MAX=1024" />
+      <compilerflag value="-DNAME_MAX=256" />
+   </files>
 
    <files id="main">
       <compilerflag value="-I${INC_DIR}"/>
@@ -288,7 +294,7 @@
 
 
 
-      <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
+      <compilerflag value="-Iinclude/xcompile" if="xcompile" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
       <compilerflag value="-DNME_NOPREMULTIPLIED_ALPHA" if="NME_NOPREMULTIPLIED_ALPHA" />
       <compilerflag value="-DNME_BUILDING_LIB" />
