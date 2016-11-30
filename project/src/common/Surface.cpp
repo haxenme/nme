@@ -86,6 +86,12 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
 #if defined(HX_WINDOWS) || defined(NME_KTX) || defined(SWT_GNF)
       if(inData!=NULL)
       {
+	     //create now?
+         mBase = inData;
+         createHardwareSurface();
+         //delete [] mBase; <-- crash here
+         free(mBase);
+         mBase = NULL;
       }
       else
 #endif
