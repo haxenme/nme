@@ -27,7 +27,56 @@
    #define ARGB_PIXEL GL_BGRA
 #endif
 
-//Constant Value:  32993 
+#ifdef HX_WINDOWS
+# ifndef MAKEFOURCC
+#  define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
+      ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |       \
+      ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24 ))
+# endif
+struct DDS_PIXELFORMAT
+{
+    uint32_t    size;
+    uint32_t    flags;
+    uint32_t    fourCC;
+    uint32_t    RGBBitCount;
+    uint32_t    RBitMask;
+    uint32_t    GBitMask;
+    uint32_t    BBitMask;
+    uint32_t    ABitMask;
+};
+# define DDS_FOURCC      0x00000004  // DDPF_FOURCC
+struct DDS_HEADER
+{
+    uint32_t        size;
+    uint32_t        flags;
+    uint32_t        height;
+    uint32_t        width;
+    uint32_t        pitchOrLinearSize;
+    uint32_t        depth;
+    uint32_t        mipMapCount;
+    uint32_t        reserved1[11];
+    DDS_PIXELFORMAT ddspf;
+    uint32_t        caps;
+    uint32_t        caps2;
+    uint32_t        caps3;
+    uint32_t        caps4;
+    uint32_t        reserved2;
+};
+typedef enum DXGI_FORMAT { 
+   DXGI_FORMAT_UNKNOWN                     = 0,
+   DXGI_FORMAT_BC3_UNORM                   = 77,
+   DXGI_FORMAT_BC7_UNORM                   = 98,
+   DXGI_FORMAT_FORCE_UINT                  = 0xffffffff
+} DXGI_FORMAT;
+struct DDS_HEADER_DXT10
+{
+   DXGI_FORMAT dxgiFormat;
+   uint32_t    resourceDimension;
+   uint32_t    miscFlag;
+   uint32_t    arraySize;
+   uint32_t    miscFlags2;
+};
+#endif
 
 namespace nme
 {
@@ -166,34 +215,62 @@ public:
       // No reference count since the surface should outlive us
       mSurface = inSurface;
 
-      mPixelWidth = mSurface->Width();
-      mPixelHeight = mSurface->Height();
       mDirtyRect = Rect(0,0);
       mContextVersion = gTextureContextVersion;
 
 #ifdef HX_WINDOWS
-      if( pfDDS == mSurface->GPUFormat())
+      if (pfDDS == mSurface->Format())
       {
-           mTextureWidth = mPixelWidth;
-           mTextureHeight = mPixelHeight;
-           mTextureID = 0;
-           glGenTextures(1, &mTextureID);
-           glBindTexture(GL_TEXTURE_2D,mTextureID);
-           mRepeat = mCanRepeat;
-           mSmooth = true;
-           uint8 * buffer = (uint8 *)mSurface->Row(0);
-           static int level = 0; //no mipmaps
-           static int nBlockSize = 16; //8 if DXT1
-           int size = ((mPixelWidth+3)/4) * ((mPixelHeight+3)/4) * nBlockSize;
-           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
-           glCompressedTexImage2D(GL_TEXTURE_2D, level,  GL_COMPRESSED_RGBA_BPTC_UNORM_ARB /*GL_COMPRESSED_RGBA_S3TC_DXT5_EXT*/, mPixelWidth, mPixelHeight,0, size, buffer);
-            return;
+         mTextureID = 0;
+         glGenTextures(1, &mTextureID);
+         glBindTexture(GL_TEXTURE_2D, mTextureID);
+         mRepeat = mCanRepeat;
+         mSmooth = true;
+         const uint8 *base = (const uint8 *)mSurface->GetBase();
+         auto header = reinterpret_cast<const DDS_HEADER*>(base + sizeof(uint32_t));
+         mPixelWidth = header->width; 
+         mPixelHeight = header->height;
+         mTextureWidth = mPixelWidth;
+         mTextureHeight = mPixelHeight;
+
+         bool bDX10Header = (header->ddspf.flags & DDS_FOURCC) && (MAKEFOURCC('D', 'X', '1', '0') == header->ddspf.fourCC);
+         ptrdiff_t offset = sizeof(uint32_t) + sizeof(DDS_HEADER) + (bDX10Header ? sizeof(DDS_HEADER_DXT10) : 0);
+         static int level = 0; //no mipmaps
+         static int blockSize = 16; //8 if DXT1, BC1, or BC4
+         int r = (mPixelWidth+3)/4;
+         int size = (r>1?r:1) * ((mPixelHeight+3)/4) * blockSize;
+         const GLvoid * buffer = (const GLvoid *)(base+offset);
+
+         //default to BC7 texture
+         GLenum internalformat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+         //check if it is a BC3 (DXT4) texture
+         if( bDX10Header )
+         {
+            auto dx10Header = reinterpret_cast<const DDS_HEADER_DXT10*>(base + sizeof(uint32_t) + sizeof(DDS_HEADER));
+            if( dx10Header->dxgiFormat==DXGI_FORMAT_BC3_UNORM )
+              internalformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+         }
+         else
+         {
+            bool bDXT5 = (header->ddspf.flags & DDS_FOURCC) && 
+              ((MAKEFOURCC('D', 'X', 'T', '4') == header->ddspf.fourCC) || (MAKEFOURCC('D', 'X', 'T', '5') == header->ddspf.fourCC));
+            if( bDXT5 )
+              internalformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+         }
+
+        fprintf(stderr, "DDS mips:%d size:%d(%d) pitchOrLinearSize:%d dx10:%s(0x%x).\n", header->mipMapCount, level, size, header->pitchOrLinearSize, bDX10Header?"TRUE":"FALSE", header->ddspf.fourCC);
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
+         glCompressedTexImage2D(GL_TEXTURE_2D, level, internalformat, mPixelWidth, mPixelHeight, 0, size, buffer);
+         return;
       }
 #endif
+
+      mPixelWidth = mSurface->Width();
+      mPixelHeight = mSurface->Height();
 
       bool non_po2 = NonPO2Supported(inFlags & surfNotRepeatIfNonPO2);
       //printf("Using non-power-of-2 texture %d\n",non_po2);
