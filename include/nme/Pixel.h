@@ -106,6 +106,27 @@ struct BGRA
    inline int getB() const { return PREM ? gUnPremAlphaLut[a][b] : b; }
    inline int getLuma() const { return PREM ? gUnPremAlphaLut[a][(r+(g<<1)+b)>>2] : (r+(g<<1)+b)>>2; }
 
+   inline void setAlpha(Uint8 val)
+   {
+      if (PREM && val!=a)
+      {
+         const Uint8 *un = gUnPremAlphaLut[a];
+         const Uint8 *pre = gUnPremAlphaLut[val];
+         r = pre[un[r]];
+         g = pre[un[g]];
+         b = pre[un[b]];
+      }
+      a = val;
+   }
+   inline void setLuma(Uint8 val)
+   {
+      r = g = b = PREM ? gPremAlphaLut[a][val] : val;
+   }
+
+   inline void setR(int val) { r= PREM ? gPremAlphaLut[a][val] : val; }
+   inline void setG(int val) { g= PREM ? gPremAlphaLut[a][val] : val; }
+   inline void setB(int val) { b= PREM ? gPremAlphaLut[a][val] : val; }
+
    inline void setRAlpha(int val) { r= PREM ? val : gUnPremAlphaLut[a][val]; }
    inline void setGAlpha(int val) { g= PREM ? val : gUnPremAlphaLut[a][val]; }
    inline void setBAlpha(int val) { b= PREM ? val : gUnPremAlphaLut[a][val]; }
@@ -173,6 +194,20 @@ struct RGB
    inline int getG() const { return g; }
    inline int getB() const { return b; }
 
+
+   inline void setAlpha(Uint8 val) { }
+   inline void setLuma(Uint8 val) { r = g = b = val; }
+
+   inline void setR(int val) { r=val; }
+   inline void setG(int val) { g=val; }
+   inline void setB(int val) { b=val; }
+
+   inline void setRAlpha(int val) { r=val; }
+   inline void setGAlpha(int val) { g=val; }
+   inline void setBAlpha(int val) { b=val; }
+
+
+
    Uint8 r,g,b;
 };
 
@@ -228,6 +263,20 @@ struct AlphaPixel
    inline int getB() const { return 255; }
    inline int getLuma() const { return 255; }
 
+
+
+   inline void setAlpha(Uint8 val) { a = val; }
+   inline void setLuma(Uint8 val) { }
+
+   inline void setR(int val) { }
+   inline void setG(int val) { }
+   inline void setB(int val) { }
+
+   inline void setRAlpha(int val) { }
+   inline void setGAlpha(int val) { }
+   inline void setBAlpha(int val) { }
+
+
    Uint8 a;
 };
 
@@ -247,6 +296,20 @@ struct LumaPixel
    inline int getG() const { return luma; }
    inline int getB() const { return luma; }
 
+
+
+   inline void setAlpha(Uint8 val) { }
+   inline void setLuma(Uint8 val) { luma = val; }
+
+   inline void setR(int val) { luma = val; }
+   inline void setG(int val) { luma = val; }
+   inline void setB(int val) { luma = val; }
+
+   inline void setRAlpha(int val) { luma = val; }
+   inline void setGAlpha(int val) { luma = val; }
+   inline void setBAlpha(int val) { luma = val; }
+
+
    Uint8 luma;
 };
 
@@ -265,6 +328,20 @@ struct LumaAlphaPixel
    inline int getR() const { return luma; }
    inline int getG() const { return luma; }
    inline int getB() const { return luma; }
+
+
+
+   inline void setAlpha(Uint8 val) { a = val; }
+   inline void setLuma(Uint8 val) { luma = val; }
+
+   inline void setR(int val) { luma = val; }
+   inline void setG(int val) { luma = val; }
+   inline void setB(int val) { luma = val; }
+
+   inline void setRAlpha(int val) { luma = gUnPremAlphaLut[a][val]; }
+   inline void setGAlpha(int val) { luma = gUnPremAlphaLut[a][val]; }
+   inline void setBAlpha(int val) { luma = gUnPremAlphaLut[a][val]; }
+
 
    Uint8 luma;
    Uint8 a;

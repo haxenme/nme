@@ -11,10 +11,13 @@ abstract Image<PIXEL>(cpp.Pointer<ImageBuffer>)
 
    public var width(get,never):Int;
    public var height(get,never):Int;
+   public var pixelFormat(get,never):Int;
 
+   inline public function invalidate():Void this.value.Edit();
 
    inline public function get_width():Int return this.value.Width();
    inline public function get_height():Int return this.value.Height();
+   inline public function get_pixelFormat():Int return this.value.Format();
 
    inline public static function fromBitmapData<PIXEL>(data:BitmapData) : Image<PIXEL>
        return new Image<PIXEL>( ImageBuffer.fromBitmapData(data) );
@@ -24,3 +27,5 @@ abstract Image<PIXEL>(cpp.Pointer<ImageBuffer>)
    }
 
 }
+
+

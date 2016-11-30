@@ -3897,6 +3897,18 @@ value nme_bitmap_data_set_format(value inHandle, value format)
 }
 DEFINE_PRIM(nme_bitmap_data_set_format,2);
 
+value nme_bitmap_data_get_format(value inHandle)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+   {
+      return alloc_int(surface->Format());
+   }
+   return alloc_int(0);
+}
+DEFINE_PRIM(nme_bitmap_data_get_format,1);
+
+
 value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 {
    ByteData bytes;

@@ -30,6 +30,7 @@ class Surface
    public var rect(get_rect, null):Rectangle;
    public var transparent(get_transparent, null):Bool;
    public var width(get_width, null):Int;
+   public var format(get, set):Int;
    public var premultipliedAlpha(get_premultipliedAlpha, set_premultipliedAlpha):Bool;
    public var nmeHandle:Dynamic;
    
@@ -265,6 +266,19 @@ class Surface
       nme_bitmap_data_set_format(nmeHandle, format);
    }
 
+   inline public function set_format(format:Int) : Int
+   {
+      setFormat(format);
+      return format;
+   }
+
+   public function get_format() : Int
+   {
+      return nme_bitmap_data_get_format(nmeHandle);
+   }
+
+
+
    public function noise(randomSeed:Int, low:Int = 0, high:Int = 255, channelOptions:Int = 7, grayScale:Bool = false) 
    {
       nme_bitmap_data_noise(nmeHandle, randomSeed, low, high, channelOptions, grayScale);
@@ -306,6 +320,7 @@ class Surface
    private static var nme_bitmap_data_set_pixel_rgba = Loader.load("nme_bitmap_data_set_pixel_rgba", 4);
    private static var nme_bitmap_data_set_bytes = Loader.load("nme_bitmap_data_set_bytes", 4);
    private static var nme_bitmap_data_set_format = Loader.load("nme_bitmap_data_set_format", 2);
+   private static var nme_bitmap_data_get_format = Loader.load("nme_bitmap_data_get_format", 1);
    #if cpp
    private static var nme_bitmap_data_set_array = Loader.load("nme_bitmap_data_set_array", 3);
    #end
