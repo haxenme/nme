@@ -349,13 +349,20 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          if (evt.nmeGetIsCancelled())
             inEvent.result = 1;
 
-         #if (windows || linux)
-         if (flags & efAltDown > 0 && inEvent.result != -1 && inEvent.code == Keyboard.ENTER && type == KeyboardEvent.KEY_DOWN) 
+         #if (windows || linux || mac)
+         if (inEvent.result != -1 && type == KeyboardEvent.KEY_DOWN) 
          {
-            if (displayState == StageDisplayState.NORMAL) 
-               displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
-            else 
-               displayState = StageDisplayState.NORMAL;
+            #if mac
+            if (flags & efCtrlDown > 0 && flags & efCommandDown > 0 && flags & efShiftDown==0 && inEvent.code == Keyboard.F ) 
+            #else
+            if (flags & efAltDown > 0 && inEvent.code == Keyboard.ENTER ) 
+            #end
+            {
+               if (displayState == StageDisplayState.NORMAL) 
+                  displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+               else 
+                  displayState = StageDisplayState.NORMAL;
+            }
          }
          #end
       }

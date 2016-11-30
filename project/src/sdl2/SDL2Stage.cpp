@@ -225,6 +225,8 @@ SDL_Cursor *sDefaultCursor = 0;
 SDL_Cursor *sTextCursor = 0;
 SDL_Cursor *sHandCursor = 0;
 
+unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN_DESKTOP;
+//unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN;
 
 class SDLStage : public Stage
 {
@@ -242,7 +244,7 @@ public:
       mShowCursor = true;
       mCurrentCursor = curPointer;
       
-      mIsFullscreen = (mWindowFlags & SDL_WINDOW_FULLSCREEN || mWindowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP);
+      mIsFullscreen = (mWindowFlags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP) );
       if (mIsFullscreen)
          displayState = sdsFullscreenInteractive;
       
@@ -350,33 +352,38 @@ public:
    {
       if (inFullscreen != mIsFullscreen)
       {
+         if (!mIsFullscreen)
+         {
+            SDL_GetWindowPosition(mSDLWindow, &sgWindowRect.x, &sgWindowRect.y);
+            SDL_GetWindowSize(mSDLWindow, &sgWindowRect.w, &sgWindowRect.h);
+         }
+
          mIsFullscreen = inFullscreen;
          
          if (mIsFullscreen)
          {
-            SDL_GetWindowPosition(mSDLWindow, &sgWindowRect.x, &sgWindowRect.y);
-            SDL_GetWindowSize(mSDLWindow, &sgWindowRect.w, &sgWindowRect.h);
-            
             //SDL_SetWindowSize(mSDLWindow, sgDesktopWidth, sgDesktopHeight);
-            
             SDL_DisplayMode mode;
             SDL_GetCurrentDisplayMode(0, &mode);
             mode.w = sgDesktopWidth;
             mode.h = sgDesktopHeight;
             SDL_SetWindowDisplayMode(mSDLWindow, &mode);
             
-            SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
+            SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
          }
          else
          {
             SDL_SetWindowFullscreen(mSDLWindow, 0);
+            /*
+              Trust sdl to restore the window position
+            #if !defined(HX_LINUX) && !defined(HX_MACOS)
             if (sgWindowRect.w && sgWindowRect.h)
             {
                SDL_SetWindowSize(mSDLWindow, sgWindowRect.w, sgWindowRect.h);
+               SDL_SetWindowPosition(mSDLWindow, sgWindowRect.x, sgWindowRect.y);
             }
-            #ifndef HX_LINUX
-            SDL_SetWindowPosition(mSDLWindow, sgWindowRect.x, sgWindowRect.y);
             #endif
+            */
          }
          
          SDL_ShowCursor(mShowCursor);
@@ -394,7 +401,7 @@ public:
       mode.h = inHeight;
       SDL_SetWindowFullscreen(mSDLWindow, 0);
       SDL_SetWindowDisplayMode(mSDLWindow, &mode);
-      SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN);
+      SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode);
    }
    
 
@@ -521,7 +528,7 @@ public:
       }
       SDL_SetWindowFullscreen(mSDLWindow, 0);
       SDL_SetWindowDisplayMode(mSDLWindow, &mode);
-      SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN);
+      SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode);
    }
     
    
@@ -1192,7 +1199,9 @@ void ProcessEvent(SDL_Event &inEvent)
             case SDL_WINDOWEVENT_RESTORED:
             case SDL_WINDOWEVENT_MAXIMIZED:
                {
-               sgSDLFrame->mStage->setIsFullscreen(inEvent.window.event==SDL_WINDOWEVENT_MAXIMIZED);
+               bool isMax = SDL_GetWindowFlags(sgSDLFrame->mStage->mSDLWindow ) &
+                            (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP);
+               sgSDLFrame->mStage->setIsFullscreen(isMax);
 
                Event activate(etActivate);
                sgSDLFrame->ProcessEvent(activate);
@@ -1506,7 +1515,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    if (opengl) requestWindowFlags |= SDL_WINDOW_OPENGL;
    if (resizable) requestWindowFlags |= SDL_WINDOW_RESIZABLE;
    if (borderless) requestWindowFlags |= SDL_WINDOW_BORDERLESS;
-   if (fullscreen) requestWindowFlags |= SDL_WINDOW_FULLSCREEN; //SDL_WINDOW_FULLSCREEN_DESKTOP;
+   if (fullscreen) requestWindowFlags |= FullscreenMode; //SDL_WINDOW_FULLSCREEN_DESKTOP;
    
    if (opengl)
    {
@@ -1639,7 +1648,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    }
    
    int width, height;
-   if (windowFlags & SDL_WINDOW_FULLSCREEN || windowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+   if (windowFlags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP) )
    {
       //SDL_DisplayMode mode;
       //SDL_GetCurrentDisplayMode(0, &mode);
