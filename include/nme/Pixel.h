@@ -45,6 +45,9 @@ enum PixelFormat
    pfRGBPremA   = 8,
    pfRGBA       = 9,
 
+   pfUInt16     = 10,
+   pfUInt32     = 11,
+
    pfARGB4444,
    pfRGB565,
 

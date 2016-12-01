@@ -1,7 +1,7 @@
 package nme.native;
 
 import nme.native.Include;
-import nme.display.BitmapData;
+import nme.bare.Surface;
 import cpp.Pointer;
 import cpp.ConstPointer;
 
@@ -10,7 +10,7 @@ import cpp.ConstPointer;
 @:structAccess
 extern class ImageBuffer extends nme.native.Object
 {
-   public static inline function fromBitmapData(inBitmapData:BitmapData) : Pointer<ImageBuffer>
+   public static inline function fromBitmapData(inBitmapData:Surface) : Pointer<ImageBuffer>
    {
       var object:Pointer<Object> = Object.fromHandle(inBitmapData.nmeHandle);
       if (object!=null)

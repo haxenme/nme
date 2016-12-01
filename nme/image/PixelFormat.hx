@@ -28,5 +28,9 @@ class PixelFormat
    public inline static var pfRGBPremA   = 8;
    public inline static var pfRGBA       = 9;
 
+   // These ones can't actually be displayed
+   public inline static var pfUInt16      = 10;
+   public inline static var pfUInt32      = 11;
+
 }
 

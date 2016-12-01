@@ -35,7 +35,8 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static var FORMAT_RGB:Int = 5;  //24 bit, rgb
    public static var FORMAT_YUVSP:Int = 6;  // Plane of Y followed by interleaved UV
    public static var FORMAT_BGRPremA:Int = 7;  // Plane of Y followed by interleaved UV
-
+   public static var FORMAT_UINT16:Int = 8;  // 16-bit channel
+   public static var FORMAT_UINT32:Int = 9;  // 32-bit channel
 
    public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, ?inInternalFormat:Null<Int>)
    {

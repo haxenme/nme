@@ -1157,6 +1157,9 @@ void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
    if( y1 > Height() ) y1 = Height();
    if (x1<=x0 || y1<=y0)
       return;
+
+   int pix_size = BytesPerPixel(mPixelFormat);
+
    if (mPixelFormat==pfLumaAlpha)
    {
       for(int y=y0;y<y1;y++)
@@ -1184,7 +1187,7 @@ void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
          }
       }
    }
-   else
+   else if (pix_size==4)
    {
       if (mPixelFormat==pfBGRPremA)
       {
@@ -1197,6 +1200,14 @@ void SimpleSurface::Clear(uint32 inColour,const Rect *inRect)
          uint32 *ptr = (uint32 *)(mBase + y*mStride) + x0;
          for(int x=x0;x<x1;x++)
             *ptr++ = rgb.ival;
+      }
+   }
+   else
+   {
+      for(int y=y0;y<y1;y++)
+      {
+         uint8 *ptr = (uint8 *)(mBase + y*mStride) + x0*pix_size;
+         memset(ptr, 0, (x1-x0)*pix_size);
       }
    }
 

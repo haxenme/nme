@@ -40,6 +40,8 @@ int BytesPerPixel(PixelFormat pixelFormat)
       case pfRGB565: return 2;
       case pfLuma: return 1;
       case pfLumaAlpha: return 2;
+      case pfUInt16: return 2;
+      case pfUInt32: return 4;
    }
    // hmmm
    return 1;

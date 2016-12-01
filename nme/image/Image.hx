@@ -1,7 +1,7 @@
 package nme.image;
 
 import nme.native.ImageBuffer;
-import nme.display.BitmapData;
+import nme.bare.Surface;
 
 
 @:generic extern
@@ -19,7 +19,8 @@ abstract Image<PIXEL>(cpp.Pointer<ImageBuffer>)
    inline public function get_height():Int return this.value.Height();
    inline public function get_pixelFormat():Int return this.value.Format();
 
-   inline public static function fromBitmapData<PIXEL>(data:BitmapData) : Image<PIXEL>
+   @:from
+   inline public static function fromSurface<PIXEL>(data:Surface) : Image<PIXEL>
        return new Image<PIXEL>( ImageBuffer.fromBitmapData(data) );
 
    @:arrayAccess public inline function row( index : Int ): cpp.Pointer<PIXEL> {

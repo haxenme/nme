@@ -25,6 +25,8 @@ class Surface
    public static var FORMAT_LUMA_ALPHA:Int = 4;  //16 bit, luma + alpha
    public static var FORMAT_RGB:Int = 5;  //24 bit, rgb
    public static var FORMAT_BGRPremA:Int = 7;  //Premultipled alpha
+   public static var FORMAT_UINT16:Int = 8;  // 16-bit channel
+   public static var FORMAT_UINT32:Int = 9;  // 32-bit channel
 
    public var height(get_height, null):Int;
    public var rect(get_rect, null):Rectangle;
@@ -67,6 +69,19 @@ class Surface
          nmeHandle = nme_bitmap_data_create(inWidth, inHeight, flags, fill_col, fill_alpha, inInternalFormat);
       }
    }
+
+
+   public static function createUInt16(width:Int, height:Int) : Surface
+   {
+      return new Surface(width, height, false, 0, FORMAT_UINT16);
+   }
+
+
+   public static function createUInt32(width:Int, height:Int) : Surface
+   {
+      return new Surface(width, height, false, 0, FORMAT_UINT32);
+   }
+
 
    public function clear(color:Int):Void 
    {
