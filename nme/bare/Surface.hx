@@ -27,6 +27,7 @@ class Surface
    public static var FORMAT_BGRPremA:Int = 7;  //Premultipled alpha
    public static var FORMAT_UINT16:Int = 8;  // 16-bit channel
    public static var FORMAT_UINT32:Int = 9;  // 32-bit channel
+   public static var FORMAT_ALPHA:Int = 10;  // 8-bit channel
 
    public var height(get_height, null):Int;
    public var rect(get_rect, null):Rectangle;
@@ -36,14 +37,11 @@ class Surface
    public var premultipliedAlpha(get_premultipliedAlpha, set_premultipliedAlpha):Bool;
    public var nmeHandle:Dynamic;
    
-   private var nmeTransparent:Bool;
-
 
    public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:BitmapInt32, ?inInternalFormat:Null<Int>)
    {
       var fill_col:Int;
       var fill_alpha:Int;
-      nmeTransparent = inTransparent;
 
       if (inFillARGB == null)
       {
@@ -61,7 +59,7 @@ class Surface
       {
          var flags = HARDWARE;
 
-         if (inTransparent)
+         if (inTransparent || inInternalFormat==FORMAT_ALPHA)
             flags |= TRANSPARENT;
          else
             fill_alpha = 0xff;
@@ -81,6 +79,7 @@ class Surface
    {
       return new Surface(width, height, false, 0, FORMAT_UINT32);
    }
+
 
 
    public function clear(color:Int):Void 
@@ -303,7 +302,7 @@ class Surface
    private function get_rect():Rectangle { return new Rectangle(0, 0, width, height); }
    private function get_width():Int { return nme_bitmap_data_width(nmeHandle); }
    private function get_height():Int { return nme_bitmap_data_height(nmeHandle); }
-   private function get_transparent():Bool { return nmeTransparent; /*nme_bitmap_data_get_transparent(nmeHandle);*/ }
+   private function get_transparent():Bool { return nme_bitmap_data_get_transparent(nmeHandle); }
    private function get_premultipliedAlpha():Bool { return nme_bitmap_data_get_prem_alpha(nmeHandle); }
    private function set_premultipliedAlpha(inVal:Bool):Bool
    {

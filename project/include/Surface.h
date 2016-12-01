@@ -27,7 +27,7 @@ class Surface : public ImageBuffer
 {
 public:
    // Non-PO2 will generate dodgy repeating anyhow...
-   Surface() : mTexture(0), mVersion(0), mFlags(surfNotRepeatIfNonPO2), mAllowTrans(true) { };
+   Surface() : mTexture(0), mVersion(0), mFlags(surfNotRepeatIfNonPO2) { };
 
    // Implementation depends on platform.
    static Surface *Load(const OSChar *inFilename);
@@ -39,8 +39,6 @@ public:
    virtual unsigned int GetFlags() const { return mFlags; }
    virtual void SetFlags(unsigned int inFlags) { mFlags = inFlags; }
    virtual PixelFormat  GPUFormat() const { return Format(); }
-   virtual bool GetAllowTrans() const { return mAllowTrans; }
-   virtual void SetAllowTrans(bool inAllowTrans) { mAllowTrans = inAllowTrans; }
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0) { }
    virtual void Zero() { Clear(0); }
@@ -97,7 +95,6 @@ protected:
    Texture       *mTexture;
    virtual       ~Surface();
    unsigned int  mFlags;
-   bool          mAllowTrans;
 };
 
 // Helper class....

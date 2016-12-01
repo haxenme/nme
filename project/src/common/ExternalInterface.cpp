@@ -3756,12 +3756,11 @@ value nme_bitmap_data_create(value* arg, int nargs)
          case 7: format = pfBGRPremA; break;
          case 8: format = pfUInt16; break;
          case 9: format = pfUInt32; break;
+         case 10: format = pfAlpha; break;
       }
    }
    
    Surface *result = new SimpleSurface( w, h, format, 1, gpu );
-   if (!(flags & 0x01))
-      result->SetAllowTrans(false);
    if (gpu==pfNone && val_is_int(arg[aRGB]))
    {
       int rgb = val_int(arg[aRGB]);
@@ -3830,8 +3829,7 @@ value nme_bitmap_data_get_transparent(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      //return alloc_bool( surface->Format() & pfHasAlpha );
-      return alloc_bool( surface->GetAllowTrans() );
+      return alloc_bool( HasAlphaChannel(surface->Format()) );
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_get_transparent,1);
@@ -3922,7 +3920,6 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
    
    if (surface)
    {
-      surface->SetAllowTrans(true);   
       if (!val_is_null(inAlphaBytes))
       {
          ByteData alphabytes;
@@ -3931,16 +3928,17 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
             
          if(alphabytes.length > 0)
          {
+            if (surface->Format()!=pfRGBA)
+               surface->ChangeInternalFormat(pfRGBA);
+            uint8 *base = surface->Edit(0);
             int index = 0;
             for (int y=0; y < surface->Height(); y++)
             {
+               ARGB *rgba = (ARGB *)(base + y*surface->GetStride());
                for (int x=0; x < surface->Width(); x++)
-            {
-                  uint32 alpha = alphabytes.data[index++] << 24;
-                  uint32 pixel = surface->getPixel(x, y) << 8;
-                  surface->setPixel(x, y, (pixel >> 8) + alpha, true);
-               }
+                  rgba[x].a = alphabytes.data[index++];
             } 
+            surface->Commit();
          }
       }
      
@@ -4197,7 +4195,7 @@ value nme_bitmap_data_set_pixel32(value inSurface, value inX, value inY, value i
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),surf->GetAllowTrans());
+      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),true);
 
    return alloc_null();
 }
@@ -4212,7 +4210,7 @@ value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, valu
       value a = val_field(inRGBA,_id_a);
       value rgb = val_field(inRGBA,_id_rgb);
       if (val_is_int(a) && val_is_int(rgb))
-         surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), surf->GetAllowTrans() );
+         surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), true);
    }
    return alloc_null();
 }
@@ -4312,7 +4310,6 @@ value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value in
       queue.push_back(UserPoint(x,y));
       
       int old = surf->getPixel(x,y);
-      bool useAlpha = surf->GetAllowTrans();
       
       bool *search = new bool[width*height];
       std::fill_n(search, width*height, false);
@@ -4332,7 +4329,7 @@ value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value in
          
          if (surf->getPixel(x,y) == old)
          {
-            surf->setPixel(x,y,color,useAlpha);
+            surf->setPixel(x,y,color,true);
             if (x<width && !search[y*width + (x+1)])
             {
                queue.push_back(UserPoint(x+1,y));

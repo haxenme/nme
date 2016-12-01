@@ -686,6 +686,12 @@ template<bool DEST_ALPHA> void CopyFunc(ARGB &ioDest, ARGB inSrc)
    ioDest = inSrc;
 }
 
+struct CopyHandler
+{
+   static inline uint8 comp(uint8 a, uint8 b) { return b; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return a; }
+};
+
 // -- Inner ---------
 
 template<bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
@@ -722,6 +728,7 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
       {
          BLEND_CASE(Multiply)
          BLEND_CASE(Screen)
+         BLEND_CASE(Copy)
          /*
          BLEND_CASE(Lighten)
          BLEND_CASE(Darken)
@@ -733,7 +740,6 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
          BLEND_CASE(Erase)
          BLEND_CASE(Overlay)
          BLEND_CASE(HardLight)
-         BLEND_CASE(Copy)
          BLEND_CASE(Inner)
          */
       }
@@ -888,7 +894,6 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
               return;
           }
       }
-
 
 
       // Blitting to alpha image - can ignore blend mode
@@ -1268,11 +1273,11 @@ void SimpleSurface::EndRender()
 Surface *SimpleSurface::clone()
 {
    SimpleSurface *copy = new SimpleSurface(mWidth,mHeight,mPixelFormat,1,pfNone);
+   int pix_size = BytesPerPixel( mPixelFormat );
    if (mBase)
       for(int y=0;y<mHeight;y++)
-         memcpy(copy->mBase + copy->mStride*y, mBase+mStride*y, mWidth*(mPixelFormat==pfAlpha?1:4));
+         memcpy(copy->mBase + copy->mStride*y, mBase+mStride*y, mWidth*pix_size);
    
-   copy->SetAllowTrans(mAllowTrans);
    copy->IncRef();
    return copy;
 }

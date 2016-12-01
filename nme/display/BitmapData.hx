@@ -37,6 +37,7 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static var FORMAT_BGRPremA:Int = 7;  // Plane of Y followed by interleaved UV
    public static var FORMAT_UINT16:Int = 8;  // 16-bit channel
    public static var FORMAT_UINT32:Int = 9;  // 32-bit channel
+   public static var FORMAT_ALPHA:Int = 10;  // 8-bit channel
 
    public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, ?inInternalFormat:Null<Int>)
    {
@@ -61,6 +62,11 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static function createGrey(width:Int, height:Int, ?inLuma:Int)
    {
       return new BitmapData(width, height, false, inLuma, FORMAT_LUMA);
+   }
+
+   public static function createAlpha(width:Int, height:Int,inAlpha:Int=0)
+   {
+      return new BitmapData(width, height, false, (inAlpha&0xff)<<24, FORMAT_ALPHA);
    }
 
    public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter):Void 
