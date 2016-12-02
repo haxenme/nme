@@ -3869,14 +3869,12 @@ value nme_bitmap_data_load(value inFilename, value format)
    Surface *surface = Surface::Load(val_os_string(inFilename));
    if (surface)
    {
+      PixelFormat targetFormat = (PixelFormat)val_int(format);
+      if (targetFormat>=0)
+         surface->ChangeInternalFormat(targetFormat);
+
       value result = ObjectToAbstract(surface);
       surface->DecRef();
-      
-      if ( val_int( format ) == 1 ) 
-         surface->setGPUFormat( pfARGB4444 );
-      else if ( val_int( format ) == 2 ) 
-         surface->setGPUFormat( pfRGB565 );
-         
       return result;
    }
    return alloc_null();
@@ -3888,10 +3886,9 @@ value nme_bitmap_data_set_format(value inHandle, value format)
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
    {
-      if ( val_int( format ) == 1 ) 
-         surface->setGPUFormat( pfARGB4444 );
-      else if ( val_int( format ) == 2 ) 
-         surface->setGPUFormat( pfRGB565 );
+      PixelFormat targetFormat = (PixelFormat)val_int(format);
+      if (targetFormat!=pfNone)
+         surface->ChangeInternalFormat(targetFormat);
    }
    return alloc_null();
 }
@@ -3928,8 +3925,8 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
             
          if(alphabytes.length > 0)
          {
-            if (surface->Format()!=pfRGBA)
-               surface->ChangeInternalFormat(pfRGBA);
+            if (surface->Format()!=pfBGRA)
+               surface->ChangeInternalFormat(pfBGRA);
             uint8 *base = surface->Edit(0);
             int index = 0;
             for (int y=0; y < surface->Height(); y++)
@@ -4061,9 +4058,15 @@ value nme_bitmap_data_copy_channel(value* arg, int nargs)
       ImagePoint offset;
       FromValue(offset,arg[aDestPoint]);
 
+
+      int srcChannel =  val_int(arg[aSrcChannel]);
+      int destChannel =  val_int(arg[aDestChannel]);
+
+      if (destChannel==CHAN_ALPHA && !HasAlphaChannel(dest->Format()))
+         dest->ChangeInternalFormat(pfBGRA);
+
       AutoSurfaceRender render(dest);
-      source->BlitChannel(render.Target(),rect,offset.x, offset.y,
-                          val_int(arg[aSrcChannel]), val_int(arg[aDestChannel]) );
+      source->BlitChannel(render.Target(),rect,offset.x, offset.y, srcChannel, destChannel );
    }
 
    return alloc_null();

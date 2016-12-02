@@ -7,8 +7,7 @@ import nme.geom.Matrix;
 import nme.geom.ColorTransform;
 import nme.utils.ByteArray;
 import nme.Loader;
-
-typedef BitmapInt32 = Int;
+import nme.image.PixelFormat;
 
 @:nativeProperty
 class Surface
@@ -18,16 +17,11 @@ class Surface
 
    public static var TRANSPARENT = 0x0001;
    public static var HARDWARE = 0x0002;
-   public static var FORMAT_8888:Int = 0;
-   public static var FORMAT_4444:Int = 1; //16 bit with alpha channel
-   public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
-   public static var FORMAT_LUMA:Int = 3;  //8 bit, luma
-   public static var FORMAT_LUMA_ALPHA:Int = 4;  //16 bit, luma + alpha
-   public static var FORMAT_RGB:Int = 5;  //24 bit, rgb
-   public static var FORMAT_BGRPremA:Int = 7;  //Premultipled alpha
-   public static var FORMAT_UINT16:Int = 8;  // 16-bit channel
-   public static var FORMAT_UINT32:Int = 9;  // 32-bit channel
-   public static var FORMAT_ALPHA:Int = 10;  // 8-bit channel
+
+   public static inline var CHANNEL_RED   = 0x0001;
+   public static inline var CHANNEL_GREEN = 0x0002;
+   public static inline var CHANNEL_BLUE  = 0x0004;
+   public static inline var CHANNEL_ALPHA = 0x0008;
 
    public var height(get_height, null):Int;
    public var rect(get_rect, null):Rectangle;
@@ -38,7 +32,7 @@ class Surface
    public var nmeHandle:Dynamic;
    
 
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:BitmapInt32, ?inInternalFormat:Null<Int>)
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, inPixelFormat = -1)
    {
       var fill_col:Int;
       var fill_alpha:Int;
@@ -59,25 +53,23 @@ class Surface
       {
          var flags = HARDWARE;
 
-         if (inTransparent || inInternalFormat==FORMAT_ALPHA)
+         if (inTransparent)
             flags |= TRANSPARENT;
-         else
-            fill_alpha = 0xff;
 
-         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, flags, fill_col, fill_alpha, inInternalFormat);
+         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, flags, fill_col, fill_alpha, inPixelFormat);
       }
    }
 
 
    public static function createUInt16(width:Int, height:Int) : Surface
    {
-      return new Surface(width, height, false, 0, FORMAT_UINT16);
+      return new Surface(width, height, false, 0, PixelFormat.pfUInt16);
    }
 
 
    public static function createUInt32(width:Int, height:Int) : Surface
    {
-      return new Surface(width, height, false, 0, FORMAT_UINT32);
+      return new Surface(width, height, false, 0, PixelFormat.pfUInt32);
    }
 
 
@@ -89,7 +81,7 @@ class Surface
 
    public function clone():Surface 
    {
-      var bm = new Surface(0, 0, transparent);
+      var bm = new Surface(0, 0, false);
       bm.nmeHandle = nme_bitmap_data_clone(nmeHandle);
       return bm;
    }
@@ -136,7 +128,7 @@ class Surface
    }
 
 
-   public function fillRect(rect:Rectangle, inColour:BitmapInt32):Void 
+   public function fillRect(rect:Rectangle, inColour:Int):Void 
    {
       var a = inColour >>> 24;
       var c = inColour & 0xffffff;
@@ -149,13 +141,13 @@ class Surface
    }
 
    
-   public function floodFill(x:Int, y:Int, color:BitmapInt32):Void
+   public function floodFill(x:Int, y:Int, color:Int):Void
    {
 	  nme_bitmap_data_flood_fill(nmeHandle, x, y, color);
    }
 
    
-   public function getColorBoundsRect(mask:BitmapInt32, color:BitmapInt32, findColor:Bool = true):Rectangle 
+   public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true):Rectangle 
    {
       var result = new Rectangle();
       nme_bitmap_data_get_color_bounds_rect(nmeHandle, mask, color, findColor, result);
@@ -167,7 +159,7 @@ class Surface
       return nme_bitmap_data_get_pixel(nmeHandle, x, y);
    }
 
-   public function getPixel32(x:Int, y:Int):BitmapInt32 
+   public function getPixel32(x:Int, y:Int):Int 
    {
       return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
    }
@@ -246,7 +238,7 @@ class Surface
       nme_bitmap_data_set_pixel(nmeHandle, inX, inY, inColour);
    }
 
-   public function setPixel32(inX:Int, inY:Int, inColour:BitmapInt32):Void 
+   public function setPixel32(inX:Int, inY:Int, inColour:Int):Void 
    {
       nme_bitmap_data_set_pixel32(nmeHandle, inX, inY, inColour);
    }

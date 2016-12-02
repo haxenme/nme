@@ -129,7 +129,7 @@ void SimpleSurface::MakeTextureOnly()
 
 void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *inIgnore)
 {
-   if (!mBase)
+   if (!mBase || inNewFormat==mPixelFormat)
       return;
 
    PixelFormat newFormat = inNewFormat;
@@ -151,7 +151,7 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
 
    int newSize = BytesPerPixel(newFormat);
    int newStride = mWidth * newSize;
-   unsigned char *newBuffer = mBase = new unsigned char[newStride * mHeight+1];
+   unsigned char *newBuffer = new unsigned char[newStride * mHeight+1];
    newBuffer[newStride*mHeight] = 69;
 
    if (inIgnore==0)
@@ -200,6 +200,8 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
    mStride = newStride;
    mPixelFormat = newFormat;
    mGPUPixelFormat = mPixelFormat;
+   if (mTexture)
+      mTexture->Dirty(Rect(0,0,mWidth,mHeight));
 }
 
 

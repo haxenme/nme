@@ -159,7 +159,6 @@ void PixelConvert(int inWidth, int inHeight,
    job.destByteStride = destByteStride;
    job.destPlaneOffset = destPlaneOffset;
 
-
    switch(srcFormat)
    {
       case pfRGB: TPixelConvert<RGB>(job); break;

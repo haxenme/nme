@@ -10,6 +10,7 @@ import nme.geom.ColorTransform;
 import nme.filters.BitmapFilter;
 import nme.utils.ByteArray;
 import nme.Loader;
+import nme.image.PixelFormat;
 
 
 @:autoBuild(nme.macros.Embed.embedAsset("NME_bitmap_",":bitmap"))
@@ -39,9 +40,9 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static var FORMAT_UINT32:Int = 9;  // 32-bit channel
    public static var FORMAT_ALPHA:Int = 10;  // 8-bit channel
 
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, ?inInternalFormat:Null<Int>)
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, inPixelFormat:Int = -1)
    {
-      super(inWidth, inHeight, inTransparent, inFillARGB, inInternalFormat );
+      super(inWidth, inHeight, inTransparent, inFillARGB, inPixelFormat );
 
       if (nmeHandle==null)
       {
@@ -56,17 +57,17 @@ class BitmapData extends Surface implements IBitmapDrawable
    }
    public static function createPremultiplied(width:Int, height:Int, inRgba:Int = 0)
    {
-      return new BitmapData(width, height, true, inRgba, FORMAT_BGRPremA);
+      return new BitmapData(width, height, true, inRgba, PixelFormat.pfBGRPremA);
    }
 
    public static function createGrey(width:Int, height:Int, ?inLuma:Int)
    {
-      return new BitmapData(width, height, false, inLuma, FORMAT_LUMA);
+      return new BitmapData(width, height, false, inLuma, PixelFormat.pfLuma);
    }
 
    public static function createAlpha(width:Int, height:Int,inAlpha:Int=0)
    {
-      return new BitmapData(width, height, false, (inAlpha&0xff)<<24, FORMAT_ALPHA);
+      return new BitmapData(width, height, false, (inAlpha&0xff)<<24, PixelFormat.pfAlpha);
    }
 
    public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter):Void 
