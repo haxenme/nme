@@ -23,26 +23,22 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static var RED = createColor(0xff0000);
    public static var GREEN = createColor(0x00ff00);
    public static var BLUE = createColor(0x0000ff);
+
    public inline static var PNG = "png";
    public inline static var JPG = "jpg";
 
-   public static var TRANSPARENT = 0x0001;
-   public static var HARDWARE = 0x0002;
-   public static var FORMAT_8888:Int = 0;
-   public static var FORMAT_4444:Int = 1; //16 bit with alpha channel
-   public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
-   public static var FORMAT_LUMA:Int = 3;  //8 bit, luma
-   public static var FORMAT_LUMA_ALPHA:Int = 4;  //16 bit, luma + alpha
-   public static var FORMAT_RGB:Int = 5;  //24 bit, rgb
-   public static var FORMAT_YUVSP:Int = 6;  // Plane of Y followed by interleaved UV
-   public static var FORMAT_BGRPremA:Int = 7;  // Plane of Y followed by interleaved UV
-   public static var FORMAT_UINT16:Int = 8;  // 16-bit channel
-   public static var FORMAT_UINT32:Int = 9;  // 32-bit channel
-   public static var FORMAT_ALPHA:Int = 10;  // 8-bit channel
+   public static var defaultPremultiplied = true;
 
    public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, inPixelFormat:Int = -1)
    {
-      super(inWidth, inHeight, inTransparent, inFillARGB, inPixelFormat );
+      nmeHandle = null;
+
+      var pixelFormat:Int = inPixelFormat!=-1      ? inPixelFormat :
+                               !inTransparent       ? PixelFormat.pfRGB :
+                               defaultPremultiplied ? PixelFormat.pfBGRPremA :
+                                                      PixelFormat.pfBGRA;
+
+      super(inWidth, inHeight, pixelFormat, inFillARGB );
 
       if (nmeHandle==null)
       {
@@ -55,9 +51,9 @@ class BitmapData extends Surface implements IBitmapDrawable
          }
       }
    }
-   public static function createPremultiplied(width:Int, height:Int, inRgba:Int = 0)
+   public static function createPremultiplied(width:Int, height:Int, inArgb:Int = 0)
    {
-      return new BitmapData(width, height, true, inRgba, PixelFormat.pfBGRPremA);
+      return new BitmapData(width, height, true, inArgb, PixelFormat.pfBGRPremA);
    }
 
    public static function createGrey(width:Int, height:Int, ?inLuma:Int)
@@ -77,7 +73,7 @@ class BitmapData extends Surface implements IBitmapDrawable
 
    override public function clone():BitmapData 
    {
-      var bm = new BitmapData(0, 0, transparent);
+      var bm = new BitmapData(0, 0, false,0,PixelFormat.pfNone);
       bm.nmeHandle = Surface.nme_bitmap_data_clone(nmeHandle);
       return bm;
    }

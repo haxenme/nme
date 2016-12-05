@@ -47,40 +47,27 @@ Texture *Surface::GetTexture(HardwareContext *inHardware,int inPlane)
 
 // --- SimpleSurface -------------------------------------------------------
 
-SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign,PixelFormat inGPUFormat)
+SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign)
 {
    mWidth = inWidth;
    mHeight = inHeight;
    mTexture = 0;
    mPixelFormat = inPixelFormat;
-   mGPUPixelFormat = inPixelFormat;
  
    int pix_size = BytesPerPixel(inPixelFormat);
 
-   if (inGPUFormat==pfNone)
+   if (inByteAlign>1)
    {
-      if (inByteAlign>1)
-      {
-         mStride = inWidth * pix_size + inByteAlign -1;
-         mStride -= mStride % inByteAlign;
-      }
-      else
-      {
-         mStride = inWidth*pix_size;
-      }
-
-      mBase = new unsigned char[mStride * mHeight+1];
-      mBase[mStride*mHeight] = 69;
+      mStride = inWidth * pix_size + inByteAlign -1;
+      mStride -= mStride % inByteAlign;
    }
    else
    {
-      mStride = 0;
-      mBase = 0;
-      if (inGPUFormat!=0)
-         mGPUPixelFormat = inGPUFormat;
-
-      createHardwareSurface();
+      mStride = inWidth*pix_size;
    }
+
+   mBase = new unsigned char[mStride * mHeight+1];
+   mBase[mStride*mHeight] = 69;
 }
 
 SimpleSurface::~SimpleSurface()
@@ -127,6 +114,16 @@ void SimpleSurface::MakeTextureOnly()
    }
 }
 
+bool SimpleSurface::ReinterpretPixelFormat(PixelFormat inNewFormat)
+{
+   if ( BytesPerPixel(inNewFormat) != BytesPerPixel(mPixelFormat) )
+      return false;
+
+   mPixelFormat = inNewFormat;
+
+   return true;
+}
+
 void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *inIgnore)
 {
    if (!mBase || inNewFormat==mPixelFormat)
@@ -148,6 +145,42 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
          default:
            newFormat = pfRGB;
      }
+
+   // Convert in-situ
+   if (newFormat==pfRGBPremA && mPixelFormat==pfBGRA)
+   {
+      for(int y=0;y<mHeight;y++)
+      {
+         BGRPremA *bgra = (BGRPremA *)Row(y);
+         for(int x=0;x<mWidth;x++)
+         {
+            const uint8 *prem = gPremAlphaLut[bgra->a];
+            bgra->b = prem[bgra->b];
+            bgra->g = prem[bgra->g];
+            bgra->r = prem[bgra->r];
+            bgra++;
+         }
+      }
+      return;
+   }
+
+   if (newFormat==pfRGBA && mPixelFormat==pfBGRPremA)
+   {
+      for(int y=0;y<mHeight;y++)
+      {
+         BGRPremA *bgra = (BGRPremA *)Row(y);
+         for(int x=0;x<mWidth;x++)
+         {
+            const uint8 *unprem = gUnPremAlphaLut[bgra->a];
+            bgra->b = unprem[bgra->b];
+            bgra->g = unprem[bgra->g];
+            bgra->r = unprem[bgra->r];
+            bgra++;
+         }
+      }
+      return;
+   }
+
 
    int newSize = BytesPerPixel(newFormat);
    int newStride = mWidth * newSize;
@@ -199,7 +232,6 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
    mBase = newBuffer;
    mStride = newStride;
    mPixelFormat = newFormat;
-   mGPUPixelFormat = mPixelFormat;
    if (mTexture)
       mTexture->Dirty(Rect(0,0,mWidth,mHeight));
 }
@@ -1274,7 +1306,7 @@ void SimpleSurface::EndRender()
 
 Surface *SimpleSurface::clone()
 {
-   SimpleSurface *copy = new SimpleSurface(mWidth,mHeight,mPixelFormat,1,pfNone);
+   SimpleSurface *copy = new SimpleSurface(mWidth,mHeight,mPixelFormat,1);
    int pix_size = BytesPerPixel( mPixelFormat );
    if (mBase)
       for(int y=0;y<mHeight;y++)
@@ -1688,38 +1720,6 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 }
 
 
-void SimpleSurface::unmultiplyAlpha()
-{
-   if (!mBase)
-      return;
-   Rect r = Rect(0,0,mWidth,mHeight);
-   mVersion++;
-   if (mTexture)
-      mTexture->Dirty(r);
-   
-   if (mPixelFormat==pfAlpha)
-      return;
-   int i = 0;
-   int a;
-   double unmultiply;
-   
-   for(int y=0;y<r.h;y++)
-   {
-      uint8 *dest = mBase + (r.y+y)*mStride + r.x*4;
-      for(int x=0;x<r.w;x++)
-      {
-         a = *(dest + 3);
-         if(a!=0)
-         {
-            unmultiply = 255.0/a;
-            *dest = sgClamp0255[int((*dest) * unmultiply)];
-            *(dest+1) = sgClamp0255[int(*(dest + 1) * unmultiply)];
-            *(dest+2) = sgClamp0255[int(*(dest + 2) * unmultiply)];
-         }
-         dest += 4;
-      }
-   }
-}
 
 
 

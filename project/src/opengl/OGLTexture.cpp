@@ -226,12 +226,11 @@ public:
 
       uint8 *buffer = 0;
       PixelFormat fmt = mSurface->Format();
-      PixelFormat gpu = mSurface->GPUFormat();
 
-      GLuint store_format = getTextureStorage(gpu);
-      GLuint pixel_format = getTransferOgl(gpu);
-      PixelFormat buffer_format = getTransferFormat(gpu);
-      GLenum channel= getOglChannelType(gpu);
+      GLuint store_format = getTextureStorage(fmt);
+      GLuint pixel_format = getTransferOgl(fmt);
+      PixelFormat buffer_format = getTransferFormat(fmt);
+      GLenum channel= getOglChannelType(fmt);
 
       int pw = BytesPerPixel(fmt);
 
@@ -298,9 +297,8 @@ public:
 
          uint8 *buffer = 0;
          PixelFormat fmt = mSurface->Format();
-         PixelFormat gpu = mSurface->GPUFormat();
 
-         GLuint store_format = getTextureStorage(gpu);
+         GLuint store_format = getTextureStorage(fmt);
          if (store_format!=mUploadedFormat)
          {
             CreateTexture();
@@ -309,9 +307,9 @@ public:
          {
             glBindTexture(GL_TEXTURE_2D,mTextureID);
 
-            GLuint pixel_format = getTransferOgl(gpu);
-            PixelFormat buffer_format = getTransferFormat(gpu);
-            GLenum channel= getOglChannelType(gpu);
+            GLuint pixel_format = getTransferOgl(fmt);
+            PixelFormat buffer_format = getTransferFormat(fmt);
+            GLenum channel= getOglChannelType(fmt);
 
             int pw = BytesPerPixel(fmt);
 

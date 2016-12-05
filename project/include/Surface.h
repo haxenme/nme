@@ -38,17 +38,14 @@ public:
 
    virtual unsigned int GetFlags() const { return mFlags; }
    virtual void SetFlags(unsigned int inFlags) { mFlags = inFlags; }
-   virtual PixelFormat  GPUFormat() const { return Format(); }
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0) { }
+   virtual bool ReinterpretPixelFormat(PixelFormat inNewFormat) { return false; }
    virtual void Zero() { Clear(0); }
    virtual void createHardwareSurface() { }
    virtual void destroyHardwareSurface() { }
    virtual void dispose() { }
    virtual void MakeTextureOnly() { /*printf("Dumping bits from Surface\n");*/  }
-   virtual void setGPUFormat( PixelFormat pf ) {}
-   virtual void multiplyAlpha () {}
-   virtual void unmultiplyAlpha() { }
 
    int BytesPP() const { return nme::BytesPerPixel(Format()); }
 
@@ -115,7 +112,7 @@ public:
 class SimpleSurface : public Surface
 {
 public:
-   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4,PixelFormat inGPUPixelFormat=pfNone);
+   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4);
 
    PixelFormat Format() const  { return mPixelFormat; }
 
@@ -127,11 +124,11 @@ public:
    int GetStride() const { return mStride; }
    int GetPlaneOffset() const { return mStride*mHeight; }
 
-   PixelFormat  GPUFormat() const  { return mGPUPixelFormat; }
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
 
    void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0);
+   bool ReinterpretPixelFormat(PixelFormat inNewFormat);
 
 
    RenderTarget BeginRender(const Rect &inRect,bool inForHitTest);
@@ -149,8 +146,6 @@ public:
                             int inSrcChannel, int inDestChannel ) const;
 
    virtual void colorTransform(const Rect &inRect, ColorTransform &inTransform);
-   virtual void setGPUFormat( PixelFormat pf ) { mGPUPixelFormat = pf; }
-   void unmultiplyAlpha();
    
    Surface *clone();
    void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false, bool inLittleEndian=false);
@@ -172,7 +167,6 @@ protected:
    int           mWidth;
    int           mHeight;
    PixelFormat   mPixelFormat;
-   PixelFormat   mGPUPixelFormat;
    int           mStride;
    uint8         *mBase;
    ~SimpleSurface();

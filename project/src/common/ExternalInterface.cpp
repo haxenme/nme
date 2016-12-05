@@ -3733,44 +3733,19 @@ TEXT_PROP_GET_IDX(line_text,LineText,alloc_wstring);
 TEXT_PROP_GET_IDX(line_offset,LineOffset,alloc_int);
 
 
-value nme_bitmap_data_create(value* arg, int nargs)
+value nme_bitmap_data_create(value width, value height, value pixelFormat, value fill)
 {
-   enum { aWidth, aHeight, aFlags, aRGB, aA, aInternal };
+   int w = val_int(width);
+   int h = val_int(height);
 
-   int w = val_number(arg[aWidth]);
-   int h = val_number(arg[aHeight]);
-   uint32 flags = val_int(arg[aFlags]);
+   PixelFormat format = (PixelFormat)val_int(pixelFormat);
 
-   PixelFormat format = (flags & 0x01) ? pfBGRA : pfRGB;
-   PixelFormat gpu = pfNone;
-   if (!val_is_null(arg[aInternal]))
-   {
-      int internalFormat = val_int(arg[aInternal]);
-      switch(internalFormat)
-      {
-         case 1: gpu = pfBGRA; break;
-         case 2: gpu = pfBGRPremA; break;
-         case 3: format = pfLuma; break;
-         case 4: format = pfLumaAlpha; break;
-         case 5: format = pfRGB; break;
-         case 7: format = pfBGRPremA; break;
-         case 8: format = pfUInt16; break;
-         case 9: format = pfUInt32; break;
-         case 10: format = pfAlpha; break;
-      }
-   }
-   
-   Surface *result = new SimpleSurface( w, h, format, 1, gpu );
-   if (gpu==pfNone && val_is_int(arg[aRGB]))
-   {
-      int rgb = val_int(arg[aRGB]);
-      value inA = arg[aA];
-      int alpha = val_is_int(inA) ? val_int(inA) : 255;
-      result->Clear( rgb + (alpha<<24) );
-   }
+   Surface *result = new SimpleSurface( w, h, format, 1 );
+   if (val_is_int(fill))
+      result->Clear( val_int(fill) );
    return ObjectToAbstract(result);
 }
-DEFINE_PRIM_MULT(nme_bitmap_data_create);
+DEFINE_PRIM(nme_bitmap_data_create,4);
 
 value nme_bitmap_data_width(value inHandle)
 {
@@ -4356,30 +4331,6 @@ value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value in
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_flood_fill,4);
-
-
-value nme_bitmap_data_unmultiply_alpha(value inSurface)
-{
-   Surface *surf;
-   if (AbstractToObject(inSurface,surf))
-   {
-      surf->unmultiplyAlpha();
-   }
-   return alloc_null();
-}
-DEFINE_PRIM(nme_bitmap_data_unmultiply_alpha,1);
-
-
-value nme_bitmap_data_multiply_alpha(value inSurface)
-{
-   Surface *surf;
-   if (AbstractToObject(inSurface,surf))
-   {
-      surf->multiplyAlpha();
-   }
-   return alloc_null();
-}
-DEFINE_PRIM(nme_bitmap_data_multiply_alpha,1);
 
 
 value nme_render_surface_to_surface(value* arg, int nargs)

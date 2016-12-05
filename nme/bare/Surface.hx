@@ -32,44 +32,22 @@ class Surface
    public var nmeHandle:Dynamic;
    
 
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, inPixelFormat = -1)
+   public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, ?inFillRgb:Int)
    {
-      var fill_col:Int;
-      var fill_alpha:Int;
-
-      if (inFillARGB == null)
-      {
-         fill_col = 0xffffff;
-         fill_alpha = 0xff;
-      }
-      else 
-      {
-         fill_col = inFillARGB & 0xffffff;
-         fill_alpha = inFillARGB >>> 24;
-      }
-
-      nmeHandle = null;
-      if (inWidth >= 1 && inHeight >= 1) 
-      {
-         var flags = HARDWARE;
-
-         if (inTransparent)
-            flags |= TRANSPARENT;
-
-         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, flags, fill_col, fill_alpha, inPixelFormat);
-      }
+      if (inWidth>0 && inHeight>0 && inPixelFormat!=PixelFormat.pfNone)
+         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, inPixelFormat, inFillRgb);
    }
 
 
    public static function createUInt16(width:Int, height:Int) : Surface
    {
-      return new Surface(width, height, false, 0, PixelFormat.pfUInt16);
+      return new Surface(width, height, PixelFormat.pfUInt16, 0);
    }
 
 
    public static function createUInt32(width:Int, height:Int) : Surface
    {
-      return new Surface(width, height, false, 0, PixelFormat.pfUInt32);
+      return new Surface(width, height, PixelFormat.pfUInt32, 0);
    }
 
 
@@ -81,7 +59,7 @@ class Surface
 
    public function clone():Surface 
    {
-      var bm = new Surface(0, 0, false);
+      var bm = new Surface(0, 0, PixelFormat.pfNone);
       bm.nmeHandle = nme_bitmap_data_clone(nmeHandle);
       return bm;
    }
@@ -193,14 +171,14 @@ class Surface
 
    public static function load(inFilename:String, format:Int = 0):Surface 
    {
-      var result = new Surface(0, 0);
+      var result = new Surface(0, 0, PixelFormat.pfNone);
       result.nmeHandle = nme_bitmap_data_load(inFilename, format);
       return result;
    }
 
    public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Surface 
    {
-      var result = new Surface(0, 0);
+      var result = new Surface(0, 0, PixelFormat.pfNone);
       result.nmeLoadFromBytes(inBytes, inRawAlpha);
       return result;
    }
@@ -303,7 +281,7 @@ class Surface
    }
 
    // Native Methods
-   private static var nme_bitmap_data_create = Loader.load("nme_bitmap_data_create", -1);
+   private static var nme_bitmap_data_create = Loader.load("nme_bitmap_data_create", 4);
    private static var nme_bitmap_data_load = Loader.load("nme_bitmap_data_load", 2);
    private static var nme_bitmap_data_from_bytes = Loader.load("nme_bitmap_data_from_bytes", 2);
    private static var nme_bitmap_data_clear = Loader.load("nme_bitmap_data_clear", 2);
