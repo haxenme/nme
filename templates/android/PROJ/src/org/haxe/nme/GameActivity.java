@@ -165,6 +165,12 @@ implements SensorEventListener
       
       metrics = new DisplayMetrics();
       mContext.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+      ::if WIN_FULLSCREEN::
+      ::if (ANDROID_TARGET_SDK_VERSION >= 19)::
+      mContext.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+      ::end::
+      ::end::
       
       Extension.assetManager = mAssets;
       Extension.callbackHandler = mHandler;
