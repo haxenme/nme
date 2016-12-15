@@ -166,11 +166,10 @@ implements SensorEventListener
       metrics = new DisplayMetrics();
       mContext.getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-      ::if WIN_FULLSCREEN::
-      ::if (ANDROID_TARGET_SDK_VERSION >= 19)::
-      mContext.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
-      ::end::
-      ::end::
+      ::if WIN_FULLSCREEN::::if (ANDROID_TARGET_SDK_VERSION >= 19)::
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+         mContext.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+      ::end::::end::
       
       Extension.assetManager = mAssets;
       Extension.callbackHandler = mHandler;
@@ -385,6 +384,29 @@ implements SensorEventListener
          } });
    }
    
+// IMMERSIVE MODE SUPPORT
+::if (WIN_FULLSCREEN)::::if (ANDROID_TARGET_SDK_VERSION >= 19)::
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if(hasFocus) {
+			hideSystemUi();
+		}
+	}
+
+	private void hideSystemUi() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			View decorView = this.getWindow().getDecorView();
+			decorView.setSystemUiVisibility(
+				View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+		}
+	}
+::end::::end::
    
    public static double CapabilitiesGetPixelAspectRatio()
    {
