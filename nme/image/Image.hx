@@ -24,7 +24,7 @@ abstract Image<PIXEL>(cpp.Pointer<ImageBuffer>)
        return new Image<PIXEL>( ImageBuffer.fromBitmapData(data) );
 
    @:arrayAccess public inline function row( index : Int ): cpp.Pointer<PIXEL> {
-      return cpp.Pointer.fromRaw(this.ref.Row(index)).typeCast();
+      return cpp.Pointer.fromRaw(this.ref.Row(index)).reinterpret();
    }
 
 }
