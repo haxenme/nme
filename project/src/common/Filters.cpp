@@ -235,8 +235,6 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0
    int sw = inSrc->Width();
    int sh = inSrc->Height();
 
-   outDest->Zero();
-
    int blurred_w = std::min(sw+mBlurX,w);
    int blurred_h = std::min(sh+mBlurY,h);
    // TODO: tmp height is potentially less (h+mBlurY) than sh ...
@@ -266,15 +264,6 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0
    sw = tmp->Width();
    }
 
-   if (1)
-   {
-      AutoSurfaceRender dest_render(outDest);
-      const RenderTarget &target = dest_render.Target();
-      for(int y=0;y<sh;y++)
-         memcpy(target.Row(y),tmp->Row(y),sw*sizeof(PIXEL));
-   }
-   else
-   {
    AutoSurfaceRender dest_render(outDest);
    const RenderTarget &target = dest_render.Target();
    int s_stride = tmp->GetStride()/sizeof(PIXEL);
@@ -288,7 +277,7 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0
 
       BlurRow(src,s_stride,sh-sy0,oy, dest,d_stride,blurred_h,mBlurY+1,sy0);
    }
-   }
+
    tmp->DecRef();
 }
 

@@ -77,7 +77,6 @@ SimpleSurface::~SimpleSurface()
       if (mBase[mStride*mHeight]!=69)
       {
          ELOG("Image write overflow");
-         *(int *)0=0;
       }
       delete [] mBase;
    }
@@ -506,38 +505,6 @@ static int init_clamp = InitClamp();
 
 typedef void (*BlendFunc)(ARGB &ioDest, ARGB inSrc);
 
-template<bool DEST_ALPHA,typename FUNC>
-inline void BlendFuncWithAlpha(ARGB &ioDest, ARGB &inSrc,FUNC F)
-{
-   if (inSrc.a==0)
-      return;
-   ARGB val = inSrc;
-   if (!DEST_ALPHA || ioDest.a>0)
-   {
-      F(val.r,ioDest.r);
-      F(val.g,ioDest.g);
-      F(val.b,ioDest.b);
-   }
-   if (DEST_ALPHA && ioDest.a<255)
-   {
-      int A = ioDest.a + (ioDest.a>>7);
-      int A_ = 256-A;
-      val.r = (val.r *A + inSrc.r*A_)>>8;
-      val.g = (val.g *A + inSrc.g*A_)>>8;
-      val.b = (val.b *A + inSrc.b*A_)>>8;
-   }
-   if (val.a==255)
-   {
-      ioDest = val;
-      return;
-   }
-
-   if (DEST_ALPHA)
-      ioDest.QBlendA(val);
-   else
-      ioDest.QBlend(val);
-}
-
 
 template<typename SRC, typename FUNC>
 RGB ApplyComponent(const RGB &d, const SRC &s, const FUNC &)
@@ -601,7 +568,16 @@ struct ScreenHandler
 };
 
 
+// -- Copy --------
+struct CopyHandler
+{
+   static inline uint8 comp(uint8 a, uint8 b) { return b; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return a; }
+};
 
+
+
+#if 0
 template<bool DEST_ALPHA> void ScreenFunc(ARGB &ioDest, ARGB inSrc)
    { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoScreen()); }
 
@@ -720,12 +696,6 @@ template<bool DEST_ALPHA> void CopyFunc(ARGB &ioDest, ARGB inSrc)
    ioDest = inSrc;
 }
 
-struct CopyHandler
-{
-   static inline uint8 comp(uint8 a, uint8 b) { return b; }
-   static inline uint8 alpha(uint8 a, uint8 b) { return a; }
-};
-
 // -- Inner ---------
 
 template<bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
@@ -738,6 +708,7 @@ template<bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
       ioDest.b += ((inSrc.b - ioDest.b)*A)>>8;
    }
 }
+#endif
 
 template<typename DEST, typename SOURCE, typename MASK>
 void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
@@ -1461,32 +1432,72 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
    }
 
    const ARGB *src = (const ARGB *)inPixels;
+   bool bigEndian = !inIgnoreOrder && !inLittleEndian;
 
    for(int y=0;y<r.h;y++)
    {
       if (mPixelFormat==pfBGRA)
       {
          ARGB *dest = (ARGB *)(mBase + (r.y+y)*mStride) + r.x;
-         memcpy(dest, src, r.w*sizeof(ARGB));
+         if (bigEndian)
+         {
+            for(int x=0;x<r.w;x++)
+            {
+               dest->a = src->b;
+               dest->r = src->g;
+               dest->g = src->r;
+               dest->b = src->a;
+            }
+         }
+         else
+            memcpy(dest, src, r.w*sizeof(ARGB));
          src+=r.w;
       }
       else if (mPixelFormat==pfAlpha)
       {
          AlphaPixel *dest = (AlphaPixel *)(mBase + (r.y+y)*mStride) + r.x;
+         if (!bigEndian)
+            dest += 3;
          for(int x=0;x<r.w;x++)
-            SetPixel(*dest++,*src++);
+         {
+            SetPixel(*dest,*src++);
+            dest+=4;
+         }
       }
       else if (mPixelFormat==pfRGB)
       {
          RGB *dest = (RGB *)(mBase + (r.y+y)*mStride) + r.x;
-         for(int x=0;x<r.w;x++)
-            SetPixel(*dest++,*src++);
+         if (bigEndian)
+         {
+            for(int x=0;x<r.w;x++)
+            {
+               dest->r = src->g;
+               dest->g = src->r;
+               dest->b = src->a;
+            }
+         }
+         else
+            for(int x=0;x<r.w;x++)
+               SetPixel(*dest++,*src++);
       }
       else if (mPixelFormat==pfBGRPremA)
       {
          BGRPremA *dest = (BGRPremA *)(mBase + (r.y+y)*mStride) + r.x;
-         for(int x=0;x<r.w;x++)
-            SetPixel(*dest++,*src++);
+         if (bigEndian)
+         {
+            for(int x=0;x<r.w;x++)
+            {
+               const Uint8 *aLut = gPremAlphaLut[dest->a = src->b];
+               dest->r = aLut[src->g];
+               dest->g = aLut[src->r];
+               dest->b = aLut[src->a];
+               dest++;
+               src++;
+            }
+         }
+         else
+            for(int x=0;x<r.w;x++)
+               SetPixel(*dest++,*src++);
       }
    }
 }
