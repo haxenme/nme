@@ -49,7 +49,7 @@ class RunAll
       File.saveContent("ImportAll.hx", lines.join("\n"));
 
       Sys.println('Build test...');
-      var result = Sys.command("haxelib",["run","nme","build","cpp"]);
+      var result = Sys.command("haxelib",["run","nme","build","cpp","-toolkit"]);
       Sys.println('Built with result $result.');
       Sys.exit(result);
    }
