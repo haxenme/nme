@@ -109,6 +109,12 @@
       <compilerflag value="-DNAME_MAX=256" />
    </files>
 
+   <!-- inject flags for missing mingw headers -->
+   <files id="native-toolkit-sdl" if="mingw" >
+      <compilerflag value="-I${this_dir}/include/mingw" />
+   </files>
+
+
    <files id="main">
       <compilerflag value="-I${INC_DIR}"/>
       <file name="Test.cpp"/>
