@@ -302,16 +302,28 @@ void RenderBlend(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget
    switch(inDest.mPixelFormat)
    {
       case pfAlpha:
-         DestRender(inAlpha, inSource, DestSurface<AlphaPixel>(inDest), inBlend, inState, inTX, inTY);
+         {
+         DestSurface<AlphaPixel> dest(inDest);
+         DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
+         }
          break;
       case pfBGRA:
-         DestRender(inAlpha, inSource, DestSurface<ARGB>(inDest), inBlend, inState, inTX, inTY);
+         {
+         DestSurface<ARGB> dest(inDest);
+         DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
+         }
          break;
       case pfBGRPremA:
-         DestRender(inAlpha, inSource, DestSurface<BGRPremA>(inDest), inBlend, inState, inTX, inTY);
+         {
+         DestSurface<BGRPremA> dest(inDest);
+         DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
+         }
          break;
       case pfRGB:
-         DestRender(inAlpha, inSource, DestSurface<RGB>(inDest), inBlend, inState, inTX, inTY);
+         {
+         DestSurface<RGB> dest(inDest);
+         DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
+         }
          break;
    }
 }

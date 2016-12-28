@@ -1,7 +1,6 @@
 #include <Graphics.h>
 #include "Render.h"
 
-#include <windows.h>
 namespace nme
 {
 

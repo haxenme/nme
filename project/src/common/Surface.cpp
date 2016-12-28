@@ -724,7 +724,7 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
          case bm##mode: \
             for(int x=0;x<inSrcRect.w;x++) \
             { \
-               DEST::Pixel &dest = outDest.Next(); \
+               typename DEST::Pixel &dest = outDest.Next(); \
                BlendPixel(dest,ApplyComponent(dest,inMask.Mask(inSrc.Next()),mode##Handler() ) ); \
             } \
             break;
@@ -753,7 +753,7 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
 
 
 template<typename DEST,typename SRC>
-void TTBlitRgb(DEST &dest, SRC &src, int dx, int dy, Rect src_rect, const BitmapCache *inMask, BlendMode inBlend )
+void TTBlitRgb(const DEST &dest, SRC &src, int dx, int dy, Rect src_rect, const BitmapCache *inMask, BlendMode inBlend )
 {
    if (inBlend==bmNormal || inBlend==bmLayer)
    {
@@ -775,20 +775,20 @@ void TTBlitRgb(DEST &dest, SRC &src, int dx, int dy, Rect src_rect, const Bitmap
 
 
 template<typename DEST>
-void TBlitRgb(DEST &dest, int dx, int dy, const SimpleSurface *src, Rect src_rect, const BitmapCache *inMask, BlendMode inBlend, uint32 inTint )
+void TBlitRgb(const DEST &dest, int dx, int dy, const SimpleSurface *inSrc, Rect src_rect, const BitmapCache *inMask, BlendMode inBlend, uint32 inTint )
 {
       bool tint = inBlend==bmTinted;
       bool tint_inner = inBlend==bmTintedInner;
       bool tint_add = inBlend==bmTintedAdd;
 
-      bool src_alpha = src->Format()==pfAlpha;
+      bool src_alpha = inSrc->Format()==pfAlpha;
 
       // Blitting tint, we can ignore blend mode too (this is used for rendering text)
       if (tint)
       {
          if (src_alpha)
          {
-            TintSource<false> src(src->GetBase(),src->GetStride(),inTint,src->Format());
+            TintSource<false> src(inSrc->GetBase(),inSrc->GetStride(),inTint,inSrc->Format());
             if (inMask)
                TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
             else
@@ -796,7 +796,7 @@ void TBlitRgb(DEST &dest, int dx, int dy, const SimpleSurface *src, Rect src_rec
          }
          else
          {
-            TintSource<false,true> src(src->GetBase(),src->GetStride(),inTint,src->Format());
+            TintSource<false,true> src(inSrc->GetBase(),inSrc->GetStride(),inTint,inSrc->Format());
             if (inMask)
                TBlit( dest, src, ImageMask(*inMask), dx, dy, src_rect );
             else
@@ -805,7 +805,7 @@ void TBlitRgb(DEST &dest, int dx, int dy, const SimpleSurface *src, Rect src_rec
       }
       else if (tint_inner)
       {
-         TintSource<true> src(src->GetBase(),src->GetStride(),inTint,src->Format());
+         TintSource<true> src(inSrc->GetBase(),inSrc->GetStride(),inTint,inSrc->Format());
 
          if (inMask)
             TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmInner );
@@ -814,7 +814,7 @@ void TBlitRgb(DEST &dest, int dx, int dy, const SimpleSurface *src, Rect src_rec
       }
       else if (tint_add)
       {
-         TintSource<false,true> src(src->GetBase(),src->GetStride(),inTint,src->Format());
+         TintSource<false,true> src(inSrc->GetBase(),inSrc->GetStride(),inTint,inSrc->Format());
 
          if (inMask)
             TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmAdd );
@@ -823,19 +823,31 @@ void TBlitRgb(DEST &dest, int dx, int dy, const SimpleSurface *src, Rect src_rec
       }
       else
       {
-         switch(src->Format())
+         switch(inSrc->Format())
          {
             case pfAlpha:
-               TTBlitRgb(dest, ImageSource<AlphaPixel>(src->GetBase(),src->GetStride()), dx, dy, src_rect,inMask,inBlend);
+               {
+               ImageSource<AlphaPixel> src(inSrc->GetBase(),inSrc->GetStride());
+               TTBlitRgb(dest, src, dx, dy, src_rect,inMask,inBlend);
+               }
                return;
             case pfRGB:
-               TTBlitRgb(dest, ImageSource<RGB>(src->GetBase(),src->GetStride()), dx, dy, src_rect,inMask,inBlend);
+               {
+               ImageSource<RGB> src(inSrc->GetBase(),inSrc->GetStride());
+               TTBlitRgb(dest, src, dx, dy, src_rect,inMask,inBlend);
+               }
                return;
             case pfBGRA:
-               TTBlitRgb(dest, ImageSource<ARGB>(src->GetBase(),src->GetStride()), dx, dy, src_rect,inMask,inBlend);
+               {
+               ImageSource<ARGB> src(inSrc->GetBase(),inSrc->GetStride());
+               TTBlitRgb(dest, src, dx, dy, src_rect,inMask,inBlend);
+               }
                return;
             case pfBGRPremA:
-               TTBlitRgb(dest, ImageSource<BGRPremA>(src->GetBase(),src->GetStride()), dx, dy, src_rect,inMask,inBlend);
+               {
+               ImageSource<BGRPremA> src(inSrc->GetBase(),inSrc->GetStride());
+               TTBlitRgb(dest, src, dx, dy, src_rect,inMask,inBlend);
+               }
                return;
             default:
                ;
