@@ -150,7 +150,7 @@ class Loader
    static function sysName() 
    {
       // Problems with initialization order in cpp...
-      #if cpp
+      #if (cpp && hxcpp_api_level<331)
       var sys_string = Lib.load("std", "sys_string", 0);
       return sys_string();
       #else

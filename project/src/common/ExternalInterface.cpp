@@ -62,6 +62,7 @@ static int _id_width;
 static int _id_height;
 static int _id_length;
 static int _id_value;
+static int _id_endian;
 static int _id_flags;
 static int _id_result;
 static int _id_code;
@@ -171,6 +172,7 @@ extern "C" void InitIDs()
    _id_height = val_id("height");
    _id_length = val_id("length");
    _id_value = val_id("value");
+   _id_endian = val_id("endian");
    _id_id = val_id("id");
    _id_flags = val_id("flags");
    _id_result = val_id("result");
@@ -799,6 +801,20 @@ unsigned char *ByteArray::Bytes()
       val_throw(alloc_string("Bad ByteArray"));
    }
    return (unsigned char *)buffer_data(buf);
+}
+
+
+bool ByteArray::LittleEndian()
+{
+   value f = val_field(mValue,_id_endian);
+   if (val_is_string(f))
+   {
+      const char *l = val_string(f);
+      if (l)
+         return l[0]=='l';
+   }
+   int one = 0x0000001;
+   return *(unsigned char *)&one == 1;
 }
 
 
@@ -4205,7 +4221,7 @@ value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes,val
       if (rect.w>0 && rect.h>0)
       {
          ByteArray array(inBytes);
-         surf->setPixels(rect,(unsigned int *)(array.Bytes() + val_int(inOffset)) );
+         surf->setPixels(rect,(unsigned int *)(array.Bytes() + val_int(inOffset)), false, array.LittleEndian() );
       }
    }
 

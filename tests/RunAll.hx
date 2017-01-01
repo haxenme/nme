@@ -51,6 +51,15 @@ class RunAll
       Sys.println('Build test...');
       var result = Sys.command("haxelib",["run","nme","build","cpp","-toolkit"]);
       Sys.println('Built with result $result.');
+      if (result!=0)
+         Sys.exit(result);
+
+      /*
+      Sys.println('Render ..');
+      Sys.setCwd("../Render");
+      var result = Sys.command("haxelib",["run","nme","test","cpp","-toolkit"]);
+      Sys.println('ran with result $result.');
+      */
       Sys.exit(result);
    }
 }

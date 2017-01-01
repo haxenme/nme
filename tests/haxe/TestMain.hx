@@ -2,9 +2,14 @@ package;
 import haxe.Timer;
 import nme.display.TestBitmapDataCopyChannel;
 import nme.display.TestTilesheet;
+import nme.StaticNme;
+
+
 class TestMain {
 
 	static function main(){
+        //nme.display.BitmapData.defaultPremultiplied = false;
+
         var r = new haxe.unit.TestRunner();
         r.add(new TestBitmapDataCopyChannel());
         r.add(new TestTilesheet());

@@ -363,7 +363,7 @@ class BitmapData extends Surface implements IBitmapDrawable
       return p;
    }
 
-   public static function load(inFilename:String, format:Int = 0):BitmapData 
+   public static function load(inFilename:String, format:Int = -1):BitmapData 
    {
       var result = new BitmapData(0, 0);
       result.nmeHandle = Surface.nme_bitmap_data_load(inFilename, format);
