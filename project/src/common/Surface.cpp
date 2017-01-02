@@ -1445,7 +1445,6 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
 
    const ARGB *src = (const ARGB *)inPixels;
    bool bigEndian = !inIgnoreOrder && !inLittleEndian;
-   bigEndian = false;
 
    for(int y=0;y<r.h;y++)
    {
