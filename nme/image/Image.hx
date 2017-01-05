@@ -4,7 +4,7 @@ import nme.native.ImageBuffer;
 import nme.bare.Surface;
 
 
-@:generic extern
+@:generic #if (haxe_ver>3.30) extern #end
 abstract Image<PIXEL>(cpp.Pointer<ImageBuffer>)
 {
    inline public function new(inSrc:cpp.Pointer<ImageBuffer>) this = inSrc;
