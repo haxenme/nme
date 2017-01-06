@@ -17,6 +17,8 @@
 #include <Utils.h>
 #endif
 
+#define NME_DUALSHOCK_CONTROLLER 2
+#define NME_XBOXONE_CONTROLLER 7
 
 namespace nme
 {
@@ -829,6 +831,13 @@ SDL_Joystick *sgJoystick;
 QuickVec<SDL_Joystick *> sgJoysticks;
 QuickVec<int> sgJoysticksId;
 QuickVec<int> sgJoysticksIndex;
+#if defined(NME_XBOXONE_CONTROLLER) || defined(NME_DUALSHOCK_CONTROLLER) 
+QuickVec<int> sgJoystickType;
+#endif
+#ifdef NME_XBOXONE_CONTROLLER
+QuickVec<bool> sgJoystickLeftTriggerPushed;
+QuickVec<bool> sgJoistickRightTriggerPushed;
+#endif
 std::map<int, std::map<int, int> > sgJoysticksAxisMap;
 #endif
 
@@ -1348,33 +1357,87 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_JOYAXISMOTION:
       {
-         if (sgJoysticksAxisMap[inEvent.jaxis.which].empty())
+#ifdef NME_XBOXONE_CONTROLLER
+         int joyId = -1;
+         for (int i = 0; i < sgJoysticksId.size(); i++)
          {
-            sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] = inEvent.jaxis.value;
-         }
-         else if (sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] == inEvent.jaxis.value)
-         {
-            break;
-         }
-         if (inEvent.jaxis.value > -sgJoystickDeadZone && inEvent.jaxis.value < sgJoystickDeadZone)
-         {
-            if (sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] != 0)
+            if (sgJoysticksId[i] == inEvent.jdevice.which)
             {
-               sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] = 0;
-               Event joystick(etJoyAxisMove);
+               joyId = i;
+               break;
+            }
+         }
+         if ( joyId == -1 )
+         {
+            printf("Can't find device: %d\n", inEvent.jdevice.which );
+            return;
+         }
+         bool bIsXboxOneController = ( sgJoystickType[joyId] == NME_XBOXONE_CONTROLLER );
+         if ( bIsXboxOneController && (inEvent.jaxis.axis == 2 || inEvent.jaxis.axis == 5 ) )
+         {
+            bool *triggerPushedPtr = inEvent.jaxis.axis == 2 ? &sgJoystickLeftTriggerPushed[joyId] :
+                                                               &sgJoistickRightTriggerPushed[joyId];
+            if ( inEvent.jaxis.value >= 0 && !(*triggerPushedPtr) )
+            {
+               Event joystick(etJoyButtonDown);
                joystick.id = inEvent.jaxis.which;
-               joystick.code = inEvent.jaxis.axis;
-               joystick.value = 0;
+               joystick.code = inEvent.jaxis.axis == 2 ? 6 /*LEFT_TRIGGER*/ : 7 /*RIGHT_TRIGGER*/;
+               sgSDLFrame->ProcessEvent(joystick);
+               (*triggerPushedPtr) = true;
+            }
+            else if ( inEvent.jaxis.value < 0 && (*triggerPushedPtr) )
+            {
+               Event joystick(etJoyButtonUp);
+               joystick.id = inEvent.jaxis.which;
+               joystick.code = inEvent.jaxis.axis == 2 ? 6 /*LEFT_TRIGGER*/ : 7 /*RIGHT_TRIGGER*/;
+               (*triggerPushedPtr) = false;
                sgSDLFrame->ProcessEvent(joystick);
             }
-            break;
          }
-         sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] = inEvent.jaxis.value;
-         Event joystick(etJoyAxisMove);
-         joystick.id = inEvent.jaxis.which;
-         joystick.code = inEvent.jaxis.axis;
-         joystick.value = inEvent.jaxis.value;
-         sgSDLFrame->ProcessEvent(joystick);
+         else
+#endif
+         {
+#ifdef NME_XBOXONE_CONTROLLER
+            if( bIsXboxOneController )
+            {
+               if( inEvent.jaxis.axis==3 )
+               {
+                  inEvent.jaxis.axis=2;
+               }
+               else if( inEvent.jaxis.axis==4 )
+               {
+                  inEvent.jaxis.axis=5;
+               }
+            }
+#endif
+            if (sgJoysticksAxisMap[inEvent.jaxis.which].empty())
+            {
+               sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] = inEvent.jaxis.value;
+            }
+            else if (sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] == inEvent.jaxis.value)
+            {
+               break;
+            }
+            if (inEvent.jaxis.value > -sgJoystickDeadZone && inEvent.jaxis.value < sgJoystickDeadZone)
+            {
+               if (sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] != 0)
+               {
+                  sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] = 0;
+                  Event joystick(etJoyAxisMove);
+                  joystick.id = inEvent.jaxis.which;
+                  joystick.code = inEvent.jaxis.axis;
+                  joystick.value = 0;
+                  sgSDLFrame->ProcessEvent(joystick);
+               }
+               break;
+            }
+            sgJoysticksAxisMap[inEvent.jaxis.which][inEvent.jaxis.axis] = inEvent.jaxis.value;
+            Event joystick(etJoyAxisMove);
+            joystick.id = inEvent.jaxis.which;
+            joystick.code = inEvent.jaxis.axis;
+            joystick.value = inEvent.jaxis.value;
+            sgSDLFrame->ProcessEvent(joystick);
+         }
          break;
       }
       case SDL_JOYBALLMOTION:
@@ -1387,16 +1450,118 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_JOYBUTTONDOWN:
       {
+#if defined(NME_XBOXONE_CONTROLLER) || defined(NME_DUALSHOCK_CONTROLLER)
+         int joyId = -1;
+         for (int i = 0; i < sgJoysticksId.size(); i++)
+         {
+            if (sgJoysticksId[i] == inEvent.jdevice.which)
+            {
+               joyId = i;
+               break;
+            }
+         }
+         if ( joyId == -1 )
+         {
+            printf("Can't find device: %d\n", inEvent.jdevice.which );
+            return;
+         }
+#endif
          Event joystick(etJoyButtonDown);
          joystick.id = inEvent.jbutton.which;
+#ifdef NME_XBOXONE_CONTROLLER
+         bool bIsXboxOneController = ( sgJoystickType[joyId] == NME_XBOXONE_CONTROLLER );
+         if( bIsXboxOneController )
+         {
+            if( inEvent.jbutton.button == 6 )
+            {
+               inEvent.jbutton.button = 8;
+            }
+            else if( inEvent.jbutton.button == 7 )
+            {
+               inEvent.jbutton.button = 9;
+            }
+            else if( inEvent.jbutton.button == 8 || inEvent.jbutton.button == 9 )
+            {
+               break;
+            }
+         }
+#endif
+#ifdef NME_DUALSHOCK_CONTROLLER
+         if ( sgJoystickType[joyId] == NME_DUALSHOCK_CONTROLLER )
+         {
+            if ( inEvent.jbutton.button == 0 )
+            {
+               inEvent.jbutton.button = 2;
+            }
+            else if ( inEvent.jbutton.button == 1 )
+            {
+               inEvent.jbutton.button = 0;
+            }
+            else if ( inEvent.jbutton.button == 2 )
+            {
+               inEvent.jbutton.button = 1;
+            }
+         }
+#endif
          joystick.code = inEvent.jbutton.button;
          sgSDLFrame->ProcessEvent(joystick);
          break;
       }
       case SDL_JOYBUTTONUP:
       {
+#if defined(NME_XBOXONE_CONTROLLER) || defined(NME_DUALSHOCK_CONTROLLER)
+         int joyId = -1;
+         for (int i = 0; i < sgJoysticksId.size(); i++)
+         {
+            if (sgJoysticksId[i] == inEvent.jdevice.which)
+            {
+               joyId = i;
+               break;
+            }
+         }
+         if ( joyId == -1 )
+         {
+            printf("Can't find device: %d\n", inEvent.jdevice.which );
+            return;
+         }
+#endif
          Event joystick(etJoyButtonUp);
          joystick.id = inEvent.jbutton.which;
+#ifdef NME_XBOXONE_CONTROLLER
+         bool bIsXboxOneController = ( sgJoystickType[joyId] == NME_XBOXONE_CONTROLLER );
+         if( bIsXboxOneController )
+         {
+            if( inEvent.jbutton.button == 6 )
+            {
+               inEvent.jbutton.button = 8;
+            }
+            else if( inEvent.jbutton.button == 7 )
+            {
+               inEvent.jbutton.button = 9;
+            }
+            else if( inEvent.jbutton.button == 8 || inEvent.jbutton.button == 9 )
+            {
+               break;
+            }
+         }
+#endif
+#ifdef NME_DUALSHOCK_CONTROLLER
+         if ( sgJoystickType[joyId] == NME_DUALSHOCK_CONTROLLER )
+         {
+            if ( inEvent.jbutton.button == 0 )
+            {
+               inEvent.jbutton.button = 2;
+            }
+            else if ( inEvent.jbutton.button == 1 )
+            {
+               inEvent.jbutton.button = 0;
+            }
+            else if ( inEvent.jbutton.button == 2 )
+            {
+               inEvent.jbutton.button = 1;
+            }
+         }
+#endif
          joystick.code = inEvent.jbutton.button;
          for (int i = 0; i < sgJoysticksId.size(); i++) { //if SDL_JOYDEVICEREMOVED is triggered, up is fired on all buttons, so we need to counter the effect
             if (sgJoysticksId[i] == joystick.id) {
@@ -1426,14 +1591,48 @@ void ProcessEvent(SDL_Event &inEvent)
                break;
             }
          }
-         if (joyId == -1)
+         ////if (joyId == -1)       // This was commented due to bug recognizing joystick reconnection
          {
             Event joystick(etJoyDeviceAdded);
             sgJoystick = SDL_JoystickOpen(inEvent.jdevice.which); //which: joystick device index
             joystick.id = SDL_JoystickInstanceID(sgJoystick);
+            //get string id
+
+#if defined(NME_DUALSHOCK_CONTROLLER) || defined(NME_XBOXONE_CONTROLLER)
+            const char * gamepadstring = SDL_JoystickName(sgJoystick);
+            int joystickType = 0; //default type (XBox 360, basically)
+#endif
+
+#ifdef NME_DUALSHOCK_CONTROLLER
+            if (strcmp (gamepadstring, "Wireless Controller") == 0 ||
+                     strstr (gamepadstring, "Playstation") != 0 ||
+                     strcmp (gamepadstring, "PS Controller") == 0 ||
+                     strstr (gamepadstring, "PS3") != 0 )
+            {
+                // Dualshock controller (PS3/PS4)
+                joystickType = NME_DUALSHOCK_CONTROLLER;
+            }
+#endif
+#ifdef NME_XBOXONE_CONTROLLER
+            if (joystickType == 0 && 
+                (strstr (gamepadstring, "XInput Controller") != 0 || 
+                     strstr (gamepadstring, "XBOX One") != 0 ))
+            {
+                // XboxOne controller
+                joystickType = NME_XBOXONE_CONTROLLER;
+            }
+#endif
             sgJoysticks.push_back(sgJoystick);
             sgJoysticksId.push_back(joystick.id);
             sgJoysticksIndex.push_back(inEvent.jdevice.which);
+#if defined( NME_XBOXONE_CONTROLLER ) || defined( NME_DUALSHOCK_CONTROLLER )
+            joystick.x = joystickType;
+            sgJoystickType.push_back(joystickType);
+#endif
+#ifdef NME_XBOXONE_CONTROLLER 
+            sgJoystickLeftTriggerPushed.push_back(false);
+            sgJoistickRightTriggerPushed.push_back(false);
+#endif
             sgSDLFrame->ProcessEvent(joystick);
          }
          break;
@@ -1455,6 +1654,13 @@ void ProcessEvent(SDL_Event &inEvent)
          sgJoysticksId.erase(j,1);
          sgJoysticks.erase(j,1);
          sgJoysticksIndex.erase(j,1);
+#if defined(NME_DUALSHOCK_CONTROLLER) || defined(NME_XBOXONE_CONTROLLER)
+         sgJoystickType.erase(j,1);
+#endif
+#ifdef NME_XBOXONE_CONTROLLER
+         sgJoystickLeftTriggerPushed.erase(j,1);
+         sgJoistickRightTriggerPushed.erase(j,1);
+#endif
          sgSDLFrame->ProcessEvent(joystick);
          break;
       }
