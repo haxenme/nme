@@ -18,7 +18,7 @@ class UInt8Array extends ArrayBufferView implements ArrayAccess<Int>
 
       if (Std.is(inBufferOrArray,Int))
       {
-         super( Std.int(inBufferOrArray) );
+         super( length = Std.int(inBufferOrArray) );
       }
       else if (Std.is(inBufferOrArray,Array))
       {

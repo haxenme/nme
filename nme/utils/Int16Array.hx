@@ -19,7 +19,7 @@ class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
 
       if (Std.is(inBufferOrArray,Int))
       {
-         super( Std.int(inBufferOrArray) << 1 );
+         super( (length=Std.int(inBufferOrArray)) << 1 );
       }
       else if (Std.is(inBufferOrArray,Array))
       {

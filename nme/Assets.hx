@@ -272,7 +272,7 @@ class Assets
       if (useCache!=false)
       {
          var val = i.getCache();
-         if (val!=null)
+         if (val!=null && Std.is(val,BitmapData) )
             return val;
       }
  
@@ -340,7 +340,8 @@ class Assets
    {
       if (useCache!=false)
       {
-         var val:ByteArray = i.getCache();
+         var cached = i.getCache();
+         var val:ByteArray = Std.is(cached, ByteArray) ? cached : null;
          if (val!=null)
          {
             val.position = 0;
@@ -420,7 +421,7 @@ class Assets
       if (useCache!=false)
       {
          var val = i.getCache();
-         if (val!=null)
+         if (val!=null && Std.is(val,Font) )
             return val;
       }
 
@@ -468,7 +469,7 @@ class Assets
       if (useCache!=false)
       {
          var val = i.getCache();
-         if (val!=null)
+         if (val!=null && Std.is(val,Sound) )
             return val;
       }
 

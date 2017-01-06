@@ -19,7 +19,7 @@ class Int32Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
 
       if (Std.is(inBufferOrArray,Int))
       {
-         super( Std.int(inBufferOrArray)<<2  );
+         super( (length=Std.int(inBufferOrArray))<<2  );
       }
       else if (Std.is(inBufferOrArray,Array))
       {
