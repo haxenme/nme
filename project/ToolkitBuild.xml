@@ -396,9 +396,10 @@
          <section if="NME_SDL_ANY" >
             <files id="native-toolkit-sdl-mixer"  />
             <files id="native-toolkit-sdl"   />
-            <files id="native-toolkit-modplug" if="modplug" />
          </section>
       </section>
+      
+         <files id="native-toolkit-modplug" if="modplug" />
          <files id="native-toolkit-ogg"   />
          <files id="native-toolkit-vorbis" />
          <files id="native-toolkit-jpeg" />
