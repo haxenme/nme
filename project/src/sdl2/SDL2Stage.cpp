@@ -1575,21 +1575,17 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       
       #ifdef HX_WINDOWS
       HINSTANCE handle = ::GetModuleHandle(0);
-      HICON icon = ::LoadIcon(handle, (char *)101);
+      LPARAM icon = (LPARAM)::LoadImage(handle, MAKEINTRESOURCE(101), IMAGE_ICON, 
+         GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
       
       if (icon)
       {
          SDL_SysWMinfo wminfo;
          SDL_VERSION (&wminfo.version);
-         
          if (SDL_GetWindowWMInfo(window, &wminfo) == 1)
          {
             HWND hwnd = wminfo.info.win.window;
-            #ifdef HXCPP_M64
-            ::SetClassLongPtrA(hwnd, GCLP_HICON, reinterpret_cast<LONG_PTR>(icon));
-            #else
-            ::SetClassLong(hwnd, GCL_HICON, reinterpret_cast<LONG>(icon));
-            #endif
+            ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, icon);
          }
       }
       #endif
