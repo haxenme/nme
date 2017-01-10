@@ -1585,6 +1585,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          if (SDL_GetWindowWMInfo(window, &wminfo) == 1)
          {
             HWND hwnd = wminfo.info.win.window;
+            ::SendMessage(hwnd, WM_SETICON, ICON_BIG, icon);
             ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, icon);
          }
       }
