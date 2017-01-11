@@ -32,7 +32,8 @@ class JNI
       if (field != null)
          return Reflect.callMethod(inObj, field, inArgs);
 
-      trace("onCallback - unknown field " + inFunc);
+      trace("onCallback - unknown field " + inFunc + " in " + inObj);
+      trace("Make sure to use '@:keep' if enabling DLC");
 
       return null;
    }
