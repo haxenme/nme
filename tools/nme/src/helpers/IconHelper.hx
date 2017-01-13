@@ -200,7 +200,7 @@ class IconHelper
          ico.writeInt(0); // cols
          ico.writeInt(0); // important
 
-         var bits = bmp.getPixels(new Rectangle(0, 0, size, size));
+         var bits = BitmapData.getRGBAPixels(bmp);
          var and_mask = new ByteArray();
 
          for(y in 0...size) 
@@ -211,16 +211,16 @@ class IconHelper
 
             for(i in 0...size) 
             {
-               var a = bits.readByte();
                var r = bits.readByte();
                var g = bits.readByte();
                var b = bits.readByte();
+               var a = bits.readByte();
                ico.writeByte(b);
                ico.writeByte(g);
                ico.writeByte(r);
                ico.writeByte(a);
 
-               if (a < 128)
+               if (a == 0)
                   mask |= bit;
 
                bit = bit >> 1;
