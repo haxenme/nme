@@ -137,7 +137,6 @@ class IconHelper
    public static function createWindowsIcon(icons:Array<Icon>, targetPath:String):Bool 
    {
       var sizes = [ 16, 24, 32, 40, 48, 64, 96, 128, 256 ];
-      var paddingTotal:Array<Int> = [];
       var paddingPerRow:Array<Int> = [];
       var bmps = new Array<BitmapData>();
 
@@ -151,9 +150,9 @@ class IconHelper
          {
             bmps.push(bmp);
             data_pos += 16;
+            var paddPerRow:Int = Std.int(((32-size%32)%32)/8);
+            paddingPerRow.push(paddPerRow);
          }
-         var paddPerRow:Int = Std.int(((32-size%32)%32)/8);
-         paddingPerRow.push(paddPerRow);
       }
 
       var ico = new ByteArray();
@@ -184,8 +183,8 @@ class IconHelper
       for(bmp in bmps) 
       {
          var size:Int = bmp.width;
-         var rowPadding:Int = paddingPerRow[j++];
-         var extraPadding:Int = rowPadding * size;
+         var paddPerRow:Int = paddingPerRow[j++];
+         var extraPadding:Int = paddPerRow * size;
          var xor_size = size * size * 4;
          var and_size = size * size >> 3;
 
@@ -233,7 +232,7 @@ class IconHelper
                   mask = 0;
                }
             }
-            for(k in 0...rowPadding)
+            for(k in 0...paddPerRow)
                and_mask.writeByte(0);
          }
          ico.writeBytes(and_mask, 0, and_mask.length);
