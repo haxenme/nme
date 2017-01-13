@@ -137,6 +137,8 @@ class IconHelper
    public static function createWindowsIcon(icons:Array<Icon>, targetPath:String):Bool 
    {
       var sizes = [ 16, 24, 32, 40, 48, 64, 96, 128, 256 ];
+      var paddingTotal:Array<Int> = [];
+      var paddingPerRow:Array<Int> = [];
       var bmps = new Array<BitmapData>();
 
       var data_pos = 6;
@@ -150,6 +152,8 @@ class IconHelper
             bmps.push(bmp);
             data_pos += 16;
          }
+         var paddPerRow:Int = Std.int(((32-size%32)%32)/8);
+         paddingPerRow.push(paddPerRow);
       }
 
       var ico = new ByteArray();
@@ -158,9 +162,11 @@ class IconHelper
       ico.writeShort(1);
       ico.writeShort(bmps.length);
 
+      var j:Int=0;
       for(bmp in bmps) 
       {
          var size = bmp.width;
+         var extraPadding = paddingPerRow[j++]*size;
          var xor_size = size * size * 4;
          var and_size = size * size >> 3;
          ico.writeByte(size);
@@ -169,14 +175,17 @@ class IconHelper
          ico.writeByte(0); // reserved
          ico.writeShort(1); // planes
          ico.writeShort(32); // bits per pixel
-         ico.writeInt(40 + xor_size + and_size); // Data size
+         ico.writeInt(40 + xor_size + and_size + extraPadding); // Data size
          ico.writeInt(data_pos); // Data offset
-         data_pos += 40 + xor_size + and_size;
+         data_pos += 40 + xor_size + and_size + extraPadding;
       }
 
+      j = 0;
       for(bmp in bmps) 
       {
-         var size = bmp.width;
+         var size:Int = bmp.width;
+         var rowPadding:Int = paddingPerRow[j++];
+         var extraPadding:Int = rowPadding * size;
          var xor_size = size * size * 4;
          var and_size = size * size >> 3;
 
@@ -186,7 +195,7 @@ class IconHelper
          ico.writeShort(1);
          ico.writeShort(32);
          ico.writeInt(0); // Bit fields...
-         ico.writeInt(xor_size + and_size); // Size...
+         ico.writeInt(xor_size + and_size + extraPadding); // Size...
          ico.writeInt(0); // res-x
          ico.writeInt(0); // res-y
          ico.writeInt(0); // cols
@@ -224,8 +233,9 @@ class IconHelper
                   mask = 0;
                }
             }
+            for(k in 0...rowPadding)
+               and_mask.writeByte(0);
          }
-
          ico.writeBytes(and_mask, 0, and_mask.length);
       }
 
