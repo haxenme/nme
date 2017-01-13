@@ -18,9 +18,9 @@
 		1ECD4AF91D521CDE00ED25DA /* NotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1ECD4AF81D521CDE00ED25DA /* NotificationController.mm */; };
 		1ECD4AFB1D521CDE00ED25DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1ECD4AFA1D521CDE00ED25DA /* Assets.xcassets */; };
 		1ECD4AFF1D521CDE00ED25DA /* ::WATCH_FILE::.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1ECD4ADE1D521CDE00ED25DA /* ::WATCH_FILE::.app */; };
-      ::end::
+	  ::end::
 
-    	1E2E17AD131E8B5D0048F3C7 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5131E8B5D0048F3C7 /* Data */; };
+		1E2E17AD131E8B5D0048F3C7 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5131E8B5D0048F3C7 /* Data */; };
 		1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBA9A121AF1C60048A9DF /* UIKit.framework */; };
 		1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA2121AF2210048A9DF /* OpenAL.framework */; };
 		1EEEBAA5121AF2210048A9DF /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */; };
@@ -37,7 +37,7 @@
 
 		1EF0A83A121ADB8E003F2F59 /* Main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E003F2F59 /* Main.mm */; };
 		1EF0A83A121ADB8E013F2F59 /* Import.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EF0A839121ADB8E013F2F59 /* Main.mm */; };
-      1EF0A83B121ADB8E003F2F59 /* haxe in Sources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5141E8B5D0048F3C7 /* haxe */; };
+	  1EF0A83B121ADB8E003F2F59 /* haxe in Sources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5141E8B5D0048F3C7 /* haxe */; };
 		1E3B11C21854877600E698A8 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1E3B11C11854877600E698A8 /* Images.xcassets */; };
 
 
@@ -49,7 +49,7 @@
 
 /* Begin PBXContainerItemProxy section */
 
-      ::if (NME_WATCHOS)::
+	  ::if (NME_WATCHOS)::
 		1ECD4AEC1D521CDE00ED25DA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
@@ -104,7 +104,7 @@
 
 /* Begin PBXFileReference section */
 		1D6058910D05DD3D006BFB54 /* "::APP_TITLE::.app" */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "::APP_TITLE::.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-        1E2E17A5131E8B5D0048F3C7 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "::APP_FILE::/assets"; sourceTree = "<group>"; };
+		1E2E17A5131E8B5D0048F3C7 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "::APP_FILE::/assets"; sourceTree = "<group>"; };
 		1EEEBA9A121AF1C60048A9DF /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		1EEEBAA2121AF2210048A9DF /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -116,18 +116,18 @@
 		1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1EEEBAFF121BE2B30048A9DF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-                50C0551A1D7D0BB0005B17C7 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
-                50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+				50C0551A1D7D0BB0005B17C7 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+				50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 
-        1E3B11C11854877600E698A8 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "::APP_FILE::/Images.xcassets"; sourceTree = "<group>"; };
+		1E3B11C11854877600E698A8 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "::APP_FILE::/Images.xcassets"; sourceTree = "<group>"; };
 		
-        1EF0A839121ADB8E003F2F59 /* Main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.mm; name = Main.mm; path = "::APP_FILE::/Classes/Main.mm"; sourceTree = SOURCE_ROOT; };
-        1EF0A839121ADB8E013F2F59 /* Import.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.m; name = Import.m; path = "::APP_FILE::/Classes/Import.m"; sourceTree = SOURCE_ROOT; };
-        1E2E17A5141E8B5D0048F3C7 /* haxe */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "haxe"; sourceTree = SOURCE_ROOT; };
+		1EF0A839121ADB8E003F2F59 /* Main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.mm; name = Main.mm; path = "::APP_FILE::/Classes/Main.mm"; sourceTree = SOURCE_ROOT; };
+		1EF0A839121ADB8E013F2F59 /* Import.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.m; name = Import.m; path = "::APP_FILE::/Classes/Import.m"; sourceTree = SOURCE_ROOT; };
+		1E2E17A5141E8B5D0048F3C7 /* haxe */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "haxe"; sourceTree = SOURCE_ROOT; };
 		::ADDL_PBX_FILE_REFERENCE::
 
-      
-      ::if (NME_WATCHOS)::
+	  
+	  ::if (NME_WATCHOS)::
 		8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "::APP_FILE::/::APP_FILE::-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		1ECD4ADE1D521CDE00ED25DA /* ::WATCH_FILE::.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "::WATCH_FILE::.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1ECD4AE11D521CDE00ED25DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
@@ -156,8 +156,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			        50C0551B1D7D0BB0005B17C7 /* CoreVideo.framework in Frameworks */,
-			        50C0551D1D7D0E0B005B17C7 /* CoreMedia.framework in Frameworks */,
+					50C0551B1D7D0BB0005B17C7 /* CoreVideo.framework in Frameworks */,
+					50C0551D1D7D0E0B005B17C7 /* CoreMedia.framework in Frameworks */,
 				1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */,
 				1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */,
 				1EEEBAA5121AF2210048A9DF /* OpenGLES.framework in Frameworks */,
@@ -174,7 +174,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 
-      ::if (NME_WATCHOS)::
+	  ::if (NME_WATCHOS)::
 		1ECD4AE71D521CDE00ED25DA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -182,7 +182,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-      ::end::
+	  ::end::
 
 /* End PBXFrameworksBuildPhase section */
 
@@ -200,15 +200,15 @@
 			isa = PBXGroup;
 			children = (
 				1D6058910D05DD3D006BFB54 /* "::APP_TITLE::.app" */,
-            ::if (NME_WATCHOS)::
-	         1ECD4ADE1D521CDE00ED25DA /* ::WATCH_FILE::.app */,
+			::if (NME_WATCHOS)::
+			 1ECD4ADE1D521CDE00ED25DA /* ::WATCH_FILE::.app */,
 				1ECD4AEA1D521CDE00ED25DA /* ::WATCH_FILE:: Extension.appex */,
-            ::end::
+			::end::
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-      ::if (NME_WATCHOS)::
+	  ::if (NME_WATCHOS)::
 		1ECD4ADF1D521CDE00ED25DA /* ::WATCH_FILE:: */ = {
 			isa = PBXGroup;
 			children = (
@@ -249,8 +249,8 @@
 		1EEEBA99121AF18B0048A9DF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-			        50C0551A1D7D0BB0005B17C7 /* CoreVideo.framework */,
-			        50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */,
+					50C0551A1D7D0BB0005B17C7 /* CoreVideo.framework */,
+					50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */,
 				1EEEBA9A121AF1C60048A9DF /* UIKit.framework */,
 				1EEEBAA2121AF2210048A9DF /* OpenAL.framework */,
 				1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */,
@@ -271,15 +271,15 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
-            ::if (NME_WATCHOS)::
+			::if (NME_WATCHOS)::
 				1ECD4ADF1D521CDE00ED25DA /* ::WATCH_FILE:: */,
 				1ECD4AEE1D521CDE00ED25DA /* ::WATCH_FILE:: Extension */,
-	         ::end::
+			 ::end::
 				1EEEBA99121AF18B0048A9DF /* Frameworks */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
-	         1E3B11C11854877600E698A8 /* Images.xcassets */,
+			 1E3B11C11854877600E698A8 /* Images.xcassets */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
 			name = CustomTemplate;
@@ -288,7 +288,7 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-	        1E2E17A5141E8B5D0048F3C7 /* haxe */,
+			1E2E17A5141E8B5D0048F3C7 /* haxe */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -296,8 +296,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-                8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */,
-                1E2E17A5131E8B5D0048F3C7 /* assets */,
+				8D1107310486CEB800E47090 /* ::APP_FILE::-Info.plist */,
+				1E2E17A5131E8B5D0048F3C7 /* assets */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -313,24 +313,24 @@
 				1D60588D0D05DD3D006BFB54 /* Resources */,
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
-            ::if (NME_WATCHOS)::
-		      1ECD4B071D521CDE00ED25DA /* Embed Watch Content */,
-            ::end::
+			::if (NME_WATCHOS)::
+			  1ECD4B071D521CDE00ED25DA /* Embed Watch Content */,
+			::end::
 			);
 			buildRules = (
 			);
 			dependencies = (
 				1EF0A883121AE1D2003F2F59 /* PBXTargetDependency */,
-            ::if (NME_WATCHOS)::
-	         1ECD4AFE1D521CDE00ED25DA /* PBXTargetDependency */,
-            ::end::
+			::if (NME_WATCHOS)::
+			 1ECD4AFE1D521CDE00ED25DA /* PBXTargetDependency */,
+			::end::
 			);
 			name = "::APP_FILE::"; /* HMMM */
 			productName = "::APP_TITLE::";
 			productReference = 1D6058910D05DD3D006BFB54 /* "::APP_TITLE::.app" */;
 			productType = "com.apple.product-type.application";
 		};
-      ::if (NME_WATCHOS)::
+	  ::if (NME_WATCHOS)::
 		1ECD4ADD1D521CDE00ED25DA /* ::WATCH_FILE:: */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1ECD4B041D521CDE00ED25DA /* Build configuration list for PBXNativeTarget "::WATCH_FILE::" */;
@@ -352,7 +352,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1ECD4B001D521CDE00ED25DA /* Build configuration list for PBXNativeTarget "::WATCH_FILE:: Extension" */;
 			buildPhases = (
-            1E8B88D81D5789F5008FAA07 /* ShellScript */,
+			1E8B88D81D5789F5008FAA07 /* ShellScript */,
 				1ECD4AE61D521CDE00ED25DA /* Sources */,
 				1ECD4AE71D521CDE00ED25DA /* Frameworks */,
 				1ECD4AE81D521CDE00ED25DA /* Resources */,
@@ -366,7 +366,7 @@
 			productReference = 1ECD4AEA1D521CDE00ED25DA /* ::WATCH_FILE:: Extension.appex */;
 			productType = "com.apple.product-type.watchkit2-extension";
 		};
-      ::end::
+	  ::end::
 /* End PBXNativeTarget section */
 
 
@@ -392,29 +392,29 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
-         ::if (NME_WATCHOS)::
+		 ::if (NME_WATCHOS)::
 		   attributes = {
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
-                  ::if (DEVELOPMENT_TEAM)::
+				  ::if (DEVELOPMENT_TEAM)::
 						DevelopmentTeam = ::DEVELOPMENT_TEAM::;
-                  ::end::
+				  ::end::
 					};
 					1ECD4ADD1D521CDE00ED25DA = {
 						CreatedOnToolsVersion = 7.3;
-                  ::if (DEVELOPMENT_TEAM)::
+				  ::if (DEVELOPMENT_TEAM)::
 						DevelopmentTeam = ::DEVELOPMENT_TEAM::;
-                  ::end::
+				  ::end::
 					};
 					1ECD4AE91D521CDE00ED25DA = {
-                  ::if (DEVELOPMENT_TEAM)::
+				  ::if (DEVELOPMENT_TEAM)::
 						DevelopmentTeam = ::DEVELOPMENT_TEAM::;
-                  ::end::
+				  ::end::
 						CreatedOnToolsVersion = 7.3;
 					};
 				};
 			};
-         ::end::
+		 ::end::
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "::APP_TITLE::" */;
 			compatibilityVersion = "Xcode 3.2";
 			hasScannedForEncodings = 1;
@@ -428,10 +428,10 @@
 			targets = (
 				1D6058900D05DD3D006BFB54 /* "::APP_TITLE::" */,
 				1EF0A87F121AE1CE003F2F59 /* Build Haxe */,
-            ::if (NME_WATCHOS)::
-	         1ECD4ADD1D521CDE00ED25DA /* ::WATCH_FILE:: */,
+			::if (NME_WATCHOS)::
+			 1ECD4ADD1D521CDE00ED25DA /* ::WATCH_FILE:: */,
 				1ECD4AE91D521CDE00ED25DA /* ::WATCH_FILE:: Extension */,
-            ::end::
+			::end::
 			);
 		};
 /* End PBXProject section */
@@ -441,12 +441,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-                1E2E17AD131E8B5D0048F3C7 /* assets in Resources */,
-	             1E3B11C21854877600E698A8 /* Images.xcassets in Resources */,
+				1E2E17AD131E8B5D0048F3C7 /* assets in Resources */,
+				 1E3B11C21854877600E698A8 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-      ::if (NME_WATCHOS)::
+	  ::if (NME_WATCHOS)::
 		1ECD4ADC1D521CDE00ED25DA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -464,7 +464,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-      ::end::
+	  ::end::
 /* End PBXResourcesBuildPhase section */
 
 ::if (NME_WATCHOS)::
@@ -497,7 +497,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 
-      ::if (NME_WATCHOS)::
+	  ::if (NME_WATCHOS)::
 		1ECD4AE61D521CDE00ED25DA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -509,7 +509,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-      ::end::
+	  ::end::
 
 /* End PBXSourcesBuildPhase section */
 
@@ -530,7 +530,7 @@
 
 
 /* Begin PBXTargetDependency section */
-      ::if (NME_WATCHOS)::
+	  ::if (NME_WATCHOS)::
 		1ECD4AED1D521CDE00ED25DA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 1ECD4AE91D521CDE00ED25DA /* WatchOsProductName Extension */;
@@ -541,7 +541,7 @@
 			target = 1ECD4ADD1D521CDE00ED25DA /* WatchOsProductName */;
 			targetProxy = 1ECD4AFD1D521CDE00ED25DA /* PBXContainerItemProxy */;
 		};
-      ::end::
+	  ::end::
 		1EF0A883121AE1D2003F2F59 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 1EF0A87F121AE1CE003F2F59 /* Build Haxe */;
@@ -567,7 +567,7 @@
 				::if (OBJC_ARC)::
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_ENABLE_OBJC_ARC = YES;
-         	CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
@@ -579,33 +579,38 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				::end::
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "::KEY_STORE_IDENTITY::";
-            ::if (DEVELOPMENT_TEAM)::
+			::if (DEVELOPMENT_TEAM)::
 				DEVELOPMENT_TEAM = ::DEVELOPMENT_TEAM::;
-            ::end::
+			::end::
 				ENABLE_BITCODE = NO;
-            ENABLE_STRICT_OBJC_MSGSEND = YES;
-	         ENABLE_TESTABILITY = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
-            GCC_NO_COMMON_BLOCKS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-            GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				CC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-            GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-            GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = ::DEPLOYMENT::;
+			::if (NME_IOS_OPTIMIZE_LINK_THIN)::
+				LLVM_LTO = YES_THIN;
+			::elseif (NME_IOS_OPTIMIZE_LINK)::
+				LLVM_LTO = YES;
+			::end::
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "::TARGET_DEVICES::";
-            	::THUMB_SUPPORT::
+				::THUMB_SUPPORT::
 				VALID_ARCHS = "::VALID_ARCHS::";
 			};
 			name = Debug;
@@ -634,12 +639,15 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				::end::
-            ::if (DEVELOPMENT_TEAM)::
+			::if (NME_IOS_PRODUCTION_COMPILE)::
+				DEBUG_INFORMATION_FORMAT = dwarf;
+			::end::
+			::if (DEVELOPMENT_TEAM)::
 				DEVELOPMENT_TEAM = ::DEVELOPMENT_TEAM::;
-            ::end::
+			::end::
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "::KEY_STORE_IDENTITY::";
 				ENABLE_BITCODE = NO;
-            ENABLE_STRICT_OBJC_MSGSEND = YES;
+			ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -652,11 +660,26 @@
 				/* GCC_ENABLE_SYMBOL_SEPARATION = YES; */
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = ::DEPLOYMENT::;
+		::if (NME_IOS_OPTIMIZE_LINK_THIN)::
+				LLVM_LTO = YES_THIN;
+				GCC_OPTIMIZATION_LEVEL = fast;
+		::else::
+			::if (NME_IOS_OPTIMIZATION_LEVEL)::
+				GCC_OPTIMIZATION_LEVEL = ::NME_IOS_OPTIMIZATION_LEVEL::;
+		        ::elseif (NME_IOS_PRODUCTION_COMPILE)::
+				GCC_OPTIMIZATION_LEVEL = 2;
+		        ::end::
+			::end::				
+		::end::
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				/* PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES; */
+
+		::if (NME_IOS_PRODUCTION_COMPILE)::
+				ONLY_ACTIVE_ARCH = YES;
+		::end::
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "::TARGET_DEVICES::";
-            	::THUMB_SUPPORT::
+				::THUMB_SUPPORT::
 				VALID_ARCHS = "::VALID_ARCHS::";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -667,16 +690,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage";
-            CLANG_CXX_LIBRARY = "libc++";
-            GCC_INPUT_FILETYPE = automatic;
+				CLANG_CXX_LIBRARY = "libc++";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_OPTIMIZATION_LEVEL = 0;
+			GCC_INPUT_FILETYPE = automatic;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "::APP_FILE::/::APP_FILE::-Prefix.pch";
 				INFOPLIST_FILE = "::APP_FILE::/::APP_FILE::-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-	         PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::;
+			 PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::;
 				WRAPPER_EXTENSION = app;
 
-	            "LIBRARY_SEARCH_PATHS[arch=armv6]" = (
+				"LIBRARY_SEARCH_PATHS[arch=armv6]" = (
 					"$(inherited)",
 					"\"$(SRCROOT)/::APP_FILE::/lib/armv6-debug\"",
 					"\"$(SRCROOT)/::APP_FILE::/lib/armv6\"",
@@ -701,11 +726,16 @@
 					"\"$(SRCROOT)/::APP_FILE::/lib/x86_64-debug\"",
 					"\"$(SRCROOT)/::APP_FILE::/lib/x86_64\"",
 				);
-            ::if (NME_IOS_INCLUDE)::
-            USER_HEADER_SEARCH_PATHS = "::NME_IOS_INCLUDE::";
-            ::end::
+				::if (NME_IOS_INCLUDE)::
+				USER_HEADER_SEARCH_PATHS = "::NME_IOS_INCLUDE::";
+				::end::
+			::if (NME_IOS_OPTIMIZE_LINK_THIN)::
+				LLVM_LTO = YES_THIN;
+			::elseif (NME_IOS_OPTIMIZE_LINK)::
+				LLVM_LTO = YES;
+			::end::
 
-		        OTHER_LDFLAGS = (
+				OTHER_LDFLAGS = (
 					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
 					::foreach linkedLibraries:: "::__current__::",
@@ -721,7 +751,7 @@
 
 
 
-      ::if (NME_WATCHOS)::
+	  ::if (NME_WATCHOS)::
 		1ECD4B011D521CDE00ED25DA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -752,10 +782,10 @@
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
-            VALID_ARCHS = "armv7k i386";
-            ::if (DEVELOPMENT_TEAM)::
+			VALID_ARCHS = "armv7k i386";
+			::if (DEVELOPMENT_TEAM)::
 				DEVELOPMENT_TEAM = ::DEVELOPMENT_TEAM::;
-            ::end::
+			::end::
 				WATCHOS_DEPLOYMENT_TARGET = ::WATCHOS_DEPLOYMENT_TARGET::;
 
 				"LIBRARY_SEARCH_PATHS[arch=armv7k]" = (
@@ -769,18 +799,18 @@
 
 				"USER_HEADER_SEARCH_PATHS[arch=armv7k]" = (
 					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/armv7k\"",
-               "../watchos/haxe/cpp/include",
-               "::HXCPP_INCLUDE_DIR::"
+			   "../watchos/haxe/cpp/include",
+			   "::HXCPP_INCLUDE_DIR::"
 				);
 				"USER_HEADER_SEARCH_PATHS[arch=i386]" = (
 					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/i386\"",
-               "../watchos/haxe/cpp/include",
-               "::HXCPP_INCLUDE_DIR::"
+			   "../watchos/haxe/cpp/include",
+			   "::HXCPP_INCLUDE_DIR::"
 				);
    
-            ::if (NME_WATCHOS_INCLUDE_not)::
-            USER_HEADER_SEARCH_PATHS = "::NME_WATCHOS_INCLUDE::";
-            ::end::
+			::if (NME_WATCHOS_INCLUDE_not)::
+			USER_HEADER_SEARCH_PATHS = "::NME_WATCHOS_INCLUDE::";
+			::end::
 				OTHER_LDFLAGS = (
 					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
@@ -810,10 +840,19 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				COPY_PHASE_STRIP = NO;
+			::if (NME_IOS_PRODUCTION_COMPILE)::
+				DEBUG_INFORMATION_FORMAT = dwarf;
+			::else::
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+			::end::
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
+			::if (NME_IOS_OPTIMIZATION_LEVEL)::
+				GCC_OPTIMIZATION_LEVEL = ::NME_IOS_OPTIMIZATION_LEVEL::;
+		    ::elseif (NME_IOS_PRODUCTION_COMPILE)::
+				GCC_OPTIMIZATION_LEVEL = 2;
+			::end::
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -838,9 +877,15 @@
 					"\"$(SRCROOT)/::WATCH_FILE:: Extension/lib/i386\"",
 				);
 
-            ::if (NME_WATCHOS_INCLUDE)::
-            USER_HEADER_SEARCH_PATHS = "::NME_WATCHOS_INCLUDE::";
-            ::end::
+			::if (NME_WATCHOS_INCLUDE)::
+			USER_HEADER_SEARCH_PATHS = "::NME_WATCHOS_INCLUDE::";
+			::end::
+
+			::if (NME_IOS_OPTIMIZE_LINK_THIN)::
+				LLVM_LTO = YES_THIN;
+			::elseif (NME_IOS_OPTIMIZE_LINK)::
+				LLVM_LTO = YES;
+			::end::
 				OTHER_LDFLAGS = (
 					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
@@ -907,7 +952,11 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				COPY_PHASE_STRIP = NO;
+			::if (NME_IOS_PRODUCTION_COMPILE)::
+				DEBUG_INFORMATION_FORMAT = dwarf;
+			::else::
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+			::end::
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -924,10 +973,10 @@
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
-            VALID_ARCHS = "armv7k i386";
-            ::if (DEVELOPMENT_TEAM)::
+			VALID_ARCHS = "armv7k i386";
+			::if (DEVELOPMENT_TEAM)::
 				DEVELOPMENT_TEAM = ::DEVELOPMENT_TEAM::;
-            ::end::
+			::end::
 				WATCHOS_DEPLOYMENT_TARGET = ::WATCHOS_DEPLOYMENT_TARGET::;
 			};
 			name = Release;
@@ -941,15 +990,24 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage";
-            CLANG_CXX_LIBRARY = "libc++";
+			CLANG_CXX_LIBRARY = "libc++";
+
+			::if (NME_IOS_PRODUCTION_COMPILE)::
+				DEBUG_INFORMATION_FORMAT = dwarf;
+			::end::
+			::if (NME_IOS_OPTIMIZATION_LEVEL)::
+				GCC_OPTIMIZATION_LEVEL = ::NME_IOS_OPTIMIZATION_LEVEL::;
+		    ::elseif (NME_IOS_PRODUCTION_COMPILE)::
+				GCC_OPTIMIZATION_LEVEL = 2;
+			::end::
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "::APP_FILE::/::APP_FILE::-Prefix.pch";
 				INFOPLIST_FILE = "::APP_FILE::/::APP_FILE::-Info.plist";
-	         PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::;
+			 	PRODUCT_BUNDLE_IDENTIFIER = ::APP_PACKAGE::;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 
-            	"LIBRARY_SEARCH_PATHS[arch=armv6]" = (
+				"LIBRARY_SEARCH_PATHS[arch=armv6]" = (
 					"$(inherited)",
 					"\"$(SRCROOT)/::APP_FILE::/lib/armv6\"",
 				);
@@ -969,9 +1027,9 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/::APP_FILE::/lib/x86_64\"",
 				);
-            ::if (NME_IOS_INCLUDE)::
-            USER_HEADER_SEARCH_PATHS = "::NME_IOS_INCLUDE::";
-            ::end::
+			::if (NME_IOS_INCLUDE)::
+			USER_HEADER_SEARCH_PATHS = "::NME_IOS_INCLUDE::";
+			::end::
 				OTHER_LDFLAGS = (
 					::foreach ndlls:: ::if (importStatic==""):: "-l::name::", ::end::
 					::end::
@@ -1018,12 +1076,19 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				::end::
+			::if (NME_IOS_OPTIMIZE_LINK)::
+				GCC_OPTIMIZATION_LEVEL = fast;
+			::else if (NME_IOS_OPTIMIZATION_LEVEL)::
+				GCC_OPTIMIZATION_LEVEL = ::NME_IOS_OPTIMIZATION_LEVEL::;
+		    ::elseif (NME_IOS_PRODUCTION_COMPILE)::
+				GCC_OPTIMIZATION_LEVEL = 2;
+			::end::	
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-                ZERO_LINK = NO;
+				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -1043,7 +1108,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-      ::if (NME_WATCHOS)::
+	  ::if (NME_WATCHOS)::
 		1ECD4B001D521CDE00ED25DA /* Build configuration list for PBXNativeTarget "::WATCH_FILE:: Extension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
