@@ -215,12 +215,13 @@ class IconHelper
                var g = bits.readByte();
                var b = bits.readByte();
                var a = bits.readByte();
+
                ico.writeByte(b);
                ico.writeByte(g);
                ico.writeByte(r);
                ico.writeByte(a);
 
-               if (a == 0)
+               if ((a&0x80) == 0)
                   mask |= bit;
 
                bit = bit >> 1;
