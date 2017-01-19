@@ -1,6 +1,7 @@
 using StringTools;
 import sys.FileSystem;
 
+// When used with js, name=name on server, path (if present) = source path
 class Dependency
 {
    public var name:String;

@@ -1370,11 +1370,6 @@ class CommandLineTools
          case "create":
             createTemplate();
 
-         case "serve":
-            var server = new nme.net.http.Server(function(a,b) { } );
-            server.listen(8080);
-            server.untilDeath();
-
          case "shell":
             var deploy = project.hasDef("deploy") ? project.getDef("deploy") : getValue("deploy");
             var parsed = parseDeploy(deploy,true,true);
@@ -1724,7 +1719,8 @@ class CommandLineTools
 
       if (command=="")
       {
-         displayInfo(true);
+         if (!Log.mVerbose)
+            displayInfo(true);
          command = "test";
          assumedTest = true;
       }
