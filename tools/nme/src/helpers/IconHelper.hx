@@ -133,6 +133,11 @@ class IconHelper
 
       return false;
    }
+   
+   private static inline function alignTo(val:Int, align:Int):Int
+   {
+        return ((val + align - 1) & ~(align - 1));
+   }
 
    public static function createWindowsIcon(icons:Array<Icon>, targetPath:String):Bool 
    {
@@ -162,7 +167,7 @@ class IconHelper
       {
          var size = bmp.width;
          var xor_size = size * size * 4;
-         var and_size = size * size >> 3;
+         var and_size = size * alignTo(size >> 3, 4);
          ico.writeByte(size);
          ico.writeByte(size);
          ico.writeByte(0); // palette
@@ -178,7 +183,7 @@ class IconHelper
       {
          var size = bmp.width;
          var xor_size = size * size * 4;
-         var and_size = size * size >> 3;
+         var and_size = size * alignTo(size >> 3, 4);
 
          ico.writeInt(40); // size(bytes)
          ico.writeInt(size);
@@ -192,7 +197,7 @@ class IconHelper
          ico.writeInt(0); // cols
          ico.writeInt(0); // important
 
-         var bits = bmp.getPixels(new Rectangle(0, 0, size, size));
+         var bits = BitmapData.getRGBAPixels(bmp);
          var and_mask = new ByteArray();
 
          for(y in 0...size) 
@@ -201,19 +206,23 @@ class IconHelper
             var bit = 128;
             bits.position = (size-1 - y) * 4 * size;
 
-            for(i in 0...size) 
+            for(i in 0...alignTo(size,32)) 
             {
-               var a = bits.readByte();
-               var r = bits.readByte();
-               var g = bits.readByte();
-               var b = bits.readByte();
-               ico.writeByte(b);
-               ico.writeByte(g);
-               ico.writeByte(r);
-               ico.writeByte(a);
+               if(i<size)
+               {
+                  var r = bits.readByte();
+                  var g = bits.readByte();
+                  var b = bits.readByte();
+                  var a = bits.readByte();
 
-               if (a < 128)
-                  mask |= bit;
+                  ico.writeByte(b);
+                  ico.writeByte(g);
+                  ico.writeByte(r);
+                  ico.writeByte(a);
+
+                  if ((a&0x80) == 0)
+                     mask |= bit;
+               }
 
                bit = bit >> 1;
 
