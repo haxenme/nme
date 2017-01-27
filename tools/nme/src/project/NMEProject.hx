@@ -398,6 +398,7 @@ class NMEProject
 
             if (architectures.length==0)
                architectures = [ PlatformHelper.hostArchitecture ];
+            window.singleInstance = false;
 
          default:
             Log.error("Unknown platform target : " + inTargetName);
