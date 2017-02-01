@@ -629,6 +629,7 @@ class Assets
    }
 
   #if (cpp||neko)
+   @:keep 
    private static var initResources:Dynamic = (function() {
        var nme_set_resource_factory = nme.Loader.load("nme_set_resource_factory", 1);
        if (nme_set_resource_factory!=null)
