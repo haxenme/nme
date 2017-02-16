@@ -63,7 +63,7 @@ class IOSConfig
    public var compiler:String;
    public var deployment:String;
    public var deviceConfig:Int;
-   public var linkerFlags:String;
+   public var linkerFlags:Array<String>;
    public var prerenderedIcon:Bool;
    public var viewTestDir:String;
    public var sourceFlavour:String;
@@ -73,7 +73,7 @@ class IOSConfig
       compiler =  "clang";
       deployment =  "8.0";
       deviceConfig =  UNIVERSAL;
-      linkerFlags =  "";
+      linkerFlags =  new Array();
       viewTestDir =  "";
       prerenderedIcon =  false;
       sourceFlavour = "cpp";
