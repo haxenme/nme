@@ -987,7 +987,7 @@ class NMMLParser
                         project.iosConfig.prerenderedIcon = (substitute(element.att.resolve("prerendered-icon")) == "true");
 
                      if (element.has.resolve("linker-flags")) 
-                        project.iosConfig.linkerFlags = substitute(element.att.resolve("linker-flags"));
+                        project.iosConfig.linkerFlags = project.iosConfig.linkerFlags.concat(substitute(element.att.resolve("linker-flags")).split(" "));
                   }
                default:
                   if (inWarnUnknown)

@@ -262,7 +262,7 @@ ${hxcpp_include}';
       }
 
       context.IOS_COMPILER = config.compiler;
-      context.IOS_LINKER_FLAGS = config.linkerFlags.split(" ").join(", ");
+      context.IOS_LINKER_FLAGS = config.linkerFlags.join(", ");
 
       context.otherLinkerFlags = project.otherLinkerFlags;
       context.frameworkSearchPaths = project.frameworkSearchPaths;
