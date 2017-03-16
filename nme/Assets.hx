@@ -189,6 +189,7 @@ class Assets
    public static function noId(id:String, type:String)
    {
       trace("[nme.Assets] missing asset '" + id + "' of type " + type);
+      //trace(info);
    }
 
    public static function badType(id:String, type:String)
