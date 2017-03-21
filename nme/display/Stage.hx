@@ -660,7 +660,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
             data[inEvent.code] = value;
 
-            evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2]);
+            evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2], data[3]);
             evt.axis = data.copy();
 
             nmeJoyAxisData.set(inEvent.id, data);

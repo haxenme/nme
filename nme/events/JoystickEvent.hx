@@ -18,8 +18,9 @@ class JoystickEvent extends Event
    public var x:Float;
    public var y:Float;
    public var z:Float;
+   public var w:Float;
 
-   public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, device:Int = 0, id:Int = 0, x:Float = 0, y:Float = 0, z:Float = 0) 
+   public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, device:Int = 0, id:Int = 0, x:Float = 0, y:Float = 0, z:Float = 0, w:Float=0) 
    {
       super(type, bubbles, cancelable);
 
@@ -28,18 +29,19 @@ class JoystickEvent extends Event
       this.x = x;
       this.y = y;
       this.z = z;
+      this.w = w;
 
-      axis = [ x, y, z ];
+      axis = [ x, y, z, w ];
    }
 
    public override function clone():Event 
    {
-      return new JoystickEvent(type, bubbles, cancelable, device, id, x, y, z);
+      return new JoystickEvent(type, bubbles, cancelable, device, id, x, y, z, w);
    }
 
    public override function toString():String 
    {
-      return "[JoystickEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " device=" + device + " id=" + id + " x=" + x + " y=" + y + " z=" + z + "]";
+      return "[JoystickEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " device=" + device + " id=" + id + " x=" + x + " y=" + y + " z=" + z + " w="+ w + "]";
    }
 }
 
