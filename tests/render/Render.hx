@@ -71,6 +71,13 @@ class Render extends Sprite
    public function new()
    {
       super();
+      blendMode = LAYER;
+
+      name = "Render main!";
+      var gfx = graphics;
+      gfx.beginFill(0x777777);
+      gfx.drawRect(0,0,800,600);
+
       var bmp = createBmp(false,false);
       var bitmap = new Bitmap(bmp);
       addChild(bitmap);
@@ -80,11 +87,29 @@ class Render extends Sprite
       bitmap.x = 20;
       addChild(bitmap);
 
-      var bmp = createBmp(false,false);
-      var bitmap = new Bitmap(bmp);
-      bitmap.x = 40;
-      bitmap.blendMode = BlendMode.ADD;
-      addChild(bitmap);
+      var y = 20;
+
+      for(prem in 0...2)
+      {
+         var x = 0;
+         for(mode in [ ADD, SCREEN, MULTIPLY, LIGHTEN, DARKEN, DIFFERENCE, SUBTRACT,
+                       OVERLAY, HARDLIGHT, INVERT, ALPHA, ERASE ])
+         {
+            var bmp = createBmp(true,prem>0);
+            var bitmap = new Bitmap(bmp);
+            bitmap.y = y;
+            bitmap.x = x*20;
+            bitmap.blendMode = mode;
+            addChild(bitmap);
+            x++;
+            if (x>8)
+            {
+               x = 0;
+               y+= 20;
+            }
+         }
+         y+=20;
+      }
 
       addEventListener(Event.RESIZE, function(_) resize() );
       resize();

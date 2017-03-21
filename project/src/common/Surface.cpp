@@ -515,6 +515,12 @@ RGB ApplyComponent(const RGB &d, const SRC &s, const FUNC &)
    result.b = FUNC::comp(d.b, s.getB() );
    return result;
 }
+template<typename SRC, typename FUNC>
+void UpdateAlpha(RGB &d, const SRC &s, const FUNC &)
+{
+}
+
+
 
 template<typename SRC, typename FUNC>
 ARGB ApplyComponent(const ARGB &d, const SRC &s, const FUNC &)
@@ -527,16 +533,64 @@ ARGB ApplyComponent(const ARGB &d, const SRC &s, const FUNC &)
    return result;
 }
 
+template<typename SRC, typename FUNC>
+void UpdateAlpha(ARGB &d, const SRC &s, const FUNC &)
+{
+   d.a = FUNC::alpha(d.a,s.getAlpha());
+}
+
 
 template<typename SRC, typename FUNC>
 BGRPremA ApplyComponent(const BGRPremA &d, const SRC &s, const FUNC &)
 {
    BGRPremA result;
-   result.r = FUNC::comp(d.r, s.getRAlpha() );
-   result.g = FUNC::comp(d.g, s.getGAlpha() );
-   result.b = FUNC::comp(d.b, s.getBAlpha() );
-   result.a = FUNC::alpha(d.a, s.getAlpha() );
+   if (FUNC::Unmultiplied)
+   {
+      result.a = FUNC::alpha(d.a, s.getAlpha() );
+      const Uint8 *aLut = gPremAlphaLut[result.a];
+      result.r = aLut[ FUNC::comp(d.getR(), s.getR() ) ];
+      result.g = aLut[ FUNC::comp(d.getG(), s.getG() ) ];
+      result.b = aLut[ FUNC::comp(d.getB(), s.getB() ) ];
+   }
+   else
+   {
+      result.r = FUNC::comp(d.r, s.getRAlpha() );
+      result.g = FUNC::comp(d.g, s.getGAlpha() );
+      result.b = FUNC::comp(d.b, s.getBAlpha() );
+      result.a = FUNC::alpha(d.a, s.getAlpha() );
+   }
+
    return result;
+}
+
+template<typename SRC, typename FUNC>
+void UpdateAlpha(BGRPremA &d, const SRC &s, const FUNC &)
+{
+   int a = FUNC::alpha(d.a,s.getAlpha());
+   if (a!=d.a)
+   {
+      if (a<2)
+      {
+         d.ival =0;
+      }
+      else if (a==255)
+      {
+         const Uint8 *from = gUnPremAlphaLut[d.a];
+         d.r = from[d.r];
+         d.g = from[d.g];
+         d.b = from[d.b];
+         d.a = 255;
+      }
+      else
+      {
+         const Uint8 *from = gUnPremAlphaLut[d.a];
+         const Uint8 *to = gPremAlphaLut[a];
+         d.r = to[from[d.r]];
+         d.g = to[from[d.g]];
+         d.b = to[from[d.b]];
+         d.a = a;
+      }
+   }
 }
 
 
@@ -548,11 +602,18 @@ AlphaPixel ApplyComponent(const AlphaPixel &d, const SRC &s, const FUNC &)
    return result;
 }
 
+template<typename SRC, typename FUNC>
+void UpdateAlpha(AlphaPixel &d, const SRC &s, const FUNC &)
+{
+   d.a = FUNC::alpha(d.a,s.getAlpha());
+}
+
 
 // --- Multiply -----
 
 struct MultiplyHandler
 {
+   enum { Unmultiplied = false, AlphaOnly = false };
    static inline uint8 comp(uint8 a, uint8 b) { return ( (a + (a>>7)) * b ) >> 8; }
    static inline uint8 alpha(uint8 a, uint8 b) { return ( (a + (a>>7)) * b ) >> 8; }
 };
@@ -563,6 +624,7 @@ struct MultiplyHandler
 
 struct ScreenHandler
 {
+   enum { Unmultiplied = false, AlphaOnly = false };
    static inline uint8 comp(uint8 a, uint8 b) { return 255 - (((255 - a) * ( 256 - b - (b>>7)))>>8); }
    static inline uint8 alpha(uint8 a, uint8 b) { return 255 - (((255 - a) * ( 256 - b - (b>>7)))>>8); }
 };
@@ -571,131 +633,74 @@ struct ScreenHandler
 // -- Copy --------
 struct CopyHandler
 {
+   enum { Unmultiplied = false, AlphaOnly = false };
    static inline uint8 comp(uint8 a, uint8 b) { return b; }
-   static inline uint8 alpha(uint8 a, uint8 b) { return a; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
 };
 
 
 struct AddHandler
 {
+   enum { Unmultiplied = false, AlphaOnly = false };
    static inline uint8 comp(uint8 a, uint8 b) { return sgClamp0255[a+b]; }
-   static inline uint8 alpha(uint8 a, uint8 b) { return sgClamp0255[a+b]; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return a; }
 };
 
 
 
+struct LightenHandler
+{
+   enum { Unmultiplied = true, AlphaOnly = false };
+   static inline uint8 comp(uint8 a, uint8 b) { return b>a ? b:a; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
+};
+
+
+struct DarkenHandler
+{
+   enum { Unmultiplied = true, AlphaOnly = false };
+   static inline uint8 comp(uint8 a, uint8 b) { return b<a ? b:a; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
+};
+
+
+struct DifferenceHandler
+{
+   enum { Unmultiplied = true, AlphaOnly = false };
+   static inline uint8 comp(uint8 a, uint8 b) { return b<a ? a-b : b-a; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
+};
+
+
+struct SubtractHandler
+{
+   enum { Unmultiplied = false, AlphaOnly = false };
+   static inline uint8 comp(uint8 a, uint8 b) { return sgClamp0255[(int)a-b]; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return a; }
+};
+
+
+struct HardLightHandler
+{
+   enum { Unmultiplied = true, AlphaOnly = false };
+   static inline uint8 comp(uint8 a, uint8 b) { return b>127 ? ScreenHandler::comp(a,b) : MultiplyHandler::comp(a,b); }
+   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
+};
+
+struct OverlayHandler
+{
+   enum { Unmultiplied = true, AlphaOnly = false };
+
+   // TODO - seems to match flash when i use 'b>127', not 'a>127'
+   static inline uint8 comp(uint8 a, uint8 b) { return b>127 ? ScreenHandler::comp(a,b) : MultiplyHandler::comp(a,b); }
+   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
+};
+
+//
+// Blend the colour, take the alpha - special case?
+//
 #if 0
-template<bool DEST_ALPHA> void ScreenFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoScreen()); }
-
-// --- Lighten -----
-
-struct DoLighten
-{
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-   { if (inDest > ioVal ) ioVal = inDest; }
-};
-
-template<bool DEST_ALPHA> void LightenFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoLighten()); }
-
-// --- Darken -----
-
-struct DoDarken
-{
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-   { if (inDest < ioVal ) ioVal = inDest; }
-};
-
-template<bool DEST_ALPHA> void DarkenFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoDarken()); }
-
-// --- Difference -----
-
-struct DoDifference
-{
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-   { if (inDest < ioVal ) ioVal -= inDest; else ioVal = inDest-ioVal; }
-};
-
-template<bool DEST_ALPHA> void DifferenceFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoDifference()); }
-
-// --- Add -----
-
-// --- Subtract -----
-
-struct DoSubtract
-{
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-   { ioVal = sgClamp0255[inDest-ioVal]; }
-};
-
-template<bool DEST_ALPHA> void SubtractFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoSubtract()); }
-
-// --- Invert -----
-
-struct DoInvert
-{
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-   { ioVal = 255 - inDest; }
-};
-
-template< bool DEST_ALPHA> void InvertFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoInvert()); }
-
-// --- Alpha -----
-
-template<bool DEST_ALPHA> void AlphaFunc(ARGB &ioDest, ARGB inSrc)
-{
-   if (DEST_ALPHA)
-      ioDest.a = (ioDest.a * ( inSrc.a + (inSrc.a>>7))) >> 8;
-}
-
-// --- Erase -----
-
-template< bool DEST_ALPHA> void EraseFunc(ARGB &ioDest, ARGB inSrc)
-{
-   if (DEST_ALPHA)
-      ioDest.a = (ioDest.a * ( 256-inSrc.a - (inSrc.a>>7))) >> 8;
-}
-
-// --- Overlay -----
-
-/*
-struct DoOverlay
-{
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-   { if (inDest>127) DoScreen()(ioVal,inDest); else DoMult()(ioVal,inDest); }
-};
-*/
-
-template<bool DEST_ALPHA> void OverlayFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoOverlay()); }
-
-// --- HardLight -----
-
-   /*
-struct DoHardLight
-{
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-   { if (ioVal>127) DoScreen()(ioVal,inDest); else DoMult()(ioVal,inDest); }
-};
-*/
-
-template<bool DEST_ALPHA> void HardLightFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoHardLight()); }
-
-// -- Set ---------
-
-template<bool DEST_ALPHA> void CopyFunc(ARGB &ioDest, ARGB inSrc)
-{
-   ioDest = inSrc;
-}
-
 // -- Inner ---------
-
 template<bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
 {
    int A = inSrc.a;
@@ -707,6 +712,44 @@ template<bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
    }
 }
 #endif
+struct InnerHandler
+{
+   enum { Unmultiplied = true, AlphaOnly = false };
+
+   // TODO - seems to match flash when i use 'b>127', not 'a>127'
+   static inline uint8 comp(uint8 a, uint8 b) { return b; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
+};
+
+
+
+// Only depends on incoming alpha ...
+struct InvertHandler
+{
+   enum { Unmultiplied = true, AlphaOnly = false };
+   static inline uint8 comp(uint8 a, uint8 b) { return 255-a; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
+};
+
+
+struct AlphaHandler
+{
+   enum { Unmultiplied = true, AlphaOnly = true };
+   static inline uint8 comp(uint8 a, uint8 b) { return a; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
+};
+
+
+struct EraseHandler
+{
+   enum { Unmultiplied = true, AlphaOnly = true };
+   static inline uint8 comp(uint8 a, uint8 b) { return a; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return gPremAlphaLut[a][b]; }
+};
+
+
+
+
 
 template<typename DEST, typename SOURCE, typename MASK>
 void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
@@ -723,7 +766,10 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
             for(int x=0;x<inSrcRect.w;x++) \
             { \
                typename DEST::Pixel &dest = outDest.Next(); \
-               BlendPixel(dest,ApplyComponent(dest,inMask.Mask(inSrc.Next()),mode##Handler() ) ); \
+               if (mode##Handler::AlphaOnly) \
+                  UpdateAlpha(dest,inMask.Mask(inSrc.Next()),mode##Handler() ); \
+               else \
+                  BlendPixel(dest,ApplyComponent(dest,inMask.Mask(inSrc.Next()),mode##Handler() ) ); \
             } \
             break;
 
@@ -733,7 +779,6 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
          BLEND_CASE(Screen)
          BLEND_CASE(Copy)
          BLEND_CASE(Add)
-         /*
          BLEND_CASE(Lighten)
          BLEND_CASE(Darken)
          BLEND_CASE(Difference)
@@ -744,7 +789,6 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
          BLEND_CASE(Overlay)
          BLEND_CASE(HardLight)
          BLEND_CASE(Inner)
-         */
       }
    }
 }
