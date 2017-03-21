@@ -3,6 +3,8 @@ import nme.utils.ByteArrayTools;
 import nme.display.BitmapData;
 import nme.display.Bitmap;
 import nme.display.Sprite;
+import nme.display.BlendMode;
+import nme.events.Event;
 import nme.geom.Rectangle;
 import nme.geom.Matrix;
 using cpp.NativeMath;
@@ -69,12 +71,6 @@ class Render extends Sprite
    public function new()
    {
       super();
-      var dpiScale = nme.system.Capabilities.screenDPI/96;
-      if (dpiScale<1.5)
-          dpiScale = 1.0;
-      scaleX = scaleY = 10*dpiScale;
-
-
       var bmp = createBmp(false,false);
       var bitmap = new Bitmap(bmp);
       addChild(bitmap);
@@ -83,6 +79,26 @@ class Render extends Sprite
       var bitmap = new Bitmap(bmp);
       bitmap.x = 20;
       addChild(bitmap);
+
+      var bmp = createBmp(false,false);
+      var bitmap = new Bitmap(bmp);
+      bitmap.x = 40;
+      bitmap.blendMode = BlendMode.ADD;
+      addChild(bitmap);
+
+      addEventListener(Event.RESIZE, function(_) resize() );
+      resize();
+   }
+
+   function resize()
+   {
+      /*
+      var dpiScale = nme.system.Capabilities.screenDPI/96;
+      if (dpiScale<1.5)
+          dpiScale = 1.0;
+      scaleX = scaleY = 10*dpiScale;
+      */
+      scaleX = scaleY = 4;
    }
 }
 

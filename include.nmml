@@ -7,6 +7,5 @@
    <asset name="Cousine-Regular.ttf" id="_monospace" embed="true"/>
 </assets>
 
-<classpath name="lyre" if="html5" />
 
 </project>

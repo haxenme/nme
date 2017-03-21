@@ -576,6 +576,13 @@ struct CopyHandler
 };
 
 
+struct AddHandler
+{
+   static inline uint8 comp(uint8 a, uint8 b) { return sgClamp0255[a+b]; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return sgClamp0255[a+b]; }
+};
+
+
 
 #if 0
 template<bool DEST_ALPHA> void ScreenFunc(ARGB &ioDest, ARGB inSrc)
@@ -615,15 +622,6 @@ template<bool DEST_ALPHA> void DifferenceFunc(ARGB &ioDest, ARGB inSrc)
    { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoDifference()); }
 
 // --- Add -----
-
-struct DoAdd
-{
-   inline void operator()(uint8 &ioVal,uint8 inDest) const
-   { ioVal = sgClamp0255[ioVal+inDest]; }
-};
-
-template< bool DEST_ALPHA> void AddFunc(ARGB &ioDest, ARGB inSrc)
-   { BlendFuncWithAlpha<DEST_ALPHA>(ioDest,inSrc,DoAdd()); }
 
 // --- Subtract -----
 
@@ -734,11 +732,11 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
          BLEND_CASE(Multiply)
          BLEND_CASE(Screen)
          BLEND_CASE(Copy)
+         BLEND_CASE(Add)
          /*
          BLEND_CASE(Lighten)
          BLEND_CASE(Darken)
          BLEND_CASE(Difference)
-         BLEND_CASE(Add)
          BLEND_CASE(Subtract)
          BLEND_CASE(Invert)
          BLEND_CASE(Alpha)
