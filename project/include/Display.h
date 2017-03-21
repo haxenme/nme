@@ -520,6 +520,7 @@ enum WindowFlags
    wfRequireShaders = 0x00000100,
    wfDepthBuffer    = 0x00000200,
    wfStencilBuffer  = 0x00000400,
+   wfSingleInstance = 0x00000800,
 };
 
 void StartAnimation();

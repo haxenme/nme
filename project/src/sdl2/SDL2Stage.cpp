@@ -17,6 +17,9 @@
 #include <Utils.h>
 #endif
 
+#if defined(HX_WINDOWS) && !defined(HX_WINRT)
+#define NME_WINDOWS_SINGLE_INSTANCE
+#endif
 
 namespace nme
 {
@@ -28,6 +31,9 @@ static bool sgJoystickEnabled = false;
 static int  sgShaderFlags = 0;
 static bool sgIsOGL2 = false;
 const int sgJoystickDeadZone = 1000;
+#ifdef NME_WINDOWS_SINGLE_INSTANCE 
+static HANDLE sgMutexRunning = NULL;
+#endif
 
 enum { NO_TOUCH = -1 };
 
@@ -297,7 +303,15 @@ public:
       }
       mPrimarySurface->DecRef();
       SDL_DestroyRenderer(mSDLRenderer);
-      SDL_DestroyWindow(mSDLWindow);
+      SDL_DestroyWindow(mSDLWindow); 
+
+      #ifdef NME_WINDOWS_SINGLE_INSTANCE
+      if ( sgMutexRunning )
+      {
+         ReleaseMutex( sgMutexRunning );
+         sgMutexRunning = NULL;
+      }
+      #endif
    }
    
    
@@ -1482,7 +1496,24 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    }
    #endif
 
-
+   #ifdef NME_WINDOWS_SINGLE_INSTANCE
+   bool singleInstance = (inFlags & wfSingleInstance) != 0;
+   if (singleInstance)
+   {
+      // Detect previous instances of game
+      HANDLE sgMutexRunning = OpenMutex( MUTEX_ALL_ACCESS, 0, inTitle );
+      if ( !sgMutexRunning )
+      {
+         sgMutexRunning = CreateMutex( 0, 0, inTitle );
+      }
+      else
+      {
+         MessageBox( NULL, (LPCSTR)"An instance of the game is already running.",
+                           (LPCSTR)"Application already running", MB_ICONWARNING | MB_OK );
+         return;
+      }
+   }
+   #endif   
    
    sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
 
@@ -1926,6 +1957,14 @@ void StartAnimation()
 
    Event deactivate(etDeactivate);
    sgSDLFrame->ProcessEvent(deactivate);
+      
+#ifdef NME_WINDOWS_SINGLE_INSTANCE
+   if ( sgMutexRunning )
+   {
+      ReleaseMutex( sgMutexRunning );
+	  sgMutexRunning = NULL;
+   }
+#endif
    
    Event kill(etDestroyHandler);
    sgSDLFrame->ProcessEvent(kill);

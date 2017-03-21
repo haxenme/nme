@@ -172,7 +172,8 @@ class ApplicationMain
          (::WIN_VSYNC:: ? nme.app.Application.VSYNC : 0) |
          (::WIN_FULLSCREEN:: ? nme.app.Application.FULLSCREEN : 0) |
          (::WIN_ANTIALIASING:: == 4 ? nme.app.Application.HW_AA_HIRES : 0) |
-         (::WIN_ANTIALIASING:: == 2 ? nme.app.Application.HW_AA : 0);
+         (::WIN_ANTIALIASING:: == 2 ? nme.app.Application.HW_AA : 0)|
+         (::WIN_SINGLE_INSTANCE:: ? nme.app.Application.SINGLE_INSTANCE : 0);
 
 
          #if nme_application
