@@ -76,6 +76,10 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var isOpenGL(get, never):Bool;
    // Is this used?  Could not tell where "event.down" is being set, therefore this would appear useless
    //public var onKey:Int -> Bool -> Int -> Int -> Void; 
+
+   // Set for custom exception processing
+   public var exceptionHandler:Dynamic->Array<StackItem>->Void;
+
    public var pauseWhenDeactivated:Bool;
    public var quality(get, set):StageQuality;
    public var scaleMode(get, set):StageScaleMode;
@@ -461,9 +465,14 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void
    {
-      trace("Exception: " + exception+"\n" + haxe.CallStack.toString(stack));
-      trace("\n\n\n===Terminating===\n.");
-      throw "Unhandled exception:" + exception;
+      if (exceptionHandler!=null)
+         exceptionHandler(exception,stack);
+      else
+      {
+         trace("Exception: " + exception+"\n" + haxe.CallStack.toString(stack));
+         trace("\n\n\n===Terminating===\n.");
+         throw "Unhandled exception:" + exception;
+      }
    }
  
 
