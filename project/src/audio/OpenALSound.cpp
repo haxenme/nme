@@ -142,13 +142,18 @@ public:
    {
       clRemoveChannel(this);
 
-      if (!openal_is_shutdown && sourceId && playing())
+      if (!openal_is_shutdown && sourceId)
       {
-         alSourceStop(sourceId);
-         check("stop");
+         if (playing()) 
+         {
+            alSourceStop(sourceId);
+            check("stop");
+         }
+         alSourcei(sourceId, AL_BUFFER, 0);
+         alDeleteSources(1, &sourceId);
       }
       sourceId = 0;
-
+   
       if (soundObject)
       {
          soundObject->DecRef();
