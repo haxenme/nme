@@ -1,4 +1,19 @@
 
+5.7
+--------------------------
+
+* Numerous other contributions - thanks everyone!
+* Added some polygon clipping options
+* More towards premultiplied alpha
+* Some more openfl compatibility
+* Fix tile sub-pixel offsets
+* Android immersive mode fixes
+* More native text options
+* Move towards toolkit builds
+* Optionally lock out multiplle instances of application
+* Add smaller and lower-res icons for windows
+* Fix issues with freeing sound buffers
+* Add ios watch support
 * ios default deployment set to "8.0".  Can be overridden with the 'deployment' attribute in the ios tag.
 * Fix static linking flags
 
