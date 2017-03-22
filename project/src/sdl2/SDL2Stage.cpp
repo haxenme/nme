@@ -1606,8 +1606,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       
       #ifdef HX_WINDOWS
       HINSTANCE handle = ::GetModuleHandle(0);
-      LPARAM icon = (LPARAM)::LoadImage(handle, MAKEINTRESOURCE(101), IMAGE_ICON, 
+      LPSTR resource = MAKEINTRESOURCE(101);
+      LPARAM icon = (LPARAM)::LoadImage(handle, resource, IMAGE_ICON, 
          GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
+      LPARAM smicon = (LPARAM)::LoadImage(handle, resource, IMAGE_ICON, 
+         GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
       
       if (icon)
       {
@@ -1617,7 +1620,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          {
             HWND hwnd = wminfo.info.win.window;
             ::SendMessage(hwnd, WM_SETICON, ICON_BIG, icon);
-            ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, icon);
+            if(smicon)
+                ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, smicon);
+            else
+                ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, icon);
          }
       }
       #endif
