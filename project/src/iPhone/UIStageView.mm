@@ -1837,6 +1837,29 @@ NMEStage::~NMEStage()
 void NMEStage::PopupKeyboard(PopupKeyboardMode inMode, WString *)
 {
   popupEnabled = inMode!=pkmOff;
+  if(popupEnabled){
+      DisplayObject *fobj = GetFocusObject();
+      int softKeyboard = 0;
+      if(fobj)
+          softKeyboard = fobj->getSoftKeyboard();
+      else
+          softKeyboard = getSoftKeyboard();
+
+      if(softKeyboard == 1)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeNamePhonePad;
+      else if(softKeyboard == 4)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
+      else if(softKeyboard == 5)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeURL;
+      else if(softKeyboard == 3)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeNumberPad;
+      else if(softKeyboard == 2)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeEmailAddress;
+      else if(softKeyboard == 102)
+          nmeView->mTextField.keyboardType = UIKeyboardTypeASCIICapable;
+      else //default
+          nmeView->mTextField.keyboardType = UIKeyboardTypeDefault;
+  }
   [ nmeView enableKeyboard:popupEnabled];
 }
  

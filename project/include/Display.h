@@ -112,6 +112,8 @@ public:
    void setHitEnabled(bool inVal) { hitEnabled = inVal; }
    bool getNeedsSoftKeyboard() { return needsSoftKeyboard; }
    void setNeedsSoftKeyboard(bool inVal) { needsSoftKeyboard = inVal; }
+   int getSoftKeyboard() { return softKeyboard; }
+   void setSoftKeyboard(int inType) { softKeyboard = inType; }
    bool getMovesForSoftKeyboard() { return movesForSoftKeyboard; }
    void setMovesForSoftKeyboard(bool inVal) { movesForSoftKeyboard = inVal; }
    bool getCacheAsBitmap() { return cacheAsBitmap; }
@@ -160,6 +162,7 @@ public:
    bool   mouseEnabled;
    bool   hitEnabled;
    bool   needsSoftKeyboard;
+   int    softKeyboard;
    bool   movesForSoftKeyboard;
 
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
