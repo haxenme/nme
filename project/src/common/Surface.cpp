@@ -696,31 +696,6 @@ struct OverlayHandler
    static inline uint8 alpha(uint8 a, uint8 b) { return b; }
 };
 
-//
-// Blend the colour, take the alpha - special case?
-//
-#if 0
-// -- Inner ---------
-template<bool DEST_ALPHA> void InnerFunc(ARGB &ioDest, ARGB inSrc)
-{
-   int A = inSrc.a;
-   if (A)
-   {
-      ioDest.r += ((inSrc.r - ioDest.r)*A)>>8;
-      ioDest.g += ((inSrc.g - ioDest.g)*A)>>8;
-      ioDest.b += ((inSrc.b - ioDest.b)*A)>>8;
-   }
-}
-#endif
-struct InnerHandler
-{
-   enum { Unmultiplied = true, AlphaOnly = false };
-
-   // TODO - seems to match flash when i use 'b>127', not 'a>127'
-   static inline uint8 comp(uint8 a, uint8 b) { return b; }
-   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
-};
-
 
 
 // Only depends on incoming alpha ...
@@ -736,7 +711,7 @@ struct AlphaHandler
 {
    enum { Unmultiplied = true, AlphaOnly = true };
    static inline uint8 comp(uint8 a, uint8 b) { return a; }
-   static inline uint8 alpha(uint8 a, uint8 b) { return b; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return gPremAlphaLut[b][a]; }
 };
 
 
@@ -744,8 +719,27 @@ struct EraseHandler
 {
    enum { Unmultiplied = true, AlphaOnly = true };
    static inline uint8 comp(uint8 a, uint8 b) { return a; }
-   static inline uint8 alpha(uint8 a, uint8 b) { return gPremAlphaLut[a][b]; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return gPremAlphaLut[255-b][a]; }
 };
+
+
+//
+// Blend the colour, take the alpha - special case?
+//
+// -- Inner ---------
+template<typename DEST, typename SRC> void ApplyInner(DEST &ioDest, SRC inSrc)
+{
+   int A = inSrc.getAlpha();
+   if (A)
+   {
+      int r = ioDest.getR();
+      int g = ioDest.getG();
+      int b = ioDest.getB();
+      ioDest.setR( r + (((inSrc.getR() - r)*A)>>8) );
+      ioDest.setG( g + (((inSrc.getG() - g)*A)>>8) );
+      ioDest.setB( b + (((inSrc.getB() - b)*A)>>8) );
+   }
+}
 
 
 
@@ -784,11 +778,19 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
          BLEND_CASE(Difference)
          BLEND_CASE(Subtract)
          BLEND_CASE(Invert)
-         BLEND_CASE(Alpha)
-         BLEND_CASE(Erase)
          BLEND_CASE(Overlay)
          BLEND_CASE(HardLight)
-         BLEND_CASE(Inner)
+         BLEND_CASE(Alpha)
+         BLEND_CASE(Erase)
+
+         case bmInner:
+            for(int x=0;x<inSrcRect.w;x++)
+            {
+               typename DEST::Pixel &dest = outDest.Next();
+               ApplyInner(dest,inSrc.Next());
+            }
+            break;
+
       }
    }
 }
@@ -1654,7 +1656,7 @@ void SimpleSurface::applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint i
    Rect dest = GetFilteredObjectRect(f,src_rect);
 
    inSrc->IncRef();
-   Surface *result = FilterBitmap(f, inSrc, src_rect, dest, false, ImagePoint(inRect.x,inRect.y) );
+   Surface *result = FilterBitmap(f, inSrc, src_rect, dest, false, false, ImagePoint(inRect.x,inRect.y) );
 
    dest.Translate(inOffset.x, inOffset.y);
 

@@ -656,17 +656,35 @@ void HighlightZeroAlpha(Surface *ioBMP)
 
 
 Surface *FilterBitmap( const FilterList &inFilters, Surface *inBitmap,
-                       const Rect &inSrcRect, const Rect &inDestRect, bool inMakePOW2,
+                       const Rect &inSrcRect, const Rect &inDestRect,
+                       bool inMakePOW2, bool inRecycle,
                        ImagePoint inSrc0)
 {
    int n = inFilters.size();
-   if (n==0)
+   PixelFormat fmt = inBitmap->Format();
+   if (n==0 || (fmt!=pfBGRPremA && fmt!=pfBGRA) )
       return inBitmap;
 
    Rect src_rect = inSrcRect;
 
-
    Surface *bmp = inBitmap;
+
+   if (fmt!=pfBGRA)
+   {
+      if (inRecycle)
+         bmp->ChangeInternalFormat(pfBGRA);
+      else
+      {
+         int w = bmp->Width();
+         int h = bmp->Height();
+         Surface *converted = new SimpleSurface(w,h,pfBGRA);
+         PixelConvert(w,h, bmp->Format(), bmp->Row(0), bmp->GetStride(), 0,
+                           pfBGRA, converted->EditRect(0,0,w,h), converted->GetStride(), 0 );
+         bmp->DecRef();
+         converted->IncRef();
+         bmp = converted;
+      }
+   }
 
    bool do_clear = false;
    for(int i=0;i<n;i++)
@@ -708,6 +726,9 @@ Surface *FilterBitmap( const FilterList &inFilters, Surface *inBitmap,
    }
 
    //HighlightZeroAlpha(bmp);
+
+   if (fmt==pfBGRPremA)
+      bmp->ChangeInternalFormat(pfBGRPremA);
 
    return bmp;
 }
