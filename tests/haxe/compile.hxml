@@ -2,3 +2,4 @@
 -cp ../..
 -main TestMain
 -D HXCPP_M64
+-D toolkit

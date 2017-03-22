@@ -7,8 +7,7 @@ import nme.geom.Matrix;
 import nme.geom.ColorTransform;
 import nme.utils.ByteArray;
 import nme.Loader;
-
-typedef BitmapInt32 = Int;
+import nme.image.PixelFormat;
 
 @:nativeProperty
 class Surface
@@ -18,50 +17,40 @@ class Surface
 
    public static var TRANSPARENT = 0x0001;
    public static var HARDWARE = 0x0002;
-   public static var FORMAT_8888:Int = 0;
-   public static var FORMAT_4444:Int = 1; //16 bit with alpha channel
-   public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
+
+   public static inline var CHANNEL_RED   = 0x0001;
+   public static inline var CHANNEL_GREEN = 0x0002;
+   public static inline var CHANNEL_BLUE  = 0x0004;
+   public static inline var CHANNEL_ALPHA = 0x0008;
 
    public var height(get_height, null):Int;
    public var rect(get_rect, null):Rectangle;
    public var transparent(get_transparent, null):Bool;
    public var width(get_width, null):Int;
+   public var format(get, set):Int;
    public var premultipliedAlpha(get_premultipliedAlpha, set_premultipliedAlpha):Bool;
    public var nmeHandle:Dynamic;
    
-   private var nmeTransparent:Bool;
 
-
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:BitmapInt32, ?inGPUMode:Null<Int>)
+   public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, ?inFillRgb:Int)
    {
-      var fill_col:Int;
-      var fill_alpha:Int;
-      nmeTransparent = inTransparent;
-
-      if (inFillARGB == null)
-      {
-         fill_col = 0xffffff;
-         fill_alpha = 0xff;
-      }
-      else 
-      {
-         fill_col = inFillARGB & 0xffffff;
-         fill_alpha = inFillARGB >>> 24;
-      }
-
-      nmeHandle = null;
-      if (inWidth >= 1 && inHeight >= 1) 
-      {
-         var flags = HARDWARE;
-
-         if (inTransparent)
-            flags |= TRANSPARENT;
-         else
-            fill_alpha = 0xff;
-
-         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, flags, fill_col, fill_alpha, inGPUMode);
-      }
+      if (inWidth>0 && inHeight>0 && inPixelFormat!=PixelFormat.pfNone)
+         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, inPixelFormat, inFillRgb);
    }
+
+
+   public static function createUInt16(width:Int, height:Int) : Surface
+   {
+      return new Surface(width, height, PixelFormat.pfUInt16, 0);
+   }
+
+
+   public static function createUInt32(width:Int, height:Int) : Surface
+   {
+      return new Surface(width, height, PixelFormat.pfUInt32, 0);
+   }
+
+
 
    public function clear(color:Int):Void 
    {
@@ -70,7 +59,7 @@ class Surface
 
    public function clone():Surface 
    {
-      var bm = new Surface(0, 0, transparent);
+      var bm = new Surface(0, 0, PixelFormat.pfNone);
       bm.nmeHandle = nme_bitmap_data_clone(nmeHandle);
       return bm;
    }
@@ -117,7 +106,7 @@ class Surface
    }
 
 
-   public function fillRect(rect:Rectangle, inColour:BitmapInt32):Void 
+   public function fillRect(rect:Rectangle, inColour:Int):Void 
    {
       var a = inColour >>> 24;
       var c = inColour & 0xffffff;
@@ -130,13 +119,13 @@ class Surface
    }
 
    
-   public function floodFill(x:Int, y:Int, color:BitmapInt32):Void
+   public function floodFill(x:Int, y:Int, color:Int):Void
    {
 	  nme_bitmap_data_flood_fill(nmeHandle, x, y, color);
    }
 
    
-   public function getColorBoundsRect(mask:BitmapInt32, color:BitmapInt32, findColor:Bool = true):Rectangle 
+   public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true):Rectangle 
    {
       var result = new Rectangle();
       nme_bitmap_data_get_color_bounds_rect(nmeHandle, mask, color, findColor, result);
@@ -148,7 +137,7 @@ class Surface
       return nme_bitmap_data_get_pixel(nmeHandle, x, y);
    }
 
-   public function getPixel32(x:Int, y:Int):BitmapInt32 
+   public function getPixel32(x:Int, y:Int):Int 
    {
       return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
    }
@@ -182,14 +171,14 @@ class Surface
 
    public static function load(inFilename:String, format:Int = 0):Surface 
    {
-      var result = new Surface(0, 0);
+      var result = new Surface(0, 0, PixelFormat.pfNone);
       result.nmeHandle = nme_bitmap_data_load(inFilename, format);
       return result;
    }
 
    public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Surface 
    {
-      var result = new Surface(0, 0);
+      var result = new Surface(0, 0, PixelFormat.pfNone);
       result.nmeLoadFromBytes(inBytes, inRawAlpha);
       return result;
    }
@@ -227,7 +216,7 @@ class Surface
       nme_bitmap_data_set_pixel(nmeHandle, inX, inY, inColour);
    }
 
-   public function setPixel32(inX:Int, inY:Int, inColour:BitmapInt32):Void 
+   public function setPixel32(inX:Int, inY:Int, inColour:Int):Void 
    {
       nme_bitmap_data_set_pixel32(nmeHandle, inX, inY, inColour);
    }
@@ -261,6 +250,19 @@ class Surface
       nme_bitmap_data_set_format(nmeHandle, format);
    }
 
+   inline public function set_format(format:Int) : Int
+   {
+      setFormat(format);
+      return format;
+   }
+
+   public function get_format() : Int
+   {
+      return nme_bitmap_data_get_format(nmeHandle);
+   }
+
+
+
    public function noise(randomSeed:Int, low:Int = 0, high:Int = 255, channelOptions:Int = 7, grayScale:Bool = false) 
    {
       nme_bitmap_data_noise(nmeHandle, randomSeed, low, high, channelOptions, grayScale);
@@ -270,7 +272,7 @@ class Surface
    private function get_rect():Rectangle { return new Rectangle(0, 0, width, height); }
    private function get_width():Int { return nme_bitmap_data_width(nmeHandle); }
    private function get_height():Int { return nme_bitmap_data_height(nmeHandle); }
-   private function get_transparent():Bool { return nmeTransparent; /*nme_bitmap_data_get_transparent(nmeHandle);*/ }
+   private function get_transparent():Bool { return nme_bitmap_data_get_transparent(nmeHandle); }
    private function get_premultipliedAlpha():Bool { return nme_bitmap_data_get_prem_alpha(nmeHandle); }
    private function set_premultipliedAlpha(inVal:Bool):Bool
    {
@@ -279,7 +281,7 @@ class Surface
    }
 
    // Native Methods
-   private static var nme_bitmap_data_create = Loader.load("nme_bitmap_data_create", -1);
+   private static var nme_bitmap_data_create = Loader.load("nme_bitmap_data_create", 4);
    private static var nme_bitmap_data_load = Loader.load("nme_bitmap_data_load", 2);
    private static var nme_bitmap_data_from_bytes = Loader.load("nme_bitmap_data_from_bytes", 2);
    private static var nme_bitmap_data_clear = Loader.load("nme_bitmap_data_clear", 2);
@@ -302,6 +304,7 @@ class Surface
    private static var nme_bitmap_data_set_pixel_rgba = Loader.load("nme_bitmap_data_set_pixel_rgba", 4);
    private static var nme_bitmap_data_set_bytes = Loader.load("nme_bitmap_data_set_bytes", 4);
    private static var nme_bitmap_data_set_format = Loader.load("nme_bitmap_data_set_format", 2);
+   private static var nme_bitmap_data_get_format = Loader.load("nme_bitmap_data_get_format", 1);
    #if cpp
    private static var nme_bitmap_data_set_array = Loader.load("nme_bitmap_data_set_array", 3);
    #end

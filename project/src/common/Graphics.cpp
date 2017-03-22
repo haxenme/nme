@@ -793,7 +793,7 @@ RenderTarget::RenderTarget(const Rect &inRect,PixelFormat inFormat,uint8 *inPtr,
 RenderTarget::RenderTarget(const Rect &inRect,HardwareRenderer *inHardware)
 {
    mRect = inRect;
-   mPixelFormat = pfHardware;
+   mPixelFormat = pfRenderBuffer;
    mSoftPtr = 0;
    mSoftStride = 0;
    mHardware = inHardware;
@@ -818,34 +818,9 @@ RenderTarget RenderTarget::ClipRect(const Rect &inRect) const
 void RenderTarget::Clear(uint32 inColour, const Rect &inRect) const
 {
    if (IsHardware())
-   {
       mHardware->Clear(inColour,&inRect);
-      return;
-   }
-
-   if (mPixelFormat==pfAlpha)
-   {
-      int val = inColour>>24;
-      for(int y=inRect.y;y<inRect.y1();y++)
-      {
-         uint8 *alpha = (uint8 *)Row(y) + inRect.x;
-         memset(alpha,val,inRect.w);
-      }
-   }
    else
-   {
-      ARGB rgb(inColour);
-      if (!(mPixelFormat & pfHasAlpha))
-         rgb.a = 255;
-
-      for(int y=inRect.y;y<inRect.y1();y++)
-      {
-         int *ptr = (int *)Row(y) + inRect.x;
-         for(int x=0;x<inRect.w;x++)
-            *ptr++ = rgb.ival;
-      }
- 
-   }
+      SetPixelRect(inColour, inRect, mPixelFormat, mSoftPtr, mSoftStride);
 }
 
 

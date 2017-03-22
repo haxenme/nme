@@ -26,6 +26,7 @@ struct ByteArray
    unsigned char *Bytes();
    const unsigned char *Bytes() const;
    bool          Ok() { return mValue!=0; }
+   bool          LittleEndian();
 
 
    value mValue;

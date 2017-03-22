@@ -90,7 +90,8 @@ typedef QuickVec<Filter *> FilterList;
 Rect ExpandVisibleFilterDomain( const FilterList &inList, const Rect &inRect );
 
 Surface *FilterBitmap(const FilterList &inList, Surface *inBitmap,
-                       const Rect &inSrcRect, const Rect &inDestRect, bool inMakePOW2,
+                       const Rect &inSrcRect, const Rect &inDestRect,
+                       bool inMakePOW2, bool recycleBitmap,
                         ImagePoint inSrc0 = ImagePoint(0,0) );
 
 Rect GetFilteredObjectRect(const FilterList &inList,const Rect &inRect);

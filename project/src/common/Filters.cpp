@@ -9,27 +9,13 @@ namespace nme
 
 Surface *ExtractAlpha(const Surface *inSurface)
 {
-   if (inSurface->Format()!=pfXRGB && inSurface->Format()!=pfARGB)
-      return 0;
-
    int w =  inSurface->Width();
    int h = inSurface->Height();
    Surface *result = new SimpleSurface(w,h,pfAlpha);
    result->IncRef();
 
    AutoSurfaceRender render(result);
-   const RenderTarget &target = render.Target();
-   for(int y=0;y<h;y++)
-   {
-      const uint8 *src = &((const ARGB *)inSurface->Row(y))->a;
-      uint8 *dest = target.Row(y);
-      for(int x=0;x<w;x++)
-      {
-         *dest = *src;
-         dest++;
-         src+=4;
-      }
-   }
+   inSurface->BlitChannel(render.Target(), Rect(0,0,w,h), 0, 0, CHAN_ALPHA, CHAN_ALPHA );
    return result;
 }
 
@@ -116,10 +102,11 @@ void BlurFilter::GetFilteredObjectRect(Rect &ioRect,int inPass) const
   inFilterSize - total filter size
   inPixelsLeft - number of valid pixels on left
 */
-    
-void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inFilterLeft,
-             ARGB *inDest, int inDD, int inDestW, int inFilterSize,int inPixelsLeft)
+template<bool PREM>
+void BlurRow(const BGRA<PREM> *inSrc, int inDS, int inSrcW, int inFilterLeft,
+             BGRA<PREM> *inDest, int inDD, int inDestW, int inFilterSize,int inPixelsLeft)
 {
+   typedef BGRA<PREM> Pixel;
    int sr = 0;
    int sg = 0;
    int sb = 0;
@@ -127,18 +114,18 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inFilterLeft,
 
    // loop over destination pixels with kernel    -xxx+
    // At each pixel, we - the trailing pixel and + the leading pixel
-   const ARGB *prev = inSrc - inFilterLeft*inDS;
-   const ARGB *first = std::max(prev,inSrc - inPixelsLeft*inDS);
-   const ARGB *src = prev + inFilterSize*inDS;
-   const ARGB *src_end = inSrc + inSrcW*inDS;
-   ARGB *dest = inDest;
-   for(const ARGB *s=first;s<src;s+=inDS)
+   const Pixel *prev = inSrc - inFilterLeft*inDS;
+   const Pixel *first = std::max(prev,inSrc - inPixelsLeft*inDS);
+   const Pixel *src = prev + inFilterSize*inDS;
+   const Pixel *src_end = inSrc + inSrcW*inDS;
+   Pixel *dest = inDest;
+   for(const Pixel *s=first;s<src;s+=inDS)
    {
       int a = s->a;
       sa+=a;
-      sr+= s->r * a;
-      sg+= s->g * a;
-      sb+= s->b * a;
+      sr+= s->getRAlpha();
+      sg+= s->getGAlpha();
+      sb+= s->getBAlpha();
    }
    for(int x=0;x<inDestW; x++)
    {
@@ -154,6 +141,13 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inFilterLeft,
 
       if (sa==0)
          dest->ival = 0;
+      else if (PREM)
+      {
+         dest->r = sr/inFilterSize;
+         dest->g = sg/inFilterSize;
+         dest->b = sb/inFilterSize;
+         dest->a = sa/inFilterSize;
+      }
       else
       {
          dest->r = sr/sa;
@@ -166,18 +160,18 @@ void BlurRow(const ARGB *inSrc, int inDS, int inSrcW, int inFilterLeft,
       {
          int a = src->a;
          sa+=a;
-         sr+= src->r * a;
-         sg+= src->g * a;
-         sb+= src->b * a;
+         sr+= src->getRAlpha();
+         sg+= src->getGAlpha();
+         sb+= src->getBAlpha();
       }
 
       if (prev>=first)
       {
          int a = prev->a;
          sa-=a;
-         sr-= prev->r * a;
-         sg-= prev->g * a;
-         sb-= prev->b * a;
+         sr-= prev->getRAlpha();
+         sg-= prev->getGAlpha();
+         sb-= prev->getBAlpha();
       }
 
 
@@ -241,8 +235,6 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0
    int sw = inSrc->Width();
    int sh = inSrc->Height();
 
-   outDest->Zero();
-
    int blurred_w = std::min(sw+mBlurX,w);
    int blurred_h = std::min(sh+mBlurY,h);
    // TODO: tmp height is potentially less (h+mBlurY) than sh ...
@@ -272,15 +264,6 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0
    sw = tmp->Width();
    }
 
-   if (0)
-   {
-      AutoSurfaceRender dest_render(outDest);
-      const RenderTarget &target = dest_render.Target();
-      for(int y=0;y<sh;y++)
-         memcpy(target.Row(y),tmp->Row(y),sw*sizeof(PIXEL));
-   }
-   else
-   {
    AutoSurfaceRender dest_render(outDest);
    const RenderTarget &target = dest_render.Target();
    int s_stride = tmp->GetStride()/sizeof(PIXEL);
@@ -294,13 +277,20 @@ void BlurFilter::DoApply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0
 
       BlurRow(src,s_stride,sh-sy0,oy, dest,d_stride,blurred_h,mBlurY+1,sy0);
    }
-   }
+
    tmp->DecRef();
 }
 
 void BlurFilter::Apply(const Surface *inSrc,Surface *outDest,ImagePoint inSrc0,ImagePoint inDiff,int inPass) const
 {
-   DoApply<ARGB>(inSrc,outDest,inSrc0,inDiff,inPass);
+   PixelFormat sFmt = inSrc->Format();
+   PixelFormat dFmt = outDest->Format();
+
+   if (sFmt==pfBGRPremA && dFmt==pfBGRPremA)
+      DoApply<BGRPremA>(inSrc,outDest,inSrc0,inDiff,inPass);
+   else if (sFmt==pfBGRA && dFmt==pfBGRA)
+      DoApply<ARGB>(inSrc,outDest,inSrc0,inDiff,inPass);
+
    //ApplyStrength(mStrength,outDest);
 }
 
@@ -666,17 +656,35 @@ void HighlightZeroAlpha(Surface *ioBMP)
 
 
 Surface *FilterBitmap( const FilterList &inFilters, Surface *inBitmap,
-                       const Rect &inSrcRect, const Rect &inDestRect, bool inMakePOW2,
+                       const Rect &inSrcRect, const Rect &inDestRect,
+                       bool inMakePOW2, bool inRecycle,
                        ImagePoint inSrc0)
 {
    int n = inFilters.size();
-   if (n==0)
+   PixelFormat fmt = inBitmap->Format();
+   if (n==0 || (fmt!=pfBGRPremA && fmt!=pfBGRA) )
       return inBitmap;
 
    Rect src_rect = inSrcRect;
 
-
    Surface *bmp = inBitmap;
+
+   if (fmt!=pfBGRA)
+   {
+      if (inRecycle)
+         bmp->ChangeInternalFormat(pfBGRA);
+      else
+      {
+         int w = bmp->Width();
+         int h = bmp->Height();
+         Surface *converted = new SimpleSurface(w,h,pfBGRA);
+         PixelConvert(w,h, bmp->Format(), bmp->Row(0), bmp->GetStride(), 0,
+                           pfBGRA, converted->EditRect(0,0,w,h), converted->GetStride(), 0 );
+         bmp->DecRef();
+         converted->IncRef();
+         bmp = converted;
+      }
+   }
 
    bool do_clear = false;
    for(int i=0;i<n;i++)
@@ -718,6 +726,9 @@ Surface *FilterBitmap( const FilterList &inFilters, Surface *inBitmap,
    }
 
    //HighlightZeroAlpha(bmp);
+
+   if (fmt==pfBGRPremA)
+      bmp->ChangeInternalFormat(pfBGRPremA);
 
    return bmp;
 }

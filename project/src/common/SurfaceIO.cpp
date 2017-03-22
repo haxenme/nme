@@ -159,36 +159,19 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
    // Start decompressor.
    jpeg_start_decompress(&cinfo);
 
-   result = new SimpleSurface(cinfo.output_width, cinfo.output_height, pfXRGB);
+   result = new SimpleSurface(cinfo.output_width, cinfo.output_height, pfRGB);
    result->IncRef();
 
 
    RenderTarget target = result->BeginRender(Rect(cinfo.output_width, cinfo.output_height));
 
 
-   row_buf = (uint8 *)malloc(cinfo.output_width * 3);
-
    while (cinfo.output_scanline < cinfo.output_height)
    {
-      uint8 * src = row_buf;
       uint8 * dest = target.Row(cinfo.output_scanline);
-
-      jpeg_read_scanlines(&cinfo, &row_buf, 1);
-
-      uint8 *end = dest + cinfo.output_width*4;
-      while (dest<end)
-      {
-         dest[0] = src[2];
-         dest[1] = src[1];
-         dest[2] = src[0];
-         dest[3] = 0xff;
-         dest+=4;
-         src+=3;
-      }
+      jpeg_read_scanlines(&cinfo, &dest, 1);
    }
    result->EndRender();
-
-   free(row_buf);
 
    // Finish decompression.
    jpeg_finish_decompress(&cinfo);
@@ -261,7 +244,6 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
 
    int w = inSurface->Width();
    int h = inSurface->Height();
-   QuickVec<uint8> row_buf(w*3);
 
    jpeg_create_compress(&cinfo);
  
@@ -285,23 +267,34 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
    jpeg_set_quality (&cinfo, (int)(inQuality * 100), true);
    jpeg_start_compress(&cinfo, true);
  
-   JSAMPROW row_pointer = &row_buf[0];
+   PixelFormat srcFmt = inSurface->Format();
+   if (srcFmt==pfAlpha)
+      srcFmt = pfLuma;
 
-   /* main code to write jpeg data */
-   while (cinfo.next_scanline < cinfo.image_height)
+   if (srcFmt == pfRGB)
    {
-      const uint8 *src =  (const uint8 *)inSurface->Row(cinfo.next_scanline);
-      uint8 *dest = &row_buf[0];
+      QuickVec<JSAMPROW> row_buf(h);
+      for(int y=0;y<h;y++)
+         row_buf[y] = (JSAMPROW)inSurface->Row(y);
+      jpeg_write_scanlines(&cinfo, &row_buf[0], h);
+   }
+   else
+   {
+      int pw = BytesPerPixel(pfRGB);
+      QuickVec<uint8> row_data(pw*w);
+      uint8 *buf = &row_data[0];
+      JSAMPROW *row_pointer = &buf;
 
-      for(int x=0;x<w;x++)
+      while (cinfo.next_scanline < cinfo.image_height)
       {
-         dest[0] = src[2];
-         dest[1] = src[1];
-         dest[2] = src[0];
-         dest+=3;
-         src+=4;
+         const uint8 *src = (const uint8 *)inSurface->Row(cinfo.next_scanline);
+
+         PixelConvert(w,1,
+           srcFmt,  src, inSurface->GetStride(), 0,
+           pfRGB, buf, pw*w, 0 );
+
+         jpeg_write_scanlines(&cinfo, row_pointer, 1);
       }
-      jpeg_write_scanlines(&cinfo, &row_pointer, 1);
    }
    jpeg_finish_compress(&cinfo);
 
@@ -404,8 +397,8 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
                     png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS);
    
    /* Add filler (or alpha) byte (before/after each RGB triplet) */
-   png_set_expand(png_ptr);
-   png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
+   //png_set_expand(png_ptr);
+   //png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
    //png_set_gray_1_2_4_to_8(png_ptr);
    png_set_palette_to_rgb(png_ptr);
    png_set_gray_to_rgb(png_ptr);
@@ -414,9 +407,10 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
    if (bit_depth == 16)
       png_set_strip_16(png_ptr);
 
-   png_set_bgr(png_ptr);
+   if (has_alpha)
+      png_set_bgr(png_ptr);
 
-   result = new SimpleSurface(width,height, (has_alpha) ? pfARGB : pfXRGB);
+   result = new SimpleSurface(width,height, has_alpha ? pfBGRA : pfRGB);
    result->IncRef();
    target = result->BeginRender(Rect(width,height));
    
@@ -472,46 +466,59 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
    int h = inSurface->Height();
 
    int bit_depth = 8;
-   int color_type = (inSurface->Format()&pfHasAlpha) ?
-                    PNG_COLOR_TYPE_RGB_ALPHA :
-                    PNG_COLOR_TYPE_RGB;
+   int color_type = PNG_COLOR_TYPE_RGB;
+   PixelFormat color_format = pfRGB;
+   PixelFormat srcFmt = inSurface->Format();
+
+   if (srcFmt==pfAlpha || srcFmt==pfLuma)
+   {
+      color_type = PNG_COLOR_TYPE_GRAY;
+      color_format = srcFmt;
+   }
+   else if (srcFmt==pfLumaAlpha)
+   {
+      color_type = PNG_COLOR_TYPE_GRAY_ALPHA;
+      color_format = srcFmt;
+   }
+   else if ( !HasAlphaChannel(srcFmt) )
+   {
+      color_type = PNG_COLOR_TYPE_RGB;
+      color_format = pfRGB;
+   }
+
    png_set_IHDR(png_ptr, info_ptr, w, h,
            bit_depth, color_type, PNG_INTERLACE_NONE,
            PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
    png_write_info(png_ptr, info_ptr);
 
-   bool do_alpha = color_type==PNG_COLOR_TYPE_RGBA;
-   
-   /*if (do_alpha)
+   if (srcFmt==color_format)
    {
       QuickVec<png_bytep> row_pointers(h);
       for(int y=0;y<h;y++)
          row_pointers[y] = (png_bytep)inSurface->Row(y);
       png_write_image(png_ptr, &row_pointers[0]);
    }
-   else*/
+   else
    {
-      QuickVec<uint8> row_data(w*4);
+      int pw = BytesPerPixel(color_format);
+
+      QuickVec<uint8> row_data(pw*w);
       png_bytep row = &row_data[0];
+
       for(int y=0;y<h;y++)
       {
          uint8 *buf = &row_data[0];
          const uint8 *src = (const uint8 *)inSurface->Row(y);
-         for(int x=0;x<w;x++)
-         {
-            buf[0] = src[2];
-            buf[1] = src[1];
-            buf[2] = src[0];
-            src+=3;
-            buf+=3;
-            if (do_alpha)
-               *buf++ = *src;
-            src++;
-         }
+
+         PixelConvert(w,1,
+           srcFmt,  src, inSurface->GetStride(), 0,
+           color_format, buf, pw*w, 0 );
+
          png_write_rows(png_ptr, &row, 1);
       }
    }
+
 
    png_write_end(png_ptr, NULL);
 

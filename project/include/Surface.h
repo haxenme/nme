@@ -27,7 +27,7 @@ class Surface : public ImageBuffer
 {
 public:
    // Non-PO2 will generate dodgy repeating anyhow...
-   Surface() : mTexture(0), mVersion(0), mFlags(surfNotRepeatIfNonPO2), mAllowTrans(true) { };
+   Surface() : mTexture(0), mVersion(0), mFlags(surfNotRepeatIfNonPO2) { };
 
    // Implementation depends on platform.
    static Surface *Load(const OSChar *inFilename);
@@ -38,21 +38,16 @@ public:
 
    virtual unsigned int GetFlags() const { return mFlags; }
    virtual void SetFlags(unsigned int inFlags) { mFlags = inFlags; }
-   virtual int         GPUFormat() const { return Format(); }
-   virtual bool GetAllowTrans() const { return mAllowTrans; }
-   virtual void SetAllowTrans(bool inAllowTrans) { mAllowTrans = inAllowTrans; }
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
-
+   virtual void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0) { }
+   virtual bool ReinterpretPixelFormat(PixelFormat inNewFormat) { return false; }
    virtual void Zero() { Clear(0); }
    virtual void createHardwareSurface() { }
    virtual void destroyHardwareSurface() { }
    virtual void dispose() { }
    virtual void MakeTextureOnly() { /*printf("Dumping bits from Surface\n");*/  }
-   virtual void setGPUFormat( PixelFormat pf ) {}
-   virtual void multiplyAlpha () {}
-   virtual void unmultiplyAlpha() { }
 
-   int BytesPP() const { return Format()==pfAlpha ? 1 : 4; }
+   int BytesPP() const { return nme::BytesPerPixel(Format()); }
 
    virtual RenderTarget BeginRender(const Rect &inRect,bool inForHitTest=false)=0;
    virtual void EndRender()=0;
@@ -97,7 +92,6 @@ protected:
    Texture       *mTexture;
    virtual       ~Surface();
    unsigned int  mFlags;
-   bool          mAllowTrans;
 };
 
 // Helper class....
@@ -118,7 +112,7 @@ public:
 class SimpleSurface : public Surface
 {
 public:
-   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4,int inGPUPixelFormat=-1);
+   SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4);
 
    PixelFormat Format() const  { return mPixelFormat; }
 
@@ -128,10 +122,13 @@ public:
    uint8       *Edit(const Rect *inRect);
    void        Commit() { };
    int GetStride() const { return mStride; }
+   int GetPlaneOffset() const { return mStride*mHeight; }
 
-   int         GPUFormat() const  { return mGPUPixelFormat; }
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
+
+   void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0);
+   bool ReinterpretPixelFormat(PixelFormat inNewFormat);
 
 
    RenderTarget BeginRender(const Rect &inRect,bool inForHitTest);
@@ -149,8 +146,6 @@ public:
                             int inSrcChannel, int inDestChannel ) const;
 
    virtual void colorTransform(const Rect &inRect, ColorTransform &inTransform);
-   virtual void setGPUFormat( PixelFormat pf ) { mGPUPixelFormat = pf; }
-   void unmultiplyAlpha();
    
    Surface *clone();
    void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false, bool inLittleEndian=false);
@@ -172,7 +167,6 @@ protected:
    int           mWidth;
    int           mHeight;
    PixelFormat   mPixelFormat;
-   int           mGPUPixelFormat;
    int           mStride;
    uint8         *mBase;
    ~SimpleSurface();
@@ -187,7 +181,7 @@ class HardwareSurface : public Surface
 public:
    HardwareSurface(HardwareRenderer *inContext);
 
-   PixelFormat Format()  const { return pfHardware; }
+   PixelFormat Format()  const { return pfRenderBuffer; }
 
    int Width() const { return mHardware->Width(); }
    int Height() const { return mHardware->Height(); }
@@ -195,6 +189,7 @@ public:
    uint8       *Edit(const Rect *inRect=0) { return 0; }
    void        Commit() { }
    int GetStride() const { return 0; }
+   int GetPlaneOffset() const { return 0; }
 
 
    void Clear(uint32 inColour,const Rect *inRect=0) { mHardware->Clear(inColour,inRect); }

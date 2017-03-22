@@ -203,7 +203,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
             int w = h;
             while(w<orig_w)
                w*=2;
-            PixelFormat pf = mFace->WantRGB() ? pfARGB : pfAlpha;
+            PixelFormat pf = mFace->WantRGB() ? pfBGRA : pfAlpha;
             Tilesheet *sheet = new Tilesheet(w,h,pf,true);
             sheet->GetSurface().Clear(0);
             mCurrentSheet = mSheets.size();

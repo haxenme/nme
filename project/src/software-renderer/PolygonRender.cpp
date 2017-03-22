@@ -335,6 +335,8 @@ void PolygonRender::HitTestFatCurve(const UserPoint &inP0, const UserPoint &inP1
 
 bool PolygonRender::Render(const RenderTarget &inTarget, const RenderState &inState)
 {
+
+
    Extent2DF extent;
    CachedExtentRenderer::GetExtent(inState.mTransform, extent,true);
    

@@ -256,7 +256,7 @@ public:
          {
             mGradReflect = grad->spreadMethod == smReflect;
             int w = mGradReflect ? 512 : 256;
-            mElement.mSurface = new SimpleSurface(w,1,pfARGB);
+            mElement.mSurface = new SimpleSurface(w,1,pfBGRA);
             mElement.mSurface->IncRef();
             grad->FillArray( (ARGB *)mElement.mSurface->GetBase() );
 
@@ -438,8 +438,7 @@ public:
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
       int *colours = COL ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
-      bool premultiplyAlpha = mElement.mSurface &&
-                              (mElement.mSurface->GetFlags() & surfUsePremultipliedAlpha);
+      bool premultiplyAlpha = mElement.mSurface && (mElement.mSurface->Format() == pfRGBPremA);
 
       UserPoint *point = (UserPoint *)inData;
 
