@@ -37,7 +37,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    maxChars(0),
    mouseWheelEnabled(true),
    multiline(false),
-   restrict(WString()),
+   //restrict(WString()),
    scrollH(0),
    scrollV(1),
    selectable(true),
@@ -521,7 +521,7 @@ int TextField::PointToChar(UserPoint inPoint) const
 }
 
 
-void TextField::setSelection(int inStartIndex, int inEndIndex)
+void TextField::SetSelectionInternal(int inStartIndex, int inEndIndex)
 {
    if (mLinesDirty)
       Layout();
@@ -540,8 +540,41 @@ void TextField::setSelection(int inStartIndex, int inEndIndex)
    caretIndex = mSelectMax;
 
    mCaretDirty = true;
+   mTilesDirty = true;
    mGfxDirty = true;
    DirtyCache();
+}
+
+
+void TextField::SyncSelection()
+{
+   Stage *stage = getStage();
+   if (stage && stage->GetFocusObject()==this)
+   {
+      if (mSelectMin<mSelectMax)
+         stage->SetPopupTextSelection(mSelectMin, mSelectMax);
+      else
+         stage->SetPopupTextSelection(caretIndex,caretIndex);
+   }
+}
+
+void TextField::setSelection(int inStartIndex, int inEndIndex)
+{
+   SetSelectionInternal(inStartIndex, inEndIndex);
+   SyncSelection();
+}
+
+
+void TextField::Focus()
+{
+#if defined(IPHONE) || defined (ANDROID) || defined(WEBOS) || defined(BLACKBERRY) || defined(TIZEN)
+  if (needsSoftKeyboard)
+  {
+     WString value = getText();
+     getStage()->PopupKeyboard(pkmSmart,&value);
+     SyncSelection();
+  }
+#endif
 }
 
 
@@ -564,9 +597,6 @@ bool TextField::CaptureDown(Event &inEvent)
 {
    if (selectable || isInput)
    {
-      if (selectable && isInput)
-         getStage()->EnablePopupKeyboard(true);
-
       UserPoint point = GlobalToLocal(UserPoint( inEvent.x, inEvent.y));
       int pos = PointToChar(point);
       caretIndex = pos;
@@ -579,6 +609,14 @@ bool TextField::CaptureDown(Event &inEvent)
          mGfxDirty = true;
          DirtyCache();
       }
+
+      if (selectable && isInput)
+      {
+         WString value = getText();
+         getStage()->PopupKeyboard(pkmSmart,&value);
+         SyncSelection();
+      }
+
    }
    return true;
 }
@@ -620,6 +658,7 @@ void TextField::Drag(Event &inEvent)
       mTilesDirty = true;
       mCaretDirty = true;
       DirtyCache();
+      SyncSelection();
    }
 }
 
@@ -675,12 +714,49 @@ void TextField::PasteSelection()
    InsertString(UTF8ToWide(GetClipboardText()));
 }
 
+void TextField::onTextUpdate(const std::string &inText, int inPos0, int inPos1)
+{
+   if (inPos1>inPos0)
+   {
+      mSelectMin = inPos0;
+      mSelectMax = inPos1;
+      DeleteSelection();
+   }
+   else
+      caretIndex = inPos0;
+
+   Stage *stage = getStage();
+   if (stage)
+   {
+      Event onText(etChar);
+      onText.utf8Text = inText.c_str();
+      onText.utf8Length = inText.size();
+      onText.id = getID();
+      stage->HandleEvent(onText);
+   }
+
+   InsertString(UTF8ToWide(inText));
+}
+
+
+void TextField::onTextSelect(int inPos0, int inPos1)
+{
+   SetSelectionInternal(inPos0, inPos1);
+}
+
+
+
+
 
 void TextField::OnKey(Event &inEvent)
 {
    if (isInput && (inEvent.type==etKeyDown || inEvent.type==etChar) && inEvent.code<0xffff )
    {
+      #if defined(IPHONE) || defined(HX_MACOS)
+      bool ctrl = inEvent.flags & efCommandDown;
+      #else
       bool ctrl = inEvent.flags & efCtrlDown;
+      #endif
       int code = inEvent.code;
       bool isPrintChar = (code>31 && code<63000) && code!=127 && !ctrl;
 
@@ -1591,10 +1667,10 @@ bool TextField::IsCacheDirty()
 }
 
 
-void  TextField::toScreenGrid(UserPoint &ioPoint, const Matrix &inMatrix)
+void TextField::toScreenGrid(UserPoint &ioPoint,const Matrix &inMatrix)
 {
-   ioPoint.x = floor((ioPoint.x-inMatrix.mtx)*fontScale+0.5)*fontToLocal+inMatrix.mtx;
-   ioPoint.y = floor((ioPoint.y-inMatrix.mty)*fontScale+0.5)*fontToLocal+inMatrix.mty;
+   ioPoint.x = (floor(ioPoint.x*fontScale + inMatrix.mtx+0.5)-inMatrix.mtx)*fontToLocal;
+   ioPoint.y = (floor(ioPoint.y*fontScale + inMatrix.mty+0.5)-inMatrix.mty)*fontToLocal;
 }
 
 
@@ -1705,6 +1781,16 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
    mHasCaret = caret;
 
+   if (!mTilesDirty && screenGrid)
+   {
+      UserPoint subpixelOffset( floor(matrix.mtx)-matrix.mtx, floor(matrix.mty)-matrix.mty);
+      if (subpixelOffset!=mLastSubpixelOffset)
+      {
+         mLastSubpixelOffset = subpixelOffset;
+         mTilesDirty = true;
+      }
+   }
+
    if (mTilesDirty)
    {
       mTilesDirty = false;
@@ -1738,9 +1824,9 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             if (group.Chars() && group.mFont)
             {
                ARGB tint = group.mFormat->color(textColor);
-               groupColour[0] = tint.getRedFloat();
-               groupColour[1] = tint.getGreenFloat();
-               groupColour[2] = tint.getBlueFloat();
+               groupColour[0] = tint.getR()/255.0;
+               groupColour[1] = tint.getG()/255.0;
+               groupColour[2] = tint.getB()/255.0;
                groupColour[3] = 1.0;
                for(int c=0;c<group.Chars();c++)
                {
@@ -1774,9 +1860,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
                            UserPoint p(pos.x+tile.mOx*fontToLocal,pos.y+tile.mOy*fontToLocal);
                            if (screenGrid)
-                           {
                               toScreenGrid(p,matrix);
-                           }
 
                            double right = p.x+tile.mRect.w*fontToLocal;
                            if (right>GAP)
@@ -2029,6 +2113,10 @@ void TextField::Layout(const Matrix &inMatrix)
 
    if (!mLinesDirty)
       return;
+
+
+   if (screenGrid)
+      mLastSubpixelOffset = UserPoint( floor(inMatrix.mtx)-inMatrix.mtx, floor(inMatrix.mty)-inMatrix.mty);
 
    double font6ToLocalX = fontToLocal/64.0;
 

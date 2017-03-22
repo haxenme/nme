@@ -27,7 +27,10 @@ class CommandLineTools
    public static var nme(default,null):String;
    public static var home:String;
    public static var sys:SysProxy;
+   public static var toolkit:Bool = false;
+   public static var gradle:Bool = false;
 
+   static var haxeVer:String = null;
    static var additionalArguments:Array<String>;
    static var command:String;
    static var assumedTest:Bool = false;
@@ -47,14 +50,15 @@ class CommandLineTools
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
-            "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5" ];
+            "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
+            "watchsimulator", "watchos" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
             "rebuild", "shell", "icon", "banner", "serve" ];
-   static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy" ];
-   static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host" ];
+   static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
+   static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
 
 
@@ -111,6 +115,9 @@ class CommandLineTools
 
          case Platform.HTML5:
             platform = new platforms.Html5Platform(project);
+
+         case Platform.WATCH:
+            platform = new platforms.WatchPlatform(project);
       }
 
       if (platform != null) 
@@ -275,7 +282,11 @@ class CommandLineTools
                   if (fileMatch!=null && !line.startsWith(stdFile) && fileMatch.match(line))
                   {
                      var dest = fileMatch.matched(1);
-                     if (PathHelper.isAbsolute(dest))
+                     if (dest=="?")
+                     {
+                        // ignore odd hxcpp output
+                     }
+                     else if (PathHelper.isAbsolute(dest))
                      {
                         Log.verbose("Unusual absolute path destination " + dest);
                      }
@@ -391,6 +402,10 @@ class CommandLineTools
             args.push("-v");
          if (debug)
             args.push("-debug");
+         if (toolkit)
+            args.push("-toolkit");
+         if (gradle)
+            args.push("-gradle");
          if (project.hasDef("deploy"))
             args.push("deploy=" + project.getDef("deploy"));
          if (sampleTarget!="")
@@ -718,15 +733,18 @@ class CommandLineTools
       sys.println(" Targets : ");
       sys.println("");
       sys.println("  cpp         : Create applications, for host system (linux,mac,windows)");
+      sys.println("  cppia       : Create a cppia.nme bundle, and run with host (acadnme by default)");
       sys.println("  android     : Create Google Android applications");
-      sys.println("  ios         : Create Apple iOS applications");
       sys.println("  androidview : Create library files for inclusion in Google Android applications");
+      sys.println("  androidsim  : android + simulator");
       sys.println("  iosview     : Create library files for inclusion in Apple iOS applications");
       sys.println("  flash       : Create SWF applications for Adobe Flash Player");
       sys.println("  neko        : Create application for rapid testing on host system");
+      sys.println("  ios         : Create Apple iOS applications");
       sys.println("  iphone      : ios + device debugging");
       sys.println("  iphonesim   : ios + simulator");
-      sys.println("  androidsim  : android + simulator");
+      sys.println("  watchos     : watch extension");
+      sys.println("  watchsimulator : watch extension + simulator");
       sys.println("");
       sys.println(" Options : ");
       sys.println("");
@@ -880,7 +898,7 @@ class CommandLineTools
       {
          Log.verbose("Reading HXCPP config: " + config);
 
-         new NMMLParser(project,config);
+         new NMMLParser(project,config,false);
       }
       else
       {
@@ -1012,6 +1030,8 @@ class CommandLineTools
          Log.verbose("Using project file: " + projectFile);
 
       project.checkRelocation( new Path(projectFile).dir );
+      if (projectFile!=null)
+         project.setProjectFilename(projectFile);
 
       project.haxedefs.set("nme_install_tool", "1");
       project.haxedefs.set("nme_ver", nmeVersion);
@@ -1052,7 +1072,7 @@ class CommandLineTools
       var projFile = Path.withoutDirectory(projectFile);
       if (ext == "nmml" || ext == "xml") 
       {
-         new NMMLParser(project,projFile);
+         new NMMLParser(project,projFile,true);
       }
       else if (ext=="hx")
       {
@@ -1065,7 +1085,7 @@ class CommandLineTools
          {
             try
             {
-               new NMMLParser(project,projFile);
+               new NMMLParser(project,projFile,true);
                loaded = true;
             }
             catch(e:Dynamic)
@@ -1089,11 +1109,11 @@ class CommandLineTools
          if (FileSystem.exists(include))
          {
             Log.verbose("Read from CPPIA_CLASSPATH " + include); 
-            new NMMLParser(project,include);
+            new NMMLParser(project,include,true);
          }
       }
 
-      project.processStdLibs();
+      project.processLibs();
 
       // Better way to do this?
       switch(project.target) 
@@ -1257,6 +1277,7 @@ class CommandLineTools
       }
 
       var project = new NMEProject( );
+      project.localDefines.set("NME",nme);
 
       traceEnabled = null;
 
@@ -1301,6 +1322,8 @@ class CommandLineTools
          project.localDefines.set("CPPIA_CLASSPATH", storeData.cppiaClassPath);
       if (storeData.cppiaHost!=null)
          project.localDefines.set("CPPIA_HOST", storeData.cppiaHost);
+      if (storeData.developmentTeam!=null && !project.hasDef("DEVELOPMENT_TEAM"))
+         project.localDefines.set("DEVELOPMENT_TEAM", storeData.developmentTeam);
 
 
       if (Log.mVerbose && command!="") 
@@ -1346,11 +1369,6 @@ class CommandLineTools
 
          case "create":
             createTemplate();
-
-         case "serve":
-            var server = new nme.net.http.Server(function(a,b) { } );
-            server.listen(8080);
-            server.untilDeath();
 
          case "shell":
             var deploy = project.hasDef("deploy") ? project.getDef("deploy") : getValue("deploy");
@@ -1435,6 +1453,17 @@ class CommandLineTools
 
       Log.verbose("Created " + name + " " + width + "x" + height );
 
+   }
+
+   public static function getHaxeVer()
+   {
+      if (haxeVer==null)
+      {
+         var vers = ProcessHelper.getOutput("haxe", ["-cp", nme+"/tools/haxe_ver", "--run", "HaxeVer.hx"] );
+         haxeVer = vers[0];
+      }
+
+      return haxeVer;
    }
 
 
@@ -1572,6 +1601,30 @@ class CommandLineTools
             else if (argument == "-32") 
                project.architectures.push(Architecture.X86);
 
+            else if (argument=="-gradle" || argument=="-Dgradle")
+            {
+               gradle = true;
+               toolkit = true;
+               project.haxedefs.set("gradle", "1");
+               project.haxedefs.set("toolkit", "");
+            }
+            else if (argument=="-toolkit" || argument=="-Dtoolkit")
+            {
+               toolkit = true;
+               project.haxedefs.set("toolkit", "");
+            }
+            else if (argument=="-toolkit-debug" || argument=="-Dtoolkit-debug")
+            {
+               toolkit = true;
+               project.haxedefs.set("toolkit", "");
+               project.localDefines.set("NATIVE_TOOLKIT_OPTIM_TAG", "debug");
+            }
+            else if (argument=="-toolkit-release" || argument=="-Dtoolkit-release")
+            {
+               toolkit = true;
+               project.haxedefs.set("toolkit", "");
+               project.localDefines.set("NATIVE_TOOLKIT_OPTIM_TAG", "release");
+            }
             else if (argument.substr(0, 2) == "-D") 
                project.haxedefs.set(argument.substr(2), "");
 
@@ -1594,7 +1647,13 @@ class CommandLineTools
             {
                Sys.putEnv("HXCPP_VERBOSE","1");
                Log.mVerbose = true;
-               project.haxeflags.push("--times");
+               if (project.haxeflags.indexOf("--times")<0)
+                  project.haxeflags.push("--times");
+            }
+            else if (argument == "-times") 
+            {
+               if (project.haxeflags.indexOf("--times")<0)
+                  project.haxeflags.push("--times");
             }
             else if (argument == "-vv" || argument == "-vverbose") 
             {
@@ -1630,6 +1689,8 @@ class CommandLineTools
          }
       }
 
+      if (toolkit)
+         project.localDefines.set("STATIC_NME","1");
 
       for(w in 0...words.length)
       {
@@ -1658,7 +1719,8 @@ class CommandLineTools
 
       if (command=="")
       {
-         displayInfo(true);
+         if (!Log.mVerbose)
+            displayInfo(true);
          command = "test";
          assumedTest = true;
       }

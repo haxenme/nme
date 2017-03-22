@@ -119,7 +119,7 @@ public:
    int  maxChars;
    bool mouseWheelEnabled;
    bool multiline;
-   WString restrict;
+   //WString restrict;
    bool selectable;
    float sharpness;
    struct StyleSheet *styleSheet;
@@ -157,18 +157,23 @@ public:
    void EndDrag(Event &inEvent);
    void OnKey(Event &inEvent);
    void OnScrollWheel(int inDirection);
+   void onTextUpdate(const std::string &inText, int inPos0, int inPos1);
+   void onTextSelect(int inPos0, int inPos1);
    void DeleteSelection();
    void ClearSelection();
    void CopySelection();
    void PasteSelection();
    void DeleteChars(int inFirst,int inEnd);
    void InsertString(const WString &ioString);
+   void SetSelectionInternal(int inFirst, int inLast);
    void ShowCaret(bool inFromDrag=false);
    bool FinishEditOnEnter();
    void AddCharacter(int inCharCode);
 
    bool CaretOn();
    bool IsCacheDirty();
+   void SyncSelection();
+   void Focus();
 
 
 
@@ -222,6 +227,7 @@ private:
    Graphics *mTiles;
    int      mLastCaretHeight;
    int      mLastUpDownX;
+   UserPoint mLastSubpixelOffset;
 
    int mSelectMin;
    int mSelectMax;

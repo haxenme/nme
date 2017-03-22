@@ -29,7 +29,8 @@ class Font
          if (name!=null)
          {
             var bytes = ByteArray.fromBytes(Resource.getBytes(name));
-            var details = loadBytes(bytes);
+            var details:NativeFontData = freetype_import_font("", null, 0, bytes);
+
             fontName = details.family_name;
             if (details.is_bold && details.is_italic)
             {
@@ -91,20 +92,19 @@ class Font
 
    public static function load(inFilename:String):NativeFontData 
    {
-      var result = freetype_import_font(inFilename, null, 1024 * 20, null);
+      var result = freetype_import_font(inFilename, null, 2048, null);
       return result;
    }
    
    public static function loadBytes(inBytes:ByteArray):NativeFontData 
    {
-      var result = freetype_import_font("", null, 1024 * 20, inBytes);
+      var result = freetype_import_font("", null, 2048, inBytes);
       return result;
    }
 
  
    public static function registerFontData(instance:Font, inBytes:ByteArray)
    {
-trace("Register " + instance);
       nme_font_register_font(instance.fontName, inBytes);
       nmeRegisteredFonts.push(instance);
    }

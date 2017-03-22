@@ -23,6 +23,7 @@ import wx.Assets;
 ::foreach ndlls:: ::if (registerPrim!=null):: extern \"C\" int ::registerPrim::();
 ::end::::end::
 ")
+@:access(::APP_MAIN::)
 class ApplicationMain
 {
    static public var engines : Array<Dynamic> = [
@@ -48,128 +49,131 @@ class ApplicationMain
    public static function main()
    {
       #if cpp
-      ::if MEGATRACE::
-      untyped __global__.__hxcpp_execution_trace(2);
-      ::end::
+        ::if MEGATRACE::
+          untyped __global__.__hxcpp_execution_trace(2);
+        ::end::
       #end
 
 
       #if flash
 
-      nme.AssetData.create();
+         nme.AssetData.create();
 
       #elseif nme
 
-      ::if REDIRECT_TRACE::
-      nme.Lib.redirectTrace();
-      ::end::
+         ::if REDIRECT_TRACE::
+         nme.Lib.redirectTrace();
+         ::end::
 
-      nme.app.Application.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
-      nme.text.Font.useNative = ::NATIVE_FONTS::;
+         nme.app.Application.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
+         nme.text.Font.useNative = ::NATIVE_FONTS::;
 
-      nme.AssetData.create();
+         nme.AssetData.create();
 
-      ::if (sslCaCert != "")::
-      nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
-      ::end::
+         ::if (sslCaCert != "")::
+         nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
+         ::end::
 
-      #if (cpp||neko)
-         nme.app.Application.setFixedOrientation(
-            ::if (WIN_ORIENTATION == "portrait")::
-               nme.app.Application.OrientationPortraitAny
-            ::elseif (WIN_ORIENTATION == "landscape")::
-               nme.app.Application.OrientationLandscapeAny
-            ::else::
-               nme.app.Application.OrientationAny
-             ::end::
-        );
-      #end
+         #if (cpp||neko)
+            nme.app.Application.setFixedOrientation(
+               ::if (WIN_ORIENTATION == "portrait")::
+                  nme.app.Application.OrientationPortraitAny
+               ::elseif (WIN_ORIENTATION == "landscape")::
+                  nme.app.Application.OrientationLandscapeAny
+               ::else::
+                  nme.app.Application.OrientationAny
+                ::end::
+           );
+         #end
 
       #end
    
 
    
       #if flash
-      flash.Lib.current.stage.align = flash.display.StageAlign.TOP_LEFT;
-      flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
+         // Flash
+         flash.Lib.current.stage.align = flash.display.StageAlign.TOP_LEFT;
+         flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
 
-      var load = function() ApplicationBoot.createInstance();
+         var load = function() ApplicationBoot.createInstance();
 
-      ::if (PRELOADER_NAME!=null)::
-         onLoaded = load;
-         var preloader = new ::PRELOADER_NAME::();
-         preloader.onInit();
-         
-      ::else::
-         load();
-      ::end::
+         ::if (PRELOADER_NAME!=null)::
+            onLoaded = load;
+            var preloader = new ::PRELOADER_NAME::();
+            preloader.onInit();
+            
+         ::else::
+            load();
+         ::end::
 
 
       #elseif waxe
+         // Waxe
+         #if nme
+            nme.display.ManagedStage.initSdlAudio();
+         #end
 
-      #if nme
-      nme.display.ManagedStage.initSdlAudio();
-      #end
-
-      if (ApplicationBoot.canCallMain())
-         ApplicationBoot.createInstance();
-      else
-      {
-         wx.App.boot(function()
+         if (ApplicationBoot.canCallMain())
+            ApplicationBoot.createInstance();
+         else
          {
-            var size = { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: };
-            ::if (APP_FRAME != null)::
-               frame = wx.::APP_FRAME::.create(null, null, "::APP_TITLE::", null, size);
-            ::else::
-               frame = wx.Frame.create(null, null, "::APP_TITLE::", null, size);
-            ::end::
+            wx.App.boot(function()
+            {
+               var size = { width: ::WIN_WIDTH::, height: ::WIN_HEIGHT:: };
+               ::if (APP_FRAME != null)::
+                  frame = wx.::APP_FRAME::.create(null, null, "::APP_TITLE::", null, size);
+               ::else::
+                  frame = wx.Frame.create(null, null, "::APP_TITLE::", null, size);
+               ::end::
 
-            #if nme
-               wx.NMEStage.create(frame, null, null,
-               {
-                  width: ::WIN_WIDTH::,
-                  height: ::WIN_HEIGHT::,
-                  fullscreen: ::WIN_FULLSCREEN::,
-                  stencilBuffer: ::WIN_STENCIL_BUFFER::,
-                  depthBuffer: ::WIN_DEPTH_BUFFER::,
-                  antiAliasing: ::WIN_ANTIALIASING::,
-                  resizable: ::WIN_RESIZABLE::,
-                  vsync: ::WIN_VSYNC::,
-                  fps : ::WIN_FPS:: * 1.0,
-                  color : ::WIN_BACKGROUND::,
-                  title : "::APP_TITLE::",
-                  icon  : Assets.info.get("::WIN_ICON::")==null ? null : getAsset("::WIN_ICON::")
-               });
+               #if nme
+                  wx.NMEStage.create(frame, null, null,
+                  {
+                     width: ::WIN_WIDTH::,
+                     height: ::WIN_HEIGHT::,
+                     fullscreen: ::WIN_FULLSCREEN::,
+                     stencilBuffer: ::WIN_STENCIL_BUFFER::,
+                     depthBuffer: ::WIN_DEPTH_BUFFER::,
+                     antiAliasing: ::WIN_ANTIALIASING::,
+                     resizable: ::WIN_RESIZABLE::,
+                     vsync: ::WIN_VSYNC::,
+                     fps : ::WIN_FPS:: * 1.0,
+                     color : ::WIN_BACKGROUND::,
+                     title : "::APP_TITLE::",
+                     icon  : Assets.info.get("::WIN_ICON::")==null ? null : getAsset("::WIN_ICON::")
+                  });
 
-               // Show frame before creating instance so context is good.
-               frame.shown = true;
-               ApplicationBoot.createInstance();
-               wx.App.setTopWindow(frame);
-   
-            #else
-               ApplicationBoot.createInstance();
-               if (autoShowFrame)
-               {
-                  wx.App.setTopWindow(frame);
+                  // Show frame before creating instance so context is good.
                   frame.shown = true;
-               }
-            #end
+                  ApplicationBoot.createInstance();
+                  wx.App.setTopWindow(frame);
+      
+               #else
+                  ApplicationBoot.createInstance();
+                  if (autoShowFrame)
+                  {
+                     wx.App.setTopWindow(frame);
+                     frame.shown = true;
+                  }
+               #end
 
-        });
-      }
+           });
+         }
       #elseif cppia
-       ApplicationBoot.createInstance();
-      #else
+         // Cppia
+         ApplicationBoot.createInstance();
+      #elseif nme
          var flags:Int = 
-            (::WIN_HARDWARE:: ? nme.app.Application.HARDWARE : 0) |
-            (::WIN_DEPTH_BUFFER:: ? nme.app.Application.DEPTH_BUFFER : 0) |
-            (::WIN_STENCIL_BUFFER:: ? nme.app.Application.STENCIL_BUFFER : 0) |
-            (::WIN_RESIZABLE:: ? nme.app.Application.RESIZABLE : 0) |
-            (::WIN_BORDERLESS:: ? nme.app.Application.BORDERLESS : 0) |
-            (::WIN_VSYNC:: ? nme.app.Application.VSYNC : 0) |
-            (::WIN_FULLSCREEN:: ? nme.app.Application.FULLSCREEN : 0) |
-            (::WIN_ANTIALIASING:: == 4 ? nme.app.Application.HW_AA_HIRES : 0) |
-            (::WIN_ANTIALIASING:: == 2 ? nme.app.Application.HW_AA : 0);
+         (::WIN_HARDWARE:: ? nme.app.Application.HARDWARE : 0) |
+         (::WIN_DEPTH_BUFFER:: ? nme.app.Application.DEPTH_BUFFER : 0) |
+         (::WIN_STENCIL_BUFFER:: ? nme.app.Application.STENCIL_BUFFER : 0) |
+         (::WIN_RESIZABLE:: ? nme.app.Application.RESIZABLE : 0) |
+         (::WIN_BORDERLESS:: ? nme.app.Application.BORDERLESS : 0) |
+         (::WIN_VSYNC:: ? nme.app.Application.VSYNC : 0) |
+         (::WIN_FULLSCREEN:: ? nme.app.Application.FULLSCREEN : 0) |
+         (::WIN_ANTIALIASING:: == 4 ? nme.app.Application.HW_AA_HIRES : 0) |
+         (::WIN_ANTIALIASING:: == 2 ? nme.app.Application.HW_AA : 0)|
+         (::WIN_SINGLE_INSTANCE:: ? nme.app.Application.SINGLE_INSTANCE : 0);
 
 
          #if nme_application
@@ -206,6 +210,12 @@ class ApplicationMain
             );
 
          #end
+      #else
+         // Unknown framework
+         if (ApplicationBoot.canCallMain())
+            ApplicationBoot.createInstance();
+         else
+            ApplicationBoot.createInstance();
       #end
    }
 
@@ -225,6 +235,7 @@ class ApplicationMain
       #end
    }
 
+   #if (nme||waxe)
    public static function getAsset(inName:String) : Dynamic
    {
       var i = Assets.info.get(inName);
@@ -235,15 +246,17 @@ class ApplicationMain
          return cached;
       switch(i.type)
       {
-         case BINARY, TEXT: return Assets.getBytes(inName);
+         case BINARY, TEXT, SWF: return Assets.getBytes(inName);
          case FONT: return Assets.getFont(inName);
          case IMAGE: return Assets.getBitmapData(inName);
          case MUSIC, SOUND: return Assets.getSound(inName);
+         case MOVIE_CLIP: return null;
       }
 
       throw "Unknown asset type: " + i.type;
       return null;
    }
+   #end
    
    
    public static function __init__ ()

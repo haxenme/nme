@@ -5,11 +5,11 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>${PRODUCT_NAME}</string>
+	<string>::APP_TITLE::</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
-	<string>::APP_PACKAGE::</string>
+   <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -32,6 +32,8 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIStatusBarHidden</key>
+	<::WIN_FULLSCREEN::/>
+	<key>UIRequiresFullScreen</key>
 	<::WIN_FULLSCREEN::/>
    <key>UIViewControllerBasedStatusBarAppearance</key>
    <::!WIN_FULLSCREEN::/>

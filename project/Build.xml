@@ -2,6 +2,7 @@
    <!-- Require Android 2.3+ -->
    <set name="PLATFORM" value="android-9" if="android" />
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
+   <set name="PLATFORM" value="android-21" if="HXCPP_ARM64" />
    <set name="HXCPP_CPP11" value="1" />
 
 
@@ -65,7 +66,7 @@
    <!-- Use to allow testing on mac... -->
    <set name="NME_OPENAL" value="1" if="macos" />
 
-   <set name="NME_CAMERA" value="1" />
+   <set name="NME_CAMERA" value="1" unless="watchos" />
 
    <!-- Built relative to "bin" -->
    <set name="NME_ROOT" value="" />
@@ -78,6 +79,12 @@
    <set name="OUT_DIR" value="../${NDLLDIR}" />
 
    <set name="modplug" value="1" unless="android" />
+   
+   <!-- Uncomment this if you want use ClipperLib for tesselate -->
+   <!--set name="NME_CLIPPER" value="1" /-->
+
+   <!-- Uncomment this if you want use nme's own clipper for tesselate -->
+   <!--set name="NME_INTERNAL_CLIPPING" value="1" /-->
    
    <!-- <set name="new_link" value="1" /> -->
  
@@ -143,12 +150,14 @@
    </files>
    
    
-   <files id="nme">
+   <files id="nme" tags="" >
       <compilerflag value="-I${NME_INC_DIR}"/>
       <compilerflag value="-I${INC_DIR}"/>
 
       <compilerflag value="-DNME_MODPLUG" if="modplug" />
       <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
+      <compilerflag value="-DNME_CLIPPER" if="NME_CLIPPER" />
+      <compilerflag value="-DNME_INTERNAL_CLIPPING" if="NME_INTERNAL_CLIPPING" />
 
       <cache value="1" />
 
@@ -182,7 +191,8 @@
       </section>
 
       <section if="iphone">
-         <file name="${SRC_DIR}/iPhone/UIStageView.mm"/>
+         <file name="${SRC_DIR}/apple/CaptureDevice.mm" if="NME_CAMERA" />
+         <file name="${SRC_DIR}/iPhone/UIStageView.mm" tags="static" />
          <file name="${SRC_DIR}/iPhone/UIDeviceHardware.mm"/>
          <!-- <file name="${SRC_DIR}/iPhone/SurfaceIO.mm"/> -->
          <file name="${SRC_DIR}/iPhone/NativeFont.mm"/>
@@ -226,7 +236,7 @@
       <section if="NME_SDL2">
         <compilerflag value="-I${NME_DEV}/include/SDL2" />
         <file name="${SRC_DIR}/audio/SDLSound.cpp" />
-        <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
+        <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp" tags="static" />
         <compilerflag value="-DSDL_OGL" />
         <compilerflag value="-DNME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
@@ -240,7 +250,7 @@
          <file name="${SRC_DIR}/opengl/OpenGLContext.cpp" />
          <file name="${SRC_DIR}/opengl/OGLTexture.cpp" />
          <file name="${SRC_DIR}/opengl/OGLShaders.cpp" />
-         <file name="${SRC_DIR}/opengl/OGLExport.cpp" />
+         <file name="${SRC_DIR}/opengl/OGLExport.cpp" tags="static"  />
          <file name="${SRC_DIR}/opengl/Egl.cpp" if="NME_EGL" />
          <file name="${SRC_DIR}/opengl/OpenGLS3D.cpp" if="NME_S3D" />
       </section>
@@ -255,8 +265,7 @@
       <compilerflag value="-I${INC_DIR}/xcompile" if="xcompile" />
       <compilerflag value="-I${NME_DEV}/include" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
-      <!--<compilerflag value="-DNME_PREMULTIPLIED_ALPHA" unless="NME_NOT_PREMULTIPLIED_ALPHA" />-->
-      <compilerflag value="-DNME_PREMULTIPLIED_ALPHA" if="NME_PREMULTIPLIED_ALPHA" />
+      <compilerflag value="-DNME_NOPREMULTIPLIED_ALPHA" if="NME_NOPREMULTIPLIED_ALPHA" />
       <compilerflag value="-DNME_BUILDING_LIB" />
 
 
@@ -267,27 +276,28 @@
       <file name="${SRC_DIR}/common/Graphics.cpp"/>
       <file name="${SRC_DIR}/common/GraphicsData.cpp"/>
       <file name="${SRC_DIR}/common/Matrix.cpp"/>
+      <file name="${SRC_DIR}/common/Pixels.cpp"/>
       <file name="${SRC_DIR}/common/CachedExtent.cpp"/>
       <file name="${SRC_DIR}/common/TextField.cpp"/>
-      <file name="${SRC_DIR}/common/Font.cpp"/>
-      <file name="${SRC_DIR}/common/FreeType.cpp" />
+      <file name="${SRC_DIR}/common/Font.cpp" tags="static" />
+      <file name="${SRC_DIR}/common/FreeType.cpp" tags="static"  />
       <file name="${SRC_DIR}/common/Tilesheet.cpp"/>
-      <file name="${SRC_DIR}/common/Display.cpp"/>
+      <file name="${SRC_DIR}/common/Display.cpp" tags="static" />
       <file name="${SRC_DIR}/common/Stage.cpp"/>
       <file name="${SRC_DIR}/common/BitmapCache.cpp"/>
       <file name="${SRC_DIR}/common/ColorTransform.cpp"/>
       <file name="${SRC_DIR}/common/Hardware.cpp" />
       <file name="${SRC_DIR}/common/Tessellate.cpp"/>
       <file name="${SRC_DIR}/common/Filters.cpp"/>
-      <file name="${SRC_DIR}/common/ExternalInterface.cpp"/>
+      <file name="${SRC_DIR}/common/ExternalInterface.cpp" tags="static" />
       <file name="${SRC_DIR}/common/Cursors.cpp"/>
       <file name="${SRC_DIR}/common/Input.cpp" unless="iphone" />
       <file name="${SRC_DIR}/common/SurfaceIO.cpp" unless="sdl_image" />
       <file name="${SRC_DIR}/common/ManagedStage.cpp" unless="winrt" />
       <file name="${SRC_DIR}/common/CURL.cpp" if="NME_CURL"/>
-      <file name="${SRC_DIR}/common/Lzma.cpp"/>
+      <file name="${SRC_DIR}/common/Lzma.cpp" tags="static" />
       <file name="${SRC_DIR}/common/Thread.cpp"/>
-      <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
+      <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA"  tags="static" />
 
       <file name="${SRC_DIR}/audio/Audio.cpp" />
       <file name="${SRC_DIR}/audio/ChannelList.cpp" />
@@ -314,6 +324,8 @@
       <!-- You will need this if you want USE_POLY2TRI in Tesselate.cpp
       <file name="${SRC_DIR}/common/poly2tri/Poly2Tri.cpp" />
       -->
+      <file name="${SRC_DIR}/common/clipper/clipper.cpp" if="NME_CLIPPER" />
+      <file name="${SRC_DIR}/common/NmeClip.cpp" if="NME_INTERNAL_CLIPPING" />
 
    
       <file name="${SRC_DIR}/lzma/LzFind.c" />
@@ -336,7 +348,7 @@
    <set name="target-id" value="nme-target" if="NME_STATIC_LINK" />
 
    <set name="NME_SUFFIX" value="${HX_TARGET_SUFFIX}" if="HX_TARGET_SUFFIX" />
-   <set name="NME_SUFFIX" value="${LIBPREFIX}" unless="HX_TARGET_SUFFIX" />
+   <set name="NME_SUFFIX" value="${LIBSUFFIX}" unless="HX_TARGET_SUFFIX" />
 
    <target id="${target-id}" output="${LIBPREFIX}nme${NME_SUFFIX}" tool="linker" toolid="${STD_MODULE_LINK}">
       <outdir name="${OUT_DIR}/${BINDIR}" />

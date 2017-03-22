@@ -10,6 +10,7 @@ import nme.geom.ColorTransform;
 import nme.filters.BitmapFilter;
 import nme.utils.ByteArray;
 import nme.Loader;
+import nme.image.PixelFormat;
 
 
 @:autoBuild(nme.macros.Embed.embedAsset("NME_bitmap_",":bitmap"))
@@ -22,19 +23,22 @@ class BitmapData extends Surface implements IBitmapDrawable
    public static var RED = createColor(0xff0000);
    public static var GREEN = createColor(0x00ff00);
    public static var BLUE = createColor(0x0000ff);
+
    public inline static var PNG = "png";
    public inline static var JPG = "jpg";
 
-   public static var TRANSPARENT = 0x0001;
-   public static var HARDWARE = 0x0002;
-   public static var FORMAT_8888:Int = 0;
-   public static var FORMAT_4444:Int = 1; //16 bit with alpha channel
-   public static var FORMAT_565:Int = 2;  //16 bit 565 without alpha
+   public static var defaultPremultiplied = true;
 
-
-   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, ?inGPUMode:Null<Int>)
+   public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, inPixelFormat:Int = -1)
    {
-      super(inWidth, inHeight, inTransparent, inFillARGB, inGPUMode );
+      nmeHandle = null;
+
+      var pixelFormat:Int = inPixelFormat!=-1      ? inPixelFormat :
+                               !inTransparent       ? PixelFormat.pfRGB :
+                               defaultPremultiplied ? PixelFormat.pfBGRPremA :
+                                                      PixelFormat.pfBGRA;
+
+      super(inWidth, inHeight, pixelFormat, inFillARGB );
 
       if (nmeHandle==null)
       {
@@ -47,6 +51,20 @@ class BitmapData extends Surface implements IBitmapDrawable
          }
       }
    }
+   public static function createPremultiplied(width:Int, height:Int, inArgb:Int = 0)
+   {
+      return new BitmapData(width, height, true, inArgb, PixelFormat.pfBGRPremA);
+   }
+
+   public static function createGrey(width:Int, height:Int, ?inLuma:Int)
+   {
+      return new BitmapData(width, height, false, inLuma, PixelFormat.pfLuma);
+   }
+
+   public static function createAlpha(width:Int, height:Int,inAlpha:Int=0)
+   {
+      return new BitmapData(width, height, false, (inAlpha&0xff)<<24, PixelFormat.pfAlpha);
+   }
 
    public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter):Void 
    {
@@ -55,7 +73,7 @@ class BitmapData extends Surface implements IBitmapDrawable
 
    override public function clone():BitmapData 
    {
-      var bm = new BitmapData(0, 0, transparent);
+      var bm = new BitmapData(0, 0, false,0,PixelFormat.pfNone);
       bm.nmeHandle = Surface.nme_bitmap_data_clone(nmeHandle);
       return bm;
    }
@@ -70,6 +88,8 @@ class BitmapData extends Surface implements IBitmapDrawable
       source.nmeDrawToSurface(nmeHandle, matrix, colorTransform, Std.string(blendMode), clipRect, smoothing);
    }
 
+   // BitmapData are currently stored unmultiplied on nme
+   public inline function unmultiplyAlpha() { }
 
    public static inline function extractAlpha(v:Int):Int { return v >>> 24; }
 
@@ -343,7 +363,7 @@ class BitmapData extends Surface implements IBitmapDrawable
       return p;
    }
 
-   public static function load(inFilename:String, format:Int = 0):BitmapData 
+   public static function load(inFilename:String, format:Int = -1):BitmapData 
    {
       var result = new BitmapData(0, 0);
       result.nmeHandle = Surface.nme_bitmap_data_load(inFilename, format);

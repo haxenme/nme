@@ -18,6 +18,8 @@ class Server
 {
    public static var values = new Map<String,Dynamic>();
    public static var functions = new Map<String,Dynamic>();
+   public static var enabled = true;
+   public static var password:String = "";
 
    public var connectedHost(default,null):String;
    public var directory(default,null):String;
@@ -42,6 +44,9 @@ class Server
       deque = new Deque<Void->Void>();
       postedResults = new Deque<String>();
    }
+
+   public static function setPassword(inValue:String) password = inValue;
+   public static function setEnabled(inValue:Bool) enabled = inValue;
 
    public function pollQueue() : Void->Void
    {
@@ -391,6 +396,26 @@ trace("Directory ->  " + directory);
          var fromSocket = connection.input;
          var toSocket = connection.output;
 
+         if (password!="")
+         {
+            var query = haxe.crypto.Md5.encode( Date.now().toString() );
+            toSocket.writeInt32(query.length);
+            toSocket.writeString(query);
+            var len = fromSocket.readInt32();
+            var result = "";
+            if (len==query.length)
+               result = fromSocket.readString(len);
+            var target = haxe.crypto.Md5.encode( password + query );
+            if (target!=result)
+            {
+               var message = "bad password";
+               toSocket.writeInt32(message.length);
+               toSocket.writeString(message);
+               throw message;
+            }
+         }
+
+
          while(true)
          {
             var len = fromSocket.readInt32();
@@ -573,8 +598,16 @@ trace("Directory ->  " + directory);
                log("Wait connection...");
                var connection = socket.accept();
                log("got connection");
-               connection.setBlocking(true);
-               handleConnection(connection);
+               if (enabled)
+               {
+                  connection.setBlocking(true);
+                  handleConnection(connection);
+               }
+               else
+               {
+                  log("Not enabled");
+                  connection.close();
+               }
             }
          });
       }

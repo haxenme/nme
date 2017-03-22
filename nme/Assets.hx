@@ -2,6 +2,7 @@ package nme;
 
 import nme.display.Bitmap;
 import nme.display.BitmapData;
+import nme.display.MovieClip;
 import nme.media.Sound;
 import nme.net.URLRequest;
 import nme.text.Font;
@@ -35,6 +36,13 @@ class Cache
    public function removeBitmapData(inId:String) Assets.removeBitmapData(inId);
 }
 
+typedef AssetLibrary = nme.AssetLib;
+typedef AssetLibFactory = String -> nme.AssetLib;
+
+
+
+
+
 @:nativeProperty
 class Assets 
 {
@@ -45,19 +53,71 @@ class Assets
    public static var info = new Map<String,AssetInfo>();
    public static var pathMapper = new Map<String,String>();
    public static var byteFactory = new Map<String,Void->ByteArray>();
+   public static var libraryFactories = new Map<String,AssetLibFactory>();
+   public static var loadedLibraries = new Map<String,AssetLib>();
    public static var cacheMode:Int = WEAK_CACHE;
 
    public static var scriptBase = "";
 
    public static var cache = new Cache();
 
+
+
+   public static function fromAssetList(assetList:String, inAddScriptBase:Bool)
+   {
+      var lines:Array<String> = null;
+      if (assetList.indexOf('\r')>=0)
+         lines = assetList.split('\r\n');
+      else
+         lines = assetList.split('\n');
+
+      var i:Int = 1;
+      while (i < lines.length-1)
+      {
+         var id:String = lines[i+0];
+         var resourceName:String = lines[i+1];
+         var type:AssetType = Type.createEnum(AssetType,lines[i+2]);
+         var isResource:Bool = lines[i+3] != 'false';
+         var className:String = lines[i+4];
+         if (className=="null")
+            className = null;
+         if (inAddScriptBase && !isResource)
+            resourceName = scriptBase + resourceName;
+
+         info.set(id, new AssetInfo(resourceName,type,isResource,className));
+         i+=5;
+      }
+   }
+
+   public static function loadAssetList()
+   {
+      var assetList = haxe.Resource.getString("haxe/nme/assets.txt");
+      if (assetList!=null)
+         fromAssetList(assetList,false);
+   }
+
+
+   public static function loadScriptAssetList()
+   {
+      var assetList = haxe.Resource.getString("haxe/nme/scriptassets.txt");
+      if (assetList!=null)
+         fromAssetList(assetList,true);
+   }
+
+
    //public static var id(get_id, null):Array<String>;
+
+   public static function addLibraryFactory(inType:AssetType, inFactory:AssetLibFactory)
+   {
+      libraryFactories.set(Std.string(inType), inFactory);
+   }
 
    public static function getAssetPath(inName:String) : String
    {
       var i = getInfo(inName);
       return i==null ? null : i.path;
    }
+   inline public static function getPath(inName:String) return getAssetPath(inName);
 
    public static function addEventListener(type:String, listener:Dynamic, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void
    {
@@ -82,6 +142,18 @@ class Assets
       return bytes.getData();
       #else
       return ByteArray.fromBytes(bytes);
+      #end
+   }
+
+   public static function isLocal(inId:String, inType:AssetType)
+   {
+      var i = getInfo(inId);
+      if (i==null)
+         return false;
+      #if flash
+      return i.isResource || Type.resolveClass(i.className)!=null;
+      #else
+      return true;
       #end
    }
 
@@ -117,9 +189,7 @@ class Assets
    public static function noId(id:String, type:String)
    {
       trace("[nme.Assets] missing asset '" + id + "' of type " + type);
-      for(key in info.keys())
-         trace(" " + key + " -> " + info.get(key).path );
-      trace("---");
+      //trace(info);
    }
 
    public static function badType(id:String, type:String)
@@ -203,7 +273,7 @@ class Assets
       if (useCache!=false)
       {
          var val = i.getCache();
-         if (val!=null)
+         if (val!=null && Std.is(val,BitmapData) )
             return val;
       }
  
@@ -271,7 +341,8 @@ class Assets
    {
       if (useCache!=false)
       {
-         var val:ByteArray = i.getCache();
+         var cached = i.getCache();
+         var val:ByteArray = Std.is(cached, ByteArray) ? cached : null;
          if (val!=null)
          {
             val.position = 0;
@@ -351,7 +422,7 @@ class Assets
       if (useCache!=false)
       {
          var val = i.getCache();
-         if (val!=null)
+         if (val!=null && Std.is(val,Font) )
             return val;
       }
 
@@ -399,7 +470,7 @@ class Assets
       if (useCache!=false)
       {
          var val = i.getCache();
-         if (val!=null)
+         if (val!=null && Std.is(val,Sound) )
             return val;
       }
 
@@ -487,7 +558,79 @@ class Assets
        return getText(id,useCache);
    }
 
+   public static function parseLibId(id:String)
+   {
+      var split = id.indexOf(":");
+      if (split<0)
+         return null;
+      return [ id.substr(0,split), id.substr(split+1) ];
+   }
+
+   public static function loadLibrary(inLibName:String, onLoad:AssetLib->Void)
+   {
+      if (loadedLibraries.exists(inLibName))
+      {
+         onLoad( loadedLibraries.get(inLibName) );
+         return;
+      }
+
+      var libInfo = info.get(inLibName);
+      if (libInfo==null)
+         throw "[nme.Assets] Unnkown library " + inLibName;
+
+      var type = Std.string(libInfo.type);
+      var factory = libraryFactories.get(type);
+      if (factory==null)
+         throw("[nme.Assets] missing library handler for '" + inLibName + "' of type " + type);
+
+      factory(inLibName).load(function(lib) {
+         loadedLibraries.set(inLibName,lib);
+         onLoad(lib);
+      } );
+   }
+
+
+   public static function getLoadedLibrary(inLibName:String) : AssetLib
+   {
+      if (!loadedLibraries.exists(inLibName))
+      {
+         var libInfo = info.get(inLibName);
+         if (libInfo==null)
+         {
+            noId(inLibName,"Library");
+            return null;
+         }
+
+         var type = Std.string(libInfo.type);
+         var factory = libraryFactories.get(type);
+         if (factory==null)
+         {
+            trace("[nme.Assets] missing library handler for '" + inLibName + "' of type " + type);
+            return null;
+         }
+
+         factory(inLibName).load(function(lib) loadedLibraries.set(inLibName,lib) );
+      }
+
+      return loadedLibraries.get(inLibName);
+   }
+
+   public static function getMovieClip(id:String):MovieClip
+   {
+      var libId = parseLibId(id);
+      if (libId!=null)
+      {
+         var lib = getLoadedLibrary(libId[0]);
+         if (lib==null)
+            return null;
+         return lib.getMovieClip(libId[1]);
+      }
+
+      return null;
+   }
+
   #if (cpp||neko)
+   @:keep 
    private static var initResources:Dynamic = (function() {
        var nme_set_resource_factory = nme.Loader.load("nme_set_resource_factory", 1);
        if (nme_set_resource_factory!=null)

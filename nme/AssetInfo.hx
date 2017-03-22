@@ -17,11 +17,18 @@ class AssetInfo
       type = inType;
       className = inClassName;
       isResource = inIsResource;
+      //trace('$inPath $inType $inIsResource $inClassName');
       #if !flash
       if (type==AssetType.FONT && isResource)
          new nme.text.Font("",null,null, path);
       #end
    }
+
+   public function toString()
+   {
+      return '{path:$path className:$className type:$type isResource:$isResource cached:' + (cache!=null) +'}';
+   }
+
 
    public function uncache()
    {

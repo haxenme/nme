@@ -13,6 +13,10 @@ import nme.Loader;
 import nme.app.Application;
 import haxe.CallStack;
 
+#if (toolkit && cpp && !cppia)
+import nme.StaticNme;
+#end
+
 import Sys;
 
 @:nativeProperty
@@ -37,6 +41,7 @@ class Lib
    public static var REQUIRE_SHADERS = 0;
    public static var DEPTH_BUFFER    = Application.DEPTH_BUFFER;
    public static var STENCIL_BUFFER  = Application.STENCIL_BUFFER;
+   public static var SINGLE_INSTANCE = Application.SINGLE_INSTANCE;
 
    public static var initHeight(get, never):Int;
    public static var initWidth(get, never):Int;

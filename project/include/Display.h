@@ -339,6 +339,14 @@ public:
 
 double GetTimeStamp();
 
+enum PopupKeyboardMode
+{
+   pkmOff    = 0x0000,
+   pkmDumb   = 0x0001,
+   pkmSmart  = 0x0002,
+   pkmNative = 0x0003,
+};
+
 class Stage : public DisplayObjectContainer
 {
 public:
@@ -367,7 +375,8 @@ public:
    virtual void SetScreenMode(ScreenMode mode) { }
    virtual void ShowCursor(bool inShow) { };
    virtual void SetCursor(Cursor inCursor)=0;
-   virtual void EnablePopupKeyboard(bool inEnable) { }
+   virtual void PopupKeyboard(PopupKeyboardMode inMode, WString *inValue=0) { };
+   virtual void SetPopupTextSelection(int inSel0, int inSel1) { }
    double GetNextWake() { return mNextWake; }
    virtual void SetNextWakeDelay(double inNextWake);
 
@@ -378,6 +387,9 @@ public:
    virtual uint32 getBackgroundMask() { return 0xffffffff; }
 
    virtual const char *getJoystickName(int id) { return NULL; }
+   virtual void onTextFieldText(const std::string &inText, int inPos0, int inPos1);
+   virtual void onTextFieldSelect(int inPos0, int inPos1);
+
 
    Matrix GetFullMatrix(bool inStageScaling);
    bool FinishEditOnEnter();
@@ -404,6 +416,7 @@ public:
    Stage  *getStage() { return this; }
 
    virtual class StageVideo *createStageVideo(void *) { return 0; }
+   virtual void cleanStageVideo() {}
 
 
    DisplayObject *GetFocusObject() { return mFocusObject; }
@@ -507,6 +520,7 @@ enum WindowFlags
    wfRequireShaders = 0x00000100,
    wfDepthBuffer    = 0x00000200,
    wfStencilBuffer  = 0x00000400,
+   wfSingleInstance = 0x00000800,
 };
 
 void StartAnimation();

@@ -24,7 +24,7 @@ class Html5Platform extends Platform
    override public function getBinName() : String { return null; }
    override public function getNativeDllExt() { return null; }
    override public function getLibExt() { return null; }
-   override public function getHaxeTemplateDir() { return "haxe"; }
+      override public function getHaxeTemplateDir() { return "haxe"; }
    override public function getAssetDir() { return getOutputDir()+"/assets"; }
 
 
@@ -49,13 +49,40 @@ class Html5Platform extends Platform
       }
       else
          IconHelper.createIcon(project.icons, 128, 128, destination + "/icon.png", addOutput);
+
+
+      for(dependency in project.dependencies)
+      {
+         if (dependency.path!=null)
+         {
+            FileHelper.copyFile(dependency.getFilename(), destination + "/" + dependency.name, addOutput);
+         }
+      }
    }
 
+   override private function generateContext(context:Dynamic)
+   {
+      var linkedLibraries = [];
+      for(dependency in project.dependencies)
+         linkedLibraries.push(dependency.name);
+
+      context.linkedLibraries = linkedLibraries;
+   }
 
    override public function run(arguments:Array<String>):Void 
    {
-      var fullPath =  FileSystem.fullPath('$applicationDirectory/index.html');
-      new nme.net.URLRequest("file://" + fullPath).launchBrowser();
+      var server = new nme.net.http.Server( new nme.net.http.FileServer([FileSystem.fullPath(applicationDirectory) ]).onRequest  );
+
+      var port = 2323;
+      server.listen(port);
+      new nme.net.URLRequest('http://localhost:$port/index.html' ).launchBrowser();
+
+      server.untilDeath();
+
+
+
+      //var fullPath =  FileSystem.fullPath('$applicationDirectory/index.html');
+      //new nme.net.URLRequest("file://" + fullPath).launchBrowser();
    }
 }
 

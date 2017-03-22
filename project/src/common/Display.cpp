@@ -674,7 +674,7 @@ void DisplayObject::Focus()
   {
      Stage *stage = getStage();
      if (stage)
-        stage->EnablePopupKeyboard(true);
+        stage->PopupKeyboard(pkmDumb);
   }
 #endif
 }
@@ -686,7 +686,7 @@ void DisplayObject::Unfocus()
   {
      Stage *stage = getStage();
      if (stage)
-        stage->EnablePopupKeyboard(false);
+        stage->PopupKeyboard(pkmOff);
   }
 #endif
 }
@@ -1271,7 +1271,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                if (bg && filters.size())
                    bg = 0;
                Surface *bitmap = new SimpleSurface(w, h, obj->IsBitmapRender(inTarget.IsHardware()) ?
-                         (bg ? pfXRGB : pfARGB) : pfAlpha );
+                         (bg ? pfRGB : pfBGRPremA) : pfAlpha );
                bitmap->IncRef();
 
                if (bg && obj->IsBitmapRender(inTarget.IsHardware()))
@@ -1315,7 +1315,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->mPhase = phase;
                }
 
-               bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2);
+               bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2,true);
 
                full = orig;
                obj->SetBitmapCache(
@@ -1379,6 +1379,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                //  first (hmm) - but if there is none, then the hit will be attributed to the
                //  parent object (this)
                mouseDisabledObjectHit = true;
+               obj_state->mHitResult = 0;
             }
             else
             {

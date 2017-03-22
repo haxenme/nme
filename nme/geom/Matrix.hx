@@ -230,6 +230,7 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end
       tx += inDX;
       ty += inDY;
    }
+   public function toString() return '[ $a $b $c $d $tx $ty ]';
 }
 
 #else

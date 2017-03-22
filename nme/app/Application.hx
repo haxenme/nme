@@ -45,6 +45,7 @@ class Application
    public inline static var HW_AA_HIRES     = 0x0060;
    public inline static var DEPTH_BUFFER    = 0x0200;
    public inline static var STENCIL_BUFFER  = 0x0400;
+   public inline static var SINGLE_INSTANCE = 0x0800;
 
    public static var nmeFrameHandle:Dynamic = null;
    public static var nmeWindow:Window = null;

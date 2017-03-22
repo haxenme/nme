@@ -453,7 +453,7 @@ public:
          bool premAlpha = false;
          if ((element.mFlags & DRAW_HAS_TEX) && element.mSurface)
          {
-            if (element.mSurface->GetFlags() & surfUsePremultipliedAlpha)
+            if (IsPremultipliedAlpha(element.mSurface->Format()))
                premAlpha = true;
             progId |= PROG_TEXTURE;
             if (element.mSurface->BytesPP()==1)
@@ -570,7 +570,7 @@ public:
 
          if (progId & (PROG_TINT | PROG_COLOUR_OFFSET) )
          {
-            prog->setColourTransform(ctrans, element.mColour );
+            prog->setColourTransform(ctrans, element.mColour, premAlpha );
          }
 
          if ( (element.mPrimType == ptLineStrip || element.mPrimType==ptPoints || element.mPrimType==ptLines)
@@ -733,6 +733,7 @@ public:
          e.mSurface->DecRef();
 
       e.mSurface = inSurface;
+      e.mBlendMode = bmNormal;
 
       e.mSurface->IncRef();
       e.mFlags = (e.mFlags & ~(DRAW_BMP_REPEAT|DRAW_BMP_SMOOTH) );
@@ -750,7 +751,7 @@ public:
       mBitmapBuffer.mArray.resize( (e.mCount+6) * e.mStride );
       UserPoint *p = (UserPoint *)&mBitmapBuffer.mArray[e.mCount*e.mStride];
       e.mCount+=6;
-      
+
       UserPoint corners[4];
       UserPoint tex[4];
       for(int i=0;i<4;i++)

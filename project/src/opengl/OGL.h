@@ -70,7 +70,11 @@
 typedef ptrdiff_t GLsizeiptrARB;
 
 #define NEED_EXTENSIONS
+#define GL_GLEXT_PROTOTYPES
 #include <SDL_opengl.h>
+#ifdef NME_TOOLKIT_BUILD
+#include <SDL_opengl_glext.h>
+#endif
 
 #endif
 
@@ -189,7 +193,8 @@ public:
 
    virtual void disableSlots() = 0;
    virtual void setTransform(const Trans4x4 &inTrans) = 0;
-   virtual void setColourTransform(const ColorTransform *inTransform, unsigned int inColour) = 0;
+   virtual void setColourTransform(const ColorTransform *inTransform, unsigned int inColour,
+                                    bool inPremultiplyAlpha) = 0;
    virtual void setGradientFocus(float inFocus) = 0;
 
    int vertexSlot;

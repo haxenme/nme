@@ -19,6 +19,27 @@ import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 #end
 
+typedef ByteArrayData = ByteArray;
+
+@:cppFileCode('
+namespace {
+   float mangleFloat(float f) {
+      char *c = (char *)&f;
+      std::swap(c[0],c[3]);
+      std::swap(c[1],c[2]);
+      return f;
+   }
+   double mangleDouble(double d) {
+      char *c = (char *)&d;
+      std::swap(c[0],c[7]);
+      std::swap(c[1],c[6]);
+      std::swap(c[2],c[5]);
+      std::swap(c[3],c[4]);
+      return d;
+   }
+
+}
+')
 @:nativeProperty
 class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput implements IMemoryRange implements IDataOutput
 {
@@ -28,6 +49,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public var endian(get_endian, set_endian):String;
    public var position:Int;
    public var byteLength(get_byteLength,null):Int;
+   public var __length(get,set):Int;
 
    #if (html5||neko)
    /** @private */ private var alloced:Int;
@@ -56,6 +78,17 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          #end
       }
    }
+
+   #if cpp
+   @:native("::mangleFloat")
+   @:extern static function mangleFloat(f:Float):Float return 0;
+   @:native("::mangleDouble")
+   @:extern static function mangleDouble(f:Float):Float return 0;
+   #end
+
+   inline public function get___length() return length;
+   inline public function set___length(inLength:Int) return setLength(inLength);
+   inline public function __resize(inLength:Int) ensureElem(inLength-1,true);
 
    @:keep
    inline public function __get(pos:Int):Int 
@@ -269,12 +302,14 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
       #if neko
       var bytes = new Bytes(8, untyped __dollar__ssub(b, position, 8));
-      #elseif cpp
-      var bytes = new Bytes(8, b.slice(position, position + 8));
-      #end
-
       position += 8;
       return _double_of_bytes(bytes.b, bigEndian);
+      #elseif cpp
+      var result:Float =  untyped __global__.__hxcpp_memory_get_double(b, position);
+      position += 8;
+      if (bigEndian) return mangleDouble(result);
+      return result;
+      #end
       #end
    }
 
@@ -297,12 +332,15 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #else
       #if neko
       var bytes = new Bytes(4, untyped __dollar__ssub(b, position, 4));
-      #elseif cpp
-      var bytes = new Bytes(4, b.slice(position, position + 4));
-      #end
-
       position += 4;
       return _float_of_bytes(bytes.b, bigEndian);
+      #elseif cpp
+      var result:Float =  untyped __global__.__hxcpp_memory_get_float(b, position);
+      position += 4;
+      if (bigEndian) return mangleFloat(result);
+      return result;
+      #end
+
       #end
    }
 
@@ -380,11 +418,11 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #end
    }
 
-   public function setLength(inLength:Int):Void 
+   public function setLength(inLength:Int): Int 
    {
       if (inLength > 0)
          ensureElem(inLength - 1, false);
-      length = inLength;
+      return length = inLength;
    }
 
    // ArrayBuffer interface
@@ -511,21 +549,15 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
    public function writeDouble(x:Float) 
    {
-      #if html5
       var end = position + 8;
       ensureElem(end - 1, true);
+
+      #if cpp
+      // TODO - mangle double on all platforms too?
+      if (bigEndian) x = mangleDouble(x);
+      #end
       setDouble(position,x);
       position += 8;
-      #else
-
-      #if neko
-      var bytes = new Bytes(8, _double_bytes(x, bigEndian));
-      #elseif cpp
-      var bytes = Bytes.ofData(_double_bytes(x, bigEndian));
-      #end
-
-      writeHaxeBytes(bytes,0,0);
-      #end
    }
 
    #if !no_nme_io
@@ -537,21 +569,14 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
    public function writeFloat(x:Float) 
    {
-      #if html5
       var end = position + 4;
       ensureElem(end - 1, true);
+      #if cpp
+      // TODO - mangle floats on neko too?
+      if (bigEndian) x = mangleFloat(x);
+      #end
       setFloat(position,x);
       position += 4;
-      #else
-
-      #if neko
-      var bytes = new Bytes(4, _float_bytes(x, bigEndian));
-      #elseif cpp
-      var bytes = Bytes.ofData(_float_bytes(x, bigEndian));
-      #end
-
-      writeHaxeBytes(bytes,0,0);
-      #end
    }
 
    public function writeInt(value:Int) 
@@ -627,10 +652,11 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    private function set_endian(s:String):String { bigEndian =(s == Endian.BIG_ENDIAN); return s; }
 
    // Native Methods
-   /** @private */ private static var _double_bytes = Lib.load("std", "double_bytes", 2);
+   #if neko
    /** @private */ private static var _double_of_bytes = Lib.load("std", "double_of_bytes", 2);
-   /** @private */ private static var _float_bytes = Lib.load("std", "float_bytes", 2);
    /** @private */ private static var _float_of_bytes = Lib.load("std", "float_of_bytes", 2);
+   #end
+
    #if !no_nme_io
    private static var nme_byte_array_overwrite_file = Loader.load("nme_byte_array_overwrite_file", 2);
    private static var nme_byte_array_read_file = Loader.load("nme_byte_array_read_file", 1);

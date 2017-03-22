@@ -1,4 +1,36 @@
 
+5.7
+--------------------------
+
+* Numerous other contributions - thanks everyone!
+* Added some polygon clipping options
+* More towards premultiplied alpha
+* Some more openfl compatibility
+* Fix tile sub-pixel offsets
+* Android immersive mode fixes
+* More native text options
+* Move towards toolkit builds
+* Optionally lock out multiplle instances of application
+* Add smaller and lower-res icons for windows
+* Fix issues with freeing sound buffers
+* Add ios watch support
+* ios default deployment set to "8.0".  Can be overridden with the 'deployment' attribute in the ios tag.
+* Fix static linking flags
+
+5.6
+--------------------------
+* Added TextField onScroll event
+* Added clipboard code
+* More distinction between character(text) and raw key inputs
+* Some swflib compatibility changes
+* Make window creation size depend on reported screen DPI
+* Check haxe_ver to decide if static libraries are required
+* Work in 'file copy' command for new version of haxe
+* Some Windows64 fixes
+* Some fixed for SDL music
+* More immersive fullscreen more on android when supported
+* Integrate more with the android native keyboard
+* Start work on 'nme-toolkit' build
 * More hide-and-seek with ios font locations (thanks codeservice)
 * Updated bin location for El Capitan
 * Turn off BITCODE in nme projects by default

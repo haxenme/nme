@@ -9,6 +9,10 @@ public function new()
    gfx.beginFill(0x000000);
    gfx.drawRect(120,0,120,320);
 
+   var uiScale = nme.ui.Scale.getFontScale();
+   var parent = Lib.current;
+   parent.scaleX = parent.scaleY = uiScale;
+
    for(side in 0...2)
    {
       var col = (0xFF + side * 0xFF ) % 0xffffff;

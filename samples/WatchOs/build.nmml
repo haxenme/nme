@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+  <meta
+     title="Watch Main"
+     package="com.nmehost.watch"
+     version="1.0.0"
+     company="nme" 
+  />
+  
+  <app
+     file="WatchMain" 
+     main="Main"
+  />
+  
+  <window
+     width="640" 
+     height="480" 
+     orientation="landscape" 
+     fps="0"
+     background="0xeeeeee"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+  />
+  <ios
+     sourceFlavour="mm"
+   />
+
+  <!--
+  <haxedef name="annotate_source" />
+  <haxedef name="dump" />
+  -->
+  <watchos>
+    <include path="watchSrc/build.nmml" />
+  </watchos>
+  <dependency name="WatchConnectivity.framework" />
+
+  <haxedef name="OBJC_ARC" />
+  <icon name="nme.svg" />
+  <source path="appSrc" />
+  
+  <haxelib name="nme" />
+  
+</project>

@@ -8,6 +8,8 @@ enum AssetType
    MUSIC;
    SOUND;
    TEXT;
+   SWF;
+   MOVIE_CLIP;
 }
 
 

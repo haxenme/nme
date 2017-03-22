@@ -6,7 +6,7 @@
 #include <ByteArray.h>
 #include <Utils.h>
 #include "Audio.h"
-#include <NmeThread.h>
+#include <NMEThread.h>
 #include <dlfcn.h>
 //#include <unistd.h>
 //#include <sys/time.h>

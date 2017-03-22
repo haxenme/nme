@@ -2,21 +2,38 @@ package nme.display;
 #if (!flash)
 
 @:nativeProperty
-class MovieClip extends Sprite 
+class MovieClip extends Sprite implements Dynamic<DisplayObject>
 {
-   public var currentFrame(get_currentFrame, null):Int;
+   public var currentFrame(get, null):Int;
    public var enabled:Bool;
-   public var framesLoaded(get_framesLoaded, null):Int;
-   public var totalFrames(get_totalFrames, null):Int;
+   public var framesLoaded(get, null):Int;
+   public var totalFrames(get, null):Int;
 
-   /** @private */ private var mCurrentFrame:Int;
-   /** @private */ private var mTotalFrames:Int;
+   var mCurrentFrame:Int;
+   var mTotalFrames:Int;
+
+   // Openfl alias
+   private var __currentFrame(get,set):Int;
+   function get___currentFrame() return mCurrentFrame;
+   function set___currentFrame(f) return mCurrentFrame=f;
+   private var __totalFrames(get,set):Int;
+   function get___totalFrames() return mTotalFrames;
+   function set___totalFrames(f) return mTotalFrames=f;
+
+   private var __frameScripts:Map<Int, Void->Void>;
+   private var __currentLabels:Array<FrameLabel>;
+   private var __currentFrameLabel:String;
+   private var __currentLabel:String;
+
+
    public function new() 
    {
       super();
 
       mCurrentFrame = 0;
       mTotalFrames = 0;
+      __currentLabels = [];
+      enabled = true;
    }
 
    public function gotoAndPlay(frame:Dynamic, ?scene:String):Void 

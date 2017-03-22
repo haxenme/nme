@@ -164,7 +164,7 @@ public:
    bool isOpenGL() const { return nmeView->mOGLContext; }
    Surface *GetPrimarySurface() { return nmeView->mHardwareSurface; }
    void SetCursor(nme::Cursor) { /* No cursors on iPhone ! */ }
-   void EnablePopupKeyboard(bool inEnable);
+   void PopupKeyboard(PopupKeyboardMode inEnable,WString *);
    double getDPIScale() { return nmeView->dpiScale; }
 
    int getWindowFrameBufferId() { return nmeView->defaultFramebuffer; };
@@ -259,6 +259,8 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 {
    if (animating)
    {
+      if (stage->nmeView->mOGLContext && [EAGLContext currentContext] != stage->nmeView->mOGLContext)
+         [EAGLContext setCurrentContext:stage->nmeView->mOGLContext];  
       Event evt(etPoll);
       stage->OnEvent(evt);
    }
@@ -295,14 +297,10 @@ static std::string nmeTitle;
 - (id) initWithCoder:(NSCoder*)coder
 {    
    NSLog(@"NME View init with coder - not supported");
-   /*
    if ((self = [super initWithCoder:coder]))
    {
-      printf("Init with coder\n");
-      [self myInit];
-      return self;
+      //return self;
    }
-   */
    return nil;
     
 }
@@ -1836,10 +1834,10 @@ NMEStage::~NMEStage()
   [nmeView tearDown];
 }
 
-void NMEStage::EnablePopupKeyboard(bool inEnable)
+void NMEStage::PopupKeyboard(PopupKeyboardMode inMode, WString *)
 {
-  popupEnabled = inEnable;
-  [ nmeView enableKeyboard:inEnable];
+  popupEnabled = inMode!=pkmOff;
+  [ nmeView enableKeyboard:popupEnabled];
 }
  
 
@@ -2139,7 +2137,7 @@ bool nmeIsMain = true;
 
 void EnableKeyboard(bool inEnable)
 {
-   sgNmeStage->EnablePopupKeyboard(inEnable);
+   sgNmeStage->PopupKeyboard(inEnable ? pkmDumb : pkmOff,0);
 }
 
 
@@ -2277,6 +2275,5 @@ void nme_app_set_active(bool inActive)
 
 
 }
-
 
 

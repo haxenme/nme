@@ -50,7 +50,7 @@ int GetResult()
 
 class AndroidVideo : public StageVideo
 {
-   AndroidStage            *stage;
+   Stage                   *stage;
    std::string             lastUrl;
    bool                    vpIsSet;
    DRect                   viewport;
@@ -65,6 +65,7 @@ class AndroidVideo : public StageVideo
    jmethodID               startId;
    jmethodID               pauseId;
    jmethodID               stopId;
+   jmethodID               destroyId;
    jmethodID               getDurationId;
    jmethodID               getPositionId;
    jmethodID               getBufferedId;
@@ -73,10 +74,10 @@ class AndroidVideo : public StageVideo
    jmethodID               setViewportId;
 
 public:
-   AndroidVideo(JNIEnv *env, AndroidStage *inStage)
+   AndroidVideo(JNIEnv *env, Stage *inStage)
    {
       IncRef();
-      stage = inStage;
+      this->stage = inStage;
       vpIsSet = false;
       videoWidth = 0;
       videoHeight = 0;
@@ -85,6 +86,7 @@ public:
       playId = env->GetStaticMethodID(nmeVideoView, "nmePlay", "(Ljava/lang/String;DD)V");
       startId = env->GetStaticMethodID(nmeVideoView, "nmeStart", "()V");
       stopId = env->GetStaticMethodID(nmeVideoView, "nmeStop", "()V");
+      destroyId = env->GetStaticMethodID(nmeVideoView, "nmeDestroy", "()V");
       pauseId = env->GetStaticMethodID(nmeVideoView, "nmePause", "()V");
       seekId = env->GetStaticMethodID(nmeVideoView, "nmeSeek", "(D)V");
       getDurationId = env->GetStaticMethodID(nmeVideoView, "nmeGetDuration", "()D");
@@ -188,6 +190,9 @@ public:
    {
       LOG("video: destroy\n");
       lastUrl = "";
+      JNIEnv *env = GetEnv();
+      env->CallStaticVoidMethod(nmeVideoView, destroyId);
+      stage->cleanStageVideo();
    }
 
    void onFinished()
@@ -262,6 +267,11 @@ public:
 
       return video;
    }
+   
+   void cleanStageVideo() {
+       delete video;
+       video = 0;
+   }
 
    uint32 getBackgroundMask()
    {
@@ -320,7 +330,7 @@ public:
       HandleEvent(evt);
    }
 
-   void OnKey(int inKeyCode, int inCharCode, bool inDown)
+   void OnKey(int inKeyCode, int inCharCode, bool inDown, bool isChar)
    {
       //__android_log_print(ANDROID_LOG_INFO, "NME", "OnKey %d %d", inCode, inDown);
       Event key( inDown ? etKeyDown : etKeyUp );
@@ -328,13 +338,14 @@ public:
       key.value = inKeyCode;
       HandleEvent(key);
       
-      if(inDown) {
+      if(isChar) {//if(inDown) {
          Event key( etChar );
          key.code = inCharCode;
          //key.value = inKeyCode;
          HandleEvent(key);
       }
    }
+
 
    void OnJoy(int inDeviceId, int inCode, bool inDown)
    {
@@ -451,15 +462,32 @@ public:
       //__android_log_print(ANDROID_LOG_INFO, "NME", "Accelerometer %f %f %f", inX, inY, inZ);
    }
 
-   void EnablePopupKeyboard(bool inEnable)
+   void PopupKeyboard(PopupKeyboardMode inMode,WString *inValue)
    {
       JNIEnv *env = GetEnv();
       jclass cls = FindClass("org/haxe/nme/GameActivity");
-      jmethodID mid = env->GetStaticMethodID(cls, "showKeyboard", "(Z)V");
+      jstring str = 0;
+      if (inValue)
+      {
+         std::string cstr = WideToUTF8(*inValue);
+         str = env->NewStringUTF( cstr.c_str() );
+      }
+      jmethodID mid = env->GetStaticMethodID(cls, "popupKeyboard", "(ILjava/lang/String;)V");
       if (mid == 0)
         return;
 
-      env->CallStaticVoidMethod(cls, mid, (jboolean) inEnable);
+      env->CallStaticVoidMethod(cls, mid, (int)inMode, str);
+   }
+
+   void SetPopupTextSelection(int inSel0, int inSel1)
+   {
+      JNIEnv *env = GetEnv();
+      jclass cls = FindClass("org/haxe/nme/GameActivity");
+      jmethodID mid = env->GetStaticMethodID(cls, "setPopupSelection", "(II)V");
+      if (mid == 0)
+        return;
+
+      env->CallStaticVoidMethod(cls, mid, inSel0, inSel1);
    }
 
    bool getMultitouchSupported() { return true; }
@@ -825,11 +853,33 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTrackball(JNIEnv * env, jobject 
    return nme::GetResult();
 }
 
-JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int keyCode, int charCode, bool down)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onKeyChange(JNIEnv * env, jobject obj, int keyCode, int charCode, bool down, bool isChar)
 {
    AutoHaxe haxe("onKey");
    if (nme::sStage)
-      nme::sStage->OnKey(keyCode,charCode,down);
+      nme::sStage->OnKey(keyCode,charCode,down,isChar);
+   return nme::GetResult();
+}
+
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onText(JNIEnv * env, jobject obj, jstring inText, int inReplacePos, int inReplaceLen)
+{
+   AutoHaxe haxe("onText");
+   if (nme::sStage)
+   {
+      std::string text = JStringToStdString(env, inText, false);
+      nme::sStage->onTextFieldText(text,inReplacePos,inReplaceLen);
+   }
+   return nme::GetResult();
+}
+
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onTextSelect(JNIEnv * env, jobject obj, int inReplacePos, int inReplaceLen)
+{
+   AutoHaxe haxe("onTextSelect");
+   if (nme::sStage)
+      nme::sStage->onTextFieldSelect(inReplacePos,inReplaceLen);
+
    return nme::GetResult();
 }
 

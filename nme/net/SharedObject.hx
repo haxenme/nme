@@ -75,7 +75,7 @@ class SharedObject extends EventDispatcher
       {
          if (part != "." && part != "") 
          {
-            if (total != "") 
+            if (total != "/") 
             {
                total += "/";
             }

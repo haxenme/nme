@@ -76,6 +76,10 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var isOpenGL(get, never):Bool;
    // Is this used?  Could not tell where "event.down" is being set, therefore this would appear useless
    //public var onKey:Int -> Bool -> Int -> Int -> Void; 
+
+   // Set for custom exception processing
+   public var exceptionHandler:Dynamic->Array<StackItem>->Void;
+
    public var pauseWhenDeactivated:Bool;
    public var quality(get, set):StageQuality;
    public var scaleMode(get, set):StageScaleMode;
@@ -341,19 +345,28 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
                     ((flags & efLocationRight) == 0) ? 1 : 0,
                     (flags & efCtrlDown) != 0,
                     (flags & efAltDown) != 0,
-                    (flags & efShiftDown) !=0);
+                    (flags & efShiftDown) !=0,
+                    (flags & efCtrlDown) != 0,
+                    (flags & efCommandDown) != 0);
          obj.nmeFireEvent(evt);
 
          if (evt.nmeGetIsCancelled())
             inEvent.result = 1;
 
-         #if (windows || linux)
-         if (flags & efAltDown > 0 && inEvent.result != -1 && inEvent.code == Keyboard.ENTER) 
+         #if (windows || linux || mac)
+         if (inEvent.result != -1 && type == KeyboardEvent.KEY_DOWN) 
          {
-            if (displayState == StageDisplayState.NORMAL) 
-               displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
-            else 
-               displayState = StageDisplayState.NORMAL;
+            #if mac
+            if (flags & efCtrlDown > 0 && flags & efCommandDown > 0 && flags & efShiftDown==0 && inEvent.code == Keyboard.F ) 
+            #else
+            if (flags & efAltDown > 0 && inEvent.code == Keyboard.ENTER ) 
+            #end
+            {
+               if (displayState == StageDisplayState.NORMAL) 
+                  displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+               else 
+                  displayState = StageDisplayState.NORMAL;
+            }
          }
          #end
       }
@@ -452,9 +465,14 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void
    {
-      trace("Exception: " + exception+"\n" + haxe.CallStack.toString(stack));
-      trace("\n\n\n===Terminating===\n.");
-      throw "Unhandled exception:" + exception;
+      if (exceptionHandler!=null)
+         exceptionHandler(exception,stack);
+      else
+      {
+         trace("Exception: " + exception+"\n" + haxe.CallStack.toString(stack));
+         trace("\n\n\n===Terminating===\n.");
+         throw "Unhandled exception:" + exception;
+      }
    }
  
 
@@ -651,7 +669,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
             data[inEvent.code] = value;
 
-            evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2]);
+            evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2], data[3]);
             evt.axis = data.copy();
 
             nmeJoyAxisData.set(inEvent.id, data);

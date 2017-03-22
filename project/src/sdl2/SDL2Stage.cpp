@@ -17,6 +17,9 @@
 #include <Utils.h>
 #endif
 
+#if defined(HX_WINDOWS) && !defined(HX_WINRT)
+#define NME_WINDOWS_SINGLE_INSTANCE
+#endif
 
 namespace nme
 {
@@ -28,6 +31,9 @@ static bool sgJoystickEnabled = false;
 static int  sgShaderFlags = 0;
 static bool sgIsOGL2 = false;
 const int sgJoystickDeadZone = 1000;
+#ifdef NME_WINDOWS_SINGLE_INSTANCE 
+static HANDLE sgMutexRunning = NULL;
+#endif
 
 enum { NO_TOUCH = -1 };
 
@@ -103,9 +109,7 @@ public:
    int Height() const { return mSurf->h; }
    PixelFormat Format() const
    {
-      if (mSurf->format->Amask)
-         return pfARGB;
-      return pfXRGB;
+      return pfBGRA;
    }
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }
@@ -225,6 +229,8 @@ SDL_Cursor *sDefaultCursor = 0;
 SDL_Cursor *sTextCursor = 0;
 SDL_Cursor *sHandCursor = 0;
 
+unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN_DESKTOP;
+//unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN;
 
 class SDLStage : public Stage
 {
@@ -242,7 +248,7 @@ public:
       mShowCursor = true;
       mCurrentCursor = curPointer;
       
-      mIsFullscreen = (mWindowFlags & SDL_WINDOW_FULLSCREEN || mWindowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP);
+      mIsFullscreen = (mWindowFlags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP) );
       if (mIsFullscreen)
          displayState = sdsFullscreenInteractive;
       
@@ -295,7 +301,15 @@ public:
       }
       mPrimarySurface->DecRef();
       SDL_DestroyRenderer(mSDLRenderer);
-      SDL_DestroyWindow(mSDLWindow);
+      SDL_DestroyWindow(mSDLWindow); 
+
+      #ifdef NME_WINDOWS_SINGLE_INSTANCE
+      if ( sgMutexRunning )
+      {
+         ReleaseMutex( sgMutexRunning );
+         sgMutexRunning = NULL;
+      }
+      #endif
    }
    
    
@@ -350,33 +364,38 @@ public:
    {
       if (inFullscreen != mIsFullscreen)
       {
+         if (!mIsFullscreen)
+         {
+            SDL_GetWindowPosition(mSDLWindow, &sgWindowRect.x, &sgWindowRect.y);
+            SDL_GetWindowSize(mSDLWindow, &sgWindowRect.w, &sgWindowRect.h);
+         }
+
          mIsFullscreen = inFullscreen;
          
          if (mIsFullscreen)
          {
-            SDL_GetWindowPosition(mSDLWindow, &sgWindowRect.x, &sgWindowRect.y);
-            SDL_GetWindowSize(mSDLWindow, &sgWindowRect.w, &sgWindowRect.h);
-            
             //SDL_SetWindowSize(mSDLWindow, sgDesktopWidth, sgDesktopHeight);
-            
             SDL_DisplayMode mode;
             SDL_GetCurrentDisplayMode(0, &mode);
             mode.w = sgDesktopWidth;
             mode.h = sgDesktopHeight;
             SDL_SetWindowDisplayMode(mSDLWindow, &mode);
             
-            SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
+            SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
          }
          else
          {
             SDL_SetWindowFullscreen(mSDLWindow, 0);
+            /*
+              Trust sdl to restore the window position
+            #if !defined(HX_LINUX) && !defined(HX_MACOS)
             if (sgWindowRect.w && sgWindowRect.h)
             {
                SDL_SetWindowSize(mSDLWindow, sgWindowRect.w, sgWindowRect.h);
+               SDL_SetWindowPosition(mSDLWindow, sgWindowRect.x, sgWindowRect.y);
             }
-            #ifndef HX_LINUX
-            SDL_SetWindowPosition(mSDLWindow, sgWindowRect.x, sgWindowRect.y);
             #endif
+            */
          }
          
          SDL_ShowCursor(mShowCursor);
@@ -394,7 +413,7 @@ public:
       mode.h = inHeight;
       SDL_SetWindowFullscreen(mSDLWindow, 0);
       SDL_SetWindowDisplayMode(mSDLWindow, &mode);
-      SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN);
+      SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode);
    }
    
 
@@ -521,7 +540,7 @@ public:
       }
       SDL_SetWindowFullscreen(mSDLWindow, 0);
       SDL_SetWindowDisplayMode(mSDLWindow, &mode);
-      SDL_SetWindowFullscreen(mSDLWindow, SDL_WINDOW_FULLSCREEN);
+      SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode);
    }
     
    
@@ -679,11 +698,6 @@ public:
       return y;
    }   
 
-   
-   void EnablePopupKeyboard(bool enabled)
-   {
-      
-   }
    
    
    bool getMultitouchSupported()
@@ -1197,7 +1211,9 @@ void ProcessEvent(SDL_Event &inEvent)
             case SDL_WINDOWEVENT_RESTORED:
             case SDL_WINDOWEVENT_MAXIMIZED:
                {
-               sgSDLFrame->mStage->setIsFullscreen(inEvent.window.event==SDL_WINDOWEVENT_MAXIMIZED);
+               bool isMax = SDL_GetWindowFlags(sgSDLFrame->mStage->mSDLWindow ) &
+                            (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP);
+               sgSDLFrame->mStage->setIsFullscreen(isMax);
 
                Event activate(etActivate);
                sgSDLFrame->ProcessEvent(activate);
@@ -1478,7 +1494,24 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    }
    #endif
 
-
+   #ifdef NME_WINDOWS_SINGLE_INSTANCE
+   bool singleInstance = (inFlags & wfSingleInstance) != 0;
+   if (singleInstance)
+   {
+      // Detect previous instances of game
+      HANDLE sgMutexRunning = OpenMutex( MUTEX_ALL_ACCESS, 0, inTitle );
+      if ( !sgMutexRunning )
+      {
+         sgMutexRunning = CreateMutex( 0, 0, inTitle );
+      }
+      else
+      {
+         MessageBox( NULL, (LPCSTR)"An instance of the game is already running.",
+                           (LPCSTR)"Application already running", MB_ICONWARNING | MB_OK );
+         return;
+      }
+   }
+   #endif   
    
    sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
 
@@ -1511,7 +1544,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    if (opengl) requestWindowFlags |= SDL_WINDOW_OPENGL;
    if (resizable) requestWindowFlags |= SDL_WINDOW_RESIZABLE;
    if (borderless) requestWindowFlags |= SDL_WINDOW_BORDERLESS;
-   if (fullscreen) requestWindowFlags |= SDL_WINDOW_FULLSCREEN; //SDL_WINDOW_FULLSCREEN_DESKTOP;
+   if (fullscreen) requestWindowFlags |= FullscreenMode; //SDL_WINDOW_FULLSCREEN_DESKTOP;
    
    if (opengl)
    {
@@ -1538,13 +1571,21 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
       }
    }
+
+   double dpiScale = CapabilitiesGetScreenDPI()/96.0;
+   int targetW = dpiScale<1.5 ? inWidth : dpiScale*inWidth;
+   if (targetW>sgDesktopWidth)
+      targetW = sgDesktopWidth;
+   int targetH = dpiScale<1.5 ? inHeight : dpiScale*inHeight;
+   if (targetH>sgDesktopHeight)
+      targetH = sgDesktopHeight;
    
    #ifdef HX_LINUX
-   int setWidth = inWidth;
-   int setHeight = inHeight;
+   int setWidth = targetW;
+   int setHeight = targetH;
    #else
-   int setWidth = fullscreen ? sgDesktopWidth : inWidth;
-   int setHeight = fullscreen ? sgDesktopHeight : inHeight;
+   int setWidth = fullscreen ? sgDesktopWidth : targetW;
+   int setHeight = fullscreen ? sgDesktopHeight : targetH;
    #endif
    
    SDL_Window *window = NULL;
@@ -1563,17 +1604,24 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       
       #ifdef HX_WINDOWS
       HINSTANCE handle = ::GetModuleHandle(0);
-      HICON icon = ::LoadIcon(handle, MAKEINTRESOURCE (1));
+      LPSTR resource = MAKEINTRESOURCE(101);
+      LPARAM icon = (LPARAM)::LoadImage(handle, resource, IMAGE_ICON, 
+         GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
+      LPARAM smicon = (LPARAM)::LoadImage(handle, resource, IMAGE_ICON, 
+         GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
       
       if (icon)
       {
          SDL_SysWMinfo wminfo;
          SDL_VERSION (&wminfo.version);
-         
          if (SDL_GetWindowWMInfo(window, &wminfo) == 1)
          {
             HWND hwnd = wminfo.info.win.window;
-            ::SetClassLong(hwnd, GCL_HICON, reinterpret_cast<LONG>(icon));
+            ::SendMessage(hwnd, WM_SETICON, ICON_BIG, icon);
+            if(smicon)
+                ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, smicon);
+            else
+                ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, icon);
          }
       }
       #endif
@@ -1632,7 +1680,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    }
    
    int width, height;
-   if (windowFlags & SDL_WINDOW_FULLSCREEN || windowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+   if (windowFlags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP) )
    {
       //SDL_DisplayMode mode;
       //SDL_GetCurrentDisplayMode(0, &mode);
@@ -1913,6 +1961,14 @@ void StartAnimation()
 
    Event deactivate(etDeactivate);
    sgSDLFrame->ProcessEvent(deactivate);
+      
+#ifdef NME_WINDOWS_SINGLE_INSTANCE
+   if ( sgMutexRunning )
+   {
+      ReleaseMutex( sgMutexRunning );
+	  sgMutexRunning = NULL;
+   }
+#endif
    
    Event kill(etDestroyHandler);
    sgSDLFrame->ProcessEvent(kill);

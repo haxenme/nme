@@ -309,6 +309,12 @@ public:
             return;
          }
    }
+
+   inline void qremoveAt(int inIndex)
+   {
+      mPtr[inIndex] = mPtr[--mSize];
+   }
+
  
    inline void EraseAt(int inPos)
    {

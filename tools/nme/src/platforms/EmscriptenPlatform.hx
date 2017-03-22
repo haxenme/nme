@@ -37,7 +37,7 @@ class EmscriptenPlatform extends DesktopPlatform
 
       memFile = project.getBool("emscriptenMemFile", true);
 
-      project.haxeflags.push('-D HXCPP_LINK_MEMORY_FILE=' + (memFile?"1":"0") );
+      project.haxeflags.push('-D HXCPP_LINK_MEM_FILE=' + (memFile?"1":"0") );
    }
 
    override public function getPlatformDir() : String { return "emscripten"; }
@@ -48,15 +48,36 @@ class EmscriptenPlatform extends DesktopPlatform
 
    override public function copyBinary():Void 
    {
-      var src = haxeDir + "/cpp/ApplicationMain" + (project.debug ? "-debug" : "");
+      // Must keep the same name
+      if (project.debug)
+      {
+         var src = haxeDir + "/cpp/ApplicationMain-debug";
 
-      FileHelper.copyFile(src + ext, executablePath);
-      // Needed of O2?
-      if (memFile)
-         FileHelper.copyFile(src + ext+".mem", executablePath+".mem");
+         if (ext==".html") // no 'debug'
+            FileHelper.copyFile(src + ext, applicationDirectory+"/ApplicationMain.html");
+         else
+            FileHelper.copyFile(src + ext, applicationDirectory+"/ApplicationMain-debug"+ext);
 
-      if (ext==".html")
-         FileHelper.copyFile(src + ".js", applicationDirectory+"/ApplicationMain.js");
+         // Needed of O2?
+         if (memFile)
+            FileHelper.copyFile(src + ext+".mem", applicationDirectory+"/ApplicationMain-debug"+ext + ".mem" );
+
+         if (ext==".html")
+            FileHelper.copyFile(src + ".js", applicationDirectory+"/ApplicationMain-debug.js");
+
+      }
+      else
+      {
+         var src = haxeDir + "/cpp/ApplicationMain";
+
+         FileHelper.copyFile(src + ext, executablePath);
+         // Needed of O2?
+         if (memFile)
+            FileHelper.copyFile(src + ext+".mem", executablePath+".mem");
+
+         if (ext==".html")
+            FileHelper.copyFile(src + ".js", applicationDirectory+"/ApplicationMain.js");
+      }
    }
 
    override public function run(arguments:Array<String>):Void 

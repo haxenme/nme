@@ -13,7 +13,12 @@
 #include FT_BITMAP_H
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
+
+#ifdef NME_TOOLKIT_BUILD
+#include <ftoutln.h>
+#else
 #include <freetype/ftoutln.h>
+#endif
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -66,10 +71,11 @@ public:
       int idx = FT_Get_Char_Index( mFace, inChar );
 
       int renderFlags = FT_LOAD_DEFAULT;
-      //#ifndef EMSCRIPTEN
+      #ifndef EMSCRIPTEN
+      // There is a bug on the proto-types of AF_WritingSystemClass this might need fixing
       //if (!(mTransform & (ffItalic|ffBold) ))
          renderFlags |= FT_LOAD_FORCE_AUTOHINT;
-      //#endif
+      #endif
 
       int err = FT_Load_Glyph( mFace, idx, renderFlags  );
       if (err)
@@ -613,7 +619,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
 }
 
 
-
+extern const char *RemapFontName(const char *inName);
 
 FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes, const std::string &inCombinedName)
 {
@@ -636,6 +642,13 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Aut
    
    void* pBuffer = 0;
    face = FindFont(str,flags,inBytes,&pBuffer);
+   if (!face)
+   {
+      const char *alternate = RemapFontName(str.c_str());
+      if (alternate)
+         face = FindFont(alternate,flags,inBytes,&pBuffer);
+   }
+
    if (!face)
       return 0;
 
@@ -842,7 +855,8 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
    AutoGCRoot *bytes = !val_is_null(inBytes) ? new AutoGCRoot(inBytes) : NULL;
 
    void* pBuffer = 0;
-   result = nme::MyNewFace(val_string(font_file), 0, &face, bytes, &pBuffer);
+   const char *faceName = val_string(font_file);
+   result = nme::MyNewFace(faceName, 0, &face, bytes, &pBuffer);
    
    if (result == FT_Err_Unknown_File_Format)
    {
@@ -864,114 +878,15 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
       return alloc_null();
    }
 
+   value  family_name = get_familyname_from_sfnt_name(face);
 
-   int em = val_int(em_size);
+   value  ret = alloc_empty_object();
 
-   FT_Set_Char_Size(face, em, em, 72, 72);
-
-   std::vector<glyph*> glyphs;
-
-   FT_Outline_Funcs ofn =
-   {
-      outline_move_to,
-      outline_line_to,
-      outline_conic_to,
-      outline_cubic_to,
-      0, // shift
-      0  // delta
-   };
-
-   if (!val_is_null(char_vector))
-   {
-      // Import only specified characters
-      int  num_char_codes = val_array_size(char_vector);
-
-      for(i=0; i<num_char_codes; i++)
-      {
-         FT_ULong    char_code = (FT_ULong)val_int(val_array_i(char_vector,i));
-         FT_UInt     glyph_index = FT_Get_Char_Index(face, char_code);
-
-         if(glyph_index != 0 && FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0)
-         {
-            glyph *g = new glyph;
-
-            result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
-            if(result == 0)
-            {
-               g->index = glyph_index;
-               g->char_code = char_code;
-               g->metrics = face->glyph->metrics;
-               glyphs.push_back(g);
-            }
-            else
-               delete g;
-         }
-      }
-
-   }
-   else
-   {
-      // Import every character in face
-      FT_ULong    char_code;
-      FT_UInt     glyph_index;
-
-      char_code = FT_Get_First_Char(face, &glyph_index);
-      while(glyph_index != 0)
-      {
-         if(FT_Load_Glyph(face, glyph_index, NME_FREETYPE_FLAGS) == 0)
-         {
-            glyph *g = new glyph;
-
-            result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
-            if(result == 0)
-            {
-               g->index = glyph_index;
-               g->char_code = char_code;
-               g->metrics = face->glyph->metrics;
-               glyphs.push_back(g);
-            }
-            else
-               delete g;
-         }
-         
-         char_code = FT_Get_Next_Char(face, char_code, &glyph_index);  
-      }
-   }
-
-   // Ascending sort by character codes
-   std::sort(glyphs.begin(), glyphs.end(), glyph_sort_predicate());
-
-   std::vector<kerning>  kern;
-   if (FT_HAS_KERNING(face))
-   {
-      int         n = glyphs.size();
-      FT_Vector   v;
-
-      for(i = 0; i < n; i++)
-      {
-         int  l_glyph = glyphs[i]->index;
-
-         for(j = 0; j < n; j++)
-         {
-            int   r_glyph = glyphs[j]->index;
-
-            FT_Get_Kerning(face, l_glyph, r_glyph, FT_KERNING_DEFAULT, &v);
-            if(v.x != 0 || v.y != 0)
-               kern.push_back( kerning(i, j, v.x, v.y) );
-         }
-      }
-   }
-   
-   int           num_glyphs = glyphs.size();
-   value         family_name = get_familyname_from_sfnt_name(face);
-   
-   value             ret = alloc_empty_object();
    alloc_field(ret, val_id("has_kerning"), alloc_bool(FT_HAS_KERNING(face)));
    alloc_field(ret, val_id("is_fixed_width"), alloc_bool(FT_IS_FIXED_WIDTH(face)));
    alloc_field(ret, val_id("has_glyph_names"), alloc_bool(FT_HAS_GLYPH_NAMES(face)));
    alloc_field(ret, val_id("is_italic"), alloc_bool(face->style_flags & FT_STYLE_FLAG_ITALIC));
    alloc_field(ret, val_id("is_bold"), alloc_bool(face->style_flags & FT_STYLE_FLAG_BOLD));
-   alloc_field(ret, val_id("num_glyphs"), alloc_int(num_glyphs));
    alloc_field(ret, val_id("family_name"), family_name == 0 ? alloc_string(face->family_name) : family_name);
    alloc_field(ret, val_id("style_name"), alloc_string(face->style_name));
    alloc_field(ret, val_id("em_size"), alloc_int(face->units_per_EM));
@@ -979,57 +894,169 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
    alloc_field(ret, val_id("descend"), alloc_int(face->descender));
    alloc_field(ret, val_id("height"), alloc_int(face->height));
 
-   // 'glyphs' field
-   value             neko_glyphs = alloc_array(num_glyphs);
-   for(i=0; i < glyphs.size(); i++)
+
+   // We are loading unscaled, so you must use the returned em_size
+   // Use this flag to tell if we actually want the details...
+   bool wantOutlines = val_int(em_size)>0;
+
+   if (wantOutlines)
    {
-      glyph          *g = glyphs[i];
-      int            num_points = g->pts.size();
+      std::vector<glyph*> glyphs;
 
-      value          points = alloc_array(num_points);
-      
-      for(j = 0; j < num_points; j++)
-         val_array_set_i(points,j,alloc_int(g->pts[j]));
-
-      value item = alloc_empty_object();
-      val_array_set_i(neko_glyphs,i,item);
-      alloc_field(item, val_id("char_code"), alloc_int(g->char_code));
-      alloc_field(item, val_id("advance"), alloc_int(g->metrics.horiAdvance));
-      alloc_field(item, val_id("min_x"), alloc_int(g->metrics.horiBearingX));
-      alloc_field(item, val_id("max_x"), alloc_int(g->metrics.horiBearingX + g->metrics.width));
-      alloc_field(item, val_id("min_y"), alloc_int(g->metrics.horiBearingY - g->metrics.height));
-      alloc_field(item, val_id("max_y"), alloc_int(g->metrics.horiBearingY));
-      alloc_field(item, val_id("points"), points);
-
-      delete g;
-   }
-   alloc_field(ret, val_id("glyphs"), neko_glyphs);
-
-   // 'kerning' field
-   if (FT_HAS_KERNING(face))
-   {
-      value       neko_kerning = alloc_array(kern.size());
-
-      for(i = 0; i < kern.size(); i++)
+      FT_Outline_Funcs ofn =
       {
-         kerning  *k = &kern[i];
+         outline_move_to,
+         outline_line_to,
+         outline_conic_to,
+         outline_cubic_to,
+         0, // shift
+         0  // delta
+      };
+
+
+      if (!val_is_null(char_vector))
+      {
+         // Import only specified characters
+         int  num_char_codes = val_array_size(char_vector);
+
+         for(i=0; i<num_char_codes; i++)
+         {
+            FT_ULong    char_code = (FT_ULong)val_int(val_array_i(char_vector,i));
+            FT_UInt     glyph_index = FT_Get_Char_Index(face, char_code);
+
+            if(glyph_index != 0 && FT_Load_Glyph(face, glyph_index, FT_LOAD_NO_BITMAP|FT_LOAD_NO_HINTING|FT_LOAD_NO_SCALE) == 0)
+            {
+               glyph *g = new glyph;
+
+               result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
+               if(result == 0)
+               {
+                  g->index = glyph_index;
+                  g->char_code = char_code;
+                  g->metrics = face->glyph->metrics;
+                  glyphs.push_back(g);
+               }
+               else
+                  delete g;
+            }
+         }
+
+      }
+      else
+      {
+         // Import every character in face
+         FT_ULong    char_code;
+         FT_UInt     glyph_index;
+
+         char_code = FT_Get_First_Char(face, &glyph_index);
+         while(glyph_index != 0)
+         {
+            // Just need outline - no hinting or bitmap
+            if(FT_Load_Glyph(face, glyph_index,FT_LOAD_NO_BITMAP|FT_LOAD_NO_HINTING|FT_LOAD_NO_SCALE) == 0)
+            {
+               glyph *g = new glyph;
+
+               result = FT_Outline_Decompose(&face->glyph->outline, &ofn, g);
+               if(result == 0)
+               {
+                  g->index = glyph_index;
+                  g->char_code = char_code;
+                  g->metrics = face->glyph->metrics;
+                  glyphs.push_back(g);
+               }
+               else
+                  delete g;
+            }
+            
+            char_code = FT_Get_Next_Char(face, char_code, &glyph_index);  
+         }
+      }
+
+      // Ascending sort by character codes
+      std::sort(glyphs.begin(), glyphs.end(), glyph_sort_predicate());
+
+      std::vector<kerning>  kern;
+      if (FT_HAS_KERNING(face))
+      {
+         int         n = glyphs.size();
+         FT_Vector   v;
+
+         for(i = 0; i < n; i++)
+         {
+            int  l_glyph = glyphs[i]->index;
+
+            for(j = 0; j < n; j++)
+            {
+               int   r_glyph = glyphs[j]->index;
+
+               FT_Get_Kerning(face, l_glyph, r_glyph, FT_KERNING_UNSCALED, &v);
+               if(v.x != 0 || v.y != 0)
+                  kern.push_back( kerning(i, j, v.x, v.y) );
+            }
+         }
+      }
+
+      int           num_glyphs = glyphs.size();
+      alloc_field(ret, val_id("num_glyphs"), alloc_int(num_glyphs));
+
+
+      // 'glyphs' field
+      value             neko_glyphs = alloc_array(num_glyphs);
+      for(i=0; i < glyphs.size(); i++)
+      {
+         glyph          *g = glyphs[i];
+         int            num_points = g->pts.size();
+
+         value          points = alloc_array(num_points);
+         
+         for(j = 0; j < num_points; j++)
+            val_array_set_i(points,j,alloc_int(g->pts[j]));
 
          value item = alloc_empty_object();
-         val_array_set_i(neko_kerning,i,item);
-         alloc_field(item, val_id("left_glyph"), alloc_int(k->l_glyph));
-         alloc_field(item, val_id("right_glyph"), alloc_int(k->r_glyph));
-         alloc_field(item, val_id("x"), alloc_int(k->x));
-         alloc_field(item, val_id("y"), alloc_int(k->y));
+         val_array_set_i(neko_glyphs,i,item);
+         alloc_field(item, val_id("char_code"), alloc_int(g->char_code));
+         alloc_field(item, val_id("advance"), alloc_int(g->metrics.horiAdvance));
+         alloc_field(item, val_id("min_x"), alloc_int(g->metrics.horiBearingX));
+         alloc_field(item, val_id("max_x"), alloc_int(g->metrics.horiBearingX + g->metrics.width));
+         alloc_field(item, val_id("min_y"), alloc_int(g->metrics.horiBearingY - g->metrics.height));
+         alloc_field(item, val_id("max_y"), alloc_int(g->metrics.horiBearingY));
+         alloc_field(item, val_id("points"), points);
+
+         delete g;
       }
-      
-      alloc_field(ret, val_id("kerning"), neko_kerning);
+      alloc_field(ret, val_id("glyphs"), neko_glyphs);
+
+      // 'kerning' field
+      if (FT_HAS_KERNING(face))
+      {
+         value       neko_kerning = alloc_array(kern.size());
+
+         for(i = 0; i < kern.size(); i++)
+         {
+            kerning  *k = &kern[i];
+
+            value item = alloc_empty_object();
+            val_array_set_i(neko_kerning,i,item);
+            alloc_field(item, val_id("left_glyph"), alloc_int(k->l_glyph));
+            alloc_field(item, val_id("right_glyph"), alloc_int(k->r_glyph));
+            alloc_field(item, val_id("x"), alloc_int(k->x));
+            alloc_field(item, val_id("y"), alloc_int(k->y));
+         }
+
+         alloc_field(ret, val_id("kerning"), neko_kerning);
+      }
+      else
+         alloc_field(ret, val_id("kerning"), alloc_null());
    }
-   else
-      alloc_field(ret, val_id("kerning"), alloc_null());
 
    FT_Done_Face(face);
-   if (pBuffer) free(pBuffer);
-   
+
+   delete bytes;
+   if (pBuffer)
+   {
+      free(pBuffer);
+   }
+
    return ret;
 }
 

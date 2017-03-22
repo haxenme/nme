@@ -4,7 +4,7 @@ package nme.events;
 @:nativeProperty
 class IOErrorEvent extends ErrorEvent 
 {
-   public static var IO_ERROR = "ioError";
+   public static inline var IO_ERROR = "ioError";
 
    public function new(inType:String, bubbles:Bool = true, cancelable:Bool = false, text:String = "", id:Int = 0) 
    {

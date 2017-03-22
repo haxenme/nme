@@ -16,10 +16,10 @@ class NMMLParser
 
    static var varMatch = new EReg("\\${(.*?)}", "");
 
-   public function new(inProject:NMEProject, path:String )
+   public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Fast )
    {
       project = inProject;
-      process(path);
+      process(path,inWarnUnknown,xml);
    }
 
    private function filter(text:String, include:Array<String> = null, exclude:Array<String> = null):Bool 
@@ -234,6 +234,13 @@ class NMMLParser
       }
    }
 
+   private function parseWatchOSElement(element:Fast, extensionPath:String):Void 
+   {
+      var watchOs = project.makeWatchOSConfig();
+
+      new NMMLParser(watchOs, extensionPath, false, element);
+   }
+
    private function parseAssetsElement(element:Fast, basePath:String = ""):Void 
    {
       var path = basePath;
@@ -246,7 +253,7 @@ class NMMLParser
       if (element.has.path) 
       {
          var namedPath = substitute(element.att.path);
-         path = basePath + namedPath;
+         path = PathHelper.combine(basePath,namedPath);
 
          if (element.has.rename) 
             targetPath = substitute(element.att.rename);
@@ -255,7 +262,7 @@ class NMMLParser
       }
       else if (element.has.from)
       {
-         path = basePath + substitute(element.att.from);
+         path = PathHelper.combine(basePath,substitute(element.att.from));
 
          if (element.has.rename) 
             targetPath = substitute(element.att.rename);
@@ -304,8 +311,7 @@ class NMMLParser
                id = substitute(element.att.id);
 
             var asset = new Asset(path, targetPath, type, embed);
-            if (id!="")
-               asset.id = id;
+            asset.setId(id);
 
             if (glyphs != null) 
                asset.glyphs = glyphs;
@@ -406,7 +412,7 @@ class NMMLParser
 
 
                var asset = new Asset(path + childPath, targetPath + childTargetPath, childType, childEmbed);
-               asset.id = id;
+               asset.setId(id);
 
                if (childGlyphs != null) 
                   asset.glyphs = childGlyphs;
@@ -463,7 +469,9 @@ class NMMLParser
       if (element.has.extension)
          project.androidConfig.extensions.set(substitute(element.att.extension),true);
 
-
+      if (element.has.addV4Compat)
+         project.androidConfig.addV4Compat = parseBool(element.att.addV4Compat);
+ 
       for(childElement in element.elements) 
       {
          if (isValidElement(childElement, ""))
@@ -513,7 +521,7 @@ class NMMLParser
          project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
    }
 
-   private function parseXML(xml:Fast, section:String, extensionPath:String):Void 
+   private function parseXML(xml:Fast, section:String, extensionPath:String, inWarnUnknown):Void 
    {
       for(element in xml.elements) 
       {
@@ -612,7 +620,7 @@ class NMMLParser
 
                   if (include != null && include != "" && FileSystem.exists(include)) 
                   {
-                     new NMMLParser(project,include);
+                     new NMMLParser(project,include, inWarnUnknown);
                      var dir = Path.directory(include);
                      if (dir != "")
                         project.classPaths.push(include);
@@ -690,7 +698,7 @@ class NMMLParser
                   project.addLib(name,version);
  
 
-               case "launchImage":
+               case "launchImage", "splashScreen":
 
                   /*var name:String = "";
                   if (element.has.path) 
@@ -792,6 +800,28 @@ class NMMLParser
                case "assets":
                   parseAssetsElement(element, extensionPath);
 
+               case "watchos":
+                  parseWatchOSElement(element, extensionPath);
+
+               case "library":
+                  if (element.has.path)
+                  {
+                     var name = substitute(element.att.path);
+                     var id = element.has.id ? substitute(element.att.id) : new Path(name).file;
+                     var path = project.relocatePath(name);
+                     var embed = project.embedAssets;
+                     if (element.has.embed) 
+                        embed = embed || parseBool(substitute(element.att.embed));
+
+                     var asset = new Asset(path, id, null, embed);
+                     //asset.id = id;
+                     project.assets.push(asset);
+                  }
+                  else
+                  {
+                     Log.verbose("Ignoring library handler definition.");
+                  }
+
                case "ssl":
 
                   //if (wantSslCertificate())
@@ -827,7 +857,7 @@ class NMMLParser
                   parseOutputElement(element);
 
                case "section":
-                  parseXML(element, "", extensionPath);
+                  parseXML(element, "", extensionPath, inWarnUnknown);
 
                case "certificate":
                   project.certificate = new Keystore(substitute(element.att.path));
@@ -944,6 +974,12 @@ class NMMLParser
                         }
                      }
 
+                     if (element.has.sourceFlavour) 
+                        project.iosConfig.sourceFlavour = substitute(element.att.sourceFlavour);
+
+                     if (element.has.sourceFlavor) 
+                        project.iosConfig.sourceFlavour = substitute(element.att.sourceFlavor);
+
                      if (element.has.compiler) 
                         project.iosConfig.compiler = substitute(element.att.compiler);
 
@@ -951,8 +987,11 @@ class NMMLParser
                         project.iosConfig.prerenderedIcon = (substitute(element.att.resolve("prerendered-icon")) == "true");
 
                      if (element.has.resolve("linker-flags")) 
-                        project.iosConfig.linkerFlags = substitute(element.att.resolve("linker-flags"));
+                        project.iosConfig.linkerFlags = project.iosConfig.linkerFlags.concat(substitute(element.att.resolve("linker-flags")).split(" "));
                   }
+               default:
+                  if (inWarnUnknown)
+                     Log.verbose("UNKNOWN project element " + element.name );
             }
          }
       }
@@ -982,9 +1021,12 @@ class NMMLParser
                if (Reflect.hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.parseInt(value));
 
-            case "parameters":
+            case "parameters", "ui":
+               if (name=="ui" && value=="spritekit")
+                  project.haxedefs.set("nme_spritekit", "1");
                if (Reflect.hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.string(value));
+               
 
             default:
                if (Reflect.hasField(project.window, name)) 
@@ -997,23 +1039,28 @@ class NMMLParser
       }
    }
 
-   public function process(projectFile:String):Void 
+   public function process(projectFile:String, inWarnUnkown:Bool,inXml:Fast):Void 
    {
       Log.verbose("Parse " + projectFile + "...");
-      var xml = null;
+      var xml = inXml;
       var extensionPath = "";
 
-      try 
+      if (xml==null)
       {
-         xml = new Fast(Xml.parse(File.getContent(projectFile)).firstElement());
-         extensionPath = Path.directory(projectFile);
-
-      } catch(e:Dynamic) 
-      {
-         Log.error("\"" + projectFile + "\" contains invalid XML data", e);
+         try 
+         {
+            xml = new Fast(Xml.parse(File.getContent(projectFile)).firstElement());
+   
+         }
+         catch(e:Dynamic) 
+         {
+            Log.error("\"" + projectFile + "\" contains invalid XML data", e);
+         }
       }
 
-      parseXML(xml, "", extensionPath);
+      extensionPath = Path.directory(projectFile);
+
+      parseXML(xml, "", extensionPath, inWarnUnkown);
    }
 
    public function gitver()

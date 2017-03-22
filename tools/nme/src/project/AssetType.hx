@@ -6,5 +6,6 @@ enum AssetType
    MUSIC;
    SOUND;
    TEXT;
+   SWF;
 }
 

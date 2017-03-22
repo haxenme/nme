@@ -1,13 +1,13 @@
 package nme.text;
 #if (!flash)
 
-@:nativeProperty
-class TextFormatAlign 
+@:enum
+abstract TextFormatAlign(String) from String to String
 {
-   public static var LEFT = "left";
-   public static var RIGHT = "right";
-   public static var CENTER = "center";
-   public static var JUSTIFY = "justify";
+   var LEFT = "left";
+   var RIGHT = "right";
+   var CENTER = "center";
+   var JUSTIFY = "justify";
 }
 
 #else

@@ -23,7 +23,7 @@
      resizable="true"
      hardware="true"
   />
-  
+
   <icon name="nme.svg" />
   <source path="src" />
   

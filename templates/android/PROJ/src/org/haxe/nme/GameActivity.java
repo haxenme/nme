@@ -32,7 +32,12 @@ import android.view.WindowManager;
 import android.widget.VideoView;
 import android.net.Uri;
 import android.widget.EditText;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.SpanWatcher;
+import android.text.Spanned;
+import android.text.Spannable;
+import android.view.KeyEvent;
 import dalvik.system.DexClassLoader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -53,11 +58,19 @@ import java.util.List;
 import android.util.SparseArray;
 import org.haxe.extension.Extension;
 import android.os.Build;
+import android.text.TextWatcher;
+
+
 
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
 {
    static final String TAG = "GameActivity";
+
+   private static final int KEYBOARD_OFF = 0;
+   private static final int KEYBOARD_DUMB = 1;
+   private static final int KEYBOARD_SMART = 2;
+   private static final int KEYBOARD_NATIVE = 3;
 
    private static final String GLOBAL_PREF_FILE = "nmeAppPrefs";
    private static final int DEVICE_ORIENTATION_UNKNOWN = 0;
@@ -71,7 +84,7 @@ implements SensorEventListener
    private static final int DEVICE_ROTATION_90 = 1;
    private static final int DEVICE_ROTATION_180 = 2;
    private static final int DEVICE_ROTATION_270 = 3;
-   
+
    protected static GameActivity activity;
    static AssetManager mAssets;
    static Activity mContext;
@@ -92,6 +105,16 @@ implements SensorEventListener
    int            videoW = 0;
    int            videoH = 0;
 
+   class NmeText extends EditText
+   {
+       GameActivity activity;
+       public NmeText(GameActivity context) { super( (Context)context);  activity=context; }
+       @Override protected void onSelectionChanged(int selStart, int selEnd) {
+          if (activity!=null)
+             activity.onSelectionChanged(selStart,selEnd);
+       }
+   }
+
    ArrayList<Runnable> mOnDestroyListeners;
    static SparseArray<IActivityResult> sResultHandler = new SparseArray<IActivityResult>();
    
@@ -100,13 +123,16 @@ implements SensorEventListener
    private static int bufferedNormalOrientation = -1;
    private static float[] inclinationMatrix = new float[16];
    private static float[] magnetData = new float[3];
-   private static float[] orientData = new float[3];
+   //private static float[] orientData = new float[3];
    private static float[] rotationMatrix = new float[16];
    private Sound _sound;
    
    public NMEVideoView   mVideoView;
    
    public EditText mKeyInTextView;
+   public boolean  mTextUpdateLockout = false;
+   public boolean  mIncrementalText = true;
+   boolean ignoreTextReset = false;
 
    public void onCreate(Bundle state)
    {
@@ -139,6 +165,11 @@ implements SensorEventListener
       
       metrics = new DisplayMetrics();
       mContext.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+      ::if WIN_FULLSCREEN::::if (ANDROID_TARGET_SDK_VERSION >= 19)::
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+         mContext.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+      ::end::::end::
       
       Extension.assetManager = mAssets;
       Extension.callbackHandler = mHandler;
@@ -155,19 +186,23 @@ implements SensorEventListener
       System.loadLibrary("::name::");::end::::end::
       org.haxe.HXCPP.run("ApplicationMain");
       
-
       mContainer = new RelativeLayout(mContext);
 
-      mKeyInTextView = new EditText ( this );
+
+      mTextUpdateLockout = true;
+      mKeyInTextView = new NmeText ( this );
       mKeyInTextView.setText("*");
       mKeyInTextView.setMinLines(1);
-      mKeyInTextView.setMaxLines(1);
+      //mKeyInTextView.setMaxLines(1);
       mKeyInTextView.setFocusable(true);
       mKeyInTextView.setHeight(0);
-      mKeyInTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); //text input
+      mKeyInTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); //text input
       //mKeyInTextView.setImeOptions(EditorInfo.IME_ACTION_SEND);
-      mContainer.addView(mKeyInTextView);
       mKeyInTextView.setSelection(1);
+      mContainer.addView(mKeyInTextView);
+      addTextListeners();
+      mTextUpdateLockout = false;
+
 
       mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
       Extension.mainView = mView;
@@ -349,6 +384,29 @@ implements SensorEventListener
          } });
    }
    
+// IMMERSIVE MODE SUPPORT
+::if (WIN_FULLSCREEN)::::if (ANDROID_TARGET_SDK_VERSION >= 19)::
+  @Override
+  public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
+    if(hasFocus) {
+      hideSystemUi();
+    }
+  }
+
+  private void hideSystemUi() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+      View decorView = this.getWindow().getDecorView();
+      decorView.setSystemUiVisibility(
+        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        | View.SYSTEM_UI_FLAG_FULLSCREEN
+        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+  }
+::end::::end::
    
    public static double CapabilitiesGetPixelAspectRatio()
    {
@@ -390,7 +448,7 @@ implements SensorEventListener
       SharedPreferences prefs = mContext.getSharedPreferences(GLOBAL_PREF_FILE, Activity.MODE_PRIVATE);
       SharedPreferences.Editor prefEditor = prefs.edit();
       prefEditor.putString(inId, "");
-      prefEditor.commit();
+      prefEditor.apply();
    }
    
    public static boolean setClipboardText(String text) {
@@ -450,7 +508,7 @@ implements SensorEventListener
    {
       Log.d(TAG,"====== doPause ========");
       _sound.doPause();
-      showKeyboard(false);
+      popupKeyboard(0,null);
       mView.sendActivity(NME.DEACTIVATE);
 
       mView.onPause();
@@ -480,9 +538,11 @@ implements SensorEventListener
       if (mVideoView!=null)
       {
          // Need to rebuild the container to get the video to sit under the view - odd?
+         mContainer.removeView(mKeyInTextView);
          mContainer.removeView(mVideoView);
          mContainer.removeView(mView);
 
+         mContainer.addView(mKeyInTextView);
          mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
          RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
          videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
@@ -681,10 +741,10 @@ implements SensorEventListener
       
       if (type == Sensor.TYPE_ACCELEROMETER)
       {
-         // this should not be done on the gui thread
          accelData[0] = event.values[0];
          accelData[1] = event.values[1];
          accelData[2] = event.values[2];
+         // Store value in NME
          NME.onAccelerate(-accelData[0], -accelData[1], accelData[2]);
       }
       
@@ -774,15 +834,32 @@ implements SensorEventListener
    {
       super.onStart();
 
-      ::if WIN_FULLSCREEN::::if (ANDROID_TARGET_SDK_VERSION >= 16)::
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-      {
-         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN);
+      ::if WIN_FULLSCREEN::
+      ::if (ANDROID_TARGET_SDK_VERSION >= 19)::
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        getWindow().getDecorView().setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+            View.SYSTEM_UI_FLAG_FULLSCREEN |
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
       }
-      ::end::::end::
+      ::elseif (ANDROID_TARGET_SDK_VERSION >= 16)::
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        getWindow().getDecorView().setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+            View.SYSTEM_UI_FLAG_LOW_PROFILE |
+            View.SYSTEM_UI_FLAG_FULLSCREEN
+        );
+      }
+      ::end::
+      ::end::
 
       for(Extension extension : extensions)
-         extension.onStart();
+        extension.onStart();
    }
 
    @Override protected void onStop ()
@@ -818,23 +895,8 @@ implements SensorEventListener
    @Override public void onSensorChanged(SensorEvent event)
    {
       loadNewSensorData(event);
-      
-      ::if !(ANDROIDVIEW)::
-      if (accelData != null && magnetData != null)
-      {
-         boolean foundRotationMatrix = SensorManager.getRotationMatrix(rotationMatrix, inclinationMatrix, accelData, magnetData);
-         if (foundRotationMatrix)
-         {
-            SensorManager.getOrientation(rotationMatrix, orientData);
-            // this should not be done on the gui thread
-            // NME.onOrientationUpdate(orientData[0], orientData[1], orientData[2]);
-         }
-      }
-      
       // this should not be done on the gui thread
       //NME.onDeviceOrientationUpdate(prepareDeviceOrientation());
-      //NME.onNormalOrientationFound(bufferedNormalOrientation);
-      ::end::
    }
 
   
@@ -962,6 +1024,7 @@ implements SensorEventListener
    }
    public static void popView()
    {
+      // mContainer?
       activity.setContentView(activity.mView);
       activity.doResume();
    }
@@ -997,7 +1060,7 @@ implements SensorEventListener
       }
       catch (Exception ex)
       {
-         Log.e("Could not get local address", ex.toString());
+         Log.e(TAG, "Could not get local address:" + ex.toString());
       }
       return result;
    }
@@ -1024,24 +1087,211 @@ implements SensorEventListener
       SharedPreferences prefs = mContext.getSharedPreferences(GLOBAL_PREF_FILE, Activity.MODE_PRIVATE);
       SharedPreferences.Editor prefEditor = prefs.edit();
       prefEditor.putString(inId, inPreference);
-      prefEditor.commit();
+      prefEditor.apply();
    }
    
    
-   public static void showKeyboard(boolean show)
+   public static void popupKeyboard(final  int inMode, final  String inContent)
    {
-      InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-      mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
-      
-      if (show)
-      {
-         //activity.mKeyInTextView.requestFocus();
-         mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-         // On the Nexus One, SHOW_FORCED makes it impossible
-         // to manually dismiss the keyboard.
-         // On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
-      }
+      activity.mHandler.post(new Runnable() {
+         @Override public void run()
+         {
+         InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+         mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
+         
+         if (inMode!=KEYBOARD_OFF)
+         {
+            activity.mTextUpdateLockout = true;
+            activity.mIncrementalText = inContent==null;
+            if (inMode==KEYBOARD_DUMB)
+               activity.mView.requestFocus();
+            else // todo - force native control
+            {
+               activity.mKeyInTextView.requestFocus();
+               if (!activity.mIncrementalText)
+               {
+                  activity.mKeyInTextView.setText(inContent);
+               }
+               else
+               {
+                  activity.mKeyInTextView.setText("*");
+                  activity.mKeyInTextView.setSelection(1);
+               }
+            }
+            mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            // On the Nexus One, SHOW_FORCED makes it impossible
+            // to manually dismiss the keyboard.
+            // On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
+            activity.mTextUpdateLockout = false;
+         }
+      }} );
    }
+
+   
+   public static void setPopupSelection(final int inSel0, final int inSel1)
+   {
+      //Log.v("VIEW","Post setPopupSelection " + (activity.mIncrementalText ?"inc ":"smart ") + inSel0 + "..." + inSel1 );
+      activity.mHandler.post(new Runnable() {
+         @Override public void run()
+         {
+            if (!activity.mIncrementalText)
+            {
+                activity.mTextUpdateLockout = true;
+               //Log.v("VIEW","Run setPopupSelection " + (activity.mIncrementalText ?"inc ":"smart ") + inSel0 + "..." + inSel1 );
+               if (inSel0!=inSel1)
+                  activity.mKeyInTextView.setSelection(inSel0,inSel1);
+               else
+                  activity.mKeyInTextView.setSelection(inSel0);
+                activity.mTextUpdateLockout = false;
+            }
+         }} );
+   }
+
+   void onSelectionChanged(final int selStart, final int selEnd)
+   {
+      if (mTextUpdateLockout || mView==null || mIncrementalText)
+         return;
+      mView.queueEvent(new Runnable() {
+         public void run() {
+            if (mView==null)
+               return;
+            //Log.v("VIEW*","replaced " + replace + " at  " + start + " (delete =" + before + ")" );
+            mView.HandleResult(NME.onTextSelect(selStart,selEnd));
+        }
+     });
+   }
+ 
+   void addTextListeners()
+   {
+        mKeyInTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+                if(ignoreTextReset)
+                   return;
+                // Log.v("VIEW*","beforeTextChanged [" + s + "] " + start + " " + count + " " + after);
+            }
+
+            @Override
+            public void onTextChanged(final CharSequence s, final int start, final int before, final int count)
+            {
+               if (mTextUpdateLockout || mView==null)
+               {
+                  //Log.v("VIEW*","Ignore init text " + s);
+                  return;
+               }
+               if(ignoreTextReset)
+                  return;
+               //Log.v("VIEW*","onTextChanged [" + s + "] " + start + " " + before + " " + count);
+               mView.queueEvent(new Runnable() {
+                  public void run() {
+                     if (mView==null)
+                        return;
+                     if (mIncrementalText)
+                      {
+                        for(int i = 1;i <= before;i++)
+                        {
+                           // This method will be called on the rendering thread:
+                           mView.HandleResult(NME.onKeyChange(8, 8, true, false));
+                           mView.HandleResult(NME.onKeyChange(8, 8, false, false));
+                        }
+                        for (int i = start; i < start + count; i++)
+                        {
+                           int keyCode = s.charAt(i);
+                           if (keyCode != 0)
+                            {
+                              mView.HandleResult(NME.onKeyChange(keyCode, keyCode, true, keyCode == 10 ? false : true));
+                              mView.HandleResult(NME.onKeyChange(keyCode, keyCode, false, false));
+                           }
+                        }
+                     }
+                     else
+                     {
+                        String replace = count==0 ? "" : s.subSequence(start,start+count).toString();
+                        //Log.v("VIEW*","replaced " + replace + " at  " + start + " (delete =" + before + ")" );
+                        mView.HandleResult(NME.onText(replace,start,start+before));
+                     }
+               } } );
+
+               ignoreTextReset = before > 1 || count > 1 || (count == 1 && s.charAt(start) == ' ');
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (mIncrementalText)
+                {
+                   if(!ignoreTextReset) {
+                       // Log.v("VIEW*", "afterTextChanged [" + s + "] ");
+                       if (s.length() != 1) {
+                           ignoreTextReset = true;
+                           mKeyInTextView.setText("*");
+                           mKeyInTextView.setSelection(1);
+                       }
+                   }
+                }
+                ignoreTextReset = false;
+            }
+        });
+
+        
+        mKeyInTextView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (mIncrementalText && mView!=null)
+                {
+                //if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                        final int keyCodeDown = MainView.translateKey(keyCode,event,false);
+                        if(keyCodeDown != 0) {
+                            mView.queueEvent(new Runnable() {
+                                // This method will be called on the rendering thread:
+                                public void run() {
+                                   if (mView!=null)
+                                       mView.HandleResult(NME.onKeyChange(keyCodeDown, 0, true, false));
+                                }
+                            });
+                            return true;
+                        }
+                    } else if(event.getAction() == KeyEvent.ACTION_UP) {
+                        final int keyCodeUp = MainView.translateKey(keyCode,event,false);
+                        if(keyCodeUp != 0) {
+                            mView.queueEvent(new Runnable() {
+                                // This method will be called on the rendering thread:
+                                public void run() {
+                                    if (mView!=null)
+                                       mView.HandleResult(NME.onKeyChange(keyCodeUp, 0, false, false));
+                                }
+                            });
+                            return true;
+                        }
+                    }
+                //}
+                }
+                return false;
+            }
+        });
+/*
+        mKeyInTextView.getText().setSpan( new SpanWatcher() {
+           @Override
+           public void onSpanAdded(final Spannable text, final Object what, final int start, final int end) {
+              Log.v("VIEW", "onSpanAdded");
+           }
+
+           @Override
+           public void onSpanRemoved(final Spannable text, final Object what, final int start, final int end) {
+              Log.v("VIEW", "onSpanRemoved"):
+           }
+
+           @Override
+           public void onSpanChanged(final Spannable text, final Object what,final int ostart, final int oend, final int nstart, final int nend)
+           {
+              Log.v("VIEW", "onSpanChanged " + nstart + "," + nend);
+           }
+        }, 0, 0, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        */
+    }
+
+
    
    
    public static void vibrate(int period, int duration)
@@ -1067,6 +1317,5 @@ implements SensorEventListener
       }
    }
 }
-
 
 

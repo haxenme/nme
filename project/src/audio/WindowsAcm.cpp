@@ -183,16 +183,16 @@ public:
          MPEGLAYER3WAVEFORMAT mp3Format =
          {
             {
-               WAVE_FORMAT_MPEGLAYER3,   // WORD        wFormatTag;         /* format type */
-               channels,        // WORD        nChannels;          /* number of channels (i.e. mono, stereo...) */
-               rate,       // DWORD       nSamplesPerSec;     /* sample rate */
+               (WORD)WAVE_FORMAT_MPEGLAYER3,   // WORD        wFormatTag;         /* format type */
+               (WORD)channels,        // WORD        nChannels;          /* number of channels (i.e. mono, stereo...) */
+               (DWORD)rate,       // DWORD       nSamplesPerSec;     /* sample rate */
                128 * (1024 / 8),  // DWORD       nAvgBytesPerSec;    not really used but must be one of 64, 96, 112, 128, 160kbps
                1,        // WORD        nBlockAlign;        /* block size of data */
                0,        // WORD        wBitsPerSample;     /* number of bits per sample of mono data */
                MPEGLAYER3_WFX_EXTRA_BYTES,  // WORD        cbSize;        
             },
             MPEGLAYER3_ID_MPEG,      // WORD          wID;
-            MPEGLAYER3_FLAG_PADDING_OFF,   // DWORD         fdwFlags;
+            (DWORD)MPEGLAYER3_FLAG_PADDING_OFF,   // DWORD         fdwFlags;
             MP3_BLOCK_SIZE,       // WORD          nBlockSize;
             1,          // WORD          nFramesPerBlock;
             1393,       // WORD          nCodecDelay;
@@ -202,11 +202,11 @@ public:
          WAVEFORMATEX pcmFormat =
          {
             WAVE_FORMAT_PCM, // WORD        wFormatTag;         /* format type */
-            channels,     // WORD        nChannels;          /* number of channels (i.e. mono, stereo...) */
-            rate,    // DWORD       nSamplesPerSec;     /* sample rate */
+            (WORD)channels,     // WORD        nChannels;          /* number of channels (i.e. mono, stereo...) */
+            (DWORD)rate,    // DWORD       nSamplesPerSec;     /* sample rate */
             channels * rate * sizeof(short),   // DWORD       nAvgBytesPerSec;    /* for buffer estimation */
-            channels * sizeof(short),     // WORD        nBlockAlign;        /* block size of data */
-            sizeof(short)*8,     // WORD        wBitsPerSample;     /* number of bits per sample of mono data */
+            (WORD)channels * sizeof(short),     // WORD        nBlockAlign;        /* block size of data */
+            (WORD)sizeof(short)*8,     // WORD        wBitsPerSample;     /* number of bits per sample of mono data */
             0,     // WORD        cbSize;             /* the count in bytes of the size of */
          };
 

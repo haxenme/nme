@@ -172,7 +172,8 @@ void OGLProg::disableSlots()
       glDisableVertexAttribArray(textureSlot);
 }
 
-void OGLProg::setColourTransform(const ColorTransform *inTransform, uint32 inColor)
+void OGLProg::setColourTransform(const ColorTransform *inTransform, uint32 inColor,
+                                  bool inPremultiplyAlpha)
 {
    float rf, gf, bf, af;
    if (inColor==0xffffffff)
@@ -190,30 +191,36 @@ void OGLProg::setColourTransform(const ColorTransform *inTransform, uint32 inCol
    if (inTransform && !inTransform->IsIdentity())
    {
        if (mColourOffsetSlot>=0)
-          glUniform4f(mColourOffsetSlot,
-                   #ifdef NME_PREMULTIPLIED_ALPHA
+       {
+          if (inPremultiplyAlpha)
+             glUniform4f(mColourOffsetSlot,
                    inTransform->redOffset*one_on_255*inTransform->alphaMultiplier,
                    inTransform->greenOffset*one_on_255*inTransform->alphaMultiplier,
                    inTransform->blueOffset*one_on_255*inTransform->alphaMultiplier,
-                   #else
+                   inTransform->alphaOffset*one_on_255);
+          else
+             glUniform4f(mColourOffsetSlot,
                    inTransform->redOffset*one_on_255,
                    inTransform->greenOffset*one_on_255,
                    inTransform->blueOffset*one_on_255,
-                   #endif
                    inTransform->alphaOffset*one_on_255);
+       }
 
        if (mColourScaleSlot>=0)
-          glUniform4f(mColourScaleSlot,
-                   #ifdef NME_PREMULTIPLIED_ALPHA
+       {
+          if (inPremultiplyAlpha)
+             glUniform4f(mColourScaleSlot,
                    inTransform->redMultiplier * inTransform->alphaMultiplier * rf,
                    inTransform->greenMultiplier * inTransform->alphaMultiplier * gf,
                    inTransform->blueMultiplier * inTransform->alphaMultiplier * bf,
-                   #else
+                   inTransform->alphaMultiplier * af);
+          else
+             glUniform4f(mColourScaleSlot,
                    inTransform->redMultiplier * rf,
                    inTransform->greenMultiplier * gf,
                    inTransform->blueMultiplier * bf,
-                   #endif
                    inTransform->alphaMultiplier * af);
+       }
    }
    else
    {

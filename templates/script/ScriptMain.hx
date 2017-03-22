@@ -3,6 +3,10 @@ import cpp.cppia.HostClasses;
 
 class ScriptMain
 {
+   public static var winBackground = ::WIN_BACKGROUND::;
+   public static var winWidth = ::WIN_WIDTH::;
+   public static var winHeight = ::WIN_HEIGHT::;
+
    public static function main()
    {
       var waitForResize = false;
@@ -24,13 +28,22 @@ class ScriptMain
             //waitForResize = true;
             var cx = window.x + window.width*0.5;
             var cy = window.y + window.height*0.5;
-            window.resize(::WIN_WIDTH::,::WIN_HEIGHT::);
+            var dpiScale = nme.system.Capabilities.screenDPI/96;
+            if (dpiScale<1.5)
+               dpiScale = 1.0;
+            var scaledW = Std.int( ::WIN_WIDTH:: * dpiScale);
+            if (scaledW>window.width)
+               scaledW = window.width;
+            var scaledH = Std.int( ::WIN_HEIGHT:: * dpiScale);
+            if (scaledH>window.height)
+               scaledH = window.height;
+            window.resize(scaledW, scaledH);
             var x0 = window.x;
             var y0 = window.y;
-            var px = Std.int(x0 + (window.width-::WIN_WIDTH::)*0.5);
+            var px = Std.int(x0 + (window.width-scaledW)*0.5);
             if (px<0 && x0>=0)
                px = 0;
-            var py = Std.int(y0 + (window.height-::WIN_HEIGHT::)*0.5);
+            var py = Std.int(y0 + (window.height-scaledH)*0.5);
             if (py<0 && y0>=0)
                py = 0;
             window.setPosition(px,py);
@@ -65,6 +78,8 @@ class ScriptMain
          sendFakeResize();
       }
    }
+
+   public static function onLoaded() { }
 
    static function sendFakeResize()
    {

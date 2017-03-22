@@ -72,8 +72,8 @@ class OpenALSourceChannel : public SoundChannel
 public:
    Object *soundObject;
    ALuint sourceId;
-   bool   shouldPlay;
    bool   suspended;
+   bool   playOnResume;
    double duration;
    double t0;
 
@@ -86,6 +86,7 @@ public:
       duration = 0.0;
       t0 = 0.0;
       suspended = false;
+      playOnResume = false;
 
       alGenSources(1, &sourceId);
       check("genSource");
@@ -99,7 +100,6 @@ public:
       check("setSource");
    
       setTransform(inTransform);
-      shouldPlay = false;
    }
 
    ~OpenALSourceChannel()
@@ -140,17 +140,20 @@ public:
 
    void stop()
    {
-      shouldPlay = false;
-
       clRemoveChannel(this);
 
-      if (!openal_is_shutdown && sourceId && playing())
+      if (!openal_is_shutdown && sourceId)
       {
-         alSourceStop(sourceId);
-         check("stop");
+         if (playing()) 
+         {
+            alSourceStop(sourceId);
+            check("stop");
+         }
+         alSourcei(sourceId, AL_BUFFER, 0);
+         alDeleteSources(1, &sourceId);
       }
       sourceId = 0;
-
+   
       if (soundObject)
       {
          soundObject->DecRef();
@@ -161,6 +164,7 @@ public:
    
    void suspend()
    {
+      playOnResume = !isComplete();
       suspended = true;
       if (playing())
       {
@@ -173,11 +177,12 @@ public:
    
    void resume()
    {
-      if (shouldPlay)
+      if (playOnResume)
       {
          alSourcePlay(sourceId);
          check("resume");
          suspended = false;
+         playOnResume = false;
       }
    }
   
@@ -242,6 +247,8 @@ public:
    ALuint bufferId;
    ALint  byteSize;
    int    loops;
+   bool   hasBufferedData;
+   bool   isAsync;
 
    OpenALBufferChannel(Object *inSound, const SoundTransform &inTransform, ALuint inBufferId, int startTime, int inLoops)
       : OpenALSourceChannel(inSound, inTransform )
@@ -280,13 +287,15 @@ public:
       }
      
       
+      hasBufferedData = false;
+      isAsync = false;
       if (!tooMuchSeek)
       {
-         shouldPlay = true;
+         hasBufferedData = true;
          alSourcePlay(sourceId);
          if (seekBytes && seekBytes<byteSize)
             alSourcef(sourceId, AL_BYTE_OFFSET, seekBytes);
-         clAddChannel(this, loops!=0);
+         clAddChannel(this, isAsync = loops!=0);
       }
    }
 
@@ -300,22 +309,33 @@ public:
    {
       OpenALSourceChannel::stop();
       loops = 0;
+      hasBufferedData = false;
    }
 
    void asyncUpdate()
    {
-      if (!playing() && loops!=0)
+      if (!playing())
       {
-         alSourcef(sourceId, AL_BYTE_OFFSET, 0);
-         alSourcePlay(sourceId);
-         if (loops>0)
-            loops--;
+         if (loops!=0)
+         {
+            alSourcef(sourceId, AL_BYTE_OFFSET, 0);
+            alSourcePlay(sourceId);
+            if (loops>0)
+               loops--;
+         }
+         else
+            stop();
       }
    }
 
    bool isComplete()
    {
-      return !openal_is_shutdown && !loops && !playing();
+      // Sync channels will not get asyncUpdate calls, so check here
+      if (!openal_is_shutdown && !isAsync && hasBufferedData && !playing() && !loops && !playOnResume)
+      {
+         stop();
+      }
+      return !openal_is_shutdown && !loops && !hasBufferedData;
    }
 
 };
@@ -335,6 +355,7 @@ public:
    NmeMutex bufferMutex;
    ALuint   freeBuffers[2];
    int      freeBufferCount;
+   bool     isStopped;
 
    OpenALDoubleBufferChannel(Object *inSound, const SoundTransform &inTransform)
       : OpenALSourceChannel(inSound, inTransform )
@@ -342,6 +363,7 @@ public:
       bufferIds[0] = bufferIds[1] = 0;
       freeBufferCount = 0;
       playedBytes = 0;
+      isStopped = true;
   }
 
    void createBuffers()
@@ -349,6 +371,7 @@ public:
       alGenBuffers(2, bufferIds);
       freeBuffers[ freeBufferCount++ ] = bufferIds[0];
       freeBuffers[ freeBufferCount++ ] = bufferIds[1];
+      isStopped = false;
       check("alGenBuffers");
    }
 
@@ -362,7 +385,8 @@ public:
 
       if (bufferIds[0])
          alDeleteBuffers(2, bufferIds);
-       freeBufferCount = 0;
+      freeBufferCount = 0;
+      isStopped = true;
    }
   
    void unqueueBuffers()
@@ -426,10 +450,7 @@ public:
       else
          LOG_SOUND("Bad freeBufferCount");
    }
-   bool isComplete()
-   {
-      return !openal_is_shutdown && !shouldPlay;
-   }
+   virtual bool isComplete() = 0;
 
 };
 
@@ -509,7 +530,7 @@ public:
 
    bool updateStream()
    {
-      if (openal_is_shutdown || !shouldPlay || suspended)
+      if (openal_is_shutdown || !stream || suspended)
       {
          LOG_SOUND("Dead stream.\n");
          return false;
@@ -585,20 +606,17 @@ public:
                t0 = stream->setPosition(skip);
             }
 
-            shouldPlay = true;
             if (updateStream())
             {
                clAddChannel(this,true);
             }
-            else
-               shouldPlay = false;
          }
       }
    }
 
    bool isComplete()
    {
-      return !openal_is_shutdown && freeBufferCount==2;
+      return !openal_is_shutdown && (freeBufferCount==2 || isStopped);
    }
 
 
@@ -655,7 +673,6 @@ public:
       isStereo = inIsStereo;
       rate = inRate;
       createBuffers();
-      shouldPlay = true;
       dataFormat = inFormat;
       sampleSize = 0;
       openAlFormat = 0;
@@ -683,7 +700,7 @@ public:
 
    bool needsData()
    {
-      if (openal_is_shutdown || !shouldPlay || suspended || syncDataPending || noMoreData )
+      if (openal_is_shutdown || suspended || syncDataPending || noMoreData || isStopped)
          return false;
 
       unqueueBuffers();
@@ -698,10 +715,16 @@ public:
    {
       if (openal_is_shutdown)
          return false;
+      if (isStopped)
+         return true;
       if (noMoreData)
       {
          if (freeBufferCount<2)
+         {
             unqueueBuffers();
+            if (freeBufferCount==2)
+               stop();
+         }
          return freeBufferCount==2;
       }
       return false;

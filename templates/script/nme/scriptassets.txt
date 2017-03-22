@@ -1,0 +1,6 @@
+::foreach assets::
+::id::
+::resourceName::
+::type::
+::isResource::
+::className:: ::end::

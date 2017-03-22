@@ -203,7 +203,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
             int w = h;
             while(w<orig_w)
                w*=2;
-            PixelFormat pf = mFace->WantRGB() ? pfARGB : pfAlpha;
+            PixelFormat pf = mFace->WantRGB() ? pfBGRA : pfAlpha;
             Tilesheet *sheet = new Tilesheet(w,h,pf,true);
             sheet->GetSurface().Clear(0);
             mCurrentSheet = mSheets.size();
@@ -310,6 +310,29 @@ struct FontInfo
    unsigned int flags;
 };
 
+const char *RemapFontName(const char *inName)
+{
+   if (!strcasecmp(inName,"times.ttf") ||
+       !strcasecmp(inName,"serif") ||
+       !strcasecmp(inName,"\"serif\"") ||
+       !strcasecmp(inName,"times"))
+      return "_serif"; 
+   else if (!strcasecmp(inName,"arial.ttf") ||
+            !strcasecmp(inName,"arial") ||
+            !strcasecmp(inName,"\"sans-serif\"") ||
+            !strcasecmp(inName,"sans-serif") )
+      return "_sans"; 
+   else if (!strcasecmp(inName,"_typewriter") ||
+            !strcasecmp(inName,"courier.ttf") ||
+            !strcasecmp(inName,"monospace") ||
+            !strcasecmp(inName,"\"monospace\"") ||
+            !strcasecmp(inName,"courier"))
+      return "_monospace"; 
+
+   return 0;
+}
+
+
 
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
@@ -350,19 +373,10 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
       }
       else if (pass==2)
       {
-         if (!strcasecmp(fontName.c_str(),"times.ttf") ||
-             !strcasecmp(fontName.c_str(),"times"))
-            seekName = "_serif"; 
-         else if (!strcasecmp(fontName.c_str(),"arial.ttf") ||
-                  !strcasecmp(fontName.c_str(),"arial") ||
-                  !strcasecmp(fontName.c_str(),"sans-serif") )
-            seekName = "_sans"; 
-         else if (!strcasecmp(fontName.c_str(),"_typewriter") ||
-                  !strcasecmp(fontName.c_str(),"courier.ttf") ||
-                  !strcasecmp(fontName.c_str(),"courier"))
-            seekName = "_monospace"; 
-         else
+         const char *remappedFont = RemapFontName(fontName.c_str());
+         if (!remappedFont)
             break;
+         seekName = remappedFont;
       }
 
       AutoGCRoot *bytes = 0;
@@ -409,7 +423,10 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
       face = FontFace::CreateNative(inFormat,inScale);
 
    if (!face)
+   {
+      //printf("Missing face : %s\n", fontName.c_str() );
        return 0;
+   }
 
    font =  new Font(face,info.height,inInitRef);
    // Store for Ron ...

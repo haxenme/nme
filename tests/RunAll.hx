@@ -25,7 +25,7 @@ class RunAll
 
    static function filter(inName:String):Bool
    {
-      return inName!="android" && inName!="native" && inName!="html5";
+      return inName!="android" && inName!="native" && inName!="html5" && inName!="watchos" && inName!="SwfAssetLib.hx" && inName!="ios";
    }
 
    public static function main()
@@ -49,8 +49,17 @@ class RunAll
       File.saveContent("ImportAll.hx", lines.join("\n"));
 
       Sys.println('Build test...');
-      var result = Sys.command("haxelib",["run","nme","build","cpp"]);
+      var result = Sys.command("haxelib",["run","nme","build","cpp","-toolkit"]);
       Sys.println('Built with result $result.');
+      if (result!=0)
+         Sys.exit(result);
+
+      /*
+      Sys.println('Render ..');
+      Sys.setCwd("../Render");
+      var result = Sys.command("haxelib",["run","nme","test","cpp","-toolkit"]);
+      Sys.println('ran with result $result.');
+      */
       Sys.exit(result);
    }
 }

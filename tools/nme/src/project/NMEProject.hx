@@ -10,6 +10,7 @@ class AndroidConfig
 {
    public var installLocation:String;
    public var minApiLevel:Int;
+   public var addV4Compat:Bool;
    public var targetApiLevel:Null<Int>;
    public var buildApiLevel:Null<Int>;
    public var appHeader:Array<String>;
@@ -27,7 +28,8 @@ class AndroidConfig
    public function new()
    {
       installLocation = "preferExternal";
-      minApiLevel = 8;
+      minApiLevel = 14;
+      addV4Compat = true;
       appHeader = [];
       appIntent = [];
       appActivity = [];
@@ -61,20 +63,24 @@ class IOSConfig
    public var compiler:String;
    public var deployment:String;
    public var deviceConfig:Int;
-   public var linkerFlags:String;
+   public var linkerFlags:Array<String>;
    public var prerenderedIcon:Bool;
    public var viewTestDir:String;
+   public var sourceFlavour:String;
 
    public function new()
    {
       compiler =  "clang";
-      deployment =  "5.1.1";
+      deployment =  "8.0";
       deviceConfig =  UNIVERSAL;
-      linkerFlags =  "";
+      linkerFlags =  new Array();
       viewTestDir =  "";
       prerenderedIcon =  false;
+      sourceFlavour = "cpp";
    }
 }
+
+
 
 class NMEProject 
 {
@@ -94,10 +100,12 @@ class NMEProject
    public var export:String;
    public var exportFilter:String;
    public var exportSourceDir:String;
+   public var projectFilename:String;
 
    // ios/android build parameters
    public var iosConfig:IOSConfig;
    public var androidConfig:AndroidConfig;
+   public var watchProject:NMEProject;
 
    // Defines
    public var localDefines:Map<String,String>;
@@ -123,6 +131,8 @@ class NMEProject
    public var customIOSproperties:Map<String,String>;
    public var frameworkSearchPaths:Array<String>;
    public var customIOSBlock:Array<String>;
+   // For decoding assets
+   public var libraryHandlers:Map<String,String>;
    // Additional files to be copied into andoird project
    public var javaPaths:Array<String>;
    // Android signing certificate
@@ -141,6 +151,7 @@ class NMEProject
    public var ndllCheckDir:String;
    public var command:String;
    public var target:String;
+   public var targetName:String;
 
    private var baseTemplateContext:Dynamic;
 
@@ -163,6 +174,7 @@ class NMEProject
       templateCopies = [];
       ndllCheckDir = "";
       engines = new Map<String,String>();
+      libraryHandlers = new Map<String,String>();
 
       environment = Sys.environment();
       if (environment.exists("ANDROID_SERIAL"))
@@ -221,8 +233,10 @@ class NMEProject
       app.binDir = inDir;
    }
 
+
    public function setTarget(inTargetName:String)
    {
+      targetName = inTargetName;
       switch(inTargetName) 
       {
          case "cpp":
@@ -284,6 +298,17 @@ class NMEProject
             haxedefs.set("iphone", "1");
             targetFlags.set("simulator", "");
 
+         case "watchos":
+            targetFlags.set("watchos", "");
+            haxedefs.set("objc","1");
+            target = Platform.WATCH;
+
+         case "watchsimulator":
+            targetFlags.set("watchos", "");
+            targetFlags.set("watchsimulator", "");
+            haxedefs.set("objc","1");
+            target = Platform.WATCH;
+
          case "android":
             target = Platform.ANDROID;
             targetFlags.set("android", "");
@@ -314,7 +339,7 @@ class NMEProject
 
       targetFlags.set("target_" + target.toString().toLowerCase() , "");
 
-      if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW)
+      if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW || target==Platform.WATCH)
       {
          optionalStaticLink = false;
          staticLink = true;
@@ -360,12 +385,20 @@ class NMEProject
             window.height = 0;
             window.fullscreen = true;
 
+
+         case Platform.WATCH:
+            platformType = Platform.TYPE_MOBILE;
+            window.width = 0;
+            window.height = 0;
+            window.fullscreen = true;
+
          case Platform.WINDOWS, Platform.MAC, Platform.LINUX:
 
             platformType = Platform.TYPE_DESKTOP;
 
             if (architectures.length==0)
                architectures = [ PlatformHelper.hostArchitecture ];
+            window.singleInstance = false;
 
          default:
             Log.error("Unknown platform target : " + inTargetName);
@@ -394,6 +427,21 @@ class NMEProject
       localDefines.set(target.toLowerCase(), "1");
    }
 
+   public function setProjectFilename(inFilename:String)
+   {
+      projectFilename = inFilename;
+   }
+
+   public function makeWatchOSConfig()
+   {
+      if (watchProject==null)
+      {
+         watchProject = new NMEProject();
+         watchProject.setTarget(targetName);
+         watchProject.templatePaths.push( CommandLineTools.nme + "/templates/watchos" );
+      }
+      return watchProject;
+   }
 
    public function getInt(inName:String,inDefault:Int):Int
    {
@@ -461,6 +509,11 @@ class NMEProject
       return inPath;
    }
 
+   public function addClassPath(inPath:String)
+   {
+      ArrayHelper.addUnique(classPaths, inPath);
+   }
+
    public function addArch(arch:Architecture)
    {
       ArrayHelper.addUnique(architectures, arch);
@@ -524,7 +577,13 @@ class NMEProject
    public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String)
    {
       var ndll =  findNdll(name);
-      if (ndll==null)
+      if ( (CommandLineTools.toolkit && name=="nme")  || 
+             (CommandLineTools.getHaxeVer()>="3.3") && (name=="std" || name=="regexp" ||
+                 name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) )
+      {
+         Log.verbose("Skip ndll " + name + " for toolkit link" );
+      }
+      else if (ndll==null)
       {
           var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
 
@@ -539,6 +598,7 @@ class NMEProject
    public function addLib(name:String, version:String="")
    {
       var haxelib = findHaxelib(name);
+      Log.mVerbose = true;
       if (haxelib==null)
       {
          Log.verbose("Add library " + name + ":" + version );
@@ -564,24 +624,48 @@ class NMEProject
          Log.verbose("Adding " + name + "@" + path);
 
          if (FileSystem.exists(path + "/include.nmml")) 
-            new NMMLParser(this, path + "/include.nmml");
+            new NMMLParser(this, path + "/include.nmml", true);
          else if (FileSystem.exists(path + "/include.xml")) 
-            new NMMLParser(this, path + "/include.xml");
+            new NMMLParser(this, path + "/include.xml", true);
 
          // flixel depends on lime, so lime gets same priority as flixel - we want nme with greater priority
          if (name=="flixel")
             raiseLib("nme");
 
-         if (name=="nme")
+         if (name=="nme" && !hasDef("watchos") )
             addNdll("nme", haxelib.getBase(), null, "nme");
       }
       return haxelib;
   }
 
 
-   public function processStdLibs()
+   public function processLibs()
    {
-      if (stdLibs && !isFlash)
+      var needsSwfHandler = false;
+
+      for(asset in assets)
+      {
+         if (asset.type == SWF)
+            needsSwfHandler = true;
+      }
+
+      if (needsSwfHandler && !libraryHandlers.exists("SWF"))
+      {
+         if (hasDef("flash"))
+         {
+            Log.verbose("Using default flash swf handler");
+            libraryHandlers.set("SWF","nme.swf.SwfAssetLib");
+         }
+         else
+         {
+            Log.verbose("Using default native swf handler");
+            libraryHandlers.set("SWF","format.swf.SWFLibrary");
+            addLib("swf");
+         }
+      }
+
+
+      if (stdLibs && !isFlash && !CommandLineTools.toolkit && CommandLineTools.getHaxeVer()<"3.3" )
       {
          for(lib in ["std", "zlib", "regexp"])
          {
@@ -593,6 +677,7 @@ class NMEProject
             }
          }
       }
+
    }
 
    public function getContext(inBuildDir:String):Dynamic 
@@ -607,15 +692,28 @@ class NMEProject
          Reflect.setField(context, "APP_" + StringHelper.formatUppercaseVariable(field), Reflect.field(app, field));
       }
 
+      if (watchProject!=null)
+      {
+         for(field in Reflect.fields(watchProject.app)) 
+         {
+            Reflect.setField(context, "WATCH_" + StringHelper.formatUppercaseVariable(field), Reflect.field(watchProject.app, field));
+         }
+      }
+
       context.BUILD_DIR = app.binDir;
       context.EMBED_ASSETS = embedAssets ? "true" : "false";
       context.OPENFL_COMPAT = openflCompat ? "true" : "false";
       if (openflCompat)
       {
-         haxedefs.set("openfl","2.1.6");
+         var oflVersion = hasDef("NME_OPENFL_VERSION") ? getDef("NME_OPENFL_VERSION") : "3.5.0";
+         haxedefs.set("openfl",oflVersion);
          if (target!=Platform.FLASH ) 
+         {
             haxedefs.set("openfl_legacy","1");
+            haxedefs.set("lime_legacy","1");
+         }
          haxeflags.push("--remap openfl:nme");
+         addLib("nme","");
       }
 
       if (export!=null && export!="")
@@ -634,10 +732,10 @@ class NMEProject
          engineArray.push( {name:key, version:engines.get(key) } );
       context.ENGINES = engineArray;
       context.NATIVE_FONTS = getBool("nativeFonts", true);
+      context.PROJECT_FILENAME = projectFilename==null ? "Unknown.nmml" : projectFilename;
 
       for(field in Reflect.fields(window)) 
          Reflect.setField(context, "WIN_" + StringHelper.formatUppercaseVariable(field), Reflect.field(window, field));
-
 
       for(haxeflag in haxeflags) 
       {
@@ -660,11 +758,24 @@ class NMEProject
          context.assets.push(asset);
       }
 
+
+      var handlers = new Array<Dynamic>();
+      context.libraryHandlers = handlers;
+      for(h in libraryHandlers.keys())
+      {
+         handlers.push({ type:h, handler:libraryHandlers.get(h) } );
+      }
+
       Reflect.setField(context, "ndlls", ndlls);
       //Reflect.setField(context, "sslCaCert", sslCaCert);
       context.sslCaCert = "";
 
       var compilerFlags = [];
+
+      if (target == Platform.CPPIA)
+         compilerFlags.push('-resource $inBuildDir/nme/scriptassets.txt@haxe/nme/scriptassets.txt');
+      else
+         compilerFlags.push('-resource $inBuildDir/nme/assets.txt@haxe/nme/assets.txt');
 
       for(haxelib in haxelibs) 
       {

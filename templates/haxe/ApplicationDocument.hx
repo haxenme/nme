@@ -13,7 +13,7 @@ class ApplicationDocument extends ::APP_MAIN::
       }
       #end
 
-      super();
+      ApplicationBoot.callSuper();
 
       #if nme
       if (added!=null && added.stage!=null)

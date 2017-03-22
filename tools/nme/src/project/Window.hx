@@ -18,6 +18,8 @@ class Window
    public var depthBuffer:Bool;
    public var stencilBuffer:Bool;
    public var alphaBuffer:Bool;
+   public var ui:String;
+   public var singleInstance:Bool;
 
    public function new()
    {
@@ -38,5 +40,7 @@ class Window
       depthBuffer = false;
       stencilBuffer = false;
       alphaBuffer = false;
+      ui = "";
+      singleInstance = true;
    }
 }

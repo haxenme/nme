@@ -56,9 +56,15 @@ class Basic extends Sprite
       addEventListener( Event.ENTER_FRAME, doEnter );
    }
 
+   #if script
+   public function getBackgroundColor():Int return ScriptMain.winBackground;
+   public function getWidth():Float return ScriptMain.winWidth;
+   public function getHeight():Float return ScriptMain.winHeight;
+   #else
    public function getBackgroundColor():Int return ApplicationMain.winBackground;
    public function getWidth():Float return ApplicationMain.winWidth;
    public function getHeight():Float return ApplicationMain.winHeight;
+   #end
 
    public function doEnter(_) { onEnter(); }
 
@@ -68,7 +74,11 @@ class Basic extends Sprite
          parent.removeChild(this);
       removeEventListener( Event.ENTER_FRAME, doEnter );
       dispatchEvent(new Event (Event.COMPLETE));
+      #if script
+      ScriptMain.onLoaded();
+      #else
       ApplicationMain.onLoaded();
+      #end
    }
 
    function onEnter()

@@ -20,6 +20,7 @@ class Platform
    public static inline var CPPIA = "CPPIA";
    public static inline var EMSCRIPTEN = "EMSCRIPTEN";
    public static inline var HTML5 = "HTML5";
+   public static inline var WATCH = "WATCH";
 
 
    public static inline var TYPE_WEB = "WEB";
@@ -75,7 +76,7 @@ class Platform
       var l = base.length;
      if (inFile.substr(0,l)==base)
          outputFiles.push( inFile.substr(l) );
-      else if (inFile.substr(inFile.length-8)!=".pbxproj" &&
+      else if (inFile.substr(inFile.length-8)!=".pbxproj" && inFile.indexOf("ios")<0 &&
             inFile.indexOf("android-view")<0 && inFile.indexOf("ios-view")<0 )
       {
          Log.warn( inFile + " does not appear to be under " + base );
@@ -145,13 +146,37 @@ class Platform
       return ArrayHelper.containsValue(project.architectures, inArch);
    }
 
+   public function runHaxeWithArgs(args:Array<String>)
+   {
+      var haxeRoot = project.getDef("HAXE_ROOT");
+      if (haxeRoot!=null)
+      {
+         var haxe = haxeRoot + "/haxe";
+         if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
+             haxe += ".exe";
+         var oldStdPath = Sys.getEnv("HAXE_STD_PATH");
+         Sys.putEnv("HAXE_STD_PATH", haxeRoot + "/std");
+
+         Log.verbose("Run: " + haxe + " " + args.join(" "));
+         ProcessHelper.runCommand("", haxe, args);
+
+         if (oldStdPath!=null)
+            Sys.putEnv("HAXE_STD_PATH", oldStdPath);
+      }
+      else
+      {
+         Log.verbose("Run: haxe " + args.join(" "));
+         ProcessHelper.runCommand("", "haxe", args);
+      }
+   }
+
    public function runHaxe()
    {
       var args = [haxeDir + "/build.hxml"];
       if (project.debug)
          args.push("-debug");
 
-      ProcessHelper.runCommand("", "haxe", args);
+      runHaxeWithArgs(args);
    }
 
    public function copyBinary() { }
@@ -184,7 +209,10 @@ class Platform
       header.id = project.app.packageName;
       header.engines = new Array<Dynamic>();
       for(engine in project.engines.keys())
-         header.engines.push( {name:engine, version:project.engines.get(engine)} );
+      {
+         var e = {name:engine, version:project.engines.get(engine)};
+         header.engines.push(e);
+      }
 
       if (includeIcon && project.icons!=null && project.icons.length>0)
       {
@@ -368,12 +396,25 @@ class Platform
          }
          else if (protocol=="script")
          {
-            var host = new Host(name);
-            Log.verbose("Connect to host " + host);
-            var socket = new Socket();
             try
             {
+               var socket = new Socket();
+               var parts = name.split("@");
+               var hostName = parts.pop();
+               var host = new Host(hostName);
+               var password = parts.join("@");
+
+               Log.verbose("Connect to host " + hostName);
+
                socket.connect(host, 0xacad);
+               if (password!="")
+               {
+                  var len = socket.input.readInt32();
+                  var hash = socket.input.readString(len);
+                  var response = haxe.crypto.Md5.encode( password + hash );
+                  socket.output.writeInt32(response.length);
+                  socket.output.writeString(response);
+               }
 
                var to = project.app.packageName;
 
@@ -398,7 +439,7 @@ class Platform
             }
             catch(e:Dynamic)
             {
-               Log.error("Could not connect to " + deploy + " : " + e );
+               Log.error("Could not connect to " + name + " : " + e );
             }
          }
          else if (protocol=="nme")
@@ -449,10 +490,10 @@ class Platform
    public function trace() { }
    public function uninstall() { }
 
-   public function copyTemplateDir(from:String, to:String, warnIfNotFound = true, ?inForOutput=true) : Bool
+   public function copyTemplateDir(from:String, to:String, warnIfNotFound = true, ?inForOutput=true, ?inFilter:String->Bool) : Bool
    {
       return FileHelper.recursiveCopyTemplate(project.templatePaths, from, to, context, true, warnIfNotFound, 
-          inForOutput ? addOutput : null );
+          inForOutput ? addOutput : null, inFilter );
    }
    public function copyTemplate(from:String, to:String)
    {

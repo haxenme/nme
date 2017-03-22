@@ -143,14 +143,20 @@ public:
    
    bool Render(const RenderTarget &inTarget, const RenderState &inState)
    {
+      #define orthoTol 1e-6
+
       Surface *s = mFill->bitmapData;
       double bmp_scale_x = 1.0/s->Width();
       double bmp_scale_y = 1.0/s->Height();
-      // Todo:skew
-      bool is_stretch = (inState.mTransform.mMatrix->m00!=1.0 ||
-                         inState.mTransform.mMatrix->m11!=1.0) &&
-                         ( inState.mTransform.mMatrix->m00 > 0 &&
-                           inState.mTransform.mMatrix->m11 > 0  );
+      
+      bool is_base_ortho = fabs(inState.mTransform.mMatrix->m01)< orthoTol  && fabs(inState.mTransform.mMatrix->m10)< orthoTol;
+      float sx = inState.mTransform.mMatrix->m00;
+      float sy = inState.mTransform.mMatrix->m11;
+      bool is_base_identity = is_base_ortho && fabs(sx-1.0)<orthoTol && fabs(sy-1.0)<orthoTol;
+
+      //int blits = 0;
+      //int stretches = 0;
+      //int renders = 0;
 
       for(int i=0;i<mTileData.size();i++)
       {
@@ -161,22 +167,31 @@ public:
          UserPoint corner(data.mPos);
          UserPoint pos = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
 
-         if (s->Format()==pfAlpha && !is_stretch && mBlendMode==bmNormal && data.mHasColour /* integer co-ordinate?*/ )
-         {
-            unsigned int col = inState.mColourTransform->Transform(data.mColour|0xff000000);
-            s->BlitTo(inTarget, data.mRect, (int)(pos.x), (int)(pos.y), blend, 0, col);
-         }
-         else if ( (is_stretch || data.mHasTrans) )
+         bool is_ortho = is_base_ortho && (!data.mHasTrans || fabs(data.mTransX.y)<orthoTol);
+         bool is_identity = data.mHasTrans ?
+                           is_ortho && fabs(sx*data.mTransX.x-1.0)<orthoTol && fabs(sy*data.mTransY.y-1)<orthoTol :
+                           is_base_identity;
+
+         if ( !is_identity )
          {
             // Can use stretch if there is no skew and no colour transform...
-            if (!data.mHasColour && (!data.mHasTrans) &&  mBlendMode==bmNormal )
+            if (!data.mHasColour && mBlendMode==bmNormal && is_ortho )
             {
                UserPoint p0 = pos;
-               pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
+               if (data.mHasTrans)
+                  pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w*data.mTransX.x,
+                                                          corner.y+data.mRect.h*data.mTransY.y);
+               else
+                  pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
+
                s->StretchTo(inTarget, data.mRect, DRect(p0.x,p0.y,pos.x,pos.y,true));
+
+               //stretches++;
             }
             else
             {
+               //renders++;
+
                int tile_alpha = 256;
                bool just_alpha = (data.mHasColour) &&
                                  ((data.mColour&0x00ffffff ) == 0x00ffffff);
@@ -206,7 +221,7 @@ public:
                   p[2] = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
                   p[3] = inState.mTransform.mMatrix->Apply(corner.x,corner.y+data.mRect.h);
                }
-               
+
                Extent2DF extent;
                extent.Add(p[0]);
                extent.Add(p[1]);
@@ -236,10 +251,11 @@ public:
 
                int aa = 1;
                SpanRect *span = new SpanRect(alpha_rect,aa);
+               // ToImageAA - add 0.5 offset
                for(int i=0;i<4;i++)
                   span->Line00(
-                       Fixed10( p[i].x, p[i].y  ),
-                       Fixed10( p[(i+1)&3].x, p[(i+1)&3].y) );
+                       Fixed10( p[i].x + 0.5, p[i].y + 0.5  ),
+                       Fixed10( p[(i+1)&3].x + 0.5, p[(i+1)&3].y + 0.5) );
                
                AlphaMask *alpha = span->CreateMask(inState.mTransform,tile_alpha);
                delete span;
@@ -282,7 +298,7 @@ public:
                else
                {
                   // Create temp surface
-                  SimpleSurface *tmp = new SimpleSurface(visible_pixels.w,visible_pixels.h, pfARGB);
+                  SimpleSurface *tmp = new SimpleSurface(visible_pixels.w,visible_pixels.h, pfBGRA);
                   tmp->IncRef();
                   tmp->Zero();
                   {
@@ -309,9 +325,20 @@ public:
                alpha->Dispose();
             }
          }
+         else if (s->Format()==pfAlpha && mBlendMode==bmNormal && data.mHasColour /* integer co-ordinate?*/ )
+         {
+            //blits++;
+            unsigned int col = inState.mColourTransform->Transform(data.mColour|0xff000000);
+            s->BlitTo(inTarget, data.mRect, (int)(pos.x), (int)(pos.y), blend, 0, col);
+         }
          else
+         {
+            //blits++;
             s->BlitTo(inTarget, data.mRect, (int)(pos.x), (int)(pos.y), blend, 0, data.mColour);
+         }
       }
+
+      //printf("b/s/r = %d/%d/%d\n", blits, stretches, renders);
       
       return true;
    }

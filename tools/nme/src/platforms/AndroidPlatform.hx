@@ -11,6 +11,7 @@ class AndroidPlatform extends Platform
    var buildV5:Bool;
    var buildV7:Bool;
    var buildX86:Bool;
+   var gradle:Bool;
 
 
    public function new(inProject:NMEProject)
@@ -19,12 +20,20 @@ class AndroidPlatform extends Platform
 
       buildV5 = buildV7 = buildX86 = false;
 
+      gradle = CommandLineTools.gradle;
+      if (gradle)
+      {
+         Log.verbose("Using gradle build system");
+         PathHelper.mkdir(getAppDir());
+      }
+
       var archs = project.architectures;
       var isSim =  project.targetFlags.exists("androidsim");
       if (isSim)
          ArrayHelper.addUnique(archs, Architecture.X86);
+      // Default to V7 now...
       if (archs.length<1)
-         archs.push(Architecture.ARMV5);
+         archs.push(Architecture.ARMV7);
       Log.verbose("Valid archs :" + archs );
 
       if (!isSim)
@@ -35,12 +44,13 @@ class AndroidPlatform extends Platform
       buildX86 = hasArch(X86);
 
 
+      var libDir = getOutputLibDir();
       if (!buildV5)
-         PathHelper.removeDirectory(getOutputDir() + "/libs/armeabi");
+         PathHelper.removeDirectory(libDir + "/armeabi");
       if (!buildV7)
-         PathHelper.removeDirectory(getOutputDir() + "/libs/armeabi-v7a");
+         PathHelper.removeDirectory(libDir + "/armeabi-v7a");
       if (!buildX86)
-         PathHelper.removeDirectory(getOutputDir() + "/libs/x86");
+         PathHelper.removeDirectory(libDir + "/x86");
 
       setupAdb();
 
@@ -68,6 +78,16 @@ class AndroidPlatform extends Platform
       }
    }
 
+   public function getAppDir()
+   {
+      return gradle ? getOutputDir() + "/app/src/main"  : getOutputDir();
+   }
+
+
+   public function getOutputLibDir()
+   {
+      return gradle ? getOutputDir() + "/app/src/main/jniLibs"  : getOutputDir() + "/libs";
+   }
 
 
 
@@ -89,13 +109,13 @@ class AndroidPlatform extends Platform
                                  ['$haxeDir/build.hxml', "-D", "android" ];
 
       if (buildV5)
-         ProcessHelper.runCommand("", "haxe", args);
+         runHaxeWithArgs(args);
 
       if (buildV7)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV7"]) );
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV7"]) );
 
       if (buildX86)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_X86"]) );
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_X86"]) );
    }
 
 
@@ -105,15 +125,15 @@ class AndroidPlatform extends Platform
 
       if (buildV5)
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + ".so",
-                getOutputDir() + "/libs/armeabi/libApplicationMain.so");
+                getOutputLibDir() + "/armeabi/libApplicationMain.so");
 
       if (buildV7)
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-v7.so",
-                getOutputDir() + "/libs/armeabi-v7a/libApplicationMain.so" );
+                getOutputLibDir() + "/armeabi-v7a/libApplicationMain.so" );
 
       if (buildX86)
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-x86.so",
-                getOutputDir() + "/libs/x86/libApplicationMain.so" );
+                getOutputLibDir() + "/x86/libApplicationMain.so" );
    }
 
 
@@ -122,7 +142,7 @@ class AndroidPlatform extends Platform
       context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
       context.DEBUGGABLE = project.debug;
 
-      var staticNme = false;
+      var staticNme = CommandLineTools.toolkit;
       for(ndll in project.ndlls)
          if (ndll.name=="nme" && ndll.isStatic)
             staticNme = true;
@@ -164,7 +184,10 @@ class AndroidPlatform extends Platform
       {
          var lib = project.dependencies.get(k);
          if (lib.isAndroidProject() && getAndroidProject(lib)!=extensionApi)
-            context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:getAndroidProject(lib)} );
+         {
+            var proj = getAndroidProject(lib);
+            context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:proj} );
+         }
       }
    }
 
@@ -201,22 +224,34 @@ class AndroidPlatform extends Platform
       if (project.environment.exists("ANDROID_SDK")) 
          Sys.putEnv("ANDROID_SDK", project.environment.get("ANDROID_SDK"));
 
-      var ant = project.environment.get("ANT_HOME");
-      if (ant == null || ant == "") 
-         ant = "ant";
+      if (gradle)
+      {
+         var assemble = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
+
+         var exe = PlatformHelper.hostPlatform==Platform.WINDOWS ? "./gradlew.bat" : "./gradlew";
+         ProcessHelper.runCommand(outputDir, exe, [ assemble ]);
+      }
       else
-         ant += "/bin/ant";
+      {
+         var build = "debug";
+         if (project.certificate != null) 
+            build = "release";
 
-      var build = "debug";
-      if (project.certificate != null) 
-         build = "release";
 
-      // Fix bug in Android build system, force compile
-      var buildProperties = outputDir + "/bin/build.prop";
-      if (FileSystem.exists(buildProperties)) 
-         FileSystem.deleteFile(buildProperties);
+         var ant = project.environment.get("ANT_HOME");
+         if (ant == null || ant == "") 
+            ant = "ant";
+         else
+            ant += "/bin/ant";
 
-      ProcessHelper.runCommand(outputDir, ant, [ build ]);
+
+         // Fix bug in Android build system, force compile
+         var buildProperties = outputDir + "/bin/build.prop";
+         if (FileSystem.exists(buildProperties)) 
+            FileSystem.deleteFile(buildProperties);
+
+         ProcessHelper.runCommand(outputDir, ant, [ "-v", build ]);
+      }
    }
 
    override public function buildPackage():Void 
@@ -226,27 +261,52 @@ class AndroidPlatform extends Platform
 
    override public function install():Void 
    {
-      var build = "debug";
-      if (project.certificate != null) 
-         build = "release";
-
+      var targetPath = "";
+     
       var outputDir = getOutputDir();
-      var targetPath = FileSystem.fullPath(outputDir) + "/bin/" + project.app.file + "-" + build + ".apk";
+      if (gradle)
+      {
+         var build = (project.certificate != null) ? "release" : "debug";
 
-      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "install", "-r", targetPath ]) );
+         targetPath = FileSystem.fullPath(outputDir) + "/app/build/outputs/apk/app-" + build + ".apk";
+      }
+      else
+      {
+         var build = "debug";
+         if (project.certificate != null) 
+            build = "release";
+
+         targetPath = FileSystem.fullPath(outputDir) + "/bin/" + project.app.file + "-" + build + ".apk";
+      }
+
+
+      // Apparently an exit code is too much to ask...
+      // ProcessHelper.runCommand("", adbName, adbFlags.concat([ "install", "-r", targetPath ]) );
+      try
+      {
+         var lines = ProcessHelper.getOutput(adbName,adbFlags.concat([ "install", "-r", targetPath ]), Log.mVerbose);
+         var failure = ~/Failure/;
+         for(line in lines)
+            if (failure.match(line))
+               Log.error("Failed to install apk:"  + line);
+      }
+      catch(e:Dynamic)
+      {
+         Log.error("Could not run adb install " + e);
+      }
    }
 
    override public function run(arguments:Array<String>):Void 
    {
       var activityName = project.app.packageName + "/" + project.app.packageName + ".MainActivity";
 
+      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat", "-c" ]));
       ProcessHelper.runCommand("", adbName, adbFlags.concat([ "shell", "am", "start", "-a", "android.intent.action.MAIN", "-n", activityName ]));
 
    }
 
    override public function trace():Void 
    {
-      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat", "-c" ]));
       ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat" ]));
    }
 
@@ -257,16 +317,20 @@ class AndroidPlatform extends Platform
 
    override public function updateLibs()
    {
+      var libDir = getOutputLibDir();
       if (buildV5)
-         updateLibArch( getOutputDir() + "/libs/armeabi", "" );
+         updateLibArch( libDir + "/armeabi", "" );
       if (buildV7)
-         updateLibArch( getOutputDir() + "/libs/armeabi-v7a", "-v7" );
+         updateLibArch( libDir + "/armeabi-v7a", "-v7" );
       if (buildX86)
-         updateLibArch( getOutputDir() + "/libs/x86", "-x86" );
+         updateLibArch( libDir + "/x86", "-x86" );
    }
 
 
-   override public function getOutputExtra() { return "android/PROJ"; }
+   override public function getOutputExtra()
+   {
+      return gradle ? "android/PROJ-gradle" : "android/PROJ";
+   }
 
    function addV4CompatLib(inDest:String)
    {
@@ -275,25 +339,69 @@ class AndroidPlatform extends Platform
       if (!FileSystem.exists(lib))
          lib = project.environment.get("ANDROID_SDK") +
             "/extras/android/support/v4/android-support-v4.jar";
+      if (!FileSystem.exists(lib))
+      {
+         var dir = project.environment.get("ANDROID_SDK") +
+               "/extras/android/m2repository/com/android/support/support-v4";
+         if (FileSystem.exists(dir))
+         {
+            var versionMatch = ~/^(\d)+\.(\d+)\.(\d+)$/;
+            var best = 0;
+            var bestFile:String = null;
+            for(file in FileSystem.readDirectory(dir))
+            {
+               if (versionMatch.match(file))
+               {
+                  var v0 = Std.parseInt(versionMatch.matched(1));
+                  var v1 = Std.parseInt(versionMatch.matched(2));
+                  var v2 = Std.parseInt(versionMatch.matched(3));
+                  var v = v0*10000 + v1*100 + v0;
+                  if (v>best && FileSystem.exists('$dir/$file/support-v4-$file-sources.jar' ) )
+                  {
+                     best = v0;
+                     bestFile = file;
+                  }
+               }
+            }
+            if (bestFile!=null)
+            {
+               lib = '$dir/$bestFile/support-v4-$bestFile-sources.jar';
+               Log.verbose('Found support-v4 in $lib');
+            }
+         }
+      }
+
+/*
+      if (!FileSystem.exists(lib))
+      {
+         lib = CommandLineTools.nme + "/tools/nme/bin/android-support-v4.jar";
+      }
+*/
+
 
       if (FileSystem.exists(lib))
-         FileHelper.copyIfNewer(lib, inDest + "/libs/android-support-v4.jar");
+      {
+         Log.verbose("copy to " + inDest + "/android-support-v4.jar");
+         FileHelper.copyIfNewer(lib, inDest + "/android-support-v4.jar");
+      }
       else
-         Log.error("Could not find " + lib);
+         Log.error("Could not find " + lib + " - use the SDK Manager to add the dependency" );
    }
 
    override public function updateOutputDir():Void 
    {
       super.updateOutputDir();
 
-      var destination = getOutputDir();
+      var destination = getAppDir();
       PathHelper.mkdir(destination + "/res/drawable-ldpi/");
       PathHelper.mkdir(destination + "/res/drawable-mdpi/");
       PathHelper.mkdir(destination + "/res/drawable-hdpi/");
       PathHelper.mkdir(destination + "/res/drawable-xhdpi/");
+      PathHelper.mkdir(destination + "/res/drawable-xxhdpi/");
+      PathHelper.mkdir(destination + "/res/drawable-xxxhdpi/");
 
-      var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi" ];
-      var iconSizes = [ 36, 48, 72, 96 ];
+      var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi" ];
+      var iconSizes = [ 36, 48, 72, 96, 144, 192 ];
 
       for(i in 0...iconTypes.length) 
       {
@@ -313,48 +421,68 @@ class AndroidPlatform extends Platform
        
 
       var packageDirectory = project.app.packageName;
-      packageDirectory = destination + "/src/" + packageDirectory.split(".").join("/");
+      var srcPath = gradle ? "/java" : "/src";
+      packageDirectory = destination + srcPath + "/" + packageDirectory.split(".").join("/");
       PathHelper.mkdir(packageDirectory);
       copyTemplate("android/MainActivity.java", packageDirectory + "/MainActivity.java");
 
-      var movedFiles = [ "src/org/haxe/nme/HaxeObject.java",
-                         "src/org/haxe/nme/Value.java",
-                         "src/org/haxe/nme/NME.java",
-                         "bin/classes/org/haxe/nme/HaxeObject.class",
-                         "bin/classes/org/haxe/nme/Value.class",
-                         "bin/classes/org/haxe/nme/NME.class" ];
-      for(moved in movedFiles)
+      if (!gradle)
       {
-         var file = destination + "/" + moved;
-         if (FileSystem.exists(file))
+         var movedFiles = [ "src/org/haxe/nme/HaxeObject.java",
+                            "src/org/haxe/nme/Value.java",
+                            "src/org/haxe/nme/NME.java",
+                            "bin/classes/org/haxe/nme/HaxeObject.class",
+                            "bin/classes/org/haxe/nme/Value.class",
+                            "bin/classes/org/haxe/nme/NME.class" ];
+         for(moved in movedFiles)
          {
-            Log.verbose("Remove legacy file " + file);
-            FileSystem.deleteFile(file);
+            var file = destination + "/" + moved;
+            if (FileSystem.exists(file))
+            {
+               Log.verbose("Remove legacy file " + file);
+               FileSystem.deleteFile(file);
+            }
          }
       }
 
+      var jarDir = getAppDir()+"/deps/extension-api/libs";
       for(javaPath in project.javaPaths) 
       {
          try 
          {
             if (FileSystem.isDirectory(javaPath)) 
-               FileHelper.recursiveCopy(javaPath, destination + "/src", context, true);
+               FileHelper.recursiveCopy(javaPath, destination + srcPath, context, true);
             else
             {
                if (Path.extension(javaPath) == "jar") 
-                  FileHelper.copyIfNewer(javaPath, destination + "/libs/" + Path.withoutDirectory(javaPath));
+                  FileHelper.copyIfNewer(javaPath, jarDir + "/" + Path.withoutDirectory(javaPath));
                else
-                  FileHelper.copyIfNewer(javaPath, destination + "/src/" + Path.withoutDirectory(javaPath));
+                  FileHelper.copyIfNewer(javaPath, destination + srcPath + Path.withoutDirectory(javaPath));
             }
          } catch(e:Dynamic) {}
       }
-      addV4CompatLib(getOutputDir());
+
+      //if (project.androidConfig.minApiLevel < 14)
+      if (project.androidConfig.addV4Compat && !gradle)
+         addV4CompatLib(jarDir);
+
+      if (gradle)
+      {
+         copyTemplateDir( "android/PROJ/deps/extension-api/src", destination + srcPath);
+         copyTemplateDir( "android/PROJ/src", destination + srcPath);
+      }
 
       for(k in project.dependencies.keys())
       {
          var lib = project.dependencies.get(k);
          if (lib.isAndroidProject())
-            FileHelper.recursiveCopy( lib.getFilename(), getOutputDir()+"/"+getAndroidProject(lib), context, true);
+         {
+            // TODO - where should these go?
+            if (gradle)
+               FileHelper.recursiveCopy( lib.getFilename(), destination + srcPath, context, true);
+            else
+               FileHelper.recursiveCopy( lib.getFilename(), getAppDir()+"/"+getAndroidProject(lib), context, true);
+         }
       }
    }
 

@@ -9,6 +9,7 @@
 
 # vi temp
 *.swp
+*.swo
 
 # Compiled Dynamic libraries
 *.so
@@ -37,3 +38,4 @@ out.txt
 # Miscellaneous
 all_objs
 *.pdb
+*.hash

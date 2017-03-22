@@ -45,8 +45,17 @@ class IOSPlatform extends Platform
 
       var architectures = project.architectures;
       var config = project.iosConfig;
+      var deployment = Std.parseFloat(config.deployment);
+      if ( deployment<9 && project.watchProject!=null)
+      {
+         deployment = 9;
+         config.deployment="9.0";
+      }
+      if (config.sourceFlavour=="mm")
+         project.haxeflags.push("-D objc");
+
       // If we support iphones with deployment < 5, we must support armv6 ...
-      if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && Std.parseFloat(config.deployment)<5)
+      if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && deployment<5)
           ArrayHelper.addUnique(architectures, Architecture.ARMV6);
       else
       {
@@ -141,6 +150,7 @@ class IOSPlatform extends Platform
 
    override private function generateContext(context:Dynamic)
    {
+      var config = project.iosConfig;
 
       context.HAS_ICON = false;
       context.HAS_LAUNCH_IMAGE = false;
@@ -149,6 +159,36 @@ class IOSPlatform extends Platform
       context.APP_FILE = project.app.file;
       context.REDIRECT_TRACE = redirectTrace;
       context.IOS_3X_RESOLUTION = project.getBool("ios3xResolution",true);
+      context.WATCHOS_DEPLOYMENT_TARGET = "2.2";
+      context.HXCPP_GEN_DIR = haxeDir + "/cpp";
+      var hxcpp = PathHelper.getHaxelib(new Haxelib("hxcpp"),true);
+      var hxcpp_include = hxcpp==null ? "" : " " + hxcpp + "/include";
+      context.HXCPP_INCLUDE_DIR = hxcpp_include;
+      context.NME_IOS_INCLUDE = 'haxe/cpp/include';
+
+
+      if (project.watchProject!=null)
+      {
+         context.NME_WATCHOS = true;
+         context.NME_WATCHOS_INCLUDE = '../watchos/haxe/cpp/include
+${hxcpp_include}';
+
+         if (project.watchProject.window.ui=="spritekit")
+         {
+            context.NME_WATCH_SPRITEKIT = true;
+            context.WATCHOS_DEPLOYMENT_TARGET = "3.0";
+         }
+
+         var col = project.watchProject.window.background;
+         context.TINT_RED = ((col>>16) & 0xff) / 0xff;
+         context.TINT_GREEN = ((col>>8) & 0xff) / 0xff;
+         context.TINT_BLUE = ((col) & 0xff) / 0xff;
+         context.TINT_ALPHA = 1;
+      }
+
+      var devTeam = project.getDef("DEVELOPMENT_TEAM");
+      if (devTeam!=null)
+          context.DEVELOPMENT_TEAM = devTeam;
 
 
       linkedLibraries = [];
@@ -164,7 +204,6 @@ class IOSPlatform extends Platform
       var valid_archs = new Array<String>();
       var current_archs = new Array<String>();
 
-      var config = project.iosConfig;
 
       for(architecture in project.architectures)
       {
@@ -223,7 +262,7 @@ class IOSPlatform extends Platform
       }
 
       context.IOS_COMPILER = config.compiler;
-      context.IOS_LINKER_FLAGS = config.linkerFlags.split(" ").join(", ");
+      context.IOS_LINKER_FLAGS = config.linkerFlags.join(", ");
 
       context.otherLinkerFlags = project.otherLinkerFlags;
       context.frameworkSearchPaths = project.frameworkSearchPaths;
@@ -250,30 +289,39 @@ class IOSPlatform extends Platform
       context.ADDL_PBX_FILE_REFERENCE = "";
       context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE = "";
       context.ADDL_PBX_FRAMEWORK_GROUP = "";
+      var imports = new Array<String>();
 
       for(dependency in project.dependencies)
         if (dependency.isFramework())
         {
            var lib = dependency.getFramework();
-           var frameworkID = "11C0000000000018" + StringHelper.getUniqueID();
-           var fileID = "11C0000000000018" + StringHelper.getUniqueID();
-           var path:String = 'System/Library/Frameworks';
-           if(dependency.path != '')
-               path = dependency.path;
-           var sourceTree:String = "SDKROOT";
-            if(dependency.sourceTree != '') {
-                sourceTree = dependency.sourceTree;
-                if(sourceTree == 'group') {
-                    sourceTree = "\"<group>\"";
-                }
-            }
-           context.ADDL_PBX_BUILD_FILE += '      $frameworkID /* $lib in Frameworks */ = {isa = PBXBuildFile; fileRef = $fileID /* $lib */; };\n';
-           context.ADDL_PBX_FILE_REFERENCE += '     $fileID /* $lib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = $lib; path = $path/$lib; sourceTree = $sourceTree; };\n';
-           context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += '            $frameworkID /* $lib in Frameworks */,\n';
-           context.ADDL_PBX_FRAMEWORK_GROUP += '            $fileID /* $lib */,\n';
+           if(dependency.path == '' && false)
+           {
+              imports.push( "@import " + lib.split(".framework")[0] + ";" );
+           }
+           else
+           {
+              var frameworkID = "11C0000000000018" + StringHelper.getUniqueID();
+              var fileID = "11C0000000000018" + StringHelper.getUniqueID();
+              var path:String = 'System/Library/Frameworks';
+              if(dependency.path != '')
+                  path = dependency.path;
+              var sourceTree:String = "SDKROOT";
+               if(dependency.sourceTree != '') {
+                   sourceTree = dependency.sourceTree;
+                   if(sourceTree == 'group') {
+                       sourceTree = "\"<group>\"";
+                   }
+               }
+              context.ADDL_PBX_BUILD_FILE += '      $frameworkID /* $lib in Frameworks */ = {isa = PBXBuildFile; fileRef = $fileID /* $lib */; };\n';
+              context.ADDL_PBX_FILE_REFERENCE += '     $fileID /* $lib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = $lib; path = $path/$lib; sourceTree = $sourceTree; };\n';
+              context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += '            $frameworkID /* $lib in Frameworks */,\n';
+              context.ADDL_PBX_FRAMEWORK_GROUP += '            $fileID /* $lib */,\n';
+           }
         }
 
       context.PRERENDERED_ICON = config.prerenderedIcon;
+      context.FRAMEWORK_IMPORTS = imports.join("\n");
 
       //updateIcon();
       //updateLaunchImage();
@@ -302,19 +350,19 @@ class IOSPlatform extends Platform
       var args = project.debug ? ['$haxeDir/build.hxml',"-debug"] : ['$haxeDir/build.hxml'];
 
       if (buildV6)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV6", "-D", "iphoneos"]));
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV6", "-D", "iphoneos"]));
 
       if (buildV7)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV7", "-D", "iphoneos"]));
 
       if (buildArm64)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "HXCPP_ARM64", "-D", "iphoneos" ]));
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARM64", "-D", "iphoneos" ]));
 
       if (buildI386)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim"]));
+         runHaxeWithArgs(args.concat(["-D", "iphonesim"]));
 
       if (buildX86_64)
-         ProcessHelper.runCommand("", "haxe", args.concat(["-D", "iphonesim", "-D", "HXCPP_M64"]));
+         runHaxeWithArgs(args.concat(["-D", "iphonesim", "-D", "HXCPP_M64"]));
    }
 
    function copyApplicationMain(end:String, arch:String)
@@ -362,22 +410,38 @@ class IOSPlatform extends Platform
       var name = "LaunchImage" + width + "x" + height + ".png";
       var dest = getOutputDir() + "/Images.xcassets/LaunchImage.launchimage/" + name;
 
-
       var ok = true;
 
-      try
-      {
-         if (!FileSystem.exists(dest))
-         {
-            var bitmapData = new nme.display.BitmapData(width, height,
-                 false, (0xFF << 24) | (project.window.background & 0xFFFFFF));
-            File.saveBytes(dest, bitmapData.encode("png"));
-         }
+      // check to see if any launch images are defined in the project that match this size
+      for (splashScreen in project.splashScreens) {
+        if (splashScreen.width == width && splashScreen.height == height) {
+          try 
+          {
+            FileHelper.copyFile(splashScreen.path, dest);
+          }
+          catch(e:Dynamic)
+          {
+             Log.error("Could not copy launch image " + splashScreen.path + " to " + dest + " : " + e);
+          }
+          break;
+        }
       }
-      catch(e:Dynamic)
+      // if no splash exists (either preexisting or copied over) then we generate a blank image
+      if (!FileSystem.exists(dest)) 
       {
-         Log.error("Could not save launch image " + dest + " : " + e);
+        try
+        {
+          var bitmapData = new nme.display.BitmapData(width, height,
+               false, (0xFF << 24) | (project.window.background & 0xFFFFFF));
+          File.saveBytes(dest, bitmapData.encode("png"));
+        }
+        catch(e:Dynamic) 
+        {
+          ok = false;
+          Log.error("Could create empty launch image " + dest + " : " + e);
+        }
       }
+      
 
       if (ok)
          return ", \"filename\":\"" + name + "\"";
@@ -412,19 +476,31 @@ class IOSPlatform extends Platform
       var projectDirectory = getOutputDir();
 
       PathHelper.mkdir(targetDir);
-
-
+      PathHelper.mkdir(projectDirectory);
 
 
       // Do not update if we are running from inside xcode
       if (project.command!="xcode")
       {
-         copyTemplateDir("ios/PROJ/Classes", projectDirectory + "/Classes");
-         copyTemplateDir("ios/PROJ/Images.xcassets", projectDirectory + "/Images.xcassets");
          copyTemplate("ios/PROJ/PROJ-Entitlements.plist", projectDirectory + "/" + project.app.file + "-Entitlements.plist");
          copyTemplate("ios/PROJ/PROJ-Info.plist", projectDirectory + "/" + project.app.file + "-Info.plist");
          copyTemplate("ios/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch");
          copyTemplateDir("ios/PROJ.xcodeproj", targetDir + "/" + project.app.file + ".xcodeproj");
+
+         // Copy all the rest, except the "PROJ" files...
+         copyTemplateDir("ios/PROJ", projectDirectory, true, true, function(name) return name.substr(0,4)!="PROJ" );
+         //copyTemplateDir("ios/PROJ/Classes", projectDirectory + "/Classes");
+         //copyTemplateDir("ios/PROJ/Images.xcassets", projectDirectory + "/Images.xcassets");
+
+
+         var watchos = project.watchProject;
+         if (watchos!=null)
+         {
+             copyTemplateDir("ios/WATCHPROJ", targetDir + "/" + watchos.app.file);
+             copyTemplateDir("ios/WATCHPROJ Extension", targetDir + "/" + watchos.app.file + " Extension");
+             PathHelper.mkdir(targetDir + "/" + project.app.file + ".xcodeproj/xcshareddata/xcschemes"  );
+             copyTemplate("ios/schemes/Watch.xcscheme", targetDir + "/" + project.app.file + ".xcodeproj/xcshareddata/xcschemes/Watch.xcscheme"  );
+         }
       }
 
       if (project.command == "update" && PlatformHelper.hostPlatform == Platform.MAC) 

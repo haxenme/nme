@@ -6,6 +6,16 @@ class TestBitmapDataCopyChannel extends haxe.unit.TestCase
     var source:BitmapData;
     var destination:BitmapData;
 
+    override public function setup()
+    {
+       nme.display.BitmapData.defaultPremultiplied = false;
+    }
+
+    override public function tearDown()
+    {
+       nme.display.BitmapData.defaultPremultiplied = false;
+    }
+
     public function testX() {
         source = new BitmapData(2,2,true,0xFFFFFFFF);
         destination = new BitmapData(2,2,true,0x00000000);

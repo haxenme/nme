@@ -95,7 +95,12 @@ class Client
    {
       try
       {
-         var host = new Host(inHostName);
+         var parts = inHostName.split("@");
+         var hostName = parts.pop();
+         var password = parts.join("@");
+         trace("HOSR  " + hostName);
+         trace("pass  " + password);
+         var host = new Host(hostName);
          if (log!=null)
             log("Connect to host " + host);
 
@@ -104,6 +109,15 @@ class Client
          socket.connect(host, 0xacad);
          toSocket = socket.output;
          fromSocket = socket.input;
+
+         if (password!="")
+         {
+            var len = fromSocket.readInt32();
+            var hash = fromSocket.readString(len);
+            var response = haxe.crypto.Md5.encode( password + hash );
+            toSocket.writeInt32(response.length);
+            toSocket.writeString(response);
+         }
 
          if (inDefaultPackageName!=null && inDefaultPackageName!="")
             sendCommand(["set","package",inDefaultPackageName]);

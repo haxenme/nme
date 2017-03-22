@@ -6,7 +6,7 @@ import nme.utils.ByteArray;
 @:nativeProperty
 class SampleDataEvent extends Event 
 {
-   public static var SAMPLE_DATA:String = "sampleData";
+   public static inline var SAMPLE_DATA:String = "sampleData";
 
    public var data:ByteArray;
    public var position:Float;
