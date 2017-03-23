@@ -68,7 +68,17 @@ class Loader
       {
          if (!foundNdll)
             return null;
+         #if ndll_silent_fail
+         try {
+            return Lib.load(moduleName, func, args);
+         }
+         catch(e:Dynamic)
+         {
+            return function() trace("Error using undefined function. " + e + " - Maybe you need to rebuild nme.ndll");
+         }
+         #else
          return Lib.load(moduleName, func, args);
+         #end
       }
 
       #if waxe

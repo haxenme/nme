@@ -27,7 +27,7 @@ class CommandLineTools
    public static var nme(default,null):String;
    public static var home:String;
    public static var sys:SysProxy;
-   public static var toolkit:Bool = false;
+   public static var toolkit:Bool = true;
    public static var gradle:Bool = false;
 
    static var haxeVer:String = null;
@@ -402,8 +402,8 @@ class CommandLineTools
             args.push("-v");
          if (debug)
             args.push("-debug");
-         if (toolkit)
-            args.push("-toolkit");
+         if (!toolkit)
+            args.push("-notoolkit");
          if (gradle)
             args.push("-gradle");
          if (project.hasDef("deploy"))
@@ -1604,25 +1604,19 @@ class CommandLineTools
             else if (argument=="-gradle" || argument=="-Dgradle")
             {
                gradle = true;
-               toolkit = true;
                project.haxedefs.set("gradle", "1");
-               project.haxedefs.set("toolkit", "");
             }
-            else if (argument=="-toolkit" || argument=="-Dtoolkit")
+            else if (argument=="-notoolkit" || argument=="-Dnotoolkit")
             {
-               toolkit = true;
-               project.haxedefs.set("toolkit", "");
+               toolkit = false;
+               project.localDefines.set("notoolkit", "");
             }
             else if (argument=="-toolkit-debug" || argument=="-Dtoolkit-debug")
             {
-               toolkit = true;
-               project.haxedefs.set("toolkit", "");
                project.localDefines.set("NATIVE_TOOLKIT_OPTIM_TAG", "debug");
             }
             else if (argument=="-toolkit-release" || argument=="-Dtoolkit-release")
             {
-               toolkit = true;
-               project.haxedefs.set("toolkit", "");
                project.localDefines.set("NATIVE_TOOLKIT_OPTIM_TAG", "release");
             }
             else if (argument.substr(0, 2) == "-D") 
@@ -1689,8 +1683,19 @@ class CommandLineTools
          }
       }
 
+      toolkit = !project.hasDef("notoolkit");
+      if (toolkit && !project.haxedefs.exists("toolkit"))
+         project.haxedefs.set("toolkit","");
+
       if (toolkit)
          project.localDefines.set("STATIC_NME","1");
+
+      if (toolkit && !project.hasDef("HXCPP_COMPILE_CACHE"))
+      {
+         Log.warn("Using toolkit without HXCPP_COMPILE_CACHE can lead to slow compile times.");
+         Log.warn(" try adding the following line in your .hxcpp_config.xml file:");
+         Log.warn("   <set name='HXCPP_COMPILE_CACHE' value='some_dir/.hxcpp_cache' />");
+      }
 
       for(w in 0...words.length)
       {
