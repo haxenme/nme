@@ -325,6 +325,7 @@ void RenderBlend(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget
          DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
          }
          break;
+      default: ;
    }
 }
 

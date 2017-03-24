@@ -138,9 +138,7 @@ public:
    int Height() const  { return mSurf->h; }
    PixelFormat Format()  const
    {
-      if (mSurf->flags & SDL_SRCALPHA)
-         return pfARGB;
-      return pfXRGB;
+      return pfBGRA;
    }
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }

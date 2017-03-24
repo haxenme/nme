@@ -820,7 +820,7 @@ bool ByteArray::LittleEndian()
 
 ByteArray::ByteArray(const char *inResourceName)
 {
-   mValue = 0;
+   mValue = val_null();
    if (gResourceFactory)
    {
       mValue = val_call1(gResourceFactory->get(),alloc_string(inResourceName));
@@ -896,6 +896,8 @@ bool FromValue(ByteData &outData,value inData)
 
 // --- WeakRef -----------------------------------------------------
 
+#ifndef HXCPP_JS_PRIME
+
 struct WeakRefInfo
 {
    int64 mHolder;
@@ -967,7 +969,7 @@ value nme_weak_ref_get(value inValue)
 }
 DEFINE_PRIM(nme_weak_ref_get,1);
 
-
+#endif
 
 value nme_get_unique_device_identifier()
 {

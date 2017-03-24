@@ -791,6 +791,13 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
             }
             break;
 
+         case bmNormal:
+         case bmTinted:
+         case bmTintedAdd:
+         case bmTintedInner:
+         case bmLayer:
+            ;
+
       }
    }
 }
@@ -1171,6 +1178,7 @@ void TStretchSuraceTo(const SimpleSurface *inSurface, const RenderTarget &outTar
       case pfAlpha:
          TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect);
          break;
+      default: ;
    }
 }
 
@@ -1191,6 +1199,7 @@ void SimpleSurface::StretchTo(const RenderTarget &outTarget,
       case pfAlpha:
          TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect);
          break;
+      default: ;
    }
 }
 
@@ -1585,6 +1594,7 @@ uint32 SimpleSurface::getPixel(int inX,int inY)
       case pfBGRPremA: SetPixel(result, ((BGRPremA *)ptr)[inX]); break;
       case pfAlpha: SetPixel(result, ((AlphaPixel *)ptr)[inX]); break;
 
+      default: ;
       /* TODO
       case pfARGB4444:
       case pfRGB565:
@@ -1624,6 +1634,7 @@ void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
       case pfBGRPremA: SetPixel(((BGRPremA *)ptr)[inX],value); break;
       case pfAlpha: SetPixel(((AlphaPixel *)ptr)[inX],value); break;
 
+      default: ;
       /* TODO
       case pfARGB4444:
       case pfRGB565:

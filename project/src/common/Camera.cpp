@@ -106,7 +106,7 @@ void Camera::onPoll(value handler)
       alloc_field(handler, _id_height, alloc_int(height));
       value bmp = val_ocall0(handler, _id_init_frame);
       buffer = valueToImageBuffer(bmp);
-      printf("Got image buffer %p %p (%d)\n", bmp, buffer, buffer ? buffer->Format() : 0);
+      //printf("Got image buffer %p %p (%d)\n", bmp, buffer, buffer ? buffer->Format() : 0);
    }
    if (status==camRunning && buffer)
    {

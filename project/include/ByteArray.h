@@ -25,7 +25,7 @@ struct ByteArray
    int           Size() const;
    unsigned char *Bytes();
    const unsigned char *Bytes() const;
-   bool          Ok() { return mValue!=0; }
+   inline bool   Ok() const { return !val_is_null(mValue); }
    bool          LittleEndian();
 
 

@@ -115,6 +115,7 @@ GLenum getTextureStorage(PixelFormat pixelFormat)
       case pfRGB565: return GL_RGB;
       case pfLuma: return GL_LUMINANCE;
       case pfLumaAlpha: return GL_LUMINANCE_ALPHA;
+      default: ;
    }
    return 0;
 }
@@ -145,6 +146,7 @@ GLenum getTransferOgl(PixelFormat pixelFormat)
       case pfRGB565: return GL_UNSIGNED_SHORT_5_6_5;
       case pfLuma: return GL_LUMINANCE;
       case pfLumaAlpha: return GL_LUMINANCE_ALPHA;
+      default: ;
    }
    return 0;
 }
@@ -167,6 +169,8 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat)
 
       case pfBGRPremA:
          return SWAP_RB ? pfRGBPremA :pfBGRPremA;
+
+      default: ;
    }
    return pfRGB;
 }

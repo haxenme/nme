@@ -828,7 +828,7 @@ value get_familyname_from_sfnt_name(FT_Face face)
       }
    }
    
-   return 0;
+   return val_null();
 }
 
 } // end namespace
@@ -887,7 +887,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
    alloc_field(ret, val_id("has_glyph_names"), alloc_bool(FT_HAS_GLYPH_NAMES(face)));
    alloc_field(ret, val_id("is_italic"), alloc_bool(face->style_flags & FT_STYLE_FLAG_ITALIC));
    alloc_field(ret, val_id("is_bold"), alloc_bool(face->style_flags & FT_STYLE_FLAG_BOLD));
-   alloc_field(ret, val_id("family_name"), family_name == 0 ? alloc_string(face->family_name) : family_name);
+   alloc_field(ret, val_id("family_name"), val_is_null(family_name) ? alloc_string(face->family_name) : family_name);
    alloc_field(ret, val_id("style_name"), alloc_string(face->style_name));
    alloc_field(ret, val_id("em_size"), alloc_int(face->units_per_EM));
    alloc_field(ret, val_id("ascend"), alloc_int(face->ascender));

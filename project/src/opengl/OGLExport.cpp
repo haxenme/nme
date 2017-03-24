@@ -1879,7 +1879,7 @@ value nme_gl_read_pixels(value *arg, int argCount)
 
    unsigned char *data = 0;
    ByteArray bytes( arg[aBuffer] );
-   if (bytes.mValue)
+   if (bytes.Ok())
       data = bytes.Bytes() + val_int(arg[aOffset]);
 
    glReadPixels( INT(aX), INT(aY),
@@ -1936,7 +1936,7 @@ value nme_gl_bind_texture(value inTarget, value inTexture)
       return alloc_null();
    }
 
-   value glObject = 0;
+   value glObject = val_null();
 
    if (val_is_int(inTexture))
    {
@@ -1985,7 +1985,7 @@ value nme_gl_tex_image_2d(value *arg, int argCount)
    unsigned char *data = 0;
 
    ByteArray bytes( arg[aBuffer] );
-   if (!val_is_null(bytes.mValue))
+   if (bytes.Ok())
       data = bytes.Bytes() + val_int(arg[aOffset]);
 
    glTexImage2D(INT(aTarget), INT(aLevel),  INT(aInternal),
@@ -2005,7 +2005,7 @@ value nme_gl_tex_sub_image_2d(value *arg, int argCount)
 
    unsigned char *data = 0;
    ByteArray bytes( arg[aBuffer] );
-   if (bytes.mValue)
+   if (bytes.Ok())
       data = bytes.Bytes() + val_int(arg[aOffset]);
  
    glTexSubImage2D( INT(aTarget),  INT(aLevel),
@@ -2029,7 +2029,7 @@ value nme_gl_compressed_tex_image_2d(value *arg, int argCount)
    int size = 0;
 
    ByteArray bytes( arg[aBuffer] );
-   if (!val_is_null(bytes.mValue))
+   if (bytes.Ok())
    {
       data = bytes.Bytes() + INT(aOffset);
       size = bytes.Size() - INT(aOffset);
@@ -2053,7 +2053,7 @@ value nme_gl_compressed_tex_sub_image_2d(value *arg, int argCount)
    int size = 0;
 
    ByteArray bytes( arg[aBuffer] );
-   if (!val_is_null(bytes.mValue))
+   if (bytes.Ok())
    {
       data = bytes.Bytes() + INT(aOffset);
       size = bytes.Size() - INT(aOffset);
