@@ -45,6 +45,7 @@ class CommandLineTools
    static var binDirOverride:String = "";
    static var store:SharedObject;
    static var storeData:Dynamic;
+   static var readHxcppConfig = false;
 
 
    static var allTargets = 
@@ -897,6 +898,7 @@ class CommandLineTools
       if (FileSystem.exists(config)) 
       {
          Log.verbose("Reading HXCPP config: " + config);
+         readHxcppConfig = true;
 
          new NMMLParser(project,config,false);
       }
@@ -1690,7 +1692,7 @@ class CommandLineTools
       if (toolkit)
          project.localDefines.set("STATIC_NME","1");
 
-      if (toolkit && !project.hasDef("HXCPP_COMPILE_CACHE"))
+      if (toolkit && readHxcppConfig && !project.hasDef("HXCPP_COMPILE_CACHE"))
       {
          Log.warn("Using toolkit without HXCPP_COMPILE_CACHE can lead to slow compile times.");
          Log.warn(" try adding the following line in your .hxcpp_config.xml file:");
