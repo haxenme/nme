@@ -7,5 +7,8 @@
    <asset name="Cousine-Regular.ttf" id="_monospace" embed="true"/>
 </assets>
 
+<!-- default icon -->
+<icon name="assets/icons/nme.svg" size="-1" />
+
 
 </project>

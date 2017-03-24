@@ -150,6 +150,8 @@ class IconHelper
 
       var data_pos = 6;
 
+      /*
+        No need for 8-bit icons.
       for(size in sizes_8bit) 
       {
          var bmp = getIconBitmap(icons, size, size);
@@ -159,6 +161,7 @@ class IconHelper
             data_pos += 16;
          }
       }
+      */
 
       for(size in sizes) 
       {
@@ -434,12 +437,16 @@ class IconHelper
          if (match == null && icon.width == 0 && icon.height == 0) 
          {
             match = icon;
-
-         } else if (icon.width == width && icon.height == height) 
+         }
+         else if (icon.width == width && icon.height == height) 
          {
             match = icon;
          }
       }
+
+      // Only the default icon...
+      if (match==null && icons.length==1 && icons[0].width==-1)
+         return icons[0];
 
       return match;
    }
