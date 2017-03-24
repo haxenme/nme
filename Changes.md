@@ -1,4 +1,5 @@
 
+* Reduced pre-compiled binaries to only windows32, mac64 and linux64
 * Added more internal pixel formats
 
 6.0
