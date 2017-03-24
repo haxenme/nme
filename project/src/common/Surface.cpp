@@ -1351,6 +1351,8 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
    // PixelConvert
 
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
+   if (r.w<1 || r.h<1)
+      return;
 
    ARGB *argb = (ARGB *)outPixels;
    for(int y=0;y<r.h;y++)
@@ -1369,7 +1371,7 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
          for(int x=0;x<r.w;x++)
             SetPixel(*argb++, *src++);
       }
-      else if (inIgnoreOrder || inLittleEndian || mPixelFormat==pfBGRA)
+      else if (mPixelFormat==pfBGRA)
       {
          ARGB *src = (ARGB *)(mBase + (r.y+y)*mStride) + r.x;
          memcpy(argb,src,r.w*4);
@@ -1378,9 +1380,20 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
       else if (mPixelFormat==pfBGRPremA)
       {
          BGRPremA *src = (BGRPremA *)(mBase + (r.y+y)*mStride) + r.x;
-
          for(int x=0;x<r.w;x++)
             SetPixel(*argb++, *src++);
+      }
+   }
+
+   // Make big-endian...
+   if (!inIgnoreOrder && !inLittleEndian)
+   {
+      unsigned int *argb = (unsigned int *)outPixels;
+      int n = r.w*r.h;
+      for(int i=0;i<n;i++)
+      {
+         unsigned int v = argb[i];
+         argb[i] =   (v>>24) | ((v>>8)&0x0000ff00) | ((v<<8)&0x00ff0000) | (v<<24);
       }
    }
 }
