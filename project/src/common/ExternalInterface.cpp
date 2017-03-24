@@ -820,7 +820,7 @@ bool ByteArray::LittleEndian()
 
 ByteArray::ByteArray(const char *inResourceName)
 {
-   mValue = val_null();
+   mValue = val_null;
    if (gResourceFactory)
    {
       mValue = val_call1(gResourceFactory->get(),alloc_string(inResourceName));

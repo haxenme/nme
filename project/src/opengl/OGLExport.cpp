@@ -1936,7 +1936,7 @@ value nme_gl_bind_texture(value inTarget, value inTexture)
       return alloc_null();
    }
 
-   value glObject = val_null();
+   value glObject = val_null;
 
    if (val_is_int(inTexture))
    {

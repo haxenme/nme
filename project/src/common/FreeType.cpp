@@ -828,7 +828,7 @@ value get_familyname_from_sfnt_name(FT_Face face)
       }
    }
    
-   return val_null();
+   return val_null;
 }
 
 } // end namespace
