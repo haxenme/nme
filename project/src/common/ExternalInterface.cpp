@@ -1,11 +1,14 @@
 #ifndef STATIC_LINK
 #define IMPLEMENT_API
+#elif defined(HXCPP_JS_PRIME)
+#define IMPLEMENT_API
 #endif
 
 #if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX)
 // Include neko glue....
 #define NEKO_COMPATIBLE
 #endif
+
 
 
 
@@ -746,16 +749,16 @@ DEFINE_PRIM(nme_set_resource_factory,1);
 
 
 
-ByteArray::ByteArray(int inSize)
+ByteArray::ByteArray(int inSize) :
+   mValue(val_call1(gByteArrayCreate->get(), alloc_int(inSize) ))
 {
-   mValue = val_call1(gByteArrayCreate->get(), alloc_int(inSize) );
 }
 
 ByteArray::ByteArray() : mValue(0) { }
 
 ByteArray::ByteArray(const QuickVec<uint8> &inData)
+   : mValue(val_call1(gByteArrayCreate->get(), alloc_int(inData.size()) ))
 {
-   mValue = val_call1(gByteArrayCreate->get(), alloc_int(inData.size()) );
    uint8 *bytes = Bytes();
    if (bytes)
      memcpy(bytes, &inData[0], inData.size() );
@@ -818,14 +821,11 @@ bool ByteArray::LittleEndian()
 }
 
 
-ByteArray::ByteArray(const char *inResourceName)
+ByteArray::ByteArray(const char *inResourceName) : mValue(val_null)
 {
-   mValue = val_null;
    if (gResourceFactory)
    {
       mValue = val_call1(gResourceFactory->get(),alloc_string(inResourceName));
-      if (val_is_null(mValue))
-         mValue = 0;
    }
 }
 
@@ -1760,11 +1760,12 @@ DEFINE_PRIM(nme_stage_get_normal_orientation, 0);
 
 // --- StageVideo ----------------------------------------------------------------------
 
-StageVideo::StageVideo() : mOwner(0) { }
+StageVideo::StageVideo() : mOwner(val_null) { }
 void StageVideo::setOwner(value inOwner) { mOwner.set(inOwner); }
 
 value nme_sv_create(value inStage, value inOwner)
 {
+   #ifndef HXCPP_JS_PRIME
    Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
@@ -1774,6 +1775,7 @@ value nme_sv_create(value inStage, value inOwner)
          return ObjectToAbstract(video);
       }
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sv_create, 2);
