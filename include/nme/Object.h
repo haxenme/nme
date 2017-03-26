@@ -3,6 +3,11 @@
 
 #include "NmeApi.h"
 
+#ifdef HXCPP_JS_PRIME
+#include <emscripten.h>
+#include <emscripten/val.h>
+#endif
+
 namespace nme
 {
 
@@ -17,10 +22,22 @@ protected:
    virtual ~Object() { }
 
 public:
-   Object(bool inInitialRef=0) : mRefCount(inInitialRef?1:0) { }
+   Object(bool inInitialRef=0) : mRefCount(inInitialRef?1:0)
+   #ifdef HXCPP_JS_PRIME
+   , val(0)
+   #endif
+   { }
    Object *IncRef() { mRefCount++; return this; }
    void DecRef() { mRefCount--; if (mRefCount<=0) delete this; }
    virtual int GetRefCount() { return mRefCount; }
+
+   #ifdef HXCPP_JS_PRIME
+   emscripten::val &toAbstract();
+   static Object *toObject( emscripten::val &inValue );
+
+   emscripten::val *val;
+   virtual void unrealize() { printf("unrealize\n");}
+   #endif
 
    virtual int getApiVersion() { return NME_API_VERSION; }
 

@@ -37,12 +37,14 @@ void InitCamera()
 
 ImageBuffer *valueToImageBuffer(value inBmp)
 {
+   #ifndef HXCPP_JS_PRIME
    if (val_is_kind(inBmp,gObjectKind) )
    {
        Object *obj = (Object *)val_to_kind(inBmp,gObjectKind);
        if (obj)
           return obj->asImageBuffer();
    }
+   #endif
    return 0;
 }
 

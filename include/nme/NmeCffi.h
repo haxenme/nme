@@ -9,8 +9,22 @@
 namespace nme
 {
 
-extern vkind gObjectKind;
+#ifdef HXCPP_JS_PRIME
+inline value ObjectToAbstract(Object *inObject) { return inObject->toAbstract(); }
 
+template<typename OBJ>
+inline bool AbstractToObject(value inValue, OBJ *&outObj)
+{
+   outObj = 0;
+   Object *obj = Object::toObject(inValue);
+   if (obj)
+      outObj = dynamic_cast<OBJ *>(obj);
+   return outObj;
+}
+
+
+#else
+extern vkind gObjectKind;
 
 namespace
 {
@@ -24,7 +38,6 @@ namespace
       }
    }
 }
-
 
 inline value ObjectToAbstract(Object *inObject)
 {
@@ -45,6 +58,7 @@ bool AbstractToObject(value inValue, OBJ *&outObj)
    outObj = dynamic_cast<OBJ *>(obj);
    return outObj;
 }
+#endif
 
 
 }
