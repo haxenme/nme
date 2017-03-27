@@ -9,7 +9,7 @@ import nme.geom.Rectangle;
 import nme.geom.Matrix;
 using cpp.NativeMath;
 
-class Render extends Sprite
+class BitmapBlend extends TestBase
 {
    static function createBmp(inAlpha:Bool,inPrem:Bool) : BitmapData
    {
@@ -71,9 +71,11 @@ class Render extends Sprite
    public function new()
    {
       super();
+      scaleX = scaleY = 4;
+
       blendMode = LAYER;
 
-      name = "Render main!";
+      name = "BitmapBlend";
       var gfx = graphics;
       gfx.beginFill(0x777777);
       gfx.drawRect(0,0,800,600);
@@ -81,11 +83,13 @@ class Render extends Sprite
       var bmp = createBmp(false,false);
       var bitmap = new Bitmap(bmp);
       addChild(bitmap);
+      label("Normal",0,16);
 
       var bmp = createBmp90(true,false);
       var bitmap = new Bitmap(bmp);
       bitmap.x = 20;
       addChild(bitmap);
+      label("Rot 90",20,16);
 
       var y = 20;
 
@@ -101,29 +105,20 @@ class Render extends Sprite
             bitmap.x = x*20;
             bitmap.blendMode = mode;
             addChild(bitmap);
+            label(Std.string(mode),x*20,y+16);
             x++;
             if (x>8)
             {
                x = 0;
-               y+= 20;
+               y+= 30;
             }
+
          }
-         y+=20;
+         y+=30;
       }
 
-      addEventListener(Event.RESIZE, function(_) resize() );
       resize();
    }
 
-   function resize()
-   {
-      /*
-      var dpiScale = nme.system.Capabilities.screenDPI/96;
-      if (dpiScale<1.5)
-          dpiScale = 1.0;
-      scaleX = scaleY = 10*dpiScale;
-      */
-      scaleX = scaleY = 4;
-   }
 }
 

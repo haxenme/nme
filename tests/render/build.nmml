@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+  <meta
+     title="NME Render Test"
+     package="org.haxe.nme.rendertest"
+     version="1.0.0"
+     company="nme" 
+  />
+  
+  <app
+     file="RenderTest" 
+     main="RenderTest"
+  />
+  
+  <window
+     width="800" 
+     height="600" 
+     orientation="landscape" 
+     fps="60"
+     background="0x000000"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+  />
+
+  <haxelib name="nme" />
+  
+</project>
