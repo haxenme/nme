@@ -10,8 +10,6 @@
 #endif
 
 
-
-
 #ifdef ANDROID
 #include <android/log.h>
 #endif
@@ -37,13 +35,13 @@
 #include <NmeStateVersion.h>
 #endif
 #include <nme/NmeApi.h>
-#include <hx/CFFIPrime.h>
+
 
 
 #ifdef min
 #undef min
 #undef max
-#endif
+#endif    
 
 
 namespace nme
@@ -262,14 +260,15 @@ DEFINE_ENTRY_POINT(InitIDs)
 
 
 
-
-WString val2stdwstr(value inVal)
+#ifndef HXCPP_NATIVE_WSTRING
+WString valToStdWString(value inVal)
 {
    const wchar_t *val = val_wstring(inVal);
    int len=0;
    while(val[len]) len++;
    return WString(val,len);
 }
+#endif
 
 
 template<typename T>
@@ -289,11 +288,11 @@ void FillArrayInt(QuickVec<T> &outArray,value inVal)
    }
    else
    {
-      value *vals = val_array_value(inVal);
-      if (vals)
+      values_array vals = val_array_value(inVal);
+      if (value_array_ok(vals))
       {
          for(int i=0;i<n;i++)
-            outArray[i] = val_int(vals[i]);
+            outArray[i] = array_get_int(vals,i);
       }
       else
       {
@@ -319,10 +318,10 @@ void FillArrayInt(value outVal, const QuickVec<T> &inArray)
    }
    else
    {
-      value *vals = val_array_value(outVal);
-      if (vals)
+      values_array vals = val_array_value(outVal);
+      if (value_array_ok(vals))
          for(int i=0;i<n;i++)
-            vals[i] = alloc_int(inArray[i]);
+            array_set_int(vals,i,inArray[i]);
       else
          for(int i=0;i<n;i++)
             val_array_set_i(outVal,i,alloc_int(inArray[i]));
@@ -352,10 +351,10 @@ void FillArrayDouble(value outVal, const QuickVec<T> &inArray)
       }
       else
       {
-         value *vals = val_array_value(outVal);
-         if (vals)
+         values_array vals = val_array_value(outVal);
+         if (value_array_ok(vals))
             for(int i=0;i<n;i++)
-               vals[i] = alloc_float(inArray[i]);
+               array_set_float(vals,i,inArray[i]);
          else
             for(int i=0;i<n;i++)
                val_array_set_i(outVal,i,alloc_float(inArray[i]));
@@ -391,10 +390,10 @@ void FillArrayDoubleN(QuickVec<T,N> &outArray,value inVal)
       }
       else
       {
-         value *vals = val_array_value(inVal);
-         if (vals)
+         values_array vals = val_array_value(inVal);
+         if (value_array_ok(vals))
             for(int i=0;i<n;i++)
-               outArray[i] = val_number(vals[i]);
+               outArray[i] = array_get_double(vals,i);
          else
             for(int i=0;i<n;i++)
                outArray[i] = val_number(val_array_i(inVal,i));
@@ -465,6 +464,7 @@ void FromValue(ColorTransform &outTrans, value inValue)
 
 int RGB2Int32(value inRGB)
 {
+   #ifndef HXCPP_JS_PRIME
    if (val_is_int(inRGB))
       return val_int(inRGB);
    if (val_is_object(inRGB))
@@ -472,6 +472,9 @@ int RGB2Int32(value inRGB)
       return (int)(val_field_numeric(inRGB,_id_rgb)) |
              ( ((int)val_field_numeric(inRGB,_id_a)) << 24 );
    }
+   #else
+   return val_int(inRGB);
+   #endif
    return 0;
 }
 
@@ -507,7 +510,7 @@ void FromValue(Rect &outRect, value inValue)
 
 Filter *FilterFromValue(value filter)
 {
-   WString type = val2stdwstr( val_field(filter,_id_type) );
+   WString type = valToStdWString( val_field(filter,_id_type) );
    if (type==L"BlurFilter")
    {
       int q = val_int(val_field(filter,_id_quality));
@@ -589,6 +592,7 @@ void ToValue(value &outVal,const ColorTransform &inTrans)
 
 
 
+#ifndef EMSCRIPTEN
 void FromValue(value obj, URLRequest &request)
 {
    request.url = val_string( val_field(obj, _id_url) );
@@ -620,7 +624,9 @@ void FromValue(value obj, URLRequest &request)
   request.headers = headers;
   }
 }
+#endif
 
+#ifndef HXCPP_JS_PRIME
 void print_field(value inValue, int id, void *cookie)
 {
    if (val_is_string(inValue))
@@ -628,6 +634,7 @@ void print_field(value inValue, int id, void *cookie)
    else
       printf("Field : %d = %f\n",id,val_number(inValue));
 }
+#endif
 
 }
 
@@ -675,7 +682,7 @@ DEFINE_PRIME0(nme_time_stamp)
 
 value nme_error_output(value message)
 {
-   fprintf (stderr, "%s", val_string (message));
+   fprintf(stderr, "%s", valToHxString(message).c_str() );
    return alloc_null();
 }
 DEFINE_PRIM(nme_error_output,1);
@@ -705,11 +712,11 @@ DEFINE_PRIM(nme_get_bits,0);
 
 value nme_log(value inMessage)
 {
-   const char *message = val_string(inMessage);
+   HxString message = valToHxString(inMessage);
    #ifdef IPHONE
-      nmeLog(message);
+      nmeLog(message.c_str());
    #else
-      printf("%s\n",message);
+      printf("%s\n",message.c_str());
    #endif
 
    return alloc_null();
@@ -782,8 +789,11 @@ int ByteArray::Size() const
 const unsigned char *ByteArray::Bytes() const
 {
    value bytes = val_call1(gByteArrayBytes->get(),mValue);
+   #ifndef HXCPP_JS_PRIME
    if (val_is_string(bytes))
       return (unsigned char *)val_string(bytes);
+   #endif
+
    buffer buf = val_to_buffer(bytes);
    if (buf==0)
    {
@@ -796,8 +806,10 @@ const unsigned char *ByteArray::Bytes() const
 unsigned char *ByteArray::Bytes()
 {
    value bytes = val_call1(gByteArrayBytes->get(),mValue);
+   #ifndef HXCPP_JS_PRIME
    if (val_is_string(bytes))
       return (unsigned char *)val_string(bytes);
+   #endif
    buffer buf = val_to_buffer(bytes);
    if (buf==0)
    {
@@ -810,11 +822,15 @@ unsigned char *ByteArray::Bytes()
 bool ByteArray::LittleEndian()
 {
    value f = val_field(mValue,_id_endian);
+   #ifdef HXCPP_JS_PRIME
+   if (!f.isUndefined())
+   #else
    if (val_is_string(f))
+   #endif
    {
-      const char *l = val_string(f);
-      if (l)
-         return l[0]=='l';
+      HxString endian = valToHxString(f);
+      if (endian.c_str())
+         return endian.c_str()[0]=='l';
    }
    int one = 0x0000001;
    return *(unsigned char *)&one == 1;
@@ -1103,6 +1119,7 @@ value nme_capabilities_get_language() {
 DEFINE_PRIM (nme_capabilities_get_language, 0);
 
 // ---  nme.desktop.Clipboard -----------------------------------------------------
+#ifndef HXCPP_JS_PRIME
 value nme_desktop_clipboard_set_clipboard_text(value inText) {
    return alloc_bool(SetClipboardText(val_string(inText)));
 }
@@ -1117,6 +1134,8 @@ value nme_desktop_clipboard_get_clipboard_text() {
    return alloc_string(GetClipboardText());
 }
 DEFINE_PRIM (nme_desktop_clipboard_get_clipboard_text, 0);
+#endif
+
 
 // ---  nme.filesystem -------------------------------------------------------------
 value nme_get_resource_path()
@@ -1166,7 +1185,7 @@ DEFINE_PRIM(nme_filesystem_get_volumes,2);
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)
 {
-   bool result=LaunchBrowser(val_string(url));
+   bool result=LaunchBrowser(valToHxString(url).c_str());
    return alloc_bool(result);
 }
 DEFINE_PRIM(nme_get_url,1);
@@ -1188,7 +1207,7 @@ DEFINE_PRIM(nme_haptic_vibrate,2);
 value nme_set_user_preference(value inId,value inValue)
 {
    #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
-      bool result=SetUserPreference(val_string(inId),val_string(inValue));
+      bool result=SetUserPreference(valToHxString(inId).c_str(),valToHxString(inValue).c_str());
       return alloc_bool(result);
    #endif
    return alloc_bool(false);
@@ -1198,7 +1217,7 @@ DEFINE_PRIM(nme_set_user_preference,2);
 value nme_get_user_preference(value inId)
 {
    #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
-      std::string result=GetUserPreference(val_string(inId));
+      std::string result=GetUserPreference(valToHxString(inId).c_str());
       return alloc_string(result.c_str());
    #endif
    return alloc_null();
@@ -1208,7 +1227,7 @@ DEFINE_PRIM(nme_get_user_preference,1);
 value nme_clear_user_preference(value inId)
 {
    #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
-      bool result=ClearUserPreference(val_string(inId));
+      bool result=ClearUserPreference(valToHxString(inId).c_str());
       return alloc_bool(result);
    #endif
    return alloc_bool(false);
@@ -1266,10 +1285,10 @@ void OnMainFrameCreated(Frame *inFrame)
 
 value nme_set_package(value inCompany,value inFile,value inPackage,value inVersion)
 {
-   gCompany = val_string(inCompany);
-   gFile = val_string(inFile);
-   gPackage = val_string(inPackage);
-   gVersion = val_string(inVersion);
+   gCompany = valToStdString(inCompany);
+   gFile = valToStdString(inFile);
+   gPackage = valToStdString(inPackage);
+   gVersion = valToStdString(inVersion);
    return val_null;
 }
 DEFINE_PRIM(nme_set_package,4);
@@ -1287,7 +1306,7 @@ value nme_create_main_frame(value *arg, int nargs)
 
    CreateMainFrame(OnMainFrameCreated,
        (int)val_number(arg[aWidth]), (int)val_number(arg[aHeight]),
-       val_int(arg[aFlags]), val_string(arg[aTitle]), icon );
+       val_int(arg[aFlags]), valToHxString(arg[aTitle]).c_str(), icon );
 
    return alloc_null();
 }
@@ -1296,7 +1315,7 @@ DEFINE_PRIM_MULT(nme_create_main_frame);
 
 value nme_set_asset_base(value inBase)
 {
-   gAssetBase = val_string(inBase);
+   gAssetBase = valToStdString(inBase);
    return val_null;
 }
 DEFINE_PRIM(nme_set_asset_base,1);
@@ -1813,7 +1832,7 @@ value nme_sv_play(value inVideo,value inUrl, value inStart, value inLength)
 {
    StageVideo *video;
    if (AbstractToObject(inVideo,video))
-      video->play(val_string(inUrl), val_number(inStart), val_number(inLength));
+      video->play(valToHxString(inUrl).c_str(), val_number(inStart), val_number(inLength));
    return alloc_null();
 }
 DEFINE_PRIM(nme_sv_play, 4);
@@ -2086,7 +2105,9 @@ DEFINE_PRIM(nme_display_object_global_to_local,2);
 
 value nme_type(value inObj)
 {
+   #ifndef HXCPP_JS_PRIME
    val_iter_fields(inObj, nme::print_field, 0);
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_type,1);
@@ -2153,10 +2174,10 @@ value nme_display_object_set_filters(value inObj,value inFilters)
       FilterList filters;
       if (!val_is_null(inFilters) && val_array_size(inFilters) )
       {
-         value *filter_array = val_array_value(inFilters);
-         for(int f=0;f<val_array_size(inFilters);f++)
+         int n = val_array_size(inFilters);
+         for(int f=0;f<n;f++)
          {
-            value filter = filter_array ? filter_array[f] : val_array_i(inFilters,f);
+            value filter = val_array_i(inFilters,f);
             Filter *fil = FilterFromValue(filter);
             if (fil)
                filters.push_back(fil);
@@ -2363,7 +2384,7 @@ DO_DISPLAY_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
 DO_DISPLAY_PROP(pedantic_bitmap_caching,PedanticBitmapCaching,alloc_bool,val_bool)
 DO_DISPLAY_PROP(pixel_snapping,PixelSnapping,alloc_int,val_int)
 DO_DISPLAY_PROP(visible,Visible,alloc_bool,val_bool)
-DO_DISPLAY_PROP(name,Name,alloc_wstring,val2stdwstr)
+DO_DISPLAY_PROP(name,Name,alloc_wstring,valToStdWString)
 DO_DISPLAY_PROP(blend_mode,BlendMode,alloc_int,val_int)
 DO_DISPLAY_PROP(needs_soft_keyboard,NeedsSoftKeyboard,alloc_bool,val_bool)
 DO_DISPLAY_PROP(soft_keyboard,SoftKeyboard,alloc_int,val_int)
@@ -2932,12 +2953,16 @@ enum
 
 
 
-inline float TToFloat( const float &f ) { return f; }
-inline double TToFloat( const double &f ) { return f; }
-inline double TToFloat( const value &v ) { return val_number(v); }
+inline float TToFloat( float *f, int inIdx ) { return f[inIdx]; }
+inline double TToFloat( double *f, int inIdx ) { return f[inIdx]; }
+#ifndef HXCPP_JS_PRIME
+inline double TToFloat( value *v, int inIdx ) { return val_number(v[inIdx]); }
+#else
+inline double TToFloat( const value &v, int inIdx ) { return v[inIdx].as<double>(); }
+#endif
 
-template<typename FLOAT,int RECTMODE, int TRANS, int COL>
-void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues)
+template<typename FLOATS,int RECTMODE, int TRANS, int COL>
+void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inValues)
 {
    int max = inSheet->Tiles();
    float rgba_buf[] = { 1, 1, 1, 1 };
@@ -2968,23 +2993,23 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
 
    inPath->reserveTiles(inN, RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID, TRANS!=0, COL!=0);
 
-   const FLOAT *v = inValues;
+   int v = 0;
    for(int i=0;i<inN;i++)
    {
-      float x = TToFloat(*v++);
-      float y = TToFloat(*v++);
+      float x = TToFloat(inValues,v++);
+      float y = TToFloat(inValues,v++);
 
       if (RECTMODE==TILE_RECT_GIVEN || RECTMODE==TILE_RECT_ORIGIN_GIVEN)
       {
-         rectBuf.x = TToFloat(*v++);
-         rectBuf.y = TToFloat(*v++);
-         rectBuf.w = TToFloat(*v++);
-         rectBuf.h = TToFloat(*v++);
+         rectBuf.x = TToFloat(inValues,v++);
+         rectBuf.y = TToFloat(inValues,v++);
+         rectBuf.w = TToFloat(inValues,v++);
+         rectBuf.h = TToFloat(inValues,v++);
 
          if (RECTMODE==TILE_RECT_ORIGIN_GIVEN)
          {
-            ox = TToFloat(*v++);
-            oy = TToFloat(*v++);
+            ox = TToFloat(inValues,v++);
+            oy = TToFloat(inValues,v++);
          }
       }
       else if (RECTMODE==TILE_RECT_FULL_NO_ID)
@@ -3004,7 +3029,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
             id = 0;
          else
          {
-            id = TToFloat(*v++);
+            id = TToFloat(inValues,v++);
             if (id<0 || id>=max)
             {
                v+=badIdSkip;
@@ -3020,20 +3045,20 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
 
       if (TRANS & TILE_TRANS_2x2)
       {
-         trans_2x2[0] = TToFloat(*v++);
-         trans_2x2[1] = TToFloat(*v++);
-         trans_2x2[2] = TToFloat(*v++);
-         trans_2x2[3] = TToFloat(*v++);
+         trans_2x2[0] = TToFloat(inValues,v++);
+         trans_2x2[1] = TToFloat(inValues,v++);
+         trans_2x2[2] = TToFloat(inValues,v++);
+         trans_2x2[3] = TToFloat(inValues,v++);
       }
       else if (TRANS)
       {
          if (TRANS & TILE_SCALE)
          {
-            double scale = TToFloat(*v++);
+            double scale = TToFloat(inValues,v++);
 
             if (TRANS & TILE_ROTATION)
             {
-               double theta = TToFloat(*v++);
+               double theta = TToFloat(inValues,v++);
                trans_2x2[0] = scale*cos(theta);
                trans_2x2[1] = scale*sin(theta);
             }
@@ -3044,7 +3069,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
          }
          else if (TRANS & TILE_ROTATION)
          {
-            double theta = TToFloat(*v++);
+            double theta = TToFloat(inValues,v++);
             trans_2x2[0] = cos(theta);
             trans_2x2[1] = sin(theta);
          }
@@ -3069,13 +3094,13 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
 
       if (COL & TILE_RGB)
       {
-         rgba[0] = TToFloat(*v++);
-         rgba[1] = TToFloat(*v++);
-         rgba[2] = TToFloat(*v++);
+         rgba[0] = TToFloat(inValues,v++);
+         rgba[1] = TToFloat(inValues,v++);
+         rgba[2] = TToFloat(inValues,v++);
       }
 
       if (COL & TILE_ALPHA)
-         rgba[3] = TToFloat(*v++);
+         rgba[3] = TToFloat(inValues,v++);
 
       if (RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID)
       {
@@ -3113,63 +3138,63 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
 }
 
 
-template<typename FLOAT,int RECTMODE, int TRANS>
-void TAddTilesTrans( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags)
+template<typename FLOATS,int RECTMODE, int TRANS>
+void TAddTilesTrans( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inValues, unsigned int inFlags)
 {
    if (inFlags & TILE_RGB)
    {
       if (inFlags & TILE_ALPHA)
-         TAddTilesCol<FLOAT, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA>( inPath, inSheet, inN, inValues);
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA>( inPath, inSheet, inN, inValues);
       else
-         TAddTilesCol<FLOAT, RECTMODE, TRANS, TILE_RGB>( inPath, inSheet, inN, inValues);
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB>( inPath, inSheet, inN, inValues);
    }
    else if (inFlags & TILE_ALPHA)
-      TAddTilesCol<FLOAT, RECTMODE, TRANS, TILE_ALPHA>( inPath, inSheet, inN, inValues);
+      TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_ALPHA>( inPath, inSheet, inN, inValues);
    else
-      TAddTilesCol<FLOAT, RECTMODE, TRANS, 0>( inPath, inSheet, inN, inValues);
+      TAddTilesCol<FLOATS, RECTMODE, TRANS, 0>( inPath, inSheet, inN, inValues);
 }
 
-template<typename FLOAT,int RECTMODE>
-void TAddTilesRect( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags)
+template<typename FLOATS,int RECTMODE>
+void TAddTilesRect( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inValues, unsigned int inFlags)
 {
    if ( inFlags & TILE_TRANS_2x2 )
-      TAddTilesTrans<FLOAT,RECTMODE, TILE_TRANS_2x2>( inPath, inSheet, inN, inValues, inFlags);
+      TAddTilesTrans<FLOATS,RECTMODE, TILE_TRANS_2x2>( inPath, inSheet, inN, inValues, inFlags);
    else if (inFlags & TILE_SCALE)
    {
        if (inFlags & TILE_ROTATION)
-          TAddTilesTrans<FLOAT,RECTMODE, TILE_SCALE | TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
+          TAddTilesTrans<FLOATS,RECTMODE, TILE_SCALE | TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
        else
-          TAddTilesTrans<FLOAT,RECTMODE, TILE_SCALE>( inPath, inSheet, inN, inValues, inFlags);
+          TAddTilesTrans<FLOATS,RECTMODE, TILE_SCALE>( inPath, inSheet, inN, inValues, inFlags);
    }
    else if (inFlags & TILE_ROTATION)
-      TAddTilesTrans<FLOAT,RECTMODE, TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
+      TAddTilesTrans<FLOATS,RECTMODE, TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
    else
-      TAddTilesTrans<FLOAT,RECTMODE, 0>( inPath, inSheet, inN, inValues, inFlags);
+      TAddTilesTrans<FLOATS,RECTMODE, 0>( inPath, inSheet, inN, inValues, inFlags);
 }
 
-template<typename FLOAT>
-void TAddTiles( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags, bool inFullImage)
+template<typename FLOATS>
+void TAddTiles( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inValues, unsigned int inFlags, bool inFullImage)
 {
    if (inFullImage)
    {
       if (inFlags & TILE_NO_ID)
-         TAddTilesRect<FLOAT, TILE_RECT_FULL_NO_ID>( inPath, inSheet, inN, inValues, inFlags );
+         TAddTilesRect<FLOATS, TILE_RECT_FULL_NO_ID>( inPath, inSheet, inN, inValues, inFlags );
       else
-         TAddTilesRect<FLOAT, TILE_RECT_FULL>( inPath, inSheet, inN, inValues, inFlags );
+         TAddTilesRect<FLOATS, TILE_RECT_FULL>( inPath, inSheet, inN, inValues, inFlags );
    }
    else if (inFlags & TILE_NO_ID)
    {
-      TAddTilesRect<FLOAT, TILE_RECT_ID_0>( inPath, inSheet, inN, inValues, inFlags );
+      TAddTilesRect<FLOATS, TILE_RECT_ID_0>( inPath, inSheet, inN, inValues, inFlags );
    }
    else if (inFlags & TILE_RECT)
    {
       if (inFlags & TILE_ORIGIN)
-         TAddTilesRect<FLOAT, TILE_RECT_ORIGIN_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
+         TAddTilesRect<FLOATS, TILE_RECT_ORIGIN_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
       else
-         TAddTilesRect<FLOAT, TILE_RECT_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
+         TAddTilesRect<FLOATS, TILE_RECT_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
    }
    else
-      TAddTilesRect<FLOAT, TILE_RECT_TILE >( inPath, inSheet, inN, inValues, inFlags );
+      TAddTilesRect<FLOATS, TILE_RECT_TILE >( inPath, inSheet, inN, inValues, inFlags );
 }
 
 
@@ -3250,8 +3275,8 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
                TAddTiles( gfx->getPath(), sheet, n, fvals, flags, fullImage );
             else
             {
-               value *val_ptr = val_array_value(inXYIDs);
-               if (val_ptr)
+               values_array val_ptr = val_array_value(inXYIDs);
+               if (value_array_ok(val_ptr))
                   TAddTiles( gfx->getPath(), sheet, n, val_ptr, flags, fullImage );
             }
          }
@@ -3483,7 +3508,7 @@ void FromValue(Optional<uint32> &outVal,value inVal) { outVal = (uint32)val_numb
 void FromValue(Optional<bool> &outVal,value inVal) { outVal = val_bool(inVal); }
 void FromValue(Optional<WString> &outVal,value inVal)
 {
-   outVal = val2stdwstr(inVal);
+   outVal = valToStdWString(inVal);
 }
 void FromValue(Optional<QuickVec<int> > &outVal,value inVal)
 {
@@ -3495,7 +3520,7 @@ void FromValue(Optional<QuickVec<int> > &outVal,value inVal)
 }
 void FromValue(Optional<TextFormatAlign> &outVal,value inVal)
 {
-   WString name = val2stdwstr(inVal);
+   WString name = valToStdWString(inVal);
    if (name==L"center")
       outVal = tfaCenter;
    else if (name==L"justify")
@@ -3725,8 +3750,8 @@ value nme_text_field_get_##prop(value inHandle,value inIndex) \
 } \
 DEFINE_PRIM(nme_text_field_get_##prop,2);
 
-TEXT_PROP(text,Text,alloc_wstring,val2stdwstr);
-TEXT_PROP(html_text,HTMLText,alloc_wstring,val2stdwstr);
+TEXT_PROP(text,Text,alloc_wstring,valToStdWString);
+TEXT_PROP(html_text,HTMLText,alloc_wstring,valToStdWString);
 TEXT_PROP(text_color,TextColor,alloc_int,val_int);
 TEXT_PROP(selectable,Selectable,alloc_bool,val_bool);
 TEXT_PROP(display_as_password,DisplayAsPassword,alloc_bool,val_bool);
@@ -3762,7 +3787,7 @@ value nme_bitmap_data_create(value width, value height, value pixelFormat, value
    PixelFormat format = (PixelFormat)val_int(pixelFormat);
 
    Surface *result = new SimpleSurface( w, h, format, 1 );
-   if (val_is_int(fill))
+   if (!val_is_null(fill))
       result->Clear( val_int(fill) );
    return ObjectToAbstract(result);
 }
@@ -3962,7 +3987,7 @@ value nme_bitmap_data_encode(value inSurface, value inFormat,value inQuality)
 
    ByteArray array;
 
-   bool ok = surf->Encode(&array, !strcmp(val_string(inFormat),"png"), val_number(inQuality) );
+   bool ok = surf->Encode(&array, !strcmp(valToHxString(inFormat).c_str(),"png"), val_number(inQuality) );
 
    if (!ok)
       return alloc_null();
@@ -4217,7 +4242,7 @@ value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, valu
    {
       value a = val_field(inRGBA,_id_a);
       value rgb = val_field(inRGBA,_id_rgb);
-      if (val_is_int(a) && val_is_int(rgb))
+      if (!val_is_null(a) && !val_is_null(rgb))
          surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), true);
    }
    return alloc_null();
@@ -4478,7 +4503,7 @@ value nme_video_load(value inHandle, value inFilename)
 {
    Video *video;
    if (AbstractToObject(inHandle,video))
-      video->Load(val_string(inFilename));
+      video->Load(valToStdString(inFilename).c_str());
    return alloc_null();
 }
 DEFINE_PRIM(nme_video_load,2);
@@ -4516,9 +4541,9 @@ DEFINE_PRIM(nme_video_set_smoothing,2);
 
 value nme_sound_from_file(value inFilename,value inForceMusic, value inEngine)
 {
-   std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
+   std::string engine = valToStdString(inEngine,false);
    Sound *sound = val_is_null(inFilename) ? 0 :
-                  Sound::FromFile( val_string(inFilename), val_bool(inForceMusic), engine );
+                  Sound::FromFile( valToStdString(inFilename).c_str(), val_bool(inForceMusic), engine );
 
    if (sound)
    {
@@ -4537,7 +4562,7 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic, value i
   // printf("trying bytes with length %d", length);
    if (!val_is_null(inData) && length > 0) {
       ByteArray buf = ByteArray(inData);
-      std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
+      std::string engine = valToStdString(inEngine,false);
       //printf("I'm here! trying bytes with length %d", length);
       sound = Sound::FromEncodedBytes(buf.Bytes(), length, val_bool(inForceMusic), engine );
    } else {
@@ -4813,7 +4838,7 @@ value nme_sound_channel_create_async(value inRate, value inIsStereo, value inFor
    int rate = rateId==0 ? 11025 : rateId==1 ? 22050 : 44100;
    int fmtId = val_int(inFormat);
    SoundDataFormat fmt = fmtId==0 ? sdfByte : fmtId==1 ? sdfShort : sdfFloat;
-   std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
+   std::string engine = valToStdString(inEngine,false);
    SoundChannel *channel = SoundChannel::CreateAsyncChannel(
                    fmt, val_bool(inIsStereo),rate, new AutoGCRoot(inCallback), engine );
 
@@ -5016,6 +5041,7 @@ value nme_curl_get_headers(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_headers,1);
 
+#ifndef HXCPP_JS_PRIME
 value nme_lzma_encode(value input_value)
 {
    buffer input_buffer = val_to_buffer(input_value);
@@ -5033,12 +5059,13 @@ value nme_lzma_decode(value input_value)
    return buffer_val(output_buffer);
 }
 DEFINE_PRIM(nme_lzma_decode,1);
+#endif
 
 
 value nme_file_dialog_folder(value in_title, value in_text )
 { 
-    std::string _title( val_string( in_title ) );
-    std::string _text( val_string( in_text ) );
+    std::string _title( valToStdString( in_title ) );
+    std::string _text( valToStdString( in_text ) );
 
     std::string path = FileDialogFolder( _title, _text );
 
@@ -5048,10 +5075,10 @@ DEFINE_PRIM(nme_file_dialog_folder,2);
 
 value nme_file_dialog_open(value in_title, value in_text, value in_types )
 { 
-    std::string _title( val_string( in_title ) );
-    std::string _text( val_string( in_text ) );
+    std::string _title( valToStdString( in_title ) );
+    std::string _text( valToStdString( in_text ) );
 
-    value *_types = val_array_value( in_types );
+    //value *_types = val_array_value( in_types );
 
     std::string path = FileDialogOpen( _title, _text, std::vector<std::string>() );
 
@@ -5061,10 +5088,10 @@ DEFINE_PRIM(nme_file_dialog_open,3);
 
 value nme_file_dialog_save(value in_title, value in_text, value in_types )
 { 
-    std::string _title( val_string( in_title ) );
-    std::string _text( val_string( in_text ) );
+    std::string _title( valToStdString( in_title ) );
+    std::string _text( valToStdString( in_text ) );
 
-    value *_types = val_array_value( in_types );
+    //value *_types = val_array_value( in_types );
 
     std::string path = FileDialogSave( _title, _text, std::vector<std::string>() );
 

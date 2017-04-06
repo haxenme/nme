@@ -1,3 +1,5 @@
+#include <nme/NmeCffi.h>
+
 #include <Font.h>
 #include <Utils.h>
 #include <map>
@@ -677,7 +679,7 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Aut
 
 } // end namespace nme
 
-#include <hx/CFFI.h>
+#include <nme/NmeCffi.h>
 
 // Font outlines as data - from the SamHaXe project
 
@@ -855,7 +857,7 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
    AutoGCRoot *bytes = !val_is_null(inBytes) ? new AutoGCRoot(inBytes) : NULL;
 
    void* pBuffer = 0;
-   const char *faceName = val_string(font_file);
+   std::string faceName = valToStdString(font_file);
    result = nme::MyNewFace(faceName, 0, &face, bytes, &pBuffer);
    
    if (result == FT_Err_Unknown_File_Format)

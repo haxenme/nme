@@ -78,7 +78,7 @@
    <!-- Use to allow testing on mac... -->
    <set name="NME_OPENAL" value="1" if="macos" />
 
-   <set name="NME_CAMERA" value="1" />
+   <set name="NME_CAMERA" value="1" unless="emscripten" />
 
    <!-- Built relative to "bin" -->
    <set name="NME_ROOT" value="" />
@@ -344,7 +344,6 @@
       <file name="${SRC_DIR}/common/SurfaceIO.cpp" unless="sdl_image" />
       <file name="${SRC_DIR}/common/ManagedStage.cpp" unless="winrt" />
       <file name="${SRC_DIR}/common/CURL.cpp" if="NME_CURL"/>
-      <file name="${SRC_DIR}/common/Lzma.cpp"/>
       <file name="${SRC_DIR}/common/Thread.cpp"/>
       <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
 
@@ -375,11 +374,14 @@
       <file name="${SRC_DIR}/common/NmeClip.cpp" if="NME_INTERNAL_CLIPPING" />
 
    
-      <file name="${SRC_DIR}/lzma/LzFind.c" />
-      <file name="${SRC_DIR}/lzma/LzmaDec.c" />
-      <file name="${SRC_DIR}/lzma/LzmaEnc.c" />
-      <file name="${SRC_DIR}/lzma/LzFindMt.c" if="windows" />
-      <file name="${SRC_DIR}/lzma/Threads.c" if="windows" />
+      <section unless="HXCPP_JS_PRIME" >
+         <file name="${SRC_DIR}/common/Lzma.cpp"/>
+         <file name="${SRC_DIR}/lzma/LzFind.c" />
+         <file name="${SRC_DIR}/lzma/LzmaDec.c" />
+         <file name="${SRC_DIR}/lzma/LzmaEnc.c" />
+         <file name="${SRC_DIR}/lzma/LzFindMt.c" if="windows" />
+         <file name="${SRC_DIR}/lzma/Threads.c" if="windows" />
+      </section>
    </files>
    
    <set name="target-id" value="NDLL" unless="NME_STATIC_LINK" />

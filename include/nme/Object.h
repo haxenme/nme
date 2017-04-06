@@ -19,7 +19,11 @@ class ImageBuffer;
 class Object
 {
 protected:
+   #ifdef HXCPP_JS_PRIME
+   virtual ~Object();
+   #else
    virtual ~Object() { }
+   #endif
 
 public:
    Object(bool inInitialRef=0) : mRefCount(inInitialRef?1:0)
@@ -36,7 +40,8 @@ public:
    static Object *toObject( emscripten::val &inValue );
 
    emscripten::val *val;
-   virtual void unrealize() { printf("unrealize\n");}
+   virtual const char *getObjectType() { return "unknown"; }
+   virtual void unrealize(emscripten::val &outValue) { printf("unrealize\n");}
    #endif
 
    virtual int getApiVersion() { return NME_API_VERSION; }

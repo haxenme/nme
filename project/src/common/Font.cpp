@@ -455,7 +455,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 value nme_font_register_font(value inFontName, value inBytes)
 {
    AutoGCRoot *bytes = new AutoGCRoot(inBytes);
-   sgRegisteredFonts[std::string(val_string(inFontName))] = bytes;
+   sgRegisteredFonts[valToStdString(inFontName)] = bytes;
    return alloc_null();
 }
 DEFINE_PRIM(nme_font_register_font,2)

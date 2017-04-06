@@ -5,7 +5,7 @@
 #include "ByteArray.h"
 #include <vector>
 #include <string>
-#include <hx/CFFI.h>
+#include <nme/NmeCffi.h>
 
 
 namespace nme

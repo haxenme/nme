@@ -4,7 +4,6 @@
 #include <nme/Object.h>
 #include <nme/QuickVec.h>
 #include "Utils.h"
-#include <hx/CFFI.h>
 
 namespace nme
 {

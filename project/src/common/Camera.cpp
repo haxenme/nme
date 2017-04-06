@@ -128,11 +128,11 @@ void Camera::onPoll(value handler)
 
 value nme_camera_create(value inName)
 {
-   const char *name = val_string(inName);
-   printf("Create camera %s\n", name);
+   HxString name = valToHxString(inName);
+   printf("Create camera %s\n", name.c_str());
 
    #if defined(__APPLE__) || defined(HX_WINDOWS)
-   Camera *camera = CreateCamera(name);
+   Camera *camera = CreateCamera(name.c_str());
    return ObjectToAbstract(camera);
    #else
    return alloc_null();

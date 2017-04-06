@@ -1,7 +1,9 @@
 #ifndef NME_LZMA_H
 #define NME_LZMA_H
 
-#include <hx/CFFI.h>
+#ifndef HXCPP_JS_PRIME
+
+#include <nme/NmeCffi.h>
 
 namespace nme {
 
@@ -13,5 +15,7 @@ namespace nme {
 	};
 	
 }
+
+#endif
 
 #endif

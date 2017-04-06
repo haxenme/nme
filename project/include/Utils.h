@@ -1,7 +1,7 @@
 #ifndef NME_UTILS_H
 #define NME_UTILS_H
 
-#include <hx/CFFI.h>
+#include <nme/NmeCffi.h>
 #include <string>
 #include <vector>
 #include <nme/QuickVec.h>
@@ -198,6 +198,7 @@ private:
    int     mLength;
 };
 #else
+#define HXCPP_NATIVE_WSTRING
 typedef std::wstring WString;
 #endif
 
@@ -248,7 +249,11 @@ FILE *OpenRead(const wchar_t *inName);
 
 #else
 typedef char OSChar;
+#ifdef HXCPP_JS_PRIME
+#define val_os_string(x) (x).as<std::string>().c_str()
+#else
 #define val_os_string val_string
+#endif
 
 #if defined(IPHONE)
 FILE *OpenRead(const char *inName);

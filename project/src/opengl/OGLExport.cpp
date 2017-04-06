@@ -491,14 +491,14 @@ DEFINE_PRIM(nme_gl_get_supported_extensions,1);
 value nme_gl_get_extension(value inName)
 {
    void *result = 0;
-   const char *name = val_string(inName);
+   HxString name = valToHxString(inName);
 
    #ifdef NME_ANGLE
-      result = (void *)eglGetProcAddress(name);
+      result = (void *)eglGetProcAddress(name.c_str());
    #elif defined(HX_WINDOWS)
-      result = (void *)wglGetProcAddress(name);
+      result = (void *)wglGetProcAddress(name.c_str());
    #elif defined(ANDROID)
-      result = (void *)eglGetProcAddress(name);
+      result = (void *)eglGetProcAddress(name.c_str());
    //Wait until I can test this...
    //#elif defined(HX_LINUX)
    //   result = dlsym(nme::gOGLLibraryHandle,#func);
@@ -932,7 +932,8 @@ value nme_gl_bind_attrib_location(value inId,value inSlot,value inName)
 {
    DBGFUNC("bindAttribLocation");
    int id = getResource(inId,resoProgram);
-   glBindAttribLocation(id,val_int(inSlot),val_string(inName));
+   HxString name = valToHxString(inName);
+   glBindAttribLocation(id,val_int(inSlot),name.c_str());
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_attrib_location,3);
@@ -944,7 +945,7 @@ value nme_gl_get_attrib_location(value inId,value inName)
 {
    DBGFUNC("getAttribLocation");
    int id = getResource(inId,resoProgram);
-   return alloc_int(glGetAttribLocation(id,val_string(inName)));
+   return alloc_int(glGetAttribLocation(id,valToHxString(inName).c_str()));
 }
 DEFINE_PRIM(nme_gl_get_attrib_location,2);
 
@@ -953,7 +954,7 @@ value nme_gl_get_uniform_location(value inId,value inName)
 {
    DBGFUNC("getUniformLocation");
    int id = getResource(inId,resoProgram);
-   return alloc_int(glGetUniformLocation(id,val_string(inName)));
+   return alloc_int(glGetUniformLocation(id,valToHxString(inName).c_str()));
 }
 DEFINE_PRIM(nme_gl_get_uniform_location,2);
 
@@ -1370,15 +1371,16 @@ value nme_gl_shader_source(value inId,value inSource)
 {
    DBGFUNC("shaderSource");
    int id = getResource(inId,resoShader);
-   const char *source = val_string(inSource);
+   HxString source = valToHxString(inSource);
+   const char *lines = source.c_str();
    #ifdef NME_GLES
    // TODO - do something better here
    std::string buffer;
-   buffer = std::string("precision mediump float;\n") + source;
-   source = buffer.c_str();
+   buffer = std::string("precision mediump float;\n") + hxToStdString(source);
+   lines = buffer.c_str();
    #endif
 
-   glShaderSource(id,1,&source,0);
+   glShaderSource(id,1,&lines,0);
 
    return alloc_null();
 }
@@ -1700,7 +1702,11 @@ value nme_gl_framebuffer_texture2D(value target, value attachment, value textarg
    DBGFUNC("framebufferTexture2D");
    if (CHECK_EXT(glFramebufferTexture2D))
    {
+      #ifdef HXCPP_JS_PRIME
+      int tId = val_int(texture) ? val_int(texture) : getResource(texture,resoTexture);
+      #else
       int tId = val_is_int(texture) ? val_int(texture) : getResource(texture,resoTexture);
+      #endif
       glFramebufferTexture2D( val_int(target), val_int(attachment), val_int(textarget), tId, val_int(level) );
    }
    return alloc_null();
@@ -1945,7 +1951,11 @@ value nme_gl_bind_texture(value inTarget, value inTexture)
 
    value glObject = val_null;
 
+   #ifdef HXCPP_JS_PRIME
+   if (val_int(inTexture)>0)
+   #else
    if (val_is_int(inTexture))
+   #endif
    {
       tid = val_int(inTexture);
    }
