@@ -55,7 +55,11 @@ class Assets
    public static var byteFactory = new Map<String,Void->ByteArray>();
    public static var libraryFactories = new Map<String,AssetLibFactory>();
    public static var loadedLibraries = new Map<String,AssetLib>();
+   #if js
+   public static var cacheMode:Int = STRONG_CACHE;
+   #else
    public static var cacheMode:Int = WEAK_CACHE;
+   #end
 
    public static var scriptBase = "";
 
@@ -84,7 +88,7 @@ class Assets
          if (inAddScriptBase && !isResource)
             resourceName = scriptBase + resourceName;
 
-         info.set(id, new AssetInfo(resourceName,type,isResource,className));
+         info.set(id, new AssetInfo(resourceName,type,isResource,className,id));
          i+=5;
       }
    }
@@ -279,7 +283,7 @@ class Assets
  
       #if flash
          var data = makeBitmapData(i.className);
-      #elseif js
+      #elseif (js && !jsprime)
          var data:BitmapData = null;
          // TODO
          //var data = cast(ApplicationMain.loaders.get(i.path).contentLoaderInfo.content, Bitmap).bitmapData;
@@ -408,6 +412,7 @@ class Assets
     */
    public static function getFont(id:String,?useCache:Null<Bool>):Font 
    {
+      trace("getFont " + id);
       var i = getInfo(id);
       if (i==null)
       {
@@ -427,10 +432,12 @@ class Assets
       }
 
       var font = 
-         #if (flash || js)
-         cast(Type.createInstance(Type.resolveClass(i.className),[]), Font)
+         #if (flash || (js &&!jsprime) )
+         if (i.className!=null)
+            cast(Type.createInstance(Type.resolveClass(i.className),[]), Font)
+         else
          #else
-         new Font(i.path)
+            new Font(i.path,null,null,id)
          #end
       ;
 

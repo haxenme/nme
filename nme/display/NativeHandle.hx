@@ -6,4 +6,9 @@ typedef NativeHandle = Dynamic;
 typedef NativeHandle = Dynamic;
 #elseif html5
 typedef NativeHandle = nme.html5.DisplayObject;
+#elseif jsprime
+typedef NativeHandle = {
+   var ptr:Int;
+   var kind:Int;
+}
 #end

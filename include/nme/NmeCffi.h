@@ -27,7 +27,6 @@ inline void array_set_float(values_array a, int inIndex, float val) { a[inIndex]
 inline void array_set_double(values_array a, int inIndex, double val) { a[inIndex] = alloc_float(val); }
 inline void array_set_value(values_array a, int inIndex, value val) {  a[inIndex] = val; }
 
-   /*
 struct HxWString
 {
    inline HxWString(const HxWString &inRHS)
@@ -44,7 +43,7 @@ struct HxWString
             inLen = 0;
             while(inS[inLen]) inLen++;
          }
-         __s = (wchar_t *)alloc_string_data(inS,(inLen+1)*sizeof(wchar_t)-1);
+         __s = (wchar_t *)alloc_string_len((const char *)inS,(inLen+1)*sizeof(wchar_t)-1);
          length = inLen;
       }
       else
@@ -62,14 +61,13 @@ struct HxWString
    int length;
    const wchar_t *__s;
 };
-   */
 
-#ifdef HXCPP_NATIVE_WSTRING
+//#ifdef HXCPP_NATIVE_WSTRING
 inline std::wstring valToStdWString(value inVal)
 {
    return val_wstring(inVal);
 }
-#endif
+//#endif
 
 
 #endif
@@ -327,7 +325,8 @@ inline buffer val_to_buffer(value bytes)
    AbstractToObject(bytes,result);
    return result;
 }
-inline unsigned char *buffer_data(buffer inBuffer) { return inBuffer ? &inBuffer->data[0] : 0; }
+inline unsigned char *buffer_data(buffer inBuffer) { return inBuffer ? (inBuffer->data.size() ? &inBuffer->data[0] : (unsigned char *)inBuffer ) : 0; }
+inline int buffer_size(buffer inBuffer) { return inBuffer ? inBuffer->data.size() : 0; }
 
 
 #else

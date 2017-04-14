@@ -95,8 +95,11 @@ class System
       if (restart==null)
           throw "Could not find restart function";
       restart();
-      #end
+      #elseif jsprime
+      // Sys.exit(0);
+      #else
       Sys.exit(0);
+      #end
    }
 
    public static function getLocalIpAddress() : String
@@ -108,6 +111,9 @@ class System
       return func();
       #elseif iphone
       return nme_get_local_ip_address();
+      #elseif jsprime
+      // TODO
+      return "localhost";
       #else
       return sys.net.Host.localhost();
       #end

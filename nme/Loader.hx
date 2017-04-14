@@ -1,12 +1,13 @@
 package nme;
-#if (cpp || neko)
+#if (cpp || neko || jsprime)
 
 #if neko
 import neko.Lib;
+import sys.io.Process;
 #elseif cpp
 import cpp.Lib;
-#end
 import sys.io.Process;
+#end
 
 @:nativeProperty
 class Loader 
@@ -20,6 +21,13 @@ class Loader
    {
       return Lib.load("nme", func, args);
    }
+   #elseif jsprime
+
+   public static function load(func:String, args:Int):Dynamic 
+   {
+      return untyped Module[func];
+   }
+
    #else
 
    static public function findHaxeLib(inLib:String) 

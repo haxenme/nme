@@ -40,10 +40,20 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
 	//}
 	
 
-	double CapabilitiesGetScreenDPI() {
-		
-		return 170;
-		
+	double CapabilitiesGetScreenDPI()
+   {
+      value v = value::global("window")["devicePixelRatio"];
+      if (v.isUndefined())
+      {
+         //printf("Undefined devicePixelRatio\n");
+         return 120;
+      }
+      else
+      {
+         double pixelScale = v.as<double>();
+         //printf("Got actual dpi %f\n", dpi);
+         return pixelScale*120.0;
+      }
 	}
 	
 

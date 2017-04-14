@@ -153,6 +153,11 @@ struct Line
 typedef QuickVec<Line> Lines;
 
 
+#ifdef HXCPP_JS_PRIME
+typedef BufferData *FontBuffer;
+#else
+typedef AutoGCRoot *FontBuffer;
+#endif
 
 
 class FontFace
@@ -161,7 +166,7 @@ public:
    virtual ~FontFace() { };
 
    static FontFace *CreateNative(const TextFormat &inFormat,double inScale);
-   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes, const std::string &inCombinedName);
+   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,FontBuffer inBytes, const std::string &inCombinedName);
    static FontFace *CreateCFFIFont(const TextFormat &inFormat,double inScale);
 
    virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,

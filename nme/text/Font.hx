@@ -18,7 +18,7 @@ class Font
    private static var nmeRegisteredFonts = new Array<Font>();
    private static var nmeDeviceFonts: Array<Font>;
 
-   public function new(inFilename:String = "", ?inStyle:FontStyle, ?inType:FontType, ?resourceName:String ):Void 
+   public function new(inFilename:String = "", ?inStyle:FontStyle, ?inType:FontType, ?resourceName:String,?id:String ):Void 
    {
       if (inFilename == "")
       {
@@ -31,7 +31,7 @@ class Font
             var bytes = ByteArray.fromBytes(Resource.getBytes(name));
             var details:NativeFontData = freetype_import_font("", null, 0, bytes);
 
-            fontName = details.family_name;
+            fontName = id==null ? details.family_name : id;
             if (details.is_bold && details.is_italic)
             {
                fontStyle = FontStyle.BOLD_ITALIC;

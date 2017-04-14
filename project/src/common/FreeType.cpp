@@ -253,7 +253,10 @@ public:
 
 };
 
-int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRoot *inBytes, void** outBuffer)
+
+extern void nmeRegisterFont(const std::string &inName, FontBuffer inData);
+
+int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuffer inBuffer, void** outBuffer)
 {
    *outFace = 0;
    *outBuffer = 0;
@@ -261,15 +264,48 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRo
    result = FT_New_Face(sgLibrary, inFace.c_str(), inIndex, outFace);
    if (*outFace==0)
    {
-     ByteArray bytes;
-     if (inBytes == 0)
-     {
+      #ifdef HXCPP_JS_PRIME
+      if (inBuffer)
+      {
+         result = FT_New_Memory_Face(sgLibrary, &inBuffer->data[0], inBuffer->data.size(),
+                                     inIndex, outFace);
+      }
+      else
+      {
+         FILE *file = OpenRead(inFace.c_str());
+         if (file)
+         {
+            fseek(file,0,SEEK_END);
+            int len = ftell(file);
+            std::vector<unsigned char> data;
+            if (len)
+            {
+               fseek(file,0,SEEK_SET);
+               data.resize(len);
+               fread(&data[0],len,1,file);
+            }
+            fclose(file);
+
+            if (len)
+            {
+               FontBuffer buffer = new BufferData();
+               buffer->IncRef();
+               buffer->data.swap(data);
+               result = FT_New_Memory_Face(sgLibrary, &buffer->data[0], len, inIndex, outFace);
+               nmeRegisterFont(inFace,buffer);
+            }
+         }
+      }
+      #else
+      ByteArray bytes;
+      if (inBuffer == 0)
+      {
          bytes = ByteArray::FromFile(inFace.c_str());
-     }
-     else
-     {
-         bytes = ByteArray(inBytes->get());
-     }
+      }
+      else
+      {
+         bytes = ByteArray(inBuffer->get());
+      }
       if (bytes.Ok())
       {
          int l = bytes.Size();
@@ -283,6 +319,7 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRo
          else
             *outBuffer = buf;
       }
+      #endif
    }
    //printf("MyNewFace done\n");
    return result;
@@ -292,14 +329,14 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, AutoGCRo
 
 
 
-static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags, AutoGCRoot *inBytes, void** outBuffer)
+static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags, FontBuffer inBuffer, void** outBuffer)
 {
    *outBuffer = 0;
    FT_Face face = 0;
    void* pBuffer = 0;
    // printf("MyNewFace %s with bytes %p\n", inFace.c_str(), inBytes);
 
-   MyNewFace(inFace.c_str(), 0, &face, inBytes, &pBuffer);
+   MyNewFace(inFace.c_str(), 0, &face, inBuffer, &pBuffer);
    if (face && inFlags!=0 && face->num_faces>1)
    {
       int n = face->num_faces;
@@ -587,7 +624,7 @@ std::string ToAssetName(const std::string &inPath)
 #endif
 }
 
-FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot *inBytes, void** pBuffer)
+FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, FontBuffer inBuffer, void** pBuffer)
 {
    std::string fname = inFontName;
    
@@ -598,7 +635,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
    #endif
    */
      
-   FT_Face font = OpenFont(fname,inFlags,inBytes, pBuffer);
+   FT_Face font = OpenFont(fname,inFlags,inBuffer, pBuffer);
 
    if (font==0 && fname.find("\\")==std::string::npos && fname.find("/")==std::string::npos)
    {
@@ -623,7 +660,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, AutoGCRoot
 
 extern const char *RemapFontName(const char *inName);
 
-FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes, const std::string &inCombinedName)
+FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,FontBuffer inBytes, const std::string &inCombinedName)
 {
    if (!sgLibrary)
      FT_Init_FreeType( &sgLibrary );
@@ -854,11 +891,18 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
    val_check(font_file, string);
    val_check(em_size, int);
    
-   AutoGCRoot *bytes = !val_is_null(inBytes) ? new AutoGCRoot(inBytes) : NULL;
-
    void* pBuffer = 0;
    std::string faceName = valToStdString(font_file);
+
+   #ifndef HXCPP_JS_PRIME
+   AutoGCRoot *bytes = !val_is_null(inBytes) ? new AutoGCRoot(inBytes) : NULL;
    result = nme::MyNewFace(faceName, 0, &face, bytes, &pBuffer);
+   #else
+   nme::FontBuffer bytes = val_is_null(inBytes) ? 0 : nme::val_to_buffer(inBytes);
+   if (bytes)
+      bytes->IncRef();
+   result = nme::MyNewFace(faceName, 0, &face, bytes, &pBuffer);
+   #endif
    
    if (result == FT_Err_Unknown_File_Format)
    {
@@ -1053,7 +1097,12 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
 
    FT_Done_Face(face);
 
+   #ifdef HXCPP_JS_PRIME
+   if (bytes)
+      bytes->DecRef();
+   #else
    delete bytes;
+   #endif
    if (pBuffer)
    {
       free(pBuffer);

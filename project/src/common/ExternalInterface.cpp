@@ -253,7 +253,9 @@ extern "C" void InitIDs()
    
    _tile_rect = FRect(0, 0, 1, 1);
 
+   #ifndef EMSCRIPTEN
    InitCamera();
+   #endif
 }
 
 DEFINE_ENTRY_POINT(InitIDs)
@@ -761,7 +763,7 @@ ByteArray::ByteArray(int inSize) :
 {
 }
 
-ByteArray::ByteArray() : mValue(0) { }
+ByteArray::ByteArray() : mValue(val_null) { }
 
 ByteArray::ByteArray(const QuickVec<uint8> &inData)
    : mValue(val_call1(gByteArrayCreate->get(), alloc_int(inData.size()) ))
@@ -788,10 +790,12 @@ int ByteArray::Size() const
 
 const unsigned char *ByteArray::Bytes() const
 {
-   value bytes = val_call1(gByteArrayBytes->get(),mValue);
    #ifndef HXCPP_JS_PRIME
+   value bytes = val_call1(gByteArrayBytes->get(),mValue);
    if (val_is_string(bytes))
       return (unsigned char *)val_string(bytes);
+   #else
+   value bytes = mValue;
    #endif
 
    buffer buf = val_to_buffer(bytes);
@@ -805,10 +809,12 @@ const unsigned char *ByteArray::Bytes() const
 
 unsigned char *ByteArray::Bytes()
 {
-   value bytes = val_call1(gByteArrayBytes->get(),mValue);
    #ifndef HXCPP_JS_PRIME
+   value bytes = val_call1(gByteArrayBytes->get(),mValue);
    if (val_is_string(bytes))
       return (unsigned char *)val_string(bytes);
+   #else
+   value bytes = mValue;
    #endif
    buffer buf = val_to_buffer(bytes);
    if (buf==0)
@@ -839,6 +845,7 @@ bool ByteArray::LittleEndian()
 
 ByteArray::ByteArray(const char *inResourceName) : mValue(val_null)
 {
+   printf("ByteArray from rsource factory %p %s\n", gResourceFactory, inResourceName);
    if (gResourceFactory)
    {
       mValue = val_call1(gResourceFactory->get(),alloc_string(inResourceName));
@@ -1090,6 +1097,7 @@ value nme_capabilities_get_pixel_aspect_ratio () {
 }
 DEFINE_PRIM (nme_capabilities_get_pixel_aspect_ratio, 0);
 
+
 value nme_capabilities_get_screen_dpi () {
    
    return alloc_float (CapabilitiesGetScreenDPI ());
@@ -1294,24 +1302,19 @@ value nme_set_package(value inCompany,value inFile,value inPackage,value inVersi
 DEFINE_PRIM(nme_set_package,4);
 
 
-value nme_create_main_frame(value *arg, int nargs)
+void nme_create_main_frame(value inCallback, int width, int height, int flags,
+                                  HxString title, value inIcon )
 {
    InitIDs();
-   enum { aCallback, aWidth, aHeight, aFlags, aTitle, aIcon, aSIZE };
 
-   sOnCreateCallback = new AutoGCRoot(arg[aCallback]);
+   sOnCreateCallback = new AutoGCRoot(inCallback);
 
    Surface *icon=0;
-   AbstractToObject(arg[aIcon],icon);
+   AbstractToObject(inIcon,icon);
 
-   CreateMainFrame(OnMainFrameCreated,
-       (int)val_number(arg[aWidth]), (int)val_number(arg[aHeight]),
-       val_int(arg[aFlags]), valToHxString(arg[aTitle]).c_str(), icon );
-
-   return alloc_null();
+   CreateMainFrame(OnMainFrameCreated, width, height, flags, title.c_str(), icon );
 }
-
-DEFINE_PRIM_MULT(nme_create_main_frame);
+DEFINE_PRIME6v(nme_create_main_frame)
 
 value nme_set_asset_base(value inBase)
 {
@@ -1981,22 +1984,21 @@ value nme_display_object_get_graphics(value inObj)
 
 DEFINE_PRIM(nme_display_object_get_graphics,1);
 
-value nme_display_object_draw_to_surface(value *arg,int count)
+void nme_display_object_draw_to_surface(value aObject, value aSurface, value aMatrix,
+                                        value aColourTransform, int aBlendMode, value aClipRect )
 {
-   enum { aObject, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSIZE};
-
    DisplayObject *obj;
    Surface *surf;
-   if (AbstractToObject(arg[aObject],obj) && AbstractToObject(arg[aSurface],surf))
+   if (AbstractToObject(aObject,obj) && AbstractToObject(aSurface,surf))
    {
       Rect r(surf->Width(),surf->Height());
-      if (!val_is_null(arg[aClipRect]))
-         FromValue(r,arg[aClipRect]);
+      if (!val_is_null(aClipRect))
+         FromValue(r,aClipRect);
       AutoSurfaceRender render(surf,r);
 
       Matrix matrix;
-      if (!val_is_null(arg[aMatrix]))
-         FromValue(matrix,arg[aMatrix]);
+      if (!val_is_null(aMatrix))
+         FromValue(matrix,aMatrix);
       int aa = 4;
       Stage *stage = Stage::GetCurrent();
       if (stage)
@@ -2013,10 +2015,10 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       state.mTransform.mMatrix = &matrix;
 
       ColorTransform col_trans;
-      if (!val_is_null(arg[aColourTransform]))
+      if (!val_is_null(aColourTransform))
       {
          ColorTransform t;
-         FromValue(t,arg[aColourTransform]);
+         FromValue(t,aColourTransform);
          state.CombineColourTransform(state,&t,&col_trans);
       }
 
@@ -2067,11 +2069,9 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       // restore alpha
       obj->setAlpha(objAlpha);
    }
-
-   return alloc_null();
 }
 
-DEFINE_PRIM_MULT(nme_display_object_draw_to_surface)
+DEFINE_PRIME6v(nme_display_object_draw_to_surface)
 
 
 value nme_display_object_get_id(value inObj)
@@ -2727,32 +2727,30 @@ value nme_gfx_end_fill(value inGfx)
 DEFINE_PRIM(nme_gfx_end_fill,1);
 
 
-value nme_gfx_line_style(value* arg, int nargs)
+void nme_gfx_line_style(value argGfx, value argThickness, int argColour, double argAlpha,
+                        bool argPixelHinting, int argScaleMode,
+                        int argCapsStyle, int argJointStyle, double argMiterLimit )
 {
-   enum { argGfx, argThickness, argColour, argAlpha, argPixelHinting, argScaleMode, argCapsStyle,
-          argJointStyle, argMiterLimit, argSIZE };
-
    Graphics *gfx;
-   if (AbstractToObject(arg[argGfx],gfx))
+   if (AbstractToObject(argGfx,gfx))
    {
       CHECK_ACCESS("nme_gfx_line_style");
       double thickness = -1;
-      if (!val_is_null(arg[argThickness]))
+      if (!val_is_null(argThickness))
       {
-         thickness = val_number(arg[argThickness]);
+         thickness = val_number(argThickness);
          if (thickness<0)
             thickness = 0;
       }
-      gfx->lineStyle(thickness, val_int(arg[argColour]), val_number(arg[argAlpha]),
-                 val_bool(arg[argPixelHinting]),
-                 (StrokeScaleMode)val_int(arg[argScaleMode]),
-                 (StrokeCaps)val_int(arg[argCapsStyle]),
-                 (StrokeJoints)val_int(arg[argJointStyle]),
-                 val_number(arg[argMiterLimit]) );
+      gfx->lineStyle(thickness, argColour, argAlpha,
+                 argPixelHinting,
+                 (StrokeScaleMode)argScaleMode,
+                 (StrokeCaps)argCapsStyle,
+                 (StrokeJoints)argJointStyle,
+                 argMiterLimit);
    }
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_gfx_line_style)
+DEFINE_PRIME9v(nme_gfx_line_style)
 
 
 
@@ -2958,7 +2956,10 @@ inline double TToFloat( double *f, int inIdx ) { return f[inIdx]; }
 #ifndef HXCPP_JS_PRIME
 inline double TToFloat( value *v, int inIdx ) { return val_number(v[inIdx]); }
 #else
-inline double TToFloat( const value &v, int inIdx ) { return v[inIdx].as<double>(); }
+inline double TToFloat( const value &v, int inIdx ) {
+   value val = v[inIdx];
+   return val.isUndefined() ? 0.0 : val.as<double>();
+}
 #endif
 
 template<typename FLOATS,int RECTMODE, int TRANS, int COL>
@@ -3199,7 +3200,6 @@ void TAddTiles( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inVal
 
 
 
-
 value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,value inDataSize)
 {
    Graphics *gfx;
@@ -3250,7 +3250,17 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
 
 
       int n = val_int(inDataSize);
-      if (n < 0) n = val_array_size(inXYIDs);
+      buffer buf;
+      if (n < 0)
+      {
+         buf = val_to_buffer(inXYIDs);
+         if (buf)
+         {
+            n = buffer_size(buf)/sizeof(float);
+         }
+         else
+            n = val_array_size(inXYIDs);
+      }
       n /= components;
 
       if (n)
@@ -3271,6 +3281,13 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
          else
          {
             float *fvals = val_array_float(inXYIDs);
+            if (!fvals)
+            {
+               if (!buf)
+                  buf = val_to_buffer(inXYIDs);
+               if (buf)
+                  fvals = (float *)buffer_data(buf);
+            }
             if (fvals)
                TAddTiles( gfx->getPath(), sheet, n, fvals, flags, fullImage );
             else

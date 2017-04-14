@@ -11,7 +11,7 @@ class AssetInfo
    public var cache:WeakRef<Dynamic>;
    public var isResource:Bool;
 
-   public function new(inPath:String, inType:AssetType, inIsResource:Bool, ?inClassName:String)
+   public function new(inPath:String, inType:AssetType, inIsResource:Bool, ?inClassName:String,?id:String)
    {
       path = inPath;
       type = inType;
@@ -20,7 +20,7 @@ class AssetInfo
       //trace('$inPath $inType $inIsResource $inClassName');
       #if !flash
       if (type==AssetType.FONT && isResource)
-         new nme.text.Font("",null,null, path);
+         new nme.text.Font("",null,null, path,id);
       #end
    }
 

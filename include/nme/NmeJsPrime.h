@@ -69,7 +69,7 @@ private:
    value mValue;
 };
 
-inline bool val_is_null(value inVal) { return inVal.isNull(); }
+inline bool val_is_null(value inVal) { return inVal.isNull() || inVal.isUndefined(); }
 
 
 inline double val_field_numeric(value inObject, int fieldId)

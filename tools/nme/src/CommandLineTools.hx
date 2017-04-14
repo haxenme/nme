@@ -52,7 +52,7 @@ class CommandLineTools
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
-            "watchsimulator", "watchos" ];
+            "watchsimulator", "watchos", "jsprime" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
@@ -119,6 +119,9 @@ class CommandLineTools
 
          case Platform.WATCH:
             platform = new platforms.WatchPlatform(project);
+
+         case Platform.JSPRIME:
+            platform = new platforms.JsPrimePlatform(project);
       }
 
       if (platform != null) 
@@ -740,6 +743,7 @@ class CommandLineTools
       sys.println("  androidsim  : android + simulator");
       sys.println("  iosview     : Create library files for inclusion in Apple iOS applications");
       sys.println("  flash       : Create SWF applications for Adobe Flash Player");
+      sys.println("  jsprime     : Js application with c++ compiled runtime");
       sys.println("  neko        : Create application for rapid testing on host system");
       sys.println("  ios         : Create Apple iOS applications");
       sys.println("  iphone      : ios + device debugging");

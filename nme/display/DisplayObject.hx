@@ -162,7 +162,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
 
    /** @private */ public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void {
       // --- IBitmapDrawable interface ---
-      nme_display_object_draw_to_surface(nmeHandle, inSurface, matrix, colorTransform, blendMode, clipRect);
+      nme_display_object_draw_to_surface(nmeHandle, inSurface, matrix, colorTransform, 0/*blendMode*/, clipRect);
    }
 
    /** @private */ private function nmeFindByID(inID:Int):DisplayObject {
@@ -563,7 +563,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
    // Native Methods
    private static var nme_create_display_object = Loader.load("nme_create_display_object", 0);
    private static var nme_display_object_get_graphics = Loader.load("nme_display_object_get_graphics", 1);
-   private static var nme_display_object_draw_to_surface = Loader.load("nme_display_object_draw_to_surface", -1);
+   private static var nme_display_object_draw_to_surface = nme.PrimeLoader.load("nme_display_object_draw_to_surface", "ooooiov");
    private static var nme_display_object_get_id = Loader.load("nme_display_object_get_id", 1);
    private static var nme_display_object_get_x = Loader.load("nme_display_object_get_x", 1);
    private static var nme_display_object_set_x = Loader.load("nme_display_object_set_x", 2);

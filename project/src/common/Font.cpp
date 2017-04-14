@@ -336,7 +336,10 @@ const char *RemapFontName(const char *inName)
 
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
-typedef std::map<std::string, AutoGCRoot *> FontBytesMap;
+
+
+typedef std::map<std::string, FontBuffer> FontBytesMap;
+
 FontBytesMap sgRegisteredFonts;
 
 Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef)
@@ -379,7 +382,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
          seekName = remappedFont;
       }
 
-      AutoGCRoot *bytes = 0;
+      FontBuffer bytes = 0;
       FontBytesMap::iterator fbit = sgRegisteredFonts.find(seekName);
 
       if (fbit!=sgRegisteredFonts.end())
@@ -393,7 +396,13 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
          ByteArray resource(seekName.c_str());
          if (resource.Ok())
          {
+            #ifdef HXCPP_JS_PRIME
+            sgRegisteredFonts[seekName] = val_to_buffer( resource.mValue );
+            sgRegisteredFonts[seekName]->IncRef();
+            #else
             sgRegisteredFonts[seekName] = new AutoGCRoot( resource.mValue );
+            #endif
+
             fbit = sgRegisteredFonts.find(seekName);
             bytes = fbit->second;
           //  printf("Found!\n");
@@ -451,11 +460,21 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    return font;
 }
 
+void nmeRegisterFont(const std::string &inName, FontBuffer inData)
+{
+   sgRegisteredFonts[inName] = inData;
+}
 
 value nme_font_register_font(value inFontName, value inBytes)
 {
+   std::string name = valToStdString(inFontName);
+   #ifdef HXCPP_JS_PRIME
+   FontBuffer bytes = val_to_buffer(inBytes);
+   bytes->IncRef();
+   #else
    AutoGCRoot *bytes = new AutoGCRoot(inBytes);
-   sgRegisteredFonts[valToStdString(inFontName)] = bytes;
+   #endif
+   sgRegisteredFonts[name] = bytes;
    return alloc_null();
 }
 DEFINE_PRIM(nme_font_register_font,2)

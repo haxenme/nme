@@ -321,7 +321,7 @@ class NMEProject
          case "flash":
             target = inTargetName.toUpperCase();
 
-         case "html5":
+         case "html5","jsprime":
             target = inTargetName.toUpperCase();
 
          case "windows", "mac", "linux":
@@ -370,6 +370,10 @@ class NMEProject
             embedAssets = false;
 
          case Platform.EMSCRIPTEN:
+            platformType = Platform.TYPE_WEB;
+            embedAssets = true;
+
+         case Platform.JSPRIME:
             platformType = Platform.TYPE_WEB;
             embedAssets = true;
 

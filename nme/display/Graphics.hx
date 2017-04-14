@@ -115,7 +115,15 @@ class Graphics
       if (inSmooth)
          inFlags |= TILE_SMOOTH;
 		
-      nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, inXYID, inFlags, inCount);
+      var buffer:nme.utils.Float32Buffer = cast inXYID;
+      if (buffer!=null)
+      {
+         if (inCount<0)
+            inCount = buffer.count;
+         nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, buffer, inFlags, inCount);
+      }
+      else
+         nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, inXYID, inFlags, inCount);
    }
    
    public function drawTriangles(vertices:Array<Float>, ?indices:Array<Int>, ?uvtData:Array<Float>, ?culling:TriangleCulling, ?colours:Array<Int>, blendMode:Int = 0) 
@@ -177,7 +185,7 @@ class Graphics
    private static var nme_gfx_begin_gradient_fill = Loader.load("nme_gfx_begin_gradient_fill", -1);
    private static var nme_gfx_line_gradient_fill = Loader.load("nme_gfx_line_gradient_fill", -1);
    private static var nme_gfx_end_fill = Loader.load("nme_gfx_end_fill", 1);
-   private static var nme_gfx_line_style = Loader.load("nme_gfx_line_style", -1);
+   private static var nme_gfx_line_style = nme.PrimeLoader.load("nme_gfx_line_style", "ooidbiiidv" );
    private static var nme_gfx_move_to = Loader.load("nme_gfx_move_to", 3);
    private static var nme_gfx_line_to = Loader.load("nme_gfx_line_to", 3);
    private static var nme_gfx_curve_to = Loader.load("nme_gfx_curve_to", 5);

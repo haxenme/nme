@@ -17,6 +17,7 @@ import cpp.Lib;
 import cpp.zip.Compress;
 import cpp.zip.Uncompress;
 import cpp.zip.Flush;
+using cpp.NativeArray;
 #end
 
 typedef ByteArrayData = ByteArray;
@@ -51,8 +52,12 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public var byteLength(get_byteLength,null):Int;
    public var __length(get,set):Int;
 
-   #if (html5||neko)
-   /** @private */ private var alloced:Int;
+   #if jsprime
+   private var ptr:Null<Int> = null;
+   #end
+
+   #if (js||neko)
+      private var alloced:Int;
    #end
 
    public function new(inSize:Int = 0) 
@@ -63,18 +68,22 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (inSize >= 0) 
       {
          #if (neko)
-         alloced = inSize < 16 ? 16 : inSize;
-         var bytes = untyped __dollar__smake(alloced);
-         super(inSize, bytes);
-         #elseif (html5)
-         alloced = inSize < 16 ? 16 : inSize;
-         var bytes = new BytesData(alloced);
-         super(bytes);
+            alloced = inSize < 16 ? 16 : inSize;
+            var bytes = untyped __dollar__smake(alloced);
+            super(inSize, bytes);
+         #elseif (js)
+            alloced = inSize < 16 ? 16 : inSize;
+            var bytes = new BytesData(alloced);
+            super(bytes);
          #else
-         var data = new BytesData();
-         if (inSize > 0)
-            untyped data[inSize - 1] = 0;
-         super(inSize, data);
+            var data = new BytesData();
+            if (inSize > 0)
+               untyped data[inSize - 1] = 0;
+            super(inSize, data);
+         #end
+
+         #if jsprime
+         onBufferChanged();
          #end
       }
    }
@@ -90,6 +99,25 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    inline public function set___length(inLength:Int) return setLength(inLength);
    inline public function __resize(inLength:Int) ensureElem(inLength-1,true);
 
+    
+   #if jsprime
+   function onBufferChanged() { }
+
+   @:keep
+   public function realize() {
+      ptr = nme_create_buffer(length);
+      var offset = nme_buffer_offset(ptr);
+      var heap:js.html.Uint8Array = untyped Module.HEAP8;
+      heap.set(b,offset);
+      b = null;
+      data = null;
+      onBufferChanged();
+   }
+   static var nme_create_buffer = nme.PrimeLoader.load("nme_create_buffer","ii");
+   static var nme_buffer_offset = nme.PrimeLoader.load("nme_buffer_offset","ii");
+   static var nme_resize_buffer = nme.PrimeLoader.load("nme_resize_buffer","iiv");
+   #end
+
    @:keep
    inline public function __get(pos:Int):Int 
    {
@@ -102,7 +130,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #end
    }
 
-   #if (!no_nme_io && (cpp||neko))
+   #if (!no_nme_io && (cpp||neko||jsprime))
    /** @private */ static function __init__() {
       var factory = function(inLen:Int) { return new ByteArray(inLen); };
       var resize = function(inArray:ByteArray, inLen:Int) 
@@ -114,6 +142,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       };
 
       var bytes = function(inArray:ByteArray) { return inArray==null ? null :  inArray.b; }
+
       var slen = function(inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
 
       var init = Loader.load("nme_byte_array_init", 4);
@@ -150,7 +179,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       length = 0;
    }
 
-   #if !html5
+   #if !js
    public function compress(algorithm:CompressionAlgorithm = null) 
    {
       #if neko
@@ -195,39 +224,70 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    }
    #end
 
-   /** @private */ private function ensureElem(inSize:Int, inUpdateLenght:Bool) {
+   public function setAllocSize(inSize:Int)
+   {
+      #if (js||neko)
+
+         alloced = inSize;
+         //if (alloced<16) alloced = 16;
+         #if neko
+            var new_b = untyped __dollar__smake(alloced);
+            untyped __dollar__sblit(new_b, 0, b, 0, length);
+            b = new_b;
+         #else
+            #if jsprime
+               if (ptr>0)
+               {
+                  nme_resize_buffer(ptr,alloced);
+                  b = null;
+               }
+               else // fallthrough
+            #end
+            {
+            var new_b = new js.html.Uint8Array(alloced);
+            var dest = new js.html.Uint8Array(new_b);
+            var copy = length<inSize ? length : inSize;
+            for(i in 0...copy)
+               dest[i] = b[i];
+            b = dest;
+            }
+         #end
+
+         #if jsprime
+            onBufferChanged();
+         #end
+
+      #else
+          b.setSize(inSize);
+      #end
+   }
+
+   public function setByteSize(inSize:Int)
+   {
+      setAllocSize(inSize);
+      length = inSize;
+   }
+
+   private function ensureElem(inSize:Int, inUpdateLength:Bool)
+   {
       var len = inSize + 1;
 
-      #if (html5||neko)
-      if (alloced < len) 
-      {
-         alloced =((len+1) * 3) >> 1;
-         #if neko
-         var new_b = untyped __dollar__smake(alloced);
-         untyped __dollar__sblit(new_b, 0, b, 0, length);
-         b = new_b;
-         #else
-         var new_b = new BytesData(alloced);
-         var dest = new js.html.Uint8Array(new_b);
-         for(i in 0...len)
-            dest[i] = b[i];
-         b = dest;
-         length = alloced;
-         #end
-      }
+      #if (js||neko)
+         if (alloced < len) 
+            setAllocSize( ((((len+1) * 3) >> 1) + 3) & ~3 );
       #else
-      if (b.length < len)
-         untyped b.__SetSize(len);
+         if (b.length < len)
+            untyped b.__SetSize(len);
       #end
 
-      if (inUpdateLenght && length < len)
+      if (inUpdateLength && length < len)
          length = len;
    }
 
    static public function fromBytes(inBytes:Bytes) 
    {
       var result = new ByteArray( -1);
-	  result.nmeFromBytes(inBytes);
+      result.nmeFromBytes(inBytes);
       return result;
    }
 
@@ -237,7 +297,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public function getByteBuffer():ByteArray { return this; }
    public function getStart():Int { return 0; }
 
-   #if !html5
+   #if (js && !jsprime)
    public function inflate() 
    {
       uncompress(CompressionAlgorithm.DEFLATE);
@@ -249,7 +309,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       b = inBytes.b;
       length = inBytes.length;
       
-      #if neko
+      #if (neko||js)
       alloced = length;
       #end
    }
@@ -294,7 +354,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (position + 8 > length)
          ThrowEOFi();
 
-      #if html5
+      #if js
       var p = position;
       position += 8;
       return getDouble(p);
@@ -325,7 +385,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (position + 4 > length)
          ThrowEOFi();
 
-      #if html5
+      #if js
       var p = position;
       position += 4;
       return getFloat(p);
@@ -413,7 +473,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       var result:String="";
       untyped __global__.__hxcpp_string_of_bytes(b, result, p, inLen);
       return result;
-      #elseif html5
+      #elseif js
       return getString(p,inLen);
       #end
    }
@@ -463,12 +523,12 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       return 0;
    }
 
-   #if !html5
+   #if !js
    public function uncompress(algorithm:CompressionAlgorithm = null):Void 
    {
       if (algorithm == null) algorithm = CompressionAlgorithm.GZIP;
 
-      #if neko
+      #if (neko||js)
       var src = alloced == length ? this : sub(0, length);
       #else
       var src = this;
@@ -499,7 +559,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       b = result.b;
       length = result.length;
       position = 0;
-      #if neko
+      #if (neko||js)
       alloced = length;
       #end
    }

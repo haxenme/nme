@@ -21,6 +21,7 @@ class Platform
    public static inline var EMSCRIPTEN = "EMSCRIPTEN";
    public static inline var HTML5 = "HTML5";
    public static inline var WATCH = "WATCH";
+   public static inline var JSPRIME = "JSPRIME";
 
 
    public static inline var TYPE_WEB = "WEB";
@@ -582,6 +583,16 @@ class Platform
 
             LogHelper.info("", " - Copying library file: " + src + " -> " + dest);
             FileHelper.copyIfNewer(src, dest);
+
+            src+=".mem";
+            if (FileSystem.exists(src)) 
+            {
+               var dest = libDir + "/" + pref + ndll.name + ext + ".mem";
+               addOutput(dest);
+
+               LogHelper.info("", " - Copying library mem file: " + src + " -> " + dest);
+               FileHelper.copyIfNewer(src, dest);
+            }
          }
          else
          {
