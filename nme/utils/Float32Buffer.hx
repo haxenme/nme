@@ -38,6 +38,7 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
 
    public function resize(inSize:Int)
    {
+      count = inSize;
       setByteSize((count = inSize)<<2);
       #if jsprime
       bufferSize = alloced>>2;
@@ -54,16 +55,20 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
    inline public function setF32(index:Int,val:Float)
    {
       #if jsprime
-      if (index>=count)
-      {
-         count = index+1;
-         if (index>=bufferSize)
-            ensureElem((index<<2)+3,true);
-      }
-      f32View[index]=val;
+         if (index>=count)
+         {
+            count = index+1;
+            if (index>=bufferSize)
+               ensureElem((index<<2)+3,true);
+         }
+         f32View[index]=val;
       #else
          var bpos = index<<2;
-         ensureElem(bpos+3,true);
+         if (index>=count)
+         {
+            count = index+1;
+            ensureElem(bpos+3,true);
+         }
          #if cpp
             hxcppSetFloat(b,bpos,val);
          #else

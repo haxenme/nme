@@ -100,16 +100,13 @@ class Application
 
       var create_main_frame = nme.PrimeLoader.load("nme_create_main_frame","oiiisov");
 
-      trace("create_main_frame...");
       create_main_frame(function(inFrameHandle:Dynamic) {
-      trace("got calback " + inFrameHandle);
             onQuit = close;
             nmeFrameHandle = inFrameHandle;
             nmeWindow = new Window(nmeFrameHandle,initWidth,initHeight);
             nmeWindow.setBackground(inParams.color);
             inOnLoaded(nmeWindow);
          }, initWidth, initHeight, flags, title, icon );
-      trace("wait...");
    }
 
    public static function close() 

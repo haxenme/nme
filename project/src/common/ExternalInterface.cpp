@@ -845,7 +845,7 @@ bool ByteArray::LittleEndian()
 
 ByteArray::ByteArray(const char *inResourceName) : mValue(val_null)
 {
-   printf("ByteArray from rsource factory %p %s\n", gResourceFactory, inResourceName);
+   //printf("ByteArray from rsource factory %p %s\n", gResourceFactory, inResourceName);
    if (gResourceFactory)
    {
       mValue = val_call1(gResourceFactory->get(),alloc_string(inResourceName));
@@ -3250,7 +3250,7 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
 
 
       int n = val_int(inDataSize);
-      buffer buf;
+      buffer buf = 0;
       if (n < 0)
       {
          buf = val_to_buffer(inXYIDs);
@@ -3286,7 +3286,9 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
                if (!buf)
                   buf = val_to_buffer(inXYIDs);
                if (buf)
+               {
                   fvals = (float *)buffer_data(buf);
+               }
             }
             if (fvals)
                TAddTiles( gfx->getPath(), sheet, n, fvals, flags, fullImage );

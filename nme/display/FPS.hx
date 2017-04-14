@@ -5,6 +5,7 @@ import haxe.Timer;
 import nme.events.Event;
 import nme.text.TextField;
 import nme.text.TextFormat;
+import nme.text.TextFieldAutoSize;
 
 @:nativeProperty
 class FPS extends TextField
@@ -25,6 +26,7 @@ class FPS extends TextField
 		defaultTextFormat = new TextFormat("_sans", 12, inCol);
 		
 		text = "FPS: ";
+      autoSize = TextFieldAutoSize.LEFT;
 		
 		times = [];
 		addEventListener(Event.ENTER_FRAME, onEnter);

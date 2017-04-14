@@ -114,13 +114,16 @@ class Graphics
 
       if (inSmooth)
          inFlags |= TILE_SMOOTH;
-		
       var buffer:nme.utils.Float32Buffer = cast inXYID;
       if (buffer!=null)
       {
          if (inCount<0)
             inCount = buffer.count;
+         #if js
          nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, buffer, inFlags, inCount);
+         #else
+         nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, buffer.getData(), inFlags, inCount);
+         #end
       }
       else
          nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, inXYID, inFlags, inCount);
@@ -195,7 +198,7 @@ class Graphics
    private static var nme_gfx_draw_datum = Loader.load("nme_gfx_draw_datum", 2);
    private static var nme_gfx_draw_rect = Loader.load("nme_gfx_draw_rect", 5);
    private static var nme_gfx_draw_path = Loader.load("nme_gfx_draw_path", 4);
-   private static var nme_gfx_draw_tiles = Loader.load("nme_gfx_draw_tiles", 5);
+   private static var nme_gfx_draw_tiles:Dynamic->Dynamic->Dynamic->Int->Int->Void = Loader.load("nme_gfx_draw_tiles", 5);
    private static var nme_gfx_draw_points = Loader.load("nme_gfx_draw_points", -1);
    private static var nme_gfx_draw_round_rect = Loader.load("nme_gfx_draw_round_rect", -1);
    private static var nme_gfx_draw_triangles = Loader.load("nme_gfx_draw_triangles", -1);
