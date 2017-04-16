@@ -12,6 +12,11 @@
 
    <set name="exe_link" value="1" if="HXCPP_JS_PRIME" />
 
+   <!--<set name="NME_ANGLE" value="1" if="windows" />-->
+   <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
+   <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
+
+
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
    <!-- 
       Build with:
@@ -47,7 +52,7 @@
 
    <!-- Use opengl backend ? -->
    <set name="NME_OGL" value="1" />
-   <unset name="NME_OGL" if="winrt" />
+   <unset name="NME_OGL" if="winrt" unless="NME_ANGLE" />
 
    <!-- For systems that do not create the egl context for us -->
    <set name="NME_EGL" value="1" if="rpi"/>
@@ -102,6 +107,7 @@
    <include name="${NATIVE_TOOLKIT_PATH}/sdl/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" />
 
    <!-- inject flags to allow cross-compiling -->
    <files id="native-toolkit-sdl" if="xcompile" >
@@ -179,12 +185,15 @@
       <compilerflag value="-DNME_INTERNAL_CLIPPING" if="NME_INTERNAL_CLIPPING" />
       <compilerflag value="-DNME_CLIPPER" if="NME_CLIPPER" />
       <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
+      <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
+      <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
 
       <cache value="1" />
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
 
       <depend files="nme-headers"/>
       <depend files="hxcpp-depends"/>
+      <depend name="${SRC_DIR}/opengl/OGL.h" if="NME_OGL" />
 
       <section if="windows">
          <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />
@@ -408,6 +417,7 @@
          <files id="native-toolkit-jpeg" />
          <files id="native-toolkit-png" />
          <files id="native-toolkit-zlib" />
+         <files id="native-toolkit-angle" if="NME_ANGLE" />
          <section if="NME_CURL">
             <files id="native-toolkit-curl" />
          </section>
@@ -465,7 +475,7 @@
       
          <section if="windows">
             <lib name="gdi32.lib" />
-            <lib name="opengl32.lib" />
+            <lib name="opengl32.lib" unless="NME_ANGLE" />
             <lib name="user32.lib" />
             <lib name="kernel32.lib" />
             <lib name="advapi32.lib" />
@@ -479,6 +489,7 @@
             <lib name="wldap32.lib" />
             <lib name="shell32.lib" />
             <lib name="comdlg32.lib" />
+            <lib name="d3d9.lib" if="NME_ANGLE" />
          </section>
 
          <section if="linux">

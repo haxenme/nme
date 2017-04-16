@@ -1,7 +1,17 @@
 #ifndef INCLUDED_OGL_H
 #define INCLUDED_OGL_H
 
-#if defined(BLACKBERRY) || defined(ANDROID) || defined(WEBOS) || defined(GPH) || defined(RASPBERRYPI) || defined(EMSCRIPTEN)
+#if defined(NME_ANGLE)
+   // Static link, not dll import
+   #define EGLAPI
+   #define GL_APICALL
+   #define NME_GLES
+   #define GL_GLEXT_PROTOTYPES
+
+   #include <GLES2/gl2.h>
+   #include <GLES2/gl2ext.h>
+
+#elif defined(BLACKBERRY) || defined(ANDROID) || defined(WEBOS) || defined(GPH) || defined(RASPBERRYPI) || defined(EMSCRIPTEN)
 
    #define NME_GLES
 
@@ -79,7 +89,7 @@ typedef ptrdiff_t GLsizeiptrARB;
 #endif
 
 
-#ifdef HX_WINDOWS
+#if defined(HX_WINDOWS) && !defined(NME_ANGLE)
 typedef HDC WinDC;
 typedef HGLRC GLCtx;
 #else

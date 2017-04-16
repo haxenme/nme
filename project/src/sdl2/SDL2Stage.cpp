@@ -1546,6 +1546,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    if (borderless) requestWindowFlags |= SDL_WINDOW_BORDERLESS;
    if (fullscreen) requestWindowFlags |= FullscreenMode; //SDL_WINDOW_FULLSCREEN_DESKTOP;
    
+   #ifdef NME_ANGLE
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2); 
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
+   #endif
+
    if (opengl)
    {
       SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);

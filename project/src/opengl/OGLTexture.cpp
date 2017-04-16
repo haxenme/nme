@@ -19,6 +19,9 @@
 #elif defined(IPHONE)
    #define ARGB_STORE GL_RGBA
    #define ARGB_PIXEL GL_BGRA
+#elif defined(NME_ANGLE)
+   #define ARGB_STORE GL_BGRA_EXT;
+   #define ARGB_PIXEL GL_BGRA_EXT;
 #elif defined(NME_GLES)
    #define ARGB_STORE GL_BGRA
    #define ARGB_PIXEL GL_BGRA
@@ -34,8 +37,13 @@ namespace nme
 
 bool gC0IsRed = true;
 
+#ifdef NME_ANGLE
+#define FORCE_NON_PO2
+#endif
+
 bool gFullNPO2Support = false;
 bool gPartialNPO2Support = false;
+
 
 bool NonPO2Supported(bool inNotRepeating)
 {
@@ -361,7 +369,7 @@ public:
                buffer = (uint8 *)malloc(pw * dw * dh);
                PixelConvert(dw,dh,
                             fmt, p0, mSurface->GetStride(), mSurface->GetPlaneOffset(),
-                            buffer_format, buffer, dw+pw, dw*dh*pw );
+                            buffer_format, buffer, dw*pw, dw*dh*pw );
 
                glTexSubImage2D(GL_TEXTURE_2D, 0,
                   x0, y0,

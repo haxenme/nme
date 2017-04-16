@@ -12,6 +12,11 @@
 #include <EGL/egl.h>
 #endif
 
+#ifdef NME_ANGLE
+#define EGLAPI
+#include <EGL/egl.h>
+#endif
+
 #include <nme/NmeCffi.h>
 #include <Display.h>
 #include <ByteArray.h>
@@ -488,7 +493,9 @@ value nme_gl_get_extension(value inName)
    void *result = 0;
    const char *name = val_string(inName);
 
-   #ifdef HX_WINDOWS
+   #ifdef NME_ANGLE
+      result = (void *)eglGetProcAddress(name);
+   #elif defined(HX_WINDOWS)
       result = (void *)wglGetProcAddress(name);
    #elif defined(ANDROID)
       result = (void *)eglGetProcAddress(name);
