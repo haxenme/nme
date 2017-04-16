@@ -8,9 +8,9 @@ before_install:
 - sudo ln -s /usr/local/lib/neko/nekotools /usr/local/bin/nekotools
 - sudo ln -s /usr/local/lib/neko/libneko.so /usr/local/lib/libneko.so
 - sudo ln -s /usr/local/lib/neko/libneko.dylib /usr/local/lib/libneko.dylib
-- wget -c http://haxe.org/website-content/downloads/3.2.1/downloads/haxe-3.2.1-osx.tar.gz
+- wget -c https://haxe.org/download/file/3.4.2/haxe-3.4.2-osx.tar.gz
 - sudo mkdir /usr/local/lib/haxe
-- sudo tar xvzf haxe-3.2.1-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
+- sudo tar xvzf haxe-3.4.2-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
 - sudo ln -s /usr/local/lib/haxe/haxe /usr/local/bin/haxe
 - sudo ln -s /usr/local/lib/haxe/haxelib /usr/local/bin/haxelib
 - mkdir ~/haxelib
