@@ -259,6 +259,7 @@
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/jpeg"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/png"/>
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/zlib"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/vorbis/include"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/ogg/include"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/modplug" if="modplug" />

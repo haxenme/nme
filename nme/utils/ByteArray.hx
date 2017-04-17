@@ -179,10 +179,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       length = 0;
    }
 
-   #if !js
+   #if (!js || jsprime)
    public function compress(algorithm:CompressionAlgorithm = null) 
    {
-      #if neko
+      #if (neko)
       var src = alloced == length ? this : sub(0, length);
       #else
       var src = this;
@@ -193,8 +193,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (algorithm == CompressionAlgorithm.LZMA) 
       {
          result = Bytes.ofData(nme_lzma_encode(src.getData()));
-
-      } else 
+      }
+      else 
       {
          var windowBits = switch(algorithm) 
          {
@@ -203,18 +203,25 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
             default: 15;
          }
 
-         #if enable_deflate
-         result = Compress.run(src, 8, windowBits);
+         #if jsprime
+            alloced = length = nme_zip_encode(src);
+            b = null;
+            data = null;
+            onBufferChanged();
+         #elseif enable_deflate
+            result = Compress.run(src, 8, windowBits);
          #else
-         result = Compress.run(src, 8);
+            result = Compress.run(src, 8);
          #end
       }
 
-      b = result.b;
-      length = result.length;
-      position = length;
-      #if neko
-      alloced = length;
+      #if !jsprime
+         b = result.b;
+         length = result.length;
+         position = length;
+         #if neko
+         alloced = length;
+         #end
       #end
    }
 
@@ -297,7 +304,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public function getByteBuffer():ByteArray { return this; }
    public function getStart():Int { return 0; }
 
-   #if (js && !jsprime)
+   #if (!js || jsprime)
    public function inflate() 
    {
       uncompress(CompressionAlgorithm.DEFLATE);
@@ -523,12 +530,12 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       return 0;
    }
 
-   #if !js
+   #if (!js || jsprime)
    public function uncompress(algorithm:CompressionAlgorithm = null):Void 
    {
       if (algorithm == null) algorithm = CompressionAlgorithm.GZIP;
 
-      #if (neko||js)
+      #if (neko)
       var src = alloced == length ? this : sub(0, length);
       #else
       var src = this;
@@ -549,18 +556,25 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
             default: 15;
          }
 
-         #if enable_deflate
-         result = Uncompress.run(src, null, windowBits);
+         #if jsprime
+            alloced = length = nme_zip_decode(src);
+            b = null;
+            data = null;
+            onBufferChanged();
+         #elseif enable_deflate
+            result = Uncompress.run(src, null, windowBits);
          #else
-         result = Uncompress.run(src, null);
+            result = Uncompress.run(src, null);
          #end
       }
 
-      b = result.b;
-      length = result.length;
-      position = 0;
-      #if (neko||js)
-      alloced = length;
+      #if !jsprime
+         b = result.b;
+         length = result.length;
+         position = 0;
+         #if (neko||js)
+         alloced = length;
+         #end
       #end
    }
    #end
@@ -723,6 +737,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    #end
    private static var nme_lzma_encode = Loader.load("nme_lzma_encode", 1);
    private static var nme_lzma_decode = Loader.load("nme_lzma_decode", 1);
+   #if jsprime
+   private static var nme_zip_encode = nme.PrimeLoader.load("nme_zip_encode", "oi");
+   private static var nme_zip_decode = nme.PrimeLoader.load("nme_zip_decode", "oi");
+   #end
 }
 
 #else

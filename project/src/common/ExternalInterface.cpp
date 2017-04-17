@@ -5054,6 +5054,101 @@ value nme_curl_get_headers(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_headers,1);
 
+
+
+#ifdef HXCPP_JS_PRIME
+
+#include <zlib.h>
+
+int nme_zip_encode(value ioBuffer)
+{
+   buffer buf = val_to_buffer(ioBuffer);
+
+   std::vector<unsigned char> &src = buf->data;
+   int slen = src.size();
+
+   z_stream z;
+   memset(&z,0,sizeof(z_stream));
+   int err = 0;
+   int flush = Z_NO_FLUSH;
+   int level = 5;
+   if ( deflateInit(&z,level) != Z_OK )
+      val_throw(alloc_string("bad deflateInit"));
+
+   int dlen = deflateBound(&z,slen);
+   std::vector<unsigned char> dest(dlen);
+
+   z.next_in = (Bytef*)&src[0];
+   z.avail_in = slen;
+   z.next_out = (Bytef*)&dest[0];
+   z.avail_out = dlen;
+
+   int code = 0;
+   if( (code = ::deflate(&z,flush)) < 0 )
+   {
+       deflateEnd(&z);
+       val_throw( alloc_string("bad deflate") );
+   }
+   int size = z.next_out - (Bytef*)&dest[0];
+   dest.resize(size);
+   buf->data.swap(dest);
+   deflateEnd(&z);
+   return size;
+}
+DEFINE_PRIME1(nme_zip_encode);
+
+int nme_zip_decode(value ioBuffer)
+{
+   buffer buf = val_to_buffer(ioBuffer);
+
+   std::vector<unsigned char> &src = buf->data;
+   int slen = src.size();
+   if (slen==0)
+      return 0;
+
+   std::vector<unsigned char> dest(slen*2);
+
+   z_stream z;
+   memset(&z,0,sizeof(z_stream));
+   int err = 0;
+   int flush = Z_NO_FLUSH;
+   if ( inflateInit2(&z,MAX_WBITS) != Z_OK )
+      val_throw(alloc_string("bad inflateInit"));
+
+   z.next_in = (Bytef*)&src[0];
+   z.avail_in = slen;
+
+   int dstpos = 0;
+   while(true)
+   {
+      z.next_out = (Bytef*)&dest[dstpos];
+      z.avail_out = dest.size() - dstpos;
+      int code = 0;
+      if( (code = ::inflate(&z,flush)) < 0 )
+      {
+          inflateEnd(&z);
+          val_throw( alloc_string("bad inflate") );
+      }
+      if (code==Z_STREAM_END)
+      {
+         int size = z.next_out - (Bytef*)&dest[0];
+         dest.resize(size);
+         buf->data.swap(dest);
+         inflateEnd(&z);
+         return size;
+      }
+      // Alloc some more...
+      dstpos = dest.size();
+      dest.resize(dest.size() + std::max(20, slen/2));
+   }
+   return 0;
+}
+DEFINE_PRIME1(nme_zip_decode);
+#endif
+
+
+
+
 #ifndef HXCPP_JS_PRIME
 value nme_lzma_encode(value input_value)
 {
