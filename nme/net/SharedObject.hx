@@ -1,12 +1,18 @@
 package nme.net;
 #if (!flash)
 
+#if sys
 import sys.FileSystem;
 import sys.io.File;
 import sys.io.FileInput;
 import sys.io.FileOutput;
 import haxe.io.Path;
 import Sys;
+#elseif js
+import js.html.Storage;
+import js.Browser;
+#end
+
 import nme.Loader;
 
 import haxe.Serializer;
@@ -34,7 +40,12 @@ class SharedObject extends EventDispatcher
 
    public function clear():Void 
    {
-      #if (iphone || android)
+      #if (js)
+         var storage = Browser.getLocalStorage();
+         if (storage != null)
+            storage.removeItem(localPath + ":" + name);
+
+      #elseif (iphone || android)
 
          untyped nme_clear_user_preference(name);
 
@@ -50,7 +61,7 @@ class SharedObject extends EventDispatcher
       #end
    }
 
-   #if !(iphone || android)
+   #if !(iphone || android || js)
    static public function mkdir(directory:String):Void 
    {
       directory = StringTools.replace(directory, "\\", "/");
@@ -100,7 +111,16 @@ class SharedObject extends EventDispatcher
    {
       var encodedData:String = Serializer.run(data);
 
-      #if (iphone || android)
+      #if (js)
+
+         var storage = Browser.getLocalStorage();
+         if (storage != null)
+         {
+            storage.removeItem(localPath + ":" + name);
+            storage.setItem(localPath + ":" + name, encodedData);
+         }
+
+      #elseif (iphone || android)
 
          untyped nme_set_user_preference(name, encodedData);
 
@@ -123,6 +143,7 @@ class SharedObject extends EventDispatcher
       return SharedObjectFlushStatus.FLUSHED;
    }
 
+   #if sys
    private static function getFilePath(name:String, localPath:String):String 
    {
       var path:String = nme.filesystem.File.applicationStorageDirectory.nativePath;
@@ -131,10 +152,13 @@ class SharedObject extends EventDispatcher
 
       return path;
    }
+   #end
 
    function get_realPath():String 
    {
-      #if (iphone || android)
+      #if (js)
+      return "";
+      #elseif (iphone || android)
       return "";
       #else
       return getFilePath(name,localPath);
@@ -148,7 +172,13 @@ class SharedObject extends EventDispatcher
          localPath = "";
       }
 
-      #if (iphone || android)
+      #if (js)
+         var rawData:String = null;
+         var storage = Browser.getLocalStorage();
+         if (storage != null)
+            rawData = storage.getItem(localPath + ":" + name);
+
+      #elseif (iphone || android)
 
          var rawData:String = untyped nme_get_user_preference(name);
 
@@ -168,9 +198,9 @@ class SharedObject extends EventDispatcher
 
       if (rawData == "" || rawData == null) 
       {
-         loadedData = { };
-
-      } else 
+         // empty
+      }
+      else 
       {
          try 
          {
@@ -178,10 +208,10 @@ class SharedObject extends EventDispatcher
             unserializer.setResolver(cast { resolveEnum: Type.resolveEnum, resolveClass: resolveClass } );
             loadedData = unserializer.unserialize();
 
-         } catch(e:Dynamic) 
+         }
+         catch(e:Dynamic) 
          {
             trace("Could not unserialize SharedObject");
-            loadedData = { };
          }
       }
 
@@ -203,10 +233,10 @@ class SharedObject extends EventDispatcher
    
    public function setProperty(propertyName:String, ?value:Dynamic):Void
    {
-	   if (data != null)
-	   {
-		   Reflect.setField(data, propertyName, value);
-	   }
+      if (data != null)
+      {
+         Reflect.setField(data, propertyName, value);
+      }
    }
 
    // Native Methods

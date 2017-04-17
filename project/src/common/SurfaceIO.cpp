@@ -75,7 +75,7 @@ struct MySrcManager
       MySrcManager *man = (MySrcManager *)cinfo->src;
       man->mUsed = false;
    }
-   static bool my_fill_input_buffer(j_decompress_ptr cinfo)
+   static boolean my_fill_input_buffer(j_decompress_ptr cinfo)
    {
       MySrcManager *man = (MySrcManager *)cinfo->src;
       if (man->mUsed)
@@ -102,7 +102,7 @@ struct MySrcManager
          man->pub.bytes_in_buffer = 2;
       }
    }
-   static bool my_resync_to_restart(j_decompress_ptr cinfo, int desired)
+   static boolean my_resync_to_restart(j_decompress_ptr cinfo, int desired)
    {
       MySrcManager *man = (MySrcManager *)cinfo->src;
       man->mUsed = false;
@@ -213,7 +213,7 @@ struct MyDestManager
 
    static void init_buffer(jpeg_compress_struct* cinfo) {}
 
-   static bool copy_buffer(jpeg_compress_struct* cinfo)
+   static boolean copy_buffer(jpeg_compress_struct* cinfo)
    {
       MyDestManager *man = (MyDestManager *)cinfo->dest;
       man->CopyBuffer( );

@@ -196,7 +196,8 @@ class Surface
    public function nmeDrawToSurface(inSurface:Dynamic, matrix:Matrix, colorTransform:ColorTransform, blendMode:String, clipRect:Rectangle, smoothing:Bool):Void
    {
       // IBitmapDrawable interface...
-      nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendMode, clipRect, smoothing);
+      var blendIndex = 0;
+      nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendIndex, clipRect, smoothing);
    }
    
    private inline function nmeLoadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Void 
@@ -321,7 +322,7 @@ class Surface
    private static var nme_bitmap_data_create_hardware_surface = Loader.load("nme_bitmap_data_create_hardware_surface", 1);
    private static var nme_bitmap_data_destroy_hardware_surface = Loader.load("nme_bitmap_data_destroy_hardware_surface", 1);
    private static var nme_bitmap_data_generate_filter_rect = Loader.load("nme_bitmap_data_generate_filter_rect", 3);
-   private static var nme_render_surface_to_surface = Loader.load("nme_render_surface_to_surface", -1);
+   private static var nme_render_surface_to_surface = nme.PrimeLoader.load("nme_render_surface_to_surface", "ooooiobv");
    private static var nme_bitmap_data_height = Loader.load("nme_bitmap_data_height", 1);
    private static var nme_bitmap_data_width = Loader.load("nme_bitmap_data_width", 1);
    private static var nme_bitmap_data_get_transparent = Loader.load("nme_bitmap_data_get_transparent", 1);

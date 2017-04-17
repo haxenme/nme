@@ -4407,30 +4407,28 @@ value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value in
 DEFINE_PRIM(nme_bitmap_data_flood_fill,4);
 
 
-value nme_render_surface_to_surface(value* arg, int nargs)
+void nme_render_surface_to_surface(value aTarget,value aSurface,value aMatrix,value aColourTransform,int aBlendMode,value aClipRect,bool aSmooth)
 {
-   enum { aTarget, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSmooth, aSIZE};
-
    Surface *surf;
    Surface *src;
-   if (AbstractToObject(arg[aTarget],surf) && AbstractToObject(arg[aSurface],src))
+   if (AbstractToObject(aTarget,surf) && AbstractToObject(aSurface,src))
    {
       Rect r(surf->Width(),surf->Height());
-      if (!val_is_null(arg[aClipRect]))
-         FromValue(r,arg[aClipRect]);
+      if (!val_is_null(aClipRect))
+         FromValue(r,aClipRect);
       AutoSurfaceRender render(surf,r);
 
       Matrix matrix;
-      if (!val_is_null(arg[aMatrix]))
-         FromValue(matrix,arg[aMatrix]);
+      if (!val_is_null(aMatrix))
+         FromValue(matrix,aMatrix);
       RenderState state(surf,4);
       state.mTransform.mMatrix = &matrix;
 
       ColorTransform col_trans;
-      if (!val_is_null(arg[aColourTransform]))
+      if (!val_is_null(aColourTransform))
       {
          ColorTransform t;
-         FromValue(t,arg[aColourTransform]);
+         FromValue(t,aColourTransform);
          state.CombineColourTransform(state,&t,&col_trans);
       }
 
@@ -4439,7 +4437,7 @@ value nme_render_surface_to_surface(value* arg, int nargs)
       state.mPhase = rpRender;
 
       Graphics *gfx = new Graphics(0,true);
-      gfx->beginBitmapFill(src,Matrix(),false,val_bool(arg[aSmooth]));
+      gfx->beginBitmapFill(src,Matrix(),false,aSmooth);
       gfx->moveTo(0,0);
       gfx->lineTo(src->Width(),0);
       gfx->lineTo(src->Width(),src->Height());
@@ -4449,13 +4447,9 @@ value nme_render_surface_to_surface(value* arg, int nargs)
       gfx->Render(render.Target(),state);
 
       gfx->DecRef();
-
-
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_render_surface_to_surface);
+DEFINE_PRIME7v(nme_render_surface_to_surface);
 
 
 value nme_bitmap_data_dispose(value inSurface)
