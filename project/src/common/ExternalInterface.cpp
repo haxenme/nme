@@ -3840,6 +3840,15 @@ value nme_bitmap_data_set_flags(value inHandle,value inFlags)
 DEFINE_PRIM(nme_bitmap_data_set_flags,2);
 
 
+value nme_bitmap_data_get_flags(value inHandle)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+      return alloc_int( surface->GetFlags() );
+   return alloc_int(0);
+}
+DEFINE_PRIM(nme_bitmap_data_get_flags,1);
+
 
 value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
 {

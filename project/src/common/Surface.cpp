@@ -1488,8 +1488,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       mTexture->Dirty(r);
 
    PixelFormat convert = pfNone;
-   // TODO - work out when auto-conversion is right
-   if (!HasAlphaChannel(mPixelFormat))
+   if ( !(mFlags & surfFixedPixelFormat) && !HasAlphaChannel(mPixelFormat))
    {
       int n = inRect.w * inRect.h;
       for(int i=0;i<n;i++)
@@ -1525,11 +1524,15 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                dest->r = src->g;
                dest->g = src->r;
                dest->b = src->a;
+               dest++;
+               src++;
             }
          }
          else
+         {
             memcpy(dest, src, r.w*sizeof(ARGB));
-         src+=r.w;
+            src+=r.w;
+         }
       }
       else if (mPixelFormat==pfAlpha)
       {
@@ -1552,6 +1555,8 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                dest->r = src->g;
                dest->g = src->r;
                dest->b = src->a;
+               src++;
+               dest++;
             }
          }
          else

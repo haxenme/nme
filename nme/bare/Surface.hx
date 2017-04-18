@@ -18,6 +18,10 @@ class Surface
    public static var TRANSPARENT = 0x0001;
    public static var HARDWARE = 0x0002;
 
+
+   public static var FLAG_NOREPEAT_NONPOT = 0x0001;
+   public static var FLAG_FIXED_FORMAT = 0x0002;
+
    public static inline var CHANNEL_RED   = 0x0001;
    public static inline var CHANNEL_GREEN = 0x0002;
    public static inline var CHANNEL_BLUE  = 0x0004;
@@ -211,6 +215,12 @@ class Surface
       nme_bitmap_data_set_flags(nmeHandle, inFlags);
    }
 
+   public function getFlags():Int 
+   {
+      return nme_bitmap_data_get_flags(nmeHandle);
+   }
+
+
    public function setPixel(inX:Int, inY:Int, inColour:Int):Void 
    {
       nme_bitmap_data_set_pixel(nmeHandle, inX, inY, inColour);
@@ -316,6 +326,7 @@ class Surface
    private static var nme_bitmap_data_width = Loader.load("nme_bitmap_data_width", 1);
    private static var nme_bitmap_data_get_transparent = Loader.load("nme_bitmap_data_get_transparent", 1);
    private static var nme_bitmap_data_set_flags = Loader.load("nme_bitmap_data_set_flags", 2);
+   private static var nme_bitmap_data_get_flags = Loader.load("nme_bitmap_data_get_flags", 1);
    private static var nme_bitmap_data_encode = Loader.load("nme_bitmap_data_encode", 3);
    private static var nme_bitmap_data_dump_bits = Loader.load("nme_bitmap_data_dump_bits", 1);
    private static var nme_bitmap_data_dispose = Loader.load("nme_bitmap_data_dispose", 1);

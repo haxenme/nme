@@ -42,6 +42,8 @@ class BitmapData extends Surface implements IBitmapDrawable
 
       if (nmeHandle==null)
       {
+         if (inPixelFormat!=-1 || !inTransparent)
+            setFlags( getFlags() | Surface.FLAG_FIXED_FORMAT);
          // Check for embedded resource...
          var className = Type.getClass(this);
          if (Reflect.hasField(className, "resourceName"))

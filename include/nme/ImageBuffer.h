@@ -12,6 +12,7 @@ namespace nme
 enum
 {
    surfNotRepeatIfNonPO2    = 0x0001,
+   surfFixedPixelFormat     = 0x0002,
 };
 
 
