@@ -101,7 +101,7 @@ class PathHelper
 
    static var libMap = new Map<String,String>();
 
-   public static function getHaxelibPath(inNameVersion:String)
+   public static function getHaxelibPath(inNameVersion:String) : Array<String>
    {
       var result = new Array<String>();
 
@@ -117,7 +117,11 @@ class PathHelper
 
       } catch(e:Dynamic) { };
 
+      var code = proc.exitCode();
       proc.close();
+
+      if (code!=0)
+         return [];
 
       return result;
    }
@@ -199,7 +203,11 @@ class PathHelper
                }
             }
          } catch(e:Dynamic) { };
+
+         var code = proc.exitCode();
          proc.close();
+         if (code!=0)
+            result = "";
       }
 
       if (result == "") 
