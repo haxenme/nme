@@ -662,9 +662,18 @@ class NMEProject
          }
          else
          {
-            Log.verbose("Using default native swf handler");
-            libraryHandlers.set("SWF","format.swf.SWFLibrary");
-            addLib("swf");
+            if (findHaxelib("swf")!=null)
+            {
+               Log.verbose("Using swf haxelib native swf handler");
+               libraryHandlers.set("SWF","format.swf.SWFLibrary");
+            }
+            else if (findHaxelib("gm2d")!=null)
+            {
+               Log.verbose("Using gm2d haxelib native swf handler");
+               libraryHandlers.set("SWF","gm2d.swf.SWFLibrary");
+            }
+            else
+               Log.verbose("No swf libraryHandlers set - getMovieClip may not work");
          }
       }
 

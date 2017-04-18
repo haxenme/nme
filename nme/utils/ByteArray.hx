@@ -54,6 +54,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
    #if jsprime
    private var ptr:Null<Int> = null;
+   public var byteView:js.html.Uint8Array;
    #end
 
    #if (js||neko)
@@ -101,7 +102,18 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
     
    #if jsprime
-   function onBufferChanged() { }
+   function onBufferChanged() {
+      if (ptr>0)
+      {
+         var offset = ByteArray.nme_buffer_offset(ptr);
+         byteView = new js.html.Uint8Array(untyped Module.HEAP8.buffer, offset,alloced);
+      }
+      else
+      {
+         var buffer = b;
+         byteView = new js.html.Uint8Array(b.buffer,0,alloced);
+      }
+   }
 
    @:keep
    public function realize() {
@@ -110,7 +122,6 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       var heap:js.html.Uint8Array = untyped Module.HEAP8;
       heap.set(b,offset);
       b = null;
-      data = null;
       onBufferChanged();
    }
    static var nme_create_buffer = nme.PrimeLoader.load("nme_create_buffer","ii");
@@ -125,6 +136,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       // No bounds checking is done in the cpp case
       #if cpp
       return untyped b[pos];
+      #elseif jsprime
+      return byteView[pos];
       #else
       return get(pos);
       #end
@@ -157,6 +170,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       // No bounds checking is done in the cpp case
       #if cpp
       untyped b[pos] = v;
+      #elseif jsprime
+      byteView[pos] = v;
       #else
       set(pos, v);
       #end
@@ -205,8 +220,6 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
          #if jsprime
             alloced = length = nme_zip_encode(src);
-            b = null;
-            data = null;
             onBufferChanged();
          #elseif enable_deflate
             result = Compress.run(src, 8, windowBits);
@@ -246,7 +259,6 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
                if (ptr>0)
                {
                   nme_resize_buffer(ptr,alloced);
-                  b = null;
                }
                else // fallthrough
             #end
@@ -318,6 +330,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       
       #if (neko||js)
       alloced = length;
+      #if jsprime
+         ptr = null;
+         onBufferChanged();
+      #end
       #end
    }
 
@@ -344,13 +360,16 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          outData.ensureElem(inOffset + inLen - 1, true);
 
       #if neko
-      outData.blit(inOffset, this, position, inLen);
+         outData.blit(inOffset, this, position, inLen);
+      #elseif jsprime
+         var src = byteView.subarray(position,position+inLen);
+         outData.byteView.set( src, inOffset);
       #else
-      var b1 = b;
-      var b2 = outData.b;
-      var p = position;
-      for(i in 0...inLen)
-         b2[inOffset + i] = b1[p + i];
+         var b1 = b;
+         var b2 = outData.b;
+         var p = position;
+         for(i in 0...inLen)
+            b2[inOffset + i] = b1[p + i];
       #end
 
       position += inLen;
@@ -559,7 +578,6 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          #if jsprime
             alloced = length = nme_zip_decode(src);
             b = null;
-            data = null;
             onBufferChanged();
          #elseif enable_deflate
             result = Uncompress.run(src, null, windowBits);

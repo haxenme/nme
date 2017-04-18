@@ -1512,6 +1512,7 @@ void SimpleSurface::getColorBoundsRect(int inMask, int inCol, bool inFind, Rect 
 
 void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inIgnoreOrder, bool inLittleEndian)
 {
+
    if (!mBase)
       return;
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));

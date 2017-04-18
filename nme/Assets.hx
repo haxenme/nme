@@ -433,13 +433,10 @@ class Assets
 
       var font = 
          #if (flash || (js &&!jsprime) )
-         if (i.className!=null)
-            cast(Type.createInstance(Type.resolveClass(i.className),[]), Font)
-         else
+            cast(Type.createInstance(Type.resolveClass(i.className),[]), Font);
          #else
-            new Font(i.path,null,null,id)
+            new Font(i.path,null,null,id);
          #end
-      ;
 
       trySetCache(i,useCache,font);
 
