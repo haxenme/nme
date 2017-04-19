@@ -387,7 +387,7 @@ public:
                   x0, y0,
                   dw, dh,
                   pixel_format, channel,
-                  mSurface->Row(y0) + x0 );
+                  mSurface->Row(y0) + x0*pw );
                #ifndef NME_GLES
                glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
                #endif
