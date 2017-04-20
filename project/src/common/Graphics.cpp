@@ -390,14 +390,20 @@ void Graphics::moveTo(float x, float y)
    OnChanged();
 }
 
+#ifdef EMSCRIPTEN
+#define EPSILON 0.0001
+#else
+#define EPSILON 0.00001
+#endif
+
 void Graphics::curveTo(float cx, float cy, float x, float y)
 {
    if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
         (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
      mPathData->initPosition(mCursor);
 
-   if ( (fabs(mCursor.x-cx)<0.00001 && fabs(mCursor.y-cy)<0.00001) ||
-        (fabs(x-cx)<0.00001 && fabs(y-cy)<0.00001)  )
+   if ( (fabs(mCursor.x-cx)<EPSILON && fabs(mCursor.y-cy)<EPSILON) ||
+        (fabs(x-cx)<EPSILON && fabs(y-cy)<EPSILON)  )
    {
       mPathData->lineTo(x,y);
    }
