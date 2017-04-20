@@ -37,7 +37,6 @@
 #include <nme/NmeApi.h>
 
 
-
 #ifdef min
 #undef min
 #undef max
@@ -2667,28 +2666,27 @@ DEFINE_PRIM(nme_gfx_line_bitmap_fill,5);
 
 
 
-void nme_gfx_begin_set_gradient_fill(value *arg, int args, bool inForSolid)
+void nme_gfx_begin_set_gradient_fill(
+      value aGfx,  int aType, value aColors, value aAlphas, value aRatios, value aMatrix,
+        int aSpreadMethod, int aInterpMethod, double aFocal, bool inForSolid)
 {
-   enum { aGfx, aType, aColors, aAlphas, aRatios, aMatrix, aSpreadMethod, aInterpMethod,
-          aFocal, aSIZE };
-
    Graphics *gfx;
-   if (AbstractToObject(arg[aGfx],gfx))
+   if (AbstractToObject(aGfx,gfx))
    {
       CHECK_ACCESS("nme_gfx_begin_set_gradient_fill");
       Matrix matrix;
-      FromValue(matrix,arg[aMatrix]);
-      GraphicsGradientFill *grad = new GraphicsGradientFill(val_int(arg[aType]), 
+      FromValue(matrix,aMatrix);
+      GraphicsGradientFill *grad = new GraphicsGradientFill(aType, 
          matrix,
-         (SpreadMethod)val_int( arg[aSpreadMethod]),
-         (InterpolationMethod)val_int( arg[aInterpMethod]),
-         val_number( arg[aFocal] ) );
-      int n = std::min( val_array_size(arg[aColors]),
-           std::min(val_array_size(arg[aAlphas]), val_array_size(arg[aRatios]) ) );
+         (SpreadMethod)aSpreadMethod,
+         (InterpolationMethod)aInterpMethod,
+         aFocal);
+      int n = std::min( val_array_size(aColors),
+           std::min(val_array_size(aAlphas), val_array_size(aRatios) ) );
       for(int i=0;i<n;i++)
-         grad->AddStop( val_int( val_array_i( arg[aColors], i ) ),
-                        val_number( val_array_i( arg[aAlphas], i ) ),
-                        val_number( val_array_i( arg[aRatios], i ) )/255.0 );
+         grad->AddStop( val_int( val_array_i( aColors, i ) ),
+                        val_number( val_array_i( aAlphas, i ) ),
+                        val_number( val_array_i( aRatios, i ) )/255.0 );
 
       grad->setIsSolidStyle(inForSolid);
       grad->IncRef();
@@ -2696,23 +2694,7 @@ void nme_gfx_begin_set_gradient_fill(value *arg, int args, bool inForSolid)
       grad->DecRef();
    }
 }
-
-value nme_gfx_begin_gradient_fill(value *arg, int args)
-{
-   CHECK_ACCESS("nme_gfx_begin_gradient_fill");
-   nme_gfx_begin_set_gradient_fill(arg,args, true);
-   return alloc_null();
-}
-DEFINE_PRIM_MULT(nme_gfx_begin_gradient_fill)
-
-value nme_gfx_line_gradient_fill(value *arg, int args)
-{
-   CHECK_ACCESS("nme_gfx_line_gradient_fill");
-   nme_gfx_begin_set_gradient_fill(arg,args, false);
-   return alloc_null();
-}
-DEFINE_PRIM_MULT(nme_gfx_line_gradient_fill)
-
+DEFINE_PRIME10v(nme_gfx_begin_set_gradient_fill)
 
 
 value nme_gfx_end_fill(value inGfx)

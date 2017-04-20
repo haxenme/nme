@@ -22,20 +22,20 @@ bool gNmeNativeFonts = true;
 
 // --- CFFI font delegates to haxe to get the glyphs -----
 
-static int _id_bold;
-static int _id_name;
-static int _id_italic;
-static int _id_height;
-static int _id_ascent;
-static int _id_descent;
-static int _id_isRGB;
+static int _id_bold=0;
+static int _id_name=0;
+static int _id_italic=0;
+static int _id_height=0;
+static int _id_ascent=0;
+static int _id_descent=0;
+static int _id_isRGB=0;
 
-static int _id_getGlyphInfo;
-static int _id_renderGlyphInternal;
-static int _id_width;
-static int _id_advance;
-static int _id_offsetX;
-static int _id_offsetY;
+static int _id_getGlyphInfo=0;
+static int _id_renderGlyphInternal=0;
+static int _id_width=0;
+static int _id_advance=0;
+static int _id_offsetX=0;
+static int _id_offsetY=0;
 
 class CFFIFont : public FontFace
 {
@@ -115,7 +115,7 @@ value nme_font_set_factory(value inFactory)
       _id_renderGlyphInternal = val_id("renderGlyphInternal");
       _id_width = val_id("width");
       _id_advance = val_id("advance");
-      _id_offsetX = val_id("offset_x");
+      _id_offsetX = val_id("offsetX");
       _id_offsetY = val_id("offsetY");
    }
    return alloc_null();

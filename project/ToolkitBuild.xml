@@ -171,6 +171,7 @@
       <depend name="../include/nme/QuickVec.h" />
       <depend name="../include/nme/Rect.h" />
       <depend name="../include/nme/Texture.h" />
+      <depend name="../include/nme/NmeJsPrime.h" />
 
       <depend name="${HXCPP}/include/hx/CFFI.h"/>
       <depend name="${HXCPP}/include/hx/CFFIAPI.h"/>

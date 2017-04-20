@@ -15,6 +15,7 @@ typedef int vkind;
 extern IdMap sIdMap;
 extern IdMap sKindMap;
 extern std::vector<value> sIdKeys;
+extern std::vector<const char *> sIdKeyNames;
 
 // emscripten will perform these checks
 #define val_check_kind(v,t)
@@ -31,6 +32,7 @@ inline int val_id(const char *inName)
       int result = sIdMap.size();
       sIdMap[inName] = result;
       sIdKeys.push_back(value(inName));
+      sIdKeyNames.push_back(inName);
       return result;
    }
    return id->second;
@@ -222,20 +224,18 @@ inline value val_callN(value func,value *args,int count)
 // Call object field
 inline value val_ocall0(value obj,int fieldId)
 {
-   value func = obj[sIdKeys[fieldId]];
-   return func();
+   return obj.call<value>(sIdKeyNames[fieldId]);
 }
 inline value val_ocall1(value obj,int fieldId,value arg0)
 {
-   value func = obj[sIdKeys[fieldId]];
-   return func(arg0);
+   return obj.call<value>(sIdKeyNames[fieldId],arg0);
 }
 inline value val_ocall2(value obj,int fieldId,value arg0,value arg1)
 {
-   value func = obj[sIdKeys[fieldId]];
-   return func(arg0,arg1);
+   return obj.call<value>(sIdKeyNames[fieldId],arg0,arg1);
 }
 
+/*
 inline value val_ocallN(value obj,int fieldId,value *args,int count)
 {
    value func = obj[sIdKeys[fieldId]];
@@ -256,8 +256,8 @@ inline value val_ocallN(value obj,int fieldId,value *args,int count)
    }
    hx_fail("Too many args",__FILE__,__LINE__);
    return alloc_null();
-
 }
+*/
 
 //int val_type(value inObject) { value = inObject.typeof(); }
 

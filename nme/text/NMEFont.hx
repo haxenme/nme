@@ -3,14 +3,10 @@ package nme.text;
 
 import nme.display.BitmapData;
 
-#if haxe3
-typedef Hash<T> = haxe.ds.StringMap<T>;
-#end
-
 @:nativeProperty
 class NMEFont 
 {
-   static var factories = new Hash<NMEFontFactory>();
+   static var factories:Map<String,NMEFontFactory>;
 
    var height:Int;
    var ascent:Int;
@@ -27,6 +23,9 @@ class NMEFont
 
    static function createFont(inDef:NMEFontDef):NMEFont 
    {
+      if (factories==null)
+         return null;
+
       if (factories.exists(inDef.name))
          return factories.get(inDef.name)(inDef);
 
@@ -36,16 +35,21 @@ class NMEFont
    // Implementation should override
    public function getGlyphInfo(inChar:Int):NMEGlyphInfo 
    {
-      trace("getGlyphInfo");
+      trace("getGlyphInfo - not implemented");
       return null;
    }
 
    static public function registerFont(inName:String, inFactory:NMEFontFactory) 
    {
-      factories.set(inName, inFactory);
 
-      var register = Loader.load("nme_font_set_factory", 1);
-      register(createFont);
+      if (factories==null)
+      {
+         factories = new Map<String,NMEFontFactory>();
+         var register = Loader.load("nme_font_set_factory", 1);
+         register(createFont);
+      }
+
+      factories.set(inName, inFactory);
    }
 
    // Implementation should override

@@ -48,7 +48,7 @@ class Graphics
          matrix.createGradientBox(200, 200, 0, -100, -100);
       }
 
-      nme_gfx_begin_gradient_fill(nmeHandle, Type.enumIndex(type), colors, alphas, ratios, matrix, spreadMethod == null ? 0 : Type.enumIndex(spreadMethod), interpolationMethod == null ? 0 : Type.enumIndex(interpolationMethod), focalPointRatio);
+      nme_gfx_begin_set_gradient_fill(nmeHandle, Type.enumIndex(type), colors, alphas, ratios, matrix, spreadMethod == null ? 0 : Type.enumIndex(spreadMethod), interpolationMethod == null ? 0 : Type.enumIndex(interpolationMethod), focalPointRatio, true);
    }
 
    public function clear() 
@@ -153,7 +153,7 @@ class Graphics
          matrix.createGradientBox(200, 200, 0, -100, -100);
       }
 
-      nme_gfx_line_gradient_fill(nmeHandle, Type.enumIndex(type), colors, alphas, ratios, matrix, spreadMethod == null ? 0 : Type.enumIndex(spreadMethod), interpolationMethod == null ? 0 : Type.enumIndex(interpolationMethod), focalPointRatio);
+      nme_gfx_begin_set_gradient_fill(nmeHandle, Type.enumIndex(type), colors, alphas, ratios, matrix, spreadMethod == null ? 0 : Type.enumIndex(spreadMethod), interpolationMethod == null ? 0 : Type.enumIndex(interpolationMethod), focalPointRatio, false);
    }
 
    public function lineStyle(?thickness:Null<Float>, color:Int = 0, alpha:Float = 1.0, pixelHinting:Bool = false, ?scaleMode:LineScaleMode, ?caps:CapsStyle, ?joints:JointStyle, miterLimit:Float = 3):Void 
@@ -185,8 +185,7 @@ class Graphics
    private static var nme_gfx_begin_fill = Loader.load("nme_gfx_begin_fill", 3);
    private static var nme_gfx_begin_bitmap_fill = Loader.load("nme_gfx_begin_bitmap_fill", 5);
    private static var nme_gfx_line_bitmap_fill = Loader.load("nme_gfx_line_bitmap_fill", 5);
-   private static var nme_gfx_begin_gradient_fill = Loader.load("nme_gfx_begin_gradient_fill", -1);
-   private static var nme_gfx_line_gradient_fill = Loader.load("nme_gfx_line_gradient_fill", -1);
+   private static var nme_gfx_begin_set_gradient_fill = nme.PrimeLoader.load("nme_gfx_begin_set_gradient_fill", "oiooooiidbv");
    private static var nme_gfx_end_fill = Loader.load("nme_gfx_end_fill", 1);
    private static var nme_gfx_line_style = nme.PrimeLoader.load("nme_gfx_line_style", "ooidbiiidv" );
    private static var nme_gfx_move_to = Loader.load("nme_gfx_move_to", 3);
