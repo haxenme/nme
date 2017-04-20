@@ -34,6 +34,8 @@ nme.n
 tests/RunAll.n
 tests/import-all
 out.txt
+#binaries - not for committing
+ndll
 
 # Miscellaneous
 all_objs

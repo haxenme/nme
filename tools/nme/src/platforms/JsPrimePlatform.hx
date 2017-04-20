@@ -34,6 +34,8 @@ class JsPrimePlatform extends Platform
 
    override public function copyBinary():Void 
    {
+      PathHelper.mkdir(getOutputDir());
+
       var src = haxeDir + "/ApplicationMain.js";
 
       FileHelper.copyFile(src, getOutputDir());

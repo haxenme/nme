@@ -3246,8 +3246,7 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
       if (flags & TILE_ALPHA)
          components++;
 
-
-      int n = val_int(inDataSize);
+      int n = val_is_null(inDataSize) ? -1 : val_int(inDataSize);
       buffer buf = 0;
       if (n < 0)
       {
