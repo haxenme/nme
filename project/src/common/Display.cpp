@@ -1315,7 +1315,7 @@ void DisplayObjectContainer::Render( const RenderTarget &inTarget, const RenderS
                obj_state->mPhase = phase;
                }
 
-               bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,old_pow2,true);
+               bitmap = FilterBitmap(filters,bitmap,render_to,visible_bitmap,false/*old_pow2*/,true);
 
                full = orig;
                obj->SetBitmapCache(

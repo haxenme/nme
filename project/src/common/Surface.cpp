@@ -123,6 +123,7 @@ bool SimpleSurface::ReinterpretPixelFormat(PixelFormat inNewFormat)
    return true;
 }
 
+
 void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *inIgnore)
 {
    if (!mBase || inNewFormat==mPixelFormat)
@@ -148,10 +149,14 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
    // Convert in-situ
    if (newFormat==pfRGBPremA && mPixelFormat==pfBGRA)
    {
+      int x1 = inIgnore ? std::min(mWidth,inIgnore->x) : mWidth;
+      int x2 = inIgnore ? std::min(mWidth,inIgnore->x+inIgnore->w) : mWidth;
       for(int y=0;y<mHeight;y++)
       {
+         if (inIgnore && (y>=inIgnore->y && y<inIgnore->y+inIgnore->h))
+            continue;
          BGRPremA *bgra = (BGRPremA *)Row(y);
-         for(int x=0;x<mWidth;x++)
+         for(int x=0;x<x1;x++)
          {
             const uint8 *prem = gPremAlphaLut[bgra->a];
             bgra->b = prem[bgra->b];
@@ -159,16 +164,32 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
             bgra->r = prem[bgra->r];
             bgra++;
          }
+
+         bgra = (BGRPremA *)Row(y) + x2;
+         for(int x=x2;x<mWidth;x++)
+         {
+            const uint8 *prem = gPremAlphaLut[bgra->a];
+            bgra->b = prem[bgra->b];
+            bgra->g = prem[bgra->g];
+            bgra->r = prem[bgra->r];
+            bgra++;
+         }
+
       }
+      mPixelFormat = newFormat;
       return;
    }
 
-   if (newFormat==pfRGBA && mPixelFormat==pfBGRPremA)
+   if (newFormat==pfBGRA && mPixelFormat==pfBGRPremA)
    {
+      int x1 = inIgnore ? std::min(mWidth,inIgnore->x) : mWidth;
+      int x2 = inIgnore ? std::min(mWidth,inIgnore->x+inIgnore->w) : mWidth;
       for(int y=0;y<mHeight;y++)
       {
+         if (inIgnore && (y>=inIgnore->y && y<inIgnore->y+inIgnore->h))
+            continue;
          BGRPremA *bgra = (BGRPremA *)Row(y);
-         for(int x=0;x<mWidth;x++)
+         for(int x=0;x<x1;x++)
          {
             const uint8 *unprem = gUnPremAlphaLut[bgra->a];
             bgra->b = unprem[bgra->b];
@@ -176,7 +197,18 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
             bgra->r = unprem[bgra->r];
             bgra++;
          }
+         bgra = (BGRPremA *)Row(y) + x2;
+         for(int x=x2;x<mWidth;x++)
+         {
+            const uint8 *unprem = gUnPremAlphaLut[bgra->a];
+            bgra->b = unprem[bgra->b];
+            bgra->g = unprem[bgra->g];
+            bgra->r = unprem[bgra->r];
+            bgra++;
+         }
+
       }
+      mPixelFormat = newFormat;
       return;
    }
 

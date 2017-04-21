@@ -150,9 +150,9 @@ void BlurRow(const BGRA<PREM> *inSrc, int inDS, int inSrcW, int inFilterLeft,
       }
       else
       {
-         dest->r = sr/sa;
-         dest->g = sg/sa;
-         dest->b = sb/sa;
+         dest->r = (sr*255)/sa;
+         dest->g = (sg*255)/sa;
+         dest->b = (sb*255)/sa;
          dest->a = sa/inFilterSize;
       }
 
@@ -678,10 +678,10 @@ Surface *FilterBitmap( const FilterList &inFilters, Surface *inBitmap,
          int w = bmp->Width();
          int h = bmp->Height();
          Surface *converted = new SimpleSurface(w,h,pfBGRA);
+         converted->IncRef();
          PixelConvert(w,h, bmp->Format(), bmp->Row(0), bmp->GetStride(), 0,
                            pfBGRA, converted->EditRect(0,0,w,h), converted->GetStride(), 0 );
          bmp->DecRef();
-         converted->IncRef();
          bmp = converted;
       }
    }

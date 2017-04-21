@@ -7,6 +7,8 @@ ThreadId GetThreadId()
 {
    #ifdef HX_WINDOWS
    return GetCurrentThreadId();
+   #elif defined(EMSCRIPTEN)
+   return 0;
    #else
    return pthread_self();
    #endif

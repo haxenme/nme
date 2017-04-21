@@ -37,7 +37,7 @@ namespace nme
 
 bool gC0IsRed = true;
 
-#ifdef NME_ANGLE
+#if defined(NME_ANGLE) || defined(EMSCRIPTEN)
 #define FORCE_NON_PO2
 #endif
 
@@ -250,6 +250,14 @@ public:
       if (copy_required)
       {
          buffer = (uint8 *)malloc(pw * mTextureWidth * mTextureHeight);
+         int extraX =  mTextureWidth - mPixelWidth;
+         if (extraX)
+            for(int y=0;y<mPixelHeight;y++)
+               memset( buffer + (mTextureWidth*y+mPixelWidth)*pw, 0, pw*extraX);
+         int extraY = mTextureHeight-mPixelHeight;
+         if (extraY)
+            memset( buffer + mTextureWidth*mPixelHeight*pw, 0, pw*mTextureWidth*extraY);
+
          PixelConvert( mPixelWidth, mPixelHeight,
               fmt, mSurface->GetBase(), mSurface->GetStride(), mSurface->GetPlaneOffset(),
               buffer_format, buffer, mTextureWidth*pw, pw*mTextureWidth*mTextureHeight );
