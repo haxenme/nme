@@ -66,11 +66,7 @@ public:
       mContextId = gTextureContextVersion;
       mQuadsBuffer = 0;
       mFullTexCoordsBuffer = 0;
-      #if defined(NME_GLES)
-      mQuality = sqLow;
-      #else
       mQuality = sqBest;
-      #endif
 
       for(int i=0;i<PROG_COUNT;i++)
          mProg[i] = 0;
