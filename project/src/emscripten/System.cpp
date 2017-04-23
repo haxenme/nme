@@ -42,6 +42,7 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
 
 	double CapabilitiesGetScreenDPI()
    {
+      #ifdef HXCPP_JS_PRIME
       value v = value::global("window")["devicePixelRatio"];
       if (v.isUndefined())
       {
@@ -54,6 +55,9 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
          //printf("Got actual dpi %f\n", dpi);
          return pixelScale*120.0;
       }
+      #else
+      return 120;
+      #endif
 	}
 	
 

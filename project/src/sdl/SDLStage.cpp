@@ -101,7 +101,11 @@ int initSDL () {
         PDL_Init(0);
    #endif
    
+   #ifdef EMSCRIPTEN
+   int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_TIMER);
+   #else
    int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
+   #endif
    
    #if HX_WINDOWS
       init_win32();
@@ -377,7 +381,6 @@ public:
          }
  
          mSDLSurface = SDL_SetVideoMode(inWidth, inHeight, 32, mFlags);
-         printf("SetVideoMode %dx%d\n", inWidth, inHeight);
   
          if (mIsOpenGL)
          {
@@ -812,13 +815,6 @@ int SDLKeyToFlash(int inKey,bool &outRight)
                inKey==SDLK_RALT || inKey==SDLK_RMETA || inKey==SDLK_RSUPER);
    if (inKey>=keyA && inKey<=keyZ)
       return inKey;
-   if (inKey>=SDLK_0 && inKey<=SDLK_9)
-      return inKey - SDLK_0 + keyNUMBER_0;
-   if (inKey>=SDLK_KP0 && inKey<=SDLK_KP9)
-      return inKey - SDLK_KP0 + keyNUMPAD_0;
-
-   if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
-      return inKey - SDLK_F1 + keyF1;
 
 
    switch(inKey)
@@ -867,6 +863,15 @@ int SDLKeyToFlash(int inKey,bool &outRight)
       SDL_TRANS(TAB)
       SDL_TRANS(UP)
    }
+
+   if (inKey>=SDLK_0 && inKey<=SDLK_9)
+      return inKey - SDLK_0 + keyNUMBER_0;
+
+   if (inKey>=SDLK_KP0 && inKey<=SDLK_KP9)
+      return inKey - SDLK_KP0 + keyNUMPAD_0;
+
+   if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
+      return inKey - SDLK_F1 + keyF1;
 
    return inKey;
 }
@@ -1531,6 +1536,7 @@ void StartAnimation()
    emscripten_get_element_css_size("canvas", &w, &h);
    if (sgDeviceDpi==0.0)
    {
+      #ifdef HXCPP_JS_PRIME
       value v = value::global("window")["devicePixelRatio"];
       if (v.isUndefined())
       {
@@ -1540,6 +1546,9 @@ void StartAnimation()
       {
          sgDeviceDpi = v.as<double>();
       }
+      #else
+      sgDeviceDpi = 1.0;
+      #endif
    }
    int cw = w*sgDeviceDpi;
    int ch = h*sgDeviceDpi;
