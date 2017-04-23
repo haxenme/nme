@@ -6,6 +6,7 @@ import sys.io.File;
 import sys.FileSystem;
 import NMEProject;
 import platforms.Platform;
+import AlphaMode;
 
 using StringTools;
 
@@ -241,6 +242,27 @@ class NMMLParser
       new NMMLParser(watchOs, extensionPath, false, element);
    }
 
+
+   function getElementAlpha(element:Fast, inDefault:AlphaMode)
+   {
+      if (element.has.alpha)
+      {
+         var a = substitute(element.att.alpha).toLowerCase();
+         switch(a)
+         {
+            case "premultiplied": return AlphaIsPremultiplied;
+            case "postprocess": return AlphaPostprocess;
+            case "preprocess": return AlphaPreprocess;
+            case "default": return inDefault;
+            default:
+               throw "Invalid alpha mode : should be premultiplied/postprocess/preprocess/default";
+         }
+      }
+      return inDefault;
+   }
+
+
+
    private function parseAssetsElement(element:Fast, basePath:String = ""):Void 
    {
       var path = basePath;
@@ -269,6 +291,8 @@ class NMMLParser
          else
             targetPath = "";
       }
+
+      var assetsAlpha = getElementAlpha(element,AlphaDefault);
 
       path = project.relocatePath(path);
 
@@ -310,7 +334,7 @@ class NMMLParser
             if (element.has.id) 
                id = substitute(element.att.id);
 
-            var asset = new Asset(path, targetPath, type, embed);
+            var asset = new Asset(path, targetPath, type, embed, assetsAlpha);
             asset.setId(id);
 
             if (glyphs != null) 
@@ -361,7 +385,7 @@ class NMMLParser
                }
             }
 
-            parseAssetsElementDirectory(path, targetPath, include, exclude, type, embed, glyphs, recurse);
+            parseAssetsElementDirectory(path, targetPath, include, exclude, type, embed, assetsAlpha, glyphs, recurse);
          }
       }
       else
@@ -383,6 +407,8 @@ class NMMLParser
                var childEmbed = embed;
                var childType = type;
                var childGlyphs = glyphs;
+
+               var childAlpha = getElementAlpha(childElement, assetsAlpha);
 
                if (childElement.has.rename) 
                   childTargetPath = childElement.att.rename;
@@ -411,7 +437,7 @@ class NMMLParser
                   id = substitute(childElement.att.name);
 
 
-               var asset = new Asset(path + childPath, targetPath + childTargetPath, childType, childEmbed);
+               var asset = new Asset(path + childPath, targetPath + childTargetPath, childType, childEmbed, childAlpha);
                asset.setId(id);
 
                if (childGlyphs != null) 
@@ -423,7 +449,7 @@ class NMMLParser
       }
    }
 
-   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:Bool, glyphs:String, recursive:Bool):Void 
+   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:Bool, assetsAlpha:AlphaMode, glyphs:String, recursive:Bool):Void 
    {
       var files = FileSystem.readDirectory(path);
 
@@ -435,13 +461,13 @@ class NMMLParser
          if (FileSystem.isDirectory(path + "/" + file) && recursive) 
          {
             if (filter(file, [ "*" ], exclude.split("|"))) 
-               parseAssetsElementDirectory(path + "/" + file, targetPath + file, include, exclude, type, embed, glyphs, true);
+               parseAssetsElementDirectory(path + "/" + file, targetPath + file, include, exclude, type, embed, assetsAlpha, glyphs, true);
          }
          else
          {
             if (filter(file, include.split("|"), exclude.split("|"))) 
             {
-               var asset = new Asset(path + "/" + file, targetPath + file, type, embed);
+               var asset = new Asset(path + "/" + file, targetPath + file, type, embed, assetsAlpha);
 
                if (glyphs != null) 
                   asset.glyphs = glyphs;

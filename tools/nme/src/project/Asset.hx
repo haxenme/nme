@@ -1,8 +1,4 @@
-package;
-
 import haxe.io.Path;
-
-
 
 
 class Asset 
@@ -21,17 +17,19 @@ class Asset
    public var targetPath:String;
    public var flashClass:String;
    public var className:String;
+   public var alphaMode:AlphaMode;
    public var type:AssetType;
    public var isSound:Bool;
    public var isMusic:Bool;
    public var isImage:Bool;
    public var isLibrary:Bool;
 
-   public function new(path:String = "", rename:String = "", inType:AssetType, inEmbed:Bool) 
+   public function new(path:String = "", rename:String = "", inType:AssetType, inEmbed:Bool, ?inAlphaMode:AlphaMode) 
    {
       embed = inEmbed;
       isResource = embed;
       sourcePath = path;
+      alphaMode = inAlphaMode==null ? AlphaDefault : inAlphaMode;
 
       if (rename == "") 
          targetPath = path;

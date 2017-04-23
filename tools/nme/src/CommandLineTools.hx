@@ -12,6 +12,8 @@ import nme.Loader;
 import nme.net.SharedObject;
 import nme.script.Client;
 import NMEProject;
+import AlphaMode;
+
 using StringTools;
 
 
