@@ -465,6 +465,11 @@ void nmeRegisterFont(const std::string &inName, FontBuffer inData)
    sgRegisteredFonts[inName] = inData;
 }
 
+FontBuffer nmeGetRegisteredFont(const std::string &inName)
+{
+   return sgRegisteredFonts[inName];
+}
+
 value nme_font_register_font(value inFontName, value inBytes)
 {
    std::string name = valToStdString(inFontName);

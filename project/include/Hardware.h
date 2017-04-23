@@ -89,6 +89,8 @@ public:
 
 };
 
+typedef float Trans4x4[4][4];
+
 class HardwareRenderer : public HardwareContext
 {
 public:
@@ -114,9 +116,7 @@ public:
 
 
    virtual void Render(const RenderState &inState, const HardwareData &inData )=0;
-   virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0,bool inRepeat=true,bool inSmooth=true)=0;
-   virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
-   virtual void EndBitmapRender()=0;
+   virtual void RenderData(const HardwareData &inData, const ColorTransform *ctrans,const Trans4x4 &inTrans)=0;
 
    virtual void BeginDirectRender()=0;
    virtual void EndDirectRender()=0;

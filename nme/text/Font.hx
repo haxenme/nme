@@ -11,15 +11,19 @@ import nme.Loader;
 class Font 
 {
    public var fontName(default, null):String;
-   public var fontStyle(default, null):FontStyle;
+   public var fontStyle(get, never):FontStyle;
    public var fontType(default, null):FontType;
    public static var useNative(get, set):Bool;
    
-   private static var nmeRegisteredFonts = new Array<Font>();
+   private var knownFontStyle:FontStyle;
+
+   private static var nmeRegisteredFonts = new Map<String,Font>();
    private static var nmeDeviceFonts: Array<Font>;
 
    public function new(inFilename:String = "", ?inStyle:FontStyle, ?inType:FontType, ?resourceName:String,?id:String ):Void 
    {
+      knownFontStyle = inStyle;
+
       if (inFilename == "")
       {
          var fontClass = Type.getClass(this);
@@ -28,54 +32,77 @@ class Font
                     null;
          if (name!=null)
          {
-            var bytes = ByteArray.fromBytes(Resource.getBytes(name));
-            var details:NativeFontData = freetype_import_font("", null, 0, bytes);
-
-            fontName = id==null ? details.family_name : id;
-            if (details.is_bold && details.is_italic)
+            fontName = id;
+            var existing = nmeRegisteredFonts.get(fontName);
+            if (existing!=null)
             {
-               fontStyle = FontStyle.BOLD_ITALIC;
-            }
-            else if (details.is_bold)
-            {
-               fontStyle = FontStyle.BOLD;
-            }
-            else if (details.is_italic)
-            {
-               fontStyle = FontStyle.ITALIC;
+               fontType = existing.fontType;
+               knownFontStyle = existing.knownFontStyle;
             }
             else
             {
-               fontStyle = FontStyle.REGULAR;
+               var bytes = ByteArray.fromBytes(Resource.getBytes(name));
+
+               fontType = FontType.EMBEDDED;
+               if (resourceName!=null)
+                  registerFontData(this, bytes);
             }
-            fontType = FontType.EMBEDDED;
-            if (resourceName!=null)
-               registerFontData(this, bytes);
          }
          else
          {
             var className = Type.getClassName(Type.getClass(this));
             fontName = className.split(".").pop();
-            fontStyle = FontStyle.REGULAR;
+            knownFontStyle = FontStyle.REGULAR;
             fontType = FontType.EMBEDDED;
          }
       }
       else
       {
          fontName = inFilename;
-         fontStyle = inStyle==null ? FontStyle.REGULAR : inStyle;
+         knownFontStyle = inStyle==null ? FontStyle.REGULAR : inStyle;
          fontType = inType==null ? FontType.EMBEDDED : inType;
       }
    }
 
+   public function get_fontStyle():FontStyle
+   {
+      if (knownFontStyle==null)
+      {
+         knownFontStyle = FontStyle.REGULAR;
+
+         var details:NativeFontData = freetype_import_font(fontName, null, 0, null);
+         if (details!=null)
+         {
+            if (details.is_bold && details.is_italic)
+            {
+               knownFontStyle = FontStyle.BOLD_ITALIC;
+            }
+            else if (details.is_bold)
+            {
+               knownFontStyle = FontStyle.BOLD;
+            }
+            else if (details.is_italic)
+            {
+               knownFontStyle = FontStyle.ITALIC;
+            }
+        }
+      }
+
+      return knownFontStyle;
+   }
+
+
    public function toString() : String
    {
-      return "{ name=" + fontName + ", style=" + fontStyle + ", type=" + fontType + " }";
+      return "{ name=" + fontName + ", style=" + knownFontStyle + ", type=" + fontType + " }";
    }
    
    public static function enumerateFonts(enumerateDeviceFonts:Bool = false):Array<Font>
    {
-      var result = nmeRegisteredFonts.copy();
+      var result = new Array<Font>();
+      for(key in nmeRegisteredFonts.keys())
+         result.push( nmeRegisteredFonts.get(key) );
+
       if (enumerateDeviceFonts)
       {
          if (nmeDeviceFonts==null)
@@ -85,7 +112,6 @@ class Font
             nme_font_iterate_device_fonts( function(name,style) nmeDeviceFonts.push(new Font(name,styles[style],FontType.DEVICE)) );
          }
          result = result.concat(nmeDeviceFonts);
-         
       }
       return result;
    }
@@ -105,8 +131,11 @@ class Font
  
    public static function registerFontData(instance:Font, inBytes:ByteArray)
    {
+      if (nmeRegisteredFonts.exists(instance.fontName))
+         return;
+
       nme_font_register_font(instance.fontName, inBytes);
-      nmeRegisteredFonts.push(instance);
+      nmeRegisteredFonts.set(instance.fontName,instance);
    }
 
    
@@ -115,10 +144,13 @@ class Font
       var instance = Type.createInstance (font, [ "", null, null ]);
       if (instance != null)
       {
+         if (nmeRegisteredFonts.exists(instance.fontName))
+            return;
+
          if (Reflect.hasField(font, "resourceName"))
             nme_font_register_font(instance.fontName, ByteArray.fromBytes (Resource.getBytes(Reflect.field(font, "resourceName"))));
 
-         nmeRegisteredFonts.push(cast instance);
+         nmeRegisteredFonts.set(instance.fontName, cast instance);
       }
    }
 

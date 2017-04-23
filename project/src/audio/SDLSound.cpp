@@ -42,6 +42,17 @@ void onMusicDone()
       sDoneMusic = true;
 }
 
+#ifdef EMSCRIPTEN
+namespace {
+void Mix_QuerySpec(int *frequency, Uint16 *format, int *channels)
+{
+   *frequency = 44100;
+   *format = 32784;
+   *channels = 2;
+}
+}
+#endif
+
 /*
 extern "C" void music_mixer(void *udata, Uint8 *stream, int len);
 void onMusic(void *udata, Uint8 *stream, int len)

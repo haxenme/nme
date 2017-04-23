@@ -458,6 +458,8 @@ struct Transform
    int            mAAFactor;
 };
 
+class HardwareData;
+
 
 
 class BitmapCache
@@ -492,6 +494,9 @@ public:
    Matrix     mMatrix;
    Scale9     mScale9;
    Surface    *mBitmap;
+
+   HardwareData *mHardwareBuffer;
+   Rect         mLastHardwareSrc;
 
 	ImagePoint mMaskOffset;
 	int        mMaskVersion;
@@ -539,7 +544,6 @@ struct RenderState
 };
 
 
-class HardwareData;
 class HardwareRenderer;
 
 

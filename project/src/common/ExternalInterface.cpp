@@ -4554,10 +4554,11 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic, value i
   // printf("trying bytes with length %d", length);
    if (!val_is_null(inData) && length > 0) {
       ByteArray buf = ByteArray(inData);
-      std::string engine = valToStdString(inEngine,false);
+      std::string engine = val_is_null(inEngine) ? std::string() : valToStdString(inEngine,false);
       //printf("I'm here! trying bytes with length %d", length);
       sound = Sound::FromEncodedBytes(buf.Bytes(), length, val_bool(inForceMusic), engine );
    } else {
+
       val_throw(alloc_string("Empty ByteArray"));
    }
 

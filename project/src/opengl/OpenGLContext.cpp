@@ -12,11 +12,6 @@
 #undef DEFINE_EXTENSION
 #endif
 
-#ifdef NME_S3D
-#include "OpenGLS3D.h"
-#endif
-
-
 
 int sgDrawCount = 0;
 int sgDrawBitmap = 0;
@@ -63,7 +58,6 @@ public:
       mWidth = 0;
       mHeight = 0;
       mLineWidth = -1;
-      mBitmapTexture = 0;
       mLineScaleNormal = -1;
       mLineScaleV = -1;
       mLineScaleH = -1;
@@ -82,22 +76,7 @@ public:
          mProg[i] = 0;
       for(int i=0;i<4;i++)
          for(int j=0;j<4;j++)
-            mBitmapTrans[i][j] = mTrans[i][j] = i==j;
-
-      mBitmapBuffer.mElements.resize(1);
-      DrawElement &e = mBitmapBuffer.mElements[0];
-      memset(&e,0,sizeof(DrawElement));
-      e.mCount = 0;
-      e.mFlags = DRAW_HAS_TEX;
-      e.mPrimType = ptTriangles;
-      e.mVertexOffset = 0;
-      e.mColour = 0xff000000;
-      e.mTexOffset = sizeof(float)*2;
-      e.mStride = sizeof(float)*4;
-      
-      #if defined(NME_S3D) && defined(ANDROID)
-      mS3D.Init ();
-      #endif
+            mTrans[i][j] = i==j;
    }
    ~OGLContext()
    {
@@ -198,10 +177,6 @@ public:
       mHeight = inHeight;
       #ifdef ANDROID
       //__android_log_print(ANDROID_LOG_ERROR, "NME", "SetWindowSize %d %d", inWidth, inHeight);
-      #endif
-      
-      #if defined(NME_S3D) && defined(ANDROID)
-      mS3D.Resize (inWidth, inHeight);
       #endif
    }
 
@@ -719,81 +694,6 @@ public:
    }
 
 
-
-
-   void BeginBitmapRender(Surface *inSurface,uint32 inTint,bool inRepeat,bool inSmooth)
-   {
-      mBitmapBuffer.mArray.resize(0);
-      mBitmapBuffer.mRendersWithoutVbo = -999;
-      DrawElement &e = mBitmapBuffer.mElements[0];
-      e.mCount = 0;
-
-      e.mColour = inTint;
-      if (e.mSurface)
-         e.mSurface->DecRef();
-
-      e.mSurface = inSurface;
-      e.mBlendMode = bmNormal;
-
-      e.mSurface->IncRef();
-      e.mFlags = (e.mFlags & ~(DRAW_BMP_REPEAT|DRAW_BMP_SMOOTH) );
-      if (inRepeat)
-         e.mFlags |= DRAW_BMP_REPEAT;
-      if (inSmooth)
-         e.mFlags |= DRAW_BMP_SMOOTH;
-
-      mBitmapTexture = inSurface->GetTexture(this);
-   }
-
-   void RenderBitmap(const Rect &inSrc, int inX, int inY)
-   {
-      DrawElement &e = mBitmapBuffer.mElements[0];
-      mBitmapBuffer.mArray.resize( (e.mCount+6) * e.mStride );
-      UserPoint *p = (UserPoint *)&mBitmapBuffer.mArray[e.mCount*e.mStride];
-      e.mCount+=6;
-
-      UserPoint corners[4];
-      UserPoint tex[4];
-      for(int i=0;i<4;i++)
-      {
-         corners[i] =  UserPoint(inX + ((i&1)?inSrc.w:0), inY + ((i>1)?inSrc.h:0) ); 
-         tex[i] = mBitmapTexture->PixelToTex(UserPoint(inSrc.x + ((i&1)?inSrc.w:0), inSrc.y + ((i>1)?inSrc.h:0) )); 
-      }
-      *p++ = corners[0];
-      *p++ = tex[0];
-      *p++ = corners[1];
-      *p++ = tex[1];
-      *p++ = corners[2];
-      *p++ = tex[2];
-
-      *p++ = corners[1];
-      *p++ = tex[1];
-      *p++ = corners[2];
-      *p++ = tex[2];
-      *p++ = corners[3];
-      *p++ = tex[3];
-   }
-   
-
-   void EndBitmapRender()
-   {
-      DrawElement &e = mBitmapBuffer.mElements[0];
-
-      if (e.mCount)
-      {
-         RenderData(mBitmapBuffer,0,mBitmapTrans);
-         e.mCount = 0;
-      }
-
-      if (e.mSurface)
-      {
-         e.mSurface->DecRef();
-         e.mSurface = 0;
-      }
-      mBitmapBuffer.mArray.resize(0);
-      mBitmapTexture = 0;
-   }
-
    inline void SetLineWidth(double inWidth)
    {
       if (inWidth!=mLineWidth)
@@ -830,45 +730,11 @@ public:
       mOffsetY = (y0+y1)/(y0-y1);
       mModelView = Matrix();
 
-      mBitmapTrans[0][0] = mScaleX;
-      mBitmapTrans[0][3] = mOffsetX;
-      mBitmapTrans[1][1] = mScaleY;
-      mBitmapTrans[1][3] = mOffsetY;
-
       CombineModelView(mModelView);
    } 
 
    void CombineModelView(const Matrix &inModelView)
    {
-      #ifdef NME_S3D
-      
-      #ifdef ANDROID
-      float eyeOffset = mS3D.GetEyeOffset ();
-      #else
-      float eyeOffset = 0;
-      #endif
-
-      mTrans[0][0] = inModelView.m00 * mScaleX;
-      mTrans[0][1] = inModelView.m01 * mScaleX;
-      mTrans[0][2] = 0;
-      mTrans[0][3] = (inModelView.mtx + eyeOffset) * mScaleX + mOffsetX;
-
-      mTrans[1][0] = inModelView.m10 * mScaleY;
-      mTrans[1][1] = inModelView.m11 * mScaleY;
-      mTrans[1][2] = 0;
-      mTrans[1][3] = inModelView.mty * mScaleY + mOffsetY;
-
-      mTrans[2][0] = 0;
-      mTrans[2][1] = 0;
-      mTrans[2][2] = -1;
-      mTrans[2][3] = inModelView.mtz;
-      
-      #ifdef ANDROID
-      mS3D.FocusEye (mTrans);
-      #endif
-      
-      #else
-      
       mTrans[0][0] = inModelView.m00 * mScaleX;
       mTrans[0][1] = inModelView.m01 * mScaleX;
       mTrans[0][2] = 0;
@@ -878,28 +744,7 @@ public:
       mTrans[1][1] = inModelView.m11 * mScaleY;
       mTrans[1][2] = 0;
       mTrans[1][3] = inModelView.mty * mScaleY + mOffsetY;
-      
-      #endif
    }
-   
-   #ifdef NME_S3D
-   void EndS3DRender()
-   {
-      setOrtho(0, mWidth, 0, mHeight);
-      #ifdef ANDROID
-      mS3D.EndS3DRender(mWidth, mHeight, mTrans);
-      #endif
-   }
-   
-   void SetS3DEye(int eye)
-   {
-      #ifdef ANDROID
-      mS3D.SetS3DEye(eye);
-      #endif
-   }
-   #endif
-
-
 
 
    int mWidth,mHeight;
@@ -917,8 +762,8 @@ public:
    WinDC mDC;
    GLCtx mOGLCtx;
 
-   HardwareData mBitmapBuffer;
-   Texture *mBitmapTexture;
+   //HardwareData mBitmapBuffer;
+   //Texture *mBitmapTexture;
 
    double mLineWidth;
    
@@ -947,76 +792,8 @@ public:
 
 
    Trans4x4 mTrans;
-   Trans4x4 mBitmapTrans;
-   
-   #if defined(NME_S3D)
-   OpenGLS3D mS3D;
-   #endif
 };
 
-
-#ifdef NME_S3D
-
-value nme_gl_s3d_set_focal_length (value length)
-{
-
-   OGLContext* ctx = dynamic_cast<OGLContext*> (HardwareRenderer::current);
-   if (ctx) {
-
-      ctx->mS3D.mFocalLength = val_float (length);
-
-   }
-   
-   return alloc_null ();
-}
-DEFINE_PRIM (nme_gl_s3d_set_focal_length,1);
-
-value nme_gl_s3d_get_focal_length ()
-{
-
-   OGLContext* ctx = dynamic_cast<OGLContext*> (HardwareRenderer::current);
-   if (ctx) {
-
-      return alloc_float (ctx->mS3D.mFocalLength);
-
-   }
-
-   return alloc_null ();
-
-}
-DEFINE_PRIM (nme_gl_s3d_get_focal_length,0);
-
-value nme_gl_s3d_set_eye_separation (value separation)
-{
-
-   OGLContext* ctx = dynamic_cast<OGLContext*> (HardwareRenderer::current);
-   if (ctx) {
-
-      ctx->mS3D.mEyeSeparation = val_float (separation);
-
-   }
-   
-   return alloc_null ();
-
-}
-DEFINE_PRIM (nme_gl_s3d_set_eye_separation,1);
-
-value nme_gl_s3d_get_eye_separation ()
-{
-
-   OGLContext* ctx = dynamic_cast<OGLContext*> (HardwareRenderer::current);
-   if (ctx) {
-
-      return alloc_float (ctx->mS3D.mEyeSeparation);
-
-   }
-
-   return alloc_null ();
-
-}
-DEFINE_PRIM (nme_gl_s3d_get_eye_separation,0);
-
-#endif
 
 
 // ----------------------------------------------------------------------------

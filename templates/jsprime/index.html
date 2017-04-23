@@ -37,7 +37,7 @@
 			font-style: normal;
 		}::end::::end::
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; width:100%;height:80% }
+      canvas.emscripten { border: 0px none; width:100%;height:100% }
       textarea.output { border: 0px none; width:100%;height:20% }
 	</style>
 	
@@ -49,7 +49,6 @@
    <div class="emscripten_border" id="stage" >
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
    </div>
-    <textarea class="output" id="output"  ></textarea>
     <script type='text/javascript'>
        var Module = {
         preRun: [],

@@ -190,11 +190,12 @@ enum
    PROG_COUNT =             0x0100,
 };
 
-typedef float Trans4x4[4][4];
 
 class GPUProg
 {
 public:
+   typedef float Trans4x4[4][4];
+
    static GPUProg *create(unsigned int inID);
 
    virtual ~GPUProg() {}

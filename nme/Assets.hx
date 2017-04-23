@@ -363,7 +363,7 @@ class Assets
       {
          #if flash
             data = Type.createInstance(Type.resolveClass(i.className), []);
-         #elseif js
+         #elseif (js&&!jsprime)
             return null;
             /*
             var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
@@ -412,7 +412,6 @@ class Assets
     */
    public static function getFont(id:String,?useCache:Null<Bool>):Font 
    {
-      trace("getFont " + id);
       var i = getInfo(id);
       if (i==null)
       {
@@ -435,7 +434,7 @@ class Assets
          #if (flash || (js &&!jsprime) )
             cast(Type.createInstance(Type.resolveClass(i.className),[]), Font);
          #else
-            new Font(i.path,null,null,id);
+            i.isResource ?  new Font("",null,null,i.path,id) :  new Font(i.path,null,null,null,id);
          #end
 
       trySetCache(i,useCache,font);
@@ -481,7 +480,7 @@ class Assets
       var sound:Sound = null;
       #if flash
       sound = cast(Type.createInstance(Type.resolveClass(i.className), []), Sound);
-      #elseif js
+      #elseif (js&&!jsprime)
       sound = new Sound(new URLRequest(i.path));
       #else
       if (i.isResource)

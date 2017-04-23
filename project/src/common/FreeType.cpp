@@ -255,6 +255,7 @@ public:
 
 
 extern void nmeRegisterFont(const std::string &inName, FontBuffer inData);
+extern FontBuffer nmeGetRegisteredFont(const std::string &inName);
 
 int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuffer inBuffer, void** outBuffer)
 {
@@ -893,17 +894,26 @@ value freetype_import_font(value font_file, value char_vector, value em_size, va
    
    void* pBuffer = 0;
    std::string faceName = valToStdString(font_file);
+   nme::FontBuffer fontBuffer = nme::nmeGetRegisteredFont(faceName);
+   nme::FontBuffer bytes = 0;
 
-   #ifndef HXCPP_JS_PRIME
-   AutoGCRoot *bytes = !val_is_null(inBytes) ? new AutoGCRoot(inBytes) : NULL;
-   result = nme::MyNewFace(faceName, 0, &face, bytes, &pBuffer);
-   #else
-   nme::FontBuffer bytes = val_is_null(inBytes) ? 0 : nme::val_to_buffer(inBytes);
-   if (bytes)
-      bytes->IncRef();
-   result = nme::MyNewFace(faceName, 0, &face, bytes, &pBuffer);
-   #endif
-   
+   if (fontBuffer)
+   {
+      result = nme::MyNewFace(faceName, 0, &face, fontBuffer, &pBuffer);
+   }
+   else
+   {
+      #ifndef HXCPP_JS_PRIME
+      bytes = !val_is_null(inBytes) ? new AutoGCRoot(inBytes) : NULL;
+      result = nme::MyNewFace(faceName, 0, &face, bytes, &pBuffer);
+      #else
+      bytes = val_is_null(inBytes) ? 0 : nme::val_to_buffer(inBytes);
+      if (bytes)
+         bytes->IncRef();
+      result = nme::MyNewFace(faceName, 0, &face, bytes, &pBuffer);
+      #endif
+   }
+
    if (result == FT_Err_Unknown_File_Format)
    {
       val_throw(alloc_string("Unknown file format!"));
