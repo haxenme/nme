@@ -52,6 +52,7 @@
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
+   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="emscripten" />
 
    <!-- Use opengl backend ? -->
    <set name="NME_OGL" value="1" />
@@ -82,6 +83,8 @@
    <!-- Use to allow testing on mac... -->
    <set name="NME_OPENAL" value="1" if="macos" />
 
+   <set name="NME_OPENAL" value="1" if="emscripten" />
+
    <set name="NME_CAMERA" value="1" unless="emscripten" />
 
    <!-- Built relative to "bin" -->
@@ -110,7 +113,7 @@
    <include name="${NATIVE_TOOLKIT_PATH}/freetype/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
-   <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" />
+   <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" if="NME_MIXER" />
    <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" />
 
    <!-- inject flags to allow cross-compiling -->
@@ -278,19 +281,19 @@
         <compilerflag value="-I/opt/local/include" if="macos" />
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
-        <compilerflag value="-DNME_MIXER" />
-        <file name="${SRC_DIR}/audio/SDLSound.cpp" />
+        <compilerflag value="-DNME_MIXER" if="NME_MIXER" />
+        <file name="${SRC_DIR}/audio/SDLSound.cpp" if="NME_MIXER" />
         <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
       </section>
 
       <section if="NME_SDL2">
-        <file name="${SRC_DIR}/audio/SDLSound.cpp" />
+        <file name="${SRC_DIR}/audio/SDLSound.cpp"  if="NME_MIXER"/>
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl-mixer" />
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl-mixer" if="NME_MIXER" />
         <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
         <compilerflag value="-DSDL_OGL" />
-        <compilerflag value="-DNME_MIXER" />
+        <compilerflag value="-DNME_MIXER" if="NME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
         <depend files="native-toolkit-sdl-depends" />
         <depend files="native-toolkit-sdl-mixer-depends" />
@@ -413,7 +416,7 @@
 
       <section unless="NME_NATIVE_SDL_SYSTEM">
          <section if="NME_SDL_ANY" >
-            <files id="native-toolkit-sdl-mixer"  />
+            <files id="native-toolkit-sdl-mixer" if="NME_MIXER" />
             <files id="native-toolkit-sdl"   />
          </section>
       </section>

@@ -1512,6 +1512,8 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 
 
 #ifdef EMSCRIPTEN
+extern void clUpdateAsyncChannels();
+
 void StartAnimation()
 {
    SDL_Event event;
@@ -1521,6 +1523,8 @@ void StartAnimation()
       // if (sgDead) break;
       event.type = -1;
    }
+
+   clUpdateAsyncChannels();
 
    double w=0;
    double h=0;
@@ -1570,6 +1574,8 @@ void StartAnimation()
             sgTimerActive = false;
             sgTimerID = 0;
          }
+
+         void clUpdateAsyncChannels()
          
          ProcessEvent(event);
          if (sgDead) break;

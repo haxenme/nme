@@ -38,6 +38,8 @@ Sound *Sound::FromFile(const std::string &inFilename, bool inForceMusic, const s
    else
       result = ReadAndCreate(inFilename, inForceMusic, CreateOpenAlSound);
 
+   #elif defined(EMSCRIPTEN)
+      result = ReadAndCreate(inFilename, inForceMusic, CreateOpenAlSound);
    #else
 
      #ifdef HX_MACOS
@@ -87,6 +89,8 @@ Sound *Sound::FromEncodedBytes(const unsigned char *inData, int inLen, bool inFo
    else
       result = CreateOpenAlSound(inData, inLen, inForceMusic);
 
+   #elif defined(EMSCRIPTEN)
+      result = CreateOpenAlSound(inData, inLen, inForceMusic);
    #else
 
 
@@ -127,6 +131,10 @@ SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inData, const Sou
 
    result = CreateOpenAlSyncChannel(inData, inTransform, inDataFormat, inIsStereo, inRate);
 
+   #elif defined(EMSCRIPTEN)
+
+   result = CreateOpenAlSyncChannel(inData, inTransform, inDataFormat, inIsStereo, inRate);
+
    #else
 
    result = CreateSdlSyncChannel(inData, inTransform, inDataFormat, inIsStereo, inRate);
@@ -149,6 +157,8 @@ SoundChannel *SoundChannel::CreateAsyncChannel(SoundDataFormat inDataFormat,bool
 
 
    #elif defined(IPHONE)
+
+   #elif defined(EMSCRIPTEN)
 
 
    #else
