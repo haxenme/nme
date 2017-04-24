@@ -582,9 +582,9 @@ class NMEProject
    public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String)
    {
       var ndll =  findNdll(name);
-      if ( (CommandLineTools.toolkit && name=="nme")  || 
+      if ( !isNeko() && ( (CommandLineTools.toolkit && name=="nme")  || 
              (CommandLineTools.getHaxeVer()>="3.3") && (name=="std" || name=="regexp" ||
-                 name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) )
+                 name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) ) )
       {
          Log.verbose("Skip ndll " + name + " for toolkit link" );
       }

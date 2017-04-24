@@ -3,4 +3,5 @@
 ::resourceName::
 ::type::
 ::isResource::
-::className:: ::end::
+::className::
+::alphaMode::::end::

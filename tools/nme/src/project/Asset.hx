@@ -101,10 +101,10 @@ class Asset
             bmp.setFormat( nme.image.PixelFormat.pfBGRA, false );
             var bytes = bmp.encode( BitmapData.PNG, 1);
             sys.io.File.saveBytes(convertName, bytes );
-
-            sourcePath = convertName;
-            alphaMode = AlphaIsPremultiplied;
          }
+
+         sourcePath = convertName;
+         alphaMode = AlphaIsPremultiplied;
       }
    }
 

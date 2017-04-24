@@ -521,14 +521,19 @@ class Platform
    public function buildPackage() { }
 
 
+   public function preprocessAssets()
+   {
+      var convertDir = project.app.binDir + "/converted";
+      for(asset in project.assets) 
+         asset.preprocess(convertDir);
+   }
+
    public function updateAssets()
    {
       var base = getAssetDir();
       PathHelper.mkdir(base);
-      var convertDir = project.app.binDir + "/converted";
       for(asset in project.assets) 
       {
-         asset.preprocess(convertDir);
          var target = catPaths(base, asset.targetPath );
          if (!asset.embed)
          {

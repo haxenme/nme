@@ -67,7 +67,7 @@ class Assets
 
 
 
-   public static function fromAssetList(assetList:String, inAddScriptBase:Bool)
+   public static function fromAssetList(assetList:String, inAddScriptBase:Bool,inAlphaToo:Bool)
    {
       var lines:Array<String> = null;
       if (assetList.indexOf('\r')>=0)
@@ -87,10 +87,10 @@ class Assets
             className = null;
          if (inAddScriptBase && !isResource)
             resourceName = scriptBase + resourceName;
-         var alphaMode:AlphaMode = Type.createEnum(AlphaMode,lines[i+5]);
+         var alphaMode:AlphaMode = inAlphaToo ? Type.createEnum(AlphaMode,lines[i+5]) : AlphaDefault;
 
          info.set(id, new AssetInfo(resourceName,type,isResource,className,id,alphaMode));
-         i+=6;
+         i+= inAlphaToo ? 6 : 5;
       }
    }
 
@@ -98,7 +98,7 @@ class Assets
    {
       var assetList = haxe.Resource.getString("haxe/nme/assets.txt");
       if (assetList!=null)
-         fromAssetList(assetList,false);
+         fromAssetList(assetList,false,true);
    }
 
 
@@ -106,7 +106,16 @@ class Assets
    {
       var assetList = haxe.Resource.getString("haxe/nme/scriptassets.txt");
       if (assetList!=null)
-         fromAssetList(assetList,true);
+         fromAssetList(assetList,true,false);
+   }
+
+ 
+   // includes alpha mode
+   public static function loadScriptAssetList2()
+   {
+      var assetList = haxe.Resource.getString("haxe/nme/scriptassets.txt");
+      if (assetList!=null)
+         fromAssetList(assetList,true,true);
    }
 
 

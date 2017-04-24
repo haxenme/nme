@@ -16,7 +16,7 @@ class ScriptData
 
    public static function create():Void
    {
-      Assets.loadScriptAssetList();
+      Assets.loadScriptAssetList2();
    }
 }
 
