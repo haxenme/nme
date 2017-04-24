@@ -11,5 +11,7 @@
 <icon name="assets/icons/nme.svg" size="-1" />
 <ndll name="Nme" if="jsprime" />
 
+<error value="Nme.n is out of date.  Please rebuild" unless="${toolversion:1}" />
+
 
 </project>

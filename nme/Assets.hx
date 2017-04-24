@@ -87,9 +87,10 @@ class Assets
             className = null;
          if (inAddScriptBase && !isResource)
             resourceName = scriptBase + resourceName;
+         var alphaMode:AlphaMode = Type.createEnum(AlphaMode,lines[i+5]);
 
-         info.set(id, new AssetInfo(resourceName,type,isResource,className,id));
-         i+=5;
+         info.set(id, new AssetInfo(resourceName,type,isResource,className,id,alphaMode));
+         i+=6;
       }
    }
 
@@ -300,6 +301,17 @@ class Assets
                data = BitmapData.loadFromBytes( byteFactory.get(filename)() );
             else
                data = BitmapData.load(filename);
+         }
+         if (data!=null && data.transparent)
+         {
+            switch(i.alphaMode)
+            {
+               case AlphaPostprocess:
+                  data.premultipliedAlpha = true;
+               case AlphaIsPremultiplied, AlphaPreprocess:
+                  data.setFormat( nme.image.PixelFormat.pfBGRPremA, false );
+               default:
+            }
          }
       #end
       trySetCache(i,useCache,data);

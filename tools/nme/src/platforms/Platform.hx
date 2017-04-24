@@ -5,6 +5,7 @@ import sys.io.File;
 import haxe.io.Path;
 import sys.net.Host;
 import sys.net.Socket;
+import nme.AlphaMode;
 using StringTools;
 
 class Platform
@@ -524,8 +525,10 @@ class Platform
    {
       var base = getAssetDir();
       PathHelper.mkdir(base);
+      var convertDir = project.app.binDir + "/converted";
       for(asset in project.assets) 
       {
+         asset.preprocess(convertDir);
          var target = catPaths(base, asset.targetPath );
          if (!asset.embed)
          {

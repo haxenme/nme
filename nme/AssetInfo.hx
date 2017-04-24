@@ -1,6 +1,7 @@
 package nme;
 
 import nme.utils.WeakRef;
+import nme.AlphaMode;
 
 @:nativeProperty
 class AssetInfo
@@ -10,13 +11,15 @@ class AssetInfo
    public var type:AssetType;
    public var cache:WeakRef<Dynamic>;
    public var isResource:Bool;
+   public var alphaMode:AlphaMode;
 
-   public function new(inPath:String, inType:AssetType, inIsResource:Bool, ?inClassName:String,?id:String)
+   public function new(inPath:String, inType:AssetType, inIsResource:Bool, ?inClassName:String,?id:String,?inAlphaMode:AlphaMode)
    {
       path = inPath;
       type = inType;
       className = inClassName;
       isResource = inIsResource;
+      alphaMode = inAlphaMode==null ? AlphaDefault : inAlphaMode;
       //trace('$inPath $inType $inIsResource $inClassName');
       #if !flash
       if (type==AssetType.FONT && isResource)

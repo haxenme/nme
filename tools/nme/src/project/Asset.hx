@@ -1,4 +1,6 @@
 import haxe.io.Path;
+import nme.display.BitmapData;
+import nme.AlphaMode;
 
 
 class Asset 
@@ -82,6 +84,28 @@ class Asset
       isMusic = type==MUSIC;
       isImage = type==IMAGE;
       isLibrary = type==SWF;
+   }
+
+   public function preprocess(convertDir:String)
+   {
+      if (type==IMAGE && alphaMode==AlphaPreprocess && format=="png")
+      {
+         PathHelper.mkdir(convertDir);
+         //var file = sys.io.File.getBytes(sourcePath);
+         var convertName = convertDir + "/" + haxe.crypto.Md5.make( haxe.io.Bytes.ofString(sourcePath) ).toHex() + "_prem.png";
+         if (FileHelper.isNewer(sourcePath, convertName))
+         {
+            Log.verbose('Premultiplying $sourcePath to $convertName');
+            var bmp = BitmapData.load(sourcePath);
+            bmp.premultipliedAlpha = true;
+            bmp.setFormat( nme.image.PixelFormat.pfBGRA, false );
+            var bytes = bmp.encode( BitmapData.PNG, 1);
+            sys.io.File.saveBytes(convertName, bytes );
+
+            sourcePath = convertName;
+            alphaMode = AlphaIsPremultiplied;
+         }
+      }
    }
 
    public function setId(inId:String)

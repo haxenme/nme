@@ -12,7 +12,7 @@ import nme.Loader;
 import nme.net.SharedObject;
 import nme.script.Client;
 import NMEProject;
-import AlphaMode;
+import nme.AlphaMode;
 
 using StringTools;
 
@@ -384,8 +384,6 @@ class CommandLineTools
 
    static function doSample(project:NMEProject,dir:String,sampleTarget:String)
    {
- 
-
       if (command=="demo")
       {
          if (sampleInDir=="")

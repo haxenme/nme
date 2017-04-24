@@ -3909,18 +3909,23 @@ value nme_bitmap_data_load(value inFilename, value format)
 }
 DEFINE_PRIM(nme_bitmap_data_load,2);
 
-value nme_bitmap_data_set_format(value inHandle, value format)
+value nme_bitmap_data_set_format(value inHandle, value format, value inConvert)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
    {
       PixelFormat targetFormat = (PixelFormat)val_int(format);
       if (targetFormat!=pfNone)
-         surface->ChangeInternalFormat(targetFormat);
+      {
+         if (val_bool(inConvert))
+            surface->ChangeInternalFormat(targetFormat);
+         else
+            surface->ReinterpretPixelFormat(targetFormat);
+      }
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_set_format,2);
+DEFINE_PRIM(nme_bitmap_data_set_format,3);
 
 value nme_bitmap_data_get_format(value inHandle)
 {

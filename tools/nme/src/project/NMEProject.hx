@@ -3,6 +3,7 @@ package;
 import haxe.io.Path;
 import sys.FileSystem;
 import platforms.Platform;
+import nme.AlphaMode;
 
 typedef IntMap<T> = Map<Int, T>;
 
@@ -758,8 +759,13 @@ class NMEProject
 
       context.assets = new Array<Dynamic>();
 
+      var alpha:String = getDef("NME_ALPHA_MODE");
+      var defaultMode:AlphaMode = alpha!=null && alpha!="" ? NMMLParser.parseAlphaMode(alpha) : AlphaUnmultiplied;
       for(asset in assets) 
       {
+         if (asset.alphaMode==AlphaDefault)
+            asset.alphaMode = defaultMode;
+
          if ( (embedAssets || asset.embed) && target!=Platform.FLASH ) 
          {
             asset.resourceName = asset.flatName;

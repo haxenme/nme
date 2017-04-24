@@ -6,7 +6,7 @@ import sys.io.File;
 import sys.FileSystem;
 import NMEProject;
 import platforms.Platform;
-import AlphaMode;
+import nme.AlphaMode;
 
 using StringTools;
 
@@ -16,6 +16,8 @@ class NMMLParser
    static var gitVersion:String = null;
 
    static var varMatch = new EReg("\\${(.*?)}", "");
+
+   static var TOOL_VERSION = 1;
 
    public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Fast )
    {
@@ -98,7 +100,7 @@ class NMMLParser
          var check = StringTools.trim(part);
          if (check!="")
          {
-            if (!project.hasDef(check))
+            if (!parseBool(part) && !project.hasDef(check))
                return false;
             someMatched = true;
          }
@@ -118,10 +120,14 @@ class NMMLParser
    private function isValidElement(element:Fast, section:String):Bool 
    {
       var ifVal = element.x.get("if");
+      if (ifVal!=null)
+         ifVal =substitute(ifVal);
       if (ifVal!=null && !parseCondition(ifVal))
          return false;
 
       var unlessVal = element.x.get("unless");
+      if (unlessVal!=null)
+         unlessVal = substitute(unlessVal);
       if (unlessVal!=null && parseCondition(unlessVal))
          return false;
 
@@ -243,24 +249,28 @@ class NMMLParser
    }
 
 
+   public static function parseAlphaMode(alphaMode:String) : AlphaMode
+   {
+      switch(alphaMode.toLowerCase())
+      {
+         case "unmultiplied": return AlphaUnmultiplied;
+         case "premultiplied": return AlphaIsPremultiplied;
+         case "postprocess": return AlphaPostprocess;
+         case "preprocess": return AlphaPreprocess;
+         case "default": return AlphaDefault;
+         default:
+            throw "Invalid alpha mode : should be premultiplied/postprocess/preprocess/unmultiplied/default";
+      }
+      return null;
+   }
+
+
    function getElementAlpha(element:Fast, inDefault:AlphaMode)
    {
       if (element.has.alpha)
-      {
-         var a = substitute(element.att.alpha).toLowerCase();
-         switch(a)
-         {
-            case "premultiplied": return AlphaIsPremultiplied;
-            case "postprocess": return AlphaPostprocess;
-            case "preprocess": return AlphaPreprocess;
-            case "default": return inDefault;
-            default:
-               throw "Invalid alpha mode : should be premultiplied/postprocess/preprocess/default";
-         }
-      }
+         return parseAlphaMode(substitute(element.att.alpha));
       return inDefault;
    }
-
 
 
    private function parseAssetsElement(element:Fast, basePath:String = ""):Void 
@@ -1115,6 +1125,11 @@ class NMMLParser
          else if (newString.startsWith("haxelib:"))
          {
             newString = PathHelper.getHaxelib(new Haxelib(newString.substr(8)));
+         }
+         else if (newString.startsWith("toolversion:"))
+         {
+            var ver = Std.parseInt( newString.substr(12) );
+            newString = ver >= TOOL_VERSION ? "true" : "false";
          }
          else
          {

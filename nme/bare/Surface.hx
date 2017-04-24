@@ -256,9 +256,9 @@ class Surface
       #end
    }
 
-   public function setFormat(format:Int) 
+   public function setFormat(format:Int,inConvert=true) 
    {
-      nme_bitmap_data_set_format(nmeHandle, format);
+      nme_bitmap_data_set_format(nmeHandle, format, inConvert);
    }
 
    inline public function set_format(format:Int) : Int
@@ -314,7 +314,7 @@ class Surface
    private static var nme_bitmap_data_set_pixel32 = Loader.load("nme_bitmap_data_set_pixel32", 4);
    private static var nme_bitmap_data_set_pixel_rgba = Loader.load("nme_bitmap_data_set_pixel_rgba", 4);
    private static var nme_bitmap_data_set_bytes = Loader.load("nme_bitmap_data_set_bytes", 4);
-   private static var nme_bitmap_data_set_format = Loader.load("nme_bitmap_data_set_format", 2);
+   private static var nme_bitmap_data_set_format = Loader.load("nme_bitmap_data_set_format", 3);
    private static var nme_bitmap_data_get_format = Loader.load("nme_bitmap_data_get_format", 1);
    #if cpp
    private static var nme_bitmap_data_set_array = Loader.load("nme_bitmap_data_set_array", 3);
