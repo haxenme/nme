@@ -761,10 +761,13 @@ class NMEProject
 
       var alpha:String = getDef("NME_ALPHA_MODE");
       var defaultMode:AlphaMode = alpha!=null && alpha!="" ? NMMLParser.parseAlphaMode(alpha) : AlphaUnmultiplied;
+
+      var convertDir = app.binDir + "/converted";
       for(asset in assets) 
       {
          if (asset.alphaMode==AlphaDefault)
             asset.alphaMode = defaultMode;
+         asset.preprocess(convertDir);
 
          if ( (embedAssets || asset.embed) && target!=Platform.FLASH ) 
          {

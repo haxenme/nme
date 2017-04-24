@@ -157,7 +157,6 @@ class CommandLineTools
             Log.verbose("\nRunning command: UPDATE");
             platform.updateBuildDir();
             platform.updateOutputDir();
-            platform.preprocessAssets();
             platform.updateAssets();
             platform.updateLibs();
             platform.updateExtra();
