@@ -1140,8 +1140,8 @@ class NMMLParser
          }
          else if (newString.startsWith("toolversion:"))
          {
-            var ver = Std.parseInt( newString.substr(12) );
-            newString = ver >= TOOL_VERSION ? "true" : "false";
+            var requiredVersion = Std.parseInt( newString.substr(12) );
+            newString = requiredVersion <= TOOL_VERSION ? "true" : "false";
          }
          else
          {
