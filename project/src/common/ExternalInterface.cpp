@@ -2829,44 +2829,37 @@ value nme_gfx_draw_path(value inGfx, value inCommands, value inData, value inWin
 }
 DEFINE_PRIM(nme_gfx_draw_path, 4);
 
-value nme_gfx_draw_round_rect(value *arg, int args)
+void nme_gfx_draw_round_rect(value aGfx,double aX,double aY,double aW,double aH,double aRx,double aRy )
 {
-   enum { aGfx, aX, aY, aW, aH, aRx, aRy, aSIZE };
    Graphics *gfx;
-   if (AbstractToObject(arg[aGfx],gfx))
+   if (AbstractToObject(aGfx,gfx))
    {
       CHECK_ACCESS("nme_gfx_draw_round_rect");
-      gfx->drawRoundRect( val_number(arg[aX]), val_number(arg[aY]), val_number(arg[aW]), val_number(arg[aH]), val_number(arg[aRx]), val_number(arg[aRy]) );
+      gfx->drawRoundRect( aX, aY, aW, aH, aRx, aRy );
    }
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_gfx_draw_round_rect);
+DEFINE_PRIME7v(nme_gfx_draw_round_rect);
 
-value nme_gfx_draw_triangles(value *arg, int args )
+void nme_gfx_draw_triangles(value aGfx,value aVertices,value aIndices,value aUVData, int aCull, value aColours, int aBlend )
 {
-
-   enum { aGfx, aVertices, aIndices, aUVData, aCull, aColours, aBlend };
-   
    Graphics *gfx;
-   if (AbstractToObject(arg[aGfx],gfx))
+   if (AbstractToObject(aGfx,gfx))
    {
       CHECK_ACCESS("nme_gfx_draw_triangles");
       QuickVec<float> vertices;
       QuickVec<int> indices;
       QuickVec<float> uvt;
       QuickVec<int> colours;
-      
-      FillArrayDouble(vertices,arg[aVertices]);
-      FillArrayInt(indices,arg[aIndices]);
-      FillArrayDouble(uvt,arg[aUVData]);
-      FillArrayInt(colours, arg[aColours]);
-      
-      gfx->drawTriangles(vertices, indices, uvt, val_int(arg[aCull]), colours, val_int( arg[ aBlend ] ) );
+
+      FillArrayDouble(vertices,aVertices);
+      FillArrayInt(indices,aIndices);
+      FillArrayDouble(uvt,aUVData);
+      FillArrayInt(colours,aColours);
+
+      gfx->drawTriangles(vertices, indices, uvt, aCull, colours, aBlend);
    }
-   
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_gfx_draw_triangles);
+DEFINE_PRIME7v(nme_gfx_draw_triangles);
 
 
 value nme_gfx_draw_data(value inGfx,value inData)

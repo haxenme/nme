@@ -199,8 +199,8 @@ class Graphics
    private static var nme_gfx_draw_path = Loader.load("nme_gfx_draw_path", 4);
    private static var nme_gfx_draw_tiles:Dynamic->Dynamic->Dynamic->Int->Int->Void = Loader.load("nme_gfx_draw_tiles", 5);
    private static var nme_gfx_draw_points = Loader.load("nme_gfx_draw_points", -1);
-   private static var nme_gfx_draw_round_rect = Loader.load("nme_gfx_draw_round_rect", -1);
-   private static var nme_gfx_draw_triangles = Loader.load("nme_gfx_draw_triangles", -1);
+   private static var nme_gfx_draw_round_rect = nme.PrimeLoader.load("nme_gfx_draw_round_rect", "oddddddv");
+   private static var nme_gfx_draw_triangles = nme.PrimeLoader.load("nme_gfx_draw_triangles","ooooioiv");
 }
 
 #else

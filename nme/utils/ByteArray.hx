@@ -600,8 +600,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    /** @private */ inline function write_uncheck(inByte:Int) {
       #if cpp
       untyped b.__unsafe_set(position++, inByte);
-      #else
+      #elseif neko
       untyped __dollar__sset(b, position++, inByte & 0xff);
+      #else
+      b[position++] = inByte;
       #end
    }
 
@@ -614,7 +616,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    {
       ensureElem(position, true);
 
-      #if cpp
+      #if !neko
       b[position++] = untyped value;
       #else
       untyped __dollar__sset(b, position++, value & 0xff);
