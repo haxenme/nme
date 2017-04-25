@@ -11,6 +11,8 @@ enum StageAlign
    BOTTOM_RIGHT;
    BOTTOM_LEFT;
    BOTTOM;
+   CENTRE;
+   GAME;
 }
 
 #else

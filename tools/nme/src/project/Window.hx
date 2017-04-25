@@ -20,6 +20,7 @@ class Window
    public var alphaBuffer:Bool;
    public var ui:String;
    public var singleInstance:Bool;
+   public var scaleMode:ScaleMode;
 
    public function new()
    {
@@ -42,5 +43,6 @@ class Window
       alphaBuffer = false;
       ui = "";
       singleInstance = true;
+      scaleMode = ScaleNative;
    }
 }

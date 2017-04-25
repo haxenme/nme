@@ -17,7 +17,7 @@ class NMMLParser
 
    static var varMatch = new EReg("\\${(.*?)}", "");
 
-   static var TOOL_VERSION = 1;
+   static var TOOL_VERSION = 2;
 
    public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Fast )
    {
@@ -1053,6 +1053,19 @@ class NMMLParser
                if (orientation != null) 
                   project.window.orientation = orientation;
 
+            case "scaleMode":
+               switch(value.toLowerCase())
+               {
+                  case "native" : project.window.scaleMode = ScaleNative;
+                  case "game" : project.window.scaleMode = ScaleGame;
+                  case "ui" : project.window.scaleMode = ScaleUiScaled;
+                  case "pixels" : project.window.scaleMode = ScaleGamePixels;
+                  case "stretch" : project.window.scaleMode = ScaleGameStretch;
+                  case "centre","center" : project.window.scaleMode = ScaleCentre;
+                  default:
+                      throw "Window scaleMode should be native/centre/game/ui/pixels or stretch";
+               }
+
             case "height", "width", "fps", "antialiasing":
                if (Reflect.hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.parseInt(value));
@@ -1062,7 +1075,6 @@ class NMMLParser
                   project.haxedefs.set("nme_spritekit", "1");
                if (Reflect.hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.string(value));
-               
 
             default:
                if (Reflect.hasField(project.window, name)) 

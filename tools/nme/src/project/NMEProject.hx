@@ -751,6 +751,30 @@ class NMEProject
       for(field in Reflect.fields(window)) 
          Reflect.setField(context, "WIN_" + StringHelper.formatUppercaseVariable(field), Reflect.field(window, field));
 
+      context.WIN_SCALE_FLAGS = Type.enumIndex(window.scaleMode);
+
+      context.STAGE_SCALE = "NO_SCALE";
+      context.STAGE_ALIGN = "TOP_LEFT";
+      switch(window.scaleMode)
+      {
+         case ScaleNative:
+         case ScaleGamePixels:
+            context.STAGE_SCALE = "SHOW_ALL";
+            context.STAGE_ALIGN = "GAME_PIXELS";
+         case ScaleGameStretch:
+            context.STAGE_SCALE = "SHOW_ALL";
+            context.STAGE_ALIGN = "GAME_STRETCH";
+         case ScaleCentre:
+            context.STAGE_SCALE = "SHOW_ALL";
+            context.STAGE_ALIGN = "CENTRE";
+         case ScaleGame:
+            context.STAGE_SCALE = "SHOW_ALL";
+            context.STAGE_ALIGN = "GAME";
+         case ScaleUiScaled:
+      }
+      context.WIN_STAGE_ALIGN = Type.enumIndex(window.scaleMode);
+
+
       for(haxeflag in haxeflags) 
       {
          if (StringTools.startsWith(haxeflag, "-lib")) 

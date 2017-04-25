@@ -12,7 +12,7 @@
 <ndll name="Nme" if="jsprime" />
 <classpath name="haxe/compat" unless="NME_NO_HAXE_COMPAT" />
 
-<error value="Nme.n is out of date.  Please rebuild" unless="${toolversion:1}" />
+<error value="Nme.n is out of date.  Please rebuild" unless="${toolversion:2}" />
 
 
 </project>

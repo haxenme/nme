@@ -173,7 +173,9 @@ class ApplicationMain
          (::WIN_FULLSCREEN:: ? nme.app.Application.FULLSCREEN : 0) |
          (::WIN_ANTIALIASING:: == 4 ? nme.app.Application.HW_AA_HIRES : 0) |
          (::WIN_ANTIALIASING:: == 2 ? nme.app.Application.HW_AA : 0)|
-         (::WIN_SINGLE_INSTANCE:: ? nme.app.Application.SINGLE_INSTANCE : 0);
+         (::WIN_SINGLE_INSTANCE:: ? nme.app.Application.SINGLE_INSTANCE : 0) |
+         (::WIN_SCALE_FLAGS:: * nme.app.Application.SCALE_BASE)
+         ;
 
 
          #if nme_application
@@ -194,8 +196,8 @@ class ApplicationMain
          #else
 
             nme.Lib.create(function() { 
-                  nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
-                  nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
+                  nme.Lib.current.stage.align = nme.display.StageAlign.::STAGE_ALIGN::;
+                  nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.::STAGE_SCALE::;
                   nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
                   ApplicationBoot.createInstance();
                },
