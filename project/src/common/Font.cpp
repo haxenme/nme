@@ -19,6 +19,8 @@ namespace nme
 
 bool gNmeNativeFonts = true;
 
+extern std::string GetFreeTypeFaceName(FontBuffer inBytes);
+
 
 // --- CFFI font delegates to haxe to get the glyphs -----
 
@@ -480,6 +482,11 @@ value nme_font_register_font(value inFontName, value inBytes)
    AutoGCRoot *bytes = new AutoGCRoot(inBytes);
    #endif
    sgRegisteredFonts[name] = bytes;
+
+   std::string faceName = GetFreeTypeFaceName(bytes);
+   if (sgRegisteredFonts.find(faceName)==sgRegisteredFonts.end())
+      sgRegisteredFonts[faceName] = bytes;
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_font_register_font,2)

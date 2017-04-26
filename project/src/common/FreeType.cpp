@@ -254,7 +254,9 @@ public:
 };
 
 
+
 extern void nmeRegisterFont(const std::string &inName, FontBuffer inData);
+
 extern FontBuffer nmeGetRegisteredFont(const std::string &inName);
 
 int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuffer inBuffer, void** outBuffer)
@@ -881,6 +883,37 @@ value freetype_init()
    return alloc_bool(nme::sgLibrary);
 }
 DEFINE_PRIM(freetype_init, 0);
+
+
+
+namespace nme {
+std::string GetFreeTypeFaceName(FontBuffer inBytes)
+{
+   if (!nme::sgLibrary)
+     FT_Init_FreeType( &nme::sgLibrary );
+
+   FT_Face face =0;
+   #ifdef HXCPP_JS_PRIME
+   int result = FT_New_Memory_Face(sgLibrary, &inBytes->data[0], inBytes->data.size(),0,&face);
+   #else
+   ByteArray bytes(inBytes->get());
+   if (!bytes.Ok())
+      return "";
+   int result = FT_New_Memory_Face(sgLibrary, bytes.Bytes(), bytes.Size(), 0, &face);
+   #endif
+   if (result != 0 || !face)
+      return "";
+
+   value family_name = get_familyname_from_sfnt_name(face);
+   FT_Done_Face(face);
+
+   return valToStdString(family_name);
+}
+}
+
+
+
+
 
 value freetype_import_font(value font_file, value char_vector, value em_size, value inBytes)
 {

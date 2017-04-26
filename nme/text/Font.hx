@@ -42,10 +42,10 @@ class Font
             else
             {
                var bytes = ByteArray.fromBytes(Resource.getBytes(name));
-
                fontType = FontType.EMBEDDED;
-               if (resourceName!=null)
-                  registerFontData(this, bytes);
+
+
+               registerFontData(this, bytes);
             }
          }
          else
@@ -148,7 +148,7 @@ class Font
             return;
 
          if (Reflect.hasField(font, "resourceName"))
-            nme_font_register_font(instance.fontName, ByteArray.fromBytes (Resource.getBytes(Reflect.field(font, "resourceName"))));
+            nme_font_register_font(instance.fontName, ByteArray.fromBytes(Resource.getBytes(Reflect.field(font, "resourceName"))));
 
          nmeRegisteredFonts.set(instance.fontName, cast instance);
       }
