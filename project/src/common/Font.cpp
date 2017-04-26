@@ -484,8 +484,12 @@ value nme_font_register_font(value inFontName, value inBytes)
    sgRegisteredFonts[name] = bytes;
 
    std::string faceName = GetFreeTypeFaceName(bytes);
-   if (sgRegisteredFonts.find(faceName)==sgRegisteredFonts.end())
-      sgRegisteredFonts[faceName] = bytes;
+   if (faceName!="")
+   {
+      //printf("faceName alias : %s\n", faceName.c_str());
+      if (sgRegisteredFonts.find(faceName)==sgRegisteredFonts.end())
+         sgRegisteredFonts[faceName] = bytes;
+   }
 
    return alloc_null();
 }

@@ -116,13 +116,13 @@ class CommandLineTools
          case Platform.EMSCRIPTEN:
             platform = new platforms.EmscriptenPlatform(project);
 
-         case Platform.HTML5:
-            platform = new platforms.Html5Platform(project);
+         case Platform.JS:
+            platform = new platforms.JsPlatform(project);
 
          case Platform.WATCH:
             platform = new platforms.WatchPlatform(project);
 
-         case Platform.JSPRIME:
+         case Platform.JSPRIME, Platform.HTML5:
             platform = new platforms.JsPrimePlatform(project);
       }
 

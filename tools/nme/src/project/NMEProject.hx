@@ -145,7 +145,7 @@ class NMEProject
    public var debug:Bool;
    public var megaTrace:Bool;
    public var isFlash:Bool;
-   public var isHtml5:Bool;
+   public var isRawJs:Bool;
 
    // Exported into project for use in project files
    public var platformType:String;
@@ -323,7 +323,10 @@ class NMEProject
             target = inTargetName.toUpperCase();
 
          case "html5","jsprime":
-            target = inTargetName.toUpperCase();
+            target = Platform.JSPRIME;
+
+         case "js":
+            target = Platform.JS;
 
          case "windows", "mac", "linux":
             targetFlags.set("cpp", "1");
@@ -339,6 +342,8 @@ class NMEProject
          ndllCheckDir = "/iPhone";
 
       targetFlags.set("target_" + target.toString().toLowerCase() , "");
+      if (target==Platform.JSPRIME)
+         targetFlags.set("target_html5","");
 
       if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW || target==Platform.WATCH)
       {
@@ -347,8 +352,8 @@ class NMEProject
       }
 
       isFlash =  target==Platform.FLASH;
-      isHtml5 =  target==Platform.HTML5;
-      if (!isFlash && !isHtml5)
+      isRawJs =  target==Platform.JS;
+      if (!isFlash && !isRawJs)
       {
           haxeflags.push("--remap flash:nme");
           haxeflags.push("--remap lime:nme");
@@ -366,7 +371,7 @@ class NMEProject
             platformType = Platform.TYPE_SCRIPT;
             embedAssets = false;
 
-         case Platform.HTML5:
+         case Platform.JS:
             platformType = Platform.TYPE_WEB;
             embedAssets = false;
 
@@ -374,7 +379,7 @@ class NMEProject
             platformType = Platform.TYPE_WEB;
             embedAssets = true;
 
-         case Platform.JSPRIME:
+         case Platform.JSPRIME, Platform.HTML5:
             platformType = Platform.TYPE_WEB;
             embedAssets = true;
 
@@ -430,6 +435,11 @@ class NMEProject
       localDefines.set("haxe3", "1");
 
       localDefines.set(target.toLowerCase(), "1");
+      if (target==Platform.JSPRIME)
+      {
+         localDefines.set("html5","1");
+         haxedefs.set("html5","1");
+      }
    }
 
    public function setProjectFilename(inFilename:String)

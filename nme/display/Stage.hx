@@ -738,6 +738,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeDragObject.y = y;
    }
 
+/*
    private function nmeNextFrameDue(inOtherTimers:Float, inTimestamp:Float)
    {
       if (!active && pauseWhenDeactivated)
@@ -752,6 +753,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
       return inOtherTimers;
    }
+*/
 
    override private function set_opaqueBackground(inBG:Null<Int>):Null<Int> 
    {

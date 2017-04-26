@@ -6,7 +6,7 @@ import sys.io.File;
 import sys.FileSystem;
 
 
-class Html5Platform extends Platform
+class JsPlatform extends Platform
 {
    private var applicationDirectory:String;
 
@@ -20,7 +20,7 @@ class Html5Platform extends Platform
       project.haxeflags.push('-js $haxeDir/ApplicationMain.js');
    }
 
-   override public function getPlatformDir() : String { return "html5"; }
+   override public function getPlatformDir() : String { return "js"; }
    override public function getBinName() : String { return null; }
    override public function getNativeDllExt() { return null; }
    override public function getLibExt() { return null; }
@@ -34,7 +34,7 @@ class Html5Platform extends Platform
                         '$applicationDirectory/${project.app.file}.js', addOutput);
    }
 
-   override public function getOutputExtra() return "html5";
+   override public function getOutputExtra() return "js";
 
    override public function updateOutputDir():Void 
    {

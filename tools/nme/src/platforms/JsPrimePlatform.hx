@@ -41,6 +41,16 @@ class JsPrimePlatform extends Platform
       FileHelper.copyFile(src, getOutputDir());
    }
 
+   override function generateContext(context:Dynamic)
+   {
+      super.generateContext(context);
+      // Flixel is based on cpp & neko - need jsprime too
+      if (project.findHaxelib("flixel")!=null)
+          project.haxeflags.push("-D FLX_JOYSTICK_API" );
+
+   }
+
+
    public function setupServer()
    {
       var hasSdk = project.hasDef("EMSCRIPTEN_SDK");
