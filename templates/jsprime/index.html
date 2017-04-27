@@ -25,17 +25,6 @@
 		html,body { margin: 0; padding: 0; width:100%; height: 100%; overflow: hidden; }
 		#stage { width: 100%; height: 100%; }
       div { position: absolute; }
-		::foreach assets::::if (type == "font")::
-		@font-face {
-			font-family: '::id::';
-			src: url('::targetPath::.eot');
-			src: url('::targetPath::.eot?#iefix') format('embedded-opentype'),
-			url('::targetPath::.svg#my-font-family') format('svg'),
-			url('::targetPath::.woff') format('woff'),
-			url('::targetPath::.ttf') format('truetype');
-			font-weight: normal;
-			font-style: normal;
-		}::end::::end::
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
       canvas.emscripten { border: 0px none; width:100%;height:100% }
       textarea.output { border: 0px none; width:100%;height:20% }
@@ -43,9 +32,6 @@
 	
 </head>
 <body>
-	::foreach assets::::if (type == "font")::
-	<span style="font-family: ::id::"> </span>::end::::end::
-	
    <div class="emscripten_border" id="stage" >
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
    </div>

@@ -32,6 +32,7 @@
 #include <SDL_mixer.h>
 #endif
 
+
 #ifdef SDL_IMAGE
 #include <SDL_image.h>
 #endif
@@ -813,8 +814,10 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 {
    outRight = (inKey==SDLK_RSHIFT || inKey==SDLK_RCTRL ||
                inKey==SDLK_RALT || inKey==SDLK_RMETA || inKey==SDLK_RSUPER);
-   if (inKey>=keyA && inKey<=keyZ)
-      return inKey;
+   if (inKey>=SDLK_a && inKey<=SDLK_z)
+   {
+      return inKey-SDLK_a + keyA;
+   }
 
 
    switch(inKey)
@@ -954,9 +957,11 @@ void ProcessEvent(SDL_Event &inEvent)
             sLastUnicode[inEvent.key.keysym.scancode] = key.code;
          }
          else
+         {
             // SDL does not provide unicode on key up, so remember it,
             //  keyed by scancode
             key.code = sLastUnicode[inEvent.key.keysym.scancode];
+         }
 
          AddModStates(key.flags,inEvent.key.keysym.mod);
          if (right)
@@ -1342,7 +1347,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    inOnFrame(sgSDLFrame);
    
    #ifdef EMSCRIPTEN
-   emscripten_set_main_loop(StartAnimation, 0, true);
+   emscripten_set_main_loop(StartAnimation, 0, false);
    #else
    StartAnimation();
    #endif
@@ -1519,49 +1524,59 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 #ifdef EMSCRIPTEN
 extern void clUpdateAsyncChannels();
 
+int sgSinceCheck = 0;
 void StartAnimation()
 {
    SDL_Event event;
    while (SDL_PollEvent(&event))
    {
-      ProcessEvent (event);
+      ProcessEvent(event);
       // if (sgDead) break;
       event.type = -1;
    }
 
-   clUpdateAsyncChannels();
+   //clUpdateAsyncChannels();
 
-   double w=0;
-   double h=0;
-   emscripten_get_element_css_size("canvas", &w, &h);
-   if (sgDeviceDpi==0.0)
+   if (sgSinceCheck<=0)
    {
-      #ifdef HXCPP_JS_PRIME
-      value v = value::global("window")["devicePixelRatio"];
-      if (v.isUndefined())
+
+      if (sgDeviceDpi==0.0)
       {
+         #ifdef HXCPP_JS_PRIME
+         value v = value::global("window")["devicePixelRatio"];
+         if (v.isUndefined())
+         {
+            sgDeviceDpi = 1.0;
+         }
+         else
+         {
+            sgDeviceDpi = v.as<double>();
+            if (sgDeviceDpi<1)
+               sgDeviceDpi = 1;
+         }
+         #else
          sgDeviceDpi = 1.0;
+         #endif
       }
-      else
+
+      double w=0;
+      double h=0;
+      emscripten_get_element_css_size("canvas", &w, &h);
+      int cw = w*sgDeviceDpi;
+      int ch = h*sgDeviceDpi;
+      if (sgCanvasWidth!=cw || sgCanvasHeight!=ch)
       {
-         sgDeviceDpi = v.as<double>();
+         sgCanvasWidth=cw;
+         sgCanvasHeight=ch;
+   
+         Event resize(etResize,cw,ch);
+         sgSDLFrame->Resize(cw,ch);
+         sgSDLFrame->ProcessEvent(resize);
       }
-      #else
-      sgDeviceDpi = 1.0;
-      #endif
+      sgSinceCheck = 15;
    }
-   int cw = w*sgDeviceDpi;
-   int ch = h*sgDeviceDpi;
-   if (sgCanvasWidth!=cw || sgCanvasHeight!=ch)
-   {
-      sgCanvasWidth=cw;
-      sgCanvasHeight=ch;
-
-      Event resize(etResize,cw,ch);
-      sgSDLFrame->Resize(cw,ch);
-      sgSDLFrame->ProcessEvent(resize);
-   }
-
+   else
+      sgSinceCheck --;
 
    Event poll(etPoll);
    sgSDLFrame->ProcessEvent(poll);
