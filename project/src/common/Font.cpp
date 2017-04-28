@@ -343,6 +343,15 @@ FontMap sgFontMap;
 typedef std::map<std::string, FontBuffer> FontBytesMap;
 
 FontBytesMap sgRegisteredFonts;
+static std::string registerNorm(const std::string &inName)
+{
+   std::string result = inName;
+   int len = inName.size();
+   const char *p = inName.c_str();
+   for(int i=0;i<len;i++)
+      result[i] = ::tolower(p[i]);
+   return result;
+}
 
 Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef)
 {
@@ -384,8 +393,9 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
          seekName = remappedFont;
       }
 
+      std::string norm = registerNorm(seekName);
       FontBuffer bytes = 0;
-      FontBytesMap::iterator fbit = sgRegisteredFonts.find(seekName);
+      FontBytesMap::iterator fbit = sgRegisteredFonts.find(norm);
 
       if (fbit!=sgRegisteredFonts.end())
       {
@@ -399,13 +409,13 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
          if (resource.Ok())
          {
             #ifdef HXCPP_JS_PRIME
-            sgRegisteredFonts[seekName] = val_to_buffer( resource.mValue );
-            sgRegisteredFonts[seekName]->IncRef();
+            sgRegisteredFonts[norm] = val_to_buffer( resource.mValue );
+            sgRegisteredFonts[norm]->IncRef();
             #else
-            sgRegisteredFonts[seekName] = new AutoGCRoot( resource.mValue );
+            sgRegisteredFonts[norm] = new AutoGCRoot( resource.mValue );
             #endif
 
-            fbit = sgRegisteredFonts.find(seekName);
+            fbit = sgRegisteredFonts.find(norm);
             bytes = fbit->second;
           //  printf("Found!\n");
          }
@@ -464,12 +474,12 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 
 void nmeRegisterFont(const std::string &inName, FontBuffer inData)
 {
-   sgRegisteredFonts[inName] = inData;
+   sgRegisteredFonts[registerNorm(inName)] = inData;
 }
 
 FontBuffer nmeGetRegisteredFont(const std::string &inName)
 {
-   return sgRegisteredFonts[inName];
+   return sgRegisteredFonts[registerNorm(inName)];
 }
 
 value nme_font_register_font(value inFontName, value inBytes)
@@ -481,9 +491,9 @@ value nme_font_register_font(value inFontName, value inBytes)
    #else
    AutoGCRoot *bytes = new AutoGCRoot(inBytes);
    #endif
-   sgRegisteredFonts[name] = bytes;
+   sgRegisteredFonts[ registerNorm(name) ] = bytes;
 
-   std::string faceName = GetFreeTypeFaceName(bytes);
+   std::string faceName = registerNorm( GetFreeTypeFaceName(bytes) );
    if (faceName!="")
    {
       //printf("faceName alias : %s\n", faceName.c_str());

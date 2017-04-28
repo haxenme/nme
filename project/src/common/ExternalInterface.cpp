@@ -4072,21 +4072,20 @@ value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, v
 }
 DEFINE_PRIM(nme_bitmap_data_copy,5);
 
-value nme_bitmap_data_copy_channel(value* arg, int nargs)
+void nme_bitmap_data_copy_channel(value aSrc, value aSrcRect, value aDest, value aDestPoint, int aSrcChannel, int aDestChannel)
 {
-   enum { aSrc, aSrcRect, aDest, aDestPoint, aSrcChannel, aDestChannel, aSIZE };
    Surface *source;
    Surface *dest;
-   if (AbstractToObject(arg[aSrc],source) && AbstractToObject(arg[aDest],dest))
+   if (AbstractToObject(aSrc,source) && AbstractToObject(aDest,dest))
    {
       Rect rect;
-      FromValue(rect,arg[aSrcRect]);
+      FromValue(rect,aSrcRect);
       ImagePoint offset;
-      FromValue(offset,arg[aDestPoint]);
+      FromValue(offset,aDestPoint);
 
 
-      int srcChannel =  val_int(arg[aSrcChannel]);
-      int destChannel =  val_int(arg[aDestChannel]);
+      int srcChannel =  aSrcChannel;
+      int destChannel =  aDestChannel;
 
       if (destChannel==CHAN_ALPHA && !HasAlphaChannel(dest->Format()))
          dest->ChangeInternalFormat(pfBGRA);
@@ -4094,10 +4093,8 @@ value nme_bitmap_data_copy_channel(value* arg, int nargs)
       AutoSurfaceRender render(dest);
       source->BlitChannel(render.Target(),rect,offset.x, offset.y, srcChannel, destChannel );
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_bitmap_data_copy_channel);
+DEFINE_PRIME6v(nme_bitmap_data_copy_channel);
 
 
 value nme_bitmap_data_get_pixels(value inSurface, value inRect)

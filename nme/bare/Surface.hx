@@ -300,7 +300,7 @@ class Surface
    private static var nme_bitmap_data_apply_filter = Loader.load("nme_bitmap_data_apply_filter", 5);
    private static var nme_bitmap_data_color_transform = Loader.load("nme_bitmap_data_color_transform", 3);
    private static var nme_bitmap_data_copy = Loader.load("nme_bitmap_data_copy", 5);
-   private static var nme_bitmap_data_copy_channel = Loader.load("nme_bitmap_data_copy_channel", -1);
+   private static var nme_bitmap_data_copy_channel = nme.PrimeLoader.load("nme_bitmap_data_copy_channel", "ooooiiv");
    private static var nme_bitmap_data_fill = Loader.load("nme_bitmap_data_fill", 4);
    private static var nme_bitmap_data_get_pixels = Loader.load("nme_bitmap_data_get_pixels", 2);
    private static var nme_bitmap_data_get_pixel = Loader.load("nme_bitmap_data_get_pixel", 3);
