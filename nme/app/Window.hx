@@ -34,7 +34,7 @@ class Window
    //public var onKey:Int -> Int -> Int -> Void;
    public var onText: AppEvent -> Void;
 
-   public var nmeHandle(default,null):nme.display.NativeHandle;
+   public var nmeHandle(default,null):nme.NativeHandle;
    var enterFramePending:Bool;
 
    public function new(inFrameHandle:Dynamic,inWidth:Int,inHeight:Int)
@@ -51,6 +51,9 @@ class Window
       #end
  
       nmeHandle = nme_get_frame_stage(inFrameHandle);
+
+      nme.NativeResource.setAutoClear(nmeHandle);
+
       nme_set_stage_handler(nmeHandle, nmeProcessWindowEvent, inWidth, inHeight);
    }
 
@@ -271,6 +274,9 @@ class Window
    public function endRender()
    {
       nme_stage_end_render(nmeHandle);
+      #if jsprime
+      nme.NativeResource.releaseTempRefs();
+      #end
    }
 
 

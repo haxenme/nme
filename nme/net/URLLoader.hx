@@ -8,6 +8,8 @@ import nme.events.ProgressEvent;
 import nme.events.HTTPStatusEvent;
 import nme.utils.ByteArray;
 import nme.Loader;
+import nme.NativeHandle;
+import nme.NativeResource;
 
 #if html5
 // ok
@@ -28,7 +30,7 @@ class URLLoader extends EventDispatcher
    public var data:Dynamic;
    public var dataFormat:URLLoaderDataFormat;
 
-   /** @private */ private var nmeHandle:Dynamic;
+   /** @private */ public var nmeHandle:NativeHandle;
    /** @private */ private static var activeLoaders = new List<URLLoader>();
    private static inline var urlInvalid    = 0;
    private static inline var urlInit       = 1;
@@ -42,7 +44,7 @@ class URLLoader extends EventDispatcher
    {
       super();
 
-      nmeHandle = 0;
+      nmeHandle = null;
       bytesLoaded = 0;
       bytesTotal = -1;
       state = urlInvalid;
@@ -103,7 +105,8 @@ class URLLoader extends EventDispatcher
 
             nmeDataComplete();
 
-      } else 
+      }
+      else 
       {
          request.nmePrepare();
          nmeHandle = nme_curl_create(request);
@@ -115,7 +118,8 @@ class URLLoader extends EventDispatcher
       }
    }
 
-   /** @private */ private function nmeDataComplete() {
+   /** @private */ private function nmeDataComplete()
+   {
       activeLoaders.remove(this);
 
       if (nmeOnComplete != null) 
@@ -125,17 +129,20 @@ class URLLoader extends EventDispatcher
          else
             DispatchIOErrorEvent();
 
-      } else 
+      }
+      else 
       {
          dispatchEvent(new Event(Event.COMPLETE));
       }
    }
 
-   /** @private */ public static function nmeLoadPending() {
+   /** @private */ public static function nmeLoadPending()
+   {
       return !activeLoaders.isEmpty();
    }
 
-   /** @private */ public static function nmePollData() {
+   /** @private */ public static function nmePollData()
+   {
       if (!activeLoaders.isEmpty()) 
       {
          nme_curl_process_loaders();
@@ -156,7 +163,8 @@ class URLLoader extends EventDispatcher
       dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
    }
 
-   /** @private */ private function dispatchHTTPStatus(code:Int):Void {
+   /** @private */ private function dispatchHTTPStatus(code:Int):Void
+   {
       
       var evt = new HTTPStatusEvent (HTTPStatusEvent.HTTP_STATUS, false, false, code);
       var headers:Array<String> = nme_curl_get_headers(nmeHandle);
@@ -171,7 +179,8 @@ class URLLoader extends EventDispatcher
       dispatchEvent (evt);
    }
 
-   /** @private */ private function update() {
+   /** @private */ private function update()
+   {
       if (nmeHandle != null) 
       {
          var old_loaded = bytesLoaded;
@@ -208,20 +217,22 @@ class URLLoader extends EventDispatcher
 
                      nmeDataComplete();
 
-            } else 
+            }
+            else 
             {
                // XXX : This should be handled in project/common/CURL.cpp
                var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, "HTTP status code " + Std.string(code), code);
-               nmeHandle = null;
+               NativeResource.disposeHandler(this);
                dispatchEvent(evt);
             }
 
-         } else if (state == urlError) 
+         }
+         else if (state == urlError) 
          {
             dispatchHTTPStatus(code);
 
             var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, nme_curl_get_error_message(nmeHandle), code);
-            nmeHandle = null;
+            NativeResource.disposeHandler(this);
             dispatchEvent(evt);
          }
       }

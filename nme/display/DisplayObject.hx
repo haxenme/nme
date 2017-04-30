@@ -12,6 +12,7 @@ import nme.geom.ColorTransform;
 import nme.geom.Point;
 import nme.filters.BitmapFilter;
 import nme.Loader;
+import nme.NativeHandle;
 
 @:nativeProperty
 class DisplayObject extends EventDispatcher implements IBitmapDrawable 

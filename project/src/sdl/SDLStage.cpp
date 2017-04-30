@@ -1040,6 +1040,13 @@ void ProcessEvent(SDL_Event &inEvent)
 }
 
 
+static bool sCheckCanvasSize = true;
+EM_BOOL onCanvasSize(int, const EmscriptenUiEvent *, void *)
+{
+   sCheckCanvasSize = true;
+   return false;
+}
+
 
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    unsigned int inFlags, const char *inTitle, Surface *inIcon )
@@ -1347,6 +1354,24 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    inOnFrame(sgSDLFrame);
    
    #ifdef EMSCRIPTEN
+
+      #ifdef HXCPP_JS_PRIME
+      value v = value::global("window")["devicePixelRatio"];
+      if (v.isUndefined())
+      {
+         sgDeviceDpi = 1.0;
+      }
+      else
+      {
+         sgDeviceDpi = v.as<double>();
+         if (sgDeviceDpi<1)
+            sgDeviceDpi = 1;
+      }
+      #else
+      sgDeviceDpi = 1.0;
+      #endif
+
+   emscripten_set_resize_callback(0, 0, false, onCanvasSize);
    emscripten_set_main_loop(StartAnimation, 0, false);
    #else
    StartAnimation();
@@ -1524,7 +1549,6 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 #ifdef EMSCRIPTEN
 extern void clUpdateAsyncChannels();
 
-int sgSinceCheck = 0;
 void StartAnimation()
 {
    SDL_Event event;
@@ -1535,30 +1559,11 @@ void StartAnimation()
       event.type = -1;
    }
 
-   //clUpdateAsyncChannels();
+   clUpdateAsyncChannels();
 
-   if (sgSinceCheck<=0)
+   if (sCheckCanvasSize)
    {
-
-      if (sgDeviceDpi==0.0)
-      {
-         #ifdef HXCPP_JS_PRIME
-         value v = value::global("window")["devicePixelRatio"];
-         if (v.isUndefined())
-         {
-            sgDeviceDpi = 1.0;
-         }
-         else
-         {
-            sgDeviceDpi = v.as<double>();
-            if (sgDeviceDpi<1)
-               sgDeviceDpi = 1;
-         }
-         #else
-         sgDeviceDpi = 1.0;
-         #endif
-      }
-
+      sCheckCanvasSize = false;
       double w=0;
       double h=0;
       emscripten_get_element_css_size("canvas", &w, &h);
@@ -1568,19 +1573,18 @@ void StartAnimation()
       {
          sgCanvasWidth=cw;
          sgCanvasHeight=ch;
-   
+
          Event resize(etResize,cw,ch);
          sgSDLFrame->Resize(cw,ch);
          sgSDLFrame->ProcessEvent(resize);
       }
-      sgSinceCheck = 15;
    }
-   else
-      sgSinceCheck --;
 
    Event poll(etPoll);
    sgSDLFrame->ProcessEvent(poll);
+   //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, nextWake);
 }
+
 #else
 void StartAnimation()
 {

@@ -68,6 +68,8 @@ class IGraphicsData : public Object
 public:
    IGraphicsData() { };
 
+   NmeObjectType getObjectType() { return notIGraphicsData; }
+
    IGraphicsData *IncRef() { mRefCount++; return this; }
 
    virtual GraphicsDataType GetType() { return gdtUnknown; }
@@ -640,6 +642,8 @@ class Graphics : public Object
 public:
    Graphics(DisplayObject *inOwner, bool inInitRef = false);
    ~Graphics();
+
+   NmeObjectType getObjectType() { return notGraphics; }
 
    void clear(bool inForceHardwareFree=false);
 

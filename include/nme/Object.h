@@ -15,15 +15,32 @@ namespace nme
 
 class ImageBuffer;
 
+enum NmeObjectType
+{
+   notUnkown,
+   notDisplayObject,
+   notSurface,
+   notGraphics,
+   notHardwareContext,
+   notHardwareResource,
+   notTilesheet,
+   notSound,
+   notSoundChannel,
+   notBytes,
+   notCamera,
+   notVideo,
+   notIGraphicsData,
+   notUrl,
+   notFrame,
+   notTextFormat,
+   notFont,
+};
+
 
 class Object
 {
 protected:
-   #ifdef HXCPP_JS_PRIME
-   virtual ~Object();
-   #else
    virtual ~Object() { }
-   #endif
 
 public:
    Object(bool inInitialRef=0) : mRefCount(inInitialRef?1:0)
@@ -32,31 +49,32 @@ public:
    #endif
    { }
    Object *IncRef() { mRefCount++; return this; }
+   #ifdef HXCPP_JS_PRIME
+   void releaseObject();
+   void DecRef() { mRefCount--; if (mRefCount<=0) releaseObject(); }
+   #else
    void DecRef() { mRefCount--; if (mRefCount<=0) delete this; }
+   #endif
    virtual int GetRefCount() { return mRefCount; }
+
+   virtual int getApiVersion() { return NME_API_VERSION; }
+
+   #ifdef HXCPP_JS_PRIME
+   virtual NmeObjectType getObjectType() = 0;
+   #else
+   virtual NmeObjectType getObjectType() { return notUnkown; }
+   #endif
 
    #ifdef HXCPP_JS_PRIME
    emscripten::val &toAbstract();
    static Object *toObject( emscripten::val &inValue );
 
    emscripten::val *val;
-   virtual const char *getObjectType() { return "unknown"; }
-   virtual void unrealize(emscripten::val &outValue) { printf("unrealize\n");}
+   virtual void unrealize(emscripten::val &outValue);
    #endif
 
-   virtual int getApiVersion() { return NME_API_VERSION; }
 
    virtual ImageBuffer *asImageBuffer() { return 0; }
-   virtual void *asReserved1() { return 0; }
-   virtual void *asReserved2() { return 0; }
-   virtual void *asReserved3() { return 0; }
-   virtual void *asReserved4() { return 0; }
-   virtual void *asReserved5() { return 0; }
-   virtual void *asReserved6() { return 0; }
-   virtual void *asReserved7() { return 0; }
-   virtual void *asReserved8() { return 0; }
-   virtual void *asReserved9() { return 0; }
-
 
    int mRefCount;
 };

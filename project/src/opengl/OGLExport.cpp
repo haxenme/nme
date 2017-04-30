@@ -278,6 +278,7 @@ public:
    {
       release();
    }
+   NmeObjectType getObjectType() { return notHardwareResource; }
    void release()
    {
       HardwareRenderer *ctx = HardwareRenderer::current;

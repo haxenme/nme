@@ -6,6 +6,7 @@ import haxe.io.BytesData;
 import nme.errors.EOFError; // Ensure that the neko->haxe callbacks are initialized
 import nme.utils.CompressionAlgorithm;
 import nme.Loader;
+import nme.NativeResource;
 
 #if neko
 import neko.Lib;
@@ -53,7 +54,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public var __length(get,set):Int;
 
    #if jsprime
-   private var ptr:Null<Int> = null;
+   public var ptr:Null<Int>=null;
+   public var flags:Int;
    public var byteView:js.html.Uint8Array;
    #end
 
@@ -61,7 +63,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       private var alloced:Int;
    #end
 
-   public function new(inSize:Int = 0) 
+   public function new(inSize:Int = 0,inWriteOnly=false)
    {
       bigEndian = true;
       position = 0;
@@ -84,6 +86,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          #end
 
          #if jsprime
+         //if (inWriteOnly)
+            //NativeResource.setWriteOnly(this);
          onBufferChanged();
          #end
       }

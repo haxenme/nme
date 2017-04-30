@@ -10,6 +10,7 @@ import nme.Loader;
 import nme.errors.Error;
 import nme.utils.ByteArray;
 import nme.utils.Endian;
+import nme.NativeHandle;
 
 @:nativeProperty
 @:autoBuild(nme.macros.Embed.embedAsset("NME_sound_",":sound"))
@@ -22,7 +23,7 @@ class Sound extends EventDispatcher
    public var length(get_length, null):Float;
    public var url(default, null):String;
 
-   /** @private */ public var nmeHandle:Dynamic;
+   /** @private */ public var nmeHandle:NativeHandle;
    /** @private */ private var nmeLoading:Bool;
    /** @private */ private var nmeDynamicSound:Bool;
    public function new(?stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false, ?inEngine:String) 
@@ -71,8 +72,8 @@ class Sound extends EventDispatcher
       if (nmeHandle != null)
          nme_sound_close(nmeHandle);
 
-      nmeHandle = 0;
-      nmeLoading = false;
+      nme.NativeResource.disposeHandler(this);
+         nmeLoading = false;
    }
 
    public function load(stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false, ?inEngine:String) 

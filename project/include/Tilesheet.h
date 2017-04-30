@@ -22,6 +22,8 @@ public:
    Tilesheet(int inWidth,int inHeight,PixelFormat inFormat,bool inInitRef=false);
    Tilesheet(Surface *inSurface,bool inInitRef=false);
 
+   NmeObjectType getObjectType() { return notTilesheet; }
+
    Tilesheet *IncRef() { Object::IncRef(); return this; }
 
    int AllocRect(int inW,int inH,float inOx = 0, float inOy = 0,bool inAlphaBorder=false);

@@ -24,6 +24,8 @@ extern std::vector<const char *> sIdKeyNames;
 #define val_null alloc_null()
 
 
+
+
 inline int val_id(const char *inName)
 {
    IdMap::iterator id = sIdMap.find(inName);

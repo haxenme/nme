@@ -4,6 +4,7 @@ import nme.Loader;
 import nme.display.BitmapData;
 import nme.events.StatusEvent;
 import nme.events.Event;
+import nme.NativeHandle;
 
 @:nativeProperty
 class Camera extends nme.events.EventDispatcher
@@ -13,11 +14,11 @@ class Camera extends nme.events.EventDispatcher
 
    static var cameraMap:Map<String,Camera>;
 
-   public var nmeHandle:Dynamic;
    public var bitmapData(default,null):BitmapData;
    public var errorString(default,null):String;
    public var width(default,null):Int;
    public var height(default,null):Int;
+   public var nmeHandle:NativeHandle;
    // isSupported
 
    private function new(inHandle:Dynamic)

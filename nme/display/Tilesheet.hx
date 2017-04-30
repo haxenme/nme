@@ -4,6 +4,7 @@ import nme.geom.Matrix;
 import nme.geom.Point;
 import nme.geom.Rectangle;
 import nme.Loader;
+import nme.NativeHandle;
 
 @:nativeProperty
 class Tilesheet 
@@ -29,7 +30,7 @@ class Tilesheet
 
    #if !flash
 
-   /** @private */ public var nmeHandle:Dynamic;
+   /** @private */ public var nmeHandle:NativeHandle;
 
    public function new(inImage:BitmapData) 
    {

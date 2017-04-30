@@ -471,7 +471,7 @@ class CommandLineTools
 
         var arg = words[0];
 
-        if (FileSystem.exists(arg) && FileSystem.isDirectory(arg))
+        if (PathHelper.isAbsolute(arg) && FileSystem.exists(arg) && FileSystem.isDirectory(arg))
         {
            doSample(project, arg,target);
            return;
@@ -1030,7 +1030,7 @@ class CommandLineTools
          if (assumedTest && words.length==0)
             return false;
 
-         Log.error("You must have a \"project.nmml\" file or specify another valid project file when using the '" + command + "' command");
+         Log.error("You must have a \"project.nmml\" file or specify another valid project file when using the '" + command + "' command in " + Sys.getCwd());
       }
       else
          Log.verbose("Using project file: " + projectFile);

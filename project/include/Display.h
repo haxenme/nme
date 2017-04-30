@@ -84,6 +84,8 @@ class DisplayObject : public Object
 public:
    DisplayObject(bool inInitRef = false);
 
+   NmeObjectType getObjectType() { return notDisplayObject; }
+
    double getX();
    void   setX(double inValue);
    double getY();
@@ -512,6 +514,8 @@ public:
    virtual void SetTitle() = 0;
    virtual void SetIcon() = 0;
    virtual Stage *GetStage() = 0;
+
+   NmeObjectType getObjectType() { return notFrame; }
 };
 
 enum WindowFlags

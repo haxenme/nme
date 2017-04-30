@@ -86,6 +86,7 @@ protected:
 public:
    virtual bool IsOpenGL() const = 0;
    virtual class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags)=0;
+   NmeObjectType getObjectType() { return notHardwareContext; }
 
 };
 

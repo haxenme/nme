@@ -960,6 +960,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
    // clip to origial rect...
    src_rect = src_rect.Intersect( inSrcRect );
 
+
    if (src_rect.HasPixels())
    {
       if (mPixelFormat>=pfRenderToCount)
@@ -968,6 +969,8 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
       bool src_alpha = mPixelFormat==pfAlpha;
       bool dest_alpha = outDest.mPixelFormat==pfAlpha;
+
+
 
       int dx = inPosX + src_rect.x - inSrcRect.x;
       int dy = inPosY + src_rect.y - inSrcRect.y;

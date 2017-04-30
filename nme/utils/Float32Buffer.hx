@@ -10,10 +10,10 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
    var bufferSize:Int;
    #end
 
-   public function new(inCount:Int = 0)
+   public function new(inCount:Int = 0,inWriteOnly:Bool=false)
    {
       count = inCount;
-      super(count<4 ? 16 : (count<<2) );
+      super(count<4 ? 16 : (count<<2), inWriteOnly );
       #if jsprime
       bufferSize = alloced>>2;
       #end

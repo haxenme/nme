@@ -5,6 +5,7 @@ import nme.events.Event;
 import nme.events.EventDispatcher;
 import nme.events.SampleDataEvent;
 import nme.Loader;
+import nme.NativeHandle;
 
 @:nativeProperty
 class SoundChannel extends EventDispatcher 
@@ -21,10 +22,12 @@ class SoundChannel extends EventDispatcher
    private static var nmeIsPolling = false;
    private var nmeStopped:Bool;
 
-   /** @private */ public var nmeHandle:Dynamic;
+   /** @private */ public var nmeHandle:NativeHandle;
    /** @private */ private var nmeTransform:SoundTransform;
    /** @private */ public var nmeDataProvider:EventDispatcher;
-   public function new(inSoundHandle:Dynamic, startTime:Float, loops:Int, sndTransform:SoundTransform) 
+
+
+   public function new(inSoundHandle:NativeHandle, startTime:Float, loops:Int, sndTransform:SoundTransform) 
    {
       super();
 
@@ -53,7 +56,7 @@ class SoundChannel extends EventDispatcher
    }
 
 
-   public static function createDynamic(inSoundHandle:Dynamic, sndTransform:SoundTransform, dataProvider:EventDispatcher) 
+   public static function createDynamic(inSoundHandle:NativeHandle, sndTransform:SoundTransform, dataProvider:EventDispatcher) 
    {
       var result = new SoundChannel(null, 0, 0, sndTransform);
 

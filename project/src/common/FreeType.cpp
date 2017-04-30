@@ -115,7 +115,7 @@ public:
 
       FT_Render_Mode mode = FT_RENDER_MODE_NORMAL;
       // mode = FT_RENDER_MODE_MONO;
-      if (mFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
+      //if (mFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
          err = FT_Render_Glyph( mFace->glyph, mode );
       if (err)
          return false;
@@ -197,8 +197,8 @@ public:
             unsigned char *row = bitmap.buffer + r*bitmap.pitch;
             if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
             {
-               int bit = 0;
-               int data = 0;
+               unsigned int bit = 0;
+               unsigned int data = 0;
                for(int x=0;x<outTarget.mRect.w;x++)
                {
                   if (!bit)
@@ -212,8 +212,16 @@ public:
             }
             else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
             {
+               /*
+               char buf[1000];
                for(int x=0;x<w;x++)
-                  *dest ++ = *row++ | underline;
+                  buf[x] = row[x]>128 ? '#' : ' ';
+               buf[w] = '\0';
+               printf("> %s\n", buf);
+               */
+
+               for(int x=0;x<w;x++)
+                  *dest ++ = *row++;// | underline;
             }
          }
          else if (r>=underlineY0 && r<underlineY1)

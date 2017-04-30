@@ -3,6 +3,7 @@ package nme.display;
 
 import nme.geom.Matrix;
 import nme.Loader;
+import nme.NativeHandle;
 
 @:nativeProperty
 class Graphics 
@@ -18,8 +19,9 @@ class Graphics
    private static inline var TILE_SMOOTH = 0x1000;
    public static inline var TILE_BLEND_NORMAL   = 0x00000000;
    public static inline var TILE_BLEND_ADD      = 0x00010000;
+
    //public static inline var TILE_BLEND_SUBTRACT = 0x00020000;
-   /** @private */ private var nmeHandle:Dynamic;
+   /** @private */ var nmeHandle:NativeHandle;
    public function new(inHandle:Dynamic) 
    {
       nmeHandle = inHandle;

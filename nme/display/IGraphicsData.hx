@@ -1,10 +1,12 @@
 package nme.display;
+import nme.NativeHandle;
+
 #if (!flash)
 
 class IGraphicsData 
 {
-   /** @private */ public var nmeHandle:Dynamic;
-   public function new(inHandle:Dynamic) 
+   /** @private */ public var nmeHandle:NativeHandle;
+   public function new(inHandle:NativeHandle) 
    {
       nmeHandle = inHandle;
    }

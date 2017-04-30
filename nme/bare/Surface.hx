@@ -7,6 +7,7 @@ import nme.geom.Matrix;
 import nme.geom.ColorTransform;
 import nme.utils.ByteArray;
 import nme.Loader;
+import nme.NativeHandle;
 import nme.image.PixelFormat;
 
 @:nativeProperty
@@ -33,7 +34,7 @@ class Surface
    public var width(get_width, null):Int;
    public var format(get, set):Int;
    public var premultipliedAlpha(get_premultipliedAlpha, set_premultipliedAlpha):Bool;
-   public var nmeHandle:Dynamic;
+   public var nmeHandle:NativeHandle;
    
 
    public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, ?inFillRgb:Int)

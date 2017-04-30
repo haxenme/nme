@@ -315,6 +315,9 @@ inline bool AbstractToObject(value inValue, OBJ *&outObj)
 
 struct BufferData : Object
 {
+    NmeObjectType getObjectType() { return notBytes; }
+    void unrealize(value &outValue);
+
     std::vector<unsigned char> data;
 };
 typedef BufferData *buffer;

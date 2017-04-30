@@ -84,6 +84,8 @@ public:
    static TextFormat *Default();
    TextFormat *IncRef() { Object::IncRef(); return this; }
 
+   NmeObjectType getObjectType() { return notTextFormat; }
+
    TextFormat *COW();
 
 
@@ -193,6 +195,8 @@ class Font : public Object
 
 public:
    static Font *Create(TextFormat &inFormat,double inScale, bool inNative,bool inInitRef=true);
+
+   NmeObjectType getObjectType() { return notFont; }
 
    Font *IncRef() { Object::IncRef(); return this; }
 

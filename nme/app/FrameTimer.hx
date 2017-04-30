@@ -36,12 +36,13 @@ class FrameTimer implements IPollClient
          var wasInvalid =invalid;
          invalid = false;
          #if jsprime
-         if (fps>0)
+         if (fps>=60)
          {
             lastRender = timestamp;
             window.onNewFrame();
-         }
-         #else
+            offTarget = 0.0;
+         } else
+         #end
          if (fps>0 && timestamp >= lastRender - offTarget + framePeriod - 0.0005 ) 
          {
             if (catchup)
@@ -58,7 +59,6 @@ class FrameTimer implements IPollClient
             lastRender = timestamp;
             window.onNewFrame();
          }
-         #end
          else if (wasInvalid)
          {
             window.onInvalidFrame();
@@ -83,15 +83,11 @@ class FrameTimer implements IPollClient
       if (framePeriod==0.0)
          return defaultWake;
 
-      #if jsprime
-      return 0.0;
-      #else
       var next = lastRender + framePeriod - haxe.Timer.stamp();
       if (next < defaultWake)
          return next;
 
       return defaultWake;
-      #end
    }
 
 }
