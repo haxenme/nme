@@ -28,10 +28,13 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
          var offset = ByteArray.nme_buffer_offset(ptr);
          f32View = new js.html.Float32Array(untyped Module.HEAP8.buffer, offset,bufferSize);
       }
+      else if (b!=null)
+      {
+         f32View = new js.html.Float32Array(b.buffer,0,bufferSize);
+      }
       else
       {
-         var buffer = b;
-         f32View = new js.html.Float32Array(b.buffer,0,bufferSize);
+         f32View = null;
       }
    }
    #end

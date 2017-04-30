@@ -296,6 +296,19 @@ struct VolumeInfo
 
 void GetVolumeInfo( std::vector<VolumeInfo> &outInfo );
 
+#ifdef HXCPP_JS_PRIME
+struct ByteStream
+{
+   QuickVec<unsigned char> data;
+
+   inline void addInt(int inVal)
+   {
+      data.append((unsigned char *)inVal,4);
+   }
+
+   void toValue(value outValue);
+};
+#endif
 
 }
 

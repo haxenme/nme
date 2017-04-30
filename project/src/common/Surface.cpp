@@ -1852,6 +1852,24 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
 }
 
 
+#ifdef HXCPP_JS_PRIME
+void SimpleSurface::unrealize()
+{
+   if (val)
+   {
+      ByteStream stream;
+      stream.addInt(mWidth);
+      stream.addInt(mHeight);
+      stream.addInt((int)mPixelFormat);
+      stream.data.append(mBase,mHeight*mStride);
+
+      stream.toValue(*val);
+   }
+}
+#endif
+
+
+
 
 
 

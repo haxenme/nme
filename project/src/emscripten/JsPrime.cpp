@@ -1,5 +1,7 @@
 #include <nme/NmeCffi.h>
 #include <nme/QuickVec.h>
+#include <Utils.h>
+#include <Display.h>
 
 IdMap sIdMap;
 IdMap sKindMap;
@@ -17,10 +19,14 @@ void Object::releaseObject()
       value &v = *val;
       if (!v["unrealize"].isUndefined())
          v.call<void>("unrealize");
+      else
+      {
+         unrealize();
 
-      val->set("ptr", emscripten::val::null() );
-      val->set("type", (int)getObjectType() );
-      unrealize(*val);
+         val->set("ptr", emscripten::val::null() );
+         val->set("type", (int)getObjectType() );
+
+      }
       delete val;
    }
    delete this;
@@ -81,25 +87,38 @@ Object *Object::toObject( value &inValue )
    return 0;
 }
 
-
-void BufferData::unrealize(value &outValue)
+void ByteStream::toValue(value v)
 {
-   //printf("BufferData::unrealize\n");
+   int len = data.size();
+   int offset = (int)&data[0];
+
+   /*
+    * TODO
+   EM_ASM_({
+      var buffer = new ArrayBuffer($2);
+      var buf8 = new UInt8Array(buffer);
+      buf8.set( Module.HEAP8, $1, $2);
+      $1["data"] = buf8;
+    }, v, offset, len);
+  */
 }
 
-void Object::unrealize(value &outValue)
+void Object::unrealize()
 {
-   //printf("Object(%d)::unrealize\n", (int)getObjectType());
+   printf("TODO unrealize object %d\n", getObjectType());
+   DisplayObject *d = dynamic_cast<DisplayObject *>(this);
+   if (d)
+      printf("name %S\n", d->name.c_str());
 }
 
 
-int nme_create_buffer(int inLength)
+int nme_buffer_create(int inLength)
 {
    BufferData *data = new BufferData();
    data->data.resize(inLength*4);
    return (int)data;
 }
-DEFINE_PRIME1(nme_create_buffer)
+DEFINE_PRIME1(nme_buffer_create)
 
 
 int nme_buffer_offset(int inPtr)
@@ -110,12 +129,21 @@ int nme_buffer_offset(int inPtr)
 DEFINE_PRIME1(nme_buffer_offset)
 
 
-void nme_resize_buffer(int inPtr, int inNewSize)
+int nme_buffer_length(int inPtr)
+{
+   BufferData *data = (BufferData *)inPtr;
+   return data->data.size();
+}
+DEFINE_PRIME1(nme_buffer_length)
+
+
+
+void nme_buffer_resize(int inPtr, int inNewSize)
 {
    BufferData *data = (BufferData *)inPtr;
    data->data.resize(inNewSize*4);
 }
-DEFINE_PRIME2v(nme_resize_buffer)
+DEFINE_PRIME2v(nme_buffer_resize)
 
 
 
@@ -169,7 +197,7 @@ DEFINE_PRIME1v(nme_native_resource_unlock)
 void nme_native_resource_release_temps()
 {
    /*
-    * todo
+    * TODO:
    for(int i=0;i<gTempRefs.size();i++)
       gTempRefs[i]->DecRef();
    gTempRefs.resize(0);

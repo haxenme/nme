@@ -56,7 +56,6 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    #if jsprime
    public var ptr:Null<Int>=null;
    public var flags:Int;
-   public var byteView:js.html.Uint8Array;
    #end
 
    #if (js||neko)
@@ -68,29 +67,29 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       bigEndian = true;
       position = 0;
 
-      if (inSize >= 0) 
-      {
-         #if (neko)
-            alloced = inSize < 16 ? 16 : inSize;
-            var bytes = untyped __dollar__smake(alloced);
-            super(inSize, bytes);
-         #elseif (js)
-            alloced = inSize < 16 ? 16 : inSize;
-            var bytes = new BytesData(alloced);
-            super(bytes);
-         #else
-            var data = new BytesData();
-            if (inSize > 0)
-               untyped data[inSize - 1] = 0;
-            super(inSize, data);
-         #end
+      if (inSize<0)
+        inSize = 0;
 
-         #if jsprime
-         //if (inWriteOnly)
-            //NativeResource.setWriteOnly(this);
-         onBufferChanged();
-         #end
-      }
+      #if (neko)
+         alloced = inSize < 16 ? 16 : inSize;
+         var bytes = untyped __dollar__smake(alloced);
+         super(inSize, bytes);
+      #elseif (js)
+         alloced = inSize < 16 ? 16 : inSize;
+         var bytes = new BytesData(alloced);
+         super(bytes);
+      #else
+         var data = new BytesData();
+         if (inSize > 0)
+            untyped data[inSize - 1] = 0;
+         super(inSize, data);
+      #end
+
+      #if jsprime
+      if (inWriteOnly)
+         NativeResource.setWriteOnly(this);
+      onBufferChanged();
+      #end
    }
 
    #if cpp
@@ -106,31 +105,68 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
     
    #if jsprime
-   function onBufferChanged() {
+   function onBufferChanged()
+   {
       if (ptr>0)
       {
          var offset = ByteArray.nme_buffer_offset(ptr);
-         byteView = new js.html.Uint8Array(untyped Module.HEAP8.buffer, offset,alloced);
-      }
-      else
-      {
-         var buffer = b;
-         byteView = new js.html.Uint8Array(b.buffer,0,alloced);
+         b = new js.html.Uint8Array(untyped Module.HEAP8.buffer, offset,alloced);
       }
    }
 
    @:keep
-   public function realize() {
-      ptr = nme_create_buffer(length);
-      var offset = nme_buffer_offset(ptr);
-      var heap:js.html.Uint8Array = untyped Module.HEAP8;
-      heap.set(b,offset);
+   public function realize()
+   {
+      alloced = length;
+      ptr = nme_buffer_create(length);
+      if (length>0)
+      {
+         var offset = nme_buffer_offset(ptr);
+         var heap:js.html.Uint8Array = untyped Module.HEAP8;
+         heap.set(b,offset);
+      }
       b = null;
       onBufferChanged();
    }
-   static var nme_create_buffer = nme.PrimeLoader.load("nme_create_buffer","ii");
+
+   public function unrealize()
+   {
+      var f:Int = flags==null ? 0 : flags;
+      if ( (f&NativeResource.AUTO_CLEAR) != 0)
+      {
+         ptr = 0;
+         alloced = 0;
+         length = 0;
+         data = null;
+         b = null;
+      }
+      else
+      {
+         // As per js/_std/haxe/io/Bytes.hx
+         alloced = length<16 ? 16 : length;
+         var data = new BytesData(alloced);
+         b = new js.html.Uint8Array(data);
+         untyped {
+            b.bufferValue = data; // some impl does not return the same instance in .buffer
+            data.hxBytes = this;
+            data.bytes = this.b;
+         }
+
+         if (length>0 && (f&NativeResource.WRITE_ONLY) != 0)
+         {
+            var offset = nme_buffer_offset(ptr);
+            var heap:js.html.Uint8Array = untyped Module.HEAP8;
+            b.set(heap.subarray(offset,offset+length));
+         }
+      }
+      onBufferChanged();
+   }
+
+
+   static var nme_buffer_create = nme.PrimeLoader.load("nme_buffer_create","ii");
    static var nme_buffer_offset = nme.PrimeLoader.load("nme_buffer_offset","ii");
-   static var nme_resize_buffer = nme.PrimeLoader.load("nme_resize_buffer","iiv");
+   static var nme_buffer_resize = nme.PrimeLoader.load("nme_buffer_resize","iiv");
+   static var nme_buffer_length = nme.PrimeLoader.load("nme_buffer_length","ii");
    #end
 
    @:keep
@@ -141,7 +177,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #if cpp
       return untyped b[pos];
       #elseif jsprime
-      return byteView[pos];
+      return b[pos];
       #else
       return get(pos);
       #end
@@ -175,7 +211,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #if cpp
       untyped b[pos] = v;
       #elseif jsprime
-      byteView[pos] = v;
+      b[pos] = v;
       #else
       set(pos, v);
       #end
@@ -262,7 +298,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
             #if jsprime
                if (ptr>0)
                {
-                  nme_resize_buffer(ptr,alloced);
+                  nme_buffer_resize(ptr,alloced);
                }
                else // fallthrough
             #end
@@ -366,8 +402,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       #if neko
          outData.blit(inOffset, this, position, inLen);
       #elseif jsprime
-         var src = byteView.subarray(position,position+inLen);
-         outData.byteView.set( src, inOffset);
+         var src = b.subarray(position,position+inLen);
+         outData.b.set( src, inOffset);
       #else
          var b1 = b;
          var b2 = outData.b;

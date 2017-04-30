@@ -8,8 +8,8 @@ import nme.PrimeLoader;
 
 class NativeResource
 {
-   inline static var AUTO_CLEAR = 0x0001;
-   inline static var WRITE_ONLY = 0x0002;
+   public inline static var AUTO_CLEAR = 0x0001;
+   public inline static var WRITE_ONLY = 0x0002;
 
    #if jsprime
    inline public static function disposeHandler(handler:NativeHandler) : Void {

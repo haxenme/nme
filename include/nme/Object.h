@@ -70,7 +70,7 @@ public:
    static Object *toObject( emscripten::val &inValue );
 
    emscripten::val *val;
-   virtual void unrealize(emscripten::val &outValue);
+   virtual void unrealize();
    #endif
 
 

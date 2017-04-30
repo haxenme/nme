@@ -52,8 +52,6 @@ class Window
  
       nmeHandle = nme_get_frame_stage(inFrameHandle);
 
-      nme.NativeResource.setAutoClear(nmeHandle);
-
       nme_set_stage_handler(nmeHandle, nmeProcessWindowEvent, inWidth, inHeight);
    }
 

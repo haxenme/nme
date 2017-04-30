@@ -738,6 +738,10 @@ public:
       mStage = new SDLStage(inSurface,mFlags,inIsOpenGL,inW,inH);
       mStage->IncRef();
       // SetTimer(mHandle,timerFrame, 10,0);
+      #ifdef HXCPP_JS_PRIME
+      // Never die
+      IncRef();
+      #endif
    }
    ~SDLFrame()
    {

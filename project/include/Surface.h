@@ -114,6 +114,7 @@ class SimpleSurface : public Surface
 public:
    SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4);
 
+
    PixelFormat Format() const  { return mPixelFormat; }
 
    int Width() const  { return mWidth; }
@@ -126,6 +127,10 @@ public:
 
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
+
+   #ifdef HXCPP_JS_PRIME
+   void unrealize();
+   #endif
 
    void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0);
    bool ReinterpretPixelFormat(PixelFormat inNewFormat);
