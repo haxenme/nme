@@ -1861,11 +1861,25 @@ void SimpleSurface::unrealize()
       stream.addInt(mWidth);
       stream.addInt(mHeight);
       stream.addInt((int)mPixelFormat);
-      stream.data.append(mBase,mHeight*mStride);
+      stream.data.append(mBase,GetBufferSize());
 
       stream.toValue(*val);
    }
 }
+
+
+SimpleSurface *SimpleSurface::realize(InputStream &inStream)
+{
+   int w = inStream.getInt();
+   int h = inStream.getInt();
+   PixelFormat pf = (PixelFormat)inStream.getInt();
+
+   SimpleSurface *result = new SimpleSurface(w,h,pf);
+   int bytes = result->GetBufferSize();
+   memcpy(result->mBase, inStream.getBytes( bytes ), bytes);
+   return result;
+}
+
 #endif
 
 

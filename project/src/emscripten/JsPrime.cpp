@@ -2,6 +2,7 @@
 #include <nme/QuickVec.h>
 #include <Utils.h>
 #include <Display.h>
+#include <Surface.h>
 
 IdMap sIdMap;
 IdMap sKindMap;
@@ -22,10 +23,8 @@ void Object::releaseObject()
       else
       {
          unrealize();
-
          val->set("ptr", emscripten::val::null() );
          val->set("type", (int)getObjectType() );
-
       }
       delete val;
    }
@@ -63,8 +62,18 @@ Object *Object::toObject( value &inValue )
          NmeObjectType realizeType = (NmeObjectType)inValue["type"].as<int>();
          switch(realizeType)
          {
-            //case notSurface:
-            //   break;
+            case notSurface:
+               {
+               int len = value::global("Module").call<int>("realize", inValue );
+               unsigned char *ptr = (unsigned char *)inValue["ptr"].as<int>();
+               InputStream bytes(ptr,len);
+               SimpleSurface *s = SimpleSurface::realize(bytes);
+               free(ptr);
+               s->val = new emscripten::val(inValue);
+               inValue.set("ptr",(int)s);
+               newRef = true;
+               }
+               break;
 
             default:
                printf("TODO - realize resource %d\n", realizeType);
@@ -179,7 +188,7 @@ void nme_native_resource_dispose(value inValue)
    {
       ptr->DecRef();
    }
-   inValue["ptr"] = value::null();
+   inValue.set("ptr",value::null());
 }
 DEFINE_PRIME1v(nme_native_resource_dispose)
 

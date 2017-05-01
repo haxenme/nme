@@ -124,12 +124,14 @@ public:
    void        Commit() { };
    int GetStride() const { return mStride; }
    int GetPlaneOffset() const { return mStride*mHeight; }
+   int GetBufferSize() const { return mStride*mHeight; }
 
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
 
    #ifdef HXCPP_JS_PRIME
    void unrealize();
+   static SimpleSurface *realize(InputStream &inStream);
    #endif
 
    void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0);

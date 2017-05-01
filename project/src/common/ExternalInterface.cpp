@@ -5109,7 +5109,6 @@ int nme_zip_decode(value ioBuffer)
       if (code==Z_STREAM_END)
       {
          int size = z.next_out - (Bytef*)&dest[0];
-         printf("zstream resize...%d\n", size);
          dest.resize(size);
          buf->data.swap(dest);
          inflateEnd(&z);
@@ -5117,7 +5116,6 @@ int nme_zip_decode(value ioBuffer)
       }
       // Alloc some more...
       dstpos = dest.size();
-      printf("alloc some more...\n");
       dest.resize(dest.size() + std::max(20, slen/2));
    }
    return 0;

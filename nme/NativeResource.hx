@@ -15,7 +15,10 @@ class NativeResource
    static function __init__() untyped
    {
       if (Module!=null)
+      {
          Module.unrealize = unrealize;
+         Module.realize = realize;
+      }
    }
 
    @:keep
@@ -31,6 +34,23 @@ class NativeResource
          handle.handleList = handleList;
       }
    }
+
+   @:keep
+   static function realize(handle:NativeHandle) : Int
+   {
+      var bytes:js.html.Uint8Array = untyped handle.data;
+      untyped handle.data = null;
+      var len = bytes.length;
+
+      // Get data byte size, allocate memory on Emscripten heap, and get pointer
+      var ptr:Int = untyped Module._malloc(len);
+
+      var heap = new js.html.Uint8Array(untyped Module.HEAPU8.buffer, ptr, len);
+      heap.set(bytes);
+      untyped handle.ptr = ptr;
+      return len;
+   }
+
 
    inline public static function disposeHandler(handler:NativeHandler) : Void {
       if (handler.nmeHandle!=null)

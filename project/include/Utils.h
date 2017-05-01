@@ -303,11 +303,37 @@ struct ByteStream
 
    inline void addInt(int inVal)
    {
-      data.append((unsigned char *)inVal,4);
+      data.append((unsigned char *)&inVal,4);
    }
 
    void toValue(value outValue);
 };
+
+struct InputStream
+{
+   const unsigned char *ptr;
+   int len;
+
+   InputStream(const unsigned char *inPtr, int inLength)
+       : ptr(inPtr), len(inLength) { }
+
+   inline int getInt()
+   {
+      int result;
+      memcpy(&result,ptr,4);
+      ptr+=4;
+      len-=4;
+      return result;
+   }
+   inline const unsigned char *getBytes(int inLen)
+   {
+      const unsigned char *result = ptr;
+      ptr+=inLen;
+      len-=inLen;
+      return result;
+   }
+};
+
 #endif
 
 }
