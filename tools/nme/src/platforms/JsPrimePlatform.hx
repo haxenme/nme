@@ -37,8 +37,7 @@ class JsPrimePlatform extends Platform
       PathHelper.mkdir(getOutputDir());
 
       var src = haxeDir + "/ApplicationMain.js";
-
-      FileHelper.copyFile(src, getOutputDir());
+      FileHelper.copyFile(src, getOutputDir()+"/ApplicationMain.js");
    }
 
    override function generateContext(context:Dynamic)

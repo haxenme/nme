@@ -12,6 +12,26 @@ class NativeResource
    public inline static var WRITE_ONLY = 0x0002;
 
    #if jsprime
+   static function __init__() untyped
+   {
+      if (Module!=null)
+         Module.unrealize = unrealize;
+   }
+
+   @:keep
+   static function unrealize(handle:NativeHandle, ptr:Int, len:Int, handleList:Dynamic)
+   {
+      var buffer = new js.html.ArrayBuffer(len);
+      var bytes = new js.html.Uint8Array(buffer);
+      var heap:js.html.Uint8Array = untyped Module.HEAP8;
+      bytes.set(heap.subarray(ptr,ptr+len));
+      untyped
+      {
+         handle.data = bytes;
+         handle.handleList = handleList;
+      }
+   }
+
    inline public static function disposeHandler(handler:NativeHandler) : Void {
       if (handler.nmeHandle!=null)
       {

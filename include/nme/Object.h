@@ -17,16 +17,16 @@ class ImageBuffer;
 
 enum NmeObjectType
 {
-   notUnkown,
-   notDisplayObject,
+   notUnknown,
+   notBytes,
    notSurface,
+   notDisplayObject,
    notGraphics,
    notHardwareContext,
    notHardwareResource,
    notTilesheet,
    notSound,
    notSoundChannel,
-   notBytes,
    notCamera,
    notVideo,
    notIGraphicsData,
@@ -35,6 +35,8 @@ enum NmeObjectType
    notTextFormat,
    notFont,
 };
+
+extern const char *gObjectTypeNames[];
 
 
 class Object
@@ -62,7 +64,7 @@ public:
    #ifdef HXCPP_JS_PRIME
    virtual NmeObjectType getObjectType() = 0;
    #else
-   virtual NmeObjectType getObjectType() { return notUnkown; }
+   virtual NmeObjectType getObjectType() { return notUnknown; }
    #endif
 
    #ifdef HXCPP_JS_PRIME

@@ -63,6 +63,9 @@ Object *Object::toObject( value &inValue )
          NmeObjectType realizeType = (NmeObjectType)inValue["type"].as<int>();
          switch(realizeType)
          {
+            //case notSurface:
+            //   break;
+
             default:
                printf("TODO - realize resource %d\n", realizeType);
                return 0;
@@ -89,26 +92,42 @@ Object *Object::toObject( value &inValue )
 
 void ByteStream::toValue(value v)
 {
-   int len = data.size();
    int offset = (int)&data[0];
+   int len = data.size();
 
-   /*
-    * TODO
-   EM_ASM_({
-      var buffer = new ArrayBuffer($2);
-      var buf8 = new UInt8Array(buffer);
-      buf8.set( Module.HEAP8, $1, $2);
-      $1["data"] = buf8;
-    }, v, offset, len);
-  */
+   value::global("Module").call<void>("unrealize", v, offset, len, value::null() );
 }
+
+
+const char *gObjectTypeNames[] = {
+   "Unknown",
+   "Bytes",
+   "Surface",
+   "DisplayObject",
+   "Graphics",
+   "HardwareContext",
+   "HardwareResource",
+   "Tilesheet",
+   "Sound",
+   "SoundChannel",
+   "Camera",
+   "Video",
+   "IGraphicsData",
+   "Url",
+   "Frame",
+   "TextFormat",
+   "Font",
+};
+
+
 
 void Object::unrealize()
 {
-   printf("TODO unrealize object %d\n", getObjectType());
    DisplayObject *d = dynamic_cast<DisplayObject *>(this);
    if (d)
-      printf("name %S\n", d->name.c_str());
+      printf("TODO handle display object %S\n", d->name.c_str());
+   else
+      printf("TODO unrealize object %s\n", gObjectTypeNames[getObjectType()]);
 }
 
 
@@ -194,14 +213,27 @@ void nme_native_resource_unlock(value inValue)
 }
 DEFINE_PRIME1v(nme_native_resource_unlock)
 
+
 void nme_native_resource_release_temps()
 {
-   /*
-    * TODO:
    for(int i=0;i<gTempRefs.size();i++)
-      gTempRefs[i]->DecRef();
+   {
+      Object *obj = gTempRefs[i];
+      int type = obj->getObjectType();
+      switch(type)
+      {
+         case notBytes:
+         case notSurface:
+            // Ok, implemented
+            obj->DecRef();
+            break;
+         default:
+            // potentially leak for now
+            //obj->DecRef();
+            ;
+      }
+   }
    gTempRefs.resize(0);
-   */
 }
 
 DEFINE_PRIME0v(nme_native_resource_release_temps)
