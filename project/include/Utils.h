@@ -309,6 +309,31 @@ struct ByteStream
    void toValue(value outValue);
 };
 
+struct OutputStream : public ByteStream
+{
+   value *handleArray;
+   int   count;
+
+   OutputStream()
+   {
+      handleArray = new value(value::object());
+      count = 0;
+   }
+   ~OutputStream()
+   {
+      delete handleArray;
+   }
+
+   inline void addHandle(const value &inHandle)
+   {
+      addInt(count);
+      handleArray->set(count++, inHandle);
+   }
+
+   void toValue(value outValue);
+};
+
+
 struct InputStream
 {
    const unsigned char *ptr;

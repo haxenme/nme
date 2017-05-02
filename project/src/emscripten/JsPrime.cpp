@@ -107,12 +107,19 @@ void ByteStream::toValue(value v)
    value::global("Module").call<void>("unrealize", v, offset, len, value::null() );
 }
 
+void OutputStream::toValue(value v)
+{
+   ByteStream::toValue(v);
+   if (count)
+      v.set("handles", *handleArray);
+}
+
+
 
 const char *gObjectTypeNames[] = {
    "Unknown",
    "Bytes",
    "Surface",
-   "DisplayObject",
    "Graphics",
    "HardwareContext",
    "HardwareResource",
@@ -120,23 +127,26 @@ const char *gObjectTypeNames[] = {
    "Sound",
    "SoundChannel",
    "Camera",
-   "Video",
    "IGraphicsData",
    "Url",
    "Frame",
    "TextFormat",
    "Font",
+   "Stage",
+   "Video",
+   "ManagedStage",
+   "DisplayObject",
+   "DisplayObjectContainer",
+   "DirectRenderer",
+   "SimpleButton",
+   "TextField",
 };
 
 
 
 void Object::unrealize()
 {
-   DisplayObject *d = dynamic_cast<DisplayObject *>(this);
-   if (d)
-      printf("TODO handle display object %S\n", d->name.c_str());
-   else
-      printf("TODO unrealize object %s\n", gObjectTypeNames[getObjectType()]);
+   printf("TODO unrealize object %s\n", gObjectTypeNames[getObjectType()]);
 }
 
 
@@ -233,6 +243,7 @@ void nme_native_resource_release_temps()
       {
          case notBytes:
          case notSurface:
+         case notDisplayObject:
             // Ok, implemented
             obj->DecRef();
             break;

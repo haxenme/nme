@@ -82,6 +82,49 @@ extern bool gMouseShowCursor;
 class DisplayObject : public Object
 {
 public:
+   int            id;
+   WString        name;
+   BlendMode      blendMode;
+   bool           cacheAsBitmap;
+   bool           pedanticBitmapCaching;
+   unsigned char  pixelSnapping;
+   ColorTransform colorTransform;
+   FilterList     filters;
+
+   uint32 opaqueBackground;
+   DRect  scale9Grid;
+   DRect  scrollRect;
+   bool   visible;
+   bool   mouseEnabled;
+   bool   hitEnabled;
+   bool   needsSoftKeyboard;
+   int    softKeyboard;
+   bool   movesForSoftKeyboard;
+   uint32 mDirtyFlags;
+
+protected:
+   DisplayObjectContainer *mParent;
+   Graphics               *mGfx;
+   BitmapCache            *mBitmapCache;
+   int                     mBitmapGfx;
+
+   // Masking...
+   DisplayObject          *mMask;
+   int                    mIsMaskCount;
+
+   // Matrix stuff
+   Matrix mLocalMatrix;
+   // Decomp
+   double x;
+   double y;
+   double scaleX;
+   double scaleY;
+   double rotation;
+
+
+
+
+public:
    DisplayObject(bool inInitRef = false);
 
    NmeObjectType getObjectType() { return notDisplayObject; }
@@ -90,10 +133,6 @@ public:
    void   setX(double inValue);
    double getY();
    void   setY(double inValue);
-   #ifdef NME_S3D
-   double getZ();
-   void   setZ(double inValue);
-   #endif
    virtual double getHeight();
    virtual void   setHeight(double inValue);
    virtual double getWidth();
@@ -152,25 +191,6 @@ public:
 
    struct LoaderInfo &GetLoaderInfo();
 
-   BlendMode blendMode;
-   bool cacheAsBitmap;
-   bool pedanticBitmapCaching;
-   unsigned char pixelSnapping;
-   ColorTransform  colorTransform;
-   FilterList filters;
-
-   WString  name;
-   uint32 opaqueBackground;
-   DRect   scale9Grid;
-   DRect   scrollRect;
-   int     id;
-   bool   visible;
-   bool   mouseEnabled;
-   bool   hitEnabled;
-   bool   needsSoftKeyboard;
-   int    softKeyboard;
-   bool   movesForSoftKeyboard;
-
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
 
    virtual void Render( const RenderTarget &inTarget, const RenderState &inState );
@@ -228,40 +248,33 @@ public:
                                const ColorTransform *inObjTrans,
                                ColorTransform *inBuf);
 
-   uint32 mDirtyFlags;
+
+   #ifdef HXCPP_JS_PRIME
+   virtual void encodeStream(OutputStream &inStream);
+   void unrealize();
+   virtual void decodeStream(InputStream &inStream);
+   static DisplayObject *realize(InputStream &inStream);
+   #endif
+
 
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
    void ClearFilters();
    ~DisplayObject();
-   DisplayObjectContainer *mParent;
-   Graphics               *mGfx;
-   BitmapCache            *mBitmapCache;
-   int                    mBitmapGfx;
-
-
-   // Masking...
-   DisplayObject          *mMask;
-   int                    mIsMaskCount;
-
-   // Matrix stuff
-   Matrix mLocalMatrix;
-   // Decomp
-   double x;
-   double y;
-   #ifdef NME_S3D
-   double z;
-   #endif
-   double scaleX;
-   double scaleY;
-   double rotation;
 };
 
 
 
 class DisplayObjectContainer : public DisplayObject
 {
+public:
+   bool mouseChildren;
+   CachedExtent mExtentCache[3];
+protected:
+   QuickVec<DisplayObject *> mChildren;
+
+
 public:
    DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef), mouseChildren(true) { }
 
@@ -291,13 +304,15 @@ public:
 
    bool getMouseChildren() { return mouseChildren; }
    void setMouseChildren(bool inVal) { mouseChildren = inVal; }
-   
-   bool mouseChildren;
-   CachedExtent mExtentCache[3];
+
+
 protected:
    ~DisplayObjectContainer();
-   QuickVec<DisplayObject *> mChildren;
 };
+
+
+
+
 
 class DirectRenderer : public DisplayObject
 {
@@ -316,15 +331,19 @@ class SimpleButton : public DisplayObjectContainer
 {
 public:
    enum { stateUp=0, stateDown, stateOver, stateHitTest, stateSIZE };
-   void setMouseState(int inState);
+
+   DisplayObject *mState[stateSIZE];
+   bool enabled;
+   bool useHandCursor;
+   int  mMouseState;
+
+
    SimpleButton(bool inInitRef = false);
    ~SimpleButton();
 
-   DisplayObject *mState[stateSIZE];
-   
    void RemoveChildFromList(DisplayObject *inChild);
 
-
+   void setMouseState(int inState);
    void Render( const RenderTarget &inTarget, const RenderState &inState );
    void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke);
    bool IsCacheDirty();
@@ -339,9 +358,6 @@ public:
 
    void setState(int inState, DisplayObject *inObject);
 
-   bool enabled;
-   bool useHandCursor;
-   int  mMouseState;
 };
 
 

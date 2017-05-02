@@ -20,7 +20,6 @@ enum NmeObjectType
    notUnknown,
    notBytes,
    notSurface,
-   notDisplayObject,
    notGraphics,
    notHardwareContext,
    notHardwareResource,
@@ -28,12 +27,19 @@ enum NmeObjectType
    notSound,
    notSoundChannel,
    notCamera,
-   notVideo,
    notIGraphicsData,
    notUrl,
    notFrame,
    notTextFormat,
    notFont,
+   notStage,
+   notVideo,
+   notManagedStage,
+   notDisplayObject,  // Shape, Bitmap
+   notDisplayObjectContainer, // Sprite
+   notDirectRenderer,
+   notSimpleButton,
+   notTextField,
 };
 
 extern const char *gObjectTypeNames[];

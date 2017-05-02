@@ -691,6 +691,61 @@ void DisplayObject::Unfocus()
 #endif
 }
 
+
+
+
+
+
+#ifdef HXCPP_JS_PRIME
+void DisplayObject::encodeStream(OutputStream &inStream)
+{
+}
+void DisplayObject::unrealize()
+{
+   if (val)
+   {
+      OutputStream stream;
+      stream.addInt(getObjectType());
+      encodeStream(stream);
+      stream.toValue(*val);
+   }
+}
+
+void DisplayObject::decodeStream(InputStream &inStream)
+{
+}
+
+DisplayObject *DisplayObject::realize(InputStream &inStream)
+{
+   DisplayObject *result = 0;
+
+   NmeObjectType type = (NmeObjectType)inStream.getInt();
+   switch(type)
+   {
+      case notDisplayObject:
+         result = new DisplayObject();
+         break;
+      default:
+         ;
+   }
+
+   if (!result)
+   {
+      printf("could not decode DisplayObject %d\n", type);
+      return 0;
+   }
+   result->decodeStream(inStream);
+   return result;
+}
+#endif
+
+
+
+
+
+
+
+
 // --- DirectRenderer ------------------------------------------------
 
 HardwareRenderer *gDirectRenderContext = 0;
