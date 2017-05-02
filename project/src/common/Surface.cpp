@@ -803,7 +803,6 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
       {
          BLEND_CASE(Multiply)
          BLEND_CASE(Screen)
-         BLEND_CASE(Copy)
          BLEND_CASE(Add)
          BLEND_CASE(Lighten)
          BLEND_CASE(Darken)
@@ -814,6 +813,14 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
          BLEND_CASE(HardLight)
          BLEND_CASE(Alpha)
          BLEND_CASE(Erase)
+
+         case bmCopy:
+            for(int x=0;x<inSrcRect.w;x++)
+            {
+               typename DEST::Pixel &dest = outDest.Next();
+               SetPixel(dest,inMask.Mask(inSrc.Next()));
+            }
+            break;
 
          case bmInner:
             for(int x=0;x<inSrcRect.w;x++)
