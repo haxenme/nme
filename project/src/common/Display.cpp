@@ -700,7 +700,7 @@ void DisplayObject::Unfocus()
 void DisplayObject::encodeStream(OutputStream &inStream)
 {
    inStream.add(id);
-   inStream.add(name.size());
+   inStream.addInt(name.size());
    inStream.append(name.c_str(),name.size()*sizeof(wchar_t));
    inStream.add(blendMode);
    inStream.add(cacheAsBitmap);
@@ -756,6 +756,52 @@ void DisplayObject::unrealize()
 
 void DisplayObject::decodeStream(InputStream &inStream)
 {
+   inStream.get(id);
+   int len = inStream.getInt();
+   wchar_t *str = (wchar_t *)inStream.getBytes(len*sizeof(wchar_t));
+   name = WString(str, str+len);
+   printf("Decoded %S\n", name.c_str());
+   inStream.get(blendMode);
+   inStream.get(cacheAsBitmap);
+   inStream.get(pedanticBitmapCaching);
+   inStream.get(pixelSnapping);
+   inStream.get(colorTransform);
+   //TODO - FilterList     filters;
+   inStream.get(opaqueBackground);
+   inStream.get(scale9Grid);
+   inStream.get(scrollRect);
+   inStream.get(visible);
+   inStream.get(mouseEnabled);
+   inStream.get(hitEnabled);
+   inStream.get(needsSoftKeyboard);
+   inStream.get(softKeyboard);
+   inStream.get(movesForSoftKeyboard);
+   //uint32 mDirtyFlags;
+
+   inStream.getObject(mParent);
+   inStream.getObject(mGfx);
+   //Recreate
+   //BitmapCache  *mBitmapCache;
+   //int          mBitmapGfx;
+
+   // Masking...
+   inStream.getObject(mMask);
+   //mIsMaskCount;
+
+   if (inStream.getBool())
+   {
+      mDirtyFlags &= ~dirtLocalMatrix;
+      inStream.get(mLocalMatrix);
+   }
+   else
+   {
+      mDirtyFlags &= ~dirtDecomp;
+      inStream.get(x);
+      inStream.get(y);
+      inStream.get(scaleX);
+      inStream.get(scaleY);
+      inStream.get(rotation);
+   }
 }
 
 DisplayObject *DisplayObject::realize(InputStream &inStream)
@@ -777,6 +823,8 @@ DisplayObject *DisplayObject::realize(InputStream &inStream)
       printf("could not decode DisplayObject %d\n", type);
       return 0;
    }
+
+   inStream.linkAbstract(result);
    result->decodeStream(inStream);
    return result;
 }

@@ -307,23 +307,16 @@ struct ByteStream
       return inVal;
    }
 
-   void toValue(value outValue);
+   void toValue(value &outValue);
 };
 
 struct OutputStream : public ByteStream
 {
-   value *handleArray;
+   value handleArray;
    int   count;
 
-   OutputStream()
-   {
-      handleArray = new value(value::object());
-      count = 0;
-   }
-   ~OutputStream()
-   {
-      delete handleArray;
-   }
+   OutputStream() : handleArray(value::object()), count(0) { }
+
    inline void append(const void *inData, int inBytes)
    {
       data.append((unsigned char *)inData, inBytes);
@@ -354,10 +347,10 @@ struct OutputStream : public ByteStream
    inline void addHandle(const value &inHandle)
    {
       addInt(count);
-      handleArray->set(count++, inHandle);
+      handleArray.set(count++, inHandle);
    }
 
-   void toValue(value outValue);
+   void toValue(value &outValue);
 };
 
 
@@ -365,9 +358,17 @@ struct InputStream
 {
    const unsigned char *ptr;
    int len;
+   int count;
+   value handleArray;
+   value abstract;
 
-   InputStream(const unsigned char *inPtr, int inLength)
-       : ptr(inPtr), len(inLength) { }
+   InputStream(const unsigned char *inPtr, int inLength, value inHandles, value inAbstract)
+       : ptr(inPtr), len(inLength), handleArray(inHandles), abstract(inAbstract)
+   {
+      count = 0;
+   }
+
+   void linkAbstract(Object *inObject);
 
    inline int getInt()
    {
@@ -384,6 +385,47 @@ struct InputStream
       len-=inLen;
       return result;
    }
+
+   template<typename T>
+   void get(T& outData)
+   {
+      memcpy(&outData, ptr, sizeof(T));
+      ptr+=sizeof(T);
+      len-=sizeof(T);
+   }
+   template<typename T>
+   void getVec(QuickVec<T> &outData)
+   {
+      int n = getInt();
+      outData.resize(n);
+      int size = n*sizeof(T);
+      memcpy(outData.ByteData(), getBytes(size),size);
+   }
+
+   bool getBool()
+   {
+      bool result;
+      get(result);
+      return result;
+   }
+   template<typename T>
+   void getObject(T *&outObject)
+   {
+      if (getBool())
+      {
+         value v = getHandle();
+         Object *obj = Object::toObject(v);
+         outObject = dynamic_cast<T*>(obj);
+      }
+      else
+         outObject = 0;
+   }
+
+   inline value getHandle()
+   {
+      return handleArray[count++];
+   }
+
 };
 
 #endif

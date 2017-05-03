@@ -1882,6 +1882,7 @@ SimpleSurface *SimpleSurface::realize(InputStream &inStream)
    PixelFormat pf = (PixelFormat)inStream.getInt();
 
    SimpleSurface *result = new SimpleSurface(w,h,pf);
+   inStream.linkAbstract(result);
    int bytes = result->GetBufferSize();
    memcpy(result->mBase, inStream.getBytes( bytes ), bytes);
    return result;

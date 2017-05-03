@@ -47,59 +47,73 @@ value &Object::toAbstract()
 
 Object *Object::toObject( value &inValue )
 {
-   bool newRef = false;
    if (inValue.isNull() || inValue.isUndefined())
       return 0;
+
    if (inValue["ptr"].isNull()  || inValue["ptr"].isUndefined())
    {
       // Custom 'realize' method (ByteArray)
       if (!inValue["realize"].isUndefined())
       {
          inValue.call<void>("realize");
+         Object *newObject = (Object *)inValue["ptr"].as<int>();
+
+         newObject->val = new emscripten::val(inValue);
+         inValue.set("ptr",(int)newObject);
+         newObject->IncRef();
+         gTempRefs.push_back(newObject);
+
+         return newObject;
       }
       else if (!inValue["type"].isUndefined())
       {
          NmeObjectType realizeType = (NmeObjectType)inValue["type"].as<int>();
+
+         int len = value::global("Module").call<int>("realize", inValue );
+         unsigned char *ptr = (unsigned char *)inValue["ptr"].as<int>();
+         InputStream input(ptr,len,inValue["handles"],inValue);
+         Object *newObject = 0;
+
          switch(realizeType)
          {
             case notSurface:
-               {
-               int len = value::global("Module").call<int>("realize", inValue );
-               unsigned char *ptr = (unsigned char *)inValue["ptr"].as<int>();
-               InputStream bytes(ptr,len);
-               SimpleSurface *s = SimpleSurface::realize(bytes);
-               free(ptr);
-               s->val = new emscripten::val(inValue);
-               inValue.set("ptr",(int)s);
-               newRef = true;
-               }
+               newObject = SimpleSurface::realize(input);
+               break;
+
+            case notDisplayObject:
+            case notDisplayObjectContainer:
+            case notDirectRenderer:
+            case notSimpleButton:
+            case notTextField:
+               newObject = DisplayObject::realize(input);
                break;
 
             default:
                printf("TODO - realize resource %d\n", realizeType);
+               free(ptr);
                return 0;
          }
-         newRef = true;
+
+         return newObject;
       }
       else
          return 0;
    }
 
    Object *ptr = (Object *)inValue["ptr"].as<int>();
-   if (ptr)
-   {
-      if (newRef)
-      {
-         ptr->IncRef();
-         gTempRefs.push_back(ptr);
-      }
-      return ptr;
-   }
-
-   return 0;
+   return ptr;
 }
 
-void ByteStream::toValue(value v)
+void InputStream::linkAbstract(Object *newObject)
+{
+   newObject->val = new emscripten::val(abstract);
+   abstract.set("ptr",(int)newObject);
+   newObject->IncRef();
+   gTempRefs.push_back(newObject);
+}
+
+
+void ByteStream::toValue(value &v)
 {
    int offset = (int)&data[0];
    int len = data.size();
@@ -107,11 +121,12 @@ void ByteStream::toValue(value v)
    value::global("Module").call<void>("unrealize", v, offset, len, value::null() );
 }
 
-void OutputStream::toValue(value v)
+void OutputStream::toValue(value &v)
 {
    ByteStream::toValue(v);
    if (count)
-      v.set("handles", *handleArray);
+      v.set("handles", handleArray);
+   printf("Saved %d bytes, %d handles\n", data.size(), count);
 }
 
 
