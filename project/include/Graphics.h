@@ -639,6 +639,29 @@ typedef QuickVec<GraphicsJob> GraphicsJobs;
 
 class Graphics : public Object
 {
+private:
+   DisplayObject             *mOwner;
+   GraphicsJobs              mJobs;
+   int                       mVersion;
+
+   int                       mConvertedJobs;
+   int                       mMeasuredJobs;
+   int                       mBuiltHardware;
+   int                       mClearCount;
+
+   GraphicsPath              *mPathData;
+   HardwareData              *mHardwareData;
+
+   double                    mRotation0;
+   Extent2DF                 mExtent0;
+
+   GraphicsJob               mFillJob;
+   GraphicsJob               mLineJob;
+   GraphicsJob               mTileJob;
+
+   UserPoint                 mCursor;
+
+
 public:
    Graphics(DisplayObject *inOwner, bool inInitRef = false);
    ~Graphics();
@@ -704,32 +727,22 @@ public:
 
    int Version() const;
 
+
+
+   #ifdef HXCPP_JS_PRIME
+   void unrealize();
+   void decodeStream(class InputStream &inStream);
+   static Graphics *realize(class InputStream &inStream);
+   #endif
+
+
+
 protected:
    void                      BuildHardware();
    void                      Flush(bool inLine=true,bool inFill=true,bool inTile=true);
    inline void               OnChanged();
 
 private:
-   DisplayObject             *mOwner;
-   GraphicsJobs              mJobs;
-   int                       mVersion;
-
-   int                       mConvertedJobs;
-   int                       mMeasuredJobs;
-   int                       mBuiltHardware;
-   int                       mClearCount;
-
-   GraphicsPath              *mPathData;
-   HardwareData              *mHardwareData;
-
-   double                    mRotation0;
-   Extent2DF                 mExtent0;
-
-   GraphicsJob               mFillJob;
-   GraphicsJob               mLineJob;
-   GraphicsJob               mTileJob;
-
-   UserPoint                 mCursor;
 
    void BuiltExtent0(double inRotation);
 

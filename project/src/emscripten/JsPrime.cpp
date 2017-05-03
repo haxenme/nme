@@ -244,6 +244,7 @@ void nme_native_resource_release_temps()
          case notBytes:
          case notSurface:
          case notDisplayObject:
+         case notGraphics:
             // Ok, implemented
             obj->DecRef();
             break;

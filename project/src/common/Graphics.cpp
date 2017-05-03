@@ -704,6 +704,149 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 }
 
 
+
+#ifdef HXCPP_JS_PRIME
+
+void encodeGraphicsData(OutputStream &stream, IGraphicsData *data)
+{
+   switch(stream.addInt(data->GetType()))
+   {
+      case gdtUnknown:
+         break;
+
+      case gdtEndFill:
+         // nothing to do
+         break;
+      case gdtSolidFill:
+         {
+         GraphicsSolidFill *fill = data->AsSolidFill();
+         stream.addBool( fill->isSolidStyle() );
+         stream.add( fill->mRGB );
+         }
+         break;
+
+      case gdtGradientFill:
+         {
+         GraphicsGradientFill *grad = data->AsGradientFill();
+         stream.addBool( grad->isSolidStyle() );
+         stream.addVec( grad->mStops );
+         stream.add( grad->focalPointRatio );
+         stream.add( grad->matrix );
+         stream.add( grad->interpolationMethod );
+         stream.add( grad->spreadMethod  );
+         stream.add( grad->isLinear  );
+         break;
+         }
+
+      case gdtBitmapFill:
+         {
+         GraphicsBitmapFill *bmp = data->AsBitmapFill();
+         stream.addBool( bmp->isSolidStyle() );
+         stream.addObject( bmp->bitmapData );
+         stream.add( bmp->matrix );
+         stream.add( bmp->repeat );
+         stream.add( bmp->smooth );
+         break;
+         }
+
+      case gdtPath:
+         {
+         GraphicsPath *path = data->AsPath();
+         stream.addVec(path->commands);
+         stream.addVec(path->data);
+         stream.add(path->winding);
+         break;
+         }
+
+      case gdtTrianglePath:
+         {
+         GraphicsTrianglePath *tris = data->AsTrianglePath();
+         stream.add(tris->mType);
+         stream.add(tris->mBlendMode);
+         stream.add(tris->mTriangleCount);
+         stream.addVec(tris->mVertices);
+         stream.addVec(tris->mUVT);
+         stream.addVec(tris->mColours);
+         break;
+         }
+      case gdtStroke:
+         {
+         GraphicsStroke *stroke = data->AsStroke();
+         if (stream.addBool(stroke->fill))
+            encodeGraphicsData(stream,stroke->fill);
+
+         stream.add(stroke->caps);
+         stream.add(stroke->joints);
+         stream.add(stroke->miterLimit);
+         stream.add(stroke->pixelHinting);
+         stream.add(stroke->scaleMode);
+         stream.add(stroke->thickness);
+         break;
+         }
+   }
+}
+
+void Graphics::unrealize()
+{
+   if (val)
+   {
+      OutputStream stream;
+
+      Flush();
+
+      //*mOwner;
+
+      int count = mJobs.size();
+      stream.addInt(count);
+      for(int j=0;j<count;j++)
+      {
+         GraphicsJob &job = mJobs[j];
+
+         if (stream.addBool(job.mFill))
+            encodeGraphicsData(stream,job.mFill);
+
+         GraphicsStroke *stroke = job.mStroke;
+         if (stream.addBool(stroke))
+            encodeGraphicsData(stream, stroke);
+
+         GraphicsTrianglePath *tris = job.mTriangles;
+         if (stream.addBool(tris))
+            encodeGraphicsData(stream,tris);
+
+         stream.add(job.mCommand0);
+         stream.add(job.mCommandCount);
+         stream.add(job.mData0);
+         stream.add(job.mDataCount);
+         stream.add(job.mIsTileJob);
+         stream.add(job.mIsPointJob);
+         stream.add(job.mTileMode);
+         stream.add(job.mBlendMode);
+      }
+
+      if (stream.addBool(mPathData))
+         encodeGraphicsData(stream,mPathData);
+
+
+      stream.toValue(*val);
+   }
+}
+
+void Graphics::decodeStream(InputStream &inStream)
+{
+}
+
+Graphics *Graphics::realize(InputStream &inStream)
+{
+   Graphics *result = new Graphics(0);
+   result->decodeStream(inStream);
+   return result;
+}
+#endif
+
+
+
+
+
 // --- RenderState -------------------------------------------------------------------
 
 void GraphicsJob::clear()

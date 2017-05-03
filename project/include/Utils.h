@@ -301,9 +301,10 @@ struct ByteStream
 {
    QuickVec<unsigned char> data;
 
-   inline void addInt(int inVal)
+   inline int addInt(int inVal)
    {
       data.append((unsigned char *)&inVal,4);
+      return inVal;
    }
 
    void toValue(value outValue);
@@ -322,6 +323,32 @@ struct OutputStream : public ByteStream
    ~OutputStream()
    {
       delete handleArray;
+   }
+   inline void append(const void *inData, int inBytes)
+   {
+      data.append((unsigned char *)inData, inBytes);
+   }
+   template<typename T>
+   void add(const T& inData)
+   {
+      data.append((unsigned char *)&inData, sizeof(T));
+   }
+   template<typename T>
+   void addVec(const QuickVec<T> &inData)
+   {
+      addInt(inData.size());
+      append(inData.ByteData(), inData.ByteCount());
+   }
+
+   bool addBool(bool inValue)
+   {
+      add(inValue);
+      return inValue;
+   }
+   void addObject(Object *inObj)
+   {
+      if (addBool(inObj))
+         addHandle( inObj->toAbstract() );
    }
 
    inline void addHandle(const value &inHandle)

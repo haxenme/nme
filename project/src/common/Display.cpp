@@ -699,7 +699,50 @@ void DisplayObject::Unfocus()
 #ifdef HXCPP_JS_PRIME
 void DisplayObject::encodeStream(OutputStream &inStream)
 {
+   inStream.add(id);
+   inStream.add(name.size());
+   inStream.append(name.c_str(),name.size()*sizeof(wchar_t));
+   inStream.add(blendMode);
+   inStream.add(cacheAsBitmap);
+   inStream.add(pedanticBitmapCaching);
+   inStream.add(pixelSnapping);
+   inStream.add(colorTransform);
+   //TODO - FilterList     filters;
+   inStream.add(opaqueBackground);
+   inStream.add(scale9Grid);
+   inStream.add(scrollRect);
+   inStream.add(visible);
+   inStream.add(mouseEnabled);
+   inStream.add(hitEnabled);
+   inStream.add(needsSoftKeyboard);
+   inStream.add(softKeyboard);
+   inStream.add(movesForSoftKeyboard);
+   //uint32 mDirtyFlags;
+
+   inStream.addObject(mParent);
+   inStream.addObject(mGfx);
+   //Recreate
+   //BitmapCache  *mBitmapCache;
+   //int          mBitmapGfx;
+
+   // Masking...
+   inStream.addObject(mMask);
+   //mIsMaskCount;
+
+   if (inStream.addBool(mDirtyFlags & dirtDecomp))
+   {
+      inStream.add(mLocalMatrix);
+   }
+   else
+   {
+      inStream.add(x);
+      inStream.add(y);
+      inStream.add(scaleX);
+      inStream.add(scaleY);
+      inStream.add(rotation);
+   }
 }
+
 void DisplayObject::unrealize()
 {
    if (val)
