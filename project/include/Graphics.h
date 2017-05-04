@@ -180,6 +180,7 @@ class GraphicsBitmapFill : public IGraphicsFill
 {
 public:
    GraphicsBitmapFill(Surface *inBitmapData, const Matrix &inMatrix, bool inRepeat, bool inSmooth);
+   GraphicsBitmapFill() : bitmapData(0) { }
    ~GraphicsBitmapFill();
 
    GraphicsDataType GetType() { return gdtBitmapFill; }
@@ -358,6 +359,7 @@ public:
             const QuickVec<float> &inUVT, int inCull,
             const QuickVec<int> &inColours,
             int blendMode );
+   GraphicsTrianglePath() { }
 
    VertexType       mType;
    int              mTriangleCount;
@@ -593,10 +595,6 @@ public:
 
    virtual bool Hits(const RenderState &inState) { return false; }
    
-   #ifdef NME_DIRECTFB
-   static Renderer *CreateHardware(const class GraphicsJob &inJob,const GraphicsPath &inPath,HardwareContext &inHardware);
-   #endif
-   
    static Renderer *CreateSoftware(const class GraphicsJob &inJob,const GraphicsPath &inPath);
 
 protected:
@@ -614,9 +612,6 @@ struct GraphicsJob
    GraphicsStroke  *mStroke;
    IGraphicsFill   *mFill;
    GraphicsTrianglePath  *mTriangles;
-   #ifdef NME_DIRECTFB
-   class Renderer  *mHardwareRenderer;
-   #endif
    class Renderer  *mSoftwareRenderer;
    int             mCommand0;
    int             mData0;
@@ -666,6 +661,7 @@ public:
    Graphics(DisplayObject *inOwner, bool inInitRef = false);
    ~Graphics();
 
+   void setOwner(DisplayObject *owner);
    NmeObjectType getObjectType() { return notGraphics; }
 
    void clear(bool inForceHardwareFree=false);

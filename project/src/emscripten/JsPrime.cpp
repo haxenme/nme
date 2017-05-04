@@ -88,6 +88,10 @@ Object *Object::toObject( value &inValue )
                newObject = DisplayObject::realize(input);
                break;
 
+            case notGraphics:
+               newObject = Graphics::realize(input);
+               break;
+
             default:
                printf("TODO - realize resource %d\n", realizeType);
                free(ptr);
@@ -126,7 +130,7 @@ void OutputStream::toValue(value &v)
    ByteStream::toValue(v);
    if (count)
       v.set("handles", handleArray);
-   printf("Saved %d bytes, %d handles\n", data.size(), count);
+   //printf("Saved(%p) %d bytes, %d handles\n", this, data.size(), count);
 }
 
 

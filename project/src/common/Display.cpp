@@ -743,10 +743,12 @@ void DisplayObject::encodeStream(OutputStream &inStream)
    }
 }
 
+int idx = 0;
 void DisplayObject::unrealize()
 {
    if (val)
    {
+      int i = idx++;
       OutputStream stream;
       stream.addInt(getObjectType());
       encodeStream(stream);
@@ -760,7 +762,6 @@ void DisplayObject::decodeStream(InputStream &inStream)
    int len = inStream.getInt();
    wchar_t *str = (wchar_t *)inStream.getBytes(len*sizeof(wchar_t));
    name = WString(str, str+len);
-   printf("Decoded %S\n", name.c_str());
    inStream.get(blendMode);
    inStream.get(cacheAsBitmap);
    inStream.get(pedanticBitmapCaching);
@@ -778,8 +779,10 @@ void DisplayObject::decodeStream(InputStream &inStream)
    inStream.get(movesForSoftKeyboard);
    //uint32 mDirtyFlags;
 
-   inStream.getObject(mParent);
+   inStream.getObject(mParent,false);
    inStream.getObject(mGfx);
+   if (mGfx)
+      mGfx->setOwner(this);
    //Recreate
    //BitmapCache  *mBitmapCache;
    //int          mBitmapGfx;

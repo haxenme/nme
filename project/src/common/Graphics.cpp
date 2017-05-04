@@ -38,6 +38,10 @@ Graphics::~Graphics()
    mPathData->DecRef();
 }
 
+void Graphics::setOwner(DisplayObject *inOwner)
+{
+   mOwner = inOwner;
+}
 
 void Graphics::clear(bool inForceFreeHardware)
 {
@@ -786,6 +790,115 @@ void encodeGraphicsData(OutputStream &stream, IGraphicsData *data)
    }
 }
 
+
+IGraphicsData *decodeGraphicsData(InputStream &stream);
+
+template<typename T>
+void decodeGraphicsData(InputStream &stream, T *&outPointer)
+{
+   outPointer = 0;
+   IGraphicsData *g = decodeGraphicsData(stream);
+   if (g)
+   {
+      g->IncRef();
+      T *result = dynamic_cast<T*>(g);
+      if (result)
+      {
+         outPointer = result;
+      }
+      else
+      {
+         printf("decodeGraphicsData not right type\n");
+         g->DecRef();
+      }
+   }
+   else
+      printf("Could not decodeGraphicsData\n");
+}
+
+
+IGraphicsData *decodeGraphicsData(InputStream &stream)
+{
+   switch(stream.getInt())
+   {
+      case gdtUnknown:
+         return 0;
+
+      case gdtEndFill:
+         return new GraphicsEndFill();
+
+      case gdtSolidFill:
+         {
+         GraphicsSolidFill *fill = new GraphicsSolidFill();
+         fill->setIsSolidStyle(stream.getBool());
+         stream.get( fill->mRGB );
+         return fill;
+         }
+
+      case gdtGradientFill:
+         {
+         GraphicsGradientFill *grad = new GraphicsGradientFill();
+         grad->setIsSolidStyle(stream.getBool());
+         stream.getVec( grad->mStops );
+         stream.get( grad->focalPointRatio );
+         stream.get( grad->matrix );
+         stream.get( grad->interpolationMethod );
+         stream.get( grad->spreadMethod  );
+         stream.get( grad->isLinear  );
+         return grad;
+         }
+
+      case gdtBitmapFill:
+         {
+         GraphicsBitmapFill *bmp = new GraphicsBitmapFill();
+         bmp->setIsSolidStyle(stream.getBool());
+         stream.getObject( bmp->bitmapData );
+         stream.get( bmp->matrix );
+         stream.get( bmp->repeat );
+         stream.get( bmp->smooth );
+         return bmp;
+         }
+
+      case gdtPath:
+         {
+         GraphicsPath *path = new GraphicsPath();
+         stream.getVec(path->commands);
+         stream.getVec(path->data);
+         stream.get(path->winding);
+         return path;
+         }
+
+      case gdtTrianglePath:
+         {
+         GraphicsTrianglePath *tris = new GraphicsTrianglePath();
+         stream.get(tris->mType);
+         stream.get(tris->mBlendMode);
+         stream.get(tris->mTriangleCount);
+         stream.getVec(tris->mVertices);
+         stream.getVec(tris->mUVT);
+         stream.getVec(tris->mColours);
+         return tris;
+         }
+
+
+      case gdtStroke:
+         {
+         GraphicsStroke *stroke = new GraphicsStroke();
+         if (stream.getBool())
+            decodeGraphicsData(stream,stroke->fill);
+
+         stream.get(stroke->caps);
+         stream.get(stroke->joints);
+         stream.get(stroke->miterLimit);
+         stream.get(stroke->pixelHinting);
+         stream.get(stroke->scaleMode);
+         stream.get(stroke->thickness);
+         return stroke;
+         }
+   }
+   return 0;
+}
+
 void Graphics::unrealize()
 {
    if (val)
@@ -802,17 +915,6 @@ void Graphics::unrealize()
       {
          GraphicsJob &job = mJobs[j];
 
-         if (stream.addBool(job.mFill))
-            encodeGraphicsData(stream,job.mFill);
-
-         GraphicsStroke *stroke = job.mStroke;
-         if (stream.addBool(stroke))
-            encodeGraphicsData(stream, stroke);
-
-         GraphicsTrianglePath *tris = job.mTriangles;
-         if (stream.addBool(tris))
-            encodeGraphicsData(stream,tris);
-
          stream.add(job.mCommand0);
          stream.add(job.mCommandCount);
          stream.add(job.mData0);
@@ -821,6 +923,16 @@ void Graphics::unrealize()
          stream.add(job.mIsPointJob);
          stream.add(job.mTileMode);
          stream.add(job.mBlendMode);
+
+         if (stream.addBool(job.mFill))
+            encodeGraphicsData(stream,job.mFill);
+
+         if (stream.addBool(job.mStroke))
+            encodeGraphicsData(stream, job.mStroke);
+
+         GraphicsTrianglePath *tris = job.mTriangles;
+         if (stream.addBool(tris))
+            encodeGraphicsData(stream,tris);
       }
 
       if (stream.addBool(mPathData))
@@ -829,10 +941,41 @@ void Graphics::unrealize()
 
       stream.toValue(*val);
    }
+   else
+      printf("Graphics::unrealize - no val?\n");
 }
 
-void Graphics::decodeStream(InputStream &inStream)
+void Graphics::decodeStream(InputStream &stream)
 {
+   int count = stream.getInt();
+   mJobs.resize(count);
+   for(int j=0;j<count;j++)
+   {
+      GraphicsJob &job = mJobs[j];
+
+      stream.get(job.mCommand0);
+      stream.get(job.mCommandCount);
+      stream.get(job.mData0);
+      stream.get(job.mDataCount);
+      stream.get(job.mIsTileJob);
+      stream.get(job.mIsPointJob);
+      stream.get(job.mTileMode);
+      stream.get(job.mBlendMode);
+
+      if (stream.getBool())
+         decodeGraphicsData(stream,job.mFill);
+
+      if (stream.getBool())
+         decodeGraphicsData(stream, job.mStroke);
+
+      if (stream.getBool())
+         decodeGraphicsData(stream,job.mTriangles);
+   }
+
+   if (stream.getBool())
+      decodeGraphicsData(stream,mPathData);
+   else
+      printf("No path data?\n");
 }
 
 Graphics *Graphics::realize(InputStream &inStream)

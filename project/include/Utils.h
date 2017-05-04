@@ -315,7 +315,9 @@ struct OutputStream : public ByteStream
    value handleArray;
    int   count;
 
-   OutputStream() : handleArray(value::object()), count(0) { }
+   OutputStream() : handleArray(value::object()), count(0)
+   {
+   }
 
    inline void append(const void *inData, int inBytes)
    {
@@ -346,7 +348,6 @@ struct OutputStream : public ByteStream
 
    inline void addHandle(const value &inHandle)
    {
-      addInt(count);
       handleArray.set(count++, inHandle);
    }
 
@@ -404,21 +405,31 @@ struct InputStream
 
    bool getBool()
    {
-      bool result;
+      bool result=false;
       get(result);
       return result;
    }
    template<typename T>
-   void getObject(T *&outObject)
+   void getObject(T *&outObject,bool inAddRef=true)
    {
       if (getBool())
       {
          value v = getHandle();
+         if (v.isNull() || v.isUndefined())
+            printf("Bad handle?\n");
          Object *obj = Object::toObject(v);
          outObject = dynamic_cast<T*>(obj);
+         if (obj && !outObject)
+         {
+            printf("got object, but wrong type %p\n", obj);
+         }
+         else if (inAddRef)
+            obj->IncRef();
       }
       else
+      {
          outObject = 0;
+      }
    }
 
    inline value getHandle()
