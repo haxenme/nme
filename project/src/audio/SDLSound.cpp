@@ -1034,6 +1034,12 @@ public:
    SDLMusic(const unsigned char *inData, int len)
    {
       IncRef();
+      
+      if(!Init()) {
+         mMusic = 0;
+         return;
+      }
+      
       loaded = true;
       
       reso.resize(len);
