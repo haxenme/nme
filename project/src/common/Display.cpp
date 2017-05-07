@@ -692,96 +692,93 @@ void DisplayObject::Unfocus()
 #endif
 }
 
-
-
-
-
-
 #ifdef HXCPP_JS_PRIME
-void DisplayObject::encodeStream(OutputStream &inStream)
-{
-   inStream.add(id);
-   inStream.addInt(name.size());
-   inStream.append(name.c_str(),name.size()*sizeof(wchar_t));
-   inStream.add(blendMode);
-   inStream.add(cacheAsBitmap);
-   inStream.add(pedanticBitmapCaching);
-   inStream.add(pixelSnapping);
-   inStream.add(colorTransform);
-   //TODO - FilterList     filters;
-   inStream.add(opaqueBackground);
-   inStream.add(scale9Grid);
-   inStream.add(scrollRect);
-   inStream.add(visible);
-   inStream.add(mouseEnabled);
-   inStream.add(hitEnabled);
-   inStream.add(needsSoftKeyboard);
-   inStream.add(softKeyboard);
-   inStream.add(movesForSoftKeyboard);
-   //uint32 mDirtyFlags;
-
-   inStream.addObject(mParent);
-   inStream.addObject(mGfx);
-   //Recreate
-   //BitmapCache  *mBitmapCache;
-   //int          mBitmapGfx;
-
-   // Masking...
-   inStream.addObject(mMask);
-   //mIsMaskCount;
-
-   if (inStream.addBool(mDirtyFlags & dirtDecomp))
-   {
-      inStream.add(mLocalMatrix);
-   }
-   else
-   {
-      inStream.add(x);
-      inStream.add(y);
-      inStream.add(scaleX);
-      inStream.add(scaleY);
-      inStream.add(rotation);
-   }
-}
-
-int idx = 0;
 void DisplayObject::unrealize()
 {
    if (val)
    {
-      int i = idx++;
-      OutputStream stream;
+      ValueObjectStreamOut stream;
       stream.addInt(getObjectType());
       encodeStream(stream);
       stream.toValue(*val);
    }
 }
+#endif
 
-void DisplayObject::decodeStream(InputStream &inStream)
+
+
+void DisplayObject::encodeStream(ObjectStreamOut &stream)
 {
-   inStream.get(id);
-   int len = inStream.getInt();
-   wchar_t *str = (wchar_t *)inStream.getBytes(len*sizeof(wchar_t));
-   name = WString(str, str+len);
-   inStream.get(blendMode);
-   inStream.get(cacheAsBitmap);
-   inStream.get(pedanticBitmapCaching);
-   inStream.get(pixelSnapping);
-   inStream.get(colorTransform);
+   stream.add(id);
+   stream.addInt(name.size());
+   stream.append(name.c_str(),name.size()*sizeof(wchar_t));
+   stream.add(blendMode);
+   stream.add(cacheAsBitmap);
+   stream.add(pedanticBitmapCaching);
+   stream.add(pixelSnapping);
+   stream.add(colorTransform);
    //TODO - FilterList     filters;
-   inStream.get(opaqueBackground);
-   inStream.get(scale9Grid);
-   inStream.get(scrollRect);
-   inStream.get(visible);
-   inStream.get(mouseEnabled);
-   inStream.get(hitEnabled);
-   inStream.get(needsSoftKeyboard);
-   inStream.get(softKeyboard);
-   inStream.get(movesForSoftKeyboard);
+   stream.add(opaqueBackground);
+   stream.add(scale9Grid);
+   stream.add(scrollRect);
+   stream.add(visible);
+   stream.add(mouseEnabled);
+   stream.add(hitEnabled);
+   stream.add(needsSoftKeyboard);
+   stream.add(softKeyboard);
+   stream.add(movesForSoftKeyboard);
    //uint32 mDirtyFlags;
 
-   inStream.getObject(mParent,false);
-   inStream.getObject(mGfx);
+   stream.addObject(stream.parentToo ? mParent : 0);
+   stream.addObject(mGfx);
+   //Recreate
+   //BitmapCache  *mBitmapCache;
+   //int          mBitmapGfx;
+
+   // Masking...
+   stream.addObject(mMask);
+   //mIsMaskCount;
+
+   if (stream.addBool(mDirtyFlags & dirtDecomp))
+   {
+      stream.add(mLocalMatrix);
+   }
+   else
+   {
+      stream.add(x);
+      stream.add(y);
+      stream.add(scaleX);
+      stream.add(scaleY);
+      stream.add(rotation);
+   }
+}
+
+
+void DisplayObject::decodeStream(ObjectStreamIn &stream)
+{
+   stream.get(id);
+   int len = stream.getInt();
+   wchar_t *str = (wchar_t *)stream.getBytes(len*sizeof(wchar_t));
+   name = WString(str, str+len);
+   stream.get(blendMode);
+   stream.get(cacheAsBitmap);
+   stream.get(pedanticBitmapCaching);
+   stream.get(pixelSnapping);
+   stream.get(colorTransform);
+   //TODO - FilterList     filters;
+   stream.get(opaqueBackground);
+   stream.get(scale9Grid);
+   stream.get(scrollRect);
+   stream.get(visible);
+   stream.get(mouseEnabled);
+   stream.get(hitEnabled);
+   stream.get(needsSoftKeyboard);
+   stream.get(softKeyboard);
+   stream.get(movesForSoftKeyboard);
+   //uint32 mDirtyFlags;
+
+   stream.getObject(mParent,false);
+   stream.getObject(mGfx);
    if (mGfx)
       mGfx->setOwner(this);
    //Recreate
@@ -789,26 +786,26 @@ void DisplayObject::decodeStream(InputStream &inStream)
    //int          mBitmapGfx;
 
    // Masking...
-   inStream.getObject(mMask);
+   stream.getObject(mMask);
    //mIsMaskCount;
 
-   if (inStream.getBool())
+   if (stream.getBool())
    {
       mDirtyFlags &= ~dirtLocalMatrix;
-      inStream.get(mLocalMatrix);
+      stream.get(mLocalMatrix);
    }
    else
    {
       mDirtyFlags &= ~dirtDecomp;
-      inStream.get(x);
-      inStream.get(y);
-      inStream.get(scaleX);
-      inStream.get(scaleY);
-      inStream.get(rotation);
+      stream.get(x);
+      stream.get(y);
+      stream.get(scaleX);
+      stream.get(scaleY);
+      stream.get(rotation);
    }
 }
 
-DisplayObject *DisplayObject::realize(InputStream &inStream)
+DisplayObject *DisplayObject::fromStream(ObjectStreamIn &inStream)
 {
    DisplayObject *result = 0;
 
@@ -842,7 +839,8 @@ DisplayObject *DisplayObject::realize(InputStream &inStream)
    return result;
 }
 
-void DisplayObjectContainer::encodeStream(OutputStream &inStream)
+
+void DisplayObjectContainer::encodeStream(ObjectStreamOut &inStream)
 {
    DisplayObject::encodeStream(inStream);
    inStream.add(mouseChildren);
@@ -852,7 +850,7 @@ void DisplayObjectContainer::encodeStream(OutputStream &inStream)
 }
 
 
-void DisplayObjectContainer::decodeStream(InputStream &inStream)
+void DisplayObjectContainer::decodeStream(ObjectStreamIn &inStream)
 {
    DisplayObject::decodeStream(inStream);
    inStream.get(mouseChildren);
@@ -863,7 +861,7 @@ void DisplayObjectContainer::decodeStream(InputStream &inStream)
 }
 
 
-void SimpleButton::decodeStream(InputStream &inStream)
+void SimpleButton::decodeStream(ObjectStreamIn &inStream)
 {
    DisplayObjectContainer::decodeStream(inStream);
    inStream.get(enabled);
@@ -873,7 +871,7 @@ void SimpleButton::decodeStream(InputStream &inStream)
       inStream.getObject( mState[i] );
 }
 
-void SimpleButton::encodeStream(OutputStream &inStream)
+void SimpleButton::encodeStream(ObjectStreamOut &inStream)
 {
    DisplayObjectContainer::encodeStream(inStream);
    inStream.add(enabled);
@@ -882,14 +880,6 @@ void SimpleButton::encodeStream(OutputStream &inStream)
    for(int i=0;i<stateSIZE;i++)
       inStream.addObject( mState[i] );
 }
-
-
-
-#endif
-
-
-
-
 
 
 

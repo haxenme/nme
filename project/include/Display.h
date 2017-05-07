@@ -3,6 +3,7 @@
 
 #include <nme/Object.h>
 #include <nme/Event.h>
+#include <nme/ObjectStream.h>
 #include <Utils.h>
 #include <Geom.h>
 #include <Graphics.h>
@@ -249,11 +250,12 @@ public:
                                ColorTransform *inBuf);
 
 
+   virtual void encodeStream(ObjectStreamOut &inStream);
+   virtual void decodeStream(ObjectStreamIn &inStream);
+   static DisplayObject *fromStream(ObjectStreamIn &inStream);
+
    #ifdef HXCPP_JS_PRIME
-   virtual void encodeStream(OutputStream &inStream);
    void unrealize();
-   virtual void decodeStream(InputStream &inStream);
-   static DisplayObject *realize(InputStream &inStream);
    #endif
 
 
@@ -278,10 +280,8 @@ protected:
 public:
    DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef), mouseChildren(true) { }
 
-   #ifdef HXCPP_JS_PRIME
-   void decodeStream(InputStream &inStream);
-   void encodeStream(OutputStream &inStream);
-   #endif
+   void decodeStream(ObjectStreamIn &inStream);
+   void encodeStream(ObjectStreamOut &inStream);
 
    void addChild(DisplayObject *inChild);
    void setChildIndex(DisplayObject *inChild);
@@ -363,10 +363,8 @@ public:
 
    void setState(int inState, DisplayObject *inObject);
 
-   #ifdef HXCPP_JS_PRIME
-   void decodeStream(InputStream &inStream);
-   void encodeStream(OutputStream &inStream);
-   #endif
+   void decodeStream(ObjectStreamIn &inStream);
+   void encodeStream(ObjectStreamOut &inStream);
 
 };
 

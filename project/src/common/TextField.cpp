@@ -2295,68 +2295,67 @@ void TextField::Layout(const Matrix &inMatrix)
 }
 
 
-#ifdef HXCPP_JS_PRIME
 
-void TextField::decodeStream(InputStream &inStream)
+void TextField::decodeStream(ObjectStreamIn &stream)
 {
-   DisplayObject::decodeStream(inStream);
+   DisplayObject::decodeStream(stream);
 }
 
-void TextField::encodeStream(OutputStream &inStream)
+void TextField::encodeStream(ObjectStreamOut &stream)
 {
-   DisplayObject::encodeStream(inStream);
+   DisplayObject::encodeStream(stream);
 
-   inStream.add(alwaysShowSelection);
-   inStream.add(antiAliasType);
-   inStream.add(autoSize);
-   inStream.add(background);
-   inStream.add(backgroundColor);
-   inStream.add(border);
-   inStream.add(borderColor);
-   inStream.add(condenseWhite);
-   inStream.addObject(defaultTextFormat);
-   inStream.add(displayAsPassword);
-   inStream.add(embedFonts);
-   inStream.add(gridFitType);
-   inStream.add(maxChars);
-   inStream.add(mouseWheelEnabled);
-   inStream.add(multiline);
+   stream.add(alwaysShowSelection);
+   stream.add(antiAliasType);
+   stream.add(autoSize);
+   stream.add(background);
+   stream.add(backgroundColor);
+   stream.add(border);
+   stream.add(borderColor);
+   stream.add(condenseWhite);
+   stream.addObject(defaultTextFormat);
+   stream.add(displayAsPassword);
+   stream.add(embedFonts);
+   stream.add(gridFitType);
+   stream.add(maxChars);
+   stream.add(mouseWheelEnabled);
+   stream.add(multiline);
    //WString restrict;
-   inStream.add(selectable);
-   inStream.add(sharpness);
-   inStream.add(textColor);
-   inStream.add(thickness);
-   inStream.add(useRichTextClipboard);
-   inStream.add(wordWrap);
-   inStream.add(isInput);
+   stream.add(selectable);
+   stream.add(sharpness);
+   stream.add(textColor);
+   stream.add(thickness);
+   stream.add(useRichTextClipboard);
+   stream.add(wordWrap);
+   stream.add(isInput);
 
-   inStream.add(scrollH);
-   inStream.add(scrollV);
-   inStream.add(maxScrollH);
-   inStream.add(maxScrollV);
-   inStream.add(caretIndex);
+   stream.add(scrollH);
+   stream.add(scrollV);
+   stream.add(maxScrollH);
+   stream.add(maxScrollV);
+   stream.add(caretIndex);
 
-   inStream.add( mCharGroups.size() );
+   stream.add( mCharGroups.size() );
    for(int g=0;g<mCharGroups.size(); g++)
    {
       CharGroup &ch = *mCharGroups[g];
-      inStream.addVec(ch.mString);
-      inStream.add(ch.mChar0);
-      inStream.add(ch.mFontHeight);
-      inStream.add(ch.mFlags);
-      inStream.addObject(ch.mFormat);
-      inStream.addObject(ch.mFont);
+      stream.addVec(ch.mString);
+      stream.add(ch.mChar0);
+      stream.add(ch.mFontHeight);
+      stream.add(ch.mFlags);
+      stream.addObject(ch.mFormat);
+      stream.addObject(ch.mFont);
    }
 
-   inStream.add(mSelectMin);
-   inStream.add(mSelectMax);
+   stream.add(mSelectMin);
+   stream.add(mSelectMax);
 
    // Local coordinates
-   inStream.add(explicitWidth);
-   inStream.add(fieldWidth);
-   inStream.add(fieldHeight);
-   inStream.add(textWidth);
-   inStream.add(textHeight);
+   stream.add(explicitWidth);
+   stream.add(fieldWidth);
+   stream.add(fieldHeight);
+   stream.add(textWidth);
+   stream.add(textHeight);
 
    /*
     Graphics state
@@ -2386,7 +2385,6 @@ void TextField::encodeStream(OutputStream &inStream)
 }
 
 
-#endif
 
 
 

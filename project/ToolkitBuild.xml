@@ -169,6 +169,7 @@
       <depend name="../include/nme/NmeApi.h" />
       <depend name="../include/nme/NmeCffi.h" />
       <depend name="../include/nme/Object.h" />
+      <depend name="../include/nme/ObjectStream.h" />
       <depend name="../include/nme/Pixel.h" />
       <depend name="../include/nme/Point.h" />
       <depend name="../include/nme/QuickVec.h" />

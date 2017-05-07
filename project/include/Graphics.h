@@ -727,9 +727,11 @@ public:
 
    #ifdef HXCPP_JS_PRIME
    void unrealize();
-   void decodeStream(class InputStream &inStream);
-   static Graphics *realize(class InputStream &inStream);
    #endif
+
+   void encodeStream(class ObjectStreamOut &inStream);
+   void decodeStream(class ObjectStreamIn &inStream);
+   static Graphics *fromStream(class ObjectStreamIn &inStream);
 
 
 

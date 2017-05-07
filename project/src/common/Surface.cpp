@@ -1864,7 +1864,7 @@ void SimpleSurface::unrealize()
 {
    if (val)
    {
-      ByteStream stream;
+      ValueObjectStreamOut stream;
       stream.addInt(mWidth);
       stream.addInt(mHeight);
       stream.addInt((int)mPixelFormat);
@@ -1874,8 +1874,9 @@ void SimpleSurface::unrealize()
    }
 }
 
+#endif
 
-SimpleSurface *SimpleSurface::realize(InputStream &inStream)
+SimpleSurface *SimpleSurface::fromStream(ObjectStreamIn &inStream)
 {
    int w = inStream.getInt();
    int h = inStream.getInt();
@@ -1888,7 +1889,6 @@ SimpleSurface *SimpleSurface::realize(InputStream &inStream)
    return result;
 }
 
-#endif
 
 
 

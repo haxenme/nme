@@ -6,6 +6,10 @@
 #include <vector>
 #include <nme/QuickVec.h>
 
+#ifdef HXCPP_JS_PRIME
+#include <nme/ObjectStream.h>
+#endif
+
 
 #ifdef BLACKBERRY
 #include <bps/event.h>
@@ -297,146 +301,54 @@ struct VolumeInfo
 void GetVolumeInfo( std::vector<VolumeInfo> &outInfo );
 
 #ifdef HXCPP_JS_PRIME
-struct ByteStream
-{
-   QuickVec<unsigned char> data;
-
-   inline int addInt(int inVal)
-   {
-      data.append((unsigned char *)&inVal,4);
-      return inVal;
-   }
-
-   void toValue(value &outValue);
-};
-
-struct OutputStream : public ByteStream
+struct ValueObjectStreamOut : public ObjectStreamOut
 {
    value handleArray;
    int   count;
 
-   OutputStream() : handleArray(value::object()), count(0)
+   ValueObjectStreamOut() : handleArray(value::object()), count(0)
    {
    }
 
-   inline void append(const void *inData, int inBytes)
-   {
-      data.append((unsigned char *)inData, inBytes);
-   }
-   template<typename T>
-   void add(const T& inData)
-   {
-      data.append((unsigned char *)&inData, sizeof(T));
-   }
-   template<typename T,int N>
-   void addVec(const QuickVec<T,N> &inData)
-   {
-      addInt(inData.size());
-      append(inData.ByteData(), inData.ByteCount());
-   }
-
-   bool addBool(bool inValue)
-   {
-      add(inValue);
-      return inValue;
-   }
    void addObject(Object *inObj)
    {
       if (addBool(inObj))
-         addHandle( inObj->toAbstract() );
-   }
-
-   inline void addHandle(const value &inHandle)
-   {
-      handleArray.set(count++, inHandle);
+         handleArray.set(count++, inObj->toAbstract() );
    }
 
    void toValue(value &outValue);
 };
 
 
-struct InputStream
+struct ValueObjectStreamIn : public ObjectStreamIn
 {
-   const unsigned char *ptr;
-   int len;
    int count;
    value handleArray;
    value abstract;
 
-   InputStream(const unsigned char *inPtr, int inLength, value inHandles, value inAbstract)
-       : ptr(inPtr), len(inLength), handleArray(inHandles), abstract(inAbstract)
+   ValueObjectStreamIn(const unsigned char *inPtr, int inLength, value inHandles, value inAbstract)
+       : ObjectStreamIn(inPtr,inLength), handleArray(inHandles), abstract(inAbstract)
    {
       count = 0;
    }
 
    void linkAbstract(Object *inObject);
 
-   inline int getInt()
-   {
-      int result;
-      memcpy(&result,ptr,4);
-      ptr+=4;
-      len-=4;
-      return result;
-   }
-   inline const unsigned char *getBytes(int inLen)
-   {
-      const unsigned char *result = ptr;
-      ptr+=inLen;
-      len-=inLen;
-      return result;
-   }
-
-   template<typename T>
-   void get(T& outData)
-   {
-      memcpy(&outData, ptr, sizeof(T));
-      ptr+=sizeof(T);
-      len-=sizeof(T);
-   }
-   template<typename T>
-   void getVec(QuickVec<T> &outData)
-   {
-      int n = getInt();
-      outData.resize(n);
-      int size = n*sizeof(T);
-      memcpy(outData.ByteData(), getBytes(size),size);
-   }
-
-   bool getBool()
-   {
-      bool result=false;
-      get(result);
-      return result;
-   }
-   template<typename T>
-   void getObject(T *&outObject,bool inAddRef=true)
+   Object *decodeObject()
    {
       if (getBool())
       {
-         value v = getHandle();
+         value v = handleArray[count++];
          if (v.isNull() || v.isUndefined())
-            printf("Bad handle?\n");
-         Object *obj = Object::toObject(v);
-         outObject = dynamic_cast<T*>(obj);
-         if (obj && !outObject)
          {
-            printf("got object, but wrong type %p\n", obj);
+            printf("Bad handle?\n");
+            return 0;
          }
-         else if (inAddRef)
-            obj->IncRef();
+         return Object::toObject(v);
       }
       else
-      {
-         outObject = 0;
-      }
+         return 0;
    }
-
-   inline value getHandle()
-   {
-      return handleArray[count++];
-   }
-
 };
 
 #endif

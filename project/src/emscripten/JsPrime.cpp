@@ -71,13 +71,13 @@ Object *Object::toObject( value &inValue )
 
          int len = value::global("Module").call<int>("realize", inValue );
          unsigned char *ptr = (unsigned char *)inValue["ptr"].as<int>();
-         InputStream input(ptr,len,inValue["handles"],inValue);
+         ValueObjectStreamIn input(ptr,len,inValue["handles"],inValue);
          Object *newObject = 0;
 
          switch(realizeType)
          {
             case notSurface:
-               newObject = SimpleSurface::realize(input);
+               newObject = SimpleSurface::fromStream(input);
                break;
 
             case notDisplayObject:
@@ -85,11 +85,11 @@ Object *Object::toObject( value &inValue )
             case notDirectRenderer:
             case notSimpleButton:
             case notTextField:
-               newObject = DisplayObject::realize(input);
+               newObject = DisplayObject::fromStream(input);
                break;
 
             case notGraphics:
-               newObject = Graphics::realize(input);
+               newObject = Graphics::fromStream(input);
                break;
 
             default:
@@ -108,7 +108,7 @@ Object *Object::toObject( value &inValue )
    return ptr;
 }
 
-void InputStream::linkAbstract(Object *newObject)
+void ValueObjectStreamIn::linkAbstract(Object *newObject)
 {
    newObject->val = new emscripten::val(abstract);
    abstract.set("ptr",(int)newObject);
@@ -117,20 +117,14 @@ void InputStream::linkAbstract(Object *newObject)
 }
 
 
-void ByteStream::toValue(value &v)
+void ValueObjectStreamOut::toValue(value &v)
 {
    int offset = (int)&data[0];
    int len = data.size();
 
    value::global("Module").call<void>("unrealize", v, offset, len, value::null() );
-}
-
-void OutputStream::toValue(value &v)
-{
-   ByteStream::toValue(v);
    if (count)
       v.set("handles", handleArray);
-   //printf("Saved(%p) %d bytes, %d handles\n", this, data.size(), count);
 }
 
 

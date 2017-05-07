@@ -9,6 +9,7 @@
 #include "Hardware.h"
 #include <nme/Texture.h>
 #include <nme/ImageBuffer.h>
+#include <nme/ObjectStream.h>
 
 // ---- Surface API --------------
 
@@ -131,8 +132,8 @@ public:
 
    #ifdef HXCPP_JS_PRIME
    void unrealize();
-   static SimpleSurface *realize(InputStream &inStream);
    #endif
+   static SimpleSurface *fromStream(ObjectStreamIn &inStream);
 
    void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0);
    bool ReinterpretPixelFormat(PixelFormat inNewFormat);

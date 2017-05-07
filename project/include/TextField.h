@@ -206,10 +206,8 @@ public:
    void Focus();
 
 
-   #ifdef HXCPP_JS_PRIME
-   void decodeStream(InputStream &inStream);
-   void encodeStream(OutputStream &inStream);
-   #endif
+   void decodeStream(ObjectStreamIn &inStream);
+   void encodeStream(ObjectStreamOut &inStream);
 
 protected:
    ~TextField();

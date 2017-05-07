@@ -709,9 +709,8 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 
 
 
-#ifdef HXCPP_JS_PRIME
 
-void encodeGraphicsData(OutputStream &stream, IGraphicsData *data)
+void encodeGraphicsData(ObjectStreamOut &stream, IGraphicsData *data)
 {
    switch(stream.addInt(data->GetType()))
    {
@@ -791,10 +790,10 @@ void encodeGraphicsData(OutputStream &stream, IGraphicsData *data)
 }
 
 
-IGraphicsData *decodeGraphicsData(InputStream &stream);
+IGraphicsData *decodeGraphicsData(ObjectStreamIn &stream);
 
 template<typename T>
-void decodeGraphicsData(InputStream &stream, T *&outPointer)
+void decodeGraphicsData(ObjectStreamIn &stream, T *&outPointer)
 {
    outPointer = 0;
    IGraphicsData *g = decodeGraphicsData(stream);
@@ -817,7 +816,7 @@ void decodeGraphicsData(InputStream &stream, T *&outPointer)
 }
 
 
-IGraphicsData *decodeGraphicsData(InputStream &stream)
+IGraphicsData *decodeGraphicsData(ObjectStreamIn &stream)
 {
    switch(stream.getInt())
    {
@@ -899,15 +898,35 @@ IGraphicsData *decodeGraphicsData(InputStream &stream)
    return 0;
 }
 
+
+#ifdef HXCPP_JS_PRIME
+
 void Graphics::unrealize()
 {
    if (val)
    {
-      OutputStream stream;
+      ValueObjectStreamOut stream;
+      encodeStream(stream);
+      stream.toValue(*val);
+   }
+   else
+      printf("Graphics::unrealize - no val?\n");
+}
+#endif
 
-      Flush();
+Graphics *Graphics::fromStream(ObjectStreamIn &inStream)
+{
+   Graphics *result = new Graphics(0);
+   result->decodeStream(inStream);
+   return result;
+}
 
+
+
+void Graphics::encodeStream(ObjectStreamOut &stream)
+{
       //*mOwner;
+      Flush();
 
       int count = mJobs.size();
       stream.addInt(count);
@@ -938,14 +957,9 @@ void Graphics::unrealize()
       if (stream.addBool(mPathData))
          encodeGraphicsData(stream,mPathData);
 
-
-      stream.toValue(*val);
-   }
-   else
-      printf("Graphics::unrealize - no val?\n");
 }
 
-void Graphics::decodeStream(InputStream &stream)
+void Graphics::decodeStream(ObjectStreamIn &stream)
 {
    int count = stream.getInt();
    mJobs.resize(count);
@@ -977,14 +991,6 @@ void Graphics::decodeStream(InputStream &stream)
    else
       printf("No path data?\n");
 }
-
-Graphics *Graphics::realize(InputStream &inStream)
-{
-   Graphics *result = new Graphics(0);
-   result->decodeStream(inStream);
-   return result;
-}
-#endif
 
 
 
