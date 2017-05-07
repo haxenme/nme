@@ -42,7 +42,6 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    scrollV(1),
    selectable(true),
    sharpness(0),
-   styleSheet(0),
    textColor(0x000000),
    thickness(0),
    useRichTextClipboard(false),
@@ -57,7 +56,6 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    fieldWidth = 100.0;
    explicitWidth = fieldWidth;
    fieldHeight = 100.0;
-   //mActiveRect = Rect(100,100);
    mFontsDirty = false;
    mSelectMin = mSelectMax = 0;
    mSelectDownChar = 0;
@@ -982,52 +980,6 @@ void TextField::ShowCaret(bool inFromDrag)
       }
       setScrollV(scroll+1);
    }
-   /*
-
-   if (scrollV <= mLines.size())
-   {
-      if (pos.y-mLines[scrollV-1].mY0 >= mActiveRect.h)
-      {
-         changed = true;
-         scrollV++;
-      }
-      else if (scrollV>1 && pos.y<mLines[scrollV-1].mY0)
-      {
-         scrollV--;
-         changed = true;
-      }
-   }
-
-
-   if (scrollH<0)
-   {
-      changed = true;
-      scrollH = 0;
-   }
-   if (scrollH>maxScrollH)
-   {
-      scrollH = maxScrollH;
-      changed = true;
-      if (scrollV<1) scrollV = 1;
-   }
-   // TODO: -ve scroll for right/aligned/centred?
-   if (scrollV>maxScrollV)
-   {
-      scrollV = maxScrollV;
-      changed = true;
-   }
-
-   if (changed)
-   {
-      DirtyCache();
-      mTilesDirty = true;
-      mCaretDirty = true;
-      if (mSelectMax > mSelectMin)
-      {
-         mGfxDirty = true;
-      }
-   }
-   */
 }
 
 
@@ -1685,9 +1637,6 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
       RenderState state(inState);
 
-      //Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleH);
-      //state.mClipRect = r.Intersect(inState.mClipRect);
-
       if (inState.mMask)
          state.mClipRect = inState.mClipRect.Intersect(
                inState.mMask->GetRect().Translated(-inState.mTargetOffset) );
@@ -1709,9 +1658,6 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    RenderState state(inState);
 
    // TODO - full transform
-   //Rect r = mActiveRect.Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleH);
-   //state.mClipRect = r.Intersect(inState.mClipRect);
-
    if (inState.mMask)
       state.mClipRect = inState.mClipRect.Intersect(
                inState.mMask->GetRect().Translated(-inState.mTargetOffset) );
@@ -1919,16 +1865,6 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
 {
    Layout(*inTrans.mMatrix);
 
-
-   /*
-   if (inForBitmap && !border && !background)
-   {
-      Rect r = mActiveRect.Translated(inTrans.mMatrix->mtx, inTrans.mMatrix->mty);
-      for(int corner=0;corner<4;corner++)
-          outExt.Add( UserPoint(((corner & 1) ? r.x : r.x1()),((corner & 1) ? r.y : r.y1())));
-   }
-   else
-   */
    if (inForBitmap && border)
    {
       BuildBackground();
@@ -1939,8 +1875,6 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
       for(int corner=0;corner<4;corner++)
       {
          UserPoint pos((corner & 1) ? fieldWidth : 0, (corner & 2) ? fieldHeight: 0);
-         //UserPoint pos((corner & 1) ? mActiveRect.x1() : mActiveRect.x,
-         //              (corner & 2) ? mActiveRect.y1() : mActiveRect.y);
          outExt.Add( inTrans.mMatrix->Apply(pos.x,pos.y) );
       }
    }
@@ -2359,6 +2293,100 @@ void TextField::Layout(const Matrix &inMatrix)
    mSelectMax = std::min(mSelectMax,n);
    ShowCaret();
 }
+
+
+#ifdef HXCPP_JS_PRIME
+
+void TextField::decodeStream(InputStream &inStream)
+{
+   DisplayObject::decodeStream(inStream);
+}
+
+void TextField::encodeStream(OutputStream &inStream)
+{
+   DisplayObject::encodeStream(inStream);
+
+   inStream.add(alwaysShowSelection);
+   inStream.add(antiAliasType);
+   inStream.add(autoSize);
+   inStream.add(background);
+   inStream.add(backgroundColor);
+   inStream.add(border);
+   inStream.add(borderColor);
+   inStream.add(condenseWhite);
+   inStream.addObject(defaultTextFormat);
+   inStream.add(displayAsPassword);
+   inStream.add(embedFonts);
+   inStream.add(gridFitType);
+   inStream.add(maxChars);
+   inStream.add(mouseWheelEnabled);
+   inStream.add(multiline);
+   //WString restrict;
+   inStream.add(selectable);
+   inStream.add(sharpness);
+   inStream.add(textColor);
+   inStream.add(thickness);
+   inStream.add(useRichTextClipboard);
+   inStream.add(wordWrap);
+   inStream.add(isInput);
+
+   inStream.add(scrollH);
+   inStream.add(scrollV);
+   inStream.add(maxScrollH);
+   inStream.add(maxScrollV);
+   inStream.add(caretIndex);
+
+   inStream.add( mCharGroups.size() );
+   for(int g=0;g<mCharGroups.size(); g++)
+   {
+      CharGroup &ch = *mCharGroups[g];
+      inStream.addVec(ch.mString);
+      inStream.add(ch.mChar0);
+      inStream.add(ch.mFontHeight);
+      inStream.add(ch.mFlags);
+      inStream.addObject(ch.mFormat);
+      inStream.addObject(ch.mFont);
+   }
+
+   inStream.add(mSelectMin);
+   inStream.add(mSelectMax);
+
+   // Local coordinates
+   inStream.add(explicitWidth);
+   inStream.add(fieldWidth);
+   inStream.add(fieldHeight);
+   inStream.add(textWidth);
+   inStream.add(textHeight);
+
+   /*
+    Graphics state
+   bool mLinesDirty;
+   bool mLinesDirty;
+   bool mGfxDirty;
+   bool mFontsDirty;
+   bool mTilesDirty;
+   bool mCaretDirty;
+   bool mHasCaret;
+   double mBlink0;
+   Lines mLines;
+   QuickVec<UserPoint> mCharPos;
+   Graphics *mCaretGfx;
+   Graphics *mHighlightGfx;
+   Graphics *mTiles;
+   int      mLastCaretHeight;
+   int      mLastUpDownX;
+   UserPoint mLastSubpixelOffset;
+
+   int mSelectDownChar;
+   int mSelectKeyDown;
+   bool   screenGrid;
+   double fontScale;
+   double fontToLocal;
+   */
+}
+
+
+#endif
 
 
 

@@ -300,7 +300,7 @@ void Stage::HandleEvent(Event &inEvent)
       if (inEvent.type==etMouseUp && (inEvent.value==3 || inEvent.value==4) )
       {
          TextField *text =  dynamic_cast<TextField *>(hit_obj);
-         if (text && text->mouseWheelEnabled)
+         if (text && text->getMouseWheelEnabled() )
             text->OnScrollWheel(-inEvent.deltaY);
       }
    }

@@ -14,6 +14,79 @@ namespace nme
 
 class TextField : public DisplayObject
 {
+private:
+   AntiAliasType antiAliasType;
+   AutoSizeMode  autoSize;
+   bool        background;
+   int         backgroundColor;
+   bool        border;
+   int         borderColor;
+
+   TextFormat  *defaultTextFormat;
+   bool        displayAsPassword;
+   bool        embedFonts;
+   GridFitType gridFitType;
+   int         maxChars;
+   bool        mouseWheelEnabled;
+   bool        condenseWhite;
+   bool        multiline;
+   //WString   restrict;
+
+   bool        selectable;
+   float       sharpness;
+   int         textColor;
+   float       thickness;
+   bool        useRichTextClipboard;
+   bool        wordWrap;
+   bool        isInput;
+
+   int         mSelectMin;
+   int         mSelectMax;
+   bool        alwaysShowSelection;
+   int         scrollH;
+   int         scrollV;
+   int         maxScrollH;
+   int         maxScrollV;
+   int         caretIndex;
+
+    // Local coordinates
+   double      explicitWidth;
+   double      textWidth;
+   double      textHeight;
+
+
+   CharGroups  mCharGroups;
+
+
+   // Render state
+   bool        screenGrid;
+   double      fontScale;
+   double      fontToLocal;
+   double      fieldWidth;
+   double      fieldHeight;
+
+   bool        mLinesDirty;
+   bool        mGfxDirty;
+   bool        mFontsDirty;
+   bool        mTilesDirty;
+   bool        mCaretDirty;
+   bool        mHasCaret;
+   double      mBlink0;
+
+   Lines       mLines;
+   Graphics    *mCaretGfx;
+   Graphics    *mHighlightGfx;
+   Graphics    *mTiles;
+   int         mLastCaretHeight;
+   int         mLastUpDownX;
+   UserPoint   mLastSubpixelOffset;
+
+   int         mSelectDownChar;
+   int         mSelectKeyDown;
+
+   QuickVec<UserPoint> mCharPos;
+
+
 public:
    TextField(bool inInitRef=false);
 
@@ -81,7 +154,7 @@ public:
    void  setDisplayAsPassword(bool inValue) { displayAsPassword = inValue; }
    bool  getEmbedFonts() const { return embedFonts; }
    void  setEmbedFonts(bool inValue) { embedFonts = inValue; }
-
+   bool  getMouseWheelEnabled() { return mouseWheelEnabled; }
 
    int   getLineOffset(int inLine);
    WString getLineText(int inLine);
@@ -103,51 +176,8 @@ public:
    double   getTextHeight();
    double   getTextWidth();
 
-   bool  alwaysShowSelection;
-   AntiAliasType antiAliasType;
-   AutoSizeMode autoSize;
-   bool  background;
-   int   backgroundColor;
-   bool  border;
-   int   borderColor;
-   bool  condenseWhite;
-
-   TextFormat *defaultTextFormat;
-   bool  displayAsPassword;
-   bool  embedFonts;
-   GridFitType gridFitType;
-   int  maxChars;
-   bool mouseWheelEnabled;
-   bool multiline;
-   //WString restrict;
-   bool selectable;
-   float sharpness;
-   struct StyleSheet *styleSheet;
-   int textColor;
-   float  thickness;
-   bool useRichTextClipboard;
-   bool  wordWrap;
-   bool  isInput;
-
-   int  scrollH;
-   int  scrollV;
-   int  maxScrollH;
-   int  maxScrollV;
-   int  caretIndex;
 
    void Render( const RenderTarget &inTarget, const RenderState &inState );
-
-   bool   screenGrid;
-   double fontScale;
-   double fontToLocal;
-
-   // Local coordinates
-   double  explicitWidth;
-   double  fieldWidth;
-   double  fieldHeight;
-   double  textWidth;
-   double  textHeight;
-   DRect   mActiveRect;
 
    void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
    Cursor GetCursor();
@@ -176,9 +206,10 @@ public:
    void Focus();
 
 
-
-
-
+   #ifdef HXCPP_JS_PRIME
+   void decodeStream(InputStream &inStream);
+   void encodeStream(OutputStream &inStream);
+   #endif
 
 protected:
    ~TextField();
@@ -196,9 +227,9 @@ private:
    StringState mStringState;
    WString mUserString;
 
-	void SplitGroup(int inGroup,int inPos);
+   void SplitGroup(int inGroup,int inPos);
 
-	void BuildBackground();
+   void BuildBackground();
 
    int  PointToChar(UserPoint inPoint) const;
    int  LineFromChar(int inChar) const;
@@ -210,29 +241,6 @@ private:
 
    void OnChange();
 
-   bool mLinesDirty;
-   bool mGfxDirty;
-   bool mFontsDirty;
-   bool mTilesDirty;
-   bool mCaretDirty;
-   bool mHasCaret;
-   double mBlink0;
-
-
-   CharGroups mCharGroups;
-   Lines mLines;
-   QuickVec<UserPoint> mCharPos;
-   Graphics *mCaretGfx;
-   Graphics *mHighlightGfx;
-   Graphics *mTiles;
-   int      mLastCaretHeight;
-   int      mLastUpDownX;
-   UserPoint mLastSubpixelOffset;
-
-   int mSelectMin;
-   int mSelectMax;
-   int mSelectDownChar;
-   int mSelectKeyDown;
 };
 
 } // end namespace nme

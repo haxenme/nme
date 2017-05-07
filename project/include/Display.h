@@ -278,6 +278,11 @@ protected:
 public:
    DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef), mouseChildren(true) { }
 
+   #ifdef HXCPP_JS_PRIME
+   void decodeStream(InputStream &inStream);
+   void encodeStream(OutputStream &inStream);
+   #endif
+
    void addChild(DisplayObject *inChild);
    void setChildIndex(DisplayObject *inChild);
    void swapChildrenAt(int inChild1, int inChild2);
@@ -357,6 +362,11 @@ public:
    void setUseHandCursor(bool inUseHandCursor) { useHandCursor = inUseHandCursor; }
 
    void setState(int inState, DisplayObject *inObject);
+
+   #ifdef HXCPP_JS_PRIME
+   void decodeStream(InputStream &inStream);
+   void encodeStream(OutputStream &inStream);
+   #endif
 
 };
 

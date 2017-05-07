@@ -1,5 +1,6 @@
 #include <Display.h>
 #include <Surface.h>
+#include <TextField.h>
 #include <math.h>
 
 
@@ -817,6 +818,15 @@ DisplayObject *DisplayObject::realize(InputStream &inStream)
       case notDisplayObject:
          result = new DisplayObject();
          break;
+      case notDisplayObjectContainer:
+         result = new DisplayObjectContainer();
+         break;
+      case notSimpleButton:
+         result = new SimpleButton();
+         break;
+      case notTextField:
+         result = new TextField();
+         break;
       default:
          ;
    }
@@ -831,6 +841,50 @@ DisplayObject *DisplayObject::realize(InputStream &inStream)
    result->decodeStream(inStream);
    return result;
 }
+
+void DisplayObjectContainer::encodeStream(OutputStream &inStream)
+{
+   DisplayObject::encodeStream(inStream);
+   inStream.add(mouseChildren);
+   inStream.addInt(mChildren.size());
+   for(int i=0;i<mChildren.size();i++)
+      inStream.addObject(mChildren[i]);
+}
+
+
+void DisplayObjectContainer::decodeStream(InputStream &inStream)
+{
+   DisplayObject::decodeStream(inStream);
+   inStream.get(mouseChildren);
+   int n = inStream.getInt();
+   mChildren.resize(n);
+   for(int i=0;i<n;i++)
+      inStream.getObject(mChildren[i]);
+}
+
+
+void SimpleButton::decodeStream(InputStream &inStream)
+{
+   DisplayObjectContainer::decodeStream(inStream);
+   inStream.get(enabled);
+   inStream.get(useHandCursor);
+   inStream.get(mMouseState);
+   for(int i=0;i<stateSIZE;i++)
+      inStream.getObject( mState[i] );
+}
+
+void SimpleButton::encodeStream(OutputStream &inStream)
+{
+   DisplayObjectContainer::encodeStream(inStream);
+   inStream.add(enabled);
+   inStream.add(useHandCursor);
+   inStream.add(mMouseState);
+   for(int i=0;i<stateSIZE;i++)
+      inStream.addObject( mState[i] );
+}
+
+
+
 #endif
 
 

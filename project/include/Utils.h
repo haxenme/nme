@@ -328,8 +328,8 @@ struct OutputStream : public ByteStream
    {
       data.append((unsigned char *)&inData, sizeof(T));
    }
-   template<typename T>
-   void addVec(const QuickVec<T> &inData)
+   template<typename T,int N>
+   void addVec(const QuickVec<T,N> &inData)
    {
       addInt(inData.size());
       append(inData.ByteData(), inData.ByteCount());
