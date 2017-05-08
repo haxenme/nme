@@ -2095,7 +2095,7 @@ value nme_display_object_encode(value inObj, int inFlags)
    if (AbstractToObject(inObj,obj))
    {
       ObjectStreamOut *outStream = ObjectStreamOut::createEncoder(inFlags);
-      obj->encodeStream( *outStream );
+      outStream->addObject(obj);
       ByteArray array(outStream->data);
       delete outStream;
       return array.mValue;
@@ -2111,8 +2111,10 @@ value nme_display_object_decode(value inArray, int inFlags)
    ByteArray array(inArray);
 
    ObjectStreamIn *inStream = ObjectStreamIn::createDecoder(array.Bytes(),array.Size(),inFlags);
-   DisplayObject *dobj;
+   DisplayObject *dobj=0;
    inStream->getObject(dobj,false);
+   if (!dobj)
+      return alloc_null();
    return ObjectToAbstract(dobj);
 
 }

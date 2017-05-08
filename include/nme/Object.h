@@ -73,6 +73,9 @@ public:
    virtual NmeObjectType getObjectType() { return notUnknown; }
    #endif
 
+   virtual void encodeStream(class ObjectStreamOut &inStream) { }
+   virtual void decodeStream(class ObjectStreamIn &inStream)  { }
+
    #ifdef HXCPP_JS_PRIME
    emscripten::val &toAbstract();
    static Object *toObject( emscripten::val &inValue );

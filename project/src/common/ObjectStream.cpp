@@ -1,5 +1,8 @@
 #include <nme/ObjectStream.h>
+#include <Surface.h>
+#include <Display.h>
 #include <map>
+#include <vector>
 
 namespace nme
 {
@@ -16,8 +19,22 @@ public:
 
    void addObject(Object *inObj)
    {
+      if (addBool(inObj))
+      {
+         if (encodedObjects.find(inObj)!=encodedObjects.end())
+         {
+            addInt(encodedObjects[inObj]);
+         }
+         else
+         {
+            addInt(encodedObjects.size());
+            encodedObjects[inObj] = encodedObjects.size();
+            NmeObjectType type = inObj->getObjectType();
+            addInt(type);
+            inObj->encodeStream(*this);
+         }
+      }
    }
-
 };
 
 ObjectStreamOut *ObjectStreamOut::createEncoder(int inFlags)
@@ -29,19 +46,61 @@ ObjectStreamOut *ObjectStreamOut::createEncoder(int inFlags)
 
 class ObjectDecoder : public ObjectStreamIn
 {
+   std::vector<Object *> objects;
 public:
    ObjectDecoder(const unsigned char *inPtr, int inLength,int inFlags) 
       : ObjectStreamIn(inPtr, inLength)
    {
    }
+   ~ObjectDecoder()
+   {
+      for(int i=0;i<objects.size();i++)
+         objects[i]->DecRef();
+   }
 
    Object *decodeObject()
    {
-      return 0;
+      int pos = getInt();
+      if (pos<objects.size())
+         return objects[pos];
+      if (pos!=objects.size())
+      {
+         printf("Object stream mismatch %d!=%d\n", pos, objects.size());
+         return 0;
+      }
+
+      Object *newObject = 0;
+      NmeObjectType type = (NmeObjectType)getInt();
+      switch(type)
+      {
+         case notSurface:
+            newObject = SimpleSurface::fromStream(*this);
+            break;
+
+         case notDisplayObject:
+         case notDisplayObjectContainer:
+         case notDirectRenderer:
+         case notSimpleButton:
+         case notTextField:
+            newObject = DisplayObject::fromStream(*this);
+            break;
+
+         case notGraphics:
+            newObject = Graphics::fromStream(*this);
+            break;
+
+         default:
+            printf("TODO - decodeObject %d\n", type);
+            return 0;
+      }
+
+      return newObject;
    }
 
    void linkAbstract(Object *inObject)
    {
+      inObject->IncRef();
+      objects.push_back(inObject);
    }
 
 };

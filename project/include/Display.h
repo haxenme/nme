@@ -250,8 +250,8 @@ public:
                                ColorTransform *inBuf);
 
 
-   virtual void encodeStream(ObjectStreamOut &inStream);
-   virtual void decodeStream(ObjectStreamIn &inStream);
+   void encodeStream(ObjectStreamOut &inStream);
+   void decodeStream(ObjectStreamIn &inStream);
    static DisplayObject *fromStream(ObjectStreamIn &inStream);
 
    #ifdef HXCPP_JS_PRIME

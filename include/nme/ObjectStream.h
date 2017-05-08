@@ -150,6 +150,7 @@ struct ValueObjectStreamOut : public ObjectStreamOut
 
    ValueObjectStreamOut() : handleArray(value::object()), count(0)
    {
+
    }
 
    void addObject(Object *inObj)

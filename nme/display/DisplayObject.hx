@@ -61,7 +61,8 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
       nmeID = nme_display_object_get_id(nmeHandle);
 
       super(this);
-      this.name = inType + " " + nmeID;
+      if (inType!=null)
+         this.name = inType + " " + nmeID;
    }
 
    override public function dispatchEvent(event:Event):Bool 
@@ -144,14 +145,16 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
       return result;
    }
 
-   public function encode(inFlags:Int = 0):ByteArray
+   public function encodeDisplay(inFlags:Int = 0):ByteArray
    {
       return nme_display_object_encode(nmeHandle, inFlags);
    }
 
-   public static function decode(inBytes:ByteArray,inFlags=0) : DisplayObject
+   public static function decodeDisplay(inBytes:ByteArray,inFlags=0) : DisplayObject
    {
-      return nme_display_object_decode(inBytes,inFlags);
+      var handle = nme_display_object_decode(inBytes,inFlags);
+      // TODO - correct haxe type, with haxe children
+      return new DisplayObject(handle,null);
    }
 
    /** @private */ private function nmeAsInteractiveObject():InteractiveObject {
