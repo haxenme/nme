@@ -1,21 +1,17 @@
 #ifndef NME_UTILS_H
 #define NME_UTILS_H
 
-#include <nme/NmeCffi.h>
 #include <string>
 #include <vector>
 #include <nme/QuickVec.h>
-
-#ifdef HXCPP_JS_PRIME
-#include <nme/ObjectStream.h>
-#endif
-
 
 #ifdef BLACKBERRY
 #include <bps/event.h>
 #endif
 
 void NmeLog(const char *inFmt, ...);
+
+class AutoGCRoot;
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -165,45 +161,7 @@ enum SpecialDir
 };
 void GetSpecialDir(SpecialDir inDir,std::string &outDir);
 
-#ifdef ANDROID
-class WString
-{
-public:
-   WString() : mLength(0), mString(0) { }
-   WString(const WString &inRHS);
-   WString(const wchar_t *inStr);
-   WString(const wchar_t *inStr,int inLen);
-   ~WString();
-
-   inline int length() const { return mLength; }
-   inline int size() const { return mLength; }
-   void resize(int inLength);
-   
-   int compare ( const WString& str ) const { return wcscmp (mString, str.mString); };
-
-   WString &operator=(const WString &inRHS);
-   inline wchar_t &operator[](int inIndex) { return mString[inIndex]; }
-   inline const wchar_t &operator[](int inIndex) const { return mString[inIndex]; }
-   const wchar_t *c_str() const { return mString ? mString : L""; }
-
-   WString &operator +=(const WString &inRHS);
-   WString operator +(const WString &inRHS) const;
-   bool operator<(const WString &inRHS) const;
-   bool operator>(const WString &inRHS) const;
-   bool operator==(const WString &inRHS) const;
-   bool operator!=(const WString &inRHS) const;
-
-   WString substr(int inPos,int inLen) const;
-
-
-private:
-   wchar_t *mString;
-   int     mLength;
-};
-#else
-#define HXCPP_NATIVE_WSTRING
 typedef std::wstring WString;
-#endif
 
 int DecodeAdvanceUTF8(const unsigned char * &ioPtr);
 
@@ -300,58 +258,6 @@ struct VolumeInfo
 
 void GetVolumeInfo( std::vector<VolumeInfo> &outInfo );
 
-#ifdef HXCPP_JS_PRIME
-struct ValueObjectStreamOut : public ObjectStreamOut
-{
-   value handleArray;
-   int   count;
-
-   ValueObjectStreamOut() : handleArray(value::object()), count(0)
-   {
-   }
-
-   void addObject(Object *inObj)
-   {
-      if (addBool(inObj))
-         handleArray.set(count++, inObj->toAbstract() );
-   }
-
-   void toValue(value &outValue);
-};
-
-
-struct ValueObjectStreamIn : public ObjectStreamIn
-{
-   int count;
-   value handleArray;
-   value abstract;
-
-   ValueObjectStreamIn(const unsigned char *inPtr, int inLength, value inHandles, value inAbstract)
-       : ObjectStreamIn(inPtr,inLength), handleArray(inHandles), abstract(inAbstract)
-   {
-      count = 0;
-   }
-
-   void linkAbstract(Object *inObject);
-
-   Object *decodeObject()
-   {
-      if (getBool())
-      {
-         value v = handleArray[count++];
-         if (v.isNull() || v.isUndefined())
-         {
-            printf("Bad handle?\n");
-            return 0;
-         }
-         return Object::toObject(v);
-      }
-      else
-         return 0;
-   }
-};
-
-#endif
 
 }
 

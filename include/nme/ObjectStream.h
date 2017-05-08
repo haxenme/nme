@@ -4,6 +4,11 @@
 #include "Object.h"
 #include "QuickVec.h"
 
+#ifdef HXCPP_JS_PRIME
+#include <emscripten.h>
+#include <emscripten/bind.h>
+#endif
+
 namespace nme
 {
 
@@ -140,6 +145,67 @@ struct ObjectStreamIn
 
 
 };
+
+
+
+#ifdef HXCPP_JS_PRIME
+struct ValueObjectStreamOut : public ObjectStreamOut
+{
+   typedef emscripten::val value;
+
+   value handleArray;
+   int   count;
+
+   ValueObjectStreamOut() : handleArray(value::object()), count(0)
+   {
+   }
+
+   void addObject(Object *inObj)
+   {
+      if (addBool(inObj))
+         handleArray.set(count++, inObj->toAbstract() );
+   }
+
+   void toValue(value &outValue);
+};
+
+
+struct ValueObjectStreamIn : public ObjectStreamIn
+{
+   typedef emscripten::val value;
+
+   int count;
+   value handleArray;
+   value abstract;
+
+   ValueObjectStreamIn(const unsigned char *inPtr, int inLength, value inHandles, value inAbstract)
+       : ObjectStreamIn(inPtr,inLength), handleArray(inHandles), abstract(inAbstract)
+   {
+      count = 0;
+   }
+
+   void linkAbstract(Object *inObject);
+
+   Object *decodeObject()
+   {
+      if (getBool())
+      {
+         value v = handleArray[count++];
+         if (v.isNull() || v.isUndefined())
+         {
+            printf("Bad handle?\n");
+            return 0;
+         }
+         return Object::toObject(v);
+      }
+      else
+         return 0;
+   }
+};
+
+#endif
+
+
 
 }
 #endif

@@ -5,13 +5,15 @@
 
 #ifdef HXCPP_JS_PRIME
 #include "NmeJsPrime.h"
+#include <Utils.h>
 
 #else
 
-#include <hx/CFFI.h>
+
 #include <hx/CFFIPrime.h>
 #include <string>
 #include <Utils.h>
+
 
 typedef value * values_array;
 
@@ -63,12 +65,10 @@ struct HxWString
    const wchar_t *__s;
 };
 
-//#ifdef HXCPP_NATIVE_WSTRING
 inline std::wstring valToStdWString(value inVal)
 {
    return val_wstring(inVal);
 }
-//#endif
 
 
 #endif

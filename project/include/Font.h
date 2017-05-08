@@ -2,7 +2,7 @@
 #define NME_FONT_H
 
 #include <nme/Object.h>
-#include <Utils.h>
+#include <nme/NmeCffi.h>
 #include <Graphics.h>
 #include <Tilesheet.h>
 #include <map>

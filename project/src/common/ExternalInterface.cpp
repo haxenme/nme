@@ -14,8 +14,8 @@
 #include <android/log.h>
 #endif
 
-#include <Utils.h>
 #include <nme/NmeCffi.h>
+#include <Utils.h>
 #include <Display.h>
 #include <TextField.h>
 #include <Surface.h>
@@ -259,17 +259,6 @@ extern "C" void InitIDs()
 
 DEFINE_ENTRY_POINT(InitIDs)
 
-
-
-#ifndef HXCPP_NATIVE_WSTRING
-WString valToStdWString(value inVal)
-{
-   const wchar_t *val = val_wstring(inVal);
-   int len=0;
-   while(val[len]) len++;
-   return WString(val,len);
-}
-#endif
 
 
 template<typename T>

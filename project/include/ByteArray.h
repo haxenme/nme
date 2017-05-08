@@ -3,6 +3,7 @@
 
 #include <nme/Object.h>
 #include <nme/QuickVec.h>
+#include <nme/NmeCffi.h>
 #include "Utils.h"
 
 namespace nme
