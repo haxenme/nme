@@ -8,6 +8,7 @@
 
 #else
 
+#include <hx/CFFI.h>
 #include <hx/CFFIPrime.h>
 #include <string>
 #include <Utils.h>
