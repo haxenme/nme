@@ -355,6 +355,7 @@
       <file name="${SRC_DIR}/common/CURL.cpp" if="NME_CURL"/>
       <file name="${SRC_DIR}/common/Thread.cpp"/>
       <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
+      <file name="${SRC_DIR}/common/ObjectStream.cpp" />
 
       <file name="${SRC_DIR}/audio/Audio.cpp" />
       <file name="${SRC_DIR}/audio/ChannelList.cpp" />

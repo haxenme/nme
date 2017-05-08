@@ -2089,6 +2089,38 @@ value nme_display_object_global_to_local(value inObj,value ioPoint)
 DEFINE_PRIM(nme_display_object_global_to_local,2);
 
 
+value nme_display_object_encode(value inObj, int inFlags)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      ObjectStreamOut *outStream = ObjectStreamOut::createEncoder(inFlags);
+      obj->encodeStream( *outStream );
+      ByteArray array(outStream->data);
+      delete outStream;
+      return array.mValue;
+   }
+   return alloc_null();
+}
+DEFINE_PRIME2(nme_display_object_encode)
+
+
+
+value nme_display_object_decode(value inArray, int inFlags)
+{
+   ByteArray array(inArray);
+
+   ObjectStreamIn *inStream = ObjectStreamIn::createDecoder(array.Bytes(),array.Size(),inFlags);
+   DisplayObject *dobj;
+   inStream->getObject(dobj,false);
+   return ObjectToAbstract(dobj);
+
+}
+DEFINE_PRIME2(nme_display_object_decode)
+
+
+
+
 value nme_type(value inObj)
 {
    #ifndef HXCPP_JS_PRIME

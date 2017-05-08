@@ -21,6 +21,11 @@ struct ObjectStreamOut
    ObjectStreamOut(bool inParentToo=true) : parentToo(inParentToo)
    {
    }
+   virtual ~ObjectStreamOut() { }
+
+   static ObjectStreamOut *createEncoder(int inFlags);
+
+   virtual void addObject(Object *inObj) = 0;
 
    inline int addInt(int inVal)
    {
@@ -50,21 +55,6 @@ struct ObjectStreamOut
       return inValue;
    }
 
-   virtual void addObject(Object *inObj) = 0;
-
-   /*
-   {
-      if (addBool(inObj))
-         addHandle( inObj->toAbstract() );
-   }
-
-   inline void addHandle(const value &inHandle)
-   {
-      handleArray.set(count++, inHandle);
-   }
-   */
-
-   //void toValue(value &outValue);
 };
 
 
@@ -78,6 +68,8 @@ struct ObjectStreamIn
    {
    }
    virtual ~ObjectStreamIn() { }
+
+   static ObjectStreamIn *createDecoder(const unsigned char *inPtr, int inLength,int inFlags);
 
    virtual void linkAbstract(Object *inObject) { }
 

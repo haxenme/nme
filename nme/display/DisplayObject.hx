@@ -11,6 +11,7 @@ import nme.geom.Transform;
 import nme.geom.ColorTransform;
 import nme.geom.Point;
 import nme.filters.BitmapFilter;
+import nme.utils.ByteArray;
 import nme.Loader;
 import nme.NativeHandle;
 
@@ -141,6 +142,16 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
       var result = inLocal.clone();
       nme_display_object_local_to_global(nmeHandle, result);
       return result;
+   }
+
+   public function encode(inFlags:Int = 0):ByteArray
+   {
+      return nme_display_object_encode(nmeHandle, inFlags);
+   }
+
+   public static function decode(inBytes:ByteArray,inFlags=0) : DisplayObject
+   {
+      return nme_display_object_decode(inBytes,inFlags);
    }
 
    /** @private */ private function nmeAsInteractiveObject():InteractiveObject {
@@ -561,6 +572,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
       return inVal;
    }
 
+
    // Native Methods
    private static var nme_create_display_object = Loader.load("nme_create_display_object", 0);
    private static var nme_display_object_get_graphics = Loader.load("nme_display_object_get_graphics", 1);
@@ -614,6 +626,8 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
    private static var nme_display_object_get_hit_enabled = Loader.load("nme_display_object_get_hit_enabled", 1);
    private static var nme_display_object_set_hit_enabled = Loader.load("nme_display_object_set_hit_enabled", 2);
    private static var nme_doc_add_child = Loader.load("nme_doc_add_child", 2);
+   private static var nme_display_object_encode = nme.PrimeLoader.load("nme_display_object_encode", "oio");
+   private static var nme_display_object_decode = nme.PrimeLoader.load("nme_display_object_decode", "oio");
 }
 
 #else
