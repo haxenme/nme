@@ -69,7 +69,8 @@ public:
    void IfEquals(Optional<T> &inRHS) { if (mSet && inRHS.mSet && inRHS.mVal != mVal) mSet = false; }
    bool IsSet() const { return mSet; }
 
-  T &__Get() { return mVal; }
+   T &write() { mSet = true; return mVal; }
+   T &__Get() { return mVal; }
 
 private:
    bool mSet;
@@ -82,9 +83,14 @@ public:
    TextFormat(const TextFormat &,bool inInitRef=true);
    static TextFormat *Create(bool inInitRef = true);
    static TextFormat *Default();
+   static TextFormat *fromStream(class ObjectStreamIn &inStream);
    TextFormat *IncRef() { Object::IncRef(); return this; }
 
    NmeObjectType getObjectType() { return notTextFormat; }
+
+   void encodeStream(class ObjectStreamOut &inStream);
+   void decodeStream(class ObjectStreamIn &inStream);
+
 
    TextFormat *COW();
 
@@ -197,6 +203,9 @@ public:
    static Font *Create(TextFormat &inFormat,double inScale, bool inNative,bool inInitRef=true);
 
    NmeObjectType getObjectType() { return notFont; }
+   void encodeStream(class ObjectStreamOut &inStream);
+   void decodeStream(class ObjectStreamIn &inStream);
+
 
    Font *IncRef() { Object::IncRef(); return this; }
 

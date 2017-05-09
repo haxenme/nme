@@ -710,8 +710,7 @@ void DisplayObject::encodeStream(ObjectStreamOut &stream)
 {
    stream.addInt(getObjectType());
    stream.add(id);
-   stream.addInt(name.size());
-   stream.append(name.c_str(),name.size()*sizeof(wchar_t));
+   stream.add(name);
    stream.add(blendMode);
    stream.add(cacheAsBitmap);
    stream.add(pedanticBitmapCaching);
@@ -758,9 +757,7 @@ void DisplayObject::decodeStream(ObjectStreamIn &stream)
 {
    // TODO - replace id?
    stream.get(id);
-   int len = stream.getInt();
-   wchar_t *str = (wchar_t *)stream.getBytes(len*sizeof(wchar_t));
-   name = WString(str, str+len);
+   stream.get(name);
    stream.get(blendMode);
    stream.get(cacheAsBitmap);
    stream.get(pedanticBitmapCaching);

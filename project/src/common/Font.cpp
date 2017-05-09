@@ -472,6 +472,16 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    return font;
 }
 
+void Font::encodeStream(ObjectStreamOut &inStream)
+{
+   printf("Font::encodeStream\n");
+}
+void Font::decodeStream(ObjectStreamIn &inStream)
+{
+   printf("Font::decodeStream\n");
+}
+
+
 void nmeRegisterFont(const std::string &inName, FontBuffer inData)
 {
    sgRegisteredFonts[registerNorm(inName)] = inData;

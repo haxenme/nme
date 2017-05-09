@@ -3,6 +3,7 @@
 
 #include "Object.h"
 #include "QuickVec.h"
+#include <string>
 
 #ifdef HXCPP_JS_PRIME
 #include <emscripten.h>
@@ -47,6 +48,11 @@ struct ObjectStreamOut
    {
       addInt(inData.size());
       append(inData.ByteData(), inData.ByteCount());
+   }
+   void add(const std::wstring &inVal)
+   {
+      addInt(inVal.size());
+      append(inVal.c_str(),inVal.size()*sizeof(wchar_t));
    }
 
    bool addBool(bool inValue)
@@ -96,14 +102,21 @@ struct ObjectStreamIn
       ptr+=sizeof(T);
       len-=sizeof(T);
    }
-   template<typename T>
-   void getVec(QuickVec<T> &outData)
+   template<typename T,int N>
+   void getVec(QuickVec<T,N> &outData)
    {
       int n = getInt();
       outData.resize(n);
       int size = n*sizeof(T);
       memcpy(outData.ByteData(), getBytes(size),size);
    }
+   void get(std::wstring &outVal)
+   {
+      int size = getInt();
+      wchar_t *data = (wchar_t *)getBytes(size*sizeof(wchar_t));
+      outVal = std::wstring( data, data+size );
+   }
+
 
    bool getBool()
    {

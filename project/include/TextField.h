@@ -91,7 +91,7 @@ public:
    TextField(bool inInitRef=false);
 
    bool IsInteractive() const { return true; }
-
+   NmeObjectType getObjectType() { return notTextField; }
 
    void appendText(WString inString);
    Rect getCharBoundaries(int inCharIndex);

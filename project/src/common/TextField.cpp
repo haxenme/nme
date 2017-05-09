@@ -2299,6 +2299,60 @@ void TextField::Layout(const Matrix &inMatrix)
 void TextField::decodeStream(ObjectStreamIn &stream)
 {
    DisplayObject::decodeStream(stream);
+
+   stream.get(alwaysShowSelection);
+   stream.get(antiAliasType);
+   stream.get(autoSize);
+   stream.get(background);
+   stream.get(backgroundColor);
+   stream.get(border);
+   stream.get(borderColor);
+   stream.get(condenseWhite);
+   stream.getObject(defaultTextFormat);
+   stream.get(displayAsPassword);
+   stream.get(embedFonts);
+   stream.get(gridFitType);
+   stream.get(maxChars);
+   stream.get(mouseWheelEnabled);
+   stream.get(multiline);
+   //WString restrict;
+   stream.get(selectable);
+   stream.get(sharpness);
+   stream.get(textColor);
+   stream.get(thickness);
+   stream.get(useRichTextClipboard);
+   stream.get(wordWrap);
+   stream.get(isInput);
+
+   stream.get(scrollH);
+   stream.get(scrollV);
+   stream.get(maxScrollH);
+   stream.get(maxScrollV);
+   stream.get(caretIndex);
+
+
+   int size = stream.getInt();
+   mCharGroups.resize(size);
+   for(int g=0;g<size; g++)
+   {
+      CharGroup &ch = *mCharGroups[g];
+      stream.getVec(ch.mString);
+      stream.get(ch.mChar0);
+      stream.get(ch.mFontHeight);
+      stream.get(ch.mFlags);
+      stream.getObject(ch.mFormat);
+      stream.getObject(ch.mFont);
+   }
+
+   stream.get(mSelectMin);
+   stream.get(mSelectMax);
+
+   // Local coordinates
+   stream.get(explicitWidth);
+   stream.get(fieldWidth);
+   stream.get(fieldHeight);
+   stream.get(textWidth);
+   stream.get(textHeight);
 }
 
 void TextField::encodeStream(ObjectStreamOut &stream)
@@ -2335,7 +2389,7 @@ void TextField::encodeStream(ObjectStreamOut &stream)
    stream.add(maxScrollV);
    stream.add(caretIndex);
 
-   stream.add( mCharGroups.size() );
+   stream.addInt( mCharGroups.size() );
    for(int g=0;g<mCharGroups.size(); g++)
    {
       CharGroup &ch = *mCharGroups[g];
@@ -2468,6 +2522,60 @@ TextFormat *TextFormat::Default()
    sDefaultTextFormat->IncRef();
    return sDefaultTextFormat;
 }
+
+
+void TextFormat::encodeStream(ObjectStreamOut &inStream)
+{
+   if (inStream.addBool(align.IsSet())) inStream.add(align.Get());
+   if (inStream.addBool(blockIndent.IsSet())) inStream.add(blockIndent.Get());
+   if (inStream.addBool(bold.IsSet())) inStream.add(bold.Get());
+   if (inStream.addBool(bullet.IsSet())) inStream.add(bullet.Get());
+   if (inStream.addBool(color.IsSet())) inStream.add(color.Get());
+   if (inStream.addBool(font.IsSet())) inStream.add(font.Get());
+   if (inStream.addBool(indent.IsSet())) inStream.add(indent.Get());
+   if (inStream.addBool(italic.IsSet())) inStream.add(italic.Get());
+   if (inStream.addBool(kerning.IsSet())) inStream.add(kerning.Get());
+   if (inStream.addBool(leading.IsSet())) inStream.add(leading.Get());
+   if (inStream.addBool(leftMargin.IsSet())) inStream.add(leftMargin.Get());
+   if (inStream.addBool(letterSpacing.IsSet())) inStream.add(letterSpacing.Get());
+   if (inStream.addBool(rightMargin.IsSet())) inStream.add(rightMargin.Get());
+   if (inStream.addBool(size.IsSet())) inStream.add(size.Get());
+   if (inStream.addBool(tabStops.IsSet())) inStream.addVec(tabStops.Get());
+   if (inStream.addBool(target.IsSet())) inStream.add(target.Get());
+   if (inStream.addBool(underline.IsSet())) inStream.add(underline.Get());
+   if (inStream.addBool(url.IsSet())) inStream.add(url.Get());
+}
+
+void TextFormat::decodeStream(ObjectStreamIn &inStream)
+{
+   if (inStream.getBool()) inStream.get(align.write());
+   if (inStream.getBool()) inStream.get(blockIndent.write());
+   if (inStream.getBool()) inStream.get(bold.write());
+   if (inStream.getBool()) inStream.get(bullet.write());
+   if (inStream.getBool()) inStream.get(color.write());
+   if (inStream.getBool()) inStream.get(font.write());
+   if (inStream.getBool()) inStream.get(indent.write());
+   if (inStream.getBool()) inStream.get(italic.write());
+   if (inStream.getBool()) inStream.get(kerning.write());
+   if (inStream.getBool()) inStream.get(leading.write());
+   if (inStream.getBool()) inStream.get(leftMargin.write());
+   if (inStream.getBool()) inStream.get(letterSpacing.write());
+   if (inStream.getBool()) inStream.get(rightMargin.write());
+   if (inStream.getBool()) inStream.get(size.write());
+   if (inStream.getBool()) inStream.getVec(tabStops.write());
+   if (inStream.getBool()) inStream.get(target.write());
+   if (inStream.getBool()) inStream.get(underline.write());
+   if (inStream.getBool()) inStream.get(url.write());
+}
+
+TextFormat *TextFormat::fromStream(ObjectStreamIn &inStream)
+{
+   TextFormat *result = new TextFormat();
+   inStream.linkAbstract(result);
+   result->decodeStream(inStream);
+   return result;
+}
+
 
 
 

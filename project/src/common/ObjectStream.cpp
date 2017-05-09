@@ -1,6 +1,7 @@
 #include <nme/ObjectStream.h>
 #include <Surface.h>
 #include <Display.h>
+#include <TextField.h>
 #include <map>
 #include <vector>
 
@@ -75,6 +76,10 @@ public:
       {
          case notSurface:
             newObject = SimpleSurface::fromStream(*this);
+            break;
+
+         case notTextFormat:
+            newObject = TextFormat::fromStream(*this);
             break;
 
          case notDisplayObject:
