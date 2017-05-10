@@ -818,7 +818,8 @@ void decodeGraphicsData(ObjectStreamIn &stream, T *&outPointer)
 
 IGraphicsData *decodeGraphicsData(ObjectStreamIn &stream)
 {
-   switch(stream.getInt())
+   int type = stream.getInt();
+   switch(type)
    {
       case gdtUnknown:
          return 0;
@@ -917,6 +918,7 @@ void Graphics::unrealize()
 Graphics *Graphics::fromStream(ObjectStreamIn &inStream)
 {
    Graphics *result = new Graphics(0);
+   inStream.linkAbstract(result);
    result->decodeStream(inStream);
    return result;
 }
@@ -963,6 +965,7 @@ void Graphics::decodeStream(ObjectStreamIn &stream)
 {
    int count = stream.getInt();
    mJobs.resize(count);
+   mJobs.Zero();
    for(int j=0;j<count;j++)
    {
       GraphicsJob &job = mJobs[j];

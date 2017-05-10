@@ -789,12 +789,12 @@ void DisplayObject::decodeStream(ObjectStreamIn &stream)
 
    if (stream.getBool())
    {
-      mDirtyFlags &= ~dirtLocalMatrix;
+      mDirtyFlags = dirtAll ^ dirtLocalMatrix;
       stream.get(mLocalMatrix);
    }
    else
    {
-      mDirtyFlags &= ~dirtDecomp;
+      mDirtyFlags = dirtAll ^ dirtDecomp;
       stream.get(x);
       stream.get(y);
       stream.get(scaleX);
@@ -855,7 +855,10 @@ void DisplayObjectContainer::decodeStream(ObjectStreamIn &inStream)
    int n = inStream.getInt();
    mChildren.resize(n);
    for(int i=0;i<n;i++)
+   {
       inStream.getObject(mChildren[i]);
+      mChildren[i]->hackSetParent(this);
+   }
 }
 
 
@@ -866,7 +869,12 @@ void SimpleButton::decodeStream(ObjectStreamIn &inStream)
    inStream.get(useHandCursor);
    inStream.get(mMouseState);
    for(int i=0;i<stateSIZE;i++)
+   {
       inStream.getObject( mState[i] );
+      if (mState[i])
+         mState[i]->hackSetParent(this);
+   }
+
 }
 
 void SimpleButton::encodeStream(ObjectStreamOut &inStream)

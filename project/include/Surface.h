@@ -134,6 +134,8 @@ public:
    void unrealize();
    #endif
    static SimpleSurface *fromStream(ObjectStreamIn &inStream);
+   void encodeStream(ObjectStreamOut &stream);
+
 
    void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0);
    bool ReinterpretPixelFormat(PixelFormat inNewFormat);

@@ -1858,6 +1858,14 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
    EndRender();
 }
 
+void SimpleSurface::encodeStream(ObjectStreamOut &stream)
+{
+   stream.addInt(mWidth);
+   stream.addInt(mHeight);
+   stream.addInt((int)mPixelFormat);
+   stream.data.append(mBase,GetBufferSize());
+}
+
 
 #ifdef HXCPP_JS_PRIME
 void SimpleSurface::unrealize()
@@ -1865,11 +1873,7 @@ void SimpleSurface::unrealize()
    if (val)
    {
       ValueObjectStreamOut stream;
-      stream.addInt(mWidth);
-      stream.addInt(mHeight);
-      stream.addInt((int)mPixelFormat);
-      stream.data.append(mBase,GetBufferSize());
-
+      encodeStream(stream);
       stream.toValue(*val);
    }
 }

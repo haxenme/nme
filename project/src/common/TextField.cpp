@@ -2341,7 +2341,7 @@ void TextField::decodeStream(ObjectStreamIn &stream)
       stream.get(ch.mFontHeight);
       stream.get(ch.mFlags);
       stream.getObject(ch.mFormat);
-      stream.getObject(ch.mFont);
+      ch.mFont = 0;
    }
 
    stream.get(mSelectMin);
@@ -2398,7 +2398,8 @@ void TextField::encodeStream(ObjectStreamOut &stream)
       stream.add(ch.mFontHeight);
       stream.add(ch.mFlags);
       stream.addObject(ch.mFormat);
-      stream.addObject(ch.mFont);
+      // Will be recreated
+      //stream.addObject(ch.mFont);
    }
 
    stream.add(mSelectMin);

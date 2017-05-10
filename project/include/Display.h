@@ -39,6 +39,7 @@ enum
    dirtLocalMatrix = 0x0002,
    dirtCache       = 0x0004,
    dirtExtent      = 0x0008,
+   dirtAll         = 0x000f,
 };
 
 enum StageScaleMode
@@ -186,6 +187,7 @@ public:
    //const Transform &getTransform();
 
    DisplayObject *getParent();
+   void hackSetParent(DisplayObjectContainer *inParent) { mParent=inParent; } 
 
    DisplayObject *getRoot();
    virtual Stage  *getStage();
@@ -279,6 +281,7 @@ protected:
 
 public:
    DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef), mouseChildren(true) { }
+   NmeObjectType getObjectType() { return notDisplayObjectContainer; }
 
    void decodeStream(ObjectStreamIn &inStream);
    void encodeStream(ObjectStreamOut &inStream);
