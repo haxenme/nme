@@ -256,10 +256,6 @@ public:
    void decodeStream(ObjectStreamIn &inStream);
    static DisplayObject *fromStream(ObjectStreamIn &inStream);
 
-   #ifdef HXCPP_JS_PRIME
-   void unrealize();
-   #endif
-
 
 protected:
    void UpdateDecomp();

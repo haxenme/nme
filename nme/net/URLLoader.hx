@@ -30,16 +30,18 @@ class URLLoader extends EventDispatcher
    public var data:Dynamic;
    public var dataFormat:URLLoaderDataFormat;
 
-   /** @private */ public var nmeHandle:NativeHandle;
-   /** @private */ private static var activeLoaders = new List<URLLoader>();
+   public var nmeHandle:NativeHandle;
+   private static var activeLoaders = new List<URLLoader>();
+
    private static inline var urlInvalid    = 0;
    private static inline var urlInit       = 1;
    private static inline var urlLoading    = 2;
    private static inline var urlComplete    = 3;
    private static inline var urlError       = 4;
 
-   /** @private */ private var state:Int;
-   /** @private */ public var nmeOnComplete:Dynamic -> Bool;
+   private var state:Int;
+   public var nmeOnComplete:Dynamic -> Bool;
+
    public function new(?request:URLRequest) 
    {
       super();
@@ -114,11 +116,14 @@ class URLLoader extends EventDispatcher
          if (nmeHandle == null)
             onError("Could not open URL");
          else
+         {
+            #if js nme.NativeResource.lock(this); #end
             activeLoaders.push(this);
+         }
       }
    }
 
-   /** @private */ private function nmeDataComplete()
+   private function nmeDataComplete()
    {
       activeLoaders.remove(this);
 
@@ -134,14 +139,15 @@ class URLLoader extends EventDispatcher
       {
          dispatchEvent(new Event(Event.COMPLETE));
       }
+      #if js nme.NativeResource.unlock(this); #end
    }
 
-   /** @private */ public static function nmeLoadPending()
+   public static function nmeLoadPending()
    {
       return !activeLoaders.isEmpty();
    }
 
-   /** @private */ public static function nmePollData()
+   public static function nmePollData()
    {
       if (!activeLoaders.isEmpty()) 
       {
@@ -158,24 +164,25 @@ class URLLoader extends EventDispatcher
       }
    }
 
-   /** @private */ private function onError(msg):Void {
+   private function onError(msg):Void
+   {
       activeLoaders.remove(this);
       dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
+      #if js nme.NativeResource.unlock(this); #end
    }
 
-   /** @private */ private function dispatchHTTPStatus(code:Int):Void
+   private function dispatchHTTPStatus(code:Int):Void
    {
-      
       var evt = new HTTPStatusEvent (HTTPStatusEvent.HTTP_STATUS, false, false, code);
       var headers:Array<String> = nme_curl_get_headers(nmeHandle);
-      
+
       for(h in headers)
       {
          var idx = h.indexOf(": ");
          if(idx > 0)
             evt.responseHeaders.push(new URLRequestHeader(h.substr(0, idx), h.substr(idx + 2, h.length - idx - 4)));
       }
-      
+
       dispatchEvent (evt);
    }
 
@@ -214,8 +221,7 @@ class URLLoader extends EventDispatcher
                   default:
                      data = bytes;
                }
-
-                     nmeDataComplete();
+               nmeDataComplete();
 
             }
             else 

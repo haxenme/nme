@@ -23,6 +23,10 @@ public:
    Tilesheet(Surface *inSurface,bool inInitRef=false);
 
    NmeObjectType getObjectType() { return notTilesheet; }
+   void encodeStream(ObjectStreamOut &inStream);
+   void decodeStream(class ObjectStreamIn &inStream);
+   static Tilesheet *fromStream(ObjectStreamIn &inStream);
+
 
    Tilesheet *IncRef() { Object::IncRef(); return this; }
 

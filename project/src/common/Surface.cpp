@@ -1867,19 +1867,6 @@ void SimpleSurface::encodeStream(ObjectStreamOut &stream)
 }
 
 
-#ifdef HXCPP_JS_PRIME
-void SimpleSurface::unrealize()
-{
-   if (val)
-   {
-      ValueObjectStreamOut stream;
-      encodeStream(stream);
-      stream.toValue(*val);
-   }
-}
-
-#endif
-
 SimpleSurface *SimpleSurface::fromStream(ObjectStreamIn &inStream)
 {
    int w = inStream.getInt();

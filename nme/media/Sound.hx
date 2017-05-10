@@ -23,9 +23,10 @@ class Sound extends EventDispatcher
    public var length(get_length, null):Float;
    public var url(default, null):String;
 
-   /** @private */ public var nmeHandle:NativeHandle;
-   /** @private */ private var nmeLoading:Bool;
-   /** @private */ private var nmeDynamicSound:Bool;
+   public var nmeHandle:NativeHandle;
+   private var nmeLoading:Bool;
+   private var nmeDynamicSound:Bool;
+
    public function new(?stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false, ?inEngine:String) 
    {
       super();
@@ -73,7 +74,7 @@ class Sound extends EventDispatcher
          nme_sound_close(nmeHandle);
 
       nme.NativeResource.disposeHandler(this);
-         nmeLoading = false;
+      nmeLoading = false;
    }
 
    public function load(stream:URLRequest, ?context:SoundLoaderContext, forcePlayAsMusic:Bool = false, ?inEngine:String) 
@@ -85,10 +86,10 @@ class Sound extends EventDispatcher
       {
          throw("Could not load " + (forcePlayAsMusic ? "music" : "sound") + ":" + stream.url);
 
-      } else 
+      }
+      else 
       {
          url = stream.url;
-         nmeLoading = true;
          nmeLoading = false;
          nmeCheckLoading();
       }
@@ -150,7 +151,8 @@ class Sound extends EventDispatcher
       loadCompressedDataFromByteArray(wav, wav.length);
    }
 
-   /** @private */ private function nmeCheckLoading() {
+   private function nmeCheckLoading()
+   {
       if (!nmeDynamicSound && nmeLoading && nmeHandle != null) 
       {
          var status:Dynamic = nme_sound_get_status(nmeHandle);
@@ -170,7 +172,8 @@ class Sound extends EventDispatcher
       }
    }
 
-   /** @private */ private function nmeOnError(msg:String):Void {
+   private function nmeOnError(msg:String):Void
+   {
       dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
       nmeHandle = null;
       nmeLoading = true;
@@ -211,7 +214,8 @@ class Sound extends EventDispatcher
    }
 
    // Getters & Setters
-   /** @private */ private function get_id3():ID3Info {
+   private function get_id3():ID3Info
+   {
       nmeCheckLoading();
 
       if (nmeHandle == null || nmeLoading)
@@ -222,12 +226,14 @@ class Sound extends EventDispatcher
       return id3;
    }
 
-   /** @private */ private function get_isBuffering():Bool {
+   private function get_isBuffering():Bool
+   {
       nmeCheckLoading();
       return(nmeLoading && nmeHandle == null);
    }
 
-   /** @private */ private function get_length():Float {
+   private function get_length():Float
+   {
       if (nmeHandle == null || nmeLoading)
          return 0;
 

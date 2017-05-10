@@ -692,17 +692,7 @@ void DisplayObject::Unfocus()
 #endif
 }
 
-#ifdef HXCPP_JS_PRIME
-void DisplayObject::unrealize()
-{
-   if (val)
-   {
-      ValueObjectStreamOut stream;
-      encodeStream(stream);
-      stream.toValue(*val);
-   }
-}
-#endif
+
 
 
 
@@ -757,6 +747,12 @@ void DisplayObject::decodeStream(ObjectStreamIn &stream)
 {
    // TODO - replace id?
    stream.get(id);
+   if (stream.newIds)
+   {
+      id = sgDisplayObjID++ & 0x7fffffff;
+      if (id==0)
+         id = sgDisplayObjID++;
+   }
    stream.get(name);
    stream.get(blendMode);
    stream.get(cacheAsBitmap);

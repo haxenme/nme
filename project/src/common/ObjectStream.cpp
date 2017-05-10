@@ -74,6 +74,10 @@ public:
       NmeObjectType type = (NmeObjectType)getInt();
       switch(type)
       {
+         case notTilesheet:
+            newObject = Tilesheet::fromStream(*this);
+            break;
+
          case notSurface:
             newObject = SimpleSurface::fromStream(*this);
             break;

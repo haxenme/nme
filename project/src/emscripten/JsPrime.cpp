@@ -76,8 +76,19 @@ Object *Object::toObject( value &inValue )
 
          switch(realizeType)
          {
+            // notSound,
+            // notSoundChannel,
+
             case notSurface:
                newObject = SimpleSurface::fromStream(input);
+               break;
+
+            case notTilesheet:
+               newObject = Tilesheet::fromStream(input);
+               break;
+
+            case notTextFormat:
+               newObject = TextFormat::fromStream(input);
                break;
 
             case notDisplayObject:
@@ -159,7 +170,15 @@ const char *gObjectTypeNames[] = {
 
 void Object::unrealize()
 {
-   printf("TODO unrealize object %s\n", gObjectTypeNames[getObjectType()]);
+   if (val)
+   {
+      ValueObjectStreamOut stream;
+      encodeStream(stream);
+      if (stream.empty())
+         printf("TODO unrealize object %s\n", gObjectTypeNames[getObjectType()]);
+      else
+         stream.toValue(*val);
+   }
 }
 
 
@@ -251,21 +270,7 @@ void nme_native_resource_release_temps()
    for(int i=0;i<gTempRefs.size();i++)
    {
       Object *obj = gTempRefs[i];
-      int type = obj->getObjectType();
-      switch(type)
-      {
-         case notBytes:
-         case notSurface:
-         case notDisplayObject:
-         case notGraphics:
-            // Ok, implemented
-            obj->DecRef();
-            break;
-         default:
-            // potentially leak for now
-            //obj->DecRef();
-            ;
-      }
+      obj->DecRef();
    }
    gTempRefs.resize(0);
 }

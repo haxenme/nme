@@ -2111,6 +2111,9 @@ value nme_display_object_decode(value inArray, int inFlags)
    ByteArray array(inArray);
 
    ObjectStreamIn *inStream = ObjectStreamIn::createDecoder(array.Bytes(),array.Size(),inFlags);
+   if (!(inFlags & 0x0001))
+      inStream->newIds = true;
+
    DisplayObject *dobj=0;
    inStream->getObject(dobj,false);
    if (!dobj)

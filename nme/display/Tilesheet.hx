@@ -26,11 +26,11 @@ class Tilesheet
    public static inline var TILE_BLEND_SUBTRACT = 0x00000000;
 
 
-   /** @private */ public var nmeBitmap:BitmapData;
+   public var nmeBitmap:BitmapData;
 
    #if !flash
 
-   /** @private */ public var nmeHandle:NativeHandle;
+   public var nmeHandle:NativeHandle;
 
    public function new(inImage:BitmapData) 
    {

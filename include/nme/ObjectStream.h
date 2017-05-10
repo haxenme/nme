@@ -66,12 +66,14 @@ struct ObjectStreamOut
 
 struct ObjectStreamIn
 {
+   bool newIds;
    const unsigned char *ptr;
    int len;
 
    ObjectStreamIn(const unsigned char *inPtr, int inLength)
        : ptr(inPtr), len(inLength)
    {
+      newIds = false;
    }
    virtual ~ObjectStreamIn() { }
 

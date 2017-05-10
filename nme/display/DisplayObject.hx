@@ -150,6 +150,8 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
       return nme_display_object_encode(nmeHandle, inFlags);
    }
 
+   // By default, fresh IDs will be allocated to avoid conflicts in display list
+   static inline var DISPLAY_KEEP_ID = 0x0001;
    public static function decodeDisplay(inBytes:ByteArray,inFlags=0) : DisplayObject
    {
       var handle = nme_display_object_decode(inBytes,inFlags);

@@ -52,7 +52,8 @@ class NativeResource
    }
 
 
-   inline public static function disposeHandler(handler:NativeHandler) : Void {
+   inline public static function disposeHandler(handler:NativeHandler) : Void
+   {
       if (handler.nmeHandle!=null)
       {
          nme_native_resource_dispose(handler.nmeHandle);

@@ -130,9 +130,6 @@ public:
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
 
-   #ifdef HXCPP_JS_PRIME
-   void unrealize();
-   #endif
    static SimpleSurface *fromStream(ObjectStreamIn &inStream);
    void encodeStream(ObjectStreamOut &stream);
 
