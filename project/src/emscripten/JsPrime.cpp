@@ -3,6 +3,8 @@
 #include <Utils.h>
 #include <Display.h>
 #include <Surface.h>
+#include <Tilesheet.h>
+#include <Font.h>
 
 IdMap sIdMap;
 IdMap sKindMap;
@@ -12,6 +14,75 @@ std::vector<const char *> sIdKeyNames;
 namespace nme
 {
 QuickVec<Object *> gTempRefs; 
+
+
+struct ValueObjectStreamOut : public ObjectStreamOut
+{
+   typedef emscripten::val value;
+
+   value handleArray;
+   int   count;
+
+   ValueObjectStreamOut() : handleArray(value::object()), count(0)
+   {
+
+   }
+
+   void addObject(Object *inObj)
+   {
+      if (addBool(inObj))
+      {
+         addInt(count);
+         handleArray.set(count++, inObj->toAbstract() );
+      }
+   }
+
+   void toValue(value &outValue);
+};
+
+
+struct ValueObjectStreamIn : public ObjectStreamIn
+{
+   typedef emscripten::val value;
+
+   int count;
+   value handleArray;
+   value abstract;
+
+   ValueObjectStreamIn(const unsigned char *inPtr, int inLength, value inHandles, value inAbstract)
+       : ObjectStreamIn(inPtr,inLength), handleArray(inHandles), abstract(inAbstract)
+   {
+      count = 0;
+   }
+
+   void linkAbstract(Object *inObject);
+
+   Object *decodeObject()
+   {
+      if (getBool())
+      {
+         int check = getInt();
+         if (check!=count)
+         {
+            printf("Bad handle count mismatch %d/%d\n", check, count);
+            *(int *)0=0;
+         }
+         value v = handleArray[count++];
+         if (v.isNull() || v.isUndefined())
+         {
+            printf("Bad handle %d?\n", count-1);
+            *(int *)0=0;
+            return 0;
+         }
+         return Object::toObject(v);
+      }
+      else
+         return 0;
+   }
+};
+
+
+
 
 void Object::releaseObject()
 {

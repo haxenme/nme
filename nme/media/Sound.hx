@@ -71,8 +71,9 @@ class Sound extends EventDispatcher
    public function close() 
    {
       if (nmeHandle != null)
+      {
          nme_sound_close(nmeHandle);
-
+      }
       nme.NativeResource.disposeHandler(this);
       nmeLoading = false;
    }
@@ -89,6 +90,7 @@ class Sound extends EventDispatcher
       }
       else 
       {
+         nme.NativeResource.lockHandler(this);
          url = stream.url;
          nmeLoading = false;
          nmeCheckLoading();
@@ -103,6 +105,10 @@ class Sound extends EventDispatcher
       if (nmeHandle == null) 
       {
          throw("Could not load buffer with length: " + length);
+      }
+      else
+      {
+         nme.NativeResource.lockHandler(this);
       }
    }
 
@@ -175,8 +181,7 @@ class Sound extends EventDispatcher
    private function nmeOnError(msg:String):Void
    {
       dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
-      nmeHandle = null;
-      nmeLoading = true;
+      close();
    }
 
    public function play(startTime:Float = 0, loops:Int = 0, ?sndTransform:SoundTransform):SoundChannel 
@@ -197,7 +202,12 @@ class Sound extends EventDispatcher
             return null;
 
          var result = SoundChannel.createDynamic(nmeHandle, sndTransform, this);
-         nmeHandle = null;
+
+         #if js
+            nme.NativeResource.lockHandler(this);
+         #else
+            nmeHandle = null;
+         #end
          return result;
 
       }

@@ -26,6 +26,8 @@ struct ObjectStreamOut
 
    static ObjectStreamOut *createEncoder(int inFlags);
 
+   inline bool empty() const { return data.empty(); }
+
    virtual void addObject(Object *inObj) = 0;
 
    inline int addInt(int inVal)
@@ -81,8 +83,11 @@ struct ObjectStreamIn
 
    virtual void linkAbstract(Object *inObject) { }
 
+
    inline int getInt()
    {
+      if (len<=0)
+         return 0;
       int result;
       memcpy(&result,ptr,4);
       ptr+=4;
@@ -122,6 +127,11 @@ struct ObjectStreamIn
 
    bool getBool()
    {
+      if (len<=0)
+      {
+         printf("EOF!\n");
+         return false;
+      }
       bool result=false;
       get(result);
       return result;
@@ -139,80 +149,20 @@ struct ObjectStreamIn
          outObject = dynamic_cast<T*>(obj);
          if (obj && !outObject)
          {
-            printf("got object, but wrong type %p\n", obj);
+            printf("got object(%d), but wrong type %p\n", obj->getObjectType(), obj);
+            *(int *)0=0;
          }
-         else if (inAddRef)
+         else if (obj && inAddRef)
             obj->IncRef();
+         else if (!obj)
+            printf("Bad obj logic\n");
       }
       else
       {
          outObject = 0;
       }
    }
-
-
 };
-
-
-
-#ifdef HXCPP_JS_PRIME
-struct ValueObjectStreamOut : public ObjectStreamOut
-{
-   typedef emscripten::val value;
-
-   value handleArray;
-   int   count;
-
-   ValueObjectStreamOut() : handleArray(value::object()), count(0)
-   {
-
-   }
-
-   void addObject(Object *inObj)
-   {
-      if (addBool(inObj))
-         handleArray.set(count++, inObj->toAbstract() );
-   }
-
-   void toValue(value &outValue);
-};
-
-
-struct ValueObjectStreamIn : public ObjectStreamIn
-{
-   typedef emscripten::val value;
-
-   int count;
-   value handleArray;
-   value abstract;
-
-   ValueObjectStreamIn(const unsigned char *inPtr, int inLength, value inHandles, value inAbstract)
-       : ObjectStreamIn(inPtr,inLength), handleArray(inHandles), abstract(inAbstract)
-   {
-      count = 0;
-   }
-
-   void linkAbstract(Object *inObject);
-
-   Object *decodeObject()
-   {
-      if (getBool())
-      {
-         value v = handleArray[count++];
-         if (v.isNull() || v.isUndefined())
-         {
-            printf("Bad handle?\n");
-            return 0;
-         }
-         return Object::toObject(v);
-      }
-      else
-         return 0;
-   }
-};
-
-#endif
-
 
 
 }

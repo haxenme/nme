@@ -42,7 +42,10 @@ class SoundChannel extends EventDispatcher
          nmeHandle = nme_sound_channel_create(inSoundHandle, startTime, loops, nmeTransform);
 
       if (nmeHandle != null)
+      {
+         nme.NativeResource.lockHandler(this);
          nmeIncompleteList.push(this);
+      }
    }
 
 
@@ -111,6 +114,7 @@ class SoundChannel extends EventDispatcher
    {
       var complete = new Event(Event.SOUND_COMPLETE);
       dispatchEvent(complete);
+      nme.NativeResource.disposeHandler(this);
    }
 
    public static function nmePollComplete()

@@ -724,16 +724,9 @@ public:
    int Version() const;
 
 
-
-   #ifdef HXCPP_JS_PRIME
-   void unrealize();
-   #endif
-
    void encodeStream(class ObjectStreamOut &inStream);
    void decodeStream(class ObjectStreamIn &inStream);
    static Graphics *fromStream(class ObjectStreamIn &inStream);
-
-
 
 protected:
    void                      BuildHardware();

@@ -99,14 +99,14 @@ class URLLoader extends EventDispatcher
                   data = bytes;
             }
 
-         } catch(e:Dynamic) 
+         }
+         catch(e:Dynamic) 
          {
             onError(e);
             return;
          }
 
-            nmeDataComplete();
-
+         nmeDataComplete();
       }
       else 
       {
@@ -117,7 +117,7 @@ class URLLoader extends EventDispatcher
             onError("Could not open URL");
          else
          {
-            #if js nme.NativeResource.lock(this); #end
+            #if js nme.NativeResource.lockHandler(this); #end
             activeLoaders.push(this);
          }
       }
@@ -139,7 +139,7 @@ class URLLoader extends EventDispatcher
       {
          dispatchEvent(new Event(Event.COMPLETE));
       }
-      #if js nme.NativeResource.unlock(this); #end
+      nme.NativeResource.disposeHandler(this);
    }
 
    public static function nmeLoadPending()
@@ -168,7 +168,7 @@ class URLLoader extends EventDispatcher
    {
       activeLoaders.remove(this);
       dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
-      #if js nme.NativeResource.unlock(this); #end
+      nme.NativeResource.disposeHandler(this);
    }
 
    private function dispatchHTTPStatus(code:Int):Void
@@ -228,8 +228,8 @@ class URLLoader extends EventDispatcher
             {
                // XXX : This should be handled in project/common/CURL.cpp
                var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, "HTTP status code " + Std.string(code), code);
-               NativeResource.disposeHandler(this);
                dispatchEvent(evt);
+               NativeResource.disposeHandler(this);
             }
 
          }
@@ -238,8 +238,8 @@ class URLLoader extends EventDispatcher
             dispatchHTTPStatus(code);
 
             var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, nme_curl_get_error_message(nmeHandle), code);
-            NativeResource.disposeHandler(this);
             dispatchEvent(evt);
+            NativeResource.disposeHandler(this);
          }
       }
    }

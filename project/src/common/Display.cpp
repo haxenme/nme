@@ -763,6 +763,7 @@ void DisplayObject::decodeStream(ObjectStreamIn &stream)
    stream.get(opaqueBackground);
    stream.get(scale9Grid);
    stream.get(scrollRect);
+
    stream.get(visible);
    stream.get(mouseEnabled);
    stream.get(hitEnabled);

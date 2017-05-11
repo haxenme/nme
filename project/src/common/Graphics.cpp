@@ -900,21 +900,6 @@ IGraphicsData *decodeGraphicsData(ObjectStreamIn &stream)
 }
 
 
-#ifdef HXCPP_JS_PRIME
-
-void Graphics::unrealize()
-{
-   if (val)
-   {
-      ValueObjectStreamOut stream;
-      encodeStream(stream);
-      stream.toValue(*val);
-   }
-   else
-      printf("Graphics::unrealize - no val?\n");
-}
-#endif
-
 Graphics *Graphics::fromStream(ObjectStreamIn &inStream)
 {
    Graphics *result = new Graphics(0);
@@ -922,7 +907,6 @@ Graphics *Graphics::fromStream(ObjectStreamIn &inStream)
    result->decodeStream(inStream);
    return result;
 }
-
 
 
 void Graphics::encodeStream(ObjectStreamOut &stream)
@@ -958,7 +942,6 @@ void Graphics::encodeStream(ObjectStreamOut &stream)
 
       if (stream.addBool(mPathData))
          encodeGraphicsData(stream,mPathData);
-
 }
 
 void Graphics::decodeStream(ObjectStreamIn &stream)
