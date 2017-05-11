@@ -13,6 +13,9 @@
 namespace nme
 {
 
+#define STREAM_ADD_SYNC(x) stream.addInt(x)
+#define STREAM_GET_SYNC(x) if (stream.getInt()!=x) { printf("Bad sync %d\n", x); *(int *)0=0; }
+
 
 struct ObjectStreamOut
 {
@@ -27,8 +30,6 @@ struct ObjectStreamOut
    static ObjectStreamOut *createEncoder(int inFlags);
 
    inline bool empty() const { return data.empty(); }
-
-   virtual void addObject(Object *inObj) = 0;
 
    inline int addInt(int inVal)
    {
@@ -63,6 +64,14 @@ struct ObjectStreamOut
       return inValue;
    }
 
+   void addObject(Object *inObject)
+   {
+      if (addBool(inObject))
+         encodeObject(inObject);
+   }
+
+   protected:
+      virtual void encodeObject(Object *inObj) = 0;
 };
 
 
@@ -153,9 +162,14 @@ struct ObjectStreamIn
             *(int *)0=0;
          }
          else if (obj && inAddRef)
+         {
             obj->IncRef();
+         }
          else if (!obj)
+         {
             printf("Bad obj logic\n");
+            *(int *)0=0;
+         }
       }
       else
       {

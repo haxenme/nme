@@ -699,7 +699,9 @@ void DisplayObject::Unfocus()
 void DisplayObject::encodeStream(ObjectStreamOut &stream)
 {
    stream.addInt(getObjectType());
+
    stream.add(id);
+   STREAM_ADD_SYNC(100);
    stream.add(name);
    stream.add(blendMode);
    stream.add(cacheAsBitmap);
@@ -747,6 +749,7 @@ void DisplayObject::decodeStream(ObjectStreamIn &stream)
 {
    // TODO - replace id?
    stream.get(id);
+   STREAM_GET_SYNC(100);
    if (stream.newIds)
    {
       id = sgDisplayObjID++ & 0x7fffffff;
@@ -771,6 +774,7 @@ void DisplayObject::decodeStream(ObjectStreamIn &stream)
    stream.get(softKeyboard);
    stream.get(movesForSoftKeyboard);
    //uint32 mDirtyFlags;
+
 
    stream.getObject(mParent,false);
    stream.getObject(mGfx);

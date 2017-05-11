@@ -28,13 +28,10 @@ struct ValueObjectStreamOut : public ObjectStreamOut
 
    }
 
-   void addObject(Object *inObj)
+   void encodeObject(Object *inObj)
    {
-      if (addBool(inObj))
-      {
-         addInt(count);
-         handleArray.set(count++, inObj->toAbstract() );
-      }
+      addInt(count);
+      handleArray.set(count++, inObj->toAbstract() );
    }
 
    void toValue(value &outValue);
@@ -59,25 +56,20 @@ struct ValueObjectStreamIn : public ObjectStreamIn
 
    Object *decodeObject()
    {
-      if (getBool())
+      int check = getInt();
+      if (check!=count)
       {
-         int check = getInt();
-         if (check!=count)
-         {
-            printf("Bad handle count mismatch %d/%d\n", check, count);
-            *(int *)0=0;
-         }
-         value v = handleArray[count++];
-         if (v.isNull() || v.isUndefined())
-         {
-            printf("Bad handle %d?\n", count-1);
-            *(int *)0=0;
-            return 0;
-         }
-         return Object::toObject(v);
+         printf("Bad handle count mismatch %d/%d\n", check, count);
+         *(int *)0=0;
       }
-      else
+      value v = handleArray[count++];
+      if (v.isNull() || v.isUndefined())
+      {
+         printf("Bad handle %d?\n", count-1);
+         *(int *)0=0;
          return 0;
+      }
+      return Object::toObject(v);
    }
 };
 
@@ -112,6 +104,9 @@ value &Object::toAbstract()
       IncRef();
       gTempRefs.push_back(this);
    }
+   // ?
+   //IncRef();
+   //gTempRefs.push_back(this);
 
    return *val;
 }
@@ -183,7 +178,9 @@ Object *Object::toObject( value &inValue )
          return newObject;
       }
       else
+      {
          return 0;
+      }
    }
 
    Object *ptr = (Object *)inValue["ptr"].as<int>();
@@ -192,8 +189,14 @@ Object *Object::toObject( value &inValue )
 
 void ValueObjectStreamIn::linkAbstract(Object *newObject)
 {
+   if (newObject->val)
+   {
+      printf("Object already has value?\n");
+      *(int *)0=0;
+   }
    newObject->val = new emscripten::val(abstract);
    abstract.set("ptr",(int)newObject);
+   abstract.set("type",(int)newObject->getObjectType());
    newObject->IncRef();
    gTempRefs.push_back(newObject);
 }

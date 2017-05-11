@@ -11,8 +11,6 @@
 namespace nme
 {
 
-
-
 class ImageBuffer;
 
 enum NmeObjectType

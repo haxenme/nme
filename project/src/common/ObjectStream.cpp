@@ -18,22 +18,19 @@ public:
    {
    }
 
-   void addObject(Object *inObj)
+   void encodeObject(Object *inObj)
    {
-      if (addBool(inObj))
+      if (encodedObjects.find(inObj)!=encodedObjects.end())
       {
-         if (encodedObjects.find(inObj)!=encodedObjects.end())
-         {
-            addInt(encodedObjects[inObj]);
-         }
-         else
-         {
-            addInt(encodedObjects.size());
-            encodedObjects[inObj] = encodedObjects.size();
-            NmeObjectType type = inObj->getObjectType();
-            addInt(type);
-            inObj->encodeStream(*this);
-         }
+         addInt(encodedObjects[inObj]);
+      }
+      else
+      {
+         addInt(encodedObjects.size());
+         encodedObjects[inObj] = encodedObjects.size();
+         NmeObjectType type = inObj->getObjectType();
+         addInt(type);
+         inObj->encodeStream(*this);
       }
    }
 };
