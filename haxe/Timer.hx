@@ -2,7 +2,7 @@ package haxe;
 
 #if macro
 class Timer { }
-#elseif (flash || js)
+#elseif (flash)
 
 // Original haxe.Timer class
 class Timer
