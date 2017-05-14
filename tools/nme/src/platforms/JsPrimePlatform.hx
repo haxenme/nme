@@ -30,6 +30,10 @@ class JsPrimePlatform extends Platform
       super(inProject);
 
       project.haxeflags.push('-js $haxeDir/ApplicationMain.js');
+      if (inProject.hasDef("jsminimal"))
+      {
+         project.macros.push("--macro nme.macros.Exclude.exclude()");
+      }
    }
 
    override public function copyBinary():Void 
@@ -37,7 +41,28 @@ class JsPrimePlatform extends Platform
       PathHelper.mkdir(getOutputDir());
 
       var src = haxeDir + "/ApplicationMain.js";
-      FileHelper.copyFile(src, getOutputDir()+"/ApplicationMain.js");
+      if (project.hasDef("jsminimal"))
+      {
+         var hxClassesDef = ~/hxClasses/;
+         var inject = "if (typeof($global['hxClasses'])=='undefined') $global['hxClasses']=$hxClasses else $hxClasses=$global['hxClasses'];";
+         var contents = File.getContent(src);
+         var lastPos = 0;
+         for(pos in 0...contents.length)
+         {
+            if (contents.charCodeAt(pos)=='\n'.code)
+            {
+               if (hxClassesDef.match(contents.substr(lastPos, pos-lastPos)))
+               {
+                  contents = contents.substr(0,pos+1) + (inject+"\n") + contents.substr(pos+1);
+                  break;
+               }
+               lastPos = pos;
+            }
+         }
+         File.saveContent(getOutputDir()+"/ApplicationMain.js",contents);
+      }
+      else
+         FileHelper.copyFile(src, getOutputDir()+"/ApplicationMain.js");
    }
 
    override function generateContext(context:Dynamic)
@@ -47,6 +72,17 @@ class JsPrimePlatform extends Platform
       if (project.findHaxelib("flixel")!=null)
           project.haxeflags.push("-D FLX_JOYSTICK_API" );
 
+   }
+
+
+   override public function updateExtra()
+   {
+      super.updateExtra();
+      if (project.hasDef("jsminimal"))
+      {
+         var src = CommandLineTools.nme + "/ndll/Emscripten/nmeclasses.js";
+         FileHelper.copyFile(src, getOutputDir()+"/nmeclasses.js");
+      }
    }
 
 

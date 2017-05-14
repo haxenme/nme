@@ -47,6 +47,8 @@ class MakeClasses
       return exclude.indexOf(inName)<0;
    }
 
+
+
    public static function main()
    {
       Sys.println('Find classes...');
@@ -71,6 +73,45 @@ class MakeClasses
       Sys.println('Built with result $result.');
       if (result!=0)
          Sys.exit(result);
+
+      FileSystem.createDirectory("../../ndll");
+      FileSystem.createDirectory("../../ndll/Emscripten");
+
+      var hxClassesDef = ~/hxClasses/;
+
+      var inject = "if (typeof($global['hxClasses'])=='undefined') $global['hxClasses']=$hxClasses else $hxClasses=$global['hxClasses'];";
+      var src = File.getContent("gen/nmeclasses.js");
+      var lastPos = 0;
+      for(pos in 0...src.length)
+      {
+         if (src.charCodeAt(pos)=='\n'.code)
+         {
+            if (hxClassesDef.match(src.substr(lastPos, pos-lastPos)))
+            {
+               src = src.substr(0,pos+1) + (inject+"\n") + src.substr(pos+1);
+               break;
+            }
+            lastPos = pos;
+         }
+      }
+
+      /*
+      var lines = src.split("\n");
+      for(l in 0...lines.length)
+      {
+         if (hxClassesDef.match(lines[l]))
+         {
+            lines.insert(l,"if (typeof($global['hxClasses'])=='undefined') $global['hxClasses']=$hxClasses else $hxClasses=$global['hxClasses'];" );
+            break;
+         }
+      }
+      src = lines.join("\n");
+      */
+
+      File.saveContent("../../ndll/Emscripten/nmeclasses.js",src);
+
+      var bytes = File.getBytes("gen/export_classes.info");
+      File.saveBytes("../../ndll/Emscripten/export_classes.info",bytes);
 
       Sys.exit(result);
    }
