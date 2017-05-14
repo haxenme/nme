@@ -41,6 +41,8 @@ class MakeClasses
       "display3D",
       "Stage3D.hx",
       "preloader",
+      "Type",
+      "Reflect",
    ];
    static function keep(inName:String):Bool
    {
@@ -68,7 +70,7 @@ class MakeClasses
       File.saveContent("gen/ImportAll.hx", lines.join("\n"));
 
       Sys.println('Generate ...');
-      var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../..","-js","gen/nmeclasses.js","-dce","no","-D","jsprime"] );
+      var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../..","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
 
       Sys.println('Built with result $result.');
       if (result!=0)

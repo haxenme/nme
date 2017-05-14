@@ -36,6 +36,27 @@ class JsPrimePlatform extends Platform
       }
    }
 
+   static function parseClassInfo(externs:Map<String,Bool>, filename:String)
+   {
+      if (sys.FileSystem.exists(filename))
+      {
+         var file = sys.io.File.read(filename);
+         trace(filename);
+         try
+         {
+            while(true)
+            {
+               var line = file.readLine();
+               var parts = line.split(" ");
+               if (parts[0]=="class" || parts[0]=="interface" || parts[0]=="enum")
+                  externs.set(parts[1],true);
+            }
+         } catch( e : Dynamic ) { }
+         if (file!=null)
+            file.close();
+      }
+   }
+
    override public function copyBinary():Void 
    {
       PathHelper.mkdir(getOutputDir());
@@ -43,19 +64,68 @@ class JsPrimePlatform extends Platform
       var src = haxeDir + "/ApplicationMain.js";
       if (project.hasDef("jsminimal"))
       {
+         var exportMap = new Map<String,Bool>();
+         parseClassInfo(exportMap, CommandLineTools.nme + "/ndll/Emscripten/export_classes.info");
+         var exports = {};
+         for(name in exportMap.keys())
+         {
+            var parts = name.split(".");
+            var root = exports;
+            for(p in 0...parts.length)
+            {
+               var part = parts[p];
+               if (p==parts.length-1)
+                  Reflect.setField(root,part,"$hxClasses[\"" + name + "\"]");
+               else
+               {
+                  var next = Reflect.field(root,part);
+                  if (next==null)
+                     Reflect.setField(root,part,next ={} );
+                  root = next;
+               }
+            }
+         }
+         var defs = new Array<String>();
+         for(f in Reflect.fields(exports))
+         {
+            var val = Reflect.field(exports,f);
+            if (!Std.is(val,String))
+            {
+               var str = haxe.Json.stringify(val);
+               str = str.split("\\\"").join("'");
+               str = str.split("\"").join("");
+               val = str.split("'").join("\"");
+            }
+            defs.push('var $f = $val;');
+         }
+         var classDefInject = defs.join("\n");
+
          var hxClassesDef = ~/hxClasses/;
-         var inject = "if (typeof($global['hxClasses'])=='undefined') $global['hxClasses']=$hxClasses else $hxClasses=$global['hxClasses'];";
+         var extendFunc = ~/extend/;
+
+         var hxClassesOverride = "if (typeof($global['hxClasses'])=='undefined') $global['hxClasses']=$hxClasses else $hxClasses=$global['hxClasses'];";
+         var hxClassesSet = "var $hxClasses = (typeof($global['hxClasses'])=='undefined') ? {} : $global['hxClasses'];";
+
          var contents = File.getContent(src);
          var lastPos = 0;
          for(pos in 0...contents.length)
          {
             if (contents.charCodeAt(pos)=='\n'.code)
             {
-               if (hxClassesDef.match(contents.substr(lastPos, pos-lastPos)))
+               var line = contents.substr(lastPos, pos-lastPos);
+               if (hxClassesDef.match(line))
                {
-                  contents = contents.substr(0,pos+1) + (inject+"\n") + contents.substr(pos+1);
+                  contents = contents.substr(0,pos+1) + (hxClassesOverride+"\n") +
+                            classDefInject + contents.substr(pos+1);
                   break;
                }
+               else if (extendFunc.match(line))
+               {
+                  contents = contents.substr(0,pos+1) + (hxClassesSet+"\n") +
+                            classDefInject + contents.substr(pos+1);
+                  break;
+               }
+
                lastPos = pos;
             }
          }
