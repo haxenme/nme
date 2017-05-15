@@ -1,5 +1,6 @@
 import sys.FileSystem;
 import sys.io.File;
+using StringTools;
 
 class MakeClasses
 {
@@ -41,12 +42,48 @@ class MakeClasses
       "display3D",
       "Stage3D.hx",
       "preloader",
-      "Type",
-      "Reflect",
    ];
    static function keep(inName:String):Bool
    {
       return exclude.indexOf(inName)<0;
+   }
+
+   static function genExports(file:String)
+   {
+      var result = new Array<String>();
+      for(line in file.split("\n"))
+      {
+         var parts = line.split(" ");
+         if (parts[0]=="class" || parts[0]=="interface" || parts[0]=="enum")
+         {
+            var e = parts[1];
+            result.push('  classes.$e = $e;');
+         }
+      }
+      return result;
+   }
+
+   static function filterContents(contents:String)
+   {
+      return contents.split("\n").filter(function(s) {
+         var s = s.split(" ")[1];
+         return s!=null && !(s.startsWith("Export") ||
+                             s.startsWith("ImportAll") ||
+                             s.startsWith("js.") ||
+                             s.startsWith("haxe._") ||
+                             s.startsWith("nme._") ||
+                             s.startsWith("nme.text._") ||
+                             s.startsWith("nme.utils._") ||
+                             s.startsWith("haxe.ds") ||
+                             s.startsWith("haxe.extern._") ||
+                             s.startsWith("haxe.xml._") ||
+                             s.startsWith("haxe.IMap") ||
+                             s.startsWith("cpp._") ||
+                             s.startsWith("_") ||
+                             s.startsWith("ValueType") ||
+                             s.startsWith("haxe.EnumValueTools") ||
+                             s.startsWith("haxe.macro") );
+      }).join("\n");
    }
 
 
@@ -57,25 +94,45 @@ class MakeClasses
       var classes = new Array<String>();
       findRecurse("../../nme","nme",keep,classes);
       findRecurse("../../haxe","haxe",keep,classes);
+      classes = classes.concat([
+         "List",
+         "haxe.CallStack",
+         "Xml",
+         "haxe.xml.Parser",
+      ]);
 
       Sys.println('Create wrapper...');
       var lines = new Array<String>();
       for(cls in classes)
          lines.push('import $cls;');
       lines.push("class ImportAll {");
-      lines.push("   public static function main() { }");
+      lines.push("  public static function main(classes:Dynamic) {");
+      lines.push(" }");
       lines.push("}");
 
       FileSystem.createDirectory("gen");
       File.saveContent("gen/ImportAll.hx", lines.join("\n"));
 
-      Sys.println('Generate ...');
+      Sys.println('Generate pass 1...');
       var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../..","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
-
-      Sys.println('Built with result $result.');
       if (result!=0)
          Sys.exit(result);
 
+      var contents = File.getContent("gen/export_classes.info");
+      contents = filterContents(contents);
+      var exports = genExports(contents);
+
+      Sys.println('Generate pass 2...');
+      lines.pop();
+      lines.pop();
+      lines = lines.concat(exports).concat([" }","}"]);
+      File.saveContent("gen/ImportAll.hx", lines.join("\n"));
+
+      var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../..","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
+      if (result!=0)
+         Sys.exit(result);
+
+      Sys.println("Export...");
       FileSystem.createDirectory("../../ndll");
       FileSystem.createDirectory("../../ndll/Emscripten");
 
@@ -98,22 +155,17 @@ class MakeClasses
       }
 
       /*
+       Interp mode does not like big split ...
       var lines = src.split("\n");
-      for(l in 0...lines.length)
-      {
-         if (hxClassesDef.match(lines[l]))
-         {
-            lines.insert(l,"if (typeof($global['hxClasses'])=='undefined') $global['hxClasses']=$hxClasses else $hxClasses=$global['hxClasses'];" );
-            break;
-         }
-      }
-      src = lines.join("\n");
       */
 
       File.saveContent("../../ndll/Emscripten/nmeclasses.js",src);
 
-      var bytes = File.getBytes("gen/export_classes.info");
-      File.saveBytes("../../ndll/Emscripten/export_classes.info",bytes);
+      File.saveContent("../../ndll/Emscripten/export_classes.info",contents);
+
+      Sys.println("Gen exports.");
+
+      Sys.println("Done.");
 
       Sys.exit(result);
    }

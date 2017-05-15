@@ -51,7 +51,6 @@ class Exclude
       if (sys.FileSystem.exists(filename))
       {
          var file = sys.io.File.read(filename);
-         trace(filename);
          try
          {
             while(true)

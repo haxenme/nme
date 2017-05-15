@@ -23,6 +23,7 @@ class CreateExports
                exports.push("enum " + pack + e.name);
             case TInst(i,_):
                var i = i.get();
+               if (i.name=="ImportAll" || i.name=="Exports") continue;
                var pack = i.pack.length==0 ? "" : i.pack.join(".") + ".";
                exports.push((i.isInterface ? "class " : "interface ") + pack + i.name);
             default:

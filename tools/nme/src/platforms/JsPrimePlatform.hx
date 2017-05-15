@@ -88,6 +88,8 @@ class JsPrimePlatform extends Platform
          var defs = new Array<String>();
          for(f in Reflect.fields(exports))
          {
+            defs.push('var $f = ' + "$" + 'hxClasses.package.$f;');
+            /*
             var val = Reflect.field(exports,f);
             if (!Std.is(val,String))
             {
@@ -97,7 +99,9 @@ class JsPrimePlatform extends Platform
                val = str.split("'").join("\"");
             }
             defs.push('var $f = $val;');
+            */
          }
+         defs.push("");
          var classDefInject = defs.join("\n");
 
          var hxClassesDef = ~/hxClasses/;
@@ -121,8 +125,8 @@ class JsPrimePlatform extends Platform
                }
                else if (extendFunc.match(line))
                {
-                  contents = contents.substr(0,pos+1) + (hxClassesSet+"\n") +
-                            classDefInject + contents.substr(pos+1);
+                  contents = contents.substr(0,lastPos+1) + (hxClassesSet+"\n") +
+                            classDefInject + contents.substr(lastPos+1);
                   break;
                }
 
