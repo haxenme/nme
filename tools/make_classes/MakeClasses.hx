@@ -41,6 +41,7 @@ class MakeClasses
       "gl",
       "display3D",
       "Stage3D.hx",
+      "StaticNme.hx",
       "preloader",
    ];
    static function keep(inName:String):Bool
@@ -54,10 +55,10 @@ class MakeClasses
       for(line in file.split("\n"))
       {
          var parts = line.split(" ");
-         if (parts[0]=="class" || parts[0]=="interface" || parts[0]=="enum")
+         if (parts[0]=="class" || parts[0]=="interface" || parts[0]=="enum" || parts[0]=="abstract")
          {
             var e = parts[1];
-            result.push('  classes.$e = $e;');
+            result.push(' "$e",');
          }
       }
       return result;
@@ -69,19 +70,6 @@ class MakeClasses
          var s = s.split(" ")[1];
          return s!=null && !(s.startsWith("Export") ||
                              s.startsWith("ImportAll") ||
-                             s.startsWith("js.") ||
-                             s.startsWith("haxe._") ||
-                             s.startsWith("nme._") ||
-                             s.startsWith("nme.text._") ||
-                             s.startsWith("nme.utils._") ||
-                             s.startsWith("haxe.ds") ||
-                             s.startsWith("haxe.extern._") ||
-                             s.startsWith("haxe.xml._") ||
-                             s.startsWith("haxe.IMap") ||
-                             s.startsWith("cpp._") ||
-                             s.startsWith("_") ||
-                             s.startsWith("ValueType") ||
-                             s.startsWith("haxe.EnumValueTools") ||
                              s.startsWith("haxe.macro") );
       }).join("\n");
    }
@@ -96,6 +84,8 @@ class MakeClasses
       findRecurse("../../haxe","haxe",keep,classes);
       classes = classes.concat([
          "List",
+         "Reflect",
+         "Type",
          "haxe.CallStack",
          "Xml",
          "haxe.xml.Parser",
@@ -106,8 +96,8 @@ class MakeClasses
       for(cls in classes)
          lines.push('import $cls;');
       lines.push("class ImportAll {");
-      lines.push("  public static function main(classes:Dynamic) {");
-      lines.push(" }");
+      lines.push("  public static var classNames:Array<String> = [");
+      lines.push(" ];");
       lines.push("}");
 
       FileSystem.createDirectory("gen");
@@ -125,7 +115,7 @@ class MakeClasses
       Sys.println('Generate pass 2...');
       lines.pop();
       lines.pop();
-      lines = lines.concat(exports).concat([" }","}"]);
+      lines = lines.concat(exports).concat([" ];","}"]);
       File.saveContent("gen/ImportAll.hx", lines.join("\n"));
 
       var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../..","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
@@ -138,7 +128,7 @@ class MakeClasses
 
       var hxClassesDef = ~/hxClasses/;
 
-      var inject = "if (typeof($global['hxClasses'])=='undefined') $global['hxClasses']=$hxClasses else $hxClasses=$global['hxClasses'];";
+      var inject = "if (typeof($global['hxClasses'])=='undefined')  { $global['hxClasses']=$hxClasses; }  else { $hxClasses=$global['hxClasses']; }";
       var src = File.getContent("gen/nmeclasses.js");
       var lastPos = 0;
       for(pos in 0...src.length)

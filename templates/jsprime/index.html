@@ -70,9 +70,23 @@
         monitorRunDependencies: function(left) {
           this.totalDependencies = Math.max(this.totalDependencies, left);
           if (left==0) {
-             var main = document.createElement('script');
-             main.src = "ApplicationMain.js";
-             document.body.appendChild(main);
+             var run = function() {
+                var main = document.createElement('script');
+                main.src = "ApplicationMain.js";
+                document.body.appendChild(main);
+             };
+             ::if (jsminimal)::
+             if ( typeof(window.nmeClassesLoaded)!="undefined")
+                run()
+             else {
+                window.nmeOnClasses = run;
+                var classes = document.createElement('script');
+                classes.src = "nmeclasses.js";
+                document.body.appendChild(classes);
+             }
+             ::else::
+             run();
+             ::end::
           }
         },
       };

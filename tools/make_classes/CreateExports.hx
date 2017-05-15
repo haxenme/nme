@@ -25,8 +25,14 @@ class CreateExports
                var i = i.get();
                if (i.name=="ImportAll" || i.name=="Exports") continue;
                var pack = i.pack.length==0 ? "" : i.pack.join(".") + ".";
-               exports.push((i.isInterface ? "class " : "interface ") + pack + i.name);
+               exports.push((i.isInterface ? "interface " : "class ") + pack + i.name);
+            case TAbstract(i,_):
+               var i = i.get();
+               var pack = i.pack.length==0 ? "" : i.pack.join(".") + ".";
+               exports.push("abstract " + pack + i.name);
+
             default:
+               //trace(type);
          }
       }
       sys.io.File.saveContent("gen/export_classes.info", exports.join("\n"));

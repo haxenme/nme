@@ -48,7 +48,7 @@ class JsPrimePlatform extends Platform
             {
                var line = file.readLine();
                var parts = line.split(" ");
-               if (parts[0]=="class" || parts[0]=="interface" || parts[0]=="enum")
+               if (parts[0]=="class" || parts[0]=="interface" || parts[0]=="enum" || parts[0]=="abstract")
                   externs.set(parts[1],true);
             }
          } catch( e : Dynamic ) { }
@@ -142,6 +142,8 @@ class JsPrimePlatform extends Platform
    override function generateContext(context:Dynamic)
    {
       super.generateContext(context);
+      context.jsminimal = project.hasDef("jsminimal");
+
       // Flixel is based on cpp & neko - need jsprime too
       if (project.findHaxelib("flixel")!=null)
           project.haxeflags.push("-D FLX_JOYSTICK_API" );
