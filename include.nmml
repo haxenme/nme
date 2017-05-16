@@ -14,5 +14,6 @@
 
 <error value="Nme.n is out of date.  Please rebuild" unless="${toolversion:2}" />
 
+<set name="preloader" value="${NME}/ndll/Emscripten/preloader.js" if="std-preloader"/>
 
 </project>

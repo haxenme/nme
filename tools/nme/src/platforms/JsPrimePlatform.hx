@@ -143,6 +143,17 @@ class JsPrimePlatform extends Platform
    {
       super.generateContext(context);
       context.jsminimal = project.hasDef("jsminimal");
+      if (project.hasDef("preloader"))
+      {
+         var preloader = project.getDef("preloader");
+         try {
+            context.NME_PRELOADER = File.getContent(preloader);
+         }
+         catch(e:Dynamic)
+         {
+            Log.error("Could not load preloader '" + preloader + "'");
+         }
+      }
 
       // Flixel is based on cpp & neko - need jsprime too
       if (project.findHaxelib("flixel")!=null)

@@ -263,6 +263,18 @@ class ApplicationMain
    
    public static function __init__ ()
    {
+      #if jsprime
+      untyped __define_feature__("Type.getClassName", {});
+
+      var win = js.Browser.window;
+      if (win!=null)
+      {
+         var preloader = untyped win.preloadUpdate;
+         if (preloader!=null)
+            preloader(100,100);
+      }
+      #end
+
       #if neko
       untyped $loader.path = $array ("@executable_path/", $loader.path);
       #elseif cpp

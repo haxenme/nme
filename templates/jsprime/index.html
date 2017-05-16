@@ -35,6 +35,13 @@
    <div class="emscripten_border" id="stage" >
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
    </div>
+
+    ::if (NME_PRELOADER!=null)::
+       <script type='text/javascript'>
+       ::NME_PRELOADER::
+       </script>
+    ::end::
+
     <script type='text/javascript'>
        var Module = {
         preRun: [],
@@ -69,6 +76,10 @@
         totalDependencies: 0,
         monitorRunDependencies: function(left) {
           this.totalDependencies = Math.max(this.totalDependencies, left);
+          var preloadUpdate = window.preloadUpdate;
+          var done = this.totalDependencies-left;
+          var total = this.totalDependencies + ::if (jsminimal)::2::else::1::end::;
+          if ( typeof(preloadUpdate)!="undefined" ) preloadUpdate(done,total);
           if (left==0) {
              var run = function() {
                 var main = document.createElement('script');
@@ -79,7 +90,11 @@
              if ( typeof(window.nmeClassesLoaded)!="undefined")
                 run()
              else {
-                window.nmeOnClasses = run;
+                window.nmeOnClasses = function() {
+                   if ( typeof(preloadUpdate)!="undefined" )
+                      preloadUpdate(done+1,total);
+                   run();
+                }
                 var classes = document.createElement('script');
                 classes.src = "nmeclasses.js";
                 document.body.appendChild(classes);
