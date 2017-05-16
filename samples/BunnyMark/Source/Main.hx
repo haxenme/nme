@@ -51,6 +51,7 @@ class Main extends Sprite
       tilesheet = new Tilesheet(bitmapData);
       tilesheet.addTileRect(new nme.geom.Rectangle(0, 0, bitmapData.width, bitmapData.height));
       drawList = new nme.utils.Float32Buffer(200);
+      nme.NativeResource.lock(drawList);
       #else
       tileset = new Tileset(bitmapData);
       tileset.addRect(bitmapData.rect);

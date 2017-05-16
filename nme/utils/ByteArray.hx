@@ -134,7 +134,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       var f:Int = flags==null ? 0 : flags;
       if ( (f&NativeResource.AUTO_CLEAR) != 0)
       {
-         ptr = 0;
+         ptr = null;
          alloced = 0;
          length = 0;
          data = null;
@@ -158,6 +158,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
             var heap:js.html.Uint8Array = untyped Module.HEAP8;
             b.set(heap.subarray(offset,offset+length));
          }
+         ptr = null;
       }
       onBufferChanged();
    }
