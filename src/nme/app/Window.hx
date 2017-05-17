@@ -120,9 +120,9 @@ class Window
       if (appEventHandler==null)
           return;
 
-#if HXCPP_TELEMETRY
-      Stage.hxt.start_timing ("EVENT");
-#end
+      #if HXCPP_TELEMETRY
+      Stage.hxt.start_timing (".event");
+      #end
       var event:AppEvent = inEvent;
       try
       {
@@ -269,9 +269,9 @@ class Window
          event.pollTime = 0;
          appEventHandler.onUnhandledException(e,stack);
       }
-#if HXCPP_TELEMETRY
-      Stage.hxt.end_timing ("EVENT");
-#end
+      #if HXCPP_TELEMETRY
+      Stage.hxt.end_timing (".event");
+      #end
    }
 
    public function beginRender()
