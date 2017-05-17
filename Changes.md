@@ -1,4 +1,5 @@
 
+* Moved haxe,nme and ios directories into "src" directory
 * Reduced pre-compiled binaries to only windows32, mac64 and linux64
 * Added more internal pixel formats
 

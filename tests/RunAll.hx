@@ -32,8 +32,8 @@ class RunAll
    {
       Sys.println('Find classes...');
       var classes = new Array<String>();
-      findRecurse("../nme","nme",filter,classes);
-      findRecurse("../haxe","haxe",filter,classes);
+      findRecurse("../src/nme","nme",filter,classes);
+      findRecurse("../src/haxe","haxe",filter,classes);
 
       Sys.println('Create test...');
       var lines = new Array<String>();
