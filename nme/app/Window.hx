@@ -1,5 +1,8 @@
 package nme.app;
 
+#if HXCPP_TELEMETRY
+import nme.display.Stage;
+#end
 import nme.display.StageAlign;
 import nme.display.StageDisplayState;
 import nme.display.StageQuality;
@@ -117,6 +120,9 @@ class Window
       if (appEventHandler==null)
           return;
 
+#if HXCPP_TELEMETRY
+      Stage.hxt.start_timing ("EVENT");
+#end
       var event:AppEvent = inEvent;
       try
       {
@@ -263,6 +269,9 @@ class Window
          event.pollTime = 0;
          appEventHandler.onUnhandledException(e,stack);
       }
+#if HXCPP_TELEMETRY
+      Stage.hxt.end_timing ("EVENT");
+#end
    }
 
    public function beginRender()
