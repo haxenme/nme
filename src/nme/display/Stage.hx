@@ -38,6 +38,10 @@ import haxe.CallStack;
 import cpp.vm.Gc;
 #end
 
+#if HXCPP_TELEMETRY
+import hxtelemetry.HxTelemetry;
+#end
+
 @:nativeProperty
 class Stage extends DisplayObjectContainer implements nme.app.IPollClient implements nme.app.IAppEventHandler
 {
@@ -138,9 +142,15 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    var nmeFrameMemIndex:Int;
    #end
 
+#if HXCPP_TELEMETRY
+   public static var hxt:HxTelemetry;
+#end
 
    public function new(inWindow:Window)
    {
+#if HXCPP_TELEMETRY
+      hxt = new HxTelemetry();
+#end
       nmeEnterFrameEvent = new Event(Event.ENTER_FRAME);
       nmeRenderEvent = new Event(Event.RENDER);
 
@@ -504,6 +514,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public function onRender(inFrameDue:Bool)
    {
+#if HXCPP_TELEMETRY
+      hxt.advance_frame();
+#end
       if (inFrameDue)
          nmeBroadcast(nmeEnterFrameEvent);
 
@@ -578,7 +591,17 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
       if (!rendered)
       #end
-      nme_render_stage(nmeHandle);
+      {
+#if HXCPP_TELEMETRY
+         var stack:String = hxt.unwind_stack();
+         hxt.start_timing ("RENDER");
+#end
+         nme_render_stage(nmeHandle);
+#if HXCPP_TELEMETRY
+         hxt.end_timing ("RENDER");
+         hxt.rewind_stack (stack);
+#end
+      }
    }
 
    public function onDisplayObjectFocus(inEvent:AppEvent):Void
