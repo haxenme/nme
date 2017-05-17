@@ -13,8 +13,11 @@
 namespace nme
 {
 
-#define STREAM_ADD_SYNC(x) stream.addInt(x)
-#define STREAM_GET_SYNC(x) if (stream.getInt()!=x) { printf("Bad sync %d\n", x); *(int *)0=0; }
+//#define STREAM_ADD_SYNC(x) stream.addInt(x)
+//#define STREAM_GET_SYNC(x) if (stream.getInt()!=x) { printf("Bad sync %d\n", x); *(int *)0=0; }
+
+#define STREAM_ADD_SYNC(x)
+#define STREAM_GET_SYNC(x)
 
 
 struct ObjectStreamOut
@@ -138,7 +141,9 @@ struct ObjectStreamIn
    {
       if (len<=0)
       {
+         #ifdef HXCPP_JS_PRIME
          printf("EOF!\n");
+         #endif
          return false;
       }
       bool result=false;
@@ -158,8 +163,10 @@ struct ObjectStreamIn
          outObject = dynamic_cast<T*>(obj);
          if (obj && !outObject)
          {
+            #ifdef HXCPP_JS_PRIME
             printf("got object(%d), but wrong type %p\n", obj->getObjectType(), obj);
-            *(int *)0=0;
+            #endif
+            //*(int *)0=0;
          }
          else if (obj && inAddRef)
          {
@@ -167,8 +174,10 @@ struct ObjectStreamIn
          }
          else if (!obj)
          {
+            #ifdef HXCPP_JS_PRIME
             printf("Bad obj logic\n");
-            *(int *)0=0;
+            #endif
+            //*(int *)0=0;
          }
       }
       else
