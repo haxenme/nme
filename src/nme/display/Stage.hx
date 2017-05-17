@@ -149,7 +149,16 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public function new(inWindow:Window)
    {
       #if HXCPP_TELEMETRY
-      hxt = new HxTelemetry();
+
+      var config = new Config();
+      config.allocations = true;
+      config.host = 'localhost';
+      config.app_name = 'NME';
+      config.activity_descriptors = [ 
+          { name: '.event', description: "Event", color: 0xB6B6D5},
+          { name: '.render', description: "Rendering", color:0x91D891},
+      ];
+      hxt = new HxTelemetry(config);
       #end
 
       nmeEnterFrameEvent = new Event(Event.ENTER_FRAME);
