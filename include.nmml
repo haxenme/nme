@@ -17,4 +17,10 @@
 
 <set name="preloader" value="${NME}/ndll/Emscripten/preloader.js" if="std-preloader"/>
 
+<section if="NME_HXTELEMETRY">
+   <haxelib name="hxtelemetry"/>
+   <haxedef name="HXCPP_TELEMETRY"/>
+   <haxedef name="HXCPP_STACK_TRACE"/>
+</section>
+
 </project>
