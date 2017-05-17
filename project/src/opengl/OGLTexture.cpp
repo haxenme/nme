@@ -348,7 +348,10 @@ public:
                if (dw>mPixelWidth/2)
                {
                   x0 = 0;
-                  dw = mPixelWidth;
+                  if ( (mPixelWidth*pw) & 0x03 )
+                     copy_required = true;
+                  else
+                     dw = mPixelWidth;
                }
                else
                   copy_required = true;
@@ -390,6 +393,7 @@ public:
             {
                #ifndef NME_GLES
                glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
+               glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                #endif
                glTexSubImage2D(GL_TEXTURE_2D, 0,
                   x0, y0,
