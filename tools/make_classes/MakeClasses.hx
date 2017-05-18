@@ -80,8 +80,8 @@ class MakeClasses
    {
       Sys.println('Find classes...');
       var classes = new Array<String>();
-      findRecurse("../../nme","nme",keep,classes);
-      findRecurse("../../haxe","haxe",keep,classes);
+      findRecurse("../../src/nme","nme",keep,classes);
+      findRecurse("../../src/haxe","haxe",keep,classes);
       classes = classes.concat([
          "List",
          "Reflect",
@@ -104,7 +104,7 @@ class MakeClasses
       File.saveContent("gen/ImportAll.hx", lines.join("\n"));
 
       Sys.println('Generate pass 1...');
-      var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../..","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
+      var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
       if (result!=0)
          Sys.exit(result);
 
@@ -118,7 +118,7 @@ class MakeClasses
       lines = lines.concat(exports).concat([" ];","}"]);
       File.saveContent("gen/ImportAll.hx", lines.join("\n"));
 
-      var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../..","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
+      var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
       if (result!=0)
          Sys.exit(result);
 
