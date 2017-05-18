@@ -38,10 +38,6 @@ import haxe.CallStack;
 import cpp.vm.Gc;
 #end
 
-#if HXCPP_TELEMETRY
-import hxtelemetry.HxTelemetry;
-#end
-
 @:nativeProperty
 class Stage extends DisplayObjectContainer implements nme.app.IPollClient implements nme.app.IAppEventHandler
 {
@@ -142,23 +138,10 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    var nmeFrameMemIndex:Int;
    #end
 
-   #if HXCPP_TELEMETRY
-   public static var hxt:HxTelemetry;
-   #end
-
    public function new(inWindow:Window)
    {
       #if HXCPP_TELEMETRY
-
-      var config = new Config();
-      config.allocations = true;
-      config.host = 'localhost';
-      config.app_name = 'NME';
-      config.activity_descriptors = [ 
-          { name: '.event', description: "Event", color: 0xB6B6D5},
-          { name: '.render', description: "Rendering", color:0x91D891},
-      ];
-      hxt = new HxTelemetry(config);
+      Application.initHxTelemetry();
       #end
 
       nmeEnterFrameEvent = new Event(Event.ENTER_FRAME);
@@ -182,7 +165,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeLastRender = 0;
       nmeLastDown = [];
       nmeLastClickTime = 0.0;
-	   nmeTouchInfo = new Map<Int,TouchInfo>();
+      nmeTouchInfo = new Map<Int,TouchInfo>();
       nmeJoyAxisData = new Map<Int,Array<Float>>();
 
       #if stage3d
@@ -199,8 +182,6 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeLastPreempt = false;
       nmeFrameMemIndex = 0;
       #end
-
-
    }
 
    public static dynamic function getOrientation():Int 
@@ -525,6 +506,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public function onRender(inFrameDue:Bool)
    {
       #if HXCPP_TELEMETRY
+      var hxt = Application.getHxTelemetry();
       hxt.advance_frame();
       #end
 
