@@ -142,15 +142,25 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    var nmeFrameMemIndex:Int;
    #end
 
-#if HXCPP_TELEMETRY
+   #if HXCPP_TELEMETRY
    public static var hxt:HxTelemetry;
-#end
+   #end
 
    public function new(inWindow:Window)
    {
-#if HXCPP_TELEMETRY
-      hxt = new HxTelemetry();
-#end
+      #if HXCPP_TELEMETRY
+
+      var config = new Config();
+      config.allocations = true;
+      config.host = 'localhost';
+      config.app_name = 'NME';
+      config.activity_descriptors = [ 
+          { name: '.event', description: "Event", color: 0xB6B6D5},
+          { name: '.render', description: "Rendering", color:0x91D891},
+      ];
+      hxt = new HxTelemetry(config);
+      #end
+
       nmeEnterFrameEvent = new Event(Event.ENTER_FRAME);
       nmeRenderEvent = new Event(Event.RENDER);
 
@@ -514,9 +524,10 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public function onRender(inFrameDue:Bool)
    {
-#if HXCPP_TELEMETRY
+      #if HXCPP_TELEMETRY
       hxt.advance_frame();
-#end
+      #end
+
       if (inFrameDue)
          nmeBroadcast(nmeEnterFrameEvent);
 
@@ -580,7 +591,15 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
             nme_set_render_gc_free(true);
             Gc.enterGCFreeZone();
             nmeCollectionLock.release();
+            #if HXCPP_TELEMETRY
+            var stack:String = hxt.unwind_stack();
+            hxt.start_timing (".render");
+            #end
             nme_render_stage(nmeHandle);
+            #if HXCPP_TELEMETRY
+            hxt.end_timing (".render");
+            hxt.rewind_stack (stack);
+            #end
             Gc.exitGCFreeZone();
             nme_set_render_gc_free(false);
          }
@@ -592,15 +611,15 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       if (!rendered)
       #end
       {
-#if HXCPP_TELEMETRY
+         #if HXCPP_TELEMETRY
          var stack:String = hxt.unwind_stack();
-         hxt.start_timing ("RENDER");
-#end
+         hxt.start_timing (".render");
+         #end
          nme_render_stage(nmeHandle);
-#if HXCPP_TELEMETRY
-         hxt.end_timing ("RENDER");
+         #if HXCPP_TELEMETRY
+         hxt.end_timing (".render");
          hxt.rewind_stack (stack);
-#end
+         #end
       }
    }
 
