@@ -121,7 +121,7 @@ class Graphics
       {
          if (inCount<0)
             inCount = buffer.count;
-         #if js
+         #if jsprime
          nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, buffer, inFlags, inCount);
          #else
          nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, buffer.getData(), inFlags, inCount);

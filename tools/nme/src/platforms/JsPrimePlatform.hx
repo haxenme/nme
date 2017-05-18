@@ -155,6 +155,11 @@ class JsPrimePlatform extends Platform
          }
       }
 
+      context.NME_IMMEDIATE_LOAD = false;
+      context.NME_LIB_JS = "Nme.js";
+      context.NME_APP_JS = project.debug ? "ApplicationMain-debug.js" : "ApplicationMain.js";
+      context.NME_MEM_FILE = true;
+
       // Flixel is based on cpp & neko - need jsprime too
       if (project.findHaxelib("flixel")!=null)
           project.haxeflags.push("-D FLX_JOYSTICK_API" );

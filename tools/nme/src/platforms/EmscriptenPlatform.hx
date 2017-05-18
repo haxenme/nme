@@ -15,13 +15,15 @@ class EmscriptenPlatform extends DesktopPlatform
    private var python:String;
    private var memFile:Bool;
 
+   override public function getOutputExtra() : String { return ext==".js" ? "jsprime" : ""; }
+
    public function new(inProject:NMEProject)
    {
       super(inProject);
 
       setupSdk();
 
-      ext = ".html";
+      ext = ".js";
       applicationDirectory = getOutputDir();
       executableFile = "ApplicationMain" + ext;
       executablePath = applicationDirectory + "/" + executableFile;
@@ -29,11 +31,6 @@ class EmscriptenPlatform extends DesktopPlatform
       project.haxeflags.push('-D exe_link');
       project.haxeflags.push('-D HXCPP_LINK_EMSCRIPTEN_EXT=$ext');
       project.haxeflags.push('-D HXCPP_LINK_EMRUN');
-      var mem = project.getInt("emscriptenMemory",64)<<20;
-      if (mem>0)
-         project.haxeflags.push('-D HXCPP_LINK_TOTAL_MEMORY=$mem');
-      else
-         project.haxeflags.push('-D HXCPP_LINK_MEMORY_GROWTH');
 
       memFile = project.getBool("emscriptenMemFile", true);
 
@@ -80,16 +77,25 @@ class EmscriptenPlatform extends DesktopPlatform
       }
    }
 
+   override function generateContext(context:Dynamic)
+   {
+      super.generateContext(context);
+      context.NME_LIB_JS = project.debug ? "ApplicationMain-debug.js" : "ApplicationMain.js";
+      context.NME_MEM_FILE = memFile;
+      context.NME_APP_JS = null;
+   }
+
    override public function run(arguments:Array<String>):Void 
    {
       var command = sdkPath==null ? "emrun" : sdkPath + "/emrun";
+      var source = ext == ".html" ? Path.withoutDirectory(executablePath) : "index.html";
       if (python!=null)
       {
          PathHelper.addExePath( haxe.io.Path.directory(python) );
-         ProcessHelper.runCommand(applicationDirectory, "python", [command].concat([Path.withoutDirectory(executablePath)]).concat(arguments) );
+         ProcessHelper.runCommand(applicationDirectory, "python", [command].concat([source]).concat(arguments) );
       }
       else
-         ProcessHelper.runCommand(applicationDirectory, command, [Path.withoutDirectory(executablePath)].concat(arguments) );
+         ProcessHelper.runCommand(applicationDirectory, command, [source].concat(arguments) );
    }
 
    public function setupSdk()
