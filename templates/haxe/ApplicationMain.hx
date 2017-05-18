@@ -66,6 +66,14 @@ class ApplicationMain
          ::end::
 
          nme.app.Application.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
+         #if HXCPP_TELEMETRY
+         ::if TELEMETRY_HOST::
+         nme.app.Application.setTelemetryConfigHost("::TELEMETRY_HOST::");
+         ::end::
+         ::if TELEMETRY_ALOCATIONS::
+         nme.app.Application.setTelemetryConfigAllocations("::TELEMETRY_ALOCATIONS::" != "false");
+         ::end::
+         #end
          nme.text.Font.useNative = ::NATIVE_FONTS::;
 
          nme.AssetData.create();

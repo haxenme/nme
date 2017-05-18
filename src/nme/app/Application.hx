@@ -12,6 +12,10 @@ import cpp.vm.Mutex;
 import neko.vm.Mutex;
 #end
 
+#if HXCPP_TELEMETRY
+import hxtelemetry.HxTelemetry;
+#end
+
 typedef WindowParams = {
     ? flags        : Null<Int>,
     ? fps          : Null<Float>,
@@ -62,6 +66,7 @@ class Application
    public static var packageName(default, null):String;
    public static var file(default, null):String;
 
+
    public static var build(get, null):String;
    public static var ndllVersion(get, null):Int;
    public static var nmeStateVersion(get, null):String;
@@ -76,7 +81,11 @@ class Application
    static var mainThreadJobMutex = new Mutex();
    #end
 
-
+   #if HXCPP_TELEMETRY
+   public static var hxt:HxTelemetry;
+   public static var telemetryHost(default, null):String = "localhost";
+   public static var telemetryAllocations:Bool = true;
+   #end
 
    public static function createWindow(inOnLoaded:Window->Void, inParams:WindowParams)
    {
@@ -256,6 +265,39 @@ class Application
 
       nme_set_package(inCompany, inFile, inPack, inVersion);
    }
+
+   #if HXCPP_TELEMETRY
+   public static function initHxTelemetry() 
+   {
+      if (hxt==null)
+      {
+         var config = new Config();
+         config.allocations = Application.telemetryAllocations;
+         config.host = Application.telemetryHost;
+         config.app_name = Application.file;
+         //trace("telemetry config[ allocations:"+(config.allocations?"t":"f")+", host:"+config.host+", app_name:"+config.app_name);
+         config.activity_descriptors = [
+             { name: '.event', description: "Event", color: 0xB6B6D5},
+             { name: '.render', description: "Rendering", color:0x91D891},
+         ];
+         hxt = new HxTelemetry(config);
+      }
+   }
+
+   public static inline function getHxTelemetry():HxTelemetry
+   {
+      return hxt;
+   }
+
+   public static function setTelemetryConfigHost(inTelemetryHost:String) 
+   {
+      telemetryHost = inTelemetryHost;
+   }
+   public static function setTelemetryConfigAllocations(inTelemetryAllocations:Bool) 
+   {
+      telemetryAllocations = inTelemetryAllocations;
+   }
+   #end
    
    public static function get_build():String { return Version.name; }
    public static function get_ndllVersion():Int { return nme_get_ndll_version(); }

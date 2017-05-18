@@ -121,7 +121,9 @@ class Window
           return;
 
       #if HXCPP_TELEMETRY
-      Stage.hxt.start_timing (".event");
+      var hxt = Application.getHxTelemetry();
+      var hxtStack:String = hxt.unwind_stack();
+      hxt.start_timing (".event");
       #end
       var event:AppEvent = inEvent;
       try
@@ -270,7 +272,8 @@ class Window
          appEventHandler.onUnhandledException(e,stack);
       }
       #if HXCPP_TELEMETRY
-      Stage.hxt.end_timing (".event");
+      hxt.end_timing (".event");
+      hxt.rewind_stack (hxtStack);
       #end
    }
 
