@@ -194,6 +194,7 @@
       <compilerflag value="-DNME_CLIPPER" if="NME_CLIPPER" />
       <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
       <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
+      <compilerflag value="-DNME_DISPLAY_STATS" if="NME_DISPLAY_STATS" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
 
       <cache value="1" />

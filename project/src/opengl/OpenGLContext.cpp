@@ -13,8 +13,11 @@
 #endif
 
 
+#ifdef NME_DISPLAY_STATS
 int sgDrawCount = 0;
-int sgDrawBitmap = 0;
+int sgDrawVerts = 0;
+//int sgDrawBitmap = 0;
+#endif
 
 
 namespace nme
@@ -44,7 +47,18 @@ void ResetHardwareContext()
       HardwareRenderer::current->OnContextLost();
 }
 
-
+#ifdef NME_DISPLAY_STATS
+int s_glVerts = 0;
+int s_glCalls = 0;
+int GetGLVerts()
+{
+   return s_glVerts;   
+}
+int GetGLCalls()
+{
+   return s_glCalls;
+}
+#endif
 
 class OGLContext : public HardwareRenderer
 {
@@ -293,14 +307,20 @@ public:
 
          mLineWidth = 99999;
 
+         #ifdef NME_DISPLAY_STATS
          // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
          sgDrawCount = 0;
-         sgDrawBitmap = 0;
+         sgDrawVerts = 0;
+         //sgDrawBitmap = 0;
+         #endif
       }
    }
    void EndRender()
    {
-
+      #ifdef NME_DISPLAY_STATS
+      s_glCalls = sgDrawCount;
+      s_glVerts = sgDrawVerts;
+      #endif
    }
 
    void updateContext()
@@ -578,18 +598,28 @@ public:
                      break;
                }
          }
-   
-            //printf("glDrawArrays %d : %d x %d\n", element.mPrimType, element.mFirst, element.mCount );
 
+         #ifdef NME_DISPLAY_STATS
+         //printf("glDrawArrays %d : %d x %d\n", element.mPrimType, element.mFirst, element.mCount );
          sgDrawCount++;
-         
+         #endif
+
          if (element.mPrimType==ptQuads || element.mPrimType==ptQuadsFull)
          {
             BindQuadsBufferIndices(element.mCount);
-            glDrawElements(GL_TRIANGLES, element.mCount*3/2, mQuadsBufferType, 0 );
+            GLsizei count = element.mCount*3/2;
+            glDrawElements(GL_TRIANGLES, count, mQuadsBufferType, 0 );
+            #ifdef NME_DISPLAY_STATS
+            sgDrawVerts+=count;
+            #endif
          }
          else
+         {
             glDrawArrays(sgOpenglType[element.mPrimType], 0, element.mCount );
+            #ifdef NME_DISPLAY_STATS
+            sgDrawVerts+=element.mCount;
+            #endif
+         }
 
       }
 
