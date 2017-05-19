@@ -13,8 +13,8 @@ class DisplayStats extends TextField
 
     private static inline var m_updateTime:Float = 0.5; //sec
     private static inline var m_precisionDecimals:Int = 1;
-    private static inline var m_smoothing:Float = 0.9; //lerp with previous fps
-    private static inline var m_spikeRangeInFPS:Float = 1.0; //force update if spike
+    private static inline var m_smoothing:Float = 0.1; //lerp with previous fps
+    private static inline var m_spikeRangeInSec:Float = 0.00166; //force update if spike
     private var m_timeToChange:Float;
     private var m_isNormalFormat:Bool;
     private var m_currentTime:Float;
@@ -26,6 +26,7 @@ class DisplayStats extends TextField
     private var m_showDt:Float;
     private var m_glVerts:Int;
     private var m_glCalls:Int;
+    private var m_dt:Float;
     
     public function new(inX:Float = 10.0, inY:Float = 10.0, inCol:Int = 0x000000, inWarningCol:Int = 0xFF0000)
     {    
@@ -45,6 +46,9 @@ class DisplayStats extends TextField
         
         text = "";
         autoSize = TextFieldAutoSize.LEFT;
+
+        m_currentTime = haxe.Timer.stamp();
+        m_dt = 1.0/m_initFrameRate;
         
         addEventListener(Event.ENTER_FRAME, onEnter);
     }
@@ -62,28 +66,41 @@ class DisplayStats extends TextField
         if (visible)
         {
             var currentTime = haxe.Timer.stamp();
-            var dt = (currentTime-m_currentTime);
-            var showFPS:Float = 0.0;
-            var fps:Float = 0.0;
-            if(dt > 0.0)
+            var dt:Float = (currentTime-m_currentTime);
+            var spike:Bool = false;
+            if(dt>0.1)
             {
-                fps = 1.0 / dt;
-                fps = fps * m_smoothing + m_currentFPS * (1.0-m_smoothing);
-                if(m_precisionDecimals==0)
+                //reinitialize if dt is too big
+                dt = 1.0/m_initFrameRate;
+            }
+            else
+            {
+                spike = (dt < m_dt-m_spikeRangeInSec);
+                if(spike)
                 {
-                    showFPS = Math.round( fps );
+                    dt = dt*(1.0-m_smoothing)+m_dt * m_smoothing; 
                 }
                 else
                 {
-                    //decimals
-                    var pw = Math.pow(10, m_precisionDecimals);
-                    showFPS = Math.round(fps *  pw) / pw;
+                    dt = dt*m_smoothing+m_dt * (1.0-m_smoothing); 
                 }
             }
+            m_dt = dt;
             m_currentTime = currentTime;
+            var fps:Float = 1.0 / dt;
+            var showFPS:Float;
+            if(m_precisionDecimals==0)
+            {
+                showFPS = Math.round( fps );
+            }
+            else
+            {
+                //decimals
+                var pw = Math.pow(10, m_precisionDecimals);
+                showFPS = Math.round(fps *  pw) / pw;
+            }
 
             m_timeToChange-= dt;
-            var spike:Bool = (fps < m_currentFPS-m_spikeRangeInFPS);
             if (m_timeToChange < 0 || spike)
             {
                 m_timeToChange = m_updateTime;
