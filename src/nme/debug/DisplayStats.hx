@@ -83,7 +83,7 @@ class DisplayStats extends TextField
             m_currentTime = currentTime;
 
             m_timeToChange-= dt;
-            var spike:Bool = (fps < fps-m_spikeRangeInFPS);
+            var spike:Bool = (fps < m_currentFPS-m_spikeRangeInFPS);
             if (m_timeToChange < 0 || spike)
             {
                 m_timeToChange = m_updateTime;
