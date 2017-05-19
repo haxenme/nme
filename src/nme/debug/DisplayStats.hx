@@ -118,17 +118,9 @@ class DisplayStats extends TextField
                 }
                 if(dirtyText)
                 {
-                    if(m_glCalls>0)
-                    {
-                        text = "GL verts: "+m_glVerts+
-                           "\nGL calls: "+m_glCalls+"\n"+
-                           showFPS + (fps==Math.floor(showFPS)?".0  /  ":"  /  ") + m_showDt;
-                    }
-                    else
-                    {
-                        text = "Use -DNME_DISPLAY_STATS -clean to show GL information\n"+
-                           showFPS + (fps==Math.floor(showFPS)?".0  /  ":"  /  ") + m_showDt;
-                    }
+                    text = "GL verts: "+m_glVerts+
+                       "\nGL calls: "+m_glCalls+"\n"+
+                       showFPS + (fps==Math.floor(showFPS)?".0  /  ":"  /  ") + m_showDt;
                 }
                 m_currentFPS = fps;
                 m_showFPS = showFPS;

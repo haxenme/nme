@@ -57,7 +57,6 @@
    <!-- Use opengl backend ? -->
    <set name="NME_OGL" value="1" />
    <unset name="NME_OGL" if="winrt" unless="NME_ANGLE" />
-   <set name="NME_DISPLAY_STATS" value="1"  if="NME_OGL debug"/>
 
    <!-- For systems that do not create the egl context for us -->
    <set name="NME_EGL" value="1" if="rpi"/>
@@ -196,7 +195,6 @@
       <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
       <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
-      <compilerflag value="-DNME_DISPLAY_STATS" if="NME_DISPLAY_STATS" />
 
       <cache value="1" />
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />

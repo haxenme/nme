@@ -47,10 +47,9 @@ namespace nme
 {
 void InitCamera();
 
-#ifdef NME_DISPLAY_STATS
+// DisplayStats
 int GetGLVerts();
 int GetGLCalls();
-#endif
 
 // Not static
 int _id_id=0;
@@ -5217,21 +5216,13 @@ DEFINE_PRIM(nme_file_dialog_save,3);
 
 value nme_displaystats_get_glverts() 
 {
-      #ifdef NME_DISPLAY_STATS
-      return alloc_int( GetGLVerts() );
-      #else
-      return alloc_int( 0 );
-      #endif
+     return alloc_int( GetGLVerts() );
 }
 DEFINE_PRIM(nme_displaystats_get_glverts, 0);
 
 value nme_displaystats_get_glcalls() 
 {
-      #ifdef NME_DISPLAY_STATS
-      return alloc_int( GetGLCalls() );
-      #else
-      return alloc_int( 0 );
-      #endif
+     return alloc_int( GetGLCalls() );
 }
 DEFINE_PRIM(nme_displaystats_get_glcalls, 0);
 
