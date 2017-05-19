@@ -1,12 +1,10 @@
 package nme.debug;
 
-
 import haxe.Timer;
 import nme.events.Event;
 import nme.text.TextField;
 import nme.text.TextFormat;
 import nme.text.TextFieldAutoSize;
-
 
 @:nativeProperty
 class DisplayStats extends TextField
@@ -21,11 +19,11 @@ class DisplayStats extends TextField
     private var m_isNormalFormat:Bool;
     private var m_currentTime:Float;
     private var m_currentFPS:Float;
-    private var m_oldFPS:Float;
+    private var m_showFPS:Float;
     private var m_initFrameRate:Float;
     private var m_normalTextFormat:TextFormat;
     private var m_warnTextFormat:TextFormat;
-
+    private var m_showDt:Float;
     private var m_glVerts:Int;
     private var m_glCalls:Int;
     
@@ -65,59 +63,79 @@ class DisplayStats extends TextField
         {
             var currentTime = haxe.Timer.stamp();
             var dt = (currentTime-m_currentTime);
+            var showFPS:Float = 0.0;
+            var fps:Float = 0.0;
             if(dt > 0.0)
             {
-                m_currentFPS = 1.0 / dt;
-                m_currentFPS = m_currentFPS * m_smoothing + m_oldFPS * (1.0-m_smoothing);
+                fps = 1.0 / dt;
+                fps = fps * m_smoothing + m_currentFPS * (1.0-m_smoothing);
                 if(m_precisionDecimals==0)
                 {
-                    m_currentFPS = Math.round( m_currentFPS );
+                    showFPS = Math.round( fps );
                 }
                 else
                 {
-                    m_currentFPS = Math.round( m_currentFPS * Math.pow(10, m_precisionDecimals) ) / Math.pow(10, m_precisionDecimals);
+                    //decimals
+                    var pw = Math.pow(10, m_precisionDecimals);
+                    showFPS = Math.round(fps *  pw) / pw;
                 }
             }
             m_currentTime = currentTime;
 
             m_timeToChange-= dt;
-            var spike:Bool = (m_currentFPS < m_oldFPS-m_spikeRangeInFPS);
+            var spike:Bool = (fps < fps-m_spikeRangeInFPS);
             if (m_timeToChange < 0 || spike)
             {
                 m_timeToChange = m_updateTime;
-
-                if ( m_currentFPS != m_oldFPS )
+                var dirtyText:Bool = false;
+                if ( showFPS != m_showFPS )
                 {
+                    dirtyText = true;
                     //change color if necessary
-                    if ( m_currentFPS < m_initFrameRate && m_isNormalFormat )
+                    if ( showFPS < m_initFrameRate && m_isNormalFormat )
                     {
                         m_isNormalFormat = false;
                         defaultTextFormat = m_warnTextFormat;
                     }
-                    else if ( m_currentFPS >= m_initFrameRate && !m_isNormalFormat )
+                    else if ( showFPS >= m_initFrameRate && !m_isNormalFormat )
                     {
                         m_isNormalFormat = true;
                         defaultTextFormat = m_normalTextFormat;
                     }
-                    var showDt = Math.round( dt * Math.pow(10, 3) ) / Math.pow(10, 3);
-
-                    #if NME_DISPLAY_STATS
-                    m_glVerts = getGLVerts();
-                    m_glCalls = getGLCalls();
-                    text = "GL verts: "+m_glVerts+
-                           "\nGL calls: "+m_glCalls+"\n"+
-                           m_currentFPS + (m_currentFPS==Math.floor(m_currentFPS)?".0  /  ":"  /  ") + showDt;
-                    #else
-                    text = "Use -DNME_DISPLAY_STATS -clean to show GL information\n"+
-                           m_currentFPS + (m_currentFPS==Math.floor(m_currentFPS)?".0  /  ":"  /  ") + showDt;
-                    #end
+                    m_showDt = Math.round( dt * Math.pow(10, 3) ) / Math.pow(10, 3);
                 }
-                m_oldFPS = m_currentFPS;
+                var glVerts = getGLVerts();
+                var glCalls = getGLCalls();
+                if (m_glVerts!=glVerts)
+                {
+                    dirtyText = true;
+                    m_glVerts = glVerts;
+                }
+                if (m_glCalls!=glCalls)
+                {
+                    dirtyText = true;
+                    m_glCalls = glCalls;
+                }
+                if(dirtyText)
+                {
+                    if(m_glCalls>0)
+                    {
+                        text = "GL verts: "+m_glVerts+
+                           "\nGL calls: "+m_glCalls+"\n"+
+                           showFPS + (fps==Math.floor(showFPS)?".0  /  ":"  /  ") + m_showDt;
+                    }
+                    else
+                    {
+                        text = "Use -DNME_DISPLAY_STATS -clean to show GL information\n"+
+                           showFPS + (fps==Math.floor(showFPS)?".0  /  ":"  /  ") + m_showDt;
+                    }
+                }
+                m_currentFPS = fps;
+                m_showFPS = showFPS;
             }
         }
     }
 
-#if NME_DISPLAY_STATS
     public static dynamic function getGLVerts():Int 
     {
        return nme_displaystats_get_glverts();
@@ -130,5 +148,4 @@ class DisplayStats extends TextField
 
    private static var nme_displaystats_get_glverts = Loader.load("nme_displaystats_get_glverts", 0);
    private static var nme_displaystats_get_glcalls = Loader.load("nme_displaystats_get_glcalls", 0);
-#end
 }

@@ -26,6 +26,11 @@
 
 #define INT(a) val_int(arg[a])
 
+#ifdef NME_DISPLAY_STATS
+extern int sgDrawCount;
+extern int sgDrawVerts;
+#endif
+
 
 // --- General -------------------------------------------
 
@@ -1762,7 +1767,13 @@ DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
 value nme_gl_draw_arrays(value inMode, value inFirst, value inCount)
 {
    DBGFUNC("drawArrays");
-   glDrawArrays( val_int(inMode), val_int(inFirst), val_int(inCount) );
+   GLsizei count = val_int(inCount);
+   glDrawArrays( val_int(inMode), val_int(inFirst), count );   
+   #ifdef NME_DISPLAY_STATS
+   sgDrawCount++;
+   sgDrawVerts+=count;
+   #endif
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_draw_arrays,3);
@@ -1771,7 +1782,13 @@ DEFINE_PRIM(nme_gl_draw_arrays,3);
 value nme_gl_draw_elements(value inMode, value inCount, value inType, value inOffset)
 {
    DBGFUNC("drawElements");
-   glDrawElements( val_int(inMode), val_int(inCount), val_int(inType), (void *)(intptr_t)val_int(inOffset) );
+   GLsizei count = val_int(inCount);
+   glDrawElements( val_int(inMode), count, val_int(inType), (void *)(intptr_t)val_int(inOffset) );
+   #ifdef NME_DISPLAY_STATS
+   sgDrawCount++;
+   sgDrawVerts+=count;
+   #endif
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_draw_elements,4);

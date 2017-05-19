@@ -5215,22 +5215,25 @@ value nme_file_dialog_save(value in_title, value in_text, value in_types )
 }
 DEFINE_PRIM(nme_file_dialog_save,3);
 
-#ifdef NME_DISPLAY_STATS
 value nme_displaystats_get_glverts() 
 {
+      #ifdef NME_DISPLAY_STATS
       return alloc_int( GetGLVerts() );
-      //return alloc_int( 0 );
+      #else
+      return alloc_int( 0 );
+      #endif
 }
-
 DEFINE_PRIM(nme_displaystats_get_glverts, 0);
 
 value nme_displaystats_get_glcalls() 
 {
+      #ifdef NME_DISPLAY_STATS
       return alloc_int( GetGLCalls() );
-      //return alloc_int( 0 );
+      #else
+      return alloc_int( 0 );
+      #endif
 }
 DEFINE_PRIM(nme_displaystats_get_glcalls, 0);
-#endif
 
 // Reference this to bring in all the symbols for the static library
 #ifdef STATIC_LINK

@@ -23,6 +23,4 @@
    <haxedef name="HXCPP_STACK_TRACE"/>
 </section>
 
-<haxedef name="NME_DISPLAY_STATS" if="NME_DISPLAY_STATS"/>
-
 </project>
