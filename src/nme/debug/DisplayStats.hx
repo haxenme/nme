@@ -5,6 +5,7 @@ import nme.events.Event;
 import nme.text.TextField;
 import nme.text.TextFormat;
 import nme.text.TextFieldAutoSize;
+import openfl.system.System;
 
 @:nativeProperty
 class DisplayStats extends TextField
@@ -13,8 +14,9 @@ class DisplayStats extends TextField
 
     private static inline var m_updateTime:Float = 0.5; //sec
     private static inline var m_precisionDecimals:Int = 1;
-    private static inline var m_smoothing:Float = 0.1; //lerp with previous fps
+    private static inline var m_smoothing:Float = 0.1; //lerp with previous
     private static inline var m_spikeRangeInSec:Float = 0.00166; //force update if spike
+    private static inline var MB_CONVERSION:Float = 9.53674316e-5;
     private var m_timeToChange:Float;
     private var m_isNormalFormat:Bool;
     private var m_currentTime:Float;
@@ -27,6 +29,8 @@ class DisplayStats extends TextField
     private var m_glVerts:Int;
     private var m_glCalls:Int;
     private var m_dt:Float;
+    private var m_fpsPrecisionDecimalsPow:Float;
+    private var m_memPeak:Float;
     
     public function new(inX:Float = 10.0, inY:Float = 10.0, inCol:Int = 0x000000, inWarningCol:Int = 0xFF0000)
     {    
@@ -41,7 +45,7 @@ class DisplayStats extends TextField
         m_warnTextFormat = new TextFormat("_sans", 12, inWarningCol);
         defaultTextFormat = m_normalTextFormat;
         m_isNormalFormat = true;
-        m_initFrameRate = Lib.stage.frameRate; //nme.app.Application.initFrameRate;
+        m_initFrameRate = Lib.stage.frameRate;
         m_timeToChange = m_updateTime;
         
         text = "";
@@ -49,6 +53,7 @@ class DisplayStats extends TextField
 
         m_currentTime = haxe.Timer.stamp();
         m_dt = 1.0/m_initFrameRate;
+        m_fpsPrecisionDecimalsPow = Math.pow(10, m_precisionDecimals);
         
         addEventListener(Event.ENTER_FRAME, onEnter);
     }
@@ -95,9 +100,20 @@ class DisplayStats extends TextField
             }
             else
             {
-                //decimals
-                var pw = Math.pow(10, m_precisionDecimals);
-                showFPS = Math.round(fps *  pw) / pw;
+                showFPS = Math.round(fps *  m_fpsPrecisionDecimalsPow) / m_fpsPrecisionDecimalsPow;
+            }
+
+            #if cpp
+            var mem:Float = Math.round( 
+                ( cpp.vm.Gc.memInfo64( cpp.vm.Gc.MEM_INFO_RESERVED ) +
+                  cpp.vm.Gc.memInfo64( cpp.vm.Gc.MEM_INFO_CURRENT ) ) * MB_CONVERSION)/100;
+            #else
+            var mem:Float = Math.round(System.totalMemory * MB_CONVERSION)/100;
+            #end
+
+            if (mem > m_memPeak)
+            {
+                m_memPeak = mem;
             }
 
             m_timeToChange-= dt;
@@ -137,7 +153,8 @@ class DisplayStats extends TextField
                 {
                     text = "GL verts: "+m_glVerts+
                        "\nGL calls: "+m_glCalls+"\n"+
-                       showFPS + (fps==Math.floor(showFPS)?".0  /  ":"  /  ") + m_showDt;
+                       showFPS + (fps==Math.floor(showFPS)?".0  /  ":"  /  ") + m_showDt +
+                       "\nMEM: " + mem + " MB\nMEM peak: " + m_memPeak + " MB";
                 }
                 m_currentFPS = fps;
                 m_showFPS = showFPS;
