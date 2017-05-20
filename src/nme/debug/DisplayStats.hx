@@ -31,7 +31,9 @@ class DisplayStats extends TextField
     private var m_dt:Float;
     private var m_fpsPrecisionDecimalsPow:Float;
     private var m_memPeak:Float;
-    
+    private var m_statsArray:Array<Int>;
+    private var m_oldStatsArray:Array<Int>;
+
     public function new(inX:Float = 10.0, inY:Float = 10.0, inCol:Int = 0x000000, inWarningCol:Int = 0xFF0000)
     {    
         super();
@@ -55,6 +57,9 @@ class DisplayStats extends TextField
         m_dt = 1.0/m_initFrameRate;
         m_fpsPrecisionDecimalsPow = Math.pow(10, m_precisionDecimals);
         
+        m_statsArray = [0,0,0,0];
+        m_oldStatsArray = [0,0,0,0];
+
         addEventListener(Event.ENTER_FRAME, onEnter);
     }
     
@@ -137,24 +142,30 @@ class DisplayStats extends TextField
                     }
                     m_showDt = Math.round( dt * Math.pow(10, 3) ) / Math.pow(10, 3);
                 }
-                var glVerts = getGLVerts();
-                var glCalls = getGLCalls();
-                if (m_glVerts!=glVerts)
+
+                nme_displaystats_get_glstats( m_statsArray );
+                for (i in 0...4)
                 {
-                    dirtyText = true;
-                    m_glVerts = glVerts;
+                    if (m_statsArray[i] != m_oldStatsArray[i])
+                    {
+                        dirtyText = true;
+                        m_oldStatsArray[i] = m_statsArray[i];
+                    }
                 }
-                if (m_glCalls!=glCalls)
-                {
-                    dirtyText = true;
-                    m_glCalls = glCalls;
-                }
+
                 if(dirtyText)
                 {
-                    text = "GL verts: "+m_glVerts+
-                       "\nGL calls: "+m_glCalls+"\n"+
-                       showFPS + (fps==Math.floor(showFPS)?".0  /  ":"  /  ") + m_showDt +
-                       "\nMEM: " + mem + " MB\nMEM peak: " + m_memPeak + " MB";
+                    var vertsTotal:Int = m_statsArray[0]+m_statsArray[2];
+                    var callsTotal:Int = m_statsArray[1]+m_statsArray[3];
+                    text = "GL verts: "+vertsTotal+
+                           "\n    drawArrays: "+m_statsArray[0]+
+                           "\n    drawElements: "+m_statsArray[2]+"\n"+
+                           "GL calls: "+callsTotal+
+                           "\n    drawArrays: "+m_statsArray[1]+
+                           "\n    drawElements: "+m_statsArray[3]+"\n"+
+                           "MEM: " + mem + " MB\n"+
+                           "MEM peak: "+ m_memPeak + " MB\n"+
+                           showFPS + (fps==Math.ffloor(showFPS)?".0  /  ":"  /  ") + m_showDt;
                 }
                 m_currentFPS = fps;
                 m_showFPS = showFPS;
@@ -162,16 +173,5 @@ class DisplayStats extends TextField
         }
     }
 
-    public static dynamic function getGLVerts():Int 
-    {
-       return nme_displaystats_get_glverts();
-    }
-
-    public static dynamic function getGLCalls():Int 
-    {
-       return nme_displaystats_get_glcalls();
-    }
-
-   private static var nme_displaystats_get_glverts = Loader.load("nme_displaystats_get_glverts", 0);
-   private static var nme_displaystats_get_glcalls = Loader.load("nme_displaystats_get_glcalls", 0);
+   private static var nme_displaystats_get_glstats = nme.PrimeLoader.load("nme_displaystats_get_glstats", "ov");
 }

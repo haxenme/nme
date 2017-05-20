@@ -15,6 +15,8 @@
 
 int sgDrawCount = 0;
 int sgDrawVerts = 0;
+int sgDrawElementsCount = 0;
+int sgDrawElementsVerts = 0;
 //int sgDrawBitmap = 0;
 
 
@@ -47,6 +49,8 @@ void ResetHardwareContext()
 
 int s_glVerts = 0;
 int s_glCalls = 0;
+int s_glElementsVerts = 0;
+int s_glElementsCalls = 0;
 int GetGLVerts()
 {
    return s_glVerts;   
@@ -54,6 +58,14 @@ int GetGLVerts()
 int GetGLCalls()
 {
    return s_glCalls;
+}
+int GetGLElementsVerts()
+{
+   return s_glElementsVerts;   
+}
+int GetGLElementsCalls()
+{
+   return s_glElementsCalls;
 }
 
 class OGLContext : public HardwareRenderer
@@ -306,6 +318,8 @@ public:
          // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
          sgDrawCount = 0;
          sgDrawVerts = 0;
+         sgDrawElementsCount = 0;
+         sgDrawElementsVerts = 0;
          //sgDrawBitmap = 0;
       }
    }
@@ -314,6 +328,8 @@ public:
       // DisplayStats
       s_glCalls = sgDrawCount;
       s_glVerts = sgDrawVerts;
+      s_glElementsCalls = sgDrawElementsCount;
+      s_glElementsVerts = sgDrawElementsVerts;
    }
 
    void updateContext()
@@ -593,18 +609,19 @@ public:
          }
 
          //printf("glDrawArrays %d : %d x %d\n", element.mPrimType, element.mFirst, element.mCount );
-         sgDrawCount++;
          if (element.mPrimType==ptQuads || element.mPrimType==ptQuadsFull)
          {
             BindQuadsBufferIndices(element.mCount);
             GLsizei count = element.mCount*3/2;
             glDrawElements(GL_TRIANGLES, count, mQuadsBufferType, 0 );
-            sgDrawVerts+=count;
+            sgDrawElementsVerts+=count;
+            sgDrawElementsCount++;
          }
          else
          {
             glDrawArrays(sgOpenglType[element.mPrimType], 0, element.mCount );
             sgDrawVerts+=element.mCount;
+            sgDrawCount++;
          }
 
       }

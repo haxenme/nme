@@ -28,6 +28,8 @@
 
 extern int sgDrawCount;
 extern int sgDrawVerts;
+extern int sgDrawElementsVerts;
+extern int sgDrawElementsCount;
 
 
 // --- General -------------------------------------------
@@ -1779,8 +1781,8 @@ value nme_gl_draw_elements(value inMode, value inCount, value inType, value inOf
    DBGFUNC("drawElements");
    GLsizei count = val_int(inCount);
    glDrawElements( val_int(inMode), count, val_int(inType), (void *)(intptr_t)val_int(inOffset) );
-   sgDrawCount++;
-   sgDrawVerts+=count;
+   sgDrawElementsCount++;
+   sgDrawElementsVerts+=count;
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_draw_elements,4);
