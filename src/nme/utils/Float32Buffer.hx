@@ -48,7 +48,7 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
       #end
    }
 
-   #if cpp
+   #if (cpp && !cppia)
    @:extern @:native("__hxcpp_memory_set_float")
    static function hxcppSetFloat(b:haxe.io.BytesData, pos:Int, val:Float):Void { }
    @:extern @:native("__hxcpp_memory_get_float")
@@ -72,7 +72,7 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
             count = index+1;
             ensureElem(bpos+3,true);
          }
-         #if cpp
+         #if (cpp && !cppia)
             hxcppSetFloat(b,bpos,val);
          #else
             setFloat(bpos,val);
@@ -85,7 +85,7 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
       #if jsprime
       return f32View[index];
       #else
-         #if cpp
+         #if (cpp && !cppia)
             return hxcppGetFloat(b,index<<2);
          #else
             return getFloat(index<<2);
@@ -100,7 +100,7 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
       #if jsprime
       f32View[index]=val;
       #else
-         #if cpp
+         #if (cpp && !cppia)
             hxcppSetFloat(b,index<<2,val);
          #else
             setFloat(index<<2,val);

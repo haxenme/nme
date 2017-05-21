@@ -54,7 +54,8 @@ class WindowsPlatform extends DesktopPlatform
 
    override public function run(arguments:Array<String>):Void 
    {
-      ProcessHelper.runCommand(applicationDirectory, Path.withoutDirectory(executablePath), arguments);
+      var dir = deployDir!=null ? deployDir : applicationDirectory;
+      ProcessHelper.runCommand(dir, Path.withoutDirectory(executablePath), arguments);
    }
 }
 

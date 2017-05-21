@@ -45,6 +45,7 @@ class Platform
    var remoteMd5s:Map<String,String>;
    var adbName:String;
    var adbFlags:Array<String>;
+   var deployDir:String;
 
 
    public function new(inProject:NMEProject)
@@ -475,11 +476,11 @@ class Platform
                }
             }
 
-            var to = name + arch;
+            deployDir = name + arch;
             for(file in outputFiles)
             {
                Log.verbose("copy " + file);
-               FileHelper.copyFile(from+"/"+file,to+"/"+file);
+               FileHelper.copyFile(from+"/"+file,deployDir+"/"+file);
             }
          }
          else

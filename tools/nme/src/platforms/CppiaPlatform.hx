@@ -14,9 +14,8 @@ class CppiaPlatform extends Platform
    {
       super(inProject);
 
-      if (project.getDef("CPPIA_HAXELIB")==null)
-         project.addLib("acadnme");
-
+      //if (project.getDef("CPPIA_HAXELIB")==null)
+      //   project.addLib("acadnme");
 
       applicationDirectory = getOutputDir();
 
@@ -60,8 +59,16 @@ class CppiaPlatform extends Platform
       {
          var haxelib = project.getDef("CPPIA_HAXELIB");
          if (haxelib==null || haxelib=="")
-            haxelib = "acadnme";
-         ProcessHelper.runCommand("", "haxelib", ["run", haxelib, fullPath].concat(arguments));
+         {
+            // TODO - non windows
+            var dir = CommandLineTools.nme + "/bin/Windows/Acadnme";
+            var exe = "Acadnme.exe";
+            ProcessHelper.runCommand(dir, exe, [fullPath].concat(arguments));
+         }
+         else
+         {
+            ProcessHelper.runCommand("", "haxelib", ["run", haxelib, fullPath].concat(arguments));
+         }
       }
       else
       {
