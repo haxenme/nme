@@ -12,7 +12,7 @@
 
    <set name="exe_link" value="1" if="HXCPP_JS_PRIME" />
    <set name="HXCPP_LINK_MEM_FILE" value="1" if="HXCPP_JS_PRIME" />
-   <set name="HXCPP_LINK_TOTAL_MEMORY" value="134217728" if="HXCPP_JS_PRIME||emscripten" unless="HXCPP_JS_PRIME" />
+   <set name="HXCPP_LINK_TOTAL_MEMORY" value="134217728" if="HXCPP_JS_PRIME||emscripten" />
 
 
    <!--<set name="NME_ANGLE" value="1" if="windows" />-->
