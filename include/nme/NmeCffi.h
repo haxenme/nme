@@ -316,10 +316,11 @@ inline bool AbstractToObject(value inValue, OBJ *&outObj)
 
 struct BufferData : Object
 {
-    NmeObjectType getObjectType() { return notBytes; }
-    void unrealize(value &outValue);
+   NmeObjectType getObjectType() { return notBytes; }
+   static BufferData *fromStream(class ObjectStreamIn &inStream);
+   void encodeStream(class ObjectStreamOut &inStream);
 
-    std::vector<unsigned char> data;
+   std::vector<unsigned char> data;
 };
 typedef BufferData *buffer;
 

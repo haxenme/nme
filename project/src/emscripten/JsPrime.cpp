@@ -73,7 +73,22 @@ struct ValueObjectStreamIn : public ObjectStreamIn
    }
 };
 
+BufferData *BufferData::fromStream(class ObjectStreamIn &inStream)
+{
+   int len = inStream.getInt();
+   BufferData *buf = new BufferData();
+   buf->data.resize(len);
+   if (len)
+      memcpy(&buf->data[0], inStream.getBytes(len), len);
+   return buf;
+}
 
+void BufferData::encodeStream(class ObjectStreamOut &inStream)
+{
+   inStream.addInt(data.size());
+   if (data.size())
+      inStream.append(&data[0], data.size());
+}
 
 
 void Object::releaseObject()
@@ -144,6 +159,10 @@ Object *Object::toObject( value &inValue )
          {
             // notSound,
             // notSoundChannel,
+
+            case notBytes:
+               newObject = BufferData::fromStream(input);
+               break;
 
             case notSurface:
                newObject = SimpleSurface::fromStream(input);
