@@ -29,9 +29,9 @@ class CommandLineTools
    public static var nme(default,null):String;
    public static var home:String;
    public static var sys:SysProxy;
-   public static var toolkit:Bool = true;
    public static var gradle:Bool = false;
 
+   static var toolkit:Bool = true;
    static var haxeVer:String = null;
    static var additionalArguments:Array<String>;
    static var command:String;
@@ -1631,7 +1631,7 @@ class CommandLineTools
             else if (argument == "-lib") 
             {
                var name = arguments[argIdx++];
-               project.addLib(name);
+               project.addLib(name,false);
             }
 
             else if (argument == "-static" || argument=="-s") 

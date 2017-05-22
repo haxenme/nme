@@ -36,6 +36,9 @@ tests/import-all
 out.txt
 #binaries - not for committing
 ndll
+src/cppia
+src/jsprime
+tools/make_classes/gen
 
 # Miscellaneous
 all_objs

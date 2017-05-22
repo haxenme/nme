@@ -63,7 +63,9 @@
 
   <source path="src" />
 
-  <haxelib name="nme" static="true" />
+  <unset name="toolkit" unless="web||mobile" />
+
+  <haxelib name="nme" nocopy="true" />
   <haxedef name="scriptable" />
   <engine name="Acadnme" version="6.0" />
   <haxedef name="HXCPP_LINK_TOTAL_MEMORY" value="32000000"/>

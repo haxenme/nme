@@ -142,7 +142,7 @@ class AndroidPlatform extends Platform
       context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
       context.DEBUGGABLE = project.debug;
 
-      var staticNme = CommandLineTools.toolkit;
+      var staticNme = project.hasDef("toolkit");
       for(ndll in project.ndlls)
          if (ndll.name=="nme" && ndll.isStatic)
             staticNme = true;

@@ -17,7 +17,7 @@ class NMMLParser
 
    static var varMatch = new EReg("\\${(.*?)}", "");
 
-   static var TOOL_VERSION = 2;
+   static var TOOL_VERSION = 3;
 
    public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Fast )
    {
@@ -589,6 +589,7 @@ class NMMLParser
 
                case "unset":
 
+                  project.haxedefs.remove(element.att.name);
                   project.localDefines.remove(element.att.name);
                   project.environment.remove(element.att.name);
 
@@ -695,6 +696,7 @@ class NMMLParser
                   if (element.has.resolve("static"))
                       isStatic = parseBool(element.att.resolve("static"));
                  var name = substitute(element.att.name);
+                 var nocopy = element.has.nocopy && parseBool(substitute(element.att.nocopy));
 
                  var haxelib = "";
                  var version = "";
@@ -716,11 +718,11 @@ class NMMLParser
                  var base = extensionPath;
                  if (haxelib!="")
                  {
-                    var lib = project.addLib(haxelib,version);
+                    var lib = project.addLib(haxelib,version,nocopy);
                     base = lib.getBase();
                  }
                  if (name!="lime" && name!="openfl")
-                    project.addNdll(name, base, isStatic, haxelib);
+                    project.addNdll(name, base, isStatic, haxelib, nocopy);
 
 
 
@@ -731,7 +733,8 @@ class NMMLParser
                   if (element.has.version) 
                      version = substitute(element.att.version);
 
-                  project.addLib(name,version);
+                  var nocopy = element.has.nocopy && parseBool(substitute(element.att.nocopy));
+                  project.addLib(name,version,nocopy);
  
 
                case "launchImage", "splashScreen":

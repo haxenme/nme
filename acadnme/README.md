@@ -12,17 +12,17 @@ nme cpp nocompile
 
 Then build the AcadnmeBoot sample, which will create bin/apps/AcadnmeBoot.nme
 ```
-cd samples/AcadnmeBoot
+cd ../samples/AcadnmeBoot
 nme cppia installer
-cd -
 ```
 
 Now you can build + run the Acadnme host
 ```
+cd ../acadnme
 nme cpp
 ```
 
-Rebuilding
+Testing
 ----------
 
 Having built the host, you can test with

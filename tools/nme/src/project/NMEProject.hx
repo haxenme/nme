@@ -589,10 +589,10 @@ class NMEProject
          }
    }
 
-   public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String)
+   public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String, noCopy:Bool)
    {
       var ndll =  findNdll(name);
-      if ( !isNeko() && ( (CommandLineTools.toolkit && name=="nme")  || 
+      if ( !isNeko() && ( (hasDef("toolkit") && name=="nme")  || 
              (CommandLineTools.getHaxeVer()>="3.3") && (name=="std" || name=="regexp" ||
                  name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) ) )
       {
@@ -602,15 +602,19 @@ class NMEProject
       {
           var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
 
-          ndlls.push( new NDLL(name, base, isStatic, inHaxelibName) );
+          ndlls.push( new NDLL(name, base, isStatic, inHaxelibName, noCopy) );
       }
       else if (inStatic && optionalStaticLink)
       {
           ndll.setStatic();
       }
+      else if (noCopy)
+      {
+         ndll.noCopy = true;
+      }
    }
 
-   public function addLib(name:String, version:String="")
+   public function addLib(name:String, version:String="",inNoCopy:Bool)
    {
       var haxelib = findHaxelib(name);
       Log.mVerbose = true;
@@ -648,7 +652,7 @@ class NMEProject
             raiseLib("nme");
 
          if (name=="nme" && !hasDef("watchos") )
-            addNdll("nme", haxelib.getBase(), null, "nme");
+            addNdll("nme", haxelib.getBase(), null, "nme", inNoCopy);
       }
       return haxelib;
   }
@@ -689,14 +693,14 @@ class NMEProject
       }
 
 
-      if (stdLibs && !isFlash && !CommandLineTools.toolkit && CommandLineTools.getHaxeVer()<"3.3" )
+      if (stdLibs && !isFlash && !hasDef("toolkit") && CommandLineTools.getHaxeVer()<"3.3" )
       {
          for(lib in ["std", "zlib", "regexp"])
          {
             if (findNdll(lib)==null)
             {
                var haxelib = addHaxelib("hxcpp","");
-               var ndll = new NDLL(lib, haxelib.getBase(), staticLink, "hxcpp");
+               var ndll = new NDLL(lib, haxelib.getBase(), staticLink, "hxcpp", false);
                ndlls.push(ndll);
             }
          }
@@ -737,7 +741,7 @@ class NMEProject
             haxedefs.set("lime_legacy","1");
          }
          haxeflags.push("--remap openfl:nme");
-         addLib("nme","");
+         addLib("nme","",false);
       }
 
       if (export!=null && export!="")

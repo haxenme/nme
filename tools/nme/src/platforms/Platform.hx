@@ -561,7 +561,7 @@ class Platform
 
          var src = srcProject + "/ndll/" + binName + "/" + pref + ndll.name + archSuffix + ext;
 
-         if (ndll.isStatic && !useNeko)
+         if (ndll.noCopy || (ndll.isStatic && !useNeko))
          {
             continue;
             // var ext = getLibExt();

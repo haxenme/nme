@@ -23,7 +23,7 @@ class HxParser
       project.app.main = file;
       project.app.packageName = "com.nme." + file.toLowerCase();
 
-      project.addLib("nme","");
+      project.addLib("nme","",false);
 
       process(path);
    }
@@ -69,11 +69,11 @@ class HxParser
         case "bin":
            project.app.binDir = value;
         case "lib":
-           project.addLib(value,"");
+           project.addLib(value,"",false);
         case "ndll":
-           project.addNdll(value,"",false,"");
+           project.addNdll(value,"",false,"",false);
         case "staticlib":
-           project.addNdll(value,"",true,"");
+           project.addNdll(value,"",true,"",false);
 
         case "min-swf-version":
            var version = Std.parseFloat(value);

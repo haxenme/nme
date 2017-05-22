@@ -252,5 +252,25 @@ class Acadnme extends Sprite implements IScriptHandler
       #end
    }
 
+   #if cpp
+   static public function __init__()
+   {
+      var exeDir = haxe.io.Path.directory(Sys.programPath());
+      var slash = exeDir.indexOf("/") >=0 ? "/" : "\\";
+      var parts = exeDir.split(slash);
+      if (parts.length>3)
+      {
+         parts.pop();
+         parts.pop();
+         parts.pop();
+         parts.push("ndll");
+         parts.push(cpp.Lib.getBinDirectory());
+         var dllPath = parts.join(slash);
+         cpp.Lib.pushDllSearchPath( exeDir );
+         cpp.Lib.pushDllSearchPath( dllPath );
+      }
+   }
+   #end
+
 }
 

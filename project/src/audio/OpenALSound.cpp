@@ -11,7 +11,7 @@
 #include <nme/QuickVec.h>
 #include <Utils.h>
 #include "Audio.h"
-#include <NmeThread.h>
+#include <NMEThread.h>
 #include <unistd.h>
 #include <sys/time.h>
 
