@@ -138,6 +138,10 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    var nmeFrameMemIndex:Int;
    #end
 
+   #if (debug || NME_DISPLAY_STATS)
+   var m_displayStats:nme.debug.DisplayStats;
+   #end
+
    public function new(inWindow:Window)
    {
       #if HXCPP_TELEMETRY
@@ -181,6 +185,11 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeLastCurrentMemory = 0;
       nmeLastPreempt = false;
       nmeFrameMemIndex = 0;
+      #end
+
+      #if (NME_DISPLAY_STATS)
+      m_displayStats = new nme.debug.DisplayStats();
+      addChild(m_displayStats);
       #end
    }
 
@@ -368,6 +377,29 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
                else 
                   displayState = StageDisplayState.NORMAL;
             }
+
+            #if (debug || NME_DISPLAY_STATS)
+            #if mac
+            else if (flags & efCommandDown > 0 && inEvent.code == Keyboard.NUMBER_1 ) 
+            #else
+            else if (flags & efAltDown > 0 && inEvent.code == Keyboard.NUMBER_1 ) 
+            #end
+               if(m_displayStats==null)
+               {
+                  m_displayStats = new nme.debug.DisplayStats();
+                  addChild(m_displayStats);
+               }
+               else
+                  m_displayStats.toggleVisibility();
+
+            #if mac
+            else if (flags & efCommandDown > 0 && inEvent.code == Keyboard.NUMBER_2 ) 
+            #else
+            else if (flags & efAltDown > 0 && inEvent.code == Keyboard.NUMBER_2 ) 
+            #end
+               if(m_displayStats!=null)
+                  m_displayStats.changeVerboseLevel();
+            #end
          }
          #end
       }

@@ -5,7 +5,13 @@ import nme.events.Event;
 import nme.text.TextField;
 import nme.text.TextFormat;
 import nme.text.TextFieldAutoSize;
+import nme.app.Application;
+
+#if cpp
+import cpp.vm.Gc;
+#else
 import openfl.system.System;
+#end
 
 @:nativeProperty
 class DisplayStats extends TextField
@@ -17,6 +23,7 @@ class DisplayStats extends TextField
     private static inline var m_smoothing:Float = 0.1; //lerp with previous
     private static inline var m_spikeRangeInSec:Float = 0.00166; //force update if spike
     private static inline var MB_CONVERSION:Float = 9.53674316e-5;
+    private static inline var numVerboseLevels:Int = 3;
     private var m_timeToChange:Float;
     private var m_isNormalFormat:Bool;
     private var m_currentTime:Float;
@@ -33,6 +40,13 @@ class DisplayStats extends TextField
     private var m_memPeak:Float;
     private var m_statsArray:Array<Int>;
     private var m_oldStatsArray:Array<Int>;
+    private var m_dirtyText:Bool;
+    private var m_verboseLevel:Int;
+    private var m_memCurrent:Float;
+    #if cpp
+    private var m_memReserved:Float;
+    #end
+
 
     public function new(inX:Float = 10.0, inY:Float = 10.0, inCol:Int = 0x000000, inWarningCol:Int = 0xFF0000)
     {    
@@ -47,7 +61,7 @@ class DisplayStats extends TextField
         m_warnTextFormat = new TextFormat("_sans", 12, inWarningCol);
         defaultTextFormat = m_normalTextFormat;
         m_isNormalFormat = true;
-        m_initFrameRate = Lib.stage.frameRate;
+        m_initFrameRate = Application.initFrameRate;
         m_timeToChange = m_updateTime;
         
         text = "";
@@ -59,6 +73,12 @@ class DisplayStats extends TextField
         
         m_statsArray = [0,0,0,0];
         m_oldStatsArray = [0,0,0,0];
+
+        #if (NME_DISPLAY_STATS == 1)
+        m_verboseLevel = 1;
+        #elseif (NME_DISPLAY_STATS == 2)
+        m_verboseLevel = 2;
+        #end
 
         addEventListener(Event.ENTER_FRAME, onEnter);
     }
@@ -108,27 +128,27 @@ class DisplayStats extends TextField
                 showFPS = Math.round(fps *  m_fpsPrecisionDecimalsPow) / m_fpsPrecisionDecimalsPow;
             }
 
-            #if cpp
-            var mem:Float = Math.round( 
-                ( cpp.vm.Gc.memInfo64( cpp.vm.Gc.MEM_INFO_RESERVED ) +
-                  cpp.vm.Gc.memInfo64( cpp.vm.Gc.MEM_INFO_CURRENT ) ) * MB_CONVERSION)/100;
-            #else
-            var mem:Float = Math.round(System.totalMemory * MB_CONVERSION)/100;
-            #end
-
-            if (mem > m_memPeak)
+            if(m_verboseLevel>0)
             {
-                m_memPeak = mem;
+                #if cpp
+                m_memCurrent = Math.round( Gc.memInfo64( Gc.MEM_INFO_CURRENT ) * MB_CONVERSION)/100;
+                m_memReserved = Math.round( Gc.memInfo64( Gc.MEM_INFO_RESERVED ) * MB_CONVERSION)/100;
+                if (m_memReserved > m_memPeak)
+                    m_memPeak = m_memReserved;
+                #else
+                m_memCurrent = Math.round(System.totalMemory * MB_CONVERSION)/100;
+                if (m_memCurrent > m_memPeak)
+                    m_memPeak = m_memCurrent;
+                #end
             }
 
             m_timeToChange-= dt;
             if (m_timeToChange < 0 || spike)
             {
                 m_timeToChange = m_updateTime;
-                var dirtyText:Bool = false;
                 if ( showFPS != m_showFPS )
                 {
-                    dirtyText = true;
+                    m_dirtyText = true;
                     //change color if necessary
                     if ( showFPS < m_initFrameRate && m_isNormalFormat )
                     {
@@ -148,28 +168,66 @@ class DisplayStats extends TextField
                 {
                     if (m_statsArray[i] != m_oldStatsArray[i])
                     {
-                        dirtyText = true;
+                        m_dirtyText = true;
                         m_oldStatsArray[i] = m_statsArray[i];
                     }
                 }
 
-                if(dirtyText)
+                if(m_dirtyText)
                 {
-                    var vertsTotal:Int = m_statsArray[0]+m_statsArray[2];
-                    var callsTotal:Int = m_statsArray[1]+m_statsArray[3];
-                    text = "GL verts: "+vertsTotal+
-                           "\n    drawArrays: "+m_statsArray[0]+
-                           "\n    drawElements: "+m_statsArray[2]+"\n"+
-                           "GL calls: "+callsTotal+
-                           "\n    drawArrays: "+m_statsArray[1]+
-                           "\n    drawElements: "+m_statsArray[3]+"\n"+
-                           "MEM: " + mem + " MB\n"+
-                           "MEM peak: "+ m_memPeak + " MB\n"+
+                    m_dirtyText = false;
+                    var vertsTotal:Int = m_statsArray[0] + m_statsArray[2];
+                    var callsTotal:Int = m_statsArray[1] + m_statsArray[3];
+
+                    //GL stats
+                    if(m_verboseLevel>1)
+                    {
+                        text = "GL verts: " + vertsTotal +
+                           "\n    drawArrays: " + m_statsArray[0] +
+                           "\n    drawElements: " + m_statsArray[2] +
+                           "\nGL calls: " + callsTotal +
+                           "\n    drawArrays: " + m_statsArray[1]+
+                           "\n    drawElements: " + m_statsArray[3] + "\n" +
                            showFPS + (fps==Math.ffloor(showFPS)?".0  /  ":"  /  ") + m_showDt;
+                    }
+                    else
+                    {
+                        text = "GL verts: " + vertsTotal +
+                           "\nGL calls: " + callsTotal + "\n" +
+                           showFPS + (fps==Math.ffloor(showFPS)?".0  /  ":"  /  ") + m_showDt;
+                    }
+
+                    //Memory stats
+                    if(m_verboseLevel>0)
+                    {                        text += 
+                           "\n\nMEM: " + m_memCurrent +
+                           #if cpp
+                           " MB\nMEM  reserved: " + m_memReserved + ",  peak: " +
+                           #else
+                           " MB\nMEM  peak: " +
+                           #end
+                           m_memPeak + " MB";
+                    }
+
                 }
                 m_currentFPS = fps;
                 m_showFPS = showFPS;
             }
+        }
+    }
+
+    public function toggleVisibility()
+    {
+        visible = !visible;
+        m_dirtyText = true;
+    }
+
+    public function changeVerboseLevel()
+    {
+        if(visible)
+        {
+            m_verboseLevel = (++m_verboseLevel)%numVerboseLevels;
+            m_dirtyText = true;
         }
     }
 
