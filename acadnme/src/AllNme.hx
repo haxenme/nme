@@ -210,6 +210,7 @@ import nme.utils.ByteArray;
 import nme.utils.CompressionAlgorithm;
 import nme.utils.Endian;
 import nme.utils.Float32Array;
+import nme.utils.Float32Buffer;
 import nme.utils.IDataInput;
 import nme.utils.IDataOutput;
 import nme.utils.IMemoryRange;
