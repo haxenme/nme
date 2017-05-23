@@ -18,12 +18,12 @@ class DisplayStats extends TextField
 {
    public var currentFPS(get,never):Float;
 
-   private static inline var m_updateTime:Float = 0.5; //sec
-   private static inline var m_precisionDecimals:Int = 1;
-   private static inline var m_smoothing:Float = 0.1; //lerp with previous
-   private static inline var m_spikeRangeInSec:Float = 0.00166; //force update if spike
+   private static inline var sUpdateTime:Float = 0.5; //sec
+   private static inline var sFpsDecimals:Int = 1;
+   private static inline var sFpsSmoothing:Float = 0.1; //lerp with previous
+   private static inline var sSpikeRangeInSec:Float = 0.00166; //force update if spike
    private static inline var MB_CONVERSION:Float = 9.53674316e-5;
-   private static inline var numVerboseLevels:Int = 3;
+   private static inline var sNumVerboseLevels:Int = 3;
    private var m_timeToChange:Float;
    private var m_isNormalFormat:Bool;
    private var m_currentTime:Float;
@@ -37,6 +37,7 @@ class DisplayStats extends TextField
    private var m_glCalls:Int;
    private var m_dt:Float;
    private var m_fpsPrecisionDecimalsPow:Float;
+   private var m_dtPrecisionDecimalsPow:Float;
    private var m_memPeak:Float;
    private var m_statsArray:Array<Int>;
    private var m_oldStatsArray:Array<Int>;
@@ -62,14 +63,13 @@ class DisplayStats extends TextField
       defaultTextFormat = m_normalTextFormat;
       m_isNormalFormat = true;
       m_initFrameRate = Application.initFrameRate;
-      m_timeToChange = m_updateTime;
+      m_timeToChange = sUpdateTime;
       
       text = "";
       autoSize = TextFieldAutoSize.LEFT;
 
-      m_currentTime = haxe.Timer.stamp();
-      m_dt = 1.0/m_initFrameRate;
-      m_fpsPrecisionDecimalsPow = Math.pow(10, m_precisionDecimals);
+      m_fpsPrecisionDecimalsPow = Math.pow(10, sFpsDecimals);
+      m_dtPrecisionDecimalsPow = Math.pow(10, 3);
       
       m_statsArray = [0,0,0,0];
       m_oldStatsArray = [0,0,0,0];
@@ -79,6 +79,8 @@ class DisplayStats extends TextField
       #elseif (NME_DISPLAY_STATS == 2)
       m_verboseLevel = 2;
       #end
+
+      setDisplayMode(1);
 
       addEventListener(Event.ENTER_FRAME, onEnter);
    }
@@ -98,21 +100,23 @@ class DisplayStats extends TextField
          var currentTime = haxe.Timer.stamp();
          var dt:Float = (currentTime-m_currentTime);
          var spike:Bool = false;
+
          if(dt>0.1)
          {
+            m_initFrameRate = Lib.stage.frameRate;
             //reinitialize if dt is too big
             dt = 1.0/m_initFrameRate;
          }
          else
          {
-            spike = (dt < m_dt-m_spikeRangeInSec);
+            spike = (dt < m_dt-sSpikeRangeInSec);
             if(spike)
             {
-               dt = dt*(1.0-m_smoothing)+m_dt * m_smoothing; 
+               dt = dt*(1.0-sFpsSmoothing)+m_dt * sFpsSmoothing; 
             }
             else
             {
-               dt = dt*m_smoothing+m_dt * (1.0-m_smoothing); 
+               dt = dt*sFpsSmoothing+m_dt * (1.0-sFpsSmoothing); 
             }
          }
          m_dt = dt;
@@ -124,7 +128,7 @@ class DisplayStats extends TextField
          m_timeToChange-= dt;
          if (m_timeToChange < 0 || spike)
          {
-            m_timeToChange = m_updateTime;
+            m_timeToChange = sUpdateTime;
             if (showFPS != m_showFPS)
             {
                m_dirtyText = true;
@@ -139,7 +143,7 @@ class DisplayStats extends TextField
                   m_isNormalFormat = true;
                   defaultTextFormat = m_normalTextFormat;
                }
-               m_showDt = Math.round(dt * Math.pow(10, 3)) / Math.pow(10, 3);
+               m_showDt = Math.round(dt * m_dtPrecisionDecimalsPow) / m_dtPrecisionDecimalsPow;
             }
 
             nme_displaystats_get_glstats( m_statsArray );
@@ -157,31 +161,46 @@ class DisplayStats extends TextField
                m_dirtyText = false;
                var vertsTotal:Int = m_statsArray[0] + m_statsArray[2];
                var callsTotal:Int = m_statsArray[1] + m_statsArray[3];
+               var buf = new StringBuf();
 
                //GL stats
                if(m_verboseLevel>1)
                {
-                  text = "GL verts: " + vertsTotal +
-                     "\n   drawArrays: " + m_statsArray[0] +
-                     "\n   drawElements: " + m_statsArray[2] +
-                     "\nGL calls: " + callsTotal +
-                     "\n   drawArrays: " + m_statsArray[1]+
-                     "\n   drawElements: " + m_statsArray[3] + "\n" +
-                     showFPS + (fps==Math.ffloor(showFPS)?".0  /  ":"  /  ") + m_showDt;
+                  buf.add("GL verts: ");
+                  buf.add(vertsTotal);
+                  buf.add("\n   drawArrays: ");
+                  buf.add(m_statsArray[0]);
+                  buf.add("\n   drawElements: ");
+                  buf.add(m_statsArray[2]);
+                  buf.add("\nGL calls: ");
+                  buf.add(callsTotal);
+                  buf.add("\n   drawArrays: ");
+                  buf.add(m_statsArray[1]);
+                  buf.add("\n   drawElements: ");
+                  buf.add(m_statsArray[3]);
+                  buf.add("\n");
+                  buf.add(showFPS);
+                  buf.add((fps==Math.ffloor(showFPS)?".0  /  ":"  /  "));
+                  buf.add(m_showDt);
                }
                else
                {
-                  text = "GL verts: " + vertsTotal +
-                     "\nGL calls: " + callsTotal + "\n" +
-                     showFPS + (fps==Math.ffloor(showFPS)?".0  /  ":"  /  ") + m_showDt;
+                  buf.add("GL verts: ");
+                  buf.add(vertsTotal);
+                  buf.add("\nGL calls: ");
+                  buf.add(callsTotal);
+                  buf.add("\n");
+                  buf.add(showFPS);
+                  buf.add((fps==Math.ffloor(showFPS)?".0  /  ":"  /  "));
+                  buf.add(m_showDt);
                }
 
                //Memory stats
                if(m_verboseLevel>0)
                {
                   #if cpp
-                  m_memCurrent = Math.round(Gc.memInfo64( Gc.MEM_INFO_CURRENT) * MB_CONVERSION )/100;
-                  m_memReserved = Math.round(Gc.memInfo64( Gc.MEM_INFO_RESERVED) * MB_CONVERSION )/100;
+                  m_memCurrent = Math.round(Gc.memInfo64(Gc.MEM_INFO_CURRENT) * MB_CONVERSION)/100;
+                  m_memReserved = Math.round(Gc.memInfo64(Gc.MEM_INFO_RESERVED) * MB_CONVERSION)/100;
                   if (m_memReserved > m_memPeak)
                      m_memPeak = m_memReserved;
                   #else
@@ -189,16 +208,19 @@ class DisplayStats extends TextField
                   if (m_memCurrent > m_memPeak)
                      m_memPeak = m_memCurrent;
                   #end
-                  text += 
-                     "\n\nMEM: " + m_memCurrent +
-                     #if cpp
-                     " MB\nMEM  reserved: " + m_memReserved + ",  peak: " +
-                     #else
-                     " MB\nMEM  peak: " +
-                     #end
-                     m_memPeak + " MB";
+                  buf.add("\n\nMEM: ");
+                  buf.add(m_memCurrent);
+                  #if cpp
+                  buf.add(" MB\nMEM  reserved: ");
+                  buf.add(m_memReserved);
+                  buf.add(",  peak: ");
+                  #else
+                  buf.add(" MB\nMEM  peak: ");
+                  #end
+                  buf.add(m_memPeak);
+                  buf.add(" MB");
                }
-
+               text = buf.toString();
             }
             m_currentFPS = fps;
             m_showFPS = showFPS;
@@ -216,7 +238,7 @@ class DisplayStats extends TextField
    {
       if(visible)
       {
-         m_verboseLevel = (++m_verboseLevel)%numVerboseLevels;
+         m_verboseLevel = (++m_verboseLevel)%sNumVerboseLevels;
          m_dirtyText = true;
       }
    }

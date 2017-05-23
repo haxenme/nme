@@ -380,7 +380,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
             #if (debug || NME_DISPLAY_STATS)
             #if mac
-            else if (flags & efCommandDown > 0 && inEvent.code == Keyboard.NUMBER_1 ) 
+            else if (flags & efCtrlDown > 0 && flags & efCommandDown > 0 && flags & efShiftDown==0 && inEvent.code == Keyboard.NUMBER_1 ) 
             #else
             else if (flags & efAltDown > 0 && inEvent.code == Keyboard.NUMBER_1 ) 
             #end
@@ -393,13 +393,12 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
                   m_displayStats.toggleVisibility();
 
             #if mac
-            else if (flags & efCommandDown > 0 && inEvent.code == Keyboard.NUMBER_2 ) 
+            else if (flags & efCtrlDown > 0 && flags & efCommandDown > 0 && flags & efShiftDown==0 && == Keyboard.NUMBER_2 ) 
             #else
             else if (flags & efAltDown > 0 && inEvent.code == Keyboard.NUMBER_2 ) 
             #end
                if(m_displayStats!=null)
                   m_displayStats.changeVerboseLevel();
-            #end
          }
          #end
       }
