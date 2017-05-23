@@ -187,7 +187,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeFrameMemIndex = 0;
       #end
 
-      #if (NME_DISPLAY_STATS)
+      #if NME_DISPLAY_STATS
       m_displayStats = new nme.debug.DisplayStats();
       addChild(m_displayStats);
       #end
@@ -399,6 +399,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
             #end
                if(m_displayStats!=null)
                   m_displayStats.changeVerboseLevel();
+            #end
          }
          #end
       }

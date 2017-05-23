@@ -80,8 +80,6 @@ class DisplayStats extends TextField
       m_verboseLevel = 2;
       #end
 
-      setDisplayMode(1);
-
       addEventListener(Event.ENTER_FRAME, onEnter);
    }
    
