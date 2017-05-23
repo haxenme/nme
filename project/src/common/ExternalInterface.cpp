@@ -3286,8 +3286,10 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
                if (buf)
                   fvals = (float *)buffer_data(buf);
             }
+            #ifndef EMSCRIPTEN
             if (!fvals && val_is_string(inXYIDs))
                fvals = (float *)val_string(inXYIDs);
+            #endif
             if (fvals)
                TAddTiles( gfx->getPath(), sheet, n, fvals, flags, fullImage );
             else
