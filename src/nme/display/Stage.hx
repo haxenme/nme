@@ -378,11 +378,12 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
                   displayState = StageDisplayState.NORMAL;
             }
 
+
             #if (debug || NME_DISPLAY_STATS)
             #if mac
-            else if (flags & efCtrlDown > 0 && flags & efCommandDown > 0 && flags & efShiftDown==0 && inEvent.code == Keyboard.NUMBER_1 ) 
+            else if (flags & efCommandDown > 0 && value == Keyboard.F1) 
             #else
-            else if (flags & efAltDown > 0 && inEvent.code == Keyboard.NUMBER_1 ) 
+            else if (flags & efAltDown > 0 && value == Keyboard.F1)
             #end
                if(m_displayStats==null)
                {
@@ -390,15 +391,20 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
                   addChild(m_displayStats);
                }
                else
+               {
                   m_displayStats.toggleVisibility();
-
+                  addChild(m_displayStats);
+               }
             #if mac
-            else if (flags & efCtrlDown > 0 && flags & efCommandDown > 0 && flags & efShiftDown==0 && == Keyboard.NUMBER_2 ) 
+            else if (flags & efCommandDown > 0 && value == Keyboard.F2) 
             #else
-            else if (flags & efAltDown > 0 && inEvent.code == Keyboard.NUMBER_2 ) 
+            else if (flags & efAltDown > 0 && value == Keyboard.F2) 
             #end
                if(m_displayStats!=null)
+               {
                   m_displayStats.changeVerboseLevel();
+                  addChild(m_displayStats);
+               }
             #end
          }
          #end
