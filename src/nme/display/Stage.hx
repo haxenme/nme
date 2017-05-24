@@ -391,20 +391,13 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
                   addChild(m_displayStats);
                }
                else
-               {
                   m_displayStats.toggleVisibility();
-                  addChild(m_displayStats);
-               }
             #if mac
-            else if (flags & efCommandDown > 0 && value == Keyboard.F2) 
+            else if (flags & efCommandDown > 0 && value == Keyboard.F2 && m_displayStats!=null) 
             #else
-            else if (flags & efAltDown > 0 && value == Keyboard.F2) 
+            else if (flags & efAltDown > 0 && value == Keyboard.F2 && m_displayStats!=null) 
             #end
-               if(m_displayStats!=null)
-               {
-                  m_displayStats.changeVerboseLevel();
-                  addChild(m_displayStats);
-               }
+               m_displayStats.changeVerboseLevel();
             #end
          }
          #end
@@ -979,6 +972,30 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    {
       nme_stage_show_cursor(nmeHandle, inShow);
    }
+
+   //Debug stats always on top
+   #if (debug || NME_DISPLAY_STATS)
+   override public function addChild(child:DisplayObject):DisplayObject 
+   {
+      nmeAddChild(child);
+      if(m_displayStats!=null && m_displayStats!=child)
+      {
+         addChild(m_displayStats);
+      }
+      return child;
+   }
+
+   override public function addChildAt(child:DisplayObject, index:Int):DisplayObject 
+   {
+      nmeAddChild(child);
+      if(m_displayStats!=null && m_displayStats!=child)
+      {
+         addChild(m_displayStats);
+      }
+      nmeSetChildIndex(child, index);
+      return child;
+   }
+   #end
 
    // Getters & Setters
    private function get_focus():InteractiveObject 

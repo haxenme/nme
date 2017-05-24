@@ -49,7 +49,8 @@ class DisplayStats extends TextField
    #end
 
 
-   public function new(inX:Float = 10.0, inY:Float = 10.0, inCol:Int = 0x000000, inWarningCol:Int = 0xFF0000)
+   public function new(inX:Float = 10.0, inY:Float = 10.0, inCol:Int = 0x000000, inWarningCol:Int = 0xFF0000, 
+      inBackground:Bool = true, inBgCol:Int = 0xDDDDDD)
    {   
       super();
       
@@ -57,6 +58,8 @@ class DisplayStats extends TextField
       y = inY;
       selectable = false;
       mouseEnabled = false;
+      background = inBackground;
+      backgroundColor = inBgCol;
       
       m_normalTextFormat = new TextFormat("_sans", 12, inCol);
       m_warnTextFormat = new TextFormat("_sans", 12, inWarningCol);
@@ -211,7 +214,7 @@ class DisplayStats extends TextField
                   #if cpp
                   buf.add(" MB\nMEM  reserved: ");
                   buf.add(m_memReserved);
-                  buf.add(",  peak: ");
+                  buf.add("\nMEM  peak: ");
                   #else
                   buf.add(" MB\nMEM  peak: ");
                   #end
