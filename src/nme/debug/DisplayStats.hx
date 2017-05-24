@@ -77,10 +77,12 @@ class DisplayStats extends TextField
       m_statsArray = [0,0,0,0];
       m_oldStatsArray = [0,0,0,0];
 
-      #if (NME_DISPLAY_STATS == 1)
+      #if (NME_DISPLAY_STATS == 2)
       m_verboseLevel = 1;
-      #elseif (NME_DISPLAY_STATS == 2)
+      #elseif (NME_DISPLAY_STATS == 3)
       m_verboseLevel = 2;
+      #elseif (NME_DISPLAY_STATS == 0)
+      visible = false;
       #end
 
       addEventListener(Event.ENTER_FRAME, onEnter);
@@ -167,17 +169,17 @@ class DisplayStats extends TextField
                //GL stats
                if(m_verboseLevel>1)
                {
-                  buf.add("GL verts: ");
+                  buf.add("GL verts: \t\t");
                   buf.add(vertsTotal);
-                  buf.add("\n   drawArrays: ");
+                  buf.add("\n   drawArrays:\t\t\t");
                   buf.add(m_statsArray[0]);
-                  buf.add("\n   drawElements: ");
+                  buf.add("\n   drawElements:\t");
                   buf.add(m_statsArray[2]);
-                  buf.add("\nGL calls: ");
+                  buf.add("\nGL calls: \t\t");
                   buf.add(callsTotal);
-                  buf.add("\n   drawArrays: ");
+                  buf.add("\n   drawArrays:\t\t\t");
                   buf.add(m_statsArray[1]);
-                  buf.add("\n   drawElements: ");
+                  buf.add("\n   drawElements:\t");
                   buf.add(m_statsArray[3]);
                   buf.add("\n");
                   buf.add(showFPS);
@@ -186,9 +188,9 @@ class DisplayStats extends TextField
                }
                else
                {
-                  buf.add("GL verts: ");
+                  buf.add("GL verts: \t\t");
                   buf.add(vertsTotal);
-                  buf.add("\nGL calls: ");
+                  buf.add("\nGL calls: \t\t");
                   buf.add(callsTotal);
                   buf.add("\n");
                   buf.add(showFPS);
@@ -201,23 +203,28 @@ class DisplayStats extends TextField
                {
                   #if cpp
                   m_memCurrent = Math.round(Gc.memInfo64(Gc.MEM_INFO_CURRENT) * MB_CONVERSION)/100;
-                  m_memReserved = Math.round(Gc.memInfo64(Gc.MEM_INFO_RESERVED) * MB_CONVERSION)/100;
-                  if (m_memReserved > m_memPeak)
-                     m_memPeak = m_memReserved;
                   #else
                   m_memCurrent = Math.round(System.totalMemory * MB_CONVERSION)/100;
                   if (m_memCurrent > m_memPeak)
                      m_memPeak = m_memCurrent;
                   #end
-                  buf.add("\n\nMEM: ");
+                  buf.add("\n\nMEM:\t\t\t");
                   buf.add(m_memCurrent);
+                  if(m_verboseLevel<=1)
+                  {
+                     buf.add(" MB");
+                  }
+               }
+               if(m_verboseLevel>1)
+               {
                   #if cpp
-                  buf.add(" MB\nMEM  reserved: ");
+                  m_memReserved = Math.round(Gc.memInfo64(Gc.MEM_INFO_RESERVED) * MB_CONVERSION)/100;
+                  if (m_memReserved > m_memPeak)
+                     m_memPeak = m_memReserved;
+                  buf.add(" MB\n   reserved:\t");
                   buf.add(m_memReserved);
-                  buf.add("\nMEM  peak: ");
-                  #else
-                  buf.add(" MB\nMEM  peak: ");
                   #end
+                  buf.add(" MB\n   peak:\t\t\t ");
                   buf.add(m_memPeak);
                   buf.add(" MB");
                }
