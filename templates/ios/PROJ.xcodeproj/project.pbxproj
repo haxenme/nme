@@ -556,12 +556,12 @@
 		C01FCF4F08A954540054247B /* Debug */ = {/* Build configuration list for PBXProject "::APP_TITLE::" */ 
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				::foreach frameworkSearchPaths::
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					::__current__::,
+					"$(PROJECT_DIR)",
+					::foreach frameworkSearchPaths:: "\"::__current__::\"",
+					::end::
 				);
-				::end::
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				::if (OBJC_ARC)::
@@ -613,12 +613,12 @@
 		C01FCF5008A954540054247B /* Release */ = {/* Build configuration list for PBXProject "::APP_TITLE::" */ 
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				::foreach frameworkSearchPaths::
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					::__current__::,
+					"$(PROJECT_DIR)",
+					::foreach frameworkSearchPaths:: "\"::__current__::\"",
+					::end::
 				);
-				::end::
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				::if (OBJC_ARC)::
