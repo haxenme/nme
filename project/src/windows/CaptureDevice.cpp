@@ -1,4 +1,4 @@
-#ifndef __MINGW32__
+#if !(defined(__MINGW32__) || defined(HX_WINRT)) 
 
 #include <windows.h>
 #include <process.h>

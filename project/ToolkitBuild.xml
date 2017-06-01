@@ -97,7 +97,7 @@
    <set name="SUP_DIR" value="${this_dir}/support" if="this_dir" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
 
-   <set name="modplug" value="1" unless="android||emscripten" />
+   <set name="modplug" value="1" unless="android||emscripten||winrt" />
    
    <!-- <set name="new_link" value="1" /> -->
  
@@ -205,10 +205,11 @@
 
       <section if="windows">
          <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />
-         <file name="${SRC_DIR}/windows/GDIFont.cpp"/>
-         <file name="${SRC_DIR}/windows/System.cpp" />
-         <file name="${SRC_DIR}/audio/WindowsAcm.cpp" unless="mingw" />
+         <file name="${SRC_DIR}/windows/GDIFont.cpp" unless="winrt"/>
+         <file name="${SRC_DIR}/windows/System.cpp" unless="winrt"/>
+         <file name="${SRC_DIR}/audio/WindowsAcm.cpp" unless="mingw || winrt" />
          <compilerflag value="-DNME_NO_WINACM" if="mingw" />
+         <compilerflag value="-DNME_NO_WINACM" if="winrt" />
       </section>
 
       <section if="linux">
