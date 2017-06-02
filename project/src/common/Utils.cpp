@@ -114,7 +114,9 @@ std::string GetExeName()
 {
    #ifdef HX_WINDOWS
      char path[MAX_PATH] = "";
+     #ifndef HX_WINRT
      GetModuleFileName(0,path,MAX_PATH);
+     #endif
      return path;
    #elif defined(HX_MACOS)
      char path[1024] = "";
@@ -387,7 +389,9 @@ void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 #if !defined(HX_MACOS) && !defined(IPHONE)
 void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 {
-#if defined(HX_WINRT)
+#if (defined(HX_WINRT) && !defined(__cplusplus_winrt))
+    OutputDebugString("Utils.cpp GetSpecialDir not implemented, compile with ABI=-ZW for winrt");
+#elif defined(HX_WINRT) && defined(__cplusplus_winrt)
    std::wstring result;
    Windows::Storage::StorageFolder ^folder = nullptr;
 

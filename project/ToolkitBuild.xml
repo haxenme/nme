@@ -52,7 +52,7 @@
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
-   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="emscripten" />
+   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="emscripten||winrt" />
 
    <!-- Use opengl backend ? -->
    <set name="NME_OGL" value="1" />
@@ -63,8 +63,7 @@
 
    <!-- Do we need to implement curl in NME -->
    <set name="NME_CURL" value="1" />
-   <unset name="NME_CURL" if="winrt" />
-   <unset name="NME_CURL" if="emscripten" />
+   <unset name="NME_CURL" if="emscripten||winrt" />
 
    <!-- And allow https ? -->
    <set name="NME_SSL" value="1" />
@@ -85,7 +84,7 @@
 
    <set name="NME_OPENAL" value="1" if="emscripten" />
 
-   <set name="NME_CAMERA" value="1" unless="emscripten" />
+   <set name="NME_CAMERA" value="1" unless="emscripten||winrt" />
 
    <!-- Built relative to "bin" -->
    <set name="NME_ROOT" value="" />
@@ -206,7 +205,7 @@
       <section if="windows">
          <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />
          <file name="${SRC_DIR}/windows/GDIFont.cpp" unless="winrt"/>
-         <file name="${SRC_DIR}/windows/System.cpp" unless="winrt"/>
+         <file name="${SRC_DIR}/windows/System.cpp"/>
          <file name="${SRC_DIR}/audio/WindowsAcm.cpp" unless="mingw || winrt" />
          <compilerflag value="-DNME_NO_WINACM" if="mingw" />
          <compilerflag value="-DNME_NO_WINACM" if="winrt" />
@@ -298,7 +297,7 @@
         <compilerflag value="-DNME_MIXER" if="NME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
         <depend files="native-toolkit-sdl-depends" />
-        <depend files="native-toolkit-sdl-mixer-depends" />
+        <depend files="native-toolkit-sdl-mixer-depends" if="NME_MIXER"/>
       </section>
 
       <section if="NME_CURL">
@@ -437,8 +436,9 @@
 
       <section unless="static_link">
          <ext value=".so" />
-         <ext value=".ndll" if="windows || mac || linux" />
+         <ext value=".ndll" if="windows || mac || linux" unless="winrt"/>
          <ext value=".js" if="HXCPP_JS_PRIME" />
+         <ext value=".dll" if="winrt" />
 
 
          <section if="NME_NATIVE_SDL_SYSTEM" >
@@ -502,7 +502,7 @@
             <lib name="wldap32.lib" />
             <lib name="shell32.lib" />
             <lib name="comdlg32.lib" />
-            <lib name="d3d9.lib" if="NME_ANGLE" />
+            <lib name="d3d9.lib" if="NME_ANGLE" unless="winrt"/>
          </section>
 
          <section if="linux">
@@ -511,8 +511,11 @@
             <lib name="-lrt" />
          </section>
       
-         <section if="winrt">
+         <section if="winrt" unless="static_link">
             <lib name="D3D11.lib" />
+            <lib name="d3dcompiler.lib"/> <!-- for D3DReflect -->
+            <lib name="xinput.lib"/>
+            <lib name="xaudio2.lib"/>
          </section>
       
       </section>
