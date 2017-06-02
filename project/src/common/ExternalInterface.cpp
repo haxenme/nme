@@ -1188,9 +1188,8 @@ DEFINE_PRIM(nme_filesystem_get_volumes,2);
 value nme_get_url(value url)
 {
 #if defined(HX_WINRT)
-   OutputDebugString("ExternalInterface.cpp  lime_get_url not implemented on PS\n");
+   OutputDebugString("ExternalInterface.cpp  nme_get_url not implemented\n");
    return alloc_null();
-
 #else
    bool result=LaunchBrowser(valToHxString(url).c_str());
    return alloc_bool(result);
