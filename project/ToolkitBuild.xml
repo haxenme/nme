@@ -513,9 +513,10 @@
       
          <section if="winrt" unless="static_link">
             <lib name="D3D11.lib" />
-            <lib name="d3dcompiler.lib"/> <!-- for D3DReflect -->
+            <lib name="d3dcompiler.lib"/>
             <lib name="xinput.lib"/>
             <lib name="xaudio2.lib"/>
+            <lib name="dxgi.lib"/>
          </section>
       
       </section>
