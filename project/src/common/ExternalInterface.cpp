@@ -9,6 +9,10 @@
 #define NEKO_COMPATIBLE
 #endif
 
+#if defined(EMSCRIPTEN) || defined(HX_WINRT)
+#define NME_NO_CURL
+#define NME_NO_CAMERA
+#endif
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -252,7 +256,7 @@ extern "C" void InitIDs()
    
    _tile_rect = FRect(0, 0, 1, 1);
 
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CAMERA
    InitCamera();
    #endif
 }
@@ -1027,7 +1031,9 @@ DEFINE_PRIM( nme_sys_get_exe_name, 0 );
 value nme_capabilities_get_screen_resolutions ()
 {
    //Only really makes sense on PC platforms
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
+   #if defined(HX_WINRT)
+      OutputDebugString("ExternalInterface nme_capabilities_get_screen_resolutions not implemented\n");
+   #elif defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
       QuickVec<int>* res = CapabilitiesGetScreenResolutions();
       
       value result = alloc_array( res->size());
@@ -1049,7 +1055,9 @@ value nme_capabilities_get_screen_modes () {
 
 
    //Only really makes sense on PC platforms
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
+   #if  defined(HX_WINRT)
+      OutputDebugString("ExternalInterface nme_capabilities_get_screen_modes not implemented\n");
+   #elif defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
 
 
       QuickVec<ScreenMode>* modes = CapabilitiesGetScreenModes();
@@ -1179,8 +1187,13 @@ DEFINE_PRIM(nme_filesystem_get_volumes,2);
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)
 {
+#if defined(HX_WINRT)
+   OutputDebugString("ExternalInterface.cpp  nme_get_url not implemented\n");
+   return alloc_null();
+#else
    bool result=LaunchBrowser(valToHxString(url).c_str());
    return alloc_bool(result);
+#endif
 }
 DEFINE_PRIM(nme_get_url,1);
 
@@ -1200,7 +1213,7 @@ DEFINE_PRIM(nme_haptic_vibrate,2);
 // --- SharedObject ----------------------------------------------------------------------
 value nme_set_user_preference(value inId,value inValue)
 {
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN) //|| defined(HX_WINRT)
       bool result=SetUserPreference(valToHxString(inId).c_str(),valToHxString(inValue).c_str());
       return alloc_bool(result);
    #endif
@@ -1210,7 +1223,7 @@ DEFINE_PRIM(nme_set_user_preference,2);
 
 value nme_get_user_preference(value inId)
 {
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN) //|| defined(HX_WINRT)
       std::string result=GetUserPreference(valToHxString(inId).c_str());
       return alloc_string(result.c_str());
    #endif
@@ -1220,7 +1233,7 @@ DEFINE_PRIM(nme_get_user_preference,1);
 
 value nme_clear_user_preference(value inId)
 {
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN) //|| defined(HX_WINRT)
       bool result=ClearUserPreference(valToHxString(inId).c_str());
       return alloc_bool(result);
    #endif
@@ -4932,10 +4945,9 @@ DEFINE_PRIM(nme_tilesheet_get_rect,3);
 
 
 // --- URL ----------------------------------------------------------
-
 value nme_curl_initialize(value inCACertFilePath)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader::initialize(val_string(inCACertFilePath));
    #endif
    return alloc_null();
@@ -4944,7 +4956,7 @@ DEFINE_PRIM(nme_curl_initialize,1);
 
 value nme_curl_create(value inURLRequest)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLRequest request;
    FromValue(inURLRequest,request);
    URLLoader *loader = URLLoader::create(request);
@@ -4956,7 +4968,7 @@ DEFINE_PRIM(nme_curl_create,1);
 
 value nme_curl_process_loaders()
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    return alloc_bool(URLLoader::processAll());
    #endif
    return alloc_bool(true);
@@ -4965,7 +4977,7 @@ DEFINE_PRIM(nme_curl_process_loaders,0);
 
 value nme_curl_update_loader(value inLoader,value outHaxeObj)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -4980,7 +4992,7 @@ DEFINE_PRIM(nme_curl_update_loader,2);
 
 value nme_curl_get_error_message(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -4993,7 +5005,7 @@ DEFINE_PRIM(nme_curl_get_error_message,1);
 
 value nme_curl_get_code(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -5007,7 +5019,7 @@ DEFINE_PRIM(nme_curl_get_code,1);
 
 value nme_curl_get_data(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -5022,7 +5034,7 @@ DEFINE_PRIM(nme_curl_get_data,1);
 
 value nme_curl_get_cookies(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -5040,7 +5052,7 @@ DEFINE_PRIM(nme_curl_get_cookies,1);
 
 value nme_curl_get_headers(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {

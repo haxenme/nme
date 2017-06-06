@@ -434,15 +434,18 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    if (!face)
       face = FontFace::CreateCFFIFont(inFormat,inScale);
 
+#ifndef HX_WINRT
    if (native && !face)
       face = FontFace::CreateNative(inFormat,inScale);
+#endif
 
    if (!face)
       face = FontFace::CreateFreeType(inFormat,inScale,NULL,"");
 
+#ifndef HX_WINRT
    if (!native && !face)
       face = FontFace::CreateNative(inFormat,inScale);
-
+#endif
    if (!face)
    {
       //printf("Missing face : %s\n", fontName.c_str() );

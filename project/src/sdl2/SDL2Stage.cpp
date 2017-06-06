@@ -1610,7 +1610,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
       window = SDL_CreateWindow(inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, setWidth, setHeight, requestWindowFlags);
       
-      #ifdef HX_WINDOWS
+      #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
       HINSTANCE handle = ::GetModuleHandle(0);
       LPSTR resource = MAKEINTRESOURCE(101);
       LPARAM icon = (LPARAM)::LoadImage(handle, resource, IMAGE_ICON, 

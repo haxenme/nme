@@ -1,3 +1,4 @@
+#ifndef HX_WINRT
 #include <windows.h>
 #include <shlobj.h> 
 
@@ -154,3 +155,58 @@ bool nmeCoInitialize()
    }
 
 }
+#else
+#include <stdio.h>
+#include <string>
+#include <vector>
+
+
+namespace nme {
+ 
+   bool nmeCoInitialize()
+   {
+      return false;
+   }
+
+   
+   bool LaunchBrowser(const char *inUtf8URL)
+   {
+      return false;
+   }
+
+   std::string CapabilitiesGetLanguage()
+   {
+      return "en";
+   }
+   
+   bool SetDPIAware()
+   {
+      return false;
+   }
+
+   bool dpiAware = SetDPIAware();
+
+   double CapabilitiesGetScreenDPI()
+   {
+      return 0;
+   }
+
+   double CapabilitiesGetPixelAspectRatio() {
+      return 1.0;
+   }
+
+
+   std::string FileDialogFolder( const std::string &title, const std::string &text ) {      
+      return ""; 
+   }
+
+   std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
+      return ""; 
+   }
+
+   std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
+      return ""; 
+   }
+
+}
+#endif
