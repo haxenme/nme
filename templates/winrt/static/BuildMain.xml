@@ -1,0 +1,45 @@
+<xml>
+    <include name="${HXCPP}/build-tool/BuildCommon.xml" />
+    <set name="NATIVE_TOOLKIT_PATH" value="${haxelib:nme-toolkit}" unless="NATIVE_TOOLKIT_PATH" />
+    <set name="DBG" value="-debug" if="debug" />
+    
+    <files id="main">
+
+        <file name="Main.cpp" />
+
+        <compilerflag value="-ZW"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include"/>
+        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include/configs/winrt"/>
+        <compilerflag value="-D__WINRT__"/>
+        <!--<compilerflag value="-DUNICODE"/>-->
+        <compilerflag value="-DSDL_BUILDING_WINRT=1"/>
+        <!--<compilerflag value="-DSDL_MAIN_NEEDED"/>-->
+
+    </files>
+    
+    <target id="main" output="Main${DBG}" tool="linker" toolid="exe">
+        
+        <files id="main" />
+
+        ::foreach ndlls::
+        <echo value="::path::ndll\WinRT\lib::name::.lib" />
+        <lib name="::path::ndll\WinRT\lib::name::.lib" />
+        ::end::
+
+        <lib name="D3D11.lib" />
+        <lib name="d3dcompiler.lib"/>
+        <lib name="xinput.lib"/>
+        <lib name="xaudio2.lib"/>
+        <lib name="dxgi.lib"/>
+        <lib name="libApplicationMain${DBG}${LIBEXT}" />
+        
+    </target>
+    
+    <target id="default">
+        
+        <target id="main" />
+        
+    </target>
+    
+</xml>
+

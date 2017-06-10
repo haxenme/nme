@@ -44,6 +44,14 @@ class AndroidConfig
    }
 }
 
+class WinRTConfig
+{
+   public var isWinrt:Bool;
+   public function new()
+   {
+   }
+}
+
 class Engine
 {
    public function new(inName:String, inVersion:String)
@@ -106,6 +114,7 @@ class NMEProject
    // ios/android build parameters
    public var iosConfig:IOSConfig;
    public var androidConfig:AndroidConfig;
+   public var winrtConfig:WinRTConfig;
    public var watchProject:NMEProject;
 
    // Defines
@@ -165,6 +174,7 @@ class NMEProject
       openflCompat = true;
       iosConfig = new IOSConfig();
       androidConfig = new AndroidConfig();
+      winrtConfig = new WinRTConfig();
 
       debug = false;
       megaTrace = false;
@@ -243,6 +253,7 @@ class NMEProject
          case "cpp":
             target = PlatformHelper.hostPlatform;
             targetFlags.set("cpp", "");
+            winrtConfig.isWinrt = haxedefs.exists("winrt");
 
          case "cppia":
             target = Platform.CPPIA;
@@ -328,9 +339,22 @@ class NMEProject
          case "js":
             target = Platform.JS;
 
+         case "winrt":
+            targetFlags.set("cpp", "1");
+            haxedefs.set("winrt", "");
+            haxedefs.set("NME_ANGLE", "");
+            haxedefs.set("static_link", "");
+            haxedefs.set("ABI", "-ZW");
+            localDefines.set("ENV_DCS", "::"); //for Main.cpp
+            localDefines.set("APP_ARCH",haxedefs.exists("HXCPP_M64")?"x64":"x86"); //for AppxManifest
+            target = Platform.WINDOWS;
+            staticLink = true;
+            winrtConfig.isWinrt = true;
+
          case "windows", "mac", "linux":
             targetFlags.set("cpp", "1");
             target = inTargetName.toUpperCase();
+            winrtConfig.isWinrt = haxedefs.exists("winrt");
 
          default:
             Log.error("Unknown target : " + inTargetName);

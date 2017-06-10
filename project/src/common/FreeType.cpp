@@ -532,10 +532,14 @@ const char *fontFolders[] = { "/Library/Fonts/", 0 };
 }
 #else
 
+#if defined(HX_WINRT)
+#define strcasecmp stricmp
+#endif
+
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
    #if defined(HX_WINRT)
-      DLOG("Looking for font %s...", inName.c_str());
+      //DLOG("Looking for font %s...", inName.c_str());
    #endif
    const char *alternate = 0;
    if (!strcasecmp(inName.c_str(),"_serif") ||
@@ -604,7 +608,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
        #endif
 
       #ifdef HX_WINRT
-      ERROR_LOG("Could not load font %s.", inName.c_str() );
+      //ERROR_LOG("Could not load font %s.", inName.c_str() );
       #endif
       
       //printf("Unfound font: %s\n",inName.c_str());
