@@ -114,7 +114,6 @@ class System
       #elseif jsprime
       // TODO
       return "localhost";
-      #else
       #elseif winrt
       return "localhost";
       #else
