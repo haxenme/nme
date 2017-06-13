@@ -115,6 +115,9 @@ class System
       // TODO
       return "localhost";
       #else
+      #elseif winrt
+      return "localhost";
+      #else
       return sys.net.Host.localhost();
       #end
    }
