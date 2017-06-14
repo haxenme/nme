@@ -50,11 +50,11 @@ class Assets
    public static inline var WEAK_CACHE = 1;
    public static inline var STRONG_CACHE = 2;
 
-   public static var info = new Map<String,AssetInfo>();
-   public static var pathMapper = new Map<String,String>();
-   public static var byteFactory = new Map<String,Void->ByteArray>();
-   public static var libraryFactories = new Map<String,AssetLibFactory>();
-   public static var loadedLibraries = new Map<String,AssetLib>();
+   public static var info = new haxe.ds.StringMap<AssetInfo>();
+   public static var pathMapper = new haxe.ds.StringMap<String>();
+   public static var byteFactory = new haxe.ds.StringMap<Void->ByteArray>();
+   public static var libraryFactories = new haxe.ds.StringMap<AssetLibFactory>();
+   public static var loadedLibraries = new haxe.ds.StringMap<AssetLib>();
    #if js
    public static var cacheMode:Int = STRONG_CACHE;
    #else
