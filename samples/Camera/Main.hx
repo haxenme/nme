@@ -12,7 +12,8 @@ class Main extends Sprite
    {
       super();
       camera = Camera.getCamera();
-      camera.addEventListener(Event.VIDEO_FRAME,onFrame);
+      if (camera!=null)
+         camera.addEventListener(Event.VIDEO_FRAME,onFrame);
       stage.addEventListener(nme.events.Event.RESIZE, function(_) setBmpSize() );
    }
 
@@ -46,10 +47,13 @@ class Main extends Sprite
    public function onFrame(_)
    {
       trace("onFrame!");
-      camera.removeEventListener(Event.VIDEO_FRAME,onFrame);
-      bitmap = new Bitmap( camera.bitmapData );
-      addChild(bitmap);
-      setBmpSize();
+      if (camera!=null)
+      {
+         camera.removeEventListener(Event.VIDEO_FRAME,onFrame);
+         bitmap = new Bitmap( camera.bitmapData );
+         addChild(bitmap);
+         setBmpSize();
+      }
 
       /*
       #if cpp
