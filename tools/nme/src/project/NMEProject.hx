@@ -46,7 +46,7 @@ class AndroidConfig
 
 class WinRTConfig
 {
-   public var isWinrt:Bool;
+   public var isAppx:Bool;
    public function new()
    {
    }
@@ -253,7 +253,6 @@ class NMEProject
          case "cpp":
             target = PlatformHelper.hostPlatform;
             targetFlags.set("cpp", "");
-            winrtConfig.isWinrt = haxedefs.exists("winrt");
 
          case "cppia":
             target = Platform.CPPIA;
@@ -347,14 +346,13 @@ class NMEProject
             haxedefs.set("ABI", "-ZW");
             localDefines.set("ENV_DCS", "::"); //for Main.cpp
             localDefines.set("APP_ARCH",haxedefs.exists("HXCPP_M64")?"x64":"x86"); //for AppxManifest
-            target = Platform.WINDOWS;
+            target = Platform.WINRT;
             staticLink = true;
-            winrtConfig.isWinrt = true;
+            winrtConfig.isAppx = haxedefs.exists("appx");
 
          case "windows", "mac", "linux":
             targetFlags.set("cpp", "1");
             target = inTargetName.toUpperCase();
-            winrtConfig.isWinrt = haxedefs.exists("winrt");
 
          default:
             Log.error("Unknown target : " + inTargetName);
@@ -426,7 +424,7 @@ class NMEProject
             window.height = 0;
             window.fullscreen = true;
 
-         case Platform.WINDOWS, Platform.MAC, Platform.LINUX:
+         case Platform.WINDOWS, Platform.MAC, Platform.LINUX, Platform.WINRT:
 
             platformType = Platform.TYPE_DESKTOP;
 

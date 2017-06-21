@@ -98,6 +98,9 @@ class CommandLineTools
          case Platform.IOS:
             platform = new platforms.IOSPlatform(project);
 
+         case Platform.WINRT:
+            platform = new platforms.WinrtPlatform(project);
+
          case Platform.WINDOWS:
             platform = new platforms.WindowsPlatform(project);
 

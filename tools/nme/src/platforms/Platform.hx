@@ -17,6 +17,7 @@ class Platform
    public static inline var LINUX = "LINUX";
    public static inline var MAC = "MAC";
    public static inline var WINDOWS = "WINDOWS";
+   public static inline var WINRT = "WINRT";
    public static inline var ANDROIDVIEW = "ANDROIDVIEW";
    public static inline var CPPIA = "CPPIA";
    public static inline var EMSCRIPTEN = "EMSCRIPTEN";
