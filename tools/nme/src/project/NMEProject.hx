@@ -47,8 +47,11 @@ class AndroidConfig
 class WinRTConfig
 {
    public var isAppx:Bool;
+   public var appCapability:Array<WinrtCapability>;
+
    public function new()
    {
+      appCapability = [];
    }
 }
 

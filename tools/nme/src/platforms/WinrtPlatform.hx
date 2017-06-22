@@ -203,6 +203,11 @@ class WinrtPlatform extends WindowsPlatform
         //powershell 'Add-AppxPackage HerokuShaders.appx'
       }
     }
+
+   override function generateContext(context:Dynamic) : Void
+   {
+      context.appCapability = project.winrtConfig.appCapability;
+   }
 }
 
 

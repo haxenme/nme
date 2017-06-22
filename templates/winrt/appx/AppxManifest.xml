@@ -23,6 +23,6 @@
     </Application>
   </Applications>
   <Capabilities>
-    <Capability Name="internetClient" />
+    ::foreach appCapability:: <::namespace::Capability Name="::capability::" />::end::
   </Capabilities>
 </Package>
