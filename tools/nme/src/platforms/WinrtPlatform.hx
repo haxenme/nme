@@ -116,6 +116,22 @@ class WinrtPlatform extends WindowsPlatform
       super.updateOutputDir();
       var destination = getOutputDir();
       copyTemplateDir( "winrt/appx", destination );
+
+      PathHelper.mkdir(destination + "/assetspkg/");
+
+      var iconNames = [ "Square44x44Logo.targetsize-24_altform-unplated", "LockScreenLogo.scale-200", "StoreLogo", "Square44x44Logo.scale-200", "Square150x150Logo.scale-200" ];
+      var iconSizes = [ 24, 48, 50, 88, 300 ];
+
+      for(i in 0...iconNames.length) 
+      {
+         if (IconHelper.createIcon(project.icons, iconSizes[i], iconSizes[i], destination + "/assetspkg/" + iconNames[i] + ".png")) 
+            context.HAS_ICON = true;
+      }
+
+      IconHelper.createIcon(/*project.banners!=null ? project.banners :*/ project.icons, 1240, 600,
+         destination + "/assetspkg/SplashScreen.scale-200.png");
+      IconHelper.createIcon(/*project.banners!=null ? project.banners :*/ project.icons, 620, 300,
+         destination + "/assetspkg/Wide310x150Logo.scale-200.png");
    }
 
 
@@ -208,7 +224,7 @@ class WinrtPlatform extends WindowsPlatform
    {
       context.appCapability = project.winrtConfig.appCapability;
       context.ENV_DCS = "::";
-      context.APP_ARCH = haxedefs.exists("HXCPP_M64")?"x64":"x86";
+      context.APP_ARCH = is64? "x64" : "x86";
    }
 }
 
