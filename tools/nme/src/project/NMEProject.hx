@@ -347,8 +347,6 @@ class NMEProject
             haxedefs.set("NME_ANGLE", "");
             haxedefs.set("static_link", "");
             haxedefs.set("ABI", "-ZW");
-            localDefines.set("ENV_DCS", "::"); //for Main.cpp
-            localDefines.set("APP_ARCH",haxedefs.exists("HXCPP_M64")?"x64":"x86"); //for AppxManifest
             target = Platform.WINRT;
             staticLink = true;
             winrtConfig.isAppx = haxedefs.exists("appx");

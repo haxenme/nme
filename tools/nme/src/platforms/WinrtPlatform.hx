@@ -207,6 +207,8 @@ class WinrtPlatform extends WindowsPlatform
    override function generateContext(context:Dynamic) : Void
    {
       context.appCapability = project.winrtConfig.appCapability;
+      context.ENV_DCS = "::";
+      context.APP_ARCH = haxedefs.exists("HXCPP_M64")?"x64":"x86";
    }
 }
 
