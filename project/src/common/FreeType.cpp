@@ -6,9 +6,10 @@
 
 #include <Utils.h>
 
-#ifdef HX_WINRT
+#if defined(HX_WINRT) && defined(__cplusplus_winrt)
 #define generic userGeneric
 #endif
+
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -37,10 +38,12 @@
 #endif
 #endif
 
-#if defined(HX_WINDOWS) && !defined(HX_WINRT)
+#if defined(HX_WINDOWS)
 #define NOMINMAX
+#if !defined(HXWINRT)
 #include <windows.h>
 #include <tchar.h>
+#endif
 #endif
 
 #include "ByteArray.h"
@@ -378,14 +381,7 @@ static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags, FontBuf
 
 
 
-#if defined(HX_WINRT) && defined(__cplusplus_winrt)
-
-bool GetFontFile(const std::string& inName,std::string &outFile)
-{
-   return false;
-}
-
-#elif defined(HX_WINDOWS) && !defined(HX_WINRT)
+#if defined(HX_WINDOWS) && !defined(HX_WINRT)
 
 #define strcasecmp stricmp
 
@@ -557,7 +553,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT)
          //DLOG("***Freetype.cpp LOOKING FOR /FreeSerif.ttf");
-         outFile = "/FreeSerif.ttf";
+         outFile = "./FreeSerif.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
       #endif
@@ -577,7 +573,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT)
          //DLOG("***Freetype.cpp LOOKING FOR /FreeSans.ttf");
-         outFile = "/FreeSans.ttf";
+         //outFile = "/FreeSans.ttf";
+         outFile = "./FreeSerif.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
       #endif
@@ -593,9 +590,10 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/fonts/font_repository/monotype/cour.ttf";
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
-      #elif defined(HX_WINRT) || defined(_XBOX_ONE)
+      #elif defined(HX_WINRT)
          //DLOG("***Freetype.cpp LOOKING FOR /FreeMono.ttf");
-         outFile = "/FreeMono.ttf";
+         //outFile = "/FreeMono.ttf";
+         outFile = "./FreeSerif.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
       #endif
@@ -681,7 +679,7 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, FontBuffer
       if (font==0 && GetFontFile(fname,file_name))
       {
       #ifdef HX_WINRT
-         //DLOG("Found font: %s\n",file_name.c_str());
+         //DLOG("Find font: %s\n",file_name.c_str());
       #endif
          font = OpenFont(file_name.c_str(),inFlags,NULL,pBuffer);
       }

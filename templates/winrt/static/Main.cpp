@@ -3,7 +3,7 @@
 
 #ifndef SDL_WINRT_METADATA_FILE_AVAILABLE
 #ifndef __cplusplus_winrt
-#error SDL_winrt_main_NonXAML.cpp must be compiled with /ZW, otherwise build errors due to missing .winmd files can occur.
+#error Main.cpp must be compiled with /ZW, otherwise build errors due to missing .winmd files can occur.
 #endif
 #endif
 
@@ -33,7 +33,7 @@ extern "C" int nme_register_prims();
 ::foreach ndlls::::if (registerStatics)::
 extern "C" int ::nameSafe::_register_prims ();::end::::end::
 
-int mymain(int argc, char *argv[])
+int _main(int argc, char *argv[])
 {
 
   hxcpp_set_top_of_stack ();
@@ -56,9 +56,10 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   if (FAILED(Windows::ENV_DCS::Foundation::ENV_DCS::Initialize(RO_INIT_MULTITHREADED))) 
   {
+      DLOG("ERROR: Main.cpp can't initialize ");
       return 1;
   } 
 
-  SDL_WinRTRunApp(mymain, NULL);
+  SDL_WinRTRunApp(_main, NULL);
   return 0;
 }
