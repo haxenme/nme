@@ -40,7 +40,7 @@
 
 #if defined(HX_WINDOWS)
 #define NOMINMAX
-#if !defined(HXWINRT)
+#if !defined(HX_WINRT)
 #include <windows.h>
 #include <tchar.h>
 #endif
@@ -549,7 +549,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT)
-         outFile = "./fonts/FreeSerif.ttf";
+         outFile = "./fonts/selawik.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
       #endif
@@ -568,7 +568,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT)
-         outFile = "./fonts/FreeSans.ttf";
+         outFile = "./fonts/selawik.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
       #endif
@@ -585,7 +585,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT)
-         outFile = "./fonts/FreeMono.ttf";
+         outFile = "./fonts/selawik.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
       #endif
