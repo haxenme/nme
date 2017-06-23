@@ -534,9 +534,6 @@ const char *fontFolders[] = { "/Library/Fonts/", 0 };
 
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
-   #if defined(HX_WINRT)
-      //DLOG("Looking for font %s...", inName.c_str());
-   #endif
    const char *alternate = 0;
    if (!strcasecmp(inName.c_str(),"_serif") ||
        !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
@@ -552,8 +549,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT)
-         //DLOG("***Freetype.cpp LOOKING FOR /FreeSerif.ttf");
-         outFile = "./FreeSerif.ttf";
+         outFile = "./fonts/FreeSerif.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
       #endif
@@ -572,9 +568,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT)
-         //DLOG("***Freetype.cpp LOOKING FOR /FreeSans.ttf");
-         //outFile = "/FreeSans.ttf";
-         outFile = "./FreeSerif.ttf";
+         outFile = "./fonts/FreeSans.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
       #endif
@@ -591,9 +585,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT)
-         //DLOG("***Freetype.cpp LOOKING FOR /FreeMono.ttf");
-         //outFile = "/FreeMono.ttf";
-         outFile = "./FreeSerif.ttf";
+         outFile = "./fonts/FreeMono.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
       #endif
@@ -602,11 +594,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
    else
    {
       #ifdef ANDROID
-       //__android_log_print(ANDROID_LOG_INFO, "GetFontFile", "Could not load font %s.", inName.c_str() );
-       #endif
-
-      #ifdef HX_WINRT
-      //ERROR_LOG("Could not load font %s.", inName.c_str() );
+      //__android_log_print(ANDROID_LOG_INFO, "GetFontFile", "Could not load font %s.", inName.c_str() );
       #endif
       
       //printf("Unfound font: %s\n",inName.c_str());
@@ -678,9 +666,6 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, FontBuffer
 
       if (font==0 && GetFontFile(fname,file_name))
       {
-      #ifdef HX_WINRT
-         //DLOG("Find font: %s\n",file_name.c_str());
-      #endif
          font = OpenFont(file_name.c_str(),inFlags,NULL,pBuffer);
       }
    }
