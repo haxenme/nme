@@ -7,6 +7,8 @@
 #include <Utils.h>
 
 #if defined(HX_WINRT) && defined(__cplusplus_winrt)
+#define NOMINMAX
+#include <dwrite.h>
 #define generic userGeneric
 #endif
 
@@ -38,12 +40,10 @@
 #endif
 #endif
 
-#if defined(HX_WINDOWS)
+#if defined(HX_WINDOWS) && !defined(HX_WINRT)
 #define NOMINMAX
-#if !defined(HX_WINRT)
 #include <windows.h>
 #include <tchar.h>
-#endif
 #endif
 
 #include "ByteArray.h"
@@ -270,6 +270,11 @@ extern void nmeRegisterFont(const std::string &inName, FontBuffer inData);
 
 extern FontBuffer nmeGetRegisteredFont(const std::string &inName);
 
+
+#if defined(HX_WINRT) && defined(__cplusplus_winrt)
+ByteArray getWinrtFont(const std::string &inFace);
+#endif
+
 int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuffer inBuffer, void** outBuffer)
 {
    *outFace = 0;
@@ -315,6 +320,12 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuff
       if (inBuffer == 0)
       {
          bytes = ByteArray::FromFile(inFace.c_str());
+         #if defined(HX_WINRT) && defined(__cplusplus_winrt)
+         if (!bytes.Ok())
+         {
+            bytes = getWinrtFont(inFace);
+         }
+         #endif
       }
       else
       {
@@ -548,8 +559,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/fonts/font_repository/monotype/times.ttf";
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
-      #elif defined(HX_WINRT)
-         outFile = "./fonts/selawik.ttf";
+      #elif defined(HX_WINRT) && defined(__cplusplus_winrt)
+         outFile = "Georgia";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
       #endif
@@ -567,8 +578,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/fonts/font_repository/monotype/arial.ttf";
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
-      #elif defined(HX_WINRT)
-         outFile = "./fonts/selawik.ttf";
+      #elif defined(HX_WINRT) && defined(__cplusplus_winrt)
+         outFile = "Arial";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
       #endif
@@ -584,8 +595,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/fonts/font_repository/monotype/cour.ttf";
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
-      #elif defined(HX_WINRT)
-         outFile = "./fonts/selawik.ttf";
+      #elif defined(HX_WINRT) && defined(__cplusplus_winrt)
+         outFile = "Courier New";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
       #endif
@@ -1308,4 +1319,93 @@ value nme_font_iterate_device_fonts(value inFunc)
 
 DEFINE_PRIM(nme_font_iterate_device_fonts,1)
 
+
+#if defined(HX_WINRT) && defined(__cplusplus_winrt)
+namespace nme
+{
+   ByteArray getWinrtFont(const std::string &inFace)
+   {
+      IDWriteFactory *writeFactory;
+      if(SUCCEEDED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&writeFactory))))
+      {
+         IDWriteFontCollection *fontCollection;
+         if(SUCCEEDED(writeFactory->GetSystemFontCollection(&fontCollection, TRUE)))
+         {
+            UINT32 index;
+            BOOL exists;
+            std::wstring fontNameW;
+            fontNameW.assign(inFace.begin(), inFace.end());
+            if(SUCCEEDED(fontCollection->FindFamilyName(fontNameW.c_str(), &index, &exists)))
+            {
+               if(exists)
+               {
+                  IDWriteFontFamily *fontFamily;
+                  if(SUCCEEDED(fontCollection->GetFontFamily(index, &fontFamily)))
+                  {
+                     IDWriteFont *matchingFont;
+                     if(SUCCEEDED(fontFamily->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_REGULAR, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &matchingFont)))
+                     {
+                        IDWriteFontFace *fontFace;
+                        if(SUCCEEDED(matchingFont->CreateFontFace(&fontFace)))
+                        {
+                           IDWriteFontFile *fontFile;
+                           UINT32 numberOfFiles = 1;
+                           if(SUCCEEDED(fontFace->GetFiles(&numberOfFiles, &fontFile)))
+                           {
+                              const void *fontFileReferenceKey;
+                              UINT32 fontFileReferenceKeySize;
+                              if(SUCCEEDED(fontFile->GetReferenceKey(&fontFileReferenceKey, &fontFileReferenceKeySize)))
+                              {
+                                 IDWriteFontFileLoader *fontFileLoader;
+                                 if(SUCCEEDED(fontFile->GetLoader(&fontFileLoader)))
+                                 {
+                                    IDWriteFontFileStream *fontFileStream;
+                                    if(SUCCEEDED(fontFileLoader->CreateStreamFromKey(fontFileReferenceKey, fontFileReferenceKeySize, &fontFileStream)))
+                                    {
+                                       UINT64 fileSize;
+                                       if(SUCCEEDED(fontFileStream->GetFileSize(&fileSize)))
+                                       {
+                                          const void *fragmentStart;
+                                          void *fragmentContext;
+                                          if(SUCCEEDED(fontFileStream->ReadFileFragment(&fragmentStart, 0, fileSize, &fragmentContext)))
+                                          {
+                                             ByteArray bytes((size_t)fileSize);
+                                             memcpy(bytes.Bytes(), fragmentStart, (size_t)fileSize);
+
+                                             fontFileStream->ReleaseFileFragment(fragmentContext);
+                                             fontFileStream->Release();
+                                             fontFileLoader->Release();
+                                             fontFile->Release();
+                                             fontFace->Release();
+                                             matchingFont->Release();
+                                             fontFamily->Release();
+                                             fontCollection->Release();
+                                             writeFactory->Release();
+
+                                             return bytes;
+                                          }
+                                       }
+                                    }
+                                    fontFileStream->Release();
+                                 }
+                                 fontFileLoader->Release();
+                              }
+                              fontFile->Release();
+                           }
+                           fontFace->Release();
+                        }
+                        matchingFont->Release();
+                     }
+                     fontFamily->Release();
+                  }
+               }
+            }
+            fontCollection->Release();
+         }
+         writeFactory->Release();
+      }
+      return ByteArray();
+   }
+}
+#endif
 
