@@ -272,7 +272,7 @@ extern FontBuffer nmeGetRegisteredFont(const std::string &inName);
 
 
 #if defined(HX_WINRT) && defined(__cplusplus_winrt)
-ByteArray getWinrtFont(const std::string &inFace);
+ByteArray getWinrtDeviceFont(const std::string &inFace);
 #endif
 
 int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuffer inBuffer, void** outBuffer)
@@ -323,7 +323,7 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuff
          #if defined(HX_WINRT) && defined(__cplusplus_winrt)
          if (!bytes.Ok())
          {
-            bytes = getWinrtFont(inFace);
+            bytes = getWinrtDeviceFont(inFace);
          }
          #endif
       }
@@ -1202,9 +1202,11 @@ void SendFont(std::string name, value inFunc)
       ITALIC,
       REGULAR,
    };
+   #ifndef HX_WINRT
    size_t pos = name.find_last_of('.');
    if (pos!=std::string::npos)
       name = name.substr(0,pos);
+   #endif
 
    FontStyle style = REGULAR; 
    if (ChompEnding(name," Bold Italic"))
@@ -1217,12 +1219,12 @@ void SendFont(std::string name, value inFunc)
    val_call2(inFunc,alloc_string_len(name.c_str(),name.size()), alloc_int(style) );
 }
 
-#ifndef HX_WINRT
-
-
+#if defined(HX_WINRT)
+void winrtItererateDeviceFonts(value inFunc);
+#else
 void ItererateFontDir(const std::string &inDir, value inFunc, int inMaxDepth)
 {
-   #if defined(HX_WINDOWS) && !defined(HX_WINRT)
+   #if defined(HX_WINDOWS)
    std::string search = inDir + "*.ttf";
 
    WIN32_FIND_DATA d;
@@ -1276,7 +1278,9 @@ void ItererateFontDir(const std::string &inDir, value inFunc, int inMaxDepth)
 
 value nme_font_iterate_device_fonts(value inFunc)
 {
-   #ifndef HX_WINRT
+   #ifdef HX_WINRT
+      winrtItererateDeviceFonts(inFunc);
+   #else
       #ifdef HX_WINDOWS
       char win_path[2 * MAX_PATH];
       GetWindowsDirectory(win_path, 2*MAX_PATH);
@@ -1323,7 +1327,7 @@ DEFINE_PRIM(nme_font_iterate_device_fonts,1)
 #if defined(HX_WINRT) && defined(__cplusplus_winrt)
 namespace nme
 {
-   ByteArray getWinrtFont(const std::string &inFace)
+   ByteArray getWinrtDeviceFont(const std::string &inFace)
    {
       IDWriteFactory *writeFactory;
       if(SUCCEEDED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&writeFactory))))
@@ -1407,5 +1411,68 @@ namespace nme
       return ByteArray();
    }
 }
+
+//#  define DLOG(fmt, ...) {char buf[1024];sprintf(buf,"****LOG: %s(%d): %s \n    [" fmt "]\n",__FILE__,__LINE__,__FUNCTION__, __VA_ARGS__);OutputDebugString(buf);}
+
+void winrtItererateDeviceFonts(value inFunc)
+{
+  IDWriteFactory *writeFactory;
+  if (SUCCEEDED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&writeFactory))))
+  {
+    IDWriteFontCollection *fontCollection;
+    if (SUCCEEDED(writeFactory->GetSystemFontCollection(&fontCollection, TRUE)))
+    {
+      UINT32 familyCount = fontCollection->GetFontFamilyCount();
+      if (familyCount>0)
+      {
+        uint32 index = 0;
+        BOOL exists = false;
+        wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
+        int defaultLocaleSuccess = GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH);
+        for (UINT32 i = 0; i < familyCount; ++i)
+        {
+          IDWriteFontFamily *fontFamily;
+          if (SUCCEEDED(fontCollection->GetFontFamily(i, &fontFamily)))
+          {
+            IDWriteLocalizedStrings *familyNames;
+            if (SUCCEEDED(fontFamily->GetFamilyNames(&familyNames)))
+            {
+              if (defaultLocaleSuccess)
+              {
+                if (SUCCEEDED(familyNames->FindLocaleName(localeName, &index, &exists))) 
+                {
+                  if (!exists)
+                  {
+                    familyNames->FindLocaleName(L"en-us", &index, &exists);
+                  }
+                }
+              }
+              if (!exists)
+              {
+                index = 0;
+              }
+              UINT32 length = 0;
+              if (SUCCEEDED(familyNames->GetStringLength(index, &length)))
+              {
+                wchar_t* name = new (std::nothrow) wchar_t[length+1];
+                if (name != nullptr && SUCCEEDED(familyNames->GetString(index, name, length+1)))
+                {
+                  std::wstring ws(name);
+                  std::string strName(ws.begin(), ws.end());
+                  //DLOG("i: %d, index %d, font: %s", i, index, strName.c_str());
+                  SendFont(strName,inFunc);
+                }
+              }
+            }
+            fontFamily->Release();
+          }
+        }
+      }
+      fontCollection->Release();
+    }
+    writeFactory->Release();
+  }
+}
+
 #endif
 
