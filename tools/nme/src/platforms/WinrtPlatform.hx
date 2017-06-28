@@ -61,7 +61,7 @@ class WinrtPlatform extends WindowsPlatform
          var appxName = project.app.packageName;
          var appxId = "App";
          var appxAUMID:String = null; 
-         var appxInfoFile = applicationDirectory + "/appxinfo.txt";
+         var appxInfoFile = haxeDir + "/cpp/appxinfo.txt";
          var kitsRoot10 = "C:\\Program Files (x86)\\Windows Kits\\10\\"; //%WindowsSdkDir%
 
          //get PackageFamilyappxName and set appxAUMID
@@ -115,7 +115,8 @@ class WinrtPlatform extends WindowsPlatform
    {
       super.updateOutputDir();
       var destination = getOutputDir();
-      copyTemplateDir( "winrt/appx", destination );
+      copyTemplateDir( "winrt/appx", haxeDir + "/cpp" );
+      FileHelper.copyFile(haxeDir + "/cpp/AppxManifest.xml", destination+"/AppxManifest.xml");
 
       PathHelper.mkdir(destination + "/assetspkg/");
 
@@ -182,16 +183,14 @@ class WinrtPlatform extends WindowsPlatform
           for (filename in outputFiles)
           {
               if (!(StringTools.endsWith(filename,".exe") || 
-                StringTools.endsWith(filename,".pri") ||
-                StringTools.startsWith(filename,"temp/")
-                ) 
+                StringTools.endsWith(filename,".pri") ) 
                 && filename!="AppxManifest.xml")
               {
                  buf.add(filename);
                  buf.addChar(10);
               }
           }
-          var resultFileName = getOutputDir() + "/temp/layout.resfiles";
+          var resultFileName = haxeDir +"/cpp/temp/layout.resfiles";
           if(sys.FileSystem.exists(resultFileName))
           {
              sys.FileSystem.deleteFile(sys.FileSystem.absolutePath(resultFileName));
@@ -205,8 +204,19 @@ class WinrtPlatform extends WindowsPlatform
           Log.error("Error creating layout.resfiles " + e);
         }
 
-        var makepriParams = ["new", "/pr", applicationDirectory + "/temp", "/cf", applicationDirectory + "/temp/" + "priconfig.xml", "/mn", applicationDirectory + "/"+'AppxManifest.xml', "/of", applicationDirectory + "/"+"resources.pri", "/o"];
+        var makepriParams = ["new", "/pr", haxeDir + "/cpp/temp", "/cf", haxeDir + "/cpp/temp/priconfig.xml", "/mn", applicationDirectory + "/"+'AppxManifest.xml', "/of", applicationDirectory + "/"+"resources.pri", "/o"];
         var process = new sys.io.Process(kitsRoot10+'bin\\x86\\MakePri.exe', makepriParams);
+
+        //needs to wait make pri
+        var retry:Int = 10;
+        while (retry>0 && !sys.FileSystem.exists(applicationDirectory + "/"+"resources.pri"))
+        {
+          Sys.sleep(1);
+          Log.info("waiting pri..");
+          retry--;
+        }
+        if (retry<=0)
+            Log.error("Error on MakePri");
 
         Log.info("make appx");
         var makeappParams = ["pack", "/d", applicationDirectory, "/p", applicationDirectory+"/../"+project.app.file+".Appx" ];
