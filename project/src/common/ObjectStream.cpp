@@ -63,7 +63,7 @@ public:
          return objects[pos];
       if (pos!=objects.size())
       {
-         printf("Object stream mismatch %d!=%d\n", pos, objects.size());
+         printf("Object stream mismatch %d!=%zu\n", pos, objects.size());
          return 0;
       }
 
