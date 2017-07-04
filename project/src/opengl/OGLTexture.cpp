@@ -225,7 +225,7 @@ public:
       mCanRepeat = IsPower2(mTextureWidth) && IsPower2(mTextureHeight);
 
       #ifdef NME_ANGLE
-      if (mTextureWidth%2!=0)
+      if (mTextureWidth & 0x1)
          mTextureWidth++;
       #endif
 
