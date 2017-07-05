@@ -123,9 +123,10 @@ class CppiaPlatform extends Platform
       Log.verbose("Wrote " + filename + " data=" + zipfileBytes.length);
    }
 
-
-
-
+    override public function deploy(inAndRun:Bool):Bool {
+        addManifest();
+        return super.deploy(inAndRun);
+    }
 }
 
 
