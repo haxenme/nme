@@ -3,7 +3,7 @@ package;
 class CommandLineToolsLauncher 
 {
     public static function main():Void {
-        Sys.command('./bin/tools/${calcBinName()}', Sys.args());
+        Sys.exit(Sys.command('./bin/tools/${calcBinName()}', Sys.args()));
     }
 
     static function calcBinName():String {
