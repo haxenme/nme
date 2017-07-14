@@ -54,7 +54,7 @@ class WinrtPlatform extends WindowsPlatform
 
       if(project.winrtConfig.isAppx)
       {
-          Log.info("Double click on "+project.app.file + ".Appx to run");
+          Log.info("\n***Double click on "+project.app.file + ".Appx to install Appx");
       }
       else
       {
@@ -173,6 +173,8 @@ class WinrtPlatform extends WindowsPlatform
       if(project.winrtConfig.isAppx)
       {
         var kitsRoot10 = "C:\\Program Files (x86)\\Windows Kits\\10\\"; //%WindowsSdkDir%
+        var resultFilePath = haxeDir +"/cpp/temp";
+        var resultFileName = resultFilePath +"/layout.resfiles";
         Log.info("make pri");
 
         //prepare file to make pri
@@ -190,7 +192,8 @@ class WinrtPlatform extends WindowsPlatform
                  buf.addChar(10);
               }
           }
-          var resultFileName = haxeDir +"/cpp/temp/layout.resfiles";
+          //PathHelper.mkdir(resultFilePath);
+
           if(sys.FileSystem.exists(resultFileName))
           {
              sys.FileSystem.deleteFile(sys.FileSystem.absolutePath(resultFileName));
@@ -204,7 +207,7 @@ class WinrtPlatform extends WindowsPlatform
           Log.error("Error creating layout.resfiles " + e);
         }
 
-        var makepriParams = ["new", "/pr", haxeDir + "/cpp/temp", "/cf", haxeDir + "/cpp/temp/priconfig.xml", "/mn", applicationDirectory + "/"+'AppxManifest.xml', "/of", applicationDirectory + "/"+"resources.pri", "/o"];
+        var makepriParams = ["new", "/pr", resultFilePath, "/cf", resultFilePath + "/priconfig.xml", "/mn", applicationDirectory + "/"+'AppxManifest.xml', "/of", applicationDirectory + "/"+"resources.pri", "/o"];
         var process = new sys.io.Process(kitsRoot10+'bin\\x86\\MakePri.exe', makepriParams);
 
         //needs to wait make pri
@@ -218,14 +221,56 @@ class WinrtPlatform extends WindowsPlatform
         if (retry<=0)
             Log.error("Error on MakePri");
 
-        Log.info("make appx");
-        var makeappParams = ["pack", "/d", applicationDirectory, "/p", applicationDirectory+"/../"+project.app.file+".Appx" ];
+        var appxDir = applicationDirectory+"/../";
+
+        Log.info("make "+project.app.file+".Appx");
+        var makeappParams = ["pack", "/d", applicationDirectory, "/p", appxDir+project.app.file+".Appx" ];
         var process2 = new sys.io.Process(kitsRoot10+'bin\\x86\\MakeAppx.exe', makeappParams);
         Log.info(kitsRoot10+'bin\\x86\\MakeAppx.exe');
         Log.info(makeappParams.toString());
         process.close();
         process2.close();
         // "C:\Program Files (x86)\Windows Kits\10\bin\x86\MakeAppx.exe" pack /d HerokuShaders /p HerokuShaders
+
+        Log.info("get certificate powershell scripts");
+        copyTemplateDir( "winrt/scripts", applicationDirectory+"/.." );
+
+		var pfxFileName =  project.app.file+".pfx";
+
+		if(sys.FileSystem.exists(appxDir+pfxFileName))
+		{
+			sys.FileSystem.deleteFile(appxDir+pfxFileName);
+		}
+        //New certificate, calls Batch file that runs powershell script on elevated mode
+        var process3 = new sys.io.Process(applicationDirectory+"/../newcertificate.bat", []);
+        process3.close();
+
+        //needs to wait pfx
+        retry = 20;
+        while (retry>0 && !sys.FileSystem.exists(appxDir+pfxFileName))
+        {
+          Sys.sleep(1);
+          Log.info("waiting "+appxDir+pfxFileName);
+          retry--;
+        }
+        if (retry<=0)
+            Log.error("Error on new pfx");
+
+
+        Log.info("signing "+project.app.file+".Appx with " + pfxFileName);
+
+        var certificatePwd = project.environment.exists("APP_CERTIFICATE_PWD")?
+                             project.environment.get("APP_CERTIFICATE_PWD"):"nmeexample";
+        var signParams = ["sign", "/fd", "SHA256", "/a", "/f", appxDir+pfxFileName, "/p", certificatePwd, appxDir+project.app.file+".Appx"];
+        Log.info(kitsRoot10+"bin\\x64\\SignTool.exe "+signParams);
+        var process4 = new sys.io.Process(kitsRoot10+"bin\\x64\\SignTool.exe", signParams);
+         if (process4.exitCode() != 0) {
+            var message = process3.stderr.readAll().toString();
+            Log.error("Error signing appx. " + message);
+         }
+        Log.info("\n\n***Double click "+pfxFileName+" to setup certificate (Local machine, Place all certificates in the following store->Trusted People)\n");
+        process4.close();
+
         //powershell 'Add-AppxPackage HerokuShaders.appx'
       }
     }
