@@ -235,27 +235,32 @@ class WinrtPlatform extends WindowsPlatform
         Log.info("get certificate powershell scripts");
         copyTemplateDir( "winrt/scripts", applicationDirectory+"/.." );
 
-		var pfxFileName =  project.app.file+".pfx";
+        var pfxFileName =  project.app.file+".pfx";
 
-		if(sys.FileSystem.exists(appxDir+pfxFileName))
-		{
-			sys.FileSystem.deleteFile(appxDir+pfxFileName);
-		}
-        //New certificate, calls Batch file that runs powershell script on elevated mode
-        var process3 = new sys.io.Process(applicationDirectory+"/../newcertificate.bat", []);
+        if(sys.FileSystem.exists(appxDir+pfxFileName))
+        {
+            sys.FileSystem.deleteFile(appxDir+pfxFileName);
+        }
+
+        //New certificate, calls powershell script on elevated mode
+        var cmd = "Start-Process powershell \"-ExecutionPolicy Bypass -Command `\"cd `\""+sys.FileSystem.absolutePath(applicationDirectory)+"/.."+"`\"; & `\".\\newcertificate.ps1`\"`\"\" -Verb RunAs";
+        var process3 = new sys.io.Process("powershell.exe", ["-Command", cmd]);
+        
+        if (process3.exitCode() != 0) {
+            var message = process3.stderr.readAll().toString();
+            Log.error("Error newcertificate. " + message);
+        }
         process3.close();
 
-        //needs to wait pfx
-        retry = 20;
-        while (retry>0 && !sys.FileSystem.exists(appxDir+pfxFileName))
-        {
-          Sys.sleep(1);
-          Log.info("waiting "+appxDir+pfxFileName);
-          retry--;
+        //check pfx
+        retry = 10;
+        while (retry>0 && !sys.FileSystem.exists(appxDir+pfxFileName)){
+            Log.info("waiting "+appxDir+pfxFileName);
+            Sys.sleep(1);
+            retry--;
         }
         if (retry<=0)
-            Log.error("Error on new pfx");
-
+            Log.error("Error on MakePri");
 
         Log.info("signing "+project.app.file+".Appx with " + pfxFileName);
 
@@ -264,10 +269,10 @@ class WinrtPlatform extends WindowsPlatform
         var signParams = ["sign", "/fd", "SHA256", "/a", "/f", appxDir+pfxFileName, "/p", certificatePwd, appxDir+project.app.file+".Appx"];
         Log.info(kitsRoot10+"bin\\x64\\SignTool.exe "+signParams);
         var process4 = new sys.io.Process(kitsRoot10+"bin\\x64\\SignTool.exe", signParams);
-         if (process4.exitCode() != 0) {
-            var message = process3.stderr.readAll().toString();
+        if (process4.exitCode() != 0) {
+            var message = process4.stderr.readAll().toString();
             Log.error("Error signing appx. " + message);
-         }
+        }
         Log.info("\n\n***Double click "+pfxFileName+" to setup certificate (Local machine, Place all certificates in the following store->Trusted People)\n");
         process4.close();
 
