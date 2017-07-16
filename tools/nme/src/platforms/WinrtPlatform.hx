@@ -169,115 +169,137 @@ class WinrtPlatform extends WindowsPlatform
 
    override public function buildPackage():Void 
    {
-      super.buildPackage();
-      if(project.winrtConfig.isAppx)
-      {
-        var kitsRoot10 = "C:\\Program Files (x86)\\Windows Kits\\10\\"; //%WindowsSdkDir%
-        var resultFilePath = haxeDir +"/cpp/temp";
-        var resultFileName = resultFilePath +"/layout.resfiles";
-        Log.info("make pri");
-
-        //prepare file to make pri
-        try
+        super.buildPackage();
+        if(project.winrtConfig.isAppx)
         {
-          var from = getOutputDir();
-          var buf = new StringBuf();
-          for (filename in outputFiles)
-          {
-              if (!(StringTools.endsWith(filename,".exe") || 
-                StringTools.endsWith(filename,".pri") ) 
-                && filename!="AppxManifest.xml")
-              {
-                 buf.add(filename);
-                 buf.addChar(10);
-              }
-          }
-          //PathHelper.mkdir(resultFilePath);
+            var kitsRoot10 = "C:\\Program Files (x86)\\Windows Kits\\10\\"; //%WindowsSdkDir%
+            var resultFilePath = haxeDir +"/cpp/temp";
+            var resultFileName = resultFilePath +"/layout.resfiles";
+            Log.info("make pri");
 
-          if(sys.FileSystem.exists(resultFileName))
-          {
-             sys.FileSystem.deleteFile(sys.FileSystem.absolutePath(resultFileName));
-          }
-          sys.io.File.saveContent(resultFileName, buf.toString());
-          Log.verbose("Created layout.resfiles : " + resultFileName);
+            //prepare file to make pri
+            try
+            {
+                var from = getOutputDir();
+                var buf = new StringBuf();
+                for (filename in outputFiles)
+                {
+                    if (!(StringTools.endsWith(filename,".exe") || 
+                        StringTools.endsWith(filename,".pri") ) 
+                        && filename!="AppxManifest.xml")
+                    {
+                         buf.add(filename);
+                         buf.addChar(10);
+                    }
+                }
+  
+                if(sys.FileSystem.exists(resultFileName))
+                    sys.FileSystem.deleteFile(sys.FileSystem.absolutePath(resultFileName));
 
+                sys.io.File.saveContent(resultFileName, buf.toString());
+                Log.verbose("Created layout.resfiles : " + resultFileName);
+            }
+            catch(e:Dynamic)
+            {
+                Log.error("Error creating layout.resfiles " + e);
+            }
+
+            var makepriParams = ["new", "/pr", resultFilePath, "/cf", resultFilePath + "/priconfig.xml", "/mn", applicationDirectory + "/"+'AppxManifest.xml', "/of", applicationDirectory + "/"+"resources.pri", "/o"];
+            var process = new sys.io.Process(kitsRoot10+'bin\\x86\\MakePri.exe', makepriParams);
+
+            //needs to wait make pri
+            var retry:Int = 10;
+            while (retry>0 && !sys.FileSystem.exists(applicationDirectory + "/"+"resources.pri"))
+            {
+                Sys.sleep(1);
+                Log.info("waiting pri..");
+                retry--;
+            }
+            if (retry<=0)
+                Log.error("Error on MakePri");
+
+            var appxDir = applicationDirectory+"/../";
+
+            Log.info("make "+project.app.file+".Appx");
+            var makeappParams = ["pack", "/d", applicationDirectory, "/p", appxDir+project.app.file+".Appx" ];
+            var process2 = new sys.io.Process(kitsRoot10+'bin\\x86\\MakeAppx.exe', makeappParams);
+            Log.info(kitsRoot10+'bin\\x86\\MakeAppx.exe');
+            Log.info(makeappParams.toString());
+            process.close();
+            process2.close();
+
+            var pfxPath:String = null;
+            var certificatePwd:String = null;
+
+            if (project.certificate != null && (project.certificate.path != null || project.certificate.path.length==0))
+            {
+                if (sys.FileSystem.exists(project.certificate.path))
+                {
+                    //apply certificate
+                    Log.info("cert path: " +project.certificate.path+", pwd:"+project.certificate.password);
+
+                    pfxPath = project.certificate.path;
+                    certificatePwd = project.certificate.password;                    
+                }
+                else
+                {
+                    pfxPath = project.certificate.path;
+                    certificatePwd = project.certificate.password;
+
+                    //create certificate
+                    Log.warn("Warn: certificate " +project.certificate.path+" not found, creting new one");
+                    Log.info("get certificate powershell scripts");
+                    copyTemplateDir( "winrt/scripts", applicationDirectory+"/.." );
+
+                    var pfxFileName =  project.app.file+".pfx";
+
+
+                    //New certificate, calls powershell script on elevated mode
+                    var cmd = "Start-Process powershell \"-ExecutionPolicy Bypass -Command `\"cd `\""+sys.FileSystem.absolutePath(applicationDirectory)+"/.."+"`\"; & `\".\\newcertificate.ps1`\"`\"\" -Verb RunAs";
+                    var process3 = new sys.io.Process("powershell.exe", ["-Command", cmd]);
+                    
+                    if (process3.exitCode() != 0) {
+                        var message = process3.stderr.readAll().toString();
+                        Log.error("Error newcertificate. " + message);
+                    }
+                    process3.close();
+
+                    //check pfx
+                    retry = 10;
+                    while (retry>0 && !sys.FileSystem.exists(appxDir+pfxFileName)){
+                        Log.info("waiting "+appxDir+pfxFileName);
+                        Sys.sleep(1);
+                        retry--;
+                    }
+                    if (retry<=0)
+                        Log.error("Error creating certificate");
+
+                    if(appxDir+pfxFileName != pfxPath)
+                    {
+                        FileHelper.copyFile(appxDir+pfxFileName, pfxPath);
+                        if (!sys.FileSystem.exists(pfxPath))
+                        {
+                            Log.error("could not copy "+appxDir+pfxFileName+" to "+pfxPath);
+                        }
+                    }
+                }
+
+            }
+            if (pfxPath!=null && certificatePwd!=null && pfxPath.length>0 && certificatePwd.length>0)
+            {
+                Log.info("signing "+project.app.file+".Appx with " + pfxPath);
+
+                var signParams = ["sign", "/fd", "SHA256", "/a", "/f", pfxPath, "/p", certificatePwd, appxDir+project.app.file+".Appx"];
+                Log.info(kitsRoot10+"bin\\x64\\SignTool.exe "+signParams);
+                var process4 = new sys.io.Process(kitsRoot10+"bin\\x64\\SignTool.exe", signParams);
+                if (process4.exitCode() != 0) {
+                    var message = process4.stderr.readAll().toString();
+                    Log.error("Error signing appx. " + message);
+                }
+                Log.info("\n\n***Double click "+pfxPath+" to setup certificate (Local machine, Place all certificates in the following store->Trusted People)\n");
+                    process4.close();
+            }
         }
-        catch(e:Dynamic)
-        {
-          Log.error("Error creating layout.resfiles " + e);
-        }
-
-        var makepriParams = ["new", "/pr", resultFilePath, "/cf", resultFilePath + "/priconfig.xml", "/mn", applicationDirectory + "/"+'AppxManifest.xml', "/of", applicationDirectory + "/"+"resources.pri", "/o"];
-        var process = new sys.io.Process(kitsRoot10+'bin\\x86\\MakePri.exe', makepriParams);
-
-        //needs to wait make pri
-        var retry:Int = 10;
-        while (retry>0 && !sys.FileSystem.exists(applicationDirectory + "/"+"resources.pri"))
-        {
-          Sys.sleep(1);
-          Log.info("waiting pri..");
-          retry--;
-        }
-        if (retry<=0)
-            Log.error("Error on MakePri");
-
-        var appxDir = applicationDirectory+"/../";
-
-        Log.info("make "+project.app.file+".Appx");
-        var makeappParams = ["pack", "/d", applicationDirectory, "/p", appxDir+project.app.file+".Appx" ];
-        var process2 = new sys.io.Process(kitsRoot10+'bin\\x86\\MakeAppx.exe', makeappParams);
-        Log.info(kitsRoot10+'bin\\x86\\MakeAppx.exe');
-        Log.info(makeappParams.toString());
-        process.close();
-        process2.close();
-        // "C:\Program Files (x86)\Windows Kits\10\bin\x86\MakeAppx.exe" pack /d HerokuShaders /p HerokuShaders
-
-        Log.info("get certificate powershell scripts");
-        copyTemplateDir( "winrt/scripts", applicationDirectory+"/.." );
-
-        var pfxFileName =  project.app.file+".pfx";
-
-        if(sys.FileSystem.exists(appxDir+pfxFileName))
-        {
-            sys.FileSystem.deleteFile(appxDir+pfxFileName);
-        }
-
-        //New certificate, calls powershell script on elevated mode
-        var cmd = "Start-Process powershell \"-ExecutionPolicy Bypass -Command `\"cd `\""+sys.FileSystem.absolutePath(applicationDirectory)+"/.."+"`\"; & `\".\\newcertificate.ps1`\"`\"\" -Verb RunAs";
-        var process3 = new sys.io.Process("powershell.exe", ["-Command", cmd]);
-        
-        if (process3.exitCode() != 0) {
-            var message = process3.stderr.readAll().toString();
-            Log.error("Error newcertificate. " + message);
-        }
-        process3.close();
-
-        //check pfx
-        retry = 10;
-        while (retry>0 && !sys.FileSystem.exists(appxDir+pfxFileName)){
-            Log.info("waiting "+appxDir+pfxFileName);
-            Sys.sleep(1);
-            retry--;
-        }
-        if (retry<=0)
-            Log.error("Error on MakePri");
-
-        Log.info("signing "+project.app.file+".Appx with " + pfxFileName);
-
-        var certificatePwd = project.environment.exists("APP_CERTIFICATE_PWD")?
-                             project.environment.get("APP_CERTIFICATE_PWD"):"nmeexample";
-        var signParams = ["sign", "/fd", "SHA256", "/a", "/f", appxDir+pfxFileName, "/p", certificatePwd, appxDir+project.app.file+".Appx"];
-        Log.info(kitsRoot10+"bin\\x64\\SignTool.exe "+signParams);
-        var process4 = new sys.io.Process(kitsRoot10+"bin\\x64\\SignTool.exe", signParams);
-        if (process4.exitCode() != 0) {
-            var message = process4.stderr.readAll().toString();
-            Log.error("Error signing appx. " + message);
-        }
-        Log.info("\n\n***Double click "+pfxFileName+" to setup certificate (Local machine, Place all certificates in the following store->Trusted People)\n");
-        process4.close();
-
-        //powershell 'Add-AppxPackage HerokuShaders.appx'
-      }
     }
 
    override function generateContext(context:Dynamic) : Void
@@ -285,6 +307,10 @@ class WinrtPlatform extends WindowsPlatform
       context.appCapability = project.winrtConfig.appCapability;
       context.ENV_DCS = "::";
       context.APP_ARCH = is64? "x64" : "x86";
+        if(!project.environment.exists("APP_CERTIFICATE_PWD") && project.certificate!=null && project.certificate.password!=null)
+        {
+            project.environment.set("APP_CERTIFICATE_PWD",project.certificate.password);
+        }
    }
 }
 
