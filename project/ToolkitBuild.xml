@@ -96,7 +96,7 @@
    <set name="SUP_DIR" value="${this_dir}/support" if="this_dir" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
 
-   <set name="modplug" value="1" unless="android||emscripten||winrt" />
+   <set name="modplug" value="1" unless="android||emscripten" />
    
    <!-- <set name="new_link" value="1" /> -->
  
