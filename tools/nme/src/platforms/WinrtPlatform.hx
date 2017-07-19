@@ -304,13 +304,24 @@ class WinrtPlatform extends WindowsPlatform
 
    override function generateContext(context:Dynamic) : Void
    {
-      context.appCapability = project.winrtConfig.appCapability;
-      context.ENV_DCS = "::";
-      context.APP_ARCH = is64? "x64" : "x86";
+        context.appCapability = project.winrtConfig.appCapability;
+        context.packageDependency = project.winrtConfig.packageDependency;
+        context.ENV_DCS = "::";
+        context.APP_ARCH = is64? "x64" : "x86";
         if(!project.environment.exists("APP_CERTIFICATE_PWD") && project.certificate!=null && project.certificate.password!=null)
         {
             project.environment.set("APP_CERTIFICATE_PWD",project.certificate.password);
         }
+        if(project.winrtConfig.isXbox)
+        {
+            context.APP_TARGET = "Windows.Xbox";
+        }
+        else
+        {
+            context.APP_TARGET = "Windows.Universal";
+        }
+        context.APP_MINVERSION = "10.0.14393.0";
+        context.APP_MAXVERSION = "10.0.15063.400";
    }
 }
 

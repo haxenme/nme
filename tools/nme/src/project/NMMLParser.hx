@@ -556,6 +556,9 @@ class NMMLParser
                case "appCapability":
                   project.winrtConfig.appCapability.push(
                       new WinrtCapability(value, childElement.has.namespace  ? substitute(childElement.att.namespace) : "") );
+               case "packageDependency":
+                  project.winrtConfig.packageDependency.push(
+                      new WinrtPackageDependency(value, substitute(childElement.att.minversion), substitute(childElement.att.publisher) ) );
                default:
                   Log.error("Unknown winrt attribute " + childElement.name);
             }

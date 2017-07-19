@@ -47,11 +47,15 @@ class AndroidConfig
 class WinRTConfig
 {
    public var isAppx:Bool;
+   public var isXbox:Bool;
    public var appCapability:Array<WinrtCapability>;
+   public var packageDependency:Array<WinrtPackageDependency>;
+
 
    public function new()
    {
       appCapability = [];
+      packageDependency = [];
    }
 }
 
@@ -341,15 +345,20 @@ class NMEProject
          case "js":
             target = Platform.JS;
 
-         case "winrt":
+         case "winrt","uwp":
             targetFlags.set("cpp", "1");
             haxedefs.set("winrt", "");
             haxedefs.set("NME_ANGLE", "");
             haxedefs.set("static_link", "");
             haxedefs.set("ABI", "-ZW");
             target = Platform.WINRT;
-            staticLink = true;
+            winrtConfig.isXbox = haxedefs.exists("xbox");
             winrtConfig.isAppx = haxedefs.exists("appx");
+            if(winrtConfig.isXbox)
+            {
+                haxedefs.set("HXCPP_M64", null);
+                winrtConfig.isAppx = true;
+            }
 
          case "windows", "mac", "linux":
             targetFlags.set("cpp", "1");
@@ -368,7 +377,7 @@ class NMEProject
       if (target==Platform.JSPRIME)
          targetFlags.set("target_html5","");
 
-      if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW || target==Platform.WATCH)
+      if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW || target==Platform.WATCH || target==Platform.WINRT)
       {
          optionalStaticLink = false;
          staticLink = true;

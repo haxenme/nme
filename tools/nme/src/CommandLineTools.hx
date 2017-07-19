@@ -54,7 +54,7 @@ class CommandLineTools
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
-            "watchsimulator", "watchos", "jsprime", "winrt" ];
+            "watchsimulator", "watchos", "jsprime", "winrt", "uwp" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
