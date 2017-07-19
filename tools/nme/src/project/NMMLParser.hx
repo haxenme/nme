@@ -544,6 +544,28 @@ class NMMLParser
       }
    }
 
+   private function parseWinrtElement(element:Fast):Void 
+   {
+      for(childElement in element.elements) 
+      {
+         if (isValidElement(childElement, ""))
+         {
+            var value = substitute(childElement.att.value);
+            switch(childElement.name) 
+            {
+               case "appCapability":
+                  project.winrtConfig.appCapability.push(
+                      new WinrtCapability(value, childElement.has.namespace  ? substitute(childElement.att.namespace) : "") );
+               case "packageDependency":
+                  project.winrtConfig.packageDependency.push(
+                      new WinrtPackageDependency(value, substitute(childElement.att.minversion), substitute(childElement.att.publisher) ) );
+               default:
+                  Log.error("Unknown winrt attribute " + childElement.name);
+            }
+         }
+      }
+   }
+
 
    private function parseOutputElement(element:Fast):Void 
    {
@@ -891,6 +913,10 @@ class NMMLParser
 
                case "android":
                   parseAndroidElement(element);
+
+               case "winrt":
+                  parseWinrtElement(element);
+
 
                case "output":
                   parseOutputElement(element);
