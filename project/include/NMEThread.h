@@ -5,6 +5,7 @@
 
 #ifndef HX_WINDOWS
 #include <pthread.h>
+#define NME_PTHREADS
 #else
 #include <windows.h>
 #undef min
@@ -42,6 +43,22 @@ struct NmeAutoMutex
      mutex.Unlock();
    }
 };
+
+
+extern volatile int gTaskId;
+extern int GetWorkerCount();
+
+inline int GetNextTask()
+{
+   #ifdef NME_WORKER_THREADS
+   return HxAtomicInc(&gTaskId);
+   #else
+   return gTaskId++;
+   #endif
+}
+
+typedef void (*WorkerFunc)(int inThreadId, void *inData);
+void RunWorkerTask( WorkerFunc inFunc, void *inData );
 
 
 }
