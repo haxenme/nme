@@ -52,7 +52,7 @@
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
-   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="emscripten||winrt" />
+   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="emscripten" />
 
    <!-- Use opengl backend ? -->
    <set name="NME_OGL" value="1" />
@@ -96,7 +96,7 @@
    <set name="SUP_DIR" value="${this_dir}/support" if="this_dir" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
 
-   <set name="modplug" value="1" unless="android||emscripten||winrt" />
+   <set name="modplug" value="1" unless="android||emscripten" />
    
    <!-- <set name="new_link" value="1" /> -->
  
@@ -487,7 +487,7 @@
          </section>
       
       
-         <section if="windows">
+         <section if="windows" unless="winrt">
             <lib name="gdi32.lib" />
             <lib name="opengl32.lib" unless="NME_ANGLE" />
             <lib name="user32.lib" />
@@ -503,21 +503,13 @@
             <lib name="wldap32.lib" />
             <lib name="shell32.lib" />
             <lib name="comdlg32.lib" />
-            <lib name="d3d9.lib" if="NME_ANGLE" unless="winrt"/>
+            <lib name="d3d9.lib" if="NME_ANGLE"/>
          </section>
 
          <section if="linux">
             <lib name="${HXCPP}/lib/${BINDIR}/liblinuxcompat.a" />
             <lib name="-lpthread" />
             <lib name="-lrt" />
-         </section>
-      
-         <section if="winrt" unless="static_link">
-            <lib name="D3D11.lib" />
-            <lib name="d3dcompiler.lib"/>
-            <lib name="xinput.lib"/>
-            <lib name="xaudio2.lib"/>
-            <lib name="dxgi.lib"/>
          </section>
       
       </section>
