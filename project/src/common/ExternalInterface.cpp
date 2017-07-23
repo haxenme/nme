@@ -1031,9 +1031,7 @@ DEFINE_PRIM( nme_sys_get_exe_name, 0 );
 value nme_capabilities_get_screen_resolutions ()
 {
    //Only really makes sense on PC platforms
-   #if defined(HX_WINRT)
-      OutputDebugString("ExternalInterface nme_capabilities_get_screen_resolutions not implemented\n");
-   #elif defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
+   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
       QuickVec<int>* res = CapabilitiesGetScreenResolutions();
       
       value result = alloc_array( res->size());
@@ -1055,9 +1053,7 @@ value nme_capabilities_get_screen_modes () {
 
 
    //Only really makes sense on PC platforms
-   #if  defined(HX_WINRT)
-      OutputDebugString("ExternalInterface nme_capabilities_get_screen_modes not implemented\n");
-   #elif defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
+   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
 
 
       QuickVec<ScreenMode>* modes = CapabilitiesGetScreenModes();
@@ -1187,13 +1183,8 @@ DEFINE_PRIM(nme_filesystem_get_volumes,2);
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)
 {
-#if defined(HX_WINRT)
-   OutputDebugString("ExternalInterface.cpp  nme_get_url not implemented\n");
-   return alloc_null();
-#else
    bool result=LaunchBrowser(valToHxString(url).c_str());
    return alloc_bool(result);
-#endif
 }
 DEFINE_PRIM(nme_get_url,1);
 
