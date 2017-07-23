@@ -200,10 +200,10 @@ namespace nme {
       delete[] wc;
 
       bool hasScheme = 
-        strcmp( inUtf8URL, "http:" ) == 0   ||
-        strcmp( inUtf8URL, "mailto:" ) == 0 || 
-        strcmp( inUtf8URL, "ms-" ) == 0     || 
-        strcmp( inUtf8URL, "bingmaps:" ) == 0 ; 
+        strncmp( inUtf8URL, "http:", 5 ) == 0   ||
+        strncmp( inUtf8URL, "mailto:", 7 ) == 0 || 
+        strncmp( inUtf8URL, "ms-", 3 ) == 0     || 
+        strncmp( inUtf8URL, "bingmaps:", 9 ) == 0 ; 
 
       auto uri = hasScheme? ref new Windows::Foundation::Uri(platformStringUri) : 
                             ref new Windows::Foundation::Uri((ref new Platform::String(L"http://"))+platformStringUri);
