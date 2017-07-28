@@ -57,7 +57,7 @@ public:
                        BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint=0xffffff ) const = 0;
    virtual void StretchTo(const RenderTarget &outTarget,
-                          const Rect &inSrcRect, const DRect &inDestRect) const = 0;
+                          const Rect &inSrcRect, const DRect &inDestRect,unsigned int inFlags) const = 0;
    virtual void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
                             int inPosX, int inPosY,
                             int inSrcChannel, int inDestChannel ) const = 0;
@@ -146,7 +146,7 @@ public:
                        uint32 inTint=0xffffff ) const;
 
    virtual void StretchTo(const RenderTarget &outTarget,
-                          const Rect &inSrcRect, const DRect &inDestRect) const;
+                          const Rect &inSrcRect, const DRect &inDestRect,unsigned int inFlags) const;
 
    virtual void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
                             int inPosX, int inPosY,
@@ -217,7 +217,7 @@ public:
                BlendMode inBlend, const BitmapCache *inMask,
                uint32 inTint ) const { }
    void StretchTo(const RenderTarget &outTarget,
-               const Rect &inSrcRect, const DRect &inDestRect) const { }
+               const Rect &inSrcRect, const DRect &inDestRect,unsigned int) const { }
    void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
                int inPosX, int inPosY,
                int inSrcChannel, int inDestChannel ) const  { }

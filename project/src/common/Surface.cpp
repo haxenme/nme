@@ -53,6 +53,8 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
    mHeight = inHeight;
    mTexture = 0;
    mPixelFormat = inPixelFormat;
+
+   mRefCount = 10000000;
  
    int pix_size = BytesPerPixel(inPixelFormat);
 
@@ -1133,7 +1135,7 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 
 template<typename SRC,typename DEST>
 void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
-                const Rect &inSrcRect, const DRect &inDestRect)
+                const Rect &inSrcRect, const DRect &inDestRect, int inFlags)
 {
    Rect irect( inDestRect.x+0.5, inDestRect.y+0.5, inDestRect.x1()+0.5, inDestRect.y1()+0.5, true);
    Rect out = irect.Intersect(outTarget.mRect);
@@ -1143,103 +1145,110 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
    int dsx_dx = (inSrcRect.w << 16)/inDestRect.w;
    int dsy_dy = (inSrcRect.h << 16)/inDestRect.h;
 
-   #ifndef STRETCH_BILINEAR
-   // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
-   // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
-   //
-   // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
-
-   //int sx0 = (int)((out.x-inDestRect.x*inSrcRect.w/inDestRect.w)*65536) +(inSrcRect.x<<16);
-   //int sy0 = (int)((out.y-inDestRect.y*inSrcRect.h/inDestRect.h)*65536) +(inSrcRect.y<<16);
-   int sx0 = (int)((out.x+0.5-inDestRect.x)*dsx_dx + (inSrcRect.x<<16) );
-   int sy0 = (int)((out.y+0.5-inDestRect.y)*dsy_dy + (inSrcRect.y<<16) );
-
-   for(int y=0;y<out.h;y++)
+   if (!inFlags)
    {
-      DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
-      int y_ = (sy0>>16);
-      const SRC *src = (const SRC *)inSrc->Row(y_);
-      sy0+=dsy_dy;
+      // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
+      // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
+      //
+      // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
 
-      int sx = sx0;
-      for(int x=0;x<out.w;x++)
-         BlendPixel(*dest++, src[sx>>16]);
-   }
+      //int sx0 = (int)((out.x-inDestRect.x*inSrcRect.w/inDestRect.w)*65536) +(inSrcRect.x<<16);
+      //int sy0 = (int)((out.y-inDestRect.y*inSrcRect.h/inDestRect.h)*65536) +(inSrcRect.y<<16);
+      int sx0 = (int)((out.x+0.5-inDestRect.x)*dsx_dx + (inSrcRect.x<<16) );
+      int sy0 = (int)((out.y+0.5-inDestRect.y)*dsy_dy + (inSrcRect.y<<16) );
 
-   #else
-   // todo - overflow testing
-   // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
-   // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
-   //
-   // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
-   int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16) - 0x8000;
-   int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16) - 0x8000;
-   int last_y = inSrcRect.y1()-1;
-   SRC s;
-   for(int y=0;y<out.h;y++)
-   {
-      DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
-      int y_ = (sy0>>16);
-      int y_frac = sy0 & 0xffff;
-      const SRC *src0 = (const SRC *)inSrc->Row(y_);
-      const SRC *src1 = (const SRC *)inSrc->Row(y_<last_y ? y_+1 : y_);
-      sy0+=dsy_dy;
-
-      int sx = sx0;
-      for(int x=0;x<out.w;x++)
+      for(int y=0;y<out.h;y++)
       {
-         int x_ = sx>>16;
-         int x_frac = sx & 0xffff;
+         DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
+         int y_ = (sy0>>16);
+         const SRC *src = (const SRC *)inSrc->Row(y_);
+         sy0+=dsy_dy;
 
-         SRC s = BilinearInterp( src0[x_], src0[x_+1], src1[x_], src1[x_+1], x_frac, y_frac);
-
-         BlendPixel(*dest, s);
-         dest++;
-         sx+=dsx_dx;
+         int sx = sx0;
+         for(int x=0;x<out.w;x++)
+         {
+            BlendPixel(*dest++, src[sx>>16]);
+            sx+=dsx_dx;
+         }
       }
    }
-   #endif
+   else
+   {
+      // todo - overflow testing
+      // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
+      // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
+      //
+      // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
+      int sx0 = (int)((out.x+0.5-inDestRect.x)*dsx_dx + (inSrcRect.x<<16) ) - 0x8000;
+      int sy0 = (int)((out.y+0.5-inDestRect.y)*dsy_dy + (inSrcRect.y<<16) ) - 0x8000;
+      //int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16) - 0x8000;
+      //int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16) - 0x8000;
+      int last_y = inSrcRect.y1()-1;
+      SRC s;
+      for(int y=0;y<out.h;y++)
+      {
+         DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
+         int y_ = (sy0>>16);
+         int y_frac = sy0 & 0xffff;
+         const SRC *src0 = (const SRC *)inSrc->Row(y_);
+         const SRC *src1 = (const SRC *)inSrc->Row(y_<last_y ? y_+1 : y_);
+         sy0+=dsy_dy;
+
+         int sx = sx0;
+         for(int x=0;x<out.w;x++)
+         {
+            int x_ = sx>>16;
+            int x_frac = sx & 0xffff;
+
+            SRC s = BilinearInterp( src0[x_], src0[x_+1], src1[x_], src1[x_+1], x_frac, y_frac);
+
+            BlendPixel(*dest, s);
+            dest++;
+            sx+=dsx_dx;
+         }
+      }
+   }
 }
 
 
 template<typename PIXEL>
 void TStretchSuraceTo(const SimpleSurface *inSurface, const RenderTarget &outTarget,
-                     const Rect &inSrcRect, const DRect &inDestRect)
+                     const Rect &inSrcRect, const DRect &inDestRect, unsigned int inFlags)
 {
    switch(outTarget.Format())
    {
       case pfRGB:
-         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect);
+         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
          break;
       case pfBGRA:
-         TStretchTo<PIXEL,ARGB>(inSurface, outTarget, inSrcRect, inDestRect);
+         TStretchTo<PIXEL,ARGB>(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
          break;
       case pfBGRPremA:
-         TStretchTo<PIXEL,BGRPremA>(inSurface, outTarget, inSrcRect, inDestRect);
+         TStretchTo<PIXEL,BGRPremA>(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
          break;
       case pfAlpha:
-         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect);
+         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
          break;
       default: ;
    }
 }
 
 void SimpleSurface::StretchTo(const RenderTarget &outTarget,
-                     const Rect &inSrcRect, const DRect &inDestRect) const
+                     const Rect &inSrcRect, const DRect &inDestRect, unsigned int inFlags) const
 {
    switch(mPixelFormat)
    {
       case pfRGB:
-         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect);
+         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect, inFlags);
          break;
       case pfBGRA:
-         TStretchSuraceTo<ARGB>(this, outTarget, inSrcRect, inDestRect);
+         TStretchSuraceTo<ARGB>(this, outTarget, inSrcRect, inDestRect,inFlags);
          break;
       case pfBGRPremA:
-         TStretchSuraceTo<BGRPremA>(this, outTarget, inSrcRect, inDestRect);
+         TStretchSuraceTo<BGRPremA>(this, outTarget, inSrcRect, inDestRect,inFlags);
          break;
       case pfAlpha:
-         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect);
+         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect,inFlags);
          break;
       default: ;
    }

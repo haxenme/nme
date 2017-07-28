@@ -171,7 +171,7 @@ public:
    }
 
    void StretchTo(const RenderTarget &outTarget,
-          const Rect &inSrcRect, const DRect &inDestRect) const
+          const Rect &inSrcRect, const DRect &inDestRect,unsigned int) const
    {
    }
 
