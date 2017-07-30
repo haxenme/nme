@@ -9,23 +9,22 @@
 
 namespace nme {
  
-static bool nmeIsCoInit = false;
-static bool nmeIsCoInitOk = false;
-bool nmeCoInitialize()
-{
-   if (!IsMainThread())
-      return CoInitialize(0)==S_OK;
-
-   if (!nmeIsCoInit)
+   static bool nmeIsCoInit = false;
+   static bool nmeIsCoInitOk = false;
+   bool nmeCoInitialize()
    {
-      nmeIsCoInit = true;
-      HRESULT result = CoInitialize(0);
-      nmeIsCoInitOk = result==S_OK || result==S_FALSE || result==RPC_E_CHANGED_MODE;
-   }
-   return nmeIsCoInitOk;
-}
+      if (!IsMainThread())
+         return CoInitialize(0)==S_OK;
 
-   
+      if (!nmeIsCoInit)
+      {
+         nmeIsCoInit = true;
+         HRESULT result = CoInitialize(0);
+         nmeIsCoInitOk = result==S_OK || result==S_FALSE || result==RPC_E_CHANGED_MODE;
+      }
+      return nmeIsCoInitOk;
+   }
+
    bool LaunchBrowser(const char *inUtf8URL)
    {
       int result;
@@ -156,47 +155,102 @@ bool nmeCoInitialize()
 
 }
 #else
+
+#include <ppltasks.h>
+
+#include <windows.h>
+#include <shlobj.h> 
+
 #include <stdio.h>
 #include <string>
 #include <vector>
-
+#include <NMEThread.h>
 
 namespace nme {
  
+   static bool nmeIsCoInit = false;
+   static bool nmeIsCoInitOk = false;
    bool nmeCoInitialize()
    {
-      return false;
+      if (!IsMainThread())
+         return CoInitializeEx(NULL,0)==S_OK;
+
+      if (!nmeIsCoInit)
+      {
+         nmeIsCoInit = true;
+         HRESULT result = CoInitializeEx(NULL,0);
+         nmeIsCoInitOk = result==S_OK || result==S_FALSE || result==RPC_E_CHANGED_MODE;
+      }
+      return nmeIsCoInitOk;
    }
 
-   
    bool LaunchBrowser(const char *inUtf8URL)
    {
-      return false;
+      if (inUtf8URL==NULL)
+        return false;
+
+      int inLen = strlen(inUtf8URL);
+      if (inLen<=0)
+        return false;
+
+      //char* to wchar_t* to Platform::String
+      wchar_t* wc = new wchar_t[inLen+1];
+      mbstowcs (wc, inUtf8URL, inLen+1);
+      auto platformStringUri = ref new Platform::String(wc, inLen);
+      delete[] wc;
+
+      bool hasScheme = 
+        strncmp( inUtf8URL, "http:", 5 ) == 0   ||
+        strncmp( inUtf8URL, "mailto:", 7 ) == 0 || 
+        strncmp( inUtf8URL, "ms-", 3 ) == 0     || 
+        strncmp( inUtf8URL, "bingmaps:", 9 ) == 0 ; 
+
+      auto uri = hasScheme? ref new Windows::Foundation::Uri(platformStringUri) : 
+                            ref new Windows::Foundation::Uri((ref new Platform::String(L"http://"))+platformStringUri);
+
+      // Set to true to show a warning
+      auto launchOptions = ref new Windows::System::LauncherOptions();
+      launchOptions->TreatAsUntrusted = false;
+
+      concurrency::task<bool> launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri,launchOptions));
+      launchUriOperation.then([](bool success)
+      {
+          //OutputDebugString( success ? "URL LAUNCH OK" : "URL LAUNCH FAIL" );
+      }); 
+      return true;
    }
 
    std::string CapabilitiesGetLanguage()
    {
-      return "en";
+      Platform::String^ rtstr = ( Windows::System::UserProfile::GlobalizationPreferences::Languages )->GetAt(0);
+      //Platform::String to std::string
+      std::wstring wsstr( rtstr->Begin() );
+      std::string sstr( wsstr.begin(), wsstr.end() );
+      return sstr;
    }
    
    bool SetDPIAware()
    {
-      return false;
+      return true;
    }
-
    bool dpiAware = SetDPIAware();
 
    double CapabilitiesGetScreenDPI()
    {
-      return 0;
+      auto displayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+      return (double)displayInformation->LogicalDpi;
    }
 
    double CapabilitiesGetPixelAspectRatio() {
-      return 1.0;
+      auto displayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+      double hPixelsPerInch = (double)displayInformation->RawDpiX;
+      double vPixelsPerInch = (double)displayInformation->RawDpiY;
+      return hPixelsPerInch / vPixelsPerInch;
    }
 
-
-   std::string FileDialogFolder( const std::string &title, const std::string &text ) {      
+   //https://docs.microsoft.com/en-us/windows/uwp/files/index
+   std::string FileDialogFolder( const std::string &title, const std::string &text ) {
+      //not supported on Xbox UWP
       return ""; 
    }
 

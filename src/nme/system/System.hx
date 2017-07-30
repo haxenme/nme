@@ -114,6 +114,8 @@ class System
       #elseif jsprime
       // TODO
       return "localhost";
+      #elseif winrt
+      return "localhost";
       #else
       return sys.net.Host.localhost();
       #end

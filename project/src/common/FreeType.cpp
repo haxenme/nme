@@ -6,7 +6,9 @@
 
 #include <Utils.h>
 
-#ifdef HX_WINRT
+#if defined(HX_WINRT) && defined(__cplusplus_winrt)
+#define NOMINMAX
+#include <dwrite.h>
 #define generic userGeneric
 #endif
 
@@ -267,6 +269,11 @@ extern void nmeRegisterFont(const std::string &inName, FontBuffer inData);
 
 extern FontBuffer nmeGetRegisteredFont(const std::string &inName);
 
+
+#if defined(HX_WINRT) && defined(__cplusplus_winrt)
+ByteArray getWinrtDeviceFont(const std::string &inFace);
+#endif
+
 int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuffer inBuffer, void** outBuffer)
 {
    *outFace = 0;
@@ -312,6 +319,12 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuff
       if (inBuffer == 0)
       {
          bytes = ByteArray::FromFile(inFace.c_str());
+         #if defined(HX_WINRT) && defined(__cplusplus_winrt)
+         if (!bytes.Ok())
+         {
+            bytes = getWinrtDeviceFont(inFace);
+         }
+         #endif
       }
       else
       {
@@ -378,14 +391,7 @@ static FT_Face OpenFont(const std::string &inFace, unsigned int inFlags, FontBuf
 
 
 
-#if defined(HX_WINRT) && defined(__cplusplus_winrt)
-
-bool GetFontFile(const std::string& inName,std::string &outFile)
-{
-   return false;
-}
-
-#elif defined(HX_WINDOWS) && !defined(HX_WINRT)
+#if defined(HX_WINDOWS) && !defined(HX_WINRT)
 
 #define strcasecmp stricmp
 
@@ -532,11 +538,12 @@ const char *fontFolders[] = { "/Library/Fonts/", 0 };
 }
 #else
 
+#if defined(HX_WINRT)
+#define strcasecmp stricmp
+#endif
+
 bool GetFontFile(const std::string& inName,std::string &outFile)
 {
-   #if defined(HX_WINRT)
-      DLOG("Looking for font %s...", inName.c_str());
-   #endif
    const char *alternate = 0;
    if (!strcasecmp(inName.c_str(),"_serif") ||
        !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
@@ -551,9 +558,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/fonts/font_repository/monotype/times.ttf";
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
-      #elif defined(HX_WINRT)
-         //DLOG("***Freetype.cpp LOOKING FOR /FreeSerif.ttf");
-         outFile = "/FreeSerif.ttf";
+      #elif defined(HX_WINRT) && defined(__cplusplus_winrt)
+         outFile = "Georgia";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
       #endif
@@ -571,9 +577,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/fonts/font_repository/monotype/arial.ttf";
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
-      #elif defined(HX_WINRT)
-         //DLOG("***Freetype.cpp LOOKING FOR /FreeSans.ttf");
-         outFile = "/FreeSans.ttf";
+      #elif defined(HX_WINRT) && defined(__cplusplus_winrt)
+         outFile = "Arial";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
       #endif
@@ -589,9 +594,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/fonts/font_repository/monotype/cour.ttf";
       #elif defined (TIZEN)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
-      #elif defined(HX_WINRT) || defined(_XBOX_ONE)
-         //DLOG("***Freetype.cpp LOOKING FOR /FreeMono.ttf");
-         outFile = "/FreeMono.ttf";
+      #elif defined(HX_WINRT) && defined(__cplusplus_winrt)
+         outFile = "Courier New";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
       #endif
@@ -600,11 +604,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
    else
    {
       #ifdef ANDROID
-       //__android_log_print(ANDROID_LOG_INFO, "GetFontFile", "Could not load font %s.", inName.c_str() );
-       #endif
-
-      #ifdef HX_WINRT
-      ERROR_LOG("Could not load font %s.", inName.c_str() );
+      //__android_log_print(ANDROID_LOG_INFO, "GetFontFile", "Could not load font %s.", inName.c_str() );
       #endif
       
       //printf("Unfound font: %s\n",inName.c_str());
@@ -676,9 +676,6 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, FontBuffer
 
       if (font==0 && GetFontFile(fname,file_name))
       {
-      #ifdef HX_WINRT
-         //DLOG("Found font: %s\n",file_name.c_str());
-      #endif
          font = OpenFont(file_name.c_str(),inFlags,NULL,pBuffer);
       }
    }
@@ -1204,9 +1201,11 @@ void SendFont(std::string name, value inFunc)
       ITALIC,
       REGULAR,
    };
+   #ifndef HX_WINRT
    size_t pos = name.find_last_of('.');
    if (pos!=std::string::npos)
       name = name.substr(0,pos);
+   #endif
 
    FontStyle style = REGULAR; 
    if (ChompEnding(name," Bold Italic"))
@@ -1219,12 +1218,12 @@ void SendFont(std::string name, value inFunc)
    val_call2(inFunc,alloc_string_len(name.c_str(),name.size()), alloc_int(style) );
 }
 
-#ifndef HX_WINRT
-
-
+#if defined(HX_WINRT)
+void winrtItererateDeviceFonts(value inFunc);
+#else
 void ItererateFontDir(const std::string &inDir, value inFunc, int inMaxDepth)
 {
-   #if defined(HX_WINDOWS) && !defined(HX_WINRT)
+   #if defined(HX_WINDOWS)
    std::string search = inDir + "*.ttf";
 
    WIN32_FIND_DATA d;
@@ -1278,7 +1277,9 @@ void ItererateFontDir(const std::string &inDir, value inFunc, int inMaxDepth)
 
 value nme_font_iterate_device_fonts(value inFunc)
 {
-   #ifndef HX_WINRT
+   #ifdef HX_WINRT
+      winrtItererateDeviceFonts(inFunc);
+   #else
       #ifdef HX_WINDOWS
       char win_path[2 * MAX_PATH];
       GetWindowsDirectory(win_path, 2*MAX_PATH);
@@ -1321,4 +1322,156 @@ value nme_font_iterate_device_fonts(value inFunc)
 
 DEFINE_PRIM(nme_font_iterate_device_fonts,1)
 
+
+#if defined(HX_WINRT) && defined(__cplusplus_winrt)
+namespace nme
+{
+   ByteArray getWinrtDeviceFont(const std::string &inFace)
+   {
+      IDWriteFactory *writeFactory;
+      if(SUCCEEDED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&writeFactory))))
+      {
+         IDWriteFontCollection *fontCollection;
+         if(SUCCEEDED(writeFactory->GetSystemFontCollection(&fontCollection, TRUE)))
+         {
+            UINT32 index;
+            BOOL exists;
+            std::wstring fontNameW;
+            fontNameW.assign(inFace.begin(), inFace.end());
+            if(SUCCEEDED(fontCollection->FindFamilyName(fontNameW.c_str(), &index, &exists)))
+            {
+               if(exists)
+               {
+                  IDWriteFontFamily *fontFamily;
+                  if(SUCCEEDED(fontCollection->GetFontFamily(index, &fontFamily)))
+                  {
+                     IDWriteFont *matchingFont;
+                     if(SUCCEEDED(fontFamily->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_REGULAR, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &matchingFont)))
+                     {
+                        IDWriteFontFace *fontFace;
+                        if(SUCCEEDED(matchingFont->CreateFontFace(&fontFace)))
+                        {
+                           IDWriteFontFile *fontFile;
+                           UINT32 numberOfFiles = 1;
+                           if(SUCCEEDED(fontFace->GetFiles(&numberOfFiles, &fontFile)))
+                           {
+                              const void *fontFileReferenceKey;
+                              UINT32 fontFileReferenceKeySize;
+                              if(SUCCEEDED(fontFile->GetReferenceKey(&fontFileReferenceKey, &fontFileReferenceKeySize)))
+                              {
+                                 IDWriteFontFileLoader *fontFileLoader;
+                                 if(SUCCEEDED(fontFile->GetLoader(&fontFileLoader)))
+                                 {
+                                    IDWriteFontFileStream *fontFileStream;
+                                    if(SUCCEEDED(fontFileLoader->CreateStreamFromKey(fontFileReferenceKey, fontFileReferenceKeySize, &fontFileStream)))
+                                    {
+                                       UINT64 fileSize;
+                                       if(SUCCEEDED(fontFileStream->GetFileSize(&fileSize)))
+                                       {
+                                          const void *fragmentStart;
+                                          void *fragmentContext;
+                                          if(SUCCEEDED(fontFileStream->ReadFileFragment(&fragmentStart, 0, fileSize, &fragmentContext)))
+                                          {
+                                             ByteArray bytes((size_t)fileSize);
+                                             memcpy(bytes.Bytes(), fragmentStart, (size_t)fileSize);
+
+                                             fontFileStream->ReleaseFileFragment(fragmentContext);
+                                             fontFileStream->Release();
+                                             fontFileLoader->Release();
+                                             fontFile->Release();
+                                             fontFace->Release();
+                                             matchingFont->Release();
+                                             fontFamily->Release();
+                                             fontCollection->Release();
+                                             writeFactory->Release();
+
+                                             return bytes;
+                                          }
+                                       }
+                                    }
+                                    fontFileStream->Release();
+                                 }
+                                 fontFileLoader->Release();
+                              }
+                              fontFile->Release();
+                           }
+                           fontFace->Release();
+                        }
+                        matchingFont->Release();
+                     }
+                     fontFamily->Release();
+                  }
+               }
+            }
+            fontCollection->Release();
+         }
+         writeFactory->Release();
+      }
+      return ByteArray();
+   }
+}
+
+//#  define DLOG(fmt, ...) {char buf[1024];sprintf(buf,"****LOG: %s(%d): %s \n    [" fmt "]\n",__FILE__,__LINE__,__FUNCTION__, __VA_ARGS__);OutputDebugString(buf);}
+
+void winrtItererateDeviceFonts(value inFunc)
+{
+  IDWriteFactory *writeFactory;
+  if (SUCCEEDED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&writeFactory))))
+  {
+    IDWriteFontCollection *fontCollection;
+    if (SUCCEEDED(writeFactory->GetSystemFontCollection(&fontCollection, TRUE)))
+    {
+      UINT32 familyCount = fontCollection->GetFontFamilyCount();
+      if (familyCount>0)
+      {
+        uint32 index = 0;
+        BOOL exists = false;
+        wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
+        int defaultLocaleSuccess = GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH);
+        for (UINT32 i = 0; i < familyCount; ++i)
+        {
+          IDWriteFontFamily *fontFamily;
+          if (SUCCEEDED(fontCollection->GetFontFamily(i, &fontFamily)))
+          {
+            IDWriteLocalizedStrings *familyNames;
+            if (SUCCEEDED(fontFamily->GetFamilyNames(&familyNames)))
+            {
+              if (defaultLocaleSuccess)
+              {
+                if (SUCCEEDED(familyNames->FindLocaleName(localeName, &index, &exists))) 
+                {
+                  if (!exists)
+                  {
+                    familyNames->FindLocaleName(L"en-us", &index, &exists);
+                  }
+                }
+              }
+              if (!exists)
+              {
+                index = 0;
+              }
+              UINT32 length = 0;
+              if (SUCCEEDED(familyNames->GetStringLength(index, &length)))
+              {
+                wchar_t* name = new (std::nothrow) wchar_t[length+1];
+                if (name != nullptr && SUCCEEDED(familyNames->GetString(index, name, length+1)))
+                {
+                  std::wstring ws(name);
+                  std::string strName(ws.begin(), ws.end());
+                  //DLOG("i: %d, index %d, font: %s", i, index, strName.c_str());
+                  SendFont(strName,inFunc);
+                }
+              }
+            }
+            fontFamily->Release();
+          }
+        }
+      }
+      fontCollection->Release();
+    }
+    writeFactory->Release();
+  }
+}
+
+#endif
 

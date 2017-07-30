@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp build" xmlns:build="http://schemas.microsoft.com/developer/appx/2015/build">
+  <Identity Name="::APP_PACKAGE::" Publisher="CN=::if APP_COMPANYID::APP_COMPANYID::else::NME_Example::end::" Version="::APP_VERSION::.0" ProcessorArchitecture="::APP_ARCH::" />
+  <!--<mp:PhoneIdentity PhoneProductId="3b8b2495-3f10-49e7-8eaa-23a7f45cd13d" PhonePublisherId="00000000-0000-0000-0000-000000000000" />-->
+  <Properties>
+    <DisplayName>::APP_TITLE::</DisplayName>
+    <PublisherDisplayName>::APP_COMPANY::</PublisherDisplayName>
+    <Logo>assetspkg\StoreLogo.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="::APP_TARGET::" MinVersion="::APP_MINVERSION::" MaxVersionTested="::APP_MAXVERSION::" />
+    <!--<PackageDependency Name="Microsoft.VCLibs.140.00.Debug" MinVersion="14.0.24210.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />-->    
+    ::foreach packageDependency:: <PackageDependency Name="::dependency::" MinVersion="::minversion::" Publisher="::publisher::" /></PackageDependency>::end::
+  </Dependencies>
+  <Resources>
+    <Resource Language="EN-US" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="::APP_FILE::.exe" EntryPoint="::APP_FILE::.App">
+      <uap:VisualElements DisplayName="::APP_TITLE::" Square150x150Logo="assetspkg\Square150x150Logo.scale-200.png" Square44x44Logo="assetspkg\Square44x44Logo.scale-200.png" Description="::APP_TITLE::::APP_DESCRIPTION::" BackgroundColor="transparent">
+        <uap:DefaultTile Wide310x150Logo="assetspkg\Wide310x150Logo.scale-200.png" />
+        <uap:SplashScreen Image="assetspkg\SplashScreen.scale-200.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+  <Capabilities>
+    ::foreach appCapability:: <::namespace::Capability Name="::capability::" />::end::
+  </Capabilities>
+</Package>

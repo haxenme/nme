@@ -54,7 +54,7 @@ class CommandLineTools
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
-            "watchsimulator", "watchos", "jsprime" ];
+            "watchsimulator", "watchos", "jsprime", "winrt", "uwp" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
@@ -97,6 +97,9 @@ class CommandLineTools
 
          case Platform.IOS:
             platform = new platforms.IOSPlatform(project);
+
+         case Platform.WINRT:
+            platform = new platforms.WinrtPlatform(project);
 
          case Platform.WINDOWS:
             platform = new platforms.WindowsPlatform(project);
@@ -750,6 +753,7 @@ class CommandLineTools
       sys.println("  iphonesim   : ios + simulator");
       sys.println("  watchos     : watch extension");
       sys.println("  watchsimulator : watch extension + simulator");
+      sys.println("  winrt       : Create Universal Windows Platform applications");
       sys.println("");
       sys.println(" Options : ");
       sys.println("");
