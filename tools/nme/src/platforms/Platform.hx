@@ -377,8 +377,6 @@ class Platform
 
    public function deploy(inAndRun:Bool) : Bool
    {
-      addManifest();
-
       var target = CommandLineTools.parseDeploy(project.getDef("deploy"),false,false);
       if (target!=null)
       {
