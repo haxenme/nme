@@ -67,6 +67,8 @@
 
   <haxelib name="nme" nocopy="true" />
   <haxedef name="scriptable" />
+  <haxedef name="NME_ANGLE" if="windows" />
+  <haxedef name="HXCPP_M64" if="windows" />
   <engine name="Acadnme" version="6.0" />
   <haxedef name="HXCPP_LINK_TOTAL_MEMORY" value="32000000"/>
   <haxeflag name="-dce no" />
