@@ -7,10 +7,13 @@ class CommandLineToolsLauncher
     }
 
     static function calcBinName():String {
-        #if windows
-        return 'CommandLineTools-debug.exe';
-        #else
-        return 'CommandLineTools-debug';
+        var name:String = 'CommandLineTools';
+        #if debug
+        name+='-debug';
         #end
+        #if windows
+        name+='.exe';
+        #end
+        return name;
     }
 }
