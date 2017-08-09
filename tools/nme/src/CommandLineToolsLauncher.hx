@@ -11,9 +11,8 @@ class CommandLineToolsLauncher
         #if debug
         name+='-debug';
         #end
-        #if windows
-        name+='.exe';
-        #end
+        if(Sys.systemName() == "Windows")
+            name+='.exe';
         return name;
     }
 }
