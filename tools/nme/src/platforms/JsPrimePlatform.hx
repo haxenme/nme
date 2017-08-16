@@ -178,6 +178,15 @@ class JsPrimePlatform extends Platform
    }
 
 
+   override public function updateOutputDir():Void 
+   {
+      super.updateOutputDir();
+      var ico = "icon.ico";
+      var iconPath = PathHelper.combine(getOutputDir(), ico);
+      IconHelper.createWindowsIcon(project.icons, iconPath, true);
+   }
+
+
    public function setupServer()
    {
       var hasSdk = project.hasDef("EMSCRIPTEN_SDK");

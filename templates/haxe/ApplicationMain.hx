@@ -148,7 +148,7 @@ class ApplicationMain
                      fps : ::WIN_FPS:: * 1.0,
                      color : ::WIN_BACKGROUND::,
                      title : "::APP_TITLE::",
-                     icon  : Assets.info.get("::WIN_ICON::")==null ? null : getAsset("::WIN_ICON::")
+                     icon  : Assets.info.get("::WIN_ICON::")==null ? null : Assets.getBitmapData("::WIN_ICON::")
                   });
 
                   // Show frame before creating instance so context is good.
@@ -194,7 +194,7 @@ class ApplicationMain
                width : ::WIN_WIDTH::,
                height : ::WIN_HEIGHT::,
                title : "::APP_TITLE::",
-               icon  : Assets.info.get("::WIN_ICON::")==null ? null : getAsset("::WIN_ICON::")
+               icon  : Assets.info.get("::WIN_ICON::")==null ? null : Assets.getBitmapData("::WIN_ICON::")
             };
 
             nme.app.Application.createWindow(function(window:nme.app.Window) {
@@ -215,7 +215,7 @@ class ApplicationMain
                flags,
                "::APP_TITLE::"
                ::if (WIN_ICON!=null)::
-               , getAsset("::WIN_ICON::")
+               , Assets.getBitmapData("::WIN_ICON::")
                ::end::
             );
 
@@ -245,30 +245,6 @@ class ApplicationMain
       #end
    }
 
-   #if (nme||waxe)
-   public static function getAsset(inName:String) : Dynamic
-   {
-      var i = Assets.info.get(inName);
-      if (i==null)
-         throw "Asset does not exist: " + inName;
-      var cached = i.getCache();
-      if (cached!=null)
-         return cached;
-      switch(i.type)
-      {
-         case BINARY, TEXT, SWF: return Assets.getBytes(inName);
-         case FONT: return Assets.getFont(inName);
-         case IMAGE: return Assets.getBitmapData(inName);
-         case MUSIC, SOUND: return Assets.getSound(inName);
-         case MOVIE_CLIP: return null;
-      }
-
-      throw "Unknown asset type: " + i.type;
-      return null;
-   }
-   #end
-   
-   
    public static function __init__ ()
    {
       #if jsprime

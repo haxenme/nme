@@ -59,7 +59,7 @@ class CommandLineTools
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
-            "rebuild", "shell", "icon", "banner", "serve" ];
+            "rebuild", "shell", "icon", "banner", "favicon", "serve" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -766,7 +766,7 @@ class CommandLineTools
       sys.println("  -tidy : remove ouput files");
       sys.println("  -clean : remove output files and c++ obj file store");
       sys.println("  -bin directory: put generated binaries in different directory");
-      sys.println("  [mac/linux] -32 -64 : Compile for 32-bit or 64-bit instead of default");
+      sys.println("  [mac/linux/windows] -32 -64 : Compile for 32-bit or 64-bit instead of default");
       sys.println("  [android] -device=serialnumber : specify serial number");
       sys.println("  [ios] -simulator : Build/test for the device simulator");
       sys.println("  [ios] -simulator -ipad : Build/test for the iPad Simulator");
@@ -980,7 +980,7 @@ class CommandLineTools
          targetName = "cppia";
       }
 
-      if (targetName=="" && (project.command=="icon" || project.command=="banner" ))
+      if (targetName=="" && (project.command=="icon" || project.command=="banner" || project.command=="favicon" ))
       {
          targetName = "cpp";
          Log.verbose('Using default nocompile target "$targetName"');
@@ -1410,6 +1410,9 @@ class CommandLineTools
          case "icon":
             createIcon(project,false);
 
+         case "favicon":
+            createIcon(project,false,true);
+
          case "banner":
             createIcon(project,true);
 
@@ -1437,18 +1440,18 @@ class CommandLineTools
       return { protocol:protocol, name:name };
    }
 
-   public static function createIcon(project:NMEProject, inBanner:Bool)
+   public static function createIcon(project:NMEProject, inBanner:Bool, favIcon = false)
    {
       var width = 0;
       var height = 0;
       var name = words[0];
-      if (words.length==3)
+      if (words.length==3 && !favIcon)
       {
          width = Std.parseInt(words[1]);
          height = Std.parseInt(words[2]);
       }
 
-      if (width==0 || height==0 || name==null)
+      if ( (!favIcon && (width==0 || height==0)) || name==null)
          Log.error("Usage: nme icon iconname.png width height");
 
       words.splice(0,3);
@@ -1457,11 +1460,17 @@ class CommandLineTools
          Log.error("Could not load project");
 
  
-      var ok = IconHelper.createIcon(inBanner?project.banners:project.icons, width, height, name);
+      var ok = favIcon ? 
+         IconHelper.createWindowsIcon(project.icons, name, favIcon) :
+         IconHelper.createIcon(inBanner?project.banners:project.icons, width, height, name );
+
       if (!ok)
          Log.error('Could not create $name icon $width x $height');
 
-      Log.verbose("Created " + name + " " + width + "x" + height );
+      if (favIcon)
+         Log.verbose("Created " + name);
+      else
+         Log.verbose("Created " + name + " " + width + "x" + height );
 
    }
 

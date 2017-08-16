@@ -74,6 +74,15 @@ class MakeClasses
       }).join("\n");
    }
 
+   static function runCommand(exe:String, args:Array<String>)
+   {
+     Sys.println(exe + " " + args.join(" ") );
+     if (Sys.command(exe, args)!=0)
+     {
+        Sys.println("#### Error, " + exe + " failed");
+        Sys.exit(-1);
+     }
+   }
 
 
    public static function main()
@@ -104,9 +113,7 @@ class MakeClasses
       File.saveContent("gen/ImportAll.hx", lines.join("\n"));
 
       Sys.println('Generate pass 1...');
-      var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
-      if (result!=0)
-         Sys.exit(result);
+      runCommand("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
 
       var contents = File.getContent("gen/export_classes.info");
       contents = filterContents(contents);
@@ -118,9 +125,7 @@ class MakeClasses
       lines = lines.concat(exports).concat([" ];","}"]);
       File.saveContent("gen/ImportAll.hx", lines.join("\n"));
 
-      var result = Sys.command("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
-      if (result!=0)
-         Sys.exit(result);
+      runCommand("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
 
       Sys.println("Export...");
       FileSystem.createDirectory("../../ndll");
@@ -156,7 +161,5 @@ class MakeClasses
       Sys.println("Gen exports.");
 
       Sys.println("Done.");
-
-      Sys.exit(result);
    }
 }

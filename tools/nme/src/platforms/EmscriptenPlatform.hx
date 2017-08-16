@@ -23,7 +23,7 @@ class EmscriptenPlatform extends DesktopPlatform
 
       setupSdk();
 
-      ext = ".js";
+      ext = project.hasDef("EMSCRIPTEN_HTML") ? ".html" : ".js";
       applicationDirectory = getOutputDir();
       executableFile = "ApplicationMain" + ext;
       executablePath = applicationDirectory + "/" + executableFile;

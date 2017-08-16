@@ -438,7 +438,12 @@ class NMEProject
             platformType = Platform.TYPE_DESKTOP;
 
             if (architectures.length==0)
-               architectures = [ PlatformHelper.hostArchitecture ];
+            {
+               if (isNeko())
+                  architectures = [ PlatformHelper.hostArchitecture ];
+               else
+                  architectures = [ Architecture.X64 ];
+            }
             window.singleInstance = false;
 
          default:
@@ -632,6 +637,16 @@ class NMEProject
       else if (ndll==null)
       {
           var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
+
+          if (name=="nme" && inStatic==null)
+          {
+             if (hasDef("nme_static"))
+                isStatic = true;
+             else if (hasDef("windows") || hasDef("mac") || hasDef("linux"))
+             {
+                isStatic = false;
+             }
+          }
 
           ndlls.push( new NDLL(name, base, isStatic, inHaxelibName, noCopy) );
       }
