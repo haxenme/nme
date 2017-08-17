@@ -111,7 +111,6 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public static var nmeQuitting = false;
 
-   private var nmeJoyAxisData:Map<Int,Array <Float>>;
    private var nmeDragBounds:Rectangle;
    private var nmeDragObject:Sprite;
    private var nmeDragOffsetX:Float;
@@ -166,7 +165,6 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeLastDown = [];
       nmeLastClickTime = 0.0;
       nmeTouchInfo = new Map<Int,TouchInfo>();
-      nmeJoyAxisData = new Map<Int,Array<Float>>();
 
       #if stage3d
       stage3Ds = new Vector();
@@ -674,53 +672,16 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
    }
 
+   private inline function axisNormalize(value:Int):Float
+   {
+      // Range: -32768 to 32767
+      return value==0 ? 0.0 : value>=32767 ? 1.0 : value<=-32767 ? -1.0 : value / 32767;
+   }
+
    public function onJoystick(inEvent:AppEvent, inType:String):Void
    {
-      var evt:JoystickEvent = null;
-
-      switch(inType) 
-      {
-         case JoystickEvent.AXIS_MOVE:
-            var data = nmeJoyAxisData.get(inEvent.id);
-            if (data == null) 
-               data = [ 0.0, 0.0, 0.0, 0.0 ];
-
-            var value:Float = inEvent.value / 32767; // Range: -32768 to 32767
-            if (value < -1) value = -1;
-
-            while(data.length < inEvent.code) 
-               data.push(0);
-
-            data[inEvent.code] = value;
-
-            evt = new JoystickEvent(inType, false, false, inEvent.id, 0, data[0], data[1], data[2], data[3]);
-            evt.axis = data.copy();
-
-            nmeJoyAxisData.set(inEvent.id, data);
-
-         case JoystickEvent.BALL_MOVE:
-            evt = new JoystickEvent(inType, false, false, inEvent.id,  inEvent.code, inEvent.x, inEvent.y);
-
-         case JoystickEvent.HAT_MOVE:
-            var x = 0;
-            var y = 0;
-
-            if (inEvent.value & 0x01 != 0) 
-               y = -1; // up
-            else if (inEvent.value & 0x04 != 0) 
-               y = 1; // down
-
-            if (inEvent.value & 0x02 != 0) 
-               x = 1; // right
-            else if (inEvent.value & 0x08 != 0) 
-               x = -1; // left
-
-            evt = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code, x, y);
-
-         default:
-            evt = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code);
-      }
-
+      var value:Float = axisNormalize(inEvent.value);
+      var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code, value);
       nmeDispatchEvent(evt);
    }
 
