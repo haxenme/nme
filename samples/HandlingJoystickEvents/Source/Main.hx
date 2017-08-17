@@ -65,6 +65,8 @@ private function onJoystickAxisMove( e:JoystickEvent ):Void
             movingRightAxis = (e.value > 0.5);
             movingLeftAxis = (e.value < -0.5);
         case JoystickEvent.AXIS_LEFTY:
+            movingDownAxis = (e.value > 0.5);
+            movingUpAxis = (e.value < -0.5);
         case JoystickEvent.AXIS_RIGHTX:
         //
         case JoystickEvent.AXIS_RIGHTY:
