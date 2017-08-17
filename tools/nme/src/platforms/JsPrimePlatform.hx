@@ -143,9 +143,46 @@ class JsPrimePlatform extends Platform
    {
       super.generateContext(context);
       context.jsminimal = project.hasDef("jsminimal");
-      if (project.hasDef("preloader"))
+
+      if (project.hasDef("preloadBg"))
+         context.PRELOAD_BG = '"' + project.getDef("preloadBg") + '"';
+      else
       {
-         var preloader = project.getDef("preloader");
+         var bg = project.window.background;
+         context.PRELOAD_BG = '"#' + StringTools.hex(bg,6) + '"';
+      }
+
+      if (project.hasDef("preloadFg"))
+         context.PRELOAD_FG = '"' + project.getDef("preloadFg") + '"';
+      else
+      {
+         var bg = project.window.background;
+         var r = (bg>>16) & 0xff;
+         var g = (bg>>8) & 0xff;
+         var b = (bg) & 0xff;
+         r = (r>=160) ? 0 : 255;
+         g = (g>=160) ? 0 : 255;
+         b = (b>=160) ? 0 : 255;
+         var fg = (r<<16) | (g<<8) | b;
+         context.PRELOAD_FG = '"#' + StringTools.hex(fg,6) + '"';
+      }
+
+      var preloader = project.getDef("preloader");
+      if (!project.hasDef("nopreloader") )
+      {
+         if (preloader==null && !project.hasDef("nopreloader") )
+         {
+            preloader = CommandLineTools.nme + "/ndll/Emscripten/preloader.js";
+            Log.verbose('Using default preloader $preloader');
+         }
+         else
+         {
+            Log.verbose('Using specified $preloader');
+         }
+     }
+
+      if (preloader!=null)
+      {
          try {
             context.NME_PRELOADER = File.getContent(preloader);
          }

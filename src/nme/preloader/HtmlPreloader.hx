@@ -5,40 +5,56 @@ class HtmlPreloader
 {
    static var context:CanvasRenderingContext2D;
    static var canvas:CanvasElement;
+   static var bg:String;
+   static var fg:String;
 
    public static function render(count:Int, of:Int)
    {
+      var win  = js.Browser.window;
       if (count==of)
       {
-         var doc  = js.Browser.window.document;
+         var doc  = win.document;
          doc.body.removeChild(canvas);
          canvas = null;
          context = null;
-         untyped js.Browser.window.preloadUpdate = null;
+         untyped win.preloadUpdate = null;
       }
       else
       {
          var w = canvas.width;
          var h = canvas.height;
          var ctx = context;
-         ctx.fillStyle = "#b0b0b0";
+         var scale = win.devicePixelRatio;
+         if (scale==null) scale = 1;
+         var bw = Std.int(w - scale*20);
+         if (bw<20) bw = w;
+         var bh = Std.int(scale*20);
+
+         ctx.fillStyle = bg;
          ctx.fillRect(0,0,w,h);
-         ctx.strokeStyle = "#000060";
+         ctx.strokeStyle = fg;
          ctx.lineWidth = 1;
          ctx.beginPath();
-         ctx.rect(w*0.2, h/2-30,w*0.6, 60);
+         var border = Std.int(scale*2);
+         ctx.rect(Std.int((w-bw)/2)-border, Std.int((h-bh)/2)-border, bw+border*2, bh+border*2);
          ctx.stroke();
-         ctx.fillStyle = "#000060";
-         ctx.fillRect(w*0.22, h/2-28,w*0.56*(count+1)/(of+1), 56);
+         ctx.fillStyle = fg;
+         ctx.fillRect(Std.int((w-bw)/2), Std.int((h-bh)/2), bw*(count+1)/(of+1), bh);
       }
    }
 
    public static function main()
    {
-      var doc  = js.Browser.window.document;
+      var win  = js.Browser.window;
+      bg = untyped win.preloadBg;
+      if (bg==null) bg = "#b0b0b0";
+      fg = untyped win.preloadFg;
+      if (fg==null) fg = "#000060";
+
+      var doc  = win.document;
       canvas = cast doc.createElement("canvas");
-      canvas.width = js.Browser.window.innerWidth;
-      canvas.height = js.Browser.window.innerHeight;
+      canvas.width = win.innerWidth;
+      canvas.height = win.innerHeight;
       doc.body.appendChild(canvas);
       context = canvas.getContext2d();
       render(0,10);

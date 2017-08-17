@@ -15,6 +15,8 @@
 	<script type="text/javascript" src="::__current__::"></script>::end::::end::
 	
 	<script>
+		window.preloadBg = ::PRELOAD_BG::;
+		window.preloadFg = ::PRELOAD_FG::;
 		window.addEventListener ("touchmove", function (event) { event.preventDefault (); }, false);
 		if (typeof window.devicePixelRatio != 'undefined' && window.devicePixelRatio > 2) {
 			var meta = document.getElementById ("viewport");
@@ -149,9 +151,25 @@
           })();
          ::end::
 
-          var script = document.createElement('script');
-          script.src = "::NME_LIB_JS::";
-          document.body.appendChild(script);
+          (function() {
+             var xhr = new XMLHttpRequest;
+             var script = document.createElement("script");
+             xhr.open("GET", "::NME_LIB_JS::", true);
+             xhr.onload = function (e) {
+               if (xhr.readyState === 4) {
+                 if (xhr.status === 200) {
+                   script.text = xhr.response;
+                   document.head.appendChild(script);
+                 } else {
+                   console.error(xhr.response);
+                 }
+               }
+             };
+             //xhr.onprogress = function (e) {
+             //  Module.print('Loading JavaScript: ' + (100 * e.loaded / + e.total) + '%');
+             //};
+             xhr.send();
+          }) ();
 
     </script>
 
