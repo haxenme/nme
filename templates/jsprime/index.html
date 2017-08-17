@@ -44,24 +44,26 @@
     ::end::
 
     <script type='text/javascript'>
+       var emrun_http_sequence_number=1;
+       var emrunPost = function(msg){
+          var http=new XMLHttpRequest;
+          http.open("POST","stdio.html",true);
+          http.send(msg)
+       }
+
        var Module = {
         preRun: [],
         postRun: [],
         print: (function() {
-          var element = document.getElementById('output');
-          if (element) element.value = ''; // clear browser cache
-          return function(text) {
+          if (document.URL.search("localhost")!=-1||document.URL.search(":6931/")!=-1)
+             return function(text) {
+               if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+               emrunPost("^out^"+emrun_http_sequence_number++ +"^"+encodeURIComponent(text));
+             }
+          else
+            return function(text) {
             if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-            // These replacements are necessary if you render to raw HTML
-            //text = text.replace(/&/g, "&amp;");
-            //text = text.replace(/</g, "&lt;");
-            //text = text.replace(/>/g, "&gt;");
-            //text = text.replace('\n', '<br>', 'g');
             console.log(text);
-            if (element) {
-              element.value += text + "\n";
-              element.scrollTop = element.scrollHeight; // focus on bottom
-            }
           };
         })(),
         canvas: (function() {
@@ -107,6 +109,20 @@
           }
         ::end::
         },
+        printErr: (function() {
+          if (document.URL.search("localhost")!=-1||document.URL.search(":6931/")!=-1)
+             return function(text) {
+               if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+               emrunPost("^err^"+emrun_http_sequence_number++ +"^"+encodeURIComponent(text));
+               console.error(text);
+             }
+          else
+            return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            console.error(text);
+          };
+        })(),
+
         printErr: function(text) {
           if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
           console.error(text);

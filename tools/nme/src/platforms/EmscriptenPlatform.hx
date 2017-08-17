@@ -85,17 +85,41 @@ class EmscriptenPlatform extends DesktopPlatform
       context.NME_APP_JS = null;
    }
 
+
+   function emrun(arguments:Array<String>):Void 
+   {
+      var command = sdkPath==null ? "emrun" : sdkPath + "/emrun";
+      if (python!=null)
+      {
+         PathHelper.addExePath( haxe.io.Path.directory(python) );
+         ProcessHelper.runCommand("", "python", [command].concat(arguments));
+      }
+      else
+         ProcessHelper.runCommand("", command, arguments);
+   }
+   public static function listBrowsers():Void 
+   {
+      var proj = new NMEProject();
+      CommandLineTools.getHXCPPConfig(proj);
+      var instance = new EmscriptenPlatform(proj);
+      instance.emrun(["--list_browsers"]);
+      Sys.println("NME : Use --nobrowser for no launch, or");
+      Sys.println("          -browser ID, for specific one");
+   }
+
    override public function run(arguments:Array<String>):Void 
    {
       var command = sdkPath==null ? "emrun" : sdkPath + "/emrun";
       var source = ext == ".html" ? Path.withoutDirectory(executablePath) : "index.html";
+      var browser = CommandLineTools.browser;
+      var browserOps = browser=="none" ? ["--no_browser"] : browser==null ? [] : ["--browser",browser];
       if (python!=null)
       {
          PathHelper.addExePath( haxe.io.Path.directory(python) );
-         ProcessHelper.runCommand(applicationDirectory, "python", [command].concat([source]).concat(arguments) );
+         ProcessHelper.runCommand(applicationDirectory, "python", [command].concat(browserOps).concat([source]).concat(arguments) );
       }
       else
-         ProcessHelper.runCommand(applicationDirectory, command, [source].concat(arguments) );
+         ProcessHelper.runCommand(applicationDirectory, command, [source].concat(browserOps).concat(arguments) );
    }
 
    public function setupSdk()

@@ -54,6 +54,10 @@ class ApplicationMain
         ::end::
       #end
 
+      #if jsprime
+      haxe.Log.trace = jsprimeLog;
+      #end
+
 
       #if flash
 
@@ -244,6 +248,19 @@ class ApplicationMain
       catch(e:Dynamic) {  }
       #end
    }
+
+   #if jsprime
+   @:access(js.Boot.__string_rec)
+   static dynamic function jsprimeLog( v : Dynamic, ?infos : haxe.PosInfos ) : Void
+   {
+      var msg = if (infos != null) infos.fileName + ":" + infos.lineNumber + ": " else "";
+      msg += js.Boot.__string_rec(v, "");
+      if (infos != null && infos.customParams != null)
+         for (v in infos.customParams)
+            msg += "," + js.Boot.__string_rec(v, "");
+      (untyped Module).print(msg);
+   }
+   #end
 
    public static function __init__ ()
    {

@@ -30,6 +30,7 @@ class CommandLineTools
    public static var home:String;
    public static var sys:SysProxy;
    public static var gradle:Bool = false;
+   public static var browser:String = null;
 
    static var toolkit:Bool = true;
    static var haxeVer:String = null;
@@ -59,7 +60,7 @@ class CommandLineTools
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
-            "rebuild", "shell", "icon", "banner", "favicon", "serve" ];
+            "rebuild", "shell", "icon", "banner", "favicon", "serve", "listbrowsers" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -413,6 +414,12 @@ class CommandLineTools
             args.push("-notoolkit");
          if (gradle)
             args.push("-gradle");
+         if (browser!=null)
+         {
+            args.push("-browser");
+            args.push(browser);
+         }
+
          if (project.hasDef("deploy"))
             args.push("deploy=" + project.getDef("deploy"));
          if (sampleTarget!="")
@@ -736,6 +743,10 @@ class CommandLineTools
       sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
       sys.println("  rebuild : rebuild binaries from a build.xml file'");
       sys.println("  remake : rebuild nme tool and build nme project binaries for targets'");
+      sys.println("  listbrowsers: show list of browsers that can be used with js targets");
+      sys.println("  icon filename width height: generate project icon");
+      sys.println("  banner filename width height: generate project banner");
+      sys.println("  favicon filename: generate project favicon");
       sys.println("");
       sys.println(" Targets : ");
       sys.println("");
@@ -766,6 +777,8 @@ class CommandLineTools
       sys.println("  -tidy : remove ouput files");
       sys.println("  -clean : remove output files and c++ obj file store");
       sys.println("  -bin directory: put generated binaries in different directory");
+      sys.println("  -browser id: which browser to launch with js targets");
+      sys.println("  -nobrowser: do not launch browser js targets (just build + serve project)");
       sys.println("  [mac/linux/windows] -32 -64 : Compile for 32-bit or 64-bit instead of default");
       sys.println("  [android] -device=serialnumber : specify serial number");
       sys.println("  [ios] -simulator : Build/test for the device simulator");
@@ -1413,6 +1426,9 @@ class CommandLineTools
          case "favicon":
             createIcon(project,false,true);
 
+         case "listbrowsers":
+            platforms.EmscriptenPlatform.listBrowsers();
+
          case "banner":
             createIcon(project,true);
 
@@ -1629,6 +1645,14 @@ class CommandLineTools
             {
                toolkit = false;
                project.localDefines.set("notoolkit", "");
+            }
+            else if (argument=="-browser")
+            {
+               browser = arguments[argIdx++];
+            }
+            else if (argument=="-nobrowser")
+            {
+               browser = "none";
             }
             else if (argument=="-toolkit-debug" || argument=="-Dtoolkit-debug")
             {

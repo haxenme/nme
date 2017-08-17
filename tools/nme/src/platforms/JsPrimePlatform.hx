@@ -227,14 +227,17 @@ class JsPrimePlatform extends Platform
    {
       setupServer();
       var command = sdkPath==null ? "emrun" : sdkPath + "/emrun";
+      var browser = CommandLineTools.browser;
+      var browserOps = browser=="none" ? ["--no_browser"] : browser==null ? [] : ["--browser",browser];
+
       var dir = getOutputDir();
       if (python!=null)
       {
          PathHelper.addExePath( haxe.io.Path.directory(python) );
-         ProcessHelper.runCommand(dir, "python", [command].concat(["index.html"]).concat(arguments) );
+         ProcessHelper.runCommand(dir, "python", [command].concat(browserOps).concat(["index.html"]).concat(arguments) );
       }
       else
-         ProcessHelper.runCommand(dir, command, ["index.html"].concat(arguments) );
+         ProcessHelper.runCommand(dir, command, browserOps.concat(["index.html"]).concat(arguments) );
    }
 }
 
