@@ -17,6 +17,10 @@ class Main extends Sprite {
 	private var movingRight:Bool;
 	private var movingUp:Bool;
 	
+    private var movingDownAxis:Bool;
+    private var movingLeftAxis:Bool;
+    private var movingRightAxis:Bool;
+    private var movingUpAxis:Bool;
 	
 	public function new () {
 		
@@ -58,15 +62,15 @@ private function onJoystickAxisMove( e:JoystickEvent ):Void
     switch(e.id)
     {
         case JoystickEvent.AXIS_LEFTX:
-        //
+            movingRightAxis = (e.value > 0.5);
+            movingLeftAxis = (e.value < -0.5);
         case JoystickEvent.AXIS_LEFTY:
-        //
         case JoystickEvent.AXIS_RIGHTX:
         //
         case JoystickEvent.AXIS_RIGHTY:
         //
         case JoystickEvent.AXIS_TRIGGERLEFT:
-        //
+        //note: triggers have value range 0 (not pressed) to 1 (pressed)
         case JoystickEvent.AXIS_TRIGGERRIGHT:
         //
     }
@@ -122,25 +126,25 @@ private function onJoystickButton( e:JoystickEvent, pressed:Bool ):Void
 
 	private function this_onEnterFrame (event:Event):Void {
 		
-		if (movingDown) {
+        if (movingDown || movingDownAxis) {
 			
 			Logo.y += 5;
 			
 		}
 		
-		if (movingLeft) {
+        if (movingLeft || movingLeftAxis) {
 			
 			Logo.x -= 5;
 			
 		}
 		
-		if (movingRight) {
+        if (movingRight || movingRightAxis) {
 			
 			Logo.x += 5;
 			
 		}
 		
-		if (movingUp) {
+        if (movingUp || movingUpAxis) {
 			
 			Logo.y -= 5;
 			
