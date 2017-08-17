@@ -1,7 +1,7 @@
 ## Building with nme-dev
 
 The original way of building nme was to use the libraries provided by the 'nme-dev' haxelib.
-To do this, you install the haxelib and run "neko buil.n", possibly passing desired architectures.
+To do this, you install the haxelib and run "neko build.n", possibly passing desired architectures.
 
 ## Building with Native-Toolkit
 
