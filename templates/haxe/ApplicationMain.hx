@@ -45,7 +45,6 @@ class ApplicationMain
    public static var winBackground:Int = ::WIN_BACKGROUND::;
    public static var onLoaded:Void->Void;
 
-   
    public static function main()
    {
       #if cpp
@@ -56,6 +55,9 @@ class ApplicationMain
 
       #if jsprime
       haxe.Log.trace = jsprimeLog;
+      var closePreloader:Void->Void = (untyped Module).closePreloader;
+      if (closePreloader!=null)
+         closePreloader();
       #end
 
 
@@ -266,14 +268,6 @@ class ApplicationMain
    {
       #if jsprime
       untyped __define_feature__("Type.getClassName", {});
-
-      var win = js.Browser.window;
-      if (win!=null)
-      {
-         var preloader = untyped win.preloadUpdate;
-         if (preloader!=null)
-            preloader(100,100);
-      }
       #end
 
       #if neko

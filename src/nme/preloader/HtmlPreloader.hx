@@ -8,39 +8,39 @@ class HtmlPreloader
    static var bg:String;
    static var fg:String;
 
-   public static function render(count:Int, of:Int)
+   public static function close()
    {
       var win  = js.Browser.window;
-      if (count==of)
-      {
-         var doc  = win.document;
-         doc.body.removeChild(canvas);
-         canvas = null;
-         context = null;
-         untyped win.preloadUpdate = null;
-      }
-      else
-      {
-         var w = canvas.width;
-         var h = canvas.height;
-         var ctx = context;
-         var scale = win.devicePixelRatio;
-         if (scale==null) scale = 1;
-         var bw = Std.int(w - scale*20);
-         if (bw<20) bw = w;
-         var bh = Std.int(scale*20);
+      var doc  = win.document;
+      doc.body.removeChild(canvas);
+      canvas = null;
+      context = null;
+      untyped win.preloadUpdate = null;
+      untyped win.closeProgress = null;
+   }
 
-         ctx.fillStyle = bg;
-         ctx.fillRect(0,0,w,h);
-         ctx.strokeStyle = fg;
-         ctx.lineWidth = 1;
-         ctx.beginPath();
-         var border = Std.int(scale*2);
-         ctx.rect(Std.int((w-bw)/2)-border, Std.int((h-bh)/2)-border, bw+border*2, bh+border*2);
-         ctx.stroke();
-         ctx.fillStyle = fg;
-         ctx.fillRect(Std.int((w-bw)/2), Std.int((h-bh)/2), bw*(count+1)/(of+1), bh);
-      }
+   public static function render(fraction:Float)
+   {
+      var win  = js.Browser.window;
+      var w = canvas.width;
+      var h = canvas.height;
+      var ctx = context;
+      var scale = win.devicePixelRatio;
+      if (scale==null) scale = 1;
+      var bw = Std.int(w - scale*20);
+      if (bw<20) bw = w;
+      var bh = Std.int(scale*20);
+
+      ctx.fillStyle = bg;
+      ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle = fg;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      var border = Std.int(scale*2);
+      ctx.rect(Std.int((w-bw)/2)-border, Std.int((h-bh)/2)-border, bw+border*2, bh+border*2);
+      ctx.stroke();
+      ctx.fillStyle = fg;
+      ctx.fillRect(Std.int((w-bw)/2), Std.int((h-bh)/2), bw*fraction, bh);
    }
 
    public static function main()
@@ -57,7 +57,8 @@ class HtmlPreloader
       canvas.height = win.innerHeight;
       doc.body.appendChild(canvas);
       context = canvas.getContext2d();
-      render(0,10);
-      untyped js.Browser.window.preloadUpdate = render;
+      render(0);
+      untyped win.preloadUpdate = render;
+      untyped win.closePreloader = close;
    }
 }

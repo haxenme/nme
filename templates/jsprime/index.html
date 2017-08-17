@@ -78,38 +78,70 @@
 
           return canvas;
         })(),
-        totalDependencies: 0,
+        totalDownloads: 1,
+
+        downloadedNmeJs: 0,
+        nmeJs: null,
+        binaryIsReady : false,
+
+        downloadedNmeApp: 0,
+        nmeApp: null,
+
+        downloadedNmeClasses: 0,
+        nmeClasses: null,
+
+        calledRun: false,
+
+        progress: function() {
+          var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedNmeClasses;
+          if (this.binaryIsReady) loaded++;
+
+          var preloadUpdate = window.preloadUpdate;
+          var fraction = loaded/this.totalDownloads;
+          if ( typeof(preloadUpdate)=="function" ) preloadUpdate(fraction);
+
+          if (this.nmeJs!=null) {
+             var script = document.createElement("script");
+             script.text = this.nmeJs;
+             this.nmeJs = null;
+             document.head.appendChild(script);
+          }
+
+          if (!this.binaryIsReady) return;
+          if (!this.calledRun)
+          {
+             window.setTimeout(function() { Module.progress(); }, 100);
+             return;
+          }
+
+          ::if (jsminimal)::
+          if (this.nmeClasses!=null) {
+             var script = document.createElement("script");
+             script.text = this.nmeClasses;
+             this.nmeClasses = null;
+             document.head.appendChild(script);
+          }
+          if ( typeof(window.nmeClassesLoaded)=="undefined")
+             return;
+          ::end::
+
+          ::if (!NME_IMMEDIATE_LOAD)::
+          if (this.nmeApp!=null) {
+             var script = document.createElement("script");
+             script.text = this.nmeApp;
+             this.nmeApp = null;
+             document.head.appendChild(script);
+          }
+          ::end::
+        },
+
+        // This will get called by emsscripen code once it c++ constructors have run
         monitorRunDependencies: function(left) {
           this.totalDependencies = Math.max(this.totalDependencies, left);
-          var preloadUpdate = window.preloadUpdate;
-          var done = this.totalDependencies-left;
-          var total = this.totalDependencies + ::if (jsminimal)::2::else::1::end::;
-          if ( typeof(preloadUpdate)!="undefined" ) preloadUpdate(done,total);
-          ::if (!NME_IMMEDIATE_LOAD)::
           if (left==0) {
-             var run = function() {
-                 var script = document.createElement('script');
-                 script.src = "::NME_APP_JS::";
-                 document.body.appendChild(script);
-             };
-             ::if (jsminimal)::
-             if ( typeof(window.nmeClassesLoaded)!="undefined")
-                run()
-             else {
-                window.nmeOnClasses = function() {
-                   if ( typeof(preloadUpdate)!="undefined" )
-                      preloadUpdate(done+1,total);
-                   run();
-                }
-                var classes = document.createElement('script');
-                classes.src = "nmeclasses.js";
-                document.body.appendChild(classes);
-             }
-             ::else::
-             run();
-             ::end::
+             this.binaryIsReady = true;
+             this.progress();
           }
-        ::end::
         },
         printErr: (function() {
           if (document.URL.search("localhost")!=-1||document.URL.search(":6931/")!=-1)
@@ -152,24 +184,75 @@
          ::end::
 
           (function() {
+             Module.totalDownloads++;
              var xhr = new XMLHttpRequest;
-             var script = document.createElement("script");
              xhr.open("GET", "::NME_LIB_JS::", true);
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {
                  if (xhr.status === 200) {
-                   script.text = xhr.response;
-                   document.head.appendChild(script);
+                   Module.nmeJs =xhr.response; 
+                   Module.progress();
                  } else {
                    console.error(xhr.response);
                  }
                }
              };
-             //xhr.onprogress = function (e) {
-             //  Module.print('Loading JavaScript: ' + (100 * e.loaded / + e.total) + '%');
-             //};
+             xhr.onprogress = function (e) {
+               Module.downloadedNmeJs = e.loaded / e.total;
+               Module.progress();
+             };
              xhr.send();
           }) ();
+
+
+          ::if (!NME_IMMEDIATE_LOAD)::
+          (function() {
+             Module.totalDownloads++;
+             var xhr = new XMLHttpRequest;
+             xhr.open("GET", "::NME_APP_JS::", true);
+             xhr.onload = function (e) {
+               if (xhr.readyState === 4) {
+                 if (xhr.status === 200) {
+                   Module.nmeApp =xhr.response; 
+                   Module.progress();
+                 } else {
+                   console.error(xhr.response);
+                 }
+               }
+             };
+             xhr.onprogress = function (e) {
+               Module.downloadedNmeApp = e.loaded / e.total;
+               Module.progress();
+             };
+             xhr.send();
+          }) ();
+          ::end::
+
+          ::if (jsminimal)::
+          (function() {
+             Module.totalDownloads++;
+             window.nmeOnClasses = Module.progress;
+             var xhr = new XMLHttpRequest;
+             xhr.open("GET", "nmeclasses.js", true);
+             xhr.onload = function (e) {
+               if (xhr.readyState === 4) {
+                 if (xhr.status === 200) {
+                   Module.nmeClasses =xhr.response; 
+                   Module.progress();
+                 } else {
+                   console.error(xhr.response);
+                 }
+               }
+             };
+             xhr.onprogress = function (e) {
+               Module.downloadedNmeClasses = e.loaded / e.total;
+               Module.progress();
+             };
+             xhr.send();
+          }) ();
+          ::end::
+
+
 
     </script>
 

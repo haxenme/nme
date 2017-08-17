@@ -86,6 +86,7 @@ class JsPrimePlatform extends Platform
             }
          }
          var defs = new Array<String>();
+         defs.push("var __map_reserved = window.__map_reserved;");
          for(f in Reflect.fields(exports))
          {
             defs.push('var $f = ' + "$" + 'hxClasses.package.$f;');
