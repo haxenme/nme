@@ -113,7 +113,7 @@ class MakeClasses
       File.saveContent("gen/ImportAll.hx", lines.join("\n"));
 
       Sys.println('Generate pass 1...');
-      runCommand("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
+      runCommand("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/NmeClasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
 
       var contents = File.getContent("gen/export_classes.info");
       contents = filterContents(contents);
@@ -125,7 +125,7 @@ class MakeClasses
       lines = lines.concat(exports).concat([" ];","}"]);
       File.saveContent("gen/ImportAll.hx", lines.join("\n"));
 
-      runCommand("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/nmeclasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
+      runCommand("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/NmeClasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
 
       Sys.println("Export...");
       FileSystem.createDirectory("../../ndll");
@@ -134,7 +134,7 @@ class MakeClasses
       var hxClassesDef = ~/hxClasses/;
 
       var inject = "if (typeof($global['hxClasses'])=='undefined')  { $global['hxClasses']=$hxClasses; }  else { $hxClasses=$global['hxClasses']; }";
-      var src = File.getContent("gen/nmeclasses.js");
+      var src = File.getContent("gen/NmeClasses.js");
       var lastPos = 0;
       for(pos in 0...src.length)
       {
@@ -154,7 +154,7 @@ class MakeClasses
       var lines = src.split("\n");
       */
 
-      File.saveContent("../../ndll/Emscripten/nmeclasses.js",src);
+      File.saveContent("../../ndll/Emscripten/NmeClasses.js",src);
 
       File.saveContent("../../ndll/Emscripten/export_classes.info",contents);
 

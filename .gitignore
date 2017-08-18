@@ -40,6 +40,10 @@ src/cppia
 src/jsprime
 tools/make_classes/gen
 
+project/src/emscripten/_monospace.cpp
+project/src/emscripten/_sans.cpp
+project/src/emscripten/_serif.cpp
+
 # Miscellaneous
 all_objs
 *.pdb

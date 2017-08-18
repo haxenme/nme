@@ -25,15 +25,24 @@ class JsPrimePlatform extends Platform
    override public function getNativeDllExt() { return ".js"; }
    override public function getArchSuffix() { return ""; }
 
+   var extraFlags = new Array<String>();
+
    public function new(inProject:NMEProject)
    {
       super(inProject);
 
       project.haxeflags.push('-js $haxeDir/ApplicationMain.js');
-      if (inProject.hasDef("jsminimal"))
-      {
-         project.macros.push("--macro nme.macros.Exclude.exclude()");
-      }
+      extraFlags.push('-js $haxeDir/ApplicationMain.js');
+      project.haxeflags.push('-D jsminimal');
+      extraFlags.push('-D jsminimal');
+      project.macros.push("--macro nme.macros.Exclude.exclude()");
+   }
+
+   public function restoreState()
+   {
+      for(flag in extraFlags)
+         project.haxeflags.remove(flag);
+      project.macros.remove("--macro nme.macros.Exclude.exclude()");
    }
 
    static function parseClassInfo(externs:Map<String,Bool>, filename:String)
@@ -57,12 +66,23 @@ class JsPrimePlatform extends Platform
       }
    }
 
+
+   public function getScriptName()
+   {
+      return haxeDir + "/ApplicationMain.js";
+   }
+
    override public function copyBinary():Void 
    {
-      PathHelper.mkdir(getOutputDir());
+      copyOutputTo(getOutputDir());
+   }
+
+   public function copyOutputTo(destDir:String):Void
+   {
+      PathHelper.mkdir(destDir);
 
       var src = haxeDir + "/ApplicationMain.js";
-      if (project.hasDef("jsminimal"))
+      if (true || project.hasDef("jsminimal"))
       {
          var exportMap = new Map<String,Bool>();
          parseClassInfo(exportMap, CommandLineTools.nme + "/ndll/Emscripten/export_classes.info");
@@ -134,10 +154,11 @@ class JsPrimePlatform extends Platform
                lastPos = pos;
             }
          }
-         File.saveContent(getOutputDir()+"/ApplicationMain.js",contents);
+         File.saveContent(destDir+"/ApplicationMain.js",contents);
       }
       else
-         FileHelper.copyFile(src, getOutputDir()+"/ApplicationMain.js");
+         FileHelper.copyFile(src, destDir+"/ApplicationMain.js");
+      project.localDefines.set("jsScript",destDir+"/ApplicationMain.js");
    }
 
    override function generateContext(context:Dynamic)
@@ -182,6 +203,8 @@ class JsPrimePlatform extends Platform
          }
      }
 
+     context.PARSE_NME = File.getContent(CommandLineTools.nme + "/ndll/Emscripten/parsenme.js");
+
       if (preloader!=null)
       {
          try {
@@ -195,12 +218,15 @@ class JsPrimePlatform extends Platform
 
       context.NME_IMMEDIATE_LOAD = false;
       context.NME_LIB_JS = "Nme.js";
-      context.NME_APP_JS = project.debug ? "ApplicationMain-debug.js" : "ApplicationMain.js";
+      context.NME_APP_JS = getNmeFilename();
       context.NME_MEM_FILE = true;
 
       // Flixel is based on cpp & neko - need jsprime too
       if (project.findHaxelib("flixel")!=null)
+      {
+          extraFlags.push("-D FLX_JOYSTICK_API");
           project.haxeflags.push("-D FLX_JOYSTICK_API" );
+      }
 
    }
 
@@ -208,11 +234,9 @@ class JsPrimePlatform extends Platform
    override public function updateExtra()
    {
       super.updateExtra();
-      if (project.hasDef("jsminimal"))
-      {
-         var src = CommandLineTools.nme + "/ndll/Emscripten/nmeclasses.js";
-         FileHelper.copyFile(src, getOutputDir()+"/nmeclasses.js");
-      }
+
+      var src = CommandLineTools.nme + "/ndll/Emscripten/NmeClasses.js";
+      FileHelper.copyFile(src, getOutputDir()+"/NmeClasses.js");
    }
 
 
@@ -258,8 +282,9 @@ class JsPrimePlatform extends Platform
             }
          }
       }
-
    }
+
+   override public function buildPackage() createNmeFile();
 
    override public function run(arguments:Array<String>):Void 
    {

@@ -36,6 +36,25 @@ class CppiaPlatform extends Platform
                         '$applicationDirectory/ScriptMain.cppia', addOutput);
    }
 
+   public function copyOutputTo(destDir:String):Void 
+   {
+      PathHelper.mkdir(destDir);
+      FileHelper.copyFile('$haxeDir/ScriptMain.cppia', '$destDir/ScriptMain.cppia');
+      project.localDefines.set("cppiaScript",destDir+"/ScriptMain.cppia");
+   }
+
+
+   override public function runHaxe()
+   {
+      super.runHaxe();
+   }
+
+   public function getScriptName()
+   {
+      return haxeDir + "/ScriptMain.cppia";
+   }
+
+   /*
    override public function updateOutputDir():Void 
    {
       super.updateOutputDir();
@@ -49,6 +68,7 @@ class CppiaPlatform extends Platform
       else
          IconHelper.createIcon(project.icons, 128, 128, destination + "/icon.png", addOutput);
    }
+   */
 
 
    override public function run(arguments:Array<String>):Void 
@@ -77,6 +97,9 @@ class CppiaPlatform extends Platform
    }
 
 
+   override public function buildPackage() createNmeFile();
+
+   /*
    override public function createInstaller()
    {
       var dir = getOutputDir();
@@ -127,6 +150,7 @@ class CppiaPlatform extends Platform
         addManifest();
         return super.deploy(inAndRun);
     }
+   */
 }
 
 

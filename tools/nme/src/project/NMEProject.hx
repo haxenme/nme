@@ -412,7 +412,7 @@ class NMEProject
 
          case Platform.JSPRIME, Platform.HTML5:
             platformType = Platform.TYPE_WEB;
-            embedAssets = true;
+            embedAssets = false;
 
          case Platform.ANDROID, Platform.IOS,
               Platform.IOSVIEW, Platform.ANDROIDVIEW:

@@ -6,6 +6,7 @@ import haxe.io.Path;
 import sys.net.Host;
 import sys.net.Socket;
 import nme.AlphaMode;
+import nme.script.NmeItem;
 using StringTools;
 
 class Platform
@@ -206,18 +207,13 @@ class Platform
 
    public function createInstaller() { }
 
-   public function createManifestHeader(?inBody:haxe.io.Bytes, includeIcon=false)
+   public function createManifestHeader(includeIcon)
    {
       var header:Dynamic = {};
       header.name = project.app.title;
       header.developer = project.app.company;
       header.id = project.app.packageName;
-      header.engines = new Array<Dynamic>();
-      for(engine in project.engines.keys())
-      {
-         var e = {name:engine, version:project.engines.get(engine)};
-         header.engines.push(e);
-      }
+      header.version = 1;
 
       if (includeIcon && project.icons!=null && project.icons.length>0)
       {
@@ -228,6 +224,7 @@ class Platform
                header.svgIcon = File.getContent(icon);
             else
             {
+               IconHelper.createIcon(project.icons, 128, 128, getOutputDir() + "/icon.png", addOutput);
                var iconFile = getOutputDir() + "/icon.png";
                header.bmpIcon = haxe.crypto.Base64.encode(File.getBytes(icon));
             }
@@ -240,6 +237,7 @@ class Platform
       return header;
    }
 
+/*
    public function addManifest()
    {
       try
@@ -273,6 +271,7 @@ class Platform
          Log.error("Error creating manifest " + e);
       }
    }
+*/
 
    public function getResult(socket:Socket) : String
    {
@@ -617,5 +616,72 @@ class Platform
 
          copyTemplateDir(extra,  output );
       }
+   }
+
+
+   public function getNmeFilename()
+   {
+      return project.app.file + ".nme";
+   }
+
+   public function createNmeFile()
+   {
+      // Save the zipped file to disc
+      var filename = getOutputDir() + "/" + getNmeFilename();
+
+      var outfile = sys.io.File.write(filename,true);
+      outfile.bigEndian = false;
+      outfile.writeString("NME$");
+
+      var header = haxe.Json.stringify( createManifestHeader(true) );
+      outfile.writeInt32(header.length);
+      outfile.writeString(header);
+
+      var data = new Array<haxe.io.Bytes>();
+      var offset = 0;
+
+      var index = new Array<NmeItem>();
+
+      for(s in ["cppiaScript", "jsScript" ])
+      {
+         var script = project.getDef(s);
+         if (script!=null)
+         {
+            var bytes = File.getBytes(script);
+            data.push(bytes);
+            var item = new NmeItem();
+            item.offset = offset;
+            item.length = data.length;
+            item.type = s=="jsScript" ? "TEXT" : "BINARY";
+            item.id = s;
+            item.flags = 0;
+            index.push(item);
+         }
+      }
+ 
+      var base = getOutputDir();
+      for(asset in project.assets)
+      {
+         var bytes = File.getBytes(base + "/" + asset.targetPath);
+         data.push(bytes);
+         var item = new NmeItem();
+         item.offset = offset;
+         item.length = data.length;
+         item.type = Std.string(asset.type);
+         item.id = asset.id;
+         item.flags = asset.alphaMode==AlphaIsPremultiplied ? 1 : 0;
+         index.push(item);
+      }
+ 
+      var indexData = haxe.Json.stringify(index);
+      outfile.writeInt32(indexData.length);
+      outfile.writeString(indexData);
+
+      for(blob in data)
+         outfile.writeBytes(blob,0,blob.length);
+
+      outfile.close();
+
+      Log.verbose("Wrote " + filename);
    }
 }

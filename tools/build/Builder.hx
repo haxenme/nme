@@ -79,6 +79,8 @@ class Builder extends hxcpp.Builder
       runCommand("haxe", ["--run","MakeClasses"]);
       setDir( cwd+"../tools/preloader/");
       runCommand("haxe", ["compile.hxml"]);
+      setDir( cwd+"../tools/parsenme/");
+      runCommand("haxe", ["compile.hxml"]);
    }
 
    public static function main()

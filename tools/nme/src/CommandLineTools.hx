@@ -30,6 +30,8 @@ class CommandLineTools
    public static var home:String;
    public static var sys:SysProxy;
    public static var gradle:Bool = false;
+   public static var quick:Bool = false;
+   public static var fat:Bool = false;
    public static var browser:String = null;
 
    static var toolkit:Bool = true;
@@ -85,6 +87,13 @@ class CommandLineTools
          Log.verbose("Overriding bin directory : " + project.app.binDir);
       }
 
+      if (project.hasDef("fat"))
+         fat=true;
+      if (project.hasDef("quick"))
+         quick=true;
+
+      var buildFat = (command == "build" || command == "test") && !quick;
+
       switch(project.target) 
       {
          case Platform.ANDROID:
@@ -115,13 +124,30 @@ class CommandLineTools
             platform = new platforms.FlashPlatform(project);
 
          case Platform.CPPIA:
+            var jsPlatform:platforms.JsPrimePlatform = null;
+            if (fat && buildFat)
+            {
+               jsPlatform = new platforms.JsPrimePlatform(project);
+               jsPlatform.runHaxe();
+               jsPlatform.restoreState();
+            }
             platform = new platforms.CppiaPlatform(project);
+            if (jsPlatform!=null)
+               jsPlatform.copyOutputTo(platform.getOutputDir());
 
          case Platform.EMSCRIPTEN:
             platform = new platforms.EmscriptenPlatform(project);
 
          case Platform.JS:
+            var cppiaPlatform:platforms.CppiaPlatform = null;
+            if (fat && buildFat)
+            {
+               var cppiaPlatform = new platforms.JsPrimePlatform(project);
+               cppiaPlatform.runHaxe();
+            }
             platform = new platforms.JsPlatform(project);
+            if (cppiaPlatform!=null)
+               cppiaPlatform.copyOutputTo(platform.getOutputDir());
 
          case Platform.WATCH:
             platform = new platforms.WatchPlatform(project);
@@ -129,6 +155,7 @@ class CommandLineTools
          case Platform.JSPRIME, Platform.HTML5:
             platform = new platforms.JsPrimePlatform(project);
       }
+
 
       if (platform != null) 
       {
@@ -161,7 +188,8 @@ class CommandLineTools
             Log.verbose("\nRunning command: UPDATE");
             platform.updateBuildDir();
             platform.updateOutputDir();
-            platform.updateAssets();
+            if (!quick)
+               platform.updateAssets();
             platform.updateLibs();
             platform.updateExtra();
          }
@@ -786,9 +814,9 @@ class CommandLineTools
       sys.println("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
    }
 
-   private static function displayInfo(showHint:Bool = false, forXcode:Bool = false):Void 
+   private static function displayInfo(showHint:Bool = false, skipBanner:Bool = false):Void 
    {
-      if (!forXcode) // Does not show up so well in xcode
+      if (!skipBanner) // Does not show up so well in xcode
       {
          sys.println(" _____________");
          sys.println("|             |");
@@ -1351,7 +1379,7 @@ class CommandLineTools
 
       if (Log.mVerbose && command!="") 
       {
-         displayInfo(false, command=="xcode");
+         displayInfo(false, command=="xcode" || quick);
          sys.println("");
       }
 
@@ -1640,6 +1668,14 @@ class CommandLineTools
             {
                gradle = true;
                project.haxedefs.set("gradle", "1");
+            }
+            else if (argument=="-q" || argument=="-quick")
+            {
+               project.haxedefs.set("quick", "1");
+            }
+            else if (argument=="-fat")
+            {
+               project.haxedefs.set("fat", "1");
             }
             else if (argument=="-notoolkit" || argument=="-Dnotoolkit")
             {
