@@ -494,6 +494,11 @@ class NMEProject
       return watchProject;
    }
 
+   public function expandCppia()
+   {
+      return hasDef("expand");
+   }
+
    public function getInt(inName:String,inDefault:Int):Int
    {
       if (!hasDef(inName))
@@ -629,8 +634,7 @@ class NMEProject
    {
       var ndll =  findNdll(name);
       if ( !isNeko() && ( (hasDef("toolkit") && name=="nme")  || 
-             (CommandLineTools.getHaxeVer()>="3.3") && (name=="std" || name=="regexp" ||
-                 name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) ) )
+              (name=="std" || name=="regexp" || name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) ) )
       {
          Log.verbose("Skip ndll " + name + " for toolkit link" );
       }
@@ -735,20 +739,6 @@ class NMEProject
             }
             else
                Log.verbose("No swf libraryHandlers set - getMovieClip may not work");
-         }
-      }
-
-
-      if (stdLibs && !isFlash && !hasDef("toolkit") && CommandLineTools.getHaxeVer()<"3.3" )
-      {
-         for(lib in ["std", "zlib", "regexp"])
-         {
-            if (findNdll(lib)==null)
-            {
-               var haxelib = addHaxelib("hxcpp","");
-               var ndll = new NDLL(lib, haxelib.getBase(), staticLink, "hxcpp", false);
-               ndlls.push(ndll);
-            }
          }
       }
 
@@ -878,14 +868,22 @@ class NMEProject
 
       var compilerFlags = [];
 
-      if (target == Platform.CPPIA)
-         compilerFlags.push('-resource $inBuildDir/nme/scriptassets.txt@haxe/nme/scriptassets.txt');
+      if (target==Platform.JSPRIME)
+      {
+         // nothing
+      }
+      else if (target==Platform.CPPIA)
+      {
+         if (expandCppia())
+            compilerFlags.push('-resource $inBuildDir/nme/scriptassets.txt@haxe/nme/scriptassets.txt');
+      }
       else
+      {
          compilerFlags.push('-resource $inBuildDir/nme/assets.txt@haxe/nme/assets.txt');
+      }
 
       for(haxelib in haxelibs) 
       {
- 
          haxelib.addLibraryFlags(compilerFlags);
          Reflect.setField(context, "LIB_" + haxelib.name.toUpperCase(), true);
       }

@@ -14,12 +14,14 @@ class CppiaPlatform extends Platform
    {
       super(inProject);
 
-      //if (project.getDef("CPPIA_HAXELIB")==null)
-      //   project.addLib("acadnme");
-
       applicationDirectory = getOutputDir();
 
       project.haxeflags.push('-cpp $haxeDir/ScriptMain.cppia');
+   }
+
+   public function restoreState()
+   {
+      project.haxeflags.remove('-cpp $haxeDir/ScriptMain.cppia');
    }
 
    override public function getPlatformDir() : String { return "cppia"; }
@@ -32,8 +34,8 @@ class CppiaPlatform extends Platform
 
    override public function copyBinary():Void 
    {
-     FileHelper.copyFile('$haxeDir/ScriptMain.cppia',
-                        '$applicationDirectory/ScriptMain.cppia', addOutput);
+      if (project.expandCppia())
+         copyOutputTo(getOutputDir());
    }
 
    public function copyOutputTo(destDir:String):Void 
@@ -54,50 +56,46 @@ class CppiaPlatform extends Platform
       return haxeDir + "/ScriptMain.cppia";
    }
 
-   /*
    override public function updateOutputDir():Void 
    {
-      super.updateOutputDir();
-
-      var destination = getOutputDir();
-      var icon = IconHelper.getSvgIcon(project.icons);
-      if (icon!=null)
+      if (project.expandCppia())
       {
-         FileHelper.copyFile(icon, destination + "/icon.svg", addOutput);
-      }
-      else
-         IconHelper.createIcon(project.icons, 128, 128, destination + "/icon.png", addOutput);
-   }
-   */
+         super.updateOutputDir();
 
+         var destination = getOutputDir();
+         var icon = IconHelper.getSvgIcon(project.icons);
+         if (icon!=null)
+         {
+            FileHelper.copyFile(icon, destination + "/icon.svg", addOutput);
+         }
+         else
+            IconHelper.createIcon(project.icons, 128, 128, destination + "/icon.png", addOutput);
+      }
+   }
+
+   override public function updateAssets()
+   {
+      if (project.expandCppia())
+         super.updateAssets();
+   }
 
    override public function run(arguments:Array<String>):Void 
    {
-      var fullPath =  FileSystem.fullPath('$applicationDirectory/ScriptMain.cppia');
-      var host = project.getDef("CPPIA_HOST");
-      if (host==null)
-      {
-         var haxelib = project.getDef("CPPIA_HAXELIB");
-         if (haxelib==null || haxelib=="")
-         {
-            // TODO - non windows
-            var dir = CommandLineTools.nme + "/bin/Windows/Acadnme";
-            var exe = "Acadnme.exe";
-            ProcessHelper.runCommand(dir, exe, [fullPath].concat(arguments));
-         }
-         else
-         {
-            ProcessHelper.runCommand("", "haxelib", ["run", haxelib, fullPath].concat(arguments));
-         }
-      }
-      else
-      {
-         ProcessHelper.runCommand("", host, [fullPath].concat(arguments));
-      }
+      var fullPath =  project.expandCppia() ? 
+           FileSystem.fullPath( getOutputDir() ) :
+           FileSystem.fullPath( getOutputDir() + "/" + getNmeFilename() );
+      CommandLineTools.runAcadnme([fullPath].concat(arguments), project);
    }
 
 
-   override public function buildPackage() createNmeFile();
+
+   override public function buildPackage()
+   {
+      if (!project.expandCppia())
+      {
+         createNmeFile();
+      }
+   }
 
    /*
    override public function createInstaller()

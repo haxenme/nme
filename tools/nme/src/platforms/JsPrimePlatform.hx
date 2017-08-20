@@ -66,6 +66,7 @@ class JsPrimePlatform extends Platform
       }
    }
 
+   override public function updateAssets() { }
 
    public function getScriptName()
    {

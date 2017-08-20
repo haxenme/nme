@@ -651,26 +651,28 @@ class Platform
             data.push(bytes);
             var item = new NmeItem();
             item.offset = offset;
-            item.length = data.length;
-            item.type = s=="jsScript" ? "TEXT" : "BINARY";
+            item.length = bytes.length;
+            item.type = "TEXT";
             item.id = s;
             item.flags = 0;
             index.push(item);
+            offset += item.length;
          }
       }
  
       var base = getOutputDir();
       for(asset in project.assets)
       {
-         var bytes = File.getBytes(base + "/" + asset.targetPath);
+         var bytes = File.getBytes( asset.sourcePath);
          data.push(bytes);
          var item = new NmeItem();
          item.offset = offset;
-         item.length = data.length;
+         item.length = bytes.length;
          item.type = Std.string(asset.type);
          item.id = asset.id;
          item.flags = asset.alphaMode==AlphaIsPremultiplied ? 1 : 0;
          index.push(item);
+         offset += item.length;
       }
  
       var indexData = haxe.Json.stringify(index);

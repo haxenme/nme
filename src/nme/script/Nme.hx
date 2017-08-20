@@ -55,51 +55,49 @@ class Nme
    public static function runInput(input:haxe.io.Input, ?verify:Dynamic->Bytes->Void)
    {
       var magic = input.readString(4);
-      if (magic!="NME!")
+      if (magic!="NME$")
          throw "NME - bad magic";
       input.bigEndian = false;
       var headerLen = input.readInt32();
-      var zipLen = input.readInt32();
+
+      // todo - verify
       var header = haxe.Json.parse( input.readString(headerLen) );
+      var len = input.readInt32();
+      var itemsString = input.readString(len);
+      var items:Array<Dynamic> = haxe.Json.parse(itemsString);
 
-      if (verify!=null)
-      {
-         var bytes = haxe.io.Bytes.alloc(zipLen);
-         input.readBytes(bytes,0,zipLen);
-         verify(header, bytes);
-         input = new haxe.io.BytesInput(bytes);
-      }
-
-      var zip = new haxe.zip.Reader( input );
-      var entries = zip.read();
       var script:String = null;
-      for(entry in entries)
+      var isResource = false;
+      var className:String = null;
+      for(i in items)
       {
-         if (entry.fileName=="ScriptMain.cppia")
+         var id:String = i.id;
+         if (id=="cppiaScript")
          {
-            var data = entry.data;
-            if (entry.compressed)
-            {
-               var byteArray = inflate(data);
-               script = byteArray.getString(0,byteArray.length);
-            }
-            else
-               script = data.getString(0,data.length);
-         }
-         else if (entry.fileName.startsWith("assets/"))
-         {
-            nme.Assets.byteFactory.set(entry.fileName.substr(7), function() return inflate(entry.data)  );
+            script = input.readString(i.length);
          }
          else
          {
-            // Ignore this entry?
+            var bytes = Bytes.alloc(i.length);
+            input.readFullBytes(bytes,0,i.length);
+
+            if (id!="jsScript")
+            {
+               var item:{flags:Int,type:String,value:haxe.io.Bytes} = i;
+               var alphaMode = AlphaMode.AlphaIsPremultiplied;
+               var type = Type.createEnum(AssetType,item.type);
+               nme.Assets.info.set(id, new AssetInfo(id,type,isResource,className,id,alphaMode));
+
+               nme.Assets.byteFactory.set(id, function() return ByteArray.fromBytes(bytes) );
+            }
          }
       }
+
       #if (cpp && !cppia)
          if (script==null)
             throw "Could not find script in input";
          #if ((hxcpp_api_level>=320) && scriptable)
-            cpp.cppia.Host.run(script);
+            cpp.cppia.Host.run(script.toString());
          #end
       #else
          throw "Script not available on this platform";

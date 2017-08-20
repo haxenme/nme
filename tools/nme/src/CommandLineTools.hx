@@ -139,21 +139,22 @@ class CommandLineTools
             platform = new platforms.EmscriptenPlatform(project);
 
          case Platform.JS:
-            var cppiaPlatform:platforms.CppiaPlatform = null;
-            if (fat && buildFat)
-            {
-               var cppiaPlatform = new platforms.JsPrimePlatform(project);
-               cppiaPlatform.runHaxe();
-            }
             platform = new platforms.JsPlatform(project);
-            if (cppiaPlatform!=null)
-               cppiaPlatform.copyOutputTo(platform.getOutputDir());
 
          case Platform.WATCH:
             platform = new platforms.WatchPlatform(project);
 
          case Platform.JSPRIME, Platform.HTML5:
+            var cppiaPlatform:platforms.CppiaPlatform = null;
+            if (fat && buildFat)
+            {
+               cppiaPlatform = new platforms.CppiaPlatform(project);
+               cppiaPlatform.runHaxe();
+               cppiaPlatform.restoreState();
+            }
             platform = new platforms.JsPrimePlatform(project);
+            if (cppiaPlatform!=null)
+               cppiaPlatform.copyOutputTo(platform.getOutputDir());
       }
 
 
@@ -876,6 +877,17 @@ class CommandLineTools
       return "";
    }
 
+
+   public static function runAcadnme(args:Array<String>, ?project:NMEProject)
+   {
+      //var host = project!=null ? project.getDef("CPPIA_HOST") : null;
+      // TODO - non windows
+      var dir = nme + "/bin/Windows/Acadnme";
+      var exe = "Acadnme.exe";
+      ProcessHelper.runCommand(dir, exe, args);
+   }
+
+
    private static function generate():Void 
    {
    }
@@ -1129,6 +1141,10 @@ class CommandLineTools
       {
          new HxParser(project,projFile);
       }
+      else if (ext=="nme")
+      {
+         runAcadnme([projFile],project);
+      }
       else
       {
          var loaded = false;
@@ -1296,18 +1312,7 @@ class CommandLineTools
 
       var fullPath =  FileSystem.fullPath(words[0]);
 
-      var host = project.getDef("CPPIA_HOST");
-      if (host==null)
-      {
-         var haxelib = project.getDef("CPPIA_HAXELIB");
-         if (haxelib==null)
-            haxelib = "acadnme";
-         ProcessHelper.runCommand("", "haxelib", ["run", haxelib, fullPath].concat(additionalArguments));
-      }
-      else
-      {
-         ProcessHelper.runCommand("", host, [fullPath].concat(additionalArguments));
-      }
+      runAcadnme([fullPath].concat(additionalArguments));
    }
 
    public static function init():Void {
@@ -1518,6 +1523,8 @@ class CommandLineTools
 
    }
 
+   // Assume haxever > 3.2 now
+   /*
    public static function getHaxeVer()
    {
       if (haxeVer==null)
@@ -1528,6 +1535,7 @@ class CommandLineTools
 
       return haxeVer;
    }
+   */
 
 
    private static function processArguments(project:NMEProject):Void 
