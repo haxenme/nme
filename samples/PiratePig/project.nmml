@@ -12,6 +12,8 @@
 	<haxelib name="actuate" />
 	
 	<ios binaries="armv7" />
+
+   <set name="NME_ALPHA_MODE" value="preprocess" />
 	
 	<assets path="Assets/fonts" rename="fonts" include="*.ttf" />
 	<assets path="Assets/images" rename="images" include="*" exclude="icon.svg" />

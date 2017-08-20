@@ -83,8 +83,10 @@ class Nme
 
             if (id!="jsScript")
             {
-               var item:{flags:Int,type:String,value:haxe.io.Bytes} = i;
-               var alphaMode = AlphaMode.AlphaIsPremultiplied;
+               var item:{flags:Int,type:String,value:haxe.io.Bytes,alphaMode:String} = i;
+               var alphaMode = AlphaMode.AlphaDefault;
+               if (item.alphaMode!=null)
+                  alphaMode = Type.createEnum(AlphaMode,item.alphaMode);
                var type = Type.createEnum(AssetType,item.type);
                nme.Assets.info.set(id, new AssetInfo(id,type,isResource,className,id,alphaMode));
 

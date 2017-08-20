@@ -105,8 +105,10 @@ class Assets
       if (items!=null)
          for(id in Reflect.fields(items))
          {
-            var item:{flags:Int,type:String,value:haxe.io.Bytes} = Reflect.field(items,id);
-            var alphaMode = AlphaMode.AlphaIsPremultiplied;
+            var item:{flags:Int,type:String,value:haxe.io.Bytes,alphaMode:String} = Reflect.field(items,id);
+            var alphaMode = AlphaMode.AlphaDefault;
+            if (item.alphaMode!=null)
+               alphaMode = Type.createEnum(AlphaMode,item.alphaMode);
             var type =  Type.createEnum(AssetType,item.type);
             info.set(id, new AssetInfo(id,type,isResource,className,id,alphaMode));
             byteFactory.set(id,function() return ByteArray.fromBytes(item.value) );

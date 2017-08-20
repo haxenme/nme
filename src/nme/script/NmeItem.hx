@@ -9,5 +9,5 @@ class NmeItem
    public var type:String;
    public var id:String;
    public var className:String;
-   public var flags:Int;
+   public var alphaMode:String;
 }

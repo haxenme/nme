@@ -36,6 +36,8 @@ class CppiaPlatform extends Platform
    {
       if (project.expandCppia())
          copyOutputTo(getOutputDir());
+      else
+         project.localDefines.set("cppiaScript",haxeDir+"/ScriptMain.cppia");
    }
 
    public function copyOutputTo(destDir:String):Void 
@@ -82,7 +84,7 @@ class CppiaPlatform extends Platform
    override public function run(arguments:Array<String>):Void 
    {
       var fullPath =  project.expandCppia() ? 
-           FileSystem.fullPath( getOutputDir() ) :
+           FileSystem.fullPath( getOutputDir() + "/ScriptMain.cppia" ) :
            FileSystem.fullPath( getOutputDir() + "/" + getNmeFilename() );
       CommandLineTools.runAcadnme([fullPath].concat(arguments), project);
    }

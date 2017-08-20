@@ -525,6 +525,7 @@ class Platform
    {
       var base = getAssetDir();
       PathHelper.mkdir(base);
+      var convertDir = project.app.binDir + "/converted";
       for(asset in project.assets) 
       {
          var target = catPaths(base, asset.targetPath );
@@ -532,6 +533,7 @@ class Platform
          {
             PathHelper.mkdir(Path.directory(target));
             addOutput(target);
+            asset.cleanConversion(convertDir,target);
             FileHelper.copyAssetIfNewer(asset, target);
          }
       }
@@ -626,7 +628,8 @@ class Platform
 
    public function createNmeFile()
    {
-      // Save the zipped file to disc
+      PathHelper.mkdir(getOutputDir());
+
       var filename = getOutputDir() + "/" + getNmeFilename();
 
       var outfile = sys.io.File.write(filename,true);
@@ -654,7 +657,6 @@ class Platform
             item.length = bytes.length;
             item.type = "TEXT";
             item.id = s;
-            item.flags = 0;
             index.push(item);
             offset += item.length;
          }
@@ -670,7 +672,8 @@ class Platform
          item.length = bytes.length;
          item.type = Std.string(asset.type);
          item.id = asset.id;
-         item.flags = asset.alphaMode==AlphaIsPremultiplied ? 1 : 0;
+         if (asset.type==IMAGE)
+            item.alphaMode = Std.string(asset.alphaMode);
          index.push(item);
          offset += item.length;
       }
