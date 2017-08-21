@@ -207,15 +207,16 @@ class Platform
 
    public function createInstaller() { }
 
-   public function createManifestHeader(includeIcon)
+   public function createManifestHeader()
    {
       var header:Dynamic = {};
       header.name = project.app.title;
       header.developer = project.app.company;
       header.id = project.app.packageName;
       header.version = 1;
+      header.nme = nme.Version.name;
 
-      if (includeIcon && project.icons!=null && project.icons.length>0)
+      if ( project.icons!=null && project.icons.length>0)
       {
          try
          {
@@ -237,29 +238,13 @@ class Platform
       return header;
    }
 
-/*
    public function addManifest()
    {
       try
       {
          if (manifest==null)
          {
-            manifest = {};
-            manifest.header = createManifestHeader();
-            md5s = new Map<String,String>();
-
-            var headerMd5s:Dynamic = {};
-
-            var from = getOutputDir();
-            var lines = new Array<String>();
-            for(filename in outputFiles)
-            {
-                var file = sys.io.File.getBytes(from+"/"+filename);
-                var md5 = haxe.crypto.Md5.make(file).toHex();
-                md5s.set(filename,md5);
-                Reflect.setField(headerMd5s,filename,md5);
-            }
-            manifest.md5s = headerMd5s;
+            manifest = createManifestHeader();
             var manifestName = getOutputDir() + "/manifest.json";
             sys.io.File.saveContent(manifestName, haxe.Json.stringify(manifest) );
             outputFiles.push("manifest.json");
@@ -271,7 +256,6 @@ class Platform
          Log.error("Error creating manifest " + e);
       }
    }
-*/
 
    public function getResult(socket:Socket) : String
    {
@@ -418,24 +402,52 @@ class Platform
                   socket.output.writeString(response);
                }
 
-               var to = project.app.packageName;
-
-               var manifest = project.hasDef("forcedeploy") ? null :  pullFile(socket, to+"/manifest.json");
-               if (manifest!=null)
-                  remoteMd5s = parseMd5s(manifest.toString());
-
-               for(file in outputFiles)
+               if (project.expandCppia())
                {
-                  var remote = remoteMd5s==null ? null : remoteMd5s.get(file);
-                  if (remote==null || remote!=md5s.get(file))
-                     transfer(socket, from+"/"+file, to+"/"+file);
-                  else
-                     Log.verbose("Already deployed " + file);
-               }
+                  var to = project.app.packageName;
 
-               var ran = inAndRun && sendRun(socket, project.app.packageName);
-               if (!ran || !inAndRun)
-                  bye(socket);
+                  // todo - timestamp
+                  var forced = project.hasDef("forcedeploy");
+                  var stampFile = haxeDir + "/" + host + ".up";
+                  var timestamp:Float = 0;
+                  if (!forced)
+                  {
+                     if (!FileSystem.exists(stampFile))
+                        forced = true;
+                     else
+                     {
+                        var info = FileSystem.stat(stampFile);
+                        var mtime = info.atime;
+                        if (mtime==null)
+                           forced = true;
+                        else
+                           timestamp = mtime.getTime();
+                     }
+                  }
+                  trace(outputFiles);
+                  for(file in outputFiles)
+                  {
+                     var remote = remoteMd5s==null ? null : remoteMd5s.get(file);
+                     if (forced || FileSystem.stat(from+"/"+file).mtime.getTime()>=timestamp)
+                        transfer(socket, from+"/"+file, to+"/"+file);
+                     else
+                        Log.verbose("Already deployed " + file);
+                  }
+                  File.saveContent(stampFile,Std.string(timestamp));
+
+                  var ran = inAndRun && sendRun(socket, project.app.packageName);
+                  if (!ran || !inAndRun)
+                     bye(socket);
+               }
+               else
+               {
+                  var src = getOutputDir() + "/" + getNmeFilename();
+                  var to = project.app.packageName+".nme";
+                  transfer(socket, src, to);
+                  var ran = inAndRun && sendRun(socket, to);
+                  if (!ran || !inAndRun)
+                     bye(socket);
+               }
                socket.close();
                return inAndRun;
             }
@@ -446,8 +458,6 @@ class Platform
          }
          else if (protocol=="nme")
          {
-            if (project.command!="installer")
-               Log.error("Nme deployment can only be used with the installer command");
             var filename = getOutputDir() + "/" + project.app.file + ".nme";
             if (!FileSystem.exists(filename))
                Log.error('Could not find  $filename to deploy');
@@ -636,7 +646,7 @@ class Platform
       outfile.bigEndian = false;
       outfile.writeString("NME$");
 
-      var header = haxe.Json.stringify( createManifestHeader(true) );
+      var header = haxe.Json.stringify( createManifestHeader() );
       outfile.writeInt32(header.length);
       outfile.writeString(header);
 

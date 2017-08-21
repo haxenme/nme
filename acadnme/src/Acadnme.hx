@@ -252,6 +252,17 @@ class Acadnme extends Sprite implements IScriptHandler
       #end
    }
 
+   @:keep // Used by boot
+   public static function getNmeVersion() : String
+   {
+      #if cppia
+      return "";
+      #else
+      return nme.Version.name;
+      #end
+   }
+
+
    #if cpp
    static public function __init__()
    {

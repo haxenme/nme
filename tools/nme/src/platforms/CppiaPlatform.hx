@@ -35,7 +35,10 @@ class CppiaPlatform extends Platform
    override public function copyBinary():Void 
    {
       if (project.expandCppia())
+      {
          copyOutputTo(getOutputDir());
+         outputFiles.push( "ScriptMain.cppia" );
+      }
       else
          project.localDefines.set("cppiaScript",haxeDir+"/ScriptMain.cppia");
    }
@@ -64,14 +67,7 @@ class CppiaPlatform extends Platform
       {
          super.updateOutputDir();
 
-         var destination = getOutputDir();
-         var icon = IconHelper.getSvgIcon(project.icons);
-         if (icon!=null)
-         {
-            FileHelper.copyFile(icon, destination + "/icon.svg", addOutput);
-         }
-         else
-            IconHelper.createIcon(project.icons, 128, 128, destination + "/icon.png", addOutput);
+         addManifest();
       }
    }
 
@@ -98,59 +94,6 @@ class CppiaPlatform extends Platform
          createNmeFile();
       }
    }
-
-   /*
-   override public function createInstaller()
-   {
-      var dir = getOutputDir();
-      var bytesOutput = new haxe.io.BytesOutput();
-      var writer = new haxe.zip.Writer(bytesOutput);
-
-      var entries:List<haxe.zip.Entry> = new List();
-      for(file in outputFiles)
-      {
-         var src = dir + "/" + file;
-         var bytes = sys.io.File.getBytes(src);
-         // Add our text data entry:
-         var entry =
-           {
-               fileName : file,
-               fileSize : bytes.length,
-               fileTime : Date.now(),
-               compressed : false,
-               dataSize : 0,
-               data : bytes,
-               crc32 : haxe.crypto.Crc32.make(bytes),
-               extraFields : new List()
-           };
-         haxe.zip.Tools.compress(entry,5);
-         entries.add(entry);
-      }
-      writer.write(entries);
-
-      // Grab the zipped file from the output stream
-      var zipfileBytes = bytesOutput.getBytes();
-      // Save the zipped file to disc
-      var filename = getOutputDir() + "/" + project.app.file + ".nme";
-
-      var outfile = sys.io.File.write(filename,true);
-      outfile.bigEndian = false;
-      outfile.writeString("NME!");
-      var header = haxe.Json.stringify( createManifestHeader(zipfileBytes, true) );
-      outfile.writeInt32(header.length);
-      outfile.writeInt32(zipfileBytes.length);
-      outfile.writeString(header);
-      outfile.writeBytes(zipfileBytes,0,zipfileBytes.length);
-      outfile.close();
-
-      Log.verbose("Wrote " + filename + " data=" + zipfileBytes.length);
-   }
-
-    override public function deploy(inAndRun:Bool):Bool {
-        addManifest();
-        return super.deploy(inAndRun);
-    }
-   */
 }
 
 

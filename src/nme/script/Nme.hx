@@ -25,11 +25,10 @@ class Nme
    public static function getHeader(input:haxe.io.Input)
    {
       var magic = input.readString(4);
-      if (magic!="NME!")
+      if (magic!="NME$")
          throw "NME - bad magic";
       input.bigEndian = false;
       var headerLen = input.readInt32();
-      var zipLen = input.readInt32();
       return haxe.Json.parse( input.readString(headerLen) );
    }
 

@@ -117,7 +117,7 @@ class Asset
 
    public function cleanConversion(dir:String, file:String)
    {
-      if (!FileSystem.isDirectory(dir))
+      if (!FileSystem.exists(dir))
          return;
 
       var dataFile = dir + "/" + haxe.crypto.Md5.make( haxe.io.Bytes.ofString(file) ).toHex() + ".dat";

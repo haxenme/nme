@@ -98,7 +98,7 @@ class Client
          var parts = inHostName.split("@");
          var hostName = parts.pop();
          var password = parts.join("@");
-         trace("HOSR  " + hostName);
+         trace("HOST  " + hostName);
          trace("pass  " + password);
          var host = new Host(hostName);
          if (log!=null)

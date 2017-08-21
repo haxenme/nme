@@ -630,11 +630,28 @@ class NMEProject
          }
    }
 
+   public function isStaticNme()
+   {
+      if (hasDef("nme_static") || hasDef("iphone") || hasDef("ios") ||hasDef("watchos"))
+         return true;
+      if (hasDef("nme_dynamic"))
+         return false;
+
+      var isAndroidSo =  false;//hasDef("android") && !hasDef("androidsim") && !hasDef("androidview");
+      if ( hasDef("windows") || hasDef("mac") || hasDef("linux") || isAndroidSo)
+      {
+         // Use dynamic libraries by default on desktop
+         return false;
+      }
+
+      haxedefs.set("nme_static","1");
+      return true;
+   }
+
    public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String, noCopy:Bool)
    {
       var ndll =  findNdll(name);
-      if ( !isNeko() && ( (hasDef("toolkit") && name=="nme")  || 
-              (name=="std" || name=="regexp" || name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) ) )
+      if ( !isNeko() && (name=="std" || name=="regexp" || name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) )
       {
          Log.verbose("Skip ndll " + name + " for toolkit link" );
       }
@@ -643,14 +660,7 @@ class NMEProject
           var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
 
           if (name=="nme" && inStatic==null)
-          {
-             if (hasDef("nme_static"))
-                isStatic = true;
-             else if (hasDef("windows") || hasDef("mac") || hasDef("linux"))
-             {
-                isStatic = false;
-             }
-          }
+             isStatic = isStaticNme();
 
           ndlls.push( new NDLL(name, base, isStatic, inHaxelibName, noCopy) );
       }
