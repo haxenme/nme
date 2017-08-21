@@ -17,6 +17,10 @@
 #include <Utils.h>
 #endif
 
+#if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX) 
+#include "GameControllerDB.h"
+#endif
+
 #if defined(HX_WINDOWS) && !defined(HX_WINRT)
 #define NME_WINDOWS_SINGLE_INSTANCE
 #endif
@@ -55,6 +59,9 @@ int InitSDL()
    if (err == 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER) == 0)
    {
       sgGameControllerEnabled = true;
+#if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX) 
+      SDL_GameControllerAddMappingsFromRW (SDL_RWFromConstMem (g_gameControllerDB, sizeof (g_gameControllerDB)), 0);
+#endif
    }
    
    return err;
