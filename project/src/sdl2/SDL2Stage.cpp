@@ -1400,6 +1400,7 @@ void ProcessEvent(SDL_Event &inEvent)
          Event joystick(etJoyButtonDown);
          joystick.id = inEvent.jbutton.which;
          joystick.code = inEvent.jbutton.button;
+		 joystick.value = 32767;
          sgSDLFrame->ProcessEvent(joystick);
          break;
       }
@@ -1408,6 +1409,7 @@ void ProcessEvent(SDL_Event &inEvent)
          Event joystick(etJoyButtonUp);
          joystick.id = inEvent.jbutton.which;
          joystick.code = inEvent.jbutton.button;
+		 joystick.value = 0;
          for (int i = 0; i < sgJoysticksId.size(); i++) { //if SDL_JOYDEVICEREMOVED is triggered, up is fired on all buttons, so we need to counter the effect
             if (sgJoysticksId[i] == joystick.id) {
                sgSDLFrame->ProcessEvent(joystick);
