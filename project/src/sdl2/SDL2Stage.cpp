@@ -1431,13 +1431,16 @@ void ProcessEvent(SDL_Event &inEvent)
          }
          if (joyId == -1)
          {
-            Event joystick(etJoyDeviceAdded);
             SDL_GameController *gameController = SDL_GameControllerOpen(inEvent.jdevice.which); //which: joystick device index
-            joystick.id = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gameController));
-            sgGameControllers.push_back(gameController);
-            sgJoysticksId.push_back(joystick.id);
-            sgJoysticksIndex.push_back(inEvent.jdevice.which);
-            sgSDLFrame->ProcessEvent(joystick);
+            if(gameController)
+            {
+               Event joystick(etJoyDeviceAdded);
+               joystick.id = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gameController));
+               sgGameControllers.push_back(gameController);
+               sgJoysticksId.push_back(joystick.id);
+               sgJoysticksIndex.push_back(inEvent.jdevice.which);
+               sgSDLFrame->ProcessEvent(joystick);
+            }
          }
          break;
       }
@@ -1697,6 +1700,24 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    inOnFrame(sgSDLFrame);
    int numJoysticks = SDL_NumJoysticks();
    SDL_GameControllerEventState(SDL_TRUE);
+   
+   //open available controllers
+   SDL_GameController *gameController = NULL;
+   for (int i = 0; i < numJoysticks; ++i) {
+      if (SDL_IsGameController(i)) {
+         gameController = SDL_GameControllerOpen(i);
+         if(gameController)
+         {
+            Event joystick(etJoyDeviceAdded);
+            joystick.id = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gameController));
+            sgGameControllers.push_back(gameController);
+            sgJoysticksId.push_back(joystick.id);
+            sgJoysticksIndex.push_back(i);
+            sgSDLFrame->ProcessEvent(joystick);
+         }
+      }
+   }
+
    StartAnimation();
 }
 
