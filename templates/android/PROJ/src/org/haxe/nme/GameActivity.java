@@ -424,7 +424,7 @@ implements SensorEventListener
    
    public static double CapabilitiesGetScreenDPI()
    {
-      return metrics.xdpi;   
+      return metrics.densityDpi;   
    }
    
    
