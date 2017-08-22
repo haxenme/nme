@@ -1,4 +1,5 @@
 package nme;
+
 #if (!flash)
 
 import haxe.io.BytesData;
@@ -7,11 +8,17 @@ import nme.utils.ByteArray;
 #if neko
 import neko.Lib;
 #end
+#if !cpp
+import haxe.io.FPHelper;
+#end
 
 @:nativeProperty
+#if jsprime @:access(nme.utils.ByteArray.b) #end
 class Memory 
 {
-   #if neko
+   #if jsprime
+   static var b:ByteArray;
+   #elseif !cpp
    static var b:BytesData;
    #else
    static var gcRef:ByteArray;
@@ -20,7 +27,9 @@ class Memory
 
    static public function select(inBytes:ByteArray):Void 
    {
-      #if neko
+      #if jsprime
+      b = inBytes;
+      #elseif !cpp
       if (inBytes == null)
          b = null;
       else
@@ -33,30 +42,77 @@ class Memory
          untyped __global__.__hxcpp_memory_select(inBytes.getData());
       #end
 
+
       if (inBytes == null)
          len = 0;
       else
          len = inBytes.length;
    }
 
-   #if neko
+
+   #if jsprime
 
       // TODO
       static inline public function getByte(addr:Int):Int 
       {
-         return untyped __dollar__sget(b, addr);
+         return b.b[addr];
       }
 
       static inline public function getDouble(addr:Int):Float 
       {
-         return _double_of_bytes(untyped __dollar__ssub(b, addr, 8), false);
+         return b.getDouble(addr);
       }
 
       static inline public function getFloat(addr:Int):Float 
       {
-         return _float_of_bytes(untyped __dollar__ssub(b, addr, 4), false);
+         return b.getFloat(addr);
+      }
+      static inline public function setByte(addr:Int, v:Int):Void 
+      {
+         b.b[addr]=v;
       }
 
+      static inline public function setDouble(addr:Int, v:Float):Void 
+      {
+         b.setDouble(addr,v);
+      }
+
+      static inline public function setFloat(addr:Int, v:Float):Void 
+      {
+         b.setFloat(addr,v);
+      }
+
+      static public function getI32(addr:Int):Int 
+      {
+         var b = b.b;
+         return b[addr++] | (b[addr++] << 8) | (b[addr++] << 16) |(b[addr] << 24);
+      }
+
+      static inline public function getUI16(addr:Int):Int 
+      {
+         var b = b.b;
+         return b[addr++] | (b[addr++] << 8);
+      }
+
+      static public function setI16(addr:Int, v:Int):Void 
+      {
+         var b = b.b;
+         b[addr++] =  v & 0xff;
+         b[addr++] = (v >> 8) & 0xff;
+      }
+
+      static public function setI32(addr:Int, v:Int):Void 
+      {
+         var b = b.b;
+         b[addr++] =  v & 0xff;
+         b[addr++] = (v >> 8) & 0xff;
+         b[addr++] = (v >> 16) & 0xff;
+         b[addr++] = (v >> 24) & 0xff;
+      }
+
+
+
+   #elseif (!cpp)
       static public function getI32(addr:Int):Int 
       {
          return getByte(addr++) |(getByte(addr++) << 8) |(getByte(addr++) << 16) |(getByte(addr) << 24);
@@ -65,21 +121,6 @@ class Memory
       static inline public function getUI16(addr:Int):Int 
       {
          return getByte(addr++) |(getByte(addr++) << 8);
-      }
-
-      static inline public function setByte(addr:Int, v:Int):Void 
-      {
-         untyped __dollar__sset(b, addr, v);
-      }
-
-      static inline public function setDouble(addr:Int, v:Float):Void 
-      {
-         untyped __dollar__sblit(b, addr, _double_bytes(v, false), 0, 8);
-      }
-
-      static inline public function setFloat(addr:Int, v:Float):Void 
-      {
-         untyped __dollar__sblit(b, addr, _float_bytes(v, false), 0, 4);
       }
 
       static public function setI16(addr:Int, v:Int):Void 
@@ -95,6 +136,71 @@ class Memory
          setByte(addr++,(v >> 16) & 0xff);
          setByte(addr++,(v >> 24));
       }
+
+      #if neko
+
+         // TODO
+         static inline public function getByte(addr:Int):Int 
+         {
+            return untyped __dollar__sget(b, addr);
+         }
+
+         static inline public function getDouble(addr:Int):Float 
+         {
+            return _double_of_bytes(untyped __dollar__ssub(b, addr, 8), false);
+         }
+
+         static inline public function getFloat(addr:Int):Float 
+         {
+            return _float_of_bytes(untyped __dollar__ssub(b, addr, 4), false);
+         }
+         static inline public function setByte(addr:Int, v:Int):Void 
+         {
+            untyped __dollar__sset(b, addr, v);
+         }
+
+         static inline public function setDouble(addr:Int, v:Float):Void 
+         {
+            untyped __dollar__sblit(b, addr, _double_bytes(v, false), 0, 8);
+         }
+
+         static inline public function setFloat(addr:Int, v:Float):Void 
+         {
+            untyped __dollar__sblit(b, addr, _float_bytes(v, false), 0, 4);
+         }
+     #else
+
+         static inline public function getByte(addr:Int):Int 
+         {
+            return untyped b[addr];
+         }
+         static inline public function setByte(addr:Int, v:Int):Void 
+         {
+            untyped b[addr] = v;
+         }
+
+         static inline public function getDouble(addr:Int):Float 
+         {
+            return return FPHelper.i64ToDouble(getI32(addr),getI32(addr+4));
+         }
+
+         static inline public function getFloat(addr:Int):Float 
+         {
+            return FPHelper.i32ToFloat(getI32(addr));
+         }
+
+         static inline public function setDouble(addr:Int, v:Float):Void 
+         {
+            FPHelper.i64ToDouble(getI32(addr), getI32(addr+4));
+         }
+
+         static inline public function setFloat(addr:Int, v:Float):Void 
+         {
+            var i = FPHelper.floatToI32(v);
+            setI32(addr, i);
+         }
+
+     #end
 
    #else
 

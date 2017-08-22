@@ -287,21 +287,40 @@ class JsPrimePlatform extends Platform
 
    override public function buildPackage() createNmeFile();
 
+   function runServer(dir:String, browser:String)
+   {
+      var port = 6931;
+      Log.verbose("Running server @" + dir +":" + port );
+      var handler = new nme.net.http.FileServer([dir], new nme.net.http.StdioHandler(Sys.println));
+      var server = new nme.net.http.Server(handler.onRequest);
+      server.listen(port);
+
+      if (browser!="none")
+         new nme.net.URLRequest('http://localhost:$port/index.html' ).launchBrowser();
+
+      server.untilDeath();
+   }
+
    override public function run(arguments:Array<String>):Void 
    {
-      setupServer();
-      var command = sdkPath==null ? "emrun" : sdkPath + "/emrun";
-      var browser = CommandLineTools.browser;
-      var browserOps = browser=="none" ? ["--no_browser"] : browser==null ? [] : ["--browser",browser];
+      if (project.hasDef("emserver"))
+         setupServer();
 
-      var dir = getOutputDir();
-      if (python!=null)
+      var browser = CommandLineTools.browser;
+      var dir = FileSystem.fullPath(getOutputDir());
+
+      if (!project.hasDef("emserver") || python==null || sdkPath==null)
       {
+         runServer(dir,browser);
+      }
+      else
+      {
+         var browserOps = browser=="none" ? ["--no_browser"] : browser==null ? [] : ["--browser",browser];
+         var command = sdkPath + "/emrun";
+
          PathHelper.addExePath( haxe.io.Path.directory(python) );
          ProcessHelper.runCommand(dir, "python", [command].concat(browserOps).concat(["index.html"]).concat(arguments) );
       }
-      else
-         ProcessHelper.runCommand(dir, command, browserOps.concat(["index.html"]).concat(arguments) );
    }
 }
 

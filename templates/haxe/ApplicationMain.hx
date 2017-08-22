@@ -253,7 +253,7 @@ class ApplicationMain
 
    #if jsprime
    @:access(js.Boot.__string_rec)
-   static dynamic function jsprimeLog( v : Dynamic, ?infos : haxe.PosInfos ) : Void
+   static function jsprimeLog( v : Dynamic, ?infos : haxe.PosInfos ) : Void
    {
       var msg = if (infos != null) infos.fileName + ":" + infos.lineNumber + ": " else "";
       msg += js.Boot.__string_rec(v, "");
@@ -268,6 +268,7 @@ class ApplicationMain
    {
       #if jsprime
       untyped __define_feature__("Type.getClassName", {});
+      untyped __define_feature__("haxe.Log.trace", {});
       #end
 
       #if neko

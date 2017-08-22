@@ -10,40 +10,10 @@ class Request
    public var body:String;
    public var headers:Map<String,String>;
 
-   public function new(data:haxe.io.Bytes)
+   public function new(inHeaders:haxe.ds.StringMap<String>, inBody:String)
    {
-      var parts = data.toString().split("\r\n");
-      var req = "";
-      for(i in 0...parts.length)
-      {
-         if (parts[i]=="")
-         {
-             var rest = i+1;
-             if (rest<parts.length)
-             {
-                body = parts.slice(rest).join("\r\n");
-                break;
-             }
-         }
-         else if (i==0)
-         {
-            var reqs = parts[i].split(" ");
-            method = reqs[0];
-            url = StringTools.urlDecode(reqs[1]);
-            version = reqs[2];
-         }
-         else
-         {
-            var header = parts[i];
-            var col = header.indexOf(':');
-            if (col>0)
-            {
-               if (headers==null)
-                  headers = new Map<String,String>();
-               headers.set(header.substr(0,col), header.substr(col+2));
-            }
-         }
-      }
+      headers = inHeaders;
+      body = inBody;
    }
 
    public function getHeader(name:String) : String
