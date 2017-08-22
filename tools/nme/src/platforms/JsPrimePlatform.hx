@@ -11,6 +11,9 @@ class JsPrimePlatform extends Platform
    private var sdkPath:String;
    private var python:String;
 
+   var nmeJs:String;
+   var nmeClassesJs:String;
+
    override public function getPlatformDir() : String { return "jsprime"; }
    override public function get_platform() : String { return "jsprime"; }
    override public function getBinName() : String { return "Emscripten"; }
@@ -36,6 +39,13 @@ class JsPrimePlatform extends Platform
       project.haxeflags.push('-D jsminimal');
       extraFlags.push('-D jsminimal');
       project.macros.push("--macro nme.macros.Exclude.exclude()");
+
+      nmeJs = project.getDef("nmeJs");
+      if (nmeJs==null)
+         nmeJs = "/nme/" + nme.Version.name + "/Nme.js";
+      nmeClassesJs = project.getDef("nmeClassesJs");
+      if (nmeClassesJs==null)
+         nmeClassesJs = "/nme/" + nme.Version.name + "/NmeClasses.js";
    }
 
    public function restoreState()
@@ -218,8 +228,9 @@ class JsPrimePlatform extends Platform
       }
 
       context.NME_IMMEDIATE_LOAD = false;
-      context.NME_LIB_JS = "Nme.js";
+      context.NME_JS = nmeJs;
       context.NME_APP_JS = getNmeFilename();
+      context.NME_CLASSES_JS = nmeClassesJs;
       context.NME_MEM_FILE = true;
 
       // Flixel is based on cpp & neko - need jsprime too
@@ -237,7 +248,7 @@ class JsPrimePlatform extends Platform
       super.updateExtra();
 
       var src = CommandLineTools.nme + "/ndll/Emscripten/NmeClasses.js";
-      FileHelper.copyFile(src, getOutputDir()+"/NmeClasses.js");
+      FileHelper.copyFile(src, getOutputDir()+nmeClassesJs);
    }
 
 
@@ -247,6 +258,14 @@ class JsPrimePlatform extends Platform
       var ico = "icon.ico";
       var iconPath = PathHelper.combine(getOutputDir(), ico);
       IconHelper.createWindowsIcon(project.icons, iconPath, true);
+   }
+
+   
+   override public function remapName(dir:String,filename:String)
+   {
+      if (filename=="Nme.js")
+         return getOutputDir() + nmeJs;
+      return super.remapName(dir, filename);
    }
 
 
@@ -291,7 +310,7 @@ class JsPrimePlatform extends Platform
    {
       var port = 6931;
       Log.verbose("Running server @" + dir +":" + port );
-      var handler = new nme.net.http.FileServer([dir], new nme.net.http.StdioHandler(Sys.println));
+      var handler = new nme.net.http.FileServer([dir], new nme.net.http.StdioHandler(Sys.println), Log.mVerbose);
       var server = new nme.net.http.Server(handler.onRequest);
       server.listen(port);
 

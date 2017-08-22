@@ -180,7 +180,7 @@
     <script>
           ::if (NME_MEM_FILE)::
            (function() {
-            var memoryInitializer = '::NME_LIB_JS::.mem';
+            var memoryInitializer = '::NME_JS::.mem';
             if (typeof Module['locateFile'] === 'function') {
               memoryInitializer = Module['locateFile'](memoryInitializer);
             } else if (Module['memoryInitializerPrefixURL']) {
@@ -196,7 +196,7 @@
           (function() {
              Module.totalDownloads++;
              var xhr = new XMLHttpRequest;
-             xhr.open("GET", "::NME_LIB_JS::", true);
+             xhr.open("GET", "::NME_JS::", true);
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {
                  if (xhr.status === 200) {
@@ -241,7 +241,7 @@
              Module.totalDownloads++;
              window.nmeOnClasses = Module.progress;
              var xhr = new XMLHttpRequest;
-             xhr.open("GET", "NmeClasses.js", true);
+             xhr.open("GET", "::NME_CLASSES_JS::", true);
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {
                  if (xhr.status === 200) {

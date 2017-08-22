@@ -1,6 +1,5 @@
 package nme.net.http;
 
-import sys.FileSystem;
 import haxe.io.Bytes;
 
 class StdioHandler extends Handler

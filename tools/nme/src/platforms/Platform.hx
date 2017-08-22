@@ -554,6 +554,11 @@ class Platform
       return PathHelper.combine(inBase,inExtra);
    }
 
+   public function remapName(dir:String,filename:String)
+   {
+      return dir + "/" + filename;
+   }
+
    public function updateLibArch(libDir:String, archSuffix:String)
    {
       var binName = getBinName();
@@ -591,7 +596,7 @@ class Platform
 
          if (FileSystem.exists(src)) 
          {
-            var dest = libDir + "/" + pref + ndll.name + ext;
+            var dest = remapName( libDir,  pref + ndll.name + ext );
             addOutput(dest);
 
             LogHelper.info("", " - Copying library file: " + src + " -> " + dest);
@@ -600,7 +605,7 @@ class Platform
             src+=".mem";
             if (FileSystem.exists(src)) 
             {
-               var dest = libDir + "/" + pref + ndll.name + ext + ".mem";
+               var dest = dest + ".mem";
                addOutput(dest);
 
                LogHelper.info("", " - Copying library mem file: " + src + " -> " + dest);

@@ -25,8 +25,9 @@ class HtmlPreloader
       var w = canvas.width;
       var h = canvas.height;
       var ctx = context;
-      var scale = win.devicePixelRatio;
-      if (scale==null) scale = 1;
+      //var scale = win.devicePixelRatio;
+      //if (scale==null) scale = 1;
+      var scale = 1;
       var bw = Std.int(w - scale*20);
       if (bw<20) bw = w;
       var bh = Std.int(scale*20);
