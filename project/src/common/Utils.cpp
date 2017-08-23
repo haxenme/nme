@@ -250,7 +250,11 @@ WString ColorToWide(int value)
 extern double __hxcpp_time_stamp();
 inline double  GetTimeStamp()
 {
+#ifdef STATIC_LINK
     return __hxcpp_time_stamp();
+#else
+    return 0.0;
+#endif
 }
 
 #ifdef HX_MACOS
