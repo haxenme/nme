@@ -348,7 +348,7 @@ class NMEProject
             targetFlags.set("cpp", "1");
             haxedefs.set("winrt", "");
             haxedefs.set("NME_ANGLE", "");
-            haxedefs.set("static_link", "");
+            //haxedefs.set("static_link", "");
             haxedefs.set("ABI", "-ZW");
             target = Platform.WINRT;
             winrtConfig.isXbox = haxedefs.exists("xbox");

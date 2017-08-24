@@ -3,7 +3,7 @@
    <set name="tvos" value="1" if="appletv" />
    <set name="mac" value="1" if="macos" />
    <set name="native_toolkit_sdl_static" value="1" if="static_link" />
-   
+
    <!-- Require Android 2.3+ -->
    <set name="PLATFORM" value="android-9" if="android" />
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
@@ -393,7 +393,7 @@
       <file name="${SRC_DIR}/common/NmeClip.cpp" if="NME_INTERNAL_CLIPPING" />
 
    
-      <section unless="HXCPP_JS_PRIME" >
+      <section unless="HXCPP_JS_PRIME||winrt" >
          <file name="${SRC_DIR}/common/Lzma.cpp"/>
          <file name="${SRC_DIR}/lzma/LzFind.c" />
          <file name="${SRC_DIR}/lzma/LzmaDec.c" />
@@ -515,6 +515,17 @@
             <lib name="d3d9.lib" if="NME_ANGLE"/>
          </section>
 
+         <section if="winrt">
+            <lib name="kernel32.lib" />
+            <lib name="d3d11.lib" />
+            <lib name="Xaudio2.lib" />
+            <lib name="Xinput.lib" />
+            <lib name="DXGI.lib" />
+            <lib name="Dwrite.lib" />
+            <lib name="D3dcompiler.lib" />
+         </section>
+
+
          <section if="linux">
             <lib name="${HXCPP}/lib/${BINDIR}/liblinuxcompat.a" />
             <lib name="-lpthread" />
@@ -524,6 +535,17 @@
       </section>
 
    </target>
+
+
+    <files id="__main__" tags="haxe,main,static" replace="true" >
+      <depend files="hxcpp-depends"/>
+      <depend name="${HXCPP}/include/hx/HxcppMain.h"/>
+      <file name="${this_dir}/src/winrt/Main.cpp" />
+      <compilerflag value="-Iinclude" />
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
+      <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
+      <cache value="1" />
+    </files>
 
    <!-- Link as libraries to reduce binary size of possible -->
    <files id="native-toolkit-angle">

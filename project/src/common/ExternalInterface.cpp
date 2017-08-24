@@ -5157,25 +5157,31 @@ DEFINE_PRIME1(nme_zip_decode);
 
 
 
-#ifndef HXCPP_JS_PRIME
 value nme_lzma_encode(value input_value)
 {
+#if !defined(HXCPP_JS_PRIME) && !defined(HX_WINRT)
    buffer input_buffer = val_to_buffer(input_value);
    buffer output_buffer = alloc_buffer_len(0);
    Lzma::Encode(input_buffer, output_buffer);
    return buffer_val(output_buffer);
+#else
+   return alloc_null();
+#endif
 }
 DEFINE_PRIM(nme_lzma_encode,1);
 
 value nme_lzma_decode(value input_value)
 {
+#if !defined(HXCPP_JS_PRIME) && !defined(HX_WINRT)
    buffer input_buffer = val_to_buffer(input_value);
    buffer output_buffer = alloc_buffer_len(0);
    Lzma::Decode(input_buffer, output_buffer);
    return buffer_val(output_buffer);
+#else
+   return alloc_null();
+#endif
 }
 DEFINE_PRIM(nme_lzma_decode,1);
-#endif
 
 
 value nme_file_dialog_folder(value in_title, value in_text )
