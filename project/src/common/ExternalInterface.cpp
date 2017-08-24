@@ -13,6 +13,9 @@
 #define NME_NO_CURL
 #define NME_NO_CAMERA
 #endif
+#if defined(HXCPP_JS_PRIME) || defined(HX_WINRT)
+#define NME_NO_LZMA
+#endif
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -1906,19 +1909,23 @@ DEFINE_PRIM(nme_sv_get_buffered_percent, 1);
 
 // --- ManagedStage ----------------------------------------------------------------------
 
-#ifndef HX_WINRT
 
 value nme_managed_stage_create(value inW,value inH,value inFlags)
 {
+#ifdef HX_WINRT
+   return alloc_null();
+#else
    SetMainThread();
    ManagedStage *stage = new ManagedStage(val_int(inW),val_int(inH),val_int(inFlags));
    return ObjectToAbstract(stage);
+#endif
 }
 DEFINE_PRIM(nme_managed_stage_create,3);
 
 
 value nme_managed_stage_pump_event(value inStage,value inEvent)
 {
+#ifndef HX_WINRT
    ManagedStage *stage;
    if (AbstractToObject(inStage,stage))
    {
@@ -1926,12 +1933,12 @@ value nme_managed_stage_pump_event(value inStage,value inEvent)
       FromValue(event,inEvent);
       stage->PumpEvent(event);
    }
+#endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_managed_stage_pump_event,2);
 
 
-#endif
 
 
 
@@ -5159,7 +5166,7 @@ DEFINE_PRIME1(nme_zip_decode);
 
 value nme_lzma_encode(value input_value)
 {
-#if !defined(HXCPP_JS_PRIME) && !defined(HX_WINRT)
+#if !defined(NME_NO_LZMA)
    buffer input_buffer = val_to_buffer(input_value);
    buffer output_buffer = alloc_buffer_len(0);
    Lzma::Encode(input_buffer, output_buffer);
@@ -5172,7 +5179,7 @@ DEFINE_PRIM(nme_lzma_encode,1);
 
 value nme_lzma_decode(value input_value)
 {
-#if !defined(HXCPP_JS_PRIME) && !defined(HX_WINRT)
+#if !defined(NME_NO_LZMA)
    buffer input_buffer = val_to_buffer(input_value);
    buffer output_buffer = alloc_buffer_len(0);
    Lzma::Decode(input_buffer, output_buffer);

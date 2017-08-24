@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <SDL_main.h>
 #include <hxcpp.h>
 #include <wrl.h>
