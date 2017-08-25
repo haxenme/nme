@@ -1420,16 +1420,16 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_CONTROLLERDEVICEADDED:
       {
-         int joyId = -1;
-         for (int i = 0; i < sgJoysticksId.size(); i++)
-         {
-            if (sgJoysticksIndex[i] == inEvent.jdevice.which)
-            {
-               joyId = inEvent.jdevice.which;
-               break;
-            }
-         }
-         if (joyId == -1)
+         //int joyId = -1;
+         //for (int i = 0; i < sgJoysticksId.size(); i++)
+         //{
+         //   if (sgJoysticksIndex[i] == inEvent.jdevice.which)
+         //   {
+         //      joyId = inEvent.jdevice.which;
+         //      break;
+         //   }
+         //}
+         //if (joyId == -1)  // Allow joystick reconnection event
          {
             SDL_GameController *gameController = SDL_GameControllerOpen(inEvent.jdevice.which); //which: joystick device index
             if(gameController)
