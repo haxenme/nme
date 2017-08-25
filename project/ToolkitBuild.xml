@@ -502,7 +502,8 @@
             <lib name="user32.lib" />
             <lib name="kernel32.lib" />
             <lib name="advapi32.lib" />
-            <lib name="${SUP_DIR}/windows/dxguid.lib"/>
+            <lib name="${SUP_DIR}/windows/dxguid.lib" unless="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
+	    <lib name="dxguid.lib" if="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
             <lib name="winmm.lib" />
             <lib name="imm32.lib"  />
             <lib name="ole32.lib" />
@@ -525,7 +526,6 @@
             <lib name="D3dcompiler.lib" />
          </section>
 
-
          <section if="linux">
             <lib name="${HXCPP}/lib/${BINDIR}/liblinuxcompat.a" />
             <lib name="-lpthread" />
@@ -537,7 +537,7 @@
    </target>
 
 
-    <files id="__main__" tags="haxe,main,static" replace="true" >
+    <files id="__main__" tags="haxe,main,static" replace="true" if="winrt">
       <depend files="hxcpp-depends"/>
       <depend name="${HXCPP}/include/hx/HxcppMain.h"/>
       <file name="${this_dir}/src/winrt/Main.cpp" />
