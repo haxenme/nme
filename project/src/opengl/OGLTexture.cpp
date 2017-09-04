@@ -115,7 +115,7 @@ GLenum getTextureStorage(PixelFormat pixelFormat)
 {
    switch(pixelFormat)
    {
-      case pfRGB:      return GL_RGB;
+      case pfRGB:      return ARGB_STORE;
       case pfBGRA:     return ARGB_STORE;
       case pfBGRPremA: return ARGB_STORE;
       case pfAlpha: return GL_ALPHA;
@@ -146,7 +146,7 @@ GLenum getTransferOgl(PixelFormat pixelFormat)
 {
    switch(pixelFormat)
    {
-      case pfRGB:      return GL_RGB;
+      case pfRGB:      return ARGB_PIXEL;
       case pfBGRA:     return ARGB_PIXEL;
       case pfBGRPremA: return ARGB_PIXEL;
       case pfAlpha: return GL_ALPHA;
@@ -165,6 +165,8 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat)
    switch(pixelFormat)
    {
       case pfRGB:
+         return SWAP_RB ? pfRGBA :pfBGRA;
+
       case pfLuma:
       case pfAlpha:
       case pfLumaAlpha:
@@ -244,11 +246,12 @@ public:
       PixelFormat buffer_format = getTransferFormat(fmt);
       GLenum channel= getOglChannelType(fmt);
 
-      int pw = BytesPerPixel(fmt);
+      //int pw = BytesPerPixel(fmt);
 
       bool copy_required = mSurface->GetBase() && (mTextureWidth!=mPixelWidth || mTextureHeight!=mPixelHeight || buffer_format!=fmt);
       if (copy_required)
       {
+         int pw = BytesPerPixel(buffer_format);
          buffer = (uint8 *)malloc(pw * mTextureWidth * mTextureHeight);
          int extraX =  mTextureWidth - mPixelWidth;
          if (extraX)
