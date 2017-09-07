@@ -154,6 +154,18 @@ public:
       else
          glDeleteRenderbuffers(1,&inBuffer);
    }
+   void DestroyVertexarray(unsigned int inBuffer)
+   {
+      if ( !IsMainThread() )
+      {
+         mHasZombie = true;
+         mZombieVertexarrays.push_back(inBuffer);
+      }
+#ifndef NME_NO_GLES3COMPAT
+      else
+         glDeleteVertexArrays(1,&inBuffer);
+#endif
+   }
 
 
    void OnContextLost()
@@ -164,6 +176,7 @@ public:
       mZombieShaders.resize(0);
       mZombieFramebuffers.resize(0);
       mZombieRenderbuffers.resize(0);
+      mZombieVertexarrays.resize(0);
       mHasZombie = false;
    }
 
@@ -277,6 +290,14 @@ public:
                glDeleteRenderbuffers(mZombieRenderbuffers.size(),&mZombieRenderbuffers[0]);
                mZombieRenderbuffers.resize(0);
             }
+
+            if (mZombieVertexarrays.size())
+            {
+               #ifndef NME_NO_GLES3COMPAT
+               glDeleteVertexArrays(mZombieVertexarrays.size(),&mZombieVertexarrays[0]);
+               #endif
+               mZombieVertexarrays.resize(0);
+            }
          }
 
 
@@ -316,6 +337,7 @@ public:
       mZombieShaders.resize(0);
       mZombieFramebuffers.resize(0);
       mZombieRenderbuffers.resize(0);
+      mZombieVertexarrays.resize(0);
 
       ReloadExtentions();
    }
@@ -771,6 +793,7 @@ public:
    QuickVec<GLuint> mZombieShaders;
    QuickVec<GLuint> mZombieFramebuffers;
    QuickVec<GLuint> mZombieRenderbuffers;
+   QuickVec<GLuint> mZombieVertexarrays;
 
    GPUProg *mProg[PROG_COUNT];
 

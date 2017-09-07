@@ -1550,8 +1550,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    #ifdef NME_ANGLE
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2); 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
    #endif
 
    if (opengl)
@@ -1641,6 +1639,12 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       int renderFlags = 0;
       if (opengl) renderFlags |= SDL_RENDERER_ACCELERATED;
       if (opengl && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
+
+      #if defined(NME_ANGLE) && !defined(NME_NO_GLES3COMPAT)
+	  //needs to be just before SDL_CreateRenderer
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); 
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
+      #endif
 
       renderer = SDL_CreateRenderer (window, -1, renderFlags);
       

@@ -501,6 +501,11 @@ class GL
       nme_gl_bind_texture(target, texture);
    }
 
+   public static inline function bindVertexArray(vertexarray:GLVertexArray):Void
+   {
+      nme_gl_bind_vertexarray(vertexarray);
+   }
+
    public static inline function blendColor(red:Float, green:Float, blue:Float, alpha:Float):Void
    {
       nme_gl_blend_color(red, green, blue, alpha);
@@ -619,6 +624,11 @@ class GL
    public static inline function createTexture():GLTexture
    {
       return new GLTexture(version, nme_gl_create_texture());
+   }
+
+   public static inline function createVertexArray():GLVertexArray
+   {
+      return new GLVertexArray(version, nme_gl_create_vertexarray());
    }
 
    public static inline function cullFace(mode:Int):Void
@@ -1310,6 +1320,10 @@ class GL
    private static var nme_gl_vertex_attrib4fv = load("nme_gl_vertex_attrib4fv", 2);
    private static var nme_gl_vertex_attrib_pointer = load("nme_gl_vertex_attrib_pointer", -1);
    private static var nme_gl_viewport = load("nme_gl_viewport", 4);
+
+   //gles3
+   private static var nme_gl_create_vertexarray = load("nme_gl_create_vertexarray", 0);
+   private static var nme_gl_bind_vertexarray = load("nme_gl_bind_vertexarray", 1);
    #else // not (neko||cpp)
 
    // Stub to get flixel to compile
