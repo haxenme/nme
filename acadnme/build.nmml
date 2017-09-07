@@ -46,7 +46,8 @@
      <appIntent value="android.intent.category.LEANBACK_LAUNCHER" />
   </android>
 
-  <assets from="../bin/apps/"  if="mobile||web" less="nocompile" >
+  <set name="nmeDest" if="rpi" />
+     <assets from="../bin/apps/"  rename="${nmeDest}" if="mobile||web||rpi" less="nocompile" >
      <asset name="AcadnmeBoot.nme" />
      <!--
      <asset name="Flappybalt.nme" />
@@ -62,8 +63,6 @@
   <export name="../src/cppia/export_classes.info" />
 
   <source path="src" />
-
-  <unset name="toolkit" unless="web||mobile" />
 
   <haxelib name="nme" nocopy="true" />
   <haxedef name="scriptable" />
