@@ -803,8 +803,8 @@ GL_GEN_RESO(render_buffer,glGenRenderbuffers,resoRenderbuffer)
 #ifdef NME_NO_GLES3COMPAT
 value nme_gl_create_vertexarray(value inType)
 {
-   DBGFUNC("createShader");
-   return val_int(-1);
+   DBGFUNC("create vertex array needs NME_GLES3COMPAT");
+   return alloc_int(-1);
 }
 DEFINE_PRIM(nme_gl_create_vertexarray,0);
 #else
@@ -1784,7 +1784,9 @@ value nme_gl_bind_vertexarray(value inId )
 {
    DBGFUNC("bindVertexArray");
    int id = getResourceId(inId,resoVertexarray);
+#ifndef NME_NO_GLES3COMPAT
    glBindVertexArray(id);
+#endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_bind_vertexarray,1);

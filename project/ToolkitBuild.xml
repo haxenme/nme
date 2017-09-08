@@ -191,6 +191,7 @@
       <compilerflag value="-I${NME_INC_DIR}"/>
       <compilerflag value="-I${INC_DIR}"/>
 
+      <!--<compilerflag value="-DNME_NO_GLES3COMPAT" unless="NME_GLES3COMPAT" />-->
       <compilerflag value="-DNME_MODPLUG" if="modplug" />
       <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
       <compilerflag value="-DNME_INTERNAL_CLIPPING" if="NME_INTERNAL_CLIPPING" />
