@@ -235,6 +235,11 @@ public:
       mTextureHeight = non_po2 ? mPixelHeight : UpToPower2(mPixelHeight);
       mCanRepeat = IsPower2(mTextureWidth) && IsPower2(mTextureHeight);
 
+      #ifdef NME_ANGLE
+      if (mTextureWidth & 0x1)
+         mTextureWidth++;
+      #endif
+
       mTextureID = 0;
       glGenTextures(1, &mTextureID);
       CreateTexture();
