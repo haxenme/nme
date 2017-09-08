@@ -3,16 +3,19 @@ package nme.net.http;
 import sys.FileSystem;
 import haxe.io.Bytes;
 
-class FileServer
+class FileServer extends Handler
 {
    var dirs:Array<String>;
+   var verbose:Bool;
 
-   public function new(inDirs:Array<String>)
+   public function new(inDirs:Array<String>, ?inHandler:Handler, inVerbose=false)
    {
+      super(inHandler);
       dirs = inDirs;
+      verbose = inVerbose;
    }
 
-   public function onRequest(request:Request):Bytes
+   override public function onRequest(request:Request):Bytes
    {
       for(d in dirs)
       {
@@ -29,11 +32,12 @@ class FileServer
             var result = Bytes.alloc(hData.length + data.length);
             result.blit(0,hData,0,hData.length);
             result.blit(hData.length,data,0,data.length);
+            if (verbose && log!=null)
+               log("file: " + path + "*" + data.length);
             return result;
          }
       }
-      trace("Not found: " + request.url );
-      return Bytes.ofString("HTTP/1.1 404 Not Found\r\n\r\n");
+      return defaultHandler(request);
    }
 }
 

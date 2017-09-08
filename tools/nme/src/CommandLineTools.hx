@@ -30,6 +30,9 @@ class CommandLineTools
    public static var home:String;
    public static var sys:SysProxy;
    public static var gradle:Bool = false;
+   public static var quick:Bool = false;
+   public static var fat:Bool = false;
+   public static var browser:String = null;
 
    static var toolkit:Bool = true;
    static var haxeVer:String = null;
@@ -52,14 +55,14 @@ class CommandLineTools
 
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
-            "androidview", "android-view", "iphonesim", "android", "androidsim",
+            "androidview", "android-view", "iphonesim", "android", "androidsim", "rpi",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
             "watchsimulator", "watchos", "jsprime", "winrt", "uwp" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
-            "rebuild", "shell", "icon", "banner", "serve" ];
+            "rebuild", "shell", "icon", "banner", "favicon", "serve", "listbrowsers" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -84,6 +87,13 @@ class CommandLineTools
          Log.verbose("Overriding bin directory : " + project.app.binDir);
       }
 
+      if (project.hasDef("fat"))
+         fat=true;
+      if (project.hasDef("quick"))
+         quick=true;
+
+      var buildFat = (command == "build" || command == "test") && !quick;
+
       switch(project.target) 
       {
          case Platform.ANDROID:
@@ -107,14 +117,23 @@ class CommandLineTools
          case Platform.MAC:
             platform = new platforms.MacPlatform(project);
 
-         case Platform.LINUX:
+         case Platform.LINUX, Platform.RPI:
             platform = new platforms.LinuxPlatform(project);
 
          case Platform.FLASH:
             platform = new platforms.FlashPlatform(project);
 
          case Platform.CPPIA:
+            var jsPlatform:platforms.JsPrimePlatform = null;
+            if (fat && buildFat)
+            {
+               jsPlatform = new platforms.JsPrimePlatform(project);
+               jsPlatform.runHaxe();
+               jsPlatform.restoreState();
+            }
             platform = new platforms.CppiaPlatform(project);
+            if (jsPlatform!=null)
+               jsPlatform.copyOutputTo(platform.getOutputDir());
 
          case Platform.EMSCRIPTEN:
             platform = new platforms.EmscriptenPlatform(project);
@@ -126,8 +145,18 @@ class CommandLineTools
             platform = new platforms.WatchPlatform(project);
 
          case Platform.JSPRIME, Platform.HTML5:
+            var cppiaPlatform:platforms.CppiaPlatform = null;
+            if (fat && buildFat)
+            {
+               cppiaPlatform = new platforms.CppiaPlatform(project);
+               cppiaPlatform.runHaxe();
+               cppiaPlatform.restoreState();
+            }
             platform = new platforms.JsPrimePlatform(project);
+            if (cppiaPlatform!=null)
+               cppiaPlatform.copyOutputTo(platform.getOutputDir());
       }
+
 
       if (platform != null) 
       {
@@ -160,7 +189,8 @@ class CommandLineTools
             Log.verbose("\nRunning command: UPDATE");
             platform.updateBuildDir();
             platform.updateOutputDir();
-            platform.updateAssets();
+            if (!quick)
+               platform.updateAssets();
             platform.updateLibs();
             platform.updateExtra();
          }
@@ -413,6 +443,12 @@ class CommandLineTools
             args.push("-notoolkit");
          if (gradle)
             args.push("-gradle");
+         if (browser!=null)
+         {
+            args.push("-browser");
+            args.push(browser);
+         }
+
          if (project.hasDef("deploy"))
             args.push("deploy=" + project.getDef("deploy"));
          if (sampleTarget!="")
@@ -736,6 +772,10 @@ class CommandLineTools
       sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
       sys.println("  rebuild : rebuild binaries from a build.xml file'");
       sys.println("  remake : rebuild nme tool and build nme project binaries for targets'");
+      sys.println("  listbrowsers: show list of browsers that can be used with js targets");
+      sys.println("  icon filename width height: generate project icon");
+      sys.println("  banner filename width height: generate project banner");
+      sys.println("  favicon filename: generate project favicon");
       sys.println("");
       sys.println(" Targets : ");
       sys.println("");
@@ -749,6 +789,7 @@ class CommandLineTools
       sys.println("  jsprime     : Js application with c++ compiled runtime");
       sys.println("  neko        : Create application for rapid testing on host system");
       sys.println("  ios         : Create Apple iOS applications");
+      sys.println("  rpi         : Create RaspberryPi applications");
       sys.println("  iphone      : ios + device debugging");
       sys.println("  iphonesim   : ios + simulator");
       sys.println("  watchos     : watch extension");
@@ -766,16 +807,18 @@ class CommandLineTools
       sys.println("  -tidy : remove ouput files");
       sys.println("  -clean : remove output files and c++ obj file store");
       sys.println("  -bin directory: put generated binaries in different directory");
-      sys.println("  [mac/linux] -32 -64 : Compile for 32-bit or 64-bit instead of default");
+      sys.println("  -browser id: which browser to launch with js targets");
+      sys.println("  -nobrowser: do not launch browser js targets (just build + serve project)");
+      sys.println("  [mac/linux/windows] -32 -64 : Compile for 32-bit or 64-bit instead of default");
       sys.println("  [android] -device=serialnumber : specify serial number");
       sys.println("  [ios] -simulator : Build/test for the device simulator");
       sys.println("  [ios] -simulator -ipad : Build/test for the iPad Simulator");
       sys.println("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
    }
 
-   private static function displayInfo(showHint:Bool = false, forXcode:Bool = false):Void 
+   private static function displayInfo(showHint:Bool = false, skipBanner:Bool = false):Void 
    {
-      if (!forXcode) // Does not show up so well in xcode
+      if (!skipBanner) // Does not show up so well in xcode
       {
          sys.println(" _____________");
          sys.println("|             |");
@@ -834,6 +877,17 @@ class CommandLineTools
 
       return "";
    }
+
+
+   public static function runAcadnme(args:Array<String>, ?project:NMEProject)
+   {
+      //var host = project!=null ? project.getDef("CPPIA_HOST") : null;
+      // TODO - non windows
+      var dir = nme + "/bin/Windows/Acadnme";
+      var exe = "Acadnme.exe";
+      ProcessHelper.runCommand(dir, exe, args);
+   }
+
 
    private static function generate():Void 
    {
@@ -980,7 +1034,7 @@ class CommandLineTools
          targetName = "cppia";
       }
 
-      if (targetName=="" && (project.command=="icon" || project.command=="banner" ))
+      if (targetName=="" && (project.command=="icon" || project.command=="banner" || project.command=="favicon" ))
       {
          targetName = "cpp";
          Log.verbose('Using default nocompile target "$targetName"');
@@ -1087,6 +1141,10 @@ class CommandLineTools
       else if (ext=="hx")
       {
          new HxParser(project,projFile);
+      }
+      else if (ext=="nme")
+      {
+         runAcadnme([projFile],project);
       }
       else
       {
@@ -1255,18 +1313,7 @@ class CommandLineTools
 
       var fullPath =  FileSystem.fullPath(words[0]);
 
-      var host = project.getDef("CPPIA_HOST");
-      if (host==null)
-      {
-         var haxelib = project.getDef("CPPIA_HAXELIB");
-         if (haxelib==null)
-            haxelib = "acadnme";
-         ProcessHelper.runCommand("", "haxelib", ["run", haxelib, fullPath].concat(additionalArguments));
-      }
-      else
-      {
-         ProcessHelper.runCommand("", host, [fullPath].concat(additionalArguments));
-      }
+      runAcadnme([fullPath].concat(additionalArguments));
    }
 
    public static function init():Void {
@@ -1338,7 +1385,7 @@ class CommandLineTools
 
       if (Log.mVerbose && command!="") 
       {
-         displayInfo(false, command=="xcode");
+         displayInfo(false, command=="xcode" || quick);
          sys.println("");
       }
 
@@ -1410,6 +1457,12 @@ class CommandLineTools
          case "icon":
             createIcon(project,false);
 
+         case "favicon":
+            createIcon(project,false,true);
+
+         case "listbrowsers":
+            platforms.EmscriptenPlatform.listBrowsers();
+
          case "banner":
             createIcon(project,true);
 
@@ -1437,18 +1490,18 @@ class CommandLineTools
       return { protocol:protocol, name:name };
    }
 
-   public static function createIcon(project:NMEProject, inBanner:Bool)
+   public static function createIcon(project:NMEProject, inBanner:Bool, favIcon = false)
    {
       var width = 0;
       var height = 0;
       var name = words[0];
-      if (words.length==3)
+      if (words.length==3 && !favIcon)
       {
          width = Std.parseInt(words[1]);
          height = Std.parseInt(words[2]);
       }
 
-      if (width==0 || height==0 || name==null)
+      if ( (!favIcon && (width==0 || height==0)) || name==null)
          Log.error("Usage: nme icon iconname.png width height");
 
       words.splice(0,3);
@@ -1457,14 +1510,22 @@ class CommandLineTools
          Log.error("Could not load project");
 
  
-      var ok = IconHelper.createIcon(inBanner?project.banners:project.icons, width, height, name);
+      var ok = favIcon ? 
+         IconHelper.createWindowsIcon(project.icons, name, favIcon) :
+         IconHelper.createIcon(inBanner?project.banners:project.icons, width, height, name );
+
       if (!ok)
          Log.error('Could not create $name icon $width x $height');
 
-      Log.verbose("Created " + name + " " + width + "x" + height );
+      if (favIcon)
+         Log.verbose("Created " + name);
+      else
+         Log.verbose("Created " + name + " " + width + "x" + height );
 
    }
 
+   // Assume haxever > 3.2 now
+   /*
    public static function getHaxeVer()
    {
       if (haxeVer==null)
@@ -1475,6 +1536,7 @@ class CommandLineTools
 
       return haxeVer;
    }
+   */
 
 
    private static function processArguments(project:NMEProject):Void 
@@ -1616,10 +1678,26 @@ class CommandLineTools
                gradle = true;
                project.haxedefs.set("gradle", "1");
             }
+            else if (argument=="-q" || argument=="-quick")
+            {
+               project.haxedefs.set("quick", "1");
+            }
+            else if (argument=="-fat")
+            {
+               project.haxedefs.set("fat", "1");
+            }
             else if (argument=="-notoolkit" || argument=="-Dnotoolkit")
             {
                toolkit = false;
                project.localDefines.set("notoolkit", "");
+            }
+            else if (argument=="-browser")
+            {
+               browser = arguments[argIdx++];
+            }
+            else if (argument=="-nobrowser")
+            {
+               browser = "none";
             }
             else if (argument=="-toolkit-debug" || argument=="-Dtoolkit-debug")
             {

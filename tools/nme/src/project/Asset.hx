@@ -1,6 +1,8 @@
 import haxe.io.Path;
 import nme.display.BitmapData;
 import nme.AlphaMode;
+import sys.FileSystem;
+import sys.io.File;
 
 
 class Asset 
@@ -25,6 +27,7 @@ class Asset
    public var isMusic:Bool;
    public var isImage:Bool;
    public var isLibrary:Bool;
+   public var conversion:String;
 
    public function new(path:String = "", rename:String = "", inType:AssetType, inEmbed:Bool, ?inAlphaMode:AlphaMode) 
    {
@@ -88,23 +91,50 @@ class Asset
 
    public function preprocess(convertDir:String)
    {
-      if (type==IMAGE && alphaMode==AlphaPreprocess && format=="png")
+      if (type==IMAGE && format=="png")
       {
-         PathHelper.mkdir(convertDir);
-         //var file = sys.io.File.getBytes(sourcePath);
-         var convertName = convertDir + "/" + haxe.crypto.Md5.make( haxe.io.Bytes.ofString(sourcePath) ).toHex() + "_prem.png";
-         if (FileHelper.isNewer(sourcePath, convertName))
+         if (alphaMode==AlphaPreprocess)
          {
-            Log.verbose('Premultiplying $sourcePath to $convertName');
-            var bmp = BitmapData.load(sourcePath);
-            bmp.premultipliedAlpha = true;
-            bmp.setFormat( nme.image.PixelFormat.pfBGRA, false );
-            var bytes = bmp.encode( BitmapData.PNG, 1);
-            sys.io.File.saveBytes(convertName, bytes );
-         }
+            PathHelper.mkdir(convertDir);
+            //var file = sys.io.File.getBytes(sourcePath);
+            var convertName = convertDir + "/" + haxe.crypto.Md5.make( haxe.io.Bytes.ofString(sourcePath) ).toHex() + "_prem.png";
+            if (FileHelper.isNewer(sourcePath, convertName))
+            {
+               Log.verbose('Premultiplying $sourcePath to $convertName');
+               var bmp = BitmapData.load(sourcePath);
+               bmp.premultipliedAlpha = true;
+               bmp.setFormat( nme.image.PixelFormat.pfBGRA, false );
+               var bytes = bmp.encode( BitmapData.PNG, 1);
+               sys.io.File.saveBytes(convertName, bytes );
+            }
 
-         sourcePath = convertName;
-         alphaMode = AlphaIsPremultiplied;
+            conversion = "prem";
+            sourcePath = convertName;
+            alphaMode = AlphaIsPremultiplied;
+         }
+      }
+   }
+
+   public function cleanConversion(dir:String, file:String)
+   {
+      if (!FileSystem.exists(dir))
+         return;
+
+      var dataFile = dir + "/" + haxe.crypto.Md5.make( haxe.io.Bytes.ofString(file) ).toHex() + ".dat";
+      if (!FileSystem.exists(dataFile))
+      {
+         if (conversion!=null)
+            File.saveContent(dataFile,conversion);
+         return;
+      }
+      var oldConvert = File.getContent(dataFile);
+      if (oldConvert!=conversion)
+      {
+         Log.verbose("Remove old conversion " + file);
+         FileSystem.deleteFile(dataFile);
+         FileSystem.deleteFile(file);
+         if (conversion!=null)
+            File.saveContent(dataFile,conversion);
       }
    }
 

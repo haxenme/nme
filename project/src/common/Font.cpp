@@ -14,6 +14,24 @@
 #define strcasecmp stricmp
 #endif
 
+#ifdef HXCPP_JS_PRIME
+#include <zlib.h>
+
+extern int gSansFullSize;
+extern int gSansCompressedSize;
+extern const unsigned char *gSansData;
+
+extern int gSerifFullSize;
+extern int gSerifCompressedSize;
+extern const unsigned char *gSerifData;
+
+extern int gMonospaceFullSize;
+extern int gMonospaceCompressedSize;
+extern const unsigned char *gMonospaceData;
+
+
+#endif
+
 namespace nme
 {
 
@@ -339,6 +357,40 @@ const char *RemapFontName(const char *inName)
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
 
+#ifdef HXCPP_JS_PRIME
+BufferData *decompressFontData(int srcLen, int destLen, const unsigned char *inData)
+{
+   BufferData *data = new BufferData();
+   data->IncRef();
+   data->data.resize(destLen);
+
+   z_stream z;
+   memset(&z,0,sizeof(z_stream));
+   int err = 0;
+   int flush = Z_NO_FLUSH;
+   if ( inflateInit2(&z,MAX_WBITS) != Z_OK )
+      val_throw(alloc_string("bad inflateInit"));
+
+   z.next_in = (Bytef*)inData;
+   z.avail_in = srcLen;
+
+   z.next_out = (Bytef*)&data->data[0];
+   z.avail_out = data->data.size();
+   int code = 0;
+   if( (code = ::inflate(&z,flush)) < 0 )
+   {
+       inflateEnd(&z);
+       val_throw( alloc_string("bad inflate") );
+   }
+
+   inflateEnd(&z);
+
+   return data;
+}
+#endif
+
+
+
 
 typedef std::map<std::string, FontBuffer> FontBytesMap;
 
@@ -403,6 +455,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
          //printf("Registered!\n");
       }
 
+
       if (!bytes)
       {
          ByteArray resource(seekName.c_str());
@@ -422,6 +475,21 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
          //else
          //   printf("No resource\n");
       }
+
+      #ifdef HXCPP_JS_PRIME
+      if (!bytes)
+      {
+         if (norm=="_sans")
+            bytes = decompressFontData( gSansCompressedSize, gSansFullSize, gSansData );
+         else if (norm=="_serif")
+            bytes = decompressFontData( gSerifCompressedSize, gSerifFullSize, gSerifData );
+         else if (norm=="_monospace")
+            bytes = decompressFontData( gMonospaceCompressedSize, gMonospaceFullSize, gMonospaceData );
+
+         if (bytes)
+            sgRegisteredFonts[norm] = bytes;
+      }
+      #endif
 
       if (bytes)
       {

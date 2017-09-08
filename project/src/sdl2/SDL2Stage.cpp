@@ -32,7 +32,6 @@ static int sgDesktopHeight = 0;
 static Rect sgWindowRect = Rect(0, 0, 0, 0);
 static bool sgInitCalled = false;
 static bool sgGameControllerEnabled = false;
-static int  sgShaderFlags = 0;
 static bool sgIsOGL2 = false;
 const int sgJoystickDeadZone = 1000;
 #ifdef NME_WINDOWS_SINGLE_INSTANCE 
@@ -258,7 +257,7 @@ public:
       mIsFullscreen = (mWindowFlags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP) );
       if (mIsFullscreen)
          displayState = sdsFullscreenInteractive;
-      
+
       if (mIsOpenGL)
       {
          mOpenGLContext = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
@@ -347,6 +346,7 @@ public:
    
    void ResizeWindow(int inWidth, int inHeight)
    {
+      #if !defined(RASPBERRYPI)
       if (mIsFullscreen)
       {
         /*
@@ -364,6 +364,7 @@ public:
       {
          SDL_SetWindowSize(mSDLWindow, inWidth, inHeight);
       }
+      #endif
    }
    
    
@@ -601,11 +602,7 @@ public:
    {
       if (mIsOpenGL)
       {
-         #ifdef RASPBERRYPI
-         nmeEGLSwapBuffers();
-         #else
          SDL_RenderPresent(mSDLRenderer);
-         #endif
       }
       else
       {
@@ -1508,8 +1505,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    }
    #endif   
    
-   sgShaderFlags = (inFlags & (wfAllowShaders|wfRequireShaders) );
-
    //Rect r(100,100,inWidth,inHeight);
    
    int err = InitSDL();
@@ -1589,7 +1584,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    int setWidth = fullscreen ? sgDesktopWidth : targetW;
    int setHeight = fullscreen ? sgDesktopHeight : targetH;
    #endif
-   
+
    SDL_Window *window = NULL;
    SDL_Renderer *renderer = NULL;
 

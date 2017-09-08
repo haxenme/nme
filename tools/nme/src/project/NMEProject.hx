@@ -348,7 +348,7 @@ class NMEProject
             targetFlags.set("cpp", "1");
             haxedefs.set("winrt", "");
             haxedefs.set("NME_ANGLE", "");
-            haxedefs.set("static_link", "");
+            //haxedefs.set("static_link", "");
             haxedefs.set("ABI", "-ZW");
             target = Platform.WINRT;
             winrtConfig.isXbox = haxedefs.exists("xbox");
@@ -358,6 +358,14 @@ class NMEProject
                 haxedefs.set("HXCPP_M64", null);
                 winrtConfig.isAppx = true;
             }
+
+         case "rpi":
+            targetFlags.set("cpp", "1");
+            targetFlags.set("linux", "1");
+            targetFlags.set("rpi", "1");
+            if (PlatformHelper.hostPlatform==Platform.WINDOWS)
+               addHaxelib("winrpi",null);
+            target = inTargetName.toUpperCase();
 
          case "windows", "mac", "linux":
             targetFlags.set("cpp", "1");
@@ -412,7 +420,7 @@ class NMEProject
 
          case Platform.JSPRIME, Platform.HTML5:
             platformType = Platform.TYPE_WEB;
-            embedAssets = true;
+            embedAssets = false;
 
          case Platform.ANDROID, Platform.IOS,
               Platform.IOSVIEW, Platform.ANDROIDVIEW:
@@ -433,12 +441,21 @@ class NMEProject
             window.height = 0;
             window.fullscreen = true;
 
+         case Platform.RPI:
+            platformType = Platform.TYPE_DESKTOP;
+            window.singleInstance = false;
+
          case Platform.WINDOWS, Platform.MAC, Platform.LINUX, Platform.WINRT:
 
             platformType = Platform.TYPE_DESKTOP;
 
             if (architectures.length==0)
-               architectures = [ PlatformHelper.hostArchitecture ];
+            {
+               if (isNeko())
+                  architectures = [ PlatformHelper.hostArchitecture ];
+               else
+                  architectures = [ Architecture.X64 ];
+            }
             window.singleInstance = false;
 
          default:
@@ -487,6 +504,11 @@ class NMEProject
          watchProject.templatePaths.push( CommandLineTools.nme + "/templates/watchos" );
       }
       return watchProject;
+   }
+
+   public function expandCppia()
+   {
+      return hasDef("expand");
    }
 
    public function getInt(inName:String,inDefault:Int):Int
@@ -620,18 +642,40 @@ class NMEProject
          }
    }
 
+   public function isStaticNme()
+   {
+      if (hasDef("rpi"))
+         haxedefs.set("nme_static","1");
+
+      if (hasDef("nme_static") || hasDef("iphone") || hasDef("ios") ||hasDef("watchos") )
+         return true;
+      if (hasDef("nme_dynamic"))
+         return false;
+
+      var isAndroidSo =  false;//hasDef("android") && !hasDef("androidsim") && !hasDef("androidview");
+      if ( hasDef("windows") || hasDef("mac") || hasDef("linux") || isAndroidSo)
+      {
+         // Use dynamic libraries by default on desktop
+         return false;
+      }
+
+      haxedefs.set("nme_static","1");
+      return true;
+   }
+
    public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String, noCopy:Bool)
    {
       var ndll =  findNdll(name);
-      if ( !isNeko() && ( (hasDef("toolkit") && name=="nme")  || 
-             (CommandLineTools.getHaxeVer()>="3.3") && (name=="std" || name=="regexp" ||
-                 name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) ) )
+      if ( !isNeko() && (name=="std" || name=="regexp" || name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) )
       {
          Log.verbose("Skip ndll " + name + " for toolkit link" );
       }
       else if (ndll==null)
       {
           var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
+
+          if (name=="nme" && inStatic==null)
+             isStatic = isStaticNme();
 
           ndlls.push( new NDLL(name, base, isStatic, inHaxelibName, noCopy) );
       }
@@ -720,20 +764,6 @@ class NMEProject
             }
             else
                Log.verbose("No swf libraryHandlers set - getMovieClip may not work");
-         }
-      }
-
-
-      if (stdLibs && !isFlash && !hasDef("toolkit") && CommandLineTools.getHaxeVer()<"3.3" )
-      {
-         for(lib in ["std", "zlib", "regexp"])
-         {
-            if (findNdll(lib)==null)
-            {
-               var haxelib = addHaxelib("hxcpp","");
-               var ndll = new NDLL(lib, haxelib.getBase(), staticLink, "hxcpp", false);
-               ndlls.push(ndll);
-            }
          }
       }
 
@@ -863,14 +893,22 @@ class NMEProject
 
       var compilerFlags = [];
 
-      if (target == Platform.CPPIA)
-         compilerFlags.push('-resource $inBuildDir/nme/scriptassets.txt@haxe/nme/scriptassets.txt');
+      if (target==Platform.JSPRIME)
+      {
+         // nothing
+      }
+      else if (target==Platform.CPPIA)
+      {
+         if (expandCppia())
+            compilerFlags.push('-resource $inBuildDir/nme/scriptassets.txt@haxe/nme/scriptassets.txt');
+      }
       else
+      {
          compilerFlags.push('-resource $inBuildDir/nme/assets.txt@haxe/nme/assets.txt');
+      }
 
       for(haxelib in haxelibs) 
       {
- 
          haxelib.addLibraryFlags(compilerFlags);
          Reflect.setField(context, "LIB_" + haxelib.name.toUpperCase(), true);
       }

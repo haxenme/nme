@@ -39,6 +39,7 @@ class AcadnmeBoot extends Screen implements IBoot
    var serverEnabled:Bool;
    var store:SharedObject;
    var storeData:Dynamic;
+   var nmeVersion:String;
 
    public function new()
    {
@@ -80,18 +81,13 @@ class AcadnmeBoot extends Screen implements IBoot
       titleBar.setItemLayout( new VerticalLayout().stretch() );
       addWidget(titleBar);
 
-         var titleText = "";
-         for(engine in Acadnme.getEngines())
-         {
-            if (titleText!="")
-               titleText += " + ";
-            titleText += engine.name + "(v" + engine.version + ")";
-         }
-         if (titleText=="")
-            titleText = "No engine setting found";
-         var accent = 0xFFF3E0;
-         titleBar.addWidget( new TextLabel(titleText,{ textColor:0xffffff, fontSize:Skin.scale(24), bold:true, align:Layout.AlignCenterX|Layout.AlignTop }) );
-         titleBar.addWidget(new TextLabel(defaultDir,{ textColor:accent, align: Layout.AlignCenterY|Layout.AlignLeft }) );
+      nmeVersion = Acadnme.getNmeVersion();
+
+      var titleText = "Acadnme v" + nmeVersion;
+
+      var accent = 0xFFF3E0;
+      titleBar.addWidget( new TextLabel(titleText,{ textColor:0xffffff, fontSize:Skin.scale(24), bold:true, align:Layout.AlignCenterX|Layout.AlignTop }) );
+      titleBar.addWidget(new TextLabel(defaultDir,{ textColor:accent, align: Layout.AlignCenterY|Layout.AlignLeft }) );
 
 
        var hostBar = new Widget({ align:Layout.AlignCenterY  });
@@ -327,26 +323,26 @@ class AcadnmeBoot extends Screen implements IBoot
             idx++;
          }
 
-         var disabled = getHeaderError(details.engines);
-            
+         var disabled = getVersionError(details.nme);
+
          tileCtrl.add(createDetails(bitmap, defaultDir,details.name,details.developer, disabled, path));
       }
    }
 
-   public function getHeaderError(engines:Array<{name:String, version:String}>) : String
+   public function getVersionError(version:String) : String
    {
-      if (engines==null || engines.length==0)
+      if (version==null)
          return "No version";
 
-      var haveEngines:Array<{name:String, version:String}> = Acadnme.getEngines();
-      if (engines!=null && haveEngines!=null)
-      {
-            for(e in engines)
-               for(h in haveEngines)
-                  if (e.name==h.name && e.version==h.version)
-                     return null;
-      }
-      return "Version mismatch " + engines[0].name + " " + engines[0].version;
+      var parts = version.split(".");
+      if (parts.length!=3)
+         return "Bad version format :" + version;
+      var nmeParts = nmeVersion.split(".");
+      if (parts[0]!=nmeParts[0])
+         return "Bad major version : " + parts[0];
+
+      // check minor?
+      return null;
    }
 
 
@@ -362,71 +358,72 @@ class AcadnmeBoot extends Screen implements IBoot
          for( name in FileSystem.readDirectory(defaultDir))
          {
             var title = name;
-            var dir = defaultDir + "/" +name;
-            if (sys.FileSystem.isDirectory(dir))
+            var path = defaultDir + "/" +name;
+            var disabled = "No manifest";
+            var developer = "unknown";
+            var bitmap:Widget = null;
+            var header:Dynamic = null;
+            var script:String = null;
+
+            if (sys.FileSystem.isDirectory(path))
             {
-               var script = dir+"/ScriptMain.cppia";
+               script = path+"/ScriptMain.cppia";
                if (!FileSystem.exists(script))
                   continue;
 
-               var disabled = "No manifest";
-               var manifest = dir+"/manifest.json";
-               var developer = "unknown";
+               var manifest = path+"/manifest.json";
                if (FileSystem.exists(manifest))
                {
                   disabled = "Bad manifest";
                   try
                   {
                      var content = File.getContent(manifest);
-                     var json = haxe.Json.parse(content);
-                     if (json!=null)
-                     {
-                        var header = json.header;
-                        if (header!=null)
-                        {
-                           var engines = header.engines;
-                           if (disabled!=null)
-                              disabled = getHeaderError(engines);
-                           if (header.developer!=null)
-                              developer = "developer:" + header.developer;
-                           if (header.name!=null)
-                              title = header.name;
-                        }
-                     }
+                     header = haxe.Json.parse(content);
                   }
                   catch(e:Dynamic) { }
                }
-
-
-               var bitmap:Widget = null;
-               for(ext in ["svg", "png", "jpg"])
-               {
-                  var icon = dir + "/icon." + ext;
-                  if (sys.FileSystem.exists(icon))
-                  {
-                     if (ext=="svg")
-                     {
-                         try
-                         {
-                            var src = sys.io.File.getContent(icon);
-                            if (src!=null)
-                               bitmap = createSvgBmp(src);
-                         }
-                     }
-                     else
-                        bitmap = createBmp(icon);
-                  }
-                  if (bitmap!=null)
-                     break;
-               }
-               if (bitmap==null)
-                  bitmap = createSvgBmp( Assets.getString("default.svg") );
-
-               var path = disabled==null ? script : null;
-               if (path!=null)
-                  launchScript[name] = path;
-               tileCtrl.add(createDetails(bitmap, dir,title,developer,disabled, path));
             }
+            else
+            {
+               if (!StringTools.endsWith(name,".nme"))
+                  continue;
+
+               script = path;
+               disabled = "Bad manifest";
+               header = nme.script.Nme.getFileHeader(path);
+            }
+
+            if (header!=null)
+            {
+               disabled = null;
+
+               if (header.svgIcon!=null)
+               {
+                  bitmap = createSvgBmp(header.svgIcon);
+               }
+               else if (header.bmpIcon!=null)
+               {
+                  var bytes = haxe.crypto.Base64.decode(header.bmpIcon);
+                  bitmap = createBmp(bytes);
+               }
+
+               if (header.developer!=null)
+                  developer = "developer:" + header.developer;
+
+               if (header.name!=null)
+                  title = header.name;
+
+               disabled = getVersionError(header.nme);
+            }
+
+            if (bitmap==null)
+               bitmap = createSvgBmp( Assets.getString("default.svg") );
+
+            var path = disabled==null ? script : null;
+            if (path!=null)
+               launchScript[name] = path;
+
+            tileCtrl.add(createDetails(bitmap, path,title,developer,disabled, path));
          }
       }
       catch(e:Dynamic)
@@ -473,14 +470,11 @@ class AcadnmeBoot extends Screen implements IBoot
             }
          }
       }
-
-
-
    }
 
    public function createDetails(bitmap:Widget, dir:String, name:String, developer:String, inDisabled:String, path:String)
    {
-      var result = new gm2d.ui.Control(["SimpleTile"],{ onEnter:function() onSelect(path) } );
+      var result = new gm2d.ui.Control(["SimpleTile"],{ onEnter:function() onSelect(path), onClick:function() onSelect(path) } );
       result.addChild(bitmap);
       var row = new HorizontalLayout();
       row.add(bitmap.getLayout());
@@ -504,8 +498,10 @@ class AcadnmeBoot extends Screen implements IBoot
       return result;
    }
 
-   public function createBmp(filename:String) : Widget
+   public function createBmp(bytes:haxe.io.Bytes) : Widget
    {
+      //var bmp = renderer.renderBitmap( new Rectangle(0,0,size/scale,size/scale), scale );
+      //return new Image(bmp, { padding:3, wantsFocus:false } );
       return null;
    }
 

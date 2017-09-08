@@ -3,7 +3,7 @@
    <set name="tvos" value="1" if="appletv" />
    <set name="mac" value="1" if="macos" />
    <set name="native_toolkit_sdl_static" value="1" if="static_link" />
-   
+
    <!-- Require Android 2.3+ -->
    <set name="PLATFORM" value="android-9" if="android" />
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
@@ -15,9 +15,15 @@
    <set name="HXCPP_LINK_TOTAL_MEMORY" value="134217728" if="HXCPP_JS_PRIME||emscripten" />
 
 
-   <!--<set name="NME_ANGLE" value="1" if="windows" />-->
+   <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE" />
    <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
    <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
+
+   <set name="linux" value="1" if="winrpi" />
+   <unset name="windows" if="winrpi" />
+   <set name="xcompile" value="1" if="winrpi" />
+   <set name="rpi" value="1" if="winrpi" />
+   <set name="sdl_rpi" value="1" if="winrpi" />
 
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
@@ -42,13 +48,14 @@
       What SDL to use?
       For desktop, use version 2.
       For ios/android, not needed. 
-      For rpi, and other systems, use installed 1.0
+      For old rpi, and other systems, use installed 1.0
    -->
-   <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="rpi" />
+   <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="rpi" unless="sdl_rpi" />
    <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="emscripten" />
    <set name="NME_SDL2" value="1" if="windows" />
    <set name="NME_SDL2" value="1" if="linux" unless="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL2" value="1" if="macos" />
+   <set name="NME_SDL2" value="1" if="winnrpi" />
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
@@ -59,7 +66,7 @@
    <unset name="NME_OGL" if="winrt" unless="NME_ANGLE" />
 
    <!-- For systems that do not create the egl context for us -->
-   <set name="NME_EGL" value="1" if="rpi"/>
+   <set name="NME_EGL" value="1" if="rpi" unless="sdl_rpi" />
 
    <!-- Do we need to implement curl in NME -->
    <set name="NME_CURL" value="1" />
@@ -117,7 +124,8 @@
 
    <!-- inject flags to allow cross-compiling -->
    <files id="native-toolkit-sdl" if="xcompile" >
-      <compilerflag value="-Iinclude/xcompile" />
+      <compilerflag value="-I${haxelib:winrpi}/include" if="winrpi" />
+      <compilerflag value="-I${this_dir}/include/xcompile" />
       <compilerflag value="-DPATH_MAX=1024" />
       <compilerflag value="-DNAME_MAX=256" />
    </files>
@@ -160,6 +168,10 @@
       <depend name="include/Utils.h" />
       <depend name="include/Video.h" />
 
+      <depend name="src/software-renderer/BitmapFill.h" />
+      <depend name="src/software-renderer/AlphaMask.h" />
+      <depend name="src/software-renderer/Render.h" />
+      <depend name="src/software-renderer/PolygonRender.h" />
 
       <depend name="../include/nme/Event.h" />
       <depend name="../include/nme/Extent.h" />
@@ -196,7 +208,9 @@
       <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
 
-      <cache value="1" />
+      <cache value="1" unless="winrpi" />
+      <cache value="1" asLibrary="true" if="winrpi" />
+
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
 
       <depend files="nme-headers"/>
@@ -254,9 +268,13 @@
       <section if="emscripten">
          <file name="${SRC_DIR}/emscripten/System.cpp" />
          <file name="${SRC_DIR}/emscripten/JsPrime.cpp" if="HXCPP_JS_PRIME" />
+
+         <file name="${SRC_DIR}/emscripten/_sans.cpp" />
+         <file name="${SRC_DIR}/emscripten/_serif.cpp" />
+         <file name="${SRC_DIR}/emscripten/_monospace.cpp" />
       </section>
 
-      <section if="rpi">
+      <section if="rpi" unless="winrpi" >
          <compilerflag value="-I/opt/vc/include" />
          <compilerflag value="-I/opt/vc/include/interface/vcos/pthreads/" />
       </section>
@@ -321,6 +339,7 @@
 
 
 
+      <compilerflag value="-I${haxelib:winrpi}/include" if="winrpi" />
       <compilerflag value="-Iinclude/xcompile" if="xcompile" />
       <compilerflag value="-D_7ZIP_ST" unless="windows"/>
       <compilerflag value="-DNME_NOPREMULTIPLIED_ALPHA" if="NME_NOPREMULTIPLIED_ALPHA" />
@@ -384,8 +403,10 @@
       <file name="${SRC_DIR}/common/clipper/clipper.cpp" if="NME_CLIPPER" />
       <file name="${SRC_DIR}/common/NmeClip.cpp" if="NME_INTERNAL_CLIPPING" />
 
+      <!--<file name="${SRC_DIR}/rpi/RPi.cpp" if="winrpi" />-->
+
    
-      <section unless="HXCPP_JS_PRIME" >
+      <section unless="HXCPP_JS_PRIME||winrt" >
          <file name="${SRC_DIR}/common/Lzma.cpp"/>
          <file name="${SRC_DIR}/lzma/LzFind.c" />
          <file name="${SRC_DIR}/lzma/LzmaDec.c" />
@@ -439,6 +460,7 @@
          <ext value=".so" />
          <ext value=".ndll" if="windows || mac || linux" unless="winrt"/>
          <ext value=".js" if="HXCPP_JS_PRIME" />
+         <ext value=".wasm" if="HXCPP_JS_PRIME WASM" />
          <ext value=".dll" if="winrt" />
 
 
@@ -479,21 +501,31 @@
             <lib name="-lEGL" />
             <lib name="-lz" />
          </section>
-         
-         <section if="rpi">
+
+         <section if="rpi" unless="winrpi" >
             <lib name="/opt/vc/lib/libGLESv2.so" />
             <lib name="/opt/vc/lib/libEGL.so" />
             <lib name="/opt/vc/lib/libbcm_host.so" />
          </section>
-      
-      
+
+         <section if="rpi winrpi" >
+            <libpath name="${haxelib:winrpi}/lib" />
+            <lib name="-lGLESv2" />
+            <lib name="-lEGL" />
+            <lib name="-lvcos" />
+            <lib name="-lvchiq_arm" />
+            <lib name="-lbcm_host" />
+         </section>
+
+
          <section if="windows" unless="winrt">
             <lib name="gdi32.lib" />
             <lib name="opengl32.lib" unless="NME_ANGLE" />
             <lib name="user32.lib" />
             <lib name="kernel32.lib" />
             <lib name="advapi32.lib" />
-            <lib name="${SUP_DIR}/windows/dxguid.lib"/>
+            <lib name="${SUP_DIR}/windows/dxguid.lib" unless="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
+	    <lib name="dxguid.lib" if="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
             <lib name="winmm.lib" />
             <lib name="imm32.lib"  />
             <lib name="ole32.lib" />
@@ -506,8 +538,17 @@
             <lib name="d3d9.lib" if="NME_ANGLE"/>
          </section>
 
+         <section if="winrt">
+            <lib name="kernel32.lib" />
+            <lib name="d3d11.lib" />
+            <lib name="Xaudio2.lib" />
+            <lib name="Xinput.lib" />
+            <lib name="DXGI.lib" />
+            <lib name="Dwrite.lib" />
+            <lib name="D3dcompiler.lib" />
+         </section>
+
          <section if="linux">
-            <lib name="${HXCPP}/lib/${BINDIR}/liblinuxcompat.a" />
             <lib name="-lpthread" />
             <lib name="-lrt" />
          </section>
@@ -515,6 +556,54 @@
       </section>
 
    </target>
+
+
+    <files id="__main__" tags="haxe,main,static" replace="true" if="winrt">
+      <depend files="hxcpp-depends"/>
+      <depend name="${HXCPP}/include/hx/HxcppMain.h"/>
+      <file name="${this_dir}/src/winrt/Main.cpp" />
+      <compilerflag value="-Iinclude" />
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
+      <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
+      <cache value="1" />
+    </files>
+
+   <!-- Link as libraries to reduce binary size of possible -->
+   <files id="native-toolkit-angle">
+      <cache value="1" asLibrary="true" project="libAngle" />
+   </files>
+   <files id="native-toolkit-modplug" >
+      <cache value="1" asLibrary="true" project="libModPlug" />
+   </files>
+   <files id="native-toolkit-ogg"   >
+      <!--<cache value="1" asLibrary="true" project="libOgg" />-->
+      <cache value="1" project="libOgg" />
+   </files>
+   <files id="native-toolkit-vorbis" >
+      <cache value="1" asLibrary="true" project="libVorbis" />
+   </files>
+   <files id="native-toolkit-jpeg" >
+      <cache value="1" asLibrary="true" project="libJpeg" />
+   </files>
+   <files id="native-toolkit-png" >
+      <cache value="1" asLibrary="true" project="libPng" />
+   </files>
+   <files id="native-toolkit-zlib" >
+      <cache value="1" asLibrary="true" project="libZlib" />
+   </files>
+   <files id="native-toolkit-sdl" >
+      <cache value="1" asLibrary="true" project="libSdl" />
+   </files>
+   <files id="native-toolkit-sdl-mixer" >
+      <cache value="1" asLibrary="true" project="libSdlMixer" />
+   </files>
+   <files id="native-toolkit-curl" >
+      <cache value="1" asLibrary="true" project="libCurl" />
+   </files>
+   <files id="native-toolkit-freetype" >
+      <cache value="1" asLibrary="true" project="libFreetype" />
+   </files>
+
    
    <target id="default" unless="NME_STATIC_LINK || exe_link" >
      <target id="NDLL"/>

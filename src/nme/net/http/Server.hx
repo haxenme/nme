@@ -42,7 +42,8 @@ class Server
                      try{
                         while( process(connection) )
                         {
-                           // break
+                           // Can't re-use connection because we rely on reading all the data.
+                           break;
                         }
                         connection.close();
                      }
@@ -67,20 +68,79 @@ class Server
       var output = connection.output;
 
       var count = 0;
+      var buffer = Bytes.alloc(1024);
+      var partialLine = "";
+      var headers = new haxe.ds.StringMap<String>();
+      var body:String = null;
+      var contentLength = 0;
+      var url:String=null;
+      var method:String=null;
+      var version:String=null;
+
       while(true)
       {
-         var buffer = Bytes.alloc(1024);
          try
          {
             var read = input.readBytes( buffer, 0, 1024 );
+            if (read==0)
+               break;
             count += read;
             if (read<1024)
+               partialLine +=  buffer.sub(0,read).toString();
+            else
+               partialLine += buffer.toString();
+
+            var parts = partialLine.split("\r\n");
+            if (parts.length>1)
             {
-               if (read>0)
-                  allBytes.push( buffer.sub(0,read) );
-               break;
+               partialLine = parts.pop();
+               for(i in 0...parts.length)
+               {
+                  var line = parts[i];
+                  if (line=="")
+                  {
+                     body = parts.slice(i+1).join("\r\n") + partialLine;
+                     partialLine = null;
+                     var remaining = contentLength-body.length;
+                     if (remaining>0)
+                     {
+                        if (remaining>1024)
+                           buffer = Bytes.alloc(remaining);
+
+                        var read = input.readBytes( buffer, 0, remaining );
+                        if (remaining>=1024)
+                           body += buffer.toString();
+                        else
+                           body += buffer.sub(0,remaining).toString();
+                     }
+                     break;
+                  }
+                  else
+                  {
+                     if (url==null)
+                     {
+                        var reqs = parts[i].split(" ");
+                        method = reqs[0];
+                        url = StringTools.urlDecode(reqs[1]);
+                        version = reqs[2];
+                     }
+                     else
+                     {
+                        var col = line.indexOf(':');
+                        if (col>0)
+                        {
+                           var key = line.substr(0,col);
+                           var value = line.substr(col+2);
+                           if (key=="Content-Length")
+                              contentLength = Std.parseInt(value);
+                           headers.set(key,value);
+                        }
+                    }
+                  }
+               }
+               if (body!=null)
+                  break;
             }
-            allBytes.push(buffer);
          }
          catch(e:Dynamic)
          {
@@ -88,19 +148,17 @@ class Server
          }
       }
 
-      if (count<1)
+      if (url==null)
          return false;
 
-      var total = Bytes.alloc(count);
-      var pos = 0;
-      for(s in allBytes)
-      {
-         total.blit(pos,s,0,s.length);
-         pos += s.length;
-      }
-      var request = new Request(total);
+      var request = new Request(headers, body);
+      request.url = url;
+      request.version = version;
+      request.method = method;
+
       var bytes = handler(request);
       var len = output.writeBytes(bytes, 0, bytes.length);
+
       return request.isKeepAlive();
    }
 

@@ -84,8 +84,6 @@ class Server
             var docsDir = nme.filesystem.File.documentsDirectory.nativePath;
             //directory = sys.FileSystem.fullPath( docsDir ) +  "/" + inEngineName;
             directory = docsDir +  "/" + inEngineName;
-trace("docs ->  " + docsDir);
-trace("Directory ->  " + directory);
             try
             {
                sys.FileSystem.createDirectory(directory);
@@ -337,7 +335,7 @@ trace("Directory ->  " + directory);
          case "get","aget":
             var async = cmd=="aget";
             if (inCommand[0]=="" || inCommand[0]==null)
-               return "usage: set name";
+               return "usage: get name";
             else if (handler==null && !async)
                return "Error: no handler";
             else
@@ -449,7 +447,14 @@ trace("Directory ->  " + directory);
                var message = restartOnScript ? "restart" : "ok";
                toSocket.writeInt32(message.length);
                toSocket.writeString(message);
-               var fullPath = directory+"/"+app+"/ScriptMain.cppia";
+
+               var fullPath:String = null;
+               var nmeName = directory+"/"+app;
+               log("nmeName " + nmeName);
+               if (FileSystem.exists(nmeName) && !FileSystem.isDirectory(nmeName) )
+                  fullPath = nmeName;
+               else
+                  fullPath = directory+"/"+app+"/ScriptMain.cppia";
                log("fullPath " + fullPath);
 
                if (restartOnScript)

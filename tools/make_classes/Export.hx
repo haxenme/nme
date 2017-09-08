@@ -32,6 +32,9 @@ class Export
 
       var global:Dynamic = untyped __js__("$global");
       global.nmeClassesLoaded = true;
+      // String map hack
+      global.__map_reserved = untyped __map_reserved;
+
       if (typeOf(global.nmeOnClasses) == 'function')
          global.nmeOnClasses();
    }

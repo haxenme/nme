@@ -13,39 +13,12 @@ class WinrtPlatform extends WindowsPlatform
       super(inProject);
    }
 
-   override public function runHaxe()
-   {
-      var args = [haxeDir + "/build.hxml"];
-      if (project.debug)
-         args.push("-debug");
-
-      args.push("-D");
-      args.push("static_link");
-      args.push("-D");
-      args.push("ABI=-ZW");
-
-      runHaxeWithArgs(args);
-
-      buildWinRTMain();
-   }
-
-   public function buildWinRTMain()
-   {
-      var dest = haxeDir+"/cpp";
-      var projectDirectory = getOutputDir();
-      copyTemplateDir("winrt/static", dest );
-      var args = [ "run", "hxcpp", "BuildMain.xml" ];
-      if (project.debug)
-         args.push("-debug");
-      ProcessHelper.runCommand (dest, "haxelib", args);
-   }
-
    override public function getPlatformDir() : String { return "winrt"; }
    override public function getBinName() : String { return is64 ? "WinRT64" : "WinRT"; }
 
    override public function copyBinary():Void 
    {
-      FileHelper.copyFile(haxeDir + "/cpp/Main" + (project.debug ? "-debug" : "") + ".exe", executablePath);
+      FileHelper.copyFile(haxeDir + "/cpp/ApplicationMain" + (project.debug ? "-debug" : "") + ".exe", executablePath);
    }
 
    override public function run(arguments:Array<String>):Void 

@@ -523,11 +523,13 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	}
 	else if (inDir == DIR_DOCS)
 	{
-		outDir = "$HOME/Documents";
+      std::string home = getenv("HOME");
+		outDir = home + "/Documents";
 	}
 	else if (inDir == DIR_DESKTOP)
 	{
-		outDir = "$HOME/Desktop";
+      std::string home = getenv("HOME");
+		outDir = home + "/Desktop";
 	}
 #endif
 }

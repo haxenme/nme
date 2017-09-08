@@ -6,6 +6,7 @@ import haxe.io.Path;
 import sys.net.Host;
 import sys.net.Socket;
 import nme.AlphaMode;
+import nme.script.NmeItem;
 using StringTools;
 
 class Platform
@@ -20,6 +21,7 @@ class Platform
    public static inline var WINRT = "WINRT";
    public static inline var ANDROIDVIEW = "ANDROIDVIEW";
    public static inline var CPPIA = "CPPIA";
+   public static inline var RPI = "RPI";
    public static inline var EMSCRIPTEN = "EMSCRIPTEN";
    public static inline var HTML5 = "HTML5";
    public static inline var JS = "JS";
@@ -206,20 +208,16 @@ class Platform
 
    public function createInstaller() { }
 
-   public function createManifestHeader(?inBody:haxe.io.Bytes, includeIcon=false)
+   public function createManifestHeader()
    {
       var header:Dynamic = {};
       header.name = project.app.title;
       header.developer = project.app.company;
       header.id = project.app.packageName;
-      header.engines = new Array<Dynamic>();
-      for(engine in project.engines.keys())
-      {
-         var e = {name:engine, version:project.engines.get(engine)};
-         header.engines.push(e);
-      }
+      header.version = 1;
+      header.nme = nme.Version.name;
 
-      if (includeIcon && project.icons!=null && project.icons.length>0)
+      if ( project.icons!=null && project.icons.length>0)
       {
          try
          {
@@ -228,6 +226,7 @@ class Platform
                header.svgIcon = File.getContent(icon);
             else
             {
+               IconHelper.createIcon(project.icons, 128, 128, getOutputDir() + "/icon.png", addOutput);
                var iconFile = getOutputDir() + "/icon.png";
                header.bmpIcon = haxe.crypto.Base64.encode(File.getBytes(icon));
             }
@@ -246,22 +245,7 @@ class Platform
       {
          if (manifest==null)
          {
-            manifest = {};
-            manifest.header = createManifestHeader();
-            md5s = new Map<String,String>();
-
-            var headerMd5s:Dynamic = {};
-
-            var from = getOutputDir();
-            var lines = new Array<String>();
-            for(filename in outputFiles)
-            {
-                var file = sys.io.File.getBytes(from+"/"+filename);
-                var md5 = haxe.crypto.Md5.make(file).toHex();
-                md5s.set(filename,md5);
-                Reflect.setField(headerMd5s,filename,md5);
-            }
-            manifest.md5s = headerMd5s;
+            manifest = createManifestHeader();
             var manifestName = getOutputDir() + "/manifest.json";
             sys.io.File.saveContent(manifestName, haxe.Json.stringify(manifest) );
             outputFiles.push("manifest.json");
@@ -419,24 +403,52 @@ class Platform
                   socket.output.writeString(response);
                }
 
-               var to = project.app.packageName;
-
-               var manifest = project.hasDef("forcedeploy") ? null :  pullFile(socket, to+"/manifest.json");
-               if (manifest!=null)
-                  remoteMd5s = parseMd5s(manifest.toString());
-
-               for(file in outputFiles)
+               if (project.expandCppia())
                {
-                  var remote = remoteMd5s==null ? null : remoteMd5s.get(file);
-                  if (remote==null || remote!=md5s.get(file))
-                     transfer(socket, from+"/"+file, to+"/"+file);
-                  else
-                     Log.verbose("Already deployed " + file);
-               }
+                  var to = project.app.packageName;
 
-               var ran = inAndRun && sendRun(socket, project.app.packageName);
-               if (!ran || !inAndRun)
-                  bye(socket);
+                  // todo - timestamp
+                  var forced = project.hasDef("forcedeploy");
+                  var stampFile = haxeDir + "/" + host + ".up";
+                  var timestamp:Float = 0;
+                  if (!forced)
+                  {
+                     if (!FileSystem.exists(stampFile))
+                        forced = true;
+                     else
+                     {
+                        var info = FileSystem.stat(stampFile);
+                        var mtime = info.atime;
+                        if (mtime==null)
+                           forced = true;
+                        else
+                           timestamp = mtime.getTime();
+                     }
+                  }
+                  trace(outputFiles);
+                  for(file in outputFiles)
+                  {
+                     var remote = remoteMd5s==null ? null : remoteMd5s.get(file);
+                     if (forced || FileSystem.stat(from+"/"+file).mtime.getTime()>=timestamp)
+                        transfer(socket, from+"/"+file, to+"/"+file);
+                     else
+                        Log.verbose("Already deployed " + file);
+                  }
+                  File.saveContent(stampFile,Std.string(timestamp));
+
+                  var ran = inAndRun && sendRun(socket, project.app.packageName);
+                  if (!ran || !inAndRun)
+                     bye(socket);
+               }
+               else
+               {
+                  var src = getOutputDir() + "/" + getNmeFilename();
+                  var to = project.app.packageName+".nme";
+                  transfer(socket, src, to);
+                  var ran = inAndRun && sendRun(socket, to);
+                  if (!ran || !inAndRun)
+                     bye(socket);
+               }
                socket.close();
                return inAndRun;
             }
@@ -447,8 +459,6 @@ class Platform
          }
          else if (protocol=="nme")
          {
-            if (project.command!="installer")
-               Log.error("Nme deployment can only be used with the installer command");
             var filename = getOutputDir() + "/" + project.app.file + ".nme";
             if (!FileSystem.exists(filename))
                Log.error('Could not find  $filename to deploy');
@@ -463,8 +473,11 @@ class Platform
             var arch = "";
             if (protocol=="bindir")
             {
+               var bin = getBinName();
                // Cross compile
-               if (getBinName()=="Linux" || getBinName()=="Linux64")
+               if (bin=="RPi")
+                  arch = "/RPi/" + project.app.file;
+               else if (bin=="Linux" || bin=="Linux64")
                   arch = "/Linux/" + project.app.file;
                else switch(PlatformHelper.hostPlatform)
                {
@@ -476,6 +489,7 @@ class Platform
             }
 
             deployDir = name + arch;
+            Log.verbose("Deploy to " + deployDir);
             for(file in outputFiles)
             {
                Log.verbose("copy " + file);
@@ -526,6 +540,7 @@ class Platform
    {
       var base = getAssetDir();
       PathHelper.mkdir(base);
+      var convertDir = project.app.binDir + "/converted";
       for(asset in project.assets) 
       {
          var target = catPaths(base, asset.targetPath );
@@ -533,6 +548,7 @@ class Platform
          {
             PathHelper.mkdir(Path.directory(target));
             addOutput(target);
+            asset.cleanConversion(convertDir,target);
             FileHelper.copyAssetIfNewer(asset, target);
          }
       }
@@ -541,6 +557,11 @@ class Platform
    public function catPaths(inBase:String, inExtra:String)
    {
       return PathHelper.combine(inBase,inExtra);
+   }
+
+   public function remapName(dir:String,filename:String)
+   {
+      return dir + "/" + filename;
    }
 
    public function updateLibArch(libDir:String, archSuffix:String)
@@ -580,7 +601,7 @@ class Platform
 
          if (FileSystem.exists(src)) 
          {
-            var dest = libDir + "/" + pref + ndll.name + ext;
+            var dest = remapName( libDir,  pref + ndll.name + ext );
             addOutput(dest);
 
             LogHelper.info("", " - Copying library file: " + src + " -> " + dest);
@@ -589,7 +610,7 @@ class Platform
             src+=".mem";
             if (FileSystem.exists(src)) 
             {
-               var dest = libDir + "/" + pref + ndll.name + ext + ".mem";
+               var dest = dest + ".mem";
                addOutput(dest);
 
                LogHelper.info("", " - Copying library mem file: " + src + " -> " + dest);
@@ -617,5 +638,75 @@ class Platform
 
          copyTemplateDir(extra,  output );
       }
+   }
+
+
+   public function getNmeFilename()
+   {
+      return project.app.file + ".nme";
+   }
+
+   public function createNmeFile()
+   {
+      PathHelper.mkdir(getOutputDir());
+
+      var filename = getOutputDir() + "/" + getNmeFilename();
+
+      var outfile = sys.io.File.write(filename,true);
+      outfile.bigEndian = false;
+      outfile.writeString("NME$");
+
+      var header = haxe.Json.stringify( createManifestHeader() );
+      outfile.writeInt32(header.length);
+      outfile.writeString(header);
+
+      var data = new Array<haxe.io.Bytes>();
+      var offset = 0;
+
+      var index = new Array<NmeItem>();
+
+      for(s in ["cppiaScript", "jsScript" ])
+      {
+         var script = project.getDef(s);
+         if (script!=null)
+         {
+            var bytes = File.getBytes(script);
+            data.push(bytes);
+            var item = new NmeItem();
+            item.offset = offset;
+            item.length = bytes.length;
+            item.type = "TEXT";
+            item.id = s;
+            index.push(item);
+            offset += item.length;
+         }
+      }
+ 
+      var base = getOutputDir();
+      for(asset in project.assets)
+      {
+         var bytes = File.getBytes( asset.sourcePath);
+         data.push(bytes);
+         var item = new NmeItem();
+         item.offset = offset;
+         item.length = bytes.length;
+         item.type = Std.string(asset.type);
+         item.id = asset.id;
+         if (asset.type==IMAGE)
+            item.alphaMode = Std.string(asset.alphaMode);
+         index.push(item);
+         offset += item.length;
+      }
+ 
+      var indexData = haxe.Json.stringify(index);
+      outfile.writeInt32(indexData.length);
+      outfile.writeString(indexData);
+
+      for(blob in data)
+         outfile.writeBytes(blob,0,blob.length);
+
+      outfile.close();
+
+      Log.verbose("Wrote " + filename);
    }
 }
