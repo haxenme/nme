@@ -132,6 +132,10 @@ class Acadnme extends Sprite implements IScriptHandler
             return parts.slice(0,idx+1).join("/") + "/bin/apps";
          }
       }
+
+      // exe directory
+      parts[ parts.length-1 ] = "apps";
+      return parts.join("/");
       #end
 
       return null;

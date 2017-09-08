@@ -55,7 +55,7 @@ class CommandLineTools
 
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
-            "androidview", "android-view", "iphonesim", "android", "androidsim",
+            "androidview", "android-view", "iphonesim", "android", "androidsim", "rpi",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
             "watchsimulator", "watchos", "jsprime", "winrt", "uwp" ];
    static var allCommands = 
@@ -117,7 +117,7 @@ class CommandLineTools
          case Platform.MAC:
             platform = new platforms.MacPlatform(project);
 
-         case Platform.LINUX:
+         case Platform.LINUX, Platform.RPI:
             platform = new platforms.LinuxPlatform(project);
 
          case Platform.FLASH:
@@ -789,6 +789,7 @@ class CommandLineTools
       sys.println("  jsprime     : Js application with c++ compiled runtime");
       sys.println("  neko        : Create application for rapid testing on host system");
       sys.println("  ios         : Create Apple iOS applications");
+      sys.println("  rpi         : Create RaspberryPi applications");
       sys.println("  iphone      : ios + device debugging");
       sys.println("  iphonesim   : ios + simulator");
       sys.println("  watchos     : watch extension");

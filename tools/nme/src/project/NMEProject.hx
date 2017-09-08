@@ -359,6 +359,14 @@ class NMEProject
                 winrtConfig.isAppx = true;
             }
 
+         case "rpi":
+            targetFlags.set("cpp", "1");
+            targetFlags.set("linux", "1");
+            targetFlags.set("rpi", "1");
+            if (PlatformHelper.hostPlatform==Platform.WINDOWS)
+               addHaxelib("winrpi",null);
+            target = inTargetName.toUpperCase();
+
          case "windows", "mac", "linux":
             targetFlags.set("cpp", "1");
             target = inTargetName.toUpperCase();
@@ -432,6 +440,10 @@ class NMEProject
             window.width = 0;
             window.height = 0;
             window.fullscreen = true;
+
+         case Platform.RPI:
+            platformType = Platform.TYPE_DESKTOP;
+            window.singleInstance = false;
 
          case Platform.WINDOWS, Platform.MAC, Platform.LINUX, Platform.WINRT:
 
@@ -632,7 +644,10 @@ class NMEProject
 
    public function isStaticNme()
    {
-      if (hasDef("nme_static") || hasDef("iphone") || hasDef("ios") ||hasDef("watchos"))
+      if (hasDef("rpi"))
+         haxedefs.set("nme_static","1");
+
+      if (hasDef("nme_static") || hasDef("iphone") || hasDef("ios") ||hasDef("watchos") )
          return true;
       if (hasDef("nme_dynamic"))
          return false;

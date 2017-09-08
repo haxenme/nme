@@ -21,6 +21,7 @@ class Platform
    public static inline var WINRT = "WINRT";
    public static inline var ANDROIDVIEW = "ANDROIDVIEW";
    public static inline var CPPIA = "CPPIA";
+   public static inline var RPI = "RPI";
    public static inline var EMSCRIPTEN = "EMSCRIPTEN";
    public static inline var HTML5 = "HTML5";
    public static inline var JS = "JS";
@@ -472,8 +473,11 @@ class Platform
             var arch = "";
             if (protocol=="bindir")
             {
+               var bin = getBinName();
                // Cross compile
-               if (getBinName()=="Linux" || getBinName()=="Linux64")
+               if (bin=="RPi")
+                  arch = "/RPi/" + project.app.file;
+               else if (bin=="Linux" || bin=="Linux64")
                   arch = "/Linux/" + project.app.file;
                else switch(PlatformHelper.hostPlatform)
                {
@@ -485,6 +489,7 @@ class Platform
             }
 
             deployDir = name + arch;
+            Log.verbose("Deploy to " + deployDir);
             for(file in outputFiles)
             {
                Log.verbose("copy " + file);

@@ -11,7 +11,7 @@
    #endif
    static int ARGB_STORE = GL_BGRA_EXT;
    static int ARGB_PIXEL = GL_BGRA_EXT;
-#elif defined(EMSCRIPTEN)
+#elif defined(EMSCRIPTEN) || defined(RASPBERRYPI)
    #undef SWAP_RB
    #define SWAP_RB 1
    #define ARGB_STORE GL_RGBA
@@ -34,6 +34,12 @@
 
 namespace nme
 {
+
+#ifdef NME_ANGLE
+bool gOglAllowRgb = false;
+#else
+bool gOglAllowRgb = true;
+#endif
 
 bool gC0IsRed = true;
 
@@ -115,7 +121,7 @@ GLenum getTextureStorage(PixelFormat pixelFormat)
 {
    switch(pixelFormat)
    {
-      case pfRGB:      return GL_RGB;
+      case pfRGB:  return gOglAllowRgb ? GL_RGB : ARGB_STORE;
       case pfBGRA:     return ARGB_STORE;
       case pfBGRPremA: return ARGB_STORE;
       case pfAlpha: return GL_ALPHA;
@@ -146,7 +152,7 @@ GLenum getTransferOgl(PixelFormat pixelFormat)
 {
    switch(pixelFormat)
    {
-      case pfRGB:      return GL_RGB;
+      case pfRGB:  return gOglAllowRgb ? GL_RGB : ARGB_PIXEL;
       case pfBGRA:     return ARGB_PIXEL;
       case pfBGRPremA: return ARGB_PIXEL;
       case pfAlpha: return GL_ALPHA;
@@ -165,6 +171,13 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat)
    switch(pixelFormat)
    {
       case pfRGB:
+         if (gOglAllowRgb)
+           return pfRGB;
+         // Fallthough
+
+      case pfBGRA:
+         return SWAP_RB ? pfRGBA :pfBGRA;
+
       case pfLuma:
       case pfAlpha:
       case pfLumaAlpha:
@@ -172,8 +185,6 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat)
       case pfRGB565:
          return pixelFormat;
 
-      case pfBGRA:
-         return SWAP_RB ? pfRGBA :pfBGRA;
 
       case pfBGRPremA:
          return SWAP_RB ? pfRGBPremA :pfBGRPremA;
@@ -245,22 +256,24 @@ public:
       GLenum channel= getOglChannelType(fmt);
 
       int pw = BytesPerPixel(fmt);
+      int destPw = BytesPerPixel(buffer_format);
 
       bool copy_required = mSurface->GetBase() && (mTextureWidth!=mPixelWidth || mTextureHeight!=mPixelHeight || buffer_format!=fmt);
       if (copy_required)
       {
-         buffer = (uint8 *)malloc(pw * mTextureWidth * mTextureHeight);
-         int extraX =  mTextureWidth - mPixelWidth;
-         if (extraX)
-            for(int y=0;y<mPixelHeight;y++)
-               memset( buffer + (mTextureWidth*y+mPixelWidth)*pw, 0, pw*extraX);
-         int extraY = mTextureHeight-mPixelHeight;
-         if (extraY)
-            memset( buffer + mTextureWidth*mPixelHeight*pw, 0, pw*mTextureWidth*extraY);
+         buffer = (uint8 *)malloc(destPw * mTextureWidth * mTextureHeight);
 
          PixelConvert( mPixelWidth, mPixelHeight,
               fmt, mSurface->GetBase(), mSurface->GetStride(), mSurface->GetPlaneOffset(),
-              buffer_format, buffer, mTextureWidth*pw, pw*mTextureWidth*mTextureHeight );
+              buffer_format, buffer, mTextureWidth*destPw, destPw*mTextureWidth*mTextureHeight );
+
+         int extraX =  mTextureWidth - mPixelWidth;
+         if (extraX)
+            for(int y=0;y<mPixelHeight;y++)
+               memset( buffer + (mTextureWidth*y+mPixelWidth)*destPw, 0, destPw*extraX);
+         int extraY = mTextureHeight-mPixelHeight;
+         if (extraY)
+            memset( buffer + mTextureWidth*mPixelHeight*destPw, 0, destPw*mTextureWidth*extraY);
       }
 
       // __android_log_print(ANDROID_LOG_ERROR, "NME", "CreateTexture %d (%dx%d)",
@@ -332,6 +345,7 @@ public:
             GLenum channel= getOglChannelType(fmt);
 
             int pw = BytesPerPixel(fmt);
+            int destPw = BytesPerPixel(buffer_format);
 
 
             int x0 = mDirtyRect.x;
@@ -362,7 +376,7 @@ public:
             {
                uint8 *buffer = 0;
                // Make unpack align a multiple of 4 ...
-               if (pw<4)
+               if (destPw<4)
                {
                   dw = (dw + 3) & ~3;
                   if (x0+dw > mPixelWidth)
@@ -377,10 +391,10 @@ public:
                }
 
                const uint8 *p0 = mSurface->Row(y0) + x0*pw;
-               buffer = (uint8 *)malloc(pw * dw * dh);
+               buffer = (uint8 *)malloc(destPw * dw * dh);
                PixelConvert(dw,dh,
                             fmt, p0, mSurface->GetStride(), mSurface->GetPlaneOffset(),
-                            buffer_format, buffer, dw*pw, dw*dh*pw );
+                            buffer_format, buffer, dw*destPw, dw*dh*destPw );
 
                glTexSubImage2D(GL_TEXTURE_2D, 0,
                   x0, y0,
