@@ -308,11 +308,9 @@ public:
             case resoRenderbuffer:
                ctx->DestroyRenderbuffer(id);
                break;
-#ifndef NME_NO_GLES3COMPAT
             case resoVertexarray:
                ctx->DestroyVertexarray(id);
                break;
-#endif
          }
       }
       type = resoNone;

@@ -49,6 +49,14 @@ class Utils
       return _isGLES;
    };
 
+   public static function isWebGL():Bool 
+   {
+      if(!_glVersionInit)
+         GLVersion();
+
+      return _isWebGL;
+   };
+
    //is GLES3 or OpenGL 3.3
    public static function isGLES3compat():Bool
    {
@@ -70,12 +78,21 @@ class Utils
          if(version.indexOf("OpenGL ES")>=0)
          { 
             _isGLES = true;
+            _isWebGL = false;
             _glVersion = Std.parseFloat(version.split(" ")[2]);
             _isGLES3compat = (_glVersion>=3.0);
+         }
+         else if(version.indexOf("WebGL")>=0)
+         { 
+            _isGLES = true; //a kind of GLES
+            _isWebGL = true;
+            _glVersion = Std.parseFloat(version.split(" ")[1]);
+            _isGLES3compat = (_glVersion>=2.0);
          }
          else
          {
             _isGLES = false;
+            _isWebGL = false;
             _glVersion = Std.parseFloat(version.split(" ")[0]);
             _isGLES3compat = (_glVersion>=3.3);
          }
@@ -88,7 +105,7 @@ class Utils
    //Helper functions for writting compatible gles3/gles2 shader sources
    //1) attribute -> IN(n)
    //2) varying -> OUT()
-   //3) OUT_COLOR("color"): use it vertex shader to define the name output instead of gl_FragColor. 
+   //3) OUT_COLOR("color"): use it in fragment shader to define the name output instead of gl_FragColor
    //4) HEADER is included automatically in "createProgram" unless inAutoHeader is set to false
 
    public static inline function IN(slot:Int):String
@@ -129,6 +146,7 @@ class Utils
    }
 
    public static var _isGLES:Bool;
+   public static var _isWebGL:Bool;
    public static var _isGLES3compat:Bool;
    public static var _glVersion:Float;
    public static var _glVersionInit:Bool;
