@@ -1646,7 +1646,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       #ifdef NME_NO_GLES3COMPAT
       major = 2;
       #endif
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); 
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major); 
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
       #endif
 

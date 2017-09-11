@@ -20,6 +20,9 @@
 
 #ifndef NME_NO_GLES3COMPAT
    #include <GLES3/gl3.h>
+   #if defined(ANDROID)
+      #define __gl2_h_ //For Android Platform < 21
+   #endif
 #endif
    #include <GLES2/gl2.h>
    #include <GLES2/gl2ext.h>
