@@ -1550,6 +1550,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    #ifdef NME_ANGLE
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
+   int major = 3;
+   #ifdef NME_NO_GLES3COMPAT
+   major = 2;
+   #endif
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major); 
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
+   DLOG("1 ");
    #endif
 
    if (opengl)
@@ -1642,10 +1649,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
       #ifdef NME_ANGLE 
       //needs to be just before SDL_CreateRenderer because SDL_GetWindowFlags resets it
-      int major = 3;
-      #ifdef NME_NO_GLES3COMPAT
-      major = 2;
-      #endif
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major); 
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
       #endif
