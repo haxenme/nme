@@ -23,8 +23,14 @@ class Utils
       var program = GL.createProgram();
       if(inAutoHeader)
       {
-         inVertexSource = HEADER(GL.VERTEX_SHADER) + inVertexSource;
-         inFragmentSource = HEADER(GL.FRAGMENT_SHADER) + inFragmentSource;
+         if( !StringTools.startsWith(inVertexSource,"#v") )
+         {
+            inVertexSource = HEADER(GL.VERTEX_SHADER) + inVertexSource;
+         }
+         if( !StringTools.startsWith(inFragmentSource,"#v") )
+         {
+            inFragmentSource = HEADER(GL.FRAGMENT_SHADER) + inFragmentSource;
+         }
       }
       var vshader = createShader(inVertexSource, GL.VERTEX_SHADER);
       var fshader = createShader(inFragmentSource, GL.FRAGMENT_SHADER);
@@ -103,15 +109,28 @@ class Utils
    }
 
    //Helper functions for writting compatible gles3/gles2 shader sources
-   //1) attribute -> IN(n)
-   //2) varying -> OUT()
-   //3) OUT_COLOR("color"): use it in fragment shader to define the name output instead of gl_FragColor
+   //1) In VS: attribute -> IN(n)
+   //2) In VS: varying -> OUT()
+   //2a) In FS: varyng -> IN()
+   //3) In VS: OUT_COLOR("color"): define the name output instead of gl_FragColor
    //4) HEADER is included automatically in "createProgram" unless inAutoHeader is set to false
 
-   public static inline function IN(slot:Int):String
+   public static inline function IN(slot:Int = -1):String
+   {
+     return slot < 0 ? IN_FS() : IN_VS(slot);
+   }
+
+   public static inline function IN_FS():String
    {
      return isGLES3compat()? 
-            "layout(location = "+slot+") in" : 
+            "in" : 
+            "varying";
+   }
+
+   public static inline function IN_VS(slot:Int):String 
+   {
+     return isGLES3compat()? 
+            "layout(location = " + slot + ") in" : 
             "attribute";
    }
 
