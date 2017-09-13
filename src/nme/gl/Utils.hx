@@ -112,8 +112,8 @@ class Utils
    //1) In VS: attribute -> IN(n)
    //2) In VS: varying -> OUT()
    //2a) In FS: varyng -> IN()
-   //3) In VS: OUT_COLOR("color"): define the name output instead of gl_FragColor
-   //4) HEADER is included automatically in "createProgram" unless inAutoHeader is set to false
+   //3) In FS: OUT_COLOR("color"): define the name output instead of gl_FragColor
+   //5) HEADER is included automatically in "createProgram" unless inAutoHeader is set to false
 
    public static inline function IN(slot:Int = -1):String
    {
@@ -123,29 +123,36 @@ class Utils
    public static inline function IN_FS():String
    {
      return isGLES3compat()? 
-            "in" : 
-            "varying";
+            "\nin " : 
+            "\nvarying ";
    }
 
    public static inline function IN_VS(slot:Int):String 
    {
      return isGLES3compat()? 
-            "layout(location = " + slot + ") in" : 
-            "attribute";
+            "\nlayout(location = " + slot + ") in " : 
+            "\nattribute ";
    }
 
    public static inline function OUT():String
    {
     return isGLES3compat()? 
-         "out" : 
-         "varying";
+         "\nout" : 
+         "\nvarying";
    }
 
    public static inline function OUT_COLOR(fragColor:String):String
    {
      return isGLES3compat()? 
-         "out vec4 "+fragColor+";" : 
-         "#define "+fragColor+" gl_FragColor";
+         "\nout vec4 "+fragColor+";\n" : 
+         "\n#define "+fragColor+" gl_FragColor\n";
+   }
+
+   public static inline function TEXTURE():String
+   {
+    return isGLES3compat()? 
+         " texture" : 
+         " texture2D";
    }
 
    private static inline function HEADER(type:Int):String
