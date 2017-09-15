@@ -7,25 +7,48 @@ class JoystickEvent extends Event
    public static inline var AXIS_MOVE:String = "axisMove";
    public static inline var BUTTON_DOWN:String = "buttonDown";
    public static inline var BUTTON_UP:String = "buttonUp";
+   public static inline var HAT_MOVE:String = "hatMove";
    public static inline var DEVICE_ADDED:String = "deviceAdded";
    public static inline var DEVICE_REMOVED:String = "deviceRemoved";
 
    public var device:Int;
    public var id:Int;
    public var value:Float;
+   public var x(get, set):Float; //x is an alias of "value"
+   public var y:Float;
+   public var z:Float; //dummy z to fix compile
+   public var w:Float; //dummy w to fix compile
+   private var eventValue:Int;
 
-   public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, device:Int = 0, id:Int = 0, value:Float = 0) 
+   function set_x(inX) {
+      return value = inX;
+   }
+   function get_x() {
+      return value;
+   }
+
+   public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, device:Int = 0, id:Int = 0, eventValue:Int = 0) 
    {
       super(type, bubbles, cancelable);
 
       this.device = device;
       this.id = id;
-      this.value = value;
+      this.eventValue = eventValue;
+
+      if(type==HAT_MOVE)
+      {
+         this.x = (eventValue & HAT_RIGHT)!=0 ? 1.0 : (eventValue & HAT_LEFT)!=0 ? -1.0 : 0.0;
+         this.y = (eventValue & HAT_UP)!=0 ? 1.0 : (eventValue & HAT_DOWN)!=0 ? -1.0 : 0.0;
+      }
+      else
+      {
+         this.value = axisNormalize(eventValue);
+      }
    }
 
    public override function clone():Event 
    {
-      return new JoystickEvent(type, bubbles, cancelable, device, id, value);
+      return new JoystickEvent(type, bubbles, cancelable, device, id, eventValue);
    }
 
    public override function toString():String 
@@ -40,6 +63,12 @@ class JoystickEvent extends Event
       return buf.toString();
    }
 
+   private inline function axisNormalize(value:Int):Float
+   {
+      // Range: -32768 to 32767
+      return value==0 ? 0.0 : value>=32767 ? 1.0 : value<=-32767 ? -1.0 : value / 32767;
+   }  
+
    public static inline var BUTTON_A:Int = 0;
    public static inline var BUTTON_B:Int = 1;
    public static inline var BUTTON_X:Int = 2;
@@ -51,10 +80,11 @@ class JoystickEvent extends Event
    public static inline var BUTTON_RIGHTSTICK:Int = 8;
    public static inline var BUTTON_LEFTSHOULDER:Int = 9;
    public static inline var BUTTON_RIGHTSHOULDER:Int = 10;
-   public static inline var BUTTON_DPAD_UP:Int = 11;
-   public static inline var BUTTON_DPAD_DOWN:Int = 12;
-   public static inline var BUTTON_DPAD_LEFT:Int = 13;
-   public static inline var BUTTON_DPAD_RIGHT:Int = 14;
+
+   //public static inline var BUTTON_DPAD_UP:Int = 11;
+   //public static inline var BUTTON_DPAD_DOWN:Int = 12;
+   //public static inline var BUTTON_DPAD_LEFT:Int = 13;
+   //public static inline var BUTTON_DPAD_RIGHT:Int = 14;
 
    public static inline var AXIS_LEFTX:Int = 0;
    public static inline var AXIS_LEFTY:Int = 1;
@@ -62,6 +92,11 @@ class JoystickEvent extends Event
    public static inline var AXIS_RIGHTY:Int = 3;
    public static inline var AXIS_TRIGGERLEFT:Int = 4;
    public static inline var AXIS_TRIGGERRIGHT:Int = 5;
+
+   private static inline var HAT_UP:Int = 0x1;
+   private static inline var HAT_RIGHT:Int = 0x2;
+   private static inline var HAT_DOWN:Int = 0x4;
+   private static inline var HAT_LEFT:Int = 0x8;
 
    public function idLabel():String
    {
@@ -81,10 +116,11 @@ class JoystickEvent extends Event
                case JoystickEvent.BUTTON_RIGHTSTICK: return "BUTTON_RIGHTSTICK";
                case JoystickEvent.BUTTON_LEFTSHOULDER: return "BUTTON_LEFTSHOULDER";
                case JoystickEvent.BUTTON_RIGHTSHOULDER: return "BUTTON_RIGHTSHOULDER";
-               case JoystickEvent.BUTTON_DPAD_UP: return "BUTTON_DPAD_UP";
-               case JoystickEvent.BUTTON_DPAD_DOWN: return "BUTTON_DPAD_DOWN";
-               case JoystickEvent.BUTTON_DPAD_LEFT: return "BUTTON_DPAD_LEFT";
-               case JoystickEvent.BUTTON_DPAD_RIGHT: return "BUTTON_DPAD_RIGHT";
+
+               //case JoystickEvent.BUTTON_DPAD_UP: return "BUTTON_DPAD_UP";
+               //case JoystickEvent.BUTTON_DPAD_DOWN: return "BUTTON_DPAD_DOWN";
+               //case JoystickEvent.BUTTON_DPAD_LEFT: return "BUTTON_DPAD_LEFT";
+               //case JoystickEvent.BUTTON_DPAD_RIGHT: return "BUTTON_DPAD_RIGHT";
             }
          case AXIS_MOVE:
             switch(id)
@@ -96,6 +132,8 @@ class JoystickEvent extends Event
                case JoystickEvent.AXIS_TRIGGERLEFT: return "AXIS_TRIGGERLEFT";
                case JoystickEvent.AXIS_TRIGGERRIGHT: return "AXIS_TRIGGERRIGHT";
             }
+         case HAT_MOVE:
+               return "HAT_MOVE[x:"+x+" y:"+y+"]";
       }
       return "";
    }
