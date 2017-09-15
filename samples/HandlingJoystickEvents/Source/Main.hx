@@ -29,6 +29,7 @@ class Main extends Sprite {
     private var gray:ColorTransform;
     private var blue:ColorTransform;
     private var green:ColorTransform;
+    private var orange:ColorTransform;
 
 
     static private inline var PLAYER1:Int = 0;
@@ -60,6 +61,7 @@ class Main extends Sprite {
         gray = new ColorTransform(0.8,0.8,0.8);
         blue = new ColorTransform(0,0,1);
         green = new ColorTransform(0,1,0);
+        orange = new ColorTransform(1,0.5,0.3);
 
         userHatPosition = new Array<Array<Int>>();
         userAxisPosition = new Array<Array<Int>>();
@@ -187,10 +189,12 @@ class Main extends Sprite {
        return INVALID_ID;
     }
 
+#if 0
     private inline function hatClamp(val:Int):Int
     {
       return (val > 1 ? 1 : val <-1 ? -1 : val);
     }
+#end
 
     private function onJoystickButton( e:JoystickEvent, pressed:Bool ):Void
     {
@@ -265,6 +269,11 @@ class Main extends Sprite {
         {
           (userHatPosition[player])[_X] = Std.int(e.x);
           (userHatPosition[player])[_Y] = Std.int(e.y);
+
+          (userDisplayButton[player])[11/*UP*/].transform.colorTransform = e.y>0? orange : gray; 
+          (userDisplayButton[player])[12 /*DOWN*/].transform.colorTransform = e.y<0? orange : gray; 
+          (userDisplayButton[player])[13 /*LEFT*/].transform.colorTransform = e.x<0? orange : gray; 
+          (userDisplayButton[player])[14 /*RIGHT*/].transform.colorTransform = e.x>0? orange : gray; 
         }
     }
 
