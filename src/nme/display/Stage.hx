@@ -672,16 +672,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
    }
 
-   private inline function axisNormalize(value:Int):Float
-   {
-      // Range: -32768 to 32767
-      return value==0 ? 0.0 : value>=32767 ? 1.0 : value<=-32767 ? -1.0 : value / 32767;
-   }
-
    public function onJoystick(inEvent:AppEvent, inType:String):Void
    {
-      var value:Float = axisNormalize(inEvent.value);
-      var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code, value);
+      var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code, inEvent.value);
       nmeDispatchEvent(evt);
    }
 

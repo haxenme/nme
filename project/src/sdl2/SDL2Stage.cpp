@@ -845,6 +845,14 @@ QuickVec<SDL_GameController *> sgGameControllers;
 QuickVec<int> sgJoysticksId;
 QuickVec<int> sgJoysticksIndex;
 std::map<int, std::map<int, int> > sgJoysticksAxisMap;
+std::map<int, int> sgJoysticksHatX;
+std::map<int, int> sgJoysticksHatY;
+std::map<int, int> sgJoysticksHatX_old;
+std::map<int, int> sgJoysticksHatY_old;
+inline int hatClamp(int val)
+{
+   return (val >= 1 ? 1 : val <= -1 ? -1 : 0);
+} 
 #endif
 
 
@@ -1394,6 +1402,21 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_CONTROLLERBUTTONDOWN:
       {
+          switch(inEvent.jbutton.button) 
+          {
+              case SDL_CONTROLLER_BUTTON_DPAD_UP:
+                  hatClamp(++sgJoysticksHatY[inEvent.jbutton.which]);
+                  return;
+              case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+                  hatClamp(--sgJoysticksHatY[inEvent.jbutton.which]);
+                  return;
+              case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                  hatClamp(++sgJoysticksHatX[inEvent.jbutton.which]);
+                  return;
+              case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                  hatClamp(--sgJoysticksHatX[inEvent.jbutton.which]);
+                  return;
+          }
          Event joystick(etJoyButtonDown);
          joystick.id = inEvent.jbutton.which;
          joystick.code = inEvent.jbutton.button;
@@ -1403,6 +1426,21 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_CONTROLLERBUTTONUP:
       {
+          switch(inEvent.jbutton.button) 
+          {
+              case SDL_CONTROLLER_BUTTON_DPAD_UP:
+                  hatClamp(--sgJoysticksHatY[inEvent.jbutton.which]);
+                  return;
+              case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+                  hatClamp(++sgJoysticksHatY[inEvent.jbutton.which]);
+                  return;
+              case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                  hatClamp(--sgJoysticksHatX[inEvent.jbutton.which]);
+                  return;
+              case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                  hatClamp(++sgJoysticksHatX[inEvent.jbutton.which]);
+                  return;
+          }
          Event joystick(etJoyButtonUp);
          joystick.id = inEvent.jbutton.which;
          joystick.code = inEvent.jbutton.button;
@@ -1934,7 +1972,25 @@ void StartAnimation()
          if (sgDead)
             break;
       }
- 
+
+      //Joystick Hat events
+      for (int i = 0; i < sgJoysticksId.size(); i++) {
+         int id = sgJoysticksId[i];
+         if (sgJoysticksHatX[id] != sgJoysticksHatX_old[id] || sgJoysticksHatY[id] != sgJoysticksHatY_old[id]) {
+            Event joystick(etJoyHatMove);
+             joystick.id = id;
+             joystick.code = 0;
+            unsigned int hx = sgJoysticksHatX[id] > 0 ? SDL_HAT_RIGHT : sgJoysticksHatX[id] < 0 ? SDL_HAT_LEFT : 0;
+            unsigned int hy = sgJoysticksHatY[id] > 0 ? SDL_HAT_UP : sgJoysticksHatY[id] < 0 ? SDL_HAT_DOWN : 0;
+            joystick.value = (hx|hy);
+            //fprintf(stderr,"[%d,0x%x]",id,joystick.value);
+            sgSDLFrame->ProcessEvent(joystick);
+            sgJoysticksHatX_old[id] = sgJoysticksHatX[id]; 
+            sgJoysticksHatY_old[id] = sgJoysticksHatY[id];
+            break;
+         }
+      }
+
       // Poll
       Event poll(etPoll);
       sgSDLFrame->ProcessEvent(poll);

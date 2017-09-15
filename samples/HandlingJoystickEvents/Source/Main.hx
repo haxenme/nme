@@ -79,10 +79,6 @@ class Main extends Sprite {
 
           userDisplayButton[userID] = new Array<Sprite>();
 
-          createCircle(userID,JoystickEvent.BUTTON_DPAD_UP, 1, 2);
-          createCircle(userID,JoystickEvent.BUTTON_DPAD_DOWN, 1, 4);
-          createCircle(userID,JoystickEvent.BUTTON_DPAD_LEFT, 0, 3);
-          createCircle(userID,JoystickEvent.BUTTON_DPAD_RIGHT, 2, 3);
           createCircle(userID,JoystickEvent.BUTTON_A, 7, 4);
           createCircle(userID,JoystickEvent.BUTTON_B, 8, 3);
           createCircle(userID,JoystickEvent.BUTTON_X, 6, 3);
@@ -105,6 +101,11 @@ class Main extends Sprite {
           (userDisplayButton[userID])[JoystickEvent.BUTTON_LEFTSHOULDER].scaleY = 0.6;
           createCircle(userID,JoystickEvent.BUTTON_RIGHTSHOULDER, 8, 1);
           (userDisplayButton[userID])[JoystickEvent.BUTTON_RIGHTSHOULDER].scaleY = 0.6;
+
+          createCircle(userID, 11/*JoystickEvent.BUTTON_DPAD_UP*/, 1, 2);
+          createCircle(userID, 12 /*JoystickEvent.BUTTON_DPAD_DOWN*/, 1, 4);
+          createCircle(userID, 13 /*JoystickEvent.BUTTON_DPAD_LEFT*/, 0, 3);
+          createCircle(userID, 14 /*JoystickEvent.BUTTON_DPAD_RIGHT*/, 2, 3);
 
           //this circle indicates if user has joystick with green
           createCircle(userID,15, 4, 0);
@@ -133,6 +134,7 @@ class Main extends Sprite {
         Lib.current.stage.addEventListener (JoystickEvent.BUTTON_DOWN, onJoystickButtonDown);
         Lib.current.stage.addEventListener (JoystickEvent.BUTTON_UP, onJoystickButtonUp);
         Lib.current.stage.addEventListener (JoystickEvent.AXIS_MOVE, onJoystickAxisMove);
+        Lib.current.stage.addEventListener (JoystickEvent.HAT_MOVE, onJoystickHatMove);
         Lib.current.stage.addEventListener (JoystickEvent.DEVICE_ADDED, onJoystickDeviceAdded);
         Lib.current.stage.addEventListener (JoystickEvent.DEVICE_REMOVED, onJoystickDeviceRemoved);
         
@@ -202,6 +204,8 @@ class Main extends Sprite {
           (userDisplayButton[player])[e.id].transform.colorTransform = pressed? red : gray; 
           switch(e.id)
           {
+#if 0
+              //Use HAT_MOVE event for BUTTON_DPAD_*
               case JoystickEvent.BUTTON_DPAD_UP:
                  (userHatPosition[player])[_Y] = 
                     pressed? 
@@ -222,6 +226,7 @@ class Main extends Sprite {
                     pressed? 
                       hatClamp(++(userHatPosition[player])[0]) : 
                       hatClamp(--(userHatPosition[player])[0]);
+#end
               case JoystickEvent.BUTTON_A:
                  //
               case JoystickEvent.BUTTON_B:
@@ -249,6 +254,17 @@ class Main extends Sprite {
         else
         {
           trace("No player for this joystick");
+        }
+    }
+
+    private function onJoystickHatMove( e:JoystickEvent ):Void
+    {
+        //trace(e); 
+        var player = userIDFromDevice(e.device);
+        if(player!=INVALID_ID)
+        {
+          (userHatPosition[player])[_X] = Std.int(e.x);
+          (userHatPosition[player])[_Y] = Std.int(e.y);
         }
     }
 
