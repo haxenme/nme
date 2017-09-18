@@ -1,6 +1,6 @@
 package nme.app;
 
-#if (cpp && hxcpp_api_level>=312)
+#if (cpp && !cppia && hxcpp_api_level>=312)
 import nme.native.NativeEvent;
 using cpp.NativeString;
 
