@@ -13,12 +13,12 @@ class JoystickEvent extends Event
 
    public var device:Int;
    public var id:Int;
+   public var user:Int;
    public var value:Float;
    public var x(get, set):Float; //x is an alias of "value"
    public var y:Float;
    public var z:Float; //dummy z to fix compile
    public var w:Float; //dummy w to fix compile
-   private var eventValue:Int;
 
    function set_x(inX) {
       return value = inX;
@@ -27,28 +27,20 @@ class JoystickEvent extends Event
       return value;
    }
 
-   public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, device:Int = 0, id:Int = 0, eventValue:Int = 0) 
+   public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, device:Int = 0, id:Int = 0, userId:Int = 0, x:Float = 0, y:Float = 0) 
    {
       super(type, bubbles, cancelable);
 
       this.device = device;
       this.id = id;
-      this.eventValue = eventValue;
-
-      if(type==HAT_MOVE)
-      {
-         this.x = (eventValue & HAT_RIGHT)!=0 ? 1.0 : (eventValue & HAT_LEFT)!=0 ? -1.0 : 0.0;
-         this.y = (eventValue & HAT_UP)!=0 ? 1.0 : (eventValue & HAT_DOWN)!=0 ? -1.0 : 0.0;
-      }
-      else
-      {
-         this.value = axisNormalize(eventValue);
-      }
+      this.user = userId;
+      this.value = x;  
+      this.y = y; 
    }
 
    public override function clone():Event 
    {
-      return new JoystickEvent(type, bubbles, cancelable, device, id, eventValue);
+      return new JoystickEvent(type, bubbles, cancelable, device, id, user, x, y);
    }
 
    public override function toString():String 
@@ -62,12 +54,6 @@ class JoystickEvent extends Event
       buf.add("]");
       return buf.toString();
    }
-
-   private inline function axisNormalize(value:Int):Float
-   {
-      // Range: -32768 to 32767
-      return value==0 ? 0.0 : value>=32767 ? 1.0 : value<=-32767 ? -1.0 : value / 32767;
-   }  
 
    public static inline var BUTTON_A:Int = 0;
    public static inline var BUTTON_B:Int = 1;

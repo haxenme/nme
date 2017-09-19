@@ -674,7 +674,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public function onJoystick(inEvent:AppEvent, inType:String):Void
    {
-      var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code, inEvent.value);
+      var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code, inEvent.value, inEvent.sx, inEvent.sy);
       nmeDispatchEvent(evt);
    }
 
