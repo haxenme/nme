@@ -882,10 +882,20 @@ class CommandLineTools
    public static function runAcadnme(args:Array<String>, ?project:NMEProject)
    {
       //var host = project!=null ? project.getDef("CPPIA_HOST") : null;
-      // TODO - non windows
-      var dir = nme + "/bin/Windows/Acadnme";
-      var exe = "Acadnme.exe";
-      ProcessHelper.runCommand(dir, exe, args);
+      switch (host)
+      {
+         case Platform.WINDOWS:
+            ProcessHelper.runCommand(nme + "/bin/Windows/Acadnme", "Acadnme.exe", args);
+
+         case Platform.LINUX:
+            ProcessHelper.runCommand("", "chmod", [ "u+x", nme + "/bin/Linux/Acadnme/Acadnme" ]);
+            ProcessHelper.runCommand(nme + "/bin/Linux/Acadnme", "./Acadnme", args);
+
+         case Platform.MAC:
+            ProcessHelper.runCommand(nme + "/bin/Mac", "open", ["./Acadnme.app", "--args"].concat(args));
+
+         default:
+      }
    }
 
 
