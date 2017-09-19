@@ -861,7 +861,7 @@ struct controllerState
       haty_old(0),
       userId(inUserId)
    {
-      SDL_GameController *gameController = SDL_GameControllerOpen(which); //which: joystick device index
+      gameController = SDL_GameControllerOpen(which); //which: joystick device index
       joystickId = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gameController));
       for(int i=0; i<6; i++)
       {
@@ -875,7 +875,10 @@ struct controllerState
 
    void remove()
    {
-      SDL_GameControllerClose(gameController);
+      if(gameController!=NULL)
+      {
+         SDL_GameControllerClose(gameController);
+      }
       Event joystick(etJoyDeviceRemoved);
       joystick.id = joystickId;
       joystick.value = userId;
@@ -957,7 +960,10 @@ int popUserId()
    {
       userIds = new QuickVec<int>(MAX_USERS);
       for(int i=0; i<MAX_USERS; i++)
+      {
          (*userIds)[i]=(MAX_USERS-1-i);
+         //sgJoysticksState[i] = NULL;
+      }
    }   
 
    if(userIds->size()==0)
@@ -1518,7 +1524,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_CONTROLLERBUTTONDOWN:
       {
           int userId = getUserIdFromJoystickId(inEvent.jbutton.which);
-          if(userId>=0)
+          if(userId>=0 && sgJoysticksState[userId]!=NULL)
           {
              switch(inEvent.jbutton.button) 
              {
@@ -1548,7 +1554,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_CONTROLLERBUTTONUP:
       {
           int userId = getUserIdFromJoystickId(inEvent.jbutton.which);
-          if(userId>=0)
+          if(userId>=0 && sgJoysticksState[userId]!=NULL)
           {
              switch(inEvent.jbutton.button) 
              {
@@ -1834,7 +1840,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    SDL_GameControllerEventState(SDL_TRUE);
    
    //open available controllers
-   SDL_GameController *gameController = NULL;
    for (int i = 0; i < numJoysticks; ++i)
    {
       if (SDL_IsGameController(i)) 

@@ -5,6 +5,7 @@ package nme.events;
 class JoystickEvent extends Event 
 {
    public static inline var AXIS_MOVE:String = "axisMove";
+   public static inline var BALL_MOVE:String = "ballMove"; //dummy ballMove for retrocompatibility
    public static inline var BUTTON_DOWN:String = "buttonDown";
    public static inline var BUTTON_UP:String = "buttonUp";
    public static inline var HAT_MOVE:String = "hatMove";
@@ -17,8 +18,8 @@ class JoystickEvent extends Event
    public var value:Float;
    public var x(get, set):Float; //x is an alias of "value"
    public var y:Float;
-   public var z:Float; //dummy z to fix compile
-   public var w:Float; //dummy w to fix compile
+   public var z:Float; //dummy z for retrocompatibility
+   public var w:Float; //dummy w for retrocompatibility
 
    function set_x(inX) {
       return value = inX;
@@ -48,6 +49,7 @@ class JoystickEvent extends Event
       var buf:StringBuf = new StringBuf();
       buf.add("[JoystickEvent type="); buf.add(type);
       buf.add(" device="); buf.add(device);
+      buf.add(" user="); buf.add(user);
       buf.add(" id="); buf.add(id);
       buf.add("("); buf.add(idLabel()); buf.add(")");
       buf.add(" value="); buf.add(value);

@@ -14,11 +14,7 @@ class Main extends Sprite {
     
     private var Logo:Sprite;
 
-    //These are useful for asigning joysticks to players on a local multiplayer game
-    //assigning a connected Joystick device to a userID
-    static private inline var MAX_PLAYERS:Int = 4;
-    private var userIDstack:Array<Int>; //Stores the available userIDs, from 0 to MAX_PLAYERS-1
-    private var userJoysickDevice:IntMap<Int>; //Map usersIDs to Joystick devices ids
+    static private inline var MAX_USERS:Int = 4;
 
     private var userHatPosition:Array<Array<Int>>; //records x,y directions, either -1, 0 or 1
     private var userAxisPosition:Array<Array<Int>>; //records x,y directions, either -1, 0 or 1
@@ -52,9 +48,6 @@ class Main extends Sprite {
         Logo.buttonMode = true;
         addChild (Logo);
 
-        //Init user-joystick stack and map
-        userIDstack = [];
-        userJoysickDevice = new IntMap<Int>();
         userDisplay = new Array<Sprite>();
         userDisplayButton = new Array<Array<Sprite>>();
         red = new ColorTransform(1,0,0);
@@ -66,10 +59,8 @@ class Main extends Sprite {
         userHatPosition = new Array<Array<Int>>();
         userAxisPosition = new Array<Array<Int>>();
 
-        for(userID in 0...MAX_PLAYERS)
+        for(userID in 0...MAX_USERS)
         {
-          userIDstack.push(userID);
-          userJoysickDevice.set(userID,JOYSTICK_NOT_ASIGNED);
           userHatPosition[userID] = new Array<Int>();
           userAxisPosition[userID] = new Array<Int>();
 
@@ -175,62 +166,18 @@ class Main extends Sprite {
        onJoystickButton(e, true);
     }
 
-    private function userIDFromDevice( inDevice:Int )
-    {
-       for (userID in 0...MAX_PLAYERS)
-       {
-        var device:Int =  userJoysickDevice.get(userID);
-        if(device == inDevice)
-        {
-          //trace("user:"+userID+" joystick:"+device);
-          return userID;
-        }
-       }
-       return INVALID_ID;
-    }
-
-#if 0
-    private inline function hatClamp(val:Int):Int
-    {
-      return (val > 1 ? 1 : val <-1 ? -1 : val);
-    }
-#end
-
     private function onJoystickButton( e:JoystickEvent, pressed:Bool ):Void
     {
         //trace(e);
 
-        var player = userIDFromDevice(e.device);
-        if(player!=INVALID_ID)
+        var player = e.user;
+        if(player<MAX_USERS)
         {
           //color button
           //if(e.id!=JoystickEvent.BUTTON_GUIDE)
           (userDisplayButton[player])[e.id].transform.colorTransform = pressed? red : gray; 
           switch(e.id)
           {
-#if 0
-              //Use HAT_MOVE event for BUTTON_DPAD_*
-              case JoystickEvent.BUTTON_DPAD_UP:
-                 (userHatPosition[player])[_Y] = 
-                    pressed? 
-                      hatClamp(++(userHatPosition[player])[1]) : 
-                      hatClamp(--(userHatPosition[player])[1]);
-              case JoystickEvent.BUTTON_DPAD_DOWN:
-                 (userHatPosition[player])[_Y] = 
-                    pressed? 
-                      hatClamp(--(userHatPosition[player])[1]) : 
-                      hatClamp(++(userHatPosition[player])[1]);
-              case JoystickEvent.BUTTON_DPAD_LEFT:
-                 (userHatPosition[player])[_X] = 
-                    pressed? 
-                      hatClamp(--(userHatPosition[player])[0]) : 
-                      hatClamp(++(userHatPosition[player])[0]);
-              case JoystickEvent.BUTTON_DPAD_RIGHT:
-                 (userHatPosition[player])[_X] = 
-                    pressed? 
-                      hatClamp(++(userHatPosition[player])[0]) : 
-                      hatClamp(--(userHatPosition[player])[0]);
-#end
               case JoystickEvent.BUTTON_A:
                  //
               case JoystickEvent.BUTTON_B:
@@ -264,8 +211,8 @@ class Main extends Sprite {
     private function onJoystickHatMove( e:JoystickEvent ):Void
     {
         //trace(e); 
-        var player = userIDFromDevice(e.device);
-        if(player!=INVALID_ID)
+        var player = e.user;
+        if(player<MAX_USERS)
         {
           (userHatPosition[player])[_X] = Std.int(e.x);
           (userHatPosition[player])[_Y] = Std.int(e.y);
@@ -281,8 +228,8 @@ class Main extends Sprite {
     {
         //trace(e); 
 
-        var player = userIDFromDevice(e.device);
-        if(player!=INVALID_ID)
+        var player = e.user;
+        if(player<MAX_USERS)
         {
           switch(e.id)
           {
@@ -314,58 +261,20 @@ class Main extends Sprite {
     {
        //trace(e);
        //check if already added
-       var  player = userIDFromDevice(e.device);
-       if(player != INVALID_ID)
+       var  player = e.user;
+       if(player >= MAX_USERS)
        {
-         trace("added joystick already asigned to user: "+player+"   "+userJoysickDevice);
+         trace("too many game controllers added");
          return;
        }
        //assign to user
-       var userID = getUserID();
-       if(userID != INVALID_ID)
-       {
-         userJoysickDevice.set(userID,e.device);
-        (userDisplayButton[userID])[15].transform.colorTransform = green; 
-       }
+       (userDisplayButton[player])[15].transform.colorTransform = green; 
     }
 
     private function onJoystickDeviceRemoved( e:JoystickEvent ):Void
     {
        //trace(e);
-       for (userID in 0...MAX_PLAYERS)
-       {
-        var device:Int =  userJoysickDevice.get(userID);
-        if(device == e.device)
-        {
-          releaseUserID(userID);
-          userJoysickDevice.set(userID,JOYSTICK_NOT_ASIGNED);
-          //trace("Joystick "+e.device+" removed from user: "+userID+". Map: "+userJoysickDevice);
-          (userDisplayButton[userID])[15].transform.colorTransform = gray; 
-          break;
-        }
-       }
-    }
-
-    private function getUserID()
-    {
-      if(userIDstack.length <= 0)
-      {
-        trace("Too much joysticks: MAX_PLAYERS ("+ MAX_PLAYERS +") already logged");
-        //you could save this id to assign when other joystick disconects
-        return INVALID_ID;
-      }
-      return userIDstack.shift();
-    }
-
-    private function releaseUserID( val:Int)
-    {
-      userIDstack.push( val );
-      //keep ids in order
-      userIDstack.sort(function(a, b) {
-           if(a < b) return -1;
-           else if(a > b) return 1;
-           else return 0;
-      });
+       (userDisplayButton[e.user])[15].transform.colorTransform = gray;
     }
 
     private function this_onEnterFrame (event:Event):Void
