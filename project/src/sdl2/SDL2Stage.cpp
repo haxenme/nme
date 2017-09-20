@@ -849,15 +849,11 @@ struct controllerState
    int axis[6];
    int hatx;
    int haty;
-   int hatx_old;
-   int haty_old;
    SDL_GameController * gameController;
 
    controllerState(int joystickIndex):
       hatx(0),
       haty(0),
-      hatx_old(0),
-      haty_old(0),
       userId(joystickIndex)
    {
       gameController = SDL_GameControllerOpen(joystickIndex);
@@ -916,17 +912,22 @@ struct controllerState
 
    void hatEvent()
    {
-      hatx = hatClamp(hatx);
-      haty = hatClamp(haty);
-      Event joystick(etJoyHatMove);
-      joystick.id = joystickId;
-      joystick.code = 0;
-      joystick.value = userId;
-      joystick.scaleX = (float)hatx;
-      joystick.scaleY = (float)haty;
-      sgSDLFrame->ProcessEvent(joystick);
-      hatx_old = hatx;
-      haty_old = haty;
+      int x = SDL_GameControllerGetButton(gameController,SDL_CONTROLLER_BUTTON_DPAD_RIGHT)? 1 :
+              SDL_GameControllerGetButton(gameController,SDL_CONTROLLER_BUTTON_DPAD_LEFT)? -1 : 0;
+      int y = SDL_GameControllerGetButton(gameController,SDL_CONTROLLER_BUTTON_DPAD_UP)? 1 :
+              SDL_GameControllerGetButton(gameController,SDL_CONTROLLER_BUTTON_DPAD_DOWN)? -1 : 0;
+      if(x!=hatx || y!=haty)
+      {
+         Event joystick(etJoyHatMove);
+         joystick.id = joystickId;
+         joystick.code = 0;
+         joystick.value = userId;
+         joystick.scaleX = (float)x;
+         joystick.scaleY = (float)y;
+         sgSDLFrame->ProcessEvent(joystick);
+         hatx = x;
+         haty = y;
+      }
    }
 
    inline int hatClamp(int val)
@@ -1471,28 +1472,19 @@ void ProcessEvent(SDL_Event &inEvent)
           struct controllerState* controller = sgJoysticksState[inEvent.jbutton.which];
           if(controller!=NULL)
           {
-             switch(inEvent.jbutton.button) 
+             if(inEvent.jbutton.button>=SDL_CONTROLLER_BUTTON_DPAD_UP) 
              {
-                 case SDL_CONTROLLER_BUTTON_DPAD_UP:
-                     ++controller->haty;
-                     return;
-                 case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-                     --controller->haty;
-                     return;
-                 case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                     ++controller->hatx;
-                     return;
-                 case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                     --controller->hatx;
-                     return;
+                controller->hatEvent();
              }
-
-            Event joystick(etJoyButtonDown);
-            joystick.id = inEvent.jbutton.which;
-            joystick.code = inEvent.jbutton.button;
-            joystick.value = controller->userId;
-            joystick.scaleX = 1.0;
-            sgSDLFrame->ProcessEvent(joystick);
+             else
+             {
+                Event joystick(etJoyButtonDown);
+                joystick.id = inEvent.jbutton.which;
+                joystick.code = inEvent.jbutton.button;
+                joystick.value = controller->userId;
+                joystick.scaleX = 1.0;
+                sgSDLFrame->ProcessEvent(joystick);
+             }
          }
          break;
       }
@@ -1501,27 +1493,19 @@ void ProcessEvent(SDL_Event &inEvent)
          struct controllerState* controller = sgJoysticksState[inEvent.jbutton.which];
          if(controller!=NULL)
          {
-             switch(inEvent.jbutton.button) 
+             if(inEvent.jbutton.button>=SDL_CONTROLLER_BUTTON_DPAD_UP) 
              {
-                 case SDL_CONTROLLER_BUTTON_DPAD_UP:
-                     --controller->haty;
-                     return;
-                 case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-                     ++controller->haty;
-                     return;
-                 case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                     --controller->hatx;
-                     return;
-                 case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                     ++controller->hatx;
-                     return;
+                controller->hatEvent();
              }
-            Event joystick(etJoyButtonUp);
-            joystick.id = inEvent.jbutton.which;
-            joystick.code = inEvent.jbutton.button;
-            joystick.value = controller->userId;
-            joystick.scaleX = 0.0;
-            sgSDLFrame->ProcessEvent(joystick);
+             else
+             {
+               Event joystick(etJoyButtonUp);
+               joystick.id = inEvent.jbutton.which;
+               joystick.code = inEvent.jbutton.button;
+               joystick.value = controller->userId;
+               joystick.scaleX = 0.0;
+               sgSDLFrame->ProcessEvent(joystick);
+             }
          }
          break;
       }
@@ -2012,23 +1996,6 @@ void StartAnimation()
             break;
       }
       
-      //Joystick Hat events
-      if(sgJoysticksState.size() > 0)
-      {
-         std::map<int, struct controllerState*>::iterator itr = sgJoysticksState.begin();
-         while (itr != sgJoysticksState.end()) 
-         {
-            struct controllerState* controller = itr->second;
-
-            if ( controller->hatx != controller->hatx_old || 
-                     controller->haty != controller->haty_old )
-            {
-               controller->hatEvent();
-            }
-            ++itr;
-         }
-      }
-
       // Poll
       Event poll(etPoll);
       sgSDLFrame->ProcessEvent(poll);
