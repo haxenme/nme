@@ -842,7 +842,6 @@ extern "C" void MacBoot( /*void (*)()*/ );
 SDLFrame *sgSDLFrame = 0;
 #ifndef EMSCRIPTEN
 #define AXIS_INIT_VALUE -32769
-#define MAX_USERS 16
 struct controllerState 
 {
    int joystickId;
@@ -879,11 +878,12 @@ struct controllerState
       if(gameController!=NULL)
       {
          SDL_GameControllerClose(gameController);
+         gameController = NULL;
+         Event joystick(etJoyDeviceRemoved);
+         joystick.id = joystickId;
+         joystick.value = userId;
+         sgSDLFrame->ProcessEvent(joystick);
       }
-      Event joystick(etJoyDeviceRemoved);
-      joystick.id = joystickId;
-      joystick.value = userId;
-      sgSDLFrame->ProcessEvent(joystick);
    }
 
    void setAxisMove(int code, int value)
@@ -892,7 +892,6 @@ struct controllerState
       {
          if (axis[code] != AXIS_INIT_VALUE)
          {
-            value = 0;
             Event joystick(etJoyAxisMove);
             joystick.id = joystickId;
             joystick.code = code;
@@ -901,15 +900,17 @@ struct controllerState
             axis[code] = joystick.value;
             sgSDLFrame->ProcessEvent(joystick);
          }
-         return;
       }
-      Event joystick(etJoyAxisMove);
-      joystick.id = joystickId;
-      joystick.code = code;
-      joystick.value = userId;
-      joystick.scaleX = axisNormalize(value);
-      axis[code] = joystick.value;
-      sgSDLFrame->ProcessEvent(joystick);
+      else
+      {
+         Event joystick(etJoyAxisMove);
+         joystick.id = joystickId;
+         joystick.code = code;
+         joystick.value = userId;
+         joystick.scaleX = axisNormalize(value);
+         axis[code] = joystick.value;
+         sgSDLFrame->ProcessEvent(joystick);
+      }
    }
 
 
@@ -920,8 +921,6 @@ struct controllerState
       Event joystick(etJoyHatMove);
       joystick.id = joystickId;
       joystick.code = 0;
-      unsigned int hx = hatx > 0 ? SDL_HAT_RIGHT : hatx < 0 ? SDL_HAT_LEFT : 0;
-      unsigned int hy = haty > 0 ? SDL_HAT_UP : haty < 0 ? SDL_HAT_DOWN : 0;
       joystick.value = userId;
       joystick.scaleX = (float)hatx;
       joystick.scaleY = (float)haty;
@@ -1541,7 +1540,6 @@ void ProcessEvent(SDL_Event &inEvent)
          {
             int userId = sgJoysticksState[joystickId]->userId;
             sgJoysticksState[joystickId]->remove();
-            sgJoysticksState[joystickId]=NULL;
             sgJoysticksState.erase(joystickId);
          }
          break;
@@ -2015,13 +2013,19 @@ void StartAnimation()
       }
       
       //Joystick Hat events
-      for (int i = 0; i < sgJoysticksState.size(); i++)
+      if(sgJoysticksState.size() > 0)
       {
-         if (sgJoysticksState[i]!=NULL && 
-              (sgJoysticksState[i]->hatx != sgJoysticksState[i]->hatx_old || 
-               sgJoysticksState[i]->haty != sgJoysticksState[i]->haty_old ))
+         std::map<int, struct controllerState*>::iterator itr = sgJoysticksState.begin();
+         while (itr != sgJoysticksState.end()) 
          {
-            sgJoysticksState[i]->hatEvent();
+            struct controllerState* controller = itr->second;
+
+            if ( controller->hatx != controller->hatx_old || 
+                     controller->haty != controller->haty_old )
+            {
+               controller->hatEvent();
+            }
+            ++itr;
          }
       }
 
