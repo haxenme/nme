@@ -88,7 +88,6 @@ class Assets
          if (inAddScriptBase && !isResource)
             resourceName = scriptBase + resourceName;
          var alphaMode:AlphaMode = inAlphaToo ? Type.createEnum(AlphaMode,lines[i+5]) : AlphaDefault;
-
          info.set(id, new AssetInfo(resourceName,type,isResource,className,id,alphaMode));
          i+= inAlphaToo ? 6 : 5;
       }
@@ -99,18 +98,17 @@ class Assets
       #if jsprime
       var module:Dynamic = untyped window.Module;
       var items = module.nmeAppItems;
-      var isResource = false;
+      var isResource = true;
       var className = null;
-      var resourceName = null;
       if (items!=null)
          for(id in Reflect.fields(items))
          {
-            var item:{flags:Int,type:String,value:haxe.io.Bytes,alphaMode:String} = Reflect.field(items,id);
+            var item:{flags:Int,resourceName:String,type:String,value:haxe.io.Bytes,alphaMode:String} = Reflect.field(items,id);
             var alphaMode = AlphaMode.AlphaDefault;
             if (item.alphaMode!=null)
                alphaMode = Type.createEnum(AlphaMode,item.alphaMode);
             var type =  Type.createEnum(AssetType,item.type);
-            info.set(id, new AssetInfo(id,type,isResource,className,id,alphaMode));
+            info.set(id, new AssetInfo(item.resourceName,type,isResource,className,id,alphaMode));
             byteFactory.set(id,function() return ByteArray.fromBytes(item.value) );
          }
  

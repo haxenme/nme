@@ -340,6 +340,7 @@ class NMEProject
 
          case "html5","jsprime":
             target = Platform.JSPRIME;
+            haxedefs.set("js-unflatten", "");
 
          case "js":
             target = Platform.JS;

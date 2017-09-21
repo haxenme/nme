@@ -28,6 +28,16 @@ class Matrix #if cpp implements cpp.rtti.FieldNumericIntegerLookup #end
       ty = in_ty == null ? 0.0 : in_ty;
    }
 
+   public function copyFrom(src:Matrix)
+   {
+      a = src.a;
+      b = src.b;
+      c = src.c;
+      d = src.d;
+      tx = src.tx;
+      ty = src.ty;
+   }
+
    public function clone():Matrix 
    {
       return new Matrix(a, b, c, d, tx, ty);
