@@ -31,6 +31,10 @@ class Acadnme extends Sprite implements IScriptHandler
    {
       super();
 
+      #if cpp
+      enableJit(true);
+      #end
+
       instance = this;
       var startServer = #if emscripten false #else true #end;
 
@@ -108,6 +112,9 @@ class Acadnme extends Sprite implements IScriptHandler
       }
 
    }
+
+   @:native("hx::EnableJit")
+   @:extern static function enableJit(enable:Bool) : Void { }
 
 
    public static function getNmeAppsDir() : String

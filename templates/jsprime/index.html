@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link rel="icon" type="image/vnd.microsoft.icon" href="/icon.ico" />
+	<link rel="icon" type="image/vnd.microsoft.icon" href="icon.ico" />
 	
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -107,6 +107,7 @@
           var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedNmeClasses;
           if (this.binaryIsReady) loaded++;
 
+
           var preloadUpdate = window.preloadUpdate;
           var fraction = loaded/this.totalDownloads;
           if ( typeof(preloadUpdate)=="function" ) preloadUpdate(fraction);
@@ -200,6 +201,7 @@
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {
                  if (xhr.status === 200) {
+                   Module.downloadedNmeJs = 1;
                    Module.nmeJs =xhr.response; 
                    Module.progress();
                  } else {
@@ -222,6 +224,7 @@
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {
                  if (xhr.status === 200) {
+                   Module.downloadedNmeApp = 1;
                    Module.nmeApp =xhr.response; 
                    Module.progress();
                  } else {
@@ -239,12 +242,13 @@
 
           (function() {
              Module.totalDownloads++;
-             window.nmeOnClasses = Module.progress;
+             window.nmeOnClasses = function() { Module.progress() };
              var xhr = new XMLHttpRequest;
              xhr.open("GET", "::NME_CLASSES_JS::", true);
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {
                  if (xhr.status === 200) {
+                   Module.downloadedNmeClasses = 1;
                    Module.nmeClasses =xhr.response; 
                    Module.progress();
                  } else {

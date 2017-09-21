@@ -41,9 +41,9 @@ class Main extends Sprite
 
       bunnies = new Array();
       minX = 0;
-      maxX = stage.stageWidth;
+      maxX = 800;
       minY = 0;
-      maxY = stage.stageHeight;
+      maxY = 600;
       gravity = 0.5;
 
       var bitmapData = Assets.getBitmapData("assets/wabbit_alpha.png");
@@ -55,7 +55,7 @@ class Main extends Sprite
       #else
       tileset = new Tileset(bitmapData);
       tileset.addRect(bitmapData.rect);
-      tilemap = new Tilemap(stage.stageWidth, stage.stageHeight, tileset);
+      tilemap = new Tilemap(800, 600, tileset);
       addChild(tilemap);
       #end
 
@@ -74,6 +74,7 @@ class Main extends Sprite
       stage.addEventListener(MouseEvent.MOUSE_DOWN, stage_onMouseDown);
       stage.addEventListener(MouseEvent.MOUSE_UP, stage_onMouseUp);
       stage.addEventListener(Event.ENTER_FRAME, stage_onEnterFrame);
+      stage.addEventListener(Event.RESIZE, function(_) setSize() );
 
       for(i in 0...100)
          addBunny();
@@ -82,6 +83,14 @@ class Main extends Sprite
       #if nme
       drawList.resize(bunnies.length*2);
       #end
+
+      setSize();
+   }
+
+   function setSize()
+   {
+      var scale = Math.min( stage.stageWidth/800, stage.stageHeight/600 );
+      scaleX = scaleY = scale;
    }
 
    private function addBunny():Void
