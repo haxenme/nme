@@ -33,7 +33,7 @@ class FileServer extends Handler
             result.blit(0,hData,0,hData.length);
             result.blit(hData.length,data,0,data.length);
             if (verbose && log!=null)
-               log("file: " + path + "*" + data.length);
+               log("file: " + request.url + " x " + data.length);
             return result;
          }
       }

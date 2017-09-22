@@ -59,7 +59,7 @@
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
-   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="emscripten" />
+   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" />
 
    <!-- Use opengl backend ? -->
    <set name="NME_OGL" value="1" />

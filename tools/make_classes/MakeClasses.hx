@@ -64,6 +64,28 @@ class MakeClasses
       return result;
    }
 
+   static function genPackages(file:String)
+   {
+      var result = new Array<String>();
+      for(line in file.split("\n"))
+      {
+         var parts = line.split(" ");
+         if (parts[0]=="class" || parts[0]=="interface" || parts[0]=="enum" || parts[0]=="abstract")
+         {
+            var e = parts[1];
+            var path = e.split(".");
+            if (result.indexOf(path[0])<0)
+               result.push(path[0]);
+         }
+      }
+
+      for(i in ["Any", "_Any", "_EReg", "EnumValue", "Void", "Null", "Bool", "ArrayAccess", "Sys", "UInt", "XmlType", "_Xml"] )
+         result.remove(i);
+
+      return result;
+   }
+
+
    static function filterContents(contents:String)
    {
       return contents.split("\n").filter(function(s) {
@@ -105,8 +127,6 @@ class MakeClasses
       for(cls in classes)
          lines.push('import $cls;');
       lines.push("class ImportAll {");
-      lines.push("  public static var classNames:Array<String> = [");
-      lines.push(" ];");
       lines.push("}");
 
       FileSystem.createDirectory("gen");
@@ -118,12 +138,7 @@ class MakeClasses
       var contents = File.getContent("gen/export_classes.info");
       contents = filterContents(contents);
       var exports = genExports(contents);
-
-      Sys.println('Generate pass 2...');
-      lines.pop();
-      lines.pop();
-      lines = lines.concat(exports).concat([" ];","}"]);
-      File.saveContent("gen/ImportAll.hx", lines.join("\n"));
+      var packages = genPackages(contents);
 
       runCommand("haxe",["-main","Export","-cp","gen","-cp","../../src","-js","gen/NmeClasses.js","-dce","no","-D","jsprime","-D","js-unflatten"] );
 
@@ -147,6 +162,12 @@ class MakeClasses
             }
             lastPos = pos;
          }
+      }
+
+      var exportMain = src.indexOf("\nExport.main();");
+      if (exportMain>0)
+      {
+         src = src.substr(0,exportMain+1) + "$hxClasses.package = {};\n" + packages.map(function(x) return "$hxClasses.package." + '$x = $x').join(";\n") +  src.substr(exportMain);
       }
 
       /*

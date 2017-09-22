@@ -41,11 +41,14 @@ class Font
             }
             else
             {
-               var bytes = ByteArray.fromBytes(Resource.getBytes(name));
                fontType = FontType.EMBEDDED;
-
-
-               registerFontData(this, bytes);
+               var bytes = Assets.getResource(name);
+               if (bytes!=null)
+               {
+                  registerFontData(this, bytes);
+               }
+               else
+                  trace("Could not find font data for " + name);
             }
          }
          else

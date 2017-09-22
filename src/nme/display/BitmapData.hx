@@ -49,7 +49,7 @@ class BitmapData extends Surface implements IBitmapDrawable
          if (Reflect.hasField(className, "resourceName"))
          {
             var resoName = Reflect.field(className, "resourceName");
-            nmeLoadFromBytes(ByteArray.fromBytes(haxe.Resource.getBytes(resoName)), null);
+            nmeLoadFromBytes(ByteArray.fromBytes(nme.Assets.getResource(resoName)), null);
          }
       }
    }

@@ -91,6 +91,12 @@ Sound *Sound::FromEncodedBytes(const unsigned char *inData, int inLen, bool inFo
 
    #elif defined(EMSCRIPTEN)
       result = CreateOpenAlSound(inData, inLen, inForceMusic);
+      if (!result || !result->ok())
+      {
+         if (result)
+            result->DecRef();
+         result = CreateSdlSound(inData, inLen, inForceMusic);
+      }
    #else
 
 

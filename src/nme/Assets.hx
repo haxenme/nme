@@ -98,7 +98,6 @@ class Assets
       #if jsprime
       var module:Dynamic = untyped window.Module;
       var items = module.nmeAppItems;
-      var isResource = true;
       var className = null;
       if (items!=null)
          for(id in Reflect.fields(items))
@@ -108,8 +107,12 @@ class Assets
             if (item.alphaMode!=null)
                alphaMode = Type.createEnum(AlphaMode,item.alphaMode);
             var type =  Type.createEnum(AssetType,item.type);
+            var isResource = type==FONT && item.resourceName!=null;
+            if (isResource)
+               byteFactory.set(item.resourceName,function() return ByteArray.fromBytes(item.value) );
+            else
+               byteFactory.set(id,function() return ByteArray.fromBytes(item.value) );
             info.set(id, new AssetInfo(item.resourceName,type,isResource,className,id,alphaMode));
-            byteFactory.set(id,function() return ByteArray.fromBytes(item.value) );
          }
  
       #else
@@ -157,9 +160,15 @@ class Assets
    }
 
 
-   static function getResource(inName:String) : ByteArray
+   public static function getResource(inName:String) : ByteArray
    {
       var bytes = haxe.Resource.getBytes(inName);
+      if (bytes==null)
+      {
+         var factory = byteFactory.get(inName);
+         if (factory!=null)
+            return factory();
+      }
       if (bytes==null)
       {
          trace("[nme.Assets] missing binary resource '" + inName + "'");
