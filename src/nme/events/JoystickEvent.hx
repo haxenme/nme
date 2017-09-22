@@ -15,19 +15,19 @@ class JoystickEvent extends Event
    public var axis(default, null):Array<Float>;
    public var device:Int;
    public var id:Int;
-
    public var user:Int;
-   public var value:Float;
    public var x:Float;
    public var y:Float;
-   public var z:Float;
-   public var w:Float;
-
-   function set_x(inX) {
-      return value = inX;
-   }
-   function get_x() {
-      return value;
+   public var z(get, null):Float;
+   public var w(get, null):Float;
+     
+   function get_z() 
+   {
+      return (axis==null? 0 : axis[2]);
+   }  
+   function get_w() 
+   {
+      return (axis==null? 0 : axis[3]);
    }
 
    public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, device:Int = 0,
@@ -38,20 +38,9 @@ class JoystickEvent extends Event
       this.device = device;
       this.id = id;
       this.user = userId;
-      this.value = x;  
-      if(axis!=null)
-      {
-         this.axis = axis;
-         this.x = axis[0];
-         this.y = axis[1];
-         this.z = axis[2];
-         this.w = axis[3];
-      }
-      else
-      {
-         this.x = x;
-         this.y = y;
-      }
+      this.axis = axis;
+      this.x = x;
+      this.y = y;
    }
 
    public override function clone():Event 
@@ -67,7 +56,7 @@ class JoystickEvent extends Event
       buf.add(" user="); buf.add(user);
       buf.add(" id="); buf.add(id);
       buf.add("("); buf.add(idLabel()); buf.add(")");
-      buf.add(" value="); buf.add(value);
+      buf.add(" x="); buf.add(x);
       buf.add("]");
       return buf.toString();
    }
@@ -84,12 +73,9 @@ class JoystickEvent extends Event
    public static inline var BUTTON_LEFTSHOULDER:Int = 9;
    public static inline var BUTTON_RIGHTSHOULDER:Int = 10;
 
-   public static inline var AXIS_LEFTX:Int = 0;
-   public static inline var AXIS_LEFTY:Int = 1;
-   public static inline var AXIS_RIGHTX:Int = 2;
-   public static inline var AXIS_RIGHTY:Int = 3;
-   public static inline var AXIS_TRIGGERLEFT:Int = 4;
-   public static inline var AXIS_TRIGGERRIGHT:Int = 5;
+   public static inline var AXIS_LEFT:Int = 0;
+   public static inline var AXIS_RIGHT:Int = 2;
+   public static inline var AXIS_TRIGGER:Int = 4;
 
    public function idLabel():String
    {
@@ -113,12 +99,10 @@ class JoystickEvent extends Event
          case AXIS_MOVE:
             switch(id)
             {
-               case JoystickEvent.AXIS_LEFTX: return "AXIS_LEFTX";
-               case JoystickEvent.AXIS_LEFTY: return "AXIS_LEFTY";
-               case JoystickEvent.AXIS_RIGHTX: return "AXIS_RIGHTX";
-               case JoystickEvent.AXIS_RIGHTY: return "AXIS_RIGHTY";
-               case JoystickEvent.AXIS_TRIGGERLEFT: return "AXIS_TRIGGERLEFT";
-               case JoystickEvent.AXIS_TRIGGERRIGHT: return "AXIS_TRIGGERRIGHT";
+               case JoystickEvent.AXIS_LEFT: return "AXIS_LEFT[x:"+x+" y:"+y+"]";
+               case JoystickEvent.AXIS_RIGHT: return "AXIS_RIGHT[x:"+x+" y:"+y+"]";
+               case JoystickEvent.AXIS_TRIGGER: return "AXIS_TRIGGER[x:"+x+" y:"+y+"]";
+               default: return "AXIS ERROR[id:"+id+"x:"+x+" y:"+y+"]";
             }
          case HAT_MOVE:
                return "HAT_MOVE[x:"+x+" y:"+y+"]";

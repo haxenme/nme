@@ -208,6 +208,7 @@ class Main extends Sprite {
         }
     }
 
+    //Receives hat pairs. Check "x" and "y" values
     private function onJoystickHatMove( e:JoystickEvent ):Void
     {
         //trace(e); 
@@ -224,6 +225,7 @@ class Main extends Sprite {
         }
     }
 
+    //Receives axis in pairs. Check "x" and "y" values with "id"
     private function onJoystickAxisMove( e:JoystickEvent ):Void
     {
         //trace(e); 
@@ -233,22 +235,19 @@ class Main extends Sprite {
         {
           switch(e.id)
           {
-              case JoystickEvent.AXIS_LEFTX:
-                (userAxisPosition[player])[_X] = (e.value > 0.5 ? 1 : e.value < -0.5 ? -1 : 0);
-                (userDisplayButton[player])[16].transform.colorTransform  = (e.value > 0.5 ? red : e.value < -0.5 ? blue : gray);
-              case JoystickEvent.AXIS_LEFTY:
-                (userAxisPosition[player])[_Y] = (e.value > 0.5 ? -1 : e.value < -0.5 ? 1 : 0);
-                (userDisplayButton[player])[17].transform.colorTransform  = (e.value > 0.5 ? red : e.value < -0.5 ? blue : gray);
-              case JoystickEvent.AXIS_RIGHTX:
-                 (userDisplayButton[player])[18].transform.colorTransform  = (e.value > 0.5 ? red : e.value < -0.5 ? blue : gray);
-              case JoystickEvent.AXIS_RIGHTY:
-                 (userDisplayButton[player])[19].transform.colorTransform  = (e.value > 0.5 ? red : e.value < -0.5 ? blue : gray);
-              case JoystickEvent.AXIS_TRIGGERLEFT:
+              case JoystickEvent.AXIS_LEFT:
+                (userAxisPosition[player])[_X] = (e.x > 0.5 ? 1 : e.x < -0.5 ? -1 : 0);
+                (userDisplayButton[player])[16].transform.colorTransform  = (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray);
+                (userAxisPosition[player])[_Y] = (e.y > 0.5 ? -1 : e.y < -0.5 ? 1 : 0);
+                (userDisplayButton[player])[17].transform.colorTransform  = (e.y > 0.5 ? red : e.y < -0.5 ? blue : gray);
+              case JoystickEvent.AXIS_RIGHT:
+                 (userDisplayButton[player])[18].transform.colorTransform  = (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray);
+                 (userDisplayButton[player])[19].transform.colorTransform  = (e.y > 0.5 ? red : e.y < -0.5 ? blue : gray);
+              case JoystickEvent.AXIS_TRIGGER:
               //note: triggers have value range 0 (not pressed) to 1 (pressed)
               //some controllers are not analog
-                (userDisplayButton[player])[20].transform.colorTransform  = e.value > 0.5 ? red : gray; 
-              case JoystickEvent.AXIS_TRIGGERRIGHT:
-                (userDisplayButton[player])[21].transform.colorTransform  = e.value > 0.5 ? red : gray; 
+                (userDisplayButton[player])[20].transform.colorTransform  = e.x > 0.5 ? red : gray; 
+                (userDisplayButton[player])[21].transform.colorTransform  = e.y > 0.5 ? red : gray; 
           }
         }
         else

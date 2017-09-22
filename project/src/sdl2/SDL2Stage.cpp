@@ -917,33 +917,38 @@ struct controllerState
 
    void setAxisMove(int code, int value)
    {
-      if (value > -sgJoystickDeadZone && value < sgJoystickDeadZone)
+      int codex;
+      int codey;
+      int x;
+      int y;
+      if (code % 2 == 0)
       {
-         if (axis[code] != 0)
-         {
-            Event joystick(etJoyAxisMove);
-            joystick.id = joystickId;
-            joystick.code = code;
-            joystick.value = userId;
-            joystick.scaleX = 0.0;
-            joystick.flags = 1;
-            sgSDLFrame->ProcessEvent(joystick);
-            axis[code] = 0;
-         }
+         codex = code;
+         codey = code+1;
+         SDL_GameControllerAxis codeyEnum = static_cast<SDL_GameControllerAxis>(codey);
+         x = axisClamp(value);
+         y = axisClamp(SDL_GameControllerGetAxis(gameController,codeyEnum));
       }
       else
       {
-         if (axis[code] != value)
-         {
-            Event joystick(etJoyAxisMove);
-            joystick.id = joystickId;
-            joystick.code = code;
-            joystick.value = userId;
-            joystick.scaleX = axisNormalize(value);
-            joystick.flags = 1;
-            sgSDLFrame->ProcessEvent(joystick);
-            axis[code] = value;
-		 }
+         codex = code-1;
+         codey = code;
+         SDL_GameControllerAxis codexEnum = static_cast<SDL_GameControllerAxis>(codex);
+         x = axisClamp(SDL_GameControllerGetAxis(gameController,codexEnum));
+         y = axisClamp(value);
+      }
+      if (axis[codex] != x || axis[codey] != y)
+      {
+         Event joystick(etJoyAxisMove);
+         joystick.id = joystickId;
+         joystick.code = codex;
+         joystick.value = userId;
+         joystick.scaleX = axisNormalize(x);
+         joystick.scaleY = axisNormalize(y);
+         joystick.flags = 1;
+         sgSDLFrame->ProcessEvent(joystick);
+         axis[codex] = x;
+         axis[codey] = y;
       }
    }
 
@@ -978,9 +983,13 @@ struct controllerState
       sgSDLFrame->ProcessEvent(joystick);
    }
 
+   inline int axisClamp(int val)
+   {
+      return ( (val > -sgJoystickDeadZone && val < sgJoystickDeadZone) ? 0 : val );
+   } 
    inline float axisNormalize(int val)
    {
-      return (val >=32767 ? 1.0f : val <= -32767 ? -1.0f : val / 32767.0f);
+      return (val == 0 ? 0.0f : val >=32767 ? 1.0f : val <= -32767 ? -1.0f : val / 32767.0f);
    } 
 };
 

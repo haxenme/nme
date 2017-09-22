@@ -680,13 +680,15 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       var user = inEvent.value;
       if(inEvent.flags > 0)
       {
-
          if(nmeJoyAxisData[user]==null)
             nmeJoyAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
 
          data = nmeJoyAxisData[user];
          if(inEvent.flags==1)
+         {
             data[inEvent.code] = inEvent.sx;
+            data[inEvent.code+1] = inEvent.sy;
+         }
          else if(inEvent.flags==2)
          {
             for(d in data)
