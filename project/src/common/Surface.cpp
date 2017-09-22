@@ -1045,6 +1045,8 @@ void SimpleSurface::colorTransform(const Rect &inRect, ColorTransform &inTransfo
    if (mPixelFormat==pfAlpha || !mBase)
       return;
 
+   ChangeInternalFormat(pfBGRA);
+
    const uint8 *ta = inTransform.GetAlphaLUT();
    const uint8 *tr = inTransform.GetRLUT();
    const uint8 *tg = inTransform.GetGLUT();

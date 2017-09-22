@@ -447,7 +447,7 @@ public:
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
       int *colours = COL ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
-      bool premultiplyAlpha = mElement.mSurface && (mElement.mSurface->Format() == pfRGBPremA);
+      bool premultiplyAlpha = mElement.mSurface && IsPremultipliedAlpha(mElement.mSurface->Format());
 
       UserPoint *point = (UserPoint *)inData;
 
@@ -607,7 +607,7 @@ public:
       char *texPtr = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (char *)&data.mArray[ mElement.mTexOffset ] : 0;
       char *colourPtr = COL ? (char *)&data.mArray[ mElement.mColourOffset ] : 0;
 
-      bool premultiplyAlpha = mElement.mSurface && (mElement.mSurface->Format() == pfRGBPremA);
+      bool premultiplyAlpha = mElement.mSurface && IsPremultipliedAlpha(mElement.mSurface->Format());
 
       UserPoint pos;
       UserPoint p1;
