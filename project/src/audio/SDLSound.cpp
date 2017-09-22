@@ -934,7 +934,7 @@ public:
    }
    void setTransform(const SoundTransform &inTransform) 
    {
-      if (mMusic>=0)
+      if (mMusic && inTransform.volume>=0)
          Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
    }
 
