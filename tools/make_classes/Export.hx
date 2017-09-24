@@ -12,6 +12,9 @@ class Export
 
    public static function main()
    {
+      untyped __define_feature__("use.$iterator", {});
+      untyped __define_feature__("use.$bind", {});
+
       var global:Dynamic = untyped __js__("$global");
       global.nmeClassesLoaded = true;
       // String map hack

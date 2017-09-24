@@ -22,7 +22,7 @@ class AssetInfo
       alphaMode = inAlphaMode==null ? AlphaDefault : inAlphaMode;
       //trace('$inPath $inType $inIsResource $inClassName');
       #if !flash
-      if (type==AssetType.FONT && isResource)
+      if (type==AssetType.FONT #if (!jsprime && !cppia) && isResource #end )
          new nme.text.Font("",null,null, path,id);
       #end
    }

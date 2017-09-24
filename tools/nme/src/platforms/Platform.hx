@@ -692,7 +692,6 @@ class Platform
          item.length = bytes.length;
          item.type = Std.string(asset.type);
          item.id = asset.id;
-         item.resourceName = asset.resourceName;
          if (asset.type==IMAGE)
             item.alphaMode = Std.string(asset.alphaMode);
          index.push(item);

@@ -99,20 +99,17 @@ class Assets
       var module:Dynamic = untyped window.Module;
       var items = module.nmeAppItems;
       var className = null;
+      var isResource = false;
       if (items!=null)
          for(id in Reflect.fields(items))
          {
-            var item:{flags:Int,resourceName:String,type:String,value:haxe.io.Bytes,alphaMode:String} = Reflect.field(items,id);
+            var item:{flags:Int,type:String,value:haxe.io.Bytes,alphaMode:String} = Reflect.field(items,id);
             var alphaMode = AlphaMode.AlphaDefault;
             if (item.alphaMode!=null)
                alphaMode = Type.createEnum(AlphaMode,item.alphaMode);
             var type =  Type.createEnum(AssetType,item.type);
-            var isResource = type==FONT && item.resourceName!=null;
-            if (isResource)
-               byteFactory.set(item.resourceName,function() return ByteArray.fromBytes(item.value) );
-            else
-               byteFactory.set(id,function() return ByteArray.fromBytes(item.value) );
-            info.set(id, new AssetInfo(item.resourceName,type,isResource,className,id,alphaMode));
+            byteFactory.set(id,function() return ByteArray.fromBytes(item.value) );
+            info.set(id, new AssetInfo(id,type,isResource,className,id,alphaMode));
          }
  
       #else
