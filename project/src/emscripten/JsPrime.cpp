@@ -14,6 +14,9 @@ std::vector<const char *> sIdKeyNames;
 namespace nme
 {
 QuickVec<Object *> gTempRefs; 
+static int realized = 0;
+static int unrealized = 0;
+static int released = 0;
 
 
 struct ValueObjectStreamOut : public ObjectStreamOut
@@ -91,8 +94,13 @@ void BufferData::encodeStream(class ObjectStreamOut &inStream)
 }
 
 
+int Object::sLiveObjectCount = 0;
+int Object::sFrameId = 0;
+
 void Object::releaseObject()
 {
+   sLiveObjectCount--;
+   released++;
    if (val)
    {
       value &v = *val;
@@ -119,10 +127,7 @@ value &Object::toAbstract()
       IncRef();
       gTempRefs.push_back(this);
    }
-   // ?
-   //IncRef();
-   //gTempRefs.push_back(this);
-
+   lastFrameId = sFrameId;
    return *val;
 }
 
@@ -142,12 +147,15 @@ Object *Object::toObject( value &inValue )
          newObject->val = new emscripten::val(inValue);
          inValue.set("ptr",(int)newObject);
          newObject->IncRef();
+         newObject->lastFrameId = Object::sFrameId;
          gTempRefs.push_back(newObject);
 
          return newObject;
       }
       else if (!inValue["type"].isUndefined())
       {
+         realized++;
+
          NmeObjectType realizeType = (NmeObjectType)inValue["type"].as<int>();
 
          int len = value::global("Module").call<int>("realize", inValue );
@@ -194,6 +202,9 @@ Object *Object::toObject( value &inValue )
                return 0;
          }
 
+         if (newObject)
+            newObject->lastFrameId = Object::sFrameId;
+
          return newObject;
       }
       else
@@ -203,6 +214,9 @@ Object *Object::toObject( value &inValue )
    }
 
    Object *ptr = (Object *)inValue["ptr"].as<int>();
+   if (ptr)
+      ptr->lastFrameId = sFrameId;
+
    return ptr;
 }
 
@@ -265,6 +279,7 @@ void Object::unrealize()
 {
    if (val)
    {
+      unrealized++;
       ValueObjectStreamOut stream;
       encodeStream(stream);
       if (stream.empty())
@@ -327,6 +342,8 @@ void nme_native_resource_dispose(value inValue)
 }
 DEFINE_PRIME1v(nme_native_resource_dispose)
 
+static int lockedResources = 0;
+
 void nme_native_resource_lock(value inValue)
 {
    if (inValue.isNull() || inValue.isUndefined())
@@ -338,6 +355,7 @@ void nme_native_resource_lock(value inValue)
    Object *ptr = (Object *)inValue["ptr"].as<int>();
    if (ptr)
    {
+      lockedResources++;
       ptr->IncRef();
    }
 }
@@ -353,7 +371,10 @@ void nme_native_resource_unlock(value inValue)
 
    Object *ptr = (Object *)inValue["ptr"].as<int>();
    if (ptr)
+   {
+      lockedResources--;
       ptr->DecRef();
+   }
 }
 DEFINE_PRIME1v(nme_native_resource_unlock)
 
@@ -363,9 +384,19 @@ void nme_native_resource_release_temps()
    for(int i=0;i<gTempRefs.size();i++)
    {
       Object *obj = gTempRefs[i];
-      obj->DecRef();
+      if (obj->lastFrameId<Object::sFrameId)
+      {
+         obj->DecRef();
+         gTempRefs.qremoveAt(i);
+      }
+      else
+         i++;
    }
-   gTempRefs.resize(0);
+   //printf("rel=%d, free=%d tot=%d\n", realized, released, Object::sLiveObjectCount);
+   unrealized = 0;
+   realized = 0;
+   released = 0;
+   Object::sFrameId++;
 }
 
 DEFINE_PRIME0v(nme_native_resource_release_temps)

@@ -35,7 +35,8 @@ Graphics::~Graphics()
 {
    mOwner = 0;
    clear();
-   mPathData->DecRef();
+   if (mPathData)
+      mPathData->DecRef();
 }
 
 void Graphics::setOwner(DisplayObject *inOwner)
@@ -973,9 +974,19 @@ void Graphics::decodeStream(ObjectStreamIn &stream)
    }
 
    if (stream.getBool())
+   {
+      if (mPathData)
+      {
+         mPathData->DecRef();
+         mPathData = 0;
+      }
+
       decodeGraphicsData(stream,mPathData);
+   }
    else
+   {
       printf("No path data?\n");
+   }
 }
 
 

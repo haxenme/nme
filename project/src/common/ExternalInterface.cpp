@@ -3368,6 +3368,7 @@ DEFINE_PRIM_MULT(nme_gfx_draw_points);
 value nme_graphics_path_create(value inCommands,value inData,value inWinding)
 {
    GraphicsPath *result = new GraphicsPath();
+   printf("nme_graphics_path_create!\n");
 
    if (!val_bool(inWinding))
       result->winding = wrNonZero;

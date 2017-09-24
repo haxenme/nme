@@ -2,6 +2,7 @@
 #define NME_OBJECT_H
 
 #include "NmeApi.h"
+#include "QuickVec.h"
 
 #ifdef HXCPP_JS_PRIME
 #include <emscripten.h>
@@ -38,6 +39,7 @@ enum NmeObjectType
    notDirectRenderer,
    notSimpleButton,
    notTextField,
+   notCOUNT,
 };
 
 extern const char *gObjectTypeNames[];
@@ -51,9 +53,11 @@ protected:
 public:
    Object(bool inInitialRef=0) : mRefCount(inInitialRef?1:0)
    #ifdef HXCPP_JS_PRIME
-   , val(0)
+   , val(0), lastFrameId(sFrameId)
    #endif
-   { }
+   {
+      sLiveObjectCount++;
+   }
    Object *IncRef() { mRefCount++; return this; }
    #ifdef HXCPP_JS_PRIME
    void releaseObject();
@@ -79,7 +83,11 @@ public:
    static Object *toObject( emscripten::val &inValue );
 
    emscripten::val *val;
+   int lastFrameId;
    virtual void unrealize();
+
+   static int sFrameId;
+   static int sLiveObjectCount;
    #endif
 
 
