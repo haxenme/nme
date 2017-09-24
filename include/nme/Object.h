@@ -56,7 +56,9 @@ public:
    , val(0), lastFrameId(sFrameId)
    #endif
    {
+      #ifdef HXCPP_JS_PRIME
       sLiveObjectCount++;
+      #endif
    }
    Object *IncRef() { mRefCount++; return this; }
    #ifdef HXCPP_JS_PRIME
