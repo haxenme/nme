@@ -20,10 +20,11 @@ class AssetInfo
       className = inClassName;
       isResource = inIsResource;
       alphaMode = inAlphaMode==null ? AlphaDefault : inAlphaMode;
-      //trace('$inPath $inType $inIsResource $inClassName');
       #if !flash
-      if (type==AssetType.FONT #if (!jsprime && !cppia) && isResource #end )
+      if (type==AssetType.FONT && nme.Assets.isEmbedded(id) )
+      {
          new nme.text.Font("",null,null, path,id);
+      }
       #end
    }
 

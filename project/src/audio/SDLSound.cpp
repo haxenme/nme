@@ -555,7 +555,8 @@ public:
    {
       if (mChannel>=0)
       {
-         Mix_HaltChannel(mChannel);
+         if (gSDLAudioState==sdaOpen)
+            Mix_HaltChannel(mChannel);
          sDoneChannel[mChannel] = true;
          loopsPending = 0;
       }

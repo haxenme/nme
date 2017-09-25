@@ -156,6 +156,12 @@ class Assets
       //dispatcher.addEventListener (type, listener, useCapture, priority, useWeakReference);
    }
 
+   public static function isEmbedded(inName:String)
+   {
+      if (byteFactory.get(inName)!=null)
+         return true;
+      return haxe.Resource.listNames().indexOf(inName)>=0;
+   }
 
    public static function getResource(inName:String) : ByteArray
    {

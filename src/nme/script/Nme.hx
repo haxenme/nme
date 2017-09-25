@@ -87,9 +87,8 @@ class Nme
                if (item.alphaMode!=null)
                   alphaMode = Type.createEnum(AlphaMode,item.alphaMode);
                var type = Type.createEnum(AssetType,item.type);
-               nme.Assets.info.set(id, new AssetInfo(id,type,isResource,className,id,alphaMode));
-
                nme.Assets.byteFactory.set(id, function() return ByteArray.fromBytes(bytes) );
+               nme.Assets.info.set(id, new AssetInfo(id,type,isResource,className,id,alphaMode));
             }
          }
       }
