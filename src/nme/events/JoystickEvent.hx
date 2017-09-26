@@ -22,6 +22,7 @@ class JoystickEvent extends Event
    public var device:Int;
    public var id:Int;
    public var user:Int;
+   public var isGamePad:Bool;
    public var x:Float;
    public var y:Float;
    public var z(get, null):Float;
@@ -37,7 +38,7 @@ class JoystickEvent extends Event
    }
 
    public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, device:Int = 0,
-                       id:Int = 0, userId:Int = 0, x:Float = 0, y:Float = 0, axis:Array<Float> = null) 
+                       id:Int = 0, userId:Int = 0, x:Float = 0, y:Float = 0, axis:Array<Float> = null, isGamePad:Bool=false) 
    {
       super(type, bubbles, cancelable);
 
@@ -47,6 +48,7 @@ class JoystickEvent extends Event
       this.axis = axis;
       this.x = x;
       this.y = y;
+      this.isGamePad = isGamePad;
    }
 
    public override function clone():Event 

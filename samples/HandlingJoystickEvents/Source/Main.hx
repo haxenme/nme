@@ -64,12 +64,15 @@ class Main extends Sprite {
         
         Lib.current.stage.addEventListener (Event.ENTER_FRAME, this_onEnterFrame);
 
-        //These events return unmapped (raw) values from joysticks and unsupported gamepads 
+        //These events return unmapped (raw) values from all input devices 
+        //including joysticks and unsupported/supported gamepads 
         //Lib.current.stage.addEventListener (JoystickEvent.BUTTON_DOWN, onJoystickButtonDown);
         //Lib.current.stage.addEventListener (JoystickEvent.BUTTON_UP, onJoystickButtonUp);
         //Lib.current.stage.addEventListener (JoystickEvent.AXIS_MOVE, onJoystickAxisMove);
+        //Lib.current.stage.addEventListener (JoystickEvent.BALL_MOVE, onJoystickAxisMove);
 
-        //These event return mapped values of gamepads. Check with GamepadAxis and GamedButton 
+        //These event return mapped values of suppoorted gamepads 
+        //Check id values with GamepadAxis and GamedButton 
         Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_BUTTON_DOWN, onControllerButtonDown);
         Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_BUTTON_UP, onControllerButtonUp);
         Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_AXIS_MOVE, onControllerAxisMove);
@@ -97,14 +100,11 @@ class Main extends Sprite {
     private function onControllerButton( e:JoystickEvent, pressed:Bool ):Void
     {
         //trace(e);
-
         var player = e.user;
+        var buttonId = e.id;
         if(player<MAX_USERS)
         {
-          //color button
-          //if(e.id!=JoystickEvent.BUTTON_GUIDE)
-          (GamePadDisplay.userDisplayButton[player])[e.id].transform.colorTransform = pressed? GamePadDisplay.red : GamePadDisplay.gray; 
-          switch(e.id)
+          switch(buttonId)
           {
               case GamepadButton.A:
                  //
@@ -129,27 +129,27 @@ class Main extends Sprite {
               case GamepadButton.RIGHTSHOULDER:
                  //
           }
-        }
-        else
-        {
-          trace("No player for this joystick");
+          GamePadDisplay.setColor(player, buttonId, pressed? GamePadDisplay.red : GamePadDisplay.gray);
         }
     }
 
     //Receives hat pairs. Check "x" and "y" values
     private function onJoystickHatMove( e:JoystickEvent ):Void
     {
-        trace(e); 
+        //trace(e); 
         var player = e.user;
         if(player<MAX_USERS)
         {
           (userHatPosition[player])[_X] = Std.int(e.x);
           (userHatPosition[player])[_Y] = Std.int(e.y);
 
-          (GamePadDisplay.userDisplayButton[player])[11/*UP*/].transform.colorTransform = e.y>0? GamePadDisplay.orange : GamePadDisplay.gray; 
-          (GamePadDisplay.userDisplayButton[player])[12 /*DOWN*/].transform.colorTransform = e.y<0? GamePadDisplay.orange : GamePadDisplay.gray; 
-          (GamePadDisplay.userDisplayButton[player])[13 /*LEFT*/].transform.colorTransform = e.x<0? GamePadDisplay.orange : GamePadDisplay.gray; 
-          (GamePadDisplay.userDisplayButton[player])[14 /*RIGHT*/].transform.colorTransform = e.x>0? GamePadDisplay.orange : GamePadDisplay.gray; 
+          var orange = GamePadDisplay.orange;
+          var gray = GamePadDisplay.gray;
+
+          GamePadDisplay.setColor(player, 11/*UP*/   , e.y>0? orange : gray);
+          GamePadDisplay.setColor(player, 12/*DOWN*/ , e.y<0? orange : gray);
+          GamePadDisplay.setColor(player, 13/*LEFT*/ , e.x<0? orange : gray);
+          GamePadDisplay.setColor(player, 14/*RIGHT*/, e.x>0? orange : gray);
         }
     }
 
@@ -157,25 +157,28 @@ class Main extends Sprite {
     private function onControllerAxisMove( e:JoystickEvent ):Void
     {
         //trace(e); 
+        var red = GamePadDisplay.red;
+        var blue = GamePadDisplay.blue;
+        var gray = GamePadDisplay.gray;
 
         var player = e.user;
         if(player<MAX_USERS)
         {
           switch(e.id)
           {
-              case GamepadAxis.LEFT:
-                (userAxisPosition[player])[_X] = (e.x > 0.5 ? 1 : e.x < -0.5 ? -1 : 0);
-                (GamePadDisplay.userDisplayButton[player])[16].transform.colorTransform  = (e.x > 0.5 ? GamePadDisplay.red : e.x < -0.5 ? GamePadDisplay.blue : GamePadDisplay.gray);
-                (userAxisPosition[player])[_Y] = (e.y > 0.5 ? -1 : e.y < -0.5 ? 1 : 0);
-                (GamePadDisplay.userDisplayButton[player])[17].transform.colorTransform  = (e.y > 0.5 ? GamePadDisplay.red : e.y < -0.5 ? GamePadDisplay.blue : GamePadDisplay.gray);
-              case GamepadAxis.RIGHT:
-                 (GamePadDisplay.userDisplayButton[player])[18].transform.colorTransform  = (e.x > 0.5 ? GamePadDisplay.red : e.x < -0.5 ? GamePadDisplay.blue : GamePadDisplay.gray);
-                 (GamePadDisplay.userDisplayButton[player])[19].transform.colorTransform  = (e.y > 0.5 ? GamePadDisplay.red : e.y < -0.5 ? GamePadDisplay.blue : GamePadDisplay.gray);
-              case GamepadAxis.TRIGGER:
+            case GamepadAxis.LEFT:
+              (userAxisPosition[player])[_X] = (e.x > 0.5 ? 1 : e.x < -0.5 ? -1 : 0);
+              GamePadDisplay.setColor(player, 16, (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray));
+              (userAxisPosition[player])[_Y] = (e.y > 0.5 ? -1 : e.y < -0.5 ? 1 : 0);
+              GamePadDisplay.setColor(player, 17, (e.y > 0.5 ? red : e.x < -0.5 ? blue : gray));
+            case GamepadAxis.RIGHT:
+              GamePadDisplay.setColor(player, 18, (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray));
+              GamePadDisplay.setColor(player, 19, (e.x > 0.5 ? red : e.y < -0.5 ? blue : gray));
+            case GamepadAxis.TRIGGER:
               //note: triggers have value range 0 (not pressed) to 1 (pressed)
               //some controllers are not analog
-                (GamePadDisplay.userDisplayButton[player])[20].transform.colorTransform  = e.x > 0.5 ? GamePadDisplay.red : GamePadDisplay.gray; 
-                (GamePadDisplay.userDisplayButton[player])[21].transform.colorTransform  = e.y > 0.5 ? GamePadDisplay.red : GamePadDisplay.gray; 
+              GamePadDisplay.setColor(player, 20, (e.x > 0.5 ? red : gray));
+              GamePadDisplay.setColor(player, 21, (e.x > 0.5 ? red : gray)); 
           }
         }
         else
@@ -187,21 +190,17 @@ class Main extends Sprite {
     private function onJoystickDeviceAdded( e:JoystickEvent ):Void
     {
        //trace(e);
-       //check if already added
        var  player = e.user;
-       if(player >= MAX_USERS)
-       {
-         trace("too many game controllers added");
-         return;
-       }
-       //assign to user
-       (GamePadDisplay.userDisplayButton[player])[15].transform.colorTransform = GamePadDisplay.green; 
+       if(player < MAX_USERS)
+         GamePadDisplay.setColor(player, 15, e.isGamePad ? GamePadDisplay.green : GamePadDisplay.orange);
     }
 
     private function onJoystickDeviceRemoved( e:JoystickEvent ):Void
     {
        //trace(e);
-       (GamePadDisplay.userDisplayButton[e.user])[15].transform.colorTransform = GamePadDisplay.gray;
+       var  player = e.user;
+       if(player < MAX_USERS)
+         GamePadDisplay.setColor(player, 15, GamePadDisplay.gray);
     }
 
     private function this_onEnterFrame (event:Event):Void
@@ -281,7 +280,8 @@ class GamePadDisplay extends Sprite {
         createCircle(userID, 13 /*GamepadButton.DPAD_LEFT*/, 0, 3);
         createCircle(userID, 14 /*GamepadButton.DPAD_RIGHT*/, 2, 3);
 
-        //this circle indicates if user has joystick with green
+        //this circle indicates if user has supported gamepad with green
+        //or a joystick/unsupported gamepad with orange
         createCircle(userID, 15, 4, 0, 2.0);
 
         //these are for indicating the Axis
@@ -304,7 +304,7 @@ class GamePadDisplay extends Sprite {
         circle.graphics.endFill();
         circle.x = -radius/2;
         circle.y = -radius/2;
-        circle.transform.colorTransform = gray;
+        //circle.transform.colorTransform = gray;
 
         var container = new Sprite();
         container.x = inX*radius*1.5;
@@ -314,5 +314,11 @@ class GamePadDisplay extends Sprite {
         userDisplay[userID].addChild(container);
         container.addChild(circle);
         (userDisplayButton[userID])[buttonId] = container;
+        setColor(userID, buttonId, gray);
+    }
+
+    static public function setColor(userID:Int, buttonId:Int, transform:ColorTransform):Void
+    {
+      (GamePadDisplay.userDisplayButton[userID])[buttonId].transform.colorTransform  = transform;
     }
   }

@@ -31,7 +31,7 @@ static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
 static Rect sgWindowRect = Rect(0, 0, 0, 0);
 static bool sgInitCalled = false;
-static bool sgJoystickEnabled = false;
+//static bool sgJoystickEnabled = false;
 static bool sgGameControllerEnabled = false;
 static bool sgIsOGL2 = false;
 const int sgJoystickDeadZone = 1000;
@@ -63,10 +63,10 @@ int InitSDL()
       SDL_GameControllerAddMappingsFromRW (SDL_RWFromConstMem (g_gameControllerDB, sizeof (g_gameControllerDB)), 0);
       #endif
    }
-   if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0)
-   {
-      sgJoystickEnabled = true;
-   }
+   //if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0)
+   //{
+   //   sgJoystickEnabled = true;
+   //}
    
    return err;
 }
@@ -907,6 +907,8 @@ typedef struct controllerState
                joystick.id = joystickId;
                joystick.value = userId;
                joystick.flags = 2;
+               if(isGameController)
+                 joystick.y = 1;
                sgSDLFrame->ProcessEvent(joystick);
                return true;
             }
@@ -924,6 +926,7 @@ typedef struct controllerState
          joystick.id = joystickId;
          joystick.value = userId;
          joystick.flags = 2;
+         joystick.y = 1; //isGameController
          sgSDLFrame->ProcessEvent(joystick);
          gameController = NULL;
          sdlJoystick = NULL;
@@ -981,6 +984,7 @@ typedef struct controllerState
          joystick.scaleX = axisNormalize(x);
          joystick.scaleY = axisNormalize(y);
          joystick.flags = 3;
+         joystick.y = 1; //isGameController
          sgSDLFrame->ProcessEvent(joystick);
          controllerAxis[codex] = x;
          controllerAxis[codey] = y;
@@ -1041,6 +1045,7 @@ typedef struct controllerState
          joystick.value = userId;
          joystick.scaleX = (float)x;
          joystick.scaleY = (float)y;
+         joystick.y = 1; //isGameController
          sgSDLFrame->ProcessEvent(joystick);
          hatx = x;
          haty = y;
@@ -1054,6 +1059,7 @@ typedef struct controllerState
       joystick.code = button;
       joystick.value = userId;
       joystick.scaleX = pressed? 1.0f : 0.0f;
+      joystick.y = 1; //isGameController
       sgSDLFrame->ProcessEvent(joystick);
    }
 
@@ -1707,9 +1713,8 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_JOYHATMOTION:
       {
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
-         if(controller!=NULL /*&& !controller->isGameController*/)
+         if(controller!=NULL && !controller->isGameController)
          {
-            //fprintf(stderr,"[SDL_JOYHATMOTION 0x%x]",inEvent.jhat.hat);
             Event joystick(etJoyHatMove);
             joystick.id = controller->joystickId;
             joystick.code = 0;

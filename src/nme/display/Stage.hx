@@ -710,8 +710,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
                   d = 0.0;
          }
       }
+      var isGamePad:Bool = inEvent.y>0;
       var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code,
-                                                inEvent.value, inEvent.sx, inEvent.sy, data);
+                                                inEvent.value, inEvent.sx, inEvent.sy, data, isGamePad);
       nmeDispatchEvent(evt);
    }
 
