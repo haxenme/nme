@@ -1,5 +1,7 @@
 package nme.events;
 #if (!flash)
+import nme.ui.GamepadButton;
+import nme.ui.GamepadAxis;
 
 @:nativeProperty
 class JoystickEvent extends Event 
@@ -65,53 +67,18 @@ class JoystickEvent extends Event
       return buf.toString();
    }
 
-   public static inline var BUTTON_A:Int = 0;
-   public static inline var BUTTON_B:Int = 1;
-   public static inline var BUTTON_X:Int = 2;
-   public static inline var BUTTON_Y:Int = 3;
-   public static inline var BUTTON_BACK:Int = 4;
-   public static inline var BUTTON_GUIDE:Int = 5;
-   public static inline var BUTTON_START:Int = 6;
-   public static inline var BUTTON_LEFTSTICK:Int = 7;
-   public static inline var BUTTON_RIGHTSTICK:Int = 8;
-   public static inline var BUTTON_LEFTSHOULDER:Int = 9;
-   public static inline var BUTTON_RIGHTSHOULDER:Int = 10;
-
-   public static inline var AXIS_LEFT:Int = 0;
-   public static inline var AXIS_RIGHT:Int = 2;
-   public static inline var AXIS_TRIGGER:Int = 4;
-
    public function idLabel():String
    {
       switch(type)
       {
          case BUTTON_DOWN, BUTTON_UP:
-            switch(id)
-            {
-               case JoystickEvent.BUTTON_A: return "BUTTON_A";
-               case JoystickEvent.BUTTON_B: return "BUTTON_B";
-               case JoystickEvent.BUTTON_X: return "BUTTON_X";
-               case JoystickEvent.BUTTON_Y: return "BUTTON_Y";
-               case JoystickEvent.BUTTON_BACK: return "BUTTON_BACK";
-               case JoystickEvent.BUTTON_GUIDE: return "BUTTON_GUIDE";
-               case JoystickEvent.BUTTON_START: return "BUTTON_START";
-               case JoystickEvent.BUTTON_LEFTSTICK: return "BUTTON_LEFTSTICK";
-               case JoystickEvent.BUTTON_RIGHTSTICK: return "BUTTON_RIGHTSTICK";
-               case JoystickEvent.BUTTON_LEFTSHOULDER: return "BUTTON_LEFTSHOULDER";
-               case JoystickEvent.BUTTON_RIGHTSHOULDER: return "BUTTON_RIGHTSHOULDER";
-            }
+            return GamepadButton.toString(id) + "[" + (type == BUTTON_DOWN ? "pressed" : "released") + "]";
          case AXIS_MOVE:
-            switch(id)
-            {
-               case JoystickEvent.AXIS_LEFT: return "AXIS_LEFT[x:"+x+" y:"+y+"]";
-               case JoystickEvent.AXIS_RIGHT: return "AXIS_RIGHT[x:"+x+" y:"+y+"]";
-               case JoystickEvent.AXIS_TRIGGER: return "AXIS_TRIGGER[x:"+x+" y:"+y+"]";
-               default: return "AXIS ERROR[id:"+id+"x:"+x+" y:"+y+"]";
-            }
+            return GamepadAxis.toString(id)+"[x:" + x + " y:" + y + "]";
          case HAT_MOVE:
-               return "HAT_MOVE[x:"+x+" y:"+y+"]";
+            return "HAT_MOVE[x:" + x + " y:" + y + "]";
          case BALL_MOVE:
-               return "BALL_MOVE[x:"+x+" y:"+y+"]";
+            return "BALL_MOVE[x:" + x + " y:" + y + "]";
       }
       return "";
    }
