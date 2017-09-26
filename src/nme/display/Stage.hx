@@ -682,13 +682,32 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       var user = inEvent.value;
       if(inEvent.flags > 0)
       {
-
          if(inEvent.flags==1)
+         {         
+            if(nmeJoyAxisData[user]==null)
+               nmeJoyAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
+
+            data = nmeJoyAxisData[user];
+            data[inEvent.code] = inEvent.sx;
+            data[inEvent.code+1] = inEvent.sy;
+         }
+         if(inEvent.flags==3)
+         { 
+            if(nmeControllerAxisData[user]==null)
+               nmeControllerAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
+
+            data = nmeControllerAxisData[user];
             data[inEvent.code] = inEvent.sx;
             data[inEvent.code+1] = inEvent.sy;
          }
          else if(inEvent.flags==2)
          {
+            if(nmeJoyAxisData[user]!=null)
+               for(d in nmeControllerAxisData[user])
+                  d = 0.0;
+            if(nmeControllerAxisData[user]!=null)
+               for(d in nmeControllerAxisData[user])
+                  d = 0.0;
          }
       }
       var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code,
