@@ -112,6 +112,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public static var nmeQuitting = false;
 
    private var nmeJoyAxisData:Array<Array<Float>>;
+   private var nmeControllerAxisData:Array<Array<Float>>;
    private var nmeDragBounds:Rectangle;
    private var nmeDragObject:Sprite;
    private var nmeDragOffsetX:Float;
@@ -167,6 +168,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeLastClickTime = 0.0;
       nmeTouchInfo = new Map<Int,TouchInfo>();
       nmeJoyAxisData = new Array<Array<Float>>();
+      nmeControllerAxisData = new Array<Array<Float>>();
 
       #if stage3d
       stage3Ds = new Vector();
@@ -680,19 +682,13 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       var user = inEvent.value;
       if(inEvent.flags > 0)
       {
-         if(nmeJoyAxisData[user]==null)
-            nmeJoyAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
 
-         data = nmeJoyAxisData[user];
          if(inEvent.flags==1)
-         {
             data[inEvent.code] = inEvent.sx;
             data[inEvent.code+1] = inEvent.sy;
          }
          else if(inEvent.flags==2)
          {
-            for(d in data)
-               d = 0.0;
          }
       }
       var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code,

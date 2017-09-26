@@ -860,8 +860,8 @@ typedef struct controllerState
 {
    int joystickId;
    int userId;
-   int axis[SDL_CONTROLLER_AXIS_MAX];
-   int joyaxis[8];
+   int controllerAxis[SDL_CONTROLLER_AXIS_MAX];
+   int joyAxis[8];
    int hatx;
    int haty;
    bool isGameController;
@@ -888,8 +888,8 @@ typedef struct controllerState
      if(sdlJoystick)
      {
         joystickId = SDL_JoystickInstanceID(sdlJoystick);
-        memset((void*) axis, 0, sizeof(axis));
-        memset((void*) joyaxis, 0, sizeof(joyaxis));
+        memset((void*) controllerAxis, 0, sizeof(controllerAxis));
+        memset((void*) joyAxis, 0, sizeof(joyAxis));
      }
    }
 
@@ -953,7 +953,7 @@ typedef struct controllerState
       int x;
       int y;
 
-      if(value >= SDL_CONTROLLER_AXIS_MAX)
+      if(code >= SDL_CONTROLLER_AXIS_MAX)
          return;
 
       if (code % 2 == 0)
@@ -972,7 +972,7 @@ typedef struct controllerState
          x = axisClamp(SDL_GameControllerGetAxis(gameController,codexEnum));
          y = axisClamp(value);
       }
-      if (axis[codex] != x || axis[codey] != y)
+      if (controllerAxis[codex] != x || controllerAxis[codey] != y)
       {
          Event joystick(etControllerAxisMove);
          joystick.id = joystickId;
@@ -980,10 +980,10 @@ typedef struct controllerState
          joystick.value = userId;
          joystick.scaleX = axisNormalize(x);
          joystick.scaleY = axisNormalize(y);
-         //joystick.flags = 1;
+         joystick.flags = 3;
          sgSDLFrame->ProcessEvent(joystick);
-         axis[codex] = x;
-         axis[codey] = y;
+         controllerAxis[codex] = x;
+         controllerAxis[codey] = y;
       }
    }
 
@@ -994,7 +994,7 @@ typedef struct controllerState
       int x;
       int y;
 
-      if(value >= 8)
+      if(code >= 8)
          return;
 
       if (code % 2 == 0)
@@ -1011,7 +1011,7 @@ typedef struct controllerState
          x = axisClamp(SDL_JoystickGetAxis(sdlJoystick,codex));
          y = axisClamp(value);
       }
-      if (joyaxis[codex] != x || joyaxis[codey] != y)
+      if (joyAxis[codex] != x || joyAxis[codey] != y)
       {
          Event joystick(etJoyAxisMove);
          joystick.id = joystickId;
@@ -1021,8 +1021,8 @@ typedef struct controllerState
          joystick.scaleY = axisNormalize(y);
          joystick.flags = 1;
          sgSDLFrame->ProcessEvent(joystick);
-         joyaxis[codex] = x;
-         joyaxis[codey] = y;
+         joyAxis[codex] = x;
+         joyAxis[codey] = y;
       }
    }
 
