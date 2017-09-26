@@ -46,4 +46,8 @@ class EventId
    public static inline var RenderContextRestored =  33;
 
    public static inline var Scroll = 34;
+
+   public static inline var ControllerAxisMove = 35;
+   public static inline var ControllerButtonDown = 36;
+   public static inline var ControllerButtonUp = 37;
 }

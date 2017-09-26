@@ -22,5 +22,9 @@ class EventName
    public static inline var BUTTON_UP = "buttonUp";
    public static inline var DEVICE_ADDED = "deviceAdded";
    public static inline var DEVICE_REMOVED = "deviceRemoved";
+
+   public static inline var GAMECONTROLLER_AXIS_MOVE = "controllerAxisMove";
+   public static inline var GAMECONTROLLER_BUTTON_DOWN = "controllerButtonDown";
+   public static inline var GAMECONTROLLER_BUTTON_UP = "controllerButtonUp";
 }
 
