@@ -238,6 +238,15 @@ class Window
             case EventId.JoyButtonUp:
                appEventHandler.onJoystick(event, EventName.BUTTON_UP);
 
+            case EventId.ControllerAxisMove:
+               appEventHandler.onJoystick(event, EventName.GAMECONTROLLER_AXIS_MOVE);
+   
+            case EventId.ControllerButtonDown:
+               appEventHandler.onJoystick(event, EventName.GAMECONTROLLER_BUTTON_DOWN);
+   
+            case EventId.ControllerButtonUp:
+               appEventHandler.onJoystick(event, EventName.GAMECONTROLLER_BUTTON_UP);
+
             case EventId.JoyDeviceAdded:
                appEventHandler.onJoystick(event, EventName.DEVICE_ADDED);
 

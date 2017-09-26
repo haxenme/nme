@@ -12,6 +12,10 @@ class JoystickEvent extends Event
    public static inline var DEVICE_ADDED:String = "deviceAdded";
    public static inline var DEVICE_REMOVED:String = "deviceRemoved";
 
+   public static inline var GAMECONTROLLER_AXIS_MOVE:String = "controllerAxisMove";
+   public static inline var GAMECONTROLLER_BUTTON_DOWN:String = "controllerButtonDown";
+   public static inline var GAMECONTROLLER_BUTTON_UP:String = "controllerButtonUp";
+
    public var axis(default, null):Array<Float>;
    public var device:Int;
    public var id:Int;

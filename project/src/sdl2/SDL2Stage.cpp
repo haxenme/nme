@@ -861,6 +861,7 @@ typedef struct controllerState
    int joystickId;
    int userId;
    int axis[SDL_CONTROLLER_AXIS_MAX];
+   int joyaxis[8];
    int hatx;
    int haty;
    bool isGameController;
@@ -887,7 +888,8 @@ typedef struct controllerState
      if(sdlJoystick)
      {
         joystickId = SDL_JoystickInstanceID(sdlJoystick);
-        memeset((void*) axis, 0, sizeof(axis));
+        memset((void*) axis, 0, sizeof(axis));
+        memset((void*) joyaxis, 0, sizeof(joyaxis));
      }
    }
 
@@ -944,7 +946,7 @@ typedef struct controllerState
       }
    }
 
-   void setAxisMove(int code, int value)
+   void controllerAxisMove(int code, int value)
    {
       int codex;
       int codey;
@@ -972,6 +974,45 @@ typedef struct controllerState
       }
       if (axis[codex] != x || axis[codey] != y)
       {
+         Event joystick(etControllerAxisMove);
+         joystick.id = joystickId;
+         joystick.code = codex;
+         joystick.value = userId;
+         joystick.scaleX = axisNormalize(x);
+         joystick.scaleY = axisNormalize(y);
+         //joystick.flags = 1;
+         sgSDLFrame->ProcessEvent(joystick);
+         axis[codex] = x;
+         axis[codey] = y;
+      }
+   }
+
+   void joyAxisMove(int code, int value)
+   {
+      int codex;
+      int codey;
+      int x;
+      int y;
+
+      if(value >= 8)
+         return;
+
+      if (code % 2 == 0)
+      {
+         codex = code;
+         codey = code+1;
+         x = axisClamp(value);
+         y = axisClamp(SDL_JoystickGetAxis(sdlJoystick,codey));
+      }
+      else
+      {
+         codex = code-1;
+         codey = code;
+         x = axisClamp(SDL_JoystickGetAxis(sdlJoystick,codex));
+         y = axisClamp(value);
+      }
+      if (joyaxis[codex] != x || joyaxis[codey] != y)
+      {
          Event joystick(etJoyAxisMove);
          joystick.id = joystickId;
          joystick.code = codex;
@@ -980,8 +1021,8 @@ typedef struct controllerState
          joystick.scaleY = axisNormalize(y);
          joystick.flags = 1;
          sgSDLFrame->ProcessEvent(joystick);
-         axis[codex] = x;
-         axis[codey] = y;
+         joyaxis[codex] = x;
+         joyaxis[codey] = y;
       }
    }
 
@@ -1006,7 +1047,17 @@ typedef struct controllerState
       }
    }
    
-   void setButtonEvent(int button, bool pressed)
+   void controllerButtonEvent(int button, bool pressed)
+   {
+      Event joystick(pressed? etControllerButtonDown: etControllerButtonUp);
+      joystick.id = joystickId;
+      joystick.code = button;
+      joystick.value = userId;
+      joystick.scaleX = pressed? 1.0f : 0.0f;
+      sgSDLFrame->ProcessEvent(joystick);
+   }
+
+   void joyButtonEvent(int button, bool pressed)
    {
       Event joystick(pressed? etJoyButtonDown: etJoyButtonUp);
       joystick.id = joystickId;
@@ -1585,7 +1636,7 @@ void ProcessEvent(SDL_Event &inEvent)
       {   
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
          if(controller != NULL)
-            controller->setAxisMove(inEvent.jaxis.axis, inEvent.jaxis.value);
+            controller->controllerAxisMove(inEvent.jaxis.axis, inEvent.jaxis.value);
          break;
       }
       case SDL_CONTROLLERBUTTONDOWN:
@@ -1597,7 +1648,7 @@ void ProcessEvent(SDL_Event &inEvent)
              if(inEvent.jbutton.button>=SDL_CONTROLLER_BUTTON_DPAD_UP) 
                 controller->controllerHatEvent();
              else
-             controller->setButtonEvent(inEvent.jbutton.button, inEvent.jbutton.state==SDL_PRESSED);
+             controller->controllerButtonEvent(inEvent.jbutton.button, inEvent.jbutton.state==SDL_PRESSED);
          }
          break;
       }
@@ -1626,24 +1677,24 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_JOYAXISMOTION:
       {   
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
-         if(controller != NULL && !controller->isGameController)
-            controller->setAxisMove(inEvent.jaxis.axis, inEvent.jaxis.value);
+         if(controller != NULL /*&& !controller->isGameController*/)
+            controller->joyAxisMove(inEvent.jaxis.axis, inEvent.jaxis.value);
          break;
       }
       case SDL_JOYBUTTONDOWN:
       case SDL_JOYBUTTONUP:
       {     
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
-         if(controller!=NULL && !controller->isGameController)
-             controller->setButtonEvent(inEvent.jbutton.button, inEvent.jbutton.state==SDL_PRESSED);
+         if(controller!=NULL /*&& !controller->isGameController*/)
+             controller->joyButtonEvent(inEvent.jbutton.button, inEvent.jbutton.state==SDL_PRESSED);
          break;
       }
       case SDL_JOYBALLMOTION:
       {
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
-         if(controller!=NULL && !controller->isGameController)
+         if(controller!=NULL /*&& !controller->isGameController*/)
          {
-           Event joystick(etJoyBallMove);
+            Event joystick(etJoyBallMove);
             joystick.id = controller->joystickId;
             joystick.code = inEvent.jball.ball;
             joystick.value = controller->userId;
@@ -1656,7 +1707,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_JOYHATMOTION:
       {
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
-         if(controller!=NULL && !controller->isGameController)
+         if(controller!=NULL /*&& !controller->isGameController*/)
          {
             //fprintf(stderr,"[SDL_JOYHATMOTION 0x%x]",inEvent.jhat.hat);
             Event joystick(etJoyHatMove);
@@ -2175,7 +2226,7 @@ void StartAnimation()
    if ( sgMutexRunning )
    {
       ReleaseMutex( sgMutexRunning );
-     sgMutexRunning = NULL;
+      sgMutexRunning = NULL;
    }
 #endif
    

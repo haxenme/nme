@@ -124,9 +124,13 @@ class Main extends Sprite {
         
         Lib.current.stage.addEventListener (Event.ENTER_FRAME, this_onEnterFrame);
 
-        Lib.current.stage.addEventListener (JoystickEvent.BUTTON_DOWN, onJoystickButtonDown);
-        Lib.current.stage.addEventListener (JoystickEvent.BUTTON_UP, onJoystickButtonUp);
-        Lib.current.stage.addEventListener (JoystickEvent.AXIS_MOVE, onJoystickAxisMove);
+        //Lib.current.stage.addEventListener (JoystickEvent.BUTTON_DOWN, onJoystickButtonDown);
+        //Lib.current.stage.addEventListener (JoystickEvent.BUTTON_UP, onJoystickButtonUp);
+        //Lib.current.stage.addEventListener (JoystickEvent.AXIS_MOVE, onJoystickAxisMove);
+        Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_BUTTON_DOWN, onControllerButtonDown);
+        Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_BUTTON_UP, onControllerButtonUp);
+        Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_AXIS_MOVE, onControllerAxisMove);
+
         Lib.current.stage.addEventListener (JoystickEvent.HAT_MOVE, onJoystickHatMove);
         Lib.current.stage.addEventListener (JoystickEvent.DEVICE_ADDED, onJoystickDeviceAdded);
         Lib.current.stage.addEventListener (JoystickEvent.DEVICE_REMOVED, onJoystickDeviceRemoved);
@@ -154,19 +158,19 @@ class Main extends Sprite {
         (userDisplayButton[userID])[buttonId] = container;
     }
 
-    private function onJoystickButtonUp( e:JoystickEvent ):Void
+    private function onControllerButtonUp( e:JoystickEvent ):Void
     {
        //trace(e);
-       onJoystickButton(e, false);
+       onControllerButton(e, false);
     }
 
-    private function onJoystickButtonDown( e:JoystickEvent ):Void
+    private function onControllerButtonDown( e:JoystickEvent ):Void
     {
        //trace(e);
-       onJoystickButton(e, true);
+       onControllerButton(e, true);
     }
 
-    private function onJoystickButton( e:JoystickEvent, pressed:Bool ):Void
+    private function onControllerButton( e:JoystickEvent, pressed:Bool ):Void
     {
         //trace(e);
 
@@ -226,7 +230,7 @@ class Main extends Sprite {
     }
 
     //Receives axis in pairs. Check "x" and "y" values with "id"
-    private function onJoystickAxisMove( e:JoystickEvent ):Void
+    private function onControllerAxisMove( e:JoystickEvent ):Void
     {
         //trace(e); 
 
