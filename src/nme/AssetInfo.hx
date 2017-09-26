@@ -21,7 +21,7 @@ class AssetInfo
       isResource = inIsResource;
       alphaMode = inAlphaMode==null ? AlphaDefault : inAlphaMode;
       #if !flash
-      if (type==AssetType.FONT && nme.Assets.isEmbedded(id) )
+      if (type==AssetType.FONT && (isResource || nme.Assets.isEmbedded(id)) )
       {
          new nme.text.Font("",null,null, path,id);
       }

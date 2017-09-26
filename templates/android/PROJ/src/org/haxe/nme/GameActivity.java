@@ -674,10 +674,10 @@ implements SensorEventListener
     
    public static int getResourceID(String inFilename)
    {
-      ::foreach assets::::if (isSound)::if (inFilename.equals("::id::")) return ::APP_PACKAGE::.R.raw.::flatName::;
-      ::end::::end::
-      ::foreach assets::::if (isMusic)::if (inFilename.equals("::id::")) return ::APP_PACKAGE::.R.raw.::flatName::;
-      ::end::::end::
+      ::foreach assets::::if (isSound)::::if (!embed)::if (inFilename.equals("::id::")) return ::APP_PACKAGE::.R.raw.::flatName::;
+      ::end::::end::::end::
+      ::foreach assets::::if (isMusic)::::if (!embed)::if (inFilename.equals("::id::")) return ::APP_PACKAGE::.R.raw.::flatName::;
+      ::end::::end::::end::
       return -1;
    }
    
