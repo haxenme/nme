@@ -1020,6 +1020,8 @@ typedef struct controllerState
          joystick.scaleX = axisNormalize(x);
          joystick.scaleY = axisNormalize(y);
          joystick.flags = 1;
+         if(isGameController)
+           joystick.y = 1;
          sgSDLFrame->ProcessEvent(joystick);
          joyAxis[codex] = x;
          joyAxis[codey] = y;
@@ -1066,6 +1068,8 @@ typedef struct controllerState
       joystick.code = button;
       joystick.value = userId;
       joystick.scaleX = pressed? 1.0f : 0.0f;
+      if(isGameController)
+        joystick.y = 1;
       sgSDLFrame->ProcessEvent(joystick);
    }
 
