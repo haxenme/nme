@@ -11,10 +11,14 @@ class GamepadButton
    public static inline var BACK:Int = 4;
    public static inline var GUIDE:Int = 5;
    public static inline var START:Int = 6;
-   public static inline var LEFTSTICK:Int = 7;
-   public static inline var RIGHTSTICK:Int = 8;
-   public static inline var LEFTSHOULDER:Int = 9;
-   public static inline var RIGHTSHOULDER:Int = 10;
+   public static inline var LEFT_STICK:Int = 7;
+   public static inline var RIGHT_STICK:Int = 8;
+   public static inline var LEFT_SHOULDER:Int = 9;
+   public static inline var RIGHT_SHOULDER:Int = 10;
+   public static inline var DPAD_UP:Int = 11;
+   public static inline var DPAD_DOWN:Int = 12;
+   public static inline var DPAD_LEFT:Int = 13;
+   public static inline var DPAD_RIGHT:Int = 14;
 
    public static function toString(id:Int) : String
    {
@@ -27,10 +31,14 @@ class GamepadButton
          case GamepadButton.BACK: return "GamepadButton.BACK";
          case GamepadButton.GUIDE: return "GamepadButton.GUIDE";
          case GamepadButton.START: return "GamepadButton.START";
-         case GamepadButton.LEFTSTICK: return "GamepadButton.LEFTSTICK";
-         case GamepadButton.RIGHTSTICK: return "GamepadButton.RIGHTSTICK";
-         case GamepadButton.LEFTSHOULDER: return "GamepadButton.LEFTSHOULDER";
-         case GamepadButton.RIGHTSHOULDER: return "GamepadButton.RIGHTSHOULDER";
+         case GamepadButton.LEFT_STICK: return "GamepadButton.LEFT_STICK";
+         case GamepadButton.RIGHT_STICK: return "GamepadButton.RIGHT_STICK";
+         case GamepadButton.LEFT_SHOULDER: return "GamepadButton.LEFT_SHOULDER";
+         case GamepadButton.RIGHT_SHOULDER: return "GamepadButton.RIGHT_SHOULDER";
+         case GamepadButton.DPAD_UP: return "GamepadButton.DPAD_UP";
+         case GamepadButton.DPAD_DOWN: return "GamepadButton.DPAD_DOWN";
+         case GamepadButton.DPAD_LEFT: return "GamepadButton.DPAD_LEFT";
+         case GamepadButton.DPAD_RIGHT: return "GamepadButton.DPAD_RIGHT";
          default: return "BUTTON UNKNOWN[id:"+id+"]";
       }
    }

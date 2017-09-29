@@ -17,6 +17,9 @@ import nme.display.Stage3D;
 #end
 import nme.media.StageVideo;
 
+import nme.ui.GameInput;
+import nme.ui.GamepadButton;
+import nme.events.GameInputEvent;
 import nme.events.JoystickEvent;
 import nme.events.MouseEvent;
 import nme.events.FocusEvent;
@@ -691,7 +694,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
             data[inEvent.code] = inEvent.sx;
             data[inEvent.code+1] = inEvent.sy;
          }
-         if(inEvent.flags==3)
+         else if(inEvent.flags==3)
          { 
             if(nmeControllerAxisData[user]==null)
                nmeControllerAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
@@ -714,6 +717,59 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code,
                                                 inEvent.value, inEvent.sx, inEvent.sy, data, isGamePad);
       nmeDispatchEvent(evt);
+
+      if(GameInput.hasInstances())
+      {
+         if(inType == JoystickEvent.DEVICE_ADDED)
+         {
+            GameInput.nmeGamepadConnect(user);
+         }
+         else if(inType == JoystickEvent.DEVICE_REMOVED)
+         {
+            GameInput.nmeGamepadDisconnect(user);
+         }
+
+         if(isGamePad)
+         {
+            if(inType == JoystickEvent.GAMECONTROLLER_AXIS_MOVE)
+            {
+               GameInput.nmeGamepadAxisMove(user,inEvent.code, inEvent.sx);
+               GameInput.nmeGamepadAxisMove(user,inEvent.code+1, inEvent.sy);
+            }
+            else if(inType == JoystickEvent.GAMECONTROLLER_BUTTON_DOWN)
+            {
+               GameInput.nmeGamepadButton(user, inEvent.code, 1);
+            }
+            else if(inType == JoystickEvent.GAMECONTROLLER_BUTTON_UP)
+            {
+               GameInput.nmeGamepadButton(user, inEvent.code, 0);
+            }
+         }
+         else
+         {
+            if(inType == JoystickEvent.AXIS_MOVE)
+            {
+               GameInput.nmeGamepadAxisMove(user, inEvent.code, inEvent.sx);
+               GameInput.nmeGamepadAxisMove(user, inEvent.code+1, inEvent.sy);
+            }
+            else if(inType == JoystickEvent.BUTTON_DOWN)
+            {
+               GameInput.nmeGamepadButton(user, inEvent.code, 1);
+            }
+            else if(inType == JoystickEvent.BUTTON_UP)
+            {
+               GameInput.nmeGamepadButton(user, inEvent.code, 0);
+            }
+         }
+         
+         if(inType == JoystickEvent.HAT_MOVE)
+         {
+            GameInput.nmeGamepadButton(user, GamepadButton.DPAD_UP, inEvent.sy>0.0?1:0);
+            GameInput.nmeGamepadButton(user, GamepadButton.DPAD_DOWN, inEvent.sy<0.0?1:0);
+            GameInput.nmeGamepadButton(user, GamepadButton.DPAD_LEFT, inEvent.sx<0.0?1:0);
+            GameInput.nmeGamepadButton(user, GamepadButton.DPAD_RIGHT, inEvent.sx>0.0?1:0);
+         }
+      }
    }
 
    public function onSysMessage(inEvent:AppEvent):Void

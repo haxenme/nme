@@ -120,13 +120,13 @@ class Main extends Sprite {
                  //
               case GamepadButton.START:
                  //
-              case GamepadButton.LEFTSTICK:
+              case GamepadButton.LEFT_STICK:
                  //
-              case GamepadButton.RIGHTSTICK:
+              case GamepadButton.RIGHT_STICK:
                  //
-              case GamepadButton.LEFTSHOULDER:
+              case GamepadButton.LEFT_SHOULDER:
                  //
-              case GamepadButton.RIGHTSHOULDER:
+              case GamepadButton.RIGHT_SHOULDER:
                  //
           }
           GamePadDisplay.setColor(player, buttonId, pressed? GamePadDisplay.red : GamePadDisplay.gray);
@@ -146,10 +146,10 @@ class Main extends Sprite {
           var orange = GamePadDisplay.orange;
           var gray = GamePadDisplay.gray;
 
-          GamePadDisplay.setColor(player, 11/*UP*/   , e.y>0? orange : gray);
-          GamePadDisplay.setColor(player, 12/*DOWN*/ , e.y<0? orange : gray);
-          GamePadDisplay.setColor(player, 13/*LEFT*/ , e.x<0? orange : gray);
-          GamePadDisplay.setColor(player, 14/*RIGHT*/, e.x>0? orange : gray);
+          GamePadDisplay.setColor(player, GamepadButton.DPAD_UP   , e.y>0? orange : gray);
+          GamePadDisplay.setColor(player, GamepadButton.DPAD_DOWN , e.y<0? orange : gray);
+          GamePadDisplay.setColor(player, GamepadButton.DPAD_LEFT , e.x<0? orange : gray);
+          GamePadDisplay.setColor(player, GamepadButton.DPAD_RIGHT, e.x>0? orange : gray);
         }
     }
 
@@ -269,16 +269,16 @@ class GamePadDisplay extends Sprite {
         createCircle(userID,GamepadButton.GUIDE, 4, 3, 0.6, 0.6);
         createCircle(userID,GamepadButton.START, 5, 5, 0.6, 0.6);
 
-        createCircle(userID,GamepadButton.LEFTSTICK, 1, 6);
-        createCircle(userID,GamepadButton.RIGHTSTICK, 7, 6);
+        createCircle(userID, GamepadButton.LEFT_STICK, 1, 6);
+        createCircle(userID, GamepadButton.RIGHT_STICK, 7, 6);
 
-        createCircle(userID,GamepadButton.LEFTSHOULDER, 0, 1, 1.0, 0.6);
-        createCircle(userID,GamepadButton.RIGHTSHOULDER, 8, 1, 1.0, 0.6);
+        createCircle(userID, GamepadButton.LEFT_SHOULDER, 0, 1, 1.0, 0.6);
+        createCircle(userID, GamepadButton.RIGHT_SHOULDER, 8, 1, 1.0, 0.6);
 
-        createCircle(userID, 11/*GamepadButton.DPAD_UP*/, 1, 2);
-        createCircle(userID, 12 /*GamepadButton.DPAD_DOWN*/, 1, 4);
-        createCircle(userID, 13 /*GamepadButton.DPAD_LEFT*/, 0, 3);
-        createCircle(userID, 14 /*GamepadButton.DPAD_RIGHT*/, 2, 3);
+        createCircle(userID, GamepadButton.DPAD_UP, 1, 2);
+        createCircle(userID, GamepadButton.DPAD_DOWN, 1, 4);
+        createCircle(userID, GamepadButton.DPAD_LEFT, 0, 3);
+        createCircle(userID, GamepadButton.DPAD_RIGHT, 2, 3);
 
         //this circle indicates if user has supported gamepad with green
         //or a joystick/unsupported gamepad with orange
