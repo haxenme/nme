@@ -19,7 +19,8 @@ class Main extends Sprite {
     static public inline var MAX_USERS:Int = 4;
 
     private var userHatPosition:Array<Array<Int>>; //records x,y directions, either -1, 0 or 1
-    private var userAxisPosition:Array<Array<Int>>; //records x,y directions, either -1, 0 or 1
+    private var userAxisPosition:Array<Array<Int>>;
+    private var userDisplays:Array<GamePadDisplay>;
 
     static private inline var _X:Int = 0;
     static private inline var _Y:Int = 1;
@@ -35,13 +36,7 @@ class Main extends Sprite {
         Logo.buttonMode = true;
         addChild (Logo);
 
-        GamePadDisplay.userDisplay = new Array<Sprite>();
-        GamePadDisplay.userDisplayButton = new Array<Array<Sprite>>();
-        GamePadDisplay.red = new ColorTransform(1,0,0);
-        GamePadDisplay.gray = new ColorTransform(0.8,0.8,0.8);
-        GamePadDisplay.blue = new ColorTransform(0,0,1);
-        GamePadDisplay.green = new ColorTransform(0,1,0);
-        GamePadDisplay.orange = new ColorTransform(1,0.5,0.3);
+        userDisplays = new Array<GamePadDisplay>();
 
         userHatPosition = new Array<Array<Int>>();
         userAxisPosition = new Array<Array<Int>>();
@@ -51,15 +46,11 @@ class Main extends Sprite {
           userHatPosition[userID] = new Array<Int>();
           userAxisPosition[userID] = new Array<Int>();
 
-          GamePadDisplay.userDisplay[userID] = new Sprite();
-          addChild(GamePadDisplay.userDisplay[userID]);
+          userDisplays[userID] = new GamePadDisplay();
+          addChild(userDisplays[userID]);
 
-          GamePadDisplay.userDisplay[userID].x = ( userID%2 ==0 )? 50 : 450;
-          GamePadDisplay.userDisplay[userID].y = ( userID<2 )? 50 : 350;
-
-          GamePadDisplay.userDisplayButton[userID] = new Array<Sprite>();
-
-          GamePadDisplay.setGUI(userID);
+          userDisplays[userID].x = ( userID%2 ==0 )? 50 : 450;
+          userDisplays[userID].y = ( userID<2 )? 50 : 350;
         }
         
         Lib.current.stage.addEventListener (Event.ENTER_FRAME, this_onEnterFrame);
@@ -129,7 +120,8 @@ class Main extends Sprite {
               case GamepadButton.RIGHT_SHOULDER:
                  //
           }
-          GamePadDisplay.setColor(player, buttonId, pressed? GamePadDisplay.red : GamePadDisplay.gray);
+          
+          userDisplays[player].setColor(buttonId, pressed? GamePadDisplay.red : GamePadDisplay.gray);
         }
     }
 
@@ -146,10 +138,10 @@ class Main extends Sprite {
           var orange = GamePadDisplay.orange;
           var gray = GamePadDisplay.gray;
 
-          GamePadDisplay.setColor(player, GamepadButton.DPAD_UP   , e.y>0? orange : gray);
-          GamePadDisplay.setColor(player, GamepadButton.DPAD_DOWN , e.y<0? orange : gray);
-          GamePadDisplay.setColor(player, GamepadButton.DPAD_LEFT , e.x<0? orange : gray);
-          GamePadDisplay.setColor(player, GamepadButton.DPAD_RIGHT, e.x>0? orange : gray);
+          userDisplays[player].setColor( GamepadButton.DPAD_UP   , e.y>0? orange : gray);
+          userDisplays[player].setColor( GamepadButton.DPAD_DOWN , e.y<0? orange : gray);
+          userDisplays[player].setColor( GamepadButton.DPAD_LEFT , e.x<0? orange : gray);
+          userDisplays[player].setColor( GamepadButton.DPAD_RIGHT, e.x>0? orange : gray);
         }
     }
 
@@ -168,17 +160,17 @@ class Main extends Sprite {
           {
             case GamepadAxis.LEFT:
               (userAxisPosition[player])[_X] = (e.x > 0.5 ? 1 : e.x < -0.5 ? -1 : 0);
-              GamePadDisplay.setColor(player, 16, (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray));
+              userDisplays[player].setColor( 16, (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray));
               (userAxisPosition[player])[_Y] = (e.y > 0.5 ? -1 : e.y < -0.5 ? 1 : 0);
-              GamePadDisplay.setColor(player, 17, (e.y > 0.5 ? red : e.x < -0.5 ? blue : gray));
+              userDisplays[player].setColor( 17, (e.y > 0.5 ? red : e.x < -0.5 ? blue : gray));
             case GamepadAxis.RIGHT:
-              GamePadDisplay.setColor(player, 18, (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray));
-              GamePadDisplay.setColor(player, 19, (e.x > 0.5 ? red : e.y < -0.5 ? blue : gray));
+              userDisplays[player].setColor( 18, (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray));
+              userDisplays[player].setColor( 19, (e.x > 0.5 ? red : e.y < -0.5 ? blue : gray));
             case GamepadAxis.TRIGGER:
               //note: triggers have value range 0 (not pressed) to 1 (pressed)
               //some controllers are not analog
-              GamePadDisplay.setColor(player, 20, (e.x > 0.5 ? red : gray));
-              GamePadDisplay.setColor(player, 21, (e.x > 0.5 ? red : gray)); 
+              userDisplays[player].setColor( 20, (e.x > 0.5 ? red : gray));
+              userDisplays[player].setColor( 21, (e.x > 0.5 ? red : gray)); 
           }
         }
         else
@@ -192,7 +184,7 @@ class Main extends Sprite {
        //trace(e);
        var  player = e.user;
        if(player < MAX_USERS)
-         GamePadDisplay.setColor(player, 15, e.isGamePad ? GamePadDisplay.green : GamePadDisplay.orange);
+         userDisplays[player].setColor( 15, e.isGamePad ? GamePadDisplay.green : GamePadDisplay.orange);
     }
 
     private function onJoystickDeviceRemoved( e:JoystickEvent ):Void
@@ -200,7 +192,7 @@ class Main extends Sprite {
        //trace(e);
        var  player = e.user;
        if(player < MAX_USERS)
-         GamePadDisplay.setColor(player, 15, GamePadDisplay.gray);
+         userDisplays[player].setColor( 15, GamePadDisplay.gray);
     }
 
     private function this_onEnterFrame (event:Event):Void
@@ -248,56 +240,66 @@ class Main extends Sprite {
 }
 
 
-class GamePadDisplay extends Sprite {
+class GamePadDisplay extends Sprite 
+{
 
-    static public var userDisplay:Array<Sprite>;
-    static public var userDisplayButton:Array<Array<Sprite>>;
-    static public var red:ColorTransform;
-    static public var gray:ColorTransform;
-    static public var blue:ColorTransform;
-    static public var green:ColorTransform;
-    static public var orange:ColorTransform;
+    public var userDisplayButton:Array<Sprite>;
+    public var bg:Sprite;
+    static public var red:ColorTransform = new ColorTransform(1,0,0);
+    static public var gray:ColorTransform = new ColorTransform(0.3,0.3,0.3);
+    static public var blue:ColorTransform = new ColorTransform(0,0,1);
+    static public var green:ColorTransform = new ColorTransform(0,1,0);
+    static public var orange:ColorTransform = new ColorTransform(1,0.5,0.3);
 
-    static public function setGUI( userID:Int ):Void
+    public function new()
     {
-        createCircle(userID,GamepadButton.A, 7, 4);
-        createCircle(userID,GamepadButton.B, 8, 3);
-        createCircle(userID,GamepadButton.X, 6, 3);
-        createCircle(userID,GamepadButton.Y, 7, 2);
+        super();
+        userDisplayButton = new Array<Sprite>();
+        bg = new Sprite();
+        bg.addChild (new Bitmap (Assets.getBitmapData ("assets/sdlcontroller.png")));
+        addChild(bg);
+        setGUI();
+    }
 
-        createCircle(userID,GamepadButton.BACK, 3, 5, 0.6, 0.6);
-        createCircle(userID,GamepadButton.GUIDE, 4, 3, 0.6, 0.6);
-        createCircle(userID,GamepadButton.START, 5, 5, 0.6, 0.6);
+    public function setGUI():Void
+    {
+        createCircle(GamepadButton.A, 286, 131);
+        createCircle(GamepadButton.B, 318, 107);
+        createCircle(GamepadButton.X, 257, 109);
+        createCircle(GamepadButton.Y, 288, 85);
 
-        createCircle(userID, GamepadButton.LEFT_STICK, 1, 6);
-        createCircle(userID, GamepadButton.RIGHT_STICK, 7, 6);
+        createCircle(GamepadButton.BACK, 139, 110, 0.6, 0.6);
+        createCircle(GamepadButton.GUIDE, 178, 110, 0.6, 0.6);
+        createCircle(GamepadButton.START, 218, 110, 0.6, 0.6);
 
-        createCircle(userID, GamepadButton.LEFT_SHOULDER, 0, 1, 1.0, 0.6);
-        createCircle(userID, GamepadButton.RIGHT_SHOULDER, 8, 1, 1.0, 0.6);
+        createCircle(GamepadButton.LEFT_STICK, 66, 125);
+        createCircle(GamepadButton.RIGHT_STICK, 230, 180);
+        createCircle(GamepadButton.LEFT_SHOULDER, 64, 35, 1.0, 0.6);
+        createCircle(GamepadButton.RIGHT_SHOULDER, 298, 35, 1.0, 0.6);
 
-        createCircle(userID, GamepadButton.DPAD_UP, 1, 2);
-        createCircle(userID, GamepadButton.DPAD_DOWN, 1, 4);
-        createCircle(userID, GamepadButton.DPAD_LEFT, 0, 3);
-        createCircle(userID, GamepadButton.DPAD_RIGHT, 2, 3);
+        createCircle(GamepadButton.DPAD_UP, 118, 137);
+        createCircle(GamepadButton.DPAD_DOWN, 118, 191);
+        createCircle(GamepadButton.DPAD_LEFT, 90, 165);
+        createCircle(GamepadButton.DPAD_RIGHT, 151, 165);
 
         //this circle indicates if user has supported gamepad with green
         //or a joystick/unsupported gamepad with orange
-        createCircle(userID, 15, 4, 0, 2.0);
+        createCircle(15, 173, 52, 2.0);
 
         //these are for indicating the Axis
-        createCircle(userID, 16, 1, 7, 1.0, 0.6);
-        createCircle(userID, 17, 1, 7, 0.6);
-        createCircle(userID, 18, 7, 7, 1.0, 0.6);
-        createCircle(userID, 19, 7, 7, 0.6);
-        createCircle(userID, 20, 0, 0, 1.0, 0.6);
-        createCircle(userID, 21, 8, 0, 1.0, 0.6);
+        createCircle(16, 54, 98, 2.0, 0.6);
+        createCircle(17, 64, 88, 0.6, 2.0);
+        createCircle(18, 223, 156, 2.0, 0.6);
+        createCircle(19, 233, 146, 0.6, 2.0);
+        createCircle(20, 79, 2, 1.0, 0.6);
+        createCircle(21, 274, 2, 1.0, 0.6);
     }
 
-    static public function createCircle(userID:Int, buttonId:Int, inX:Int, inY:Int, scaleX:Float=1.0, scaleY:Float=1.0):Void
+    public function createCircle(buttonId:Int, inX:Int, inY:Int, scaleX:Float=1.0, scaleY:Float=1.0):Void
     {
         //add display
         var circleColor:UInt = 0xFFFFFF;
-        var radius:Float = 20;
+        var radius:Float = 12;
         var circle:nme.display.Shape = new nme.display.Shape();
         circle.graphics.beginFill(circleColor);
         circle.graphics.drawCircle(radius, radius, radius);
@@ -307,18 +309,18 @@ class GamePadDisplay extends Sprite {
         //circle.transform.colorTransform = gray;
 
         var container = new Sprite();
-        container.x = inX*radius*1.5;
-        container.y = inY*radius*1.5;
+        container.x = inX;
+        container.y = inY;
         container.scaleX = scaleX;
         container.scaleY = scaleY;
-        userDisplay[userID].addChild(container);
+        addChild(container);
         container.addChild(circle);
-        (userDisplayButton[userID])[buttonId] = container;
-        setColor(userID, buttonId, gray);
+        userDisplayButton[buttonId] = container;
+        setColor(buttonId, gray);
     }
 
-    static public function setColor(userID:Int, buttonId:Int, transform:ColorTransform):Void
+    public function setColor(buttonId:Int, transform:ColorTransform):Void
     {
-      (GamePadDisplay.userDisplayButton[userID])[buttonId].transform.colorTransform  = transform;
+      userDisplayButton[buttonId].transform.colorTransform  = transform;
     }
   }
