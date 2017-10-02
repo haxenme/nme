@@ -29,13 +29,6 @@ class Main extends Sprite {
         
         super ();
         
-        Logo = new Sprite ();
-        Logo.addChild (new Bitmap (Assets.getBitmapData ("assets/nme.png")));
-        Logo.x = 100;
-        Logo.y = 100;
-        Logo.buttonMode = true;
-        addChild (Logo);
-
         userDisplays = new Array<GamePadDisplay>();
 
         userHatPosition = new Array<Array<Int>>();
@@ -52,6 +45,13 @@ class Main extends Sprite {
           userDisplays[userID].x = ( userID%2 ==0 )? 50 : 450;
           userDisplays[userID].y = ( userID<2 )? 50 : 350;
         }
+
+        Logo = new Sprite ();
+        Logo.addChild (new Bitmap (Assets.getBitmapData ("assets/nme.png")));
+        Logo.x = 375;
+        Logo.y = 275;
+        Logo.buttonMode = true;
+        addChild (Logo);
         
         Lib.current.stage.addEventListener (Event.ENTER_FRAME, this_onEnterFrame);
 
@@ -162,15 +162,15 @@ class Main extends Sprite {
               (userAxisPosition[player])[_X] = (e.x > 0.5 ? 1 : e.x < -0.5 ? -1 : 0);
               userDisplays[player].setColor( 16, (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray));
               (userAxisPosition[player])[_Y] = (e.y > 0.5 ? -1 : e.y < -0.5 ? 1 : 0);
-              userDisplays[player].setColor( 17, (e.y > 0.5 ? red : e.x < -0.5 ? blue : gray));
+              userDisplays[player].setColor( 17, (e.y > 0.5 ? red : e.y < -0.5 ? blue : gray));
             case GamepadAxis.RIGHT:
               userDisplays[player].setColor( 18, (e.x > 0.5 ? red : e.x < -0.5 ? blue : gray));
-              userDisplays[player].setColor( 19, (e.x > 0.5 ? red : e.y < -0.5 ? blue : gray));
+              userDisplays[player].setColor( 19, (e.y > 0.5 ? red : e.y < -0.5 ? blue : gray));
             case GamepadAxis.TRIGGER:
               //note: triggers have value range 0 (not pressed) to 1 (pressed)
               //some controllers are not analog
               userDisplays[player].setColor( 20, (e.x > 0.5 ? red : gray));
-              userDisplays[player].setColor( 21, (e.x > 0.5 ? red : gray)); 
+              userDisplays[player].setColor( 21, (e.y > 0.5 ? red : gray)); 
           }
         }
         else
