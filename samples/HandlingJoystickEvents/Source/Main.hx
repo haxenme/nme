@@ -38,6 +38,8 @@ class Main extends Sprite {
     private var movingDownControl:GameInputControl;
     private var movingLeftControl:GameInputControl;
     private var movingRightControl:GameInputControl;
+    private var movingAxis0Control:GameInputControl;
+    private var movingAxis1Control:GameInputControl;
 #end
 
     public function new () {
@@ -167,19 +169,29 @@ class Main extends Sprite {
           movingLeftControl = device.getControlAt(6+GamepadButton.DPAD_LEFT);
           movingRightControl = device.getControlAt(6+GamepadButton.DPAD_RIGHT);
     #else
-          var button_up =    "BUTTON_" + GamepadButton.DPAD_UP;
-          var button_down =  "BUTTON_" + GamepadButton.DPAD_DOWN;
-          var button_left =  "BUTTON_" + GamepadButton.DPAD_LEFT;
-          var button_right = "BUTTON_" + GamepadButton.DPAD_RIGHT;
           for(i in 0...device.numControls)
           {
              var control = device.getControlAt(i);
-             switch(control.id)
+             var temp = control.id.split("_");
+             if(temp[0]=="BUTTON")
              {
-                case button_up:    movingUpControl    = control;
-                case button_down:  movingDownControl  = control;
-                case button_left:  movingLeftControl  = control;
-                case button_right: movingRightControl = control;
+                var intId = Std.parseInt(temp[1]);
+                switch(intId)
+                {
+                  case GamepadButton.DPAD_UP:    movingUpControl    = control;
+                  case GamepadButton.DPAD_DOWN:  movingDownControl  = control;
+                  case GamepadButton.DPAD_LEFT:  movingLeftControl  = control;
+                  case GamepadButton.DPAD_RIGHT: movingRightControl = control;
+                }
+             }
+             else if(temp[0]=="AXIS")
+             {
+                var intId = Std.parseInt(temp[1]);
+                switch(intId)
+                {
+                  case 0:  movingAxis0Control    = control;
+                  case 1:  movingAxis1Control    = control;
+               }
              }
           }
     #end
@@ -330,6 +342,11 @@ class Main extends Sprite {
        movingDown  = movingDown  || ( movingDownControl  !=null && movingDownControl.value  > 0);
        movingLeft  = movingLeft  || ( movingLeftControl  !=null && movingLeftControl.value  > 0);
        movingRight = movingRight || ( movingRightControl !=null && movingRightControl.value > 0);
+
+       movingUp    = movingUp    || ( movingAxis1Control !=null && movingAxis1Control.value < -0.5);
+       movingDown  = movingDown  || ( movingAxis1Control !=null && movingAxis1Control.value > 0.5);
+       movingLeft  = movingLeft  || ( movingAxis0Control !=null && movingAxis0Control.value < -0.5);
+       movingRight = movingRight || ( movingAxis0Control !=null && movingAxis0Control.value > 0.5);
 #end
 
         if (movingDown) {
