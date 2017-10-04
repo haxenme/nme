@@ -11,19 +11,34 @@ import nme.ui.GamepadAxis;
 import haxe.ds.IntMap;
 import nme.geom.ColorTransform;
 
+#if NME_GAMEINPUT_API
+import nme.events.GameInputEvent;
+import nme.ui.GameInput;
+import nme.ui.GameInputDevice;
+import nme.ui.GameInputControl;
+#end
+
 class Main extends Sprite {
-    
-    
+        
     private var Logo:Sprite;
 
     static public inline var MAX_USERS:Int = 4;
-
-    private var userHatPosition:Array<Array<Int>>; //records x,y directions, either -1, 0 or 1
-    private var userAxisPosition:Array<Array<Int>>;
     private var userDisplays:Array<GamePadDisplay>;
-
     static private inline var _X:Int = 0;
     static private inline var _Y:Int = 1;
+
+#if NME_JOYSTICK_API
+    private var userHatPosition:Array<Array<Int>>; //records x,y directions, either -1, 0 or 1
+    private var userAxisPosition:Array<Array<Int>>;
+#end
+
+#if NME_GAMEINPUT_API
+    private var gameInput:GameInput = new GameInput();
+    private var movingUpControl:GameInputControl;
+    private var movingDownControl:GameInputControl;
+    private var movingLeftControl:GameInputControl;
+    private var movingRightControl:GameInputControl;
+#end
 
     public function new () {
         
@@ -31,17 +46,21 @@ class Main extends Sprite {
         
         userDisplays = new Array<GamePadDisplay>();
 
+#if NME_JOYSTICK_API
         userHatPosition = new Array<Array<Int>>();
         userAxisPosition = new Array<Array<Int>>();
+#end
 
         for(userID in 0...MAX_USERS)
         {
+
+#if NME_JOYSTICK_API
           userHatPosition[userID] = new Array<Int>();
           userAxisPosition[userID] = new Array<Int>();
+#end
 
           userDisplays[userID] = new GamePadDisplay();
           addChild(userDisplays[userID]);
-
           userDisplays[userID].x = ( userID%2 ==0 )? 50 : 450;
           userDisplays[userID].y = ( userID<2 )? 50 : 350;
         }
@@ -55,6 +74,7 @@ class Main extends Sprite {
         
         Lib.current.stage.addEventListener (Event.ENTER_FRAME, this_onEnterFrame);
 
+#if NME_JOYSTICK_API
         //These events return unmapped (raw) values from all input devices 
         //including joysticks and unsupported/supported gamepads 
         //Lib.current.stage.addEventListener (JoystickEvent.BUTTON_DOWN, onJoystickButtonDown);
@@ -62,7 +82,7 @@ class Main extends Sprite {
         //Lib.current.stage.addEventListener (JoystickEvent.AXIS_MOVE, onJoystickAxisMove);
         //Lib.current.stage.addEventListener (JoystickEvent.BALL_MOVE, onJoystickAxisMove);
 
-        //These event return mapped values of suppoorted gamepads 
+        //These events return mapped values of suppoorted gamepads 
         //Check id values with GamepadAxis and GamedButton 
         Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_BUTTON_DOWN, onControllerButtonDown);
         Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_BUTTON_UP, onControllerButtonUp);
@@ -72,10 +92,102 @@ class Main extends Sprite {
         Lib.current.stage.addEventListener (JoystickEvent.HAT_MOVE, onJoystickHatMove);
         Lib.current.stage.addEventListener (JoystickEvent.DEVICE_ADDED, onJoystickDeviceAdded);
         Lib.current.stage.addEventListener (JoystickEvent.DEVICE_REMOVED, onJoystickDeviceRemoved);
+#end
+
+#if NME_GAMEINPUT_API
+        gameInput.addEventListener (GameInputEvent.DEVICE_ADDED, gameInput_onDeviceAdded);
+        gameInput.addEventListener (GameInputEvent.DEVICE_REMOVED, gameInput_onDeviceRemoved);
+        for (i in 0...GameInput.numDevices)
+           addGamepad(GameInput.getDeviceAt(i));
+#end
     }
 
+#if NME_GAMEINPUT_API
+    private function addGamepad(device:GameInputDevice)
+    {
+       if(device==null)
+        return;
+
+       device.enabled = true;
+    
+       var player:Int=findGamepadIndex(device);
+       if(player<0 || player>=MAX_USERS)
+        return;
+
+       //userDisplays[player].setColor( 15, event.isGamePad ? GamePadDisplay.green : GamePadDisplay.orange);
+       userDisplays[player].setColor( 15, GamePadDisplay.green);
+
+       if(player==0)
+          setControls(device);
+    }
+
+    private function findGamepadIndex(device:GameInputDevice):Int
+    {
+       if (device == null)
+          return - 1;
+    
+       for (i in 0...GameInput.numDevices)
+          if (GameInput.getDeviceAt(i) == device)
+             return i;
+
+       return -1;
+    }
+
+    private function gameInput_onDeviceAdded (event:GameInputEvent):Void
+    {
+       addGamepad(event.device);
+    }
+  
+  
+    private function gameInput_onDeviceRemoved (event:GameInputEvent):Void {
+    
+       var device = event.device;
+       device.enabled = false;
+
+       if(device == GameInput.getDeviceAt(0))
+       {
+          movingUpControl    = null;
+          movingDownControl  = null;
+          movingLeftControl  = null;
+          movingRightControl = null;
+       }    
+       device = GameInput.getDeviceAt(0);
+       if(null != device)
+          setControls(device);
+ 
+       userDisplays[3].setColor( 15, GamePadDisplay.gray);
+    }
+  
+
+    public function setControls(device:GameInputDevice)
+    {
+    #if 0
+          movingUpControl = device.getControlAt(6+GamepadButton.DPAD_UP);
+          movingDownControl = device.getControlAt(6+GamepadButton.DPAD_DOWN);
+          movingLeftControl = device.getControlAt(6+GamepadButton.DPAD_LEFT);
+          movingRightControl = device.getControlAt(6+GamepadButton.DPAD_RIGHT);
+    #else
+          var button_up =    "BUTTON_" + GamepadButton.DPAD_UP;
+          var button_down =  "BUTTON_" + GamepadButton.DPAD_DOWN;
+          var button_left =  "BUTTON_" + GamepadButton.DPAD_LEFT;
+          var button_right = "BUTTON_" + GamepadButton.DPAD_RIGHT;
+          for(i in 0...device.numControls)
+          {
+             var control = device.getControlAt(i);
+             switch(control.id)
+             {
+                case button_up:    movingUpControl    = control;
+                case button_down:  movingDownControl  = control;
+                case button_left:  movingLeftControl  = control;
+                case button_right: movingRightControl = control;
+             }
+          }
+    #end
+    }
+#end
 
 
+#if NME_JOYSTICK_API
     private function onControllerButtonUp( e:JoystickEvent ):Void
     {
        //trace(e);
@@ -194,21 +306,31 @@ class Main extends Sprite {
        if(player < MAX_USERS)
          userDisplays[player].setColor( 15, GamePadDisplay.gray);
     }
+#end
 
     private function this_onEnterFrame (event:Event):Void
     {
       
        var player = 0;
+       var movingUp:Bool    = false;
+       var movingDown:Bool  = false;
+       var movingLeft:Bool  = false; 
+       var movingRight:Bool = false;
 
-       var movingUp:Bool    = ( (userHatPosition[player])[_Y] > 0);
-       var movingDown:Bool  = ( (userHatPosition[player])[_Y] < 0);
-       var movingLeft:Bool  = ( (userHatPosition[player])[_X] < 0); 
-       var movingRight:Bool = ( (userHatPosition[player])[_X] > 0);
+#if NME_JOYSTICK_API
+       movingUp    = ((userHatPosition[player])[_Y] > 0)  || ( (userAxisPosition[player])[_Y] > 0);
+       movingDown  = ((userHatPosition[player])[_Y] < 0)  || ( (userAxisPosition[player])[_Y] < 0);
+       movingLeft  = ((userHatPosition[player])[_X] < 0)  || ( (userAxisPosition[player])[_X] < 0); 
+       movingRight = ((userHatPosition[player])[_X] > 0)  || ( (userAxisPosition[player])[_X] > 0);
+#end
 
-       movingUp    = movingUp    || ( (userAxisPosition[player])[_Y] > 0);
-       movingDown  = movingDown  || ( (userAxisPosition[player])[_Y] < 0);
-       movingLeft  = movingLeft  || ( (userAxisPosition[player])[_X] < 0); 
-       movingRight = movingRight || ( (userAxisPosition[player])[_X] > 0);
+#if NME_GAMEINPUT_API
+       //GameInput API
+       movingUp    = movingUp    || ( movingUpControl    !=null && movingUpControl.value    > 0);
+       movingDown  = movingDown  || ( movingDownControl  !=null && movingDownControl.value  > 0);
+       movingLeft  = movingLeft  || ( movingLeftControl  !=null && movingLeftControl.value  > 0);
+       movingRight = movingRight || ( movingRightControl !=null && movingRightControl.value > 0);
+#end
 
         if (movingDown) {
             
