@@ -539,7 +539,7 @@
          </section>
 
          <section if="winrt">
-            <lib name="kernel32.lib" />
+            <lib name="WindowsApp.lib" /><!--kernel32-->
             <lib name="d3d11.lib" />
             <lib name="Xaudio2.lib" />
             <lib name="Xinput.lib" />

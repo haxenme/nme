@@ -9,7 +9,11 @@
   </Properties>
   <Dependencies>
     <TargetDeviceFamily Name="::APP_TARGET::" MinVersion="::APP_MINVERSION::" MaxVersionTested="::APP_MAXVERSION::" />
-    <!--<PackageDependency Name="Microsoft.VCLibs.140.00.Debug" MinVersion="14.0.24210.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />-->    
+::if APP_DEBUG_DEPENDECY::
+    <PackageDependency Name="Microsoft.VCLibs.140.00.Debug" MinVersion="::APP_MINVERSION::" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
+::else::
+    <PackageDependency Name="Microsoft.VCLibs.140.00" MinVersion="::APP_MINVERSION::" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
+::end::
     ::foreach packageDependency:: <PackageDependency Name="::dependency::" MinVersion="::minversion::" Publisher="::publisher::" /></PackageDependency>::end::
   </Dependencies>
   <Resources>
