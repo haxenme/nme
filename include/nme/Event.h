@@ -49,10 +49,6 @@ enum EventType
    etRenderContextRestored, // 33
 
    etScroll, // 34
-
-   etControllerAxisMove, // 35
-   etControllerButtonDown, // 36
-   etControllerButtonUp, // 37
 };
 
 enum EventFlags

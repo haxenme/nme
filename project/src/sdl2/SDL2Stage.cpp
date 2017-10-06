@@ -848,6 +848,9 @@ SDLFrame *sgSDLFrame = 0;
 #ifndef EMSCRIPTEN
 
 #define MAX_JOYSTICKS 16
+#define etControllerAxisMove etJoyAxisMove
+#define etControllerButtonDown etJoyButtonDown
+#define etControllerButtonUp etJoyButtonUp
 QuickVec<int>*  userIds = NULL;
 
 struct controllerState;
@@ -1683,7 +1686,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_JOYAXISMOTION:
       {   
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
-         if(controller != NULL /*&& !controller->isGameController*/)
+         if(controller != NULL && !controller->isGameController)
             controller->joyAxisMove(inEvent.jaxis.axis, inEvent.jaxis.value);
          break;
       }
@@ -1691,14 +1694,14 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_JOYBUTTONUP:
       {     
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
-         if(controller!=NULL /*&& !controller->isGameController*/)
+         if(controller!=NULL && !controller->isGameController)
              controller->joyButtonEvent(inEvent.jbutton.button, inEvent.jbutton.state==SDL_PRESSED);
          break;
       }
       case SDL_JOYBALLMOTION:
       {
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
-         if(controller!=NULL /*&& !controller->isGameController*/)
+         if(controller!=NULL && !controller->isGameController)
          {
             Event joystick(etJoyBallMove);
             joystick.id = controller->joystickId;

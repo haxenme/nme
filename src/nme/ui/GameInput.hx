@@ -65,14 +65,14 @@ class GameInput extends EventDispatcher
    static function getGamepadGuid(index:Int) : String
    {
       // TODO
-      return "guid";
+      return "guid"+index;
    }
 
 
    static function getGamepadName(index:Int) : String
    {
       // TODO
-      return "name";
+      return "name"+index;
    }
 
    private static function __getDevice(index:Int):GameInputDevice

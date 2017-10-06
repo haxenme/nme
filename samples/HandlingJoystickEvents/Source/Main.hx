@@ -77,18 +77,13 @@ class Main extends Sprite {
         Lib.current.stage.addEventListener (Event.ENTER_FRAME, this_onEnterFrame);
 
 #if NME_JOYSTICK_API
-        //These events return unmapped (raw) values from all input devices 
-        //including joysticks and unsupported/supported gamepads 
-        //Lib.current.stage.addEventListener (JoystickEvent.BUTTON_DOWN, onJoystickButtonDown);
-        //Lib.current.stage.addEventListener (JoystickEvent.BUTTON_UP, onJoystickButtonUp);
-        //Lib.current.stage.addEventListener (JoystickEvent.AXIS_MOVE, onJoystickAxisMove);
-        //Lib.current.stage.addEventListener (JoystickEvent.BALL_MOVE, onJoystickAxisMove);
-
-        //These events return mapped values of suppoorted gamepads 
-        //Check id values with GamepadAxis and GamedButton 
-        Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_BUTTON_DOWN, onControllerButtonDown);
-        Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_BUTTON_UP, onControllerButtonUp);
-        Lib.current.stage.addEventListener (JoystickEvent.GAMECONTROLLER_AXIS_MOVE, onControllerAxisMove);
+        //These events return unmapped (raw) values from joysticks and unsupported/supported gamepads
+        //and mapped values of suppoorted gamepads that match values in GamepadAxis and GamedButton
+        //(check "isGamePad" in event) 
+        Lib.current.stage.addEventListener (JoystickEvent.BUTTON_DOWN, onJoystickButtonDown);
+        Lib.current.stage.addEventListener (JoystickEvent.BUTTON_UP, onJoystickButtonUp);
+        Lib.current.stage.addEventListener (JoystickEvent.AXIS_MOVE, onJoystickAxisMove);
+        //Lib.current.stage.addEventListener (JoystickEvent.BALL_MOVE, onJoystickAxisMove); //not used
 
         //These events are for both joysticks and gamepad devices
         Lib.current.stage.addEventListener (JoystickEvent.HAT_MOVE, onJoystickHatMove);
@@ -191,7 +186,7 @@ class Main extends Sprite {
                 {
                   case 0:  movingAxis0Control    = control;
                   case 1:  movingAxis1Control    = control;
-               }
+                }
              }
           }
     #end
@@ -200,16 +195,24 @@ class Main extends Sprite {
 
 
 #if NME_JOYSTICK_API
-    private function onControllerButtonUp( e:JoystickEvent ):Void
+    private function onJoystickButtonUp( e:JoystickEvent ):Void
     {
        //trace(e);
-       onControllerButton(e, false);
+       //if(e.isGamePad)
+         onControllerButton(e, false);
     }
 
-    private function onControllerButtonDown( e:JoystickEvent ):Void
+    private function onJoystickButtonDown( e:JoystickEvent ):Void
     {
        //trace(e);
-       onControllerButton(e, true);
+       //if(e.isGamePad)
+         onControllerButton(e, true);
+    }
+
+    private function onJoystickAxisMove( e:JoystickEvent ):Void
+    {
+       //if(e.isGamePad)
+         onControllerAxisMove(e);
     }
 
     private function onControllerButton( e:JoystickEvent, pressed:Bool ):Void

@@ -115,7 +115,6 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public static var nmeQuitting = false;
 
    private var nmeJoyAxisData:Array<Array<Float>>;
-   private var nmeControllerAxisData:Array<Array<Float>>;
    private var nmeDragBounds:Rectangle;
    private var nmeDragObject:Sprite;
    private var nmeDragOffsetX:Float;
@@ -171,7 +170,6 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeLastClickTime = 0.0;
       nmeTouchInfo = new Map<Int,TouchInfo>();
       nmeJoyAxisData = new Array<Array<Float>>();
-      nmeControllerAxisData = new Array<Array<Float>>();
 
       #if stage3d
       stage3Ds = new Vector();
@@ -679,44 +677,83 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
    }
 
+   private inline function axismap( code:Int )
+   {
+      #if openfl_legacy
+      switch(code)
+      {
+         case 3: code = 4;
+         case 2: code = 3;
+         case 4: code = 2;
+      }
+      #end
+      return code;
+   }
+   private inline function buttonmap( code:Int )
+   {
+      #if openfl_legacy
+      switch(code)
+      {
+         case  9: code = GamepadButton.LEFT_SHOULDER;
+         case  4: code = GamepadButton.BACK;
+         case  8: code = GamepadButton.RIGHT_STICK;
+         case 10: code = GamepadButton.RIGHT_SHOULDER;
+         case  6: code = GamepadButton.START;
+         case  7: code = GamepadButton.LEFT_STICK;
+      }
+      #end
+      return code;
+   }
+
    public function onJoystick(inEvent:AppEvent, inType:String):Void
    {
       var data:Array<Float> = null;
       var user = inEvent.value;
+      var isGamePad:Bool = inEvent.y>0;
       if(inEvent.flags > 0)
       {
+         ///is axis move event
          if(inEvent.flags==1)
          {         
             if(nmeJoyAxisData[user]==null)
                nmeJoyAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
 
             data = nmeJoyAxisData[user];
-            data[inEvent.code] = inEvent.sx;
-            data[inEvent.code+1] = inEvent.sy;
+            data[ inEvent.code ] = inEvent.sx;
+            data[ inEvent.code+1 ] = inEvent.sy;
          }
          else if(inEvent.flags==3)
          { 
-            if(nmeControllerAxisData[user]==null)
-               nmeControllerAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
+            //isGamePad
+            if(nmeJoyAxisData[user]==null)
+               nmeJoyAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
 
-            data = nmeControllerAxisData[user];
-            data[inEvent.code] = inEvent.sx;
-            data[inEvent.code+1] = inEvent.sy;
+            data = nmeJoyAxisData[user];
+            data[ axismap(inEvent.code) ] = inEvent.sx;
+            data[ axismap(inEvent.code+1) ] = inEvent.sy;
          }
          else if(inEvent.flags==2)
          {
             if(nmeJoyAxisData[user]!=null)
-               for(d in nmeControllerAxisData[user])
-                  d = 0.0;
-            if(nmeControllerAxisData[user]!=null)
-               for(d in nmeControllerAxisData[user])
+               for(d in nmeJoyAxisData[user])
                   d = 0.0;
          }
       }
-      var isGamePad:Bool = inEvent.y>0;
-      var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code,
+      #if openfl_legacy
+      if(isGamePad && StringTools.startsWith(inType,"button"))
+      {
+         //map sdl controller to legacy xinput
+         var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, buttonmap(inEvent.code),
                                                 inEvent.value, inEvent.sx, inEvent.sy, data, isGamePad);
-      nmeDispatchEvent(evt);
+         nmeDispatchEvent(evt);
+      }
+      else
+      #end
+      {
+         var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code,
+                                                   inEvent.value, inEvent.sx, inEvent.sy, data, isGamePad);
+         nmeDispatchEvent(evt);
+      }
 
       if(GameInput.hasInstances())
       {
@@ -728,41 +765,20 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          {
             GameInput.nmeGamepadDisconnect(user);
          }
-
-         if(isGamePad)
+         else if(inType == JoystickEvent.AXIS_MOVE)
          {
-            if(inType == JoystickEvent.GAMECONTROLLER_AXIS_MOVE)
-            {
-               GameInput.nmeGamepadAxisMove(user,inEvent.code, inEvent.sx);
-               GameInput.nmeGamepadAxisMove(user,inEvent.code+1, inEvent.sy);
-            }
-            else if(inType == JoystickEvent.GAMECONTROLLER_BUTTON_DOWN)
-            {
-               GameInput.nmeGamepadButton(user, inEvent.code, 1);
-            }
-            else if(inType == JoystickEvent.GAMECONTROLLER_BUTTON_UP)
-            {
-               GameInput.nmeGamepadButton(user, inEvent.code, 0);
-            }
+            GameInput.nmeGamepadAxisMove(user, inEvent.code, inEvent.sx);
+            GameInput.nmeGamepadAxisMove(user, inEvent.code+1, inEvent.sy);
          }
-         else
+         else if(inType == JoystickEvent.BUTTON_DOWN)
          {
-            if(inType == JoystickEvent.AXIS_MOVE)
-            {
-               GameInput.nmeGamepadAxisMove(user, inEvent.code, inEvent.sx);
-               GameInput.nmeGamepadAxisMove(user, inEvent.code+1, inEvent.sy);
-            }
-            else if(inType == JoystickEvent.BUTTON_DOWN)
-            {
-               GameInput.nmeGamepadButton(user, inEvent.code, 1);
-            }
-            else if(inType == JoystickEvent.BUTTON_UP)
-            {
-               GameInput.nmeGamepadButton(user, inEvent.code, 0);
-            }
+            GameInput.nmeGamepadButton(user, inEvent.code, 1);
          }
-         
-         if(inType == JoystickEvent.HAT_MOVE)
+         else if(inType == JoystickEvent.BUTTON_UP)
+         {
+            GameInput.nmeGamepadButton(user, inEvent.code, 0);
+         }
+         else if(inType == JoystickEvent.HAT_MOVE)
          {
             GameInput.nmeGamepadButton(user, GamepadButton.DPAD_UP, inEvent.sy>0.0?1:0);
             GameInput.nmeGamepadButton(user, GamepadButton.DPAD_DOWN, inEvent.sy<0.0?1:0);
