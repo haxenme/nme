@@ -662,8 +662,10 @@ DEFINE_PRIM(nme_##obj_prefix##_set_##prop,2)
 to_type nme_##obj_prefix##_get_##prop(value inObj) \
 { \
    Obj *obj; \
+   if (AbstractToObject(inObj,obj)) \
    AbstractToObject(inObj,obj); \
-   return obj->get##Prop(); \
+      return obj->get##Prop(); \
+   return (to_type)0; \
 } \
 \
 DEFINE_PRIME1(nme_##obj_prefix##_get_##prop)
