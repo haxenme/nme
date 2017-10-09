@@ -658,7 +658,32 @@ value nme_##obj_prefix##_set_##prop(value inObj,value inVal) \
 \
 DEFINE_PRIM(nme_##obj_prefix##_set_##prop,2)
 
+#define DO_PROP_READ_PRIME(Obj,obj_prefix,prop,Prop,to_type) \
+to_type nme_##obj_prefix##_get_##prop(value inObj) \
+{ \
+   Obj *obj; \
+   if (AbstractToObject(inObj,obj)) \
+   AbstractToObject(inObj,obj); \
+      return obj->get##Prop(); \
+   return (to_type)0; \
+} \
+\
+DEFINE_PRIME1(nme_##obj_prefix##_get_##prop)
 
+#define DO_PROP_PRIME(Obj,obj_prefix,prop,Prop,to_type,from_type) \
+DO_PROP_READ_PRIME(Obj,obj_prefix,prop,Prop,to_type) \
+void nme_##obj_prefix##_set_##prop(value inObj,from_type inVal) \
+{ \
+   Obj *obj; \
+   if (AbstractToObject(inObj,obj)) \
+      obj->set##Prop(inVal); \
+} \
+\
+DEFINE_PRIME2v(nme_##obj_prefix##_set_##prop)
+
+#define DO_DISPLAY_PROP_PRIME(prop,Prop,to_val,from_val) \
+   DO_PROP_PRIME(DisplayObject,display_object,prop,Prop,to_val,from_val) 
+   
 #define DO_DISPLAY_PROP(prop,Prop,to_val,from_val) \
    DO_PROP(DisplayObject,display_object,prop,Prop,to_val,from_val) 
 
@@ -673,7 +698,6 @@ double nme_time_stamp()
 {
    return GetTimeStamp();
 }
-
 DEFINE_PRIME0(nme_time_stamp)
 
 
@@ -1968,7 +1992,7 @@ value nme_create_display_object()
    return ObjectToAbstract( new DisplayObject() );
 }
 
-DEFINE_PRIM(nme_create_display_object,0);
+DEFINE_PRIME0(nme_create_display_object);
 
 value nme_display_object_get_graphics(value inObj)
 {
@@ -1979,7 +2003,7 @@ value nme_display_object_get_graphics(value inObj)
    return alloc_null();
 }
 
-DEFINE_PRIM(nme_display_object_get_graphics,1);
+DEFINE_PRIME1(nme_display_object_get_graphics);
 
 void nme_display_object_draw_to_surface(value aObject, value aSurface, value aMatrix,
                                         value aColourTransform, int aBlendMode, value aClipRect )
@@ -2067,22 +2091,21 @@ void nme_display_object_draw_to_surface(value aObject, value aSurface, value aMa
       obj->setAlpha(objAlpha);
    }
 }
-
 DEFINE_PRIME6v(nme_display_object_draw_to_surface)
 
 
-value nme_display_object_get_id(value inObj)
+int nme_display_object_get_id(value inObj)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
-      return alloc_int( obj->id );
+      return obj->id;
 
-   return alloc_null();
+   return -1;
 }
 
-DEFINE_PRIM(nme_display_object_get_id,1);
+DEFINE_PRIME1(nme_display_object_get_id);
 
-value nme_display_object_global_to_local(value inObj,value ioPoint)
+void nme_display_object_global_to_local(value inObj,value ioPoint)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2093,11 +2116,8 @@ value nme_display_object_global_to_local(value inObj,value ioPoint)
       alloc_field(ioPoint, _id_x, alloc_float(trans.x) );
       alloc_field(ioPoint, _id_y, alloc_float(trans.y) );
    }
-
-   return alloc_null();
 }
-
-DEFINE_PRIM(nme_display_object_global_to_local,2);
+DEFINE_PRIME2v(nme_display_object_global_to_local);
 
 
 value nme_display_object_encode(value inObj, int inFlags)
@@ -2147,7 +2167,7 @@ value nme_type(value inObj)
 DEFINE_PRIM(nme_type,1);
 
 
-value nme_display_object_local_to_global(value inObj,value ioPoint)
+void nme_display_object_local_to_global(value inObj,value ioPoint)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2158,29 +2178,24 @@ value nme_display_object_local_to_global(value inObj,value ioPoint)
       alloc_field(ioPoint, _id_x, alloc_float(trans.x) );
       alloc_field(ioPoint, _id_y, alloc_float(trans.y) );
    }
-
-   return alloc_null();
 }
-
-DEFINE_PRIM(nme_display_object_local_to_global,2);
-
+DEFINE_PRIME2v(nme_display_object_local_to_global);
 
 
-value nme_display_object_hit_test_point(
-            value inObj,value inX, value inY, value inShape, value inRecurse)
+bool nme_display_object_hit_test_point(
+            value inObj, double inX, double inY, bool inShape, bool inRecurse)
 {
    DisplayObject *obj;
-   UserPoint pos(val_number(inX),val_number(inY));
+   UserPoint pos(inX,inY);
 
    if (AbstractToObject(inObj,obj))
    {
-      if (val_bool(inShape))
+      if (inShape)
       {
          Stage *stage = obj->getStage();
          if (stage)
          {
-            bool recurse = val_bool(inRecurse);
-            return alloc_bool( stage->HitTest( pos, obj, recurse ) );
+            return stage->HitTest( pos, obj, inRecurse );
          }
       }
       else
@@ -2191,16 +2206,15 @@ value nme_display_object_hit_test_point(
 
          Extent2DF ext;
          obj->GetExtent(trans, ext, true, true );
-         return alloc_bool( ext.Contains(pos) );
+         return ext.Contains(pos);
       }
    }
-
-   return alloc_null();
+   return false;
 }
-DEFINE_PRIM(nme_display_object_hit_test_point,5);
+DEFINE_PRIME5(nme_display_object_hit_test_point);
 
 
-value nme_display_object_set_filters(value inObj,value inFilters)
+void nme_display_object_set_filters(value inObj,value inFilters)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2219,13 +2233,10 @@ value nme_display_object_set_filters(value inObj,value inFilters)
       }
       obj->setFilters(filters);
    }
-
-   return alloc_null();
 }
+DEFINE_PRIME2v(nme_display_object_set_filters);
 
-DEFINE_PRIM(nme_display_object_set_filters,2);
-
-value nme_display_object_set_scale9_grid(value inObj,value inRect)
+void nme_display_object_set_scale9_grid(value inObj,value inRect)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2239,11 +2250,10 @@ value nme_display_object_set_scale9_grid(value inObj,value inRect)
          obj->setScale9Grid(rect);
       }
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_scale9_grid,2);
+DEFINE_PRIME2v(nme_display_object_set_scale9_grid);
 
-value nme_display_object_set_scroll_rect(value inObj,value inRect)
+void nme_display_object_set_scroll_rect(value inObj,value inRect)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2257,11 +2267,10 @@ value nme_display_object_set_scroll_rect(value inObj,value inRect)
          obj->setScrollRect(rect);
       }
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_scroll_rect,2);
+DEFINE_PRIME2v(nme_display_object_set_scroll_rect);
 
-value nme_display_object_set_mask(value inObj,value inMask)
+void nme_display_object_set_mask(value inObj,value inMask)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2270,12 +2279,11 @@ value nme_display_object_set_mask(value inObj,value inMask)
       AbstractToObject(inMask,mask);
       obj->setMask(mask);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_mask,2);
+DEFINE_PRIME2v(nme_display_object_set_mask);
 
 
-value nme_display_object_set_matrix(value inObj,value inMatrix)
+void nme_display_object_set_matrix(value inObj,value inMatrix)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2285,24 +2293,21 @@ value nme_display_object_set_matrix(value inObj,value inMatrix)
 
        obj->setMatrix(m);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_matrix,2);
+DEFINE_PRIME2v(nme_display_object_set_matrix);
 
-value nme_display_object_get_matrix(value inObj,value outMatrix, value inFull)
+void nme_display_object_get_matrix(value inObj,value outMatrix, bool inFull)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
    {
-      Matrix m = val_bool(inFull) ? obj->GetFullMatrix(false) : obj->GetLocalMatrix();
+      Matrix m = inFull ? obj->GetFullMatrix(false) : obj->GetLocalMatrix();
       ToValue(outMatrix,m);
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_get_matrix,3);
+DEFINE_PRIME3v(nme_display_object_get_matrix);
 
-value nme_display_object_set_color_transform(value inObj,value inTrans)
+void nme_display_object_set_color_transform(value inObj,value inTrans)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2312,31 +2317,28 @@ value nme_display_object_set_color_transform(value inObj,value inTrans)
 
        obj->setColorTransform(trans);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_color_transform,2);
+DEFINE_PRIME2v(nme_display_object_set_color_transform);
 
-value nme_display_object_get_color_transform(value inObj,value outTrans, value inFull)
+void nme_display_object_get_color_transform(value inObj,value outTrans, bool inFull)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
    {
-      ColorTransform t = val_bool(inFull) ? obj->GetFullColorTransform() :
-                                            obj->GetLocalColorTransform();
+      ColorTransform t = inFull ? obj->GetFullColorTransform() :
+                                  obj->GetLocalColorTransform();
       ToValue(outTrans,t);
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_get_color_transform,3);
+DEFINE_PRIME3v(nme_display_object_get_color_transform);
 
-value nme_display_object_get_pixel_bounds(value inObj,value outBounds)
+void nme_display_object_get_pixel_bounds(value inObj,value outBounds)
 {
-   return alloc_null();
-}
-DEFINE_PRIM(nme_display_object_get_pixel_bounds,2);
 
-value nme_display_object_get_bounds(value inObj, value inTarget, value outBounds, value inIncludeStroke)
+}
+DEFINE_PRIME2v(nme_display_object_get_pixel_bounds);
+
+void nme_display_object_get_bounds(value inObj, value inTarget, value outBounds, bool inIncludeStroke)
 {
    DisplayObject *obj;
    DisplayObject *target;
@@ -2352,18 +2354,17 @@ value nme_display_object_get_bounds(value inObj, value inTarget, value outBounds
       trans.mMatrix = &m;
 
       Extent2DF ext;
-      obj->GetExtent(trans, ext, false, val_bool(inIncludeStroke) );
+      obj->GetExtent(trans, ext, false, inIncludeStroke);
       
       Rect rect;
       if (ext.GetRect(rect))
          ToValue(outBounds,rect);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_get_bounds,4);
+DEFINE_PRIME4v(nme_display_object_get_bounds);
 
 
-value nme_display_object_request_soft_keyboard(value inObj)
+bool nme_display_object_request_soft_keyboard(value inObj)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2373,16 +2374,15 @@ value nme_display_object_request_soft_keyboard(value inObj)
       {
          // TODO: return whether it pops up
          stage->PopupKeyboard(pkmDumb);
-         return alloc_bool(true);
+         return true;
       }
    }
-
-   return alloc_bool(false);
+   return false;
 }
-DEFINE_PRIM(nme_display_object_request_soft_keyboard,1);
+DEFINE_PRIME1v(nme_display_object_request_soft_keyboard);
 
 
-value nme_display_object_dismiss_soft_keyboard(value inObj)
+bool nme_display_object_dismiss_soft_keyboard(value inObj)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2392,40 +2392,57 @@ value nme_display_object_dismiss_soft_keyboard(value inObj)
       {
          // TODO: return whether it pops up
          stage->PopupKeyboard(pkmOff);
-         return alloc_bool(true);
+         return true;
       }
    }
-
-   return alloc_bool(false);
+   return false;
 }
-DEFINE_PRIM(nme_display_object_dismiss_soft_keyboard,1);
+DEFINE_PRIME1(nme_display_object_dismiss_soft_keyboard);
 
 
-DO_DISPLAY_PROP(x,X,alloc_float,val_number)
-DO_DISPLAY_PROP(y,Y,alloc_float,val_number)
+DO_DISPLAY_PROP_PRIME(x,X,double,double)
+DO_DISPLAY_PROP_PRIME(y,Y,double,double)
 #ifdef NME_S3D
-DO_DISPLAY_PROP(z,Z,alloc_float,val_number)
+DO_DISPLAY_PROP_PRIME(z,Z,double,double)
 #endif
-DO_DISPLAY_PROP(scale_x,ScaleX,alloc_float,val_number)
-DO_DISPLAY_PROP(scale_y,ScaleY,alloc_float,val_number)
-DO_DISPLAY_PROP(rotation,Rotation,alloc_float,val_number)
-DO_DISPLAY_PROP(width,Width,alloc_float,val_number)
-DO_DISPLAY_PROP(height,Height,alloc_float,val_number)
-DO_DISPLAY_PROP(alpha,Alpha,alloc_float,val_number)
-DO_DISPLAY_PROP(bg,OpaqueBackground,alloc_int,val_int)
-DO_DISPLAY_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
-DO_DISPLAY_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
-DO_DISPLAY_PROP(pedantic_bitmap_caching,PedanticBitmapCaching,alloc_bool,val_bool)
-DO_DISPLAY_PROP(pixel_snapping,PixelSnapping,alloc_int,val_int)
-DO_DISPLAY_PROP(visible,Visible,alloc_bool,val_bool)
+DO_DISPLAY_PROP_PRIME(scale_x,ScaleX,double,double)
+DO_DISPLAY_PROP_PRIME(scale_y,ScaleY,double,double)
+DO_DISPLAY_PROP_PRIME(rotation,Rotation,double,double)
+DO_DISPLAY_PROP_PRIME(width,Width,double,double)
+DO_DISPLAY_PROP_PRIME(height,Height,double,double)
+DO_DISPLAY_PROP_PRIME(alpha,Alpha,double,double)
+DO_DISPLAY_PROP_PRIME(bg,OpaqueBackground,int,int)
+DO_DISPLAY_PROP_PRIME(mouse_enabled,MouseEnabled,bool,bool)
+DO_DISPLAY_PROP_PRIME(cache_as_bitmap,CacheAsBitmap,bool,bool)
+DO_DISPLAY_PROP_PRIME(pedantic_bitmap_caching,PedanticBitmapCaching,bool,bool)
+DO_DISPLAY_PROP_PRIME(pixel_snapping,PixelSnapping,int,int)
+DO_DISPLAY_PROP_PRIME(visible,Visible,bool,bool)
+#if 1
 DO_DISPLAY_PROP(name,Name,alloc_wstring,valToStdWString)
-DO_DISPLAY_PROP(blend_mode,BlendMode,alloc_int,val_int)
-DO_DISPLAY_PROP(needs_soft_keyboard,NeedsSoftKeyboard,alloc_bool,val_bool)
-DO_DISPLAY_PROP(soft_keyboard,SoftKeyboard,alloc_int,val_int)
-DO_DISPLAY_PROP(moves_for_soft_keyboard,MovesForSoftKeyboard,alloc_bool,val_bool)
-DO_DISPLAY_PROP(hit_enabled,HitEnabled,alloc_bool,val_bool)
-DO_PROP_READ(DisplayObject,display_object,mouse_x,MouseX,alloc_float)
-DO_PROP_READ(DisplayObject,display_object,mouse_y,MouseY,alloc_float)
+#else
+HxString nme_display_object_get_name(value inObj)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+      return HxString(obj->getName());
+   return HxString("");
+}
+DEFINE_PRIME1(nme_display_object_get_name)
+void nme_display_object_set_name(value inObj,HxString inVal)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+      obj->setName(inVal);
+}
+DEFINE_PRIME2v(nme_display_object_set_name)
+#endif
+DO_DISPLAY_PROP_PRIME(blend_mode,BlendMode,int,int)
+DO_DISPLAY_PROP_PRIME(needs_soft_keyboard,NeedsSoftKeyboard,bool,bool)
+DO_DISPLAY_PROP_PRIME(soft_keyboard,SoftKeyboard,int,int)
+DO_DISPLAY_PROP_PRIME(moves_for_soft_keyboard,MovesForSoftKeyboard,bool,bool)
+DO_DISPLAY_PROP_PRIME(hit_enabled,HitEnabled,bool,bool)
+DO_PROP_READ_PRIME(DisplayObject,display_object,mouse_x,MouseX,double)
+DO_PROP_READ_PRIME(DisplayObject,display_object,mouse_y,MouseY,double)
 
 // --- DirectRenderer -----------------------------------------------------
 
@@ -2517,7 +2534,7 @@ value nme_create_display_object_container()
 
 DEFINE_PRIM(nme_create_display_object_container,0);
 
-value nme_doc_add_child(value inParent, value inChild)
+void nme_doc_add_child(value inParent, value inChild)
 {
    DisplayObjectContainer *parent;
    DisplayObject *child;
@@ -2526,9 +2543,8 @@ value nme_doc_add_child(value inParent, value inChild)
       CHECK_ACCESS("nme_doc_add_child");
       parent->addChild(child);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_doc_add_child,2);
+DEFINE_PRIME2v(nme_doc_add_child);
 
 
 value nme_doc_swap_children(value inParent, value inChild0, value inChild1)
