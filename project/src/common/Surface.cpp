@@ -54,8 +54,6 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
    mTexture = 0;
    mPixelFormat = inPixelFormat;
 
-   mRefCount = 10000000;
- 
    int pix_size = BytesPerPixel(inPixelFormat);
 
    if (inByteAlign>1)
