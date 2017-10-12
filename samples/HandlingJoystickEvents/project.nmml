@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="Handling Joystick Events" package="io.nme.samples.handlingjoystickevents" version="1.0.0" company="NME" />
+	<app main="Main" path="Export" file="HandlingJoystickEvents" />
+	
+	<source path="Source" />
+	
+	<haxelib name="nme" />
+	<haxelib name="actuate" />
+
+	<haxedef name="NME_JOYSTICK_API" unless="NME_NO_JOYSTICK_API"/>
+<!--<haxedef name="NME_GAMEINPUT_API" unless="NME_NO_GAMEINPUT_API"/>-->
+	
+	<assets path="Assets" rename="assets" exclude="nme.svg" />
+	<icon path="Assets/nme.svg" />
+	
+</project>

@@ -6,13 +6,13 @@ import nme.events.GameInputEvent;
 
 @:access(nme.ui.GameInputControl)
 @:access(nme.ui.GameInputDevice)
+@:allow(nme.display.Stage)
 class GameInput extends EventDispatcher
 {
    public static var isSupported(default, null) = true;
    public static var numDevices(default, null) = 0;
 
    static var nmeDevices = new Array<GameInputDevice>();
-   static var nmeDeviceMap = new Map< {}, GameInputDevice>();
    static var nmeInstances = [];
 
 
@@ -21,14 +21,21 @@ class GameInput extends EventDispatcher
       super();
       nmeInstances.push(this);
 
-      if (nmeInstances.length==1)
-      {
+      //Called from Stage
+      //if (nmeInstances.length==1)
+      //{
          // TODO : Register callbacks
          //  nmeGamepadConnect
          //  nmeGamepadDisconnect
          //  nmeGamepadButton
          //  nmeGamepadAxisMove
-      }
+      //}
+   }
+
+
+   static function hasInstances()
+   {
+      return nmeInstances.length>0;
    }
 
 
@@ -39,7 +46,8 @@ class GameInput extends EventDispatcher
       {
          for (device in nmeDevices)
          {
-            dispatchEvent(new GameInputEvent (GameInputEvent.DEVICE_ADDED, device));
+            if(device!=null)
+               dispatchEvent(new GameInputEvent (GameInputEvent.DEVICE_ADDED, device));
          }
       }
    }
@@ -54,39 +62,41 @@ class GameInput extends EventDispatcher
       return null;
    }
 
-   static function getGamepadGuid(gamepad:Dynamic) : String
+   static function getGamepadGuid(index:Int) : String
    {
       // TODO
-      return "guid";
+      return "guid"+index;
    }
 
 
-   static function getGamepadName(gamepad:Dynamic) : String
+   static function getGamepadName(index:Int) : String
    {
       // TODO
-      return "name";
+      return "name"+index;
    }
 
-   private static function __getDevice(gamepad:Dynamic):GameInputDevice
+   private static function __getDevice(index:Int):GameInputDevice
    {
-      if (gamepad == null) return null;
-      if (!nmeDeviceMap.exists(gamepad))
+      if (index < 0 || index > 16) return null;
+      if (nmeDevices[index]==null)
       {
-         var device = new GameInputDevice(getGamepadGuid(gamepad), getGamepadName(gamepad));
-         nmeDevices.push (device);
-         nmeDeviceMap.set(gamepad, device);
-         numDevices = nmeDevices.length;
+         nmeDevices[index] = new GameInputDevice(getGamepadGuid(index), getGamepadName(index));
+         numDevices = 0;
+         for (nmeDevice in nmeDevices)
+         {
+            if(nmeDevice!=null)
+               numDevices++;
+         }
       }
 
-      return nmeDeviceMap.get(gamepad);
+      return nmeDevices[index];
 
    }
 
 
-
-   static function nmeGamepadConnect(gamepad:Dynamic):Void
+   static function nmeGamepadConnect(index:Int):Void
    {
-      var device = __getDevice(gamepad);
+      var device = __getDevice(index);
       if (device == null) return;
 
       for (instance in nmeInstances)
@@ -96,18 +106,18 @@ class GameInput extends EventDispatcher
    }
 
 
-   static function nmeGamepadDisconnect(gamepad:Dynamic):Void
+   static function nmeGamepadDisconnect(index:Int):Void
    {
-      var device = nmeDeviceMap.get(gamepad);
+      var device = nmeDevices[index];
       if (device != null)
       {
-         if (nmeDeviceMap.exists(gamepad))
+         nmeDevices[index] = null;
+         numDevices = 0;
+         for (nmeDevice in nmeDevices)
          {
-            nmeDevices.remove(nmeDeviceMap.get (gamepad));
-            nmeDeviceMap.remove(gamepad);
+            if(nmeDevice!=null)
+               numDevices++;
          }
-
-         numDevices = nmeDevices.length;
 
          for (instance in nmeInstances)
          {
@@ -119,9 +129,9 @@ class GameInput extends EventDispatcher
 
 
 
-   static function nmeGamepadAxisMove(gamepad:Dynamic, axis:Int, value:Float):Void
+   static function nmeGamepadAxisMove(index:Int, axis:Int, value:Float):Void
    {
-      var device = __getDevice(gamepad);
+      var device = __getDevice(index);
       if (device == null) return;
       if (device.enabled)
       {
@@ -139,9 +149,9 @@ class GameInput extends EventDispatcher
    }
 
 
-   static function nmeGamepadButton(gamepad:Dynamic, button:Int, down:Int):Void
+   static public function nmeGamepadButton(index:Int, button:Int, down:Int):Void
    {
-      var device = __getDevice (gamepad);
+      var device = __getDevice(index);
       if (device == null) return;
 
       if (device.enabled)
