@@ -962,7 +962,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private function set_frameRate(inRate:Float):Float 
    {
       if (nmeFrameTimer!=null)
+      {
         nmeFrameTimer.fps = inRate;
+      }
       return inRate;
    }
    private function get_frameRate():Float return nmeFrameTimer==null ? 0 : nmeFrameTimer.fps;
