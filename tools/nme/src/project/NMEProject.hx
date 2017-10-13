@@ -453,7 +453,14 @@ class NMEProject
             if (architectures.length==0)
             {
                if (isNeko())
-                  architectures = [ PlatformHelper.hostArchitecture ];
+               {
+                  if (target==Platform.LINUX && hasDef("HXCPP_LINUX_ARMV7"))
+                     architectures = [ Architecture.ARMV7 ];
+                  else if (target==Platform.LINUX && hasDef("HXCPP_LINUX_ARM64"))
+                     architectures = [ Architecture.ARM64 ];
+                  else
+                     architectures = [ PlatformHelper.hostArchitecture ];
+               }
                else
                   architectures = [ Architecture.X64 ];
             }
