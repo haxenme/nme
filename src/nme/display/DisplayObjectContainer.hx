@@ -5,7 +5,7 @@ import nme.errors.ArgumentError;
 import nme.events.Event;
 import nme.geom.Point;
 import nme.errors.RangeError;
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 class DisplayObjectContainer extends InteractiveObject 
@@ -333,13 +333,13 @@ class DisplayObjectContainer extends InteractiveObject
    private function set_tabChildren(inValue:Bool) { return false; }
 
    // Native Methods
-   private static var nme_create_display_object_container = Loader.load("nme_create_display_object_container", 0);
-   private static var nme_doc_add_child = Loader.load("nme_doc_add_child", 2);
-   private static var nme_doc_remove_child = Loader.load("nme_doc_remove_child", 2);
-   private static var nme_doc_set_child_index = Loader.load("nme_doc_set_child_index", 3);
-   private static var nme_doc_get_mouse_children = Loader.load("nme_doc_get_mouse_children", 1);
-   private static var nme_doc_set_mouse_children = Loader.load("nme_doc_set_mouse_children", 2);
-   private static var nme_doc_swap_children = Loader.load("nme_doc_swap_children", 3);
+   private static var nme_create_display_object_container = PrimeLoader.load("nme_create_display_object_container", "o");
+   private static var nme_doc_add_child = PrimeLoader.load("nme_doc_add_child", "oov");
+   private static var nme_doc_remove_child = PrimeLoader.load("nme_doc_remove_child", "oiv");
+   private static var nme_doc_set_child_index = PrimeLoader.load("nme_doc_set_child_index", "ooiv");
+   private static var nme_doc_get_mouse_children = PrimeLoader.load("nme_doc_get_mouse_children", "ob");
+   private static var nme_doc_set_mouse_children = PrimeLoader.load("nme_doc_set_mouse_children", "obv");
+   private static var nme_doc_swap_children = PrimeLoader.load("nme_doc_swap_children", "ooov");
 }
 
 #else
