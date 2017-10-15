@@ -29,6 +29,7 @@ before_install:
 - haxelib -notimeout install nme-toolkit
 - haxelib -notimeout install format
 - haxelib -notimeout install gm2d
+
 script:
 - cd $TRAVIS_BUILD_DIR/tools/nme
 - haxe compile.hxml
