@@ -1845,6 +1845,33 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    int targetH = dpiScale<1.5 ? inHeight : dpiScale*inHeight;
    if (targetH>sgDesktopHeight)
       targetH = sgDesktopHeight;
+
+   int targetX = SDL_WINDOWPOS_UNDEFINED;
+   int targetY = SDL_WINDOWPOS_UNDEFINED;
+
+   #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
+   if (!borderless && !fullscreen)
+   {
+      DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPED |
+                    WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+      if (resizable)
+         style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
+       RECT r; r.left = 0; r.top = 0; r.left = 1; r.right = 1;
+       AdjustWindowRectEx(&r, style, FALSE, 0);
+       int borderW = r.right-r.left;
+       int borderH = r.bottom-r.top;
+       if (targetH + borderH > sgDesktopHeight)
+       {
+          targetY = -r.top;
+          targetH = sgDesktopHeight - borderH;
+       }
+       if (targetW + borderW > sgDesktopWidth)
+       {
+          targetX = -r.left;
+          targetW = sgDesktopWidth - borderW;
+       }
+   }
+   #endif
    
    #ifdef HX_LINUX
    int setWidth = targetW;
@@ -1866,7 +1893,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          window = NULL;
       }
 
-      window = SDL_CreateWindow(inTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, setWidth, setHeight, requestWindowFlags);
+      window = SDL_CreateWindow(inTitle, targetX, targetY, setWidth, setHeight, requestWindowFlags);
       
       #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
       HINSTANCE handle = ::GetModuleHandle(0);
