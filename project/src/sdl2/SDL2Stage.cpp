@@ -1808,8 +1808,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    #ifdef NME_ANGLE
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2); 
+   int major = 3;
+   #ifdef NME_NO_GLES3COMPAT
+   major = 2;
+   #endif
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
+   DLOG("1 ");
    #endif
 
    if (opengl)
@@ -1927,6 +1932,12 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       if (opengl) renderFlags |= SDL_RENDERER_ACCELERATED;
       if (opengl && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
 
+      #ifdef NME_ANGLE 
+      //needs to be just before SDL_CreateRenderer because SDL_GetWindowFlags resets it
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major); 
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
+      #endif
+
       renderer = SDL_CreateRenderer (window, -1, renderFlags);
       
       if (opengl)
@@ -1938,6 +1949,16 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          sgIsOGL2 = false;
       }
       
+      #ifdef NME_ANGLE 
+      if (!renderer && opengl && major>2) 
+      {
+         fprintf(stderr, "GLES3 is not available. Retrying with GLES2. (%s)\n", SDL_GetError());
+         major = 2;
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major); 
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
+      }
+      else
+      #endif
       if (!renderer && (inFlags & wfHW_AA_HIRES || inFlags & wfHW_AA)) {
          // if no window was created and AA was enabled, disable AA and try again
          fprintf(stderr, "Multisampling is not available. Retrying without. (%s)\n", SDL_GetError());

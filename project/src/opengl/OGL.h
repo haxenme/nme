@@ -8,6 +8,9 @@
    #define NME_GLES
    #define GL_GLEXT_PROTOTYPES
 
+#ifndef NME_NO_GLES3COMPAT
+   #include <GLES3/gl3.h>
+#endif
    #include <GLES2/gl2.h>
    #include <GLES2/gl2ext.h>
 
@@ -15,6 +18,12 @@
 
    #define NME_GLES
 
+#ifndef NME_NO_GLES3COMPAT
+   #include <GLES3/gl3.h>
+   #if defined(ANDROID)
+      #define __gl2_h_ //For Android Platform < 21
+   #endif
+#endif
    #include <GLES2/gl2.h>
    #include <GLES2/gl2ext.h>
 
@@ -22,11 +31,18 @@
    
    #define NME_GLES	
    
+#ifndef NME_NO_GLES3COMPAT
+   #include <gl3.h>
+#endif
    #include <gl2.h>
    #include <gl2ext.h>
 
 #elif defined(IPHONE)
 
+#ifndef NME_NO_GLES3COMPAT
+   #include <OpenGLES/ES3/gl.h>
+   #include <OpenGLES/ES3/glext.h>
+#endif
    #include <OpenGLES/ES1/gl.h>
    #include <OpenGLES/ES1/glext.h>
    #include <OpenGLES/ES2/gl.h>

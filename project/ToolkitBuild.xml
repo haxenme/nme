@@ -4,9 +4,12 @@
    <set name="mac" value="1" if="macos" />
    <set name="native_toolkit_sdl_static" value="1" if="static_link" />
 
+   <set name="NME_NO_GLES3COMPAT" value="1" unless="windows||android||NME_GLES3COMPAT" />
+ 
    <!-- Require Android 2.3+ -->
    <set name="PLATFORM" value="android-9" if="android" />
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
+   <set name="PLATFORM" value="android-18"  unless="NME_NO_GLES3COMPAT"/>
    <set name="PLATFORM" value="android-21" if="HXCPP_ARM64" />
    <set name="HXCPP_CPP11" value="1" />
 
@@ -199,6 +202,7 @@
       <compilerflag value="-I${NME_INC_DIR}"/>
       <compilerflag value="-I${INC_DIR}"/>
 
+      <compilerflag value="-DNME_NO_GLES3COMPAT" if="NME_NO_GLES3COMPAT" />
       <compilerflag value="-DNME_MODPLUG" if="modplug" />
       <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
       <compilerflag value="-DNME_INTERNAL_CLIPPING" if="NME_INTERNAL_CLIPPING" />
@@ -497,7 +501,8 @@
          <section if="android">
             <lib name="-ldl" />
             <lib name="-landroid" />
-            <lib name="-lGLESv2" />
+            <lib name="-lGLESv2" if="NME_NO_GLES3COMPAT"/>
+            <lib name="-lGLESv3" unless="NME_NO_GLES3COMPAT"/>
             <lib name="-lEGL" />
             <lib name="-lz" />
          </section>
