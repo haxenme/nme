@@ -59,7 +59,9 @@ import android.util.SparseArray;
 import org.haxe.extension.Extension;
 import android.os.Build;
 import android.text.TextWatcher;
-
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
@@ -246,8 +248,74 @@ implements SensorEventListener
    }
    ::end::
 
+    ::if ANDROID_BILLING::
+    BillingManager mBillingManager;
 
-  
+    public static void billingInit(String inPublicKey, HaxeObject inUpdatesListener)
+    {
+       activity.mBillingManager = new BillingManager(activity, inPublicKey, inUpdatesListener);
+    }
+    public static void billingClose()
+    {
+       activity.mBillingManager.destroy();
+    }
+    public static void billingPurchase(String skuId, String billingType)
+    {
+       activity.mBillingManager.initiatePurchaseFlow(skuId, billingType);
+    }
+    public static void billingQuery(String itemType, String[] skuArray, final HaxeObject onResult)
+    {
+       activity.mBillingManager.querySkuDetailsAsync(itemType, java.util.Arrays.asList(skuArray),
+          new com.android.billingclient.api.SkuDetailsResponseListener() {
+             String result = "";
+             @Override
+             public void onSkuDetailsResponse(int responseCode, List<com.android.billingclient.api.SkuDetails> skuDetailsList) {
+                try {
+                   JSONArray array= new JSONArray();
+                   for(com.android.billingclient.api.SkuDetails sku : skuDetailsList)
+                   {
+                      JSONObject obj= new JSONObject();
+                      obj.put("description", sku.getDescription() );
+                      obj.put("freeTrialPeriod", sku.getFreeTrialPeriod() );
+                      obj.put("introductoryPrice", sku.getIntroductoryPrice() );
+                      obj.put("introductoryPriceAmountMicros", sku.getIntroductoryPriceAmountMicros() );
+                      obj.put("introductoryPriceCycles", sku.getIntroductoryPriceCycles() );
+                      obj.put("introductoryPricePeriod", sku.getIntroductoryPricePeriod() );
+                      obj.put("price", sku.getPrice() );
+                      obj.put("priceAmountMicros", sku.getPriceAmountMicros() );
+                      obj.put("priceCurrencyCode", sku.getPriceCurrencyCode() );
+                      obj.put("sku", sku.getSku() );
+                      obj.put("subscriptionPeriod", sku.getSubscriptionPeriod() );
+                      obj.put("title", sku.getTitle() );
+                      obj.put("type", sku.getType() );
+                      array.put(obj);
+                   }
+                   result = array.toString();
+
+                } catch (JSONException e) {
+                   e.printStackTrace();
+                   responseCode = -1;
+                }
+
+                final int code = responseCode;
+                final String skus = result;
+                GameActivity.queueRunnable( new Runnable() {
+                  @Override public void run() {
+                      onResult.call2("onSkuDetails", code, skus);
+                  } } );
+             } } );
+    }
+
+    public static void billingConsume(String purchaseToken)
+    {
+       activity.mBillingManager.consumeAsync(purchaseToken);
+    }
+    public static int billingClientClode()
+    {
+       return activity.mBillingManager.getBillingClientResponseCode();
+    }
+    ::end::
+
 
    public void createStageVideoSync(HaxeObject inHandler)
    {

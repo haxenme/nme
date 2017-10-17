@@ -18,6 +18,14 @@ class AndroidPlatform extends Platform
    {
       super(inProject);
 
+     if (project.hasDef("androidBilling"))
+     {
+        CommandLineTools.gradle = true;
+        project.haxedefs.set("gradle", "1");
+        project.haxedefs.set("androidBilling", "1");
+     }
+
+
       buildV5 = buildV7 = buildX86 = false;
 
       gradle = CommandLineTools.gradle;
@@ -153,6 +161,8 @@ class AndroidPlatform extends Platform
       context.appIntent = project.androidConfig.appIntent;
       context.appPermission = project.androidConfig.appPermission;
       context.appFeature = project.androidConfig.appFeature;
+      if (project.hasDef("androidBilling"))
+         context.ANDROID_BILLING=1;
 
 
       // Will not install on devices less than this ....
