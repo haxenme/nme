@@ -75,7 +75,7 @@ class Utils
    {
       if(!_glVersionInit)
       {
-         version = StringTools.ltrim(GL.getParameter(GL.VERSION));
+         var version = StringTools.ltrim(GL.getParameter(GL.VERSION));
          if(version.indexOf("OpenGL ES") >= 0)
          { 
             _isGLES = true;
