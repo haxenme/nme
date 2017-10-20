@@ -8,6 +8,9 @@
    #define NME_GLES
    #define GL_GLEXT_PROTOTYPES
 
+   #ifndef NME_NO_GLES3COMPAT
+   #include <GLES3/gl3.h>
+   #endif
    #include <GLES2/gl2.h>
    #include <GLES2/gl2ext.h>
 
@@ -15,6 +18,10 @@
 
    #define NME_GLES
 
+   #ifndef NME_NO_GLES3COMPAT
+   #include <GLES3/gl3.h>
+   #define __gl2_h_ //Not needed for Android Platform >= 21
+   #endif
    #include <GLES2/gl2.h>
    #include <GLES2/gl2ext.h>
 
@@ -24,6 +31,9 @@
    
    #include <gl2.h>
    #include <gl2ext.h>
+   #ifndef NME_NO_GLES3COMPAT
+   #include <gl3.h>
+   #endif
 
 #elif defined(IPHONE)
 
@@ -31,6 +41,10 @@
    #include <OpenGLES/ES1/glext.h>
    #include <OpenGLES/ES2/gl.h>
    #include <OpenGLES/ES2/glext.h>
+   #ifndef NME_NO_GLES3COMPAT
+   #include <OpenGLES/ES3/gl.h>
+   #include <OpenGLES/ES3/glext.h>
+   #endif
 
    //typedef CAEAGLLayer *WinDC;
    //typedef EAGLContext *GLCtx;
