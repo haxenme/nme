@@ -1856,10 +1856,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
                     WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
       if (resizable)
          style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
-       RECT r; r.left = 0; r.top = 0; r.left = 1; r.right = 1;
+
+       RECT r;
+       r.left =  r.top = 0;
+       r.right = r.bottom = 100;
        AdjustWindowRectEx(&r, style, FALSE, 0);
-       int borderW = r.right-r.left;
-       int borderH = r.bottom-r.top;
+       int borderW = r.right-r.left - 100;
+       int borderH = r.bottom-r.top - 100;
        if (targetH + borderH > sgDesktopHeight)
        {
           targetY = -r.top;
