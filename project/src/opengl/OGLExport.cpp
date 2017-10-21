@@ -803,8 +803,8 @@ GL_GEN_RESO(render_buffer,glGenRenderbuffers,resoRenderbuffer)
 #ifdef NME_NO_GLES3COMPAT
 value nme_gl_create_vertexarray(value inType)
 {
-   DBGFUNC("createShader");
-   return val_int(-1);
+   ELOG("Error: NME_NO_GLES3COMPAT is set");
+   return alloc_int(-1);
 }
 DEFINE_PRIM(nme_gl_create_vertexarray,0);
 #else
