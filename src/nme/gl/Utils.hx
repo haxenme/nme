@@ -10,7 +10,20 @@ class Utils
       GL.compileShader(shader);
       if (GL.getShaderParameter(shader, GL.COMPILE_STATUS)==0)
       {
-         trace("--- ERR ---\n" + source);
+         var lines = source.split("\n");
+         var buf = new StringBuf();
+         buf.add("--- ERR ---\n");
+         var nline = 1;
+         for(line in lines)
+         {
+            if(nline<10)
+              buf.add("0");            
+            buf.add((nline++));
+            buf.add(": ");
+            buf.add(line);
+            buf.add("\n");
+         }
+         trace(buf.toString());
          var err = GL.getShaderInfoLog(shader);
          if (err!="")
             throw err;
