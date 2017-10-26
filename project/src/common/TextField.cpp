@@ -1787,12 +1787,13 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                      {
                         while(line<last_line && mLines[line+1].mChar0 >= cid)
                            line++;
-                        double lineY = pos.y + mLines[line].mMetrics.ascent;
-                        if (lineY>fieldHeight)
+                        if (pos.y>fieldHeight)
                            break;
+                        double lineY = pos.y + mLines[line].mMetrics.ascent;
                         if (pos.y>=GAP)
                         {
                            pos.y = lineY;
+
 
                            int a;
                            Tile tile = group.mFont->GetGlyph( ch, a);
@@ -1812,35 +1813,24 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                            if (right>GAP)
                            {
                               float *tint = cid>=mSelectMin && cid<mSelectMax ? white : groupColour;
+                              Rect r = tile.mRect;
+
                               if (pos.x < GAP)
                               {
-                                 Rect r = tile.mRect;
                                  int dx = (GAP-pos.x)*fontScale + 0.001;
                                  r.x += dx;
                                  r.w -= dx;
-
-                                 if (right>clipRight)
-                                 {
-                                    r.w = (clipRight-GAP)*fontScale + 0.001;
-                                    if (r.w>0)
-                                       mTiles->tile(GAP,p.y,r,trans_2x2,tint);
-                                 }
-                                 else
-                                 {
-                                    mTiles->tile(GAP,p.y,r,trans_2x2,tint);
-                                 }
-
                               }
-                              else if (right>clipRight)
-                              {
-                                 Rect r = tile.mRect;
+
+                              if (right>clipRight)
                                  r.w = (clipRight-p.x)*fontScale + 0.001;
-                                 if (r.w>0)
-                                    mTiles->tile(p.x,p.y,r,trans_2x2,tint);
-                              }
-                              else
+
+                              if (r.w>0)
                               {
-                                 mTiles->tile(p.x,p.y,tile.mRect,trans_2x2,tint);
+                                 if (lineY > fieldHeight)
+                                    r.h -= (lineY-fieldHeight)*fontScale + 0.001;
+
+                                 mTiles->tile(p.x,p.y,r,trans_2x2,tint);
                               }
                            }
                         }
