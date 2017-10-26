@@ -32,7 +32,7 @@ class System
       #elseif cpp
          return cpp.vm.Gc.run(true);
       #elseif js
-         return untyped __js_run_gc();
+         //return untyped __js_run_gc();
       #else
          #error "System not supported on this target"
       #end
@@ -80,6 +80,12 @@ class System
       #else
       return Sys.systemName().toLowerCase();
       #end
+   }
+
+   public static function setClipboard(string:String):Void
+   {
+      var cb = new nme.desktop.Clipboard();
+      cb.setData( nme.desktop.ClipboardFormats.TEXT_FORMAT, string);
    }
 
    private static function get_exeName():String

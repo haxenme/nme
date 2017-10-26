@@ -129,6 +129,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private var nmeFrameTimer:FrameTimer;
    private var nmeEnterFrameEvent:Event;
    private var nmeRenderEvent:Event;
+   var nmePrenderListeners:Array<Void->Void>;
 
    #if cpp
    var nmePreemptiveGcFreq:Int;
@@ -299,6 +300,21 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
       return true;
    }
+
+   public function addPrerenderListener(listener:Void->Void)
+   {
+      if (nmePrenderListeners==null)
+         nmePrenderListeners = [listener];
+      else
+         nmePrenderListeners.push(listener);
+   }
+
+   public function removePrerenderListener(listener:Void->Void)
+   {
+      if (nmePrenderListeners!=null && nmePrenderListeners.remove(listener) && nmePrenderListeners.length==0)
+         nmePrenderListeners = null;
+   }
+
 
    // --- IAppEventHandler ----
    
@@ -521,6 +537,10 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          invalid = false;
          nmeBroadcast(nmeRenderEvent);
       }
+
+      if (nmePrenderListeners!=null)
+         for(listener in nmePrenderListeners)
+            listener();
 
       #if cpp
       var rendered = false;
