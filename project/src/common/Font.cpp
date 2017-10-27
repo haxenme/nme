@@ -517,6 +517,9 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
    if (!face)
    {
       //printf("Missing face : %s\n", fontName.c_str() );
+      TextFormat defaultFormat = inFormat;
+      defaultFormat.font = UTF8ToWide("_sans");
+      return Create(defaultFormat, inScale, inNative, inInitRef);
        return 0;
    }
 
