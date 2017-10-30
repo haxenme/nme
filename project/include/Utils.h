@@ -183,9 +183,29 @@ bool HasClipboardText();
 const char* GetClipboardText();
 std::string CapabilitiesGetLanguage();
 
-std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes );
-std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes );
-std::string FileDialogFolder( const std::string &title, const std::string &text );
+
+struct FileDialogSpec
+{
+   FileDialogSpec() : flags(0), isFinished(false), callback(0) { }
+   ~FileDialogSpec();
+   void complete();
+
+   std::string  title;
+   std::string  text;
+   std::string  fileTypes;
+   std::string  defaultPath;
+   AutoGCRoot   *callback;
+   unsigned int flags;
+
+   std::string  result;
+   bool isFinished;
+};
+extern FileDialogSpec *gCurrentFileDialog;
+
+
+bool FileDialogOpen( FileDialogSpec *inSpec );
+bool FileDialogSave( FileDialogSpec *inSpec );
+bool FileDialogFolder( FileDialogSpec *inSpec );
 
 bool LaunchBrowser(const char *inUtf8URL);
 

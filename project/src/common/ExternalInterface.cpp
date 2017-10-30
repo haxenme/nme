@@ -5208,6 +5208,28 @@ value nme_lzma_decode(value input_value)
 DEFINE_PRIM(nme_lzma_decode,1);
 
 
+
+namespace nme
+{
+FileDialogSpec *gCurrentFileDialog = 0;
+
+FileDialogSpec::~FileDialogSpec()
+{
+   delete callback;
+}
+void FileDialogSpec::complete()
+{
+   gCurrentFileDialog = 0;
+   if (result.empty())
+      val_call1(callback->get(), alloc_null( ) );
+   else
+      val_call1(callback->get(), alloc_string( result.c_str() ) );
+   delete this;
+}
+
+}
+
+/*
 value nme_file_dialog_folder(value in_title, value in_text )
 { 
     std::string _title( valToStdString( in_title ) );
@@ -5218,20 +5240,38 @@ value nme_file_dialog_folder(value in_title, value in_text )
     return alloc_string( path.c_str() );
 }
 DEFINE_PRIM(nme_file_dialog_folder,2);
+*/
 
-value nme_file_dialog_open(value in_title, value in_text, value in_types )
-{ 
-    std::string _title( valToStdString( in_title ) );
-    std::string _text( valToStdString( in_text ) );
 
-    //value *_types = val_array_value( in_types );
+bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultPath, HxString inTypes, value inCallback )
+{
+   if (gCurrentFileDialog)
+      return false;
 
-    std::string path = FileDialogOpen( _title, _text, std::vector<std::string>() );
+   // TODO - mac
+   #if defined(HX_WINDOWS) || !defined(HX_WINRT)
+   gCurrentFileDialog = new FileDialogSpec();
+   gCurrentFileDialog->title = inTitle.c_str();
+   gCurrentFileDialog->text = inText.c_str();
+   gCurrentFileDialog->defaultPath = inDefaultPath.c_str();
+   gCurrentFileDialog->fileTypes = inTypes.c_str();
+   gCurrentFileDialog->callback = new AutoGCRoot(inCallback);
 
-    return alloc_string( path.c_str() );
+   if (!FileDialogOpen( gCurrentFileDialog ))
+   {
+      delete gCurrentFileDialog;
+      gCurrentFileDialog = 0;
+      return false;
+   }
+   else
+      return true;
+   #endif
+
+   return false;
 }
-DEFINE_PRIM(nme_file_dialog_open,3);
+DEFINE_PRIME5(nme_file_dialog_open);
 
+/*
 value nme_file_dialog_save(value in_title, value in_text, value in_types )
 { 
     std::string _title( valToStdString( in_title ) );
@@ -5244,6 +5284,7 @@ value nme_file_dialog_save(value in_title, value in_text, value in_types )
     return alloc_string( path.c_str() );
 }
 DEFINE_PRIM(nme_file_dialog_save,3);
+*/
 
 // Reference this to bring in all the symbols for the static library
 #ifdef STATIC_LINK
