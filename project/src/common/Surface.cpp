@@ -1889,7 +1889,187 @@ SimpleSurface *SimpleSurface::fromStream(ObjectStreamIn &inStream)
    return result;
 }
 
+enum
+{
+   FloatZeroMean   = 0x0001,
+   Float128Mean    = 0x0002,
+   FloatUnitScale  = 0x0004,
+   FloatStdScale   = 0x0008,
+   FloatSwizzeRgb  = 0x0010,
+};
 
+
+void SimpleSurface::getFloats32(float *outData, int inStride, PixelFormat inFormat, int inTransform, int inSubsample)
+{
+   std::vector<unsigned char> buffer;
+   const unsigned char *ptr = mBase;
+   // TODO - inSubsample
+   int stride = mStride;
+   int pixelSize = BytesPerPixel(inFormat);
+   if (inFormat!=mPixelFormat)
+   {
+      stride = mWidth * pixelSize;
+      buffer.resize( stride * mHeight );
+      PixelConvert(mWidth, mHeight,
+          mPixelFormat,  mBase, mStride, GetPlaneOffset(),
+          inFormat, &buffer[0], stride, 0 );
+      ptr = &buffer[0];
+   }
+   bool swizzleRgb = (inTransform & FloatSwizzeRgb );
+
+   int histo[256];
+   int ppr = mWidth * pixelSize;
+   int count = ppr*mHeight;
+   memset(histo, 0, sizeof(histo));
+   for(int y=0;y<mHeight;y++)
+   {
+      const Uint8 *p = ptr + y*stride;
+      for(int x=0;x<ppr;x++)
+         histo[p[x]]++;
+   }
+   int n = 0;
+   int sumX = 0;
+   double sumX2 = 0;
+   for(int i=0;i<256;i++)
+   {
+      n += histo[i];
+      sumX += i*histo[i];
+      sumX2 += i*i*histo[i];
+   }
+   if (!n)
+      return;
+   float lut[256];
+
+   if (!inTransform)
+   {
+      for(int i=0;i<256;i++)
+         lut[i] = i;
+   }
+   else if ( (inTransform & FloatUnitScale) && !(inTransform & FloatZeroMean) )
+   {
+      if (inTransform & Float128Mean)
+         for(int i=0;i<256;i++)
+            lut[i] = (double)(i-128)/255.0;
+      else
+         for(int i=0;i<256;i++)
+            lut[i] = (double)i/255.0;
+   }
+   else
+   {
+      double mean = 0;
+      if (inTransform & Float128Mean)
+      {
+         mean = 128.0;
+      }
+      else if (inTransform & FloatZeroMean)
+      {
+         double sum = 0;
+         for(int i=0;i<256;i++)
+            sum+=histo[i]*i;
+         mean = (double)sum/count;
+      }
+
+      double scale = 1;
+      if (inTransform & FloatUnitScale)
+      {
+         scale = 1.0/255;
+      }
+      else if (inTransform & FloatStdScale)
+      {
+         double sumSig2 = 0;
+         for(int i=0;i<256;i++)
+            sumSig2 += (i-mean)*(i-mean)*histo[i];
+         if (sumSig2>0)
+            scale = sqrt(count/sumSig2);
+
+      }
+
+
+      for(int i=0;i<256;i++)
+         lut[i] = (i-mean)*scale;
+   }
+
+   float *dest = outData;
+   for(int y=0;y<mHeight;y++)
+   {
+      const Uint8 *src = ptr + y*stride;
+      if (inStride)
+         dest = (float *)( (char *)outData + inStride*mHeight );
+
+      if (swizzleRgb && inFormat==pfRGB)
+      {
+        for(int x=0;x<mWidth;x++)
+        {
+           *dest++ = lut[src[2]];
+           *dest++ = lut[src[1]];
+           *dest++ = lut[src[0]];
+           src+=3;
+        }
+      }
+      else
+        for(int x=0;x<ppr;x++)
+           *dest++ = lut[*src++];
+   }
+}
+
+void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat inFormat, int inTransform, int inExpand)
+{
+   std::vector<unsigned char> buffer;
+   Uint8 *ptr = mBase;
+   // TODO - inExpand
+
+   int stride = mStride;
+   int pixelSize = BytesPerPixel(inFormat);
+
+   if (inFormat!=mPixelFormat)
+   {
+      stride = mWidth * pixelSize;
+      buffer.resize( stride * mHeight );
+      ptr = &buffer[0];
+   }
+   int ppr = mWidth * pixelSize;
+
+   const float *src = inData;
+   #define GET_FLOAT( EXPR ) { \
+         for(int y=0;y<mHeight;y++) \
+         { \
+            Uint8 *dest = ptr + y*stride; \
+            if (inStride) \
+               src = (const float *)( (char *)inData + y*inStride ); \
+            for(int x=0;x<ppr;x++) \
+            { \
+               float fval = EXPR ; \
+               *dest++ = fval < 0.0f ? 0 : fval>=255.0f ? 255 : (int)fval; \
+            } \
+         } \
+      }
+
+
+
+
+   if (inTransform & Float128Mean)
+   {
+      if (inTransform & FloatUnitScale)
+         GET_FLOAT( *src++ * 128.0f + 128.0f )
+      else
+         GET_FLOAT( *src++ + 128.0f )
+   }
+   else
+   {
+      if (inTransform & FloatUnitScale)
+         GET_FLOAT( *src++ * 255.0f  )
+      else
+         GET_FLOAT( *src++  )
+   }
+
+
+   if (inFormat!=mPixelFormat)
+   {
+      PixelConvert(mWidth, mHeight,
+          inFormat,  &buffer[0], stride, 0,
+          mPixelFormat, mBase, mStride, 0 );
+   }
+}
 
 
 

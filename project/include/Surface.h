@@ -83,6 +83,9 @@ public:
 
    virtual void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale) { }
 
+   virtual void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample) { }
+   virtual void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand) { }
+
    void OnChanged() { mVersion++; }
 
    int Version() const  { return mVersion; }
@@ -163,6 +166,9 @@ public:
    void scroll(int inDX,int inDY);
    void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter);
    void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale);
+   void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample);
+   void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand);
+
    void createHardwareSurface();
    void destroyHardwareSurface();
    void dispose();

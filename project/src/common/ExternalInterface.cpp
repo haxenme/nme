@@ -148,6 +148,7 @@ static int _id_descent;
 static FRect _tile_rect;
 
 vkind gObjectKind;
+vkind gDataPointer;
 
 NmeApi gNmeApi;
 
@@ -256,6 +257,7 @@ extern "C" void InitIDs()
    _id_descent = val_id("descent");
 
    kind_share(&gObjectKind,"nme::Object");
+   kind_share(&gDataPointer,"data");
    
    _tile_rect = FRect(0, 0, 1, 1);
 
@@ -4373,6 +4375,38 @@ value nme_bitmap_data_noise(value *args, int nArgs)
    return alloc_null();
 }
 DEFINE_PRIM_MULT(nme_bitmap_data_noise);
+
+
+
+void nme_bitmap_data_get_floats32(value inSurface, value inData, int inOffset, int inStride,
+       int inPixelFormat, int inTransform, int inSubsample)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
+      if (data)
+      {
+         surf->getFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inSubsample);
+      }
+   }
+}
+DEFINE_PRIME7v(nme_bitmap_data_get_floats32);
+
+void nme_bitmap_data_set_floats32(value inSurface, value inData, int inOffset, int inStride,
+       int inPixelFormat, int inTransform, int inExpand)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
+      if (data)
+      {
+         surf->setFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inExpand);
+      }
+   }
+}
+DEFINE_PRIME7v(nme_bitmap_data_set_floats32);
 
 
 

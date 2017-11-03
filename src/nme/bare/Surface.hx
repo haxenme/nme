@@ -28,6 +28,18 @@ class Surface
    public static inline var CHANNEL_BLUE  = 0x0004;
    public static inline var CHANNEL_ALPHA = 0x0008;
 
+   public static inline var FLOAT_UNSCALED     = 0x0000;
+   public static inline var FLOAT_ZERO_MEAN    = 0x0001;
+   public static inline var FLOAT_128_MEAN     = 0x0002;
+   public static inline var FLOAT_UNIT_SCALE   = 0x0004;
+   public static inline var FLOAT_STD_SCALE    = 0x0008;
+   public static inline var FLOAT_SWIZZLE_RGB  = 0x0010;
+
+   // zero mean, std scale
+   public static inline var FLOAT_NORM       = 0x0009;
+   // add 128, * 255
+   public static inline var FLOAT_EXPAND     = 0x0006;
+
    public var height(get_height, null):Int;
    public var rect(get_rect, null):Rectangle;
    public var transparent(get_transparent, null):Bool;
@@ -257,6 +269,19 @@ class Surface
       #end
    }
 
+   public function getFloats32(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
+           pixelFormat:Int, transform:Int, subSample:Int = 1)
+   {
+      nme_bitmap_data_get_floats32(nmeHandle,dataHandle, dataOffset, dataStride, pixelFormat, transform, subSample);
+   }
+
+
+   public function setFloats32(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
+           pixelFormat:Int, transform:Int, expand:Int = 1)
+   {
+      nme_bitmap_data_set_floats32(nmeHandle,dataHandle, dataOffset, dataStride, pixelFormat, transform, expand);
+   }
+
    public function setFormat(format:Int,inConvert=true) 
    {
       nme_bitmap_data_set_format(nmeHandle, format, inConvert);
@@ -272,6 +297,7 @@ class Surface
    {
       return nme_bitmap_data_get_format(nmeHandle);
    }
+
 
 
 
@@ -336,5 +362,7 @@ class Surface
    private static var nme_bitmap_data_flood_fill = Loader.load("nme_bitmap_data_flood_fill", 4);
    private static var nme_bitmap_data_get_prem_alpha = Loader.load("nme_bitmap_data_get_prem_alpha", 1);
    private static var nme_bitmap_data_set_prem_alpha = Loader.load("nme_bitmap_data_set_prem_alpha", 2);
+   private static var nme_bitmap_data_get_floats32 = nme.PrimeLoader.load("nme_bitmap_data_get_floats32", "ooiiiiiv");
+   private static var nme_bitmap_data_set_floats32 = nme.PrimeLoader.load("nme_bitmap_data_set_floats32", "ooiiiiiv");
 }
 
