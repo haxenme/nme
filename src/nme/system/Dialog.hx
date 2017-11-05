@@ -25,7 +25,7 @@ class Dialog
                var def = SharedObject.getLocal("fileOpen");
                if (def!=null)
                {
-                  Reflect.setField(def, rememberKey, path);
+                  def.setProperty(rememberKey, path);
                   def.flush();
                }
             }
@@ -41,7 +41,7 @@ class Dialog
    {
       if (rememberKey==null)
          rememberKey = "imageDirectory";
-      var imageFiles = "Image Files|*.jpg;*.png|All Files|*.*";
+      var imageFiles = "Image Files(*.jpg,*.png)|*.jpg;*.png|All Files(*.*)|*.*";
       return fileOpen(title, text, defaultPath, imageFiles, onResult, rememberKey);
    }
 

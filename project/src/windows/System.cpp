@@ -125,7 +125,14 @@ static unsigned __stdcall dialog_proc( void *inSpec )
 
    ofn.hwndOwner = GetApplicationWindow();
    ofn.lStructSize = sizeof(ofn);
-   ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
+   int len = spec->fileTypes.size();
+   std::vector<char> buf(len+2);
+   const char *ptr = spec->fileTypes.c_str();
+   for(int i=0;i<len;i++)
+      buf[i] = ptr[i]=='|' ? '\0' : ptr[i];
+   buf[len] = '\0';
+   ofn.lpstrFilter = &buf[0];
+   //ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
    ofn.lpstrFile = path;
    ofn.lpstrTitle = spec->title.c_str();
    ofn.nMaxFile = MAX_PATH;
