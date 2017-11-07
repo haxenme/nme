@@ -1,4 +1,13 @@
 language: objective-c
+
+env:
+  global:
+  - HXCPP_COMPILE_CACHE=~/hxcache
+
+cache:
+  directories:
+  - $HXCPP_COMPILE_CACHE
+
 before_install:
 - travis_retry brew install neko --HEAD
 - wget -c https://github.com/HaxeFoundation/haxe/releases/download/3.4.2/haxe-3.4.2-osx.tar.gz
@@ -20,6 +29,7 @@ before_install:
 - haxelib -notimeout install nme-toolkit
 - haxelib -notimeout install format
 - haxelib -notimeout install gm2d
+
 script:
 - cd $TRAVIS_BUILD_DIR/tools/nme
 - haxe compile.hxml
