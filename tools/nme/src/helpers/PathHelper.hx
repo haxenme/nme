@@ -150,6 +150,7 @@ class PathHelper
          }
       }
 
+      // If only there was a "haxelib get" !
       var haxelibPath = getHaxelibPath(name);
       var result = "";
       var stupidHaxelib = false;
@@ -218,6 +219,20 @@ class PathHelper
       }
       else
       {
+         var parts = result.split("\\").join("/");
+         var parts = parts.split("/");
+         while(parts.length>1)
+         {
+            var test = parts.join("/")+"/haxelib.json";
+            trace(test);
+            if (FileSystem.exists(test))
+            {
+               result = parts.join("/");
+               break;
+            }
+            parts.pop();
+         }
+
          LogHelper.info("", " - Discovered haxelib \"" + name + "\" at \"" + result + "\"");
       }
 

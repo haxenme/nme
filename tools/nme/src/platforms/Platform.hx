@@ -7,6 +7,8 @@ import sys.net.Host;
 import sys.net.Socket;
 import nme.AlphaMode;
 import nme.script.NmeItem;
+import haxe.zip.Entry;
+import haxe.zip.Writer;
 using StringTools;
 
 class Platform
@@ -337,6 +339,32 @@ class Platform
       return bytes;
    }
 
+   public function getDeploymentName(extension:String)
+   {
+      var version = project.app.version;
+      var parts = version.split(".");
+      if (parts.length==3)
+      {
+         version = "_" + parts.shift();
+         for(p in parts)
+         {
+            var i = Std.parseInt(p);
+            if (i<=0)
+               version += "000";
+            else if (i<10)
+               version += "00" + i;
+            else if (i<100)
+               version += "0" + i;
+            else
+               version +=  i;
+         }
+      }
+      else if (version!="")
+         version = "_" + version;
+        
+      return project.app.file + version + extension;
+   }
+
    public function parseMd5s(inFile:String)
    {
       var result = new Map<String, String>();
@@ -495,6 +523,59 @@ class Platform
                Log.verbose("copy " + file);
                FileHelper.copyFile(from+"/"+file,deployDir+"/"+file);
             }
+         }
+         else if (protocol=="zip")
+         {
+             var entries:List<Entry> = new List();
+             var from = getOutputDir();
+             var to = project.app.file + "/";
+             for(file in outputFiles)
+             {
+                Log.verbose('  zip $to$file');
+                try {
+                   var bytes = sys.io.File.getBytes(from+"/"+file);
+                   var zipped = haxe.zip.Compress.run(bytes,9);
+                   zipped = zipped.sub(2,zipped.length-6);
+                   if (zipped.length > bytes.length*0.9)
+                      zipped = null;
+                   entries.add( {
+                      fileName : to + file,
+                      fileSize : bytes.length,
+                      fileTime : Date.now(),
+                      compressed : zipped!=null,
+                      dataSize : zipped==null ? 0 : zipped.length,
+                      data : zipped==null ? bytes : zipped,
+                      crc32 : haxe.crypto.Crc32.make(bytes),
+                      extraFields : new List()
+                   } );
+                }
+                catch(e:Dynamic)
+                {
+                   Log.error('Could not include $file in zip file');
+                }
+             }
+
+             if (name=="" || name==null)
+                name = getDeploymentName(".zip");
+
+             var wrote = 0;
+             try {
+                var bytesOutput = new haxe.io.BytesOutput();
+                var writer = new Writer(bytesOutput);
+                writer.write(entries);
+                // Grab the zipped file from the output stream
+                var zipfileBytes = bytesOutput.getBytes();
+                wrote = zipfileBytes.length;
+                // Save the zipped file to disc
+                var file = File.write(name, true);
+                file.write(zipfileBytes);
+                file.close();
+             }
+             catch(e:Dynamic)
+             {
+                Log.error('Could not save zip file $name');
+             }
+             Log.info('Wrote zip $name, $wrote bytes');
          }
          else
             Log.error("Unknown deployment protocol, use: 'script:', 'adb:' or 'dir:'");
