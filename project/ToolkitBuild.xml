@@ -593,6 +593,13 @@
    </files>
    <files id="native-toolkit-sdl" >
       <cache value="1" asLibrary="true" project="libSdl" />
+      <section if="NME_MIXER linux" >
+         <compilerflag value="-Isupport/linux"  />
+         <compilerflag value="-DSDL_AUDIO_DRIVER_ALSA" />
+         <compilerflag value='-DSDL_AUDIO_DRIVER_ALSA_DYNAMIC="libasound.so.2"'  />
+         <compilerflag value="-DSDL_AUDIO_DRIVER_PULSEAUDIO" />
+         <compilerflag value='-DSDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC="libpulse-simple.so.0"' />
+      </section>
    </files>
    <files id="native-toolkit-sdl-mixer" >
       <cache value="1" asLibrary="true" project="libSdlMixer" />

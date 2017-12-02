@@ -96,6 +96,7 @@ static bool Init()
       ELOG("Please init Stage before creating sound.");
       return false;
    }
+   printf("SDL Audio is open: %d\n", gSDLAudioState==sdaOpen);
    if (gSDLAudioState!=sdaOpen)
      return false;
 
@@ -116,6 +117,7 @@ static bool Init()
       #endif
    }
 
+   printf("Ok.\n");
    return sChannelsInit;
 }
 
