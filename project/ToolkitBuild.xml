@@ -228,6 +228,7 @@
 
       <section if="linux">
          <compilerflag value="-Wno-conversion" if="linux"/>
+         <file name="${SRC_DIR}/linux/V4L.cpp" if="NME_CAMERA" />
          <file name="${SRC_DIR}/linux/NativeFont.cpp"/>
          <file name="${SRC_DIR}/linux/System.cpp"/>
       </section>

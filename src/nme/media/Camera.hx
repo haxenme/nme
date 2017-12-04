@@ -57,6 +57,17 @@ class Camera extends nme.events.EventDispatcher
       nme.Lib.current.stage.removeEventListener(nme.events.Event.ENTER_FRAME, onPoll);
    }
 
+   @:keep function _init_frame_fmt(inPixelFormat:Int)
+   {
+      bitmapData = new BitmapData(width,height,false,0,inPixelFormat);
+      var event = new StatusEvent(StatusEvent.STATUS);
+      event.code = CAMERA_UNMUTED;
+      event.level = StatusEvent.STATUS;
+      dispatchEvent(event);
+      return bitmapData.nmeHandle;
+   }
+
+
    @:keep function _init_frame()
    {
       bitmapData = new BitmapData(width,height,true);
@@ -64,7 +75,6 @@ class Camera extends nme.events.EventDispatcher
       event.code = CAMERA_UNMUTED;
       event.level = StatusEvent.STATUS;
       dispatchEvent(event);
-      trace("Init frame " + width + "x" + height);
       return bitmapData.nmeHandle;
    }
 
