@@ -32,6 +32,7 @@ class V4L : public Camera
    void *bufferData[3];
    int   bufferDataLen[3];
    bool streamOn;
+   int   videoFormat;
 
 public:
    V4L(const char *inName)
@@ -45,6 +46,7 @@ public:
          bufferData[i] = 0;
 
       fd = -1;
+      videoFormat = 0;
       openDevice(inName);
       initDevice();
    }
@@ -149,16 +151,20 @@ public:
          {
             fmt.fmt.pix.width       = 640; //replace
             fmt.fmt.pix.height      = 480; //replace
-            fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB32;
+            fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
 
             if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))
                setError("Could not set format");
          }
 
          int pf = fmt.fmt.pix.pixelformat;
-         //printf("Got %dx%d : %c%c%c%c\n", fmt.fmt.pix.width, fmt.fmt.pix.height, 
-         //       (pf>>24) & 0xff, (pf>>16) & 0xff, (pf>>8)& 0xff, (pf&0xff) );
+         if (pf!=V4L2_PIX_FMT_YUYV)
+         {
+            printf("Unknown pixel format %dx%d : %c%c%c%c\n", fmt.fmt.pix.width, fmt.fmt.pix.height, 
+                (pf>>24) & 0xff, (pf>>16) & 0xff, (pf>>8)& 0xff, (pf&0xff) );
+         }
 
+         videoFormat = pf;
 
          /* Buggy driver paranoia. */
          min = fmt.fmt.pix.width * 2;
@@ -281,51 +287,30 @@ public:
          const unsigned char *s = (unsigned char *)inData + y*width*2;
          unsigned char *rgb =  dest + y*stride;
 
-         for(int x=0;x<pairs;x++)
+         if (videoFormat==V4L2_PIX_FMT_YUYV)
          {
-            int y1 = *s++;
-            int cb = ((*s - 128) * 454) >> 8;
-            int cg = (*s++ - 128) * 88;
-            int y2 = *s++;
-            int cr = ((*s - 128) * 359) >> 8;
-            cg = (cg + (*s++ - 128) * 183) >> 8;
-            *rgb++ = clamp(y1 + cr);
-            *rgb++ = clamp(y1 - cg);
-            *rgb++ = clamp(y1 + cb);
+            for(int x=0;x<pairs;x++)
+            {
+               int y1 = s[0];
+               int u  = s[1]-128;
+               int y2 = s[2];
+               int v  = s[3]-128;
 
-            *rgb++ = clamp(y2 + cr);
-            *rgb++ = clamp(y2 - cg);
-            *rgb++ = clamp(y2 + cb);
+               int cr = (v*359) >> 8;
+               int cg = (u*88 + v*183) >> 8;
+               int cb = (u*454) >> 8;
+
+               *rgb++ = clamp(y1 + cr);
+               *rgb++ = clamp(y1 - cg);
+               *rgb++ = clamp(y1 + cb);
+
+               *rgb++ = clamp(y2 + cr);
+               *rgb++ = clamp(y2 - cg);
+               *rgb++ = clamp(y2 + cb);
+
+               s+=4;
+            }
          }
-
-/*
-y1 = *s++;
-      cb = ((*s - 128) * 454) >> 8;
-      cg = (*s++ - 128) * 88;
-      y2 = *s++;
-      cr = ((*s - 128) * 359) >> 8;
-      cg = (cg + (*s++ - 128) * 183) >> 8;
-      r = y1 + cr;
-      b = y1 + cb;
-      g = y1 - cg;
-      SAT(r);
-      SAT(g);
-      SAT(b);
-      *d++ = b;
-      *d++ = g;
-      *d++ = r;
-      r = y2 + cr;
-      b = y2 + cb;
-      g = y2 - cg;
-      SAT(r);
-      SAT(g);
-      SAT(b);
-      *d++ = b;
-      *d++ = g;
-      *d++ = r;
-
-*/
-
       }
       buffer->Commit();
    }

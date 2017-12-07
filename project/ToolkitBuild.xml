@@ -14,17 +14,15 @@
    <set name="HXCPP_LINK_MEM_FILE" value="1" if="HXCPP_JS_PRIME" />
    <set name="HXCPP_LINK_TOTAL_MEMORY" value="134217728" if="HXCPP_JS_PRIME||emscripten" />
 
-
-   <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE" />
-   <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
-   <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
-
    <set name="linux" value="1" if="winrpi" />
    <unset name="windows" if="winrpi" />
    <set name="xcompile" value="1" if="winrpi" />
    <set name="rpi" value="1" if="winrpi" />
    <set name="sdl_rpi" value="1" if="winrpi" />
 
+   <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE" />
+   <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
+   <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
    <!-- 

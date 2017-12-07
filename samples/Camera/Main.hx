@@ -15,6 +15,7 @@ class Main extends Sprite
       if (camera!=null)
          camera.addEventListener(Event.VIDEO_FRAME,onFrame);
       stage.addEventListener(nme.events.Event.RESIZE, function(_) setBmpSize() );
+      stage.addEventListener(nme.events.KeyboardEvent.KEY_DOWN, function(_) nme.Lib.close() );
    }
 
    function setBmpSize()
@@ -51,6 +52,7 @@ class Main extends Sprite
       {
          camera.removeEventListener(Event.VIDEO_FRAME,onFrame);
          bitmap = new Bitmap( camera.bitmapData );
+         bitmap.smoothing = true;
          addChild(bitmap);
          setBmpSize();
       }
