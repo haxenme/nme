@@ -1981,7 +1981,6 @@ void SimpleSurface::getFloats32(float *outData, int inStride, PixelFormat inForm
             sumSig2 += (i-mean)*(i-mean)*histo[i];
          if (sumSig2>0)
             scale = sqrt(count/sumSig2);
-
       }
 
 
