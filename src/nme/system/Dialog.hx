@@ -20,8 +20,10 @@ class Dialog
             if (name!=null && name!="")
             {
                var path = name;
+               #if !js
                if (path!="" && !sys.FileSystem.isDirectory(path))
                   path = haxe.io.Path.directory(path);
+               #end
                var def = SharedObject.getLocal("fileOpen");
                if (def!=null)
                {
