@@ -4384,11 +4384,13 @@ void nme_bitmap_data_get_floats32(value inSurface, value inData, int inOffset, i
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
+      #ifndef EMSCRIPTEN
       unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
       if (data)
       {
          surf->getFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inSubsample);
       }
+      #endif
    }
 }
 DEFINE_PRIME7v(nme_bitmap_data_get_floats32);
@@ -4399,11 +4401,13 @@ void nme_bitmap_data_set_floats32(value inSurface, value inData, int inOffset, i
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
+      #ifndef EMSCRIPTEN
       unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
       if (data)
       {
          surf->setFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inExpand);
       }
+      #endif
    }
 }
 DEFINE_PRIME7v(nme_bitmap_data_set_floats32);
