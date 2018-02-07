@@ -46,6 +46,7 @@ enum ResoType
    resoProgram, //4
    resoFramebuffer, //5
    resoRenderbuffer, //6
+   resoVertexarray, //7 (GLES3)
 };
 
 const char *getTypeString(int inType)
@@ -59,6 +60,7 @@ const char *getTypeString(int inType)
       case resoProgram: return "Program";
       case resoFramebuffer: return "Framebuffer";
       case resoRenderbuffer: return "Renderbuffer";
+      case resoVertexarray: return "Vertexarray";
    }
    return "Unknown";
 }
@@ -305,6 +307,9 @@ public:
                break;
             case resoRenderbuffer:
                ctx->DestroyRenderbuffer(id);
+               break;
+            case resoVertexarray:
+               ctx->DestroyVertexarray(id);
                break;
          }
       }
@@ -638,7 +643,6 @@ value nme_gl_get_parameter(value pname_val)
       case GL_SAMPLE_BUFFERS:
       case GL_SAMPLES:
       case GL_SCISSOR_TEST:
-      case GL_SHADING_LANGUAGE_VERSION:
       case GL_STENCIL_BACK_FAIL:
       case GL_STENCIL_BACK_FUNC:
       case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
@@ -663,6 +667,7 @@ value nme_gl_get_parameter(value pname_val)
 
       case GL_VENDOR:
       case GL_VERSION:
+      case GL_SHADING_LANGUAGE_VERSION:
       case GL_RENDERER:
          strings = 1;
          break;
@@ -794,6 +799,17 @@ GL_GEN_RESO(buffer,glGenBuffers,resoBuffer)
 GL_GEN_RESO(framebuffer,glGenFramebuffers,resoFramebuffer)
 GL_GEN_RESO(render_buffer,glGenRenderbuffers,resoRenderbuffer)
 
+//GLES3
+#ifdef NME_NO_GLES3COMPAT
+value nme_gl_create_vertexarray(value inType)
+{
+   ELOG("Error: NME_NO_GLES3COMPAT is set");
+   return alloc_int(-1);
+}
+DEFINE_PRIM(nme_gl_create_vertexarray,0);
+#else
+GL_GEN_RESO(vertexarray,glGenVertexArrays,resoVertexarray)
+#endif
 
 // --- Stencil -------------------------------------------
 
@@ -1376,9 +1392,12 @@ value nme_gl_shader_source(value inId,value inSource)
    const char *lines = source.c_str();
    #ifdef NME_GLES
    // TODO - do something better here
-   std::string buffer;
-   buffer = std::string("precision mediump float;\n") + hxToStdString(source);
-   lines = buffer.c_str();
+   if (lines[0]!='#' && lines[1]!='v')
+   {
+      std::string buffer;
+      buffer = std::string("precision mediump float;\n") + hxToStdString(source);
+      lines = buffer.c_str();
+   }
    #endif
 
    glShaderSource(id,1,&lines,0);
@@ -1756,8 +1775,25 @@ value nme_gl_get_render_buffer_parameter(value target, value pname)
 }
 DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
 
-// --- Drawing -------------------------------
 
+
+
+// --- GLES3: VertexArray
+
+value nme_gl_bind_vertexarray(value inId )
+{
+   int id = getResourceId(inId,resoVertexarray);
+   #ifndef NME_NO_GLES3COMPAT
+   glBindVertexArray(id);
+   #endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_bind_vertexarray,1);
+
+
+
+
+// --- Drawing -------------------------------
 
 value nme_gl_draw_arrays(value inMode, value inFirst, value inCount)
 {
