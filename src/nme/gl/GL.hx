@@ -830,6 +830,11 @@ class GL
       return nme_gl_get_shader_source(shader.id);
    }
 
+   public static inline function getTranslatedShaderSourceANGLE(shader:GLShader):String
+   {
+      return nme_gl_get_translated_shader_source(shader.id);
+   }
+
    public static inline function getSupportedExtensions():Array<String>
    {
       var result = new Array<String>();
@@ -1310,6 +1315,8 @@ class GL
    private static var nme_gl_vertex_attrib4fv = load("nme_gl_vertex_attrib4fv", 2);
    private static var nme_gl_vertex_attrib_pointer = load("nme_gl_vertex_attrib_pointer", -1);
    private static var nme_gl_viewport = load("nme_gl_viewport", 4);
+   //angle
+   private static var nme_gl_get_translated_shader_source = load("nme_gl_get_translated_shader_source", 1);
    #else // not (neko||cpp)
 
    // Stub to get flixel to compile
