@@ -77,9 +77,10 @@ class WinrtPlatform extends WindowsPlatform
           Log.info("run: "+appxAUMID);
           var process4 = new sys.io.Process(kitsRoot10+'App Certification Kit\\microsoft.windows.softwarelogo.appxlauncher.exe', [appxAUMID]);
           //if (process4.exitCode() != 0) {
-          //   var message = process.stderr.readAll().toString();
-          //   Log.error("Cannot run. " + message);
-          // }
+             var message = process4.stderr.readAll().toString();
+             if(message.length>0)
+                Log.error("Cannot run. " + message);
+           //}
       }
    }
 
@@ -295,6 +296,8 @@ class WinrtPlatform extends WindowsPlatform
         }
         context.APP_MINVERSION = "10.0.14393.0";
         context.APP_MAXVERSION = "10.0.15063.400";
+        if(project.debug)
+           context.APP_DEBUG_DEPENDECY = true;
    }
 }
 
