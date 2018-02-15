@@ -4,10 +4,22 @@
    <set name="mac" value="1" if="macos" />
    <set name="native_toolkit_sdl_static" value="1" if="static_link" />
 
+
+   <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE" />
+   <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
+   <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
+
+   <!-- Uncomment to default GLES3 compatibility-->
+   <!--<set name="NME_GLES3" value="1" if="NME_ANGLE" unless="NME_FORCE_GLES2"/>-->
+   <!--<set name="NME_GLES3" value="1" unless="NME_FORCE_GLES2"/>-->
+
    <!-- Require Android 2.3+ -->
-   <set name="PLATFORM" value="android-9" if="android" />
-   <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
-   <set name="PLATFORM" value="android-21" if="HXCPP_ARM64" />
+   <section if="android">
+      <set name="PLATFORM" value="android-9"/>
+      <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
+      <set name="PLATFORM" value="android-18" if="NME_GLES3"/>
+      <set name="PLATFORM" value="android-21" if="HXCPP_ARM64" />
+   </section>
    <set name="HXCPP_CPP11" value="1" />
 
    <set name="exe_link" value="1" if="HXCPP_JS_PRIME" />
@@ -19,10 +31,6 @@
    <set name="xcompile" value="1" if="winrpi" />
    <set name="rpi" value="1" if="winrpi" />
    <set name="sdl_rpi" value="1" if="winrpi" />
-
-   <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE" />
-   <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
-   <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
    <!-- 
@@ -205,6 +213,7 @@
       <compilerflag value="-DNME_WORKER_THREADS" if="NME_WORKER_THREADS" />
       <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
+      <compilerflag value="-DNME_GLES3" if="NME_GLES3" />
 
       <cache value="1" unless="winrpi" />
       <cache value="1" asLibrary="true" if="winrpi" />
@@ -496,20 +505,23 @@
          <section if="android">
             <lib name="-ldl" />
             <lib name="-landroid" />
-            <lib name="-lGLESv2" />
+            <lib name="-lGLESv2" unless="NME_GLES3"/>
+            <lib name="-lGLESv3" if="NME_GLES3"/>
             <lib name="-lEGL" />
             <lib name="-lz" />
          </section>
 
          <section if="rpi" unless="winrpi" >
-            <lib name="/opt/vc/lib/libGLESv2.so" />
+            <lib name="/opt/vc/lib/libGLESv2.so" unless="NME_GLES3"/>
+            <lib name="/opt/vc/lib/libGLESv3.so" if="NME_GLES3"/>
             <lib name="/opt/vc/lib/libEGL.so" />
             <lib name="/opt/vc/lib/libbcm_host.so" />
          </section>
 
          <section if="rpi winrpi" >
             <libpath name="${haxelib:winrpi}/lib" />
-            <lib name="-lGLESv2" />
+            <lib name="-lGLESv2" unless="NME_GLES3"/>
+            <lib name="-lGLESv3" if="NME_GLES3"/>
             <lib name="-lEGL" />
             <lib name="-lvcos" />
             <lib name="-lvchiq_arm" />

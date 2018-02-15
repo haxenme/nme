@@ -46,6 +46,9 @@ enum ResoType
    resoProgram, //4
    resoFramebuffer, //5
    resoRenderbuffer, //6
+   #ifdef NME_GLES3
+   resoVertexarray, //7
+   #endif
 };
 
 const char *getTypeString(int inType)
@@ -59,6 +62,9 @@ const char *getTypeString(int inType)
       case resoProgram: return "Program";
       case resoFramebuffer: return "Framebuffer";
       case resoRenderbuffer: return "Renderbuffer";
+      #ifdef NME_GLES3
+      case resoVertexarray: return "Vertexarray";
+      #endif
    }
    return "Unknown";
 }
@@ -306,6 +312,11 @@ public:
             case resoRenderbuffer:
                ctx->DestroyRenderbuffer(id);
                break;
+            #ifdef NME_GLES3
+            case resoVertexarray:
+               ctx->DestroyVertexarray(id);
+               break;
+            #endif
          }
       }
       type = resoNone;
@@ -793,7 +804,9 @@ GL_GEN_RESO(buffer,glGenBuffers,resoBuffer)
 
 GL_GEN_RESO(framebuffer,glGenFramebuffers,resoFramebuffer)
 GL_GEN_RESO(render_buffer,glGenRenderbuffers,resoRenderbuffer)
-
+#ifdef NME_GLES3
+GL_GEN_RESO(vertexarray,glGenVertexArrays,resoVertexarray)
+#endif
 
 // --- Stencil -------------------------------------------
 
@@ -1374,6 +1387,13 @@ value nme_gl_shader_source(value inId,value inSource)
    int id = getResource(inId,resoShader);
    HxString source = valToHxString(inSource);
    const char *lines = source.c_str();
+   
+   #ifdef NME_GLES3
+	if (strcmp("#version", lines)) { 
+	   glShaderSource(id,1,&lines,0);
+	   return alloc_null();
+   }
+   #endif
    #ifdef NME_GLES
    // TODO - do something better here
    std::string buffer;
@@ -1755,6 +1775,19 @@ value nme_gl_get_render_buffer_parameter(value target, value pname)
    return alloc_int(result);
 }
 DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
+
+
+
+#ifdef NME_GLES3
+value nme_gl_bind_vertexarray(value inId )
+{
+   int id = getResourceId(inId,resoVertexarray);
+   glBindVertexArray(id);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_bind_vertexarray,1);
+#endif
+
 
 // --- Drawing -------------------------------
 

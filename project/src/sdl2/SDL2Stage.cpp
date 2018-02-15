@@ -1809,9 +1809,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    if (fullscreen) requestWindowFlags |= FullscreenMode; //SDL_WINDOW_FULLSCREEN_DESKTOP;
    
    #ifdef NME_ANGLE
+   int major = 2; 
+   #ifdef NME_GLES3
+   major = 3;
+   #endif
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2); 
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
    #endif
 
@@ -1944,6 +1948,16 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          sgIsOGL2 = false;
       }
       
+      #if defined(NME_ANGLE) && defined(NME_GLES3) 
+      if (!renderer && opengl && major>2) 
+      {
+         fprintf(stderr, "GLES3 is not available. Retrying with GLES2. (%s)\n", SDL_GetError());
+         major = 2;
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major); 
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); 
+      }
+      else
+      #endif
       if (!renderer && (inFlags & wfHW_AA_HIRES || inFlags & wfHW_AA)) {
          // if no window was created and AA was enabled, disable AA and try again
          fprintf(stderr, "Multisampling is not available. Retrying without. (%s)\n", SDL_GetError());
