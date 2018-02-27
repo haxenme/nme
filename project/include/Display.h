@@ -450,6 +450,9 @@ public:
    virtual class StageVideo *createStageVideo(void *) { return 0; }
    virtual void cleanStageVideo() {}
 
+   virtual void setTitle(const std::string &) { }
+   virtual std::string getTitle() { return ""; }
+
 
    DisplayObject *GetFocusObject() { return mFocusObject; }
    void SetFocusObject(DisplayObject *inObj,FocusSource inSource=fsProgram,int inKey=0);
@@ -534,8 +537,6 @@ protected:
 class Frame : public Object
 {
 public:
-   virtual void SetTitle() = 0;
-   virtual void SetIcon() = 0;
    virtual Stage *GetStage() = 0;
 
    NmeObjectType getObjectType() { return notFrame; }

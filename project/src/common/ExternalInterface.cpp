@@ -1799,6 +1799,32 @@ value nme_stage_get_normal_orientation() {
 
 DEFINE_PRIM(nme_stage_get_normal_orientation, 0);
 
+
+
+
+HxString nme_stage_get_title(value inStage) {
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      return stage->getTitle().c_str();
+   }
+   return "?";
+}
+
+DEFINE_PRIME1(nme_stage_get_title);
+
+
+
+void nme_stage_set_title(value inStage, HxString inTitle) {
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      stage->setTitle(hxToStdString(inTitle));
+   }
+}
+DEFINE_PRIME2v(nme_stage_set_title);
+
+
 // --- StageVideo ----------------------------------------------------------------------
 
 StageVideo::StageVideo() : mOwner(val_null) { }

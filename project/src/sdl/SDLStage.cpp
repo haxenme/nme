@@ -760,12 +760,6 @@ public:
 
   // --- Frame Interface ----------------------------------------------------
 
-   void SetTitle()
-   {
-   }
-   void SetIcon()
-   {
-   }
    Stage *GetStage()
    {
       return mStage;

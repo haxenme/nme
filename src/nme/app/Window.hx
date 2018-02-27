@@ -19,6 +19,7 @@ class Window
    public var isOpenGL(get, null):Bool;
    public var quality(get, set):StageQuality;
    public var scaleMode(get, set):StageScaleMode;
+   public var title(get, set):String;
    public var x(get, null):Int;
    public var y(get, null):Int;
    public var height(get, null):Int;
@@ -384,6 +385,17 @@ class Window
       nme_stage_set_window_position(nmeHandle, x, y);
    }
 
+   public function get_title():String
+   {
+      return nme_stage_get_title(nmeHandle);
+   }
+
+   public function set_title(inTitle:String):String
+   {
+      nme_stage_set_title(nmeHandle,inTitle);
+      return inTitle;
+   }
+
 
 
    private static var nme_stage_resize_window = Loader.load("nme_stage_resize_window", 3);
@@ -412,6 +424,8 @@ class Window
 
    private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
    private static var nme_display_object_set_bg = Loader.load("nme_display_object_set_bg", 2);
+   private static var nme_stage_get_title = PrimeLoader.load("nme_stage_get_title", "os");
+   private static var nme_stage_set_title = PrimeLoader.load("nme_stage_set_title", "osv");
 
    #if (cpp && hxcpp_api_level>=312)
    private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler_native", 4);

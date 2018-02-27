@@ -207,7 +207,7 @@
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
 
       <cache value="1" unless="winrpi" />
-      <cache value="1" asLibrary="true" if="winrpi" />
+      <cache value="1" asLibrary="true" if="winrpi NME_STATIC_LINK" />
 
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
 

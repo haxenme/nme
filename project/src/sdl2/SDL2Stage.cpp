@@ -5,7 +5,11 @@
 #include <nme/NmeCffi.h>
 #include <KeyCodes.h>
 #include <map>
+
+#undef NME_MIXER
+
 #include <Sound.h>
+
 
 #ifdef NME_MIXER
 #include <SDL_mixer.h>
@@ -726,6 +730,14 @@ public:
       return false;
       #endif
    }
+
+   
+   void setTitle(const std::string &inTitle)
+   {
+      SDL_SetWindowTitle(mSDLWindow, inTitle.c_str());
+   }
+   
+
    
    
    bool mMultiTouch;
@@ -808,19 +820,6 @@ public:
    
    
    // --- Frame Interface ----------------------------------------------------
-   
-   
-   void SetTitle()
-   {
-      
-   }
-   
-   
-   void SetIcon()
-   {
-      
-   }
-   
    
    Stage *GetStage()
    {
