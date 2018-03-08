@@ -269,6 +269,13 @@ class Surface
       #end
    }
 
+   public function getUInts8(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
+           pixelFormat:Int, subSample:Int = 1)
+   {
+      nme_bitmap_data_get_uints8(nmeHandle,dataHandle, dataOffset, dataStride, pixelFormat, subSample);
+   }
+
+
    public function getFloats32(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
            pixelFormat:Int, transform:Int, subSample:Int = 1)
    {
@@ -364,5 +371,6 @@ class Surface
    private static var nme_bitmap_data_set_prem_alpha = Loader.load("nme_bitmap_data_set_prem_alpha", 2);
    private static var nme_bitmap_data_get_floats32 = nme.PrimeLoader.load("nme_bitmap_data_get_floats32", "ooiiiiiv");
    private static var nme_bitmap_data_set_floats32 = nme.PrimeLoader.load("nme_bitmap_data_set_floats32", "ooiiiiiv");
+   private static var nme_bitmap_data_get_uints8 = nme.PrimeLoader.load("nme_bitmap_data_get_uints8", "ooiiiiv");
 }
 

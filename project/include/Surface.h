@@ -85,6 +85,7 @@ public:
 
    virtual void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample) { }
    virtual void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand) { }
+   virtual void getUInts8(uint8 *outData, int inStride, PixelFormat pixelFormat, int inSubsample) { }
 
    void OnChanged() { mVersion++; }
 
@@ -168,6 +169,7 @@ public:
    void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale);
    void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample);
    void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand);
+   void getUInts8(uint8 *outData, int inStride, PixelFormat pixelFormat, int inSubsample);
 
    void createHardwareSurface();
    void destroyHardwareSurface();

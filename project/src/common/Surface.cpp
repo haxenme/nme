@@ -2011,6 +2011,33 @@ void SimpleSurface::getFloats32(float *outData, int inStride, PixelFormat inForm
    }
 }
 
+
+
+
+void SimpleSurface::getUInts8(uint8 *outData, int inStride, PixelFormat inFormat, int inSubsample)
+{
+   // TODO - inSubsample
+   int pixelSize = BytesPerPixel(inFormat);
+   int stride = inStride==0 ? pixelSize*mWidth : inStride;
+   if (inFormat!=mPixelFormat)
+   {
+      PixelConvert(mWidth, mHeight,
+          mPixelFormat,  mBase, mStride, GetPlaneOffset(),
+          inFormat, outData, stride, 0 );
+   }
+   else if (stride==mStride)
+   {
+      memcpy(outData, mBase, mWidth*mHeight*pixelSize );
+   }
+   else
+   {
+      for(int y=0;y<mHeight;y++)
+         memcpy(outData+stride*y, mBase+mStride*y, mWidth*pixelSize );
+   }
+}
+
+
+
 void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat inFormat, int inTransform, int inExpand)
 {
    std::vector<unsigned char> buffer;

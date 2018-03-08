@@ -32,5 +32,21 @@ class PixelFormat
    public inline static var pfUInt16      = 10;
    public inline static var pfUInt32      = 11;
 
+
+   static public function channelCount(inFormat:Int) : Int
+   {
+      switch(inFormat)
+      {
+         case pfLuma, pfAlpha, pfUInt16, pfUInt32: return 1;
+         case pfLumaAlpha: return 2;
+         case pfRGB: return 3;
+         case pfRGBA, pfBGRA, pfBGRPremA, pfRGBPremA: return 4;
+         case pfRGBA32f, pfRGB32f: return 4;
+         default:
+            throw "Unknown pixel format " + inFormat;
+      }
+      return 0;
+   }
+
 }
 
