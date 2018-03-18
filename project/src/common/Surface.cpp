@@ -1896,6 +1896,7 @@ enum
    FloatUnitScale  = 0x0004,
    FloatStdScale   = 0x0008,
    FloatSwizzeRgb  = 0x0010,
+   Float100Scale  = 0x0020,
 };
 
 
@@ -1973,6 +1974,10 @@ void SimpleSurface::getFloats32(float *outData, int inStride, PixelFormat inForm
       if (inTransform & FloatUnitScale)
       {
          scale = 1.0/255;
+      }
+      else if (inTransform & Float100Scale)
+      {
+         scale = 0.01;
       }
       else if (inTransform & FloatStdScale)
       {

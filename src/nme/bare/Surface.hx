@@ -34,6 +34,7 @@ class Surface
    public static inline var FLOAT_UNIT_SCALE   = 0x0004;
    public static inline var FLOAT_STD_SCALE    = 0x0008;
    public static inline var FLOAT_SWIZZLE_RGB  = 0x0010;
+   public static inline var FLOAT_100_SCALE    = 0x0020;
 
    // zero mean, std scale
    public static inline var FLOAT_NORM       = 0x0009;
