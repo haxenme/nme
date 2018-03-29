@@ -377,11 +377,15 @@ public:
    {
       long size = 0;
       HRESULT err =  inGrabber->GetCurrentBuffer(&size, NULL);
-      if (err==S_OK)
+      if (err==S_OK && size>0)
       {
          FrameBuffer *frameBuffer = getWriteBuffer();
 
          frameBuffer->data.resize(size);
+         if (!size || !&frameBuffer->data[0])
+         {
+            printf("Printf alloc frame - %d (%p) %dx%d\n", size, &frameBuffer->data[0],width,height);
+         }
          frameBuffer->width = width;
          frameBuffer->height = height;
          frameBuffer->stride = mBytesPerRow;
@@ -504,7 +508,6 @@ public:
          unsigned char *dest = outBuffer->Edit(0);
          //printf("Dest %p (%dx%d, %d)\n", dest, outBuffer->Width(), outBuffer->Height(), outBuffer->GetStride() );
          unsigned char *src = &inFrame->data[0];
-         //printf("Src %p (%dx%d, %d)\n", src, inFrame->width, inFrame->height, inFrame->stride );
          for(int y=0;y<height;y++)
          {
             int destY = height-1-y;

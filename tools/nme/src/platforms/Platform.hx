@@ -660,7 +660,11 @@ class Platform
          var dir = "/ndll/" + binName + "/";
          var srcProject = ndll.path;
 
-         var src = srcProject + "/ndll/" + binName + "/" + pref + ndll.name + archSuffix + ext;
+         var src = srcProject + "/ndll/" + binName + "/" + pref + ndll.name;
+         if (FileSystem.exists(src)) 
+            ext = "";
+         else
+            src = srcProject + "/ndll/" + binName + "/" + pref + ndll.name + archSuffix + ext;
 
          if (ndll.noCopy || (ndll.isStatic && !useNeko))
          {

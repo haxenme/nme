@@ -19,7 +19,6 @@ struct FrameBuffer
    unsigned char *row(int inY) { return &data[inY*stride]; }
    std::vector<unsigned char> data;
 
-   int index;
    int width;
    int height;
    int stride;
