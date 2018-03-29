@@ -31,9 +31,6 @@ class Acadnme extends Sprite implements IScriptHandler
    {
       super();
 
-      #if cpp
-      enableJit(true);
-      #end
 
       instance = this;
       var startServer = #if emscripten false #else true #end;
@@ -48,9 +45,10 @@ class Acadnme extends Sprite implements IScriptHandler
       installBackHandler();
       #end
 
-      while(idx<args.length)
+      var unusedArgs = new Array<String>();
+      for(arg in args)
       {
-         var arg =args[idx];
+         var used = true;
          if (arg.substr(0,1)=='-')
          {
             if (arg=="-delay")
@@ -59,19 +57,30 @@ class Acadnme extends Sprite implements IScriptHandler
                Sys.sleep(8);
             else if (arg=="-noserver")
                startServer = false;
+            #if cpp
+            else if (arg=="-nojit")
+               enableJit(false);
+            #end
             else if (arg=="-nogc")
             {
                trace("disable gc...");
                cpp.vm.Gc.enable(false);
-             }
+            }
+            else
+               used = false;
          }
-         else
+         else if (script==null)
          {
             script = arg;
             startServer = false;
          }
-         idx++;
+         else
+            used = false;
+
+         if (!used)
+            unusedArgs.push(arg);
       }
+      nme.system.System.setArgs(unusedArgs);
 
       Server.functions["log"] = function(x) { scriptLog(x); return "ok"; }
 

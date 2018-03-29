@@ -59,6 +59,7 @@ namespace nme
 
 Camera::Camera() : status(camInit), buffer(0), width(0), height(0), pixelFormat(pfBGRA)
 {
+   frameId = 0;
 }
 
 
@@ -152,7 +153,6 @@ void Camera::onFrame(value handler)
 value nme_camera_create(value inName)
 {
    HxString name = valToHxString(inName);
-   printf("Create camera %s\n", name.c_str());
 
    #if defined(__APPLE__) || defined(HX_WINDOWS) || defined(HX_LINUX)
    Camera *camera = CreateCamera(name.c_str());

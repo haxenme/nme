@@ -1536,6 +1536,17 @@ void ProcessEvent(SDL_Event &inEvent)
                //sgSDLFrame->ProcessEvent(kill);
                break;
             }
+
+            /*
+            case SDL_DROPFILE:
+            {
+               char *dropped_filedir = inEvent.drop.file;
+               printf("DROP %s\n", dropped_filedir);
+               SDL_free(dropped_filedir);
+               break;
+            }
+            */
+
             default: break;
          }
          
@@ -2223,6 +2234,8 @@ void StartAnimation()
 {
    SDL_Event event;
    event.type = SDL_NOEVENT;
+
+   //SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
    double nextWake = GetTimeStamp();
    while(!sgDead)

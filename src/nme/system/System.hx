@@ -19,11 +19,31 @@ class System
    public static var totalMemory(get_totalMemory, null):Int;
    public static var totalMemoryNumber(get_totalMemoryNumber, null):Float;
    public static var exeName(get_exeName, null):String;
+   static var args:Array<String>;
 
    static public function exit(?inCode:Int) 
    {
       Lib.close();
    }
+
+   static public function getArgs():Array<String>
+   {
+      if (args==null)
+      {
+         #if sys
+         args = Sys.args();
+         #else
+         args = new Array<String>();
+         #end
+      }
+      return args.copy();
+   }
+
+   static public function setArgs(inArgs:Array<String>)
+   {
+      args = inArgs.copy();
+   }
+
 
    static public function gc() 
    {

@@ -211,7 +211,7 @@ public:
       IBaseFilter *pSrc;
 
 
-      listDevices();
+      //listDevices();
 
 
       //if(S_OK == (pClassEnum->Next (1, &pMoniker, &cFetched)))
@@ -376,7 +376,8 @@ public:
    void GrabImage(ISampleGrabber *inGrabber)
    {
       long size = 0;
-      if (inGrabber->GetCurrentBuffer(&size, NULL)==S_OK)
+      HRESULT err =  inGrabber->GetCurrentBuffer(&size, NULL);
+      if (err==S_OK)
       {
          FrameBuffer *frameBuffer = getWriteBuffer();
 
