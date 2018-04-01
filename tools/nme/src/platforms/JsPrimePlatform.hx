@@ -41,12 +41,15 @@ class JsPrimePlatform extends Platform
       project.macros.push("--macro nme.macros.Exclude.exclude()");
 
       nmeJs = project.getDef("nmeJs");
+      var nmeUrl = project.getDef("nmeUrl");
+      if (nmeUrl==null)
+         nmeUrl = "/nme/";
       if (nmeJs==null)
       {
          if (project.hasDef("flatoutput"))
             nmeJs = "Nme.js";
          else
-            nmeJs = "/nme/" + nme.Version.name + "/Nme.js";
+            nmeJs = nmeUrl + nme.Version.name + "/Nme.js";
       }
       nmeClassesJs = project.getDef("nmeClassesJs");
       if (nmeClassesJs==null)
@@ -54,7 +57,7 @@ class JsPrimePlatform extends Platform
          if (project.hasDef("flatoutput"))
             nmeClassesJs = "NmeClasses.js";
          else
-            nmeClassesJs = "/nme/" + nme.Version.name + "/NmeClasses.js";
+            nmeClassesJs = nmeUrl + nme.Version.name + "/NmeClasses.js";
       }
    }
 
@@ -279,7 +282,17 @@ class JsPrimePlatform extends Platform
       super.updateExtra();
 
       var src = CommandLineTools.nme + "/ndll/Emscripten/NmeClasses.js";
-      FileHelper.copyFile(src, getOutputDir()+"/" + nmeClassesJs);
+      var dest = getNmeOutputDir()+"/" + nmeClassesJs;
+      FileHelper.copyFile(src, dest);
+      addOutputQuiet(dest,true);
+   }
+
+   function getNmeOutputDir()
+   {
+      var dir = project.getDef("nmeDeployDir");
+      if (dir!=null)
+         return dir;
+      return getOutputDir();
    }
 
 
@@ -295,7 +308,7 @@ class JsPrimePlatform extends Platform
    override public function remapName(dir:String,filename:String)
    {
       if (filename=="Nme.js")
-         return getOutputDir() + "/" + nmeJs;
+         return getNmeOutputDir() + "/" + nmeJs;
       return super.remapName(dir, filename);
    }
 

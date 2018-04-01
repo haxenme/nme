@@ -79,7 +79,7 @@ class Platform
       haxeDir = targetDir + "/haxe";
    }
 
-   public function addOutput(inFile:String) : Void
+   public function addOutputQuiet(inFile:String, quiet=false) : Void
    {
       var base = getOutputDir() + "/";
       var l = base.length;
@@ -88,9 +88,11 @@ class Platform
       else if (inFile.substr(inFile.length-8)!=".pbxproj" && inFile.indexOf("ios")<0 &&
             inFile.indexOf("android-view")<0 && inFile.indexOf("ios-view")<0 )
       {
-         Log.warn( inFile + " does not appear to be under " + base );
+         if (!quiet)
+            Log.warn( inFile + " does not appear to be under " + base );
       }
    }
+   public function addOutput(inFile:String) addOutputQuiet(inFile, false);
 
    public function init()
    {
@@ -687,19 +689,22 @@ class Platform
          if (FileSystem.exists(src)) 
          {
             var dest = remapName( libDir,  pref + ndll.name + ext );
-            addOutput(dest);
-
-            LogHelper.info("", " - Copying library file: " + src + " -> " + dest);
-            FileHelper.copyIfNewer(src, dest);
-
-            src+=".mem";
-            if (FileSystem.exists(src)) 
+            if (dest!=null)
             {
-               var dest = dest + ".mem";
-               addOutput(dest);
+               addOutputQuiet(dest,true);
 
-               LogHelper.info("", " - Copying library mem file: " + src + " -> " + dest);
+               LogHelper.info("", " - Copying library file: " + src + " -> " + dest);
                FileHelper.copyIfNewer(src, dest);
+
+               src+=".mem";
+               if (FileSystem.exists(src)) 
+               {
+                  var dest = dest + ".mem";
+                  addOutputQuiet(dest,true);
+
+                  LogHelper.info("", " - Copying library mem file: " + src + " -> " + dest);
+                  FileHelper.copyIfNewer(src, dest);
+               }
             }
          }
          else
@@ -736,6 +741,7 @@ class Platform
       PathHelper.mkdir(getOutputDir());
 
       var filename = getOutputDir() + "/" + getNmeFilename();
+      addOutput(filename);
 
       var outfile = sys.io.File.write(filename,true);
       outfile.bigEndian = false;
