@@ -14,6 +14,10 @@ class JsPrimePlatform extends Platform
    var nmeJs:String;
    var nmeClassesJs:String;
 
+   var nmeJsBody:String;
+   var nmeJsFooter:String;
+   var nmeJsHeader:String;
+
    override public function getPlatformDir() : String { return "jsprime"; }
    override public function get_platform() : String { return "jsprime"; }
    override public function getBinName() : String { return "Emscripten"; }
@@ -59,6 +63,10 @@ class JsPrimePlatform extends Platform
          else
             nmeClassesJs = nmeUrl + nme.Version.name + "/NmeClasses.js";
       }
+
+      nmeJsBody = getJsImport("nmeJsBody");
+      nmeJsHeader = getJsImport("nmeJsHeader");
+      nmeJsFooter = getJsImport("nmeJsFooter");
    }
 
    public function restoreState()
@@ -66,6 +74,22 @@ class JsPrimePlatform extends Platform
       for(flag in extraFlags)
          project.haxeflags.remove(flag);
       project.macros.remove("--macro nme.macros.Exclude.exclude()");
+   }
+
+   public function getJsImport(name:String) : String
+   {
+      var def = project.getDef(name);
+      if (def==null)
+         return null;
+      try
+      {
+         return sys.io.File.getContent(def);
+      }
+      catch(e:Dynamic)
+      {
+         Log.error("Could not load Js part " + name + "->" + def);
+      }
+      return null;
    }
 
    static function parseClassInfo(externs:Map<String,Bool>, filename:String)
@@ -266,6 +290,9 @@ class JsPrimePlatform extends Platform
       context.NME_APP_JS = getNmeFilename();
       context.NME_CLASSES_JS = nmeClassesJs;
       context.NME_MEM_FILE = true;
+      context.NME_JS_BODY = nmeJsBody;
+      context.NME_JS_FOOTER = nmeJsFooter;
+      context.NME_JS_HEADER = nmeJsHeader;
 
       // Flixel is based on cpp & neko - need jsprime too
       if (project.findHaxelib("flixel")!=null)

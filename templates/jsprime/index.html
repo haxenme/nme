@@ -26,18 +26,24 @@
 	
 	<style>
 		html,body { margin: 0; padding: 0; width:100%; height: 100%; overflow: hidden; }
-		#stage { width: 100%; height: 100%; }
-      div { position: absolute; }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
       canvas.emscripten { border: 0px none; width:100%;height:100% }
       textarea.output { border: 0px none; width:100%;height:20% }
 	</style>
+
+   ::if (NME_JS_HEADER!=null)::
+   ::NME_JS_HEADER::
+   ::end::
 	
 </head>
 <body>
-   <div class="emscripten_border" id="stage" >
+   ::if (NME_JS_BODY!=null)::
+   ::NME_JS_BODY::
+   ::else::
+   <div class="emscripten_border" id="stage" style="position:absolute;width:100%;height:100%;" >
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
    </div>
+   ::end::
 
     ::if (NME_PRELOADER!=null)::
        <script type='text/javascript'>
@@ -264,6 +270,11 @@
           }) ();
 
     </script>
+
+    ::if (NME_JS_FOOTER!=null)::
+    ::NME_JS_FOOTER::
+    ::end::
+
 
 </body>
 </html>
