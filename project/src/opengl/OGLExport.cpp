@@ -1390,12 +1390,15 @@ value nme_gl_shader_source(value inId,value inSource)
    
    #ifdef NME_GLES
    // TODO - do something better here
-   // Skip add precision if starts with #version
-   if (!strcmp("#version", lines)) { 
-      std::string buffer;
-      buffer = std::string("precision mediump float;\n") + hxToStdString(source);
-      lines = buffer.c_str();
+   if (lines[0] == '#') { // Skip add precision if starts with #version
+      glShaderSource(id,1,&lines,0);
+      return;
    }
+
+   std::string buffer;
+   buffer = std::string("precision mediump float;\n") + hxToStdString(source);
+   lines = buffer.c_str();
+
    #endif
 
    glShaderSource(id,1,&lines,0);
