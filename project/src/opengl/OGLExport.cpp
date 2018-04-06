@@ -1388,17 +1388,14 @@ value nme_gl_shader_source(value inId,value inSource)
    HxString source = valToHxString(inSource);
    const char *lines = source.c_str();
    
-   #ifdef NME_GLES3
-	if (strcmp("#version", lines)) { 
-	   glShaderSource(id,1,&lines,0);
-	   return alloc_null();
-   }
-   #endif
    #ifdef NME_GLES
    // TODO - do something better here
-   std::string buffer;
-   buffer = std::string("precision mediump float;\n") + hxToStdString(source);
-   lines = buffer.c_str();
+   // Skip add precision if starts with #version
+   if (!strcmp("#version", lines)) { 
+      std::string buffer;
+      buffer = std::string("precision mediump float;\n") + hxToStdString(source);
+      lines = buffer.c_str();
+   }
    #endif
 
    glShaderSource(id,1,&lines,0);
