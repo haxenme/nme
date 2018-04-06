@@ -1392,7 +1392,7 @@ value nme_gl_shader_source(value inId,value inSource)
    // TODO - do something better here
    if (lines[0] == '#') { // Skip add precision if starts with #version
       glShaderSource(id,1,&lines,0);
-      return;
+      return alloc_null();
    }
 
    std::string buffer;
