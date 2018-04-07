@@ -5,6 +5,7 @@ class HtmlPreloader
 {
    static var context:CanvasRenderingContext2D;
    static var canvas:CanvasElement;
+   static var restoreCanvas:Void->Void;
    static var bg:String;
    static var fg:String;
 
@@ -12,7 +13,7 @@ class HtmlPreloader
    {
       var win  = js.Browser.window;
       var doc  = win.document;
-      doc.body.removeChild(canvas);
+      restoreCanvas();
       canvas = null;
       context = null;
       untyped win.preloadUpdate = null;
@@ -53,10 +54,32 @@ class HtmlPreloader
       if (fg==null) fg = "#000060";
 
       var doc  = win.document;
-      canvas = cast doc.createElement("canvas");
+      canvas = doc.createCanvasElement();
       canvas.width = win.innerWidth;
       canvas.height = win.innerHeight;
-      doc.body.appendChild(canvas);
+      canvas.className = "preloader";
+
+      var parent:Node = cast doc.getElementById("stage");
+      if (parent!=null)
+      {
+         var oldCanvas = doc.getElementById("canvas");
+         if (oldCanvas!=null)
+         {
+            var oldDisplay = oldCanvas.style.display;
+            oldCanvas.style.display = "None";
+            restoreCanvas = function() {
+                oldCanvas.style.display = oldDisplay;
+                parent.removeChild(canvas);
+            }
+         }
+      }
+      else
+         parent = doc.body;
+
+      parent.appendChild(canvas);
+      if (restoreCanvas==null)
+         restoreCanvas = function() parent.removeChild(canvas);
+
       context = canvas.getContext2d();
       render(0);
       untyped win.preloadUpdate = render;

@@ -24,11 +24,11 @@
 		}
 	</script>
 	
+
 	<style>
 		html,body { margin: 0; padding: 0; width:100%; height: 100%; overflow: hidden; }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; width:100%;height:100% }
-      textarea.output { border: 0px none; width:100%;height:20% }
+     canvas.emscripten { border: 0px none; width:100%;height:100% }
 	</style>
 
    ::if (NME_JS_HEADER!=null)::
@@ -180,6 +180,11 @@
         },
         parseNmeApp : function() {
         },
+        closePreloader: function() {
+           if ( typeof(window.closePreloader)!=undefined)
+              window.closePreloader();
+        },
+
 
       };
     </script>
