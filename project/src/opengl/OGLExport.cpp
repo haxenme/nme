@@ -1386,17 +1386,14 @@ value nme_gl_shader_source(value inId,value inSource)
    DBGFUNC("shaderSource");
    int id = getResource(inId,resoShader);
    HxString source = valToHxString(inSource);
-   if (source.length<=0)   
-      return alloc_null();
-      
    const char *lines = source.c_str();
    
    #ifdef NME_GLES
+   std::string buffer;
    if (lines[0]!='#')
    {
-      char* buffer = (char*)malloc(source.length + 29);
-      sprintf(buffer, "precision mediump float;\n%s", lines);
-      lines = buffer;
+      buffer = std::string("precision mediump float;\n") + hxToStdString(source);
+      lines = buffer.c_str();
    }
    #endif
 
