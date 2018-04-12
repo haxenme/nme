@@ -62,7 +62,7 @@ class Int32Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
    inline public function __get(index:Int):Int { return getInt32(index << 2); }
 
    @:keep
-   inline public function __set(index:Int, v:Int):Void { setInt32(index << 2, v); }
+   inline public function __set(index:Int, v:Int):Int { setInt32(index << 2, v); return v; }
 }
 
 #end

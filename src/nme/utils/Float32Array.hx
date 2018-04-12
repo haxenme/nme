@@ -67,7 +67,7 @@ class Float32Array extends ArrayBufferView implements ArrayAccess<Float>
    inline public function __get(index:Int):Float { return getFloat32(index << 2); }
 
    @:keep
-   inline public function __set(index:Int, v:Float):Void { setFloat32(index << 2, v); }
+   inline public function __set(index:Int, v:Float):Float { setFloat32(index << 2, v); return v; }
 }
 
 #end
