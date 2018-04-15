@@ -41,7 +41,36 @@ class GameInputDevice
       }
    }
 
+   public function toString() return 'GameInputDevice($id:$name)';
+
+   public function getButtonAt(i:Int) return i>=0 && i<15 ? nmeControls[i+6] : null;
+
+   public function getAxisAt(i:Int) return i>=0 && i<6 ? nmeControls[i] : null;
+
    public function getCachedSamples(data:ByteArray, append:Bool = false):Int return 0;
+
+   public function isButtonDown(buttonId:Int)
+   {
+      if (buttonId<0 || buttonId>=15)
+         return false;
+      return nmeControls[buttonId+6].value>0;
+   }
+
+   public function readDPadUp() return isButtonDown(GamepadButton.DPAD_UP);
+   public function readDPadDown() return isButtonDown(GamepadButton.DPAD_DOWN);
+   public function readDPadLeft() return isButtonDown(GamepadButton.DPAD_LEFT);
+   public function readDPadRight() return isButtonDown(GamepadButton.DPAD_RIGHT);
+
+   public function getX0() return nmeControls[0].value;
+   public function getY0() return nmeControls[1].value;
+
+   public function isLeft() return getX0()<-0.5 || readDPadLeft();
+   public function isRight() return getX0()>0.5 || readDPadRight();
+   public function isUp() return getY0()<-0.5 || readDPadUp();
+   public function isDown() return getY0()>0.5 || readDPadDown();
+
+   public function getDx() : Int return (isLeft() ? -1 : 0) + (isRight() ? 1 : 0);
+   public function getDy() : Int return (isUp() ? -1 : 0) + (isDown() ? 1 : 0);
 
    public function getControlAt(i:Int):GameInputControl
    {
