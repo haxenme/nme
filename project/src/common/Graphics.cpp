@@ -333,7 +333,6 @@ void Graphics::endTiles()
    {
       mTileJob.mFill->DecRef();
       mTileJob.mFill = 0;
-
       OnChanged();
    }
 }
@@ -350,6 +349,7 @@ void Graphics::beginTiles(Surface *bitmapData,bool inSmooth,int inBlendMode, int
    mTileJob.mBlendMode = inBlendMode;
    mTileJob.mTileCount = inCount;
    mTileJob.mTileMode = inMode;
+   OnChanged();
 }
 
 void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
