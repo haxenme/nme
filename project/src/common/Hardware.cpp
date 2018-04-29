@@ -2493,7 +2493,7 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
          {
             for(int i=2;i<draw.mCount;i++)
             {
-               if (HitTri(V(i-2), V(i-2),V(i), pos ))
+               if (HitTri(V(i-2), V(i-1),V(i), pos ))
                   return true;
             }
          }

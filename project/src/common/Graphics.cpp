@@ -628,40 +628,6 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 {
    Flush();
    
-   #ifdef NME_DIRECTFB
-   
-   for(int i=0;i<mJobs.size();i++)
-   {
-      GraphicsJob &job = mJobs[i];
-      
-      if (!job.mHardwareRenderer /*&& !job.mSoftwareRenderer*/)
-         job.mHardwareRenderer = Renderer::CreateHardware(job,*mPathData,*inTarget.mHardware);
-      
-      //if (!job.mSoftwareRenderer)
-         //job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
-      
-      if (inState.mPhase==rpHitTest)
-      {
-         if (job.mHardwareRenderer && job.mSoftwareRenderer->Hits(inState))
-         {
-            return true;
-         }
-         /*else if (job.mSoftwareRenderer && job.mSoftwareRenderer->Hits(inState))
-         {
-            return true;
-         }*/
-      }
-      else
-      {
-         if (job.mHardwareRenderer)
-            job.mHardwareRenderer->Render(inTarget,inState);
-         //else
-            //job.mSoftwareRenderer->Render(inTarget,inState);
-      }
-   }
-   
-   #else
-   
    if (inTarget.IsHardware())
    {
       if (!mHardwareData)
@@ -702,8 +668,6 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
             job.mSoftwareRenderer->Render(inTarget,inState);
       }
    }
-   
-   #endif
 
    return false;
 }
