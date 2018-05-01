@@ -1176,6 +1176,13 @@ class GL
       nme_gl_viewport(x, y, width, height);
    }
 
+   public static inline function debugMessageCallback(onResult:String->Void):Bool
+   {
+      return nme_debug_message_callback(onResult);
+   }
+   private static var nme_debug_message_callback = PrimeLoader.load("nme_debug_message_callback", "ob");
+
+
    // Getters & Setters
    private static inline function get_drawingBufferHeight() { return Lib.current.stage.stageHeight; }
    private static inline function get_drawingBufferWidth() { return Lib.current.stage.stageWidth; }

@@ -1779,6 +1779,19 @@ value nme_gl_get_render_buffer_parameter(value target, value pname)
 }
 DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
 
+
+
+#ifdef NME_GLES3
+value nme_gl_bind_vertexarray(value inId )
+{
+   int id = getResourceId(inId,resoVertexarray);
+   glBindVertexArray(id);
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_bind_vertexarray,1);
+#endif
+
+
 // --- Drawing -------------------------------
 
 
@@ -2174,6 +2187,153 @@ value nme_gl_get_tex_parameter(value inTarget,value inPname)
 DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
+#if NME_ANGLE
+struct DebugMessage
+{
+   DebugMessage() : callback(0) { }
+   ~DebugMessage(){ delete callback; gCurrentFileDialog = 0; };
+   void onResult( const char* result )
+   {
+      if (result==NULL || result[0]=='/0')
+         val_call1(callback->get(), alloc_null( ) );
+         else
+         val_call1(callback->get(), alloc_string( result ) );
+      delete this;
+   };
+   AutoGCRoot   *callback;
+};
+DebugMessage *gCurrentDebugMessage = 0;
+
+
+static void GL_APIENTRY Callback(GLenum source,
+                                 GLenum type,
+                                 GLuint id,
+                                 GLenum severity,
+                                 GLsizei length,
+                                 const GLchar *message,
+                                 const void *userParam)
+{
+    char* _source;
+    char* _type;
+    char* _severity;
+
+    switch (source) {
+        case GL_DEBUG_SOURCE_API_KHR:
+        _source = "API";
+        break;
+
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM_KHR:
+        _source = "WINDOW SYSTEM";
+        break;
+
+        case GL_DEBUG_SOURCE_SHADER_COMPILER_KHR:
+        _source = "SHADER COMPILER";
+        break;
+
+        case GL_DEBUG_SOURCE_THIRD_PARTY_KHR:
+        _source = "THIRD PARTY";
+        break;
+
+        case GL_DEBUG_SOURCE_APPLICATION_KHR:
+        _source = "APPLICATION";
+        break;
+
+        case GL_DEBUG_SOURCE_OTHER_KHR:
+        _source = "UNKNOWN";
+        break;
+
+        default:
+        _source = "UNKNOWN";
+        break;
+    }
+
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR_KHR:
+        _type = "ERROR";
+        break;
+
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_KHR:
+        _type = "DEPRECATED BEHAVIOR";
+        break;
+
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_KHR:
+        _type = "UDEFINED BEHAVIOR";
+        break;
+
+        case GL_DEBUG_TYPE_PORTABILITY_KHR:
+        _type = "PORTABILITY";
+        break;
+
+        case GL_DEBUG_TYPE_PERFORMANCE_KHR:
+        _type = "PERFORMANCE";
+        break;
+
+        case GL_DEBUG_TYPE_OTHER_KHR:
+        _type = "OTHER";
+        break;
+
+        case GL_DEBUG_TYPE_MARKER_KHR:
+        _type = "MARKER";
+        break;
+
+        default:
+        _type = "UNKNOWN";
+        break;
+    }
+
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH_KHR:
+        _severity = "HIGH";
+        break;
+
+        case GL_DEBUG_SEVERITY_MEDIUM_KHR:
+        _severity = "MEDIUM";
+        break;
+
+        case GL_DEBUG_SEVERITY_LOW_KHR:
+        _severity = "LOW";
+        break;
+
+        case GL_DEBUG_SEVERITY_NOTIFICATION_KHR:
+        _severity = "NOTIFICATION";
+        break;
+
+        default:
+        _severity = "UNKNOWN";
+        break;
+    }
+
+char buf[2048];
+sprintf(buf,"CALLBACK:%d: %s of %s severity, raised from %s: %s in %s",
+            id, _type, _severity, _source, message, sDebugName);
+    fprintf(stderr,"CALLBACK:%s\n", buf);
+  gCurrentDebugMessage->onResult(buf);
+}
+
+bool nme_debug_message_callback( value inCallback )
+{
+//Tested only in Angle
+#ifdef NME_ANGLE
+   if(GL_KHR_debug)
+   {
+      if (gCurrentDebugMessage)
+         return false;
+
+      gCurrentDebugMessage = new DebugMessage();
+      gCurrentDebugMessage->callback = new AutoGCRoot(inCallback);
+#ifdef NME_GLES
+      glEnable(GL_DEBUG_OUTPUT_KHR);
+      glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR);
+      glDebugMessageCallbackKHR( Callback, 0 );
+#else
+      //TODO
+#endif
+      return true;
+   }
+   return false;
+}
+DEFINE_PRIME1(nme_debug_message_callback);
+#endif
 }
 
 extern "C" int nme_oglexport_register_prims() { return 0; }
