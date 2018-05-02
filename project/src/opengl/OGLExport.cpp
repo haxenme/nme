@@ -1781,16 +1781,6 @@ DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
 
 
 
-#ifdef NME_GLES3
-value nme_gl_bind_vertexarray(value inId )
-{
-   int id = getResourceId(inId,resoVertexarray);
-   glBindVertexArray(id);
-   return alloc_null();
-}
-DEFINE_PRIM(nme_gl_bind_vertexarray,1);
-#endif
-
 
 // --- Drawing -------------------------------
 
