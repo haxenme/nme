@@ -2299,6 +2299,7 @@ sprintf(buf,"CALLBACK:%d: %s of %s severity, raised from %s: %s in %s",
     fprintf(stderr,"CALLBACK:%s\n", buf);
   gCurrentDebugMessage->onResult(buf);
 }
+#endif
 
 bool nme_debug_message_callback( value inCallback )
 {
@@ -2320,10 +2321,12 @@ bool nme_debug_message_callback( value inCallback )
 #endif
       return true;
    }
+#endif
+
    return false;
 }
 DEFINE_PRIME1(nme_debug_message_callback);
-#endif
+
 }
 
 extern "C" int nme_oglexport_register_prims() { return 0; }
