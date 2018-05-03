@@ -3769,6 +3769,30 @@ value nme_text_field_get_line_metrics(value inText,value inIndex,value outMetric
 DEFINE_PRIM(nme_text_field_get_line_metrics,3);
 
 
+void nme_text_field_get_line_positions(value inText,int inIndex0,value outLines)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      int n = val_array_size(outLines);
+      double *ptr = val_array_double(outLines);
+      if (ptr)
+      {
+         text->getLinePositions(inIndex0,ptr,n);
+      }
+      else
+      {
+         std::vector<double> buf(n);
+         text->getLinePositions(inIndex0,&buf[0],n);
+         for(int i=0;i<n;i++)
+            val_array_set_i(outLines, i, alloc_float(buf[i]));
+      }
+   }
+}
+DEFINE_PRIME3v(nme_text_field_get_line_positions);
+
+
+
 value nme_text_field_get_char_boundaries(value inText,value inIndex,value outBounds)
 {
    TextField *text;

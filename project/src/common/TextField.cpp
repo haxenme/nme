@@ -393,15 +393,29 @@ bool TextField::FinishEditOnEnter()
 int TextField::getBottomScrollV()
 {
    Layout();
-   double l = std::max(scrollV -1,0);
-   double height = fieldHeight-2*GAP;
-   while(height>0 && l<mLines.size())
-   {
-      Line &line = mLines[l++];
-      height -= line.mMetrics.height;
-   }
-   return l;
+
+   int line = scrollV-1;
+   double viewEnd = mLines[line].mY0 + fieldHeight-2*GAP;
+   while(line<mLines.size() && mLines[line].mY0<viewEnd)
+      line++;
+   return line;
 }
+
+void TextField::getLinePositions(int inLineId0, double *outResult, int inCount)
+{
+   Layout();
+   double y0 = mLines[scrollV-1].mY0;
+   double lastY = 0;
+   for(int l=0;l<inCount;l++)
+   {
+      int id = l+inLineId0-1;
+      if (id<0 || id>=mLines.size())
+         outResult[l] = lastY;
+      else
+         outResult[l] = lastY = mLines[id].mY0 - y0;
+   }
+}
+
 
 void TextField::setScrollH(int inScrollH)
 {

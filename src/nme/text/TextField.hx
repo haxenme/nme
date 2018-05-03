@@ -56,6 +56,19 @@ class TextField extends InteractiveObject
       return nme_text_field_get_line_offset(nmeHandle, lineIndex);
    }
 
+
+   public function getLinePositions(startLine:Int, endLine:Int):Array<Float>
+   {
+      var count = endLine-startLine;
+      var buffer = new Array<Float>();
+      if (count>0)
+      {
+         buffer[count-1] = 0.0;
+         nme_text_field_get_line_positions(nmeHandle, startLine, buffer);
+      }
+      return buffer;
+   }
+
    public function getLineText(lineIndex:Int):String 
    {
       return nme_text_field_get_line_text(nmeHandle, lineIndex);
@@ -191,6 +204,8 @@ class TextField extends InteractiveObject
    private static var nme_text_field_get_selection_begin_index = Loader.load("nme_text_field_get_selection_begin_index", 1);
    private static var nme_text_field_get_selection_end_index = Loader.load("nme_text_field_get_selection_end_index", 1);
    private static var nme_text_field_set_selection = Loader.load("nme_text_field_set_selection", 3);
+
+   private static var nme_text_field_get_line_positions = PrimeLoader.load("nme_text_field_get_line_positions", "oiov");
 }
 
 #else

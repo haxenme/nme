@@ -100,6 +100,7 @@ public:
    int getLineIndexAtPoint(double x,double y);
    int getLineIndexOfChar(int inCharIndex);
    int getLineLength(int inLineIndex);
+   void getLinePositions(int inLineId0, double *outResult, int inCount);
    WString getLineText();
    int getParagraphLength(int inCharIndex);
    TextFormat *getTextFormat(int inFirstChar=-1, int inEndChar=-1);
