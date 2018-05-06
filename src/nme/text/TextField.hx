@@ -56,6 +56,11 @@ class TextField extends InteractiveObject
       return nme_text_field_get_line_offset(nmeHandle, lineIndex);
    }
 
+   public function getLineIndexOfChar(charIndex:Int):Int 
+   {
+      return nme_text_field_get_line_for_char(nmeHandle, charIndex);
+   }
+
 
    public function getLinePositions(startLine:Int, endLine:Int):Array<Float>
    {
@@ -104,6 +109,17 @@ class TextField extends InteractiveObject
    {
       nme_text_field_set_text_format(nmeHandle, format, beginIndex, endIndex);
    }
+
+   public function replaceSelectedText(inNewText:String) : Void
+   {
+      nme_text_field_replace_selected_text(nmeHandle, inNewText);
+   }
+
+   public function replaceText(c0:Int, c1:Int,inNewText:String) : Void
+   {
+      nme_text_field_replace_text(nmeHandle, c0, c1, inNewText);
+   }
+
 
    // Getters & Setters
    private function get_autoSize():TextFieldAutoSize { return Type.createEnumIndex(TextFieldAutoSize, nme_text_field_get_auto_size(nmeHandle)); }
@@ -206,6 +222,9 @@ class TextField extends InteractiveObject
    private static var nme_text_field_set_selection = Loader.load("nme_text_field_set_selection", 3);
 
    private static var nme_text_field_get_line_positions = PrimeLoader.load("nme_text_field_get_line_positions", "oiov");
+   private static var nme_text_field_get_line_for_char = PrimeLoader.load("nme_text_field_get_line_for_char", "oii");
+   private static var nme_text_field_replace_selected_text = PrimeLoader.load("nme_text_field_replace_selected_text", "oov");
+   private static var nme_text_field_replace_text = PrimeLoader.load("nme_text_field_replace_text", "oiiov");
 }
 
 #else

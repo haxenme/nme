@@ -726,6 +726,40 @@ void TextField::PasteSelection()
    InsertString(UTF8ToWide(GetClipboardText()));
 }
 
+void TextField::replaceSelectedText(const WString &inText)
+{
+   int p = mSelectMin;
+   DeleteSelection();
+   mSelectMin = mSelectMax = caretIndex = p;
+   InsertString(inText);
+}
+
+
+void TextField::replaceText(int inC0, int inC1, const WString &inText)
+{
+   if (inC0<inC1)
+   {
+      DeleteChars(inC0,inC1);
+      /*
+      int cIdx = caretIndex;
+      if (caretIndex>=inC0)
+      {
+         if (caretIndex<inC1)
+            cIdx = inC0;
+         else
+            cIdx = caretIndex - (inC1-inC0);
+
+         DeleteChars(inC0,inC1);
+         caretIndex = cIdx;
+         mSelectMin = mSelectMax = 0;
+      }
+      */
+   }
+
+   caretIndex = inC0;
+   InsertString(inText);
+}
+
 void TextField::onTextUpdate(const std::string &inText, int inPos0, int inPos1)
 {
    if (inPos1>inPos0)
@@ -893,7 +927,7 @@ void TextField::OnKey(Event &inEvent)
                           caretIndex = 0;
                        else
                        {
-                          int l= LineFromChar(caretIndex);
+                          int l= getLineFromChar(caretIndex);
                           Line &line = mLines[l];
                           caretIndex = line.mChar0;
                        }
@@ -904,7 +938,7 @@ void TextField::OnKey(Event &inEvent)
                           caretIndex = getLength();
                        else
                        {
-                          int l= LineFromChar(caretIndex);
+                          int l= getLineFromChar(caretIndex);
                           if (l==mLines.size()-1)
                              caretIndex = getLength();
                           else
@@ -918,7 +952,7 @@ void TextField::OnKey(Event &inEvent)
                      case keyUP:
                      case keyDOWN:
                      {
-                        int l= LineFromChar(caretIndex);
+                        int l= getLineFromChar(caretIndex);
                         //printf("caret line : %d\n",l);
                         if (l==0 && inEvent.value==keyUP) return;
                         if (l==mLines.size()-1 && inEvent.value==keyDOWN) return;
@@ -978,7 +1012,7 @@ void TextField::ShowCaret(bool inFromDrag)
    else if (pos.x>fieldWidth-GAP)
       setScrollH( scrollH + pos.x - (fieldWidth-GAP) + 1 );
 
-   int line = LineFromChar(caretIndex);
+   int line = getLineFromChar(caretIndex);
    if (pos.y<GAP)
    {
       setScrollV(line+1);
@@ -1150,7 +1184,7 @@ Rect TextField::getCharBoundaries(int inCharIndex)
    if (inCharIndex>=0 && inCharIndex<mCharPos.size())
    {
       UserPoint p = mCharPos[ inCharIndex ];
-      Line &line = mLines[LineFromChar(inCharIndex)];
+      Line &line = mLines[getLineFromChar(inCharIndex)];
       int height = line.mMetrics.height;
       int linePos = inCharIndex - line.mChar0;
       int width = line.mChars>linePos ? mCharPos[ inCharIndex+1 ].x - p.x : line.mMetrics.width - p.x; 
@@ -1389,7 +1423,7 @@ void TextField::setHTMLText(const WString &inString)
 }
 
 
-int TextField::LineFromChar(int inChar) const
+int TextField::getLineFromChar(int inChar) const
 {
    int min = 0;
    int max = mLines.size();
@@ -1567,8 +1601,8 @@ void TextField::BuildBackground()
          if (!mHighlightGfx)
             mHighlightGfx = new Graphics(this,true);
 
-         int l0 = LineFromChar(mSelectMin);
-         int l1 = LineFromChar(mSelectMax-1);
+         int l0 = getLineFromChar(mSelectMin);
+         int l1 = getLineFromChar(mSelectMax-1);
          UserPoint pos = mCharPos[mSelectMin] - scroll;
          double height = mLines[l1].mMetrics.height;
          double x1 = EndOfCharX(mSelectMax-1,l1) - scroll.x;
@@ -1712,7 +1746,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       else
          mCaretGfx->clear();
 
-      int line = LineFromChar(caretIndex);
+      int line = getLineFromChar(caretIndex);
       if (line>=0)
       {
          UserPoint pos = GetCursorPos() - scroll;

@@ -3793,6 +3793,41 @@ DEFINE_PRIME3v(nme_text_field_get_line_positions);
 
 
 
+int nme_text_field_get_line_for_char(value inText,int inIndex0)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      return text->getLineFromChar(inIndex0);
+   }
+   return 0;
+}
+DEFINE_PRIME2(nme_text_field_get_line_for_char);
+
+
+
+void nme_text_field_replace_selected_text(value inText,value inValue)
+{
+   TextField *text;
+
+   if (AbstractToObject(inText,text))
+      text->replaceSelectedText( valToStdWString(inValue) );
+}
+DEFINE_PRIME2v(nme_text_field_replace_selected_text);
+
+
+void nme_text_field_replace_text(value inText,int inC0, int inC1, value inValue)
+{
+   TextField *text;
+
+   if (AbstractToObject(inText,text))
+      text->replaceText( inC0, inC1, valToStdWString(inValue) );
+}
+DEFINE_PRIME4v(nme_text_field_replace_text);
+
+
+
+
 value nme_text_field_get_char_boundaries(value inText,value inIndex,value outBounds)
 {
    TextField *text;
