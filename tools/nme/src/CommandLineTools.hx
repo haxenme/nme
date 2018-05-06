@@ -62,7 +62,8 @@ class CommandLineTools
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
-            "rebuild", "shell", "icon", "banner", "favicon", "serve", "listbrowsers" ];
+            "rebuild", "shell", "icon", "banner", "favicon", "serve", "listbrowsers",
+            "prepare" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -184,7 +185,7 @@ class CommandLineTools
             platform.uninstall();
          }
 
-         if (command == "update" || command == "build" || command == "test" || command=="xcode" || command=="installer") 
+         if (command == "update" || command == "build" || command == "test" || command=="xcode" || command=="installer" || command=="prepare" ) 
          {
             Log.verbose("\nRunning command: UPDATE");
             platform.updateBuildDir();
@@ -201,6 +202,15 @@ class CommandLineTools
             platform.updateBuildDir();
             platform.runHaxe();
             haxed = true;
+         }
+
+         if (command == "prepare")
+         {
+            Log.verbose("\nRunning command: PREPARE");
+            platform.updateBuildDir();
+            Sys.println("PREPARE BUILD_FILE=" + platform.getHaxeDir() + "/build.hxml");
+            Sys.println("PREPARE BUILD_DIR=" + Sys.getCwd());
+            Sys.println("PREPARE BUILD_OUTPUT=" + platform.getBinaryName());
          }
 
          if (command == "build" || command == "test" || command=="xcode" || command=="installer") 
@@ -755,7 +765,7 @@ class CommandLineTools
 
       sys.println("");
       sys.println(" Usage : nme help");
-      sys.println(" Usage : nme [setup|clean|update|build|run|test] <project> (target) [options]");
+      sys.println(" Usage : nme [setup|clean|update|build|run|test|prepare] <project> (target) [options]");
       sys.println("");
       sys.println(" Commands : ");
       sys.println("");
@@ -776,6 +786,7 @@ class CommandLineTools
       sys.println("  icon filename width height: generate project icon");
       sys.println("  banner filename width height: generate project banner");
       sys.println("  favicon filename: generate project favicon");
+      sys.println("  prepare filename: prepare the project for building, but print info only");
       sys.println("");
       sys.println(" Targets : ");
       sys.println("");
@@ -1451,7 +1462,7 @@ class CommandLineTools
             else
                buildProject(project);
 
-         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile":
+         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile", "prepare":
 
             if (words.length > 2) 
             {
@@ -1746,6 +1757,10 @@ class CommandLineTools
                Log.mVerbose = true;
                if (project.haxeflags.indexOf("--times")<0)
                   project.haxeflags.push("--times");
+            }
+            else if (argument == "-silent")
+            {
+               Log.mute = true;
             }
             else if (argument == "-times") 
             {

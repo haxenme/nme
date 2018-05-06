@@ -113,7 +113,9 @@ class Platform
    public function getExeDir() { return getOutputDir(); }
    public function getLibDir() { return getExeDir(); }
    public function getHaxeTemplateDir() { return "haxe"; }
+   public function getHaxeDir() { return haxeDir; }
    public function getNativeDllExt() { return ".so"; }
+   public function getBinaryName() { return ""; }
    public function getArchSuffix() { return ""; }
    public function postBuild() { }
 

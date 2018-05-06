@@ -224,7 +224,7 @@ class PathHelper
          while(parts.length>1)
          {
             var test = parts.join("/")+"/haxelib.json";
-            trace(test);
+            //trace(test);
             if (FileSystem.exists(test))
             {
                result = parts.join("/");

@@ -30,6 +30,12 @@ class CppiaPlatform extends Platform
    override public function getLibExt() { return null; }
    override public function getHaxeTemplateDir() { return "script"; }
    override public function getAssetDir() { return getOutputDir()+"/assets"; }
+   override public function getBinaryName()
+   {
+       return project.expandCppia() ?
+           FileSystem.fullPath( getOutputDir() + "/ScriptMain.cppia" ) :
+           FileSystem.fullPath( getOutputDir() + "/" + getNmeFilename() );
+   }
 
 
    override public function copyBinary():Void 
@@ -79,9 +85,7 @@ class CppiaPlatform extends Platform
 
    override public function run(arguments:Array<String>):Void 
    {
-      var fullPath =  project.expandCppia() ? 
-           FileSystem.fullPath( getOutputDir() + "/ScriptMain.cppia" ) :
-           FileSystem.fullPath( getOutputDir() + "/" + getNmeFilename() );
+      var fullPath = getBinaryName();
       CommandLineTools.runAcadnme([fullPath].concat(arguments), project);
    }
 
