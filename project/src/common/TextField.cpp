@@ -1181,13 +1181,22 @@ WString TextField::getHTMLText()
 
 Rect TextField::getCharBoundaries(int inCharIndex)
 {
+   if (mLinesDirty)
+      Layout();
+
    if (inCharIndex>=0 && inCharIndex<mCharPos.size())
    {
       UserPoint p = mCharPos[ inCharIndex ];
       Line &line = mLines[getLineFromChar(inCharIndex)];
       int height = line.mMetrics.height;
       int linePos = inCharIndex - line.mChar0;
-      int width = line.mChars>linePos ? mCharPos[ inCharIndex+1 ].x - p.x : line.mMetrics.width - p.x; 
+      double width = line.mChars>linePos+1 ? mCharPos[ inCharIndex+1 ].x - p.x : line.mMetrics.width - p.x; 
+      if (width<0)
+      {
+         p.x += width;
+         width = 0;
+      }
+
       return Rect(p.x, p.y, width, height);
    }
 
