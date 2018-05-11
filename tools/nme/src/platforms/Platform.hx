@@ -162,6 +162,14 @@ class Platform
    public function runHaxeWithArgs(args:Array<String>)
    {
       var haxeRoot = project.getDef("HAXE_ROOT");
+
+
+      if (project.hasDef("haxe-server"))
+      {
+         var buildDir = Sys.getCwd();
+         args = ["--cwd", buildDir, "--connect", project.getDef("haxe-server") ].concat(args);
+      }
+
       if (haxeRoot!=null)
       {
          var haxe = haxeRoot + "/haxe";

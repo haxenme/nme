@@ -63,7 +63,7 @@ class CommandLineTools
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
             "rebuild", "shell", "icon", "banner", "favicon", "serve", "listbrowsers",
-            "prepare" ];
+            "prepare", "quickrun" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -213,7 +213,7 @@ class CommandLineTools
             Sys.println("PREPARE BUILD_OUTPUT=" + platform.getBinaryName());
          }
 
-         if (command == "build" || command == "test" || command=="xcode" || command=="installer") 
+         if (command == "build" || command == "test" || command=="xcode" || command=="installer" || command=="quickrun" ) 
          {
             Log.verbose("\nRunning command: BUILD");
             platform.runHaxe();
@@ -247,7 +247,7 @@ class CommandLineTools
             platform.install();
          }
 
-         if (command == "run" || command == "rerun" || command == "test") 
+         if (command == "run" || command == "rerun" || command == "test" || command=="quickrun") 
          {
             Log.verbose("\nRunning command: RUN");
             platform.run(additionalArguments);
@@ -776,6 +776,7 @@ class CommandLineTools
       sys.println("  build : Compile and package for the specified project/target");
       sys.println("  run : Install and run for the specified project/target");
       sys.println("  test : Update, build and run in one command");
+      sys.println("  quickrun : Rebuild binary and run");
       sys.println("  clone : Copy an existing sample or project");
       sys.println("  demo :  Run an existing sample or project");
       sys.println("  create : Create a new project or extension using templates");
@@ -1462,7 +1463,7 @@ class CommandLineTools
             else
                buildProject(project);
 
-         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile", "prepare":
+         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile", "prepare", "quickrun":
 
             if (words.length > 2) 
             {
