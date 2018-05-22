@@ -285,7 +285,7 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuff
       #ifdef HXCPP_JS_PRIME
       if (inBuffer)
       {
-         result = FT_New_Memory_Face(sgLibrary, &inBuffer->data[0], inBuffer->data.size(),
+         result = FT_New_Memory_Face(sgLibrary, inBuffer->getData(), inBuffer->getDataSize(),
                                      inIndex, outFace);
       }
       else
@@ -308,8 +308,8 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuff
             {
                FontBuffer buffer = new BufferData();
                buffer->IncRef();
-               buffer->data.swap(data);
-               result = FT_New_Memory_Face(sgLibrary, &buffer->data[0], len, inIndex, outFace);
+               buffer->swapData(data);
+               result = FT_New_Memory_Face(sgLibrary, buffer->getData(), len, inIndex, outFace);
                nmeRegisterFont(inFace,buffer);
             }
          }
@@ -918,7 +918,7 @@ std::string GetFreeTypeFaceName(FontBuffer inBytes)
 
    FT_Face face =0;
    #ifdef HXCPP_JS_PRIME
-   int result = FT_New_Memory_Face(sgLibrary, &inBytes->data[0], inBytes->data.size(),0,&face);
+   int result = FT_New_Memory_Face(sgLibrary, inBytes->getData(), inBytes->getDataSize(),0,&face);
    #else
    ByteArray bytes(inBytes->get());
    if (!bytes.Ok())

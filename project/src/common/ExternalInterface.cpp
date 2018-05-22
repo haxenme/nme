@@ -5236,8 +5236,7 @@ int nme_zip_encode(value ioBuffer)
 {
    buffer buf = val_to_buffer(ioBuffer);
 
-   std::vector<unsigned char> &src = buf->data;
-   int slen = src.size();
+   int slen = buf->getDataSize();
 
    z_stream z;
    memset(&z,0,sizeof(z_stream));
@@ -5250,7 +5249,7 @@ int nme_zip_encode(value ioBuffer)
    int dlen = deflateBound(&z,slen);
    std::vector<unsigned char> dest(dlen);
 
-   z.next_in = (Bytef*)&src[0];
+   z.next_in = (Bytef*)buf->getData();
    z.avail_in = slen;
    z.next_out = (Bytef*)&dest[0];
    z.avail_out = dlen;
@@ -5263,7 +5262,7 @@ int nme_zip_encode(value ioBuffer)
    }
    int size = z.next_out - (Bytef*)&dest[0];
    dest.resize(size);
-   buf->data.swap(dest);
+   buf->swapData(dest);
    deflateEnd(&z);
    return size;
 }
@@ -5275,8 +5274,7 @@ int nme_zip_decode(value ioBuffer)
    if (!buf)
       return 0;
 
-   std::vector<unsigned char> &src = buf->data;
-   int slen = src.size();
+   int slen = buf->getDataSize();
    if (slen==0)
       return 0;
 
@@ -5289,7 +5287,7 @@ int nme_zip_decode(value ioBuffer)
    if ( inflateInit2(&z,MAX_WBITS) != Z_OK )
       val_throw(alloc_string("bad inflateInit"));
 
-   z.next_in = (Bytef*)&src[0];
+   z.next_in = (Bytef*)buf->getData();
    z.avail_in = slen;
 
    int dstpos = 0;
@@ -5307,7 +5305,7 @@ int nme_zip_decode(value ioBuffer)
       {
          int size = z.next_out - (Bytef*)&dest[0];
          dest.resize(size);
-         buf->data.swap(dest);
+         buf->swapData(dest);
          inflateEnd(&z);
          return size;
       }

@@ -777,7 +777,6 @@ public:
    Surface     *mPrimarySurface;
    SDL_Surface *mSoftwareSurface;
    SDL_Texture *mSoftwareTexture;
-   double       mFrameRate;
    bool         mIsOpenGL;
    Cursor       mCurrentCursor;
    bool         mShowCursor;

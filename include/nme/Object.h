@@ -14,6 +14,8 @@ namespace nme
 
 class ImageBuffer;
 
+extern int gImageData;
+
 enum NmeObjectType
 {
    notUnknown,

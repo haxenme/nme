@@ -7,6 +7,7 @@ namespace nme
 
 int gTextureContextVersion = 1;
 
+int gImageData = 0;
 
 // --- Surface -------------------------------------------------------
 
@@ -68,6 +69,8 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
 
    mBase = new unsigned char[mStride * mHeight+1];
    mBase[mStride*mHeight] = 69;
+
+   gImageData += mStride*mHeight;
 }
 
 SimpleSurface::~SimpleSurface()
@@ -79,6 +82,8 @@ SimpleSurface::~SimpleSurface()
          ELOG("Image write overflow");
       }
       delete [] mBase;
+
+      gImageData -= mStride*mHeight;
    }
 }
 

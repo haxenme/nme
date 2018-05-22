@@ -17,7 +17,7 @@ QuickVec<Object *> gTempRefs;
 static int realized = 0;
 static int unrealized = 0;
 static int released = 0;
-
+int BufferData::totalSize = 0;
 
 struct ValueObjectStreamOut : public ObjectStreamOut
 {
@@ -80,7 +80,7 @@ BufferData *BufferData::fromStream(class ObjectStreamIn &inStream)
 {
    int len = inStream.getInt();
    BufferData *buf = new BufferData();
-   buf->data.resize(len);
+   buf->setDataSize(len);
    if (len)
       memcpy(&buf->data[0], inStream.getBytes(len), len);
    return buf;
@@ -203,7 +203,11 @@ Object *Object::toObject( value &inValue )
          }
 
          if (newObject)
+         {
+            //newObject->IncRef();
             newObject->lastFrameId = Object::sFrameId;
+            //gTempRefs.push_back(newObject);
+         }
 
          return newObject;
       }
@@ -290,10 +294,17 @@ void Object::unrealize()
 }
 
 
+BufferData::~BufferData()
+{
+   //printf("~BufferData");
+   //printf("%p x %d", getData(), getDataSize() );
+   totalSize -= data.size();
+}
+
 int nme_buffer_create(int inLength)
 {
    BufferData *data = new BufferData();
-   data->data.resize(inLength*4);
+   data->setDataSize(inLength*4);
    return (int)data;
 }
 DEFINE_PRIME1(nme_buffer_create)
@@ -302,7 +313,7 @@ DEFINE_PRIME1(nme_buffer_create)
 int nme_buffer_offset(int inPtr)
 {
    BufferData *data = (BufferData *)inPtr;
-   return (int)(&data->data[0]);
+   return (int)data->getData();
 }
 DEFINE_PRIME1(nme_buffer_offset)
 
@@ -310,7 +321,7 @@ DEFINE_PRIME1(nme_buffer_offset)
 int nme_buffer_length(int inPtr)
 {
    BufferData *data = (BufferData *)inPtr;
-   return data->data.size();
+   return data->getDataSize();
 }
 DEFINE_PRIME1(nme_buffer_length)
 
@@ -318,8 +329,9 @@ DEFINE_PRIME1(nme_buffer_length)
 
 void nme_buffer_resize(int inPtr, int inNewSize)
 {
+   //printf("Resize -> %d\n", inNewSize);
    BufferData *data = (BufferData *)inPtr;
-   data->data.resize(inNewSize*4);
+   data->setDataSize(inNewSize*4);
 }
 DEFINE_PRIME2v(nme_buffer_resize)
 
@@ -392,7 +404,8 @@ void nme_native_resource_release_temps()
       else
          i++;
    }
-   //printf("rel=%d, free=%d tot=%d\n", realized, released, Object::sLiveObjectCount);
+
+   // printf("created=%d, freed=%d #tot=%d imageData=%d bufferData=%d\n", realized, released, Object::sLiveObjectCount, gImageData, BufferData::totalSize);
    unrealized = 0;
    realized = 0;
    released = 0;

@@ -362,7 +362,8 @@ BufferData *decompressFontData(int srcLen, int destLen, const unsigned char *inD
 {
    BufferData *data = new BufferData();
    data->IncRef();
-   data->data.resize(destLen);
+
+   data->setDataSize(destLen);
 
    z_stream z;
    memset(&z,0,sizeof(z_stream));
@@ -374,8 +375,8 @@ BufferData *decompressFontData(int srcLen, int destLen, const unsigned char *inD
    z.next_in = (Bytef*)inData;
    z.avail_in = srcLen;
 
-   z.next_out = (Bytef*)&data->data[0];
-   z.avail_out = data->data.size();
+   z.next_out = (Bytef*)data->getData();
+   z.avail_out = data->getDataSize();
    int code = 0;
    if( (code = ::inflate(&z,flush)) < 0 )
    {

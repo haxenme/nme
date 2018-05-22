@@ -316,11 +316,37 @@ inline bool AbstractToObject(value inValue, OBJ *&outObj)
 
 struct BufferData : Object
 {
+   BufferData() { }
+
    NmeObjectType getObjectType() { return notBytes; }
+
+   unsigned char *getData() { return data.size() ? &data[0] : 0; }
+   int getDataSize() { return data.size(); }
+   void setDataSize(int inSize)
+   {
+      totalSize -= data.size();
+      data.resize(inSize);
+      totalSize += data.size();
+   }
+   void swapData(std::vector<unsigned char > &ioData)
+   {
+      totalSize -= data.size();
+      data.swap(ioData);
+      totalSize += data.size();
+   }
+
    static BufferData *fromStream(class ObjectStreamIn &inStream);
    void encodeStream(class ObjectStreamOut &inStream);
 
-   std::vector<unsigned char> data;
+   static int totalSize;
+
+   private:
+      std::vector<unsigned char> data;
+
+      BufferData(const BufferData &);
+      void operator = (const BufferData &);
+   protected:
+      ~BufferData();
 };
 typedef BufferData *buffer;
 
@@ -330,8 +356,11 @@ inline buffer val_to_buffer(value bytes)
    AbstractToObject(bytes,result);
    return result;
 }
-inline unsigned char *buffer_data(buffer inBuffer) { return inBuffer ? (inBuffer->data.size() ? &inBuffer->data[0] : (unsigned char *)inBuffer ) : 0; }
-inline int buffer_size(buffer inBuffer) { return inBuffer ? inBuffer->data.size() : 0; }
+inline unsigned char *buffer_data(buffer inBuffer)
+{
+   return inBuffer ? inBuffer->getData() : 0;
+}
+inline int buffer_size(buffer inBuffer) { return inBuffer ? inBuffer->getDataSize() : 0; }
 
 
 #else

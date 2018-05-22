@@ -61,6 +61,7 @@ class FrameTimer implements IPollClient
          }
          else if (wasInvalid)
          {
+            offTarget = 0.0;
             window.onInvalidFrame();
          }
 
