@@ -120,12 +120,6 @@ class ProcessHelper
 
    public static function runCommand(path:String, command:String, args:Array<String>, safeExecute:Bool = true, ignoreErrors:Bool = false):Void 
    {
-      if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
-      {
-         command = StringTools.replace(command, ",", "^,");
-      }
-
-
       if (safeExecute) 
       {
          try 
