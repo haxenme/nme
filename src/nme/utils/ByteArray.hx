@@ -123,7 +123,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       {
          var offset = nme_buffer_offset(ptr);
          var heap:js.html.Uint8Array = untyped Module.HEAP8;
-         heap.set(b,offset);
+         if (b.length<=length)
+            heap.set(b,offset);
+         else
+            heap.set(b.subarray(0,length),offset);
       }
       b = null;
       onBufferChanged();
@@ -168,6 +171,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    static var nme_buffer_offset = nme.PrimeLoader.load("nme_buffer_offset","ii");
    static var nme_buffer_resize = nme.PrimeLoader.load("nme_buffer_resize","iiv");
    static var nme_buffer_length = nme.PrimeLoader.load("nme_buffer_length","ii");
+   #else
    #end
 
    @:keep
@@ -725,7 +729,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          write_uncheck(value >> 8);
          write_uncheck(value);
 
-      } else 
+      }
+      else 
       {
          write_uncheck(value);
          write_uncheck(value >> 8);

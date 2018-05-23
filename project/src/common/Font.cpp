@@ -363,7 +363,7 @@ BufferData *decompressFontData(int srcLen, int destLen, const unsigned char *inD
    BufferData *data = new BufferData();
    data->IncRef();
 
-   data->setDataSize(destLen);
+   data->setDataSize(destLen,false);
 
    z_stream z;
    memset(&z,0,sizeof(z_stream));

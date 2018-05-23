@@ -1546,6 +1546,7 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 
 #ifdef EMSCRIPTEN
 extern void clUpdateAsyncChannels();
+extern void nme_native_resource_release_temps();
 
 void StartAnimation()
 {
@@ -1555,6 +1556,9 @@ void StartAnimation()
       ProcessEvent(event);
       // if (sgDead) break;
       event.type = -1;
+      #ifdef HXCPP_JS_PRIME
+      nme_native_resource_release_temps();
+      #endif
    }
 
    clUpdateAsyncChannels();
@@ -1575,11 +1579,17 @@ void StartAnimation()
          Event resize(etResize,cw,ch);
          sgSDLFrame->Resize(cw,ch);
          sgSDLFrame->ProcessEvent(resize);
+         #ifdef HXCPP_JS_PRIME
+         nme_native_resource_release_temps();
+         #endif
       }
    }
 
    Event poll(etPoll);
    sgSDLFrame->ProcessEvent(poll);
+   #ifdef HXCPP_JS_PRIME
+   nme_native_resource_release_temps();
+   #endif
    //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, nextWake);
 }
 

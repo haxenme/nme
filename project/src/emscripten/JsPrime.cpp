@@ -19,6 +19,16 @@ static int unrealized = 0;
 static int released = 0;
 int BufferData::totalSize = 0;
 
+static void pushTemp(Object *obj)
+{
+   if (!obj->held)
+   {
+      obj->held = true;
+      obj->IncRef();
+      gTempRefs.push_back(obj);
+   }
+}
+
 struct ValueObjectStreamOut : public ObjectStreamOut
 {
    typedef emscripten::val value;
@@ -76,26 +86,98 @@ struct ValueObjectStreamIn : public ObjectStreamIn
    }
 };
 
+
+BufferData::BufferData() : data(0), allocLen(0)
+{
+   pushTemp(this);
+}
+
+void BufferData::verify(const char *inWhere)
+{
+   if (data)
+   {
+      if (data[-1]!=68)
+      {
+         printf("Buffer underrun %s %d\n",  inWhere, data[-1]);
+         *(int *)0=0;
+      }
+      if (data[allocLen]!=69)
+      {
+         printf("Buffer override %s %d\n", inWhere, data[allocLen]);
+         *(int *)0=0;
+      }
+   }
+}
+
+void BufferData::setDataSize(int inSize, bool keepData)
+{
+   if (!keepData)
+   {
+      if (data)
+      {
+         verify("setDataSize noKeep");
+         data[-1]=77;
+         free(data - 4);
+         totalSize -= allocLen;
+      }
+      allocLen = inSize;
+      data = (unsigned char *)malloc(allocLen + 5) + 4;
+      totalSize += allocLen;
+      data[-1] = 68;
+      data[allocLen] = 69;
+   }
+   else
+   {
+      unsigned char *next = (unsigned char *)malloc(inSize + 5) + 4;
+      totalSize += inSize;
+      next[-1] = 68;
+      next[inSize] = 69;
+
+      if (data)
+         memcpy(next, data, std::min(inSize,allocLen));
+      if (inSize>allocLen)
+         memset(next + allocLen, 0, inSize-allocLen);
+      if (data)
+      {
+         verify("setDataSize keep");
+         data[-1]=77;
+         free(data - 4);
+         totalSize -= allocLen;
+      }
+      data = next;
+      allocLen = inSize;
+   }
+}
+
+void BufferData::swapData(std::vector<unsigned char > &ioData)
+{
+   setDataSize(ioData.size(),false);
+   memcpy(data, &ioData[0], ioData.size() );
+   std::vector<unsigned char > empty;
+   empty.swap(ioData);
+}
+
+
+
 BufferData *BufferData::fromStream(class ObjectStreamIn &inStream)
 {
    int len = inStream.getInt();
    BufferData *buf = new BufferData();
-   buf->setDataSize(len);
+   buf->setDataSize(len,false);
    if (len)
-      memcpy(&buf->data[0], inStream.getBytes(len), len);
+      memcpy(buf->data, inStream.getBytes(len), len);
    return buf;
 }
 
 void BufferData::encodeStream(class ObjectStreamOut &inStream)
 {
-   inStream.addInt(data.size());
-   if (data.size())
-      inStream.append(&data[0], data.size());
+   inStream.addInt(allocLen);
+   if (allocLen)
+      inStream.append(data, allocLen);
 }
 
 
 int Object::sLiveObjectCount = 0;
-int Object::sFrameId = 0;
 
 void Object::releaseObject()
 {
@@ -105,7 +187,9 @@ void Object::releaseObject()
    {
       value &v = *val;
       if (!v["unrealize"].isUndefined())
+      {
          v.call<void>("unrealize");
+      }
       else
       {
          unrealize();
@@ -124,10 +208,7 @@ value &Object::toAbstract()
       val = new emscripten::val( emscripten::val::object() );
       val->set("ptr", (int)this);
       val->set("kind", (int)gObjectKind);
-      IncRef();
-      gTempRefs.push_back(this);
    }
-   lastFrameId = sFrameId;
    return *val;
 }
 
@@ -141,14 +222,14 @@ Object *Object::toObject( value &inValue )
       // Custom 'realize' method (ByteArray)
       if (!inValue["realize"].isUndefined())
       {
+         realized++;
          inValue.call<void>("realize");
          Object *newObject = (Object *)inValue["ptr"].as<int>();
+         pushTemp(newObject);
 
          newObject->val = new emscripten::val(inValue);
          inValue.set("ptr",(int)newObject);
-         newObject->IncRef();
-         newObject->lastFrameId = Object::sFrameId;
-         gTempRefs.push_back(newObject);
+         // printf("new temp ref %p (%d)\n", newObject, newObject->mRefCount);
 
          return newObject;
       }
@@ -203,11 +284,7 @@ Object *Object::toObject( value &inValue )
          }
 
          if (newObject)
-         {
-            //newObject->IncRef();
-            newObject->lastFrameId = Object::sFrameId;
-            //gTempRefs.push_back(newObject);
-         }
+            pushTemp(newObject);
 
          return newObject;
       }
@@ -218,8 +295,6 @@ Object *Object::toObject( value &inValue )
    }
 
    Object *ptr = (Object *)inValue["ptr"].as<int>();
-   if (ptr)
-      ptr->lastFrameId = sFrameId;
 
    return ptr;
 }
@@ -234,8 +309,6 @@ void ValueObjectStreamIn::linkAbstract(Object *newObject)
    newObject->val = new emscripten::val(abstract);
    abstract.set("ptr",(int)newObject);
    abstract.set("type",(int)newObject->getObjectType());
-   newObject->IncRef();
-   gTempRefs.push_back(newObject);
 }
 
 
@@ -296,15 +369,20 @@ void Object::unrealize()
 
 BufferData::~BufferData()
 {
-   //printf("~BufferData");
-   //printf("%p x %d", getData(), getDataSize() );
-   totalSize -= data.size();
+   if (data)
+   {
+      verify("~BufferData");
+      data[-1]=77;
+      free(data - 4);
+      totalSize -= allocLen;
+   }
 }
 
 int nme_buffer_create(int inLength)
 {
    BufferData *data = new BufferData();
-   data->setDataSize(inLength*4);
+   data->setDataSize(inLength, true);
+   //data->verify("nme_buffer_create");
    return (int)data;
 }
 DEFINE_PRIME1(nme_buffer_create)
@@ -313,6 +391,7 @@ DEFINE_PRIME1(nme_buffer_create)
 int nme_buffer_offset(int inPtr)
 {
    BufferData *data = (BufferData *)inPtr;
+   //data->verify("nme_buffer_offset");
    return (int)data->getData();
 }
 DEFINE_PRIME1(nme_buffer_offset)
@@ -321,6 +400,7 @@ DEFINE_PRIME1(nme_buffer_offset)
 int nme_buffer_length(int inPtr)
 {
    BufferData *data = (BufferData *)inPtr;
+   //data->verify("nme_buffer_length");
    return data->getDataSize();
 }
 DEFINE_PRIME1(nme_buffer_length)
@@ -329,9 +409,9 @@ DEFINE_PRIME1(nme_buffer_length)
 
 void nme_buffer_resize(int inPtr, int inNewSize)
 {
-   //printf("Resize -> %d\n", inNewSize);
    BufferData *data = (BufferData *)inPtr;
-   data->setDataSize(inNewSize*4);
+   data->setDataSize(inNewSize, true);
+   //data->verify("nme_buffer_resize");
 }
 DEFINE_PRIME2v(nme_buffer_resize)
 
@@ -393,23 +473,22 @@ DEFINE_PRIME1v(nme_native_resource_unlock)
 
 void nme_native_resource_release_temps()
 {
+   if (!gTempRefs.size())
+      return;
+
+   int held = gTempRefs.size();
    for(int i=0;i<gTempRefs.size();i++)
    {
       Object *obj = gTempRefs[i];
-      if (obj->lastFrameId<Object::sFrameId)
-      {
-         obj->DecRef();
-         gTempRefs.qremoveAt(i);
-      }
-      else
-         i++;
+      obj->held = false;
+      obj->DecRef();
    }
+   gTempRefs.resize(0);
 
-   // printf("created=%d, freed=%d #tot=%d imageData=%d bufferData=%d\n", realized, released, Object::sLiveObjectCount, gImageData, BufferData::totalSize);
+   //printf("created=%d, freed=%d #tot=%d temps=%d imageData=%d bufferData=%d\n", realized, released, Object::sLiveObjectCount, held, gImageData, BufferData::totalSize);
    unrealized = 0;
    realized = 0;
    released = 0;
-   Object::sFrameId++;
 }
 
 DEFINE_PRIME0v(nme_native_resource_release_temps)

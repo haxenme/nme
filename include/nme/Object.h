@@ -55,7 +55,7 @@ protected:
 public:
    Object(bool inInitialRef=0) : mRefCount(inInitialRef?1:0)
    #ifdef HXCPP_JS_PRIME
-   , val(0), lastFrameId(sFrameId)
+   , val(0), held(false)
    #endif
    {
       #ifdef HXCPP_JS_PRIME
@@ -87,7 +87,7 @@ public:
    static Object *toObject( emscripten::val &inValue );
 
    emscripten::val *val;
-   int lastFrameId;
+   bool held;
    virtual void unrealize();
 
    static int sFrameId;

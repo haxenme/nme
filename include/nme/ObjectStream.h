@@ -132,8 +132,10 @@ struct ObjectStreamIn
    void get(std::wstring &outVal)
    {
       int size = getInt();
-      wchar_t *data = (wchar_t *)getBytes(size*sizeof(wchar_t));
-      outVal = std::wstring( data, data+size );
+      const void *data = getBytes(size*sizeof(wchar_t));
+      outVal.resize( size );
+      if (size)
+         memcpy( &outVal[0], data, size*sizeof(wchar_t) );
    }
 
 

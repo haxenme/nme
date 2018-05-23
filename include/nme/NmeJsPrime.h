@@ -10,6 +10,7 @@ typedef emscripten::val values_array;
 typedef std::string HxString;
 typedef std::wstring HxWString;
 
+
 typedef int vkind;
 
 extern IdMap sIdMap;

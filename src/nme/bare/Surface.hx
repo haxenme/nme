@@ -263,10 +263,11 @@ class Surface
       #if cpp
       nme_bitmap_data_set_array(nmeHandle, rect, inPixels);
       #else
-      var bytes = new ByteArray();
+      var bytes = new ByteArray(0,true);
       for(i in 0...count)
          bytes.writeInt(inPixels[i]);
       nme_bitmap_data_set_bytes(nmeHandle, rect, bytes, 0);
+      //bytes.dispose();
       #end
    }
 

@@ -285,9 +285,6 @@ class Window
    public function endRender()
    {
       nme_stage_end_render(nmeHandle);
-      #if jsprime
-      nme.NativeResource.releaseTempRefs();
-      #end
    }
 
 

@@ -316,24 +316,16 @@ inline bool AbstractToObject(value inValue, OBJ *&outObj)
 
 struct BufferData : Object
 {
-   BufferData() { }
+   BufferData();
 
    NmeObjectType getObjectType() { return notBytes; }
 
-   unsigned char *getData() { return data.size() ? &data[0] : 0; }
-   int getDataSize() { return data.size(); }
-   void setDataSize(int inSize)
-   {
-      totalSize -= data.size();
-      data.resize(inSize);
-      totalSize += data.size();
-   }
-   void swapData(std::vector<unsigned char > &ioData)
-   {
-      totalSize -= data.size();
-      data.swap(ioData);
-      totalSize += data.size();
-   }
+   unsigned char *getData() { return data; }
+   int getDataSize() { return allocLen; }
+
+   void setDataSize(int inSize, bool keepData);
+   void swapData(std::vector<unsigned char > &ioData);
+   void verify(const char *inWhere);
 
    static BufferData *fromStream(class ObjectStreamIn &inStream);
    void encodeStream(class ObjectStreamOut &inStream);
@@ -341,7 +333,8 @@ struct BufferData : Object
    static int totalSize;
 
    private:
-      std::vector<unsigned char> data;
+      unsigned char *data;
+      int allocLen;
 
       BufferData(const BufferData &);
       void operator = (const BufferData &);
