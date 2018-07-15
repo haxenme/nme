@@ -5,11 +5,9 @@ import haxe.io.Bytes;
 #if cpp
 import cpp.vm.Thread;
 import cpp.vm.Lock;
-import cpp.net.Poll;
 #elseif neko
 import neko.vm.Thread;
 import neko.vm.Lock;
-import neko.net.Poll;
 #end
 
 typedef Callback = Request -> haxe.io.Bytes;
