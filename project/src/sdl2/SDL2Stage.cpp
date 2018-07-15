@@ -6,8 +6,6 @@
 #include <KeyCodes.h>
 #include <map>
 
-#undef NME_MIXER
-
 #include <Sound.h>
 
 

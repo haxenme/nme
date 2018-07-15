@@ -4733,7 +4733,10 @@ value nme_sound_from_file(value inFilename,value inForceMusic, value inEngine)
    if (sound)
    {
       value result =  ObjectToAbstract(sound);
+      // TODO - leaking sounds on jsprime
+      #ifndef HXCPP_JS_PRIME
       sound->DecRef();
+      #endif
       return result;
    }
    return alloc_null();
@@ -4745,23 +4748,31 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic, value i
    int length = val_int(inLen);
    Sound *sound;
   // printf("trying bytes with length %d", length);
-   if (!val_is_null(inData) && length > 0) {
+   if (!val_is_null(inData) && length > 0)
+   {
       ByteArray buf = ByteArray(inData);
       std::string engine = val_is_null(inEngine) ? std::string() : valToStdString(inEngine,false);
       //printf("I'm here! trying bytes with length %d", length);
       sound = Sound::FromEncodedBytes(buf.Bytes(), length, val_bool(inForceMusic), engine );
-   } else {
-
+   }
+   else
+   {
       val_throw(alloc_string("Empty ByteArray"));
    }
+
 
    if (sound)
    {
       value result =  ObjectToAbstract(sound);
+      // TODO - leaking sounds on jsprime
+      #ifndef HXCPP_JS_PRIME
       sound->DecRef();
+      #endif
       return result;
-   } else {
-      val_throw(alloc_string("Not Sound"));
+   }
+   else
+   {
+      val_throw(alloc_string("No Sound"));
    }
    return alloc_null();
 }
