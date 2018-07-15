@@ -4,8 +4,10 @@
    <set name="mac" value="1" if="macos" />
    <set name="native_toolkit_sdl_static" value="1" if="static_link" />
 
-   <!-- Require Android 2.3+ -->
-   <set name="PLATFORM" value="android-9" if="android" />
+
+   <!-- Require Android 4.0+ with newer NDKs-->
+   <set name="PLATFORM" value="android-14"  unless="PLATFORM" />
+
    <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
    <set name="PLATFORM" value="android-21" if="HXCPP_ARM64" />
    <set name="HXCPP_CPP11" value="1" />
@@ -30,8 +32,8 @@
          -Diphonesim              -> build i386 version
          -Diphoneos               -> build armv6
          -Diphoneos -DHXCPP_ARMV7 -> build armv7
-         -Dandroid                -> build android armv5
-         -Dandroid  -DHXCPP_ARMV7 -> build android armv7
+         -Dandroid  -DHXCPP_ARMV5 -> build android armv7
+         -Dandroid                -> build android armv7
          -Dandroid  -DHXCPP_X86   -> build android x86
          - no defines             -> build current OS
          -DHXCPP_M64              -> build current OS, 64 but version
