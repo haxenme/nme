@@ -3,7 +3,7 @@ package nme.utils;
 #if (!flash)
 
 @:nativeProperty
-class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> 
+class UInt16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAccess<Int> 
 {
    static public inline var SBYTES_PER_ELEMENT = 2;
 
@@ -58,18 +58,11 @@ class Int16Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
       }
    }
 
-   public function subarray(start:Int = 0, ?end:Int) : Int16Array
-   {
-      if (end==null)
-         end = length;
-      return new Int16Array(buffer, (start<<1)+byteOffset, (end-start) );
-   }
+   @:keep
+   inline public function __get(index:Int):Int { return getUInt16(index << 1); }
 
    @:keep
-   inline public function __get(index:Int):Int { return getInt16(index << 1); }
-
-   @:keep
-   inline public function __set(index:Int, v:Int):Int { setInt16(index << 1, v); return v; }
+   inline public function __set(index:Int, v:Int):Int { setUInt16(index << 1, v); return v; }
 }
 
 #end

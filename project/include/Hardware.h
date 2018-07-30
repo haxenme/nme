@@ -130,6 +130,9 @@ public:
    virtual void DestroyShader(unsigned int inShader)=0;
    virtual void DestroyFramebuffer(unsigned int inBuffer)=0;
    virtual void DestroyRenderbuffer(unsigned int inBuffer)=0;
+   virtual void DestroyQuery(unsigned int inQuert)=0;
+   virtual void DestroyVertexArray(unsigned int inVertexArray)=0;
+   virtual void DestroyTransformFeedback(unsigned int inTransformFeedback)=0;
    
    #ifdef NME_S3D
    virtual void EndS3DRender()=0;

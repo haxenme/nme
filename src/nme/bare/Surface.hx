@@ -9,6 +9,7 @@ import nme.utils.ByteArray;
 import nme.Loader;
 import nme.NativeHandle;
 import nme.image.PixelFormat;
+import nme.utils.UInt8Array;
 
 @:nativeProperty
 class Surface
@@ -48,6 +49,7 @@ class Surface
    public var format(get, set):Int;
    public var premultipliedAlpha(get_premultipliedAlpha, set_premultipliedAlpha):Bool;
    public var nmeHandle:NativeHandle;
+   public var data(get,null):UInt8Array;
    
 
    public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, ?inFillRgb:Int)
@@ -160,7 +162,7 @@ class Surface
       return nme_bitmap_data_get_pixel32(nmeHandle, x, y);
    }
 
-   public function getPixels(rect:Rectangle):ByteArray 
+   public function getPixels(?rect:Rectangle):ByteArray 
    {
       var result:ByteArray = nme_bitmap_data_get_pixels(nmeHandle, rect);
       if (result != null) result.position = result.length;
@@ -269,6 +271,11 @@ class Surface
       nme_bitmap_data_set_bytes(nmeHandle, rect, bytes, 0);
       //bytes.dispose();
       #end
+   }
+
+   public function get_data() : UInt8Array
+   {
+      return UInt8Array.fromBytes( getPixels() );
    }
 
    public function getUInts8(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,

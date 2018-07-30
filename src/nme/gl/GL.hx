@@ -3,11 +3,13 @@ package nme.gl;
 import nme.display.BitmapData;
 import nme.utils.ArrayBuffer;
 import nme.utils.ByteArray;
+import nme.utils.UInt8Array;
 import nme.utils.IMemoryRange;
 import nme.utils.ArrayBufferView;
 import nme.geom.Matrix3D;
 import nme.Lib;
 import nme.Loader;
+import nme.PrimeLoader;
 
 #if (neko||cpp)
 import nme.utils.Float32Array;
@@ -33,11 +35,24 @@ abstract NmeInts(Dynamic)
    @:from inline static function fromArrayInt( f:Array<Int> )
         return new NmeInts(f);
 }
+
+abstract NmeBytes(Dynamic)
+{
+   public inline function new(d:Dynamic) this = d;
+   @:to inline function toDynamic() return this;
+   @:from inline static function fromByteArray( b:ByteArray )
+        return new NmeBytes(b);
+   @:from inline static function fromArrayBufferView( b:ArrayBufferView )
+        return new NmeBytes(b);
+}
+
+
 #end
 
 
 
 @:nativeProperty
+@:allow(nme.gl.WebGL2Context)
 class GL 
 {
    /* ClearBufferMask */
@@ -456,6 +471,285 @@ class GL
    public static inline var UNPACK_COLORSPACE_CONVERSION_WEBGL = 0x9243;
    public static inline var BROWSER_DEFAULT_WEBGL          = 0x9244;
 
+   public static inline var READ_BUFFER = 0x0C02;
+   public static inline var UNPACK_ROW_LENGTH = 0x0CF2;
+   public static inline var UNPACK_SKIP_ROWS = 0x0CF3;
+   public static inline var UNPACK_SKIP_PIXELS = 0x0CF4;
+   public static inline var PACK_ROW_LENGTH = 0x0D02;
+   public static inline var PACK_SKIP_ROWS = 0x0D03;
+   public static inline var PACK_SKIP_PIXELS = 0x0D04;
+   public static inline var TEXTURE_BINDING_3D = 0x806A;
+   public static inline var UNPACK_SKIP_IMAGES = 0x806D;
+   public static inline var UNPACK_IMAGE_HEIGHT = 0x806E;
+   public static inline var MAX_3D_TEXTURE_SIZE = 0x8073;
+   public static inline var MAX_ELEMENTS_VERTICES = 0x80E8;
+   public static inline var MAX_ELEMENTS_INDICES = 0x80E9;
+   public static inline var MAX_TEXTURE_LOD_BIAS = 0x84FD;
+   public static inline var MAX_FRAGMENT_UNIFORM_COMPONENTS = 0x8B49;
+   public static inline var MAX_VERTEX_UNIFORM_COMPONENTS = 0x8B4A;
+   public static inline var MAX_ARRAY_TEXTURE_LAYERS = 0x88FF;
+   public static inline var MIN_PROGRAM_TEXEL_OFFSET = 0x8904;
+   public static inline var MAX_PROGRAM_TEXEL_OFFSET = 0x8905;
+   public static inline var MAX_VARYING_COMPONENTS = 0x8B4B;
+   public static inline var FRAGMENT_SHADER_DERIVATIVE_HINT = 0x8B8B;
+   public static inline var RASTERIZER_DISCARD = 0x8C89;
+   public static inline var VERTEX_ARRAY_BINDING = 0x85B5;
+   public static inline var MAX_VERTEX_OUTPUT_COMPONENTS = 0x9122;
+   public static inline var MAX_FRAGMENT_INPUT_COMPONENTS = 0x9125;
+   public static inline var MAX_SERVER_WAIT_TIMEOUT = 0x9111;
+   public static inline var MAX_ELEMENT_INDEX = 0x8D6B;
+
+
+   // WebGL2 helpers
+   public static inline var RED = 0x1903;
+   public static inline var RGB8 = 0x8051;
+   public static inline var RGBA8 = 0x8058;
+   public static inline var RGB10_A2 = 0x8059;
+   public static inline var TEXTURE_3D = 0x806F;
+   public static inline var TEXTURE_WRAP_R = 0x8072;
+   public static inline var TEXTURE_MIN_LOD = 0x813A;
+   public static inline var TEXTURE_MAX_LOD = 0x813B;
+   public static inline var TEXTURE_BASE_LEVEL = 0x813C;
+   public static inline var TEXTURE_MAX_LEVEL = 0x813D;
+   public static inline var TEXTURE_COMPARE_MODE = 0x884C;
+   public static inline var TEXTURE_COMPARE_FUNC = 0x884D;
+   public static inline var SRGB = 0x8C40;
+   public static inline var SRGB8 = 0x8C41;
+   public static inline var SRGB8_ALPHA8 = 0x8C43;
+   public static inline var COMPARE_REF_TO_TEXTURE = 0x884E;
+   public static inline var RGBA32F = 0x8814;
+   public static inline var RGB32F = 0x8815;
+   public static inline var RGBA16F = 0x881A;
+   public static inline var RGB16F = 0x881B;
+   public static inline var TEXTURE_2D_ARRAY = 0x8C1A;
+   public static inline var TEXTURE_BINDING_2D_ARRAY = 0x8C1D;
+   public static inline var R11F_G11F_B10F = 0x8C3A;
+   public static inline var RGB9_E5 = 0x8C3D;
+   public static inline var RGBA32UI = 0x8D70;
+   public static inline var RGB32UI = 0x8D71;
+   public static inline var RGBA16UI = 0x8D76;
+   public static inline var RGB16UI = 0x8D77;
+   public static inline var RGBA8UI = 0x8D7C;
+   public static inline var RGB8UI = 0x8D7D;
+   public static inline var RGBA32I = 0x8D82;
+   public static inline var RGB32I = 0x8D83;
+   public static inline var RGBA16I = 0x8D88;
+   public static inline var RGB16I = 0x8D89;
+   public static inline var RGBA8I = 0x8D8E;
+   public static inline var RGB8I = 0x8D8F;
+   public static inline var RED_INTEGER = 0x8D94;
+   public static inline var RGB_INTEGER = 0x8D98;
+   public static inline var RGBA_INTEGER = 0x8D99;
+   public static inline var R8 = 0x8229;
+   public static inline var RG8 = 0x822B;
+   public static inline var R16F = 0x822D;
+   public static inline var R32F = 0x822E;
+   public static inline var RG16F = 0x822F;
+   public static inline var RG32F = 0x8230;
+   public static inline var R8I = 0x8231;
+   public static inline var R8UI = 0x8232;
+   public static inline var R16I = 0x8233;
+   public static inline var R16UI = 0x8234;
+   public static inline var R32I = 0x8235;
+   public static inline var R32UI = 0x8236;
+   public static inline var RG8I = 0x8237;
+   public static inline var RG8UI = 0x8238;
+   public static inline var RG16I = 0x8239;
+   public static inline var RG16UI = 0x823A;
+   public static inline var RG32I = 0x823B;
+   public static inline var RG32UI = 0x823C;
+   public static inline var R8_SNORM = 0x8F94;
+   public static inline var RG8_SNORM = 0x8F95;
+   public static inline var RGB8_SNORM = 0x8F96;
+   public static inline var RGBA8_SNORM = 0x8F97;
+   public static inline var RGB10_A2UI = 0x906F;
+   public static inline var TEXTURE_IMMUTABLE_FORMAT = 0x912F;
+   public static inline var TEXTURE_IMMUTABLE_LEVELS = 0x82DF;
+   
+   public static inline var UNSIGNED_INT_2_10_10_10_REV = 0x8368;
+   public static inline var UNSIGNED_INT_10F_11F_11F_REV = 0x8C3B;
+   public static inline var UNSIGNED_INT_5_9_9_9_REV = 0x8C3E;
+   public static inline var FLOAT_32_UNSIGNED_INT_24_8_REV = 0x8DAD;
+   public static inline var UNSIGNED_INT_24_8 = 0x84FA;
+   public static inline var HALF_FLOAT = 0x140B;
+   public static inline var RG = 0x8227;
+   public static inline var RG_INTEGER = 0x8228;
+   public static inline var INT_2_10_10_10_REV = 0x8D9F;
+   
+   public static inline var CURRENT_QUERY = 0x8865;
+   public static inline var QUERY_RESULT = 0x8866;
+   public static inline var QUERY_RESULT_AVAILABLE = 0x8867;
+   public static inline var ANY_SAMPLES_PASSED = 0x8C2F;
+   public static inline var ANY_SAMPLES_PASSED_CONSERVATIVE = 0x8D6A;
+   
+   public static inline var MAX_DRAW_BUFFERS = 0x8824;
+   public static inline var DRAW_BUFFER0 = 0x8825;
+   public static inline var DRAW_BUFFER1 = 0x8826;
+   public static inline var DRAW_BUFFER2 = 0x8827;
+   public static inline var DRAW_BUFFER3 = 0x8828;
+   public static inline var DRAW_BUFFER4 = 0x8829;
+   public static inline var DRAW_BUFFER5 = 0x882A;
+   public static inline var DRAW_BUFFER6 = 0x882B;
+   public static inline var DRAW_BUFFER7 = 0x882C;
+   public static inline var DRAW_BUFFER8 = 0x882D;
+   public static inline var DRAW_BUFFER9 = 0x882E;
+   public static inline var DRAW_BUFFER10 = 0x882F;
+   public static inline var DRAW_BUFFER11 = 0x8830;
+   public static inline var DRAW_BUFFER12 = 0x8831;
+   public static inline var DRAW_BUFFER13 = 0x8832;
+   public static inline var DRAW_BUFFER14 = 0x8833;
+   public static inline var DRAW_BUFFER15 = 0x8834;
+   public static inline var MAX_COLOR_ATTACHMENTS = 0x8CDF;
+   public static inline var COLOR_ATTACHMENT1 = 0x8CE1;
+   public static inline var COLOR_ATTACHMENT2 = 0x8CE2;
+   public static inline var COLOR_ATTACHMENT3 = 0x8CE3;
+   public static inline var COLOR_ATTACHMENT4 = 0x8CE4;
+   public static inline var COLOR_ATTACHMENT5 = 0x8CE5;
+   public static inline var COLOR_ATTACHMENT6 = 0x8CE6;
+   public static inline var COLOR_ATTACHMENT7 = 0x8CE7;
+   public static inline var COLOR_ATTACHMENT8 = 0x8CE8;
+   public static inline var COLOR_ATTACHMENT9 = 0x8CE9;
+   public static inline var COLOR_ATTACHMENT10 = 0x8CEA;
+   public static inline var COLOR_ATTACHMENT11 = 0x8CEB;
+   public static inline var COLOR_ATTACHMENT12 = 0x8CEC;
+   public static inline var COLOR_ATTACHMENT13 = 0x8CED;
+   public static inline var COLOR_ATTACHMENT14 = 0x8CEE;
+   public static inline var COLOR_ATTACHMENT15 = 0x8CEF;
+   
+   public static inline var SAMPLER_3D = 0x8B5F;
+   public static inline var SAMPLER_2D_SHADOW = 0x8B62;
+   public static inline var SAMPLER_2D_ARRAY = 0x8DC1;
+   public static inline var SAMPLER_2D_ARRAY_SHADOW = 0x8DC4;
+   public static inline var SAMPLER_CUBE_SHADOW = 0x8DC5;
+   public static inline var INT_SAMPLER_2D = 0x8DCA;
+   public static inline var INT_SAMPLER_3D = 0x8DCB;
+   public static inline var INT_SAMPLER_CUBE = 0x8DCC;
+   public static inline var INT_SAMPLER_2D_ARRAY = 0x8DCF;
+   public static inline var UNSIGNED_INT_SAMPLER_2D = 0x8DD2;
+   public static inline var UNSIGNED_INT_SAMPLER_3D = 0x8DD3;
+   public static inline var UNSIGNED_INT_SAMPLER_CUBE = 0x8DD4;
+   public static inline var UNSIGNED_INT_SAMPLER_2D_ARRAY = 0x8DD7;
+   public static inline var MAX_SAMPLES = 0x8D57;
+   public static inline var SAMPLER_BINDING = 0x8919;
+   
+   public static inline var PIXEL_PACK_BUFFER = 0x88EB;
+   public static inline var PIXEL_UNPACK_BUFFER = 0x88EC;
+   public static inline var PIXEL_PACK_BUFFER_BINDING = 0x88ED;
+   public static inline var PIXEL_UNPACK_BUFFER_BINDING = 0x88EF;
+   public static inline var COPY_READ_BUFFER = 0x8F36;
+   public static inline var COPY_WRITE_BUFFER = 0x8F37;
+   public static inline var COPY_READ_BUFFER_BINDING = 0x8F36;
+   public static inline var COPY_WRITE_BUFFER_BINDING = 0x8F37;
+   
+   public static inline var FLOAT_MAT2x3 = 0x8B65;
+   public static inline var FLOAT_MAT2x4 = 0x8B66;
+   public static inline var FLOAT_MAT3x2 = 0x8B67;
+   public static inline var FLOAT_MAT3x4 = 0x8B68;
+   public static inline var FLOAT_MAT4x2 = 0x8B69;
+   public static inline var FLOAT_MAT4x3 = 0x8B6A;
+   public static inline var UNSIGNED_INT_VEC2 = 0x8DC6;
+   public static inline var UNSIGNED_INT_VEC3 = 0x8DC7;
+   public static inline var UNSIGNED_INT_VEC4 = 0x8DC8;
+   public static inline var UNSIGNED_NORMALIZED = 0x8C17;
+   public static inline var SIGNED_NORMALIZED = 0x8F9C;
+   
+   public static inline var VERTEX_ATTRIB_ARRAY_INTEGER = 0x88FD;
+   public static inline var VERTEX_ATTRIB_ARRAY_DIVISOR = 0x88FE;
+   
+   public static inline var TRANSFORM_FEEDBACK_BUFFER_MODE = 0x8C7F;
+   public static inline var MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS = 0x8C80;
+   public static inline var TRANSFORM_FEEDBACK_VARYINGS = 0x8C83;
+   public static inline var TRANSFORM_FEEDBACK_BUFFER_START = 0x8C84;
+   public static inline var TRANSFORM_FEEDBACK_BUFFER_SIZE = 0x8C85;
+   public static inline var TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN = 0x8C88;
+   public static inline var MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS = 0x8C8A;
+   public static inline var MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS = 0x8C8B;
+   public static inline var INTERLEAVED_ATTRIBS = 0x8C8C;
+   public static inline var SEPARATE_ATTRIBS = 0x8C8D;
+   public static inline var TRANSFORM_FEEDBACK_BUFFER = 0x8C8E;
+   public static inline var TRANSFORM_FEEDBACK_BUFFER_BINDING = 0x8C8F;
+   public static inline var TRANSFORM_FEEDBACK = 0x8E22;
+   public static inline var TRANSFORM_FEEDBACK_PAUSED = 0x8E23;
+   public static inline var TRANSFORM_FEEDBACK_ACTIVE = 0x8E24;
+   public static inline var TRANSFORM_FEEDBACK_BINDING = 0x8E25;
+
+   public static inline var FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING = 0x8210;
+   public static inline var FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE = 0x8211;
+   public static inline var FRAMEBUFFER_ATTACHMENT_RED_SIZE = 0x8212;
+   public static inline var FRAMEBUFFER_ATTACHMENT_GREEN_SIZE = 0x8213;
+   public static inline var FRAMEBUFFER_ATTACHMENT_BLUE_SIZE = 0x8214;
+   public static inline var FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE = 0x8215;
+   public static inline var FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE = 0x8216;
+   public static inline var FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE = 0x8217;
+   public static inline var FRAMEBUFFER_DEFAULT = 0x8218;
+   public static inline var DEPTH24_STENCIL8 = 0x88F0;
+   public static inline var DRAW_FRAMEBUFFER_BINDING = 0x8CA6;
+   public static inline var READ_FRAMEBUFFER = 0x8CA8;
+   public static inline var DRAW_FRAMEBUFFER = 0x8CA9;
+   public static inline var READ_FRAMEBUFFER_BINDING = 0x8CAA;
+   public static inline var RENDERBUFFER_SAMPLES = 0x8CAB;
+   public static inline var FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER = 0x8CD4;
+   public static inline var FRAMEBUFFER_INCOMPLETE_MULTISAMPLE = 0x8D56;
+
+   public static inline var UNIFORM_BUFFER = 0x8A11;
+   public static inline var UNIFORM_BUFFER_BINDING = 0x8A28;
+   public static inline var UNIFORM_BUFFER_START = 0x8A29;
+   public static inline var UNIFORM_BUFFER_SIZE = 0x8A2A;
+   public static inline var MAX_VERTEX_UNIFORM_BLOCKS = 0x8A2B;
+   public static inline var MAX_FRAGMENT_UNIFORM_BLOCKS = 0x8A2D;
+   public static inline var MAX_COMBINED_UNIFORM_BLOCKS = 0x8A2E;
+   public static inline var MAX_UNIFORM_BUFFER_BINDINGS = 0x8A2F;
+   public static inline var MAX_UNIFORM_BLOCK_SIZE = 0x8A30;
+   public static inline var MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS = 0x8A31;
+   public static inline var MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS = 0x8A33;
+   public static inline var UNIFORM_BUFFER_OFFSET_ALIGNMENT = 0x8A34;
+   public static inline var ACTIVE_UNIFORM_BLOCKS = 0x8A36;
+   public static inline var UNIFORM_TYPE = 0x8A37;
+   public static inline var UNIFORM_SIZE = 0x8A38;
+   public static inline var UNIFORM_BLOCK_INDEX = 0x8A3A;
+   public static inline var UNIFORM_OFFSET = 0x8A3B;
+   public static inline var UNIFORM_ARRAY_STRIDE = 0x8A3C;
+   public static inline var UNIFORM_MATRIX_STRIDE = 0x8A3D;
+   public static inline var UNIFORM_IS_ROW_MAJOR = 0x8A3E;
+   public static inline var UNIFORM_BLOCK_BINDING = 0x8A3F;
+   public static inline var UNIFORM_BLOCK_DATA_SIZE = 0x8A40;
+   public static inline var UNIFORM_BLOCK_ACTIVE_UNIFORMS = 0x8A42;
+   public static inline var UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES = 0x8A43;
+   public static inline var UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER = 0x8A44;
+   public static inline var UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER = 0x8A46;
+
+   public static inline var OBJECT_TYPE = 0x9112;
+   public static inline var SYNC_CONDITION = 0x9113;
+   public static inline var SYNC_STATUS = 0x9114;
+   public static inline var SYNC_FLAGS = 0x9115;
+   public static inline var SYNC_FENCE = 0x9116;
+   public static inline var SYNC_GPU_COMMANDS_COMPLETE = 0x9117;
+   public static inline var UNSIGNALED = 0x9118;
+   public static inline var SIGNALED = 0x9119;
+   public static inline var ALREADY_SIGNALED = 0x911A;
+   public static inline var TIMEOUT_EXPIRED = 0x911B;
+   public static inline var CONDITION_SATISFIED = 0x911C;
+   public static inline var WAIT_FAILED = 0x911D;
+   public static inline var SYNC_FLUSH_COMMANDS_BIT = 0x00000001;
+   
+   public static inline var COLOR = 0x1800;
+   public static inline var DEPTH = 0x1801;
+   public static inline var STENCIL = 0x1802;
+   public static inline var MIN = 0x8007;
+   public static inline var MAX = 0x8008;
+   public static inline var DEPTH_COMPONENT24 = 0x81A6;
+   public static inline var STREAM_READ = 0x88E1;
+   public static inline var STREAM_COPY = 0x88E2;
+   public static inline var STATIC_READ = 0x88E5;
+   public static inline var STATIC_COPY = 0x88E6;
+   public static inline var DYNAMIC_READ = 0x88E9;
+   public static inline var DYNAMIC_COPY = 0x88EA;
+   public static inline var DEPTH_COMPONENT32F = 0x8CAC;
+   public static inline var DEPTH32F_STENCIL8 = 0x8CAD;
+   public static inline var INVALID_INDEX = 0xFFFFFFFF;
+   public static inline var TIMEOUT_IGNORED = -1;
+   public static inline var MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
+
 
    #if (neko||cpp)
 
@@ -613,7 +907,7 @@ class GL
 
    public static inline function createShader(type:Int):GLShader
    {
-      return new GLShader(version, nme_gl_create_shader(type));
+      return new GLShader(version,nme_gl_create_shader(type));
    }
 
    public static inline function createTexture():GLTexture
@@ -697,10 +991,21 @@ class GL
       nme_gl_draw_arrays(mode, first, count);
    }
 
+   public static inline function drawArraysInstanced(mode:Int, first:Int, count:Int, instances:Int):Void
+   {
+      nme_gl_draw_arrays_instanced(mode, first, count, instances);
+   }
+
    public static inline function drawElements(mode:Int, count:Int, type:Int, offset:Int):Void
    {
       nme_gl_draw_elements(mode, count, type, offset);
    }
+
+   public static inline function drawElementsInstanced(mode:Int, count:Int, type:Int, offset:Int, instances:Int):Void
+   {
+      nme_gl_draw_elements_instanced(mode, count, type, offset,instances);
+   }
+
 
    public static inline function enable(cap:Int):Void
    {
@@ -937,8 +1242,10 @@ class GL
       nme_gl_polygon_offset(factor, units);
    }
 
-   public static inline function readPixels(x:Int, y:Int, width:Int, height:Int, format:Int, type:Int, pixels:ByteArray):Void
+   public static inline function readPixels(x:Int, y:Int, width:Int, height:Int, format:Int, type:Int, pixels:NmeBytes):Void
    {
+      var offset = 0;
+      nme_gl_read_pixels(x,y,width,height,format,type,pixels,offset);
    }
 
    public static inline function renderbufferStorage(target:Int, internalformat:Int, width:Int, height:Int):Void
@@ -1171,6 +1478,134 @@ class GL
       nme_gl_viewport(x, y, width, height);
    }
 
+
+
+
+
+
+   // New WebGL additions
+   public static inline function createQuery():GLQuery
+   {
+      return new GLQuery(version,nme_gl_create_query());
+   }
+   public static inline function deleteQuery(query:GLQuery):Void
+   {
+      nme_gl_delete_query(query.id);
+      query.invalidate();
+   }
+   public static inline function beginQuery(target:Int,query:GLQuery):Void
+   {
+      nme_gl_begin_query(target,query.id);
+   }
+   public static inline function endQuery(target:Int):Void
+   {
+      nme_gl_end_query(target);
+   }
+   public static function getQueryInt(query:GLQuery, pname:Int):Int
+   {
+      return nme_gl_query_get_int(query.id, pname);
+   }
+   public static function getQueryParameter(query:GLQuery, pname:Int):Dynamic
+   {
+      switch(pname)
+      {
+         case QUERY_RESULT:
+            return getQueryInt(query, pname);
+         case QUERY_RESULT_AVAILABLE:
+            return getQueryInt(query, pname)!=0;
+         default:
+            return null;
+      }
+   }
+
+   public static inline function createVertexArray():GLVertexArrayObject
+   {
+      return new GLVertexArrayObject(version,nme_gl_create_vertex_array());
+   }
+   public static inline function deleteVertexArray(array:GLVertexArrayObject):Void
+   {
+      nme_gl_delete_vertex_array(array.id);
+      array.invalidate();
+   }
+   public static inline function bindVertexArray(array:GLVertexArrayObject):Void
+   {
+      nme_gl_bind_vertex_array(array);
+   }
+   public static inline function vertexAttribDivisor(index:Int, divisor:Int) : Void
+   {
+      nme_gl_vertex_attrib_divisor(index, divisor);
+   }
+   public static inline function bindBufferBase(target:Int, index:Int, buffer:GLBuffer):Void
+   {
+      nme_gl_bind_buffer_base(target, index, buffer);
+   }
+
+
+   public static inline function createTransformFeedback():GLTransformFeedback
+   {
+      return new GLTransformFeedback(version,nme_gl_create_transform_feedback());
+   }
+   public static inline function deleteTransformFeedback(feedback:GLTransformFeedback):Void
+   {
+      nme_gl_delete_transform_feedback(feedback);
+   }
+
+
+   public static inline function bindTransformFeedback(target:Int, feedback:GLTransformFeedback):Void
+   {
+      nme_gl_bind_transform_feedback(target,feedback);
+   }
+
+   public static inline function beginTransformFeedback(primitive:Int):Void
+   {
+      nme_gl_begin_transform_feedback(primitive);
+   }
+   public static inline function endTransformFeedback():Void
+   {
+      nme_gl_end_transform_feedback();
+   }
+   public static function transformFeedbackVaryings(prog:GLProgram, vars:Array<String>, bufferMode:Int):Void
+   {
+      nme_gl_transform_feedback_varyings(prog, vars, bufferMode);
+   }
+   public static function getUniformBlockIndex(prog:GLProgram, blockName:String):Int
+   {
+      return nme_gl_get_uniform_block_index(prog, blockName);
+   }
+   public static function uniformBlockBinding(prog:GLProgram, blockIndex:Int, blockBinding:Int):Void
+   {
+      nme_gl_uniform_block_binding(prog, blockIndex, blockBinding);
+   }
+   public static function blitFramebuffer( srcX0:Int, srcY0:Int, srcX1:Int, srcY1:Int, dstX0:Int, dstY0:Int, dstX1:Int, dstY1:Int, mask:Int, filter:Int)
+   {
+      nme_gl_blit_framebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+   }
+   public static function renderbufferStorageMultisample(target:Int, samples:Int, internalFormat:Int, width:Int, height:Int)
+   {
+      nme_gl_renderbuffer_storage_multisample(target, samples, internalFormat, width, height);
+   }
+   public static function drawBuffers(buffers:Array<Int>):Void
+   {
+      nme_gl_draw_buffers(buffers);
+   }
+   public static function readBuffer(buffer:Int):Void
+   {
+      nme_gl_read_buffer(buffer);
+   }
+
+   public static inline function compressedTexImage3D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, depth:Int, border:Int,  imagesize:Int, data:IMemoryRange, inOffset=0):Void
+   {
+      nme_gl_compressed_tex_image_3d(target, level, internalformat, width, height, depth, border,imagesize, data == null ? null : data.getByteBuffer(), (data == null ? 0 : data.getStart()) + inOffset);
+   }
+
+
+   public static inline function texImage3D(target:Int, level:Int, internalformat:Int, width:Int, height:Int, depth:Int, border:Int, format:Int, type:Int,pixels:ArrayBufferView):Void
+   {
+      nme_gl_tex_image_3d(target, level, internalformat, width, height, depth, border, format, type, pixels == null ? null : pixels.getByteBuffer(), pixels == null ? 0 : pixels.getStart());
+   }
+
+
+
    // Getters & Setters
    private static inline function get_drawingBufferHeight() { return Lib.current.stage.stageHeight; }
    private static inline function get_drawingBufferWidth() { return Lib.current.stage.stageWidth; }
@@ -1222,8 +1657,10 @@ class GL
    private static var nme_gl_detach_shader = load("nme_gl_detach_shader", 2);
    private static var nme_gl_disable = load("nme_gl_disable", 1);
    private static var nme_gl_disable_vertex_attrib_array = load("nme_gl_disable_vertex_attrib_array", 1);
-   private static var nme_gl_draw_arrays = load("nme_gl_draw_arrays", 3);
-   private static var nme_gl_draw_elements = load("nme_gl_draw_elements", 4);
+   private static var nme_gl_draw_arrays = PrimeLoader.load("nme_gl_draw_arrays", "iiiv");
+   private static var nme_gl_draw_arrays_instanced = PrimeLoader.load("nme_gl_draw_arrays_instanced", "iiiiv");
+   private static var nme_gl_draw_elements = PrimeLoader.load("nme_gl_draw_elements", "iiiiv");
+   private static var nme_gl_draw_elements_instanced = PrimeLoader.load("nme_gl_draw_elements_instanced", "iiiiiv");
    private static var nme_gl_enable = load("nme_gl_enable", 1);
    private static var nme_gl_enable_vertex_attrib_array = load("nme_gl_enable_vertex_attrib_array", 1);
    private static var nme_gl_finish = load("nme_gl_finish", 0);
@@ -1310,6 +1747,37 @@ class GL
    private static var nme_gl_vertex_attrib4fv = load("nme_gl_vertex_attrib4fv", 2);
    private static var nme_gl_vertex_attrib_pointer = load("nme_gl_vertex_attrib_pointer", -1);
    private static var nme_gl_viewport = load("nme_gl_viewport", 4);
+   private static var nme_gl_read_pixels = load("nme_gl_read_pixels", -1);
+
+   private static var nme_gl_create_query = load("nme_gl_create_query", 0);
+   private static var nme_gl_delete_query = load("nme_gl_delete_query", 1);
+   private static var nme_gl_begin_query = PrimeLoader.load("nme_gl_begin_query", "iiv");
+   private static var nme_gl_end_query = PrimeLoader.load("nme_gl_end_query", "iv");
+   private static var nme_gl_query_get_int = PrimeLoader.load("nme_gl_query_get_int", "iii");
+
+   private static var nme_gl_create_vertex_array = load("nme_gl_create_vertex_array", 0);
+   private static var nme_gl_delete_vertex_array = load("nme_gl_delete_vertex_array", 1);
+   private static var nme_gl_bind_vertex_array = PrimeLoader.load("nme_gl_bind_vertex_array", "ov");
+   private static var nme_gl_bind_buffer_base = PrimeLoader.load("nme_gl_bind_buffer_base", "iiov");
+   private static var nme_gl_vertex_attrib_divisor = PrimeLoader.load("nme_gl_vertex_attrib_divisor", "iiv");
+
+   private static var nme_gl_create_transform_feedback = load("nme_gl_create_transform_feedback", 0);
+   private static var nme_gl_delete_transform_feedback = load("nme_gl_delete_transform_feedback", 1);
+   private static var nme_gl_bind_transform_feedback = PrimeLoader.load("nme_gl_bind_transform_feedback", "iov");
+   private static var nme_gl_begin_transform_feedback = PrimeLoader.load("nme_gl_begin_transform_feedback", "iv");
+   private static var nme_gl_end_transform_feedback = PrimeLoader.load("nme_gl_end_transform_feedback", "v");
+   private static var nme_gl_transform_feedback_varyings = PrimeLoader.load("nme_gl_transform_feedback_varyings", "ooiv");
+
+   private static var nme_gl_get_uniform_block_index = PrimeLoader.load("nme_gl_get_uniform_block_index", "osi");
+   private static var nme_gl_uniform_block_binding = PrimeLoader.load("nme_gl_uniform_block_binding", "oiiv");
+
+   private static var nme_gl_blit_framebuffer = PrimeLoader.load("nme_gl_blit_framebuffer", "iiiiiiiiiiv");
+   private static var nme_gl_renderbuffer_storage_multisample = PrimeLoader.load("nme_gl_renderbuffer_storage_multisample", "iiiiiv");
+   private static var nme_gl_draw_buffers = PrimeLoader.load("nme_gl_draw_buffers", "ov");
+   private static var nme_gl_read_buffer = PrimeLoader.load("nme_gl_read_buffer", "iv");
+   private static var nme_gl_tex_image_3d = PrimeLoader.load("nme_gl_tex_image_3d", "iiiiiiiiioiv");
+   private static var nme_gl_compressed_tex_image_3d = PrimeLoader.load("nme_gl_compressed_tex_image_3d", "iiiiiiiioiv");
+
    #else // not (neko||cpp)
 
    // Stub to get flixel to compile

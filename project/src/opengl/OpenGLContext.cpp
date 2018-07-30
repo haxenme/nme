@@ -13,6 +13,7 @@
 #endif
 
 
+
 int sgDrawCount = 0;
 int sgDrawBitmap = 0;
 
@@ -155,6 +156,52 @@ public:
          glDeleteRenderbuffers(1,&inBuffer);
    }
 
+   void DestroyQuery(unsigned int inBuffer)
+   {
+      if ( !IsMainThread() )
+      {
+         mHasZombie = true;
+         mZombieQueries.push_back(inBuffer);
+      }
+      else
+      {
+         #if NME_GL_LEVEL>=300
+         glDeleteQueries(1,&inBuffer);
+         #endif
+      }
+   }
+
+   void DestroyVertexArray(unsigned int inArray)
+   {
+      if ( !IsMainThread() )
+      {
+         mHasZombie = true;
+         mZombieVertexArrays.push_back(inArray);
+      }
+      else
+      {
+         #if NME_GL_LEVEL>=300
+         glDeleteVertexArrays(1,&inArray);
+         #endif
+      }
+   }
+
+
+   void DestroyTransformFeedback(unsigned int inFeedback)
+   {
+      if ( !IsMainThread() )
+      {
+         mHasZombie = true;
+         mZombieTransformFeedback.push_back(inFeedback);
+      }
+      else
+      {
+         #if NME_GL_LEVEL>=300
+         glDeleteTransformFeedbacks(1,&inFeedback);
+         #endif
+      }
+   }
+
 
    void OnContextLost()
    {
@@ -164,6 +211,9 @@ public:
       mZombieShaders.resize(0);
       mZombieFramebuffers.resize(0);
       mZombieRenderbuffers.resize(0);
+      mZombieQueries.resize(0);
+      mZombieVertexArrays.resize(0);
+      mZombieTransformFeedback.resize(0);
       mHasZombie = false;
    }
 
@@ -277,6 +327,32 @@ public:
                glDeleteRenderbuffers(mZombieRenderbuffers.size(),&mZombieRenderbuffers[0]);
                mZombieRenderbuffers.resize(0);
             }
+
+            if (mZombieQueries.size())
+            {
+               #if NME_GL_LEVEL>=300
+               glDeleteQueries(mZombieQueries.size(),&mZombieQueries[0]);
+               #endif
+               mZombieQueries.resize(0);
+            }
+
+            if (mZombieVertexArrays.size())
+            {
+               #if NME_GL_LEVEL>=300
+               glDeleteQueries(mZombieVertexArrays.size(),&mZombieVertexArrays[0]);
+               #endif
+               mZombieVertexArrays.resize(0);
+            }
+
+            if (mZombieTransformFeedback.size())
+            {
+               #if NME_GL_LEVEL>=300
+               glDeleteQueries(mZombieTransformFeedback.size(),&mZombieTransformFeedback[0]);
+               #endif
+               mZombieTransformFeedback.resize(0);
+            }
+
+
          }
 
 
@@ -316,6 +392,9 @@ public:
       mZombieShaders.resize(0);
       mZombieFramebuffers.resize(0);
       mZombieRenderbuffers.resize(0);
+      mZombieQueries.resize(0);
+      mZombieVertexArrays.resize(0);
+      mZombieTransformFeedback.resize(0);
 
       ReloadExtentions();
    }
@@ -771,6 +850,9 @@ public:
    QuickVec<GLuint> mZombieShaders;
    QuickVec<GLuint> mZombieFramebuffers;
    QuickVec<GLuint> mZombieRenderbuffers;
+   QuickVec<GLuint> mZombieQueries;
+   QuickVec<GLuint> mZombieVertexArrays;
+   QuickVec<GLuint> mZombieTransformFeedback;
 
    GPUProg *mProg[PROG_COUNT];
 

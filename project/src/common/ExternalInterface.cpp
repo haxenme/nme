@@ -145,6 +145,10 @@ static int _id_matrix;
 static int _id_ascent;
 static int _id_descent;
 
+static int _id_buffer;
+static int _id_byteOffset;
+static int _id_byteLength;
+
 static FRect _tile_rect;
 
 vkind gObjectKind;
@@ -255,6 +259,10 @@ extern "C" void InitIDs()
 
    _id_ascent = val_id("ascent");
    _id_descent = val_id("descent");
+
+   _id_buffer = val_id("buffer");
+   _id_byteLength = val_id("byteLength");
+   _id_byteOffset = val_id("byteOffset");
 
    kind_share(&gObjectKind,"nme::Object");
    kind_share(&gDataPointer,"data");
@@ -805,26 +813,17 @@ void ByteArray::Resize(int inSize)
 
 int ByteArray::Size() const
 {
+   value len = val_field(mValue,_id_byteLength);
+   if (!val_is_null(len))
+      return val_int(len);
+
    return val_int( val_call1(gByteArrayLen->get(), mValue ));
 }
 
 
 const unsigned char *ByteArray::Bytes() const
 {
-   #ifndef HXCPP_JS_PRIME
-   value bytes = val_call1(gByteArrayBytes->get(),mValue);
-   if (val_is_string(bytes))
-      return (unsigned char *)val_string(bytes);
-   #else
-   value bytes = mValue;
-   #endif
-
-   buffer buf = val_to_buffer(bytes);
-   if (buf==0)
-   {
-      val_throw(alloc_string("Bad ByteArray"));
-   }
-   return (unsigned char *)buffer_data(buf);
+   return const_cast<ByteArray *>(this)->Bytes();
 }
 
 
@@ -837,12 +836,33 @@ unsigned char *ByteArray::Bytes()
    #else
    value bytes = mValue;
    #endif
+
    buffer buf = val_to_buffer(bytes);
+
+   int offset = 0;
+   // ArrayBufferView?
+   if (buf==0)
+   {
+      value bufferField = val_field(mValue,_id_buffer);
+      if (!val_is_null(bufferField))
+      {
+         bytes = val_call1(gByteArrayBytes->get(),bufferField);
+         buf = val_to_buffer(bytes);
+         if (buf!=0)
+         {
+            value off = val_field(bytes,_id_byteOffset);
+            if (!val_is_null(off))
+               offset = (int)val_number(off);
+         }
+      }
+   }
+
    if (buf==0)
    {
       val_throw(alloc_string("Bad ByteArray"));
    }
-   return (unsigned char *)buffer_data(buf);
+
+   return (unsigned char *)buffer_data(buf)+offset;
 }
 
 

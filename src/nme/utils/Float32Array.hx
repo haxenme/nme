@@ -14,7 +14,7 @@ class Float32Array extends ArrayBufferView implements ArrayAccess<Float>
    // Constrctor: ElementCount,
    //             Array , startElement, elementCount
    //             ArrayBuffer, startByte, elementCount
-   public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inElements:Null<Int>)
+   public function new(?inBufferOrArray:Dynamic, inStart:Int = 0, ?inElements:Null<Int>)
    {
       BYTES_PER_ELEMENT = 4;
 
@@ -63,11 +63,89 @@ class Float32Array extends ArrayBufferView implements ArrayAccess<Float>
       return new Float32Array(inMatrix.rawData);
    }
 
+   public static function fromBytes(bytes:haxe.io.Bytes, byteOffset:Int=0, ?len:Int )
+      return new Float32Array(bytes, byteOffset, len);
+
+   public function subarray(start:Int = 0, ?end:Int) : Float32Array
+   {
+      if (end==null)
+         end = length;
+      return new Float32Array(buffer, (start<<2)+byteOffset, (end-start) );
+   }
+
+   @:generic
+   public function TSet<T>(array:Array<T>,offset)
+   {
+      #if !cpp
+      buffer.position = offset<<2;
+      #end
+      for(i in 0...array.length)
+        #if cpp
+        untyped __global__.__hxcpp_memory_set_float(bytes,((i+offset) << 2), cast array[i]);
+        #else
+        buffer.writeFloat(cast array[i + offset]);
+        #end
+   }
+
+   public function set(inBufferOrArray:Dynamic, offset:Int=0)
+   {
+      #if cpp
+      if (Std.is(inBufferOrArray,Array))
+      {
+         var a:Array<Float> = inBufferOrArray;
+         if (a!=null)
+         {
+             TSet(a,offset);
+             return;
+         }
+
+         var a:Array<Int> = inBufferOrArray;
+         if (a!=null)
+         {
+             TSet(a,offset);
+             return;
+         }
+
+         var a:Array<cpp.Float32> = inBufferOrArray;
+         if (a!=null)
+         {
+             TSet(a,offset);
+             return;
+         }
+
+         var a:Array<cpp.UInt8> = inBufferOrArray;
+         if (a!=null)
+         {
+             TSet(a,offset);
+             return;
+         }
+
+         var a:Array<cpp.Int8> = inBufferOrArray;
+         if (a!=null)
+         {
+             TSet(a,offset);
+             return;
+         }
+     }
+     else
+     #end
+     if (Std.is(inBufferOrArray,ArrayBufferView))
+     {
+        var a:ArrayBufferView = inBufferOrArray;
+        var length = a.byteLength>>2;
+        for(i in 0...length)
+           setFloat32( (i+offset)<<2, a.getFloat32(i<<2) );
+     }
+
+     for(i in 0...inBufferOrArray.length)
+         __set(i+offset, inBufferOrArray[i]);
+   }
+
    @:keep
    inline public function __get(index:Int):Float { return getFloat32(index << 2); }
 
    @:keep
-   inline public function __set(index:Int, v:Float):Void { setFloat32(index << 2, v); }
+   inline public function __set(index:Int, v:Float):Float { setFloat32(index << 2, v); return v; }
 }
 
 #end

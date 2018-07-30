@@ -356,6 +356,7 @@ class Assets
       trySetCache(i,useCache,data);
       return data;
    }
+   inline public static function getImage(id:String, ?useCache:Null<Bool>) return getBitmapData(id,useCache);
 
 
    public static function hasBytes(id:String):Bool

@@ -46,6 +46,9 @@ enum ResoType
    resoProgram, //4
    resoFramebuffer, //5
    resoRenderbuffer, //6
+   resoQuery, //7
+   resoVertexArray, //8
+   resoTransformFeedback, //9
 };
 
 const char *getTypeString(int inType)
@@ -59,6 +62,9 @@ const char *getTypeString(int inType)
       case resoProgram: return "Program";
       case resoFramebuffer: return "Framebuffer";
       case resoRenderbuffer: return "Renderbuffer";
+      case resoQuery: return "Query";
+      case resoVertexArray: return "VertexArray";
+      case resoTransformFeedback: return "TransformFeedback";
    }
    return "Unknown";
 }
@@ -305,6 +311,15 @@ public:
                break;
             case resoRenderbuffer:
                ctx->DestroyRenderbuffer(id);
+               break;
+            case resoQuery:
+               ctx->DestroyQuery(id);
+               break;
+            case resoVertexArray:
+               ctx->DestroyVertexArray(id);
+               break;
+            case resoTransformFeedback:
+               ctx->DestroyTransformFeedback(id);
                break;
          }
       }
@@ -638,7 +653,6 @@ value nme_gl_get_parameter(value pname_val)
       case GL_SAMPLE_BUFFERS:
       case GL_SAMPLES:
       case GL_SCISSOR_TEST:
-      case GL_SHADING_LANGUAGE_VERSION:
       case GL_STENCIL_BACK_FAIL:
       case GL_STENCIL_BACK_FUNC:
       case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
@@ -664,6 +678,7 @@ value nme_gl_get_parameter(value pname_val)
       case GL_VENDOR:
       case GL_VERSION:
       case GL_RENDERER:
+      case GL_SHADING_LANGUAGE_VERSION:
          strings = 1;
          break;
    }
@@ -722,6 +737,7 @@ value nme_gl_resource_id(value inResource)
 }
 DEFINE_PRIM(nme_gl_resource_id,1);
 
+
 // --- Is -------------------------------------------
 
 #define GL_IS(name,type) \
@@ -754,6 +770,21 @@ GL_DELETE_RESO(program)
 GL_DELETE_RESO(framebuffer)
 GL_DELETE_RESO(renderbuffer)
 GL_DELETE_RESO(buffer)
+
+
+#if NME_GL_LEVEL>=300
+#define GL_DELETE_RESO300(name) \
+      GL_DELETE_RESO(name)
+#else
+#define GL_DELETE_RESO300(name) \
+   value nme_gl_delete_##name() { return alloc_null(); } \
+   DEFINE_PRIM(nme_gl_delete_##name,0);
+#endif
+
+GL_DELETE_RESO300(query)
+GL_DELETE_RESO300(vertex_array)
+GL_DELETE_RESO300(transform_feedback)
+
 
 // --- Create -------------------------------------------
 
@@ -793,6 +824,20 @@ GL_GEN_RESO(buffer,glGenBuffers,resoBuffer)
 
 GL_GEN_RESO(framebuffer,glGenFramebuffers,resoFramebuffer)
 GL_GEN_RESO(render_buffer,glGenRenderbuffers,resoRenderbuffer)
+
+
+#if NME_GL_LEVEL>=300
+#define GL_GEN_RESO300(name,gen,type) \
+      GL_GEN_RESO(name,gen,type)
+#else
+#define GL_GEN_RESO300(name,gen,type) \
+   value nme_gl_create_##name() { return alloc_null(); } \
+   DEFINE_PRIM(nme_gl_create_##name,0);
+#endif
+
+GL_GEN_RESO300(query,glGenQueries,resoQuery)
+GL_GEN_RESO300(vertex_array,glGenVertexArrays,resoVertexArray)
+GL_GEN_RESO300(transform_feedback,glGenTransformFeedbacks,resoTransformFeedback)
 
 
 // --- Stencil -------------------------------------------
@@ -1374,12 +1419,113 @@ value nme_gl_shader_source(value inId,value inSource)
    int id = getResource(inId,resoShader);
    HxString source = valToHxString(inSource);
    const char *lines = source.c_str();
-   #ifdef NME_GLES
-   // TODO - do something better here
+
+   const char *precisionStart = 0;
+   const char *precisionEnd = 0;
+
+   const char *versionStart = 0;
+   const char *versionEnd = 0;
+
+   const char *p = lines;
+   bool precAllowed = true;
+
+   versionEnd = p;
+   if (!strncmp(p,"#version",8))
+   {
+      p+=8;
+      while(*p && *p!='\n')
+         p++;
+      if (*p=='\n')
+      {
+         versionStart = lines;
+         versionEnd = ++p;
+      }
+   }
+
+   while(*p)
+   {
+      switch(*p)
+      {
+         case '\n':
+         case ';':
+            precAllowed = !precisionStart;
+            break;
+         case ' ':
+         case '\t':
+         case '\r':
+            // skip
+            break;
+         case 'p':
+            if (precAllowed)
+            {
+               if (!strncmp(p,"precision",9))
+               {
+                  precisionStart = p;
+                  while(*p)
+                  {
+                     if (*p==';')
+                     {
+                        precisionEnd = p+1;
+                        break;
+                     }
+                     p++;
+                  }
+                  precAllowed = false;
+                  continue;
+               }
+            }
+            // fallthough
+         default:
+            precAllowed = false;
+      }
+      p++;
+   }
+
+   if (precisionStart)
+   {
+      std::string precString(precisionStart, precisionEnd-precisionStart);
+      //printf("FOUND %s\n", precString.c_str());
+   }
+   else
+   {
+      //printf("PREC NOT FOUND\n");
+   }
+
+
+
+
    std::string buffer;
-   buffer = std::string("precision mediump float;\n") + hxToStdString(source);
-   lines = buffer.c_str();
+   if (versionStart)
+      buffer = std::string(lines, versionEnd-versionStart);
+   else
+   {
+
+     // 300: in and out are used instead of attribute and varying.
+     // GLSL 330+ texture2D to texture
+
+      #ifdef NME_GLES
+      buffer = "#version 100\n";
+      buffer = "#define texture texture2D\n";
+      #else
+      buffer = "#version 130\n";
+      #endif
+   }
+
+   #ifdef NME_GLES
+   if (!precisionStart)
+      buffer += std::string("precision mediump float;\n") + std::string(versionEnd);
+   else
+      buffer += std::string(versionEnd);
+
+   #else
+   if (precisionStart)
+      buffer += std::string(versionEnd, precisionStart-versionEnd) + std::string(precisionEnd, p-precisionEnd);
+   else
+      buffer += std::string(versionEnd);
    #endif
+
+   lines = buffer.c_str();
+   //printf("===={{{\n%s\n}}}====\n", lines);
 
    glShaderSource(id,1,&lines,0);
 
@@ -1411,29 +1557,6 @@ value nme_gl_detach_shader(value inProg,value inShader)
 DEFINE_PRIM(nme_gl_detach_shader,2);
 
 
-
-value nme_gl_compile_shader(value inId)
-{
-   DBGFUNC("compileShader");
-   int id = getResource(inId,resoShader);
-   glCompileShader(id);
-
-   return alloc_null();
-}
-DEFINE_PRIM(nme_gl_compile_shader,1);
-
-
-value nme_gl_get_shader_parameter(value inId,value inName)
-{
-   DBGFUNC("getShaderParameter");
-   int id = getResource(inId,resoShader);
-   int result = 0;
-   glGetShaderiv(id,val_int(inName), & result);
-   return alloc_int(result);
-}
-DEFINE_PRIM(nme_gl_get_shader_parameter,2);
-
-
 value nme_gl_get_shader_info_log(value inId)
 {
    DBGFUNC("getShaderInfoLog");
@@ -1455,7 +1578,6 @@ value nme_gl_get_shader_info_log(value inId)
 }
 DEFINE_PRIM(nme_gl_get_shader_info_log,1);
 
-
 value nme_gl_get_shader_source(value inId)
 {
    DBGFUNC("getShaderSource");
@@ -1473,6 +1595,42 @@ value nme_gl_get_shader_source(value inId)
    return result;
 }
 DEFINE_PRIM(nme_gl_get_shader_source,1);
+
+
+
+
+value nme_gl_compile_shader(value inId)
+{
+   //printf("Compile ....\n");
+
+   //printf("%s\n", val_string(nme_gl_get_shader_source(inId)));
+   //printf("---{{{\n");
+   DBGFUNC("compileShader");
+   int id = getResource(inId,resoShader);
+   glCompileShader(id);
+
+
+
+   //printf("\n}}}----\n");
+   //printf("Error:\n");
+   //printf("%s\n",val_string(nme_gl_get_shader_info_log(inId)));
+   //printf("----\n");
+
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_compile_shader,1);
+
+
+value nme_gl_get_shader_parameter(value inId,value inName)
+{
+   DBGFUNC("getShaderParameter");
+   int id = getResource(inId,resoShader);
+   int result = 0;
+   glGetShaderiv(id,val_int(inName), & result);
+   return alloc_int(result);
+}
+DEFINE_PRIM(nme_gl_get_shader_parameter,2);
+
 
 
 
@@ -1756,26 +1914,83 @@ value nme_gl_get_render_buffer_parameter(value target, value pname)
 }
 DEFINE_PRIM(nme_gl_get_render_buffer_parameter,2);
 
+
+void nme_gl_blit_framebuffer(int srcX0,int  srcY0,int  srcX1,int  srcY1,int  dstX0,int  dstY0,int  dstX1,int  dstY1,int  mask,int  filter)
+{
+   #if NME_GL_LEVEL>=300
+   glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+   #endif
+}
+DEFINE_PRIME10v(nme_gl_blit_framebuffer);
+
+void nme_gl_renderbuffer_storage_multisample(int target, int samples, int internalFormat, int width, int height)
+{
+   #if NME_GL_LEVEL>=300
+   glRenderbufferStorageMultisample(target,samples,internalFormat,width,height);
+   #endif
+}
+DEFINE_PRIME5v(nme_gl_renderbuffer_storage_multisample);
+ 
+void nme_gl_read_buffer(int inBuffer)
+{
+   #if NME_GL_LEVEL>=300
+   glReadBuffer(inBuffer);
+   #endif
+}
+DEFINE_PRIME1v(nme_gl_read_buffer);
+
+void nme_gl_draw_buffers(value inBuffers)
+{
+   #if NME_GL_LEVEL>=300
+   int n = val_array_size(inBuffers);
+   std::vector<GLenum> buffers(n);
+   int *ptr = val_array_int(inBuffers);
+   for(int i=0;i<n;i++)
+      buffers[i] = ptr ? ptr[i] : val_int(val_array_i(inBuffers,i));
+ 
+   glDrawBuffers(n,&buffers[0]);
+   #endif
+}
+DEFINE_PRIME1v(nme_gl_draw_buffers);
+
+
 // --- Drawing -------------------------------
 
 
-value nme_gl_draw_arrays(value inMode, value inFirst, value inCount)
+void nme_gl_draw_arrays(int inMode, int inFirst, int inCount)
 {
    DBGFUNC("drawArrays");
-   glDrawArrays( val_int(inMode), val_int(inFirst), val_int(inCount) );
-   return alloc_null();
+   glDrawArrays( inMode, inFirst, inCount );
 }
-DEFINE_PRIM(nme_gl_draw_arrays,3);
+DEFINE_PRIME3v(nme_gl_draw_arrays)
 
 
-value nme_gl_draw_elements(value inMode, value inCount, value inType, value inOffset)
+void nme_gl_draw_arrays_instanced(int inMode, int inFirst, int inCount, int inInstances)
+{
+   DBGFUNC("drawArraysInstanced");
+   #if NME_GL_LEVEL>=300
+   glDrawArraysInstanced( inMode, inFirst, inCount, inInstances );
+   #endif
+}
+DEFINE_PRIME4v(nme_gl_draw_arrays_instanced)
+
+
+void nme_gl_draw_elements(int inMode, int inCount, int inType, int inOffset)
 {
    DBGFUNC("drawElements");
-   glDrawElements( val_int(inMode), val_int(inCount), val_int(inType), (void *)(intptr_t)val_int(inOffset) );
-   return alloc_null();
+   glDrawElements( inMode, inCount, inType, (void *)(intptr_t)inOffset );
 }
-DEFINE_PRIM(nme_gl_draw_elements,4);
+DEFINE_PRIME4v(nme_gl_draw_elements)
 
+
+void nme_gl_draw_elements_instanced(int inMode, int inCount, int inType, int inOffset, int inInstances)
+{
+   DBGFUNC("drawElementsInstanced");
+   #if NME_GL_LEVEL>=300
+   glDrawElementsInstanced( inMode, inCount, inType, (void *)(intptr_t)inOffset, inInstances );
+   #endif
+}
+DEFINE_PRIME5v(nme_gl_draw_elements_instanced)
 
 
 
@@ -2088,6 +2303,45 @@ DEFINE_PRIM_MULT(nme_gl_compressed_tex_sub_image_2d);
 
 
 
+void nme_gl_tex_image_3d(int target, int level, int internalformat, int width, int height, int depth,int border,int  format,int  type, value buffer, int start)
+{
+   DBGFUNC("texImage3D");
+
+   ByteArray bytes(buffer);
+   unsigned char *data = 0;
+   if (bytes.Ok())
+      data = bytes.Bytes() + start;
+
+   #if NME_GL_LEVEL>=300
+   glTexImage3D(target, level,  internalformat,
+                width,  height, depth, border,
+                format, type, data );
+   #endif
+}
+
+DEFINE_PRIME11v(nme_gl_tex_image_3d);
+
+
+
+void nme_gl_compressed_tex_image_3d(int target, int level, int internalformat, int width, int height, int depth, int border, int imageSize, value buffer, int start )
+{
+   DBGFUNC("compressedTexImage3D");
+
+   ByteArray bytes(buffer);
+   unsigned char *data = 0;
+   if (bytes.Ok())
+      data = bytes.Bytes() + start;
+
+   #if NME_GL_LEVEL>=300
+   glCompressedTexImage3D(target, level,  internalformat,
+                width,  height, depth, border, imageSize,
+                data );
+   #endif
+}
+
+DEFINE_PRIME10v(nme_gl_compressed_tex_image_3d);
+
+
 
 
 value nme_gl_tex_parameterf(value inTarget, value inPName, value inVal)
@@ -2149,6 +2403,147 @@ value nme_gl_get_tex_parameter(value inTarget,value inPname)
    return alloc_int(result);
 }
 DEFINE_PRIM(nme_gl_get_tex_parameter,2);
+
+
+// ---  Query -------------------------------------------------
+
+void nme_gl_begin_query(int target, int qid)
+{
+   #if NME_GL_LEVEL>=300
+   glBeginQuery(target, qid);
+   #endif
+}
+DEFINE_PRIME2v(nme_gl_begin_query)
+
+void nme_gl_end_query(int target)
+{
+   #if NME_GL_LEVEL>=300
+   glEndQuery(target);
+   #endif
+}
+DEFINE_PRIME1v(nme_gl_end_query)
+
+
+int nme_gl_query_get_int(int qid, int pname)
+{
+   GLuint result = 0;
+   #if NME_GL_LEVEL>=300
+   glGetQueryObjectuiv(qid, pname, &result);
+   #endif
+   return result;
+}
+DEFINE_PRIME2(nme_gl_query_get_int)
+
+
+// ---  VertexArray -------------------------------------------------
+
+void nme_gl_bind_vertex_array(value inId)
+{
+   DBGFUNC("bindVertexArray");
+   int id = getResource(inId,resoVertexArray);
+
+   #if NME_GL_LEVEL>=300
+   glBindVertexArray(id);
+   #endif
+}
+DEFINE_PRIME1v(nme_gl_bind_vertex_array)
+
+
+void nme_gl_vertex_attrib_divisor(int index, int divisor)
+{
+   #if NME_GL_LEVEL>=300
+   glVertexAttribDivisor(index,divisor);
+   #endif
+}
+DEFINE_PRIME2v(nme_gl_vertex_attrib_divisor)
+
+
+
+// ---  TransformFeedback -------------------------------------------------
+
+void nme_gl_bind_transform_feedback(int inTarget,value inFeedback)
+{
+   DBGFUNC("bindTransformFeedback");
+   int id = getResource(inFeedback,resoTransformFeedback);
+
+   #if NME_GL_LEVEL>=300
+   glBindTransformFeedback(inTarget,id);
+   #endif
+}
+DEFINE_PRIME2v(nme_gl_bind_transform_feedback)
+
+void nme_gl_begin_transform_feedback(int primitive)
+{
+   #if NME_GL_LEVEL>=300
+   glBeginTransformFeedback(primitive);
+   #endif
+}
+DEFINE_PRIME1v(nme_gl_begin_transform_feedback)
+
+void nme_gl_end_transform_feedback()
+{
+   #if NME_GL_LEVEL>=300
+   glEndTransformFeedback();
+   #endif
+}
+DEFINE_PRIME0v(nme_gl_end_transform_feedback)
+
+
+void nme_gl_transform_feedback_varyings(value prog, value names, int mode)
+{
+   int id = getResource(prog,resoProgram);
+   #if NME_GL_LEVEL>=300
+   // Store on stack to make GC easy
+   enum { MAX_NAMES = 256 };
+   const char *nameBuf[MAX_NAMES];
+   int count = val_array_size(names);
+   if (count>256)
+      val_throw(alloc_string("too many varyings"));
+   for(int i=0;i<count;i++)
+      nameBuf[i] = val_string( val_array_i(names,i) );
+
+   glTransformFeedbackVaryings(id, count, nameBuf, mode);
+   #endif
+}
+DEFINE_PRIME3v(nme_gl_transform_feedback_varyings)
+
+
+void nme_gl_bind_buffer_base(int inTarget,int inIndex, value inBuffer)
+{
+   DBGFUNC("glBindBufferBase");
+   int id = getResource(inBuffer,resoBuffer);
+
+   #if NME_GL_LEVEL>=300
+   glBindBufferBase(inTarget,inIndex,id);
+   #endif
+}
+DEFINE_PRIME3v(nme_gl_bind_buffer_base)
+
+
+
+
+int nme_gl_get_uniform_block_index(value prog, HxString name)
+{
+   int id = getResource(prog,resoProgram);
+   #if NME_GL_LEVEL>=300
+   return glGetUniformBlockIndex(id, name.c_str());
+   #else
+   return 0;
+   #endif
+}
+DEFINE_PRIME2(nme_gl_get_uniform_block_index)
+
+
+
+void nme_gl_uniform_block_binding(value prog, int blockIndex, int blockBinding)
+{
+   int id = getResource(prog,resoProgram);
+   #if NME_GL_LEVEL>=300
+   glUniformBlockBinding(id, blockIndex, blockBinding);
+   #endif
+}
+DEFINE_PRIME3v(nme_gl_uniform_block_binding)
+
 
 
 }

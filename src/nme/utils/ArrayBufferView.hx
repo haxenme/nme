@@ -29,10 +29,14 @@ class ArrayBufferView implements IMemoryRange
       }
       else 
       {
-         buffer = inLengthOrBuffer;
+         if (Std.is(inLengthOrBuffer, haxe.io.Bytes)) 
+            buffer = ByteArray.fromBytes(inLengthOrBuffer);
+         else
+            buffer = inLengthOrBuffer;
 
          if (buffer == null)
-            throw("Invalid input buffer");
+            buffer = new ArrayBuffer(0);
+            //throw("Invalid input buffer");
 
          byteOffset = inByteOffset;
 
@@ -43,7 +47,8 @@ class ArrayBufferView implements IMemoryRange
          {
             byteLength = buffer.length - inByteOffset;
 
-         } else 
+         }
+         else 
          {
             byteLength = inLength;
 
@@ -57,6 +62,18 @@ class ArrayBufferView implements IMemoryRange
       #if cpp
       bytes = buffer.getData();
       #end
+   }
+
+   public function toBytes() : haxe.io.Bytes
+      return buffer;
+
+   public function setData(byteData:ArrayBufferView, inOffset:Int)
+   {
+      var size = byteData.getLength();
+      if (size+inOffset>byteLength)
+         throw "Out of bounds";
+      var targetOff = byteOffset + inOffset;
+      buffer.blit(targetOff, byteData.getByteBuffer(), byteData.getStart(), size);
    }
 
    // IMemoryRange
@@ -130,10 +147,32 @@ class ArrayBufferView implements IMemoryRange
       #end
    }
 
+
+   inline public function getUInt16(bytePos:Int):Int 
+   {
+      #if cpp
+      untyped return __global__.__hxcpp_memory_get_ui16(bytes, bytePos + byteOffset);
+      #else
+      buffer.position = bytePos + byteOffset;
+      return buffer.readUnsignedShort();
+      #end
+   }
+
    inline public function setInt16(bytePos:Int, v:Int):Void 
    {
       #if cpp
       untyped __global__.__hxcpp_memory_set_i16(bytes, bytePos + byteOffset, v);
+      #else
+      buffer.position = bytePos + byteOffset;
+      buffer.writeShort(Std.int(v));
+      #end
+   }
+
+
+   inline public function setUInt16(bytePos:Int, v:Int):Void 
+   {
+      #if cpp
+      untyped __global__.__hxcpp_memory_set_ui16(bytes, bytePos + byteOffset, v);
       #else
       buffer.position = bytePos + byteOffset;
       buffer.writeShort(Std.int(v));

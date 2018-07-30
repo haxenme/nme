@@ -120,7 +120,10 @@
    <include name="${NATIVE_TOOLKIT_PATH}/sdl/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" if="NME_MIXER" />
-   <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" />
+
+   <!--<include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" />-->
+   <set name="ANGLE_DIR" value="c:/Users/Hugh/dev/angle/" if="NME_ANGLE" />
+   <include name="${ANGLE_DIR}/files.xml" if="NME_ANGLE" />
 
    <!-- inject flags to allow cross-compiling -->
    <files id="native-toolkit-sdl" if="xcompile" >
@@ -216,6 +219,7 @@
       <depend files="nme-headers"/>
       <depend files="hxcpp-depends"/>
       <depend name="${SRC_DIR}/opengl/OGL.h" if="NME_OGL" />
+      <depend name="${SRC_DIR}/opengl/OGLExtensions.h" if="NME_OGL" />
 
       <section if="windows">
          <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />

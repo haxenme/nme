@@ -13,7 +13,7 @@ class Int32Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
    // Constrctor: ElementCount,
    //             Array , startElement, elementCount
    //             ArrayBuffer, startByte, elementCount
-   public function new(inBufferOrArray:Dynamic, inStart:Int = 0, ?inElements:Null<Int>) 
+   public function new(?inBufferOrArray:Dynamic, inStart:Int = 0, ?inElements:Null<Int>) 
    {
       BYTES_PER_ELEMENT = 4;
 
@@ -56,6 +56,13 @@ class Int32Array extends ArrayBufferView #if !haxe3 , #end implements ArrayAcces
          if ((length << 2) !=(byteLength))
             throw "Invalid length multiple";
       }
+   }
+
+   public function subarray(start:Int = 0, ?end:Int) : Int32Array
+   {
+      if (end==null)
+         end = length;
+      return new Int32Array(buffer, (start<<2)+byteOffset, (end-start) );
    }
 
    @:keep
