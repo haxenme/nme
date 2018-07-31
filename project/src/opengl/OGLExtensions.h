@@ -178,6 +178,9 @@ OGL_EXT(glBlitFramebuffer, void, (GLint srcX0, GLint srcY0, GLint srcX1, GLint s
 OGL_EXT(glRenderbufferStorageMultisample,void,(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height) ); 
 OGL_EXT(glDrawArraysInstanced,void,(GLenum mode, GLint first, GLsizei count, GLsizei primcount) ); 
 OGL_EXT(glDrawElementsInstanced,void,(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei primcount));
+OGL_EXT(glReadBuffer,void,(GLenum src));
+
+
 #ifdef DYNAMIC_OGL
 
 //OGL_EXT(glActiveTexture,void, (GLenum texture));
