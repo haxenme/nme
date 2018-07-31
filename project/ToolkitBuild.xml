@@ -121,8 +121,7 @@
    <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" if="NME_MIXER" />
 
-   <!--<include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" />-->
-   <set name="ANGLE_DIR" value="c:/Users/Hugh/dev/angle/" if="NME_ANGLE" />
+   <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" />
    <include name="${ANGLE_DIR}/files.xml" if="NME_ANGLE" />
 
    <!-- inject flags to allow cross-compiling -->
