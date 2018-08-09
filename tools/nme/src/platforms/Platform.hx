@@ -357,7 +357,7 @@ class Platform
       var parts = version.split(".");
       if (parts.length==3)
       {
-         version = "_" + parts.shift();
+         version = "-" + parts.shift();
          for(p in parts)
          {
             var i = Std.parseInt(p);
@@ -372,7 +372,7 @@ class Platform
          }
       }
       else if (version!="")
-         version = "_" + version;
+         version = "-" + version;
         
       return project.app.file + version + extension;
    }
@@ -398,6 +398,13 @@ class Platform
          Log.warn("Invalid Json format " + e);
       }
       return result;
+   }
+
+   function backslash(f:String) return f.split("/").join("\\");
+   function sortLen(dirs:Array<String>)
+   {
+      dirs.sort(function(a,b) return a.length>b.length ? 1 : -1 );
+      return dirs;
    }
 
    public function deploy(inAndRun:Bool) : Bool
@@ -465,7 +472,6 @@ class Platform
                            timestamp = mtime.getTime();
                      }
                   }
-                  trace(outputFiles);
                   for(file in outputFiles)
                   {
                      var remote = remoteMd5s==null ? null : remoteMd5s.get(file);
@@ -589,11 +595,53 @@ class Platform
              }
              Log.info('Wrote zip $name, $wrote bytes');
          }
+         else if (protocol=="nsis")
+         {
+             if (PlatformHelper.hostPlatform!=WINDOWS)
+                Log.error("Nsis deployment only supported on windows");
+
+             var nsis = project.getDef("NSIS");
+             if (nsis==null)
+                Log.error('Please set the NSIS variable to point to the NSIS install directory');
+
+             if (name=="" || name==null)
+                name = getDeploymentName("-installer.exe");
+             var scriptName = getHaxeDir() + "/installer.nsis";
+
+             //var path = PathHelper.combine( Sys.getCwd(), name );
+             var path = name;
+
+             context.INSTALLER_NAME = path;
+             var from = getOutputDir();
+             var dirMap = new Map<String,Array<Dynamic>>();
+             var uninstallFiles = [];
+             for(file in outputFiles)
+             {
+                var parts = file.split("/");
+                var f = parts.pop();
+                var destDir = parts.join("/");
+                if (!dirMap.exists(destDir))
+                    dirMap.set(destDir,[]);
+                dirMap.get(destDir).push(backslash(from+"/"+file));
+             }
+             var sorted = sortLen([for(k in dirMap.keys()) k ]);
+             context.INSTALLER_DIRS = [ for(k in sorted) { dir:backslash(k), files:dirMap.get(k) } ];
+             context.INSTALLER_ICON = backslash(getOutputDir()+"/icon.ico");
+             context.UNINSTALL_FILES = outputFiles.map(backslash);
+             context.EXE_NAME = getBinaryName();
+
+             copyTemplate("nsis/installer.nsis", scriptName, false);
+
+             ProcessHelper.runCommand("",nsis+"/makensis.exe", ["/NOCD", scriptName] );
+
+             Log.verbose("Wrote " + name);
+         }
          else
-            Log.error("Unknown deployment protocol, use: 'script:', 'adb:' or 'dir:'");
+            Log.error("Unknown deployment protocol, use: 'script:', 'adb:', 'nsis:' or 'dir:'");
       }
       return false;
    }
+
 
    public function prepareTest() { }
    public function run(arguments:Array<String>) { }
@@ -605,9 +653,9 @@ class Platform
       return FileHelper.recursiveCopyTemplate(project.templatePaths, from, to, context, true, warnIfNotFound, 
           inForOutput ? addOutput : null, inFilter );
    }
-   public function copyTemplate(from:String, to:String)
+   public function copyTemplate(from:String, to:String,doAddOutput=true)
    {
-      FileHelper.copyFileTemplate(project.templatePaths, from, to, context, addOutput);
+      FileHelper.copyFileTemplate(project.templatePaths, from, to, context, doAddOutput ? addOutput : null);
    }
 
    public function updateBuildDir()

@@ -1,0 +1,155 @@
+# set the name of the installer
+Name "::APP_TITLE::"
+Outfile "::INSTALLER_NAME::"
+
+!define MULTIUSER_EXECUTIONLEVEL Highest
+!define MULTIUSER_USE_PROGRAMFILES64 1
+!define MULTIUSER_MUI
+!define MULTIUSER_INSTALLMODE_COMMANDLINE
+
+!define MULTIUSER_INSTALLMODE_INSTDIR "::APP_TITLE::"
+
+!define MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_KEY "Software\::APP_COMPANY::\::APP_PACKAGE::"
+!define MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_VALUENAME "InstMode"
+
+!include MultiUser.nsh
+
+ 
+  
+ Var StartMenuFolder
+
+;--------------------------------
+;Interface Settings
+
+  !define MUI_ABORTWARNING
+
+
+!define MUI_ICON ::INSTALLER_ICON::
+!define MUI_UNICON ::INSTALLER_ICON::
+
+;--------------------------------
+;Pages
+
+  !insertmacro MULTIUSER_PAGE_INSTALLMODE
+  #!insertmacro MUI_PAGE_LICENSE "${NSISDIR}\Docs\Modern UI\License.txt"
+  #!insertmacro MUI_PAGE_COMPONENTS
+  !insertmacro MUI_PAGE_DIRECTORY
+  
+   ;Start Menu Folder Page Configuration
+  !define MUI_STARTMENUPAGE_REGISTRY_ROOT "SHCTX" 
+  !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\::APP_COMPANY::\::APP_PACKAGE::" 
+  !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
+ 
+  !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
+  !insertmacro MUI_PAGE_INSTFILES
+
+  ::if EXE_NAME::
+  #Hack readme checkbox to create desktop icon
+  Function finishpageaction
+     CreateShortcut "$desktop\::APP_TITLE::.lnk" "$INSTDIR\::EXE_NAME::"
+  FunctionEnd
+
+  !define MUI_FINISHPAGE_SHOWREADME ""
+  !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+  !define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"
+  !define MUI_FINISHPAGE_SHOWREADME_FUNCTION finishpageaction
+
+  !define MUI_FINISHPAGE_RUN $INSTDIR\::EXE_NAME::
+  !insertmacro MUI_PAGE_FINISH
+  ::end::
+
+  !insertmacro MUI_UNPAGE_CONFIRM
+  !insertmacro MUI_UNPAGE_INSTFILES
+
+;--------------------------------
+;Languages
+ 
+  !insertmacro MUI_LANGUAGE "English"
+
+
+Function .onInit
+  !insertmacro MULTIUSER_INIT
+FunctionEnd
+
+
+ 
+# default section start
+Section
+ 
+ 
+# specify file to go in output path
+::foreach INSTALLER_DIRS::
+# define output path
+SetOutPath $INSTDIR\::dir::
+
+::foreach files::
+File ::__current__:: ::end::
+::end::
+
+#;Store installation folder
+#  WriteRegStr HKCU "Software\::APP_PACKAGE::" "" $INSTDIR
+ 
+WriteUninstaller $INSTDIR\uninstall.exe
+
+#Write uninstall strings to registry
+WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\::APP_PACKAGE::" \
+                 "DisplayName" "::APP_TITLE::"
+WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\::APP_PACKAGE::" \
+                 "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\::APP_PACKAGE::" \
+                 "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\::APP_PACKAGE::" \
+                 "DisplayIcon" "$\"$INSTDIR\icon.ico$\""
+WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\::APP_PACKAGE::" \
+                 "Publisher" "::APP_COMPANY::"
+WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\::APP_PACKAGE::" \
+                 "DisplayVersion" "::APP_VERSION::"
+
+WriteRegStr SHCTX "${MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_KEY}" "${MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_VALUENAME}" \
+                  $MultiUser.InstallMode
+
+!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+ 
+ ;Create shortcuts
+ CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
+ CreateShortCut "$SMPROGRAMS\$StartMenuFolder\::APP_TITLE::.lnk" "$INSTDIR\::EXE_NAME::"
+ 
+!insertmacro MUI_STARTMENU_WRITE_END
+
+
+#-------
+# default section end
+SectionEnd
+ 
+# create a section to define what the uninstaller does.
+# the section will always be named "Uninstall"
+Section "Uninstall"
+ 
+
+!insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
+
+# Always delete uninstaller first
+Delete $INSTDIR\uninstall.exe
+ 
+# now delete installed file
+::foreach UNINSTALL_FILES::
+Delete $INSTDIR\::__current__::::end::
+
+::foreach INSTALLER_DIRS::
+RmDir $INSTDIR\::dir:: ::end::
+
+Delete "$SMPROGRAMS\$StartMenuFolder\::APP_TITLE::.lnk"
+RMDir "$SMPROGRAMS\$StartMenuFolder"
+Delete "$desktop\::APP_TITLE::.lnk"
+
+DeleteRegKey SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\::APP_PACKAGE::"
+DeleteRegKey SHCTX "Software\::APP_COMPANY::\::APP_PACKAGE::"
+DeleteRegKey /ifempty SHCTX "Software\::APP_COMPANY::"
+
+ 
+SectionEnd
+
+Function un.onInit
+  !insertmacro MULTIUSER_UNINIT
+FunctionEnd
+

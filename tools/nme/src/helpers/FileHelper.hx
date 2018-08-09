@@ -65,6 +65,7 @@ class FileHelper
              extension == "cpp" ||
              extension == "mm" ||
              extension == "m" ||
+             extension == "nsis" ||
           extension == "properties" ||
           extension == "xcscheme" ||
           extension == "hxproj" ||
