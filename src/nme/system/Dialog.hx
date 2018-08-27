@@ -47,6 +47,15 @@ class Dialog
       return fileOpen(title, text, defaultPath, imageFiles, onResult, rememberKey);
    }
 
+   public static function getDirectory(title:String, text:String, ?defaultPath:String, onResult:String->Void,?rememberKey:String) : Bool
+   {
+      if (rememberKey==null)
+         rememberKey = "lastDirectory";
+      var directoryMatch = "<directory>";
+      return fileOpen(title, text, defaultPath, directoryMatch, onResult, rememberKey);
+   }
+
+
    static var nme_file_dialog_open = PrimeLoader.load("nme_file_dialog_open", "ssssob");
 }
 

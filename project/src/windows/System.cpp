@@ -84,65 +84,79 @@ namespace nme {
    }
 
 
-   /*
-   std::string FileDialogFolder( const std::string &title, const std::string &text ) {
-
-      char path[MAX_PATH];
-       BROWSEINFO bi = { 0 };
-       bi.lpszTitle = ("All Folders Automatically Recursed.");
-       LPITEMIDLIST pidl = SHBrowseForFolder ( &bi );
-
-       if ( pidl != 0 ) {
-           // get the name of the folder and put it in path
-           SHGetPathFromIDList ( pidl, path );
-
-
-           // free memory used
-           IMalloc * imalloc = 0;
-           if ( SUCCEEDED( SHGetMalloc ( &imalloc )) )
-           {
-               imalloc->Free ( pidl );
-               imalloc->Release ( );
-           }
-
-           return std::string(path);
-       }
-      
-      return ""; 
-   }
-   */
 
 HWND GetApplicationWindow();
 
 static unsigned __stdcall dialog_proc( void *inSpec )
 {
    FileDialogSpec *spec = (FileDialogSpec *)inSpec;
-
-   OPENFILENAME ofn;
-   char path[MAX_PATH] = "";
-
-   ZeroMemory(&ofn, sizeof(ofn));
-
-   ofn.hwndOwner = GetApplicationWindow();
-   ofn.lStructSize = sizeof(ofn);
-   int len = spec->fileTypes.size();
-   std::vector<char> buf(len+2);
-   const char *ptr = spec->fileTypes.c_str();
-   for(int i=0;i<len;i++)
-      buf[i] = ptr[i]=='|' ? '\0' : ptr[i];
-   buf[len] = '\0';
-   ofn.lpstrFilter = &buf[0];
-   //ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
-   ofn.lpstrFile = path;
-   ofn.lpstrTitle = spec->title.c_str();
-   ofn.nMaxFile = MAX_PATH;
-   ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
-   ofn.lpstrDefExt = "*";
-
-   if (GetOpenFileName(&ofn))
+   if (spec->fileTypes=="<directory>")
    {
-      spec->result =  std::string( ofn.lpstrFile ); 
+
+      IFileDialog *dlg = 0;
+      if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&dlg))))
+      {
+         dlg->SetTitle(UTF8ToWide(spec->title).c_str());
+
+         if (spec->defaultPath[0])
+         {
+            IShellItem *item = 0;
+            SHCreateItemFromParsingName(UTF8ToWide(spec->defaultPath).c_str(), 0, IID_IShellItem,(void **)&item);
+            if (item)
+            {
+               dlg->SetDefaultFolder(item);
+               item->Release();
+            }
+         }
+
+         DWORD dwOptions;
+         if (SUCCEEDED(dlg->GetOptions(&dwOptions)))
+         {
+            dlg->SetOptions(dwOptions | FOS_PICKFOLDERS);
+            if (SUCCEEDED(dlg->Show(NULL)))
+            {
+                IShellItem *item = 0;
+                if (SUCCEEDED(dlg->GetResult(&item)))
+                {
+                   wchar_t *path = 0;
+                   if(SUCCEEDED(item->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &path)))
+                      spec->result =  WideToUTF8(path);
+                   item->Release();
+                }
+            }
+         }
+         dlg->Release();
+      }
    }
+   else
+   {
+      OPENFILENAME ofn;
+      char path[MAX_PATH] = "";
+
+      ZeroMemory(&ofn, sizeof(ofn));
+
+      ofn.hwndOwner = GetApplicationWindow();
+      ofn.lStructSize = sizeof(ofn);
+      int len = spec->fileTypes.size();
+      std::vector<char> buf(len+2);
+      const char *ptr = spec->fileTypes.c_str();
+      for(int i=0;i<len;i++)
+         buf[i] = ptr[i]=='|' ? '\0' : ptr[i];
+      buf[len] = '\0';
+      ofn.lpstrFilter = &buf[0];
+      ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
+      //ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
+      ofn.lpstrFile = path;
+      ofn.lpstrTitle = spec->title.c_str();
+      ofn.nMaxFile = MAX_PATH;
+      ofn.lpstrDefExt = "*";
+
+      if (GetOpenFileName(&ofn))
+      {
+         spec->result =  std::string( ofn.lpstrFile ); 
+      }
+   }
+
    spec->isFinished = true;
    // ping windows thread.
 
