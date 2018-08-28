@@ -259,6 +259,13 @@ public:
       int destPw = BytesPerPixel(buffer_format);
 
       bool copy_required = mSurface->GetBase() && (mTextureWidth!=mPixelWidth || mTextureHeight!=mPixelHeight || buffer_format!=fmt);
+
+      #if !defined(NME_GLES)
+      bool oddRowLength = (mPixelWidth*pw) & 0x3;
+      if (oddRowLength)
+         copy_required = true;
+      #endif
+
       if (copy_required)
       {
          buffer = (uint8 *)malloc(destPw * mTextureWidth * mTextureHeight);
@@ -285,6 +292,7 @@ public:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, mTextureWidth, mTextureHeight, 0, pixel_format, channel, buffer ? buffer : mSurface->GetBase());
 

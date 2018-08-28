@@ -40,14 +40,18 @@ class Event
    public var target(get_target, set_target):Dynamic;
    public var type(get_type, never):String;
 
-   /** @private */ private var _bubbles : Bool;
-   /** @private */ private var _cancelable : Bool;
-   /** @private */ private var _currentTarget : Dynamic;
-   /** @private */ private var _eventPhase : Int;
-   /** @private */ private var _target : Dynamic;
-   /** @private */ private var _type : String;
-   /** @private */ private var nmeIsCancelled:Bool;
-   /** @private */ private var nmeIsCancelledNow:Bool;
+
+   private var _bubbles : Bool;
+   private var _cancelable : Bool;
+   private var _currentTarget : Dynamic;
+   private var _eventPhase : Int;
+   private var _target : Dynamic;
+   private var _type : String;
+   private var nmeIsCancelled:Bool;
+   private var nmeIsCancelledNow:Bool;
+
+   public var clickCancelled:Bool;
+
    public function new(type:String, bubbles:Bool = false, cancelable:Bool = false) 
    {
       _type = type;
@@ -55,6 +59,7 @@ class Event
       _cancelable = cancelable;
       nmeIsCancelled = false;
       nmeIsCancelledNow = false;
+      clickCancelled = false;
       _target = null;
       _currentTarget = null;
       _eventPhase = EventPhase.AT_TARGET;
