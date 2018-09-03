@@ -5394,7 +5394,7 @@ void FileDialogSpec::complete()
    if (result.empty())
       val_call1(callback->get(), alloc_null( ) );
    else
-      val_call1(callback->get(), alloc_string( result.c_str() ) );
+      val_call1(callback->get(), alloc_string_len( result.c_str(), result.size() ) );
    delete this;
 }
 
@@ -5414,7 +5414,7 @@ DEFINE_PRIM(nme_file_dialog_folder,2);
 */
 
 
-bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultPath, HxString inTypes, value inCallback )
+bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultPath, HxString inTypes, value inCallback, int inFlags )
 {
    if (gCurrentFileDialog)
       return false;
@@ -5427,6 +5427,7 @@ bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultP
    gCurrentFileDialog->defaultPath = inDefaultPath.c_str();
    gCurrentFileDialog->fileTypes = inTypes.c_str();
    gCurrentFileDialog->callback = new AutoGCRoot(inCallback);
+   gCurrentFileDialog->flags = inFlags;
 
    if (!FileDialogOpen( gCurrentFileDialog ))
    {
@@ -5440,7 +5441,7 @@ bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultP
 
    return false;
 }
-DEFINE_PRIME5(nme_file_dialog_open);
+DEFINE_PRIME6(nme_file_dialog_open);
 
 /*
 value nme_file_dialog_save(value in_title, value in_text, value in_types )

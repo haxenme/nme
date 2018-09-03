@@ -87,10 +87,22 @@ namespace nme {
 
 HWND GetApplicationWindow();
 
+namespace {
+enum
+{
+   flagSave            = 0x0001,
+   flagPromptOverwrite = 0x0002,
+   flagMustExist       = 0x0004,
+   flagDirectory       = 0x0008,
+   flagMultiSelect     = 0x0010,
+   flagHideReadOnly    = 0x0020,
+};
+}
+
 static unsigned __stdcall dialog_proc( void *inSpec )
 {
    FileDialogSpec *spec = (FileDialogSpec *)inSpec;
-   if (spec->fileTypes=="<directory>")
+   if (spec->flags & flagDirectory)
    {
 
       IFileDialog *dlg = 0;
@@ -144,16 +156,35 @@ static unsigned __stdcall dialog_proc( void *inSpec )
          buf[i] = ptr[i]=='|' ? '\0' : ptr[i];
       buf[len] = '\0';
       ofn.lpstrFilter = &buf[0];
-      ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
+      ofn.Flags = OFN_EXPLORER;
+      if (spec->flags & flagMustExist)
+         ofn.Flags |= OFN_FILEMUSTEXIST;
+      if (spec->flags & flagHideReadOnly)
+         ofn.Flags |= OFN_HIDEREADONLY;
+      if (spec->flags & flagMultiSelect)
+         ofn.Flags |= OFN_ALLOWMULTISELECT;
+      if (spec->flags & flagPromptOverwrite)
+         ofn.Flags |= OFN_OVERWRITEPROMPT;
       //ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
       ofn.lpstrFile = path;
       ofn.lpstrTitle = spec->title.c_str();
       ofn.nMaxFile = MAX_PATH;
       ofn.lpstrDefExt = "*";
 
-      if (GetOpenFileName(&ofn))
+      bool result = (spec->flags & flagSave) ? GetSaveFileName(&ofn) : GetOpenFileName(&ofn);
+      if (result)
       {
-         spec->result =  std::string( ofn.lpstrFile ); 
+         if (spec->flags & flagMultiSelect)
+         {
+            const char *ptr = ofn.lpstrFile;
+            while(ptr[0] || ptr[1])
+               ptr++;
+            ptr++;
+            int len = ptr- ofn.lpstrFile;
+            spec->result =  std::string( ofn.lpstrFile, len ); 
+         }
+         else
+            spec->result =  std::string( ofn.lpstrFile ); 
       }
    }
 
@@ -169,29 +200,6 @@ bool FileDialogOpen( FileDialogSpec *inSpec )
    return _beginthreadex( 0, 0, dialog_proc, (void *)inSpec, 0, 0);
 }
 
-   /*
-   std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
-
-      OPENFILENAME ofn;
-       char path[1024] = "";
-
-       ZeroMemory(&ofn, sizeof(ofn));
-
-       ofn.lStructSize = sizeof(ofn);
-       ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
-       ofn.lpstrFile = path;
-       ofn.lpstrTitle = title.c_str();
-       ofn.nMaxFile = MAX_PATH;
-       ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
-       ofn.lpstrDefExt = "*";
-
-       if(GetSaveFileName(&ofn))  {
-         return std::string( ofn.lpstrFile ); 
-       }
-
-      return ""; 
-   }
-   */
 
 }
 #else
