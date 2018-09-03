@@ -108,6 +108,11 @@ class Dialog
             break;
          }
       }
+      if (result.length>1)
+      {
+         var dir = result.shift();
+         result = [ for(r in result) '$dir/$r' ];
+      }
       return result;
    }
 
