@@ -8,7 +8,7 @@ class ColorTransform
    public var alphaOffset:Float;
    public var blueMultiplier:Float;
    public var blueOffset:Float;
-   public var color(get_color, set_color):Int;
+   public var color(get, set):Int;
    public var greenMultiplier:Float;
    public var greenOffset:Float;
    public var redMultiplier:Float;

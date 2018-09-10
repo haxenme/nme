@@ -33,12 +33,12 @@ class Event
    public static inline var UNLOAD = "unload";
    public static inline var VIDEO_FRAME = "videoFrame";
 
-   public var bubbles(get_bubbles, never):Bool;
-   public var cancelable(get_cancelable, never):Bool;
-   public var currentTarget(get_currentTarget, set_currentTarget):Dynamic;
-   public var eventPhase(get_eventPhase, never):Int;
-   public var target(get_target, set_target):Dynamic;
-   public var type(get_type, never):String;
+   public var bubbles(get, never):Bool;
+   public var cancelable(get, never):Bool;
+   public var currentTarget(get, set):Dynamic;
+   public var eventPhase(get, never):Int;
+   public var target(get, set):Dynamic;
+   public var type(get, never):String;
 
 
    private var _bubbles : Bool;

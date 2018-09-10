@@ -6,8 +6,8 @@ import nme.Loader;
 @:nativeProperty
 class GraphicsPath extends IGraphicsData 
 {
-   public var commands(get_commands, set_commands):Array<Int>;
-   public var data(get_data, set_data):Array<Float>;
+   public var commands(get, set):Array<Int>;
+   public var data(get, set):Array<Float>;
 
    public function new(?commands:Array<Int>, ?data:Array<Float>, winding:String = GraphicsPathWinding.EVEN_ODD) 
    {

@@ -4,7 +4,7 @@ package nme.geom;
 @:nativeProperty
 class Point 
 {
-   public var length(get_length, never):Float;
+   public var length(get, never):Float;
    public var x:Float;
    public var y:Float;
 

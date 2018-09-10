@@ -5,8 +5,8 @@ package nme.gl;
 class GLObject 
 {
    public var id:Dynamic;
-   public var invalidated(get_invalidated, null):Bool;
-   public var valid(get_valid, null):Bool;
+   public var invalidated(get, null):Bool;
+   public var valid(get, null):Bool;
 
    private var version:Int;
 

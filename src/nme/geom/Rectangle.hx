@@ -4,14 +4,14 @@ package nme.geom;
 @:nativeProperty
 class Rectangle 
 {
-   public var bottom(get_bottom, set_bottom):Float;
-   public var bottomRight(get_bottomRight, set_bottomRight):Point;
+   public var bottom(get, set):Float;
+   public var bottomRight(get, set):Point;
    public var height:Float;
-   public var left(get_left, set_left):Float;
-   public var right(get_right, set_right):Float;
-   public var size(get_size, set_size):Point;
-   public var top(get_top, set_top):Float;
-   public var topLeft(get_topLeft, set_topLeft):Point;
+   public var left(get, set):Float;
+   public var right(get, set):Float;
+   public var size(get, set):Point;
+   public var top(get, set):Float;
+   public var topLeft(get, set):Point;
    public var width:Float;
    public var x:Float;
    public var y:Float;

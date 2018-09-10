@@ -9,7 +9,7 @@ import nme.events.TimerEvent;
 class Timer extends EventDispatcher 
 {
    public var currentCount:Int;
-   public var delay(get_delay, set_delay):Float;
+   public var delay(get, set):Float;
    public var repeatCount:Int;
    public var running:Bool;
 

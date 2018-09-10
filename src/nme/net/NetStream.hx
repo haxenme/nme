@@ -10,13 +10,13 @@ class NetStream extends nme.events.EventDispatcher
    inline static var CONNECT_TO_FMS : String = "connectToFMS";
    inline static var DIRECT_CONNECTIONS : String ="directConnections";
 
-   public var bytesTotal(get_bytesTotal,null) : Int;
-   public var bytesLoaded(get_bytesLoaded,null) : Int;
-   public var decodedFrames(get_decodedFrames,null) : Int;
+   public var bytesTotal(get,null) : Int;
+   public var bytesLoaded(get,null) : Int;
+   public var decodedFrames(get,null) : Int;
    public var client:Dynamic;
    public var objectEncoding(default,null) : Int;
-   public var peerStreams(get_peerStreams,null) : Array<Dynamic>;
-   public var time(get_time,null) : Float;
+   public var peerStreams(get,null) : Array<Dynamic>;
+   public var time(get,null) : Float;
    public var soundTransform(get,set) : SoundTransform;
 
 

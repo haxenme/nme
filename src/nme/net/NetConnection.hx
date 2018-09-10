@@ -9,11 +9,11 @@ class NetConnection extends nme.events.EventDispatcher
 {
    public static inline var defaultObjectEncoding : Int = 0;
    public var client : Dynamic;
-   public var connected(get_connected,null) : Bool;
+   public var connected(get,null) : Bool;
    public var objectEncoding(default,null) : Int;
    public var uri(default,null) : String;
    public var connectedProxyType(default,null) : String;
-   public var proxyType(get_proxyType, set_proxyType): String;
+   public var proxyType(get, set): String;
    public var usingTLS(default,null) : Bool;
 
 

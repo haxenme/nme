@@ -8,7 +8,7 @@ import nme.Loader;
 class StorageVolumeInfo extends EventDispatcher 
 {
    public static inline var isSupported = true;
-   public static var storageVolumeInfo(get_storageVolumeInfo, null):StorageVolumeInfo;
+   public static var storageVolumeInfo(get, null):StorageVolumeInfo;
 
    private static var nmeStorageVolumeInfo:StorageVolumeInfo;
 

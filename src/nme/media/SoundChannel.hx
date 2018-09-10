@@ -10,10 +10,10 @@ import nme.NativeHandle;
 @:nativeProperty
 class SoundChannel extends EventDispatcher 
 {
-   public var leftPeak(get_leftPeak, null):Float;
-   public var rightPeak(get_rightPeak, null):Float;
-   public var position(get_position, set_position):Float;
-   public var soundTransform(get_soundTransform, set_soundTransform):SoundTransform;
+   public var leftPeak(get, null):Float;
+   public var rightPeak(get, null):Float;
+   public var position(get, set):Float;
+   public var soundTransform(get, set):SoundTransform;
    // Does not do anything...
    public var pitch:Float;
 

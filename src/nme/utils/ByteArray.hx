@@ -47,10 +47,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 {
 
    public var bigEndian:Bool;
-   public var bytesAvailable(get_bytesAvailable, null):Int;
-   public var endian(get_endian, set_endian):String;
+   public var bytesAvailable(get, null):Int;
+   public var endian(get, set):String;
    public var position:Int;
-   public var byteLength(get_byteLength,null):Int;
+   public var byteLength(get,null):Int;
    public var __length(get,set):Int;
 
    #if jsprime

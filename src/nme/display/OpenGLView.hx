@@ -12,7 +12,7 @@ class OpenGLView extends DirectRenderer
    public static inline var CONTEXT_LOST = "glcontextlost";
    public static inline var CONTEXT_RESTORED = "glcontextrestored";
 
-   public static var isSupported(get_isSupported, null):Bool;
+   public static var isSupported(get, null):Bool;
 
    //var context:GLInstance;
    public function new() 

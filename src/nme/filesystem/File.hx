@@ -11,11 +11,11 @@ import nme.JNI;
 @:nativeProperty
 class File 
 {
-   public static var applicationDirectory(get_applicationDirectory, null):File;
-   public static var applicationStorageDirectory(get_applicationStorageDirectory,null) : File;
-   public static var desktopDirectory(get_desktopDirectory,null) : File;
-   public static var documentsDirectory(get_documentsDirectory,null) : File;
-   public static var userDirectory(get_userDirectory, null) : File;
+   public static var applicationDirectory(get, null):File;
+   public static var applicationStorageDirectory(get,null) : File;
+   public static var desktopDirectory(get,null) : File;
+   public static var documentsDirectory(get,null) : File;
+   public static var userDirectory(get, null) : File;
 
    static inline var APP = 0;
    static inline var STORAGE = 1;
@@ -23,8 +23,8 @@ class File
    static inline var DOCS = 3;
    static inline var USER = 4;
 
-   public var nativePath(default, set_nativePath):String;
-   public var url(default, set_url):String;
+   public var nativePath(default, set):String;
+   public var url(default, set):String;
 
    public function new(?path:String = null) 
    {

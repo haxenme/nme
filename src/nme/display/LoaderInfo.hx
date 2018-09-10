@@ -11,7 +11,7 @@ import nme.utils.ByteArray;
 @:nativeProperty
 class LoaderInfo extends URLLoader 
 {
-   public var bytes(get_bytes, null):ByteArray;
+   public var bytes(get, null):ByteArray;
    public var childAllowsParent(default, null):Bool;
    public var content:DisplayObject;
    public var contentType:String;

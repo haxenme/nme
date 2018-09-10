@@ -7,10 +7,10 @@ import nme.Loader;
 class InteractiveObject extends DisplayObject 
 {
    public var doubleClickEnabled:Bool;
-   public var mouseEnabled(get_mouseEnabled, set_mouseEnabled):Bool;
-   public var moveForSoftKeyboard(get_moveForSoftKeyboard, set_moveForSoftKeyboard):Bool;
-   public var needsSoftKeyboard(get_needsSoftKeyboard, set_needsSoftKeyboard):Bool;
-   public var softKeyboard(get_softKeyboard, set_softKeyboard): Int;
+   public var mouseEnabled(get, set):Bool;
+   public var moveForSoftKeyboard(get, set):Bool;
+   public var needsSoftKeyboard(get, set):Bool;
+   public var softKeyboard(get, set): Int;
 
    /** @private */ private var nmeMouseEnabled:Bool;
    public function new(inHandle:Dynamic, inType:String) 

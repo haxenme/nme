@@ -6,11 +6,11 @@ import nme.display.DisplayObject;
 @:nativeProperty
 class Transform 
 {
-   public var colorTransform(get_colorTransform, set_colorTransform):ColorTransform;
-   public var concatenatedColorTransform(get_concatenatedColorTransform, null):ColorTransform;
-   public var concatenatedMatrix(get_concatenatedMatrix, null):Matrix;
-   public var matrix(get_matrix, set_matrix):Matrix;
-   public var pixelBounds(get_pixelBounds, null):Rectangle;
+   public var colorTransform(get, set):ColorTransform;
+   public var concatenatedColorTransform(get, null):ColorTransform;
+   public var concatenatedMatrix(get, null):Matrix;
+   public var matrix(get, set):Matrix;
+   public var pixelBounds(get, null):Rectangle;
 
    /** @private */ private var nmeObj:DisplayObject;
    public function new(inParent:DisplayObject) 

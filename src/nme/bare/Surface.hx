@@ -42,12 +42,12 @@ class Surface
    // add 128, * 255
    public static inline var FLOAT_EXPAND     = 0x0006;
 
-   public var height(get_height, null):Int;
-   public var rect(get_rect, null):Rectangle;
-   public var transparent(get_transparent, null):Bool;
-   public var width(get_width, null):Int;
+   public var height(get, null):Int;
+   public var rect(get, null):Rectangle;
+   public var transparent(get, null):Bool;
+   public var width(get, null):Int;
    public var format(get, set):Int;
-   public var premultipliedAlpha(get_premultipliedAlpha, set_premultipliedAlpha):Bool;
+   public var premultipliedAlpha(get, set):Bool;
    public var nmeHandle:NativeHandle;
    public var data(get,null):UInt8Array;
    

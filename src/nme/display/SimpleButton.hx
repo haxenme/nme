@@ -6,14 +6,14 @@ import nme.Loader;
 @:nativeProperty
 class SimpleButton extends InteractiveObject 
 {
-   public var downState(default, set_downState):DisplayObject;
-   public var enabled(get_enabled, set_enabled):Bool;
-   public var hitTestState(default, set_hitTestState):DisplayObject;
-   public var overState(default, set_overState):DisplayObject;
+   public var downState(default, set):DisplayObject;
+   public var enabled(get, set):Bool;
+   public var hitTestState(default, set):DisplayObject;
+   public var overState(default, set):DisplayObject;
    //public var soundTransform:SoundTransform;
    //public var trackAsMenu:Bool;
-   public var upState(default, set_upState):DisplayObject;
-   public var useHandCursor(get_useHandCursor, set_useHandCursor):Bool;
+   public var upState(default, set):DisplayObject;
+   public var useHandCursor(get, set):Bool;
 
    public function new(?upState:DisplayObject, ?overState:DisplayObject, ?downState:DisplayObject, ?hitTestState:DisplayObject) 
    {

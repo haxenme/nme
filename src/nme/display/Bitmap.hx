@@ -7,8 +7,8 @@ import nme.display.PixelSnapping;
 @:nativeProperty
 class Bitmap extends DisplayObject 
 {
-   public var bitmapData(default, set_bitmapData):BitmapData;
-   public var smoothing(default, set_smoothing):Bool;
+   public var bitmapData(default, set):BitmapData;
+   public var smoothing(default, set):Bool;
 
    private var mGraphics:Graphics;
 

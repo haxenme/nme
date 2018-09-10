@@ -18,9 +18,9 @@ class Sound extends EventDispatcher
 {
    public var bytesLoaded(default, null):Int;
    public var bytesTotal(default, null):Int;
-   public var id3(get_id3, null):ID3Info;
-   public var isBuffering(get_isBuffering, null):Bool;
-   public var length(get_length, null):Float;
+   public var id3(get, null):ID3Info;
+   public var isBuffering(get, null):Bool;
+   public var length(get, null):Float;
    public var url(default, null):String;
 
    public var nmeHandle:NativeHandle;

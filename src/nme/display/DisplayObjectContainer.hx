@@ -10,10 +10,10 @@ import nme.Loader;
 @:nativeProperty
 class DisplayObjectContainer extends InteractiveObject 
 {
-   public var mouseChildren(get_mouseChildren, set_mouseChildren):Bool;
-   public var numChildren(get_numChildren, null):Int;
-   public var tabChildren(get_tabChildren, set_tabChildren):Bool;
-   //public var textSnapshot(get_textSnapshot, null):TextSnapshot; // not implemented
+   public var mouseChildren(get, set):Bool;
+   public var numChildren(get, null):Int;
+   public var tabChildren(get, set):Bool;
+   //public var textSnapshot(get, null):TextSnapshot; // not implemented
    /** @private */ private var nmeChildren:Array<DisplayObject>;
    public function new(inHandle:NativeHandle, inType:String) 
    {

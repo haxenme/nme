@@ -7,7 +7,7 @@ import nme.display.DisplayObject;
 @:nativeProperty
 class Video extends DisplayObject
 {
-   public var smoothing(default, set_smoothing):Bool;
+   public var smoothing(default, set):Bool;
    public var videoHeight(default, null):Int;
    public var videoWidth(default, null):Int;
 

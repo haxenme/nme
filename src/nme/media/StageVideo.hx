@@ -14,15 +14,15 @@ import nme.events.NetStatusEvent;
 @:nativeProperty
 class StageVideo extends EventDispatcher
 {
-   public var colorSpaces(get_colorSpaces,null) : Vector<String>;
+   public var colorSpaces(get,null) : Vector<String>;
    public var depth : Int;
    public var videoHeight(default,null) : Int;
    public var videoWidth(default,null) : Int;
    public var duration(default,null) : Float;
 
-   public var viewPort(get_viewPort, set_viewPort) : Rectangle;
-   public var pan(get_pan,set_pan) : Point;
-   public var zoom(get_zoom,set_zoom) : Point;
+   public var viewPort(get, set) : Rectangle;
+   public var pan(get,set) : Point;
+   public var zoom(get,set) : Point;
 
    inline static var playComplete = "NetStream.Play.Complete"; // Not ios
    inline static var playSwitch = "NetStream.Play.Switch";

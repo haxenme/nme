@@ -3,8 +3,8 @@ package nme.utils;
 
 interface IDataInput 
 {
-   public var bytesAvailable(get_bytesAvailable, null):Int;
-   public var endian(get_endian, set_endian):String;
+   public var bytesAvailable(get, null):Int;
+   public var endian(get, set):String;
 
    public function readBoolean():Bool;
    public function readByte():Int;

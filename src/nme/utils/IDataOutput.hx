@@ -3,7 +3,7 @@ package nme.utils;
 
 interface IDataOutput 
 {
-   public var endian(get_endian, set_endian):String;
+   public var endian(get, set):String;
 
    public function writeBoolean(value:Bool):Void;
    public function writeByte(value:Int):Void;

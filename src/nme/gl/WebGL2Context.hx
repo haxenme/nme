@@ -715,8 +715,8 @@ class WebGL2Context
 
    #if (neko||cpp)
 
-   public static var drawingBufferHeight(get_drawingBufferHeight, null):Int;
-   public static var drawingBufferWidth(get_drawingBufferWidth, null):Int;
+   public static var drawingBufferHeight(get, null):Int;
+   public static var drawingBufferWidth(get, null):Int;
 
    public inline function activeTexture(texture:Int):Void { GL.nme_gl_active_texture(texture); }
 

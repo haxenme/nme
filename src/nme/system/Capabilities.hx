@@ -6,12 +6,12 @@ import nme.Loader;
 @:nativeProperty
 class Capabilities 
 {
-   public static var pixelAspectRatio(get_pixelAspectRatio, null):Float;
-   public static var screenDPI(get_screenDPI, null):Float;
-   public static var screenResolutionX(get_screenResolutionX, null):Float;
-   public static var screenResolutionY(get_screenResolutionY, null):Float;
-   public static var screenResolutions(get_screenResolutions, null):Array<Array<Int>>;
-   public static var language(get_language, null):String;
+   public static var pixelAspectRatio(get, null):Float;
+   public static var screenDPI(get, null):Float;
+   public static var screenResolutionX(get, null):Float;
+   public static var screenResolutionY(get, null):Float;
+   public static var screenResolutions(get, null):Array<Array<Int>>;
+   public static var language(get, null):String;
 
    // Getters & Setters
    private static function get_pixelAspectRatio():Float { return nme_capabilities_get_pixel_aspect_ratio(); }

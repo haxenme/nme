@@ -15,10 +15,10 @@ import cpp.vm.Gc;
 @:nativeProperty
 class System 
 {
-   public static var deviceID(get_deviceID, null):String;
-   public static var totalMemory(get_totalMemory, null):Int;
-   public static var totalMemoryNumber(get_totalMemoryNumber, null):Float;
-   public static var exeName(get_exeName, null):String;
+   public static var deviceID(get, null):String;
+   public static var totalMemory(get, null):Int;
+   public static var totalMemoryNumber(get, null):Float;
+   public static var exeName(get, null):String;
    static var args:Array<String>;
 
    static public function exit(?inCode:Int) 
