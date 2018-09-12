@@ -143,7 +143,7 @@ static unsigned __stdcall dialog_proc( void *inSpec )
    else
    {
       OPENFILENAME ofn;
-      char path[MAX_PATH] = "";
+      std::vector<char> path(32*1024);
 
       ZeroMemory(&ofn, sizeof(ofn));
 
@@ -166,9 +166,9 @@ static unsigned __stdcall dialog_proc( void *inSpec )
       if (spec->flags & flagPromptOverwrite)
          ofn.Flags |= OFN_OVERWRITEPROMPT;
       //ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
-      ofn.lpstrFile = path;
+      ofn.lpstrFile = &path[0];
       ofn.lpstrTitle = spec->title.c_str();
-      ofn.nMaxFile = MAX_PATH;
+      ofn.nMaxFile = path.size();
       ofn.lpstrDefExt = "*";
 
       bool result = (spec->flags & flagSave) ? GetSaveFileName(&ofn) : GetOpenFileName(&ofn);
