@@ -238,6 +238,9 @@ class AndroidPlatform extends Platform
       {
          var assemble = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
 
+         if(PlatformHelper.hostPlatform==Platform.MAC)
+            ProcessHelper.runCommand(outputDir, 'chmod', ['+x', './gradlew']);
+          
          var exe = PlatformHelper.hostPlatform==Platform.WINDOWS ? "./gradlew.bat" : "./gradlew";
          ProcessHelper.runCommand(outputDir, exe, [ assemble ]);
       }
