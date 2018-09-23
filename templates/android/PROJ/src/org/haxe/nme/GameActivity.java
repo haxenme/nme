@@ -1226,13 +1226,21 @@ implements SensorEventListener
                //Log.v("VIEW","Run setPopupSelection " + (activity.mIncrementalText ?"inc ":"smart ") + inSel0 + "..." + inSel1 );
                if (inSel0!=inSel1)
                   activity.mKeyInTextView.setSelection(inSel0,inSel1);
-               else
-                  activity.mKeyInTextView.setSelection(inSel0);
+               else {
+                  int selection = calcSelectionIndex(inSel0, activity.mKeyInTextView);
+                  activity.mKeyInTextView.setSelection(selection);
+               }
                 activity.mTextUpdateLockout = false;
             }
          }} );
    }
 
+   private static int calcSelectionIndex(int index, EditText editText){
+      if(index >= editText.getText().length())
+         return 0;
+      return index;
+   }
+        
    void onSelectionChanged(final int selStart, final int selEnd)
    {
       if (mTextUpdateLockout || mView==null || mIncrementalText)
