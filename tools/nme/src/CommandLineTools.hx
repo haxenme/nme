@@ -4,7 +4,6 @@ import std.RealSys;
 import std.SysProxy;
 import haxe.io.Path;
 import sys.io.File;
-import sys.io.Process;
 import sys.FileSystem;
 import platforms.Platform;
 import nme.system.System;
@@ -12,7 +11,6 @@ import nme.Loader;
 import nme.net.SharedObject;
 import nme.script.Client;
 import NMEProject;
-import nme.AlphaMode;
 
 using StringTools;
 

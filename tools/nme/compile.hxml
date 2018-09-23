@@ -1,13 +1,22 @@
--main CommandLineTools
+-cp src
+-main CommandLineToolsLauncher
 -neko ../../nme.n
+#-debug
+
+--next
+
+-main CommandLineTools
+-cpp ../../bin/tools
 -cp src
 -cp src/helpers
 -cp src/project
 -cp ../../src
 -D nme
 -D ndll_silent_fail=1
+-D HXCPP_COMPILE_CACHE
+#-D profileNMMLParser
 -lib format
 -lib gm2d
 -lib hxcpp
 --remap flash:nme
--debug
+#-debug

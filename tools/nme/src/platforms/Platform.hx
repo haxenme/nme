@@ -5,7 +5,6 @@ import sys.io.File;
 import haxe.io.Path;
 import sys.net.Host;
 import sys.net.Socket;
-import nme.AlphaMode;
 import nme.script.NmeItem;
 import haxe.zip.Entry;
 import haxe.zip.Writer;
