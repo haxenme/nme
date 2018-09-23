@@ -481,20 +481,19 @@ class AndroidPlatform extends Platform
 
       if (gradle)
       {
-         copyTemplateDir( "android/PROJ/deps/extension-api/src", destination + srcPath);
+         copyTemplateDir( "android/PROJ/deps/extension-api", '${getOutputDir()}/extension-api');
          copyTemplateDir( "android/PROJ/src", destination + srcPath);
       }
-
+       
       for(k in project.dependencies.keys())
       {
          var lib = project.dependencies.get(k);
-         if (lib.isAndroidProject())
+         if (gradle) {
+            FileHelper.recursiveCopy( lib.getFilename(), '${getOutputDir()}/${lib.makeUniqueName()}', context, true);
+         }
+         else if (lib.isAndroidProject())
          {
-            // TODO - where should these go?
-            if (gradle)
-               FileHelper.recursiveCopy( lib.getFilename(), destination + srcPath, context, true);
-            else
-               FileHelper.recursiveCopy( lib.getFilename(), getAppDir()+"/"+getAndroidProject(lib), context, true);
+            FileHelper.recursiveCopy( lib.getFilename(), getAppDir()+"/"+getAndroidProject(lib), context, true);
          }
       }
    }

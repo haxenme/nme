@@ -1,0 +1,13 @@
+apply plugin: 'android-library'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "25.0.0"
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+        }
+    }
+}
