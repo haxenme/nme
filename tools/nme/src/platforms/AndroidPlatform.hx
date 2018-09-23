@@ -196,7 +196,14 @@ class AndroidPlatform extends Platform
       for( k in project.androidConfig.extensions.keys())
          extensions.push(k);
       context.ANDROID_EXTENSIONS =extensions;
+      
+      if(gradle)
+         setGradleLibraries();
+      else
+         setAntLibraries();
+   }
 
+   private function setAntLibraries() {
       context.ANDROID_LIBRARY_PROJECTS = [];
       var idx = 1;
       var extensionApi = "deps/extension-api";
@@ -208,6 +215,16 @@ class AndroidPlatform extends Platform
          {
             var proj = getAndroidProject(lib);
             context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:proj} );
+         }
+      }
+   }
+   
+   private function setGradleLibraries() {
+      context.ANDROID_LIBRARY_PROJECTS = [{name:'extension-api'}];
+      for(k in project.dependencies.keys()) {
+         var lib = project.dependencies.get(k);
+         if (lib.isAndroidProject()) {
+            context.ANDROID_LIBRARY_PROJECTS.push( {name:lib.name} );
          }
       }
    }
@@ -494,19 +511,19 @@ class AndroidPlatform extends Platform
 
       if (gradle)
       {
-         copyTemplateDir( "android/PROJ/deps/extension-api/src", destination + srcPath);
+         copyTemplateDir( "android/PROJ/deps/extension-api", '${getOutputDir()}/extension-api');
          copyTemplateDir( "android/PROJ/src", destination + srcPath);
       }
-
+       
       for(k in project.dependencies.keys())
       {
          var lib = project.dependencies.get(k);
-         if (lib.isAndroidProject())
+         if (gradle) {
+              var libPath = '${getOutputDir()}/${lib.makeUniqueName()}';
+              FileHelper.recursiveCopy( lib.getFilename(), libPath, context, true);
+         }
+         else if (lib.isAndroidProject())
          {
-            // TODO - where should these go?
-            if (gradle)
-               FileHelper.recursiveCopy( lib.getFilename(), destination + srcPath, context, true);
-            else
                FileHelper.recursiveCopy( lib.getFilename(), getAppDir()+"/"+getAndroidProject(lib), context, true);
          }
       }
