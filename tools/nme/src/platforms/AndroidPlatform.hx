@@ -10,6 +10,7 @@ class AndroidPlatform extends Platform
 {
    var buildV5:Bool;
    var buildV7:Bool;
+   var build64:Bool;
    var buildX86:Bool;
    var gradle:Bool;
 
@@ -26,7 +27,7 @@ class AndroidPlatform extends Platform
      }
 
 
-      buildV5 = buildV7 = buildX86 = false;
+      buildV5 = buildV7 = build64 = buildX86 = false;
 
       gradle = CommandLineTools.gradle;
       if (gradle)
@@ -48,6 +49,7 @@ class AndroidPlatform extends Platform
       {
          buildV5 = hasArch(ARMV5);
          buildV7 = hasArch(ARMV7);
+         build64 = hasArch(ARM64);
       }
       buildX86 = hasArch(X86);
 
@@ -57,6 +59,8 @@ class AndroidPlatform extends Platform
          PathHelper.removeDirectory(libDir + "/armeabi");
       if (!buildV7)
          PathHelper.removeDirectory(libDir + "/armeabi-v7a");
+      if (!build64)
+         PathHelper.removeDirectory(libDir + "/arm64-v8a");
       if (!buildX86)
          PathHelper.removeDirectory(libDir + "/x86");
 
@@ -121,6 +125,9 @@ class AndroidPlatform extends Platform
 
       if (buildV7)
          runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV7"]) );
+      
+      if (build64)
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARM64"]) );
 
       if (buildX86)
          runHaxeWithArgs(args.concat(["-D", "HXCPP_X86"]) );
@@ -139,6 +146,10 @@ class AndroidPlatform extends Platform
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-v7.so",
                 getOutputLibDir() + "/armeabi-v7a/libApplicationMain.so" );
 
+      if (build64)
+           FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-64.so",
+           getOutputLibDir() + "/arm64-v8a/libApplicationMain.so" );
+      
       if (buildX86)
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-x86.so",
                 getOutputLibDir() + "/x86/libApplicationMain.so" );
@@ -332,6 +343,8 @@ class AndroidPlatform extends Platform
          updateLibArch( libDir + "/armeabi", "" );
       if (buildV7)
          updateLibArch( libDir + "/armeabi-v7a", "-v7" );
+      if (build64)
+         updateLibArch( libDir + "/arm64-v8a", "-64" );
       if (buildX86)
          updateLibArch( libDir + "/x86", "-x86" );
    }
