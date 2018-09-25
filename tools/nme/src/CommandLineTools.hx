@@ -861,6 +861,8 @@ class CommandLineTools
          return PathHelper.combine(path, "project.xml");
       else if (FileSystem.exists(PathHelper.combine(path, "Project.xml"))) 
          return PathHelper.combine(path, "Project.xml");
+      else if (FileSystem.exists(PathHelper.combine(path, "build.xml"))) 
+         return PathHelper.combine(path, "build.xml");
       else
       {
          var files = FileSystem.readDirectory(path);
