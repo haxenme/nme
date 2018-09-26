@@ -133,12 +133,40 @@ public:
       }
       else
       {
-         tessellate_lines = false;
+         /*tessellate_lines = false;
          mElement.mPrimType = ptLineStrip;
          GraphicsStroke *stroke = inJob.mStroke;
          mElement.mScaleMode = stroke->scaleMode;
          mElement.mWidth = stroke->thickness;
-         SetFill(stroke->fill,inHardware);
+         SetFill(stroke->fill,inHardware);*/
+         
+         mElement.mPrimType = ptLineStrip;
+         GraphicsStroke *stroke = inJob.mStroke;
+         mElement.mScaleMode = stroke->scaleMode;
+         mElement.mWidth = stroke->thickness;
+         if (!SetFill(stroke->fill,inHardware))
+             return;
+
+         mPerpLen = stroke->thickness * 0.5;
+         if (mPerpLen<=0.0)
+         {
+               mPerpLen = 0.5/mScale;
+               mElement.mWidth = 1.0/mScale;
+         }
+
+         mCaps = stroke->caps;
+         mJoints = stroke->joints;
+         mMiterLimit = stroke->miterLimit*mPerpLen;
+
+         if (mPerpLen<0.5/mScale)
+         {
+            int a = (mElement.mColour>>24)*mPerpLen*mScale/0.5;
+            mElement.mColour = (mElement.mColour & 0x00ffffff) | (a<<24);
+            mPerpLen = 0.5/mScale;
+            mElement.mWidth = 1.0/mScale;
+         }
+
+         //no alpha, for more sharp looking lines
       }
 
       if (mElement.mSurface)
