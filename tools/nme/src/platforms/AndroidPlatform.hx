@@ -89,7 +89,7 @@ class AndroidPlatform extends Platform
          }
       }
    }
-   
+      
    private function decideAudioFolder() {
       if(gradle)
          return 'app/src/main/res/raw';
@@ -99,7 +99,7 @@ class AndroidPlatform extends Platform
    private function decideAssetsFolder() {
       if(gradle)
          return 'app/src/main/assets';
-      return '/assets';
+      return 'assets';
    }
 
    public function getAppDir()
@@ -521,10 +521,13 @@ class AndroidPlatform extends Platform
       if (project.androidConfig.addV4Compat && !gradle)
          addV4CompatLib(jarDir);
 
-      if (gradle)
-      {
-         copyTemplateDir( "android/PROJ/deps/extension-api", '${getOutputDir()}/extension-api');
-         copyTemplateDir( "android/PROJ/src", destination + srcPath);
+      if (gradle) {
+         copyTemplateDir( "android/extension-api", '${getOutputDir()}/extension-api');
+         copyTemplateDir( "android/java", '${getOutputDir()}/app/src/main/java');
+      }
+      else {
+         copyTemplateDir( "android/extension-api", '${getOutputDir()}/deps/extension-api');
+         copyTemplateDir( "android/java", '${getOutputDir()}/src');
       }
        
       for(k in project.dependencies.keys())
