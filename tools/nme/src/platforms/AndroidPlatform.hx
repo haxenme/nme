@@ -80,14 +80,26 @@ class AndroidPlatform extends Platform
             {
                case SOUND, MUSIC:
                   asset.resourceName = asset.id;
-                  asset.targetPath =  "res/raw/" + asset.flatName + "." + Path.extension(asset.targetPath);
+                  asset.targetPath =  '${decideAudioFolder()}/${asset.flatName}.${Path.extension(asset.targetPath)}';
 
                default:
                   asset.resourceName = asset.flatName;
-                  asset.targetPath = "assets/" + asset.resourceName;
+                  asset.targetPath = '${decideAssetsFolder()}/${asset.resourceName}';
             }
          }
       }
+   }
+   
+   private function decideAudioFolder() {
+      if(gradle)
+         return 'app/src/main/res/raw';
+      return 'res/raw';
+   }
+
+   private function decideAssetsFolder() {
+      if(gradle)
+         return 'app/src/main/assets';
+      return '/assets';
    }
 
    public function getAppDir()
