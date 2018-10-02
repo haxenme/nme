@@ -251,6 +251,7 @@ public:
                                const ColorTransform *inObjTrans,
                                ColorTransform *inBuf);
 
+   virtual void ChildrenDirty() { }
 
    void encodeStream(ObjectStreamOut &inStream);
    void decodeStream(ObjectStreamIn &inStream);
