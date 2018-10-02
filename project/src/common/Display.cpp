@@ -316,6 +316,7 @@ void DisplayObject::setColorTransform(const ColorTransform &inTrans)
 {
    colorTransform = inTrans;
    DirtyCache();
+   ChildrenDirty();
 }
 
 
@@ -632,6 +633,7 @@ void DisplayObject::setAlpha(double inAlpha)
    colorTransform.alphaMultiplier = inAlpha;
    colorTransform.alphaOffset = 0;
    DirtyCache();
+   ChildrenDirty();
 }
 
 void DisplayObject::setBlendMode(int inMode)
@@ -1704,7 +1706,14 @@ void DisplayObjectContainer::ClearCacheDirty()
    DisplayObject::ClearCacheDirty();
 }
 
-
+void DisplayObjectContainer::ChildrenDirty()
+{
+   for(int i=0;i<mChildren.size();i++) {
+      mChildren[i]->mDirtyFlags |= dirtCache;
+      mChildren[i]->SetBitmapCache(0);
+      mChildren[i]->ChildrenDirty();
+   }
+}
 
 
 } // end namespace nme
