@@ -30,4 +30,9 @@ dependencies {
     compile 'com.android.billingclient:billing:1.0'
     ::end::
     testCompile 'junit:junit:4.12'
+
+    dependencies {
+        ::foreach (ANDROID_LIBRARY_PROJECTS)::
+        compile project(':::name::')::end::
+    }
 }

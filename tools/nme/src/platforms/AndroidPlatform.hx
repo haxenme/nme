@@ -80,14 +80,26 @@ class AndroidPlatform extends Platform
             {
                case SOUND, MUSIC:
                   asset.resourceName = asset.id;
-                  asset.targetPath =  "res/raw/" + asset.flatName + "." + Path.extension(asset.targetPath);
+                  asset.targetPath =  '${decideAudioFolder()}/${asset.flatName}.${Path.extension(asset.targetPath)}';
 
                default:
                   asset.resourceName = asset.flatName;
-                  asset.targetPath = "assets/" + asset.resourceName;
+                  asset.targetPath = '${decideAssetsFolder()}/${asset.resourceName}';
             }
          }
       }
+   }
+      
+   private function decideAudioFolder() {
+      if(gradle)
+         return 'app/src/main/res/raw';
+      return 'res/raw';
+   }
+
+   private function decideAssetsFolder() {
+      if(gradle)
+         return 'app/src/main/assets';
+      return 'assets';
    }
 
    public function getAppDir()
@@ -196,7 +208,14 @@ class AndroidPlatform extends Platform
       for( k in project.androidConfig.extensions.keys())
          extensions.push(k);
       context.ANDROID_EXTENSIONS =extensions;
+      
+      if(gradle)
+         setGradleLibraries();
+      else
+         setAntLibraries();
+   }
 
+   private function setAntLibraries() {
       context.ANDROID_LIBRARY_PROJECTS = [];
       var idx = 1;
       var extensionApi = "deps/extension-api";
@@ -208,6 +227,16 @@ class AndroidPlatform extends Platform
          {
             var proj = getAndroidProject(lib);
             context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:proj} );
+         }
+      }
+   }
+   
+   private function setGradleLibraries() {
+      context.ANDROID_LIBRARY_PROJECTS = [{name:'extension-api'}];
+      for(k in project.dependencies.keys()) {
+         var lib = project.dependencies.get(k);
+         if (lib.isAndroidProject()) {
+            context.ANDROID_LIBRARY_PROJECTS.push( {name:lib.name} );
          }
       }
    }
@@ -249,6 +278,9 @@ class AndroidPlatform extends Platform
       {
          var assemble = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
 
+         if(PlatformHelper.hostPlatform==Platform.MAC)
+            ProcessHelper.runCommand(outputDir, 'chmod', ['+x', './gradlew']);
+          
          var exe = PlatformHelper.hostPlatform==Platform.WINDOWS ? "./gradlew.bat" : "./gradlew";
          ProcessHelper.runCommand(outputDir, exe, [ assemble ]);
       }
@@ -489,21 +521,24 @@ class AndroidPlatform extends Platform
       if (project.androidConfig.addV4Compat && !gradle)
          addV4CompatLib(jarDir);
 
-      if (gradle)
-      {
-         copyTemplateDir( "android/PROJ/deps/extension-api/src", destination + srcPath);
-         copyTemplateDir( "android/PROJ/src", destination + srcPath);
+      if (gradle) {
+         copyTemplateDir( "android/extension-api", '${getOutputDir()}/extension-api');
+         copyTemplateDir( "android/java", '${getOutputDir()}/app/src/main/java');
       }
-
+      else {
+         copyTemplateDir( "android/extension-api", '${getOutputDir()}/deps/extension-api');
+         copyTemplateDir( "android/java", '${getOutputDir()}/src');
+      }
+       
       for(k in project.dependencies.keys())
       {
          var lib = project.dependencies.get(k);
-         if (lib.isAndroidProject())
+         if (gradle) {
+              var libPath = '${getOutputDir()}/${lib.makeUniqueName()}';
+              FileHelper.recursiveCopy( lib.getFilename(), libPath, context, true);
+         }
+         else if (lib.isAndroidProject())
          {
-            // TODO - where should these go?
-            if (gradle)
-               FileHelper.recursiveCopy( lib.getFilename(), destination + srcPath, context, true);
-            else
                FileHelper.recursiveCopy( lib.getFilename(), getAppDir()+"/"+getAndroidProject(lib), context, true);
          }
       }
