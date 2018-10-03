@@ -2,7 +2,7 @@ package nme.display;
 #if (!flash)
 
 @:nativeProperty
-class MovieClip extends Sprite implements Dynamic<DisplayObject>
+class MovieClip extends Sprite
 {
    public var currentFrame(get, null):Int;
    public var enabled:Bool;

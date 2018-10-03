@@ -4537,6 +4537,24 @@ void nme_bitmap_data_get_uints8(value inSurface, value inData, int inOffset, int
 DEFINE_PRIME6v(nme_bitmap_data_get_uints8);
 
 
+void nme_bitmap_data_set_uints8(value inSurface, value inData, int inOffset, int inStride,
+       int inPixelFormat, int inExpand)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      #ifndef EMSCRIPTEN
+      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
+      if (data)
+      {
+         surf->setUInts8((data + inOffset), inStride, (PixelFormat)inPixelFormat, inExpand);
+      }
+      #endif
+   }
+}
+DEFINE_PRIME6v(nme_bitmap_data_set_uints8);
+
+
 
 value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inColor)
 {

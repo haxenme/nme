@@ -5,12 +5,12 @@ import nme.PrimeLoader;
 
 class Dialog
 {
-   inline static var Save            = 0x0001;
-   inline static var PromptOverwrite = 0x0002;
-   inline static var MustExist       = 0x0004;
-   inline static var Directory       = 0x0008;
-   inline static var MultiSelect     = 0x0010;
-   inline static var HideReadOnly    = 0x0020;
+   inline static public var Save            = 0x0001;
+   inline static public var PromptOverwrite = 0x0002;
+   inline static public var MustExist       = 0x0004;
+   inline static public var Directory       = 0x0008;
+   inline static public var MultiSelect     = 0x0010;
+   inline static public var HideReadOnly    = 0x0020;
 
 
    public static function fileDialog(title:String, text:String, ?defaultPath:String, filesSpec:String = "All Files|*.*", onResult:String->Void,?rememberKey:String, inFlags:Int) : Bool

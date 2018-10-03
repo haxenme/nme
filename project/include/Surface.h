@@ -86,6 +86,7 @@ public:
    virtual void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample) { }
    virtual void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand) { }
    virtual void getUInts8(uint8 *outData, int inStride, PixelFormat pixelFormat, int inSubsample) { }
+   virtual void setUInts8(const uint8 *inData, int inStride, PixelFormat pixelFormat, int inExpand) { }
 
    void OnChanged() { mVersion++; }
 
@@ -170,6 +171,7 @@ public:
    void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample);
    void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand);
    void getUInts8(uint8 *outData, int inStride, PixelFormat pixelFormat, int inSubsample);
+   void setUInts8(const uint8 *inData, int inStride, PixelFormat pixelFormat, int inExpand);
 
    void createHardwareSurface();
    void destroyHardwareSurface();

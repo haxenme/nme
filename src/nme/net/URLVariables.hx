@@ -2,7 +2,7 @@ package nme.net;
 #if (!flash)
 
 @:nativeProperty
-class URLVariables implements Dynamic 
+class URLVariables
 {
    public function new(?inEncoded:String) 
    {

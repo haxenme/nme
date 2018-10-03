@@ -2047,6 +2047,30 @@ void SimpleSurface::getUInts8(uint8 *outData, int inStride, PixelFormat inFormat
 }
 
 
+void SimpleSurface::setUInts8(const uint8 *inData, int inStride, PixelFormat inFormat, int inExpand)
+{
+   // TODO - inExpand
+   int pixelSize = BytesPerPixel(inFormat);
+   int stride = inStride==0 ? pixelSize*mWidth : inStride;
+   if (inFormat!=mPixelFormat)
+   {
+      PixelConvert(mWidth, mHeight,
+          inFormat, inData, stride, 0,
+          mPixelFormat,  mBase, mStride, GetPlaneOffset());
+   }
+   else if (stride==mStride)
+   {
+      memcpy(mBase, inData, mWidth*mHeight*pixelSize );
+   }
+   else
+   {
+      for(int y=0;y<mHeight;y++)
+         memcpy(mBase+mStride*y, inData+stride*y, mWidth*pixelSize );
+   }
+}
+
+
+
 
 void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat inFormat, int inTransform, int inExpand)
 {

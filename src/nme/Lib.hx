@@ -50,6 +50,7 @@ class Lib
    public static var version(get, never):String;
    public static var packageName(get, never):String;
    public static var file(get, never):String;
+   public static var title:String;
 
    public static var build(get, never):String;
    public static var ndllVersion(get, never):Int;
@@ -63,6 +64,8 @@ class Lib
               inFrameRate:Float = 60.0, inColour:Int = 0xffffffff, inFlags:Int = 0x0f,
               inTitle:String = "NME", ?inIcon:Surface, ?inDummy:Dynamic) 
    {
+      title = inTitle;
+
       var params = {
          width:inWidth,
          height:inHeight,

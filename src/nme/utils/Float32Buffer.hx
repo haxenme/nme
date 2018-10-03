@@ -50,9 +50,9 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
 
    #if (cpp && !cppia)
    @:extern @:native("__hxcpp_memory_set_float")
-   static function hxcppSetFloat(b:haxe.io.BytesData, pos:Int, val:Float):Void { }
+   extern static function hxcppSetFloat(b:haxe.io.BytesData, pos:Int, val:Float):Void;
    @:extern @:native("__hxcpp_memory_get_float")
-   static function hxcppGetFloat(b:haxe.io.BytesData, pos:Int):Float return 0.0;
+   extern static function hxcppGetFloat(b:haxe.io.BytesData, pos:Int):Float;
    #end
 
    #if !cppia inline #end
