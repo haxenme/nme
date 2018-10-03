@@ -970,7 +970,7 @@ class CommandLineTools
          {
             Log.warn("HXCPP config might be missing(Environment has no \"HOME\" variable)");
 
-            return null;
+            return;
          }
 
          config = home + "/.hxcpp_config.xml";

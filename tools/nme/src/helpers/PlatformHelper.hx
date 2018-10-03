@@ -5,8 +5,8 @@ import platforms.Platform;
 
 class PlatformHelper 
 {
-   public static var hostArchitecture(get_hostArchitecture, null):Architecture;
-   public static var hostPlatform(get_hostPlatform, null):String;
+   public static var hostArchitecture(get, null):Architecture;
+   public static var hostPlatform(get, null):String;
 
    private static var _hostArchitecture:Architecture;
    private static var _hostPlatform:String;
