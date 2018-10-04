@@ -1,7 +1,11 @@
 package;
 
 import haxe.io.Path;
-import haxe.xml.Fast;
+#if (haxe_ver < 4)
+import haxe.xml.Fast in Access;
+#else
+import haxe.xml.Access;
+#end
 import sys.io.File;
 import sys.FileSystem;
 import NMEProject;
@@ -19,7 +23,7 @@ class NMMLParser
 
    static var TOOL_VERSION = 3;
 
-   public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Fast )
+   public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Access )
    {
       project = inProject;
       process(path,inWarnUnknown,xml);
@@ -117,7 +121,7 @@ class NMMLParser
       return false;
    }
 
-   private function isValidElement(element:Fast, section:String):Bool 
+   private function isValidElement(element:Access, section:String):Bool 
    {
       var ifVal = element.x.get("if");
       if (ifVal!=null)
@@ -193,7 +197,7 @@ class NMMLParser
       return segments.join("");
    }
 
-   private function parseAppElement(element:Fast):Void 
+   private function parseAppElement(element:Access):Void 
    {
       for(attribute in element.x.attributes()) 
       {
@@ -241,7 +245,7 @@ class NMMLParser
       }
    }
 
-   private function parseWatchOSElement(element:Fast, extensionPath:String):Void 
+   private function parseWatchOSElement(element:Access, extensionPath:String):Void 
    {
       var watchOs = project.makeWatchOSConfig();
 
@@ -265,7 +269,7 @@ class NMMLParser
    }
 
 
-   function getElementAlpha(element:Fast, inDefault:AlphaMode)
+   function getElementAlpha(element:Access, inDefault:AlphaMode)
    {
       if (element.has.alpha)
          return parseAlphaMode(substitute(element.att.alpha));
@@ -273,7 +277,7 @@ class NMMLParser
    }
 
 
-   private function parseAssetsElement(element:Fast, basePath:String = ""):Void 
+   private function parseAssetsElement(element:Access, basePath:String = ""):Void 
    {
       var path = basePath;
       var embed = project.embedAssets;
@@ -488,7 +492,7 @@ class NMMLParser
       }
    }
 
-   private function parseAndroidElement(element:Fast):Void 
+   private function parseAndroidElement(element:Access):Void 
    {
       if (element.has.minApiLevel) 
          project.androidConfig.minApiLevel = Std.parseInt(substitute(element.att.minApiLevel));
@@ -544,7 +548,7 @@ class NMMLParser
       }
    }
 
-   private function parseWinrtElement(element:Fast):Void 
+   private function parseWinrtElement(element:Access):Void 
    {
       for(childElement in element.elements) 
       {
@@ -567,7 +571,7 @@ class NMMLParser
    }
 
 
-   private function parseOutputElement(element:Fast):Void 
+   private function parseOutputElement(element:Access):Void 
    {
       if (element.has.name) 
          project.app.file = substitute(element.att.name);
@@ -579,7 +583,7 @@ class NMMLParser
          project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
    }
 
-   private function parseXML(xml:Fast, section:String, extensionPath:String, inWarnUnknown):Void 
+   private function parseXML(xml:Access, section:String, extensionPath:String, inWarnUnknown):Void 
    {
       for(element in xml.elements) 
       {
@@ -1061,7 +1065,7 @@ class NMMLParser
       }
    }
 
-   private function parseWindowElement(element:Fast):Void 
+   private function parseWindowElement(element:Access):Void 
    {
       for(attribute in element.x.attributes()) 
       {
@@ -1115,7 +1119,7 @@ class NMMLParser
       }
    }
 
-   public function process(projectFile:String, inWarnUnkown:Bool,inXml:Fast):Void 
+   public function process(projectFile:String, inWarnUnkown:Bool,inXml:Access):Void 
    {
       Log.verbose("Parse " + projectFile + "...");
       var xml = inXml;
@@ -1125,7 +1129,7 @@ class NMMLParser
       {
          try 
          {
-            xml = new Fast(Xml.parse(File.getContent(projectFile)).firstElement());
+            xml = new Access(Xml.parse(File.getContent(projectFile)).firstElement());
    
          }
          catch(e:Dynamic) 
