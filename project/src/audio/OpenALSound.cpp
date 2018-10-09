@@ -1,12 +1,17 @@
+#ifdef EMSCRIPTEN
+#include <AL/al.h>
+#include <AL/alc.h>
+#else
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
+#endif
 
 #include <math.h>
 #include <Sound.h>
 #include <nme/QuickVec.h>
 #include <Utils.h>
 #include "Audio.h"
-#include <NmeThread.h>
+#include <NMEThread.h>
 #include <unistd.h>
 #include <sys/time.h>
 
@@ -189,6 +194,7 @@ public:
    
    double getLeft()  
    {
+      #ifndef EMSCRIPTEN
       if (sourceId)
       {
          float panX=0;
@@ -198,12 +204,14 @@ public:
          check("getLeft");
          return (1-panX)/2;
       }
+      #endif
       return 0.5;
    }
    
    
    double getRight()   
    {
+      #ifndef EMSCRIPTEN
       if (sourceId)
       {
          float panX=0;
@@ -213,6 +221,7 @@ public:
          check("getRight");
          return (panX+1)/2;
       }
+      #endif
       return 0.5;
    }
  

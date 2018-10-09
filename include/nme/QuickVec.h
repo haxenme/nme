@@ -356,6 +356,7 @@ public:
 
    inline int ByteCount() const { return mSize*sizeof(T_); }
    inline unsigned char *ByteData() { return (unsigned char *)mPtr; }
+   inline const unsigned char *ByteData() const { return (const unsigned char *)mPtr; }
    
    bool operator == (const QuickVec<T_,QBUF_SIZE_> &inRHS) { return (*mPtr == *(inRHS.mPtr)); }
    bool operator != (const QuickVec<T_,QBUF_SIZE_> &inRHS) { return !(*mPtr == *(inRHS.mPtr)); }

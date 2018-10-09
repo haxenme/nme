@@ -45,13 +45,19 @@ class ApplicationMain
    public static var winBackground:Int = ::WIN_BACKGROUND::;
    public static var onLoaded:Void->Void;
 
-   
    public static function main()
    {
       #if cpp
         ::if MEGATRACE::
           untyped __global__.__hxcpp_execution_trace(2);
         ::end::
+      #end
+
+      #if jsprime
+      haxe.Log.trace = jsprimeLog;
+      var closePreloader:Void->Void = (untyped Module).closePreloader;
+      if (closePreloader!=null)
+         closePreloader();
       #end
 
 
@@ -66,6 +72,14 @@ class ApplicationMain
          ::end::
 
          nme.app.Application.setPackage("::APP_COMPANY::", "::APP_FILE::", "::APP_PACKAGE::", "::APP_VERSION::");
+         #if HXCPP_TELEMETRY
+         ::if TELEMETRY_HOST::
+         nme.app.Application.setTelemetryConfigHost("::TELEMETRY_HOST::");
+         ::end::
+         ::if TELEMETRY_ALOCATIONS::
+         nme.app.Application.setTelemetryConfigAllocations("::TELEMETRY_ALOCATIONS::" != "false");
+         ::end::
+         #end
          nme.text.Font.useNative = ::NATIVE_FONTS::;
 
          nme.AssetData.create();
@@ -140,7 +154,7 @@ class ApplicationMain
                      fps : ::WIN_FPS:: * 1.0,
                      color : ::WIN_BACKGROUND::,
                      title : "::APP_TITLE::",
-                     icon  : Assets.info.get("::WIN_ICON::")==null ? null : getAsset("::WIN_ICON::")
+                     icon  : Assets.info.get("::WIN_ICON::")==null ? null : Assets.getBitmapData("::WIN_ICON::")
                   });
 
                   // Show frame before creating instance so context is good.
@@ -173,7 +187,9 @@ class ApplicationMain
          (::WIN_FULLSCREEN:: ? nme.app.Application.FULLSCREEN : 0) |
          (::WIN_ANTIALIASING:: == 4 ? nme.app.Application.HW_AA_HIRES : 0) |
          (::WIN_ANTIALIASING:: == 2 ? nme.app.Application.HW_AA : 0)|
-         (::WIN_SINGLE_INSTANCE:: ? nme.app.Application.SINGLE_INSTANCE : 0);
+         (::WIN_SINGLE_INSTANCE:: ? nme.app.Application.SINGLE_INSTANCE : 0) |
+         (::WIN_SCALE_FLAGS:: * nme.app.Application.SCALE_BASE)
+         ;
 
 
          #if nme_application
@@ -184,7 +200,7 @@ class ApplicationMain
                width : ::WIN_WIDTH::,
                height : ::WIN_HEIGHT::,
                title : "::APP_TITLE::",
-               icon  : Assets.info.get("::WIN_ICON::")==null ? null : getAsset("::WIN_ICON::")
+               icon  : Assets.info.get("::WIN_ICON::")==null ? null : Assets.getBitmapData("::WIN_ICON::")
             };
 
             nme.app.Application.createWindow(function(window:nme.app.Window) {
@@ -194,8 +210,8 @@ class ApplicationMain
          #else
 
             nme.Lib.create(function() { 
-                  nme.Lib.current.stage.align = nme.display.StageAlign.TOP_LEFT;
-                  nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.NO_SCALE;
+                  nme.Lib.current.stage.align = nme.display.StageAlign.::STAGE_ALIGN::;
+                  nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.::STAGE_SCALE::;
                   nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
                   ApplicationBoot.createInstance();
                },
@@ -205,7 +221,7 @@ class ApplicationMain
                flags,
                "::APP_TITLE::"
                ::if (WIN_ICON!=null)::
-               , getAsset("::WIN_ICON::")
+               , Assets.getBitmapData("::WIN_ICON::")
                ::end::
             );
 
@@ -235,32 +251,30 @@ class ApplicationMain
       #end
    }
 
-   #if (nme||waxe)
-   public static function getAsset(inName:String) : Dynamic
+   #if jsprime
+   @:access(js.Boot.__string_rec)
+   static function jsprimeLog( v : Dynamic, ?infos : haxe.PosInfos ) : Void
    {
-      var i = Assets.info.get(inName);
-      if (i==null)
-         throw "Asset does not exist: " + inName;
-      var cached = i.getCache();
-      if (cached!=null)
-         return cached;
-      switch(i.type)
-      {
-         case BINARY, TEXT, SWF: return Assets.getBytes(inName);
-         case FONT: return Assets.getFont(inName);
-         case IMAGE: return Assets.getBitmapData(inName);
-         case MUSIC, SOUND: return Assets.getSound(inName);
-         case MOVIE_CLIP: return null;
-      }
-
-      throw "Unknown asset type: " + i.type;
-      return null;
+      var msg = if (infos != null) infos.fileName + ":" + infos.lineNumber + ": " else "";
+      msg += js.Boot.__string_rec(v, "");
+      if (infos != null && infos.customParams != null)
+         for (v in infos.customParams)
+            msg += "," + js.Boot.__string_rec(v, "");
+      (untyped Module).print(msg);
    }
    #end
-   
-   
+
    public static function __init__ ()
    {
+      #if jsprime
+      untyped __define_feature__("Type.getClassName", {});
+      untyped __define_feature__("Type.resolveClass", {});
+      untyped __define_feature__("haxe.Log.trace", {});
+      untyped __define_feature__("use.$iterator", {});
+      untyped __define_feature__("use.$bind", {});
+      untyped __define_feature__("HxOverrides.iter", {});
+      #end
+
       #if neko
       untyped $loader.path = $array ("@executable_path/", $loader.path);
       #elseif cpp

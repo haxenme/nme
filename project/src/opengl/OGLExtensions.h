@@ -141,6 +141,46 @@ OGL_EXT(glVertexAttrib3fv,void,(GLuint, const GLfloat *));
 OGL_EXT(glVertexAttrib4f,void,(GLuint, GLfloat, GLfloat, GLfloat, GLfloat));
 OGL_EXT(glVertexAttrib4fv,void,(GLuint, const GLfloat *));
 
+
+
+
+// Query
+OGL_EXT(glGenQueries,void,(GLsizei, GLuint *));
+OGL_EXT(glDeleteQueries,void,(GLsizei, const GLuint *));
+OGL_EXT(glGetQueryiv, void, (GLenum , GLenum , GLint * ));
+OGL_EXT(glGetQueryObjectiv, void, (GLuint , GLenum , GLint * ));
+OGL_EXT(glGetQueryObjectuiv, void, (GLuint , GLenum , GLuint * ));
+OGL_EXT(glBeginQuery, void, (GLenum, GLuint));
+OGL_EXT(glEndQuery, void, (GLenum));
+
+
+
+OGL_EXT(glGenTransformFeedbacks,void,(GLsizei, GLuint *));
+OGL_EXT(glDeleteTransformFeedbacks,void,(GLsizei, const GLuint *));
+OGL_EXT(glBeginTransformFeedback,void,(GLenum primitiveMode) );
+OGL_EXT(glEndTransformFeedback,void,(void) );
+OGL_EXT(glTransformFeedbackVaryings,void,(GLuint program, GLsizei count, const char **varyings, GLenum bufferMode));
+OGL_EXT( glBindTransformFeedback,void,(GLenum target, GLuint id));
+ 
+
+OGL_EXT(glGenVertexArrays,void,(GLsizei, GLuint *));
+OGL_EXT(glDeleteVertexArrays,void,(GLsizei, const GLuint *));
+OGL_EXT(glBindBufferBase,void,(GLenum target, GLuint index, GLuint buffer));
+OGL_EXT(glBindVertexArray, void, (GLuint array) );
+OGL_EXT(glGetUniformBlockIndex,GLuint,(GLuint program, const GLchar *uniformBlockName) );
+OGL_EXT(glUniformBlockBinding,void,(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding));
+OGL_EXT(glVertexAttribDivisor,void,(GLuint index, GLuint divisor));
+
+OGL_EXT(glTexImage3D,void,(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid * data) );
+OGL_EXT(glCompressedTexImage3D, void, (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid * data) );
+
+OGL_EXT(glBlitFramebuffer, void, (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter) );
+OGL_EXT(glRenderbufferStorageMultisample,void,(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height) ); 
+OGL_EXT(glDrawArraysInstanced,void,(GLenum mode, GLint first, GLsizei count, GLsizei primcount) ); 
+OGL_EXT(glDrawElementsInstanced,void,(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei primcount));
+OGL_EXT(glReadBuffer,void,(GLenum src));
+
+
 #ifdef DYNAMIC_OGL
 
 //OGL_EXT(glActiveTexture,void, (GLenum texture));

@@ -12,20 +12,15 @@
 	<haxelib name="actuate" />
 	
 	<ios binaries="armv7" />
+
+   <set name="NME_ALPHA_MODE" value="preprocess" />
 	
 	<assets path="Assets/fonts" rename="fonts" include="*.ttf" />
 	<assets path="Assets/images" rename="images" include="*" exclude="icon.svg" />
 	
 	<icon path="Assets/images/icon.svg" />
 	
-	<assets path="Assets/sounds" rename="sounds" if="web">
-		<sound path="3.mp3" id="sound3" />
-		<sound path="4.mp3" id="sound4" />
-		<sound path="5.mp3" id="sound5" />
-		<music path="theme.mp3" id="soundTheme" />
-	</assets>
-
-	<assets path="Assets/sounds" rename="sounds" unless="web">
+	<assets path="Assets/sounds" rename="sounds" >
 		<sound path="3.ogg" id="sound3" />
 		<sound path="4.ogg" id="sound4" />
 		<sound path="5.ogg" id="sound5" />

@@ -1,26 +1,44 @@
 #ifndef INCLUDED_OGL_H
 #define INCLUDED_OGL_H
 
-#if defined(BLACKBERRY) || defined(ANDROID) || defined(WEBOS) || defined(GPH) || defined(RASPBERRYPI) || defined(EMSCRIPTEN)
+#if defined(NME_ANGLE)
+   // Static link, not dll import
+   #define EGLAPI
+   #define GL_APICALL
+   #define NME_GLES
+   #define GL_GLEXT_PROTOTYPES
+
+   #define NME_GL_LEVEL 300
+
+   #include <GLES3/gl3.h>
+   #include <GLES2/gl2ext.h>
+
+#elif defined(EMSCRIPTEN)
 
    #define NME_GLES
+   //#define NME_GL_LEVEL 300
+   #define NME_GL_LEVEL 200
+
+   #include <GLES3/gl3.h>
+   #include <GLES3/gl2ext.h>
+
+#elif defined(ANDROID) || defined(RASPBERRYPI)
+
+   #define NME_GLES
+   // TODO - check extensions
+   #define NME_GL_LEVEL 200
 
    #include <GLES2/gl2.h>
    #include <GLES2/gl2ext.h>
 
-#elif defined(TIZEN)
-   
-   #define NME_GLES	
-   
-   #include <gl2.h>
-   #include <gl2ext.h>
-
 #elif defined(IPHONE)
 
-   #include <OpenGLES/ES1/gl.h>
-   #include <OpenGLES/ES1/glext.h>
-   #include <OpenGLES/ES2/gl.h>
-   #include <OpenGLES/ES2/glext.h>
+   // TODO - check extensions
+   //#define NME_GL_LEVEL 300
+   #define NME_GL_LEVEL 200
+
+   #include <OpenGLES/ES3/gl.h>
+   #include <OpenGLES/ES3/glext.h>
 
    //typedef CAEAGLLayer *WinDC;
    //typedef EAGLContext *GLCtx;
@@ -28,6 +46,7 @@
 
 #elif defined(HX_LINUX)
 
+  #define NME_GL_LEVEL 300
   #define NEED_EXTENSIONS
   #define DYNAMIC_OGL
 
@@ -40,6 +59,9 @@
   #define GL_GLEXT_PROTOTYPES
   #include <SDL_opengl.h>
   #define FORCE_NON_PO2
+
+  // TODO - do we care about mac?  They do not care about us.
+  #define NME_GL_LEVEL 200
 
   #define glBindFramebuffer glBindFramebufferEXT
   #define glBindRenderbuffer glBindRenderbufferEXT
@@ -60,6 +82,8 @@
 
 #elif defined(HX_WINDOWS)
 
+#define NME_GL_LEVEL 300
+
 // Windows ....
 #include <windows.h>
 #include <gl/GL.h>
@@ -78,8 +102,7 @@ typedef ptrdiff_t GLsizeiptrARB;
 
 #endif
 
-
-#ifdef HX_WINDOWS
+#if defined(HX_WINDOWS) && !defined(NME_ANGLE)
 typedef HDC WinDC;
 typedef HGLRC GLCtx;
 #else
@@ -180,11 +203,12 @@ enum
    PROG_COUNT =             0x0100,
 };
 
-typedef float Trans4x4[4][4];
 
 class GPUProg
 {
 public:
+   typedef float Trans4x4[4][4];
+
    static GPUProg *create(unsigned int inID);
 
    virtual ~GPUProg() {}

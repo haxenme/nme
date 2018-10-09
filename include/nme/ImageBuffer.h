@@ -12,6 +12,7 @@ namespace nme
 enum
 {
    surfNotRepeatIfNonPO2    = 0x0001,
+   surfFixedPixelFormat     = 0x0002,
 };
 
 
@@ -22,6 +23,8 @@ protected: // Use 'DecRef'
 public:
    virtual unsigned int GetFlags() const = 0;
    virtual void SetFlags(unsigned int inFlags) = 0;
+
+   NmeObjectType getObjectType() { return notSurface; }
 
    virtual PixelFormat Format()  const = 0;
    virtual int  Version() const  = 0;

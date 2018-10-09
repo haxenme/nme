@@ -9,6 +9,7 @@
 #include "Hardware.h"
 #include <nme/Texture.h>
 #include <nme/ImageBuffer.h>
+#include <nme/ObjectStream.h>
 
 // ---- Surface API --------------
 
@@ -56,7 +57,7 @@ public:
                        BlendMode inBlend, const BitmapCache *inMask,
                        uint32 inTint=0xffffff ) const = 0;
    virtual void StretchTo(const RenderTarget &outTarget,
-                          const Rect &inSrcRect, const DRect &inDestRect) const = 0;
+                          const Rect &inSrcRect, const DRect &inDestRect,unsigned int inFlags) const = 0;
    virtual void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
                             int inPosX, int inPosY,
                             int inSrcChannel, int inDestChannel ) const = 0;
@@ -81,6 +82,11 @@ public:
    virtual void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter) { }
 
    virtual void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale) { }
+
+   virtual void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample) { }
+   virtual void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand) { }
+   virtual void getUInts8(uint8 *outData, int inStride, PixelFormat pixelFormat, int inSubsample) { }
+   virtual void setUInts8(const uint8 *inData, int inStride, PixelFormat pixelFormat, int inExpand) { }
 
    void OnChanged() { mVersion++; }
 
@@ -114,6 +120,7 @@ class SimpleSurface : public Surface
 public:
    SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,int inByteAlign=4);
 
+
    PixelFormat Format() const  { return mPixelFormat; }
 
    int Width() const  { return mWidth; }
@@ -123,9 +130,14 @@ public:
    void        Commit() { };
    int GetStride() const { return mStride; }
    int GetPlaneOffset() const { return mStride*mHeight; }
+   int GetBufferSize() const { return mStride*mHeight; }
 
    void Clear(uint32 inColour,const Rect *inRect);
    void Zero();
+
+   static SimpleSurface *fromStream(ObjectStreamIn &inStream);
+   void encodeStream(ObjectStreamOut &stream);
+
 
    void ChangeInternalFormat(PixelFormat inNewFormat=pfNone, const Rect *inIgnore=0);
    bool ReinterpretPixelFormat(PixelFormat inNewFormat);
@@ -139,7 +151,7 @@ public:
                        uint32 inTint=0xffffff ) const;
 
    virtual void StretchTo(const RenderTarget &outTarget,
-                          const Rect &inSrcRect, const DRect &inDestRect) const;
+                          const Rect &inSrcRect, const DRect &inDestRect,unsigned int inFlags) const;
 
    virtual void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
                             int inPosX, int inPosY,
@@ -156,6 +168,11 @@ public:
    void scroll(int inDX,int inDY);
    void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter);
    void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale);
+   void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample);
+   void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand);
+   void getUInts8(uint8 *outData, int inStride, PixelFormat pixelFormat, int inSubsample);
+   void setUInts8(const uint8 *inData, int inStride, PixelFormat pixelFormat, int inExpand);
+
    void createHardwareSurface();
    void destroyHardwareSurface();
    void dispose();
@@ -210,7 +227,7 @@ public:
                BlendMode inBlend, const BitmapCache *inMask,
                uint32 inTint ) const { }
    void StretchTo(const RenderTarget &outTarget,
-               const Rect &inSrcRect, const DRect &inDestRect) const { }
+               const Rect &inSrcRect, const DRect &inDestRect,unsigned int) const { }
    void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
                int inPosX, int inPosY,
                int inSrcChannel, int inDestChannel ) const  { }

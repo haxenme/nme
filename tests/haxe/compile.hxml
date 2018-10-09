@@ -1,5 +1,5 @@
 -cpp bin
--cp ../..
+-cp ../../src
 -main TestMain
 -D HXCPP_M64
 -D toolkit

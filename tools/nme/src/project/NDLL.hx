@@ -7,15 +7,17 @@ class NDLL
    public var name:String;
    public var path:String;
    public var isStatic:Bool;
+   public var noCopy:Bool;
    public var haxelibName:String;
    public var importStatic:String;
    public var registerPrim:String;
 
-   public function new(inName:String, inBasePath:String, inIsStatic:Bool, inHaxelibName:String)
+   public function new(inName:String, inBasePath:String, inIsStatic:Bool, inHaxelibName:String, inNoCopy:Bool)
    {
       name = inName;
       path = inBasePath;
       isStatic = inIsStatic;
+      noCopy = inNoCopy;
       haxelibName = inHaxelibName;
       importStatic="";
       registerPrim = null;

@@ -300,7 +300,7 @@ void Stage::HandleEvent(Event &inEvent)
       if (inEvent.type==etMouseUp && (inEvent.value==3 || inEvent.value==4) )
       {
          TextField *text =  dynamic_cast<TextField *>(hit_obj);
-         if (text && text->mouseWheelEnabled)
+         if (text && text->getMouseWheelEnabled() )
             text->OnScrollWheel(-inEvent.deltaY);
       }
    }
@@ -430,11 +430,15 @@ void Stage::CalcStageScaling(double inNewWidth,double inNewHeight)
       case saTopRight:
       case saRight:
       case saBottomRight:
-         StageOX = -extra_y;
+         StageOX = int(extra_x);
          break;
       case saTop:
       case saBottom:
-         StageOX = -extra_x/2;
+      case saCentre:
+      case saGame:
+      case saGamePixels:
+      case saGameStretch:
+         StageOX = int(extra_x/2);
          break;
    }
 
@@ -446,11 +450,15 @@ void Stage::CalcStageScaling(double inNewWidth,double inNewHeight)
       case saBottomRight:
       case saBottomLeft:
       case saBottom:
-         StageOY = -extra_y;
+         StageOY = int(extra_y);
          break;
       case saLeft:
       case saRight:
-         StageOY = -extra_y/2;
+      case saCentre:
+      case saGame:
+      case saGamePixels:
+      case saGameStretch:
+         StageOY = int(extra_y/2);
          break;
    }
    DirtyCache();
@@ -502,7 +510,21 @@ void Stage::RenderStage()
 
    state.mTransform.mMatrix = &mStageScale;
 
-   state.mClipRect = Rect( currentTarget.Width(), currentTarget.Height() );
+   int w = currentTarget.Width();
+   int h = currentTarget.Height();
+   if (align==saGame)
+   {
+      int ox = mStageScale.mtx;
+      int oy = mStageScale.mty;
+      // Rounding?
+      int sw = w-ox*2;
+      int sh = h-oy*2;
+      state.mClipRect = Rect(ox, oy, sw, sh);
+   }
+   else
+   {
+      state.mClipRect = Rect(w,h);
+   }
 
    state.mPhase = rpBitmap;
    state.mRoundSizeToPOW2 = currentTarget.IsHardware();

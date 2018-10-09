@@ -42,7 +42,6 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    scrollV(1),
    selectable(true),
    sharpness(0),
-   styleSheet(0),
    textColor(0x000000),
    thickness(0),
    useRichTextClipboard(false),
@@ -57,7 +56,6 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    fieldWidth = 100.0;
    explicitWidth = fieldWidth;
    fieldHeight = 100.0;
-   //mActiveRect = Rect(100,100);
    mFontsDirty = false;
    mSelectMin = mSelectMax = 0;
    mSelectDownChar = 0;
@@ -395,15 +393,29 @@ bool TextField::FinishEditOnEnter()
 int TextField::getBottomScrollV()
 {
    Layout();
-   double l = std::max(scrollV -1,0);
-   double height = fieldHeight-2*GAP;
-   while(height>0 && l<mLines.size())
-   {
-      Line &line = mLines[l++];
-      height -= line.mMetrics.height;
-   }
-   return l;
+
+   int line = scrollV-1;
+   double viewEnd = mLines[line].mY0 + fieldHeight-2*GAP;
+   while(line<mLines.size() && mLines[line].mY0<viewEnd)
+      line++;
+   return line;
 }
+
+void TextField::getLinePositions(int inLineId0, double *outResult, int inCount)
+{
+   Layout();
+   double y0 = mLines[scrollV-1].mY0;
+   double lastY = 0;
+   for(int l=0;l<inCount;l++)
+   {
+      int id = l+inLineId0-1;
+      if (id<0 || id>=mLines.size())
+         outResult[l] = lastY;
+      else
+         outResult[l] = lastY = mLines[id].mY0 - y0;
+   }
+}
+
 
 void TextField::setScrollH(int inScrollH)
 {
@@ -714,6 +726,40 @@ void TextField::PasteSelection()
    InsertString(UTF8ToWide(GetClipboardText()));
 }
 
+void TextField::replaceSelectedText(const WString &inText)
+{
+   int p = mSelectMin;
+   DeleteSelection();
+   mSelectMin = mSelectMax = caretIndex = p;
+   InsertString(inText);
+}
+
+
+void TextField::replaceText(int inC0, int inC1, const WString &inText)
+{
+   if (inC0<inC1)
+   {
+      DeleteChars(inC0,inC1);
+      /*
+      int cIdx = caretIndex;
+      if (caretIndex>=inC0)
+      {
+         if (caretIndex<inC1)
+            cIdx = inC0;
+         else
+            cIdx = caretIndex - (inC1-inC0);
+
+         DeleteChars(inC0,inC1);
+         caretIndex = cIdx;
+         mSelectMin = mSelectMax = 0;
+      }
+      */
+   }
+
+   caretIndex = inC0;
+   InsertString(inText);
+}
+
 void TextField::onTextUpdate(const std::string &inText, int inPos0, int inPos1)
 {
    if (inPos1>inPos0)
@@ -881,7 +927,7 @@ void TextField::OnKey(Event &inEvent)
                           caretIndex = 0;
                        else
                        {
-                          int l= LineFromChar(caretIndex);
+                          int l= getLineFromChar(caretIndex);
                           Line &line = mLines[l];
                           caretIndex = line.mChar0;
                        }
@@ -892,7 +938,7 @@ void TextField::OnKey(Event &inEvent)
                           caretIndex = getLength();
                        else
                        {
-                          int l= LineFromChar(caretIndex);
+                          int l= getLineFromChar(caretIndex);
                           if (l==mLines.size()-1)
                              caretIndex = getLength();
                           else
@@ -906,7 +952,7 @@ void TextField::OnKey(Event &inEvent)
                      case keyUP:
                      case keyDOWN:
                      {
-                        int l= LineFromChar(caretIndex);
+                        int l= getLineFromChar(caretIndex);
                         //printf("caret line : %d\n",l);
                         if (l==0 && inEvent.value==keyUP) return;
                         if (l==mLines.size()-1 && inEvent.value==keyDOWN) return;
@@ -966,7 +1012,7 @@ void TextField::ShowCaret(bool inFromDrag)
    else if (pos.x>fieldWidth-GAP)
       setScrollH( scrollH + pos.x - (fieldWidth-GAP) + 1 );
 
-   int line = LineFromChar(caretIndex);
+   int line = getLineFromChar(caretIndex);
    if (pos.y<GAP)
    {
       setScrollV(line+1);
@@ -982,52 +1028,6 @@ void TextField::ShowCaret(bool inFromDrag)
       }
       setScrollV(scroll+1);
    }
-   /*
-
-   if (scrollV <= mLines.size())
-   {
-      if (pos.y-mLines[scrollV-1].mY0 >= mActiveRect.h)
-      {
-         changed = true;
-         scrollV++;
-      }
-      else if (scrollV>1 && pos.y<mLines[scrollV-1].mY0)
-      {
-         scrollV--;
-         changed = true;
-      }
-   }
-
-
-   if (scrollH<0)
-   {
-      changed = true;
-      scrollH = 0;
-   }
-   if (scrollH>maxScrollH)
-   {
-      scrollH = maxScrollH;
-      changed = true;
-      if (scrollV<1) scrollV = 1;
-   }
-   // TODO: -ve scroll for right/aligned/centred?
-   if (scrollV>maxScrollV)
-   {
-      scrollV = maxScrollV;
-      changed = true;
-   }
-
-   if (changed)
-   {
-      DirtyCache();
-      mTilesDirty = true;
-      mCaretDirty = true;
-      if (mSelectMax > mSelectMin)
-      {
-         mGfxDirty = true;
-      }
-   }
-   */
 }
 
 
@@ -1181,13 +1181,22 @@ WString TextField::getHTMLText()
 
 Rect TextField::getCharBoundaries(int inCharIndex)
 {
+   if (mLinesDirty)
+      Layout();
+
    if (inCharIndex>=0 && inCharIndex<mCharPos.size())
    {
       UserPoint p = mCharPos[ inCharIndex ];
-      Line &line = mLines[LineFromChar(inCharIndex)];
+      Line &line = mLines[getLineFromChar(inCharIndex)];
       int height = line.mMetrics.height;
       int linePos = inCharIndex - line.mChar0;
-      int width = line.mChars>linePos ? mCharPos[ inCharIndex+1 ].x - p.x : line.mMetrics.width - p.x; 
+      double width = line.mChars>linePos+1 ? mCharPos[ inCharIndex+1 ].x - p.x : line.mMetrics.width - p.x; 
+      if (width<0)
+      {
+         p.x += width;
+         width = 0;
+      }
+
       return Rect(p.x, p.y, width, height);
    }
 
@@ -1423,7 +1432,7 @@ void TextField::setHTMLText(const WString &inString)
 }
 
 
-int TextField::LineFromChar(int inChar) const
+int TextField::getLineFromChar(int inChar) const
 {
    int min = 0;
    int max = mLines.size();
@@ -1601,8 +1610,8 @@ void TextField::BuildBackground()
          if (!mHighlightGfx)
             mHighlightGfx = new Graphics(this,true);
 
-         int l0 = LineFromChar(mSelectMin);
-         int l1 = LineFromChar(mSelectMax-1);
+         int l0 = getLineFromChar(mSelectMin);
+         int l1 = getLineFromChar(mSelectMax-1);
          UserPoint pos = mCharPos[mSelectMin] - scroll;
          double height = mLines[l1].mMetrics.height;
          double x1 = EndOfCharX(mSelectMax-1,l1) - scroll.x;
@@ -1685,9 +1694,6 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
       RenderState state(inState);
 
-      //Rect r = mActiveRect.Rotated(mLayoutRotation).Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleH);
-      //state.mClipRect = r.Intersect(inState.mClipRect);
-
       if (inState.mMask)
          state.mClipRect = inState.mClipRect.Intersect(
                inState.mMask->GetRect().Translated(-inState.mTargetOffset) );
@@ -1709,9 +1715,6 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    RenderState state(inState);
 
    // TODO - full transform
-   //Rect r = mActiveRect.Translated(matrix.mtx,matrix.mty).RemoveBorder(2*mLayoutScaleH);
-   //state.mClipRect = r.Intersect(inState.mClipRect);
-
    if (inState.mMask)
       state.mClipRect = inState.mClipRect.Intersect(
                inState.mMask->GetRect().Translated(-inState.mTargetOffset) );
@@ -1752,7 +1755,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       else
          mCaretGfx->clear();
 
-      int line = LineFromChar(caretIndex);
+      int line = getLineFromChar(caretIndex);
       if (line>=0)
       {
          UserPoint pos = GetCursorPos() - scroll;
@@ -1841,12 +1844,13 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                      {
                         while(line<last_line && mLines[line+1].mChar0 >= cid)
                            line++;
-                        double lineY = pos.y + mLines[line].mMetrics.ascent;
-                        if (lineY>fieldHeight)
+                        if (pos.y>fieldHeight)
                            break;
+                        double lineY = pos.y + mLines[line].mMetrics.ascent;
                         if (pos.y>=GAP)
                         {
                            pos.y = lineY;
+
 
                            int a;
                            Tile tile = group.mFont->GetGlyph( ch, a);
@@ -1866,35 +1870,24 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                            if (right>GAP)
                            {
                               float *tint = cid>=mSelectMin && cid<mSelectMax ? white : groupColour;
+                              Rect r = tile.mRect;
+
                               if (pos.x < GAP)
                               {
-                                 Rect r = tile.mRect;
                                  int dx = (GAP-pos.x)*fontScale + 0.001;
                                  r.x += dx;
                                  r.w -= dx;
-
-                                 if (right>clipRight)
-                                 {
-                                    r.w = (clipRight-GAP)*fontScale + 0.001;
-                                    if (r.w>0)
-                                       mTiles->tile(GAP,p.y,r,trans_2x2,tint);
-                                 }
-                                 else
-                                 {
-                                    mTiles->tile(GAP,p.y,r,trans_2x2,tint);
-                                 }
-
                               }
-                              else if (right>clipRight)
-                              {
-                                 Rect r = tile.mRect;
+
+                              if (right>clipRight)
                                  r.w = (clipRight-p.x)*fontScale + 0.001;
-                                 if (r.w>0)
-                                    mTiles->tile(p.x,p.y,r,trans_2x2,tint);
-                              }
-                              else
+
+                              if (r.w>0)
                               {
-                                 mTiles->tile(p.x,p.y,tile.mRect,trans_2x2,tint);
+                                 if (lineY > fieldHeight)
+                                    r.h -= (lineY-fieldHeight)*fontScale + 0.001;
+
+                                 mTiles->tile(p.x,p.y,r,trans_2x2,tint);
                               }
                            }
                         }
@@ -1919,16 +1912,6 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
 {
    Layout(*inTrans.mMatrix);
 
-
-   /*
-   if (inForBitmap && !border && !background)
-   {
-      Rect r = mActiveRect.Translated(inTrans.mMatrix->mtx, inTrans.mMatrix->mty);
-      for(int corner=0;corner<4;corner++)
-          outExt.Add( UserPoint(((corner & 1) ? r.x : r.x1()),((corner & 1) ? r.y : r.y1())));
-   }
-   else
-   */
    if (inForBitmap && border)
    {
       BuildBackground();
@@ -1939,8 +1922,6 @@ void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inFor
       for(int corner=0;corner<4;corner++)
       {
          UserPoint pos((corner & 1) ? fieldWidth : 0, (corner & 2) ? fieldHeight: 0);
-         //UserPoint pos((corner & 1) ? mActiveRect.x1() : mActiveRect.x,
-         //              (corner & 2) ? mActiveRect.y1() : mActiveRect.y);
          outExt.Add( inTrans.mMatrix->Apply(pos.x,pos.y) );
       }
    }
@@ -2362,6 +2343,153 @@ void TextField::Layout(const Matrix &inMatrix)
 
 
 
+void TextField::decodeStream(ObjectStreamIn &stream)
+{
+   DisplayObject::decodeStream(stream);
+
+   stream.get(alwaysShowSelection);
+   stream.get(antiAliasType);
+   stream.get(autoSize);
+   stream.get(background);
+   stream.get(backgroundColor);
+   stream.get(border);
+   stream.get(borderColor);
+   stream.get(condenseWhite);
+   stream.getObject(defaultTextFormat);
+   stream.get(displayAsPassword);
+   stream.get(embedFonts);
+   stream.get(gridFitType);
+   stream.get(maxChars);
+   stream.get(mouseWheelEnabled);
+   stream.get(multiline);
+   //WString restrict;
+   stream.get(selectable);
+   stream.get(sharpness);
+   stream.get(textColor);
+   stream.get(thickness);
+   stream.get(useRichTextClipboard);
+   stream.get(wordWrap);
+   stream.get(isInput);
+
+   stream.get(scrollH);
+   stream.get(scrollV);
+   stream.get(maxScrollH);
+   stream.get(maxScrollV);
+   stream.get(caretIndex);
+
+
+   int size = stream.getInt();
+   mCharGroups.resize(size);
+   for(int g=0;g<size; g++)
+   {
+      CharGroup &ch = *mCharGroups[g];
+      stream.getVec(ch.mString);
+      stream.get(ch.mChar0);
+      stream.get(ch.mFontHeight);
+      stream.get(ch.mFlags);
+      stream.getObject(ch.mFormat);
+      ch.mFont = 0;
+   }
+
+   stream.get(mSelectMin);
+   stream.get(mSelectMax);
+
+   // Local coordinates
+   stream.get(explicitWidth);
+   stream.get(fieldWidth);
+   stream.get(fieldHeight);
+   stream.get(textWidth);
+   stream.get(textHeight);
+}
+
+void TextField::encodeStream(ObjectStreamOut &stream)
+{
+   DisplayObject::encodeStream(stream);
+
+   stream.add(alwaysShowSelection);
+   stream.add(antiAliasType);
+   stream.add(autoSize);
+   stream.add(background);
+   stream.add(backgroundColor);
+   stream.add(border);
+   stream.add(borderColor);
+   stream.add(condenseWhite);
+   stream.addObject(defaultTextFormat);
+   stream.add(displayAsPassword);
+   stream.add(embedFonts);
+   stream.add(gridFitType);
+   stream.add(maxChars);
+   stream.add(mouseWheelEnabled);
+   stream.add(multiline);
+   //WString restrict;
+   stream.add(selectable);
+   stream.add(sharpness);
+   stream.add(textColor);
+   stream.add(thickness);
+   stream.add(useRichTextClipboard);
+   stream.add(wordWrap);
+   stream.add(isInput);
+
+   stream.add(scrollH);
+   stream.add(scrollV);
+   stream.add(maxScrollH);
+   stream.add(maxScrollV);
+   stream.add(caretIndex);
+
+   stream.addInt( mCharGroups.size() );
+   for(int g=0;g<mCharGroups.size(); g++)
+   {
+      CharGroup &ch = *mCharGroups[g];
+      stream.addVec(ch.mString);
+      stream.add(ch.mChar0);
+      stream.add(ch.mFontHeight);
+      stream.add(ch.mFlags);
+      stream.addObject(ch.mFormat);
+      // Will be recreated
+      //stream.addObject(ch.mFont);
+   }
+
+   stream.add(mSelectMin);
+   stream.add(mSelectMax);
+
+   // Local coordinates
+   stream.add(explicitWidth);
+   stream.add(fieldWidth);
+   stream.add(fieldHeight);
+   stream.add(textWidth);
+   stream.add(textHeight);
+
+   /*
+    Graphics state
+   bool mLinesDirty;
+   bool mLinesDirty;
+   bool mGfxDirty;
+   bool mFontsDirty;
+   bool mTilesDirty;
+   bool mCaretDirty;
+   bool mHasCaret;
+   double mBlink0;
+   Lines mLines;
+   QuickVec<UserPoint> mCharPos;
+   Graphics *mCaretGfx;
+   Graphics *mHighlightGfx;
+   Graphics *mTiles;
+   int      mLastCaretHeight;
+   int      mLastUpDownX;
+   UserPoint mLastSubpixelOffset;
+
+   int mSelectDownChar;
+   int mSelectKeyDown;
+   bool   screenGrid;
+   double fontScale;
+   double fontToLocal;
+   */
+}
+
+
+
+
+
 
 // --- TextFormat -----------------------------------
 
@@ -2442,6 +2570,60 @@ TextFormat *TextFormat::Default()
    sDefaultTextFormat->IncRef();
    return sDefaultTextFormat;
 }
+
+
+void TextFormat::encodeStream(ObjectStreamOut &inStream)
+{
+   if (inStream.addBool(align.IsSet())) inStream.add(align.Get());
+   if (inStream.addBool(blockIndent.IsSet())) inStream.add(blockIndent.Get());
+   if (inStream.addBool(bold.IsSet())) inStream.add(bold.Get());
+   if (inStream.addBool(bullet.IsSet())) inStream.add(bullet.Get());
+   if (inStream.addBool(color.IsSet())) inStream.add(color.Get());
+   if (inStream.addBool(font.IsSet())) inStream.add(font.Get());
+   if (inStream.addBool(indent.IsSet())) inStream.add(indent.Get());
+   if (inStream.addBool(italic.IsSet())) inStream.add(italic.Get());
+   if (inStream.addBool(kerning.IsSet())) inStream.add(kerning.Get());
+   if (inStream.addBool(leading.IsSet())) inStream.add(leading.Get());
+   if (inStream.addBool(leftMargin.IsSet())) inStream.add(leftMargin.Get());
+   if (inStream.addBool(letterSpacing.IsSet())) inStream.add(letterSpacing.Get());
+   if (inStream.addBool(rightMargin.IsSet())) inStream.add(rightMargin.Get());
+   if (inStream.addBool(size.IsSet())) inStream.add(size.Get());
+   if (inStream.addBool(tabStops.IsSet())) inStream.addVec(tabStops.Get());
+   if (inStream.addBool(target.IsSet())) inStream.add(target.Get());
+   if (inStream.addBool(underline.IsSet())) inStream.add(underline.Get());
+   if (inStream.addBool(url.IsSet())) inStream.add(url.Get());
+}
+
+void TextFormat::decodeStream(ObjectStreamIn &inStream)
+{
+   if (inStream.getBool()) inStream.get(align.write());
+   if (inStream.getBool()) inStream.get(blockIndent.write());
+   if (inStream.getBool()) inStream.get(bold.write());
+   if (inStream.getBool()) inStream.get(bullet.write());
+   if (inStream.getBool()) inStream.get(color.write());
+   if (inStream.getBool()) inStream.get(font.write());
+   if (inStream.getBool()) inStream.get(indent.write());
+   if (inStream.getBool()) inStream.get(italic.write());
+   if (inStream.getBool()) inStream.get(kerning.write());
+   if (inStream.getBool()) inStream.get(leading.write());
+   if (inStream.getBool()) inStream.get(leftMargin.write());
+   if (inStream.getBool()) inStream.get(letterSpacing.write());
+   if (inStream.getBool()) inStream.get(rightMargin.write());
+   if (inStream.getBool()) inStream.get(size.write());
+   if (inStream.getBool()) inStream.getVec(tabStops.write());
+   if (inStream.getBool()) inStream.get(target.write());
+   if (inStream.getBool()) inStream.get(underline.write());
+   if (inStream.getBool()) inStream.get(url.write());
+}
+
+TextFormat *TextFormat::fromStream(ObjectStreamIn &inStream)
+{
+   TextFormat *result = new TextFormat();
+   inStream.linkAbstract(result);
+   result->decodeStream(inStream);
+   return result;
+}
+
 
 
 

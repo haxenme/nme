@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+  <meta
+     title="Acadnme"
+     package="com.acadnme.launcher"
+     company="nme" 
+     bin="bin" 
+  />
+
+  <meta
+     version="6.0.0"
+     buildNumber="6000"
+     />
+  
+  <app
+     file="Acadnme" 
+     main="Acadnme"
+  />
+  
+  <window
+     width="640" 
+     height="480" 
+     fps="0"
+     background="0xffffff"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+  />
+
+  <set name="deploy" value="bindir:../bin" if="cpp" />
+
+  <set name="nativeFonts" value="false" />
+
+  <android>
+     <appPermission value="android.permission.WRITE_EXTERNAL_STORAGE" />
+     <appPermission value="android.permission.READ_EXTERNAL_STORAGE" />
+     <appPermission value="android.permission.INTERNET" />
+     <appPermission value="android.permission.ACCESS_WIFI_STATE" />
+     <appPermission value="android.permission.ACCESS_WIFI_STATE" />
+     <appHeader value='android:isGame="true"' />
+
+     <appPermission value="android.software.leanback" required="false" />
+     <appFeature value='android.software.leanback' required='false'/>
+     <appFeature value='android.hardware.touchscreen' required='false'/>
+     <appIntent value="android.intent.category.LEANBACK_LAUNCHER" />
+  </android>
+
+  <set name="nmeDest" if="rpi" />
+     <assets from="../bin/apps/"  rename="${nmeDest}" if="mobile||web||rpi" less="nocompile" >
+     <asset name="AcadnmeBoot.nme" />
+     <!--
+     <asset name="Flappybalt.nme" />
+     <asset name="PiratePig.nme" />
+     <asset name="Tilemap.nme" />
+     <asset name="HerokuShaders.nme" /> -->
+  </assets>
+
+  <banner name="assets/banner.svg" />
+  <icon name="assets/icon.svg" />
+
+  <mkdir name="../src/cppia"/>
+  <export name="../src/cppia/export_classes.info" />
+
+  <source path="src" />
+
+  <haxelib name="nme" nocopy="true" />
+  <haxedef name="scriptable" />
+  <haxedef name="NME_ANGLE" if="windows" />
+  <haxedef name="HXCPP_M64" if="windows" />
+  <engine name="Acadnme" version="6.0" />
+  <haxedef name="HXCPP_LINK_TOTAL_MEMORY" value="32000000"/>
+  <haxeflag name="-dce no" />
+
+  <certificate path="${KEYSTORE_PATH}/android.keystore" alias="nme" password="${KEYSTORE_PASSWD}" if="KEYSTORE_PASSWD"/>
+
+  
+</project>

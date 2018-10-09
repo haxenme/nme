@@ -74,7 +74,7 @@ void DestRender(const AlphaMask &inAlpha, SOURCE_ &inSource, DEST_ &outDest, con
                outDest.SetX(x0);
                inSource.SetPos(x0,y);
                int alpha = run->mAlpha;
-               if (alpha==256)
+               if (!BLEND_::HasAlphaTransform && alpha==256)
                {
                   while(x0++<x1)
                      inBlend.blend( outDest.GetInc(),inSource.GetInc() );
@@ -111,6 +111,8 @@ struct DestSurface
 
 struct NoTransform
 {
+   enum { HasAlphaTransform = 0 };
+
    inline void apply(AlphaPixel &ioPixel) const { }
    inline void apply(BGRPremA &ioPixel) const { }
    inline void apply(ARGB  &ioPixel) const { }
@@ -120,6 +122,8 @@ struct NoTransform
 
 struct TransformRGBA
 {
+   enum { HasAlphaTransform = 1 };
+
    const uint8 *mAlpha_LUT;
    const uint8 *mR_LUT;
    const uint8 *mG_LUT;
@@ -140,12 +144,11 @@ struct TransformRGBA
    inline void apply(BGRPremA &ioPixel) const
    {
       int transA = mAlpha_LUT[ioPixel.a];
-      ioPixel.a = transA;
       if (transA==255)
       {
-         ioPixel.r = mAlpha_LUT[ioPixel.getR()];
-         ioPixel.g = mAlpha_LUT[ioPixel.getG()];
-         ioPixel.b = mAlpha_LUT[ioPixel.getB()];
+         ioPixel.r = mR_LUT[ioPixel.getR()];
+         ioPixel.g = mG_LUT[ioPixel.getG()];
+         ioPixel.b = mB_LUT[ioPixel.getB()];
       }
       else
       {
@@ -154,6 +157,7 @@ struct TransformRGBA
          ioPixel.g = lut[mG_LUT[ioPixel.getG()]];
          ioPixel.b = lut[mB_LUT[ioPixel.getB()]];
       }
+      ioPixel.a = transA;
    }
    inline void apply(ARGB  &ioPixel) const
    {
@@ -173,6 +177,8 @@ struct TransformRGBA
 
 struct TransformRGB
 {
+   enum { HasAlphaTransform = 0 };
+
    const uint8 *mR_LUT;
    const uint8 *mG_LUT;
    const uint8 *mB_LUT;
@@ -211,6 +217,7 @@ struct TransformRGB
 
 struct TransformA
 {
+   enum { HasAlphaTransform = 1 };
    const uint8 *mAlpha_LUT;
 
    TransformA(const RenderState &inState)
@@ -248,6 +255,7 @@ template<typename TRANSFORM>
 struct Blender
 {
    TRANSFORM transform;
+   enum { HasAlphaTransform = TRANSFORM::HasAlphaTransform };
 
    Blender(const TRANSFORM &inTransform) : transform(inTransform) { }
 
@@ -261,15 +269,18 @@ struct Blender
    template<typename DEST, bool PREM>
    void blend(DEST &ioDest, BGRA<PREM> inSrc,int inAlpha256) const
    {
-      if (PREM)
-      {
-         inSrc.r = (inSrc.r*inAlpha256)>>8;
-         inSrc.g = (inSrc.g*inAlpha256)>>8;
-         inSrc.b = (inSrc.b*inAlpha256)>>8;
-      }
       inSrc.a = (inSrc.a*inAlpha256)>>8;
-      transform.apply(inSrc);
-      BlendPixel(ioDest, inSrc);
+      if (inSrc.a)
+      {
+         if (PREM)
+         {
+            inSrc.r = (inSrc.r*inAlpha256)>>8;
+            inSrc.g = (inSrc.g*inAlpha256)>>8;
+            inSrc.b = (inSrc.b*inAlpha256)>>8;
+         }
+         transform.apply(inSrc);
+         BlendPixel(ioDest, inSrc);
+      }
    }
 
    template<typename DEST>
@@ -288,8 +299,11 @@ struct Blender
    void blend(DEST &ioDest, AlphaPixel src,int inAlpha256) const
    {
       src.a = (src.a * inAlpha256) >> 8;
-      transform.apply(src);
-      BlendPixel(ioDest, src);
+      if (src.a)
+      {
+         transform.apply(src);
+         BlendPixel(ioDest, src);
+      }
    }
 };
 
@@ -325,6 +339,7 @@ void RenderBlend(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget
          DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
          }
          break;
+      default: ;
    }
 }
 

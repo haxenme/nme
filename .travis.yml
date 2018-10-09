@@ -1,16 +1,18 @@
 language: objective-c
+
+env:
+  global:
+  - HXCPP_COMPILE_CACHE=~/hxcache
+
+cache:
+  directories:
+  - $HXCPP_COMPILE_CACHE
+
 before_install:
-- wget -c http://nekovm.org/media/neko-2.0.0-osx64.tar.gz
-- sudo mkdir /usr/local/lib/neko
-- sudo tar xvzf neko-2.0.0-osx64.tar.gz -C /usr/local/lib/neko --strip-components=1
-- sudo ln -s /usr/local/lib/neko/neko /usr/local/bin/neko
-- sudo ln -s /usr/local/lib/neko/nekoc /usr/local/bin/nekoc
-- sudo ln -s /usr/local/lib/neko/nekotools /usr/local/bin/nekotools
-- sudo ln -s /usr/local/lib/neko/libneko.so /usr/local/lib/libneko.so
-- sudo ln -s /usr/local/lib/neko/libneko.dylib /usr/local/lib/libneko.dylib
-- wget -c http://haxe.org/website-content/downloads/3.2.1/downloads/haxe-3.2.1-osx.tar.gz
+- travis_retry brew install neko --HEAD
+- wget -c https://github.com/HaxeFoundation/haxe/releases/download/3.4.2/haxe-3.4.2-osx.tar.gz
 - sudo mkdir /usr/local/lib/haxe
-- sudo tar xvzf haxe-3.2.1-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
+- sudo tar xvzf haxe-3.4.2-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
 - sudo ln -s /usr/local/lib/haxe/haxe /usr/local/bin/haxe
 - sudo ln -s /usr/local/lib/haxe/haxelib /usr/local/bin/haxelib
 - mkdir ~/haxelib
@@ -27,6 +29,7 @@ before_install:
 - haxelib -notimeout install nme-toolkit
 - haxelib -notimeout install format
 - haxelib -notimeout install gm2d
+
 script:
 - cd $TRAVIS_BUILD_DIR/tools/nme
 - haxe compile.hxml

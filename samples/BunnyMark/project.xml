@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="BunnyMark" package="org.openfl.samples.bunnymark" version="1.0.0" company="OpenFL" />
+	<app main="Main" path="Export" file="BunnyMark" />
+	
+	<window width="800" height="600" fps="1000" />
+	
+	<source path="Source" />
+	
+	<haxelib name="openfl" />
+	
+	<assets path="Assets" rename="assets" />
+	
+</project>

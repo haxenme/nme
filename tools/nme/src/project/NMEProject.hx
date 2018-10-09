@@ -3,6 +3,7 @@ package;
 import haxe.io.Path;
 import sys.FileSystem;
 import platforms.Platform;
+import nme.AlphaMode;
 
 typedef IntMap<T> = Map<Int, T>;
 
@@ -40,6 +41,20 @@ class AndroidConfig
       gameActivityBase = "Activity";
       gameActivityViewBase = "android.app.Fragment";
       extensions = new Map<String,Bool>();
+   }
+}
+
+class WinRTConfig
+{
+   public var isAppx:Bool;
+   public var isXbox:Bool;
+   public var appCapability:Array<WinrtCapability>;
+   public var packageDependency:Array<WinrtPackageDependency>;
+
+   public function new()
+   {
+      appCapability = [];
+      packageDependency = [];
    }
 }
 
@@ -105,6 +120,7 @@ class NMEProject
    // ios/android build parameters
    public var iosConfig:IOSConfig;
    public var androidConfig:AndroidConfig;
+   public var winrtConfig:WinRTConfig;
    public var watchProject:NMEProject;
 
    // Defines
@@ -144,7 +160,7 @@ class NMEProject
    public var debug:Bool;
    public var megaTrace:Bool;
    public var isFlash:Bool;
-   public var isHtml5:Bool;
+   public var isRawJs:Bool;
 
    // Exported into project for use in project files
    public var platformType:String;
@@ -164,6 +180,7 @@ class NMEProject
       openflCompat = true;
       iosConfig = new IOSConfig();
       androidConfig = new AndroidConfig();
+      winrtConfig = new WinRTConfig();
 
       debug = false;
       megaTrace = false;
@@ -321,7 +338,34 @@ class NMEProject
          case "flash":
             target = inTargetName.toUpperCase();
 
-         case "html5":
+         case "html5","jsprime":
+            target = Platform.JSPRIME;
+            haxedefs.set("js-unflatten", "");
+
+         case "js":
+            target = Platform.JS;
+
+         case "winrt","uwp":
+            targetFlags.set("cpp", "1");
+            haxedefs.set("winrt", "");
+            haxedefs.set("NME_ANGLE", "");
+            //haxedefs.set("static_link", "");
+            haxedefs.set("ABI", "-ZW");
+            target = Platform.WINRT;
+            winrtConfig.isXbox = haxedefs.exists("xbox");
+            winrtConfig.isAppx = haxedefs.exists("appx");
+            if(winrtConfig.isXbox)
+            {
+                haxedefs.set("HXCPP_M64", null);
+                winrtConfig.isAppx = true;
+            }
+
+         case "rpi":
+            targetFlags.set("cpp", "1");
+            targetFlags.set("linux", "1");
+            targetFlags.set("rpi", "1");
+            if (PlatformHelper.hostPlatform==Platform.WINDOWS)
+               addHaxelib("winrpi",null);
             target = inTargetName.toUpperCase();
 
          case "windows", "mac", "linux":
@@ -338,16 +382,18 @@ class NMEProject
          ndllCheckDir = "/iPhone";
 
       targetFlags.set("target_" + target.toString().toLowerCase() , "");
+      if (target==Platform.JSPRIME)
+         targetFlags.set("target_html5","");
 
-      if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW || target==Platform.WATCH)
+      if (target==Platform.IOS || target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW || target==Platform.WATCH || target==Platform.WINRT)
       {
          optionalStaticLink = false;
          staticLink = true;
       }
 
       isFlash =  target==Platform.FLASH;
-      isHtml5 =  target==Platform.HTML5;
-      if (!isFlash && !isHtml5)
+      isRawJs =  target==Platform.JS;
+      if (!isFlash && !isRawJs)
       {
           haxeflags.push("--remap flash:nme");
           haxeflags.push("--remap lime:nme");
@@ -365,13 +411,17 @@ class NMEProject
             platformType = Platform.TYPE_SCRIPT;
             embedAssets = false;
 
-         case Platform.HTML5:
+         case Platform.JS:
             platformType = Platform.TYPE_WEB;
             embedAssets = false;
 
          case Platform.EMSCRIPTEN:
             platformType = Platform.TYPE_WEB;
             embedAssets = true;
+
+         case Platform.JSPRIME, Platform.HTML5:
+            platformType = Platform.TYPE_WEB;
+            embedAssets = false;
 
          case Platform.ANDROID, Platform.IOS,
               Platform.IOSVIEW, Platform.ANDROIDVIEW:
@@ -392,12 +442,28 @@ class NMEProject
             window.height = 0;
             window.fullscreen = true;
 
-         case Platform.WINDOWS, Platform.MAC, Platform.LINUX:
+         case Platform.RPI:
+            platformType = Platform.TYPE_DESKTOP;
+            window.singleInstance = false;
+
+         case Platform.WINDOWS, Platform.MAC, Platform.LINUX, Platform.WINRT:
 
             platformType = Platform.TYPE_DESKTOP;
 
             if (architectures.length==0)
-               architectures = [ PlatformHelper.hostArchitecture ];
+            {
+               if (isNeko())
+               {
+                  if (target==Platform.LINUX && hasDef("HXCPP_LINUX_ARMV7"))
+                     architectures = [ Architecture.ARMV7 ];
+                  else if (target==Platform.LINUX && hasDef("HXCPP_LINUX_ARM64"))
+                     architectures = [ Architecture.ARM64 ];
+                  else
+                     architectures = [ PlatformHelper.hostArchitecture ];
+               }
+               else
+                  architectures = [ Architecture.X64 ];
+            }
             window.singleInstance = false;
 
          default:
@@ -425,6 +491,11 @@ class NMEProject
       localDefines.set("haxe3", "1");
 
       localDefines.set(target.toLowerCase(), "1");
+      if (target==Platform.JSPRIME)
+      {
+         localDefines.set("html5","1");
+         haxedefs.set("html5","1");
+      }
    }
 
    public function setProjectFilename(inFilename:String)
@@ -441,6 +512,11 @@ class NMEProject
          watchProject.templatePaths.push( CommandLineTools.nme + "/templates/watchos" );
       }
       return watchProject;
+   }
+
+   public function expandCppia()
+   {
+      return hasDef("expand");
    }
 
    public function getInt(inName:String,inDefault:Int):Int
@@ -574,12 +650,31 @@ class NMEProject
          }
    }
 
-   public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String)
+   public function isStaticNme()
+   {
+      if (hasDef("rpi"))
+         haxedefs.set("nme_static","1");
+
+      if (hasDef("nme_static") || hasDef("iphone") || hasDef("ios") ||hasDef("watchos") )
+         return true;
+      if (hasDef("nme_dynamic"))
+         return false;
+
+      var isAndroidSo =  false;//hasDef("android") && !hasDef("androidsim") && !hasDef("androidview");
+      if ( hasDef("windows") || hasDef("mac") || hasDef("linux") || isAndroidSo)
+      {
+         // Use dynamic libraries by default on desktop
+         return false;
+      }
+
+      haxedefs.set("nme_static","1");
+      return true;
+   }
+
+   public function addNdll(name:String, base:String, inStatic:Null<Bool>, inHaxelibName:String, noCopy:Bool)
    {
       var ndll =  findNdll(name);
-      if ( (CommandLineTools.toolkit && name=="nme")  || 
-             (CommandLineTools.getHaxeVer()>="3.3") && (name=="std" || name=="regexp" ||
-                 name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) )
+      if ( !isNeko() && (name=="std" || name=="regexp" || name=="zlib" || name=="mysql" || name=="mysql5" || name=="sqlite" ) )
       {
          Log.verbose("Skip ndll " + name + " for toolkit link" );
       }
@@ -587,15 +682,22 @@ class NMEProject
       {
           var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
 
-          ndlls.push( new NDLL(name, base, isStatic, inHaxelibName) );
+          if (name=="nme" && inStatic==null)
+             isStatic = isStaticNme();
+
+          ndlls.push( new NDLL(name, base, isStatic, inHaxelibName, noCopy) );
       }
       else if (inStatic && optionalStaticLink)
       {
           ndll.setStatic();
       }
+      else if (noCopy)
+      {
+         ndll.noCopy = true;
+      }
    }
 
-   public function addLib(name:String, version:String="")
+   public function addLib(name:String, version:String="",inNoCopy:Bool)
    {
       var haxelib = findHaxelib(name);
       Log.mVerbose = true;
@@ -633,7 +735,7 @@ class NMEProject
             raiseLib("nme");
 
          if (name=="nme" && !hasDef("watchos") )
-            addNdll("nme", haxelib.getBase(), null, "nme");
+            addNdll("nme", haxelib.getBase(), null, "nme", inNoCopy);
       }
       return haxelib;
   }
@@ -658,23 +760,18 @@ class NMEProject
          }
          else
          {
-            Log.verbose("Using default native swf handler");
-            libraryHandlers.set("SWF","format.swf.SWFLibrary");
-            addLib("swf");
-         }
-      }
-
-
-      if (stdLibs && !isFlash && !CommandLineTools.toolkit && CommandLineTools.getHaxeVer()<"3.3" )
-      {
-         for(lib in ["std", "zlib", "regexp"])
-         {
-            if (findNdll(lib)==null)
+            if (findHaxelib("swf")!=null)
             {
-               var haxelib = addHaxelib("hxcpp","");
-               var ndll = new NDLL(lib, haxelib.getBase(), staticLink, "hxcpp");
-               ndlls.push(ndll);
+               Log.verbose("Using swf haxelib native swf handler");
+               libraryHandlers.set("SWF","format.swf.SWFLibrary");
             }
+            else if (findHaxelib("gm2d")!=null)
+            {
+               Log.verbose("Using gm2d haxelib native swf handler");
+               libraryHandlers.set("SWF","gm2d.swf.SWFLibrary");
+            }
+            else
+               Log.verbose("No swf libraryHandlers set - getMovieClip may not work");
          }
       }
 
@@ -713,7 +810,7 @@ class NMEProject
             haxedefs.set("lime_legacy","1");
          }
          haxeflags.push("--remap openfl:nme");
-         addLib("nme","");
+         addLib("nme","",false);
       }
 
       if (export!=null && export!="")
@@ -737,6 +834,30 @@ class NMEProject
       for(field in Reflect.fields(window)) 
          Reflect.setField(context, "WIN_" + StringHelper.formatUppercaseVariable(field), Reflect.field(window, field));
 
+      context.WIN_SCALE_FLAGS = Type.enumIndex(window.scaleMode);
+
+      context.STAGE_SCALE = "NO_SCALE";
+      context.STAGE_ALIGN = "TOP_LEFT";
+      switch(window.scaleMode)
+      {
+         case ScaleNative:
+         case ScaleGamePixels:
+            context.STAGE_SCALE = "SHOW_ALL";
+            context.STAGE_ALIGN = "GAME_PIXELS";
+         case ScaleGameStretch:
+            context.STAGE_SCALE = "SHOW_ALL";
+            context.STAGE_ALIGN = "GAME_STRETCH";
+         case ScaleCentre:
+            context.STAGE_SCALE = "SHOW_ALL";
+            context.STAGE_ALIGN = "CENTRE";
+         case ScaleGame:
+            context.STAGE_SCALE = "SHOW_ALL";
+            context.STAGE_ALIGN = "GAME";
+         case ScaleUiScaled:
+      }
+      context.WIN_STAGE_ALIGN = Type.enumIndex(window.scaleMode);
+
+
       for(haxeflag in haxeflags) 
       {
          if (StringTools.startsWith(haxeflag, "-lib")) 
@@ -745,9 +866,17 @@ class NMEProject
 
       context.assets = new Array<Dynamic>();
 
+      var alpha:String = getDef("NME_ALPHA_MODE");
+      var defaultMode:AlphaMode = alpha!=null && alpha!="" ? NMMLParser.parseAlphaMode(alpha) : AlphaUnmultiplied;
+
+      var convertDir = app.binDir + "/converted";
       for(asset in assets) 
       {
-         if ( (embedAssets || asset.embed) && target!=Platform.FLASH ) 
+         if (asset.alphaMode==AlphaDefault)
+            asset.alphaMode = defaultMode;
+         asset.preprocess(convertDir);
+
+         if ( (embedAssets || asset.embed) && target!=Platform.FLASH && target!=Platform.JSPRIME && target!=Platform.CPPIA)
          {
             asset.resourceName = asset.flatName;
             //var relPath = PathHelper.relocatePath(asset.sourcePath, inBuildDir);
@@ -772,14 +901,22 @@ class NMEProject
 
       var compilerFlags = [];
 
-      if (target == Platform.CPPIA)
-         compilerFlags.push('-resource $inBuildDir/nme/scriptassets.txt@haxe/nme/scriptassets.txt');
+      if (target==Platform.JSPRIME)
+      {
+         // nothing
+      }
+      else if (target==Platform.CPPIA)
+      {
+         if (expandCppia())
+            compilerFlags.push('-resource $inBuildDir/nme/scriptassets.txt@haxe/nme/scriptassets.txt');
+      }
       else
+      {
          compilerFlags.push('-resource $inBuildDir/nme/assets.txt@haxe/nme/assets.txt');
+      }
 
       for(haxelib in haxelibs) 
       {
- 
          haxelib.addLibraryFlags(compilerFlags);
          Reflect.setField(context, "LIB_" + haxelib.name.toUpperCase(), true);
       }

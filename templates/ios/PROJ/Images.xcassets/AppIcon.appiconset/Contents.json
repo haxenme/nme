@@ -98,6 +98,12 @@
       "idiom" : "ipad",
       "scale" : "2x"
       $$appIcon(167)
+    },
+    {
+      "size" : "1024x1024",
+      "idiom" : "ios-marketing",
+      "scale" : "1x"
+      $$appIcon(1024)
     }
   ],
   "info" : {

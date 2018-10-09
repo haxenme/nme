@@ -1,3 +1,17 @@
+* Default to ndll builds for desktop
+* Add winrpi for toolkit
+* Default to libAngle on windows
+* Ship acadnme binaries for windows/mac/linux
+* Work on Winrt target - thanks Carlos
+* Add Jsprime target
+* Add mini http-server for js testing
+* New combined .nme format for cppia and jsprime, no manifest file
+* Moved haxe,nme and ios directories into "src" directory
+* Reduced pre-compiled binaries to only windows32, mac64 and linux64
+* Added more internal pixel formats
+
+6.0
+--------------------------
 
 5.7
 --------------------------

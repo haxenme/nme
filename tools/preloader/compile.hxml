@@ -1,0 +1,3 @@
+-cp ../../src
+-main nme.preloader.HtmlPreloader
+-js ../../ndll/Emscripten/preloader.js

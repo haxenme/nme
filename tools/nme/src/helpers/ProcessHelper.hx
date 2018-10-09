@@ -7,7 +7,7 @@ import platforms.Platform;
 
 class ProcessHelper 
 {
-   public static function getOutput(command:String, args:Array<String>, inEcho:Bool = false) : Array<String>
+   public static function getOutput(command:String, args:Array<String>, inEcho:Bool = false, inShowErrors=false) : Array<String>
    {
       var result = new Array<String>();
 
@@ -31,6 +31,10 @@ class ProcessHelper
       {
          var code = process.exitCode();
          process.close();
+         if (code!=0 && inShowErrors)
+         {
+            Log.error("Error running: command " + args.join(" "));
+         }
       }
 
       return result;
@@ -120,12 +124,6 @@ class ProcessHelper
 
    public static function runCommand(path:String, command:String, args:Array<String>, safeExecute:Bool = true, ignoreErrors:Bool = false):Void 
    {
-      if (PlatformHelper.hostPlatform == Platform.WINDOWS) 
-      {
-         command = StringTools.replace(command, ",", "^,");
-      }
-
-
       if (safeExecute) 
       {
          try 

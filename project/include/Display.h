@@ -3,6 +3,7 @@
 
 #include <nme/Object.h>
 #include <nme/Event.h>
+#include <nme/ObjectStream.h>
 #include <Utils.h>
 #include <Geom.h>
 #include <Graphics.h>
@@ -38,6 +39,7 @@ enum
    dirtLocalMatrix = 0x0002,
    dirtCache       = 0x0004,
    dirtExtent      = 0x0008,
+   dirtAll         = 0x000f,
 };
 
 enum StageScaleMode
@@ -58,6 +60,10 @@ enum StageAlign
    saBottomRight,
    saBottomLeft,
    saBottom,
+   saCentre,
+   saGame,
+   saGamePixels,
+   saGameStretch,
 };
 
 enum PixelSnapping
@@ -78,16 +84,57 @@ extern bool gMouseShowCursor;
 class DisplayObject : public Object
 {
 public:
+   int            id;
+   WString        name;
+   BlendMode      blendMode;
+   bool           cacheAsBitmap;
+   bool           pedanticBitmapCaching;
+   unsigned char  pixelSnapping;
+   ColorTransform colorTransform;
+   FilterList     filters;
+
+   uint32 opaqueBackground;
+   DRect  scale9Grid;
+   DRect  scrollRect;
+   bool   visible;
+   bool   mouseEnabled;
+   bool   hitEnabled;
+   bool   needsSoftKeyboard;
+   int    softKeyboard;
+   bool   movesForSoftKeyboard;
+   uint32 mDirtyFlags;
+
+protected:
+   DisplayObjectContainer *mParent;
+   Graphics               *mGfx;
+   BitmapCache            *mBitmapCache;
+   int                     mBitmapGfx;
+
+   // Masking...
+   DisplayObject          *mMask;
+   int                    mIsMaskCount;
+
+   // Matrix stuff
+   Matrix mLocalMatrix;
+   // Decomp
+   double x;
+   double y;
+   double scaleX;
+   double scaleY;
+   double rotation;
+
+
+
+
+public:
    DisplayObject(bool inInitRef = false);
+
+   NmeObjectType getObjectType() { return notDisplayObject; }
 
    double getX();
    void   setX(double inValue);
    double getY();
    void   setY(double inValue);
-   #ifdef NME_S3D
-   double getZ();
-   void   setZ(double inValue);
-   #endif
    virtual double getHeight();
    virtual void   setHeight(double inValue);
    virtual double getWidth();
@@ -140,30 +187,12 @@ public:
    //const Transform &getTransform();
 
    DisplayObject *getParent();
+   void hackSetParent(DisplayObjectContainer *inParent) { mParent=inParent; } 
 
    DisplayObject *getRoot();
    virtual Stage  *getStage();
 
    struct LoaderInfo &GetLoaderInfo();
-
-   BlendMode blendMode;
-   bool cacheAsBitmap;
-   bool pedanticBitmapCaching;
-   unsigned char pixelSnapping;
-   ColorTransform  colorTransform;
-   FilterList filters;
-
-   WString  name;
-   uint32 opaqueBackground;
-   DRect   scale9Grid;
-   DRect   scrollRect;
-   int     id;
-   bool   visible;
-   bool   mouseEnabled;
-   bool   hitEnabled;
-   bool   needsSoftKeyboard;
-   int    softKeyboard;
-   bool   movesForSoftKeyboard;
 
    virtual void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke);
 
@@ -222,34 +251,17 @@ public:
                                const ColorTransform *inObjTrans,
                                ColorTransform *inBuf);
 
-   uint32 mDirtyFlags;
+
+   void encodeStream(ObjectStreamOut &inStream);
+   void decodeStream(ObjectStreamIn &inStream);
+   static DisplayObject *fromStream(ObjectStreamIn &inStream);
+
 
 protected:
    void UpdateDecomp();
    void UpdateLocalMatrix();
    void ClearFilters();
    ~DisplayObject();
-   DisplayObjectContainer *mParent;
-   Graphics               *mGfx;
-   BitmapCache            *mBitmapCache;
-   int                    mBitmapGfx;
-
-
-   // Masking...
-   DisplayObject          *mMask;
-   int                    mIsMaskCount;
-
-   // Matrix stuff
-   Matrix mLocalMatrix;
-   // Decomp
-   double x;
-   double y;
-   #ifdef NME_S3D
-   double z;
-   #endif
-   double scaleX;
-   double scaleY;
-   double rotation;
 };
 
 
@@ -257,7 +269,18 @@ protected:
 class DisplayObjectContainer : public DisplayObject
 {
 public:
+   bool mouseChildren;
+   CachedExtent mExtentCache[3];
+protected:
+   QuickVec<DisplayObject *> mChildren;
+
+
+public:
    DisplayObjectContainer(bool inInitRef = false) : DisplayObject(inInitRef), mouseChildren(true) { }
+   NmeObjectType getObjectType() { return notDisplayObjectContainer; }
+
+   void decodeStream(ObjectStreamIn &inStream);
+   void encodeStream(ObjectStreamOut &inStream);
 
    void addChild(DisplayObject *inChild);
    void setChildIndex(DisplayObject *inChild);
@@ -285,13 +308,15 @@ public:
 
    bool getMouseChildren() { return mouseChildren; }
    void setMouseChildren(bool inVal) { mouseChildren = inVal; }
-   
-   bool mouseChildren;
-   CachedExtent mExtentCache[3];
+
+
 protected:
    ~DisplayObjectContainer();
-   QuickVec<DisplayObject *> mChildren;
 };
+
+
+
+
 
 class DirectRenderer : public DisplayObject
 {
@@ -310,15 +335,19 @@ class SimpleButton : public DisplayObjectContainer
 {
 public:
    enum { stateUp=0, stateDown, stateOver, stateHitTest, stateSIZE };
-   void setMouseState(int inState);
+
+   DisplayObject *mState[stateSIZE];
+   bool enabled;
+   bool useHandCursor;
+   int  mMouseState;
+
+
    SimpleButton(bool inInitRef = false);
    ~SimpleButton();
 
-   DisplayObject *mState[stateSIZE];
-   
    void RemoveChildFromList(DisplayObject *inChild);
 
-
+   void setMouseState(int inState);
    void Render( const RenderTarget &inTarget, const RenderState &inState );
    void GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForScreen,bool inIncludeStroke);
    bool IsCacheDirty();
@@ -333,9 +362,9 @@ public:
 
    void setState(int inState, DisplayObject *inObject);
 
-   bool enabled;
-   bool useHandCursor;
-   int  mMouseState;
+   void decodeStream(ObjectStreamIn &inStream);
+   void encodeStream(ObjectStreamOut &inStream);
+
 };
 
 
@@ -421,6 +450,9 @@ public:
    virtual class StageVideo *createStageVideo(void *) { return 0; }
    virtual void cleanStageVideo() {}
 
+   virtual void setTitle(const std::string &) { }
+   virtual std::string getTitle() { return ""; }
+
 
    DisplayObject *GetFocusObject() { return mFocusObject; }
    void SetFocusObject(DisplayObject *inObj,FocusSource inSource=fsProgram,int inKey=0);
@@ -505,9 +537,9 @@ protected:
 class Frame : public Object
 {
 public:
-   virtual void SetTitle() = 0;
-   virtual void SetIcon() = 0;
    virtual Stage *GetStage() = 0;
+
+   NmeObjectType getObjectType() { return notFrame; }
 };
 
 enum WindowFlags
@@ -524,7 +556,20 @@ enum WindowFlags
    wfDepthBuffer    = 0x00000200,
    wfStencilBuffer  = 0x00000400,
    wfSingleInstance = 0x00000800,
+   wfScaleBase      = 0x00001000,
+   wfScaleMask      = 0x0000f000,
 };
+
+enum WindowScaleMode
+{
+   wsmNative,
+   wsmGame,
+   wsmCentre,
+   wsmUiScaled,
+   wsmGamePixels,
+   wsmGameStretch,
+};
+
 
 void StartAnimation();
 void PauseAnimation();

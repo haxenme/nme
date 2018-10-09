@@ -7,6 +7,7 @@ namespace nme
 
 int gTextureContextVersion = 1;
 
+int gImageData = 0;
 
 // --- Surface -------------------------------------------------------
 
@@ -53,7 +54,7 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
    mHeight = inHeight;
    mTexture = 0;
    mPixelFormat = inPixelFormat;
- 
+
    int pix_size = BytesPerPixel(inPixelFormat);
 
    if (inByteAlign>1)
@@ -68,6 +69,8 @@ SimpleSurface::SimpleSurface(int inWidth,int inHeight,PixelFormat inPixelFormat,
 
    mBase = new unsigned char[mStride * mHeight+1];
    mBase[mStride*mHeight] = 69;
+
+   gImageData += mStride*mHeight;
 }
 
 SimpleSurface::~SimpleSurface()
@@ -79,6 +82,8 @@ SimpleSurface::~SimpleSurface()
          ELOG("Image write overflow");
       }
       delete [] mBase;
+
+      gImageData -= mStride*mHeight;
    }
 }
 
@@ -123,6 +128,7 @@ bool SimpleSurface::ReinterpretPixelFormat(PixelFormat inNewFormat)
    return true;
 }
 
+
 void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *inIgnore)
 {
    if (!mBase || inNewFormat==mPixelFormat)
@@ -148,10 +154,14 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
    // Convert in-situ
    if (newFormat==pfRGBPremA && mPixelFormat==pfBGRA)
    {
+      int x1 = inIgnore ? std::min(mWidth,inIgnore->x) : mWidth;
+      int x2 = inIgnore ? std::min(mWidth,inIgnore->x+inIgnore->w) : mWidth;
       for(int y=0;y<mHeight;y++)
       {
+         if (inIgnore && (y>=inIgnore->y && y<inIgnore->y+inIgnore->h))
+            continue;
          BGRPremA *bgra = (BGRPremA *)Row(y);
-         for(int x=0;x<mWidth;x++)
+         for(int x=0;x<x1;x++)
          {
             const uint8 *prem = gPremAlphaLut[bgra->a];
             bgra->b = prem[bgra->b];
@@ -159,16 +169,32 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
             bgra->r = prem[bgra->r];
             bgra++;
          }
+
+         bgra = (BGRPremA *)Row(y) + x2;
+         for(int x=x2;x<mWidth;x++)
+         {
+            const uint8 *prem = gPremAlphaLut[bgra->a];
+            bgra->b = prem[bgra->b];
+            bgra->g = prem[bgra->g];
+            bgra->r = prem[bgra->r];
+            bgra++;
+         }
+
       }
+      mPixelFormat = newFormat;
       return;
    }
 
-   if (newFormat==pfRGBA && mPixelFormat==pfBGRPremA)
+   if (newFormat==pfBGRA && mPixelFormat==pfBGRPremA)
    {
+      int x1 = inIgnore ? std::min(mWidth,inIgnore->x) : mWidth;
+      int x2 = inIgnore ? std::min(mWidth,inIgnore->x+inIgnore->w) : mWidth;
       for(int y=0;y<mHeight;y++)
       {
+         if (inIgnore && (y>=inIgnore->y && y<inIgnore->y+inIgnore->h))
+            continue;
          BGRPremA *bgra = (BGRPremA *)Row(y);
-         for(int x=0;x<mWidth;x++)
+         for(int x=0;x<x1;x++)
          {
             const uint8 *unprem = gUnPremAlphaLut[bgra->a];
             bgra->b = unprem[bgra->b];
@@ -176,7 +202,18 @@ void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *in
             bgra->r = unprem[bgra->r];
             bgra++;
          }
+         bgra = (BGRPremA *)Row(y) + x2;
+         for(int x=x2;x<mWidth;x++)
+         {
+            const uint8 *unprem = gUnPremAlphaLut[bgra->a];
+            bgra->b = unprem[bgra->b];
+            bgra->g = unprem[bgra->g];
+            bgra->r = unprem[bgra->r];
+            bgra++;
+         }
+
       }
+      mPixelFormat = newFormat;
       return;
    }
 
@@ -771,7 +808,6 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
       {
          BLEND_CASE(Multiply)
          BLEND_CASE(Screen)
-         BLEND_CASE(Copy)
          BLEND_CASE(Add)
          BLEND_CASE(Lighten)
          BLEND_CASE(Darken)
@@ -783,6 +819,14 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
          BLEND_CASE(Alpha)
          BLEND_CASE(Erase)
 
+         case bmCopy:
+            for(int x=0;x<inSrcRect.w;x++)
+            {
+               typename DEST::Pixel &dest = outDest.Next();
+               SetPixel(dest,inMask.Mask(inSrc.Next()));
+            }
+            break;
+
          case bmInner:
             for(int x=0;x<inSrcRect.w;x++)
             {
@@ -790,6 +834,13 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
                ApplyInner(dest,inSrc.Next());
             }
             break;
+
+         case bmNormal:
+         case bmTinted:
+         case bmTintedAdd:
+         case bmTintedInner:
+         case bmLayer:
+            ;
 
       }
    }
@@ -921,6 +972,7 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
    // clip to origial rect...
    src_rect = src_rect.Intersect( inSrcRect );
 
+
    if (src_rect.HasPixels())
    {
       if (mPixelFormat>=pfRenderToCount)
@@ -929,6 +981,8 @@ void SimpleSurface::BlitTo(const RenderTarget &outDest,
 
       bool src_alpha = mPixelFormat==pfAlpha;
       bool dest_alpha = outDest.mPixelFormat==pfAlpha;
+
+
 
       int dx = inPosX + src_rect.x - inSrcRect.x;
       int dy = inPosY + src_rect.y - inSrcRect.y;
@@ -993,6 +1047,8 @@ void SimpleSurface::colorTransform(const Rect &inRect, ColorTransform &inTransfo
 {
    if (mPixelFormat==pfAlpha || !mBase)
       return;
+
+   ChangeInternalFormat(pfBGRA);
 
    const uint8 *ta = inTransform.GetAlphaLUT();
    const uint8 *tr = inTransform.GetRLUT();
@@ -1084,7 +1140,7 @@ void SimpleSurface::BlitChannel(const RenderTarget &outTarget, const Rect &inSrc
 
 template<typename SRC,typename DEST>
 void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
-                const Rect &inSrcRect, const DRect &inDestRect)
+                const Rect &inSrcRect, const DRect &inDestRect, int inFlags)
 {
    Rect irect( inDestRect.x+0.5, inDestRect.y+0.5, inDestRect.x1()+0.5, inDestRect.y1()+0.5, true);
    Rect out = irect.Intersect(outTarget.mRect);
@@ -1094,103 +1150,112 @@ void TStretchTo(const SimpleSurface *inSrc,const RenderTarget &outTarget,
    int dsx_dx = (inSrcRect.w << 16)/inDestRect.w;
    int dsy_dy = (inSrcRect.h << 16)/inDestRect.h;
 
-   #ifndef STRETCH_BILINEAR
-   // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
-   // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
-   //
-   // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
-
-   //int sx0 = (int)((out.x-inDestRect.x*inSrcRect.w/inDestRect.w)*65536) +(inSrcRect.x<<16);
-   //int sy0 = (int)((out.y-inDestRect.y*inSrcRect.h/inDestRect.h)*65536) +(inSrcRect.y<<16);
-   int sx0 = (int)((out.x+0.5-inDestRect.x)*dsx_dx + (inSrcRect.x<<16) );
-   int sy0 = (int)((out.y+0.5-inDestRect.y)*dsy_dy + (inSrcRect.y<<16) );
-
-   for(int y=0;y<out.h;y++)
+   if (!inFlags)
    {
-      DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
-      int y_ = (sy0>>16);
-      const SRC *src = (const SRC *)inSrc->Row(y_);
-      sy0+=dsy_dy;
+      // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
+      // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
+      //
+      // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
 
-      int sx = sx0;
-      for(int x=0;x<out.w;x++)
-         BlendPixel(*dest++, src[sx>>16]);
-   }
+      //int sx0 = (int)((out.x-inDestRect.x*inSrcRect.w/inDestRect.w)*65536) +(inSrcRect.x<<16);
+      //int sy0 = (int)((out.y-inDestRect.y*inSrcRect.h/inDestRect.h)*65536) +(inSrcRect.y<<16);
+      int sx0 = (int)((out.x+0.5-inDestRect.x)*dsx_dx + (inSrcRect.x<<16) );
+      int sy0 = (int)((out.y+0.5-inDestRect.y)*dsy_dy + (inSrcRect.y<<16) );
 
-   #else
-   // todo - overflow testing
-   // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
-   // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
-   //
-   // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
-   int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16) - 0x8000;
-   int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16) - 0x8000;
-   int last_y = inSrcRect.y1()-1;
-   SRC s;
-   for(int y=0;y<out.h;y++)
-   {
-      DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
-      int y_ = (sy0>>16);
-      int y_frac = sy0 & 0xffff;
-      const SRC *src0 = (const SRC *)inSrc->Row(y_);
-      const SRC *src1 = (const SRC *)inSrc->Row(y_<last_y ? y_+1 : y_);
-      sy0+=dsy_dy;
-
-      int sx = sx0;
-      for(int x=0;x<out.w;x++)
+      for(int y=0;y<out.h;y++)
       {
-         int x_ = sx>>16;
-         int x_frac = sx & 0xffff;
+         DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
+         int y_ = (sy0>>16);
+         const SRC *src = (const SRC *)inSrc->Row(y_);
+         sy0+=dsy_dy;
 
-         SRC s = BilinearInterp( src0[x_], src0[x_+1], src1[x_], src1[x_+1], x_frac, y_frac);
-
-         BlendPixel(*dest, s);
-         dest++;
-         sx+=dsx_dx;
+         int sx = sx0;
+         for(int x=0;x<out.w;x++)
+         {
+            BlendPixel(*dest++, src[sx>>16]);
+            sx+=dsx_dx;
+         }
       }
    }
-   #endif
+   else
+   {
+      // todo - overflow testing
+      // (Dx - inDestRect.x) * dsx_dx = ( Sx- inSrcRect.x )
+      // Start first sample at out.x+0.5, and subtract 0.5 so src(1) is between first and second pixel
+      //
+      // Sx = (out.x+0.5-inDestRect.x)*dsx_dx + inSrcRect.x - 0.5
+      int sx0 = (int)((out.x+0.5-inDestRect.x)*dsx_dx + (inSrcRect.x<<16) ) - 0x8000;
+      int sy0 = (int)((out.y+0.5-inDestRect.y)*dsy_dy + (inSrcRect.y<<16) ) - 0x8000;
+      //int sx0 = (((((out.x-inDestRect.x)<<8) + 0x80) * inSrcRect.w/inDestRect.w) << 8) +(inSrcRect.x<<16) - 0x8000;
+      //int sy0 = (((((out.y-inDestRect.y)<<8) + 0x80) * inSrcRect.h/inDestRect.h) << 8) +(inSrcRect.y<<16) - 0x8000;
+      int last_y = inSrcRect.y1()-1;
+      SRC s;
+      for(int y=0;y<out.h;y++)
+      {
+         DEST *dest= (DEST *)outTarget.Row(y+out.y) + out.x;
+         int y_ = (sy0>>16);
+         int y_frac = sy0 & 0xffff;
+         const SRC *src0 = (const SRC *)inSrc->Row(y_);
+         const SRC *src1 = (const SRC *)inSrc->Row(y_<last_y ? y_+1 : y_);
+         sy0+=dsy_dy;
+
+         int sx = sx0;
+         for(int x=0;x<out.w;x++)
+         {
+            int x_ = sx>>16;
+            int x_frac = sx & 0xffff;
+
+            SRC s = BilinearInterp( src0[x_], src0[x_+1], src1[x_], src1[x_+1], x_frac, y_frac);
+
+            BlendPixel(*dest, s);
+            dest++;
+            sx+=dsx_dx;
+         }
+      }
+   }
 }
 
 
 template<typename PIXEL>
 void TStretchSuraceTo(const SimpleSurface *inSurface, const RenderTarget &outTarget,
-                     const Rect &inSrcRect, const DRect &inDestRect)
+                     const Rect &inSrcRect, const DRect &inDestRect, unsigned int inFlags)
 {
    switch(outTarget.Format())
    {
       case pfRGB:
-         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect);
+         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
          break;
       case pfBGRA:
-         TStretchTo<PIXEL,ARGB>(inSurface, outTarget, inSrcRect, inDestRect);
+         TStretchTo<PIXEL,ARGB>(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
          break;
       case pfBGRPremA:
-         TStretchTo<PIXEL,BGRPremA>(inSurface, outTarget, inSrcRect, inDestRect);
+         TStretchTo<PIXEL,BGRPremA>(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
          break;
       case pfAlpha:
-         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect);
+         TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
          break;
+      default: ;
    }
 }
 
 void SimpleSurface::StretchTo(const RenderTarget &outTarget,
-                     const Rect &inSrcRect, const DRect &inDestRect) const
+                     const Rect &inSrcRect, const DRect &inDestRect, unsigned int inFlags) const
 {
    switch(mPixelFormat)
    {
       case pfRGB:
-         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect);
+         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect, inFlags);
          break;
       case pfBGRA:
-         TStretchSuraceTo<ARGB>(this, outTarget, inSrcRect, inDestRect);
+         TStretchSuraceTo<ARGB>(this, outTarget, inSrcRect, inDestRect,inFlags);
          break;
       case pfBGRPremA:
-         TStretchSuraceTo<BGRPremA>(this, outTarget, inSrcRect, inDestRect);
+         TStretchSuraceTo<BGRPremA>(this, outTarget, inSrcRect, inDestRect,inFlags);
          break;
       case pfAlpha:
-         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect);
+         TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect,inFlags);
          break;
+      default: ;
    }
 }
 
@@ -1351,6 +1416,8 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
    // PixelConvert
 
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
+   if (r.w<1 || r.h<1)
+      return;
 
    ARGB *argb = (ARGB *)outPixels;
    for(int y=0;y<r.h;y++)
@@ -1369,7 +1436,7 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
          for(int x=0;x<r.w;x++)
             SetPixel(*argb++, *src++);
       }
-      else if (inIgnoreOrder || inLittleEndian || mPixelFormat==pfBGRA)
+      else if (mPixelFormat==pfBGRA)
       {
          ARGB *src = (ARGB *)(mBase + (r.y+y)*mStride) + r.x;
          memcpy(argb,src,r.w*4);
@@ -1378,9 +1445,20 @@ void SimpleSurface::getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnore
       else if (mPixelFormat==pfBGRPremA)
       {
          BGRPremA *src = (BGRPremA *)(mBase + (r.y+y)*mStride) + r.x;
-
          for(int x=0;x<r.w;x++)
             SetPixel(*argb++, *src++);
+      }
+   }
+
+   // Make big-endian...
+   if (!inIgnoreOrder && !inLittleEndian)
+   {
+      unsigned int *argb = (unsigned int *)outPixels;
+      int n = r.w*r.h;
+      for(int i=0;i<n;i++)
+      {
+         unsigned int v = argb[i];
+         argb[i] =   (v>>24) | ((v>>8)&0x0000ff00) | ((v<<8)&0x00ff0000) | (v<<24);
       }
    }
 }
@@ -1458,6 +1536,7 @@ void SimpleSurface::getColorBoundsRect(int inMask, int inCol, bool inFind, Rect 
 
 void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inIgnoreOrder, bool inLittleEndian)
 {
+
    if (!mBase)
       return;
    Rect r = inRect.Intersect(Rect(0,0,Width(),Height()));
@@ -1466,8 +1545,7 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
       mTexture->Dirty(r);
 
    PixelFormat convert = pfNone;
-   // TODO - work out when auto-conversion is right
-   if (!HasAlphaChannel(mPixelFormat))
+   if ( !(mFlags & surfFixedPixelFormat) && !HasAlphaChannel(mPixelFormat))
    {
       int n = inRect.w * inRect.h;
       for(int i=0;i<n;i++)
@@ -1503,11 +1581,15 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                dest->r = src->g;
                dest->g = src->r;
                dest->b = src->a;
+               dest++;
+               src++;
             }
          }
          else
+         {
             memcpy(dest, src, r.w*sizeof(ARGB));
-         src+=r.w;
+            src+=r.w;
+         }
       }
       else if (mPixelFormat==pfAlpha)
       {
@@ -1530,6 +1612,8 @@ void SimpleSurface::setPixels(const Rect &inRect,const uint32 *inPixels,bool inI
                dest->r = src->g;
                dest->g = src->r;
                dest->b = src->a;
+               src++;
+               dest++;
             }
          }
          else
@@ -1572,6 +1656,7 @@ uint32 SimpleSurface::getPixel(int inX,int inY)
       case pfBGRPremA: SetPixel(result, ((BGRPremA *)ptr)[inX]); break;
       case pfAlpha: SetPixel(result, ((AlphaPixel *)ptr)[inX]); break;
 
+      default: ;
       /* TODO
       case pfARGB4444:
       case pfRGB565:
@@ -1611,6 +1696,7 @@ void SimpleSurface::setPixel(int inX,int inY,uint32 inRGBA,bool inAlphaToo)
       case pfBGRPremA: SetPixel(((BGRPremA *)ptr)[inX],value); break;
       case pfAlpha: SetPixel(((AlphaPixel *)ptr)[inX],value); break;
 
+      default: ;
       /* TODO
       case pfARGB4444:
       case pfRGB565:
@@ -1784,6 +1870,265 @@ void SimpleSurface::noise(unsigned int randomSeed, unsigned int low, unsigned in
    }
    
    EndRender();
+}
+
+void SimpleSurface::encodeStream(ObjectStreamOut &stream)
+{
+   stream.addInt(mWidth);
+   stream.addInt(mHeight);
+   stream.addInt((int)mPixelFormat);
+   stream.data.append(mBase,GetBufferSize());
+}
+
+
+SimpleSurface *SimpleSurface::fromStream(ObjectStreamIn &inStream)
+{
+   int w = inStream.getInt();
+   int h = inStream.getInt();
+   PixelFormat pf = (PixelFormat)inStream.getInt();
+
+   SimpleSurface *result = new SimpleSurface(w,h,pf);
+   inStream.linkAbstract(result);
+   int bytes = result->GetBufferSize();
+   memcpy(result->mBase, inStream.getBytes( bytes ), bytes);
+   return result;
+}
+
+enum
+{
+   FloatZeroMean   = 0x0001,
+   Float128Mean    = 0x0002,
+   FloatUnitScale  = 0x0004,
+   FloatStdScale   = 0x0008,
+   FloatSwizzeRgb  = 0x0010,
+   Float100Scale  = 0x0020,
+};
+
+
+void SimpleSurface::getFloats32(float *outData, int inStride, PixelFormat inFormat, int inTransform, int inSubsample)
+{
+   std::vector<unsigned char> buffer;
+   const unsigned char *ptr = mBase;
+   // TODO - inSubsample
+   int stride = mStride;
+   int pixelSize = BytesPerPixel(inFormat);
+   if (inFormat!=mPixelFormat)
+   {
+      stride = mWidth * pixelSize;
+      buffer.resize( stride * mHeight );
+      PixelConvert(mWidth, mHeight,
+          mPixelFormat,  mBase, mStride, GetPlaneOffset(),
+          inFormat, &buffer[0], stride, 0 );
+      ptr = &buffer[0];
+   }
+   bool swizzleRgb = (inTransform & FloatSwizzeRgb );
+
+   int histo[256];
+   int ppr = mWidth * pixelSize;
+   int count = ppr*mHeight;
+   memset(histo, 0, sizeof(histo));
+   for(int y=0;y<mHeight;y++)
+   {
+      const Uint8 *p = ptr + y*stride;
+      for(int x=0;x<ppr;x++)
+         histo[p[x]]++;
+   }
+   int n = 0;
+   int sumX = 0;
+   double sumX2 = 0;
+   for(int i=0;i<256;i++)
+   {
+      n += histo[i];
+      sumX += i*histo[i];
+      sumX2 += i*i*histo[i];
+   }
+   if (!n)
+      return;
+   float lut[256];
+
+   if (!inTransform)
+   {
+      for(int i=0;i<256;i++)
+         lut[i] = i;
+   }
+   else if ( (inTransform & FloatUnitScale) && !(inTransform & FloatZeroMean) )
+   {
+      if (inTransform & Float128Mean)
+         for(int i=0;i<256;i++)
+            lut[i] = (double)(i-128)/255.0;
+      else
+         for(int i=0;i<256;i++)
+            lut[i] = (double)i/255.0;
+   }
+   else
+   {
+      double mean = 0;
+      if (inTransform & Float128Mean)
+      {
+         mean = 128.0;
+      }
+      else if (inTransform & FloatZeroMean)
+      {
+         double sum = 0;
+         for(int i=0;i<256;i++)
+            sum+=histo[i]*i;
+         mean = (double)sum/count;
+      }
+
+      double scale = 1;
+      if (inTransform & FloatUnitScale)
+      {
+         scale = 1.0/255;
+      }
+      else if (inTransform & Float100Scale)
+      {
+         scale = 0.01;
+      }
+      else if (inTransform & FloatStdScale)
+      {
+         double sumSig2 = 0;
+         for(int i=0;i<256;i++)
+            sumSig2 += (i-mean)*(i-mean)*histo[i];
+         if (sumSig2>0)
+            scale = sqrt(count/sumSig2);
+      }
+
+
+      for(int i=0;i<256;i++)
+         lut[i] = (i-mean)*scale;
+   }
+
+   float *dest = outData;
+   for(int y=0;y<mHeight;y++)
+   {
+      const Uint8 *src = ptr + y*stride;
+      if (inStride)
+         dest = (float *)( (char *)outData + inStride*mHeight );
+
+      if (swizzleRgb && inFormat==pfRGB)
+      {
+        for(int x=0;x<mWidth;x++)
+        {
+           *dest++ = lut[src[2]];
+           *dest++ = lut[src[1]];
+           *dest++ = lut[src[0]];
+           src+=3;
+        }
+      }
+      else
+        for(int x=0;x<ppr;x++)
+           *dest++ = lut[*src++];
+   }
+}
+
+
+
+
+void SimpleSurface::getUInts8(uint8 *outData, int inStride, PixelFormat inFormat, int inSubsample)
+{
+   // TODO - inSubsample
+   int pixelSize = BytesPerPixel(inFormat);
+   int stride = inStride==0 ? pixelSize*mWidth : inStride;
+   if (inFormat!=mPixelFormat)
+   {
+      PixelConvert(mWidth, mHeight,
+          mPixelFormat,  mBase, mStride, GetPlaneOffset(),
+          inFormat, outData, stride, 0 );
+   }
+   else if (stride==mStride)
+   {
+      memcpy(outData, mBase, mWidth*mHeight*pixelSize );
+   }
+   else
+   {
+      for(int y=0;y<mHeight;y++)
+         memcpy(outData+stride*y, mBase+mStride*y, mWidth*pixelSize );
+   }
+}
+
+
+void SimpleSurface::setUInts8(const uint8 *inData, int inStride, PixelFormat inFormat, int inExpand)
+{
+   // TODO - inExpand
+   int pixelSize = BytesPerPixel(inFormat);
+   int stride = inStride==0 ? pixelSize*mWidth : inStride;
+   if (inFormat!=mPixelFormat)
+   {
+      PixelConvert(mWidth, mHeight,
+          inFormat, inData, stride, 0,
+          mPixelFormat,  mBase, mStride, GetPlaneOffset());
+   }
+   else if (stride==mStride)
+   {
+      memcpy(mBase, inData, mWidth*mHeight*pixelSize );
+   }
+   else
+   {
+      for(int y=0;y<mHeight;y++)
+         memcpy(mBase+mStride*y, inData+stride*y, mWidth*pixelSize );
+   }
+}
+
+
+
+
+void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat inFormat, int inTransform, int inExpand)
+{
+   std::vector<unsigned char> buffer;
+   Uint8 *ptr = mBase;
+   // TODO - inExpand
+
+   int stride = mStride;
+   int pixelSize = BytesPerPixel(inFormat);
+
+   if (inFormat!=mPixelFormat)
+   {
+      stride = mWidth * pixelSize;
+      buffer.resize( stride * mHeight );
+      ptr = &buffer[0];
+   }
+   int ppr = mWidth * pixelSize;
+
+   const float *src = inData;
+   #define GET_FLOAT( EXPR ) { \
+         for(int y=0;y<mHeight;y++) \
+         { \
+            Uint8 *dest = ptr + y*stride; \
+            if (inStride) \
+               src = (const float *)( (char *)inData + y*inStride ); \
+            for(int x=0;x<ppr;x++) \
+            { \
+               float fval = EXPR ; \
+               *dest++ = fval < 0.0f ? 0 : fval>=255.0f ? 255 : (int)fval; \
+            } \
+         } \
+      }
+
+
+
+
+   if (inTransform & Float128Mean)
+   {
+      if (inTransform & FloatUnitScale)
+         GET_FLOAT( *src++ * 128.0f + 128.0f )
+      else
+         GET_FLOAT( *src++ + 128.0f )
+   }
+   else
+   {
+      if (inTransform & FloatUnitScale)
+         GET_FLOAT( *src++ * 255.0f  )
+      else
+         GET_FLOAT( *src++  )
+   }
+
+
+   if (inFormat!=mPixelFormat)
+   {
+      PixelConvert(mWidth, mHeight,
+          inFormat,  &buffer[0], stride, 0,
+          mPixelFormat, mBase, mStride, 0 );
+   }
 }
 
 

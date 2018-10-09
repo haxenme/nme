@@ -1,0 +1,3 @@
+-cp ../../src
+-main ParseNme
+-js ../../ndll/Emscripten/parsenme.js

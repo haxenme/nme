@@ -1,5 +1,7 @@
+#ifndef HX_WINRT
 #include <windows.h>
 #include <shlobj.h> 
+#include <Utils.h>
 
 #include <stdio.h>
 #include <string>
@@ -8,27 +10,26 @@
 
 namespace nme {
  
-static bool nmeIsCoInit = false;
-static bool nmeIsCoInitOk = false;
-bool nmeCoInitialize()
-{
-   if (!IsMainThread())
-      return CoInitialize(0)==S_OK;
-
-   if (!nmeIsCoInit)
+   static bool nmeIsCoInit = false;
+   static bool nmeIsCoInitOk = false;
+   bool nmeCoInitialize()
    {
-      nmeIsCoInit = true;
-      HRESULT result = CoInitialize(0);
-      nmeIsCoInitOk = result==S_OK || result==S_FALSE || result==RPC_E_CHANGED_MODE;
-   }
-   return nmeIsCoInitOk;
-}
+      if (!IsMainThread())
+         return CoInitialize(0)==S_OK;
 
-   
+      if (!nmeIsCoInit)
+      {
+         nmeIsCoInit = true;
+         HRESULT result = CoInitialize(0);
+         nmeIsCoInitOk = result==S_OK || result==S_FALSE || result==RPC_E_CHANGED_MODE;
+      }
+      return nmeIsCoInitOk;
+   }
+
    bool LaunchBrowser(const char *inUtf8URL)
    {
       int result;
-      result=(int)ShellExecute(NULL, "open", inUtf8URL, NULL, NULL, SW_SHOWDEFAULT);
+      result=(int)(size_t)ShellExecute(NULL, "open", inUtf8URL, NULL, NULL, SW_SHOWDEFAULT);
       return (result>32);
    }
 
@@ -83,74 +84,217 @@ bool nmeCoInitialize()
    }
 
 
-   std::string FileDialogFolder( const std::string &title, const std::string &text ) {
 
-      char path[MAX_PATH];
-       BROWSEINFO bi = { 0 };
-       bi.lpszTitle = ("All Folders Automatically Recursed.");
-       LPITEMIDLIST pidl = SHBrowseForFolder ( &bi );
+HWND GetApplicationWindow();
 
-       if ( pidl != 0 ) {
-           // get the name of the folder and put it in path
-           SHGetPathFromIDList ( pidl, path );
+namespace {
+enum
+{
+   flagSave            = 0x0001,
+   flagPromptOverwrite = 0x0002,
+   flagMustExist       = 0x0004,
+   flagDirectory       = 0x0008,
+   flagMultiSelect     = 0x0010,
+   flagHideReadOnly    = 0x0020,
+};
+}
 
+static unsigned __stdcall dialog_proc( void *inSpec )
+{
+   FileDialogSpec *spec = (FileDialogSpec *)inSpec;
+   if (spec->flags & flagDirectory)
+   {
 
-           // free memory used
-           IMalloc * imalloc = 0;
-           if ( SUCCEEDED( SHGetMalloc ( &imalloc )) )
-           {
-               imalloc->Free ( pidl );
-               imalloc->Release ( );
-           }
+      IFileDialog *dlg = 0;
+      if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&dlg))))
+      {
+         dlg->SetTitle(UTF8ToWide(spec->title).c_str());
 
-           return std::string(path);
-       }
-      
-      return ""; 
+         if (spec->defaultPath[0])
+         {
+            IShellItem *item = 0;
+            SHCreateItemFromParsingName(UTF8ToWide(spec->defaultPath).c_str(), 0, IID_IShellItem,(void **)&item);
+            if (item)
+            {
+               dlg->SetDefaultFolder(item);
+               item->Release();
+            }
+         }
+
+         DWORD dwOptions;
+         if (SUCCEEDED(dlg->GetOptions(&dwOptions)))
+         {
+            dlg->SetOptions(dwOptions | FOS_PICKFOLDERS);
+            if (SUCCEEDED(dlg->Show(NULL)))
+            {
+                IShellItem *item = 0;
+                if (SUCCEEDED(dlg->GetResult(&item)))
+                {
+                   wchar_t *path = 0;
+                   if(SUCCEEDED(item->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &path)))
+                      spec->result =  WideToUTF8(path);
+                   item->Release();
+                }
+            }
+         }
+         dlg->Release();
+      }
+   }
+   else
+   {
+      OPENFILENAME ofn;
+      std::vector<char> path(32*1024);
+
+      ZeroMemory(&ofn, sizeof(ofn));
+
+      ofn.hwndOwner = GetApplicationWindow();
+      ofn.lStructSize = sizeof(ofn);
+      int len = spec->fileTypes.size();
+      std::vector<char> buf(len+2);
+      const char *ptr = spec->fileTypes.c_str();
+      for(int i=0;i<len;i++)
+         buf[i] = ptr[i]=='|' ? '\0' : ptr[i];
+      buf[len] = '\0';
+      ofn.lpstrFilter = &buf[0];
+      ofn.Flags = OFN_EXPLORER;
+      if (spec->flags & flagMustExist)
+         ofn.Flags |= OFN_FILEMUSTEXIST;
+      if (spec->flags & flagHideReadOnly)
+         ofn.Flags |= OFN_HIDEREADONLY;
+      if (spec->flags & flagMultiSelect)
+         ofn.Flags |= OFN_ALLOWMULTISELECT;
+      if (spec->flags & flagPromptOverwrite)
+         ofn.Flags |= OFN_OVERWRITEPROMPT;
+      //ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
+      ofn.lpstrFile = &path[0];
+      ofn.lpstrTitle = spec->title.c_str();
+      ofn.nMaxFile = path.size();
+      ofn.lpstrDefExt = "*";
+
+      bool result = (spec->flags & flagSave) ? GetSaveFileName(&ofn) : GetOpenFileName(&ofn);
+      if (result)
+      {
+         if (spec->flags & flagMultiSelect)
+         {
+            const char *ptr = ofn.lpstrFile;
+            while(ptr[0] || ptr[1])
+               ptr++;
+            ptr++;
+            int len = ptr- ofn.lpstrFile;
+            spec->result =  std::string( ofn.lpstrFile, len ); 
+         }
+         else
+            spec->result =  std::string( ofn.lpstrFile ); 
+      }
    }
 
-   std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
+   spec->isFinished = true;
+   // ping windows thread.
 
-      OPENFILENAME ofn;
-       char path[MAX_PATH] = "";
+   return 0;
+}
 
-       ZeroMemory(&ofn, sizeof(ofn));
 
-       ofn.lStructSize = sizeof(ofn);
-       ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
-       ofn.lpstrFile = path;
-       ofn.lpstrTitle = title.c_str();
-       ofn.nMaxFile = MAX_PATH;
-       ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
-       ofn.lpstrDefExt = "*";
+bool FileDialogOpen( FileDialogSpec *inSpec )
+{
+   return _beginthreadex( 0, 0, dialog_proc, (void *)inSpec, 0, 0);
+}
 
-       if(GetOpenFileName(&ofn)) {
-         return std::string( ofn.lpstrFile ); 
-       } 
 
-      return ""; 
+}
+#else
+
+#include <ppltasks.h>
+
+#include <windows.h>
+#include <shlobj.h> 
+
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <NMEThread.h>
+
+namespace nme {
+ 
+   static bool nmeIsCoInit = false;
+   static bool nmeIsCoInitOk = false;
+   bool nmeCoInitialize()
+   {
+      if (!IsMainThread())
+         return CoInitializeEx(NULL,0)==S_OK;
+
+      if (!nmeIsCoInit)
+      {
+         nmeIsCoInit = true;
+         HRESULT result = CoInitializeEx(NULL,0);
+         nmeIsCoInitOk = result==S_OK || result==S_FALSE || result==RPC_E_CHANGED_MODE;
+      }
+      return nmeIsCoInitOk;
    }
 
-   std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes ) { 
+   bool LaunchBrowser(const char *inUtf8URL)
+   {
+      if (inUtf8URL==NULL)
+        return false;
 
-      OPENFILENAME ofn;
-       char path[1024] = "";
+      int inLen = strlen(inUtf8URL);
+      if (inLen<=0)
+        return false;
 
-       ZeroMemory(&ofn, sizeof(ofn));
+      //char* to wchar_t* to Platform::String
+      wchar_t* wc = new wchar_t[inLen+1];
+      mbstowcs (wc, inUtf8URL, inLen+1);
+      auto platformStringUri = ref new Platform::String(wc, inLen);
+      delete[] wc;
 
-       ofn.lStructSize = sizeof(ofn);
-       ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
-       ofn.lpstrFile = path;
-       ofn.lpstrTitle = title.c_str();
-       ofn.nMaxFile = MAX_PATH;
-       ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
-       ofn.lpstrDefExt = "*";
+      bool hasScheme = 
+        strncmp( inUtf8URL, "http:", 5 ) == 0   ||
+        strncmp( inUtf8URL, "mailto:", 7 ) == 0 || 
+        strncmp( inUtf8URL, "ms-", 3 ) == 0     || 
+        strncmp( inUtf8URL, "bingmaps:", 9 ) == 0 ; 
 
-       if(GetSaveFileName(&ofn))  {
-         return std::string( ofn.lpstrFile ); 
-       }
+      auto uri = hasScheme? ref new Windows::Foundation::Uri(platformStringUri) : 
+                            ref new Windows::Foundation::Uri((ref new Platform::String(L"http://"))+platformStringUri);
 
-      return ""; 
+      // Set to true to show a warning
+      auto launchOptions = ref new Windows::System::LauncherOptions();
+      launchOptions->TreatAsUntrusted = false;
+
+      concurrency::task<bool> launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri,launchOptions));
+      launchUriOperation.then([](bool success)
+      {
+          //OutputDebugString( success ? "URL LAUNCH OK" : "URL LAUNCH FAIL" );
+      }); 
+      return true;
+   }
+
+   std::string CapabilitiesGetLanguage()
+   {
+      Platform::String^ rtstr = ( Windows::System::UserProfile::GlobalizationPreferences::Languages )->GetAt(0);
+      //Platform::String to std::string
+      std::wstring wsstr( rtstr->Begin() );
+      std::string sstr( wsstr.begin(), wsstr.end() );
+      return sstr;
+   }
+   
+   bool SetDPIAware()
+   {
+      return true;
+   }
+   bool dpiAware = SetDPIAware();
+
+   double CapabilitiesGetScreenDPI()
+   {
+      auto displayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+      return (double)displayInformation->LogicalDpi;
+   }
+
+   double CapabilitiesGetPixelAspectRatio() {
+      auto displayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+      double hPixelsPerInch = (double)displayInformation->RawDpiX;
+      double vPixelsPerInch = (double)displayInformation->RawDpiY;
+      return hPixelsPerInch / vPixelsPerInch;
    }
 
 }
+#endif

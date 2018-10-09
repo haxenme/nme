@@ -1,11 +1,16 @@
 package;
 
 import haxe.io.Path;
-import haxe.xml.Fast;
+#if (haxe_ver < 4)
+import haxe.xml.Fast in Access;
+#else
+import haxe.xml.Access;
+#end
 import sys.io.File;
 import sys.FileSystem;
 import NMEProject;
 import platforms.Platform;
+import nme.AlphaMode;
 
 using StringTools;
 
@@ -16,7 +21,9 @@ class NMMLParser
 
    static var varMatch = new EReg("\\${(.*?)}", "");
 
-   public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Fast )
+   static var TOOL_VERSION = 3;
+
+   public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Access )
    {
       project = inProject;
       process(path,inWarnUnknown,xml);
@@ -97,7 +104,7 @@ class NMMLParser
          var check = StringTools.trim(part);
          if (check!="")
          {
-            if (!project.hasDef(check))
+            if (!parseBool(part) && !project.hasDef(check))
                return false;
             someMatched = true;
          }
@@ -114,13 +121,17 @@ class NMMLParser
       return false;
    }
 
-   private function isValidElement(element:Fast, section:String):Bool 
+   private function isValidElement(element:Access, section:String):Bool 
    {
       var ifVal = element.x.get("if");
+      if (ifVal!=null)
+         ifVal =substitute(ifVal);
       if (ifVal!=null && !parseCondition(ifVal))
          return false;
 
       var unlessVal = element.x.get("unless");
+      if (unlessVal!=null)
+         unlessVal = substitute(unlessVal);
       if (unlessVal!=null && parseCondition(unlessVal))
          return false;
 
@@ -186,7 +197,7 @@ class NMMLParser
       return segments.join("");
    }
 
-   private function parseAppElement(element:Fast):Void 
+   private function parseAppElement(element:Access):Void 
    {
       for(attribute in element.x.attributes()) 
       {
@@ -234,14 +245,39 @@ class NMMLParser
       }
    }
 
-   private function parseWatchOSElement(element:Fast, extensionPath:String):Void 
+   private function parseWatchOSElement(element:Access, extensionPath:String):Void 
    {
       var watchOs = project.makeWatchOSConfig();
 
       new NMMLParser(watchOs, extensionPath, false, element);
    }
 
-   private function parseAssetsElement(element:Fast, basePath:String = ""):Void 
+
+   public static function parseAlphaMode(alphaMode:String) : AlphaMode
+   {
+      switch(alphaMode.toLowerCase())
+      {
+         case "unmultiplied": return AlphaUnmultiplied;
+         case "premultiplied": return AlphaIsPremultiplied;
+         case "postprocess": return AlphaPostprocess;
+         case "preprocess": return AlphaPreprocess;
+         case "default": return AlphaDefault;
+         default:
+            throw "Invalid alpha mode : should be premultiplied/postprocess/preprocess/unmultiplied/default";
+      }
+      return null;
+   }
+
+
+   function getElementAlpha(element:Access, inDefault:AlphaMode)
+   {
+      if (element.has.alpha)
+         return parseAlphaMode(substitute(element.att.alpha));
+      return inDefault;
+   }
+
+
+   private function parseAssetsElement(element:Access, basePath:String = ""):Void 
    {
       var path = basePath;
       var embed = project.embedAssets;
@@ -269,6 +305,8 @@ class NMMLParser
          else
             targetPath = "";
       }
+
+      var assetsAlpha = getElementAlpha(element,AlphaDefault);
 
       path = project.relocatePath(path);
 
@@ -310,7 +348,7 @@ class NMMLParser
             if (element.has.id) 
                id = substitute(element.att.id);
 
-            var asset = new Asset(path, targetPath, type, embed);
+            var asset = new Asset(path, targetPath, type, embed, assetsAlpha);
             asset.setId(id);
 
             if (glyphs != null) 
@@ -361,7 +399,7 @@ class NMMLParser
                }
             }
 
-            parseAssetsElementDirectory(path, targetPath, include, exclude, type, embed, glyphs, recurse);
+            parseAssetsElementDirectory(path, targetPath, include, exclude, type, embed, assetsAlpha, glyphs, recurse);
          }
       }
       else
@@ -383,6 +421,8 @@ class NMMLParser
                var childEmbed = embed;
                var childType = type;
                var childGlyphs = glyphs;
+
+               var childAlpha = getElementAlpha(childElement, assetsAlpha);
 
                if (childElement.has.rename) 
                   childTargetPath = childElement.att.rename;
@@ -411,7 +451,7 @@ class NMMLParser
                   id = substitute(childElement.att.name);
 
 
-               var asset = new Asset(path + childPath, targetPath + childTargetPath, childType, childEmbed);
+               var asset = new Asset(path + childPath, targetPath + childTargetPath, childType, childEmbed, childAlpha);
                asset.setId(id);
 
                if (childGlyphs != null) 
@@ -423,7 +463,7 @@ class NMMLParser
       }
    }
 
-   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:Bool, glyphs:String, recursive:Bool):Void 
+   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:Bool, assetsAlpha:AlphaMode, glyphs:String, recursive:Bool):Void 
    {
       var files = FileSystem.readDirectory(path);
 
@@ -435,13 +475,13 @@ class NMMLParser
          if (FileSystem.isDirectory(path + "/" + file) && recursive) 
          {
             if (filter(file, [ "*" ], exclude.split("|"))) 
-               parseAssetsElementDirectory(path + "/" + file, targetPath + file, include, exclude, type, embed, glyphs, true);
+               parseAssetsElementDirectory(path + "/" + file, targetPath + file, include, exclude, type, embed, assetsAlpha, glyphs, true);
          }
          else
          {
             if (filter(file, include.split("|"), exclude.split("|"))) 
             {
-               var asset = new Asset(path + "/" + file, targetPath + file, type, embed);
+               var asset = new Asset(path + "/" + file, targetPath + file, type, embed, assetsAlpha);
 
                if (glyphs != null) 
                   asset.glyphs = glyphs;
@@ -452,7 +492,7 @@ class NMMLParser
       }
    }
 
-   private function parseAndroidElement(element:Fast):Void 
+   private function parseAndroidElement(element:Access):Void 
    {
       if (element.has.minApiLevel) 
          project.androidConfig.minApiLevel = Std.parseInt(substitute(element.att.minApiLevel));
@@ -508,8 +548,30 @@ class NMMLParser
       }
    }
 
+   private function parseWinrtElement(element:Access):Void 
+   {
+      for(childElement in element.elements) 
+      {
+         if (isValidElement(childElement, ""))
+         {
+            var value = substitute(childElement.att.value);
+            switch(childElement.name) 
+            {
+               case "appCapability":
+                  project.winrtConfig.appCapability.push(
+                      new WinrtCapability(value, childElement.has.namespace  ? substitute(childElement.att.namespace) : "") );
+               case "packageDependency":
+                  project.winrtConfig.packageDependency.push(
+                      new WinrtPackageDependency(value, substitute(childElement.att.minversion), substitute(childElement.att.publisher) ) );
+               default:
+                  Log.error("Unknown winrt attribute " + childElement.name);
+            }
+         }
+      }
+   }
 
-   private function parseOutputElement(element:Fast):Void 
+
+   private function parseOutputElement(element:Access):Void 
    {
       if (element.has.name) 
          project.app.file = substitute(element.att.name);
@@ -521,7 +583,7 @@ class NMMLParser
          project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
    }
 
-   private function parseXML(xml:Fast, section:String, extensionPath:String, inWarnUnknown):Void 
+   private function parseXML(xml:Access, section:String, extensionPath:String, inWarnUnknown):Void 
    {
       for(element in xml.elements) 
       {
@@ -553,6 +615,7 @@ class NMMLParser
 
                case "unset":
 
+                  project.haxedefs.remove(element.att.name);
                   project.localDefines.remove(element.att.name);
                   project.environment.remove(element.att.name);
 
@@ -659,6 +722,7 @@ class NMMLParser
                   if (element.has.resolve("static"))
                       isStatic = parseBool(element.att.resolve("static"));
                  var name = substitute(element.att.name);
+                 var nocopy = element.has.nocopy && parseBool(substitute(element.att.nocopy));
 
                  var haxelib = "";
                  var version = "";
@@ -680,11 +744,11 @@ class NMMLParser
                  var base = extensionPath;
                  if (haxelib!="")
                  {
-                    var lib = project.addLib(haxelib,version);
+                    var lib = project.addLib(haxelib,version,nocopy);
                     base = lib.getBase();
                  }
                  if (name!="lime" && name!="openfl")
-                    project.addNdll(name, base, isStatic, haxelib);
+                    project.addNdll(name, base, isStatic, haxelib, nocopy);
 
 
 
@@ -695,7 +759,8 @@ class NMMLParser
                   if (element.has.version) 
                      version = substitute(element.att.version);
 
-                  project.addLib(name,version);
+                  var nocopy = element.has.nocopy && parseBool(substitute(element.att.nocopy));
+                  project.addLib(name,version,nocopy);
  
 
                case "launchImage", "splashScreen":
@@ -853,6 +918,9 @@ class NMMLParser
                case "android":
                   parseAndroidElement(element);
 
+               case "winrt":
+                  parseWinrtElement(element);
+
                case "output":
                   parseOutputElement(element);
 
@@ -997,7 +1065,7 @@ class NMMLParser
       }
    }
 
-   private function parseWindowElement(element:Fast):Void 
+   private function parseWindowElement(element:Access):Void 
    {
       for(attribute in element.x.attributes()) 
       {
@@ -1017,6 +1085,19 @@ class NMMLParser
                if (orientation != null) 
                   project.window.orientation = orientation;
 
+            case "scaleMode":
+               switch(value.toLowerCase())
+               {
+                  case "native" : project.window.scaleMode = ScaleNative;
+                  case "game" : project.window.scaleMode = ScaleGame;
+                  case "ui" : project.window.scaleMode = ScaleUiScaled;
+                  case "pixels" : project.window.scaleMode = ScaleGamePixels;
+                  case "stretch" : project.window.scaleMode = ScaleGameStretch;
+                  case "centre","center" : project.window.scaleMode = ScaleCentre;
+                  default:
+                      throw "Window scaleMode should be native/centre/game/ui/pixels or stretch";
+               }
+
             case "height", "width", "fps", "antialiasing":
                if (Reflect.hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.parseInt(value));
@@ -1026,7 +1107,6 @@ class NMMLParser
                   project.haxedefs.set("nme_spritekit", "1");
                if (Reflect.hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.string(value));
-               
 
             default:
                if (Reflect.hasField(project.window, name)) 
@@ -1039,7 +1119,7 @@ class NMMLParser
       }
    }
 
-   public function process(projectFile:String, inWarnUnkown:Bool,inXml:Fast):Void 
+   public function process(projectFile:String, inWarnUnkown:Bool,inXml:Access):Void 
    {
       Log.verbose("Parse " + projectFile + "...");
       var xml = inXml;
@@ -1049,7 +1129,7 @@ class NMMLParser
       {
          try 
          {
-            xml = new Fast(Xml.parse(File.getContent(projectFile)).firstElement());
+            xml = new Access(Xml.parse(File.getContent(projectFile)).firstElement());
    
          }
          catch(e:Dynamic) 
@@ -1089,6 +1169,11 @@ class NMMLParser
          else if (newString.startsWith("haxelib:"))
          {
             newString = PathHelper.getHaxelib(new Haxelib(newString.substr(8)));
+         }
+         else if (newString.startsWith("toolversion:"))
+         {
+            var requiredVersion = Std.parseInt( newString.substr(12) );
+            newString = requiredVersion <= TOOL_VERSION ? "true" : "false";
          }
          else
          {

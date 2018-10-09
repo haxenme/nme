@@ -25,15 +25,15 @@ class RunAll
 
    static function filter(inName:String):Bool
    {
-      return inName!="android" && inName!="native" && inName!="html5" && inName!="watchos" && inName!="SwfAssetLib.hx" && inName!="ios";
+      return inName!="android" && inName!="native" && inName!="html5" && inName!="watchos" && inName!="SwfAssetLib.hx" && inName!="ios" && inName!="compat" && inName!="preloader" && inName!="store";
    }
 
    public static function main()
    {
       Sys.println('Find classes...');
       var classes = new Array<String>();
-      findRecurse("../nme","nme",filter,classes);
-      findRecurse("../haxe","haxe",filter,classes);
+      findRecurse("../src/nme","nme",filter,classes);
+      findRecurse("../src/haxe","haxe",filter,classes);
 
       Sys.println('Create test...');
       var lines = new Array<String>();

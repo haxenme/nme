@@ -10,6 +10,7 @@ class AndroidPlatform extends Platform
 {
    var buildV5:Bool;
    var buildV7:Bool;
+   var build64:Bool;
    var buildX86:Bool;
    var gradle:Bool;
 
@@ -18,7 +19,15 @@ class AndroidPlatform extends Platform
    {
       super(inProject);
 
-      buildV5 = buildV7 = buildX86 = false;
+     if (project.hasDef("androidBilling"))
+     {
+        CommandLineTools.gradle = true;
+        project.haxedefs.set("gradle", "1");
+        project.haxedefs.set("androidBilling", "1");
+     }
+
+
+      buildV5 = buildV7 = build64 = buildX86 = false;
 
       gradle = CommandLineTools.gradle;
       if (gradle)
@@ -40,6 +49,7 @@ class AndroidPlatform extends Platform
       {
          buildV5 = hasArch(ARMV5);
          buildV7 = hasArch(ARMV7);
+         build64 = hasArch(ARM64);
       }
       buildX86 = hasArch(X86);
 
@@ -49,6 +59,8 @@ class AndroidPlatform extends Platform
          PathHelper.removeDirectory(libDir + "/armeabi");
       if (!buildV7)
          PathHelper.removeDirectory(libDir + "/armeabi-v7a");
+      if (!build64)
+         PathHelper.removeDirectory(libDir + "/arm64-v8a");
       if (!buildX86)
          PathHelper.removeDirectory(libDir + "/x86");
 
@@ -68,14 +80,26 @@ class AndroidPlatform extends Platform
             {
                case SOUND, MUSIC:
                   asset.resourceName = asset.id;
-                  asset.targetPath =  "res/raw/" + asset.flatName + "." + Path.extension(asset.targetPath);
+                  asset.targetPath =  '${decideAudioFolder()}/${asset.flatName}.${Path.extension(asset.targetPath)}';
 
                default:
                   asset.resourceName = asset.flatName;
-                  asset.targetPath = "assets/" + asset.resourceName;
+                  asset.targetPath = '${decideAssetsFolder()}/${asset.resourceName}';
             }
          }
       }
+   }
+      
+   private function decideAudioFolder() {
+      if(gradle)
+         return 'app/src/main/res/raw';
+      return 'res/raw';
+   }
+
+   private function decideAssetsFolder() {
+      if(gradle)
+         return 'app/src/main/assets';
+      return 'assets';
    }
 
    public function getAppDir()
@@ -113,6 +137,9 @@ class AndroidPlatform extends Platform
 
       if (buildV7)
          runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV7"]) );
+      
+      if (build64)
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARM64"]) );
 
       if (buildX86)
          runHaxeWithArgs(args.concat(["-D", "HXCPP_X86"]) );
@@ -131,6 +158,10 @@ class AndroidPlatform extends Platform
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-v7.so",
                 getOutputLibDir() + "/armeabi-v7a/libApplicationMain.so" );
 
+      if (build64)
+           FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-64.so",
+           getOutputLibDir() + "/arm64-v8a/libApplicationMain.so" );
+      
       if (buildX86)
          FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-x86.so",
                 getOutputLibDir() + "/x86/libApplicationMain.so" );
@@ -142,7 +173,7 @@ class AndroidPlatform extends Platform
       context.ANDROID_INSTALL_LOCATION = project.androidConfig.installLocation;
       context.DEBUGGABLE = project.debug;
 
-      var staticNme = CommandLineTools.toolkit;
+      var staticNme = project.isStaticNme();
       for(ndll in project.ndlls)
          if (ndll.name=="nme" && ndll.isStatic)
             staticNme = true;
@@ -153,6 +184,8 @@ class AndroidPlatform extends Platform
       context.appIntent = project.androidConfig.appIntent;
       context.appPermission = project.androidConfig.appPermission;
       context.appFeature = project.androidConfig.appFeature;
+      if (project.hasDef("androidBilling"))
+         context.ANDROID_BILLING=1;
 
 
       // Will not install on devices less than this ....
@@ -175,7 +208,14 @@ class AndroidPlatform extends Platform
       for( k in project.androidConfig.extensions.keys())
          extensions.push(k);
       context.ANDROID_EXTENSIONS =extensions;
+      
+      if(gradle)
+         setGradleLibraries();
+      else
+         setAntLibraries();
+   }
 
+   private function setAntLibraries() {
       context.ANDROID_LIBRARY_PROJECTS = [];
       var idx = 1;
       var extensionApi = "deps/extension-api";
@@ -187,6 +227,16 @@ class AndroidPlatform extends Platform
          {
             var proj = getAndroidProject(lib);
             context.ANDROID_LIBRARY_PROJECTS.push( {index:idx++, path:proj} );
+         }
+      }
+   }
+   
+   private function setGradleLibraries() {
+      context.ANDROID_LIBRARY_PROJECTS = [{name:'extension-api'}];
+      for(k in project.dependencies.keys()) {
+         var lib = project.dependencies.get(k);
+         if (lib.isAndroidProject()) {
+            context.ANDROID_LIBRARY_PROJECTS.push( {name:lib.name} );
          }
       }
    }
@@ -228,6 +278,9 @@ class AndroidPlatform extends Platform
       {
          var assemble = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
 
+         if(PlatformHelper.hostPlatform==Platform.MAC)
+            ProcessHelper.runCommand(outputDir, 'chmod', ['+x', './gradlew']);
+          
          var exe = PlatformHelper.hostPlatform==Platform.WINDOWS ? "./gradlew.bat" : "./gradlew";
          ProcessHelper.runCommand(outputDir, exe, [ assemble ]);
       }
@@ -322,6 +375,8 @@ class AndroidPlatform extends Platform
          updateLibArch( libDir + "/armeabi", "" );
       if (buildV7)
          updateLibArch( libDir + "/armeabi-v7a", "-v7" );
+      if (build64)
+         updateLibArch( libDir + "/arm64-v8a", "-64" );
       if (buildX86)
          updateLibArch( libDir + "/x86", "-x86" );
    }
@@ -466,21 +521,24 @@ class AndroidPlatform extends Platform
       if (project.androidConfig.addV4Compat && !gradle)
          addV4CompatLib(jarDir);
 
-      if (gradle)
-      {
-         copyTemplateDir( "android/PROJ/deps/extension-api/src", destination + srcPath);
-         copyTemplateDir( "android/PROJ/src", destination + srcPath);
+      if (gradle) {
+         copyTemplateDir( "android/extension-api", '${getOutputDir()}/extension-api');
+         copyTemplateDir( "android/java", '${getOutputDir()}/app/src/main/java');
       }
-
+      else {
+         copyTemplateDir( "android/extension-api", '${getOutputDir()}/deps/extension-api');
+         copyTemplateDir( "android/java", '${getOutputDir()}/src');
+      }
+       
       for(k in project.dependencies.keys())
       {
          var lib = project.dependencies.get(k);
-         if (lib.isAndroidProject())
+         if (gradle) {
+              var libPath = '${getOutputDir()}/${lib.makeUniqueName()}';
+              FileHelper.recursiveCopy( lib.getFilename(), libPath, context, true);
+         }
+         else if (lib.isAndroidProject())
          {
-            // TODO - where should these go?
-            if (gradle)
-               FileHelper.recursiveCopy( lib.getFilename(), destination + srcPath, context, true);
-            else
                FileHelper.recursiveCopy( lib.getFilename(), getAppDir()+"/"+getAndroidProject(lib), context, true);
          }
       }

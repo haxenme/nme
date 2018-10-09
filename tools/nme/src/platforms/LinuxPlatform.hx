@@ -35,6 +35,16 @@ class LinuxPlatform extends DesktopPlatform
             isRaspberryPi = true;
             is64 = true;
          }
+         else if (inProject.hasDef("HXCPP_LINUX_ARMV7"))
+         { 
+             is64 = false;
+             inProject.architectures = [ Architecture.ARMV7 ];
+         }
+         else if (inProject.hasDef("HXCPP_LINUX_ARM64"))
+         { 
+             inProject.architectures = [ Architecture.ARM64 ];
+             is64 = true;
+         }
       }
 
       super(inProject);
@@ -77,7 +87,8 @@ class LinuxPlatform extends DesktopPlatform
 
    override public function run(arguments:Array<String>):Void 
    {
-      ProcessHelper.runCommand(applicationDirectory, "./" + Path.withoutDirectory(executablePath), arguments);
+      var dir = deployDir!=null ? deployDir : applicationDirectory;
+      ProcessHelper.runCommand(dir, "./" + Path.withoutDirectory(executablePath), arguments);
    }
 }
 

@@ -11,7 +11,7 @@
    #endif
    static int ARGB_STORE = GL_BGRA_EXT;
    static int ARGB_PIXEL = GL_BGRA_EXT;
-#elif defined(EMSCRIPTEN)
+#elif defined(EMSCRIPTEN) || defined(RASPBERRYPI)
    #undef SWAP_RB
    #define SWAP_RB 1
    #define ARGB_STORE GL_RGBA
@@ -19,6 +19,9 @@
 #elif defined(IPHONE)
    #define ARGB_STORE GL_RGBA
    #define ARGB_PIXEL GL_BGRA
+#elif defined(NME_ANGLE)
+   #define ARGB_STORE GL_BGRA_EXT;
+   #define ARGB_PIXEL GL_BGRA_EXT;
 #elif defined(NME_GLES)
    #define ARGB_STORE GL_BGRA
    #define ARGB_PIXEL GL_BGRA
@@ -32,10 +35,21 @@
 namespace nme
 {
 
+#ifdef NME_ANGLE
+bool gOglAllowRgb = false;
+#else
+bool gOglAllowRgb = true;
+#endif
+
 bool gC0IsRed = true;
+
+#if defined(NME_ANGLE) || defined(EMSCRIPTEN)
+#define FORCE_NON_PO2
+#endif
 
 bool gFullNPO2Support = false;
 bool gPartialNPO2Support = false;
+
 
 bool NonPO2Supported(bool inNotRepeating)
 {
@@ -107,7 +121,7 @@ GLenum getTextureStorage(PixelFormat pixelFormat)
 {
    switch(pixelFormat)
    {
-      case pfRGB:      return GL_RGB;
+      case pfRGB:  return gOglAllowRgb ? GL_RGB : ARGB_STORE;
       case pfBGRA:     return ARGB_STORE;
       case pfBGRPremA: return ARGB_STORE;
       case pfAlpha: return GL_ALPHA;
@@ -115,6 +129,7 @@ GLenum getTextureStorage(PixelFormat pixelFormat)
       case pfRGB565: return GL_RGB;
       case pfLuma: return GL_LUMINANCE;
       case pfLumaAlpha: return GL_LUMINANCE_ALPHA;
+      default: ;
    }
    return 0;
 }
@@ -137,7 +152,7 @@ GLenum getTransferOgl(PixelFormat pixelFormat)
 {
    switch(pixelFormat)
    {
-      case pfRGB:      return GL_RGB;
+      case pfRGB:  return gOglAllowRgb ? GL_RGB : ARGB_PIXEL;
       case pfBGRA:     return ARGB_PIXEL;
       case pfBGRPremA: return ARGB_PIXEL;
       case pfAlpha: return GL_ALPHA;
@@ -145,6 +160,7 @@ GLenum getTransferOgl(PixelFormat pixelFormat)
       case pfRGB565: return GL_UNSIGNED_SHORT_5_6_5;
       case pfLuma: return GL_LUMINANCE;
       case pfLumaAlpha: return GL_LUMINANCE_ALPHA;
+      default: ;
    }
    return 0;
 }
@@ -155,6 +171,13 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat)
    switch(pixelFormat)
    {
       case pfRGB:
+         if (gOglAllowRgb)
+           return pfRGB;
+         // Fallthough
+
+      case pfBGRA:
+         return SWAP_RB ? pfRGBA :pfBGRA;
+
       case pfLuma:
       case pfAlpha:
       case pfLumaAlpha:
@@ -162,11 +185,11 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat)
       case pfRGB565:
          return pixelFormat;
 
-      case pfBGRA:
-         return SWAP_RB ? pfRGBA :pfBGRA;
 
       case pfBGRPremA:
          return SWAP_RB ? pfRGBPremA :pfBGRPremA;
+
+      default: ;
    }
    return pfRGB;
 }
@@ -233,14 +256,31 @@ public:
       GLenum channel= getOglChannelType(fmt);
 
       int pw = BytesPerPixel(fmt);
+      int destPw = BytesPerPixel(buffer_format);
 
       bool copy_required = mSurface->GetBase() && (mTextureWidth!=mPixelWidth || mTextureHeight!=mPixelHeight || buffer_format!=fmt);
+
+      #if !defined(NME_GLES)
+      bool oddRowLength = (mPixelWidth*pw) & 0x3;
+      if (oddRowLength)
+         copy_required = true;
+      #endif
+
       if (copy_required)
       {
-         buffer = (uint8 *)malloc(pw * mTextureWidth * mTextureHeight);
+         buffer = (uint8 *)malloc(destPw * mTextureWidth * mTextureHeight);
+
          PixelConvert( mPixelWidth, mPixelHeight,
               fmt, mSurface->GetBase(), mSurface->GetStride(), mSurface->GetPlaneOffset(),
-              buffer_format, buffer, mTextureWidth*pw, pw*mTextureWidth*mTextureHeight );
+              buffer_format, buffer, mTextureWidth*destPw, destPw*mTextureWidth*mTextureHeight );
+
+         int extraX =  mTextureWidth - mPixelWidth;
+         if (extraX)
+            for(int y=0;y<mPixelHeight;y++)
+               memset( buffer + (mTextureWidth*y+mPixelWidth)*destPw, 0, destPw*extraX);
+         int extraY = mTextureHeight-mPixelHeight;
+         if (extraY)
+            memset( buffer + mTextureWidth*mPixelHeight*destPw, 0, destPw*mTextureWidth*extraY);
       }
 
       // __android_log_print(ANDROID_LOG_ERROR, "NME", "CreateTexture %d (%dx%d)",
@@ -252,6 +292,7 @@ public:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, mTextureWidth, mTextureHeight, 0, pixel_format, channel, buffer ? buffer : mSurface->GetBase());
 
@@ -312,6 +353,7 @@ public:
             GLenum channel= getOglChannelType(fmt);
 
             int pw = BytesPerPixel(fmt);
+            int destPw = BytesPerPixel(buffer_format);
 
 
             int x0 = mDirtyRect.x;
@@ -328,7 +370,10 @@ public:
                if (dw>mPixelWidth/2)
                {
                   x0 = 0;
-                  dw = mPixelWidth;
+                  if ( (mPixelWidth*pw) & 0x03 )
+                     copy_required = true;
+                  else
+                     dw = mPixelWidth;
                }
                else
                   copy_required = true;
@@ -339,7 +384,7 @@ public:
             {
                uint8 *buffer = 0;
                // Make unpack align a multiple of 4 ...
-               if (pw<4)
+               if (destPw<4)
                {
                   dw = (dw + 3) & ~3;
                   if (x0+dw > mPixelWidth)
@@ -354,10 +399,10 @@ public:
                }
 
                const uint8 *p0 = mSurface->Row(y0) + x0*pw;
-               buffer = (uint8 *)malloc(pw * dw * dh);
+               buffer = (uint8 *)malloc(destPw * dw * dh);
                PixelConvert(dw,dh,
                             fmt, p0, mSurface->GetStride(), mSurface->GetPlaneOffset(),
-                            buffer_format, buffer, dw+pw, dw*dh*pw );
+                            buffer_format, buffer, dw*destPw, dw*dh*destPw );
 
                glTexSubImage2D(GL_TEXTURE_2D, 0,
                   x0, y0,
@@ -370,12 +415,13 @@ public:
             {
                #ifndef NME_GLES
                glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
+               glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                #endif
                glTexSubImage2D(GL_TEXTURE_2D, 0,
                   x0, y0,
                   dw, dh,
                   pixel_format, channel,
-                  mSurface->Row(y0) + x0 );
+                  mSurface->Row(y0) + x0*pw );
                #ifndef NME_GLES
                glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
                #endif

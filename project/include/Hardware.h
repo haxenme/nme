@@ -86,8 +86,11 @@ protected:
 public:
    virtual bool IsOpenGL() const = 0;
    virtual class Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags)=0;
+   NmeObjectType getObjectType() { return notHardwareContext; }
 
 };
+
+typedef float Trans4x4[4][4];
 
 class HardwareRenderer : public HardwareContext
 {
@@ -114,9 +117,7 @@ public:
 
 
    virtual void Render(const RenderState &inState, const HardwareData &inData )=0;
-   virtual void BeginBitmapRender(Surface *inSurface,uint32 inTint=0,bool inRepeat=true,bool inSmooth=true)=0;
-   virtual void RenderBitmap(const Rect &inSrc, int inX, int inY)=0;
-   virtual void EndBitmapRender()=0;
+   virtual void RenderData(const HardwareData &inData, const ColorTransform *ctrans,const Trans4x4 &inTrans)=0;
 
    virtual void BeginDirectRender()=0;
    virtual void EndDirectRender()=0;
@@ -129,6 +130,9 @@ public:
    virtual void DestroyShader(unsigned int inShader)=0;
    virtual void DestroyFramebuffer(unsigned int inBuffer)=0;
    virtual void DestroyRenderbuffer(unsigned int inBuffer)=0;
+   virtual void DestroyQuery(unsigned int inQuert)=0;
+   virtual void DestroyVertexArray(unsigned int inVertexArray)=0;
+   virtual void DestroyTransformFeedback(unsigned int inTransformFeedback)=0;
    
    #ifdef NME_S3D
    virtual void EndS3DRender()=0;

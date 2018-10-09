@@ -89,7 +89,7 @@ struct MySrcManager
          man->pub.bytes_in_buffer = man->mLen;
          man->mUsed = true;
       }
-      return true;
+      return TRUE;
    }
    static void my_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
    {
@@ -106,7 +106,7 @@ struct MySrcManager
    {
       MySrcManager *man = (MySrcManager *)cinfo->src;
       man->mUsed = false;
-      return true;
+      return TRUE;
    }
    static void my_term_source(j_decompress_ptr cinfo)
    {
@@ -264,8 +264,8 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
    cinfo.in_color_space   = JCS_RGB;
  
    jpeg_set_defaults(&cinfo);
-   jpeg_set_quality (&cinfo, (int)(inQuality * 100), true);
-   jpeg_start_compress(&cinfo, true);
+   jpeg_set_quality(&cinfo, (int)(inQuality * 100), TRUE);
+   jpeg_start_compress(&cinfo, TRUE);
  
    PixelFormat srcFmt = inSurface->Format();
    if (srcFmt==pfAlpha)
@@ -467,6 +467,7 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
 
    int bit_depth = 8;
    int color_type = PNG_COLOR_TYPE_RGB;
+   bool swapBgr = false;
    PixelFormat color_format = pfRGB;
    PixelFormat srcFmt = inSurface->Format();
 
@@ -485,10 +486,19 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
       color_type = PNG_COLOR_TYPE_RGB;
       color_format = pfRGB;
    }
+   else
+   {
+      color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+      color_format = pfBGRA;
+      swapBgr = true;
+   }
 
    png_set_IHDR(png_ptr, info_ptr, w, h,
            bit_depth, color_type, PNG_INTERLACE_NONE,
            PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+   if (swapBgr)
+      png_set_bgr(png_ptr);
 
    png_write_info(png_ptr, info_ptr);
 

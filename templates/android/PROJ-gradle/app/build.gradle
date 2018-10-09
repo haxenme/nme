@@ -26,5 +26,13 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:support-v4:24.2.1'
+    ::if ANDROID_BILLING::
+    compile 'com.android.billingclient:billing:1.0'
+    ::end::
     testCompile 'junit:junit:4.12'
+
+    dependencies {
+        ::foreach (ANDROID_LIBRARY_PROJECTS)::
+        compile project(':::name::')::end::
+    }
 }

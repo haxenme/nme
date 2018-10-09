@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+  <meta
+     title="NME Camera"
+     package="org.nmehost.camera"
+     version="1.0.0"
+     company="nme" 
+  />
+  
+  <app
+     file="Application" 
+     main="Main"
+  />
+  
+  <window
+     width="640" 
+     height="480" 
+     orientation="landscape" 
+     fps="60"
+     background="0xeeeeee"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+  />
+
+  <haxelib name="nme" />
+
+</project>

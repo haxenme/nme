@@ -47,6 +47,8 @@ class ImageHelper
       var data = new BitmapData(width, height, true, backgroundColor);
       data.draw(bitmap,matrix);
 
+      sys.io.File.saveBytes("crap.jpg", data.encode("jpg",1) );
+
       return data;
    }
 }

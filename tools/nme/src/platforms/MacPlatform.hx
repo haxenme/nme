@@ -56,10 +56,11 @@ class MacPlatform extends DesktopPlatform
    override public function run(arguments:Array<String>):Void 
    {
       var exe =  Path.withoutDirectory(executablePath);
+      var dir = deployDir!=null ? deployDir : executableDirectory;
       if (wantLldb())
-         ProcessHelper.runCommand(executableDirectory, "lldb", [exe].concat(arguments) );
+         ProcessHelper.runCommand(dir, "lldb", [exe].concat(arguments) );
       else
-         ProcessHelper.runCommand(executableDirectory, "./" + exe, arguments);
+         ProcessHelper.runCommand(dir, "./" + exe, arguments);
    }
 
    override public function updateOutputDir():Void 

@@ -209,8 +209,6 @@ public:
 
    IOSViewFrame(Stage *inStage) : stage(inStage) { }
 
-   virtual void SetTitle()  { }
-   virtual void SetIcon() { }
    virtual Stage *GetStage()  { return stage; }
 
 };

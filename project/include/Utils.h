@@ -1,11 +1,9 @@
 #ifndef NME_UTILS_H
 #define NME_UTILS_H
 
-#include <hx/CFFI.h>
 #include <string>
 #include <vector>
 #include <nme/QuickVec.h>
-
 
 #ifdef BLACKBERRY
 #include <bps/event.h>
@@ -13,6 +11,7 @@
 
 void NmeLog(const char *inFmt, ...);
 
+class AutoGCRoot;
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -162,44 +161,7 @@ enum SpecialDir
 };
 void GetSpecialDir(SpecialDir inDir,std::string &outDir);
 
-#ifdef ANDROID
-class WString
-{
-public:
-   WString() : mLength(0), mString(0) { }
-   WString(const WString &inRHS);
-   WString(const wchar_t *inStr);
-   WString(const wchar_t *inStr,int inLen);
-   ~WString();
-
-   inline int length() const { return mLength; }
-   inline int size() const { return mLength; }
-   void resize(int inLength);
-   
-   int compare ( const WString& str ) const { return wcscmp (mString, str.mString); };
-
-   WString &operator=(const WString &inRHS);
-   inline wchar_t &operator[](int inIndex) { return mString[inIndex]; }
-   inline const wchar_t &operator[](int inIndex) const { return mString[inIndex]; }
-   const wchar_t *c_str() const { return mString ? mString : L""; }
-
-   WString &operator +=(const WString &inRHS);
-   WString operator +(const WString &inRHS) const;
-   bool operator<(const WString &inRHS) const;
-   bool operator>(const WString &inRHS) const;
-   bool operator==(const WString &inRHS) const;
-   bool operator!=(const WString &inRHS) const;
-
-   WString substr(int inPos,int inLen) const;
-
-
-private:
-   wchar_t *mString;
-   int     mLength;
-};
-#else
 typedef std::wstring WString;
-#endif
 
 int DecodeAdvanceUTF8(const unsigned char * &ioPtr);
 
@@ -221,9 +183,29 @@ bool HasClipboardText();
 const char* GetClipboardText();
 std::string CapabilitiesGetLanguage();
 
-std::string FileDialogOpen( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes );
-std::string FileDialogSave( const std::string &title, const std::string &text, const std::vector<std::string> &fileTypes );
-std::string FileDialogFolder( const std::string &title, const std::string &text );
+
+struct FileDialogSpec
+{
+   FileDialogSpec() : flags(0), isFinished(false), callback(0) { }
+   ~FileDialogSpec();
+   void complete();
+
+   std::string  title;
+   std::string  text;
+   std::string  fileTypes;
+   std::string  defaultPath;
+   AutoGCRoot   *callback;
+   unsigned int flags;
+
+   std::string  result;
+   bool isFinished;
+};
+extern FileDialogSpec *gCurrentFileDialog;
+
+
+bool FileDialogOpen( FileDialogSpec *inSpec );
+bool FileDialogSave( FileDialogSpec *inSpec );
+bool FileDialogFolder( FileDialogSpec *inSpec );
 
 bool LaunchBrowser(const char *inUtf8URL);
 
@@ -248,7 +230,11 @@ FILE *OpenRead(const wchar_t *inName);
 
 #else
 typedef char OSChar;
+#ifdef HXCPP_JS_PRIME
+#define val_os_string(x) (x).as<std::string>().c_str()
+#else
 #define val_os_string val_string
+#endif
 
 #if defined(IPHONE)
 FILE *OpenRead(const char *inName);

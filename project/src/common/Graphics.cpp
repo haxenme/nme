@@ -35,9 +35,14 @@ Graphics::~Graphics()
 {
    mOwner = 0;
    clear();
-   mPathData->DecRef();
+   if (mPathData)
+      mPathData->DecRef();
 }
 
+void Graphics::setOwner(DisplayObject *inOwner)
+{
+   mOwner = inOwner;
+}
 
 void Graphics::clear(bool inForceFreeHardware)
 {
@@ -328,7 +333,6 @@ void Graphics::endTiles()
    {
       mTileJob.mFill->DecRef();
       mTileJob.mFill = 0;
-
       OnChanged();
    }
 }
@@ -345,6 +349,7 @@ void Graphics::beginTiles(Surface *bitmapData,bool inSmooth,int inBlendMode, int
    mTileJob.mBlendMode = inBlendMode;
    mTileJob.mTileCount = inCount;
    mTileJob.mTileMode = inMode;
+   OnChanged();
 }
 
 void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
@@ -390,14 +395,20 @@ void Graphics::moveTo(float x, float y)
    OnChanged();
 }
 
+#ifdef EMSCRIPTEN
+#define EPSILON 0.0001
+#else
+#define EPSILON 0.00001
+#endif
+
 void Graphics::curveTo(float cx, float cy, float x, float y)
 {
    if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
         (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
      mPathData->initPosition(mCursor);
 
-   if ( (fabs(mCursor.x-cx)<0.00001 && fabs(mCursor.y-cy)<0.00001) ||
-        (fabs(x-cx)<0.00001 && fabs(y-cy)<0.00001)  )
+   if ( (fabs(mCursor.x-cx)<EPSILON && fabs(mCursor.y-cy)<EPSILON) ||
+        (fabs(x-cx)<EPSILON && fabs(y-cy)<EPSILON)  )
    {
       mPathData->lineTo(x,y);
    }
@@ -617,40 +628,6 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
 {
    Flush();
    
-   #ifdef NME_DIRECTFB
-   
-   for(int i=0;i<mJobs.size();i++)
-   {
-      GraphicsJob &job = mJobs[i];
-      
-      if (!job.mHardwareRenderer /*&& !job.mSoftwareRenderer*/)
-         job.mHardwareRenderer = Renderer::CreateHardware(job,*mPathData,*inTarget.mHardware);
-      
-      //if (!job.mSoftwareRenderer)
-         //job.mSoftwareRenderer = Renderer::CreateSoftware(job,*mPathData);
-      
-      if (inState.mPhase==rpHitTest)
-      {
-         if (job.mHardwareRenderer && job.mSoftwareRenderer->Hits(inState))
-         {
-            return true;
-         }
-         /*else if (job.mSoftwareRenderer && job.mSoftwareRenderer->Hits(inState))
-         {
-            return true;
-         }*/
-      }
-      else
-      {
-         if (job.mHardwareRenderer)
-            job.mHardwareRenderer->Render(inTarget,inState);
-         //else
-            //job.mSoftwareRenderer->Render(inTarget,inState);
-      }
-   }
-   
-   #else
-   
    if (inTarget.IsHardware())
    {
       if (!mHardwareData)
@@ -691,11 +668,293 @@ bool Graphics::Render( const RenderTarget &inTarget, const RenderState &inState 
             job.mSoftwareRenderer->Render(inTarget,inState);
       }
    }
-   
-   #endif
 
    return false;
 }
+
+
+
+
+void encodeGraphicsData(ObjectStreamOut &stream, IGraphicsData *data)
+{
+   switch(stream.addInt(data->GetType()))
+   {
+      case gdtUnknown:
+         break;
+
+      case gdtEndFill:
+         // nothing to do
+         break;
+      case gdtSolidFill:
+         {
+         GraphicsSolidFill *fill = data->AsSolidFill();
+         stream.addBool( fill->isSolidStyle() );
+         stream.add( fill->mRGB );
+         }
+         break;
+
+      case gdtGradientFill:
+         {
+         GraphicsGradientFill *grad = data->AsGradientFill();
+         stream.addBool( grad->isSolidStyle() );
+         stream.addVec( grad->mStops );
+         stream.add( grad->focalPointRatio );
+         stream.add( grad->matrix );
+         stream.add( grad->interpolationMethod );
+         stream.add( grad->spreadMethod  );
+         stream.add( grad->isLinear  );
+         break;
+         }
+
+      case gdtBitmapFill:
+         {
+         GraphicsBitmapFill *bmp = data->AsBitmapFill();
+         stream.addBool( bmp->isSolidStyle() );
+         stream.addObject( bmp->bitmapData );
+         stream.add( bmp->matrix );
+         stream.add( bmp->repeat );
+         stream.add( bmp->smooth );
+         break;
+         }
+
+      case gdtPath:
+         {
+         GraphicsPath *path = data->AsPath();
+         stream.addVec(path->commands);
+         stream.addVec(path->data);
+         stream.add(path->winding);
+         break;
+         }
+
+      case gdtTrianglePath:
+         {
+         GraphicsTrianglePath *tris = data->AsTrianglePath();
+         stream.add(tris->mType);
+         stream.add(tris->mBlendMode);
+         stream.add(tris->mTriangleCount);
+         stream.addVec(tris->mVertices);
+         stream.addVec(tris->mUVT);
+         stream.addVec(tris->mColours);
+         break;
+         }
+      case gdtStroke:
+         {
+         GraphicsStroke *stroke = data->AsStroke();
+         if (stream.addBool(stroke->fill))
+            encodeGraphicsData(stream,stroke->fill);
+
+         stream.add(stroke->caps);
+         stream.add(stroke->joints);
+         stream.add(stroke->miterLimit);
+         stream.add(stroke->pixelHinting);
+         stream.add(stroke->scaleMode);
+         stream.add(stroke->thickness);
+         break;
+         }
+   }
+}
+
+
+IGraphicsData *decodeGraphicsData(ObjectStreamIn &stream);
+
+template<typename T>
+void decodeGraphicsData(ObjectStreamIn &stream, T *&outPointer)
+{
+   outPointer = 0;
+   IGraphicsData *g = decodeGraphicsData(stream);
+   if (g)
+   {
+      g->IncRef();
+      T *result = dynamic_cast<T*>(g);
+      if (result)
+      {
+         outPointer = result;
+      }
+      else
+      {
+         printf("decodeGraphicsData not right type\n");
+         g->DecRef();
+      }
+   }
+   else
+      printf("Could not decodeGraphicsData\n");
+}
+
+
+IGraphicsData *decodeGraphicsData(ObjectStreamIn &stream)
+{
+   int type = stream.getInt();
+   switch(type)
+   {
+      case gdtUnknown:
+         return 0;
+
+      case gdtEndFill:
+         return new GraphicsEndFill();
+
+      case gdtSolidFill:
+         {
+         GraphicsSolidFill *fill = new GraphicsSolidFill();
+         fill->setIsSolidStyle(stream.getBool());
+         stream.get( fill->mRGB );
+         return fill;
+         }
+
+      case gdtGradientFill:
+         {
+         GraphicsGradientFill *grad = new GraphicsGradientFill();
+         grad->setIsSolidStyle(stream.getBool());
+         stream.getVec( grad->mStops );
+         stream.get( grad->focalPointRatio );
+         stream.get( grad->matrix );
+         stream.get( grad->interpolationMethod );
+         stream.get( grad->spreadMethod  );
+         stream.get( grad->isLinear  );
+         return grad;
+         }
+
+      case gdtBitmapFill:
+         {
+         GraphicsBitmapFill *bmp = new GraphicsBitmapFill();
+         bmp->setIsSolidStyle(stream.getBool());
+         stream.getObject( bmp->bitmapData );
+         stream.get( bmp->matrix );
+         stream.get( bmp->repeat );
+         stream.get( bmp->smooth );
+         return bmp;
+         }
+
+      case gdtPath:
+         {
+         GraphicsPath *path = new GraphicsPath();
+         stream.getVec(path->commands);
+         stream.getVec(path->data);
+         stream.get(path->winding);
+         return path;
+         }
+
+      case gdtTrianglePath:
+         {
+         GraphicsTrianglePath *tris = new GraphicsTrianglePath();
+         stream.get(tris->mType);
+         stream.get(tris->mBlendMode);
+         stream.get(tris->mTriangleCount);
+         stream.getVec(tris->mVertices);
+         stream.getVec(tris->mUVT);
+         stream.getVec(tris->mColours);
+         return tris;
+         }
+
+
+      case gdtStroke:
+         {
+         GraphicsStroke *stroke = new GraphicsStroke();
+         if (stream.getBool())
+            decodeGraphicsData(stream,stroke->fill);
+
+         stream.get(stroke->caps);
+         stream.get(stroke->joints);
+         stream.get(stroke->miterLimit);
+         stream.get(stroke->pixelHinting);
+         stream.get(stroke->scaleMode);
+         stream.get(stroke->thickness);
+         return stroke;
+         }
+   }
+   return 0;
+}
+
+
+Graphics *Graphics::fromStream(ObjectStreamIn &inStream)
+{
+   Graphics *result = new Graphics(0);
+   inStream.linkAbstract(result);
+   result->decodeStream(inStream);
+   return result;
+}
+
+
+void Graphics::encodeStream(ObjectStreamOut &stream)
+{
+      //*mOwner;
+      Flush();
+
+      int count = mJobs.size();
+      stream.addInt(count);
+      for(int j=0;j<count;j++)
+      {
+         GraphicsJob &job = mJobs[j];
+
+         stream.add(job.mCommand0);
+         stream.add(job.mCommandCount);
+         stream.add(job.mData0);
+         stream.add(job.mDataCount);
+         stream.add(job.mIsTileJob);
+         stream.add(job.mIsPointJob);
+         stream.add(job.mTileMode);
+         stream.add(job.mBlendMode);
+
+         if (stream.addBool(job.mFill))
+            encodeGraphicsData(stream,job.mFill);
+
+         if (stream.addBool(job.mStroke))
+            encodeGraphicsData(stream, job.mStroke);
+
+         GraphicsTrianglePath *tris = job.mTriangles;
+         if (stream.addBool(tris))
+            encodeGraphicsData(stream,tris);
+      }
+
+      if (stream.addBool(mPathData))
+         encodeGraphicsData(stream,mPathData);
+}
+
+void Graphics::decodeStream(ObjectStreamIn &stream)
+{
+   int count = stream.getInt();
+   mJobs.resize(count);
+   mJobs.Zero();
+   for(int j=0;j<count;j++)
+   {
+      GraphicsJob &job = mJobs[j];
+
+      stream.get(job.mCommand0);
+      stream.get(job.mCommandCount);
+      stream.get(job.mData0);
+      stream.get(job.mDataCount);
+      stream.get(job.mIsTileJob);
+      stream.get(job.mIsPointJob);
+      stream.get(job.mTileMode);
+      stream.get(job.mBlendMode);
+
+      if (stream.getBool())
+         decodeGraphicsData(stream,job.mFill);
+
+      if (stream.getBool())
+         decodeGraphicsData(stream, job.mStroke);
+
+      if (stream.getBool())
+         decodeGraphicsData(stream,job.mTriangles);
+   }
+
+   if (stream.getBool())
+   {
+      if (mPathData)
+      {
+         mPathData->DecRef();
+         mPathData = 0;
+      }
+
+      decodeGraphicsData(stream,mPathData);
+   }
+   else
+   {
+      printf("No path data?\n");
+   }
+}
+
+
+
 
 
 // --- RenderState -------------------------------------------------------------------

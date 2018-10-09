@@ -16,6 +16,10 @@ typedef void* LPVOID;
 
 #ifdef _WIN32
 #include <windows.h>
+#else
+   #ifndef HANDLE
+   typedef void* HANDLE;
+   #endif
 #endif
 
 #ifndef EXTERN_C_BEGIN

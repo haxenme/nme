@@ -4,7 +4,7 @@
 -cp src
 -cp src/helpers
 -cp src/project
--cp ../..
+-cp ../../src
 -D nme
 -D ndll_silent_fail
 -lib format

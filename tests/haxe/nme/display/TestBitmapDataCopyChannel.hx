@@ -13,7 +13,7 @@ class TestBitmapDataCopyChannel extends haxe.unit.TestCase
 
     override public function tearDown()
     {
-       nme.display.BitmapData.defaultPremultiplied = false;
+       nme.display.BitmapData.defaultPremultiplied = true;
     }
 
     public function testX() {

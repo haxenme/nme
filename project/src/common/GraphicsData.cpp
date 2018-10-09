@@ -50,20 +50,20 @@ void GraphicsPath::clear()
 
 void GraphicsPath::curveTo(float controlX, float controlY, float anchorX, float anchorY)
 {
-	commands.push_back(pcCurveTo);
-	data.push_back(controlX);
-	data.push_back(controlY);
-	data.push_back(anchorX);
-	data.push_back(anchorY);
+   commands.push_back(pcCurveTo);
+   data.push_back(controlX);
+   data.push_back(controlY);
+   data.push_back(anchorX);
+   data.push_back(anchorY);
 }
 
 void GraphicsPath::arcTo(float controlX, float controlY, float anchorX, float anchorY)
 {
-	commands.push_back(pcArcTo);
-	data.push_back(controlX);
-	data.push_back(controlY);
-	data.push_back(anchorX);
-	data.push_back(anchorY);
+   commands.push_back(pcArcTo);
+   data.push_back(controlX);
+   data.push_back(controlY);
+   data.push_back(anchorX);
+   data.push_back(anchorY);
 }
 
 void GraphicsPath::elementBlendMode(int inMode)
@@ -86,30 +86,30 @@ void GraphicsPath::elementBlendMode(int inMode)
 
 void GraphicsPath::lineTo(float x, float y)
 {
-	commands.push_back(pcLineTo);
-	data.push_back(x);
-	data.push_back(y);
+   commands.push_back(pcLineTo);
+   data.push_back(x);
+   data.push_back(y);
 }
 
 void GraphicsPath::moveTo(float x, float y)
 {
-	commands.push_back(pcMoveTo);
-	data.push_back(x);
-	data.push_back(y);
+   commands.push_back(pcMoveTo);
+   data.push_back(x);
+   data.push_back(y);
 }
 
 void GraphicsPath::wideLineTo(float x, float y)
 {
-	commands.push_back(pcLineTo);
-	data.push_back(x);
-	data.push_back(y);
+   commands.push_back(pcLineTo);
+   data.push_back(x);
+   data.push_back(y);
 }
 
 void GraphicsPath::wideMoveTo(float x, float y)
 {
-	commands.push_back(pcMoveTo);
-	data.push_back(x);
-	data.push_back(y);
+   commands.push_back(pcMoveTo);
+   data.push_back(x);
+   data.push_back(y);
 }
 
 
@@ -212,96 +212,120 @@ GraphicsTrianglePath::GraphicsTrianglePath( const QuickVec<float> &inXYs,
             const QuickVec<int> &inColours,
             int inBlendMode)
 {
-	UserPoint *v = (UserPoint *) &inXYs[0];
+   UserPoint *v = (UserPoint *) &inXYs[0];
     uint32 *c = (uint32 *) &inColours[0];
-    if(inColours.empty()) c=NULL;
-	
-	int v_count = inXYs.size()/2;
-	int uv_parts = inUVT.size()==v_count*2 ? 2 : inUVT.size()==v_count*3 ? 3 : 0;
-	const float *uvt = &inUVT[0];
+    if(inColours.empty()) c=0;
+   
+   int v_count = inXYs.size()/2;
+   int uv_parts = inUVT.size()==v_count*2 ? 2 : inUVT.size()==v_count*3 ? 3 : 0;
+   const float *uvt = &inUVT[0];
 
-	mBlendMode = inBlendMode;
-	
-	if (inIndices.empty())
-	{
-		int t_count = v_count/3;
-		if (inCull==tcNone)
-		{
-			mVertices.resize(6*t_count);
-			memcpy(&mVertices[0],v,3*sizeof(UserPoint));
-			if (uv_parts)
-			{
-				mUVT.resize(uv_parts*3*t_count);
-				memcpy(&mUVT[0],&inUVT[0],uv_parts*sizeof(UserPoint));
-			}
-		}
-		else
-		{
-			for(int i=0;i<t_count;i++)
-			{
-				UserPoint p0 = *v++;
-				UserPoint p1 = *v++;
-				UserPoint p2 = *v++;
-				if ( (p1-p0).Cross(p2-p0)*inCull > 0)
-				{
-					mTriangleCount++;
-					mVertices.push_back(p0);
-					mVertices.push_back(p1);
-					mVertices.push_back(p2);
-					for(int i=0;i<uv_parts*3;i++)
-						mUVT.push_back( *uvt++ );
-				}
-				else
-					uvt += uv_parts;
-			}
-		}
-	}
-	else
-	{
-		const int *idx = &inIndices[0];
-		int t_count = inIndices.size()/3;
-		for(int i=0;i<t_count;i++)
-		{
-			int i0 = *idx++;
-			int i1 = *idx++;
-			int i2 = *idx++;
-			if (i0>=0 && i1>=0 && i2>=0 && i0<v_count && i1<v_count && i2<v_count)
-			{
-				UserPoint p0 = v[i0];
-				UserPoint p1 = v[i1];
-				UserPoint p2 = v[i2];
-				if ( (p1-p0).Cross(p2-p0)*inCull >= 0)
-				{
-					mVertices.push_back(p0);
-					mVertices.push_back(p1);
-					mVertices.push_back(p2);
-		                    if(c)
-		                    {
-		                       uint32 co0 = c[i0];
-		                       uint32 co1 = c[i1];
-		                       uint32 co2 = c[i2];
-							   co0 = ((co0 >> 24) & 0xFF) << 24 | (co0 & 0xFF) << 16 | ((co0 >> 8) & 0xFF) << 8 | ((co0 >> 16) & 0xFF);
-							   co1 = ((co1 >> 24) & 0xFF) << 24 | (co1 & 0xFF) << 16 | ((co1 >> 8) & 0xFF) << 8 | ((co1 >> 16) & 0xFF);
-							   co2 = ((co2 >> 24) & 0xFF) << 24 | (co2 & 0xFF) << 16 | ((co2 >> 8) & 0xFF) << 8 | ((co2 >> 16) & 0xFF);
-		                       mColours.push_back(co0);
-		                       mColours.push_back(co1);
-		                       mColours.push_back(co2);
-		                    }
-					if (uv_parts)
-					{
-						const float *f = uvt + uv_parts*i0;
-						for(int i=0;i<uv_parts;i++) mUVT.push_back( *f++ );
-						f = uvt + uv_parts*i1;
-						for(int i=0;i<uv_parts;i++) mUVT.push_back( *f++ );
-						f = uvt + uv_parts*i2;
-						for(int i=0;i<uv_parts;i++) mUVT.push_back( *f++ );
-					}
-				}
-			}
-		}
-	}
+   mBlendMode = inBlendMode;
+   
+   if (inIndices.empty())
+   {
+      int t_count = v_count/3;
+      if (inCull==tcNone)
+      {
+         mVertices.resize(3*t_count);
+         memcpy(&mVertices[0],v,3*t_count*sizeof(UserPoint));
 
-	mTriangleCount = mVertices.size()/3;
+         int vCount = t_count * 3;
+         if (uv_parts)
+         {
+            mUVT.resize(uv_parts*vCount);
+            memcpy(&mUVT[0],&inUVT[0],uv_parts*sizeof(UserPoint));
+         }
+         if(c)
+         {
+            for(int j=0;j<vCount;j++)
+            {
+               uint32 co0 = *c++;
+               mColours.push_back( (co0 & 0xff00ff00) | ((co0 & 0xFF) << 16) | ((co0 >> 16) & 0xFF) );
+            }
+         }
+      }
+      else
+      {
+         for(int i=0;i<t_count;i++)
+         {
+            UserPoint p0 = *v++;
+            UserPoint p1 = *v++;
+            UserPoint p2 = *v++;
+            if ( inCull==tcNone || (p1-p0).Cross(p2-p0)*inCull > 0)
+            {
+               mTriangleCount++;
+               mVertices.push_back(p0);
+               mVertices.push_back(p1);
+               mVertices.push_back(p2);
+               for(int i=0;i<uv_parts*3;i++)
+                  mUVT.push_back( *uvt++ );
+
+               if(c)
+               {
+                  for(int j=0;j<3;j++)
+                  {
+                     uint32 co0 = *c++;
+                     mColours.push_back( (co0 & 0xff00ff00) | ((co0 & 0xFF) << 16) | ((co0 >> 16) & 0xFF) );
+                  }
+               }
+            }
+            else
+            {
+               uvt += uv_parts;
+               if (c)
+                  c+= 3;
+            }
+         }
+      }
+
+   }
+   else
+   {
+      const int *idx = &inIndices[0];
+      int t_count = inIndices.size()/3;
+      for(int i=0;i<t_count;i++)
+      {
+         int i0 = *idx++;
+         int i1 = *idx++;
+         int i2 = *idx++;
+         if (i0>=0 && i1>=0 && i2>=0 && i0<v_count && i1<v_count && i2<v_count)
+         {
+            UserPoint p0 = v[i0];
+            UserPoint p1 = v[i1];
+            UserPoint p2 = v[i2];
+            if ( (p1-p0).Cross(p2-p0)*inCull >= 0)
+            {
+               mVertices.push_back(p0);
+               mVertices.push_back(p1);
+               mVertices.push_back(p2);
+               if(c)
+               {
+                  uint32 co0 = c[i0];
+                  uint32 co1 = c[i1];
+                  uint32 co2 = c[i2];
+                  co0 = ((co0 >> 24) & 0xFF) << 24 | (co0 & 0xFF) << 16 | ((co0 >> 8) & 0xFF) << 8 | ((co0 >> 16) & 0xFF);
+                  co1 = ((co1 >> 24) & 0xFF) << 24 | (co1 & 0xFF) << 16 | ((co1 >> 8) & 0xFF) << 8 | ((co1 >> 16) & 0xFF);
+                  co2 = ((co2 >> 24) & 0xFF) << 24 | (co2 & 0xFF) << 16 | ((co2 >> 8) & 0xFF) << 8 | ((co2 >> 16) & 0xFF);
+                  mColours.push_back(co0);
+                  mColours.push_back(co1);
+                  mColours.push_back(co2);
+               }
+               if (uv_parts)
+               {
+                  const float *f = uvt + uv_parts*i0;
+                  for(int i=0;i<uv_parts;i++) mUVT.push_back( *f++ );
+                  f = uvt + uv_parts*i1;
+                  for(int i=0;i<uv_parts;i++) mUVT.push_back( *f++ );
+                  f = uvt + uv_parts*i2;
+                  for(int i=0;i<uv_parts;i++) mUVT.push_back( *f++ );
+               }
+            }
+         }
+      }
+   }
+
+   mTriangleCount = mVertices.size()/3;
    mType = uv_parts==2 ? vtVertexUV : uv_parts==3? vtVertexUVT : vtVertex;
 }
 

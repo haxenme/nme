@@ -1,5 +1,7 @@
 #ifndef STATIC_LINK
 #define IMPLEMENT_API
+#elif defined(HXCPP_JS_PRIME)
+#define IMPLEMENT_API
 #endif
 
 #if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX)
@@ -7,14 +9,20 @@
 #define NEKO_COMPATIBLE
 #endif
 
-
+#if defined(EMSCRIPTEN) || defined(HX_WINRT)
+#define NME_NO_CURL
+#define NME_NO_CAMERA
+#endif
+#if defined(HXCPP_JS_PRIME) || defined(HX_WINRT)
+#define NME_NO_LZMA
+#endif
 
 #ifdef ANDROID
 #include <android/log.h>
 #endif
 
-#include <Utils.h>
 #include <nme/NmeCffi.h>
+#include <Utils.h>
 #include <Display.h>
 #include <TextField.h>
 #include <Surface.h>
@@ -34,13 +42,12 @@
 #include <NmeStateVersion.h>
 #endif
 #include <nme/NmeApi.h>
-#include <hx/CFFIPrime.h>
 
 
 #ifdef min
 #undef min
 #undef max
-#endif
+#endif    
 
 
 namespace nme
@@ -62,7 +69,7 @@ static int _id_width;
 static int _id_height;
 static int _id_length;
 static int _id_value;
-static int _id_endian;
+static int _id_bigEndian;
 static int _id_flags;
 static int _id_result;
 static int _id_code;
@@ -138,9 +145,14 @@ static int _id_matrix;
 static int _id_ascent;
 static int _id_descent;
 
+static int _id_buffer;
+static int _id_byteOffset;
+static int _id_byteLength;
+
 static FRect _tile_rect;
 
 vkind gObjectKind;
+vkind gDataPointer;
 
 NmeApi gNmeApi;
 
@@ -172,7 +184,7 @@ extern "C" void InitIDs()
    _id_height = val_id("height");
    _id_length = val_id("length");
    _id_value = val_id("value");
-   _id_endian = val_id("endian");
+   _id_bigEndian = val_id("bigEndian");
    _id_id = val_id("id");
    _id_flags = val_id("flags");
    _id_result = val_id("result");
@@ -248,25 +260,22 @@ extern "C" void InitIDs()
    _id_ascent = val_id("ascent");
    _id_descent = val_id("descent");
 
+   _id_buffer = val_id("buffer");
+   _id_byteLength = val_id("byteLength");
+   _id_byteOffset = val_id("byteOffset");
+
    kind_share(&gObjectKind,"nme::Object");
+   kind_share(&gDataPointer,"data");
    
    _tile_rect = FRect(0, 0, 1, 1);
 
+   #ifndef NME_NO_CAMERA
    InitCamera();
+   #endif
 }
 
 DEFINE_ENTRY_POINT(InitIDs)
 
-
-
-
-WString val2stdwstr(value inVal)
-{
-   const wchar_t *val = val_wstring(inVal);
-   int len=0;
-   while(val[len]) len++;
-   return WString(val,len);
-}
 
 
 template<typename T>
@@ -286,11 +295,11 @@ void FillArrayInt(QuickVec<T> &outArray,value inVal)
    }
    else
    {
-      value *vals = val_array_value(inVal);
-      if (vals)
+      values_array vals = val_array_value(inVal);
+      if (value_array_ok(vals))
       {
          for(int i=0;i<n;i++)
-            outArray[i] = val_int(vals[i]);
+            outArray[i] = array_get_int(vals,i);
       }
       else
       {
@@ -316,10 +325,10 @@ void FillArrayInt(value outVal, const QuickVec<T> &inArray)
    }
    else
    {
-      value *vals = val_array_value(outVal);
-      if (vals)
+      values_array vals = val_array_value(outVal);
+      if (value_array_ok(vals))
          for(int i=0;i<n;i++)
-            vals[i] = alloc_int(inArray[i]);
+            array_set_int(vals,i,inArray[i]);
       else
          for(int i=0;i<n;i++)
             val_array_set_i(outVal,i,alloc_int(inArray[i]));
@@ -349,10 +358,10 @@ void FillArrayDouble(value outVal, const QuickVec<T> &inArray)
       }
       else
       {
-         value *vals = val_array_value(outVal);
-         if (vals)
+         values_array vals = val_array_value(outVal);
+         if (value_array_ok(vals))
             for(int i=0;i<n;i++)
-               vals[i] = alloc_float(inArray[i]);
+               array_set_float(vals,i,inArray[i]);
          else
             for(int i=0;i<n;i++)
                val_array_set_i(outVal,i,alloc_float(inArray[i]));
@@ -388,10 +397,10 @@ void FillArrayDoubleN(QuickVec<T,N> &outArray,value inVal)
       }
       else
       {
-         value *vals = val_array_value(inVal);
-         if (vals)
+         values_array vals = val_array_value(inVal);
+         if (value_array_ok(vals))
             for(int i=0;i<n;i++)
-               outArray[i] = val_number(vals[i]);
+               outArray[i] = array_get_double(vals,i);
          else
             for(int i=0;i<n;i++)
                outArray[i] = val_number(val_array_i(inVal,i));
@@ -462,6 +471,7 @@ void FromValue(ColorTransform &outTrans, value inValue)
 
 int RGB2Int32(value inRGB)
 {
+   #ifndef HXCPP_JS_PRIME
    if (val_is_int(inRGB))
       return val_int(inRGB);
    if (val_is_object(inRGB))
@@ -469,6 +479,9 @@ int RGB2Int32(value inRGB)
       return (int)(val_field_numeric(inRGB,_id_rgb)) |
              ( ((int)val_field_numeric(inRGB,_id_a)) << 24 );
    }
+   #else
+   return val_int(inRGB);
+   #endif
    return 0;
 }
 
@@ -504,7 +517,7 @@ void FromValue(Rect &outRect, value inValue)
 
 Filter *FilterFromValue(value filter)
 {
-   WString type = val2stdwstr( val_field(filter,_id_type) );
+   WString type = valToStdWString( val_field(filter,_id_type) );
    if (type==L"BlurFilter")
    {
       int q = val_int(val_field(filter,_id_quality));
@@ -586,6 +599,7 @@ void ToValue(value &outVal,const ColorTransform &inTrans)
 
 
 
+#ifndef EMSCRIPTEN
 void FromValue(value obj, URLRequest &request)
 {
    request.url = val_string( val_field(obj, _id_url) );
@@ -617,7 +631,9 @@ void FromValue(value obj, URLRequest &request)
   request.headers = headers;
   }
 }
+#endif
 
+#ifndef HXCPP_JS_PRIME
 void print_field(value inValue, int id, void *cookie)
 {
    if (val_is_string(inValue))
@@ -625,6 +641,7 @@ void print_field(value inValue, int id, void *cookie)
    else
       printf("Field : %d = %f\n",id,val_number(inValue));
 }
+#endif
 
 }
 
@@ -651,7 +668,32 @@ value nme_##obj_prefix##_set_##prop(value inObj,value inVal) \
 \
 DEFINE_PRIM(nme_##obj_prefix##_set_##prop,2)
 
+#define DO_PROP_READ_PRIME(Obj,obj_prefix,prop,Prop,to_type) \
+to_type nme_##obj_prefix##_get_##prop(value inObj) \
+{ \
+   Obj *obj; \
+   if (AbstractToObject(inObj,obj)) \
+   AbstractToObject(inObj,obj); \
+      return obj->get##Prop(); \
+   return (to_type)0; \
+} \
+\
+DEFINE_PRIME1(nme_##obj_prefix##_get_##prop)
 
+#define DO_PROP_PRIME(Obj,obj_prefix,prop,Prop,to_type,from_type) \
+DO_PROP_READ_PRIME(Obj,obj_prefix,prop,Prop,to_type) \
+void nme_##obj_prefix##_set_##prop(value inObj,from_type inVal) \
+{ \
+   Obj *obj; \
+   if (AbstractToObject(inObj,obj)) \
+      obj->set##Prop(inVal); \
+} \
+\
+DEFINE_PRIME2v(nme_##obj_prefix##_set_##prop)
+
+#define DO_DISPLAY_PROP_PRIME(prop,Prop,to_val,from_val) \
+   DO_PROP_PRIME(DisplayObject,display_object,prop,Prop,to_val,from_val) 
+   
 #define DO_DISPLAY_PROP(prop,Prop,to_val,from_val) \
    DO_PROP(DisplayObject,display_object,prop,Prop,to_val,from_val) 
 
@@ -666,13 +708,12 @@ double nme_time_stamp()
 {
    return GetTimeStamp();
 }
-
 DEFINE_PRIME0(nme_time_stamp)
 
 
 value nme_error_output(value message)
 {
-   fprintf (stderr, "%s", val_string (message));
+   fprintf(stderr, "%s", valToHxString(message).c_str() );
    return alloc_null();
 }
 DEFINE_PRIM(nme_error_output,1);
@@ -702,11 +743,11 @@ DEFINE_PRIM(nme_get_bits,0);
 
 value nme_log(value inMessage)
 {
-   const char *message = val_string(inMessage);
+   HxString message = valToHxString(inMessage);
    #ifdef IPHONE
-      nmeLog(message);
+      nmeLog(message.c_str());
    #else
-      printf("%s\n",message);
+      printf("%s\n",message.c_str());
    #endif
 
    return alloc_null();
@@ -746,16 +787,16 @@ DEFINE_PRIM(nme_set_resource_factory,1);
 
 
 
-ByteArray::ByteArray(int inSize)
+ByteArray::ByteArray(int inSize) :
+   mValue(val_call1(gByteArrayCreate->get(), alloc_int(inSize) ))
 {
-   mValue = val_call1(gByteArrayCreate->get(), alloc_int(inSize) );
 }
 
-ByteArray::ByteArray() : mValue(0) { }
+ByteArray::ByteArray() : mValue(val_null) { }
 
 ByteArray::ByteArray(const QuickVec<uint8> &inData)
+   : mValue(val_call1(gByteArrayCreate->get(), alloc_int(inData.size()) ))
 {
-   mValue = val_call1(gByteArrayCreate->get(), alloc_int(inData.size()) );
    uint8 *bytes = Bytes();
    if (bytes)
      memcpy(bytes, &inData[0], inData.size() );
@@ -772,60 +813,81 @@ void ByteArray::Resize(int inSize)
 
 int ByteArray::Size() const
 {
+   value len = val_field(mValue,_id_byteLength);
+   if (!val_is_null(len))
+      return val_int(len);
+
    return val_int( val_call1(gByteArrayLen->get(), mValue ));
 }
 
 
 const unsigned char *ByteArray::Bytes() const
 {
-   value bytes = val_call1(gByteArrayBytes->get(),mValue);
-   if (val_is_string(bytes))
-      return (unsigned char *)val_string(bytes);
-   buffer buf = val_to_buffer(bytes);
-   if (buf==0)
-   {
-      val_throw(alloc_string("Bad ByteArray"));
-   }
-   return (unsigned char *)buffer_data(buf);
+   return const_cast<ByteArray *>(this)->Bytes();
 }
 
 
 unsigned char *ByteArray::Bytes()
 {
+   #ifndef HXCPP_JS_PRIME
    value bytes = val_call1(gByteArrayBytes->get(),mValue);
    if (val_is_string(bytes))
       return (unsigned char *)val_string(bytes);
+   #else
+   value bytes = mValue;
+   #endif
+
    buffer buf = val_to_buffer(bytes);
+
+   int offset = 0;
+   // ArrayBufferView?
+   if (buf==0)
+   {
+      value bufferField = val_field(mValue,_id_buffer);
+      if (!val_is_null(bufferField))
+      {
+         bytes = val_call1(gByteArrayBytes->get(),bufferField);
+         buf = val_to_buffer(bytes);
+         if (buf!=0)
+         {
+            value off = val_field(bytes,_id_byteOffset);
+            if (!val_is_null(off))
+               offset = (int)val_number(off);
+         }
+      }
+   }
+
    if (buf==0)
    {
       val_throw(alloc_string("Bad ByteArray"));
    }
-   return (unsigned char *)buffer_data(buf);
+
+   return (unsigned char *)buffer_data(buf)+offset;
 }
 
 
 bool ByteArray::LittleEndian()
 {
-   value f = val_field(mValue,_id_endian);
-   if (val_is_string(f))
+   value f = val_field(mValue,_id_bigEndian);
+   #ifdef HXCPP_JS_PRIME
+   if (!f.isUndefined())
+   #else
+   if (val_is_bool(f))
+   #endif
    {
-      const char *l = val_string(f);
-      if (l)
-         return l[0]=='l';
+      return !val_bool(f);
    }
    int one = 0x0000001;
    return *(unsigned char *)&one == 1;
 }
 
 
-ByteArray::ByteArray(const char *inResourceName)
+ByteArray::ByteArray(const char *inResourceName) : mValue(val_null)
 {
-   mValue = 0;
+   //printf("ByteArray from rsource factory %p %s\n", gResourceFactory, inResourceName);
    if (gResourceFactory)
    {
       mValue = val_call1(gResourceFactory->get(),alloc_string(inResourceName));
-      if (val_is_null(mValue))
-         mValue = 0;
    }
 }
 
@@ -895,6 +957,8 @@ bool FromValue(ByteData &outData,value inData)
 }
 
 // --- WeakRef -----------------------------------------------------
+
+#ifndef HXCPP_JS_PRIME
 
 struct WeakRefInfo
 {
@@ -967,7 +1031,7 @@ value nme_weak_ref_get(value inValue)
 }
 DEFINE_PRIM(nme_weak_ref_get,1);
 
-
+#endif
 
 value nme_get_unique_device_identifier()
 {
@@ -1072,6 +1136,7 @@ value nme_capabilities_get_pixel_aspect_ratio () {
 }
 DEFINE_PRIM (nme_capabilities_get_pixel_aspect_ratio, 0);
 
+
 value nme_capabilities_get_screen_dpi () {
    
    return alloc_float (CapabilitiesGetScreenDPI ());
@@ -1101,6 +1166,7 @@ value nme_capabilities_get_language() {
 DEFINE_PRIM (nme_capabilities_get_language, 0);
 
 // ---  nme.desktop.Clipboard -----------------------------------------------------
+#ifndef HXCPP_JS_PRIME
 value nme_desktop_clipboard_set_clipboard_text(value inText) {
    return alloc_bool(SetClipboardText(val_string(inText)));
 }
@@ -1115,6 +1181,8 @@ value nme_desktop_clipboard_get_clipboard_text() {
    return alloc_string(GetClipboardText());
 }
 DEFINE_PRIM (nme_desktop_clipboard_get_clipboard_text, 0);
+#endif
+
 
 // ---  nme.filesystem -------------------------------------------------------------
 value nme_get_resource_path()
@@ -1164,7 +1232,7 @@ DEFINE_PRIM(nme_filesystem_get_volumes,2);
 // --- getURL ----------------------------------------------------------------------
 value nme_get_url(value url)
 {
-   bool result=LaunchBrowser(val_string(url));
+   bool result=LaunchBrowser(valToHxString(url).c_str());
    return alloc_bool(result);
 }
 DEFINE_PRIM(nme_get_url,1);
@@ -1185,8 +1253,8 @@ DEFINE_PRIM(nme_haptic_vibrate,2);
 // --- SharedObject ----------------------------------------------------------------------
 value nme_set_user_preference(value inId,value inValue)
 {
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
-      bool result=SetUserPreference(val_string(inId),val_string(inValue));
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN) //|| defined(HX_WINRT)
+      bool result=SetUserPreference(valToHxString(inId).c_str(),valToHxString(inValue).c_str());
       return alloc_bool(result);
    #endif
    return alloc_bool(false);
@@ -1195,8 +1263,8 @@ DEFINE_PRIM(nme_set_user_preference,2);
 
 value nme_get_user_preference(value inId)
 {
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
-      std::string result=GetUserPreference(val_string(inId));
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN) //|| defined(HX_WINRT)
+      std::string result=GetUserPreference(valToHxString(inId).c_str());
       return alloc_string(result.c_str());
    #endif
    return alloc_null();
@@ -1205,8 +1273,8 @@ DEFINE_PRIM(nme_get_user_preference,1);
 
 value nme_clear_user_preference(value inId)
 {
-   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN)
-      bool result=ClearUserPreference(val_string(inId));
+   #if defined(IPHONE) || defined(ANDROID) || defined(WEBOS) || defined(TIZEN) //|| defined(HX_WINRT)
+      bool result=ClearUserPreference(valToHxString(inId).c_str());
       return alloc_bool(result);
    #endif
    return alloc_bool(false);
@@ -1264,37 +1332,32 @@ void OnMainFrameCreated(Frame *inFrame)
 
 value nme_set_package(value inCompany,value inFile,value inPackage,value inVersion)
 {
-   gCompany = val_string(inCompany);
-   gFile = val_string(inFile);
-   gPackage = val_string(inPackage);
-   gVersion = val_string(inVersion);
+   gCompany = valToStdString(inCompany);
+   gFile = valToStdString(inFile);
+   gPackage = valToStdString(inPackage);
+   gVersion = valToStdString(inVersion);
    return val_null;
 }
 DEFINE_PRIM(nme_set_package,4);
 
 
-value nme_create_main_frame(value *arg, int nargs)
+void nme_create_main_frame(value inCallback, int width, int height, int flags,
+                                  HxString title, value inIcon )
 {
    InitIDs();
-   enum { aCallback, aWidth, aHeight, aFlags, aTitle, aIcon, aSIZE };
 
-   sOnCreateCallback = new AutoGCRoot(arg[aCallback]);
+   sOnCreateCallback = new AutoGCRoot(inCallback);
 
    Surface *icon=0;
-   AbstractToObject(arg[aIcon],icon);
+   AbstractToObject(inIcon,icon);
 
-   CreateMainFrame(OnMainFrameCreated,
-       (int)val_number(arg[aWidth]), (int)val_number(arg[aHeight]),
-       val_int(arg[aFlags]), val_string(arg[aTitle]), icon );
-
-   return alloc_null();
+   CreateMainFrame(OnMainFrameCreated, width, height, flags, title.c_str(), icon );
 }
-
-DEFINE_PRIM_MULT(nme_create_main_frame);
+DEFINE_PRIME6v(nme_create_main_frame)
 
 value nme_set_asset_base(value inBase)
 {
-   gAssetBase = val_string(inBase);
+   gAssetBase = valToStdString(inBase);
    return val_null;
 }
 DEFINE_PRIM(nme_set_asset_base,1);
@@ -1756,13 +1819,40 @@ value nme_stage_get_normal_orientation() {
 
 DEFINE_PRIM(nme_stage_get_normal_orientation, 0);
 
+
+
+
+HxString nme_stage_get_title(value inStage) {
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      return stage->getTitle().c_str();
+   }
+   return "?";
+}
+
+DEFINE_PRIME1(nme_stage_get_title);
+
+
+
+void nme_stage_set_title(value inStage, HxString inTitle) {
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      stage->setTitle(hxToStdString(inTitle));
+   }
+}
+DEFINE_PRIME2v(nme_stage_set_title);
+
+
 // --- StageVideo ----------------------------------------------------------------------
 
-StageVideo::StageVideo() : mOwner(0) { }
+StageVideo::StageVideo() : mOwner(val_null) { }
 void StageVideo::setOwner(value inOwner) { mOwner.set(inOwner); }
 
 value nme_sv_create(value inStage, value inOwner)
 {
+   #ifndef HXCPP_JS_PRIME
    Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
@@ -1772,6 +1862,7 @@ value nme_sv_create(value inStage, value inOwner)
          return ObjectToAbstract(video);
       }
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sv_create, 2);
@@ -1809,7 +1900,7 @@ value nme_sv_play(value inVideo,value inUrl, value inStart, value inLength)
 {
    StageVideo *video;
    if (AbstractToObject(inVideo,video))
-      video->play(val_string(inUrl), val_number(inStart), val_number(inLength));
+      video->play(valToHxString(inUrl).c_str(), val_number(inStart), val_number(inLength));
    return alloc_null();
 }
 DEFINE_PRIM(nme_sv_play, 4);
@@ -1890,19 +1981,23 @@ DEFINE_PRIM(nme_sv_get_buffered_percent, 1);
 
 // --- ManagedStage ----------------------------------------------------------------------
 
-#ifndef HX_WINRT
 
 value nme_managed_stage_create(value inW,value inH,value inFlags)
 {
+#ifdef HX_WINRT
+   return alloc_null();
+#else
    SetMainThread();
    ManagedStage *stage = new ManagedStage(val_int(inW),val_int(inH),val_int(inFlags));
    return ObjectToAbstract(stage);
+#endif
 }
 DEFINE_PRIM(nme_managed_stage_create,3);
 
 
 value nme_managed_stage_pump_event(value inStage,value inEvent)
 {
+#ifndef HX_WINRT
    ManagedStage *stage;
    if (AbstractToObject(inStage,stage))
    {
@@ -1910,12 +2005,12 @@ value nme_managed_stage_pump_event(value inStage,value inEvent)
       FromValue(event,inEvent);
       stage->PumpEvent(event);
    }
+#endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_managed_stage_pump_event,2);
 
 
-#endif
 
 
 
@@ -1945,7 +2040,7 @@ value nme_create_display_object()
    return ObjectToAbstract( new DisplayObject() );
 }
 
-DEFINE_PRIM(nme_create_display_object,0);
+DEFINE_PRIME0(nme_create_display_object);
 
 value nme_display_object_get_graphics(value inObj)
 {
@@ -1956,24 +2051,23 @@ value nme_display_object_get_graphics(value inObj)
    return alloc_null();
 }
 
-DEFINE_PRIM(nme_display_object_get_graphics,1);
+DEFINE_PRIME1(nme_display_object_get_graphics);
 
-value nme_display_object_draw_to_surface(value *arg,int count)
+void nme_display_object_draw_to_surface(value aObject, value aSurface, value aMatrix,
+                                        value aColourTransform, int aBlendMode, value aClipRect )
 {
-   enum { aObject, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSIZE};
-
    DisplayObject *obj;
    Surface *surf;
-   if (AbstractToObject(arg[aObject],obj) && AbstractToObject(arg[aSurface],surf))
+   if (AbstractToObject(aObject,obj) && AbstractToObject(aSurface,surf))
    {
       Rect r(surf->Width(),surf->Height());
-      if (!val_is_null(arg[aClipRect]))
-         FromValue(r,arg[aClipRect]);
+      if (!val_is_null(aClipRect))
+         FromValue(r,aClipRect);
       AutoSurfaceRender render(surf,r);
 
       Matrix matrix;
-      if (!val_is_null(arg[aMatrix]))
-         FromValue(matrix,arg[aMatrix]);
+      if (!val_is_null(aMatrix))
+         FromValue(matrix,aMatrix);
       int aa = 4;
       Stage *stage = Stage::GetCurrent();
       if (stage)
@@ -1990,10 +2084,10 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       state.mTransform.mMatrix = &matrix;
 
       ColorTransform col_trans;
-      if (!val_is_null(arg[aColourTransform]))
+      if (!val_is_null(aColourTransform))
       {
          ColorTransform t;
-         FromValue(t,arg[aColourTransform]);
+         FromValue(t,aColourTransform);
          state.CombineColourTransform(state,&t,&col_trans);
       }
 
@@ -2044,25 +2138,22 @@ value nme_display_object_draw_to_surface(value *arg,int count)
       // restore alpha
       obj->setAlpha(objAlpha);
    }
-
-   return alloc_null();
 }
+DEFINE_PRIME6v(nme_display_object_draw_to_surface)
 
-DEFINE_PRIM_MULT(nme_display_object_draw_to_surface)
 
-
-value nme_display_object_get_id(value inObj)
+int nme_display_object_get_id(value inObj)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
-      return alloc_int( obj->id );
+      return obj->id;
 
-   return alloc_null();
+   return -1;
 }
 
-DEFINE_PRIM(nme_display_object_get_id,1);
+DEFINE_PRIME1(nme_display_object_get_id);
 
-value nme_display_object_global_to_local(value inObj,value ioPoint)
+void nme_display_object_global_to_local(value inObj,value ioPoint)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2073,22 +2164,58 @@ value nme_display_object_global_to_local(value inObj,value ioPoint)
       alloc_field(ioPoint, _id_x, alloc_float(trans.x) );
       alloc_field(ioPoint, _id_y, alloc_float(trans.y) );
    }
+}
+DEFINE_PRIME2v(nme_display_object_global_to_local);
 
+
+value nme_display_object_encode(value inObj, int inFlags)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+   {
+      ObjectStreamOut *outStream = ObjectStreamOut::createEncoder(inFlags);
+      outStream->addObject(obj);
+      ByteArray array(outStream->data);
+      delete outStream;
+      return array.mValue;
+   }
    return alloc_null();
 }
+DEFINE_PRIME2(nme_display_object_encode)
 
-DEFINE_PRIM(nme_display_object_global_to_local,2);
+
+
+value nme_display_object_decode(value inArray, int inFlags)
+{
+   ByteArray array(inArray);
+
+   ObjectStreamIn *inStream = ObjectStreamIn::createDecoder(array.Bytes(),array.Size(),inFlags);
+   if (!(inFlags & 0x0001))
+      inStream->newIds = true;
+
+   DisplayObject *dobj=0;
+   inStream->getObject(dobj,false);
+   if (!dobj)
+      return alloc_null();
+   return ObjectToAbstract(dobj);
+
+}
+DEFINE_PRIME2(nme_display_object_decode)
+
+
 
 
 value nme_type(value inObj)
 {
+   #ifndef HXCPP_JS_PRIME
    val_iter_fields(inObj, nme::print_field, 0);
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_type,1);
 
 
-value nme_display_object_local_to_global(value inObj,value ioPoint)
+void nme_display_object_local_to_global(value inObj,value ioPoint)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2099,29 +2226,24 @@ value nme_display_object_local_to_global(value inObj,value ioPoint)
       alloc_field(ioPoint, _id_x, alloc_float(trans.x) );
       alloc_field(ioPoint, _id_y, alloc_float(trans.y) );
    }
-
-   return alloc_null();
 }
-
-DEFINE_PRIM(nme_display_object_local_to_global,2);
-
+DEFINE_PRIME2v(nme_display_object_local_to_global);
 
 
-value nme_display_object_hit_test_point(
-            value inObj,value inX, value inY, value inShape, value inRecurse)
+bool nme_display_object_hit_test_point(
+            value inObj, double inX, double inY, bool inShape, bool inRecurse)
 {
    DisplayObject *obj;
-   UserPoint pos(val_number(inX),val_number(inY));
+   UserPoint pos(inX,inY);
 
    if (AbstractToObject(inObj,obj))
    {
-      if (val_bool(inShape))
+      if (inShape)
       {
          Stage *stage = obj->getStage();
          if (stage)
          {
-            bool recurse = val_bool(inRecurse);
-            return alloc_bool( stage->HitTest( pos, obj, recurse ) );
+            return stage->HitTest( pos, obj, inRecurse );
          }
       }
       else
@@ -2132,16 +2254,15 @@ value nme_display_object_hit_test_point(
 
          Extent2DF ext;
          obj->GetExtent(trans, ext, true, true );
-         return alloc_bool( ext.Contains(pos) );
+         return ext.Contains(pos);
       }
    }
-
-   return alloc_null();
+   return false;
 }
-DEFINE_PRIM(nme_display_object_hit_test_point,5);
+DEFINE_PRIME5(nme_display_object_hit_test_point);
 
 
-value nme_display_object_set_filters(value inObj,value inFilters)
+void nme_display_object_set_filters(value inObj,value inFilters)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2149,10 +2270,10 @@ value nme_display_object_set_filters(value inObj,value inFilters)
       FilterList filters;
       if (!val_is_null(inFilters) && val_array_size(inFilters) )
       {
-         value *filter_array = val_array_value(inFilters);
-         for(int f=0;f<val_array_size(inFilters);f++)
+         int n = val_array_size(inFilters);
+         for(int f=0;f<n;f++)
          {
-            value filter = filter_array ? filter_array[f] : val_array_i(inFilters,f);
+            value filter = val_array_i(inFilters,f);
             Filter *fil = FilterFromValue(filter);
             if (fil)
                filters.push_back(fil);
@@ -2160,13 +2281,10 @@ value nme_display_object_set_filters(value inObj,value inFilters)
       }
       obj->setFilters(filters);
    }
-
-   return alloc_null();
 }
+DEFINE_PRIME2v(nme_display_object_set_filters);
 
-DEFINE_PRIM(nme_display_object_set_filters,2);
-
-value nme_display_object_set_scale9_grid(value inObj,value inRect)
+void nme_display_object_set_scale9_grid(value inObj,value inRect)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2180,11 +2298,10 @@ value nme_display_object_set_scale9_grid(value inObj,value inRect)
          obj->setScale9Grid(rect);
       }
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_scale9_grid,2);
+DEFINE_PRIME2v(nme_display_object_set_scale9_grid);
 
-value nme_display_object_set_scroll_rect(value inObj,value inRect)
+void nme_display_object_set_scroll_rect(value inObj,value inRect)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2198,11 +2315,10 @@ value nme_display_object_set_scroll_rect(value inObj,value inRect)
          obj->setScrollRect(rect);
       }
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_scroll_rect,2);
+DEFINE_PRIME2v(nme_display_object_set_scroll_rect);
 
-value nme_display_object_set_mask(value inObj,value inMask)
+void nme_display_object_set_mask(value inObj,value inMask)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2211,12 +2327,11 @@ value nme_display_object_set_mask(value inObj,value inMask)
       AbstractToObject(inMask,mask);
       obj->setMask(mask);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_mask,2);
+DEFINE_PRIME2v(nme_display_object_set_mask);
 
 
-value nme_display_object_set_matrix(value inObj,value inMatrix)
+void nme_display_object_set_matrix(value inObj,value inMatrix)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2226,24 +2341,21 @@ value nme_display_object_set_matrix(value inObj,value inMatrix)
 
        obj->setMatrix(m);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_matrix,2);
+DEFINE_PRIME2v(nme_display_object_set_matrix);
 
-value nme_display_object_get_matrix(value inObj,value outMatrix, value inFull)
+void nme_display_object_get_matrix(value inObj,value outMatrix, bool inFull)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
    {
-      Matrix m = val_bool(inFull) ? obj->GetFullMatrix(false) : obj->GetLocalMatrix();
+      Matrix m = inFull ? obj->GetFullMatrix(false) : obj->GetLocalMatrix();
       ToValue(outMatrix,m);
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_get_matrix,3);
+DEFINE_PRIME3v(nme_display_object_get_matrix);
 
-value nme_display_object_set_color_transform(value inObj,value inTrans)
+void nme_display_object_set_color_transform(value inObj,value inTrans)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2253,31 +2365,28 @@ value nme_display_object_set_color_transform(value inObj,value inTrans)
 
        obj->setColorTransform(trans);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_set_color_transform,2);
+DEFINE_PRIME2v(nme_display_object_set_color_transform);
 
-value nme_display_object_get_color_transform(value inObj,value outTrans, value inFull)
+void nme_display_object_get_color_transform(value inObj,value outTrans, bool inFull)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
    {
-      ColorTransform t = val_bool(inFull) ? obj->GetFullColorTransform() :
-                                            obj->GetLocalColorTransform();
+      ColorTransform t = inFull ? obj->GetFullColorTransform() :
+                                  obj->GetLocalColorTransform();
       ToValue(outTrans,t);
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_get_color_transform,3);
+DEFINE_PRIME3v(nme_display_object_get_color_transform);
 
-value nme_display_object_get_pixel_bounds(value inObj,value outBounds)
+void nme_display_object_get_pixel_bounds(value inObj,value outBounds)
 {
-   return alloc_null();
-}
-DEFINE_PRIM(nme_display_object_get_pixel_bounds,2);
 
-value nme_display_object_get_bounds(value inObj, value inTarget, value outBounds, value inIncludeStroke)
+}
+DEFINE_PRIME2v(nme_display_object_get_pixel_bounds);
+
+void nme_display_object_get_bounds(value inObj, value inTarget, value outBounds, bool inIncludeStroke)
 {
    DisplayObject *obj;
    DisplayObject *target;
@@ -2293,18 +2402,17 @@ value nme_display_object_get_bounds(value inObj, value inTarget, value outBounds
       trans.mMatrix = &m;
 
       Extent2DF ext;
-      obj->GetExtent(trans, ext, false, val_bool(inIncludeStroke) );
+      obj->GetExtent(trans, ext, false, inIncludeStroke);
       
       Rect rect;
       if (ext.GetRect(rect))
          ToValue(outBounds,rect);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_display_object_get_bounds,4);
+DEFINE_PRIME4v(nme_display_object_get_bounds);
 
 
-value nme_display_object_request_soft_keyboard(value inObj)
+bool nme_display_object_request_soft_keyboard(value inObj)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2314,16 +2422,15 @@ value nme_display_object_request_soft_keyboard(value inObj)
       {
          // TODO: return whether it pops up
          stage->PopupKeyboard(pkmDumb);
-         return alloc_bool(true);
+         return true;
       }
    }
-
-   return alloc_bool(false);
+   return false;
 }
-DEFINE_PRIM(nme_display_object_request_soft_keyboard,1);
+DEFINE_PRIME1v(nme_display_object_request_soft_keyboard);
 
 
-value nme_display_object_dismiss_soft_keyboard(value inObj)
+bool nme_display_object_dismiss_soft_keyboard(value inObj)
 {
    DisplayObject *obj;
    if (AbstractToObject(inObj,obj))
@@ -2333,40 +2440,57 @@ value nme_display_object_dismiss_soft_keyboard(value inObj)
       {
          // TODO: return whether it pops up
          stage->PopupKeyboard(pkmOff);
-         return alloc_bool(true);
+         return true;
       }
    }
-
-   return alloc_bool(false);
+   return false;
 }
-DEFINE_PRIM(nme_display_object_dismiss_soft_keyboard,1);
+DEFINE_PRIME1(nme_display_object_dismiss_soft_keyboard);
 
 
-DO_DISPLAY_PROP(x,X,alloc_float,val_number)
-DO_DISPLAY_PROP(y,Y,alloc_float,val_number)
+DO_DISPLAY_PROP_PRIME(x,X,double,double)
+DO_DISPLAY_PROP_PRIME(y,Y,double,double)
 #ifdef NME_S3D
-DO_DISPLAY_PROP(z,Z,alloc_float,val_number)
+DO_DISPLAY_PROP_PRIME(z,Z,double,double)
 #endif
-DO_DISPLAY_PROP(scale_x,ScaleX,alloc_float,val_number)
-DO_DISPLAY_PROP(scale_y,ScaleY,alloc_float,val_number)
-DO_DISPLAY_PROP(rotation,Rotation,alloc_float,val_number)
-DO_DISPLAY_PROP(width,Width,alloc_float,val_number)
-DO_DISPLAY_PROP(height,Height,alloc_float,val_number)
-DO_DISPLAY_PROP(alpha,Alpha,alloc_float,val_number)
-DO_DISPLAY_PROP(bg,OpaqueBackground,alloc_int,val_int)
-DO_DISPLAY_PROP(mouse_enabled,MouseEnabled,alloc_bool,val_bool)
-DO_DISPLAY_PROP(cache_as_bitmap,CacheAsBitmap,alloc_bool,val_bool)
-DO_DISPLAY_PROP(pedantic_bitmap_caching,PedanticBitmapCaching,alloc_bool,val_bool)
-DO_DISPLAY_PROP(pixel_snapping,PixelSnapping,alloc_int,val_int)
-DO_DISPLAY_PROP(visible,Visible,alloc_bool,val_bool)
-DO_DISPLAY_PROP(name,Name,alloc_wstring,val2stdwstr)
-DO_DISPLAY_PROP(blend_mode,BlendMode,alloc_int,val_int)
-DO_DISPLAY_PROP(needs_soft_keyboard,NeedsSoftKeyboard,alloc_bool,val_bool)
-DO_DISPLAY_PROP(soft_keyboard,SoftKeyboard,alloc_int,val_int)
-DO_DISPLAY_PROP(moves_for_soft_keyboard,MovesForSoftKeyboard,alloc_bool,val_bool)
-DO_DISPLAY_PROP(hit_enabled,HitEnabled,alloc_bool,val_bool)
-DO_PROP_READ(DisplayObject,display_object,mouse_x,MouseX,alloc_float)
-DO_PROP_READ(DisplayObject,display_object,mouse_y,MouseY,alloc_float)
+DO_DISPLAY_PROP_PRIME(scale_x,ScaleX,double,double)
+DO_DISPLAY_PROP_PRIME(scale_y,ScaleY,double,double)
+DO_DISPLAY_PROP_PRIME(rotation,Rotation,double,double)
+DO_DISPLAY_PROP_PRIME(width,Width,double,double)
+DO_DISPLAY_PROP_PRIME(height,Height,double,double)
+DO_DISPLAY_PROP_PRIME(alpha,Alpha,double,double)
+DO_DISPLAY_PROP_PRIME(bg,OpaqueBackground,int,int)
+DO_DISPLAY_PROP_PRIME(mouse_enabled,MouseEnabled,bool,bool)
+DO_DISPLAY_PROP_PRIME(cache_as_bitmap,CacheAsBitmap,bool,bool)
+DO_DISPLAY_PROP_PRIME(pedantic_bitmap_caching,PedanticBitmapCaching,bool,bool)
+DO_DISPLAY_PROP_PRIME(pixel_snapping,PixelSnapping,int,int)
+DO_DISPLAY_PROP_PRIME(visible,Visible,bool,bool)
+#if 1
+DO_DISPLAY_PROP(name,Name,alloc_wstring,valToStdWString)
+#else
+HxString nme_display_object_get_name(value inObj)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+      return HxString(obj->getName());
+   return HxString("");
+}
+DEFINE_PRIME1(nme_display_object_get_name)
+void nme_display_object_set_name(value inObj,HxString inVal)
+{
+   DisplayObject *obj;
+   if (AbstractToObject(inObj,obj))
+      obj->setName(inVal);
+}
+DEFINE_PRIME2v(nme_display_object_set_name)
+#endif
+DO_DISPLAY_PROP_PRIME(blend_mode,BlendMode,int,int)
+DO_DISPLAY_PROP_PRIME(needs_soft_keyboard,NeedsSoftKeyboard,bool,bool)
+DO_DISPLAY_PROP_PRIME(soft_keyboard,SoftKeyboard,int,int)
+DO_DISPLAY_PROP_PRIME(moves_for_soft_keyboard,MovesForSoftKeyboard,bool,bool)
+DO_DISPLAY_PROP_PRIME(hit_enabled,HitEnabled,bool,bool)
+DO_PROP_READ_PRIME(DisplayObject,display_object,mouse_x,MouseX,double)
+DO_PROP_READ_PRIME(DisplayObject,display_object,mouse_y,MouseY,double)
 
 // --- DirectRenderer -----------------------------------------------------
 
@@ -2458,7 +2582,7 @@ value nme_create_display_object_container()
 
 DEFINE_PRIM(nme_create_display_object_container,0);
 
-value nme_doc_add_child(value inParent, value inChild)
+void nme_doc_add_child(value inParent, value inChild)
 {
    DisplayObjectContainer *parent;
    DisplayObject *child;
@@ -2467,9 +2591,8 @@ value nme_doc_add_child(value inParent, value inChild)
       CHECK_ACCESS("nme_doc_add_child");
       parent->addChild(child);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_doc_add_child,2);
+DEFINE_PRIME2v(nme_doc_add_child);
 
 
 value nme_doc_swap_children(value inParent, value inChild0, value inChild1)
@@ -2644,28 +2767,27 @@ DEFINE_PRIM(nme_gfx_line_bitmap_fill,5);
 
 
 
-void nme_gfx_begin_set_gradient_fill(value *arg, int args, bool inForSolid)
+void nme_gfx_begin_set_gradient_fill(
+      value aGfx,  int aType, value aColors, value aAlphas, value aRatios, value aMatrix,
+        int aSpreadMethod, int aInterpMethod, double aFocal, bool inForSolid)
 {
-   enum { aGfx, aType, aColors, aAlphas, aRatios, aMatrix, aSpreadMethod, aInterpMethod,
-          aFocal, aSIZE };
-
    Graphics *gfx;
-   if (AbstractToObject(arg[aGfx],gfx))
+   if (AbstractToObject(aGfx,gfx))
    {
       CHECK_ACCESS("nme_gfx_begin_set_gradient_fill");
       Matrix matrix;
-      FromValue(matrix,arg[aMatrix]);
-      GraphicsGradientFill *grad = new GraphicsGradientFill(val_int(arg[aType]), 
+      FromValue(matrix,aMatrix);
+      GraphicsGradientFill *grad = new GraphicsGradientFill(aType, 
          matrix,
-         (SpreadMethod)val_int( arg[aSpreadMethod]),
-         (InterpolationMethod)val_int( arg[aInterpMethod]),
-         val_number( arg[aFocal] ) );
-      int n = std::min( val_array_size(arg[aColors]),
-           std::min(val_array_size(arg[aAlphas]), val_array_size(arg[aRatios]) ) );
+         (SpreadMethod)aSpreadMethod,
+         (InterpolationMethod)aInterpMethod,
+         aFocal);
+      int n = std::min( val_array_size(aColors),
+           std::min(val_array_size(aAlphas), val_array_size(aRatios) ) );
       for(int i=0;i<n;i++)
-         grad->AddStop( val_int( val_array_i( arg[aColors], i ) ),
-                        val_number( val_array_i( arg[aAlphas], i ) ),
-                        val_number( val_array_i( arg[aRatios], i ) )/255.0 );
+         grad->AddStop( val_int( val_array_i( aColors, i ) ),
+                        val_number( val_array_i( aAlphas, i ) ),
+                        val_number( val_array_i( aRatios, i ) )/255.0 );
 
       grad->setIsSolidStyle(inForSolid);
       grad->IncRef();
@@ -2673,23 +2795,7 @@ void nme_gfx_begin_set_gradient_fill(value *arg, int args, bool inForSolid)
       grad->DecRef();
    }
 }
-
-value nme_gfx_begin_gradient_fill(value *arg, int args)
-{
-   CHECK_ACCESS("nme_gfx_begin_gradient_fill");
-   nme_gfx_begin_set_gradient_fill(arg,args, true);
-   return alloc_null();
-}
-DEFINE_PRIM_MULT(nme_gfx_begin_gradient_fill)
-
-value nme_gfx_line_gradient_fill(value *arg, int args)
-{
-   CHECK_ACCESS("nme_gfx_line_gradient_fill");
-   nme_gfx_begin_set_gradient_fill(arg,args, false);
-   return alloc_null();
-}
-DEFINE_PRIM_MULT(nme_gfx_line_gradient_fill)
-
+DEFINE_PRIME10v(nme_gfx_begin_set_gradient_fill)
 
 
 value nme_gfx_end_fill(value inGfx)
@@ -2702,32 +2808,30 @@ value nme_gfx_end_fill(value inGfx)
 DEFINE_PRIM(nme_gfx_end_fill,1);
 
 
-value nme_gfx_line_style(value* arg, int nargs)
+void nme_gfx_line_style(value argGfx, value argThickness, int argColour, double argAlpha,
+                        bool argPixelHinting, int argScaleMode,
+                        int argCapsStyle, int argJointStyle, double argMiterLimit )
 {
-   enum { argGfx, argThickness, argColour, argAlpha, argPixelHinting, argScaleMode, argCapsStyle,
-          argJointStyle, argMiterLimit, argSIZE };
-
    Graphics *gfx;
-   if (AbstractToObject(arg[argGfx],gfx))
+   if (AbstractToObject(argGfx,gfx))
    {
       CHECK_ACCESS("nme_gfx_line_style");
       double thickness = -1;
-      if (!val_is_null(arg[argThickness]))
+      if (!val_is_null(argThickness))
       {
-         thickness = val_number(arg[argThickness]);
+         thickness = val_number(argThickness);
          if (thickness<0)
             thickness = 0;
       }
-      gfx->lineStyle(thickness, val_int(arg[argColour]), val_number(arg[argAlpha]),
-                 val_bool(arg[argPixelHinting]),
-                 (StrokeScaleMode)val_int(arg[argScaleMode]),
-                 (StrokeCaps)val_int(arg[argCapsStyle]),
-                 (StrokeJoints)val_int(arg[argJointStyle]),
-                 val_number(arg[argMiterLimit]) );
+      gfx->lineStyle(thickness, argColour, argAlpha,
+                 argPixelHinting,
+                 (StrokeScaleMode)argScaleMode,
+                 (StrokeCaps)argCapsStyle,
+                 (StrokeJoints)argJointStyle,
+                 argMiterLimit);
    }
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_gfx_line_style)
+DEFINE_PRIME9v(nme_gfx_line_style)
 
 
 
@@ -2826,44 +2930,37 @@ value nme_gfx_draw_path(value inGfx, value inCommands, value inData, value inWin
 }
 DEFINE_PRIM(nme_gfx_draw_path, 4);
 
-value nme_gfx_draw_round_rect(value *arg, int args)
+void nme_gfx_draw_round_rect(value aGfx,double aX,double aY,double aW,double aH,double aRx,double aRy )
 {
-   enum { aGfx, aX, aY, aW, aH, aRx, aRy, aSIZE };
    Graphics *gfx;
-   if (AbstractToObject(arg[aGfx],gfx))
+   if (AbstractToObject(aGfx,gfx))
    {
       CHECK_ACCESS("nme_gfx_draw_round_rect");
-      gfx->drawRoundRect( val_number(arg[aX]), val_number(arg[aY]), val_number(arg[aW]), val_number(arg[aH]), val_number(arg[aRx]), val_number(arg[aRy]) );
+      gfx->drawRoundRect( aX, aY, aW, aH, aRx, aRy );
    }
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_gfx_draw_round_rect);
+DEFINE_PRIME7v(nme_gfx_draw_round_rect);
 
-value nme_gfx_draw_triangles(value *arg, int args )
+void nme_gfx_draw_triangles(value aGfx,value aVertices,value aIndices,value aUVData, int aCull, value aColours, int aBlend )
 {
-
-   enum { aGfx, aVertices, aIndices, aUVData, aCull, aColours, aBlend };
-   
    Graphics *gfx;
-   if (AbstractToObject(arg[aGfx],gfx))
+   if (AbstractToObject(aGfx,gfx))
    {
       CHECK_ACCESS("nme_gfx_draw_triangles");
       QuickVec<float> vertices;
       QuickVec<int> indices;
       QuickVec<float> uvt;
       QuickVec<int> colours;
-      
-      FillArrayDouble(vertices,arg[aVertices]);
-      FillArrayInt(indices,arg[aIndices]);
-      FillArrayDouble(uvt,arg[aUVData]);
-      FillArrayInt(colours, arg[aColours]);
-      
-      gfx->drawTriangles(vertices, indices, uvt, val_int(arg[aCull]), colours, val_int( arg[ aBlend ] ) );
+
+      FillArrayDouble(vertices,aVertices);
+      FillArrayInt(indices,aIndices);
+      FillArrayDouble(uvt,aUVData);
+      FillArrayInt(colours,aColours);
+
+      gfx->drawTriangles(vertices, indices, uvt, aCull, colours, aBlend);
    }
-   
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_gfx_draw_triangles);
+DEFINE_PRIME7v(nme_gfx_draw_triangles);
 
 
 value nme_gfx_draw_data(value inGfx,value inData)
@@ -2928,12 +3025,19 @@ enum
 
 
 
-inline float TToFloat( const float &f ) { return f; }
-inline double TToFloat( const double &f ) { return f; }
-inline double TToFloat( const value &v ) { return val_number(v); }
+inline float TToFloat( float *f, int inIdx ) { return f[inIdx]; }
+inline double TToFloat( double *f, int inIdx ) { return f[inIdx]; }
+#ifndef HXCPP_JS_PRIME
+inline double TToFloat( value *v, int inIdx ) { return val_number(v[inIdx]); }
+#else
+inline double TToFloat( const value &v, int inIdx ) {
+   value val = v[inIdx];
+   return val.isUndefined() ? 0.0 : val.as<double>();
+}
+#endif
 
-template<typename FLOAT,int RECTMODE, int TRANS, int COL>
-void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues)
+template<typename FLOATS,int RECTMODE, int TRANS, int COL>
+void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inValues)
 {
    int max = inSheet->Tiles();
    float rgba_buf[] = { 1, 1, 1, 1 };
@@ -2964,23 +3068,23 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
 
    inPath->reserveTiles(inN, RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID, TRANS!=0, COL!=0);
 
-   const FLOAT *v = inValues;
+   int v = 0;
    for(int i=0;i<inN;i++)
    {
-      float x = TToFloat(*v++);
-      float y = TToFloat(*v++);
+      float x = TToFloat(inValues,v++);
+      float y = TToFloat(inValues,v++);
 
       if (RECTMODE==TILE_RECT_GIVEN || RECTMODE==TILE_RECT_ORIGIN_GIVEN)
       {
-         rectBuf.x = TToFloat(*v++);
-         rectBuf.y = TToFloat(*v++);
-         rectBuf.w = TToFloat(*v++);
-         rectBuf.h = TToFloat(*v++);
+         rectBuf.x = TToFloat(inValues,v++);
+         rectBuf.y = TToFloat(inValues,v++);
+         rectBuf.w = TToFloat(inValues,v++);
+         rectBuf.h = TToFloat(inValues,v++);
 
          if (RECTMODE==TILE_RECT_ORIGIN_GIVEN)
          {
-            ox = TToFloat(*v++);
-            oy = TToFloat(*v++);
+            ox = TToFloat(inValues,v++);
+            oy = TToFloat(inValues,v++);
          }
       }
       else if (RECTMODE==TILE_RECT_FULL_NO_ID)
@@ -3000,7 +3104,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
             id = 0;
          else
          {
-            id = TToFloat(*v++);
+            id = TToFloat(inValues,v++);
             if (id<0 || id>=max)
             {
                v+=badIdSkip;
@@ -3016,20 +3120,20 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
 
       if (TRANS & TILE_TRANS_2x2)
       {
-         trans_2x2[0] = TToFloat(*v++);
-         trans_2x2[1] = TToFloat(*v++);
-         trans_2x2[2] = TToFloat(*v++);
-         trans_2x2[3] = TToFloat(*v++);
+         trans_2x2[0] = TToFloat(inValues,v++);
+         trans_2x2[1] = TToFloat(inValues,v++);
+         trans_2x2[2] = TToFloat(inValues,v++);
+         trans_2x2[3] = TToFloat(inValues,v++);
       }
       else if (TRANS)
       {
          if (TRANS & TILE_SCALE)
          {
-            double scale = TToFloat(*v++);
+            double scale = TToFloat(inValues,v++);
 
             if (TRANS & TILE_ROTATION)
             {
-               double theta = TToFloat(*v++);
+               double theta = TToFloat(inValues,v++);
                trans_2x2[0] = scale*cos(theta);
                trans_2x2[1] = scale*sin(theta);
             }
@@ -3040,7 +3144,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
          }
          else if (TRANS & TILE_ROTATION)
          {
-            double theta = TToFloat(*v++);
+            double theta = TToFloat(inValues,v++);
             trans_2x2[0] = cos(theta);
             trans_2x2[1] = sin(theta);
          }
@@ -3065,13 +3169,13 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
 
       if (COL & TILE_RGB)
       {
-         rgba[0] = TToFloat(*v++);
-         rgba[1] = TToFloat(*v++);
-         rgba[2] = TToFloat(*v++);
+         rgba[0] = TToFloat(inValues,v++);
+         rgba[1] = TToFloat(inValues,v++);
+         rgba[2] = TToFloat(inValues,v++);
       }
 
       if (COL & TILE_ALPHA)
-         rgba[3] = TToFloat(*v++);
+         rgba[3] = TToFloat(inValues,v++);
 
       if (RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID)
       {
@@ -3109,65 +3213,64 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOA
 }
 
 
-template<typename FLOAT,int RECTMODE, int TRANS>
-void TAddTilesTrans( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags)
+template<typename FLOATS,int RECTMODE, int TRANS>
+void TAddTilesTrans( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inValues, unsigned int inFlags)
 {
    if (inFlags & TILE_RGB)
    {
       if (inFlags & TILE_ALPHA)
-         TAddTilesCol<FLOAT, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA>( inPath, inSheet, inN, inValues);
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA>( inPath, inSheet, inN, inValues);
       else
-         TAddTilesCol<FLOAT, RECTMODE, TRANS, TILE_RGB>( inPath, inSheet, inN, inValues);
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB>( inPath, inSheet, inN, inValues);
    }
    else if (inFlags & TILE_ALPHA)
-      TAddTilesCol<FLOAT, RECTMODE, TRANS, TILE_ALPHA>( inPath, inSheet, inN, inValues);
+      TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_ALPHA>( inPath, inSheet, inN, inValues);
    else
-      TAddTilesCol<FLOAT, RECTMODE, TRANS, 0>( inPath, inSheet, inN, inValues);
+      TAddTilesCol<FLOATS, RECTMODE, TRANS, 0>( inPath, inSheet, inN, inValues);
 }
 
-template<typename FLOAT,int RECTMODE>
-void TAddTilesRect( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags)
+template<typename FLOATS,int RECTMODE>
+void TAddTilesRect( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inValues, unsigned int inFlags)
 {
    if ( inFlags & TILE_TRANS_2x2 )
-      TAddTilesTrans<FLOAT,RECTMODE, TILE_TRANS_2x2>( inPath, inSheet, inN, inValues, inFlags);
+      TAddTilesTrans<FLOATS,RECTMODE, TILE_TRANS_2x2>( inPath, inSheet, inN, inValues, inFlags);
    else if (inFlags & TILE_SCALE)
    {
        if (inFlags & TILE_ROTATION)
-          TAddTilesTrans<FLOAT,RECTMODE, TILE_SCALE | TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
+          TAddTilesTrans<FLOATS,RECTMODE, TILE_SCALE | TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
        else
-          TAddTilesTrans<FLOAT,RECTMODE, TILE_SCALE>( inPath, inSheet, inN, inValues, inFlags);
+          TAddTilesTrans<FLOATS,RECTMODE, TILE_SCALE>( inPath, inSheet, inN, inValues, inFlags);
    }
    else if (inFlags & TILE_ROTATION)
-      TAddTilesTrans<FLOAT,RECTMODE, TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
+      TAddTilesTrans<FLOATS,RECTMODE, TILE_ROTATION>( inPath, inSheet, inN, inValues, inFlags);
    else
-      TAddTilesTrans<FLOAT,RECTMODE, 0>( inPath, inSheet, inN, inValues, inFlags);
+      TAddTilesTrans<FLOATS,RECTMODE, 0>( inPath, inSheet, inN, inValues, inFlags);
 }
 
-template<typename FLOAT>
-void TAddTiles( GraphicsPath *inPath, Tilesheet *inSheet, int inN, const FLOAT *inValues, unsigned int inFlags, bool inFullImage)
+template<typename FLOATS>
+void TAddTiles( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inValues, unsigned int inFlags, bool inFullImage)
 {
    if (inFullImage)
    {
       if (inFlags & TILE_NO_ID)
-         TAddTilesRect<FLOAT, TILE_RECT_FULL_NO_ID>( inPath, inSheet, inN, inValues, inFlags );
+         TAddTilesRect<FLOATS, TILE_RECT_FULL_NO_ID>( inPath, inSheet, inN, inValues, inFlags );
       else
-         TAddTilesRect<FLOAT, TILE_RECT_FULL>( inPath, inSheet, inN, inValues, inFlags );
+         TAddTilesRect<FLOATS, TILE_RECT_FULL>( inPath, inSheet, inN, inValues, inFlags );
    }
    else if (inFlags & TILE_NO_ID)
    {
-      TAddTilesRect<FLOAT, TILE_RECT_ID_0>( inPath, inSheet, inN, inValues, inFlags );
+      TAddTilesRect<FLOATS, TILE_RECT_ID_0>( inPath, inSheet, inN, inValues, inFlags );
    }
    else if (inFlags & TILE_RECT)
    {
       if (inFlags & TILE_ORIGIN)
-         TAddTilesRect<FLOAT, TILE_RECT_ORIGIN_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
+         TAddTilesRect<FLOATS, TILE_RECT_ORIGIN_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
       else
-         TAddTilesRect<FLOAT, TILE_RECT_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
+         TAddTilesRect<FLOATS, TILE_RECT_GIVEN>( inPath, inSheet, inN, inValues, inFlags );
    }
    else
-      TAddTilesRect<FLOAT, TILE_RECT_TILE >( inPath, inSheet, inN, inValues, inFlags );
+      TAddTilesRect<FLOATS, TILE_RECT_TILE >( inPath, inSheet, inN, inValues, inFlags );
 }
-
 
 
 
@@ -3219,9 +3322,18 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
       if (flags & TILE_ALPHA)
          components++;
 
-
-      int n = val_int(inDataSize);
-      if (n < 0) n = val_array_size(inXYIDs);
+      int n = val_is_null(inDataSize) ? -1 : val_int(inDataSize);
+      buffer buf = 0;
+      if (n < 0)
+      {
+         buf = val_to_buffer(inXYIDs);
+         if (buf)
+         {
+            n = buffer_size(buf)/sizeof(float);
+         }
+         else
+            n = val_array_size(inXYIDs);
+      }
       n /= components;
 
       if (n)
@@ -3242,12 +3354,23 @@ value nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,value inFlags,
          else
          {
             float *fvals = val_array_float(inXYIDs);
+            if (!fvals)
+            {
+               if (!buf)
+                  buf = val_to_buffer(inXYIDs);
+               if (buf)
+                  fvals = (float *)buffer_data(buf);
+            }
+            #ifndef EMSCRIPTEN
+            if (!fvals && val_is_string(inXYIDs))
+               fvals = (float *)val_string(inXYIDs);
+            #endif
             if (fvals)
                TAddTiles( gfx->getPath(), sheet, n, fvals, flags, fullImage );
             else
             {
-               value *val_ptr = val_array_value(inXYIDs);
-               if (val_ptr)
+               values_array val_ptr = val_array_value(inXYIDs);
+               if (value_array_ok(val_ptr))
                   TAddTiles( gfx->getPath(), sheet, n, val_ptr, flags, fullImage );
             }
          }
@@ -3309,6 +3432,7 @@ DEFINE_PRIM_MULT(nme_gfx_draw_points);
 value nme_graphics_path_create(value inCommands,value inData,value inWinding)
 {
    GraphicsPath *result = new GraphicsPath();
+   //printf("nme_graphics_path_create!\n");
 
    if (!val_bool(inWinding))
       result->winding = wrNonZero;
@@ -3479,7 +3603,7 @@ void FromValue(Optional<uint32> &outVal,value inVal) { outVal = (uint32)val_numb
 void FromValue(Optional<bool> &outVal,value inVal) { outVal = val_bool(inVal); }
 void FromValue(Optional<WString> &outVal,value inVal)
 {
-   outVal = val2stdwstr(inVal);
+   outVal = valToStdWString(inVal);
 }
 void FromValue(Optional<QuickVec<int> > &outVal,value inVal)
 {
@@ -3491,7 +3615,7 @@ void FromValue(Optional<QuickVec<int> > &outVal,value inVal)
 }
 void FromValue(Optional<TextFormatAlign> &outVal,value inVal)
 {
-   WString name = val2stdwstr(inVal);
+   WString name = valToStdWString(inVal);
    if (name==L"center")
       outVal = tfaCenter;
    else if (name==L"justify")
@@ -3665,6 +3789,65 @@ value nme_text_field_get_line_metrics(value inText,value inIndex,value outMetric
 DEFINE_PRIM(nme_text_field_get_line_metrics,3);
 
 
+void nme_text_field_get_line_positions(value inText,int inIndex0,value outLines)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      int n = val_array_size(outLines);
+      double *ptr = val_array_double(outLines);
+      if (ptr)
+      {
+         text->getLinePositions(inIndex0,ptr,n);
+      }
+      else
+      {
+         std::vector<double> buf(n);
+         text->getLinePositions(inIndex0,&buf[0],n);
+         for(int i=0;i<n;i++)
+            val_array_set_i(outLines, i, alloc_float(buf[i]));
+      }
+   }
+}
+DEFINE_PRIME3v(nme_text_field_get_line_positions);
+
+
+
+int nme_text_field_get_line_for_char(value inText,int inIndex0)
+{
+   TextField *text;
+   if (AbstractToObject(inText,text))
+   {
+      return text->getLineFromChar(inIndex0);
+   }
+   return 0;
+}
+DEFINE_PRIME2(nme_text_field_get_line_for_char);
+
+
+
+void nme_text_field_replace_selected_text(value inText,value inValue)
+{
+   TextField *text;
+
+   if (AbstractToObject(inText,text))
+      text->replaceSelectedText( valToStdWString(inValue) );
+}
+DEFINE_PRIME2v(nme_text_field_replace_selected_text);
+
+
+void nme_text_field_replace_text(value inText,int inC0, int inC1, value inValue)
+{
+   TextField *text;
+
+   if (AbstractToObject(inText,text))
+      text->replaceText( inC0, inC1, valToStdWString(inValue) );
+}
+DEFINE_PRIME4v(nme_text_field_replace_text);
+
+
+
+
 value nme_text_field_get_char_boundaries(value inText,value inIndex,value outBounds)
 {
    TextField *text;
@@ -3721,8 +3904,8 @@ value nme_text_field_get_##prop(value inHandle,value inIndex) \
 } \
 DEFINE_PRIM(nme_text_field_get_##prop,2);
 
-TEXT_PROP(text,Text,alloc_wstring,val2stdwstr);
-TEXT_PROP(html_text,HTMLText,alloc_wstring,val2stdwstr);
+TEXT_PROP(text,Text,alloc_wstring,valToStdWString);
+TEXT_PROP(html_text,HTMLText,alloc_wstring,valToStdWString);
 TEXT_PROP(text_color,TextColor,alloc_int,val_int);
 TEXT_PROP(selectable,Selectable,alloc_bool,val_bool);
 TEXT_PROP(display_as_password,DisplayAsPassword,alloc_bool,val_bool);
@@ -3758,7 +3941,7 @@ value nme_bitmap_data_create(value width, value height, value pixelFormat, value
    PixelFormat format = (PixelFormat)val_int(pixelFormat);
 
    Surface *result = new SimpleSurface( w, h, format, 1 );
-   if (val_is_int(fill))
+   if (!val_is_null(fill))
       result->Clear( val_int(fill) );
    return ObjectToAbstract(result);
 }
@@ -3836,6 +4019,15 @@ value nme_bitmap_data_set_flags(value inHandle,value inFlags)
 DEFINE_PRIM(nme_bitmap_data_set_flags,2);
 
 
+value nme_bitmap_data_get_flags(value inHandle)
+{
+   Surface *surface;
+   if (AbstractToObject(inHandle,surface))
+      return alloc_int( surface->GetFlags() );
+   return alloc_int(0);
+}
+DEFINE_PRIM(nme_bitmap_data_get_flags,1);
+
 
 value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
 {
@@ -3873,18 +4065,23 @@ value nme_bitmap_data_load(value inFilename, value format)
 }
 DEFINE_PRIM(nme_bitmap_data_load,2);
 
-value nme_bitmap_data_set_format(value inHandle, value format)
+value nme_bitmap_data_set_format(value inHandle, value format, value inConvert)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
    {
       PixelFormat targetFormat = (PixelFormat)val_int(format);
       if (targetFormat!=pfNone)
-         surface->ChangeInternalFormat(targetFormat);
+      {
+         if (val_bool(inConvert))
+            surface->ChangeInternalFormat(targetFormat);
+         else
+            surface->ReinterpretPixelFormat(targetFormat);
+      }
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_set_format,2);
+DEFINE_PRIM(nme_bitmap_data_set_format,3);
 
 value nme_bitmap_data_get_format(value inHandle)
 {
@@ -3949,7 +4146,7 @@ value nme_bitmap_data_encode(value inSurface, value inFormat,value inQuality)
 
    ByteArray array;
 
-   bool ok = surf->Encode(&array, !strcmp(val_string(inFormat),"png"), val_number(inQuality) );
+   bool ok = surf->Encode(&array, !strcmp(valToHxString(inFormat).c_str(),"png"), val_number(inQuality) );
 
    if (!ok)
       return alloc_null();
@@ -4038,21 +4235,20 @@ value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, v
 }
 DEFINE_PRIM(nme_bitmap_data_copy,5);
 
-value nme_bitmap_data_copy_channel(value* arg, int nargs)
+void nme_bitmap_data_copy_channel(value aSrc, value aSrcRect, value aDest, value aDestPoint, int aSrcChannel, int aDestChannel)
 {
-   enum { aSrc, aSrcRect, aDest, aDestPoint, aSrcChannel, aDestChannel, aSIZE };
    Surface *source;
    Surface *dest;
-   if (AbstractToObject(arg[aSrc],source) && AbstractToObject(arg[aDest],dest))
+   if (AbstractToObject(aSrc,source) && AbstractToObject(aDest,dest))
    {
       Rect rect;
-      FromValue(rect,arg[aSrcRect]);
+      FromValue(rect,aSrcRect);
       ImagePoint offset;
-      FromValue(offset,arg[aDestPoint]);
+      FromValue(offset,aDestPoint);
 
 
-      int srcChannel =  val_int(arg[aSrcChannel]);
-      int destChannel =  val_int(arg[aDestChannel]);
+      int srcChannel =  aSrcChannel;
+      int destChannel =  aDestChannel;
 
       if (destChannel==CHAN_ALPHA && !HasAlphaChannel(dest->Format()))
          dest->ChangeInternalFormat(pfBGRA);
@@ -4060,10 +4256,8 @@ value nme_bitmap_data_copy_channel(value* arg, int nargs)
       AutoSurfaceRender render(dest);
       source->BlitChannel(render.Target(),rect,offset.x, offset.y, srcChannel, destChannel );
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_bitmap_data_copy_channel);
+DEFINE_PRIME6v(nme_bitmap_data_copy_channel);
 
 
 value nme_bitmap_data_get_pixels(value inSurface, value inRect)
@@ -4204,7 +4398,7 @@ value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, valu
    {
       value a = val_field(inRGBA,_id_a);
       value rgb = val_field(inRGBA,_id_rgb);
-      if (val_is_int(a) && val_is_int(rgb))
+      if (!val_is_null(a) && !val_is_null(rgb))
          surf->setPixel(val_int(inX),val_int(inY),(val_int(a)<<24) | val_int(rgb), true);
    }
    return alloc_null();
@@ -4289,6 +4483,79 @@ DEFINE_PRIM_MULT(nme_bitmap_data_noise);
 
 
 
+void nme_bitmap_data_get_floats32(value inSurface, value inData, int inOffset, int inStride,
+       int inPixelFormat, int inTransform, int inSubsample)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      #ifndef EMSCRIPTEN
+      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
+      if (data)
+      {
+         surf->getFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inSubsample);
+      }
+      #endif
+   }
+}
+DEFINE_PRIME7v(nme_bitmap_data_get_floats32);
+
+void nme_bitmap_data_set_floats32(value inSurface, value inData, int inOffset, int inStride,
+       int inPixelFormat, int inTransform, int inExpand)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      #ifndef EMSCRIPTEN
+      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
+      if (data)
+      {
+         surf->setFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inExpand);
+      }
+      #endif
+   }
+}
+DEFINE_PRIME7v(nme_bitmap_data_set_floats32);
+
+
+
+void nme_bitmap_data_get_uints8(value inSurface, value inData, int inOffset, int inStride,
+       int inPixelFormat, int inSubsample)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      #ifndef EMSCRIPTEN
+      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
+      if (data)
+      {
+         surf->getUInts8((data + inOffset), inStride, (PixelFormat)inPixelFormat, inSubsample);
+      }
+      #endif
+   }
+}
+DEFINE_PRIME6v(nme_bitmap_data_get_uints8);
+
+
+void nme_bitmap_data_set_uints8(value inSurface, value inData, int inOffset, int inStride,
+       int inPixelFormat, int inExpand)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      #ifndef EMSCRIPTEN
+      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
+      if (data)
+      {
+         surf->setUInts8((data + inOffset), inStride, (PixelFormat)inPixelFormat, inExpand);
+      }
+      #endif
+   }
+}
+DEFINE_PRIME6v(nme_bitmap_data_set_uints8);
+
+
+
 value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inColor)
 {
    Surface *surf;
@@ -4350,30 +4617,28 @@ value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value in
 DEFINE_PRIM(nme_bitmap_data_flood_fill,4);
 
 
-value nme_render_surface_to_surface(value* arg, int nargs)
+void nme_render_surface_to_surface(value aTarget,value aSurface,value aMatrix,value aColourTransform,int aBlendMode,value aClipRect,bool aSmooth)
 {
-   enum { aTarget, aSurface, aMatrix, aColourTransform, aBlendMode, aClipRect, aSmooth, aSIZE};
-
    Surface *surf;
    Surface *src;
-   if (AbstractToObject(arg[aTarget],surf) && AbstractToObject(arg[aSurface],src))
+   if (AbstractToObject(aTarget,surf) && AbstractToObject(aSurface,src))
    {
       Rect r(surf->Width(),surf->Height());
-      if (!val_is_null(arg[aClipRect]))
-         FromValue(r,arg[aClipRect]);
+      if (!val_is_null(aClipRect))
+         FromValue(r,aClipRect);
       AutoSurfaceRender render(surf,r);
 
       Matrix matrix;
-      if (!val_is_null(arg[aMatrix]))
-         FromValue(matrix,arg[aMatrix]);
+      if (!val_is_null(aMatrix))
+         FromValue(matrix,aMatrix);
       RenderState state(surf,4);
       state.mTransform.mMatrix = &matrix;
 
       ColorTransform col_trans;
-      if (!val_is_null(arg[aColourTransform]))
+      if (!val_is_null(aColourTransform))
       {
          ColorTransform t;
-         FromValue(t,arg[aColourTransform]);
+         FromValue(t,aColourTransform);
          state.CombineColourTransform(state,&t,&col_trans);
       }
 
@@ -4382,7 +4647,7 @@ value nme_render_surface_to_surface(value* arg, int nargs)
       state.mPhase = rpRender;
 
       Graphics *gfx = new Graphics(0,true);
-      gfx->beginBitmapFill(src,Matrix(),false,val_bool(arg[aSmooth]));
+      gfx->beginBitmapFill(src,Matrix(),false,aSmooth);
       gfx->moveTo(0,0);
       gfx->lineTo(src->Width(),0);
       gfx->lineTo(src->Width(),src->Height());
@@ -4392,13 +4657,9 @@ value nme_render_surface_to_surface(value* arg, int nargs)
       gfx->Render(render.Target(),state);
 
       gfx->DecRef();
-
-
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_render_surface_to_surface);
+DEFINE_PRIME7v(nme_render_surface_to_surface);
 
 
 value nme_bitmap_data_dispose(value inSurface)
@@ -4465,7 +4726,7 @@ value nme_video_load(value inHandle, value inFilename)
 {
    Video *video;
    if (AbstractToObject(inHandle,video))
-      video->Load(val_string(inFilename));
+      video->Load(valToStdString(inFilename).c_str());
    return alloc_null();
 }
 DEFINE_PRIM(nme_video_load,2);
@@ -4503,14 +4764,17 @@ DEFINE_PRIM(nme_video_set_smoothing,2);
 
 value nme_sound_from_file(value inFilename,value inForceMusic, value inEngine)
 {
-   std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
+   std::string engine = valToStdString(inEngine,false);
    Sound *sound = val_is_null(inFilename) ? 0 :
-                  Sound::FromFile( val_string(inFilename), val_bool(inForceMusic), engine );
+                  Sound::FromFile( valToStdString(inFilename).c_str(), val_bool(inForceMusic), engine );
 
    if (sound)
    {
       value result =  ObjectToAbstract(sound);
+      // TODO - leaking sounds on jsprime
+      #ifndef HXCPP_JS_PRIME
       sound->DecRef();
+      #endif
       return result;
    }
    return alloc_null();
@@ -4522,22 +4786,31 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic, value i
    int length = val_int(inLen);
    Sound *sound;
   // printf("trying bytes with length %d", length);
-   if (!val_is_null(inData) && length > 0) {
+   if (!val_is_null(inData) && length > 0)
+   {
       ByteArray buf = ByteArray(inData);
-      std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
+      std::string engine = val_is_null(inEngine) ? std::string() : valToStdString(inEngine,false);
       //printf("I'm here! trying bytes with length %d", length);
       sound = Sound::FromEncodedBytes(buf.Bytes(), length, val_bool(inForceMusic), engine );
-   } else {
+   }
+   else
+   {
       val_throw(alloc_string("Empty ByteArray"));
    }
+
 
    if (sound)
    {
       value result =  ObjectToAbstract(sound);
+      // TODO - leaking sounds on jsprime
+      #ifndef HXCPP_JS_PRIME
       sound->DecRef();
+      #endif
       return result;
-   } else {
-      val_throw(alloc_string("Not Sound"));
+   }
+   else
+   {
+      val_throw(alloc_string("No Sound"));
    }
    return alloc_null();
 }
@@ -4800,7 +5073,7 @@ value nme_sound_channel_create_async(value inRate, value inIsStereo, value inFor
    int rate = rateId==0 ? 11025 : rateId==1 ? 22050 : 44100;
    int fmtId = val_int(inFormat);
    SoundDataFormat fmt = fmtId==0 ? sdfByte : fmtId==1 ? sdfShort : sdfFloat;
-   std::string engine = val_is_null(inEngine) ? "" : val_string(inEngine);
+   std::string engine = valToStdString(inEngine,false);
    SoundChannel *channel = SoundChannel::CreateAsyncChannel(
                    fmt, val_bool(inIsStereo),rate, new AutoGCRoot(inCallback), engine );
 
@@ -4878,10 +5151,9 @@ DEFINE_PRIM(nme_tilesheet_get_rect,3);
 
 
 // --- URL ----------------------------------------------------------
-
 value nme_curl_initialize(value inCACertFilePath)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader::initialize(val_string(inCACertFilePath));
    #endif
    return alloc_null();
@@ -4890,7 +5162,7 @@ DEFINE_PRIM(nme_curl_initialize,1);
 
 value nme_curl_create(value inURLRequest)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLRequest request;
    FromValue(inURLRequest,request);
    URLLoader *loader = URLLoader::create(request);
@@ -4902,7 +5174,7 @@ DEFINE_PRIM(nme_curl_create,1);
 
 value nme_curl_process_loaders()
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    return alloc_bool(URLLoader::processAll());
    #endif
    return alloc_bool(true);
@@ -4911,7 +5183,7 @@ DEFINE_PRIM(nme_curl_process_loaders,0);
 
 value nme_curl_update_loader(value inLoader,value outHaxeObj)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -4926,7 +5198,7 @@ DEFINE_PRIM(nme_curl_update_loader,2);
 
 value nme_curl_get_error_message(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -4939,7 +5211,7 @@ DEFINE_PRIM(nme_curl_get_error_message,1);
 
 value nme_curl_get_code(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -4953,7 +5225,7 @@ DEFINE_PRIM(nme_curl_get_code,1);
 
 value nme_curl_get_data(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -4968,7 +5240,7 @@ DEFINE_PRIM(nme_curl_get_data,1);
 
 value nme_curl_get_cookies(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -4986,7 +5258,7 @@ DEFINE_PRIM(nme_curl_get_cookies,1);
 
 value nme_curl_get_headers(value inLoader)
 {
-   #ifndef EMSCRIPTEN
+   #ifndef NME_NO_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -5003,61 +5275,206 @@ value nme_curl_get_headers(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_headers,1);
 
+
+
+#ifdef HXCPP_JS_PRIME
+
+#include <zlib.h>
+
+int nme_zip_encode(value ioBuffer)
+{
+   buffer buf = val_to_buffer(ioBuffer);
+
+   int slen = buf->getDataSize();
+
+   z_stream z;
+   memset(&z,0,sizeof(z_stream));
+   int err = 0;
+   int flush = Z_NO_FLUSH;
+   int level = 5;
+   if ( deflateInit(&z,level) != Z_OK )
+      val_throw(alloc_string("bad deflateInit"));
+
+   int dlen = deflateBound(&z,slen);
+   std::vector<unsigned char> dest(dlen);
+
+   z.next_in = (Bytef*)buf->getData();
+   z.avail_in = slen;
+   z.next_out = (Bytef*)&dest[0];
+   z.avail_out = dlen;
+
+   int code = 0;
+   if( (code = ::deflate(&z,flush)) < 0 )
+   {
+       deflateEnd(&z);
+       val_throw( alloc_string("bad deflate") );
+   }
+   int size = z.next_out - (Bytef*)&dest[0];
+   dest.resize(size);
+   buf->swapData(dest);
+   deflateEnd(&z);
+   return size;
+}
+DEFINE_PRIME1(nme_zip_encode);
+
+int nme_zip_decode(value ioBuffer)
+{
+   buffer buf = val_to_buffer(ioBuffer);
+   if (!buf)
+      return 0;
+
+   int slen = buf->getDataSize();
+   if (slen==0)
+      return 0;
+
+   std::vector<unsigned char> dest(slen*2);
+
+   z_stream z;
+   memset(&z,0,sizeof(z_stream));
+   int err = 0;
+   int flush = Z_NO_FLUSH;
+   if ( inflateInit2(&z,MAX_WBITS) != Z_OK )
+      val_throw(alloc_string("bad inflateInit"));
+
+   z.next_in = (Bytef*)buf->getData();
+   z.avail_in = slen;
+
+   int dstpos = 0;
+   while(true)
+   {
+      z.next_out = (Bytef*)&dest[dstpos];
+      z.avail_out = dest.size() - dstpos;
+      int code = 0;
+      if( (code = ::inflate(&z,flush)) < 0 )
+      {
+          inflateEnd(&z);
+          val_throw( alloc_string("bad inflate") );
+      }
+      if (code==Z_STREAM_END)
+      {
+         int size = z.next_out - (Bytef*)&dest[0];
+         dest.resize(size);
+         buf->swapData(dest);
+         inflateEnd(&z);
+         return size;
+      }
+      // Alloc some more...
+      dstpos = dest.size();
+      dest.resize(dest.size() + std::max(20, slen/2));
+   }
+   return 0;
+}
+DEFINE_PRIME1(nme_zip_decode);
+#endif
+
+
+
+
 value nme_lzma_encode(value input_value)
 {
+#if !defined(NME_NO_LZMA)
    buffer input_buffer = val_to_buffer(input_value);
    buffer output_buffer = alloc_buffer_len(0);
    Lzma::Encode(input_buffer, output_buffer);
    return buffer_val(output_buffer);
+#else
+   return alloc_null();
+#endif
 }
 DEFINE_PRIM(nme_lzma_encode,1);
 
 value nme_lzma_decode(value input_value)
 {
+#if !defined(NME_NO_LZMA)
    buffer input_buffer = val_to_buffer(input_value);
    buffer output_buffer = alloc_buffer_len(0);
    Lzma::Decode(input_buffer, output_buffer);
    return buffer_val(output_buffer);
+#else
+   return alloc_null();
+#endif
 }
 DEFINE_PRIM(nme_lzma_decode,1);
 
 
+
+namespace nme
+{
+FileDialogSpec *gCurrentFileDialog = 0;
+
+FileDialogSpec::~FileDialogSpec()
+{
+   delete callback;
+}
+void FileDialogSpec::complete()
+{
+   gCurrentFileDialog = 0;
+   if (result.empty())
+      val_call1(callback->get(), alloc_null( ) );
+   else
+      val_call1(callback->get(), alloc_string_len( result.c_str(), result.size() ) );
+   delete this;
+}
+
+}
+
+/*
 value nme_file_dialog_folder(value in_title, value in_text )
 { 
-    std::string _title( val_string( in_title ) );
-    std::string _text( val_string( in_text ) );
+    std::string _title( valToStdString( in_title ) );
+    std::string _text( valToStdString( in_text ) );
 
     std::string path = FileDialogFolder( _title, _text );
 
     return alloc_string( path.c_str() );
 }
 DEFINE_PRIM(nme_file_dialog_folder,2);
+*/
 
-value nme_file_dialog_open(value in_title, value in_text, value in_types )
-{ 
-    std::string _title( val_string( in_title ) );
-    std::string _text( val_string( in_text ) );
 
-    value *_types = val_array_value( in_types );
+bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultPath, HxString inTypes, value inCallback, int inFlags )
+{
+   if (gCurrentFileDialog)
+      return false;
 
-    std::string path = FileDialogOpen( _title, _text, std::vector<std::string>() );
+   // TODO - mac
+   #if defined(HX_WINDOWS) && !defined(HX_WINRT)
+   gCurrentFileDialog = new FileDialogSpec();
+   gCurrentFileDialog->title = inTitle.c_str();
+   gCurrentFileDialog->text = inText.c_str();
+   gCurrentFileDialog->defaultPath = inDefaultPath.c_str();
+   gCurrentFileDialog->fileTypes = inTypes.c_str();
+   gCurrentFileDialog->callback = new AutoGCRoot(inCallback);
+   gCurrentFileDialog->flags = inFlags;
 
-    return alloc_string( path.c_str() );
+   if (!FileDialogOpen( gCurrentFileDialog ))
+   {
+      delete gCurrentFileDialog;
+      gCurrentFileDialog = 0;
+      return false;
+   }
+   else
+      return true;
+   #endif
+
+   return false;
 }
-DEFINE_PRIM(nme_file_dialog_open,3);
+DEFINE_PRIME6(nme_file_dialog_open);
 
+/*
 value nme_file_dialog_save(value in_title, value in_text, value in_types )
 { 
-    std::string _title( val_string( in_title ) );
-    std::string _text( val_string( in_text ) );
+    std::string _title( valToStdString( in_title ) );
+    std::string _text( valToStdString( in_text ) );
 
-    value *_types = val_array_value( in_types );
+    //value *_types = val_array_value( in_types );
 
     std::string path = FileDialogSave( _title, _text, std::vector<std::string>() );
 
     return alloc_string( path.c_str() );
 }
 DEFINE_PRIM(nme_file_dialog_save,3);
+*/
 
 // Reference this to bring in all the symbols for the static library
 #ifdef STATIC_LINK

@@ -42,6 +42,17 @@ void onMusicDone()
       sDoneMusic = true;
 }
 
+#ifdef EMSCRIPTEN
+namespace {
+void Mix_QuerySpec(int *frequency, Uint16 *format, int *channels)
+{
+   *frequency = 44100;
+   *format = 32784;
+   *channels = 2;
+}
+}
+#endif
+
 /*
 extern "C" void music_mixer(void *udata, Uint8 *stream, int len);
 void onMusic(void *udata, Uint8 *stream, int len)
@@ -85,6 +96,7 @@ static bool Init()
       ELOG("Please init Stage before creating sound.");
       return false;
    }
+   //printf("SDL Audio is open: %d\n", gSDLAudioState==sdaOpen);
    if (gSDLAudioState!=sdaOpen)
      return false;
 
@@ -105,6 +117,7 @@ static bool Init()
       #endif
    }
 
+   //printf("Ok.\n");
    return sChannelsInit;
 }
 
@@ -544,7 +557,8 @@ public:
    {
       if (mChannel>=0)
       {
-         Mix_HaltChannel(mChannel);
+         if (gSDLAudioState==sdaOpen)
+            Mix_HaltChannel(mChannel);
          sDoneChannel[mChannel] = true;
          loopsPending = 0;
       }
@@ -923,7 +937,7 @@ public:
    }
    void setTransform(const SoundTransform &inTransform) 
    {
-      if (mMusic>=0)
+      if (mMusic && inTransform.volume>=0)
          Mix_VolumeMusic( inTransform.volume*MIX_MAX_VOLUME );
    }
 
@@ -1023,6 +1037,12 @@ public:
    SDLMusic(const unsigned char *inData, int len)
    {
       IncRef();
+      
+      if(!Init()) {
+         mMusic = 0;
+         return;
+      }
+      
       loaded = true;
       
       reso.resize(len);

@@ -56,6 +56,8 @@ public:
    static void PerformAsyncCallback(void *inCallback);
    static void DestroyAsyncCallback(void *inCallback);
 
+   NmeObjectType getObjectType() { return notSoundChannel; }
+
    virtual bool isComplete() = 0;
    virtual double getLeft() = 0;
    virtual double getRight() = 0;
@@ -96,6 +98,8 @@ public:
    virtual void close()  { }
    virtual SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform) = 0;
    virtual const char *getEngine() { return "unknown"; }
+   NmeObjectType getObjectType() { return notSound; }
+
 };
 
 } // end namespace nme

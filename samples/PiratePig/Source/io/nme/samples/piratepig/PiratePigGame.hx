@@ -104,16 +104,12 @@ class PiratePigGame extends Sprite {
 			
 			var firstPosition = getPosition (-1, column);
 			
-			#if !js
 			tile.alpha = 0;
-			#end
 			tile.x = firstPosition.x;
 			tile.y = firstPosition.y;
 			
 			tile.moveTo (0.15 * (row + 1), position.x, position.y);
-			#if !js
 			Actuate.tween (tile, 0.3, { alpha: 1 } ).delay (0.15 * (row - 2)).ease (Quad.easeOut);
-			#end
 			
 		} else {
 			
@@ -137,10 +133,6 @@ class PiratePigGame extends Sprite {
 		var defaultFormat = new TextFormat (font.fontName, 60, 0x000000);
 		defaultFormat.align = TextFormatAlign.RIGHT;
 		
-		#if js
-		// Right-aligned text is not supported in HTML5 yet
-		defaultFormat.align = TextFormatAlign.LEFT;
-		#end
 		
 		var contentWidth = 75 * NUM_COLUMNS;
 		
@@ -150,12 +142,7 @@ class PiratePigGame extends Sprite {
 		Score.selectable = false;
 		Score.defaultTextFormat = defaultFormat;
 		
-		#if !js
 		Score.filters = [ new BlurFilter (1.5, 1.5), new DropShadowFilter (1, 45, 0, 0.2, 5, 5) ];
-		#else
-		Score.y = 0;
-		Score.x += 90;
-		#end
 		
 		Score.embedFonts = true;
 		addChild (Score);
@@ -164,10 +151,8 @@ class PiratePigGame extends Sprite {
 		Background.graphics.beginFill (0xFFFFFF, 0.4);
 		Background.graphics.drawRect (0, 0, contentWidth, 75 * NUM_ROWS);
 		
-		#if !js
 		Background.filters = [ new BlurFilter (10, 10) ];
 		addChild (Background);
-		#end
 		
 		TileContainer.x = 14;
 		TileContainer.y = Background.y + 14;
@@ -516,19 +501,8 @@ class PiratePigGame extends Sprite {
 		scaleX = 1;
 		scaleY = 1;
 		
-		#if js
-		
-		// looking up the total width and height is not working, so we'll calculate it ourselves
-		
-		var currentWidth = 75 * NUM_COLUMNS;
-		var currentHeight = 75 * NUM_ROWS + 85;
-		
-		#else
-		
 		var currentWidth = width;
 		var currentHeight = height;
-		
-		#end
 		
 		var maxScaleX = maxWidth / currentWidth;
 		var maxScaleY = maxHeight / currentHeight;

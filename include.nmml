@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   
-<assets from="assets/fonts"  if="emscripten" unless="nofonts" >
-   <asset name="Arimo-Regular.ttf" id="_sans" embed="true"/>
-   <asset name="Tinos-Regular.ttf" id="_serif" embed="true"/>
-   <asset name="Cousine-Regular.ttf" id="_monospace" embed="true"/>
-</assets>
+<!-- default icon -->
+<icon name="assets/icons/nme.svg" size="-1" />
+<ndll name="Nme" if="jsprime" />
 
+<classpath name="src" />
+<classpath name="src/cppia" if="cppia" />
+<classpath name="src/jsprime" if="jsprime" />
+<classpath name="src/haxe/compat" unless="NME_NO_HAXE_COMPAT" />
+
+<error value="Nme.n is out of date.  Please rebuild" unless="${toolversion:3}" />
+
+<set name="preloader" value="${NME}/ndll/Emscripten/preloader.js" if="std-preloader"/>
+
+<section if="NME_HXTELEMETRY || telemetry">
+   <haxelib name="hxtelemetry"/>
+   <haxedef name="HXCPP_TELEMETRY"/>
+   <haxedef name="HXCPP_STACK_TRACE"/>
+</section>
 
 </project>

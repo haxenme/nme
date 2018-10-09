@@ -1,10 +1,5 @@
-#ifdef HX_WINDOWS
-#include <windows.h>
-#else
-#include <pthread.h>
-#include <unistd.h>
-#include <sys/time.h>
-#endif
+// From hxcpp
+#include <hx/Thread.h>
 
 #include <Sound.h>
 #include "Audio.h"
@@ -55,24 +50,15 @@ void clUpdateAsyncChannels()
 
 bool asyncIsShutdown = false;
 
+
 #ifdef HX_WINDOWS
 
-HANDLE asyncSoundWakeEvent;
-HANDLE asyncSoundMutex;
+HxMutex asyncSoundMutex;
 
 void clInit(bool inFirst, bool inIsAsync)
 {
-   if (inFirst)
-   {
-      //asyncSoundWakeEvent = CreateEvent(0, false, 0, 0);
-      asyncSoundMutex = CreateMutex(0, false, 0);
-   }
-
-
    #ifdef NME_OPENAL
-
      #error "Async openal update loop not implemented"
-
    #endif
 }
 
@@ -81,13 +67,13 @@ void clPingLocked() { }
 
 void clLock()
 {
-   WaitForSingleObject( asyncSoundMutex, INFINITE);
+   asyncSoundMutex.Lock();
 }
 
 
 void clUnlock()
 {
-    ReleaseMutex(asyncSoundMutex);
+   asyncSoundMutex.Unlock();
 }
 
 

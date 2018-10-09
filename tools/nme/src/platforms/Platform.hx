@@ -5,6 +5,10 @@ import sys.io.File;
 import haxe.io.Path;
 import sys.net.Host;
 import sys.net.Socket;
+import nme.AlphaMode;
+import nme.script.NmeItem;
+import haxe.zip.Entry;
+import haxe.zip.Writer;
 using StringTools;
 
 class Platform
@@ -16,11 +20,15 @@ class Platform
    public static inline var LINUX = "LINUX";
    public static inline var MAC = "MAC";
    public static inline var WINDOWS = "WINDOWS";
+   public static inline var WINRT = "WINRT";
    public static inline var ANDROIDVIEW = "ANDROIDVIEW";
    public static inline var CPPIA = "CPPIA";
+   public static inline var RPI = "RPI";
    public static inline var EMSCRIPTEN = "EMSCRIPTEN";
    public static inline var HTML5 = "HTML5";
+   public static inline var JS = "JS";
    public static inline var WATCH = "WATCH";
+   public static inline var JSPRIME = "JSPRIME"; // Alias for HTML5
 
 
    public static inline var TYPE_WEB = "WEB";
@@ -42,6 +50,7 @@ class Platform
    var remoteMd5s:Map<String,String>;
    var adbName:String;
    var adbFlags:Array<String>;
+   var deployDir:String;
 
 
    public function new(inProject:NMEProject)
@@ -70,7 +79,7 @@ class Platform
       haxeDir = targetDir + "/haxe";
    }
 
-   public function addOutput(inFile:String) : Void
+   public function addOutputQuiet(inFile:String, quiet=false) : Void
    {
       var base = getOutputDir() + "/";
       var l = base.length;
@@ -79,9 +88,11 @@ class Platform
       else if (inFile.substr(inFile.length-8)!=".pbxproj" && inFile.indexOf("ios")<0 &&
             inFile.indexOf("android-view")<0 && inFile.indexOf("ios-view")<0 )
       {
-         Log.warn( inFile + " does not appear to be under " + base );
+         if (!quiet)
+            Log.warn( inFile + " does not appear to be under " + base );
       }
    }
+   public function addOutput(inFile:String) addOutputQuiet(inFile, false);
 
    public function init()
    {
@@ -102,7 +113,9 @@ class Platform
    public function getExeDir() { return getOutputDir(); }
    public function getLibDir() { return getExeDir(); }
    public function getHaxeTemplateDir() { return "haxe"; }
+   public function getHaxeDir() { return haxeDir; }
    public function getNativeDllExt() { return ".so"; }
+   public function getBinaryName() { return ""; }
    public function getArchSuffix() { return ""; }
    public function postBuild() { }
 
@@ -149,6 +162,14 @@ class Platform
    public function runHaxeWithArgs(args:Array<String>)
    {
       var haxeRoot = project.getDef("HAXE_ROOT");
+
+
+      if (project.hasDef("haxe-server"))
+      {
+         var buildDir = Sys.getCwd();
+         args = ["--cwd", buildDir, "--connect", project.getDef("haxe-server") ].concat(args);
+      }
+
       if (haxeRoot!=null)
       {
          var haxe = haxeRoot + "/haxe";
@@ -201,20 +222,16 @@ class Platform
 
    public function createInstaller() { }
 
-   public function createManifestHeader(?inBody:haxe.io.Bytes, includeIcon=false)
+   public function createManifestHeader()
    {
       var header:Dynamic = {};
       header.name = project.app.title;
       header.developer = project.app.company;
       header.id = project.app.packageName;
-      header.engines = new Array<Dynamic>();
-      for(engine in project.engines.keys())
-      {
-         var e = {name:engine, version:project.engines.get(engine)};
-         header.engines.push(e);
-      }
+      header.version = 1;
+      header.nme = nme.Version.name;
 
-      if (includeIcon && project.icons!=null && project.icons.length>0)
+      if ( project.icons!=null && project.icons.length>0)
       {
          try
          {
@@ -223,6 +240,7 @@ class Platform
                header.svgIcon = File.getContent(icon);
             else
             {
+               IconHelper.createIcon(project.icons, 128, 128, getOutputDir() + "/icon.png", addOutput);
                var iconFile = getOutputDir() + "/icon.png";
                header.bmpIcon = haxe.crypto.Base64.encode(File.getBytes(icon));
             }
@@ -241,22 +259,7 @@ class Platform
       {
          if (manifest==null)
          {
-            manifest = {};
-            manifest.header = createManifestHeader();
-            md5s = new Map<String,String>();
-
-            var headerMd5s:Dynamic = {};
-
-            var from = getOutputDir();
-            var lines = new Array<String>();
-            for(filename in outputFiles)
-            {
-                var file = sys.io.File.getBytes(from+"/"+filename);
-                var md5 = haxe.crypto.Md5.make(file).toHex();
-                md5s.set(filename,md5);
-                Reflect.setField(headerMd5s,filename,md5);
-            }
-            manifest.md5s = headerMd5s;
+            manifest = createManifestHeader();
             var manifestName = getOutputDir() + "/manifest.json";
             sys.io.File.saveContent(manifestName, haxe.Json.stringify(manifest) );
             outputFiles.push("manifest.json");
@@ -348,6 +351,32 @@ class Platform
       return bytes;
    }
 
+   public function getDeploymentName(extension:String)
+   {
+      var version = project.app.version;
+      var parts = version.split(".");
+      if (parts.length==3)
+      {
+         version = "-" + parts.shift();
+         for(p in parts)
+         {
+            var i = Std.parseInt(p);
+            if (i<=0)
+               version += "000";
+            else if (i<10)
+               version += "00" + i;
+            else if (i<100)
+               version += "0" + i;
+            else
+               version +=  i;
+         }
+      }
+      else if (version!="")
+         version = "-" + version;
+        
+      return project.app.file + version + extension;
+   }
+
    public function parseMd5s(inFile:String)
    {
       var result = new Map<String, String>();
@@ -371,10 +400,15 @@ class Platform
       return result;
    }
 
+   function backslash(f:String) return f.split("/").join("\\");
+   function sortLen(dirs:Array<String>)
+   {
+      dirs.sort(function(a,b) return a.length>b.length ? 1 : -1 );
+      return dirs;
+   }
+
    public function deploy(inAndRun:Bool) : Bool
    {
-      addManifest();
-
       var target = CommandLineTools.parseDeploy(project.getDef("deploy"),false,false);
       if (target!=null)
       {
@@ -416,24 +450,51 @@ class Platform
                   socket.output.writeString(response);
                }
 
-               var to = project.app.packageName;
-
-               var manifest = project.hasDef("forcedeploy") ? null :  pullFile(socket, to+"/manifest.json");
-               if (manifest!=null)
-                  remoteMd5s = parseMd5s(manifest.toString());
-
-               for(file in outputFiles)
+               if (project.expandCppia())
                {
-                  var remote = remoteMd5s==null ? null : remoteMd5s.get(file);
-                  if (remote==null || remote!=md5s.get(file))
-                     transfer(socket, from+"/"+file, to+"/"+file);
-                  else
-                     Log.verbose("Already deployed " + file);
-               }
+                  var to = project.app.packageName;
 
-               var ran = inAndRun && sendRun(socket, project.app.packageName);
-               if (!ran || !inAndRun)
-                  bye(socket);
+                  // todo - timestamp
+                  var forced = project.hasDef("forcedeploy");
+                  var stampFile = haxeDir + "/" + host + ".up";
+                  var timestamp:Float = 0;
+                  if (!forced)
+                  {
+                     if (!FileSystem.exists(stampFile))
+                        forced = true;
+                     else
+                     {
+                        var info = FileSystem.stat(stampFile);
+                        var mtime = info.atime;
+                        if (mtime==null)
+                           forced = true;
+                        else
+                           timestamp = mtime.getTime();
+                     }
+                  }
+                  for(file in outputFiles)
+                  {
+                     var remote = remoteMd5s==null ? null : remoteMd5s.get(file);
+                     if (forced || FileSystem.stat(from+"/"+file).mtime.getTime()>=timestamp)
+                        transfer(socket, from+"/"+file, to+"/"+file);
+                     else
+                        Log.verbose("Already deployed " + file);
+                  }
+                  File.saveContent(stampFile,Std.string(timestamp));
+
+                  var ran = inAndRun && sendRun(socket, project.app.packageName);
+                  if (!ran || !inAndRun)
+                     bye(socket);
+               }
+               else
+               {
+                  var src = getOutputDir() + "/" + getNmeFilename();
+                  var to = project.app.packageName+".nme";
+                  transfer(socket, src, to);
+                  var ran = inAndRun && sendRun(socket, to);
+                  if (!ran || !inAndRun)
+                     bye(socket);
+               }
                socket.close();
                return inAndRun;
             }
@@ -444,8 +505,6 @@ class Platform
          }
          else if (protocol=="nme")
          {
-            if (project.command!="installer")
-               Log.error("Nme deployment can only be used with the installer command");
             var filename = getOutputDir() + "/" + project.app.file + ".nme";
             if (!FileSystem.exists(filename))
                Log.error('Could not find  $filename to deploy');
@@ -460,8 +519,11 @@ class Platform
             var arch = "";
             if (protocol=="bindir")
             {
+               var bin = getBinName();
                // Cross compile
-               if (getBinName()=="Linux" || getBinName()=="Linux64")
+               if (bin=="RPi")
+                  arch = "/RPi/" + project.app.file;
+               else if (bin=="Linux" || bin=="Linux64")
                   arch = "/Linux/" + project.app.file;
                else switch(PlatformHelper.hostPlatform)
                {
@@ -472,18 +534,114 @@ class Platform
                }
             }
 
-            var to = name + arch;
+            deployDir = name + arch;
+            Log.verbose("Deploy to " + deployDir);
             for(file in outputFiles)
             {
                Log.verbose("copy " + file);
-               FileHelper.copyFile(from+"/"+file,to+"/"+file);
+               FileHelper.copyFile(from+"/"+file,deployDir+"/"+file);
             }
          }
+         else if (protocol=="zip")
+         {
+             var entries:List<Entry> = new List();
+             var from = getOutputDir();
+             var to = project.app.file + "/";
+             for(file in outputFiles)
+             {
+                Log.verbose('  zip $to$file');
+                try {
+                   var bytes = sys.io.File.getBytes(from+"/"+file);
+                   var zipped = haxe.zip.Compress.run(bytes,9);
+                   zipped = zipped.sub(2,zipped.length-6);
+                   if (zipped.length > bytes.length*0.9)
+                      zipped = null;
+                   entries.add( {
+                      fileName : to + file,
+                      fileSize : bytes.length,
+                      fileTime : Date.now(),
+                      compressed : zipped!=null,
+                      dataSize : zipped==null ? 0 : zipped.length,
+                      data : zipped==null ? bytes : zipped,
+                      crc32 : haxe.crypto.Crc32.make(bytes),
+                      extraFields : new List()
+                   } );
+                }
+                catch(e:Dynamic)
+                {
+                   Log.error('Could not include $file in zip file');
+                }
+             }
+
+             if (name=="" || name==null)
+                name = getDeploymentName(".zip");
+
+             var wrote = 0;
+             try {
+                var bytesOutput = new haxe.io.BytesOutput();
+                var writer = new Writer(bytesOutput);
+                writer.write(entries);
+                // Grab the zipped file from the output stream
+                var zipfileBytes = bytesOutput.getBytes();
+                wrote = zipfileBytes.length;
+                // Save the zipped file to disc
+                var file = File.write(name, true);
+                file.write(zipfileBytes);
+                file.close();
+             }
+             catch(e:Dynamic)
+             {
+                Log.error('Could not save zip file $name');
+             }
+             Log.info('Wrote zip $name, $wrote bytes');
+         }
+         else if (protocol=="nsis")
+         {
+             if (PlatformHelper.hostPlatform!=WINDOWS)
+                Log.error("Nsis deployment only supported on windows");
+
+             var nsis = project.getDef("NSIS");
+             if (nsis==null)
+                Log.error('Please set the NSIS variable to point to the NSIS install directory');
+
+             if (name=="" || name==null)
+                name = getDeploymentName("-installer.exe");
+             var scriptName = getHaxeDir() + "/installer.nsis";
+
+             //var path = PathHelper.combine( Sys.getCwd(), name );
+             var path = name;
+
+             context.INSTALLER_NAME = path;
+             var from = getOutputDir();
+             var dirMap = new Map<String,Array<Dynamic>>();
+             var uninstallFiles = [];
+             for(file in outputFiles)
+             {
+                var parts = file.split("/");
+                var f = parts.pop();
+                var destDir = parts.join("/");
+                if (!dirMap.exists(destDir))
+                    dirMap.set(destDir,[]);
+                dirMap.get(destDir).push(backslash(from+"/"+file));
+             }
+             var sorted = sortLen([for(k in dirMap.keys()) k ]);
+             context.INSTALLER_DIRS = [ for(k in sorted) { dir:backslash(k), files:dirMap.get(k) } ];
+             context.INSTALLER_ICON = backslash(getOutputDir()+"/icon.ico");
+             context.UNINSTALL_FILES = outputFiles.map(backslash);
+             context.EXE_NAME = getBinaryName();
+
+             copyTemplate("nsis/installer.nsis", scriptName, false);
+
+             ProcessHelper.runCommand("",nsis+"/makensis.exe", ["/NOCD", scriptName] );
+
+             Log.verbose("Wrote " + name);
+         }
          else
-            Log.error("Unknown deployment protocol, use: 'script:', 'adb:' or 'dir:'");
+            Log.error("Unknown deployment protocol, use: 'script:', 'adb:', 'nsis:' or 'dir:'");
       }
       return false;
    }
+
 
    public function prepareTest() { }
    public function run(arguments:Array<String>) { }
@@ -495,9 +653,9 @@ class Platform
       return FileHelper.recursiveCopyTemplate(project.templatePaths, from, to, context, true, warnIfNotFound, 
           inForOutput ? addOutput : null, inFilter );
    }
-   public function copyTemplate(from:String, to:String)
+   public function copyTemplate(from:String, to:String,doAddOutput=true)
    {
-      FileHelper.copyFileTemplate(project.templatePaths, from, to, context, addOutput);
+      FileHelper.copyFileTemplate(project.templatePaths, from, to, context, doAddOutput ? addOutput : null);
    }
 
    public function updateBuildDir()
@@ -523,6 +681,7 @@ class Platform
    {
       var base = getAssetDir();
       PathHelper.mkdir(base);
+      var convertDir = project.app.binDir + "/converted";
       for(asset in project.assets) 
       {
          var target = catPaths(base, asset.targetPath );
@@ -530,6 +689,7 @@ class Platform
          {
             PathHelper.mkdir(Path.directory(target));
             addOutput(target);
+            asset.cleanConversion(convertDir,target);
             FileHelper.copyAssetIfNewer(asset, target);
          }
       }
@@ -538,6 +698,11 @@ class Platform
    public function catPaths(inBase:String, inExtra:String)
    {
       return PathHelper.combine(inBase,inExtra);
+   }
+
+   public function remapName(dir:String,filename:String)
+   {
+      return dir + "/" + filename;
    }
 
    public function updateLibArch(libDir:String, archSuffix:String)
@@ -555,9 +720,13 @@ class Platform
          var dir = "/ndll/" + binName + "/";
          var srcProject = ndll.path;
 
-         var src = srcProject + "/ndll/" + binName + "/" + pref + ndll.name + archSuffix + ext;
+         var src = srcProject + "/ndll/" + binName + "/" + pref + ndll.name;
+         if (FileSystem.exists(src)) 
+            ext = "";
+         else
+            src = srcProject + "/ndll/" + binName + "/" + pref + ndll.name + archSuffix + ext;
 
-         if (ndll.isStatic && !useNeko)
+         if (ndll.noCopy || (ndll.isStatic && !useNeko))
          {
             continue;
             // var ext = getLibExt();
@@ -577,11 +746,24 @@ class Platform
 
          if (FileSystem.exists(src)) 
          {
-            var dest = libDir + "/" + pref + ndll.name + ext;
-            addOutput(dest);
+            var dest = remapName( libDir,  pref + ndll.name + ext );
+            if (dest!=null)
+            {
+               addOutputQuiet(dest,true);
 
-            LogHelper.info("", " - Copying library file: " + src + " -> " + dest);
-            FileHelper.copyIfNewer(src, dest);
+               LogHelper.info("", " - Copying library file: " + src + " -> " + dest);
+               FileHelper.copyIfNewer(src, dest);
+
+               src+=".mem";
+               if (FileSystem.exists(src)) 
+               {
+                  var dest = dest + ".mem";
+                  addOutputQuiet(dest,true);
+
+                  LogHelper.info("", " - Copying library mem file: " + src + " -> " + dest);
+                  FileHelper.copyIfNewer(src, dest);
+               }
+            }
          }
          else
          {
@@ -604,5 +786,76 @@ class Platform
 
          copyTemplateDir(extra,  output );
       }
+   }
+
+
+   public function getNmeFilename()
+   {
+      return project.app.file + ".nme";
+   }
+
+   public function createNmeFile()
+   {
+      PathHelper.mkdir(getOutputDir());
+
+      var filename = getOutputDir() + "/" + getNmeFilename();
+      addOutput(filename);
+
+      var outfile = sys.io.File.write(filename,true);
+      outfile.bigEndian = false;
+      outfile.writeString("NME$");
+
+      var header = haxe.Json.stringify( createManifestHeader() );
+      outfile.writeInt32(header.length);
+      outfile.writeString(header);
+
+      var data = new Array<haxe.io.Bytes>();
+      var offset = 0;
+
+      var index = new Array<NmeItem>();
+
+      for(s in ["cppiaScript", "jsScript" ])
+      {
+         var script = project.getDef(s);
+         if (script!=null)
+         {
+            var bytes = File.getBytes(script);
+            data.push(bytes);
+            var item = new NmeItem();
+            item.offset = offset;
+            item.length = bytes.length;
+            item.type = "TEXT";
+            item.id = s;
+            index.push(item);
+            offset += item.length;
+         }
+      }
+ 
+      var base = getOutputDir();
+      for(asset in project.assets)
+      {
+         var bytes = File.getBytes( asset.sourcePath);
+         data.push(bytes);
+         var item = new NmeItem();
+         item.offset = offset;
+         item.length = bytes.length;
+         item.type = Std.string(asset.type);
+         item.id = asset.id;
+         if (asset.type==IMAGE)
+            item.alphaMode = Std.string(asset.alphaMode);
+         index.push(item);
+         offset += item.length;
+      }
+ 
+      var indexData = haxe.Json.stringify(index);
+      outfile.writeInt32(indexData.length);
+      outfile.writeString(indexData);
+
+      for(blob in data)
+         outfile.writeBytes(blob,0,blob.length);
+
+      outfile.close();
+
+      Log.verbose("Wrote " + filename);
    }
 }

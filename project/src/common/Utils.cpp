@@ -114,7 +114,9 @@ std::string GetExeName()
 {
    #ifdef HX_WINDOWS
      char path[MAX_PATH] = "";
+     #ifndef HX_WINRT
      GetModuleFileName(0,path,MAX_PATH);
+     #endif
      return path;
    #elif defined(HX_MACOS)
      char path[1024] = "";
@@ -387,7 +389,9 @@ void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 #if !defined(HX_MACOS) && !defined(IPHONE)
 void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 {
-#if defined(HX_WINRT)
+#if (defined(HX_WINRT) && !defined(__cplusplus_winrt))
+    OutputDebugString("Utils.cpp GetSpecialDir not implemented, compile with ABI=-ZW for winrt");
+#elif defined(HX_WINRT) && defined(__cplusplus_winrt)
    std::wstring result;
    Windows::Storage::StorageFolder ^folder = nullptr;
 
@@ -519,172 +523,16 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	}
 	else if (inDir == DIR_DOCS)
 	{
-		outDir = "$HOME/Documents";
+      std::string home = getenv("HOME");
+		outDir = home + "/Documents";
 	}
 	else if (inDir == DIR_DESKTOP)
 	{
-		outDir = "$HOME/Desktop";
+      std::string home = getenv("HOME");
+		outDir = home + "/Desktop";
 	}
 #endif
 }
-#endif
-
-
-#ifdef ANDROID
-
-WString::WString(const WString &inRHS)
-{
-   mLength = inRHS.mLength;
-   if (mLength==0)
-      mString = 0;
-   else
-   {
-      mString = new wchar_t[mLength+1];
-      memcpy(mString,inRHS.mString,mLength*sizeof(wchar_t));
-      mString[mLength] = '\0';
-   }
-}
-
-WString::WString(const wchar_t *inStr)
-{
-   mLength = 0;
-   if (inStr==0 || *inStr=='\0')
-   {
-      mString = 0;
-   }
-   else
-   {
-      while(inStr[mLength]) mLength++;
-      mString = new wchar_t[mLength+1];
-      memcpy(mString,inStr,mLength*sizeof(wchar_t));
-      mString[mLength] = '\0';
-   }
-
-}
-
-WString::WString(const wchar_t *inStr,int inLen)
-{
-   if (inLen==0)
-   {
-      mString = 0;
-   }
-   else
-   {
-      mString = new wchar_t[inLen+1];
-      if (mString && inStr)
-         memcpy(mString,inStr,inLen*sizeof(wchar_t));
-      mString[inLen] = '\0';
-   }
-
-   mLength = inLen;
-}
-
-
-void WString::resize(int inLength)
-{
-   delete [] mString;
-   mString = new wchar_t[inLength+1];
-   memset(mString,0,sizeof(wchar_t)*(inLength+1));
-   mLength = inLength;
-}
-
-WString::~WString()
-{
-   delete [] mString;
-}
-
-
-WString &WString::operator=(const WString &inRHS)
-{
-   if (inRHS.mString != mString)
-   {
-      delete [] mString;
-      mLength = inRHS.mLength;
-      if (mLength==0)
-         mString = 0;
-      else
-      {
-         mString = new wchar_t[mLength+1];
-         memcpy(mString,inRHS.mString,mLength*sizeof(wchar_t));
-         mString[mLength] = '\0';
-      }
-   }
-}
-
-WString &WString::operator +=(const WString &inRHS)
-{
-   *this = *this + inRHS;
-   return *this;
-}
-
-WString WString::operator +(const WString &inRHS) const
-{
-   int len = mLength + inRHS.mLength;
-   if (len==0)
-      return WString();
-
-   WString result(0,len);
-   memcpy(result.mString, mString, mLength*sizeof(wchar_t));
-   memcpy(result.mString + mLength, inRHS.mString, inRHS.mLength*sizeof(wchar_t));
-   return result;
-}
-
-bool WString::operator<(const WString &inRHS) const
-{
-   int len = mLength<inRHS.mLength ? mLength : inRHS.mLength;
-   for(int i=0;i<len;i++)
-      if (mString[i] < inRHS.mString[i])
-         return true;
-      else if (mString[i]>inRHS.mString[i])
-         return false;
-
-   return mLength<inRHS.mLength;
-}
-
-bool WString::operator>(const WString &inRHS) const
-{
-   int len = mLength<inRHS.mLength ? mLength : inRHS.mLength;
-   for(int i=0;i<len;i++)
-      if (mString[i] > inRHS.mString[i])
-         return true;
-      else if (mString[i]<inRHS.mString[i])
-         return false;
-
-   return mLength>inRHS.mLength;
-}
-
-
-bool WString::operator==(const WString &inRHS) const
-{
-   if (mLength!=inRHS.mLength)
-      return false;
-
-   for(int i=0;i<mLength;i++)
-      if (mString[i]!=inRHS.mString[i])
-         return false;
-
-   return true;
-}
-
-
-bool WString::operator!=(const WString &inRHS) const
-{
-   if (mLength!=inRHS.mLength)
-      return true;
-
-   for(int i=0;i<mLength;i++)
-      if (mString[i]!=inRHS.mString[i])
-         return true;
-
-   return false;
-}
-
-
-WString WString::substr(int inPos,int inLen) const
-{
-   return WString(mString+inPos,inLen);
-}
-
 #endif
 
 

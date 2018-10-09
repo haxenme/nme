@@ -2,7 +2,7 @@
 #define NME_FONT_H
 
 #include <nme/Object.h>
-#include <Utils.h>
+#include <nme/NmeCffi.h>
 #include <Graphics.h>
 #include <Tilesheet.h>
 #include <map>
@@ -69,7 +69,8 @@ public:
    void IfEquals(Optional<T> &inRHS) { if (mSet && inRHS.mSet && inRHS.mVal != mVal) mSet = false; }
    bool IsSet() const { return mSet; }
 
-  T &__Get() { return mVal; }
+   T &write() { mSet = true; return mVal; }
+   T &__Get() { return mVal; }
 
 private:
    bool mSet;
@@ -82,7 +83,14 @@ public:
    TextFormat(const TextFormat &,bool inInitRef=true);
    static TextFormat *Create(bool inInitRef = true);
    static TextFormat *Default();
+   static TextFormat *fromStream(class ObjectStreamIn &inStream);
    TextFormat *IncRef() { Object::IncRef(); return this; }
+
+   NmeObjectType getObjectType() { return notTextFormat; }
+
+   void encodeStream(class ObjectStreamOut &inStream);
+   void decodeStream(class ObjectStreamIn &inStream);
+
 
    TextFormat *COW();
 
@@ -153,6 +161,11 @@ struct Line
 typedef QuickVec<Line> Lines;
 
 
+#ifdef HXCPP_JS_PRIME
+typedef BufferData *FontBuffer;
+#else
+typedef AutoGCRoot *FontBuffer;
+#endif
 
 
 class FontFace
@@ -161,7 +174,7 @@ public:
    virtual ~FontFace() { };
 
    static FontFace *CreateNative(const TextFormat &inFormat,double inScale);
-   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,AutoGCRoot *inBytes, const std::string &inCombinedName);
+   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,FontBuffer inBytes, const std::string &inCombinedName);
    static FontFace *CreateCFFIFont(const TextFormat &inFormat,double inScale);
 
    virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
@@ -188,6 +201,11 @@ class Font : public Object
 
 public:
    static Font *Create(TextFormat &inFormat,double inScale, bool inNative,bool inInitRef=true);
+
+   NmeObjectType getObjectType() { return notFont; }
+   void encodeStream(class ObjectStreamOut &inStream);
+   void decodeStream(class ObjectStreamIn &inStream);
+
 
    Font *IncRef() { Object::IncRef(); return this; }
 

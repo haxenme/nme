@@ -546,8 +546,6 @@ public:
      sStage = 0;
    }
 
-   virtual void SetTitle() { }
-   virtual void SetIcon() { }
    virtual Stage *GetStage() 
    {
       return sStage;

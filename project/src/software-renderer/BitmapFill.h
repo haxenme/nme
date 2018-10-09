@@ -156,7 +156,7 @@ public:
 
       //  For bilinear-interp, a tex value of 0.5 should map to the beginning of the range between pixel 0 and pixel 1
       //   so an adjustment of  - (0.5,0.5) is subtracted to make this a truncation operation
-      
+     
       mMapper.mtx += (mMapper.m00 + mMapper.m01)*0.5 - mBilinearAdjust;
       mMapper.mty += (mMapper.m10 + mMapper.m11)*0.5 - mBilinearAdjust;
 
@@ -190,8 +190,6 @@ template<int EDGE,bool SMOOTH,typename SRC,bool PERSP>
 class BitmapFiller : public BitmapFillerBase
 {
 public:
-   enum { HasAlpha = SRC::pixelFormat };
-
    BitmapFiller(GraphicsBitmapFill *inFill) : BitmapFillerBase(inFill)
    {
       mPerspective = PERSP;
@@ -226,51 +224,54 @@ public:
 
          SRC p00,p01,p10,p11;
 
-         if (EDGE == EDGE_CLAMP) 
-         { 
-            int x_step = sizeof(SRC); 
-            int y_step = mStride; 
+         if (EDGE == EDGE_CLAMP)
+         {
+            int x_step = sizeof(SRC);
+            int y_step = mStride;
 
-            if (x<0) {  x_step = x = 0; } 
-            else if (x>=mW1) { x_step = 0; x = mW1; } 
+            if (x<0) {  x_step = x = 0; }
+            else if (x>=mW1) { x_step = 0; x = mW1; }
 
-            if (y<0) {  y_step = y = 0; } 
-            else if (y>=mH1) { y_step = 0; y = mH1; } 
+            if (y<0) {  y_step = y = 0; }
+            else if (y>=mH1) { y_step = 0; y = mH1; }
 
-            const uint8 * ptr = mBase + y*mStride + x*4; 
-            p00 = *(SRC *)ptr; 
-            p01 = *(SRC *)(ptr + x_step); 
-            p10 = *(SRC *)(ptr + y_step); 
-            p11 = *(SRC *)(ptr + y_step + x_step); 
-         } 
-         else if (EDGE==EDGE_POW2) 
-         { 
-            const uint8 *p = mBase + (y&mH1)*mStride; 
+            const uint8 * ptr = mBase + y*mStride + x*sizeof(SRC);
+            p00 = *(SRC *)ptr;
+            p01 = *(SRC *)(ptr + x_step);
+            p10 = *(SRC *)(ptr + y_step);
+            p11 = *(SRC *)(ptr + y_step + x_step);
+         }
+         else if (EDGE==EDGE_POW2)
+         {
+            const uint8 *p = mBase + (y&mH1)*mStride;
 
-            p00 = *(SRC *)(p+ (x & mW1)*4); 
-            p01 = *(SRC *)(p+ ((x+1) & mW1)*4); 
+            p00 = *(SRC *)(p+ (x & mW1)*sizeof(SRC));
+            p01 = *(SRC *)(p+ ((x+1) & mW1)*sizeof(SRC));
 
-            p = mBase + ( (y+1) &mH1)*mStride; 
-            p10 = *(SRC *)(p+ (x & mW1)*4); 
-            p11 = *(SRC *)(p+ ((x+1) & mW1)*4); 
-         } 
-         else 
-         { 
-            int x1 = ((x+1) % mWidth) * 4; 
-            if (x1<0) x1+=mWidth; 
-            x = (x % mWidth)*4; 
-            if (x<0) x+=mWidth; 
+            p = mBase + ( (y+1) &mH1)*mStride;
+            p10 = *(SRC *)(p+ (x & mW1)*sizeof(SRC));
+            p11 = *(SRC *)(p+ ((x+1) & mW1)*sizeof(SRC));
+         }
+         else
+         {
+            int x1 = ((x+1) % mWidth);
+            if (x1<0) x1+=mWidth;
+            x1*=sizeof(SRC);
 
-            int y0= (y%mHeight); if (y0<0) y0+=mHeight; 
-            const uint8 *p = mBase + y0*mStride; 
+            x = (x % mWidth);
+            if (x<0) x+=mWidth;
+            x*=sizeof(SRC);
 
-            p00 = *(SRC *)(p+ x); 
-            p01 = *(SRC *)(p+ x1); 
+            int y0= (y%mHeight); if (y0<0) y0+=mHeight;
+            const uint8 *p = mBase + y0*mStride;
 
-            int y1= ((y+1)%mHeight); if (y1<0) y1+=mHeight; 
-            p = mBase + y1*mStride; 
-            p10 = *(SRC *)(p+ x); 
-            p11 = *(SRC *)(p+ x1); 
+            p00 = *(SRC *)(p+ x);
+            p01 = *(SRC *)(p+ x1);
+
+            int y1= ((y+1)%mHeight); if (y1<0) y1+=mHeight;
+            p = mBase + y1*mStride;
+            p10 = *(SRC *)(p+ x);
+            p11 = *(SRC *)(p+ x1);
          }
 
          return BilinearInterp(p00, p01, p10, p11, frac_x, frac_y);
@@ -283,21 +284,21 @@ public:
             mPos.y += mDPyDX;
          }
 
-         if (EDGE == EDGE_CLAMP) 
-         { 
-            if (x<0) x = 0; 
-            else if (x>=mWidth) x = mW1; 
- 
-            if (y<0) y = 0; 
-            else if (y>=mHeight) y = mH1; 
-         } 
-         else if (EDGE == EDGE_POW2) 
-         { 
-            x &= mW1; 
-            y &= mH1; 
-         } 
-         else if (EDGE == EDGE_REPEAT) 
-         { 
+         if (EDGE == EDGE_CLAMP)
+         {
+            if (x<0) x = 0;
+            else if (x>=mWidth) x = mW1;
+
+            if (y<0) y = 0;
+            else if (y>=mHeight) y = mH1;
+         }
+         else if (EDGE == EDGE_POW2)
+         {
+            x &= mW1;
+            y &= mH1;
+         }
+         else if (EDGE == EDGE_REPEAT)
+         {
             x = x % mWidth; if (x<0) x+=mWidth;
             y = y % mHeight; if (y<0) y+=mHeight;
          }

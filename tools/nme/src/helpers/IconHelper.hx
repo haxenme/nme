@@ -141,7 +141,7 @@ class IconHelper
         return ((val + align - 1) & ~(align - 1));
    }
 
-   public static function createWindowsIcon(icons:Array<Icon>, targetPath:String):Bool 
+   public static function createWindowsIcon(icons:Array<Icon>, targetPath:String, favicon = false):Bool 
    {
       var sizes = [ 256, 128, 64, 48, 40, 32, 24, 16 ];
       var sizes_8bit = [ 48, 32, 16 ];
@@ -150,23 +150,28 @@ class IconHelper
 
       var data_pos = 6;
 
-      for(size in sizes_8bit) 
+      if (favicon)
       {
-         var bmp = getIconBitmap(icons, size, size);
-         if (bmp != null) 
+         for(size in sizes_8bit) 
          {
-            bmps_8bit.push(bmp);
-            data_pos += 16;
+            var bmp = getIconBitmap(icons, size, size);
+            if (bmp != null) 
+            {
+               bmps_8bit.push(bmp);
+               data_pos += 16;
+            }
          }
       }
-
-      for(size in sizes) 
+      else
       {
-         var bmp = getIconBitmap(icons, size, size);
-         if (bmp != null) 
+         for(size in sizes) 
          {
-            bmps.push(bmp);
-            data_pos += 16;
+            var bmp = getIconBitmap(icons, size, size);
+            if (bmp != null) 
+            {
+               bmps.push(bmp);
+               data_pos += 16;
+            }
          }
       }
 
@@ -229,9 +234,8 @@ class IconHelper
 
          var bits = BitmapData.getRGBAPixels(bmp);
          var and_mask = new ByteArray();
-         var bucketDictionary:IntMap<Int> = new IntMap<Int>(); //key: color, value: slot
-         var buckets:Array<Int> = new Array<Int>(); //palette
-         var colorIndexes:Array<Int> = new Array<Int>(); //bmp
+         var colourCounter:IntMap<Int> = new IntMap<Int>(); //key: color, value: slot
+         var allCols = new Array<Int>();
 
          //calculate palette & and mask
          for(y in 0...size) 
@@ -247,63 +251,23 @@ class IconHelper
                   var r:Int = 0xFF & bits.readByte();
                   var g:Int = 0xFF & bits.readByte();
                   var b:Int = 0xFF & bits.readByte();
+                  var color:Int = ((b << 16) | (g << 8) | (r));
+
                   var a = bits.readByte();
 
-                  var color:Int = ((b << 16) | (g << 8) | (r));
-                  if( color==0x000000 )
-                  {
-                     //black pixel
-                     colorIndexes.push(255);
-                  }
-                  else if(bucketDictionary.exists(color))
-                  {
-                     var slot:Int = bucketDictionary.get(color);
-                     colorIndexes.push(slot); 
-                  }
-                  else
-                  {
-                     if(buckets.length < 255)
-                     {
-                        var slot = buckets.length;
-                        bucketDictionary.set(color, slot);
-                        colorIndexes.push(slot);
-                        buckets.push(color);
-                     }
-                     else
-                     {
-                        //no more buckets left
-                        Log.warn("Your "+size+"x"+size+" icon has more than 255 colors.");
-
-                        //we search for the nearest color in the palette which may be enough for such small images
-                        //we could modify the resulting bucket to an intermediate value 
-                        var c1 = ((color & 0xFF0000) >> 16);
-                        var c2 = ((color & 0xFF00) >> 8);
-                        var c3 = ((color & 0xFF));
-
-                        //initilize with distance and index to black color
-                        var sqNearestDistance:Int = (c1*c1+c2*c2+c3*c3);
-                        var nearestIndex = 255;
-
-                        var index = 0;
-                        for( bucket in buckets )
-                        {
-                           var d1 = c1-((bucket & 0xFF0000) >> 16);
-                           var d2 = c2-((bucket & 0xFF00) >> 8);
-                           var d3 = c3-((bucket & 0xFF));
-                           var sqDistance = (d1*d1+d2*d2+d3*d3);
-                           if( sqDistance < sqNearestDistance )
-                           {
-                              sqNearestDistance = sqDistance;
-                              nearestIndex = index;
-                           }
-                           index++;
-                        }
-                        colorIndexes.push(nearestIndex);
-                     }
-                  }
-
                   if ((a&0x80) == 0)
+                  {
                      mask |= bit;
+                     color = 0;
+                  }
+
+                  var val = colourCounter.get(color);
+                  if (val==null)
+                     colourCounter.set(color,1);
+                  else
+                     colourCounter.set(color, val+1);
+
+                  allCols.push(color);
                }
 
                bit = bit >> 1;
@@ -316,24 +280,106 @@ class IconHelper
             }
          }
 
+         var cols = new Array<Int>();
+         var count = new Array<Int>();
+         var paletteMap = new Map<Int,Int>();
+         var idx = 0;
+         for(k in colourCounter.keys())
+         {
+            cols[idx] = k;
+            count[idx] = colourCounter.get(k);
+            paletteMap.set(k,idx);
+            idx++;
+         }
+
+         var palSize = idx;
+         var paletteRemap = [for(i in 0...palSize) i];
+
+         while(palSize>255)
+         {
+            palSize--;
+            var where = -1;
+            var smallest = size*size;
+            for(i in 0...idx)
+            {
+                if (cols[i]>=0 && count[i]<smallest)
+                {
+                   smallest = count[i];
+                   where = i;
+                   if (smallest==1)
+                      break;
+                }
+            }
+            var match = -1;
+            var err = 255.0*255.0*3;
+            var col = cols[where];
+            var r = col & 0xff;
+            var g = (col>>8) & 0xff;
+            var b = (col>>16) & 0xff;
+            for(j in 0...idx)
+            {
+               if (j!=where)
+               {
+                  col = cols[j];
+                  if (col>0 && col>=0)
+                  {
+                     var dr = r - (col&0xff);
+                     var dg = g - ((col>>8)&0xff);
+                     var db = b - ((col>>16)&0xff);
+                     var diff = dr*dr + dg*dg + db*db;
+                     if (diff<err)
+                     {
+                        err = diff;
+                        match = j;
+                     }
+                  }
+               }
+            }
+            paletteRemap[where] = match;
+            count[match] += count[where];
+            cols[where] = -1;
+         }
+
+         var palette = new Array<Int>();
+         var paletteIdx = new Array<Int>();
+         var idx = 0;
+         for(j in 0...paletteRemap.length)
+         {
+            if (paletteRemap[j]==j)
+            {
+               paletteIdx[j] = palette.length;
+               palette.push( cols[j] );
+            }
+         }
+
+         var colorIndexes:Array<Int> = new Array<Int>(); //bmp
+         for(col in allCols)
+         {
+            var idx = paletteMap.get(col);
+            while(true)
+            {
+               var remap = paletteRemap[idx];
+               if (remap==idx)
+                  break;
+               idx = remap;
+            }
+            colorIndexes.push( paletteIdx[idx] );
+         }
+
          //write palette
-         var nSlot:Int = 256;
-         for (color in buckets) 
+         for (color in palette) 
          {
             ico.writeByte((color & 0xFF0000) >> 16);
             ico.writeByte((color & 0xFF00) >> 8);
             ico.writeByte((color & 0xFF));
             ico.writeByte(0x00);
-            nSlot--;
          }
-         while(nSlot>0)
+         for(i in palette.length...256)
          {
-            //black, at least in the last palette entry
             ico.writeByte(0x00);
             ico.writeByte(0x00);
             ico.writeByte(0x00);
             ico.writeByte(0x00);
-            nSlot--;
          }
 
          //write bmp (color indexes)
@@ -434,12 +480,16 @@ class IconHelper
          if (match == null && icon.width == 0 && icon.height == 0) 
          {
             match = icon;
-
-         } else if (icon.width == width && icon.height == height) 
+         }
+         else if (icon.width == width && icon.height == height) 
          {
             match = icon;
          }
       }
+
+      // Only the default icon...
+      if (match==null && icons.length==1 && icons[0].width==-1)
+         return icons[0];
 
       return match;
    }

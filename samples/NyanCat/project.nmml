@@ -9,7 +9,8 @@
 	<classpath name="Source" />
 	
 	<haxelib name="nme" />
-	<haxelib name="actuate" />
+	<haxelib name="swf" unless="jsprime" />
+	<haxelib name="gm2d" if="jsprime" />
 	
 	<assets path="Assets" rename="assets" include="*" exclude="nme.svg" />
 	<library path="Source/library.swf" />

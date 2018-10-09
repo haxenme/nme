@@ -16,7 +16,11 @@ class ScriptData
 
    public static function create():Void
    {
-      Assets.loadScriptAssetList();
+      ::foreach libraryHandlers::
+      Assets.addLibraryFactory( ::type::, function(id) return new ::handler::(id) );
+      ::end::
+
+      Assets.loadScriptAssetList2();
    }
 }
 

@@ -63,6 +63,7 @@ public:
    Filler             *mFiller;
    QuickVec<TileData> mTileData;
    BlendMode          mBlendMode;
+   unsigned int       mFlags;
 
    TileRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath)
    {
@@ -76,6 +77,7 @@ public:
       mBlendMode = bmNormal;
       if (inJob.mBlendMode==pcBlendModeAdd)
          mBlendMode = bmAdd;
+      mFlags = mFill->smooth ? 1 : 0;
 
       int size = (inJob.mTileMode & pcTile_Full_Image_Bit) ? 1 : 3;
       if (inJob.mTileMode & pcTile_Trans_Bit)
@@ -184,7 +186,7 @@ public:
                else
                   pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
 
-               s->StretchTo(inTarget, data.mRect, DRect(p0.x,p0.y,pos.x,pos.y,true));
+               s->StretchTo(inTarget, data.mRect, DRect(p0.x,p0.y,pos.x,pos.y,true), mFlags);
 
                //stretches++;
             }

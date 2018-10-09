@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+  <meta
+     title="NME Application"
+     package="::packageName::"
+     version="::version::"
+     company="::company::" 
+  />
+  
+  <app
+     file="::packageName::" 
+     main="Main"
+  />
+  
+  <window
+     width="640" 
+     height="480" 
+     orientation="landscape" 
+     fps="60"
+     background="0xeeeeee"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+  />
+
+  <icon name="${NME}/assets/icons/nme.svg" />
+  <source path="src" />
+  <haxelib name="nme" />
+  
+</project>

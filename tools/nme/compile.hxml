@@ -3,9 +3,9 @@
 -cp src
 -cp src/helpers
 -cp src/project
--cp ../..
+-cp ../../src
 -D nme
--D ndll_silent_fail
+-D ndll_silent_fail=1
 -lib format
 -lib gm2d
 -lib hxcpp

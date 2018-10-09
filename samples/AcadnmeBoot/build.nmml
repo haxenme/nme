@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+  <meta
+     title="Acadnme Booter"
+     package="com.acadnme.boot"
+     version="1.0.0"
+     company="nme" 
+     bin="bin" 
+  />
+  
+  <app
+     file="AcadnmeBoot" 
+     main="AcadnmeBoot"
+  />
+  
+  <!--background="0x643B0F"-->
+  <window
+     width="400" 
+     height="400" 
+     orientation="landscape" 
+     background="0xffffff"
+     fps="20"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+  />
+
+  <set name="deploy" value = "nme:../../bin/apps" if="installer" />
+
+  <!-- IBoot  -->
+  <classpath name="../../acadnme/src" />
+
+  <assets embed="true" >
+     <string name = "default.svg" />
+  </assets>
+  
+  <source path="src" />
+  
+  <haxelib name="nme" />
+  <haxelib name="gm2d" />
+  
+</project>

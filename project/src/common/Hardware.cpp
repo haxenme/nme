@@ -1,5 +1,6 @@
 #include <Graphics.h>
 #include <Surface.h>
+#include <NMEThread.h>
 
 
 #ifndef M_PI
@@ -142,9 +143,17 @@ public:
 
       if (mElement.mSurface)
       {
-         mElement.mFlags |= DRAW_HAS_TEX;
-         mElement.mTexOffset = mElement.mVertexOffset + mElement.mStride;
-         mElement.mStride += 2*sizeof(float);
+         if (tile_mode && (inJob.mTileMode & pcTile_Full_Image_Bit) )
+         {
+            // No need for texture data itself
+            mElement.mFlags |= DRAW_HAS_TEX;
+         }
+         else
+         {
+            mElement.mFlags |= DRAW_HAS_TEX;
+            mElement.mTexOffset = mElement.mVertexOffset + mElement.mStride;
+            mElement.mStride += 2*sizeof(float);
+         }
       }
 
       if (inJob.mTriangles)
@@ -345,7 +354,7 @@ public:
    template<typename T>
    void Next(T *&ptr)
    {
-      ptr = (T *)( (char *)ptr + mElement.mStride );
+      ptr = (T *)( ((char *)ptr) + mElement.mStride );
    }
 
 
@@ -438,7 +447,7 @@ public:
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
       int *colours = COL ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
-      bool premultiplyAlpha = mElement.mSurface && (mElement.mSurface->Format() == pfRGBPremA);
+      bool premultiplyAlpha = mElement.mSurface && IsPremultipliedAlpha(mElement.mSurface->Format());
 
       UserPoint *point = (UserPoint *)inData;
 
@@ -591,28 +600,251 @@ public:
    }
 
 
+   template<bool FULL, bool COL, bool TRANS>
+   void TAddTilesMt(const float *inData, int inTiles)
+   {
+      char *vertexPtr = (char *)&data.mArray[mElement.mVertexOffset];
+      char *texPtr = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (char *)&data.mArray[ mElement.mTexOffset ] : 0;
+      char *colourPtr = COL ? (char *)&data.mArray[ mElement.mColourOffset ] : 0;
+
+      bool premultiplyAlpha = mElement.mSurface && IsPremultipliedAlpha(mElement.mSurface->Format());
+
+      UserPoint pos;
+      UserPoint p1;
+      UserPoint p2;
+      UserPoint p3;
+
+      UserPoint tex0(0,0);
+      UserPoint tex1(1,1);
+      UserPoint bmpSize(mTexture->GetWidth(),mTexture->GetHeight());
+      if (bmpSize.x==0 || bmpSize.y==0)
+         bmpSize = UserPoint(1,1);
+
+      double texScaleX = 1.0/bmpSize.x;
+      double texScaleY = 1.0/bmpSize.y;
+
+      /*
+        Opengl is very clear when it comes to how pixels & textures are sampled.
+        The sampling is done at 1/2 pixel offsets, but there is still one case that causes issues.
+        When you draw the tile exactly on the 1/2 pixel offset, the geometry uses some convention
+         to decide whether to include the pixel or not.  By being consistent in its rounding direction,
+         it ensures that if two tiles touch each other, all the pixels will be drawn one way
+         or another. good. The problem is that in this case, the texture coords run exactly down the
+         crack between the pixels.  In the nearest-neighbour case, opengl must decide which texel
+         to render, using some convention.  However, sadly, this convention is not exactly the same as
+         the geometry convention.  This means that a texel inconistent with the geometry can be rendered.
+
+        To fix this we alter the tex-coords by 10-7 of a image, which means there is no "tie" in the
+         texture sampling equation, and no convetion is required.
+      */
+      #define texTol  0.0000001f
+
+      UserPoint tileSize = bmpSize;
+      int stride = mElement.mStride * 4;
+      int srcPoints = 1;
+      if (!FULL) srcPoints += 2;
+      if (TRANS) srcPoints += 2;
+      if (COL) srcPoints += 2;
+
+      while(true)
+      {
+         int pid = GetNextTask();
+         if (pid>=inTiles)
+            break;
+
+         UserPoint *point = ((UserPoint *)inData) + pid*srcPoints;
+
+         pos = *point++;
+
+         if (!FULL)
+         {
+            UserPoint tileOrigin = *point++;
+            tileSize  = *point++;
+
+            if (tileSize.x<0)
+            {
+               tex0.x = (tileOrigin.x ) * texScaleX - texTol;
+               tex1.x = (tileOrigin.x + tileSize.x ) * texScaleX + texTol;
+            }
+            else
+            {
+               tex0.x = (tileOrigin.x ) * texScaleX + texTol;
+               tex1.x = (tileOrigin.x + tileSize.x ) * texScaleX - texTol;
+            }
+
+            if (tileSize.y<0)
+            {
+               tex0.y = (tileOrigin.y ) * texScaleY - texTol;
+               tex1.y = (tileOrigin.y + tileSize.y ) * texScaleY + texTol;
+            }
+            else
+            {
+               tex0.y = (tileOrigin.y ) * texScaleY + texTol;
+               tex1.y = (tileOrigin.y + tileSize.y ) * texScaleY - texTol;
+            }
+         }
+
+         UserPoint *vertices = (UserPoint *)(vertexPtr + pid*stride);
+
+         if (TRANS)
+         {
+            UserPoint trans_x = *point++;
+            UserPoint trans_y = *point++;
+
+            UserPoint p1(pos.x + tileSize.x*trans_x.x,
+                         pos.y + tileSize.x*trans_x.y);
+            UserPoint p2(pos.x + tileSize.x*trans_x.x + tileSize.y*trans_y.x,
+                         pos.y + tileSize.x*trans_x.y + tileSize.y*trans_y.y );
+            UserPoint p3(pos.x + tileSize.y*trans_y.x,
+                         pos.y + tileSize.y*trans_y.y );
+
+
+            *vertices = ( pos );
+            Next(vertices);
+            *vertices = ( p1 );
+            Next(vertices);
+            *vertices = ( p3 );
+            Next(vertices);
+            *vertices = ( p2 );
+         }
+         else
+         {
+            UserPoint p1(pos.x + tileSize.x, pos.y + tileSize.y);
+
+            *vertices = (pos);
+            Next(vertices);
+            *vertices = UserPoint(p1.x,pos.y);
+            Next(vertices);
+            *vertices = UserPoint(pos.x,p1.y);
+            Next(vertices);
+            *vertices = p1;
+         }
+
+
+         if (!FULL)
+         {
+            UserPoint *tex = (UserPoint *)(texPtr + pid*stride);
+
+            *tex = tex0;
+            Next(tex);
+            *tex = UserPoint(tex1.x,tex0.y);
+            Next(tex);
+            *tex = UserPoint(tex0.x,tex1.y);
+            Next(tex);
+            *tex = tex1;
+         }
+
+         if (COL)
+         {
+            UserPoint rg = *point++;
+            UserPoint ba = *point++;
+
+            if (premultiplyAlpha)
+            {
+               rg.x *= ba.y;
+               rg.y *= ba.y;
+               ba.x *= ba.y;
+            }
+
+            #ifdef BLACKBERRY
+            uint32 col = ((int)(rg.x*255)) |
+                         (((int)(rg.y*255))<<8) |
+                         (((int)(ba.x*255))<<16) |
+                         (((int)(ba.y*255))<<24);
+            #else
+            uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
+                         ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
+                         ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
+                         ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
+            #endif
+
+            uint32 *colours = (uint32 *)(colourPtr + pid*stride);
+
+            *colours = ( col );
+            Next(colours);
+            *colours = ( col );
+            Next(colours);
+            *colours = ( col );
+            Next(colours);
+            *colours = ( col );
+         }
+      }
+   }
+
+
+
+   struct AddTileJob
+   {
+      AddTileJob(int inMode, const float *inData, int inTiles, HardwareBuilder *inBuilder) :
+         mode(inMode), data(inData), tiles(inTiles), builder(inBuilder) { }
+
+      int mode;
+      const float *data;
+      int tiles;
+      HardwareBuilder *builder;
+   };
+
+   static void SAddTiles(int, void *inJob)
+   {
+      AddTileJob *job = (AddTileJob *)inJob;
+
+      bool fullTile =  job->mode & pcTile_Full_Image_Bit;
+      bool hasColour = job->mode & pcTile_Col_Bit;
+      bool hasTrans =  job->mode & pcTile_Trans_Bit;
+
+      const float *inData = job->data;
+      int inTiles = job->tiles;
+      HardwareBuilder *thiz = job->builder;
+
+      if      (!fullTile && !hasColour && !hasTrans)
+         thiz->TAddTilesMt<false,false,false>(inData, inTiles);
+      else if (!fullTile && !hasColour && hasTrans)
+         thiz->TAddTilesMt<false,false,true>(inData, inTiles);
+      else if (!fullTile && hasColour && !hasTrans)
+         thiz->TAddTilesMt<false,true,false>(inData, inTiles);
+      else if (!fullTile && hasColour && hasTrans)
+         thiz->TAddTilesMt<false,true,true>(inData, inTiles);
+      else if (fullTile && !hasColour && !hasTrans)
+         thiz->TAddTilesMt<true,false,false>(inData, inTiles);
+      else if (fullTile && !hasColour && hasTrans)
+         thiz->TAddTilesMt<true,false,true>(inData, inTiles);
+      else if (fullTile && hasColour && !hasTrans)
+         thiz->TAddTilesMt<true,true,false>(inData, inTiles);
+      else if (fullTile && hasColour && hasTrans)
+         thiz->TAddTilesMt<true,true,true>(inData, inTiles);
+   }
+
    void AddTiles(int inMode, const float *inData, int inTiles)
    {
-       bool fullTile =  inMode & pcTile_Full_Image_Bit;
-       bool hasColour = inMode & pcTile_Col_Bit;
-       bool hasTrans =  inMode & pcTile_Trans_Bit;
+      if (inTiles>100 && nme::GetWorkerCount()>1)
+      {
+         AddTileJob job(inMode, inData, inTiles, this);
 
-       if      (!fullTile && !hasColour && !hasTrans)
-          TAddTiles<false,false,false>(inData, inTiles);
-       else if (!fullTile && !hasColour && hasTrans)
-          TAddTiles<false,false,true>(inData, inTiles);
-       else if (!fullTile && hasColour && !hasTrans)
-          TAddTiles<false,true,false>(inData, inTiles);
-       else if (!fullTile && hasColour && hasTrans)
-          TAddTiles<false,true,true>(inData, inTiles);
-       else if (fullTile && !hasColour && !hasTrans)
-          TAddTiles<true,false,false>(inData, inTiles);
-       else if (fullTile && !hasColour && hasTrans)
-          TAddTiles<true,false,true>(inData, inTiles);
-       else if (fullTile && hasColour && !hasTrans)
-          TAddTiles<true,true,false>(inData, inTiles);
-       else if (fullTile && hasColour && hasTrans)
-          TAddTiles<true,true,true>(inData, inTiles);
+         RunWorkerTask(SAddTiles, &job);
+      }
+      else
+      {
+         bool fullTile =  inMode & pcTile_Full_Image_Bit;
+         bool hasColour = inMode & pcTile_Col_Bit;
+         bool hasTrans =  inMode & pcTile_Trans_Bit;
+
+         if      (!fullTile && !hasColour && !hasTrans)
+            TAddTiles<false,false,false>(inData, inTiles);
+         else if (!fullTile && !hasColour && hasTrans)
+            TAddTiles<false,false,true>(inData, inTiles);
+         else if (!fullTile && hasColour && !hasTrans)
+            TAddTiles<false,true,false>(inData, inTiles);
+         else if (!fullTile && hasColour && hasTrans)
+            TAddTiles<false,true,true>(inData, inTiles);
+         else if (fullTile && !hasColour && !hasTrans)
+            TAddTiles<true,false,false>(inData, inTiles);
+         else if (fullTile && !hasColour && hasTrans)
+            TAddTiles<true,false,true>(inData, inTiles);
+         else if (fullTile && hasColour && !hasTrans)
+            TAddTiles<true,true,false>(inData, inTiles);
+         else if (fullTile && hasColour && hasTrans)
+            TAddTiles<true,true,true>(inData, inTiles);
+      }
 
       mElement.mCount = inTiles*4;
 
@@ -2261,7 +2493,7 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
          {
             for(int i=2;i<draw.mCount;i++)
             {
-               if (HitTri(V(i-2), V(i-2),V(i), pos ))
+               if (HitTri(V(i-2), V(i-1),V(i), pos ))
                   return true;
             }
          }

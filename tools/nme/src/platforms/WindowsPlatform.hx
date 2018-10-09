@@ -28,6 +28,7 @@ class WindowsPlatform extends DesktopPlatform
    override public function getBinName() : String { return is64 ? "Windows64" : "Windows"; }
    override public function getNativeDllExt() { return ".dll"; }
    override public function getLibExt() { return ".lib"; }
+   override public function getBinaryName() { return executableFile; }
 
 
    override public function copyBinary():Void 
@@ -54,7 +55,8 @@ class WindowsPlatform extends DesktopPlatform
 
    override public function run(arguments:Array<String>):Void 
    {
-      ProcessHelper.runCommand(applicationDirectory, Path.withoutDirectory(executablePath), arguments);
+      var dir = deployDir!=null ? deployDir : applicationDirectory;
+      ProcessHelper.runCommand(dir, Path.withoutDirectory(executablePath), arguments);
    }
 }
 

@@ -68,6 +68,8 @@ class IGraphicsData : public Object
 public:
    IGraphicsData() { };
 
+   NmeObjectType getObjectType() { return notIGraphicsData; }
+
    IGraphicsData *IncRef() { mRefCount++; return this; }
 
    virtual GraphicsDataType GetType() { return gdtUnknown; }
@@ -178,6 +180,7 @@ class GraphicsBitmapFill : public IGraphicsFill
 {
 public:
    GraphicsBitmapFill(Surface *inBitmapData, const Matrix &inMatrix, bool inRepeat, bool inSmooth);
+   GraphicsBitmapFill() : bitmapData(0) { }
    ~GraphicsBitmapFill();
 
    GraphicsDataType GetType() { return gdtBitmapFill; }
@@ -266,6 +269,7 @@ enum PathCommand
 
 extern int gCommandDataSize[256];
 
+#undef WindingRule
 enum WindingRule { wrOddEven, wrNonZero };
 
 
@@ -356,6 +360,7 @@ public:
             const QuickVec<float> &inUVT, int inCull,
             const QuickVec<int> &inColours,
             int blendMode );
+   GraphicsTrianglePath() { }
 
    VertexType       mType;
    int              mTriangleCount;
@@ -458,6 +463,8 @@ struct Transform
    int            mAAFactor;
 };
 
+class HardwareData;
+
 
 
 class BitmapCache
@@ -492,6 +499,9 @@ public:
    Matrix     mMatrix;
    Scale9     mScale9;
    Surface    *mBitmap;
+
+   HardwareData *mHardwareBuffer;
+   Rect         mLastHardwareSrc;
 
 	ImagePoint mMaskOffset;
 	int        mMaskVersion;
@@ -539,7 +549,6 @@ struct RenderState
 };
 
 
-class HardwareData;
 class HardwareRenderer;
 
 
@@ -587,10 +596,6 @@ public:
 
    virtual bool Hits(const RenderState &inState) { return false; }
    
-   #ifdef NME_DIRECTFB
-   static Renderer *CreateHardware(const class GraphicsJob &inJob,const GraphicsPath &inPath,HardwareContext &inHardware);
-   #endif
-   
    static Renderer *CreateSoftware(const class GraphicsJob &inJob,const GraphicsPath &inPath);
 
 protected:
@@ -608,9 +613,6 @@ struct GraphicsJob
    GraphicsStroke  *mStroke;
    IGraphicsFill   *mFill;
    GraphicsTrianglePath  *mTriangles;
-   #ifdef NME_DIRECTFB
-   class Renderer  *mHardwareRenderer;
-   #endif
    class Renderer  *mSoftwareRenderer;
    int             mCommand0;
    int             mData0;
@@ -633,9 +635,35 @@ typedef QuickVec<GraphicsJob> GraphicsJobs;
 
 class Graphics : public Object
 {
+private:
+   DisplayObject             *mOwner;
+   GraphicsJobs              mJobs;
+   int                       mVersion;
+
+   int                       mConvertedJobs;
+   int                       mMeasuredJobs;
+   int                       mBuiltHardware;
+   int                       mClearCount;
+
+   GraphicsPath              *mPathData;
+   HardwareData              *mHardwareData;
+
+   double                    mRotation0;
+   Extent2DF                 mExtent0;
+
+   GraphicsJob               mFillJob;
+   GraphicsJob               mLineJob;
+   GraphicsJob               mTileJob;
+
+   UserPoint                 mCursor;
+
+
 public:
    Graphics(DisplayObject *inOwner, bool inInitRef = false);
    ~Graphics();
+
+   void setOwner(DisplayObject *owner);
+   NmeObjectType getObjectType() { return notGraphics; }
 
    void clear(bool inForceHardwareFree=false);
 
@@ -696,32 +724,17 @@ public:
 
    int Version() const;
 
+
+   void encodeStream(class ObjectStreamOut &inStream);
+   void decodeStream(class ObjectStreamIn &inStream);
+   static Graphics *fromStream(class ObjectStreamIn &inStream);
+
 protected:
    void                      BuildHardware();
    void                      Flush(bool inLine=true,bool inFill=true,bool inTile=true);
    inline void               OnChanged();
 
 private:
-   DisplayObject             *mOwner;
-   GraphicsJobs              mJobs;
-   int                       mVersion;
-
-   int                       mConvertedJobs;
-   int                       mMeasuredJobs;
-   int                       mBuiltHardware;
-   int                       mClearCount;
-
-   GraphicsPath              *mPathData;
-   HardwareData              *mHardwareData;
-
-   double                    mRotation0;
-   Extent2DF                 mExtent0;
-
-   GraphicsJob               mFillJob;
-   GraphicsJob               mLineJob;
-   GraphicsJob               mTileJob;
-
-   UserPoint                 mCursor;
 
    void BuiltExtent0(double inRotation);
 

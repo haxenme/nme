@@ -19,7 +19,9 @@ Tilesheet::Tilesheet(Surface *inSurface,bool inInitRef) : Object(inInitRef)
    mCurrentX = 0;
    mCurrentY = 0;
    mMaxHeight = 0;
-   mSheet = inSurface->IncRef();
+   mSheet = inSurface;
+   if (mSheet)
+      mSheet->IncRef();
 
 }
 
@@ -105,6 +107,39 @@ bool Tilesheet::IsSingleTileImage()
    }
    return false;
 }
+
+void Tilesheet::encodeStream(ObjectStreamOut &inStream)
+{
+   inStream.add(mCurrentX);
+   inStream.add(mCurrentY);
+   inStream.add(mMaxHeight);
+   inStream.addObject(mSheet);
+   inStream.addVec(mTiles);
+}
+
+
+void Tilesheet::decodeStream(ObjectStreamIn &inStream)
+{
+   inStream.get(mCurrentX);
+   inStream.get(mCurrentY);
+   inStream.get(mMaxHeight);
+   inStream.getObject(mSheet);
+   inStream.getVec(mTiles);
+   for(int i=0;i<mTiles.size();i++)
+      mTiles[i].mSurface = mSheet;
+}
+
+
+Tilesheet *Tilesheet::fromStream(ObjectStreamIn &inStream)
+{
+   Tilesheet *result = new Tilesheet(0,false);
+   inStream.linkAbstract(result);
+   result->decodeStream(inStream);
+
+   return result;
+}
+
+
 
 
 } // end namespace nme

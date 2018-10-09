@@ -35,6 +35,8 @@ int BytesPerPixel(PixelFormat pixelFormat)
       case pfRGB:      return 3;
       case pfBGRA:     return 4;
       case pfBGRPremA: return 4;
+      case pfRGBPremA: return 4;
+      case pfRGBA:     return 4;
       case pfAlpha: return 1;
       case pfARGB4444: return 2;
       case pfRGB565: return 2;
@@ -42,7 +44,11 @@ int BytesPerPixel(PixelFormat pixelFormat)
       case pfLumaAlpha: return 2;
       case pfUInt16: return 2;
       case pfUInt32: return 4;
+      case pfRGB32f: return 12;
+      case pfRGBA32f: return 16;
+      default: ;
    }
+
    // hmmm
    return 1;
 }
@@ -58,6 +64,7 @@ int GetPixelChannelOffset(PixelFormat inFormat, PixelChannel inChannel)
          case pfAlpha: return 0;
          case pfLumaAlpha: return 1;
          case pfRGBPremA: case pfRGBA: return 3;
+         default: ;
       }
       return CHANNEL_OFFSET_VIRTUAL_ALPHA;
    }
@@ -68,6 +75,7 @@ int GetPixelChannelOffset(PixelFormat inFormat, PixelChannel inChannel)
          case pfBGRA: case pfBGRPremA: return 2;
          case pfRGB: case pfRGBPremA: case pfRGBA: return 0;
          case pfLuma: case pfLumaAlpha: return 0;
+         default: ;
       }
    }
    else if (inChannel==CHAN_GREEN)
@@ -77,6 +85,7 @@ int GetPixelChannelOffset(PixelFormat inFormat, PixelChannel inChannel)
          case pfBGRA: case pfBGRPremA: return 1;
          case pfRGB: case pfRGBPremA: case pfRGBA: return 1;
          case pfLuma: case pfLumaAlpha: return 0;
+         default: ;
       }
    }
    else if (inChannel==CHAN_BLUE)
@@ -86,6 +95,7 @@ int GetPixelChannelOffset(PixelFormat inFormat, PixelChannel inChannel)
          case pfBGRA: case pfBGRPremA: return 0;
          case pfRGB: case pfRGBPremA: case pfRGBA: return 2;
          case pfLuma: case pfLumaAlpha: return 0;
+         default: ;
       }
    }
    return CHANNEL_OFFSET_NONE;
@@ -135,6 +145,7 @@ void TPixelConvert(PixelConvertJob &job)
       case pfRGBPremA: TTPixelConvert<SRC,RGBA<true> >(job); break;
       case pfRGB565: TTPixelConvert<SRC,RGB565 >(job); break;
       case pfARGB4444: TTPixelConvert<SRC,ARGB4444 >(job); break;
+      default: ; // TODO
    }
 }
 
@@ -173,6 +184,7 @@ void PixelConvert(int inWidth, int inHeight,
       //case pfRGBPremA: TPixelConvert<RGBA<true> >(job); break;
       case pfRGB565: TPixelConvert<RGB565>(job); break;
       case pfARGB4444: TPixelConvert<ARGB4444>(job); break;
+      default: ; // TODO
    }
 
 
@@ -233,8 +245,8 @@ void SetPixelRect(unsigned int inRgb, const Rect &inRect,
       case pfRGBPremA: TSetPixelRect<RGBA<true> >(job); break;
       case pfRGB565: TSetPixelRect<RGB565>(job); break;
       case pfARGB4444: TSetPixelRect<ARGB4444>(job); break;
+      default: ; // TODO
    }
-
 }
 
 

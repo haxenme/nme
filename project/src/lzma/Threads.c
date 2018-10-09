@@ -42,7 +42,7 @@ WRes Thread_Create(CThread *p, THREAD_FUNC_TYPE func, LPVOID param)
 
 WRes Event_Create(CEvent *p, BOOL manualReset, int signaled)
 {
-  *p = CreateEvent(NULL, manualReset, (signaled ? TRUE : FALSE), NULL);
+  *p = CreateEvent(0, manualReset, (signaled ? TRUE : FALSE), 0);
   return HandleToWRes(*p);
 }
 

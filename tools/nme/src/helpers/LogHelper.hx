@@ -43,12 +43,15 @@ class LogHelper
 
    public static function verbose(message:String):Void 
    {
-      if (mVerbose)
+      if (!mute && mVerbose)
          Sys.println(message);
    }
 
    public static function info(message:String, verboseMessage:String = ""):Void 
    {
+      if (mute)
+         return;
+
       if (mVerbose && verboseMessage != "") 
          Sys.println(verboseMessage);
       else if (message != "") 
@@ -57,6 +60,9 @@ class LogHelper
 
    public static function warn(message:String, verboseMessage:String = "", allowRepeat:Bool = false):Void 
    {
+      if (mute)
+         return;
+
       var output = "";
 
       if (mVerbose && verboseMessage != "") 

@@ -25,11 +25,13 @@
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 #ifdef NME_MIXER
 #include <SDL_mixer.h>
 #endif
+
 
 #ifdef SDL_IMAGE
 #include <SDL_image.h>
@@ -46,25 +48,25 @@ SDL_SysWMinfo wminfo;
 
 void init_win32()
 {
-	SDL_Cursor *cursor = SDL_GetCursor();
+   SDL_Cursor *cursor = SDL_GetCursor();
 
-	HINSTANCE handle = GetModuleHandle(NULL);
-	//((struct zWMcursor *)cursor->wm_cursor)->curs = (void *)LoadCursorA(NULL, IDC_ARROW);
-	((struct zWMcursor *)cursor->wm_cursor)->curs = (void *)LoadCursor(NULL, IDC_ARROW);
-	SDL_SetCursor(cursor);
+   HINSTANCE handle = GetModuleHandle(NULL);
+   //((struct zWMcursor *)cursor->wm_cursor)->curs = (void *)LoadCursorA(NULL, IDC_ARROW);
+   ((struct zWMcursor *)cursor->wm_cursor)->curs = (void *)LoadCursor(NULL, IDC_ARROW);
+   SDL_SetCursor(cursor);
 
-	icon = LoadIcon(handle, (char *)101);
-	SDL_GetWMInfo(&wminfo);
-	hwnd = wminfo.window;
-	SetClassLong(hwnd, GCL_HICON, (LONG)icon);
+   icon = LoadIcon(handle, (char *)101);
+   SDL_GetWMInfo(&wminfo);
+   hwnd = wminfo.window;
+   SetClassLong(hwnd, GCL_HICON, (LONG)icon);
 
-	SDL_putenv("SDL_VIDEO_WINDOW_POS=center");
-	SDL_putenv("SDL_VIDEO_CENTERED=center");
+   SDL_putenv("SDL_VIDEO_WINDOW_POS=center");
+   SDL_putenv("SDL_VIDEO_CENTERED=center");
 }
 
 void done_win32()
 {
-	DestroyIcon(icon);
+   DestroyIcon(icon);
 }
 #endif
 
@@ -72,8 +74,13 @@ void done_win32()
 namespace nme
 {
 
+extern double CapabilitiesGetScreenDPI();
+
 static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
+static int sgCanvasWidth = 0;
+static int sgCanvasHeight = 0;
+static double sgDeviceDpi = 0.0;
 
 static bool sgInitCalled = false;
 static bool sgJoystickEnabled = false;
@@ -84,39 +91,43 @@ enum { NO_TOUCH = -1 };
 
 //To guard against multiple calls
 int initSDL () {
-	
-	if (sgInitCalled)
-		return 0;
-	
-	sgInitCalled = true;
-	
-	#ifdef WEBOS
-	   if (PDL_GetPDKVersion () >= 100)
-		  PDL_Init(0);
-	#endif
-	
-	int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
-	
-	#if HX_WINDOWS
-		init_win32();
-	#endif
-	
-	if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0) {
-		
-		sgJoystickEnabled = true;
-		
-	}
-	
-	#ifdef BLACKBERRY
-	if (err == 0) {
-		
-		SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
-		
-	}
-	#endif
-	
-	return err;
-	
+   
+   if (sgInitCalled)
+      return 0;
+   
+   sgInitCalled = true;
+   
+   #ifdef WEBOS
+      if (PDL_GetPDKVersion () >= 100)
+        PDL_Init(0);
+   #endif
+   
+   #ifdef EMSCRIPTEN
+   int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_TIMER);
+   #else
+   int err = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
+   #endif
+   
+   #if HX_WINDOWS
+      init_win32();
+   #endif
+   
+   if (err == 0 && SDL_InitSubSystem (SDL_INIT_JOYSTICK) == 0) {
+      
+      sgJoystickEnabled = true;
+      
+   }
+   
+   #ifdef BLACKBERRY
+   if (err == 0) {
+      
+      SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
+      
+   }
+   #endif
+   
+   return err;
+   
 }
 
 
@@ -138,9 +149,7 @@ public:
    int Height() const  { return mSurf->h; }
    PixelFormat Format()  const
    {
-      if (mSurf->flags & SDL_SRCALPHA)
-         return pfARGB;
-      return pfXRGB;
+      return pfBGRA;
    }
    const uint8 *GetBase() const { return (const uint8 *)mSurf->pixels; }
    int GetStride() const { return mSurf->pitch; }
@@ -195,14 +204,14 @@ public:
                uint32 inTint=0xffffff ) const
    {
    }
-	void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
-									 int inPosX, int inPosY,
-									 int inSrcChannel, int inDestChannel ) const
-	{
-	}
+   void BlitChannel(const RenderTarget &outTarget, const Rect &inSrcRect,
+                            int inPosX, int inPosY,
+                            int inSrcChannel, int inDestChannel ) const
+   {
+   }
 
    void StretchTo(const RenderTarget &outTarget,
-          const Rect &inSrcRect, const DRect &inDestRect) const
+          const Rect &inSrcRect, const DRect &inDestRect,unsigned int) const
    {
    }
 
@@ -234,7 +243,7 @@ Surface *Surface::Load(const OSChar *inFilename)
    
    if (img != NULL)
    {
-	  Surface *result = new SDLSurf(img, true);
+     Surface *result = new SDLSurf(img, true);
       result->IncRef();
       return result;
    }
@@ -325,13 +334,13 @@ public:
          mPrimarySurface = new SDLSurf(inSurface,inIsOpenGL);
       }
       mPrimarySurface->IncRef();
-	  
-	  #if defined(WEBOS) || defined(BLACKBERRY)
-	  mMultiTouch = true;
-	  #else
-	  mMultiTouch = false;
-	  #endif
-	  mSingleTouchID = NO_TOUCH;
+     
+     #if defined(WEBOS) || defined(BLACKBERRY)
+     mMultiTouch = true;
+     #else
+     mMultiTouch = false;
+     #endif
+     mSingleTouchID = NO_TOUCH;
       mDX = 0;
       mDY = 0;
 
@@ -458,6 +467,7 @@ public:
             mOpenGLContext->DecRef();
             mOpenGLContext = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
             mOpenGLContext->SetWindowSize(w, h);
+            printf("mOpenGLContext SetWindowSize %d,%d\n", w,h);
             mOpenGLContext->IncRef();
             mPrimarySurface->DecRef();
             mPrimarySurface = new HardwareSurface(mOpenGLContext);
@@ -484,25 +494,25 @@ public:
 
    void ProcessEvent(Event &inEvent)
    {
-	   
-	   #ifdef HX_MACOS
-	   
-	   if (inEvent.type == etKeyUp && (inEvent.flags & efCommandDown))
-	   {
-		   switch (inEvent.code)
-		   {
-			   case SDLK_q:
-			   case SDLK_w: 
-				   inEvent.type = etQuit;
-				   break;
-			   case SDLK_m:
-				   SDL_WM_IconifyWindow();
-				   return;
-		   }
-	   }
-	   
-	   #endif
-	   
+      
+      #ifdef HX_MACOS
+      
+      if (inEvent.type == etKeyUp && (inEvent.flags & efCommandDown))
+      {
+         switch (inEvent.code)
+         {
+            case SDLK_q:
+            case SDLK_w: 
+               inEvent.type = etQuit;
+               break;
+            case SDLK_m:
+               SDL_WM_IconifyWindow();
+               return;
+         }
+      }
+      
+      #endif
+      
       #if defined(HX_WINDOWS) || defined(HX_LINUX)
       
       if (inEvent.type == etKeyUp && (inEvent.flags & efAltDown) && inEvent.value == keyF4)
@@ -511,43 +521,43 @@ public:
       }
       
       #endif
-	   
-	  #if defined(WEBOS) || defined(BLACKBERRY)
-	   
-	   if (inEvent.type == etMouseMove || inEvent.type == etMouseDown || inEvent.type == etMouseUp) {
-		   
-		   if (mSingleTouchID == NO_TOUCH || inEvent.value == mSingleTouchID || !mMultiTouch)
-			inEvent.flags |= efPrimaryTouch;
-			
-			if (mMultiTouch) {
-				
-				switch(inEvent.type)
+      
+     #if defined(WEBOS) || defined(BLACKBERRY)
+      
+      if (inEvent.type == etMouseMove || inEvent.type == etMouseDown || inEvent.type == etMouseUp) {
+         
+         if (mSingleTouchID == NO_TOUCH || inEvent.value == mSingleTouchID || !mMultiTouch)
+         inEvent.flags |= efPrimaryTouch;
+         
+         if (mMultiTouch) {
+            
+            switch(inEvent.type)
                {
                   case  etMouseDown: inEvent.type = etTouchBegin; break;
-				  case  etMouseUp: inEvent.type = etTouchEnd; break;
-				  case  etMouseMove: inEvent.type = etTouchMove; break;
+              case  etMouseUp: inEvent.type = etTouchEnd; break;
+              case  etMouseMove: inEvent.type = etTouchMove; break;
                }
-			   
-			   if (inEvent.type == etTouchBegin) {
-					
-					mDownX = inEvent.x;
-					mDownY = inEvent.y;
-					
-				}
-				
-				if (inEvent.type == etTouchEnd) {
-					
-					if (mSingleTouchID==inEvent.value)
-						mSingleTouchID = NO_TOUCH;
-					
-				}
-				
-			}
-		   
-	   }
-	   
-	   #endif
-	   
+            
+            if (inEvent.type == etTouchBegin) {
+               
+               mDownX = inEvent.x;
+               mDownY = inEvent.y;
+               
+            }
+            
+            if (inEvent.type == etTouchEnd) {
+               
+               if (mSingleTouchID==inEvent.value)
+                  mSingleTouchID = NO_TOUCH;
+               
+            }
+            
+         }
+         
+      }
+      
+      #endif
+      
       HandleEvent(inEvent);
    }
 
@@ -573,12 +583,12 @@ public:
 
    void SetCursor(Cursor inCursor)
    {
-	  #if defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
-	  SDL_ShowCursor(false);
-	  return;
-	  #endif
-	  
-	  if (sDefaultCursor==0)
+     #if defined(WEBOS) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
+     SDL_ShowCursor(false);
+     return;
+     #endif
+     
+     if (sDefaultCursor==0)
          sDefaultCursor = SDL_GetCursor();
 
       mCurrentCursor = inCursor;
@@ -643,12 +653,12 @@ public:
             PDL_SetKeyboardState (PDL_FALSE);
             
          }
-      	
+         
       }
       
       #endif
-	  
-	  #ifdef BLACKBERRY
+     
+     #ifdef BLACKBERRY
       
       if (inMode) {
          
@@ -659,26 +669,26 @@ public:
          virtualkeyboard_hide();
          
       }
-	  
+     
       #endif
       
    }
    
    
    bool getMultitouchSupported() { 
-	   #if defined(WEBOS) || defined(BLACKBERRY)
-	   return true;
-	   #else
-	   return false;
-	   #endif
+      #if defined(WEBOS) || defined(BLACKBERRY)
+      return true;
+      #else
+      return false;
+      #endif
    }
    void setMultitouchActive(bool inActive) { mMultiTouch = inActive; }
    bool getMultitouchActive() {
-	   #if defined(WEBOS) || defined(BLACKBERRY)
-	   return mMultiTouch;
-	   #else
-	   return false;
-	   #endif
+      #if defined(WEBOS) || defined(BLACKBERRY)
+      return mMultiTouch;
+      #else
+      return false;
+      #endif
    }
    
    bool mMultiTouch;
@@ -728,6 +738,10 @@ public:
       mStage = new SDLStage(inSurface,mFlags,inIsOpenGL,inW,inH);
       mStage->IncRef();
       // SetTimer(mHandle,timerFrame, 10,0);
+      #ifdef HXCPP_JS_PRIME
+      // Never die
+      IncRef();
+      #endif
    }
    ~SDLFrame()
    {
@@ -746,12 +760,6 @@ public:
 
   // --- Frame Interface ----------------------------------------------------
 
-   void SetTitle()
-   {
-   }
-   void SetIcon()
-   {
-   }
    Stage *GetStage()
    {
       return mStage;
@@ -786,15 +794,15 @@ void AddModStates(int &ioFlags,int inState = -1)
    if (state & KMOD_CTRL) ioFlags |= efCtrlDown;
    if (state & KMOD_ALT) ioFlags |= efAltDown;
    if (state & KMOD_META) ioFlags |= efCommandDown;
-	
+   
  
-	int m = SDL_GetMouseState(0,0);
-	if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
-	if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
-	if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
-		
+   int m = SDL_GetMouseState(0,0);
+   if ( m & SDL_BUTTON(1) ) ioFlags |= efLeftDown;
+   if ( m & SDL_BUTTON(2) ) ioFlags |= efMiddleDown;
+   if ( m & SDL_BUTTON(3) ) ioFlags |= efRightDown;
+      
 
-	ioFlags |= efPrimaryTouch;
+   ioFlags |= efPrimaryTouch;
    ioFlags |= efNoNativeClick;
 }
 
@@ -804,15 +812,10 @@ int SDLKeyToFlash(int inKey,bool &outRight)
 {
    outRight = (inKey==SDLK_RSHIFT || inKey==SDLK_RCTRL ||
                inKey==SDLK_RALT || inKey==SDLK_RMETA || inKey==SDLK_RSUPER);
-   if (inKey>=keyA && inKey<=keyZ)
-      return inKey;
-   if (inKey>=SDLK_0 && inKey<=SDLK_9)
-      return inKey - SDLK_0 + keyNUMBER_0;
-   if (inKey>=SDLK_KP0 && inKey<=SDLK_KP9)
-      return inKey - SDLK_KP0 + keyNUMPAD_0;
-
-   if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
-      return inKey - SDLK_F1 + keyF1;
+   if (inKey>=SDLK_a && inKey<=SDLK_z)
+   {
+      return inKey-SDLK_a + keyA;
+   }
 
 
    switch(inKey)
@@ -862,6 +865,15 @@ int SDLKeyToFlash(int inKey,bool &outRight)
       SDL_TRANS(UP)
    }
 
+   if (inKey>=SDLK_0 && inKey<=SDLK_9)
+      return inKey - SDLK_0 + keyNUMBER_0;
+
+   if (inKey>=SDLK_KP0 && inKey<=SDLK_KP9)
+      return inKey - SDLK_KP0 + keyNUMPAD_0;
+
+   if (inKey>=SDLK_F1 && inKey<=SDLK_F15)
+      return inKey - SDLK_F1 + keyF1;
+
    return inKey;
 }
 
@@ -880,30 +892,30 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(close);
          break;
       }
-	   case SDL_ACTIVEEVENT:
+      case SDL_ACTIVEEVENT:
       {
          if (inEvent.active.state & SDL_APPINPUTFOCUS)
          {
             Event activate( inEvent.active.gain ? etGotInputFocus : etLostInputFocus );
             sgSDLFrame->ProcessEvent(activate);
          }
-	
+   
          if (inEvent.active.state & SDL_APPACTIVE)
          {
             Event activate( inEvent.active.gain ? etActivate : etDeactivate );
             sgSDLFrame->ProcessEvent(activate);
          }
-		   break;
-	   }
+         break;
+      }
       case SDL_MOUSEMOTION:
       {
          Event mouse(etMouseMove,inEvent.motion.x,inEvent.motion.y);
-		 #if defined(WEBOS) || defined(BLACKBERRY)
-		 mouse.value = inEvent.motion.which;
-		 mouse.flags |= efLeftDown;
-		 #else
-		 AddModStates(mouse.flags);
-		 #endif
+       #if defined(WEBOS) || defined(BLACKBERRY)
+       mouse.value = inEvent.motion.which;
+       mouse.flags |= efLeftDown;
+       #else
+       AddModStates(mouse.flags);
+       #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
@@ -911,22 +923,22 @@ void ProcessEvent(SDL_Event &inEvent)
       {
          Event mouse(etMouseDown,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
          #if defined(WEBOS) || defined(BLACKBERRY)
-		 mouse.value = inEvent.motion.which;
-		 mouse.flags |= efLeftDown;
-		 #else
-		 AddModStates(mouse.flags);
-		 #endif
+       mouse.value = inEvent.motion.which;
+       mouse.flags |= efLeftDown;
+       #else
+       AddModStates(mouse.flags);
+       #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
       case SDL_MOUSEBUTTONUP:
       {
          Event mouse(etMouseUp,inEvent.button.x,inEvent.button.y,inEvent.button.button-1);
-		 #if defined(WEBOS) || defined(BLACKBERRY)
-		 mouse.value = inEvent.motion.which;
-		 #else
-		 AddModStates(mouse.flags);
-		 #endif
+       #if defined(WEBOS) || defined(BLACKBERRY)
+       mouse.value = inEvent.motion.which;
+       #else
+       AddModStates(mouse.flags);
+       #endif
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
@@ -943,9 +955,11 @@ void ProcessEvent(SDL_Event &inEvent)
             sLastUnicode[inEvent.key.keysym.scancode] = key.code;
          }
          else
+         {
             // SDL does not provide unicode on key up, so remember it,
             //  keyed by scancode
             key.code = sLastUnicode[inEvent.key.keysym.scancode];
+         }
 
          AddModStates(key.flags,inEvent.key.keysym.mod);
          if (right)
@@ -954,12 +968,12 @@ void ProcessEvent(SDL_Event &inEvent)
          break;
       }
 
-	  case SDL_VIDEOEXPOSE:
-	  {
-			Event poll(etPoll);
-			sgSDLFrame->ProcessEvent(poll);
+     case SDL_VIDEOEXPOSE:
+     {
+         Event poll(etPoll);
+         sgSDLFrame->ProcessEvent(poll);
          break;
-	  }
+     }
       case SDL_VIDEORESIZE:
       {
          Event resize(etResize,inEvent.resize.w,inEvent.resize.h);
@@ -967,88 +981,74 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(resize);
          break;
       }
-	  
-	  case SDL_JOYAXISMOTION:
-	  {
+     
+     case SDL_JOYAXISMOTION:
+     {
          Event joystick(etJoyAxisMove);
          joystick.id = inEvent.jaxis.which;
          joystick.code = inEvent.jaxis.axis;
          joystick.value = inEvent.jaxis.value;
          sgSDLFrame->ProcessEvent(joystick);
          break;
-	  }
-	  case SDL_JOYBALLMOTION:
-	  {
+     }
+     case SDL_JOYBALLMOTION:
+     {
          Event joystick(etJoyBallMove, inEvent.jball.xrel, inEvent.jball.yrel);
          joystick.id = inEvent.jball.which;
          joystick.code = inEvent.jball.ball;
          sgSDLFrame->ProcessEvent(joystick);
          break;
-	  }
-	  case SDL_JOYBUTTONDOWN:
-	  {
+     }
+     case SDL_JOYBUTTONDOWN:
+     {
          Event joystick(etJoyButtonDown);
          joystick.id = inEvent.jbutton.which;
          joystick.code = inEvent.jbutton.button;
          sgSDLFrame->ProcessEvent(joystick);
          break;
-	  }
-	  case SDL_JOYBUTTONUP:
-	  {
+     }
+     case SDL_JOYBUTTONUP:
+     {
          Event joystick(etJoyButtonUp);
          joystick.id = inEvent.jbutton.which;
          joystick.code = inEvent.jbutton.button;
          sgSDLFrame->ProcessEvent(joystick);
          break;
-	  }
-	  case SDL_JOYHATMOTION:
-	  {
+     }
+     case SDL_JOYHATMOTION:
+     {
          Event joystick(etJoyHatMove);
          joystick.id = inEvent.jhat.which;
          joystick.code = inEvent.jhat.hat;
-		 joystick.value = inEvent.jhat.value;
+       joystick.value = inEvent.jhat.value;
          sgSDLFrame->ProcessEvent(joystick);
          break;
-	  }
-	  
-	  #ifdef BLACKBERRY
-	  case SDL_SYSWMEVENT:
-	  {
+     }
+     
+     #ifdef BLACKBERRY
+     case SDL_SYSWMEVENT:
+     {
          Event syswm(etSysWM);
-		 syswm.value = (int)inEvent.syswm.msg->event;
-		 sgSDLFrame->ProcessEvent(syswm);
-	  }
-	  #endif
-	  
+       syswm.value = (int)inEvent.syswm.msg->event;
+       sgSDLFrame->ProcessEvent(syswm);
+     }
+     #endif
+     
    }
 }
 
 
-#ifdef EMSCRIPTEN
-void loop () {
-	
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		ProcessEvent (event);
-	   // if (sgDead) break;
-		event.type = -1;
-	 }
-	 
-	 Event poll(etPoll);
-	 sgSDLFrame->ProcessEvent(poll);
-	
-	
+static bool sCheckCanvasSize = true;
+EM_BOOL onCanvasSize(int, const EmscriptenUiEvent *, void *)
+{
+   sCheckCanvasSize = true;
+   return false;
 }
-#endif
-
-
-
 
 
 void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    unsigned int inFlags, const char *inTitle, Surface *inIcon )
 {
-
 #ifdef HX_MACOS
    MacBoot();
 #endif
@@ -1056,9 +1056,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    openlog (gPackage.c_str(), 0, LOG_USER);
 #endif
 #ifdef HX_WINDOWS
-	//ShowWindow (GetConsoleWindow (), SW_MINIMIZE);
+   //ShowWindow (GetConsoleWindow (), SW_MINIMIZE);
 #endif
-	
+   
    unsigned int sdl_flags = 0;
    bool fullscreen = (inFlags & wfFullScreen) != 0;
    bool opengl = (inFlags & wfHardware) != 0;
@@ -1068,7 +1068,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    Rect r(100,100,inWidth,inHeight);
 
-   int err = initSDL ();// SDL_Init( init_flags );
+   int err = initSDL();// SDL_Init( init_flags );
+
    
    if ( err == -1 )
    {
@@ -1118,11 +1119,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    #endif
 
 
-   const SDL_VideoInfo *info  = SDL_GetVideoInfo();
-   sgDesktopWidth = info->current_w;
-   sgDesktopHeight = info->current_h;
-
-
    #ifdef RASPBERRYPI
    sdl_flags = SDL_SWSURFACE;
    if (opengl)
@@ -1133,7 +1129,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    if ( resizable )
       sdl_flags |= SDL_RESIZABLE;
-	
+   
    if ( borderless )
       sdl_flags |= SDL_NOFRAME;
 
@@ -1145,6 +1141,21 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
 
    int use_w = fullscreen ? 0 : inWidth;
    int use_h = fullscreen ? 0 : inHeight;
+
+   #ifdef EMSCRIPTEN
+   double w=0;
+   double h=0;
+   emscripten_get_element_css_size("canvas", &w, &h);
+   sgCanvasWidth = use_w = sgDesktopWidth = w;
+   sgCanvasHeight = use_h = sgDesktopHeight = h;
+   #else
+   const SDL_VideoInfo *info  = SDL_GetVideoInfo();
+   sgDesktopWidth = info->current_w;
+   sgDesktopHeight = info->current_h;
+   #endif
+
+
+
 
 #if defined(IPHONE) || defined(BLACKBERRY) || defined(EMSCRIPTEN)
    sdl_flags |= SDL_NOFRAME;
@@ -1183,10 +1194,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       if (inFlags & wfStencilBuffer)
          startingPass = 1;
  
-	   #if defined (WEBOS) || defined (BLACKBERRY) || defined(EMSCRIPTEN)
+      #if defined (WEBOS) || defined (BLACKBERRY) || defined(EMSCRIPTEN)
       // Start at 16 bits...
-	   startingPass = 2;
-	   #endif
+      startingPass = 2;
+      #endif
 
       // No need to loop over depth
       if (!(inFlags & wfDepthBuffer))
@@ -1234,7 +1245,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
                   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8 );
    
                SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-   			
+            
                if (aa_tries > 0)
                {
                   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, aa_pass>0);
@@ -1249,7 +1260,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
                #endif
    
                sdl_flags |= SDL_OPENGL;
-   			
+            
                //printf("set video mode %dx%d\n", use_w, use_h );
                if (!(screen = SDL_SetVideoMode( use_w, use_h, 32, sdl_flags)))
                {
@@ -1275,8 +1286,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       }
    }
 
-   //printf("OGL2 -> %d\n", sgIsOGL2);
- 
    if (!screen)
    {
       if (!opengl || !nmeEgl)
@@ -1324,17 +1333,17 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    int numJoysticks = SDL_NumJoysticks();
    
    if (sgJoystickEnabled && numJoysticks > 0) {
-	   
-	   for (int i = 0; i < numJoysticks; i++) {
-		   
-		   sgJoystick = SDL_JoystickOpen(i);
-		   
-	   }
-	   
-	   #ifndef WEBOS
-	   SDL_JoystickEventState(SDL_TRUE);
-	   #endif
-	   
+      
+      for (int i = 0; i < numJoysticks; i++) {
+         
+         sgJoystick = SDL_JoystickOpen(i);
+         
+      }
+      
+      #ifndef WEBOS
+      SDL_JoystickEventState(SDL_TRUE);
+      #endif
+      
    }
    #endif
 
@@ -1343,7 +1352,25 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
    inOnFrame(sgSDLFrame);
    
    #ifdef EMSCRIPTEN
-   emscripten_set_main_loop (loop, 0, true);
+
+      #ifdef HXCPP_JS_PRIME
+      value v = value::global("window")["devicePixelRatio"];
+      if (v.isUndefined())
+      {
+         sgDeviceDpi = 1.0;
+      }
+      else
+      {
+         sgDeviceDpi = v.as<double>();
+         if (sgDeviceDpi<1)
+            sgDeviceDpi = 1;
+      }
+      #else
+      sgDeviceDpi = 1.0;
+      #endif
+
+   emscripten_set_resize_callback(0, 0, false, onCanvasSize);
+   emscripten_set_main_loop(StartAnimation, 0, false);
    #else
    StartAnimation();
    #endif
@@ -1363,38 +1390,38 @@ void SetIcon( const char *path ) {
 }
 
 QuickVec<int>*  CapabilitiesGetScreenResolutions() {
-	
-	
-	initSDL ();
-	
-	QuickVec<int> *out = new QuickVec<int>();
-	
-	// Get available fullscreen/hardware modes
-	SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
-	
-	// Check if there are any modes available
-	if (modes == (SDL_Rect**)0) {
-	    return out;
-	}
-	
-	// Check if our resolution is unrestricted
-	if (modes == (SDL_Rect**)-1) {
-	    return out;
-	}
-	else{
-	    // Print valid modes 
-	    
-	    for ( int i=0; modes[i]; ++i) {
-	       out->push_back( modes[ i ]->w );
-	       out->push_back( modes[ i ]->h );
-	    }
-	       
-	}
-		
-	
-	return out;
-	
-	
+   
+   
+   initSDL ();
+   
+   QuickVec<int> *out = new QuickVec<int>();
+   
+   // Get available fullscreen/hardware modes
+   SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
+   
+   // Check if there are any modes available
+   if (modes == (SDL_Rect**)0) {
+       return out;
+   }
+   
+   // Check if our resolution is unrestricted
+   if (modes == (SDL_Rect**)-1) {
+       return out;
+   }
+   else{
+       // Print valid modes 
+       
+       for ( int i=0; modes[i]; ++i) {
+          out->push_back( modes[ i ]->w );
+          out->push_back( modes[ i ]->h );
+       }
+          
+   }
+      
+   
+   return out;
+   
+   
 }
 
 
@@ -1418,41 +1445,41 @@ const char *GetClipboardText()
 #ifndef BLACKBERRY
 
 double CapabilitiesGetScreenResolutionX() {
-	
-	initSDL ();
-	
-	return sgDesktopWidth;
-	
-	/*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
-	
-	if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
-		
-		const SDL_VideoInfo* videoInfo = SDL_GetVideoInfo();
-		return videoInfo->current_w;
-		
-	}
-	
-	return modes[0]->w;*/
-	
+   
+   initSDL ();
+   
+   return sgDesktopWidth;
+   
+   /*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
+   
+   if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
+      
+      const SDL_VideoInfo* videoInfo = SDL_GetVideoInfo();
+      return videoInfo->current_w;
+      
+   }
+   
+   return modes[0]->w;*/
+   
 }
 
 double CapabilitiesGetScreenResolutionY() {
-	
-	initSDL ();
-	
-	return sgDesktopHeight;
-	
-	/*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
-	
-	if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
-		
-		const SDL_VideoInfo* videoInfo = SDL_GetVideoInfo();
-		return videoInfo->current_h;
-		
-	}
-	
-	return modes[0]->h;*/
-	
+   
+   initSDL ();
+   
+   return sgDesktopHeight;
+   
+   /*SDL_Rect** modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
+   
+   if (modes == (SDL_Rect**)0 || modes == (SDL_Rect**)-1) {
+      
+      const SDL_VideoInfo* videoInfo = SDL_GetVideoInfo();
+      return videoInfo->current_h;
+      
+   }
+   
+   return modes[0]->h;*/
+   
 }
 
 #endif
@@ -1504,10 +1531,10 @@ Uint32 OnTimer(Uint32 interval, void *)
 
 bool GetAcceleration(double &outX, double &outY, double &outZ)
 {
-	outX = SDL_JoystickGetAxis(sgJoystick, 0) / 32768.0;
-	outY = SDL_JoystickGetAxis(sgJoystick, 1) / 32768.0;
-	outZ = SDL_JoystickGetAxis(sgJoystick, 2) / 32768.0;
-	return true;
+   outX = SDL_JoystickGetAxis(sgJoystick, 0) / 32768.0;
+   outY = SDL_JoystickGetAxis(sgJoystick, 1) / 32768.0;
+   outZ = SDL_JoystickGetAxis(sgJoystick, 2) / 32768.0;
+   return true;
 }
 
 #endif
@@ -1517,10 +1544,59 @@ bool GetAcceleration(double &outX, double &outY, double &outZ)
 #endif
 
 
+#ifdef EMSCRIPTEN
+extern void clUpdateAsyncChannels();
+extern void nme_native_resource_release_temps();
+
 void StartAnimation()
 {
    SDL_Event event;
-   #ifndef EMSCRIPTEN
+   while (SDL_PollEvent(&event))
+   {
+      ProcessEvent(event);
+      // if (sgDead) break;
+      event.type = -1;
+      #ifdef HXCPP_JS_PRIME
+      nme_native_resource_release_temps();
+      #endif
+   }
+
+   clUpdateAsyncChannels();
+
+   if (sCheckCanvasSize)
+   {
+      sCheckCanvasSize = false;
+      double w=0;
+      double h=0;
+      emscripten_get_element_css_size("canvas", &w, &h);
+      int cw = w*sgDeviceDpi;
+      int ch = h*sgDeviceDpi;
+      if (sgCanvasWidth!=cw || sgCanvasHeight!=ch)
+      {
+         sgCanvasWidth=cw;
+         sgCanvasHeight=ch;
+
+         Event resize(etResize,cw,ch);
+         sgSDLFrame->Resize(cw,ch);
+         sgSDLFrame->ProcessEvent(resize);
+         #ifdef HXCPP_JS_PRIME
+         nme_native_resource_release_temps();
+         #endif
+      }
+   }
+
+   Event poll(etPoll);
+   sgSDLFrame->ProcessEvent(poll);
+   #ifdef HXCPP_JS_PRIME
+   nme_native_resource_release_temps();
+   #endif
+   //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, nextWake);
+}
+
+#else
+void StartAnimation()
+{
+   SDL_Event event;
    bool firstTime = true;
    while(!sgDead)
    {
@@ -1534,12 +1610,13 @@ void StartAnimation()
             sgTimerActive = false;
             sgTimerID = 0;
          }
+
+         void clUpdateAsyncChannels()
          
          ProcessEvent(event);
          if (sgDead) break;
          event.type = SDL_NOEVENT;
-   #endif
-		 while (SDL_PollEvent(&event)) {
+       while (SDL_PollEvent(&event)) {
             ProcessEvent (event);
             if (sgDead) break;
             event.type = -1;
@@ -1547,17 +1624,16 @@ void StartAnimation()
          
          Event poll(etPoll);
          sgSDLFrame->ProcessEvent(poll);
-   #ifndef EMSCRIPTEN
          if (sgDead) break;
          
          double next = sgSDLFrame->GetStage()->GetNextWake() - GetTimeStamp();
-		 if (next > 0.001) {
-			 int snooze = next*1000.0;
-			 sgTimerActive = true;
-			 sgTimerID = SDL_AddTimer(snooze, OnTimer, 0);
-		 } else {
-			 OnTimer(0, 0);
-		 }
+       if (next > 0.001) {
+          int snooze = next*1000.0;
+          sgTimerActive = true;
+          sgTimerID = SDL_AddTimer(snooze, OnTimer, 0);
+       } else {
+          OnTimer(0, 0);
+       }
       }
    }
    
@@ -1567,12 +1643,12 @@ void StartAnimation()
    Event kill(etDestroyHandler);
    sgSDLFrame->ProcessEvent(kill);
    SDL_Quit();
-   #endif
    
    #if HX_WINDOWS
    done_win32();
    #endif
 }
+#endif
 
 
 /*
