@@ -309,8 +309,8 @@ public:
 
    bool getMouseChildren() { return mouseChildren; }
    void setMouseChildren(bool inVal) { mouseChildren = inVal; }
-
-   virtual void ChildrenDirty() { }
+   
+   void ChildrenDirty() { }
 protected:
    ~DisplayObjectContainer();
 };
