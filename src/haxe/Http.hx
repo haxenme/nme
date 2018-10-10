@@ -462,7 +462,7 @@ class Http {
 				#elseif java
 				sock = new java.net.SslSocket();
 				#elseif (!no_ssl && (hxssl || hl || cpp || (neko && !(macro || interp))))
-				sock = new Socket();
+				sock = new sys.ssl.Socket();
 				#else
 				throw "Https is only supported with -lib hxssl";
 				#end
@@ -778,7 +778,7 @@ class Http {
 				if( p.len <= len ) {
 					var cstr = chunk_re.matched(1);
 					chunk_size = Std.parseInt("0x"+cstr);
-					if( cstr == "0" ) {
+					if( chunk_size == 0 ) {
 						chunk_size = null;
 						chunk_buf = null;
 						return false;
