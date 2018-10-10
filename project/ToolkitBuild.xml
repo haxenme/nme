@@ -488,7 +488,6 @@
             <vflag name="-framework" value="ForceFeedback" />
             <vflag name="-framework" value="Cocoa" />
             <vflag name="-framework" value="OpenGL" />
-            <vflag name="-framework" value="QuickTime" />
             <vflag name="-framework" value="AppKit" />
             <vflag name="-framework" value="OpenAL"/>
             <vflag name="-framework" value="AVFoundation" if="NME_CAMERA"/>
