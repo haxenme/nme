@@ -197,6 +197,7 @@ void BlurRow(const uint8 *inSrc, int inDS, int inSrcW, int inFilterLeft,
    uint8 *dest = inDest;
    for(const uint8 *s=first;s<src;s+=inDS)
       sa += *s;
+   const int filterScale20 = (1<<20) / inFilterSize;
 
    for(int x=0;x<inDestW; x++)
    {
@@ -210,7 +211,7 @@ void BlurRow(const uint8 *inSrc, int inDS, int inSrcW, int inFilterLeft,
          return;
       }
 
-      *dest = sa/inFilterSize;
+      *dest = (sa * filterScale20)>>20;
 
       if (src>=inSrc && src<src_end)
          sa+=*src;

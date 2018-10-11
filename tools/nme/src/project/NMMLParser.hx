@@ -1,7 +1,8 @@
 package;
 
 import haxe.io.Path;
-#if (haxe_ver < 4)
+// Can't really use haxe_ver becaise it has been at 4 for over a year
+#if !force_xml_access  // (haxe_ver < 4)
 import haxe.xml.Fast in Access;
 #else
 import haxe.xml.Access;

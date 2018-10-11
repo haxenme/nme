@@ -72,7 +72,7 @@ class Sample extends Sprite
          for(str in 1...4)
          {
              var glow = new flash.filters.GlowFilter(0xff0000,0.5,
-                               inDist,inDist, str,q, false,(q&0x1)==0);
+                               inDist,inDist, str,1, false,(q&0x1)==0);
              var f = new Array<flash.filters.BitmapFilter>();
              f.push(glow);
              small_objs[idx++].filters = f;
