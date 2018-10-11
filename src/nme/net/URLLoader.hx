@@ -7,20 +7,27 @@ import nme.events.IOErrorEvent;
 import nme.events.ProgressEvent;
 import nme.events.HTTPStatusEvent;
 import nme.utils.ByteArray;
-import nme.Loader;
-import nme.NativeHandle;
-import nme.NativeResource;
 
 #if html5
 // ok
-#else
 #elseif neko
-import neko.FileSystem;
-import neko.io.File;
+import neko.vm.Thread;
+import neko.vm.Deque;
 #else
-import cpp.FileSystem;
-import cpp.io.File;
+import cpp.vm.Thread;
+import cpp.vm.Deque;
 #end
+
+typedef WorkerCommand = {
+    var code: Int;
+    var urlLoader: URLLoader;
+    var error: String;
+    var status: Int;
+    var headers: Map<String,String>;
+    var data: Dynamic;
+    var total: Int;
+    var len: Int;
+}
 
 @:nativeProperty
 class URLLoader extends EventDispatcher 
@@ -30,26 +37,20 @@ class URLLoader extends EventDispatcher
    public var data:Dynamic;
    public var dataFormat:URLLoaderDataFormat;
 
-   public var nmeHandle:NativeHandle;
-   private static var activeLoaders = new List<URLLoader>();
+    /** @private */ private var http: Http;
+    /** @private */ private var thread: Thread;
+   /** @private */ private static var activeLoaders = new Array<URLLoader>();
+    /** @private */ private static var wCommands: Deque<WorkerCommand> = new Deque<WorkerCommand>();
 
-   private static inline var urlInvalid    = 0;
-   private static inline var urlInit       = 1;
-   private static inline var urlLoading    = 2;
-   private static inline var urlComplete    = 3;
-   private static inline var urlError       = 4;
-
-   private var state:Int;
-   public var nmeOnComplete:Dynamic -> Bool;
-
+   /** @private */ private var cookies:Array<String>;
+   /** @private */ private var activeRequest:URLRequest;
+   /** @private */ public var nmeOnComplete:Dynamic -> Bool;
    public function new(?request:URLRequest) 
    {
       super();
 
-      nmeHandle = null;
       bytesLoaded = 0;
       bytesTotal = -1;
-      state = urlInvalid;
       dataFormat = URLLoaderDataFormat.TEXT;
 
       if (request != null)
@@ -58,26 +59,49 @@ class URLLoader extends EventDispatcher
 
    public function close() 
    {
+       if(activeLoaders.indexOf(this) >= 0) {//still active
+           this.thread.sendMessage("close");//terminate signal
+           http.cancel();
+       }
    }
 
    public function getCookies():Array<String> 
    {
-      return nme_curl_get_cookies(nmeHandle);
+      return cookies;
    }
 
-   public static function hasActive() 
+    public static function closeAll() {
+        for(loader in activeLoaders)
+            loader.close();
+    }
+
+    public static function hasActive()
    {
-      return !activeLoaders.isEmpty();
+      return activeLoaders.length != 0;
    }
 
-   public static function initialize(inCACertFilePath:String) 
-   {
-      nme_curl_initialize(inCACertFilePath);
+   private function redirect(url: String) {
+       if(url == null || url.length == 0 || activeRequest == null)
+           return;
+
+       var redirectRequest = new URLRequest(url);
+
+       redirectRequest.userAgent = activeRequest.userAgent;
+       redirectRequest.requestHeaders = activeRequest.requestHeaders;
+       redirectRequest.authType = activeRequest.authType;
+       redirectRequest.cookieString = activeRequest.cookieString;
+       redirectRequest.verbose = activeRequest.verbose;
+       redirectRequest.method = activeRequest.method;
+       redirectRequest.contentType = activeRequest.contentType;
+       redirectRequest.credentials = activeRequest.credentials;
+       redirectRequest.followRedirects = activeRequest.followRedirects;
+
+       load(redirectRequest);
    }
 
-   public function load(request:URLRequest) 
+   public function load(request:URLRequest)
    {
-      state = urlInit;
+      activeRequest = request;
       var pref = request.url.substr(0, 7);
 
       if (pref != "http://" && pref != "https:/") { // local file
@@ -99,32 +123,118 @@ class URLLoader extends EventDispatcher
                   data = bytes;
             }
 
-         }
-         catch(e:Dynamic) 
+         } catch(e:Dynamic) 
          {
             onError(e);
             return;
          }
 
-         nmeDataComplete();
-      }
-      else 
-      {
-         request.nmePrepare();
-         nmeHandle = nme_curl_create(request);
+            nmeDataComplete();
 
-         if (nmeHandle == null)
-            onError("Could not open URL");
-         else
-         {
-            #if js nme.NativeResource.lockHandler(this); #end
-            activeLoaders.push(this);
+      }
+      else
+      {
+         http = new Http(request.url, request.method);
+         if(request.userAgent != null && request.userAgent.length > 0)
+              http.setHeader("User-Agent", request.userAgent);
+         if(request.contentType != null && request.contentType.length > 0)
+             http.setHeader("Content-Type", request.contentType);
+
+         var auth: String = "Anonymous";
+         if (request.authType == URLRequest.AUTH_BASIC)
+             auth = "Basic";
+         else if (request.authType == URLRequest.AUTH_DIGEST)
+             auth = "Digest";
+         else if (request.authType == URLRequest.AUTH_GSSNEGOTIATE)
+             auth = "Negotiate";
+         else if (request.authType == URLRequest.AUTH_NTLM)
+             auth = "NTLM";
+         else if (request.authType == URLRequest.AUTH_DIGEST_IE)
+             auth = "Digest";
+         else if (request.authType == URLRequest.AUTH_DIGEST_ANY)
+             auth = "Digest";
+
+         if(request.credentials != null && request.credentials.length > 0)
+             http.setHeader("Authorization", auth + " " + request.credentials);
+
+         if(request.cookieString != null && request.cookieString.length > 0) {
+             cookies = request.cookieString.split(";");
+             http.setHeader("Cookie", request.cookieString);   //n=v; n=v;...
          }
+
+         if(request.requestHeaders != null)
+             for(requestHeader in request.requestHeaders)
+                 http.setHeader(requestHeader.name, requestHeader.value);
+
+         var post: Bool = request.method == URLRequestMethod.POST || request.method == URLRequestMethod.PUT;
+         if(post)
+            http.setPostData(request.data);
+         else
+             for(i in Reflect.fields(request.data))
+                http.setParameter(i, Reflect.field(request.data, i));
+
+         activeLoaders.push(this);
+
+         thread = Thread.create(function(){
+            var urlLoader: URLLoader = Thread.readMessage(true);
+            var request: URLRequest = Thread.readMessage(true);
+            var disableEventsAndStop: Bool = false;
+
+            urlLoader.http.onError = function(error: String) {
+                if(disableEventsAndStop)
+                    return;
+                disableEventsAndStop = true;
+                wCommands.add({code: 0, urlLoader: urlLoader, error: error, status: 0, headers: null, data: null, total: 0, len: 0});
+            }
+            urlLoader.http.onStatus = function(status: Int) {
+                if(disableEventsAndStop)
+                    return;
+                if(Thread.readMessage(false)=="close")
+                    disableEventsAndStop = true;
+                else {
+                    if(status == 301 && request.followRedirects)
+                        disableEventsAndStop = true;
+                    wCommands.add({code: 1, urlLoader: urlLoader, error: null, status: status, headers: urlLoader.http.responseHeaders, data: null, total: 0, len: 0});
+                    if(status >= 400){
+                        disableEventsAndStop = true;
+                        wCommands.add({code: 0, urlLoader: urlLoader, error: "HTTP status code " + status, status: status, headers: urlLoader.http.responseHeaders, data: null, total: 0, len: 0});
+                    }
+                }
+            }
+            urlLoader.http.onData = function(data: Dynamic) {
+                if(disableEventsAndStop)
+                    return;
+                if(Thread.readMessage(false)=="close")
+                    disableEventsAndStop = true;
+                else {}
+                    wCommands.add({code: 2, urlLoader: urlLoader, error: null, status: 0, headers: urlLoader.http.responseHeaders, data: data, total: 0, len: 0});
+            }
+            urlLoader.http.onResponseProgress = function(total: Int, len: Int): Bool {
+                if(disableEventsAndStop)
+                    return false;
+                if(Thread.readMessage(false)=="close") {
+                    disableEventsAndStop = true;
+                    return false;
+                }
+                wCommands.add({code: 3, urlLoader: urlLoader, error: null, status: 0, headers: urlLoader.http.responseHeaders, data: null, total: total, len: len});
+                return true;
+            }
+            try {
+                urlLoader.http.request(post);
+            } catch (error: String) {
+                if(!disableEventsAndStop)
+                    wCommands.add({code: 0, urlLoader: urlLoader, error: error, status: 0, headers: null, data: null, total: 0, len: 0});
+                return;
+            }
+            //send remove from active signal
+            wCommands.add({code: 4, urlLoader: urlLoader, error: null, status: 0, headers: urlLoader.http.responseHeaders, data: null, total: 0, len: 0});
+         });
+         thread.sendMessage(this);
+         thread.sendMessage(request);
       }
    }
 
-   private function nmeDataComplete()
-   {
+   /** @private */ private function nmeDataComplete() {
       activeLoaders.remove(this);
 
       if (nmeOnComplete != null) 
@@ -134,126 +244,61 @@ class URLLoader extends EventDispatcher
          else
             DispatchIOErrorEvent();
 
-      }
-      else 
+      } else 
       {
          dispatchEvent(new Event(Event.COMPLETE));
       }
-      nme.NativeResource.disposeHandler(this);
    }
 
-   public static function nmeLoadPending()
-   {
-      return !activeLoaders.isEmpty();
+   /** @private */ public static function nmeLoadPending() {
+      return activeLoaders.length != 0;
    }
 
-   public static function nmePollData()
-   {
-      if (!activeLoaders.isEmpty()) 
+   /** @private */ public static function nmePollData() {
+      if (activeLoaders.length != 0)
       {
-         nme_curl_process_loaders();
-         var oldLoaders = activeLoaders;
-         activeLoaders = new List<URLLoader>();
+          var wCommand: WorkerCommand = wCommands.pop(false);
+          if(wCommand != null) {
+            if(wCommand.code == 0) {//error
+                wCommand.urlLoader.onError(wCommand.error);
+            } else if(wCommand.code == 1) {//status
+                if(wCommand.status == 301 && wCommand.urlLoader.activeRequest.followRedirects)
+                    wCommand.urlLoader.redirect(wCommand.headers.get("Location"));
+                else {
+                    var evt = new HTTPStatusEvent (HTTPStatusEvent.HTTP_STATUS, false, false, wCommand.status);
+                    for(name in wCommand.headers.keys())
+                    {
+                        if(name != null && name.length > 0)
+                            evt.responseHeaders.push(new URLRequestHeader(name, wCommand.headers.get(name)));
+                    }
 
-         for(loader in oldLoaders) 
-         {
-            loader.update();
-            if (loader.state == urlLoading)
-               activeLoaders.push(loader);
-         }
+                    wCommand.urlLoader.dispatchEvent (evt);
+                }
+            } else if(wCommand.code == 2) {//completes
+                switch(wCommand.urlLoader.dataFormat)
+                {
+                    case TEXT:
+                        wCommand.urlLoader.data = wCommand.data;
+                    case VARIABLES:
+                        wCommand.urlLoader.data = new URLVariables(wCommand.data);
+                    default:
+                        wCommand.urlLoader.data =  ByteArray.fromBytes(haxe.io.Bytes.ofString(wCommand.data));
+                }
+                wCommand.urlLoader.nmeDataComplete();
+            } else if(wCommand.code == 3) {//progress
+                wCommand.urlLoader.bytesTotal = wCommand.total;
+                wCommand.urlLoader.bytesLoaded = wCommand.len;
+                wCommand.urlLoader.dispatchEvent(new ProgressEvent(ProgressEvent.PROGRESS, false, false, wCommand.len,wCommand.total));
+            } else //code = 4 or unspecified thread about to complete
+                activeLoaders.remove(wCommand.urlLoader);//if still avtive
+          }
       }
    }
 
-   private function onError(msg):Void
-   {
+   /** @private */ private function onError(msg):Void {
       activeLoaders.remove(this);
       dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
-      nme.NativeResource.disposeHandler(this);
    }
-
-   private function dispatchHTTPStatus(code:Int):Void
-   {
-      var evt = new HTTPStatusEvent (HTTPStatusEvent.HTTP_STATUS, false, false, code);
-      var headers:Array<String> = nme_curl_get_headers(nmeHandle);
-
-      for(h in headers)
-      {
-         var idx = h.indexOf(": ");
-         if(idx > 0)
-            evt.responseHeaders.push(new URLRequestHeader(h.substr(0, idx), h.substr(idx + 2, h.length - idx - 4)));
-      }
-
-      dispatchEvent (evt);
-   }
-
-   /** @private */ private function update()
-   {
-      if (nmeHandle != null) 
-      {
-         var old_loaded = bytesLoaded;
-         var old_total = bytesTotal;
-         nme_curl_update_loader(nmeHandle, this);
-
-         if (old_total < 0 && bytesTotal > 0) 
-         {
-            dispatchEvent(new Event(Event.OPEN));
-         }
-
-         if (bytesTotal > 0 && bytesLoaded != old_loaded) 
-         {
-            dispatchEvent(new ProgressEvent(ProgressEvent.PROGRESS, false, false, bytesLoaded, bytesTotal));
-         }
-
-         var code:Int = nme_curl_get_code(nmeHandle);
-
-         if (state == urlComplete) 
-         {
-            dispatchHTTPStatus(code);
-
-            if (code < 400) 
-            {
-               var bytes:ByteArray = nme_curl_get_data(nmeHandle);
-
-               switch(dataFormat) 
-               {
-                  case TEXT, VARIABLES:
-                     data = bytes == null ? "" : bytes.asString();
-                  default:
-                     data = bytes;
-               }
-               nmeDataComplete();
-
-            }
-            else 
-            {
-               // XXX : This should be handled in project/common/CURL.cpp
-               var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, "HTTP status code " + Std.string(code), code);
-               dispatchEvent(evt);
-               NativeResource.disposeHandler(this);
-            }
-
-         }
-         else if (state == urlError) 
-         {
-            dispatchHTTPStatus(code);
-
-            var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, nme_curl_get_error_message(nmeHandle), code);
-            dispatchEvent(evt);
-            NativeResource.disposeHandler(this);
-         }
-      }
-   }
-
-   // Native Methods
-   private static var nme_curl_create = Loader.load("nme_curl_create", 1);
-   private static var nme_curl_process_loaders = Loader.load("nme_curl_process_loaders", 0);
-   private static var nme_curl_update_loader = Loader.load("nme_curl_update_loader", 2);
-   private static var nme_curl_get_code = Loader.load("nme_curl_get_code", 1);
-   private static var nme_curl_get_error_message = Loader.load("nme_curl_get_error_message", 1);
-   private static var nme_curl_get_data = Loader.load("nme_curl_get_data", 1);
-   private static var nme_curl_get_cookies = Loader.load("nme_curl_get_cookies", 1);
-   private static var nme_curl_get_headers = Loader.load("nme_curl_get_headers", 1);
-   private static var nme_curl_initialize = Loader.load("nme_curl_initialize", 1);
 }
 
 #else
