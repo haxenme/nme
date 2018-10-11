@@ -251,6 +251,7 @@ public:
                                const ColorTransform *inObjTrans,
                                ColorTransform *inBuf);
 
+   virtual void ChildrenDirty() { }
 
    void encodeStream(ObjectStreamOut &inStream);
    void decodeStream(ObjectStreamIn &inStream);
@@ -308,8 +309,8 @@ public:
 
    bool getMouseChildren() { return mouseChildren; }
    void setMouseChildren(bool inVal) { mouseChildren = inVal; }
-
-
+   
+   void ChildrenDirty();
 protected:
    ~DisplayObjectContainer();
 };
