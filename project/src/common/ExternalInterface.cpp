@@ -4484,7 +4484,7 @@ DEFINE_PRIM_MULT(nme_bitmap_data_noise);
 
 
 void nme_bitmap_data_get_floats32(value inSurface, value inData, int inOffset, int inStride,
-       int inPixelFormat, int inTransform, int inSubsample)
+       int inPixelFormat, int inTransform, int inSubsample, value subrect)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
@@ -4493,15 +4493,18 @@ void nme_bitmap_data_get_floats32(value inSurface, value inData, int inOffset, i
       unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
       if (data)
       {
-         surf->getFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inSubsample);
+         Rect rect(0,0,surf->Width(), surf->Height());
+         if (!val_is_null(subrect))
+            FromValue(rect,subrect);
+         surf->getFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inSubsample,rect);
       }
       #endif
    }
 }
-DEFINE_PRIME7v(nme_bitmap_data_get_floats32);
+DEFINE_PRIME8v(nme_bitmap_data_get_floats32);
 
 void nme_bitmap_data_set_floats32(value inSurface, value inData, int inOffset, int inStride,
-       int inPixelFormat, int inTransform, int inExpand)
+       int inPixelFormat, int inTransform, int inExpand, value subrect)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
@@ -4510,12 +4513,15 @@ void nme_bitmap_data_set_floats32(value inSurface, value inData, int inOffset, i
       unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
       if (data)
       {
-         surf->setFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inExpand);
+         Rect rect(0,0,surf->Width(), surf->Height());
+         if (!val_is_null(subrect))
+            FromValue(rect,subrect);
+         surf->setFloats32((float *)(data + inOffset), inStride, (PixelFormat)inPixelFormat, inTransform, inExpand,rect);
       }
       #endif
    }
 }
-DEFINE_PRIME7v(nme_bitmap_data_set_floats32);
+DEFINE_PRIME8v(nme_bitmap_data_set_floats32);
 
 
 

@@ -394,6 +394,11 @@ class BitmapData extends Surface implements IBitmapDrawable
       // Handled internally...
    }
 
+   public function toString():String
+   {
+      return 'BitmapData($width,$height)';
+   }
+
    // Native Methods
    private static var nme_bitmap_data_apply_filter = Loader.load("nme_bitmap_data_apply_filter", 5);
    private static var nme_bitmap_data_generate_filter_rect = Loader.load("nme_bitmap_data_generate_filter_rect", 3);

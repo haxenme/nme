@@ -290,16 +290,16 @@ class Surface
    }
 
    public function getFloats32(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
-           pixelFormat:Int, transform:Int, subSample:Int = 1)
+           pixelFormat:Int, transform:Int, subSample:Int = 1, ?subrect:Rectangle)
    {
-      nme_bitmap_data_get_floats32(nmeHandle,dataHandle, dataOffset, dataStride, pixelFormat, transform, subSample);
+      nme_bitmap_data_get_floats32(nmeHandle,dataHandle, dataOffset, dataStride, pixelFormat, transform, subSample, subrect);
    }
 
 
    public function setFloats32(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
-           pixelFormat:Int, transform:Int, expand:Int = 1)
+           pixelFormat:Int, transform:Int, expand:Int = 1, ?subrect:Rectangle)
    {
-      nme_bitmap_data_set_floats32(nmeHandle,dataHandle, dataOffset, dataStride, pixelFormat, transform, expand);
+      nme_bitmap_data_set_floats32(nmeHandle,dataHandle, dataOffset, dataStride, pixelFormat, transform, expand,subrect);
    }
 
 
@@ -384,8 +384,8 @@ class Surface
    private static var nme_bitmap_data_flood_fill = Loader.load("nme_bitmap_data_flood_fill", 4);
    private static var nme_bitmap_data_get_prem_alpha = Loader.load("nme_bitmap_data_get_prem_alpha", 1);
    private static var nme_bitmap_data_set_prem_alpha = Loader.load("nme_bitmap_data_set_prem_alpha", 2);
-   private static var nme_bitmap_data_get_floats32 = nme.PrimeLoader.load("nme_bitmap_data_get_floats32", "ooiiiiiv");
-   private static var nme_bitmap_data_set_floats32 = nme.PrimeLoader.load("nme_bitmap_data_set_floats32", "ooiiiiiv");
+   private static var nme_bitmap_data_get_floats32 = nme.PrimeLoader.load("nme_bitmap_data_get_floats32", "ooiiiiiov");
+   private static var nme_bitmap_data_set_floats32 = nme.PrimeLoader.load("nme_bitmap_data_set_floats32", "ooiiiiiov");
    private static var nme_bitmap_data_get_uints8 = nme.PrimeLoader.load("nme_bitmap_data_get_uints8", "ooiiiiv");
    private static var nme_bitmap_data_set_uints8 = nme.PrimeLoader.load("nme_bitmap_data_set_uints8", "ooiiiiv");
 }
