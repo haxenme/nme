@@ -61,6 +61,7 @@ DisplayObject::~DisplayObject()
       mGfx->DecRef();
    }
    delete mBitmapCache;
+   mBitmapCache = 0;
    if (mMask)
       setMask(0);
    ClearFilters();
