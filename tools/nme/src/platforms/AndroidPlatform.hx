@@ -321,7 +321,7 @@ class AndroidPlatform extends Platform
       {
          var build = (project.certificate != null) ? "release" : "debug";
 
-         targetPath = FileSystem.fullPath(outputDir) + "/app/build/outputs/apk/app-" + build + ".apk";
+         targetPath = '${FileSystem.fullPath(outputDir)}/app/build/outputs/apk/${build}/app-${build}.apk';
       }
       else
       {

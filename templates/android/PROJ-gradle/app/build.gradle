@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "25.0.0"
+    compileSdkVersion 26
+    buildToolsVersion "28.0.3"
     defaultConfig {
         applicationId "::APP_PACKAGE::"
         minSdkVersion ::ANDROID_MIN_API_LEVEL::
@@ -20,19 +20,19 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    api fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support:support-v4:24.2.1'
+    api 'com.android.support:appcompat-v7:24.2.1'
+    api 'com.android.support:support-v4:24.2.1'
     ::if ANDROID_BILLING::
-    compile 'com.android.billingclient:billing:1.0'
+    api 'com.android.billingclient:billing:1.0'
     ::end::
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 
     dependencies {
         ::foreach (ANDROID_LIBRARY_PROJECTS)::
-        compile project(':::name::')::end::
+        api project(':::name::')::end::
     }
 }
