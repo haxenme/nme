@@ -218,6 +218,8 @@ public:
    ~OpenSlSourceChannel()
    {
       stop();
+      if (soundObject) 
+         soundObject->DecRef();
    }
 
    void play()
