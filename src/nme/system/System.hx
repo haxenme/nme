@@ -19,6 +19,7 @@ class System
    public static var totalMemory(get, null):Int;
    public static var totalMemoryNumber(get, null):Float;
    public static var exeName(get, null):String;
+   public static var exeDirectory(get, null):String;
    static var args:Array<String>;
 
    static public function exit(?inCode:Int) 
@@ -113,6 +114,16 @@ class System
       var func = Loader.load("nme_sys_get_exe_name", 0);
       return func();
    }
+
+   private static function get_exeDirectory():String
+   {
+      var name = exeName.split("\\").join("/");
+      var slash = name.lastIndexOf("/");
+      if (slash<0)
+         return "./";
+      return name.substr(0,slash+1);
+   }
+
 
    public static function restart() : Void
    {
