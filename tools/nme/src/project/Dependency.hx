@@ -23,7 +23,9 @@ class Dependency
 
    public function isAndroidProject()
    {
-      return FileSystem.exists( getAndroidProject() + "/project.properties" );
+      var isAnt = FileSystem.exists( getAndroidProject() + "/project.properties" );
+      var isGradle = FileSystem.exists( getAndroidProject() + "/build.gradle" );
+      return isAnt || isGradle;
    }
 
    public function isFramework()
