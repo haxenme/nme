@@ -13,11 +13,6 @@
 #endif
 
 
-
-int sgDrawCount = 0;
-int sgDrawBitmap = 0;
-
-
 namespace nme
 {
 
@@ -45,7 +40,11 @@ void ResetHardwareContext()
       HardwareRenderer::current->OnContextLost();
 }
 
-
+int gStatsArray[4] = {0,0,0,0};
+void GetGLStats(int * statsArray)
+{
+   memcpy(statsArray, gStatsArray, sizeof(int)*4);
+}
 
 class OGLContext : public HardwareRenderer
 {
@@ -74,6 +73,11 @@ public:
       for(int i=0;i<4;i++)
          for(int j=0;j<4;j++)
             mTrans[i][j] = i==j;
+
+      mDrawVerts = 0; 
+      mDrawCount = 0; 
+      mDrawElementsVerts = 0; 
+      mDrawElementsCount = 0;
    }
    ~OGLContext()
    {
@@ -370,13 +374,18 @@ public:
          mLineWidth = 99999;
 
          // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
-         sgDrawCount = 0;
-         sgDrawBitmap = 0;
+         mDrawVerts = 0; 
+         mDrawCount = 0; 
+         mDrawElementsVerts = 0; 
+         mDrawElementsCount = 0;
       }
    }
    void EndRender()
    {
-
+      gStatsArray[0] = mDrawVerts;
+      gStatsArray[1] = mDrawCount;
+      gStatsArray[2] = mDrawElementsVerts;
+      gStatsArray[3] = mDrawElementsCount;  
    }
 
    void updateContext()
@@ -659,17 +668,21 @@ public:
          }
    
             //printf("glDrawArrays %d : %d x %d\n", element.mPrimType, element.mFirst, element.mCount );
-
-         sgDrawCount++;
          
          if (element.mPrimType==ptQuads || element.mPrimType==ptQuadsFull)
          {
             BindQuadsBufferIndices(element.mCount);
-            glDrawElements(GL_TRIANGLES, element.mCount*3/2, mQuadsBufferType, 0 );
+            GLsizei nVerts = element.mCount*3/2;
+            glDrawElements(GL_TRIANGLES, nVerts, mQuadsBufferType, 0 );
+            mDrawElementsCount++;
+            mDrawElementsVerts += nVerts;
          }
          else
+         {
             glDrawArrays(sgOpenglType[element.mPrimType], 0, element.mCount );
-
+            mDrawCount++;
+            mDrawVerts += element.mCount;
+         }
       }
 
       if (lastProg)
@@ -868,8 +881,12 @@ public:
    GLenum mQuadsBufferSize;
    GLenum mQuadsBufferType;
 
-
    Trans4x4 mTrans;
+
+   int mDrawVerts;
+   int mDrawCount;
+   int mDrawElementsCount;
+   int mDrawElementsVerts;
 };
 
 
