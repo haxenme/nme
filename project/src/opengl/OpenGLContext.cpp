@@ -40,10 +40,15 @@ void ResetHardwareContext()
       HardwareRenderer::current->OnContextLost();
 }
 
-int gStatsArray[4] = {0,0,0,0};
-void GetGLStats(int * statsArray)
+int gStatsArray[8] = {0,0,0,0,0,0,0,0};
+int mGLViewDrawVerts = 0;
+int mGLViewDrawCount = 0;
+int mGLViewDrawElementsVerts = 0;
+int mGLViewDrawElementsCount = 0;
+void GetGLStats(int * statsArray, int n)
 {
-   memcpy(statsArray, gStatsArray, sizeof(int)*4);
+   n = (n>=8?8:n);
+   memcpy(statsArray, gStatsArray, sizeof(int)*n);
 }
 
 class OGLContext : public HardwareRenderer
@@ -378,6 +383,11 @@ public:
          mDrawCount = 0; 
          mDrawElementsVerts = 0; 
          mDrawElementsCount = 0;
+
+         mGLViewDrawVerts = 0;
+         mGLViewDrawCount = 0;
+         mGLViewDrawElementsVerts = 0;
+         mGLViewDrawElementsCount = 0;
       }
    }
    void EndRender()
@@ -386,6 +396,10 @@ public:
       gStatsArray[1] = mDrawCount;
       gStatsArray[2] = mDrawElementsVerts;
       gStatsArray[3] = mDrawElementsCount;  
+      gStatsArray[4] = mGLViewDrawVerts;
+      gStatsArray[5] = mGLViewDrawCount;
+      gStatsArray[6] = mGLViewDrawElementsVerts;
+      gStatsArray[7] = mGLViewDrawElementsCount;  
    }
 
    void updateContext()

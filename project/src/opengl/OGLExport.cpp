@@ -34,6 +34,10 @@ namespace nme
 
 extern int _id_id;
 
+extern int mGLViewDrawVerts;
+extern int mGLViewDrawCount;
+extern int mGLViewDrawElementsVerts;
+extern int mGLViewDrawElementsCount; 
 
 int gDirectMaxAttribArray = 0;
 
@@ -1961,6 +1965,8 @@ void nme_gl_draw_arrays(int inMode, int inFirst, int inCount)
 {
    DBGFUNC("drawArrays");
    glDrawArrays( inMode, inFirst, inCount );
+   mGLViewDrawCount++;
+   mGLViewDrawVerts += inCount;
 }
 DEFINE_PRIME3v(nme_gl_draw_arrays)
 
@@ -1979,6 +1985,8 @@ void nme_gl_draw_elements(int inMode, int inCount, int inType, int inOffset)
 {
    DBGFUNC("drawElements");
    glDrawElements( inMode, inCount, inType, (void *)(intptr_t)inOffset );
+   mGLViewDrawElementsCount++;
+   mGLViewDrawElementsVerts += inCount;
 }
 DEFINE_PRIME4v(nme_gl_draw_elements)
 

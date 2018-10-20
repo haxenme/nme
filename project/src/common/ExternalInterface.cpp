@@ -53,7 +53,7 @@
 namespace nme
 {
 void InitCamera();
-void GetGLStats(int *statsArray);
+void GetGLStats(int *statsArray, int n);
 
 // Not static
 int _id_id=0;
@@ -5483,23 +5483,24 @@ value nme_file_dialog_save(value in_title, value in_text, value in_types )
 DEFINE_PRIM(nme_file_dialog_save,3);
 */
 
-void nme_displaystats_get_glstats(value aStatsArray)
+void nme_get_glstats(value aStatsArray)
 {  
    if (val_is_null(aStatsArray))
       return;
     
    int n = val_array_size(aStatsArray);
-   if (n < 4)
+   if (n <= 0)
       return;
 
   int *statsArray = val_array_int(aStatsArray);   
   if(statsArray)
   {
     //0 Verts, 1 Calls, 2 Element Verts, 3 Element Calls
-    GetGLStats(statsArray);
+    //4 - 7 GLView stats
+    GetGLStats(statsArray, n);
   }
 }
-DEFINE_PRIME1v(nme_displaystats_get_glstats)
+DEFINE_PRIME1v(nme_get_glstats)
 
 // Reference this to bring in all the symbols for the static library
 #ifdef STATIC_LINK
