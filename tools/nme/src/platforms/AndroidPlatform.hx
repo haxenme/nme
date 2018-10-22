@@ -208,6 +208,8 @@ class AndroidPlatform extends Platform
       for( k in project.androidConfig.extensions.keys())
          extensions.push(k);
       context.ANDROID_EXTENSIONS =extensions;
+
+      context.ANDROID_SDK = StringTools.replace(project.environment.get("ANDROID_SDK"),"\\","/");
       
       if(gradle)
          setGradleLibraries();
