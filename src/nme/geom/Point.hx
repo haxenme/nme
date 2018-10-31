@@ -36,6 +36,20 @@ class Point
       y = sourcePoint.y;
    }
 
+   public function dist(pt2:Point):Float 
+   {
+      var dx = x - pt2.x;
+      var dy = y - pt2.y;
+      return Math.sqrt(dx * dx + dy * dy);
+   }
+
+   public function dist2(pt2:Point):Float 
+   {
+      var dx = x - pt2.x;
+      var dy = y - pt2.y;
+      return (dx * dx + dy * dy);
+   }
+
    public static function distance(pt1:Point, pt2:Point):Float 
    {
       var dx = pt1.x - pt2.x;

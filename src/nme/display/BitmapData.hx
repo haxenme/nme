@@ -80,6 +80,15 @@ class BitmapData extends Surface implements IBitmapDrawable
       return bm;
    }
 
+   public function cloneRect(x0:Int, y0:Int, inWidth:Int, inHeight:Int):BitmapData 
+   {
+      var result = new BitmapData(inWidth,inHeight,transparent,0,format);
+
+      result.copyPixels(this, new Rectangle(x0,y0,inWidth,inHeight), new Point(0,0), null, null, false );
+
+      return result;
+   }
+
    public static inline function createColor(inRGB:Int, inAlpha:Int = 0xFF):Int 
    {
       return inRGB |(inAlpha << 24);
@@ -371,6 +380,20 @@ class BitmapData extends Surface implements IBitmapDrawable
       result.nmeHandle = Surface.nme_bitmap_data_load(inFilename, format);
       return result;
    }
+
+
+   #if !no_nme_io
+   public function save(inFilename:String, inQuality:Float = 0.9):Void
+   {
+      var ext = inFilename.length>3 ? inFilename.substr(inFilename.length-3).toLowerCase() : PNG;
+      if (ext=="jpg" || ext=="jpeg")
+         ext = JPG;
+      else
+         ext = PNG;
+      var bytes = encode(ext, inQuality);
+      bytes.writeFile(inFilename);
+   }
+   #end
 
    public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):BitmapData 
    {

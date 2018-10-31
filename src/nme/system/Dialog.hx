@@ -20,10 +20,7 @@ class Dialog
       {
          if (defaultPath==null)
          {
-            var def = SharedObject.getLocal("fileOpen");
-            if (def!=null)
-               defaultPath = Reflect.field(def.data, rememberKey);
-            if (defaultPath==null) defaultPath = "";
+            defaultPath = getDefaultPath(rememberKey);
          }
          resultCallback = function(name:String) {
             if (name!=null && name!="")
@@ -46,6 +43,7 @@ class Dialog
                   def.flush();
                }
             }
+            if (name=="") name=null;
             onResult(name);
          }
       }
@@ -53,6 +51,15 @@ class Dialog
       return nme_file_dialog_open(title, text, defaultPath, filesSpec, resultCallback, inFlags);
    }
 
+   public static function getDefaultPath(rememberKey:String) : String
+   {
+      var def = SharedObject.getLocal("fileOpen");
+      var defaultPath:String = null;
+      if (def!=null)
+         defaultPath = Reflect.field(def.data, rememberKey);
+      if (defaultPath==null) defaultPath = "";
+      return defaultPath;
+   }
 
    public static function fileOpen(title:String, text:String, ?defaultPath:String, filesSpec:String = "All Files|*.*", onResult:String->Void,?rememberKey:String, inFlags=MustExist) : Bool
    {
