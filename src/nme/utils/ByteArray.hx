@@ -93,10 +93,17 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    }
 
    #if cpp
-   @:native("::mangleFloat")
-   @:extern static function mangleFloat(f:Float):Float return 0;
-   @:native("::mangleDouble")
-   @:extern static function mangleDouble(f:Float):Float return 0;
+   #if (haxe_ver>=4)
+      @:native("::mangleFloat")
+      extern static function mangleFloat(f:Float):Float;
+      @:native("::mangleDouble")
+      extern static function mangleDouble(f:Float):Float;
+   #else
+      @:native("::mangleFloat")
+      @:extern static function mangleFloat(f:Float):Float return 0;
+      @:native("::mangleDouble")
+      @:extern static function mangleDouble(f:Float):Float return 0;
+   #end
    #end
 
    inline public function get___length() return length;
