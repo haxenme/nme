@@ -99,6 +99,7 @@ class Surface
       nme_bitmap_data_copy(sourceBitmapData.nmeHandle, sourceRect, nmeHandle, destPoint, mergeAlpha);
    }
 
+
    public function createHardwareSurface() 
    {
       nme_bitmap_data_create_hardware_surface(nmeHandle);

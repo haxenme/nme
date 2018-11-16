@@ -2109,7 +2109,7 @@ void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat i
    if (inTransform & Float128Mean)
    {
       if (inTransform & FloatUnitScale)
-         GET_FLOAT( *src++ * 128.0f + 128.0f )
+         GET_FLOAT( *src++ * 255.0f + 128.0f )
       else
          GET_FLOAT( *src++ + 128.0f )
    }
