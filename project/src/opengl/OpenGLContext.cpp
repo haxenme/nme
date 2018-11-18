@@ -40,15 +40,11 @@ void ResetHardwareContext()
       HardwareRenderer::current->OnContextLost();
 }
 
-int gStatsArray[8] = {0,0,0,0,0,0,0,0};
-int mGLViewDrawVerts = 0;
-int mGLViewDrawCount = 0;
-int mGLViewDrawElementsVerts = 0;
-int mGLViewDrawElementsCount = 0;
+glStatsStruct gStats;
+glStatsStruct gCurrStats;
 void GetGLStats(int * statsArray, int n)
 {
-   n = (n>=8?8:n);
-   memcpy(statsArray, gStatsArray, sizeof(int)*n);
+   gStats.get(statsArray, n);
 }
 
 class OGLContext : public HardwareRenderer
@@ -78,11 +74,6 @@ public:
       for(int i=0;i<4;i++)
          for(int j=0;j<4;j++)
             mTrans[i][j] = i==j;
-
-      mDrawVerts = 0; 
-      mDrawCount = 0; 
-      mDrawElementsVerts = 0; 
-      mDrawElementsCount = 0;
    }
    ~OGLContext()
    {
@@ -379,27 +370,12 @@ public:
          mLineWidth = 99999;
 
          // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
-         mDrawVerts = 0; 
-         mDrawCount = 0; 
-         mDrawElementsVerts = 0; 
-         mDrawElementsCount = 0;
-
-         mGLViewDrawVerts = 0;
-         mGLViewDrawCount = 0;
-         mGLViewDrawElementsVerts = 0;
-         mGLViewDrawElementsCount = 0;
+         gCurrStats.clear();
       }
    }
    void EndRender()
    {
-      gStatsArray[0] = mDrawVerts;
-      gStatsArray[1] = mDrawCount;
-      gStatsArray[2] = mDrawElementsVerts;
-      gStatsArray[3] = mDrawElementsCount;  
-      gStatsArray[4] = mGLViewDrawVerts;
-      gStatsArray[5] = mGLViewDrawCount;
-      gStatsArray[6] = mGLViewDrawElementsVerts;
-      gStatsArray[7] = mGLViewDrawElementsCount;  
+      gCurrStats.get(&gStats);
    }
 
    void updateContext()
@@ -688,14 +664,12 @@ public:
             BindQuadsBufferIndices(element.mCount);
             GLsizei nVerts = element.mCount*3/2;
             glDrawElements(GL_TRIANGLES, nVerts, mQuadsBufferType, 0 );
-            mDrawElementsCount++;
-            mDrawElementsVerts += nVerts;
+            gCurrStats.record(nVerts, NME_GL_STATS_DRAW_ELEMENTS);
          }
          else
          {
             glDrawArrays(sgOpenglType[element.mPrimType], 0, element.mCount );
-            mDrawCount++;
-            mDrawVerts += element.mCount;
+            gCurrStats.record(element.mCount, NME_GL_STATS_DRAW_ARRAYS);
          }
       }
 
@@ -896,11 +870,6 @@ public:
    GLenum mQuadsBufferType;
 
    Trans4x4 mTrans;
-
-   int mDrawVerts;
-   int mDrawCount;
-   int mDrawElementsCount;
-   int mDrawElementsVerts;
 };
 
 
