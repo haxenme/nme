@@ -157,6 +157,11 @@ class System
       return sys.net.Host.localhost();
       #end
    }
+   
+   public static function getGLStats(statsArray:Array<Int>) : Void
+   {
+      nme_get_glstats(statsArray);
+   }
 
 
    // Native Methods
@@ -164,6 +169,7 @@ class System
    #if iphone
    private static var nme_get_local_ip_address = Loader.load("nme_get_local_ip_address", 0);
    #end
+   private static var nme_get_glstats = nme.PrimeLoader.load("nme_get_glstats", "ov");
 }
 
 #else

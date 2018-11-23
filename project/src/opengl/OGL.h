@@ -230,7 +230,39 @@ public:
 
 void InitOGL2Extensions();
 
-} // end namespace nme
+#define NME_GL_STATS_DRAW_ARRAYS 0x0
+#define NME_GL_STATS_DRAW_ELEMENTS 0x2
+#define NME_GL_STATS_GLVIEW 0x4
+struct glStatsStruct
+{
+    glStatsStruct(){
+        clear();
+    }
+    inline void clear(){
+        #ifndef NME_NO_GL_STATS
+        memset(statsArray, 0x0, sizeof(statsArray));
+        #endif
+    }
+    inline void record(int verts, int flag){
+        #ifndef NME_NO_GL_STATS
+        statsArray[flag] += verts;
+        statsArray[++flag]++;
+        #endif
+    }
+    inline void get(int * arr, int n){
+        #ifndef NME_NO_GL_STATS
+        n = (n>=8?8:n);
+        memcpy(arr, statsArray, sizeof(int)*n);
+        #endif
+    }
+    inline void get(glStatsStruct *inStats){
+        #ifndef NME_NO_GL_STATS
+        memcpy(inStats->statsArray, statsArray, sizeof(statsArray));
+        #endif
+    }
+    int statsArray[8];
+};
 
+} // end namespace nme
 
 #endif // INCLUDED_OGL_H
