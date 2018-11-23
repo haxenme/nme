@@ -491,6 +491,12 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
       color_type = PNG_COLOR_TYPE_RGB_ALPHA;
       color_format = pfBGRA;
       swapBgr = true;
+
+      if (srcFmt==pfRGBA)
+      {
+         swapBgr = false;
+         srcFmt = pfBGRA;
+      }
    }
 
    png_set_IHDR(png_ptr, info_ptr, w, h,
