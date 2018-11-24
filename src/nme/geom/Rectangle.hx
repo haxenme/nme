@@ -12,6 +12,7 @@ class Rectangle
    public var size(get, set):Point;
    public var top(get, set):Float;
    public var topLeft(get, set):Point;
+   public var centre(get,set):Point;
    public var width:Float;
    public var x:Float;
    public var y:Float;
@@ -197,6 +198,8 @@ class Rectangle
    private function set_top(t:Float) { height -= t - y; y = t; return t; }
    private function get_topLeft() { return new Point(x, y); }
    private function set_topLeft(p:Point) { x = p.x; y = p.y; return p.clone(); }
+   private function get_centre() { return new Point(x+width*0.5, y+height*0.5); }
+   private function set_centre(p:Point) { x = p.x-width*0.5; y = p.y-height*0.5; return p.clone(); }
 }
 
 #else
