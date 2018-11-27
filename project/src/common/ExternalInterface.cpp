@@ -692,11 +692,14 @@ void nme_##obj_prefix##_set_##prop(value inObj,from_type inVal) \
 \
 DEFINE_PRIME2v(nme_##obj_prefix##_set_##prop)
 
-#define DO_DISPLAY_PROP_PRIME(prop,Prop,to_val,from_val) \
-   DO_PROP_PRIME(DisplayObject,display_object,prop,Prop,to_val,from_val) 
+#define DO_DISPLAY_PROP_PRIME(prop,Prop,to_type,from_type) \
+   DO_PROP_PRIME(DisplayObject,display_object,prop,Prop,to_type,from_type) 
    
 #define DO_DISPLAY_PROP(prop,Prop,to_val,from_val) \
    DO_PROP(DisplayObject,display_object,prop,Prop,to_val,from_val) 
+
+#define DO_STAGE_PROP_PRIME(prop,Prop,to_type,from_type) \
+   DO_PROP_PRIME(Stage,stage,prop,Prop,to_type,from_type) 
 
 #define DO_STAGE_PROP(prop,Prop,to_val,from_val) \
    DO_PROP(Stage,stage,prop,Prop,to_val,from_val) 
@@ -1529,7 +1532,7 @@ DEFINE_PRIM(nme_stage_begin_render,2);
 
 
 
-value nme_render_stage(value inStage)
+void nme_render_stage(value inStage)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
@@ -1538,10 +1541,8 @@ value nme_render_stage(value inStage)
       stage->RenderStage();
       sgRenderingCount--;
    }
-   return alloc_null();
 }
-
-DEFINE_PRIM(nme_render_stage,1);
+DEFINE_PRIME1v(nme_render_stage);
 
 
 
@@ -1554,41 +1555,36 @@ value nme_stage_end_render(value inStage)
 }
 DEFINE_PRIM(nme_stage_end_render,1);
 
-value nme_stage_check_cache(value inStage)
+
+
+bool nme_stage_check_cache(value inStage)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
-      return alloc_bool(stage->BuildCache());
-   return alloc_null();
+      return stage->BuildCache();
+   return false;
 }
-DEFINE_PRIM(nme_stage_check_cache,1);
+DEFINE_PRIME1(nme_stage_check_cache);
 
 
-
-
-
-
-value nme_set_render_gc_free(value inGcFree)
+void nme_set_render_gc_free(bool inGcFree)
 {
-   gNmeRenderGcFree = val_bool(inGcFree);
-   return alloc_null();
+   gNmeRenderGcFree = inGcFree;
 }
+DEFINE_PRIME1v(nme_set_render_gc_free);
 
-DEFINE_PRIM(nme_set_render_gc_free,1);
 
-
-value nme_stage_resize_window(value inStage, value inWidth, value inHeight)
+void nme_stage_resize_window(value inStage, int inWidth, int inHeight)
 {
    #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
    Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
-      stage->ResizeWindow(val_int(inWidth), val_int(inHeight));
+      stage->ResizeWindow(inWidth, inHeight);
    }
    #endif
-   return alloc_null();
 }
-DEFINE_PRIM(nme_stage_resize_window,3);
+DEFINE_PRIME3v(nme_stage_resize_window);
 
 
 value nme_stage_set_resolution(value inStage, value inWidth, value inHeight)
@@ -1637,7 +1633,7 @@ value nme_stage_set_fullscreen(value inStage, value inFull)
 DEFINE_PRIM(nme_stage_set_fullscreen,2);
 
 
-value nme_stage_get_focus_id(value inValue)
+int nme_stage_get_focus_id(value inValue)
 {
    int result = -1;
    Stage *stage;
@@ -1647,12 +1643,12 @@ value nme_stage_get_focus_id(value inValue)
       if (obj)
          result = obj->getID();
    }
-
-   return alloc_int(result);
+   return result;
 }
-DEFINE_PRIM(nme_stage_get_focus_id,1);
+DEFINE_PRIME1(nme_stage_get_focus_id);
 
-value nme_stage_set_focus(value inStage,value inObject,value inDirection)
+
+void nme_stage_set_focus(value inStage,value inObject)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
@@ -1661,9 +1657,8 @@ value nme_stage_set_focus(value inStage,value inObject,value inDirection)
       AbstractToObject(inObject,obj);
       stage->SetFocusObject(obj);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_stage_set_focus,3);
+DEFINE_PRIME2v(nme_stage_set_focus);
 
 value nme_stage_get_joystick_name(value inStage, value inId)
 {
@@ -1679,7 +1674,7 @@ value nme_stage_get_joystick_name(value inStage, value inId)
 }
 DEFINE_PRIM(nme_stage_get_joystick_name,2);
 
-DO_STAGE_PROP(focus_rect,FocusRect,alloc_bool,val_bool)
+DO_STAGE_PROP_PRIME(focus_rect,FocusRect,bool,bool)
 DO_STAGE_PROP(scale_mode,ScaleMode,alloc_int,val_int)
 #ifdef NME_S3D
 DO_STAGE_PROP(autos3d,AutoS3D,alloc_bool,val_bool)
@@ -1716,16 +1711,15 @@ value nme_stage_request_render()
 DEFINE_PRIM(nme_stage_request_render,0);
  
 
-value nme_stage_show_cursor(value inStage,value inShow)
+void nme_stage_show_cursor(value inStage,bool inShow)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
-      stage->ShowCursor(val_bool(inShow));
+      stage->ShowCursor(inShow);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_stage_show_cursor,2);
+DEFINE_PRIME2v(nme_stage_show_cursor);
 
 value nme_stage_constrain_cursor_to_window_frame(value inStage, value inLock)
 {
@@ -1792,33 +1786,28 @@ value nme_stage_set_window_position( value inStage, value inX, value inY ) {
 DEFINE_PRIM(nme_stage_set_window_position,3);
 
 
-value nme_stage_get_orientation() {
+int nme_stage_get_orientation() {
 
    #if defined(IPHONE) || defined(ANDROID) || defined(BLACKBERRY)
-      return alloc_int( GetDeviceOrientation() );
-   
+      return GetDeviceOrientation();
    #else
-   
-      return alloc_int( 0 );
-      
-   #endif
-   
+      return 0;
+   #endif  
 }
+DEFINE_PRIME0(nme_stage_get_orientation);
 
-DEFINE_PRIM(nme_stage_get_orientation, 0);
 
-value nme_stage_get_normal_orientation() {
+int nme_stage_get_normal_orientation() {
 
    #if defined(ANDROID)
-      return alloc_int( GetNormalOrientation() );
+      return GetNormalOrientation();
    #elif defined(IPHONE)
-      return alloc_int( 1 ); // ios device sensors are always portrait orientated  
+      return 1; // ios device sensors are always portrait orientated  
    #else
-      return alloc_int( 0 );  
+      return 0;  
    #endif
 }
-
-DEFINE_PRIM(nme_stage_get_normal_orientation, 0);
+DEFINE_PRIME0(nme_stage_get_normal_orientation);
 
 
 
@@ -2428,7 +2417,7 @@ bool nme_display_object_request_soft_keyboard(value inObj)
    }
    return false;
 }
-DEFINE_PRIME1v(nme_display_object_request_soft_keyboard);
+DEFINE_PRIME1(nme_display_object_request_soft_keyboard);
 
 
 bool nme_display_object_dismiss_soft_keyboard(value inObj)
@@ -2510,9 +2499,9 @@ value nme_direct_renderer_create()
 {
    return ObjectToAbstract( new DirectRenderer(onDirectRender) );
 }
-DEFINE_PRIM(nme_direct_renderer_create,0);
+DEFINE_PRIME0(nme_direct_renderer_create);
 
-value nme_direct_renderer_set(value inRenderer, value inCallback)
+void nme_direct_renderer_set(value inRenderer, value inCallback)
 {
    DirectRenderer *renderer = 0;
 
@@ -2540,10 +2529,8 @@ value nme_direct_renderer_set(value inRenderer, value inCallback)
          }
       }
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_direct_renderer_set,2);
+DEFINE_PRIME2v(nme_direct_renderer_set);
 
 // --- SimpleButton -----------------------------------------------------
 
@@ -2580,8 +2567,8 @@ value nme_create_display_object_container()
 {
    return ObjectToAbstract( new DisplayObjectContainer() );
 }
+DEFINE_PRIME0(nme_create_display_object_container);
 
-DEFINE_PRIM(nme_create_display_object_container,0);
 
 void nme_doc_add_child(value inParent, value inChild)
 {
@@ -2596,7 +2583,7 @@ void nme_doc_add_child(value inParent, value inChild)
 DEFINE_PRIME2v(nme_doc_add_child);
 
 
-value nme_doc_swap_children(value inParent, value inChild0, value inChild1)
+void nme_doc_swap_children(value inParent, value inChild0, value inChild1)
 {
    DisplayObjectContainer *parent;
    if (AbstractToObject(inParent,parent))
@@ -2604,38 +2591,35 @@ value nme_doc_swap_children(value inParent, value inChild0, value inChild1)
       CHECK_ACCESS("nme_doc_swap_children");
       parent->swapChildrenAt(val_int(inChild0), val_int(inChild1) );
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_doc_swap_children,3);
+DEFINE_PRIME3v(nme_doc_swap_children);
 
 
-value nme_doc_remove_child(value inParent, value inPos)
+void nme_doc_remove_child(value inParent, int inPos)
 {
    DisplayObjectContainer *parent;
    if (AbstractToObject(inParent,parent))
    {
       CHECK_ACCESS("nme_doc_remove_child");
-      parent->removeChildAt(val_int(inPos));
+      parent->removeChildAt(inPos);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_doc_remove_child,2);
+DEFINE_PRIME2v(nme_doc_remove_child);
 
-value nme_doc_set_child_index(value inParent, value inChild, value inPos)
+void nme_doc_set_child_index(value inParent, value inChild, int inPos)
 {
    DisplayObjectContainer *parent;
    DisplayObject *child;
    if (AbstractToObject(inParent,parent) && AbstractToObject(inChild,child))
    {
       CHECK_ACCESS("nme_doc_set_child_index");
-      parent->setChildIndex(child,val_int(inPos));
+      parent->setChildIndex(child,inPos);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_doc_set_child_index,3);
+DEFINE_PRIME3v(nme_doc_set_child_index);
 
 
-DO_PROP(DisplayObjectContainer,doc,mouse_children,MouseChildren,alloc_bool,val_bool);
+DO_PROP_PRIME(DisplayObjectContainer,doc,mouse_children,MouseChildren,bool,bool);
 
 
 // --- ExternalInterface -----------------------------------------------------
@@ -4192,7 +4176,7 @@ value nme_bitmap_data_color_transform(value inSurface,value inRect, value inColo
 DEFINE_PRIM(nme_bitmap_data_color_transform,3);
 
 
-value nme_bitmap_data_apply_filter(value inDest, value inSrc,value inRect, value inOffset, value inFilter)
+void nme_bitmap_data_apply_filter(value inDest, value inSrc,value inRect, value inOffset, value inFilter)
 {
    Surface *src;
    Surface *dest;
@@ -4209,9 +4193,8 @@ value nme_bitmap_data_apply_filter(value inDest, value inSrc,value inRect, value
       }
       //delete filter;
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_apply_filter,5);
+DEFINE_PRIME5v(nme_bitmap_data_apply_filter);
 
 
 
@@ -4446,7 +4429,7 @@ DEFINE_PRIM(nme_bitmap_data_set_array,3);
 
 
 
-value nme_bitmap_data_generate_filter_rect(value inRect, value inFilter, value outRect)
+void nme_bitmap_data_generate_filter_rect(value inRect, value inFilter, value outRect)
 {
    Rect rect;
    FromValue(rect,inRect);
@@ -4461,9 +4444,8 @@ value nme_bitmap_data_generate_filter_rect(value inRect, value inFilter, value o
    }
 
    ToValue(outRect,rect);
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_generate_filter_rect,3);
+DEFINE_PRIME3v(nme_bitmap_data_generate_filter_rect);
 
 
 
@@ -5124,9 +5106,9 @@ value nme_tilesheet_create(value inSurface)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_tilesheet_create,1);
+DEFINE_PRIME1(nme_tilesheet_create);
 
-value nme_tilesheet_add_rect(value inSheet,value inRect, value inHotSpot)
+int nme_tilesheet_add_rect(value inSheet,value inRect, value inHotSpot)
 {
    Tilesheet *sheet;
    if (AbstractToObject(inSheet,sheet))
@@ -5137,24 +5119,22 @@ value nme_tilesheet_add_rect(value inSheet,value inRect, value inHotSpot)
       if (!val_is_null(inHotSpot))
          FromValue(p,inHotSpot);
       int tile = sheet->addTileRect(rect,p.x,p.y);
-     return alloc_int(tile);
+     return tile;
    }
-   return alloc_null();
+   return -1;
 }
-DEFINE_PRIM(nme_tilesheet_add_rect,3);
+DEFINE_PRIME3(nme_tilesheet_add_rect);
 
-value nme_tilesheet_get_rect(value inSheet, value inIndex, value outRect)
+void nme_tilesheet_get_rect(value inSheet, int inIndex, value outRect)
 {
    Tilesheet *sheet;
    if (AbstractToObject(inSheet,sheet))
    {
-      int index = val_int(inIndex);
-      Tile tile = sheet->GetTile(index);
+      Tile tile = sheet->GetTile(inIndex);
       ToValue(outRect, tile.mRect);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_tilesheet_get_rect,3);
+DEFINE_PRIME3v(nme_tilesheet_get_rect);
 
 
 // --- URL ----------------------------------------------------------

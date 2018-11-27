@@ -1,7 +1,7 @@
 package nme.display;
 
 import nme.geom.*;
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.NativeHandle;
 
 @:nativeProperty
@@ -65,9 +65,9 @@ class Tilesheet
    }
 
    // Native Methods
-   private static var nme_tilesheet_create = Loader.load("nme_tilesheet_create", 1);
-   private static var nme_tilesheet_add_rect = Loader.load("nme_tilesheet_add_rect", 3);
-   private static var nme_tilesheet_get_rect = Loader.load("nme_tilesheet_get_rect", 3);
+   private static var nme_tilesheet_create = PrimeLoader.load("nme_tilesheet_create", "oo");
+   private static var nme_tilesheet_add_rect = PrimeLoader.load("nme_tilesheet_add_rect", "oooi");
+   private static var nme_tilesheet_get_rect = PrimeLoader.load("nme_tilesheet_get_rect", "oiov");
 
    #else
 
