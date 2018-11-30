@@ -1,6 +1,7 @@
 package nme.app;
 
 import haxe.Timer;
+import nme.PrimeLoader;
 import nme.Loader;
 import nme.bare.Surface;
 import nme.app.Window;
@@ -108,7 +109,7 @@ class Application
       var title = inParams.title==null ? "NME" : inParams.title;
       var icon = inParams.icon==null ? null : inParams.icon.nmeHandle;
 
-      var create_main_frame = nme.PrimeLoader.load("nme_create_main_frame","oiiisov");
+      var create_main_frame = PrimeLoader.load("nme_create_main_frame","oiiisov");
 
       create_main_frame(function(inFrameHandle:Dynamic) {
             onQuit = close;
@@ -122,7 +123,7 @@ class Application
    public static function close() 
    {
       nmeQuitting = true;
-      var close = Loader.load("nme_close", 0);
+      var close = PrimeLoader.load("nme_close", "v");
       close();
    }
 
@@ -209,7 +210,7 @@ class Application
    public static function forceClose() 
    {
       // Terminates the process straight away, bypassing graceful shutdown
-      var terminate = Loader.load("nme_terminate", 0);
+      var terminate = PrimeLoader.load("nme_terminate", "v");
       terminate();
    }
 
@@ -306,16 +307,16 @@ class Application
 
    // Native Methods
    #if android
-   private static var nme_post_ui_callback = Loader.load("nme_post_ui_callback", 1);
+   private static var nme_post_ui_callback = PrimeLoader.load("nme_post_ui_callback", "ov");
    #end
    private static var nme_set_package = Loader.load("nme_set_package", 4);
-   private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
-   private static var nme_pause_animation = Loader.load("nme_pause_animation", 0);
-   private static var nme_resume_animation = Loader.load("nme_resume_animation", 0);
-   private static var nme_get_ndll_version = Loader.load("nme_get_ndll_version", 0);
-   private static var nme_get_nme_state_version = Loader.load("nme_get_ndll_version", 0);
-   private static var nme_stage_set_fixed_orientation = Loader.load("nme_stage_set_fixed_orientation", 1);
-   private static var nme_get_bits = Loader.load("nme_get_bits", 0);
+   //private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
+   private static var nme_pause_animation = PrimeLoader.load("nme_pause_animation", "v");
+   private static var nme_resume_animation = PrimeLoader.load("nme_resume_animation", "v");
+   private static var nme_get_ndll_version = PrimeLoader.load("nme_get_ndll_version", "i");
+   private static var nme_get_nme_state_version = Loader.load("nme_get_nme_state_version", 0);
+   private static var nme_stage_set_fixed_orientation = PrimeLoader.load("nme_stage_set_fixed_orientation", "iv");
+   private static var nme_get_bits = PrimeLoader.load("nme_get_bits", "i");
 }
 
 

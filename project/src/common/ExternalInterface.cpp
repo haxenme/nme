@@ -722,11 +722,11 @@ value nme_error_output(value message)
 }
 DEFINE_PRIM(nme_error_output,1);
 
-value nme_get_ndll_version()
+int nme_get_ndll_version()
 {
-   return alloc_int( NME_BINARY_VERSION );
+   return NME_BINARY_VERSION;
 }
-DEFINE_PRIM(nme_get_ndll_version,0);
+DEFINE_PRIME0(nme_get_ndll_version);
 
 value nme_get_nme_state_version()
 {
@@ -738,11 +738,11 @@ value nme_get_nme_state_version()
 }
 DEFINE_PRIM(nme_get_nme_state_version,0);
 
-value nme_get_bits()
+int nme_get_bits()
 {
-   return alloc_int( sizeof(void *) * 8 );
+   return ( sizeof(void *) * 8 );
 }
-DEFINE_PRIM(nme_get_bits,0);
+DEFINE_PRIME0(nme_get_bits);
 
 
 value nme_log(value inMessage)
@@ -1287,14 +1287,13 @@ DEFINE_PRIM(nme_clear_user_preference,1);
 
 // --- Stage ----------------------------------------------------------------------
 
-value nme_stage_set_fixed_orientation(value inValue)
+void nme_stage_set_fixed_orientation(int inValue)
 {
 #if defined(IPHONE) || defined(TIZEN)
-   gFixedOrientation = val_int(inValue);
+   gFixedOrientation = inValue;
 #endif
-   return alloc_null();
 }
-DEFINE_PRIM(nme_stage_set_fixed_orientation,1);
+DEFINE_PRIME1v(nme_stage_set_fixed_orientation);
 
 
 value nme_init_sdl_audio( )
@@ -1306,6 +1305,7 @@ value nme_init_sdl_audio( )
    return alloc_null();
 }
 DEFINE_PRIM(nme_init_sdl_audio,0);
+
 
 value nme_get_frame_stage(value inValue)
 {
@@ -1320,7 +1320,7 @@ value nme_get_frame_stage(value inValue)
 
    return ObjectToAbstract(frame->GetStage());
 }
-DEFINE_PRIM(nme_get_frame_stage,1);
+DEFINE_PRIME1(nme_get_frame_stage);
 
 
 AutoGCRoot *sOnCreateCallback = 0;
@@ -1366,19 +1366,17 @@ value nme_set_asset_base(value inBase)
 }
 DEFINE_PRIM(nme_set_asset_base,1);
 
-value nme_terminate()
+void nme_terminate()
 {
    exit(0);
-   return alloc_null();
 }
-DEFINE_PRIM(nme_terminate,0);
+DEFINE_PRIME0v(nme_terminate);
 
-value nme_close()
+void nme_close()
 {
    StopAnimation();
-   return alloc_null();
 }
-DEFINE_PRIM(nme_close,0);
+DEFINE_PRIME0v(nme_close);
 
 value nme_start_animation()
 {
@@ -1387,19 +1385,17 @@ value nme_start_animation()
 }
 DEFINE_PRIM(nme_start_animation,0);
 
-value nme_pause_animation()
+void nme_pause_animation()
 {
    PauseAnimation();
-   return alloc_null();
 }
-DEFINE_PRIM(nme_pause_animation,0);
+DEFINE_PRIME0v(nme_pause_animation);
 
-value nme_resume_animation()
+void nme_resume_animation()
 {
    ResumeAnimation();
-   return alloc_null();
 }
-DEFINE_PRIM(nme_resume_animation,0);
+DEFINE_PRIME0v(nme_resume_animation);
 
 value nme_stop_animation()
 {
@@ -1408,19 +1404,15 @@ value nme_stop_animation()
 }
 DEFINE_PRIM(nme_stop_animation,0);
 
-value nme_stage_set_next_wake(value inStage, value inNextWake)
+void nme_stage_set_next_wake(value inStage, double inNextWake)
 {
    Stage *stage;
-
    if (AbstractToObject(inStage,stage))
    {
-      stage->SetNextWakeDelay(val_number(inNextWake));
+      stage->SetNextWakeDelay(inNextWake);
    }
-
-   return alloc_null();
 }
-
-DEFINE_PRIM(nme_stage_set_next_wake,2);
+DEFINE_PRIME2v(nme_stage_set_next_wake);
 
 void external_handler( nme::Event &ioEvent, void *inUserData )
 {
@@ -1502,33 +1494,29 @@ void external_handler_native( nme::Event &ioEvent, void *inUserData )
 }
 
 
-value nme_set_stage_handler_native(value inStage,value inHandler,value inNomWidth, value inNomHeight)
+void nme_set_stage_handler_native(value inStage,value inHandler,int inNomWidth, int inNomHeight)
 {
    Stage *stage;
    if (!AbstractToObject(inStage,stage))
-      return alloc_null();
+      return;
 
    sgNativeHandlerStage = stage;
 
    AutoGCRoot *data = new AutoGCRoot(inHandler);
 
-   stage->SetNominalSize(val_int(inNomWidth), val_int(inNomHeight) );
+   stage->SetNominalSize(inNomWidth, inNomHeight);
    stage->SetEventHandler(external_handler_native,data);
-
-   return alloc_null();
 }
+DEFINE_PRIME4v(nme_set_stage_handler_native);
 
-DEFINE_PRIM(nme_set_stage_handler_native,4);
 
-
-value nme_stage_begin_render(value inStage,value inClear)
+void nme_stage_begin_render(value inStage, bool inClear)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
-      stage->BeginRenderStage(val_bool(inClear));
-   return alloc_null();
+      stage->BeginRenderStage(inClear);
 }
-DEFINE_PRIM(nme_stage_begin_render,2);
+DEFINE_PRIME2v(nme_stage_begin_render);
 
 
 
@@ -1546,14 +1534,13 @@ DEFINE_PRIME1v(nme_render_stage);
 
 
 
-value nme_stage_end_render(value inStage)
+void nme_stage_end_render(value inStage)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
       stage->EndRenderStage();
-   return alloc_null();
 }
-DEFINE_PRIM(nme_stage_end_render,1);
+DEFINE_PRIME1v(nme_stage_end_render);
 
 
 
@@ -1675,40 +1662,39 @@ value nme_stage_get_joystick_name(value inStage, value inId)
 DEFINE_PRIM(nme_stage_get_joystick_name,2);
 
 DO_STAGE_PROP_PRIME(focus_rect,FocusRect,bool,bool)
-DO_STAGE_PROP(scale_mode,ScaleMode,alloc_int,val_int)
+DO_STAGE_PROP_PRIME(scale_mode,ScaleMode,int,int)
 #ifdef NME_S3D
-DO_STAGE_PROP(autos3d,AutoS3D,alloc_bool,val_bool)
+DO_STAGE_PROP_PRIME(autos3d,AutoS3D,bool,bool)
 #endif
-DO_STAGE_PROP(align,Align,alloc_int,val_int)
-DO_STAGE_PROP(quality,Quality,alloc_int,val_int)
-DO_STAGE_PROP(display_state,DisplayState,alloc_int,val_int)
-DO_STAGE_PROP(multitouch_active,MultitouchActive,alloc_bool,val_bool)
-DO_PROP_READ(Stage,stage,stage_width,StageWidth,alloc_float);
-DO_PROP_READ(Stage,stage,stage_height,StageHeight,alloc_float);
-DO_PROP_READ(Stage,stage,dpi_scale,DPIScale,alloc_float);
-DO_PROP_READ(Stage,stage,multitouch_supported,MultitouchSupported,alloc_bool);
+DO_STAGE_PROP_PRIME(align,Align,int,int)
+DO_STAGE_PROP_PRIME(quality,Quality,int,int)
+DO_STAGE_PROP_PRIME(display_state,DisplayState,int,int)
+DO_STAGE_PROP_PRIME(multitouch_active,MultitouchActive,bool,bool)
+DO_PROP_READ_PRIME(Stage,stage,stage_width,StageWidth,int);
+DO_PROP_READ_PRIME(Stage,stage,stage_height,StageHeight,int);
+DO_PROP_READ_PRIME(Stage,stage,dpi_scale,DPIScale,double);
+DO_PROP_READ_PRIME(Stage,stage,multitouch_supported,MultitouchSupported,bool);
 
 
-value nme_stage_is_opengl(value inStage)
+bool nme_stage_is_opengl(value inStage)  
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
-      return alloc_bool(stage->isOpenGL());
+      return stage->isOpenGL();
    }
-   return alloc_bool(false);
+   return false;
 }
-DEFINE_PRIM(nme_stage_is_opengl,1);
+DEFINE_PRIME1(nme_stage_is_opengl);
  
 namespace nme { void AndroidRequestRender(); }
-value nme_stage_request_render()
+void nme_stage_request_render()
 {
    #ifdef ANDROID
    AndroidRequestRender();
    #endif
-   return alloc_null();
 }
-DEFINE_PRIM(nme_stage_request_render,0);
+DEFINE_PRIME0v(nme_stage_request_render);
  
 
 void nme_stage_show_cursor(value inStage,bool inShow)
@@ -1746,44 +1732,41 @@ value nme_stage_set_cursor_position_in_window( value inStage, value inX, value i
 DEFINE_PRIM(nme_stage_set_cursor_position_in_window,3);
 
 
-value nme_stage_get_window_x( value inStage )
+int nme_stage_get_window_x(value inStage)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
-      return alloc_int(stage->GetWindowX());
+      return stage->GetWindowX();
    }
-   return alloc_int(0);
+   return 0;
 }
-DEFINE_PRIM(nme_stage_get_window_x,1);
+DEFINE_PRIME1(nme_stage_get_window_x);
 
 
-value nme_stage_get_window_y( value inStage )
+int nme_stage_get_window_y(value inStage)
 {
    Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
-      return alloc_int(stage->GetWindowY());
+      return stage->GetWindowY();
    }
-   return alloc_int(0);
+   return 0;
 }
-DEFINE_PRIM(nme_stage_get_window_y,1);
+DEFINE_PRIME1(nme_stage_get_window_y);
 
 
 
 
-value nme_stage_set_window_position( value inStage, value inX, value inY ) {
-
-    Stage *stage;
+void nme_stage_set_window_position(value inStage, int inX, int inY)
+{
+   Stage *stage;
    if (AbstractToObject(inStage,stage))
    {
-      int x = val_int(inX);
-      int y = val_int(inY);      
-      stage->SetStageWindowPosition(x,y);
+      stage->SetStageWindowPosition(inX,inY);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_stage_set_window_position,3);
+DEFINE_PRIME3v(nme_stage_set_window_position);
 
 
 int nme_stage_get_orientation() {
