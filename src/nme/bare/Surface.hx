@@ -6,7 +6,7 @@ import nme.geom.Point;
 import nme.geom.Matrix;
 import nme.geom.ColorTransform;
 import nme.utils.ByteArray;
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.NativeHandle;
 import nme.image.PixelFormat;
 import nme.utils.UInt8Array;
@@ -52,7 +52,7 @@ class Surface
    public var data(get,null):UInt8Array;
    
 
-   public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, ?inFillRgb:Int)
+   public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, inFillRgb:Int=-1)
    {
       if (inWidth>0 && inHeight>0 && inPixelFormat!=PixelFormat.pfNone)
          nmeHandle = nme_bitmap_data_create(inWidth, inHeight, inPixelFormat, inFillRgb);
@@ -129,8 +129,8 @@ class Surface
 
    public function fillRect(rect:Rectangle, inColour:Int):Void 
    {
-      var a = inColour >>> 24;
-      var c = inColour & 0xffffff;
+      var a:Int = inColour >>> 24;
+      var c:Int = inColour & 0xffffff;
       nme_bitmap_data_fill(nmeHandle, rect, c, a);
    }
 
@@ -342,52 +342,52 @@ class Surface
    }
 
    // Native Methods
-   private static var nme_bitmap_data_create = Loader.load("nme_bitmap_data_create", 4);
-   private static var nme_bitmap_data_load = Loader.load("nme_bitmap_data_load", 2);
-   private static var nme_bitmap_data_from_bytes = Loader.load("nme_bitmap_data_from_bytes", 2);
-   private static var nme_bitmap_data_clear = Loader.load("nme_bitmap_data_clear", 2);
-   private static var nme_bitmap_data_clone = Loader.load("nme_bitmap_data_clone", 1);
-   private static var nme_bitmap_data_apply_filter = Loader.load("nme_bitmap_data_apply_filter", 5);
-   private static var nme_bitmap_data_color_transform = Loader.load("nme_bitmap_data_color_transform", 3);
-   private static var nme_bitmap_data_copy = Loader.load("nme_bitmap_data_copy", 5);
-   private static var nme_bitmap_data_copy_channel = nme.PrimeLoader.load("nme_bitmap_data_copy_channel", "ooooiiv");
-   private static var nme_bitmap_data_fill = Loader.load("nme_bitmap_data_fill", 4);
-   private static var nme_bitmap_data_get_pixels = Loader.load("nme_bitmap_data_get_pixels", 2);
-   private static var nme_bitmap_data_get_pixel = Loader.load("nme_bitmap_data_get_pixel", 3);
-   private static var nme_bitmap_data_get_pixel32 = Loader.load("nme_bitmap_data_get_pixel32", 3);
+   private static var nme_bitmap_data_create = PrimeLoader.load("nme_bitmap_data_create", "iiiio");
+   private static var nme_bitmap_data_load = nme.Loader.load("nme_bitmap_data_load", 2);
+   private static var nme_bitmap_data_from_bytes = PrimeLoader.load("nme_bitmap_data_from_bytes", "ooo");
+   private static var nme_bitmap_data_clear = PrimeLoader.load("nme_bitmap_data_clear", "oiv");
+   private static var nme_bitmap_data_clone = PrimeLoader.load("nme_bitmap_data_clone", "oo");
+   //private static var nme_bitmap_data_apply_filter = nme.Loader.load("nme_bitmap_data_apply_filter", 5);
+   private static var nme_bitmap_data_color_transform = PrimeLoader.load("nme_bitmap_data_color_transform", "ooov");
+   private static var nme_bitmap_data_copy = PrimeLoader.load("nme_bitmap_data_copy", "oooobv");
+   private static var nme_bitmap_data_copy_channel = PrimeLoader.load("nme_bitmap_data_copy_channel", "ooooiiv");
+   private static var nme_bitmap_data_fill = PrimeLoader.load("nme_bitmap_data_fill", "ooiiv");
+   private static var nme_bitmap_data_get_pixels = PrimeLoader.load("nme_bitmap_data_get_pixels", "ooo");
+   private static var nme_bitmap_data_get_pixel = PrimeLoader.load("nme_bitmap_data_get_pixel", "oiii");
+   private static var nme_bitmap_data_get_pixel32 = PrimeLoader.load("nme_bitmap_data_get_pixel32", "oiii");
    #if cpp
-   private static var nme_bitmap_data_get_array = Loader.load("nme_bitmap_data_get_array", 3);
+   private static var nme_bitmap_data_get_array = PrimeLoader.load("nme_bitmap_data_get_array", "ooov");
    #end
-   private static var nme_bitmap_data_get_color_bounds_rect = Loader.load("nme_bitmap_data_get_color_bounds_rect", 5);
-   private static var nme_bitmap_data_scroll = Loader.load("nme_bitmap_data_scroll", 3);
-   private static var nme_bitmap_data_set_pixel = Loader.load("nme_bitmap_data_set_pixel", 4);
-   private static var nme_bitmap_data_set_pixel32 = Loader.load("nme_bitmap_data_set_pixel32", 4);
-   private static var nme_bitmap_data_set_pixel_rgba = Loader.load("nme_bitmap_data_set_pixel_rgba", 4);
-   private static var nme_bitmap_data_set_bytes = Loader.load("nme_bitmap_data_set_bytes", 4);
-   private static var nme_bitmap_data_set_format = Loader.load("nme_bitmap_data_set_format", 3);
-   private static var nme_bitmap_data_get_format = Loader.load("nme_bitmap_data_get_format", 1);
+   private static var nme_bitmap_data_get_color_bounds_rect = PrimeLoader.load("nme_bitmap_data_get_color_bounds_rect", "oiibov");
+   private static var nme_bitmap_data_scroll = PrimeLoader.load("nme_bitmap_data_scroll", "oiiv");
+   private static var nme_bitmap_data_set_pixel = PrimeLoader.load("nme_bitmap_data_set_pixel", "oiiiv");
+   private static var nme_bitmap_data_set_pixel32 = PrimeLoader.load("nme_bitmap_data_set_pixel32", "oiiiv");
+//   private static var nme_bitmap_data_set_pixel_rgba = nme.Loader.load("nme_bitmap_data_set_pixel_rgba", 4);
+   private static var nme_bitmap_data_set_bytes = PrimeLoader.load("nme_bitmap_data_set_bytes", "oooiv");
+   private static var nme_bitmap_data_set_format = PrimeLoader.load("nme_bitmap_data_set_format", "oibv");
+   private static var nme_bitmap_data_get_format = PrimeLoader.load("nme_bitmap_data_get_format", "oi");
    #if cpp
-   private static var nme_bitmap_data_set_array = Loader.load("nme_bitmap_data_set_array", 3);
+   private static var nme_bitmap_data_set_array = PrimeLoader.load("nme_bitmap_data_set_array", "ooov");
    #end
-   private static var nme_bitmap_data_create_hardware_surface = Loader.load("nme_bitmap_data_create_hardware_surface", 1);
-   private static var nme_bitmap_data_destroy_hardware_surface = Loader.load("nme_bitmap_data_destroy_hardware_surface", 1);
-   private static var nme_bitmap_data_generate_filter_rect = Loader.load("nme_bitmap_data_generate_filter_rect", 3);
-   private static var nme_render_surface_to_surface = nme.PrimeLoader.load("nme_render_surface_to_surface", "ooooiobv");
-   private static var nme_bitmap_data_height = Loader.load("nme_bitmap_data_height", 1);
-   private static var nme_bitmap_data_width = Loader.load("nme_bitmap_data_width", 1);
-   private static var nme_bitmap_data_get_transparent = Loader.load("nme_bitmap_data_get_transparent", 1);
-   private static var nme_bitmap_data_set_flags = Loader.load("nme_bitmap_data_set_flags", 2);
-   private static var nme_bitmap_data_get_flags = Loader.load("nme_bitmap_data_get_flags", 1);
-   private static var nme_bitmap_data_encode = Loader.load("nme_bitmap_data_encode", 3);
-   private static var nme_bitmap_data_dump_bits = Loader.load("nme_bitmap_data_dump_bits", 1);
-   private static var nme_bitmap_data_dispose = Loader.load("nme_bitmap_data_dispose", 1);
-   private static var nme_bitmap_data_noise = Loader.load("nme_bitmap_data_noise", -1);
-   private static var nme_bitmap_data_flood_fill = Loader.load("nme_bitmap_data_flood_fill", 4);
-   private static var nme_bitmap_data_get_prem_alpha = Loader.load("nme_bitmap_data_get_prem_alpha", 1);
-   private static var nme_bitmap_data_set_prem_alpha = Loader.load("nme_bitmap_data_set_prem_alpha", 2);
-   private static var nme_bitmap_data_get_floats32 = nme.PrimeLoader.load("nme_bitmap_data_get_floats32", "ooiiiiiov");
-   private static var nme_bitmap_data_set_floats32 = nme.PrimeLoader.load("nme_bitmap_data_set_floats32", "ooiiiiiov");
-   private static var nme_bitmap_data_get_uints8 = nme.PrimeLoader.load("nme_bitmap_data_get_uints8", "ooiiiiv");
-   private static var nme_bitmap_data_set_uints8 = nme.PrimeLoader.load("nme_bitmap_data_set_uints8", "ooiiiiv");
+   private static var nme_bitmap_data_create_hardware_surface = PrimeLoader.load("nme_bitmap_data_create_hardware_surface", "ov");
+   private static var nme_bitmap_data_destroy_hardware_surface = PrimeLoader.load("nme_bitmap_data_destroy_hardware_surface", "ov");
+//   private static var nme_bitmap_data_generate_filter_rect = PrimeLoader.load("nme_bitmap_data_generate_filter_rect", 3);
+   private static var nme_render_surface_to_surface = PrimeLoader.load("nme_render_surface_to_surface", "ooooiobv");
+   private static var nme_bitmap_data_height = PrimeLoader.load("nme_bitmap_data_height", "oi");
+   private static var nme_bitmap_data_width = PrimeLoader.load("nme_bitmap_data_width", "oi");
+   private static var nme_bitmap_data_get_transparent = PrimeLoader.load("nme_bitmap_data_get_transparent", "ob");
+   private static var nme_bitmap_data_set_flags = PrimeLoader.load("nme_bitmap_data_set_flags", "oiv");
+   private static var nme_bitmap_data_get_flags = PrimeLoader.load("nme_bitmap_data_get_flags", "oi");
+   private static var nme_bitmap_data_encode = nme.Loader.load("nme_bitmap_data_encode", 3);
+   private static var nme_bitmap_data_dump_bits = PrimeLoader.load("nme_bitmap_data_dump_bits", "ov");
+   private static var nme_bitmap_data_dispose = PrimeLoader.load("nme_bitmap_data_dispose", "ov");
+   private static var nme_bitmap_data_noise = PrimeLoader.load("nme_bitmap_data_noise", "oiiiibv");
+   private static var nme_bitmap_data_flood_fill = PrimeLoader.load("nme_bitmap_data_flood_fill", "oiiiv");
+   private static var nme_bitmap_data_get_prem_alpha = PrimeLoader.load("nme_bitmap_data_get_prem_alpha", "ob");
+   private static var nme_bitmap_data_set_prem_alpha = PrimeLoader.load("nme_bitmap_data_set_prem_alpha", "obv");
+   private static var nme_bitmap_data_get_floats32 = PrimeLoader.load("nme_bitmap_data_get_floats32", "ooiiiiiov");
+   private static var nme_bitmap_data_set_floats32 = PrimeLoader.load("nme_bitmap_data_set_floats32", "ooiiiiiov");
+   private static var nme_bitmap_data_get_uints8 = PrimeLoader.load("nme_bitmap_data_get_uints8", "ooiiiiv");
+   private static var nme_bitmap_data_set_uints8 = PrimeLoader.load("nme_bitmap_data_set_uints8", "ooiiiiv");
 }
 

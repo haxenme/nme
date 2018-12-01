@@ -3901,120 +3901,116 @@ TEXT_PROP_GET_IDX(line_text,LineText,alloc_wstring);
 TEXT_PROP_GET_IDX(line_offset,LineOffset,alloc_int);
 
 
-value nme_bitmap_data_create(value width, value height, value pixelFormat, value fill)
+value nme_bitmap_data_create(int width, int height, int pixelFormat, int fill)
 {
-   int w = val_int(width);
-   int h = val_int(height);
-
-   PixelFormat format = (PixelFormat)val_int(pixelFormat);
-
-   Surface *result = new SimpleSurface( w, h, format, 1 );
-   if (!val_is_null(fill))
-      result->Clear( val_int(fill) );
+   PixelFormat format = (PixelFormat)(pixelFormat);
+   Surface *result = new SimpleSurface( width, height, format, 1 );
+   if (fill>=0)
+      result->Clear(fill);
    return ObjectToAbstract(result);
 }
-DEFINE_PRIM(nme_bitmap_data_create,4);
+DEFINE_PRIME4(nme_bitmap_data_create);
 
-value nme_bitmap_data_width(value inHandle)
+
+int nme_bitmap_data_width(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_int(surface->Width());
-   return alloc_int(0);
+      return surface->Width();
+   return 0;
 }
-DEFINE_PRIM(nme_bitmap_data_width,1);
+DEFINE_PRIME1(nme_bitmap_data_width);
 
-value nme_bitmap_data_height(value inHandle)
+
+int nme_bitmap_data_height(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_int(surface->Height());
-   return alloc_int(0);
+      return surface->Height();
+   return 0;
 }
-DEFINE_PRIM(nme_bitmap_data_height,1);
+DEFINE_PRIME1(nme_bitmap_data_height);
 
-value nme_bitmap_data_get_prem_alpha(value inHandle)
+
+bool nme_bitmap_data_get_prem_alpha(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_bool(surface->Format() == pfBGRPremA);
-   return alloc_null();
+      return (surface->Format() == pfBGRPremA);
+   return false;
 }
-DEFINE_PRIM(nme_bitmap_data_get_prem_alpha,1);
+DEFINE_PRIME1(nme_bitmap_data_get_prem_alpha);
 
-value nme_bitmap_data_set_prem_alpha(value inHandle,value inVal)
+
+void nme_bitmap_data_set_prem_alpha(value inHandle,bool inVal)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
    {
-      bool use = val_bool(inVal) && (surface->Format()<pfAlpha);
+      bool use = inVal && (surface->Format()<pfAlpha);
       if (use)
          surface->ChangeInternalFormat(pfBGRPremA);
       else
          surface->ChangeInternalFormat(pfBGRA);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_set_prem_alpha,2);
+DEFINE_PRIME2v(nme_bitmap_data_set_prem_alpha);
 
 
-
-value nme_bitmap_data_clear(value inHandle,value inRGB)
+void nme_bitmap_data_clear(value inHandle,int inRGB)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      surface->Clear( val_int(inRGB) );
-   return alloc_null();
+      surface->Clear(inRGB);
 }
-DEFINE_PRIM(nme_bitmap_data_clear,2);
+DEFINE_PRIME2v(nme_bitmap_data_clear);
 
-value nme_bitmap_data_get_transparent(value inHandle)
+
+bool nme_bitmap_data_get_transparent(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_bool( HasAlphaChannel(surface->Format()) );
-   return alloc_null();
+      return HasAlphaChannel(surface->Format());
+   return false;
 }
-DEFINE_PRIM(nme_bitmap_data_get_transparent,1);
+DEFINE_PRIME1(nme_bitmap_data_get_transparent);
 
-value nme_bitmap_data_set_flags(value inHandle,value inFlags)
+
+void nme_bitmap_data_set_flags(value inHandle,int inFlags)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      surface->SetFlags(val_int(inFlags));
-   return alloc_null();
+      surface->SetFlags(inFlags);
 }
-DEFINE_PRIM(nme_bitmap_data_set_flags,2);
+DEFINE_PRIME2v(nme_bitmap_data_set_flags);
 
 
-value nme_bitmap_data_get_flags(value inHandle)
+int nme_bitmap_data_get_flags(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
-      return alloc_int( surface->GetFlags() );
-   return alloc_int(0);
+      return surface->GetFlags();
+   return 0;
 }
-DEFINE_PRIM(nme_bitmap_data_get_flags,1);
+DEFINE_PRIME1(nme_bitmap_data_get_flags);
 
 
-value nme_bitmap_data_fill(value inHandle, value inRect, value inRGB, value inA)
+void nme_bitmap_data_fill(value inHandle, value inRect, int inRGB, int inA)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
    {
       if (val_is_null(inRect))
-         surface->Clear( val_int(inRGB) | (val_int(inA)<<24) );
+         surface->Clear( inRGB | (inA<<24) );
       else
       {
        Rect rect;
        FromValue(rect,inRect);
-         surface->Clear( val_int(inRGB) | (val_int(inA)<<24), &rect );
+         surface->Clear( inRGB | (inA<<24), &rect );
       }
    }
-   return alloc_null();
-
 }
-DEFINE_PRIM(nme_bitmap_data_fill,4);
+DEFINE_PRIME4v(nme_bitmap_data_fill);
 
 value nme_bitmap_data_load(value inFilename, value format)
 {
@@ -4033,34 +4029,34 @@ value nme_bitmap_data_load(value inFilename, value format)
 }
 DEFINE_PRIM(nme_bitmap_data_load,2);
 
-value nme_bitmap_data_set_format(value inHandle, value format, value inConvert)
+void nme_bitmap_data_set_format(value inHandle, int format, bool inConvert)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
    {
-      PixelFormat targetFormat = (PixelFormat)val_int(format);
+      PixelFormat targetFormat = (PixelFormat)(format);
       if (targetFormat!=pfNone)
       {
-         if (val_bool(inConvert))
+         if (inConvert)
             surface->ChangeInternalFormat(targetFormat);
          else
             surface->ReinterpretPixelFormat(targetFormat);
       }
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_set_format,3);
+DEFINE_PRIME3v(nme_bitmap_data_set_format);
 
-value nme_bitmap_data_get_format(value inHandle)
+
+int nme_bitmap_data_get_format(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
    {
-      return alloc_int(surface->Format());
+      return surface->Format();
    }
-   return alloc_int(0);
+   return 0;
 }
-DEFINE_PRIM(nme_bitmap_data_get_format,1);
+DEFINE_PRIME1(nme_bitmap_data_get_format);
 
 
 value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
@@ -4103,7 +4099,7 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_from_bytes,2);
+DEFINE_PRIME2(nme_bitmap_data_from_bytes);
 
 
 value nme_bitmap_data_encode(value inSurface, value inFormat,value inQuality)
@@ -4138,10 +4134,10 @@ value nme_bitmap_data_clone(value inSurface)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_clone,1);
+DEFINE_PRIME1(nme_bitmap_data_clone);
 
 
-value nme_bitmap_data_color_transform(value inSurface,value inRect, value inColorTransform)
+void nme_bitmap_data_color_transform(value inSurface,value inRect, value inColorTransform)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
@@ -4150,13 +4146,10 @@ value nme_bitmap_data_color_transform(value inSurface,value inRect, value inColo
       FromValue(trans,inColorTransform);
       Rect rect;
       FromValue(rect,inRect);
-
       surf->colorTransform(rect,trans);
-
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_color_transform,3);
+DEFINE_PRIME3v(nme_bitmap_data_color_transform);
 
 
 void nme_bitmap_data_apply_filter(value inDest, value inSrc,value inRect, value inOffset, value inFilter)
@@ -4180,8 +4173,7 @@ void nme_bitmap_data_apply_filter(value inDest, value inSrc,value inRect, value 
 DEFINE_PRIME5v(nme_bitmap_data_apply_filter);
 
 
-
-value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, value inOffset, value inMergeAlpha)
+void nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, value inOffset, bool inMergeAlpha)
 {
    Surface *source;
    Surface *dest;
@@ -4194,13 +4186,12 @@ value nme_bitmap_data_copy(value inSource, value inSourceRect, value inTarget, v
 
       AutoSurfaceRender render(dest);
       
-      BlendMode blend = val_bool(inMergeAlpha) ? bmNormal : bmCopy;
+      BlendMode blend = inMergeAlpha ? bmNormal : bmCopy;
       source->BlitTo(render.Target(),rect,offset.x, offset.y, blend, 0);
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_copy,5);
+DEFINE_PRIME5v(nme_bitmap_data_copy);
+
 
 void nme_bitmap_data_copy_channel(value aSrc, value aSrcRect, value aDest, value aDestPoint, int aSrcChannel, int aDestChannel)
 {
@@ -4240,16 +4231,15 @@ value nme_bitmap_data_get_pixels(value inSurface, value inRect)
          ByteArray array(size);
 
          surf->getPixels(rect,(unsigned int *)array.Bytes());
-
          return array.mValue;
       }
    }
-
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_get_pixels,2);
+DEFINE_PRIME2(nme_bitmap_data_get_pixels);
 
-value nme_bitmap_data_get_array(value inSurface, value inRect, value outArray)
+
+void nme_bitmap_data_get_array(value inSurface, value inRect, value outArray)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
@@ -4263,52 +4253,43 @@ value nme_bitmap_data_get_array(value inSurface, value inRect, value outArray)
             surf->getPixels(rect,(unsigned int *)ints,false,true);
       }
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_get_array,3);
+DEFINE_PRIME3v(nme_bitmap_data_get_array);
 
 
-
-
-value nme_bitmap_data_get_color_bounds_rect(value inSurface, value inMask, value inCol, value inFind, value outRect)
+void nme_bitmap_data_get_color_bounds_rect(value inSurface, int inMask, int inCol, bool inFind, value outRect)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
       Rect result;
-
-      int mask = RGB2Int32(inMask);
-      int col = RGB2Int32(inCol);
-      surf->getColorBoundsRect(mask,col,val_bool(inFind),result);
-
+      surf->getColorBoundsRect(inMask,inCol,inFind,result);
       ToValue(outRect,result);
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_get_color_bounds_rect,5);
+DEFINE_PRIME5v(nme_bitmap_data_get_color_bounds_rect);
 
 
-value nme_bitmap_data_get_pixel(value inSurface, value inX, value inY)
+int nme_bitmap_data_get_pixel(value inSurface, int inX, int inY)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-      return alloc_int(surf->getPixel(val_int(inX),val_int(inY)) & 0xffffff);
+      return surf->getPixel(inX,inY) & 0xffffff;
 
-   return alloc_null();
+   return -1;
 }
-DEFINE_PRIM(nme_bitmap_data_get_pixel,3);
+DEFINE_PRIME3(nme_bitmap_data_get_pixel);
 
-value nme_bitmap_data_get_pixel32(value inSurface, value inX, value inY)
+
+int nme_bitmap_data_get_pixel32(value inSurface, int inX, int inY)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-      return alloc_int(surf->getPixel(val_int(inX),val_int(inY)));
+      return surf->getPixel(inX,inY);
 
-   return alloc_null();
+   return -1;
 }
-DEFINE_PRIM(nme_bitmap_data_get_pixel32,3);
+DEFINE_PRIME3(nme_bitmap_data_get_pixel32);
 
 
 value nme_bitmap_data_get_pixel_rgba(value inSurface, value inX,value inY)
@@ -4327,35 +4308,32 @@ value nme_bitmap_data_get_pixel_rgba(value inSurface, value inX,value inY)
 }
 DEFINE_PRIM(nme_bitmap_data_get_pixel_rgba,3);
 
-value nme_bitmap_data_scroll(value inSurface, value inDX, value inDY)
+
+void nme_bitmap_data_scroll(value inSurface, int inDX, int inDY)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-      surf->scroll(val_int(inDX),val_int(inDY));
-
-   return alloc_null();
+      surf->scroll(inDX,inDY);
 }
-DEFINE_PRIM(nme_bitmap_data_scroll,3);
+DEFINE_PRIME3v(nme_bitmap_data_scroll);
 
-value nme_bitmap_data_set_pixel(value inSurface, value inX, value inY, value inRGB)
+
+void nme_bitmap_data_set_pixel(value inSurface, int inX, int inY, int inRGB)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB));
-
-   return alloc_null();
+      surf->setPixel(inX,inY,inRGB);
 }
-DEFINE_PRIM(nme_bitmap_data_set_pixel,4);
+DEFINE_PRIME4v(nme_bitmap_data_set_pixel);
 
-value nme_bitmap_data_set_pixel32(value inSurface, value inX, value inY, value inRGB)
+
+void nme_bitmap_data_set_pixel32(value inSurface, int inX, int inY, int inRGB)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-      surf->setPixel(val_int(inX),val_int(inY),val_int(inRGB),true);
-
-   return alloc_null();
+      surf->setPixel(inX,inY,inRGB,true);
 }
-DEFINE_PRIM(nme_bitmap_data_set_pixel32,4);
+DEFINE_PRIME4v(nme_bitmap_data_set_pixel32);
 
 
 value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, value inRGBA)
@@ -4373,7 +4351,7 @@ value nme_bitmap_data_set_pixel_rgba(value inSurface, value inX, value inY, valu
 DEFINE_PRIM(nme_bitmap_data_set_pixel_rgba,4);
 
 
-value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes,value inOffset)
+void nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes,int inOffset)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
@@ -4383,15 +4361,14 @@ value nme_bitmap_data_set_bytes(value inSurface, value inRect, value inBytes,val
       if (rect.w>0 && rect.h>0)
       {
          ByteArray array(inBytes);
-         surf->setPixels(rect,(unsigned int *)(array.Bytes() + val_int(inOffset)), false, array.LittleEndian() );
+         surf->setPixels(rect,(unsigned int *)(array.Bytes() + inOffset), false, array.LittleEndian() );
       }
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_set_bytes,4);
+DEFINE_PRIME4v(nme_bitmap_data_set_bytes);
 
-value nme_bitmap_data_set_array(value inSurface, value inRect, value inArray)
+
+void nme_bitmap_data_set_array(value inSurface, value inRect, value inArray)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
@@ -4405,10 +4382,8 @@ value nme_bitmap_data_set_array(value inSurface, value inRect, value inArray)
             surf->setPixels(rect,(unsigned int *)ints,false,true);
       }
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_set_array,3);
+DEFINE_PRIME3v(nme_bitmap_data_set_array);
 
 
 
@@ -4431,22 +4406,15 @@ void nme_bitmap_data_generate_filter_rect(value inRect, value inFilter, value ou
 DEFINE_PRIME3v(nme_bitmap_data_generate_filter_rect);
 
 
-
-value nme_bitmap_data_noise(value *args, int nArgs)
+void nme_bitmap_data_noise(value inSurface, int inRandomSeed, int inLow, int inHigh, int inChannelOptions, bool inGrayScale)
 {
-   enum { aSurface, aRandomSeed, aLow, aHigh, aChannelOptions, aGrayScale };
-
    Surface *surf;
-   if (AbstractToObject(args[aSurface],surf))
+   if (AbstractToObject(inSurface,surf))
    {
-      surf->noise(val_int(args[aRandomSeed]), val_int(args[aLow]), val_int(args[aHigh]),
-            val_int(args[aChannelOptions]), val_int(args[aGrayScale]));
+      surf->noise(inRandomSeed, inLow, inHigh, inChannelOptions, inGrayScale);
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM_MULT(nme_bitmap_data_noise);
-
+DEFINE_PRIME6v(nme_bitmap_data_noise);
 
 
 void nme_bitmap_data_get_floats32(value inSurface, value inData, int inOffset, int inStride,
@@ -4528,22 +4496,18 @@ DEFINE_PRIME6v(nme_bitmap_data_set_uints8);
 
 
 
-value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value inColor)
+void nme_bitmap_data_flood_fill(value inSurface, int inX, int inY, int inColor)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
-   {
-      int x = val_int(inX);
-      int y = val_int(inY);
-      int color = val_int(inColor);
-      
+   {  
       int width = surf->Width();
       int height = surf->Height();
       
       std::vector<UserPoint> queue;
-      queue.push_back(UserPoint(x,y));
+      queue.push_back(UserPoint(inX,inY));
       
-      int old = surf->getPixel(x,y);
+      int old = surf->getPixel(inX,inY);
       
       bool *search = new bool[width*height];
       std::fill_n(search, width*height, false);
@@ -4551,10 +4515,10 @@ value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value in
       while (queue.size() > 0)
       {
          UserPoint currPoint = queue.back();
-       queue.pop_back();
+         queue.pop_back();
          
-         x = currPoint.x;
-         y = currPoint.y;
+         int x = currPoint.x;
+         int y = currPoint.y;
        
          if (x<0 || x>=width) continue;
          if (y<0 || y>=height) continue;
@@ -4563,7 +4527,7 @@ value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value in
          
          if (surf->getPixel(x,y) == old)
          {
-            surf->setPixel(x,y,color,true);
+            surf->setPixel(x,y,inColor,true);
             if (x<width && !search[y*width + (x+1)])
             {
                queue.push_back(UserPoint(x+1,y));
@@ -4584,9 +4548,8 @@ value nme_bitmap_data_flood_fill(value inSurface, value inX, value inY, value in
       }
       delete [] search;
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_flood_fill,4);
+DEFINE_PRIME4v(nme_bitmap_data_flood_fill);
 
 
 void nme_render_surface_to_surface(value aTarget,value aSurface,value aMatrix,value aColourTransform,int aBlendMode,value aClipRect,bool aSmooth)
@@ -4634,47 +4597,44 @@ void nme_render_surface_to_surface(value aTarget,value aSurface,value aMatrix,va
 DEFINE_PRIME7v(nme_render_surface_to_surface);
 
 
-value nme_bitmap_data_dispose(value inSurface)
+void nme_bitmap_data_dispose(value inSurface)
 {
    Surface *surf;
    if (AbstractToObject(inSurface, surf))
    {
        surf->dispose();
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_dispose,1);
+DEFINE_PRIME1v(nme_bitmap_data_dispose);
 
 
-value nme_bitmap_data_destroy_hardware_surface(value inHandle)
+void nme_bitmap_data_destroy_hardware_surface(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
       surface->destroyHardwareSurface();
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_destroy_hardware_surface,1);
+DEFINE_PRIME1v(nme_bitmap_data_destroy_hardware_surface);
 
-value nme_bitmap_data_create_hardware_surface(value inHandle)
+
+void nme_bitmap_data_create_hardware_surface(value inHandle)
 {
    Surface *surface;
    if (AbstractToObject(inHandle,surface))
       surface->createHardwareSurface();
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_create_hardware_surface,1);
+DEFINE_PRIME1v(nme_bitmap_data_create_hardware_surface);
 
 
-value nme_bitmap_data_dump_bits(value inSurface)
+void nme_bitmap_data_dump_bits(value inSurface)
 {
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
       surf->MakeTextureOnly();
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_dump_bits,1);
+DEFINE_PRIME1v(nme_bitmap_data_dump_bits);
 
 
 
