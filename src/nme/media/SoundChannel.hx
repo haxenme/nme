@@ -4,7 +4,7 @@ package nme.media;
 import nme.events.Event;
 import nme.events.EventDispatcher;
 import nme.events.SampleDataEvent;
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.NativeHandle;
 
 @:nativeProperty
@@ -12,7 +12,7 @@ class SoundChannel extends EventDispatcher
 {
    public var leftPeak(get, null):Float;
    public var rightPeak(get, null):Float;
-   public var position(get, set):Float;
+   public var position(get, null):Float;
    public var soundTransform(get, set):SoundTransform;
    // Does not do anything...
    public var pitch:Float;
@@ -160,7 +160,7 @@ class SoundChannel extends EventDispatcher
    private function get_leftPeak():Float { return nme_sound_channel_get_left(nmeHandle); }
    private function get_rightPeak():Float { return nme_sound_channel_get_right(nmeHandle); }
    private function get_position():Float { return nme_sound_channel_get_position(nmeHandle); }
-   private function set_position(value:Float):Float { return nme_sound_channel_set_position(nmeHandle, position); }
+   private function set_position(value:Float):Void { nme_sound_channel_set_position(nmeHandle, position); }
 
    private function get_soundTransform():SoundTransform 
    {
@@ -182,19 +182,19 @@ class SoundChannel extends EventDispatcher
 
 
    // Native Methods
-   private static var nme_sound_channel_is_complete = Loader.load("nme_sound_channel_is_complete", 1);
-   private static var nme_sound_channel_get_left = Loader.load("nme_sound_channel_get_left", 1);
-   private static var nme_sound_channel_get_right = Loader.load("nme_sound_channel_get_right", 1);
-   private static var nme_sound_channel_get_position = Loader.load("nme_sound_channel_get_position", 1);
-   private static var nme_sound_channel_set_position = Loader.load("nme_sound_channel_set_position", 2);
-   private static var nme_sound_channel_get_data_position = Loader.load("nme_sound_channel_get_data_position", 1);
-   private static var nme_sound_channel_stop = Loader.load("nme_sound_channel_stop", 1);
-   private static var nme_sound_channel_create = Loader.load("nme_sound_channel_create", 4);
-   private static var nme_sound_channel_set_transform = Loader.load("nme_sound_channel_set_transform", 2);
-   private static var nme_sound_channel_needs_data = Loader.load("nme_sound_channel_needs_data", 1);
-   private static var nme_sound_channel_add_data = Loader.load("nme_sound_channel_add_data", 2);
-   private static var nme_sound_channel_create_async = Loader.load("nme_sound_channel_create_async", 5);
-   private static var nme_sound_channel_post_buffer = Loader.load("nme_sound_channel_post_buffer", 2);
+   private static var nme_sound_channel_is_complete = PrimeLoader.load("nme_sound_channel_is_complete", "ob");
+   private static var nme_sound_channel_get_left = PrimeLoader.load("nme_sound_channel_get_left", "od");
+   private static var nme_sound_channel_get_right = PrimeLoader.load("nme_sound_channel_get_right", "od");
+   private static var nme_sound_channel_get_position = PrimeLoader.load("nme_sound_channel_get_position", "od");
+   private static var nme_sound_channel_set_position = PrimeLoader.load("nme_sound_channel_set_position", "odv");
+   private static var nme_sound_channel_get_data_position = PrimeLoader.load("nme_sound_channel_get_data_position", "od");
+   private static var nme_sound_channel_stop = PrimeLoader.load("nme_sound_channel_stop", "ov");
+   private static var nme_sound_channel_create = PrimeLoader.load("nme_sound_channel_create", "odioo");
+   private static var nme_sound_channel_set_transform = PrimeLoader.load("nme_sound_channel_set_transform", "oov");
+   private static var nme_sound_channel_needs_data = PrimeLoader.load("nme_sound_channel_needs_data", "ob");
+   private static var nme_sound_channel_add_data = PrimeLoader.load("nme_sound_channel_add_data", "oov");
+   private static var nme_sound_channel_create_async = nme.Loader.load("nme_sound_channel_create_async", 5);
+   private static var nme_sound_channel_post_buffer = PrimeLoader.load("nme_sound_channel_post_buffer", "oov");
 }
 
 #else

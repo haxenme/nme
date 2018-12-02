@@ -1169,19 +1169,25 @@ value nme_capabilities_get_language() {
 }
 DEFINE_PRIM (nme_capabilities_get_language, 0);
 
+
 // ---  nme.desktop.Clipboard -----------------------------------------------------
 #ifndef HXCPP_JS_PRIME
-value nme_desktop_clipboard_set_clipboard_text(value inText) {
+value nme_desktop_clipboard_set_clipboard_text(value inText)
+{
    return alloc_bool(SetClipboardText(val_string(inText)));
 }
 DEFINE_PRIM (nme_desktop_clipboard_set_clipboard_text, 1);
 
-value nme_desktop_clipboard_has_clipboard_text() {
-   return alloc_bool(HasClipboardText());
-}
-DEFINE_PRIM (nme_desktop_clipboard_has_clipboard_text, 0);
 
-value nme_desktop_clipboard_get_clipboard_text() {
+bool nme_desktop_clipboard_has_clipboard_text()
+{
+   return HasClipboardText();
+}
+DEFINE_PRIME0(nme_desktop_clipboard_has_clipboard_text);
+
+
+value nme_desktop_clipboard_get_clipboard_text()
+{
    return alloc_string(GetClipboardText());
 }
 DEFINE_PRIM (nme_desktop_clipboard_get_clipboard_text, 0);
@@ -1243,15 +1249,13 @@ DEFINE_PRIM(nme_get_url,1);
 
 
 // --- Haptic Vibrate ---------------------------------------------------------------
-
-value nme_haptic_vibrate(value inPeriod, value inDuration)
+void nme_haptic_vibrate(int inPeriod, int inDuration)
 {
    #if defined(WEBOS) || defined(ANDROID)
-   HapticVibrate (val_int(inPeriod), val_int(inDuration));
+   HapticVibrate (inPeriod, inDuration);
    #endif
-   return alloc_null();
 }
-DEFINE_PRIM(nme_haptic_vibrate,2);
+DEFINE_PRIME2v(nme_haptic_vibrate);
 
 
 // --- SharedObject ----------------------------------------------------------------------
@@ -4752,7 +4756,8 @@ DEFINE_PRIM(nme_sound_from_data, 4);
   sound->getID3Value(name,val); \
   alloc_field(outVar, val_id(name), alloc_string(val.c_str() ) );
 
-value nme_sound_get_id3(value inSound, value outVar)
+
+void nme_sound_get_id3(value inSound, value outVar)
 {
    Sound *sound;
    if (AbstractToObject(inSound,sound))
@@ -4766,31 +4771,32 @@ value nme_sound_get_id3(value inSound, value outVar)
       GET_ID3("track")
       GET_ID3("year")
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_sound_get_id3,2);
+DEFINE_PRIME2v(nme_sound_get_id3);
 
-value nme_sound_get_length(value inSound)
+
+double nme_sound_get_length(value inSound)
 {
    Sound *sound;
    if (AbstractToObject(inSound, sound))
    {
-      return alloc_float( sound->getLength() );
+      return sound->getLength();
    }
-   return alloc_null();
+   return 0.0;
 }
-DEFINE_PRIM(nme_sound_get_length,1);
+DEFINE_PRIME1(nme_sound_get_length);
+
  
-value nme_sound_close(value inSound)
+void nme_sound_close(value inSound)
 {
    Sound *sound;
    if (AbstractToObject(inSound,sound))
    {
       sound->close();
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_sound_close,1);
+DEFINE_PRIME1v(nme_sound_close);
+
  
 value nme_sound_get_status(value inSound)
 {
@@ -4806,10 +4812,9 @@ value nme_sound_get_status(value inSound)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_sound_get_status,1);
- 
+DEFINE_PRIME1(nme_sound_get_status);
 
- 
+
 value nme_sound_get_engine(value inSound)
 {
    Sound *sound;
@@ -4824,77 +4829,79 @@ DEFINE_PRIM(nme_sound_get_engine,1);
 
 
 // --- SoundChannel --------------------------------------------------------
-
-value nme_sound_channel_is_complete(value inChannel)
+bool nme_sound_channel_is_complete(value inChannel)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
-      return alloc_bool(channel->isComplete());
+      return channel->isComplete();
    }
-   return alloc_null();
+   return true;
 }
-DEFINE_PRIM(nme_sound_channel_is_complete,1);
+DEFINE_PRIME1(nme_sound_channel_is_complete);
 
-value nme_sound_channel_get_left(value inChannel)
+
+double nme_sound_channel_get_left(value inChannel)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
-      return alloc_float(channel->getLeft());
+      return channel->getLeft();
    }
-   return alloc_null();
+   return 0.0;
 }
-DEFINE_PRIM(nme_sound_channel_get_left,1);
+DEFINE_PRIME1(nme_sound_channel_get_left);
 
-value nme_sound_channel_get_right(value inChannel)
+
+double nme_sound_channel_get_right(value inChannel)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
-      return alloc_float(channel->getRight());
+      return channel->getRight();
    }
-   return alloc_null();
+   return 0.0;
 }
-DEFINE_PRIM(nme_sound_channel_get_right,1);
+DEFINE_PRIME1(nme_sound_channel_get_right);
 
-value nme_sound_channel_get_position(value inChannel)
+
+double nme_sound_channel_get_position(value inChannel)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
-      return alloc_float(channel->getPosition());
+      return channel->getPosition();
    }
-   return alloc_null();
+   return 0.0;
 }
-DEFINE_PRIM(nme_sound_channel_get_position,1);
+DEFINE_PRIME1(nme_sound_channel_get_position);
 
-value nme_sound_channel_set_position(value inChannel, value inFloat)
+
+void nme_sound_channel_set_position(value inChannel, double inFloat)
 {
    #ifdef HX_MACOS
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
-   {    
-      float position = val_number(inFloat);
-      channel->setPosition(position);
+   {
+      channel->setPosition(inFloat);
    }
    #endif
-   return alloc_null();
 }
-DEFINE_PRIM(nme_sound_channel_set_position,2);
+DEFINE_PRIME2v(nme_sound_channel_set_position);
 
-value nme_sound_channel_stop(value inChannel)
+
+void nme_sound_channel_stop(value inChannel)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       channel->stop();
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_sound_channel_stop,1);
+DEFINE_PRIME1v(nme_sound_channel_stop);
 
-value nme_sound_channel_set_transform(value inChannel, value inTransform)
+
+void nme_sound_channel_set_transform(value inChannel, value inTransform)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
@@ -4903,18 +4910,18 @@ value nme_sound_channel_set_transform(value inChannel, value inTransform)
       FromValue(trans,inTransform);
       channel->setTransform(trans);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_sound_channel_set_transform,2);
+DEFINE_PRIME2v(nme_sound_channel_set_transform);
 
-value nme_sound_channel_create(value inSound, value inStart, value inLoops, value inTransform)
+
+value nme_sound_channel_create(value inSound, double inStart, int inLoops, value inTransform)
 {
    Sound *sound;
    if (AbstractToObject(inSound,sound))
    {
       SoundTransform trans;
       FromValue(trans,inTransform);
-      SoundChannel *channel = sound->openChannel(val_number(inStart),val_int(inLoops),trans);
+      SoundChannel *channel = sound->openChannel(inStart,inLoops,trans);
       if (channel)
       {
          value result = ObjectToAbstract(channel);
@@ -4923,46 +4930,43 @@ value nme_sound_channel_create(value inSound, value inStart, value inLoops, valu
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_sound_channel_create,4);
+DEFINE_PRIME4(nme_sound_channel_create);
+
 
 // --- dynamic sound ---
-
-
-value nme_sound_channel_needs_data(value inChannel)
+bool nme_sound_channel_needs_data(value inChannel)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
-      return alloc_bool(channel->needsData());
+      return channel->needsData();
    }
-   return alloc_bool(false);
+   return false;
 }
-DEFINE_PRIM(nme_sound_channel_needs_data,1);
+DEFINE_PRIME1(nme_sound_channel_needs_data);
 
 
-value nme_sound_channel_add_data(value inChannel, value inBytes)
+void nme_sound_channel_add_data(value inChannel, value inBytes)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       channel->addData(ByteArray(inBytes));
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_sound_channel_add_data,2);
+DEFINE_PRIME2v(nme_sound_channel_add_data);
 
 
-value nme_sound_channel_get_data_position(value inChannel)
+double nme_sound_channel_get_data_position(value inChannel)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
-      return alloc_float(channel->getDataPosition());
+      return channel->getDataPosition();
    }
-   return alloc_null();
+   return 0.0;
 }
-DEFINE_PRIM(nme_sound_channel_get_data_position,1);
-
+DEFINE_PRIME1(nme_sound_channel_get_data_position);
 
 
 value nme_sound_channel_create_dynamic(value inBytes, value inTransform)
@@ -4978,8 +4982,7 @@ value nme_sound_channel_create_dynamic(value inBytes, value inTransform)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_sound_channel_create_dynamic,2);
-
+DEFINE_PRIME2(nme_sound_channel_create_dynamic);
 
 
 // --- Async Sound -----------------------------------------------
@@ -5019,8 +5022,7 @@ value nme_sound_channel_create_async(value inRate, value inIsStereo, value inFor
 DEFINE_PRIM(nme_sound_channel_create_async,5);
 
 
-
-value nme_sound_channel_post_buffer(value inChannel, value inBytes)
+void nme_sound_channel_post_buffer(value inChannel, value inBytes)
 {
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
@@ -5028,11 +5030,8 @@ value nme_sound_channel_post_buffer(value inChannel, value inBytes)
       ByteArray bytes(inBytes);
       channel->addData(bytes);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_sound_channel_post_buffer,2);
-
-
+DEFINE_PRIME2v(nme_sound_channel_post_buffer);
 
 
 // --- Tilesheet -----------------------------------------------
