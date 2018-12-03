@@ -771,23 +771,22 @@ AutoGCRoot *gByteArrayBytes = 0;
 
 AutoGCRoot *gResourceFactory = 0;
 
-value nme_byte_array_init(value inFactory, value inLen, value inResize, value inBytes)
+
+void nme_byte_array_init(value inFactory, value inLen, value inResize, value inBytes)
 {
    gByteArrayCreate = new AutoGCRoot(inFactory);
    gByteArrayLen = new AutoGCRoot(inLen);
    gByteArrayResize = new AutoGCRoot(inResize);
    gByteArrayBytes = new AutoGCRoot(inBytes);
-   return alloc_null();
 }
-DEFINE_PRIM(nme_byte_array_init,4);
+DEFINE_PRIME4v(nme_byte_array_init);
 
 
-value nme_set_resource_factory(value inFactory)
+void nme_set_resource_factory(value inFactory)
 {
    gResourceFactory = new AutoGCRoot(inFactory);
-   return alloc_null();
 }
-DEFINE_PRIM(nme_set_resource_factory,1);
+DEFINE_PRIME1v(nme_set_resource_factory);
 
 
 
@@ -1988,26 +1987,36 @@ value nme_managed_stage_pump_event(value inStage,value inEvent)
 DEFINE_PRIM(nme_managed_stage_pump_event,2);
 
 
-
-
-
-
 // --- Input --------------------------------------------------------------
-
-value nme_input_get_acceleration()
+double gAccel[3]={0.0,0.0,0.0};
+bool nme_input_get_acceleration_support()
 {
-   double x,y,z;
-   if (!GetAcceleration(x,y,z))
-       return alloc_null();
-
-   value obj = alloc_empty_object();
-   alloc_field(obj,_id_x, alloc_float(x));
-   alloc_field(obj,_id_y, alloc_float(y));
-   alloc_field(obj,_id_z, alloc_float(z));
-   return obj;
+   if (!GetAcceleration(gAccel[0],gAccel[1],gAccel[2]))
+       return false;
+   return true;
 }
+DEFINE_PRIME0(nme_input_get_acceleration_support);
 
-DEFINE_PRIM(nme_input_get_acceleration,0);
+
+double nme_input_get_acceleration_x()
+{
+   return gAccel[0];
+}
+DEFINE_PRIME0(nme_input_get_acceleration_x);
+
+
+double nme_input_get_acceleration_y()
+{
+   return gAccel[1];
+}
+DEFINE_PRIME0(nme_input_get_acceleration_y);
+
+
+double nme_input_get_acceleration_z()
+{
+   return gAccel[2];
+}
+DEFINE_PRIME0(nme_input_get_acceleration_z);
 
 
 // --- DisplayObject --------------------------------------------------------------
@@ -5297,8 +5306,6 @@ DEFINE_PRIME1(nme_zip_decode);
 #endif
 
 
-
-
 value nme_lzma_encode(value input_value)
 {
 #if !defined(NME_NO_LZMA)
@@ -5310,7 +5317,8 @@ value nme_lzma_encode(value input_value)
    return alloc_null();
 #endif
 }
-DEFINE_PRIM(nme_lzma_encode,1);
+DEFINE_PRIME1(nme_lzma_encode);
+
 
 value nme_lzma_decode(value input_value)
 {
@@ -5323,7 +5331,7 @@ value nme_lzma_decode(value input_value)
    return alloc_null();
 #endif
 }
-DEFINE_PRIM(nme_lzma_decode,1);
+DEFINE_PRIME1(nme_lzma_decode);
 
 
 

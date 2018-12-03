@@ -5,7 +5,7 @@ import haxe.io.Bytes;
 import haxe.io.BytesData;
 import nme.errors.EOFError; // Ensure that the neko->haxe callbacks are initialized
 import nme.utils.CompressionAlgorithm;
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.NativeResource;
 
 #if neko
@@ -174,10 +174,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    }
 
 
-   static var nme_buffer_create = nme.PrimeLoader.load("nme_buffer_create","ii");
-   static var nme_buffer_offset = nme.PrimeLoader.load("nme_buffer_offset","ii");
-   static var nme_buffer_resize = nme.PrimeLoader.load("nme_buffer_resize","iiv");
-   static var nme_buffer_length = nme.PrimeLoader.load("nme_buffer_length","ii");
+   static var nme_buffer_create = PrimeLoader.load("nme_buffer_create","ii");
+   static var nme_buffer_offset = PrimeLoader.load("nme_buffer_offset","ii");
+   static var nme_buffer_resize = PrimeLoader.load("nme_buffer_resize","iiv");
+   static var nme_buffer_length = PrimeLoader.load("nme_buffer_length","ii");
    #else
    #end
 
@@ -210,7 +210,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
       var slen = function(inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
 
-      var init = Loader.load("nme_byte_array_init", 4);
+      var init = PrimeLoader.load("nme_byte_array_init", "oooov");
       if (init!=null)
          init(factory, slen, resize, bytes);
    }

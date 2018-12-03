@@ -687,7 +687,7 @@ class Assets
   #if (cpp||neko)
    @:keep 
    private static var initResources:Dynamic = (function() {
-       var nme_set_resource_factory = nme.Loader.load("nme_set_resource_factory", 1);
+       var nme_set_resource_factory = nme.PrimeLoader.load("nme_set_resource_factory", "ov");
        if (nme_set_resource_factory!=null)
        {
            var notFound = new Map<String,Bool>();
