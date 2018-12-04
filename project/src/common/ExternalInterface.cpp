@@ -3563,15 +3563,14 @@ value nme_graphics_stroke_create(value* arg, int nargs)
 DEFINE_PRIM_MULT(nme_graphics_stroke_create)
 
 
-
 // --- TextField --------------------------------------------------------------
-
 value nme_text_field_create()
 {
    TextField *text = new TextField();
    return ObjectToAbstract(text);
 }
-DEFINE_PRIM(nme_text_field_create,0)
+DEFINE_PRIME0(nme_text_field_create)
+
 
 inline value alloc_wstring(const WString &inStr)
 {
@@ -3689,7 +3688,7 @@ void GetTextFormat(const TextFormat &inFormat, value &outValue, bool inIfSet = f
 }
 
 
-value nme_text_field_set_def_text_format(value inText,value inFormat)
+void nme_text_field_set_def_text_format(value inText,value inFormat)
 {
    TextField *text;
    if (AbstractToObject(inText,text))
@@ -3699,42 +3698,37 @@ value nme_text_field_set_def_text_format(value inText,value inFormat)
       text->setDefaultTextFormat(fmt);
       fmt->DecRef();
    }
-   return alloc_null();
 }
+DEFINE_PRIME2v(nme_text_field_set_def_text_format)
 
-DEFINE_PRIM(nme_text_field_set_def_text_format,2)
 
-value nme_text_field_get_text_format(value inText,value outFormat,value inStart,value inEnd)
+void nme_text_field_get_text_format(value inText,value outFormat,int inStart,int inEnd)
 {
    TextField *text;
    if (AbstractToObject(inText,text))
    {
-      TextFormat *fmt = text->getTextFormat(val_int(inStart),val_int(inEnd));
+      TextFormat *fmt = text->getTextFormat(inStart,inEnd);
       GetTextFormat(*fmt,outFormat,true);
    }
-   return alloc_null();
 }
+DEFINE_PRIME4v(nme_text_field_get_text_format)
 
-DEFINE_PRIM(nme_text_field_get_text_format,4)
 
-
-value nme_text_field_set_text_format(value inText,value inFormat,value inStart,value inEnd)
+void nme_text_field_set_text_format(value inText,value inFormat,int inStart,int inEnd)
 {
    TextField *text;
    if (AbstractToObject(inText,text))
    {
       TextFormat *fmt = TextFormat::Create(true);
       SetTextFormat(*fmt,inFormat);
-      text->setTextFormat(fmt,val_int(inStart),val_int(inEnd));
+      text->setTextFormat(fmt,inStart,inEnd);
       fmt->DecRef();
    }
-   return alloc_null();
 }
+DEFINE_PRIME4v(nme_text_field_set_text_format)
 
-DEFINE_PRIM(nme_text_field_set_text_format,4)
 
-
-value nme_text_field_get_def_text_format(value inText,value outFormat)
+void nme_text_field_get_def_text_format(value inText,value outFormat)
 {
    TextField *text;
    if (AbstractToObject(inText,text))
@@ -3742,9 +3736,8 @@ value nme_text_field_get_def_text_format(value inText,value outFormat)
       const TextFormat *fmt = text->getDefaultTextFormat();
       GetTextFormat(*fmt,outFormat);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_text_field_get_def_text_format,2);
+DEFINE_PRIME2v(nme_text_field_get_def_text_format);
 
 
 void GetTextLineMetrics(const TextLineMetrics &inMetrics, value &outValue)
@@ -3757,17 +3750,16 @@ void GetTextLineMetrics(const TextLineMetrics &inMetrics, value &outValue)
    alloc_field(outValue,_id_leading, alloc_float(inMetrics.leading));
 }
 
-value nme_text_field_get_line_metrics(value inText,value inIndex,value outMetrics)
+void nme_text_field_get_line_metrics(value inText,int inIndex,value outMetrics)
 {
    TextField *text;
    if (AbstractToObject(inText,text))
    {
-      const TextLineMetrics *mts = text->getLineMetrics(val_int(inIndex));
+      const TextLineMetrics *mts = text->getLineMetrics(inIndex);
       GetTextLineMetrics(*mts, outMetrics);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_text_field_get_line_metrics,3);
+DEFINE_PRIME3v(nme_text_field_get_line_metrics);
 
 
 void nme_text_field_get_line_positions(value inText,int inIndex0,value outLines)
@@ -3793,7 +3785,6 @@ void nme_text_field_get_line_positions(value inText,int inIndex0,value outLines)
 DEFINE_PRIME3v(nme_text_field_get_line_positions);
 
 
-
 int nme_text_field_get_line_for_char(value inText,int inIndex0)
 {
    TextField *text;
@@ -3804,7 +3795,6 @@ int nme_text_field_get_line_for_char(value inText,int inIndex0)
    return 0;
 }
 DEFINE_PRIME2(nme_text_field_get_line_for_char);
-
 
 
 void nme_text_field_replace_selected_text(value inText,value inValue)
@@ -3827,30 +3817,25 @@ void nme_text_field_replace_text(value inText,int inC0, int inC1, value inValue)
 DEFINE_PRIME4v(nme_text_field_replace_text);
 
 
-
-
-value nme_text_field_get_char_boundaries(value inText,value inIndex,value outBounds)
+void nme_text_field_get_char_boundaries(value inText,int inIndex,value outBounds)
 {
    TextField *text;
    if (AbstractToObject(inText,text))
    {
-      Rect rect = text->getCharBoundaries(val_int(inIndex));
+      Rect rect = text->getCharBoundaries(inIndex);
       ToValue(outBounds,rect);
    }
-   return alloc_null();
 }
-DEFINE_PRIM(nme_text_field_get_char_boundaries,3);
+DEFINE_PRIME3v(nme_text_field_get_char_boundaries);
 
 
-value nme_text_field_set_selection(value inText, value inStart, value inEnd)
+void nme_text_field_set_selection(value inText,int inStart,int inEnd)
 {
    TextField *text;
    if (AbstractToObject(inText,text))
-      text->setSelection(val_int(inStart), val_int(inEnd));
-
-   return alloc_null();
+      text->setSelection(inStart, inEnd);
 }
-DEFINE_PRIM(nme_text_field_set_selection,3);
+DEFINE_PRIME3v(nme_text_field_set_selection);
 
 
 #define TEXT_PROP_GET(prop,Prop,to_val) \
@@ -3885,33 +3870,65 @@ value nme_text_field_get_##prop(value inHandle,value inIndex) \
 } \
 DEFINE_PRIM(nme_text_field_get_##prop,2);
 
+
+#define TEXT_PROP_GET_PRIME(prop,Prop,to_type) \
+to_type nme_text_field_get_##prop(value inHandle) \
+{ \
+   TextField *t; \
+   if (AbstractToObject(inHandle,t)) \
+      return (to_type)(t->get##Prop()); \
+   return (to_type)0; \
+} \
+DEFINE_PRIME1(nme_text_field_get_##prop);
+
+#define TEXT_PROP_PRIME(prop,Prop,to_from_type) \
+   TEXT_PROP_GET_PRIME(prop,Prop,to_from_type) \
+void nme_text_field_set_##prop(value inHandle,to_from_type inValue) \
+{ \
+   TextField *t; \
+   if (AbstractToObject(inHandle,t)) \
+      t->set##Prop(inValue); \
+} \
+DEFINE_PRIME2v(nme_text_field_set_##prop);
+
+#define TEXT_PROP_GET_IDX_PRIME(prop,Prop,to_type) \
+to_type nme_text_field_get_##prop(value inHandle,int inIndex) \
+{ \
+   TextField *t; \
+   if (AbstractToObject(inHandle,t)) \
+      return (to_type)(t->get##Prop(inIndex)); \
+   return (to_type)0; \
+} \
+DEFINE_PRIME2(nme_text_field_get_##prop);
+
+
 TEXT_PROP(text,Text,alloc_wstring,valToStdWString);
 TEXT_PROP(html_text,HTMLText,alloc_wstring,valToStdWString);
-TEXT_PROP(text_color,TextColor,alloc_int,val_int);
-TEXT_PROP(selectable,Selectable,alloc_bool,val_bool);
-TEXT_PROP(display_as_password,DisplayAsPassword,alloc_bool,val_bool);
-TEXT_PROP(type,IsInput,alloc_bool,val_bool);
-TEXT_PROP(multiline,Multiline,alloc_bool,val_bool);
-TEXT_PROP(word_wrap,WordWrap,alloc_bool,val_bool);
-TEXT_PROP(background,Background,alloc_bool,val_bool);
-TEXT_PROP(background_color,BackgroundColor,alloc_int,val_int);
-TEXT_PROP(border,Border,alloc_bool,val_bool);
-TEXT_PROP(border_color,BorderColor,alloc_int,val_int);
-TEXT_PROP(embed_fonts,EmbedFonts,alloc_bool,val_bool);
-TEXT_PROP(auto_size,AutoSize,alloc_int,val_int);
-TEXT_PROP_GET(text_width,TextWidth,alloc_float);
-TEXT_PROP_GET(text_height,TextHeight,alloc_float);
-TEXT_PROP_GET(max_scroll_h,MaxScrollH,alloc_int);
-TEXT_PROP_GET(max_scroll_v,MaxScrollV,alloc_int);
-TEXT_PROP_GET(bottom_scroll_v,BottomScrollV,alloc_int);
-TEXT_PROP_GET(selection_begin_index,SelectionBeginIndex,alloc_int);
-TEXT_PROP_GET(selection_end_index,SelectionEndIndex,alloc_int);
-TEXT_PROP(scroll_h,ScrollH,alloc_int,val_int);
-TEXT_PROP(scroll_v,ScrollV,alloc_int,val_int);
-TEXT_PROP_GET(num_lines,NumLines,alloc_int);
-TEXT_PROP(max_chars,MaxChars,alloc_int,val_int);
+TEXT_PROP_PRIME(text_color,TextColor,int);
+TEXT_PROP_PRIME(selectable,Selectable,bool);
+TEXT_PROP_PRIME(display_as_password,DisplayAsPassword,bool);
+TEXT_PROP_PRIME(type,IsInput,bool);
+TEXT_PROP_PRIME(multiline,Multiline,bool);
+TEXT_PROP_PRIME(word_wrap,WordWrap,bool);
+TEXT_PROP_PRIME(background,Background,bool);
+TEXT_PROP_PRIME(background_color,BackgroundColor,int);
+TEXT_PROP_PRIME(border,Border,bool);
+TEXT_PROP_PRIME(border_color,BorderColor,int);
+TEXT_PROP_PRIME(embed_fonts,EmbedFonts,bool);
+TEXT_PROP_PRIME(auto_size,AutoSize,int);
+TEXT_PROP_GET_PRIME(text_width,TextWidth,double);
+TEXT_PROP_GET_PRIME(text_height,TextHeight,double);
+TEXT_PROP_GET_PRIME(max_scroll_h,MaxScrollH,int);
+TEXT_PROP_GET_PRIME(max_scroll_v,MaxScrollV,int);
+TEXT_PROP_GET_PRIME(bottom_scroll_v,BottomScrollV,int);
+TEXT_PROP_GET_PRIME(selection_begin_index,SelectionBeginIndex,int);
+TEXT_PROP_GET_PRIME(selection_end_index,SelectionEndIndex,int);
+TEXT_PROP_PRIME(scroll_h,ScrollH,int);
+TEXT_PROP_PRIME(scroll_v,ScrollV,int);
+TEXT_PROP_GET_PRIME(num_lines,NumLines,int);
+TEXT_PROP_PRIME(max_chars,MaxChars,int);
 TEXT_PROP_GET_IDX(line_text,LineText,alloc_wstring);
-TEXT_PROP_GET_IDX(line_offset,LineOffset,alloc_int);
+TEXT_PROP_GET_IDX_PRIME(line_offset,LineOffset,int);
 
 
 value nme_bitmap_data_create(int width, int height, int pixelFormat, int fill)

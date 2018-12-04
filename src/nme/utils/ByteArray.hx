@@ -805,14 +805,14 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    #end
 
    #if !no_nme_io
-   private static var nme_byte_array_overwrite_file = Loader.load("nme_byte_array_overwrite_file", 2);
-   private static var nme_byte_array_read_file = Loader.load("nme_byte_array_read_file", 1);
+   private static var nme_byte_array_overwrite_file = nme.Loader.load("nme_byte_array_overwrite_file", 2);
+   private static var nme_byte_array_read_file = nme.Loader.load("nme_byte_array_read_file", 1);
    #end
-   private static var nme_lzma_encode = Loader.load("nme_lzma_encode", 1);
-   private static var nme_lzma_decode = Loader.load("nme_lzma_decode", 1);
+   private static var nme_lzma_encode = PrimeLoader.load("nme_lzma_encode", "oo");
+   private static var nme_lzma_decode = PrimeLoader.load("nme_lzma_decode", "oo");
    #if jsprime
-   private static var nme_zip_encode = nme.PrimeLoader.load("nme_zip_encode", "oi");
-   private static var nme_zip_decode = nme.PrimeLoader.load("nme_zip_decode", "oi");
+   private static var nme_zip_encode = PrimeLoader.load("nme_zip_encode", "oi");
+   private static var nme_zip_decode = PrimeLoader.load("nme_zip_decode", "oi");
    #end
 }
 
