@@ -1,7 +1,7 @@
 package nme.system;
 #if (!flash)
 
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 class Capabilities 
@@ -77,12 +77,12 @@ class Capabilities
    }
 
    // Native Methods
-   private static var nme_capabilities_get_pixel_aspect_ratio = Loader.load("nme_capabilities_get_pixel_aspect_ratio", 0);
-   private static var nme_capabilities_get_screen_dpi = Loader.load("nme_capabilities_get_screen_dpi", 0);
-   private static var nme_capabilities_get_screen_resolution_x = Loader.load("nme_capabilities_get_screen_resolution_x", 0);
-   private static var nme_capabilities_get_screen_resolution_y = Loader.load("nme_capabilities_get_screen_resolution_y", 0);
-   private static var nme_capabilities_get_screen_resolutions = Loader.load("nme_capabilities_get_screen_resolutions", 0 );
-   private static var nme_capabilities_get_language = Loader.load("nme_capabilities_get_language", 0);
+   private static var nme_capabilities_get_pixel_aspect_ratio = PrimeLoader.load("nme_capabilities_get_pixel_aspect_ratio", "d");
+   private static var nme_capabilities_get_screen_dpi = PrimeLoader.load("nme_capabilities_get_screen_dpi", "d");
+   private static var nme_capabilities_get_screen_resolution_x = PrimeLoader.load("nme_capabilities_get_screen_resolution_x", "d");
+   private static var nme_capabilities_get_screen_resolution_y = PrimeLoader.load("nme_capabilities_get_screen_resolution_y", "d");
+   private static var nme_capabilities_get_screen_resolutions = PrimeLoader.load("nme_capabilities_get_screen_resolutions", "o" );
+   private static var nme_capabilities_get_language = nme.Loader.load("nme_capabilities_get_language", 0);
 }
 
 #else
