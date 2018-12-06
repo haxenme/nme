@@ -1,7 +1,7 @@
 package nme.display;
 #if (!flash)
 
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 class GraphicsEndFill extends IGraphicsData 
@@ -11,7 +11,7 @@ class GraphicsEndFill extends IGraphicsData
       super(nme_graphics_end_fill_create());
    }
 
-   private static var nme_graphics_end_fill_create = Loader.load("nme_graphics_end_fill_create", 0);
+   private static var nme_graphics_end_fill_create = PrimeLoader.load("nme_graphics_end_fill_create", "o");
 }
 
 #else

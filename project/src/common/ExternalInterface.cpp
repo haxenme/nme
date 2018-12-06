@@ -681,9 +681,9 @@ to_type nme_##obj_prefix##_get_##prop(value inObj) \
 \
 DEFINE_PRIME1(nme_##obj_prefix##_get_##prop)
 
-#define DO_PROP_PRIME(Obj,obj_prefix,prop,Prop,to_type,from_type) \
-DO_PROP_READ_PRIME(Obj,obj_prefix,prop,Prop,to_type) \
-void nme_##obj_prefix##_set_##prop(value inObj,from_type inVal) \
+#define DO_PROP_PRIME(Obj,obj_prefix,prop,Prop,to_from_type) \
+DO_PROP_READ_PRIME(Obj,obj_prefix,prop,Prop,to_from_type) \
+void nme_##obj_prefix##_set_##prop(value inObj,to_from_type inVal) \
 { \
    Obj *obj; \
    if (AbstractToObject(inObj,obj)) \
@@ -692,17 +692,14 @@ void nme_##obj_prefix##_set_##prop(value inObj,from_type inVal) \
 \
 DEFINE_PRIME2v(nme_##obj_prefix##_set_##prop)
 
-#define DO_DISPLAY_PROP_PRIME(prop,Prop,to_type,from_type) \
-   DO_PROP_PRIME(DisplayObject,display_object,prop,Prop,to_type,from_type) 
+#define DO_DISPLAY_PROP_PRIME(prop,Prop,to_from_type) \
+   DO_PROP_PRIME(DisplayObject,display_object,prop,Prop,to_from_type) 
    
 #define DO_DISPLAY_PROP(prop,Prop,to_val,from_val) \
    DO_PROP(DisplayObject,display_object,prop,Prop,to_val,from_val) 
 
-#define DO_STAGE_PROP_PRIME(prop,Prop,to_type,from_type) \
-   DO_PROP_PRIME(Stage,stage,prop,Prop,to_type,from_type) 
-
-#define DO_STAGE_PROP(prop,Prop,to_val,from_val) \
-   DO_PROP(Stage,stage,prop,Prop,to_val,from_val) 
+#define DO_STAGE_PROP_PRIME(prop,Prop,to_from_type) \
+   DO_PROP_PRIME(Stage,stage,prop,Prop,to_from_type) 
 
 
 using namespace nme;
@@ -1161,7 +1158,7 @@ value nme_desktop_clipboard_set_clipboard_text(value inText)
 {
    return alloc_bool(SetClipboardText(val_string(inText)));
 }
-DEFINE_PRIM (nme_desktop_clipboard_set_clipboard_text, 1);
+DEFINE_PRIM(nme_desktop_clipboard_set_clipboard_text, 1);
 
 
 bool nme_desktop_clipboard_has_clipboard_text()
@@ -1175,7 +1172,7 @@ value nme_desktop_clipboard_get_clipboard_text()
 {
    return alloc_string(GetClipboardText());
 }
-DEFINE_PRIM (nme_desktop_clipboard_get_clipboard_text, 0);
+DEFINE_PRIM(nme_desktop_clipboard_get_clipboard_text, 0);
 #endif
 
 
@@ -1651,15 +1648,15 @@ value nme_stage_get_joystick_name(value inStage, value inId)
 }
 DEFINE_PRIM(nme_stage_get_joystick_name,2);
 
-DO_STAGE_PROP_PRIME(focus_rect,FocusRect,bool,bool)
-DO_STAGE_PROP_PRIME(scale_mode,ScaleMode,int,int)
+DO_STAGE_PROP_PRIME(focus_rect,FocusRect,bool)
+DO_STAGE_PROP_PRIME(scale_mode,ScaleMode,int)
 #ifdef NME_S3D
-DO_STAGE_PROP_PRIME(autos3d,AutoS3D,bool,bool)
+DO_STAGE_PROP_PRIME(autos3d,AutoS3D,bool)
 #endif
-DO_STAGE_PROP_PRIME(align,Align,int,int)
-DO_STAGE_PROP_PRIME(quality,Quality,int,int)
-DO_STAGE_PROP_PRIME(display_state,DisplayState,int,int)
-DO_STAGE_PROP_PRIME(multitouch_active,MultitouchActive,bool,bool)
+DO_STAGE_PROP_PRIME(align,Align,int)
+DO_STAGE_PROP_PRIME(quality,Quality,int)
+DO_STAGE_PROP_PRIME(display_state,DisplayState,int)
+DO_STAGE_PROP_PRIME(multitouch_active,MultitouchActive,bool)
 DO_PROP_READ_PRIME(Stage,stage,stage_width,StageWidth,int);
 DO_PROP_READ_PRIME(Stage,stage,stage_height,StageHeight,int);
 DO_PROP_READ_PRIME(Stage,stage,dpi_scale,DPIScale,double);
@@ -2418,23 +2415,23 @@ bool nme_display_object_dismiss_soft_keyboard(value inObj)
 DEFINE_PRIME1(nme_display_object_dismiss_soft_keyboard);
 
 
-DO_DISPLAY_PROP_PRIME(x,X,double,double)
-DO_DISPLAY_PROP_PRIME(y,Y,double,double)
+DO_DISPLAY_PROP_PRIME(x,X,double)
+DO_DISPLAY_PROP_PRIME(y,Y,double)
 #ifdef NME_S3D
-DO_DISPLAY_PROP_PRIME(z,Z,double,double)
+DO_DISPLAY_PROP_PRIME(z,Z,double)
 #endif
-DO_DISPLAY_PROP_PRIME(scale_x,ScaleX,double,double)
-DO_DISPLAY_PROP_PRIME(scale_y,ScaleY,double,double)
-DO_DISPLAY_PROP_PRIME(rotation,Rotation,double,double)
-DO_DISPLAY_PROP_PRIME(width,Width,double,double)
-DO_DISPLAY_PROP_PRIME(height,Height,double,double)
-DO_DISPLAY_PROP_PRIME(alpha,Alpha,double,double)
-DO_DISPLAY_PROP_PRIME(bg,OpaqueBackground,int,int)
-DO_DISPLAY_PROP_PRIME(mouse_enabled,MouseEnabled,bool,bool)
-DO_DISPLAY_PROP_PRIME(cache_as_bitmap,CacheAsBitmap,bool,bool)
-DO_DISPLAY_PROP_PRIME(pedantic_bitmap_caching,PedanticBitmapCaching,bool,bool)
-DO_DISPLAY_PROP_PRIME(pixel_snapping,PixelSnapping,int,int)
-DO_DISPLAY_PROP_PRIME(visible,Visible,bool,bool)
+DO_DISPLAY_PROP_PRIME(scale_x,ScaleX,double)
+DO_DISPLAY_PROP_PRIME(scale_y,ScaleY,double)
+DO_DISPLAY_PROP_PRIME(rotation,Rotation,double)
+DO_DISPLAY_PROP_PRIME(width,Width,double)
+DO_DISPLAY_PROP_PRIME(height,Height,double)
+DO_DISPLAY_PROP_PRIME(alpha,Alpha,double)
+DO_DISPLAY_PROP_PRIME(bg,OpaqueBackground,int)
+DO_DISPLAY_PROP_PRIME(mouse_enabled,MouseEnabled,bool)
+DO_DISPLAY_PROP_PRIME(cache_as_bitmap,CacheAsBitmap,bool)
+DO_DISPLAY_PROP_PRIME(pedantic_bitmap_caching,PedanticBitmapCaching,bool)
+DO_DISPLAY_PROP_PRIME(pixel_snapping,PixelSnapping,int)
+DO_DISPLAY_PROP_PRIME(visible,Visible,bool)
 #if 1
 DO_DISPLAY_PROP(name,Name,alloc_wstring,valToStdWString)
 #else
@@ -2454,11 +2451,11 @@ void nme_display_object_set_name(value inObj,HxString inVal)
 }
 DEFINE_PRIME2v(nme_display_object_set_name)
 #endif
-DO_DISPLAY_PROP_PRIME(blend_mode,BlendMode,int,int)
-DO_DISPLAY_PROP_PRIME(needs_soft_keyboard,NeedsSoftKeyboard,bool,bool)
-DO_DISPLAY_PROP_PRIME(soft_keyboard,SoftKeyboard,int,int)
-DO_DISPLAY_PROP_PRIME(moves_for_soft_keyboard,MovesForSoftKeyboard,bool,bool)
-DO_DISPLAY_PROP_PRIME(hit_enabled,HitEnabled,bool,bool)
+DO_DISPLAY_PROP_PRIME(blend_mode,BlendMode,int)
+DO_DISPLAY_PROP_PRIME(needs_soft_keyboard,NeedsSoftKeyboard,bool)
+DO_DISPLAY_PROP_PRIME(soft_keyboard,SoftKeyboard,int)
+DO_DISPLAY_PROP_PRIME(moves_for_soft_keyboard,MovesForSoftKeyboard,bool)
+DO_DISPLAY_PROP_PRIME(hit_enabled,HitEnabled,bool)
 DO_PROP_READ_PRIME(DisplayObject,display_object,mouse_x,MouseX,double)
 DO_PROP_READ_PRIME(DisplayObject,display_object,mouse_y,MouseY,double)
 
@@ -2521,27 +2518,24 @@ value nme_simple_button_create()
 {
    return ObjectToAbstract( new SimpleButton() );
 }
-DEFINE_PRIM(nme_simple_button_create,0);
+DEFINE_PRIME0(nme_simple_button_create);
 
 
-value nme_simple_button_set_state(value inButton, value inState, value inObject)
+void nme_simple_button_set_state(value inButton, int inState, value inObject)
 {
    SimpleButton *button = 0;
-
    if (AbstractToObject(inButton,button))
    {
       DisplayObject *object = 0;
       AbstractToObject(inObject,object);
-      button->setState(val_int(inState), object);
+      button->setState(inState, object);
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_simple_button_set_state,3);
+DEFINE_PRIME3v(nme_simple_button_set_state);
 
 
-DO_PROP(SimpleButton,simple_button,enabled,Enabled,alloc_bool,val_bool) 
-DO_PROP(SimpleButton,simple_button,hand_cursor,UseHandCursor,alloc_bool,val_bool) 
+DO_PROP_PRIME(SimpleButton,simple_button,enabled,Enabled,bool) 
+DO_PROP_PRIME(SimpleButton,simple_button,hand_cursor,UseHandCursor,bool) 
 
 
 
@@ -2603,7 +2597,7 @@ void nme_doc_set_child_index(value inParent, value inChild, int inPos)
 DEFINE_PRIME3v(nme_doc_set_child_index);
 
 
-DO_PROP_PRIME(DisplayObjectContainer,doc,mouse_children,MouseChildren,bool,bool);
+DO_PROP_PRIME(DisplayObjectContainer,doc,mouse_children,MouseChildren,bool);
 
 
 // --- WEBOS ExternalInterface -----------------------------------------------------
@@ -3234,7 +3228,7 @@ void TAddTiles( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inVal
 
 
 
-void nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,int flags,int inDataSize)
+void nme_gfx_draw_tiles(value inGfx, value inSheet, value inXYIDs, int flags, int inDataSize)
 {
    Graphics *gfx;
    Tilesheet *sheet;
@@ -3338,6 +3332,8 @@ void nme_gfx_draw_tiles(value inGfx,value inSheet, value inXYIDs,int flags,int i
 }
 DEFINE_PRIME5v(nme_gfx_draw_tiles);
 
+
+
 static bool sNekoLutInit = false;
 static int sNekoLut[256];
 
@@ -3378,118 +3374,109 @@ DEFINE_PRIME6v(nme_gfx_draw_points);
 
 
 // --- IGraphicsData -----------------------------------------------------
-value nme_graphics_path_create(value inCommands,value inData,value inWinding)
+value nme_graphics_path_create(value inCommands,value inData,bool inWinding)
 {
    GraphicsPath *result = new GraphicsPath();
-   //printf("nme_graphics_path_create!\n");
 
-   if (!val_bool(inWinding))
+   if (!inWinding)
       result->winding = wrNonZero;
 
    FillArrayInt(result->commands,inCommands);
    FillArrayDouble(result->data,inData);
-
    return ObjectToAbstract(result);
 }
-DEFINE_PRIM(nme_graphics_path_create,3)
+DEFINE_PRIME3(nme_graphics_path_create)
 
 
-value nme_graphics_path_curve_to(value inPath,value inX1, value inY1, value inX2, value inY2)
+void nme_graphics_path_curve_to(value inPath,double inX1,double inY1,double inX2,double inY2)
 {
    GraphicsPath *path;
    if (AbstractToObject(inPath,path))
-      path->curveTo(val_number(inX1), val_number(inY1), val_number(inX2), val_number(inY2) );
-   return alloc_null();
+      path->curveTo(inX1,inY1,inX2,inY2);
 }
-DEFINE_PRIM(nme_graphics_path_curve_to,5)
+DEFINE_PRIME5v(nme_graphics_path_curve_to)
 
 
-
-value nme_graphics_path_line_to(value inPath,value inX1, value inY1)
+void nme_graphics_path_line_to(value inPath,double inX1,double inY1)
 {
    GraphicsPath *path;
    if (AbstractToObject(inPath,path))
-      path->lineTo(val_number(inX1), val_number(inY1));
-   return alloc_null();
+      path->lineTo(inX1, inY1);
 }
-DEFINE_PRIM(nme_graphics_path_line_to,3)
+DEFINE_PRIME3v(nme_graphics_path_line_to)
 
-value nme_graphics_path_move_to(value inPath,value inX1, value inY1)
+
+void nme_graphics_path_move_to(value inPath,double inX1,double inY1)
 {
    GraphicsPath *path;
    if (AbstractToObject(inPath,path))
-      path->moveTo(val_number(inX1), val_number(inY1));
-   return alloc_null();
+      path->moveTo(inX1,inY1);
 }
-DEFINE_PRIM(nme_graphics_path_move_to,3)
-
+DEFINE_PRIME3v(nme_graphics_path_move_to)
 
    
-value nme_graphics_path_wline_to(value inPath,value inX1, value inY1)
+void nme_graphics_path_wline_to(value inPath,double inX1,double inY1)
 {
    GraphicsPath *path;
    if (AbstractToObject(inPath,path))
-      path->wideLineTo(val_number(inX1), val_number(inY1));
-   return alloc_null();
+      path->wideLineTo(inX1,inY1);
 }
-DEFINE_PRIM(nme_graphics_path_wline_to,3)
+DEFINE_PRIME3v(nme_graphics_path_wline_to)
 
-value nme_graphics_path_wmove_to(value inPath,value inX1, value inY1)
+
+void nme_graphics_path_wmove_to(value inPath,double inX1, double inY1)
 {
    GraphicsPath *path;
    if (AbstractToObject(inPath,path))
-      path->wideMoveTo(val_number(inX1), val_number(inY1));
-   return alloc_null();
+      path->wideMoveTo(inX1,inY1);
 }
-DEFINE_PRIM(nme_graphics_path_wmove_to,3)
+DEFINE_PRIME3v(nme_graphics_path_wmove_to)
 
 
-value nme_graphics_path_get_commands(value inPath,value outCommands)
+void nme_graphics_path_get_commands(value inPath,value outCommands)
 {
    GraphicsPath *path;
    if (AbstractToObject(inPath,path))
       FillArrayInt(outCommands,path->commands);
-   return alloc_null();
 }
-DEFINE_PRIM(nme_graphics_path_get_commands,2)
+DEFINE_PRIME2v(nme_graphics_path_get_commands)
 
-value nme_graphics_path_set_commands(value inPath,value inCommands)
+
+void nme_graphics_path_set_commands(value inPath,value inCommands)
 {
    GraphicsPath *path;
    if (AbstractToObject(inPath,path))
       FillArrayInt(path->commands,inCommands);
-   return alloc_null();
 }
-DEFINE_PRIM(nme_graphics_path_set_commands,2)
+DEFINE_PRIME2v(nme_graphics_path_set_commands)
 
-value nme_graphics_path_get_data(value inPath,value outData)
+
+void nme_graphics_path_get_data(value inPath,value outData)
 {
    GraphicsPath *path;
    if (AbstractToObject(inPath,path))
       FillArrayDouble(outData,path->data);
-   return alloc_null();
 }
-DEFINE_PRIM(nme_graphics_path_get_data,2)
+DEFINE_PRIME2v(nme_graphics_path_get_data)
 
-value nme_graphics_path_set_data(value inPath,value inData)
+
+void nme_graphics_path_set_data(value inPath,value inData)
 {
    GraphicsPath *path;
    if (AbstractToObject(inPath,path))
       FillArrayDouble(path->data,inData);
-   return alloc_null();
 }
-DEFINE_PRIM(nme_graphics_path_set_data,2)
+DEFINE_PRIME2v(nme_graphics_path_set_data)
 
 
 
 // --- IGraphicsData - Fills ---------------------------------------------
-
-value nme_graphics_solid_fill_create(value inColour, value inAlpha)
+value nme_graphics_solid_fill_create(int inColour, double inAlpha)
 {
-   GraphicsSolidFill *solid = new GraphicsSolidFill( val_int(inColour), val_number(inAlpha) );
+   GraphicsSolidFill *solid = new GraphicsSolidFill(inColour,inAlpha);
    return ObjectToAbstract(solid);
 }
-DEFINE_PRIM(nme_graphics_solid_fill_create,2)
+DEFINE_PRIME2(nme_graphics_solid_fill_create)
 
 
 value nme_graphics_end_fill_create()
@@ -3497,38 +3484,24 @@ value nme_graphics_end_fill_create()
    GraphicsEndFill *end = new GraphicsEndFill;
    return ObjectToAbstract(end);
 }
-DEFINE_PRIM(nme_graphics_end_fill_create,0)
+DEFINE_PRIME0(nme_graphics_end_fill_create)
+
 
 
 // --- IGraphicsData - Stroke ---------------------------------------------
-
-value nme_graphics_stroke_create(value* arg, int nargs)
+value nme_graphics_stroke_create(double thickness,bool pixelHinting,int scaleMode,
+  int capsStyle,int jointStyle,double miterLimit,value inFill)
 {
-   enum { argThickness, argPixelHinting, argScaleMode, argCapsStyle,
-          argJointStyle, argMiterLimit, argFill, argSIZE };
-
-   double thickness = -1;
-   if (!val_is_null(arg[argThickness]))
-   {
-      thickness = val_number(arg[argThickness]);
-      if (thickness<0)
-         thickness = 0;
-   }
-
    IGraphicsFill *fill=0;
-   AbstractToObject(arg[argFill],fill);
+   AbstractToObject(inFill,fill);
 
-   GraphicsStroke *stroke = new GraphicsStroke(fill, thickness,
-                 val_bool(arg[argPixelHinting]),
-                 (StrokeScaleMode)val_int(arg[argScaleMode]),
-                 (StrokeCaps)val_int(arg[argCapsStyle]),
-                 (StrokeJoints)val_int(arg[argJointStyle]),
-                 val_number(arg[argMiterLimit]) );
+   GraphicsStroke *stroke = new GraphicsStroke(fill,thickness,pixelHinting,
+                 (StrokeScaleMode)scaleMode,(StrokeCaps)capsStyle,
+                 (StrokeJoints)jointStyle, miterLimit);
 
    return ObjectToAbstract(stroke);
 }
-
-DEFINE_PRIM_MULT(nme_graphics_stroke_create)
+DEFINE_PRIME7(nme_graphics_stroke_create)
 
 
 // --- TextField --------------------------------------------------------------
@@ -4010,6 +3983,7 @@ void nme_bitmap_data_fill(value inHandle, value inRect, int inRGB, int inA)
 }
 DEFINE_PRIME4v(nme_bitmap_data_fill);
 
+
 value nme_bitmap_data_load(value inFilename, value format)
 {
    Surface *surface = Surface::Load(val_os_string(inFilename));
@@ -4026,6 +4000,7 @@ value nme_bitmap_data_load(value inFilename, value format)
    return alloc_null();
 }
 DEFINE_PRIM(nme_bitmap_data_load,2);
+
 
 void nme_bitmap_data_set_format(value inHandle, int format, bool inConvert)
 {
@@ -4116,8 +4091,6 @@ value nme_bitmap_data_encode(value inSurface, value inFormat,value inQuality)
    return array.mValue;
 }
 DEFINE_PRIM(nme_bitmap_data_encode,3);
-
-
 
 
 value nme_bitmap_data_clone(value inSurface)
@@ -4384,7 +4357,6 @@ void nme_bitmap_data_set_array(value inSurface, value inRect, value inArray)
 DEFINE_PRIME3v(nme_bitmap_data_set_array);
 
 
-
 void nme_bitmap_data_generate_filter_rect(value inRect, value inFilter, value outRect)
 {
    Rect rect;
@@ -4456,7 +4428,6 @@ void nme_bitmap_data_set_floats32(value inSurface, value inData, int inOffset, i
 DEFINE_PRIME8v(nme_bitmap_data_set_floats32);
 
 
-
 void nme_bitmap_data_get_uints8(value inSurface, value inData, int inOffset, int inStride,
        int inPixelFormat, int inSubsample)
 {
@@ -4491,7 +4462,6 @@ void nme_bitmap_data_set_uints8(value inSurface, value inData, int inOffset, int
    }
 }
 DEFINE_PRIME6v(nme_bitmap_data_set_uints8);
-
 
 
 void nme_bitmap_data_flood_fill(value inSurface, int inX, int inY, int inColor)
@@ -4637,7 +4607,6 @@ DEFINE_PRIME1v(nme_bitmap_data_dump_bits);
 
 
 // --- Video --------------------------------------------------
-
 value nme_video_create(value inWidth, value inHeight)
 {
    /*
@@ -4980,7 +4949,6 @@ DEFINE_PRIME2(nme_sound_channel_create_dynamic);
 
 
 // --- Async Sound -----------------------------------------------
-
 void SoundChannel::PerformAsyncCallback(void *inCallback)
 {
    AutoGCRoot *agc = (AutoGCRoot *)inCallback;
@@ -4993,7 +4961,6 @@ void SoundChannel::DestroyAsyncCallback(void *inCallback)
    AutoGCRoot *agc = (AutoGCRoot *)inCallback;
    delete agc;
 }
-
 
 
 value nme_sound_channel_create_async(value inRate, value inIsStereo, value inFormat, value inCallback, value inEngine)
@@ -5029,7 +4996,6 @@ DEFINE_PRIME2v(nme_sound_channel_post_buffer);
 
 
 // --- Tilesheet -----------------------------------------------
-
 value nme_tilesheet_create(value inSurface)
 {
    Surface *surface;
@@ -5061,6 +5027,7 @@ int nme_tilesheet_add_rect(value inSheet,value inRect, value inHotSpot)
 }
 DEFINE_PRIME3(nme_tilesheet_add_rect);
 
+
 void nme_tilesheet_get_rect(value inSheet, int inIndex, value outRect)
 {
    Tilesheet *sheet;
@@ -5073,6 +5040,7 @@ void nme_tilesheet_get_rect(value inSheet, int inIndex, value outRect)
 DEFINE_PRIME3v(nme_tilesheet_get_rect);
 
 
+
 // --- URL ----------------------------------------------------------
 value nme_curl_initialize(value inCACertFilePath)
 {
@@ -5082,6 +5050,7 @@ value nme_curl_initialize(value inCACertFilePath)
    return alloc_null();
 }
 DEFINE_PRIM(nme_curl_initialize,1);
+
 
 value nme_curl_create(value inURLRequest)
 {
@@ -5095,6 +5064,7 @@ value nme_curl_create(value inURLRequest)
 }
 DEFINE_PRIM(nme_curl_create,1);
 
+
 value nme_curl_process_loaders()
 {
    #ifndef NME_NO_CURL
@@ -5103,6 +5073,7 @@ value nme_curl_process_loaders()
    return alloc_bool(true);
 }
 DEFINE_PRIM(nme_curl_process_loaders,0);
+
 
 value nme_curl_update_loader(value inLoader,value outHaxeObj)
 {
@@ -5119,6 +5090,7 @@ value nme_curl_update_loader(value inLoader,value outHaxeObj)
 }
 DEFINE_PRIM(nme_curl_update_loader,2);
 
+
 value nme_curl_get_error_message(value inLoader)
 {
    #ifndef NME_NO_CURL
@@ -5131,6 +5103,7 @@ value nme_curl_get_error_message(value inLoader)
    return alloc_null();
 }
 DEFINE_PRIM(nme_curl_get_error_message,1);
+
 
 value nme_curl_get_code(value inLoader)
 {
@@ -5161,6 +5134,7 @@ value nme_curl_get_data(value inLoader)
 }
 DEFINE_PRIM(nme_curl_get_data,1);
 
+
 value nme_curl_get_cookies(value inLoader)
 {
    #ifndef NME_NO_CURL
@@ -5178,6 +5152,7 @@ value nme_curl_get_cookies(value inLoader)
    return alloc_array(0);
 }
 DEFINE_PRIM(nme_curl_get_cookies,1);
+
 
 value nme_curl_get_headers(value inLoader)
 {
@@ -5239,6 +5214,7 @@ int nme_zip_encode(value ioBuffer)
    return size;
 }
 DEFINE_PRIME1(nme_zip_encode);
+
 
 int nme_zip_decode(value ioBuffer)
 {
@@ -5322,22 +5298,23 @@ DEFINE_PRIME1(nme_lzma_decode);
 
 namespace nme
 {
-FileDialogSpec *gCurrentFileDialog = 0;
+   FileDialogSpec *gCurrentFileDialog = 0;
 
-FileDialogSpec::~FileDialogSpec()
-{
-   delete callback;
-}
-void FileDialogSpec::complete()
-{
-   gCurrentFileDialog = 0;
-   if (result.empty())
-      val_call1(callback->get(), alloc_null( ) );
-   else
-      val_call1(callback->get(), alloc_string_len( result.c_str(), result.size() ) );
-   delete this;
-}
+   FileDialogSpec::~FileDialogSpec()
+   {
+      delete callback;
+   }
 
+
+   void FileDialogSpec::complete()
+   {
+      gCurrentFileDialog = 0;
+      if (result.empty())
+         val_call1(callback->get(), alloc_null( ) );
+      else
+         val_call1(callback->get(), alloc_string_len( result.c_str(), result.size() ) );
+      delete this;
+   }
 }
 
 /*

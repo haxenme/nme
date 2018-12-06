@@ -1,7 +1,7 @@
 package nme.display;
 #if (!flash)
 
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 class GraphicsPath extends IGraphicsData 
@@ -67,16 +67,16 @@ class GraphicsPath extends IGraphicsData
    }
 
    // Native Methods
-   private static var nme_graphics_path_create = Loader.load("nme_graphics_path_create", 3);
-   private static var nme_graphics_path_curve_to = Loader.load("nme_graphics_path_curve_to", 5);
-   private static var nme_graphics_path_line_to = Loader.load("nme_graphics_path_line_to", 3);
-   private static var nme_graphics_path_move_to = Loader.load("nme_graphics_path_move_to", 3);
-   private static var nme_graphics_path_wline_to = Loader.load("nme_graphics_path_wline_to", 3);
-   private static var nme_graphics_path_wmove_to = Loader.load("nme_graphics_path_wmove_to", 3);
-   private static var nme_graphics_path_get_commands = Loader.load("nme_graphics_path_get_commands", 2);
-   private static var nme_graphics_path_set_commands = Loader.load("nme_graphics_path_set_commands", 2);
-   private static var nme_graphics_path_get_data = Loader.load("nme_graphics_path_get_data", 2);
-   private static var nme_graphics_path_set_data = Loader.load("nme_graphics_path_set_data", 2);
+   private static var nme_graphics_path_create = PrimeLoader.load("nme_graphics_path_create", "oobo");
+   private static var nme_graphics_path_curve_to = PrimeLoader.load("nme_graphics_path_curve_to", "oddddv");
+   private static var nme_graphics_path_line_to = PrimeLoader.load("nme_graphics_path_line_to", "oddv");
+   private static var nme_graphics_path_move_to = PrimeLoader.load("nme_graphics_path_move_to", "oddv");
+   private static var nme_graphics_path_wline_to = PrimeLoader.load("nme_graphics_path_wline_to", "oddv");
+   private static var nme_graphics_path_wmove_to = PrimeLoader.load("nme_graphics_path_wmove_to", "oddv");
+   private static var nme_graphics_path_get_commands = PrimeLoader.load("nme_graphics_path_get_commands", "oov");
+   private static var nme_graphics_path_set_commands = PrimeLoader.load("nme_graphics_path_set_commands", "oov");
+   private static var nme_graphics_path_get_data = PrimeLoader.load("nme_graphics_path_get_data", "oov");
+   private static var nme_graphics_path_set_data = PrimeLoader.load("nme_graphics_path_set_data", "oov");
 }
 
 #else
