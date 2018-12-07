@@ -12,7 +12,7 @@ class SoundChannel extends EventDispatcher
 {
    public var leftPeak(get, null):Float;
    public var rightPeak(get, null):Float;
-   public var position(get, null):Float;
+   public var position(get, set):Float;
    public var soundTransform(get, set):SoundTransform;
    // Does not do anything...
    public var pitch:Float;
@@ -160,7 +160,7 @@ class SoundChannel extends EventDispatcher
    private function get_leftPeak():Float { return nme_sound_channel_get_left(nmeHandle); }
    private function get_rightPeak():Float { return nme_sound_channel_get_right(nmeHandle); }
    private function get_position():Float { return nme_sound_channel_get_position(nmeHandle); }
-   private function set_position(value:Float):Void { nme_sound_channel_set_position(nmeHandle, position); }
+   private function set_position(value:Float):Float { nme_sound_channel_set_position(nmeHandle, position); return value;}
 
    private function get_soundTransform():SoundTransform 
    {

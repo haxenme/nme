@@ -11,9 +11,9 @@ class Accelerometer
       var bIsSupported:Bool = nme_input_get_acceleration_support();
       if(bIsSupported)
       {
-        var x:Float = nme_input_get_acceleration_x;
-        var y:Float = nme_input_get_acceleration_y;
-        var z:Float = nme_input_get_acceleration_z;
+        var x:Float = nme_input_get_acceleration_x();
+        var y:Float = nme_input_get_acceleration_y();
+        var z:Float = nme_input_get_acceleration_z();
         if(!inAcceleration)
             return new Acceleration(x,y,z);
         else
