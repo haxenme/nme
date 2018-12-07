@@ -14,8 +14,10 @@ class Accelerometer
         var x:Float = nme_input_get_acceleration_x();
         var y:Float = nme_input_get_acceleration_y();
         var z:Float = nme_input_get_acceleration_z();
-        if(!inAcceleration)
+        if(inAcceleration==null)
+        {
             return new Acceleration(x,y,z);
+        }
         else
         {
             inAcceleration.x = x;
