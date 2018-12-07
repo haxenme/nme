@@ -28,9 +28,9 @@ class Accelerometer
       return null;
    }
    private static var nme_input_get_acceleration_support = PrimeLoader.load("nme_input_get_acceleration_support", "b");
-   private static var nme_input_get_acceleration_x = PrimeLoader.load("nme_input_get_acceleration_x", "dv");
-   private static var nme_input_get_acceleration_y = PrimeLoader.load("nme_input_get_acceleration_y", "dv");
-   private static var nme_input_get_acceleration_z = PrimeLoader.load("nme_input_get_acceleration_z", "dv");
+   private static var nme_input_get_acceleration_x = PrimeLoader.load("nme_input_get_acceleration_x", "d");
+   private static var nme_input_get_acceleration_y = PrimeLoader.load("nme_input_get_acceleration_y", "d");
+   private static var nme_input_get_acceleration_z = PrimeLoader.load("nme_input_get_acceleration_z", "d");
 }
 
 #end
