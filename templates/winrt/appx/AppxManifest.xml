@@ -10,6 +10,7 @@
   <Dependencies>
     <TargetDeviceFamily Name="::APP_TARGET::" MinVersion="::APP_MINVERSION::" MaxVersionTested="::APP_MAXVERSION::" />
     <!--<PackageDependency Name="Microsoft.VCLibs.140.00.Debug" MinVersion="14.0.24210.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />-->    
+    <PackageDependency Name="Microsoft.VCLibs.140.00" MinVersion="10.0.14393.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
     ::foreach packageDependency:: <PackageDependency Name="::dependency::" MinVersion="::minversion::" Publisher="::publisher::" /></PackageDependency>::end::
   </Dependencies>
   <Resources>
