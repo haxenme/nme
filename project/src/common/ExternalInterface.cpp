@@ -3871,7 +3871,7 @@ TEXT_PROP_PRIME(max_chars,MaxChars,int);
 TEXT_PROP_GET_IDX(line_text,LineText,alloc_wstring);
 TEXT_PROP_GET_IDX_PRIME(line_offset,LineOffset,int);
 
-
+#if 0
 value nme_bitmap_data_create(int width, int height, int pixelFormat, int fill)
 {
    PixelFormat format = (PixelFormat)(pixelFormat);
@@ -3881,7 +3881,21 @@ value nme_bitmap_data_create(int width, int height, int pixelFormat, int fill)
    return ObjectToAbstract(result);
 }
 DEFINE_PRIME4(nme_bitmap_data_create);
+#else
+value nme_bitmap_data_create(value width, value height, value pixelFormat, value fill)
+{
+   int w = val_int(width);
+   int h = val_int(height);
 
+   PixelFormat format = (PixelFormat)val_int(pixelFormat);
+
+   Surface *result = new SimpleSurface( w, h, format, 1 );
+   if (!val_is_null(fill))
+      result->Clear( val_int(fill) );
+   return ObjectToAbstract(result);
+}
+DEFINE_PRIM(nme_bitmap_data_create,4);
+#endif
 
 int nme_bitmap_data_width(value inHandle)
 {

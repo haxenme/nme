@@ -52,7 +52,7 @@ class Surface
    public var data(get,null):UInt8Array;
    
 
-   public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, inFillRgb:Int=-1)
+   public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, ?inFillRgb:Int)
    {
       if (inWidth>0 && inHeight>0 && inPixelFormat!=PixelFormat.pfNone)
          nmeHandle = nme_bitmap_data_create(inWidth, inHeight, inPixelFormat, inFillRgb);
@@ -342,7 +342,7 @@ class Surface
    }
 
    // Native Methods
-   private static var nme_bitmap_data_create = PrimeLoader.load("nme_bitmap_data_create", "iiiio");
+   private static var nme_bitmap_data_create = nme.Loader.load("nme_bitmap_data_create", 4);
    private static var nme_bitmap_data_load = nme.Loader.load("nme_bitmap_data_load", 2);
    private static var nme_bitmap_data_from_bytes = PrimeLoader.load("nme_bitmap_data_from_bytes", "ooo");
    private static var nme_bitmap_data_clear = PrimeLoader.load("nme_bitmap_data_clear", "oiv");
