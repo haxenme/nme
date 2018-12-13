@@ -4251,7 +4251,7 @@ int nme_bitmap_data_get_pixel(value inSurface, int inX, int inY)
 }
 DEFINE_PRIME3(nme_bitmap_data_get_pixel);
 
-
+#if 0
 int nme_bitmap_data_get_pixel32(value inSurface, int inX, int inY)
 {
    Surface *surf;
@@ -4261,7 +4261,17 @@ int nme_bitmap_data_get_pixel32(value inSurface, int inX, int inY)
    return -1;
 }
 DEFINE_PRIME3(nme_bitmap_data_get_pixel32);
+#else
+value nme_bitmap_data_get_pixel32(value inSurface, value inX, value inY)
+{ 
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf)) 
+      return alloc_int(surf->getPixel(val_int(inX),val_int(inY)));
 
+    return alloc_null(); 
+} 
+DEFINE_PRIM(nme_bitmap_data_get_pixel32,3);
+#endif
 
 value nme_bitmap_data_get_pixel_rgba(value inSurface, value inX,value inY)
 {
