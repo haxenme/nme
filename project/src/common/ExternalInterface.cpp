@@ -3871,16 +3871,16 @@ TEXT_PROP_PRIME(max_chars,MaxChars,int);
 TEXT_PROP_GET_IDX(line_text,LineText,alloc_wstring);
 TEXT_PROP_GET_IDX_PRIME(line_offset,LineOffset,int);
 
-#if 0
-value nme_bitmap_data_create(int width, int height, int pixelFormat, int fill)
+#if 1
+value nme_bitmap_data_create(int width, int height, int pixelFormat, int fillValue, bool bFill)
 {
    PixelFormat format = (PixelFormat)(pixelFormat);
    Surface *result = new SimpleSurface( width, height, format, 1 );
-   if (fill>=0)
-      result->Clear(fill);
+   if (bFill)
+      result->Clear(fillValue);
    return ObjectToAbstract(result);
 }
-DEFINE_PRIME4(nme_bitmap_data_create);
+DEFINE_PRIME5(nme_bitmap_data_create);
 #else
 value nme_bitmap_data_create(value width, value height, value pixelFormat, value fill)
 {
@@ -4265,7 +4265,7 @@ int nme_bitmap_data_get_pixel(value inSurface, int inX, int inY)
 }
 DEFINE_PRIME3(nme_bitmap_data_get_pixel);
 
-#if 0
+#if 1
 int nme_bitmap_data_get_pixel32(value inSurface, int inX, int inY)
 {
    Surface *surf;

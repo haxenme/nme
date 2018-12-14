@@ -55,7 +55,7 @@ class Surface
    public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, ?inFillRgb:Int)
    {
       if (inWidth>0 && inHeight>0 && inPixelFormat!=PixelFormat.pfNone)
-         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, inPixelFormat, inFillRgb);
+         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, inPixelFormat, inFillRgb, (inFillRgb!=null));
    }
 
 
@@ -342,7 +342,7 @@ class Surface
    }
 
    // Native Methods
-   private static var nme_bitmap_data_create = nme.Loader.load("nme_bitmap_data_create", 4);
+   private static var nme_bitmap_data_create = PrimeLoader.load("nme_bitmap_data_create", "iiiibo");
    private static var nme_bitmap_data_load = nme.Loader.load("nme_bitmap_data_load", 2);
    private static var nme_bitmap_data_from_bytes = PrimeLoader.load("nme_bitmap_data_from_bytes", "ooo");
    private static var nme_bitmap_data_clear = PrimeLoader.load("nme_bitmap_data_clear", "oiv");
@@ -354,7 +354,7 @@ class Surface
    private static var nme_bitmap_data_fill = PrimeLoader.load("nme_bitmap_data_fill", "ooiiv");
    private static var nme_bitmap_data_get_pixels = PrimeLoader.load("nme_bitmap_data_get_pixels", "ooo");
    private static var nme_bitmap_data_get_pixel = PrimeLoader.load("nme_bitmap_data_get_pixel", "oiii");
-   private static var nme_bitmap_data_get_pixel32 = nme.Loader.load("nme_bitmap_data_get_pixel32", 3);
+   private static var nme_bitmap_data_get_pixel32 = PrimeLoader.load("nme_bitmap_data_get_pixel32", "oiii");
    #if cpp
    private static var nme_bitmap_data_get_array = PrimeLoader.load("nme_bitmap_data_get_array", "ooov");
    #end
