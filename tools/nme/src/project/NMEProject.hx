@@ -95,6 +95,18 @@ class IOSConfig
    }
 }
 
+class FileAssociation
+{
+   public var extension:String;
+   public var description:String;
+
+   public function new(inExtension:String, inDescription:String)
+   {
+      extension = inExtension;
+      description = inDescription;
+   }
+}
+
 
 
 class NMEProject 
@@ -106,6 +118,7 @@ class NMEProject
    public var ndlls:Array<NDLL>;
    public var icons:Array<Icon>;
    public var banners:Array<Icon>;
+   public var fileAssociations:Array<FileAssociation>;
    public var splashScreens:Array<SplashScreen>;
    public var optionalStaticLink:Bool;
    public var staticLink:Bool;
@@ -189,6 +202,7 @@ class NMEProject
       targetFlags = new Map<String,String>();
       templatePaths = [];
       templateCopies = [];
+      fileAssociations = [];
       ndllCheckDir = "";
       engines = new Map<String,String>();
       libraryHandlers = new Map<String,String>();
@@ -595,6 +609,11 @@ class NMEProject
       ArrayHelper.addUnique(architectures, arch);
    }
 
+   public function addFileAssociation(extension:String, description:String)
+   {
+      fileAssociations.push( new FileAssociation(extension,description) );
+   }
+
    public function hasTargetFlag(inFlag:String)
    {
       return targetFlags.exists(inFlag);
@@ -863,6 +882,8 @@ class NMEProject
          if (StringTools.startsWith(haxeflag, "-lib")) 
             Reflect.setField(context, "LIB_" + haxeflag.substr(5).toUpperCase(), "true");
       }
+
+      context.fileAssociations = fileAssociations;
 
       context.assets = new Array<Dynamic>();
 

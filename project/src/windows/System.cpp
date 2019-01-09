@@ -171,6 +171,9 @@ static unsigned __stdcall dialog_proc( void *inSpec )
       ofn.nMaxFile = path.size();
       ofn.lpstrDefExt = "*";
 
+      if (spec->defaultPath[0])
+         ofn.lpstrInitialDir = spec->defaultPath.c_str();
+
       bool result = (spec->flags & flagSave) ? GetSaveFileName(&ofn) : GetOpenFileName(&ofn);
       if (result)
       {

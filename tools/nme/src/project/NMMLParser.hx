@@ -844,6 +844,14 @@ class NMMLParser
                   project.classPaths.push( fullPath );
                   Log.verbose("Adding class path " + fullPath);
 
+               case "fileAssociation":
+                  if (!element.has.extension) 
+                     Log.error("fileAssociation element should have extension attribute");
+                  if (!element.has.description) 
+                     Log.error("fileAssociation element should have description attribute");
+                  project.addFileAssociation(
+                       substitute(element.att.extension), substitute(element.att.description) );
+
                case "extension":
 
                   // deprecated
