@@ -3830,6 +3830,27 @@ void nme_text_field_replace_text(value inText,int inC0, int inC1, value inValue)
 }
 DEFINE_PRIME4v(nme_text_field_replace_text);
 
+void nme_text_field_send_key(value inText,int code, int value, int flags)
+{
+   TextField *text;
+
+   if (AbstractToObject(inText,text))
+   {
+      Event event;
+      event.code = code;
+      event.value = value;
+      event.flags = flags;
+      bool ctrl = flags & efCtrlDown;
+      bool isPrintChar = (code>31 && code<63000) && code!=127 && !ctrl;
+      event.type = isPrintChar ? etChar : etKeyDown;
+
+
+      text->OnKey(event);
+   }
+}
+DEFINE_PRIME4v(nme_text_field_send_key);
+
+
 
 
 

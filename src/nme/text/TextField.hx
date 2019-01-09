@@ -120,6 +120,19 @@ class TextField extends InteractiveObject
       nme_text_field_replace_text(nmeHandle, c0, c1, inNewText);
    }
 
+   public function sendKey(charCode:Int, keyId:Int, shift:Bool, ctrl:Bool, alt:Bool) : Void
+   {
+      var flags = 0;
+      if (shift) flags |= 0x02;
+      if (ctrl) flags |= 0x14;
+      if (alt) flags |= 0x08;
+      nme_text_field_send_key(nmeHandle, charCode, keyId, flags);
+   }
+
+   public function sendCopy() { sendKey(0, nme.ui.Keyboard.C, false, true, false ); }
+   public function sendPaste() { sendKey(0, nme.ui.Keyboard.V, false, true, false ); }
+
+
 
    // Getters & Setters
    private function get_autoSize():TextFieldAutoSize { return Type.createEnumIndex(TextFieldAutoSize, nme_text_field_get_auto_size(nmeHandle)); }
@@ -225,6 +238,7 @@ class TextField extends InteractiveObject
    private static var nme_text_field_get_line_for_char = PrimeLoader.load("nme_text_field_get_line_for_char", "oii");
    private static var nme_text_field_replace_selected_text = PrimeLoader.load("nme_text_field_replace_selected_text", "oov");
    private static var nme_text_field_replace_text = PrimeLoader.load("nme_text_field_replace_text", "oiiov");
+   private static var nme_text_field_send_key = PrimeLoader.load("nme_text_field_send_key", "oiiiv");
 }
 
 #else
