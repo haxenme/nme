@@ -294,6 +294,7 @@ SetOutPath $INSTDIR\::dir::
 File ::__current__:: ::end::
 ::end::
 
+SetOutPath $INSTDIR
 #;Store installation folder
 #  WriteRegStr HKCU "Software\::APP_PACKAGE::" "" $INSTDIR
  
@@ -315,6 +316,7 @@ WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\::APP_PAC
 
 WriteRegStr SHCTX "${MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_KEY}" "${MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_VALUENAME}" \
                   $MultiUser.InstallMode
+
 
 ::foreach fileAssociations::
 ${RegisterExtension} "$INSTDIR\::EXE_NAME::" "::extension::" "::description::"
