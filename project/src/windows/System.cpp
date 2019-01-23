@@ -156,7 +156,7 @@ static unsigned __stdcall dialog_proc( void *inSpec )
          buf[i] = ptr[i]=='|' ? '\0' : ptr[i];
       buf[len] = '\0';
       ofn.lpstrFilter = &buf[0];
-      ofn.Flags = OFN_EXPLORER;
+      ofn.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR;
       if (spec->flags & flagMustExist)
          ofn.Flags |= OFN_FILEMUSTEXIST;
       if (spec->flags & flagHideReadOnly)
