@@ -1,7 +1,7 @@
 package nme.display;
 #if (!flash)
 
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 class GraphicsSolidFill extends IGraphicsData 
@@ -11,7 +11,7 @@ class GraphicsSolidFill extends IGraphicsData
       super(nme_graphics_solid_fill_create(color, alpha));
    }
 
-   private static var nme_graphics_solid_fill_create = Loader.load("nme_graphics_solid_fill_create", 2);
+   private static var nme_graphics_solid_fill_create = PrimeLoader.load("nme_graphics_solid_fill_create", "ido");
 }
 
 #else

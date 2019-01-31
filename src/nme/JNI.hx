@@ -7,7 +7,7 @@ import haxe.crypto.BaseCode;
 #else
 import haxe.BaseCode;
 #end
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 class JNI 
@@ -19,7 +19,7 @@ class JNI
       if (!isInit) 
       {
          isInit = true;
-         var func = Loader.load("nme_jni_init_callback", 1);
+         var func = PrimeLoader.load("nme_jni_init_callback", "ov");
          func(onCallback);
       }
    }
@@ -130,9 +130,9 @@ class JNI
 
    // Native Methods
    #if android
-   private static var nme_jni_create_method = Loader.load("nme_jni_create_method", 5);
-   private static var nme_jni_call_member = Loader.load("nme_jni_call_member", 3);
-   private static var nme_jni_call_static = Loader.load("nme_jni_call_static", 2);
+   private static var nme_jni_create_method = nme.Loader.load("nme_jni_create_method", 5);
+   private static var nme_jni_call_member = PrimeLoader.load("nme_jni_call_member", "oooo");
+   private static var nme_jni_call_static = PrimeLoader.load("nme_jni_call_static", "ooo");
    #else
    private static var nme_jni_create_method:Dynamic;
    private static var nme_jni_call_member:Dynamic;
@@ -178,8 +178,8 @@ class JNIMethod
 
    // Native Methods
    #if android
-   private static var nme_jni_call_member = Loader.load("nme_jni_call_member", 3);
-   private static var nme_jni_call_static = Loader.load("nme_jni_call_static", 2);
+   private static var nme_jni_call_member = PrimeLoader.load("nme_jni_call_member", "oooo");
+   private static var nme_jni_call_static = PrimeLoader.load("nme_jni_call_static", "ooo");
    #else
    private static var nme_jni_call_member:Dynamic;
    private static var nme_jni_call_static:Dynamic;

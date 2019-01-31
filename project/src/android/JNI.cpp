@@ -267,13 +267,12 @@ void JNIInit(JNIEnv *env)
    sInit = true;
 }
 
-value nme_jni_init_callback(value inCallback)
+void nme_jni_init_callback(value inCallback)
 {
    if (!gCallback)
       gCallback = new AutoGCRoot(inCallback);
-   return alloc_null();
 }
-DEFINE_PRIM(nme_jni_init_callback,1);
+DEFINE_PRIME1v(nme_jni_init_callback);
 
 
 struct JavaHaxeReference
@@ -809,7 +808,7 @@ struct JNIField : public nme::Object
       return (!mFieldType.isUnknown());
    }
 
-   bool Ok() const { return mField>0; }
+   bool Ok() const { return mField!=NULL; }
    
    value GetStatic()
    {
@@ -1164,7 +1163,7 @@ struct JNIMethod : public nme::Object
       return !mReturn.isUnknown();
    }
 
-   bool Ok() const { return mMethod>0; }
+   bool Ok() const { return mMethod!=NULL; }
 
 
 
@@ -1312,7 +1311,7 @@ value nme_jni_call_static(value inMethod, value inArgs)
    value result =  method->CallStatic(inArgs);
    return result;
 }
-DEFINE_PRIM(nme_jni_call_static,2);
+DEFINE_PRIME2(nme_jni_call_static);
 
 
 value nme_jni_call_member(value inMethod, value inObject, value inArgs)
@@ -1331,7 +1330,7 @@ value nme_jni_call_member(value inMethod, value inObject, value inArgs)
    }
    return method->CallMember(object,inArgs);
 }
-DEFINE_PRIM(nme_jni_call_member,3);
+DEFINE_PRIME3(nme_jni_call_member);
 
 
 

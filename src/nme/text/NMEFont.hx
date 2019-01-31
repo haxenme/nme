@@ -45,7 +45,7 @@ class NMEFont
       if (factories==null)
       {
          factories = new Map<String,NMEFontFactory>();
-         var register = Loader.load("nme_font_set_factory", 1);
+         var register = PrimeLoader.load("nme_font_set_factory", "ov");
          register(createFont);
       }
 

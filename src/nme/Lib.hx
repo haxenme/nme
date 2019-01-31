@@ -204,7 +204,7 @@ class Lib
    public static function set_silentRecreate(inVal:Bool) { Application.silentRecreate=inVal; return inVal; }
 
    // Native Methods
-   private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
+   //private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
    private static var nme_log = Loader.load("nme_log", 1);
 }
 

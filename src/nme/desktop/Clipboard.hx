@@ -127,7 +127,7 @@ class Clipboard {
 
     // Native Methods
     private static var nme_desktop_clipboard_set_clipboard_text = Loader.load("nme_desktop_clipboard_set_clipboard_text", 1);
-    private static var nme_desktop_clipboard_has_clipboard_text = Loader.load("nme_desktop_clipboard_has_clipboard_text", 0);
+    private static var nme_desktop_clipboard_has_clipboard_text = nme.PrimeLoader.load("nme_desktop_clipboard_has_clipboard_text", "b");
     private static var nme_desktop_clipboard_get_clipboard_text = Loader.load("nme_desktop_clipboard_get_clipboard_text", 0);
 }
 #else
