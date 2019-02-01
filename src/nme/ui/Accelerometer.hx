@@ -29,6 +29,9 @@ class Accelerometer
       // returns null if device not supported
       return null;
    }
+
+   inline public static function isSupported() return nme_input_get_acceleration_support();
+
    private static var nme_input_get_acceleration_support = PrimeLoader.load("nme_input_get_acceleration_support", "b");
    private static var nme_input_get_acceleration_x = PrimeLoader.load("nme_input_get_acceleration_x", "d");
    private static var nme_input_get_acceleration_y = PrimeLoader.load("nme_input_get_acceleration_y", "d");
