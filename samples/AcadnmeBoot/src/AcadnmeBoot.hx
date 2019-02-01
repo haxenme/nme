@@ -20,7 +20,7 @@ import gm2d.ui.Image;
 import gm2d.ui.ListControl;
 import gm2d.skin.FillStyle;
 import gm2d.skin.LineStyle;
-import gm2d.skin.Style;
+import gm2d.skin.Shape;
 import gm2d.skin.Skin;
 import gm2d.svg.Svg;
 import gm2d.svg.SvgRenderer;
@@ -65,12 +65,12 @@ class AcadnmeBoot extends Screen implements IBoot
       var pad = Skin.scale(2);
       Skin.guiLight = 0xf0f0f0;
       Skin.guiDark = 0xa0a0a0;
-      Skin.replaceAttribs("DialogTitle", null, {
+      Skin.replaceAttribs("DialogTitle", {
           align: Layout.AlignStretch | Layout.AlignCenterY,
           textAlign: "left",
           fontSize: Skin.scale(20),
           padding: new Rectangle(pad,pad,pad*2,pad*2),
-          style: StyleUnderlineRect,
+          shape: ShapeUnderlineRect,
           fill: FillSolid(0xffffff,1),
           line: LineSolid(1,0xFF9800,2),
         });
@@ -94,7 +94,7 @@ class AcadnmeBoot extends Screen implements IBoot
        hostBar.setItemLayout( new HorizontalLayout([1,0]).stretch() );
 
        hostBar.addWidget(new TextLabel("Host:" + getConnectionStatus(),{ textColor:accent, align:Layout.AlignCenterY|Layout.AlignStretch }) );
-       hostBar.addWidget( Button.BMPButton( createMenuIcon(), onMenu, { style:StyleNone } ) );
+       hostBar.addWidget( Button.BMPButton( createMenuIcon(), onMenu, { shape:ShapeNone } ) );
        hostBar.build();
 
        titleBar.addWidget(hostBar);
