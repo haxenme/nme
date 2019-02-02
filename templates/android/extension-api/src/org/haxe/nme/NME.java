@@ -30,6 +30,8 @@ public class NME {
      public static native int onTextSelect( int inReplacePos, int inReplaceLength);
      public static native int onRender();
      public static native int onPoll();
+     public static native int setLaunchAppLink(String url);
+     public static native int onAppLink(String url);
      public static native double getNextWake();
      public static native int onActivity(int inState);
      public static native void onCallback(long inHandle);

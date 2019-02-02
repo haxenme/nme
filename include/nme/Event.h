@@ -49,6 +49,7 @@ enum EventType
    etRenderContextRestored, // 33
 
    etScroll, // 34
+   etAppLink, // 35
 };
 
 enum EventFlags

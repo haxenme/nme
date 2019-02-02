@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="::ANDROID_INSTALL_LOCATION::"  package="::APP_PACKAGE::">
+
+
+		<uses-feature android:glEsVersion="0x00020000" android:required="true" />
+      ::foreach appFeature:: <uses-feature android:name="::feature::" android:required="::required::" />
+::end::
+
+
+	<application
+       android:label="::APP_TITLE::"
+       ::if (DEBUGGABLE):: android:debuggable="true" ::end::
+       ::if (HAS_ICON):: android:icon="@drawable/icon"::end::
+       ::if (HAS_BANNER):: android:banner="@drawable/banner"::end::
+       ::foreach appHeader:: ::__current__:: ::end::
+   >
+
+		<activity
+        android:name="MainActivity"
+        android:label="::APP_TITLE::"
+        android:configChanges="keyboard|keyboardHidden|orientation|screenSize"::if (WIN_ORIENTATION!=""):: android:screenOrientation="::WIN_ORIENTATION::"::end::
+      ::foreach appActivity:: ::__current__:: ::end::
+       >
+			
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+				<category android:name="ouya.intent.category.GAME"/>
+            ::foreach appIntent:: <category android:name="::__current__::"/> ::end::
+			</intent-filter>
+    
+            <!-- SPEICIFC FOR APP LINKS {-->
+            <intent-filter android:label="@string/filter_view_http_gizmos">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://www.example.com/gizmos” -->
+                <data android:scheme="http"
+                      android:host="www.example.com"
+                      android:pathPrefix="/gizmos" />
+                <!-- note that the leading "/" is required for pathPrefix-->
+            </intent-filter>
+            <intent-filter android:label="@string/filter_view_example_gizmos">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "example://gizmos” -->
+                <data android:scheme="example"
+                      android:host="gizmos" />
+            </intent-filter>
+            <!-- SPEICIFC FOR APP LINKS }-->
+			
+		</activity>
+
+		
+	</application>
+
+    <uses-sdk android:minSdkVersion="::ANDROID_MIN_API_LEVEL::"
+              android:targetSdkVersion="::ANDROID_TARGET_API_LEVEL::" />
+	
+   ::foreach appPermission:: <uses-permission android:name="::permission::" android:required="::required::" />
+::end::
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	
+</manifest> 

@@ -1,6 +1,7 @@
 package nme.display;
 #if !flash
 
+import nme.events.AppLinkEvent;
 import haxe.Timer;
 import nme.app.Application;
 import nme.app.Window;
@@ -814,6 +815,13 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeDispatchEvent(evt);
    }
 
+   public function onAppLink(inEvent:AppEvent):Void
+   {
+      var evt = new AppLinkEvent(AppLinkEvent.APP_LINK, false, false);
+      evt.url = inEvent.text;
+      nmeDispatchEvent(evt);
+   }
+    
    public function onContextLost():Void
    {
       var evt = new Event(Event.CONTEXT3D_LOST);

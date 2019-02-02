@@ -30,6 +30,7 @@ static class AndroidStage *sStage = 0;
 static class AndroidFrame *sFrame = 0;
 static FrameCreationCallback sOnFrame = 0;
 static bool sCloseActivity = false;
+static std::string launchAppLink = "";
 
 static int sgNMEResult = 0;
 
@@ -302,7 +303,14 @@ public:
          HandleEvent(evt);
       }
    }
- 
+   
+   void handleAppLink(const char * c)
+   {
+      Event evt(etAppLink);
+      evt.utf8Text = c;
+      evt.utf8Length = evt.utf8Text ? strlen(evt.utf8Text) : 0;
+      HandleEvent(evt);
+   }
 
    void OnRender()
    {
@@ -577,6 +585,9 @@ public:
             //"Create stage %p, sOnFrame=%p", sStage,sOnFrame);
          if (sOnFrame)
             sOnFrame(this);
+            
+         if (nme::launchAppLink != "")
+            sStage->handleAppLink(nme::launchAppLink.c_str());
       }
       else
       {
@@ -937,6 +948,27 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onActivity(JNIEnv * env, jobject o
    return nme::GetResult();
 }
 
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_setLaunchAppLink(JNIEnv * env, jobject obj, jstring url)
+{
+   AutoHaxe haxe("setLaunchAppLink");
+   
+   std::string string = JStringToStdString(env, url, true);
+   nme::launchAppLink = string;
+   
+   return nme::GetResult();
+}
+
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onAppLink(JNIEnv * env, jobject obj, jstring url)
+{
+   AutoHaxe haxe("onAppLink");
+   
+   if (nme::sStage) {
+      std::string string = JStringToStdString(env, url, true);
+      nme::sStage->handleAppLink(string.c_str());
+   }
+   
+   return nme::GetResult();
+}
 
 
 } // end extern C
