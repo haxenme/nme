@@ -48,7 +48,8 @@ class Window
       autoClear = true;
  
       #if android
-      renderRequest = PrimeLoader.load("nme_stage_request_render", "b");
+      var nme_stage_request_render = PrimeLoader.load("nme_stage_request_render", "v");
+      renderRequest = function() { nme_stage_request_render(); return false;}
       #else
       renderRequest = null;
       #end
@@ -60,12 +61,9 @@ class Window
 
    public function shouldRenderNow() : Bool
    {
-      if (renderRequest!=null)
-      {
-         renderRequest();
-         return false;
-      }
-      return true;
+      if (renderRequest==null)
+         return true;
+      return renderRequest();
    }
 
    public function setBackground(inBackground:Null<Int>) : Void
