@@ -1361,7 +1361,7 @@ DEFINE_PRIM(nme_jni_get_jobject,1);
 
 
 
-value nme_post_ui_callback(value inCallback)
+void nme_post_ui_callback(value inCallback)
 {
    JNIEnv *env = GetEnv();
    JNIInit(env);
@@ -1377,10 +1377,8 @@ value nme_post_ui_callback(value inCallback)
       delete root;
       val_throw(alloc_string("JNI Exception"));
    }
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_post_ui_callback,1);
+DEFINE_PRIME1v(nme_post_ui_callback);
 
 
 extern "C"
