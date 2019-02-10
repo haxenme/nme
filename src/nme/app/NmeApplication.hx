@@ -118,6 +118,10 @@ class NmeApplication implements IAppEventHandler implements IPollClient
    {
    }
 
+   public function onAppLink(inEvent:AppEvent):Void
+   {
+   }
+
    public function onScroll(event:AppEvent):Void
    {
    }

@@ -232,6 +232,10 @@ implements SensorEventListener
 
      for(Extension extension : extensions)
         extension.onCreate(state);
+       
+     Uri link = getIntentAppLink();
+     if(link != null)
+        NME.setLaunchAppLink(link.toString());
    }
 
    ::if ANDROIDVIEW::
@@ -930,6 +934,10 @@ implements SensorEventListener
 
       for(Extension extension : extensions)
         extension.onStart();
+        
+      Uri link = getIntentAppLink();
+      if(link != null)
+        NME.onAppLink(link.toString());
    }
 
    @Override protected void onStop ()
@@ -1409,6 +1417,13 @@ implements SensorEventListener
          
          v.vibrate(pattern, -1);
       }
+   }
+
+   private Uri getIntentAppLink()
+   {
+      Intent intent = getIntent();
+      String action = intent.getAction();
+      return intent.getData();
    }
 }
 

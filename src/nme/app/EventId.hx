@@ -46,4 +46,5 @@ class EventId
    public static inline var RenderContextRestored =  33;
 
    public static inline var Scroll = 34;
+   public static inline var AppLink = 35;
 }

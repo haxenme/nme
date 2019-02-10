@@ -250,6 +250,9 @@ class Window
             case EventId.RenderContextLost:
                appEventHandler.onContextLost();
 
+            case EventId.AppLink:
+                appEventHandler.onAppLink(event);
+             
             case EventId.Scroll:
                appEventHandler.onScroll(event);
          }
