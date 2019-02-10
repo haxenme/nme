@@ -587,7 +587,11 @@ public:
             sOnFrame(this);
             
          if (nme::launchAppLink != "")
-            sStage->handleAppLink(nme::launchAppLink.c_str());
+         {
+            std::string temp = nme::launchAppLink;
+            nme::launchAppLink = "";
+            sStage->handleAppLink(temp.c_str());
+         }
       }
       else
       {
