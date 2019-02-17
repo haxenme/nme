@@ -379,7 +379,7 @@
 			buildConfigurationList = 1EF0A885121AE21C003F2F59 /* Build configuration list for PBXLegacyTarget "Build Haxe" */;
 			buildPhases = (
 			);
-			buildToolPath = haxelib;
+			buildToolPath = ::BUILD_TOOL_PATH::;
 			buildWorkingDirectory = "::PROJECT_DIRECTORY::";
 			dependencies = (
 			);
@@ -480,7 +480,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "echo haxelib run nme xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME; haxelib run nme xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME";
+			shellScript = "echo ::BUILD_TOOL_PATH:: run nme xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME; ::BUILD_TOOL_PATH:: run nme xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME";
 		};
 /* End PBXShellScriptBuildPhase section */
 ::end::

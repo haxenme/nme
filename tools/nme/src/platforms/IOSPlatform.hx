@@ -238,6 +238,8 @@ ${hxcpp_include}';
           blocks.push({value:value});
       }
       context.CUSTOM_BLOCKS = blocks;
+       
+      context.BUILD_TOOL_PATH = getAbsolutePath("haxelib");
 
       var requiredCapabilities = [];
 
@@ -325,6 +327,22 @@ ${hxcpp_include}';
 
       //updateIcon();
       //updateLaunchImage();
+   }
+
+   private function getAbsolutePath(binary:String): String {
+       var process:Process;
+       #if windows
+       process = new Process("which", [binary]);
+       #else
+       process = new Process("which", [binary]);
+       #end
+       var exit:Int = process.exitCode(true);
+       if(exit != 0) {
+           var stderror = process.stderr.readAll().toString();
+           throw "getAbsolutePath error:\n${stderror}";
+       }
+       var stdout = PathHelper.normalizeEOLs(process.stdout.readAll().toString());
+       return stdout.split("\n")[0];
    }
 
    override public function trace()
