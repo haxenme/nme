@@ -331,11 +331,10 @@ ${hxcpp_include}';
 
    private function getAbsolutePath(binary:String): String {
        var process:Process;
-       #if windows
-       process = new Process("which", [binary]);
-       #else
-       process = new Process("which", [binary]);
-       #end
+       if(PlatformHelper.get_hostPlatform() == Platform.WINDOWS)
+          process = new Process("where.exe", [binary]);
+       else
+          process = new Process("which", [binary]);
        var exit:Int = process.exitCode(true);
        if(exit != 0) {
            var stderror = process.stderr.readAll().toString();
