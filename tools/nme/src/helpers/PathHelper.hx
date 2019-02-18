@@ -513,12 +513,5 @@ class PathHelper
          return expand(path);
       }
    }
-
-    public static function normalizeEOLs(string:String):String
-    {
-       var withoutCRLF = string.split('\r\n').join('\r');
-       var withoutCR = withoutCRLF.split('\r\n').join('\r');
-       return withoutCR.split('\r').join('\n');
-    }
     
 }
