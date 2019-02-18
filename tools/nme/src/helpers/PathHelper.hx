@@ -513,5 +513,4 @@ class PathHelper
          return expand(path);
       }
    }
-    
 }
