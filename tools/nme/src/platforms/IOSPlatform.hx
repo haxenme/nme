@@ -330,20 +330,15 @@ ${hxcpp_include}';
    }
 
    private function getAbsolutePath(binary:String): String {
-       var process:Process;
-       
-       if(PlatformHelper.hostPlatform == Platform.WINDOWS)
-          process = new Process("where.exe", [binary]);
-       else
-          process = new Process("which", [binary]);
-       
+       var process:Process = new Process("which", [binary]);
        if(process.exitCode(true) != 0) {
           var stderror = process.stderr.readAll().toString();
           throw "getAbsolutePath error:\n${stderror}";
        }
        
-       var stdout = PathHelper.normalizeEOLs(process.stdout.readAll().toString());
-       return stdout.split("\n")[0];
+       var stdout = process.stdout.readAll().toString();
+       var lines = stdout.split("\n");
+       return lines[0];
    }
 
    override public function trace()
