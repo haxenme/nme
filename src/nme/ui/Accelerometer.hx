@@ -21,8 +21,8 @@ class Accelerometer
         else
         {
             inAcceleration.x = x;
-            inAcceleration.x = y;
-            inAcceleration.x = z;
+            inAcceleration.y = y;
+            inAcceleration.z = z;
             return inAcceleration;
         }
       }

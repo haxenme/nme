@@ -4,7 +4,6 @@ package nme.sensors;
 import nme.errors.ArgumentError;
 import nme.events.AccelerometerEvent;
 import nme.events.EventDispatcher;
-import nme.Loader;
 import haxe.Timer;
 
 private class Data
