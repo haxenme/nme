@@ -78,7 +78,7 @@ class MainView extends GLSurfaceView {
        isPollImminent = false;
        final MainView me = this;
        pollMe = new Runnable() {
-           @Override public void run() { me.onPoll(); }
+           @Override public void run() { me.onPollHX(); }
        };
 
        translucent = inTranslucent;
@@ -285,7 +285,7 @@ class MainView extends GLSurfaceView {
 
 
    // Haxe thread...
-   void onPoll()
+   void onPollHX()
    {
       isPollImminent = false;
       HandleResult( NME.onPoll() );
@@ -349,6 +349,12 @@ class MainView extends GLSurfaceView {
    public void onPause () {
        Log.v("NME","onPause");
        deactivated = true;
+       
+       super.onPause(); //Pause GL Thread
+       
+       if (pendingTimer != null) { //Pause the Haxe Thread
+         pendingTimer.cancel();
+       }
    }
 
    @Override
