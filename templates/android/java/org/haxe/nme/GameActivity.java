@@ -847,7 +847,7 @@ implements SensorEventListener
    @Override public void onDestroy()
    {
       // TODO: Wait for result?
-      Log.d(TAG,"onDestroy");
+      Log.i(TAG,"onDestroy");
       if (mOnDestroyListeners!=null)
          for(Runnable listener : mOnDestroyListeners)
             listener.run();
@@ -942,10 +942,14 @@ implements SensorEventListener
 
    @Override protected void onStop ()
    {
+      Log.i(TAG,"onStop");
       super.onStop ();
 
       for(Extension extension : extensions)
          extension.onStop();
+
+      //https://developer.android.com/reference/android/opengl/GLSurfaceView.html#onPause()
+      mView.onPause();
    }
 
 
