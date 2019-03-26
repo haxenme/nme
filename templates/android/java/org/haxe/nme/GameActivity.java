@@ -1175,6 +1175,11 @@ implements SensorEventListener
    
    public static void popupKeyboard(final  int inMode, final  String inContent, final int inType)
    {
+      if(activity == null) {
+        Log.i("VIEW","popupKeyboard occured after destruction, ignoring...");
+        return;
+      }
+        
       activity.mHandler.post(new Runnable() {
          @Override public void run()
          {
