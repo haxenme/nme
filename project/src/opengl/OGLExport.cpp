@@ -2407,7 +2407,7 @@ value nme_gl_get_tex_parameter(value inTarget,value inPname)
 DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
-
+#ifdef GL_KHR_debug
 struct DebugMessage
 {
    DebugMessage() : callback(0) { }
@@ -2475,10 +2475,11 @@ static void GL_APIENTRY Callback(GLenum source,
    buf += std::string("]");
    gCurrentDebugMessage->onResult(buf.c_str());
 }
-
+#endif
 
 bool nme_gl_debug_message_callback( value inCallback )
 {
+#ifdef GL_KHR_debug
    if(GL_KHR_debug)
    {
       if (gCurrentDebugMessage)
@@ -2493,6 +2494,7 @@ bool nme_gl_debug_message_callback( value inCallback )
 
       return true;
    }
+#endif
    return false;
 }
 DEFINE_PRIME1(nme_gl_debug_message_callback);
@@ -2500,6 +2502,7 @@ DEFINE_PRIME1(nme_gl_debug_message_callback);
 
 value nme_gl_debug_message_insert(value inMsg)
 {
+#ifdef GL_KHR_debug
    DBGFUNC("debugMessageInsert");
    HxString msg = valToHxString(inMsg);
    glDebugMessageInsertKHR( GL_DEBUG_SOURCE_APPLICATION_KHR,
@@ -2508,6 +2511,7 @@ value nme_gl_debug_message_insert(value inMsg)
       GL_DEBUG_SEVERITY_NOTIFICATION_KHR,
       msg.size(),
       msg.c_str() );
+ #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_debug_message_insert,1);
