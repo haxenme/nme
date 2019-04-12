@@ -2408,6 +2408,15 @@ DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
 #ifdef GL_KHR_debug
+#ifndef GL_DEBUG_SOURCE_APPLICATION_KHR
+#  define GL_DEBUG_SOURCE_APPLICATION_KHR 0x824A
+#endif
+#ifndef GL_DEBUG_TYPE_OTHER_KHR
+#  define GL_DEBUG_TYPE_OTHER_KHR 0x8251
+#endif
+#ifndef GL_DEBUG_SEVERITY_NOTIFICATION_KHR
+#  define GL_DEBUG_SEVERITY_NOTIFICATION_KHR 0x826B
+#endif
 struct DebugMessage
 {
    DebugMessage() : callback(0) { }
@@ -2425,7 +2434,7 @@ struct DebugMessage
 DebugMessage *gCurrentDebugMessage = 0;
 
 
-static void GL_APIENTRY Callback(GLenum source,
+static void OnErrorCallback(GLenum source,
                                  GLenum type,
                                  GLuint id,
                                  GLenum severity,
@@ -2490,7 +2499,7 @@ bool nme_gl_debug_message_callback( value inCallback )
 
       glEnable(GL_DEBUG_OUTPUT_KHR);
       glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR);
-      glDebugMessageCallbackKHR( Callback, 0 );
+      glDebugMessageCallbackKHR(OnErrorCallback,0);
 
       return true;
    }
