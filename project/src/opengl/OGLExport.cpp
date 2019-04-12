@@ -2407,16 +2407,7 @@ value nme_gl_get_tex_parameter(value inTarget,value inPname)
 DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
-#ifdef GL_KHR_debug
-#ifndef GL_DEBUG_SOURCE_APPLICATION_KHR
-#  define GL_DEBUG_SOURCE_APPLICATION_KHR 0x824A
-#endif
-#ifndef GL_DEBUG_TYPE_OTHER_KHR
-#  define GL_DEBUG_TYPE_OTHER_KHR 0x8251
-#endif
-#ifndef GL_DEBUG_SEVERITY_NOTIFICATION_KHR
-#  define GL_DEBUG_SEVERITY_NOTIFICATION_KHR 0x826B
-#endif
+#if defined(NME_GLES) && defined(GL_KHR_debug) && GL_KHR_debug
 struct DebugMessage
 {
    DebugMessage() : callback(0) { }
@@ -2486,9 +2477,9 @@ static void OnErrorCallback(GLenum source,
 }
 #endif
 
-bool nme_gl_debug_message_callback( value inCallback )
+bool nme_gl_debug_message_callback(value inCallback)
 {
-#ifdef GL_KHR_debug
+#if defined(NME_GLES) && defined(GL_KHR_debug) && GL_KHR_debug
    if(GL_KHR_debug)
    {
       if (gCurrentDebugMessage)
@@ -2511,7 +2502,7 @@ DEFINE_PRIME1(nme_gl_debug_message_callback);
 
 value nme_gl_debug_message_insert(value inMsg)
 {
-#ifdef GL_KHR_debug
+#if defined(NME_GLES) && defined(GL_KHR_debug) && GL_KHR_debug
    DBGFUNC("debugMessageInsert");
    HxString msg = valToHxString(inMsg);
    glDebugMessageInsertKHR( GL_DEBUG_SOURCE_APPLICATION_KHR,
