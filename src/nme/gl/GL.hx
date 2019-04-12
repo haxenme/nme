@@ -1605,6 +1605,15 @@ class GL
    }
 
 
+   public static inline function debugMessageCallback(onResult:String->Void):Bool
+   {
+      return nme_gl_debug_message_callback(onResult);
+   }
+
+   public static inline function debugMessageInsert(msg:String):Void
+   {
+      nme_gl_debug_message_insert(msg);
+   }
 
    // Getters & Setters
    private static inline function get_drawingBufferHeight() { return Lib.current.stage.stageHeight; }
@@ -1777,6 +1786,10 @@ class GL
    private static var nme_gl_read_buffer = PrimeLoader.load("nme_gl_read_buffer", "iv");
    private static var nme_gl_tex_image_3d = PrimeLoader.load("nme_gl_tex_image_3d", "iiiiiiiiioiv");
    private static var nme_gl_compressed_tex_image_3d = PrimeLoader.load("nme_gl_compressed_tex_image_3d", "iiiiiiiioiv");
+
+   private static var nme_gl_debug_message_callback = PrimeLoader.load("nme_gl_debug_message_callback", "ob");
+   private static var nme_gl_debug_message_insert = load("nme_gl_debug_message_insert", 1);
+
 
    #else // not (neko||cpp)
 

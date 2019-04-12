@@ -2407,6 +2407,113 @@ value nme_gl_get_tex_parameter(value inTarget,value inPname)
 DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
+
+struct DebugMessage
+{
+   DebugMessage() : callback(0) { }
+   ~DebugMessage(){ delete callback; gCurrentFileDialog = 0; };
+   void onResult( const char* result )
+   {
+      if (result==NULL || result[0]=='\0')
+         val_call1(callback->get(), alloc_null( ) );
+      else
+         val_call1(callback->get(), alloc_string( result ) );
+      delete this;
+   };
+   AutoGCRoot *callback;
+};
+DebugMessage *gCurrentDebugMessage = 0;
+
+
+static void GL_APIENTRY Callback(GLenum source,
+                                 GLenum type,
+                                 GLuint id,
+                                 GLenum severity,
+                                 GLsizei length,
+                                 const GLchar *message,
+                                 const void *userParam)
+{
+   std::string _source;
+   std::string _type;
+   std::string _severity;
+
+   switch(source) {
+      case GL_DEBUG_SOURCE_API_KHR:             _source = "API"; break;
+      case GL_DEBUG_SOURCE_WINDOW_SYSTEM_KHR:   _source = "WINDOW SYSTEM"; break;
+      case GL_DEBUG_SOURCE_SHADER_COMPILER_KHR: _source = "SHADER COMPILER"; break;
+      case GL_DEBUG_SOURCE_THIRD_PARTY_KHR:     _source = "THIRD PARTY"; break;
+      case GL_DEBUG_SOURCE_APPLICATION_KHR:     _source = "APPLICATION"; break;
+      case GL_DEBUG_SOURCE_OTHER_KHR:           _source = "UNKNOWN"; break;
+      default: _source = "UNKNOWN";
+   }
+
+   switch(type) {
+      case GL_DEBUG_TYPE_ERROR_KHR:               _type = "ERROR" ;break;
+      case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_KHR: _type = "DEPRECATED BEHAVIOR" ; break;
+      case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_KHR:  _type = "UNDEFINED BEHAVIOR" ; break;
+      case GL_DEBUG_TYPE_PORTABILITY_KHR:         _type = "PORTABILITY" ; break;
+      case GL_DEBUG_TYPE_PERFORMANCE_KHR:         _type = "PERFORMANCE" ; break;
+      case GL_DEBUG_TYPE_OTHER_KHR:               _type = "OTHER" ; break;
+      case GL_DEBUG_TYPE_MARKER_KHR:              _type = "MARKER"; break;
+      default: _type = "UNKNOWN";
+   }
+
+   switch(severity) {
+      case GL_DEBUG_SEVERITY_HIGH_KHR:         _severity = "HIGH" ; break;
+      case GL_DEBUG_SEVERITY_MEDIUM_KHR:       _severity = "MEDIUM" ; break;
+      case GL_DEBUG_SEVERITY_LOW_KHR:          _severity = "LOW" ; break;
+      case GL_DEBUG_SEVERITY_NOTIFICATION_KHR: _severity = "NOTIFICATION"; break;
+      default: _severity = "UNKNOWN";
+   }
+
+   std::string buf = std::string(message);
+   buf += std::string(" [in:")      + std::string(sDebugName);
+   buf += std::string("][id:")      + std::to_string(id);
+   buf += std::string(" type:")     + _type;
+   buf += std::string(" severity:") + _severity;
+   buf += std::string(" source:")   + _source;
+   buf += std::string("]");
+   gCurrentDebugMessage->onResult(buf.c_str());
+}
+
+
+bool nme_gl_debug_message_callback( value inCallback )
+{
+   if(GL_KHR_debug)
+   {
+      if (gCurrentDebugMessage)
+         return false;
+
+      gCurrentDebugMessage = new DebugMessage();
+      gCurrentDebugMessage->callback = new AutoGCRoot(inCallback);
+
+      glEnable(GL_DEBUG_OUTPUT_KHR);
+      glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR);
+      glDebugMessageCallbackKHR( Callback, 0 );
+
+      return true;
+   }
+   return false;
+}
+DEFINE_PRIME1(nme_gl_debug_message_callback);
+
+
+value nme_gl_debug_message_insert(value inMsg)
+{
+   DBGFUNC("debugMessageInsert");
+   HxString msg = valToHxString(inMsg);
+   glDebugMessageInsertKHR( GL_DEBUG_SOURCE_APPLICATION_KHR,
+      GL_DEBUG_TYPE_OTHER_KHR,
+      0,
+      GL_DEBUG_SEVERITY_NOTIFICATION_KHR,
+      msg.size(),
+      msg.c_str() );
+   return alloc_null();
+}
+DEFINE_PRIM(nme_gl_debug_message_insert,1);
+
+
+
 // ---  Query -------------------------------------------------
 
 void nme_gl_begin_query(int target, int qid)
