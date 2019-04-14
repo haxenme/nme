@@ -2407,7 +2407,7 @@ value nme_gl_get_tex_parameter(value inTarget,value inPname)
 DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
-#if defined(GL_KHR_debug) && GL_KHR_debug && (!defined(NME_GLES)|| defined(GL_VERSION_4_3))
+#if defined(GL_KHR_debug) && GL_KHR_debug && (!defined(NME_GLES)|| defined(GL_VERSION_4_3)) &&  !defined(NME_MACOS)
 #define NME_GL_DEBUG
 #endif
 
