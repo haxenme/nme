@@ -2493,6 +2493,16 @@ bool nme_gl_debug_message_callback(value inCallback)
    if (gCurrentDebugMessage)
       return false;
 
+   #if !defined(NME_GLES) || (defined(NME_GL_LEVEL) && NME_GL_LEVEL>310)
+   GLint flags;
+   glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+   if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+   {
+      ELOG("Warning, did not set glDebugMessageCallback because not in a gl debug context");
+      return false;
+   }
+   #endif
+
    gCurrentDebugMessage = new DebugMessage();
    gCurrentDebugMessage->callback = new AutoGCRoot(inCallback);
 
@@ -2513,10 +2523,11 @@ value nme_gl_debug_message_insert(value inMsg)
 #if defined(GL_KHR_debug) && GL_KHR_debug
    DBGFUNC("debugMessageInsert");
    HxString msg = valToHxString(inMsg);
-   glDebugMessageInsertKHR( GL_DEBUG_SOURCE_APPLICATION_KHR,
-      GL_DEBUG_TYPE_OTHER_KHR,
+   KHR_FUNCTION_SUFFIX(glDebugMessageInsert)( 
+      KHR_SUFFIX(GL_DEBUG_SOURCE_APPLICATION),
+      KHR_SUFFIX(GL_DEBUG_TYPE_OTHER),
       0,
-      GL_DEBUG_SEVERITY_NOTIFICATION_KHR,
+      KHR_SUFFIX(GL_DEBUG_SEVERITY_NOTIFICATION),
       msg.size(),
       msg.c_str() );
  #endif

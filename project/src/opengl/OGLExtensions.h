@@ -180,8 +180,10 @@ OGL_EXT(glDrawArraysInstanced,void,(GLenum mode, GLint first, GLsizei count, GLs
 OGL_EXT(glDrawElementsInstanced,void,(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei primcount));
 OGL_EXT(glReadBuffer,void,(GLenum src));
 
+#if defined(GL_KHR_debug) && GL_KHR_debug
 OGL_EXT(glDebugMessageCallback,void,(GLDEBUGPROC callback, const GLvoid *pointer));
 OGL_EXT(glDebugMessageInsert,void,(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *buf));
+#endif
 
 
 #ifdef DYNAMIC_OGL
