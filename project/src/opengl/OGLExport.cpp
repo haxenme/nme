@@ -2407,7 +2407,11 @@ value nme_gl_get_tex_parameter(value inTarget,value inPname)
 DEFINE_PRIM(nme_gl_get_tex_parameter,2);
 
 
-#if defined(GL_KHR_debug) && GL_KHR_debug
+#if defined(GL_KHR_debug) && GL_KHR_debug && (!defined(NME_GLES)|| defined(GL_VERSION_4_3))
+#define NME_GL_DEBUG
+#endif
+
+#ifdef NME_GL_DEBUG
 
 #ifdef NME_GLES
 #  define KHR_SUFFIX(NAME) NAME##_KHR
@@ -2489,7 +2493,7 @@ static void OnErrorCallback(GLenum source,
 
 bool nme_gl_debug_message_callback(value inCallback)
 {
-#if defined(GL_KHR_debug) && GL_KHR_debug
+#ifdef NME_GL_DEBUG
    if (gCurrentDebugMessage)
       return false;
 
@@ -2520,7 +2524,7 @@ DEFINE_PRIME1(nme_gl_debug_message_callback);
 
 value nme_gl_debug_message_insert(value inMsg)
 {
-#if defined(GL_KHR_debug) && GL_KHR_debug
+#ifdef NME_GL_DEBUG
    DBGFUNC("debugMessageInsert");
    HxString msg = valToHxString(inMsg);
    KHR_FUNCTION_SUFFIX(glDebugMessageInsert)( 
