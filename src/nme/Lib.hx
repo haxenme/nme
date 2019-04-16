@@ -42,6 +42,7 @@ class Lib
    public static var DEPTH_BUFFER    = Application.DEPTH_BUFFER;
    public static var STENCIL_BUFFER  = Application.STENCIL_BUFFER;
    public static var SINGLE_INSTANCE = Application.SINGLE_INSTANCE;
+   public static var GL_DEBUG        = Application.GL_DEBUG;
 
    public static var initHeight(get, never):Int;
    public static var initWidth(get, never):Int;

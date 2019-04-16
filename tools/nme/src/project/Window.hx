@@ -21,6 +21,7 @@ class Window
    public var ui:String;
    public var singleInstance:Bool;
    public var scaleMode:ScaleMode;
+   public var glDebug:Bool;
 
    public function new()
    {
@@ -43,6 +44,7 @@ class Window
       alphaBuffer = false;
       ui = "";
       singleInstance = true;
+      glDebug = false;
       scaleMode = ScaleNative;
    }
 }

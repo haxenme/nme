@@ -104,7 +104,7 @@ class HxParser
             project.window.background = Std.parseInt(value);
             project.localDefines.set("WIN_" + key.toUpperCase(), Std.string(project.window.background));
 
-        case "width", "height", "fps", "vsync", "hardware", "depthBuffer", "stencilBuffer", "alphaBuffer", "singleInstance":
+        case "width", "height", "fps", "vsync", "hardware", "depthBuffer", "stencilBuffer", "alphaBuffer", "singleInstance", "glDebug":
             project.localDefines.set("WIN_" + key.toUpperCase(), value);
             Reflect.setField(project.window, key, value);
 

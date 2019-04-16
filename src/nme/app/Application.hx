@@ -52,6 +52,7 @@ class Application
    public inline static var STENCIL_BUFFER  = 0x0400;
    public inline static var SINGLE_INSTANCE = 0x0800;
    public inline static var SCALE_BASE      = 0x1000;
+   public inline static var GL_DEBUG        = 0x10000; //1<<16
 
    public static var nmeFrameHandle:Dynamic = null;
    public static var nmeWindow:Window = null;

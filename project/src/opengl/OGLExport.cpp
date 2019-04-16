@@ -2513,7 +2513,7 @@ bool nme_gl_debug_message_callback(value inCallback)
    glEnable(KHR_SUFFIX(GL_DEBUG_OUTPUT));
    glEnable(KHR_SUFFIX(GL_DEBUG_OUTPUT_SYNCHRONOUS));
    KHR_FUNCTION_SUFFIX(glDebugMessageCallback)(OnErrorCallback,0);
-
+   glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
    return true;
 #else
    return false;

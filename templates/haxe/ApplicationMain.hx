@@ -188,7 +188,8 @@ class ApplicationMain
          (::WIN_ANTIALIASING:: == 4 ? nme.app.Application.HW_AA_HIRES : 0) |
          (::WIN_ANTIALIASING:: == 2 ? nme.app.Application.HW_AA : 0)|
          (::WIN_SINGLE_INSTANCE:: ? nme.app.Application.SINGLE_INSTANCE : 0) |
-         (::WIN_SCALE_FLAGS:: * nme.app.Application.SCALE_BASE)
+         (::WIN_SCALE_FLAGS:: * nme.app.Application.SCALE_BASE) |
+         (::WIN_GL_DEBUG:: ? nme.app.Application.GL_DEBUG : 0)
          ;
 
 
