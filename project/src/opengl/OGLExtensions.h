@@ -182,7 +182,7 @@ OGL_EXT(glReadBuffer,void,(GLenum src));
 
 OGL_EXT(glDebugMessageCallback,void,(GLDEBUGPROC callback, const GLvoid *pointer));
 OGL_EXT(glDebugMessageInsert,void,(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *buf));
-
+OGL_EXT(glDebugMessageControl,void,(GLenum source,GLenum type,GLenum severity,GLsizei count,const GLuint *ids,GLboolean enabled));
 
 #ifdef DYNAMIC_OGL
 
