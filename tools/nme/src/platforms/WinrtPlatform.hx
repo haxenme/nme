@@ -150,6 +150,32 @@ class WinrtPlatform extends WindowsPlatform
             var resultFileName = resultFilePath +"/layout.resfiles";
             Log.info("make pri");
 
+            var binDir:String = kitsRoot10 + "\\bin";
+            if (sys.FileSystem.exists(binDir)) 
+            {
+               //trace("directory found: " + binDir);
+               var maxSDK:Int = 0;
+               for (file in sys.FileSystem.readDirectory(binDir)) {
+                  if(StringTools.startsWith(file,"10.0"))
+                  {
+                     var file2 = file.split("10.0.")[1];
+                     file2 = file2.split(".0")[0];
+                     //trace(file2);
+                     var fileSDK:Int  = Std.parseInt(file2);
+                     maxSDK = (maxSDK>fileSDK?maxSDK:fileSDK);
+                  }
+               }
+
+               if(maxSDK>0)
+               {
+                  //trace("Found max SDK 10.0."+maxSDK+".0");
+                  binDir += "\\10.0."+maxSDK+".0";
+               }
+            } else {
+               trace('"$binDir" does not exists');
+               return;
+            }
+
             //prepare file to make pri
             try
             {
@@ -178,7 +204,7 @@ class WinrtPlatform extends WindowsPlatform
             }
 
             var makepriParams = ["new", "/pr", resultFilePath, "/cf", resultFilePath + "/priconfig.xml", "/mn", applicationDirectory + "/"+'AppxManifest.xml', "/of", applicationDirectory + "/"+"resources.pri", "/o"];
-            var process = new sys.io.Process(kitsRoot10+'bin\\x86\\MakePri.exe', makepriParams);
+            var process = new sys.io.Process(binDir+'\\x86\\MakePri.exe', makepriParams);
 
             //needs to wait make pri
             var retry:Int = 10;
@@ -195,8 +221,8 @@ class WinrtPlatform extends WindowsPlatform
 
             Log.info("make "+project.app.file+".Appx");
             var makeappParams = ["pack", "/d", applicationDirectory, "/p", appxDir+project.app.file+".Appx" ];
-            var process2 = new sys.io.Process(kitsRoot10+'bin\\x86\\MakeAppx.exe', makeappParams);
-            Log.info(kitsRoot10+'bin\\x86\\MakeAppx.exe');
+            var process2 = new sys.io.Process(binDir+'\\x86\\MakeAppx.exe', makeappParams);
+            Log.info(binDir+'\\x86\\MakeAppx.exe');
             Log.info(makeappParams.toString());
             process.close();
             process2.close();
@@ -263,8 +289,8 @@ class WinrtPlatform extends WindowsPlatform
                 Log.info("signing "+project.app.file+".Appx with " + pfxPath);
 
                 var signParams = ["sign", "/fd", "SHA256", "/a", "/f", pfxPath, "/p", certificatePwd, appxDir+project.app.file+".Appx"];
-                Log.info(kitsRoot10+"bin\\x64\\SignTool.exe "+signParams);
-                var process4 = new sys.io.Process(kitsRoot10+"bin\\x64\\SignTool.exe", signParams);
+                Log.info(binDir+"\\x64\\SignTool.exe "+signParams);
+                var process4 = new sys.io.Process(binDir+"\\x64\\SignTool.exe", signParams);
                 if (process4.exitCode() != 0) {
                     var message = process4.stderr.readAll().toString();
                     Log.error("Error signing appx. " + message);
