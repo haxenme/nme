@@ -55,7 +55,9 @@ class Surface
    public function new(inWidth:Int, inHeight:Int, inPixelFormat:Int, ?inFillRgb:Int)
    {
       if (inWidth>0 && inHeight>0 && inPixelFormat!=PixelFormat.pfNone)
+      {
          nmeHandle = nme_bitmap_data_create(inWidth, inHeight, inPixelFormat, inFillRgb, (inFillRgb!=null));
+      }
    }
 
 

@@ -40,6 +40,13 @@ import haxe.CallStack;
 
 #if cpp
 import cpp.vm.Gc;
+#if haxe4
+import sys.thread.Thread;
+import sys.thread.Lock;
+#else
+import cpp.vm.Thread;
+import cpp.vm.Lock;
+#end
 #end
 
 @:nativeProperty
@@ -135,8 +142,8 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    #if cpp
    var nmePreemptiveGcFreq:Int;
    var nmePreemptiveGcSince:Int;
-   var nmeCollectionLock:cpp.vm.Lock;
-   var nmeCollectionAgency:cpp.vm.Thread;
+   var nmeCollectionLock:Lock;
+   var nmeCollectionAgency:Thread;
    var nmeFrameAlloc:Array<Int>;
    var nmeLastCurrentMemory:Int;
    var nmeLastPreempt:Bool;
@@ -1004,8 +1011,8 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmePreemptiveGcFreq = inFrames;
       if (nmeCollectionLock==null && inFrames!=0)
       {
-         nmeCollectionLock = new cpp.vm.Lock();
-         nmeCollectionAgency = cpp.vm.Thread.create( function() {
+         nmeCollectionLock = new Lock();
+         nmeCollectionAgency = Thread.create( function() {
            while(true)
            {
               nmeCollectionLock.wait();
