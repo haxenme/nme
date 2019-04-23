@@ -7,7 +7,7 @@ import nme.bare.Surface;
 import nme.app.Window;
 import Sys;
 
-#if haxe4
+#if (sys && haxe4)
 import sys.thread.Mutex;
 #elseif cpp
 import cpp.vm.Mutex;

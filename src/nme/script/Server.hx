@@ -7,8 +7,13 @@ import nme.events.Event;
 import sys.net.Host;
 import sys.net.Socket;
 import sys.FileSystem;
+#if haxe4
+import sys.thread.Thread;
+import sys.thread.Deque;
+#else
 import cpp.vm.Thread;
 import cpp.vm.Deque;
+#end
 import Sys;
 
 using StringTools;

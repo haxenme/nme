@@ -21,6 +21,14 @@ import cpp.zip.Flush;
 using cpp.NativeArray;
 #end
 
+#if jsprime
+#if haxe4
+   typedef JsUint8Array = js.lib.Uint8Array;
+#else
+   typedef JsUint8Array = js.html.Uint8Array;
+#end
+#end
+
 typedef ByteArrayData = ByteArray;
 
 @:cppFileCode('
@@ -117,7 +125,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (ptr>0)
       {
          var offset = ByteArray.nme_buffer_offset(ptr);
-         b = new js.html.Uint8Array(untyped Module.HEAP8.buffer, offset,alloced);
+         b = new JsUint8Array(untyped Module.HEAP8.buffer, offset,alloced);
       }
    }
 
@@ -129,7 +137,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (length>0)
       {
          var offset = nme_buffer_offset(ptr);
-         var heap:js.html.Uint8Array = untyped Module.HEAP8;
+         var heap:JsUint8Array = untyped Module.HEAP8;
          if (b.length<=length)
             heap.set(b,offset);
          else
@@ -155,7 +163,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          // As per js/_std/haxe/io/Bytes.hx
          alloced = length<16 ? 16 : length;
          var data = new BytesData(alloced);
-         b = new js.html.Uint8Array(data);
+         b = new JsUint8Array(data);
          untyped {
             b.bufferValue = data; // some impl does not return the same instance in .buffer
             data.hxBytes = this;
@@ -165,7 +173,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          if (length>0 && (f&NativeResource.WRITE_ONLY) != 0)
          {
             var offset = nme_buffer_offset(ptr);
-            var heap:js.html.Uint8Array = untyped Module.HEAP8;
+            var heap:JsUint8Array = untyped Module.HEAP8;
             b.set(heap.subarray(offset,offset+length));
          }
          ptr = null;
@@ -315,8 +323,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
                else // fallthrough
             #end
             {
-            var new_b = new js.html.Uint8Array(alloced);
-            var dest = new js.html.Uint8Array(new_b);
+            var new_b = new JsUint8Array(alloced);
+            var dest = new JsUint8Array(new_b);
             var copy = length<inSize ? length : inSize;
             for(i in 0...copy)
                dest[i] = b[i];

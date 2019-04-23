@@ -1,12 +1,20 @@
 package nme.utils;
 
+#if jsprime
+ #if haxe4
+ typedef JsFloat32Array = js.lib.Float32Array;
+ #else
+ typedef JsFloat32Array = js.html.Float32Array;
+ #end
+#end
+
 @:nativeProperty
 class Float32Buffer extends ByteArray implements ArrayAccess<Float> 
 {
    public var count(default,null):Int;
 
    #if jsprime
-   var f32View : js.html.Float32Array;
+   var f32View : JsFloat32Array;
    var bufferSize:Int;
    #end
 
@@ -26,11 +34,11 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
       if (ptr>0)
       {
          var offset = ByteArray.nme_buffer_offset(ptr);
-         f32View = new js.html.Float32Array(untyped Module.HEAP8.buffer, offset,bufferSize);
+         f32View = new JsFloat32Array(untyped Module.HEAP8.buffer, offset,bufferSize);
       }
       else if (b!=null)
       {
-         f32View = new js.html.Float32Array(b.buffer,0,bufferSize);
+         f32View = new JsFloat32Array(b.buffer,0,bufferSize);
       }
       else
       {
