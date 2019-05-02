@@ -1852,6 +1852,9 @@ class CommandLineTools
       }
 
       project.setCommand(command);
+
+      if(command == 'quickrun')
+         project.skipAssets = true;
    }
 }
 

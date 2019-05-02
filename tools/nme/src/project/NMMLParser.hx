@@ -872,7 +872,8 @@ class NMMLParser
                   parseWindowElement(element);
 
                case "assets":
-                  parseAssetsElement(element, extensionPath);
+                  if(!project.skipAssets)
+                     parseAssetsElement(element, extensionPath);
 
                case "watchos":
                   parseWatchOSElement(element, extensionPath);

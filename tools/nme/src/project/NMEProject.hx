@@ -169,6 +169,7 @@ class NMEProject
 
    // Flags
    public var embedAssets:Bool;
+   public var skipAssets:Bool;
    public var openflCompat:Bool;
    public var debug:Bool;
    public var megaTrace:Bool;
@@ -190,6 +191,7 @@ class NMEProject
    {
       baseTemplateContext = {};
       embedAssets = false;
+      skipAssets = false;
       openflCompat = true;
       iosConfig = new IOSConfig();
       androidConfig = new AndroidConfig();
