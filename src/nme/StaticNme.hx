@@ -15,7 +15,9 @@ package nme;
 {
    static function __init__()
    {
-     untyped __cpp__("nme_register_prims();");
+      #if (cpp && !cppia)
+      untyped __cpp__("nme_register_prims();");
+      #end
    }
 }
 

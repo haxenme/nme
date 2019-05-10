@@ -56,7 +56,9 @@ class Surface
    {
       if (inWidth>0 && inHeight>0 && inPixelFormat!=PixelFormat.pfNone)
       {
-         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, inPixelFormat, inFillRgb, (inFillRgb!=null));
+         var rgb:Int = inFillRgb==null ? 0 : inFillRgb;
+
+         nmeHandle = nme_bitmap_data_create(inWidth, inHeight, inPixelFormat, rgb, (inFillRgb!=null));
       }
    }
 

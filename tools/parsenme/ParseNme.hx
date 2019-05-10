@@ -4,7 +4,11 @@ class ParseNme
    {
       try {
          var module:Dynamic = untyped window.Module;
+         #if haxe4
+         var data:js.lib.ArrayBuffer = module.nmeApp;
+         #else
          var data:js.html.ArrayBuffer = module.nmeApp;
+         #end
          var bytes = haxe.io.Bytes.ofData(data);
    
          var magic = bytes.getString(0,4);
