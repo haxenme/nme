@@ -41,8 +41,16 @@ class AndroidPlatform extends Platform
       if (isSim)
          ArrayHelper.addUnique(archs, Architecture.X86);
       // Default to V7 now...
-      if (archs.length<1)
-         archs.push(Architecture.ARMV7);
+      if (archs.length<1) {
+         if(project.certificate == null) {
+            archs.push(Architecture.ARMV7);  
+         }
+         else {
+            archs.push(Architecture.ARMV7);
+            archs.push(Architecture.ARM64);
+            archs.push(Architecture.X86);
+         }
+      }
       Log.verbose("Valid archs :" + archs );
 
       if (!isSim)
