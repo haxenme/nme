@@ -541,6 +541,9 @@ class NMMLParser
 
                case "gameActivityBase":
                   project.androidConfig.gameActivityBase = value;
+               
+               case "abi":
+                  project.androidConfig.ABIs.push(value);
 
                default:
                   Log.error("Unknown android attribute " + childElement.name);

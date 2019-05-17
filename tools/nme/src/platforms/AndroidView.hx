@@ -1,5 +1,6 @@
 package platforms;
 
+import platforms.AndroidPlatform.ABI;
 import haxe.io.Path;
 import haxe.Template;
 import sys.io.File;
@@ -40,17 +41,11 @@ class AndroidView extends AndroidPlatform
 
       var dbg = project.debug ? "-debug" : "";
 
-      if (buildV5)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + ".so",
-                sdk + "/libs/armeabi/libApplicationMain.so");
-
-      if (buildV7)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-v7.so",
-                sdk + "/libs/armeabi-v7a/libApplicationMain.so" );
-
-      if (buildX86)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-x86.so",
-                sdk + "/libs/x86/libApplicationMain.so" );
+      Lambda.iter(includedABIs(), function(abi:ABI) {
+         var source = haxeDir + "/cpp/libApplicationMain" + dbg + '${abi.libArchSuffix}.so';
+         var destination = sdk + '/libs/${abi.name}/libApplicationMain.so';
+         FileHelper.copyIfNewer(source, destination);
+      });
    }
 
 
