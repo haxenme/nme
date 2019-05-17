@@ -25,6 +25,7 @@ class AndroidConfig
    public var gameActivityBase:String;
    public var gameActivityViewBase:String;
    public var extensions:Map<String,Bool>;
+   public var ABIs:Array<String> = [];
 
    public function new()
    {
