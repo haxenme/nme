@@ -57,3 +57,23 @@ dependencies {
         api project(':::name::')::end::
     }
 }
+
+/* Assigns a different version code for each output APK
+    other than the universal APK. */
+
+ext.abiCodes = [::ABI_CODES::]
+
+import com.android.build.OutputFile
+
+android.applicationVariants.all { variant ->
+    
+    variant.outputs.each { output ->
+        
+        def baseAbiVersionCode = project.ext.abiCodes.get(output.getFilter(OutputFile.ABI))
+        
+        if (baseAbiVersionCode != null) {
+            
+            output.versionCodeOverride = baseAbiVersionCode * 10000 + variant.versionCode
+        }
+    }
+}

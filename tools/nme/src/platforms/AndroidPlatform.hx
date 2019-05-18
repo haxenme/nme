@@ -7,7 +7,8 @@ typedef ABI = {
    name: String,
    architecture: Architecture,
    args: Array<String>,
-   libArchSuffix: String
+   libArchSuffix: String,
+   versionCodeScaler: Int
 }
 
 class AndroidPlatform extends Platform
@@ -23,25 +24,29 @@ class AndroidPlatform extends Platform
             name: "armeabi",
             architecture: Architecture.ARMV5,
             args: [],
-            libArchSuffix: "" 
+            libArchSuffix: "",
+            versionCodeScaler: 1
          },
          {
             name: "armeabi-v7a",
             architecture: Architecture.ARMV7,
             args: ["-D", "HXCPP_ARMV7"],
-            libArchSuffix: "-v7"
+            libArchSuffix: "-v7",
+            versionCodeScaler: 2
          },
          {
             name: "arm64-v8a",
             architecture: Architecture.ARM64,
             args: ["-D", "HXCPP_ARM64"],
-            libArchSuffix: "-64"
+            libArchSuffix: "-64",
+            versionCodeScaler: 3
          },
          {
             name: "x86",
             architecture: Architecture.X86,
             args: ["-D", "HXCPP_X86"],
-            libArchSuffix: "-x86"
+            libArchSuffix: "-x86",
+            versionCodeScaler: 4
          }
       ];
 
@@ -219,7 +224,8 @@ class AndroidPlatform extends Platform
       else
          setAntLibraries();
       
-      context.ABIS = Lambda.map(includedABIs(), function(abi:ABI) return '"${abi.name}"').join(',');
+      context.ABIS = Lambda.map(includedABIs(), function(abi:ABI) return '"${abi.name}"').join(', ');
+      context.ABI_CODES = Lambda.map(includedABIs(), function(abi:ABI) return '\'${abi.name}\':${abi.versionCodeScaler}').join(', ');
    }
 
    private function setAntLibraries() {
