@@ -79,7 +79,7 @@ class AndroidPlatform extends Platform
       Log.verbose("Valid archs: " + project.architectures );
       
       var libDir = getOutputLibDir();
-      var excluded:List<ABI> = Lambda.filter(abis, function(abi:ABI) return project.architectures.indexOf(abi.architecture) == -1);
+      var excluded:Array<ABI> = Lambda.filter(abis, function(abi:ABI) return project.architectures.indexOf(abi.architecture) == -1);
       Lambda.iter(excluded, function(abi:ABI) {
          PathHelper.removeDirectory(libDir + '/${abi.name}');
       });
@@ -110,7 +110,7 @@ class AndroidPlatform extends Platform
       }
    }
 
-   function includedABIs():List<ABI> {
+   function includedABIs():Array<ABI> {
       return Lambda.map(project.architectures, function(architecture:Architecture) {
          return Lambda.find(abis, function(abi:ABI) return abi.architecture == architecture);
       });
