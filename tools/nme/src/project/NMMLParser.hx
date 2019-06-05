@@ -1,5 +1,7 @@
 package;
 
+import Lambda;
+import haxe.xml.Fast;
 import haxe.io.Path;
 // Can't really use haxe_ver becaise it has been at 4 for over a year
 #if !force_xml_access  // (haxe_ver < 4)
@@ -587,7 +589,56 @@ class NMMLParser
          project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
    }
 
-   private function parseXML(xml:Access, section:String, extensionPath:String, inWarnUnknown):Void 
+   private function parseXML(xml:Access, section:String, extensionPath:String, inWarnUnknown):Void
+   {
+      parseRelationally(xml, section, extensionPath);
+      parseSequentially(xml, section, extensionPath, inWarnUnknown);
+   }
+
+   function parseRelationally(xml:Access, section:String, extensionPath:String):Void
+   {
+      var elements:Array<Access> = [for(element in xml.elements) element];
+      
+      var templates:List<Access> = Lambda.filter(elements, function(element) {
+         return isTemplate(element, section);
+      });
+      
+      Lambda.iter(templates, function(element) {
+         return parseTemplate(element,extensionPath);
+      });
+   }
+
+   private function isTemplate(element:Access, section:String):Bool {
+      if(isValidElement(element, section)) {
+         if(element.name == "template" 
+         || element.name == "templatePath") {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   function parseTemplate(element:Access, extensionPath:String):Void {
+      var path = "";
+      if (element.has.name)
+         path = combine(extensionPath, substitute(element.att.name));
+      else if (element.has.path)
+         path = combine(extensionPath, substitute(element.att.path));
+      else
+         Log.error("Template should have either a 'name' or a 'path'");
+
+      if (element.has.rename)
+      {
+         project.templateCopies.push( new TemplateCopy(path, substitute(element.att.rename) ) );
+      }
+      else
+      {
+         project.templatePaths.remove(path);
+         project.templatePaths.push(path);
+      }
+   }
+   
+   private function parseSequentially(xml:Access, section:String, extensionPath:String, inWarnUnknown):Void 
    {
       for(element in xml.elements) 
       {
@@ -904,25 +955,6 @@ class NMMLParser
 
                   //if (wantSslCertificate())
                      //parseSsl(element);
-               case "template", "templatePath":
-
-                  var path = "";
-                  if (element.has.name)
-                     path = combine(extensionPath, substitute(element.att.name));
-                  else if (element.has.path)
-                     path = combine(extensionPath, substitute(element.att.path));
-                  else
-                     Log.error("Template should have either a 'name' or a 'path'");
-
-                  if (element.has.rename)
-                  {
-                     project.templateCopies.push( new TemplateCopy(path, substitute(element.att.rename) ) );
-                  }
-                  else
-                  {
-                     project.templatePaths.remove(path);
-                     project.templatePaths.push(path);
-                  }
 
                case "preloader":
                   // deprecated
@@ -1134,7 +1166,6 @@ class NMMLParser
 
    public function process(projectFile:String, inWarnUnkown:Bool,inXml:Access):Void 
    {
-      Log.verbose("Parse " + projectFile + "...");
       var xml = inXml;
       var extensionPath = "";
 
