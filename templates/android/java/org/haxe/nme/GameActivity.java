@@ -62,7 +62,8 @@ import android.text.TextWatcher;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
-
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
@@ -297,7 +298,7 @@ implements SensorEventListener
                    result = array.toString();
 
                 } catch (JSONException e) {
-                   e.printStackTrace();
+                   Log.e(TAG, getStackTrace(e))
                    responseCode = -1;
                 }
 
@@ -1173,61 +1174,73 @@ implements SensorEventListener
    }
    
    
-   public static void popupKeyboard(final  int inMode, final  String inContent, final int inType)
+   public static void popupKeyboard(final int inMode, final  String inContent, final int inType)
    {
-      if(activity == null) {
-        Log.i("VIEW","popupKeyboard occured after destruction, ignoring...");
-        return;
-      }
-        
-      activity.mHandler.post(new Runnable() {
-         @Override public void run()
-         {
-         InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-         mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
-         
-         if (inMode!=KEYBOARD_OFF)
-         {
-            activity.mTextUpdateLockout = true;
-            activity.mIncrementalText = inContent==null;
-            if (inMode==KEYBOARD_DUMB)
-               activity.mView.requestFocus();
-            else // todo - force native control
-            {
-               activity.mKeyInTextView.requestFocus();
-               if (!activity.mIncrementalText)
-               {
-                  activity.mKeyInTextView.setText(inContent);
+      try { 
+         activity.mHandler.post(new Runnable() {
+            @Override public void run() {
+               try {
+                  handlePopKeyboard(inMode, inContent, inType);
                }
-               else
-               {
-                  activity.mKeyInTextView.setText("*");
-                  activity.mKeyInTextView.setSelection(1);
+               catch(Exception e) {
+                  Log.e(TAG, getStackTrace(e));
+                  Log.e(TAG,"handlePopKeyboard: " + e);
                }
             }
+         });
+      }
+      catch(Exception e) {
+        Log.e(TAG, getStackTrace(e));
+        Log.e(TAG,"popupKeyboard: " + e);  
+      }
+   }
 
-            if (inType == 1)
-                activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
-            else if (inType == 2)
-                activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-            else if (inType == 5)
-                activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_URI);
-            else if (inType == 3)
-                activity.mKeyInTextView.setInputType(InputType.TYPE_CLASS_NUMBER);
-            else if (inType == 4)
-                activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PHONETIC);
-            else if (inType == 101)//only on android
-                activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+   private static void handlePopKeyboard(final int inMode, final  String inContent, final int inType)
+   {
+      InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+      mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
+      
+      if (inMode!=KEYBOARD_OFF)
+      {
+         activity.mTextUpdateLockout = true;
+         activity.mIncrementalText = inContent==null;
+         if (inMode==KEYBOARD_DUMB)
+            activity.mView.requestFocus();
+         else // todo - force native control
+         {
+            activity.mKeyInTextView.requestFocus();
+            if (!activity.mIncrementalText)
+            {
+               activity.mKeyInTextView.setText(inContent);
+            }
             else
-                activity.mKeyInTextView.setInputType(activity.mDefaultInputType);
-
-            mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-            // On the Nexus One, SHOW_FORCED makes it impossible
-            // to manually dismiss the keyboard.
-            // On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
-            activity.mTextUpdateLockout = false;
+            {
+               activity.mKeyInTextView.setText("*");
+               activity.mKeyInTextView.setSelection(1);
+            }
          }
-      }} );
+
+         if (inType == 1)
+             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+         else if (inType == 2)
+             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+         else if (inType == 5)
+             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_URI);
+         else if (inType == 3)
+             activity.mKeyInTextView.setInputType(InputType.TYPE_CLASS_NUMBER);
+         else if (inType == 4)
+             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PHONETIC);
+         else if (inType == 101)//only on android
+             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+         else
+             activity.mKeyInTextView.setInputType(activity.mDefaultInputType);
+
+         mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+         // On the Nexus One, SHOW_FORCED makes it impossible
+         // to manually dismiss the keyboard.
+         // On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
+         activity.mTextUpdateLockout = false;
+      }
    }
 
    
@@ -1433,6 +1446,14 @@ implements SensorEventListener
       Intent intent = getIntent();
       String action = intent.getAction();
       return intent.getData();
+   }
+
+   private static String getStackTrace(Exception e)
+   {
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      e.printStackTrace(pw);
+      return sw.toString();
    }
 }
 
