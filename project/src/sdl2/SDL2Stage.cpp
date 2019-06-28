@@ -735,9 +735,11 @@ public:
       SDL_SetWindowTitle(mSDLWindow, inTitle.c_str());
    }
    
+   std::string getTitle() {
+       return std::string(SDL_GetWindowTitle(mSDLWindow));
+   }
 
-   
-   
+
    bool mMultiTouch;
    int  mSingleTouchID;
   
