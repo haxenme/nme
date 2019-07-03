@@ -1311,7 +1311,7 @@ value nme_jni_call_static(value inMethod, value inArgs)
    value result =  method->CallStatic(inArgs);
    return result;
 }
-DEFINE_PRIME2(nme_jni_call_static);
+DEFINE_PRIM(nme_jni_call_static,2);
 
 
 value nme_jni_call_member(value inMethod, value inObject, value inArgs)
@@ -1330,7 +1330,7 @@ value nme_jni_call_member(value inMethod, value inObject, value inArgs)
    }
    return method->CallMember(object,inArgs);
 }
-DEFINE_PRIME3(nme_jni_call_member);
+DEFINE_PRIM(nme_jni_call_member,3);
 
 
 

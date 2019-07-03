@@ -26,7 +26,6 @@ class JNI
 
    static function onCallback(inObj:Dynamic, inFunc:Dynamic, inArgs:Dynamic):Dynamic 
    {
-      //trace("onCallback " + inObj + "," + inFunc + "," + inArgs );
       var field = Reflect.field(inObj, inFunc);
 
       if (field != null)
@@ -65,6 +64,16 @@ class JNI
       return null;
       #end
    }
+   
+	public static function createStaticField(className:String, memberName:String, signature:String):JNIStaticField 
+	{
+		#if android
+		init();
+		return new JNIStaticField(nme_jni_create_field(className, memberName, signature, true));
+		#else
+		return null;
+		#end
+	}
 
    /**
     * Create bindings to a static class method in Java
@@ -130,14 +139,46 @@ class JNI
 
    // Native Methods
    #if android
+   private static var nme_jni_create_field = nme.Loader.load("nme_jni_create_field", 4);
    private static var nme_jni_create_method = nme.Loader.load("nme_jni_create_method", 5);
-   private static var nme_jni_call_member = PrimeLoader.load("nme_jni_call_member", "oooo");
-   private static var nme_jni_call_static = PrimeLoader.load("nme_jni_call_static", "ooo");
+   private static var nme_jni_call_member = nme.Loader.load("nme_jni_call_member", 3);
+   private static var nme_jni_call_static = nme.Loader.load("nme_jni_call_static", 2);
    #else
+   private static var nme_jni_create_field:Dynamic;
    private static var nme_jni_create_method:Dynamic;
    private static var nme_jni_call_member:Dynamic;
    private static var nme_jni_call_static:Dynamic;
    #end
+}
+
+class JNIStaticField 
+{
+	private var field:Dynamic;
+	
+	public function new(field:Dynamic) 
+	{
+		this.field = field;
+	}
+	
+	public function get():Dynamic 
+	{
+		return nme_jni_get_static(field);
+	}
+	
+	public function set(value:Dynamic):Dynamic 
+	{
+		nme_jni_set_static(field, value);
+		return value;
+	}
+	
+	// Native Methods
+	#if android
+	private static var nme_jni_get_static = nme.Loader.load("nme_jni_get_static", 1);
+	private static var nme_jni_set_static = nme.Loader.load("nme_jni_set_static", 2);
+	#else
+	private static var nme_jni_get_static:Dynamic = null;
+	private static var nme_jni_set_static:Dynamic = null;
+	#end
 }
 
 class JNIMethod 
@@ -178,8 +219,8 @@ class JNIMethod
 
    // Native Methods
    #if android
-   private static var nme_jni_call_member = PrimeLoader.load("nme_jni_call_member", "oooo");
-   private static var nme_jni_call_static = PrimeLoader.load("nme_jni_call_static", "ooo");
+   private static var nme_jni_call_member = nme.Loader.load("nme_jni_call_member", 3);
+   private static var nme_jni_call_static = nme.Loader.load("nme_jni_call_static", 2);
    #else
    private static var nme_jni_call_member:Dynamic;
    private static var nme_jni_call_static:Dynamic;
