@@ -182,6 +182,14 @@ class Rectangle
       var y1 = bottom < toUnion.bottom ? toUnion.bottom : bottom;
       return new Rectangle(x0, y0, x1 - x0, y1 - y0);
    }
+   
+   public function copyFrom(sourceRect:Rectangle):Void 
+   {
+      x = sourceRect.x;
+      y = sourceRect.y;
+      width = sourceRect.width;
+      height = sourceRect.height;
+   }
 
    // Getters & Setters
    private function get_bottom() { return y + height; }
