@@ -8,6 +8,15 @@
 	
 	<haxelib name="nme" />
 
+  <section if="android">
+    <android>
+      <abi value="armeabi-v7a" />
+      <abi value="arm64-v8a" />
+      <abi value="x86" />
+      <abi value="x86_64" />
+    </android>
+  </section>
+
 	<assets path="Assets" rename="assets" exclude="nme.svg" />
 	<icon path="Assets/nme.svg" />
 	

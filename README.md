@@ -43,3 +43,6 @@ nme test ios
 
 Browse the [sample projects](https://github.com/haxenme/nme/tree/master/samples). Every sample project contains the _.hx_ Haxe sources and the _.nmml_ config file to build the example.
 
+### Android
+
+Requires NDK(r20)

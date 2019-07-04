@@ -47,6 +47,13 @@ class AndroidPlatform extends Platform
             args: ["-D", "HXCPP_X86"],
             libArchSuffix: "-x86",
             versionCodeScaler: 4
+         },
+         {
+             name: "x86_64",
+             architecture: Architecture.X86_64,
+             args: ["-D", "HXCPP_X86_64"],
+             libArchSuffix: "-x86_64",
+             versionCodeScaler: 5
          }
       ];
 
@@ -65,10 +72,10 @@ class AndroidPlatform extends Platform
       }
 
       if (project.targetFlags.exists("androidsim")) {
-         project.androidConfig.ABIs = ["x86"];
+         project.androidConfig.ABIs = [queryDeviceABI()];
       }
       else if(project.androidConfig.ABIs.length == 0) {
-         project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86"];
+         project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"];
       }
 
       project.architectures = project.androidConfig.ABIs.map(function (string:String) {
@@ -333,10 +340,7 @@ class AndroidPlatform extends Platform
       if (gradle)
       {
          var build = (project.certificate != null) ? "release" : "debug";
-         
-         var lines = ProcessHelper.getOutput(adbName,"shell getprop ro.product.cpu.abi".split(' '), Log.mVerbose);
-         var abi = lines[0];
-         targetPath = '${FileSystem.fullPath(outputDir)}/app/build/outputs/apk/${build}/app-${abi}-${build}.apk';
+         targetPath = '${FileSystem.fullPath(outputDir)}/app/build/outputs/apk/${build}/app-${queryDeviceABI()}-${build}.apk';
       }
       else
       {
@@ -362,6 +366,12 @@ class AndroidPlatform extends Platform
       {
          Log.error("Could not run adb install " + e);
       }
+   }
+    
+   private function queryDeviceABI():String {
+      var lines = ProcessHelper.getOutput(adbName,"shell getprop ro.product.cpu.abi".split(' '), Log.mVerbose);
+      var abi = lines[0];
+      return abi; 
    }
 
    override public function run(arguments:Array<String>):Void 
