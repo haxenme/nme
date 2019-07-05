@@ -143,7 +143,7 @@ static unsigned __stdcall dialog_proc( void *inSpec )
    else
    {
       OPENFILENAME ofn;
-      std::vector<char> path(32*1024);
+      std::vector<char> path(1024*1024);
 
       ZeroMemory(&ofn, sizeof(ofn));
 
