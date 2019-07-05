@@ -607,7 +607,7 @@ int TextField::getSelectionEndIndex()
 
 bool TextField::CaptureDown(Event &inEvent)
 {
-   if (selectable || isInput)
+   if ( (inEvent.flags & efLeftDown) && (selectable || isInput) )
    {
       UserPoint point = GlobalToLocal(UserPoint( inEvent.x, inEvent.y));
       int pos = PointToChar(point);
@@ -628,7 +628,6 @@ bool TextField::CaptureDown(Event &inEvent)
          getStage()->PopupKeyboard(pkmSmart,&value);
          SyncSelection();
       }
-
    }
    return true;
 }
@@ -796,16 +795,18 @@ void TextField::onTextSelect(int inPos0, int inPos1)
 
 void TextField::OnKey(Event &inEvent)
 {
-   if (isInput && (inEvent.type==etKeyDown || inEvent.type==etChar) && inEvent.code<0xffff )
-   {
-      #if defined(IPHONE) || defined(HX_MACOS)
-      bool ctrl = inEvent.flags & efCommandDown;
-      #else
-      bool ctrl = inEvent.flags & efCtrlDown;
-      #endif
-      int code = inEvent.code;
-      bool isPrintChar = (code>31 && code<63000) && code!=127 && !ctrl;
+   #if defined(IPHONE) || defined(HX_MACOS)
+   bool ctrl = inEvent.flags & efCommandDown;
+   #else
+   bool ctrl = inEvent.flags & efCtrlDown;
+   #endif
+   int code = inEvent.code;
+   bool isPrintChar = (code>31 && code<63000) && code!=127 && !ctrl;
 
+   bool allowSpecial = !isPrintChar && selectable;
+
+   if ((isInput||allowSpecial) && (inEvent.type==etKeyDown || inEvent.type==etChar) && inEvent.code<0xffff )
+   {
       if (isPrintChar)
       {
          // Use etChar, not etKeyDown for printable characters
@@ -828,7 +829,7 @@ void TextField::OnKey(Event &inEvent)
          switch(value)
          {
             case keyX:
-               if (mSelectMin<mSelectMax)
+               if (isInput && mSelectMin<mSelectMax)
                {
                   CopySelection();
                   DeleteSelection();
@@ -844,45 +845,54 @@ void TextField::OnKey(Event &inEvent)
                return;
 
             case keyV:
-               if (mSelectMin<mSelectMax)
-                  DeleteSelection();
-               PasteSelection();
-               mCaretDirty = true;
-               ShowCaret();
-               OnChange();
+               if (isInput)
+               {
+                  if (mSelectMin<mSelectMax)
+                     DeleteSelection();
+                  PasteSelection();
+                  mCaretDirty = true;
+                  ShowCaret();
+                  OnChange();
+               }
                return;
 
 
             case keyBACKSPACE:
-               if (mSelectMin<mSelectMax)
+               if (isInput)
                {
-                  DeleteSelection();
+                  if (mSelectMin<mSelectMax)
+                  {
+                     DeleteSelection();
+                  }
+                  else if (caretIndex>0)
+                  {
+                     DeleteChars(caretIndex-1,caretIndex);
+                     caretIndex--;
+                  }
+                  else if (mCharGroups.size())
+                     DeleteChars(0,1);
+                  ShowCaret();
+                  OnChange();
                }
-               else if (caretIndex>0)
-               {
-                  DeleteChars(caretIndex-1,caretIndex);
-                  caretIndex--;
-               }
-               else if (mCharGroups.size())
-                  DeleteChars(0,1);
-               ShowCaret();
-               OnChange();
                return;
 
             case keyDELETE:
-               if (mSelectMin<mSelectMax)
+               if (isInput)
                {
-                  if (shift)
-                     CopySelection();
-                  DeleteSelection();
+                  if (mSelectMin<mSelectMax)
+                  {
+                     if (shift)
+                        CopySelection();
+                     DeleteSelection();
+                  }
+                  else if (caretIndex<getLength())
+                  {
+                     DeleteChars(caretIndex,caretIndex+1);
+                  }
+                  mCaretDirty = true;
+                  ShowCaret();
+                  OnChange();
                }
-               else if (caretIndex<getLength())
-               {
-                  DeleteChars(caretIndex,caretIndex+1);
-               }
-               mCaretDirty = true;
-               ShowCaret();
-               OnChange();
                return;
 
             case keySHIFT:
@@ -985,7 +995,7 @@ void TextField::OnKey(Event &inEvent)
             // TODO: top/bottom
 
             case keyENTER:
-               if (multiline)
+               if (multiline && isInput)
                   AddCharacter('\n');
                break;
          }
