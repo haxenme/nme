@@ -30,7 +30,7 @@ class AndroidConfig
    public function new()
    {
       installLocation = "preferExternal";
-      minApiLevel = 14;
+      minApiLevel = 16;
       addV4Compat = true;
       appHeader = [];
       appIntent = [];
@@ -346,12 +346,6 @@ class NMEProject
          case "android":
             target = Platform.ANDROID;
             targetFlags.set("android", "");
-            haxedefs.set("HXCPP_NDK20","1");
-
-         case "androidsim":
-            target = Platform.ANDROID;
-            targetFlags.set("android", "");
-            targetFlags.set("androidsim", "");
 
          case "flash":
             target = inTargetName.toUpperCase();

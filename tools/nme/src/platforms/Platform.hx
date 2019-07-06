@@ -149,8 +149,6 @@ class Platform
          adbFlags = [ "-s", project.targetFlags.get("device") ];
       else if (project.targetFlags.exists("androidsim") || project.targetFlags.exists("e"))
          adbFlags = [ "-e" ];
-      else
-         adbFlags = [ "-d" ] ;
    }
 
 

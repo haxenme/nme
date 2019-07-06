@@ -4,10 +4,6 @@ import sys.io.File;
 class Builder extends hxcpp.Builder
 {
    static var toolkitBuild = true;
-
-   public function new(inArgs:Array<String>) {
-      super(inArgs.concat(["-DHXCPP_NDK20"]));
-   }
     
    override public function getBuildFile()
    {

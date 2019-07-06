@@ -45,4 +45,4 @@ Browse the [sample projects](https://github.com/haxenme/nme/tree/master/samples)
 
 ### Android
 
-Requires NDK(r20)
+NDK(r20) Recommended
