@@ -4,7 +4,7 @@ import sys.io.File;
 class Builder extends hxcpp.Builder
 {
    static var toolkitBuild = true;
-    
+
    override public function getBuildFile()
    {
       if (toolkitBuild)

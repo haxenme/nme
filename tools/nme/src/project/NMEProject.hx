@@ -347,6 +347,11 @@ class NMEProject
             target = Platform.ANDROID;
             targetFlags.set("android", "");
 
+         case "androidsim":
+            target = Platform.ANDROID;
+            targetFlags.set("android", "");
+            targetFlags.set("androidsim", "");
+
          case "flash":
             target = inTargetName.toUpperCase();
 
