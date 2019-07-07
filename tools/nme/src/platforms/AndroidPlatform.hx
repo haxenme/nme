@@ -82,18 +82,20 @@ class AndroidPlatform extends Platform
          project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"];
       }
 
-      project.architectures = project.androidConfig.ABIs.map(function (string:String) {
-         var abi:ABI = Lambda.find(abis, function(abi:ABI) return string == abi.name);
-         return abi.architecture;
-      } );
+      project.architectures = [for(abi in project.androidConfig.ABIs) findArchitectureByName(abi)];
       
       Log.verbose("Valid archs: " + project.architectures );
       
       var libDir = getOutputLibDir();
+      for(abi in abis)
+         if (project.architectures.indexOf(abi.architecture) == -1)
+             PathHelper.removeDirectory(libDir + '/${abi.name}');
+      /*
       var excluded:List<ABI> = Lambda.filter(abis, function(abi:ABI) return project.architectures.indexOf(abi.architecture) == -1);
       Lambda.iter(excluded, function(abi:ABI) {
          PathHelper.removeDirectory(libDir + '/${abi.name}');
       });
+      */
 
       if (project.environment.exists("JAVA_HOME")) 
          Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
@@ -119,10 +121,33 @@ class AndroidPlatform extends Platform
       }
    }
 
-   function includedABIs():List<ABI> {
-      return Lambda.map(project.architectures, function(architecture:Architecture) {
-         return Lambda.find(abis, function(abi:ABI) return abi.architecture == architecture);
-      });
+
+   function findArchitectureByName(arch:String) : Architecture
+   {
+      for(abi in abis)
+         if (abi.name==arch)
+             return abi.architecture;
+      throw 'Unknown architecture: $arch';
+      return null;
+   }
+   function findByArchitecture(arch:Architecture) : ABI
+   {
+      for(abi in abis)
+         if (abi.architecture==arch)
+             return abi;
+      return null;
+   }
+
+   function includedABIs():Array<ABI>
+   {
+      var included = [];
+      for(arch in project.architectures)
+      {
+         var abi = findByArchitecture(arch);
+         if (abi!=null)
+            included.push(abi);
+      }
+      return included;
    }
       
    private function decideAudioFolder() {
@@ -167,9 +192,8 @@ class AndroidPlatform extends Platform
       var args = project.debug ? ['$haxeDir/build.hxml',"-debug","-D", "android"] :
                                  ['$haxeDir/build.hxml', "-D", "android" ];
 
-      Lambda.iter(includedABIs(), function(abi:ABI) {
+      for(abi in includedABIs())
          runHaxeWithArgs(args.concat(abi.args));
-      });
    }
 
 
@@ -177,11 +201,12 @@ class AndroidPlatform extends Platform
    {
       var dbg = project.debug ? "-debug" : "";
       
-      Lambda.iter(includedABIs(), function(abi:ABI) {
+      for(abi in includedABIs())
+      {
          var source = haxeDir + "/cpp/libApplicationMain" + dbg + '${abi.libArchSuffix}.so';
          var destination = getOutputLibDir() + '/${abi.name}/libApplicationMain.so';
          FileHelper.copyIfNewer(source, destination);
-      });
+      };
    }
 
 
@@ -233,8 +258,8 @@ class AndroidPlatform extends Platform
       else
          setAntLibraries();
       
-      context.ABIS = Lambda.map(includedABIs(), function(abi:ABI) return '"${abi.name}"').join(', ');
-      context.ABI_CODES = Lambda.map(includedABIs(), function(abi:ABI) return '\'${abi.name}\':${abi.versionCodeScaler}').join(', ');
+      context.ABIS = [for(abi in includedABIs()) '"${abi.name}"'].join(', ');
+      context.ABI_CODES = [for(abi in includedABIs()) '\'${abi.name}\':${abi.versionCodeScaler}'].join(', ');
    }
 
    private function setAntLibraries() {
@@ -410,9 +435,8 @@ class AndroidPlatform extends Platform
    override public function updateLibs()
    {
       var libDir = getOutputLibDir();
-      Lambda.iter(includedABIs(), function(abi:ABI) {
+      for(abi in includedABIs())
          updateLibArch( libDir + '/${abi.name}', abi.libArchSuffix );
-      });
    }
    
    override public function getOutputExtra()

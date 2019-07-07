@@ -597,6 +597,11 @@ class NMMLParser
 
    function parseRelationally(xml:Access, section:String, extensionPath:String):Void
    {
+      for(element in xml.elements)
+         if (isTemplate(element,section))
+             parseTemplate(element,extensionPath);
+
+      /*
       var elements:Array<Access> = [for(element in xml.elements) element];
       
       var templates:List<Access> = Lambda.filter(elements, function(element) {
@@ -606,6 +611,7 @@ class NMMLParser
       Lambda.iter(templates, function(element) {
          return parseTemplate(element,extensionPath);
       });
+      */
    }
 
    private function isTemplate(element:Access, section:String):Bool {
