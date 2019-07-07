@@ -15,10 +15,12 @@ class AndroidPlatform extends Platform
 {
    var gradle:Bool;
    var abis:Array<ABI>;
+   var installed:Bool;
 
    public function new(inProject:NMEProject)
    {
       super(inProject);
+      setupAdb();
       abis = [
          {
             name: "armeabi",
@@ -47,6 +49,13 @@ class AndroidPlatform extends Platform
             args: ["-D", "HXCPP_X86"],
             libArchSuffix: "-x86",
             versionCodeScaler: 4
+         },
+         {
+             name: "x86_64",
+             architecture: Architecture.X86_64,
+             args: ["-D", "HXCPP_X86_64"],
+             libArchSuffix: "-x86_64",
+             versionCodeScaler: 5
          }
       ];
 
@@ -63,12 +72,14 @@ class AndroidPlatform extends Platform
          Log.verbose("Using gradle build system");
          PathHelper.mkdir(getAppDir());
       }
-
-      if (project.targetFlags.exists("androidsim")) {
-         project.androidConfig.ABIs = ["x86"];
+      
+      if (project.command == "test") {
+         var abi = queryDeviceABI();
+         if(abi != null)
+            project.androidConfig.ABIs = [abi];
       }
       else if(project.androidConfig.ABIs.length == 0) {
-         project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86"];
+         project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"];
       }
 
       project.architectures = project.androidConfig.ABIs.map(function (string:String) {
@@ -83,8 +94,6 @@ class AndroidPlatform extends Platform
       Lambda.iter(excluded, function(abi:ABI) {
          PathHelper.removeDirectory(libDir + '/${abi.name}');
       });
-
-      setupAdb();
 
       if (project.environment.exists("JAVA_HOME")) 
          Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
@@ -333,10 +342,7 @@ class AndroidPlatform extends Platform
       if (gradle)
       {
          var build = (project.certificate != null) ? "release" : "debug";
-         
-         var lines = ProcessHelper.getOutput(adbName,"shell getprop ro.product.cpu.abi".split(' '), Log.mVerbose);
-         var abi = lines[0];
-         targetPath = '${FileSystem.fullPath(outputDir)}/app/build/outputs/apk/${build}/app-${abi}-${build}.apk';
+         targetPath = '${FileSystem.fullPath(outputDir)}/app/build/outputs/apk/${build}/app-${queryDeviceABI()}-${build}.apk';
       }
       else
       {
@@ -356,16 +362,32 @@ class AndroidPlatform extends Platform
          var failure = ~/Failure/;
          for(line in lines)
             if (failure.match(line))
-               Log.error("Failed to install apk:"  + line);
+               throw("Failed to install apk:"  + line);
       }
       catch(e:Dynamic)
       {
          Log.error("Could not run adb install " + e);
+         installed = false;
       }
+      installed = true;
+   }
+    
+   private function queryDeviceABI():String {
+      var lines = ProcessHelper.getOutput(adbName,"shell getprop ro.product.cpu.abi".split(' '), Log.mVerbose);
+      if(lines.length > 0) {
+         if(lines[0].indexOf('error') == -1) {
+            var abi = lines[0];
+            return abi;  
+         }
+      }
+      return null;
    }
 
    override public function run(arguments:Array<String>):Void 
    {
+      if(!installed)
+         return;
+      
       var activityName = project.app.packageName + "/" + project.app.packageName + ".MainActivity";
 
       ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat", "-c" ]));
@@ -375,6 +397,8 @@ class AndroidPlatform extends Platform
 
    override public function trace():Void 
    {
+      if(!installed)
+         return;
       ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat" ]));
    }
 

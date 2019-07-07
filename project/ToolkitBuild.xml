@@ -3,13 +3,6 @@
    <set name="tvos" value="1" if="appletv" />
    <set name="mac" value="1" if="macos" />
    <set name="native_toolkit_sdl_static" value="1" if="static_link" />
-
-
-   <!-- Require Android 4.0+ with newer NDKs-->
-   <set name="PLATFORM" value="android-14"  unless="PLATFORM" />
-
-   <set name="PLATFORM" value="android-14" if="HXCPP_X86" />
-   <set name="PLATFORM" value="android-21" if="HXCPP_ARM64" />
    <set name="HXCPP_CPP11" value="1" />
 
    <set name="exe_link" value="1" if="HXCPP_JS_PRIME" />

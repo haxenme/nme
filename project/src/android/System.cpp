@@ -82,7 +82,7 @@ namespace nme {
 		JNIEnv *env = GetEnv();
       jclass cls = FindClass("org/haxe/nme/GameActivity");
 		jmethodID mid = env->GetStaticMethodID(cls, "vibrate", "(II)V");
-		if (mid > 0)
+		if (mid > (void *)0)
 			env->CallStaticVoidMethod(cls, mid, period, duration);	
 	}
 	

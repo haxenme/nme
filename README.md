@@ -43,3 +43,8 @@ nme test ios
 
 Browse the [sample projects](https://github.com/haxenme/nme/tree/master/samples). Every sample project contains the _.hx_ Haxe sources and the _.nmml_ config file to build the example.
 
+### Android
+
+* NDK(r20) Recommended
+* `haxelib run nme build android -gradle` builds all APKs
+* `haxelib run nme test android -gradle` only builds the APK required for the running devices architecture 
