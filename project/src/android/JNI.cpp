@@ -989,16 +989,16 @@ struct JNIField : public nme::Object
 };
 
 
-value nme_jni_create_field(value inClass, value inField, value inSig,value inStatic)
+value nme_jni_create_field(value inClass, value inField, value inSig, value inStatic)
 {
-   JNIField *field = new JNIField(inClass,inField,inSig,val_bool(inStatic) );
+   JNIField *field = new JNIField(inClass, inField, inSig, val_bool(inStatic));
    if (field->Ok())
       return ObjectToAbstract(field);
    ELOG("nme_jni_create_field - failed");
    delete field;
    return alloc_null();
 }
-DEFINE_PRIM(nme_jni_create_field,4);
+DEFINE_PRIME4(nme_jni_create_field);
 
 
 value nme_jni_get_static(value inField)
@@ -1009,7 +1009,7 @@ value nme_jni_get_static(value inField)
    value result = field->GetStatic();
    return result;
 }
-DEFINE_PRIM(nme_jni_get_static,1);
+DEFINE_PRIME1(nme_jni_get_static);
 
 
 void nme_jni_set_static(value inField, value inValue)
@@ -1019,7 +1019,7 @@ void nme_jni_set_static(value inField, value inValue)
       return;
    field->SetStatic(inValue);
 }
-DEFINE_PRIM(nme_jni_set_static,2);
+DEFINE_PRIME2v(nme_jni_set_static);
 
 
 value nme_jni_get_member(value inField, value inObject)
@@ -1289,10 +1289,10 @@ struct JNIMethod : public nme::Object
 };
 
 
-value nme_jni_create_method(value inClass, value inMethod, value inSig,value inStatic, value inQuiet)
+value nme_jni_create_method(value inClass, value inMethod, value inSig, value inStatic, value inQuiet)
 {
    bool quiet = val_bool(inQuiet);
-   JNIMethod *method = new JNIMethod(inClass,inMethod,inSig,val_bool(inStatic), quiet );
+   JNIMethod *method = new JNIMethod(inClass, inMethod, inSig, val_bool(inStatic), quiet);
    if (method->Ok())
       return ObjectToAbstract(method);
    if (!quiet)
@@ -1300,7 +1300,7 @@ value nme_jni_create_method(value inClass, value inMethod, value inSig,value inS
    delete method;
    return alloc_null();
 }
-DEFINE_PRIM(nme_jni_create_method,5);
+DEFINE_PRIME5(nme_jni_create_method);
 
 
 value nme_jni_call_static(value inMethod, value inArgs)
@@ -1311,7 +1311,7 @@ value nme_jni_call_static(value inMethod, value inArgs)
    value result =  method->CallStatic(inArgs);
    return result;
 }
-DEFINE_PRIM(nme_jni_call_static,2);
+DEFINE_PRIME2(nme_jni_call_static);
 
 
 value nme_jni_call_member(value inMethod, value inObject, value inArgs)
@@ -1330,7 +1330,7 @@ value nme_jni_call_member(value inMethod, value inObject, value inArgs)
    }
    return method->CallMember(object,inArgs);
 }
-DEFINE_PRIM(nme_jni_call_member,3);
+DEFINE_PRIME3(nme_jni_call_member);
 
 
 
