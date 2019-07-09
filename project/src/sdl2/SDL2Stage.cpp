@@ -2267,6 +2267,7 @@ void StartAnimation()
       // Kill some time
       if (waitMs>0)
       {
+         AutoGCBlocking block;
          if (sgSDLFrame->mStage->BuildCache())
          {
             Event redraw(etRedraw);

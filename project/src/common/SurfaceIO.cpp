@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <Surface.h>
 #include <ByteArray.h>
+#include <nme/NmeCffi.h>
 
 
 extern "C" {
@@ -561,6 +562,8 @@ Surface *Surface::Load(const OSChar *inFilename)
       #endif
       return 0;
    }
+
+   AutoGCBlocking block;
 
    int len = 0;
    while(inFilename[len])
