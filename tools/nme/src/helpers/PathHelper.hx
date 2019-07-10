@@ -239,6 +239,28 @@ class PathHelper
       return result;
    }
 
+   public static function classPathFrom(path:String)
+   {
+      try
+      {
+         var name = path+"/haxelib.json";
+         if (FileSystem.exists(name))
+         {
+            var contents = sys.io.File.getContent(name);
+            var json = haxe.Json.parse(contents);
+            if (json!=null)
+            {
+               var res = json.classPath;
+               if (res!=null)
+                  return path + "/" + res;
+            }
+         }
+      }
+      catch(e:Dynamic) { }
+
+      return path;
+   }
+
 /*
    public static function getLibraryPath(ndll:NDLL, directoryName:String, namePrefix:String = "", nameSuffix:String = ".ndll", allowDebug:Bool = false):String 
    {
