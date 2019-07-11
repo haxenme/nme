@@ -34,10 +34,10 @@ class ApplicationData
       file = "MyApplication";
 
       title = "MyApplication";
-      description = "";
-      packageName = "com.example.myapp";
+      description = "application";
+      packageName = "com.nmehost.myapp";
       version = "1.0.0";
-      company = "Example, Inc.";
+      company = "HaxeNme, Inc.";
       buildNumber = "1";
       companyID = "";
 

@@ -810,6 +810,19 @@ class NMEProject
          Reflect.setField(context, "APP_" + StringHelper.formatUppercaseVariable(field), Reflect.field(app, field));
       }
 
+      var ver = app.version;
+      var parts = ver.split(".");
+      // TODO - build number...
+      if (parts.length==3)
+         parts.push("0");
+      context.FILE_VERSION = parts.join(".");
+      context.VERSION_NUMBER = parts.join(",");
+
+      var year0 = getDef("COPYRIGHT_START");
+      var year1 = Date.now().getFullYear();
+      
+      context.COPYRIGHT_YEARS = year0!=null ? '$year0-$year1' : year1;
+
       if (watchProject!=null)
       {
          for(field in Reflect.fields(watchProject.app)) 
