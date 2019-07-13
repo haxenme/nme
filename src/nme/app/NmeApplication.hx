@@ -126,6 +126,11 @@ class NmeApplication implements IAppEventHandler implements IPollClient
    {
    }
 
+
+   public function onDpiChanged(event:AppEvent):Void
+   {
+   }
+
    public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void
    {
       trace("Exception: " + exception+"\n" + haxe.CallStack.toString(stack));

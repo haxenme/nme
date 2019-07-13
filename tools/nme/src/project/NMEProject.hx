@@ -890,6 +890,7 @@ class NMEProject
          case ScaleUiScaled:
       }
       context.WIN_STAGE_ALIGN = Type.enumIndex(window.scaleMode);
+      context.DPI_AWARE = getDef("dpiAware");
 
 
       for(haxeflag in haxeflags) 

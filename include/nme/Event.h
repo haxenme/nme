@@ -50,6 +50,8 @@ enum EventType
 
    etScroll, // 34
    etAppLink, // 35
+
+   etDpiChanged, // 36
 };
 
 enum EventFlags

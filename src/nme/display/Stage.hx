@@ -693,6 +693,12 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          obj.nmeFireEvent(new Event(Event.SCROLL));
    }
 
+
+   public function onDpiChanged(inEvent:AppEvent):Void
+   {
+      nmeDispatchEvent(new Event(Event.DPI_CHANGED) );
+   }
+
    public function onActive(inActive:Bool):Void
    {
       // trace("nmeSetActive : " + inActive);

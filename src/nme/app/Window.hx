@@ -255,6 +255,9 @@ class Window
              
             case EventId.Scroll:
                appEventHandler.onScroll(event);
+
+            case EventId.DpiChanged:
+               appEventHandler.onDpiChanged(event);
          }
 
 

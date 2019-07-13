@@ -25,8 +25,9 @@ class WindowsPlatform extends DesktopPlatform
       if (getPlatformDir() != "winrt")
       {
          project.haxedefs.set("resourceFile", "resource.rc");
-         // TODO - test
-         //project.haxedefs.set("manifestFile", "NmeManifest.xml");
+         var dpiAware = project.getDef("dpiAware");
+         if (dpiAware=="changed")
+            project.haxedefs.set("manifestFile", "NmeManifest.xml");
       }
    }
 
