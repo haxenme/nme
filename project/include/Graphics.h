@@ -260,6 +260,7 @@ enum PathCommand
    pcTile_Trans_Bit       = 0x01,
    pcTile_Col_Bit         = 0x02,
    pcTile_Full_Image_Bit  = 0x04,
+   pcTile_Mouse_Enable_Bit  = 0x08,
 
 
    pcBlendModeAdd   = 0x20,

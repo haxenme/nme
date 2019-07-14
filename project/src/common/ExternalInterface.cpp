@@ -2960,6 +2960,7 @@ enum
   TILE_RECT     = 0x0020,
   TILE_ORIGIN   = 0x0040,
   TILE_NO_ID    = 0x0080,
+  TILE_MOUSE_ENABLE = 0x0100,
   TILE_SMOOTH   = 0x1000,
 
   TILE_BLEND_ADD   = 0x10000,
@@ -3298,6 +3299,8 @@ void nme_gfx_draw_tiles(value inGfx, value inSheet, value inXYIDs, int flags, in
             tileFlags |= pcTile_Trans_Bit;
          if (flags & (TILE_RGB | TILE_ALPHA) )
             tileFlags |= pcTile_Col_Bit;
+         if (flags & (TILE_MOUSE_ENABLE) )
+            tileFlags |= pcTile_Mouse_Enable_Bit;
 
          gfx->beginTiles(&sheet->GetSurface(), smooth, blend, tileFlags, n);
 
