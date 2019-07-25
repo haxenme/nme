@@ -67,7 +67,7 @@ class MainView extends GLSurfaceView {
    boolean onPaused;
    Runnable pollMe;
    TimerTask pendingTimer;
-   Semaphore handleResultSemaphore;
+   Semaphore pendingTimerSemaphore;
    boolean renderPending = false;
 
 
@@ -78,11 +78,11 @@ class MainView extends GLSurfaceView {
        super(context);
 
        isPollImminent = false;
+       pendingTimerSemaphore = new Semaphore(1,true);
        final MainView me = this;
        pollMe = new Runnable() {
            @Override public void run() { me.onPollHX(); }
        };
-       handleResultSemaphore = new Semaphore(1);
 
        translucent = inTranslucent;
        getHolder().setFormat(
@@ -254,38 +254,40 @@ class MainView extends GLSurfaceView {
    // Haxe thread
    public void HandleResult(int inCode)
    {
-      if(handleResultSemaphore.tryAcquire()) {
-         if (inCode==resTerminate)
-         {
-            Log.v("VIEW","Terminate Request.");
-            mActivity.onNMEFinish();
-            return;
-         }
-         
-         double wake = NME.getNextWake();
-         int delayMs = (int)(wake * 1000);
+       if (inCode==resTerminate)
+       {
+          //Log.v("VIEW","Terminate Request.");
+          mActivity.onNMEFinish();
+          return;
+       }
 
-         if (renderPending && delayMs<5)
-            delayMs = 5;
 
-         if (delayMs<=1)
-            queuePoll();
-         else
-         {
-            if (pendingTimer!=null)
-               pendingTimer.cancel();
+       double wake = NME.getNextWake();
+       int delayMs = (int)(wake * 1000);
 
-            final MainView me = this;
-            pendingTimer = new TimerTask() {
-                @Override public void run() {
-                   me.queuePoll();
-                }
-            };
+       if (renderPending && delayMs<5)
+          delayMs = 5;
 
-            mTimer.schedule(pendingTimer,delayMs);
-         }
-         handleResultSemaphore.release();
-      }
+       if (delayMs<=1)
+          queuePoll();
+       else
+       {
+          pendingTimerSemaphore.acquireUninterruptibly();
+          
+          if (pendingTimer!=null)
+             pendingTimer.cancel();
+
+          final MainView me = this;
+          pendingTimer = new TimerTask() {
+              @Override public void run() {
+                 me.queuePoll();
+              }
+          };
+
+          mTimer.schedule(pendingTimer,delayMs);
+
+          pendingTimerSemaphore.release();
+       }
    }
 
 
@@ -356,10 +358,12 @@ class MainView extends GLSurfaceView {
        deactivated = true;
        
        super.onPause(); //Pause GL Thread
-       
+
+       pendingTimerSemaphore.acquireUninterruptibly();
        if (pendingTimer != null) { //Pause the Haxe Thread
          pendingTimer.cancel();
        }
+       pendingTimerSemaphore.release();
    }
 
    @Override
