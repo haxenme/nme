@@ -36,7 +36,6 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
 import java.util.TimerTask;
-import java.util.concurrent.Semaphore;
 
 /**
  * A simple GLSurfaceView sub-class that demonstrate how to perform
@@ -67,7 +66,6 @@ class MainView extends GLSurfaceView {
    boolean onPaused;
    Runnable pollMe;
    TimerTask pendingTimer;
-   Semaphore handleResultSemaphore;
    boolean renderPending = false;
 
 
@@ -82,7 +80,6 @@ class MainView extends GLSurfaceView {
        pollMe = new Runnable() {
            @Override public void run() { me.onPollHX(); }
        };
-       handleResultSemaphore = new Semaphore(1);
 
        translucent = inTranslucent;
        getHolder().setFormat(
@@ -254,38 +251,36 @@ class MainView extends GLSurfaceView {
    // Haxe thread
    public void HandleResult(int inCode)
    {
-      if(handleResultSemaphore.tryAcquire()) {
-         if (inCode==resTerminate)
-         {
-            Log.v("VIEW","Terminate Request.");
-            mActivity.onNMEFinish();
-            return;
-         }
-         
-         double wake = NME.getNextWake();
-         int delayMs = (int)(wake * 1000);
+       if (inCode==resTerminate)
+       {
+          //Log.v("VIEW","Terminate Request.");
+          mActivity.onNMEFinish();
+          return;
+       }
 
-         if (renderPending && delayMs<5)
-            delayMs = 5;
 
-         if (delayMs<=1)
-            queuePoll();
-         else
-         {
-            if (pendingTimer!=null)
-               pendingTimer.cancel();
+       double wake = NME.getNextWake();
+       int delayMs = (int)(wake * 1000);
 
-            final MainView me = this;
-            pendingTimer = new TimerTask() {
-                @Override public void run() {
-                   me.queuePoll();
-                }
-            };
+       if (renderPending && delayMs<5)
+          delayMs = 5;
 
-            mTimer.schedule(pendingTimer,delayMs);
-         }
-         handleResultSemaphore.release();
-      }
+       if (delayMs<=1)
+          queuePoll();
+       else
+       {
+          if (pendingTimer!=null)
+             pendingTimer.cancel();
+
+          final MainView me = this;
+          pendingTimer = new TimerTask() {
+              @Override public void run() {
+                 me.queuePoll();
+              }
+          };
+
+          mTimer.schedule(pendingTimer,delayMs);
+       }
    }
 
 
