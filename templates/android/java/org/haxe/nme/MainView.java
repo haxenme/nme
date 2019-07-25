@@ -36,6 +36,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
 import java.util.TimerTask;
+import java.util.concurrent.Semaphore;
 
 /**
  * A simple GLSurfaceView sub-class that demonstrate how to perform
@@ -66,6 +67,7 @@ class MainView extends GLSurfaceView {
    boolean onPaused;
    Runnable pollMe;
    TimerTask pendingTimer;
+   Semaphore pendingTimerSemaphore;
    boolean renderPending = false;
 
 
@@ -76,6 +78,7 @@ class MainView extends GLSurfaceView {
        super(context);
 
        isPollImminent = false;
+       pendingTimerSemaphore = new Semaphore(1,true);
        final MainView me = this;
        pollMe = new Runnable() {
            @Override public void run() { me.onPollHX(); }
@@ -269,6 +272,8 @@ class MainView extends GLSurfaceView {
           queuePoll();
        else
        {
+          pendingTimerSemaphore.acquireUninterruptibly();
+          
           if (pendingTimer!=null)
              pendingTimer.cancel();
 
@@ -280,6 +285,8 @@ class MainView extends GLSurfaceView {
           };
 
           mTimer.schedule(pendingTimer,delayMs);
+
+          pendingTimerSemaphore.release();
        }
    }
 
@@ -351,10 +358,12 @@ class MainView extends GLSurfaceView {
        deactivated = true;
        
        super.onPause(); //Pause GL Thread
-       
+
+       pendingTimerSemaphore.acquireUninterruptibly();
        if (pendingTimer != null) { //Pause the Haxe Thread
          pendingTimer.cancel();
        }
+       pendingTimerSemaphore.release();
    }
 
    @Override
