@@ -16,6 +16,7 @@ class Graphics
    public static inline var TILE_RECT    = 0x0020;		// won't use tile ids
    public static inline var TILE_ORIGIN  = 0x0040;
    public static inline var TILE_NO_ID   = 0x0080;  // Assume ID0
+   public static inline var TILE_MOUSE_ENABLE   = 0x0100;
    private static inline var TILE_SMOOTH = 0x1000;
    public static inline var TILE_BLEND_NORMAL   = 0x00000000;
    public static inline var TILE_BLEND_ADD      = 0x00010000;

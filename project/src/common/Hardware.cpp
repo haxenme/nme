@@ -223,6 +223,9 @@ public:
    
             mElement.mPrimType = (mode & pcTile_Full_Image_Bit) ? ptQuadsFull : ptQuads;
             ReserveArrays(tiles*4);
+
+			if (mode & pcTile_Mouse_Enable_Bit)
+               mElement.mFlags |= DRAW_TILE_MOUSE;
    
             AddTiles(mode, &inPath.data[inJob.mData0], tiles);
          }
@@ -2489,6 +2492,26 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
                   return true;
            }
          }
+         else if ((draw.mPrimType == ptQuadsFull || draw.mPrimType == ptQuads) && (draw.mFlags & DRAW_TILE_MOUSE))
+		 {
+            if (draw.mCount<4)
+               continue;
+
+			int numQuads = draw.mCount / 4;
+
+			int vidx = 0;
+            for(int i=0;i<numQuads;i++)
+            {
+               UserPoint base = V(vidx++);
+               UserPoint _v0 = V(vidx++);
+               UserPoint _v1 = V(vidx++);
+               UserPoint _v2 = V(vidx++);
+               if (HitTri(base,_v0,_v1,pos))
+                  return true;
+			   else if (HitTri(_v0,_v2,_v1,pos))
+                  return true;
+           }
+		 }
          else if (draw.mPrimType == ptTriangleStrip)
          {
             for(int i=2;i<draw.mCount;i++)
