@@ -616,8 +616,9 @@ class NMMLParser
 
    private function isTemplate(element:Access, section:String):Bool {
       if(isValidElement(element, section)) {
-         if(element.name == "template" 
-         || element.name == "templatePath") {
+         if(element.name == "template"
+         || element.name == "templatePath"
+         || element.name == "templateCopy") {
             return true;
          }
       }
@@ -633,9 +634,19 @@ class NMMLParser
       else
          Log.error("Template should have either a 'name' or a 'path'");
 
-      if (element.has.rename)
+      if (element.has.to)
+      {
+         project.templateCopies.push( new TemplateCopy(path, substitute(element.att.to) ) );
+      }
+      else if (element.has.rename)
       {
          project.templateCopies.push( new TemplateCopy(path, substitute(element.att.rename) ) );
+      }
+      else if (element.name=="templateCopy")
+      {
+         if (!element.has.name)
+            Log.error("templateCopy should a 'name' attribute");
+         project.templateCopies.push( new TemplateCopy(path, substitute(element.att.name) ) );
       }
       else
       {
