@@ -154,7 +154,7 @@ const std::string &GetResourcePath()
 
 int GetDeviceOrientation()
 {
-   return ( [UIApplication sharedApplication].statusBarOrientation );
+   return ( [UIDevice currentDevice].orientation );
 }
 
 double CapabilitiesGetPixelAspectRatio()
