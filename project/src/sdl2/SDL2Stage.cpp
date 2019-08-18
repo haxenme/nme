@@ -2334,6 +2334,7 @@ void StartAnimation()
          AutoGCBlocking block;
          if (sgSDLFrame->mStage->BuildCache())
          {
+            block.Close();
             Event redraw(etRedraw);
             sgSDLFrame->ProcessEvent(redraw);
          }
