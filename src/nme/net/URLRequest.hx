@@ -2,6 +2,7 @@ package nme.net;
 #if (!flash)
 
 import nme.utils.ByteArray;
+import nme.net.URLVariables;
 
 @:nativeProperty
 class URLRequest 
@@ -75,7 +76,7 @@ class URLRequest
          nmeBytes = data;
 
       }
-      else if (Std.is(data, URLVariables)) 
+      else if (Std.is(data, URLVariablesBase))
       {
          var vars:URLVariables = data;
          var str = vars.toString();
