@@ -2961,6 +2961,7 @@ enum
   TILE_ORIGIN   = 0x0040,
   TILE_NO_ID    = 0x0080,
   TILE_MOUSE_ENABLE = 0x0100,
+  TILE_FIXED_SIZE   = 0x0200,
   TILE_SMOOTH   = 0x1000,
 
   TILE_BLEND_ADD   = 0x10000,
@@ -2991,7 +2992,7 @@ inline double TToFloat( const value &v, int inIdx ) {
 }
 #endif
 
-template<typename FLOATS,int RECTMODE, int TRANS, int COL>
+template<typename FLOATS,int RECTMODE, int TRANS, int COL,bool FIXED>
 void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inValues)
 {
    int max = inSheet->Tiles();
@@ -3021,7 +3022,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
    FRect rectBuf(_tile_rect);
    const FRect *r = &rectBuf;
 
-   inPath->reserveTiles(inN, RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID, TRANS!=0, COL!=0);
+   inPath->reserveTiles(inN, RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID, TRANS!=0, COL!=0, FIXED);
 
    int v = 0;
    for(int i=0;i<inN;i++)
@@ -3108,7 +3109,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
          trans_2x2[3] = trans_2x2[0];
       }
 
-      if (RECTMODE!=TILE_RECT_FULL && RECTMODE!=TILE_RECT_FULL_NO_ID)
+      if (RECTMODE!=TILE_RECT_FULL && RECTMODE!=TILE_RECT_FULL_NO_ID && !FIXED)
       {
          if (TRANS)
          {
@@ -3131,6 +3132,15 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
 
       if (COL & TILE_ALPHA)
          rgba[3] = TToFloat(inValues,v++);
+
+      if (FIXED)
+      {
+         if (TRANS)
+            inPath->qorigin( ox*trans_2x2[0] + oy*trans_2x2[2],
+                             ox*trans_2x2[1] + oy*trans_2x2[3] );
+         else
+            inPath->qorigin(ox,oy);
+      }
 
       if (RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID)
       {
@@ -3159,7 +3169,9 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
             inPath->qtile(x,y,r,0,rgba);
          else
             inPath->qtile(x,y,r,0,0);
+
       }
+
    }
    /*
    if (!inPath->commands.verify() || !inPath->data.verify())
@@ -3171,17 +3183,34 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
 template<typename FLOATS,int RECTMODE, int TRANS>
 void TAddTilesTrans( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inValues, unsigned int inFlags)
 {
-   if (inFlags & TILE_RGB)
+   if (inFlags & TILE_FIXED_SIZE)
    {
-      if (inFlags & TILE_ALPHA)
-         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA>( inPath, inSheet, inN, inValues);
+      if (inFlags & TILE_RGB)
+      {
+         if (inFlags & TILE_ALPHA)
+            TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA,true>( inPath, inSheet, inN, inValues);
+         else
+            TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB,true>( inPath, inSheet, inN, inValues);
+      }
+      else if (inFlags & TILE_ALPHA)
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_ALPHA,true>( inPath, inSheet, inN, inValues);
       else
-         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB>( inPath, inSheet, inN, inValues);
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, 0,true>( inPath, inSheet, inN, inValues);
    }
-   else if (inFlags & TILE_ALPHA)
-      TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_ALPHA>( inPath, inSheet, inN, inValues);
    else
-      TAddTilesCol<FLOATS, RECTMODE, TRANS, 0>( inPath, inSheet, inN, inValues);
+   {
+      if (inFlags & TILE_RGB)
+      {
+         if (inFlags & TILE_ALPHA)
+            TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA,false>( inPath, inSheet, inN, inValues);
+         else
+            TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB,false>( inPath, inSheet, inN, inValues);
+      }
+      else if (inFlags & TILE_ALPHA)
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_ALPHA,false>( inPath, inSheet, inN, inValues);
+      else
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, 0,false>( inPath, inSheet, inN, inValues);
+   }
 }
 
 template<typename FLOATS,int RECTMODE>
@@ -3301,6 +3330,8 @@ void nme_gfx_draw_tiles(value inGfx, value inSheet, value inXYIDs, int flags, in
             tileFlags |= pcTile_Col_Bit;
          if (flags & (TILE_MOUSE_ENABLE) )
             tileFlags |= pcTile_Mouse_Enable_Bit;
+         if (flags & (TILE_FIXED_SIZE) )
+            tileFlags |= pcTile_Fixed_Size_Bit;
 
          gfx->beginTiles(&sheet->GetSurface(), smooth, blend, tileFlags, n);
 

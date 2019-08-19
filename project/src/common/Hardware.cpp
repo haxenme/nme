@@ -66,7 +66,9 @@ public:
       mSolidMode = false;
       mAlphaAA = false;
       mPerpLen = 0.5;
-      mScale = data.scaleOf(inState);
+      mStateScale = data.scaleOf(inState);
+      mScale = mStateScale;
+      mTileScale = 1.0;
       if (mScale<=0.001)
          mScale = 0.001;
       mCurveThresh2 = 0.125/mScale/mScale;
@@ -220,13 +222,20 @@ public:
                mElement.mFlags |= DRAW_HAS_COLOUR;
                mElement.mColour = 0xffffffff;
             }
-   
+
             mElement.mPrimType = (mode & pcTile_Full_Image_Bit) ? ptQuadsFull : ptQuads;
             ReserveArrays(tiles*4);
 
-			if (mode & pcTile_Mouse_Enable_Bit)
+            if (mode & pcTile_Mouse_Enable_Bit)
                mElement.mFlags |= DRAW_TILE_MOUSE;
-   
+
+            if (mode & pcTile_Fixed_Size_Bit)
+            {
+               ioData.mMinScale = mStateScale*0.99;
+               ioData.mMaxScale = mStateScale*1.01;
+               mTileScale = mStateScale>0 ? 1.0/mStateScale : 1.0;
+            }
+
             AddTiles(mode, &inPath.data[inJob.mData0], tiles);
          }
       }
@@ -443,10 +452,9 @@ public:
    }
 
 
-   template<bool FULL, bool COL, bool TRANS>
-   void TAddTiles(const float *inData, int inTiles)
+   template<bool FULL, bool COL, bool TRANS, bool FIXED>
+   void TTAddTiles(const float *inData, int inTiles)
    {
-
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
       int *colours = COL ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
@@ -485,10 +493,23 @@ public:
       #define texTol  0.0000001f
 
       UserPoint tileSize = bmpSize;
+      if (FIXED && FULL)
+      {
+         tileSize.x *= mTileScale;
+         tileSize.y *= mTileScale;
+      }
 
       for(int i=0;i<inTiles;i++)
       {
-         pos = *point++;
+         if (FIXED)
+         {
+            UserPoint off = *point++;
+            pos = *point++;
+            pos.x -= off.x * mTileScale;
+            pos.y -= off.y * mTileScale;
+         }
+         else
+            pos = *point++;
 
          if (!FULL)
          {
@@ -515,6 +536,12 @@ public:
             {
                tex0.y = (tileOrigin.y ) * texScaleY + texTol;
                tex1.y = (tileOrigin.y + tileSize.y ) * texScaleY - texTol;
+            }
+
+            if (FIXED)
+            {
+               tileSize.x *= mTileScale;
+               tileSize.y *= mTileScale;
             }
          }
 
@@ -602,9 +629,19 @@ public:
       }
    }
 
-
    template<bool FULL, bool COL, bool TRANS>
-   void TAddTilesMt(const float *inData, int inTiles)
+   void TAddTiles(const float *inData, int inTiles,bool fixed)
+   {
+      if (fixed)
+         TTAddTiles<FULL,COL,TRANS,true>(inData,inTiles);
+      else
+         TTAddTiles<FULL,COL,TRANS,false>(inData,inTiles);
+   }
+
+
+
+   template<bool FULL, bool COL, bool TRANS, bool FIXED>
+   void TTAddTilesMt(const float *inData, int inTiles)
    {
       char *vertexPtr = (char *)&data.mArray[mElement.mVertexOffset];
       char *texPtr = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (char *)&data.mArray[ mElement.mTexOffset ] : 0;
@@ -643,8 +680,15 @@ public:
       #define texTol  0.0000001f
 
       UserPoint tileSize = bmpSize;
+      if (FIXED && FULL)
+      {
+         tileSize.x *= mTileScale;
+         tileSize.y *= mTileScale;
+      }
+
       int stride = mElement.mStride * 4;
       int srcPoints = 1;
+      if (FIXED) srcPoints += 1;
       if (!FULL) srcPoints += 2;
       if (TRANS) srcPoints += 2;
       if (COL) srcPoints += 2;
@@ -657,7 +701,15 @@ public:
 
          UserPoint *point = ((UserPoint *)inData) + pid*srcPoints;
 
-         pos = *point++;
+         if (FIXED)
+         {
+            UserPoint off = *point++;
+            pos = *point++;
+            pos.x -= off.x * mTileScale;
+            pos.y -= off.y * mTileScale;
+         }
+         else
+            pos = *point++;
 
          if (!FULL)
          {
@@ -684,6 +736,11 @@ public:
             {
                tex0.y = (tileOrigin.y ) * texScaleY + texTol;
                tex1.y = (tileOrigin.y + tileSize.y ) * texScaleY - texTol;
+            }
+            if (FIXED)
+            {
+               tileSize.x *= mTileScale;
+               tileSize.y *= mTileScale;
             }
          }
 
@@ -774,6 +831,15 @@ public:
       }
    }
 
+   template<bool FULL, bool COL, bool TRANS>
+   void TAddTilesMt(const float *inData, int inTiles, bool fixed)
+   {
+      if (fixed)
+         TTAddTilesMt<FULL,COL,TRANS,true>(inData,inTiles);
+      else
+         TTAddTilesMt<FULL,COL,TRANS,false>(inData,inTiles);
+   }
+
 
 
    struct AddTileJob
@@ -794,27 +860,28 @@ public:
       bool fullTile =  job->mode & pcTile_Full_Image_Bit;
       bool hasColour = job->mode & pcTile_Col_Bit;
       bool hasTrans =  job->mode & pcTile_Trans_Bit;
+      bool fixed = job->mode & pcTile_Fixed_Size_Bit;
 
       const float *inData = job->data;
       int inTiles = job->tiles;
       HardwareBuilder *thiz = job->builder;
 
       if      (!fullTile && !hasColour && !hasTrans)
-         thiz->TAddTilesMt<false,false,false>(inData, inTiles);
+         thiz->TAddTilesMt<false,false,false>(inData, inTiles, fixed);
       else if (!fullTile && !hasColour && hasTrans)
-         thiz->TAddTilesMt<false,false,true>(inData, inTiles);
+         thiz->TAddTilesMt<false,false,true>(inData, inTiles, fixed);
       else if (!fullTile && hasColour && !hasTrans)
-         thiz->TAddTilesMt<false,true,false>(inData, inTiles);
+         thiz->TAddTilesMt<false,true,false>(inData, inTiles, fixed);
       else if (!fullTile && hasColour && hasTrans)
-         thiz->TAddTilesMt<false,true,true>(inData, inTiles);
+         thiz->TAddTilesMt<false,true,true>(inData, inTiles, fixed);
       else if (fullTile && !hasColour && !hasTrans)
-         thiz->TAddTilesMt<true,false,false>(inData, inTiles);
+         thiz->TAddTilesMt<true,false,false>(inData, inTiles, fixed);
       else if (fullTile && !hasColour && hasTrans)
-         thiz->TAddTilesMt<true,false,true>(inData, inTiles);
+         thiz->TAddTilesMt<true,false,true>(inData, inTiles, fixed);
       else if (fullTile && hasColour && !hasTrans)
-         thiz->TAddTilesMt<true,true,false>(inData, inTiles);
+         thiz->TAddTilesMt<true,true,false>(inData, inTiles, fixed);
       else if (fullTile && hasColour && hasTrans)
-         thiz->TAddTilesMt<true,true,true>(inData, inTiles);
+         thiz->TAddTilesMt<true,true,true>(inData, inTiles, fixed);
    }
 
    void AddTiles(int inMode, const float *inData, int inTiles)
@@ -830,23 +897,24 @@ public:
          bool fullTile =  inMode & pcTile_Full_Image_Bit;
          bool hasColour = inMode & pcTile_Col_Bit;
          bool hasTrans =  inMode & pcTile_Trans_Bit;
+         bool isFixed =  inMode & pcTile_Fixed_Size_Bit;
 
          if      (!fullTile && !hasColour && !hasTrans)
-            TAddTiles<false,false,false>(inData, inTiles);
+            TAddTiles<false,false,false>(inData, inTiles, isFixed);
          else if (!fullTile && !hasColour && hasTrans)
-            TAddTiles<false,false,true>(inData, inTiles);
+            TAddTiles<false,false,true>(inData, inTiles, isFixed);
          else if (!fullTile && hasColour && !hasTrans)
-            TAddTiles<false,true,false>(inData, inTiles);
+            TAddTiles<false,true,false>(inData, inTiles, isFixed);
          else if (!fullTile && hasColour && hasTrans)
-            TAddTiles<false,true,true>(inData, inTiles);
+            TAddTiles<false,true,true>(inData, inTiles, isFixed);
          else if (fullTile && !hasColour && !hasTrans)
-            TAddTiles<true,false,false>(inData, inTiles);
+            TAddTiles<true,false,false>(inData, inTiles, isFixed);
          else if (fullTile && !hasColour && hasTrans)
-            TAddTiles<true,false,true>(inData, inTiles);
+            TAddTiles<true,false,true>(inData, inTiles, isFixed);
          else if (fullTile && hasColour && !hasTrans)
-            TAddTiles<true,true,false>(inData, inTiles);
+            TAddTiles<true,true,false>(inData, inTiles, isFixed);
          else if (fullTile && hasColour && hasTrans)
-            TAddTiles<true,true,true>(inData, inTiles);
+            TAddTiles<true,true,true>(inData, inTiles, isFixed);
       }
 
       mElement.mCount = inTiles*4;
@@ -1624,12 +1692,12 @@ public:
 
 
       // Allow shrinking to half the size
-      float s = mScale * 0.5;
+      float s = mStateScale * 0.5;
       if (data.mMinScale==0 || s>data.mMinScale)
          data.mMinScale = s;
 
       // And growing to 1.41 the size ...
-      s = mScale * 1.41;
+      s = mStateScale * 1.41;
       if (data.mMaxScale==0 || s<data.mMaxScale)
          data.mMaxScale = s;
 
@@ -2150,6 +2218,8 @@ public:
    double      mMiterLimit;
    double      mPerpLen;
    double      mScale;
+   double      mStateScale;
+   double      mTileScale;
    double      mCurveThresh2;
    double      mFatLineCullThresh;
    Matrix      mTextureMapper;

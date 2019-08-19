@@ -256,11 +256,12 @@ enum PathCommand
    pcPointsXY  = 9,
    pcPointsXYRGBA  = 11,
 
-   pcTile                 = 0x10,
-   pcTile_Trans_Bit       = 0x01,
-   pcTile_Col_Bit         = 0x02,
-   pcTile_Full_Image_Bit  = 0x04,
-   pcTile_Mouse_Enable_Bit  = 0x08,
+   pcTile_Trans_Bit        = 0x01,
+   pcTile_Col_Bit          = 0x02,
+   pcTile_Full_Image_Bit   = 0x04,
+   pcTile_Mouse_Enable_Bit = 0x08,
+   pcTile                  = 0x10,
+   pcTile_Fixed_Size_Bit   = 0x20,
 
 
    pcBlendModeAdd   = 0x20,
@@ -299,7 +300,7 @@ public:
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs);
    void closeLine(int inCommand0, int inData0);
 
-   void reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour);
+   void reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour, bool isFixed);
    // You must reserveTiles before calling these
    inline void qimage(float x, float y, float *inTrans,float *inRGBA)
    {
@@ -319,6 +320,11 @@ public:
          data.qpush(inRGBA[2]);
          data.qpush(inRGBA[3]);
       }
+   }
+   inline void qorigin(float x, float y)
+   {
+      data.qpush(x);
+      data.qpush(y);
    }
 
    inline void qtile(float x, float y, const FRect *inTileRect,float *inTrans,float *inRGBA)

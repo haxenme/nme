@@ -16,6 +16,7 @@ class Tilesheet
    public static inline var TILE_ORIGIN       = 0x0040;
    public static inline var TILE_NO_ID        = 0x0080;
    public static inline var TILE_MOUSE_ENABLE = 0x0100;
+   public static inline var TILE_FIXED_SIZE   = 0x0200;
    public static inline var TILE_BLEND_NORMAL = 0x00000000;
    public static inline var TILE_BLEND_ADD = 0x00010000;
 

@@ -138,7 +138,7 @@ void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inTrans,
    }
 }
 
-void GraphicsPath::reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour)
+void GraphicsPath::reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour, bool isFixed)
 {
    commands.reserve( commands.size() + inN );
    int points = inFullImage ? 1 : 3;
@@ -146,6 +146,8 @@ void GraphicsPath::reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool
       points += 2;
    if (inHasColour)
       points += 2;
+   if (isFixed)
+      points++;
    data.reserve( data.size() + inN*points*2 );
 }
 
