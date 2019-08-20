@@ -224,7 +224,7 @@ public:
             }
 
             mElement.mPrimType = (mode & pcTile_Full_Image_Bit) ? ptQuadsFull : ptQuads;
-            ReserveArrays(tiles*4);
+            ReserveArraysTight(tiles*4);
 
             if (mode & pcTile_Mouse_Enable_Bit)
                mElement.mFlags |= DRAW_TILE_MOUSE;
@@ -249,10 +249,17 @@ public:
       }
    }
  
-   void ReserveArrays(int inN)
+   void ReserveArraysTight(int inN)
    {
       mElement.mCount = inN;
       data.mArray.resize( mElement.mVertexOffset + mElement.mStride*inN );
+   }
+
+
+   void ReserveArrays(int inN)
+   {
+      mElement.mCount = inN;
+      data.mArray.resizeSpace( mElement.mVertexOffset + mElement.mStride*inN );
    }
 
   
