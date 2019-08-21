@@ -4,7 +4,7 @@ package nme.text;
 import haxe.Resource;
 import nme.display.Stage;
 import nme.utils.ByteArray;
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 @:autoBuild(nme.macros.Embed.embedAsset("NME_font_",":font"))
@@ -159,18 +159,18 @@ class Font
 
    #if (cpp||neko)
    static function get_useNative():Bool return nme_font_get_use_native();
-   static function set_useNative(inVal:Bool):Bool return nme_font_set_use_native(inVal);
+   static function set_useNative(inVal:Bool):Bool {nme_font_set_use_native(inVal); return inVal;}
 
    // Native Methods
-   private static var nme_font_set_use_native = Loader.load("nme_font_set_use_native", 1);
-   private static var nme_font_get_use_native = Loader.load("nme_font_get_use_native", 0);
+   private static var nme_font_set_use_native = PrimeLoader.load("nme_font_set_use_native", "bv");
+   private static var nme_font_get_use_native = PrimeLoader.load("nme_font_get_use_native", "b");
    #else
    static function get_useNative():Bool return false;
    static function set_useNative(inVal:Bool):Bool return false;
    #end
-   private static var freetype_import_font = Loader.load("freetype_import_font", 4);
-   private static var nme_font_register_font = Loader.load("nme_font_register_font", 2);
-   private static var nme_font_iterate_device_fonts = Loader.load("nme_font_iterate_device_fonts", 1);
+   private static var freetype_import_font = nme.Loader.load("freetype_import_font", 4);
+   private static var nme_font_register_font = nme.Loader.load("nme_font_register_font", 2);
+   private static var nme_font_iterate_device_fonts = PrimeLoader.load("nme_font_iterate_device_fonts", "ov");
 }
 
 typedef NativeFontData = 

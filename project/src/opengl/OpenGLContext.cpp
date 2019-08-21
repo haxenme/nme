@@ -13,11 +13,6 @@
 #endif
 
 
-
-int sgDrawCount = 0;
-int sgDrawBitmap = 0;
-
-
 namespace nme
 {
 
@@ -45,7 +40,12 @@ void ResetHardwareContext()
       HardwareRenderer::current->OnContextLost();
 }
 
-
+glStatsStruct gStats;
+glStatsStruct gCurrStats;
+void GetGLStats(int * statsArray, int n)
+{
+   gStats.get(statsArray, n);
+}
 
 class OGLContext : public HardwareRenderer
 {
@@ -370,13 +370,12 @@ public:
          mLineWidth = 99999;
 
          // printf("DrawArrays: %d, DrawBitmaps:%d  Buffers:%d\n", sgDrawCount, sgDrawBitmap, sgBufferCount );
-         sgDrawCount = 0;
-         sgDrawBitmap = 0;
+         gCurrStats.clear();
       }
    }
    void EndRender()
    {
-
+      gCurrStats.get(&gStats);
    }
 
    void updateContext()
@@ -659,17 +658,19 @@ public:
          }
    
             //printf("glDrawArrays %d : %d x %d\n", element.mPrimType, element.mFirst, element.mCount );
-
-         sgDrawCount++;
          
          if (element.mPrimType==ptQuads || element.mPrimType==ptQuadsFull)
          {
             BindQuadsBufferIndices(element.mCount);
-            glDrawElements(GL_TRIANGLES, element.mCount*3/2, mQuadsBufferType, 0 );
+            GLsizei nVerts = element.mCount*3/2;
+            glDrawElements(GL_TRIANGLES, nVerts, mQuadsBufferType, 0 );
+            gCurrStats.record(nVerts, NME_GL_STATS_DRAW_ELEMENTS);
          }
          else
+         {
             glDrawArrays(sgOpenglType[element.mPrimType], 0, element.mCount );
-
+            gCurrStats.record(element.mCount, NME_GL_STATS_DRAW_ARRAYS);
+         }
       }
 
       if (lastProg)
@@ -867,7 +868,6 @@ public:
    GLuint mQuadsBuffer;
    GLenum mQuadsBufferSize;
    GLenum mQuadsBufferType;
-
 
    Trans4x4 mTrans;
 };

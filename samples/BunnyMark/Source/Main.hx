@@ -59,17 +59,26 @@ class Main extends Sprite
       addChild(tilemap);
       #end
 
+      #if nme
+      var dpi = nme.system.Capabilities.screenDPI;
+      var dpiScale = Math.max(dpi/120,1);
+      #else
+      var dpiScale = 1.0;
+      #end
+
       fps = new FPS();
       fps.background = true;
       fps.backgroundColor = 0xffffff;
-      addChild(fps);
+      fps.scaleX = fps.scaleY = dpiScale;
+      flash.Lib.current.addChild(fps);
       bunnyCount = new TextField();
       bunnyCount.text = "?";
-      bunnyCount.y = 40;
+      bunnyCount.y = 40*dpiScale;
       bunnyCount.background = true;
       bunnyCount.backgroundColor = 0xffffff;
       bunnyCount.autoSize = openfl.text.TextFieldAutoSize.LEFT;
-      addChild(bunnyCount);
+      bunnyCount.scaleX = bunnyCount.scaleY = dpiScale;
+      flash.Lib.current.addChild(bunnyCount);
 
       stage.addEventListener(MouseEvent.MOUSE_DOWN, stage_onMouseDown);
       stage.addEventListener(MouseEvent.MOUSE_UP, stage_onMouseUp);

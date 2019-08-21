@@ -1905,45 +1905,41 @@ enum
 };
 
 
-void SimpleSurface::getFloats32(float *outData, int inStride, PixelFormat inFormat, int inTransform, int inSubsample)
+void SimpleSurface::getFloats32(float *outData, int inStride, PixelFormat inFormat, int inTransform, int inSubsample,const Rect &bounds)
 {
+   int pixelSize = BytesPerPixel(inFormat);
+
    std::vector<unsigned char> buffer;
-   const unsigned char *ptr = mBase;
+   const unsigned char *ptr = mBase + mStride*bounds.y + bounds.x*BytesPerPixel(mPixelFormat);
+   int w = bounds.w;
+   int h = bounds.h;
    // TODO - inSubsample
    int stride = mStride;
-   int pixelSize = BytesPerPixel(inFormat);
    if (inFormat!=mPixelFormat)
    {
-      stride = mWidth * pixelSize;
-      buffer.resize( stride * mHeight );
-      PixelConvert(mWidth, mHeight,
-          mPixelFormat,  mBase, mStride, GetPlaneOffset(),
+      stride = w * pixelSize;
+      buffer.resize( stride * h );
+      PixelConvert(w, h,
+          mPixelFormat,  ptr, mStride, GetPlaneOffset(),
           inFormat, &buffer[0], stride, 0 );
       ptr = &buffer[0];
    }
    bool swizzleRgb = (inTransform & FloatSwizzeRgb );
 
    int histo[256];
-   int ppr = mWidth * pixelSize;
-   int count = ppr*mHeight;
-   memset(histo, 0, sizeof(histo));
-   for(int y=0;y<mHeight;y++)
+   int ppr = w * pixelSize;
+   int count = ppr*h;
+
+   if ( inTransform & (FloatZeroMean | FloatStdScale) )
    {
-      const Uint8 *p = ptr + y*stride;
-      for(int x=0;x<ppr;x++)
-         histo[p[x]]++;
+      memset(histo, 0, sizeof(histo));
+      for(int y=0;y<h;y++)
+      {
+         const Uint8 *p = ptr + y*stride;
+         for(int x=0;x<ppr;x++)
+            histo[p[x]]++;
+      }
    }
-   int n = 0;
-   int sumX = 0;
-   double sumX2 = 0;
-   for(int i=0;i<256;i++)
-   {
-      n += histo[i];
-      sumX += i*histo[i];
-      sumX2 += i*i*histo[i];
-   }
-   if (!n)
-      return;
    float lut[256];
 
    if (!inTransform)
@@ -1999,15 +1995,15 @@ void SimpleSurface::getFloats32(float *outData, int inStride, PixelFormat inForm
    }
 
    float *dest = outData;
-   for(int y=0;y<mHeight;y++)
+   for(int y=0;y<h;y++)
    {
       const Uint8 *src = ptr + y*stride;
       if (inStride)
-         dest = (float *)( (char *)outData + inStride*mHeight );
+         dest = (float *)( (char *)outData + inStride*y );
 
       if (swizzleRgb && inFormat==pfRGB)
       {
-        for(int x=0;x<mWidth;x++)
+        for(int x=0;x<w;x++)
         {
            *dest++ = lut[src[2]];
            *dest++ = lut[src[1]];
@@ -2072,10 +2068,13 @@ void SimpleSurface::setUInts8(const uint8 *inData, int inStride, PixelFormat inF
 
 
 
-void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat inFormat, int inTransform, int inExpand)
+void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat inFormat, int inTransform, int inExpand,const Rect &bounds)
 {
+   Uint8 *ptr = mBase + mStride*bounds.y + bounds.x*BytesPerPixel(mPixelFormat);
+   int w = bounds.w;
+   int h = bounds.h;
+
    std::vector<unsigned char> buffer;
-   Uint8 *ptr = mBase;
    // TODO - inExpand
 
    int stride = mStride;
@@ -2083,15 +2082,15 @@ void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat i
 
    if (inFormat!=mPixelFormat)
    {
-      stride = mWidth * pixelSize;
-      buffer.resize( stride * mHeight );
+      stride = w * pixelSize;
+      buffer.resize( stride * h );
       ptr = &buffer[0];
    }
-   int ppr = mWidth * pixelSize;
+   int ppr = w * pixelSize;
 
    const float *src = inData;
    #define GET_FLOAT( EXPR ) { \
-         for(int y=0;y<mHeight;y++) \
+         for(int y=0;y<h;y++) \
          { \
             Uint8 *dest = ptr + y*stride; \
             if (inStride) \
@@ -2110,7 +2109,7 @@ void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat i
    if (inTransform & Float128Mean)
    {
       if (inTransform & FloatUnitScale)
-         GET_FLOAT( *src++ * 128.0f + 128.0f )
+         GET_FLOAT( *src++ * 255.0f + 128.0f )
       else
          GET_FLOAT( *src++ + 128.0f )
    }
@@ -2125,10 +2124,13 @@ void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat i
 
    if (inFormat!=mPixelFormat)
    {
-      PixelConvert(mWidth, mHeight,
+      PixelConvert(w, h,
           inFormat,  &buffer[0], stride, 0,
-          mPixelFormat, mBase, mStride, 0 );
+          mPixelFormat, ptr, mStride, 0 );
    }
+
+   if (mTexture)
+      mTexture->Dirty(bounds);
 }
 
 

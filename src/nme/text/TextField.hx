@@ -2,7 +2,7 @@ package nme.text;
 #if (!flash)
 
 import nme.display.InteractiveObject;
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.geom.Rectangle;
 
 @:nativeProperty
@@ -120,6 +120,19 @@ class TextField extends InteractiveObject
       nme_text_field_replace_text(nmeHandle, c0, c1, inNewText);
    }
 
+   public function sendKey(charCode:Int, keyId:Int, shift:Bool, ctrl:Bool, alt:Bool) : Void
+   {
+      var flags = 0;
+      if (shift) flags |= 0x02;
+      if (ctrl) flags |= 0x14;
+      if (alt) flags |= 0x08;
+      nme_text_field_send_key(nmeHandle, charCode, keyId, flags);
+   }
+
+   public function sendCopy() { sendKey(0, nme.ui.Keyboard.C, false, true, false ); }
+   public function sendPaste() { sendKey(0, nme.ui.Keyboard.V, false, true, false ); }
+
+
 
    // Getters & Setters
    private function get_autoSize():TextFieldAutoSize { return Type.createEnumIndex(TextFieldAutoSize, nme_text_field_get_auto_size(nmeHandle)); }
@@ -168,63 +181,64 @@ class TextField extends InteractiveObject
    private function set_wordWrap(inVal:Bool):Bool { nme_text_field_set_word_wrap(nmeHandle, inVal); return inVal; }
 
    // Native Methods
-   private static var nme_text_field_create = Loader.load("nme_text_field_create", 0);
-   private static var nme_text_field_get_text = Loader.load("nme_text_field_get_text", 1);
-   private static var nme_text_field_set_text = Loader.load("nme_text_field_set_text", 2);
-   private static var nme_text_field_get_html_text = Loader.load("nme_text_field_get_html_text", 1);
-   private static var nme_text_field_set_html_text = Loader.load("nme_text_field_set_html_text", 2);
-   private static var nme_text_field_get_text_color = Loader.load("nme_text_field_get_text_color", 1);
-   private static var nme_text_field_set_text_color = Loader.load("nme_text_field_set_text_color", 2);
-   private static var nme_text_field_get_selectable = Loader.load("nme_text_field_get_selectable", 1);
-   private static var nme_text_field_set_selectable = Loader.load("nme_text_field_set_selectable", 2);
-   private static var nme_text_field_get_display_as_password = Loader.load("nme_text_field_get_display_as_password", 1);
-   private static var nme_text_field_set_display_as_password = Loader.load("nme_text_field_set_display_as_password", 2);
-   private static var nme_text_field_get_def_text_format = Loader.load("nme_text_field_get_def_text_format", 2);
-   private static var nme_text_field_set_def_text_format = Loader.load("nme_text_field_set_def_text_format", 2);
-   private static var nme_text_field_get_auto_size = Loader.load("nme_text_field_get_auto_size", 1);
-   private static var nme_text_field_set_auto_size = Loader.load("nme_text_field_set_auto_size", 2);
-   private static var nme_text_field_get_type = Loader.load("nme_text_field_get_type", 1);
-   private static var nme_text_field_set_type = Loader.load("nme_text_field_set_type", 2);
-   private static var nme_text_field_get_multiline = Loader.load("nme_text_field_get_multiline", 1);
-   private static var nme_text_field_set_multiline = Loader.load("nme_text_field_set_multiline", 2);
-   private static var nme_text_field_get_word_wrap = Loader.load("nme_text_field_get_word_wrap", 1);
-   private static var nme_text_field_set_word_wrap = Loader.load("nme_text_field_set_word_wrap", 2);
-   private static var nme_text_field_get_border = Loader.load("nme_text_field_get_border", 1);
-   private static var nme_text_field_set_border = Loader.load("nme_text_field_set_border", 2);
-   private static var nme_text_field_get_border_color = Loader.load("nme_text_field_get_border_color", 1);
-   private static var nme_text_field_set_border_color = Loader.load("nme_text_field_set_border_color", 2);
-   private static var nme_text_field_get_background = Loader.load("nme_text_field_get_background", 1);
-   private static var nme_text_field_set_background = Loader.load("nme_text_field_set_background", 2);
-   private static var nme_text_field_get_background_color = Loader.load("nme_text_field_get_background_color", 1);
-   private static var nme_text_field_set_background_color = Loader.load("nme_text_field_set_background_color", 2);
-   private static var nme_text_field_get_text_width = Loader.load("nme_text_field_get_text_width", 1);
-   private static var nme_text_field_get_text_height = Loader.load("nme_text_field_get_text_height", 1);
-   private static var nme_text_field_get_text_format = Loader.load("nme_text_field_get_text_format", 4);
-   private static var nme_text_field_set_text_format = Loader.load("nme_text_field_set_text_format", 4);
-   private static var nme_text_field_get_max_scroll_v = Loader.load("nme_text_field_get_max_scroll_v", 1);
-   private static var nme_text_field_get_max_scroll_h = Loader.load("nme_text_field_get_max_scroll_h", 1);
-   private static var nme_text_field_get_bottom_scroll_v = Loader.load("nme_text_field_get_bottom_scroll_v", 1);
-   private static var nme_text_field_get_scroll_h = Loader.load("nme_text_field_get_scroll_h", 1);
-   private static var nme_text_field_set_scroll_h = Loader.load("nme_text_field_set_scroll_h", 2);
-   private static var nme_text_field_get_scroll_v = Loader.load("nme_text_field_get_scroll_v", 1);
-   private static var nme_text_field_set_scroll_v = Loader.load("nme_text_field_set_scroll_v", 2);
-   private static var nme_text_field_get_num_lines = Loader.load("nme_text_field_get_num_lines", 1);
-   private static var nme_text_field_get_max_chars = Loader.load("nme_text_field_get_max_chars", 1);
-   private static var nme_text_field_set_max_chars = Loader.load("nme_text_field_set_max_chars", 2);
-   private static var nme_text_field_get_line_text = Loader.load("nme_text_field_get_line_text", 2);
-   private static var nme_text_field_get_line_metrics = Loader.load("nme_text_field_get_line_metrics", 3);
-   private static var nme_text_field_get_line_offset = Loader.load("nme_text_field_get_line_offset", 2);
-   private static var nme_text_field_get_embed_fonts = Loader.load("nme_text_field_get_embed_fonts", 1);
-   private static var nme_text_field_set_embed_fonts = Loader.load("nme_text_field_set_embed_fonts", 2);
-   private static var nme_text_field_get_char_boundaries = Loader.load("nme_text_field_get_char_boundaries", 3);
-   private static var nme_text_field_get_selection_begin_index = Loader.load("nme_text_field_get_selection_begin_index", 1);
-   private static var nme_text_field_get_selection_end_index = Loader.load("nme_text_field_get_selection_end_index", 1);
-   private static var nme_text_field_set_selection = Loader.load("nme_text_field_set_selection", 3);
+   private static var nme_text_field_create = PrimeLoader.load("nme_text_field_create", "o");
+   private static var nme_text_field_get_text = nme.Loader.load("nme_text_field_get_text", 1);
+   private static var nme_text_field_set_text = nme.Loader.load("nme_text_field_set_text", 2);
+   private static var nme_text_field_get_html_text = nme.Loader.load("nme_text_field_get_html_text", 1);
+   private static var nme_text_field_set_html_text = nme.Loader.load("nme_text_field_set_html_text", 2);
+   private static var nme_text_field_get_text_color = PrimeLoader.load("nme_text_field_get_text_color", "oi");
+   private static var nme_text_field_set_text_color = PrimeLoader.load("nme_text_field_set_text_color", "oiv");
+   private static var nme_text_field_get_selectable = PrimeLoader.load("nme_text_field_get_selectable", "ob");
+   private static var nme_text_field_set_selectable = PrimeLoader.load("nme_text_field_set_selectable", "obv");
+   private static var nme_text_field_get_display_as_password = PrimeLoader.load("nme_text_field_get_display_as_password", "ob");
+   private static var nme_text_field_set_display_as_password = PrimeLoader.load("nme_text_field_set_display_as_password", "obv");
+   private static var nme_text_field_get_def_text_format = PrimeLoader.load("nme_text_field_get_def_text_format", "oov");
+   private static var nme_text_field_set_def_text_format = PrimeLoader.load("nme_text_field_set_def_text_format", "oov");
+   private static var nme_text_field_get_auto_size = PrimeLoader.load("nme_text_field_get_auto_size", "oi");
+   private static var nme_text_field_set_auto_size = PrimeLoader.load("nme_text_field_set_auto_size", "oiv");
+   private static var nme_text_field_get_type = PrimeLoader.load("nme_text_field_get_type", "ob");
+   private static var nme_text_field_set_type = PrimeLoader.load("nme_text_field_set_type", "obv");
+   private static var nme_text_field_get_multiline = PrimeLoader.load("nme_text_field_get_multiline", "ob");
+   private static var nme_text_field_set_multiline = PrimeLoader.load("nme_text_field_set_multiline", "obv");
+   private static var nme_text_field_get_word_wrap = PrimeLoader.load("nme_text_field_get_word_wrap", "ob");
+   private static var nme_text_field_set_word_wrap = PrimeLoader.load("nme_text_field_set_word_wrap", "obv");
+   private static var nme_text_field_get_border = PrimeLoader.load("nme_text_field_get_border", "ob");
+   private static var nme_text_field_set_border = PrimeLoader.load("nme_text_field_set_border", "obv");
+   private static var nme_text_field_get_border_color = PrimeLoader.load("nme_text_field_get_border_color", "oi");
+   private static var nme_text_field_set_border_color = PrimeLoader.load("nme_text_field_set_border_color", "oiv");
+   private static var nme_text_field_get_background = PrimeLoader.load("nme_text_field_get_background", "ob");
+   private static var nme_text_field_set_background = PrimeLoader.load("nme_text_field_set_background", "obv");
+   private static var nme_text_field_get_background_color = PrimeLoader.load("nme_text_field_get_background_color", "oi");
+   private static var nme_text_field_set_background_color = PrimeLoader.load("nme_text_field_set_background_color", "oiv");
+   private static var nme_text_field_get_text_width = PrimeLoader.load("nme_text_field_get_text_width", "od");
+   private static var nme_text_field_get_text_height = PrimeLoader.load("nme_text_field_get_text_height", "od");
+   private static var nme_text_field_get_text_format = PrimeLoader.load("nme_text_field_get_text_format", "ooiiv");
+   private static var nme_text_field_set_text_format = PrimeLoader.load("nme_text_field_set_text_format", "ooiiv");
+   private static var nme_text_field_get_max_scroll_v = PrimeLoader.load("nme_text_field_get_max_scroll_v", "oi");
+   private static var nme_text_field_get_max_scroll_h = PrimeLoader.load("nme_text_field_get_max_scroll_h", "oi");
+   private static var nme_text_field_get_bottom_scroll_v = PrimeLoader.load("nme_text_field_get_bottom_scroll_v", "oi");
+   private static var nme_text_field_get_scroll_h = PrimeLoader.load("nme_text_field_get_scroll_h", "oi");
+   private static var nme_text_field_set_scroll_h = PrimeLoader.load("nme_text_field_set_scroll_h", "oiv");
+   private static var nme_text_field_get_scroll_v = PrimeLoader.load("nme_text_field_get_scroll_v", "oi");
+   private static var nme_text_field_set_scroll_v = PrimeLoader.load("nme_text_field_set_scroll_v", "oiv");
+   private static var nme_text_field_get_num_lines = PrimeLoader.load("nme_text_field_get_num_lines", "oi");
+   private static var nme_text_field_get_max_chars = PrimeLoader.load("nme_text_field_get_max_chars", "oi");
+   private static var nme_text_field_set_max_chars = PrimeLoader.load("nme_text_field_set_max_chars", "oiv");
+   private static var nme_text_field_get_line_text = nme.Loader.load("nme_text_field_get_line_text", 2);
+   private static var nme_text_field_get_line_metrics = PrimeLoader.load("nme_text_field_get_line_metrics", "oiov");
+   private static var nme_text_field_get_line_offset = PrimeLoader.load("nme_text_field_get_line_offset", "oii");
+   private static var nme_text_field_get_embed_fonts = PrimeLoader.load("nme_text_field_get_embed_fonts", "ob");
+   private static var nme_text_field_set_embed_fonts = PrimeLoader.load("nme_text_field_set_embed_fonts", "obv");
+   private static var nme_text_field_get_char_boundaries = PrimeLoader.load("nme_text_field_get_char_boundaries", "oiov");
+   private static var nme_text_field_get_selection_begin_index = PrimeLoader.load("nme_text_field_get_selection_begin_index", "oi");
+   private static var nme_text_field_get_selection_end_index = PrimeLoader.load("nme_text_field_get_selection_end_index", "oi");
+   private static var nme_text_field_set_selection = PrimeLoader.load("nme_text_field_set_selection", "oiiv");
 
    private static var nme_text_field_get_line_positions = PrimeLoader.load("nme_text_field_get_line_positions", "oiov");
    private static var nme_text_field_get_line_for_char = PrimeLoader.load("nme_text_field_get_line_for_char", "oii");
    private static var nme_text_field_replace_selected_text = PrimeLoader.load("nme_text_field_replace_selected_text", "oov");
    private static var nme_text_field_replace_text = PrimeLoader.load("nme_text_field_replace_text", "oiiov");
+   private static var nme_text_field_send_key = PrimeLoader.load("nme_text_field_send_key", "oiiiv");
 }
 
 #else

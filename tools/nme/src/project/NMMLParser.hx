@@ -1,5 +1,7 @@
 package;
 
+import Lambda;
+import haxe.xml.Fast;
 import haxe.io.Path;
 // Can't really use haxe_ver becaise it has been at 4 for over a year
 #if !force_xml_access  // (haxe_ver < 4)
@@ -541,6 +543,9 @@ class NMMLParser
 
                case "gameActivityBase":
                   project.androidConfig.gameActivityBase = value;
+               
+               case "abi":
+                  project.androidConfig.ABIs.push(value);
 
                default:
                   Log.error("Unknown android attribute " + childElement.name);
@@ -584,7 +589,73 @@ class NMMLParser
          project.app.swfVersion = Std.parseFloat(substitute(element.att.resolve("swf-version")));
    }
 
-   private function parseXML(xml:Access, section:String, extensionPath:String, inWarnUnknown):Void 
+   private function parseXML(xml:Access, section:String, extensionPath:String, inWarnUnknown):Void
+   {
+      parseRelationally(xml, section, extensionPath);
+      parseSequentially(xml, section, extensionPath, inWarnUnknown);
+   }
+
+   function parseRelationally(xml:Access, section:String, extensionPath:String):Void
+   {
+      for(element in xml.elements)
+         if (isTemplate(element,section))
+             parseTemplate(element,extensionPath);
+
+      /*
+      var elements:Array<Access> = [for(element in xml.elements) element];
+      
+      var templates:List<Access> = Lambda.filter(elements, function(element) {
+         return isTemplate(element, section);
+      });
+      
+      Lambda.iter(templates, function(element) {
+         return parseTemplate(element,extensionPath);
+      });
+      */
+   }
+
+   private function isTemplate(element:Access, section:String):Bool {
+      if(isValidElement(element, section)) {
+         if(element.name == "template"
+         || element.name == "templatePath"
+         || element.name == "templateCopy") {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   function parseTemplate(element:Access, extensionPath:String):Void {
+      var path = "";
+      if (element.has.name)
+         path = combine(extensionPath, substitute(element.att.name));
+      else if (element.has.path)
+         path = combine(extensionPath, substitute(element.att.path));
+      else
+         Log.error("Template should have either a 'name' or a 'path'");
+
+      if (element.has.to)
+      {
+         project.templateCopies.push( new TemplateCopy(path, substitute(element.att.to) ) );
+      }
+      else if (element.has.rename)
+      {
+         project.templateCopies.push( new TemplateCopy(path, substitute(element.att.rename) ) );
+      }
+      else if (element.name=="templateCopy")
+      {
+         if (!element.has.name)
+            Log.error("templateCopy should a 'name' attribute");
+         project.templateCopies.push( new TemplateCopy(path, substitute(element.att.name) ) );
+      }
+      else
+      {
+         project.templatePaths.remove(path);
+         project.templatePaths.push(path);
+      }
+   }
+   
+   private function parseSequentially(xml:Access, section:String, extensionPath:String, inWarnUnknown):Void 
    {
       for(element in xml.elements) 
       {
@@ -844,6 +915,14 @@ class NMMLParser
                   project.classPaths.push( fullPath );
                   Log.verbose("Adding class path " + fullPath);
 
+               case "fileAssociation":
+                  if (!element.has.extension) 
+                     Log.error("fileAssociation element should have extension attribute");
+                  if (!element.has.description) 
+                     Log.error("fileAssociation element should have description attribute");
+                  project.addFileAssociation(
+                       substitute(element.att.extension), substitute(element.att.description) );
+
                case "extension":
 
                   // deprecated
@@ -864,7 +943,8 @@ class NMMLParser
                   parseWindowElement(element);
 
                case "assets":
-                  parseAssetsElement(element, extensionPath);
+                  if(!project.skipAssets)
+                     parseAssetsElement(element, extensionPath);
 
                case "watchos":
                   parseWatchOSElement(element, extensionPath);
@@ -892,25 +972,6 @@ class NMMLParser
 
                   //if (wantSslCertificate())
                      //parseSsl(element);
-               case "template", "templatePath":
-
-                  var path = "";
-                  if (element.has.name)
-                     path = combine(extensionPath, substitute(element.att.name));
-                  else if (element.has.path)
-                     path = combine(extensionPath, substitute(element.att.path));
-                  else
-                     Log.error("Template should have either a 'name' or a 'path'");
-
-                  if (element.has.rename)
-                  {
-                     project.templateCopies.push( new TemplateCopy(path, substitute(element.att.rename) ) );
-                  }
-                  else
-                  {
-                     project.templatePaths.remove(path);
-                     project.templatePaths.push(path);
-                  }
 
                case "preloader":
                   // deprecated
@@ -1122,7 +1183,6 @@ class NMMLParser
 
    public function process(projectFile:String, inWarnUnkown:Bool,inXml:Access):Void 
    {
-      Log.verbose("Parse " + projectFile + "...");
       var xml = inXml;
       var extensionPath = "";
 

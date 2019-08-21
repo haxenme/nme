@@ -149,8 +149,6 @@ class Platform
          adbFlags = [ "-s", project.targetFlags.get("device") ];
       else if (project.targetFlags.exists("androidsim") || project.targetFlags.exists("e"))
          adbFlags = [ "-e" ];
-      else
-         adbFlags = [ "-d" ] ;
    }
 
 
@@ -665,7 +663,10 @@ class Platform
 
       copyTemplateDir( getHaxeTemplateDir(), haxeDir, true, false );
       for(path in project.templateCopies)
-         FileHelper.copyFile(path.from, getOutputDir() + "/" + path.to );
+         if (FileSystem.isDirectory(path.from))
+            FileHelper.recursiveCopy(path.from, getOutputDir() + "/" + path.to );
+         else
+            FileHelper.copyFile(path.from, getOutputDir() + "/" + path.to );
    }
 
    public function updateOutputDir()

@@ -204,7 +204,13 @@ class Timer
                i++;
          }
          if (timerCount<origTimerCount)
+         {
+            #if (cpp && haxe4)
+            cpp.NativeArray.setSize(sRunningTimers, timerCount);
+            #else
             sRunningTimers.slice(timerCount, origTimerCount-timerCount);
+            #end
+         }
       }
    }
 

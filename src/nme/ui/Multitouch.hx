@@ -3,7 +3,7 @@ package nme.ui;
 
 import nme.ui.MultitouchInputMode;
 import nme.Lib;
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 class Multitouch 
@@ -44,9 +44,9 @@ class Multitouch
    private static function get_supportsTouchEvents():Bool { return nme_stage_get_multitouch_supported(Lib.current.stage.nmeHandle); }
 
    // Native Methods
-   private static var nme_stage_get_multitouch_supported = Loader.load("nme_stage_get_multitouch_supported", 1);
-   private static var nme_stage_get_multitouch_active = Loader.load("nme_stage_get_multitouch_active", 1);
-   private static var nme_stage_set_multitouch_active = Loader.load("nme_stage_set_multitouch_active", 2);
+   private static var nme_stage_get_multitouch_supported = PrimeLoader.load("nme_stage_get_multitouch_supported", "ob");
+   private static var nme_stage_get_multitouch_active = PrimeLoader.load("nme_stage_get_multitouch_active", "ob");
+   private static var nme_stage_set_multitouch_active = PrimeLoader.load("nme_stage_set_multitouch_active", "obv");
 }
 
 #else

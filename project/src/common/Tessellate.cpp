@@ -187,7 +187,11 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
          // erase point
          p->unlink();
          if (p==head)
+         {
             p = head = p->next;
+            if (p == p->next)
+               return;
+         }
          else
          {
             p = p->next;

@@ -19,6 +19,7 @@ class System
    public static var totalMemory(get, null):Int;
    public static var totalMemoryNumber(get, null):Float;
    public static var exeName(get, null):String;
+   public static var exeDirectory(get, null):String;
    static var args:Array<String>;
 
    static public function exit(?inCode:Int) 
@@ -114,6 +115,16 @@ class System
       return func();
    }
 
+   private static function get_exeDirectory():String
+   {
+      var name = exeName.split("\\").join("/");
+      var slash = name.lastIndexOf("/");
+      if (slash<0)
+         return "./";
+      return name.substr(0,slash+1);
+   }
+
+
    public static function restart() : Void
    {
       #if android
@@ -146,6 +157,11 @@ class System
       return sys.net.Host.localhost();
       #end
    }
+   
+   public static function getGLStats(statsArray:Array<Int>) : Void
+   {
+      nme_get_glstats(statsArray);
+   }
 
 
    // Native Methods
@@ -153,6 +169,7 @@ class System
    #if iphone
    private static var nme_get_local_ip_address = Loader.load("nme_get_local_ip_address", 0);
    #end
+   private static var nme_get_glstats = nme.PrimeLoader.load("nme_get_glstats", "ov");
 }
 
 #else

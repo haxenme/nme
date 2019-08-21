@@ -5,7 +5,7 @@ import haxe.io.Bytes;
 import haxe.io.BytesData;
 import nme.errors.EOFError; // Ensure that the neko->haxe callbacks are initialized
 import nme.utils.CompressionAlgorithm;
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.NativeResource;
 
 #if neko
@@ -19,6 +19,14 @@ import cpp.zip.Compress;
 import cpp.zip.Uncompress;
 import cpp.zip.Flush;
 using cpp.NativeArray;
+#end
+
+#if jsprime
+#if haxe4
+   typedef JsUint8Array = js.lib.Uint8Array;
+#else
+   typedef JsUint8Array = js.html.Uint8Array;
+#end
 #end
 
 typedef ByteArrayData = ByteArray;
@@ -93,10 +101,17 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    }
 
    #if cpp
-   @:native("::mangleFloat")
-   @:extern static function mangleFloat(f:Float):Float return 0;
-   @:native("::mangleDouble")
-   @:extern static function mangleDouble(f:Float):Float return 0;
+   #if (haxe_ver>=4)
+      @:native("::mangleFloat")
+      extern static function mangleFloat(f:Float):Float;
+      @:native("::mangleDouble")
+      extern static function mangleDouble(f:Float):Float;
+   #else
+      @:native("::mangleFloat")
+      @:extern static function mangleFloat(f:Float):Float return 0;
+      @:native("::mangleDouble")
+      @:extern static function mangleDouble(f:Float):Float return 0;
+   #end
    #end
 
    inline public function get___length() return length;
@@ -110,7 +125,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (ptr>0)
       {
          var offset = ByteArray.nme_buffer_offset(ptr);
-         b = new js.html.Uint8Array(untyped Module.HEAP8.buffer, offset,alloced);
+         b = new JsUint8Array(untyped Module.HEAP8.buffer, offset,alloced);
       }
    }
 
@@ -122,7 +137,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       if (length>0)
       {
          var offset = nme_buffer_offset(ptr);
-         var heap:js.html.Uint8Array = untyped Module.HEAP8;
+         var heap:JsUint8Array = untyped Module.HEAP8;
          if (b.length<=length)
             heap.set(b,offset);
          else
@@ -148,7 +163,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          // As per js/_std/haxe/io/Bytes.hx
          alloced = length<16 ? 16 : length;
          var data = new BytesData(alloced);
-         b = new js.html.Uint8Array(data);
+         b = new JsUint8Array(data);
          untyped {
             b.bufferValue = data; // some impl does not return the same instance in .buffer
             data.hxBytes = this;
@@ -158,7 +173,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          if (length>0 && (f&NativeResource.WRITE_ONLY) != 0)
          {
             var offset = nme_buffer_offset(ptr);
-            var heap:js.html.Uint8Array = untyped Module.HEAP8;
+            var heap:JsUint8Array = untyped Module.HEAP8;
             b.set(heap.subarray(offset,offset+length));
          }
          ptr = null;
@@ -167,10 +182,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    }
 
 
-   static var nme_buffer_create = nme.PrimeLoader.load("nme_buffer_create","ii");
-   static var nme_buffer_offset = nme.PrimeLoader.load("nme_buffer_offset","ii");
-   static var nme_buffer_resize = nme.PrimeLoader.load("nme_buffer_resize","iiv");
-   static var nme_buffer_length = nme.PrimeLoader.load("nme_buffer_length","ii");
+   static var nme_buffer_create = PrimeLoader.load("nme_buffer_create","ii");
+   static var nme_buffer_offset = PrimeLoader.load("nme_buffer_offset","ii");
+   static var nme_buffer_resize = PrimeLoader.load("nme_buffer_resize","iiv");
+   static var nme_buffer_length = PrimeLoader.load("nme_buffer_length","ii");
    #else
    #end
 
@@ -203,7 +218,7 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
 
       var slen = function(inArray:ByteArray) { return inArray == null ? 0 : inArray.length; }
 
-      var init = Loader.load("nme_byte_array_init", 4);
+      var init = PrimeLoader.load("nme_byte_array_init", "oooov");
       if (init!=null)
          init(factory, slen, resize, bytes);
    }
@@ -308,8 +323,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
                else // fallthrough
             #end
             {
-            var new_b = new js.html.Uint8Array(alloced);
-            var dest = new js.html.Uint8Array(new_b);
+            var new_b = new JsUint8Array(alloced);
+            var dest = new JsUint8Array(new_b);
             var copy = length<inSize ? length : inSize;
             for(i in 0...copy)
                dest[i] = b[i];
@@ -798,14 +813,14 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    #end
 
    #if !no_nme_io
-   private static var nme_byte_array_overwrite_file = Loader.load("nme_byte_array_overwrite_file", 2);
-   private static var nme_byte_array_read_file = Loader.load("nme_byte_array_read_file", 1);
+   private static var nme_byte_array_overwrite_file = nme.Loader.load("nme_byte_array_overwrite_file", 2);
+   private static var nme_byte_array_read_file = nme.Loader.load("nme_byte_array_read_file", 1);
    #end
-   private static var nme_lzma_encode = Loader.load("nme_lzma_encode", 1);
-   private static var nme_lzma_decode = Loader.load("nme_lzma_decode", 1);
+   private static var nme_lzma_encode = PrimeLoader.load("nme_lzma_encode", "oo");
+   private static var nme_lzma_decode = PrimeLoader.load("nme_lzma_decode", "oo");
    #if jsprime
-   private static var nme_zip_encode = nme.PrimeLoader.load("nme_zip_encode", "oi");
-   private static var nme_zip_decode = nme.PrimeLoader.load("nme_zip_decode", "oi");
+   private static var nme_zip_encode = PrimeLoader.load("nme_zip_encode", "oi");
+   private static var nme_zip_decode = PrimeLoader.load("nme_zip_decode", "oi");
    #end
 }
 

@@ -4,6 +4,15 @@ import nme.NativeHandle;
 
 #if jsprime
 import nme.PrimeLoader;
+
+#if haxe4
+   typedef JsArrayBuffer = js.lib.ArrayBuffer;
+   typedef JsUint8Array = js.lib.Uint8Array;
+#else
+   typedef JsArrayBuffer = js.html.ArrayBuffer;
+   typedef JsUint8Array = js.html.Uint8Array;
+#end
+
 #end
 
 class NativeResource
@@ -24,9 +33,9 @@ class NativeResource
    @:keep
    static function unrealize(handle:NativeHandle, ptr:Int, len:Int, handleList:Dynamic)
    {
-      var buffer = new js.html.ArrayBuffer(len);
-      var bytes = new js.html.Uint8Array(buffer);
-      var heap:js.html.Uint8Array = untyped Module.HEAP8;
+      var buffer = new JsArrayBuffer(len);
+      var bytes = new JsUint8Array(buffer);
+      var heap:JsUint8Array = untyped Module.HEAP8;
       bytes.set(heap.subarray(ptr,ptr+len));
       untyped
       {
@@ -38,14 +47,14 @@ class NativeResource
    @:keep
    static function realize(handle:NativeHandle) : Int
    {
-      var bytes:js.html.Uint8Array = untyped handle.data;
+      var bytes:JsUint8Array = untyped handle.data;
       untyped handle.data = null;
       var len = bytes.length;
 
       // Get data byte size, allocate memory on Emscripten heap, and get pointer
       var ptr:Int = untyped Module._malloc(len);
 
-      var heap = new js.html.Uint8Array(untyped Module.HEAPU8.buffer, ptr, len);
+      var heap = new JsUint8Array(untyped Module.HEAPU8.buffer, ptr, len);
       heap.set(bytes);
       untyped handle.ptr = ptr;
       return len;

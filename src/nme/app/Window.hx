@@ -47,9 +47,9 @@ class Window
       active = true;
       autoClear = true;
  
-
       #if android
-      renderRequest = Loader.load("nme_stage_request_render", 0);
+      var nme_stage_request_render = PrimeLoader.load("nme_stage_request_render", "v");
+      renderRequest = function() { nme_stage_request_render(); return false;}
       #else
       renderRequest = null;
       #end
@@ -63,8 +63,7 @@ class Window
    {
       if (renderRequest==null)
          return true;
-
-      return renderRequest() == true;
+      return renderRequest();
    }
 
    public function setBackground(inBackground:Null<Int>) : Void
@@ -251,12 +250,18 @@ class Window
             case EventId.RenderContextLost:
                appEventHandler.onContextLost();
 
+            case EventId.AppLink:
+                appEventHandler.onAppLink(event);
+             
             case EventId.Scroll:
                appEventHandler.onScroll(event);
+
+            case EventId.DpiChanged:
+               appEventHandler.onDpiChanged(event);
          }
 
 
-         var nextWake = Application.getNextWake(event.pollTime);
+         var nextWake:Float = Application.getNextWake(event.pollTime);
          if (nextWakeHandler!=null)
             nextWakeHandler(nextWake);
 
@@ -362,12 +367,12 @@ class Window
 
    public function get_height():Int 
    {
-      return Std.int(cast(nme_stage_get_stage_height(nmeHandle), Float));
+      return nme_stage_get_stage_height(nmeHandle);
    }
 
    public function get_width():Int 
    {
-      return Std.int(cast(nme_stage_get_stage_width(nmeHandle), Float));
+      return nme_stage_get_stage_width(nmeHandle);
    }
 
 
@@ -395,39 +400,39 @@ class Window
 
 
 
-   private static var nme_stage_resize_window = Loader.load("nme_stage_resize_window", 3);
-   private static var nme_stage_is_opengl = Loader.load("nme_stage_is_opengl", 1);
-   private static var nme_stage_get_stage_width = Loader.load("nme_stage_get_stage_width", 1);
-   private static var nme_stage_get_stage_height = Loader.load("nme_stage_get_stage_height", 1);
-   private static var nme_stage_get_dpi_scale = Loader.load("nme_stage_get_dpi_scale", 1);
-   private static var nme_stage_get_scale_mode = Loader.load("nme_stage_get_scale_mode", 1);
-   private static var nme_stage_set_scale_mode = Loader.load("nme_stage_set_scale_mode", 2);
-   private static var nme_stage_get_align = Loader.load("nme_stage_get_align", 1);
-   private static var nme_stage_set_align = Loader.load("nme_stage_set_align", 2);
-   private static var nme_stage_get_quality = Loader.load("nme_stage_get_quality", 1);
-   private static var nme_stage_set_quality = Loader.load("nme_stage_set_quality", 2);
-   private static var nme_stage_get_display_state = Loader.load("nme_stage_get_display_state", 1);
-   private static var nme_stage_set_display_state = Loader.load("nme_stage_set_display_state", 2);
-   private static var nme_stage_show_cursor = Loader.load("nme_stage_show_cursor", 2);
-   private static var nme_stage_set_fixed_orientation = Loader.load("nme_stage_set_fixed_orientation", 1);
-   private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);
-   private static var nme_stage_get_normal_orientation = Loader.load("nme_stage_get_normal_orientation", 0);
-   private static var nme_stage_set_window_position = Loader.load("nme_stage_set_window_position", 3);
-   private static var nme_stage_get_window_x = Loader.load("nme_stage_get_window_x", 1);
-   private static var nme_stage_get_window_y = Loader.load("nme_stage_get_window_y", 1);
-   private static var nme_stage_set_next_wake = Loader.load("nme_stage_set_next_wake", 2);
-   private static var nme_stage_begin_render = Loader.load("nme_stage_begin_render", 2);
-   private static var nme_stage_end_render = Loader.load("nme_stage_end_render", 1);
+   private static var nme_stage_resize_window = PrimeLoader.load("nme_stage_resize_window", "oiiv");
+   private static var nme_stage_is_opengl = PrimeLoader.load("nme_stage_is_opengl", "ob");
+   private static var nme_stage_get_stage_width = PrimeLoader.load("nme_stage_get_stage_width", "oi");
+   private static var nme_stage_get_stage_height = PrimeLoader.load("nme_stage_get_stage_height", "oi");
+   private static var nme_stage_get_dpi_scale = PrimeLoader.load("nme_stage_get_dpi_scale", "od");
+   private static var nme_stage_get_scale_mode = PrimeLoader.load("nme_stage_get_scale_mode", "oi");
+   private static var nme_stage_set_scale_mode = PrimeLoader.load("nme_stage_set_scale_mode", "oiv");
+   private static var nme_stage_get_align = PrimeLoader.load("nme_stage_get_align", "oi");
+   private static var nme_stage_set_align = PrimeLoader.load("nme_stage_set_align", "oiv");
+   private static var nme_stage_get_quality = PrimeLoader.load("nme_stage_get_quality", "oi");
+   private static var nme_stage_set_quality = PrimeLoader.load("nme_stage_set_quality", "oiv");
+   private static var nme_stage_get_display_state = PrimeLoader.load("nme_stage_get_display_state", "oi");
+   private static var nme_stage_set_display_state = PrimeLoader.load("nme_stage_set_display_state", "oiv");
+   //private static var nme_stage_show_cursor = PrimeLoader.load("nme_stage_show_cursor", 2);
+   //private static var nme_stage_set_fixed_orientation = PrimeLoader.load("nme_stage_set_fixed_orientation", 1);
+   //private static var nme_stage_get_orientation = PrimeLoader.load("nme_stage_get_orientation", 0);
+   //private static var nme_stage_get_normal_orientation = PrimeLoader.load("nme_stage_get_normal_orientation", 0);
+   private static var nme_stage_set_window_position = PrimeLoader.load("nme_stage_set_window_position", "oiiv");
+   private static var nme_stage_get_window_x = PrimeLoader.load("nme_stage_get_window_x", "oi");
+   private static var nme_stage_get_window_y = PrimeLoader.load("nme_stage_get_window_y", "oi");
+   private static var nme_stage_set_next_wake = PrimeLoader.load("nme_stage_set_next_wake", "odv");
+   private static var nme_stage_begin_render = PrimeLoader.load("nme_stage_begin_render", "obv");
+   private static var nme_stage_end_render = PrimeLoader.load("nme_stage_end_render", "ov");
 
-   private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
+   private static var nme_get_frame_stage = PrimeLoader.load("nme_get_frame_stage", "oo");
    private static var nme_display_object_set_bg = Loader.load("nme_display_object_set_bg", 2);
    private static var nme_stage_get_title = PrimeLoader.load("nme_stage_get_title", "os");
    private static var nme_stage_set_title = PrimeLoader.load("nme_stage_set_title", "osv");
 
    #if (cpp && hxcpp_api_level>=312)
-   private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler_native", 4);
+   private static var nme_set_stage_handler = PrimeLoader.load("nme_set_stage_handler_native", "ooiiv");
    #else
-   private static var nme_set_stage_handler = Loader.load("nme_set_stage_handler", 4);
+   private static var nme_set_stage_handler = PrimeLoader.load("nme_set_stage_handler", "ooiiv");
    #end
 }
 

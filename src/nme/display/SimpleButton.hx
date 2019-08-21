@@ -1,7 +1,7 @@
 package nme.display;
 #if (!flash)
 
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 class SimpleButton extends InteractiveObject 
@@ -69,12 +69,12 @@ class SimpleButton extends InteractiveObject
    }
 
    // Native Methods
-   private static var nme_simple_button_set_state = Loader.load("nme_simple_button_set_state", 3);
-   private static var nme_simple_button_get_enabled = Loader.load("nme_simple_button_get_enabled", 1);
-   private static var nme_simple_button_set_enabled = Loader.load("nme_simple_button_set_enabled", 2);
-   private static var nme_simple_button_get_hand_cursor = Loader.load("nme_simple_button_get_hand_cursor", 1);
-   private static var nme_simple_button_set_hand_cursor = Loader.load("nme_simple_button_set_hand_cursor", 2);
-   private static var nme_simple_button_create = Loader.load("nme_simple_button_create", 0);
+   private static var nme_simple_button_set_state = PrimeLoader.load("nme_simple_button_set_state", "oiov");
+   private static var nme_simple_button_get_enabled = PrimeLoader.load("nme_simple_button_get_enabled", "ob");
+   private static var nme_simple_button_set_enabled = PrimeLoader.load("nme_simple_button_set_enabled", "obv");
+   private static var nme_simple_button_get_hand_cursor = PrimeLoader.load("nme_simple_button_get_hand_cursor", "ob");
+   private static var nme_simple_button_set_hand_cursor = PrimeLoader.load("nme_simple_button_set_hand_cursor", "obv");
+   private static var nme_simple_button_create = PrimeLoader.load("nme_simple_button_create", "o");
 }
 
 #else

@@ -36,7 +36,7 @@ class TouchEvent extends MouseEvent
    public static function nmeCreate(inType:String, inEvent:AppEvent, inLocal:Point, inTarget:InteractiveObject, sizeX:Float, sizeY:Float) 
    {
       var flags : Int = inEvent.flags;
-      var evt = new TouchEvent(inType, true, false, inLocal.x, inLocal.y, sizeX, sizeY, null,(flags & MouseEvent.efCtrlDown) != 0,(flags & MouseEvent.efAltDown) != 0,(flags & MouseEvent.efShiftDown) != 0,(flags & MouseEvent.efLeftDown) != 0, 0, 0);
+      var evt = new TouchEvent(inType, true, true, inLocal.x, inLocal.y, sizeX, sizeY, null,(flags & MouseEvent.efCtrlDown) != 0,(flags & MouseEvent.efAltDown) != 0,(flags & MouseEvent.efShiftDown) != 0,(flags & MouseEvent.efLeftDown) != 0, 0, 0);
       evt.stageX = inEvent.x;
       evt.stageY = inEvent.y;
       evt.target = inTarget;

@@ -69,8 +69,7 @@ class PathHelper
 
       if (matches.length > 0) 
       {
-         //return matches[0];
-         return matches[matches.length - 1];
+         return matches[0];
       }
 
       return null;
@@ -238,6 +237,28 @@ class PathHelper
 
       libMap.set(name,result);
       return result;
+   }
+
+   public static function classPathFrom(path:String)
+   {
+      try
+      {
+         var name = path+"/haxelib.json";
+         if (FileSystem.exists(name))
+         {
+            var contents = sys.io.File.getContent(name);
+            var json = haxe.Json.parse(contents);
+            if (json!=null)
+            {
+               var res = json.classPath;
+               if (res!=null)
+                  return path + "/" + res;
+            }
+         }
+      }
+      catch(e:Dynamic) { }
+
+      return path;
    }
 
 /*

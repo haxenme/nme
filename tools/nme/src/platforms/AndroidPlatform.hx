@@ -1,33 +1,70 @@
 package platforms;
 
 import haxe.io.Path;
-import haxe.Template;
-import sys.io.File;
 import sys.FileSystem;
 
+typedef ABI = {
+   name: String,
+   architecture: Architecture,
+   args: Array<String>,
+   libArchSuffix: String,
+   versionCodeScaler: Int
+}
 
 class AndroidPlatform extends Platform
 {
-   var buildV5:Bool;
-   var buildV7:Bool;
-   var build64:Bool;
-   var buildX86:Bool;
    var gradle:Bool;
-
+   var abis:Array<ABI>;
+   var installed:Bool;
 
    public function new(inProject:NMEProject)
    {
       super(inProject);
+      setupAdb();
+      abis = [
+         {
+            name: "armeabi",
+            architecture: Architecture.ARMV5,
+            args: [],
+            libArchSuffix: "",
+            versionCodeScaler: 1
+         },
+         {
+            name: "armeabi-v7a",
+            architecture: Architecture.ARMV7,
+            args: ["-D", "HXCPP_ARMV7"],
+            libArchSuffix: "-v7",
+            versionCodeScaler: 2
+         },
+         {
+            name: "arm64-v8a",
+            architecture: Architecture.ARM64,
+            args: ["-D", "HXCPP_ARM64"],
+            libArchSuffix: "-64",
+            versionCodeScaler: 3
+         },
+         {
+            name: "x86",
+            architecture: Architecture.X86,
+            args: ["-D", "HXCPP_X86"],
+            libArchSuffix: "-x86",
+            versionCodeScaler: 4
+         },
+         {
+             name: "x86_64",
+             architecture: Architecture.X86_64,
+             args: ["-D", "HXCPP_X86_64"],
+             libArchSuffix: "-x86_64",
+             versionCodeScaler: 5
+         }
+      ];
 
-     if (project.hasDef("androidBilling"))
-     {
-        CommandLineTools.gradle = true;
-        project.haxedefs.set("gradle", "1");
-        project.haxedefs.set("androidBilling", "1");
-     }
-
-
-      buildV5 = buildV7 = build64 = buildX86 = false;
+      if (project.hasDef("androidBilling"))
+      {
+         CommandLineTools.gradle = true;
+         project.haxedefs.set("gradle", "1");
+         project.haxedefs.set("androidBilling", "1");
+      }
 
       gradle = CommandLineTools.gradle;
       if (gradle)
@@ -35,36 +72,30 @@ class AndroidPlatform extends Platform
          Log.verbose("Using gradle build system");
          PathHelper.mkdir(getAppDir());
       }
-
-      var archs = project.architectures;
-      var isSim =  project.targetFlags.exists("androidsim");
-      if (isSim)
-         ArrayHelper.addUnique(archs, Architecture.X86);
-      // Default to V7 now...
-      if (archs.length<1)
-         archs.push(Architecture.ARMV7);
-      Log.verbose("Valid archs :" + archs );
-
-      if (!isSim)
-      {
-         buildV5 = hasArch(ARMV5);
-         buildV7 = hasArch(ARMV7);
-         build64 = hasArch(ARM64);
+      
+      if (project.command == "test") {
+         var abi = queryDeviceABI();
+         if(abi != null)
+            project.androidConfig.ABIs = [abi];
       }
-      buildX86 = hasArch(X86);
+      else if(project.androidConfig.ABIs.length == 0) {
+         project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"];
+      }
 
-
+      project.architectures = [for(abi in project.androidConfig.ABIs) findArchitectureByName(abi)];
+      
+      Log.verbose("Valid archs: " + project.architectures );
+      
       var libDir = getOutputLibDir();
-      if (!buildV5)
-         PathHelper.removeDirectory(libDir + "/armeabi");
-      if (!buildV7)
-         PathHelper.removeDirectory(libDir + "/armeabi-v7a");
-      if (!build64)
-         PathHelper.removeDirectory(libDir + "/arm64-v8a");
-      if (!buildX86)
-         PathHelper.removeDirectory(libDir + "/x86");
-
-      setupAdb();
+      for(abi in abis)
+         if (project.architectures.indexOf(abi.architecture) == -1)
+             PathHelper.removeDirectory(libDir + '/${abi.name}');
+      /*
+      var excluded:List<ABI> = Lambda.filter(abis, function(abi:ABI) return project.architectures.indexOf(abi.architecture) == -1);
+      Lambda.iter(excluded, function(abi:ABI) {
+         PathHelper.removeDirectory(libDir + '/${abi.name}');
+      });
+      */
 
       if (project.environment.exists("JAVA_HOME")) 
          Sys.putEnv("JAVA_HOME", project.environment.get("JAVA_HOME"));
@@ -88,6 +119,35 @@ class AndroidPlatform extends Platform
             }
          }
       }
+   }
+
+
+   function findArchitectureByName(arch:String) : Architecture
+   {
+      for(abi in abis)
+         if (abi.name==arch)
+             return abi.architecture;
+      throw 'Unknown architecture: $arch';
+      return null;
+   }
+   function findByArchitecture(arch:Architecture) : ABI
+   {
+      for(abi in abis)
+         if (abi.architecture==arch)
+             return abi;
+      return null;
+   }
+
+   function includedABIs():Array<ABI>
+   {
+      var included = [];
+      for(arch in project.architectures)
+      {
+         var abi = findByArchitecture(arch);
+         if (abi!=null)
+            included.push(abi);
+      }
+      return included;
    }
       
    private function decideAudioFolder() {
@@ -132,39 +192,21 @@ class AndroidPlatform extends Platform
       var args = project.debug ? ['$haxeDir/build.hxml',"-debug","-D", "android"] :
                                  ['$haxeDir/build.hxml', "-D", "android" ];
 
-      if (buildV5)
-         runHaxeWithArgs(args);
-
-      if (buildV7)
-         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARMV7"]) );
-      
-      if (build64)
-         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARM64"]) );
-
-      if (buildX86)
-         runHaxeWithArgs(args.concat(["-D", "HXCPP_X86"]) );
+      for(abi in includedABIs())
+         runHaxeWithArgs(args.concat(abi.args));
    }
 
 
    override public function copyBinary():Void 
    {
       var dbg = project.debug ? "-debug" : "";
-
-      if (buildV5)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + ".so",
-                getOutputLibDir() + "/armeabi/libApplicationMain.so");
-
-      if (buildV7)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-v7.so",
-                getOutputLibDir() + "/armeabi-v7a/libApplicationMain.so" );
-
-      if (build64)
-           FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-64.so",
-           getOutputLibDir() + "/arm64-v8a/libApplicationMain.so" );
       
-      if (buildX86)
-         FileHelper.copyIfNewer(haxeDir + "/cpp/libApplicationMain" + dbg + "-x86.so",
-                getOutputLibDir() + "/x86/libApplicationMain.so" );
+      for(abi in includedABIs())
+      {
+         var source = haxeDir + "/cpp/libApplicationMain" + dbg + '${abi.libArchSuffix}.so';
+         var destination = getOutputLibDir() + '/${abi.name}/libApplicationMain.so';
+         FileHelper.copyIfNewer(source, destination);
+      };
    }
 
 
@@ -208,11 +250,16 @@ class AndroidPlatform extends Platform
       for( k in project.androidConfig.extensions.keys())
          extensions.push(k);
       context.ANDROID_EXTENSIONS =extensions;
+
+      context.ANDROID_SDK = StringTools.replace(project.environment.get("ANDROID_SDK"),"\\","/");
       
       if(gradle)
          setGradleLibraries();
       else
          setAntLibraries();
+      
+      context.ABIS = [for(abi in includedABIs()) '"${abi.name}"'].join(', ');
+      context.ABI_CODES = [for(abi in includedABIs()) '\'${abi.name}\':${abi.versionCodeScaler}'].join(', ');
    }
 
    private function setAntLibraries() {
@@ -241,7 +288,7 @@ class AndroidPlatform extends Platform
       }
    }
 
-   public function getAndroidProject(inDep:Dependency)
+   public function getAndroidProject(inDep:Dependency):String
    {
       return "deps/" + inDep.makeUniqueName();
    }
@@ -320,8 +367,7 @@ class AndroidPlatform extends Platform
       if (gradle)
       {
          var build = (project.certificate != null) ? "release" : "debug";
-
-         targetPath = FileSystem.fullPath(outputDir) + "/app/build/outputs/apk/app-" + build + ".apk";
+         targetPath = '${FileSystem.fullPath(outputDir)}/app/build/outputs/apk/${build}/app-${queryDeviceABI()}-${build}.apk';
       }
       else
       {
@@ -341,16 +387,32 @@ class AndroidPlatform extends Platform
          var failure = ~/Failure/;
          for(line in lines)
             if (failure.match(line))
-               Log.error("Failed to install apk:"  + line);
+               throw("Failed to install apk:"  + line);
       }
       catch(e:Dynamic)
       {
          Log.error("Could not run adb install " + e);
+         installed = false;
       }
+      installed = true;
+   }
+    
+   private function queryDeviceABI():String {
+      var lines = ProcessHelper.getOutput(adbName,"shell getprop ro.product.cpu.abi".split(' '), Log.mVerbose);
+      if(lines.length > 0) {
+         if(lines[0].indexOf('error') == -1) {
+            var abi = lines[0];
+            return abi;  
+         }
+      }
+      return null;
    }
 
    override public function run(arguments:Array<String>):Void 
    {
+      if(!installed)
+         return;
+      
       var activityName = project.app.packageName + "/" + project.app.packageName + ".MainActivity";
 
       ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat", "-c" ]));
@@ -360,6 +422,8 @@ class AndroidPlatform extends Platform
 
    override public function trace():Void 
    {
+      if(!installed)
+         return;
       ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat" ]));
    }
 
@@ -371,17 +435,10 @@ class AndroidPlatform extends Platform
    override public function updateLibs()
    {
       var libDir = getOutputLibDir();
-      if (buildV5)
-         updateLibArch( libDir + "/armeabi", "" );
-      if (buildV7)
-         updateLibArch( libDir + "/armeabi-v7a", "-v7" );
-      if (build64)
-         updateLibArch( libDir + "/arm64-v8a", "-64" );
-      if (buildX86)
-         updateLibArch( libDir + "/x86", "-x86" );
+      for(abi in includedABIs())
+         updateLibArch( libDir + '/${abi.name}', abi.libArchSuffix );
    }
-
-
+   
    override public function getOutputExtra()
    {
       return gradle ? "android/PROJ-gradle" : "android/PROJ";

@@ -76,7 +76,7 @@ static void openAudio()
 
    #ifdef HX_WINDOWS
    int chunksize = 2048;
-   #else
+  #else
    int chunksize = 4096;
    #endif
    
@@ -735,9 +735,11 @@ public:
       SDL_SetWindowTitle(mSDLWindow, inTitle.c_str());
    }
    
+   std::string getTitle() {
+       return std::string(SDL_GetWindowTitle(mSDLWindow));
+   }
 
-   
-   
+
    bool mMultiTouch;
    int  mSingleTouchID;
   
@@ -1743,6 +1745,65 @@ void ProcessEvent(SDL_Event &inEvent)
    }
 };
 
+#if (defined(HX_WINDOWS) && !defined(HX_WINRT))
+
+#ifndef GWL_WNDPROC
+   #define GWL_WNDPROC GWLP_WNDPROC
+#endif
+
+struct WinData
+{
+   WNDPROC proc;
+   SDLFrame *frame;
+
+   WinData(WNDPROC inProc=0, SDLFrame *inFrame=0) : proc(inProc), frame(inFrame) { }
+};
+
+std::map<HWND,WinData> oldWinProcs;
+
+LRESULT CALLBACK NmeWinProc(
+    HWND hwnd,        // handle to window
+    UINT uMsg,        // message identifier
+    WPARAM wParam,    // first message parameter
+    LPARAM lParam)    // second message parameter
+{ 
+   WinData next = oldWinProcs[hwnd];
+
+   if (uMsg==WM_DESTROY && next.proc)
+   {
+      SetWindowLongPtr(hwnd, GWL_WNDPROC, (LONG_PTR)next.proc);
+      oldWinProcs.erase( oldWinProcs.find(hwnd) );
+   }
+   else if (uMsg==0x02E0 /*WM_DPICHANGED*/)
+   {
+      //printf("WM_DPICHANGED %d,%d ... %d,%d\n", rect->left, rect->top, rect->right, rect->bottom);
+      RECT* const rect = (RECT*)lParam;
+      SetWindowPos(hwnd,
+         NULL,
+         rect->left,
+         rect->top,
+         rect->right - rect->left,
+         rect->bottom - rect->top,
+         SWP_NOZORDER | SWP_NOACTIVATE);
+
+      Event dpiChanged(etDpiChanged);
+      dpiChanged.x = LOWORD(wParam);
+      dpiChanged.y = HIWORD(wParam);
+      sgSDLFrame->ProcessEvent(dpiChanged);
+   }
+
+   if (next.proc)
+      return CallWindowProc(next.proc, hwnd, uMsg, wParam, lParam);
+   return 0;
+}
+
+void insertWinProc(HWND hwnd,SDLFrame *frame)
+{
+   WNDPROC proc = (WNDPROC)SetWindowLongPtr(hwnd, GWL_WNDPROC, (LONG_PTR)NmeWinProc);
+   oldWinProcs[hwnd] = WinData(proc,frame);
+}
+
+#endif
 
 void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight, unsigned int inFlags, const char *inTitle, Surface *inIcon)
 {
@@ -1860,6 +1921,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    int targetY = SDL_WINDOWPOS_UNDEFINED;
 
    #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
+   HWND hWin = 0;
+
    if (!borderless && !fullscreen)
    {
       DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPED |
@@ -1916,18 +1979,18 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       LPARAM smicon = (LPARAM)::LoadImage(handle, resource, IMAGE_ICON, 
          GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
       
-      if (icon)
+      SDL_SysWMinfo wminfo;
+      SDL_VERSION (&wminfo.version);
+      if (SDL_GetWindowWMInfo(window, &wminfo) == 1)
       {
-         SDL_SysWMinfo wminfo;
-         SDL_VERSION (&wminfo.version);
-         if (SDL_GetWindowWMInfo(window, &wminfo) == 1)
+         hWin = wminfo.info.win.window;
+         if (icon)
          {
-            HWND hwnd = wminfo.info.win.window;
-            ::SendMessage(hwnd, WM_SETICON, ICON_BIG, icon);
+            ::SendMessage(hWin, WM_SETICON, ICON_BIG, icon);
             if(smicon)
-                ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, smicon);
+                ::SendMessage(hWin, WM_SETICON, ICON_SMALL, smicon);
             else
-                ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, icon);
+                ::SendMessage(hWin, WM_SETICON, ICON_SMALL, icon);
          }
       }
       #endif
@@ -2001,6 +2064,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    }
    
    sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, width, height);
+   #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
+   insertWinProc(hWin,sgSDLFrame);
+   #endif
    inOnFrame(sgSDLFrame);
 
    //int numJoysticks = SDL_NumJoysticks();
@@ -2265,8 +2331,10 @@ void StartAnimation()
       // Kill some time
       if (waitMs>0)
       {
+         AutoGCBlocking block;
          if (sgSDLFrame->mStage->BuildCache())
          {
+            block.Close();
             Event redraw(etRedraw);
             sgSDLFrame->ProcessEvent(redraw);
          }

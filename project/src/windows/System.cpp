@@ -143,7 +143,7 @@ static unsigned __stdcall dialog_proc( void *inSpec )
    else
    {
       OPENFILENAME ofn;
-      std::vector<char> path(32*1024);
+      std::vector<char> path(1024*1024);
 
       ZeroMemory(&ofn, sizeof(ofn));
 
@@ -156,7 +156,7 @@ static unsigned __stdcall dialog_proc( void *inSpec )
          buf[i] = ptr[i]=='|' ? '\0' : ptr[i];
       buf[len] = '\0';
       ofn.lpstrFilter = &buf[0];
-      ofn.Flags = OFN_EXPLORER;
+      ofn.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR;
       if (spec->flags & flagMustExist)
          ofn.Flags |= OFN_FILEMUSTEXIST;
       if (spec->flags & flagHideReadOnly)
@@ -170,6 +170,9 @@ static unsigned __stdcall dialog_proc( void *inSpec )
       ofn.lpstrTitle = spec->title.c_str();
       ofn.nMaxFile = path.size();
       ofn.lpstrDefExt = "*";
+
+      if (spec->defaultPath[0])
+         ofn.lpstrInitialDir = spec->defaultPath.c_str();
 
       bool result = (spec->flags & flagSave) ? GetSaveFileName(&ofn) : GetOpenFileName(&ofn);
       if (result)

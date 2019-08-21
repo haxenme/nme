@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="Accelerometer" package="io.nme.samples.accelerometer" version="1.0.0" company="NME" />
+	<app main="Main" path="Export" file="Accelerometer" />
+	
+	<source path="Source" />
+	
+	<haxelib name="nme" />
+	
+</project>

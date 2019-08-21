@@ -9,7 +9,7 @@ import nme.geom.Matrix;
 import nme.geom.ColorTransform;
 import nme.filters.BitmapFilter;
 import nme.utils.ByteArray;
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.image.PixelFormat;
 
 
@@ -78,6 +78,15 @@ class BitmapData extends Surface implements IBitmapDrawable
       var bm = new BitmapData(0, 0, false,0,PixelFormat.pfNone);
       bm.nmeHandle = Surface.nme_bitmap_data_clone(nmeHandle);
       return bm;
+   }
+
+   public function cloneRect(x0:Int, y0:Int, inWidth:Int, inHeight:Int):BitmapData 
+   {
+      var result = new BitmapData(inWidth,inHeight,transparent,0,format);
+
+      result.copyPixels(this, new Rectangle(x0,y0,inWidth,inHeight), new Point(0,0), null, null, false );
+
+      return result;
    }
 
    public static inline function createColor(inRGB:Int, inAlpha:Int = 0xFF):Int 
@@ -372,6 +381,20 @@ class BitmapData extends Surface implements IBitmapDrawable
       return result;
    }
 
+
+   #if !no_nme_io
+   public function save(inFilename:String, inQuality:Float = 0.9):Void
+   {
+      var ext = inFilename.length>3 ? inFilename.substr(inFilename.length-3).toLowerCase() : PNG;
+      if (ext=="jpg" || ext=="jpeg")
+         ext = JPG;
+      else
+         ext = PNG;
+      var bytes = encode(ext, inQuality);
+      bytes.writeFile(inFilename);
+   }
+   #end
+
    public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):BitmapData 
    {
       var result = new BitmapData(0, 0);
@@ -394,9 +417,14 @@ class BitmapData extends Surface implements IBitmapDrawable
       // Handled internally...
    }
 
+   public function toString():String
+   {
+      return 'BitmapData($width,$height)';
+   }
+
    // Native Methods
-   private static var nme_bitmap_data_apply_filter = Loader.load("nme_bitmap_data_apply_filter", 5);
-   private static var nme_bitmap_data_generate_filter_rect = Loader.load("nme_bitmap_data_generate_filter_rect", 3);
+   private static var nme_bitmap_data_apply_filter = PrimeLoader.load("nme_bitmap_data_apply_filter", "ooooov");
+   private static var nme_bitmap_data_generate_filter_rect = PrimeLoader.load("nme_bitmap_data_generate_filter_rect", "ooov");
 }
 
 

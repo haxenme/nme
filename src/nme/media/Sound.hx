@@ -253,12 +253,12 @@ class Sound extends EventDispatcher
    // Native Methods
    private static var nme_sound_from_file = Loader.load("nme_sound_from_file", 3);
    private static var nme_sound_from_data = Loader.load("nme_sound_from_data", 4);
-   private static var nme_sound_get_id3 = Loader.load("nme_sound_get_id3", 2);
-   private static var nme_sound_get_length = Loader.load("nme_sound_get_length", 1);
-   private static var nme_sound_close = Loader.load("nme_sound_close", 1);
-   private static var nme_sound_get_status = Loader.load("nme_sound_get_status", 1);
+   private static var nme_sound_get_id3 = nme.PrimeLoader.load("nme_sound_get_id3", "oov");
+   private static var nme_sound_get_length = nme.PrimeLoader.load("nme_sound_get_length", "od");
+   private static var nme_sound_close = nme.PrimeLoader.load("nme_sound_close", "ov");
+   private static var nme_sound_get_status = nme.PrimeLoader.load("nme_sound_get_status", "oo");
    private static var nme_sound_get_engine = Loader.load("nme_sound_get_engine", 1);
-   private static var nme_sound_channel_create_dynamic = Loader.load("nme_sound_channel_create_dynamic", 2);
+   private static var nme_sound_channel_create_dynamic = nme.PrimeLoader.load("nme_sound_channel_create_dynamic", "ooo");
 }
 
 #else

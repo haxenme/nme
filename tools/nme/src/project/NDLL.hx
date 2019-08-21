@@ -52,9 +52,11 @@ class NDLL
       isStatic = true;
 
       var importName = name == "mysql5" ? "mysql" : name;
+
       var className = "Static" + importName.substr(0,1).toUpperCase()  + importName.substr(1);
 
-      var filename =  path + "/" + haxelibName + "/" + className + ".hx";
+      var classPath = PathHelper.classPathFrom(path);
+      var filename =  classPath + "/" + haxelibName + "/" + className + ".hx";
       if (FileSystem.exists(filename))
          importStatic = "import " + haxelibName + "." + className + ";\n";
       else

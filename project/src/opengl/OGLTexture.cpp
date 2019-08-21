@@ -293,6 +293,9 @@ public:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+      #ifndef NME_GLES
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+      #endif
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, mTextureWidth, mTextureHeight, 0, pixel_format, channel, buffer ? buffer : mSurface->GetBase());
 
@@ -415,7 +418,6 @@ public:
             {
                #ifndef NME_GLES
                glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
-               glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
                #endif
                glTexSubImage2D(GL_TEXTURE_2D, 0,
                   x0, y0,

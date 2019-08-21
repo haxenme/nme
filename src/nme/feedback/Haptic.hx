@@ -1,7 +1,7 @@
 package nme.feedback;
 #if (!flash)
 
-import nme.Loader;
+import nme.PrimeLoader;
 
 @:nativeProperty
 class Haptic 
@@ -15,7 +15,7 @@ class Haptic
 
    // Native Methods
    #if cpp
-   static var nme_haptic_vibrate = Loader.load("nme_haptic_vibrate", 2);
+   static var nme_haptic_vibrate = PrimeLoader.load("nme_haptic_vibrate", "iiv");
    #end
 }
 

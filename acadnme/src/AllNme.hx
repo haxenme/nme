@@ -116,6 +116,7 @@ import nme.feedback.Haptic;
 import nme.filesystem.File;
 import nme.filesystem.StorageVolume;
 import nme.filesystem.StorageVolumeInfo;
+import nme.system.Dialog;
 import nme.filters.BitmapFilter;
 import nme.filters.BitmapFilterQuality;
 import nme.filters.BitmapFilterType;

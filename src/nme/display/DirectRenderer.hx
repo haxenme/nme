@@ -1,7 +1,7 @@
 package nme.display;
 #if (!flash)
 
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.events.Event;
 import nme.geom.Rectangle;
 
@@ -26,8 +26,8 @@ class DirectRenderer extends DisplayObject
    }
 
    // Native Methods
-   private static var nme_direct_renderer_create = Loader.load("nme_direct_renderer_create", 0);
-   private static var nme_direct_renderer_set = Loader.load("nme_direct_renderer_set", 2);
+   private static var nme_direct_renderer_create = PrimeLoader.load("nme_direct_renderer_create", "o");
+   private static var nme_direct_renderer_set = PrimeLoader.load("nme_direct_renderer_set", "oov");
 }
 
 #end

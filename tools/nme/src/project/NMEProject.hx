@@ -25,11 +25,12 @@ class AndroidConfig
    public var gameActivityBase:String;
    public var gameActivityViewBase:String;
    public var extensions:Map<String,Bool>;
+   public var ABIs:Array<String> = [];
 
    public function new()
    {
       installLocation = "preferExternal";
-      minApiLevel = 14;
+      minApiLevel = 16;
       addV4Compat = true;
       appHeader = [];
       appIntent = [];
@@ -95,6 +96,18 @@ class IOSConfig
    }
 }
 
+class FileAssociation
+{
+   public var extension:String;
+   public var description:String;
+
+   public function new(inExtension:String, inDescription:String)
+   {
+      extension = inExtension;
+      description = inDescription;
+   }
+}
+
 
 
 class NMEProject 
@@ -106,6 +119,7 @@ class NMEProject
    public var ndlls:Array<NDLL>;
    public var icons:Array<Icon>;
    public var banners:Array<Icon>;
+   public var fileAssociations:Array<FileAssociation>;
    public var splashScreens:Array<SplashScreen>;
    public var optionalStaticLink:Bool;
    public var staticLink:Bool;
@@ -156,6 +170,7 @@ class NMEProject
 
    // Flags
    public var embedAssets:Bool;
+   public var skipAssets:Bool;
    public var openflCompat:Bool;
    public var debug:Bool;
    public var megaTrace:Bool;
@@ -177,6 +192,7 @@ class NMEProject
    {
       baseTemplateContext = {};
       embedAssets = false;
+      skipAssets = false;
       openflCompat = true;
       iosConfig = new IOSConfig();
       androidConfig = new AndroidConfig();
@@ -189,6 +205,7 @@ class NMEProject
       targetFlags = new Map<String,String>();
       templatePaths = [];
       templateCopies = [];
+      fileAssociations = [];
       ndllCheckDir = "";
       engines = new Map<String,String>();
       libraryHandlers = new Map<String,String>();
@@ -595,6 +612,11 @@ class NMEProject
       ArrayHelper.addUnique(architectures, arch);
    }
 
+   public function addFileAssociation(extension:String, description:String)
+   {
+      fileAssociations.push( new FileAssociation(extension,description) );
+   }
+
    public function hasTargetFlag(inFlag:String)
    {
       return targetFlags.exists(inFlag);
@@ -700,7 +722,6 @@ class NMEProject
    public function addLib(name:String, version:String="",inNoCopy:Bool)
    {
       var haxelib = findHaxelib(name);
-      Log.mVerbose = true;
       if (haxelib==null)
       {
          Log.verbose("Add library " + name + ":" + version );
@@ -789,6 +810,19 @@ class NMEProject
          Reflect.setField(context, "APP_" + StringHelper.formatUppercaseVariable(field), Reflect.field(app, field));
       }
 
+      var ver = app.version;
+      var parts = ver.split(".");
+      // TODO - build number...
+      if (parts.length==3)
+         parts.push("0");
+      context.FILE_VERSION = parts.join(".");
+      context.VERSION_NUMBER = parts.join(",");
+
+      var year0 = getDef("COPYRIGHT_START");
+      var year1 = Date.now().getFullYear();
+      
+      context.COPYRIGHT_YEARS = year0!=null ? '$year0-$year1' : year1;
+
       if (watchProject!=null)
       {
          for(field in Reflect.fields(watchProject.app)) 
@@ -856,6 +890,7 @@ class NMEProject
          case ScaleUiScaled:
       }
       context.WIN_STAGE_ALIGN = Type.enumIndex(window.scaleMode);
+      context.DPI_AWARE = getDef("dpiAware");
 
 
       for(haxeflag in haxeflags) 
@@ -863,6 +898,8 @@ class NMEProject
          if (StringTools.startsWith(haxeflag, "-lib")) 
             Reflect.setField(context, "LIB_" + haxeflag.substr(5).toUpperCase(), "true");
       }
+
+      context.fileAssociations = fileAssociations;
 
       context.assets = new Array<Dynamic>();
 

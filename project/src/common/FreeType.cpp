@@ -1275,7 +1275,7 @@ void ItererateFontDir(const std::string &inDir, value inFunc, int inMaxDepth)
 }
 #endif
 
-value nme_font_iterate_device_fonts(value inFunc)
+void nme_font_iterate_device_fonts(value inFunc)
 {
    #ifdef HX_WINRT
       winrtItererateDeviceFonts(inFunc);
@@ -1316,11 +1316,8 @@ value nme_font_iterate_device_fonts(value inFunc)
          testFolder++;
       }
    #endif
-   
-   return alloc_null();
 }
-
-DEFINE_PRIM(nme_font_iterate_device_fonts,1)
+DEFINE_PRIME1v(nme_font_iterate_device_fonts)
 
 
 #if defined(HX_WINRT) && defined(__cplusplus_winrt)

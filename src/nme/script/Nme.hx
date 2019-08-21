@@ -65,7 +65,11 @@ class Nme
       var itemsString = input.readString(len);
       var items:Array<Dynamic> = haxe.Json.parse(itemsString);
 
+      #if haxe4
+      var script:Bytes = null;
+      #else
       var script:String = null;
+      #end
       var isResource = false;
       var className:String = null;
       for(i in items)
@@ -73,7 +77,12 @@ class Nme
          var id:String = i.id;
          if (id=="cppiaScript")
          {
+            #if haxe4
+            script = Bytes.alloc(i.length);
+            input.readBytes(script,0,i.length);
+            #else
             script = input.readString(i.length);
+            #end
          }
          else
          {
@@ -96,7 +105,9 @@ class Nme
       #if (cpp && !cppia)
          if (script==null)
             throw "Could not find script in input";
-         #if ((hxcpp_api_level>=320) && scriptable)
+         #if haxe4
+            cpp.cppia.Host.run(script);
+         #elseif ((hxcpp_api_level>=320) && scriptable)
             cpp.cppia.Host.run(script.toString());
          #end
       #else
@@ -121,7 +132,11 @@ class Nme
       else
       {
          nme.Assets.scriptBase = haxe.io.Path.directory(inFilename) + "/assets/";
+         #if haxe4
+         var contents = sys.io.File.getBytes(inFilename);
+         #else
          var contents = sys.io.File.getContent(inFilename);
+         #end
          #if ((hxcpp_api_level>=320) && scriptable)
          cpp.cppia.Host.run(contents);
          #end
@@ -166,7 +181,11 @@ class Nme
          }
          else
          {
+            #if haxe4
+            var script = nme.Assets.getBytes(inResource);
+            #else
             var script = nme.Assets.getString(inResource);
+            #end
             if (script==null)
                throw "Could not find resource script " + inResource;
             #if ((hxcpp_api_level>=320) && scriptable)

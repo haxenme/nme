@@ -83,8 +83,8 @@ public:
 
    virtual void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale) { }
 
-   virtual void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample) { }
-   virtual void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand) { }
+   virtual void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample, const Rect &bounds) { }
+   virtual void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand, const Rect &bounds) { }
    virtual void getUInts8(uint8 *outData, int inStride, PixelFormat pixelFormat, int inSubsample) { }
    virtual void setUInts8(const uint8 *inData, int inStride, PixelFormat pixelFormat, int inExpand) { }
 
@@ -168,8 +168,8 @@ public:
    void scroll(int inDX,int inDY);
    void applyFilter(Surface *inSrc, const Rect &inRect, ImagePoint inOffset, Filter *inFilter);
    void noise(unsigned int randomSeed, unsigned int low, unsigned int high, int channelOptions, bool grayScale);
-   void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample);
-   void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand);
+   void getFloats32(float *outData, int inStride, PixelFormat pixelFormat, int inTransform, int inSubsample,const Rect &bounds);
+   void setFloats32(const float *inData, int inStride, PixelFormat pixelFormat, int inTransform, int inExpand,const Rect &bounds);
    void getUInts8(uint8 *outData, int inStride, PixelFormat pixelFormat, int inSubsample);
    void setUInts8(const uint8 *inData, int inStride, PixelFormat pixelFormat, int inExpand);
 

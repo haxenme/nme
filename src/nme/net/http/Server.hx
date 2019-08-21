@@ -2,7 +2,10 @@ package nme.net.http;
 
 import sys.net.Socket;
 import haxe.io.Bytes;
-#if cpp
+#if haxe4
+import sys.thread.Thread;
+import sys.thread.Lock;
+#elseif cpp
 import cpp.vm.Thread;
 import cpp.vm.Lock;
 #elseif neko

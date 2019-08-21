@@ -2,7 +2,7 @@ package nme.display;
 #if (!flash)
 
 import nme.geom.Matrix;
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.NativeHandle;
 
 @:nativeProperty
@@ -15,7 +15,9 @@ class Graphics
    public static inline var TILE_TRANS_2x2 = 0x0010; // Will ignore scale and rotation....
    public static inline var TILE_RECT    = 0x0020;		// won't use tile ids
    public static inline var TILE_ORIGIN  = 0x0040;
-   public static inline var TILE_NO_ID   = 0x0040;  // Assume ID0
+   public static inline var TILE_NO_ID   = 0x0080;  // Assume ID0
+   public static inline var TILE_MOUSE_ENABLE   = 0x0100;
+   public static inline var TILE_FIXED_SIZE     = 0x0200;
    private static inline var TILE_SMOOTH = 0x1000;
    public static inline var TILE_BLEND_NORMAL   = 0x00000000;
    public static inline var TILE_BLEND_ADD      = 0x00010000;
@@ -183,24 +185,24 @@ class Graphics
    }
 
    // Native Methods
-   private static var nme_gfx_clear = Loader.load("nme_gfx_clear", 1);
-   private static var nme_gfx_begin_fill = Loader.load("nme_gfx_begin_fill", 3);
-   private static var nme_gfx_begin_bitmap_fill = Loader.load("nme_gfx_begin_bitmap_fill", 5);
-   private static var nme_gfx_line_bitmap_fill = Loader.load("nme_gfx_line_bitmap_fill", 5);
+   private static var nme_gfx_clear = PrimeLoader.load("nme_gfx_clear", "ov");
+   private static var nme_gfx_begin_fill = PrimeLoader.load("nme_gfx_begin_fill", "oidv");
+   private static var nme_gfx_begin_bitmap_fill = PrimeLoader.load("nme_gfx_begin_bitmap_fill", "ooobbv");
+   private static var nme_gfx_line_bitmap_fill = PrimeLoader.load("nme_gfx_line_bitmap_fill", "ooobbv");
    private static var nme_gfx_begin_set_gradient_fill = nme.PrimeLoader.load("nme_gfx_begin_set_gradient_fill", "oiooooiidbv");
-   private static var nme_gfx_end_fill = Loader.load("nme_gfx_end_fill", 1);
+   private static var nme_gfx_end_fill = PrimeLoader.load("nme_gfx_end_fill", "ov");
    private static var nme_gfx_line_style = nme.PrimeLoader.load("nme_gfx_line_style", "ooidbiiidv" );
-   private static var nme_gfx_move_to = Loader.load("nme_gfx_move_to", 3);
-   private static var nme_gfx_line_to = Loader.load("nme_gfx_line_to", 3);
-   private static var nme_gfx_curve_to = Loader.load("nme_gfx_curve_to", 5);
-   private static var nme_gfx_arc_to = Loader.load("nme_gfx_arc_to", 5);
-   private static var nme_gfx_draw_ellipse = Loader.load("nme_gfx_draw_ellipse", 5);
-   private static var nme_gfx_draw_data = Loader.load("nme_gfx_draw_data", 2);
-   private static var nme_gfx_draw_datum = Loader.load("nme_gfx_draw_datum", 2);
-   private static var nme_gfx_draw_rect = Loader.load("nme_gfx_draw_rect", 5);
-   private static var nme_gfx_draw_path = Loader.load("nme_gfx_draw_path", 4);
-   private static var nme_gfx_draw_tiles:Dynamic->Dynamic->Dynamic->Int->Int->Void = Loader.load("nme_gfx_draw_tiles", 5);
-   private static var nme_gfx_draw_points = Loader.load("nme_gfx_draw_points", -1);
+   private static var nme_gfx_move_to = PrimeLoader.load("nme_gfx_move_to", "oddv");
+   private static var nme_gfx_line_to = PrimeLoader.load("nme_gfx_line_to", "oddv");
+   private static var nme_gfx_curve_to = PrimeLoader.load("nme_gfx_curve_to", "oddddv");
+   private static var nme_gfx_arc_to = PrimeLoader.load("nme_gfx_arc_to", "oddddv");
+   private static var nme_gfx_draw_ellipse = PrimeLoader.load("nme_gfx_draw_ellipse", "oddddv");
+   private static var nme_gfx_draw_data = PrimeLoader.load("nme_gfx_draw_data", "oov");
+   private static var nme_gfx_draw_datum = PrimeLoader.load("nme_gfx_draw_datum", "oov");
+   private static var nme_gfx_draw_rect = PrimeLoader.load("nme_gfx_draw_rect", "oddddv");
+   private static var nme_gfx_draw_path = PrimeLoader.load("nme_gfx_draw_path", "ooobv");
+   private static var nme_gfx_draw_tiles = PrimeLoader.load("nme_gfx_draw_tiles", "oooiiv");
+   private static var nme_gfx_draw_points = PrimeLoader.load("nme_gfx_draw_points", "oooibdv");
    private static var nme_gfx_draw_round_rect = nme.PrimeLoader.load("nme_gfx_draw_round_rect", "oddddddv");
    private static var nme_gfx_draw_triangles = nme.PrimeLoader.load("nme_gfx_draw_triangles","ooooioiv");
 }

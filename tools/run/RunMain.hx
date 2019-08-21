@@ -9,14 +9,17 @@ class RunMain
       log(" 1. Build the binaries appropriate to your system(s), this can be done with:");
       log("     cd project");
       log("     neko build.n");
-      log("   Note: this requires the 'nme-dev' library, which can be installed with:");
-      log("     haxelib install nme-dev");
+      log("   Note: this requires the 'nme-toolkit' library, which can be installed with:");
+      log("     haxelib install nme-toolkit");
       log(" 2. Rebuild the main command-line tool, this can be done with:");
       log("     cd tools/nme");
       log("     haxe compile.hxml");
       log("   Note: this requires the 'gm2d' and 'format' libraries, which can be installed with:");
       log("     haxelib install gm2d");
       log("     haxelib install format");
+      log(" 3. Build the acadnme tool, this can be done with:");
+      log("     cd acadnme");
+      log("     neko ../nme.n build .");
       while(true)
       {
          Sys.print("\nWould you like to do this now [y/n]");
@@ -39,29 +42,36 @@ class RunMain
 
    public static function setup()
    {
-      log("Installing nme-dev...");
-      run("","haxelib", [ "install","nme-dev"]);
+      log("Installing nme-toolkit...");
+      run("","haxelib", [ "install","nme-toolkit"]);
       buildBinaries([]);
       log("Installing gm2d...");
       run("","haxelib", [ "install","gm2d"]);
       log("Installing format...");
       run("","haxelib", [ "install","format"]);
       compileTool();
+      compileAcadnme();
+      log("Initial setup complete.");
    }
 
-    public static function buildBinaries(platforms:Array<String>)
-    {
-        log("Building binaries...");
-        var args = ["build.n"].concat(platforms);
-        run("project","neko", args);
-    }
+   public static function buildBinaries(platforms:Array<String>)
+   {
+      log("Building binaries...");
+      var args = ["build.n"].concat(platforms);
+      run("project","neko", args);
+   }
 
-    public static function compileTool()
-    {
-        log("Compiling nme tool...");
-        run("tools/nme","haxe", [ "compile.hxml"]);
-        log("Initial setup complete.");
-    }
+   public static function compileTool()
+   {
+      log("Compiling nme tool...");
+      run("tools/nme","haxe", [ "compile.hxml"]);
+   }
+
+   public static function compileAcadnme()
+   {
+      log("Compiling acadnme tool...");
+      run("acadnme","neko", [ "../nme.n", "build", "."]);
+   }
 
    public static function run(dir:String, command:String, args:Array<String>)
    {

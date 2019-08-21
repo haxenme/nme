@@ -118,7 +118,7 @@ public:
 
 AutoGCRoot *sCFFIFontFactory = 0;
 
-value nme_font_set_factory(value inFactory)
+void nme_font_set_factory(value inFactory)
 {
    if (!sCFFIFontFactory)
    {
@@ -138,10 +138,9 @@ value nme_font_set_factory(value inFactory)
       _id_offsetX = val_id("offsetX");
       _id_offsetY = val_id("offsetY");
    }
-   return alloc_null();
 }
+DEFINE_PRIME1v(nme_font_set_factory)
 
-DEFINE_PRIM(nme_font_set_factory,1)
 
 FontFace *FontFace::CreateCFFIFont(const TextFormat &inFormat,double inScale)
 {
@@ -591,23 +590,18 @@ value nme_font_register_font(value inFontName, value inBytes)
 DEFINE_PRIM(nme_font_register_font,2)
 
 
-
-value nme_font_get_use_native()
+bool nme_font_get_use_native()
 {
-   return alloc_bool(gNmeNativeFonts);
+   return gNmeNativeFonts;
 }
-DEFINE_PRIM(nme_font_get_use_native,0)
+DEFINE_PRIME0(nme_font_get_use_native)
 
 
-
-
-value nme_font_set_use_native(value inUse)
+void nme_font_set_use_native(bool inUse)
 {
-   gNmeNativeFonts = val_bool(inUse);
-   return inUse;
+   gNmeNativeFonts = inUse;
 }
-DEFINE_PRIM(nme_font_set_use_native,1)
-
+DEFINE_PRIME1v(nme_font_set_use_native)
 
 
 

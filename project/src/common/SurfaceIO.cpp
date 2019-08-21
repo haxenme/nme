@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <Surface.h>
 #include <ByteArray.h>
+#include <nme/NmeCffi.h>
 
 
 extern "C" {
@@ -491,6 +492,12 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
       color_type = PNG_COLOR_TYPE_RGB_ALPHA;
       color_format = pfBGRA;
       swapBgr = true;
+
+      if (srcFmt==pfRGBA)
+      {
+         swapBgr = false;
+         srcFmt = pfBGRA;
+      }
    }
 
    png_set_IHDR(png_ptr, info_ptr, w, h,
@@ -555,6 +562,8 @@ Surface *Surface::Load(const OSChar *inFilename)
       #endif
       return 0;
    }
+
+   AutoGCBlocking block;
 
    int len = 0;
    while(inFilename[len])

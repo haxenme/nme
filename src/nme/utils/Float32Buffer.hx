@@ -1,12 +1,20 @@
 package nme.utils;
 
+#if jsprime
+ #if haxe4
+ typedef JsFloat32Array = js.lib.Float32Array;
+ #else
+ typedef JsFloat32Array = js.html.Float32Array;
+ #end
+#end
+
 @:nativeProperty
 class Float32Buffer extends ByteArray implements ArrayAccess<Float> 
 {
    public var count(default,null):Int;
 
    #if jsprime
-   var f32View : js.html.Float32Array;
+   var f32View : JsFloat32Array;
    var bufferSize:Int;
    #end
 
@@ -26,11 +34,11 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
       if (ptr>0)
       {
          var offset = ByteArray.nme_buffer_offset(ptr);
-         f32View = new js.html.Float32Array(untyped Module.HEAP8.buffer, offset,bufferSize);
+         f32View = new JsFloat32Array(untyped Module.HEAP8.buffer, offset,bufferSize);
       }
       else if (b!=null)
       {
-         f32View = new js.html.Float32Array(b.buffer,0,bufferSize);
+         f32View = new JsFloat32Array(b.buffer,0,bufferSize);
       }
       else
       {
@@ -49,10 +57,17 @@ class Float32Buffer extends ByteArray implements ArrayAccess<Float>
    }
 
    #if (cpp && !cppia)
-   @:extern @:native("__hxcpp_memory_set_float")
-   static function hxcppSetFloat(b:haxe.io.BytesData, pos:Int, val:Float):Void { }
-   @:extern @:native("__hxcpp_memory_get_float")
-   static function hxcppGetFloat(b:haxe.io.BytesData, pos:Int):Float return 0;
+   #if (haxe_ver>=4.00)
+      @:native("__hxcpp_memory_set_float")
+      extern static function hxcppSetFloat(b:haxe.io.BytesData, pos:Int, val:Float):Void;
+      @:native("__hxcpp_memory_get_float")
+      extern static function hxcppGetFloat(b:haxe.io.BytesData, pos:Int):Float;
+   #else
+      @:extern @:native("__hxcpp_memory_set_float")
+      static function hxcppSetFloat(b:haxe.io.BytesData, pos:Int, val:Float):Void { }
+      @:extern @:native("__hxcpp_memory_get_float")
+      static function hxcppGetFloat(b:haxe.io.BytesData, pos:Int):Float return 0;
+   #end
    #end
 
    #if !cppia inline #end

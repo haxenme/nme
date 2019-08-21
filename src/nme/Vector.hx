@@ -39,6 +39,8 @@ private typedef VectorData<T> = Array<T>;
 		this = new flash.Vector<T>(length, fixed);
 		#else
 		this = new Array<T>();
+		if (length != null && length > 0)
+			set_length(length);
 		#end
 		
 	}
@@ -144,6 +146,11 @@ private typedef VectorData<T> = Array<T>;
 		
 	}
 	
+	public inline function insertAt (index:Int, element:T):Void {
+
+		this.insert (index, element);
+
+	}
 	
 	public inline function indexOf(x:T, ?from:Int = 0):Int {
 		
@@ -244,13 +251,13 @@ private typedef VectorData<T> = Array<T>;
 	
 	
 	private inline function set_length(value:Int):Int {
-		
-		#if flash
+		#if cpp
+          	cpp.NativeArray.setSize (this, value);
+        	#elseif flash
 		return this.length = value;
-		#else
-		return value;
 		#end
 		
+		return this.length;
 	}
 	
 	

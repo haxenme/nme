@@ -191,7 +191,7 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
                  name==L"courier.ttf")
            wcsncpy(desc.lfFaceName,L"courier",LF_FACESIZE);
         else
-           break;
+           return 0;
      }
 
      int bad =  EnumFontFamiliesExW(sgFontDC, &desc, MyEnumFontFunc, 0, 0 );

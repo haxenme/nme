@@ -42,6 +42,7 @@ class MakeClasses
       "display3D",
       "Stage3D.hx",
       "StaticNme.hx",
+      "AGALMiniAssembler.hx",
       "store",
       "preloader",
    ];

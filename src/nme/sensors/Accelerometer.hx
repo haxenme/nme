@@ -4,8 +4,19 @@ package nme.sensors;
 import nme.errors.ArgumentError;
 import nme.events.AccelerometerEvent;
 import nme.events.EventDispatcher;
-import nme.Loader;
 import haxe.Timer;
+
+private class Data
+{
+   public var x:Float;
+   public var y:Float;
+   public var z:Float;
+
+   public function new()
+   {
+      x = y = z = 0.0;
+   }
+}
 
 @:nativeProperty
 class Accelerometer extends EventDispatcher 
@@ -16,10 +27,14 @@ class Accelerometer extends EventDispatcher
 
    private static var defaultInterval:Int = 34;
 
+   var data:Data;
+
    /** @private */ private var timer:Timer;
    public function new() 
    {
       super();
+
+      data = new Data();
 
       setRequestedUpdateInterval(defaultInterval);
    }
@@ -29,6 +44,8 @@ class Accelerometer extends EventDispatcher
       super.addEventListener(type, listener, useCapture, priority, useWeakReference);
       update();
    }
+
+   public static function get_isSupported() return nme.ui.Accelerometer.isSupported();
 
    public function setRequestedUpdateInterval(interval:Float):Void 
    {
@@ -60,7 +77,7 @@ class Accelerometer extends EventDispatcher
    /** @private */ private function update():Void {
       var event = new AccelerometerEvent(AccelerometerEvent.UPDATE);
 
-      var data = nme_input_get_acceleration();
+      nme.ui.Accelerometer.get(data);
 
       event.timestamp = Timer.stamp();
       event.accelerationX = data.x;
@@ -70,10 +87,6 @@ class Accelerometer extends EventDispatcher
       dispatchEvent(event);
    }
 
-   // Getters & Setters
-   /** @private */ private static function get_isSupported():Bool { return nme_input_get_acceleration() != null; }
-   // Native Methods
-   private static var nme_input_get_acceleration = Loader.load("nme_input_get_acceleration", 0);
 }
 
 typedef Function = Dynamic -> Void;

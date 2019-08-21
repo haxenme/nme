@@ -1,6 +1,7 @@
 package nme;
 #if (cpp || neko || jsprime)
 
+import haxe.io.Path;
 #if neko
 import neko.Lib;
 import sys.io.Process;
@@ -32,6 +33,7 @@ class Loader
 
    static public function findHaxeLib(inLib:String) 
    {
+      Sys.setCwd(Sys.args()[Sys.args().length-1]);
       try 
       {
          var proc = new Process("haxelib", ["path", inLib]);

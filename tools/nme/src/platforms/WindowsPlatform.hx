@@ -22,6 +22,13 @@ class WindowsPlatform extends DesktopPlatform
 
       if (!project.environment.exists("SHOW_CONSOLE")) 
          project.haxedefs.set("no_console", "1");
+      if (getPlatformDir() != "winrt")
+      {
+         project.haxedefs.set("resourceFile", "resource.rc");
+         var dpiAware = project.getDef("dpiAware");
+         if (dpiAware=="changed")
+            project.haxedefs.set("manifestFile", "NmeManifest.xml");
+      }
    }
 
    override public function getPlatformDir() : String { return useNeko ? "windows-neko" : "windows"; }
@@ -29,6 +36,14 @@ class WindowsPlatform extends DesktopPlatform
    override public function getNativeDllExt() { return ".dll"; }
    override public function getLibExt() { return ".lib"; }
    override public function getBinaryName() { return executableFile; }
+
+   override public function updateBuildDir():Void 
+   {
+      super.updateBuildDir();
+      if (getPlatformDir() != "winrt")
+         copyTemplateDir( "windows", haxeDir + "/cpp", true, false );
+   }
+
 
 
    override public function copyBinary():Void 

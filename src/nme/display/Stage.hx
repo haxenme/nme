@@ -1,6 +1,7 @@
 package nme.display;
 #if !flash
 
+import nme.events.AppLinkEvent;
 import haxe.Timer;
 import nme.app.Application;
 import nme.app.Window;
@@ -32,13 +33,20 @@ import nme.geom.Rectangle;
 import nme.Lib;
 import nme.media.SoundChannel;
 import nme.net.URLLoader;
-import nme.Loader;
+import nme.PrimeLoader;
 import nme.Vector;
 import nme.events.StageVideoAvailabilityEvent;
 import haxe.CallStack;
 
 #if cpp
 import cpp.vm.Gc;
+#if haxe4
+import sys.thread.Thread;
+import sys.thread.Lock;
+#else
+import cpp.vm.Thread;
+import cpp.vm.Lock;
+#end
 #end
 
 @:nativeProperty
@@ -134,8 +142,8 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    #if cpp
    var nmePreemptiveGcFreq:Int;
    var nmePreemptiveGcSince:Int;
-   var nmeCollectionLock:cpp.vm.Lock;
-   var nmeCollectionAgency:cpp.vm.Thread;
+   var nmeCollectionLock:Lock;
+   var nmeCollectionAgency:Thread;
    var nmeFrameAlloc:Array<Int>;
    var nmeLastCurrentMemory:Int;
    var nmeLastPreempt:Bool;
@@ -327,9 +335,13 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
            var text:String = null;
            if (inEvent.code>0)
            {
+              #if haxe4
+              text = String.fromCharCode(inEvent.code);
+              #else
               var u = new haxe.Utf8();
               u.addChar( inEvent.code );
               text = u.toString();
+              #end
            }
            else
            {
@@ -681,6 +693,12 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          obj.nmeFireEvent(new Event(Event.SCROLL));
    }
 
+
+   public function onDpiChanged(inEvent:AppEvent):Void
+   {
+      nmeDispatchEvent(new Event(Event.DPI_CHANGED) );
+   }
+
    public function onActive(inActive:Bool):Void
    {
       // trace("nmeSetActive : " + inActive);
@@ -814,6 +832,13 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeDispatchEvent(evt);
    }
 
+   public function onAppLink(inEvent:AppEvent):Void
+   {
+      var evt = new AppLinkEvent(AppLinkEvent.APP_LINK, false, false);
+      evt.url = inEvent.text;
+      nmeDispatchEvent(evt);
+   }
+    
    public function onContextLost():Void
    {
       var evt = new Event(Event.CONTEXT3D_LOST);
@@ -996,8 +1021,8 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmePreemptiveGcFreq = inFrames;
       if (nmeCollectionLock==null && inFrames!=0)
       {
-         nmeCollectionLock = new cpp.vm.Lock();
-         nmeCollectionAgency = cpp.vm.Thread.create( function() {
+         nmeCollectionLock = new Lock();
+         nmeCollectionAgency = Thread.create( function() {
            while(true)
            {
               nmeCollectionLock.wait();
@@ -1037,9 +1062,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private function set_focus(inObject:InteractiveObject):InteractiveObject 
    {
       if (inObject == null)
-         nme_stage_set_focus(nmeHandle, null, 0);
+         nme_stage_set_focus(nmeHandle, null);
       else
-         nme_stage_set_focus(nmeHandle, inObject.nmeHandle, 0);
+         nme_stage_set_focus(nmeHandle, inObject.nmeHandle);
       return inObject;
    }
 
@@ -1084,18 +1109,18 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private function set_renderRequest(f:Void->Bool):Void->Bool return window.renderRequest = f;
 
    // Native Methods
-   private static var nme_render_stage = Loader.load("nme_render_stage", 1);
-   private static var nme_set_render_gc_free = Loader.load("nme_set_render_gc_free", 1);
-   private static var nme_stage_get_focus_id = Loader.load("nme_stage_get_focus_id", 1);
-   private static var nme_stage_set_focus = Loader.load("nme_stage_set_focus", 3);
-   private static var nme_stage_get_focus_rect = Loader.load("nme_stage_get_focus_rect", 1);
-   private static var nme_stage_set_focus_rect = Loader.load("nme_stage_set_focus_rect", 2);
-   private static var nme_stage_resize_window = Loader.load("nme_stage_resize_window", 3);
-   private static var nme_stage_show_cursor = Loader.load("nme_stage_show_cursor", 2);
+   private static var nme_render_stage = PrimeLoader.load("nme_render_stage", "ov");
+   private static var nme_set_render_gc_free = PrimeLoader.load("nme_set_render_gc_free", "bv");
+   private static var nme_stage_get_focus_id = PrimeLoader.load("nme_stage_get_focus_id", "oi");
+   private static var nme_stage_set_focus = PrimeLoader.load("nme_stage_set_focus", "oov");
+   private static var nme_stage_get_focus_rect = PrimeLoader.load("nme_stage_get_focus_rect", "ob");
+   private static var nme_stage_set_focus_rect = PrimeLoader.load("nme_stage_set_focus_rect", "obv");
+   private static var nme_stage_resize_window = PrimeLoader.load("nme_stage_resize_window", "oiiv");
+   private static var nme_stage_show_cursor = PrimeLoader.load("nme_stage_show_cursor", "obv");
   
-   private static var nme_stage_get_orientation = Loader.load("nme_stage_get_orientation", 0);
-   private static var nme_stage_get_normal_orientation = Loader.load("nme_stage_get_normal_orientation", 0);
-   private static var nme_stage_check_cache = Loader.load("nme_stage_check_cache", 1);
+   private static var nme_stage_get_orientation = PrimeLoader.load("nme_stage_get_orientation", "i");
+   private static var nme_stage_get_normal_orientation = PrimeLoader.load("nme_stage_get_normal_orientation", "i");
+   private static var nme_stage_check_cache = PrimeLoader.load("nme_stage_check_cache", "ob");
 }
 
 class TouchInfo 
