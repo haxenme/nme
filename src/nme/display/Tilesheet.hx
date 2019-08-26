@@ -52,7 +52,7 @@ class Tilesheet
 
    public function getTileRect(index:Int, ?result:Rectangle):Rectangle
    {
-      if (tileCount <= index)
+      if (tileCount <= index || index < 0)
       {
         return null;
       }
