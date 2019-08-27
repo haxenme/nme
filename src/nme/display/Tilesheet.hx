@@ -53,6 +53,11 @@ class Tilesheet
 
    public function getTileRect(index:Int, ?result:Rectangle):Rectangle
    {
+      if (tileCount <= index || index < 0)
+      {
+        return null;
+      }
+      
       if (result == null)
       {
         result =  new Rectangle();
