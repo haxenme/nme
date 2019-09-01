@@ -59,6 +59,7 @@ public:
          int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
          if (-1 == xioctl(fd, VIDIOC_STREAMOFF, &type))
          {
+            printf("VIDIOC_STREAMOFF error\n");
             // Hmm
          }
       }
@@ -102,7 +103,7 @@ public:
          r = ioctl(fh, request, arg);
       } while (-1 == r && EINTR == errno);
       if (r==-1 && !inQuiet)
-         printf("xioctl error %s\n", strerror(errno) );
+         printf("xioctl error %d %s\n", request, strerror(errno) );
       return r;
    }
 
@@ -130,7 +131,42 @@ public:
 
       cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-      if (0 == xioctl(fd, VIDIOC_CROPCAP, &cropcap))
+      int cropCapRes =  xioctl(fd, VIDIOC_CROPCAP, &cropcap, true);
+      if (cropCapRes==ENODATA || cropCapRes==-1)
+      {
+         CLEAR(fmt);
+
+         //struct v4l2_fmtdesc fmtdesc;
+         //CLEAR(fmtdesc);
+         //fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+         //while (ioctl(fd,VIDIOC_ENUM_FMT,&fmtdesc) == 0)
+         //{
+         //   printf("%s (%08x)\n", fmtdesc.description, fmtdesc.pixelformat);
+         //   fmtdesc.index++;
+         //}
+
+         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+         if (-1 == xioctl(fd, VIDIOC_G_FMT, &fmt))
+               setError("Could not get format");
+         else
+         {
+            fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB24;
+            fmt.fmt.pix.width = 640;
+            fmt.fmt.pix.height = 480;
+            if (xioctl(fd,VIDIOC_S_FMT,&fmt)==0)
+            {
+               videoFormat = fmt.fmt.pix.pixelformat;
+            }
+            else
+            {
+               setError("Could not set format.");
+            }
+         }
+
+         //printf(" video %dx%d, pix=%08x\n", fmt.fmt.pix.width,  fmt.fmt.pix.height, fmt.fmt.pix.pixelformat );
+
+      }
+      else if (0 == cropCapRes)
       {
          crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
          crop.c = cropcap.defrect; /* reset to default */
@@ -174,6 +210,15 @@ public:
          if (fmt.fmt.pix.sizeimage < min)
                 fmt.fmt.pix.sizeimage = min;
       }
+      else if (cropCapRes==EINVAL)
+      {
+         setError("cropCat EINVAL");
+      }
+      else
+      {
+         //V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE
+         printf("Bad cropCat result %d %08x\n", cropCapRes, cropCapRes);
+      }
 
 
       struct v4l2_requestbuffers req = {0};
@@ -183,7 +228,6 @@ public:
 
       if (-1 == xioctl(fd, VIDIOC_REQBUFS, &req))
          return setError("Could not request buffers\n");
-
 
       struct v4l2_buffer buf;
       for(int i=0;i<req.count;i++)
@@ -210,6 +254,8 @@ public:
       height = fmt.fmt.pix.height;
       pixelFormat = pfRGB;
       status = camRunning;
+
+      //printf("running %dx%d!\n", width, height);
    }
 
 
@@ -252,7 +298,9 @@ public:
             if(-1 == xioctl(fd, VIDIOC_DQBUF, &buf,true))
             {
                if (errno==EAGAIN)
-                  printf(" - again\n");
+               {
+                  //printf(" - again\n");
+               }
                else
                   setError("Retrieving Frame");
             }
@@ -282,36 +330,50 @@ public:
      unsigned char *dest = buffer->Edit(0);
 
      int pairs = width>>1;
-     for(int y=0;y<height;y++)
+     if (videoFormat==V4L2_PIX_FMT_RGB24)
      {
-         const unsigned char *s = (unsigned char *)inData + y*width*2;
-         unsigned char *rgb =  dest + y*stride;
+        memcpy(dest, inData, width * height * 3 );
+     }
+     else
+        for(int y=0;y<height;y++)
+        {
+            const unsigned char *s = (unsigned char *)inData + y*width*2;
+            unsigned char *rgb =  dest + y*stride;
 
-         if (videoFormat==V4L2_PIX_FMT_YUYV)
-         {
-            for(int x=0;x<pairs;x++)
+            if (videoFormat==V4L2_PIX_FMT_YUYV)
             {
-               int y1 = s[0];
-               int u  = s[1]-128;
-               int y2 = s[2];
-               int v  = s[3]-128;
+               for(int x=0;x<pairs;x++)
+               {
+                  int y1 = s[0];
+                  int u  = s[1]-128;
+                  int y2 = s[2];
+                  int v  = s[3]-128;
 
-               int cr = (v*359) >> 8;
-               int cg = (u*88 + v*183) >> 8;
-               int cb = (u*454) >> 8;
+                  int cr = (v*359) >> 8;
+                  int cg = (u*88 + v*183) >> 8;
+                  int cb = (u*454) >> 8;
 
-               *rgb++ = clamp(y1 + cr);
-               *rgb++ = clamp(y1 - cg);
-               *rgb++ = clamp(y1 + cb);
+                  *rgb++ = clamp(y1 + cr);
+                  *rgb++ = clamp(y1 - cg);
+                  *rgb++ = clamp(y1 + cb);
 
-               *rgb++ = clamp(y2 + cr);
-               *rgb++ = clamp(y2 - cg);
-               *rgb++ = clamp(y2 + cb);
+                  *rgb++ = clamp(y2 + cr);
+                  *rgb++ = clamp(y2 - cg);
+                  *rgb++ = clamp(y2 + cb);
 
-               s+=4;
+                  s+=4;
+               }
+            }
+            else
+            {
+               static bool shown = false;
+               if (!shown)
+               {
+                  printf("fillBuffer - Unknown frame format %08x (yuv=%08x rgb=%08x)\n", videoFormat, V4L2_PIX_FMT_YUYV,V4L2_PIX_FMT_RGB24);
+                  shown = true;
+               }
             }
          }
-      }
       buffer->Commit();
    }
 

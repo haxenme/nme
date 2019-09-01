@@ -381,8 +381,8 @@ class NMEProject
             targetFlags.set("cpp", "1");
             targetFlags.set("linux", "1");
             targetFlags.set("rpi", "1");
-            if (PlatformHelper.hostPlatform==Platform.WINDOWS)
-               addHaxelib("winrpi",null);
+            //if (PlatformHelper.hostPlatform==Platform.WINDOWS)
+            //   addHaxelib("winrpi",null);
             target = inTargetName.toUpperCase();
 
          case "windows", "mac", "linux":

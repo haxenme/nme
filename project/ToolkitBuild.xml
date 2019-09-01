@@ -9,6 +9,8 @@
    <set name="HXCPP_LINK_MEM_FILE" value="1" if="HXCPP_JS_PRIME" />
    <set name="HXCPP_LINK_TOTAL_MEMORY" value="268435456" if="HXCPP_JS_PRIME||emscripten" />
 
+   <set name="winrpi" value="1" if="windows_host rpi" />
+
    <set name="linux" value="1" if="winrpi" />
    <unset name="windows" if="winrpi" />
    <set name="xcompile" value="1" if="winrpi" />
@@ -48,7 +50,7 @@
    <set name="NME_SDL2" value="1" if="windows" />
    <set name="NME_SDL2" value="1" if="linux" unless="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL2" value="1" if="macos" />
-   <set name="NME_SDL2" value="1" if="winnrpi" />
+   <set name="NME_SDL2" value="1" if="winrpi" />
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
