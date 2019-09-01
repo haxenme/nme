@@ -777,8 +777,8 @@ GL_DELETE_RESO(buffer)
       GL_DELETE_RESO(name)
 #else
 #define GL_DELETE_RESO300(name) \
-   value nme_gl_delete_##name() { return alloc_null(); } \
-   DEFINE_PRIM(nme_gl_delete_##name,0);
+   value nme_gl_delete_##name(value val) { return alloc_null(); } \
+   DEFINE_PRIM(nme_gl_delete_##name,1);
 #endif
 
 GL_DELETE_RESO300(query)
