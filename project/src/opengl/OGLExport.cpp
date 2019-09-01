@@ -1507,7 +1507,11 @@ value nme_gl_shader_source(value inId,value inSource)
       buffer = "#version 100\n";
       buffer = "#define texture texture2D\n";
       #else
-      buffer = "#version 130\n";
+        #ifdef HX_MACOS
+          buffer = "#version 120\n";
+        #else
+          buffer = "#version 130\n";
+        #endif
       #endif
    }
 
