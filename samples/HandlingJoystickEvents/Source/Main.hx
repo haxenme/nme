@@ -40,6 +40,16 @@ class Main extends Sprite {
     private var movingRightControl:GameInputControl;
     private var movingAxis0Control:GameInputControl;
     private var movingAxis1Control:GameInputControl;
+    private var buttonAControl:GameInputControl;
+    private var buttonBControl:GameInputControl;
+    private var buttonXControl:GameInputControl;
+    private var buttonYControl:GameInputControl;
+    private var buttonLStickControl:GameInputControl;
+    private var buttonRStickControl:GameInputControl;
+    private var buttonLShoulderControl:GameInputControl;
+    private var buttonBack:GameInputControl;
+    private var buttonStart:GameInputControl;
+    private var buttonGuide:GameInputControl;
 #end
 
     public function new () {
@@ -177,6 +187,18 @@ class Main extends Sprite {
                   case GamepadButton.DPAD_DOWN:  movingDownControl  = control;
                   case GamepadButton.DPAD_LEFT:  movingLeftControl  = control;
                   case GamepadButton.DPAD_RIGHT: movingRightControl = control;
+
+                  case GamepadButton.A: buttonAControl = control;
+                  case GamepadButton.B: buttonBControl = control;
+                  case GamepadButton.X: buttonXControl = control;
+                  case GamepadButton.Y: buttonYControl = control;
+                  case GamepadButton.LEFT_STICK: buttonLStickControl = control;
+                  case GamepadButton.RIGHT_STICK: buttonRStickControl = control;
+                  case GamepadButton.LEFT_SHOULDER: buttonLShoulderControl = control;
+                  case GamepadButton.RIGHT_SHOULDER: buttonRShoulderControl = control;
+                  case GamepadButton.BACK: buttonBackControl = control;
+                  case GamepadButton.START: buttonStartControl = control;
+                  case GamepadButton.GUIDE: buttonGuideControl = control;
                 }
              }
              else if(temp[0]=="AXIS")
@@ -350,6 +372,61 @@ class Main extends Sprite {
        movingDown  = movingDown  || ( movingAxis1Control !=null && movingAxis1Control.value > 0.5);
        movingLeft  = movingLeft  || ( movingAxis0Control !=null && movingAxis0Control.value < -0.5);
        movingRight = movingRight || ( movingAxis0Control !=null && movingAxis0Control.value > 0.5);
+       if(buttonAControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.A, buttonAControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonBControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.B, buttonBControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonXControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.X, buttonXControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonYControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.Y, buttonYControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonLShoulderControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.LEFT_SHOULDER, buttonLShoulderControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonRShoulderControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.RIGHT_SHOULDER, buttonRShoulderControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonLStickControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.LEFT_STICK, buttonLStickControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonRStickControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.RIGHT_STICK, buttonRStickControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonStartControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.START, buttonStartControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonBackControl !=null)
+       {
+            userDisplays[player].setColor( GamepadButton.BACK, buttonBackControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+       if(buttonGuideControl !=null)
+       {
+  
+            userDisplays[player].setColor( GamepadButton.GUIDE, buttonGuideControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
+       }
+
 #end
 
         if (movingDown) {
