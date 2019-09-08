@@ -11,7 +11,7 @@
 
 #ifdef NME_MIXER
 #include <SDL_mixer.h>
-#endif
+#endif  
 
 #ifdef HX_WINDOWS
 #include <SDL_syswm.h>
@@ -63,6 +63,7 @@ int InitSDL()
       sgGameControllerEnabled = true;
       #if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX) 
       SDL_GameControllerAddMappingsFromRW (SDL_RWFromConstMem (g_gameControllerDB, sizeof (g_gameControllerDB)), 0);
+      SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt"); //user defined mappings
       #endif
    }
    

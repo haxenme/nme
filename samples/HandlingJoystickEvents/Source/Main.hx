@@ -374,47 +374,38 @@ class Main extends Sprite {
        movingRight = movingRight || ( movingAxis0Control !=null && movingAxis0Control.value > 0.5);
        if(buttonAControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.A, buttonAControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
        if(buttonBControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.B, buttonBControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
        if(buttonXControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.X, buttonXControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
        if(buttonYControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.Y, buttonYControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
        if(buttonLShoulderControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.LEFT_SHOULDER, buttonLShoulderControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
        if(buttonRShoulderControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.RIGHT_SHOULDER, buttonRShoulderControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
        if(buttonLStickControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.LEFT_STICK, buttonLStickControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
        if(buttonRStickControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.RIGHT_STICK, buttonRStickControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
        if(buttonStartControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.START, buttonStartControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
        if(buttonBackControl !=null)
@@ -423,7 +414,6 @@ class Main extends Sprite {
        }
        if(buttonGuideControl !=null)
        {
-  
             userDisplays[player].setColor( GamepadButton.GUIDE, buttonGuideControl.value > 0.0 ? GamePadDisplay.orange : GamePadDisplay.gray);
        }
 
