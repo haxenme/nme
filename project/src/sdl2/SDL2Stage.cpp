@@ -11,7 +11,7 @@
 
 #ifdef NME_MIXER
 #include <SDL_mixer.h>
-#endif  
+#endif
 
 #ifdef HX_WINDOWS
 #include <SDL_syswm.h>

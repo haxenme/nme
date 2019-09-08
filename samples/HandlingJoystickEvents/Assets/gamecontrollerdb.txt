@@ -1,0 +1,2 @@
+#get your joystick mapping using http://generalarcade.com/gamepadtool/
+030000005e0400000700000000000000,SideWinder Game Pad USB version 1.0,platform:Windows,a:b0,b:b1,x:b3,y:b4,back:b8,start:b9,leftstick:b5,rightstick:b2,leftshoulder:b6,rightshoulder:b7,dpup:-a1,dpdown:+a1,dpleft:-a0,dpright:+a0,

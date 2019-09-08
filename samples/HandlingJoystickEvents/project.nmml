@@ -9,10 +9,14 @@
 	<haxelib name="nme" />
 	<haxelib name="actuate" />
 
-	<haxedef name="NME_JOYSTICK_API" unless="NME_NO_JOYSTICK_API"/>
-<!--<haxedef name="NME_GAMEINPUT_API" unless="NME_NO_GAMEINPUT_API"/>-->
+	<!-- OpenFL compatibility API -->
+	<haxedef name="NME_JOYSTICK_API" if="NME_NO_GAMEINPUT_API"/>
 	
-	<assets path="Assets" rename="assets" exclude="nme.svg" />
+	<!-- Newer API -->
+	<haxedef name="NME_GAMEINPUT_API" unless="NME_NO_GAMEINPUT_API"/>
+	
+	<assets path="Assets" rename="assets" exclude="nme.svg|gamecontrollerdb.txt" />
+	<assets path="Assets/gamecontrollerdb.txt" rename="gamecontrollerdb.txt" />
 	<icon path="Assets/nme.svg" />
 	
 </project>
