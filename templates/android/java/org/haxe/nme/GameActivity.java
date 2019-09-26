@@ -953,6 +953,22 @@ implements SensorEventListener
       mView.onPause();
    }
 
+   @Override public void onBackPressed()
+   {
+      Log.d(TAG,"onBackPressed");
+
+      if (mView != null)
+      {
+         mView.queueEvent(new Runnable()
+         {
+            public void run()
+            {
+               mView.HandleResult(NME.onKeyChange(27, 27, true, false));
+               mView.HandleResult(NME.onKeyChange(27, 27, false, false));
+            }
+         });
+      }
+   }
 
    public static void registerExtension(Extension extension)
    {
