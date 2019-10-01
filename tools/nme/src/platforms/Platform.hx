@@ -653,7 +653,7 @@ class Platform
    }
    public function copyTemplate(from:String, to:String,doAddOutput=true)
    {
-      FileHelper.copyFileTemplate(project.templatePaths, from, to, context, doAddOutput ? addOutput : null);
+      FileHelper.recursiveCopyTemplate(project.templatePaths, from, to, context, doAddOutput ? addOutput : null);
    }
 
    public function updateBuildDir()
