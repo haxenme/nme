@@ -111,6 +111,7 @@ class NMEStage;
 
 - (void) createOGLFramebuffer;
 - (void) destroyOGLFramebuffer;
+- (void) recreateOGLFramebuffer;
 @end
 
 
@@ -155,6 +156,7 @@ public:
    bool           multiTouchEnabled;
    bool           haveOpaqueBg;
    bool           wantOpaqueBg;
+   bool           needRecreateOGLFramebuffer;
 
    NMEStage(CGRect inRect);
    ~NMEStage();
@@ -258,7 +260,11 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
    if (animating)
    {
       if (stage->nmeView->mOGLContext && [EAGLContext currentContext] != stage->nmeView->mOGLContext)
-         [EAGLContext setCurrentContext:stage->nmeView->mOGLContext];  
+         [EAGLContext setCurrentContext:stage->nmeView->mOGLContext];
+     
+      if (stage->needRecreateOGLFramebuffer)
+         [stage->nmeView recreateOGLFramebuffer];
+
       Event evt(etPoll);
       stage->OnEvent(evt);
    }
@@ -1041,9 +1047,7 @@ static std::string nmeTitle;
    }
 }
 
-
-
-- (void) layoutSubviews
+- (void) recreateOGLFramebuffer
 {
    [EAGLContext setCurrentContext:mOGLContext];
    [self destroyOGLFramebuffer];
@@ -1053,6 +1057,13 @@ static std::string nmeTitle;
    mHardwareRenderer->SetWindowSize(backingWidth,backingHeight);
 
    mStage->OnOGLResize(backingWidth,backingHeight);
+
+   mStage->needRecreateOGLFramebuffer = false;
+}
+
+- (void) layoutSubviews
+{
+   mStage->needRecreateOGLFramebuffer = true; 
 }
 
 #ifndef OBJC_ARC
@@ -1682,6 +1693,7 @@ NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
 
    haveOpaqueBg = true;
    wantOpaqueBg = true;
+   needRecreateOGLFramebuffer = false;
 
    NSString* platform = [UIDeviceHardware platformString];
    //printf("Detected hardware: %s\n", [platform UTF8String]);
