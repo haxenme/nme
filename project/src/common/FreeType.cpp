@@ -20,6 +20,7 @@
 
 #ifdef NME_TOOLKIT_BUILD
 #include <ftoutln.h>
+#include <ftstroke.h>
 #else
 #include <freetype/ftoutln.h>
 #endif
@@ -49,6 +50,10 @@
 
 #define NME_FREETYPE_FLAGS  (FT_LOAD_FORCE_AUTOHINT|FT_LOAD_DEFAULT)
 
+#define NME_OUTLINE_END_SQUARE 0x10
+#define NME_OUTLINE_EDGE_BEVEL 0x20
+#define NME_OUTLINE_EDGE_MITER 0x40
+
 namespace nme
 {
 
@@ -57,20 +62,50 @@ FT_Library sgLibrary = 0;
 
 class FreeTypeFont : public FontFace
 {
+   void* mBuffer;
+   FT_Face  mFace;
+   uint32 mTransform;
+   int    mPixelHeight;
+   bool   stroked;
+   int    pad;
+   FT_Stroker stroker;
+
 public:
-   FreeTypeFont(FT_Face inFace, int inPixelHeight, int inTransform, void* inBuffer) :
-     mFace(inFace), mPixelHeight(inPixelHeight),mTransform(inTransform), mBuffer(inBuffer)
+   //  inOutline in 64th of a pixel...
+   //  inOutlineMiter in 16.16 format
+   FreeTypeFont(FT_Face inFace, int inPixelHeight,
+                int inOutline, int inOutlineFlags, unsigned int inOutlineMiter,
+                int inTransform, void* inBuffer) :
+     mFace(inFace), mPixelHeight(inPixelHeight),
+     mTransform(inTransform), mBuffer(inBuffer)
    {
+      stroked = inOutline>0;
+      pad = 0;
+      if (stroked)
+      {
+         FT_Stroker_New(sgLibrary, &stroker);
+         //  64th of a pixel...
+         FT_Stroker_LineCap cap = (inOutlineFlags&NME_OUTLINE_END_SQUARE) ? FT_STROKER_LINECAP_SQUARE :
+                                  FT_STROKER_LINECAP_ROUND;
+         FT_Stroker_LineJoin miter = (inOutlineFlags&NME_OUTLINE_EDGE_MITER) ? FT_STROKER_LINEJOIN_MITER :
+                     (inOutlineFlags&NME_OUTLINE_EDGE_BEVEL) ? FT_STROKER_LINEJOIN_BEVEL :
+                     FT_STROKER_LINEJOIN_ROUND;
+         FT_Stroker_Set(stroker, inOutline, cap, miter, inOutlineMiter);
+         pad = (inOutline+63)>>6;
+      }
    }
 
 
    ~FreeTypeFont()
    {
+      if (stroked)
+         FT_Stroker_Done(stroker);
+
       FT_Done_Face(mFace);
-	  if (mBuffer) free(mBuffer);
+      if (mBuffer) free(mBuffer);
    }
 
-   bool LoadBitmap(int inChar)
+   bool LoadBitmap(int inChar,bool andRender=true)
    {
       int idx = FT_Get_Char_Index( mFace, inChar );
 
@@ -80,6 +115,7 @@ public:
       //if (!(mTransform & (ffItalic|ffBold) ))
          renderFlags |= FT_LOAD_FORCE_AUTOHINT;
       #endif
+
 
       int err = FT_Load_Glyph( mFace, idx, renderFlags  );
       if (err)
@@ -113,25 +149,25 @@ public:
       }
 
 
-
-
       FT_Render_Mode mode = FT_RENDER_MODE_NORMAL;
       // mode = FT_RENDER_MODE_MONO;
       //if (mFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
-         err = FT_Render_Glyph( mFace->glyph, mode );
-      if (err)
-         return false;
-
-      #ifndef GPH
-      if (mTransform & ffBold)
+      if (andRender)
       {
-         if ( mFace->glyph->format != FT_GLYPH_FORMAT_OUTLINE && !emboldened)
+         err = FT_Render_Glyph( mFace->glyph, mode );
+         if (err)
+            return false;
+
+         if (mTransform & ffBold)
          {
-            FT_GlyphSlot_Own_Bitmap(mFace->glyph);
-            FT_Bitmap_Embolden(sgLibrary, &mFace->glyph->bitmap, 1<<6, 0);
+            if ( mFace->glyph->format != FT_GLYPH_FORMAT_OUTLINE && !emboldened)
+            {
+               FT_GlyphSlot_Own_Bitmap(mFace->glyph);
+               FT_Bitmap_Embolden(sgLibrary, &mFace->glyph->bitmap, 1<<6, 0);
+            }
          }
       }
-      #endif
+
       return true;
    }
 
@@ -142,39 +178,75 @@ public:
    bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
                            int &outOx, int &outOy)
    {
-      if (!LoadBitmap(inChar))
+      if (!LoadBitmap(inChar,!stroked))
          return false;
 
-      outOx = mFace->glyph->bitmap_left;
-      outOy = -mFace->glyph->bitmap_top;
-      FT_Bitmap &bitmap = mFace->glyph->bitmap;
-      outW = bitmap.width;
-      outH = bitmap.rows;
+      FT_Bitmap *bitmap = &mFace->glyph->bitmap;
+
+      FT_Glyph glyph;
+      if (stroked)
+      {
+         FT_Get_Glyph(mFace->glyph, &glyph);
+         FT_Glyph_StrokeBorder(&glyph, stroker, false, false);
+         FT_Glyph_To_Bitmap( &glyph, FT_RENDER_MODE_NORMAL, 0, 1 );
+
+         FT_BitmapGlyph glyph_bitmap = (FT_BitmapGlyph)glyph;
+         bitmap = &glyph_bitmap->bitmap;
+         outOx = glyph_bitmap->left;
+         outOy = -glyph_bitmap->top;
+      }
+      else
+      {
+         outOx = mFace->glyph->bitmap_left;
+         outOy = -mFace->glyph->bitmap_top;
+      }
+
+
+      outW = bitmap->width;
+      outH = bitmap->rows;
 
       if (mTransform & ffUnderline)
       {
-         int underlineY0 = mFace->glyph->bitmap_top + getUnderlineOffset();
+         int underlineY0 = mFace->glyph->bitmap_top + getUnderlineOffset() + pad;
          int underlineY1 = underlineY0 + getUnderlineHeight();
          if (outH<underlineY1)
             outH = underlineY1;
       }
 
       outAdvance = (mFace->glyph->advance.x);
+
+      if (stroked)
+         FT_Done_Glyph(glyph);
+
       return true;
    }
 
 
    void RenderGlyph(int inChar,const RenderTarget &outTarget)
    {
-      if (!LoadBitmap(inChar))
+      if (!LoadBitmap(inChar,!stroked))
          return;
 
       int underlineY0 = -1;
       int underlineY1 = -1;
 
-      FT_Bitmap &bitmap = mFace->glyph->bitmap;
-      int w = bitmap.width;
-      int h = bitmap.rows;
+      FT_Bitmap *bitmap = &mFace->glyph->bitmap;
+      int ow = bitmap->width;
+      int oh = bitmap->rows;
+
+      FT_Glyph glyph;
+      if (stroked)
+      {
+         FT_Get_Glyph(mFace->glyph, &glyph);
+         FT_Glyph_StrokeBorder(&glyph, stroker, false, false);
+         FT_Glyph_To_Bitmap( &glyph, FT_RENDER_MODE_NORMAL, 0, 1 );
+
+         FT_BitmapGlyph glyph_bitmap = (FT_BitmapGlyph)glyph;
+         bitmap = &glyph_bitmap->bitmap;
+      }
+
+      int w = bitmap->width;
+      int h = bitmap->rows;
  
       if (mTransform & ffUnderline)
       {
@@ -186,7 +258,10 @@ public:
          h = underlineY1;
 
       if (w>outTarget.mRect.w || h>outTarget.mRect.h)
+      {
+         printf(" too big %d %d\n", outTarget.mRect.w, outTarget.mRect.h);
          return;
+      }
 
       for(int r=0;r<h;r++)
       {
@@ -194,10 +269,10 @@ public:
 
          int underline = (r>=underlineY0 && r<underlineY1) ? 0xff : 0;
 
-         if (r<bitmap.rows)
+         if (r<bitmap->rows)
          {
-            unsigned char *row = bitmap.buffer + r*bitmap.pitch;
-            if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
+            unsigned char *row = bitmap->buffer + r*bitmap->pitch;
+            if (bitmap->pixel_mode == FT_PIXEL_MODE_MONO)
             {
                unsigned int bit = 0;
                unsigned int data = 0;
@@ -212,7 +287,7 @@ public:
                   bit >>= 1;
                }
             }
-            else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
+            else if (bitmap->pixel_mode == FT_PIXEL_MODE_GRAY)
             {
                /*
                char buf[1000];
@@ -228,13 +303,16 @@ public:
          }
          else if (r>=underlineY0 && r<underlineY1)
          {
-            memset( dest, 0xff, bitmap.pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
+            memset( dest, 0xff, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
          }
          else
          {
-            memset( dest, 0x00, bitmap.pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
+            memset( dest, 0x00, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
          }
       }
+
+      if (stroked)
+         FT_Done_Glyph(glyph);
    }
 
 
@@ -256,11 +334,6 @@ public:
    }
 
    
-   void* mBuffer;
-   FT_Face  mFace;
-   uint32 mTransform;
-   int    mPixelHeight;
-
 };
 
 
@@ -705,6 +778,23 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Fon
       if (inFormat.italic)
          flags |= ffItalic;
    }
+
+   int scaledOutline = 0;
+   int miter8d8 = 0;
+   if (inFormat.outline.Get()>0 )
+   {
+      scaledOutline = (int )(inFormat.outline*inScale*64 + 0.5);
+      if (scaledOutline>16)
+      {
+         miter8d8 = inFormat.outlineMiterLimit*256;
+         if (miter8d8>0xffff) miter8d8 = 0xffff;
+         flags |= inFormat.outlineFlags.Get() | ((scaledOutline>>4)<<8);
+         flags ^= (miter8d8<<16);
+      }
+      else
+         scaledOutline = 0;
+   }
+
    
    void* pBuffer = 0;
    face = FindFont(str,flags,inBytes,&pBuffer);
@@ -721,8 +811,6 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Fon
    int height = (int )(inFormat.size*inScale + 0.5);
    FT_Set_Pixel_Sizes(face,0, height);
 
-
-
    uint32 transform = 0;
    if (inCombinedName=="")
    {
@@ -734,7 +822,7 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale,Fon
    if ( inFormat.underline )
       transform |= ffUnderline;
 
-   return new FreeTypeFont(face,height,transform,pBuffer);
+   return new FreeTypeFont(face,height,scaledOutline,inFormat.outlineFlags.Get(),miter8d8<<8,transform,pBuffer);
 }
 
 

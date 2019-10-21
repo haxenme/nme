@@ -4,6 +4,11 @@ package nme.text;
 @:nativeProperty
 class TextFormat 
 {
+   // outlineFlags
+   public static inline var OUTLINE_END_SQUARE = 0x10;
+   public static inline var OUTLINE_EDGE_BEVEL = 0x20;
+   public static inline var OUTLINE_EDGE_MITER = 0x40;
+
    public var align:String;
    public var blockIndent:Dynamic;
    public var bold:Dynamic;
@@ -19,6 +24,9 @@ class TextFormat
    public var letterSpacing:Dynamic;
    public var rightMargin:Dynamic;
    public var size:Dynamic;
+   public var outline:Null<Float>;
+   public var outlineFlags:Null<Int>;
+   public var outlineMiterLimit:Null<Float>;
    public var tabStops:Array<Int>;
    public var target:String;
    public var underline:Dynamic;

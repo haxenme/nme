@@ -2200,14 +2200,21 @@ void TextField::Layout(const Matrix &inMatrix)
          double ox = charX;
          if (displayAsPassword)
             ch = gPasswordChar;
+         double right = charX;
          if (g.mFont)
-            g.mFont->GetGlyph( ch, advance6 );
+         {
+            Tile tile = g.mFont->GetGlyph( ch, advance6 );
+            charX += advance6*font6ToLocalX;
+            right += (tile.mRect.w+tile.mOx)*fontToLocal;
+            if (right<charX)
+               right = charX;
+         }
          else
             advance6 = 0;
-         charX += advance6*font6ToLocalX;
+
 
          //  printf(" Char %c (%f..%f/%f) %p\n", ch, ox, max_x, charY, g.mFont);
-         if ( !displayAsPassword && (wordWrap) && charX > max_x && line.mChars>1)
+         if ( !displayAsPassword && (wordWrap) && right > max_x && line.mChars>1)
          {
             // No break on line so far - just back up 1 character....
             if (last_word_line_chars==0 || !wordWrap)
@@ -2238,7 +2245,6 @@ void TextField::Layout(const Matrix &inMatrix)
             continue;
          }
 
-         double right = charX;
          if (screenGrid)
             right = ((int)((right*fontScale+0.999)))*fontToLocal;
          line.mMetrics.width = right;
@@ -2518,6 +2524,9 @@ TextFormat::TextFormat() :
    letterSpacing(0),
    rightMargin(0),
    size(12),
+   outline(0),
+   outlineFlags(0),
+   outlineMiterLimit(0),
    tabStops( QuickVec<int>() ),
    target(L""),
    underline(false),
@@ -2541,6 +2550,9 @@ TextFormat::TextFormat(const TextFormat &inRHS,bool inInitRef) : Object(inInitRe
    letterSpacing(inRHS.letterSpacing),
    rightMargin(inRHS.rightMargin),
    size(inRHS.size),
+   outline(inRHS.outline),
+   outlineFlags(inRHS.outlineFlags),
+   outlineMiterLimit(inRHS.outlineMiterLimit),
    tabStops( inRHS.tabStops),
    target(inRHS.target),
    underline(inRHS.underline),
@@ -2598,6 +2610,9 @@ void TextFormat::encodeStream(ObjectStreamOut &inStream)
    if (inStream.addBool(letterSpacing.IsSet())) inStream.add(letterSpacing.Get());
    if (inStream.addBool(rightMargin.IsSet())) inStream.add(rightMargin.Get());
    if (inStream.addBool(size.IsSet())) inStream.add(size.Get());
+   if (inStream.addBool(outline.IsSet())) inStream.add(outline.Get());
+   if (inStream.addBool(outlineFlags.IsSet())) inStream.add(outlineFlags.Get());
+   if (inStream.addBool(outlineMiterLimit.IsSet())) inStream.add(outlineMiterLimit.Get());
    if (inStream.addBool(tabStops.IsSet())) inStream.addVec(tabStops.Get());
    if (inStream.addBool(target.IsSet())) inStream.add(target.Get());
    if (inStream.addBool(underline.IsSet())) inStream.add(underline.Get());
@@ -2620,6 +2635,9 @@ void TextFormat::decodeStream(ObjectStreamIn &inStream)
    if (inStream.getBool()) inStream.get(letterSpacing.write());
    if (inStream.getBool()) inStream.get(rightMargin.write());
    if (inStream.getBool()) inStream.get(size.write());
+   if (inStream.getBool()) inStream.get(outline.write());
+   if (inStream.getBool()) inStream.get(outlineFlags.write());
+   if (inStream.getBool()) inStream.get(outlineMiterLimit.write());
    if (inStream.getBool()) inStream.getVec(tabStops.write());
    if (inStream.getBool()) inStream.get(target.write());
    if (inStream.getBool()) inStream.get(underline.write());
@@ -2652,6 +2670,16 @@ bool CharGroup::UpdateFont(double inScale,bool inNative)
    int flags = (mFormat->bold.Get() ? 1 : 0 ) |
                (mFormat->italic.Get() ? 2 : 0 ) |
                (mFormat->underline.Get() ? 4 : 0 );
+
+   int outlineSize = 0.5 + inScale*mFormat->outline*64;
+   if (outlineSize>16)
+   {
+      outlineSize >>= 4;
+      int miter = std::min(0xffff,(int)(inScale*mFormat->outlineMiterLimit*256));
+      flags |= mFormat->outlineFlags.Get() | (outlineSize<<8);
+      flags ^= miter<<16;
+   }
+
    if (!mFont || h!=mFontHeight || mFlags!=flags )
    {
       Font *oldFont = mFont;
@@ -2696,6 +2724,9 @@ void CharGroup::ApplyFormat(TextFormat *inFormat)
    inFormat->letterSpacing.Apply(mFormat->letterSpacing);
    inFormat->rightMargin.Apply(mFormat->rightMargin);
    inFormat->size.Apply(mFormat->size);
+   inFormat->outline.Apply(mFormat->outline);
+   inFormat->outlineFlags.Apply(mFormat->outlineFlags);
+   inFormat->outlineMiterLimit.Apply(mFormat->outlineMiterLimit);
    inFormat->tabStops.Apply(mFormat->tabStops);
    inFormat->target.Apply(mFormat->target);
    inFormat->url.Apply(mFormat->url);

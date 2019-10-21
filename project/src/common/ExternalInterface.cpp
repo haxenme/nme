@@ -105,6 +105,9 @@ static int _id_leftMargin;
 static int _id_letterSpacing;
 static int _id_rightMargin;
 static int _id_size;
+static int _id_outline;
+static int _id_outlineFlags;
+static int _id_outlineMiterLimit;
 static int _id_tabStops;
 static int _id_target;
 static int _id_underline;
@@ -221,6 +224,9 @@ extern "C" void InitIDs()
    _id_letterSpacing = val_id("letterSpacing");
    _id_rightMargin = val_id("rightMargin");
    _id_size = val_id("size");
+   _id_outline = val_id("outline");
+   _id_outlineFlags = val_id("outlineFlags");
+   _id_outlineMiterLimit = val_id("outlineMiterLimit");
    _id_tabStops = val_id("tabStops");
    _id_target = val_id("target");
    _id_underline = val_id("underline");
@@ -3554,6 +3560,8 @@ inline value alloc_wstring(const WString &inStr)
 
 
 void FromValue(Optional<int> &outVal,value inVal) { outVal = (int)val_number(inVal); }
+void FromValue(Optional<float> &outVal,value inVal) { outVal = (float)val_number(inVal); }
+void FromValue(Optional<double> &outVal,value inVal) { outVal = (double)val_number(inVal); }
 void FromValue(Optional<uint32> &outVal,value inVal) { outVal = (uint32)val_number(inVal); }
 void FromValue(Optional<bool> &outVal,value inVal) { outVal = val_bool(inVal); }
 void FromValue(Optional<WString> &outVal,value inVal)
@@ -3603,6 +3611,9 @@ void SetTextFormat(TextFormat &outFormat, value inValue)
    STF(letterSpacing);
    STF(rightMargin);
    STF(size);
+   STF(outline);
+   STF(outlineFlags);
+   STF(outlineMiterLimit);
    STF(tabStops);
    STF(target);
    STF(underline);
@@ -3612,6 +3623,8 @@ void SetTextFormat(TextFormat &outFormat, value inValue)
 
 
 value ToValue(const int &inVal) { return alloc_int(inVal); }
+value ToValue(const float &inVal) { return alloc_float(inVal); }
+value ToValue(const double &inVal) { return alloc_float(inVal); }
 value ToValue(const uint32 &inVal) { return alloc_int(inVal); }
 value ToValue(const bool &inVal) { return alloc_bool(inVal); }
 value ToValue(const WString &inVal) { return alloc_wstring(inVal); }
@@ -3656,6 +3669,9 @@ void GetTextFormat(const TextFormat &inFormat, value &outValue, bool inIfSet = f
    GTF(letterSpacing,inIfSet);
    GTF(rightMargin,inIfSet);
    GTF(size,inIfSet);
+   GTF(outline,inIfSet);
+   GTF(outlineFlags,inIfSet);
+   GTF(outlineMiterLimit,inIfSet);
    GTF(tabStops,inIfSet);
    GTF(target,inIfSet);
    GTF(underline,inIfSet);
