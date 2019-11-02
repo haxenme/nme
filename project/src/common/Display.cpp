@@ -330,8 +330,8 @@ Matrix &DisplayObject::GetLocalMatrix()
       double c = cos(r);
       double s = sin(r);
       mLocalMatrix.m00 = c*scaleX;
-      mLocalMatrix.m01 = s*scaleY;
-      mLocalMatrix.m10 = -s*scaleX;
+      mLocalMatrix.m01 = s*scaleX;
+      mLocalMatrix.m10 = -s*scaleY;
       mLocalMatrix.m11 = c*scaleY;
       mLocalMatrix.mtx = x;
       mLocalMatrix.mty = y;
