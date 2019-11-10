@@ -527,7 +527,7 @@ const char *fontFolders[] = { "/System/Library/Fonts/CoreAddition/", "/System/Li
 			      "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/", 0 };
 #else
 //#define FONT_BASE "/Library/Fonts/"
-const char *fontFolders[] = { "/Library/Fonts/", 0 };
+const char *fontFolders[] = { "/System/Library/Fonts", "/System/Library/Fonts/Supplemental/", "/Library/Fonts/", 0 };
 #endif
 
    const char **testFolder = fontFolders;
@@ -1388,7 +1388,7 @@ void nme_font_iterate_device_fonts(value inFunc)
 	    "/System/Library/Fonts/AppFonts/", "/System/Library/Fonts/LanguageSupport/", "/System/Library/Fonts/Watch/",
 	    "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/"
          #elif defined(__APPLE__)
-            "/Library/Fonts/"
+            "/System/Library/Fonts", "/System/Library/Fonts/Supplemental/", "/Library/Fonts/"
          #elif defined(HX_WINDOWS)
            win_path
          #else
