@@ -48,3 +48,6 @@ project/src/emscripten/_serif.cpp
 all_objs
 *.pdb
 *.hash
+
+# OSX
+*.DS_Store

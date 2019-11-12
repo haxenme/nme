@@ -29,7 +29,7 @@ class CommandLineTools
    public static var nme(default,null):String;
    public static var home:String;
    public static var sys:SysProxy;
-   public static var gradle:Bool = false;
+   public static var gradle:Bool = true;
    public static var quick:Bool = false;
    public static var fat:Bool = false;
    public static var browser:String = null;
@@ -451,8 +451,8 @@ class CommandLineTools
             args.push("-debug");
          if (!toolkit)
             args.push("-notoolkit");
-         if (gradle)
-            args.push("-gradle");
+         if (!gradle)
+            args.push("-ant");
          if (browser!=null)
          {
             args.push("-browser");
@@ -1702,10 +1702,10 @@ class CommandLineTools
             else if (argument == "-32") 
                project.architectures.push(Architecture.X86);
 
-            else if (argument=="-gradle" || argument=="-Dgradle")
+            else if (argument=="-ant" || argument=="-Dant")
             {
-               gradle = true;
-               project.haxedefs.set("gradle", "1");
+               gradle = false;
+               project.haxedefs.remove("gradle");
             }
             else if (argument=="-q" || argument=="-quick")
             {

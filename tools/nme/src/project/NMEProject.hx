@@ -346,6 +346,7 @@ class NMEProject
          case "android":
             target = Platform.ANDROID;
             targetFlags.set("android", "");
+            haxedefs.set("gradle", "1");
 
          case "androidsim":
             target = Platform.ANDROID;

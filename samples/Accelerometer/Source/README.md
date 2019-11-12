@@ -1,4 +1,4 @@
-haxelib run nme test android -gradle && adb logcat
+haxelib run nme test android && adb logcat
 
 Expected x,y,z values output as a trace.
 

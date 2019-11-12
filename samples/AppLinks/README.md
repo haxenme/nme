@@ -9,7 +9,7 @@ http://www.example.com/gizmos
 
 Perhaps via gmail or sms.
 
-3) nme test android -gradle
+3) nme test android
 4) Click the link in SMS or gmail
 
 Expect: 
