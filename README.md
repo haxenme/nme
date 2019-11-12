@@ -46,5 +46,5 @@ Browse the [sample projects](https://github.com/haxenme/nme/tree/master/samples)
 ### Android
 
 * NDK(r20) Recommended
-* `haxelib run nme build android -gradle` builds all APKs
-* `haxelib run nme test android -gradle` only builds the APK required for the running devices architecture 
+* `haxelib run nme build android` builds all APKs
+* `haxelib run nme test android` only builds the APK required for the running devices architecture 
