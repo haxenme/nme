@@ -61,8 +61,11 @@ int InitSDL()
    if (err == 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER) == 0)
    {
       sgGameControllerEnabled = true;
-      #if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX) 
-      SDL_GameControllerAddMappingsFromRW (SDL_RWFromConstMem (g_gameControllerDB, sizeof (g_gameControllerDB)), 0);
+      #if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX) || defined(ANDROID) || defined(IPHONE) 
+      for(int i=0; i<g_nGameControllerDBs; i++)
+            SDL_GameControllerAddMappingsFromRW (SDL_RWFromConstMem (g_gameControllerDB[i], sizeof (g_gameControllerDB[i])), 0);
+
+	  SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt"); //user defined mappings
       #endif
    }
    
