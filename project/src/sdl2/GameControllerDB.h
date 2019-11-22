@@ -19,7 +19,7 @@ unsigned const g_nGameControllerDBs = 1;
 #else
 unsigned const g_nGameControllerDBs = 0;
 #endif
-static const char *g_gameControllerDB[][g_nGameControllerDBs] =
+static const char *g_gameControllerDB[g_nGameControllerDBs] =
 {
 #ifdef HX_WINDOWS
 "03000000fa2d00000100000000000000,3DRUDDER,leftx:a0,lefty:a1,rightx:a5,righty:a2,platform:Windows,\n\
