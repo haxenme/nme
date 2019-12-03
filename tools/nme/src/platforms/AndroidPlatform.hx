@@ -73,10 +73,12 @@ class AndroidPlatform extends Platform
          PathHelper.mkdir(getAppDir());
       }
       
-      if (project.command == "test") {
+      if (project.command == "test")
+      {
          var abi = queryDeviceABI();
          if (abi != null)
             project.androidConfig.ABIs = [abi];
+
          if (project.androidConfig.ABIs.length==0)
             Log.error("Could not determine build target from adb, and no test ABI specified");
       }
@@ -130,7 +132,7 @@ class AndroidPlatform extends Platform
       for(abi in abis)
          if (abi.name==arch)
              return abi.architecture;
-      throw 'Unknown architecture: $arch';
+      throw 'Unknown architecture: $arch in ' + [for(abi in abis) abi.name];
       return null;
    }
    function findByArchitecture(arch:Architecture) : ABI
@@ -404,7 +406,7 @@ class AndroidPlatform extends Platform
       var lines = ProcessHelper.getOutput(adbName,"shell getprop ro.product.cpu.abi".split(' '), Log.mVerbose);
       if(lines.length > 0) {
          if(lines[0].indexOf('error') == -1) {
-            var abi = lines[0];
+            var abi = lines[0].split("\r")[0];
             return abi;  
          }
       }
