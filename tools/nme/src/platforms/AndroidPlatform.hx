@@ -75,10 +75,13 @@ class AndroidPlatform extends Platform
       
       if (project.command == "test") {
          var abi = queryDeviceABI();
-         if(abi != null)
+         if (abi != null)
             project.androidConfig.ABIs = [abi];
+         if (project.androidConfig.ABIs.length==0)
+            Log.error("Could not determine build target from adb, and no test ABI specified");
       }
-      else if(project.androidConfig.ABIs.length == 0) {
+      else if(project.androidConfig.ABIs.length == 0)
+      {
          project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"];
       }
 

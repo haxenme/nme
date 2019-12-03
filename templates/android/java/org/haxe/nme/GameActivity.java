@@ -298,7 +298,7 @@ implements SensorEventListener
                    result = array.toString();
 
                 } catch (JSONException e) {
-                   Log.e(TAG, getStackTrace(e))
+                   Log.e(TAG, getStackTrace(e));
                    responseCode = -1;
                 }
 
