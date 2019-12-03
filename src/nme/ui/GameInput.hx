@@ -3,6 +3,7 @@ package nme.ui;
 import nme.events.Event;
 import nme.events.EventDispatcher;
 import nme.events.GameInputEvent;
+import nme.ui.GamepadButton;
 
 @:access(nme.ui.GameInputControl)
 @:access(nme.ui.GameInputDevice)
@@ -14,6 +15,7 @@ class GameInput extends EventDispatcher
 
    static var nmeDevices = new Array<GameInputDevice>();
    static var nmeInstances = [];
+   static var nmeKeyboardDevices = new Array<KeyboardInputDevice>();
 
 
    public function new()
@@ -32,10 +34,32 @@ class GameInput extends EventDispatcher
       //}
    }
 
+   public function addKeyboardDevice0() : GameInputDevice
+   {
+      if (nmeKeyboardDevices[0]!=null)
+         return nmeKeyboardDevices[0];
+
+      var device = new KeyboardInputDevice("Keyboard0","Keyboard0", [
+             GamepadButton.A => Keyboard.SPACE,
+             GamepadButton.B => Keyboard.ENTER,
+             GamepadButton.X => Keyboard.COMMA,
+             GamepadButton.Y => Keyboard.PERIOD,
+             GamepadButton.DPAD_UP => Keyboard.UP,
+             GamepadButton.DPAD_DOWN => Keyboard.DOWN,
+             GamepadButton.DPAD_LEFT => Keyboard.LEFT,
+             GamepadButton.DPAD_RIGHT => Keyboard.RIGHT,
+             GamepadButton.BACK => Keyboard.ESCAPE,
+             GamepadButton.START => Keyboard.TAB,
+         ]);
+      nmeKeyboardDevices[0] = device;
+      dispatchEvent(new GameInputEvent (GameInputEvent.DEVICE_ADDED, device));
+      return device;
+   }
+
 
    static function hasInstances()
    {
-      return nmeInstances.length>0;
+      return nmeInstances.length>0 || nmeKeyboardDevices.length>0;
    }
 
 
@@ -49,9 +73,24 @@ class GameInput extends EventDispatcher
             if(device!=null)
                dispatchEvent(new GameInputEvent (GameInputEvent.DEVICE_ADDED, device));
          }
+         for (device in nmeKeyboardDevices)
+         {
+            if(device!=null)
+               dispatchEvent(new GameInputEvent (GameInputEvent.DEVICE_ADDED, device));
+         }
       }
    }
 
+   public static function getBest():GameInputDevice
+   {
+      for(i in 0...18)
+      {
+         var d = getDeviceAt(i);
+         if (d!=null)
+            return d;
+      }
+      return null;
+   }
 
    public static function getDeviceAt(index:Int):GameInputDevice
    {
@@ -59,6 +98,9 @@ class GameInput extends EventDispatcher
       {
          return nmeDevices[index];
       }
+      index -= 16;
+      if (index>=0 && index<nmeKeyboardDevices.length)
+         return nmeKeyboardDevices[index];
       return null;
    }
 

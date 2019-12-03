@@ -80,6 +80,11 @@ class EventDispatcher implements IEventDispatcher
       }
    }
 
+   public function mightRespondTo(type:String)
+   {
+      return nmeEventMap!=null && nmeEventMap.exists(type);
+   }
+
    private static inline function sortEvents( a:Listener, b:Listener ):Int 
    { 
       // in theory these can be null, might be best to tread carefully
