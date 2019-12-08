@@ -363,6 +363,10 @@ class NMEProject
          case "js":
             target = Platform.JS;
 
+         case "rg350":
+            target = Platform.RG350;
+            haxedefs.set("gcw0", "");
+
          case "winrt","uwp":
             targetFlags.set("cpp", "1");
             haxedefs.set("winrt", "");
@@ -461,6 +465,10 @@ class NMEProject
             window.fullscreen = true;
 
          case Platform.RPI:
+            platformType = Platform.TYPE_DESKTOP;
+            window.singleInstance = false;
+
+         case Platform.RG350:
             platformType = Platform.TYPE_DESKTOP;
             window.singleInstance = false;
 
@@ -684,7 +692,7 @@ class NMEProject
          return false;
 
       var isAndroidSo =  false;//hasDef("android") && !hasDef("androidsim") && !hasDef("androidview");
-      if ( hasDef("windows") || hasDef("mac") || hasDef("linux") || isAndroidSo)
+      if ( hasDef("windows") || hasDef("mac") || hasDef("linux") || isAndroidSo || hasDef("gcw0"))
       {
          // Use dynamic libraries by default on desktop
          return false;

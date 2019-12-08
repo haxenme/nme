@@ -57,7 +57,7 @@ class CommandLineTools
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim", "rpi",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
-            "watchsimulator", "watchos", "jsprime", "winrt", "uwp" ];
+            "watchsimulator", "watchos", "jsprime", "winrt", "uwp", "rg350" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
@@ -156,6 +156,9 @@ class CommandLineTools
             platform = new platforms.JsPrimePlatform(project);
             if (cppiaPlatform!=null)
                cppiaPlatform.copyOutputTo(platform.getOutputDir());
+
+         case Platform.RG350:
+            platform = new platforms.Rg350Platform(project);
       }
 
 
@@ -804,6 +807,7 @@ class CommandLineTools
       sys.println("  rpi         : Create RaspberryPi applications");
       sys.println("  iphone      : ios + device debugging");
       sys.println("  iphonesim   : ios + simulator");
+      sys.println("  rg350       : Retro Gamer 350 console");
       sys.println("  watchos     : watch extension");
       sys.println("  watchsimulator : watch extension + simulator");
       sys.println("  winrt       : Create Universal Windows Platform applications");

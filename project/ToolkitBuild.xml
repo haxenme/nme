@@ -11,15 +11,19 @@
 
    <set name="winrpi" value="1" if="windows_host rpi" />
 
+   <set name="linux" value="1" if="gcw0" />
    <set name="linux" value="1" if="winrpi" />
    <unset name="windows" if="winrpi" />
+   <unset name="windows" if="gcw0" />
    <set name="xcompile" value="1" if="winrpi" />
+   <set name="xcompile" value="1" if="gcw0" />
    <set name="rpi" value="1" if="winrpi" />
    <set name="sdl_rpi" value="1" if="winrpi" />
 
    <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE" />
    <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
    <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
+
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
    <!-- 
@@ -47,10 +51,12 @@
    -->
    <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="rpi" unless="sdl_rpi" />
    <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="emscripten" />
+   <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="gcw0" />
    <set name="NME_SDL2" value="1" if="windows" />
    <set name="NME_SDL2" value="1" if="linux" unless="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL2" value="1" if="macos" />
    <set name="NME_SDL2" value="1" if="winrpi" />
+   <set name="NME_SDL2" value="1" if="gcw0" />
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
@@ -65,7 +71,7 @@
 
    <!-- Do we need to implement curl in NME -->
    <set name="NME_CURL" value="1" />
-   <unset name="NME_CURL" if="emscripten||winrt" />
+   <unset name="NME_CURL" if="emscripten||winrt||gcw0" />
 
    <!-- And allow https ? -->
    <set name="NME_SSL" value="1" />
@@ -103,6 +109,7 @@
    <!-- <set name="new_link" value="1" /> -->
  
    <set name="HXCPP_OPTIM_LEVEL" value="-O2" if="emscripten" unless="debug" />
+   <set name="HXCPP_DEBUG_LINK" value="1" />
 
 
    <include name="${NATIVE_TOOLKIT_PATH}/ogg/files.xml" />
@@ -296,7 +303,7 @@
       <depend files="native-toolkit-modplug-depends" if="modplug" />
       <depend files="native-toolkit-curl-depends" if="NME_CURL" />
 
-      <section if="NME_NATIVE_SDL_SYSTEM">
+      <section if="NME_NATIVE_SDL_SYSTEM" unless="NME_SDL2" >
         <compilerflag value="-I/opt/local/include" if="macos" />
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
@@ -464,7 +471,15 @@
 
 
          <section if="NME_NATIVE_SDL_SYSTEM" >
-            <lib name="-lSDL" />
+            <section unless="NME_SDL2" >
+               <lib name="-lSDL" />
+            </section>
+            <section if="NME_SDL2" >
+               <lib name="-lSDL2" />
+               <lib name="-lSDL_Mixer" />
+               <lib name="-lEGL" />
+               <lib name="-lGLESv2" />
+            </section>
          </section>
             <!--<lib name="-lcurl" />
             <lib name="-lpng" />

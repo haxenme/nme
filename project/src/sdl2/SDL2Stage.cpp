@@ -1810,6 +1810,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    #ifdef HX_MACOS
    MacBoot();
    #endif
+
    
    bool fullscreen = (inFlags & wfFullScreen) != 0;
    bool opengl = (inFlags & wfHardware) != 0;
@@ -1863,6 +1864,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    
    if (SDL_GetNumVideoDisplays() > 0)
    {
+
       SDL_DisplayMode currentMode;
       SDL_GetDesktopDisplayMode(0, &currentMode);
       sgDesktopWidth = currentMode.w;

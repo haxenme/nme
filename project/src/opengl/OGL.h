@@ -31,6 +31,14 @@
    #include <GLES2/gl2.h>
    #include <GLES2/gl2ext.h>
 
+#elif defined(GCW0)
+
+   #define NME_GLES
+   // TODO - check extensions
+   #define NME_GL_LEVEL 200
+   #include <GLES2/gl2.h>
+   #include <GLES2/gl2ext.h>
+
 #elif defined(IPHONE)
 
    // TODO - check extensions

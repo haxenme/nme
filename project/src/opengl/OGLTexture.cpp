@@ -22,6 +22,9 @@
 #elif defined(NME_ANGLE)
    #define ARGB_STORE GL_BGRA_EXT;
    #define ARGB_PIXEL GL_BGRA_EXT;
+#elif defined(GCW0)
+   #define ARGB_STORE GL_RGBA
+   #define ARGB_PIXEL GL_BGRA_EXT
 #elif defined(NME_GLES)
    #define ARGB_STORE GL_BGRA
    #define ARGB_PIXEL GL_BGRA
