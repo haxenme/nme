@@ -573,8 +573,13 @@ public:
 
          if (prog->colourSlot >= 0)
          {
+            #ifdef NME_FLOAT32_VERT_VALUES
+            glVertexAttribPointer(prog->colourSlot, 4, GL_FLOAT, GL_FALSE, stride,
+                data + element.mColourOffset);
+            #else
             glVertexAttribPointer(prog->colourSlot, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride,
                 data + element.mColourOffset);
+            #endif
             glEnableVertexAttribArray(prog->colourSlot);
          }
 
@@ -598,7 +603,9 @@ public:
                   rebind = true;
             }
             else
+            {
                glVertexAttribPointer(prog->textureSlot,  2 , GL_FLOAT, GL_FALSE, stride, data + element.mTexOffset);
+            }
 
             glEnableVertexAttribArray(prog->textureSlot);
 
@@ -656,9 +663,7 @@ public:
                      break;
                }
          }
-   
-            //printf("glDrawArrays %d : %d x %d\n", element.mPrimType, element.mFirst, element.mCount );
-         
+ 
          if (element.mPrimType==ptQuads || element.mPrimType==ptQuadsFull)
          {
             BindQuadsBufferIndices(element.mCount);

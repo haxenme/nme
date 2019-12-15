@@ -129,7 +129,7 @@ public:
             mElement.mWidth += 1.0/mScale;
             mElement.mFlags |= DRAW_HAS_NORMAL;
             mElement.mNormalOffset = mElement.mVertexOffset + mElement.mStride;
-            mElement.mStride += sizeof(float)*2.0;
+            mElement.mStride += sizeof(float)*2;
             mAlphaAA = true;
          }
       }
@@ -171,7 +171,11 @@ public:
          if (inJob.mTriangles->mColours.size())
          {
             mElement.mColourOffset = mElement.mVertexOffset + mElement.mStride;
+            #ifdef NME_FLOAT32_VERT_VALUES
+            mElement.mStride += sizeof(float)*4;
+            #else
             mElement.mStride += sizeof(int);
+            #endif
             mElement.mFlags |= DRAW_HAS_COLOUR;
             mElement.mColour = 0xffffffff;
          }
@@ -218,6 +222,11 @@ public:
             if (mode & pcTile_Col_Bit)
             {
                mElement.mColourOffset = mElement.mVertexOffset + mElement.mStride;
+               #ifdef NME_FLOAT32_VERT_VALUES
+               mElement.mStride += sizeof(float)*4;
+               #else
+               mElement.mStride += sizeof(int);
+               #endif
                mElement.mStride += sizeof(int);
                mElement.mFlags |= DRAW_HAS_COLOUR;
                mElement.mColour = 0xffffffff;
@@ -383,7 +392,11 @@ public:
       ReserveArrays(n);
 
       UserPoint *vertices = (UserPoint *)&data.mArray[ mElement.mVertexOffset ];
+      #ifdef NME_FLOAT32_VERT_VALUES
+      float *colours = (mElement.mFlags & DRAW_HAS_COLOUR) ? (float *)&data.mArray[ mElement.mColourOffset ] : 0;
+      #else
       int *colours = (mElement.mFlags & DRAW_HAS_COLOUR) ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
+      #endif
       UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
       bool persp = mElement.mFlags & DRAW_HAS_PERSPECTIVE;
       int stride = mElement.mStride;
@@ -401,7 +414,14 @@ public:
            
          if(colours)
          {
+            #ifdef NME_FLOAT32_VERT_VALUES
+            colours[0] = ( (inPath->mColours[v]   ) & 0xff)/255.0;
+            colours[1] = ( (inPath->mColours[v]>>8) & 0xff)/255.0;
+            colours[2] = ( (inPath->mColours[v]>>16) & 0xff)/255.0;
+            colours[3] = ( (inPath->mColours[v]>>24) & 0xff)/255.0;
+            #else
             *colours = inPath->mColours[v];
+            #endif
             Next(colours);
          }
 
@@ -464,7 +484,11 @@ public:
    {
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
+      #ifdef NME_FLOAT32_VERT_VALUES
+      UserPoint *colours = COL ? (UserPoint *)&data.mArray[ mElement.mColourOffset ] : 0;
+      #else
       int *colours = COL ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
+      #endif
       bool premultiplyAlpha = mElement.mSurface && IsPremultipliedAlpha(mElement.mSurface->Format());
 
       UserPoint *point = (UserPoint *)inData;
@@ -611,27 +635,41 @@ public:
                rg.y *= ba.y;
                ba.x *= ba.y;
             }
-
-            #ifdef BLACKBERRY
-            uint32 col = ((int)(rg.x*255)) |
-                         (((int)(rg.y*255))<<8) |
-                         (((int)(ba.x*255))<<16) |
-                         (((int)(ba.y*255))<<24);
+            #ifdef NME_FLOAT32_VERT_VALUES
+               colours[0] = rg;
+               colours[1] = ba;
+               Next(colours);
+               colours[0] = rg;
+               colours[1] = ba;
+               Next(colours);
+               colours[0] = rg;
+               colours[1] = ba;
+               Next(colours);
+               colours[0] = rg;
+               colours[1] = ba;
+               Next(colours);
             #else
-            uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
-                         ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
-                         ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
-                         ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
-            #endif
+               #ifdef BLACKBERRY
+               uint32 col = ((int)(rg.x*255)) |
+                            (((int)(rg.y*255))<<8) |
+                            (((int)(ba.x*255))<<16) |
+                            (((int)(ba.y*255))<<24);
+               #else
+               uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
+                            ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
+                            ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
+                            ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
+               #endif
 
-            *colours = ( col );
-            Next(colours);
-            *colours = ( col );
-            Next(colours);
-            *colours = ( col );
-            Next(colours);
-            *colours = ( col );
-            Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+            #endif
          }
       }
    }

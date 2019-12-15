@@ -11,7 +11,7 @@
    #endif
    static int ARGB_STORE = GL_BGRA_EXT;
    static int ARGB_PIXEL = GL_BGRA_EXT;
-#elif defined(EMSCRIPTEN) || defined(RASPBERRYPI)
+#elif defined(EMSCRIPTEN) || defined(RASPBERRYPI) || defined(GCW0)
    #undef SWAP_RB
    #define SWAP_RB 1
    #define ARGB_STORE GL_RGBA

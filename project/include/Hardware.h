@@ -3,6 +3,10 @@
 
 #include "Graphics.h"
 
+#ifdef GCW0
+#define NME_FLOAT32_VERT_VALUES
+#endif
+
 namespace nme
 {
 

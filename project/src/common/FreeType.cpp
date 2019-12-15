@@ -621,7 +621,6 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
    if (!strcasecmp(inName.c_str(),"_serif") ||
        !strcasecmp(inName.c_str(),"times.ttf") || !strcasecmp(inName.c_str(),"times"))
    {
-      
       #if defined (ANDROID)
          outFile = "/system/fonts/DroidSerif-Regular.ttf";
          alternate = "/system/fonts/NotoSerif-Regular.ttf";
@@ -633,10 +632,12 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT) && defined(__cplusplus_winrt)
          outFile = "Georgia";
+      #elif defined(GCW0)
+         //outFile = "/usr/share/fonts/dejavu/DejaVuSans.ttf";
+         outFile = "/usr/share/gmenu2x/skins/ScanlinesBlue/fonts/PixelManiaConden.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
       #endif
-      
    }
    else if (!strcasecmp(inName.c_str(),"_sans") || !strcasecmp(inName.c_str(),"arial.ttf") ||
               !strcasecmp(inName.c_str(),"arial") || !strcasecmp(inName.c_str(),"sans-serif") )
@@ -652,6 +653,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT) && defined(__cplusplus_winrt)
          outFile = "Arial";
+      #elif defined(GCW0)
+         outFile = "/usr/share/fonts/dejavu/DejaVuSans.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
       #endif
@@ -669,6 +672,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
          outFile = "/usr/share/fonts/TizenSansRegular.ttf";
       #elif defined(HX_WINRT) && defined(__cplusplus_winrt)
          outFile = "Courier New";
+      #elif defined(GCW0)
+         outFile = "/usr/share/fonts/dejavu/DejaVuSansMono.ttf";
       #else
          outFile = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
       #endif
@@ -752,7 +757,6 @@ FT_Face FindFont(const std::string &inFontName, unsigned int inFlags, FontBuffer
          font = OpenFont(file_name.c_str(),inFlags,NULL,pBuffer);
       }
    }
-
 
    return font;
 }

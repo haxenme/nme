@@ -57,6 +57,7 @@
    <set name="NME_SDL2" value="1" if="macos" />
    <set name="NME_SDL2" value="1" if="winrpi" />
    <set name="NME_SDL2" value="1" if="gcw0" />
+   <set name="SYSTEM_FREETYPE" value="1" if="gcw0" />
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
@@ -438,7 +439,7 @@
 
       <files id="nme"/>
 
-      <files id="native-toolkit-freetype" />
+      <files id="native-toolkit-freetype" unless="SYSTEM_FREETYPE" />
 
       <section if="NME_SDL2">
          <lib name="-luuid" if="mingw" unless="static_link" />
@@ -479,6 +480,7 @@
                <lib name="-lSDL_Mixer" />
                <lib name="-lEGL" />
                <lib name="-lGLESv2" />
+               <lib name="-lfreetype" if="SYSTEM_FREETYPE" />
             </section>
          </section>
             <!--<lib name="-lcurl" />
