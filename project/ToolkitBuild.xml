@@ -110,7 +110,7 @@
    <!-- <set name="new_link" value="1" /> -->
  
    <set name="HXCPP_OPTIM_LEVEL" value="-O2" if="emscripten" unless="debug" />
-   <set name="HXCPP_DEBUG_LINK" value="1" />
+   <!--<set name="HXCPP_DEBUG_LINK" value="1" />-->
 
 
    <include name="${NATIVE_TOOLKIT_PATH}/ogg/files.xml" />
@@ -124,8 +124,8 @@
    <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" if="NME_MIXER" />
 
-   <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" />
-   <include name="${ANGLE_DIR}/files.xml" if="NME_ANGLE" />
+   <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" unless="ANGLE_DIR" />
+   <include name="${ANGLE_DIR}/files.xml" if="NME_ANGLE ANGLE_DIR" />
 
    <!-- inject flags to allow cross-compiling -->
    <files id="native-toolkit-sdl" if="xcompile" >
@@ -316,9 +316,14 @@
       <section if="NME_SDL2">
         <file name="${SRC_DIR}/audio/SDLSound.cpp"  if="NME_MIXER"/>
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl-mixer" if="NME_MIXER" />
-        <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
+        <section unless="NME_NATIVE_SDL_SYSTEM" >
+           <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
+           <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl-mixer" if="NME_MIXER" />
+           <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
+        </section>
+        <section if="gcw0" >
+           <compilerflag value="-I${GCW0_SDK}/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include/SDL2" />
+        </section>
         <compilerflag value="-DSDL_OGL" />
         <compilerflag value="-DNME_MIXER" if="NME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
@@ -477,7 +482,7 @@
             </section>
             <section if="NME_SDL2" >
                <lib name="-lSDL2" />
-               <lib name="-lSDL_Mixer" />
+               <lib name="-lSDL2_Mixer" />
                <lib name="-lEGL" />
                <lib name="-lGLESv2" />
                <lib name="-lfreetype" if="SYSTEM_FREETYPE" />
@@ -540,7 +545,7 @@
             <lib name="kernel32.lib" />
             <lib name="advapi32.lib" />
             <lib name="${SUP_DIR}/windows/dxguid.lib" unless="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
-	    <lib name="dxguid.lib" if="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
+            <lib name="dxguid.lib" if="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
             <lib name="winmm.lib" />
             <lib name="imm32.lib"  />
             <lib name="ole32.lib" />
@@ -550,6 +555,7 @@
             <lib name="wldap32.lib" />
             <lib name="shell32.lib" />
             <lib name="comdlg32.lib" />
+            <lib name="setupapi.lib" />
             <lib name="d3d9.lib" if="NME_ANGLE"/>
          </section>
 
@@ -561,6 +567,7 @@
             <lib name="DXGI.lib" />
             <lib name="Dwrite.lib" />
             <lib name="D3dcompiler.lib" />
+            <lib name="Runtimeobject.lib" />
          </section>
 
          <section if="linux">

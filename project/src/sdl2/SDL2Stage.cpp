@@ -56,6 +56,7 @@ int InitSDL()
    #else
    int audioFlag = 0;
    #endif
+
    int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
    
    if (err == 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER) == 0)
@@ -65,7 +66,7 @@ int InitSDL()
       SDL_GameControllerAddMappingsFromRW (SDL_RWFromConstMem (g_gameControllerDB, sizeof (g_gameControllerDB)), 0);
       #endif
    }
-   
+
    return err;
 }
 
@@ -1473,6 +1474,8 @@ void ProcessEvent(SDL_Event &inEvent)
             {
                Event poll(etPoll);
                sgSDLFrame->ProcessEvent(poll);
+               Event redraw(etRedraw);
+               sgSDLFrame->ProcessEvent(redraw);
                break;
             }
             //case SDL_WINDOWEVENT_MOVED: break;
@@ -1482,6 +1485,8 @@ void ProcessEvent(SDL_Event &inEvent)
                Event resize(etResize, inEvent.window.data1, inEvent.window.data2);
                sgSDLFrame->Resize(inEvent.window.data1, inEvent.window.data2);
                sgSDLFrame->ProcessEvent(resize);
+               Event redraw(etRedraw);
+               sgSDLFrame->ProcessEvent(redraw);
                break;
             }
             case SDL_WINDOWEVENT_MINIMIZED:
@@ -1600,6 +1605,9 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_MOUSEWHEEL: 
       {   
+         if (inEvent.wheel.y==0)
+            break;
+
             //previous behavior in nme was fake button 3 for down, 4 for up
          int event_dir = (inEvent.wheel.y > 0) ? 3 : 4;
             //space to get the current mouse position, to make sure the values are sane
@@ -1617,15 +1625,56 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
-        case SDL_TEXTINPUT:
-        {
-            const char *text = inEvent.text.text;
-            int unicode = ConvertToWChar(text, 0)[0];
-            Event key( etChar );
-            key.code = unicode;
-            sgSDLFrame->ProcessEvent(key);
-            break;
-        }
+
+      case SDL_FINGERDOWN:
+      {
+         int width = 0;
+         int height = 0;
+         SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+
+         // button?
+         Event mouse(etMouseDown, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
+         mouse.flags |= efLeftDown;
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+
+      case SDL_FINGERUP:
+      {
+         int width = 0;
+         int height = 0;
+         SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+
+         // button?
+         Event mouse(etMouseUp, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
+         //mouse.flags |= efLeftDown;
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+
+      case SDL_FINGERMOTION:
+      {
+         int width = 0;
+         int height = 0;
+         SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+
+         // button?
+         Event mouse(etMouseMove, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
+         mouse.flags |= efLeftDown;
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+
+
+      case SDL_TEXTINPUT:
+      {
+          const char *text = inEvent.text.text;
+          int unicode = ConvertToWChar(text, 0)[0];
+          Event key( etChar );
+          key.code = unicode;
+          sgSDLFrame->ProcessEvent(key);
+          break;
+      }
       case SDL_KEYDOWN:
       case SDL_KEYUP:
       {
@@ -1742,6 +1791,17 @@ void ProcessEvent(SDL_Event &inEvent)
          }
          break;
       }
+      case SDL_AUDIODEVICEADDED:
+         // TODO
+         break;
+
+      case SDL_AUDIODEVICEREMOVED:
+         // TODO
+         break;
+
+      default:
+         //printf("Unknown event: %x\n", inEvent.type);
+         break;
    }
 };
 
@@ -1882,7 +1942,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3); 
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1); 
    #endif
 
    if (opengl)

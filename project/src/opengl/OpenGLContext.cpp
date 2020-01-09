@@ -240,6 +240,7 @@ public:
       float red =   ((inColour >>16) & 0xff) /255.0;
       float green = ((inColour >>8 ) & 0xff) /255.0;
       float blue  = ((inColour     ) & 0xff) /255.0;
+
       red *= alpha;
       green *= alpha;
       blue *= alpha;
@@ -446,7 +447,16 @@ public:
 
    void RenderData(const HardwareData &inData, const ColorTransform *ctrans,const Trans4x4 &inTrans)
    {
+      // data will be 0 if a VBO is bounds, and offsets will be relative to the VBO data
+      // Otherwise, it will be a raw pointer
       const uint8 *data = 0;
+
+      // We can generally just bind the VBO once, and draw all the elements.
+      // However, sometimes the texture coordinates come from a different VBO which invalidates
+      //  the "current" GL_ARRAY_BUFFER.  Since this is done at the end of one element, we can check
+      //  at the beginning of the next element to see if we need to re-bind.
+      bool rebindVboNext = false;
+
       if (inData.mVertexBo)
       {
          if (inData.mContextId!=gTextureContextVersion)
@@ -455,18 +465,20 @@ public:
                inData.mVboOwner->DecRef();
             inData.mVboOwner = 0;
             // Create one right away...
-            inData.mRendersWithoutVbo = 5;
+            inData.mRendersWithoutVbo = 0x7ffffff0;
             inData.mVertexBo = 0;
             inData.mContextId = 0;
          }
          else
-            glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
+            rebindVboNext = true;
       }
 
       if (!inData.mVertexBo)
       {
          data = &inData.mArray[0];
-         #ifndef EMSCRIPTEN
+
+         // Always use VBOs on EMSCRIPTEN and ANGLE
+         #if ( !defined(EMSCRIPTEN) && !defined(NME_ANGLE) )
          inData.mRendersWithoutVbo++;
          if ( inData.mRendersWithoutVbo>4)
          #endif
@@ -481,9 +493,10 @@ public:
             data = 0;
          }
       }
+      else
+         rebindVboNext = true;
 
       GPUProg *lastProg = 0;
-      bool rebind = false;
  
       for(int e=0;e<inData.mElements.size();e++)
       {
@@ -492,10 +505,15 @@ public:
          if (!n)
             continue;
 
-         if (rebind && inData.mVertexBo)
+         if (rebindVboNext)
          {
-            glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
-            rebind = false;
+            if (inData.mVertexBo)
+               glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
+            else
+               // Restore the meaning of vertex attributes to be raw pointers
+               glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            rebindVboNext = false;
          }
 
          int progId = 0;
@@ -591,16 +609,14 @@ public:
          }
 
 
+         // Do texture last since it might mess with GL_ARRAY_BUFFER
          if (prog->textureSlot >= 0)
          {
             if (element.mPrimType==ptQuadsFull)
             {
                BindFullQuadTextures(element.mCount);
                glVertexAttribPointer(prog->textureSlot, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), 0);
-               if (data)
-                  glBindBuffer(GL_ARRAY_BUFFER, 0);
-               else
-                  rebind = true;
+               rebindVboNext = true;
             }
             else
             {
@@ -681,7 +697,7 @@ public:
       if (lastProg)
         lastProg->disableSlots();
 
-      if (inData.mVertexBo)
+      if (inData.mVertexBo || rebindVboNext)
          glBindBuffer(GL_ARRAY_BUFFER,0);
    }
 
