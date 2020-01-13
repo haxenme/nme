@@ -411,10 +411,44 @@ int LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
       if (e0==inOuter)
          break;
    }
+   if (!bestOut)
+   {
+      double closest = 1e39;
+      for(EdgePoint *in = inInner;  ; )
+      {
+         for(EdgePoint *e0 = inOuter;  ; )
+         {
+            double dx = in->p.x-e0->p.x;
+            double dy = in->p.y-e0->p.y;
+            double dist = dx*dx+dy*dy;
+            if (dist<closest)
+            {
+               closest = dist;
+               bestIn = in;
+               bestOut = e0;
+            }
+
+            e0 = e0->next;
+            if (e0==inOuter)
+               break;
+         }
+
+         in = in->next;
+         if (in==inInner) break;
+      }
+   }
 
    if (!bestOut)
    {
-      printf("Could not link hole\n");
+      printf("Could not link hole to points\n");
+      printf(" left most %f,%f\n",bestIn->p.x, bestIn->p.y);
+      for(EdgePoint *e0 = inOuter;  ; )
+      {
+         printf("  outer %f,%f\n",e0->p.x, e0->p.y);
+         e0 = e0->next;
+         if (e0==inOuter)
+            break;
+      }
       return 0;
    }
 
@@ -687,10 +721,18 @@ void TriangulateSubPolys(SubInfo *outer, QuickVec<SubInfo *> &holes,  Vertices &
    #else
       if (holeCount)
       {
+         //printf("Sort holes : %d\n", holeCount);
          std::sort(holes.begin(), holes.end(), sortLeft);
 
          for(int h=0;h<holeCount;h++)
          {
+            /*
+            printf("Hole %d: %f,%f ... %f,%f\n", h,
+                   holes[h]->x0,
+                   holes[h]->y0,
+                   holes[h]->x1,
+                   holes[h]->y1 );
+            */
             SubInfo &info = *holes[h];
             size += LinkSubPolys(outer->first,info.first, info.link);
          }
