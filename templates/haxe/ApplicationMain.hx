@@ -140,7 +140,7 @@ class ApplicationMain
                   frame = wx.Frame.create(null, null, "::APP_TITLE::", null, size);
                ::end::
 
-               #if nme
+               #if (nme && !nme_no_stage)
                   wx.NMEStage.create(frame, null, null,
                   {
                      width: ::WIN_WIDTH::,
