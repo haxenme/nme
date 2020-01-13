@@ -378,6 +378,8 @@ class BitmapData extends Surface implements IBitmapDrawable
    {
       var result = new BitmapData(0, 0);
       result.nmeHandle = Surface.nme_bitmap_data_load(inFilename, format);
+      if (result.width<1 || result.height<1)
+         return null;
       return result;
    }
 
@@ -399,6 +401,8 @@ class BitmapData extends Surface implements IBitmapDrawable
    {
       var result = new BitmapData(0, 0);
       result.nmeLoadFromBytes(inBytes, inRawAlpha);
+      if (result.width<1 || result.height<1)
+         return null;
       return result;
    }
 
