@@ -66,21 +66,42 @@ class Server
 
    function setDir(inEngineName:String, inDirectory:String)
    {
+      trace("setDir: " + inEngineName + "=" + inDirectory);
       directory = inDirectory;
       if (directory==null || directory=="")
       {
          directory = null;
          var host = nme.system.System.systemName();
+         trace("Host : " + host);
          if (host=="android")
          {
             directory = "/mnt/sdcard/" + inEngineName;
             try
             {
                if (!sys.FileSystem.exists(directory))
+               {
                   sys.FileSystem.createDirectory(directory);
+                  trace('Made $directory');
+               }
+               else
+               {
+                  if (!sys.FileSystem.isDirectory(directory))
+                  {
+                     trace("Exists, but not directory:" + directory);
+                     directory = null;
+                  }
+                  else
+                  {
+                     trace('Exists $directory, test write');
+                     var bytes = haxe.io.Bytes.ofString("test");
+                     sys.io.File.saveBytes(directory + "/test.txt", bytes);
+                     trace("wrote ok.");
+                  }
+               }
             }
             catch(e:Dynamic)
             {
+               trace('could not make directory');
                directory = null;
             }
          }
@@ -89,6 +110,7 @@ class Server
             var docsDir = nme.filesystem.File.documentsDirectory.nativePath;
             //directory = sys.FileSystem.fullPath( docsDir ) +  "/" + inEngineName;
             directory = docsDir +  "/" + inEngineName;
+            trace("Docs dir: " + directory);
             try
             {
                sys.FileSystem.createDirectory(directory);
