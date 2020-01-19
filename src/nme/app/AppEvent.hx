@@ -8,8 +8,8 @@ using cpp.NativeString;
 abstract AppEvent(cpp.Pointer<NativeEvent>) from cpp.Pointer<NativeEvent>
 {
    public var type(get,never) : Int;
-   public var x(get,never) : Int;
-   public var y(get,never) : Int;
+   public var x(get,set) : Int;
+   public var y(get,set) : Int;
    public var value(get,never):Int;
    public var code(get,never):Int;
    public var id(get,never):Int;
@@ -25,6 +25,8 @@ abstract AppEvent(cpp.Pointer<NativeEvent>) from cpp.Pointer<NativeEvent>
    inline function get_type():Int return this.ref.type;
    inline function get_x():Int return this.ref.x;
    inline function get_y():Int return this.ref.y;
+   inline function set_x(val:Int):Int { this.ref.x=val; return val; }
+   inline function set_y(val:Int):Int { this.ref.y=val; return val; }
    inline function get_value():Int return this.ref.value;
    inline function get_code():Int return this.ref.code;
    inline function get_id():Int return this.ref.id;

@@ -400,6 +400,7 @@ public:
    virtual int getWindowFrameBufferId() { return 0; };
 
    void SetEventHandler(EventHandler inHander,void *inUserData);
+   void SetMouseEventHandler(EventHandler inHander,void *inUserData);
    void SetNominalSize(int inWidth,int inHeight);
    virtual void   setOpaqueBackground(uint32 inBG);
    DisplayObject *HitTest(UserPoint inPoint,DisplayObject *inRoot=0,bool inRecurse=true);
@@ -464,6 +465,8 @@ protected:
    void CalcStageScaling(double inW,double inH);
    EventHandler mHandler;
    void         *mHandlerData;
+   EventHandler mMouseHandler;
+   void         *mMouseHandlerData;
    bool         focusRect;
    UserPoint    mLastMousePos;
    StageScaleMode scaleMode;

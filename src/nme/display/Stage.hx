@@ -1084,6 +1084,15 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       return this;
    }
 
+
+   #if cpp
+   public function setMouseFilter(inHandler:Event->Void)
+   {
+      nme_set_stage_mouse_handler_native(nmeHandle,inHandler);
+   }
+   #end
+
+
    public function resize(width:Int, height:Int):Void window.resize(width,height);
 
    private function get_stageFocusRect():Bool { return nme_stage_get_focus_rect(nmeHandle); }
@@ -1121,6 +1130,12 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private static var nme_stage_get_orientation = PrimeLoader.load("nme_stage_get_orientation", "i");
    private static var nme_stage_get_normal_orientation = PrimeLoader.load("nme_stage_get_normal_orientation", "i");
    private static var nme_stage_check_cache = PrimeLoader.load("nme_stage_check_cache", "ob");
+
+   #if cpp
+   private static var nme_set_stage_mouse_handler_native = PrimeLoader.load("nme_set_stage_mouse_handler_native", "oov");
+   #end
+
+
 }
 
 class TouchInfo 

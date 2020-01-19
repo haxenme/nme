@@ -57,6 +57,7 @@ class Lib
    public static var nmeStateVersion(get, never):String;
    public static var bits(get, never):Int;
    public static var silentRecreate(get,set):Bool;
+   public static var stageFactory:(Window)->Stage;
 
 
 
@@ -79,7 +80,10 @@ class Lib
       Application.createWindow(function(inWindow:Window) {
          try
          {
-            Lib.nmeStage = new Stage(inWindow);
+            if (stageFactory!=null)
+               Lib.nmeStage = stageFactory(inWindow);
+            else
+               Lib.nmeStage = new Stage(inWindow);
             Lib.nmeStage.frameRate = inFrameRate;
             Lib.nmeStage.opaqueBackground = inColour;
 

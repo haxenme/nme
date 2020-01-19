@@ -1460,6 +1460,23 @@ DEFINE_PRIME4v(nme_set_stage_handler);
 
 Stage *sgNativeHandlerStage = 0;
 
+static nme::Event eventData;
+
+value makeDynamicEvent()
+{
+   static AutoGCRoot *dynamicEvent = 0;
+   static vkind eventKind;
+
+   if (dynamicEvent==0)
+   {
+      kind_share(&eventKind,"nme::Event");
+      value eventHolder = alloc_abstract(eventKind,&eventData);
+      dynamicEvent = new AutoGCRoot(eventHolder);
+   }
+   return dynamicEvent->get();
+}
+
+
 void external_handler_native( nme::Event &ioEvent, void *inUserData )
 {
    AutoGCRoot *handler = (AutoGCRoot *)inUserData;
@@ -1469,25 +1486,25 @@ void external_handler_native( nme::Event &ioEvent, void *inUserData )
       return;
    }
 
-   static AutoGCRoot *dynamicEvent = 0;
-   static nme::Event eventData;
-   static vkind eventKind;
-   if (dynamicEvent==0)
-   {
-      kind_share(&eventKind,"nme::Event");
-      value eventHolder = alloc_abstract(eventKind,&eventData);
-      dynamicEvent = new AutoGCRoot(eventHolder);
-   }
-
    eventData = ioEvent;
    eventData.pollTime = GetTimeStamp();
-
-   val_call1(handler->get(), dynamicEvent->get());
+   val_call1(handler->get(), makeDynamicEvent());
 
    ioEvent.result = eventData.result;
 
    sgNativeHandlerStage->SetNextWakeDelay(eventData.pollTime);
 }
+
+void external_mouse_handler_native( nme::Event &ioEvent, void *inUserData )
+{
+   AutoGCRoot *handler = (AutoGCRoot *)inUserData;
+
+   eventData = ioEvent;
+   val_call1(handler->get(), makeDynamicEvent());
+   ioEvent = eventData;
+}
+
+
 
 
 void nme_set_stage_handler_native(value inStage,value inHandler,int inNomWidth, int inNomHeight)
@@ -1504,6 +1521,20 @@ void nme_set_stage_handler_native(value inStage,value inHandler,int inNomWidth, 
    stage->SetEventHandler(external_handler_native,data);
 }
 DEFINE_PRIME4v(nme_set_stage_handler_native);
+
+
+void nme_set_stage_mouse_handler_native(value inStage,value inHandler)
+{
+   Stage *stage;
+   if (!AbstractToObject(inStage,stage))
+      return;
+
+   AutoGCRoot *data = new AutoGCRoot(inHandler);
+
+   stage->SetMouseEventHandler(external_mouse_handler_native,data);
+}
+DEFINE_PRIME2v(nme_set_stage_mouse_handler_native);
+
 
 
 void nme_stage_begin_render(value inStage, bool inClear)

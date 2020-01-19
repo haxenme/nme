@@ -49,6 +49,8 @@ Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
    gCurrentStage = this;
    mHandler = 0;
    mHandlerData = 0;
+   mMouseHandler = 0;
+   mMouseHandlerData = 0;
    opaqueBackground = 0xffffffff;
    mFocusObject = 0;
    mMouseDownObject = 0;
@@ -140,10 +142,28 @@ void Stage::SetEventHandler(EventHandler inHander,void *inUserData)
    mHandlerData = inUserData;
 }
 
+
+void Stage::SetMouseEventHandler(EventHandler inHander,void *inUserData)
+{
+   mMouseHandler = inHander;
+   mMouseHandlerData = inUserData;
+}
+
 void Stage::HandleEvent(Event &inEvent)
 {
    gCurrentStage = this;
    DisplayObject *hit_obj = 0;
+
+   if ( mMouseHandler && ( inEvent.type==etMouseMove || inEvent.type==etMouseDown ||
+         inEvent.type==etMouseUp || inEvent.type==etMouseClick ||
+         inEvent.type==etTouchBegin || inEvent.type==etTouchEnd || 
+         inEvent.type==etTouchMove || inEvent.type==etTouchTap )
+       )
+   {
+      int was = inEvent.x;
+      mMouseHandler(inEvent, mMouseHandlerData);
+   }
+
 
    bool primary = inEvent.flags & efPrimaryTouch;
 
@@ -151,6 +171,7 @@ void Stage::HandleEvent(Event &inEvent)
          inEvent.type==etTouchBegin || inEvent.type==etTouchMove  )
             && primary )
       mLastMousePos = UserPoint(inEvent.x, inEvent.y);
+
 
    if (mMouseDownObject && primary)
    {
