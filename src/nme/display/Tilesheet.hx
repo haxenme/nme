@@ -33,14 +33,14 @@ class Tilesheet
 
    public var nmeHandle:NativeHandle;
 
-   public function new(inImage:BitmapData, ?rects:Array<Rectangle>) 
+   public function new(inImage:BitmapData, ?rects:Array<Rectangle>,?inPoint:Point) 
    {
       tileCount = 0;
       nmeBitmap = inImage;
       nmeHandle = nme_tilesheet_create(inImage.nmeHandle);
       if (rects!=null)
          for(rect in rects)
-            addTileRect(rect);
+            addTileRect(rect,inPoint);
    }
 
    public function addTileRect(rectangle:Rectangle, centerPoint:Point = null):Int 
