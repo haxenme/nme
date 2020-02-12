@@ -404,9 +404,10 @@ extern "C"
 extern get_file_callback_func get_file_callback;
 }
 
-#if (defined(HX_MACOS) || defined(ANDROID) ) && defined(NME_CURL_SSL)
-#define TRY_GET_FILE
-#endif
+// New lib curl does not have get_file_callback
+//#if (defined(HX_MACOS) || defined(ANDROID) ) && defined(NME_CURL_SSL)
+//#define TRY_GET_FILE
+//#endif
 
 #ifdef TRY_GET_FILE
 static int sGetFile(const char *inFilename, unsigned char **outBuf)
