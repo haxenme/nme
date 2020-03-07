@@ -30,19 +30,21 @@ class Dependency
 
    public function isFramework()
    {
-      return name.endsWith(".framework");
+      return name.endsWith(".framework") || path.endsWith(".framework");
    }
 
    public function isLibrary()
    {
-      return name.endsWith(".a");
+      return name.endsWith(".a") || path.endsWith(".a");
    }
 
 
 
    public function getFramework()
    {
-      return name;
+      if (name!="")
+         return name;
+      return path;
    }
 
 
