@@ -1030,7 +1030,7 @@ class NMEProject
 
       if (certificate != null) 
       {
-         context.KEY_STORE = PathHelper.tryFullPath(certificate.path);
+         context.KEY_STORE = PathHelper.tryFullPath(certificate.path).split("\\").join("/");
 
          if (certificate.password != null) 
             context.KEY_STORE_PASSWORD = certificate.password;
