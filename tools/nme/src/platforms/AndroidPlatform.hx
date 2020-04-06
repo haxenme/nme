@@ -225,6 +225,7 @@ class AndroidPlatform extends Platform
          if (ndll.name=="nme" && ndll.isStatic)
             staticNme = true;
       context.STATIC_NME = staticNme;
+      context.UNIVERSAL_APK = project.androidConfig.universalApk;
 
       context.appHeader = project.androidConfig.appHeader;
       context.appActivity = project.androidConfig.appActivity;

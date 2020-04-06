@@ -514,6 +514,9 @@ class NMMLParser
 
       if (element.has.addV4Compat)
          project.androidConfig.addV4Compat = parseBool(element.att.addV4Compat);
+
+      if (element.has.universalApk)
+         project.androidConfig.universalApk = parseBool(element.att.universalApk);
  
       for(childElement in element.elements) 
       {

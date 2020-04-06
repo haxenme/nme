@@ -12,6 +12,7 @@ class AndroidConfig
    public var installLocation:String;
    public var minApiLevel:Int;
    public var addV4Compat:Bool;
+   public var universalApk:Bool;
    public var targetApiLevel:Null<Int>;
    public var buildApiLevel:Null<Int>;
    public var appHeader:Array<String>;
@@ -32,6 +33,7 @@ class AndroidConfig
       installLocation = "preferExternal";
       minApiLevel = 16;
       addV4Compat = true;
+      universalApk = false;
       appHeader = [];
       appIntent = [];
       appActivity = [];
