@@ -673,6 +673,16 @@ public:
       if (Init())
       {
          mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(inData, len), 1);
+
+         if (!mChunk)
+         {
+            INmeSoundData *data = INmeSoundData::create(inData,len,SoundForceDecode);
+            if (data)
+            {
+               setSoundData(data);
+            }
+         }
+ 
          onChunk();
       }
    }
@@ -1026,7 +1036,6 @@ public:
          }
       }
 
-
       if (!mMusic)
       {
          mError = SDL_GetError();
@@ -1053,10 +1062,12 @@ public:
       #else
       mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], len));
       #endif
+
+
       if ( mMusic == NULL )
       {
          mError = SDL_GetError();
-         ELOG("Error in music with len (%d)", len );
+         //ELOG("Error in music with len (%d)", len );
       }
    }
    ~SDLMusic()
