@@ -42,7 +42,11 @@ class Exclude
                     enumRef.get().exclude();
             case TAbstract(absRef, params):
                if (externs.exists(absRef.toString()))
-                    absRef.get().exclude();
+               {
+                  var exclude = absRef.get().exclude;
+                  if (exclude!=null)
+                     exclude();
+               }
             default:
          }
       }
