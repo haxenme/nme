@@ -1342,10 +1342,17 @@ void OnMainFrameCreated(Frame *inFrame)
 
 void nme_set_package(HxString inCompany,HxString inFile,HxString inPackage,HxString inVersion)
 {
+   #ifdef HXCPP_JS_PRIME
    gCompany = inCompany;
    gFile = inFile;
    gPackage = inPackage;
    gVersion = inVersion;
+   #else
+   gCompany = inCompany.c_str();
+   gFile = inFile.c_str();
+   gPackage = inPackage.c_str();
+   gVersion = inVersion.c_str();
+   #endif
 }
 DEFINE_PRIME4v(nme_set_package);
 
