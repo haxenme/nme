@@ -77,6 +77,14 @@ class ManagedStage extends Stage
    {
    }
 
+   override public function invalidate():Void 
+   {
+      super.invalidate();
+      if (renderRequest!=null)
+         renderRequest();
+   }
+
+
    public static function initSdlAudio()
    {
        nme_init_sdl_audio();

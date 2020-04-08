@@ -157,12 +157,25 @@ static FRect _tile_rect;
 
 vkind gObjectKind;
 vkind gDataPointer;
+vkind gPointer;
 
 NmeApi gNmeApi;
 
 
 static int sgIDsInit = false;
 static int sgRenderingCount = 0;
+
+#ifdef HXCPP_JS_PRIME
+extern "C"
+{
+IdMap sIdMap;
+IdMap sKindMap;
+std::vector<value> sIdKeys;
+std::vector<const char *> sIdKeyNames;
+}
+#endif
+
+
 #if 1
 #define CHECK_ACCESS(where)
 #else
@@ -273,6 +286,7 @@ extern "C" void InitIDs()
 
    kind_share(&gObjectKind,"nme::Object");
    kind_share(&gDataPointer,"data");
+   kind_share(&gPointer,"gPointer");
    
    _tile_rect = FRect(0, 0, 1, 1);
 
@@ -455,6 +469,8 @@ void FromValue(Event &outEvent, value inValue)
    outEvent.flags = ValInt(inValue,_id_flags,0);
    outEvent.code = ValInt(inValue,_id_code,0);
    outEvent.result = (EventResult)ValInt(inValue,_id_result,0);
+   outEvent.deltaX = ValInt(inValue,_id_deltaX,0);
+   outEvent.deltaY = ValInt(inValue,_id_deltaY,0);
 }
 
 
@@ -1324,16 +1340,14 @@ void OnMainFrameCreated(Frame *inFrame)
    delete sOnCreateCallback;
 }
 
-
-value nme_set_package(value inCompany,value inFile,value inPackage,value inVersion)
+void nme_set_package(HxString inCompany,HxString inFile,HxString inPackage,HxString inVersion)
 {
-   gCompany = valToStdString(inCompany);
-   gFile = valToStdString(inFile);
-   gPackage = valToStdString(inPackage);
-   gVersion = valToStdString(inVersion);
-   return val_null;
+   gCompany = inCompany;
+   gFile = inFile;
+   gPackage = inPackage;
+   gVersion = inVersion;
 }
-DEFINE_PRIM(nme_set_package,4);
+DEFINE_PRIME4v(nme_set_package);
 
 
 void nme_create_main_frame(value inCallback, int width, int height, int flags,
@@ -1837,6 +1851,20 @@ void nme_stage_set_title(value inStage, HxString inTitle) {
    }
 }
 DEFINE_PRIME2v(nme_stage_set_title);
+
+
+namespace nme
+{
+void *gNativeWindowHandle = 0;
+}
+void nme_set_native_window(value inWindow)
+{
+   #ifndef HXCPP_JS_PRIME
+   gNativeWindowHandle = val_to_kind(inWindow, gPointer);
+   #endif
+}
+DEFINE_PRIME1v(nme_set_native_window);
+
 
 
 // --- StageVideo ----------------------------------------------------------------------

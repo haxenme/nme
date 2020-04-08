@@ -2150,7 +2150,7 @@ void SetIcon(const char *path)
 HWND GetApplicationWindow()
 {
    if (!sgSDLFrame)
-      return 0;
+      return (HWND)gNativeWindowHandle;
 
    SDL_SysWMinfo wminfo;
    SDL_VERSION (&wminfo.version);

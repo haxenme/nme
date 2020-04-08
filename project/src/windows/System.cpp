@@ -96,6 +96,8 @@ enum
    flagDirectory       = 0x0008,
    flagMultiSelect     = 0x0010,
    flagHideReadOnly    = 0x0020,
+
+   flagRunningOnMainThread = 0x1000,
 };
 }
 
@@ -192,7 +194,9 @@ static unsigned __stdcall dialog_proc( void *inSpec )
    }
 
    spec->isFinished = true;
-   // ping windows thread.
+   if (spec->flags & flagRunningOnMainThread)
+      spec->complete();
+   // ping windows event.
 
    return 0;
 }
@@ -200,7 +204,17 @@ static unsigned __stdcall dialog_proc( void *inSpec )
 
 bool FileDialogOpen( FileDialogSpec *inSpec )
 {
-   return _beginthreadex( 0, 0, dialog_proc, (void *)inSpec, 0, 0);
+   // Do not run in thread
+   if (gNativeWindowHandle)
+   {
+      inSpec->flags |= flagRunningOnMainThread;
+      dialog_proc(inSpec);
+      return true;
+   }
+   else
+   {
+      return _beginthreadex( 0, 0, dialog_proc, (void *)inSpec, 0, 0);
+   }
 }
 
 

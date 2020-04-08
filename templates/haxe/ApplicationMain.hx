@@ -139,6 +139,8 @@ class ApplicationMain
                ::else::
                   frame = wx.Frame.create(null, null, "::APP_TITLE::", null, size);
                ::end::
+               nme.Lib.title = "::APP_TITLE::";
+               var icon = Assets.info.get("::WIN_ICON::")==null ? null : Assets.getBitmapData("::WIN_ICON::");
 
                #if (nme && !nme_no_stage)
                   wx.NMEStage.create(frame, null, null,
@@ -154,7 +156,7 @@ class ApplicationMain
                      fps : ::WIN_FPS:: * 1.0,
                      color : ::WIN_BACKGROUND::,
                      title : "::APP_TITLE::",
-                     icon  : Assets.info.get("::WIN_ICON::")==null ? null : Assets.getBitmapData("::WIN_ICON::")
+                     icon  : icon,
                   });
 
                   // Show frame before creating instance so context is good.
