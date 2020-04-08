@@ -46,6 +46,7 @@ struct zWMcursor { void* curs; };
 HWND hwnd;
 SDL_SysWMinfo wminfo;
 
+
 void init_win32()
 {
    SDL_Cursor *cursor = SDL_GetCursor();
@@ -73,6 +74,7 @@ void done_win32()
 
 namespace nme
 {
+static bool sCheckCanvasSize = true;
 
 extern double CapabilitiesGetScreenDPI();
 
@@ -312,7 +314,7 @@ public:
 
       mIsOpenGL = inIsOpenGL;
       mSDLSurface = inSurface;
-      mFlags = inFlags;
+      mFlags = inFlags | SDL_WINDOW_RESIZABLE;
       mShowCursor = true;
       mLockCursor = false;
       mCurrentCursor = curPointer;      
@@ -974,6 +976,7 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(poll);
          break;
      }
+
       case SDL_VIDEORESIZE:
       {
          Event resize(etResize,inEvent.resize.w,inEvent.resize.h);
@@ -1038,11 +1041,10 @@ void ProcessEvent(SDL_Event &inEvent)
 }
 
 
-static bool sCheckCanvasSize = true;
-EM_BOOL onCanvasSize(int, const EmscriptenUiEvent *, void *)
+extern "C"
 {
-   sCheckCanvasSize = true;
-   return false;
+void onCanvasSize() { sCheckCanvasSize = true; }
+EMSCRIPTEN_BINDINGS(onCanvasSize) { emscripten::function("onCanvasSize", &onCanvasSize); }
 }
 
 
@@ -1369,7 +1371,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       sgDeviceDpi = 1.0;
       #endif
 
-   emscripten_set_resize_callback(0, 0, false, onCanvasSize);
+   //emscripten_set_resize_callback("canvas", nullptr, false, onCanvasSize);
+   EM_ASM({
+      window.onresize = function() {
+         Module.onCanvasSize();
+      }
+    });
+
    emscripten_set_main_loop(StartAnimation, 0, false);
    #else
    StartAnimation();

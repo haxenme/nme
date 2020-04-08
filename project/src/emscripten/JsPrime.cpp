@@ -6,10 +6,6 @@
 #include <Tilesheet.h>
 #include <Font.h>
 
-IdMap sIdMap;
-IdMap sKindMap;
-std::vector<value> sIdKeys;
-std::vector<const char *> sIdKeyNames;
 
 namespace nme
 {

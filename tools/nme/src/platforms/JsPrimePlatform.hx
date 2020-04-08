@@ -12,6 +12,7 @@ class JsPrimePlatform extends Platform
    private var python:String;
 
    var nmeJs:String;
+   var nmeWasm:String;
    var nmeClassesJs:String;
 
    var nmeJsBody:String;
@@ -44,10 +45,10 @@ class JsPrimePlatform extends Platform
       extraFlags.push('-D jsminimal');
       project.macros.push("--macro nme.macros.Exclude.exclude()");
 
-      nmeJs = project.getDef("nmeJs");
       var nmeUrl = project.getDef("nmeUrl");
       if (nmeUrl==null)
          nmeUrl = "/nme/";
+      nmeJs = project.getDef("nmeJs");
       if (nmeJs==null)
       {
          if (project.hasDef("flatoutput"))
@@ -55,6 +56,15 @@ class JsPrimePlatform extends Platform
          else
             nmeJs = nmeUrl + nme.Version.name + "/Nme.js";
       }
+      nmeWasm = project.getDef("nme.wasm");
+      if (nmeWasm==null)
+      {
+         if (project.hasDef("flatoutput"))
+            nmeWasm = "nme.wasm";
+         else
+            nmeWasm = nmeUrl + nme.Version.name + "/nme.wasm";
+      }
+
       nmeClassesJs = project.getDef("nmeClassesJs");
       if (nmeClassesJs==null)
       {
@@ -97,7 +107,6 @@ class JsPrimePlatform extends Platform
       if (sys.FileSystem.exists(filename))
       {
          var file = sys.io.File.read(filename);
-         trace(filename);
          try
          {
             while(true)
@@ -287,9 +296,10 @@ class JsPrimePlatform extends Platform
 
       context.NME_IMMEDIATE_LOAD = false;
       context.NME_JS = nmeJs;
+      context.NME_WASM = nmeWasm;
       context.NME_APP_JS = getNmeFilename();
       context.NME_CLASSES_JS = nmeClassesJs;
-      context.NME_MEM_FILE = true;
+      context.NME_MEM_FILE = false;
       context.NME_JS_BODY = nmeJsBody;
       context.NME_JS_FOOTER = nmeJsFooter;
       context.NME_JS_HEADER = nmeJsHeader;
@@ -310,6 +320,11 @@ class JsPrimePlatform extends Platform
 
       var src = CommandLineTools.nme + "/ndll/Emscripten/NmeClasses.js";
       var dest = getNmeOutputDir()+"/" + nmeClassesJs;
+      FileHelper.copyFile(src, dest);
+      addOutputQuiet(dest,true);
+
+      var src = CommandLineTools.nme + "/ndll/Emscripten/nme.wasm";
+      var dest = getNmeOutputDir()+"/" + nmeWasm;
       FileHelper.copyFile(src, dest);
       addOutputQuiet(dest,true);
    }
@@ -336,6 +351,8 @@ class JsPrimePlatform extends Platform
    {
       if (filename=="Nme.js")
          return getNmeOutputDir() + "/" + nmeJs;
+      if (filename=="nme.wasm")
+         return getNmeOutputDir() + "/" + nmeWasm;
       return super.remapName(dir, filename);
    }
 

@@ -118,7 +118,13 @@ class Graphics
 
       if (inSmooth)
          inFlags |= TILE_SMOOTH;
+      #if jsprime
+      var buffer:nme.utils.Float32Buffer = 
+         Std.is(inXYID,nme.utils.Float32Buffer) ? (inXYID:nme.utils.Float32Buffer) : null;
+      #else
       var buffer:nme.utils.Float32Buffer = cast inXYID;
+      #end
+
       if (buffer!=null)
       {
          if (inCount<0)
@@ -130,7 +136,9 @@ class Graphics
          #end
       }
       else
+      {
          nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, inXYID, inFlags, inCount);
+      }
    }
    
    public function drawTriangles(vertices:Array<Float>, ?indices:Array<Int>, ?uvtData:Array<Float>, ?culling:TriangleCulling, ?colours:Array<Int>, blendMode:Int = 0) 

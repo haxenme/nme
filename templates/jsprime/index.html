@@ -108,7 +108,12 @@
         nmeClasses: null,
 
         calledRun: false,
-
+        ::if (NME_WASM)::
+        locateFile: function(filename,scriptDir) {
+           if (filename=="nme.wasm") return '::NME_WASM::';
+           return scriptDir + filename;
+        },
+        ::end::
         progress: function() {
           var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedNmeClasses;
           if (this.binaryIsReady) loaded++;

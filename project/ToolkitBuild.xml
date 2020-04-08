@@ -1,4 +1,5 @@
 <xml>
+
    <set name="ios" value="1" if="iphone" />
    <set name="tvos" value="1" if="appletv" />
    <set name="mac" value="1" if="macos" />
@@ -6,7 +7,7 @@
    <set name="HXCPP_CPP11" value="1" />
 
    <set name="exe_link" value="1" if="HXCPP_JS_PRIME" />
-   <set name="HXCPP_LINK_MEM_FILE" value="1" if="HXCPP_JS_PRIME" />
+   <!--<set name="HXCPP_LINK_MEM_FILE" value="1" if="HXCPP_JS_PRIME" />-->
    <set name="HXCPP_LINK_TOTAL_MEMORY" value="268435456" if="HXCPP_JS_PRIME||emscripten" />
 
    <set name="winrpi" value="1" if="windows_host rpi" />
