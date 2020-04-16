@@ -111,7 +111,7 @@ struct EdgePoint
    }
 
 
-   float calcCross()
+   double calcCross()
    {
       return (prev->p - p).Cross(next->p - p);
    }
@@ -170,6 +170,48 @@ struct ConcaveSet
 
       return true;
    }
+
+   void verify(EdgePoint *e0,int inN)
+   {
+      if (inN<=2)
+         return;
+
+      EdgePoint *e = e0;
+      int idx = 0;
+      while(true)
+      {
+         bool concave = e->calcConcave();
+         if (concave!=e->isConcave)
+            printf("Bad concave set, is:%d was:%d (n=%d)\n",concave,e->isConcave,inN);
+
+         bool inSet = points.find(e->p)!=points.end();
+         if (e->isConcave && !inSet)
+            printf("Bad inSet, is:%d set:%d (n=%d/%d)\n",e->isConcave,inSet,idx,inN);
+
+         idx++;
+         e = e->next;
+         if (e==e0)
+            break;
+      }
+
+       for(PointSet::const_iterator p = points.begin(); p!=points.end(); ++p)
+       {
+          EdgePoint *e = e0;
+          UserPoint pp = *p;
+          bool foundConcave = false;
+          for(int j=0;j<inN;j++)
+          {
+             if (e->isConcave && e->p==pp)
+             {
+                foundConcave = true;
+                break;
+             }
+             e = e->next;
+          }
+          if (!foundConcave)
+             printf("Could not find concave point (%f,%f) in poly.\n", pp.x, pp.y);
+       }
+   };
 };
 
 
@@ -181,7 +223,7 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
 
    for(EdgePoint *p = head; ; )
    {
-      float cross = p->calcCross();
+      double cross = p->calcCross();
       if (fabs(cross)<INSIDE_TOL && p->p.Dist2(p->next->p)<0.00001 )
       {
          // erase point
@@ -273,9 +315,12 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
             concaveSet.add(prev);
 
 
+
          // Take a step back and try again...
          pi = prev;
          p_end = pi->prev;
+
+         //concaveSet.verify(pi,size);
       }
       else
          pi = pi->next;
@@ -471,9 +516,12 @@ int LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
       count ++;
    }
    else
+   {
       bestAlpha = 0;
+   }
 
-   if (bestAlpha==0)
+   // Fuse close points...
+   if ( bestIn->p.Dist(bestOut->p) < 0.0001 )
    {
       /* Hole links to outline at a common point...
       
@@ -967,6 +1015,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
       info.linkPolygon(&edgeBuffer[edgeBufferStart],p,info.size,reverse!=info.is_internal);
 
       edgeBufferStart += info.size;
+
    }
 
 
