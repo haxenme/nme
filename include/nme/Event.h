@@ -52,6 +52,10 @@ enum EventType
    etAppLink, // 35
 
    etDpiChanged, // 36
+
+   etDropBegin, // 37
+   etDropFile, // 38
+   etDropEnd, // 39
 };
 
 enum EventFlags

@@ -1535,30 +1535,47 @@ void ProcessEvent(SDL_Event &inEvent)
             {
                //Event deactivate(etDeactivate);
                //sgSDLFrame->ProcessEvent(deactivate);
-               
+
                //Event kill(etDestroyHandler);
                //sgSDLFrame->ProcessEvent(kill);
                break;
             }
 
-            /*
-            case SDL_DROPFILE:
-            {
-               char *dropped_filedir = inEvent.drop.file;
-               printf("DROP %s\n", dropped_filedir);
-               SDL_free(dropped_filedir);
-               break;
-            }
-            */
 
             default: break;
          }
-         
          break;
-         
       }
+
+      case SDL_DROPBEGIN:
+      {
+         Event event(etDropBegin);
+         sgSDLFrame->ProcessEvent(event);
+         break;
+      }
+      case SDL_DROPCOMPLETE:
+      {
+         int x=0;
+         int y=0;
+         SDL_GetMouseState(&x,&y);
+         Event event(etDropEnd, x, y);
+         AddModStates(event.flags);
+         sgSDLFrame->ProcessEvent(event);
+         break;
+      }
+      case SDL_DROPFILE:
+      {
+         Event event(etDropFile);
+         event.utf8Text = inEvent.drop.file;
+         event.utf8Length = strlen(inEvent.drop.file);
+         sgSDLFrame->ProcessEvent(event);
+         SDL_free(inEvent.drop.file);
+         break;
+      }
+
+
       case SDL_MOUSEMOTION:
-      {  
+      {
             //default to 0
          int deltaX = 0;
          int deltaY = 0;
@@ -2360,7 +2377,8 @@ void StartAnimation()
    SDL_Event event;
    event.type = SDL_NOEVENT;
 
-   //SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+   //SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
+   SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
    double nextWake = GetTimeStamp();
    while(!sgDead)

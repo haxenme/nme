@@ -233,7 +233,8 @@ void Stage::HandleEvent(Event &inEvent)
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown ||
          inEvent.type==etMouseUp || inEvent.type==etMouseClick ||
          inEvent.type==etTouchBegin || inEvent.type==etTouchEnd ||
-         inEvent.type==etTouchMove || inEvent.type==etTouchTap
+         inEvent.type==etTouchMove || inEvent.type==etTouchTap ||
+         inEvent.type==etDropEnd
        )
    {
       UserPoint pixels(inEvent.x,inEvent.y);

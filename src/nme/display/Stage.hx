@@ -27,6 +27,7 @@ import nme.events.FocusEvent;
 import nme.events.KeyboardEvent;
 import nme.events.SystemEvent;
 import nme.events.TouchEvent;
+import nme.events.DropEvent;
 import nme.events.Event;
 import nme.geom.Point;
 import nme.geom.Rectangle;
@@ -137,6 +138,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private var nmeFrameTimer:FrameTimer;
    private var nmeEnterFrameEvent:Event;
    private var nmeRenderEvent:Event;
+   private var nmeDropItems:Array<String>;
    var nmePrenderListeners:Array<Void->Void>;
 
    #if cpp
@@ -693,6 +695,42 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          obj.nmeFireEvent(new Event(Event.SCROLL));
    }
 
+   public function onDrop(inEvent:AppEvent):Void
+   {
+      if (inEvent.type==nme.app.EventId.DropBegin)
+      {
+        nmeDropItems = [];
+      }
+      else if (inEvent.type==nme.app.EventId.DropEnd)
+      {
+         if (nmeDropItems!=null)
+         {
+            var stack = new Array<InteractiveObject>();
+            var obj:DisplayObject = nmeFindByID(inEvent.id);
+
+            if (obj != null)
+               obj.nmeGetInteractiveObjectStack(stack);
+
+            var local:Point = null;
+            if (stack.length > 0) 
+            {
+               var obj = stack[0];
+               stack.reverse();
+               local = obj.globalToLocal(new Point(inEvent.x, inEvent.y));
+
+               var evt = DropEvent.nmeCreate(DropEvent.DROP_FILES, inEvent, local, obj, nmeDropItems);
+               evt.items = nmeDropItems;
+               obj.nmeFireEvent(evt);
+            }
+            nmeDropItems = null;
+         }
+      }
+      else if (inEvent.type==nme.app.EventId.DropFile)
+      {
+         if (nmeDropItems!=null)
+            nmeDropItems.push( inEvent.text );
+      }
+   }
 
    public function onDpiChanged(inEvent:AppEvent):Void
    {

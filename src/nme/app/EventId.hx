@@ -49,4 +49,8 @@ class EventId
    public static inline var AppLink = 35;
 
    public static inline var DpiChanged = 36;
+
+   public static inline var DropBegin = 37;
+   public static inline var DropFile = 38;
+   public static inline var DropEnd = 39;
 }
