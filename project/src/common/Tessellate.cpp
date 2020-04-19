@@ -368,13 +368,16 @@ enum PIPResult { PIP_NO, PIP_YES, PIP_MAYBE };
 
 */
 
-PIPResult PointInPolygon(UserPoint p0, UserPoint *ioPtr,int inN)
+PIPResult PointInPolygon(UserPoint p0, UserPoint *ioPtr,int inN, double tol)
 {
    int crossing = 0;
    for(int i=0;i<inN;i++)
    {
       UserPoint p1 = ioPtr[i];
       UserPoint p2 = ioPtr[ (i+1)%inN ];
+
+      if (tol>0 && fabs(p1.y-p0.y)<tol || fabs(p2.y-p0.y)<tol )
+         return PIP_MAYBE;
 
       bool m1 = p1.y==p0.y;
       bool m2 = p2.y==p0.y;
@@ -564,15 +567,17 @@ int LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
    else if (bestAlpha>0.0001)
    {
       // Insert node into outline
-      EdgePoint *b = inBuffer + 2;
-      b->init( UserPoint(closestX,bestOut->p.y + ( bestOut->next->p.y- bestOut->p.y) * bestAlpha),
+      EdgePoint *b = inBuffer++;
+      count ++;
+
+      // Use a small offset to avoid creating a degenerate/numerically unstable line
+      b->init( UserPoint(closestX-0.0001,bestOut->p.y + ( bestOut->next->p.y- bestOut->p.y) * bestAlpha),
                 bestOut, bestOut->next );
 
       bestOut->next->prev = b;
       bestOut->next = b;
 
       bestOut = b;
-      count ++;
    }
    else
    {
@@ -1057,11 +1062,20 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
             int prev_p0 = subInfo[prev].p0;
             int prev_size = subInfo[prev].size;
             int inside = PIP_MAYBE;
-            for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
+            for(int pass=0; pass<2 && inside==PIP_MAYBE; pass++)
             {
-               inside = PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size);
-               if (inside==PIP_YES)
-                  parent = prev;
+               // The case where some points are in, and some are out, is undefined.
+               // Due to some numerical differences, some polys in practice slightly overlap.
+               // Possibly could make sure that all the points are in, but pass 0, we
+               //  ignore points that are slightly in, looking for a point that is
+               //  quite in or actually out.  Pass 1, if required, we do a strict test.
+               double tol = pass==0 ? 0.1 : 0;
+               for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
+               {
+                  inside = PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size, tol);
+                  if (inside==PIP_YES)
+                     parent = prev;
+               }
             }
          }
       }
