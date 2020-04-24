@@ -357,7 +357,7 @@ enum PIPResult { PIP_NO, PIP_YES, PIP_MAYBE };
 
             + p2
            /
-      p0 +/  if (p0->p1) X (p0->p2) > 0  then p0 is left of p1->p2
+      p0+-/  if (p0->p1) X (p0->p2) > 0  then p0 is left of p1->p2
          /
         /
     p1 + 
@@ -376,15 +376,18 @@ PIPResult PointInPolygon(UserPoint p0, UserPoint *ioPtr,int inN, double tol)
       UserPoint p1 = ioPtr[i];
       UserPoint p2 = ioPtr[ (i+1)%inN ];
 
-      if (tol>0 && fabs(p1.y-p0.y)<tol || fabs(p2.y-p0.y)<tol )
+      // Very similar Y value - might be unstable...
+      if (tol>0 && (fabs(p1.y-p0.y)<tol || fabs(p2.y-p0.y)<tol) )
+      {
          return PIP_MAYBE;
+      }
 
       bool m1 = p1.y==p0.y;
       bool m2 = p2.y==p0.y;
       if (m1||m2)
       {
          // Overlaps - try a different point
-         if ( (m1 && p1.x==p0.x) || (m2 && p2.x==p0.x) )
+         if ( (m1 && fabs(p1.x-p0.x)<=tol) || (m2 && fabs(p2.x-p0.x)<=tol) )
             return PIP_MAYBE;
 
          if (m1&&m2)
@@ -409,19 +412,40 @@ PIPResult PointInPolygon(UserPoint p0, UserPoint *ioPtr,int inN, double tol)
       }
       else if (p1.y<p0.y && p2.y>p0.y)
       {
+         // cross tol?
          double cross = (p1-p0).Cross(p2-p0);
          if (cross==0)
+         {
             return PIP_MAYBE;
+         }
          if (cross>0)
+         {
+            if (tol>0)
+            {
+               double ix = p1.x + (p0.y-p1.y)/(p2.y-p1.y) * (p2.x-p1.x);
+               if (fabs(ix-p0.x)<tol)
+                  return PIP_MAYBE;
+            }
             crossing++;
+         }
       }
       else if(p1.y>p0.y && p2.y<p0.y)
       {
          double cross = (p1-p0).Cross(p2-p0);
          if (cross==0)
+         {
             return PIP_MAYBE;
+         }
          if (cross<0)
+         {
+            if (tol>0)
+            {
+               double ix = p1.x + (p0.y-p1.y)/(p2.y-p1.y) * (p2.x-p1.x);
+               if (fabs(ix-p0.x)<tol)
+                  return PIP_MAYBE;
+            }
             crossing++;
+         }
       }
    }
    return (crossing & 1) ? PIP_YES : PIP_NO;
@@ -738,6 +762,11 @@ struct SubInfo
    bool contains(const UserPoint inP) const
    {
       return inP.x>=x0 && inP.x<=x1 && inP.y>=y0 && inP.y<=y1;
+   }
+
+   double sideLength()
+   {
+      return (x1-x0 + y1-y0)*0.5;
    }
 
 
@@ -1057,10 +1086,11 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
       for(int prev=sub-1; prev>=0 && parent==-1; prev--)
       {
-         if (subInfo[prev].contains(p[0]))
+         SubInfo &outer = subInfo[prev];
+         if (outer.contains(p[0]))
          {
-            int prev_p0 = subInfo[prev].p0;
-            int prev_size = subInfo[prev].size;
+            int prev_p0 = outer.p0;
+            int prev_size = outer.size;
             int inside = PIP_MAYBE;
             for(int pass=0; pass<2 && inside==PIP_MAYBE; pass++)
             {
@@ -1069,9 +1099,14 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
                // Possibly could make sure that all the points are in, but pass 0, we
                //  ignore points that are slightly in, looking for a point that is
                //  quite in or actually out.  Pass 1, if required, we do a strict test.
-               double tol = pass==0 ? 0.1 : 0;
+               double tol = pass==0 ? outer.sideLength()*0.01 : 0;
                for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
                {
+                  if (!outer.contains(p[test_point]))
+                  {
+                     inside = PIP_NO;
+                     break;
+                  }
                   inside = PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size, tol);
                   if (inside==PIP_YES)
                      parent = prev;
