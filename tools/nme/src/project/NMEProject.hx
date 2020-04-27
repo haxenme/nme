@@ -345,9 +345,10 @@ class NMEProject
             haxedefs.set("objc","1");
             target = Platform.WATCH;
 
-         case "android":
+         case "android", "bundlerelease", "bundledebug":
             target = Platform.ANDROID;
             targetFlags.set("android", "");
+            targetFlags.set(inTargetName, "");
             haxedefs.set("gradle", "1");
 
          case "androidsim":

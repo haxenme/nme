@@ -330,6 +330,10 @@ class AndroidPlatform extends Platform
       if (gradle)
       {
          var assemble = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
+         if (project.hasDef("bundlerelease"))
+            assemble = "bundleRelease";
+         else if (project.hasDef("bundledebug"))
+            assemble = "bundleDebug";
 
          if(PlatformHelper.hostPlatform==Platform.MAC)
             ProcessHelper.runCommand(outputDir, 'chmod', ['+x', './gradlew']);

@@ -57,7 +57,8 @@ class CommandLineTools
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim", "rpi",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
-            "watchsimulator", "watchos", "jsprime", "winrt", "uwp", "rg350" ];
+            "watchsimulator", "watchos", "jsprime", "winrt", "uwp", "rg350",
+            "bundlerelease", "bundledebug" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
@@ -1051,6 +1052,10 @@ class CommandLineTools
          if (isTarget(test))
          {
             targetName = test;
+            if (targetName.toLowerCase()=="bundlerelease" || targetName.toLowerCase()=="bundledebug")
+            {
+               project.command = "build";
+            }
             words.splice(w,1);
             break;
          }
