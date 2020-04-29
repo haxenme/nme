@@ -5,10 +5,9 @@ class Purchase
    public var jsonData:Dynamic;
    public var sku(get,null):String;
 
-   public function new(?inJsonData:String)
+   public function new(?inJsonData:Dynamic)
    {
-      if (inJsonData!=null)
-         jsonData = haxe.Json.parse(jsonData);
+      jsonData = inJsonData;
    }
 
    public function get_sku():String
@@ -20,9 +19,7 @@ class Purchase
 
    public static function fromDynamic(d:Dynamic)
    {
-      var string:String = d;
-      var p = new Purchase(string);
-      return p;
+      return new Purchase(d);
    }
 
    public function toString() return 'Purchase($jsonData)';

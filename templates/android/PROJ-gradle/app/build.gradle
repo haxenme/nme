@@ -64,7 +64,7 @@ dependencies {
     api 'com.android.support:appcompat-v7:24.2.1'
     api 'com.android.support:support-v4:24.2.1'
     ::if ANDROID_BILLING::
-    api 'com.android.billingclient:billing:1.0'
+    api 'com.android.billingclient:billing:2.1.0'
     ::end::
     testImplementation 'junit:junit:4.12'
 

@@ -249,6 +249,10 @@ class AndroidPlatform extends Platform
       // SDK to use for building, that we have installed
       context.ANDROID_BUILD_API_LEVEL = getMaxApiLevel(project.androidConfig.minApiLevel);
       context.ANDROID_TARGET_SDK_VERSION = getMaxApiLevel(project.androidConfig.minApiLevel);
+      if (project.hasDef("androidBilling") && context.ANDROID_TARGET_SDK_VERSION<26)
+      {
+         context.ANDROID_TARGET_SDK_VERSION = 26;
+      }
 
       context.GAME_ACTIVITY_BASE = project.androidConfig.gameActivityBase;
 

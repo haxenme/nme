@@ -15,7 +15,7 @@ class BillingWrapper
       listener = inListener;
 
    @:keep
-   function onPurchasesUpdated(purchases:Array<String>)
+   function onPurchasesUpdated(code:Int, purchases:Array<String>)
    {
       var haxePurchases = new Array<Purchase>();
       for(p in purchases)
@@ -23,7 +23,13 @@ class BillingWrapper
          var d:Dynamic = haxe.Json.parse(p);
          haxePurchases.push( Purchase.fromDynamic(d) );
       }
-      listener.onPurchasesUpdated(haxePurchases);
+      listener.onPurchasesUpdated(code,haxePurchases);
+   }
+
+   @:keep
+   function onPurchaseFailed(sku:String, code:Int)
+   {
+      listener.onPurchaseFailed(sku,code);
    }
 
    @:keep
@@ -47,6 +53,21 @@ class AndroidBillingManager
    public inline static var INAPP = "inapp";
    public inline static var SUBS = "subs";
 
+   // result codes
+   public static inline var OK = 0;
+   public static inline var USER_CANCELED = 1;
+   public static inline var ITEM_ALREADY_OWNED = 7;
+   public static inline var ITEM_NOT_OWNED = 8;
+   public static inline var ITEM_UNAVAILABLE = 4;
+   public static inline var SERVICE_DISCONNECTED = -1;
+   public static inline var SERVICE_UNAVAILABLE = 2;
+   public static inline var UNAVAILABLE = 3;
+   public static inline var DEVELOPER_ERROR = 3;
+   public static inline var ERROR = 6;
+   public static inline var FEATURE_NOT_SUPPORTED = -2;
+
+
+
    public static function init(publicKeyString, inListener:AndroidBillingListener) : Void
    {
       billingInit(publicKeyString, new BillingWrapper(inListener) );
@@ -59,7 +80,7 @@ class AndroidBillingManager
 
    public static function initiatePurchaseFlow(skuId:String, billingType:String) : Void
    {
-      billingPurchase(skuId, billingType);
+      billingPurchase(skuId,billingType);
    }
 
 

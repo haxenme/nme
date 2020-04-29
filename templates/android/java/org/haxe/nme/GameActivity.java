@@ -272,31 +272,39 @@ implements SensorEventListener
     {
        activity.mBillingManager.initiatePurchaseFlow(skuId, billingType);
     }
+    public static JSONObject getSkuJson(com.android.billingclient.api.SkuDetails sku) throws JSONException
+    {
+       JSONObject obj= new JSONObject();
+       obj.put("description", sku.getDescription() );
+       obj.put("freeTrialPeriod", sku.getFreeTrialPeriod() );
+       obj.put("introductoryPrice", sku.getIntroductoryPrice() );
+       obj.put("introductoryPriceAmountMicros", sku.getIntroductoryPriceAmountMicros() );
+       obj.put("introductoryPriceCycles", sku.getIntroductoryPriceCycles() );
+       obj.put("introductoryPricePeriod", sku.getIntroductoryPricePeriod() );
+       obj.put("price", sku.getPrice() );
+       obj.put("priceAmountMicros", sku.getPriceAmountMicros() );
+       obj.put("priceCurrencyCode", sku.getPriceCurrencyCode() );
+       obj.put("sku", sku.getSku() );
+       obj.put("subscriptionPeriod", sku.getSubscriptionPeriod() );
+       obj.put("title", sku.getTitle() );
+       obj.put("type", sku.getType() );
+       return obj;
+    }
+
     public static void billingQuery(String itemType, String[] skuArray, final HaxeObject onResult)
     {
        activity.mBillingManager.querySkuDetailsAsync(itemType, java.util.Arrays.asList(skuArray),
           new com.android.billingclient.api.SkuDetailsResponseListener() {
              String result = "";
              @Override
-             public void onSkuDetailsResponse(int responseCode, List<com.android.billingclient.api.SkuDetails> skuDetailsList) {
+             public void onSkuDetailsResponse(com.android.billingclient.api.BillingResult billingResult,
+                                              List<com.android.billingclient.api.SkuDetails> skuDetailsList) {
+                int responseCode = billingResult.getResponseCode();
                 try {
                    JSONArray array= new JSONArray();
                    for(com.android.billingclient.api.SkuDetails sku : skuDetailsList)
                    {
-                      JSONObject obj= new JSONObject();
-                      obj.put("description", sku.getDescription() );
-                      obj.put("freeTrialPeriod", sku.getFreeTrialPeriod() );
-                      obj.put("introductoryPrice", sku.getIntroductoryPrice() );
-                      obj.put("introductoryPriceAmountMicros", sku.getIntroductoryPriceAmountMicros() );
-                      obj.put("introductoryPriceCycles", sku.getIntroductoryPriceCycles() );
-                      obj.put("introductoryPricePeriod", sku.getIntroductoryPricePeriod() );
-                      obj.put("price", sku.getPrice() );
-                      obj.put("priceAmountMicros", sku.getPriceAmountMicros() );
-                      obj.put("priceCurrencyCode", sku.getPriceCurrencyCode() );
-                      obj.put("sku", sku.getSku() );
-                      obj.put("subscriptionPeriod", sku.getSubscriptionPeriod() );
-                      obj.put("title", sku.getTitle() );
-                      obj.put("type", sku.getType() );
+                      JSONObject obj= getSkuJson(sku);
                       array.put(obj);
                    }
                    result = array.toString();
