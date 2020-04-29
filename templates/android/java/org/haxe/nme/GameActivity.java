@@ -68,7 +68,7 @@ import java.io.PrintWriter;
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
 {
-   static final String TAG = "GameActivity";
+   static final String TAG = "NME GameActivity";
 
    private static final int KEYBOARD_OFF = 0;
    private static final int KEYBOARD_DUMB = 1;
@@ -256,9 +256,13 @@ implements SensorEventListener
     ::if ANDROID_BILLING::
     BillingManager mBillingManager;
 
-    public static void billingInit(String inPublicKey, HaxeObject inUpdatesListener)
+    public static void billingInit(final String inPublicKey, final HaxeObject inUpdatesListener)
     {
-       activity.mBillingManager = new BillingManager(activity, inPublicKey, inUpdatesListener);
+       Log.v(TAG,"billingInit:" + activity);
+       final GameActivity me = activity;
+       queueRunnable( new Runnable() { @Override public void run() {
+          me.mBillingManager = new BillingManager(me, inPublicKey, inUpdatesListener);
+       } });
     }
     public static void billingClose()
     {
@@ -315,7 +319,7 @@ implements SensorEventListener
     {
        activity.mBillingManager.consumeAsync(purchaseToken);
     }
-    public static int billingClientClode()
+    public static int billingClientCode()
     {
        return activity.mBillingManager.getBillingClientResponseCode();
     }

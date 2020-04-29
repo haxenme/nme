@@ -43,6 +43,9 @@ typedef SkuDetailsCallback = {
 
 class AndroidBillingManager
 {
+   // billingType strings
+   public inline static var INAPP = "inapp";
+   public inline static var SUBS = "subs";
 
    public static function init(publicKeyString, inListener:AndroidBillingListener) : Void
    {

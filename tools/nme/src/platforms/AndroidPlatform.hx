@@ -393,7 +393,7 @@ class AndroidPlatform extends Platform
       // ProcessHelper.runCommand("", adbName, adbFlags.concat([ "install", "-r", targetPath ]) );
       try
       {
-         var lines = ProcessHelper.getOutput(adbName,adbFlags.concat([ "install", "-r", targetPath ]), Log.mVerbose);
+         var lines = ProcessHelper.getOutput(adbName,adbFlags.concat([ "install", "-r", targetPath ]), Log.mVerbose, Log.mVerbose);
          var failure = ~/Failure/;
          for(line in lines)
             if (failure.match(line))
