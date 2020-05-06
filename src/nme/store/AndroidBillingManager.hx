@@ -1,50 +1,12 @@
 package nme.store;
 
 import nme.JNI;
+import nme.store.BillingEvent;
 
 #if !androidBilling
 #error "Please set androidBilling in your project"
 #end
 
-
-class BillingWrapper
-{
-   var listener:AndroidBillingListener;
-
-   public function new(inListener:AndroidBillingListener)
-      listener = inListener;
-
-   @:keep
-   function onPurchasesUpdated(code:Int, purchases:Array<String>)
-   {
-      var haxePurchases = new Array<Purchase>();
-      for(p in purchases)
-      {
-         var d:Dynamic = haxe.Json.parse(p);
-         haxePurchases.push( Purchase.fromDynamic(d) );
-      }
-      listener.onPurchasesUpdated(code,haxePurchases);
-   }
-
-   @:keep
-   function onPurchaseFailed(sku:String, code:Int)
-   {
-      listener.onPurchaseFailed(sku,code);
-   }
-
-   @:keep
-   function onBillingClientSetupFinished()
-      listener.onBillingClientSetupFinished();
-
-   @:keep
-   function onConsumeFinished(purchaseToken:String, responseCode:Int)
-      listener.onConsumeFinished(purchaseToken, responseCode);
-
-}
-
-typedef SkuDetailsCallback = {
-    function onSkuDetails(responseCode:Int, jsonDetails:String) :Void;
-}
 
 
 class AndroidBillingManager
@@ -66,12 +28,101 @@ class AndroidBillingManager
    public static inline var ERROR = 6;
    public static inline var FEATURE_NOT_SUPPORTED = -2;
 
+   static var manager:AndroidBillingManager;
 
 
-   public static function init(publicKeyString, inListener:AndroidBillingListener) : Void
+   function new() { }
+
+
+   public static function init(publicKeyString ) : Void
    {
-      billingInit(publicKeyString, new BillingWrapper(inListener) );
+      manager = new AndroidBillingManager();
+
+      billingInit(publicKeyString,manager);
    }
+
+   public static function querySkuDetails(itemType:String, skuList:Array<String>) : Void
+   {
+      billingQuery(itemType, skuList, manager);
+   }
+
+   public static function acknowledgePurchase(purchaseToken:String)
+   {
+      billingAcknowledge(purchaseToken);
+   }
+
+   @:keep
+   function onSkuDetails(responseCode:Int, jsonDetails:String) :Void
+   {
+      if (responseCode!=0)
+      {
+         trace("Error getting skuDetails:" + responseCode);
+      }
+      else
+      {
+         try
+         {
+            var details:Array<Dynamic> = haxe.Json.parse(jsonDetails);
+            if (details!=null)
+            {
+               for(d in details)
+                  BillingManager.skuInfo.set(d.sku,new SkuInfo(d));
+            }
+            BillingManager.fire( SkuDetailsUpdated(true) );
+            return;
+         }
+         catch(e:Dynamic)
+         {
+            trace("Error parsing skuDetails:" + e);
+         }
+      }
+      BillingManager.fire( SkuDetailsUpdated(false) );
+   }
+
+   @:keep
+   function onBillingClientSetupFinished()
+   {
+      BillingManager.fire( StoreSetupComplete(true) );
+   }
+
+
+   @:keep
+   function onPurchasesUpdated(code:Int, jsonDetails:String)
+   {
+      try
+      {
+         var details:Array<Dynamic> = haxe.Json.parse(jsonDetails);
+         if (details!=null)
+         {
+            var haxePurchases = new Array<Purchase>();
+            for(p in details)
+               haxePurchases.push( new Purchase(p) );
+
+            BillingManager.setPurchases(haxePurchases);
+            return;
+         }
+      }
+      catch(e:Dynamic)
+      {
+         trace("error with purchases:" + e);
+      }
+      BillingManager.fire( PurchasesUpdated(code) );
+   }
+
+   @:keep
+   function onPurchaseFailed(sku:String, code:Int)
+   {
+      BillingManager.fire( PurchaseFailed(sku, code) );
+   }
+
+   @:keep
+   function onConsumeFinished(purchaseToken:String, responseCode:Int)
+   {
+      BillingManager.fire( ConsumeComplete(purchaseToken, responseCode) );
+   }
+
+
+
 
    public static function close() : Void
    {
@@ -84,10 +135,6 @@ class AndroidBillingManager
    }
 
 
-   public static function querySkuDetails(itemType:String, skuList:Array<String>, onSkuDetails:SkuDetailsCallback ) : Void
-   {
-      billingQuery(itemType, skuList, onSkuDetails);
-   }
 
    public static function consumeAsync(purchaseToken:String) : Void
    {
@@ -106,6 +153,7 @@ class AndroidBillingManager
    static var billingQuery = JNI.createStaticMethod("org/haxe/nme/GameActivity", "billingQuery", "(Ljava/lang/String;[Ljava/lang/String;Lorg/haxe/nme/HaxeObject;)V");
    static var billingConsume = JNI.createStaticMethod("org/haxe/nme/GameActivity", "billingConsume", "(Ljava/lang/String;)V");
    static var billingClientCode = JNI.createStaticMethod("org/haxe/nme/GameActivity", "billingClientCode", "()I");
+   static var billingAcknowledge = JNI.createStaticMethod("org/haxe/nme/GameActivity", "billingAcknowledge", "(Ljava/lang/String;)V");
 }
 
 

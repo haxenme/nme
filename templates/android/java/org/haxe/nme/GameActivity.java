@@ -272,6 +272,11 @@ implements SensorEventListener
     {
        activity.mBillingManager.initiatePurchaseFlow(skuId, billingType);
     }
+    public static void billingAcknowledge(String purchaseToken)
+    {
+       activity.mBillingManager.acknowledgePurchase(purchaseToken);
+    }
+
     public static JSONObject getSkuJson(com.android.billingclient.api.SkuDetails sku) throws JSONException
     {
        JSONObject obj= new JSONObject();
@@ -1476,7 +1481,7 @@ implements SensorEventListener
       return intent.getData();
    }
 
-   private static String getStackTrace(Exception e)
+   public static String getStackTrace(Exception e)
    {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw);

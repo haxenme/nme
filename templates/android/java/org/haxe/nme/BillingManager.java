@@ -30,17 +30,24 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.Purchase.PurchaseState;
 import com.android.billingclient.api.Purchase.PurchasesResult;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
+import com.android.billingclient.api.AcknowledgePurchaseParams;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONException;
+
 
 import android.text.TextUtils;
 import android.util.Base64;
@@ -54,6 +61,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+
 
 
 import org.haxe.nme.HaxeObject;
@@ -108,18 +116,43 @@ public class BillingManager implements PurchasesUpdatedListener {
         mBillingUpdatesListener = updatesListener;
         mBillingClient = BillingClient.newBuilder(mActivity).enablePendingPurchases().setListener(this).build();
 
-        Log.d(TAG, "Starting setup.");
-
         // Start setup. This is asynchronous and the specified listener will be called
         // once setup completes.
         // It also starts to report all the new purchases through onPurchasesUpdated() callback.
         startServiceConnection(new Runnable() {
             @Override
             public void run() {
+
+                Purchase.PurchasesResult resSubs = mBillingClient.queryPurchases(SkuType.SUBS);
+                Purchase.PurchasesResult resInApp = mBillingClient.queryPurchases(SkuType.INAPP);
+
+                String purchases = "";
+                //if (resSubs.getResponseCode()==0 || resInApp.getResponseCode()==0)
+                {
+                   try
+                   {
+                      JSONArray array = new JSONArray();
+                      for(Purchase purchase : resSubs.getPurchasesList())
+                          handlePurchase(purchase,array);
+                      for(Purchase purchase : resInApp.getPurchasesList())
+                          handlePurchase(purchase,array);
+                      purchases = array.toString();
+                   }
+                   catch (JSONException e)
+                   {
+                      Log.e(TAG, "Error in handling purchase");
+                      Log.e(TAG, GameActivity.getStackTrace(e));
+                   }
+                }
+                final String purchaseCap = purchases;
+
                 GameActivity.queueRunnable( new Runnable() {
+                   @Override
                    public void run() {
                    // Notifying the listener that billing client is ready
                    mBillingUpdatesListener.call0("onBillingClientSetupFinished");
+                   if (purchaseCap!="")
+                      mBillingUpdatesListener.call2("onPurchasesUpdated", 0, purchaseCap);
                  } } );
                 // IAB is fully set up. Now, let's get an inventory of stuff we own.
                 //  - need an explicit billingQuery now
@@ -134,25 +167,28 @@ public class BillingManager implements PurchasesUpdatedListener {
     @Override
     public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases)
     {
-       final int resultCode = billingResult.getResponseCode();
-       Log.d(TAG, "onPurchasesUpdated:" + resultCode);
+       int resultCode = billingResult.getResponseCode();
 
-       List<Purchase> resultArray = new ArrayList<>();
-       if (purchases!=null)
-          for(Purchase purchase : purchases)
-              handlePurchase(purchase,resultArray);
+       String result = "";
+       try
+       {
+          JSONArray array = new JSONArray();
+          if (purchases!=null)
+             for(Purchase purchase : purchases)
+                 handlePurchase(purchase,array);
+          result = array.toString();
+       }
+       catch (JSONException e)
+       {
+          Log.e(TAG, "Error in purchases. " + GameActivity.getStackTrace(e));
+          resultCode = -1;
+       }
 
-       int count = resultArray.size();
-
-       String[] purchaseArray = new String[count];
-       int idx = 0;
-       for(Purchase p : resultArray)
-          purchaseArray[idx++] = p.getOriginalJson();
- 
-       final String[] purchaseArrayCapture = purchaseArray;
+       final String purchaseArrayCapture = result;
+       final int fRcode = resultCode;
        GameActivity.queueRunnable( new Runnable() {
             @Override public void run() {
-            mBillingUpdatesListener.call2("onPurchasesUpdated",resultCode, purchaseArrayCapture);
+            mBillingUpdatesListener.call2("onPurchasesUpdated", fRcode, purchaseArrayCapture);
          } } );
     }
 
@@ -178,6 +214,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                 // Query the purchase async
                 SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
                 params.setSkusList( Arrays.asList(skuId) ).setType(billingType);
+                // Find SkuDetails for sku ...
                 mBillingClient.querySkuDetailsAsync(params.build(),
                         new SkuDetailsResponseListener() {
                             @Override
@@ -196,6 +233,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                                    }
                                    else
                                    {
+                                      // Now launch
                                       final SkuDetails skuDetails = skuDetailsList.get(0);
                                       Runnable purchaseFlowRequest = new Runnable() {
                                           @Override public void run() {
@@ -233,7 +271,9 @@ public class BillingManager implements PurchasesUpdatedListener {
     }
 
     public void querySkuDetailsAsync(@SkuType final String itemType, final List<String> skuList,
-                                     final SkuDetailsResponseListener listener) {
+                                     final SkuDetailsResponseListener listener)
+    {
+
         // Creating a runnable from the request to use it inside our connection retry policy below
         Runnable queryRequest = new Runnable() {
             @Override
@@ -310,23 +350,50 @@ public class BillingManager implements PurchasesUpdatedListener {
      * </p>
      * @param purchase Purchase to be handled
      */
-    private void handlePurchase(Purchase purchase,  List<Purchase> outList)
+    private void handlePurchase(Purchase purchase,  JSONArray outList)  throws JSONException
     {
-        if (purchase.getSku()!="android.test.purchased" && !verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature())) {
-            Log.i(TAG, "Got a purchase: " + purchase + "; but signature is bad. Skipping...");
-            return;
-        }
+       boolean valid = verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature());
 
-        Log.d(TAG, "Got a verified purchase: " + purchase);
+       JSONObject obj= new JSONObject();
+       obj.put("sku", purchase.getSku() );
+       obj.put("valid", valid );
+       obj.put("purchaseToken", purchase.getPurchaseToken() );
+       obj.put("orderId", purchase.getOrderId() );
+       obj.put("packageName", purchase.getPackageName() );
+       // 0=unknown, 1=purchased, 2=pending
+       obj.put("purchaseState", purchase.getPurchaseState() );
+       obj.put("purchaseTime", purchase.getPurchaseTime() );
+       obj.put("signature", purchase.getSignature() );
+       obj.put("isAcknowledged", purchase.isAcknowledged() );
+       obj.put("isAutoRenewing", purchase.isAutoRenewing() );
+      
+       outList.put(obj);
+    }
 
-        outList.add(purchase);
+
+    public void acknowledgePurchase(final String purchaseToken)
+    {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+              mBillingClient.acknowledgePurchase(
+                  AcknowledgePurchaseParams.newBuilder()
+                    .setPurchaseToken(purchaseToken)
+                    .build(),
+                new AcknowledgePurchaseResponseListener() {
+                   @Override
+                   public void onAcknowledgePurchaseResponse(BillingResult billingResult) { }
+                });
+                }
+        };
+
+        executeServiceRequest(r);
     }
 
     public void startServiceConnection(final Runnable executeOnSuccess) {
         mBillingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(BillingResult billingResult) {
-                Log.d(TAG, "Setup finished. Response code: " + billingResult);
 
                 int billingResponseCode = billingResult.getResponseCode();
                 if (billingResponseCode == BillingResponseCode.OK) {
@@ -336,6 +403,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                     }
                 }
                 mBillingClientResponseCode = billingResponseCode;
+
             }
 
             @Override
@@ -365,7 +433,7 @@ public class BillingManager implements PurchasesUpdatedListener {
         try {
             return verifyPurchaseInsecure(BASE_64_ENCODED_PUBLIC_KEY, signedData, signature);
         } catch (IOException e) {
-            Log.e(TAG, "Got an exception trying to validate a purchase: " + e);
+            Log.e(TAG, "Bad purchase: " + e);
             return false;
         }
     }
@@ -386,6 +454,7 @@ public class BillingManager implements PurchasesUpdatedListener {
      */
     public static boolean verifyPurchaseInsecure(String base64PublicKey, String signedData,
             String signature) throws IOException {
+        
         if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey)
                 || TextUtils.isEmpty(signature)) {
             BillingHelper.logWarn(TAG, "Purchase verification failed: missing data.");

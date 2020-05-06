@@ -2,25 +2,46 @@ package nme.store;
 
 class Purchase
 {
-   public var jsonData:Dynamic;
-   public var sku(get,null):String;
+   public var sku:String;
+   public var purchaseToken:String;
+   public var isAcknowledged:Bool;
+   public var valid:Bool;
+   public var orderId:String;
+   public var packageName:String;
+   public var purchaseTime:Int;
+   public var signature:String;
+   public var isAutoRenewing:Bool;
 
-   public function new(?inJsonData:Dynamic)
+   // 0=unknown, 1=purchased, 2=pending
+   public var purchaseState:Int;
+
+
+   public function new(?d:{ })
    {
-      jsonData = inJsonData;
+      if (d!=null)
+         for(f in Reflect.fields(d))
+            Reflect.setField(this, f, Reflect.field(d,f) );
    }
 
-   public function get_sku():String
+   public function isPurchased()
    {
-      if (jsonData==null)
-         return null;
-      return jsonData.productId;
+      return valid && purchaseState==1;
    }
 
-   public static function fromDynamic(d:Dynamic)
+   public function isPending()
    {
-      return new Purchase(d);
+      return purchaseState==2;
    }
 
-   public function toString() return 'Purchase($jsonData)';
+
+   public function acknowledge()
+   {
+      if (purchaseToken!=null && purchaseToken!="" && !isAcknowledged)
+      {
+         isAcknowledged = true;
+         BillingManager.acknowledgePurchase(this);
+      }
+   }
+
+   public function toString() return 'Purchase($sku/$packageName :' + (isPurchased()?"owned":"error") +')';
 }
