@@ -362,6 +362,7 @@
 
 
       <file name="${SRC_DIR}/common/Surface.cpp"/>
+      <file name="${SRC_DIR}/common/SurfaceBlit.cpp"/>
       <file name="${SRC_DIR}/common/Utils.cpp"/>
       <file name="${SRC_DIR}/common/Geom.cpp"/>
       <file name="${SRC_DIR}/common/Graphics.cpp"/>
