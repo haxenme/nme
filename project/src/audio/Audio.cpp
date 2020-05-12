@@ -254,7 +254,7 @@ namespace nme
 
 bool isMp3(const std::string &inFilename)
 {
-   return inFilename.size()>3 && inFilename.substr( inFilename.size()-3 )=="mp3";
+   return inFilename.size()>3 && inFilename.substr( inFilename.size()-3,2 )=="mp";
 }
 
 
