@@ -386,8 +386,8 @@ struct MultiplyHandler
    static inline uint8 comp(uint8 a, uint8 b) { return (a  * b ) / 255; }
    static inline uint8 alpha(uint8 a, uint8 b) { return (a  * b )/ 255; }
    #else
-   static inline uint8 comp(uint8 a, uint8 b) { return ( ( (uint16)a + (a>>7)) * b ) >> 8; }
-   static inline uint8 alpha(uint8 a, uint8 b) { return ( ( (uint16)a + (a>>7)) * b ) >> 8; }
+   static inline uint8 comp(uint8 a, uint8 b) { return ( ( a + (a>>7)) * b ) >> 8; }
+   static inline uint8 alpha(uint8 a, uint8 b) { return ( ( a + (a>>7)) * b ) >> 8; }
    #endif
 };
 
