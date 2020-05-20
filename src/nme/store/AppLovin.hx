@@ -4,7 +4,9 @@ class AppLovin
 {
    static var watcher:String->Void;
    static var afterInterstitial:Void->Void;
+   static var onRewardWatched:Bool->Void;
    public static var isPreloaded = false;
+   public static var rewardReady = false;
 
    function new() {}
    @:keep function onAppLovin(event:String) onEvent(event);
@@ -24,16 +26,41 @@ class AppLovin
          case "onInterstitialHidden":
             if (afterInterstitial!=null)
             {
-               var a = afterInterstitial;
+               var func = afterInterstitial;
                afterInterstitial = null;
-               trace("Call " + a);
-               a();
+               //trace("onInterstitialHidden -> " + func);
+               func();
             }
          case "onInterstitialPreloaded":
             isPreloaded = true;
 
          case "onInterstitialPreloadFailed":
             isPreloaded = false;
+
+         case "onRewardPreloaded":
+            rewardReady = true;
+
+         case "onRewardPreloadFailed":
+            rewardReady = false;
+
+         case "onRewardVerified":
+            if (onRewardWatched!=null)
+            {
+               var func = onRewardWatched;
+               onRewardWatched = null;
+               func(true);
+            }
+            //else
+           //    trace("no onReward callback");
+
+         case "onRewardOverQuota", "onRewardRejected", "onRewardFailed",
+              "onRewardCaneled", "rewardNotAvailable":
+            if (onRewardWatched!=null)
+            {
+               var func = onRewardWatched;
+               onRewardWatched = null;
+               func(false);
+            }
       }
       if (watcher!=null)
          watcher(e);
@@ -50,10 +77,14 @@ class AppLovin
       #end
    }
 
-   public static function playRewarded( )
+   public static function playReward(inRewardWatched:Bool->Void)
    {
       #if android
+      onRewardWatched = inRewardWatched;
       androidPlayReward();
+      #else
+      if (inRewardWatched!=null)
+         inRewardWatched(false);
       #end
    }
 

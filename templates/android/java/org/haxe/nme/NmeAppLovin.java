@@ -1,5 +1,6 @@
 package org.haxe.nme;
 import com.applovin.sdk.AppLovinSdk;
+import com.applovin.sdk.AppLovinSdkConfiguration;
 import com.applovin.sdk.AppLovinAdRewardListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
@@ -31,19 +32,22 @@ class NmeAppLovin
       Log.d(TAG,"initializeSdk");
 
       sGameActivity = inGameActivity;
-      AppLovinSdk.initializeSdk(sGameActivity.mContext
-         /*
-         , new SdkInitializationListener() {
-             @Override public void onInitialzed() {
+      AppLovinSdk.initializeSdk(sGameActivity.mContext,
+        new AppLovinSdk.SdkInitializationListener()
+        {
+            @Override
+            public void onSdkInitialized(final AppLovinSdkConfiguration config)
+            {
                 isInit = true;
+                Log.d(TAG,"initializeSdk done pre=" + preloadOnInit);
                 if (preloadOnInit)
-                  preloadAsync();
+                {
+                   preloadAsync();
+                   preloadRewardAsync();
+                }
             }
-         }
-         */
-         );
-      isInit = true;
-      Log.d(TAG,"initializeSdk done.");
+      });
+      //isInit = true;
    }
 
    public static void setWatcher(final HaxeObject inWatcher, final boolean andPreload)
@@ -55,8 +59,11 @@ class NmeAppLovin
          GameActivity.queueRunnable( new Runnable() {
          @Override public void run() {
             preloadOnInit = true;
-            if (NmeAppLovin.isInit)
-               NmeAppLovin.preloadAsync();
+            if (isInit)
+               Log.d(TAG,"setWatcher done init=" + isInit);
+               preloadOnInit = false;
+               preloadAsync();
+               preloadRewardAsync();
          } } );
       }
    }
@@ -108,7 +115,13 @@ class NmeAppLovin
                NmeAppLovin.send("onInterstitialPreloadFailed");
             }
         } );
-      myIncent = AppLovinIncentivizedInterstitial.create(ctx);
+   }
+
+   static void preloadRewardAsync()
+   {
+      Context ctx = sGameActivity.mContext;
+      if (myIncent==null)
+         myIncent = AppLovinIncentivizedInterstitial.create(ctx);
       myIncent.preload(new AppLovinAdLoadListener() {
          @Override
          public void adReceived(AppLovinAd appLovinAd) {
@@ -120,22 +133,7 @@ class NmeAppLovin
              NmeAppLovin.send("onRewardPreloadFailed");
          }
      });
-
-     /*
-     adDialog.setAdLoadListener(
-       new AppLovinAdLoadListener() {
-         @Override
-         public void adReceived(AppLovinAd appLovinAd) {
-             NmeAppLovin.send("onInterstitialPreloaded");
-         }
-         @Override
-         public void failedToReceiveAd(int errorCode) {
-             // A rewarded video failed to load.
-             NmeAppLovin.send("onInterstitialPreloadFailed");
-         }
-     } );
-     */
-    }
+   }
 
    // Play a rewarded video in correspondence to a button click
     static void playRewardAsync()
@@ -144,7 +142,8 @@ class NmeAppLovin
        if (myIncent!=null && myIncent.isAdReadyToDisplay()){
            // A rewarded video is available.  Call the show method with the listeners you want to use.
            // We will use the display listener to preload the next rewarded video when this one finishes.
-           myIncent.show(sGameActivity,
+           Context ctx = sGameActivity.mContext;
+           myIncent.show( ctx,
              new AppLovinAdRewardListener() {
                 @Override
                 public void userRewardVerified(final AppLovinAd ad, Map<String, String> response) {
@@ -160,7 +159,7 @@ class NmeAppLovin
                 }
                 @Override
                 public void validationRequestFailed(final AppLovinAd ad, final int errorCode) {
-                   NmeAppLovin.send("onRewardVerified");
+                   NmeAppLovin.send("onRewardFailed");
                 }
                 @Override
                 public void userDeclinedToViewAd(final AppLovinAd ad) {
@@ -199,6 +198,7 @@ class NmeAppLovin
 
     static void playInterstitialAsync( )
     {
+       Log.e(TAG,"playInterstitialAsync");
        Context ctx = sGameActivity.mContext;
        if (adDialog==null)
            adDialog = AppLovinInterstitialAd.create( AppLovinSdk.getInstance( ctx ), ctx);
@@ -211,6 +211,7 @@ class NmeAppLovin
           @Override
           public void adHidden(AppLovinAd appLovinAd) {
               // An interstitial ad was hidden.
+              preloadAsync();
               NmeAppLovin.send("onInterstitialHidden");
           }
       } );
