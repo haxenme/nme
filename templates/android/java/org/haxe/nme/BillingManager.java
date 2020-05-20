@@ -146,7 +146,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                 }
                 final String purchaseCap = purchases;
 
-                GameActivity.queueRunnable( new Runnable() {
+                GameActivity.sendHaxe( new Runnable() {
                    @Override
                    public void run() {
                    // Notifying the listener that billing client is ready
@@ -186,7 +186,7 @@ public class BillingManager implements PurchasesUpdatedListener {
 
        final String purchaseArrayCapture = result;
        final int fRcode = resultCode;
-       GameActivity.queueRunnable( new Runnable() {
+       GameActivity.sendHaxe( new Runnable() {
             @Override public void run() {
             mBillingUpdatesListener.call2("onPurchasesUpdated", fRcode, purchaseArrayCapture);
          } } );
@@ -196,7 +196,7 @@ public class BillingManager implements PurchasesUpdatedListener {
     {
        //final String json = details==null ? null : GameActivity.getSkuJson(details).toString();
 
-       GameActivity.queueRunnable( new Runnable() {
+       GameActivity.sendHaxe( new Runnable() {
             @Override public void run() {
             mBillingUpdatesListener.call2("onPurchaseFailed", sku, resultCode);
          } } );
@@ -311,7 +311,7 @@ public class BillingManager implements PurchasesUpdatedListener {
         final ConsumeResponseListener onConsumeListener = new ConsumeResponseListener() {
             @Override
             public void onConsumeResponse(final BillingResult result, final String purchaseToken) {
-               GameActivity.queueRunnable( new Runnable() {
+               GameActivity.sendHaxe( new Runnable() {
                   @Override public void run () {
                   // If billing service was disconnected, we try to reconnect 1 time
                   // (feel free to introduce your retry policy here).

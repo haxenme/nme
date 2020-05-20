@@ -65,6 +65,10 @@ import org.json.JSONException;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 
+::if NME_APPLOVIN_KEY::
+import com.applovin.sdk.AppLovinSdk;
+::end::
+
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
 {
@@ -208,6 +212,10 @@ implements SensorEventListener
       addTextListeners();
       mTextUpdateLockout = false;
 
+      ::if NME_APPLOVIN_KEY::
+      NmeAppLovin.initializeSdk(this);
+      ::end::
+
 
       mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
       Extension.mainView = mView;
@@ -230,6 +238,7 @@ implements SensorEventListener
          ::foreach ANDROID_EXTENSIONS::
          extensions.add (new ::__current__:: ());::end::
      }
+
 
      for(Extension extension : extensions)
         extension.onCreate(state);
@@ -697,6 +706,10 @@ implements SensorEventListener
          mView.queueEvent(runnable);
    }
 
+   public static void sendHaxe(java.lang.Runnable runnable)
+   {
+      activity.sendToView(runnable);
+   }
 
    public static AssetManager getAssetManager()
    {

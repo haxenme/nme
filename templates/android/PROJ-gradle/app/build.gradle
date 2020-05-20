@@ -68,6 +68,10 @@ dependencies {
     ::end::
     testImplementation 'junit:junit:4.12'
 
+    ::if NME_APPLOVIN_KEY::
+    implementation 'com.applovin:applovin-sdk:+'
+    ::end::
+
     dependencies {
         ::foreach (ANDROID_LIBRARY_PROJECTS)::
         api project(':::name::')::end::
