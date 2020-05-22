@@ -128,6 +128,17 @@ bool SimpleSurface::ReinterpretPixelFormat(PixelFormat inNewFormat)
    return true;
 }
 
+void SimpleSurface::SetFlags(unsigned int inFlags)
+{
+   bool wasMipmapped = mFlags & surfMipmaps;
+   mFlags = inFlags;
+   bool isMipmapped = mFlags & surfMipmaps;
+   if (wasMipmapped!=isMipmapped)
+   {
+      mVersion++;
+      destroyHardwareSurface();
+   }
+}
 
 void SimpleSurface::ChangeInternalFormat(PixelFormat inNewFormat, const Rect *inIgnore)
 {

@@ -215,6 +215,7 @@ class OGLTexture : public Texture
    int mTextureHeight;
    Surface *mSurface;
    GLuint mUploadedFormat;
+   bool mMipmaps;
 
 
 public:
@@ -228,6 +229,7 @@ public:
       // No reference count since the surface should outlive us
       mSurface = inSurface;
       mUploadedFormat = 0;
+      mMipmaps = inFlags & surfMipmaps;
 
       mPixelWidth = mSurface->Width();
       mPixelHeight = mSurface->Height();
@@ -293,7 +295,7 @@ public:
       mSmooth = true;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mMipmaps ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
       #ifndef NME_GLES
@@ -301,6 +303,9 @@ public:
       #endif
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, mTextureWidth, mTextureHeight, 0, pixel_format, channel, buffer ? buffer : mSurface->GetBase());
+
+      if (mMipmaps)
+         glGenerateMipmap(GL_TEXTURE_2D);
 
       mUploadedFormat = store_format;
 
@@ -431,6 +436,9 @@ public:
                glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
                #endif
             }
+
+            if (mMipmaps)
+               glGenerateMipmap(GL_TEXTURE_2D);
 
             int err = glGetError();
             if (err != GL_NO_ERROR)
