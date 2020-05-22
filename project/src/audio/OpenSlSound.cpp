@@ -38,7 +38,7 @@ SLInterfaceID findInterface(void *dll, const char *inName)
    SLInterfaceID *symPtr = (SLInterfaceID *)dlsym(dll,inName);
    if (!symPtr)
    {
-      ELOG("Could not find symbol %s", symPtr);
+      ELOG("Could not find symbol %s", inName);
       return 0;
    }
    VLOG(" got interface %s = %d", inName, *symPtr);
@@ -364,6 +364,7 @@ public:
          (*bqPlayerPlay)->GetPosition( bqPlayerPlay, &nPositionMs ); 
          return nPositionMs + t0*1000.0;
       }
+      return 0.0;
    }
 
    bool isComplete()

@@ -540,6 +540,8 @@ value JObjectToHaxe(JNIEnv *inEnv,JNIType inType,jobject inObject)
                }
             }
             break;
+         default: break;
+            // Handled by inType.element<jniPODStart case above
       }
       return result;
    }
@@ -712,6 +714,9 @@ bool HaxeToJNI(JNIEnv *inEnv, value inValue, JNIType inType, jvalue &out)
             return true;
             }
          case jniVoid: out.l = 0; return true;
+         default: break;
+            // Handled above
+
       }
       return false;
    }
@@ -756,6 +761,9 @@ bool HaxeToJNI(JNIEnv *inEnv, value inValue, JNIType inType, jvalue &out)
          case jniFloat: out.f = (float)val_number(inValue); return true;
          case jniDouble: out.d = val_number(inValue); return true;
          case jniVoid: out.l = 0; return true;
+         default:
+            // already handled
+            break;
       }
    }
 
@@ -845,6 +853,9 @@ struct JNIField : public nme::Object
          case jniDouble:
             result = alloc_float(env->GetStaticDoubleField(mClass, mField));
             break;
+         default:
+            // Already handled
+            break;
       }
       
       CheckException(env);
@@ -891,6 +902,9 @@ struct JNIField : public nme::Object
          case jniDouble:
             env->SetStaticDoubleField(mClass, mField, setValue.d);
             break;
+         default:
+            // Already handled
+            break;
       }
       
       CheckException(env);
@@ -932,6 +946,8 @@ struct JNIField : public nme::Object
          case jniDouble:
             result = alloc_float(env->GetDoubleField(inObject, mField));
             break;
+         default: break;
+            // Type is object
       }
       
       CheckException(env);
@@ -978,8 +994,11 @@ struct JNIField : public nme::Object
          case jniDouble:
             env->SetDoubleField(inObject, mField, setValue.d);
             break;
+         default:
+            // Already handled
+            break;
       }
-      
+
       CheckException(env);
    }
 
@@ -1120,7 +1139,7 @@ struct JNIMethod : public nme::Object
    {
       if (val_array_size(inArray)!=mArgCount)
       {
-         ELOG("Invalid array count: %d!=%d",val_array_size(inArray)!=mArgCount);
+         ELOG("Invalid array count: %d!=%d",val_array_size(inArray),mArgCount);
          return false;
       }
       for(int i=0;i<mArgCount;i++)
@@ -1218,6 +1237,9 @@ struct JNIMethod : public nme::Object
          case jniDouble:
             result = alloc_float(env->CallStaticDoubleMethodA(mClass, mMethod, jargs));
             break;
+         default:
+            // Already handled
+            break;
       }
 
       CleanStringArgs();
@@ -1273,6 +1295,9 @@ struct JNIMethod : public nme::Object
             break;
          case jniDouble:
             result = alloc_float(env->CallDoubleMethodA(inObject, mMethod, jargs));
+            break;
+         default:
+            // Type is object - already handled
             break;
       }
 
