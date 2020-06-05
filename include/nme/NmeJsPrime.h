@@ -66,6 +66,14 @@ public:
    void Close() { }
 };
 
+class AutoGCUnblocking
+{
+public:
+   AutoGCUnblocking() {}
+   void Close() { }
+};
+
+
 class AutoGCRoot
 {
 public:

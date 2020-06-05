@@ -306,6 +306,7 @@ struct FontInfo
       allowNative = inAllowNative;
       name = inFormat.font;
       height = (int )(inFormat.size*inScale + 0.5);
+      flags = 0;
       if (inFormat.bold)
          flags |= ffBold;
       if (inFormat.italic)
@@ -472,6 +473,9 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 
       if (!bytes)
       {
+         //#if (HX_CFFI_API_VERSION>=410)
+         //AutoGCUnblocking unblock;
+         //#endif
          ByteArray resource(seekName.c_str());
          if (resource.Ok())
          {
