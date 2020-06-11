@@ -101,7 +101,6 @@ class URLRequest
          var str = vars.toString();
          nmeBytes = new ByteArray();
          nmeBytes.writeUTFBytes(str);
-
       }
       else 
       {

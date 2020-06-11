@@ -8,8 +8,6 @@ import nme.events.ProgressEvent;
 import nme.events.HTTPStatusEvent;
 import nme.utils.ByteArray;
 import nme.Loader;
-import nme.NativeHandle;
-import nme.NativeResource;
 
 #if html5
 // ok
@@ -22,6 +20,16 @@ import cpp.FileSystem;
 import cpp.io.File;
 #end
 
+#if NME_USE_HTTP
+typedef HttpHandle = nme.net.HttpLoader;
+#else
+import nme.NativeHandle;
+import nme.NativeResource;
+typedef HttpHandle = NativeHandle;
+#end
+
+
+
 @:nativeProperty
 class URLLoader extends EventDispatcher 
 {
@@ -30,14 +38,14 @@ class URLLoader extends EventDispatcher
    public var data:Dynamic;
    public var dataFormat:URLLoaderDataFormat;
 
-   public var nmeHandle:NativeHandle;
+   public var nmeHandle:HttpHandle;
    private static var activeLoaders = new List<URLLoader>();
 
-   private static inline var urlInvalid    = 0;
-   private static inline var urlInit       = 1;
-   private static inline var urlLoading    = 2;
-   private static inline var urlComplete    = 3;
-   private static inline var urlError       = 4;
+   public static inline var urlInvalid    = 0;
+   public static inline var urlInit       = 1;
+   public static inline var urlLoading    = 2;
+   public static inline var urlComplete    = 3;
+   public static inline var urlError       = 4;
 
    private var state:Int;
    public var nmeOnComplete:Dynamic -> Bool;
@@ -60,11 +68,6 @@ class URLLoader extends EventDispatcher
    {
    }
 
-   public function getCookies():Array<String> 
-   {
-      return nme_curl_get_cookies(nmeHandle);
-   }
-
    public static function hasActive() 
    {
       return !activeLoaders.isEmpty();
@@ -72,7 +75,9 @@ class URLLoader extends EventDispatcher
 
    public static function initialize(inCACertFilePath:String) 
    {
+      #if !NME_USE_HTTP
       nme_curl_initialize(inCACertFilePath);
+      #end
    }
 
    public function load(request:URLRequest) 
@@ -111,7 +116,7 @@ class URLLoader extends EventDispatcher
       else 
       {
          request.nmePrepare();
-         nmeHandle = nme_curl_create(request);
+         nmeHandle = createLoader(request);
 
          if (nmeHandle == null)
             onError("Could not open URL");
@@ -139,7 +144,7 @@ class URLLoader extends EventDispatcher
       {
          dispatchEvent(new Event(Event.COMPLETE));
       }
-      nme.NativeResource.disposeHandler(this);
+      disposeHandler();
    }
 
    public static function nmeLoadPending()
@@ -151,7 +156,8 @@ class URLLoader extends EventDispatcher
    {
       if (!activeLoaders.isEmpty()) 
       {
-         nme_curl_process_loaders();
+         pollLoaders();
+
          var oldLoaders = activeLoaders;
          activeLoaders = new List<URLLoader>();
 
@@ -168,13 +174,13 @@ class URLLoader extends EventDispatcher
    {
       activeLoaders.remove(this);
       dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, msg));
-      nme.NativeResource.disposeHandler(this);
+      disposeHandler();
    }
 
    private function dispatchHTTPStatus(code:Int):Void
    {
       var evt = new HTTPStatusEvent (HTTPStatusEvent.HTTP_STATUS, false, false, code);
-      var headers:Array<String> = nme_curl_get_headers(nmeHandle);
+      var headers:Array<String> = getHeaders();
 
       for(h in headers)
       {
@@ -192,7 +198,7 @@ class URLLoader extends EventDispatcher
       {
          var old_loaded = bytesLoaded;
          var old_total = bytesTotal;
-         nme_curl_update_loader(nmeHandle, this);
+         updateLoader();
 
          if (old_total < 0 && bytesTotal > 0) 
          {
@@ -204,7 +210,7 @@ class URLLoader extends EventDispatcher
             dispatchEvent(new ProgressEvent(ProgressEvent.PROGRESS, false, false, bytesLoaded, bytesTotal));
          }
 
-         var code:Int = nme_curl_get_code(nmeHandle);
+         var code:Int = getCode();
 
          if (state == urlComplete) 
          {
@@ -212,14 +218,13 @@ class URLLoader extends EventDispatcher
 
             if (code < 400) 
             {
-               var bytes:ByteArray = nme_curl_get_data(nmeHandle);
 
                switch(dataFormat) 
                {
                   case TEXT, VARIABLES:
-                     data = bytes == null ? "" : bytes.asString();
+                     data = getString();
                   default:
-                     data = bytes;
+                     data = getData();
                }
                nmeDataComplete();
 
@@ -229,7 +234,7 @@ class URLLoader extends EventDispatcher
                // XXX : This should be handled in project/common/CURL.cpp
                var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, "HTTP status code " + Std.string(code), code);
                dispatchEvent(evt);
-               NativeResource.disposeHandler(this);
+               disposeHandler();
             }
 
          }
@@ -237,11 +242,48 @@ class URLLoader extends EventDispatcher
          {
             dispatchHTTPStatus(code);
 
-            var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, nme_curl_get_error_message(nmeHandle), code);
+            var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, getErrorMessage(), code);
+
             dispatchEvent(evt);
-            NativeResource.disposeHandler(this);
+            disposeHandler();
          }
       }
+   }
+
+
+   #if NME_USE_HTTP
+   function getErrorMessage() : String return nmeHandle.getErrorMessage();
+   function getData(): ByteArray return nmeHandle.getData();
+   function getString(): String return nmeHandle.getString();
+   function getCode(): Int return nmeHandle.getCode();
+   function updateLoader()
+   {
+      bytesLoaded = nmeHandle.bytesLoaded;
+      bytesTotal = nmeHandle.bytesTotal;
+      state = nmeHandle.state;
+   }
+   function getHeaders() : Array<String> return nmeHandle.getHeaders();
+   function createLoader(request:URLRequest): HttpLoader return new HttpLoader(this,request);
+   public function getCookies():Array<String> return nmeHandle==null ? null : nmeHandle.getCookies();
+   static function pollLoaders() HttpLoader.pollAll();
+   function disposeHandler() { }
+   #else
+   function getErrorMessage() : String return nme_curl_get_error_message(nmeHandle);
+   function getData(): ByteArray return nme_curl_get_data(nmeHandle);
+   function getString() : String
+   {
+      var bytes:ByteArray = getData();
+      return bytes == null ? "" : bytes.asString();
+   }
+   function getCode(): Int return nme_curl_get_code(nmeHandle);
+   function updateLoader() nme_curl_update_loader(nmeHandle,this);
+   function getHeaders() : Array<String> return nme_curl_get_headers(nmeHandle);
+   function createLoader(request:URLRequest) : NativeHandle return nme_curl_create(request);
+   public function getCookies():Array<String> return nme_curl_get_cookies(nmeHandle);
+   static function pollLoaders() nme_curl_process_loaders();
+   function disposeHandler()
+   {
+      nme.NativeResource.disposeHandler(this);
    }
 
    // Native Methods
@@ -254,6 +296,7 @@ class URLLoader extends EventDispatcher
    private static var nme_curl_get_cookies = Loader.load("nme_curl_get_cookies", 1);
    private static var nme_curl_get_headers = Loader.load("nme_curl_get_headers", 1);
    private static var nme_curl_initialize = Loader.load("nme_curl_initialize", 1);
+   #end
 }
 
 #else
