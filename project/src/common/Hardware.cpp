@@ -1682,7 +1682,7 @@ public:
       }
       else
       {
-         int n = std::max(2,(int)(mPerpLen * 4));
+         int n = std::max(2,(int)(mPerpLen*mScale * 4));
          double dtheta = M_PI*0.5 / n;
 
          for(int i=1;i<n;i++)
