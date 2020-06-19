@@ -1,8 +1,18 @@
 apply plugin: 'com.android.application'
+::if NME_FIREBASE::
+apply plugin: 'com.google.gms.google-services'
+::end::
 
 
 android {
-    compileSdkVersion ::ANDROID_TARGET_SDK_VERSION::
+    ::if ANDROID_COMPILE_SDK_VERSION::
+    compileSdkVersion ::ANDROID_COMPILE_SDK_VERSION::
+    ::else::
+    // This does not effect the output, only the gradle system and some warnings,
+    //  so can be regularly updated
+    compileSdkVersion 28
+    ::end::
+
     buildToolsVersion "28.0.3"
     defaultConfig {
         applicationId "::APP_PACKAGE::"
@@ -61,8 +71,7 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    api 'com.android.support:appcompat-v7:24.2.1'
-    api 'com.android.support:support-v4:24.2.1'
+    // Support is in 'androidx.core' now
     ::if ANDROID_BILLING::
     api 'com.android.billingclient:billing:2.1.0'
     ::end::
@@ -70,6 +79,15 @@ dependencies {
 
     ::if NME_APPLOVIN_KEY::
     implementation 'com.applovin:applovin-sdk:+'
+    ::end::
+
+    ::if NME_FIREBASE::
+      // Add the dependency for the Performance Monitoring library
+      implementation 'com.google.firebase:firebase-analytics:17.2.2'
+
+      ::if NME_FIREBASE_PERFORMANCE::
+         implementation 'com.google.firebase:firebase-perf:19.0.7'
+      ::end::
     ::end::
 
     dependencies {

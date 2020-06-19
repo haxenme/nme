@@ -31,9 +31,11 @@
          
       </activity>
 
-      <meta-data android:name="applovin.sdk.key" android:value="::NME_APPLOVIN_KEY::"  />
+      ::if NME_APPLOVIN_KEY::
+      <meta-data
+      android:name="applovin.sdk.key" android:value="::NME_APPLOVIN_KEY::"  />
+      ::end::
 
-      
    </application>
 
     <uses-sdk android:minSdkVersion="::ANDROID_MIN_API_LEVEL::"

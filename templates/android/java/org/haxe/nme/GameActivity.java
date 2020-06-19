@@ -68,6 +68,9 @@ import java.io.PrintWriter;
 ::if NME_APPLOVIN_KEY::
 import com.applovin.sdk.AppLovinSdk;
 ::end::
+::if NME_FIREBASE::
+import com.google.firebase.analytics.FirebaseAnalytics;
+::end::
 
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
@@ -100,6 +103,10 @@ implements SensorEventListener
    static SensorManager sensorManager;
    static android.text.ClipboardManager mClipboard;
    private static List<Extension> extensions;
+
+   ::if NME_FIREBASE::
+   private FirebaseAnalytics mFirebaseAnalytics;
+   ::end::
    
    public Handler mHandler;
    RelativeLayout mContainer;
@@ -211,6 +218,10 @@ implements SensorEventListener
       mContainer.addView(mKeyInTextView);
       addTextListeners();
       mTextUpdateLockout = false;
+
+      ::if NME_FIREBASE::
+      mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+      ::end::
 
       ::if NME_APPLOVIN_KEY::
       NmeAppLovin.initializeSdk(this);
@@ -1501,6 +1512,29 @@ implements SensorEventListener
       e.printStackTrace(pw);
       return sw.toString();
    }
+
+   ::if NME_FIREBASE::
+   public static void firebaseLog(String event,
+               String[] stringNames, String[] stringValues,
+               String[] intNames, int[] intValues,
+               String[] doubleNames, double[] doubleValues
+               )
+   {
+      Bundle bundle = new Bundle();
+      if (stringNames!=null)
+         for(int i=0; i<stringNames.length; i++)
+             bundle.putString(stringNames[i], stringValues[i] );
+      if (intNames!=null)
+         for(int i=0; i<intNames.length; i++)
+             bundle.putLong(intNames[i], intValues[i] );
+      if (doubleNames!=null)
+         for(int i=0; i<doubleNames.length; i++)
+             bundle.putDouble(doubleNames[i], doubleValues[i] );
+
+
+      activity.mFirebaseAnalytics.logEvent(event, bundle);
+   }
+   ::end::
 }
 
 

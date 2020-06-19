@@ -262,6 +262,8 @@ class AndroidPlatform extends Platform
       context.ANDROID_EXTENSIONS =extensions;
 
       context.ANDROID_SDK = StringTools.replace(project.environment.get("ANDROID_SDK"),"\\","/");
+      context.NME_FIREBASE = project.hasDef("firebase") || project.hasDef("firebasePerformance");
+      context.NME_FIREBASE_PERFORMANCE = project.hasDef("firebasePerformance");
       
       if(gradle)
          setGradleLibraries();
