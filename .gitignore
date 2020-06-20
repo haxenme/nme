@@ -39,6 +39,7 @@ ndll
 src/cppia
 src/jsprime
 tools/make_classes/gen
+tools/make_classes/doc
 
 project/src/emscripten/_monospace.cpp
 project/src/emscripten/_sans.cpp

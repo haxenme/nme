@@ -44,6 +44,7 @@ class MakeClasses
       "StaticNme.hx",
       "AGALMiniAssembler.hx",
       "store",
+      "HttpLoader.hx",
       "preloader",
    ];
    static function keep(inName:String):Bool

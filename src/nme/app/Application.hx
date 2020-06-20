@@ -7,12 +7,14 @@ import nme.bare.Surface;
 import nme.app.Window;
 import Sys;
 
-#if (sys && haxe4)
-import sys.thread.Mutex;
-#elseif cpp
-import cpp.vm.Mutex;
-#elseif neko
-import neko.vm.Mutex;
+#if (cpp || neko)
+  #if (sys && haxe4)
+  import sys.thread.Mutex;
+  #elseif cpp
+  import cpp.vm.Mutex;
+  #elseif neko
+  import neko.vm.Mutex;
+  #end
 #end
 
 #if HXCPP_TELEMETRY
