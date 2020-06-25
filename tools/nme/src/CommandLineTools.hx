@@ -58,7 +58,7 @@ class CommandLineTools
             "androidview", "android-view", "iphonesim", "android", "androidsim", "rpi",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
             "watchsimulator", "watchos", "jsprime", "winrt", "uwp", "rg350",
-            "bundlerelease", "bundledebug" ];
+            "bundlerelease", "bundledebug", "arm64" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
@@ -812,6 +812,7 @@ class CommandLineTools
       sys.println("  watchos     : watch extension");
       sys.println("  watchsimulator : watch extension + simulator");
       sys.println("  winrt       : Create Universal Windows Platform applications");
+      sys.println("  arm64       : Arm64 on windows binary");
       sys.println("");
       sys.println(" Options : ");
       sys.println("");
@@ -1051,6 +1052,11 @@ class CommandLineTools
          var test = words[w].toLowerCase();
          if (isTarget(test))
          {
+            if (test=="arm64")
+            {
+               test = "cpp";
+               project.haxedefs.set("HXCPP_ARM64","1");
+            }
             targetName = test;
             if (targetName.toLowerCase()=="bundlerelease" || targetName.toLowerCase()=="bundledebug")
             {

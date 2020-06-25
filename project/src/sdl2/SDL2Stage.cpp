@@ -1,3 +1,4 @@
+#define WINDOWS_IGNORE_PACKING_MISMATCH 1
 #include <Display.h>
 #include <Utils.h>
 #include <SDL.h>

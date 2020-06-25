@@ -617,6 +617,7 @@
    </files>
    <files id="native-toolkit-sdl" >
       <cache value="1" asLibrary="true" project="libSdl" />
+      <compilerflag value="-DWINDOWS_IGNORE_PACKING_MISMATCH"  />
       <section if="NME_MIXER linux" >
          <compilerflag value="-Isupport/linux"  />
          <compilerflag value="-DSDL_AUDIO_DRIVER_ALSA" />

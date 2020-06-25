@@ -44,6 +44,7 @@ class Platform
    var haxeDir:String;
    var useNeko:Bool;
    var is64:Bool;
+   var isArm64:Bool;
    var context:Dynamic;
    var outputFiles:Array<String>;
    var manifest:Dynamic;
@@ -60,11 +61,16 @@ class Platform
       outputFiles = [];
       useNeko = project.targetFlags.exists("neko");
       is64 = false;
+      isArm64 = false;
       if (useNeko)
          is64 = nme.Lib.bits == 64;
       else
       {
-         if (inProject.hasDef("HXCPP_M32"))
+         if (inProject.hasDef("HXCPP_ARM64"))
+         {
+            isArm64 = true;
+         }
+         else if (inProject.hasDef("HXCPP_M32"))
          {
          }
          else if (inProject.hasDef("HXCPP_M64"))

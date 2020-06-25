@@ -14,6 +14,7 @@ class Builder extends hxcpp.Builder
    }
 
    override public function wantWindows64() { return true; }
+   override public function wantWindowsArm64() { return true; }
 
    override public function showUsage(inShowSpecifyMessage:Bool)
    {

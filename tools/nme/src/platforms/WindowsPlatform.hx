@@ -32,7 +32,7 @@ class WindowsPlatform extends DesktopPlatform
    }
 
    override public function getPlatformDir() : String { return useNeko ? "windows-neko" : "windows"; }
-   override public function getBinName() : String { return is64 ? "Windows64" : "Windows"; }
+   override public function getBinName() : String { return isArm64 ? "WindowsArm64" : is64 ? "Windows64" : "Windows"; }
    override public function getNativeDllExt() { return ".dll"; }
    override public function getLibExt() { return ".lib"; }
    override public function getBinaryName() { return executableFile; }
