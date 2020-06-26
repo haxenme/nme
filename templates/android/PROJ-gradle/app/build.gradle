@@ -1,6 +1,12 @@
 apply plugin: 'com.android.application'
 ::if NME_FIREBASE::
 apply plugin: 'com.google.gms.google-services'
+
+::if NME_FIREBASE_CRASHLYTICS::
+// Apply the Crashlytics Gradle plugin
+apply plugin: 'com.google.firebase.crashlytics'
+::end::
+
 ::end::
 
 
@@ -41,8 +47,22 @@ android {
             ::if KEY_STORE::
             signingConfig signingConfigs.release
             ::end::
+
+            ::if NME_FIREBASE_CRASHLYTICS::
+            firebaseCrashlytics {
+                // Enable processing and uploading of native symbols to Crashlytics
+                // servers. By default, this is disabled to improve build speeds.
+                // This flag must be enabled to see properly-symbolicated native
+                // stack traces in the Crashlytics dashboard.
+                nativeSymbolUploadEnabled true
+
+                strippedNativeLibsDir "::NME_STRIPPED_ROOT::"
+                unstrippedNativeLibsDir "::NME_UNSTRIPPED_ROOT::"
+            }
+            ::end::
         }
     }
+
     splits {
 
         // Configures multiple APKs based on ABI.
@@ -87,6 +107,10 @@ dependencies {
 
       ::if NME_FIREBASE_PERFORMANCE::
          implementation 'com.google.firebase:firebase-perf:19.0.7'
+      ::end::
+
+      ::if NME_FIREBASE_CRASHLYTICS::
+         implementation 'com.google.firebase:firebase-crashlytics-ndk:17.1.0'
       ::end::
     ::end::
 

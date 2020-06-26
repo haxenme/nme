@@ -111,6 +111,11 @@ class Lib
       return null;
    }
 
+   public static function crash()
+   {
+      nme_crash();
+   }
+
    public static function log(str:String)
    {
       nme_log(str);
@@ -210,6 +215,7 @@ class Lib
    // Native Methods
    //private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
    private static var nme_log = Loader.load("nme_log", 1);
+   private static var nme_crash = Loader.load("nme_crash",0);
 }
 
 #else

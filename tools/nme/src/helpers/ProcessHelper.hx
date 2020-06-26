@@ -40,6 +40,36 @@ class ProcessHelper
       return result;
    }
 
+   public static function logCommand(command:String, args:Array<String>, outFile:sys.io.FileOutput) : Int
+   {
+      Log.verbose(" " + command + " " + args.join(" ") );
+
+      var process:Process = null;
+      try
+      {
+         process = new Process(command, args);
+         while(true)
+         {
+            var line = process.stdout.readLine();
+            Sys.println(line);
+            outFile.writeString(line + "\n");
+         }
+      }
+      catch(e:Dynamic) { }
+
+      outFile.close();
+
+      if (process!=null)
+      {
+         var code = process.exitCode();
+         process.close();
+         return code;
+      }
+
+      return -1;
+   }
+
+
    public static function openFile(workingDirectory:String, targetPath:String, executable:String = ""):Void 
    {
       if (executable == null) 
@@ -122,7 +152,7 @@ class ProcessHelper
       }
    }
 
-   public static function runCommand(path:String, command:String, args:Array<String>, safeExecute:Bool = true, ignoreErrors:Bool = false):Void 
+   public static function runCommand(path:String, command:String, args:Array<String>, safeExecute:Bool = true, ignoreErrors:Bool = false, ?outFile:String):Void 
    {
       if (safeExecute) 
       {
@@ -133,7 +163,7 @@ class ProcessHelper
                LogHelper.error("The specified target path \"" + path + "\" does not exist");
             }
 
-            _runCommand(path, command, args);
+            _runCommand(path, command, args, outFile);
 
          } catch(e:Dynamic) 
          {
@@ -145,11 +175,11 @@ class ProcessHelper
       }
       else
       {
-         _runCommand(path, command, args);
+         _runCommand(path, command, args, outFile);
       }
    }
 
-   private static function _runCommand(path:String, command:String, args:Array<String>) 
+   private static function _runCommand(path:String, command:String, args:Array<String>, ?outFile:String) 
    {
       var oldPath:String = "";
 
@@ -160,6 +190,8 @@ class ProcessHelper
          oldPath = Sys.getCwd();
          Sys.setCwd(path);
       }
+
+      var logFile = outFile!=null ? sys.io.File.write(outFile) : null;
 
       var argString = "";
 
@@ -177,7 +209,7 @@ class ProcessHelper
 
       Log.verbose(" " + command + argString);
 
-      var result:Dynamic = Sys.command(command, args);
+      var result:Int = logFile!=null ? logCommand(command,args,logFile) : Sys.command(command, args);
 
       if (result == 0) 
       {

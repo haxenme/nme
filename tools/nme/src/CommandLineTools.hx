@@ -64,7 +64,7 @@ class CommandLineTools
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
             "rebuild", "shell", "icon", "banner", "favicon", "serve", "listbrowsers",
-            "prepare", "quickrun" ];
+            "prepare", "quickrun", "uploadcrashlytics", "ndk-stack" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -228,6 +228,10 @@ class CommandLineTools
                platform.buildPackage();
                platform.postBuild();
             }
+         }
+         if (command == "uploadcrashlytics")
+         {
+            platform.buildPackage();
          }
 
          if (project.export!=null && haxed)
@@ -1060,7 +1064,8 @@ class CommandLineTools
             targetName = test;
             if (targetName.toLowerCase()=="bundlerelease" || targetName.toLowerCase()=="bundledebug")
             {
-               project.command = "build";
+               if (project.command!="uploadcrashlytics")
+                  project.command = "build";
             }
             words.splice(w,1);
             break;
@@ -1480,7 +1485,15 @@ class CommandLineTools
             else
                buildProject(project);
 
-         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile", "prepare", "quickrun":
+         case "ndk-stack":
+             if (!loadProject(project,false))
+                Log.error("Could not load project");
+             var android = new platforms.AndroidPlatform(project);
+             android.init();
+             words.shift();
+             android.runNdkStack(words);
+
+         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile", "prepare", "quickrun", "uploadcrashlytics":
 
             if (words.length > 2) 
             {

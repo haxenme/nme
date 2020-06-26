@@ -16,11 +16,14 @@ class AndroidPlatform extends Platform
    var gradle:Bool;
    var abis:Array<ABI>;
    var installed:Bool;
+   var useArchDirs:Bool;
 
    public function new(inProject:NMEProject)
    {
       super(inProject);
       setupAdb();
+      useArchDirs = project.hasDef("HXCPP_DEBUG_LINK_AND_STRIP");
+
       abis = [
          {
             name: "armeabi",
@@ -72,6 +75,7 @@ class AndroidPlatform extends Platform
          Log.verbose("Using gradle build system");
          PathHelper.mkdir(getAppDir());
       }
+
       
       if (project.command == "test")
       {
@@ -190,6 +194,19 @@ class AndroidPlatform extends Platform
    override public function getNdllPrefix() : String { return "lib"; }
 
 
+   function getUnstrippedRoot()
+   {
+      var outDir = FileSystem.fullPath(getOutputDir());
+      outDir = outDir.split("\\").join("/");
+      return outDir+"/unstripped";
+   }
+
+   function getStrippedRoot()
+   {
+      var libDir = FileSystem.fullPath(getOutputLibDir());
+      libDir = libDir.split("\\").join("/");
+      return libDir;
+   }
 
 
    override public function runHaxe()
@@ -197,21 +214,36 @@ class AndroidPlatform extends Platform
       var args = project.debug ? ['$haxeDir/build.hxml',"-debug","-D", "android"] :
                                  ['$haxeDir/build.hxml', "-D", "android" ];
 
+      var libDir = getStrippedRoot();
+      var unstripDir = getUnstrippedRoot();
       for(abi in includedABIs())
-         runHaxeWithArgs(args.concat(abi.args));
+      {
+         var abiArgs = args.concat(abi.args);
+         if (useArchDirs)
+         {
+
+             abiArgs.push("-D");
+             abiArgs.push('HAXE_FULL_OUTPUT_NAME=$libDir/${abi.name}/libApplicationMain.so');
+             abiArgs.push("-D");
+             abiArgs.push('HAXE_FULL_UNSTRIPPED_NAME=$unstripDir/${abi.name}/libApplicationMain.so');
+         }
+         runHaxeWithArgs(abiArgs);
+      }
    }
 
 
    override public function copyBinary():Void 
    {
-      var dbg = project.debug ? "-debug" : "";
-      
-      for(abi in includedABIs())
+      if (!useArchDirs)
       {
-         var source = haxeDir + "/cpp/libApplicationMain" + dbg + '${abi.libArchSuffix}.so';
-         var destination = getOutputLibDir() + '/${abi.name}/libApplicationMain.so';
-         FileHelper.copyIfNewer(source, destination);
-      };
+         var dbg = project.debug ? "-debug" : "";
+         for(abi in includedABIs())
+         {
+            var source = haxeDir + "/cpp/libApplicationMain" + dbg + '${abi.libArchSuffix}.so';
+            var destination = getOutputLibDir() + '/${abi.name}/libApplicationMain.so';
+            FileHelper.copyIfNewer(source, destination);
+         };
+      }
    }
 
 
@@ -262,8 +294,11 @@ class AndroidPlatform extends Platform
       context.ANDROID_EXTENSIONS =extensions;
 
       context.ANDROID_SDK = StringTools.replace(project.environment.get("ANDROID_SDK"),"\\","/");
-      context.NME_FIREBASE = project.hasDef("firebase") || project.hasDef("firebasePerformance");
+      context.NME_FIREBASE = project.hasDef("firebase") || project.hasDef("firebasePerformance") || project.hasDef("crashlytics");
+      context.NME_FIREBASE_CRASHLYTICS = project.hasDef("crashlytics");
       context.NME_FIREBASE_PERFORMANCE = project.hasDef("firebasePerformance");
+      context.NME_STRIPPED_ROOT = getStrippedRoot();
+      context.NME_UNSTRIPPED_ROOT = getUnstrippedRoot();
       
       if(gradle)
          setGradleLibraries();
@@ -272,6 +307,78 @@ class AndroidPlatform extends Platform
       
       context.ABIS = [for(abi in includedABIs()) '"${abi.name}"'].join(', ');
       context.ABI_CODES = [for(abi in includedABIs()) '\'${abi.name}\':${abi.versionCodeScaler}'].join(', ');
+   }
+
+   function getNdkStackExe()
+   {
+      var dirs = [];
+      var ext = "";
+      if (PlatformHelper.hostPlatform==Platform.WINDOWS)
+      {
+         dirs = [ "windows-x86_64", "windows" ];
+         ext = ".exe";
+      }
+      else if (PlatformHelper.hostPlatform==Platform.LINUX)
+         dirs = ["linux-x86_64"];
+      else if (PlatformHelper.hostPlatform==Platform.MAC)
+         dirs = ["darwin-x86_64"];
+      else
+         Log.error("Unsupported ndk-stack host:" + PlatformHelper.hostPlatform);
+
+      var exe="";
+      for(d in dirs)
+      {
+         var test = project.environment.get("ANDROID_SDK") + "/ndk-bundle/prebuilt/" + d + "/bin/ndk-stack" + ext;
+         if (FileSystem.exists(test))
+         {
+            Log.verbose("Found ndk-stack at:" + test);
+            exe = test;
+            break;
+         }
+         else
+         {
+            Log.verbose("ndk-stack not found at:" + test);
+         }
+      }
+      if (exe=="")
+      {
+         exe = "ndk-stack" + ext;
+         Log.verbose("ndk-stack not found - assuming it is in the path");
+      }
+
+      return exe;
+   }
+
+   public function runNdkStack(args:Array<String>)
+   {
+      var exe = getNdkStackExe();
+
+      var symPath = args[0];
+      if (symPath==null)
+      {
+         var abis = includedABIs();
+         var abi = null;
+         if (abis.length!=1)
+            abi = queryDeviceABI();
+         else
+            abi = abis[0].name;
+
+         if (abi==null)
+            Log.error("Could not guess ABI (" + abis.length + " in project). Please specify ABI or add ABI path to command line");
+
+         symPath = getUnstrippedRoot() + "/" + abi;
+      }
+
+      var adbOut = args[1];
+      if (adbOut==null)
+      {
+         adbOut = project.getDef("adbOut");
+         if (adbOut==adbOut)
+            adbOut = "adb_out.txt";
+      }
+
+      Log.verbose(exe + " " + ["-sym",symPath,"-dump",adbOut].join(" ") );
+      ProcessHelper.runCommand("",exe,["-sym",symPath,"-dump",adbOut] );
    }
 
    private function setAntLibraries() {
@@ -335,17 +442,25 @@ class AndroidPlatform extends Platform
 
       if (gradle)
       {
-         var assemble = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
+         var command = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
          if (project.hasDef("bundlerelease"))
-            assemble = "bundleRelease";
+            command = "bundleRelease";
          else if (project.hasDef("bundledebug"))
-            assemble = "bundleDebug";
+            command = "bundleDebug";
+
+         if (project.command == "uploadcrashlytics")
+         {
+            if (project.hasDef("bundledebug"))
+               command = "app:uploadCrashlyticsSymbolFileDebug";
+            else
+               command = "app:uploadCrashlyticsSymbolFileRelease";
+         }
 
          if(PlatformHelper.hostPlatform==Platform.MAC)
             ProcessHelper.runCommand(outputDir, 'chmod', ['+x', './gradlew']);
           
          var exe = PlatformHelper.hostPlatform==Platform.WINDOWS ? "./gradlew.bat" : "./gradlew";
-         ProcessHelper.runCommand(outputDir, exe, [ assemble ]);
+         ProcessHelper.runCommand(outputDir, exe, [ command ]);
       }
       else
       {
@@ -440,7 +555,7 @@ class AndroidPlatform extends Platform
    {
       if(!installed)
          return;
-      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat" ]));
+      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat" ]), "adb_out.txt");
    }
 
    override public function uninstall():Void 

@@ -777,6 +777,13 @@ value nme_log(value inMessage)
 }
 DEFINE_PRIM(nme_log,1);
 
+int *sNmeCrashPtr = (int *)nullptr;
+value nme_crash()
+{
+   *sNmeCrashPtr = 0xdeadbeef;
+   return alloc_null();
+}
+DEFINE_PRIM(nme_crash,0);
 
 
 

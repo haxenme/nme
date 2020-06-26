@@ -15,6 +15,7 @@ namespace nme
 {
 
 
+
 static std::string sCACertFile("");
 static CURLM *sCurlM = 0;
 static int sRunning = 0;
@@ -164,6 +165,7 @@ public:
       curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, headerlist);
 
       mErrorBuf[0] = '\0';
+
 
       /* some servers don't like requests that are made without a user-agent
          field, so we provide one */
