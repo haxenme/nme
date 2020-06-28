@@ -38,6 +38,7 @@ class MakeClasses
       "FileServer.hx",
       "Server.hx",
       "script",
+      "firebase",
       "gl",
       "display3D",
       "Stage3D.hx",
