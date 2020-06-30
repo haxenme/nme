@@ -1,4 +1,7 @@
 package org.haxe.nme;
+
+::if NME_APPLOVIN_KEY::
+
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkConfiguration;
 import com.applovin.sdk.AppLovinAdRewardListener;
@@ -10,6 +13,7 @@ import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
+
 import org.haxe.nme.HaxeObject;
 
 import android.content.Context;
@@ -229,5 +233,9 @@ class NmeAppLovin
       else
          adDialog.show();
     }
+
 }
+::else::
+class NmeAppLovin { }
+::end::
 
