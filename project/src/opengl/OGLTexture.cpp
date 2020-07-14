@@ -233,7 +233,7 @@ public:
 
       mPixelWidth = mSurface->Width();
       mPixelHeight = mSurface->Height();
-      bool non_po2 = NonPO2Supported(inFlags & surfNotRepeatIfNonPO2);
+      bool non_po2 = NonPO2Supported(inFlags & surfNotRepeatIfNonPO2) && !mMipmaps;
       //printf("Using non-power-of-2 texture %d\n",non_po2);
 
       mTextureWidth = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);

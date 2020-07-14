@@ -368,6 +368,7 @@ public:
             const QuickVec<int> &inColours,
             int blendMode );
    GraphicsTrianglePath() { }
+   GraphicsDataType GetType() { return gdtTrianglePath; }
 
    VertexType       mType;
    int              mTriangleCount;

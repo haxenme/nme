@@ -772,7 +772,8 @@ void decodeGraphicsData(ObjectStreamIn &stream, T *&outPointer)
       }
       else
       {
-         printf("decodeGraphicsData not right type\n");
+         printf("decodeGraphicsData not right type, have : %d, want %d\n", g->GetType(),
+                 (new T)->GetType() );
          g->DecRef();
       }
    }

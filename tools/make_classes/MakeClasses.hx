@@ -83,7 +83,7 @@ class MakeClasses
          }
       }
 
-      for(i in ["Any", "_Any", "_EReg", "EnumValue", "Void", "Null", "Bool", "ArrayAccess", "Sys", "UInt", "XmlType", "_Xml"] )
+      for(i in ["Any", "_Any", "_EReg", "EnumValue", "_EnumValue","Void", "Null", "Bool", "ArrayAccess", "Sys", "UInt", "XmlType", "_Xml", "_UInt"] )
          result.remove(i);
 
       return result;
