@@ -6,6 +6,13 @@
       ::foreach appFeature:: <uses-feature android:name="::feature::" android:required="::required::" />
 ::end::
 
+      ::if (WIN_ORIENTATION!="landscape")::
+      <uses-feature android:name="android.hardware.screen.portrait" android:required="::if (WIN_ORIENTATION=="portrait")::true::else::false::end::" />
+      ::end::
+      ::if (WIN_ORIENTATION!="portrait")::
+      <uses-feature android:name="android.hardware.screen.landscape" android:required="::if (WIN_ORIENTATION=="landscape")::true::else::false::end::" />
+      ::end::
+
 
    <application
        android:label="::APP_TITLE::"
