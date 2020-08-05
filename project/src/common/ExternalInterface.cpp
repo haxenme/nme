@@ -4020,7 +4020,7 @@ TEXT_PROP_GET_IDX_PRIME(line_offset,LineOffset,int);
 value nme_bitmap_data_create(int width, int height, int pixelFormat, int fillValue, bool bFill)
 {
    PixelFormat format = (PixelFormat)(pixelFormat);
-   Surface *result = new SimpleSurface( width, height, format, 1 );
+   Surface *result = new SimpleSurface( width, height, format);
    if (bFill)
       result->Clear(fillValue);
    return ObjectToAbstract(result);

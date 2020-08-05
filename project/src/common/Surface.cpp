@@ -641,7 +641,7 @@ void SimpleSurface::EndRender()
 
 Surface *SimpleSurface::clone()
 {
-   SimpleSurface *copy = new SimpleSurface(mWidth,mHeight,mPixelFormat,1);
+   SimpleSurface *copy = new SimpleSurface(mWidth,mHeight,mPixelFormat);
    int pix_size = BytesPerPixel( mPixelFormat );
    if (mBase)
       for(int y=0;y<mHeight;y++)
