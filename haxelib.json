@@ -4,7 +4,7 @@
   "license": "MIT",
   "tags": [ "cpp", "neko", "nme", "opengl", "sdl", "android", "ios"  ],
   "description": "NME provides a backend for native iOS, Android, Windows, Mac and Linux applications, using a Flash inspired API",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "binaryversion": "101",
   "classPath": "src",
   "releasenote": "see Changes.md",
