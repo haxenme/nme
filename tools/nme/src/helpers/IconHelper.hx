@@ -27,6 +27,8 @@ class IconHelper
          if (icon!=null && Path.extension(icon.path) == "png")
          {
             var bitmapData = BitmapData.load(icon.path);
+            if (bitmapData==null)
+               throw "Could not find " + icon.path;
             if (bitmapData.width==width && bitmapData.height==height)
             {
                FileHelper.copyFile(icon.path, targetPath, onFile);
