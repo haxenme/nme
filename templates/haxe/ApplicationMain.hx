@@ -4,7 +4,6 @@ import nme.Assets;
 #elseif waxe
 import wx.Assets;
 #end
-
 #if cpp
 ::foreach ndlls::::importStatic::::end::
 #end
@@ -19,6 +18,7 @@ import wx.Assets;
 </files>
 ")
 #end
+
 @:cppFileCode("
 ::foreach ndlls:: ::if (registerPrim!=null):: extern \"C\" int ::registerPrim::();
 ::end::::end::

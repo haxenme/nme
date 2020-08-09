@@ -9,6 +9,7 @@
 <classpath name="src/cppia" if="cppia" />
 <classpath name="src/jsprime" if="jsprime" />
 <classpath name="src/haxe/compat" unless="NME_NO_HAXE_COMPAT" />
+<haxedef name="objc" if="iphone" />
 
 <error value="Nme.n is out of date.  Please rebuild" unless="${toolversion:3}" />
 

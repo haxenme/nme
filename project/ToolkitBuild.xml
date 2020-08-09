@@ -146,53 +146,55 @@
       <file name="Test.cpp"/>
    </files>
 
+   <set name="NMEP"  value="${this_dir}" />
+
    <files id="nme-headers">
-      <depend name="include/ByteArray.h" />
-      <depend name="include/CachedExtent.h" />
-      <depend name="include/Camera.h" />
-      <depend name="include/Display.h" />
-      <depend name="include/Filters.h" />
-      <depend name="include/Font.h" />
-      <depend name="include/Geom.h" />
-      <depend name="include/Graphics.h" />
-      <depend name="include/Hardware.h" />
-      <depend name="include/Input.h" />
-      <depend name="include/KeyCodes.h" />
-      <depend name="include/Lzma.h" />
-      <depend name="include/Matrix.h" />
-      <depend name="include/NMEThread.h" />
-      <depend name="include/NmeBinVersion.h" />
-      <depend name="include/NmeVersion.h" />
-      <depend name="include/S3DEye.h" />
-      <depend name="include/Scale9.h" />
-      <depend name="include/Sound.h" />
-      <depend name="include/StageVideo.h" />
-      <depend name="include/Surface.h" />
-      <depend name="include/TextField.h" />
-      <depend name="include/Tilesheet.h" />
-      <depend name="include/URL.h" />
-      <depend name="include/Utils.h" />
-      <depend name="include/Video.h" />
+      <depend name="${NMEP}/include/ByteArray.h" />
+      <depend name="${NMEP}/include/CachedExtent.h" />
+      <depend name="${NMEP}/include/Camera.h" />
+      <depend name="${NMEP}/include/Display.h" />
+      <depend name="${NMEP}/include/Filters.h" />
+      <depend name="${NMEP}/include/Font.h" />
+      <depend name="${NMEP}/include/Geom.h" />
+      <depend name="${NMEP}/include/Graphics.h" />
+      <depend name="${NMEP}/include/Hardware.h" />
+      <depend name="${NMEP}/include/Input.h" />
+      <depend name="${NMEP}/include/KeyCodes.h" />
+      <depend name="${NMEP}/include/Lzma.h" />
+      <depend name="${NMEP}/include/Matrix.h" />
+      <depend name="${NMEP}/include/NMEThread.h" />
+      <depend name="${NMEP}/include/NmeBinVersion.h" />
+      <depend name="${NMEP}/include/NmeVersion.h" />
+      <depend name="${NMEP}/include/S3DEye.h" />
+      <depend name="${NMEP}/include/Scale9.h" />
+      <depend name="${NMEP}/include/Sound.h" />
+      <depend name="${NMEP}/include/StageVideo.h" />
+      <depend name="${NMEP}/include/Surface.h" />
+      <depend name="${NMEP}/include/TextField.h" />
+      <depend name="${NMEP}/include/Tilesheet.h" />
+      <depend name="${NMEP}/include/URL.h" />
+      <depend name="${NMEP}/include/Utils.h" />
+      <depend name="${NMEP}/include/Video.h" />
 
-      <depend name="src/software-renderer/BitmapFill.h" />
-      <depend name="src/software-renderer/AlphaMask.h" />
-      <depend name="src/software-renderer/Render.h" />
-      <depend name="src/software-renderer/PolygonRender.h" />
+      <depend name="${NMEP}/src/software-renderer/BitmapFill.h" />
+      <depend name="${NMEP}/src/software-renderer/AlphaMask.h" />
+      <depend name="${NMEP}/src/software-renderer/Render.h" />
+      <depend name="${NMEP}/src/software-renderer/PolygonRender.h" />
 
-      <depend name="../include/nme/Event.h" />
-      <depend name="../include/nme/Extent.h" />
-      <depend name="../include/nme/FixedPoint.h" />
-      <depend name="../include/nme/ImageBuffer.h" />
-      <depend name="../include/nme/NmeApi.h" />
-      <depend name="../include/nme/NmeCffi.h" />
-      <depend name="../include/nme/Object.h" />
-      <depend name="../include/nme/ObjectStream.h" />
-      <depend name="../include/nme/Pixel.h" />
-      <depend name="../include/nme/Point.h" />
-      <depend name="../include/nme/QuickVec.h" />
-      <depend name="../include/nme/Rect.h" />
-      <depend name="../include/nme/Texture.h" />
-      <depend name="../include/nme/NmeJsPrime.h" />
+      <depend name="${NMEP}/../include/nme/Event.h" />
+      <depend name="${NMEP}/../include/nme/Extent.h" />
+      <depend name="${NMEP}/../include/nme/FixedPoint.h" />
+      <depend name="${NMEP}/../include/nme/ImageBuffer.h" />
+      <depend name="${NMEP}/../include/nme/NmeApi.h" />
+      <depend name="${NMEP}/../include/nme/NmeCffi.h" />
+      <depend name="${NMEP}/../include/nme/Object.h" />
+      <depend name="${NMEP}/../include/nme/ObjectStream.h" />
+      <depend name="${NMEP}/../include/nme/Pixel.h" />
+      <depend name="${NMEP}/../include/nme/Point.h" />
+      <depend name="${NMEP}/../include/nme/QuickVec.h" />
+      <depend name="${NMEP}/../include/nme/Rect.h" />
+      <depend name="${NMEP}/../include/nme/Texture.h" />
+      <depend name="${NMEP}/../include/nme/NmeJsPrime.h" />
 
       <depend name="${HXCPP}/include/hx/CFFI.h"/>
       <depend name="${HXCPP}/include/hx/CFFIAPI.h"/>
@@ -251,7 +253,7 @@
 
       <section if="iphone">
          <file name="${SRC_DIR}/apple/CaptureDevice.mm" if="NME_CAMERA" />
-         <file name="${SRC_DIR}/iPhone/UIStageView.mm"/>
+         <!--<file name="${SRC_DIR}/iPhone/UIStageView.mm"/>-->
          <file name="${SRC_DIR}/iPhone/UIDeviceHardware.mm"/>
          <!-- <file name="${SRC_DIR}/iPhone/SurfaceIO.mm"/> -->
          <file name="${SRC_DIR}/iPhone/NativeFont.mm"/>
@@ -429,7 +431,40 @@
          <file name="${SRC_DIR}/lzma/Threads.c" if="windows" />
       </section>
    </files>
-   
+
+   <!-- This section has access to both NME and haxe code -->
+   <files id="nme-haxe" tags="haxe" dir="${HXCPP_BUILD_DIR}" >
+      <compilerflag value="-I${NMEP}/include"/>
+      <compilerflag value="-I${NMEP}/../include"/>
+
+      <compilerflag value="-DNME_MODPLUG" if="modplug" />
+      <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
+      <compilerflag value="-DNME_INTERNAL_CLIPPING" if="NME_INTERNAL_CLIPPING" />
+      <compilerflag value="-DNME_CLIPPER" if="NME_CLIPPER" />
+      <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
+      <compilerflag value="-DNME_WORKER_THREADS" if="NME_WORKER_THREADS" />
+      <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
+      <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
+
+      <cache value="1" />
+
+      <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
+
+      <depend files="nme-headers"/>
+      <depend files="hxcpp-depends"/>
+      <depend name="${NMEP}/${SRC_DIR}/opengl/OGL.h" if="NME_OGL" />
+      <depend name="${NMEP}/${SRC_DIR}/opengl/OGLExtensions.h" if="NME_OGL" />
+
+      <section if="iphone" >
+         <!-- file will be copied by the template system -->
+         <file name="src/UIStageView.mm"/>
+      </section>
+   </files>
+
+   <target id='haxe'>
+     <files id='nme-haxe'/>
+   </target>
+
    <set name="target-id" value="NDLL" unless="NME_STATIC_LINK" />
    <set name="target-id" value="nme-target" if="NME_STATIC_LINK" />
    <set name="target-id" value="exe" if="HXCPP_JS_PRIME" />

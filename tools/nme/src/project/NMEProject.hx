@@ -94,7 +94,7 @@ class IOSConfig
       linkerFlags =  new Array();
       viewTestDir =  "";
       prerenderedIcon =  false;
-      sourceFlavour = "cpp";
+      sourceFlavour = "mm";
    }
 }
 

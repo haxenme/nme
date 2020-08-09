@@ -482,6 +482,14 @@ ${hxcpp_include}';
          return "";
    }
 
+      override public function updateBuildDir():Void 
+   {
+      super.updateBuildDir();
+      PathHelper.mkdir(haxeDir+"/cpp/src");
+      copyTemplate("ios/UIStageView.mm", haxeDir+"/cpp/src/UIStageView.mm");
+   }
+
+
 
    override public function updateOutputDir():Void 
    {
@@ -581,7 +589,7 @@ ${hxcpp_include}';
             platformName = "iphonesimulator";
 
         var iphoneVersion = project.environment.get("IPHONE_VER");
-        var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
+        var commands = [ "-configuration", configuration, "-allowProvisioningUpdates", "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
 
         if (project.targetFlags.exists("simulator")) 
         {
