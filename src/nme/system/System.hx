@@ -157,7 +157,8 @@ class System
       #elseif winrt
       return "localhost";
       #else
-      return sys.net.Host.localhost();
+      var host = sys.net.Host.localhost();
+      return Std.string( new sys.net.Host(host) );
       #end
    }
    

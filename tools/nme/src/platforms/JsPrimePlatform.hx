@@ -394,16 +394,18 @@ class JsPrimePlatform extends Platform
 
    override public function buildPackage() createNmeFile();
 
-   function runServer(dir:String, browser:String)
+   function runServer(dir:String, browser:String, useLan:Bool)
    {
+      var host = useLan ? nme.system.System.getLocalIpAddress() : "localhost";
       var port = 6931;
-      Log.verbose("Running server @" + dir +":" + port );
+      var url = 'http://$host:$port/index.html';
+      Log.info("Running server " + dir +" @ " + url);
       var handler = new nme.net.http.FileServer([dir], new nme.net.http.StdioHandler(Sys.println), Log.mVerbose);
       var server = new nme.net.http.Server(handler.onRequest);
-      server.listen(port);
+      server.listen(port,host);
 
       if (browser!="none")
-         new nme.net.URLRequest('http://localhost:$port/index.html' ).launchBrowser();
+         new nme.net.URLRequest(url).launchBrowser();
 
       server.untilDeath();
    }
@@ -418,7 +420,7 @@ class JsPrimePlatform extends Platform
 
       if (!project.hasDef("emserver") || python==null || sdkPath==null)
       {
-         runServer(dir,browser);
+         runServer(dir,browser, project.hasDef("lan"));
       }
       else
       {
