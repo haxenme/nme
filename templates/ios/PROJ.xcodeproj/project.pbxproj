@@ -407,7 +407,7 @@
 			attributes = {
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
-						DevelopmentTeam = VQ8E6KLN42;
+						DevelopmentTeam = ::DEVELOPMENT_TEAM::;
 					};
 					1EF0A87F121AE1CE003F2F59 = {
                   ::if (DEVELOPMENT_TEAM)::
