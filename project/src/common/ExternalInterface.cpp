@@ -5482,7 +5482,7 @@ bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultP
       return false;
 
    // TODO - mac
-   #if defined(HX_WINDOWS) && !defined(HX_WINRT)
+   #if (defined(HX_WINDOWS) && !defined(HX_WINRT)) || defined(HX_MACOS)
    gCurrentFileDialog = new FileDialogSpec();
    gCurrentFileDialog->title = inTitle.c_str();
    gCurrentFileDialog->text = inText.c_str();
