@@ -85,6 +85,8 @@ class IOSConfig
    public var prerenderedIcon:Bool;
    public var viewTestDir:String;
    public var sourceFlavour:String;
+   public var stageViewHead:String = "";
+   public var stageViewInit:String = "";
 
    public function new()
    {
@@ -153,6 +155,9 @@ class NMEProject
 
    // For <include> elements
    public var includePaths:Array<String>;
+   // Injecting xml into haxe build
+   public var buildExtraFiles:Array<String>;
+
    // For bulding projects
    public var templatePaths:Array<String>;
    public var templateCopies:Array<TemplateCopy>;
@@ -211,6 +216,7 @@ class NMEProject
       ndllCheckDir = "";
       engines = new Map<String,String>();
       libraryHandlers = new Map<String,String>();
+      buildExtraFiles = [];
 
       environment = Sys.environment();
       if (environment.exists("ANDROID_SERIAL"))
@@ -912,6 +918,7 @@ class NMEProject
       }
 
       context.fileAssociations = fileAssociations;
+      context.buildExtraFiles = buildExtraFiles;
 
       context.assets = new Array<Dynamic>();
 

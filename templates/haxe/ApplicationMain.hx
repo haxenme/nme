@@ -18,6 +18,12 @@ import wx.Assets;
 </files>
 ")
 #end
+@:buildXml("
+::foreach buildExtraFiles::
+<include name='::__current__::'/>
+::end::
+")
+
 
 @:cppFileCode("
 ::foreach ndlls:: ::if (registerPrim!=null):: extern \"C\" int ::registerPrim::();

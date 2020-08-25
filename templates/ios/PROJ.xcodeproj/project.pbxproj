@@ -570,6 +570,13 @@
             ::if (DEVELOPMENT_TEAM)::
 				DEVELOPMENT_TEAM = ::DEVELOPMENT_TEAM::;
             ::end::
+				FRAMEWORK_SEARCH_PATHS = (
+            "$(inherited)",
+            "$(PROJECT_DIR)/::APP_FILE::",
+				::foreach frameworkSearchPaths::
+					"::__current__::",
+				::end::
+				);
             GCC_INPUT_FILETYPE = automatic;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "::APP_FILE::/::APP_FILE::-Prefix.pch";
@@ -629,6 +636,13 @@
             ::if (DEVELOPMENT_TEAM)::
 				DEVELOPMENT_TEAM = ::DEVELOPMENT_TEAM::;
             ::end::
+				FRAMEWORK_SEARCH_PATHS = (
+            "$(PROJECT_DIR)/::APP_FILE::",
+            "$(inherited)",
+				::foreach frameworkSearchPaths::
+					"::__current__::",
+				::end::
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "::APP_FILE::/::APP_FILE::-Prefix.pch";
 				INFOPLIST_FILE = "::APP_FILE::/::APP_FILE::-Info.plist";
@@ -727,12 +741,13 @@
 				ENABLE_BITCODE = NO;
             ENABLE_STRICT_OBJC_MSGSEND = YES;
 	         ENABLE_TESTABILITY = YES;
-				::foreach frameworkSearchPaths::
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					::__current__::,
-				);
+            "$(inherited)",
+            "$(PROJECT_DIR)/::APP_FILE::",
+				::foreach frameworkSearchPaths::
+					"::__current__::",
 				::end::
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
             GCC_NO_COMMON_BLOCKS = YES;
@@ -792,12 +807,13 @@
             ::end::
 				ENABLE_BITCODE = NO;
             ENABLE_STRICT_OBJC_MSGSEND = YES;
-				::foreach frameworkSearchPaths::
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					::__current__::,
-				);
+            "$(inherited)",
+            "$(PROJECT_DIR)/::APP_FILE::",
+				::foreach frameworkSearchPaths::
+					"::__current__::",
 				::end::
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
