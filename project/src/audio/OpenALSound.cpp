@@ -136,7 +136,7 @@ public:
    {
       if (openal_is_shutdown)
          return false;
-       
+
       ALint state;
       alGetSourcei(sourceId, AL_SOURCE_STATE, &state);
       check("playing");

@@ -4883,6 +4883,17 @@ void nme_sound_get_id3(value inSound, value outVar)
 DEFINE_PRIME2v(nme_sound_get_id3);
 
 
+void nme_sound_suspend(bool inSuspend,int inFlags)
+{
+   if (inSuspend)
+      Sound::Suspend((unsigned int)inFlags);
+   else
+      Sound::Resume((unsigned int)inFlags);
+}
+DEFINE_PRIME2v(nme_sound_suspend);
+
+ 
+
 double nme_sound_get_length(value inSound)
 {
    Sound *sound;

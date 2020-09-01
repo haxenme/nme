@@ -18,6 +18,7 @@
 }
 @end
 
+
 @implementation AVAudioPlayerChannelDelegate
 
 - (id)init {
@@ -44,7 +45,7 @@
     LOG_SOUND("AVAudioPlayerChannelDelegate audioPlayerDidFinishPlaying()");
     LOG_SOUND("loops : %d", loops );
     LOG_SOUND("offset : %f", offset);
-    
+
     if (loops == 0) {
         LOG_SOUND("finished the mandated number of loops");
         isPlaying = false;
@@ -75,346 +76,403 @@
 
 namespace nme
 {
-    
-    
-    
-    /*----------------------------------------------------------
-     AVSoundPlayer implementation of Sound and SoundChannel classes:
-     - higher latency than OpenAL implementation
-     - streams sound data using Apple's optimized pathways
-     - doesn't allocate uncompressed sound data in memory
-     - doesn't expose sound data
-     ------------------------------------------------------------*/
-    
-    class AVAudioPlayerChannel : public SoundChannel  {
-        
-    public:
-        AVAudioPlayerChannel(Object *inSound, const std::string &inFilename,
-            NSData *data,
-            int inLoops, float  inOffset, const SoundTransform &inTransform)
-        {
-            LOG_SOUND("AVAudioPlayerChannel constructor");
-            mSound = inSound;
-            // each channel keeps the originating Sound object alive.
-            inSound->IncRef();
-           
-            LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initilising the AVAudioPlayer");
 
-            if (data == NULL) {
-                LOG_SOUND("AVAudioPlayerChannel construct with name");
-                std::string name;
-                
-                if (inFilename[0] == '/') {
-                    name = inFilename;
-                } else {
-                    name = GetResourcePath() + gAssetBase + inFilename;
-                }
-                
-                NSString *theFileName = [[NSString alloc] initWithUTF8String:name.c_str()];
-                
-                NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:theFileName ];
-                
-                theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error: nil];
-#ifndef OBJC_ARC
-                [theFileName release];
-#endif
+
+
+/*----------------------------------------------------------
+ AVSoundPlayer implementation of Sound and SoundChannel classes:
+ - higher latency than OpenAL implementation
+ - streams sound data using Apple's optimized pathways
+ - doesn't allocate uncompressed sound data in memory
+ - doesn't expose sound data
+ ------------------------------------------------------------*/
+std::vector<class AVAudioPlayerChannel *> allAvChannels;
+
+class AVAudioPlayerChannel : public SoundChannel
+{
+    Object *mSound;
+    AVAudioPlayer *theActualPlayer;
+    AVAudioPlayerChannelDelegate *thePlayerDelegate;
+    bool paused;
+
+public:
+    AVAudioPlayerChannel(Object *inSound, const std::string &inFilename,
+        NSData *data,
+        int inLoops, float  inOffset, const SoundTransform &inTransform)
+    {
+        LOG_SOUND("AVAudioPlayerChannel constructor");
+        mSound = inSound;
+        // each channel keeps the originating Sound object alive.
+        inSound->IncRef();
+        paused = false;
+
+        LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initilising the AVAudioPlayer");
+
+        if (data == NULL) {
+            LOG_SOUND("AVAudioPlayerChannel construct with name");
+            std::string name;
+
+            if (inFilename[0] == '/') {
+                name = inFilename;
             } else {
-                LOG_SOUND("AVAudioPlayerChannel construct with data");
-                theActualPlayer = [[AVAudioPlayer alloc] initWithData:data error:nil];
+                name = GetResourcePath() + gAssetBase + inFilename;
             }
 
-            // for each player there is a delegate
-            // the reason for this is that AVAudioPlayer has no way to loop
-            // starting at an offset. So what we need to do is to
-            // get the delegate to react to a loop end, rewing the player
-            // and play again.
-            LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initialising the delegate");
-            thePlayerDelegate = [[AVAudioPlayerChannelDelegate alloc] initWithLoopsOffset:inLoops offset:inOffset];
-            [theActualPlayer setDelegate:thePlayerDelegate];
-            
-            // the sound channel has been created because play() was called
-            // on a Sound, so let's play
-            LOG_SOUND("AVAudioPlayerChannel constructor - getting the player to play at offset %f", inOffset);
-            theActualPlayer.currentTime = inOffset/1000;
-            theActualPlayer.pan = inTransform.pan;
-            //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
-                //[theActualPlayer setPan: inTransform.pan];
-            [theActualPlayer setVolume: inTransform.volume];
-            [theActualPlayer play];
-            
-            LOG_SOUND("AVAudioPlayerChannel constructor exiting");
-        }
-        
-        ~AVAudioPlayerChannel()
-        {
-            LOG_SOUND("AVAudioPlayerChannel destructor");
-            
-            // when all channels associated with a sound
-            // are all destroyed, then the Sound that generates
-            // them might be destroyed (if there are no other
-            // references to it anywhere else)
-            mSound->DecRef();
-        }
-        
-        void playerHasFinishedDoingItsJob() {
-            theActualPlayer = nil;
-        }
-        
-        bool isComplete()
-        {
-            //LOG_SOUND("AVAudioPlayerChannel isComplete()"); 
-            bool isPlaying;
-            
-            if (theActualPlayer == nil) {
-                // The AVAudioPlayer has been released before
-                // , maybe by a stop() or maybe because
-                // someone already called this method before
-                // , he might be dead by now
-                // so we can't ask him if he is playing.
-                // We know that we return that it is complete
-                isPlaying = false;
-            }
-            else {
-                //LOG_SOUND("AVAudioPlayerChannel invoking isPlaying"); 
-                
-                // note that we ask the delegate, not the AVAudioPlayer
-                // the reason is that technically AVAudioPlayer might not be playing,
-                // but we are in the process of restarting it to play a loop,
-                // and we don't want to stop him. So we ask the delegate, which
-                // knows when all the loops are properly done.
-                isPlaying = [thePlayerDelegate isPlaying];
-                
-                if (!isPlaying) {
-                    // the channel is completely done playing, so we mark
-                    // both the channel and its delegate eligible for destruction (if no-one
-                    // has any more references to them)
-                    // If all the channels associated to a Sound will be destroyed,
-                    // then the Sound itself might be eligible for destruction (if there are
-                    // no more references to it anywhere else).
-                    #ifndef OBJC_ARC
-                    [thePlayerDelegate release];
-                    [theActualPlayer release];
-                    #endif
-                    theActualPlayer = nil;
-                    thePlayerDelegate = nil;
-                }
-            }
-            
-            //LOG_SOUND("AVAudioPlayerSound isComplete() returning%@\n", (!isPlaying ? @"YES" : @"NO")); 
-            return !isPlaying;
-        }
-        
-        double getLeft()  {
-            LOG_SOUND("AVAudioPlayerChannel getLeft()");
-            //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])	   
-            {
-                //return (1-[theActualPlayer pan])/2;
-                return (1-theActualPlayer.pan)/2;
-            }
-            return 0.5;
-        }
-        double getRight()   {
-            LOG_SOUND("AVAudioPlayerChannel getRight()");
-            //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
-            {
-                //return ([theActualPlayer pan] + 1)/2;
-                return (theActualPlayer.pan + 1)/2;
-            }
-            return 0.5;
-        }
-        double getPosition()   {
-            LOG_SOUND("AVAudioPlayerChannel getPosition()");
-            return [theActualPlayer currentTime] * 1000;
-        }
-        double setPosition(const float &inFloat) {
-            LOG_SOUND("AVAudioPlayerChannel setPosition()");
-            theActualPlayer.currentTime = inFloat / 1000;
-            return inFloat;
-        }
+            NSString *theFileName = [[NSString alloc] initWithUTF8String:name.c_str()];
 
-        void setTransform(const SoundTransform &inTransform) {
-            LOG_SOUND("AVAudioPlayerChannel setTransform()");
-            //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
-            {
-                //[theActualPlayer setPan: inTransform.pan];
-                theActualPlayer.pan = inTransform.pan;
-            }
-            [theActualPlayer setVolume: inTransform.volume];
-        }
-        void stop()
-        {
-            LOG_SOUND("AVAudioPlayerChannel stop()");
-            [theActualPlayer stop];
-            
-            // note that once a channel has been stopped, it's destined
-            // to be deallocated. It will never play another sound again
-            // we decrease the reference count here of both the player
-            // and its delegate.
-            // If someone calls isComplete() in the future,
-            // that function will see the nil and avoid doing another
-            // release.
-            #ifndef OBJC_ARC
-            [theActualPlayer release];
-            [thePlayerDelegate release];
-            #endif
-            theActualPlayer = nil;
-            thePlayerDelegate = nil;
-            
-        }
-        
-        
-        Object *mSound;
-        AVAudioPlayer *theActualPlayer;
-        AVAudioPlayerChannelDelegate *thePlayerDelegate;
-        
-    };
-    
-    
-    class AVAudioPlayerSound : public Sound
-    {
-    public:
-        AVAudioPlayerSound(const std::string &inFilename) : mFilename(inFilename)
-        {
-            LOG_SOUND("AVAudioPlayerSound constructor()");
-            IncRef();
-            
-            // we copy the filename to a local variable,
-            // We pass the filename to create one AVSoundPlayer
-            // each time the sound is played.
-            // Note that we don't need the path, the filename suffices.
-            //theFileName = [[NSString alloc] initWithUTF8String:inFilename.c_str()];
-            
-            // to answer the getLength() method and to see whether there will be any
-            // ploblems loading the file we create an "initial" AVAudioPlayer
-            // that we'll never actually use to play anything. We just get the length and
-            // any potential error and we
-            // release it soon after. Note that
-            // no buffers are loaded until we invoke either the play or prepareToPlay
-            // methods, so very little memory is used.
-            
-            this->data = nil;
+            NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:theFileName ];
 
-            std::string path = inFilename[0]=='/' ? inFilename : GetResourcePath() + gAssetBase + inFilename;
-            NSString *ns_name = [[NSString alloc] initWithUTF8String:path.c_str()];
-            NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:ns_name];
-            #ifndef OBJC_ARC
-            [ns_name release];
-            #endif
-            
-            NSError *err = nil;
-            AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error:&err];
-            if (err != nil)
-            {
-                mError = [[err description] UTF8String];
-            }
-            
-            theDuration = [theActualPlayer duration] * 1000;
-            #ifndef OBJC_ARC
-            [theActualPlayer release];
-            #endif
-        }
-        
-        AVAudioPlayerSound(const unsigned char *inDataPtr, int inDataLen)
-        {
-            mFilename = "unknown";
-            
-            LOG_SOUND("AVAudioPlayerSound constructor()");
-            IncRef();
-            
-            //printf("AVAudioPlayerSound!!");
-            
-            this->data = [[NSData alloc] initWithBytes:inDataPtr length:inDataLen];
-            
-            NSError *err = nil;
-            AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] initWithData:data error:&err];
-            if (err != nil)
-            {
-                mError = [[err description] UTF8String];
-            }
-            
-            theDuration = [theActualPlayer duration] * 1000;
+            theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error: nil];
 #ifndef OBJC_ARC
-            [theActualPlayer release];
+            [theFileName release];
 #endif
-        }
-        
-        ~AVAudioPlayerSound()
-        {
-            LOG_SOUND("AVAudioPlayerSound destructor() ##################################");
-        }
-        
-        double getLength()
-        {
-            LOG_SOUND("AVAudioPlayerSound getLength returning %f", theDuration);
-            
-            // we got the duration stored already and each Sound only ever
-            // loads one file - so no need to re-check, return what we have
-            return theDuration;
-        }
-        
-        void getID3Value(const std::string &inKey, std::string &outValue)
-        {
-            LOG_SOUND("AVAudioPlayerSound getID3Value returning empty string");
-            outValue = "";
-        }
-        int getBytesLoaded()
-        {
-            int toBeReturned = ok() ? 100 : 0;
-            LOG_SOUND("AVAudioPlayerSound getBytesLoaded returning %i", toBeReturned);
-            return toBeReturned;
-        }
-        int getBytesTotal()
-        {
-            int toBeReturned = ok() ? 100 : 0;
-            LOG_SOUND("AVAudioPlayerSound getBytesTotal returning %i", toBeReturned);
-            return toBeReturned;
-        }
-        bool ok()
-        {
-            bool toBeReturned = mError.empty();
-            LOG_SOUND("AVAudioPlayerSound ok() returning BOOL = %s\n", (toBeReturned ? "YES" : "NO")); 
-            return toBeReturned;
-        }
-        std::string getError()
-        {
-            LOG_SOUND("AVAudioPlayerSound getError()"); 
-            return mError;
-        }
-        
-        void close()
-        {
-            LOG_SOUND("AVAudioPlayerSound close() doing nothing"); 
+        } else {
+            LOG_SOUND("AVAudioPlayerChannel construct with data");
+            theActualPlayer = [[AVAudioPlayer alloc] initWithData:data error:nil];
         }
 
-        const char *getEngine() { return "avplayer"; }
-        
-        // This method is called when Sound.play is called.
-        SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
-        {
-            LOG_SOUND("AVAudioPlayerSound openChannel() startTime=%f, loops = %d",startTime,loops); 
-            //return new AVAudioPlayerChannel(this,mBufferID,loops,inTransform);
-            
-            // this creates the channel, note that the channel is an AVAudioPlayer that plays
-            // right away
-            return new AVAudioPlayerChannel(this, mFilename, data, loops, startTime, inTransform);
-        }
-        
-        std::string mError;
-        std::string mFilename;
-        double theDuration;
-        NSData *data;
-    };
-    
+        // for each player there is a delegate
+        // the reason for this is that AVAudioPlayer has no way to loop
+        // starting at an offset. So what we need to do is to
+        // get the delegate to react to a loop end, rewing the player
+        // and play again.
+        LOG_SOUND("AVAudioPlayerChannel constructor - allocating and initialising the delegate");
+        thePlayerDelegate = [[AVAudioPlayerChannelDelegate alloc] initWithLoopsOffset:inLoops offset:inOffset];
+        [theActualPlayer setDelegate:thePlayerDelegate];
 
-    Sound *CreateAvPlayerSound(const std::string &inFilename)
-    {
-       return new AVAudioPlayerSound(inFilename);
+        // the sound channel has been created because play() was called
+        // on a Sound, so let's play
+        LOG_SOUND("AVAudioPlayerChannel constructor - getting the player to play at offset %f", inOffset);
+        theActualPlayer.currentTime = inOffset/1000;
+        theActualPlayer.pan = inTransform.pan;
+        //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+            //[theActualPlayer setPan: inTransform.pan];
+        [theActualPlayer setVolume: inTransform.volume];
+        [theActualPlayer play];
+
+        allAvChannels.push_back(this);
+
+        LOG_SOUND("AVAudioPlayerChannel constructor exiting");
     }
 
-  
-    Sound *CreateAvPlayerSound(const unsigned char *inData, int len)
+    ~AVAudioPlayerChannel()
     {
-       return new AVAudioPlayerSound(inData, len);
+        LOG_SOUND("AVAudioPlayerChannel destructor");
+
+        if (theActualPlayer!=nil)
+           removeFromList();
+
+        // when all channels associated with a sound
+        // are all destroyed, then the Sound that generates
+        // them might be destroyed (if there are no other
+        // references to it anywhere else)
+        mSound->DecRef();
     }
-  
+
+    void removeFromList()
+    {
+       allAvChannels.erase( std::find(allAvChannels.begin(), allAvChannels.end(),this) );
+    }
+
+    void playerHasFinishedDoingItsJob() {
+        if (theActualPlayer!=nil)
+           removeFromList();
+        theActualPlayer = nil;
+    }
+
+    bool isComplete()
+    {
+        //LOG_SOUND("AVAudioPlayerChannel isComplete()"); 
+        bool isPlaying;
+
+        if (theActualPlayer == nil) {
+            // The AVAudioPlayer has been released before
+            // , maybe by a stop() or maybe because
+            // someone already called this method before
+            // , he might be dead by now
+            // so we can't ask him if he is playing.
+            // We know that we return that it is complete
+            isPlaying = false;
+        }
+        else {
+            //LOG_SOUND("AVAudioPlayerChannel invoking isPlaying"); 
+
+            // note that we ask the delegate, not the AVAudioPlayer
+            // the reason is that technically AVAudioPlayer might not be playing,
+            // but we are in the process of restarting it to play a loop,
+            // and we don't want to stop him. So we ask the delegate, which
+            // knows when all the loops are properly done.
+            isPlaying = [thePlayerDelegate isPlaying];
+
+            if (!isPlaying) {
+                // the channel is completely done playing, so we mark
+                // both the channel and its delegate eligible for destruction (if no-one
+                // has any more references to them)
+                // If all the channels associated to a Sound will be destroyed,
+                // then the Sound itself might be eligible for destruction (if there are
+                // no more references to it anywhere else).
+                #ifndef OBJC_ARC
+                [thePlayerDelegate release];
+                [theActualPlayer release];
+                #endif
+                theActualPlayer = nil;
+                thePlayerDelegate = nil;
+                removeFromList();
+            }
+        }
+
+        //LOG_SOUND("AVAudioPlayerSound isComplete() returning%@\n", (!isPlaying ? @"YES" : @"NO")); 
+        return !isPlaying;
+    }
+
+    void suspend()
+    {
+       paused = false;
+       if (theActualPlayer!=nil && [theActualPlayer isPlaying] )
+       {
+          LOG_SOUND("sound - suspend");
+          paused = true;
+          [theActualPlayer pause];
+       }
+       else
+          LOG_SOUND("sound - no need to suspend");
+    }
+
+    void resume()
+    {
+       if (theActualPlayer!=nil && paused)
+       {
+          LOG_SOUND("sound - resume");
+          [theActualPlayer play];
+       }
+       else
+          LOG_SOUND("sound - no need to resume");
+       paused = false;
+    }
+
+    double getLeft()  {
+        LOG_SOUND("AVAudioPlayerChannel getLeft()");
+        //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])	   
+        {
+            //return (1-[theActualPlayer pan])/2;
+            return (1-theActualPlayer.pan)/2;
+        }
+        return 0.5;
+    }
+    double getRight()   {
+        LOG_SOUND("AVAudioPlayerChannel getRight()");
+        //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+        {
+            //return ([theActualPlayer pan] + 1)/2;
+            return (theActualPlayer.pan + 1)/2;
+        }
+        return 0.5;
+    }
+    double getPosition()   {
+        LOG_SOUND("AVAudioPlayerChannel getPosition()");
+        return [theActualPlayer currentTime] * 1000;
+    }
+    double setPosition(const float &inFloat) {
+        LOG_SOUND("AVAudioPlayerChannel setPosition()");
+        theActualPlayer.currentTime = inFloat / 1000;
+        return inFloat;
+    }
+
+    void setTransform(const SoundTransform &inTransform) {
+        LOG_SOUND("AVAudioPlayerChannel setTransform()");
+        //if ([theActualPlayer respondsToSelector: NSSelectorFromString(@"setPan")])
+        {
+            //[theActualPlayer setPan: inTransform.pan];
+            theActualPlayer.pan = inTransform.pan;
+        }
+        [theActualPlayer setVolume: inTransform.volume];
+    }
+    void stop()
+    {
+        LOG_SOUND("AVAudioPlayerChannel stop()");
+        [theActualPlayer stop];
+
+        // note that once a channel has been stopped, it's destined
+        // to be deallocated. It will never play another sound again
+        // we decrease the reference count here of both the player
+        // and its delegate.
+        // If someone calls isComplete() in the future,
+        // that function will see the nil and avoid doing another
+        // release.
+        #ifndef OBJC_ARC
+        [theActualPlayer release];
+        [thePlayerDelegate release];
+        #endif
+        theActualPlayer = nil;
+        thePlayerDelegate = nil;
+        removeFromList();
+    }
+
+};
+
+
+class AVAudioPlayerSound : public Sound
+{
+    std::string mError;
+    std::string mFilename;
+    double theDuration;
+    NSData *data;
+
+public:
+    AVAudioPlayerSound(const std::string &inFilename) : mFilename(inFilename)
+    {
+        LOG_SOUND("AVAudioPlayerSound constructor()");
+        IncRef();
+
+        // we copy the filename to a local variable,
+        // We pass the filename to create one AVSoundPlayer
+        // each time the sound is played.
+        // Note that we don't need the path, the filename suffices.
+        //theFileName = [[NSString alloc] initWithUTF8String:inFilename.c_str()];
+
+        // to answer the getLength() method and to see whether there will be any
+        // ploblems loading the file we create an "initial" AVAudioPlayer
+        // that we'll never actually use to play anything. We just get the length and
+        // any potential error and we
+        // release it soon after. Note that
+        // no buffers are loaded until we invoke either the play or prepareToPlay
+        // methods, so very little memory is used.
+
+        this->data = nil;
+
+        std::string path = inFilename[0]=='/' ? inFilename : GetResourcePath() + gAssetBase + inFilename;
+        NSString *ns_name = [[NSString alloc] initWithUTF8String:path.c_str()];
+        NSURL  *theFileNameAndPathAsUrl = [NSURL fileURLWithPath:ns_name];
+        #ifndef OBJC_ARC
+        [ns_name release];
+        #endif
+
+        NSError *err = nil;
+        AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:theFileNameAndPathAsUrl error:&err];
+        if (err != nil)
+        {
+            mError = [[err description] UTF8String];
+        }
+
+        theDuration = [theActualPlayer duration] * 1000;
+        #ifndef OBJC_ARC
+        [theActualPlayer release];
+        #endif
+    }
+
+    AVAudioPlayerSound(const unsigned char *inDataPtr, int inDataLen)
+    {
+        mFilename = "unknown";
+
+        LOG_SOUND("AVAudioPlayerSound constructor()");
+        IncRef();
+
+        //printf("AVAudioPlayerSound!!");
+
+        this->data = [[NSData alloc] initWithBytes:inDataPtr length:inDataLen];
+
+        NSError *err = nil;
+        AVAudioPlayer *theActualPlayer = [[AVAudioPlayer alloc] initWithData:data error:&err];
+        if (err != nil)
+        {
+            mError = [[err description] UTF8String];
+        }
+
+        theDuration = [theActualPlayer duration] * 1000;
+#ifndef OBJC_ARC
+        [theActualPlayer release];
+#endif
+    }
+
+    ~AVAudioPlayerSound()
+    {
+        LOG_SOUND("AVAudioPlayerSound destructor() ##################################");
+    }
+
+    double getLength()
+    {
+        LOG_SOUND("AVAudioPlayerSound getLength returning %f", theDuration);
+
+        // we got the duration stored already and each Sound only ever
+        // loads one file - so no need to re-check, return what we have
+        return theDuration;
+    }
+
+    void getID3Value(const std::string &inKey, std::string &outValue)
+    {
+        LOG_SOUND("AVAudioPlayerSound getID3Value returning empty string");
+        outValue = "";
+    }
+    int getBytesLoaded()
+    {
+        int toBeReturned = ok() ? 100 : 0;
+        LOG_SOUND("AVAudioPlayerSound getBytesLoaded returning %i", toBeReturned);
+        return toBeReturned;
+    }
+    int getBytesTotal()
+    {
+        int toBeReturned = ok() ? 100 : 0;
+        LOG_SOUND("AVAudioPlayerSound getBytesTotal returning %i", toBeReturned);
+        return toBeReturned;
+    }
+    bool ok()
+    {
+        bool toBeReturned = mError.empty();
+        LOG_SOUND("AVAudioPlayerSound ok() returning BOOL = %s\n", (toBeReturned ? "YES" : "NO")); 
+        return toBeReturned;
+    }
+    std::string getError()
+    {
+        LOG_SOUND("AVAudioPlayerSound getError()"); 
+        return mError;
+    }
+
+    void close()
+    {
+        LOG_SOUND("AVAudioPlayerSound close() doing nothing"); 
+    }
+
+    const char *getEngine() { return "avplayer"; }
+
+    // This method is called when Sound.play is called.
+    SoundChannel *openChannel(double startTime, int loops, const SoundTransform &inTransform)
+    {
+        LOG_SOUND("AVAudioPlayerSound openChannel() startTime=%f, loops = %d",startTime,loops); 
+        //return new AVAudioPlayerChannel(this,mBufferID,loops,inTransform);
+
+        // this creates the channel, note that the channel is an AVAudioPlayer that plays
+        // right away
+        return new AVAudioPlayerChannel(this, mFilename, data, loops, startTime, inTransform);
+    }
+
+};
+
+
+Sound *CreateAvPlayerSound(const std::string &inFilename)
+{
+   return new AVAudioPlayerSound(inFilename);
+}
+
+
+Sound *CreateAvPlayerSound(const unsigned char *inData, int len)
+{
+   return new AVAudioPlayerSound(inData, len);
+}
+
+
+void avSuspendAudio()
+{
+   LOG_SOUND("avSuspendAudio %d", (int)allAvChannels.size());
+   for(auto channel : allAvChannels )
+      channel->suspend();
+}
+
+void avResumeAudio()
+{
+   LOG_SOUND("avResumeAudio %d", (int)allAvChannels.size());
+   for(auto channel : allAvChannels )
+      channel->resume();
+}
+
+
 } // end namespace nme
