@@ -88,11 +88,12 @@ enum
 }
 
 
-void fillSpec(FileDialogOpen *spec, NSPanel *panel, bool ok)
+void fillSpec(FileDialogSpec *spec, NSSavePanel *panel, bool ok)
 {
    if (ok)
    {
-      NSURL*  theDoc = [[panel URLs] objectAtIndex:0];
+      //NSURL*  theDoc = [[panel URLs] objectAtIndex:0];
+      NSURL*  theDoc = [panel URL];
       NSString *pathfile = [theDoc path];
       spec->result = std::string( [pathfile UTF8String] );
    }
@@ -132,7 +133,7 @@ void FileDialogSave( const std::string &title, const std::string &text, const st
          }];
 }
 
-void FileDialogFolder( const std::string &title, const std::string &text )
+void FileDialogFolder( const std::string &title, const std::string &text, FileDialogSpec *spec )
 {
    NSOpenPanel * panel = [NSOpenPanel openPanel];
 
@@ -161,7 +162,6 @@ void splitTypes(std::vector<std::string> &outTypes, const std::string &str)
       }
    }
 }
-
 
 
 bool FileDialogOpen( nme::FileDialogSpec *inSpec )
