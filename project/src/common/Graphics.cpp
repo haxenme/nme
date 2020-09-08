@@ -411,9 +411,40 @@ void Graphics::curveTo(float cx, float cy, float x, float y)
         (fabs(x-cx)<EPSILON && fabs(y-cy)<EPSILON)  )
    {
       mPathData->lineTo(x,y);
+      return;
    }
    else
       mPathData->curveTo(cx,cy,x,y);
+   mCursor = UserPoint(x,y);
+   OnChanged();
+}
+
+inline float Interp(float a, float b, float frac)
+{
+   return a + (b-a)*frac;
+}
+
+void Graphics::cubicTo(float cx0, float cy0, float cx1, float cy1, float x, float y)
+{
+   if ( (fabs(cx0-cx1)<EPSILON && fabs(cy0-cy1)<EPSILON )  ||
+        (fabs(x-cx1)<EPSILON && fabs(y-cy1)<EPSILON ) )
+   {
+      curveTo(cx0, cy0, x, y);
+      return;
+   }
+
+   if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
+        (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
+     mPathData->initPosition(mCursor);
+
+   if ( fabs(mCursor.x-cx0)<EPSILON && fabs(mCursor.y-cy0)<EPSILON )
+   {
+      curveTo(cx1, cy1, x, y);
+      return;
+   }
+
+   mPathData->cubicTo(cx0,cy0,cx1,cy1,x,y);
+
    mCursor = UserPoint(x,y);
    OnChanged();
 }

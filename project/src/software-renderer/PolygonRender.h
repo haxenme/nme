@@ -31,12 +31,22 @@ public:
    void Align(const UserPoint &t0, const UserPoint &t1, UserPoint &ioP0, UserPoint &ioP1);
    bool Render(const RenderTarget &inTarget, const RenderState &inState);
    void BuildSolid(const UserPoint &inP0, const UserPoint &inP1);
+   
    void BuildCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2);
    void BuildFatCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2, double perp_len, const UserPoint &perp0, const UserPoint perp1);
    void HitTestCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2);
    void HitTestFatCurve(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2, double perp_len, const UserPoint &perp0, const UserPoint &perp1);
    void CurveExtent(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2);
    void FatCurveExtent(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2, double perp_len);
+
+   void BuildCubic(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2, const UserPoint &inP3);
+   void BuildFatCubic(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2, const UserPoint &inP3, double perp_len, const UserPoint &perp0, const UserPoint perp1);
+   void HitTestCubic(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2, const UserPoint &inP3);
+   void HitTestFatCubic(const UserPoint &inP0, const UserPoint &inP1, const UserPoint &inP2, const UserPoint &inP3, double perp_len, const UserPoint &perp0, const UserPoint &perp1);
+   void CubicExtent(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2, const UserPoint &p3);
+   void FatCubicExtent(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2, const UserPoint &p3,  double perp_len);
+
+
    bool Hits(const RenderState &inState);
    void BuildHitTest(const UserPoint &inP0, const UserPoint &inP1);
    virtual int  GetWinding() { return 0xffffffff; }

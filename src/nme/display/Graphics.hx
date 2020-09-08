@@ -65,6 +65,11 @@ class Graphics
       nme_gfx_curve_to(nmeHandle, inCX, inCY, inX, inY);
    }
 
+   public function cubicTo(inCx0:Float, inCy0:Float, inCx1:Float, inCy1:Float, inX:Float, inY:Float) 
+   {
+      nme_gfx_cubic_to(nmeHandle, inCx0, inCy0, inCx1, inCy1, inX, inY);
+   }
+
    public function drawCircle(inX:Float, inY:Float, inRadius:Float) 
    {
       nme_gfx_draw_ellipse(nmeHandle, inX - inRadius, inY - inRadius, inRadius * 2, inRadius * 2);
@@ -203,6 +208,7 @@ class Graphics
    private static var nme_gfx_move_to = PrimeLoader.load("nme_gfx_move_to", "oddv");
    private static var nme_gfx_line_to = PrimeLoader.load("nme_gfx_line_to", "oddv");
    private static var nme_gfx_curve_to = PrimeLoader.load("nme_gfx_curve_to", "oddddv");
+   private static var nme_gfx_cubic_to = PrimeLoader.load("nme_gfx_cubic_to", "oddddddv");
    private static var nme_gfx_arc_to = PrimeLoader.load("nme_gfx_arc_to", "oddddv");
    private static var nme_gfx_draw_ellipse = PrimeLoader.load("nme_gfx_draw_ellipse", "oddddv");
    private static var nme_gfx_draw_data = PrimeLoader.load("nme_gfx_draw_data", "oov");

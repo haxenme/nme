@@ -122,7 +122,7 @@ public:
             mPerpLen = 0.5/mScale;
             mElement.mWidth = 1.0/mScale;
          }
- 
+
          if (alphaAA)
          {
             mPerpLen += 0.5/mScale;
@@ -257,7 +257,7 @@ public:
          AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
    }
- 
+
    void ReserveArraysTight(int inN)
    {
       mElement.mCount = inN;
@@ -271,7 +271,7 @@ public:
       data.mArray.resizeSpace( mElement.mVertexOffset + mElement.mStride*inN );
    }
 
-  
+
    bool SetFill(IGraphicsFill *inFill,HardwareRenderer &inHardware)
    {
       mGradFlags = 0;
@@ -364,7 +364,7 @@ public:
                   p.x *= 0.5;
                   p.y *= 0.5;
                }
- 
+
             }
             else
             {
@@ -402,7 +402,7 @@ public:
       int stride = mElement.mStride;
 
       mElement.mPrimType = ptTriangles;
-      
+
       const float *t = &inPath->mUVT[0];
       for(int v=0;v<n;v++)
       {
@@ -411,7 +411,7 @@ public:
             *vertices = inPath->mVertices[v];
             Next(vertices);
          }
-           
+
          if(colours)
          {
             #ifdef NME_FLOAT32_VERT_VALUES
@@ -429,7 +429,7 @@ public:
          {
             *tex = mTexture->TexToPaddedTex( UserPoint(t[0],t[1]) );
             Next(tex);
-            
+
             t+=2;
             if (persp)
             {
@@ -453,7 +453,7 @@ public:
 
       int tri_count = inPath->mVertices.size()/3;
       ReserveArrays(tri_count*6);
- 
+
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *tri =  &inPath->mVertices[0];
       for(int v=0;v<tri_count;v++)
@@ -1034,7 +1034,7 @@ public:
       data.mElements.last().mPrimType = ptLines;
    }
 
-   
+
    void PushTriangleWireframe(const Vertices &inV)
    {
       ReserveArrays(inV.size()*2);
@@ -1219,6 +1219,34 @@ public:
                }
                break;
 
+
+            case pcCubicTo:
+               {
+               double len = ((last_point-point[0]).Norm() + (point[1]-point[0]).Norm() + (point[2]-point[1]).Norm()) * 0.25;
+               if (len!=0)
+               {
+                  int steps = (int)len;
+                  if (steps<3) steps = 3;
+                  if (steps>100) steps = 100;
+                  double step = 1.0/(steps+1);
+                  double t = 0;
+                  for(int s=0;s<steps;s++)
+                  {
+                     t+=step;
+                     double t_ = 1.0-t;
+                     UserPoint p = last_point * (t_ * t_ * t_) + point[0] * (3.0 * t * t_ * t_) + point[1] * (3.0 * t * t * t_) + point[2] * (t*t*t);
+                     if (outline.last()!=p)
+                        outline.push_back(p);
+                  }
+                  last_point = point[2];
+                  if (outline.last()!=last_point)
+                      outline.push_back(last_point);
+                  points++;
+               }
+               point += 3;
+               }
+               break;
+
             default:
                points += gCommandDataSize[ inCommands[i] ];
          }
@@ -1236,25 +1264,28 @@ public:
    struct Segment
    {
       inline Segment() { }
-      inline Segment(const UserPoint &inP) : p(inP), curve(inP) { }
-      inline Segment(const UserPoint &inP,const UserPoint &inCurve) : p(inP), curve(inCurve) { }
+      inline Segment(const UserPoint &inP) : p(inP), curve0(inP), curve1(inP) { }
+      inline Segment(const UserPoint &inP,const UserPoint &inCurve) : p(inP), curve0(inCurve), curve1(inCurve) { }
+      inline Segment(const UserPoint &inP,const UserPoint &inCurve1, const UserPoint &inCurve0) : p(inP), curve0(inCurve0), curve1(inCurve1) { }
 
       UserPoint getDir0(const UserPoint &inP0) const
       {
-         return curve-inP0;
+         return curve0-inP0;
       }
       UserPoint getDir1(const UserPoint &inP0) const
       {
          if (isCurve())
-            return p-curve;
+            return p-curve1;
          return p-inP0;
       }
       UserPoint getDirAverage(const UserPoint &inP0) const { return p-inP0; }
 
-      inline bool isCurve() const { return p!=curve; }
+      inline bool isCurve() const { return p!=curve1; }
+      inline bool isCurve2() const { return curve0!=curve1; }
 
       UserPoint p;
-      UserPoint curve;
+      UserPoint curve0;
+      UserPoint curve1;
    };
 
    void AddArc(Curves &outCurve, UserPoint inP, double angle, UserPoint inVx, UserPoint inVy, float t)
@@ -1656,6 +1687,52 @@ public:
       rightCurve.push_back( CurveEdge(inP2+perp1,0.9999+t0) );
    }
 
+
+   void AddCubicSegment(Curves &leftCurve, Curves &rightCurve,
+                        UserPoint perp0, UserPoint perp1,
+                        UserPoint inP0,UserPoint inP1,UserPoint inP2,UserPoint inP3,
+                        UserPoint p0_left, UserPoint p0_right,UserPoint p1_left, UserPoint p1_right, float t0)
+   {
+      QuickVec<Range> stack;
+      Range r0(0,inP0-perp0, inP0+perp0, 1,inP3-perp1, inP3+perp1);
+      stack.push_back(r0);
+
+      while(stack.size())
+      {
+         Range r = stack.qpop();
+         if (r.t1-r.t0 > 0.001 )
+         {
+            // Calc midpoint...
+            double t = (r.t0+r.t1)*0.5;
+            double t_ = 1.0 - t;
+            UserPoint mid_p = inP0 * (t_ * t_ * t_) + inP1 * (3.0 * t * t_ * t_) + inP2 * (3.0 * t * t * t_) + inP3 * (t*t*t);
+            UserPoint dir = inP0*(2*t-1-t*t) + inP1*(1-4*t+3*t*t) + inP2*(2*t-3*t*t)  + inP3*(t*t);
+
+            UserPoint mid_l = mid_p - dir.Perp(mPerpLen);
+            UserPoint mid_r = mid_p + dir.Perp(mPerpLen);
+
+            UserPoint average_l = (r.left0+r.left1)*0.5;
+            UserPoint average_r = (r.right0+r.right1)*0.5;
+            if ( mid_l.Dist2(average_l)>mCurveThresh2 || mid_r.Dist2(average_r)>mCurveThresh2)
+            {
+               // Reverse order, LIFO
+               stack.push_back( Range(t,mid_l,mid_r, r.t1,r.left1,r.right1) );
+               r.t1 = t;
+               r.left1 = mid_l;
+               r.right1 = mid_r;
+               stack.push_back(r);
+               continue;
+            }
+         }
+         leftCurve.push_back( CurveEdge(r.left0,r.t0+t0) );
+         rightCurve.push_back( CurveEdge(r.right0,r.t0+t0) );
+      }
+      leftCurve.push_back( CurveEdge(inP3-perp1,0.9999+t0) );
+      rightCurve.push_back( CurveEdge(inP3+perp1,0.9999+t0) );
+   }
+
+
+
    void EndCap(Curves &left, Curves &right, UserPoint p0, UserPoint perp, double t)
    {
       bool first = t==0;
@@ -1666,7 +1743,7 @@ public:
          back.x*=-1;
          back.y*=-1;
       }
- 
+
       if (mCaps==scSquare)
       {
          if (first)
@@ -1795,7 +1872,7 @@ public:
           UserPoint perp1(-dir1.y*mPerpLen, dir1.x*mPerpLen);
           UserPoint next_perp(-next_dir.y*mPerpLen, next_dir.x*mPerpLen);
 
- 
+
           UserPoint p1_left = p-perp1;
           UserPoint p1_right = p+perp1;
 
@@ -1804,7 +1881,10 @@ public:
 
           if (seg.isCurve())
           {
-             AddCurveSegment(leftCurve,rightCurve,perp0, perp1,p0,seg.curve,seg.p, p0_left, p0_right, p1_left, p1_right,t);
+             if (seg.isCurve2())
+                AddCubicSegment(leftCurve,rightCurve,perp0, perp1,p0,seg.curve0,seg.curve1,seg.p, p0_left, p0_right, p1_left, p1_right,t);
+             else
+                AddCurveSegment(leftCurve,rightCurve,perp0, perp1,p0,seg.curve0,seg.p, p0_left, p0_right, p1_left, p1_right,t);
              t+=1.0;
           }
           else
@@ -1831,7 +1911,7 @@ public:
           else if ( fancyJoints && angle<0.9 )
           {
              /*
-   
+
                               ---
                            ---
                         ---
@@ -1848,40 +1928,40 @@ public:
                   |      .      |   
                   |      .      |   
                   |      .      |
-   
+
                 A = p + next_perp
                 B = p - next_perp
-   
+
                 C = p + perp1
                 D = p - perp1
-   
+
                 Y = A + alpha*next_dir
                   = C - alpha*dir1
-   
+
                    = p + next_perp + alpha*next_dir
                    = p + perp1 - alpha*dir1
-   
+
                    -> next_perp-perp1 = alpha*(dir1+next_dir)
                    -> alpha = prep1-next_perp     in either x or y direction...
                               ---------------
                               dir1+next_dir
-   
+
                 On the overlap side, we will draw a bevel, and let the removeLoops code fix it.
                 On the non-overlay side, we will draw a joint
              */
-   
-   
-   
+
+
+
              double denom_x = dir1.x+next_dir.x;
              double denom_y = dir1.y+next_dir.y;
              double alpha=0;
-   
+
              // Choose the better-conditioned axis
              if (fabs(denom_x)>fabs(denom_y))
                 alpha = denom_x==0 ? 0 : (perp1.x-next_perp.x)/denom_x;
              else
                 alpha = denom_y==0 ? 0 : (perp1.y-next_perp.y)/denom_y;
-   
+
              if ( fabs(alpha)>0.01 )
              {
                 if (mJoints==sjRound)
@@ -1950,7 +2030,7 @@ public:
             mElement.mStride -= sizeof(float)*2.0;
          }
          mElement.mWidth = 1;
- 
+
 
          for(int side=0; side<2; side++)
          {
@@ -2194,7 +2274,7 @@ public:
                prev = *point;
                first = *point++;
                break;
-               
+
             case pcWideLineTo:
                point++;
             case pcLineTo:
@@ -2204,7 +2284,7 @@ public:
                   point++;
                   continue;
                }
- 
+
                strip.push_back(Segment(*point));
 
                // Implicit loop closing...
@@ -2213,12 +2293,12 @@ public:
                   AddStrip(strip,true);
                   strip.resize(0);
                }
-               
+
                prev = *point;
                point++;
                }
                break;
-               
+
             case pcCurveTo:
                {
                   if (strip.size()>0 && *point==prev && point[1]==prev)
@@ -2226,7 +2306,7 @@ public:
                      point+=2;
                      continue;
                   }
- 
+
                   strip.push_back(Segment(point[1],point[0]));
 
                   // Implicit loop closing...
@@ -2239,7 +2319,32 @@ public:
                   prev = point[1];
                   point +=2;
               }
-               break;
+              break;
+
+
+            case pcCubicTo:
+               {
+                  if (strip.size()>0 && *point==prev && point[1]==prev && point[2]==prev)
+                  {
+                     point+=3;
+                     continue;
+                  }
+
+                  strip.push_back(Segment(point[2],point[1],point[0]));
+
+                  // Implicit loop closing...
+                  if (strip.size()>=2 && point[2]==first)
+                  {
+                     AddStrip(strip,true);
+                     strip.resize(0);
+                  }
+
+                  prev = point[2];
+                  point +=3;
+              }
+              break;
+
+
             default:
                point += gCommandDataSize[ inCommands[i] ];
          }
@@ -2311,7 +2416,7 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 
    UserPoint *srcV =  (UserPoint *)&inPath.data[ inJob.mData0 ];
    UserPoint *v = (UserPoint *)&ioData.mArray[ elem.mVertexOffset ];
-   
+
    for(int i=0;i<elem.mCount;i++)
    {
       *v = *srcV++;
@@ -2381,7 +2486,7 @@ bool HardwareData::isScaleOk(const RenderState &inState) const
 {
    if (mMinScale==0 && mMaxScale==0)
       return true;
-   
+
    float scale = scaleOf(inState);
    if (mMinScale>0 && scale<mMinScale)
    {
@@ -2459,7 +2564,7 @@ inline bool HitTri(const UserPoint &base, const UserPoint &_v0, const UserPoint 
          }
       }
    }
- 
+
    return false;
 }
 
@@ -2596,7 +2701,7 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
                continue;
 
             int numTriangles = draw.mCount / 3;
-         
+
             int vidx = 0;
             for(int i=0;i<numTriangles;i++)
             {
@@ -2608,13 +2713,13 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
            }
          }
          else if ((draw.mPrimType == ptQuadsFull || draw.mPrimType == ptQuads) && (draw.mFlags & DRAW_TILE_MOUSE))
-		 {
+         {
             if (draw.mCount<4)
                continue;
 
-			int numQuads = draw.mCount / 4;
+            int numQuads = draw.mCount / 4;
 
-			int vidx = 0;
+            int vidx = 0;
             for(int i=0;i<numQuads;i++)
             {
                UserPoint base = V(vidx++);
@@ -2623,10 +2728,10 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
                UserPoint _v2 = V(vidx++);
                if (HitTri(base,_v0,_v1,pos))
                   return true;
-			   else if (HitTri(_v0,_v2,_v1,pos))
+               else if (HitTri(_v0,_v2,_v1,pos))
                   return true;
            }
-		 }
+         }
          else if (draw.mPrimType == ptTriangleStrip)
          {
             for(int i=2;i<draw.mCount;i++)
@@ -2635,7 +2740,7 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
                   return true;
             }
          }
- 
+
       }
 
    return false;

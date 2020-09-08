@@ -57,6 +57,13 @@ public:
                   mBuildExtent->Add(last);
                   point += 2;
                   break;
+               case pcCubicTo:
+                  CubicExtent(last, point[0], point[1],point[2]);
+                  last = point[2];
+                  mBuildExtent->Add(last);
+                  point += 3;
+                  break;
+
             }
          }
       }
@@ -103,6 +110,18 @@ public:
                   point += 2;
                   points++;
                   break;
+
+
+               case pcCubicTo:
+                  if (inMode==itHitTest)
+                     HitTestCubic(last_point, point[0], point[1],point[2]);
+                  else
+                     BuildCubic(last_point, point[0], point[1],point[2]);
+                  last_point = point[2];
+                  point += 3;
+                  points++;
+                  break;
+
 
                default:
                   points += gCommandDataSize[ mCommands[i] ];

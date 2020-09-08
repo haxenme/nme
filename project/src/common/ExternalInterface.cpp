@@ -2908,6 +2908,18 @@ void nme_gfx_curve_to(value inGfx, double inCX, double inCY, double inX, double 
 DEFINE_PRIME5v(nme_gfx_curve_to);
 
 
+void nme_gfx_cubic_to(value inGfx, double inCx0, double inCy0, double inCx1, double inCy1, double inX, double inY)
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      CHECK_ACCESS("nme_gfx_cubic_to");
+      gfx->cubicTo(inCx0,inCy0,inCx1,inCy1,inX,inY);
+   }
+}
+DEFINE_PRIME7v(nme_gfx_cubic_to);
+
+
 void nme_gfx_arc_to(value inGfx, double inCX, double inCY, double inX, double inY)
 {
    Graphics *gfx;
@@ -3509,6 +3521,17 @@ void nme_graphics_path_curve_to(value inPath,double inX1,double inY1,double inX2
       path->curveTo(inX1,inY1,inX2,inY2);
 }
 DEFINE_PRIME5v(nme_graphics_path_curve_to)
+
+   
+void nme_graphics_path_cubic_to(value inPath, double inCx0, double inCy0, double inCx1, double inCy1, double inX, double inY)
+{
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      path->cubicTo(inCx0,inCy0,inCx1,inCy1,inX,inY);
+}
+DEFINE_PRIME7v(nme_graphics_path_cubic_to);
+
+
 
 
 void nme_graphics_path_line_to(value inPath,double inX1,double inY1)

@@ -45,6 +45,11 @@ public function new()
    shape.rotation = 10;
    addChild(shape);
 
+   var gfx = graphics;
+   gfx.lineStyle(4,0);
+   gfx.moveTo(0,0);
+   gfx.cubicTo(500,0,0,500,500,500);
+
 
    stage.addEventListener(nme.events.KeyboardEvent.KEY_DOWN, OnKey );
 

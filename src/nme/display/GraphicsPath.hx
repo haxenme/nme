@@ -19,6 +19,11 @@ class GraphicsPath extends IGraphicsData
       nme_graphics_path_curve_to(nmeHandle, controlX, controlY, anchorX, anchorY);
    }
 
+   public function cubicTo(cx0:Float, cy0:Float, cx1:Float, cy1:Float, x:Float, y:Float):Void 
+   {
+      nme_graphics_path_curve_to(nmeHandle, cx0,cy0,cx1,cy1,x,y);
+   }
+
    public function lineTo(x:Float, y:Float):Void 
    {
       nme_graphics_path_line_to(nmeHandle, x, y);
@@ -69,6 +74,7 @@ class GraphicsPath extends IGraphicsData
    // Native Methods
    private static var nme_graphics_path_create = PrimeLoader.load("nme_graphics_path_create", "oobo");
    private static var nme_graphics_path_curve_to = PrimeLoader.load("nme_graphics_path_curve_to", "oddddv");
+   private static var nme_graphics_path_cubic_to = PrimeLoader.load("nme_graphics_path_cubic_to", "oddddddv");
    private static var nme_graphics_path_line_to = PrimeLoader.load("nme_graphics_path_line_to", "oddv");
    private static var nme_graphics_path_move_to = PrimeLoader.load("nme_graphics_path_move_to", "oddv");
    private static var nme_graphics_path_wline_to = PrimeLoader.load("nme_graphics_path_wline_to", "oddv");
