@@ -182,7 +182,7 @@ void GraphicsPath::closeLine(int inCommand0, int inData0)
             break;
 
          case pcCubicTo:
-            point+=1;
+            point+=2;
             // Fall through...
          case pcWideLineTo:
          case pcCurveTo:
