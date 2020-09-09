@@ -21,7 +21,7 @@ class GraphicsPath extends IGraphicsData
 
    public function cubicTo(cx0:Float, cy0:Float, cx1:Float, cy1:Float, x:Float, y:Float):Void 
    {
-      nme_graphics_path_curve_to(nmeHandle, cx0,cy0,cx1,cy1,x,y);
+      nme_graphics_path_cubic_to(nmeHandle, cx0,cy0,cx1,cy1,x,y);
    }
 
    public function lineTo(x:Float, y:Float):Void 
