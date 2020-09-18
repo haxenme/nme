@@ -295,7 +295,7 @@ public:
       mSmooth = true;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mMipmaps ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mMipmaps ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
       #ifndef NME_GLES
@@ -473,7 +473,7 @@ public:
          mSmooth = inSmooth;
          if (mSmooth)
          {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mMipmaps ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
          }
          else
