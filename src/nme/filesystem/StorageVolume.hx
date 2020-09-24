@@ -22,6 +22,8 @@ class StorageVolume
 
       if (drive == "") drive = null;
    }
+
+   public function toString() return 'StorageVolume($name@$rootDirectory)';
 }
 
 #else

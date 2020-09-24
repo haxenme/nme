@@ -41,6 +41,8 @@ struct Range
    UserPoint right1;
 };
 
+HardwareRenderer *HardwareRenderer::current = nullptr;
+
 
 
 typedef QuickVec<float> Normals;
@@ -2502,6 +2504,8 @@ bool HardwareData::isScaleOk(const RenderState &inState) const
 }
 
 
+
+
 void HardwareData::clear()
 {
    releaseVbo();
@@ -2568,6 +2572,90 @@ inline bool HitTri(const UserPoint &base, const UserPoint &_v0, const UserPoint 
    return false;
 }
 
+HardwareRenderer::HardwareRenderer()
+{
+   HardwareRenderer::current = this;
+
+   mWidth = 0;
+   mHeight = 0;
+   mLineWidth = -1;
+   mLineScaleNormal = -1;
+   mLineScaleV = -1;
+   mLineScaleH = -1;
+   mQuality = sqBest;
+   mScaleX = mScaleY = 1.0;
+   mOffsetX = mOffsetY = 0;
+
+   for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++)
+         mTrans[i][j] = i==j;
+}
+
+void HardwareRenderer::SetWindowSize(int inWidth,int inHeight)
+{
+   mWidth = inWidth;
+   mHeight = inHeight;
+}
+
+int HardwareRenderer::Width() const { return mWidth; }
+int HardwareRenderer::Height() const { return mHeight; }
+
+
+void HardwareRenderer::setOrtho(float x0,float x1, float y0, float y1)
+{
+   mScaleX = 2.0/(x1-x0);
+   mScaleY = 2.0/(y1-y0);
+   mOffsetX = (x0+x1)/(x0-x1);
+   mOffsetY = (y0+y1)/(y0-y1);
+   mModelView = Matrix();
+
+   CombineModelView(mModelView);
+} 
+
+void HardwareRenderer::CombineModelView(const Matrix &inModelView)
+{
+   mTrans[0][0] = inModelView.m00 * mScaleX;
+   mTrans[0][1] = inModelView.m01 * mScaleX;
+   mTrans[0][2] = 0;
+   mTrans[0][3] = inModelView.mtx * mScaleX + mOffsetX;
+
+   mTrans[1][0] = inModelView.m10 * mScaleY;
+   mTrans[1][1] = inModelView.m11 * mScaleY;
+   mTrans[1][2] = 0;
+   mTrans[1][3] = inModelView.mty * mScaleY + mOffsetY;
+}
+
+
+void HardwareRenderer::SetQuality(StageQuality inQ)
+{
+   if (inQ!=mQuality)
+   {
+      mQuality = inQ;
+      mLineWidth = 99999;
+   }
+}
+
+void HardwareRenderer::Render(const RenderState &inState, const HardwareData &inData )
+{
+   if (!inData.mArray.size())
+      return;
+
+   SetViewport(inState.mClipRect);
+
+   if (mModelView!=*inState.mTransform.mMatrix)
+   {
+      mModelView=*inState.mTransform.mMatrix;
+      CombineModelView(mModelView);
+      mLineScaleV = -1;
+      mLineScaleH = -1;
+      mLineScaleNormal = -1;
+   }
+   const ColorTransform *ctrans = inState.mColourTransform;
+   if (ctrans && ctrans->IsIdentity())
+      ctrans = 0;
+
+   RenderData(inData,ctrans,mTrans);
+}
 
 
 

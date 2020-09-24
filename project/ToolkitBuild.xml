@@ -21,6 +21,7 @@
    <set name="rpi" value="1" if="winrpi" />
    <set name="sdl_rpi" value="1" if="winrpi" />
 
+   <set name="NME_METAL" value="1" if="nme_metal" />
    <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE" />
    <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
    <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
@@ -65,8 +66,9 @@
    <set name="NME_MIXER" value="1" if="NME_SDL_ANY" />
 
    <!-- Use opengl backend ? -->
-   <set name="NME_OGL" value="1" />
+   <set name="NME_OGL" value="1" unless="NME_METAL" />
    <unset name="NME_OGL" if="winrt" unless="NME_ANGLE" />
+   <set name="NATIVE_TOOLKIT_METAL" value="1" if="NME_METAL" />
 
    <!-- For systems that do not create the egl context for us -->
    <set name="NME_EGL" value="1" if="rpi" unless="sdl_rpi" />
@@ -214,6 +216,8 @@
       <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
       <compilerflag value="-DNME_WORKER_THREADS" if="NME_WORKER_THREADS" />
       <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
+      <compilerflag value="-DNME_OGL" if="NME_OGL" />
+      <compilerflag value="-DNME_METAL" if="NME_METAL" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
 
       <cache value="1" unless="winrpi" />
@@ -327,7 +331,7 @@
         <section if="gcw0" >
            <compilerflag value="-I${GCW0_SDK}/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include/SDL2" />
         </section>
-        <compilerflag value="-DSDL_OGL" />
+        <compilerflag value="-DSDL_OGL" if="NME_OGL"/>
         <compilerflag value="-DNME_MIXER" if="NME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
         <depend files="native-toolkit-sdl-depends" />
@@ -346,7 +350,11 @@
          <file name="${SRC_DIR}/opengl/Egl.cpp" if="NME_EGL" />
          <file name="${SRC_DIR}/opengl/OpenGLS3D.cpp" if="NME_S3D" />
       </section>
-      
+
+      <section if="NME_METAL">
+         <file name="${SRC_DIR}/metal/MetalContext.mm" />
+      </section>
+
       <section if="NME_OPENAL">
          <file name="${SRC_DIR}/audio/OpenALSound.cpp" />
          <compilerflag value="-DNME_OPENAL" />
@@ -550,6 +558,11 @@
             <lib name="-liconv" />
          </section>
 
+         <section if="NME_METAL">
+            <vflag name="-framework" value="Metal" />
+            <vflag name="-framework" value="QuartzCore" />
+         </section>
+
 
          <section if="android">
             <lib name="-ldl" />
@@ -653,6 +666,12 @@
    <files id="native-toolkit-sdl" >
       <cache value="1" asLibrary="true" project="libSdl" />
       <compilerflag value="-DWINDOWS_IGNORE_PACKING_MISMATCH"  />
+      <section if="NME_METAL">
+          <compilerflag value="-DSDL_VIDEO_METAL=1" />
+          <compilerflag value="-DSDL_VIDEO_RENDER_METAL=1" />
+          <file name="${NATIVE_TOOLKIT_PATH}/sdl/src/render/metal/SDL_render_metal.m" />
+      </section>
+
       <section if="NME_MIXER linux" >
          <compilerflag value="-Isupport/linux"  />
          <compilerflag value="-DSDL_AUDIO_DRIVER_ALSA" />

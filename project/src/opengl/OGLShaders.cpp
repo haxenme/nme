@@ -1,4 +1,5 @@
 #include "./OGLShaders.h"
+#include <HardwareImpl.h>
 
 #ifdef HX_MAXOS
   #include <OpenGL/glext.h>

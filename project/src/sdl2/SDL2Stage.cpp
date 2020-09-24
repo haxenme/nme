@@ -58,6 +58,10 @@ int InitSDL()
    int audioFlag = 0;
    #endif
 
+   #ifdef NME_METAL
+   SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
+   #endif
+
    int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
    
    if (err == 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER) == 0)
@@ -242,16 +246,18 @@ SDL_Cursor *sHandCursor = 0;
 
 unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN_DESKTOP;
 //unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN;
+//
+extern void *GetMetalLayerFromRenderer(SDL_Renderer *renderer);
 
 class SDLStage : public Stage
 {
 public:
-   SDLStage(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsOpenGL, int inWidth, int inHeight)
+   SDLStage(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsHardware, int inWidth, int inHeight)
    {
       mWidth = inWidth;
       mHeight = inHeight;
       
-      mIsOpenGL = inIsOpenGL;
+      mIsHardware = inIsHardware;
       mSDLWindow = inWindow;
       mSDLRenderer = inRenderer;
       mWindowFlags = inWindowFlags;
@@ -263,24 +269,36 @@ public:
       if (mIsFullscreen)
          displayState = sdsFullscreenInteractive;
 
-      if (mIsOpenGL)
+      if (mIsHardware)
       {
-         mOpenGLContext = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
-         mOpenGLContext->IncRef();
-         //mOpenGLContext->SetWindowSize(inSurface->w, inSurface->h);
-         mOpenGLContext->SetWindowSize(mWidth, mHeight);
-         mPrimarySurface = new HardwareSurface(mOpenGLContext);
+         #ifdef NME_OGL
+         mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
+         #elif defined(NME_METAL)
+
+         void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
+         //const id<MTLDevice> gpu = swapchain.device;
+         //const id<MTLCommandQueue> queue = [gpu newCommandQueue];
+         mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
+
+         #else
+         #error "No valid HardwareRenderer"
+         #endif
+
+         mHardwareRenderer->IncRef();
+         //mHardwareRenderer->SetWindowSize(inSurface->w, inSurface->h);
+         mHardwareRenderer->SetWindowSize(mWidth, mHeight);
+         mPrimarySurface = new HardwareSurface(mHardwareRenderer);
       }
       else
       {
-         mOpenGLContext = 0;
+         mHardwareRenderer = 0;
          mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
          if (!mSoftwareSurface)
          {
             fprintf(stderr, "Could not create SDL surface : %s\n", SDL_GetError());
          }
          mSoftwareTexture = SDL_CreateTexture(mSDLRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, mWidth, mHeight);
-         mPrimarySurface = new SDLSurf(mSoftwareSurface, inIsOpenGL);
+         mPrimarySurface = new SDLSurf(mSoftwareSurface, inIsHardware);
       }
       mPrimarySurface->IncRef();
      
@@ -301,14 +319,14 @@ public:
    ~SDLStage()
    {
       SDL_SetWindowFullscreen(mSDLWindow, 0);
-      if (!mIsOpenGL)
+      if (!mIsHardware)
       {
          SDL_FreeSurface(mSoftwareSurface);
          SDL_DestroyTexture(mSoftwareTexture);
       }
       else
       {
-         mOpenGLContext->DecRef();
+         mHardwareRenderer->DecRef();
       }
       mPrimarySurface->DecRef();
       SDL_DestroyRenderer(mSDLRenderer);
@@ -329,9 +347,9 @@ public:
       mWidth = inWidth;
       mHeight = inHeight;
       
-      if (mIsOpenGL)
+      if (mIsHardware)
       {
-         mOpenGLContext->SetWindowSize(inWidth, inHeight);
+         mHardwareRenderer->SetWindowSize(inWidth, inHeight);
       }
       else
       {
@@ -557,7 +575,7 @@ public:
    }
     
    
-   bool isOpenGL() const { return mOpenGLContext; }
+   bool isOpenGL() const { return mHardwareRenderer; }
    
    
    void ProcessEvent(Event &inEvent)
@@ -605,7 +623,7 @@ public:
    
    void Flip()
    {
-      if (mIsOpenGL)
+      if (mIsHardware)
       {
          SDL_RenderPresent(mSDLRenderer);
       }
@@ -773,13 +791,13 @@ public:
    }
    
    
-   HardwareRenderer *mOpenGLContext;
+   HardwareRenderer *mHardwareRenderer;
    SDL_Window *mSDLWindow;
    SDL_Renderer *mSDLRenderer;
    Surface     *mPrimarySurface;
    SDL_Surface *mSoftwareSurface;
    SDL_Texture *mSoftwareTexture;
-   bool         mIsOpenGL;
+   bool         mIsHardware;
    Cursor       mCurrentCursor;
    bool         mShowCursor;
    bool            mLockCursor;   
@@ -793,11 +811,11 @@ public:
 class SDLFrame : public Frame
 {
 public:
-   SDLFrame(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsOpenGL, int inWidth, int inHeight)
+   SDLFrame(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsHardware, int inWidth, int inHeight)
    {
       mWindowFlags = inWindowFlags;
-      mIsOpenGL = inIsOpenGL;
-      mStage = new SDLStage(inWindow, inRenderer, mWindowFlags, inIsOpenGL, inWidth, inHeight);
+      mIsHardware = inIsHardware;
+      mStage = new SDLStage(inWindow, inRenderer, mWindowFlags, inIsHardware, inWidth, inHeight);
       mStage->IncRef();
    }
    
@@ -829,7 +847,7 @@ public:
    
    
    SDLStage *mStage;
-   bool mIsOpenGL;
+   bool mIsHardware;
    uint32 mWindowFlags;
    
    double mAccX;
@@ -1891,7 +1909,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
    
    bool fullscreen = (inFlags & wfFullScreen) != 0;
+   #ifdef NME_OGL
    bool opengl = (inFlags & wfHardware) != 0;
+   bool metal = false;
+   #else
+   bool metal = (inFlags & wfHardware) != 0;
+   bool opengl = false;
+   #endif
    bool resizable = (inFlags & wfResizable) != 0;
    bool borderless = (inFlags & wfBorderless) != 0;
    bool vsync = (inFlags & wfVSync) != 0;
@@ -2079,9 +2103,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       windowFlags = SDL_GetWindowFlags (window);
       if (fullscreen) sgWindowRect = Rect(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, inWidth, inHeight);
 
+      bool hardware = metal||opengl;
+
       int renderFlags = 0;
-      if (opengl) renderFlags |= SDL_RENDERER_ACCELERATED;
-      if (opengl && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
+      if (hardware) renderFlags |= SDL_RENDERER_ACCELERATED;
+      if (hardware && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
 
       renderer = SDL_CreateRenderer (window, -1, renderFlags);
       
@@ -2102,11 +2128,12 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          inFlags &= ~wfHW_AA_HIRES;
          inFlags &= ~wfHW_AA;
       }
-      else if (!renderer && opengl) 
+      else if (!renderer && hardware) 
       {
          // if opengl is enabled and no window was created, disable it and try again
-         fprintf(stderr, "OpenGL is not available. Retrying without. (%s)\n", SDL_GetError());
+         fprintf(stderr, "Hardware is not available. Retrying without. (%s)\n", SDL_GetError());
          opengl = false;
+         metal = false;
          requestWindowFlags &= ~SDL_WINDOW_OPENGL;
       }
       else 
@@ -2142,8 +2169,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    {
       SDL_GetWindowSize(window, &width, &height);
    }
-   
-   sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, width, height);
+
+   bool hardware = metal||opengl;
+   sgSDLFrame = new SDLFrame(window, renderer, windowFlags, hardware, width, height);
    #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
    insertWinProc(hWin,sgSDLFrame);
    #endif

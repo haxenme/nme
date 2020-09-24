@@ -36,6 +36,33 @@ std::string CapabilitiesGetLanguage()
    return result;
 }
 
+
+#if defined(HX_MACOS)
+void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
+{
+   NSArray *urls = [[NSFileManager defaultManager] mountedVolumeURLsIncludingResourceValuesForKeys:@[NSURLVolumeNameKey] options:0];
+   for(NSURL *url in urls)
+   {
+     @autoreleasepool {
+      if ([url isFileURL])
+      {
+         NSString *p = [url path];
+
+         VolumeInfo info;
+         info.path = [p UTF8String];
+         NSArray<NSString *> *pathComponents = [url pathComponents];
+         info.name = [ [pathComponents lastObject] UTF8String];
+         info.removable = false; // todo
+         info.writable = true; // todo
+         info.fileSystemType = "Hard Drive";
+         outInfo.push_back(info);
+      }
+     }
+   }
+}
+#endif
+
+
 double CapabilitiesGetScreenDPI()
 {
    #ifndef OBJC_ARC

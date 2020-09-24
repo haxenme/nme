@@ -197,20 +197,6 @@ namespace nme
 
 Texture *OGLCreateTexture(Surface *inSurface,unsigned int inFlags);
 
-enum
-{
-   PROG_TEXTURE =           0x0001,
-   PROG_ALPHA_TEXTURE =     0x0002,
-   PROG_COLOUR_PER_VERTEX = 0x0004,
-   PROG_NORMAL_DATA =       0x0008,
-   PROG_RADIAL =            0x0010,
-   PROG_RADIAL_FOCUS =      0x0020,
-   PROG_TINT =              0x0040,
-   PROG_COLOUR_OFFSET =     0x0080,
-
-   PROG_COUNT =             0x0100,
-};
-
 
 class GPUProg
 {

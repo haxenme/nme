@@ -27,7 +27,14 @@ ManagedStage::ManagedStage(int inWidth,int inHeight,int inFlags)
 
    sgStage = this;
 
+   #if NME_OGL
    mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
+   #elif defined(NME_METAL)
+   // TODO?
+   mHardwareRenderer = HardwareRenderer::CreateMetal(0);
+   #else
+   #error "No valid HardwareRenderer"
+   #endif
    mHardwareRenderer->IncRef();
    mHardwareSurface = new HardwareSurface(mHardwareRenderer);
    mHardwareSurface->IncRef();

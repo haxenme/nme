@@ -5568,7 +5568,9 @@ void nme_get_glstats(value aStatsArray)
   {
     //0 Verts, 1 Calls, 2 Element Verts, 3 Element Calls
     //4 - 7 GLView stats
+    #ifdef NME_OGL
     GetGLStats(statsArray, n);
+    #endif
   }
 }
 DEFINE_PRIME1v(nme_get_glstats)
