@@ -77,8 +77,12 @@ public:
 
    mutable class HardwareRenderer *mVboOwner;
    mutable int             mRendersWithoutVbo;
-   mutable unsigned int    mVertexBo;
    mutable int             mContextId;
+   union
+   {
+      mutable unsigned int mVertexBo;
+      mutable void         *mVertexBufferPtr;
+   };
 };
 
 
@@ -158,7 +162,7 @@ public:
 
    virtual void DestroyNativeTexture(void *inNativeTexture) { }
    virtual void DestroyTexture(unsigned int inTex) { }
-   virtual void DestroyVbo(unsigned int inVbo) { }
+   virtual void DestroyVbo(unsigned int inVbo, void *inVboPtr) { }
    virtual void DestroyProgram(unsigned int inProg) { }
    virtual void DestroyShader(unsigned int inShader) { }
    virtual void DestroyFramebuffer(unsigned int inBuffer) { }

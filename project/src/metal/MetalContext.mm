@@ -3,6 +3,7 @@
 #include <Hardware.h>
 #include <HardwareImpl.h>
 #include <simd/simd.h>
+#include <vector>
 
 #ifdef NME_SDL2
 #include <SDL.h>
@@ -14,9 +15,17 @@
 #define _STRINGIFY( _x )   __STRINGIFY( _x )
 #endif
 
-// Extra bit for 'fan' type
-#define PROG_FAN PROG_COUNT
-#define TOTAL_PROGS (PROG_COUNT*2)
+// Extra bit for 'geom' type
+#define WHOLE_TEXTURE (PROG_COUNT*0x01)
+#define SMOOTH_TEXTURE (PROG_COUNT*0x02)
+#define REPEAT_TEXTURE (PROG_COUNT*0x04)
+
+#define GEOM_BASE (PROG_COUNT*0x08)
+
+#define GEOM_NORMAL 0
+#define GEOM_FAN    1
+#define GEOM_QUAD   2
+#define TOTAL_PROGS (GEOM_BASE*3)
 
 namespace nme
 {
@@ -28,31 +37,154 @@ void *GetMetalLayerFromRenderer(SDL_Renderer *renderer)
 }
 #endif
 
-typedef NSString *(^StringifyArrayOfIncludes)(NSArray <NSString *> *includes);
-static NSString *(^stringifyHeaderFileNamesArray)(NSArray <NSString *> *) = ^(NSArray <NSString *> *includes) {
-    NSMutableString *importStatements = [NSMutableString new];
-    [includes enumerateObjectsUsingBlock:^(NSString * _Nonnull include, NSUInteger idx, BOOL * _Nonnull stop) {
-        [importStatements appendString:@"#include <"];
-        [importStatements appendString:include];
-        [importStatements appendString:@">\n"];
-    }];
+struct MetalTexture : public Texture
+{
+   int width,height;
+   id<MTLTexture> tex;
+   Rect dirtyRect;
+   Surface *surface;
+   int bpp;
+   bool conversionRequired;
 
-    return [NSString new];
+   MetalTexture(id<MTLDevice> inDevice, Surface *inSurface, unsigned int inFlags)
+   {
+      surface = inSurface;
+      width = inSurface->Width();
+      height = inSurface->Height();
+      conversionRequired = false;
+      bpp = 0;
+      @autoreleasepool {
+         MTLTextureDescriptor *textureDescriptor = [[MTLTextureDescriptor alloc] init];
+         // Indicate that each pixel has a blue, green, red, and alpha channel, where each channel is
+         // an 8-bit unsigned normalized value (i.e. 0 maps to 0.0 and 255 maps to 1.0)
+         switch(surface->Format())
+         {
+            case pfRGB: 
+               textureDescriptor.pixelFormat = MTLPixelFormatBGRA8Unorm;
+               conversionRequired = true;
+               bpp = 3;
+               break;
+            case pfBGRA: 
+            case pfBGRPremA: 
+               textureDescriptor.pixelFormat = MTLPixelFormatBGRA8Unorm;
+               bpp = 4;
+               break;
+            case pfAlpha: 
+               textureDescriptor.pixelFormat = MTLPixelFormatA8Unorm;
+               bpp = 1;
+               break;
+            case pfARGB4444: 
+               conversionRequired = true;
+               bpp = 2;
+               //textureDescriptor.pixelFormat = MTLPixelFormatABGR4Unorm;
+               textureDescriptor.pixelFormat = MTLPixelFormatBGRA8Unorm;
+               break;
+            case pfRGB565: 
+               //textureDescriptor.pixelFormat = MTLPixelFormatB5G6R5Unorm;
+               textureDescriptor.pixelFormat = MTLPixelFormatBGRA8Unorm;
+               conversionRequired = true;
+               bpp = 2;
+               break;
+            case pfLuma: 
+               textureDescriptor.pixelFormat = MTLPixelFormatR8Unorm;
+               bpp = 1;
+               break;
+            case pfLumaAlpha: 
+               textureDescriptor.pixelFormat = MTLPixelFormatRG8Unorm;
+               bpp = 2;
+               break;
+
+            default:
+               textureDescriptor.pixelFormat = MTLPixelFormatBGRA8Unorm;
+               conversionRequired = true;
+               bpp = BytesPerPixel(surface->Format());
+         }
+
+
+         // Set the pixel dimensions of the texture
+         textureDescriptor.width = width;
+         textureDescriptor.height = height;
+         //textureDescriptor.mipmapped = inSurface->mMipmaps;
+
+         // Create the texture from the device by using the descriptor
+         tex = [inDevice newTextureWithDescriptor:textureDescriptor];
+      }
+      dirtyRect = Rect(0,0,width,height);
+
+   }
+   ~MetalTexture()
+   {
+   }
+
+   void update()
+   {
+      if (dirtyRect.HasPixels())
+      {
+         MTLRegion region = {
+           { dirtyRect.x, dirtyRect.y, 0 },       // MTLOrigin
+           { dirtyRect.w,  dirtyRect.h, 1} // MTLSize
+         };
+         NSUInteger bytesPerRow = width*bpp;
+         if (conversionRequired)
+         {
+            const uint8 *p0 = surface->Row(dirtyRect.y) + dirtyRect.x*bpp;
+            std::vector<uint8> buf(dirtyRect.w*dirtyRect.h*4);
+            PixelConvert(dirtyRect.w,dirtyRect.h,
+                            surface->Format(), p0, surface->GetStride(), surface->GetPlaneOffset(),
+                            pfRGBPremA, &buf[0], dirtyRect.w*4, dirtyRect.w*dirtyRect.h*4 );
+
+            [tex replaceRegion:region
+               mipmapLevel:0
+               withBytes:&buf[0]
+               bytesPerRow:dirtyRect.w*4];
+         }
+         else
+         {
+            [tex replaceRegion:region
+               mipmapLevel:0
+               withBytes:surface->GetBase() + dirtyRect.y*bytesPerRow + dirtyRect.x*bpp
+               bytesPerRow:bytesPerRow];
+         }
+
+         dirtyRect = Rect();
+      }
+   }
+
+
+   UserPoint PixelToTex(const UserPoint &inPixels)
+   {
+      return UserPoint(inPixels.x/width, inPixels.y/height);
+   }
+
+   UserPoint TexToPaddedTex(const UserPoint &inPixels)
+   {
+      // Not padded
+      return inPixels;
+   }
+
+   int GetWidth() { return width; }
+   int GetHeight() { return height; }
+
+   void Bind(int inSlot)
+   {
+      update();
+   }
+
+   void BindFlags(bool inRepeat,bool inSmooth)
+   {
+   }
+
+   void Dirty(const Rect &inRect)
+   {
+      if (!dirtyRect.HasPixels())
+         dirtyRect = inRect;
+      else
+         dirtyRect = dirtyRect.Union(inRect);
+   }
+
+   bool IsCurrentVersion() { return true; }
 };
 
-typedef NSString *(^StringifyArrayOfHeaderFileNames)(NSArray <NSString *> *headerFileNames);
-static NSString *(^stringifyIncludesArray)(NSArray *) = ^(NSArray *headerFileNames) {
-    NSMutableString *importStatements = [NSMutableString new];
-    [headerFileNames enumerateObjectsUsingBlock:^(NSString * _Nonnull headerFileName, NSUInteger idx, BOOL * _Nonnull stop) {
-        [importStatements appendString:@"#import "];
-        [importStatements appendString:@_STRINGIFY("")];
-        [importStatements appendString:headerFileName];
-        [importStatements appendString:@_STRINGIFY("")];
-        [importStatements appendString:@"\n"];
-    }];
-
-    return [NSString new];
-};
 
 const char *shaderHead = 
          "#import <metal_stdlib>\n"
@@ -60,41 +192,42 @@ const char *shaderHead =
 
          "using namespace metal;\n";
 
-const char *shaderFrag = 
-         "struct RasterizerData\n"
-         "{\n"
-         "    float4 position [[position]];\n"
-         "    float4 colour;\n"
-         "};\n"
 
+const char *shaderFragWhite = 
         "fragment float4 fragmentShader(RasterizerData in [[stage_in]])\n"
         "{\n"
-        "    // Return the interpolated colour.\n"
+        "    return float4(1,1,1,1);\n"
+        "}\n";
+
+const char *shaderFragCol = 
+        "fragment float4 fragmentShader(RasterizerData in [[stage_in]])\n"
+        "{\n"
         "    return in.colour;\n"
-        "}\n"
+        "}\n";
 
+const char *vertexShader = 
         "vertex RasterizerData vertexShader(uint vertexID [[vertex_id]],\n"
-        "    constant float2 *vertices [[buffer(0)]],\n"
-        "    constant Uniforms *uniforms [[buffer(1)]]\n"
-        ;
+        "    constant VertexData *vertexData [[buffer(0)]],\n"
+        "    constant Uniforms *uniforms [[buffer(1)]] ) {\n"
+        "   RasterizerData out;\n";
 
-const char *shaderTop = 
-         ")\n"
-         "{\n"
-         "   RasterizerData out;\n";
-
-const char *shaderTail = 
-         "   vector_float4 pos(vertices[vertexID].x, vertices[vertexID].y, 0.0, 1.0);\n"
+const char *shaderPos = 
+         "   vector_float4 pos(vertexData[vertexID].pos.x, vertexData[vertexID].pos.y, 0.0, 1.0);\n"
          "   out.position.x = dot(pos,uniforms->trans[0]);\n"
          "   out.position.y = dot(pos,uniforms->trans[1]);\n"
          "   out.position.z = 0;\n"
-         "   out.position.w = 1;\n"
+         "   out.position.w = 1;\n";
 
-         "   out.colour = uniforms->colour;\n"
 
+const char *shaderTail = 
          "   return out;\n"
          "}\n";
 
+enum
+{
+   VERTEX_SLOT = 0,
+   UNIFORM_SLOT = 1,
+};
 
 static float one_on_255 = 1.0/255.0;
 struct MetalProgram
@@ -102,45 +235,117 @@ struct MetalProgram
    id<MTLRenderPipelineState> pipelineState;
    std::vector<uint8> uniformBuf;
 
-   int vertexSlot;
-   int uniformSlot;
-   int textureSlot;
-   int normalSlot;
-   int colourSlot;
-
    int matrixOffset;
    int tintOffset;
+   int stride;
 
    MetalProgram(id<MTLDevice> device, MTLPixelFormat pixelFormat, unsigned int progId)
       : pipelineState(nil)
    {
-      vertexSlot = textureSlot = normalSlot = colourSlot = -1;
       matrixOffset = tintOffset = -1;
 
-      std::string uniformDef = "typedef struct _uniforms {\n"
-                               "  vector_float4 trans[4];\n";
+      std::string shader = shaderHead;
 
-      vertexSlot = 0;
-      uniformSlot = 1;
+      bool wholeTexture = progId & WHOLE_TEXTURE;
+      int geom = progId/(GEOM_BASE);
+
+      // RasterizerData - passed from frag to pixel
+      shader +=
+         "struct RasterizerData\n"
+         "{\n"
+         "    float4 position [[position]];\n";
+      if (progId & (PROG_TINT | PROG_COLOUR_PER_VERTEX ) )
+         shader += "    float4 colour;\n";
+      if ( progId & PROG_TEXTURE )
+         shader += "    float2 rtex;\n";
+      shader += "};\n";
+
+
+      // Uniform data - same for each vertex/pixel
+      shader += "typedef struct _uniforms {\n"
+                "  vector_float4 trans[4];\n";
       matrixOffset = 0;
       uniformBuf.resize( uniformBuf.size() + sizeof(Trans4x4) );
-
       if (progId & PROG_TINT)
       {
          tintOffset = (int)uniformBuf.size();
          uniformBuf.resize( uniformBuf.size() + sizeof(float)*4 );
-         uniformDef += "  vector_float4 colour;\n";
+         shader += "  vector_float4 colour;\n";
+      }
+      shader += "} Uniforms;\n";
+
+      // VertexData
+      stride = sizeof(float)*2;
+      shader +=
+         "struct VertexData\n"
+         "{\n"
+         "   float2 pos;\n";
+
+
+      if (progId & PROG_NORMAL_DATA)
+      {
+         shader += "   float2 norm;\n";
+         stride += sizeof(float)*2;
       }
 
-      uniformDef += "} Uniforms;\n";
+      if ((progId & PROG_TEXTURE) && !wholeTexture)
+      {
+         shader += "   float2 tex;\n";
+         stride += sizeof(float)*2;
+      }
 
-      std::string shader = shaderHead;
-      shader += uniformDef;
-      shader += shaderFrag;
-      shader += shaderTop;
+      if (progId & PROG_COLOUR_PER_VERTEX)
+      {
+        #ifdef NME_FLOAT32_VERT_VALUES
+         shader += "   float4 vcol;\n";
+         stride += sizeof(float)*4;
+        #else
+         shader += "   uchar4 vcol;\n";
+         stride += 4;
+        #endif
+      }
 
+      shader += "};\n";
+
+      if ( progId & PROG_TEXTURE )
+      {
+         shader += 
+             "fragment float4 fragmentShader(RasterizerData in [[stage_in]],"
+                " texture2d<float> colourTexture [[ texture(0) ]])\n"
+             "{\n";
+
+         if (progId & REPEAT_TEXTURE)
+         {
+            if (progId & SMOOTH_TEXTURE)
+               shader += " constexpr sampler textureSampler(address::repeat,mag_filter::linear, min_filter::linear);\n";
+            else
+               shader += " constexpr sampler textureSampler(address::repeat,mag_filter::nearest, min_filter::nearest);\n";
+         }
+         else
+         {
+            if (progId & SMOOTH_TEXTURE)
+               shader += " constexpr sampler textureSampler(address::clamp_to_edge,mag_filter::linear, min_filter::linear);\n";
+            else
+               shader += " constexpr sampler textureSampler(address::clamp_to_edge,mag_filter::nearest, min_filter::nearest);\n";
+         }
+
+         if (false)
+            shader += "    return float4( in.rtex.x, in.rtex.y, 0, 1);\n";
+         else if (progId & (PROG_TINT | PROG_COLOUR_PER_VERTEX) )
+            shader += "    return colourTexture.sample(textureSampler, in.rtex)*in.colour;\n";
+         else
+            shader += "    return colourTexture.sample(textureSampler, in.rtex);\n";
+
+         shader += "}\n";
+      }
+      else if (progId&(PROG_COUNT-1))
+         shader += shaderFragCol;
+      else
+         shader += shaderFragWhite;
+
+      shader += vertexShader;
       // Fan
-      if (progId & PROG_FAN)
+      if (geom==GEOM_FAN)
       {
          // Remap vertexID sequence to 0,1,2, 0,2,3, 0,3,4, 0,4,5 ...
          //                         =  0,1,2, 0,1,2, 0,1,2, 0,1,2 ...
@@ -149,8 +354,43 @@ struct MetalProgram
                    "    int corner=vertexID-tri*3;\n"
                    "    vertexID = corner + min(corner,(int)1) * tri;\n";
       }
+      else if (geom==GEOM_QUAD)
+      {
+         // 0 - 1    012345 - 012,321
+         // | / |
+         // 2 - 3
+         // Remap vertexID sequence to 0,1,2, 3,2,1, 4,5,6, 7,6,5, ...
+         //                         =  0,1,2, 3,2,1, 0,1,2, 3,2,1 ...
+         //                         +  0,0,0, 0,0,0, 4,4,4, 4,4,4, ...
+         shader += "    int quad=vertexID/6;\n"
+                   "    int corner=vertexID-quad*6;\n"
+                   "    if (corner>2) corner=6-corner;\n"
+                   "    vertexID = corner + (quad<<2);\n";
+
+         if (wholeTexture)
+            shader += "   out.rtex = float2( corner&1, corner>1 );\n";
+      }
+
+      shader += shaderPos;
+
+      if ( (progId & PROG_TEXTURE) && !wholeTexture )
+      {
+         shader += "   out.rtex = vertexData[vertexID].tex;\n";
+      }
+      if (progId & PROG_TINT)
+      {
+         shader += "   out.colour = uniforms->colour;\n";
+      }
+      if (progId & PROG_COLOUR_PER_VERTEX)
+      {
+         shader += "   out.colour = float4(vertexData[vertexID].vcol)/255.0;\n";
+      }
+
 
       shader += shaderTail;
+
+
+      //printf("SHADER: %x whole=%d\n%s\n\n",progId, wholeTexture, shader.c_str() );
 
       __autoreleasing NSError *error = nil;
 
@@ -169,6 +409,15 @@ struct MetalProgram
       pipelineStateDescriptor.vertexFunction = vertexFunction;
       pipelineStateDescriptor.fragmentFunction = fragmentFunction;
       pipelineStateDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
+
+      MTLRenderPipelineColorAttachmentDescriptor *blend = pipelineStateDescriptor.colorAttachments[0];
+      blend.blendingEnabled = YES;
+      blend.rgbBlendOperation = MTLBlendOperationAdd;
+      blend.alphaBlendOperation = MTLBlendOperationAdd;
+      blend.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+      blend.sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
+      blend.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+      blend.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
 
       pipelineState = [device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&error];
    }
@@ -207,9 +456,27 @@ struct MetalProgram
 
    void bindUniforms(id<MTLRenderCommandEncoder> renderEncoder)
    {
-      [renderEncoder setVertexBytes:&uniformBuf[0]  length:uniformBuf.size()  atIndex:uniformSlot];
+      [renderEncoder setVertexBytes:&uniformBuf[0]  length:uniformBuf.size()  atIndex:UNIFORM_SLOT];
    }
 
+};
+
+
+struct MetalBuffer
+{
+   id<MTLBuffer> buffer;
+
+   MetalBuffer(id<MTLDevice> device, const void *pointer, NSUInteger length)
+   {
+      buffer = [device newBufferWithBytes:pointer 
+                             length:(NSUInteger)length 
+                             options:MTLResourceCPUCacheModeWriteCombined ];
+   }
+   
+   ~MetalBuffer()
+   {
+      buffer = nil;
+   }
 };
 
 
@@ -228,6 +495,7 @@ static  MTLPrimitiveType sgMetalType[] = {
 
 class MetalContext : public HardwareRenderer
 {
+   MTLRenderPassColorAttachmentDescriptor *colourBuf;
    MTLRenderPassDescriptor *pass;
    CAMetalLayer *swapchain;
    id<MTLDevice> _device;
@@ -264,6 +532,7 @@ public:
      width = height = 0;
      for(int i=0;i<TOTAL_PROGS;i++)
         allPrograms[i] = nullptr;
+      colourBuf = nil;
    }
 
    void OnContextLost()
@@ -274,7 +543,7 @@ public:
 
    Texture *CreateTexture(class Surface *inSurface, unsigned int inFlags)
    {
-      return 0;
+      return new MetalTexture(_device, inSurface, inFlags);
    }
 
    // Could be common to multiple implementations...
@@ -298,9 +567,10 @@ public:
 
       pass = [MTLRenderPassDescriptor renderPassDescriptor];
       //pass.colorAttachments[0].clearColor = colour;
-      pass.colorAttachments[0].loadAction  = MTLLoadActionClear;
-      pass.colorAttachments[0].storeAction = MTLStoreActionStore;
-      pass.colorAttachments[0].texture = surface.texture;
+      colourBuf = pass.colorAttachments[0];
+      colourBuf.loadAction  = MTLLoadActionClear;
+      colourBuf.storeAction = MTLStoreActionStore;
+      colourBuf.texture = surface.texture;
       first = true;
 
    }
@@ -313,6 +583,7 @@ public:
 
       surface=nil;
       renderEncoder = nil;
+      colourBuf = nil;
       #ifndef OBJC_ARC
       [pool drain];
       pool = nullptr;
@@ -331,7 +602,7 @@ public:
          ((inColour>>8)&0xff)/255.0,
          ((inColour)&0xff)/255.0,
          1);
-      pass.colorAttachments[0].clearColor = colour;
+      colourBuf.clearColor = colour;
       commandBuffer = [queue commandBuffer];
       renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:pass];
    }
@@ -340,11 +611,32 @@ public:
    int Width() const { return width; }
    int Height() const { return height; }
 
+   void DestroyVbo(unsigned int inVbo, void *inVboPtr)
+   {
+      MetalBuffer *buffer = (MetalBuffer *)inVboPtr;
+      delete buffer;
+   }
 
    void RenderData(const HardwareData &inData, const ColorTransform *ctrans,const Trans4x4 &inTrans)
    {
-      const uint8 *data = inData.mArray.size()>0 ? &inData.mArray[0] : nullptr;
+      unsigned int len = inData.mArray.size();
+      const uint8 *data = len>0 ? &inData.mArray[0] : nullptr;
       MetalProgram *lastProg = nullptr;
+
+      MetalBuffer *buffer = (MetalBuffer *)inData.mVertexBufferPtr;
+      if (!buffer && len>4096)
+      {
+         buffer = new MetalBuffer(_device, data, len);
+         inData.mVertexBufferPtr = buffer;
+         inData.mVboOwner = this;
+         inData.mContextId = gTextureContextVersion;
+         IncRef();
+      }
+      if (buffer)
+      {
+         [renderEncoder setVertexBuffer:buffer->buffer offset:0 atIndex:VERTEX_SLOT];
+      }
+
       for(int e=0;e<inData.mElements.size();e++)
       {
          const DrawElement &element = inData.mElements[e];
@@ -352,30 +644,39 @@ public:
          if (!n)
             continue;
 
-
          bool premAlpha;
          unsigned progId = getProgId(element, ctrans, premAlpha);
+         bool wholeTexture = element.mPrimType==ptQuadsFull;
+
          if (element.mPrimType==ptTriangleFan)
-            progId |= PROG_FAN;
+            progId += GEOM_FAN * GEOM_BASE;
+         else if (element.mPrimType==ptQuads || element.mPrimType==ptQuadsFull)
+            progId += GEOM_QUAD * GEOM_BASE;
+         if (wholeTexture)
+            progId |= WHOLE_TEXTURE;
+         if (element.mSurface)
 
          bool persp = element.mFlags & DRAW_HAS_PERSPECTIVE;
 
-         switch(element.mBlendMode)
+         if ( progId & PROG_TEXTURE )
          {
-            case bmAdd:
-               break;
-            case bmMultiply:
-               break;
-            case bmScreen:
-               break;
-            default:
-               ;
+            MetalTexture *tex = (MetalTexture *)element.mSurface->GetTexture(this,0);
+
+            if (element.mFlags & DRAW_BMP_SMOOTH)
+                progId |= SMOOTH_TEXTURE;
+            if (element.mFlags & DRAW_BMP_REPEAT)
+                progId |= SMOOTH_TEXTURE;
+            [renderEncoder setFragmentTexture: tex->tex atIndex:0];
          }
 
          bool uniformsDirty = false;
          MetalProgram *prog = allPrograms[progId];
          if (!prog)
+         {
             prog = allPrograms[progId] = new MetalProgram(_device, swapchain.pixelFormat, progId);
+         }
+         if (prog->stride!=element.mStride)
+             printf("Bad stride %d!=%d  pid=%08x\n", prog->stride, element.mStride, progId );
 
 
          if (prog!=lastProg)
@@ -386,10 +687,22 @@ public:
          }
          lastProg = prog;
 
-         [renderEncoder setVertexBytes:data  + element.mVertexOffset
-                              length:n*2*sizeof(float)
-                              atIndex:prog->vertexSlot];
+         if (element.mSurface)
+            element.mSurface->Bind(*this,0);
 
+
+         // switch(element.mBlendMode) - part of pipeline
+
+         if (buffer)
+         {
+            [renderEncoder setVertexBufferOffset:element.mVertexOffset atIndex:VERTEX_SLOT];
+         }
+         else
+         {
+            [renderEncoder setVertexBytes:data  + element.mVertexOffset
+                              length:n*element.mStride
+                              atIndex:VERTEX_SLOT];
+         }
 
          if (progId & (PROG_TINT | PROG_COLOUR_OFFSET) )
          {
@@ -397,11 +710,15 @@ public:
             uniformsDirty = true;
          }
 
+
          if (uniformsDirty)
             prog->bindUniforms(renderEncoder);
 
          if (element.mPrimType==ptTriangleFan)
             n = (n-2)*3;
+         else if (element.mPrimType==ptQuads || element.mPrimType==ptQuadsFull)
+            n = (n/4)*6;
+
          [renderEncoder drawPrimitives:sgMetalType[element.mPrimType] vertexStart:0 vertexCount:n];
       }
    }

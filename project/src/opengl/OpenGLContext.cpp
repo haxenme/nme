@@ -92,7 +92,7 @@ public:
       }
    }
 
-   void DestroyVbo(unsigned int inVbo)
+   void DestroyVbo(unsigned int inVbo,void *)
    {
       if ( !IsMainThread() )
       {

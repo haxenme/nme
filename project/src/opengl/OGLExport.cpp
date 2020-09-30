@@ -295,7 +295,7 @@ public:
             case resoNone:
                break;
             case resoBuffer:
-               ctx->DestroyVbo(id);
+               ctx->DestroyVbo(id,nullptr);
                break;
             case resoTexture:
                ctx->DestroyTexture(id);

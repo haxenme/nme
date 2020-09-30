@@ -229,7 +229,7 @@ public:
                #else
                mElement.mStride += sizeof(int);
                #endif
-               mElement.mStride += sizeof(int);
+               //mElement.mStride += sizeof(int);
                mElement.mFlags |= DRAW_HAS_COLOUR;
                mElement.mColour = 0xffffffff;
             }
@@ -2458,7 +2458,7 @@ void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardwa
 HardwareData::HardwareData()
 {
    mRendersWithoutVbo = 0;
-   mVertexBo = 0;
+   mVertexBufferPtr = nullptr;
    mContextId = 0;
    mVboOwner = 0;
    mMinScale = mMaxScale = 0.0;
@@ -2468,13 +2468,13 @@ void HardwareData::releaseVbo()
 {
    if (mVboOwner)
    {
-      if (mVertexBo && mContextId==gTextureContextVersion)
-         mVboOwner->DestroyVbo(mVertexBo);
+      if (mVertexBufferPtr && mContextId==gTextureContextVersion)
+         mVboOwner->DestroyVbo(mVertexBo,mVertexBufferPtr);
       mVboOwner->DecRef();
       mVboOwner=0;
    }
    mContextId = 0;
-   mVertexBo = 0;
+   mVertexBufferPtr = nullptr;
    mRendersWithoutVbo = 0;
 }
 
