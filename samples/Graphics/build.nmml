@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  
+  <meta
+     title="NME Graphics Test"
+     package="org.haxe.nme.graphics"
+     version="1.0.0"
+     company="nme" 
+  />
+  
+  <app
+     file="Application" 
+     main="Main"
+  />
+  
+  <window
+     width="800" 
+     height="600" 
+     orientation="landscape" 
+     fps="60"
+     background="0xeeeeee"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+  />
+
+  <icon name="../../assets/icons/nme.svg" />
+  <source path="src" />
+
+  <assets from="../03-Bitmaps/" embed="true" >
+     <asset name="Image.jpg" />
+  </assets>
+
+  <haxelib name="nme" />
+
+</project>
