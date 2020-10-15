@@ -446,6 +446,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
       var local:Point = null;
       var evt:MouseEvent = null;
+      var evtCancel = false;
       if (stack.length > 0) 
       {
          var obj = stack[0];
@@ -456,9 +457,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          if (inFromMouse)
             nmeCheckInOuts(evt, stack);
          obj.nmeFireEvent(evt);
-
+         evtCancel = evt.nmeGetIsCancelled();
       }
-      else 
+      else
       {
          //trace("No obj?");
          local = new Point(inEvent.x, inEvent.y);
@@ -475,7 +476,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
       else if (inType == MouseEvent.MOUSE_UP && button < 3) 
       {
-         if (click_obj == nmeLastDown[button]) 
+         if (click_obj == nmeLastDown[button] && !evtCancel)
          {
             var evt = MouseEvent.nmeCreate(sClickEvents[button], inEvent, local, click_obj);
             click_obj.nmeFireEvent(evt);
