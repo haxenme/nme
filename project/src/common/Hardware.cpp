@@ -64,6 +64,7 @@ public:
       mElement.mColour = 0xffffffff;
       mElement.mVertexOffset = ioData.mArray.size();
       mElement.mStride = 2*sizeof(float);
+      int align = 2*sizeof(float);
 
       mSolidMode = false;
       mAlphaAA = false;
@@ -176,7 +177,12 @@ public:
             #ifdef NME_FLOAT32_VERT_VALUES
             mElement.mStride += sizeof(float)*4;
             #else
-            mElement.mStride += sizeof(int);
+               #ifdef NME_METAL
+               // Align...
+               mElement.mStride += 2*sizeof(float);
+               #else
+               mElement.mStride += sizeof(int);
+               #endif
             #endif
             mElement.mFlags |= DRAW_HAS_COLOUR;
             mElement.mColour = 0xffffffff;
@@ -227,7 +233,12 @@ public:
                #ifdef NME_FLOAT32_VERT_VALUES
                mElement.mStride += sizeof(float)*4;
                #else
-               mElement.mStride += sizeof(int);
+                  #ifdef NME_METAL
+                  // Align...
+                  mElement.mStride += 2*sizeof(float);
+                  #else
+                  mElement.mStride += sizeof(int);
+                  #endif
                #endif
                //mElement.mStride += sizeof(int);
                mElement.mFlags |= DRAW_HAS_COLOUR;

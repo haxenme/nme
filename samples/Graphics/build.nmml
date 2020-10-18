@@ -18,7 +18,7 @@
      height="600" 
      orientation="landscape" 
      fps="60"
-     background="0xeeeeee"
+     background="0xf0f0f0"
      require_shaders="true"
      resizable="true"
      hardware="true"

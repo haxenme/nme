@@ -38,7 +38,6 @@ class Main extends Sprite
       gfx.drawRect(-70,-70,140,140);
    }
 
-
    public static function drawBmpNoRepeatSmooth(s:Shape, gfx:Graphics, t:Float)
    {
       gfx.beginBitmapFill(bmpRgb,null, false, true);
@@ -136,7 +135,6 @@ class Main extends Sprite
             );
    }
 
-
    public static function drawColourVertex(s:Shape, gfx:Graphics, t:Float)
    {
       var sx = 1.0/bmpImage.width;
@@ -183,6 +181,7 @@ class Main extends Sprite
       gfx.drawTriangles(vertices, indices, tex_uvt, null ,cols);
    }
 
+
    function changeRotation(delta:Float)
    {
       for(s in shapes)
@@ -209,8 +208,9 @@ class Main extends Sprite
 
    function setSoftware(value:Bool)
    {
-      for(s in shapes)
-         s.cacheAsBitmap = value;
+      //for(s in shapes)
+         //s.cacheAsBitmap = value;
+      cacheAsBitmap = value;
    }
  
 

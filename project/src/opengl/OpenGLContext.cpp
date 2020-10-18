@@ -471,8 +471,9 @@ public:
             rebindVboNext = false;
          }
 
-         bool premAlpha;
-         unsigned progId = getProgId(element, ctrans, premAlpha);
+         unsigned progId = getProgId(element, ctrans);
+         bool premAlpha = progId & PROG_PREM_ALPHA;
+         progId &= ~PROG_PREM_ALPHA;
          bool persp = element.mFlags & DRAW_HAS_PERSPECTIVE;
 
          GPUProg *prog = mProg[progId];

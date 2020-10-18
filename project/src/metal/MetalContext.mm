@@ -37,6 +37,9 @@ void *GetMetalLayerFromRenderer(SDL_Renderer *renderer)
 }
 #endif
 
+static const double one_on_256 = 1.0/256.0;
+
+
 struct MetalTexture : public Texture
 {
    int width,height;
@@ -104,7 +107,16 @@ struct MetalTexture : public Texture
          // Set the pixel dimensions of the texture
          textureDescriptor.width = width;
          textureDescriptor.height = height;
-         //textureDescriptor.mipmapped = inSurface->mMipmaps;
+
+         if (inFlags & surfMipmaps)
+         {
+            int heightLevels = ceil(log2(height));
+            int widthLevels = ceil(log2(width));
+            int mipCount = (heightLevels > widthLevels) ? heightLevels : widthLevels;
+
+            textureDescriptor.mipmapLevelCount = mipCount;
+         }
+
 
          // Create the texture from the device by using the descriptor
          tex = [inDevice newTextureWithDescriptor:textureDescriptor];
@@ -131,7 +143,7 @@ struct MetalTexture : public Texture
             std::vector<uint8> buf(dirtyRect.w*dirtyRect.h*4);
             PixelConvert(dirtyRect.w,dirtyRect.h,
                             surface->Format(), p0, surface->GetStride(), surface->GetPlaneOffset(),
-                            pfRGBPremA, &buf[0], dirtyRect.w*4, dirtyRect.w*dirtyRect.h*4 );
+                            pfBGRPremA, &buf[0], dirtyRect.w*4, dirtyRect.w*dirtyRect.h*4 );
 
             [tex replaceRegion:region
                mipmapLevel:0
@@ -193,18 +205,6 @@ const char *shaderHead =
          "using namespace metal;\n";
 
 
-const char *shaderFragWhite = 
-        "fragment float4 fragmentShader(RasterizerData in [[stage_in]])\n"
-        "{\n"
-        "    return float4(1,1,1,1);\n"
-        "}\n";
-
-const char *shaderFragCol = 
-        "fragment float4 fragmentShader(RasterizerData in [[stage_in]])\n"
-        "{\n"
-        "    return in.colour;\n"
-        "}\n";
-
 const char *vertexShader = 
         "vertex RasterizerData vertexShader(uint vertexID [[vertex_id]],\n"
         "    constant VertexData *vertexData [[buffer(0)]],\n"
@@ -219,6 +219,12 @@ const char *shaderPos =
          "   out.position.w = 1;\n";
 
 
+const char *shaderPos4D = 
+         "   vector_float4 pos;\n"
+         "   pos.xy = vertexData[vertexID].posA;\n"
+         "   pos.zw = vertexData[vertexID].posB;\n"
+         "   out.position = pos * uniforms->trans;\n";
+
 const char *shaderTail = 
          "   return out;\n"
          "}\n";
@@ -227,6 +233,7 @@ enum
 {
    VERTEX_SLOT = 0,
    UNIFORM_SLOT = 1,
+   FRAG_UNIFORM_SLOT = 0,
 };
 
 static float one_on_255 = 1.0/255.0;
@@ -236,13 +243,15 @@ struct MetalProgram
    std::vector<uint8> uniformBuf;
 
    int matrixOffset;
-   int tintOffset;
+   int tintSlot;
+   int colourOffsetSlot;
+   int focusOffset;
    int stride;
 
    MetalProgram(id<MTLDevice> device, MTLPixelFormat pixelFormat, unsigned int progId)
       : pipelineState(nil)
    {
-      matrixOffset = tintOffset = -1;
+      matrixOffset = tintSlot = focusOffset = colourOffsetSlot = -1;
 
       std::string shader = shaderHead;
 
@@ -255,7 +264,9 @@ struct MetalProgram
          "{\n"
          "    float4 position [[position]];\n";
       if (progId & (PROG_TINT | PROG_COLOUR_PER_VERTEX ) )
-         shader += "    float4 colour;\n";
+         shader += "   float4 colour;\n";
+      if (progId & PROG_NORMAL_DATA)
+         shader += "   float2 norm;\n";
       if ( progId & PROG_TEXTURE )
          shader += "    float2 rtex;\n";
       shader += "};\n";
@@ -263,23 +274,47 @@ struct MetalProgram
 
       // Uniform data - same for each vertex/pixel
       shader += "typedef struct _uniforms {\n"
-                "  vector_float4 trans[4];\n";
+                "  matrix_float4x4 trans;\n";
       matrixOffset = 0;
       uniformBuf.resize( uniformBuf.size() + sizeof(Trans4x4) );
       if (progId & PROG_TINT)
       {
-         tintOffset = (int)uniformBuf.size();
+         tintSlot = (int)uniformBuf.size();
          uniformBuf.resize( uniformBuf.size() + sizeof(float)*4 );
          shader += "  vector_float4 colour;\n";
       }
+
+      if (progId & PROG_COLOUR_OFFSET)
+      {
+         colourOffsetSlot = (int)uniformBuf.size();
+         uniformBuf.resize( uniformBuf.size() + sizeof(float)*4 );
+         shader += "  vector_float4 colourOffset;\n";
+      }
+
+      if (progId & PROG_RADIAL_FOCUS)
+      {
+         focusOffset = (int)uniformBuf.size();
+         uniformBuf.resize( uniformBuf.size() + sizeof(float)*3 );
+         shader +=
+            "  float mA;\n"
+            "  float mFX;\n"
+            "  float mOn2A;\n";
+       }
+
       shader += "} Uniforms;\n";
 
       // VertexData
-      stride = sizeof(float)*2;
+      stride = sizeof(float)*( (progId & PROG_4D_INPUT) ? 4 : 2 );
       shader +=
          "struct VertexData\n"
-         "{\n"
-         "   float2 pos;\n";
+         "{\n";
+      if (progId & PROG_4D_INPUT)
+      {
+         shader += "   float2 posA;\n";
+         shader += "   float2 posB;\n";
+      }
+      else
+         shader += "   float2 pos;\n";
 
 
       if (progId & PROG_NORMAL_DATA)
@@ -301,18 +336,27 @@ struct MetalProgram
          stride += sizeof(float)*4;
         #else
          shader += "   uchar4 vcol;\n";
-         stride += 4;
+         shader += "   uchar4 pad;\n";
+         stride += sizeof(float)*2;
         #endif
       }
 
       shader += "};\n";
 
+
       if ( progId & PROG_TEXTURE )
       {
-         shader += 
-             "fragment float4 fragmentShader(RasterizerData in [[stage_in]],"
-                " texture2d<float> colourTexture [[ texture(0) ]])\n"
-             "{\n";
+         if (progId & (PROG_RADIAL_FOCUS|PROG_COLOUR_OFFSET) )
+            shader += 
+                "fragment float4 fragmentShader(RasterizerData in [[stage_in]],\n"
+                   " texture2d<float> colourTexture [[ texture(0) ]],\n"
+                   " constant Uniforms *uniforms [[buffer(0)]] )\n"
+                "{\n";
+        else
+            shader += 
+                "fragment float4 fragmentShader(RasterizerData in [[stage_in]],\n"
+                   " texture2d<float> colourTexture [[ texture(0) ]])\n"
+                "{\n";
 
          if (progId & REPEAT_TEXTURE)
          {
@@ -329,19 +373,65 @@ struct MetalProgram
                shader += " constexpr sampler textureSampler(address::clamp_to_edge,mag_filter::nearest, min_filter::nearest);\n";
          }
 
-         if (false)
-            shader += "    return float4( in.rtex.x, in.rtex.y, 0, 1);\n";
-         else if (progId & (PROG_TINT | PROG_COLOUR_PER_VERTEX) )
-            shader += "    return colourTexture.sample(textureSampler, in.rtex)*in.colour;\n";
-         else
-            shader += "    return colourTexture.sample(textureSampler, in.rtex);\n";
 
-         shader += "}\n";
+
+         if (false)
+            shader += "    float4 col = float4( in.rtex.x, in.rtex.y, 0, 1);\n";
+         else if (progId & PROG_RADIAL)
+         {
+            if (progId & PROG_RADIAL_FOCUS)
+            {
+               shader += 
+                  "   float GX = in.rtex.x - uniforms->mFX;\n"
+                  "   float C = GX*GX + in.rtex.y*in.rtex.y;\n"
+                  "   float B = 2.0*GX * uniforms->mFX;\n"
+                  "   float det =B*B - uniforms->mA*C;\n"
+                  "   float radius;\n"
+                  "   if (det<0.0)\n"
+                  "      radius = -B * uniforms->mOn2A;\n"
+                  "   else\n"
+                  "      radius = (-B - sqrt(det)) * uniforms->mOn2A;\n";
+            }
+            else
+            {
+               shader += 
+                  "   float radius = sqrt(in.rtex.x*in.rtex.x + in.rtex.y*in.rtex.y);\n";
+            }
+            shader += "    float4 col = colourTexture.sample(textureSampler, radius);\n";
+         }
+         else if (progId & PROG_ALPHA_TEXTURE)
+         {
+            shader += "    float4 col = float4(1,1,1,colourTexture.sample(textureSampler, in.rtex).a);\n";
+         }
+         else
+            shader += "    float4 col = colourTexture.sample(textureSampler, in.rtex);\n";
+
+         if (progId & (PROG_TINT | PROG_COLOUR_PER_VERTEX) )
+            shader += "   col *= in.colour;\n";
       }
-      else if (progId&(PROG_COUNT-1))
-         shader += shaderFragCol;
       else
-         shader += shaderFragWhite;
+      {
+         if (progId & PROG_COLOUR_OFFSET)
+            shader += "fragment float4 fragmentShader(RasterizerData in [[stage_in]],"
+                       " constant Uniforms *uniforms [[buffer(0)]] ) {\n";
+         else
+            shader += "fragment float4 fragmentShader(RasterizerData in [[stage_in]]) {\n";
+
+         if (progId&(PROG_COUNT-1)&~(PROG_NORMAL_DATA))
+            shader += "    float4 col = in.colour;\n";
+         else
+            shader += "    float4 col = float4(1,1,1,1);\n";
+      }
+
+      if ( progId & PROG_COLOUR_OFFSET )
+         shader += "   col += uniforms->colourOffset;\n";
+
+      if (progId&PROG_NORMAL_DATA)
+         shader += "   col *= min(in.norm.x-abs(in.norm.y),1.0);";
+
+      shader += 
+        "    return col;\n"
+        "}\n";
 
       shader += vertexShader;
       // Fan
@@ -371,8 +461,15 @@ struct MetalProgram
             shader += "   out.rtex = float2( corner&1, corner>1 );\n";
       }
 
-      shader += shaderPos;
+      if (progId & PROG_4D_INPUT)
+         shader += shaderPos4D;
+      else
+         shader += shaderPos;
 
+      if (progId & PROG_NORMAL_DATA)
+      {
+         shader += "   out.norm = vertexData[vertexID].norm;\n";
+      }
       if ( (progId & PROG_TEXTURE) && !wholeTexture )
       {
          shader += "   out.rtex = vertexData[vertexID].tex;\n";
@@ -383,14 +480,18 @@ struct MetalProgram
       }
       if (progId & PROG_COLOUR_PER_VERTEX)
       {
+         #ifdef NME_FLOAT32_VERT_VALUES
+         shader += "   out.colour = vertexData[vertexID].vcol;\n";
+         #else
          shader += "   out.colour = float4(vertexData[vertexID].vcol)/255.0;\n";
+         #endif
       }
 
 
       shader += shaderTail;
 
 
-      //printf("SHADER: %x whole=%d\n%s\n\n",progId, wholeTexture, shader.c_str() );
+      // printf("SHADER: %x whole=%d\n%s\n\n",progId, wholeTexture, shader.c_str() );
 
       __autoreleasing NSError *error = nil;
 
@@ -414,10 +515,22 @@ struct MetalProgram
       blend.blendingEnabled = YES;
       blend.rgbBlendOperation = MTLBlendOperationAdd;
       blend.alphaBlendOperation = MTLBlendOperationAdd;
-      blend.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
-      blend.sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
+
       blend.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
       blend.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+
+      //glBlendFunc(premAlpha ? GL_ONE : GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+      if (progId & PROG_PREM_ALPHA)
+      {
+         blend.sourceRGBBlendFactor = MTLBlendFactorOne;
+         blend.sourceAlphaBlendFactor = MTLBlendFactorOne;
+         //blend.sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
+      }
+      else
+      {
+         blend.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+         blend.sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
+      }
 
       pipelineState = [device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&error];
    }
@@ -428,35 +541,131 @@ struct MetalProgram
    void setTransform(const Trans4x4 &inTrans)
    {
       memcpy(&uniformBuf[matrixOffset], &inTrans, sizeof(Trans4x4));
+      //for(int y=0;y<4;y++)
+         //printf("%d]  %f %f %f %f\n",y, inTrans[y][0], inTrans[y][1], inTrans[y][2], inTrans[y][3] );
+      //printf("---\n");
+   }
+
+   void setGradientFocus(float inFocus)
+   {
+      if (focusOffset>=0)
+      {
+         double fx = inFocus;
+         if (fx < -0.99)
+            fx = -0.99;
+         else if (fx > 0.99)
+            fx = 0.99;
+
+         // mFY = 0; mFY can be set to zero, since rotating the matrix
+         //  can also compensate for this.
+
+         double a = (fx * fx - 1.0);
+         double on2a = 1.0 / (2.0 * a);
+         a *= 4.0;
+
+         float *uni = (float *)&uniformBuf[focusOffset];
+         uni[0] = a;
+         uni[1] = fx;
+         uni[2] = on2a;
+      }
    }
 
    void setColourTransform(const ColorTransform *inTransform, unsigned int inColour,
                                     bool inPremultiplyAlpha)
    {
-      if (tintOffset>=0)
+      if (inTransform && !inTransform->IsIdentity())
       {
-         float *dest = (float *)&uniformBuf[tintOffset];
-         if (inColour==0xffffffff)
+          if (colourOffsetSlot>=0)
+          {
+             float *dest = (float *)&uniformBuf[colourOffsetSlot];
+             if (inPremultiplyAlpha)
+             {
+                dest[0] = inTransform->redOffset*one_on_255*inTransform->alphaMultiplier;
+                dest[1] = inTransform->greenOffset*one_on_255*inTransform->alphaMultiplier;
+                dest[2] = inTransform->blueOffset*one_on_255*inTransform->alphaMultiplier;
+                dest[3] = inTransform->alphaOffset*one_on_255;
+             }
+             else
+             {
+                dest[0] = inTransform->redOffset*one_on_255;
+                dest[1] = inTransform->greenOffset*one_on_255;
+                dest[2] = inTransform->blueOffset*one_on_255;
+                dest[3] = inTransform->alphaOffset*one_on_255;
+             }
+          }
+
+          if (tintSlot>=0)
+          {
+             float rf, gf, bf, af;
+             if (inColour==0xffffffff)
+             {
+                rf = gf = bf = af = 1.0;
+             }
+             else
+             {
+                rf = ( (inColour>>16) & 0xff ) * one_on_255;
+                gf = ( (inColour>>8 ) & 0xff ) * one_on_255;
+                bf = ( (inColour    ) & 0xff ) * one_on_255;
+                af = ( (inColour>>24) & 0xff ) * one_on_255;
+             }
+
+             float *dest = (float *)&uniformBuf[tintSlot];
+             if (inPremultiplyAlpha)
+             {
+                dest[0] = inTransform->redMultiplier * inTransform->alphaMultiplier * rf;
+                dest[1] = inTransform->greenMultiplier * inTransform->alphaMultiplier * gf;
+                dest[2] = inTransform->blueMultiplier * inTransform->alphaMultiplier * bf;
+                dest[3] = inTransform->alphaMultiplier * af;
+             }
+             else
+             {
+                dest[0] = inTransform->redMultiplier * rf;
+                dest[1] = inTransform->greenMultiplier * gf;
+                dest[2] = inTransform->blueMultiplier * bf;
+                dest[3] = inTransform->alphaMultiplier * af;
+             }
+          }
+      }
+      else
+      {
+         if (colourOffsetSlot>=0)
          {
-            *dest++ = 1.0;
-            *dest++ = 1.0;
-            *dest++ = 1.0;
-            *dest++ = 1.0;
+            float *dest = (float *)&uniformBuf[colourOffsetSlot];
+            dest[0] = 0.0f;
+            dest[1] = 0.0f;
+            dest[2] = 0.0f;
+            dest[3] = 0.0f;
          }
-         else
+
+         if (tintSlot>=0)
          {
-            *dest++ = ( (inColour>>16) & 0xff ) * one_on_255;
-            *dest++ = ( (inColour>>8 ) & 0xff ) * one_on_255;
-            *dest++ = ( (inColour    ) & 0xff ) * one_on_255;
-            *dest++ = ( (inColour>>24) & 0xff ) * one_on_255;
+             float rf, gf, bf, af;
+             if (inColour==0xffffffff)
+             {
+                rf = gf = bf = af = 1.0;
+             }
+             else
+             {
+                rf = ( (inColour>>16) & 0xff ) * one_on_255;
+                gf = ( (inColour>>8 ) & 0xff ) * one_on_255;
+                bf = ( (inColour    ) & 0xff ) * one_on_255;
+                af = ( (inColour>>24) & 0xff ) * one_on_255;
+             }
+
+            float *dest = (float *)&uniformBuf[tintSlot];
+            dest[0] = rf;
+            dest[1] = gf;
+            dest[2] = bf;
+            dest[3] = af;
          }
       }
-   }
-   void setGradientFocus(float inFocus);
+  }
 
    void bindUniforms(id<MTLRenderCommandEncoder> renderEncoder)
    {
       [renderEncoder setVertexBytes:&uniformBuf[0]  length:uniformBuf.size()  atIndex:UNIFORM_SLOT];
+      if (focusOffset>=0)
+         [renderEncoder setFragmentBytes:&uniformBuf[0]  length:uniformBuf.size()  atIndex:FRAG_UNIFORM_SLOT];
    }
 
 };
@@ -491,6 +700,13 @@ static  MTLPrimitiveType sgMetalType[] = {
 
         MTLPrimitiveTypeTriangle, // Quad
         MTLPrimitiveTypeTriangle // Quad - full
+};
+
+struct VertexData
+{
+   float pos[2];
+   float tex[2];
+   uint8 vcol[4];
 };
 
 class MetalContext : public HardwareRenderer
@@ -644,8 +860,8 @@ public:
          if (!n)
             continue;
 
-         bool premAlpha;
-         unsigned progId = getProgId(element, ctrans, premAlpha);
+         unsigned progId = getProgId(element, ctrans);
+         bool premAlpha = progId & PROG_PREM_ALPHA;
          bool wholeTexture = element.mPrimType==ptQuadsFull;
 
          if (element.mPrimType==ptTriangleFan)
@@ -654,9 +870,6 @@ public:
             progId += GEOM_QUAD * GEOM_BASE;
          if (wholeTexture)
             progId |= WHOLE_TEXTURE;
-         if (element.mSurface)
-
-         bool persp = element.mFlags & DRAW_HAS_PERSPECTIVE;
 
          if ( progId & PROG_TEXTURE )
          {
@@ -665,7 +878,7 @@ public:
             if (element.mFlags & DRAW_BMP_SMOOTH)
                 progId |= SMOOTH_TEXTURE;
             if (element.mFlags & DRAW_BMP_REPEAT)
-                progId |= SMOOTH_TEXTURE;
+                progId |= REPEAT_TEXTURE;
             [renderEncoder setFragmentTexture: tex->tex atIndex:0];
          }
 
@@ -674,6 +887,22 @@ public:
          if (!prog)
          {
             prog = allPrograms[progId] = new MetalProgram(_device, swapchain.pixelFormat, progId);
+            /*
+            if (progId==0x2007)
+            {
+               int n2 = (n/4)*6;
+               printf("-> quands %d -> \n", n, n2);
+               VertexData *vd = (VertexData *)data;
+               for(int i=0;i<n2;i++)
+               {
+                   int quad=i/6;
+                   int corner=i-quad*6;
+                   if (corner>2) corner=6-corner;
+                   int v = corner + (quad<<2);
+                  printf("%d:%d] %f,%f  %f,%f\n",i,v, vd[v].pos[0], vd[v].pos[1],vd[v].tex[0], vd[v].tex[1]);
+               }
+            }
+            */
          }
          if (prog->stride!=element.mStride)
              printf("Bad stride %d!=%d  pid=%08x\n", prog->stride, element.mStride, progId );
@@ -707,6 +936,12 @@ public:
          if (progId & (PROG_TINT | PROG_COLOUR_OFFSET) )
          {
             prog->setColourTransform(ctrans, element.mColour, premAlpha );
+            uniformsDirty = true;
+         }
+
+         if (element.mFlags & DRAW_RADIAL)
+         {
+            prog->setGradientFocus(element.mRadialPos * one_on_256);
             uniformsDirty = true;
          }
 

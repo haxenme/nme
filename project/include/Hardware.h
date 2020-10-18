@@ -3,7 +3,7 @@
 
 #include "Graphics.h"
 
-#ifdef GCW0
+#if defined(GCW0)
 #define NME_FLOAT32_VERT_VALUES
 #endif
 
@@ -29,7 +29,6 @@ enum
    
    DRAW_TILE_MOUSE      = 0x00000080,
 };
-
 
 
 

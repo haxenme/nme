@@ -18,18 +18,19 @@ enum
    PROG_RADIAL_FOCUS =      0x0020,
    PROG_TINT =              0x0040,
    PROG_COLOUR_OFFSET =     0x0080,
+   PROG_4D_INPUT      =     0x0100,
+   PROG_PREM_ALPHA    =     0x0200,
 
-   PROG_COUNT =             0x0100,
+   PROG_COUNT =             0x0400,
 };
 
-inline unsigned int getProgId( const DrawElement &element, const ColorTransform *ctrans, bool &outPremAlpha)
+inline unsigned int getProgId( const DrawElement &element, const ColorTransform *ctrans)
 {
-   outPremAlpha = false;
    unsigned int progId = 0;
    if ((element.mFlags & DRAW_HAS_TEX) && element.mSurface)
    {
       if (IsPremultipliedAlpha(element.mSurface->Format()))
-         outPremAlpha = true;
+         progId |= PROG_PREM_ALPHA;
       progId |= PROG_TEXTURE;
       if (element.mSurface->BytesPP()==1)
          progId |= PROG_ALPHA_TEXTURE;
@@ -37,6 +38,9 @@ inline unsigned int getProgId( const DrawElement &element, const ColorTransform 
 
    if (element.mFlags & DRAW_HAS_COLOUR)
       progId |= PROG_COLOUR_PER_VERTEX;
+
+   if (element.mFlags & DRAW_HAS_PERSPECTIVE)
+      progId |= PROG_4D_INPUT;
 
    if (element.mFlags & DRAW_HAS_NORMAL)
       progId |= PROG_NORMAL_DATA;
