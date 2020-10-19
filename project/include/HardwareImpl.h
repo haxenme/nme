@@ -32,7 +32,7 @@ inline unsigned int getProgId( const DrawElement &element, const ColorTransform 
       if (IsPremultipliedAlpha(element.mSurface->Format()))
          progId |= PROG_PREM_ALPHA;
       progId |= PROG_TEXTURE;
-      if (element.mSurface->BytesPP()==1)
+      if (element.mSurface->Format()==pfAlpha)
          progId |= PROG_ALPHA_TEXTURE;
    }
 
