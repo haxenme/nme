@@ -1,5 +1,10 @@
 package nme.gl;
 
+#if nme_metal
+#error "GL not supported with NME_METAL"
+#else
+
+
 import nme.display.BitmapData;
 import nme.utils.ArrayBuffer;
 import nme.utils.ByteArray;
@@ -1796,3 +1801,5 @@ typedef ShaderPrecisionFormat =
 
 };
 
+
+#end // !nme_metal
