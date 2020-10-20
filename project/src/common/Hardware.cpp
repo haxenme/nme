@@ -11,6 +11,12 @@
 namespace nme
 {
 
+#ifdef NME_OGL
+  #ifdef NME_METAL
+     bool nmeOpenglRenderer = true;
+  #endif
+#endif
+
 enum { DEBUG_KEEP_LOOPS     = 0 };
 enum { DEBUG_FAT_LINES      = 0 };
 
@@ -179,7 +185,10 @@ public:
             #else
                #ifdef NME_METAL
                // Align...
-               mElement.mStride += 2*sizeof(float);
+               if (nmeOpenglRenderer)
+                   mElement.mStride += sizeof(int);
+               else
+                   mElement.mStride += 2*sizeof(float);
                #else
                mElement.mStride += sizeof(int);
                #endif
@@ -235,7 +244,10 @@ public:
                #else
                   #ifdef NME_METAL
                   // Align...
-                  mElement.mStride += 2*sizeof(float);
+                  if (nmeOpenglRenderer)
+                     mElement.mStride += sizeof(int);
+                  else
+                     mElement.mStride += 2*sizeof(float);
                   #else
                   mElement.mStride += sizeof(int);
                   #endif

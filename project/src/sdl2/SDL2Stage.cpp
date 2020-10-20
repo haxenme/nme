@@ -59,7 +59,10 @@ int InitSDL()
    #endif
 
    #ifdef NME_METAL
-   SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
+   if (!nmeOpenglRenderer)
+      SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
+   else
+      SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
    #endif
 
    int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
@@ -271,13 +274,22 @@ public:
 
       if (mIsHardware)
       {
-         #ifdef NME_OGL
+         #if defined(NME_OGL) && defined(NME_METAL)
+         if (nmeOpenglRenderer)
+         {
+            mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
+         }
+         else
+         {
+            void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
+            mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
+         }
+         #elif defined(NME_OGL)
          mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
+
          #elif defined(NME_METAL)
 
          void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
-         //const id<MTLDevice> gpu = swapchain.device;
-         //const id<MTLCommandQueue> queue = [gpu newCommandQueue];
          mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
 
          #else
@@ -1909,7 +1921,12 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
    
    bool fullscreen = (inFlags & wfFullScreen) != 0;
-   #ifdef NME_OGL
+   #if defined(NME_OGL) && defined(NME_METAL)
+   nmeOpenglRenderer = !(inFlags & wfHardwareMetal);
+   bool hw = (inFlags & wfHardware) != 0;
+   bool opengl = hw && nmeOpenglRenderer;
+   bool metal = hw && !nmeOpenglRenderer;
+   #elif defined(NME_OGL)
    bool opengl = (inFlags & wfHardware) != 0;
    bool metal = false;
    #else
@@ -2169,6 +2186,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    {
       SDL_GetWindowSize(window, &width, &height);
    }
+
 
    bool hardware = metal||opengl;
    sgSDLFrame = new SDLFrame(window, renderer, windowFlags, hardware, width, height);

@@ -195,6 +195,10 @@ class ApplicationMain
          (::WIN_SCALE_FLAGS:: * nme.app.Application.SCALE_BASE)
          ;
 
+         #if nme_metal
+         flags |= nme.app.Application.HARDWARE_METAL;
+         #end
+
 
          #if nme_application
 

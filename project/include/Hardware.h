@@ -10,6 +10,18 @@
 namespace nme
 {
 
+#if NME_OGL
+  #ifdef NME_METAL
+     extern bool nmeOpenglRenderer;
+  #else
+     const bool nmeOpenglRenderer = true;
+  #endif
+#else
+   const bool nmeOpenglRenderer = false;
+#endif
+
+
+
 void ResetHardwareContext();
 
 typedef QuickVec<UserPoint>   Vertices;

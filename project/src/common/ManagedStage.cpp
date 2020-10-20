@@ -27,7 +27,13 @@ ManagedStage::ManagedStage(int inWidth,int inHeight,int inFlags)
 
    sgStage = this;
 
-   #if NME_OGL
+   #if defined(NME_OGL) && defined(NME_METAL)
+   if (nmeOpenglRenderer)
+      mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
+   else
+      // TODO?
+      mHardwareRenderer = HardwareRenderer::CreateMetal(0);
+   #elif defined(NME_OGL)
    mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
    #elif defined(NME_METAL)
    // TODO?
