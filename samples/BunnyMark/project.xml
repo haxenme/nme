@@ -11,5 +11,5 @@
 	<haxelib name="openfl" />
 	
 	<assets path="Assets" rename="assets" />
-	
+
 </project>

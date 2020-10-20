@@ -133,8 +133,8 @@ struct MetalTexture : public Texture
       if (dirtyRect.HasPixels())
       {
          MTLRegion region = {
-           { dirtyRect.x, dirtyRect.y, 0 },       // MTLOrigin
-           { dirtyRect.w,  dirtyRect.h, 1} // MTLSize
+           { (NSUInteger)dirtyRect.x, (NSUInteger)dirtyRect.y, 0 },       // MTLOrigin
+           { (NSUInteger)dirtyRect.w,  (NSUInteger)dirtyRect.h, 1} // MTLSize
          };
          NSUInteger bytesPerRow = width*bpp;
          if (conversionRequired)
@@ -809,7 +809,7 @@ public:
    {
       setOrtho(inRect.x,inRect.x1(), inRect.y1(),inRect.y);
       // Set the region of the drawable to draw into.
-      [renderEncoder setViewport:(MTLViewport){inRect.x, inRect.y, inRect.w, inRect.h, 0.0, 1.0 }];
+      [renderEncoder setViewport:(MTLViewport){(double)inRect.x, (double)inRect.y, (double)inRect.w, (double)inRect.h, 0.0, 1.0 }];
    }
    void Clear(uint32 inColour,const Rect *inRect=0)
    {

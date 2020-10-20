@@ -25,7 +25,7 @@
 		1E3B11C21854877600E698A8 /* ::APP_FILE::/Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1E3B11C11854877600E698A8 /* ::APP_FILE::/Images.xcassets */; };
 		1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBA9A121AF1C60048A9DF /* UIKit.framework */; };
 		1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA2121AF2210048A9DF /* OpenAL.framework */; };
-		1EEEBAA5121AF2210048A9DF /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */; };
+		1EEEBAA5121AF2210048A9DF /* MetalKit/OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA4121AF2210048A9DF /* MetalKit/OpenGLES.framework */; };
 		1EEEBAA7121AF2210048A9DF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAA6121AF2210048A9DF /* QuartzCore.framework */; };
 		1EEEBAB3121AF2880048A9D0 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAB2121AF2880048A9D0 /* CoreMotion.framework */; };
 		1EEEBAB3121AF2880048A9D1 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBAB2121AF2880048A9D1 /* MediaPlayer.framework */; };
@@ -104,7 +104,11 @@
 		1E3B11C11854877600E698A8 /* ::APP_FILE::/Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "::APP_FILE::/Images.xcassets"; sourceTree = "<group>"; };
 		1EEEBA9A121AF1C60048A9DF /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		1EEEBAA2121AF2210048A9DF /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
+      ::if NME_METAL::
+		1EEEBAA4121AF2210048A9DF /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+      ::else::
 		1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+      ::end::
 		1EEEBAA6121AF2210048A9DF /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		1EEEBAB2121AF2880048A9D0 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		1EEEBAB2121AF2880048A9D1 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
@@ -151,7 +155,7 @@
 			        50C0551D1D7D0E0B005B17C7 /* CoreMedia.framework in Frameworks */,
 				1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */,
 				1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */,
-				1EEEBAA5121AF2210048A9DF /* OpenGLES.framework in Frameworks */,
+				1EEEBAA5121AF2210048A9DF /* MetalKit/OpenGLES.framework in Frameworks */,
 				1EEEBAA7121AF2210048A9DF /* QuartzCore.framework in Frameworks */,
 				1EEEBAB3121AF2880048A9DF /* CoreAudio.framework in Frameworks */,
 				1EEEBAB3121AF2880048A9D0 /* CoreMotion.framework in Frameworks */,
@@ -244,7 +248,7 @@
 				50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */,
 				1EEEBA9A121AF1C60048A9DF /* UIKit.framework */,
 				1EEEBAA2121AF2210048A9DF /* OpenAL.framework */,
-				1EEEBAA4121AF2210048A9DF /* OpenGLES.framework */,
+				1EEEBAA4121AF2210048A9DF /* MetalKit/OpenGLES.framework */,
 				1EEEBAA6121AF2210048A9DF /* QuartzCore.framework */,
 				1EEEBAB2121AF2880048A9DF /* CoreAudio.framework */,
 				1EEEBAB2121AF2880048A9D0 /* CoreMotion.framework */,

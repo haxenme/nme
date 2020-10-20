@@ -12,6 +12,12 @@
 #import <CoreMotion/CMMotionManager.h>
 #import <MediaPlayer/MediaPlayer.h>
 
+
+::if NME_METAL::
+#define NME_METAL
+#import <MetalKit/MetalKit.h>
+::end::
+
 #include <Display.h>
 #include <Surface.h>
 #include <KeyCodes.h>
@@ -26,6 +32,7 @@
 #import <OpenGLES/ES2/glext.h>
 
 #include <StageVideo.h>
+#include <Hardware.h>
 
 using namespace nme;
 
@@ -49,16 +56,23 @@ bool sgHasAccelerometer = false;
 
 class NMEStage;
 
+
 // This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
 // The view content is basically an EAGL surface you render your OpenGL scene into.
 // Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
+#ifdef NME_METAL
+@interface NMEView : MTKView<UITextFieldDelegate>
+#else
 @interface NMEView : UIView<UITextFieldDelegate>
+#endif
 {    
 @private
 
 
-   int      mRenderBuffer;
    bool     multisampling;
+
+   #ifndef NME_METAL
+   int      mRenderBuffer;
    bool     multisamplingEnabled;
 
    CAEAGLLayer      *mLayer;
@@ -70,6 +84,7 @@ class NMEStage;
    GLuint          msaaFramebuffer;
    GLuint          msaaRenderBuffer;
    GLuint          msaaDepthBuffer;
+   #endif
 
 
 @public
@@ -81,17 +96,21 @@ class NMEStage;
    double         dpiScale;
 
 
+   #ifndef NME_METAL
   // The OpenGL names for the framebuffer and renderbuffer used to render to this view
    GLuint          defaultFramebuffer;
    GLuint          colorRenderbuffer;
    GLuint          depthStencilBuffer;
 
-
-
    // The pixel dimensions of the CAEAGLLayer
    EAGLContext     *mOGLContext;
    GLint           backingWidth;
    GLint           backingHeight;
+
+   #else
+   CGSize          backingSize;
+   #endif
+
    HardwareSurface *mHardwareSurface;
    HardwareRenderer *mHardwareRenderer;
 }
@@ -109,8 +128,10 @@ class NMEStage;
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void) makeCurrent:(bool)withMultisampling;
 
+#ifndef NME_METAL
 - (void) createOGLFramebuffer;
 - (void) destroyOGLFramebuffer;
+#endif
 @end
 
 
@@ -161,13 +182,18 @@ public:
 
    UIView *getRootView() { return container; }
    bool getMultitouchSupported() { return true; }
-   bool isOpenGL() const { return nmeView->mOGLContext; }
    Surface *GetPrimarySurface() { return nmeView->mHardwareSurface; }
    void SetCursor(nme::Cursor) { /* No cursors on iPhone ! */ }
    void PopupKeyboard(PopupKeyboardMode inEnable,WString *);
    double getDPIScale() { return nmeView->dpiScale; }
 
+   #ifndef NME_METAL
+   bool isOpenGL() const { return nmeView->mOGLContext; }
    int getWindowFrameBufferId() { return nmeView->defaultFramebuffer; };
+   #else
+   // ?
+   bool isOpenGL() const { return true; }
+   #endif
 
 
 
@@ -192,8 +218,13 @@ public:
    void GetMouse() { }
 
    // --- IRenderTarget Interface ------------------------------------------
+   #ifdef NME_METAL
+   int Width() { return nmeView->backingSize.width; }
+   int Height() { return nmeView->backingSize.height; }
+   #else
    int Width() { return nmeView->backingWidth; }
    int Height() { return nmeView->backingHeight; }
+   #endif
 
 };
 
@@ -257,8 +288,10 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
 {
    if (animating)
    {
+      #ifndef NME_METAL
       if (stage->nmeView->mOGLContext && [EAGLContext currentContext] != stage->nmeView->mOGLContext)
          [EAGLContext setCurrentContext:stage->nmeView->mOGLContext];  
+      #endif
       Event evt(etPoll);
       stage->OnEvent(evt);
    }
@@ -287,7 +320,11 @@ static std::string nmeTitle;
 // You must implement this method
 + (Class) layerClass
 {
+#ifdef NME_METAL
+  return [CAMetalLayer class];
+#else
   return [CAEAGLLayer class];
+#endif
 }
 
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
@@ -326,14 +363,8 @@ static std::string nmeTitle;
    //printf("--- NMEView layer ----\n");
    mStage = inStage;
 
-   defaultFramebuffer = 0;
-   colorRenderbuffer = 0;
-   depthStencilBuffer = 0;
    mHardwareRenderer = 0;
    mHardwareSurface = 0;
-   mLayer = 0;
-   mOGLContext = 0;
-   mRenderBuffer = 0;
 
    //todo ; rather expose this hardware value as a function
    //and they can disable AA selectively on devices themselves 
@@ -341,16 +372,6 @@ static std::string nmeTitle;
    multisampling = sgEnableMSAA2 || sgEnableMSAA4;
 
 
-
-   // Get the layer
-   mLayer = (CAEAGLLayer *)self.layer;
-
-   mLayer.opaque = mStage->wantOpaqueBg;
-
-   mLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
-                                   kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
-                                   nil];
 
    // Set scaling to ensure 1:1 pixels ...
    if([[UIScreen mainScreen] respondsToSelector: NSSelectorFromString(@"scale")])
@@ -370,6 +391,29 @@ static std::string nmeTitle;
    mPrimaryTouchHash = 0;
 
 
+   #ifndef NME_METAL
+
+   // Non-metal
+   defaultFramebuffer = 0;
+   colorRenderbuffer = 0;
+   depthStencilBuffer = 0;
+
+   mLayer = 0;
+   mOGLContext = 0;
+   mRenderBuffer = 0;
+
+
+   // Get the layer
+   mLayer = (CAEAGLLayer *)self.layer;
+
+   mLayer.opaque = mStage->wantOpaqueBg;
+
+   mLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
+                                   kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
+                                   nil];
+
+   #ifndef OBJC_ARC
    if (sgAllowShaders)
    {
       mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
@@ -387,13 +431,29 @@ static std::string nmeTitle;
    //printf("createOGLFramebuffer...\n");
    [self createOGLFramebuffer];
 
-   #ifndef OBJC_ARC
    mHardwareRenderer = HardwareRenderer::CreateOpenGL(mLayer, mOGLContext, sgAllowShaders);
    #else
    mHardwareRenderer = HardwareRenderer::CreateOpenGL((__bridge void *)mLayer, (__bridge void *)mOGLContext, sgAllowShaders);
    #endif
+
    mHardwareRenderer->IncRef();
    mHardwareRenderer->SetWindowSize(backingWidth, backingHeight);
+
+   #else
+
+   // Metal
+
+   self.device = MTLCreateSystemDefaultDevice();
+
+   CAMetalLayer *metalLayer = (CAMetalLayer*)self.layer;
+
+   self.enableSetNeedsDisplay = YES;
+
+   mHardwareRenderer = HardwareRenderer::CreateMetal(metalLayer);
+
+   mHardwareRenderer->IncRef();
+   mHardwareRenderer->SetWindowSize(backingSize.width, backingSize.height);
+   #endif
 
    mHardwareSurface = new HardwareSurface(mHardwareRenderer);
    mHardwareSurface->IncRef();
@@ -698,6 +758,7 @@ static std::string nmeTitle;
 }
 
 
+#ifndef NME_METAL
 - (void) createOGLFramebuffer
 {
    APP_LOG(@"createOGLFramebuffer");
@@ -890,9 +951,11 @@ static std::string nmeTitle;
       depthStencilBuffer = 0;
    }
 }
+#endif
 
 - (void) makeCurrent :(bool)withMultisampling
 {
+   #ifndef NME_METAL
    [EAGLContext setCurrentContext:mOGLContext];
 
    bool multisamplingEnabledNow = withMultisampling;
@@ -939,6 +1002,7 @@ static std::string nmeTitle;
          glBindFramebufferOES(GL_FRAMEBUFFER_OES, msaaFramebuffer);
       }
    }
+   #endif
 }
 
 
@@ -974,6 +1038,7 @@ static std::string nmeTitle;
       mHardwareRenderer = 0;
    }
 
+   #ifndef NME_METAL
    [self destroyOGLFramebuffer];
 
    if (mOGLContext)
@@ -985,6 +1050,7 @@ static std::string nmeTitle;
       [mOGLContext release];
       mOGLContext = nil;
    }
+   #endif
 
    [self removeFromSuperview];
 }
@@ -992,6 +1058,7 @@ static std::string nmeTitle;
 
 - (void) flip
 {
+   #ifndef NME_METAL
    if (multisampling && multisamplingEnabled)
    {
       // [ddc] code taken from
@@ -1039,20 +1106,28 @@ static std::string nmeTitle;
       glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
       [mOGLContext presentRenderbuffer:GL_RENDERBUFFER_OES];
    }
+   #endif
 }
 
 
 
 - (void) layoutSubviews
 {
+   #ifndef NME_METAL
    [EAGLContext setCurrentContext:mOGLContext];
    [self destroyOGLFramebuffer];
    [self createOGLFramebuffer];
    //printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
 
-   mHardwareRenderer->SetWindowSize(backingWidth,backingHeight);
 
+   mHardwareRenderer->SetWindowSize(backingWidth,backingHeight);
    mStage->OnOGLResize(backingWidth,backingHeight);
+   #else
+   backingSize = [self drawableSize];
+
+   mHardwareRenderer->SetWindowSize(backingSize.width,backingSize.height);
+   mStage->OnOGLResize(backingSize.width,backingSize.height);
+   #endif
 }
 
 #ifndef OBJC_ARC
@@ -1775,7 +1850,9 @@ void NMEStage::recreateNmeView()
       double b = ((opaqueBackground    ) & 0xff) / 255.0;
       container.backgroundColor = [[UIColor alloc] initWithRed:r green:g blue:b alpha:1.0];
    }
+   #ifndef NME_METAL
    ResetHardwareContext();
+   #endif
    Event evt(etRenderContextLost);
    OnEvent(evt);
 }

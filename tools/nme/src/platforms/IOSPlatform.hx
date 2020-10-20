@@ -165,7 +165,8 @@ class IOSPlatform extends Platform
       var hxcpp_include = hxcpp==null ? "" : " " + hxcpp + "/include";
       context.HXCPP_INCLUDE_DIR = hxcpp_include;
       context.NME_IOS_INCLUDE = 'haxe/cpp/include';
-
+      if (project.hasDef("nme_metal"))
+         context.NME_METAL = true;
 
       if (project.watchProject!=null)
       {
@@ -333,7 +334,6 @@ ${hxcpp_include}';
 
       context.PRERENDERED_ICON = config.prerenderedIcon;
       context.FRAMEWORK_IMPORTS = imports.join("\n");
-
       //updateIcon();
       //updateLaunchImage();
    }

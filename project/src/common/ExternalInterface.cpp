@@ -5576,14 +5576,14 @@ void nme_get_glstats(value aStatsArray)
 DEFINE_PRIME1v(nme_get_glstats)
 
 // Reference this to bring in all the symbols for the static library
-#ifdef STATIC_LINK
+#if STATIC_LINK
 extern "C" int nme_oglexport_register_prims();
 #endif
 
 extern "C" int nme_register_prims()
 {
    InitIDs();
-   #ifdef STATIC_LINK
+   #if defined(STATIC_LINK) && defined(NME_OGL)
    nme_oglexport_register_prims();
    #endif
    return 0;
