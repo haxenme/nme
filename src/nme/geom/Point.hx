@@ -19,6 +19,12 @@ class Point
       return new Point(v.x + x, v.y + y);
    }
 
+   public function scaled(scale:Float):Point 
+   {
+      return new Point( x*scale, y*scale );
+   }
+
+
    public function clone():Point 
    {
       return new Point(x, y);
