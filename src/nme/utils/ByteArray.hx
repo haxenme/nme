@@ -62,6 +62,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public var __length(get,set):Int;
 
    #if jsprime
+   // ptr is an offset into global memory allocated by c++ code
+   // If the pointer is non-null then it is mapped into both JS and c++
+   // If the buffer is allocated by JS, c++  must 'realize' the array to map it into memory
+   //  and take ownership before it can access the data
    public var ptr:Null<Int>=null;
    public var flags:Int;
    #end
@@ -127,6 +131,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          var offset = ByteArray.nme_buffer_offset(ptr);
          b = new JsUint8Array(untyped Module.HEAP8.buffer, offset,alloced);
       }
+      // Base class Bytes mapper will get reconstructed as needed ..
+      data = null;
    }
 
    @:keep
@@ -326,8 +332,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
                else // fallthrough
             #end
             {
-            var new_b = new JsUint8Array(alloced);
-            var dest = new JsUint8Array(new_b);
+            var dest = new JsUint8Array(alloced);
+            // TODO - something faster
             var copy = length<inSize ? length : inSize;
             for(i in 0...copy)
                dest[i] = b[i];
