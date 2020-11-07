@@ -1868,7 +1868,8 @@ public:
       UserPoint p;
       UserPoint dir1;
 
-      bool fancyJoints =   mPerpLen*mScale > 1.0 && (mJoints==sjRound || mJoints==sjMiter);
+      bool fancyJoints =  ( mPerpLen*mScale > 1.0 && mJoints==sjRound ) ||
+                          ( mPerpLen*mScale >= 0.999 && mJoints==sjMiter);
 
       for(int i=1;i<inPath.size();i++)
       {
