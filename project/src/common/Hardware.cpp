@@ -77,7 +77,7 @@ public:
       mPerpLen = 0.5;
       mStateScale = data.scaleOf(inState);
       mScale = mStateScale;
-      mTileScale = 1.0;
+      mTileScaleY = mTileScaleY = 1.0;
       if (mScale<=0.001)
          mScale = 0.001;
       mCurveThresh2 = 0.125/mScale/mScale;
@@ -267,7 +267,9 @@ public:
             {
                ioData.mMinScale = mStateScale*0.99;
                ioData.mMaxScale = mStateScale*1.01;
-               mTileScale = mStateScale>0 ? 1.0/mStateScale : 1.0;
+               const Matrix &m = *inState.mTransform.mMatrix;
+               mTileScaleX = 1.0/sqrt( m.m00*m.m00 + m.m01*m.m01 );
+               mTileScaleY = 1.0/sqrt( m.m10*m.m10 + m.m11*m.m11 );
             }
 
             AddTiles(mode, &inPath.data[inJob.mData0], tiles);
@@ -551,8 +553,8 @@ public:
       UserPoint tileSize = bmpSize;
       if (FIXED && FULL)
       {
-         tileSize.x *= mTileScale;
-         tileSize.y *= mTileScale;
+         tileSize.x *= mTileScaleX;
+         tileSize.y *= mTileScaleY;
       }
 
       for(int i=0;i<inTiles;i++)
@@ -561,8 +563,8 @@ public:
          {
             UserPoint off = *point++;
             pos = *point++;
-            pos.x -= off.x * mTileScale;
-            pos.y -= off.y * mTileScale;
+            pos.x -= off.x * mTileScaleX;
+            pos.y -= off.y * mTileScaleY;
          }
          else
             pos = *point++;
@@ -596,8 +598,8 @@ public:
 
             if (FIXED)
             {
-               tileSize.x *= mTileScale;
-               tileSize.y *= mTileScale;
+               tileSize.x *= mTileScaleX;
+               tileSize.y *= mTileScaleY;
             }
          }
 
@@ -752,8 +754,8 @@ public:
       UserPoint tileSize = bmpSize;
       if (FIXED && FULL)
       {
-         tileSize.x *= mTileScale;
-         tileSize.y *= mTileScale;
+         tileSize.x *= mTileScaleX;
+         tileSize.y *= mTileScaleY;
       }
 
       int stride = mElement.mStride * 4;
@@ -775,8 +777,8 @@ public:
          {
             UserPoint off = *point++;
             pos = *point++;
-            pos.x -= off.x * mTileScale;
-            pos.y -= off.y * mTileScale;
+            pos.x -= off.x * mTileScaleX;
+            pos.y -= off.y * mTileScaleY;
          }
          else
             pos = *point++;
@@ -809,8 +811,8 @@ public:
             }
             if (FIXED)
             {
-               tileSize.x *= mTileScale;
-               tileSize.y *= mTileScale;
+               tileSize.x *= mTileScaleX;
+               tileSize.y *= mTileScaleY;
             }
          }
 
@@ -2395,7 +2397,8 @@ public:
    double      mPerpLen;
    double      mScale;
    double      mStateScale;
-   double      mTileScale;
+   float       mTileScaleX;
+   float       mTileScaleY;
    double      mCurveThresh2;
    double      mFatLineCullThresh;
    Matrix      mTextureMapper;
