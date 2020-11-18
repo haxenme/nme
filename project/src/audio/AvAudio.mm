@@ -25,8 +25,8 @@ public:
       sampleCount = 0;
 
       #ifndef OBJC_ARC
-	   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	   #endif
+      NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+      #endif
 
       NSString *str = [[NSString alloc] initWithUTF8String:inData.c_str()];
 
@@ -44,7 +44,11 @@ public:
          NSArray *formatDesc = ((AVAssetTrack*)[[asset tracksWithMediaType:AVMediaTypeAudio]  objectAtIndex:0]).formatDescriptions;
          for(unsigned int i = 0; i < [formatDesc count]; ++i)
          {
+            #ifndef OBJC_ARC
             CMAudioFormatDescriptionRef item = (CMAudioFormatDescriptionRef)[formatDesc objectAtIndex:i];
+            #else
+            CMAudioFormatDescriptionRef item = (__bridge CMAudioFormatDescriptionRef)[formatDesc objectAtIndex:i];
+            #endif
             const AudioStreamBasicDescription *asDesc = CMAudioFormatDescriptionGetStreamBasicDescription(item);
             if (asDesc)
             {
@@ -55,8 +59,8 @@ public:
          }
 
 
-   	   NSError *assetError = nil;
-   	   AVAssetReader *assetReader = [AVAssetReader assetReaderWithAsset:asset error:&assetError] ;
+         NSError *assetError = nil;
+         AVAssetReader *assetReader = [AVAssetReader assetReaderWithAsset:asset error:&assetError] ;
  
          AudioChannelLayout channelLayout;
          memset(&channelLayout, 0, sizeof(AudioChannelLayout));
@@ -64,18 +68,18 @@ public:
    
          NSDictionary *outputSettings = 
             [NSDictionary dictionaryWithObjectsAndKeys:
-   	        [NSNumber numberWithInt:kAudioFormatLinearPCM], AVFormatIDKey, 
-   	        [NSNumber numberWithFloat:sampleRate], AVSampleRateKey,
-   	        [NSNumber numberWithInt:channels], AVNumberOfChannelsKey,
-   	        [NSData dataWithBytes:&channelLayout length:sizeof(AudioChannelLayout)], AVChannelLayoutKey,
-   	        [NSNumber numberWithInt:16], AVLinearPCMBitDepthKey,
-   	        [NSNumber numberWithBool:NO], AVLinearPCMIsNonInterleaved,
-   	        [NSNumber numberWithBool:NO],AVLinearPCMIsFloatKey,
-   	        [NSNumber numberWithBool:NO], AVLinearPCMIsBigEndianKey,
-   	      nil];
+              [NSNumber numberWithInt:kAudioFormatLinearPCM], AVFormatIDKey, 
+              [NSNumber numberWithFloat:sampleRate], AVSampleRateKey,
+              [NSNumber numberWithInt:channels], AVNumberOfChannelsKey,
+              [NSData dataWithBytes:&channelLayout length:sizeof(AudioChannelLayout)], AVChannelLayoutKey,
+              [NSNumber numberWithInt:16], AVLinearPCMBitDepthKey,
+              [NSNumber numberWithBool:NO], AVLinearPCMIsNonInterleaved,
+              [NSNumber numberWithBool:NO],AVLinearPCMIsFloatKey,
+              [NSNumber numberWithBool:NO], AVLinearPCMIsBigEndianKey,
+            nil];
 
          AVAssetReaderAudioMixOutput *assetReaderOutput = [AVAssetReaderAudioMixOutput 
-   	           assetReaderAudioMixOutputWithAudioTracks:asset.tracks audioSettings: outputSettings];
+                 assetReaderAudioMixOutputWithAudioTracks:asset.tracks audioSettings: outputSettings];
 
          int sampleCount = channels * sampleRate * metaDuration;
          int pos = 0;
@@ -92,8 +96,8 @@ public:
 
             while(true)
             {
-   	         CMSampleBufferRef sampleBuffer = [assetReaderOutput copyNextSampleBuffer];
-   	         if (sampleBuffer)
+               CMSampleBufferRef sampleBuffer = [assetReaderOutput copyNextSampleBuffer];
+               if (sampleBuffer)
                {
                   char *buffer = 0;
                   size_t size = 0;
@@ -117,12 +121,12 @@ public:
                }
                else
                {
-               	  // done!
-               	[assetReader cancelReading];
+                    // done!
+                  [assetReader cancelReading];
                   break;
                }
             }
-   	   }
+         }
          if (remaining>0)
             decodedBuffer.resize( decodedBuffer.size()-remaining );
 
@@ -138,9 +142,8 @@ public:
 
 
       #ifndef OBJC_ARC
-	   [pool drain];
-	   #endif
-     
+      [pool drain];
+      #endif
    }
    ~AvDecodedData()
    {

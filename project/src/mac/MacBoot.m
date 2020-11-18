@@ -17,7 +17,6 @@
 #import <Cocoa/Cocoa.h>
 #endif
 
-
 typedef void (*ContinueFunc)();
 ContinueFunc continueBoot = 0;
  
@@ -33,21 +32,21 @@ ContinueFunc continueBoot = 0;
 @end
 
 /* Use this flag to determine whether we use SDLMain.nib or not */
-#define		SDL_USE_NIB_FILE	0
+#define SDL_USE_NIB_FILE  0
 
 /* Use this flag to determine whether we use CPS (docking) or not */
-#define		SDL_USE_CPS		1
+#define SDL_USE_CPS  1
 #ifdef SDL_USE_CPS
 /* Portions of CPS.h */
 typedef struct CPSProcessSerNum
 {
-	UInt32		lo;
-	UInt32		hi;
+   UInt32 lo;
+   UInt32 hi;
 } CPSProcessSerNum;
 
-extern OSErr	CPSGetCurrentProcess( CPSProcessSerNum *psn);
-extern OSErr 	CPSEnableForegroundOperation( CPSProcessSerNum *psn, UInt32 _arg2, UInt32 _arg3, UInt32 _arg4, UInt32 _arg5);
-extern OSErr	CPSSetFrontProcess( CPSProcessSerNum *psn);
+extern OSErr CPSGetCurrentProcess( CPSProcessSerNum *psn);
+extern OSErr CPSEnableForegroundOperation( CPSProcessSerNum *psn, UInt32 _arg2, UInt32 _arg3, UInt32 _arg4, UInt32 _arg5);
+extern OSErr CPSSetFrontProcess( CPSProcessSerNum *psn);
 
 #endif /* SDL_USE_CPS */
 
@@ -84,7 +83,7 @@ FILE *OpenRead(const char *inName)
     {
 
        #ifndef OBJC_ARC
-       NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
+       NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
        #endif
        NSString *str = [[NSString alloc] initWithUTF8String:inName];
        NSString *pathInBundle = [ [NSBundle mainBundle]  pathForResource:str ofType:nil];
@@ -106,7 +105,7 @@ bool GetBundleFilename(const char *inName, char *outBuffer,int inSize)
    }
 
    #ifndef OBJC_ARC
-   NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
+   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
    #endif
    NSString *str = [[NSString alloc] initWithUTF8String:inName];
    NSString *pathInBundle = [ [NSBundle mainBundle]  pathForResource:str ofType:nil];
@@ -169,27 +168,25 @@ FILE *OpenOverwrite(const char *inName)
 {
     if (shouldChdir)
     {
-        //char parentdir[MAXPATHLEN];
-		//CFURLRef url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-		//CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
-		//if (CFURLGetFileSystemRepresentation(url2, true, (UInt8 *)parentdir, MAXPATHLEN)) {
-	        //assert ( chdir (parentdir) == 0 );   /* chdir to the binary app's parent */
-		//}
-		//CFRelease(url);
-		//CFRelease(url2);
-		  
-		CFBundleRef mainBundle = CFBundleGetMainBundle();
-		CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
-		char path[PATH_MAX];
-		if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
-		{
-        	// error!
-		}
-		CFRelease(resourcesURL);
-		
-		chdir(path);
-		
-	}
+      //char parentdir[MAXPATHLEN];
+      //CFURLRef url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+      //CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
+      //if (CFURLGetFileSystemRepresentation(url2, true, (UInt8 *)parentdir, MAXPATHLEN)) {
+      //assert ( chdir (parentdir) == 0 );   /* chdir to the binary app's parent */
+      //}
+      //CFRelease(url);
+      //CFRelease(url2);
+
+      CFBundleRef mainBundle = CFBundleGetMainBundle();
+      CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+      char path[PATH_MAX];
+      if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
+      {
+        // error!
+      }
+      CFRelease(resourcesURL);
+      chdir(path);
+   }
 
 }
 
@@ -302,9 +299,9 @@ static void setupWindowMenu(void)
 static void CustomApplicationMain (int argc, char **argv)
 {
     #ifndef OBJC_ARC
-    NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     #endif
-    SDLMain				*sdlMain;
+    SDLMain *sdlMain;
 
     /* Ensure the application object is initialised */
     [SDLApplication sharedApplication];
@@ -327,8 +324,11 @@ static void CustomApplicationMain (int argc, char **argv)
 
     /* Create SDLMain and make it the app delegate */
     sdlMain = [[SDLMain alloc] init];
-    [NSApp setDelegate:sdlMain];
+    // cast
+    id appDelegate = sdlMain;
+    [NSApp setDelegate:appDelegate];
     
+
     /* Start the main event loop */
     [NSApp run];
 
@@ -489,9 +489,9 @@ void MacBoot()
 
 #if SDL_USE_NIB_FILE
     [SDLApplication poseAsClass:[NSApplication class]];
-    NSApplicationMain (argc, argv);
+    NSApplicationMain(argc, argv);
 #else
-    CustomApplicationMain (0, 0);
+    CustomApplicationMain(0, 0);
 #endif
 }
 

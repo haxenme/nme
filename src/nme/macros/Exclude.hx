@@ -22,7 +22,7 @@ class Exclude
       for(path in Context.getClassPath())
       {
          if (path=="") path = ".";
-         path = path + "/ndll/Emscripten/export_classes.info";
+         path = path + "/../ndll/Emscripten/export_classes.info";
          if (!tried.exists(path))
          {
              tried.set(path,true);
@@ -36,10 +36,17 @@ class Exclude
          {
             case TInst(classRef, params):
                if (externs.exists(classRef.toString()))
-                    classRef.get().exclude();
+                  classRef.get().exclude();
             case TEnum(enumRef, params):
                if (externs.exists(enumRef.toString()))
                     enumRef.get().exclude();
+            case TAbstract(absRef, params):
+               if (externs.exists(absRef.toString()))
+               {
+                  var exclude = absRef.get().exclude;
+                  if (exclude!=null)
+                     exclude();
+               }
             default:
          }
       }

@@ -65,10 +65,17 @@ import org.json.JSONException;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 
+::if NME_APPLOVIN_KEY::
+import com.applovin.sdk.AppLovinSdk;
+::end::
+::if NME_FIREBASE::
+import com.google.firebase.analytics.FirebaseAnalytics;
+::end::
+
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
 {
-   static final String TAG = "GameActivity";
+   static final String TAG = "NME GameActivity";
 
    private static final int KEYBOARD_OFF = 0;
    private static final int KEYBOARD_DUMB = 1;
@@ -96,6 +103,10 @@ implements SensorEventListener
    static SensorManager sensorManager;
    static android.text.ClipboardManager mClipboard;
    private static List<Extension> extensions;
+
+   ::if NME_FIREBASE::
+   private FirebaseAnalytics mFirebaseAnalytics;
+   ::end::
    
    public Handler mHandler;
    RelativeLayout mContainer;
@@ -208,6 +219,14 @@ implements SensorEventListener
       addTextListeners();
       mTextUpdateLockout = false;
 
+      ::if NME_FIREBASE::
+      mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+      ::end::
+
+      ::if NME_APPLOVIN_KEY::
+      NmeAppLovin.initializeSdk(this);
+      ::end::
+
 
       mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
       Extension.mainView = mView;
@@ -230,6 +249,7 @@ implements SensorEventListener
          ::foreach ANDROID_EXTENSIONS::
          extensions.add (new ::__current__:: ());::end::
      }
+
 
      for(Extension extension : extensions)
         extension.onCreate(state);
@@ -256,9 +276,13 @@ implements SensorEventListener
     ::if ANDROID_BILLING::
     BillingManager mBillingManager;
 
-    public static void billingInit(String inPublicKey, HaxeObject inUpdatesListener)
+    public static void billingInit(final String inPublicKey, final HaxeObject inUpdatesListener)
     {
-       activity.mBillingManager = new BillingManager(activity, inPublicKey, inUpdatesListener);
+       Log.v(TAG,"billingInit:" + activity);
+       final GameActivity me = activity;
+       queueRunnable( new Runnable() { @Override public void run() {
+          me.mBillingManager = new BillingManager(me, inPublicKey, inUpdatesListener);
+       } });
     }
     public static void billingClose()
     {
@@ -268,37 +292,50 @@ implements SensorEventListener
     {
        activity.mBillingManager.initiatePurchaseFlow(skuId, billingType);
     }
+    public static void billingAcknowledge(String purchaseToken)
+    {
+       activity.mBillingManager.acknowledgePurchase(purchaseToken);
+    }
+
+    public static JSONObject getSkuJson(com.android.billingclient.api.SkuDetails sku) throws JSONException
+    {
+       JSONObject obj= new JSONObject();
+       obj.put("description", sku.getDescription() );
+       obj.put("freeTrialPeriod", sku.getFreeTrialPeriod() );
+       obj.put("introductoryPrice", sku.getIntroductoryPrice() );
+       obj.put("introductoryPriceAmountMicros", sku.getIntroductoryPriceAmountMicros() );
+       obj.put("introductoryPriceCycles", sku.getIntroductoryPriceCycles() );
+       obj.put("introductoryPricePeriod", sku.getIntroductoryPricePeriod() );
+       obj.put("price", sku.getPrice() );
+       obj.put("priceAmountMicros", sku.getPriceAmountMicros() );
+       obj.put("priceCurrencyCode", sku.getPriceCurrencyCode() );
+       obj.put("sku", sku.getSku() );
+       obj.put("subscriptionPeriod", sku.getSubscriptionPeriod() );
+       obj.put("title", sku.getTitle() );
+       obj.put("type", sku.getType() );
+       return obj;
+    }
+
     public static void billingQuery(String itemType, String[] skuArray, final HaxeObject onResult)
     {
        activity.mBillingManager.querySkuDetailsAsync(itemType, java.util.Arrays.asList(skuArray),
           new com.android.billingclient.api.SkuDetailsResponseListener() {
              String result = "";
              @Override
-             public void onSkuDetailsResponse(int responseCode, List<com.android.billingclient.api.SkuDetails> skuDetailsList) {
+             public void onSkuDetailsResponse(com.android.billingclient.api.BillingResult billingResult,
+                                              List<com.android.billingclient.api.SkuDetails> skuDetailsList) {
+                int responseCode = billingResult.getResponseCode();
                 try {
                    JSONArray array= new JSONArray();
                    for(com.android.billingclient.api.SkuDetails sku : skuDetailsList)
                    {
-                      JSONObject obj= new JSONObject();
-                      obj.put("description", sku.getDescription() );
-                      obj.put("freeTrialPeriod", sku.getFreeTrialPeriod() );
-                      obj.put("introductoryPrice", sku.getIntroductoryPrice() );
-                      obj.put("introductoryPriceAmountMicros", sku.getIntroductoryPriceAmountMicros() );
-                      obj.put("introductoryPriceCycles", sku.getIntroductoryPriceCycles() );
-                      obj.put("introductoryPricePeriod", sku.getIntroductoryPricePeriod() );
-                      obj.put("price", sku.getPrice() );
-                      obj.put("priceAmountMicros", sku.getPriceAmountMicros() );
-                      obj.put("priceCurrencyCode", sku.getPriceCurrencyCode() );
-                      obj.put("sku", sku.getSku() );
-                      obj.put("subscriptionPeriod", sku.getSubscriptionPeriod() );
-                      obj.put("title", sku.getTitle() );
-                      obj.put("type", sku.getType() );
+                      JSONObject obj= getSkuJson(sku);
                       array.put(obj);
                    }
                    result = array.toString();
 
                 } catch (JSONException e) {
-                   Log.e(TAG, getStackTrace(e))
+                   Log.e(TAG, getStackTrace(e));
                    responseCode = -1;
                 }
 
@@ -315,7 +352,7 @@ implements SensorEventListener
     {
        activity.mBillingManager.consumeAsync(purchaseToken);
     }
-    public static int billingClientClode()
+    public static int billingClientCode()
     {
        return activity.mBillingManager.getBillingClientResponseCode();
     }
@@ -680,6 +717,10 @@ implements SensorEventListener
          mView.queueEvent(runnable);
    }
 
+   public static void sendHaxe(java.lang.Runnable runnable)
+   {
+      activity.sendToView(runnable);
+   }
 
    public static AssetManager getAssetManager()
    {
@@ -953,6 +994,22 @@ implements SensorEventListener
       mView.onPause();
    }
 
+   @Override public void onBackPressed()
+   {
+      Log.d(TAG,"onBackPressed");
+
+      if (mView != null)
+      {
+         mView.queueEvent(new Runnable()
+         {
+            public void run()
+            {
+               mView.HandleResult(NME.onKeyChange(27, 27, true, false));
+               mView.HandleResult(NME.onKeyChange(27, 27, false, false));
+            }
+         });
+      }
+   }
 
    public static void registerExtension(Extension extension)
    {
@@ -1448,13 +1505,36 @@ implements SensorEventListener
       return intent.getData();
    }
 
-   private static String getStackTrace(Exception e)
+   public static String getStackTrace(Exception e)
    {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw);
       e.printStackTrace(pw);
       return sw.toString();
    }
+
+   ::if NME_FIREBASE::
+   public static void firebaseLog(String event,
+               String[] stringNames, String[] stringValues,
+               String[] intNames, int[] intValues,
+               String[] doubleNames, double[] doubleValues
+               )
+   {
+      Bundle bundle = new Bundle();
+      if (stringNames!=null)
+         for(int i=0; i<stringNames.length; i++)
+             bundle.putString(stringNames[i], stringValues[i] );
+      if (intNames!=null)
+         for(int i=0; i<intNames.length; i++)
+             bundle.putLong(intNames[i], intValues[i] );
+      if (doubleNames!=null)
+         for(int i=0; i<doubleNames.length; i++)
+             bundle.putDouble(doubleNames[i], doubleValues[i] );
+
+
+      activity.mFirebaseAnalytics.logEvent(event, bundle);
+   }
+   ::end::
 }
 
 

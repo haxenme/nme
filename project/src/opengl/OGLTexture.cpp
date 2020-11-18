@@ -11,7 +11,7 @@
    #endif
    static int ARGB_STORE = GL_BGRA_EXT;
    static int ARGB_PIXEL = GL_BGRA_EXT;
-#elif defined(EMSCRIPTEN) || defined(RASPBERRYPI)
+#elif defined(EMSCRIPTEN) || defined(RASPBERRYPI) || defined(GCW0)
    #undef SWAP_RB
    #define SWAP_RB 1
    #define ARGB_STORE GL_RGBA
@@ -22,6 +22,9 @@
 #elif defined(NME_ANGLE)
    #define ARGB_STORE GL_BGRA_EXT;
    #define ARGB_PIXEL GL_BGRA_EXT;
+#elif defined(GCW0)
+   #define ARGB_STORE GL_RGBA
+   #define ARGB_PIXEL GL_BGRA_EXT
 #elif defined(NME_GLES)
    #define ARGB_STORE GL_BGRA
    #define ARGB_PIXEL GL_BGRA
@@ -212,6 +215,7 @@ class OGLTexture : public Texture
    int mTextureHeight;
    Surface *mSurface;
    GLuint mUploadedFormat;
+   bool mMipmaps;
 
 
 public:
@@ -225,10 +229,11 @@ public:
       // No reference count since the surface should outlive us
       mSurface = inSurface;
       mUploadedFormat = 0;
+      mMipmaps = inFlags & surfMipmaps;
 
       mPixelWidth = mSurface->Width();
       mPixelHeight = mSurface->Height();
-      bool non_po2 = NonPO2Supported(inFlags & surfNotRepeatIfNonPO2);
+      bool non_po2 = NonPO2Supported(inFlags & surfNotRepeatIfNonPO2) && !mMipmaps;
       //printf("Using non-power-of-2 texture %d\n",non_po2);
 
       mTextureWidth = non_po2 ? mPixelWidth : UpToPower2(mPixelWidth);
@@ -290,7 +295,7 @@ public:
       mSmooth = true;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mMipmaps ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
       #ifndef NME_GLES
@@ -298,6 +303,9 @@ public:
       #endif
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, mTextureWidth, mTextureHeight, 0, pixel_format, channel, buffer ? buffer : mSurface->GetBase());
+
+      if (mMipmaps)
+         glGenerateMipmap(GL_TEXTURE_2D);
 
       mUploadedFormat = store_format;
 
@@ -429,6 +437,9 @@ public:
                #endif
             }
 
+            if (mMipmaps)
+               glGenerateMipmap(GL_TEXTURE_2D);
+
             int err = glGetError();
             if (err != GL_NO_ERROR)
                ELOG("GL Error: %d %dx%d", err, mDirtyRect.w, mDirtyRect.h);
@@ -462,7 +473,7 @@ public:
          mSmooth = inSmooth;
          if (mSmooth)
          {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mMipmaps ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
          }
          else

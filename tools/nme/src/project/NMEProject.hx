@@ -12,6 +12,7 @@ class AndroidConfig
    public var installLocation:String;
    public var minApiLevel:Int;
    public var addV4Compat:Bool;
+   public var universalApk:Bool;
    public var targetApiLevel:Null<Int>;
    public var buildApiLevel:Null<Int>;
    public var appHeader:Array<String>;
@@ -32,6 +33,7 @@ class AndroidConfig
       installLocation = "preferExternal";
       minApiLevel = 16;
       addV4Compat = true;
+      universalApk = false;
       appHeader = [];
       appIntent = [];
       appActivity = [];
@@ -83,16 +85,18 @@ class IOSConfig
    public var prerenderedIcon:Bool;
    public var viewTestDir:String;
    public var sourceFlavour:String;
+   public var stageViewHead:String = "";
+   public var stageViewInit:String = "";
 
    public function new()
    {
       compiler =  "clang";
-      deployment =  "8.0";
+      deployment =  "9.0";
       deviceConfig =  UNIVERSAL;
       linkerFlags =  new Array();
       viewTestDir =  "";
       prerenderedIcon =  false;
-      sourceFlavour = "cpp";
+      sourceFlavour = "mm";
    }
 }
 
@@ -151,6 +155,9 @@ class NMEProject
 
    // For <include> elements
    public var includePaths:Array<String>;
+   // Injecting xml into haxe build
+   public var buildExtraFiles:Array<String>;
+
    // For bulding projects
    public var templatePaths:Array<String>;
    public var templateCopies:Array<TemplateCopy>;
@@ -209,6 +216,7 @@ class NMEProject
       ndllCheckDir = "";
       engines = new Map<String,String>();
       libraryHandlers = new Map<String,String>();
+      buildExtraFiles = [];
 
       environment = Sys.environment();
       if (environment.exists("ANDROID_SERIAL"))
@@ -343,9 +351,11 @@ class NMEProject
             haxedefs.set("objc","1");
             target = Platform.WATCH;
 
-         case "android":
+         case "android", "bundlerelease", "bundledebug":
             target = Platform.ANDROID;
             targetFlags.set("android", "");
+            targetFlags.set(inTargetName, "");
+            haxedefs.set("gradle", "1");
 
          case "androidsim":
             target = Platform.ANDROID;
@@ -361,6 +371,10 @@ class NMEProject
 
          case "js":
             target = Platform.JS;
+
+         case "rg350":
+            target = Platform.RG350;
+            haxedefs.set("gcw0", "");
 
          case "winrt","uwp":
             targetFlags.set("cpp", "1");
@@ -381,8 +395,8 @@ class NMEProject
             targetFlags.set("cpp", "1");
             targetFlags.set("linux", "1");
             targetFlags.set("rpi", "1");
-            if (PlatformHelper.hostPlatform==Platform.WINDOWS)
-               addHaxelib("winrpi",null);
+            //if (PlatformHelper.hostPlatform==Platform.WINDOWS)
+            //   addHaxelib("winrpi",null);
             target = inTargetName.toUpperCase();
 
          case "windows", "mac", "linux":
@@ -460,6 +474,10 @@ class NMEProject
             window.fullscreen = true;
 
          case Platform.RPI:
+            platformType = Platform.TYPE_DESKTOP;
+            window.singleInstance = false;
+
+         case Platform.RG350:
             platformType = Platform.TYPE_DESKTOP;
             window.singleInstance = false;
 
@@ -683,7 +701,7 @@ class NMEProject
          return false;
 
       var isAndroidSo =  false;//hasDef("android") && !hasDef("androidsim") && !hasDef("androidview");
-      if ( hasDef("windows") || hasDef("mac") || hasDef("linux") || isAndroidSo)
+      if ( hasDef("windows") || hasDef("mac") || hasDef("linux") || isAndroidSo || hasDef("gcw0"))
       {
          // Use dynamic libraries by default on desktop
          return false;
@@ -900,6 +918,7 @@ class NMEProject
       }
 
       context.fileAssociations = fileAssociations;
+      context.buildExtraFiles = buildExtraFiles;
 
       context.assets = new Array<Dynamic>();
 
@@ -1021,7 +1040,7 @@ class NMEProject
 
       if (certificate != null) 
       {
-         context.KEY_STORE = PathHelper.tryFullPath(certificate.path);
+         context.KEY_STORE = PathHelper.tryFullPath(certificate.path).split("\\").join("/");
 
          if (certificate.password != null) 
             context.KEY_STORE_PASSWORD = certificate.password;

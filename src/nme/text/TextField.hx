@@ -18,6 +18,7 @@ class TextField extends InteractiveObject
    public var defaultTextFormat(get, set):TextFormat;
    public var displayAsPassword(get, set):Bool;
    public var embedFonts(get, set):Bool;
+   public var forceFreeType(get, set):Bool;
    public var gridFitType:GridFitType;
    public var htmlText(get, set):String;
    public var maxChars(get, set):Int;
@@ -152,6 +153,9 @@ class TextField extends InteractiveObject
    private function set_displayAsPassword(inVal:Bool):Bool { nme_text_field_set_display_as_password(nmeHandle, inVal); return inVal; }
    private function get_embedFonts():Bool { return nme_text_field_get_embed_fonts(nmeHandle); }
    private function set_embedFonts(inVal:Bool):Bool { nme_text_field_set_embed_fonts(nmeHandle,inVal); return inVal; }
+   private function get_forceFreeType():Bool { return nme_text_field_get_embed_fonts(nmeHandle); }
+   private function set_forceFreeType(inVal:Bool):Bool { nme_text_field_set_embed_fonts(nmeHandle,inVal); return inVal; }
+
    private function get_htmlText():String { return StringTools.replace(nme_text_field_get_html_text(nmeHandle), "\n", "<br/>"); }
    private function set_htmlText(inText:String):String   { nme_text_field_set_html_text(nmeHandle, inText); return inText; }
    private function get_maxChars():Int { return nme_text_field_get_max_chars(nmeHandle); }

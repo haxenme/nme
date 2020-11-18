@@ -18,8 +18,10 @@ nme cppia installer
 
 Now you can build + run the Acadnme host
 ```
-cd ../acadnme
+cd ../../acadnme
 nme cpp
+  or
+nme android
 ```
 
 Testing

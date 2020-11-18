@@ -70,7 +70,7 @@
         preRun: [],
         postRun: [],
         print: (function() {
-          if (document.URL.search("localhost")!=-1 && document.URL.search(":693")!=-1)
+          if ( document.URL.search(":693")!=-1)
              return function(text) {
                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
                emrunPost("^out^"+emrun_http_sequence_number++ +"^"+encodeURIComponent(text));
@@ -108,7 +108,12 @@
         nmeClasses: null,
 
         calledRun: false,
-
+        ::if (NME_WASM)::
+        locateFile: function(filename,scriptDir) {
+           if (filename=="nme.wasm") return '::NME_WASM::';
+           return scriptDir + filename;
+        },
+        ::end::
         progress: function() {
           var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedNmeClasses;
           if (this.binaryIsReady) loaded++;

@@ -46,6 +46,7 @@ struct zWMcursor { void* curs; };
 HWND hwnd;
 SDL_SysWMinfo wminfo;
 
+
 void init_win32()
 {
    SDL_Cursor *cursor = SDL_GetCursor();
@@ -73,6 +74,7 @@ void done_win32()
 
 namespace nme
 {
+static bool sCheckCanvasSize = true;
 
 extern double CapabilitiesGetScreenDPI();
 
@@ -312,7 +314,7 @@ public:
 
       mIsOpenGL = inIsOpenGL;
       mSDLSurface = inSurface;
-      mFlags = inFlags;
+      mFlags = inFlags | SDL_WINDOW_RESIZABLE;
       mShowCursor = true;
       mLockCursor = false;
       mCurrentCursor = curPointer;      
@@ -974,6 +976,7 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(poll);
          break;
      }
+
       case SDL_VIDEORESIZE:
       {
          Event resize(etResize,inEvent.resize.w,inEvent.resize.h);
@@ -1038,11 +1041,10 @@ void ProcessEvent(SDL_Event &inEvent)
 }
 
 
-static bool sCheckCanvasSize = true;
-EM_BOOL onCanvasSize(int, const EmscriptenUiEvent *, void *)
+extern "C"
 {
-   sCheckCanvasSize = true;
-   return false;
+void onCanvasSize() { sCheckCanvasSize = true; }
+EMSCRIPTEN_BINDINGS(onCanvasSize) { emscripten::function("onCanvasSize", &onCanvasSize); }
 }
 
 
@@ -1369,7 +1371,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame,int inWidth,int inHeight,
       sgDeviceDpi = 1.0;
       #endif
 
-   emscripten_set_resize_callback(0, 0, false, onCanvasSize);
+   //emscripten_set_resize_callback("canvas", nullptr, false, onCanvasSize);
+   EM_ASM({
+      window.onresize = function() {
+         Module.onCanvasSize();
+      }
+    });
+
    emscripten_set_main_loop(StartAnimation, 0, false);
    #else
    StartAnimation();
@@ -1651,83 +1659,6 @@ void StartAnimation()
 #endif
 
 
-/*
-Frame *CreateTopLevelWindow(int inWidth,int inHeight,unsigned int inFlags, wchar_t *inTitle, wchar_t *inIcon )
-{
-   return 0;
-}
-
-*/
-
 } // end namespace nme
 
 
-         #if 0
-         if (event.type == SDL_JOYAXISMOTION)
-         {
-       alloc_field( evt, val_id( "type" ), alloc_int( et_jaxis ) );
-       alloc_field( evt, val_id( "axis" ), alloc_int( event.jaxis.axis ) );
-       alloc_field( evt, val_id( "value" ), alloc_int( event.jaxis.value ) );
-       alloc_field( evt, val_id( "which" ), alloc_int( event.jaxis.which ) );
-       return evt;
-         }
-         if (event.type == SDL_JOYBUTTONDOWN || event.type == SDL_JOYBUTTONUP)
-         {
-       alloc_field( evt, val_id( "type" ), alloc_int( et_jbutton ) );
-       alloc_field( evt, val_id( "button" ), alloc_int( event.jbutton.button ) );
-       alloc_field( evt, val_id( "state" ), alloc_int( event.jbutton.state ) );
-       alloc_field( evt, val_id( "which" ), alloc_int( event.jbutton.which ) );
-       return evt;
-         }
-         if (event.type == SDL_JOYHATMOTION)
-         {
-       alloc_field( evt, val_id( "type" ), alloc_int( et_jhat ) );
-       alloc_field( evt, val_id( "button" ), alloc_int( event.jhat.hat ) );
-       alloc_field( evt, val_id( "value" ), alloc_int( event.jhat.value ) );
-       alloc_field( evt, val_id( "which" ), alloc_int( event.jhat.which ) );
-       return evt;
-         }
-         if (event.type == SDL_JOYBALLMOTION)
-         {
-       alloc_field( evt, val_id( "type" ), alloc_int( et_jball ) );
-       alloc_field( evt, val_id( "ball" ), alloc_int( event.jball.ball ) );
-       alloc_field( evt, val_id( "xrel" ), alloc_int( event.jball.xrel ) );
-       alloc_field( evt, val_id( "yrel" ), alloc_int( event.jball.yrel ) );
-       alloc_field( evt, val_id( "which" ), alloc_int( event.jball.which ) );
-       return evt;
-         }
-
-         if (event.type==SDL_VIDEORESIZE)
-         {
-       alloc_field( evt, val_id( "type" ), alloc_int( et_resize ) );
-       alloc_field( evt, val_id( "width" ), alloc_int( event.resize.w ) );
-       alloc_field( evt, val_id( "height" ), alloc_int( event.resize.h ) );
-       return evt;
-         }
-         #endif
-
-
-#if 0
-/*
- */
-
-
-
-value nme_get_mouse_position()
-{
-   int x,y;
-
-   #ifdef SDL13
-   SDL_GetMouseState(0,&x,&y);
-   #else
-   SDL_GetMouseState(&x,&y);
-   #endif
-
-   value pos = alloc_empty_object();
-   alloc_field( pos, val_id( "x" ), alloc_int( x ) );
-   alloc_field( pos, val_id( "y" ), alloc_int( y ) );
-   return pos;
-}
-
-
-#endif

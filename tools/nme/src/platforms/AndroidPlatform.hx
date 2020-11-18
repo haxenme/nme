@@ -16,11 +16,14 @@ class AndroidPlatform extends Platform
    var gradle:Bool;
    var abis:Array<ABI>;
    var installed:Bool;
+   var useArchDirs:Bool;
 
    public function new(inProject:NMEProject)
    {
       super(inProject);
       setupAdb();
+      useArchDirs = project.hasDef("HXCPP_DEBUG_LINK_AND_STRIP");
+
       abis = [
          {
             name: "armeabi",
@@ -72,13 +75,19 @@ class AndroidPlatform extends Platform
          Log.verbose("Using gradle build system");
          PathHelper.mkdir(getAppDir());
       }
+
       
-      if (project.command == "test") {
+      if (project.command == "test")
+      {
          var abi = queryDeviceABI();
-         if(abi != null)
+         if (abi != null)
             project.androidConfig.ABIs = [abi];
+
+         if (project.androidConfig.ABIs.length==0)
+            Log.error("Could not determine build target from adb, and no test ABI specified");
       }
-      else if(project.androidConfig.ABIs.length == 0) {
+      else if(project.androidConfig.ABIs.length == 0)
+      {
          project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"];
       }
 
@@ -127,7 +136,7 @@ class AndroidPlatform extends Platform
       for(abi in abis)
          if (abi.name==arch)
              return abi.architecture;
-      throw 'Unknown architecture: $arch';
+      throw 'Unknown architecture: $arch in ' + [for(abi in abis) abi.name];
       return null;
    }
    function findByArchitecture(arch:Architecture) : ABI
@@ -185,6 +194,19 @@ class AndroidPlatform extends Platform
    override public function getNdllPrefix() : String { return "lib"; }
 
 
+   function getUnstrippedRoot()
+   {
+      var outDir = FileSystem.fullPath(getOutputDir());
+      outDir = outDir.split("\\").join("/");
+      return outDir+"/unstripped";
+   }
+
+   function getStrippedRoot()
+   {
+      var libDir = FileSystem.fullPath(getOutputLibDir());
+      libDir = libDir.split("\\").join("/");
+      return libDir;
+   }
 
 
    override public function runHaxe()
@@ -192,21 +214,36 @@ class AndroidPlatform extends Platform
       var args = project.debug ? ['$haxeDir/build.hxml',"-debug","-D", "android"] :
                                  ['$haxeDir/build.hxml', "-D", "android" ];
 
+      var libDir = getStrippedRoot();
+      var unstripDir = getUnstrippedRoot();
       for(abi in includedABIs())
-         runHaxeWithArgs(args.concat(abi.args));
+      {
+         var abiArgs = args.concat(abi.args);
+         if (useArchDirs)
+         {
+
+             abiArgs.push("-D");
+             abiArgs.push('HAXE_FULL_OUTPUT_NAME=$libDir/${abi.name}/libApplicationMain.so');
+             abiArgs.push("-D");
+             abiArgs.push('HAXE_FULL_UNSTRIPPED_NAME=$unstripDir/${abi.name}/libApplicationMain.so');
+         }
+         runHaxeWithArgs(abiArgs);
+      }
    }
 
 
    override public function copyBinary():Void 
    {
-      var dbg = project.debug ? "-debug" : "";
-      
-      for(abi in includedABIs())
+      if (!useArchDirs)
       {
-         var source = haxeDir + "/cpp/libApplicationMain" + dbg + '${abi.libArchSuffix}.so';
-         var destination = getOutputLibDir() + '/${abi.name}/libApplicationMain.so';
-         FileHelper.copyIfNewer(source, destination);
-      };
+         var dbg = project.debug ? "-debug" : "";
+         for(abi in includedABIs())
+         {
+            var source = haxeDir + "/cpp/libApplicationMain" + dbg + '${abi.libArchSuffix}.so';
+            var destination = getOutputLibDir() + '/${abi.name}/libApplicationMain.so';
+            FileHelper.copyIfNewer(source, destination);
+         };
+      }
    }
 
 
@@ -220,6 +257,7 @@ class AndroidPlatform extends Platform
          if (ndll.name=="nme" && ndll.isStatic)
             staticNme = true;
       context.STATIC_NME = staticNme;
+      context.UNIVERSAL_APK = project.androidConfig.universalApk;
 
       context.appHeader = project.androidConfig.appHeader;
       context.appActivity = project.androidConfig.appActivity;
@@ -243,6 +281,10 @@ class AndroidPlatform extends Platform
       // SDK to use for building, that we have installed
       context.ANDROID_BUILD_API_LEVEL = getMaxApiLevel(project.androidConfig.minApiLevel);
       context.ANDROID_TARGET_SDK_VERSION = getMaxApiLevel(project.androidConfig.minApiLevel);
+      if (project.hasDef("androidBilling") && context.ANDROID_TARGET_SDK_VERSION<26)
+      {
+         context.ANDROID_TARGET_SDK_VERSION = 26;
+      }
 
       context.GAME_ACTIVITY_BASE = project.androidConfig.gameActivityBase;
 
@@ -252,6 +294,11 @@ class AndroidPlatform extends Platform
       context.ANDROID_EXTENSIONS =extensions;
 
       context.ANDROID_SDK = StringTools.replace(project.environment.get("ANDROID_SDK"),"\\","/");
+      context.NME_FIREBASE = project.hasDef("firebase") || project.hasDef("firebasePerformance") || project.hasDef("crashlytics");
+      context.NME_FIREBASE_CRASHLYTICS = project.hasDef("crashlytics");
+      context.NME_FIREBASE_PERFORMANCE = project.hasDef("firebasePerformance");
+      context.NME_STRIPPED_ROOT = getStrippedRoot();
+      context.NME_UNSTRIPPED_ROOT = getUnstrippedRoot();
       
       if(gradle)
          setGradleLibraries();
@@ -260,6 +307,78 @@ class AndroidPlatform extends Platform
       
       context.ABIS = [for(abi in includedABIs()) '"${abi.name}"'].join(', ');
       context.ABI_CODES = [for(abi in includedABIs()) '\'${abi.name}\':${abi.versionCodeScaler}'].join(', ');
+   }
+
+   function getNdkStackExe()
+   {
+      var dirs = [];
+      var ext = "";
+      if (PlatformHelper.hostPlatform==Platform.WINDOWS)
+      {
+         dirs = [ "windows-x86_64", "windows" ];
+         ext = ".exe";
+      }
+      else if (PlatformHelper.hostPlatform==Platform.LINUX)
+         dirs = ["linux-x86_64"];
+      else if (PlatformHelper.hostPlatform==Platform.MAC)
+         dirs = ["darwin-x86_64"];
+      else
+         Log.error("Unsupported ndk-stack host:" + PlatformHelper.hostPlatform);
+
+      var exe="";
+      for(d in dirs)
+      {
+         var test = project.environment.get("ANDROID_SDK") + "/ndk-bundle/prebuilt/" + d + "/bin/ndk-stack" + ext;
+         if (FileSystem.exists(test))
+         {
+            Log.verbose("Found ndk-stack at:" + test);
+            exe = test;
+            break;
+         }
+         else
+         {
+            Log.verbose("ndk-stack not found at:" + test);
+         }
+      }
+      if (exe=="")
+      {
+         exe = "ndk-stack" + ext;
+         Log.verbose("ndk-stack not found - assuming it is in the path");
+      }
+
+      return exe;
+   }
+
+   public function runNdkStack(args:Array<String>)
+   {
+      var exe = getNdkStackExe();
+
+      var symPath = args[0];
+      if (symPath==null)
+      {
+         var abis = includedABIs();
+         var abi = null;
+         if (abis.length!=1)
+            abi = queryDeviceABI();
+         else
+            abi = abis[0].name;
+
+         if (abi==null)
+            Log.error("Could not guess ABI (" + abis.length + " in project). Please specify ABI or add ABI path to command line");
+
+         symPath = getUnstrippedRoot() + "/" + abi;
+      }
+
+      var adbOut = args[1];
+      if (adbOut==null)
+      {
+         adbOut = project.getDef("adbOut");
+         if (adbOut==adbOut)
+            adbOut = "adb_out.txt";
+      }
+
+      Log.verbose(exe + " " + ["-sym",symPath,"-dump",adbOut].join(" ") );
+      ProcessHelper.runCommand("",exe,["-sym",symPath,"-dump",adbOut] );
    }
 
    private function setAntLibraries() {
@@ -323,13 +442,25 @@ class AndroidPlatform extends Platform
 
       if (gradle)
       {
-         var assemble = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
+         var command = (project.certificate != null) ? "assembleRelease" : "assembleDebug";
+         if (project.hasDef("bundlerelease"))
+            command = "bundleRelease";
+         else if (project.hasDef("bundledebug"))
+            command = "bundleDebug";
+
+         if (project.command == "uploadcrashlytics")
+         {
+            if (project.hasDef("bundledebug"))
+               command = "app:uploadCrashlyticsSymbolFileDebug";
+            else
+               command = "app:uploadCrashlyticsSymbolFileRelease";
+         }
 
          if(PlatformHelper.hostPlatform==Platform.MAC)
             ProcessHelper.runCommand(outputDir, 'chmod', ['+x', './gradlew']);
           
          var exe = PlatformHelper.hostPlatform==Platform.WINDOWS ? "./gradlew.bat" : "./gradlew";
-         ProcessHelper.runCommand(outputDir, exe, [ assemble ]);
+         ProcessHelper.runCommand(outputDir, exe, [ command ]);
       }
       else
       {
@@ -383,7 +514,7 @@ class AndroidPlatform extends Platform
       // ProcessHelper.runCommand("", adbName, adbFlags.concat([ "install", "-r", targetPath ]) );
       try
       {
-         var lines = ProcessHelper.getOutput(adbName,adbFlags.concat([ "install", "-r", targetPath ]), Log.mVerbose);
+         var lines = ProcessHelper.getOutput(adbName,adbFlags.concat([ "install", "-r", targetPath ]), Log.mVerbose, Log.mVerbose);
          var failure = ~/Failure/;
          for(line in lines)
             if (failure.match(line))
@@ -401,7 +532,7 @@ class AndroidPlatform extends Platform
       var lines = ProcessHelper.getOutput(adbName,"shell getprop ro.product.cpu.abi".split(' '), Log.mVerbose);
       if(lines.length > 0) {
          if(lines[0].indexOf('error') == -1) {
-            var abi = lines[0];
+            var abi = lines[0].split("\r")[0];
             return abi;  
          }
       }
@@ -424,7 +555,7 @@ class AndroidPlatform extends Platform
    {
       if(!installed)
          return;
-      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat" ]));
+      ProcessHelper.runCommand("", adbName, adbFlags.concat([ "logcat" ]), "adb_out.txt");
    }
 
    override public function uninstall():Void 
@@ -520,9 +651,6 @@ class AndroidPlatform extends Platform
          if (IconHelper.createIcon(project.icons, iconSizes[i], iconSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/icon.png")) 
             context.HAS_ICON = true;
       }
-
-      IconHelper.createIcon(project.banners!=null ? project.banners : project.icons, 732, 412,
-         destination + "/res/drawable-xhdpi/ouya_icon.png");
 
       if (project.banners.length>0)
       {

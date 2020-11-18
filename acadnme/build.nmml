@@ -32,15 +32,13 @@
 
   <set name="nativeFonts" value="false" />
 
-  <android>
-     <appPermission value="android.permission.WRITE_EXTERNAL_STORAGE" />
-     <appPermission value="android.permission.READ_EXTERNAL_STORAGE" />
-     <appPermission value="android.permission.INTERNET" />
-     <appPermission value="android.permission.ACCESS_WIFI_STATE" />
-     <appPermission value="android.permission.ACCESS_WIFI_STATE" />
+  <android targetApiLevel="26" >
      <appHeader value='android:isGame="true"' />
 
      <appPermission value="android.software.leanback" required="false" />
+     <appPermission value="android.permission.READ_EXTERNAL_STORAGE" required="true" />
+     <appPermission value="android.permission.WRITE_EXTERNAL_STORAGE" required="true" />
+
      <appFeature value='android.software.leanback' required='false'/>
      <appFeature value='android.hardware.touchscreen' required='false'/>
      <appIntent value="android.intent.category.LEANBACK_LAUNCHER" />
@@ -72,7 +70,7 @@
   <haxedef name="HXCPP_LINK_TOTAL_MEMORY" value="32000000"/>
   <haxeflag name="-dce no" />
 
-  <certificate path="${KEYSTORE_PATH}/android.keystore" alias="nme" password="${KEYSTORE_PASSWD}" if="KEYSTORE_PASSWD"/>
+  <certificate path="${KEYSTORE_PATH}/android.keystore" alias="nme" password="${KEYSTORE_PASSWD}" if="KEYSTORE_PASSWD KEYSTORE_PATH" />
 
   
 </project>

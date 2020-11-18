@@ -99,6 +99,8 @@ const std::string GetUniqueDeviceIdentifier();
 std::string GetLocalIPAddress();
 const std::string &GetResourcePath();
 
+extern void *gNativeWindowHandle;
+
 
 enum ScreenFormat
 {

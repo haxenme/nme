@@ -20,6 +20,7 @@ interface IAppEventHandler
    public function onContextLost():Void;
    public function onScroll(event:AppEvent):Void;
    public function onDpiChanged(event:AppEvent):Void;
+   public function onDrop(event:AppEvent):Void;
    public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void;
 }
 

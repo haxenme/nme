@@ -20,6 +20,9 @@ using StringTools;
 class NMMLParser
 {
    var project:NMEProject;
+   var thisFile:String;
+   var thisDir:String;
+
    static var gitVersion:String = null;
 
    static var varMatch = new EReg("\\${(.*?)}", "");
@@ -28,6 +31,7 @@ class NMMLParser
 
    public function new(inProject:NMEProject, path:String, inWarnUnknown:Bool, ?xml:Access )
    {
+      thisFile = path;
       project = inProject;
       process(path,inWarnUnknown,xml);
    }
@@ -514,6 +518,9 @@ class NMMLParser
 
       if (element.has.addV4Compat)
          project.androidConfig.addV4Compat = parseBool(element.att.addV4Compat);
+
+      if (element.has.universalApk)
+         project.androidConfig.universalApk = parseBool(element.att.universalApk);
  
       for(childElement in element.elements) 
       {
@@ -616,8 +623,9 @@ class NMMLParser
 
    private function isTemplate(element:Access, section:String):Bool {
       if(isValidElement(element, section)) {
-         if(element.name == "template" 
-         || element.name == "templatePath") {
+         if(element.name == "template"
+         || element.name == "templatePath"
+         || element.name == "templateCopy") {
             return true;
          }
       }
@@ -633,9 +641,19 @@ class NMMLParser
       else
          Log.error("Template should have either a 'name' or a 'path'");
 
-      if (element.has.rename)
+      if (element.has.to)
+      {
+         project.templateCopies.push( new TemplateCopy(path, substitute(element.att.to) ) );
+      }
+      else if (element.has.rename)
       {
          project.templateCopies.push( new TemplateCopy(path, substitute(element.att.rename) ) );
+      }
+      else if (element.name=="templateCopy")
+      {
+         if (!element.has.name)
+            Log.error("templateCopy should a 'name' attribute");
+         project.templateCopies.push( new TemplateCopy(path, substitute(element.att.name) ) );
       }
       else
       {
@@ -693,6 +711,13 @@ class NMMLParser
                   project.localDefines.set(name, value);
                   project.environment.set(name, value);
                   setenv(name, value);
+
+               case "UIStageViewHead":
+                  project.iosConfig.stageViewHead += substitute(element.att.value) + "\n";
+
+               case "UIStageViewInit":
+                  project.iosConfig.stageViewInit += substitute(element.att.value) + "\n";
+
 
                case "iosViewTestDir":
                   project.iosConfig.viewTestDir = substitute(element.att.name);
@@ -753,6 +778,11 @@ class NMMLParser
                   {
                      Log.error("Could not find include file \"" + path + "\"");
                   }
+
+               case "buildExtra":
+                  var path = substitute(element.has.path ? element.att.path : element.att.name); 
+                  project.buildExtraFiles.push( combine(extensionPath, path) );
+
 
                case "app", "meta":
                   parseAppElement(element);
@@ -1109,7 +1139,7 @@ class NMMLParser
                         project.iosConfig.linkerFlags = project.iosConfig.linkerFlags.concat(substitute(element.att.resolve("linker-flags")).split(" "));
                   }
                default:
-                  if (inWarnUnknown)
+                  if (inWarnUnknown && !isTemplate(element,section))
                      Log.verbose("UNKNOWN project element " + element.name );
             }
          }
@@ -1219,6 +1249,14 @@ class NMMLParser
          else if (newString.startsWith("haxelib:"))
          {
             newString = PathHelper.getHaxelib(new Haxelib(newString.substr(8)));
+         }
+         else if (newString=="this_dir")
+         {
+            var d  = Path.directory(thisFile);
+            if (!PathHelper.isAbsolute(d))
+                newString = Path.normalize( Sys.getCwd() +"/" + d);
+            else
+                newString = d;
          }
          else if (newString.startsWith("toolversion:"))
          {

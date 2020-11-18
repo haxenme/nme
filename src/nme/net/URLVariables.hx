@@ -1,4 +1,5 @@
 package nme.net;
+
 #if (!flash && (haxe_ver<4))
 @:nativeProperty
 class URLVariables implements Dynamic
@@ -40,6 +41,7 @@ class URLVariables implements Dynamic
       return result.join("&");
    }
 }
+typedef URLVariablesBase = URLVariables;
 
 #elseif (!flash)
 
@@ -117,4 +119,6 @@ abstract URLVariables(URLVariablesBase)
 
 #else
 typedef URLVariables = flash.net.URLVariables;
+
+typedef URLVariablesBase = flash.net.URLVariables;
 #end

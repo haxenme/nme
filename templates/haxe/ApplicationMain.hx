@@ -4,7 +4,6 @@ import nme.Assets;
 #elseif waxe
 import wx.Assets;
 #end
-
 #if cpp
 ::foreach ndlls::::importStatic::::end::
 #end
@@ -19,6 +18,13 @@ import wx.Assets;
 </files>
 ")
 #end
+@:buildXml("
+::foreach buildExtraFiles::
+<include name='::__current__::'/>
+::end::
+")
+
+
 @:cppFileCode("
 ::foreach ndlls:: ::if (registerPrim!=null):: extern \"C\" int ::registerPrim::();
 ::end::::end::
@@ -84,10 +90,6 @@ class ApplicationMain
 
          nme.AssetData.create();
 
-         ::if (sslCaCert != "")::
-         nme.net.URLLoader.initialize(nme.installer.Assets.getResourceName("::sslCaCert::"));
-         ::end::
-
          #if (cpp||neko)
             nme.app.Application.setFixedOrientation(
                ::if (WIN_ORIENTATION == "portrait")::
@@ -139,8 +141,10 @@ class ApplicationMain
                ::else::
                   frame = wx.Frame.create(null, null, "::APP_TITLE::", null, size);
                ::end::
+               nme.Lib.title = "::APP_TITLE::";
+               var icon = Assets.info.get("::WIN_ICON::")==null ? null : Assets.getBitmapData("::WIN_ICON::");
 
-               #if nme
+               #if (nme && !nme_no_stage)
                   wx.NMEStage.create(frame, null, null,
                   {
                      width: ::WIN_WIDTH::,
@@ -154,7 +158,7 @@ class ApplicationMain
                      fps : ::WIN_FPS:: * 1.0,
                      color : ::WIN_BACKGROUND::,
                      title : "::APP_TITLE::",
-                     icon  : Assets.info.get("::WIN_ICON::")==null ? null : Assets.getBitmapData("::WIN_ICON::")
+                     icon  : icon,
                   });
 
                   // Show frame before creating instance so context is good.
@@ -190,6 +194,10 @@ class ApplicationMain
          (::WIN_SINGLE_INSTANCE:: ? nme.app.Application.SINGLE_INSTANCE : 0) |
          (::WIN_SCALE_FLAGS:: * nme.app.Application.SCALE_BASE)
          ;
+
+         #if nme_metal
+         flags |= nme.app.Application.HARDWARE_METAL;
+         #end
 
 
          #if nme_application

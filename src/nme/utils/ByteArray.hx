@@ -62,6 +62,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
    public var __length(get,set):Int;
 
    #if jsprime
+   // ptr is an offset into global memory allocated by c++ code
+   // If the pointer is non-null then it is mapped into both JS and c++
+   // If the buffer is allocated by JS, c++  must 'realize' the array to map it into memory
+   //  and take ownership before it can access the data
    public var ptr:Null<Int>=null;
    public var flags:Int;
    #end
@@ -127,6 +131,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          var offset = ByteArray.nme_buffer_offset(ptr);
          b = new JsUint8Array(untyped Module.HEAP8.buffer, offset,alloced);
       }
+      // Base class Bytes mapper will get reconstructed as needed ..
+      data = null;
    }
 
    @:keep
@@ -283,8 +289,11 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
             onBufferChanged();
          #elseif enable_deflate
             result = Compress.run(src, 8, windowBits);
-         #else
+         #elseif (cpp||neko)
             result = Compress.run(src, 8);
+         #else
+            // Dox/no output
+            result = null;
          #end
       }
 
@@ -323,8 +332,8 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
                else // fallthrough
             #end
             {
-            var new_b = new JsUint8Array(alloced);
-            var dest = new JsUint8Array(new_b);
+            var dest = new JsUint8Array(alloced);
+            // TODO - something faster
             var copy = length<inSize ? length : inSize;
             for(i in 0...copy)
                dest[i] = b[i];
@@ -336,8 +345,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
             onBufferChanged();
          #end
 
-      #else
+      #elseif (cpp || jsprime)
           b.setSize(inSize);
+      #else
+         // No-output/dox
       #end
    }
 
@@ -441,21 +452,24 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          ThrowEOFi();
 
       #if js
-      var p = position;
-      position += 8;
-      return getDouble(p);
+        var p = position;
+        position += 8;
+        return getDouble(p);
       #else
 
-      #if neko
-      var bytes = new Bytes(8, untyped __dollar__ssub(b, position, 8));
-      position += 8;
-      return _double_of_bytes(bytes.b, bigEndian);
-      #elseif cpp
-      var result:Float =  untyped __global__.__hxcpp_memory_get_double(b, position);
-      position += 8;
-      if (bigEndian) return mangleDouble(result);
-      return result;
-      #end
+        #if neko
+        var bytes = new Bytes(8, untyped __dollar__ssub(b, position, 8));
+        position += 8;
+        return _double_of_bytes(bytes.b, bigEndian);
+        #elseif cpp
+        var result:Float =  untyped __global__.__hxcpp_memory_get_double(b, position);
+        position += 8;
+        if (bigEndian) return mangleDouble(result);
+        return result;
+        #else
+        // Dox/no output
+        return 0;
+        #end
       #end
    }
 
@@ -472,20 +486,23 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
          ThrowEOFi();
 
       #if js
-      var p = position;
-      position += 4;
-      return getFloat(p);
+        var p = position;
+        position += 4;
+        return getFloat(p);
       #else
-      #if neko
-      var bytes = new Bytes(4, untyped __dollar__ssub(b, position, 4));
-      position += 4;
-      return _float_of_bytes(bytes.b, bigEndian);
-      #elseif cpp
-      var result:Float =  untyped __global__.__hxcpp_memory_get_float(b, position);
-      position += 4;
-      if (bigEndian) return mangleFloat(result);
-      return result;
-      #end
+        #if neko
+        var bytes = new Bytes(4, untyped __dollar__ssub(b, position, 4));
+        position += 4;
+        return _float_of_bytes(bytes.b, bigEndian);
+        #elseif cpp
+        var result:Float =  untyped __global__.__hxcpp_memory_get_float(b, position);
+        position += 4;
+        if (bigEndian) return mangleFloat(result);
+        return result;
+        #else
+        // Dox/no-output
+        return 0.0;
+        #end
 
       #end
    }
@@ -561,6 +578,9 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
       return result;
       #elseif js
       return getString(p,inLen);
+      #else
+      // No-output/dox
+      return null;
       #end
    }
 
@@ -641,8 +661,10 @@ class ByteArray extends Bytes implements ArrayAccess<Int> implements IDataInput 
             onBufferChanged();
          #elseif enable_deflate
             result = Uncompress.run(src, null, windowBits);
-         #else
+         #elseif (neko||cpp)
             result = Uncompress.run(src, null);
+         #else
+            result = null;
          #end
       }
 

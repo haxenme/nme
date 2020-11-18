@@ -11,6 +11,12 @@
 namespace nme
 {
 
+#ifdef NME_OGL
+  #ifdef NME_METAL
+     bool nmeOpenglRenderer = true;
+  #endif
+#endif
+
 enum { DEBUG_KEEP_LOOPS     = 0 };
 enum { DEBUG_FAT_LINES      = 0 };
 
@@ -41,6 +47,8 @@ struct Range
    UserPoint right1;
 };
 
+HardwareRenderer *HardwareRenderer::current = nullptr;
+
 
 
 typedef QuickVec<float> Normals;
@@ -62,11 +70,14 @@ public:
       mElement.mColour = 0xffffffff;
       mElement.mVertexOffset = ioData.mArray.size();
       mElement.mStride = 2*sizeof(float);
+      int align = 2*sizeof(float);
 
       mSolidMode = false;
       mAlphaAA = false;
       mPerpLen = 0.5;
-      mScale = data.scaleOf(inState);
+      mStateScale = data.scaleOf(inState);
+      mScale = mStateScale;
+      mTileScaleY = mTileScaleY = 1.0;
       if (mScale<=0.001)
          mScale = 0.001;
       mCurveThresh2 = 0.125/mScale/mScale;
@@ -120,14 +131,14 @@ public:
             mPerpLen = 0.5/mScale;
             mElement.mWidth = 1.0/mScale;
          }
- 
+
          if (alphaAA)
          {
             mPerpLen += 0.5/mScale;
             mElement.mWidth += 1.0/mScale;
             mElement.mFlags |= DRAW_HAS_NORMAL;
             mElement.mNormalOffset = mElement.mVertexOffset + mElement.mStride;
-            mElement.mStride += sizeof(float)*2.0;
+            mElement.mStride += sizeof(float)*2;
             mAlphaAA = true;
          }
       }
@@ -169,7 +180,19 @@ public:
          if (inJob.mTriangles->mColours.size())
          {
             mElement.mColourOffset = mElement.mVertexOffset + mElement.mStride;
-            mElement.mStride += sizeof(int);
+            #ifdef NME_FLOAT32_VERT_VALUES
+            mElement.mStride += sizeof(float)*4;
+            #else
+               #ifdef NME_METAL
+               // Align...
+               if (nmeOpenglRenderer)
+                   mElement.mStride += sizeof(int);
+               else
+                   mElement.mStride += 2*sizeof(float);
+               #else
+               mElement.mStride += sizeof(int);
+               #endif
+            #endif
             mElement.mFlags |= DRAW_HAS_COLOUR;
             mElement.mColour = 0xffffffff;
          }
@@ -216,14 +239,39 @@ public:
             if (mode & pcTile_Col_Bit)
             {
                mElement.mColourOffset = mElement.mVertexOffset + mElement.mStride;
-               mElement.mStride += sizeof(int);
+               #ifdef NME_FLOAT32_VERT_VALUES
+               mElement.mStride += sizeof(float)*4;
+               #else
+                  #ifdef NME_METAL
+                  // Align...
+                  if (nmeOpenglRenderer)
+                     mElement.mStride += sizeof(int);
+                  else
+                     mElement.mStride += 2*sizeof(float);
+                  #else
+                  mElement.mStride += sizeof(int);
+                  #endif
+               #endif
+               //mElement.mStride += sizeof(int);
                mElement.mFlags |= DRAW_HAS_COLOUR;
                mElement.mColour = 0xffffffff;
             }
-   
+
             mElement.mPrimType = (mode & pcTile_Full_Image_Bit) ? ptQuadsFull : ptQuads;
-            ReserveArrays(tiles*4);
-   
+            ReserveArraysTight(tiles*4);
+
+            if (mode & pcTile_Mouse_Enable_Bit)
+               mElement.mFlags |= DRAW_TILE_MOUSE;
+
+            if (mode & pcTile_Fixed_Size_Bit)
+            {
+               ioData.mMinScale = mStateScale*0.99;
+               ioData.mMaxScale = mStateScale*1.01;
+               const Matrix &m = *inState.mTransform.mMatrix;
+               mTileScaleX = 1.0/sqrt( m.m00*m.m00 + m.m01*m.m01 );
+               mTileScaleY = 1.0/sqrt( m.m10*m.m10 + m.m11*m.m11 );
+            }
+
             AddTiles(mode, &inPath.data[inJob.mData0], tiles);
          }
       }
@@ -236,14 +284,21 @@ public:
          AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
    }
- 
-   void ReserveArrays(int inN)
+
+   void ReserveArraysTight(int inN)
    {
       mElement.mCount = inN;
       data.mArray.resize( mElement.mVertexOffset + mElement.mStride*inN );
    }
 
-  
+
+   void ReserveArrays(int inN)
+   {
+      mElement.mCount = inN;
+      data.mArray.resizeSpace( mElement.mVertexOffset + mElement.mStride*inN );
+   }
+
+
    bool SetFill(IGraphicsFill *inFill,HardwareRenderer &inHardware)
    {
       mGradFlags = 0;
@@ -336,7 +391,7 @@ public:
                   p.x *= 0.5;
                   p.y *= 0.5;
                }
- 
+
             }
             else
             {
@@ -364,13 +419,17 @@ public:
       ReserveArrays(n);
 
       UserPoint *vertices = (UserPoint *)&data.mArray[ mElement.mVertexOffset ];
+      #ifdef NME_FLOAT32_VERT_VALUES
+      float *colours = (mElement.mFlags & DRAW_HAS_COLOUR) ? (float *)&data.mArray[ mElement.mColourOffset ] : 0;
+      #else
       int *colours = (mElement.mFlags & DRAW_HAS_COLOUR) ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
+      #endif
       UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
       bool persp = mElement.mFlags & DRAW_HAS_PERSPECTIVE;
       int stride = mElement.mStride;
 
       mElement.mPrimType = ptTriangles;
-      
+
       const float *t = &inPath->mUVT[0];
       for(int v=0;v<n;v++)
       {
@@ -379,10 +438,17 @@ public:
             *vertices = inPath->mVertices[v];
             Next(vertices);
          }
-           
+
          if(colours)
          {
+            #ifdef NME_FLOAT32_VERT_VALUES
+            colours[0] = ( (inPath->mColours[v]   ) & 0xff)/255.0;
+            colours[1] = ( (inPath->mColours[v]>>8) & 0xff)/255.0;
+            colours[2] = ( (inPath->mColours[v]>>16) & 0xff)/255.0;
+            colours[3] = ( (inPath->mColours[v]>>24) & 0xff)/255.0;
+            #else
             *colours = inPath->mColours[v];
+            #endif
             Next(colours);
          }
 
@@ -390,7 +456,7 @@ public:
          {
             *tex = mTexture->TexToPaddedTex( UserPoint(t[0],t[1]) );
             Next(tex);
-            
+
             t+=2;
             if (persp)
             {
@@ -414,7 +480,7 @@ public:
 
       int tri_count = inPath->mVertices.size()/3;
       ReserveArrays(tri_count*6);
- 
+
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *tri =  &inPath->mVertices[0];
       for(int v=0;v<tri_count;v++)
@@ -440,13 +506,16 @@ public:
    }
 
 
-   template<bool FULL, bool COL, bool TRANS>
-   void TAddTiles(const float *inData, int inTiles)
+   template<bool FULL, bool COL, bool TRANS, bool FIXED>
+   void TTAddTiles(const float *inData, int inTiles)
    {
-
       UserPoint *vertices = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *tex = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (UserPoint *)&data.mArray[ mElement.mTexOffset ] : 0;
+      #ifdef NME_FLOAT32_VERT_VALUES
+      UserPoint *colours = COL ? (UserPoint *)&data.mArray[ mElement.mColourOffset ] : 0;
+      #else
       int *colours = COL ? (int *)&data.mArray[ mElement.mColourOffset ] : 0;
+      #endif
       bool premultiplyAlpha = mElement.mSurface && IsPremultipliedAlpha(mElement.mSurface->Format());
 
       UserPoint *point = (UserPoint *)inData;
@@ -482,10 +551,23 @@ public:
       #define texTol  0.0000001f
 
       UserPoint tileSize = bmpSize;
+      if (FIXED && FULL)
+      {
+         tileSize.x *= mTileScaleX;
+         tileSize.y *= mTileScaleY;
+      }
 
       for(int i=0;i<inTiles;i++)
       {
-         pos = *point++;
+         if (FIXED)
+         {
+            UserPoint off = *point++;
+            pos = *point++;
+            pos.x -= off.x * mTileScaleX;
+            pos.y -= off.y * mTileScaleY;
+         }
+         else
+            pos = *point++;
 
          if (!FULL)
          {
@@ -512,6 +594,12 @@ public:
             {
                tex0.y = (tileOrigin.y ) * texScaleY + texTol;
                tex1.y = (tileOrigin.y + tileSize.y ) * texScaleY - texTol;
+            }
+
+            if (FIXED)
+            {
+               tileSize.x *= mTileScaleX;
+               tileSize.y *= mTileScaleY;
             }
          }
 
@@ -574,34 +662,58 @@ public:
                rg.y *= ba.y;
                ba.x *= ba.y;
             }
-
-            #ifdef BLACKBERRY
-            uint32 col = ((int)(rg.x*255)) |
-                         (((int)(rg.y*255))<<8) |
-                         (((int)(ba.x*255))<<16) |
-                         (((int)(ba.y*255))<<24);
+            #ifdef NME_FLOAT32_VERT_VALUES
+               colours[0] = rg;
+               colours[1] = ba;
+               Next(colours);
+               colours[0] = rg;
+               colours[1] = ba;
+               Next(colours);
+               colours[0] = rg;
+               colours[1] = ba;
+               Next(colours);
+               colours[0] = rg;
+               colours[1] = ba;
+               Next(colours);
             #else
-            uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
-                         ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
-                         ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
-                         ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
-            #endif
+               #ifdef BLACKBERRY
+               uint32 col = ((int)(rg.x*255)) |
+                            (((int)(rg.y*255))<<8) |
+                            (((int)(ba.x*255))<<16) |
+                            (((int)(ba.y*255))<<24);
+               #else
+               uint32 col = ((rg.x<0 ? 0 : rg.x>1?255 : (int)(rg.x*255))) |
+                            ((rg.y<0 ? 0 : rg.y>1?255 : (int)(rg.y*255))<<8) |
+                            ((ba.x<0 ? 0 : ba.x>1?255 : (int)(ba.x*255))<<16) |
+                            ((ba.y<0 ? 0 : ba.y>1?255 : (int)(ba.y*255))<<24);
+               #endif
 
-            *colours = ( col );
-            Next(colours);
-            *colours = ( col );
-            Next(colours);
-            *colours = ( col );
-            Next(colours);
-            *colours = ( col );
-            Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+               *colours = ( col );
+               Next(colours);
+            #endif
          }
       }
    }
 
-
    template<bool FULL, bool COL, bool TRANS>
-   void TAddTilesMt(const float *inData, int inTiles)
+   void TAddTiles(const float *inData, int inTiles,bool fixed)
+   {
+      if (fixed)
+         TTAddTiles<FULL,COL,TRANS,true>(inData,inTiles);
+      else
+         TTAddTiles<FULL,COL,TRANS,false>(inData,inTiles);
+   }
+
+
+
+   template<bool FULL, bool COL, bool TRANS, bool FIXED>
+   void TTAddTilesMt(const float *inData, int inTiles)
    {
       char *vertexPtr = (char *)&data.mArray[mElement.mVertexOffset];
       char *texPtr = (mElement.mFlags & DRAW_HAS_TEX) && !FULL ? (char *)&data.mArray[ mElement.mTexOffset ] : 0;
@@ -640,8 +752,15 @@ public:
       #define texTol  0.0000001f
 
       UserPoint tileSize = bmpSize;
+      if (FIXED && FULL)
+      {
+         tileSize.x *= mTileScaleX;
+         tileSize.y *= mTileScaleY;
+      }
+
       int stride = mElement.mStride * 4;
       int srcPoints = 1;
+      if (FIXED) srcPoints += 1;
       if (!FULL) srcPoints += 2;
       if (TRANS) srcPoints += 2;
       if (COL) srcPoints += 2;
@@ -654,7 +773,15 @@ public:
 
          UserPoint *point = ((UserPoint *)inData) + pid*srcPoints;
 
-         pos = *point++;
+         if (FIXED)
+         {
+            UserPoint off = *point++;
+            pos = *point++;
+            pos.x -= off.x * mTileScaleX;
+            pos.y -= off.y * mTileScaleY;
+         }
+         else
+            pos = *point++;
 
          if (!FULL)
          {
@@ -681,6 +808,11 @@ public:
             {
                tex0.y = (tileOrigin.y ) * texScaleY + texTol;
                tex1.y = (tileOrigin.y + tileSize.y ) * texScaleY - texTol;
+            }
+            if (FIXED)
+            {
+               tileSize.x *= mTileScaleX;
+               tileSize.y *= mTileScaleY;
             }
          }
 
@@ -771,6 +903,15 @@ public:
       }
    }
 
+   template<bool FULL, bool COL, bool TRANS>
+   void TAddTilesMt(const float *inData, int inTiles, bool fixed)
+   {
+      if (fixed)
+         TTAddTilesMt<FULL,COL,TRANS,true>(inData,inTiles);
+      else
+         TTAddTilesMt<FULL,COL,TRANS,false>(inData,inTiles);
+   }
+
 
 
    struct AddTileJob
@@ -791,27 +932,28 @@ public:
       bool fullTile =  job->mode & pcTile_Full_Image_Bit;
       bool hasColour = job->mode & pcTile_Col_Bit;
       bool hasTrans =  job->mode & pcTile_Trans_Bit;
+      bool fixed = job->mode & pcTile_Fixed_Size_Bit;
 
       const float *inData = job->data;
       int inTiles = job->tiles;
       HardwareBuilder *thiz = job->builder;
 
       if      (!fullTile && !hasColour && !hasTrans)
-         thiz->TAddTilesMt<false,false,false>(inData, inTiles);
+         thiz->TAddTilesMt<false,false,false>(inData, inTiles, fixed);
       else if (!fullTile && !hasColour && hasTrans)
-         thiz->TAddTilesMt<false,false,true>(inData, inTiles);
+         thiz->TAddTilesMt<false,false,true>(inData, inTiles, fixed);
       else if (!fullTile && hasColour && !hasTrans)
-         thiz->TAddTilesMt<false,true,false>(inData, inTiles);
+         thiz->TAddTilesMt<false,true,false>(inData, inTiles, fixed);
       else if (!fullTile && hasColour && hasTrans)
-         thiz->TAddTilesMt<false,true,true>(inData, inTiles);
+         thiz->TAddTilesMt<false,true,true>(inData, inTiles, fixed);
       else if (fullTile && !hasColour && !hasTrans)
-         thiz->TAddTilesMt<true,false,false>(inData, inTiles);
+         thiz->TAddTilesMt<true,false,false>(inData, inTiles, fixed);
       else if (fullTile && !hasColour && hasTrans)
-         thiz->TAddTilesMt<true,false,true>(inData, inTiles);
+         thiz->TAddTilesMt<true,false,true>(inData, inTiles, fixed);
       else if (fullTile && hasColour && !hasTrans)
-         thiz->TAddTilesMt<true,true,false>(inData, inTiles);
+         thiz->TAddTilesMt<true,true,false>(inData, inTiles, fixed);
       else if (fullTile && hasColour && hasTrans)
-         thiz->TAddTilesMt<true,true,true>(inData, inTiles);
+         thiz->TAddTilesMt<true,true,true>(inData, inTiles, fixed);
    }
 
    void AddTiles(int inMode, const float *inData, int inTiles)
@@ -827,23 +969,24 @@ public:
          bool fullTile =  inMode & pcTile_Full_Image_Bit;
          bool hasColour = inMode & pcTile_Col_Bit;
          bool hasTrans =  inMode & pcTile_Trans_Bit;
+         bool isFixed =  inMode & pcTile_Fixed_Size_Bit;
 
          if      (!fullTile && !hasColour && !hasTrans)
-            TAddTiles<false,false,false>(inData, inTiles);
+            TAddTiles<false,false,false>(inData, inTiles, isFixed);
          else if (!fullTile && !hasColour && hasTrans)
-            TAddTiles<false,false,true>(inData, inTiles);
+            TAddTiles<false,false,true>(inData, inTiles, isFixed);
          else if (!fullTile && hasColour && !hasTrans)
-            TAddTiles<false,true,false>(inData, inTiles);
+            TAddTiles<false,true,false>(inData, inTiles, isFixed);
          else if (!fullTile && hasColour && hasTrans)
-            TAddTiles<false,true,true>(inData, inTiles);
+            TAddTiles<false,true,true>(inData, inTiles, isFixed);
          else if (fullTile && !hasColour && !hasTrans)
-            TAddTiles<true,false,false>(inData, inTiles);
+            TAddTiles<true,false,false>(inData, inTiles, isFixed);
          else if (fullTile && !hasColour && hasTrans)
-            TAddTiles<true,false,true>(inData, inTiles);
+            TAddTiles<true,false,true>(inData, inTiles, isFixed);
          else if (fullTile && hasColour && !hasTrans)
-            TAddTiles<true,true,false>(inData, inTiles);
+            TAddTiles<true,true,false>(inData, inTiles, isFixed);
          else if (fullTile && hasColour && hasTrans)
-            TAddTiles<true,true,true>(inData, inTiles);
+            TAddTiles<true,true,true>(inData, inTiles, isFixed);
       }
 
       mElement.mCount = inTiles*4;
@@ -918,7 +1061,7 @@ public:
       data.mElements.last().mPrimType = ptLines;
    }
 
-   
+
    void PushTriangleWireframe(const Vertices &inV)
    {
       ReserveArrays(inV.size()*2);
@@ -1103,6 +1246,34 @@ public:
                }
                break;
 
+
+            case pcCubicTo:
+               {
+               double len = ((last_point-point[0]).Norm() + (point[1]-point[0]).Norm() + (point[2]-point[1]).Norm()) * 0.25;
+               if (len!=0)
+               {
+                  int steps = (int)len;
+                  if (steps<3) steps = 3;
+                  if (steps>100) steps = 100;
+                  double step = 1.0/(steps+1);
+                  double t = 0;
+                  for(int s=0;s<steps;s++)
+                  {
+                     t+=step;
+                     double t_ = 1.0-t;
+                     UserPoint p = last_point * (t_ * t_ * t_) + point[0] * (3.0 * t * t_ * t_) + point[1] * (3.0 * t * t * t_) + point[2] * (t*t*t);
+                     if (outline.last()!=p)
+                        outline.push_back(p);
+                  }
+                  last_point = point[2];
+                  if (outline.last()!=last_point)
+                      outline.push_back(last_point);
+                  points++;
+               }
+               point += 3;
+               }
+               break;
+
             default:
                points += gCommandDataSize[ inCommands[i] ];
          }
@@ -1120,25 +1291,28 @@ public:
    struct Segment
    {
       inline Segment() { }
-      inline Segment(const UserPoint &inP) : p(inP), curve(inP) { }
-      inline Segment(const UserPoint &inP,const UserPoint &inCurve) : p(inP), curve(inCurve) { }
+      inline Segment(const UserPoint &inP) : p(inP), curve0(inP), curve1(inP) { }
+      inline Segment(const UserPoint &inP,const UserPoint &inCurve) : p(inP), curve0(inCurve), curve1(inCurve) { }
+      inline Segment(const UserPoint &inP,const UserPoint &inCurve1, const UserPoint &inCurve0) : p(inP), curve0(inCurve0), curve1(inCurve1) { }
 
       UserPoint getDir0(const UserPoint &inP0) const
       {
-         return curve-inP0;
+         return curve0-inP0;
       }
       UserPoint getDir1(const UserPoint &inP0) const
       {
          if (isCurve())
-            return p-curve;
+            return p-curve1;
          return p-inP0;
       }
       UserPoint getDirAverage(const UserPoint &inP0) const { return p-inP0; }
 
-      inline bool isCurve() const { return p!=curve; }
+      inline bool isCurve() const { return p!=curve1; }
+      inline bool isCurve2() const { return curve0!=curve1; }
 
       UserPoint p;
-      UserPoint curve;
+      UserPoint curve0;
+      UserPoint curve1;
    };
 
    void AddArc(Curves &outCurve, UserPoint inP, double angle, UserPoint inVx, UserPoint inVy, float t)
@@ -1540,6 +1714,52 @@ public:
       rightCurve.push_back( CurveEdge(inP2+perp1,0.9999+t0) );
    }
 
+
+   void AddCubicSegment(Curves &leftCurve, Curves &rightCurve,
+                        UserPoint perp0, UserPoint perp1,
+                        UserPoint inP0,UserPoint inP1,UserPoint inP2,UserPoint inP3,
+                        UserPoint p0_left, UserPoint p0_right,UserPoint p1_left, UserPoint p1_right, float t0)
+   {
+      QuickVec<Range> stack;
+      Range r0(0,inP0-perp0, inP0+perp0, 1,inP3-perp1, inP3+perp1);
+      stack.push_back(r0);
+
+      while(stack.size())
+      {
+         Range r = stack.qpop();
+         if (r.t1-r.t0 > 0.001 )
+         {
+            // Calc midpoint...
+            double t = (r.t0+r.t1)*0.5;
+            double t_ = 1.0 - t;
+            UserPoint mid_p = inP0 * (t_ * t_ * t_) + inP1 * (3.0 * t * t_ * t_) + inP2 * (3.0 * t * t * t_) + inP3 * (t*t*t);
+            UserPoint dir = inP0*(2*t-1-t*t) + inP1*(1-4*t+3*t*t) + inP2*(2*t-3*t*t)  + inP3*(t*t);
+
+            UserPoint mid_l = mid_p - dir.Perp(mPerpLen);
+            UserPoint mid_r = mid_p + dir.Perp(mPerpLen);
+
+            UserPoint average_l = (r.left0+r.left1)*0.5;
+            UserPoint average_r = (r.right0+r.right1)*0.5;
+            if ( mid_l.Dist2(average_l)>mCurveThresh2 || mid_r.Dist2(average_r)>mCurveThresh2)
+            {
+               // Reverse order, LIFO
+               stack.push_back( Range(t,mid_l,mid_r, r.t1,r.left1,r.right1) );
+               r.t1 = t;
+               r.left1 = mid_l;
+               r.right1 = mid_r;
+               stack.push_back(r);
+               continue;
+            }
+         }
+         leftCurve.push_back( CurveEdge(r.left0,r.t0+t0) );
+         rightCurve.push_back( CurveEdge(r.right0,r.t0+t0) );
+      }
+      leftCurve.push_back( CurveEdge(inP3-perp1,0.9999+t0) );
+      rightCurve.push_back( CurveEdge(inP3+perp1,0.9999+t0) );
+   }
+
+
+
    void EndCap(Curves &left, Curves &right, UserPoint p0, UserPoint perp, double t)
    {
       bool first = t==0;
@@ -1550,7 +1770,7 @@ public:
          back.x*=-1;
          back.y*=-1;
       }
- 
+
       if (mCaps==scSquare)
       {
          if (first)
@@ -1566,7 +1786,7 @@ public:
       }
       else
       {
-         int n = std::max(2,(int)(mPerpLen * 4));
+         int n = std::max(2,(int)(mPerpLen*mScale * 4));
          double dtheta = M_PI*0.5 / n;
 
          for(int i=1;i<n;i++)
@@ -1621,12 +1841,12 @@ public:
 
 
       // Allow shrinking to half the size
-      float s = mScale * 0.5;
+      float s = mStateScale * 0.5;
       if (data.mMinScale==0 || s>data.mMinScale)
          data.mMinScale = s;
 
       // And growing to 1.41 the size ...
-      s = mScale * 1.41;
+      s = mStateScale * 1.41;
       if (data.mMaxScale==0 || s<data.mMaxScale)
          data.mMaxScale = s;
 
@@ -1650,7 +1870,8 @@ public:
       UserPoint p;
       UserPoint dir1;
 
-      bool fancyJoints =   mPerpLen*mScale > 1.0 && (mJoints==sjRound || mJoints==sjMiter);
+      bool fancyJoints =  ( mPerpLen*mScale > 1.0 && mJoints==sjRound ) ||
+                          ( mPerpLen*mScale >= 0.999 && mJoints==sjMiter);
 
       for(int i=1;i<inPath.size();i++)
       {
@@ -1679,7 +1900,7 @@ public:
           UserPoint perp1(-dir1.y*mPerpLen, dir1.x*mPerpLen);
           UserPoint next_perp(-next_dir.y*mPerpLen, next_dir.x*mPerpLen);
 
- 
+
           UserPoint p1_left = p-perp1;
           UserPoint p1_right = p+perp1;
 
@@ -1688,7 +1909,10 @@ public:
 
           if (seg.isCurve())
           {
-             AddCurveSegment(leftCurve,rightCurve,perp0, perp1,p0,seg.curve,seg.p, p0_left, p0_right, p1_left, p1_right,t);
+             if (seg.isCurve2())
+                AddCubicSegment(leftCurve,rightCurve,perp0, perp1,p0,seg.curve0,seg.curve1,seg.p, p0_left, p0_right, p1_left, p1_right,t);
+             else
+                AddCurveSegment(leftCurve,rightCurve,perp0, perp1,p0,seg.curve0,seg.p, p0_left, p0_right, p1_left, p1_right,t);
              t+=1.0;
           }
           else
@@ -1715,7 +1939,7 @@ public:
           else if ( fancyJoints && angle<0.9 )
           {
              /*
-   
+
                               ---
                            ---
                         ---
@@ -1732,40 +1956,40 @@ public:
                   |      .      |   
                   |      .      |   
                   |      .      |
-   
+
                 A = p + next_perp
                 B = p - next_perp
-   
+
                 C = p + perp1
                 D = p - perp1
-   
+
                 Y = A + alpha*next_dir
                   = C - alpha*dir1
-   
+
                    = p + next_perp + alpha*next_dir
                    = p + perp1 - alpha*dir1
-   
+
                    -> next_perp-perp1 = alpha*(dir1+next_dir)
                    -> alpha = prep1-next_perp     in either x or y direction...
                               ---------------
                               dir1+next_dir
-   
+
                 On the overlap side, we will draw a bevel, and let the removeLoops code fix it.
                 On the non-overlay side, we will draw a joint
              */
-   
-   
-   
+
+
+
              double denom_x = dir1.x+next_dir.x;
              double denom_y = dir1.y+next_dir.y;
              double alpha=0;
-   
+
              // Choose the better-conditioned axis
              if (fabs(denom_x)>fabs(denom_y))
                 alpha = denom_x==0 ? 0 : (perp1.x-next_perp.x)/denom_x;
              else
                 alpha = denom_y==0 ? 0 : (perp1.y-next_perp.y)/denom_y;
-   
+
              if ( fabs(alpha)>0.01 )
              {
                 if (mJoints==sjRound)
@@ -1834,7 +2058,7 @@ public:
             mElement.mStride -= sizeof(float)*2.0;
          }
          mElement.mWidth = 1;
- 
+
 
          for(int side=0; side<2; side++)
          {
@@ -2078,7 +2302,7 @@ public:
                prev = *point;
                first = *point++;
                break;
-               
+
             case pcWideLineTo:
                point++;
             case pcLineTo:
@@ -2088,7 +2312,7 @@ public:
                   point++;
                   continue;
                }
- 
+
                strip.push_back(Segment(*point));
 
                // Implicit loop closing...
@@ -2097,12 +2321,12 @@ public:
                   AddStrip(strip,true);
                   strip.resize(0);
                }
-               
+
                prev = *point;
                point++;
                }
                break;
-               
+
             case pcCurveTo:
                {
                   if (strip.size()>0 && *point==prev && point[1]==prev)
@@ -2110,7 +2334,7 @@ public:
                      point+=2;
                      continue;
                   }
- 
+
                   strip.push_back(Segment(point[1],point[0]));
 
                   // Implicit loop closing...
@@ -2123,7 +2347,32 @@ public:
                   prev = point[1];
                   point +=2;
               }
-               break;
+              break;
+
+
+            case pcCubicTo:
+               {
+                  if (strip.size()>0 && *point==prev && point[1]==prev && point[2]==prev)
+                  {
+                     point+=3;
+                     continue;
+                  }
+
+                  strip.push_back(Segment(point[2],point[1],point[0]));
+
+                  // Implicit loop closing...
+                  if (strip.size()>=2 && point[2]==first)
+                  {
+                     AddStrip(strip,true);
+                     strip.resize(0);
+                  }
+
+                  prev = point[2];
+                  point +=3;
+              }
+              break;
+
+
             default:
                point += gCommandDataSize[ inCommands[i] ];
          }
@@ -2147,6 +2396,9 @@ public:
    double      mMiterLimit;
    double      mPerpLen;
    double      mScale;
+   double      mStateScale;
+   float       mTileScaleX;
+   float       mTileScaleY;
    double      mCurveThresh2;
    double      mFatLineCullThresh;
    Matrix      mTextureMapper;
@@ -2193,7 +2445,7 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
 
    UserPoint *srcV =  (UserPoint *)&inPath.data[ inJob.mData0 ];
    UserPoint *v = (UserPoint *)&ioData.mArray[ elem.mVertexOffset ];
-   
+
    for(int i=0;i<elem.mCount;i++)
    {
       *v = *srcV++;
@@ -2233,7 +2485,7 @@ void BuildHardwareJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardwa
 HardwareData::HardwareData()
 {
    mRendersWithoutVbo = 0;
-   mVertexBo = 0;
+   mVertexBufferPtr = nullptr;
    mContextId = 0;
    mVboOwner = 0;
    mMinScale = mMaxScale = 0.0;
@@ -2243,13 +2495,13 @@ void HardwareData::releaseVbo()
 {
    if (mVboOwner)
    {
-      if (mVertexBo && mContextId==gTextureContextVersion)
-         mVboOwner->DestroyVbo(mVertexBo);
+      if (mVertexBufferPtr && mContextId==gTextureContextVersion)
+         mVboOwner->DestroyVbo(mVertexBo,mVertexBufferPtr);
       mVboOwner->DecRef();
       mVboOwner=0;
    }
    mContextId = 0;
-   mVertexBo = 0;
+   mVertexBufferPtr = nullptr;
    mRendersWithoutVbo = 0;
 }
 
@@ -2263,7 +2515,7 @@ bool HardwareData::isScaleOk(const RenderState &inState) const
 {
    if (mMinScale==0 && mMaxScale==0)
       return true;
-   
+
    float scale = scaleOf(inState);
    if (mMinScale>0 && scale<mMinScale)
    {
@@ -2277,6 +2529,8 @@ bool HardwareData::isScaleOk(const RenderState &inState) const
    }
    return true;
 }
+
+
 
 
 void HardwareData::clear()
@@ -2341,10 +2595,94 @@ inline bool HitTri(const UserPoint &base, const UserPoint &_v0, const UserPoint 
          }
       }
    }
- 
+
    return false;
 }
 
+HardwareRenderer::HardwareRenderer()
+{
+   HardwareRenderer::current = this;
+
+   mWidth = 0;
+   mHeight = 0;
+   mLineWidth = -1;
+   mLineScaleNormal = -1;
+   mLineScaleV = -1;
+   mLineScaleH = -1;
+   mQuality = sqBest;
+   mScaleX = mScaleY = 1.0;
+   mOffsetX = mOffsetY = 0;
+
+   for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++)
+         mTrans[i][j] = i==j;
+}
+
+void HardwareRenderer::SetWindowSize(int inWidth,int inHeight)
+{
+   mWidth = inWidth;
+   mHeight = inHeight;
+}
+
+int HardwareRenderer::Width() const { return mWidth; }
+int HardwareRenderer::Height() const { return mHeight; }
+
+
+void HardwareRenderer::setOrtho(float x0,float x1, float y0, float y1)
+{
+   mScaleX = 2.0/(x1-x0);
+   mScaleY = 2.0/(y1-y0);
+   mOffsetX = (x0+x1)/(x0-x1);
+   mOffsetY = (y0+y1)/(y0-y1);
+   mModelView = Matrix();
+
+   CombineModelView(mModelView);
+} 
+
+void HardwareRenderer::CombineModelView(const Matrix &inModelView)
+{
+   mTrans[0][0] = inModelView.m00 * mScaleX;
+   mTrans[0][1] = inModelView.m01 * mScaleX;
+   mTrans[0][2] = 0;
+   mTrans[0][3] = inModelView.mtx * mScaleX + mOffsetX;
+
+   mTrans[1][0] = inModelView.m10 * mScaleY;
+   mTrans[1][1] = inModelView.m11 * mScaleY;
+   mTrans[1][2] = 0;
+   mTrans[1][3] = inModelView.mty * mScaleY + mOffsetY;
+}
+
+
+void HardwareRenderer::SetQuality(StageQuality inQ)
+{
+   if (inQ!=mQuality)
+   {
+      mQuality = inQ;
+      mLineWidth = 99999;
+   }
+}
+
+void HardwareRenderer::Render(const RenderState &inState, const HardwareData &inData )
+{
+   if (!inData.mArray.size())
+      return;
+
+   SetViewport(inState.mClipRect);
+
+   if (mModelView!=*inState.mTransform.mMatrix)
+   {
+      mModelView=*inState.mTransform.mMatrix;
+      CombineModelView(mModelView);
+      mLineScaleV = -1;
+      mLineScaleH = -1;
+      mLineScaleNormal = -1;
+   }
+   const ColorTransform *ctrans = inState.mColourTransform;
+   if (ctrans && ctrans->IsIdentity())
+      ctrans = 0;
+
+   RenderData(inData,ctrans,mTrans);
+}
 
 
 
@@ -2478,7 +2816,7 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
                continue;
 
             int numTriangles = draw.mCount / 3;
-         
+
             int vidx = 0;
             for(int i=0;i<numTriangles;i++)
             {
@@ -2486,6 +2824,26 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
                UserPoint _v0 = V(vidx++);
                UserPoint _v1 = V(vidx++);
                if (HitTri(base,_v0,_v1,pos))
+                  return true;
+           }
+         }
+         else if ((draw.mPrimType == ptQuadsFull || draw.mPrimType == ptQuads) && (draw.mFlags & DRAW_TILE_MOUSE))
+         {
+            if (draw.mCount<4)
+               continue;
+
+            int numQuads = draw.mCount / 4;
+
+            int vidx = 0;
+            for(int i=0;i<numQuads;i++)
+            {
+               UserPoint base = V(vidx++);
+               UserPoint _v0 = V(vidx++);
+               UserPoint _v1 = V(vidx++);
+               UserPoint _v2 = V(vidx++);
+               if (HitTri(base,_v0,_v1,pos))
+                  return true;
+               else if (HitTri(_v0,_v2,_v1,pos))
                   return true;
            }
          }
@@ -2497,7 +2855,7 @@ bool HardwareRenderer::Hits(const RenderState &inState, const HardwareData &inDa
                   return true;
             }
          }
- 
+
       }
 
    return false;

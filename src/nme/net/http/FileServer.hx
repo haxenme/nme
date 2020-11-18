@@ -1,4 +1,5 @@
 package nme.net.http;
+using StringTools;
 
 import sys.FileSystem;
 import haxe.io.Bytes;
@@ -25,9 +26,14 @@ class FileServer extends Handler
             var data = sys.io.File.getBytes(path);
 
             var header = ["HTTP/1.1 200 OK",
-                          "Content-Length: " + data.length,
-                          //"Content-Type: text/html",
-                          "","" ];
+                          "Content-Length: " + data.length
+                          ];
+
+            //"Content-Type: text/html",
+            if (path.endsWith(".wasm"))
+               header.push("Content-Type: application/wasm");
+            header.push("");
+            header.push("");
             var hData = Bytes.ofString(header.join("\r\n"));
             var result = Bytes.alloc(hData.length + data.length);
             result.blit(0,hData,0,hData.length);

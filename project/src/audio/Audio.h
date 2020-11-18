@@ -40,6 +40,8 @@ SoundChannel *CreateSdlSyncChannel(const ByteArray &inData, const SoundTransform
 SoundChannel *CreateSdlAsyncChannel( SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback);
 void SuspendSdlSound();
 void ResumeSdlSound();
+void avSuspendAudio();
+void avResumeAudio();
 
 Sound *CreateAvPlayerSound(const unsigned char *inData, int len);
 Sound *CreateAvPlayerSound(const std::string &inFilename);

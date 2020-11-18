@@ -13,6 +13,7 @@ struct TileData
    Rect         mRect;
    UserPoint    mTransX;
    UserPoint    mTransY;
+   UserPoint    mOffset;
    unsigned int mColour;
    bool         mHasTrans;
    bool         mHasColour;
@@ -22,6 +23,11 @@ struct TileData
    inline TileData(const UserPoint *inPoint,int inFlags, int inWidth, int inHeight)
       : mPos(*inPoint)
    {
+      if (inFlags & pcTile_Fixed_Size_Bit)
+      {
+         mOffset = mPos;
+         mPos = *++inPoint;
+      }
       if (inFlags & pcTile_Full_Image_Bit)
       {
          mRect = Rect(0,0,inWidth,inHeight);
@@ -64,6 +70,7 @@ public:
    QuickVec<TileData> mTileData;
    BlendMode          mBlendMode;
    unsigned int       mFlags;
+   bool               mIsFixed;
 
    TileRenderer(const GraphicsJob &inJob, const GraphicsPath &inPath)
    {
@@ -84,6 +91,9 @@ public:
          size+=2;
       if (inJob.mTileMode & pcTile_Col_Bit)
          size+=2;
+      mIsFixed = inJob.mTileMode & pcTile_Fixed_Size_Bit;
+      if (mIsFixed)
+         size+=1;
 
 
       for(int j=0; j<inJob.mTileCount; j++)
@@ -120,12 +130,25 @@ public:
       for(int i=0;i<mTileData.size();i++)
       {
          TileData &data= mTileData[i];
+         UserPoint p0(data.mPos);
+         if (mIsFixed)
+            p0 = inTransform.mMatrix->Apply(p0.x,p0.y) -data.mOffset;;
+
          for(int c=0;c<4;c++)
          {
-            UserPoint corner(data.mPos);
-            if (c&1) corner.x += data.mRect.w;
-            if (c&2) corner.y += data.mRect.h;
-            ioExtent.Add( inTransform.mMatrix->Apply(corner.x,corner.y) );
+            UserPoint corner(p0);
+            if (mIsFixed)
+            {
+               if (c&1) corner.x += data.mRect.w;
+               if (c&2) corner.y += data.mRect.h;
+               ioExtent.Add( corner );
+            }
+            else
+            {
+               if (c&1) corner.x += data.mRect.w;
+               if (c&2) corner.y += data.mRect.h;
+               ioExtent.Add( inTransform.mMatrix->Apply(corner.x,corner.y) );
+            }
          }
       }
       /*
@@ -154,7 +177,7 @@ public:
       bool is_base_ortho = fabs(inState.mTransform.mMatrix->m01)< orthoTol  && fabs(inState.mTransform.mMatrix->m10)< orthoTol;
       float sx = inState.mTransform.mMatrix->m00;
       float sy = inState.mTransform.mMatrix->m11;
-      bool is_base_identity = is_base_ortho && fabs(sx-1.0)<orthoTol && fabs(sy-1.0)<orthoTol;
+      bool is_base_identity = is_base_ortho && (mIsFixed || (fabs(sx-1.0)<orthoTol && fabs(sy-1.0)<orthoTol));
 
       //int blits = 0;
       //int stretches = 0;
@@ -169,10 +192,12 @@ public:
          UserPoint corner(data.mPos);
          UserPoint pos = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
 
+
          bool is_ortho = is_base_ortho && (!data.mHasTrans || fabs(data.mTransX.y)<orthoTol);
          bool is_identity = data.mHasTrans ?
                            is_ortho && fabs(sx*data.mTransX.x-1.0)<orthoTol && fabs(sy*data.mTransY.y-1)<orthoTol :
                            is_base_identity;
+
 
          if ( !is_identity )
          {
@@ -180,11 +205,22 @@ public:
             if (!data.mHasColour && mBlendMode==bmNormal && is_ortho )
             {
                UserPoint p0 = pos;
-               if (data.mHasTrans)
-                  pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w*data.mTransX.x,
-                                                          corner.y+data.mRect.h*data.mTransY.y);
+               if (mIsFixed)
+               {
+                  p0 -= data.mOffset;
+                  if (data.mHasTrans)
+                     pos = p0 + UserPoint(data.mRect.w*data.mTransX.x, data.mRect.h*data.mTransY.y);
+                  else
+                     pos = p0 + UserPoint(data.mRect.w,data.mRect.h);
+               }
                else
-                  pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
+               {
+                  if (data.mHasTrans)
+                     pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w*data.mTransX.x,
+                                                          corner.y+data.mRect.h*data.mTransY.y);
+                  else
+                     pos = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
+               }
 
                s->StretchTo(inTarget, data.mRect, DRect(p0.x,p0.y,pos.x,pos.y,true), mFlags);
 
@@ -204,24 +240,47 @@ public:
                }
                // Create alpha mask...
                UserPoint p[4];
-               p[0] = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
-               if (data.mHasTrans)
+               if (mIsFixed)
                {
-                  p[1] = inState.mTransform.mMatrix->Apply(
-                            corner.x + data.mRect.w*data.mTransX.x,
-                            corner.y + data.mRect.w*data.mTransY.x);
-                  p[2] = inState.mTransform.mMatrix->Apply(
-                            corner.x + data.mRect.w*data.mTransX.x + data.mRect.h*data.mTransX.y,
-                            corner.y + data.mRect.w*data.mTransY.x + data.mRect.h*data.mTransY.y );
-                  p[3] = inState.mTransform.mMatrix->Apply(
-                            corner.x + data.mRect.h*data.mTransX.y,
-                            corner.y + data.mRect.h*data.mTransY.y );
+                  p[0] = pos - data.mOffset;
+                  if (data.mHasTrans)
+                  {
+                     p[1] = p[0] + UserPoint( data.mRect.w*data.mTransX.x, data.mRect.w*data.mTransY.x);
+                     p[2] = p[1] + UserPoint( data.mRect.w*data.mTransY.x, data.mRect.h*data.mTransY.y );
+                     p[3] = p[0] + UserPoint( data.mRect.w*data.mTransY.x, data.mRect.h*data.mTransY.y );
+                  }
+                  else
+                  {
+                     p[1] = p[0];
+                     p[1].x += data.mRect.w;
+                     p[2] = p[1];
+                     p[2].y += data.mRect.h;
+                     p[3] = p[0];
+                     p[3].y += data.mRect.h;
+                  }
+
                }
                else
                {
-                  p[1] = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y);
-                  p[2] = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
-                  p[3] = inState.mTransform.mMatrix->Apply(corner.x,corner.y+data.mRect.h);
+                  p[0] = inState.mTransform.mMatrix->Apply(corner.x,corner.y);
+                  if (data.mHasTrans)
+                  {
+                     p[1] = inState.mTransform.mMatrix->Apply(
+                               corner.x + data.mRect.w*data.mTransX.x,
+                               corner.y + data.mRect.w*data.mTransY.x);
+                     p[2] = inState.mTransform.mMatrix->Apply(
+                               corner.x + data.mRect.w*data.mTransX.x + data.mRect.h*data.mTransX.y,
+                               corner.y + data.mRect.w*data.mTransY.x + data.mRect.h*data.mTransY.y );
+                     p[3] = inState.mTransform.mMatrix->Apply(
+                               corner.x + data.mRect.h*data.mTransX.y,
+                               corner.y + data.mRect.h*data.mTransY.y );
+                  }
+                  else
+                  {
+                     p[1] = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y);
+                     p[2] = inState.mTransform.mMatrix->Apply(corner.x+data.mRect.w,corner.y+data.mRect.h);
+                     p[3] = inState.mTransform.mMatrix->Apply(corner.x,corner.y+data.mRect.h);
+                  }
                }
 
                Extent2DF extent;
@@ -229,15 +288,15 @@ public:
                extent.Add(p[1]);
                extent.Add(p[2]);
                extent.Add(p[3]);
-               
+
                // Get bounding pixel rect
                Rect rect = inState.mTransform.GetTargetRect(extent);
-               
+
                // Intersect with clip rect ...
                Rect visible_pixels = rect.Intersect(inState.mClipRect);
                if (!visible_pixels.HasPixels())
                   continue;
-               
+
                Rect alpha_rect(visible_pixels);
                bool offscreen_buffer = mBlendMode!=bmNormal;
                if (offscreen_buffer)
@@ -258,7 +317,7 @@ public:
                   span->Line00(
                        Fixed10( p[i].x + 0.5, p[i].y + 0.5  ),
                        Fixed10( p[(i+1)&3].x + 0.5, p[(i+1)&3].y + 0.5) );
-               
+
                AlphaMask *alpha = span->CreateMask(inState.mTransform,tile_alpha);
                delete span;
 
@@ -329,12 +388,16 @@ public:
          }
          else if (s->Format()==pfAlpha && mBlendMode==bmNormal && data.mHasColour /* integer co-ordinate?*/ )
          {
+            if (mIsFixed)
+               pos -= data.mOffset;
             //blits++;
             unsigned int col = inState.mColourTransform->Transform(data.mColour|0xff000000);
             s->BlitTo(inTarget, data.mRect, (int)(pos.x), (int)(pos.y), blend, 0, col);
          }
          else
          {
+            if (mIsFixed)
+               pos -= data.mOffset;
             //blits++;
             s->BlitTo(inTarget, data.mRect, (int)(pos.x), (int)(pos.y), blend, 0, data.mColour);
          }

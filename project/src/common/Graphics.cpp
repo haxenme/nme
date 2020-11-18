@@ -140,20 +140,51 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    rx *= 0.5;
    ry *= 0.5;
    float w = width*0.5;
-   x+=w;
+   //x+=w;
    if (rx>w) rx = w;
-   float lw = w - rx;
-   float w_ = lw + rx*SIN45;
-   float cw_ = lw + rx*TAN22;
+   //float lw = w - rx;
+   //float w_ = lw + rx*SIN45;
+   //float cw_ = lw + rx*TAN22;
    float h = height*0.5;
-   y+=h;
+   //y+=h;
    if (ry>h) ry = h;
-   float lh = h - ry;
-   float h_ = lh + ry*SIN45;
-   float ch_ = lh + ry*TAN22;
+   //float lh = h - ry;
+   //float h_ = lh + ry*SIN45;
+   //float ch_ = lh + ry*TAN22;
 
    Flush();
 
+   float d = 0.55228;
+
+   float x0 = x;
+   float cx0 = x + d*rx;
+   float x1 = x + rx;
+   float x2 = x + width - rx;
+   float cx1 = x + width - d*rx;
+   float x3 = x + width;
+
+   float y0 = y;
+   float cy0 = y + d*ry;
+   float y1 = y + ry;
+   float y2 = y + height - ry;
+   float cy1 = y + height - d*ry;
+   float y3 = y + height;
+
+   mPathData->moveTo(x0,y1);
+   mPathData->cubicTo(x0,cy0, cx0,y0, x1, y0);
+   if (x1!=x2)
+      mPathData->lineTo(x2,y0);
+   mPathData->cubicTo(cx1,y0, x3,cy0, x3,y1);
+   if (y1!=y2)
+      mPathData->lineTo(x3,y2);
+   mPathData->cubicTo(x3,cy1, cx1,y3, x2,y3);
+   if (x1!=x2)
+      mPathData->lineTo(x1,y3);
+   mPathData->cubicTo(cx0,y3, x0,cy1, x0,y2);
+   if (y1!=y2)
+      mPathData->lineTo(x0,y1);
+
+   /*
    mPathData->moveTo(x+w,y+lh);
    mPathData->curveTo(x+w,  y+ch_, x+w_, y+h_);
    mPathData->curveTo(x+cw_,y+h,   x+lw,    y+h);
@@ -167,6 +198,7 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
    mPathData->curveTo(x+cw_,y-h,   x+w_, y-h_);
    mPathData->curveTo(x+w,  y-ch_, x+w,  y-lh);
    mPathData->lineTo(x+w,  y+lh);
+   */
 
    Flush();
    OnChanged();
@@ -411,9 +443,40 @@ void Graphics::curveTo(float cx, float cy, float x, float y)
         (fabs(x-cx)<EPSILON && fabs(y-cy)<EPSILON)  )
    {
       mPathData->lineTo(x,y);
+      return;
    }
    else
       mPathData->curveTo(cx,cy,x,y);
+   mCursor = UserPoint(x,y);
+   OnChanged();
+}
+
+inline float Interp(float a, float b, float frac)
+{
+   return a + (b-a)*frac;
+}
+
+void Graphics::cubicTo(float cx0, float cy0, float cx1, float cy1, float x, float y)
+{
+   if ( (fabs(cx0-cx1)<EPSILON && fabs(cy0-cy1)<EPSILON )  ||
+        (fabs(x-cx1)<EPSILON && fabs(y-cy1)<EPSILON ) )
+   {
+      curveTo(cx0, cy0, x, y);
+      return;
+   }
+
+   if ( (mFillJob.mFill && mFillJob.mCommand0==mPathData->commands.size()) ||
+        (mLineJob.mStroke && mLineJob.mCommand0==mPathData->commands.size()) )
+     mPathData->initPosition(mCursor);
+
+   if ( fabs(mCursor.x-cx0)<EPSILON && fabs(mCursor.y-cy0)<EPSILON )
+   {
+      curveTo(cx1, cy1, x, y);
+      return;
+   }
+
+   mPathData->cubicTo(cx0,cy0,cx1,cy1,x,y);
+
    mCursor = UserPoint(x,y);
    OnChanged();
 }
@@ -772,7 +835,8 @@ void decodeGraphicsData(ObjectStreamIn &stream, T *&outPointer)
       }
       else
       {
-         printf("decodeGraphicsData not right type\n");
+         printf("decodeGraphicsData not right type, have : %d, want %d\n", g->GetType(),
+                 (new T)->GetType() );
          g->DecRef();
       }
    }

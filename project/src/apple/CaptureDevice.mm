@@ -72,7 +72,9 @@ public:
     dispatch_queue_t queue = dispatch_queue_create("myQueue", NULL);
     FrameRelay *relay = [[FrameRelay alloc] initWithCamera:this];
     [output setSampleBufferDelegate:relay queue:queue];
+    #ifndef OBJC_ARC
     dispatch_release(queue);
+    #endif
 
     // Specify the pixel format
     output.videoSettings = 

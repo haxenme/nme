@@ -33,6 +33,7 @@ class Event
    public static inline var UNLOAD = "unload";
    public static inline var VIDEO_FRAME = "videoFrame";
    public static inline var DPI_CHANGED = "dpiChanged";
+   public static inline var DROP_FILES = "dropFiles";
 
    public var bubbles(get, never):Bool;
    public var cancelable(get, never):Bool;

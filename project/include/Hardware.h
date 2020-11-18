@@ -3,8 +3,24 @@
 
 #include "Graphics.h"
 
+#if defined(GCW0)
+#define NME_FLOAT32_VERT_VALUES
+#endif
+
 namespace nme
 {
+
+#if NME_OGL
+  #ifdef NME_METAL
+     extern bool nmeOpenglRenderer;
+  #else
+     const bool nmeOpenglRenderer = true;
+  #endif
+#else
+   const bool nmeOpenglRenderer = false;
+#endif
+
+
 
 void ResetHardwareContext();
 
@@ -22,8 +38,9 @@ enum
    DRAW_HAS_TEX         = 0x00000010,
    DRAW_BMP_REPEAT      = 0x00000020,
    DRAW_BMP_SMOOTH      = 0x00000040,
+   
+   DRAW_TILE_MOUSE      = 0x00000080,
 };
-
 
 
 
@@ -71,8 +88,12 @@ public:
 
    mutable class HardwareRenderer *mVboOwner;
    mutable int             mRendersWithoutVbo;
-   mutable unsigned int    mVertexBo;
    mutable int             mContextId;
+   union
+   {
+      mutable unsigned int mVertexBo;
+      mutable void         *mVertexBufferPtr;
+   };
 };
 
 
@@ -90,12 +111,36 @@ public:
 
 };
 
+
+
 typedef float Trans4x4[4][4];
 
 class HardwareRenderer : public HardwareContext
 {
+protected:
+   int mWidth,mHeight;
+   Matrix mModelView;
+   Trans4x4 mTrans;
+
+   double mScaleX;
+   double mScaleY;
+   double mOffsetX;
+   double mOffsetY;
+   double mLineWidth;
+
+   double mLineScaleV;
+   double mLineScaleH;
+   double mLineScaleNormal;
+   StageQuality mQuality;
+
+   Rect mViewport;
+
 public:
+   HardwareRenderer();
+
    static HardwareRenderer *current;
+
+   static HardwareRenderer *CreateMetal(void *inMetalLayer);
    static HardwareRenderer *CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders);
    static HardwareRenderer *CreateDX11(void *inDevice, void *inContext);
 
@@ -103,41 +148,40 @@ public:
 
    // Could be common to multiple implementations...
    virtual bool Hits(const RenderState &inState, const HardwareData &inData );
+   void setOrtho(float x0,float x1, float y0, float y1);
+   void CombineModelView(const Matrix &inModelView);
 
-   virtual void SetWindowSize(int inWidth,int inHeight)=0;
-   virtual void SetQuality(StageQuality inQuality)=0;
+   virtual void SetWindowSize(int inWidth,int inHeight);
+   virtual void SetQuality(StageQuality inQuality);
+   virtual int Width() const;
+   virtual int Height() const;
+
    virtual void BeginRender(const Rect &inRect,bool inForHitTest)=0;
    virtual void EndRender()=0;
    virtual void SetViewport(const Rect &inRect)=0;
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void Flip() = 0;
 
-   virtual int Width() const = 0;
-   virtual int Height() const = 0;
 
 
-   virtual void Render(const RenderState &inState, const HardwareData &inData )=0;
+   virtual void Render(const RenderState &inState, const HardwareData &inData );
    virtual void RenderData(const HardwareData &inData, const ColorTransform *ctrans,const Trans4x4 &inTrans)=0;
 
    virtual void BeginDirectRender()=0;
    virtual void EndDirectRender()=0;
 
 
-   virtual void DestroyNativeTexture(void *inNativeTexture)=0;
-   virtual void DestroyTexture(unsigned int inTex)=0;
-   virtual void DestroyVbo(unsigned int inVbo)=0;
-   virtual void DestroyProgram(unsigned int inProg)=0;
-   virtual void DestroyShader(unsigned int inShader)=0;
-   virtual void DestroyFramebuffer(unsigned int inBuffer)=0;
-   virtual void DestroyRenderbuffer(unsigned int inBuffer)=0;
-   virtual void DestroyQuery(unsigned int inQuert)=0;
-   virtual void DestroyVertexArray(unsigned int inVertexArray)=0;
-   virtual void DestroyTransformFeedback(unsigned int inTransformFeedback)=0;
-   
-   #ifdef NME_S3D
-   virtual void EndS3DRender()=0;
-   virtual void SetS3DEye(int eye)=0;
-   #endif
+   virtual void DestroyNativeTexture(void *inNativeTexture) { }
+   virtual void DestroyTexture(unsigned int inTex) { }
+   virtual void DestroyVbo(unsigned int inVbo, void *inVboPtr) { }
+   virtual void DestroyProgram(unsigned int inProg) { }
+   virtual void DestroyShader(unsigned int inShader) { }
+   virtual void DestroyFramebuffer(unsigned int inBuffer) { }
+   virtual void DestroyRenderbuffer(unsigned int inBuffer) { }
+   virtual void DestroyQuery(unsigned int inQuert) { }
+   virtual void DestroyVertexArray(unsigned int inVertexArray) { }
+   virtual void DestroyTransformFeedback(unsigned int inTransformFeedback) { }
+
 };
 
 extern HardwareRenderer *gDirectRenderContext;
@@ -145,6 +189,7 @@ extern int gDirectMaxAttribArray;
 
 void BuildHardwareJob(const class GraphicsJob &inJob,const GraphicsPath &inPath,
                       HardwareData &ioData, HardwareRenderer &inHardware,const RenderState &inState);
+
 
 
 } // end namespace nme

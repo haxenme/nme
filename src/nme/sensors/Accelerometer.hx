@@ -1,6 +1,7 @@
 package nme.sensors;
 #if (!flash)
 
+import haxe.ds.Option;
 import nme.errors.ArgumentError;
 import nme.events.AccelerometerEvent;
 import nme.events.EventDispatcher;
@@ -29,7 +30,7 @@ class Accelerometer extends EventDispatcher
 
    var data:Data;
 
-   /** @private */ private var timer:Timer;
+   /** @private */ private var timer:Option<Timer> = None;
    public function new() 
    {
       super();
@@ -58,20 +59,26 @@ class Accelerometer extends EventDispatcher
          interval = defaultInterval;
       }
 
-      if (timer != null) 
-      {
-         timer.stop();
+      switch (timer) {
+         case None:
+         case Some(t):
+            t.stop();
       }
 
       if (isSupported) 
       {
-         timer = new Timer(interval);
-         timer.run = update;
+         var t:Timer = new Timer(interval);
+         t.run = update;
+         timer = Some(t);
       }
    }
 
     public function removeInterval():Void {
-        timer.stop();
+       switch (timer) {
+          case None:
+          case Some(t):
+             t.stop();
+       }
     }
 
    /** @private */ private function update():Void {

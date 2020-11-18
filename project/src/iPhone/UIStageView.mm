@@ -2232,7 +2232,7 @@ void CreateMainFrame(FrameCreationCallback inCallback,
       #ifndef OBJC_ARC
       NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
       #endif
-      UIApplicationMain(argc, argv, nil, @"NMEAppDelegate");
+	      UIApplicationMain(argc, argv, nil, @"NMEAppDelegate");
       #ifndef OBJC_ARC
       [pool release];
       #endif

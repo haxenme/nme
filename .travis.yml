@@ -24,8 +24,6 @@ before_install:
 - haxe compile.hxml
 - cd ~/hxcpp/tools/run
 - haxe compile.hxml
-- cd ~/hxcpp/project
-- neko build.n
 - haxelib -notimeout install nme-toolkit
 - haxelib -notimeout install format
 - haxelib -notimeout install gm2d

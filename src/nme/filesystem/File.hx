@@ -71,6 +71,8 @@ class File
       return url;
    }
 
+   public function toString() return 'File($nativePath)';
+
    // Native Methods
    #if iphone
    private static var nme_get_resource_path = Loader.load("nme_get_resource_path", 0);

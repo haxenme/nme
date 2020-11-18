@@ -38,12 +38,14 @@ class MakeClasses
       "FileServer.hx",
       "Server.hx",
       "script",
+      "firebase",
       "gl",
       "display3D",
       "Stage3D.hx",
       "StaticNme.hx",
       "AGALMiniAssembler.hx",
       "store",
+      "HttpLoader.hx",
       "preloader",
    ];
    static function keep(inName:String):Bool
@@ -81,7 +83,7 @@ class MakeClasses
          }
       }
 
-      for(i in ["Any", "_Any", "_EReg", "EnumValue", "Void", "Null", "Bool", "ArrayAccess", "Sys", "UInt", "XmlType", "_Xml"] )
+      for(i in ["Any", "_Any", "_EReg", "EnumValue", "_EnumValue","Void", "Null", "Bool", "ArrayAccess", "Sys", "UInt", "XmlType", "_Xml", "_UInt"] )
          result.remove(i);
 
       return result;

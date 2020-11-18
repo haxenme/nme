@@ -1,5 +1,6 @@
 #include "./OGL.h"
 #include <NMEThread.h>
+#include <HardwareImpl.h>
 
 #if HX_LINUX
 #include <dlfcn.h>
@@ -29,8 +30,6 @@ void ReloadExtentions();
 // --- HardwareRenderer Interface ---------------------------------------------------------
 
 
-HardwareRenderer* nme::HardwareRenderer::current = NULL;
-
 
 void ResetHardwareContext()
 {
@@ -53,27 +52,17 @@ public:
 
    OGLContext(WinDC inDC, GLCtx inOGLCtx)
    {
-      HardwareRenderer::current = this;
       mDC = inDC;
       mOGLCtx = inOGLCtx;
-      mWidth = 0;
-      mHeight = 0;
-      mLineWidth = -1;
-      mLineScaleNormal = -1;
-      mLineScaleV = -1;
-      mLineScaleH = -1;
       mThreadId = GetThreadId();
       mHasZombie = false;
       mContextId = gTextureContextVersion;
       mQuadsBuffer = 0;
       mFullTexCoordsBuffer = 0;
-      mQuality = sqBest;
 
       for(int i=0;i<PROG_COUNT;i++)
          mProg[i] = 0;
-      for(int i=0;i<4;i++)
-         for(int j=0;j<4;j++)
-            mTrans[i][j] = i==j;
+
    }
    ~OGLContext()
    {
@@ -103,7 +92,7 @@ public:
       }
    }
 
-   void DestroyVbo(unsigned int inVbo)
+   void DestroyVbo(unsigned int inVbo,void *)
    {
       if ( !IsMainThread() )
       {
@@ -217,18 +206,6 @@ public:
       mHasZombie = false;
    }
 
-   void SetWindowSize(int inWidth,int inHeight)
-   {
-      mWidth = inWidth;
-      mHeight = inHeight;
-      #ifdef ANDROID
-      //__android_log_print(ANDROID_LOG_ERROR, "NME", "SetWindowSize %d %d", inWidth, inHeight);
-      #endif
-   }
-
-   int Width() const { return mWidth; }
-   int Height() const { return mHeight; }
-
    void Clear(uint32 inColour, const Rect *inRect)
    {
       Rect r = inRect ? *inRect : Rect(mWidth,mHeight);
@@ -240,6 +217,7 @@ public:
       float red =   ((inColour >>16) & 0xff) /255.0;
       float green = ((inColour >>8 ) & 0xff) /255.0;
       float blue  = ((inColour     ) & 0xff) /255.0;
+
       red *= alpha;
       green *= alpha;
       blue *= alpha;
@@ -422,31 +400,18 @@ public:
    }
 
 
-   void Render(const RenderState &inState, const HardwareData &inData )
-   {
-      if (!inData.mArray.size())
-         return;
-
-      SetViewport(inState.mClipRect);
-
-      if (mModelView!=*inState.mTransform.mMatrix)
-      {
-         mModelView=*inState.mTransform.mMatrix;
-         CombineModelView(mModelView);
-         mLineScaleV = -1;
-         mLineScaleH = -1;
-         mLineScaleNormal = -1;
-      }
-      const ColorTransform *ctrans = inState.mColourTransform;
-      if (ctrans && ctrans->IsIdentity())
-         ctrans = 0;
-
-      RenderData(inData,ctrans,mTrans);
-   }
-
    void RenderData(const HardwareData &inData, const ColorTransform *ctrans,const Trans4x4 &inTrans)
    {
+      // data will be 0 if a VBO is bounds, and offsets will be relative to the VBO data
+      // Otherwise, it will be a raw pointer
       const uint8 *data = 0;
+
+      // We can generally just bind the VBO once, and draw all the elements.
+      // However, sometimes the texture coordinates come from a different VBO which invalidates
+      //  the "current" GL_ARRAY_BUFFER.  Since this is done at the end of one element, we can check
+      //  at the beginning of the next element to see if we need to re-bind.
+      bool rebindVboNext = false;
+
       if (inData.mVertexBo)
       {
          if (inData.mContextId!=gTextureContextVersion)
@@ -455,18 +420,20 @@ public:
                inData.mVboOwner->DecRef();
             inData.mVboOwner = 0;
             // Create one right away...
-            inData.mRendersWithoutVbo = 5;
+            inData.mRendersWithoutVbo = 0x7ffffff0;
             inData.mVertexBo = 0;
             inData.mContextId = 0;
          }
          else
-            glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
+            rebindVboNext = true;
       }
 
       if (!inData.mVertexBo)
       {
          data = &inData.mArray[0];
-         #ifndef EMSCRIPTEN
+
+         // Always use VBOs on EMSCRIPTEN and ANGLE
+         #if ( !defined(EMSCRIPTEN) && !defined(NME_ANGLE) )
          inData.mRendersWithoutVbo++;
          if ( inData.mRendersWithoutVbo>4)
          #endif
@@ -481,9 +448,10 @@ public:
             data = 0;
          }
       }
+      else
+         rebindVboNext = true;
 
       GPUProg *lastProg = 0;
-      bool rebind = false;
  
       for(int e=0;e<inData.mElements.size();e++)
       {
@@ -492,43 +460,20 @@ public:
          if (!n)
             continue;
 
-         if (rebind && inData.mVertexBo)
+         if (rebindVboNext)
          {
-            glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
-            rebind = false;
+            if (inData.mVertexBo)
+               glBindBuffer(GL_ARRAY_BUFFER, inData.mVertexBo);
+            else
+               // Restore the meaning of vertex attributes to be raw pointers
+               glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            rebindVboNext = false;
          }
 
-         int progId = 0;
-         bool premAlpha = false;
-         if ((element.mFlags & DRAW_HAS_TEX) && element.mSurface)
-         {
-            if (IsPremultipliedAlpha(element.mSurface->Format()))
-               premAlpha = true;
-            progId |= PROG_TEXTURE;
-            if (element.mSurface->BytesPP()==1)
-               progId |= PROG_ALPHA_TEXTURE;
-         }
-
-         if (element.mFlags & DRAW_HAS_COLOUR)
-            progId |= PROG_COLOUR_PER_VERTEX;
-
-         if (element.mFlags & DRAW_HAS_NORMAL)
-            progId |= PROG_NORMAL_DATA;
-
-         if (element.mFlags & DRAW_RADIAL)
-         {
-            progId |= PROG_RADIAL;
-            if (element.mRadialPos!=0)
-               progId |= PROG_RADIAL_FOCUS;
-         }
-
-         if (ctrans || element.mColour != 0xffffffff)
-         {
-            progId |= PROG_TINT;
-            if (ctrans && ctrans->HasOffset())
-               progId |= PROG_COLOUR_OFFSET;
-         }
-
+         unsigned progId = getProgId(element, ctrans);
+         bool premAlpha = progId & PROG_PREM_ALPHA;
+         progId &= ~PROG_PREM_ALPHA;
          bool persp = element.mFlags & DRAW_HAS_PERSPECTIVE;
 
          GPUProg *prog = mProg[progId];
@@ -573,8 +518,13 @@ public:
 
          if (prog->colourSlot >= 0)
          {
+            #ifdef NME_FLOAT32_VERT_VALUES
+            glVertexAttribPointer(prog->colourSlot, 4, GL_FLOAT, GL_FALSE, stride,
+                data + element.mColourOffset);
+            #else
             glVertexAttribPointer(prog->colourSlot, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride,
                 data + element.mColourOffset);
+            #endif
             glEnableVertexAttribArray(prog->colourSlot);
          }
 
@@ -586,19 +536,19 @@ public:
          }
 
 
+         // Do texture last since it might mess with GL_ARRAY_BUFFER
          if (prog->textureSlot >= 0)
          {
             if (element.mPrimType==ptQuadsFull)
             {
                BindFullQuadTextures(element.mCount);
                glVertexAttribPointer(prog->textureSlot, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), 0);
-               if (data)
-                  glBindBuffer(GL_ARRAY_BUFFER, 0);
-               else
-                  rebind = true;
+               rebindVboNext = true;
             }
             else
+            {
                glVertexAttribPointer(prog->textureSlot,  2 , GL_FLOAT, GL_FALSE, stride, data + element.mTexOffset);
+            }
 
             glEnableVertexAttribArray(prog->textureSlot);
 
@@ -656,9 +606,7 @@ public:
                      break;
                }
          }
-   
-            //printf("glDrawArrays %d : %d x %d\n", element.mPrimType, element.mFirst, element.mCount );
-         
+ 
          if (element.mPrimType==ptQuads || element.mPrimType==ptQuadsFull)
          {
             BindQuadsBufferIndices(element.mCount);
@@ -676,7 +624,7 @@ public:
       if (lastProg)
         lastProg->disableSlots();
 
-      if (inData.mVertexBo)
+      if (inData.mVertexBo || rebindVboNext)
          glBindBuffer(GL_ARRAY_BUFFER,0);
    }
 
@@ -787,62 +735,15 @@ public:
       return OGLCreateTexture(inSurface,inFlags);
    }
 
-   void SetQuality(StageQuality inQ)
-   {
-      if (inQ!=mQuality)
-      {
-         mQuality = inQ;
-         mLineWidth = 99999;
-      }
-   }
-
-
-
-   void setOrtho(float x0,float x1, float y0, float y1)
-   {
-      mScaleX = 2.0/(x1-x0);
-      mScaleY = 2.0/(y1-y0);
-      mOffsetX = (x0+x1)/(x0-x1);
-      mOffsetY = (y0+y1)/(y0-y1);
-      mModelView = Matrix();
-
-      CombineModelView(mModelView);
-   } 
-
-   void CombineModelView(const Matrix &inModelView)
-   {
-      mTrans[0][0] = inModelView.m00 * mScaleX;
-      mTrans[0][1] = inModelView.m01 * mScaleX;
-      mTrans[0][2] = 0;
-      mTrans[0][3] = inModelView.mtx * mScaleX + mOffsetX;
-
-      mTrans[1][0] = inModelView.m10 * mScaleY;
-      mTrans[1][1] = inModelView.m11 * mScaleY;
-      mTrans[1][2] = 0;
-      mTrans[1][3] = inModelView.mty * mScaleY + mOffsetY;
-   }
-
-
-   int mWidth,mHeight;
-   Matrix mModelView;
-   ThreadId mThreadId;
    int mContextId;
+   ThreadId mThreadId;
 
-   double mLineScaleV;
-   double mLineScaleH;
-   double mLineScaleNormal;
-   StageQuality mQuality;
-
-
-   Rect mViewport;
    WinDC mDC;
    GLCtx mOGLCtx;
 
    //HardwareData mBitmapBuffer;
    //Texture *mBitmapTexture;
 
-   double mLineWidth;
-   
    // TODO - mutex in case finalizer is run from thread
    bool             mHasZombie;
    QuickVec<GLuint> mZombieTextures;
@@ -857,10 +758,6 @@ public:
 
    GPUProg *mProg[PROG_COUNT];
 
-   double mScaleX;
-   double mOffsetX;
-   double mScaleY;
-   double mOffsetY;
 
    GLuint mFullTexCoordsBuffer;
    GLuint mFullTexCoordsSize;
@@ -869,7 +766,7 @@ public:
    GLenum mQuadsBufferSize;
    GLenum mQuadsBufferType;
 
-   Trans4x4 mTrans;
+
 };
 
 

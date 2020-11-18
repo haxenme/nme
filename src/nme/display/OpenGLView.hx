@@ -1,5 +1,8 @@
 package nme.display;
-#if (!flash)
+#if nme_metal
+#error "OpenGLView not supported with NME_METAL"
+
+#elseif (!flash)
 
 import nme.Loader;
 import nme.gl.GL;

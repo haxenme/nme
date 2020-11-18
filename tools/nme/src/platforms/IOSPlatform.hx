@@ -165,7 +165,8 @@ class IOSPlatform extends Platform
       var hxcpp_include = hxcpp==null ? "" : " " + hxcpp + "/include";
       context.HXCPP_INCLUDE_DIR = hxcpp_include;
       context.NME_IOS_INCLUDE = 'haxe/cpp/include';
-
+      if (project.hasDef("nme_metal"))
+         context.NME_METAL = true;
 
       if (project.watchProject!=null)
       {
@@ -231,6 +232,9 @@ ${hxcpp_include}';
           customIOSproperties.push( { key: key, value: value} );
       }
       context.CUSTOM_IOS_PROPERTIES = customIOSproperties;
+
+      context.stageViewHead = project.iosConfig.stageViewHead;
+      context.stageViewInit = project.iosConfig.stageViewInit;
 
       var blocks = [];
       for (i in 0...project.customIOSBlock.length) {
@@ -307,7 +311,13 @@ ${hxcpp_include}';
               var fileID = "11C0000000000018" + StringHelper.getUniqueID();
               var path:String = 'System/Library/Frameworks';
               if(dependency.path != '')
+              {
                   path = dependency.path;
+                  if (path=="PROJ")
+                     path = project.app.file;
+                  else
+                     project.frameworkSearchPaths.push(path);
+              }
               var sourceTree:String = "SDKROOT";
                if(dependency.sourceTree != '') {
                    sourceTree = dependency.sourceTree;
@@ -316,7 +326,7 @@ ${hxcpp_include}';
                    }
                }
               context.ADDL_PBX_BUILD_FILE += '      $frameworkID /* $lib in Frameworks */ = {isa = PBXBuildFile; fileRef = $fileID /* $lib */; };\n';
-              context.ADDL_PBX_FILE_REFERENCE += '     $fileID /* $lib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = $lib; path = $path/$lib; sourceTree = $sourceTree; };\n';
+              context.ADDL_PBX_FILE_REFERENCE += '     $fileID /* $lib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = $lib; path = "$path/$lib"; sourceTree = $sourceTree; };\n';
               context.ADDL_PBX_FRAMEWORKS_BUILD_PHASE += '            $frameworkID /* $lib in Frameworks */,\n';
               context.ADDL_PBX_FRAMEWORK_GROUP += '            $fileID /* $lib */,\n';
            }
@@ -324,7 +334,6 @@ ${hxcpp_include}';
 
       context.PRERENDERED_ICON = config.prerenderedIcon;
       context.FRAMEWORK_IMPORTS = imports.join("\n");
-
       //updateIcon();
       //updateLaunchImage();
    }
@@ -482,6 +491,14 @@ ${hxcpp_include}';
          return "";
    }
 
+      override public function updateBuildDir():Void 
+   {
+      super.updateBuildDir();
+      PathHelper.mkdir(haxeDir+"/cpp/src");
+      copyTemplate("ios/UIStageView.mm", haxeDir+"/cpp/src/UIStageView.mm");
+   }
+
+
 
    override public function updateOutputDir():Void 
    {
@@ -502,7 +519,7 @@ ${hxcpp_include}';
          copyTemplateDir("ios/PROJ.xcodeproj", targetDir + "/" + project.app.file + ".xcodeproj");
 
          // Copy all the rest, except the "PROJ" files...
-         copyTemplateDir("ios/PROJ", projectDirectory, true, true, function(name) return name.substr(0,4)!="PROJ" );
+         copyTemplateDir("ios/PROJ", projectDirectory, true, true, name -> name.substr(0,4)!="PROJ" );
          //copyTemplateDir("ios/PROJ/Classes", projectDirectory + "/Classes");
          //copyTemplateDir("ios/PROJ/Images.xcassets", projectDirectory + "/Images.xcassets");
 
@@ -581,7 +598,7 @@ ${hxcpp_include}';
             platformName = "iphonesimulator";
 
         var iphoneVersion = project.environment.get("IPHONE_VER");
-        var commands = [ "-configuration", configuration, "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
+        var commands = [ "-configuration", configuration, "-allowProvisioningUpdates", "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
 
         if (project.targetFlags.exists("simulator")) 
         {

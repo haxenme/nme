@@ -54,6 +54,11 @@ class Sound extends EventDispatcher
       return nme_sound_get_engine(nmeHandle);
    }
 
+   public static function suspend(inSuspend:Bool, inFlags:Int=0x02)
+   {
+      nme_sound_suspend(inSuspend,inFlags);
+   }
+
    override public function addEventListener(type:String, listener:Function, useCapture:Bool = false, priority:Int = 0, useWeakReference:Bool = false):Void 
    {
       super.addEventListener(type, listener, useCapture, priority, useWeakReference);
@@ -257,6 +262,7 @@ class Sound extends EventDispatcher
    private static var nme_sound_get_length = nme.PrimeLoader.load("nme_sound_get_length", "od");
    private static var nme_sound_close = nme.PrimeLoader.load("nme_sound_close", "ov");
    private static var nme_sound_get_status = nme.PrimeLoader.load("nme_sound_get_status", "oo");
+   private static var nme_sound_suspend = nme.PrimeLoader.load("nme_sound_suspend", "biv");
    private static var nme_sound_get_engine = Loader.load("nme_sound_get_engine", 1);
    private static var nme_sound_channel_create_dynamic = nme.PrimeLoader.load("nme_sound_channel_create_dynamic", "ooo");
 }

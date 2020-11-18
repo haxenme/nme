@@ -54,8 +54,8 @@ public:
       mSize = inRHS.mSize;
       memcpy(mPtr,inRHS.mPtr,sizeof(T_)*mSize);
    }
-   int Mem() const { return mAlloc * sizeof(T_); }
-   QuickVec(const T_ *inData,int inLen)
+   size_t Mem() const { return mAlloc * sizeof(T_); }
+   QuickVec(const T_ *inData,size_t inLen)
    {
       mPtr = QBUF_SIZE_==0 ? 0 : mQBuf;
       mAlloc = QBufSize;
@@ -64,7 +64,7 @@ public:
       resize(inLen);
       memcpy(mPtr,inData,sizeof(T_)*inLen);
    }
-   QuickVec(int inLen)
+   QuickVec(size_t inLen)
    {
       mPtr = QBUF_SIZE_==0 ? 0 : mQBuf;
       mAlloc = QBufSize;
@@ -96,7 +96,7 @@ public:
       mSize = 0;
    }
 
-   void Set(const T_ *inData,int inN)
+   void Set(const T_ *inData,size_t inN)
    {
       resize(inN);
       if (inN)
@@ -129,7 +129,7 @@ public:
       }
       else
       {
-         int last = mSize-1;
+         size_t last = mSize-1;
          // After/on end
          if (mPtr[last]==inValue)
          {
@@ -144,12 +144,12 @@ public:
          else
          {
             // between 0 ... last
-            int min = 0;
-            int max = last;
+            size_t min = 0;
+            size_t max = last;
 
             while(max>min+1)
             {
-               int middle = (max+min+1)/2;
+               size_t middle = (max+min+1)/2;
                T_ &v = mPtr[middle];
                if (v==inValue)
                {
@@ -187,7 +187,7 @@ public:
       }
       else
       {
-         int last = mSize-1;
+         size_t last = mSize-1;
          // After/on end
          if (inValue>=mPtr[last])
          {
@@ -203,12 +203,12 @@ public:
          else
          {
             // between 0 ... last
-            int min = 0;
-            int max = last;
+            size_t min = 0;
+            size_t max = last;
 
             while(max>min+1)
             {
-               int middle = (max+min+1)/2;
+               size_t middle = (max+min+1)/2;
                T_ v = mPtr[middle];
                if (v==inValue)
                {
@@ -246,7 +246,7 @@ public:
          }
       }
    }
-   void reserve(int inSize)
+   void reserve(size_t inSize)
    {
       if (mAlloc<inSize && (QBUF_SIZE_==0 || inSize>QBufSize) )
       {
@@ -264,7 +264,29 @@ public:
          }
       }
    }
-   void resize(int inSize)
+
+   void resizeSpace(size_t inSize)
+   {
+      if (mAlloc<inSize)
+      {
+         if (QBUF_SIZE_!=0 && mPtr==mQBuf)
+         {
+            mAlloc = inSize*3/2;
+            mPtr = (T_ *)malloc(sizeof(T_)*(mAlloc));
+            memcpy(mPtr, mQBuf, sizeof(T_)*mSize);
+         }
+         else
+         {
+            mAlloc = inSize*3/2;
+            mPtr = (T_*)realloc(mPtr, sizeof(T_)*mAlloc);
+         }
+
+      }
+      mSize = inSize;
+   }
+
+
+   void resize(size_t inSize)
    {
       if (mAlloc<inSize)
       {
@@ -302,7 +324,7 @@ public:
    template<typename RHS_>
    inline void qremove(const RHS_ &value)
    {
-      for(int i=0;i<mSize;i++)
+      for(size_t i=0;i<mSize;i++)
          if (mPtr[i]==value)
          {
             mPtr[i] = mPtr[--mSize];
@@ -310,23 +332,23 @@ public:
          }
    }
 
-   inline void qremoveAt(int inIndex)
+   inline void qremoveAt(size_t inIndex)
    {
       mPtr[inIndex] = mPtr[--mSize];
    }
 
  
-   inline void EraseAt(int inPos)
+   inline void EraseAt(size_t inPos)
    {
       memmove(mPtr + inPos, mPtr + inPos + 1, (mSize-inPos-1) * sizeof(T_) );
       --mSize;
    }
-   inline void EraseAt(int inFirst,int inLast)
+   inline void EraseAt(size_t inFirst,size_t inLast)
    {
       memmove(mPtr + inFirst, mPtr + inLast, (mSize-inLast) * sizeof(T_) );
       mSize -= inLast-inFirst;
    }
-   void erase(int inFirst,int inLen)
+   void erase(size_t inFirst,size_t inLen)
    {
       if (inFirst>mSize || inFirst<0)
          return;
@@ -339,7 +361,7 @@ public:
       }
    }
 
-   inline void InsertAt(int inPos,const T_ &inValue)
+   inline void InsertAt(size_t inPos,const T_ &inValue)
    {
       Grow();
       memmove(mPtr + inPos + 1, mPtr + inPos, (mSize-inPos) * sizeof(T_) );
@@ -347,25 +369,25 @@ public:
       ++mSize;
    }
 
-   inline void InsertAt(int inPos,const T_ *inValues,int inN)
+   inline void InsertAt(size_t inPos,const T_ *inValues,size_t inN)
    {
       resize(mSize+inN);
       memmove(mPtr + inPos + inN, mPtr + inPos, (mSize-inPos-inN) * sizeof(T_) );
       memcpy(mPtr+inPos,inValues,inN*sizeof(T_));
    }
 
-   inline int ByteCount() const { return mSize*sizeof(T_); }
+   inline size_t ByteCount() const { return mSize*sizeof(T_); }
    inline unsigned char *ByteData() { return (unsigned char *)mPtr; }
    inline const unsigned char *ByteData() const { return (const unsigned char *)mPtr; }
    
    bool operator == (const QuickVec<T_,QBUF_SIZE_> &inRHS) { return (*mPtr == *(inRHS.mPtr)); }
    bool operator != (const QuickVec<T_,QBUF_SIZE_> &inRHS) { return !(*mPtr == *(inRHS.mPtr)); }
 
-   inline int size() const { return mSize; }
+   inline size_t size() const { return mSize; }
    inline bool empty() const { return mSize==0; }
-   inline T_& operator[](int inIndex) { return mPtr[inIndex]; }
+   inline T_& operator[](size_t inIndex) { return mPtr[inIndex]; }
    inline T_& last() { return mPtr[mSize-1]; }
-   inline const T_& operator[](int inIndex) const { return mPtr[inIndex]; }
+   inline const T_& operator[](size_t inIndex) const { return mPtr[inIndex]; }
    inline iterator begin() { return mPtr; }
    inline iterator rbegin() { return mPtr + mSize -1; }
    inline iterator end() { return mPtr + mSize; }
@@ -445,23 +467,23 @@ public:
    }
    void DeleteAll()
    {
-      for(int i=0;i<mSize;i++)
+      for(size_t i=0;i<mSize;i++)
          DoDelete( mPtr[i] );
       resize(0);
    }
 
    void append(const QuickVec<T_> &inOther)
    {
-      int s = mSize;
+      size_t s = mSize;
       resize(mSize+inOther.mSize);
-      for(int i=0;i<inOther.mSize;i++)
+      for(size_t i=0;i<inOther.mSize;i++)
          mPtr[s+i] = inOther[i];
    }
-   void append(const T_ *inOther,int inLen)
+   void append(const T_ *inOther,size_t inLen)
    {
-      int s = mSize;
+      size_t s = mSize;
       resize(mSize+inLen);
-      for(int i=0;i<inLen;i++)
+      for(size_t i=0;i<inLen;i++)
          mPtr[s+i] = inOther[i];
    }
 
@@ -469,8 +491,8 @@ public:
 
    T_  *mPtr;
    T_  mQBuf[QBufSize==0?1:QBufSize];
-   int mAlloc;
-   int mSize;
+   size_t mAlloc;
+   size_t mSize;
 
 };
 

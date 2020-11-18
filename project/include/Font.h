@@ -109,6 +109,9 @@ public:
    Optional<int>           letterSpacing;
    Optional<int>           rightMargin;
    Optional<int>           size;
+   Optional<float>         outline;
+   Optional<float>         outlineMiterLimit;
+   Optional<int>           outlineFlags;
    Optional<QuickVec<int> >tabStops;
    Optional<WString>  target;
    Optional<bool>          underline;

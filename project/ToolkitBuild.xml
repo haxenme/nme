@@ -1,4 +1,5 @@
 <xml>
+
    <set name="ios" value="1" if="iphone" />
    <set name="tvos" value="1" if="appletv" />
    <set name="mac" value="1" if="macos" />
@@ -6,18 +7,28 @@
    <set name="HXCPP_CPP11" value="1" />
 
    <set name="exe_link" value="1" if="HXCPP_JS_PRIME" />
-   <set name="HXCPP_LINK_MEM_FILE" value="1" if="HXCPP_JS_PRIME" />
+   <!--<set name="HXCPP_LINK_MEM_FILE" value="1" if="HXCPP_JS_PRIME" />-->
    <set name="HXCPP_LINK_TOTAL_MEMORY" value="268435456" if="HXCPP_JS_PRIME||emscripten" />
 
+   <set name="winrpi" value="1" if="windows_host rpi" />
+
+   <set name="linux" value="1" if="gcw0" />
    <set name="linux" value="1" if="winrpi" />
    <unset name="windows" if="winrpi" />
+   <unset name="windows" if="gcw0" />
    <set name="xcompile" value="1" if="winrpi" />
+   <set name="xcompile" value="1" if="gcw0" />
    <set name="rpi" value="1" if="winrpi" />
    <set name="sdl_rpi" value="1" if="winrpi" />
 
+   <set name="NME_METAL" value="1" if="nme_metal" />
+   <set name="NME_METAL" value="1" if="mac" unless="nme_no_metal" />
+   <set name="NME_NO_OGL" value="1" if="nme_no_ogl" />
+   <set name="NME_NO_OGL" value="1" if="nme_metal" unless="mac" />
    <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE" />
    <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
    <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
+
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
    <!-- 
@@ -45,25 +56,29 @@
    -->
    <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="rpi" unless="sdl_rpi" />
    <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="emscripten" />
+   <set name="NME_NATIVE_SDL_SYSTEM" value="1" if="gcw0" />
    <set name="NME_SDL2" value="1" if="windows" />
    <set name="NME_SDL2" value="1" if="linux" unless="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL2" value="1" if="macos" />
-   <set name="NME_SDL2" value="1" if="winnrpi" />
+   <set name="NME_SDL2" value="1" if="winrpi" />
+   <set name="NME_SDL2" value="1" if="gcw0" />
+   <set name="SYSTEM_FREETYPE" value="1" if="gcw0" />
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
    <set name="NME_MIXER" value="1" if="NME_SDL_ANY" />
 
    <!-- Use opengl backend ? -->
-   <set name="NME_OGL" value="1" />
-   <unset name="NME_OGL" if="winrt" unless="NME_ANGLE" />
+   <set name="NME_NO_OGL" if="winrt" unless="NME_ANGLE" />
+   <set name="NME_OGL" value="1" unless="NME_NO_OGL" />
+   <set name="NATIVE_TOOLKIT_METAL" value="1" if="NME_METAL" />
 
    <!-- For systems that do not create the egl context for us -->
    <set name="NME_EGL" value="1" if="rpi" unless="sdl_rpi" />
 
    <!-- Do we need to implement curl in NME -->
    <set name="NME_CURL" value="1" />
-   <unset name="NME_CURL" if="emscripten||winrt" />
+   <unset name="NME_CURL" if="emscripten||winrt||gcw0" />
 
    <!-- And allow https ? -->
    <set name="NME_SSL" value="1" />
@@ -101,6 +116,7 @@
    <!-- <set name="new_link" value="1" /> -->
  
    <set name="HXCPP_OPTIM_LEVEL" value="-O2" if="emscripten" unless="debug" />
+   <!--<set name="HXCPP_DEBUG_LINK" value="1" />-->
 
 
    <include name="${NATIVE_TOOLKIT_PATH}/ogg/files.xml" />
@@ -114,8 +130,8 @@
    <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" if="NME_MIXER" />
 
-   <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" />
-   <include name="${ANGLE_DIR}/files.xml" if="NME_ANGLE" />
+   <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" unless="ANGLE_DIR" />
+   <include name="${ANGLE_DIR}/files.xml" if="NME_ANGLE ANGLE_DIR" />
 
    <!-- inject flags to allow cross-compiling -->
    <files id="native-toolkit-sdl" if="xcompile" >
@@ -135,53 +151,55 @@
       <file name="Test.cpp"/>
    </files>
 
+   <set name="NMEP"  value="${this_dir}" />
+
    <files id="nme-headers">
-      <depend name="include/ByteArray.h" />
-      <depend name="include/CachedExtent.h" />
-      <depend name="include/Camera.h" />
-      <depend name="include/Display.h" />
-      <depend name="include/Filters.h" />
-      <depend name="include/Font.h" />
-      <depend name="include/Geom.h" />
-      <depend name="include/Graphics.h" />
-      <depend name="include/Hardware.h" />
-      <depend name="include/Input.h" />
-      <depend name="include/KeyCodes.h" />
-      <depend name="include/Lzma.h" />
-      <depend name="include/Matrix.h" />
-      <depend name="include/NMEThread.h" />
-      <depend name="include/NmeBinVersion.h" />
-      <depend name="include/NmeVersion.h" />
-      <depend name="include/S3DEye.h" />
-      <depend name="include/Scale9.h" />
-      <depend name="include/Sound.h" />
-      <depend name="include/StageVideo.h" />
-      <depend name="include/Surface.h" />
-      <depend name="include/TextField.h" />
-      <depend name="include/Tilesheet.h" />
-      <depend name="include/URL.h" />
-      <depend name="include/Utils.h" />
-      <depend name="include/Video.h" />
+      <depend name="${NMEP}/include/ByteArray.h" />
+      <depend name="${NMEP}/include/CachedExtent.h" />
+      <depend name="${NMEP}/include/Camera.h" />
+      <depend name="${NMEP}/include/Display.h" />
+      <depend name="${NMEP}/include/Filters.h" />
+      <depend name="${NMEP}/include/Font.h" />
+      <depend name="${NMEP}/include/Geom.h" />
+      <depend name="${NMEP}/include/Graphics.h" />
+      <depend name="${NMEP}/include/Hardware.h" />
+      <depend name="${NMEP}/include/Input.h" />
+      <depend name="${NMEP}/include/KeyCodes.h" />
+      <depend name="${NMEP}/include/Lzma.h" />
+      <depend name="${NMEP}/include/Matrix.h" />
+      <depend name="${NMEP}/include/NMEThread.h" />
+      <depend name="${NMEP}/include/NmeBinVersion.h" />
+      <depend name="${NMEP}/include/NmeVersion.h" />
+      <depend name="${NMEP}/include/S3DEye.h" />
+      <depend name="${NMEP}/include/Scale9.h" />
+      <depend name="${NMEP}/include/Sound.h" />
+      <depend name="${NMEP}/include/StageVideo.h" />
+      <depend name="${NMEP}/include/Surface.h" />
+      <depend name="${NMEP}/include/TextField.h" />
+      <depend name="${NMEP}/include/Tilesheet.h" />
+      <depend name="${NMEP}/include/URL.h" />
+      <depend name="${NMEP}/include/Utils.h" />
+      <depend name="${NMEP}/include/Video.h" />
 
-      <depend name="src/software-renderer/BitmapFill.h" />
-      <depend name="src/software-renderer/AlphaMask.h" />
-      <depend name="src/software-renderer/Render.h" />
-      <depend name="src/software-renderer/PolygonRender.h" />
+      <depend name="${NMEP}/src/software-renderer/BitmapFill.h" />
+      <depend name="${NMEP}/src/software-renderer/AlphaMask.h" />
+      <depend name="${NMEP}/src/software-renderer/Render.h" />
+      <depend name="${NMEP}/src/software-renderer/PolygonRender.h" />
 
-      <depend name="../include/nme/Event.h" />
-      <depend name="../include/nme/Extent.h" />
-      <depend name="../include/nme/FixedPoint.h" />
-      <depend name="../include/nme/ImageBuffer.h" />
-      <depend name="../include/nme/NmeApi.h" />
-      <depend name="../include/nme/NmeCffi.h" />
-      <depend name="../include/nme/Object.h" />
-      <depend name="../include/nme/ObjectStream.h" />
-      <depend name="../include/nme/Pixel.h" />
-      <depend name="../include/nme/Point.h" />
-      <depend name="../include/nme/QuickVec.h" />
-      <depend name="../include/nme/Rect.h" />
-      <depend name="../include/nme/Texture.h" />
-      <depend name="../include/nme/NmeJsPrime.h" />
+      <depend name="${NMEP}/../include/nme/Event.h" />
+      <depend name="${NMEP}/../include/nme/Extent.h" />
+      <depend name="${NMEP}/../include/nme/FixedPoint.h" />
+      <depend name="${NMEP}/../include/nme/ImageBuffer.h" />
+      <depend name="${NMEP}/../include/nme/NmeApi.h" />
+      <depend name="${NMEP}/../include/nme/NmeCffi.h" />
+      <depend name="${NMEP}/../include/nme/Object.h" />
+      <depend name="${NMEP}/../include/nme/ObjectStream.h" />
+      <depend name="${NMEP}/../include/nme/Pixel.h" />
+      <depend name="${NMEP}/../include/nme/Point.h" />
+      <depend name="${NMEP}/../include/nme/QuickVec.h" />
+      <depend name="${NMEP}/../include/nme/Rect.h" />
+      <depend name="${NMEP}/../include/nme/Texture.h" />
+      <depend name="${NMEP}/../include/nme/NmeJsPrime.h" />
 
       <depend name="${HXCPP}/include/hx/CFFI.h"/>
       <depend name="${HXCPP}/include/hx/CFFIAPI.h"/>
@@ -201,6 +219,8 @@
       <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
       <compilerflag value="-DNME_WORKER_THREADS" if="NME_WORKER_THREADS" />
       <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
+      <compilerflag value="-DNME_OGL" if="NME_OGL" />
+      <compilerflag value="-DNME_METAL" if="NME_METAL" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
 
       <cache value="1" unless="winrpi" />
@@ -240,7 +260,7 @@
 
       <section if="iphone">
          <file name="${SRC_DIR}/apple/CaptureDevice.mm" if="NME_CAMERA" />
-         <file name="${SRC_DIR}/iPhone/UIStageView.mm"/>
+         <!--<file name="${SRC_DIR}/iPhone/UIStageView.mm"/>-->
          <file name="${SRC_DIR}/iPhone/UIDeviceHardware.mm"/>
          <!-- <file name="${SRC_DIR}/iPhone/SurfaceIO.mm"/> -->
          <file name="${SRC_DIR}/iPhone/NativeFont.mm"/>
@@ -294,7 +314,7 @@
       <depend files="native-toolkit-modplug-depends" if="modplug" />
       <depend files="native-toolkit-curl-depends" if="NME_CURL" />
 
-      <section if="NME_NATIVE_SDL_SYSTEM">
+      <section if="NME_NATIVE_SDL_SYSTEM" unless="NME_SDL2" >
         <compilerflag value="-I/opt/local/include" if="macos" />
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
@@ -306,10 +326,15 @@
       <section if="NME_SDL2">
         <file name="${SRC_DIR}/audio/SDLSound.cpp"  if="NME_MIXER"/>
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
-        <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl-mixer" if="NME_MIXER" />
-        <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
-        <compilerflag value="-DSDL_OGL" />
+        <section unless="NME_NATIVE_SDL_SYSTEM" >
+           <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
+           <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl-mixer" if="NME_MIXER" />
+           <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
+        </section>
+        <section if="gcw0" >
+           <compilerflag value="-I${GCW0_SDK}/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include/SDL2" />
+        </section>
+        <compilerflag value="-DSDL_OGL" if="NME_OGL"/>
         <compilerflag value="-DNME_MIXER" if="NME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
         <depend files="native-toolkit-sdl-depends" />
@@ -328,7 +353,11 @@
          <file name="${SRC_DIR}/opengl/Egl.cpp" if="NME_EGL" />
          <file name="${SRC_DIR}/opengl/OpenGLS3D.cpp" if="NME_S3D" />
       </section>
-      
+
+      <section if="NME_METAL">
+         <file name="${SRC_DIR}/metal/MetalContext.mm" />
+      </section>
+
       <section if="NME_OPENAL">
          <file name="${SRC_DIR}/audio/OpenALSound.cpp" />
          <compilerflag value="-DNME_OPENAL" />
@@ -346,6 +375,7 @@
 
 
       <file name="${SRC_DIR}/common/Surface.cpp"/>
+      <file name="${SRC_DIR}/common/SurfaceBlit.cpp"/>
       <file name="${SRC_DIR}/common/Utils.cpp"/>
       <file name="${SRC_DIR}/common/Geom.cpp"/>
       <file name="${SRC_DIR}/common/Graphics.cpp"/>
@@ -412,7 +442,40 @@
          <file name="${SRC_DIR}/lzma/Threads.c" if="windows" />
       </section>
    </files>
-   
+
+   <!-- This section has access to both NME and haxe code -->
+   <files id="nme-haxe" tags="haxe" dir="${HXCPP_BUILD_DIR}" >
+      <compilerflag value="-I${NMEP}/include"/>
+      <compilerflag value="-I${NMEP}/../include"/>
+
+      <compilerflag value="-DNME_MODPLUG" if="modplug" />
+      <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
+      <compilerflag value="-DNME_INTERNAL_CLIPPING" if="NME_INTERNAL_CLIPPING" />
+      <compilerflag value="-DNME_CLIPPER" if="NME_CLIPPER" />
+      <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
+      <compilerflag value="-DNME_WORKER_THREADS" if="NME_WORKER_THREADS" />
+      <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
+      <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
+
+      <cache value="1" />
+
+      <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
+
+      <depend files="nme-headers"/>
+      <depend files="hxcpp-depends"/>
+      <depend name="${NMEP}/${SRC_DIR}/opengl/OGL.h" if="NME_OGL" />
+      <depend name="${NMEP}/${SRC_DIR}/opengl/OGLExtensions.h" if="NME_OGL" />
+
+      <section if="iphone" >
+         <!-- file will be copied by the template system -->
+         <file name="src/UIStageView.mm"/>
+      </section>
+   </files>
+
+   <target id='haxe'>
+     <files id='nme-haxe'/>
+   </target>
+
    <set name="target-id" value="NDLL" unless="NME_STATIC_LINK" />
    <set name="target-id" value="nme-target" if="NME_STATIC_LINK" />
    <set name="target-id" value="exe" if="HXCPP_JS_PRIME" />
@@ -429,7 +492,7 @@
 
       <files id="nme"/>
 
-      <files id="native-toolkit-freetype" />
+      <files id="native-toolkit-freetype" unless="SYSTEM_FREETYPE" />
 
       <section if="NME_SDL2">
          <lib name="-luuid" if="mingw" unless="static_link" />
@@ -462,7 +525,16 @@
 
 
          <section if="NME_NATIVE_SDL_SYSTEM" >
-            <lib name="-lSDL" />
+            <section unless="NME_SDL2" >
+               <lib name="-lSDL" />
+            </section>
+            <section if="NME_SDL2" >
+               <lib name="-lSDL2" />
+               <lib name="-lSDL2_Mixer" />
+               <lib name="-lEGL" />
+               <lib name="-lGLESv2" />
+               <lib name="-lfreetype" if="SYSTEM_FREETYPE" />
+            </section>
          </section>
             <!--<lib name="-lcurl" />
             <lib name="-lpng" />
@@ -480,13 +552,18 @@
             <vflag name="-framework" value="AudioUnit" />
             <vflag name="-framework" value="ForceFeedback" />
             <vflag name="-framework" value="Cocoa" />
-            <vflag name="-framework" value="OpenGL" />
+            <vflag name="-framework" value="OpenGL" if="NME_OGL" />
             <vflag name="-framework" value="AppKit" />
             <vflag name="-framework" value="OpenAL"/>
             <vflag name="-framework" value="AVFoundation" if="NME_CAMERA"/>
             <vflag name="-framework" value="CoreMedia" if="NME_CAMERA"/>
             <vflag name="-framework" value="CoreVideo" if="NME_CAMERA"/>
             <lib name="-liconv" />
+         </section>
+
+         <section if="NME_METAL">
+            <vflag name="-framework" value="Metal" />
+            <vflag name="-framework" value="QuartzCore" />
          </section>
 
 
@@ -521,7 +598,7 @@
             <lib name="kernel32.lib" />
             <lib name="advapi32.lib" />
             <lib name="${SUP_DIR}/windows/dxguid.lib" unless="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
-	    <lib name="dxguid.lib" if="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
+            <lib name="dxguid.lib" if="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
             <lib name="winmm.lib" />
             <lib name="imm32.lib"  />
             <lib name="ole32.lib" />
@@ -531,6 +608,7 @@
             <lib name="wldap32.lib" />
             <lib name="shell32.lib" />
             <lib name="comdlg32.lib" />
+            <lib name="setupapi.lib" />
             <lib name="d3d9.lib" if="NME_ANGLE"/>
          </section>
 
@@ -542,6 +620,7 @@
             <lib name="DXGI.lib" />
             <lib name="Dwrite.lib" />
             <lib name="D3dcompiler.lib" />
+            <lib name="Runtimeobject.lib" />
          </section>
 
          <section if="linux">
@@ -589,6 +668,13 @@
    </files>
    <files id="native-toolkit-sdl" >
       <cache value="1" asLibrary="true" project="libSdl" />
+      <compilerflag value="-DWINDOWS_IGNORE_PACKING_MISMATCH"  />
+      <section if="NME_METAL">
+          <compilerflag value="-DSDL_VIDEO_METAL=1" />
+          <compilerflag value="-DSDL_VIDEO_RENDER_METAL=1" />
+          <file name="${NATIVE_TOOLKIT_PATH}/sdl/src/render/metal/SDL_render_metal.m" />
+      </section>
+
       <section if="NME_MIXER linux" >
          <compilerflag value="-Isupport/linux"  />
          <compilerflag value="-DSDL_AUDIO_DRIVER_ALSA" />

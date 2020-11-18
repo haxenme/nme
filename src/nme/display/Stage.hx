@@ -27,6 +27,7 @@ import nme.events.FocusEvent;
 import nme.events.KeyboardEvent;
 import nme.events.SystemEvent;
 import nme.events.TouchEvent;
+import nme.events.DropEvent;
 import nme.events.Event;
 import nme.geom.Point;
 import nme.geom.Rectangle;
@@ -137,6 +138,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private var nmeFrameTimer:FrameTimer;
    private var nmeEnterFrameEvent:Event;
    private var nmeRenderEvent:Event;
+   private var nmeDropItems:Array<String>;
    var nmePrenderListeners:Array<Void->Void>;
 
    #if cpp
@@ -444,6 +446,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
       var local:Point = null;
       var evt:MouseEvent = null;
+      var cancelClick = false;
       if (stack.length > 0) 
       {
          var obj = stack[0];
@@ -454,9 +457,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          if (inFromMouse)
             nmeCheckInOuts(evt, stack);
          obj.nmeFireEvent(evt);
-
+         cancelClick = evt.cancelClick;
       }
-      else 
+      else
       {
          //trace("No obj?");
          local = new Point(inEvent.x, inEvent.y);
@@ -473,7 +476,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
       else if (inType == MouseEvent.MOUSE_UP && button < 3) 
       {
-         if (click_obj == nmeLastDown[button]) 
+         if (click_obj == nmeLastDown[button] && !cancelClick)
          {
             var evt = MouseEvent.nmeCreate(sClickEvents[button], inEvent, local, click_obj);
             click_obj.nmeFireEvent(evt);
@@ -693,6 +696,42 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          obj.nmeFireEvent(new Event(Event.SCROLL));
    }
 
+   public function onDrop(inEvent:AppEvent):Void
+   {
+      if (inEvent.type==nme.app.EventId.DropBegin)
+      {
+        nmeDropItems = [];
+      }
+      else if (inEvent.type==nme.app.EventId.DropEnd)
+      {
+         if (nmeDropItems!=null)
+         {
+            var stack = new Array<InteractiveObject>();
+            var obj:DisplayObject = nmeFindByID(inEvent.id);
+
+            if (obj != null)
+               obj.nmeGetInteractiveObjectStack(stack);
+
+            var local:Point = null;
+            if (stack.length > 0) 
+            {
+               var obj = stack[0];
+               stack.reverse();
+               local = obj.globalToLocal(new Point(inEvent.x, inEvent.y));
+
+               var evt = DropEvent.nmeCreate(DropEvent.DROP_FILES, inEvent, local, obj, nmeDropItems);
+               evt.items = nmeDropItems;
+               obj.nmeFireEvent(evt);
+            }
+            nmeDropItems = null;
+         }
+      }
+      else if (inEvent.type==nme.app.EventId.DropFile)
+      {
+         if (nmeDropItems!=null)
+            nmeDropItems.push( inEvent.text );
+      }
+   }
 
    public function onDpiChanged(inEvent:AppEvent):Void
    {
@@ -1084,6 +1123,15 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       return this;
    }
 
+
+   #if cpp
+   public function setMouseFilter(inHandler:Event->Void)
+   {
+      nme_set_stage_mouse_handler_native(nmeHandle,inHandler);
+   }
+   #end
+
+
    public function resize(width:Int, height:Int):Void window.resize(width,height);
 
    private function get_stageFocusRect():Bool { return nme_stage_get_focus_rect(nmeHandle); }
@@ -1121,6 +1169,12 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private static var nme_stage_get_orientation = PrimeLoader.load("nme_stage_get_orientation", "i");
    private static var nme_stage_get_normal_orientation = PrimeLoader.load("nme_stage_get_normal_orientation", "i");
    private static var nme_stage_check_cache = PrimeLoader.load("nme_stage_check_cache", "ob");
+
+   #if cpp
+   private static var nme_set_stage_mouse_handler_native = PrimeLoader.load("nme_set_stage_mouse_handler_native", "oov");
+   #end
+
+
 }
 
 class TouchInfo 

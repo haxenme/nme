@@ -55,7 +55,8 @@ class System
       #elseif js
          //return untyped __js_run_gc();
       #else
-         #error "System not supported on this target"
+         // System does not support gc
+         //#error "System not supported on this target"
       #end
    }
 
@@ -70,6 +71,8 @@ class System
          return untyped __global__.__hxcpp_gc_used_bytes();
       #elseif js
          return untyped __js_get_heap_memory();
+      #elseif (doc_gen)
+         return 1000000;
       #else
          #error "System not supported on this target"
       #end
@@ -154,7 +157,8 @@ class System
       #elseif winrt
       return "localhost";
       #else
-      return sys.net.Host.localhost();
+      var host = sys.net.Host.localhost();
+      return Std.string( new sys.net.Host(host) );
       #end
    }
    

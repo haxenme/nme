@@ -2,9 +2,9 @@
 #include <emscripten/bind.h>
 #include <vector>
 #include <string>
-#include <unordered_map>
+#include <map>
 
-typedef std::unordered_map<std::string,int> IdMap;
+typedef std::map<std::string,int> IdMap;
 typedef emscripten::val value;
 typedef emscripten::val values_array;
 typedef std::string HxString;
@@ -13,10 +13,13 @@ typedef std::wstring HxWString;
 
 typedef int vkind;
 
+extern "C"
+{
 extern IdMap sIdMap;
 extern IdMap sKindMap;
 extern std::vector<value> sIdKeys;
 extern std::vector<const char *> sIdKeyNames;
+}
 
 // emscripten will perform these checks
 #define val_check_kind(v,t)
@@ -29,11 +32,12 @@ extern std::vector<const char *> sIdKeyNames;
 
 inline int val_id(const char *inName)
 {
-   IdMap::iterator id = sIdMap.find(inName);
+   std::string strVal(inName);
+   IdMap::iterator id = sIdMap.find(strVal);
    if (id==sIdMap.end())
    {
       int result = sIdMap.size();
-      sIdMap[inName] = result;
+      sIdMap[strVal] = result;
       sIdKeys.push_back(value(inName));
       sIdKeyNames.push_back(inName);
       return result;
@@ -61,6 +65,14 @@ public:
    AutoGCBlocking() {}
    void Close() { }
 };
+
+class AutoGCUnblocking
+{
+public:
+   AutoGCUnblocking() {}
+   void Close() { }
+};
+
 
 class AutoGCRoot
 {

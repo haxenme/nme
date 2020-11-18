@@ -17,6 +17,7 @@
 #define NME_NO_LZMA
 #endif
 
+
 #ifdef ANDROID
 #include <android/log.h>
 #endif
@@ -105,6 +106,9 @@ static int _id_leftMargin;
 static int _id_letterSpacing;
 static int _id_rightMargin;
 static int _id_size;
+static int _id_outline;
+static int _id_outlineFlags;
+static int _id_outlineMiterLimit;
 static int _id_tabStops;
 static int _id_target;
 static int _id_underline;
@@ -154,12 +158,25 @@ static FRect _tile_rect;
 
 vkind gObjectKind;
 vkind gDataPointer;
+vkind gPointer;
 
 NmeApi gNmeApi;
 
 
 static int sgIDsInit = false;
 static int sgRenderingCount = 0;
+
+#ifdef HXCPP_JS_PRIME
+extern "C"
+{
+IdMap sIdMap;
+IdMap sKindMap;
+std::vector<value> sIdKeys;
+std::vector<const char *> sIdKeyNames;
+}
+#endif
+
+
 #if 1
 #define CHECK_ACCESS(where)
 #else
@@ -221,6 +238,9 @@ extern "C" void InitIDs()
    _id_letterSpacing = val_id("letterSpacing");
    _id_rightMargin = val_id("rightMargin");
    _id_size = val_id("size");
+   _id_outline = val_id("outline");
+   _id_outlineFlags = val_id("outlineFlags");
+   _id_outlineMiterLimit = val_id("outlineMiterLimit");
    _id_tabStops = val_id("tabStops");
    _id_target = val_id("target");
    _id_underline = val_id("underline");
@@ -267,6 +287,7 @@ extern "C" void InitIDs()
 
    kind_share(&gObjectKind,"nme::Object");
    kind_share(&gDataPointer,"data");
+   kind_share(&gPointer,"gPointer");
    
    _tile_rect = FRect(0, 0, 1, 1);
 
@@ -449,6 +470,8 @@ void FromValue(Event &outEvent, value inValue)
    outEvent.flags = ValInt(inValue,_id_flags,0);
    outEvent.code = ValInt(inValue,_id_code,0);
    outEvent.result = (EventResult)ValInt(inValue,_id_result,0);
+   outEvent.deltaX = ValInt(inValue,_id_deltaX,0);
+   outEvent.deltaY = ValInt(inValue,_id_deltaY,0);
 }
 
 
@@ -755,6 +778,13 @@ value nme_log(value inMessage)
 }
 DEFINE_PRIM(nme_log,1);
 
+int *sNmeCrashPtr = (int *)nullptr;
+value nme_crash()
+{
+   *sNmeCrashPtr = 0xdeadbeef;
+   return alloc_null();
+}
+DEFINE_PRIM(nme_crash,0);
 
 
 
@@ -1318,16 +1348,21 @@ void OnMainFrameCreated(Frame *inFrame)
    delete sOnCreateCallback;
 }
 
-
-value nme_set_package(value inCompany,value inFile,value inPackage,value inVersion)
+void nme_set_package(HxString inCompany,HxString inFile,HxString inPackage,HxString inVersion)
 {
-   gCompany = valToStdString(inCompany);
-   gFile = valToStdString(inFile);
-   gPackage = valToStdString(inPackage);
-   gVersion = valToStdString(inVersion);
-   return val_null;
+   #ifdef HXCPP_JS_PRIME
+   gCompany = inCompany;
+   gFile = inFile;
+   gPackage = inPackage;
+   gVersion = inVersion;
+   #else
+   gCompany = inCompany.c_str();
+   gFile = inFile.c_str();
+   gPackage = inPackage.c_str();
+   gVersion = inVersion.c_str();
+   #endif
 }
-DEFINE_PRIM(nme_set_package,4);
+DEFINE_PRIME4v(nme_set_package);
 
 
 void nme_create_main_frame(value inCallback, int width, int height, int flags,
@@ -1454,6 +1489,23 @@ DEFINE_PRIME4v(nme_set_stage_handler);
 
 Stage *sgNativeHandlerStage = 0;
 
+static nme::Event eventData;
+
+value makeDynamicEvent()
+{
+   static AutoGCRoot *dynamicEvent = 0;
+   static vkind eventKind;
+
+   if (dynamicEvent==0)
+   {
+      kind_share(&eventKind,"nme::Event");
+      value eventHolder = alloc_abstract(eventKind,&eventData);
+      dynamicEvent = new AutoGCRoot(eventHolder);
+   }
+   return dynamicEvent->get();
+}
+
+
 void external_handler_native( nme::Event &ioEvent, void *inUserData )
 {
    AutoGCRoot *handler = (AutoGCRoot *)inUserData;
@@ -1463,25 +1515,25 @@ void external_handler_native( nme::Event &ioEvent, void *inUserData )
       return;
    }
 
-   static AutoGCRoot *dynamicEvent = 0;
-   static nme::Event eventData;
-   static vkind eventKind;
-   if (dynamicEvent==0)
-   {
-      kind_share(&eventKind,"nme::Event");
-      value eventHolder = alloc_abstract(eventKind,&eventData);
-      dynamicEvent = new AutoGCRoot(eventHolder);
-   }
-
    eventData = ioEvent;
    eventData.pollTime = GetTimeStamp();
-
-   val_call1(handler->get(), dynamicEvent->get());
+   val_call1(handler->get(), makeDynamicEvent());
 
    ioEvent.result = eventData.result;
 
    sgNativeHandlerStage->SetNextWakeDelay(eventData.pollTime);
 }
+
+void external_mouse_handler_native( nme::Event &ioEvent, void *inUserData )
+{
+   AutoGCRoot *handler = (AutoGCRoot *)inUserData;
+
+   eventData = ioEvent;
+   val_call1(handler->get(), makeDynamicEvent());
+   ioEvent = eventData;
+}
+
+
 
 
 void nme_set_stage_handler_native(value inStage,value inHandler,int inNomWidth, int inNomHeight)
@@ -1498,6 +1550,20 @@ void nme_set_stage_handler_native(value inStage,value inHandler,int inNomWidth, 
    stage->SetEventHandler(external_handler_native,data);
 }
 DEFINE_PRIME4v(nme_set_stage_handler_native);
+
+
+void nme_set_stage_mouse_handler_native(value inStage,value inHandler)
+{
+   Stage *stage;
+   if (!AbstractToObject(inStage,stage))
+      return;
+
+   AutoGCRoot *data = new AutoGCRoot(inHandler);
+
+   stage->SetMouseEventHandler(external_mouse_handler_native,data);
+}
+DEFINE_PRIME2v(nme_set_stage_mouse_handler_native);
+
 
 
 void nme_stage_begin_render(value inStage, bool inClear)
@@ -1800,6 +1866,20 @@ void nme_stage_set_title(value inStage, HxString inTitle) {
    }
 }
 DEFINE_PRIME2v(nme_stage_set_title);
+
+
+namespace nme
+{
+void *gNativeWindowHandle = 0;
+}
+void nme_set_native_window(value inWindow)
+{
+   #ifndef HXCPP_JS_PRIME
+   gNativeWindowHandle = val_to_kind(inWindow, gPointer);
+   #endif
+}
+DEFINE_PRIME1v(nme_set_native_window);
+
 
 
 // --- StageVideo ----------------------------------------------------------------------
@@ -2828,6 +2908,18 @@ void nme_gfx_curve_to(value inGfx, double inCX, double inCY, double inX, double 
 DEFINE_PRIME5v(nme_gfx_curve_to);
 
 
+void nme_gfx_cubic_to(value inGfx, double inCx0, double inCy0, double inCx1, double inCy1, double inX, double inY)
+{
+   Graphics *gfx;
+   if (AbstractToObject(inGfx,gfx))
+   {
+      CHECK_ACCESS("nme_gfx_cubic_to");
+      gfx->cubicTo(inCx0,inCy0,inCx1,inCy1,inX,inY);
+   }
+}
+DEFINE_PRIME7v(nme_gfx_cubic_to);
+
+
 void nme_gfx_arc_to(value inGfx, double inCX, double inCY, double inX, double inY)
 {
    Graphics *gfx;
@@ -2960,6 +3052,8 @@ enum
   TILE_RECT     = 0x0020,
   TILE_ORIGIN   = 0x0040,
   TILE_NO_ID    = 0x0080,
+  TILE_MOUSE_ENABLE = 0x0100,
+  TILE_FIXED_SIZE   = 0x0200,
   TILE_SMOOTH   = 0x1000,
 
   TILE_BLEND_ADD   = 0x10000,
@@ -2990,7 +3084,7 @@ inline double TToFloat( const value &v, int inIdx ) {
 }
 #endif
 
-template<typename FLOATS,int RECTMODE, int TRANS, int COL>
+template<typename FLOATS,int RECTMODE, int TRANS, int COL,bool FIXED>
 void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inValues)
 {
    int max = inSheet->Tiles();
@@ -3020,7 +3114,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
    FRect rectBuf(_tile_rect);
    const FRect *r = &rectBuf;
 
-   inPath->reserveTiles(inN, RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID, TRANS!=0, COL!=0);
+   inPath->reserveTiles(inN, RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID, TRANS!=0, COL!=0, FIXED);
 
    int v = 0;
    for(int i=0;i<inN;i++)
@@ -3107,7 +3201,7 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
          trans_2x2[3] = trans_2x2[0];
       }
 
-      if (RECTMODE!=TILE_RECT_FULL && RECTMODE!=TILE_RECT_FULL_NO_ID)
+      if (RECTMODE!=TILE_RECT_FULL && RECTMODE!=TILE_RECT_FULL_NO_ID && !FIXED)
       {
          if (TRANS)
          {
@@ -3130,6 +3224,15 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
 
       if (COL & TILE_ALPHA)
          rgba[3] = TToFloat(inValues,v++);
+
+      if (FIXED)
+      {
+         if (TRANS)
+            inPath->qorigin( ox*trans_2x2[0] + oy*trans_2x2[2],
+                             ox*trans_2x2[1] + oy*trans_2x2[3] );
+         else
+            inPath->qorigin(ox,oy);
+      }
 
       if (RECTMODE==TILE_RECT_FULL || RECTMODE==TILE_RECT_FULL_NO_ID)
       {
@@ -3158,7 +3261,9 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
             inPath->qtile(x,y,r,0,rgba);
          else
             inPath->qtile(x,y,r,0,0);
+
       }
+
    }
    /*
    if (!inPath->commands.verify() || !inPath->data.verify())
@@ -3170,17 +3275,34 @@ void TAddTilesCol( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS inV
 template<typename FLOATS,int RECTMODE, int TRANS>
 void TAddTilesTrans( GraphicsPath *inPath, Tilesheet *inSheet, int inN, FLOATS &inValues, unsigned int inFlags)
 {
-   if (inFlags & TILE_RGB)
+   if (inFlags & TILE_FIXED_SIZE)
    {
-      if (inFlags & TILE_ALPHA)
-         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA>( inPath, inSheet, inN, inValues);
+      if (inFlags & TILE_RGB)
+      {
+         if (inFlags & TILE_ALPHA)
+            TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA,true>( inPath, inSheet, inN, inValues);
+         else
+            TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB,true>( inPath, inSheet, inN, inValues);
+      }
+      else if (inFlags & TILE_ALPHA)
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_ALPHA,true>( inPath, inSheet, inN, inValues);
       else
-         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB>( inPath, inSheet, inN, inValues);
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, 0,true>( inPath, inSheet, inN, inValues);
    }
-   else if (inFlags & TILE_ALPHA)
-      TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_ALPHA>( inPath, inSheet, inN, inValues);
    else
-      TAddTilesCol<FLOATS, RECTMODE, TRANS, 0>( inPath, inSheet, inN, inValues);
+   {
+      if (inFlags & TILE_RGB)
+      {
+         if (inFlags & TILE_ALPHA)
+            TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB|TILE_ALPHA,false>( inPath, inSheet, inN, inValues);
+         else
+            TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_RGB,false>( inPath, inSheet, inN, inValues);
+      }
+      else if (inFlags & TILE_ALPHA)
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, TILE_ALPHA,false>( inPath, inSheet, inN, inValues);
+      else
+         TAddTilesCol<FLOATS, RECTMODE, TRANS, 0,false>( inPath, inSheet, inN, inValues);
+   }
 }
 
 template<typename FLOATS,int RECTMODE>
@@ -3298,6 +3420,10 @@ void nme_gfx_draw_tiles(value inGfx, value inSheet, value inXYIDs, int flags, in
             tileFlags |= pcTile_Trans_Bit;
          if (flags & (TILE_RGB | TILE_ALPHA) )
             tileFlags |= pcTile_Col_Bit;
+         if (flags & (TILE_MOUSE_ENABLE) )
+            tileFlags |= pcTile_Mouse_Enable_Bit;
+         if (flags & (TILE_FIXED_SIZE) )
+            tileFlags |= pcTile_Fixed_Size_Bit;
 
          gfx->beginTiles(&sheet->GetSurface(), smooth, blend, tileFlags, n);
 
@@ -3395,6 +3521,17 @@ void nme_graphics_path_curve_to(value inPath,double inX1,double inY1,double inX2
       path->curveTo(inX1,inY1,inX2,inY2);
 }
 DEFINE_PRIME5v(nme_graphics_path_curve_to)
+
+   
+void nme_graphics_path_cubic_to(value inPath, double inCx0, double inCy0, double inCx1, double inCy1, double inX, double inY)
+{
+   GraphicsPath *path;
+   if (AbstractToObject(inPath,path))
+      path->cubicTo(inCx0,inCy0,inCx1,inCy1,inX,inY);
+}
+DEFINE_PRIME7v(nme_graphics_path_cubic_to);
+
+
 
 
 void nme_graphics_path_line_to(value inPath,double inX1,double inY1)
@@ -3520,6 +3657,8 @@ inline value alloc_wstring(const WString &inStr)
 
 
 void FromValue(Optional<int> &outVal,value inVal) { outVal = (int)val_number(inVal); }
+void FromValue(Optional<float> &outVal,value inVal) { outVal = (float)val_number(inVal); }
+void FromValue(Optional<double> &outVal,value inVal) { outVal = (double)val_number(inVal); }
 void FromValue(Optional<uint32> &outVal,value inVal) { outVal = (uint32)val_number(inVal); }
 void FromValue(Optional<bool> &outVal,value inVal) { outVal = val_bool(inVal); }
 void FromValue(Optional<WString> &outVal,value inVal)
@@ -3569,6 +3708,9 @@ void SetTextFormat(TextFormat &outFormat, value inValue)
    STF(letterSpacing);
    STF(rightMargin);
    STF(size);
+   STF(outline);
+   STF(outlineFlags);
+   STF(outlineMiterLimit);
    STF(tabStops);
    STF(target);
    STF(underline);
@@ -3578,6 +3720,8 @@ void SetTextFormat(TextFormat &outFormat, value inValue)
 
 
 value ToValue(const int &inVal) { return alloc_int(inVal); }
+value ToValue(const float &inVal) { return alloc_float(inVal); }
+value ToValue(const double &inVal) { return alloc_float(inVal); }
 value ToValue(const uint32 &inVal) { return alloc_int(inVal); }
 value ToValue(const bool &inVal) { return alloc_bool(inVal); }
 value ToValue(const WString &inVal) { return alloc_wstring(inVal); }
@@ -3622,6 +3766,9 @@ void GetTextFormat(const TextFormat &inFormat, value &outValue, bool inIfSet = f
    GTF(letterSpacing,inIfSet);
    GTF(rightMargin,inIfSet);
    GTF(size,inIfSet);
+   GTF(outline,inIfSet);
+   GTF(outlineFlags,inIfSet);
+   GTF(outlineMiterLimit,inIfSet);
    GTF(tabStops,inIfSet);
    GTF(target,inIfSet);
    GTF(underline,inIfSet);
@@ -3896,7 +4043,7 @@ TEXT_PROP_GET_IDX_PRIME(line_offset,LineOffset,int);
 value nme_bitmap_data_create(int width, int height, int pixelFormat, int fillValue, bool bFill)
 {
    PixelFormat format = (PixelFormat)(pixelFormat);
-   Surface *result = new SimpleSurface( width, height, format, 1 );
+   Surface *result = new SimpleSurface( width, height, format);
    if (bFill)
       result->Clear(fillValue);
    return ObjectToAbstract(result);
@@ -4759,6 +4906,17 @@ void nme_sound_get_id3(value inSound, value outVar)
 DEFINE_PRIME2v(nme_sound_get_id3);
 
 
+void nme_sound_suspend(bool inSuspend,int inFlags)
+{
+   if (inSuspend)
+      Sound::Suspend((unsigned int)inFlags);
+   else
+      Sound::Resume((unsigned int)inFlags);
+}
+DEFINE_PRIME2v(nme_sound_suspend);
+
+ 
+
 double nme_sound_get_length(value inSound)
 {
    Sound *sound;
@@ -5358,7 +5516,7 @@ bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultP
       return false;
 
    // TODO - mac
-   #if defined(HX_WINDOWS) && !defined(HX_WINRT)
+   #if (defined(HX_WINDOWS) && !defined(HX_WINRT)) || defined(HX_MACOS)
    gCurrentFileDialog = new FileDialogSpec();
    gCurrentFileDialog->title = inTitle.c_str();
    gCurrentFileDialog->text = inText.c_str();
@@ -5410,20 +5568,22 @@ void nme_get_glstats(value aStatsArray)
   {
     //0 Verts, 1 Calls, 2 Element Verts, 3 Element Calls
     //4 - 7 GLView stats
+    #ifdef NME_OGL
     GetGLStats(statsArray, n);
+    #endif
   }
 }
 DEFINE_PRIME1v(nme_get_glstats)
 
 // Reference this to bring in all the symbols for the static library
-#ifdef STATIC_LINK
+#if STATIC_LINK
 extern "C" int nme_oglexport_register_prims();
 #endif
 
 extern "C" int nme_register_prims()
 {
    InitIDs();
-   #ifdef STATIC_LINK
+   #if defined(STATIC_LINK) && defined(NME_OGL)
    nme_oglexport_register_prims();
    #endif
    return 0;

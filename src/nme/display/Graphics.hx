@@ -16,6 +16,8 @@ class Graphics
    public static inline var TILE_RECT    = 0x0020;		// won't use tile ids
    public static inline var TILE_ORIGIN  = 0x0040;
    public static inline var TILE_NO_ID   = 0x0080;  // Assume ID0
+   public static inline var TILE_MOUSE_ENABLE   = 0x0100;
+   public static inline var TILE_FIXED_SIZE     = 0x0200;
    private static inline var TILE_SMOOTH = 0x1000;
    public static inline var TILE_BLEND_NORMAL   = 0x00000000;
    public static inline var TILE_BLEND_ADD      = 0x00010000;
@@ -61,6 +63,11 @@ class Graphics
    public function curveTo(inCX:Float, inCY:Float, inX:Float, inY:Float) 
    {
       nme_gfx_curve_to(nmeHandle, inCX, inCY, inX, inY);
+   }
+
+   public function cubicTo(inCx0:Float, inCy0:Float, inCx1:Float, inCy1:Float, inX:Float, inY:Float) 
+   {
+      nme_gfx_cubic_to(nmeHandle, inCx0, inCy0, inCx1, inCy1, inX, inY);
    }
 
    public function drawCircle(inX:Float, inY:Float, inRadius:Float) 
@@ -116,7 +123,13 @@ class Graphics
 
       if (inSmooth)
          inFlags |= TILE_SMOOTH;
+      #if jsprime
+      var buffer:nme.utils.Float32Buffer = 
+         Std.is(inXYID,nme.utils.Float32Buffer) ? (inXYID:nme.utils.Float32Buffer) : null;
+      #else
       var buffer:nme.utils.Float32Buffer = cast inXYID;
+      #end
+
       if (buffer!=null)
       {
          if (inCount<0)
@@ -128,7 +141,9 @@ class Graphics
          #end
       }
       else
+      {
          nme_gfx_draw_tiles(nmeHandle, sheet.nmeHandle, inXYID, inFlags, inCount);
+      }
    }
    
    public function drawTriangles(vertices:Array<Float>, ?indices:Array<Int>, ?uvtData:Array<Float>, ?culling:TriangleCulling, ?colours:Array<Int>, blendMode:Int = 0) 
@@ -193,6 +208,7 @@ class Graphics
    private static var nme_gfx_move_to = PrimeLoader.load("nme_gfx_move_to", "oddv");
    private static var nme_gfx_line_to = PrimeLoader.load("nme_gfx_line_to", "oddv");
    private static var nme_gfx_curve_to = PrimeLoader.load("nme_gfx_curve_to", "oddddv");
+   private static var nme_gfx_cubic_to = PrimeLoader.load("nme_gfx_cubic_to", "oddddddv");
    private static var nme_gfx_arc_to = PrimeLoader.load("nme_gfx_arc_to", "oddddv");
    private static var nme_gfx_draw_ellipse = PrimeLoader.load("nme_gfx_draw_ellipse", "oddddv");
    private static var nme_gfx_draw_data = PrimeLoader.load("nme_gfx_draw_data", "oov");

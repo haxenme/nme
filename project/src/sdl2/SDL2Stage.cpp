@@ -1,3 +1,4 @@
+#define WINDOWS_IGNORE_PACKING_MISMATCH 1
 #include <Display.h>
 #include <Utils.h>
 #include <SDL.h>
@@ -56,6 +57,14 @@ int InitSDL()
    #else
    int audioFlag = 0;
    #endif
+
+   #ifdef NME_METAL
+   if (!nmeOpenglRenderer)
+      SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
+   else
+      SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+   #endif
+
    int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
    
    if (err == 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER) == 0)
@@ -65,7 +74,7 @@ int InitSDL()
       SDL_GameControllerAddMappingsFromRW (SDL_RWFromConstMem (g_gameControllerDB, sizeof (g_gameControllerDB)), 0);
       #endif
    }
-   
+
    return err;
 }
 
@@ -240,16 +249,18 @@ SDL_Cursor *sHandCursor = 0;
 
 unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN_DESKTOP;
 //unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN;
+//
+extern void *GetMetalLayerFromRenderer(SDL_Renderer *renderer);
 
 class SDLStage : public Stage
 {
 public:
-   SDLStage(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsOpenGL, int inWidth, int inHeight)
+   SDLStage(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsHardware, int inWidth, int inHeight)
    {
       mWidth = inWidth;
       mHeight = inHeight;
       
-      mIsOpenGL = inIsOpenGL;
+      mIsHardware = inIsHardware;
       mSDLWindow = inWindow;
       mSDLRenderer = inRenderer;
       mWindowFlags = inWindowFlags;
@@ -261,24 +272,45 @@ public:
       if (mIsFullscreen)
          displayState = sdsFullscreenInteractive;
 
-      if (mIsOpenGL)
+      if (mIsHardware)
       {
-         mOpenGLContext = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
-         mOpenGLContext->IncRef();
-         //mOpenGLContext->SetWindowSize(inSurface->w, inSurface->h);
-         mOpenGLContext->SetWindowSize(mWidth, mHeight);
-         mPrimarySurface = new HardwareSurface(mOpenGLContext);
+         #if defined(NME_OGL) && defined(NME_METAL)
+         if (nmeOpenglRenderer)
+         {
+            mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
+         }
+         else
+         {
+            void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
+            mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
+         }
+         #elif defined(NME_OGL)
+         mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
+
+         #elif defined(NME_METAL)
+
+         void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
+         mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
+
+         #else
+         #error "No valid HardwareRenderer"
+         #endif
+
+         mHardwareRenderer->IncRef();
+         //mHardwareRenderer->SetWindowSize(inSurface->w, inSurface->h);
+         mHardwareRenderer->SetWindowSize(mWidth, mHeight);
+         mPrimarySurface = new HardwareSurface(mHardwareRenderer);
       }
       else
       {
-         mOpenGLContext = 0;
+         mHardwareRenderer = 0;
          mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
          if (!mSoftwareSurface)
          {
             fprintf(stderr, "Could not create SDL surface : %s\n", SDL_GetError());
          }
          mSoftwareTexture = SDL_CreateTexture(mSDLRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, mWidth, mHeight);
-         mPrimarySurface = new SDLSurf(mSoftwareSurface, inIsOpenGL);
+         mPrimarySurface = new SDLSurf(mSoftwareSurface, inIsHardware);
       }
       mPrimarySurface->IncRef();
      
@@ -299,14 +331,14 @@ public:
    ~SDLStage()
    {
       SDL_SetWindowFullscreen(mSDLWindow, 0);
-      if (!mIsOpenGL)
+      if (!mIsHardware)
       {
          SDL_FreeSurface(mSoftwareSurface);
          SDL_DestroyTexture(mSoftwareTexture);
       }
       else
       {
-         mOpenGLContext->DecRef();
+         mHardwareRenderer->DecRef();
       }
       mPrimarySurface->DecRef();
       SDL_DestroyRenderer(mSDLRenderer);
@@ -327,9 +359,9 @@ public:
       mWidth = inWidth;
       mHeight = inHeight;
       
-      if (mIsOpenGL)
+      if (mIsHardware)
       {
-         mOpenGLContext->SetWindowSize(inWidth, inHeight);
+         mHardwareRenderer->SetWindowSize(inWidth, inHeight);
       }
       else
       {
@@ -555,7 +587,7 @@ public:
    }
     
    
-   bool isOpenGL() const { return mOpenGLContext; }
+   bool isOpenGL() const { return mHardwareRenderer; }
    
    
    void ProcessEvent(Event &inEvent)
@@ -603,7 +635,7 @@ public:
    
    void Flip()
    {
-      if (mIsOpenGL)
+      if (mIsHardware)
       {
          SDL_RenderPresent(mSDLRenderer);
       }
@@ -751,10 +783,14 @@ public:
    
    const char *getJoystickName(int id)
    {
+      #ifdef EMSCRIPTEN
+      return "";
+      #else
       if(SDL_IsGameController(id))
            return SDL_GameControllerNameForIndex(id);
 
       return SDL_JoystickNameForIndex(id);
+      #endif
    }
  
    void setIsFullscreen(bool inIsFullscreen)
@@ -771,13 +807,13 @@ public:
    }
    
    
-   HardwareRenderer *mOpenGLContext;
+   HardwareRenderer *mHardwareRenderer;
    SDL_Window *mSDLWindow;
    SDL_Renderer *mSDLRenderer;
    Surface     *mPrimarySurface;
    SDL_Surface *mSoftwareSurface;
    SDL_Texture *mSoftwareTexture;
-   bool         mIsOpenGL;
+   bool         mIsHardware;
    Cursor       mCurrentCursor;
    bool         mShowCursor;
    bool            mLockCursor;   
@@ -791,11 +827,11 @@ public:
 class SDLFrame : public Frame
 {
 public:
-   SDLFrame(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsOpenGL, int inWidth, int inHeight)
+   SDLFrame(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsHardware, int inWidth, int inHeight)
    {
       mWindowFlags = inWindowFlags;
-      mIsOpenGL = inIsOpenGL;
-      mStage = new SDLStage(inWindow, inRenderer, mWindowFlags, inIsOpenGL, inWidth, inHeight);
+      mIsHardware = inIsHardware;
+      mStage = new SDLStage(inWindow, inRenderer, mWindowFlags, inIsHardware, inWidth, inHeight);
       mStage->IncRef();
    }
    
@@ -827,7 +863,7 @@ public:
    
    
    SDLStage *mStage;
-   bool mIsOpenGL;
+   bool mIsHardware;
    uint32 mWindowFlags;
    
    double mAccX;
@@ -1402,41 +1438,35 @@ void AddCharCode(Event &key)
 }
 
 
-wchar_t *ConvertToWChar(const char *inStr, int *ioLen)
+wchar_t convertToWChar(const char *inStr, int *ioLen)
 {
    int len = ioLen ? *ioLen : strlen(inStr);
-
-   //wchar_t *result = (wchar_t *)NewGCPrivate(0,sizeof(wchar_t)*(len+1));
-   wchar_t *result = (wchar_t *)alloc_private((len+1)*sizeof(wchar_t));
-   int l = 0;
 
    unsigned char *b = (unsigned char *)inStr;
    for(int i=0;i<len;)
    {
       int c = b[i++];
-      if (c==0) break;
+      if (c==0)
+         break;
       else if( c < 0x80 )
       {
-        result[l++] = c;
+         return c;
       }
       else if( c < 0xE0 )
-        result[l++] = ( ((c & 0x3F) << 6) | (b[i++] & 0x7F) );
+         return ( ((c & 0x3F) << 6) | (b[i++] & 0x7F) );
       else if( c < 0xF0 )
       {
         int c2 = b[i++];
-        result[l++] = ( ((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | ( b[i++] & 0x7F) );
+         return ( ((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | ( b[i++] & 0x7F) );
       }
       else
       {
         int c2 = b[i++];
         int c3 = b[i++];
-        result[l++] = ( ((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 << 6) & 0x7F) | (b[i++] & 0x7F) );
+        return ( ((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 << 6) & 0x7F) | (b[i++] & 0x7F) );
       }
    }
-   result[l] = '\0';
-   if (ioLen)
-      *ioLen = l;
-   return result;
+   return 0;
 }
 
 
@@ -1473,6 +1503,8 @@ void ProcessEvent(SDL_Event &inEvent)
             {
                Event poll(etPoll);
                sgSDLFrame->ProcessEvent(poll);
+               Event redraw(etRedraw);
+               sgSDLFrame->ProcessEvent(redraw);
                break;
             }
             //case SDL_WINDOWEVENT_MOVED: break;
@@ -1482,6 +1514,8 @@ void ProcessEvent(SDL_Event &inEvent)
                Event resize(etResize, inEvent.window.data1, inEvent.window.data2);
                sgSDLFrame->Resize(inEvent.window.data1, inEvent.window.data2);
                sgSDLFrame->ProcessEvent(resize);
+               Event redraw(etRedraw);
+               sgSDLFrame->ProcessEvent(redraw);
                break;
             }
             case SDL_WINDOWEVENT_MINIMIZED:
@@ -1530,30 +1564,47 @@ void ProcessEvent(SDL_Event &inEvent)
             {
                //Event deactivate(etDeactivate);
                //sgSDLFrame->ProcessEvent(deactivate);
-               
+
                //Event kill(etDestroyHandler);
                //sgSDLFrame->ProcessEvent(kill);
                break;
             }
 
-            /*
-            case SDL_DROPFILE:
-            {
-               char *dropped_filedir = inEvent.drop.file;
-               printf("DROP %s\n", dropped_filedir);
-               SDL_free(dropped_filedir);
-               break;
-            }
-            */
 
             default: break;
          }
-         
          break;
-         
       }
+
+      case SDL_DROPBEGIN:
+      {
+         Event event(etDropBegin);
+         sgSDLFrame->ProcessEvent(event);
+         break;
+      }
+      case SDL_DROPCOMPLETE:
+      {
+         int x=0;
+         int y=0;
+         SDL_GetMouseState(&x,&y);
+         Event event(etDropEnd, x, y);
+         AddModStates(event.flags);
+         sgSDLFrame->ProcessEvent(event);
+         break;
+      }
+      case SDL_DROPFILE:
+      {
+         Event event(etDropFile);
+         event.utf8Text = inEvent.drop.file;
+         event.utf8Length = strlen(inEvent.drop.file);
+         sgSDLFrame->ProcessEvent(event);
+         SDL_free(inEvent.drop.file);
+         break;
+      }
+
+
       case SDL_MOUSEMOTION:
-      {  
+      {
             //default to 0
          int deltaX = 0;
          int deltaY = 0;
@@ -1600,6 +1651,9 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_MOUSEWHEEL: 
       {   
+         if (inEvent.wheel.y==0)
+            break;
+
             //previous behavior in nme was fake button 3 for down, 4 for up
          int event_dir = (inEvent.wheel.y > 0) ? 3 : 4;
             //space to get the current mouse position, to make sure the values are sane
@@ -1617,15 +1671,56 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(mouse);
          break;
       }
-        case SDL_TEXTINPUT:
-        {
-            const char *text = inEvent.text.text;
-            int unicode = ConvertToWChar(text, 0)[0];
-            Event key( etChar );
-            key.code = unicode;
-            sgSDLFrame->ProcessEvent(key);
-            break;
-        }
+
+      case SDL_FINGERDOWN:
+      {
+         int width = 0;
+         int height = 0;
+         SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+
+         // button?
+         Event mouse(etMouseDown, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
+         mouse.flags |= efLeftDown;
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+
+      case SDL_FINGERUP:
+      {
+         int width = 0;
+         int height = 0;
+         SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+
+         // button?
+         Event mouse(etMouseUp, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
+         //mouse.flags |= efLeftDown;
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+
+      case SDL_FINGERMOTION:
+      {
+         int width = 0;
+         int height = 0;
+         SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+
+         // button?
+         Event mouse(etMouseMove, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
+         mouse.flags |= efLeftDown;
+         sgSDLFrame->ProcessEvent(mouse);
+         break;
+      }
+
+
+      case SDL_TEXTINPUT:
+      {
+          const char *text = inEvent.text.text;
+          int unicode = convertToWChar(text, 0);
+          Event key( etChar );
+          key.code = unicode;
+          sgSDLFrame->ProcessEvent(key);
+          break;
+      }
       case SDL_KEYDOWN:
       case SDL_KEYUP:
       {
@@ -1653,6 +1748,7 @@ void ProcessEvent(SDL_Event &inEvent)
          sgSDLFrame->ProcessEvent(key);
          break;
       }
+      #ifndef EMSCRIPTEN
       case SDL_CONTROLLERAXISMOTION:
       {   
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
@@ -1742,6 +1838,18 @@ void ProcessEvent(SDL_Event &inEvent)
          }
          break;
       }
+      #endif
+      case SDL_AUDIODEVICEADDED:
+         // TODO
+         break;
+
+      case SDL_AUDIODEVICEREMOVED:
+         // TODO
+         break;
+
+      default:
+         //printf("Unknown event: %x\n", inEvent.type);
+         break;
    }
 };
 
@@ -1810,9 +1918,21 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    #ifdef HX_MACOS
    MacBoot();
    #endif
+
    
    bool fullscreen = (inFlags & wfFullScreen) != 0;
+   #if defined(NME_OGL) && defined(NME_METAL)
+   nmeOpenglRenderer = !(inFlags & wfHardwareMetal);
+   bool hw = (inFlags & wfHardware) != 0;
+   bool opengl = hw && nmeOpenglRenderer;
+   bool metal = hw && !nmeOpenglRenderer;
+   #elif defined(NME_OGL)
    bool opengl = (inFlags & wfHardware) != 0;
+   bool metal = false;
+   #else
+   bool metal = (inFlags & wfHardware) != 0;
+   bool opengl = false;
+   #endif
    bool resizable = (inFlags & wfResizable) != 0;
    bool borderless = (inFlags & wfBorderless) != 0;
    bool vsync = (inFlags & wfVSync) != 0;
@@ -1863,6 +1983,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    
    if (SDL_GetNumVideoDisplays() > 0)
    {
+
       SDL_DisplayMode currentMode;
       SDL_GetDesktopDisplayMode(0, &currentMode);
       sgDesktopWidth = currentMode.w;
@@ -1880,7 +2001,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3); 
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1); 
    #endif
 
    if (opengl)
@@ -1999,9 +2120,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       windowFlags = SDL_GetWindowFlags (window);
       if (fullscreen) sgWindowRect = Rect(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, inWidth, inHeight);
 
+      bool hardware = metal||opengl;
+
       int renderFlags = 0;
-      if (opengl) renderFlags |= SDL_RENDERER_ACCELERATED;
-      if (opengl && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
+      if (hardware) renderFlags |= SDL_RENDERER_ACCELERATED;
+      if (hardware && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
 
       renderer = SDL_CreateRenderer (window, -1, renderFlags);
       
@@ -2022,11 +2145,12 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          inFlags &= ~wfHW_AA_HIRES;
          inFlags &= ~wfHW_AA;
       }
-      else if (!renderer && opengl) 
+      else if (!renderer && hardware) 
       {
          // if opengl is enabled and no window was created, disable it and try again
-         fprintf(stderr, "OpenGL is not available. Retrying without. (%s)\n", SDL_GetError());
+         fprintf(stderr, "Hardware is not available. Retrying without. (%s)\n", SDL_GetError());
          opengl = false;
+         metal = false;
          requestWindowFlags &= ~SDL_WINDOW_OPENGL;
       }
       else 
@@ -2062,8 +2186,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    {
       SDL_GetWindowSize(window, &width, &height);
    }
-   
-   sgSDLFrame = new SDLFrame(window, renderer, windowFlags, opengl, width, height);
+
+
+   bool hardware = metal||opengl;
+   sgSDLFrame = new SDLFrame(window, renderer, windowFlags, hardware, width, height);
    #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
    insertWinProc(hWin,sgSDLFrame);
    #endif
@@ -2088,7 +2214,7 @@ void SetIcon(const char *path)
 HWND GetApplicationWindow()
 {
    if (!sgSDLFrame)
-      return 0;
+      return (HWND)gNativeWindowHandle;
 
    SDL_SysWMinfo wminfo;
    SDL_VERSION (&wminfo.version);
@@ -2298,7 +2424,8 @@ void StartAnimation()
    SDL_Event event;
    event.type = SDL_NOEVENT;
 
-   //SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+   //SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
+   SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
    double nextWake = GetTimeStamp();
    while(!sgDead)
@@ -2334,6 +2461,7 @@ void StartAnimation()
          AutoGCBlocking block;
          if (sgSDLFrame->mStage->BuildCache())
          {
+            block.Close();
             Event redraw(etRedraw);
             sgSDLFrame->ProcessEvent(redraw);
          }

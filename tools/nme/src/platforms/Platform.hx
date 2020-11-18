@@ -29,6 +29,7 @@ class Platform
    public static inline var JS = "JS";
    public static inline var WATCH = "WATCH";
    public static inline var JSPRIME = "JSPRIME"; // Alias for HTML5
+   public static inline var RG350 = "RG350";
 
 
    public static inline var TYPE_WEB = "WEB";
@@ -43,6 +44,7 @@ class Platform
    var haxeDir:String;
    var useNeko:Bool;
    var is64:Bool;
+   var isArm64:Bool;
    var context:Dynamic;
    var outputFiles:Array<String>;
    var manifest:Dynamic;
@@ -59,11 +61,16 @@ class Platform
       outputFiles = [];
       useNeko = project.targetFlags.exists("neko");
       is64 = false;
+      isArm64 = false;
       if (useNeko)
          is64 = nme.Lib.bits == 64;
       else
       {
-         if (inProject.hasDef("HXCPP_M32"))
+         if (inProject.hasDef("HXCPP_ARM64"))
+         {
+            isArm64 = true;
+         }
+         else if (inProject.hasDef("HXCPP_M32"))
          {
          }
          else if (inProject.hasDef("HXCPP_M64"))
@@ -633,6 +640,24 @@ class Platform
              ProcessHelper.runCommand("",nsis+"/makensis.exe", ["/NOCD", scriptName] );
 
              Log.verbose("Wrote " + name);
+
+             if (project.certificate!=null)
+             {
+                var signtool = project.getDef("SIGNTOOL");
+                if (signtool==null || signtool=="")
+                {
+                   Log.verbose("SIGNTOOL variale not found, assuming signtool.exe");
+                   signtool = "signtool.exe";
+                }
+                var pfxPath = project.certificate.path;
+                var certificatePwd = project.certificate.password;
+
+
+                var signParams = ["sign", "/fd", "SHA256", "/a", "/f", pfxPath, "/p", certificatePwd,
+                   "/t", "http://timestamp.digicert.com", name];
+                ProcessHelper.runCommand("",signtool,signParams);
+                Log.verbose("signed installer");
+             }
          }
          else
             Log.error("Unknown deployment protocol, use: 'script:', 'adb:', 'nsis:' or 'dir:'");
@@ -663,7 +688,10 @@ class Platform
 
       copyTemplateDir( getHaxeTemplateDir(), haxeDir, true, false );
       for(path in project.templateCopies)
-         FileHelper.copyFile(path.from, getOutputDir() + "/" + path.to );
+         if (FileSystem.isDirectory(path.from))
+            FileHelper.recursiveCopy(path.from, getOutputDir() + "/" + path.to );
+         else
+            FileHelper.copyFile(path.from, getOutputDir() + "/" + path.to );
    }
 
    public function updateOutputDir()

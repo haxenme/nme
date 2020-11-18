@@ -231,4 +231,17 @@ class Loader
    }
 }
 
+#else
+
+// Used in no-output/dox case
+class Loader 
+{
+   public static function load(func:String, args:Int):Dynamic
+   {
+      throw "Loader.load not implemented";
+      return null;
+   }
+}
+
+
 #end

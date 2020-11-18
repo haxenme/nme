@@ -38,7 +38,7 @@ SLInterfaceID findInterface(void *dll, const char *inName)
    SLInterfaceID *symPtr = (SLInterfaceID *)dlsym(dll,inName);
    if (!symPtr)
    {
-      ELOG("Could not find symbol %s", symPtr);
+      ELOG("Could not find symbol %s", inName);
       return 0;
    }
    VLOG(" got interface %s = %d", inName, *symPtr);
@@ -142,7 +142,7 @@ public:
          case 22050: slRate = SL_SAMPLINGRATE_22_05; break;
          case 44100: slRate = SL_SAMPLINGRATE_44_1; break;
       }
-
+      
       const SLInterfaceID ids[] = {iidVolume};
       const SLboolean req[] = {SL_BOOLEAN_FALSE};
       if ((*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 1, ids, req)==SL_RESULT_SUCCESS &&
@@ -181,7 +181,6 @@ public:
          // create audio player
          const SLInterfaceID ids1[] = {iidAndroidSampleBuffer, iidVolume};
          const SLboolean req1[] = {SL_BOOLEAN_TRUE};
-          
          if ( (*engineEngine)->CreateAudioPlayer(engineEngine, &bqPlayerObject, &audioSrc, &audioSnk, 2, ids1, req1)==SL_RESULT_SUCCESS &&
               (*bqPlayerObject)->Realize(bqPlayerObject, SL_BOOLEAN_FALSE) == SL_RESULT_SUCCESS &&
               (*bqPlayerObject)->GetInterface(bqPlayerObject, iidPlay, &bqPlayerPlay)==SL_RESULT_SUCCESS  &&
@@ -218,6 +217,8 @@ public:
    ~OpenSlSourceChannel()
    {
       stop();
+      if (soundObject) 
+         soundObject->DecRef();
    }
 
    void play()
@@ -284,9 +285,12 @@ public:
       if (bqPlayerObject)
       {
          SLuint32 state = SL_PLAYSTATE_PLAYING;
-         (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_STOPPED);
-         while(state != SL_PLAYSTATE_STOPPED)
-            (*bqPlayerPlay)->GetPlayState(bqPlayerPlay, &state);
+         if (bqPlayerPlay) 
+         {
+            (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_STOPPED);
+            while(state != SL_PLAYSTATE_STOPPED)
+                  (*bqPlayerPlay)->GetPlayState(bqPlayerPlay, &state);
+         }
          (*bqPlayerObject)->Destroy(bqPlayerObject);
          bqPlayerObject = 0;
          bqPlayerPlay = 0;
@@ -317,7 +321,10 @@ public:
       if (shouldPlay)
       {
          LOG_SOUND(" -> pause");
-         (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PAUSED);
+        if (bqPlayerPlay) 
+        { 
+           (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PAUSED);
+        }
       }
    }
    
@@ -328,7 +335,10 @@ public:
       if (shouldPlay)
       {
          LOG_SOUND(" -> play");
-         (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
+         if (bqPlayerPlay) 
+         { 
+           (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
+         }
       }
    }
   
@@ -362,6 +372,7 @@ public:
          (*bqPlayerPlay)->GetPosition( bqPlayerPlay, &nPositionMs ); 
          return nPositionMs + t0*1000.0;
       }
+      return 0.0;
    }
 
    bool isComplete()

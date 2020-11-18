@@ -249,17 +249,20 @@ enum PathCommand
    pcWideMoveTo = 4,
    pcWideLineTo = 5,
    pcArcTo =  6,
+   pcCubicTo =  7,
 
    // Special code so we can mix lines and fills...
-   pcBeginAt  = 7,
+   pcBeginAt  = 8,
    // Quad combining vertices & texture-coords
    pcPointsXY  = 9,
    pcPointsXYRGBA  = 11,
 
-   pcTile                 = 0x10,
-   pcTile_Trans_Bit       = 0x01,
-   pcTile_Col_Bit         = 0x02,
-   pcTile_Full_Image_Bit  = 0x04,
+   pcTile_Trans_Bit        = 0x01,
+   pcTile_Col_Bit          = 0x02,
+   pcTile_Full_Image_Bit   = 0x04,
+   pcTile_Mouse_Enable_Bit = 0x08,
+   pcTile                  = 0x10,
+   pcTile_Fixed_Size_Bit   = 0x20,
 
 
    pcBlendModeAdd   = 0x20,
@@ -289,6 +292,7 @@ public:
 
    void curveTo(float controlX, float controlY, float anchorX, float anchorY);
    void arcTo(float controlX, float controlY, float anchorX, float anchorY);
+   void cubicTo(float cx0, float cy0, float cx1, float cy1, float anchorX, float anchorY);
    void lineTo(float x, float y);
    void moveTo(float x, float y);
    void wideLineTo(float x, float y);
@@ -298,7 +302,7 @@ public:
    void drawPoints(QuickVec<float> inXYs, QuickVec<int> inRGBAs);
    void closeLine(int inCommand0, int inData0);
 
-   void reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour);
+   void reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour, bool isFixed);
    // You must reserveTiles before calling these
    inline void qimage(float x, float y, float *inTrans,float *inRGBA)
    {
@@ -318,6 +322,11 @@ public:
          data.qpush(inRGBA[2]);
          data.qpush(inRGBA[3]);
       }
+   }
+   inline void qorigin(float x, float y)
+   {
+      data.qpush(x);
+      data.qpush(y);
    }
 
    inline void qtile(float x, float y, const FRect *inTileRect,float *inTrans,float *inRGBA)
@@ -361,6 +370,7 @@ public:
             const QuickVec<int> &inColours,
             int blendMode );
    GraphicsTrianglePath() { }
+   GraphicsDataType GetType() { return gdtTrianglePath; }
 
    VertexType       mType;
    int              mTriangleCount;
@@ -686,6 +696,7 @@ public:
    void lineTo(float x, float y);
    void moveTo(float x, float y);
    void curveTo(float cx,float cy,float x, float y);
+   void cubicTo(float cx0, float cy0, float cx1, float cy1, float anchorX, float anchorY);
    void arcTo(float cx,float cy,float x, float y);
    void drawPath(const QuickVec<uint8> &inCommands, const QuickVec<float> &inData,
            WindingRule inWinding );

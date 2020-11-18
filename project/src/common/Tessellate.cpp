@@ -51,7 +51,7 @@ struct TriSearch
 
          if (!isFlat)
          {
-            denom -= INSIDE_TOL;
+            //denom -= INSIDE_TOL;
 
             min = p;
             if (next.x<min.x) min.x=next.x;
@@ -67,15 +67,16 @@ struct TriSearch
       }
    }
 
-   inline bool pointInTri(UserPoint concave)
+   inline bool pointInTri(UserPoint concave, bool allowTouch)
    {
+      double tol = allowTouch ? INSIDE_TOL : -INSIDE_TOL;
       UserPoint v( concave - p );
       double a = v.Cross(v2);
-      if (a>INSIDE_TOL && a<denom)
+      if (a>tol && a<denom+tol)
       {
          double b = v1.Cross(v);
          // Ear contains concave point?
-         return (b>INSIDE_TOL && (a+b)<denom && (a+b)>INSIDE_TOL);
+         return (b>tol && (a+b)<denom+tol && (a+b)>tol);
       }
       return false;
    }
@@ -111,7 +112,7 @@ struct EdgePoint
    }
 
 
-   float calcCross()
+   double calcCross()
    {
       return (prev->p - p).Cross(next->p - p);
    }
@@ -140,7 +141,7 @@ struct ConcaveSet
       points.erase(edge->p);
    }
 
-   bool isEar(EdgePoint *edge)
+   bool isEar(EdgePoint *edge,bool allowTouch)
    {
       if (points.empty())
          return true;
@@ -164,12 +165,54 @@ struct ConcaveSet
          if (concave.x<test.min.x || concave.x>test.max.x )
             continue;
 
-         if (test.pointInTri(concave))
+         if (test.pointInTri(concave,allowTouch))
             return false;
       }
 
       return true;
    }
+
+   void verify(EdgePoint *e0,int inN)
+   {
+      if (inN<=2)
+         return;
+
+      EdgePoint *e = e0;
+      int idx = 0;
+      while(true)
+      {
+         bool concave = e->calcConcave();
+         if (concave!=e->isConcave)
+            printf("Bad concave set, is:%d was:%d (n=%d)\n",concave,e->isConcave,inN);
+
+         bool inSet = points.find(e->p)!=points.end();
+         if (e->isConcave && !inSet)
+            printf("Bad inSet, is:%d set:%d (n=%d/%d)\n",e->isConcave,inSet,idx,inN);
+
+         idx++;
+         e = e->next;
+         if (e==e0)
+            break;
+      }
+
+       for(PointSet::const_iterator p = points.begin(); p!=points.end(); ++p)
+       {
+          EdgePoint *e = e0;
+          UserPoint pp = *p;
+          bool foundConcave = false;
+          for(int j=0;j<inN;j++)
+          {
+             if (e->isConcave && e->p==pp)
+             {
+                foundConcave = true;
+                break;
+             }
+             e = e->next;
+          }
+          if (!foundConcave)
+             printf("Could not find concave point (%f,%f) in poly.\n", pp.x, pp.y);
+       }
+   };
 };
 
 
@@ -181,13 +224,18 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
 
    for(EdgePoint *p = head; ; )
    {
-      float cross = p->calcCross();
+      double cross = p->calcCross();
       if (fabs(cross)<INSIDE_TOL && p->p.Dist2(p->next->p)<0.00001 )
       {
          // erase point
          p->unlink();
+         size--;
          if (p==head)
+         {
             p = head = p->next;
+            if (p == p->next)
+               return;
+         }
          else
          {
             p = p->next;
@@ -211,70 +259,77 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
    EdgePoint *pi= head;
    EdgePoint *p_end = pi->prev;
 
-   while( pi!=p_end && size>2)
+   for(int pass=0;pass<2;pass++)
    {
-      if ( concaveSet.isEar(pi) )
+      bool allowTouching = pass;
+      while( pi!=p_end && size>2)
       {
-         // Have ear triangle - yay - clip it
-         outTriangles.push_back(pi->prev->p);
-         outTriangles.push_back(pi->p);
-         outTriangles.push_back(pi->next->p);
-
-         //printf("  ear : %f,%f %f,%f %f,%f\n", pi->prev->p.x, pi->prev->p.y,
-         //       pi->p.x, pi->p.y,
-         //       pi->next->p.x, pi->next->p.y );
-
-         pi->unlink();
-         size --;
-         if (size<3)
-            break;
-
-         EdgePoint *next = pi->next;
-         EdgePoint *prev = pi->prev;
-
-         while(next->isDegenerate())
+         if ( concaveSet.isEar(pi,allowTouching) )
          {
-            if (next->isConcave)
-              concaveSet.remove(next);
-            next->unlink();
-            next = next->next;
-            size--;
+            // Have ear triangle - yay - clip it
+            outTriangles.push_back(pi->prev->p);
+            outTriangles.push_back(pi->p);
+            outTriangles.push_back(pi->next->p);
+
+            //printf("  ear : %f,%f %f,%f %f,%f\n", pi->prev->p.x, pi->prev->p.y,
+            //       pi->p.x, pi->p.y,
+            //       pi->next->p.x, pi->next->p.y );
+
+            pi->unlink();
+            size --;
             if (size<3)
                break;
-         }
-         // Has it stopped being concave?
-         bool nextConcave = next->calcConcave();
-         if (next->isConcave && !nextConcave)
-            concaveSet.remove(next); 
-         // Has it stopped being concave?
-         else if (!next->isConcave && nextConcave)
-            concaveSet.add(next); 
 
-         while(prev->isDegenerate())
+            EdgePoint *next = pi->next;
+            EdgePoint *prev = pi->prev;
+
+            while(next->isDegenerate())
+            {
+               if (next->isConcave)
+                 concaveSet.remove(next);
+               next->unlink();
+               next = next->next;
+               size--;
+               if (size<3)
+                  break;
+            }
+            // Has it stopped being concave?
+            bool nextConcave = next->calcConcave();
+            if (next->isConcave && !nextConcave)
+               concaveSet.remove(next); 
+            // Has it stopped being concave?
+            else if (!next->isConcave && nextConcave)
+               concaveSet.add(next); 
+
+            while(prev->isDegenerate())
+            {
+               if (prev->isConcave)
+                 concaveSet.remove(prev); 
+               prev->unlink();
+               prev = prev->prev;
+               size--;
+               if (size<3)
+                  break;
+            }
+
+            // Has it stopped being concave?
+            bool prevConcave = prev->calcConcave();
+            if (prev->isConcave && !prevConcave)
+               concaveSet.remove(prev);
+            else if (!prev->isConcave && prevConcave)
+               concaveSet.add(prev);
+
+
+            // Take a step back and try again...
+            pi = prev;
+            p_end = pi->prev;
+            //concaveSet.verify(pi,size);
+         }
+         else
          {
-            if (prev->isConcave)
-              concaveSet.remove(prev); 
-            prev->unlink();
-            prev = prev->prev;
-            size--;
-            if (size<3)
-               break;
+            pi = pi->next;
          }
-
-         // Has it stopped being concave?
-         bool prevConcave = prev->calcConcave();
-         if (prev->isConcave && !prevConcave)
-            concaveSet.remove(prev);
-         else if (!prev->isConcave && prevConcave)
-            concaveSet.add(prev);
-
-
-         // Take a step back and try again...
-         pi = prev;
-         p_end = pi->prev;
       }
-      else
-         pi = pi->next;
    }
 }
 
@@ -285,32 +340,112 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
 
 enum PIPResult { PIP_NO, PIP_YES, PIP_MAYBE };
 
-PIPResult PointInPolygon(UserPoint p0, UserPoint *ioPtr,int inN)
+/*
+   If a line-segment crosses the horizontal ray on the right the count increases
+
+     /------------\
+    /              \
+   /    p0 ______>  \______
+   |                      |
+   |                      |
+   |                      |
+   |-----------------------
+
+
+   The cross product solves if the crossing is on the "right", if it's 0, it goes
+    through the point and we try a different start point.
+
+            + p2
+           /
+      p0+-/  if (p0->p1) X (p0->p2) > 0  then p0 is left of p1->p2
+         /
+        /
+    p1 + 
+
+   In the case where one of the line segment ends is exactly the same, we assume
+    the line segment has a tiny positive gradient as it goes right,
+    and this allows for a consistent test.
+
+*/
+
+PIPResult PointInPolygon(UserPoint p0, UserPoint *ioPtr,int inN, double tol)
 {
    int crossing = 0;
    for(int i=0;i<inN;i++)
    {
       UserPoint p1 = ioPtr[i];
       UserPoint p2 = ioPtr[ (i+1)%inN ];
-      // Should probably do something a bit better here...
-      if (p1.y==p0.y || p2.y==p0.y)
-         return PIP_MAYBE;
 
-      if (p1.y<p0.y && p2.y>p0.y)
+      // Very similar Y value - might be unstable...
+      if (tol>0 && (fabs(p1.y-p0.y)<tol || fabs(p2.y-p0.y)<tol) )
       {
+         return PIP_MAYBE;
+      }
+
+      bool m1 = p1.y==p0.y;
+      bool m2 = p2.y==p0.y;
+      if (m1||m2)
+      {
+         // Overlaps - try a different point
+         if ( (m1 && fabs(p1.x-p0.x)<=tol) || (m2 && fabs(p2.x-p0.x)<=tol) )
+            return PIP_MAYBE;
+
+         if (m1&&m2)
+         {
+            // Line goes though p0?
+            if ( (p1.x>p0.x) != (p2.x>p0.x) )
+               return PIP_MAYBE;
+            // since the ray goes slightly up, it will miss this segment
+         }
+         else if (m1 && p1.x>p0.x)
+         {
+            // The ray will go slightly over p1 - up to p2?
+            if (p2.y>p0.y)
+               crossing++;
+         }
+         else if (m2 && p2.x>p0.x)
+         {
+            // The ray will go slightly over p2 - up to p1?
+            if (p1.y>p0.y)
+               crossing++;
+         }
+      }
+      else if (p1.y<p0.y && p2.y>p0.y)
+      {
+         // cross tol?
          double cross = (p1-p0).Cross(p2-p0);
          if (cross==0)
+         {
             return PIP_MAYBE;
+         }
          if (cross>0)
+         {
+            if (tol>0)
+            {
+               double ix = p1.x + (p0.y-p1.y)/(p2.y-p1.y) * (p2.x-p1.x);
+               if (fabs(ix-p0.x)<tol)
+                  return PIP_MAYBE;
+            }
             crossing++;
+         }
       }
       else if(p1.y>p0.y && p2.y<p0.y)
       {
          double cross = (p1-p0).Cross(p2-p0);
          if (cross==0)
+         {
             return PIP_MAYBE;
+         }
          if (cross<0)
+         {
+            if (tol>0)
+            {
+               double ix = p1.x + (p0.y-p1.y)/(p2.y-p1.y) * (p2.x-p1.x);
+               if (fabs(ix-p0.x)<tol)
+                  return PIP_MAYBE;
+            }
             crossing++;
+         }
       }
    }
    return (crossing & 1) ? PIP_YES : PIP_NO;
@@ -407,10 +542,44 @@ int LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
       if (e0==inOuter)
          break;
    }
+   if (!bestOut)
+   {
+      double closest = 1e39;
+      for(EdgePoint *in = inInner;  ; )
+      {
+         for(EdgePoint *e0 = inOuter;  ; )
+         {
+            double dx = in->p.x-e0->p.x;
+            double dy = in->p.y-e0->p.y;
+            double dist = dx*dx+dy*dy;
+            if (dist<closest)
+            {
+               closest = dist;
+               bestIn = in;
+               bestOut = e0;
+            }
+
+            e0 = e0->next;
+            if (e0==inOuter)
+               break;
+         }
+
+         in = in->next;
+         if (in==inInner) break;
+      }
+   }
 
    if (!bestOut)
    {
-      printf("Could not link hole\n");
+      printf("Could not link hole to points\n");
+      printf(" left most %f,%f\n",bestIn->p.x, bestIn->p.y);
+      for(EdgePoint *e0 = inOuter;  ; )
+      {
+         printf("  outer %f,%f\n",e0->p.x, e0->p.y);
+         e0 = e0->next;
+         if (e0==inOuter)
+            break;
+      }
       return 0;
    }
 
@@ -422,20 +591,25 @@ int LinkSubPolys(EdgePoint *inOuter,  EdgePoint *inInner, EdgePoint *inBuffer)
    else if (bestAlpha>0.0001)
    {
       // Insert node into outline
-      EdgePoint *b = inBuffer + 2;
-      b->init( UserPoint(closestX,bestOut->p.y + ( bestOut->next->p.y- bestOut->p.y) * bestAlpha),
+      EdgePoint *b = inBuffer++;
+      count ++;
+
+      // Use a small offset to avoid creating a degenerate/numerically unstable line
+      b->init( UserPoint(closestX-0.0001,bestOut->p.y + ( bestOut->next->p.y- bestOut->p.y) * bestAlpha),
                 bestOut, bestOut->next );
 
       bestOut->next->prev = b;
       bestOut->next = b;
 
       bestOut = b;
-      count ++;
    }
    else
+   {
       bestAlpha = 0;
+   }
 
-   if (bestAlpha==0)
+   // Fuse close points...
+   if ( bestIn->p.Dist(bestOut->p) < 0.0001 )
    {
       /* Hole links to outline at a common point...
       
@@ -548,9 +722,14 @@ struct SubInfo
 
    bool operator <(const SubInfo &inOther) const
    {
+     return x0 < inOther.x0;
+   }
+   /*
+   bool operator <(const SubInfo &inOther) const
+   {
       // Extents not overlap - call it even
       if (x1 <= inOther.x0 || x0>=inOther.x1 || y1 <= inOther.y0 || y0>=inOther.y1 )
-         return false;
+         return x0 < inOther.x0;
 
       bool allOtherInExtent = true;
       for(int i=0;i<inOther.size;i++)
@@ -578,10 +757,16 @@ struct SubInfo
 
       return false;
    }
+   */
 
    bool contains(const UserPoint inP) const
    {
       return inP.x>=x0 && inP.x<=x1 && inP.y>=y0 && inP.y<=y1;
+   }
+
+   double sideLength()
+   {
+      return (x1-x0 + y1-y0)*0.5;
    }
 
 
@@ -683,10 +868,18 @@ void TriangulateSubPolys(SubInfo *outer, QuickVec<SubInfo *> &holes,  Vertices &
    #else
       if (holeCount)
       {
+         //printf("Sort holes : %d\n", holeCount);
          std::sort(holes.begin(), holes.end(), sortLeft);
 
          for(int h=0;h<holeCount;h++)
          {
+            /*
+            printf("Hole %d: %f,%f ... %f,%f\n", h,
+                   holes[h]->x0,
+                   holes[h]->y0,
+                   holes[h]->x1,
+                   holes[h]->y1 );
+            */
             SubInfo &info = *holes[h];
             size += LinkSubPolys(outer->first,info.first, info.link);
          }
@@ -835,6 +1028,8 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
 // Non-clipper version
 
+#define FUSE_TOL 1e-12
+
 void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys,WindingRule inWinding)
 {
    #ifdef NME_INTERNAL_CLIPPING
@@ -861,7 +1056,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    for(int i=0;i<subs;i++)
    {
       int size = subPolys[i]-p0;
-      if (size>2 && ioOutline[p0] == ioOutline[p0+size-1])
+      while(size>2 && ioOutline[p0].Dist2(ioOutline[p0+size-1])<FUSE_TOL ) 
          size--;
 
       if (size>2)
@@ -870,8 +1065,6 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    }
    subInfo.resize(subs=bigSubs);
    std::sort(subInfo.begin(), subInfo.end());
-
-
 
    int groupId = 0;
    int edgeBufferStart = 0;
@@ -893,16 +1086,31 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
       for(int prev=sub-1; prev>=0 && parent==-1; prev--)
       {
-         if (subInfo[prev].contains(p[0]))
+         SubInfo &outer = subInfo[prev];
+         if (outer.contains(p[0]))
          {
-            int prev_p0 = subInfo[prev].p0;
-            int prev_size = subInfo[prev].size;
+            int prev_p0 = outer.p0;
+            int prev_size = outer.size;
             int inside = PIP_MAYBE;
-            for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
+            for(int pass=0; pass<2 && inside==PIP_MAYBE; pass++)
             {
-               inside =  PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size);
-               if (inside==PIP_YES)
-                  parent = prev;
+               // The case where some points are in, and some are out, is undefined.
+               // Due to some numerical differences, some polys in practice slightly overlap.
+               // Possibly could make sure that all the points are in, but pass 0, we
+               //  ignore points that are slightly in, looking for a point that is
+               //  quite in or actually out.  Pass 1, if required, we do a strict test.
+               double tol = pass==0 ? outer.sideLength()*0.01 : 0;
+               for(int test_point = 0; test_point<info.size && inside==PIP_MAYBE; test_point++)
+               {
+                  if (!outer.contains(p[test_point]))
+                  {
+                     inside = PIP_NO;
+                     break;
+                  }
+                  inside = PointInPolygon( p[test_point], &ioOutline[prev_p0], prev_size, tol);
+                  if (inside==PIP_YES)
+                     parent = prev;
+               }
             }
          }
       }

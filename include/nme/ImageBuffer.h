@@ -13,6 +13,7 @@ enum
 {
    surfNotRepeatIfNonPO2    = 0x0001,
    surfFixedPixelFormat     = 0x0002,
+   surfMipmaps              = 0x0004,
 };
 
 

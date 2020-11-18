@@ -25,6 +25,9 @@ GraphicsPath::GraphicsPath() : winding(wrOddEven)
             case pcCurveTo:
                gCommandDataSize[i] = 2;
                break;
+            case pcCubicTo:
+               gCommandDataSize[i] = 3;
+               break;
             default:
                gCommandDataSize[i] = 0;
          }
@@ -53,6 +56,17 @@ void GraphicsPath::curveTo(float controlX, float controlY, float anchorX, float 
    commands.push_back(pcCurveTo);
    data.push_back(controlX);
    data.push_back(controlY);
+   data.push_back(anchorX);
+   data.push_back(anchorY);
+}
+
+void GraphicsPath::cubicTo(float cx0, float cy0, float cx1, float cy1, float anchorX, float anchorY)
+{
+   commands.push_back(pcCubicTo);
+   data.push_back(cx0);
+   data.push_back(cy0);
+   data.push_back(cx1);
+   data.push_back(cy1);
    data.push_back(anchorX);
    data.push_back(anchorY);
 }
@@ -138,7 +152,7 @@ void GraphicsPath::tile(float x, float y, const Rect &inTileRect,float *inTrans,
    }
 }
 
-void GraphicsPath::reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour)
+void GraphicsPath::reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool inHasColour, bool isFixed)
 {
    commands.reserve( commands.size() + inN );
    int points = inFullImage ? 1 : 3;
@@ -146,6 +160,8 @@ void GraphicsPath::reserveTiles(int inN, bool inFullImage, bool inTrans2x2, bool
       points += 2;
    if (inHasColour)
       points += 2;
+   if (isFixed)
+      points++;
    data.reserve( data.size() + inN*points*2 );
 }
 
@@ -165,9 +181,13 @@ void GraphicsPath::closeLine(int inCommand0, int inData0)
             move = point;
             break;
 
+         case pcCubicTo:
+            point+=2;
+            // Fall through...
          case pcWideLineTo:
          case pcCurveTo:
             point+=2;
+            // Fall through...
          case pcLineTo:
             if (move && move[0]==point[0] && move[1]==point[1])
             {

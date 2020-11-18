@@ -37,6 +37,7 @@ class MouseEvent extends Event
    public var shiftKey:Bool;
    public var stageX:Float;
    public var stageY:Float;
+   public var cancelClick:Bool;
 
    private static var efLeftDown = 0x0001;
    private static var efShiftDown = 0x0002;
@@ -58,6 +59,7 @@ class MouseEvent extends Event
       this.delta = delta;
       this.commandKey = commandKey;
       this.clickCount = clickCount;
+      cancelClick = false;
    }
 
    public override function clone():Event 
@@ -88,7 +90,7 @@ class MouseEvent extends Event
 
    public override function toString():String 
    {
-      return "[MouseEvent type=" + type + " bubbles=" + bubbles + " cancelable=" + cancelable + " localX=" + localX + " localY=" + localY + " relatedObject=" + relatedObject + " ctrlKey=" + ctrlKey + " altKey=" + altKey + " shiftKey=" + shiftKey + " buttonDown=" + buttonDown + " delta=" + delta + "]";
+      return 'MouseEvent(type=$type bubbles=$bubbles cancelable=$cancelable localX=$localX localY=$localY relatedObject=$relatedObject ctrlKey=$ctrlKey altKey=$altKey shiftKey=$shiftKey buttonDown=$buttonDown delta=$delta cancelClick=$cancelClick)';
    }
 
    public function updateAfterEvent() 

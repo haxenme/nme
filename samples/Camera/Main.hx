@@ -7,10 +7,28 @@ class Main extends Sprite
 {
    var camera:Camera;
    var bitmap:Bitmap;
+   var rot:Int;
 
    public function new()
    {
       super();
+
+      rot = 0;
+      var args = nme.system.System.getArgs();
+      for(a in args)
+      {
+         switch(a)
+         {
+            case "90": rot = 90;
+            case "270": rot = 270;
+            case "180": rot = 180;
+            case x:
+               trace("Unknown arg: " + x);
+         }
+      }
+
+
+
       camera = Camera.getCamera();
       if (camera!=null)
          camera.addEventListener(Event.VIDEO_FRAME,onFrame);
@@ -26,21 +44,38 @@ class Main extends Sprite
          var sh:Float = stage.stageHeight;
          var w = bitmap.bitmapData.width;
          var h = bitmap.bitmapData.height;
-         if (w*sh > h*sw)
+         if (rot==90 || rot==270)
          {
-            bitmap.width = sw;
-            sh = h*sw/w;
-            bitmap.height = sh;
-            bitmap.x = 0;
-            bitmap.y = (stage.stageHeight-sh)*0.5;
+            w = bitmap.bitmapData.height;
+            h = bitmap.bitmapData.width;
          }
+         var bmpW = sw;
+         var bmpH = sh;
+         if (w*sh > h*sw)
+            bmpH = h*sw/w;
          else
+            bmpW = w*sh/h;
+
+         trace('Stage : $sw,$sh');
+         trace('Camera: $bmpW,$bmpH');
+         bitmap.rotation = rot;
+         bitmap.width = bmpW;
+         bitmap.height = bmpH;
+         switch(rot)
          {
-            bitmap.height = sh;
-            sw = w*sh/h;
-            bitmap.width = sw;
-            bitmap.y = 0;
-            bitmap.x = (stage.stageWidth-sw)*0.5;
+            case 0:
+               bitmap.x = (sw-bmpW)*0.5;
+               bitmap.y = (sh-bmpH)*0.5;
+            case 90:
+               bitmap.x = sw - (sw-bmpW)*0.5;
+               bitmap.y = (sh-bmpH)*0.5;
+            case 270:
+               bitmap.x = (sw-bmpW)*0.5;
+               bitmap.y = sh - (sh-bmpH)*0.5;
+            case 180:
+               bitmap.x = sw - (sw-bmpW)*0.5;
+               bitmap.y = sh - (sh-bmpH)*0.5;
+            default:
          }
       }
    }

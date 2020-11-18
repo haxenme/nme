@@ -29,7 +29,7 @@ class CommandLineTools
    public static var nme(default,null):String;
    public static var home:String;
    public static var sys:SysProxy;
-   public static var gradle:Bool = false;
+   public static var gradle:Bool = true;
    public static var quick:Bool = false;
    public static var fat:Bool = false;
    public static var browser:String = null;
@@ -57,13 +57,14 @@ class CommandLineTools
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
             "androidview", "android-view", "iphonesim", "android", "androidsim", "rpi",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
-            "watchsimulator", "watchos", "jsprime", "winrt", "uwp" ];
+            "watchsimulator", "watchos", "jsprime", "winrt", "uwp", "rg350",
+            "bundlerelease", "bundledebug", "arm64" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
             "rebuild", "shell", "icon", "banner", "favicon", "serve", "listbrowsers",
-            "prepare", "quickrun" ];
+            "prepare", "quickrun", "uploadcrashlytics", "ndk-stack" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -156,6 +157,9 @@ class CommandLineTools
             platform = new platforms.JsPrimePlatform(project);
             if (cppiaPlatform!=null)
                cppiaPlatform.copyOutputTo(platform.getOutputDir());
+
+         case Platform.RG350:
+            platform = new platforms.Rg350Platform(project);
       }
 
 
@@ -224,6 +228,10 @@ class CommandLineTools
                platform.buildPackage();
                platform.postBuild();
             }
+         }
+         if (command == "uploadcrashlytics")
+         {
+            platform.buildPackage();
          }
 
          if (project.export!=null && haxed)
@@ -451,8 +459,8 @@ class CommandLineTools
             args.push("-debug");
          if (!toolkit)
             args.push("-notoolkit");
-         if (gradle)
-            args.push("-gradle");
+         if (!gradle)
+            args.push("-ant");
          if (browser!=null)
          {
             args.push("-browser");
@@ -804,9 +812,11 @@ class CommandLineTools
       sys.println("  rpi         : Create RaspberryPi applications");
       sys.println("  iphone      : ios + device debugging");
       sys.println("  iphonesim   : ios + simulator");
+      sys.println("  rg350       : Retro Gamer 350 console");
       sys.println("  watchos     : watch extension");
       sys.println("  watchsimulator : watch extension + simulator");
       sys.println("  winrt       : Create Universal Windows Platform applications");
+      sys.println("  arm64       : Arm64 on windows binary");
       sys.println("");
       sys.println(" Options : ");
       sys.println("");
@@ -1046,7 +1056,17 @@ class CommandLineTools
          var test = words[w].toLowerCase();
          if (isTarget(test))
          {
+            if (test=="arm64")
+            {
+               test = "cpp";
+               project.haxedefs.set("HXCPP_ARM64","1");
+            }
             targetName = test;
+            if (targetName.toLowerCase()=="bundlerelease" || targetName.toLowerCase()=="bundledebug")
+            {
+               if (project.command!="uploadcrashlytics")
+                  project.command = "build";
+            }
             words.splice(w,1);
             break;
          }
@@ -1465,7 +1485,15 @@ class CommandLineTools
             else
                buildProject(project);
 
-         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile", "prepare", "quickrun":
+         case "ndk-stack":
+             if (!loadProject(project,false))
+                Log.error("Could not load project");
+             var android = new platforms.AndroidPlatform(project);
+             android.init();
+             words.shift();
+             android.runNdkStack(words);
+
+         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile", "prepare", "quickrun", "uploadcrashlytics":
 
             if (words.length > 2) 
             {
@@ -1702,10 +1730,10 @@ class CommandLineTools
             else if (argument == "-32") 
                project.architectures.push(Architecture.X86);
 
-            else if (argument=="-gradle" || argument=="-Dgradle")
+            else if (argument=="-ant" || argument=="-Dant")
             {
-               gradle = true;
-               project.haxedefs.set("gradle", "1");
+               gradle = false;
+               project.haxedefs.remove("gradle");
             }
             else if (argument=="-q" || argument=="-quick")
             {

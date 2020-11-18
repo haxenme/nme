@@ -82,8 +82,8 @@ public:
    static Sound *FromFile(const std::string &inFilename, bool inForceMusic, const std::string &inEngine);
    static Sound *FromEncodedBytes(const unsigned char *inData, int len, bool inForceMusic, const std::string &inEngine);
 
-   static void Suspend();
-   static void Resume();
+   static void Suspend(unsigned int flags=0x01);
+   static void Resume(unsigned int flags=0x01);
    static void Shutdown();
 
    virtual void getID3Value(const std::string &inKey, std::string &outValue)

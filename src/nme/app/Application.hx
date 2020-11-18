@@ -7,12 +7,14 @@ import nme.bare.Surface;
 import nme.app.Window;
 import Sys;
 
-#if (sys && haxe4)
-import sys.thread.Mutex;
-#elseif cpp
-import cpp.vm.Mutex;
-#elseif neko
-import neko.vm.Mutex;
+#if (cpp || neko)
+  #if (sys && haxe4)
+  import sys.thread.Mutex;
+  #elseif cpp
+  import cpp.vm.Mutex;
+  #elseif neko
+  import neko.vm.Mutex;
+  #end
 #end
 
 #if HXCPP_TELEMETRY
@@ -54,6 +56,7 @@ class Application
    public inline static var STENCIL_BUFFER  = 0x0400;
    public inline static var SINGLE_INSTANCE = 0x0800;
    public inline static var SCALE_BASE      = 0x1000;
+   public inline static var HARDWARE_METAL  =0x10000;
 
    public static var nmeFrameHandle:Dynamic = null;
    public static var nmeWindow:Window = null;
@@ -77,6 +80,7 @@ class Application
 
    public static var onQuit:Void -> Void = close;
    public static var nmeQuitting = false;
+   public static var asyncPing:Void->Void = null;
 
    static var pollClientList:Array<IPollClient>;
    static var mainThreadJobs:Array<Void->Void> = [];
@@ -221,6 +225,11 @@ class Application
       nme_pause_animation();
    }
 
+   public static function setNativeWindow(window:Dynamic)
+   {
+      nme_set_native_window(window);
+   }
+
    public static function runOnMainThread(inCallback:Void->Void) 
    {
       #if ((cpp||neko) && !emscripten)
@@ -230,6 +239,8 @@ class Application
       #else
       mainThreadJobs.push(inCallback);
       #end
+      if (asyncPing!=null)
+         asyncPing();
    }
 
    public static function postUICallback(inCallback:Void->Void) 
@@ -311,7 +322,7 @@ class Application
    #if android
    private static var nme_post_ui_callback = PrimeLoader.load("nme_post_ui_callback", "ov");
    #end
-   private static var nme_set_package = Loader.load("nme_set_package", 4);
+   private static var nme_set_package = PrimeLoader.load("nme_set_package", "ssssv");
    //private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
    private static var nme_pause_animation = PrimeLoader.load("nme_pause_animation", "v");
    private static var nme_resume_animation = PrimeLoader.load("nme_resume_animation", "v");
@@ -319,6 +330,7 @@ class Application
    private static var nme_get_nme_state_version = Loader.load("nme_get_nme_state_version", 0);
    private static var nme_stage_set_fixed_orientation = PrimeLoader.load("nme_stage_set_fixed_orientation", "iv");
    private static var nme_get_bits = PrimeLoader.load("nme_get_bits", "i");
+   private static var nme_set_native_window = PrimeLoader.load("nme_set_native_window", "ov");
 }
 
 

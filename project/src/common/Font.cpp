@@ -280,6 +280,7 @@ int Font::Height()
 }
 
 
+
 // --- CharGroup ---------------------------------------------
 
 void  CharGroup::UpdateMetrics(TextLineMetrics &ioMetrics)
@@ -300,9 +301,9 @@ double CharGroup::Height(double inFontToLocal)
 
 struct FontInfo
 {
-   FontInfo(const TextFormat &inFormat,double inScale)
+   FontInfo(const TextFormat &inFormat,double inScale, bool inAllowNative)
    {
-      allowNative = gNmeNativeFonts;
+      allowNative = inAllowNative;
       name = inFormat.font;
       height = (int )(inFormat.size*inScale + 0.5);
       flags = 0;
@@ -312,6 +313,16 @@ struct FontInfo
          flags |= ffItalic;
       if (inFormat.underline)
          flags |= ffUnderline;
+
+      int outlineSize = 0.5 + inScale*inFormat.outline*64;
+      if (outlineSize>16)
+      {
+         outlineSize >>= 4;
+         int miter = (int)(inFormat.outlineMiterLimit*256);
+         flags |= inFormat.outlineFlags.Get() | (outlineSize<<8);
+         flags ^= (miter<<16);
+      }
+
    }
 
    bool operator<(const FontInfo &inRHS) const
@@ -408,8 +419,12 @@ static std::string registerNorm(const std::string &inName)
 Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef)
 {
    bool native = inNative && gNmeNativeFonts;
+   bool outline = inFormat.outline.Get()>0;
+   if (outline)
+      native = false;
 
-   FontInfo info(inFormat,inScale);
+
+   FontInfo info(inFormat,inScale,native);
 
    Font *font = 0;
    FontMap::iterator fit = sgFontMap.find(info);
@@ -458,6 +473,9 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 
       if (!bytes)
       {
+         //#if (HX_CFFI_API_VERSION>=410)
+         //AutoGCUnblocking unblock;
+         //#endif
          ByteArray resource(seekName.c_str());
          if (resource.Ok())
          {

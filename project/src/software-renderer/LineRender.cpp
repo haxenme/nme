@@ -24,8 +24,8 @@ public:
    {
       mStroke = inJob.mStroke;
    }
-   
-   
+
+
    void AddJoint(const UserPoint &p0, const UserPoint &perp1, const UserPoint &perp2)
    {
       bool miter = false;
@@ -106,15 +106,15 @@ public:
             (*this.*ItLine)(p0-perp2,p0-perp1);
       }
    }
-   
-   
+
+
    void AddLinePart(UserPoint p0, UserPoint p1, UserPoint p2, UserPoint p3)
    {
       (*this.*ItLine)(p0,p1);
       (*this.*ItLine)(p2,p3);
    }
-   
-   
+
+
    void AlignOrthogonal()
    {
       int n = mCommandCount;
@@ -149,7 +149,7 @@ public:
                unaligned_first = *point;
                first = point;
                break;
-            
+
             case pcWideLineTo:
                point++;
                p = *point;
@@ -164,19 +164,23 @@ public:
                point++;
                p = *point;
                break;
+
+            case pcCubicTo:
+               point+=2;
+               p = *point;
          }
          unaligned_prev = p;
          prev = point++;
       }
    }
-   
-   
+
+
    void BuildExtent(const UserPoint &inP0, const UserPoint &inP1)
    {
       mBuildExtent->Add(inP0);
    }
-   
-   
+
+
    inline void EndCap(UserPoint p0, UserPoint perp)
    {
       switch(mStroke->caps)
@@ -192,13 +196,13 @@ public:
          case  scRound:
             IterateCircle(p0,perp,M_PI,-perp);
             break;
-         
+
          default:
             (*this.*ItLine)(p0+perp,p0-perp);
       }
    }
-   
-   
+
+
    double GetPerpLen(const Matrix &m, bool inForExtent)
    {
       if (!mIncludeStrokeInExtent && inForExtent)
@@ -232,13 +236,13 @@ public:
                break;
          }
       }
-      
+
       // This may be too fine ....
       mDTheta = M_PI/perp_len;
       return perp_len;
    }
-   
-   
+
+
    int Iterate(IterateMode inMode,const Matrix &m)
    {
       ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
@@ -247,7 +251,7 @@ public:
 
      double perp_len = 0.0;
      int alpha = 256;
-     
+
      perp_len = GetPerpLen(m,inMode==itGetExtent);
 
 
@@ -302,7 +306,7 @@ public:
                first = *point++;
                points = 1;
                break;
-               
+
             case pcWideLineTo:
                point++;
             case pcLineTo:
@@ -314,19 +318,19 @@ public:
                      point++;
                      continue;
                   }
-                  
+
                   UserPoint perp = (*point - prev).Perp(perp_len);
                   if (points>1)
                      AddJoint(prev,prev_perp,perp);
                   else
                      first_perp = perp;
-                  
+
                   // Add edges ...
                   AddLinePart(prev+perp,*point+perp,*point-perp,prev-perp);
                   prev = *point;
                   prev_perp = perp;
                }
-               
+
                points++;
                // Implicit loop closing...
                if (points>2 && *point==first)
@@ -338,18 +342,20 @@ public:
                point++;
                }
                break;
-               
+
             case pcCurveTo:
+            case pcCubicTo:
                {
+                  bool isCubic = mCommands[mCommand0 + i]==pcCubicTo;
                   // Gradients pointing from end-point to control point - trajectory
                   //  is initially parallel to these, end cap perpendicular...
                   UserPoint g0 = point[0]-prev;
-                  UserPoint g2 = point[1]-point[0];
+                  UserPoint g2 = point[1+isCubic]-point[0+isCubic];
 
                   UserPoint perp = g0.Perp(perp_len);
                   UserPoint perp_end = g2.Perp(perp_len);
 
-                 
+
                   if (points>0)
                   {
                      if (points>1)
@@ -357,8 +363,8 @@ public:
                      else
                         first_perp = perp;
                   }
- 
-                  if (fabs(g0.Cross(g2))<0.0001)
+
+                  if (!isCubic && fabs(g0.Cross(g2))<0.0001)
                   {
                      // Treat as line, rather than curve
                      perp_end = perp;
@@ -373,21 +379,30 @@ public:
                      // Add curvy bits
                      if (inMode==itGetExtent)
                      {
-                        FatCurveExtent(prev, point[0], point[1],perp_len);
+                        if (isCubic)
+                           FatCubicExtent(prev, point[0], point[1],point[2],perp_len);
+                        else
+                           FatCurveExtent(prev, point[0], point[1],perp_len);
                      }
                      else if (inMode==itHitTest)
                      {
-                        HitTestFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
+                        if (isCubic)
+                           HitTestFatCubic(prev, point[0], point[1],point[2],perp_len, perp, perp_end);
+                        else
+                           HitTestFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
                      }
                      else
                      {
-                        BuildFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
+                        if (isCubic)
+                           BuildFatCubic(prev, point[0], point[1],point[2],perp_len, perp, perp_end);
+                        else
+                           BuildFatCurve(prev, point[0], point[1],perp_len, perp, perp_end);
                      }
                   }
-                  
-                  prev = point[1];
+
+                  prev = point[1+isCubic];
                   prev_perp = perp_end;
-                  point +=2;
+                  point +=2 + isCubic;
                   points++;
                   // Implicit loop closing...
                   if (points>2 && prev==first)
@@ -397,21 +412,24 @@ public:
                   }
                }
                break;
+
+
+
             default:
                point += gCommandDataSize[ mCommands[i] ];
          }
       }
-      
+
       if (points>1)
       {
          EndCap(first,-first_perp);
          EndCap(prev,prev_perp);
       }
-      
+
       return alpha;
    }
-   
-   
+
+
    void IterateCircle(const UserPoint &inP0, const UserPoint &inPerp, double inTheta, const UserPoint &inPerp2 )
    {
       UserPoint other(inPerp.CWPerp());
@@ -443,13 +461,13 @@ public:
       mSolid = inSolid;
       mTriangles = inJob.mTriangles;
    }
-   
-   
+
+
    ~TriangleLineRender()
    {
       if (mSolid) mSolid->Destroy();
    }
-   
+
 
    bool GetExtent(const Transform &inTransform,Extent2DF &ioExtent,bool inIncludeStroke)
    {
@@ -458,41 +476,41 @@ public:
          result = mSolid->GetExtent(inTransform,ioExtent,inIncludeStroke);
       return CachedExtentRenderer::GetExtent(inTransform,ioExtent,inIncludeStroke) || result;
    }
-   
-   
+
+
    bool Hits(const RenderState &inState)
    {
       if (mSolid && mSolid->Hits(inState))
          return true;
       return LineRender::Hits(inState);
    }
-   
-   
+
+
    int Iterate(IterateMode inMode,const Matrix &m)
    {
       ItLine = inMode==itGetExtent ? &LineRender::BuildExtent :
             inMode==itCreateRenderer ? &LineRender::BuildSolid :
                   &LineRender::BuildHitTest;
-      
+
      double perp_len = GetPerpLen(m,inMode==itGetExtent);
-     
+
      UserPoint *point = 0;
      if (inMode==itHitTest)
        point = &mTriangles->mVertices[0];
      else
        point = &mTransformed[0];
-      
+
       int tris = mTriangles->mTriangleCount;
      for(int i=0;i<tris;i++)
       {
          UserPoint v0 = *point++;
          UserPoint v1 = *point++;
          UserPoint v2 = *point++;
-         
+
          UserPoint perp0 = (v1-v0).Perp(perp_len);
          UserPoint perp1 = (v2-v1).Perp(perp_len);
          UserPoint perp2 = (v0-v2).Perp(perp_len);
-         
+
          AddJoint(v0,perp2,perp0);
        AddLinePart(v0+perp0,v1+perp0,v1-perp0,v0-perp0);
          AddJoint(v1,perp0,perp1);
@@ -500,18 +518,18 @@ public:
          AddJoint(v2,perp1,perp2);
        AddLinePart(v2+perp2,v0+perp2,v0-perp2,v2-perp2);
       }
-      
+
      return 256;
    }
-   
-   
+
+
    bool Render( const RenderTarget &inTarget, const RenderState &inState )
    {
       if (mSolid)
          mSolid->Render(inTarget,inState);
       return LineRender::Render(inTarget,inState);
    }
-   
+
 
    void SetTransform(const Transform &inTransform)
    {

@@ -158,6 +158,7 @@ public:
                             int inSrcChannel, int inDestChannel ) const;
 
    virtual void colorTransform(const Rect &inRect, ColorTransform &inTransform);
+   void SetFlags(unsigned int inFlags);
    
    Surface *clone();
    void getPixels(const Rect &inRect,uint32 *outPixels,bool inIgnoreOrder=false, bool inLittleEndian=false);

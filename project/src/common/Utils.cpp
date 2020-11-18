@@ -322,6 +322,8 @@ std::string ToStdString(const HFSUniStr255 &inStr)
 }
 #endif
 
+// Mac version is in System.mm
+#ifndef HX_MACOS
 void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 {
 #ifdef HX_WINRT
@@ -352,38 +354,9 @@ void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
          }
       }
    }
-#elif defined(HX_MACOS)
-   for(int v=1; true; v++)
-   {
-      FSVolumeInfo vinfo;
-      HFSUniStr255 name;
-      FSRef        root;
-
-      OSErr err = FSGetVolumeInfo( kFSInvalidVolumeRefNum, v, 0,
-          kFSVolInfoFlags,
-          &vinfo,
-          &name,
-          &root);
-
-      if (err)
-         break;
-
-      FSCatalogInfo cinfo;
-      int flags = kFSCatInfoUserAccess;
-      HFSUniStr255 root_name;
-      if (FSGetCatalogInfo(&root,flags,&cinfo,&root_name,0,0) )
-         break;
-
-      VolumeInfo info;
-      info.path = "/Volumes/" + ToStdString(root_name);
-      info.name = ToStdString(name);
-      info.removable = false; // todo
-      info.writable = true; // todo
-      info.fileSystemType = "Hard Drive";
-      outInfo.push_back(info);
-   }
 #endif
 }
+#endif
 
 
 #if !defined(HX_MACOS) && !defined(IPHONE)

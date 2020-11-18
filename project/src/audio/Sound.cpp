@@ -187,48 +187,59 @@ SoundChannel *SoundChannel::CreateAsyncChannel(SoundDataFormat inDataFormat,bool
 
 
 
-static bool sgSoundSuspended = false;
+static unsigned int sgSoundSuspended = 0x00000000;
 
-void Sound::Suspend()
+void Sound::Suspend(unsigned int inFlags)
 {
-   if (sgSoundSuspended)
-      return;
+   bool wasSuspended = sgSoundSuspended;
+   sgSoundSuspended |= inFlags;
 
-   sgSoundSuspended = true;
+   LOG_SOUND("Suspend %d (%d)", sgSoundSuspended,wasSuspended);
+   if (!wasSuspended)
+   {
+      #ifdef NME_OPENAL
+      SuspendOpenAl();
+      #endif
 
-   clSuspendAllChannels();
+      #if defined(NME_MIXER)
+      SuspendSdlSound();
+      #endif
 
-   #ifdef NME_OPENAL
-   SuspendOpenAl();
-   #endif
+      clSuspendAllChannels();
 
-   #ifdef NME_MIXER
-   SuspendSdlSound();
-   #endif
-
+      #if defined(IPHONE)
+      avSuspendAudio();
+      #endif
+   }
 }
 
 
-void Sound::Resume()
+void Sound::Resume(unsigned int inFlags)
 {
-   if (!sgSoundSuspended)
-      return;
+   bool wasSuspended = sgSoundSuspended;
+   sgSoundSuspended &= ~inFlags;
 
-   sgSoundSuspended = false;
+   LOG_SOUND("Resume %d -> %d", inFlags, sgSoundSuspended);
+   if (wasSuspended && !sgSoundSuspended)
+   {
+      #ifdef NME_OPENAL
+      ResumeOpenAl();
+      #endif
 
-   #ifdef NME_OPENAL
-   ResumeOpenAl();
-   #endif
+      #ifdef NME_MIXER
+      ResumeSdlSound();
+      #endif
 
-   #ifdef NME_MIXER
-   ResumeSdlSound();
-   #endif
+      clResumeAllChannels();
 
-   clResumeAllChannels();
+      #if defined(IPHONE)
+      avResumeAudio();
+      #endif
 
-   #ifdef NME_OPENAL
-   PingOpenAl();
-   #endif
+      #ifdef NME_OPENAL
+      PingOpenAl();
+      #endif
+   }
 }
 
 

@@ -27,5 +27,13 @@ class TestTilesheet extends haxe.unit.TestCase
         var rect:Rectangle = new Rectangle(0,0,10,10);
         var result = tilesheet.getTileRect( tileId, rect );
         assertEquals(rect, result);
-     }      
+     }
+    
+     public function testGetTileRectOutOfBounds() {
+        var rect1:Rectangle = tilesheet.getTileRect( -1 );
+        assertEquals(rect1, null);
+		
+		var rect2:Rectangle = tilesheet.getTileRect( tilesheet.tileCount );
+        assertEquals(rect2, null);
+     }
 }
