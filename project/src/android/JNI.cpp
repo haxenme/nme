@@ -275,6 +275,7 @@ void nme_jni_init_callback(value inCallback)
 DEFINE_PRIME1v(nme_jni_init_callback);
 
 
+/*
 struct JavaHaxeReference
 {
    JavaHaxeReference(value inValue) : root(inValue)
@@ -290,10 +291,12 @@ typedef std::map<value,JavaHaxeReference *> JavaHaxeReferenceMap;
 JavaHaxeReferenceMap gJavaObjects;
 bool gJavaObjectsMutexInit = false;
 pthread_mutex_t gJavaObjectsMutex;
+*/
 
 jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue, bool inNmeObject)
 {
    JNIInit(env);
+   /*
    if (!gJavaObjectsMutexInit)
    {
       gJavaObjectsMutexInit = false;
@@ -307,15 +310,18 @@ jobject CreateJavaHaxeObjectRef(JNIEnv *env,  value inValue, bool inNmeObject)
    else
       gJavaObjects[inValue] = new JavaHaxeReference(inValue);
    pthread_mutex_unlock(&gJavaObjectsMutex);
+   */
+   AutoGCRoot *root = new AutoGCRoot(inValue);
 
    jobject result = inNmeObject ?
-      env->CallStaticObjectMethod(HaxeObject, HaxeObject_create, (jlong)inValue) :
-      env->CallStaticObjectMethod(LimeHaxeObject, LimeHaxeObject_create, (jlong)inValue);
+      env->CallStaticObjectMethod(HaxeObject, HaxeObject_create, (jlong)root) :
+      env->CallStaticObjectMethod(LimeHaxeObject, LimeHaxeObject_create, (jlong)root);
    jthrowable exc = env->ExceptionOccurred();
    CheckException(env);
    return result;
 }
 
+   /*
 void RemoveJavaHaxeObjectRef(value inValue)
 {
    pthread_mutex_lock(&gJavaObjectsMutex);
@@ -335,6 +341,7 @@ void RemoveJavaHaxeObjectRef(value inValue)
    }
    pthread_mutex_unlock(&gJavaObjectsMutex);
 }
+   */
 
 
 struct JNIObject : public nme::Object
@@ -392,8 +399,8 @@ value JObjectToHaxeObject(JNIEnv *env,jobject inObject)
 {
    if (inObject)
    {
-      jlong val = env->GetLongField(inObject,__haxeHandle);
-      return (value)val;
+      jlong handle = env->GetLongField(inObject,__haxeHandle);
+      return handle ? ((AutoGCRoot *)handle)->get() : alloc_null();
    }
 
    return alloc_null();
@@ -1424,8 +1431,8 @@ JAVA_EXPORT void JNICALL Java_org_haxe_nme_NME_onCallback(JNIEnv * env, jobject 
 JAVA_EXPORT jobject JNICALL Java_org_haxe_nme_NME_releaseReference(JNIEnv * env, jobject obj, jlong handle)
 {
    AutoHaxe haxe("releaseReference");
-   value val = (value)handle;
-   RemoveJavaHaxeObjectRef(val);
+   AutoGCRoot *root = (AutoGCRoot *)handle;
+   delete root;
    return 0;
 }
 
@@ -1434,7 +1441,7 @@ value CallHaxe(JNIEnv * env, jobject obj, jlong handle, jstring function, jobjec
    //ELOG("CallHaxe %p", gCallback);
    if (gCallback)
    {
-      value objValue = (value)handle;
+      value objValue = handle ? ((AutoGCRoot *)handle)->get() : alloc_null();
       value funcName = JStringToHaxe(env,function);
       value args = JObjectToHaxe(env,JNIType(jniUnknown,1),inArgs);
       //ELOG("Using %d args", val_array_size(args) );
