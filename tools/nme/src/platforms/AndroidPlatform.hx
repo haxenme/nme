@@ -196,14 +196,14 @@ class AndroidPlatform extends Platform
 
    function getUnstrippedRoot()
    {
-      var outDir = FileSystem.fullPath(getOutputDir());
+      var outDir = FileSystem.absolutePath(getOutputDir());
       outDir = outDir.split("\\").join("/");
       return outDir+"/unstripped";
    }
 
    function getStrippedRoot()
    {
-      var libDir = FileSystem.fullPath(getOutputLibDir());
+      var libDir = FileSystem.absolutePath(getOutputLibDir());
       libDir = libDir.split("\\").join("/");
       return libDir;
    }
