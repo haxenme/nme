@@ -473,9 +473,9 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 
       if (!bytes)
       {
-         //#if (HX_CFFI_API_VERSION>=410)
-         //AutoGCUnblocking unblock;
-         //#endif
+         #if (HX_CFFI_API_VERSION>=410)
+         AutoGCUnblocking unblock;
+         #endif
          ByteArray resource(seekName.c_str());
          if (resource.Ok())
          {
