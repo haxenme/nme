@@ -4,15 +4,19 @@ env:
   global:
   - HXCPP_COMPILE_CACHE=~/hxcache
 
+os: osx
+
+osx_image: xcode12.2
+
 cache:
   directories:
   - $HXCPP_COMPILE_CACHE
 
 before_install:
 - travis_retry brew install neko --HEAD
-- wget -c https://github.com/HaxeFoundation/haxe/releases/download/3.4.2/haxe-3.4.2-osx.tar.gz
+- wget -c https://github.com/HaxeFoundation/haxe/releases/download/4.1.4/haxe-4.1.4-osx.tar.gz
 - sudo mkdir /usr/local/lib/haxe
-- sudo tar xvzf haxe-3.4.2-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
+- sudo tar xvzf haxe-4.1.4-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
 - sudo ln -s /usr/local/lib/haxe/haxe /usr/local/bin/haxe
 - sudo ln -s /usr/local/lib/haxe/haxelib /usr/local/bin/haxelib
 - mkdir ~/haxelib
