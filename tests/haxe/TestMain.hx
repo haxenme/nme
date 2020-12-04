@@ -7,15 +7,22 @@ import nme.StaticNme;
 
 class TestMain {
 
-	static function main(){
+	static function main()
+   {
         //nme.display.BitmapData.defaultPremultiplied = false;
 
-        var r = new haxe.unit.TestRunner();
-        r.add(new TestBitmapDataCopyChannel());
-        r.add(new TestTilesheet());
-        
-        var t0 = Timer.stamp();
-        var success = r.run();
+         var success = false;
+         var t0 = Timer.stamp();
+         try
+         {
+            new TestTilesheet();
+            new TestBitmapDataCopyChannel();
+            success = true;
+         }
+         catch(e:Dynamic)
+         {
+            trace("Error:" + e);
+         }
         trace(" Time : " + (Timer.stamp()-t0)*1000 );
         Sys.exit(success ? 0 : 1);
 	}
