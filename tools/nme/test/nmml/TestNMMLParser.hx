@@ -1,6 +1,7 @@
 package nmml;
 import sys.io.Process;
-class TestNMMLParser extends haxe.unit.TestCase
+
+class TestNMMLParser
 {
     public function testAssetRenames() {
         var previous:String = Sys.getCwd();
@@ -13,6 +14,23 @@ class TestNMMLParser extends haxe.unit.TestCase
         if(error != '')
             Sys.println(error);
         Sys.setCwd(previous);
-        assertTrue(process.exitCode() == 0);
+        assertTrue(process.exitCode() == 0, "process ok");
+    }
+
+    public function assertTrue(result:Bool, msg:String)
+    {
+       if (!result)
+          trace("Test Failed:" + msg);
+    }
+
+    public function new()
+    {
+    }
+
+    public function run()
+    {
+        testAssetRenames();
+        trace("ok");
+        return true;
     }
 }
