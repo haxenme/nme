@@ -23,6 +23,8 @@ before_install:
 - sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/neko/libneko.dylib
 - sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/bin/libneko.2.dylib
 - sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/bin/libneko.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/haxe/libneko.2.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/haxe/libneko.dylib
 - find /usr/local -name libneko.2.dylib
 - wget -c https://github.com/HaxeFoundation/haxe/releases/download/4.1.4/haxe-4.1.4-osx.tar.gz
 - sudo mkdir /usr/local/lib/haxe
@@ -31,7 +33,6 @@ before_install:
 - sudo ln -s /usr/local/lib/haxe/haxelib /usr/local/bin/haxelib
 - mkdir ~/haxelib
 - export DYLD_PRINT_RPATHS=1
-- export DYLD_PRINT_APIS=1
 - haxelib setup ~/haxelib
 - haxelib dev nme $(pwd)
 - git clone https://github.com/HaxeFoundation/hxcpp ~/hxcpp --depth 1
