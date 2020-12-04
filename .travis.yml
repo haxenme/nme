@@ -19,6 +19,8 @@ before_install:
 - sudo ln -s /usr/local/lib/neko/neko /usr/local/bin/neko
 - sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/libneko.2.dylib
 - sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/libneko.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/bin/libneko.2.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/bin/libneko.dylib
 - wget -c https://github.com/HaxeFoundation/haxe/releases/download/4.1.4/haxe-4.1.4-osx.tar.gz
 - sudo mkdir /usr/local/lib/haxe
 - sudo tar xvzf haxe-4.1.4-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
