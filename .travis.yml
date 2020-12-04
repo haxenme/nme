@@ -49,7 +49,7 @@ script:
 - cd $TRAVIS_BUILD_DIR/tools/nme
 - haxe compile.hxml
 - cd $TRAVIS_BUILD_DIR/project
-- neko build.n
+- neko build.n mac-m64
 - cd $TRAVIS_BUILD_DIR/tools/nme
 - haxelib run nme setup
 - haxe test.hxml
