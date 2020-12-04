@@ -23,7 +23,7 @@ before_install:
 - sudo cp /usr/local/lib/neko/neko-2.3.0-osx64/neko /usr/local/lib/haxe
 - sudo ln -s /usr/local/lib/neko/neko-2.3.0-osx64/libneko.2.3.0.dylib /usr/local/lib/libneko.2.dylib
 - sudo ln -s /usr/local/lib/neko/neko-2.3.0-osx64/libneko.2.3.0.dylib /usr/local/lib/libneko.dylib
-- sudo ln -s /usr/local/lib/neko/neko /usr/local/bin/neko
+- sudo ln -s /usr/local/lib/neko/neko-2.3.0-osx64/neko /usr/local/bin/neko
 - sudo ln -s /usr/local/lib/neko/libneko.2.dylib /usr/local/lib/neko/libneko.2.dylib
 - sudo ln -s /usr/local/lib/neko/libneko.dylib /usr/local/lib/neko/libneko.dylib
 - sudo ln -s /usr/local/lib/neko/libneko.2.dylib /usr/local/bin/libneko.2.dylib
@@ -35,7 +35,6 @@ before_install:
 - find /usr/local -name libneko.2.dylib
 - sudo ln -s /usr/local/lib/haxe/haxe /usr/local/bin/haxe
 - sudo ln -s /usr/local/lib/haxe/haxelib /usr/local/bin/haxelib
-- sudo ln -s /usr/local/lib/neko/neko /usr/local/bin/neko
 - mkdir ~/haxelib
 - export DYLD_PRINT_RPATHS=1
 - nm /usr/local/lib/haxe/haxelib
