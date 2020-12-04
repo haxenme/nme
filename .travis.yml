@@ -17,23 +17,19 @@ before_install:
 - sudo mkdir /usr/local/lib/neko
 - sudo mkdir /usr/local/lib/haxe
 - sudo tar xvzf neko-2.3.0-osx64.tar.gz -C /usr/local/lib/neko
-- ls -l /usr/local/lib/neko
-- ls -l /usr/local/lib/neko/libneko.2.3.0.dylib
-- nm /usr/local/lib/neko/libneko.2.3.0.dylib
+- ls -l /usr/local/lib/neko/neko-2.3.0-osx64
+- ls -l /usr/local/lib/neko/neko-2.3.0-osx64/libneko.2.3.0.dylib
+- sudo ln -s /usr/local/lib/neko/neko-2.3.0-osx64/libneko.2.3.0.dylib /usr/local/lib/libneko.2.dylib
+- sudo ln -s /usr/local/lib/neko/neko-2.3.0-osx64/libneko.2.3.0.dylib /usr/local/lib/libneko.dylib
 - sudo ln -s /usr/local/lib/neko/neko /usr/local/bin/neko
-- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/libneko.2.dylib
-- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/libneko.dylib
-- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/neko/libneko.2.dylib
-- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/neko/libneko.dylib
-- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/bin/libneko.2.dylib
-- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/bin/libneko.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.2.dylib /usr/local/lib/neko/libneko.2.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.dylib /usr/local/lib/neko/libneko.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.2.dylib /usr/local/bin/libneko.2.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.dylib /usr/local/bin/libneko.dylib
 - wget -c https://github.com/HaxeFoundation/haxe/releases/download/4.1.4/haxe-4.1.4-osx.tar.gz
 - sudo tar xvzf haxe-4.1.4-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
-- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/haxe/libneko.dylib
-- sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/haxe/libneko.2.dylib
-- ls                                                 /usr/local/lib/haxe/libneko.2.dylib
-- ls -l                                              /usr/local/lib/haxe/libneko.2.dylib
-- nm                                                 /usr/local/lib/haxe/libneko.2.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.dylib /usr/local/lib/haxe/libneko.dylib
+- sudo ln -s /usr/local/lib/neko/libneko.2.dylib /usr/local/lib/haxe/libneko.2.dylib
 - find /usr/local -name libneko.2.dylib
 - sudo ln -s /usr/local/lib/haxe/haxe /usr/local/bin/haxe
 - sudo ln -s /usr/local/lib/haxe/haxelib /usr/local/bin/haxelib
