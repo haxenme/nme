@@ -13,7 +13,10 @@ cache:
   - $HXCPP_COMPILE_CACHE
 
 before_install:
-- travis_retry brew install neko --HEAD
+- wget -c https://github.com/HaxeFoundation/neko/releases/download/v2-3-0/neko-2.3.0-osx64.tar.gz
+- sudo mkdir /usr/local/lib/neko
+- sudo tar xvzf neko-2.3.0-osx64.tar.gz -C /usr/local/lib/neko
+- sudo ln -s /usr/local/lib/neko/neko /usr/local/bin/neko
 - wget -c https://github.com/HaxeFoundation/haxe/releases/download/4.1.4/haxe-4.1.4-osx.tar.gz
 - sudo mkdir /usr/local/lib/haxe
 - sudo tar xvzf haxe-4.1.4-osx.tar.gz -C /usr/local/lib/haxe --strip-components=1
