@@ -17,8 +17,9 @@ before_install:
 - sudo mkdir /usr/local/lib/neko
 - sudo mkdir /usr/local/lib/haxe
 - sudo tar xvzf neko-2.3.0-osx64.tar.gz -C /usr/local/lib/neko
-- ls -l /usr/local/bin/neko
-- ls -l /usr/local/bin/neko/libneko.2.3.0.dylib
+- ls -l /usr/local/lib/neko
+- ls -l /usr/local/lib/neko/libneko.2.3.0.dylib
+- nm /usr/local/lib/neko/libneko.2.3.0.dylib
 - sudo ln -s /usr/local/lib/neko/neko /usr/local/bin/neko
 - sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/libneko.2.dylib
 - sudo ln -s /usr/local/lib/neko/libneko.2.3.0.dylib /usr/local/lib/libneko.dylib
