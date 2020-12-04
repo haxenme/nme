@@ -33,6 +33,8 @@ before_install:
 - sudo ln -s /usr/local/lib/haxe/haxelib /usr/local/bin/haxelib
 - mkdir ~/haxelib
 - export DYLD_PRINT_RPATHS=1
+- nm /usr/local/lib/haxe/libneko.2.dylib
+- nm /usr/local/lib/haxe/haxelib
 - haxelib setup ~/haxelib
 - haxelib dev nme $(pwd)
 - git clone https://github.com/HaxeFoundation/hxcpp ~/hxcpp --depth 1
