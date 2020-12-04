@@ -35,6 +35,7 @@ before_install:
 - find /usr/local -name libneko.2.dylib
 - sudo ln -s /usr/local/lib/haxe/haxe /usr/local/bin/haxe
 - sudo ln -s /usr/local/lib/haxe/haxelib /usr/local/bin/haxelib
+- sudo ln -s /usr/local/lib/neko/neko /usr/local/bin/neko
 - mkdir ~/haxelib
 - export DYLD_PRINT_RPATHS=1
 - nm /usr/local/lib/haxe/haxelib
