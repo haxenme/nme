@@ -20,7 +20,7 @@ class TestNMMLParser
     public function assertTrue(result:Bool, msg:String)
     {
        if (!result)
-          trace("Test Failed:" + msg);
+          throw("Test Failed:" + msg);
     }
 
     public function new()
