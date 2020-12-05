@@ -91,6 +91,11 @@ class FileHelper
             else
             {
                Log.verbose(" - Copying template file: " + source + " -> " + destination);
+               var dir = haxe.io.Path.directory(destination);    
+               if (!sys.FileSystem.exists(dir))                  
+               {                                                 
+                 sys.FileSystem.createDirectory(dir);      
+               }                                                 
                var fileOutput:FileOutput = File.write(destination, true);
                fileOutput.writeString(result);
                fileOutput.close();

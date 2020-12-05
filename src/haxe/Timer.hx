@@ -185,11 +185,8 @@ class Timer
    {
       if (sRunningTimers!=null)
       {
-         var timerCount = sRunningTimers.length;
-         var origTimerCount = timerCount;
-
          var i = 0;
-         while(i<timerCount)
+         while(i<sRunningTimers.length)
          {
             var timer = sRunningTimers[i];
             if (timer.mRunning)
@@ -197,19 +194,15 @@ class Timer
 
             if (!timer.mRunning)
             {
-               sRunningTimers[i] = sRunningTimers[timerCount-1];
-               timerCount--;
+               sRunningTimers[i] = sRunningTimers[sRunningTimers.length-1];
+               #if (cpp && haxe4)
+               cpp.NativeArray.setSize(sRunningTimers, sRunningTimers.length-1);
+               #else
+               sRunningTimers.splice(sRunningTimers.length-1, 1);
+               #end
             }
             else
                i++;
-         }
-         if (timerCount<origTimerCount)
-         {
-            #if (cpp && haxe4)
-            cpp.NativeArray.setSize(sRunningTimers, timerCount);
-            #else
-            sRunningTimers.slice(timerCount, origTimerCount-timerCount);
-            #end
          }
       }
    }
