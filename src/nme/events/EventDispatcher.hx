@@ -72,7 +72,24 @@ class EventDispatcher implements IEventDispatcher
          nmeEventMap.set(type, list);
       }
 
-      list.push(new Listener(listener, useCapture, priority,useWeakReference));
+      var found: Bool = false;
+      var liNew: Listener = new Listener(listener, useCapture, priority,useWeakReference);
+      for(i in 0...list.length)
+      {
+         if (list[i] != null)
+         {
+            var li = list[i];
+            if (li.Is(listener, useCapture))
+            {
+               // Replace
+               list[i] = liNew;
+               found = true;
+               break;
+            }
+         }
+      }
+      if(!found)
+         list.push(liNew);
      
       // if pri is 0, it's fine on the end of the list. If not, might be out of order
       if ( priority != 0 ) {
