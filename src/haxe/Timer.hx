@@ -191,16 +191,9 @@ class Timer
             var timer = sRunningTimers[i];
             if (timer.mRunning)
                timer.nmeCheck(inStamp);
-
+            
             if (!timer.mRunning)
-            {
-               sRunningTimers[i] = sRunningTimers[sRunningTimers.length-1];
-               #if (cpp && haxe4)
-               cpp.NativeArray.setSize(sRunningTimers, sRunningTimers.length-1);
-               #else
-               sRunningTimers.splice(sRunningTimers.length-1, 1);
-               #end
-            }
+               sRunningTimers.splice(i,1);
             else
                i++;
          }
