@@ -182,7 +182,12 @@ namespace nme {
             return std::string("").c_str();
 
         jstring jPref = (jstring) env->CallStaticObjectMethod(cls, mid);
-        return JStringToStdString(env,jPref,true).c_str();
+        const char *c_ptr = env->GetStringUTFChars(jPref, 0);
+        int len = strlen(c_ptr);
+        const char *result = alloc_string_data(c_ptr, len);
+        env->ReleaseStringUTFChars(jPref, c_ptr);
+
+        return result;
     }
 
 }
