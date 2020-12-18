@@ -524,7 +524,8 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 //#define FONT_BASE "/System/Library/Fonts/Cache/" before ios8.2
 const char *fontFolders[] = { "/System/Library/Fonts/CoreAddition/", "/System/Library/Fonts/Core/", "/System/Library/Fonts/CoreUI/",
 			      "/System/Library/Fonts/AppFonts/", "/System/Library/Fonts/LanguageSupport/", "/System/Library/Fonts/Watch/",
-			      "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/", 0 };
+			      "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/",
+			     "/System/Library/Fonts", "/System/Library/Fonts/Supplemental/", "/Library/Fonts/"0 };
 #else
 //#define FONT_BASE "/Library/Fonts/"
 const char *fontFolders[] = { "/System/Library/Fonts", "/System/Library/Fonts/Supplemental/", "/Library/Fonts/", 0 };
@@ -1390,7 +1391,8 @@ void nme_font_iterate_device_fonts(value inFunc)
          #elif defined(IPHONEOS)
             "/System/Library/Fonts/CoreAddition/", "/System/Library/Fonts/Core/", "/System/Library/Fonts/CoreUI/",
 	    "/System/Library/Fonts/AppFonts/", "/System/Library/Fonts/LanguageSupport/", "/System/Library/Fonts/Watch/",
-	    "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/"
+	    "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/",
+	    "/System/Library/Fonts", "/System/Library/Fonts/Supplemental/", "/Library/Fonts/"
          #elif defined(__APPLE__)
             "/System/Library/Fonts", "/System/Library/Fonts/Supplemental/", "/Library/Fonts/"
          #elif defined(HX_WINDOWS)
