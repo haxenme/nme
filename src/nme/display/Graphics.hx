@@ -125,7 +125,7 @@ class Graphics
          inFlags |= TILE_SMOOTH;
       #if jsprime
       var buffer:nme.utils.Float32Buffer = 
-         Std.is(inXYID,nme.utils.Float32Buffer) ? (inXYID:nme.utils.Float32Buffer) : null;
+         #if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(inXYID,nme.utils.Float32Buffer) ? (inXYID:nme.utils.Float32Buffer) : null;
       #else
       var buffer:nme.utils.Float32Buffer = cast inXYID;
       #end

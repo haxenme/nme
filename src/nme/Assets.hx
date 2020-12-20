@@ -317,7 +317,7 @@ class Assets
       if (useCache!=false)
       {
          var val = i.getCache();
-         if (val!=null && Std.is(val,BitmapData) )
+         if (val!=null && #if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(val,BitmapData) )
             return val;
       }
  
@@ -398,7 +398,7 @@ class Assets
       if (useCache!=false)
       {
          var cached = i.getCache();
-         var val:ByteArray = Std.is(cached, ByteArray) ? cached : null;
+         var val:ByteArray = #if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(cached, ByteArray) ? cached : null;
          if (val!=null)
          {
             val.position = 0;
@@ -420,12 +420,12 @@ class Assets
             /*
             var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
             data = null;
-            if (Std.is(asset, String)) 
+            if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(asset, String)) 
             {
                bytes = new ByteArray();
                bytes.writeUTFBytes(asset);
             }
-            else if (!Std.is(data, ByteArray)) 
+            else if (!#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(data, ByteArray)) 
             {
                badType(is,"Bytes");
                return null;
@@ -478,7 +478,7 @@ class Assets
       if (useCache!=false)
       {
          var val = i.getCache();
-         if (val!=null && Std.is(val,Font) )
+         if (val!=null && #if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(val,Font) )
             return val;
       }
 
@@ -525,7 +525,7 @@ class Assets
       if (useCache!=false)
       {
          var val = i.getCache();
-         if (val!=null && Std.is(val,Sound) )
+         if (val!=null && #if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(val,Sound) )
             return val;
       }
 

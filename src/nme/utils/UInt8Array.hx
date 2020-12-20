@@ -16,11 +16,11 @@ class UInt8Array extends ArrayBufferView implements ArrayAccess<Int>
    {
       BYTES_PER_ELEMENT = 1;
 
-      if (Std.is(inBufferOrArray,Int))
+      if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(inBufferOrArray,Int))
       {
          super( length = Std.int(inBufferOrArray) );
       }
-      else if (Std.is(inBufferOrArray,Array))
+      else if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(inBufferOrArray,Array))
       {
          var ints:Array<Int> = inBufferOrArray;
          if (inElements != null)

@@ -18,12 +18,12 @@ class Float32Array extends ArrayBufferView implements ArrayAccess<Float>
    {
       BYTES_PER_ELEMENT = 4;
 
-      if (Std.is(inBufferOrArray,Int))
+      if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(inBufferOrArray,Int))
       {
          length = Std.int(inBufferOrArray);
          super( length*BYTES_PER_ELEMENT );
       }
-      else if (Std.is(inBufferOrArray,Array))
+      else if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(inBufferOrArray,Array))
       {
          var floats:Array<Float> = inBufferOrArray;
          if (inElements != null)
@@ -90,7 +90,7 @@ class Float32Array extends ArrayBufferView implements ArrayAccess<Float>
    public function set(inBufferOrArray:Dynamic, offset:Int=0)
    {
       #if cpp
-      if (Std.is(inBufferOrArray,Array))
+      if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(inBufferOrArray,Array))
       {
          var a:Array<Float> = inBufferOrArray;
          if (a!=null)
@@ -129,7 +129,7 @@ class Float32Array extends ArrayBufferView implements ArrayAccess<Float>
      }
      else
      #end
-     if (Std.is(inBufferOrArray,ArrayBufferView))
+     if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(inBufferOrArray,ArrayBufferView))
      {
         var a:ArrayBufferView = inBufferOrArray;
         var length = a.byteLength>>2;

@@ -71,12 +71,12 @@ class URLRequest
       {
          nmeBytes = new ByteArray();
       }
-      else if (Std.is(data, ByteArray)) 
+      else if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(data, ByteArray)) 
       {
          nmeBytes = data;
 
       }
-      else if (Std.is(data, URLVariablesBase))
+      else if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(data, URLVariablesBase))
       {
          var vars:URLVariables = data;
          var str = vars.toString();
@@ -84,14 +84,14 @@ class URLRequest
          nmeBytes.writeUTFBytes(str);
 
       }
-      else if (Std.is(data, String)) 
+      else if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(data, String)) 
       {
          var str:String = data;
          nmeBytes = new ByteArray();
          nmeBytes.writeUTFBytes(str);
 
       }
-      else if (Std.is(data, Dynamic)) 
+      else if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(data, Dynamic)) 
       {
          var vars:URLVariables = new URLVariables();
 

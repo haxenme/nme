@@ -20,7 +20,7 @@ class ArrayBufferView implements IMemoryRange
 
    private function new(inLengthOrBuffer:Dynamic, inByteOffset:Int = 0, ?inLength:Int) 
    {
-      if (Std.is(inLengthOrBuffer, Int)) 
+      if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(inLengthOrBuffer, Int)) 
       {
          byteLength = Std.int(inLengthOrBuffer);
          byteOffset = 0;
@@ -29,7 +29,7 @@ class ArrayBufferView implements IMemoryRange
       }
       else 
       {
-         if (Std.is(inLengthOrBuffer, haxe.io.Bytes)) 
+         if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(inLengthOrBuffer, haxe.io.Bytes)) 
             buffer = ByteArray.fromBytes(inLengthOrBuffer);
          else
             buffer = inLengthOrBuffer;

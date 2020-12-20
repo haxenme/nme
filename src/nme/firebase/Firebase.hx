@@ -88,7 +88,7 @@ class Firebase
          for(f in Reflect.fields(params))
          {
             var val:Dynamic = Reflect.field(params, f);
-            if (Std.is(val,Int))
+            if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(val,Int))
             {
                if (intNames==null)
                {
@@ -101,7 +101,7 @@ class Firebase
                    intVals.push(Std.int(val));
                }
             }
-            else if (Std.is(val,Float))
+            else if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(val,Float))
             {
                if (dblNames==null)
                {

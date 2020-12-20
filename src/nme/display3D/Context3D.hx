@@ -397,7 +397,7 @@ class Context3D
 
         var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
 
-		if (Std.is (texture, nme.display3D.textures.Texture)) {
+		if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(texture, nme.display3D.textures.Texture)) {
 
             switch(textureIndex){
                 case 0 : GL.activeTexture (GL.TEXTURE0);

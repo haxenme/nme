@@ -332,7 +332,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    {
        var obj:DisplayObject = nmeFindByID(inEvent.id);
 
-       if (obj != null && Std.is(obj, TextField))
+       if (obj != null && #if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(obj, TextField))
        {
            var text:String = null;
            if (inEvent.code>0)
