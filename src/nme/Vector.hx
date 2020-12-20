@@ -69,7 +69,7 @@ private typedef VectorData<T> = Array<T>;
 		#if flash
 		return new VectorIterator(this);
 		#else
-		return this.iterator();
+		return cast this.iterator();
 		#end
 		
 	}
@@ -230,7 +230,7 @@ private typedef VectorData<T> = Array<T>;
 	#else
 	@:to public inline function toArray<T>():Array<T> {
 		
-		return this;
+		return cast this;
 		
     }
 	#end
