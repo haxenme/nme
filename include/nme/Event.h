@@ -56,6 +56,8 @@ enum EventType
    etDropBegin, // 37
    etDropFile, // 38
    etDropEnd, // 39
+
+   etWindowClose, // 40
 };
 
 enum EventFlags
@@ -109,7 +111,6 @@ struct Event
 
    const char  *utf8Text;
    int         utf8Length;
-
 };
 
 } // end namespace nme

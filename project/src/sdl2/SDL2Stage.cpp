@@ -107,6 +107,35 @@ void InitSDLAudio()
    openAudio();
 }
 
+#if defined(NME_OGL)
+class HardwareRenderSurface : public HardwareSurface
+{
+   static SDL_Window *lastWindow;
+   SDL_Window *window;
+   SDL_GLContext context;
+
+public:
+   HardwareRenderSurface(SDL_Window *inWindow,HardwareRenderer *inContext) : HardwareSurface(inContext)
+   {
+      window = inWindow;
+      context =  SDL_GL_GetCurrentContext();
+   }
+   RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
+   {
+      if (!inForHitTest && lastWindow!=window)
+      {
+         lastWindow = window;
+         int width = 0;
+         int height = 0;
+         SDL_GetWindowSize(window, &width, &height);
+         mHardware->SetWindowSize(width,height);
+         SDL_GL_MakeCurrent(window, context);
+      }
+      return HardwareSurface::BeginRender(inRect, inForHitTest);
+   }
+};
+SDL_Window *HardwareRenderSurface::lastWindow = nullptr;
+#endif
 
 
 class SDLSurf : public Surface
@@ -251,6 +280,8 @@ unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN_DESKTOP;
 //unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN;
 //
 extern void *GetMetalLayerFromRenderer(SDL_Renderer *renderer);
+static HardwareRenderer *sgHardwareRenderer = 0;
+
 
 class SDLStage : public Stage
 {
@@ -274,32 +305,48 @@ public:
 
       if (mIsHardware)
       {
-         #if defined(NME_OGL) && defined(NME_METAL)
-         if (nmeOpenglRenderer)
+         if (sgHardwareRenderer)
          {
-            mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
+            mHardwareRenderer = sgHardwareRenderer;
+            mHardwareRenderer->IncRef();
          }
          else
          {
+            #if defined(NME_OGL) && defined(NME_METAL)
+            if (nmeOpenglRenderer)
+            {
+               mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
+            }
+            else
+            {
+               void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
+               mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
+            }
+            #elif defined(NME_OGL)
+            mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
+
+            #elif defined(NME_METAL)
+
             void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
             mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
+   
+            #else
+            #error "No valid HardwareRenderer"
+            #endif
+
+            mHardwareRenderer->IncRef();
+            //mHardwareRenderer->SetWindowSize(inSurface->w, inSurface->h);
+            mHardwareRenderer->SetWindowSize(mWidth, mHeight);
+
+            sgHardwareRenderer = mHardwareRenderer;
          }
-         #elif defined(NME_OGL)
-         mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
 
-         #elif defined(NME_METAL)
-
-         void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
-         mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
-
-         #else
-         #error "No valid HardwareRenderer"
+         #if defined(NME_OGL)
+         if (nmeOpenglRenderer)
+            mPrimarySurface = new HardwareRenderSurface(inWindow, mHardwareRenderer);
+         else
          #endif
-
-         mHardwareRenderer->IncRef();
-         //mHardwareRenderer->SetWindowSize(inSurface->w, inSurface->h);
-         mHardwareRenderer->SetWindowSize(mWidth, mHeight);
-         mPrimarySurface = new HardwareSurface(mHardwareRenderer);
+            mPrimarySurface = new HardwareSurface(mHardwareRenderer);
       }
       else
       {
@@ -326,39 +373,50 @@ public:
       mDownX = 0;
       mDownY = 0;
    }
+
    
    
    ~SDLStage()
    {
-      SDL_SetWindowFullscreen(mSDLWindow, 0);
-      if (!mIsHardware)
-      {
-         SDL_FreeSurface(mSoftwareSurface);
-         SDL_DestroyTexture(mSoftwareTexture);
-      }
-      else
-      {
-         mHardwareRenderer->DecRef();
-      }
-      mPrimarySurface->DecRef();
-      SDL_DestroyRenderer(mSDLRenderer);
-      SDL_DestroyWindow(mSDLWindow); 
-
-      #ifdef NME_WINDOWS_SINGLE_INSTANCE
-      if ( sgMutexRunning )
-      {
-         ReleaseMutex( sgMutexRunning );
-         sgMutexRunning = NULL;
-      }
-      #endif
+      Close(false);
    }
-   
-   
+
+   void Close(bool isMain)
+   {
+      if (mSDLWindow)
+      {
+         SDL_SetWindowFullscreen(mSDLWindow, 0);
+         if (!mIsHardware)
+         {
+            SDL_FreeSurface(mSoftwareSurface);
+            SDL_DestroyTexture(mSoftwareTexture);
+         }
+         else
+         {
+            mHardwareRenderer->DecRef();
+         }
+         mPrimarySurface->DecRef();
+         SDL_DestroyRenderer(mSDLRenderer);
+         SDL_DestroyWindow(mSDLWindow); 
+
+         #ifdef NME_WINDOWS_SINGLE_INSTANCE
+         if ( sgMutexRunning && isMain)
+         {
+            ReleaseMutex( sgMutexRunning );
+            sgMutexRunning = NULL;
+         }
+         #endif
+         mSDLWindow = 0;
+      }
+   }
+
+
+
    void Resize(int inWidth, int inHeight)
    {
       mWidth = inWidth;
       mHeight = inHeight;
-      
+
       if (mIsHardware)
       {
          mHardwareRenderer->SetWindowSize(inWidth, inHeight);
@@ -367,7 +425,7 @@ public:
       {
          SDL_FreeSurface(mSoftwareSurface);
          SDL_DestroyTexture(mSoftwareTexture);
-         
+
          mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
          if (!mSoftwareSurface)
          {
@@ -823,14 +881,31 @@ public:
    int          mHeight;
 };
 
+class SDLFrame *sgSDLFrame = 0;
+std::vector<class SDLFrame *> sgAllFrames;
+
 
 class SDLFrame : public Frame
 {
 public:
+   SDLStage *mStage;
+   SDL_Window *mWindow;
+   bool mIsHardware;
+   uint32 mWindowFlags;
+   
+   double mAccX;
+   double mAccY;
+   double mAccZ;
+
+   int windowID;
+
+
    SDLFrame(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsHardware, int inWidth, int inHeight)
    {
+      mWindow = inWindow;
       mWindowFlags = inWindowFlags;
       mIsHardware = inIsHardware;
+      windowID = SDL_GetWindowID(inWindow);
       mStage = new SDLStage(inWindow, inRenderer, mWindowFlags, inIsHardware, inWidth, inHeight);
       mStage->IncRef();
    }
@@ -840,8 +915,19 @@ public:
    {
       mStage->DecRef();
    }
-   
-   
+
+   void CloseWindow()
+   {
+      mStage->Close(sgSDLFrame==this);
+      sgAllFrames.erase( std::find(sgAllFrames.begin(),sgAllFrames.end(),this) );
+   }
+
+   void Raise()
+   {
+      SDL_RaiseWindow(mWindow);
+   }
+
+
    void ProcessEvent(Event &inEvent)
    {
       mStage->ProcessEvent(inEvent);
@@ -861,14 +947,6 @@ public:
       return mStage;
    }
    
-   
-   SDLStage *mStage;
-   bool mIsHardware;
-   uint32 mWindowFlags;
-   
-   double mAccX;
-   double mAccY;
-   double mAccZ;
 };
 
 
@@ -878,7 +956,7 @@ public:
 extern "C" void MacBoot( /*void (*)()*/ );
 
 
-SDLFrame *sgSDLFrame = 0;
+
 #ifndef EMSCRIPTEN
 
 #define MAX_JOYSTICKS 16
@@ -1470,6 +1548,18 @@ wchar_t convertToWChar(const char *inStr, int *ioLen)
 }
 
 
+static SDLFrame *getEventFrame(int inId, bool useDefault = true)
+{
+   if (sgSDLFrame->windowID!=inId)
+      for(int i=0;i<sgAllFrames.size();i++)
+         if (sgAllFrames[i]->windowID==inId)
+            return sgAllFrames[i];
+
+   if (useDefault)
+      return sgSDLFrame;
+   return nullptr;
+}
+
 void ProcessEvent(SDL_Event &inEvent)
 {
    if (inEvent.type!=SDL_WINDOWEVENT && gCurrentFileDialog)
@@ -1485,18 +1575,25 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_WINDOWEVENT:
       {
+         SDLFrame *frame = getEventFrame(inEvent.window.windowID);
+
          switch (inEvent.window.event)
          {
             case SDL_WINDOWEVENT_SHOWN:
             {
                Event activate(etActivate);
-               sgSDLFrame->ProcessEvent(activate);
+               frame->ProcessEvent(activate);
                break;
             }
             case SDL_WINDOWEVENT_HIDDEN:
             {
-               Event deactivate(etDeactivate);
-               sgSDLFrame->ProcessEvent(deactivate);
+               frame = getEventFrame(inEvent.window.windowID,false);
+               if (frame)
+               {
+                  Event deactivate(etDeactivate);
+                  frame->ProcessEvent(deactivate);
+               }
+               // else printf("ignore dead window\n");
                break;
             }
             case SDL_WINDOWEVENT_EXPOSED:
@@ -1504,7 +1601,7 @@ void ProcessEvent(SDL_Event &inEvent)
                Event poll(etPoll);
                sgSDLFrame->ProcessEvent(poll);
                Event redraw(etRedraw);
-               sgSDLFrame->ProcessEvent(redraw);
+               frame->ProcessEvent(redraw);
                break;
             }
             //case SDL_WINDOWEVENT_MOVED: break;
@@ -1512,37 +1609,37 @@ void ProcessEvent(SDL_Event &inEvent)
             case SDL_WINDOWEVENT_SIZE_CHANGED:
             {
                Event resize(etResize, inEvent.window.data1, inEvent.window.data2);
-               sgSDLFrame->Resize(inEvent.window.data1, inEvent.window.data2);
-               sgSDLFrame->ProcessEvent(resize);
+               frame->Resize(inEvent.window.data1, inEvent.window.data2);
+               frame->ProcessEvent(resize);
                Event redraw(etRedraw);
-               sgSDLFrame->ProcessEvent(redraw);
+               frame->ProcessEvent(redraw);
                break;
             }
             case SDL_WINDOWEVENT_MINIMIZED:
             {
-               sgSDLFrame->mStage->setIsFullscreen(false);
+               frame->mStage->setIsFullscreen(false);
                Event deactivate(etDeactivate);
-               sgSDLFrame->ProcessEvent(deactivate);
+               frame->ProcessEvent(deactivate);
                break;
             }
 
             case SDL_WINDOWEVENT_RESTORED:
             case SDL_WINDOWEVENT_MAXIMIZED:
                {
-               bool isMax = SDL_GetWindowFlags(sgSDLFrame->mStage->mSDLWindow ) &
+               bool isMax = SDL_GetWindowFlags(frame->mStage->mSDLWindow ) &
                             (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP);
-               sgSDLFrame->mStage->setIsFullscreen(isMax);
+               frame->mStage->setIsFullscreen(isMax);
 
                Event activate(etActivate);
-               sgSDLFrame->ProcessEvent(activate);
+               frame->ProcessEvent(activate);
 
                int width = 0;
                int height = 0;
-               SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+               SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
 
                Event resize(etResize, width, height);
-               sgSDLFrame->Resize(width,height);
-               sgSDLFrame->ProcessEvent(resize);
+               frame->Resize(width,height);
+               frame->ProcessEvent(resize);
                }
                break;
 
@@ -1551,53 +1648,53 @@ void ProcessEvent(SDL_Event &inEvent)
             case SDL_WINDOWEVENT_FOCUS_GAINED:
             {
                Event inputFocus(etGotInputFocus);
-               sgSDLFrame->ProcessEvent(inputFocus);
+               frame->ProcessEvent(inputFocus);
                break;
             }
             case SDL_WINDOWEVENT_FOCUS_LOST:
             {
                Event inputFocus(etLostInputFocus);
-               sgSDLFrame->ProcessEvent(inputFocus);
+               frame->ProcessEvent(inputFocus);
                break;
             }
             case SDL_WINDOWEVENT_CLOSE:
             {
-               //Event deactivate(etDeactivate);
-               //sgSDLFrame->ProcessEvent(deactivate);
-
-               //Event kill(etDestroyHandler);
-               //sgSDLFrame->ProcessEvent(kill);
+               Event close(etWindowClose);
+               frame->ProcessEvent(close);
                break;
             }
 
-
-            default: break;
+            default:
+               break;
          }
          break;
       }
 
       case SDL_DROPBEGIN:
       {
+         SDLFrame *frame = getEventFrame(inEvent.drop.windowID);
          Event event(etDropBegin);
-         sgSDLFrame->ProcessEvent(event);
+         frame->ProcessEvent(event);
          break;
       }
       case SDL_DROPCOMPLETE:
       {
+         SDLFrame *frame = getEventFrame(inEvent.drop.windowID);
          int x=0;
          int y=0;
          SDL_GetMouseState(&x,&y);
          Event event(etDropEnd, x, y);
          AddModStates(event.flags);
-         sgSDLFrame->ProcessEvent(event);
+         frame->ProcessEvent(event);
          break;
       }
       case SDL_DROPFILE:
       {
+         SDLFrame *frame = getEventFrame(inEvent.drop.windowID);
          Event event(etDropFile);
          event.utf8Text = inEvent.drop.file;
          event.utf8Length = strlen(inEvent.drop.file);
-         sgSDLFrame->ProcessEvent(event);
+         frame->ProcessEvent(event);
          SDL_free(inEvent.drop.file);
          break;
       }
@@ -1605,6 +1702,7 @@ void ProcessEvent(SDL_Event &inEvent)
 
       case SDL_MOUSEMOTION:
       {
+         SDLFrame *frame = getEventFrame(inEvent.motion.windowID);
             //default to 0
          int deltaX = 0;
          int deltaY = 0;
@@ -1623,11 +1721,12 @@ void ProcessEvent(SDL_Event &inEvent)
          #else
          AddModStates(mouse.flags);
          #endif
-         sgSDLFrame->ProcessEvent(mouse);
+         frame->ProcessEvent(mouse);
          break;
       }
       case SDL_MOUSEBUTTONDOWN:
       {
+         SDLFrame *frame = getEventFrame(inEvent.button.windowID);
          Event mouse(etMouseDown, inEvent.button.x, inEvent.button.y, inEvent.button.button - 1);
          #if defined(WEBOS) || defined(BLACKBERRY)
          mouse.value = inEvent.motion.which;
@@ -1635,22 +1734,24 @@ void ProcessEvent(SDL_Event &inEvent)
          #else
          AddModStates(mouse.flags);
          #endif
-         sgSDLFrame->ProcessEvent(mouse);
+         frame->ProcessEvent(mouse);
          break;
       }
       case SDL_MOUSEBUTTONUP:
       {
+         SDLFrame *frame = getEventFrame(inEvent.button.windowID);
          Event mouse(etMouseUp, inEvent.button.x, inEvent.button.y, inEvent.button.button - 1);
          #if defined(WEBOS) || defined(BLACKBERRY)
          mouse.value = inEvent.motion.which;
          #else
          AddModStates(mouse.flags);
          #endif
-         sgSDLFrame->ProcessEvent(mouse);
+         frame->ProcessEvent(mouse);
          break;
       }
       case SDL_MOUSEWHEEL: 
       {   
+         SDLFrame *frame = getEventFrame(inEvent.wheel.windowID);
          if (inEvent.wheel.y==0)
             break;
 
@@ -1668,62 +1769,67 @@ void ProcessEvent(SDL_Event &inEvent)
             //add flags for modifier keys
          AddModStates(mouse.flags);
             //and done.
-         sgSDLFrame->ProcessEvent(mouse);
+         frame->ProcessEvent(mouse);
          break;
       }
 
       case SDL_FINGERDOWN:
       {
+         SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+         SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
 
          // button?
          Event mouse(etMouseDown, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
          mouse.flags |= efLeftDown;
-         sgSDLFrame->ProcessEvent(mouse);
+         frame->ProcessEvent(mouse);
          break;
       }
 
       case SDL_FINGERUP:
       {
+         SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+         SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
 
          // button?
          Event mouse(etMouseUp, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
          //mouse.flags |= efLeftDown;
-         sgSDLFrame->ProcessEvent(mouse);
+         frame->ProcessEvent(mouse);
          break;
       }
 
       case SDL_FINGERMOTION:
       {
+         SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(sgSDLFrame->mStage->mSDLWindow, &width, &height);
+         SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
 
          // button?
          Event mouse(etMouseMove, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
          mouse.flags |= efLeftDown;
-         sgSDLFrame->ProcessEvent(mouse);
+         frame->ProcessEvent(mouse);
          break;
       }
 
 
       case SDL_TEXTINPUT:
       {
+          SDLFrame *frame = getEventFrame(inEvent.text.windowID);
           const char *text = inEvent.text.text;
           int unicode = convertToWChar(text, 0);
           Event key( etChar );
           key.code = unicode;
-          sgSDLFrame->ProcessEvent(key);
+          frame->ProcessEvent(key);
           break;
       }
       case SDL_KEYDOWN:
       case SDL_KEYUP:
       {
+         SDLFrame *frame = getEventFrame(inEvent.key.windowID);
          Event key(inEvent.type == SDL_KEYDOWN ? etKeyDown : etKeyUp );
          bool right;
          key.value = SDLKeyToFlash(inEvent.key.keysym.sym, right);
@@ -1745,7 +1851,7 @@ void ProcessEvent(SDL_Event &inEvent)
          // SDL2 does not expose char codes in key events (due to the more advanced
          // Unicode event API), so we'll add some ASCII assumptions to return something
          AddCharCode(key);
-         sgSDLFrame->ProcessEvent(key);
+         frame->ProcessEvent(key);
          break;
       }
       #ifndef EMSCRIPTEN
@@ -1915,11 +2021,13 @@ void insertWinProc(HWND hwnd,SDLFrame *frame)
 
 void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight, unsigned int inFlags, const char *inTitle, Surface *inIcon)
 {
+   bool isMain = sgSDLFrame==nullptr;
+
    #ifdef HX_MACOS
-   MacBoot();
+   if (isMain)
+      MacBoot();
    #endif
 
-   
    bool fullscreen = (inFlags & wfFullScreen) != 0;
    #if defined(NME_OGL) && defined(NME_METAL)
    nmeOpenglRenderer = !(inFlags & wfHardwareMetal);
@@ -1939,7 +2047,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    //WindowScaleMode scaleMode = (WindowScaleMode)( (inFlags & wfScaleMask)/wfScaleBase );
 
    #ifdef HX_LINUX
-   if (opengl)
+   if (opengl && isMain)
    {
       if (!InitOGLFunctions())
         opengl = false;
@@ -1967,18 +2075,22 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    
    //Rect r(100,100,inWidth,inHeight);
    
-   int err = InitSDL();
-   if (err == -1)
+   if (isMain)
    {
-      fprintf(stderr,"Could not initialize SDL : %s\n", SDL_GetError());
-      inOnFrame(0);
+      int err = InitSDL();
+      if (err == -1)
+      {
+         fprintf(stderr,"Could not initialize SDL : %s\n", SDL_GetError());
+         inOnFrame(0);
+      }
    }
    
    //SDL_EnableUNICODE(1);
    //SDL_EnableKeyRepeat(500,30);
 
    #ifdef NME_MIXER
-   openAudio();
+   if (isMain)
+      openAudio();
    #endif
    
    if (SDL_GetNumVideoDisplays() > 0)
@@ -1996,7 +2108,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    if (resizable) requestWindowFlags |= SDL_WINDOW_RESIZABLE;
    if (borderless) requestWindowFlags |= SDL_WINDOW_BORDERLESS;
    if (fullscreen) requestWindowFlags |= FullscreenMode; //SDL_WINDOW_FULLSCREEN_DESKTOP;
-   
+
    #ifdef NME_ANGLE
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
@@ -2006,6 +2118,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
    if (opengl)
    {
+      SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+
       SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
       SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
       SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -2189,16 +2303,25 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
 
    bool hardware = metal||opengl;
-   sgSDLFrame = new SDLFrame(window, renderer, windowFlags, hardware, width, height);
+   SDLFrame *frame = new SDLFrame(window, renderer, windowFlags, hardware, width, height);
+
+   if (isMain)
+   {
+      sgSDLFrame = frame;
+      sgSDLFrame->IncRef();
+   }
+   sgAllFrames.push_back(frame);
    #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
-   insertWinProc(hWin,sgSDLFrame);
+   if (isMain)
+      insertWinProc(hWin,frame);
    #endif
-   inOnFrame(sgSDLFrame);
+   inOnFrame(frame);
 
    //int numJoysticks = SDL_NumJoysticks();
    //SDL_GameControllerEventState(SDL_TRUE);
 
-   StartAnimation();
+   if (isMain)
+      StartAnimation();
 }
 
 
@@ -2459,13 +2582,22 @@ void StartAnimation()
       if (waitMs>0)
       {
          AutoGCBlocking block;
-         if (sgSDLFrame->mStage->BuildCache())
+         bool rendered = false;
+         for(int i=0;i<sgAllFrames.size();i++)
          {
-            block.Close();
-            Event redraw(etRedraw);
-            sgSDLFrame->ProcessEvent(redraw);
+            SDLFrame *frame = sgAllFrames[i];
+            if (frame->mStage->BuildCache())
+            {
+               block.Close();
+               Event redraw(etRedraw);
+               frame->ProcessEvent(redraw);
+               rendered = true;
+               if (i==sgAllFrames.size()-1)
+                  block.mLocked = gc_try_blocking();
+            }
          }
-         else
+
+         if (!rendered)
          {
             // Windows will oversleep 10ms for any positive number here...
             #ifdef HX_WINDOWS

@@ -22,6 +22,11 @@ class FrameTimer implements IPollClient
       Application.addPollClient(this,true);
    }
 
+   public function destory()
+   {
+      Application.removePollClient(this);
+   }
+
    function set_fps(inFps:Float)
    {
       fps = inFps;
@@ -43,6 +48,7 @@ class FrameTimer implements IPollClient
             offTarget = 0.0;
          } else
          #end
+         //trace('onPoll $window $fps ' + (timestamp - (lastRender - offTarget + framePeriod - 0.0005) ) );
          if (fps>0 && timestamp >= lastRender - offTarget + framePeriod - 0.0005 ) 
          {
             if (catchup)

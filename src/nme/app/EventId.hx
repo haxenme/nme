@@ -53,4 +53,6 @@ class EventId
    public static inline var DropBegin = 37;
    public static inline var DropFile = 38;
    public static inline var DropEnd = 39;
+
+   public static inline var WindowClose = 40;
 }

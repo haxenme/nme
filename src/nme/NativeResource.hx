@@ -61,14 +61,6 @@ class NativeResource
    }
 
 
-   inline public static function disposeHandler(handler:NativeHandler) : Void
-   {
-      if (handler.nmeHandle!=null)
-      {
-         nme_native_resource_dispose(handler.nmeHandle);
-         handler.nmeHandle = null;
-      }
-   }
    inline public static function lockHandler(handler:NativeHandler) : Void {
       nme_native_resource_lock(handler.nmeHandle);
    }
@@ -88,11 +80,6 @@ class NativeResource
 
 
 
-   inline public static function dispose(handle:NativeHandle) : NativeHandle {
-      if (handle!=null)
-         nme_native_resource_dispose(handle);
-      return null;
-   }
    inline public static function lock(handle:NativeHandle) : Void {
       nme_native_resource_lock(handle);
    }
@@ -107,21 +94,16 @@ class NativeResource
    }
    inline public static function releaseTempRefs() : Void nme_native_resource_release_temps();
 
-   static var nme_native_resource_dispose = PrimeLoader.load("nme_native_resource_dispose","ov");
    static var nme_native_resource_lock = PrimeLoader.load("nme_native_resource_lock","ov");
    static var nme_native_resource_unlock = PrimeLoader.load("nme_native_resource_unlock","ov");
    static var nme_native_resource_release_temps = PrimeLoader.load("nme_native_resource_release_temps","v");
 
    #else
-   inline public static function disposeHandler(handler:NativeHandler) {
-      handler.nmeHandle = null;
-   }
    inline public static function setAutoClearHandler(handler:NativeHandler) : Void { }
    inline public static function setWriteOnlyHandler(handler:NativeHandler) : Void { }
    inline public static function lockHandler(handler:NativeHandler) : Void { }
    inline public static function unlockHandler(handler:NativeHandler) : Void { }
 
-   inline public static function dispose(handle:NativeHandle) : NativeHandle return null;
    inline public static function setAutoClear(handle:NativeHandle) : Void { }
    inline public static function setWriteOnly(handle:NativeHandle) : Void { }
    inline public static function lock(handle:NativeHandle) : Void { }
@@ -129,6 +111,22 @@ class NativeResource
    inline public static function releaseTempRefs() : Void { }
 
    #end
+   inline public static function disposeHandler(handler:NativeHandler) : Void
+   {
+      if (handler.nmeHandle!=null)
+      {
+         nme_native_resource_dispose(handler.nmeHandle);
+         handler.nmeHandle = null;
+      }
+   }
+   inline public static function dispose(handle:NativeHandle) : NativeHandle {
+      if (handle!=null)
+         nme_native_resource_dispose(handle);
+      return null;
+   }
+
+
+   static var nme_native_resource_dispose = PrimeLoader.load("nme_native_resource_dispose","ov");
 }
 
 

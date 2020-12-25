@@ -43,10 +43,13 @@ public:
 };
 
 Stage *Stage::gCurrentStage = 0;
+Stage *Stage::gPrimaryStage = 0;
 
 Stage::Stage(bool inInitRef) : DisplayObjectContainer(inInitRef)
 {
    gCurrentStage = this;
+   if (!gPrimaryStage)
+      gPrimaryStage = this;
    mHandler = 0;
    mHandlerData = 0;
    mMouseHandler = 0;
@@ -75,6 +78,8 @@ Stage::~Stage()
 {
    if (gCurrentStage==this)
       gCurrentStage = 0;
+   if (gPrimaryStage==this)
+      gPrimaryStage = 0;
    if (mFocusObject)
       mFocusObject->DecRef();
    if (mMouseDownObject)

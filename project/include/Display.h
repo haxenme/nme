@@ -385,6 +385,7 @@ class Stage : public DisplayObjectContainer
 public:
    Stage(bool inInitRef=false);
    static Stage *GetCurrent() { return gCurrentStage; }
+   static Stage *GetPrimary() { return gPrimaryStage; }
 
    virtual void Flip() = 0;
    virtual void GetMouse() = 0;
@@ -487,6 +488,7 @@ protected:
    SimpleButton  *mSimpleButton;
 
    static Stage  *gCurrentStage;
+   static Stage  *gPrimaryStage;
 
 public:
       //Window pointer locking
@@ -544,6 +546,9 @@ public:
    virtual Stage *GetStage() = 0;
 
    NmeObjectType getObjectType() { return notFrame; }
+
+   virtual void CloseWindow() {};
+   virtual void Raise() {};
 };
 
 enum WindowFlags

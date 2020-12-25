@@ -85,6 +85,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var focus(get, set):InteractiveObject;
    public var frameRate(get, set): Float;
    public var onQuit(get,set):Void -> Void; 
+   public var onCloseRequest:Void -> Void; 
    public var isOpenGL(get, never):Bool;
    // Is this used?  Could not tell where "event.down" is being set, therefore this would appear useless
    //public var onKey:Int -> Bool -> Int -> Int -> Void; 
@@ -100,8 +101,10 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var stageWidth(get, never):Int;
    public var renderRequest(get,set):Void->Bool;
    public var color(get,set):Int;
+   public var current(get,null):MovieClip;
 
    var invalid:Bool;
+   static var firstStage = true;
 
    #if stage3d
    public var stage3Ds:Vector<Stage3D>;
@@ -139,7 +142,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private var nmeEnterFrameEvent:Event;
    private var nmeRenderEvent:Event;
    private var nmeDropItems:Array<String>;
+   public var nmeCurrent:MovieClip;
    var nmePrenderListeners:Array<Void->Void>;
+   var nmeIsMainStage:Bool;
 
    #if cpp
    var nmePreemptiveGcFreq:Int;
@@ -161,20 +166,26 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeEnterFrameEvent = new Event(Event.ENTER_FRAME);
       nmeRenderEvent = new Event(Event.RENDER);
 
+      nmeIsMainStage = firstStage;
+      firstStage =false;
       window = inWindow;
       invalid = false;
-      super(window.nmeHandle, "Stage");
+      super(window.nmeStageHandle, "Stage");
 
       nmeMouseOverObjects = [];
       nmeFocusOverObjects = [];
       pauseWhenDeactivated = true;
 
+      window.stage = this;
       if (window.appEventHandler==null)
       {
+         if (nmeIsMainStage)
+            Application.addPollClient(this);
          window.appEventHandler = this;
-         Application.addPollClient(this);
          nmeFrameTimer = new FrameTimer(window, Application.initFrameRate);
       }
+      if (!nmeIsMainStage)
+         onCloseRequest = window.close;
 
       nmeLastRender = 0;
       nmeLastDown = [];
@@ -196,6 +207,16 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       nmeLastPreempt = false;
       nmeFrameMemIndex = 0;
       #end
+   }
+
+   override public function dispose()
+   {
+      if (nmeFrameTimer!=null)
+      {
+         nmeFrameTimer.destory();
+         nmeFrameTimer = null;
+      }
+      super.dispose();
    }
 
    public static dynamic function getOrientation():Int 
@@ -696,6 +717,12 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
          obj.nmeFireEvent(new Event(Event.SCROLL));
    }
 
+   public function onWindowClose():Void
+   {
+      if (onCloseRequest!=null)
+         onCloseRequest();
+   }
+
    public function onDrop(inEvent:AppEvent):Void
    {
       if (inEvent.type==nme.app.EventId.DropBegin)
@@ -740,7 +767,6 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
 
    public function onActive(inActive:Bool):Void
    {
-      // trace("nmeSetActive : " + inActive);
       if (inActive != active) 
       {
          window.active = inActive;
@@ -952,6 +978,17 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    }
 
 
+   private function get_current():MovieClip
+   {
+      if (nmeCurrent==null)
+      {
+         nmeCurrent = new MovieClip();
+         addChild(nmeCurrent);
+      }
+      return nmeCurrent;
+   }
+
+
 
    function nmeOnTouch(inEvent:AppEvent, inType:String, touchInfo:TouchInfo)
    {
@@ -994,6 +1031,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    }
 
    // -- IPollCient ----
+   // "Main" window only
    public function onPoll(inTimestamp:Float)
    {
       //trace("poll");

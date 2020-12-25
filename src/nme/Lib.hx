@@ -88,7 +88,11 @@ class Lib
             Lib.nmeStage.opaqueBackground = inColour;
 
             if (nmeCurrent != null) // Already created...
+            {
+               Lib.nmeStage.nmeCurrent = nmeCurrent;
                Lib.nmeStage.addChild(nmeCurrent);
+               nmeCurrent = null;
+            }
 
             inOnLoaded();
          }
@@ -100,6 +104,57 @@ class Lib
 
       }, params );
    }
+
+   public static function createSecondaryWindow(inWidth:Int, inHeight:Int, inTitle:String,
+              inFlags:Int = 0x0f,
+              inColour:Int = 0xffffff,
+              inFrameRate:Float = 0.0,
+              ?inIcon:Surface) : Window
+   {
+      title = inTitle;
+
+      var params = {
+         width:inWidth,
+         height:inHeight,
+         flags:inFlags,
+         title:inTitle,
+         color:inColour,
+         icon:inIcon
+      };
+
+      var window:Window = null;
+      var err:String = null;
+
+      Application.createWindow(function(inWindow:Window) {
+         try
+         {
+            var stage = 
+               if (stageFactory!=null)
+                  stageFactory(inWindow);
+               else
+                  new Stage(inWindow);
+            stage.frameRate = inFrameRate;
+            stage.opaqueBackground = inColour;
+
+            window = inWindow;
+         }
+         catch(e:Dynamic)
+         {
+            var stack = CallStack.toString(CallStack.exceptionStack());
+            err = ("Error creating window: (" + params + ")\n"+e+stack);
+         }
+
+      }, params, true );
+
+      if (err!=null)
+         throw err;
+      if (window==null)
+         throw "multiple windows not supported on this target";
+
+      return window;
+   }
+
+
 
    public static function load(library:String, method:String, args:Int = 0):Dynamic
    {
@@ -160,13 +215,11 @@ class Lib
    // Getters & Setters
    static function get_current():MovieClip 
    {
-      if (nmeCurrent == null) 
-      {
-         nmeCurrent = new MovieClip();
+      if (nmeStage!=null)
+         return nmeStage.current;
 
-         if (nmeStage != null)
-            nmeStage.addChild(nmeCurrent);
-      }
+      if (nmeCurrent == null)
+         nmeCurrent = new MovieClip();
 
       return nmeCurrent;
    }

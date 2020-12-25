@@ -65,6 +65,12 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
          this.name = inType + " " + nmeID;
    }
 
+   public function dispose()
+   {
+      NativeResource.disposeHandler(this);
+   }
+
+
    override public function dispatchEvent(event:Event):Bool 
    {
       var result = nmeDispatchEvent(event);

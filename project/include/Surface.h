@@ -239,7 +239,6 @@ public:
 
    protected:
       ~HardwareSurface();
-   private:
       HardwareRenderer *mHardware;
 };
 

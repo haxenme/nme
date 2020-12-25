@@ -1344,8 +1344,9 @@ void OnMainFrameCreated(Frame *inFrame)
 {
    SetMainThread();
    value frame = inFrame ? ObjectToAbstract(inFrame) : alloc_null();
-   val_call1( sOnCreateCallback->get(),frame );
+   value cb = sOnCreateCallback->get();
    delete sOnCreateCallback;
+   val_call1(cb,frame );
 }
 
 void nme_set_package(HxString inCompany,HxString inFile,HxString inPackage,HxString inVersion)
@@ -1378,6 +1379,26 @@ void nme_create_main_frame(value inCallback, int width, int height, int flags,
    CreateMainFrame(OnMainFrameCreated, width, height, flags, title.c_str(), icon );
 }
 DEFINE_PRIME6v(nme_create_main_frame)
+
+bool nme_window_supports_secondary()
+{
+   #if defined(NME_OGL) && defined(NME_SDL2) && !defined(NME_ANGLE)
+   return true;
+   #else
+   return false;
+   #endif
+}
+DEFINE_PRIME0(nme_window_supports_secondary)
+
+void nme_window_raise(value inFrame)
+{
+   Frame *frame;
+   if (AbstractToObject(inFrame,frame))
+      frame->Raise();
+}
+DEFINE_PRIME1v(nme_window_raise)
+
+
 
 
 value nme_set_asset_base(value inBase)
@@ -1487,7 +1508,6 @@ void nme_set_stage_handler(value inStage,value inHandler,int inNomWidth, int inN
 DEFINE_PRIME4v(nme_set_stage_handler);
 
 
-Stage *sgNativeHandlerStage = 0;
 
 static nme::Event eventData;
 
@@ -1521,7 +1541,9 @@ void external_handler_native( nme::Event &ioEvent, void *inUserData )
 
    ioEvent.result = eventData.result;
 
-   sgNativeHandlerStage->SetNextWakeDelay(eventData.pollTime);
+   Stage *primary = Stage::GetPrimary();
+   if (primary)
+      primary->SetNextWakeDelay(eventData.pollTime);
 }
 
 void external_mouse_handler_native( nme::Event &ioEvent, void *inUserData )
@@ -1533,6 +1555,19 @@ void external_mouse_handler_native( nme::Event &ioEvent, void *inUserData )
    ioEvent = eventData;
 }
 
+#ifndef HXCPP_JS_PRIME
+void nme_native_resource_dispose(value inValue)
+{
+   Object *obj = 0;
+   if (AbstractToObject(inValue,obj))
+   {
+      val_gc(inValue,nullptr);
+      obj->DecRef();
+   }
+}
+DEFINE_PRIME1v(nme_native_resource_dispose)
+#endif
+
 
 
 
@@ -1541,8 +1576,6 @@ void nme_set_stage_handler_native(value inStage,value inHandler,int inNomWidth, 
    Stage *stage;
    if (!AbstractToObject(inStage,stage))
       return;
-
-   sgNativeHandlerStage = stage;
 
    AutoGCRoot *data = new AutoGCRoot(inHandler);
 
@@ -1866,6 +1899,17 @@ void nme_stage_set_title(value inStage, HxString inTitle) {
    }
 }
 DEFINE_PRIME2v(nme_stage_set_title);
+
+void nme_window_close(value inFrame)
+{
+   Frame *frame;
+   if (AbstractToObject(inFrame,frame))
+   {
+      frame->CloseWindow();
+   }
+}
+DEFINE_PRIME1v(nme_window_close);
+
 
 
 namespace nme

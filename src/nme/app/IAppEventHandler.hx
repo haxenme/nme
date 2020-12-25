@@ -22,6 +22,7 @@ interface IAppEventHandler
    public function onDpiChanged(event:AppEvent):Void;
    public function onDrop(event:AppEvent):Void;
    public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void;
+   public function onWindowClose():Void;
 }
 
 

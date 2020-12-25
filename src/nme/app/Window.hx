@@ -7,6 +7,7 @@ import nme.display.StageAlign;
 import nme.display.StageDisplayState;
 import nme.display.StageQuality;
 import nme.display.StageScaleMode;
+import nme.display.Stage;
 import nme.events.TextEvent;
 
 @:nativeProperty
@@ -19,6 +20,7 @@ class Window
    public var isOpenGL(get, null):Bool;
    public var quality(get, set):StageQuality;
    public var scaleMode(get, set):StageScaleMode;
+   static public var supportsSecondary(get, null):Bool;
    public var title(get, set):String;
    public var x(get, null):Int;
    public var y(get, null):Int;
@@ -34,11 +36,13 @@ class Window
 
    // Set this to handle events...
    public var appEventHandler:IAppEventHandler;
+   public var stage:Stage;
 
    //public var onKey:Int -> Int -> Int -> Void;
    public var onText: AppEvent -> Void;
 
    public var nmeHandle(default,null):nme.NativeHandle;
+   public var nmeStageHandle(default,null):nme.NativeHandle;
    var enterFramePending:Bool;
 
    public function new(inFrameHandle:Dynamic,inWidth:Int,inHeight:Int)
@@ -46,6 +50,7 @@ class Window
       appEventHandler = null;
       active = true;
       autoClear = true;
+      nmeHandle = inFrameHandle;
  
       #if android
       var nme_stage_request_render = PrimeLoader.load("nme_stage_request_render", "v");
@@ -54,10 +59,28 @@ class Window
       renderRequest = null;
       #end
  
-      nmeHandle = nme_get_frame_stage(inFrameHandle);
+      nmeStageHandle = nme_get_frame_stage(inFrameHandle);
 
-      nme_set_stage_handler(nmeHandle, nmeProcessWindowEvent, inWidth, inHeight);
+      nme_set_stage_handler(nmeStageHandle, nmeProcessWindowEvent, inWidth, inHeight);
    }
+
+   static function get_supportsSecondary() : Bool
+   {
+      return nme_window_supports_secondary();
+   }
+
+   public function close()
+   {
+      if (stage!=null)
+      {
+         stage.dispose();
+         stage = null;
+      }
+      nme_window_close(nmeHandle);
+      NativeResource.dispose(nmeHandle);
+   }
+
+   public function toString() return 'Window($title)';
 
    public function shouldRenderNow() : Bool
    {
@@ -69,9 +92,9 @@ class Window
    public function setBackground(inBackground:Null<Int>) : Void
    {
       if (inBackground == null)
-         nme_display_object_set_bg(nmeHandle, 0);
+         nme_display_object_set_bg(nmeStageHandle, 0);
       else
-         nme_display_object_set_bg(nmeHandle, inBackground | 0xff000000);
+         nme_display_object_set_bg(nmeStageHandle, inBackground | 0xff000000);
    }
 
 
@@ -260,7 +283,9 @@ class Window
                appEventHandler.onDpiChanged(event);
 
             case EventId.DropBegin, EventId.DropFile, EventId.DropEnd:
-               appEventHandler.onDrop(event);
+
+            case EventId.WindowClose:
+               appEventHandler.onWindowClose();
          }
 
 
@@ -271,7 +296,7 @@ class Window
          #if (cpp && hxcpp_api_level>=312)
          event.pollTime = nextWake;
          #else
-         nme_stage_set_next_wake(nmeHandle,nextWake);
+         nme_stage_set_next_wake(nmeStageHandle,nextWake);
          #end
       }
       catch(e:Dynamic)
@@ -288,116 +313,116 @@ class Window
 
    public function beginRender()
    {
-      nme_stage_begin_render(nmeHandle,autoClear);
+      nme_stage_begin_render(nmeStageHandle,autoClear);
    }
    public function endRender()
    {
-      nme_stage_end_render(nmeHandle);
+      nme_stage_end_render(nmeStageHandle);
    }
 
 
    public function get_align():StageAlign 
    {
-      var i:Int = nme_stage_get_align(nmeHandle);
+      var i:Int = nme_stage_get_align(nmeStageHandle);
       return Type.createEnumIndex(StageAlign, i);
    }
 
    public function set_align(inMode:StageAlign):StageAlign 
    {
-      nme_stage_set_align(nmeHandle, Type.enumIndex(inMode));
+      nme_stage_set_align(nmeStageHandle, Type.enumIndex(inMode));
       return inMode;
    }
 
    public function get_displayState():StageDisplayState 
    {
-      var i:Int = nme_stage_get_display_state(nmeHandle);
+      var i:Int = nme_stage_get_display_state(nmeStageHandle);
       return Type.createEnumIndex(StageDisplayState, i);
    }
 
    public function set_displayState(inState:StageDisplayState):StageDisplayState 
    {
-      nme_stage_set_display_state(nmeHandle, Type.enumIndex(inState));
+      nme_stage_set_display_state(nmeStageHandle, Type.enumIndex(inState));
       return inState;
    }
 
    public function get_dpiScale():Float 
    {
-      return nme_stage_get_dpi_scale(nmeHandle);
+      return nme_stage_get_dpi_scale(nmeStageHandle);
    }
 
 
 
    public function get_isOpenGL():Bool 
    {
-      return nme_stage_is_opengl(nmeHandle);
+      return nme_stage_is_opengl(nmeStageHandle);
    }
 
    public function get_quality():StageQuality 
    {
-      var i:Int = nme_stage_get_quality(nmeHandle);
+      var i:Int = nme_stage_get_quality(nmeStageHandle);
       return Type.createEnumIndex(StageQuality, i);
    }
 
    public function set_quality(inQuality:StageQuality):StageQuality 
    {
-      nme_stage_set_quality(nmeHandle, Type.enumIndex(inQuality));
+      nme_stage_set_quality(nmeStageHandle, Type.enumIndex(inQuality));
       return inQuality;
    }
 
    public function get_scaleMode():StageScaleMode 
    {
-      var i:Int = nme_stage_get_scale_mode(nmeHandle);
+      var i:Int = nme_stage_get_scale_mode(nmeStageHandle);
       return Type.createEnumIndex(StageScaleMode, i);
    }
 
    public function set_scaleMode(inMode:StageScaleMode):StageScaleMode 
    {
-      nme_stage_set_scale_mode(nmeHandle, Type.enumIndex(inMode));
+      nme_stage_set_scale_mode(nmeStageHandle, Type.enumIndex(inMode));
       return inMode;
    }
 
    public function get_x():Int 
    {
-      return nme_stage_get_window_x(nmeHandle);
+      return nme_stage_get_window_x(nmeStageHandle);
    }
 
    public function get_y():Int 
    {
-      return nme_stage_get_window_y(nmeHandle);
+      return nme_stage_get_window_y(nmeStageHandle);
    }
 
 
 
    public function get_height():Int 
    {
-      return nme_stage_get_stage_height(nmeHandle);
+      return nme_stage_get_stage_height(nmeStageHandle);
    }
 
    public function get_width():Int 
    {
-      return nme_stage_get_stage_width(nmeHandle);
+      return nme_stage_get_stage_width(nmeStageHandle);
    }
 
 
    public function resize(width:Int, height:Int):Void
    {
-      nme_stage_resize_window(nmeHandle, width, height);
+      nme_stage_resize_window(nmeStageHandle, width, height);
    }
 
 
    public function setPosition(x:Int, y:Int):Void
    {
-      nme_stage_set_window_position(nmeHandle, x, y);
+      nme_stage_set_window_position(nmeStageHandle, x, y);
    }
 
    public function get_title():String
    {
-      return nme_stage_get_title(nmeHandle);
+      return nme_stage_get_title(nmeStageHandle);
    }
 
    public function set_title(inTitle:String):String
    {
-      nme_stage_set_title(nmeHandle,inTitle);
+      nme_stage_set_title(nmeStageHandle,inTitle);
       return inTitle;
    }
 
@@ -431,6 +456,8 @@ class Window
    private static var nme_display_object_set_bg = Loader.load("nme_display_object_set_bg", 2);
    private static var nme_stage_get_title = PrimeLoader.load("nme_stage_get_title", "os");
    private static var nme_stage_set_title = PrimeLoader.load("nme_stage_set_title", "osv");
+   private static var nme_window_close = PrimeLoader.load("nme_window_close", "ov");
+   private static var nme_window_supports_secondary = PrimeLoader.load("nme_window_supports_secondary", "b");
 
    #if (cpp && hxcpp_api_level>=312)
    private static var nme_set_stage_handler = PrimeLoader.load("nme_set_stage_handler_native", "ooiiv");

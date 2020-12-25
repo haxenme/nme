@@ -225,6 +225,7 @@ public:
       if (r==Rect(mWidth,mHeight))
       {
          glClearColor(red, green, blue, alpha );
+         //glClearColor((rand()%256)/255.0, (rand()%256)/255.0, (rand()%256)/255.0, alpha );
          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       }
       else

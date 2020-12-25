@@ -94,9 +94,14 @@ class Application
    public static var telemetryAllocations:Bool = true;
    #end
 
-   public static function createWindow(inOnLoaded:Window->Void, inParams:WindowParams)
+   public static function createWindow(inOnLoaded:Window->Void, inParams:WindowParams, isSecondary=false)
    {
-      if (sIsInit) 
+      if (isSecondary)
+      {
+         if (!sIsInit)
+            throw("Secondary window created before main window.");
+      }
+      else if (sIsInit) 
       {
          if (silentRecreate) 
          {
@@ -142,6 +147,12 @@ class Application
          pollClientList.push(client);
       else
          pollClientList.insert(0,client);
+   }
+
+   public static function removePollClient(client:IPollClient)
+   {
+      if (pollClientList!=null)
+         pollClientList.remove(client);
    }
 
    public static function pollThreadJobs()
