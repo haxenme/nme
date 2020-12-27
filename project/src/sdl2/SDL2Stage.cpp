@@ -122,7 +122,7 @@ public:
    }
    RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
    {
-      if (!inForHitTest && lastWindow!=window)
+      if ( lastWindow!=window)
       {
          lastWindow = window;
          int width = 0;
@@ -1608,11 +1608,15 @@ void ProcessEvent(SDL_Event &inEvent)
             //case SDL_WINDOWEVENT_RESIZED: break;
             case SDL_WINDOWEVENT_SIZE_CHANGED:
             {
-               Event resize(etResize, inEvent.window.data1, inEvent.window.data2);
-               frame->Resize(inEvent.window.data1, inEvent.window.data2);
-               frame->ProcessEvent(resize);
-               Event redraw(etRedraw);
-               frame->ProcessEvent(redraw);
+               frame = getEventFrame(inEvent.window.windowID,false);
+               if (frame)
+               {
+                  Event resize(etResize, inEvent.window.data1, inEvent.window.data2);
+                  frame->Resize(inEvent.window.data1, inEvent.window.data2);
+                  frame->ProcessEvent(resize);
+                  Event redraw(etRedraw);
+                  frame->ProcessEvent(redraw);
+               }
                break;
             }
             case SDL_WINDOWEVENT_MINIMIZED:
@@ -1625,21 +1629,23 @@ void ProcessEvent(SDL_Event &inEvent)
 
             case SDL_WINDOWEVENT_RESTORED:
             case SDL_WINDOWEVENT_MAXIMIZED:
+               frame = getEventFrame(inEvent.window.windowID,false);
+               if (frame)
                {
-               bool isMax = SDL_GetWindowFlags(frame->mStage->mSDLWindow ) &
-                            (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP);
-               frame->mStage->setIsFullscreen(isMax);
+                  bool isMax = SDL_GetWindowFlags(frame->mStage->mSDLWindow ) &
+                               (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP);
+                  frame->mStage->setIsFullscreen(isMax);
 
-               Event activate(etActivate);
-               frame->ProcessEvent(activate);
+                  Event activate(etActivate);
+                  frame->ProcessEvent(activate);
 
-               int width = 0;
-               int height = 0;
-               SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
+                  int width = 0;
+                  int height = 0;
+                  SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
 
-               Event resize(etResize, width, height);
-               frame->Resize(width,height);
-               frame->ProcessEvent(resize);
+                  Event resize(etResize, width, height);
+                  frame->Resize(width,height);
+                  frame->ProcessEvent(resize);
                }
                break;
 
@@ -2108,6 +2114,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    if (resizable) requestWindowFlags |= SDL_WINDOW_RESIZABLE;
    if (borderless) requestWindowFlags |= SDL_WINDOW_BORDERLESS;
    if (fullscreen) requestWindowFlags |= FullscreenMode; //SDL_WINDOW_FULLSCREEN_DESKTOP;
+
+   if (inFlags & wfAlwaysOnTop)
+      requestWindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
 
    #ifdef NME_ANGLE
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 

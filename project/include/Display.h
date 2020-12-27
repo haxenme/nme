@@ -568,6 +568,7 @@ enum WindowFlags
    wfScaleBase      = 0x00001000,
    wfScaleMask      = 0x0000f000,
    wfHardwareMetal  = 0x00010000,
+   wfAlwaysOnTop    = 0x00020000,
 };
 
 enum WindowScaleMode
