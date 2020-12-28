@@ -715,7 +715,8 @@ public:
    {
       if (mIsHardware)
       {
-         SDL_RenderPresent(mSDLRenderer);
+         //SDL_RenderPresent(mSDLRenderer);
+         SDL_GL_SwapWindow(mSDLWindow);
       }
       else
       {
