@@ -108,6 +108,10 @@ void InitSDLAudio()
 }
 
 #if defined(NME_OGL)
+// Use 1 context, even though SDL_Renderer will create multiple renderers with shared contexts.
+//  Angle does not work with shared contexts, and VBOs are not shared.
+static SDL_GLContext sgOpenglContext = nullptr;
+
 class HardwareRenderSurface : public HardwareSurface
 {
    static SDL_Window *lastWindow;
@@ -118,7 +122,23 @@ public:
    HardwareRenderSurface(SDL_Window *inWindow,HardwareRenderer *inContext) : HardwareSurface(inContext)
    {
       window = inWindow;
-      context =  SDL_GL_GetCurrentContext();
+      if (!sgOpenglContext)
+         sgOpenglContext = SDL_GL_GetCurrentContext();
+      context = sgOpenglContext;
+   }
+   int Width() const
+   {
+      int width = 0;
+      int height = 0;
+      SDL_GetWindowSize(window, &width, &height);
+      return width;
+   }
+   int Height() const
+   {
+      int width = 0;
+      int height = 0;
+      SDL_GetWindowSize(window, &width, &height);
+      return height;
    }
    RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
    {
@@ -1550,10 +1570,9 @@ wchar_t convertToWChar(const char *inStr, int *ioLen)
 
 static SDLFrame *getEventFrame(int inId, bool useDefault = true)
 {
-   if (sgSDLFrame->windowID!=inId)
-      for(int i=0;i<sgAllFrames.size();i++)
-         if (sgAllFrames[i]->windowID==inId)
-            return sgAllFrames[i];
+   for(int i=0;i<sgAllFrames.size();i++)
+       if (sgAllFrames[i]->windowID==inId)
+          return sgAllFrames[i];
 
    if (useDefault)
       return sgSDLFrame;
@@ -2214,7 +2233,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       }
 
       window = SDL_CreateWindow(inTitle, targetX, targetY, setWidth, setHeight, requestWindowFlags);
-      
+
       #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
       HINSTANCE handle = ::GetModuleHandle(0);
       LPSTR resource = MAKEINTRESOURCE(101);
@@ -2222,7 +2241,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
       LPARAM smicon = (LPARAM)::LoadImage(handle, resource, IMAGE_ICON, 
          GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-      
+
       SDL_SysWMinfo wminfo;
       SDL_VERSION (&wminfo.version);
       if (SDL_GetWindowWMInfo(window, &wminfo) == 1)

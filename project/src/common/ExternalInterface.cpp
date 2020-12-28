@@ -1382,7 +1382,7 @@ DEFINE_PRIME6v(nme_create_main_frame)
 
 bool nme_window_supports_secondary()
 {
-   #if defined(NME_OGL) && defined(NME_SDL2) && !defined(NME_ANGLE)
+   #if defined(NME_OGL) && defined(NME_SDL2)
    return true;
    #else
    return false;
