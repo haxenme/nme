@@ -412,6 +412,7 @@ public:
    virtual void SetCursor(Cursor inCursor)=0;
    virtual void PopupKeyboard(PopupKeyboardMode inMode, WString *inValue=0) { };
    virtual void SetPopupTextSelection(int inSel0, int inSel1) { }
+   virtual void GetGlobalMouseState(int &outX, int &outY, int &outButtons) { }
    double GetNextWake() { return mNextWake; }
    virtual void SetNextWakeDelay(double inNextWake);
 

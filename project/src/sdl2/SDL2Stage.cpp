@@ -424,12 +424,19 @@ public:
    }
    bool setCaptureMouse(bool val)
    {
-      if (mCaptureMouse!=val)
-      {
-         mCaptureMouse = val;
-         SDL_CaptureMouse((SDL_bool)val);
-      }
+      mCaptureMouse = val;
+      SDL_CaptureMouse((SDL_bool)val);
       return mCaptureMouse;
+   }
+   void GetGlobalMouseState(int &outX, int &outY, int &outButtons)
+   {
+      int flags = SDL_GetGlobalMouseState(&outX, &outY);
+      if (flags & SDL_BUTTON(SDL_BUTTON_LEFT))
+        outButtons |= 0x1;
+      if (flags & SDL_BUTTON(SDL_BUTTON_MIDDLE))
+        outButtons |= 0x2;
+      if (flags & SDL_BUTTON(SDL_BUTTON_RIGHT))
+        outButtons |= 0x4;
    }
 
 

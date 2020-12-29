@@ -153,6 +153,7 @@ static int _id_descent;
 static int _id_buffer;
 static int _id_byteOffset;
 static int _id_byteLength;
+static int _id_buttons;
 
 static FRect _tile_rect;
 
@@ -288,6 +289,7 @@ extern "C" void InitIDs()
    kind_share(&gObjectKind,"nme::Object");
    kind_share(&gDataPointer,"data");
    kind_share(&gPointer,"gPointer");
+   _id_buttons = val_id("buttons");
    
    _tile_rect = FRect(0, 0, 1, 1);
 
@@ -1868,6 +1870,23 @@ void nme_stage_set_window_position(value inStage, int inX, int inY)
    }
 }
 DEFINE_PRIME3v(nme_stage_set_window_position);
+
+void nme_stage_get_global_mouse_state(value inStage, value outState)
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      int x = 0;
+      int y = 0;
+      int buttons = 0;
+      stage->GetGlobalMouseState(x,y,buttons);
+      alloc_field(outState,_id_x,alloc_int(x));
+      alloc_field(outState,_id_y,alloc_int(y));
+      alloc_field(outState,_id_buttons,alloc_int(buttons));
+   }
+}
+DEFINE_PRIME2v(nme_stage_get_global_mouse_state);
+
 
 
 int nme_stage_get_orientation() {

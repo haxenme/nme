@@ -9,6 +9,7 @@ import nme.display.StageQuality;
 import nme.display.StageScaleMode;
 import nme.display.Stage;
 import nme.events.TextEvent;
+import nme.geom.Point;
 
 @:nativeProperty
 class Window 
@@ -20,6 +21,7 @@ class Window
    public var isOpenGL(get, null):Bool;
    public var quality(get, set):StageQuality;
    public var scaleMode(get, set):StageScaleMode;
+   public var globalMouseState(get, never):MouseState;
    static public var supportsSecondary(get, null):Bool;
    public var title(get, set):String;
    public var x(get, null):Int;
@@ -67,6 +69,13 @@ class Window
    static function get_supportsSecondary() : Bool
    {
       return nme_window_supports_secondary();
+   }
+
+   function get_globalMouseState() : MouseState
+   {
+      var m = new MouseState();
+      nme_stage_get_global_mouse_state(nmeStageHandle,m);
+      return m;
    }
 
    public function close()
@@ -467,6 +476,7 @@ class Window
    private static var nme_stage_set_title = PrimeLoader.load("nme_stage_set_title", "osv");
    private static var nme_window_close = PrimeLoader.load("nme_window_close", "ov");
    private static var nme_window_supports_secondary = PrimeLoader.load("nme_window_supports_secondary", "b");
+   private static var nme_stage_get_global_mouse_state = PrimeLoader.load("nme_stage_get_global_mouse_state", "oov");
 
    #if (cpp && hxcpp_api_level>=312)
    private static var nme_set_stage_handler = PrimeLoader.load("nme_set_stage_handler_native", "ooiiv");
