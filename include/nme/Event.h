@@ -58,6 +58,9 @@ enum EventType
    etDropEnd, // 39
 
    etWindowClose, // 40
+   etWindowMoved, // 41
+   etWindowEnter, // 42
+   etWindowLeave, // 43
 };
 
 enum EventFlags

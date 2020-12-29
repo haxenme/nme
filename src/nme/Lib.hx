@@ -27,7 +27,7 @@ class Lib
    public static var current(get, never):MovieClip;
 
    private static var nmeCurrent:MovieClip = null;
-   private static var nmeStage:Stage = null;
+   public  static var nmeStage(default,null):Stage = null;
 
    // Wrapper to Application class
    public static var FULLSCREEN      = Application.FULLSCREEN;

@@ -433,6 +433,8 @@ public:
    void setFocusRect(bool inVal) { focusRect = inVal; }
    bool getFocusRect() const { return focusRect; }
    UserPoint getMousePos() const { return mLastMousePos; }
+   virtual bool getCaptureMouse() { return false; };
+   virtual bool setCaptureMouse(bool val) { return false; };
    virtual double getStageWidth();
    virtual double getStageHeight();
    virtual double getDPIScale() { return 1.0; }

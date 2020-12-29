@@ -305,6 +305,22 @@ static HardwareRenderer *sgHardwareRenderer = 0;
 
 class SDLStage : public Stage
 {
+   HardwareRenderer *mHardwareRenderer;
+   SDL_Window *mSDLWindow;
+   SDL_Renderer *mSDLRenderer;
+   Surface     *mPrimarySurface;
+   SDL_Surface *mSoftwareSurface;
+   SDL_Texture *mSoftwareTexture;
+   bool         mIsHardware;
+   Cursor       mCurrentCursor;
+   bool         mShowCursor;
+   bool            mLockCursor;   
+   bool         mIsFullscreen;
+   unsigned int mWindowFlags;
+   int          mWidth;
+   int          mHeight;
+   bool         mCaptureMouse;
+
 public:
    SDLStage(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsHardware, int inWidth, int inHeight)
    {
@@ -315,6 +331,7 @@ public:
       mSDLWindow = inWindow;
       mSDLRenderer = inRenderer;
       mWindowFlags = inWindowFlags;
+      mCaptureMouse = false;
       
       mShowCursor = true;
       mCurrentCursor = curPointer;
@@ -401,10 +418,28 @@ public:
       Close(false);
    }
 
+   bool getCaptureMouse()
+   {
+      return mCaptureMouse;
+   }
+   bool setCaptureMouse(bool val)
+   {
+      if (mCaptureMouse!=val)
+      {
+         mCaptureMouse = val;
+         SDL_CaptureMouse((SDL_bool)val);
+      }
+      return mCaptureMouse;
+   }
+
+
    void Close(bool isMain)
    {
       if (mSDLWindow)
       {
+         if (mCaptureMouse)
+            setCaptureMouse(false);
+
          SDL_SetWindowFullscreen(mSDLWindow, 0);
          if (!mIsHardware)
          {
@@ -416,7 +451,8 @@ public:
             mHardwareRenderer->DecRef();
          }
          mPrimarySurface->DecRef();
-         SDL_DestroyRenderer(mSDLRenderer);
+         if (mSDLRenderer)
+            SDL_DestroyRenderer(mSDLRenderer);
          SDL_DestroyWindow(mSDLWindow); 
 
          #ifdef NME_WINDOWS_SINGLE_INSTANCE
@@ -886,20 +922,6 @@ public:
    }
    
    
-   HardwareRenderer *mHardwareRenderer;
-   SDL_Window *mSDLWindow;
-   SDL_Renderer *mSDLRenderer;
-   Surface     *mPrimarySurface;
-   SDL_Surface *mSoftwareSurface;
-   SDL_Texture *mSoftwareTexture;
-   bool         mIsHardware;
-   Cursor       mCurrentCursor;
-   bool         mShowCursor;
-   bool            mLockCursor;   
-   bool         mIsFullscreen;
-   unsigned int mWindowFlags;
-   int          mWidth;
-   int          mHeight;
 };
 
 class SDLFrame *sgSDLFrame = 0;
@@ -1624,7 +1646,6 @@ void ProcessEvent(SDL_Event &inEvent)
                frame->ProcessEvent(redraw);
                break;
             }
-            //case SDL_WINDOWEVENT_MOVED: break;
             //case SDL_WINDOWEVENT_RESIZED: break;
             case SDL_WINDOWEVENT_SIZE_CHANGED:
             {
@@ -1652,7 +1673,7 @@ void ProcessEvent(SDL_Event &inEvent)
                frame = getEventFrame(inEvent.window.windowID,false);
                if (frame)
                {
-                  bool isMax = SDL_GetWindowFlags(frame->mStage->mSDLWindow ) &
+                  bool isMax = SDL_GetWindowFlags(frame->mWindow ) &
                                (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP);
                   frame->mStage->setIsFullscreen(isMax);
 
@@ -1661,7 +1682,7 @@ void ProcessEvent(SDL_Event &inEvent)
 
                   int width = 0;
                   int height = 0;
-                  SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
+                  SDL_GetWindowSize(frame->mWindow, &width, &height);
 
                   Event resize(etResize, width, height);
                   frame->Resize(width,height);
@@ -1669,8 +1690,24 @@ void ProcessEvent(SDL_Event &inEvent)
                }
                break;
 
-            //case SDL_WINDOWEVENT_ENTER: break;
-            //case SDL_WINDOWEVENT_LEAVE: break;
+            case SDL_WINDOWEVENT_MOVED:
+               {
+                  Event event(etWindowMoved, inEvent.window.data1, inEvent.window.data2);
+                  frame->ProcessEvent(event);
+               }
+               break;
+
+            case SDL_WINDOWEVENT_ENTER:
+               {
+                  Event event(etWindowEnter);
+                  frame->ProcessEvent(event);
+               }
+               break;
+            case SDL_WINDOWEVENT_LEAVE:
+               {
+                  Event event(etWindowLeave);
+                  frame->ProcessEvent(event);
+               }
             case SDL_WINDOWEVENT_FOCUS_GAINED:
             {
                Event inputFocus(etGotInputFocus);
@@ -1804,7 +1841,7 @@ void ProcessEvent(SDL_Event &inEvent)
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
+         SDL_GetWindowSize(frame->mWindow, &width, &height);
 
          // button?
          Event mouse(etMouseDown, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
@@ -1818,7 +1855,7 @@ void ProcessEvent(SDL_Event &inEvent)
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
+         SDL_GetWindowSize(frame->mWindow, &width, &height);
 
          // button?
          Event mouse(etMouseUp, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
@@ -1832,7 +1869,7 @@ void ProcessEvent(SDL_Event &inEvent)
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(frame->mStage->mSDLWindow, &width, &height);
+         SDL_GetWindowSize(frame->mWindow, &width, &height);
 
          // button?
          Event mouse(etMouseMove, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
@@ -2044,6 +2081,8 @@ void insertWinProc(HWND hwnd,SDLFrame *frame)
 }
 
 #endif
+
+static SDL_Renderer *sgMainRenderer = 0;
 
 void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight, unsigned int inFlags, const char *inTitle, Surface *inIcon)
 {
@@ -2269,6 +2308,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       if (hardware) renderFlags |= SDL_RENDERER_ACCELERATED;
       if (hardware && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
 
+      if (hardware && sgMainRenderer)
+      {
+         renderer = sgMainRenderer;
+         break;
+      }
       renderer = SDL_CreateRenderer (window, -1, renderFlags);
       
       if (opengl)
@@ -2307,7 +2351,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    {
       fprintf(stderr, "Failed to create SDL window: %s\n", SDL_GetError());
       return;
-   }  
+   }
+
    
    if (!renderer)
    {
@@ -2332,6 +2377,12 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
 
    bool hardware = metal||opengl;
+
+   if (isMain && opengl)
+      sgMainRenderer = renderer;
+   else if (sgMainRenderer==renderer)
+      renderer = 0;
+
    SDLFrame *frame = new SDLFrame(window, renderer, windowFlags, hardware, width, height);
 
    if (isMain)
@@ -2370,7 +2421,7 @@ HWND GetApplicationWindow()
 
    SDL_SysWMinfo wminfo;
    SDL_VERSION (&wminfo.version);
-   if (SDL_GetWindowWMInfo(sgSDLFrame->mStage->mSDLWindow, &wminfo) == 1)
+   if (SDL_GetWindowWMInfo(sgSDLFrame->mWindow, &wminfo) == 1)
        return wminfo.info.win.window;
 
    return 0;

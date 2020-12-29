@@ -715,6 +715,19 @@ void nme_##obj_prefix##_set_##prop(value inObj,to_from_type inVal) \
 \
 DEFINE_PRIME2v(nme_##obj_prefix##_set_##prop)
 
+#define DO_PROP_PRIME_RET(Obj,obj_prefix,prop,Prop,to_from_type) \
+DO_PROP_READ_PRIME(Obj,obj_prefix,prop,Prop,to_from_type) \
+to_from_type nme_##obj_prefix##_set_##prop(value inObj,to_from_type inVal) \
+{ \
+   Obj *obj; \
+   if (AbstractToObject(inObj,obj)) \
+      return obj->set##Prop(inVal); \
+   return (to_from_type)0; \
+} \
+\
+DEFINE_PRIME2(nme_##obj_prefix##_set_##prop)
+
+
 #define DO_DISPLAY_PROP_PRIME(prop,Prop,to_from_type) \
    DO_PROP_PRIME(DisplayObject,display_object,prop,Prop,to_from_type) 
    
@@ -1756,6 +1769,7 @@ DO_STAGE_PROP_PRIME(align,Align,int)
 DO_STAGE_PROP_PRIME(quality,Quality,int)
 DO_STAGE_PROP_PRIME(display_state,DisplayState,int)
 DO_STAGE_PROP_PRIME(multitouch_active,MultitouchActive,bool)
+DO_PROP_PRIME_RET(Stage,stage,capture_mouse,CaptureMouse,bool)
 DO_PROP_READ_PRIME(Stage,stage,stage_width,StageWidth,int);
 DO_PROP_READ_PRIME(Stage,stage,stage_height,StageHeight,int);
 DO_PROP_READ_PRIME(Stage,stage,dpi_scale,DPIScale,double);

@@ -139,6 +139,19 @@ class NmeApplication implements IAppEventHandler implements IPollClient
    {
    }
 
+   public function onWindowMoved(x:Int, y:Int):Void
+   {
+   }
+
+   public function onWindowLeave():Void
+   {
+   }
+
+   public function onWindowEnter():Void
+   {
+   }
+
+
    public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void
    {
       trace("Exception: " + exception+"\n" + haxe.CallStack.toString(stack));

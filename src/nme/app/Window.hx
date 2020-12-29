@@ -275,7 +275,7 @@ class Window
 
             case EventId.AppLink:
                 appEventHandler.onAppLink(event);
-             
+
             case EventId.Scroll:
                appEventHandler.onScroll(event);
 
@@ -286,6 +286,15 @@ class Window
 
             case EventId.WindowClose:
                appEventHandler.onWindowClose();
+
+            case EventId.WindowEnter:
+               appEventHandler.onWindowEnter();
+
+            case EventId.WindowLeave:
+               appEventHandler.onWindowLeave();
+
+            case EventId.WindowMoved:
+               appEventHandler.onWindowMoved(event.x, event.y);
          }
 
 

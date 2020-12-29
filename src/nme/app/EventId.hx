@@ -55,4 +55,7 @@ class EventId
    public static inline var DropEnd = 39;
 
    public static inline var WindowClose = 40;
+   public static inline var WindowMoved = 41;
+   public static inline var WindowEnter = 42;
+   public static inline var WindowLeave = 43;
 }

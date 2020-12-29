@@ -28,6 +28,7 @@ import nme.events.KeyboardEvent;
 import nme.events.SystemEvent;
 import nme.events.TouchEvent;
 import nme.events.DropEvent;
+import nme.events.MoveEvent;
 import nme.events.Event;
 import nme.geom.Point;
 import nme.geom.Rectangle;
@@ -97,6 +98,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var quality(get, set):StageQuality;
    public var scaleMode(get, set):StageScaleMode;
    public var stageFocusRect(get, set):Bool;
+   public var captureMouse(get, set):Bool;
    public var stageHeight(get, never):Int;
    public var stageWidth(get, never):Int;
    public var renderRequest(get,set):Void->Bool;
@@ -780,6 +782,22 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
    }
 
+   public function onWindowMoved(inX:Int, inY:Int):Void
+   {
+      nmeBroadcast(new MoveEvent(MoveEvent.WINDOW_MOVED, inX, inY));
+   }
+
+   public function onWindowEnter():Void
+   {
+      nmeBroadcast(new Event(Event.MOUSE_ENTER));
+   }
+
+   public function onWindowLeave():Void
+   {
+      nmeBroadcast(new Event(Event.MOUSE_LEAVE));
+   }
+
+
    private inline function axismap( code:Int )
    {
       #if openfl_legacy
@@ -987,6 +1005,9 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       }
       return nmeCurrent;
    }
+
+   function get_captureMouse() return nme_stage_get_capture_mouse(nmeHandle);
+   function set_captureMouse(val:Bool) return nme_stage_set_capture_mouse(nmeHandle,val);
 
 
 
@@ -1203,6 +1224,8 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private static var nme_stage_set_focus_rect = PrimeLoader.load("nme_stage_set_focus_rect", "obv");
    private static var nme_stage_resize_window = PrimeLoader.load("nme_stage_resize_window", "oiiv");
    private static var nme_stage_show_cursor = PrimeLoader.load("nme_stage_show_cursor", "obv");
+   private static var nme_stage_get_capture_mouse = PrimeLoader.load("nme_stage_get_capture_mouse", "ob");
+   private static var nme_stage_set_capture_mouse = PrimeLoader.load("nme_stage_set_capture_mouse", "obb");
   
    private static var nme_stage_get_orientation = PrimeLoader.load("nme_stage_get_orientation", "i");
    private static var nme_stage_get_normal_orientation = PrimeLoader.load("nme_stage_get_normal_orientation", "i");

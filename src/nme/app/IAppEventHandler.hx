@@ -23,6 +23,10 @@ interface IAppEventHandler
    public function onDrop(event:AppEvent):Void;
    public function onUnhandledException(exception:Dynamic, stack:Array<StackItem>):Void;
    public function onWindowClose():Void;
+   public function onWindowMoved(x:Int, y:Int):Void;
+   public function onWindowLeave():Void;
+   public function onWindowEnter():Void;
+
 }
 
 

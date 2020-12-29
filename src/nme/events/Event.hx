@@ -18,6 +18,7 @@ class Event
    public static inline var ENTER_FRAME = "enterFrame";
    public static inline var ID3 = "id3";
    public static inline var INIT = "init";
+   public static inline var MOUSE_ENTER = "mouseEnter";
    public static inline var MOUSE_LEAVE = "mouseLeave";
    public static inline var OPEN = "open";
    public static inline var REMOVED = "removed";
@@ -34,6 +35,7 @@ class Event
    public static inline var VIDEO_FRAME = "videoFrame";
    public static inline var DPI_CHANGED = "dpiChanged";
    public static inline var DROP_FILES = "dropFiles";
+
 
    public var bubbles(get, never):Bool;
    public var cancelable(get, never):Bool;
