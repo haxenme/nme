@@ -6,7 +6,7 @@ class ApplicationDocument extends ::APP_MAIN::
       #if nme
       var added:nme.display.DisplayObject = null;
       ApplicationMain.setAndroidViewHaxeObject(this);
-      if (Std.is(this, nme.display.DisplayObject))
+      if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(this, nme.display.DisplayObject))
       {
          added = cast this;
          nme.Lib.current.addChild(added);
