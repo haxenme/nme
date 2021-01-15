@@ -2026,6 +2026,12 @@ void TextField::DeleteSelection()
    mGfxDirty = true;
 }
 
+void TextField::setCaretIndex(int inIndex)
+{
+   caretIndex = std::min(inIndex,getLength());
+   ShowCaret();
+}
+
 void TextField::InsertString(const WString &inString)
 {
    if (maxChars>0)

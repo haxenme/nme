@@ -21,7 +21,7 @@ class FileHelper
       }
       else
       {
-         if (Std.is(asset.data, Bytes)) 
+         if (Std.isOfType(asset.data, Bytes)) 
             File.saveBytes(destination, cast asset.data);
          else
             File.saveContent(destination, Std.string(asset.data));
@@ -37,7 +37,7 @@ class FileHelper
       }
       else
       {
-         if (Std.is(asset.data, Bytes)) 
+         if (Std.isOfType(asset.data, Bytes)) 
             File.saveBytes(destination, cast asset.data);
          else
             File.saveContent(destination, Std.string(asset.data));

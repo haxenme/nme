@@ -38,6 +38,7 @@ class TextField extends InteractiveObject
    public var textWidth(get, null):Float;
    public var type(get, set):TextFieldType;
    public var wordWrap(get, set):Bool;
+   public var caretIndex(get, set):Int;
 
    public function new() 
    {
@@ -183,6 +184,8 @@ class TextField extends InteractiveObject
    private function set_type(inType:TextFieldType):TextFieldType { nme_text_field_set_type(nmeHandle, inType == TextFieldType.INPUT); return inType; }
    private function get_wordWrap():Bool { return nme_text_field_get_word_wrap(nmeHandle); }
    private function set_wordWrap(inVal:Bool):Bool { nme_text_field_set_word_wrap(nmeHandle, inVal); return inVal; }
+   private function get_caretIndex():Int { return nme_text_field_get_caret_index(nmeHandle); }
+   private function set_caretIndex(inVal:Int):Int { nme_text_field_set_caret_index(nmeHandle, inVal); return inVal; }
 
    // Native Methods
    private static var nme_text_field_create = PrimeLoader.load("nme_text_field_create", "o");
@@ -237,6 +240,8 @@ class TextField extends InteractiveObject
    private static var nme_text_field_get_selection_begin_index = PrimeLoader.load("nme_text_field_get_selection_begin_index", "oi");
    private static var nme_text_field_get_selection_end_index = PrimeLoader.load("nme_text_field_get_selection_end_index", "oi");
    private static var nme_text_field_set_selection = PrimeLoader.load("nme_text_field_set_selection", "oiiv");
+   private static var nme_text_field_get_caret_index = PrimeLoader.load("nme_text_field_get_caret_index", "oi");
+   private static var nme_text_field_set_caret_index = PrimeLoader.load("nme_text_field_set_caret_index", "oiv");
 
    private static var nme_text_field_get_line_positions = PrimeLoader.load("nme_text_field_get_line_positions", "oiov");
    private static var nme_text_field_get_line_for_char = PrimeLoader.load("nme_text_field_get_line_for_char", "oii");

@@ -530,7 +530,8 @@ class PathHelper
       {
          return FileSystem.fullPath(path);
 
-      } catch(e:Dynamic) 
+      }
+      catch(e:Dynamic) 
       {
          return expand(path);
       }

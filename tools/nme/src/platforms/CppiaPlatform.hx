@@ -32,9 +32,10 @@ class CppiaPlatform extends Platform
    override public function getAssetDir() { return getOutputDir()+"/assets"; }
    override public function getBinaryName()
    {
-       return project.expandCppia() ?
-           FileSystem.fullPath( getOutputDir() + "/ScriptMain.cppia" ) :
-           FileSystem.fullPath( getOutputDir() + "/" + getNmeFilename() );
+      var file = project.expandCppia() ?
+            getOutputDir() + "/ScriptMain.cppia"  :
+            getOutputDir() + "/" + getNmeFilename();
+      return PathHelper.tryFullPath(file);
    }
 
 

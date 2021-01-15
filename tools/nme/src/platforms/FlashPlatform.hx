@@ -484,7 +484,7 @@ class FlashHelper
 
          if (inAsset.data != null) 
          {
-            if (Std.is(inAsset.data, Bytes)) 
+            if (Std.isOfType(inAsset.data, Bytes)) 
             {
                bytes = cast inAsset.data;
             }

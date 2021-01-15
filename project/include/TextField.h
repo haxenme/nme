@@ -206,6 +206,7 @@ public:
    bool IsCacheDirty();
    void SyncSelection();
    void Focus();
+   void setCaretIndex(int inIndex);
 
 
    void decodeStream(ObjectStreamIn &inStream);
