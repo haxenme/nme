@@ -131,6 +131,7 @@ class NMEStage;
 #ifndef NME_METAL
 - (void) createOGLFramebuffer;
 - (void) destroyOGLFramebuffer;
+- (void) recreateOGLFramebuffer;
 #endif
 @end
 
@@ -176,6 +177,10 @@ public:
    bool           multiTouchEnabled;
    bool           haveOpaqueBg;
    bool           wantOpaqueBg;
+   
+   #ifndef NME_METAL
+   bool           needRecreateOGLFrameBuffer;
+   #endif
 
    NMEStage(CGRect inRect);
    ~NMEStage();
@@ -290,7 +295,10 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
    {
       #ifndef NME_METAL
       if (stage->nmeView->mOGLContext && [EAGLContext currentContext] != stage->nmeView->mOGLContext)
-         [EAGLContext setCurrentContext:stage->nmeView->mOGLContext];  
+         [EAGLContext setCurrentContext:stage->nmeView->mOGLContext]; 
+      
+      if (stage->needRecreateOGLFrameBuffer)
+         [stage->nmeView recreateOGLFramebuffer];
       #endif
       Event evt(etPoll);
       stage->OnEvent(evt);
@@ -759,6 +767,18 @@ static std::string nmeTitle;
 
 
 #ifndef NME_METAL
+- (void) recreateOGLFramebuffer
+{
+   [EAGLContext setCurrentContext:mOGLContext];
+   [self destroyOGLFramebuffer];
+   [self createOGLFramebuffer];
+   //printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
+   
+   mHardwareRenderer->SetWindowSize(backingWidth, backingHeight);
+   mStage->OnOGLResize(backingWidth, backingHeight);
+   mStage->needRecreateOGLFrameBuffer = false;
+}
+
 - (void) createOGLFramebuffer
 {
    APP_LOG(@"createOGLFramebuffer");
@@ -1114,14 +1134,7 @@ static std::string nmeTitle;
 - (void) layoutSubviews
 {
    #ifndef NME_METAL
-   [EAGLContext setCurrentContext:mOGLContext];
-   [self destroyOGLFramebuffer];
-   [self createOGLFramebuffer];
-   //printf("Resize, set ogl %p : %dx%d\n", mOGLContext, backingWidth, backingHeight);
-
-
-   mHardwareRenderer->SetWindowSize(backingWidth,backingHeight);
-   mStage->OnOGLResize(backingWidth,backingHeight);
+   mStage->needRecreateOGLFrameBuffer = true;
    #else
    backingSize = [self drawableSize];
 
@@ -1757,6 +1770,10 @@ NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
 
    haveOpaqueBg = true;
    wantOpaqueBg = true;
+   
+   #ifndef NME_METAL
+   needRecreateOGLFrameBuffer = false;
+   #endif
 
    NSString* platform = [UIDeviceHardware platformString];
    //printf("Detected hardware: %s\n", [platform UTF8String]);
