@@ -15,12 +15,23 @@ class Vector3D
    public var y:Float;
    public var z:Float;
 
-   public function new(?x:Float = 0., ?y:Float = 0., ?z:Float = 0., ?w:Float = 0.) 
+   public function new(?x:Float = 0., ?y:Float = 0., ?z:Float = 0., ?w:Float = 1.0) 
    {
       this.w = w;
       this.x = x;
       this.y = y;
       this.z = z;
+   }
+
+   public function normW()
+   {
+      if (w!=0 && w!=1)
+      {
+         x/=w;
+         y/=w;
+         z/=w;
+      }
+      return this;
    }
 
    inline public function add(a:Vector3D):Vector3D 

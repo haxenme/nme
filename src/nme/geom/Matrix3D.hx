@@ -10,6 +10,26 @@ class Matrix3D
    public var position(get, set):Vector3D;
    public var rawData:Vector<Float>;
 
+   public var mxx(get,set):Float; public inline function get_mxx() return rawData[0]; public inline function set_mxx(m) return rawData[0]=m;
+   public var myx(get,set):Float; public inline function get_myx() return rawData[1]; public inline function set_myx(m) return rawData[1]=m;
+   public var mzx(get,set):Float; public inline function get_mzx() return rawData[2]; public inline function set_mzx(m) return rawData[2]=m;
+   public var mwx(get,set):Float; public inline function get_mwx() return rawData[3]; public inline function set_mwx(m) return rawData[3]=m;
+
+   public var mxy(get,set):Float; public inline function get_mxy() return rawData[4]; public inline function set_mxy(m) return rawData[4]=m;
+   public var myy(get,set):Float; public inline function get_myy() return rawData[5]; public inline function set_myy(m) return rawData[5]=m;
+   public var mzy(get,set):Float; public inline function get_mzy() return rawData[6]; public inline function set_mzy(m) return rawData[6]=m;
+   public var mwy(get,set):Float; public inline function get_mwy() return rawData[7]; public inline function set_mwy(m) return rawData[7]=m;
+
+   public var mxz(get,set):Float; public inline function get_mxz() return rawData[8]; public inline function set_mxz(m) return rawData[8]=m;
+   public var myz(get,set):Float; public inline function get_myz() return rawData[9]; public inline function set_myz(m) return rawData[9]=m;
+   public var mzz(get,set):Float; public inline function get_mzz() return rawData[10]; public inline function set_mzz(m) return rawData[10]=m;
+   public var mwz(get,set):Float; public inline function get_mwz() return rawData[11]; public inline function set_mwz(m) return rawData[11]=m;
+
+   public var tx(get,set):Float; public inline function get_tx() return rawData[12]; public inline function set_tx(m) return rawData[12]=m;
+   public var ty(get,set):Float; public inline function get_ty() return rawData[13]; public inline function set_ty(m) return rawData[13]=m;
+   public var tz(get,set):Float; public inline function get_tz() return rawData[14]; public inline function set_tz(m) return rawData[14]=m;
+   public var tw(get,set):Float; public inline function get_tw() return rawData[15]; public inline function set_tw(m) return rawData[15]=m;
+
    public function new(?v:Vector<Float>) 
    {
       if (v != null && v.length == 16) 
@@ -567,8 +587,10 @@ class Matrix3D
          (x * rawData[0] + y * rawData[4] + z * rawData[8] + rawData[12]),
          (x * rawData[1] + y * rawData[5] + z * rawData[9] + rawData[13]),
          (x * rawData[2] + y * rawData[6] + z * rawData[10] + rawData[14]),
-      1);
+         (x * rawData[3] + y * rawData[7] + z * rawData[11] + rawData[15])
+      );
    }
+
 
    public function transformVectors(vin:Vector<Float>, vout:Vector<Float>):Void 
    {

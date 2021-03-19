@@ -22,33 +22,42 @@ import nme.utils.Int32Array;
 
 abstract NmeFloats(Dynamic)
 {
+   public var length(get,never):Int;
    public inline function new(d:Dynamic) this = d;
+
    @:to inline function toDynamic() return this;
    @:from inline static function fromFloat32Array( f:Float32Array )
         return new NmeFloats(f.getByteBuffer());
    @:from inline static function fromArrayFloat( f:Array<Float> )
         return new NmeFloats(f);
+   inline public function get_length() return this.length;
 }
 
 
 abstract NmeInts(Dynamic)
 {
+   public var length(get,never):Int;
    public inline function new(d:Dynamic) this = d;
+
    @:to inline function toDynamic() return this;
    @:from inline static function fromInt32Array( f:Int32Array )
         return new NmeInts(f.getByteBuffer());
    @:from inline static function fromArrayInt( f:Array<Int> )
         return new NmeInts(f);
+   inline public function get_length() return this.length;
 }
 
 abstract NmeBytes(Dynamic)
 {
+   public var length(get,never):Int;
    public inline function new(d:Dynamic) this = d;
+
    @:to inline function toDynamic() return this;
    @:from inline static function fromByteArray( b:ByteArray )
         return new NmeBytes(b);
    @:from inline static function fromArrayBufferView( b:ArrayBufferView )
         return new NmeBytes(b);
+   inline public function get_length() return this.length;
 }
 
 
