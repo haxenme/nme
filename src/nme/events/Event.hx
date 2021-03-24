@@ -9,6 +9,7 @@ class Event
    public static inline var ADDED_TO_STAGE = "addedToStage";
    public static inline var CANCEL = "cancel";
    public static inline var CHANGE = "change";
+   public static inline var BEFORE_CLOSE = "beforeClose";
    public static inline var CLOSE = "close";
    public static inline var COMPLETE = "complete";
    public static inline var CONNECT = "connect";
