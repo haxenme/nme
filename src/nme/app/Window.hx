@@ -78,15 +78,27 @@ class Window
       return m;
    }
 
-   public function close()
+   public function close(): Bool
    {
       if (stage!=null)
       {
+         var evt_before: nme.events.Event = new nme.events.Event(nme.events.Event.BEFORE_CLOSE, false, true);
+         evt_before.target = stage;
+         stage.dispatchEvent(evt_before);
+         if(evt_before.nmeGetIsCancelled())
+            return false;
+
+         var evt_after: nme.events.Event = new nme.events.Event(nme.events.Event.CLOSE, false, false);
+         evt_after.target = stage;
+         stage.dispatchEvent(evt_after);
+
          stage.dispose();
          stage = null;
       }
       nme_window_close(nmeHandle);
       NativeResource.dispose(nmeHandle);
+
+      return true;
    }
 
    public function toString() return 'Window($title)';
