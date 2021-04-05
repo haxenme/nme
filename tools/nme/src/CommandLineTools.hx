@@ -916,7 +916,7 @@ class CommandLineTools
             ProcessHelper.runCommand(nme + "/bin/Linux/Acadnme", "./Acadnme", args);
 
          case Platform.MAC:
-            ProcessHelper.runCommand(nme + "/bin/Mac", "open", ["./Acadnme.app", "--args"].concat(args));
+            ProcessHelper.runCommand(nme + "/bin/Mac/Acadnme.app/Contents/MacOS", "./Acadnme", args);
 
          default:
       }
