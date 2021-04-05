@@ -1,24 +1,38 @@
 package nme.gl;
 
 import nme.geom.Matrix3D;
+import nme.geom.Vector3D;
 import nme.utils.*;
 import nme.gl.GL;
 
 // Used for drawing geometry using a view matrix and constant colour
 class ProgramTPosCol extends ProgramBase
 {
-   static var prog:GLProgram;
-   static var posLocation:Dynamic;
-   static var colLocation:Dynamic;
-   static var mvpLocation:Dynamic;
+   static var progClipped:GLProgram;
+   static var posLocationClip:Dynamic;
+   static var colLocationClip:Dynamic;
+   static var mvpLocationClip:Dynamic;
+
+   static var progUnclipped:GLProgram;
+   static var posLocationUnclip:Dynamic;
+   static var colLocationUnclip:Dynamic;
+   static var mvpLocationUnclip:Dynamic;
+
+   static var clipLocation:Dynamic;
+   var posLocation:Dynamic;
+   var colLocation:Dynamic;
+   var mvpLocation:Dynamic;
 
    var posBuffer:GLBuffer;
    var colBuffer:GLBuffer;
+   var clipped:Bool;
+   var prog:GLProgram;
 
-   public function new(inVertices:Float32Array, inColours:Int32Array, inPrim:Int, inPrimCount:Int)
+   public function new(inVertices:Float32Array, inColours:Int32Array, inPrim:Int, inPrimCount:Int,inClipped=false)
    {
       super(inPrim, inPrimCount);
 
+      clipped = inClipped;
       posBuffer = GL.createBuffer();
       GL.bindBuffer(GL.ARRAY_BUFFER, posBuffer);
       GL.bufferData(GL.ARRAY_BUFFER, inVertices, GL.STATIC_DRAW);
@@ -29,19 +43,28 @@ class ProgramTPosCol extends ProgramBase
 
       GL.bindBuffer(GL.ARRAY_BUFFER, null);
 
+      prog = clipped ? progClipped : progUnclipped;
+
       if (prog==null || !prog.valid)
       {
-           var vertShader =
+         var vertShader =
               "in vec3 pos;" +
               "in vec4 col;" + 
-              "out vec4 pCol;" + 
               "uniform mat4 mvp;" +
+              (clipped ? "uniform vec4 clip;" : "") +
+              "out vec4 pCol;" + 
               "void main() {" +
               " pCol = col;" +
-              " gl_Position = mvp * vec4(pos, 1.0);" +
+              " vec4 p4 = vec4(pos, 1.0);" +
+              " gl_Position = mvp * p4;";
+
+         if (clipped)
+             vertShader += " gl_ClipDistance[0] = dot(p4,clip);";
+
+         vertShader +=
               "}";
 
-            var fragShader =
+         var fragShader =
               #if !desktop 'precision mediump float;' + #end
               "in vec4 pCol;" + 
               "void main() {" +
@@ -52,6 +75,36 @@ class ProgramTPosCol extends ProgramBase
          posLocation = GL.getAttribLocation(prog, "pos");
          colLocation = GL.getAttribLocation(prog, "col");
          mvpLocation = GL.getUniformLocation(prog, "mvp");
+
+         if (clipped)
+            clipLocation = GL.getUniformLocation(prog, "clip");
+
+         if (clipped)
+         {
+            progClipped = prog;
+            posLocationClip = posLocation;
+            mvpLocationClip = mvpLocation;
+            colLocationClip = colLocation;
+         }
+         else
+         {
+            progUnclipped = prog;
+            posLocationUnclip = posLocation;
+            mvpLocationUnclip = mvpLocation;
+            colLocationUnclip = colLocation;
+         }
+      }
+      else if (clipped)
+      {
+         posLocation = posLocationClip;
+         mvpLocation = mvpLocationClip;
+         colLocation = colLocationClip;
+      }
+      else
+      {
+         posLocation = posLocationUnclip;
+         mvpLocation = mvpLocationUnclip;
+         colLocation = colLocationUnclip;
       }
    }
 
@@ -62,7 +115,9 @@ class ProgramTPosCol extends ProgramBase
    }
 
 
-   override public function render(mvp:Float32Array)
+   override public function render(mvp:Float32Array) renderClipped(mvp,null);
+
+   override public function renderClipped(mvp:Float32Array, plane:Vector3D)
    {
       GL.useProgram(prog);
 
@@ -76,34 +131,33 @@ class ProgramTPosCol extends ProgramBase
 
       GL.uniformMatrix4fv(mvpLocation, false, mvp);
 
+      if (clipped && plane!=null)
+      {
+         GL.uniform4f(clipLocation, plane.x, plane.y, plane.z, plane.w);
+         GL.enable(GL.CLIP_DISTANCE0);
+      }
+
       GL.drawArrays(primType, 0, primCount);
 
       GL.disableVertexAttribArray(posLocation);
       GL.disableVertexAttribArray(colLocation);
       GL.bindBuffer(GL.ARRAY_BUFFER, null);
+
+      if (clipped && plane!=null)
+         GL.disable(GL.CLIP_DISTANCE0);
    }
 
 
-   public static function createLines(vertices:Float32Array, colours:Int32Array)
+   public static function createLines(vertices:Float32Array, colours:Int32Array,clipped=false)
    {
-      var count = vertices.length;
-      if (count<1 || (count%6>0))
-         throw "vertices length should be a multiple of 6";
-      count = Std.int(count/3);
-      if (colours.length!=count)
-         throw "There should be one colour per vertex";
-      return new ProgramTPosCol(vertices, colours, GL.LINES, count);
+      var count = ProgramBase.lineCount(vertices,colours);
+      return new ProgramTPosCol(vertices, colours, GL.LINES, count,clipped);
    }
 
-   public static function createTriangles(vertices:Float32Array, colours:Int32Array)
+   public static function createTriangles(vertices:Float32Array, colours:Int32Array,clipped=false)
    {
-      var count = vertices.length;
-      if (count<1 || (count%9>0))
-         throw "vertices length should be a multiple of 9";
-      count = Std.int(count/3);
-      if (colours.length!=count)
-         throw "There should be one colour per vertex";
-      return new ProgramTPosCol(vertices, colours, GL.TRIANGLES, count);
+      var count = ProgramBase.triangleCount(vertices,colours);
+      return new ProgramTPosCol(vertices, colours, GL.TRIANGLES, count,clipped);
    }
 
 }

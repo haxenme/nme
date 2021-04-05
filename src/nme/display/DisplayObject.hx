@@ -261,6 +261,11 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
       return mtx;
    }
 
+   public function fillMatrix(outMatrix:Matrix, concatenated:Bool) : Void
+   {
+      nme_display_object_get_matrix(nmeHandle, outMatrix, concatenated);
+   }
+
    /** @private */ public function nmeGetInteractiveObjectStack(outStack:Array<InteractiveObject>) {
       var io = nmeAsInteractiveObject();
 

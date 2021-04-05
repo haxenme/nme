@@ -34,6 +34,8 @@ class Vector3D
       return this;
    }
 
+   inline public function toPoint() return new Point(x,y);
+
    inline public function add(a:Vector3D):Vector3D 
    {
       return new Vector3D(this.x + a.x, this.y + a.y, this.z + a.z);

@@ -202,6 +202,9 @@ class Matrix3D
 
    }
 
+   public function oglString(join='\n')
+      return '[ $mxx $myx $mzx $mwz ]$join[ $mxy $myy $mzy $mwy ]$join[ $mxz $myz $mzz $mwz ]$join[ $tx $ty $tz $tw ]';
+
 
    public function copyRowFrom( row:UInt, vector3D:Vector3D ) {
 
@@ -414,10 +417,10 @@ class Matrix3D
       }
    }
 
-   inline public function invert():Bool 
+   inline public function invert(minDet = 1e-11):Bool 
    {
       var d = determinant;
-      var invertable = Math.abs(d) > 0.00000000001;
+      var invertable = Math.abs(d) > minDet;
 
       if (invertable) 
       {

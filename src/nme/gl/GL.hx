@@ -227,7 +227,8 @@ class GL
    public static inline var DEPTH_BITS                     = 0x0D56;
    public static inline var STENCIL_BITS                   = 0x0D57;
    public static inline var POLYGON_OFFSET_UNITS           = 0x2A00;
-   /*      POLYGON_OFFSET_FILL */
+   public static inline var POLYGON_OFFSET_POINT           = 0x2A01;
+   public static inline var POLYGON_OFFSET_LINE            = 0x2A02;
    public static inline var POLYGON_OFFSET_FACTOR          = 0x8038;
    public static inline var TEXTURE_BINDING_2D             = 0x8069;
    public static inline var SAMPLE_BUFFERS                 = 0x80A8;
@@ -763,6 +764,8 @@ class GL
    public static inline var INVALID_INDEX = 0xFFFFFFFF;
    public static inline var TIMEOUT_IGNORED = -1;
    public static inline var MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
+
+   public static inline var CLIP_DISTANCE0 = 0x3000;
 
 
    #if (neko||cpp)

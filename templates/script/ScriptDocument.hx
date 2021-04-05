@@ -10,7 +10,7 @@ class ScriptDocument extends ::APP_MAIN::
       if (appMain!=null)
          Reflect.field(appMain,"setAndroidViewHaxeObject")(this);
 
-      if (Std.is(this, nme.display.DisplayObject))
+      if (Std.isOfType(this, nme.display.DisplayObject))
       {
          added = cast this;
          nme.Lib.current.addChild(cast this);
