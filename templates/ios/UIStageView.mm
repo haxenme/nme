@@ -421,7 +421,6 @@ static std::string nmeTitle;
                                    kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
                                    nil];
 
-   #ifndef OBJC_ARC
    if (sgAllowShaders)
    {
       mOGLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
@@ -439,6 +438,7 @@ static std::string nmeTitle;
    //printf("createOGLFramebuffer...\n");
    [self createOGLFramebuffer];
 
+   #ifndef OBJC_ARC
    mHardwareRenderer = HardwareRenderer::CreateOpenGL(mLayer, mOGLContext, sgAllowShaders);
    #else
    mHardwareRenderer = HardwareRenderer::CreateOpenGL((__bridge void *)mLayer, (__bridge void *)mOGLContext, sgAllowShaders);
@@ -1040,7 +1040,9 @@ static std::string nmeTitle;
 
    if (mTextField)
    {
+      #ifndef OBJC_ARC
       [mTextField release];
+      #endif
       mTextField = nil;
    }
  
@@ -1067,7 +1069,9 @@ static std::string nmeTitle;
       if ([EAGLContext currentContext] == mOGLContext)
          [EAGLContext setCurrentContext:nil];
 
+      #ifndef OBJC_ARC
       [mOGLContext release];
+      #endif
       mOGLContext = nil;
    }
    #endif
@@ -2323,13 +2327,9 @@ void CreateMainFrame(FrameCreationCallback inCallback,
    {
       // The NMEAppDelegate will create a NMEStageViewController
 
-      #ifndef OBJC_ARC
-      NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-      #endif
-	      UIApplicationMain(argc, argv, nil, @"NMEAppDelegate");
-      #ifndef OBJC_ARC
-      [pool release];
-      #endif
+      @autoreleasepool {
+         UIApplicationMain(argc, argv, nil, @"NMEAppDelegate");
+      }
    }
 }
 
