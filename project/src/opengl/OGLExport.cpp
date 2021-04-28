@@ -1582,6 +1582,29 @@ value nme_gl_get_shader_info_log(value inId)
 }
 DEFINE_PRIM(nme_gl_get_shader_info_log,1);
 
+#define TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE              0x93A0
+value nme_gl_get_translated_shader_source(value inId)
+{
+   #ifdef NME_ANGLE
+   DBGFUNC("getShaderSource");
+   int id = getResource(inId,resoShader);
+
+    int len = 0;
+   glGetShaderiv(id,TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,&len);
+   if (len==0)
+      return alloc_null();
+   char *buf = new char[len+1];
+   glGetTranslatedShaderSourceANGLE(id,len+1,0,buf);
+   value result = alloc_string(buf);
+   delete [] buf;
+
+    return result;
+   #else
+   return alloc_null();
+   #endif
+}
+DEFINE_PRIM(nme_gl_get_translated_shader_source,1);
+
 value nme_gl_get_shader_source(value inId)
 {
    DBGFUNC("getShaderSource");

@@ -1622,6 +1622,12 @@ class GL
    }
 
 
+   //Angle
+   public static inline function getTranslatedShaderSourceANGLE(shader:GLShader):String
+   {
+      return nme_gl_get_translated_shader_source(shader.id);
+   }
+
 
    // Getters & Setters
    private static inline function get_drawingBufferHeight() { return Lib.current.stage.stageHeight; }
@@ -1794,6 +1800,8 @@ class GL
    private static var nme_gl_read_buffer = PrimeLoader.load("nme_gl_read_buffer", "iv");
    private static var nme_gl_tex_image_3d = PrimeLoader.load("nme_gl_tex_image_3d", "iiiiiiiiioiv");
    private static var nme_gl_compressed_tex_image_3d = PrimeLoader.load("nme_gl_compressed_tex_image_3d", "iiiiiiiioiv");
+
+   private static var nme_gl_get_translated_shader_source = load("nme_gl_get_translated_shader_source", 1);
 
    #else // not (neko||cpp)
 
