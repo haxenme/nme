@@ -5,11 +5,11 @@ class BillingManager
 {
    public static var setup = false;
 
-   #if android
+#if (android||ios)
    inline public static var available = true;
-   #else
+#else
    inline public static var available = false;
-   #end
+#end
 
    public static var purchases = new Array<Purchase>();
    public static var skuInfo:Map<String, SkuInfo>;
@@ -19,21 +19,30 @@ class BillingManager
 
 
    public static function init(?key:String,
-                               ?inManagedInApps:Array<String>,
-                               ?inManagedSubs:Array<String>,
-                               ?billingObserver:BillingEvent->Void) : Bool
+         ?inManagedInApps:Array<String>,
+         ?inManagedSubs:Array<String>,
+         ?billingObserver:BillingEvent->Void) : Bool
    {
+      trace("Billing manager init");
       managedInApps = inManagedInApps;
       managedSubs = inManagedSubs;
       skuInfo = new Map();
       if (billingObserver!=null)
          addObserver(billingObserver);
-
-      #if android
+#if android
       AndroidBillingManager.init(key);
-      #end
-
+#elseif ios
+      IosBillingManager.init();
+      updateSkuDetails();
+#end
       return available;
+   }
+
+   public static function restorePurchases()
+   {
+   #if ios
+      IosBillingManager.restore();
+   #end
    }
 
    public static function fire(billingEvent:BillingEvent)
@@ -61,38 +70,70 @@ class BillingManager
       return observers.remove(billingObserver);
    }
 
+   public static function addPurchase(purchase:Purchase, andFire=true)
+   {
+      if (purchases==null)
+         purchases = [];
+      var found = false;
+      for(i in 0...purchases.length)
+         if (purchases[i].sku==purchase.sku)
+         {
+            purchases[i] = purchase;
+            found = true;
+            break;
+         }
+      if (!found)
+         purchases.push(purchase);
+      if (andFire)
+         fire( PurchasesUpdated(0) );
+   }
+
    public static function setPurchases(inPurchases:Array<Purchase>, andFire=true)
    {
       purchases = inPurchases;
-      trace("setPurchases :" + purchases);
       if (andFire)
          fire( PurchasesUpdated(0) );
    }
 
    public static function acknowledgePurchase(purchase:Purchase)
    {
-      #if android
+#if android
       AndroidBillingManager.acknowledgePurchase(purchase.purchaseToken);
-      #end
+#end
    }
 
    public static function updateSkuDetails(?itemType:ItemType)
    {
+      #if android
       if (itemType==InAppItem || itemType==null)
          updateSkuDetailsList( managedInApps, InAppItem );
 
       if (itemType==SubscriptionItem || itemType==null)
          updateSkuDetailsList( managedSubs, SubscriptionItem );
+      #else
+      var allItems = managedSubs==null ? managedInApps : managedSubs;
+      if (allItems!=null)
+      {
+         if (managedSubs!=null && managedInApps!=null)
+            allItems = managedSubs.concat(managedInApps);
+         // Not anymore?
+         //allItems = [ for(i in allItems) nme.Lib.packageName + "." + i ]; 
+         updateSkuDetailsList( allItems, InAppItem );
+      }
+      #end
    }
 
    public static function updateSkuDetailsList(skuList:Array<String>, itemType:ItemType)
    {
       if (skuList!=null)
       {
-         #if android
+#if android
          AndroidBillingManager.querySkuDetails(itemType==SubscriptionItem ? "subs" : "inapp", skuList );
          return;
-         #end
+#elseif ios
+         IosBillingManager.querySkuDetails(itemType==SubscriptionItem ? "subs" : "inapp", skuList );
+         return;
+#end
       }
 
       fire( SkuDetailsUpdated(false) );
@@ -108,29 +149,32 @@ class BillingManager
             itemType = InAppItem;
       }
 
-      #if android
+#if android
       AndroidBillingManager.initiatePurchaseFlow(sku, itemType==SubscriptionItem?"subs":"inapp");
-      #else
+#elseif ios
+      IosBillingManager.initiatePurchaseFlow(sku, itemType==SubscriptionItem);
+#else
       fire( PurchaseFailed(sku, -99) );
-      #end
+#end
    }
 
    public static function startConsume(purchaseToken)
    {
-      #if android
+#if android
       AndroidBillingManager.consumeAsync(purchaseToken);
-      #else
+#else
       fire( ConsumeComplete(purchaseToken, -99) );
-      #end
+#end
    }
+
 
    public static function close()
    {
       if (setup)
       {
-         #if android
+#if android
          AndroidBillingManager.close();
-         #end
+#end
       }
    }
 
