@@ -525,7 +525,7 @@ bool GetFontFile(const std::string& inName,std::string &outFile)
 const char *fontFolders[] = { "/System/Library/Fonts/CoreAddition/", "/System/Library/Fonts/Core/", "/System/Library/Fonts/CoreUI/",
 			      "/System/Library/Fonts/AppFonts/", "/System/Library/Fonts/LanguageSupport/", "/System/Library/Fonts/Watch/",
 			      "/System/Library/Fonts/Extra/", "/System/Library/Fonts/Cache/",
-			     "/System/Library/Fonts", "/System/Library/Fonts/Supplemental/", "/Library/Fonts/"0 };
+			     "/System/Library/Fonts", "/System/Library/Fonts/Supplemental/", "/Library/Fonts/" };
 #else
 //#define FONT_BASE "/Library/Fonts/"
 const char *fontFolders[] = { "/System/Library/Fonts", "/System/Library/Fonts/Supplemental/", "/Library/Fonts/", 0 };
