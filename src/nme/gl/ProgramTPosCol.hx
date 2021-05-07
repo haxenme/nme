@@ -108,6 +108,13 @@ class ProgramTPosCol extends ProgramBase
       }
    }
 
+   public function updateColours(newCols:Int32Array)
+   {
+      GL.bindBuffer(GL.ARRAY_BUFFER, colBuffer);
+      GL.bufferData(GL.ARRAY_BUFFER, newCols, GL.STATIC_DRAW);
+      GL.bindBuffer(GL.ARRAY_BUFFER, null);
+   }
+
    override public function dispose()
    {
       GL.deleteBuffer(posBuffer);
