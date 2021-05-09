@@ -15,12 +15,15 @@ class Scale
             scale = getDensity();
             return scale;
          }
-         #end
+         #elseif ios
+         return nme.Lib.current.stage.dpiScale;
+         #else
          scale = nme.system.Capabilities.screenDPI;
          if (scale>120)
             scale /= 120;
          else
             scale = 1.0;
+         #end
       }
       return scale;
    }
