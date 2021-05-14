@@ -28,14 +28,17 @@ class IOSPlatform extends Platform
    var linkedLibraries:Array<String>;
 
    var no3xResoltion:Bool;
+   var useLaunchScreen:Bool;
   
 
    public function new(inProject:NMEProject)
    {
       super(inProject);
 
+
       launchPid = 0;
       redirectTrace = false;
+
 
       for(asset in project.assets) 
          asset.resourceName = asset.targetPath = asset.flatName;
@@ -53,6 +56,7 @@ class IOSPlatform extends Platform
       }
       if (config.sourceFlavour=="mm")
          project.haxeflags.push("-D objc");
+      useLaunchScreen = config.useLaunchScreen;
 
       // If we support iphones with deployment < 5, we must support armv6 ...
       if ( (config.deviceConfig & IOSConfig.IPHONE) > 0 && deployment<5)
@@ -153,7 +157,8 @@ class IOSPlatform extends Platform
       var config = project.iosConfig;
 
       context.HAS_ICON = false;
-      context.HAS_LAUNCH_IMAGE = false;
+      context.HAS_LAUNCH_IMAGE = !useLaunchScreen;
+      context.USE_LAUNCH_SCREEN = useLaunchScreen;
       context.OBJC_ARC = false;
       context.PROJECT_DIRECTORY = Sys.getCwd();
       context.APP_FILE = project.app.file;
@@ -168,6 +173,7 @@ class IOSPlatform extends Platform
       if (project.hasDef("nme_metal"))
          context.NME_METAL = true;
 
+      var col = project.window.background;
       if (project.watchProject!=null)
       {
          context.NME_WATCHOS = true;
@@ -180,12 +186,13 @@ ${hxcpp_include}';
             context.WATCHOS_DEPLOYMENT_TARGET = "3.0";
          }
 
-         var col = project.watchProject.window.background;
-         context.TINT_RED = ((col>>16) & 0xff) / 0xff;
-         context.TINT_GREEN = ((col>>8) & 0xff) / 0xff;
-         context.TINT_BLUE = ((col) & 0xff) / 0xff;
-         context.TINT_ALPHA = 1;
+         col = project.watchProject.window.background;
       }
+
+      context.TINT_RED = ((col>>16) & 0xff) / 0xff;
+      context.TINT_GREEN = ((col>>8) & 0xff) / 0xff;
+      context.TINT_BLUE = ((col) & 0xff) / 0xff;
+      context.TINT_ALPHA = 1;
 
       var devTeam = project.getDef("DEVELOPMENT_TEAM");
       if (devTeam!=null)
@@ -261,6 +268,10 @@ ${hxcpp_include}';
         case _ : "1,2";
       }
       context.DEPLOYMENT = config.deployment;
+      var deploy = Std.parseFloat( config.deployment );
+      for(i in 6...20)
+         if (i>=deploy)
+            Reflect.setField(context,"IOS_DEPLOYMENT_" + i,true);
 
       if (config.compiler == "llvm" || config.compiler == "clang")
       {
@@ -474,12 +485,14 @@ ${hxcpp_include}';
 
    }
 
-   function createAppIcon( resolve : String -> Dynamic, sizeStr:String ) : String
+   function createAppIcon( resolve : String -> Dynamic, sizeStr:String, ?extra:String ) : String
    {
       var size = Std.parseInt(sizeStr);
       Log.verbose("createAppIcon " + size + "x" + size);
 
-      var name = "AppIcon" + size + "x" + size + ".png";
+      if (extra==null)
+         extra = "";
+      var name = "AppIcon" + size + "x" + size + extra + ".png";
       var dest = getOutputDir() + "/Images.xcassets/AppIcon.appiconset/" + name;
 
       var ok = true;
@@ -491,11 +504,16 @@ ${hxcpp_include}';
          return "";
    }
 
-      override public function updateBuildDir():Void 
+   override public function updateBuildDir():Void 
    {
       super.updateBuildDir();
       PathHelper.mkdir(haxeDir+"/cpp/src");
       copyTemplate("ios/UIStageView.mm", haxeDir+"/cpp/src/UIStageView.mm");
+      if (useLaunchScreen)
+      {
+         var outfile = getOutputDir() + "/Launch Screen.storyboard";
+         copyTemplate("ios/Launch Screen.storyboard", outfile);
+      }
    }
 
 
@@ -516,10 +534,16 @@ ${hxcpp_include}';
          copyTemplate("ios/PROJ/PROJ-Entitlements.plist", projectDirectory + "/" + project.app.file + "-Entitlements.plist");
          copyTemplate("ios/PROJ/PROJ-Info.plist", projectDirectory + "/" + project.app.file + "-Info.plist");
          copyTemplate("ios/PROJ/PROJ-Prefix.pch", projectDirectory + "/" + project.app.file + "-Prefix.pch");
+
+         //if (useLaunchScreen)
+         //   filter = (name) -> { trace(name); return name.indexOf("LaunchImage.launchimage")!=-1; };
          copyTemplateDir("ios/PROJ.xcodeproj", targetDir + "/" + project.app.file + ".xcodeproj");
 
-         // Copy all the rest, except the "PROJ" files...
-         copyTemplateDir("ios/PROJ", projectDirectory, true, true, name -> name.substr(0,4)!="PROJ" );
+         // Copy all the rest, except the "PROJ" files, or the launch inmage when using a launch screen
+         var filterProj = name -> {
+            name.substr(0,4)!="PROJ" && (!useLaunchScreen || name!="LaunchImage.launchimage");
+         };
+         copyTemplateDir("ios/PROJ", projectDirectory, true, true, filterProj);
          //copyTemplateDir("ios/PROJ/Classes", projectDirectory + "/Classes");
          //copyTemplateDir("ios/PROJ/Images.xcassets", projectDirectory + "/Images.xcassets");
 

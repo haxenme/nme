@@ -87,6 +87,7 @@ class IOSConfig
    public var sourceFlavour:String;
    public var stageViewHead:String = "";
    public var stageViewInit:String = "";
+   public var useLaunchScreen:Bool = false;
 
    public function new()
    {

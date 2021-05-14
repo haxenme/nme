@@ -1137,6 +1137,9 @@ class NMMLParser
 
                      if (element.has.resolve("linker-flags")) 
                         project.iosConfig.linkerFlags = project.iosConfig.linkerFlags.concat(substitute(element.att.resolve("linker-flags")).split(" "));
+                     if (element.has.useLaunchScreen) 
+                        project.iosConfig.useLaunchScreen = parseBool(element.att.useLaunchScreen);
+
                   }
                default:
                   if (inWarnUnknown && !isTemplate(element,section))

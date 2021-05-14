@@ -25,6 +25,10 @@
 	::foreach CUSTOM_BLOCKS::
 	::value::
 	::end::
+   ::if (USE_LAUNCH_SCREEN)::
+   <key>UILaunchStoryboardName</key>
+	<string>Launch Screen</string>
+   ::end::
 	<key>CFBundleVersion</key>
 	<string>::APP_BUILD_NUMBER::</string>
 	<key>CFBundleShortVersionString</key>
