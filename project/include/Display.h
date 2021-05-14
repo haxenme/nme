@@ -218,6 +218,7 @@ public:
    virtual void EndDrag(Event &inEvent) { }
    virtual void OnKey(Event &inEvent) { }
    virtual bool FinishEditOnEnter() { return false; }
+   virtual void GetSafeRectangle(Rect &outRect) {  }
 
    void SetParent(DisplayObjectContainer *inParent);
 

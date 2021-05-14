@@ -836,6 +836,8 @@ class NMEProject
          parts.push("0");
       context.FILE_VERSION = parts.join(".");
       context.VERSION_NUMBER = parts.join(",");
+      context.NS = "::";
+      context.nmeNs = "::nme::";
 
       var year0 = getDef("COPYRIGHT_START");
       var year1 = Date.now().getFullYear();

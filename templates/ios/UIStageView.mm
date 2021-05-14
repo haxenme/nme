@@ -154,7 +154,7 @@ class NMEStage;
 
 NMEAnimationController *sgAnimationController=0;
 
-
+typedef nme::Rect nmeRect;
 // --- Stage Implementaton ------------------------------------------------------
 //
 // The stage acts as the controller between the NME view and the NME application.
@@ -230,6 +230,8 @@ public:
    int Width() { return nmeView->backingWidth; }
    int Height() { return nmeView->backingHeight; }
    #endif
+
+   void GetSafeRectangle( nmeRect &outRect);
 
 };
 
@@ -1815,6 +1817,18 @@ NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
       }
    }
    #endif
+}
+
+void NMEStage::NS::GetSafeRectangle( nmeRect &outRectangle)
+{
+   if (@available(iOS 11.0, *))
+   {
+      UIEdgeInsets inset = getRootView().safeAreaInsets;
+      outRectangle.x += inset.left;
+      outRectangle.y += inset.top;
+      outRectangle.w -= inset.right + inset.left;
+      outRectangle.h -= inset.bottom + inset.top;
+   }
 }
 
 void NMEStage::setOpaqueBackground(uint32 inBG)

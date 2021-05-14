@@ -104,6 +104,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var renderRequest(get,set):Void->Bool;
    public var color(get,set):Int;
    public var current(get,null):MovieClip;
+   public var safeRect(get,null):Rectangle;
 
    var invalid:Bool;
    static var firstStage = true;
@@ -1182,6 +1183,13 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       return this;
    }
 
+   function get_safeRect():Rectangle
+   {
+      var rect = new Rectangle();
+      nme_stage_get_safe_rect(nmeHandle,rect);
+      return rect;
+   }
+
 
    #if cpp
    public function setMouseFilter(inHandler:Event->Void)
@@ -1230,6 +1238,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private static var nme_stage_get_orientation = PrimeLoader.load("nme_stage_get_orientation", "i");
    private static var nme_stage_get_normal_orientation = PrimeLoader.load("nme_stage_get_normal_orientation", "i");
    private static var nme_stage_check_cache = PrimeLoader.load("nme_stage_check_cache", "ob");
+   private static var nme_stage_get_safe_rect = PrimeLoader.load("nme_stage_get_safe_rect", "oov");
 
    #if cpp
    private static var nme_set_stage_mouse_handler_native = PrimeLoader.load("nme_set_stage_mouse_handler_native", "oov");

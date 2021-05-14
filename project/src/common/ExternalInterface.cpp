@@ -1675,6 +1675,21 @@ void nme_stage_resize_window(value inStage, int inWidth, int inHeight)
 DEFINE_PRIME3v(nme_stage_resize_window);
 
 
+void nme_stage_get_safe_rect(value inStage, value ioRect)
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      Rect rect(0,0, stage->getStageWidth(), stage->getStageHeight());
+      stage->GetSafeRectangle(rect);
+      ToValue(ioRect,rect);
+   }
+}
+DEFINE_PRIME2v(nme_stage_get_safe_rect);
+
+
+
+
 value nme_stage_set_resolution(value inStage, value inWidth, value inHeight)
 {
    #if (defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX))
