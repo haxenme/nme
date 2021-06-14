@@ -2,6 +2,49 @@
 #import <AvFoundation/AvFoundation.h>
 #include "Audio.h"
 
+
+@interface NSDataAssetResourceLoaderDelegate : NSObject <AVAssetResourceLoaderDelegate>
+@property (retain) NSData *data;
+@property (retain) NSString *contentType;
+
+- (instancetype)initWithData:(NSData *)data contentType:(NSString *)contentType;
+@end
+
+@implementation NSDataAssetResourceLoaderDelegate
+
+- (instancetype)initWithData:(NSData *)data contentType:(NSString *)contentType {
+    if (self = [super init]) {
+        self.data = data;
+        self.contentType = contentType;
+    }
+    return self;
+}
+
+- (BOOL)resourceLoader:(AVAssetResourceLoader *)resourceLoader shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loadingRequest {
+    AVAssetResourceLoadingContentInformationRequest* contentRequest = loadingRequest.contentInformationRequest;
+
+    // TODO: check that loadingRequest.request is actually our custom scheme        
+
+    if (contentRequest) {
+        contentRequest.contentType = self.contentType;
+        contentRequest.contentLength = self.data.length;
+        contentRequest.byteRangeAccessSupported = YES;
+    }
+
+    AVAssetResourceLoadingDataRequest* dataRequest = loadingRequest.dataRequest;
+
+    if (dataRequest) {
+        // TODO: handle requestsAllDataToEndOfResource
+        NSRange range = NSMakeRange((NSUInteger)dataRequest.requestedOffset, (NSUInteger)dataRequest.requestedLength);
+        [dataRequest respondWithData:[self.data subdataWithRange:range]];
+        [loadingRequest finishLoading];
+    }
+
+    return YES;
+}
+
+@end
+
 namespace nme
 {
 
@@ -15,6 +58,38 @@ public:
    int channels;
    int sampleCount;
    int refCount;
+   NSDataAssetResourceLoaderDelegate *delegate;
+
+   AvDecodedData(const unsigned char *inData, int len)
+   {
+      refCount++;
+      duration = 0.0;
+      channels = 0;
+      rate = 0;
+      sampleCount = 0;
+      delegate = nil;
+
+
+      #ifndef OBJC_ARC
+      NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+      #endif
+
+      NSData* data = [ NSData dataWithBytes:inData length:len];
+
+      delegate = [[NSDataAssetResourceLoaderDelegate alloc] initWithData:data contentType:AVFileTypeWAVE];
+
+      NSURL *url = [NSURL URLWithString:@"ns-data-scheme://"];
+      AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:nil];
+
+      [asset.resourceLoader setDelegate:delegate queue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)];
+
+
+      setAsset(asset);
+
+      #ifndef OBJC_ARC
+      [pool drain];
+      #endif
+   }
 
    AvDecodedData(const std::string &inData)
    {
@@ -23,6 +98,7 @@ public:
       channels = 0;
       rate = 0;
       sampleCount = 0;
+      delegate = nil;
 
       #ifndef OBJC_ARC
       NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -34,6 +110,15 @@ public:
 
       AVURLAsset *asset = [AVURLAsset URLAssetWithURL:srcUrl options:nil];
 
+      setAsset(asset);
+
+      #ifndef OBJC_ARC
+      [pool drain];
+      #endif
+   }
+
+   void setAsset(AVURLAsset *asset)
+   {
       if (asset)
       {
          float sampleRate = 0.0;
@@ -140,13 +225,11 @@ public:
             channels = 0;
       }
 
-
-      #ifndef OBJC_ARC
-      [pool drain];
-      #endif
    }
+
    ~AvDecodedData()
    {
+      delegate = nil;
    }
 
    virtual INmeSoundData  *addRef() { refCount++; return this; }
@@ -168,6 +251,12 @@ INmeSoundData *INmeSoundData::createAvDecoded(const std::string &inFilename)
 {
    return new AvDecodedData(inFilename);
 }
+
+INmeSoundData *INmeSoundData::createAvDecoded(const unsigned char *inData, int len)
+{
+   return new AvDecodedData(inData, len);
+}
+
 
 
 

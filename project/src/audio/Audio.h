@@ -91,6 +91,7 @@ class INmeSoundData
 public:
    static INmeSoundData *create(const std::string &inId, unsigned int inFlags=0x0000);
    static INmeSoundData *createAvDecoded(const std::string &inId);
+   static INmeSoundData *createAvDecoded(const unsigned char *inData, int len);
    static INmeSoundData *create(const unsigned char *inData, int inDataLength, unsigned int inFlags=0x0000);
    static INmeSoundData *createAcm(const unsigned char *inData, int inDataLength, unsigned int inFlags=0x0000);
    static INmeSoundData *create(const short *inData, int inChannelSamples, bool inIsStereo, int inRate);

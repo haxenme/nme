@@ -681,6 +681,14 @@ public:
             {
                setSoundData(data);
             }
+            #ifdef HX_MACOS
+            else
+            {
+               INmeSoundData *data = INmeSoundData::createAvDecoded(inData,len);
+               if (data)
+                  setSoundData(data);
+            }
+            #endif
          }
  
          onChunk();
@@ -1150,7 +1158,7 @@ Sound *CreateSdlSound(const unsigned char *inData, int len, bool inForceMusic)
       if (sound) sound->DecRef();
       sound = new SDLMusic(inData, len);
    }
-   #ifdef HX_WINDOWS
+   #if defined(HX_WINDOWS) || defined(HX_MACOS)
    // Try as sound after all...
    if (inForceMusic && (!sound || !sound->ok()))
    {
