@@ -7,8 +7,13 @@ import nme.events.ProgressEvent;
 import nme.events.HTTPStatusEvent;
 import nme.utils.ByteArray;
 import haxe.Http;
+#if haxe4
 import sys.thread.Mutex;
 import sys.thread.Thread;
+#else
+import cpp.vm.Mutex;
+import cpp.vm.Thread;
+#end
 
 private class OutputWatcher extends haxe.io.BytesOutput
 {
@@ -75,8 +80,12 @@ class HttpLoader
          http.setHeader("User-Agent", urlRequest.userAgent);
 
       var isPost = urlRequest.method==URLRequestMethod.POST;
+      #if haxe4
       if (isPost)
          http.setPostBytes(urlRequest.nmeBytes);
+      #else 
+         http.setPostData(urlRequest.nmeBytes.toString());
+      #end
 
       runAsync(run);
    }
@@ -103,7 +112,11 @@ class HttpLoader
             #if neko
             stringData = neko.Lib.stringReference(bytes);
             #else
+            #if haxe4
             stringData = bytes.getString(0, bytes.length, UTF8);
+            #else
+            stringData = bytes.getString(0, bytes.length);
+            #end
             #end
          }
 
