@@ -80,8 +80,8 @@ class HttpLoader
          http.setHeader("User-Agent", urlRequest.userAgent);
 
       var isPost = urlRequest.method==URLRequestMethod.POST;
-      #if haxe4
       if (isPost)
+      #if haxe4
          http.setPostBytes(urlRequest.nmeBytes);
       #else 
          http.setPostData(urlRequest.nmeBytes.toString());
