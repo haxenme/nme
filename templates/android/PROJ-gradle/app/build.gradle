@@ -29,6 +29,11 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
+    compileOptions {
+                   sourceCompatibility 1.8
+                   targetCompatibility 1.8
+               }
+
     ::if KEY_STORE::
     signingConfigs {
        release {
@@ -93,7 +98,8 @@ dependencies {
     })
     // Support is in 'androidx.core' now
     ::if ANDROID_BILLING::
-    api 'com.android.billingclient:billing:2.1.0'
+    // api 'com.android.billingclient:billing:2.1.0'
+    api "com.android.billingclient:billing:4.0.0"
     ::end::
     testImplementation 'junit:junit:4.12'
 
@@ -103,15 +109,36 @@ dependencies {
 
     ::if NME_FIREBASE::
       // Add the dependency for the Performance Monitoring library
-      implementation 'com.google.firebase:firebase-analytics:17.2.2'
+      implementation platform('com.google.firebase:firebase-bom')
+      implementation 'com.google.firebase:firebase-analytics'
 
       ::if NME_FIREBASE_PERFORMANCE::
-         implementation 'com.google.firebase:firebase-perf:19.0.7'
+         implementation 'com.google.firebase:firebase-perf'
       ::end::
 
       ::if NME_FIREBASE_CRASHLYTICS::
-         implementation 'com.google.firebase:firebase-crashlytics-ndk:17.1.0'
+         implementation 'com.google.firebase:firebase-crashlytics-ndk'
       ::end::
+        
+        implementation 'com.google.android.gms:play-services-ads:20.2.0'
+        //implementation 'com.google.firebase:firebase-inappmessaging'
+        //implementation 'com.google.firebase:firebase-inappmessaging-display'
+        //implementation 'com.google.firebase:firebase-messaging'
+        implementation 'com.google.firebase:firebase-iid'
+        // implementation 'com.google.firebase:firebase-messaging:17.3.4'
+        // implementation 'com.google.firebase:firebase-core:16.0.4'
+        //implementation 'com.google.firebase:firebase-config'
+        implementation 'com.google.firebase:firebase-crashlytics'
+        implementation 'com.google.firebase:firebase-analytics'
+        //implementation 'com.google.firebase:firebase-config:18.0.0'
+        //implementation 'com.google.firebase:firebase-iid:19.0.1'
+        // implementation 'com.google.firebase:firebase-messaging:20.0.1'
+        // implementation 'com.android.support:support-annotations:28.0.0'
+        // implementation 'com.google.firebase:firebase-core:17.0.0'
+        //implementation 'com.google.firebase:firebase-crash:16.2.1'
+        //implementation 'com.google.firebase:firebase-analytics:17.0.0'
+        implementation 'com.google.code.gson:gson:2.8.7'
+        implementation "androidx.work:work-runtime:2.5.0"
     ::end::
 
     dependencies {
