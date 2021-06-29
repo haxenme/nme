@@ -51,7 +51,8 @@ import org.json.JSONException;
 
 import android.text.TextUtils;
 import android.util.Base64;
-import com.android.billingclient.util.BillingHelper;
+// import com.android.billingclient.util.BillingHelper;
+import android.util.Log;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -355,7 +356,7 @@ public class BillingManager implements PurchasesUpdatedListener {
        boolean valid = verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature());
 
        JSONObject obj= new JSONObject();
-       obj.put("sku", purchase.getSku() );
+       obj.put("sku", purchase.getSkus().get(0) );
        obj.put("valid", valid );
        obj.put("purchaseToken", purchase.getPurchaseToken() );
        obj.put("orderId", purchase.getOrderId() );
@@ -457,7 +458,8 @@ public class BillingManager implements PurchasesUpdatedListener {
         
         if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey)
                 || TextUtils.isEmpty(signature)) {
-            BillingHelper.logWarn(TAG, "Purchase verification failed: missing data.");
+            // BillingHelper.logWarn(TAG, "Purchase verification failed: missing data.");
+            Log.w(TAG,"Purchase verification failed: missing data.");
             return false;
         }
 
@@ -482,7 +484,8 @@ public class BillingManager implements PurchasesUpdatedListener {
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
             String msg = "Invalid key specification: " + e;
-            BillingHelper.logWarn(TAG, msg);
+            // BillingHelper.logWarn(TAG, msg);
+            Log.w(TAG, msg);
             throw new IOException(msg);
         }
     }
@@ -501,7 +504,8 @@ public class BillingManager implements PurchasesUpdatedListener {
         try {
             signatureBytes = Base64.decode(signature, Base64.DEFAULT);
         } catch (IllegalArgumentException e) {
-            BillingHelper.logWarn(TAG, "Base64 decoding failed.");
+            // BillingHelper.logWarn(TAG, "Base64 decoding failed.");
+            Log.w(TAG, "Base64 decoding failed.");
             return false;
         }
         try {
@@ -509,7 +513,8 @@ public class BillingManager implements PurchasesUpdatedListener {
             signatureAlgorithm.initVerify(publicKey);
             signatureAlgorithm.update(signedData.getBytes());
             if (!signatureAlgorithm.verify(signatureBytes)) {
-                BillingHelper.logWarn(TAG, "Signature verification failed.");
+                // BillingHelper.logWarn(TAG, "Signature verification failed.");
+                Log.w(TAG,"Signature verification failed.");
                 return false;
             }
             return true;
@@ -517,9 +522,11 @@ public class BillingManager implements PurchasesUpdatedListener {
             // "RSA" is guaranteed to be available.
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
-            BillingHelper.logWarn(TAG, "Invalid key specification.");
+            // BillingHelper.logWarn(TAG, "Invalid key specification.");
+            Log.w(TAG,"Invalid key specification");
         } catch (SignatureException e) {
-            BillingHelper.logWarn(TAG, "Signature exception.");
+            // BillingHelper.logWarn(TAG, "Signature exception.");
+            Log.w(TAG, "Signature exception");
         }
         return false;
     }
