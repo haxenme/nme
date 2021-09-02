@@ -265,27 +265,49 @@ public:
 
       bool copy_required = mSurface->GetBase() && (mTextureWidth!=mPixelWidth || mTextureHeight!=mPixelHeight || buffer_format!=fmt);
 
+      #if defined(__APPLE__) && !defined(NME_GLES)
+      // Minimum unpack on apple?
+      int unpackAlign = 4;
+      #else
+      int unpackAlign = 1;
+      #endif
+
       #if !defined(NME_GLES)
-      bool oddRowLength = (mPixelWidth*pw) & 0x3;
-      if (oddRowLength)
+      int texStride = (mTextureWidth*pw+unpackAlign-1)/unpackAlign*unpackAlign;
+      int srcStride = mSurface->GetStride();
+      if (texStride!=srcStride && !copy_required)
+      {
          copy_required = true;
+         for(int i=1;i<4;i++)
+         {
+            int align = 1<<i;
+            if (align>=unpackAlign && srcStride == ((texStride+align-1)/align)*align)
+            {
+               copy_required = false;
+               unpackAlign = align;
+               break;
+            }
+         }
+      }
       #endif
 
       if (copy_required)
       {
-         buffer = (uint8 *)malloc(destPw * mTextureWidth * mTextureHeight);
+         int copyStride = (mTextureWidth*destPw+unpackAlign-1)/unpackAlign*unpackAlign;
+
+         buffer = (uint8 *)malloc(copyStride * mTextureHeight);
 
          PixelConvert( mPixelWidth, mPixelHeight,
               fmt, mSurface->GetBase(), mSurface->GetStride(), mSurface->GetPlaneOffset(),
-              buffer_format, buffer, mTextureWidth*destPw, destPw*mTextureWidth*mTextureHeight );
+              buffer_format, buffer, copyStride, copyStride*mTextureHeight );
 
-         int extraX =  mTextureWidth - mPixelWidth;
+         int extraX = copyStride - mPixelWidth*destPw;
          if (extraX)
             for(int y=0;y<mPixelHeight;y++)
-               memset( buffer + (mTextureWidth*y+mPixelWidth)*destPw, 0, destPw*extraX);
+               memset( buffer + y*copyStride + mTextureWidth*destPw, 0, extraX);
          int extraY = mTextureHeight-mPixelHeight;
          if (extraY)
-            memset( buffer + mTextureWidth*mPixelHeight*destPw, 0, destPw*mTextureWidth*extraY);
+            memset( buffer + copyStride*mPixelHeight, 0, copyStride*extraY);
       }
 
       // __android_log_print(ANDROID_LOG_ERROR, "NME", "CreateTexture %d (%dx%d)",
@@ -299,7 +321,7 @@ public:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
       #ifndef NME_GLES
-      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);
       #endif
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, mTextureWidth, mTextureHeight, 0, pixel_format, channel, buffer ? buffer : mSurface->GetBase());
