@@ -2211,7 +2211,7 @@ bool nmeIsMain = true;
    nme_app_set_active(true);
    application.idleTimerDisabled = YES;
    // Accessing the .view property causes the 'loadView' callback
-   [win addSubview:c.view];
+   //[win addSubview:c.view];
    self.window.rootViewController = c;
    sOnFrame( new IOSViewFrame(c->nmeStage) );
    return YES;
