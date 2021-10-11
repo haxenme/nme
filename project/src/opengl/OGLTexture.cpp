@@ -304,7 +304,7 @@ public:
          int extraX = copyStride - mPixelWidth*destPw;
          if (extraX)
             for(int y=0;y<mPixelHeight;y++)
-               memset( buffer + y*copyStride + mTextureWidth*destPw, 0, extraX);
+               memset( buffer + y*copyStride + mPixelWidth*destPw, 0, extraX);
          int extraY = mTextureHeight-mPixelHeight;
          if (extraY)
             memset( buffer + copyStride*mPixelHeight, 0, copyStride*extraY);
