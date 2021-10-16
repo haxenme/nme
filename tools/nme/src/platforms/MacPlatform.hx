@@ -30,7 +30,7 @@ class MacPlatform extends DesktopPlatform
    override public function getOutputDir() { return targetDir + "/" + project.app.file + ".app"; }
    override public function getExeDir() { return getOutputDir() + "/Contents/MacOS"; }
    override public function getAssetDir() { return getOutputDir() + "/Contents/Resources"; }
-   override public function getBinName() : String { return is64 ? "Mac64" : "Mac"; }
+   override public function getBinName() : String { return isArm64 ? "MacArm64" : is64 ? "Mac64" : "Mac"; }
 
 
 

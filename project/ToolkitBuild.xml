@@ -482,6 +482,7 @@
 
    <set name="NME_SUFFIX" value="${HX_TARGET_SUFFIX}" if="HX_TARGET_SUFFIX" />
    <set name="NME_SUFFIX" value="${LIBSUFFIX}" unless="HX_TARGET_SUFFIX" />
+   <set name="NME_SUFFIX" value="" if="macos" />
 
    <set name="HXCPP_LINK_NO_ZLIB" value="1" />
 
