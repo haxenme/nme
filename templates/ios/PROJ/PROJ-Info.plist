@@ -51,5 +51,9 @@
      		::if value::<true/>::else::<false/>::end::
 		::end::
    	</dict>
+   ::if (CAMERA_USAGE)::
+   <key>NSCameraUsageDescription</key>
+   <string>::CAMERA_USAGE::</string>
+   ::end::
 </dict>
 </plist>
