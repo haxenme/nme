@@ -815,7 +815,10 @@ implements SensorEventListener
             break;
          
          case 3: // Docs
-            path = Environment.getExternalStorageDirectory();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+                path = mContext.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            else
+                path = Environment.getExternalStorageDirectory();//access to external storage not allowed from SDK30
             break;
          
          case 4: // User
