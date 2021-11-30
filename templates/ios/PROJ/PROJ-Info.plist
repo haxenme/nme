@@ -55,5 +55,11 @@
    <key>NSCameraUsageDescription</key>
    <string>::CAMERA_USAGE::</string>
    ::end::
+   ::if (FILE_SHARING)::
+	<key>UIFileSharingEnabled</key>
+	<string>YES</string>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<string>YES</string>
+   ::end::
 </dict>
 </plist>

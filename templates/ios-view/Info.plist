@@ -23,5 +23,11 @@
 
    <key>CFBundleGetInfoString</key>
    <string>::CLASS_NAME:: framework</string>
+
+   ::if (CAMERA_USAGE)::
+   <key>NSCameraUsageDescription</key>
+   <string>::CAMERA_USAGE::</string>
+   ::end::
+
 </dict>
 </plist>
