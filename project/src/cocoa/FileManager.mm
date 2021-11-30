@@ -212,7 +212,7 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
    if (inDir==DIR_USER)
    {
       #ifdef IPHONE
-      inDir = (SpecialDir)NSDocumentDirectory;
+      inDir = DIR_DOCS;
       #else
 	  #ifndef OBJC_ARC
 	  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -236,7 +236,14 @@ void GetSpecialDir(SpecialDir inDir,std::string &outDir)
 	  #ifndef OBJC_ARC
 	  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	  #endif
-      NSSearchPathDirectory dir_lut[] = { NSDesktopDirectory, NSDesktopDirectory, NSDesktopDirectory, NSDocumentDirectory, NSUserDirectory,NSDesktopDirectory  };
+      NSSearchPathDirectory dir_lut[] = {
+         NSDesktopDirectory,
+         NSDesktopDirectory,
+         NSDesktopDirectory,
+         NSDocumentDirectory,
+         NSUserDirectory,
+         NSDesktopDirectory
+      };
       NSArray *paths = NSSearchPathForDirectoriesInDomains(dir_lut[inDir], NSUserDomainMask, YES);
       if (paths && [paths count]>0)
       {
