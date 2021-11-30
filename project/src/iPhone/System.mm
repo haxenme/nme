@@ -245,34 +245,28 @@ FILE *OpenRead(const char *inName)
 
 FILE *OpenOverwrite(const char *inName)
 {
+    if( inName[0]=='/')
+    {
+       return fopen(inName,"wb");
+    }
+
+    @autoreleasepool {
     std::string asset = gAssetBase + inName;
-    NSString *str = [[NSString alloc] initWithUTF8String:asset.c_str()];
+    NSString *path = [[NSString alloc] initWithUTF8String:asset.c_str()];
 
-    NSString *strWithoutInitialDash;    
-    if([str hasPrefix:@"/"]){
-     strWithoutInitialDash = [str substringFromIndex:1];
-     }
-     else {
-     strWithoutInitialDash = str;
-     }
+    path = [[[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"]
+        stringByAppendingString: @"/"] stringByAppendingString: path];
 
-    //NSLog(@"file name I'm wrinting to = %@", strWithoutInitialDash);
-    
-    //NSString *path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
-    NSString  *path = [[[NSHomeDirectory() stringByAppendingPathComponent:@"Documents"] stringByAppendingString: @"/"] stringByAppendingString: strWithoutInitialDash];
-    //NSLog(@"path name I'm wrinting to = %@", path);
-    
+    if ( ! [[NSFileManager defaultManager]
+          fileExistsAtPath: [path stringByDeletingLastPathComponent]] )
+    {
+        [[NSFileManager defaultManager]
+                  createDirectoryAtPath:[path stringByDeletingLastPathComponent]
+                  withIntermediateDirectories:YES  attributes:nil error:NULL];
+    }
 
-   if ( ! [[NSFileManager defaultManager] fileExistsAtPath: [path stringByDeletingLastPathComponent]] ) {
-        //NSLog(@"directory doesn't exist, creating it");
-      [[NSFileManager defaultManager] createDirectoryAtPath:[path stringByDeletingLastPathComponent] withIntermediateDirectories:YES  attributes:nil error:NULL];
-   }
-
-    FILE * result = fopen([path cStringUsingEncoding:1],"w");
-    #ifndef OBJC_ARC
-    [str release];
-    #endif
-    return result;
+    return fopen([path cStringUsingEncoding:1],"wb");
+    }
 }
 
 bool SetClipboardText(const char* text) {
