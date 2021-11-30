@@ -33,7 +33,7 @@ class BillingManager
       AndroidBillingManager.init(key);
 #elseif ios
       IosBillingManager.init();
-      updateSkuDetails();
+      //updateSkuDetails();
 #end
       return available;
    }

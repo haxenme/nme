@@ -110,32 +110,42 @@ static NSString *priceToString(SKProduct *product)
 }
 
 
+
 // SKProductsRequestDelegate protocol method.
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
 {
+   hx::NativeAttach haxe;
    @autoreleasepool {
-    NSLog(@"Got response products: %@",response.products);
-    bool found = false;
-    for(SKProduct *product in response.products)
+    NSLog(@"Got response : %@",response);
+    if (response!=nil)
     {
-       BM::addSkuDetails( 
-          product.productIdentifier,
-          product.localizedTitle,
-          product.localizedDescription,
-          priceToString( product ), 
-          String()
-       );
-       found = true;
-    }
-    if (found)
-       BM::onSkuDetailsDone( );
+       NSLog(@"Got response products: %@",response.products);
+       bool found = false;
+       for(SKProduct *product in response.products)
+       {
+          NSLog(@" product: %@",product);
+          NSLog(@" p id: %@",product.productIdentifier);
+          NSLog(@" p tit: %@",product.localizedTitle);
+          NSLog(@" p des: %@",product.localizedDescription);
+          BM::addSkuDetails( 
+             product.productIdentifier,
+             product.localizedTitle,
+             product.localizedDescription,
+             priceToString( product ), 
+             String()
+          );
+          found = true;
+       }
+       if (found)
+          BM::onSkuDetailsDone( );
 
 
-    self.products = response.products;
+       self.products = response.products;
 
-    NSLog(@"Got response errors: %@",response.invalidProductIdentifiers);
-    for (NSString *invalidIdentifier in response.invalidProductIdentifiers) {
-        // Handle any invalid product identifiers.
+       NSLog(@"Got response errors: %@",response.invalidProductIdentifiers);
+       for (NSString *invalidIdentifier in response.invalidProductIdentifiers) {
+           // Handle any invalid product identifiers.
+       }
     }
   }
 }
