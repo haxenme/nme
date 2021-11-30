@@ -4,6 +4,7 @@ class Window
    public var width:Int;
    public var height:Int;
    public var background:Int;
+   public var foreground:Int;
    public var parameters:String;
    public var fps:Int;
    public var hardware:Bool;
@@ -28,6 +29,7 @@ class Window
       height = 600;
       parameters = "{}";
       background = 0xFFFFFF;
+      foreground = 0x000000;
       fps = 30;
       hardware = true;
       resizable = true;

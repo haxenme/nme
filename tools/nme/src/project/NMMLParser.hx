@@ -1165,6 +1165,13 @@ class NMMLParser
                   value = "0x" + value;
                project.window.background = Std.parseInt(value);
 
+            case "foreground":
+               value = StringTools.replace(value, "#", "");
+               if (value.indexOf("0x") == -1) 
+                  value = "0x" + value;
+               project.window.foreground = Std.parseInt(value);
+
+
             case "orientation":
                var orientation = Reflect.field(Orientation, Std.string(value).toUpperCase());
                if (orientation != null) 

@@ -194,6 +194,11 @@ ${hxcpp_include}';
       context.TINT_BLUE = ((col) & 0xff) / 0xff;
       context.TINT_ALPHA = 1;
 
+      var txtCol:Int = project.window.foreground;
+      context.FG_TINT_RED = ((txtCol>>16) & 0xff) / 0xff;
+      context.FG_TINT_GREEN = ((txtCol>>8) & 0xff) / 0xff;
+      context.FG_TINT_BLUE = ((txtCol) & 0xff) / 0xff;
+
       var devTeam = project.getDef("DEVELOPMENT_TEAM");
       if (devTeam!=null)
           context.DEVELOPMENT_TEAM = devTeam;
