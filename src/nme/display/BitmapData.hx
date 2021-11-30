@@ -291,8 +291,11 @@ class BitmapData implements IBitmapDrawable
       pixels.position += size;
    }
 
-   public function setVector(rect:Rectangle, inPixels:Array<Int>):Void 
+   public function setVector(?rect:Rectangle, inPixels:Array<Int>):Void 
    {
+      if (rect==null)
+         rect = new Rectangle(0,0,width,height);
+
       var count = Std.int(rect.width * rect.height);
 
       if (inPixels.length < count) return;

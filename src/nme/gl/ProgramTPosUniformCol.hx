@@ -39,7 +39,7 @@ class ProgramTPosUniformCol extends ProgramBase
       if (prog==null || !prog.valid)
       {
            var vertShader =
-              "in vec3 pos;" +
+              "attribute vec3 pos;" +
               "uniform mat4 mvp;" +
               "void main() {" +
               " gl_Position = mvp * vec4(pos, 1.0);" +

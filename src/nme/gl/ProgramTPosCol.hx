@@ -19,6 +19,7 @@ class ProgramTPosCol extends ProgramBase
    static var mvpLocationUnclip:Dynamic;
 
    static var clipLocation:Dynamic;
+   static var fakeClip = true;
    var posLocation:Dynamic;
    var colLocation:Dynamic;
    var mvpLocation:Dynamic;
@@ -48,26 +49,34 @@ class ProgramTPosCol extends ProgramBase
       if (prog==null || !prog.valid)
       {
          var vertShader =
-              "in vec3 pos;" +
-              "in vec4 col;" + 
+              "attribute vec3 pos;" +
+              "attribute vec4 col;" + 
               "uniform mat4 mvp;" +
               (clipped ? "uniform vec4 clip;" : "") +
-              "out vec4 pCol;" + 
+              "varying vec4 pCol;" + 
+              (clipped && fakeClip ? "varying float clipDist0;" : "") +
               "void main() {" +
               " pCol = col;" +
               " vec4 p4 = vec4(pos, 1.0);" +
               " gl_Position = mvp * p4;";
 
          if (clipped)
-             vertShader += " gl_ClipDistance[0] = dot(p4,clip);";
+         {
+             if (fakeClip)
+                vertShader += " clipDist0 = dot(p4,clip);";
+             else
+                vertShader += " gl_ClipDistance[0] = dot(p4,clip);";
+         }
 
          vertShader +=
               "}";
 
          var fragShader =
               #if !desktop 'precision mediump float;' + #end
-              "in vec4 pCol;" + 
+              "varying vec4 pCol;" + 
+              (clipped && fakeClip ? "varying float clipDist0;" : "") +
               "void main() {" +
+              (clipped && fakeClip ? "if (clipDist0<=0.0) discard;" : "") +
               "gl_FragColor = pCol;"+
               "}";
 
@@ -142,6 +151,10 @@ class ProgramTPosCol extends ProgramBase
       {
          GL.uniform4f(clipLocation, plane.x, plane.y, plane.z, plane.w);
          GL.enable(GL.CLIP_DISTANCE0);
+      }
+      else
+      {
+         GL.uniform4f(clipLocation, 0, 0, 0, 1);
       }
 
       GL.drawArrays(primType, 0, primCount);
