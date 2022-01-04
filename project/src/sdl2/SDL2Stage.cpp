@@ -130,14 +130,16 @@ public:
    {
       int width = 0;
       int height = 0;
-      SDL_GetWindowSize(window, &width, &height);
+      //SDL_GetWindowSize(window, &width, &height);
+      SDL_GL_GetDrawableSize(window, &width, &height);
       return width;
    }
    int Height() const
    {
       int width = 0;
       int height = 0;
-      SDL_GetWindowSize(window, &width, &height);
+      //SDL_GetWindowSize(window, &width, &height);
+      SDL_GL_GetDrawableSize(window, &width, &height);
       return height;
    }
    RenderTarget BeginRender(const Rect &inRect,bool inForHitTest)
@@ -147,7 +149,8 @@ public:
          lastWindow = window;
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(window, &width, &height);
+         SDL_GL_GetDrawableSize(window, &width, &height);
+         //SDL_GetWindowSize(window, &width, &height);
          mHardware->SetWindowSize(width,height);
          SDL_GL_MakeCurrent(window, context);
       }
@@ -531,7 +534,8 @@ public:
          if (!mIsFullscreen)
          {
             SDL_GetWindowPosition(mSDLWindow, &sgWindowRect.x, &sgWindowRect.y);
-            SDL_GetWindowSize(mSDLWindow, &sgWindowRect.w, &sgWindowRect.h);
+            //SDL_GetWindowSize(mSDLWindow, &sgWindowRect.w, &sgWindowRect.h);
+            SDL_GL_GetDrawableSize(mSDLWindow, &sgWindowRect.w, &sgWindowRect.h);
          }
 
          mIsFullscreen = inFullscreen;
@@ -942,6 +946,7 @@ public:
    SDL_Window *mWindow;
    bool mIsHardware;
    uint32 mWindowFlags;
+   double retinaScale;
    
    double mAccX;
    double mAccY;
@@ -958,6 +963,8 @@ public:
       windowID = SDL_GetWindowID(inWindow);
       mStage = new SDLStage(inWindow, inRenderer, mWindowFlags, inIsHardware, inWidth, inHeight);
       mStage->IncRef();
+
+      retinaScale = getRetinaScale();
    }
    
    
@@ -987,6 +994,15 @@ public:
    void Resize(int inWidth, int inHeight)
    {
       mStage->Resize(inWidth, inHeight);
+   }
+
+   void scaleMouseDpi(Event &ioEvent)
+   {
+      if (retinaScale!=1.0)
+      {
+         ioEvent.x = (int)(ioEvent.x*retinaScale + 0.5);
+         ioEvent.y = (int)(ioEvent.y*retinaScale + 0.5);
+      }
    }
    
    
@@ -1660,7 +1676,8 @@ void ProcessEvent(SDL_Event &inEvent)
                if (frame)
                {
                   Event resize(etResize, inEvent.window.data1, inEvent.window.data2);
-                  frame->Resize(inEvent.window.data1, inEvent.window.data2);
+                  frame->scaleMouseDpi(resize);
+                  frame->Resize(resize.x, resize.y);
                   frame->ProcessEvent(resize);
                   Event redraw(etRedraw);
                   frame->ProcessEvent(redraw);
@@ -1689,7 +1706,8 @@ void ProcessEvent(SDL_Event &inEvent)
 
                   int width = 0;
                   int height = 0;
-                  SDL_GetWindowSize(frame->mWindow, &width, &height);
+                  //SDL_GetWindowSize(frame->mWindow, &width, &height);
+                  SDL_GL_GetDrawableSize(frame->mWindow, &width, &height);
 
                   Event resize(etResize, width, height);
                   frame->Resize(width,height);
@@ -1754,6 +1772,7 @@ void ProcessEvent(SDL_Event &inEvent)
          int y=0;
          SDL_GetMouseState(&x,&y);
          Event event(etDropEnd, x, y);
+         frame->scaleMouseDpi(event);
          AddModStates(event.flags);
          frame->ProcessEvent(event);
          break;
@@ -1781,10 +1800,14 @@ void ProcessEvent(SDL_Event &inEvent)
             //pass the delta in as well through as deltaX
          if(SDL_GetRelativeMouseMode()) {
             SDL_GetRelativeMouseState( &deltaX, &deltaY );
+            deltaX = (int)(deltaX * frame->retinaScale);
+            deltaY = (int)(deltaY * frame->retinaScale);
          }
 
             //int inValue=0, int inID=0, int inFlags=0, float inScaleX=1,float inScaleY=1, int inDeltaX=0,int inDeltaY=0
          Event mouse(etMouseMove, inEvent.motion.x, inEvent.motion.y, 0, 0, 0, 1.0f, 1.0f, deltaX, deltaY);
+         frame->scaleMouseDpi(mouse);
+
          #if defined(WEBOS) || defined(BLACKBERRY)
          mouse.value = inEvent.motion.which;
          mouse.flags |= efLeftDown;
@@ -1798,6 +1821,7 @@ void ProcessEvent(SDL_Event &inEvent)
       {
          SDLFrame *frame = getEventFrame(inEvent.button.windowID);
          Event mouse(etMouseDown, inEvent.button.x, inEvent.button.y, inEvent.button.button - 1);
+         frame->scaleMouseDpi(mouse);
          #if defined(WEBOS) || defined(BLACKBERRY)
          mouse.value = inEvent.motion.which;
          mouse.flags |= efLeftDown;
@@ -1811,6 +1835,7 @@ void ProcessEvent(SDL_Event &inEvent)
       {
          SDLFrame *frame = getEventFrame(inEvent.button.windowID);
          Event mouse(etMouseUp, inEvent.button.x, inEvent.button.y, inEvent.button.button - 1);
+         frame->scaleMouseDpi(mouse);
          #if defined(WEBOS) || defined(BLACKBERRY)
          mouse.value = inEvent.motion.which;
          #else
@@ -1838,6 +1863,7 @@ void ProcessEvent(SDL_Event &inEvent)
          mouse.deltaY = inEvent.wheel.y;
             //add flags for modifier keys
          AddModStates(mouse.flags);
+         frame->scaleMouseDpi(mouse);
             //and done.
          frame->ProcessEvent(mouse);
          break;
@@ -1848,7 +1874,8 @@ void ProcessEvent(SDL_Event &inEvent)
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(frame->mWindow, &width, &height);
+         //SDL_GetWindowSize(frame->mWindow, &width, &height);
+         SDL_GL_GetDrawableSize(frame->mWindow, &width, &height);
 
          // button?
          Event mouse(etMouseDown, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
@@ -1862,7 +1889,8 @@ void ProcessEvent(SDL_Event &inEvent)
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(frame->mWindow, &width, &height);
+         //SDL_GetWindowSize(frame->mWindow, &width, &height);
+         SDL_GL_GetDrawableSize(frame->mWindow, &width, &height);
 
          // button?
          Event mouse(etMouseUp, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
@@ -1876,7 +1904,8 @@ void ProcessEvent(SDL_Event &inEvent)
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
          int width = 0;
          int height = 0;
-         SDL_GetWindowSize(frame->mWindow, &width, &height);
+         //SDL_GetWindowSize(frame->mWindow, &width, &height);
+         SDL_GL_GetDrawableSize(frame->mWindow, &width, &height);
 
          // button?
          Event mouse(etMouseMove, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
@@ -2116,6 +2145,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    bool resizable = (inFlags & wfResizable) != 0;
    bool borderless = (inFlags & wfBorderless) != 0;
    bool vsync = (inFlags & wfVSync) != 0;
+   bool tryHighDpi = (inFlags & wfHighDpi) != 0;
    //WindowScaleMode scaleMode = (WindowScaleMode)( (inFlags & wfScaleMask)/wfScaleBase );
 
    #ifdef HX_LINUX
@@ -2180,6 +2210,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    if (resizable) requestWindowFlags |= SDL_WINDOW_RESIZABLE;
    if (borderless) requestWindowFlags |= SDL_WINDOW_BORDERLESS;
    if (fullscreen) requestWindowFlags |= FullscreenMode; //SDL_WINDOW_FULLSCREEN_DESKTOP;
+   if (tryHighDpi)
+   {
+      requestWindowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
+      enableRetinaScale(true);
+   }
 
    if (inFlags & wfAlwaysOnTop)
       requestWindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
@@ -2223,7 +2258,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       }
    }
 
+   // Get DPI without retina, "sdl window coordinates" 
+   enableRetinaScale(false);
    double dpiScale = CapabilitiesGetScreenDPI()/96.0;
+   enableRetinaScale(tryHighDpi);
+
    int targetW = dpiScale<1.5 ? inWidth : dpiScale*inWidth;
    if (targetW>sgDesktopWidth)
       targetW = sgDesktopWidth;
@@ -2372,6 +2411,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    }
    
    int width, height;
+   /*
    if (windowFlags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP) )
    {
       //SDL_DisplayMode mode;
@@ -2382,8 +2422,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       height = sgDesktopHeight;
    }
    else
+   */
    {
-      SDL_GetWindowSize(window, &width, &height);
+      SDL_GL_GetDrawableSize(window, &width, &height);
+      //SDL_GetWindowSize(window, &width, &height);
    }
 
 
@@ -2393,6 +2435,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       sgMainRenderer = renderer;
    else if (sgMainRenderer==renderer)
       renderer = 0;
+
 
    SDLFrame *frame = new SDLFrame(window, renderer, windowFlags, hardware, width, height);
 

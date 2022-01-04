@@ -58,6 +58,7 @@ class Application
    public inline static var SCALE_BASE      = 0x1000;
    public inline static var HARDWARE_METAL  =0x10000;
    public inline static var ALWAYS_ON_TOP   =0x20000;
+   public inline static var HIGH_DPI        =0x40000;
 
    public static var nmeFrameHandle:Dynamic = null;
    public static var nmeWindow:Window = null;

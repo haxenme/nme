@@ -62,6 +62,24 @@ void GetVolumeInfo( std::vector<VolumeInfo> &outInfo )
 }
 #endif
 
+static bool includeRetinaScale = false;
+void enableRetinaScale(bool enable)
+{
+   includeRetinaScale = enable;
+}
+
+double getRetinaScale()
+{
+   @autoreleasepool {
+      NSScreen *screen = [NSScreen mainScreen];
+
+      double retinaScale = 1.0;
+      if (includeRetinaScale && [screen respondsToSelector:@selector(backingScaleFactor)]) 
+          retinaScale = [NSScreen mainScreen].backingScaleFactor;
+
+      return retinaScale;
+   }
+}
 
 double CapabilitiesGetScreenDPI()
 {
@@ -70,16 +88,20 @@ double CapabilitiesGetScreenDPI()
    #endif
    
    NSScreen *screen = [NSScreen mainScreen];
+   double retinaScale = 1.0;
+   if (includeRetinaScale && [screen respondsToSelector:@selector(backingScaleFactor)]) 
+       retinaScale = [NSScreen mainScreen].backingScaleFactor;
+
    NSDictionary *description = [screen deviceDescription];
    NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
    CGSize displayPhysicalSize = CGDisplayScreenSize(
                [[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
    double result = ((displayPixelSize.width / displayPhysicalSize.width) + (displayPixelSize.height / displayPhysicalSize.height)) * 0.5 * 25.4;
-   
+
    #ifndef OBJC_ARC
    [pool drain];
    #endif
-   return result;
+   return result * retinaScale;
 }
 
 double CapabilitiesGetPixelAspectRatio() {

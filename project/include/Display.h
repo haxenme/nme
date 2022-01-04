@@ -79,6 +79,14 @@ enum Cursor { curNone, curPointer, curHand,
 extern const char *sTextCursorData[];
 extern const char *sHandCursorData[];
 
+#if defined(HX_MACOS)
+extern void enableRetinaScale(bool enable);
+extern double getRetinaScale();
+#else
+inline void enableRetinaScale(bool enable) { }
+inline double getRetinaScale() { return 1.0; }
+#endif
+
 extern bool gMouseShowCursor;
 
 class DisplayObject : public Object
@@ -573,6 +581,7 @@ enum WindowFlags
    wfScaleMask      = 0x0000f000,
    wfHardwareMetal  = 0x00010000,
    wfAlwaysOnTop    = 0x00020000,
+   wfHighDpi        = 0x00040000,
 };
 
 enum WindowScaleMode

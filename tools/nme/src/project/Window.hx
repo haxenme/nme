@@ -21,6 +21,7 @@ class Window
    public var alphaBuffer:Bool;
    public var ui:String;
    public var singleInstance:Bool;
+   public var highDpi:Bool;
    public var scaleMode:ScaleMode;
 
    public function new()
@@ -43,6 +44,7 @@ class Window
       depthBuffer = false;
       stencilBuffer = false;
       alphaBuffer = false;
+      highDpi = false;
       ui = "";
       singleInstance = true;
       scaleMode = ScaleNative;
