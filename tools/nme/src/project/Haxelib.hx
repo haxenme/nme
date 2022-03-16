@@ -33,6 +33,10 @@ class Haxelib
          var soFar = new Array<String>();
          for(line in paths)
          {
+            if (StringTools.trim(line).length == 0) // "haxelib path ..." can return blank lines
+            {
+               continue;
+            }
             if (line.substr(0,2)=="-D")
             {
                var lib = line.substr(3).split("=")[0];
