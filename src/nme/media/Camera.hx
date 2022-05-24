@@ -5,6 +5,8 @@ import nme.display.BitmapData;
 import nme.events.StatusEvent;
 import nme.events.Event;
 import nme.NativeHandle;
+import nme.PrimeLoader;
+import nme.utils.ByteArray;
 
 @:nativeProperty
 class Camera extends nme.events.EventDispatcher
@@ -19,6 +21,10 @@ class Camera extends nme.events.EventDispatcher
    public var width(default,null):Int;
    public var height(default,null):Int;
    public var nmeHandle:NativeHandle;
+
+   @:keep public var depthWidth(default,null):Int;
+   @:keep public var depthHeight(default,null):Int;
+   @:keep public var depthData(default,null):Dynamic;
    // isSupported
 
    private function new(inHandle:Dynamic)
@@ -82,6 +88,37 @@ class Camera extends nme.events.EventDispatcher
    {
       var event = new Event(Event.VIDEO_FRAME);
       dispatchEvent(event);
+      /*
+      trace('Depth: $depthWidth $depthHeight : $depthData');
+      if (depthData!=null)
+      {
+         var f:cpp.Pointer<cpp.Float32> = cpp.Pointer.fromHandle(depthData);
+         var min = 100000.0;
+         var max = 0.0;
+         for(i in 0...depthWidth*depthHeight)
+         {
+            var val = f.at(i);
+            if (val<min) min = val;
+            if (val>max) max = val;
+         }
+         trace(' dpeth range $min .. $max');
+      }
+      */
+   }
+
+   public function getDepthData(?buffer:ByteArray) : ByteArray
+   {
+      if (depthData==null)
+         return null;
+      var size = width*height*4;
+      if (buffer==null)
+         buffer = new ByteArray(size);
+      else
+         buffer.setAllocSize(size);
+
+      nme_camera_get_depth(nmeHandle, buffer);
+
+      return buffer;
    }
 
    function onPoll(_)
@@ -91,6 +128,7 @@ class Camera extends nme.events.EventDispatcher
 
    private static var nme_camera_create = Loader.load("nme_camera_create", 1);
    private static var nme_camera_on_poll = Loader.load("nme_camera_on_poll", 2);
+   private static var nme_camera_get_depth = PrimeLoader.load("nme_camera_get_depth", "oov");
 }
 
 

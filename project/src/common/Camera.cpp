@@ -1,8 +1,9 @@
-#include <hx/CFFI.h>
 #include <nme/Object.h>
 #include <nme/NmeApi.h>
 #include <nme/ImageBuffer.h>
+#include <nme/NmeCffi.h>
 #include <Camera.h>
+#include <ByteArray.h>
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -19,6 +20,11 @@ static int _id_on_frame;
 static int _id_width;
 static int _id_height;
 static int _id_frameId;
+static int _id_depth_width;
+static int _id_depth_height;
+static int _id_depth_data;
+
+extern vkind gDataPointer;
 
 using namespace nme;
 
@@ -31,6 +37,9 @@ void InitCamera()
     _id_width = val_id("width");
     _id_height = val_id("height");
     _id_frameId = val_id("frameId");
+    _id_depth_width = val_id("depthWidth");
+    _id_depth_height = val_id("depthHeight");
+    _id_depth_data = val_id("depthData");
 }
 
 
@@ -89,6 +98,17 @@ FrameBuffer *Camera::getReadBuffer()
   return result;
 }
 
+void FrameBuffer::clear()
+{
+   width = 0;
+   height = 0;
+   stride = 0;
+   data.resize(0);
+   depthWidth = 0;
+   depthHeight = 0;
+   depth.resize(0);
+   age = -1;
+}
 
 FrameBuffer *Camera::getWriteBuffer()
 {
@@ -100,7 +120,7 @@ FrameBuffer *Camera::getWriteBuffer()
      if (result==0 || test.age<result->age)
         result = &test;
   }
-  result->age = -1;
+  result->clear();
   unlock();
   return result;
 }
@@ -137,7 +157,21 @@ void Camera::onPoll(value handler)
       if (frameBuffer)
       {
          copyFrame(buffer,frameBuffer);
+         depthWidth = frameBuffer->depthWidth;
+         depthHeight = frameBuffer->depthHeight;
+         std::swap(depth, frameBuffer->depth);
          releaseFrameBuffer(frameBuffer);
+
+         alloc_field_numeric(handler, _id_depth_width, depthWidth );
+         alloc_field_numeric(handler, _id_depth_height, depthHeight );
+         if (depth.empty())
+            alloc_field(handler, _id_depth_data, alloc_null() );
+         else
+         {
+            value ptr = alloc_abstract(gDataPointer, &depth[0]);
+            alloc_field(handler, _id_depth_data, ptr);
+         }
+
          onFrame(handler);
       }
    }
@@ -171,6 +205,23 @@ value nme_camera_on_poll(value inCamera,value inHandler)
    return alloc_null();
 }
 DEFINE_PRIM(nme_camera_on_poll,2);
+
+
+void nme_camera_get_depth(value inCamera,value outBytes)
+{
+   Camera *camera;
+   if (AbstractToObject(inCamera,camera))
+   {
+      ByteArray byteArray(outBytes);
+      unsigned char *bytes = byteArray.Bytes();
+      int size = byteArray.Size();
+      if (camera->depth.size()>0 && size>=camera->depth.size()*4)
+      {
+         memcpy(bytes, &camera->depth[0], camera->depth.size()*4);
+      }
+   }
+}
+DEFINE_PRIME2v(nme_camera_get_depth);
 
 
 

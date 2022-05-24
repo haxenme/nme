@@ -17,11 +17,19 @@ struct FrameBuffer
 {
    FrameBuffer() : width(0), height(0), stride(0), age(-1) { }
    unsigned char *row(int inY) { return &data[inY*stride]; }
+   float *depthRow(int inY) { return &depth[inY*depthWidth]; }
+   void clear();
+
    std::vector<unsigned char> data;
+   std::vector<float> depth;
+
+   int depthWidth;
+   int depthHeight;
 
    int width;
    int height;
    int stride;
+
    int  age;
 };
 
@@ -59,6 +67,9 @@ public:
    PixelFormat  pixelFormat;
    FrameBuffer  frameBuffers[3];
    ImageBuffer  *buffer;
+   int          depthWidth;
+   int          depthHeight;
+   std::vector<float> depth;
 };
 
 Camera *CreateCamera(const char *inName);

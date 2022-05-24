@@ -57,7 +57,7 @@ class Main extends Sprite
             bmpW = w*sh/h;
 
          trace('Stage : $sw,$sh');
-         trace('Camera: $bmpW,$bmpH');
+         trace('Camera: $w,$h');
          bitmap.rotation = rot;
          bitmap.width = bmpW;
          bitmap.height = bmpH;
