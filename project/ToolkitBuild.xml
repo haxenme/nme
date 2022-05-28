@@ -296,6 +296,10 @@
          <compilerflag value="-I/opt/vc/include/interface/vcos/pthreads/" />
       </section>
 
+      <section if="rpi" >
+          <file name="${SRC_DIR}/linux/RpiMMal.cpp"/>
+      </section>
+
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/jpeg"/>
@@ -577,9 +581,15 @@
          </section>
 
          <section if="rpi" unless="winrpi" >
+            <libpath name="-L/opt/vc/lib" />
             <lib name="/opt/vc/lib/libGLESv2.so" />
             <lib name="/opt/vc/lib/libEGL.so" />
             <lib name="/opt/vc/lib/libbcm_host.so" />
+            <lib name="-lvcos" />
+            <lib name="-lvchiq_arm" />
+            <lib name="-lmmal_core" />
+            <lib name="-lmmal_util" />
+            <lib name="-lmmal_vc_client" />
          </section>
 
          <section if="rpi winrpi" >
@@ -589,6 +599,9 @@
             <lib name="-lvcos" />
             <lib name="-lvchiq_arm" />
             <lib name="-lbcm_host" />
+            <lib name="-lmmal_core" />
+            <lib name="-lmmal_util" />
+            <lib name="-lmmal_vc_client" />
          </section>
 
 

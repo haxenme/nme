@@ -9,7 +9,7 @@
   />
   
   <app
-     file="Application" 
+     file="NmeCamera" 
      main="Main"
   />
   

@@ -1,6 +1,8 @@
 #include <vector>
 
 #include <Camera.h>
+#include <Surface.h>
+#include <Utils.h>
 #include <hx/Thread.h>
 
 #include <stdio.h>
@@ -22,24 +24,70 @@ namespace nme
 
 #define CLEAR(x) memset(&(x), 0, sizeof(x))
 
+enum V4LAsyncState
+{
+   v4lUnused,
+   v4lWriting,
+   v4lReading,
+   v4lGood,
+};
+
+struct V4LAsyncBuf
+{
+   V4LAsyncBuf() : state(v4lUnused), age(0) { }
+
+   std::vector<uint8> i420Buf;
+   std::vector<uint8> rgbBuffer;
+   V4LAsyncState      state;
+   unsigned int       age;
+};
 
 class V4L : public Camera
 {
    HxMutex mutex;
+   V4LAsyncBuf asyncBuf[3];
+   V4LAsyncBuf *currentWriteBuffer;
    bool ok;
    int  fd;
    struct v4l2_format fmt;
    void *bufferData[3];
    int   bufferDataLen[3];
    bool streamOn;
+   // Format produced by the capture device
    int   videoFormat;
+   bool  threaded;
+   bool  keepAlive;
 
 public:
    V4L(const char *inName)
    {
-      //printf("V4L %s\n", inName);
-      if (!inName || !inName[0] || !strcmp(inName,"default"))
-         inName = "/dev/video0";
+      std::string deviceName = "/dev/video0";
+      std::vector<std::string> attribs;
+
+      if (inName && inName[0])
+      {
+         const char *p = inName;
+         while(*p)
+         {
+            const char *p0 = p;
+            while(*p && *p!=':')
+               p++;
+
+            std::string part(p0,p-p0);
+            if (*p==':')
+               p++;
+            //printf(" part->%s\n", part.c_str());
+            if (part[0]=='/')
+               deviceName = part;
+            else
+               attribs.push_back(part);
+         }
+      }
+
+      threaded = false;
+      keepAlive = true;
+      currentWriteBuffer = 0;
+
 
       streamOn = false;
       for(int i=0;i<3;i++)
@@ -47,13 +95,19 @@ public:
 
       fd = -1;
       videoFormat = 0;
-      openDevice(inName);
-      initDevice();
+      openDevice(deviceName);
+      initDevice(attribs);
    }
 
 
    ~V4L()
    {
+      if (threaded)
+      {
+         keepAlive = false;
+         while(threaded)
+            usleep(1000);
+      }
       if (streamOn)
       {
          int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -108,7 +162,7 @@ public:
    }
 
 
-   bool initDevice(void)
+   bool initDevice(const std::vector<std::string> &inAtribs)
    {
       struct v4l2_capability cap;
       struct v4l2_cropcap cropcap;
@@ -127,32 +181,129 @@ public:
           return setError("Not a video capture device");
       /* Select video input, video standard and tune here. */
 
-      CLEAR(cropcap);
+      int reqWidth = 640;
+      int reqHeight = 480;
+      bool debug = false;
+      bool nocrop = false;
+      bool mjpeg = false;
+      bool yuyv = false;
+      int reqFormat = V4L2_PIX_FMT_RGB24;
+      for(int i=0;i<inAtribs.size();i++)
+      {
+         const std::string &attrib  = inAtribs[i];
+         if (attrib[0]>='0' && attrib[0]<='9')
+         {
+            if (attrib=="1080p")
+            {
+               reqWidth = 1920;
+               reqHeight = 1080;
+            }
+            else if (attrib=="720p")
+            {
+               reqWidth = 1280;
+               reqHeight = 720;
+            }
+            else if (attrib=="600p")
+            {
+               reqWidth = 800;
+               reqHeight = 600;
+            }
+            else if (attrib=="480p")
+            {
+               reqWidth = 640;
+               reqHeight = 480;
+            }
+            else if (attrib=="360p")
+            {
+               reqWidth = 640;
+               reqHeight = 360;
+            }
+         }
+         else if (attrib=="stereo")
+         {
+            reqWidth *= 2;
+         }
+         else if (attrib=="debug")
+         {
+            debug = true;
+         }
+         else if (attrib=="nocrop")
+         {
+            nocrop = true;
+         }
+         else if (attrib=="yuyv")
+         {
+            yuyv = true;
+         }
+         else if (attrib=="mjpeg")
+         {
+            mjpeg = true;
+         }
+      }
 
+      if (debug)
+         printf("Requested size:%dx%d\n", reqWidth, reqHeight);
+
+      CLEAR(cropcap);
       cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
       int cropCapRes =  xioctl(fd, VIDIOC_CROPCAP, &cropcap, true);
-      if (cropCapRes==ENODATA || cropCapRes==-1)
+      if (cropCapRes==ENODATA || cropCapRes==-1 || nocrop)
       {
+         if (debug)
+         {
+            printf("No scaling, use supported format\n");
+            struct v4l2_fmtdesc fmtdesc;
+            CLEAR(fmtdesc);
+            fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            while (ioctl(fd,VIDIOC_ENUM_FMT,&fmtdesc) == 0)
+            {
+               printf("%s (%08x)\n", fmtdesc.description, fmtdesc.pixelformat);
+               fmtdesc.index++;
+            }
+         }
+
+         int reqFormat = V4L2_PIX_FMT_RGB24;
+         if (mjpeg)
+            reqFormat = V4L2_PIX_FMT_MJPEG;
+         else if (yuyv)
+            reqFormat = V4L2_PIX_FMT_YUYV;
+         else
+         {
+            bool hasRgb = false;
+            bool hasYuyv = false;
+            bool hasMjpeg = false;
+            struct v4l2_fmtdesc fmtdesc;
+            CLEAR(fmtdesc);
+            fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            while (ioctl(fd,VIDIOC_ENUM_FMT,&fmtdesc) == 0)
+            {
+               if (fmtdesc.pixelformat==V4L2_PIX_FMT_RGB24)
+                  hasRgb = true;
+               else if (fmtdesc.pixelformat==V4L2_PIX_FMT_YUYV)
+                  hasYuyv = true;
+               else if (fmtdesc.pixelformat==V4L2_PIX_FMT_MJPEG)
+                  hasMjpeg = true;
+               fmtdesc.index++;
+            }
+            if (debug)
+               printf("Supported rgb:%d yuyv:%d  mjpeg:%d\n", hasRgb, hasYuyv, hasMjpeg);
+            if (!hasRgb)
+            {
+               if (hasYuyv)
+                  reqFormat = V4L2_PIX_FMT_YUYV;
+            }
+         }
+
          CLEAR(fmt);
-
-         //struct v4l2_fmtdesc fmtdesc;
-         //CLEAR(fmtdesc);
-         //fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-         //while (ioctl(fd,VIDIOC_ENUM_FMT,&fmtdesc) == 0)
-         //{
-         //   printf("%s (%08x)\n", fmtdesc.description, fmtdesc.pixelformat);
-         //   fmtdesc.index++;
-         //}
-
          fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
          if (-1 == xioctl(fd, VIDIOC_G_FMT, &fmt))
                setError("Could not get format");
          else
          {
-            fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB24;
-            fmt.fmt.pix.width = 640;
-            fmt.fmt.pix.height = 480;
+            fmt.fmt.pix.pixelformat = reqFormat;
+            fmt.fmt.pix.width = reqWidth;
+            fmt.fmt.pix.height = reqHeight;
             if (xioctl(fd,VIDIOC_S_FMT,&fmt)==0)
             {
                videoFormat = fmt.fmt.pix.pixelformat;
@@ -185,16 +336,16 @@ public:
 
          if (true)
          {
-            fmt.fmt.pix.width       = 640; //replace
-            fmt.fmt.pix.height      = 480; //replace
-            fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+            fmt.fmt.pix.width       = reqWidth; //replace
+            fmt.fmt.pix.height      = reqHeight; //replace
+            fmt.fmt.pix.pixelformat = mjpeg ? V4L2_PIX_FMT_MJPEG : V4L2_PIX_FMT_YUYV;
 
             if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))
                setError("Could not set format");
          }
 
          int pf = fmt.fmt.pix.pixelformat;
-         if (pf!=V4L2_PIX_FMT_YUYV)
+         if (pf!=V4L2_PIX_FMT_YUYV && pf!=V4L2_PIX_FMT_MJPEG)
          {
             printf("Unknown pixel format %dx%d : %c%c%c%c\n", fmt.fmt.pix.width, fmt.fmt.pix.height, 
                 (pf>>24) & 0xff, (pf>>16) & 0xff, (pf>>8)& 0xff, (pf&0xff) );
@@ -255,18 +406,92 @@ public:
       pixelFormat = pfRGB;
       status = camRunning;
 
+      if (reqFormat==V4L2_PIX_FMT_MJPEG)
+      {
+         threaded = true;
+
+         HxCreateDetachedThread(sThreadLoop,this);
+      }
+
       //printf("running %dx%d!\n", width, height);
+   }
+   static void *sThreadLoop(void *thiz)
+   {
+      ((V4L *)thiz)->threadLoop();
+      return nullptr;
    }
 
 
    void lock() { mutex.Lock(); }
    void unlock() {  mutex.Unlock(); }
 
-   void onPoll(value handler)
+   // At most one buffer will be good after this ...
+   V4LAsyncBuf *getOnlyReadBufferLocked()
    {
-      syncUpdate(handler);
+      V4LAsyncBuf *best = 0;
+      for(int i=0;i<3;i++)
+      {
+         V4LAsyncBuf *a = asyncBuf+i;
+         if (a->state==v4lGood)
+         {
+            if (best)
+            {
+               if (best->age<a->age)
+               {
+                  a->state=v4lUnused;
+               }
+               else
+               {
+                  best->state = v4lUnused;
+                  best = a;
+               }
+            }
+            else
+               best = a;
+         }
+      }
+      return best;
+   }
 
-      if (status==camRunning && buffer)
+   V4LAsyncBuf *getReadBuffer()
+   {
+      lock();
+      V4LAsyncBuf *best = getOnlyReadBufferLocked();
+      if (best)
+         best->state = v4lReading;
+      unlock();
+      return best;
+   }
+
+   V4LAsyncBuf *getWriteBuffer()
+   {
+      V4LAsyncBuf *best = 0;
+      lock();
+      getOnlyReadBufferLocked();
+      for(int i=0;i<3;i++)
+      {
+         V4LAsyncBuf *a = asyncBuf+i;
+         if (a->state==v4lUnused)
+         {
+            best = a;
+            break;
+         }
+      }
+      if (best)
+         best->state = v4lWriting;
+      else
+      {
+         printf("Could not find write buffer????\n");
+         for(int i=0;i<3;i++)
+            printf(" %d] state=%d\n", i, asyncBuf[i].state );
+      }
+      unlock();
+      return best;
+   }
+
+   void threadLoop()
+   {
+      while(keepAlive)
       {
          struct timeval tv;
          int r;
@@ -277,7 +502,7 @@ public:
 
          /* Timeout. */
          tv.tv_sec = 0;
-         tv.tv_usec = 1;
+         tv.tv_usec = 5000;
 
          r = select(fd + 1, &fds, NULL, NULL, &tv);
          if (-1 == r)
@@ -308,12 +533,107 @@ public:
             {
                void *data = bufferData[buf.index];
 
-               fillBuffer(data);
-
-               onFrame(handler);
+               //double  t0 = GetTimeStamp();
+               fillBuffer((const unsigned char *)data,(unsigned int)buf.bytesused);
+               //printf("Filled : %.3f\n", GetTimeStamp()-t0);
 
                if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
                   setError("Could not requeue buffer");
+            }
+         }
+      }
+
+      threaded = false;
+   }
+
+
+   void onPoll(value handler)
+   {
+      syncUpdate(handler);
+
+      if (status==camRunning && buffer)
+      {
+         if (threaded)
+         {
+            V4LAsyncBuf *async = getReadBuffer();
+            if (async)
+            {
+               const uint8 *src = &async->rgbBuffer[0];
+               int srcStride = width*3;
+
+               uint8 *dest = buffer->Edit(0);
+               int destStride = buffer->GetStride();
+
+               if (srcStride==destStride)
+               {
+                  memcpy(dest, src, srcStride*height);
+               }
+               else
+               {
+                  for(int y=0;y<height;y++)
+                  {
+                     memcpy(dest, src, srcStride);
+                     dest += destStride;
+                     src += srcStride;
+                  }
+               }
+               async->state = v4lUnused;
+               buffer->Commit();
+
+               onFrame(handler);
+            }
+         }
+         else
+         {
+            struct timeval tv;
+            int r;
+
+            fd_set fds;
+            FD_ZERO(&fds);
+            FD_SET(fd, &fds);
+
+            /* Timeout. */
+            tv.tv_sec = 0;
+            tv.tv_usec = 1;
+
+            r = select(fd + 1, &fds, NULL, NULL, &tv);
+            if (-1 == r)
+            {
+               if (EINTR != errno)
+                  setError("Error in select");
+            }
+            else if (0 == r)
+            {
+               // ok
+            }
+            else
+            {
+               struct v4l2_buffer buf = {0};
+               buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+               buf.memory = V4L2_MEMORY_MMAP;
+
+               if(-1 == xioctl(fd, VIDIOC_DQBUF, &buf,true))
+               {
+                  if (errno==EAGAIN)
+                  {
+                     //printf(" - again\n");
+                  }
+                  else
+                     setError("Retrieving Frame");
+               }
+               else
+               {
+                  void *data = bufferData[buf.index];
+
+                  //double  t0 = GetTimeStamp();
+                  fillBuffer((const unsigned char *)data,(unsigned int)buf.bytesused);
+                  //printf("Filled : %.3f\n", GetTimeStamp()-t0);
+
+                  onFrame(handler);
+
+                  if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
+                     setError("Could not requeue buffer");
+               }
             }
          }
       }
@@ -321,18 +641,139 @@ public:
 
    inline int clamp(int x) { return (x & 0xffffff00) ? ~(x>>24) : x ; }
 
-   void fillBuffer(const void *inData)
+   static void sOnI420(void *userData, HwCallbackFrame *inFrame)
    {
+      ((V4L *)userData)->onI420(inFrame);
+   }
+
+   void onI420(HwCallbackFrame *inFrame)
+   {
+      unsigned char *dest = 0;
+      int destStride = 0;
+      std::vector<uint8> i420Buffer;
+      uint8 *i420Buf = 0;
+
+      int stride = inFrame->width;
+      int size = (stride * inFrame->height) * 3 / 2;
+
+      if (currentWriteBuffer)
+      {
+         dest = &currentWriteBuffer->rgbBuffer[0];
+         destStride = width;
+         currentWriteBuffer->i420Buf.resize(size);
+         i420Buf = &currentWriteBuffer->i420Buf[0];
+      }
+      else
+      {
+         dest = buffer->Edit(0);
+         destStride = buffer->GetStride();
+         i420Buffer.resize(size);
+         i420Buf = &i420Buffer[0];
+      }
+
+      const uint8 *l0 = inFrame->buffer + inFrame->cropY*inFrame->width + inFrame->cropX;
+      memcpy(i420Buf, inFrame->buffer, size);
+      unsigned char *luma0 = &i420Buf[ inFrame->cropY*stride + inFrame->cropX ];
+      unsigned char *u0 = &i420Buf[ inFrame->cropY*stride + inFrame->cropX + stride*height ];
+      unsigned char *v0 = &i420Buf[ inFrame->cropY*stride + inFrame->cropX + (stride*height)*5/4 ];
+
+      for(int y=0;y<height;y++)
+      {
+         const uint8 *lx = luma0;
+         const uint8 *ux = u0;
+         const uint8 *vx = v0;
+         uint8 *rgb = dest;
+         for(int x=0;x<width;x+=2)
+         {
+            int y1 = *lx++;
+            int y2 = *lx++;
+            int u = *ux++ - 128;
+            int v = *vx++ - 128;
+
+            int cr = (v*359) >> 8;
+            int cg = (u*88 + v*183) >> 8;
+            int cb = (u*454) >> 8;
+
+            *rgb++ = clamp(y1 + cr);
+            *rgb++ = clamp(y1 - cg);
+            *rgb++ = clamp(y1 + cb);
+
+            *rgb++ = clamp(y2 + cr);
+            *rgb++ = clamp(y2 - cg);
+            *rgb++ = clamp(y2 + cb);
+         }
+         luma0+=stride;
+         if (y&1)
+         {
+            u0 += stride>>1;
+            v0 += stride>>1;
+         }
+         dest += destStride;
+      }
+   }
+
+   void fillBuffer(const unsigned char *inData,unsigned int inByteCount)
+   {
+     static bool shown = false;
       // ImageBuffer  *buffer;
 
-     //printf("Fill %p (%dx%d, %d)\n", inData, buffer->Width(), buffer->Height(), buffer->GetStride() );
-     int stride = buffer->GetStride();
-     unsigned char *dest = buffer->Edit(0);
+     int stride = 0;
+     unsigned char *dest = 0;
+
+     if (threaded)
+     {
+        currentWriteBuffer = getWriteBuffer();
+        if (!currentWriteBuffer)
+           return;
+        currentWriteBuffer->rgbBuffer.resize( width*height*3 );
+        stride = width*3;
+        dest = &currentWriteBuffer->rgbBuffer[0];
+     }
+     else
+     {
+        //printf("Fill %p (%dx%d, %d)\n", inData, buffer->Width(), buffer->Height(), buffer->GetStride() );
+        stride = buffer->GetStride();
+        dest = buffer->Edit(0);
+     }
+
 
      int pairs = width>>1;
      if (videoFormat==V4L2_PIX_FMT_RGB24)
      {
         memcpy(dest, inData, width * height * 3 );
+     }
+     else if (videoFormat==V4L2_PIX_FMT_MJPEG)
+     {
+        #ifdef RASPBERRYPI
+
+        // Hack App0 tag, which can be out-of-spec for decoder ...
+        if (inByteCount>4)
+        {
+           unsigned char *d = (unsigned char *)inData;
+           int end = inByteCount-10;
+           for(int start = 0;start<end;start++)
+           {
+              if (d[0]==0xff && d[1]==0xd8 && d[2]==0xff && d[3]==0xe0 && d[6]=='A' && d[7]=='V')
+              {
+                 //printf("Hack app0 -> app4\n");
+
+                 d[3] =  0xe4;
+              }
+              d++;
+           }
+        }
+
+        if (!RpiHardwareDecodeJPeg( sOnI420, this, (const uint8*)inData, inByteCount) )
+        {
+           printf("hardware failed - use software\n");
+           //FILE *f = fopen("dump.jpeg","wb");
+           //fwrite(inData, inByteCount, 1, f);
+           //fclose(f);
+           SoftwareDecodeJPeg( (uint8*)dest, width, height, (const uint8*)inData, inByteCount);
+        }
+        #else
+        SoftwareDecodeJPeg( (uint8*)dest, width, height, (const uint8*)inData, inByteCount);
+        #endif
      }
      else
         for(int y=0;y<height;y++)
@@ -366,15 +807,28 @@ public:
             }
             else
             {
-               static bool shown = false;
                if (!shown)
                {
-                  printf("fillBuffer - Unknown frame format %08x (yuv=%08x rgb=%08x)\n", videoFormat, V4L2_PIX_FMT_YUYV,V4L2_PIX_FMT_RGB24);
+                  printf("fillBuffer - Unknown frame format %dx%d : %08x (yuv=%08x rgb=%08x)\n", width, height,
+                          videoFormat, V4L2_PIX_FMT_YUYV,V4L2_PIX_FMT_RGB24);
                   shown = true;
                }
             }
          }
-      buffer->Commit();
+
+      if (threaded)
+      {
+         currentWriteBuffer->age = 0;
+         for(int i=0;i<3;i++)
+            if (&asyncBuf[i]!=currentWriteBuffer)
+               asyncBuf[i].age++;
+         currentWriteBuffer->state = v4lGood;
+         currentWriteBuffer = 0;
+      }
+      else
+      {
+         buffer->Commit();
+      }
    }
 
 };

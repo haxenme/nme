@@ -21,7 +21,22 @@ void HintColourOrder(bool inRedFirst);
 
 extern int gTextureContextVersion;
 
+extern bool SoftwareDecodeJPeg(unsigned char *inDest, int inWidth, int inHeight, const uint8 *inData,unsigned int inDataLen);
+struct HwCallbackFrame
+{
+   int format;
+   int width;
+   int height;
+   const uint8 *buffer;
+   unsigned int bufferLength;
+   int cropX;
+   int cropY;
+   int cropW;
+   int cropH;
+};
 
+typedef void (*I420Callback)(void *userData, HwCallbackFrame *inFrame);
+extern bool RpiHardwareDecodeJPeg(I420Callback inCallback, void *inUserData, const uint8 *inData, unsigned int inDataLen);
 
 
 class Surface : public ImageBuffer

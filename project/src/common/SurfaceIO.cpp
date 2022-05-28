@@ -114,6 +114,82 @@ struct MySrcManager
    }
  };
 
+
+namespace nme {
+bool SoftwareDecodeJPeg(unsigned char *inDest, int inWidth, int inHeight, const uint8 *inData,unsigned int inDataLen)
+{
+   struct jpeg_decompress_struct cinfo;
+
+   // Don't exit on error!
+   struct ErrorData jpegError;
+   cinfo.err = jpeg_std_error(&jpegError.base);
+   jpegError.base.error_exit = OnError;
+   jpegError.base.output_message = OnOutput;
+
+   Surface *result = 0;
+   uint8 *row_buf = 0;
+
+   // Establish the setjmp return context for ErrorFunction to use
+   if (setjmp(jpegError.on_error))
+   {
+      if (row_buf)
+         free(row_buf);
+      if (result)
+         result->DecRef();
+
+      jpeg_destroy_decompress(&cinfo);
+      return false;
+   }
+
+   // Initialize the JPEG decompression object.
+   jpeg_create_decompress(&cinfo);
+
+   // Specify data source (ie, a file, or buffer)
+   MySrcManager manager(inData,inDataLen);
+   cinfo.src = &manager.pub;
+
+   // Read file parameters with jpeg_read_header().
+   if (jpeg_read_header(&cinfo, TRUE)!=JPEG_HEADER_OK)
+      return false;
+
+   cinfo.out_color_space = JCS_RGB;
+
+   // Start decompressor.
+   jpeg_start_decompress(&cinfo);
+
+   int activeHeight = std::min( (int)inHeight,  (int)cinfo.output_height);
+   bool trim = inWidth < cinfo.output_width;
+   int activeWidth = std::min( (int)inWidth,  (int)cinfo.output_width);
+   std::vector<uint8> rowBuf(trim ? cinfo.output_width : 0);
+   uint8 *bufPtr = trim ? &rowBuf[0] : nullptr;
+
+
+   while (cinfo.output_scanline < activeHeight)
+   {
+      uint8 * dest = inDest + cinfo.output_scanline * 3 * inWidth;
+      if (trim)
+      {
+         jpeg_read_scanlines(&cinfo, &bufPtr, 1);
+         memcpy(dest, bufPtr, 3*activeWidth);
+      }
+      else
+         jpeg_read_scanlines(&cinfo, &dest, 1);
+   }
+
+   // Finish decompression.
+   jpeg_finish_decompress(&cinfo);
+
+   // Release JPEG decompression object
+   jpeg_destroy_decompress(&cinfo);
+
+   return true;
+}
+}
+
+
+
+
+
 static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
 {
    struct jpeg_decompress_struct cinfo;
@@ -182,6 +258,11 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
 
    return result;
 }
+
+
+
+
+
 
 struct MyDestManager
 {
