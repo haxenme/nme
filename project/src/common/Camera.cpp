@@ -206,6 +206,16 @@ value nme_camera_on_poll(value inCamera,value inHandler)
 }
 DEFINE_PRIM(nme_camera_on_poll,2);
 
+value nme_camera_close(value inCamera)
+{
+   Camera *camera;
+   if (AbstractToObject(inCamera,camera))
+      delete camera;
+   return alloc_null();
+}
+DEFINE_PRIM(nme_camera_close,1);
+
+
 
 void nme_camera_get_depth(value inCamera,value outBytes)
 {

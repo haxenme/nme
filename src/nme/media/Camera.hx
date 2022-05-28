@@ -21,19 +21,31 @@ class Camera extends nme.events.EventDispatcher
    public var width(default,null):Int;
    public var height(default,null):Int;
    public var nmeHandle:NativeHandle;
+   public var name(default,null):String;
 
    @:keep public var depthWidth(default,null):Int;
    @:keep public var depthHeight(default,null):Int;
    @:keep public var depthData(default,null):Dynamic;
    // isSupported
 
-   private function new(inHandle:Dynamic)
+   private function new(inHandle:Dynamic, inName:String )
    {
       super();
       width = 0;
       height = 0;
       nmeHandle = inHandle;
       bitmapData = null;
+      name = inName;
+   }
+
+   public function close()
+   {
+      if (nmeHandle!=null)
+         nme_camera_close(nmeHandle);
+      if (cameraMap!=null)
+         cameraMap.remove(name);
+      nme.Lib.current.stage.removeEventListener(nme.events.Event.ENTER_FRAME, onPoll);
+      nmeHandle = null;
    }
 
 
@@ -47,11 +59,12 @@ class Camera extends nme.events.EventDispatcher
       var handle = nme_camera_create(name);
       if (handle==null)
          return null;
-      var result = new Camera(handle);
+      var result = new Camera(handle,name);
       cameraMap.set(name,result);
       nme.Lib.current.stage.addEventListener(nme.events.Event.ENTER_FRAME, result.onPoll);
       return result;
    }
+
 
    @:keep function _on_error()
    {
@@ -108,6 +121,8 @@ class Camera extends nme.events.EventDispatcher
 
    public function getDepthData(?buffer:ByteArray) : ByteArray
    {
+      if (nmeHandle==null)
+         return null;
       if (depthData==null)
          return null;
       var size = width*height*4;
@@ -123,11 +138,13 @@ class Camera extends nme.events.EventDispatcher
 
    function onPoll(_)
    {
-      nme_camera_on_poll(nmeHandle,this);
+      if (nmeHandle!=null)
+          nme_camera_on_poll(nmeHandle,this);
    }
 
    private static var nme_camera_create = Loader.load("nme_camera_create", 1);
    private static var nme_camera_on_poll = Loader.load("nme_camera_on_poll", 2);
+   private static var nme_camera_close = Loader.load("nme_camera_close", 1);
    private static var nme_camera_get_depth = PrimeLoader.load("nme_camera_get_depth", "oov");
 }
 
