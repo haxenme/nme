@@ -34,12 +34,18 @@ enum V4LAsyncState
 
 struct V4LAsyncBuf
 {
-   V4LAsyncBuf() : state(v4lUnused), age(0) { }
-
    std::vector<uint8> i420Buf;
    std::vector<uint8> rgbBuffer;
+   std::vector<uint8> jpegBuffer;
    V4LAsyncState      state;
    unsigned int       age;
+   V4LAsyncBuf() : state(v4lUnused), age(0) { }
+   const unsigned char *setMjpegData(const uint8 *inData, int inLen)
+   {
+      jpegBuffer.resize(inLen);
+      memcpy(&jpegBuffer[0], inData, inLen);
+      return &jpegBuffer[0];
+   }
 };
 
 class V4L : public Camera
@@ -57,12 +63,15 @@ class V4L : public Camera
    int   videoFormat;
    bool  threaded;
    bool  keepAlive;
+   bool  mjpegBuffers;
+   std::vector<uint8> jpegBuffer;
 
 public:
    V4L(const char *inName)
    {
       std::string deviceName = "/dev/video0";
       std::vector<std::string> attribs;
+      mjpegBuffers = false;
 
       if (inName && inName[0])
       {
@@ -191,12 +200,19 @@ public:
       for(int i=0;i<inAtribs.size();i++)
       {
          const std::string &attrib  = inAtribs[i];
+         if (debug)
+            printf("Attrib: %s\n", attrib.c_str());
          if (attrib[0]>='0' && attrib[0]<='9')
          {
             if (attrib=="1080p")
             {
                reqWidth = 1920;
                reqHeight = 1080;
+            }
+            else if (attrib=="960p")
+            {
+               reqWidth = 1280;
+               reqHeight = 960;
             }
             else if (attrib=="720p")
             {
@@ -239,10 +255,26 @@ public:
          {
             mjpeg = true;
          }
+         else if (attrib=="mjpegbuffers")
+         {
+            mjpeg = true;
+            mjpegBuffers = true;
+         }
       }
 
       if (debug)
-         printf("Requested size:%dx%d\n", reqWidth, reqHeight);
+      {
+         printf("Requested size:%dx%d. Supported:\n", reqWidth, reqHeight);
+         struct v4l2_fmtdesc fmtdesc;
+         CLEAR(fmtdesc);
+         fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+         while (ioctl(fd,VIDIOC_ENUM_FMT,&fmtdesc) == 0)
+         {
+            printf(" %s (%08x)\n", fmtdesc.description, fmtdesc.pixelformat);
+            fmtdesc.index++;
+         }
+      }
+
 
       CLEAR(cropcap);
       cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -265,9 +297,17 @@ public:
 
          int reqFormat = V4L2_PIX_FMT_RGB24;
          if (mjpeg)
+         {
+            if (debug)
+               printf("Request MJPeg\n");
             reqFormat = V4L2_PIX_FMT_MJPEG;
+         }
          else if (yuyv)
+         {
+            if (debug)
+               printf("Request YUY2\n");
             reqFormat = V4L2_PIX_FMT_YUYV;
+         }
          else
          {
             bool hasRgb = false;
@@ -342,6 +382,8 @@ public:
 
             if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))
                setError("Could not set format");
+            else if (debug)
+               printf("Set video format %dx%d %s ok\n", reqWidth, reqHeight, mjpeg?"MJPEG":"YUY2");
          }
 
          int pf = fmt.fmt.pix.pixelformat;
@@ -354,12 +396,14 @@ public:
          videoFormat = pf;
 
          /* Buggy driver paranoia. */
+         /*
          min = fmt.fmt.pix.width * 2;
          if (fmt.fmt.pix.bytesperline < min)
                 fmt.fmt.pix.bytesperline = min;
          min = fmt.fmt.pix.bytesperline * fmt.fmt.pix.height;
          if (fmt.fmt.pix.sizeimage < min)
                 fmt.fmt.pix.sizeimage = min;
+         */
       }
       else if (cropCapRes==EINVAL)
       {
@@ -406,11 +450,18 @@ public:
       pixelFormat = pfRGB;
       status = camRunning;
 
-      if (reqFormat==V4L2_PIX_FMT_MJPEG)
+      if (videoFormat==V4L2_PIX_FMT_MJPEG)
       {
          threaded = true;
+         if (debug)
+            printf("Run MJPeg thread\n");
 
          HxCreateDetachedThread(sThreadLoop,this);
+      }
+      else
+      {
+         if (debug)
+            printf("Running main thread\n");
       }
 
       //printf("running %dx%d!\n", width, height);
@@ -577,6 +628,7 @@ public:
                      src += srcStride;
                   }
                }
+               std::swap(jpegBuffer, async->jpegBuffer);
                async->state = v4lUnused;
                buffer->Commit();
 
@@ -629,6 +681,8 @@ public:
                   fillBuffer((const unsigned char *)data,(unsigned int)buf.bytesused);
                   //printf("Filled : %.3f\n", GetTimeStamp()-t0);
 
+
+
                   onFrame(handler);
 
                   if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
@@ -646,6 +700,13 @@ public:
       ((V4L *)userData)->onI420(inFrame);
    }
 
+   const unsigned char *setMjpegData(const uint8 *inData, int inLen)
+   {
+      jpegBuffer.resize(inLen);
+      memcpy(&jpegBuffer[0], inData, inLen);
+      return &jpegBuffer[0];
+   }
+
    void onI420(HwCallbackFrame *inFrame)
    {
       unsigned char *dest = 0;
@@ -659,7 +720,7 @@ public:
       if (currentWriteBuffer)
       {
          dest = &currentWriteBuffer->rgbBuffer[0];
-         destStride = width;
+         destStride = width*3;
          currentWriteBuffer->i420Buf.resize(size);
          i420Buf = &currentWriteBuffer->i420Buf[0];
       }
@@ -676,6 +737,8 @@ public:
       unsigned char *luma0 = &i420Buf[ inFrame->cropY*stride + inFrame->cropX ];
       unsigned char *u0 = &i420Buf[ inFrame->cropY*stride + inFrame->cropX + stride*height ];
       unsigned char *v0 = &i420Buf[ inFrame->cropY*stride + inFrame->cropX + (stride*height)*5/4 ];
+
+      //printf("ON I420 %dx%d %d  (%dx%d)\n", width, height, stride, inFrame->cropX, inFrame->cropY);
 
       for(int y=0;y<height;y++)
       {
@@ -744,6 +807,14 @@ public:
      }
      else if (videoFormat==V4L2_PIX_FMT_MJPEG)
      {
+        std::vector<int> byteHacks;
+        if (mjpegBuffers)
+        {
+           if (threaded)
+              inData = currentWriteBuffer->setMjpegData(inData,inByteCount);
+           else
+              inData = setMjpegData(inData, inByteCount);
+        }
         #ifdef RASPBERRYPI
 
         // Hack App0 tag, which can be out-of-spec for decoder ...
@@ -755,6 +826,8 @@ public:
            {
               if (d[0]==0xff && d[1]==0xd8 && d[2]==0xff && d[3]==0xe0 && d[6]=='A' && d[7]=='V')
               {
+                 if (mjpegBuffers)
+                    byteHacks.push_back(start+3);
                  //printf("Hack app0 -> app4\n");
 
                  d[3] =  0xe4;
@@ -771,6 +844,19 @@ public:
            //fclose(f);
            SoftwareDecodeJPeg( (uint8*)dest, width, height, (const uint8*)inData, inByteCount);
         }
+        else
+        {
+           static bool shown = false;
+           if (!shown)
+           {
+              printf("Using hardware decode\n");
+              shown = true;
+           }
+        }
+        unsigned char *d = (unsigned char *)inData;
+        for(int i : byteHacks)
+           d[i] = 0xe0;
+
         #else
         SoftwareDecodeJPeg( (uint8*)dest, width, height, (const uint8*)inData, inByteCount);
         #endif
@@ -829,6 +915,15 @@ public:
       {
          buffer->Commit();
       }
+   }
+
+   int getJpegSize()
+   {
+      return (int)jpegBuffer.size();
+   }
+   const unsigned char *getJpegData()
+   {
+      return jpegBuffer.size() ? &jpegBuffer[0] : nullptr;
    }
 
 };

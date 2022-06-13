@@ -20,7 +20,9 @@ struct FrameBuffer
    float *depthRow(int inY) { return &depth[inY*depthWidth]; }
    void clear();
 
+
    std::vector<unsigned char> data;
+   std::vector<unsigned char> mjpegData;
    std::vector<float> depth;
 
    int depthWidth;
@@ -56,6 +58,9 @@ public:
    bool setError(const std::string &inError);
 
    inline bool ok() { return status !=camError; }
+
+   virtual int getJpegSize() { return 0; }
+   virtual const unsigned char *getJpegData() { return nullptr; }
 
 
 

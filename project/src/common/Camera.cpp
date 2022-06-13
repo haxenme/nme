@@ -234,6 +234,37 @@ void nme_camera_get_depth(value inCamera,value outBytes)
 DEFINE_PRIME2v(nme_camera_get_depth);
 
 
+int nme_camera_get_jpeg_size(value inCamera)
+{
+   Camera *camera;
+   if (AbstractToObject(inCamera,camera))
+   {
+      return camera->getJpegSize();
+   }
+   return 0;
+}
+DEFINE_PRIME1(nme_camera_get_jpeg_size);
+
+
+void nme_camera_get_jpeg_data(value inCamera, value outData)
+{
+   Camera *camera;
+   if (AbstractToObject(inCamera,camera))
+   {
+      ByteArray byteArray(outData);
+      unsigned char *bytes = byteArray.Bytes();
+      int size = byteArray.Size();
+      if (size==camera->getJpegSize())
+      {
+         const unsigned char *ptr = camera->getJpegData();
+         memcpy(bytes, ptr, size);
+      }
+   }
+}
+DEFINE_PRIME2v(nme_camera_get_jpeg_data);
+
+
+
 
 
 

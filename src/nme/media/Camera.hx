@@ -119,11 +119,26 @@ class Camera extends nme.events.EventDispatcher
       */
    }
 
-   public function getDepthData(?buffer:ByteArray) : ByteArray
+   public function getJpegData(?buffer:ByteArray) : ByteArray
    {
       if (nmeHandle==null)
          return null;
-      if (depthData==null)
+      var size = nme_camera_get_jpeg_size(nmeHandle);
+      if (size<1)
+         return null;
+      if (buffer==null)
+         buffer = new ByteArray(size);
+      else
+         buffer.setAllocSize(size);
+
+      nme_camera_get_jpeg_data(nmeHandle, buffer);
+
+      return buffer;
+   }
+
+   public function getDepthData(?buffer:ByteArray) : ByteArray
+   {
+      if (nmeHandle==null)
          return null;
       var size = width*height*4;
       if (buffer==null)
@@ -146,6 +161,8 @@ class Camera extends nme.events.EventDispatcher
    private static var nme_camera_on_poll = Loader.load("nme_camera_on_poll", 2);
    private static var nme_camera_close = Loader.load("nme_camera_close", 1);
    private static var nme_camera_get_depth = PrimeLoader.load("nme_camera_get_depth", "oov");
+   private static var nme_camera_get_jpeg_size = PrimeLoader.load("nme_camera_get_jpeg_size", "oi");
+   private static var nme_camera_get_jpeg_data = PrimeLoader.load("nme_camera_get_jpeg_data", "oov");
 }
 
 
