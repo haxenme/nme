@@ -392,12 +392,20 @@ public:
    void BeginDirectRender()
    {
       gDirectMaxAttribArray = 0;
+      int err0 = glGetError();
+      if (err0 != GL_NO_ERROR)
+           ELOG("GL Error Before BeginDirectRender %d\n", err0);
+
    }
 
    void EndDirectRender()
    {
       for(int i=0;i<gDirectMaxAttribArray;i++)
          glDisableVertexAttribArray(i);
+
+      int err = glGetError();
+      if (err != GL_NO_ERROR)
+           ELOG("GL Error in DirectRender %d\n", err);
    }
 
 

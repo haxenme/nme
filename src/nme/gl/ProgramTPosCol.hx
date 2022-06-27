@@ -147,14 +147,17 @@ class ProgramTPosCol extends ProgramBase
 
       GL.uniformMatrix4fv(mvpLocation, false, mvp);
 
-      if (clipped && plane!=null)
+      if (clipped)
       {
-         GL.uniform4f(clipLocation, plane.x, plane.y, plane.z, plane.w);
-         GL.enable(GL.CLIP_DISTANCE0);
-      }
-      else
-      {
-         GL.uniform4f(clipLocation, 0, 0, 0, 1);
+         if ( plane!=null)
+         {
+            GL.uniform4f(clipLocation, plane.x, plane.y, plane.z, plane.w);
+            GL.enable(GL.CLIP_DISTANCE0);
+         }
+         else
+         {
+            GL.uniform4f(clipLocation, 0, 0, 0, 1);
+         }
       }
 
       GL.drawArrays(primType, 0, primCount);
