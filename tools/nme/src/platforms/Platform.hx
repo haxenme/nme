@@ -69,6 +69,7 @@ class Platform
          if (inProject.hasDef("HXCPP_ARM64"))
          {
             isArm64 = true;
+            is64 = true;
          }
          else if (inProject.hasDef("HXCPP_M32"))
          {

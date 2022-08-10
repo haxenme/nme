@@ -18,9 +18,11 @@ class LinuxPlatform extends DesktopPlatform
       if (inProject.targetFlags.exists("rpi")) 
          isRaspberryPi = true;
 
+      var isArm = false;
       if (isRaspberryPi)
       {
          is64 = true;
+         isArm = true;
       }
       else if (PlatformHelper.hostPlatform == Platform.LINUX) 
       {
@@ -30,27 +32,34 @@ class LinuxPlatform extends DesktopPlatform
          process.exitCode();
          process.close();
 
-         if (output.toLowerCase().indexOf("raspberrypi") > -1) 
+         var uname = output.toLowerCase();
+         if (uname.indexOf("raspberrypi") > -1) 
          {
             isRaspberryPi = true;
             is64 = true;
          }
          else if (inProject.hasDef("HXCPP_LINUX_ARMV7"))
-         { 
+         {
              is64 = false;
+             isArm = true;
              inProject.architectures = [ Architecture.ARMV7 ];
          }
-         else if (inProject.hasDef("HXCPP_LINUX_ARM64"))
-         { 
+         else if (inProject.hasDef("HXCPP_LINUX_ARM64") || uname.indexOf('aarch64')>-1 )
+         {
              inProject.architectures = [ Architecture.ARM64 ];
+
+             isArm = true;
              is64 = true;
          }
       }
 
+      if (is64 && isArm) 
+         inProject.haxedefs.set("HXCPP_ARM64", "1");
+      if (is64)
+         inProject.haxedefs.set("HXCPP_M64", "1");
+
       super(inProject);
 
-      if (is64) 
-         project.haxedefs.set("HXCPP_M64", "1");
 
 
       applicationDirectory = getOutputDir();
@@ -66,7 +75,10 @@ class LinuxPlatform extends DesktopPlatform
    {
       return isRaspberryPi ? "rpi" :( (useNeko ? "linux-neko" : "linux") + (is64 ? "64" : "") );
    }
-   override public function getBinName() : String { return isRaspberryPi ? "RPi" : (is64 ? "Linux64" : "Linux"); }
+   override public function getBinName() : String
+   {
+      return isRaspberryPi ? "RPi" : (is64 ? "Linux64" : "Linux");
+   }
 
    override public function getNativeDllExt() { return ".dso"; }
 

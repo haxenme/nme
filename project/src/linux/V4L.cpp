@@ -85,10 +85,9 @@ public:
             std::string part(p0,p-p0);
             if (*p==':')
                p++;
-            //printf(" part->%s\n", part.c_str());
             if (part[0]=='/')
                deviceName = part;
-            else
+            else if (part.size())
                attribs.push_back(part);
          }
       }
@@ -465,7 +464,10 @@ public:
       }
 
       //printf("running %dx%d!\n", width, height);
+      return true;
    }
+
+
    static void *sThreadLoop(void *thiz)
    {
       ((V4L *)thiz)->threadLoop();
@@ -815,6 +817,8 @@ public:
            else
               inData = setMjpegData(inData, inByteCount);
         }
+
+        //double t0 = GetTimeStamp();
         #ifdef RASPBERRYPI
 
         // Hack App0 tag, which can be out-of-spec for decoder ...
@@ -857,9 +861,12 @@ public:
         for(int i : byteHacks)
            d[i] = 0xe0;
 
-        #else
+        #else 
         SoftwareDecodeJPeg( (uint8*)dest, width, height, (const uint8*)inData, inByteCount);
         #endif
+
+        //double t = GetTimeStamp()-t0;
+        //printf(" decode time: %.2fms\n", t*1000);
      }
      else
         for(int y=0;y<height;y++)
