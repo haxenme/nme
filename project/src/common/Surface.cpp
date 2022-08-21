@@ -1306,6 +1306,9 @@ void SimpleSurface::setUInts8(const uint8 *inData, int inStride, PixelFormat inF
       for(int y=0;y<mHeight;y++)
          memcpy(mBase+mStride*y, inData+stride*y, mWidth*pixelSize );
    }
+
+   if (mTexture)
+      mTexture->Dirty(Rect(0,0,mWidth,mHeight));
 }
 
 
