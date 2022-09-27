@@ -2149,7 +2149,28 @@ bool nmeIsMain = true;
    [super didMoveToParentViewController:parent];
 }
 
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
 
+    if (@available(iOS 13, *)) {
+        UIHoverGestureRecognizer *hover = [[UIHoverGestureRecognizer alloc] initWithTarget:self action:@selector(hover:)];
+        [self.view addGestureRecognizer:hover];
+    }
+}
+
+- (void)hover:(UIHoverGestureRecognizer *)gestureRecognizer API_AVAILABLE(ios(13))
+{
+    CGPoint p = [gestureRecognizer locationInView:self.view];
+
+    if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
+    {
+        Event mouse(etMouseMove, p.x*nmeStage->nmeView->dpiScale, p.y*nmeStage->nmeView->dpiScale);
+        //mouse.flags |= efLeftDown;
+        //mouse.flags |= efPrimaryTouch;
+        nmeStage->OnEvent(mouse);
+    }
+}
 
 - (void)viewDidAppear:(BOOL)animated
 {
