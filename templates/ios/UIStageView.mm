@@ -2156,6 +2156,16 @@ bool nmeIsMain = true;
     if (@available(iOS 13, *)) {
         UIHoverGestureRecognizer *hover = [[UIHoverGestureRecognizer alloc] initWithTarget:self action:@selector(hover:)];
         [self.view addGestureRecognizer:hover];
+        
+        if (@available(iOS 13.4, *)) {
+            UIPanGestureRecognizer *mouseWheelRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(mouseWheelGesture:)];
+            mouseWheelRecognizer.allowedScrollTypesMask = UIScrollTypeMaskDiscrete;
+            mouseWheelRecognizer.allowedTouchTypes = @[ @(UITouchTypeIndirectPointer) ];
+            mouseWheelRecognizer.cancelsTouchesInView = NO;
+            mouseWheelRecognizer.delaysTouchesBegan = NO;
+            mouseWheelRecognizer.delaysTouchesEnded = NO;
+            [self.view addGestureRecognizer:mouseWheelRecognizer];
+        }
     }
 }
 
@@ -2169,6 +2179,38 @@ bool nmeIsMain = true;
         //mouse.flags |= efLeftDown;
         //mouse.flags |= efPrimaryTouch;
         nmeStage->OnEvent(mouse);
+    }
+}
+
+-(void)mouseWheelGesture:(UIPanGestureRecognizer *)gesture
+{
+    if (gesture.state == UIGestureRecognizerStateBegan ||
+        gesture.state == UIGestureRecognizerStateChanged ||
+        gesture.state == UIGestureRecognizerStateEnded) {
+        CGPoint velocity = [gesture velocityInView:self.view];
+        CGPoint p = [gesture locationInView:self.view];
+
+        if (velocity.x > 0.0f) {
+            velocity.x = -1.0;
+        } else if (velocity.x < 0.0f) {
+            velocity.x = 1.0f;
+        }
+        if (velocity.y > 0.0f) {
+            velocity.y = -1.0;
+        } else if (velocity.y < 0.0f) {
+            velocity.y = 1.0f;
+        }
+        if (velocity.x != 0.0f || velocity.y != 0.0f) {
+            //previous behavior in nme was fake button 3 for down, 4 for up
+            int event_dir = (velocity.y> 0) ? 3 : 4;
+            int _x = p.x*nmeStage->nmeView->dpiScale;
+            int _y = p.y*nmeStage->nmeView->dpiScale;
+            //create the event
+            Event mouse(etMouseUp, _x, _y, event_dir);
+            mouse.deltaY = event_dir==3 ? 1 : -1;
+            mouse.deltaX = velocity.x>0 ? 1 : -1;
+            nmeStage->OnEvent(mouse);
+        }
     }
 }
 
