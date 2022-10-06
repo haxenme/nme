@@ -2177,7 +2177,7 @@ bool nmeIsMain = true;
     {
         Event mouse(etMouseMove, p.x*nmeStage->nmeView->dpiScale, p.y*nmeStage->nmeView->dpiScale);
         //mouse.flags |= efLeftDown;
-        //mouse.flags |= efPrimaryTouch;
+        mouse.flags |= efPrimaryTouch;
         nmeStage->OnEvent(mouse);
     }
 }
