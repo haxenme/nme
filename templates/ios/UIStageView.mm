@@ -2266,6 +2266,10 @@ bool nmeIsMain = true;
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
    APP_LOG(@"application start");
+   
+   //audio from other apps mixes with your audio
+   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
+   
    UIWindow *win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
    window = win;
    [window makeKeyAndVisible];
