@@ -169,9 +169,9 @@ inline int val_array_size(value inArray)
 }
 
 //DEFFUNC_2(void,val_array_set_size,value,int)
-inline void val_array_set_i(value array,int index,value data) { array[index] = data; }
+inline void val_array_set_i(value array,int index,value data) { array.set(index,data); }
 
-inline void val_array_push(value array, value data) { array[ 1+array["length"].as<int>() ] = data; }
+inline void val_array_push(value array, value data) { array.set( 1+array["length"].as<int>(),data); }
 
 
 inline value alloc_string_len(const char *inStr,int inLen) { return value(std::string(inStr,inStr+inLen)); }
