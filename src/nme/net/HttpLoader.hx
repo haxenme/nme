@@ -30,7 +30,7 @@ private class OutputWatcher extends haxe.io.BytesOutput
       loader.onBytesTotal(nbytes);
    }
 
-   override function writeBytes(buf:haxe.io.Bytes, pos, len):Int
+   override function writeBytes(buf:haxe.io.Bytes, pos:Int, len:Int):Int
    {
       var result = super.writeBytes(buf, pos, len);
       loader.onBytesLoaded(b.length);
@@ -103,6 +103,40 @@ class HttpLoader
 
          bytesLoaded = bytesTotal = bytes.length;
 
+         var encoding =  http.responseHeaders.get("Content-Encoding");
+         if (encoding=="gzip")
+         {
+            var decoded = false;
+            try
+            {
+               if (bytes.length>10 && bytes.get(0)==0x1f && bytes.get(1)==0x8b)
+               {
+                  var u = new haxe.zip.Uncompress(15|32);
+                  var tmp = haxe.io.Bytes.alloc(1<<16);
+                  u.setFlushMode(haxe.zip.FlushMode.SYNC);
+                  var b = new haxe.io.BytesBuffer();
+                  var pos = 0;
+                  while (true) {
+                     var r = u.execute(bytes, pos, tmp, 0);
+                     b.addBytes(tmp, 0, r.write);
+                     pos += r.read;
+                     if (r.done)
+                       break;
+                  }
+                  u.close();
+                  bytes = b.getBytes();
+                  decoded = bytes!=null;
+               }
+            }
+            catch(e:Dynamic)
+            {
+               trace(e);
+            }
+
+            if (!decoded)
+               onError("Bad GZip data");
+         }
+
          if (urlLoader.dataFormat== URLLoaderDataFormat.BINARY)
          {
             byteData = ByteArray.fromBytes(bytes);
@@ -133,7 +167,6 @@ class HttpLoader
       if (count>bytesTotal)
          bytesTotal = count;
       bytesLoaded = count;
-      //trace("onBytesLoaded " + bytesLoaded + "/" + bytesTotal);
    }
 
 
