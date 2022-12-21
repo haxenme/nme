@@ -419,6 +419,10 @@ void TextField::getLinePositions(int inLineId0, double *outResult, int inCount)
 
 void TextField::setScrollH(int inScrollH)
 {
+   if (mLinesDirty)
+      Layout();
+
+
    int oldPos = scrollH;
    scrollH = inScrollH;
    if (scrollH<0)
@@ -445,6 +449,8 @@ void TextField::setScrollH(int inScrollH)
 
 void TextField::setScrollV(int inScrollV)
 {
+   if (mLinesDirty)
+      Layout();
    setScrollVClearSel(inScrollV,true);
 }
 
@@ -2028,6 +2034,8 @@ void TextField::DeleteSelection()
 
 void TextField::setCaretIndex(int inIndex)
 {
+   if (mLinesDirty)
+      Layout();
    caretIndex = std::min(inIndex,getLength());
    ShowCaret();
 }
