@@ -48,6 +48,7 @@ DisplayObject::DisplayObject(bool inInitRef) : Object(inInitRef)
    mMask = 0;
    mIsMaskCount = 0;
    mBitmapGfx = 0;
+   respectScrollRectExtent = false;
    id = sgDisplayObjID++ & 0x7fffffff;
    if (id==0)
       id = sgDisplayObjID++;
@@ -720,6 +721,7 @@ void DisplayObject::encodeStream(ObjectStreamOut &stream)
    stream.add(needsSoftKeyboard);
    stream.add(softKeyboard);
    stream.add(movesForSoftKeyboard);
+   stream.add(respectScrollRectExtent);
    //uint32 mDirtyFlags;
 
    stream.addObject(stream.parentToo ? mParent : 0);
@@ -775,6 +777,7 @@ void DisplayObject::decodeStream(ObjectStreamIn &stream)
    stream.get(needsSoftKeyboard);
    stream.get(softKeyboard);
    stream.get(movesForSoftKeyboard);
+   stream.get(respectScrollRectExtent);
    //uint32 mDirtyFlags;
 
 
@@ -1656,7 +1659,7 @@ void DisplayObjectContainer::GetExtent(const Transform &inTrans, Extent2DF &outE
       DisplayObject *obj = mChildren[i];
 
       full = inTrans.mMatrix->Mult( obj->GetLocalMatrix() );
-      if (inForScreen && obj->scrollRect.HasPixels())
+      if ((inForScreen || obj->respectScrollRectExtent) && obj->scrollRect.HasPixels())
       {
          for(int corner=0;corner<4;corner++)
          {

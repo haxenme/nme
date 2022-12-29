@@ -22,6 +22,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
    public var blendMode(get, set):BlendMode;
    public var cacheAsBitmap(get, set):Bool;
    public var pedanticBitmapCaching(get, set):Bool;
+   public var respectScrollRectExtent(get, set):Bool;
    public var pixelSnapping(get, set):PixelSnapping;
    public var filters(get, set):Array<Dynamic>;
    public var graphics(get, null):Graphics;
@@ -422,6 +423,14 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
       return inVal;
    }
 
+   private function get_respectScrollRectExtent():Bool { return nme_display_object_get_respect_scroll_rect_extent(nmeHandle); }
+   private function set_respectScrollRectExtent(inVal:Bool):Bool 
+   {
+      nme_display_object_set_respect_scroll_rect_extent(nmeHandle, inVal);
+      return inVal;
+   }
+
+
    private function get_pixelSnapping():PixelSnapping 
    {
       var val:Int = nme_display_object_get_pixel_snapping(nmeHandle);
@@ -624,6 +633,8 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable
    private static var nme_display_object_set_cache_as_bitmap = PrimeLoader.load("nme_display_object_set_cache_as_bitmap", "obv");
    private static var nme_display_object_get_pedantic_bitmap_caching = PrimeLoader.load("nme_display_object_get_pedantic_bitmap_caching", "ob");
    private static var nme_display_object_set_pedantic_bitmap_caching = PrimeLoader.load("nme_display_object_set_pedantic_bitmap_caching", "obv");
+   private static var nme_display_object_get_respect_scroll_rect_extent = PrimeLoader.load("nme_display_object_get_respect_scroll_rect_extent", "ob");
+   private static var nme_display_object_set_respect_scroll_rect_extent = PrimeLoader.load("nme_display_object_set_respect_scroll_rect_extent", "obv");
    private static var nme_display_object_get_pixel_snapping = PrimeLoader.load("nme_display_object_get_pixel_snapping", "oi");
    private static var nme_display_object_set_pixel_snapping = PrimeLoader.load("nme_display_object_set_pixel_snapping", "oiv");
    private static var nme_display_object_get_visible = PrimeLoader.load("nme_display_object_get_visible", "ob");

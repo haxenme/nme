@@ -97,6 +97,7 @@ public:
    BlendMode      blendMode;
    bool           cacheAsBitmap;
    bool           pedanticBitmapCaching;
+   bool           respectScrollRectExtent;
    unsigned char  pixelSnapping;
    ColorTransform colorTransform;
    FilterList     filters;
@@ -175,6 +176,8 @@ public:
    void setCacheAsBitmap(bool inVal);
    bool getPedanticBitmapCaching() { return pedanticBitmapCaching; }
    void setPedanticBitmapCaching(bool inVal) { pedanticBitmapCaching=inVal; }
+   bool getRespectScrollRectExtent() { return respectScrollRectExtent; }
+   void setRespectScrollRectExtent(bool inVal) { respectScrollRectExtent=inVal; }
    int getPixelSnapping() { return pixelSnapping; }
    void setPixelSnapping(int inVal);
    bool getVisible() { return visible; }

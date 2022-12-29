@@ -2541,7 +2541,7 @@ void nme_display_object_get_bounds(value inObj, value inTarget, value outBounds,
       trans.mMatrix = &m;
 
       Extent2DF ext;
-      obj->GetExtent(trans, ext, false, inIncludeStroke);
+      obj->GetExtent(trans, ext, obj->respectScrollRectExtent, inIncludeStroke);
       
       Rect rect;
       if (ext.GetRect(rect))
@@ -2602,6 +2602,7 @@ DO_DISPLAY_PROP_PRIME(bg,OpaqueBackground,int)
 DO_DISPLAY_PROP_PRIME(mouse_enabled,MouseEnabled,bool)
 DO_DISPLAY_PROP_PRIME(cache_as_bitmap,CacheAsBitmap,bool)
 DO_DISPLAY_PROP_PRIME(pedantic_bitmap_caching,PedanticBitmapCaching,bool)
+DO_DISPLAY_PROP_PRIME(respect_scroll_rect_extent,RespectScrollRectExtent,bool)
 DO_DISPLAY_PROP_PRIME(pixel_snapping,PixelSnapping,int)
 DO_DISPLAY_PROP_PRIME(visible,Visible,bool)
 #if 1
