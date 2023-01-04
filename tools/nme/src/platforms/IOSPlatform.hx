@@ -49,10 +49,10 @@ class IOSPlatform extends Platform
       var architectures = project.architectures;
       var config = project.iosConfig;
       var deployment = Std.parseFloat(config.deployment);
-      if ( deployment<9 && project.watchProject!=null)
+      if ( deployment<11 && project.watchProject!=null)
       {
-         deployment = 9;
-         config.deployment="9.0";
+         deployment = 11;
+         config.deployment="11.0";
       }
       if (config.sourceFlavour=="mm")
          project.haxeflags.push("-D objc");
