@@ -4723,6 +4723,7 @@ void nme_bitmap_data_get_uints8(value inSurface, value inData, int inOffset, int
 DEFINE_PRIME6v(nme_bitmap_data_get_uints8);
 
 
+
 void nme_bitmap_data_set_uints8(value inSurface, value inData, int inOffset, int inStride,
        int inPixelFormat, int inExpand)
 {

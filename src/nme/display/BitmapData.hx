@@ -342,7 +342,7 @@ class BitmapData implements IBitmapDrawable
    // use getData instead
    inline public function getUInts8(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
            pixelFormat:Int, subSample:Int = 1)
-        getData(dataHandle, dataOffset, dataStride, pixelFormat, subSample);
+        getData(dataHandle, pixelFormat, dataOffset, dataStride, subSample);
 
    // Set the pixels from a (region) of a byte buffer of given pixel format.
    // Pixel conversion between non-float types will take place (eg, pfLuma -> pfRGB)
@@ -359,7 +359,7 @@ class BitmapData implements IBitmapDrawable
  
    // use setData instead
    inline public function setUInts8(dataHandle:Dynamic, dataOffset:Int, dataStride:Int, pixelFormat:Int, expand=1)
-       setData(dataOffset, pixelFormat, dataOffset, dataStride, expand);
+       setData(dataHandle, pixelFormat, dataOffset, dataStride, expand);
 
 
 
