@@ -4697,7 +4697,22 @@ void nme_bitmap_data_get_uints8(value inSurface, value inData, int inOffset, int
    if (AbstractToObject(inSurface,surf))
    {
       #ifndef EMSCRIPTEN
-      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
+      Uint8 *data = (Uint8 *)val_data(inData);
+      if (!data)
+         data = (Uint8 *)val_array_int(inData);
+      if (!data)
+      {
+         nme::CffiBytes bytes = nme::getByteData(inData);
+         data = bytes.data;
+      }
+
+      if (!data)
+      {
+         ByteArray buffer(inData);
+         data = buffer.Bytes();
+      }
+
+
       if (data)
       {
          surf->getUInts8((data + inOffset), inStride, (PixelFormat)inPixelFormat, inSubsample);
@@ -4715,16 +4730,24 @@ void nme_bitmap_data_set_uints8(value inSurface, value inData, int inOffset, int
    if (AbstractToObject(inSurface,surf))
    {
       #ifndef EMSCRIPTEN
-      unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
+      Uint8 *data = (Uint8 *)val_data(inData);
+      if (!data)
+         data = (Uint8 *)val_array_int(inData);
+      if (!data)
+      {
+         nme::CffiBytes bytes = nme::getByteData(inData);
+         data = bytes.data;
+      }
+
+      if (!data)
+      {
+         ByteArray buffer(inData);
+         data = buffer.Bytes();
+      }
+
       if (data)
-      {
          surf->setUInts8((data + inOffset), inStride, (PixelFormat)inPixelFormat, inExpand);
-      }
-      else
-      {
-         ByteArray bytes(inData);
-         surf->setUInts8((bytes.Bytes() + inOffset), inStride, (PixelFormat)inPixelFormat, inExpand);
-      }
+
       #endif
    }
 }

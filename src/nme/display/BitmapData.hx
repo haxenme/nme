@@ -120,13 +120,13 @@ class BitmapData implements IBitmapDrawable
 
    public static function createUInt16(width:Int, height:Int) : BitmapData
    {
-      return new BitmapData(width, height, PixelFormat.pfUInt16, 0);
+      return new BitmapData(width, height, false, null, PixelFormat.pfUInt16);
    }
 
 
    public static function createUInt32(width:Int, height:Int) : BitmapData
    {
-      return new BitmapData(width, height, PixelFormat.pfUInt32, 0);
+      return new BitmapData(width, height, false, null, PixelFormat.pfUInt32);
    }
 
 
@@ -316,16 +316,52 @@ class BitmapData implements IBitmapDrawable
       return UInt8Array.fromBytes( getPixels() );
    }
 
-   public function getUInts8(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
-           pixelFormat:Int, subSample:Int = 1)
+   // Get the pixels and fill  a (region) of a byte buffer of given pixel format.
+   // The buffer should be allocated with enough room to hold the data
+   // Pixel conversion between non-float types will take place (eg, pfLuma -> pfRGB)
+   // dataHandle may be:
+   //   * A handle from an external function generating "data" abstract data,
+   //        or from a cpp.Pointer
+   //   * nme.utils.ByteArray or haxe byte Array
+   //   * Array<Int>
+
+   public function getData(dataHandle:Dynamic, inPixelFormat=-1, dataOffset=0, dataStride=0, subSample = 1)
    {
-      nme_bitmap_data_get_uints8(nmeHandle,dataHandle, dataOffset, dataStride, pixelFormat, subSample);
+      var pf:Int = inPixelFormat==-1 ? format : inPixelFormat;
+      nme_bitmap_data_get_uints8(nmeHandle,dataHandle, dataOffset, dataStride, pf, subSample);
+   }
+   public function getBytes(inPixelFormat:Int=-1) : ByteArray
+   {
+      var pf:Int = inPixelFormat==-1 ? format : inPixelFormat;
+      var size = width * height * PixelFormat.getPixelSize(pf);
+      var result = new ByteArray(size);
+      getData(result,pf);
+      return result;
    }
 
-   public function setUInts8(dataHandle:Dynamic, dataOffset:Int, dataStride:Int, pixelFormat:Int, expand=1)
+   // use getData instead
+   inline public function getUInts8(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
+           pixelFormat:Int, subSample:Int = 1)
+        getData(dataHandle, dataOffset, dataStride, pixelFormat, subSample);
+
+   // Set the pixels from a (region) of a byte buffer of given pixel format.
+   // Pixel conversion between non-float types will take place (eg, pfLuma -> pfRGB)
+   // dataHandle may be:
+   //   * A handle from an external function generating "data" abstract data,
+   //   * From a cpp.Pointer (eg: setData(Pointer.ofArray(array)) )
+   //   * nme.utils.ByteArray or haxe ByteArray
+   //   * Array<Int>
+   public function setData(dataHandle:Dynamic, inPixelFormat=-1, dataOffset=0, dataStride=0, expand=1)
    {
-      nme_bitmap_data_set_uints8(nmeHandle,dataHandle, dataOffset, dataStride, pixelFormat, expand);
+      var pf:Int = inPixelFormat==-1 ? format : inPixelFormat;
+      nme_bitmap_data_set_uints8(nmeHandle,dataHandle, dataOffset, dataStride, pf, expand);
    }
+ 
+   // use setData instead
+   inline public function setUInts8(dataHandle:Dynamic, dataOffset:Int, dataStride:Int, pixelFormat:Int, expand=1)
+       setData(dataOffset, pixelFormat, dataOffset, dataStride, expand);
+
+
 
    public function getFloats32(dataHandle:Dynamic, dataOffset:Int, dataStride:Int,
            pixelFormat:Int, transform:Int, subSample:Int = 1, ?subrect:Rectangle)

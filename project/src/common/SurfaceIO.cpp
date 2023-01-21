@@ -116,6 +116,15 @@ struct MySrcManager
 
 
 namespace nme {
+
+static bool isLittleEndian()
+{
+   unsigned short val = 0;
+   *(unsigned char *)(&val) = 1;
+   return val==1;
+}
+
+
 bool SoftwareDecodeJPeg(unsigned char *inDest, int inWidth, int inHeight, const uint8 *inData,unsigned int inDataLen)
 {
    struct jpeg_decompress_struct cinfo;
@@ -477,22 +486,27 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
    bool has_alpha = color_type== PNG_COLOR_TYPE_GRAY_ALPHA ||
                     color_type==PNG_COLOR_TYPE_RGB_ALPHA ||
                     png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS);
-   
+
+   bool load16 = color_type== PNG_COLOR_TYPE_GRAY && bit_depth==16;
+   bool swap16 = isLittleEndian();
+
    /* Add filler (or alpha) byte (before/after each RGB triplet) */
    //png_set_expand(png_ptr);
    //png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
    //png_set_gray_1_2_4_to_8(png_ptr);
    png_set_palette_to_rgb(png_ptr);
-   png_set_gray_to_rgb(png_ptr);
+
+   if (!load16)
+      png_set_gray_to_rgb(png_ptr);
 
    // Stripping 16 bits per channel to 8 bits per channel.
-   if (bit_depth == 16)
+   if (!load16 && bit_depth == 16)
       png_set_strip_16(png_ptr);
 
    if (has_alpha)
       png_set_bgr(png_ptr);
 
-   result = new SimpleSurface(width,height, has_alpha ? pfBGRA : pfRGB);
+   result = new SimpleSurface(width,height, load16 ? pfUInt16 : has_alpha ? pfBGRA : pfRGB);
    result->IncRef();
    target = result->BeginRender(Rect(width,height));
    
@@ -505,6 +519,16 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
       {
          png_bytep anAddr = (png_bytep) target.Row(i);
          png_read_rows(png_ptr, (png_bytepp) &anAddr, NULL, 1);
+
+         if (swap16)
+         {
+            unsigned short *r = (unsigned short *)anAddr;
+            for(int x=0;x<width;x++)
+            {
+               int v = r[x];
+               r[x] = ((v>>8) & 0xff) | ( (v&0xff)<<8 );
+            }
+         }
       }
    }
 
@@ -548,12 +572,20 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
    int h = inSurface->Height();
 
    int bit_depth = 8;
+   bool swap16 = false;
    int color_type = PNG_COLOR_TYPE_RGB;
    bool swapBgr = false;
    PixelFormat color_format = pfRGB;
    PixelFormat srcFmt = inSurface->Format();
 
-   if (srcFmt==pfAlpha || srcFmt==pfLuma)
+   if (srcFmt==pfUInt16)
+   {
+      bit_depth = 16;
+      color_type = PNG_COLOR_TYPE_GRAY;
+      color_format = srcFmt;
+      swap16 = isLittleEndian();
+   }
+   else if (srcFmt==pfAlpha || srcFmt==pfLuma)
    {
       color_type = PNG_COLOR_TYPE_GRAY;
       color_format = srcFmt;
@@ -590,7 +622,24 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
 
    png_write_info(png_ptr, info_ptr);
 
-   if (srcFmt==color_format)
+   if (swap16)
+   {
+      QuickVec<unsigned short> row_data(w);
+
+      for(int y=0;y<h;y++)
+      {
+         unsigned short *buf = &row_data[0];
+         const unsigned short *src = (const unsigned short *)inSurface->Row(y);
+         for(int x=0;x<w;x++)
+         {
+            int v = src[x];
+            buf[x] = ((v>>8) & 0xff) | ( (v&0xff)<<8 );
+         }
+
+         png_write_rows(png_ptr, (png_bytepp)&buf, 1);
+      }
+   }
+   else if (srcFmt==color_format)
    {
       QuickVec<png_bytep> row_pointers(h);
       for(int y=0;y<h;y++)

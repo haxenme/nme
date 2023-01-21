@@ -48,5 +48,19 @@ class PixelFormat
       return 0;
    }
 
+   static public function getPixelSize(inFormat:Int) : Int
+   {
+      switch(inFormat)
+      {
+         case pfLuma, pfAlpha: return 1;
+         case pfLumaAlpha, pfUInt16: return 2;
+         case pfRGB: return 3;
+         case pfRGBA, pfBGRA, pfBGRPremA, pfRGBPremA, pfUInt32: return 4;
+         case pfRGBA32f, pfRGB32f: return 16;
+         default:
+            throw "Unknown pixel format size" + inFormat;
+      }
+      return 0;
+   }
 }
 

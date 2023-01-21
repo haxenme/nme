@@ -1291,6 +1291,7 @@ void SimpleSurface::setUInts8(const uint8 *inData, int inStride, PixelFormat inF
    // TODO - inExpand
    int pixelSize = BytesPerPixel(inFormat);
    int stride = inStride==0 ? pixelSize*mWidth : inStride;
+
    if (inFormat!=mPixelFormat)
    {
       PixelConvert(mWidth, mHeight,

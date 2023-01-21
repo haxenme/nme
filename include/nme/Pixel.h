@@ -284,9 +284,10 @@ struct AlphaPixel
 };
 
 
+template<typename PIXEL=Uint8>
 struct LumaPixel
 {
-   enum { pixelFormat =pfLuma };
+   enum { pixelFormat = sizeof(PIXEL)==4 ? pfUInt32 : sizeof(PIXEL)==2 ? pfUInt16 : pfLuma };
 
    inline LumaPixel() { }
 
@@ -301,8 +302,8 @@ struct LumaPixel
 
 
 
-   inline void setAlpha(Uint8 val) { }
-   inline void setLuma(Uint8 val) { luma = val; }
+   inline void setAlpha(int val) { }
+   inline void setLuma(int val) { luma = val; }
 
    inline void setR(int val) { luma = val; }
    inline void setG(int val) { luma = val; }
@@ -313,7 +314,7 @@ struct LumaPixel
    inline void setBAlpha(int val) { luma = val; }
 
 
-   Uint8 luma;
+   PIXEL luma;
 };
 
 
@@ -485,8 +486,8 @@ inline void SetPixel(AlphaPixel &outA, const SRC &inSrc)
    outA.a = inSrc.getAlpha();
 }
 
-template<typename SRC>
-inline void SetPixel(LumaPixel &outLuma, const SRC &inSrc)
+template<typename SRC, typename PIXEL>
+inline void SetPixel(LumaPixel<PIXEL> &outLuma, const SRC &inSrc)
 {
    outLuma.luma = inSrc.getLuma();
 }
