@@ -4720,6 +4720,11 @@ void nme_bitmap_data_set_uints8(value inSurface, value inData, int inOffset, int
       {
          surf->setUInts8((data + inOffset), inStride, (PixelFormat)inPixelFormat, inExpand);
       }
+      else
+      {
+         ByteArray bytes(inData);
+         surf->setUInts8((bytes.Bytes() + inOffset), inStride, (PixelFormat)inPixelFormat, inExpand);
+      }
       #endif
    }
 }
