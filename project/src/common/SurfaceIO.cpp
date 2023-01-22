@@ -488,7 +488,7 @@ static Surface *TryPNG(FILE *inFile,const uint8 *inData, int inDataLen)
                     png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS);
 
    bool load16 = color_type== PNG_COLOR_TYPE_GRAY && bit_depth==16;
-   bool swap16 = isLittleEndian();
+   bool swap16 = load16 && isLittleEndian();
 
    /* Add filler (or alpha) byte (before/after each RGB triplet) */
    //png_set_expand(png_ptr);
