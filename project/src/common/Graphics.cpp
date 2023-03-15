@@ -154,7 +154,7 @@ void Graphics::drawRoundRect(float x,float  y,float  width,float  height,float  
 
    Flush();
 
-   float d = 0.55228;
+   float d = 1 - 0.55228;
 
    float x0 = x;
    float cx0 = x + d*rx;
