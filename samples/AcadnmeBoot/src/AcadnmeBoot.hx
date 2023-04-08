@@ -62,13 +62,15 @@ class AcadnmeBoot extends Screen implements IBoot
       Server.functions["reload"] =  reloadSync;
       defaultDir = getDefaultDir();
 
-      var pad = Skin.scale(2);
-      Skin.guiLight = 0xf0f0f0;
-      Skin.guiDark = 0xa0a0a0;
-      Skin.replaceAttribs("DialogTitle", {
+      var skin = new gm2d.skin.Skin(false);
+      var pad = skin.scale(2);
+      skin.guiLight = 0xf0f0f0;
+      skin.guiDark = 0xa0a0a0;
+      skin.init();
+      skin.replaceAttribs("DialogTitle", {
           align: Layout.AlignStretch | Layout.AlignCenterY,
           textAlign: "left",
-          fontSize: Skin.scale(20),
+          fontSize: skin.scale(20),
           padding: new Rectangle(pad,pad,pad*2,pad*2),
           shape: ShapeUnderlineRect,
           fill: FillSolid(0xffffff,1),
@@ -86,7 +88,7 @@ class AcadnmeBoot extends Screen implements IBoot
       var titleText = "Acadnme v" + nmeVersion;
 
       var accent = 0xFFF3E0;
-      titleBar.addWidget( new TextLabel(titleText,{ textColor:0xffffff, fontSize:Skin.scale(24), bold:true, align:Layout.AlignCenterX|Layout.AlignTop }) );
+      titleBar.addWidget( new TextLabel(titleText,{ textColor:0xffffff, fontSize:skin.scale(24), bold:true, align:Layout.AlignCenterX|Layout.AlignTop }) );
       titleBar.addWidget(new TextLabel(defaultDir,{ textColor:accent, align: Layout.AlignCenterY|Layout.AlignLeft }) );
 
 
@@ -136,8 +138,8 @@ class AcadnmeBoot extends Screen implements IBoot
 
    function createMenuIcon()
    {
-      var gap = Skin.scale(1);
-      var bar = Skin.scale(2);
+      var gap = Skin.getSkin().scale(1);
+      var bar = Skin.getSkin().scale(2);
       var size = gap * 6+bar*5;
       var bmp = new BitmapData(size,size, true, 0x0);
       var y = gap;
@@ -295,7 +297,7 @@ class AcadnmeBoot extends Screen implements IBoot
             var bmp:BitmapData = details.bmpIcon;
             if (bmp!=null && bmp.width>0 && bmp.height>0)
             {
-               var size = gm2d.skin.Skin.scale(48);
+               var size = gm2d.skin.Skin.getSkin().scale(48);
                var square = new BitmapData(size,size,true,0x00000000);
                var bitmapDraw = new Bitmap(bmp);
                var scale = new nme.geom.Matrix();
@@ -306,10 +308,14 @@ class AcadnmeBoot extends Screen implements IBoot
             }
          }
          else if (details.svgIcon!=null)
+         {
             bitmap = createSvgBmp( details.svgIcon );
+         }
 
          if (bitmap==null)
+         {
             bitmap = createSvgBmp( Assets.getString("default.svg") );
+         }
 
          var idx = 0;
          while(true)
@@ -517,12 +523,12 @@ class AcadnmeBoot extends Screen implements IBoot
          if (w==0 || h==0)
             return null;
 
-         var size = gm2d.skin.Skin.scale(48);
+         var size = Skin.getSkin().scale(48);
          var sx = size/w;
-         var sh = size/h;
-         var scale = Math.min(sx,sh);
-         var bmp = renderer.renderBitmap( new Rectangle(0,0,size/scale,size/scale), scale );
-         return new Image(bmp, { padding:3, wantsFocus:false } );
+         var sy = size/h;
+         var scale = Math.min(sx,sy);
+         var bmp = renderer.renderBitmap( new Rectangle(0,0,size,size), scale );
+         return new Image(bmp, { wantsFocus:false } );
       }
       catch(e:Dynamic) { }
       return null;
