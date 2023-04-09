@@ -78,5 +78,44 @@ jobs:
           name: windows-64-nme.ndll
           path: ndll/Windows64/nme.ndll
           
+  build_mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.3.0
+        
+      - name: Install haxelibs
+        run: |
+          haxe -version
+          haxelib install gm2d
+          haxelib install format
+          haxelib install nme-toolkit
+          haxelib install hxcpp
+          
+      - name: Build Tool
+        run: |
+          pwd
+          ls
+          cd tools/nme
+          haxe compile.hxml
+          
+      - name: Check XCode
+        run: xcode-select -p
+          
+      - name: Build Project
+        run: |
+          cd project
+          haxelib run hxcpp ToolkitBuild.xml -DHXCPP_M64
+          
+      - name: Archive Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-64-nme.ndll
+          path: ndll/Mac64/nme.ndll
+          
 
       
