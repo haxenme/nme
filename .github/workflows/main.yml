@@ -29,10 +29,19 @@ jobs:
           
       - name: Install SDL libraries
         run: |
-          sudo apt-get -y install libasound2-dev libpulse-dev  libaudio-dev libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libxcb-xinerama0-dev
+          sudo apt-get -y install libasound2-dev libpulse-dev  libaudio-dev libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
         
       - name: Build Project
         run: |
           cd project
           haxelib run hxcpp ToolkitBuild.xml
+          
+      - name: Archive Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-64-ndll
+          path: ndll/Linux64/nme.dll
+          
+          
+
       
