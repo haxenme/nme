@@ -19,13 +19,15 @@ jobs:
           haxelib install nme-toolkit
           haxelib install hxcpp
           
-      - run: |
+      - name: Build Tool
+        run: |
           pwd
           ls
-          cd nme/tools/nme
+          cd nme/tools
           haxe compile.hxml
-          
-      - run: |
+        
+      - name: Build project
+        run: |
           cd project
           haxelib run hxcpp ToolkitBuild.hxml
       
