@@ -1,0 +1,26 @@
+name: CI
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.3.0
+      - name: Install Haxelibs
+      - run: |
+          haxe -version
+          haxelib install gm2d
+          haxelib install format
+          haxelib install nme-toolkit
+          haxelib install hxcpp
+      - name: Build tool
+      - run: |
+          cd tools/nme
+          haxe compile.hxml
+      - name: Build Project
+      - run: |
+          cd project
+          haxelib run hxcpp ToolkitBuild.hxml
+      
