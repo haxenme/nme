@@ -5,20 +5,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - uses: krdlab/setup-haxe@v1
         with:
           haxe-version: 4.3.0
+          
       - run: |
           haxe -version
           haxelib install gm2d
           haxelib install format
           haxelib install nme-toolkit
           haxelib install hxcpp
+          
       - run: |
           pwd
           ls
-          cd tools\nme
+          cd nme/tools/nme
           haxe compile.hxml
+          
       - run: |
           cd project
           haxelib run hxcpp ToolkitBuild.hxml
