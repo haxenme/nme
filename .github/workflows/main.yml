@@ -23,7 +23,7 @@ jobs:
         run: |
           pwd
           ls
-          cd nme/tools
+          cd tools/nme
           haxe compile.hxml
         
       - name: Build project
