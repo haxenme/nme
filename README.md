@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/haxenme/nme.svg?branch=master)](https://travis-ci.org/haxenme/nme) [![Join the chat at https://gitter.im/haxenme/nme](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/haxenme/nme?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+![Build Status](https://github.com/haxenme/nme/actions/workflows/main.yml/badge.svg)
 
 <img src="./assets/icons/nme.svg" align="left" width="100" height="100" />
 

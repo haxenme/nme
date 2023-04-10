@@ -57,7 +57,7 @@ class Write
       var lines = [
            'package nme;',
            "class Version {",
-           '   public static inline var nme="$newVersion";',
+           '   public static inline var name="$newVersion";',
            "}"
       ];
       File.saveContent( "src/nme/Version.hx", lines.join("\n") );
