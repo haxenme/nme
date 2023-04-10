@@ -283,6 +283,7 @@
       </section>
 
       <section if="emscripten">
+         <compilerflag value="-sUSE_SDL=2"/>
          <file name="${SRC_DIR}/emscripten/System.cpp" />
          <file name="${SRC_DIR}/emscripten/JsPrime.cpp" if="HXCPP_JS_PRIME" />
 

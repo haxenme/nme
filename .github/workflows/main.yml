@@ -24,6 +24,9 @@ jobs:
           haxelib install hxcpp
           haxelib dev nme .
           
+      - name: Set Version
+        run: haxe -cp tools/version --run Write ${{github.run_number}} ${{github.sha}}
+
       - name: Build Tool
         run: |
           cd tools/nme
