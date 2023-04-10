@@ -1,4 +1,5 @@
 ![Build Status](https://github.com/haxenme/nme/actions/workflows/main.yml/badge.svg)
+![<img src="https://img.shields.io/discord/162395145352904705.svg?logo=discord" alt="Discord">](https://discordapp.com/invite/0uEuWH3spjck73Lo)
 
 <img src="./assets/icons/nme.svg" align="left" width="100" height="100" />
 
