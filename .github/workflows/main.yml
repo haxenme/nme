@@ -22,6 +22,7 @@ jobs:
           haxelib install format
           haxelib install nme-toolkit
           haxelib install hxcpp
+          haxelib dev nme .
           
       - name: Build Tool
         run: |
@@ -43,26 +44,66 @@ jobs:
           cd project
           haxelib run hxcpp ToolkitBuild.xml -DHXCPP_M64
           
+      - name: Prep Acadnme
+        run: |
+           cd acadnme
+           haxelib run nme cpp nocompile
+
+      - name: Boot Acadnme
+        run: |
+           cd samples/AcadnmeBoot
+           haxelib run nme cppia installer
+           
+      - name: Build Acadnme
+        run: |
+           cd acadnme
+           haxelib run nme cpp build -DHXCPP_M64
+           
+      - name: Setup Emscripten
+        if: startsWith(matrix.os,'ubuntu')
+        uses: mymindstorm/setup-emsdk@v11
+
+      - name: Build JSPRIME
+        if: startsWith(matrix.os,'ubuntu')
+        run: |
+          cd project
+          neko build.n jsprime
+        
+
       - name: Archive Linux Results
         if: startsWith(matrix.os,'ubuntu')
         uses: actions/upload-artifact@v3
         with:
-          name: linux-64-nme.ndll
-          path: ndll/Linux64/nme.ndll
+          name: linux-64
+          path: |
+             ndll/Linux64/nme.ndll
+             bin/Linux/Acadnme
+             ndll/Emscripten/nme.js
+             ndll/Emscripten/nme.js.mem
+             ndll/Emscripten/nmeclasses.js
+             ndll/Emscripten/preloader.js
+             ndll/Emscripten/parsenme.js
+             ndll/Emscripten/export_classes.info
+             src/cppia/export_classes.info
+             
                     
       - name: Archive Windows Results
         if: startsWith(matrix.os,'windows')
         uses: actions/upload-artifact@v3
         with:
-          name: windows-64-nme.ndll
-          path: ndll/Windows64/nme.ndll
+          name: windows-64
+          path: |
+            ndll/Windows64/nme.ndll
+            bin/Windows/Acadnme/Acadnme.exe
 
       - name: Archive Mac Results
         if: startsWith(matrix.os,'macos')
         uses: actions/upload-artifact@v3
         with:
-          name: mac-64-nme.ndll
-          path: ndll/Mac64/nme.ndll
+          name: mac-64
+          path: |
+            ndll/Mac64/nme.ndll
+            bin/Mac/Acadnme.app
           
 
       
