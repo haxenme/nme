@@ -2,8 +2,11 @@ name: CI
 on: [push]
 
 jobs:
-  build_linux:
-    runs-on: ubuntu-latest
+ build_matrix:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -22,96 +25,40 @@ jobs:
           
       - name: Build Tool
         run: |
-          pwd
-          ls
           cd tools/nme
           haxe compile.hxml
+
+        
+      - name: Check XCode
+        if: startsWith(matrix.os,'macos')
+        run: xcode-select -p
           
-      - name: Install SDL libraries
+      - name: APT Install SDL libraries
+        if: startsWith(matrix.os,'ubuntu')
         run: |
           sudo apt-get -y install libasound2-dev libpulse-dev  libaudio-dev libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
         
       - name: Build Project
         run: |
           cd project
-          haxelib run hxcpp ToolkitBuild.xml
+          haxelib run hxcpp ToolkitBuild.xml -DHXCPP_M64
           
-      - name: Archive Results
+      - name: Archive Linux Results
+        if: startsWith(matrix.os,'ubuntu')
         uses: actions/upload-artifact@v3
         with:
           name: linux-64-nme.ndll
           path: ndll/Linux64/nme.ndll
-          
-  build_windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - uses: krdlab/setup-haxe@v1
-        with:
-          haxe-version: 4.3.0
-        
-      - name: Install haxelibs
-        run: |
-          haxe -version
-          haxelib install gm2d
-          haxelib install format
-          haxelib install nme-toolkit
-          haxelib install hxcpp
-          
-      - name: Build Tool
-        run: |
-          pwd
-          ls
-          cd tools/nme
-          haxe compile.hxml
-          
-      - name: Build Project
-        run: |
-          cd project
-          haxelib run hxcpp ToolkitBuild.xml -DHXCPP_M64
-          
-      - name: Archive Results
+                    
+      - name: Archive Windows Results
+        if: startsWith(matrix.os,'windows')
         uses: actions/upload-artifact@v3
         with:
           name: windows-64-nme.ndll
           path: ndll/Windows64/nme.ndll
-          
-  build_mac:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
 
-      - uses: krdlab/setup-haxe@v1
-        with:
-          haxe-version: 4.3.0
-        
-      - name: Install haxelibs
-        run: |
-          haxe -version
-          haxelib install gm2d
-          haxelib install format
-          haxelib install nme-toolkit
-          haxelib install hxcpp
-          
-      - name: Build Tool
-        run: |
-          pwd
-          ls
-          cd tools/nme
-          haxe compile.hxml
-          
-      - name: Check XCode
-        run: xcode-select -p
-          
-      - name: Build Project
-        run: |
-          cd project
-          haxelib run hxcpp ToolkitBuild.xml -DHXCPP_M64
-          
-      - name: Archive Results
+      - name: Archive Mac Results
+        if: startsWith(matrix.os,'macos')
         uses: actions/upload-artifact@v3
         with:
           name: mac-64-nme.ndll
