@@ -146,7 +146,7 @@ jobs:
         - name: Download Windows
           uses: actions/download-artifact@v3
           with:
-             name: windows64-64
+             name: windows-64
              path: nme
 
         - name: List Files
@@ -160,7 +160,7 @@ jobs:
 
         - name: Zip release
           run: |
-             mv nme nme-${{ enve.nme_release }}
+             mv nme nme-${{ env.nme_release }}
              zip nme-${{ env.nme_release }}.zip nme-${{ env.nme_release }} 
       
         - name: Create Release
