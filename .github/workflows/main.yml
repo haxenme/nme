@@ -25,11 +25,8 @@ jobs:
           haxelib dev nme .
           
       - name: Set Version
-        run: haxe -cp tools/version --run Write ${{github.run_number}} ${{github.sha}}
+        run: haxe -cp tools/version --run Write ${{github.run_number}} ${{github.sha}} > version.env
 
-      - name: Set Release
-        if: startsWith(matrix.os,'ubuntu')
-        run: haxe -cp tools/version --run Write ${{github.run_number}} ${{github.sha}} >> $GITHUB_ENV
 
       - name: Build Tool
         run: |
@@ -92,6 +89,7 @@ jobs:
              ndll/Emscripten/parsenme.js
              ndll/Emscripten/export_classes.info
              src/cppia/export_classes.info
+             version.env
              tools
              haxelib.json
              project
@@ -133,13 +131,37 @@ jobs:
     needs: build_matrix
     runs-on: ubuntu-latest
     steps:
-        - name: Download all workflow run artifacts
+        - name: Download Linux
           uses: actions/download-artifact@v3
           with:
-             path: nme-${{ env.nme_release }}
+             name: linux-64
+             path: nme
+
+        - name: Download Mac
+          uses: actions/download-artifact@v3
+          with:
+             name: mac64-64
+             path: nme
+
+        - name: Download Windows
+          uses: actions/download-artifact@v3
+          with:
+             name: windows64-64
+             path: nme
+
+        - name: List Files
+          run: ls -R
+
+        - name: Get Version
+          run: |
+             cat nme/version.env
+             cat nme/version.env >> $GITHUB_ENV
+             rm nme/version.env
 
         - name: Zip release
-          run: zip nme-${{ env.nme_release }}.zip nme-${{ env.nme_release }} 
+          run: |
+             mv nme nme-${{ enve.nme_release }}
+             zip nme-${{ env.nme_release }}.zip nme-${{ env.nme_release }} 
       
         - name: Create Release
           id: create_release
@@ -147,7 +169,7 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            tag_name: ${{ github.ref }}
+            tag_name: v${{ env.nme_release }}
             release_name: Release ${{ env.nme_release }}
             draft: false
             prerelease: false
