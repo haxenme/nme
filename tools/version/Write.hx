@@ -61,5 +61,7 @@ class Write
            "}"
       ];
       File.saveContent( "src/nme/Version.hx", lines.join("\n") );
+
+      Sys.println("nme_release=" + newVersion );
    }
 }
