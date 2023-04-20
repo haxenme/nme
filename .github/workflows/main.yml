@@ -135,19 +135,19 @@ jobs:
           uses: actions/download-artifact@v3
           with:
              name: linux-64
-             path: .
+             path: nme
 
         - name: Download Mac
           uses: actions/download-artifact@v3
           with:
              name: mac-64
-             path: .
+             path: nme
 
         - name: Download Windows
           uses: actions/download-artifact@v3
           with:
              name: windows-64
-             path: .
+             path: nme
 
         - name: List Files
           run: ls -R
