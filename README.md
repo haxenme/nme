@@ -1,5 +1,4 @@
 ![Build Status](https://github.com/haxenme/nme/actions/workflows/main.yml/badge.svg)
-![<img src="https://img.shields.io/discord/162395145352904705.svg?logo=discord" alt="Discord">](https://discordapp.com/invite/0uEuWH3spjck73Lo)
 
 <img src="./assets/icons/nme.svg" align="left" width="100" height="100" />
 
@@ -20,22 +19,29 @@ haxelib run nme setup
 
 To install a specific version
 
-1. Go to [NME Host](http://nmehost.com/nme)
-1. Download a version, for example nme-5.5.11.zip
-1. ```haxelib install ~/Downloads/nme-5.5.11.zip```
+1. Go to [the releases page](https://github.com/haxenme/nme/releases)
+1. Download a version, for example nme-6.3.24.zip
+1. ```haxelib install ~/Downloads/nme-6.3.24.zip```
 
 ### Building applications
 
+Create your own application, or clone a sample:
+
 ```
-cd nme/samples/DisplayingABitmap
-nme test neko
-nme test cpp
-nme test flash
-nme test mac
-nme test windows
-nme test android
-nme test webos
-nme test ios
+nme clone BunnyMark -v
+cd BunnyMark
+```
+
+Build and test your application with the different backends:
+```
+nme cpp
+nme cppia
+nme jsprime
+nme neko
+nme android
+
+nme update ios
+ -> Build + run from XCode
 ````
 
  > *Note:* `nme` is a shortcut to `haxelib run nme`

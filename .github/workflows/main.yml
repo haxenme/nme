@@ -72,7 +72,10 @@ jobs:
         run: |
           cd project
           neko build.n jsprime
-        
+
+      - name: Clean Project
+        run: |
+          rm -rf project/obj
 
       - name: Archive Linux Results
         if: startsWith(matrix.os,'ubuntu')
@@ -82,9 +85,10 @@ jobs:
           path: |
              ndll/Linux64/nme.ndll
              bin/Linux/Acadnme
+             ndll/Emscripten/nme.wasm
              ndll/Emscripten/nme.js
              ndll/Emscripten/nme.js.mem
-             ndll/Emscripten/nmeclasses.js
+             ndll/Emscripten/NmeClasses.js
              ndll/Emscripten/preloader.js
              ndll/Emscripten/parsenme.js
              ndll/Emscripten/export_classes.info

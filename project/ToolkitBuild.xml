@@ -573,6 +573,10 @@
          </section>
 
 
+         <section if="emscripten">
+            <vflag name="-s" value="EXPORTED_FUNCTIONS=['_malloc']" />
+         </section>
+
          <section if="android">
             <lib name="-ldl" />
             <lib name="-landroid" />
