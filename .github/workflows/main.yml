@@ -74,8 +74,10 @@ jobs:
           neko build.n jsprime
 
       - name: Clean Project
+        if: startsWith(matrix.os,'ubuntu')
         run: |
           rm -rf project/obj
+          rm -rf acadnme/bin
 
       - name: Archive Linux Results
         if: startsWith(matrix.os,'ubuntu')
