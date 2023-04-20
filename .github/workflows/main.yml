@@ -161,7 +161,7 @@ jobs:
         - name: Zip release
           run: |
              mv nme nme-${{ env.nme_release }}
-             zip nme-${{ env.nme_release }}.zip nme-${{ env.nme_release }} 
+             zip -r nme-${{ env.nme_release }}.zip nme-${{ env.nme_release }} 
       
         - name: Create Release
           id: create_release
