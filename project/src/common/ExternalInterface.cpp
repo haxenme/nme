@@ -4722,6 +4722,18 @@ void nme_bitmap_data_get_uints8(value inSurface, value inData, int inOffset, int
 }
 DEFINE_PRIME6v(nme_bitmap_data_get_uints8);
 
+value nme_bitmap_data_get_data_handle(value inSurface)
+{
+   Surface *surf;
+   if (AbstractToObject(inSurface,surf))
+   {
+      const void *base = surf->GetBase();
+      if (base)
+         return alloc_abstract(gDataPointer,(void *)base);
+   }
+   return alloc_null();
+}
+DEFINE_PRIME1(nme_bitmap_data_get_data_handle);
 
 
 void nme_bitmap_data_set_uints8(value inSurface, value inData, int inOffset, int inStride,

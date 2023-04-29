@@ -330,6 +330,16 @@ class BitmapData implements IBitmapDrawable
       var pf:Int = inPixelFormat==-1 ? format : inPixelFormat;
       nme_bitmap_data_get_uints8(nmeHandle,dataHandle, dataOffset, dataStride, pf, subSample);
    }
+
+   // Get raw pointer to image data - you can use Pointer.fromHandle(...);
+   public function getDataHandle() : Dynamic
+   {
+      return nme_bitmap_data_get_data_handle(nmeHandle);
+   }
+
+
+
+
    public function getBytes(inPixelFormat:Int=-1) : ByteArray
    {
       var pf:Int = inPixelFormat==-1 ? format : inPixelFormat;
@@ -845,6 +855,7 @@ class BitmapData implements IBitmapDrawable
    private static var nme_bitmap_data_set_floats32 = PrimeLoader.load("nme_bitmap_data_set_floats32", "ooiiiiiov");
    private static var nme_bitmap_data_get_uints8 = PrimeLoader.load("nme_bitmap_data_get_uints8", "ooiiiiv");
    private static var nme_bitmap_data_set_uints8 = PrimeLoader.load("nme_bitmap_data_set_uints8", "ooiiiiv");
+   private static var nme_bitmap_data_get_data_handle = PrimeLoader.load("nme_bitmap_data_get_data_handle", "oo");
 }
 
 
