@@ -29,7 +29,7 @@ class ProgramTPosCol extends ProgramBase
    var clipped:Bool;
    var prog:GLProgram;
 
-   public function new(inVertices:Float32Array, inColours:Int32Array, inPrim:Int, inPrimCount:Int,inClipped=false)
+   public function new(inVertices:Float32Array, inColours:Int32Array, inPrim:Int, inPrimCount:Int,inClipped=false, pointSize=1.0)
    {
       super(inPrim, inPrimCount);
 
@@ -59,6 +59,14 @@ class ProgramTPosCol extends ProgramBase
               " pCol = col;" +
               " vec4 p4 = vec4(pos, 1.0);" +
               " gl_Position = mvp * p4;";
+
+         if (inPrim==GL.POINTS)
+         {
+            var val = "" + pointSize;
+            if (val.indexOf(".")<0)
+               val += ".0";
+            vertShader += " gl_PointSize = " + val + ";";
+         }
 
          if (clipped)
          {
