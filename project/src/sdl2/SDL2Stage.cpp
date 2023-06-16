@@ -2235,11 +2235,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
       
       if (inFlags & wfDepthBuffer)
-         #ifdef HX_MACOS
          SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24 );
-         #else
-         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32 - (inFlags & wfStencilBuffer) ? 8 : 0);
-         #endif
       
       if (inFlags & wfStencilBuffer)
          SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
