@@ -42,8 +42,8 @@
                <lib name="-luser32" />
                <lib name="-lkernel32" />
                <lib name="-ladvapi32" />
-               <lib name="${haxelib:nme}/project/support/windows/dxguid.lib"/>
                <lib name="-lwinmm" />
+               <lib name="${haxelib:nme}/project/support/windows/dxguid.lib"/>
                <lib name="-limm32"  />
                <lib name="-lole32" />
                <lib name="-loleaut32" />
@@ -60,7 +60,10 @@
                <lib name="user32.lib" />
                <lib name="kernel32.lib" />
                <lib name="advapi32.lib" />
-               <lib name="${haxelib:nme}/project/support/windows/dxguid.lib"/>
+               <lib name="${this_dir}/../support/windows/dxguid.lib" unless="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
+               <lib name="dxguid.lib" if="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
+               <lib name="Setupapi.lib" if="HXCPP_NO_WINXP_COMPAT || HXCPP_M64"/>
+               <lib name="d3d9.lib" />
                <lib name="winmm.lib" />
                <lib name="imm32.lib"  />
                <lib name="ole32.lib" />
