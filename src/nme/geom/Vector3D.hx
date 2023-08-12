@@ -30,6 +30,7 @@ class Vector3D
          x/=w;
          y/=w;
          z/=w;
+         w = 1.0;
       }
       return this;
    }
@@ -125,25 +126,41 @@ class Vector3D
       return l;
    }
 
-   inline public function project():Void 
+   inline public function project():Vector3D
    {
       x /= w;
       y /= w;
       z /= w;
+      w = 1.0;
+      return this;
    }
-   
-   inline public function setTo(xa:Float, ya:Float, za:Float):Void {
+
+   inline public function setTo(xa:Float, ya:Float, za:Float):Vector3D {
       x = xa;
       y = ya;
       z = za;
+      return this;
    }
 
-   inline public function scaleBy(s:Float):Void 
+   inline public function scaleBy(s:Float):Vector3D 
    {
       x *= s;
       y *= s;
       z *= s;
+      return this;
    }
+
+   public function scaled(s:Float):Vector3D 
+   {
+      return new Vector3D(x*s, y*s, z*s, 1);
+   }
+
+   public function addScaled(v:Vector3D, s:Float):Vector3D 
+   {
+      return new Vector3D(x + v.x*s, y + v.y*s, z + v.y*s, 1);
+   }
+
+
 
    inline public function subtract(a:Vector3D):Vector3D 
    {
