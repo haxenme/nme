@@ -215,7 +215,7 @@ class StageVideo extends EventDispatcher
    public function nmeSetVolume(inVolume:Float)
    {
       if (nmeHandle!=null)
-        nme_sv_set_sound_transform(nmeHandle,inVolume,0);
+        nme_sv_set_sound_transform(nmeHandle,inVolume,0.0);
    }
 
    public function nmeGetBytesTotal( ) : Int
