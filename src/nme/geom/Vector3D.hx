@@ -157,7 +157,7 @@ class Vector3D
 
    public function addScaled(v:Vector3D, s:Float):Vector3D 
    {
-      return new Vector3D(x + v.x*s, y + v.y*s, z + v.y*s, 1);
+      return new Vector3D(x + v.x*s, y + v.y*s, z + v.z*s, 1);
    }
 
 
