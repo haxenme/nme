@@ -4133,6 +4133,31 @@ TEXT_PROP_PRIME(max_chars,MaxChars,int);
 TEXT_PROP_GET_IDX(line_text,LineText,alloc_wstring);
 TEXT_PROP_GET_IDX_PRIME(line_offset,LineOffset,int);
 
+struct ValueAppDataCallback : public IAppDataCallback
+{
+   value cbValue;
+
+   ValueAppDataCallback(value inValue) : cbValue(inValue) { }
+
+   IAppDataCallback *get()
+   {
+      if (val_is_null(cbValue))
+         return nullptr;
+      return this;
+   }
+
+   void onAppData(int marker, const uint8 *inBytes,int inLen )
+   {
+      ByteArray byteArray(inLen);
+      uint8 *bytes = byteArray.Bytes();
+      if (bytes)
+         memcpy(bytes, inBytes, inLen);
+      val_call2( cbValue, alloc_int(marker), byteArray.mValue );
+   }
+
+};
+
+
 
 value nme_bitmap_data_create(int width, int height, int pixelFormat, int fillValue, bool bFill)
 {
@@ -4246,9 +4271,11 @@ void nme_bitmap_data_fill(value inHandle, value inRect, int inRGB, int inA)
 DEFINE_PRIME4v(nme_bitmap_data_fill);
 
 
-value nme_bitmap_data_load(value inFilename, value format)
+value nme_bitmap_data_load(value inFilename, value format, value inOnAppData)
 {
-   Surface *surface = Surface::Load(val_os_string(inFilename));
+   ValueAppDataCallback cb(inOnAppData);
+
+   Surface *surface = Surface::Load(val_os_string(inFilename), cb.get());
    if (surface)
    {
       PixelFormat targetFormat = (PixelFormat)val_int(format);
@@ -4261,7 +4288,7 @@ value nme_bitmap_data_load(value inFilename, value format)
    }
    return alloc_null();
 }
-DEFINE_PRIM(nme_bitmap_data_load,2);
+DEFINE_PRIME3(nme_bitmap_data_load);
 
 
 void nme_bitmap_data_set_format(value inHandle, int format, bool inConvert)
@@ -4294,15 +4321,15 @@ int nme_bitmap_data_get_format(value inHandle)
 DEFINE_PRIME1(nme_bitmap_data_get_format);
 
 
-value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
+value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes, value inOnAppData)
 {
    ByteData bytes;
    if (!FromValue(bytes,inRGBBytes))
       return alloc_null();
 
-   Surface *surface = Surface::LoadFromBytes(bytes.data,bytes.length);
-   
-   
+   ValueAppDataCallback cb(inOnAppData);
+   Surface *surface = Surface::LoadFromBytes(bytes.data,bytes.length, cb.get());
+
    if (surface)
    {
       if (!val_is_null(inAlphaBytes))
@@ -4334,7 +4361,7 @@ value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes)
 
    return alloc_null();
 }
-DEFINE_PRIME2(nme_bitmap_data_from_bytes);
+DEFINE_PRIME3(nme_bitmap_data_from_bytes);
 
 
 value nme_bitmap_data_encode(value inSurface, value inFormat,value inQuality)

@@ -250,9 +250,10 @@ class BitmapData implements IBitmapDrawable
       nme_render_surface_to_surface(inSurface, nmeHandle, matrix, colorTransform, blendIndex, clipRect, smoothing);
    }
    
-   private inline function nmeLoadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):Void 
+   private inline function nmeLoadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray,
+      ?onAppData:(Int, ByteArray)->Void) :Void 
    {
-      nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha);
+      nmeHandle = nme_bitmap_data_from_bytes(inBytes, inRawAlpha, onAppData);
    }
 
    public function scroll(inDX:Int, inDY:Int) 
@@ -749,10 +750,10 @@ class BitmapData implements IBitmapDrawable
       return p;
    }
 
-   public static function load(inFilename:String, format:Int = -1):BitmapData 
+   public static function load(inFilename:String, format:Int = -1, ?inOnMarker:(Int,ByteArray)->Void):BitmapData 
    {
       var result = new BitmapData(0, 0);
-      result.nmeHandle = nme_bitmap_data_load(inFilename, format);
+      result.nmeHandle = nme_bitmap_data_load(inFilename, format, inOnMarker);
       if (result.width<1 || result.height<1)
          return null;
       if (result.nmeHandle!=null && defaultMipmaps)
@@ -765,7 +766,7 @@ class BitmapData implements IBitmapDrawable
    public function save(inFilename:String, inQuality:Float = 0.9):Void
    {
       var ext = inFilename.length>3 ? inFilename.substr(inFilename.length-3).toLowerCase() : PNG;
-      if (ext=="jpg" || ext=="jpeg")
+      if (ext=="jpg" || ext=="peg")
          ext = JPG;
       else
          ext = PNG;
@@ -774,10 +775,10 @@ class BitmapData implements IBitmapDrawable
    }
    #end
 
-   public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray):BitmapData 
+   public static function loadFromBytes(inBytes:ByteArray, ?inRawAlpha:ByteArray, ?inOnMarker:(Int,ByteArray)->Void):BitmapData 
    {
       var result = new BitmapData(0, 0);
-      result.nmeLoadFromBytes(inBytes, inRawAlpha);
+      result.nmeLoadFromBytes(inBytes, inRawAlpha, inOnMarker);
       if (result.width<1 || result.height<1)
          return null;
       if (result.nmeHandle!=null && defaultMipmaps)
@@ -785,9 +786,9 @@ class BitmapData implements IBitmapDrawable
       return result;
    }
 
-   public static function loadFromHaxeBytes(inBytes:Bytes, ?inRawAlpha:Bytes)  : BitmapData
+   public static function loadFromHaxeBytes(inBytes:Bytes, ?inRawAlpha:Bytes,?inOnMarker:(Int,ByteArray)->Void)  : BitmapData
    {
-      return loadFromBytes(ByteArray.fromBytes(inBytes), inRawAlpha == null ? null : ByteArray.fromBytes(inRawAlpha));
+      return loadFromBytes(ByteArray.fromBytes(inBytes), inRawAlpha == null ? null : ByteArray.fromBytes(inRawAlpha), inOnMarker);
    }
 
    public function lock() 
@@ -809,8 +810,8 @@ class BitmapData implements IBitmapDrawable
    private static var nme_bitmap_data_apply_filter = PrimeLoader.load("nme_bitmap_data_apply_filter", "ooooov");
    private static var nme_bitmap_data_generate_filter_rect = PrimeLoader.load("nme_bitmap_data_generate_filter_rect", "ooov");
    private static var nme_bitmap_data_create = PrimeLoader.load("nme_bitmap_data_create", "iiiibo");
-   private static var nme_bitmap_data_load = nme.Loader.load("nme_bitmap_data_load", 2);
-   private static var nme_bitmap_data_from_bytes = PrimeLoader.load("nme_bitmap_data_from_bytes", "ooo");
+   private static var nme_bitmap_data_load = PrimeLoader.load("nme_bitmap_data_load", "oooo");
+   private static var nme_bitmap_data_from_bytes = PrimeLoader.load("nme_bitmap_data_from_bytes", "oooo");
    private static var nme_bitmap_data_clear = PrimeLoader.load("nme_bitmap_data_clear", "oiv");
    private static var nme_bitmap_data_clone = PrimeLoader.load("nme_bitmap_data_clone", "oo");
    //private static var nme_bitmap_data_apply_filter = nme.Loader.load("nme_bitmap_data_apply_filter", 5);

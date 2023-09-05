@@ -39,7 +39,7 @@ Surface *FromImage(UIImage *image)
 }
 
 
-Surface *Surface::Load(const OSChar *inFilename)
+Surface *Surface::Load(const OSChar *inFilename, IAppDataCallback *onAppData )
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     std::string asset = gAssetBase + inFilename;
@@ -54,7 +54,7 @@ Surface *Surface::Load(const OSChar *inFilename)
 }
 
 
-Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
+Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen,  IAppDataCallback *onAppData)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSData *data = [NSData dataWithBytes:(uint8 *)inBytes length:inLen];

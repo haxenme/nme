@@ -233,7 +233,7 @@ SDL_Surface *SurfaceToSDL(Surface *inSurface)
 
 
 #ifdef SDL_IMAGE
-Surface *Surface::Load(const OSChar *inFilename)
+Surface *Surface::Load(const OSChar *inFilename,  IAppDataCallback *onAppData)
 {
    #ifdef HX_WINDOWS
    char *filename = new char [wcslen(inFilename) + 1];
@@ -242,18 +242,18 @@ Surface *Surface::Load(const OSChar *inFilename)
    #else
    SDL_Surface *img = IMG_Load(inFilename);
    #endif
-   
+
    if (img != NULL)
    {
-     Surface *result = new SDLSurf(img, true);
+      Surface *result = new SDLSurf(img, true);
       result->IncRef();
       return result;
    }
-   
+
    return 0;
 }
 
-Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
+Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen, IAppDataCallback *onAppData=nullptr)
 {
    return 0;
 }

@@ -38,6 +38,11 @@ struct HwCallbackFrame
 typedef void (*I420Callback)(void *userData, HwCallbackFrame *inFrame);
 extern bool RpiHardwareDecodeJPeg(I420Callback inCallback, void *inUserData, const uint8 *inData, unsigned int inDataLen);
 
+struct IAppDataCallback
+{
+   virtual void onAppData(int marker, const uint8 *inBytes,int inLen ) = 0;
+};
+
 
 class Surface : public ImageBuffer
 {
@@ -46,8 +51,8 @@ public:
    Surface() : mTexture(0), mVersion(0), mFlags(surfNotRepeatIfNonPO2) { };
 
    // Implementation depends on platform.
-   static Surface *Load(const OSChar *inFilename);
-   static Surface *LoadFromBytes(const uint8 *inBytes,int inLen);
+   static Surface *Load(const OSChar *inFilename, IAppDataCallback *onAppData=nullptr);
+   static Surface *LoadFromBytes(const uint8 *inBytes,int inLen, IAppDataCallback *onAppData=nullptr);
    bool Encode( nme::ByteArray *outBytes,bool inPNG,double inQuality);
 
    Surface *IncRef() { mRefCount++; return this; }

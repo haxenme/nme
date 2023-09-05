@@ -195,11 +195,7 @@ bool SoftwareDecodeJPeg(unsigned char *inDest, int inWidth, int inHeight, const 
 }
 }
 
-
-
-
-
-static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
+static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen, IAppDataCallback *onAppData=nullptr)
 {
    struct jpeg_decompress_struct cinfo;
 
@@ -236,6 +232,18 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
       cinfo.src = &manager.pub;
    }
 
+   if (onAppData)
+   {
+      const int APP0  = 0xe0;
+      const int COM   = 0xfe;
+
+      cinfo.client_data = onAppData;
+      unsigned int bufSize = inDataLen>0 ? inDataLen : 1<<20;
+      jpeg_save_markers(&cinfo, COM, bufSize);
+      for(int i=0;i<15;i++)
+         jpeg_save_markers(&cinfo, APP0 + i, bufSize);
+   }
+
    // Read file parameters with jpeg_read_header().
    if (jpeg_read_header(&cinfo, TRUE)!=JPEG_HEADER_OK)
       return 0;
@@ -258,6 +266,16 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen)
       jpeg_read_scanlines(&cinfo, &dest, 1);
    }
    result->EndRender();
+
+   if (onAppData)
+   {
+      jpeg_saved_marker_ptr marker = cinfo.marker_list;
+      while(marker)
+      {
+         onAppData->onAppData(marker->marker, marker->data, marker->data_length);
+         marker = marker->next;
+      }
+   }
 
    // Finish decompression.
    jpeg_finish_decompress(&cinfo);
@@ -676,7 +694,7 @@ static bool EncodePNG(Surface *inSurface, ByteArray *outBytes)
 
 namespace nme {
 
-Surface *Surface::Load(const OSChar *inFilename)
+Surface *Surface::Load(const OSChar *inFilename, IAppDataCallback *onAppData)
 {
    FILE *file = OpenRead(inFilename);
    if (!file)
@@ -685,7 +703,7 @@ Surface *Surface::Load(const OSChar *inFilename)
       ByteArray bytes = AndroidGetAssetBytes(inFilename);
       if (bytes.Ok())
       {
-         Surface *result = LoadFromBytes(bytes.Bytes(), bytes.Size());
+         Surface *result = LoadFromBytes(bytes.Bytes(), bytes.Size(), onAppData);
          return result;
       }
 
@@ -714,7 +732,7 @@ Surface *Surface::Load(const OSChar *inFilename)
 
    if (jpegFirst)
    {
-      result = TryJPEG(file,0,0);
+      result = TryJPEG(file,0,0, onAppData);
       if (!result)
       {
          rewind(file);
@@ -727,7 +745,7 @@ Surface *Surface::Load(const OSChar *inFilename)
       if (!result)
       {
          rewind(file);
-         result = TryJPEG(file,0,0);
+         result = TryJPEG(file,0,0, onAppData);
       }
    }
    else
@@ -737,7 +755,7 @@ Surface *Surface::Load(const OSChar *inFilename)
       if (first==0xff)
       {
          rewind(file);
-         result = TryJPEG(file,0,0);
+         result = TryJPEG(file,0,0, onAppData);
       }
       else if (first==0x89)
       {
@@ -750,14 +768,14 @@ Surface *Surface::Load(const OSChar *inFilename)
    return result;
 }
 
-Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen)
+Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen, IAppDataCallback *onAppData)
 {
    if (!inBytes || !inLen)
       return 0;
 
    Surface *result = 0;
    if (*inBytes==0xff)
-      result = TryJPEG(0,inBytes,inLen);
+      result = TryJPEG(0,inBytes,inLen,onAppData);
    else if (*inBytes==0x89)
       result = TryPNG(0,inBytes,inLen);
 
@@ -774,4 +792,4 @@ bool Surface::Encode( ByteArray *outBytes,bool inPNG,double inQuality)
 }
 
 
-}
+} // end namespace NME
