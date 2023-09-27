@@ -11,7 +11,7 @@
 #import <QuartzCore/CADisplayLink.h>
 #import <CoreMotion/CMMotionManager.h>
 #import <MediaPlayer/MediaPlayer.h>
-
+#import <AVFoundation/AVFoundation.h>
 
 ::if NME_METAL::
 #define NME_METAL
