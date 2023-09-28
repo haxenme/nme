@@ -99,7 +99,8 @@
 
    <set name="NME_OPENAL" value="1" if="emscripten" />
 
-   <set name="NME_CAMERA" value="1" unless="emscripten||winrt" />
+   <!--   <set name="NME_CAMERA" value="1" unless="emscripten||winrt" />-->
+   <set name="NME_NO_CAMERA" value="1" />
 
    <!-- Built relative to "bin" -->
    <set name="NME_ROOT" value="" />
@@ -561,8 +562,8 @@
             <vflag name="-framework" value="OpenGL" if="NME_OGL" />
             <vflag name="-framework" value="AppKit" />
             <vflag name="-framework" value="OpenAL"/>
-            <vflag name="-framework" value="AVFoundation" if="NME_CAMERA"/>
-            <vflag name="-framework" value="CoreMedia" if="NME_CAMERA"/>
+            <vflag name="-framework" value="AVFoundation" />
+            <vflag name="-framework" value="CoreMedia" />
             <vflag name="-framework" value="CoreVideo" if="NME_CAMERA"/>
             <lib name="-liconv" />
          </section>

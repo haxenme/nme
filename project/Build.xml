@@ -441,7 +441,7 @@
             <vflag name="-framework" value="OpenGL" />
             <vflag name="-framework" value="AppKit" />
             <vflag name="-framework" value="OpenAL"/>
-            <vflag name="-framework" value="AVFoundation" if="NME_CAMERA"/>
+            <vflag name="-framework" value="AVFoundation" />
             <vflag name="-framework" value="CoreMedia" if="NME_CAMERA"/>
             <vflag name="-framework" value="CoreVideo" if="NME_CAMERA"/>
          </section>
