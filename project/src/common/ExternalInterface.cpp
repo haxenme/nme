@@ -4149,7 +4149,9 @@ struct ValueAppDataCallback : public IAppDataCallback
 
    void beginCallbacks()
    {
+      #ifndef HXCPP_JS_PRIME
       unblocked =  gc_try_unblocking();
+      #endif
    }
 
    void onAppData(int marker, const uint8 *inBytes,int inLen )
@@ -4170,8 +4172,10 @@ struct ValueAppDataCallback : public IAppDataCallback
 
    void endCallbacks()
    {
+      #ifndef HXCPP_JS_PRIME
       if (unblocked)
           gc_enter_blocking();
+      #endif
    }
 
 };
