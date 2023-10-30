@@ -40,7 +40,9 @@ extern bool RpiHardwareDecodeJPeg(I420Callback inCallback, void *inUserData, con
 
 struct IAppDataCallback
 {
+   virtual void beginCallbacks() = 0;
    virtual void onAppData(int marker, const uint8 *inBytes,int inLen ) = 0;
+   virtual void endCallbacks() = 0;
 };
 
 

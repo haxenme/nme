@@ -4136,8 +4136,9 @@ TEXT_PROP_GET_IDX_PRIME(line_offset,LineOffset,int);
 struct ValueAppDataCallback : public IAppDataCallback
 {
    value cbValue;
+   bool  unblocked;
 
-   ValueAppDataCallback(value inValue) : cbValue(inValue) { }
+   ValueAppDataCallback(value inValue) : cbValue(inValue), unblocked(false) { }
 
    IAppDataCallback *get()
    {
@@ -4146,13 +4147,31 @@ struct ValueAppDataCallback : public IAppDataCallback
       return this;
    }
 
+   void beginCallbacks()
+   {
+      unblocked =  gc_try_unblocking();
+   }
+
    void onAppData(int marker, const uint8 *inBytes,int inLen )
    {
       ByteArray byteArray(inLen);
       uint8 *bytes = byteArray.Bytes();
       if (bytes)
          memcpy(bytes, inBytes, inLen);
-      val_call2( cbValue, alloc_int(marker), byteArray.mValue );
+      try
+      {
+         val_call2( cbValue, alloc_int(marker), byteArray.mValue );
+      }
+      catch(...)
+      {
+         // Ignore?
+      }
+   }
+
+   void endCallbacks()
+   {
+      if (unblocked)
+          gc_enter_blocking();
    }
 
 };

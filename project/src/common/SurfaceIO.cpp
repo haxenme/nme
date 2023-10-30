@@ -270,10 +270,15 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen, IAppDat
    if (onAppData)
    {
       jpeg_saved_marker_ptr marker = cinfo.marker_list;
-      while(marker)
+      if (marker)
       {
-         onAppData->onAppData(marker->marker, marker->data, marker->data_length);
-         marker = marker->next;
+         onAppData->beginCallbacks();
+         while(marker)
+         {
+            onAppData->onAppData(marker->marker, marker->data, marker->data_length);
+            marker = marker->next;
+         }
+         onAppData->endCallbacks();
       }
    }
 
