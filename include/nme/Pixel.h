@@ -654,6 +654,24 @@ inline void BlendPixel(AlphaPixel &outA, const RGB &)
    outA.a = 255;
 }
 
+template<typename T>
+inline void BlendPixel( LumaPixel<Uint8> &outLuma, const T &inPixel)
+{
+   if (!inPixel.getAlpha())
+   {
+   }
+   else if (inPixel.getAlpha()==255)
+   {
+      outLuma.luma = inPixel.getLuma();
+   }
+   else
+   {
+      int a = inPixel.getAlpha();
+      int notA= 255-a;
+      outLuma.luma = (outLuma.luma*notA + inPixel.getLuma()*inPixel.getAlpha() + 128)>>8;
+   }
+}
+
 
 template<typename T>
 inline void BlendPixel(RGB &outRgb, const T &inPixel)
@@ -745,6 +763,16 @@ inline AlphaPixel BilinearInterp( AlphaPixel s00, AlphaPixel s01, AlphaPixel s10
    int ca_0 = s00.a + (((s01.a-s00.a)*x_frac) >> 16);
    int ca_1 = s10.a + (((s11.a-s10.a)*x_frac) >> 16);
    s.a = ca_0 + (((ca_1-ca_0)*y_frac) >> 16);
+   return s;
+}
+
+inline LumaPixel<Uint8> BilinearInterp( LumaPixel<Uint8> s00, LumaPixel<Uint8> s01, LumaPixel<Uint8> s10, LumaPixel<Uint8> s11, int x_frac, int y_frac)
+{
+   LumaPixel<Uint8> s;
+
+   int ca_0 = s00.luma + (((s01.luma-s00.luma)*x_frac) >> 16);
+   int ca_1 = s10.luma + (((s11.luma-s10.luma)*x_frac) >> 16);
+   s.luma = ca_0 + (((ca_1-ca_0)*y_frac) >> 16);
    return s;
 }
 

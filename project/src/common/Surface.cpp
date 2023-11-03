@@ -477,6 +477,9 @@ void TStretchSuraceTo(const SimpleSurface *inSurface, const RenderTarget &outTar
       case pfAlpha:
          TStretchTo<PIXEL,RGB>(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
          break;
+      case pfLuma:
+         TStretchTo<PIXEL, LumaPixel<Uint8> >(inSurface, outTarget, inSrcRect, inDestRect, inFlags);
+         break;
       default: ;
    }
 }
@@ -497,6 +500,9 @@ void SimpleSurface::StretchTo(const RenderTarget &outTarget,
          break;
       case pfAlpha:
          TStretchSuraceTo<RGB>(this, outTarget, inSrcRect, inDestRect,inFlags);
+         break;
+      case pfLuma:
+         TStretchSuraceTo< LumaPixel<Uint8> >(this, outTarget, inSrcRect, inDestRect,inFlags);
          break;
       default: ;
    }

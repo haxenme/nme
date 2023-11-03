@@ -339,7 +339,16 @@ void RenderBlend(const AlphaMask &inAlpha, SOURCE_ &inSource, const RenderTarget
          DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
          }
          break;
-      default: ;
+      case pfLuma:
+         {
+         DestSurface<LumaPixel<Uint8> > dest(inDest);
+         DestRender(inAlpha, inSource, dest, inBlend, inState, inTX, inTY);
+         }
+         break;
+
+      default:
+         //printf("Unknown poxel type\n");
+         ;
    }
 }
 
