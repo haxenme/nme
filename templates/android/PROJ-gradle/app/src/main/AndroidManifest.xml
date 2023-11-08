@@ -45,9 +45,9 @@
 
    </application>
 
-    <uses-sdk android:minSdkVersion="::ANDROID_MIN_API_LEVEL::"
-              android:targetSdkVersion="::ANDROID_TARGET_API_LEVEL::" />
-   
+    <!--<uses-sdk android:minSdkVersion="::ANDROID_MIN_API_LEVEL::"
+              android:targetSdkVersion="::ANDROID_TARGET_API_LEVEL::" />-->
+                 
    ::foreach appPermission:: <uses-permission android:name="::permission::" android:required="::required::" />
 ::end::
    <uses-permission android:name="android.permission.WAKE_LOCK" />

@@ -237,6 +237,10 @@ class HttpLoader
    public function getHeaders() : Array<String>
    {
       var headerMap = http.responseHeaders;
+      if (headerMap == null) {
+         onError("Header returns null");
+         return [""];
+      }
       return [ for(h in headerMap.keys()) h + ": " + headerMap.get(h) ];
    }
 
