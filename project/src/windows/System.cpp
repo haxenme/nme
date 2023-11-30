@@ -173,8 +173,33 @@ static unsigned __stdcall dialog_proc( void *inSpec )
       ofn.nMaxFile = path.size();
       ofn.lpstrDefExt = "*";
 
-      if (spec->defaultPath[0])
-         ofn.lpstrInitialDir = spec->defaultPath.c_str();
+      const char *path0 = spec->defaultPath.c_str();
+      if (*path0)
+      {
+         const char *lastWord = path0;
+         bool hasDot = false;
+         for(const char *p=lastWord; *p; p++)
+         {
+            if (*p=='\\' || *p=='/')
+            {
+               lastWord = p + 1;
+               hasDot = false;
+            }
+            else if (*p=='.')
+               hasDot = true;
+         }
+         if (lastWord && hasDot)
+         {
+            size_t len = spec->defaultPath.size();
+            memcpy(ofn.lpstrFile, spec->defaultPath.c_str(), len );
+            for(size_t i=0; i<len; i++)
+               if (ofn.lpstrFile[i]=='/')
+                  ofn.lpstrFile[i]='\\';
+            ofn.nFileOffset = (WORD)(lastWord-path0);
+         }
+         else
+            ofn.lpstrInitialDir = path0;
+      }
 
       bool result = (spec->flags & flagSave) ? GetSaveFileName(&ofn) : GetOpenFileName(&ofn);
       if (result)
