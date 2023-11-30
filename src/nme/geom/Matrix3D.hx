@@ -615,6 +615,14 @@ class Matrix3D
       }
    }
 
+   public function print()
+   {
+      Sys.println('[ $mxx $mxy $mxz | $tx ]');
+      Sys.println('[ $myx $myy $myz | $ty ]');
+      Sys.println('[ $mzx $mzy $mzz | $tz ]');
+      Sys.println('[ $mwx $mwy $mwz | $tw ]');
+   }
+
    inline public function transpose():Void 
    {
       var oRawData = rawData.copy();
