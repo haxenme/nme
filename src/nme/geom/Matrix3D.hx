@@ -88,6 +88,13 @@ class Matrix3D
       this.append(m);
    }
 
+   public function appendRadians(radians:Float, axis:Vector3D, ?pivotPoint:Vector3D):Matrix3D 
+   {
+      appendRotation( radians*180/Math.PI, axis, pivotPoint);
+      return this;
+   }
+
+
    inline public function appendScale(xScale:Float, yScale:Float, zScale:Float):Void 
    {
       this.append(new Matrix3D([xScale, 0.0, 0.0, 0.0, 0.0, yScale, 0.0, 0.0, 0.0, 0.0, zScale, 0.0, 0.0, 0.0, 0.0, 1.0]));

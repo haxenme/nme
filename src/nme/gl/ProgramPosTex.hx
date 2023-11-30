@@ -2,15 +2,13 @@ package nme.gl;
 import nme.display.BitmapData;
 import nme.utils.*;
 
-class ProgramPosTex
+class ProgramPosTex extends ProgramBase
 {
    var prog:GLProgram;
 
    var posLocation:Dynamic;
    var mvpLocation:Dynamic;
    var texLocation:Dynamic;
-   var primCount:Int;
-   var type:Int;
    public var posDims:Int;
    public var texDims:Int;
    var posBuffer:GLBuffer;
@@ -46,6 +44,7 @@ class ProgramPosTex
                        fragShader:String, samplerName:String,
                        inPosDims=2, ?inBitmap:BitmapData)
    {
+      super(GL.TRIANGLES, 0);
       prog = Utils.createProgram(vertShader,fragShader);
       posLocation = GL.getAttribLocation(prog, posName);
       texLocation = GL.getAttribLocation(prog, texName);
@@ -55,7 +54,7 @@ class ProgramPosTex
       posDims = inPosDims;
       texDims = 2;
       bitmap = inBitmap;
-      trace("-------------------- mvpLocation : " + mvpLocation);
+      //trace("-------------------- mvpLocation : " + mvpLocation);
       if (bitmap==null)
       {
          createTexture();
@@ -74,7 +73,7 @@ class ProgramPosTex
    public function setPosTex( pos:Array<Float>, texCoords:Array<Float>, inPrims:Int, inType:Int)
    {
       primCount = inPrims;
-      type = inType;
+      primType = inType;
 
       if (posBuffer==null)
          posBuffer = GL.createBuffer();
@@ -106,7 +105,7 @@ class ProgramPosTex
       GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 256, 256, 0, GL.RGBA, GL.UNSIGNED_BYTE, pixels);
    }
 
-   public function dispose()
+   override public function dispose()
    {
       GL.deleteBuffer(posBuffer);
       GL.deleteBuffer(texBuffer);
@@ -124,7 +123,7 @@ class ProgramPosTex
          GL.bindTexture(GL.TEXTURE_2D, texture);
    }
 
-   public function render(?mvp:Float32Array)
+   override public function render(mvp:Float32Array)
    {
       GL.useProgram(prog);
 
@@ -142,7 +141,7 @@ class ProgramPosTex
 
       GL.enableVertexAttribArray(posLocation);
       GL.enableVertexAttribArray(texLocation);
-      GL.drawArrays(type, 0, primCount);
+      GL.drawArrays(primType, 0, primCount);
       GL.disableVertexAttribArray(texLocation);
       GL.disableVertexAttribArray(posLocation);
    }
