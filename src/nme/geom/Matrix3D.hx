@@ -615,6 +615,7 @@ class Matrix3D
       }
    }
 
+   #if sys
    public function print()
    {
       Sys.println('[ $mxx $mxy $mxz | $tx ]');
@@ -622,6 +623,7 @@ class Matrix3D
       Sys.println('[ $mzx $mzy $mzz | $tz ]');
       Sys.println('[ $mwx $mwy $mwz | $tw ]');
    }
+   #end
 
    inline public function transpose():Void 
    {
