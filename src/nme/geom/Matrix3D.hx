@@ -77,15 +77,18 @@ class Matrix3D
 
    public function appendRotation(degrees:Float, axis:Vector3D, ?pivotPoint:Vector3D):Void 
    {
+      var p0 = pivotPoint==null ? null : transformVector(pivotPoint);
+
       var m = getAxisRotation(axis.x, axis.y, axis.z, degrees);
 
-      if (pivotPoint != null) 
+      this.append(m);
+
+      if (p0 != null) 
       {
-         var p = pivotPoint;
-         m.appendTranslation(p.x, p.y, p.z);
+         var p = transformVector(pivotPoint);
+         appendTranslation(p0.x-p.x, p0.y-p.y, p0.z-p.z);
       }
 
-      this.append(m);
    }
 
    public function appendRadians(radians:Float, axis:Vector3D, ?pivotPoint:Vector3D):Matrix3D 
@@ -344,6 +347,11 @@ class Matrix3D
       return vec;
    }
 
+   inline public function originTransform():Vector3D 
+   {
+      return new Vector3D( tx, ty, tz, tw );
+   }
+
    inline public function deltaTransformVector(v:Vector3D):Vector3D 
    {
       var x:Float = v.x, y:Float = v.y, z:Float = v.z;
@@ -457,6 +465,15 @@ class Matrix3D
 
       return invertable;
    }
+
+   public function inverse() : Matrix3D
+   {
+      var inv = clone();
+      if (inv.invert())
+         return inv;
+      return null;
+   }
+
 
    /*public function pointAt(pos:Vector3D, ?at:Vector3D, ?up:Vector3D):Void {
       if (at == null) at = new Vector3D(0,0,-1);
