@@ -3,6 +3,52 @@ package nme.geom;
 
 import nme.Vector;
 
+/*
+
+      [ 0  1  2  3  ]
+  m = [ 4  5  6  7  ]
+      [ 8  9  10 11 ]
+      [ 12 13 14 15 ]
+
+  transformVector -> vector is a row on the left, matrix is on the right
+
+   1x4 * 4x4 -> 1x4
+
+                          [ Vx Vy Vz 1 ] x [ 0  1  2  3  ]
+ V' = [V'x V'y V'z w ] =                   [ 4  5  6  7  ]
+                                           [ 8  9  10 11 ]
+                                           [ 12 13 14 15 ]
+
+  Appending a transform is transforming the result:
+
+ V" = Transform( V' )
+    = [ V ] x [ m ] x [ Transform ]
+    = [ V ] x  m.append(Transform)
+
+  Prepending a transform is transforming vector before the matrix
+
+ V" = Transform(V) x [ m ]
+    = V x [Transform] x [ m ]
+    = V x m.prepend(Transform)
+    = V x Transform.append(m)
+
+ A typical 3D pipeline has:
+  object vectors in its own cordinates (O),
+  then a placement matrix to move the object, P,
+  then a view matrix that depends on the eye position, view
+  then a projection matix that depends on field of view and screen aspect, proj
+
+ shaderPos = O x P x view x proj
+           = O x P x mvp
+
+  mvp = view.append(proj)
+  obj = mvp.prepend(P), or P.append(mvp)
+
+
+
+*/
+
+
 @:nativeProperty
 class Matrix3D 
 {
@@ -361,6 +407,17 @@ class Matrix3D
          (x * rawData[8] + y * rawData[9] + z * rawData[10] + rawData[11]),
       0);
    }
+
+   inline public function linearTransformVector(v:Vector3D):Vector3D 
+   {
+      var x:Float = v.x, y:Float = v.y, z:Float = v.z;
+      return new Vector3D(
+         x * rawData[0] + y * rawData[1] + z * rawData[2],
+         x * rawData[4] + y * rawData[5] + z * rawData[6],
+         x * rawData[8] + y * rawData[9] + z * rawData[10],
+      0);
+   }
+
 
    inline static public function getAxisRotation(x:Float, y:Float, z:Float, degrees:Float):Matrix3D 
    {
