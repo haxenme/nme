@@ -118,7 +118,7 @@ static unsigned __stdcall dialog_proc( void *inSpec )
             SHCreateItemFromParsingName(UTF8ToWide(spec->defaultPath).c_str(), 0, IID_IShellItem,(void **)&item);
             if (item)
             {
-               dlg->SetDefaultFolder(item);
+               dlg->SetFolder(item);
                item->Release();
             }
          }
