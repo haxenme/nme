@@ -647,15 +647,20 @@ class Platform
                 var signtool = project.getDef("SIGNTOOL");
                 if (signtool==null || signtool=="")
                 {
-                   Log.verbose("SIGNTOOL variale not found, assuming signtool.exe");
+                   Log.verbose("SIGNTOOL variable not found, assuming signtool.exe");
                    signtool = "signtool.exe";
                 }
                 var pfxPath = project.certificate.path;
                 var certificatePwd = project.certificate.password;
 
+                var signParams = ["sign", "/fd", "SHA256", "/a" ];
+                if (pfxPath!="<token>" && pfxPath!="" && pfxPath!=null)
+                    signParams = signParams.concat(["/f", pfxPath]);
+                if (certificatePwd!=null && certificatePwd!="")
+                    signParams = signParams.concat(["/p", certificatePwd]);
 
-                var signParams = ["sign", "/fd", "SHA256", "/a", "/f", pfxPath, "/p", certificatePwd,
-                   "/t", "http://timestamp.digicert.com", name];
+                signParams = signParams.concat([ "/t", "http://timestamp.digicert.com", name]);
+
                 ProcessHelper.runCommand("",signtool,signParams);
                 Log.verbose("signed installer");
              }
