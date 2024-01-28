@@ -2,15 +2,22 @@
 
 #define SWAP_RB 0
 
+#if (defined(ANDROID_X86) || ( defined(ANDROID) && defined(HXCPP_M64) && !defined(HXCPP_ARM64)))
+  #define ANDROID_SIM
+#endif
+
 // 0xAARRGGBB
 #if defined(ANDROID)
-   #ifdef ANDROID_X86
+   #ifdef ANDROID_SIM
       #undef SWAP_RB
       static bool SWAP_RB = false;
+      static bool SWAP_RB_MIP = false;
       static bool sFormatChecked = false;
    #endif
    static int ARGB_STORE = GL_BGRA_EXT;
    static int ARGB_PIXEL = GL_BGRA_EXT;
+   static int ARGB_STORE_MIP = GL_BGRA_EXT;
+   static int ARGB_PIXEL_MIP = GL_BGRA_EXT;
 #elif defined(EMSCRIPTEN) || defined(RASPBERRYPI) || defined(GCW0)
    #undef SWAP_RB
    #define SWAP_RB 1
@@ -84,16 +91,18 @@ bool NonPO2Supported(bool inNotRepeating)
 }
 
 
-#ifdef ANDROID_X86
+#ifdef ANDROID_SIM
 void checkRgbFormat()
 {
    sFormatChecked = true;
-   char data[4];
+   char data[4*16*16];
    glGetError();
    GLuint tid = 0;
    glGenTextures(1, &tid);
    glBindTexture(GL_TEXTURE_2D,tid);
-   glTexImage2D(GL_TEXTURE_2D, 0, ARGB_STORE, 1, 1, 0, ARGB_PIXEL, GL_UNSIGNED_BYTE, data);
+
+
+   glTexImage2D(GL_TEXTURE_2D, 0, ARGB_STORE, 4, 4, 0, ARGB_PIXEL, GL_UNSIGNED_BYTE, data);
    int err = glGetError();
    if (err)
    {
@@ -102,14 +111,32 @@ void checkRgbFormat()
       ARGB_PIXEL = /*GL_BGRA*/ 0x80E1;
 
       glTexImage2D(GL_TEXTURE_2D, 0, ARGB_STORE, 1, 1, 0, ARGB_PIXEL, GL_UNSIGNED_BYTE, data);
+
       if (glGetError())
       {
-         ELOG("Fall back to software colour transform");
+         ELOG("Fall back to software texture colour transform");
          ARGB_STORE = GL_RGBA;
          ARGB_PIXEL = GL_RGBA;
          SWAP_RB = true;
       }
    }
+
+   ARGB_STORE_MIP = ARGB_STORE;
+   ARGB_PIXEL_MIP = ARGB_PIXEL;
+   SWAP_RB_MIP = SWAP_RB;
+
+
+   glTexImage2D(GL_TEXTURE_2D, 0, ARGB_STORE, 4, 4, 0, ARGB_PIXEL, GL_UNSIGNED_BYTE, data);
+   glGenerateMipmap(GL_TEXTURE_2D);
+   err = glGetError();
+   if (err)
+   {
+      ELOG("Fall back to software texture colour transform for mipmaps");
+      ARGB_STORE_MIP = GL_RGBA;
+      ARGB_PIXEL_MIP = GL_RGBA;
+      SWAP_RB_MIP = true;
+   }
+
    glDeleteTextures(1,&tid);
    //else ELOG("Using normal texture format in simulator");
 }
@@ -120,13 +147,20 @@ void checkRgbFormat()
 // Type of storage.
 // OGLES says this should match the pixel transfer type, but extensions allow
 // the RGBA/BGRA swizzel to match the little-endian 4-byte layout
-GLenum getTextureStorage(PixelFormat pixelFormat)
+GLenum getTextureStorage(PixelFormat pixelFormat, bool mips)
 {
    switch(pixelFormat)
    {
+      #ifdef ANDROID_SIM
+      case pfRGB:  return gOglAllowRgb ? GL_RGB : mips ? ARGB_STORE_MIP : ARGB_STORE;
+      case pfBGRA:     return mips ? ARGB_STORE_MIP : ARGB_STORE;
+      case pfBGRPremA: return mips ? ARGB_STORE_MIP : ARGB_STORE;
+      #else
       case pfRGB:  return gOglAllowRgb ? GL_RGB : ARGB_STORE;
       case pfBGRA:     return ARGB_STORE;
       case pfBGRPremA: return ARGB_STORE;
+      #endif
+
       case pfAlpha: return GL_ALPHA;
       case pfARGB4444: return GL_RGBA; // GL_RGBA4
       case pfRGB565: return GL_RGB;
@@ -151,13 +185,20 @@ GLenum getOglChannelType(PixelFormat pixelFormat)
 
 
 // Transfer memory layout - in opengl enum
-GLenum getTransferOgl(PixelFormat pixelFormat)
+GLenum getTransferOgl(PixelFormat pixelFormat, bool mips)
 {
    switch(pixelFormat)
    {
+      #ifdef ANDROID_SIM
+      case pfRGB:  return gOglAllowRgb ? GL_RGB : mips ? ARGB_PIXEL_MIP : ARGB_PIXEL;
+      case pfBGRA:     return mips ? ARGB_PIXEL_MIP : ARGB_PIXEL;
+      case pfBGRPremA: return mips ? ARGB_PIXEL_MIP : ARGB_PIXEL;
+      #else
       case pfRGB:  return gOglAllowRgb ? GL_RGB : ARGB_PIXEL;
       case pfBGRA:     return ARGB_PIXEL;
       case pfBGRPremA: return ARGB_PIXEL;
+      #endif
+
       case pfAlpha: return GL_ALPHA;
       case pfARGB4444: return GL_UNSIGNED_SHORT_4_4_4_4;
       case pfRGB565: return GL_UNSIGNED_SHORT_5_6_5;
@@ -169,7 +210,7 @@ GLenum getTransferOgl(PixelFormat pixelFormat)
 }
 
 // Gpu memory layout - in our enum, may need to swizzle
-PixelFormat getTransferFormat(PixelFormat pixelFormat)
+PixelFormat getTransferFormat(PixelFormat pixelFormat, bool mips)
 {
    switch(pixelFormat)
    {
@@ -179,7 +220,11 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat)
          // Fallthough
 
       case pfBGRA:
+         #ifdef ANDROID_SIM
+         return (mips ? SWAP_RB_MIP : SWAP_RB) ? pfRGBA :pfBGRA;
+         #else
          return SWAP_RB ? pfRGBA :pfBGRA;
+         #endif
 
       case pfLuma:
       case pfAlpha:
@@ -190,7 +235,11 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat)
 
 
       case pfBGRPremA:
+         #ifdef ANDROID_SIM
+         return (mips ? SWAP_RB_MIP : SWAP_RB) ? pfRGBPremA :pfBGRPremA;
+         #else
          return SWAP_RB ? pfRGBPremA :pfBGRPremA;
+         #endif
 
       default: ;
    }
@@ -221,7 +270,7 @@ class OGLTexture : public Texture
 public:
    OGLTexture(Surface *inSurface,unsigned int inFlags)
    {
-      #ifdef ANDROID_X86
+      #ifdef ANDROID_SIM
       if (!sFormatChecked)
          checkRgbFormat();
       #endif
@@ -255,10 +304,11 @@ public:
       uint8 *buffer = 0;
       PixelFormat fmt = mSurface->Format();
 
-      GLuint store_format = getTextureStorage(fmt);
-      GLuint pixel_format = getTransferOgl(fmt);
-      PixelFormat buffer_format = getTransferFormat(fmt);
+      GLuint store_format = getTextureStorage(fmt,mMipmaps);
+      GLuint pixel_format = getTransferOgl(fmt,mMipmaps);
+      PixelFormat buffer_format = getTransferFormat(fmt,mMipmaps);
       GLenum channel= getOglChannelType(fmt);
+
 
       int pw = BytesPerPixel(fmt);
       int destPw = BytesPerPixel(buffer_format);
@@ -327,7 +377,16 @@ public:
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, mTextureWidth, mTextureHeight, 0, pixel_format, channel, buffer ? buffer : mSurface->GetBase());
 
       if (mMipmaps)
+      {
+         glGetError();
          glGenerateMipmap(GL_TEXTURE_2D);
+         int err = glGetError();
+         if (err)
+         {
+            ELOG("Error creating mipmaps @ %dx%d,%d/%d : %d\n", mTextureWidth, mTextureHeight, store_format,pixel_format,  err);
+            mMipmaps = false;
+         }
+      }
 
       mUploadedFormat = store_format;
 
@@ -372,7 +431,7 @@ public:
          uint8 *buffer = 0;
          PixelFormat fmt = mSurface->Format();
 
-         GLuint store_format = getTextureStorage(fmt);
+         GLuint store_format = getTextureStorage(fmt,mMipmaps);
          if (store_format!=mUploadedFormat)
          {
             CreateTexture();
@@ -381,8 +440,8 @@ public:
          {
             glBindTexture(GL_TEXTURE_2D,mTextureID);
 
-            GLuint pixel_format = getTransferOgl(fmt);
-            PixelFormat buffer_format = getTransferFormat(fmt);
+            GLuint pixel_format = getTransferOgl(fmt,mMipmaps);
+            PixelFormat buffer_format = getTransferFormat(fmt,mMipmaps);
             GLenum channel= getOglChannelType(fmt);
 
             int pw = BytesPerPixel(fmt);

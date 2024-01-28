@@ -11,15 +11,17 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 
 android {
+    namespace "::APP_PACKAGE::"
+
     ::if ANDROID_COMPILE_SDK_VERSION::
     compileSdkVersion ::ANDROID_COMPILE_SDK_VERSION::
     ::else::
     // This does not effect the output, only the gradle system and some warnings,
     //  so can be regularly updated
-    compileSdkVersion 28
+    compileSdkVersion 34
     ::end::
 
-    buildToolsVersion "28.0.3"
+    buildToolsVersion "34.0.0"
     defaultConfig {
         applicationId "::APP_PACKAGE::"
         minSdkVersion ::ANDROID_MIN_API_LEVEL::
@@ -56,7 +58,6 @@ android {
                 // stack traces in the Crashlytics dashboard.
                 nativeSymbolUploadEnabled true
 
-                strippedNativeLibsDir "::NME_STRIPPED_ROOT::"
                 unstrippedNativeLibsDir "::NME_UNSTRIPPED_ROOT::"
             }
             ::end::
@@ -93,7 +94,7 @@ dependencies {
     })
     // Support is in 'androidx.core' now
     ::if ANDROID_BILLING::
-    api 'com.android.billingclient:billing:2.1.0'
+    api 'com.android.billingclient:billing:6.0.1'
     ::end::
     testImplementation 'junit:junit:4.12'
 

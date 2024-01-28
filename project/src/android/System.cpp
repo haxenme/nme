@@ -179,7 +179,7 @@ namespace nme {
         jclass cls = FindClass("org/haxe/nme/GameActivity");
         jmethodID mid = env->GetStaticMethodID(cls, "getClipboardText", "()Ljava/lang/String;");
         if (mid == 0)
-            return std::string("").c_str();
+            return "";
 
         jstring jPref = (jstring) env->CallStaticObjectMethod(cls, mid);
         const char *c_ptr = env->GetStringUTFChars(jPref, 0);

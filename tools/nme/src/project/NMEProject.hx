@@ -124,6 +124,8 @@ class NMEProject
    public var ndlls:Array<NDLL>;
    public var icons:Array<Icon>;
    public var banners:Array<Icon>;
+   public var fgIcon:Icon;
+   public var bgIcon:Icon;
    public var fileAssociations:Array<FileAssociation>;
    public var splashScreens:Array<SplashScreen>;
    public var optionalStaticLink:Bool;

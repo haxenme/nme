@@ -288,15 +288,16 @@ implements SensorEventListener
     {
        activity.mBillingManager.destroy();
     }
-    public static void billingPurchase(String skuId, String billingType)
+    public static void billingPurchase(String productId, String billingType)
     {
-       activity.mBillingManager.initiatePurchaseFlow(skuId, billingType);
+       activity.mBillingManager.initiatePurchaseFlow(productId, billingType);
     }
     public static void billingAcknowledge(String purchaseToken)
     {
        activity.mBillingManager.acknowledgePurchase(purchaseToken);
     }
 
+/*
     public static JSONObject getSkuJson(com.android.billingclient.api.SkuDetails sku) throws JSONException
     {
        JSONObject obj= new JSONObject();
@@ -315,9 +316,11 @@ implements SensorEventListener
        obj.put("type", sku.getType() );
        return obj;
     }
+*/
 
     public static void billingQuery(String itemType, String[] skuArray, final HaxeObject onResult)
     {
+       /*
        activity.mBillingManager.querySkuDetailsAsync(itemType, java.util.Arrays.asList(skuArray),
           new com.android.billingclient.api.SkuDetailsResponseListener() {
              String result = "";
@@ -346,6 +349,7 @@ implements SensorEventListener
                       onResult.call2("onSkuDetails", code, skus);
                   } } );
              } } );
+        */
     }
 
     public static void billingConsume(String purchaseToken)
@@ -1215,7 +1219,7 @@ implements SensorEventListener
       ::if !ANDROIDVIEW::
       AlarmManager alm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
       alm.set(AlarmManager.RTC, System.currentTimeMillis() + 1000,
-          PendingIntent.getActivity(this, 0, new Intent(this, this.getClass()), 0));
+          PendingIntent.getActivity(this, 0, new Intent(this, this.getClass()), PendingIntent.FLAG_IMMUTABLE));
       ::end::
    }
 

@@ -24,18 +24,18 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.android.billingclient.api.BillingClient.FeatureType;
-import com.android.billingclient.api.BillingClient.SkuType;
+//import com.android.billingclient.api.BillingClient.SkuType;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.Purchase.PurchaseState;
-import com.android.billingclient.api.Purchase.PurchasesResult;
+//import com.android.billingclient.api.Purchase.PurchasesResult;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
+//import com.android.billingclient.api.SkuDetails;
+//import com.android.billingclient.api.SkuDetailsParams;
+//import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import java.io.IOException;
@@ -51,7 +51,7 @@ import org.json.JSONException;
 
 import android.text.TextUtils;
 import android.util.Base64;
-import com.android.billingclient.util.BillingHelper;
+//import com.android.billingclient.util.BillingHelper;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -123,6 +123,31 @@ public class BillingManager implements PurchasesUpdatedListener {
             @Override
             public void run() {
 
+            ::if ANDROID_INAPP_PRODUCT::
+            ImmutableList<Product> productList = ImmutableList.of(Product.newBuilder()
+                                            .setProductId("up_basic_sub")
+                                            .setProductType(ProductType.SUBS)
+                                            .build());
+
+             QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+                 .setProductList(productList)
+                 .build();
+             
+             mBillingClient.queryProductDetailsAsync(
+                params,
+                new ProductDetailsResponseListener() {
+                    public void onProductDetailsResponse(BillingResult billingResult,
+                        List<ProductDetails> productDetailsList) {
+                            int billingResponseCode = billingResult.getResponseCode();
+                            if (billingResponseCode == BillingResponseCode.OK) {
+                                // Process the result
+                            }
+                         }
+                });
+            ::end::
+
+
+        /*
                 Purchase.PurchasesResult resSubs = mBillingClient.queryPurchases(SkuType.SUBS);
                 Purchase.PurchasesResult resInApp = mBillingClient.queryPurchases(SkuType.INAPP);
 
@@ -157,6 +182,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                 // IAB is fully set up. Now, let's get an inventory of stuff we own.
                 //  - need an explicit billingQuery now
             }
+        */
         });
     }
 
@@ -206,8 +232,9 @@ public class BillingManager implements PurchasesUpdatedListener {
     /**
      * Start a purchase or subscription replace flow
      */
-    public void initiatePurchaseFlow(final String skuId, final String billingType)
+    public void initiatePurchaseFlow(final String productId, final String billingType)
     {
+       /*
        Runnable queryRequest = new Runnable() {
             @Override
             public void run() {
@@ -252,6 +279,7 @@ public class BillingManager implements PurchasesUpdatedListener {
         };
 
         executeServiceRequest(queryRequest);
+        */
     }
 
     public Context getContext() {
@@ -270,6 +298,7 @@ public class BillingManager implements PurchasesUpdatedListener {
         }
     }
 
+    /*
     public void querySkuDetailsAsync(@SkuType final String itemType, final List<String> skuList,
                                      final SkuDetailsResponseListener listener)
     {
@@ -294,6 +323,7 @@ public class BillingManager implements PurchasesUpdatedListener {
 
         executeServiceRequest(queryRequest);
     }
+    */
 
     public void consumeAsync(final String purchaseToken) {
         // If we've already scheduled to consume this token - no action is needed (this could happen
@@ -355,7 +385,7 @@ public class BillingManager implements PurchasesUpdatedListener {
        boolean valid = verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature());
 
        JSONObject obj= new JSONObject();
-       obj.put("sku", purchase.getSku() );
+       //obj.put("sku", purchase.getSku() );
        obj.put("valid", valid );
        obj.put("purchaseToken", purchase.getPurchaseToken() );
        obj.put("orderId", purchase.getOrderId() );
@@ -455,12 +485,13 @@ public class BillingManager implements PurchasesUpdatedListener {
     public static boolean verifyPurchaseInsecure(String base64PublicKey, String signedData,
             String signature) throws IOException {
         
+        /*
         if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey)
                 || TextUtils.isEmpty(signature)) {
             BillingHelper.logWarn(TAG, "Purchase verification failed: missing data.");
             return false;
         }
-
+        */
         PublicKey key = generatePublicKey(base64PublicKey);
         return verify(key, signedData, signature);
     }
@@ -482,7 +513,7 @@ public class BillingManager implements PurchasesUpdatedListener {
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
             String msg = "Invalid key specification: " + e;
-            BillingHelper.logWarn(TAG, msg);
+            //BillingHelper.logWarn(TAG, msg);
             throw new IOException(msg);
         }
     }
@@ -501,7 +532,7 @@ public class BillingManager implements PurchasesUpdatedListener {
         try {
             signatureBytes = Base64.decode(signature, Base64.DEFAULT);
         } catch (IllegalArgumentException e) {
-            BillingHelper.logWarn(TAG, "Base64 decoding failed.");
+            //BillingHelper.logWarn(TAG, "Base64 decoding failed.");
             return false;
         }
         try {
@@ -509,7 +540,7 @@ public class BillingManager implements PurchasesUpdatedListener {
             signatureAlgorithm.initVerify(publicKey);
             signatureAlgorithm.update(signedData.getBytes());
             if (!signatureAlgorithm.verify(signatureBytes)) {
-                BillingHelper.logWarn(TAG, "Signature verification failed.");
+                //BillingHelper.logWarn(TAG, "Signature verification failed.");
                 return false;
             }
             return true;
@@ -517,9 +548,9 @@ public class BillingManager implements PurchasesUpdatedListener {
             // "RSA" is guaranteed to be available.
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
-            BillingHelper.logWarn(TAG, "Invalid key specification.");
+            //BillingHelper.logWarn(TAG, "Invalid key specification.");
         } catch (SignatureException e) {
-            BillingHelper.logWarn(TAG, "Signature exception.");
+            //BillingHelper.logWarn(TAG, "Signature exception.");
         }
         return false;
     }

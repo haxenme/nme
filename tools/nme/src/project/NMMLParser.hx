@@ -12,6 +12,7 @@ import haxe.xml.Access;
 import sys.io.File;
 import sys.FileSystem;
 import NMEProject;
+import IconType;
 import platforms.Platform;
 import nme.AlphaMode;
 
@@ -917,6 +918,20 @@ class NMMLParser
 
                   if (element.has.height) 
                      icon.height = Std.parseInt(substitute(element.att.height));
+
+                  if (element.has.type) 
+                  {
+                     var type = substitute(element.att.type);
+                     switch(type)
+                     {
+                        case "normal": icon.type = IconNormal;
+                        case "fg": icon.type = IconFg;
+                        case "bg": icon.type = IconBg;
+                        case "mono": icon.type = IconMono;
+                        default:
+                           throw "Icon type should ne normal/fg/bg/mono";
+                     }
+                  }
 
                   if (element.name=="banner")
                      project.banners.push(icon);

@@ -530,6 +530,7 @@ class AndroidPlatform extends Platform
     
    private function queryDeviceABI():String {
       var lines = ProcessHelper.getOutput(adbName,"shell getprop ro.product.cpu.abi".split(' '), Log.mVerbose);
+      trace(lines);
       if(lines.length > 0) {
          if(lines[0].indexOf('error') == -1) {
             var abi = lines[0].split("\r")[0];
@@ -636,21 +637,38 @@ class AndroidPlatform extends Platform
       super.updateOutputDir();
 
       var destination = getAppDir();
-      PathHelper.mkdir(destination + "/res/drawable-ldpi/");
-      PathHelper.mkdir(destination + "/res/drawable-mdpi/");
-      PathHelper.mkdir(destination + "/res/drawable-hdpi/");
-      PathHelper.mkdir(destination + "/res/drawable-xhdpi/");
-      PathHelper.mkdir(destination + "/res/drawable-xxhdpi/");
-      PathHelper.mkdir(destination + "/res/drawable-xxxhdpi/");
+
+      PathHelper.mkdir(destination + "/res/mipmap-ldpi/");
+      PathHelper.mkdir(destination + "/res/mipmap-mdpi/");
+      PathHelper.mkdir(destination + "/res/mipmap-hdpi/");
+      PathHelper.mkdir(destination + "/res/mipmap-xhdpi/");
+      PathHelper.mkdir(destination + "/res/mipmap-xxhdpi/");
+      PathHelper.mkdir(destination + "/res/mipmap-xxxhdpi/");
+      PathHelper.mkdir(destination + "/res/mipmap-anydpi-v26/");
 
       var iconTypes = [ "ldpi", "mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi" ];
       var iconSizes = [ 36, 48, 72, 96, 144, 192 ];
 
+      var normalIcons = project.icons.filter( icon -> icon.type == IconNormal );
       for(i in 0...iconTypes.length) 
       {
-         if (IconHelper.createIcon(project.icons, iconSizes[i], iconSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/icon.png")) 
+         if (IconHelper.createIcon(normalIcons, iconSizes[i], iconSizes[i], destination + "/res/mipmap-" + iconTypes[i] + "/icon.png")) 
             context.HAS_ICON = true;
       }
+
+      var fgIcons = project.icons.filter( icon -> icon.type == IconFg );
+      var bgIcons = project.icons.filter( icon -> icon.type == IconBg );
+      if (fgIcons.length >0 && bgIcons.length>0)
+      {
+         for(i in 0...iconTypes.length) 
+         {
+            IconHelper.createIcon(fgIcons, iconSizes[i], iconSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/fg_icon.png"); 
+            IconHelper.createIcon(bgIcons, iconSizes[i], iconSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/bg_icon.png"); 
+         }
+
+         copyTemplate("android/adaptive_icon.xml", destination + "/res/mipmap-anydpi-v26/icon.xml");
+      }
+
 
       if (project.banners.length>0)
       {

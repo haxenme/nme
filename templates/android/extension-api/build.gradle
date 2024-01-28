@@ -1,11 +1,14 @@
 apply plugin: 'android-library'
 
 android {
+
+    namespace "org.haxe.extension"
+
     compileSdkVersion ::ANDROID_TARGET_SDK_VERSION::
     defaultConfig {
         targetSdkVersion ::ANDROID_TARGET_SDK_VERSION::
     }
-    buildToolsVersion "28.0.3"
+    buildToolsVersion "34.0.0"
 
     sourceSets {
         main {

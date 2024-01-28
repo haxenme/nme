@@ -402,13 +402,13 @@ public:
 
    void onBufferDone()
    {
-      HxAtomicDec(&activeBuffers);
+      __sync_fetch_and_sub(&activeBuffers,1);
    }
 
 
    std::vector<unsigned char> &allocBuffer()
    {
-      HxAtomicInc(&activeBuffers);
+       __sync_fetch_and_add(&activeBuffers,1);
       LOG_SOUND("Writing to buffer %d/%d", writeBuffer, activeBuffers);
       std::vector<unsigned char> & result = sampleBuffer[writeBuffer];
       writeBuffer = !writeBuffer;
@@ -672,7 +672,7 @@ public:
 
    void onBufferDone()
    {
-      HxAtomicDec(&activeBuffers);
+      __sync_fetch_and_sub(&activeBuffers,1);
       LOG_SOUND("onBufferDone -> %d", activeBuffers);
       if (!priming)
          streamBuffer();

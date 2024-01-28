@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="::ANDROID_INSTALL_LOCATION::" android:versionCode="::APP_BUILD_NUMBER::" android:versionName="::APP_VERSION::" package="::APP_PACKAGE::">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="::ANDROID_INSTALL_LOCATION::" android:versionCode="::APP_BUILD_NUMBER::" android:versionName="::APP_VERSION::" >
 
 	<application
        android:label="::APP_TITLE::"
