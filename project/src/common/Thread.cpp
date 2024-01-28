@@ -1,4 +1,6 @@
 #include <NMEThread.h>
+#include <hxcpp.h>
+#include <hx/StdLibs.h>
 
 namespace nme
 {
@@ -90,7 +92,7 @@ static THREAD_FUNC_TYPE SThreadLoop( void *inInfo )
 
       // Signal
       sThreadActive[threadId] = false;
-      if (HxAtomicDec(&gActiveThreads)==1)
+      if (_hx_atomic_dec(&gActiveThreads)==1)
       {
          #ifdef NME_PTHREADS
          NmeAutoMutex lock(sThreadPoolLock);

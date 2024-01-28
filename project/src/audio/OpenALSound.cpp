@@ -14,6 +14,8 @@
 #include <NMEThread.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <hxcpp.h>
+#include <hx/StdLibs.h>
 
 typedef unsigned char uint8;
 

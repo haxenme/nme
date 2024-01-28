@@ -8,6 +8,8 @@
 #include "Audio.h"
 #include <NMEThread.h>
 #include <dlfcn.h>
+#include <hxcpp.h>
+#include <hx/StdLibs.h>
 //#include <unistd.h>
 //#include <sys/time.h>
 
@@ -402,13 +404,13 @@ public:
 
    void onBufferDone()
    {
-      HxAtomicDec(&activeBuffers);
+      _hx_atomic_dec(&activeBuffers);
    }
 
 
    std::vector<unsigned char> &allocBuffer()
    {
-      HxAtomicInc(&activeBuffers);
+      _hx_atomic_inc(&activeBuffers);
       LOG_SOUND("Writing to buffer %d/%d", writeBuffer, activeBuffers);
       std::vector<unsigned char> & result = sampleBuffer[writeBuffer];
       writeBuffer = !writeBuffer;
@@ -672,7 +674,7 @@ public:
 
    void onBufferDone()
    {
-      HxAtomicDec(&activeBuffers);
+      _hx_atomic_dec(&activeBuffers);
       LOG_SOUND("onBufferDone -> %d", activeBuffers);
       if (!priming)
          streamBuffer();

@@ -2,6 +2,8 @@
 #define NME_THREAD_H
 
 #include <hx/Thread.h>
+#include <hxcpp.h>
+#include <hx/StdLibs.h>
 
 #ifndef HX_WINDOWS
 #include <pthread.h>
@@ -51,7 +53,7 @@ extern int GetWorkerCount();
 inline int GetNextTask()
 {
    #ifdef NME_WORKER_THREADS
-   return HxAtomicInc(&gTaskId);
+   return _hx_atomic_inc(&gTaskId);
    #else
    return gTaskId++;
    #endif
