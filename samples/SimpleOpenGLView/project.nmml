@@ -7,7 +7,6 @@
 	<source path="Source" />
 	
 	<haxelib name="nme" />
-	<haxelib name="actuate" />
 	
 	<assets path="Assets" rename="assets" exclude="nme.svg" />
 	<icon path="Assets/nme.svg" />
