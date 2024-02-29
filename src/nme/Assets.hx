@@ -489,6 +489,7 @@ class Assets
             i.isResource ?  new Font("",null,null,i.path,id) :  new Font(i.path,null,null,null,id);
          #end
 
+trace('$id -> $font');
       trySetCache(i,useCache,font);
 
       return font;

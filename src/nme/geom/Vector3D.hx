@@ -126,6 +126,27 @@ class Vector3D
       return l;
    }
 
+   inline public function normalized(inplace=false):Vector3D 
+   {
+      var l = length;
+      var invL = l==0 ? 1 : 1.0/l;
+      var result = this;
+      if (inplace)
+      {
+         x *= invL;
+         y *= invL;
+         z *= invL;
+      }
+      else
+      {
+         result = new Vector3D(x*invL, y*invL, z*invL);
+      }
+
+      return result;
+   }
+
+
+
    inline public function project():Vector3D
    {
       x /= w;

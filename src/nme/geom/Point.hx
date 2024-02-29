@@ -78,14 +78,37 @@ class Point
       if (x == 0 && y == 0) 
       {
          return;
-
-      } else 
+      }
+      else 
       {
          var norm = thickness / Math.sqrt(x * x + y * y);
          x *= norm;
          y *= norm;
       }
    }
+
+   inline public function dot(inPoint:Point):Float
+   {
+     return x*inPoint.x + y*inPoint.y;
+   }
+
+   inline public function normalized(inplace=false):Point
+   {
+      var result = this;
+      var len = x*x+y*y;
+      var scale  =  Math.abs(len)>1e-7 ? 1.0/len : 0.0;
+      if (inplace)
+      {
+         x *= scale;
+         y *= scale;
+      }
+      else 
+      {
+         result = new Point(x*scale, y*scale);
+      }
+      return result;
+   }
+
 
    public function offset(dx:Float, dy:Float):Void 
    {
