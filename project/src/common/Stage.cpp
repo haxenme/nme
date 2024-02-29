@@ -228,11 +228,15 @@ void Stage::HandleEvent(Event &inEvent)
 
    if (inEvent.type==etActivate)
    {
+      #ifdef NME_AUDIO
       Sound::Resume();
+      #endif
    }
    else if (inEvent.type==etDeactivate)
    {
+      #ifdef NME_AUDIO
       Sound::Suspend();
+      #endif
    }
 
    if (inEvent.type==etMouseMove || inEvent.type==etMouseDown ||

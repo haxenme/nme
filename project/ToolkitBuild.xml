@@ -66,7 +66,7 @@
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
-   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" />
+   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="NME_NO_AUDIO" />
 
    <!-- Use opengl backend ? -->
    <set name="NME_NO_OGL" if="winrt" unless="NME_ANGLE" />
@@ -221,6 +221,7 @@
       <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
       <compilerflag value="-DNME_OGL" if="NME_OGL" />
       <compilerflag value="-DNME_METAL" if="NME_METAL" />
+      <compilerflag value="-DNME_AUDIO" unless="NME_NO_AUDIO" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
 
       <cache value="1" unless="winrpi" />
@@ -267,7 +268,7 @@
          <file name="${SRC_DIR}/iPhone/System.mm"/>
          <file name="${SRC_DIR}/apple/Utils.mm"/>
          <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
-         <file name="${SRC_DIR}/audio/IosSound.mm"/>
+         <file name="${SRC_DIR}/audio/IosSound.mm" unless="NME_NO_AUDIO"/>
       </section>
 
       <section if="android">
@@ -278,7 +279,7 @@
          <file name="${SRC_DIR}/android/JNI.cpp"/>
          <file name="${SRC_DIR}/android/System.cpp"/>
          <file name="${SRC_DIR}/android/AndroidS3D.cpp" if="NME_S3D" />
-         <file name="${SRC_DIR}/audio/OpenSlSound.cpp" />
+         <file name="${SRC_DIR}/audio/OpenSlSound.cpp" unless="NME_NO_AUDIO" />
 
       </section>
 
@@ -364,7 +365,7 @@
       </section>
 
       <section if="NME_OPENAL">
-         <file name="${SRC_DIR}/audio/OpenALSound.cpp" />
+         <file name="${SRC_DIR}/audio/OpenALSound.cpp" unless="NME_NO_AUDIO" />
          <compilerflag value="-DNME_OPENAL" />
       </section>
 
@@ -411,7 +412,7 @@
 
       <file name="${SRC_DIR}/audio/Audio.cpp" />
       <file name="${SRC_DIR}/audio/ChannelList.cpp" />
-      <file name="${SRC_DIR}/audio/Sound.cpp" />
+      <file name="${SRC_DIR}/audio/Sound.cpp" unless="NME_NO_AUDIO" />
       
       <file name="${SRC_DIR}/common/XML/tinystr.cpp"/>
       <file name="${SRC_DIR}/common/XML/tinyxml.cpp"/>

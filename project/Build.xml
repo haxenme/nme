@@ -158,6 +158,7 @@
       <compilerflag value="-DSTATIC_LINK" if="NME_STATIC_LINK" />
       <compilerflag value="-DNME_CLIPPER" if="NME_CLIPPER" />
       <compilerflag value="-DNME_INTERNAL_CLIPPING" if="NME_INTERNAL_CLIPPING" />
+      <compilerflag value="-DNME_AUDIO" unless="NME_NO_AUDIO" />
 
       <cache value="1" />
 

@@ -2657,7 +2657,9 @@ void StopAnimation()
       Mix_CloseAudio();
    }
    #else
-   Sound::Shutdown();
+     #ifdef NME_AUDIO
+     Sound::Shutdown();
+     #endif
    #endif
    sgDead = true;
 }

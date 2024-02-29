@@ -2089,9 +2089,11 @@ DEFINE_PRIM(nme_sv_zoom, 3);
 
 value nme_sv_set_sound_transform(value inVideo,value a0, value a1)
 {
+   #ifdef NME_AUDIO
    StageVideo *video;
    if (AbstractToObject(inVideo,video))
       video->setSoundTransform(val_number(a0), val_number(a1));
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sv_set_sound_transform, 3);
@@ -2099,9 +2101,11 @@ DEFINE_PRIM(nme_sv_set_sound_transform, 3);
 
 value nme_sv_get_buffered_percent(value inVideo)
 {
+   #ifdef NME_AUDIO
    StageVideo *video;
    if (AbstractToObject(inVideo,video))
       return alloc_float(video->getBufferedPercent());
+   #endif
    return alloc_float(0);
 }
 DEFINE_PRIM(nme_sv_get_buffered_percent, 1);
@@ -5016,6 +5020,7 @@ DEFINE_PRIM(nme_video_set_smoothing,2);
 
 value nme_sound_from_file(value inFilename,value inForceMusic, value inEngine)
 {
+   #ifdef NME_AUDIO
    std::string engine = valToStdString(inEngine,false);
    Sound *sound = val_is_null(inFilename) ? 0 :
                   Sound::FromFile( valToStdString(inFilename).c_str(), val_bool(inForceMusic), engine );
@@ -5029,12 +5034,14 @@ value nme_sound_from_file(value inFilename,value inForceMusic, value inEngine)
       #endif
       return result;
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_from_file,3);
 
 value nme_sound_from_data(value inData, value inLen, value inForceMusic, value inEngine)
 {
+   #ifdef NME_AUDIO
    int length = val_int(inLen);
    Sound *sound;
   // printf("trying bytes with length %d", length);
@@ -5064,6 +5071,7 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic, value i
    {
       val_throw(alloc_string("No Sound"));
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_from_data, 4);
@@ -5075,6 +5083,7 @@ DEFINE_PRIM(nme_sound_from_data, 4);
 
 void nme_sound_get_id3(value inSound, value outVar)
 {
+   #ifdef NME_AUDIO
    Sound *sound;
    if (AbstractToObject(inSound,sound))
    {
@@ -5087,16 +5096,19 @@ void nme_sound_get_id3(value inSound, value outVar)
       GET_ID3("track")
       GET_ID3("year")
    }
+   #endif
 }
 DEFINE_PRIME2v(nme_sound_get_id3);
 
 
 void nme_sound_suspend(bool inSuspend,int inFlags)
 {
+   #ifdef NME_AUDIO
    if (inSuspend)
       Sound::Suspend((unsigned int)inFlags);
    else
       Sound::Resume((unsigned int)inFlags);
+   #endif
 }
 DEFINE_PRIME2v(nme_sound_suspend);
 
@@ -5104,11 +5116,13 @@ DEFINE_PRIME2v(nme_sound_suspend);
 
 double nme_sound_get_length(value inSound)
 {
+   #ifdef NME_AUDIO
    Sound *sound;
    if (AbstractToObject(inSound, sound))
    {
       return sound->getLength();
    }
+   #endif
    return 0.0;
 }
 DEFINE_PRIME1(nme_sound_get_length);
@@ -5116,17 +5130,20 @@ DEFINE_PRIME1(nme_sound_get_length);
  
 void nme_sound_close(value inSound)
 {
+   #ifdef NME_AUDIO
    Sound *sound;
    if (AbstractToObject(inSound,sound))
    {
       sound->close();
    }
+   #endif
 }
 DEFINE_PRIME1v(nme_sound_close);
 
  
 value nme_sound_get_status(value inSound)
 {
+   #ifdef NME_AUDIO
    Sound *sound;
    if (AbstractToObject(inSound,sound))
    {
@@ -5137,6 +5154,7 @@ value nme_sound_get_status(value inSound)
          alloc_field(result, _id_error, alloc_string(sound->getError().c_str()));
       return result;
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIME1(nme_sound_get_status);
@@ -5144,11 +5162,13 @@ DEFINE_PRIME1(nme_sound_get_status);
 
 value nme_sound_get_engine(value inSound)
 {
+   #ifdef NME_AUDIO
    Sound *sound;
    if (AbstractToObject(inSound,sound))
    {
       return alloc_string( sound->getEngine() );
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_get_engine,1);
@@ -5158,11 +5178,13 @@ DEFINE_PRIM(nme_sound_get_engine,1);
 // --- SoundChannel --------------------------------------------------------
 bool nme_sound_channel_is_complete(value inChannel)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       return channel->isComplete();
    }
+   #endif
    return true;
 }
 DEFINE_PRIME1(nme_sound_channel_is_complete);
@@ -5170,11 +5192,13 @@ DEFINE_PRIME1(nme_sound_channel_is_complete);
 
 double nme_sound_channel_get_left(value inChannel)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       return channel->getLeft();
    }
+   #endif
    return 0.0;
 }
 DEFINE_PRIME1(nme_sound_channel_get_left);
@@ -5182,11 +5206,13 @@ DEFINE_PRIME1(nme_sound_channel_get_left);
 
 double nme_sound_channel_get_right(value inChannel)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       return channel->getRight();
    }
+   #endif
    return 0.0;
 }
 DEFINE_PRIME1(nme_sound_channel_get_right);
@@ -5194,11 +5220,13 @@ DEFINE_PRIME1(nme_sound_channel_get_right);
 
 double nme_sound_channel_get_position(value inChannel)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       return channel->getPosition();
    }
+   #endif
    return 0.0;
 }
 DEFINE_PRIME1(nme_sound_channel_get_position);
@@ -5206,6 +5234,7 @@ DEFINE_PRIME1(nme_sound_channel_get_position);
 
 void nme_sound_channel_set_position(value inChannel, double inFloat)
 {
+   #ifdef NME_AUDIO
    #ifdef HX_MACOS
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
@@ -5213,23 +5242,27 @@ void nme_sound_channel_set_position(value inChannel, double inFloat)
       channel->setPosition(inFloat);
    }
    #endif
+   #endif
 }
 DEFINE_PRIME2v(nme_sound_channel_set_position);
 
 
 void nme_sound_channel_stop(value inChannel)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       channel->stop();
    }
+   #endif
 }
 DEFINE_PRIME1v(nme_sound_channel_stop);
 
 
 void nme_sound_channel_set_transform(value inChannel, value inTransform)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
@@ -5237,12 +5270,14 @@ void nme_sound_channel_set_transform(value inChannel, value inTransform)
       FromValue(trans,inTransform);
       channel->setTransform(trans);
    }
+   #endif
 }
 DEFINE_PRIME2v(nme_sound_channel_set_transform);
 
 
 value nme_sound_channel_create(value inSound, double inStart, int inLoops, value inTransform)
 {
+   #ifdef NME_AUDIO
    Sound *sound;
    if (AbstractToObject(inSound,sound))
    {
@@ -5255,6 +5290,7 @@ value nme_sound_channel_create(value inSound, double inStart, int inLoops, value
          return result;
       }
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIME4(nme_sound_channel_create);
@@ -5263,11 +5299,13 @@ DEFINE_PRIME4(nme_sound_channel_create);
 // --- dynamic sound ---
 bool nme_sound_channel_needs_data(value inChannel)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       return channel->needsData();
    }
+   #endif
    return false;
 }
 DEFINE_PRIME1(nme_sound_channel_needs_data);
@@ -5275,22 +5313,26 @@ DEFINE_PRIME1(nme_sound_channel_needs_data);
 
 void nme_sound_channel_add_data(value inChannel, value inBytes)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       channel->addData(ByteArray(inBytes));
    }
+   #endif
 }
 DEFINE_PRIME2v(nme_sound_channel_add_data);
 
 
 double nme_sound_channel_get_data_position(value inChannel)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       return channel->getDataPosition();
    }
+   #endif
    return 0.0;
 }
 DEFINE_PRIME1(nme_sound_channel_get_data_position);
@@ -5298,6 +5340,7 @@ DEFINE_PRIME1(nme_sound_channel_get_data_position);
 
 value nme_sound_channel_create_dynamic(value inBytes, value inTransform)
 {
+   #ifdef NME_AUDIO
    ByteArray bytes(inBytes);
    SoundTransform trans;
    FromValue(trans,inTransform);
@@ -5307,12 +5350,14 @@ value nme_sound_channel_create_dynamic(value inBytes, value inTransform)
       value result = ObjectToAbstract(channel);
       return result;
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIME2(nme_sound_channel_create_dynamic);
 
 
 // --- Async Sound -----------------------------------------------
+#ifdef NME_AUDIO
 void SoundChannel::PerformAsyncCallback(void *inCallback)
 {
    AutoGCRoot *agc = (AutoGCRoot *)inCallback;
@@ -5326,9 +5371,11 @@ void SoundChannel::DestroyAsyncCallback(void *inCallback)
    delete agc;
 }
 
+#endif
 
 value nme_sound_channel_create_async(value inRate, value inIsStereo, value inFormat, value inCallback, value inEngine)
 {
+   #ifdef NME_AUDIO
    int rateId = val_int(inRate);
    int rate = rateId==0 ? 11025 : rateId==1 ? 22050 : 44100;
    int fmtId = val_int(inFormat);
@@ -5342,6 +5389,7 @@ value nme_sound_channel_create_async(value inRate, value inIsStereo, value inFor
       value result = ObjectToAbstract(channel);
       return result;
    }
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_sound_channel_create_async,5);
@@ -5349,12 +5397,14 @@ DEFINE_PRIM(nme_sound_channel_create_async,5);
 
 void nme_sound_channel_post_buffer(value inChannel, value inBytes)
 {
+   #ifdef NME_AUDIO
    SoundChannel *channel;
    if (AbstractToObject(inChannel,channel))
    {
       ByteArray bytes(inBytes);
       channel->addData(bytes);
    }
+   #endif
 }
 DEFINE_PRIME2v(nme_sound_channel_post_buffer);
 
