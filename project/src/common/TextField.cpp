@@ -511,7 +511,7 @@ int TextField::PointToChar(UserPoint inPoint) const
       if ( (line.mY0+line.mMetrics.height) > inPoint.y && line.mChars)
       {
          if (line.mChars==1)
-            return line.mChar0;
+            return line.mChar0 + (inPoint.x>mCharPos[line.mChar0 + 1].x);
 
          // Find the char
          for(int c=0; c<line.mChars;c++)
