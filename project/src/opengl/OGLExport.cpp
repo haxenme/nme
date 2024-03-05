@@ -1961,7 +1961,8 @@ DEFINE_PRIME5v(nme_gl_renderbuffer_storage_multisample);
 void nme_gl_read_buffer(int inBuffer)
 {
    #if NME_GL_LEVEL>=300
-   glReadBuffer(inBuffer);
+   if (glReadBuffer)
+      glReadBuffer(inBuffer);
    #endif
 }
 DEFINE_PRIME1v(nme_gl_read_buffer);
