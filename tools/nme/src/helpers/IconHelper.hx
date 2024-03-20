@@ -13,6 +13,7 @@ import sys.io.File;
 import sys.FileSystem;
 
 import haxe.ds.IntMap;
+using StringTools;
 
 class IconHelper 
 {
@@ -145,6 +146,15 @@ class IconHelper
 
    public static function createWindowsIcon(icons:Array<Icon>, targetPath:String, favicon = false):Bool 
    {
+      for(icon in icons)
+      {
+         if (icon.path!=null && icon.path.endsWith(".ico"))
+         {
+            FileHelper.copyFile(icon.path, targetPath);
+            return true;
+         }
+      }
+
       var sizes = [ 256, 128, 64, 48, 40, 32, 24, 16 ];
       var sizes_8bit = [ 48, 32, 16 ];
       var bmps = new Array<BitmapData>();
