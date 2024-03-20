@@ -123,7 +123,7 @@ class Acadnme extends Sprite implements IScriptHandler
    }
 
    @:native("hx::EnableJit")
-   @:extern static function enableJit(enable:Bool) : Void #if (haxe_ver>=4) ; #else { } #end
+   extern static function enableJit(enable:Bool) : Void;
 
 
    public static function getNmeAppsDir() : String

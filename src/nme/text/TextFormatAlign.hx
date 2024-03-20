@@ -1,8 +1,8 @@
 package nme.text;
+
 #if (!flash)
 
-@:enum
-abstract TextFormatAlign(String) from String to String
+enum abstract TextFormatAlign(String) from String to String
 {
    var LEFT = "left";
    var RIGHT = "right";
