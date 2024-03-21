@@ -118,6 +118,7 @@ class MainView extends GLSurfaceView {
              public EGLConfig chooseConfig (EGL10 egl, EGLDisplay display)
              {
                 Log.v("EGL","Choose config (2) " + translucent);
+
                 int alpha = translucent ? 8 : 0;
                 int depth = ::if WIN_DEPTH_BUFFER:: 16 ::else:: 0 ::end::;
                 int stencil = ::if WIN_STENCIL_BUFFER:: 8 ::else:: 0 ::end::;
@@ -125,6 +126,7 @@ class MainView extends GLSurfaceView {
                 EGLConfig[] configs = new EGLConfig[1];
                 int[] num_config = new int[1];
 
+                setPreserveEGLContextOnPause(true);
 
                 // Try as specified - aa
                 if (::WIN_ANTIALIASING:: >= 1)
