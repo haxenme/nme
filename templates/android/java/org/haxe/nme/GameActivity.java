@@ -282,6 +282,7 @@ implements SensorEventListener
        final GameActivity me = activity;
        queueRunnable( new Runnable() { @Override public void run() {
           me.mBillingManager = new BillingManager(me, inPublicKey, inUpdatesListener);
+          Log.v(TAG,"billingInit got:" + me.mBillingManager );
        } });
     }
     public static void billingClose()
@@ -318,8 +319,9 @@ implements SensorEventListener
     }
 */
 
-    public static void billingQuery(String itemType, String[] skuArray, final HaxeObject onResult)
+    public static void billingQuery(String productType, String[] products, final HaxeObject onResult)
     {
+       activity.mBillingManager.queryProductsAsync(productType, products, onResult);
        /*
        activity.mBillingManager.querySkuDetailsAsync(itemType, java.util.Arrays.asList(skuArray),
           new com.android.billingclient.api.SkuDetailsResponseListener() {

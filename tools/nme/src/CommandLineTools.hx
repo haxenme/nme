@@ -64,7 +64,7 @@ class CommandLineTools
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
             "rebuild", "shell", "icon", "banner", "favicon", "serve", "listbrowsers",
-            "prepare", "quickrun", "uploadcrashlytics", "ndk-stack" ];
+            "prepare", "quickrun", "uploadcrashlytics", "ndk-stack", "emulator" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
@@ -789,6 +789,7 @@ class CommandLineTools
       sys.println("  demo :  Run an existing sample or project");
       sys.println("  create : Create a new project or extension using templates");
       sys.println("  setup : Create an alias for nme so you don't need to type 'haxelib run nme...'");
+      sys.println("  emulator : start/list an android emulator");
       sys.println("  rebuild : rebuild binaries from a build.xml file'");
       sys.println("  remake : rebuild nme tool and build nme project binaries for targets'");
       sys.println("  listbrowsers: show list of browsers that can be used with js targets");
@@ -1461,6 +1462,10 @@ class CommandLineTools
 
          case "generate":
             generate();
+
+         case "emulator":
+            var android = new platforms.AndroidPlatform(project);
+            android.emulator(words);
 
          case "clone":
             processSample(project,"clone");

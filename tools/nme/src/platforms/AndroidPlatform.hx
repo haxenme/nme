@@ -84,7 +84,18 @@ class AndroidPlatform extends Platform
             project.androidConfig.ABIs = [abi];
 
          if (project.androidConfig.ABIs.length==0)
+         {
+            var emulators = getAvdList();
+            if (emulators==null || emulators.length==0)
+            {
+               Log.info(" Could not find any emulators - try installing from Android Studio");
+            }
+            else
+            {
+               Log.info(" try starting one of the emulators with emulator emulator_name from" + emulators);
+            }
             Log.error("Could not determine build target from adb, and no test ABI specified");
+         }
       }
       else if(project.androidConfig.ABIs.length == 0)
       {
@@ -130,6 +141,25 @@ class AndroidPlatform extends Platform
       }
    }
 
+   public function emulator(args:Array<String>)
+   {
+      if (args.length!=1)
+      {
+         Log.error("Usage: name emulator [emulator_name|list]");
+      }
+      if (args[0]=="list")
+      {
+         var emus = getAvdList();
+         Sys.println('Emulators: $emus');
+      }
+      else
+      {
+         var emu = getEmulatorExe();
+         if (emu==null)
+            Log.error("Could not find emulator exe.");
+         ProcessHelper.runCommand("", emu,  [ "-avd", args[0] ] );
+      }
+   }
 
    function findArchitectureByName(arch:String) : Architecture
    {
@@ -349,6 +379,37 @@ class AndroidPlatform extends Platform
       return exe;
    }
 
+   static var emulatorExe:String = null;
+   function getEmulatorExe() : String
+   {
+      if (emulatorExe==null)
+      {
+         var ext = "";
+         if (PlatformHelper.hostPlatform==Platform.WINDOWS)
+            ext = ".exe";
+         var test = project.environment.get("ANDROID_SDK") + "/emulator/emulator" + ext;
+         if (FileSystem.exists(test))
+         {
+            Log.verbose("Found emulator exe at:" + test);
+            emulatorExe = test;
+         }
+         else
+            emulatorExe = "";
+      }
+      return emulatorExe=="" ? null : emulatorExe;
+   }
+
+
+   public function getAvdList() : Array<String>
+   {
+      var exe = getEmulatorExe();
+      if (exe==null)
+         return null;
+
+      var out = ProcessHelper.getOutput(exe, [ "-list-avds"]);
+      return out;
+   }
+
    public function runNdkStack(args:Array<String>)
    {
       var exe = getNdkStackExe();
@@ -530,7 +591,7 @@ class AndroidPlatform extends Platform
     
    private function queryDeviceABI():String {
       var lines = ProcessHelper.getOutput(adbName,"shell getprop ro.product.cpu.abi".split(' '), Log.mVerbose);
-      trace(lines);
+      //trace(lines);
       if(lines.length > 0) {
          if(lines[0].indexOf('error') == -1) {
             var abi = lines[0].split("\r")[0];

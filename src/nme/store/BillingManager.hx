@@ -91,6 +91,7 @@ class BillingManager
    public static function setPurchases(inPurchases:Array<Purchase>, andFire=true)
    {
       purchases = inPurchases;
+      //trace("setPurchases " + inPurchases);
       if (andFire)
          fire( PurchasesUpdated(0) );
    }
