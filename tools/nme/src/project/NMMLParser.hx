@@ -15,6 +15,7 @@ import NMEProject;
 import IconType;
 import platforms.Platform;
 import nme.AlphaMode;
+import BootType;
 
 using StringTools;
 
@@ -227,6 +228,15 @@ class NMMLParser
 
             case "preloader":
                project.app.preloader = substitute(element.att.preloader);
+
+            case "bootType":
+               var types = ["auto", "main", "new", "addStage" ];
+               var type = substitute(element.att.bootType);
+               var typeId = types.indexOf(type);
+               if (typeId<0)
+                  Log.error('Invalid bootType "$type". Should be one of $types.');
+               project.app.bootType = Type.createEnumIndex( BootType, typeId );
+
 
             case "package", "packageName", "package-name":
                project.app.packageName = substitute(element.att.resolve(attribute));

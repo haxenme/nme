@@ -1,3 +1,7 @@
+::if (APP_BOOT_TYPE!="BootTypeAuto")::
+#error "ApplicationBoot should not be called unless ApplicationBoot==BootTypeAuto"
+::else::
+
 import haxe.macro.Expr;
 import haxe.macro.Context;
 
@@ -50,3 +54,4 @@ class ApplicationBoot
       return Context.parse("{}", p);
    }
 }
+::end::

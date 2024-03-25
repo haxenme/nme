@@ -1,3 +1,5 @@
+import BootType;
+
 
 class ApplicationData
 {
@@ -7,6 +9,7 @@ class ApplicationData
    // Haxe main class
    public var main:String;
    public var preloader:String;
+   public var bootType = BootTypeAuto;
 
    // Build directory base
    public var binDir:String;
@@ -27,6 +30,7 @@ class ApplicationData
    public var url:String;
    // Target versionm
    public var swfVersion:Float;
+
 
 
    public function new()

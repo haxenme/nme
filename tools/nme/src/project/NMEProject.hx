@@ -877,7 +877,13 @@ class NMEProject
 
 
       for(field in Reflect.fields(app)) 
-         Reflect.setField(context, "APP_" + StringHelper.formatUppercaseVariable(field), Reflect.field(app, field));
+      {
+         var val:Dynamic = Reflect.field(app, field);
+         if (!Std.isOfType(val,Float))
+            val = "" + val;
+         Log.verbose(" APP_" + StringHelper.formatUppercaseVariable(field) + "=" + val);
+         Reflect.setField(context, "APP_" + StringHelper.formatUppercaseVariable(field), val);
+      }
 
 
       context.APP_PACKAGE = app.packageName;

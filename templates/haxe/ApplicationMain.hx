@@ -51,6 +51,20 @@ class ApplicationMain
    public static var winBackground:Int = ::WIN_BACKGROUND::;
    public static var onLoaded:Void->Void;
 
+
+   static function createInstance()
+   {
+     ::if (APP_BOOT_TYPE=="BootTypeMain")::
+        ::APP_MAIN::.main();
+     ::elseif (APP_BOOT_TYPE=="BootTypeNew")::
+        new ::APP_MAIN::();
+     ::elseif (APP_BOOT_TYPE=="BootTypeAddStage")::
+        new ApplicationDocument();
+     ::else::
+        ApplicationBoot.createInstance();
+     ::end::
+   }
+
    public static function main()
    {
       #if cpp
@@ -111,7 +125,13 @@ class ApplicationMain
          flash.Lib.current.stage.align = flash.display.StageAlign.TOP_LEFT;
          flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
 
-         var load = function() ApplicationBoot.createInstance();
+         function load() {
+            ::if (APP_BOOT_TYPE=="BootTypeAuto")::
+               ApplicationBoot.createInstance();
+            ::else::
+               new ApplicationDocument();
+            ::end::
+         }
 
          ::if (PRELOADER_NAME!=null)::
             onLoaded = load;
@@ -129,9 +149,15 @@ class ApplicationMain
             nme.display.ManagedStage.initSdlAudio();
          #end
 
+         ::if (APP_BOOT_TYPE=="BootTypeMain")::
+             ::APP_MAIN::.main();
+         ::else::
+
+         ::if (APP_BOOT_TYPE=="BootTypeAuto")::
          if (ApplicationBoot.canCallMain())
             ApplicationBoot.createInstance();
          else
+         ::end::
          {
             wx.App.boot(function()
             {
@@ -163,11 +189,11 @@ class ApplicationMain
 
                   // Show frame before creating instance so context is good.
                   frame.shown = true;
-                  ApplicationBoot.createInstance();
+                  createInstance();
                   wx.App.setTopWindow(frame);
       
                #else
-                  ApplicationBoot.createInstance();
+                  createInstance();
                   if (autoShowFrame)
                   {
                      wx.App.setTopWindow(frame);
@@ -177,9 +203,10 @@ class ApplicationMain
 
            });
          }
+         ::end::
       #elseif cppia
          // Cppia
-         ApplicationBoot.createInstance();
+         createInstance();
       #elseif nme
          var flags:Int = 
          (::WIN_HARDWARE:: ? nme.app.Application.HARDWARE : 0) |
@@ -222,7 +249,7 @@ class ApplicationMain
                   nme.Lib.current.stage.align = nme.display.StageAlign.::STAGE_ALIGN::;
                   nme.Lib.current.stage.scaleMode = nme.display.StageScaleMode.::STAGE_SCALE::;
                   nme.Lib.current.loaderInfo = nme.display.LoaderInfo.create (null);
-                  ApplicationBoot.createInstance();
+                  createInstance();
                },
                ::WIN_WIDTH::, ::WIN_HEIGHT::, 
                ::WIN_FPS::, 
@@ -237,10 +264,7 @@ class ApplicationMain
          #end
       #else
          // Unknown framework
-         if (ApplicationBoot.canCallMain())
-            ApplicationBoot.createInstance();
-         else
-            ApplicationBoot.createInstance();
+         createInstance();
       #end
    }
 

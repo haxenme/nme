@@ -13,7 +13,11 @@ class ApplicationDocument extends ::APP_MAIN::
       }
       #end
 
+      ::if (APP_BOOT_TYPE=="BootTypeAuto")::
       ApplicationBoot.callSuper();
+      ::else::
+      super();
+      ::end::
 
       #if nme
       if (added!=null && added.stage!=null)
