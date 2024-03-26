@@ -298,7 +298,7 @@ public:
                   continue;
 
                Rect alpha_rect(visible_pixels);
-               bool offscreen_buffer = mBlendMode!=bmNormal;
+               bool offscreen_buffer = mBlendMode!=bmNormal || (s->Format()==pfAlpha && (data.mHasColour || data.mHasTrans));
                if (offscreen_buffer)
                {
                   for(int i=0;i<4;i++)
@@ -333,16 +333,12 @@ public:
                // Can render straight to surface ....
                if (!offscreen_buffer)
                {
-                  if (s->Format()==pfAlpha)
+                  // Rotated text...
+                  if (s->Format()==pfAlpha && just_alpha)
                   {
-                     if (data.mHasColour)
-                     {
-                        ARGB col = inState.mColourTransform->Transform(data.mColour|0xff000000);
-                        mFiller->SetTint(col);
-                     }
                      mFiller->Fill(*alpha,0,0,inTarget,inState);
                   }
-                  else if (data.mHasTrans && !just_alpha)
+                  else if ( (data.mHasTrans || data.mHasColour) && !just_alpha)
                   {
                      ColorTransform buf;
                      RenderState col_state(inState);
@@ -350,7 +346,12 @@ public:
                      tint.redMultiplier =   ((data.mColour)   & 0xff) * one_on_255;
                      tint.greenMultiplier = ((data.mColour>>8) & 0xff) * one_on_255;
                      tint.blueMultiplier =  ((data.mColour>>16)  & 0xff) * one_on_255;
+
+                     tint.redMultiplier =   0;
+                     tint.greenMultiplier = 1;
+                     tint.blueMultiplier =  0;
                      col_state.CombineColourTransform(inState, &tint, &buf);
+
                      mFiller->Fill(*alpha,0,0,inTarget,col_state);
                   }
                   else
@@ -365,13 +366,6 @@ public:
                   {
                   AutoSurfaceRender tmp_render(tmp);
                   const RenderTarget &target = tmp_render.Target();
-
-                  if (s->Format()==pfAlpha && data.mHasColour)
-                  {
-                     ARGB col = inState.mColourTransform->Transform(data.mColour|0xff000000);
-                     mFiller->SetTint(col);
-                  }
-
 
                   mFiller->Fill(*alpha,0,0,target,inState);
                   }
@@ -388,6 +382,7 @@ public:
          }
          else if (s->Format()==pfAlpha && mBlendMode==bmNormal && data.mHasColour /* integer co-ordinate?*/ )
          {
+            // Normal, aligned text
             if (mIsFixed)
                pos -= data.mOffset;
             //blits++;

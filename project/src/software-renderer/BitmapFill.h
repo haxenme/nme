@@ -35,7 +35,6 @@ public:
       mMapped = false;
       mPerspective = false;
       mBilinearAdjust = 0;
-      mTint = ARGB(0xffffffff);
    }
 
 
@@ -52,9 +51,6 @@ public:
       mDPxDX = (int)(mMapper.m00 * (1<<16)+ 0.5);
       mDPyDX = (int)(mMapper.m10 * (1<<16)+ 0.5);
    }
-
-   void SetTint(ARGB inTint) { mTint = inTint; }
-
 
    void SetMapping(const UserPoint *inVertex, const float *inUVT,int inComponents)
    {
@@ -181,7 +177,6 @@ public:
    double mTX, mTY, mTW;
    double mBilinearAdjust;
    Matrix mMapper;
-   ARGB   mTint;
    GraphicsBitmapFill *mBitmap;
 };
 
