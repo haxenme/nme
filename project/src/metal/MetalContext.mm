@@ -162,7 +162,6 @@ struct MetalTexture : public Texture
       }
    }
 
-
    UserPoint PixelToTex(const UserPoint &inPixels)
    {
       return UserPoint(inPixels.x/width, inPixels.y/height);
@@ -769,9 +768,16 @@ public:
       width = inWidth;
       height = inHeight;
    }
+
+   bool supportsComponentAlpha() const
+   {
+      return false;
+   }
+
    void SetQuality(StageQuality inQuality)
    {
    }
+
    void BeginRender(const Rect &inRect,bool inForHitTest)
    {
       #ifndef OBJC_ARC
