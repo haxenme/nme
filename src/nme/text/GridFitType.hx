@@ -1,10 +1,11 @@
 package nme.text;
 #if (!flash)
 
-enum GridFitType {
-	NONE;
-	PIXEL;
-	SUBPIXEL;
+enum abstract GridFitType(String)
+{
+   var NONE;
+   var PIXEL;
+   var SUBPIXEL;
 }
 
 #else

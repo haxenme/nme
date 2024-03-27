@@ -206,6 +206,12 @@ public:
       mHasZombie = false;
    }
 
+   bool supportsComponentAlpha() const
+   {
+      return false;
+   }
+
+
    void Clear(uint32 inColour, const Rect *inRect)
    {
       Rect r = inRect ? *inRect : Rect(mWidth,mHeight);

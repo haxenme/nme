@@ -301,7 +301,7 @@ double CharGroup::Height(double inFontToLocal)
 
 struct FontInfo
 {
-   FontInfo(const TextFormat &inFormat,double inScale, bool inAllowNative)
+   FontInfo(const TextFormat &inFormat,double inScale, bool inAllowNative, AntiAliasType inAaType)
    {
       allowNative = inAllowNative;
       name = inFormat.font;
@@ -323,6 +323,7 @@ struct FontInfo
          flags ^= (miter<<16);
       }
 
+      aaType = inAaType;
    }
 
    bool operator<(const FontInfo &inRHS) const
@@ -332,11 +333,14 @@ struct FontInfo
       if (name > inRHS.name) return false;
       if (height < inRHS.height) return true;
       if (height > inRHS.height) return false;
+      if (aaType < inRHS.aaType) return true;
+      if (aaType > inRHS.aaType) return false;
       return flags < inRHS.flags;
    }
    WString      name;
    bool         allowNative;
    int          height;
+   AntiAliasType aaType;
    unsigned int flags;
 };
 
@@ -416,7 +420,7 @@ static std::string registerNorm(const std::string &inName)
    return result;
 }
 
-Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInitRef)
+Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasType aaType, bool inInitRef)
 {
    bool native = inNative && gNmeNativeFonts;
    bool outline = inFormat.outline.Get()>0;
@@ -424,7 +428,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
       native = false;
 
 
-   FontInfo info(inFormat,inScale,native);
+   FontInfo info(inFormat,inScale,native,aaType);
 
    Font *font = 0;
    FontMap::iterator fit = sgFontMap.find(info);
@@ -522,7 +526,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 
 #ifndef HX_WINRT
    if (native && !face)
-      face = FontFace::CreateNative(inFormat,inScale);
+      face = FontFace::CreateNative(inFormat,inScale, aaType);
 #endif
 
    if (!face)
@@ -530,15 +534,15 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,bool inInit
 
 #ifndef HX_WINRT
    if (!native && !face)
-      face = FontFace::CreateNative(inFormat,inScale);
+      face = FontFace::CreateNative(inFormat,inScale, aaType);
 #endif
    if (!face)
    {
       //printf("Missing face : %s\n", fontName.c_str() );
       TextFormat defaultFormat = inFormat;
       defaultFormat.font = UTF8ToWide("_sans");
-      return Create(defaultFormat, inScale, inNative, inInitRef);
-       return 0;
+      return Create(defaultFormat, inScale, inNative, aaType, inInitRef);
+      return 0;
    }
 
    font =  new Font(face,info.height,inInitRef);

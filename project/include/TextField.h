@@ -59,11 +59,12 @@ private:
 
 
    // Render state
-   bool        screenGrid;
-   double      fontScale;
-   double      fontToLocal;
-   double      fieldWidth;
-   double      fieldHeight;
+   bool          screenGrid;
+   AntiAliasType fontAaType;
+   double        fontScale;
+   double        fontToLocal;
+   double        fieldWidth;
+   double        fieldHeight;
 
    bool        mLinesDirty;
    bool        mGfxDirty;
@@ -119,6 +120,8 @@ public:
    AutoSizeMode getAutoSize() { return autoSize; }
    void  setAutoSize(int inAutoSize);
    void modifyLocalMatrix(Matrix &ioMatrix);
+   void setAntiAliasType(int inVal);
+   int getAntiAliasType() const { return (int)antiAliasType; }
 
 
    int   getCaretIndex() { return caretIndex; }
@@ -218,8 +221,8 @@ protected:
 private:
    TextField(const TextField &);
    void operator=(const TextField &);
-   void Layout(const Matrix &inMatrix);
-   void Layout() { Layout(GetFullMatrix(true)); }
+   void Layout(const Matrix &inMatrix, const RenderTarget *inTarget);
+   void Layout() { Layout(GetFullMatrix(true), nullptr); }
 
    void Clear();
    void AddNode(const TiXmlNode *inNode, TextFormat *inFormat, int &ioCharCount);

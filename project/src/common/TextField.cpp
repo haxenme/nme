@@ -24,6 +24,7 @@ static const double GAP = 2.0;
 TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    alwaysShowSelection(false),
    antiAliasType(aaNormal),
+   fontAaType(aaNormal),
    autoSize(asNone),
    background(false),
    backgroundColor(0xffffffff),
@@ -290,8 +291,14 @@ void TextField::setTextFormat(TextFormat *inFmt,int inStart,int inEnd)
    mCaretDirty = true;
 }
 
-
-
+void TextField::setAntiAliasType(int inVal)
+{
+   if (antiAliasType!=inVal)
+   {
+      antiAliasType = (AntiAliasType)inVal;
+      mFontsDirty = true;
+   }
+}
 
 
 void TextField::setTextColor(int inCol)
@@ -1605,19 +1612,28 @@ void TextField::BuildBackground()
       gfx.clear();
       if (mHighlightGfx)
          mHighlightGfx->clear();
-      if (background || border)
+      if (background)
       {
-         if (background)
-            gfx.beginFill( backgroundColor, 1 );
-         if (border)
-            gfx.lineStyle(0, borderColor,1.0, false, ssmOpenGL  );
+         gfx.beginFill( backgroundColor, 1 );
 
-         gfx.moveTo(0.001,0.001);
-         gfx.lineTo(fieldWidth+0.001,0.001);
-         gfx.lineTo(fieldWidth+0.001,fieldHeight+0.001);
-         gfx.lineTo(0.001,fieldHeight+0.001);
-         gfx.lineTo(0.001,0.001);
+         gfx.moveTo(0,0);
+         gfx.lineTo(fieldWidth,0);
+         gfx.lineTo(fieldWidth,fieldHeight);
+         gfx.lineTo(0,fieldHeight);
+         gfx.lineTo(0,0);
+         gfx.endFill();
       }
+
+      if (border)
+      {
+         gfx.lineStyle(0, borderColor,1.0, false, ssmOpenGL  );
+         gfx.moveTo(0.5,0.5);
+         gfx.lineTo(fieldWidth-0.5,0.5);
+         gfx.lineTo(fieldWidth-0.5,fieldHeight-0.5);
+         gfx.lineTo(0.5,fieldHeight-0.5);
+         gfx.lineTo(0.5,0.5);
+      }
+
 
       //printf("%d,%d\n", mSelectMin , mSelectMax);
       if (mSelectMin < mSelectMax)
@@ -1706,7 +1722,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
    if (inState.mPhase==rpBitmap && inState.mWasDirtyPtr && !*inState.mWasDirtyPtr && IsCacheDirty())
    {
       const Matrix &matrix = *inState.mTransform.mMatrix;
-      Layout(matrix);
+      Layout(matrix, nullptr);
 
       RenderState state(inState);
 
@@ -1725,7 +1741,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
       return;
 
    const Matrix &matrix = *inState.mTransform.mMatrix;
-   Layout(matrix);
+   Layout(matrix, &inTarget);
 
 
    RenderState state(inState);
@@ -1926,7 +1942,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
 void TextField::GetExtent(const Transform &inTrans, Extent2DF &outExt,bool inForBitmap,bool inIncludeStroke)
 {
-   Layout(*inTrans.mMatrix);
+   Layout(*inTrans.mMatrix, nullptr);
 
    if (inForBitmap && border)
    {
@@ -1975,7 +1991,7 @@ void TextField::DeleteChars(int inFirst,int inEnd)
 
       mLinesDirty = true;
       mGfxDirty = true;
-      Layout(GetFullMatrix(true));
+      Layout();
    }
 }
 
@@ -2078,7 +2094,7 @@ void TextField::InsertString(const WString &inString)
    caretIndex += inString.length();
    mLinesDirty = true;
    mGfxDirty = true;
-   Layout(GetFullMatrix(true));
+   Layout();
 }
 
 #ifdef EPPC
@@ -2095,7 +2111,7 @@ static bool IsWord(int inCh)
 
 // Combine x,y scaling with rotation to calculate pixel coordinates for
 //  each character.
-void TextField::Layout(const Matrix &inMatrix)
+void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
 {
    //double scale = scaleY<=0 ? 0.0 : sqrt( inMatrix.m10*inMatrix.m10 + inMatrix.m11*inMatrix.m11 )/scaleY;
    double scale = sqrt( inMatrix.m10*inMatrix.m10 + inMatrix.m11*inMatrix.m11 );
@@ -2103,17 +2119,32 @@ void TextField::Layout(const Matrix &inMatrix)
                   fabs(fabs(inMatrix.m00)-fabs(inMatrix.m11))<0.0001 &&
                 ( fabs(inMatrix.m10)<0.0001 || fabs(inMatrix.m11)<0.0001);
 
-   if (mFontsDirty || fabs(scale-fontScale)>0.0001 || grid!=screenGrid)
+   // Reuse old type
+   AntiAliasType aaType = fontAaType;
+
+   if (inTarget)
+   {
+      aaType = antiAliasType;
+      if (aaType==aaAdvancedLcd && ( !grid || fabs(inMatrix.m10)>1e-5 || !inTarget->supportsComponentAlpha() ) )
+         aaType = aaAdvanced;
+   }
+
+   bool charPositionDirty =  mFontsDirty || fabs(scale-fontScale)>0.0001 || grid!=screenGrid;
+   if (charPositionDirty || aaType!=fontAaType )
    {
       // fontScale is local-to-pixel scale
       fontScale = scale;
       screenGrid = grid;
+      fontAaType = aaType;
       for(int i=0;i<mCharGroups.size();i++)
-         mCharGroups[i]->UpdateFont(fontScale,!embedFonts);
+         mCharGroups[i]->UpdateFont(fontScale,!embedFonts,fontAaType);
 
-      mLinesDirty = true;
-      mFontsDirty = false;
-      fontToLocal = scale>0 ? 1.0/scale : 0.0;
+      if (charPositionDirty)
+      {
+         mLinesDirty = true;
+         mFontsDirty = false;
+         fontToLocal = scale>0 ? 1.0/scale : 0.0;
+      }
    }
 
    if (!mLinesDirty)
@@ -2678,7 +2709,7 @@ CharGroup::~CharGroup()
       mFont->DecRef();
 }
 
-bool CharGroup::UpdateFont(double inScale,bool inNative)
+bool CharGroup::UpdateFont(double inScale,bool inNative, AntiAliasType aaType)
 {
    int h = 0.5 + inScale*mFormat->size;
    int flags = (mFormat->bold.Get() ? 1 : 0 ) |
@@ -2694,14 +2725,15 @@ bool CharGroup::UpdateFont(double inScale,bool inNative)
       flags ^= miter<<16;
    }
 
-   if (!mFont || h!=mFontHeight || mFlags!=flags )
+   if (!mFont || h!=mFontHeight || mFlags!=flags || mAaType!=aaType)
    {
       Font *oldFont = mFont;
-      mFont = Font::Create(*mFormat,inScale,inNative,true);
+      mFont = Font::Create(*mFormat,inScale,inNative,aaType,true);
       if (oldFont)
          oldFont->DecRef();
       mFontHeight = h;
       mFlags=flags;
+      mAaType = aaType;
       return true;
    }
    return false;

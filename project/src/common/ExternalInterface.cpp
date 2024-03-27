@@ -4123,6 +4123,7 @@ TEXT_PROP_PRIME(border_color,BorderColor,int);
 TEXT_PROP_PRIME(embed_fonts,EmbedFonts,bool);
 TEXT_PROP_PRIME(auto_size,AutoSize,int);
 TEXT_PROP_PRIME(caret_index,CaretIndex,int);
+TEXT_PROP_PRIME(anti_alias_type,AntiAliasType,int);
 TEXT_PROP_GET_PRIME(text_width,TextWidth,double);
 TEXT_PROP_GET_PRIME(text_height,TextHeight,double);
 TEXT_PROP_GET_PRIME(max_scroll_h,MaxScrollH,int);

@@ -58,11 +58,9 @@ public:
    {
       if (!sGammaLUTInit)
       {
-         double pow_max = 255.0/pow(255,1.9);
          for(int i=0;i<256;i++)
-         {
-            sGammaLUT[i] = pow(i,1.9)*pow_max + 0.5;
-         }
+            sGammaLUT[i] = pow(i/255.0,1.9)*255 + 0.5;
+
          sGammaLUTInit = true;
       }
       int w = outTarget.mRect.w;
@@ -98,7 +96,10 @@ public:
          ARGB *src = sgDIBBits + (sgDIB_H - 1 - y)*sgDIB_W;
          uint8  *dest = (uint8 *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
          for(int x=0;x<outTarget.mRect.w;x++)
-            *dest++= sGammaLUT[(src++)->g];
+         {
+            *dest++= sGammaLUT[ (src->r + src->g*2 + src->b + 2) / 4];
+            src++;
+         }
       }
 
    }
@@ -136,7 +137,7 @@ int CALLBACK MyEnumFontFunc(
 
 
 
-FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
+FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale,AntiAliasType aaType)
 {
    //The height needs to be >=1, 0 causes the font mapper to use the default height
    int height = (int)std::max(( 0.5 + inFormat.size*inScale ), 1.0);
@@ -151,11 +152,11 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
    desc.lfItalic = inFormat.italic;
    desc.lfUnderline = inFormat.underline;
    //desc.lfStrikeOut; 
-   desc.lfCharSet = DEFAULT_CHARSET; 
-   desc.lfOutPrecision = OUT_RASTER_PRECIS; 
-   desc.lfClipPrecision = CLIP_DEFAULT_PRECIS; 
-   desc.lfQuality = ANTIALIASED_QUALITY; 
-   desc.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE; 
+   desc.lfCharSet = DEFAULT_CHARSET;
+   desc.lfOutPrecision = OUT_RASTER_PRECIS;
+   desc.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+   desc.lfQuality = aaType == aaNormal ? ANTIALIASED_QUALITY : CLEARTYPE_QUALITY;
+   desc.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
    wcsncpy(desc.lfFaceName,inFormat.font(L"times").c_str(),LF_FACESIZE);
 
 
@@ -198,6 +199,8 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
      if (!bad)
         break;
    }
+
+   //printf(" create native:%S.\n", desc.lfFaceName);
 
    if (!sgFontDC)
    {

@@ -580,7 +580,8 @@ struct RenderTarget
 
    inline int Width() const { return mRect.w; }
    inline int Height() const { return mRect.h; }
-	inline PixelFormat Format() const { return mPixelFormat; }
+   inline PixelFormat Format() const { return mPixelFormat; }
+   bool supportsComponentAlpha() const;
 
    Rect        mRect;
    PixelFormat mPixelFormat;

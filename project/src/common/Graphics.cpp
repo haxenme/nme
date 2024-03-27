@@ -1130,6 +1130,12 @@ RenderTarget::RenderTarget() : mRect(0,0)
    mHardware = 0;
 }
 
+bool RenderTarget::supportsComponentAlpha() const
+{
+   return !mHardware || mHardware->supportsComponentAlpha();
+}
+
+
 
 RenderTarget RenderTarget::ClipRect(const Rect &inRect) const
 {

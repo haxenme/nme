@@ -4,7 +4,7 @@
 namespace nme
 {
 
-FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale)
+FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale, AntiAliasType aaType)
 {
    return 0;
 }

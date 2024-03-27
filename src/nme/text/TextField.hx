@@ -8,7 +8,7 @@ import nme.geom.Rectangle;
 @:nativeProperty
 class TextField extends InteractiveObject 
 {
-   public var antiAliasType:AntiAliasType;
+   public var antiAliasType(get,set):AntiAliasType;
    public var autoSize(get, set):TextFieldAutoSize;
    public var background(get, set):Bool;
    public var backgroundColor(get, set):Int;
@@ -19,7 +19,8 @@ class TextField extends InteractiveObject
    public var displayAsPassword(get, set):Bool;
    public var embedFonts(get, set):Bool;
    public var forceFreeType(get, set):Bool;
-   public var gridFitType:GridFitType;
+   // Not used on NME
+   public var gridFitType(get,set):GridFitType;
    public var htmlText(get, set):String;
    public var maxChars(get, set):Int;
    public var maxScrollH(get, null):Int;
@@ -31,7 +32,8 @@ class TextField extends InteractiveObject
    public var scrollH(get, set):Int;
    public var scrollV(get, set):Int;
    public var selectable(get, set):Bool;
-   public var sharpness:Float;
+   // not used on nme
+   public var sharpness(get,set):Float;
    public var text(get, set):String;
    public var textColor(get, set):Int;
    public var textHeight(get, null):Float;
@@ -40,12 +42,13 @@ class TextField extends InteractiveObject
    public var wordWrap(get, set):Bool;
    public var caretIndex(get, set):Int;
 
+   public static var defaultAntiAliasType = AntiAliasType.NORMAL;
+
    public function new() 
    {
       var handle = nme_text_field_create();
       super(handle, "TextField");
-     gridFitType = GridFitType.PIXEL;
-     sharpness = 0;
+      antiAliasType = defaultAntiAliasType;
    }
 
    public function appendText(newText:String):Void 
@@ -187,6 +190,20 @@ class TextField extends InteractiveObject
    private function get_caretIndex():Int { return nme_text_field_get_caret_index(nmeHandle); }
    private function set_caretIndex(inVal:Int):Int { nme_text_field_set_caret_index(nmeHandle, inVal); return inVal; }
 
+   private function set_gridFitType(inVal:GridFitType):GridFitType return inVal;
+   private function get_gridFitType():GridFitType return GridFitType.PIXEL;
+   private function set_sharpness(inVal:Float):Float return inVal;
+   private function get_sharpness():Float return 0.0;
+
+   private function set_antiAliasType(inVal:AntiAliasType):AntiAliasType {
+      nme_text_field_set_anti_alias_type(nmeHandle, inVal);
+      return inVal;
+   }
+   private function get_antiAliasType():AntiAliasType {
+      return nme_text_field_get_anti_alias_type(nmeHandle);
+   }
+
+
    // Native Methods
    private static var nme_text_field_create = PrimeLoader.load("nme_text_field_create", "o");
    private static var nme_text_field_get_text = nme.Loader.load("nme_text_field_get_text", 1);
@@ -248,6 +265,8 @@ class TextField extends InteractiveObject
    private static var nme_text_field_replace_selected_text = PrimeLoader.load("nme_text_field_replace_selected_text", "oov");
    private static var nme_text_field_replace_text = PrimeLoader.load("nme_text_field_replace_text", "oiiov");
    private static var nme_text_field_send_key = PrimeLoader.load("nme_text_field_send_key", "oiiiv");
+   private static var nme_text_field_set_anti_alias_type = PrimeLoader.load("nme_text_field_set_anti_alias_type", "oiv");
+   private static var nme_text_field_get_anti_alias_type = PrimeLoader.load("nme_text_field_get_anti_alias_type", "oi");
 }
 
 #else

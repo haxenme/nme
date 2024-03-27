@@ -162,6 +162,7 @@ public:
    virtual void Clear(uint32 inColour,const Rect *inRect=0) = 0;
    virtual void Flip() = 0;
 
+   virtual bool supportsComponentAlpha() const = 0;
 
 
    virtual void Render(const RenderState &inState, const HardwareData &inData );

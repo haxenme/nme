@@ -45,7 +45,7 @@ enum TextFormatFlags
 
 extern bool gNmeNativeFonts;
 
-enum AntiAliasType { aaAdvanced, aaNormal };
+enum AntiAliasType { aaNormal, aaAdvanced, aaAdvancedLcd  };
 enum AutoSizeMode  { asCenter, asLeft, asNone, asRight };
 enum TextFormatAlign { tfaCenter, tfaJustify, tfaLeft, tfaRight};
 enum GridFitType { gftNone, gftPixel, gftSubPixel };
@@ -127,10 +127,10 @@ private:
 
 struct CharGroup
 {
-   CharGroup() : mChar0(0), mFontHeight(0), mFormat(0), mFont(0) { };
+   CharGroup() : mChar0(0), mFontHeight(0), mFormat(0), mFont(0), mAaType(aaNormal) { };
    ~CharGroup();
    void  Clear();
-   bool  UpdateFont(double inScale,bool inNative);
+   bool  UpdateFont(double inScale,bool inNative, AntiAliasType aaType);
    void  UpdateMetrics(TextLineMetrics &ioMetrics);
    double   Height(double inFontToLocal);
    int   Chars() const { return mString.size(); }
@@ -141,6 +141,7 @@ struct CharGroup
    QuickVec<wchar_t,0> mString;
    int             mFontHeight;
    unsigned int    mFlags;
+   AntiAliasType   mAaType;
    TextFormat      *mFormat;
    class Font      *mFont;
 };
@@ -176,7 +177,7 @@ class FontFace
 public:
    virtual ~FontFace() { };
 
-   static FontFace *CreateNative(const TextFormat &inFormat,double inScale);
+   static FontFace *CreateNative(const TextFormat &inFormat,double inScale, AntiAliasType aaType);
    static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,FontBuffer inBytes, const std::string &inCombinedName);
    static FontFace *CreateCFFIFont(const TextFormat &inFormat,double inScale);
 
@@ -203,7 +204,7 @@ class Font : public Object
    };
 
 public:
-   static Font *Create(TextFormat &inFormat,double inScale, bool inNative,bool inInitRef=true);
+   static Font *Create(TextFormat &inFormat,double inScale, bool inNative, AntiAliasType aaType, bool inInitRef=true);
 
    NmeObjectType getObjectType() { return notFont; }
    void encodeStream(class ObjectStreamOut &inStream);

@@ -1,42 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
 
-  <set name="WIDTH" value="640" />
-  <set name="HEIGHT" value="320" />
-
-  <set name="HEIGHT" value="640" if="target_neko"/>
+  <set name="WIDTH" value="800" />
+  <set name="HEIGHT" value="600" />
 
   <app
      file="Sample02"
      title="NME Sample 02"
      package="org.haxe.nme.sample02"
      version="1.0.0"
-     company="nme" 
+     company="nme"
      main="Sample"
+     bootType="addStage"
   />
 
-    <window
-      width="${WIDTH}"
-      height="${HEIGHT}"
-      fps="60"
+  <window
+      width="800"
+      height="600"
+      fps="0"
       background="0xffffff"
       resizable="true"
       hardware="true"
    />
 
-
-  
-  <classpath name="." />
-  <haxelib name="nme" />
   <icon name="nme.svg" />
-
-
-  <ndll name="std" />
-  <ndll name="regexp" />
-  <ndll name="zlib" />
   <ndll name="nme" haxelib="nme" />
-
-  <haxedef name="no_console" />
 
 
 </project>
