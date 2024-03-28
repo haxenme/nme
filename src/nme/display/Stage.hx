@@ -88,6 +88,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    public var onQuit(get,set):Void -> Void; 
    public var onCloseRequest:Void -> Void; 
    public var isOpenGL(get, never):Bool;
+   public var hasHardwareLcdFonts(get, never):Bool;
    // Is this used?  Could not tell where "event.down" is being set, therefore this would appear useless
    //public var onKey:Int -> Bool -> Int -> Int -> Void; 
 
@@ -1220,6 +1221,7 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    private function get_stageHeight():Int return window.height;
    private function get_stageWidth():Int return window.width;
    private function get_isOpenGL():Bool return window.get_isOpenGL();
+   private function get_hasHardwareLcdFonts():Bool return window.get_hasHardwareLcdFonts();
    private function get_renderRequest():Void->Bool return window.renderRequest;
    private function set_renderRequest(f:Void->Bool):Void->Bool return window.renderRequest = f;
 

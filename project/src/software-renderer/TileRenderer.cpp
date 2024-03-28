@@ -81,7 +81,7 @@ public:
       int h = mFill->bitmapData->Height();
       const UserPoint *point = (const UserPoint *)&inPath.data[inJob.mData0];
       mTileData.reserve( inJob.mTileCount );
-      mBlendMode = bmNormal;
+      mBlendMode = (BlendMode)inJob.mBlendMode;
       if (inJob.mBlendMode==pcBlendModeAdd)
          mBlendMode = bmAdd;
       mFlags = mFill->smooth ? 1 : 0;
@@ -187,7 +187,7 @@ public:
       {
          TileData &data= mTileData[i];
 
-         BlendMode blend = data.mHasColour ? ( mBlendMode==bmAdd ? bmTintedAdd : bmTinted ):
+         BlendMode blend = data.mHasColour ? ( mBlendMode==bmAdd ? bmTintedAdd : mBlendMode==bmComponentAlpha ? bmComponentAlpha : bmTinted ):
                                                mBlendMode;
          UserPoint corner(data.mPos);
          UserPoint pos = inState.mTransform.mMatrix->Apply(corner.x,corner.y);

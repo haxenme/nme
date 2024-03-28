@@ -91,6 +91,23 @@ void Stage::SetNextWakeDelay(double inNextWake)
    mNextWake = inNextWake + GetTimeStamp();
 }
 
+HardwareRenderer *Stage::getHardwareRenderer()
+{
+   Surface *surface = GetPrimarySurface();
+   if (!surface)
+      return nullptr;
+   return surface->GetHardwareRenderer();
+}
+
+
+bool Stage::hasHardwareLcdFonts() const
+{
+   HardwareRenderer *hw = (const_cast<Stage *>(this))->getHardwareRenderer();
+   if (!hw)
+      return false;
+   return hw->supportsComponentAlpha();
+}
+
 void Stage::SetFocusObject(DisplayObject *inObj,FocusSource inSource,int inKey)
 {
    if (inObj==mFocusObject)

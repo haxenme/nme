@@ -48,7 +48,43 @@ void GetGLStats(int * statsArray, int n)
 
 class OGLContext : public HardwareRenderer
 {
+   int mContextId;
+   ThreadId mThreadId;
+
+   WinDC mDC;
+   GLCtx mOGLCtx;
+
+   //HardwareData mBitmapBuffer;
+   //Texture *mBitmapTexture;
+
+   // TODO - mutex in case finalizer is run from thread
+   bool             mHasZombie;
+   QuickVec<GLuint> mZombieTextures;
+   QuickVec<GLuint> mZombieVbos;
+   QuickVec<GLuint> mZombiePrograms;
+   QuickVec<GLuint> mZombieShaders;
+   QuickVec<GLuint> mZombieFramebuffers;
+   QuickVec<GLuint> mZombieRenderbuffers;
+   QuickVec<GLuint> mZombieQueries;
+   QuickVec<GLuint> mZombieVertexArrays;
+   QuickVec<GLuint> mZombieTransformFeedback;
+
+   GPUProg *mProg[PROG_COUNT];
+
+
+   GLuint mFullTexCoordsBuffer;
+   GLuint mFullTexCoordsSize;
+
+   GLuint mQuadsBuffer;
+   GLenum mQuadsBufferSize;
+   GLenum mQuadsBufferType;
+
+   bool hasDrawBufferBlend;
+
+
 public:
+
+
 
    OGLContext(WinDC inDC, GLCtx inOGLCtx)
    {
@@ -59,10 +95,31 @@ public:
       mContextId = gTextureContextVersion;
       mQuadsBuffer = 0;
       mFullTexCoordsBuffer = 0;
+      hasDrawBufferBlend = false;
 
       for(int i=0;i<PROG_COUNT;i++)
          mProg[i] = 0;
 
+      makeCurrent();
+
+      const char *ext = (const char *)glGetString(GL_EXTENSIONS);
+      if (ext && *ext)
+      {
+         while(true)
+         {
+            const char *next = ext;
+            while(*next && *next!=' ')
+               next++;
+            std::string e(ext, next);
+            // GL_KHR_blend_equation_advanced
+            //printf("  ext >%s<\n", e.c_str() );
+            if ( e=="ARB_draw_buffers_blend" || e=="GL_ARB_draw_buffers_blend" )
+               hasDrawBufferBlend = true;
+            if (!*next || !next[1])
+              break;
+            ext = next+1;
+         }
+      }
    }
    ~OGLContext()
    {
@@ -208,7 +265,7 @@ public:
 
    bool supportsComponentAlpha() const
    {
-      return false;
+      return hasDrawBufferBlend;
    }
 
 
@@ -254,6 +311,17 @@ public:
       }
    }
 
+   void makeCurrent()
+   {
+      #ifndef NME_GLES
+      #ifndef SDL_OGL
+      #ifndef GLFW_OGL
+      wglMakeCurrent(mDC,mOGLCtx);
+      #endif
+      #endif
+      #endif
+   }
+
 
    void BeginRender(const Rect &inRect,bool inForHitTest)
    {
@@ -264,13 +332,7 @@ public:
             updateContext();
          }
 
-         #ifndef NME_GLES
-         #ifndef SDL_OGL
-         #ifndef GLFW_OGL
-         wglMakeCurrent(mDC,mOGLCtx);
-         #endif
-         #endif
-         #endif
+         makeCurrent();
 
          if (mHasZombie)
          {
@@ -491,6 +553,7 @@ public:
          progId &= ~PROG_PREM_ALPHA;
          bool persp = element.mFlags & DRAW_HAS_PERSPECTIVE;
 
+
          GPUProg *prog = mProg[progId];
          if (!prog)
              mProg[progId] = prog = GPUProg::create(progId);
@@ -507,6 +570,10 @@ public:
                break;
             case bmScreen:
                glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+               break;
+            case bmComponentAlpha:
+               glBlendFunc(0x88F9/*GL_SRC1_COLOR*/, 0x88FA /*GL_ONE_MINUS_SRC1_COLOR*/ );
+               //glBlendFunc( GL_ONE, GL_ZERO);
                break;
             default:
                glBlendFunc(premAlpha ? GL_ONE : GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -750,36 +817,7 @@ public:
       return OGLCreateTexture(inSurface,inFlags);
    }
 
-   int mContextId;
-   ThreadId mThreadId;
 
-   WinDC mDC;
-   GLCtx mOGLCtx;
-
-   //HardwareData mBitmapBuffer;
-   //Texture *mBitmapTexture;
-
-   // TODO - mutex in case finalizer is run from thread
-   bool             mHasZombie;
-   QuickVec<GLuint> mZombieTextures;
-   QuickVec<GLuint> mZombieVbos;
-   QuickVec<GLuint> mZombiePrograms;
-   QuickVec<GLuint> mZombieShaders;
-   QuickVec<GLuint> mZombieFramebuffers;
-   QuickVec<GLuint> mZombieRenderbuffers;
-   QuickVec<GLuint> mZombieQueries;
-   QuickVec<GLuint> mZombieVertexArrays;
-   QuickVec<GLuint> mZombieTransformFeedback;
-
-   GPUProg *mProg[PROG_COUNT];
-
-
-   GLuint mFullTexCoordsBuffer;
-   GLuint mFullTexCoordsSize;
-
-   GLuint mQuadsBuffer;
-   GLenum mQuadsBufferSize;
-   GLenum mQuadsBufferType;
 
 
 };

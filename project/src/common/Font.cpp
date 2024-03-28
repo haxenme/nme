@@ -68,7 +68,7 @@ public:
       mIsRGB = val_bool( val_field(inHandle, _id_isRGB) );
    }
 
-   bool WantRGB() { return true; }
+   PixelFormat getImageFormat() const { return pfBGRA; }
 
    bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
                            int &outOx, int &outOy)
@@ -222,7 +222,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
             int w = h;
             while(w<orig_w)
                w*=2;
-            PixelFormat pf = mFace->WantRGB() ? pfBGRA : pfAlpha;
+            PixelFormat pf = mFace->getImageFormat();
             Tilesheet *sheet = new Tilesheet(w,h,pf,true);
             sheet->GetSurface().Clear(0);
             mCurrentSheet = mSheets.size();
@@ -247,6 +247,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
       RenderTarget target = tile.mSurface->BeginRender(tile.mRect);
       if (use_default)
       {
+         // TODO - non-alpha images
          for(int y=0; y<target.mRect.h; y++)
          {
             uint8  *dest = (uint8 *)target.Row(y + target.mRect.y) + target.mRect.x;
@@ -258,6 +259,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
          mFace->RenderGlyph(inCharacter,target);
 
       tile.mSurface->EndRender();
+
       outAdvance = glyph.advance;
       return tile;
    }

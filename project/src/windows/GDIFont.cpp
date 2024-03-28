@@ -23,8 +23,10 @@ class GDIFont : public FontFace
 public:
    bool bold;
    bool italic;
+   bool lcdOut;
 
-   GDIFont(HFONT inFont, int inHeight, bool inBold, bool inItalic) : mFont(inFont), mPixelHeight(inHeight)
+   GDIFont(HFONT inFont, int inHeight, bool inBold, bool inItalic, bool inLcdOut) :
+         mFont(inFont), mPixelHeight(inHeight), lcdOut(inLcdOut)
    {
       bold = inBold;
       italic = inItalic;
@@ -36,6 +38,8 @@ public:
    {
       DeleteObject(mFont);
    }
+
+   PixelFormat getImageFormat() const { return lcdOut ? pfRGB : pfAlpha; }
 
    virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
                            int &outOx, int &outOy)
@@ -59,7 +63,7 @@ public:
       if (!sGammaLUTInit)
       {
          for(int i=0;i<256;i++)
-            sGammaLUT[i] = pow(i/255.0,1.9)*255 + 0.5;
+            sGammaLUT[i] = pow(i/255.0,1.25)*255 + 0.5;
 
          sGammaLUTInit = true;
       }
@@ -91,17 +95,35 @@ public:
       wchar_t ch = inChar;
       TextOutW(sgFontDC,0,0,&ch,1);
 
-      for(int y=0;y<outTarget.mRect.h;y++)
+      if (outTarget.Format()==pfRGB)
       {
-         ARGB *src = sgDIBBits + (sgDIB_H - 1 - y)*sgDIB_W;
-         uint8  *dest = (uint8 *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
-         for(int x=0;x<outTarget.mRect.w;x++)
+         for(int y=0;y<outTarget.mRect.h;y++)
          {
-            *dest++= sGammaLUT[ (src->r + src->g*2 + src->b + 2) / 4];
-            src++;
+            ARGB *src = sgDIBBits + (sgDIB_H - 1 - y)*sgDIB_W;
+            RGB *dest = (RGB *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
+            for(int x=0;x<outTarget.mRect.w;x++)
+            {
+               dest->r = src->r;
+               dest->g = src->g;
+               dest->b = src->b;
+               dest++;
+               src++;
+            }
          }
       }
-
+      else
+      {
+         for(int y=0;y<outTarget.mRect.h;y++)
+         {
+            ARGB *src = sgDIBBits + (sgDIB_H - 1 - y)*sgDIB_W;
+            uint8  *dest = (uint8 *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
+            for(int x=0;x<outTarget.mRect.w;x++)
+            {
+               *dest++= sGammaLUT[ (src->r + src->g*2 + src->b + 2) / 4];
+               src++;
+            }
+         }
+      }
    }
 
    void UpdateMetrics(TextLineMetrics &ioMetrics)
@@ -215,7 +237,7 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale,AntiA
    if (!hfont)
      return 0;
 
-   return new GDIFont(hfont,height, inFormat.bold, inFormat.italic);
+   return new GDIFont(hfont,height, inFormat.bold, inFormat.italic, aaType==aaAdvancedLcd);
 }
 
 } // end namespace nme

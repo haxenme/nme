@@ -1803,7 +1803,20 @@ bool nme_stage_is_opengl(value inStage)
    return false;
 }
 DEFINE_PRIME1(nme_stage_is_opengl);
- 
+
+bool nme_stage_has_hardware_lcd_fonts(value inStage)  
+{
+   Stage *stage;
+   if (AbstractToObject(inStage,stage))
+   {
+      return stage->hasHardwareLcdFonts();
+   }
+   return false;
+}
+DEFINE_PRIME1(nme_stage_has_hardware_lcd_fonts);
+
+
+
 
 namespace nme { void AndroidRequestRender(); }
 void nme_stage_request_render()

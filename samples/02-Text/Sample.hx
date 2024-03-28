@@ -15,6 +15,9 @@ class Sample extends Sprite
       //var uiScale = nme.ui.Scale.getFontScale();
       //scaleX = scaleY = uiScale;
 
+      TextField.defaultAntiAliasType = stage.hasHardwareLcdFonts ?
+                AntiAliasType.ADVANCED_LCD : AntiAliasType.ADVANCED;
+
       for(side in 0...2)
       {
          var col = (0xFF + side * 0xFF ) % 0xffffff;
@@ -83,23 +86,34 @@ class Sample extends Sprite
 
       var aaText = ["normal","advanced","advanced_lcd"];
       var cabText = ["software","hardware"];
-      for(cab in 0...2)
-         for(aa in 0...3)
-         {
-            var tf = new nme.text.TextField();
-            tf.autoSize = TextFieldAutoSize.LEFT;
-            tf.background = true;
-            tf.backgroundColor = 0xe0e0e0;
-            tf.border = true;
-            tf.borderColor = 0x000000;
-            tf.antiAliasType = aa;
-            tf.text = "Utf1 Lorem Ipsum " +  cabText[cab] + " " + aaText[aa];
-            tf.cacheAsBitmap = cab==1;
 
-            addChild(tf);
-            tf.x = 20;
-            tf.y = 350 + aa*24 + cab*24*3;
-         }
+      var tf = new nme.text.TextField();
+      tf.autoSize = TextFieldAutoSize.LEFT;
+      tf.y = 330;
+      tf.x = 20;
+      tf.htmlText = "<b>stage.hasHardwareLcdFonts " + stage.hasHardwareLcdFonts+ "</b>";
+      tf.antiAliasType = AntiAliasType.ADVANCED_LCD;
+      addChild(tf);
+
+      for(side in 0...2)
+         for(cab in 0...2)
+            for(aa in 0...3)
+            {
+               var tf = new nme.text.TextField();
+               tf.autoSize = TextFieldAutoSize.LEFT;
+               tf.background = true;
+               tf.backgroundColor = side==0 ? 0xe0e0e0 : 0x202020;
+               tf.border = true;
+               tf.borderColor = side==0 ? 0x000000 : 0x0000ff;
+               tf.antiAliasType = aa;
+               tf.textColor = side==0 ? 0x000000 : 0xffffff;
+               tf.text = "Utf1 Lorem Ipsum " +  cabText[cab] + " " + aaText[aa];
+               tf.cacheAsBitmap = cab==0;
+
+               addChild(tf);
+               tf.x = 20 + side*300;
+               tf.y = 360 + aa*24 + cab*24*3;
+            }
    }
 
 }

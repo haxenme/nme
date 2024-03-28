@@ -1891,7 +1891,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                            {
                               //if (fontSurface) mTiles->endTiles();
                               fontSurface = tile.mSurface;
-                              mTiles->beginTiles(fontSurface,!screenGrid,bmNormal);
+                              mTiles->beginTiles(fontSurface,!screenGrid,fontSurface->Format()==pfRGB ? bmComponentAlpha : bmNormal);
                            }
 
                            UserPoint p(pos.x+tile.mOx*fontToLocal,pos.y+tile.mOy*fontToLocal);
@@ -2139,6 +2139,7 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
       for(int i=0;i<mCharGroups.size();i++)
          mCharGroups[i]->UpdateFont(fontScale,!embedFonts,fontAaType);
 
+      mTilesDirty = true;
       if (charPositionDirty)
       {
          mLinesDirty = true;

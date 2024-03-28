@@ -408,8 +408,10 @@ public:
    virtual void RenderStage();
    virtual void EndRenderStage();
    virtual void ResizeWindow(int inWidth, int inHeight) {};
+   virtual HardwareRenderer *getHardwareRenderer();
 
    virtual bool isOpenGL() const = 0;
+   virtual bool hasHardwareLcdFonts() const;
    virtual int getWindowFrameBufferId() { return 0; };
 
    void SetEventHandler(EventHandler inHander,void *inUserData);

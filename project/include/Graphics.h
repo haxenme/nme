@@ -408,6 +408,9 @@ enum BlendMode
    bmTintedInner,
    // Used for rendering coloured tiles, with add
    bmTintedAdd,
+
+   // Used for rendering ClearType text
+   bmComponentAlpha,
 };
 
 class ColorTransform

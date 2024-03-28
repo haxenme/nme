@@ -19,6 +19,7 @@ class Window
    public var displayState(get, set):StageDisplayState;
    public var dpiScale(get, null):Float;
    public var isOpenGL(get, null):Bool;
+   public var hasHardwareLcdFonts(get, null):Bool;
    public var quality(get, set):StageQuality;
    public var scaleMode(get, set):StageScaleMode;
    public var globalMouseState(get, never):MouseState;
@@ -387,6 +388,12 @@ class Window
       return nme_stage_is_opengl(nmeStageHandle);
    }
 
+   public function get_hasHardwareLcdFonts():Bool
+   {
+      return nme_stage_has_hardware_lcd_fonts(nmeStageHandle);
+   }
+
+
    public function get_quality():StageQuality 
    {
       var i:Int = nme_stage_get_quality(nmeStageHandle);
@@ -460,6 +467,7 @@ class Window
 
    private static var nme_stage_resize_window = PrimeLoader.load("nme_stage_resize_window", "oiiv");
    private static var nme_stage_is_opengl = PrimeLoader.load("nme_stage_is_opengl", "ob");
+   private static var nme_stage_has_hardware_lcd_fonts = PrimeLoader.load("nme_stage_has_hardware_lcd_fonts", "ob");
    private static var nme_stage_get_stage_width = PrimeLoader.load("nme_stage_get_stage_width", "oi");
    private static var nme_stage_get_stage_height = PrimeLoader.load("nme_stage_get_stage_height", "oi");
    private static var nme_stage_get_dpi_scale = PrimeLoader.load("nme_stage_get_dpi_scale", "od");

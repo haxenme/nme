@@ -13,7 +13,7 @@ class OGLProg : public GPUProg
 {
 public:
   
-   OGLProg(const std::string &inVertProg, const std::string &inFragProg);
+   OGLProg(const std::string &inVertProg, const std::string &inFragProg, int inProgFlags);
    virtual ~OGLProg();
 
    GLuint createShader(GLuint inType, const char *inShader);
@@ -47,6 +47,7 @@ public:
    GLint     mASlot;
    GLint     mFXSlot;
    GLint     mOn2ASlot;
+   int       programFlags;
 };
 
 

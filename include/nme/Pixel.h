@@ -86,6 +86,15 @@ struct BGRA
 
    inline BGRA() { }
    inline BGRA(int inRGBA) { ival = inRGBA; }
+   inline BGRA(int inRGBA,bool withPrem) {
+      if (withPrem && PREM) {
+         a = (inRGBA>>24);
+         r = gPremAlphaLut[a][(inRGBA>>16)&0xff ];
+         g = gPremAlphaLut[a][(inRGBA>>8)&0xff ];
+         b = gPremAlphaLut[a][(inRGBA)&0xff ];
+      } else
+         ival = inRGBA;
+   }
    inline BGRA(int inRGB,int inA) { ival = (inRGB & 0xffffff) | (inA<<24); }
    inline BGRA(int inRGB,float inA)
    {
@@ -109,6 +118,7 @@ struct BGRA
    inline int getB() const { return PREM ? gUnPremAlphaLut[a][b] : b; }
    inline int getLuma() const { return PREM ? gUnPremAlphaLut[a][(r+(g<<1)+b)>>2] : (r+(g<<1)+b)>>2; }
 
+   inline void setAlphaOnly(Uint8 val) { a = val; }
    inline void setAlpha(Uint8 val)
    {
       if (PREM && val!=a)
@@ -198,6 +208,7 @@ struct RGB
    inline int getB() const { return b; }
 
 
+   inline void setAlphaOnly(Uint8 val) { }
    inline void setAlpha(Uint8 val) { }
    inline void setLuma(Uint8 val) { r = g = b = val; }
 
@@ -268,6 +279,7 @@ struct AlphaPixel
 
 
 
+   inline void setAlphaOnly(Uint8 val) { a = val; }
    inline void setAlpha(Uint8 val) { a = val; }
    inline void setLuma(Uint8 val) { }
 
@@ -302,6 +314,7 @@ struct LumaPixel
 
 
 
+   inline void setAlphaOnly(int val) { }
    inline void setAlpha(int val) { }
    inline void setLuma(int val) { luma = val; }
 
@@ -335,6 +348,7 @@ struct LumaAlphaPixel
 
 
 
+   inline void setAlphaOnly(Uint8 val) { a = val; }
    inline void setAlpha(Uint8 val) { a = val; }
    inline void setLuma(Uint8 val) { luma = val; }
 

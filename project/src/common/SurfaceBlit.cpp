@@ -14,6 +14,18 @@ struct NullMask
    inline uint8 MaskAlpha(const ARGB &inRGB) const { return inRGB.a; }
    inline uint8 MaskAlpha(const BGRPremA &inRGB) const { return inRGB.a; }
    inline uint8 MaskAlpha(const RGB &inRGB) const { return 255; }
+
+   template<typename SRC>
+   void maskComponentMask(const SRC &inRGB, RGB &outRGB) const
+   {
+      /*
+      outRGB.r = inRGB.getR();
+      outRGB.g = inRGB.getG();
+      outRGB.b = inRGB.getB();
+      */
+   }
+   inline void maskComponentMask(const RGB &inRGB, RGB &outRGB) const { outRGB = inRGB; }
+
    template<typename T>
    T Mask(T inT) const { return inT; }
 };
@@ -55,6 +67,24 @@ struct ImageMask
       return a;
    }
 
+   inline void maskComponentMask(const RGB &inRGB, RGB &outRgb) const
+   {
+      Uint8 *lut = gPremAlphaLut[*mRow];
+      outRgb.r = lut[inRGB.r];
+      outRgb.g = lut[inRGB.g];
+      outRgb.b = lut[inRGB.b];
+   }
+
+   template<typename T>
+   inline void maskComponentMask(const T &inPixel, RGB &outRgb) const
+   {
+      /*
+      Uint8 *lut = gPremAlphaLut[*mRow];
+      outRgb.r = lut[inPixel.getR()];
+      outRgb.g = lut[inPixel.getG()];
+      outRgb.b = lut[inPixel.getB()];
+      */
+   }
 
    inline AlphaPixel Mask(const AlphaPixel &inA) const
    {
@@ -514,13 +544,43 @@ template<typename DEST, typename SRC> void ApplyInner(DEST &ioDest, SRC inSrc)
    }
 }
 
+template<typename DEST> void ApplyComponentAlpha(DEST &ioDest, RGB rgbMask, BGRPremA colour)
+{
+   int outA = std::max(std::max(rgbMask.g,rgbMask.b),rgbMask.r);
+   if ( outA > 2)
+   {
+      int dra = ioDest.getRAlpha();
+      int dga = ioDest.getGAlpha();
+      int dba = ioDest.getBAlpha();
+
+      ioDest.setAlphaOnly( std::max(outA, ioDest.getAlpha() ) );
+
+      {
+         int notA = 256-rgbMask.r;
+         ioDest.setRAlpha( ((dra*notA  +colour.r*rgbMask.r )>>8) );
+      }
+      {
+         int notA = 256-rgbMask.g;
+         ioDest.setGAlpha( ((dga*notA +colour.g*rgbMask.g  )>>8) );
+      }
+      {
+         int notA = 256-rgbMask.b;
+         ioDest.setBAlpha( ((dba*notA + colour.b*rgbMask.b  )>>8) );
+      }
+   }
+
+}
+
+
+
 
 
 
 
 template<typename DEST, typename SOURCE, typename MASK>
 void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
-            int inX, int inY, const Rect &inSrcRect, BlendMode inMode)
+            int inX, int inY, const Rect &inSrcRect, BlendMode inMode,
+            BGRPremA tint=0xffffffff)
 {
    for(int y=0;y<inSrcRect.h;y++)
    {
@@ -570,6 +630,19 @@ void TBlitBlend( const DEST &outDest, SOURCE &inSrc,const MASK &inMask,
                ApplyInner(dest,inSrc.Next());
             }
             break;
+
+         case bmComponentAlpha:
+            {
+               RGB rgb;
+               for(int x=0;x<inSrcRect.w;x++)
+               {
+                  typename DEST::Pixel &dest = outDest.Next();
+                  inMask.maskComponentMask(inSrc.Next(),rgb);
+                  ApplyComponentAlpha(dest,rgb,tint);
+               }
+            }
+            break;
+
 
          case bmNormal:
          case bmTinted:
@@ -651,6 +724,16 @@ void TBlitRgb(const DEST &dest, int dx, int dy, const SimpleSurface *inSrc, Rect
             TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmAdd );
          else
             TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, bmAdd );
+      }
+      else if (inBlend==bmComponentAlpha)
+      {
+         BGRPremA tint(inTint,true);
+         ImageSource<RGB> src(inSrc->GetBase(),inSrc->GetStride());
+
+         if (inMask)
+            TBlitBlend( dest, src, ImageMask(*inMask), dx, dy, src_rect, bmComponentAlpha, tint );
+         else
+            TBlitBlend( dest, src, NullMask(), dx, dy, src_rect, bmComponentAlpha, tint );
       }
       else
       {

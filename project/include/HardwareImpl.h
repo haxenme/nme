@@ -20,8 +20,9 @@ enum
    PROG_COLOUR_OFFSET =     0x0080,
    PROG_4D_INPUT      =     0x0100,
    PROG_PREM_ALPHA    =     0x0200,
+   PROG_COMP_ALPHA    =     0x0400,
 
-   PROG_COUNT =             0x0400,
+   PROG_COUNT =             0x0800,
 };
 
 inline unsigned int getProgId( const DrawElement &element, const ColorTransform *ctrans)
@@ -58,6 +59,11 @@ inline unsigned int getProgId( const DrawElement &element, const ColorTransform 
       if (ctrans && ctrans->HasOffset())
          progId |= PROG_COLOUR_OFFSET;
    }
+   if (element.mBlendMode == bmComponentAlpha)
+   {
+      progId |= PROG_COMP_ALPHA;
+   }
+
 
    return progId;
 }

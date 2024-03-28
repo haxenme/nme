@@ -187,7 +187,7 @@ public:
    virtual void UpdateMetrics(TextLineMetrics &ioMetrics)=0;
    virtual int  Height()=0;
    virtual bool IsNative() { return false; }
-   virtual bool WantRGB() { return false; }
+   virtual PixelFormat getImageFormat() const { return pfAlpha; }
 
 };
 

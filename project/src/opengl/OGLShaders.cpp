@@ -11,12 +11,13 @@ namespace nme
 
 const float one_on_255 = 1.0/255.0;
 
-OGLProg::OGLProg(const std::string &inVertProg, const std::string &inFragProg)
+OGLProg::OGLProg(const std::string &inVertProg, const std::string &inFragProg,int inProgramFlags)
 {
    mVertProg = inVertProg;
    mFragProg = inFragProg;
    mVertId = 0;
    mFragId = 0;
+   programFlags = inProgramFlags;
 
    mImageSlot = -1;
    mColourTransform = 0;
@@ -94,9 +95,9 @@ void OGLProg::recreate()
    glValidateProgram(mProgramId);
 
 
-   GLint linked;
-   glGetProgramiv(mProgramId, GL_LINK_STATUS, &linked);
-   if (linked)
+   GLint linkStatus=0;
+   glGetProgramiv(mProgramId, GL_LINK_STATUS, &linkStatus);
+   if (linkStatus)
    {
       // All good !
       //printf("Linked!\n");
@@ -104,28 +105,34 @@ void OGLProg::recreate()
    else
    {
       ELOG("Bad Link.");
+   }
     
     // Check the status of the compile/link
    int logLen = 0;
    glGetProgramiv(mProgramId, GL_INFO_LOG_LENGTH, &logLen);
-   if(logLen > 0)
+   if(logLen > 0 || !linkStatus)
    {
        // Show any errors as appropriate
-       char *log = new char[logLen];
-       glGetProgramInfoLog(mProgramId, logLen, &logLen, log);
        ELOG("----");
        ELOG("VERT: %s", mVertProg.c_str());
        ELOG("FRAG: %s", mFragProg.c_str());
-       ELOG("ERROR:\n%s\n", log);
-       delete [] log;
-   }
-  
+       if (logLen>0)
+       {
+          char *log = new char[logLen];
+          glGetProgramInfoLog(mProgramId, logLen, &logLen, log);
+          ELOG("ERROR:\n%s\n", log);
+          delete [] log;
+       }
+       else
+       {
+          ELOG("no error message.");
+       }
+
       glDeleteShader(mVertId);
       glDeleteShader(mFragId);
       glDeleteProgram(mProgramId);
       mVertId = mFragId = mProgramId = 0;
    }
-
 
    vertexSlot = glGetAttribLocation(mProgramId, "aVertex");
    textureSlot = glGetAttribLocation(mProgramId, "aTexCoord");
@@ -181,7 +188,6 @@ void OGLProg::setColourTransform(const ColorTransform *inTransform, uint32 inCol
    {
       rf = gf = bf = af = 1.0;
    }
-   else
    {
       rf = ( (inColor>>16) & 0xff ) * one_on_255;
       gf = ( (inColor>>8 ) & 0xff ) * one_on_255;
@@ -269,17 +275,39 @@ void OGLProg::setGradientFocus(float inFocus)
 
 GPUProg *GPUProg::create(unsigned int inID)
 {
-   std::string vertexVars =
-      "uniform mat4   uTransform;\n"
-      "attribute vec4 aVertex;\n";
    std::string vertexProg =
       "   gl_Position = aVertex * uTransform;\n";
    std::string pixelVars = "";
    std::string pixelProlog = "";
+   std::string blendColour = "";
 
    #ifdef NME_GLES
    pixelVars = std::string("precision mediump float;\n");
    #endif
+
+   std::string VIN = "attribute";
+   std::string VOUT = "varying";
+   std::string FIN = "varying";
+   std::string VERSION = "";
+
+   bool dualBlend = inID & PROG_COMP_ALPHA;
+   std::string fragName("gl_FragColor");
+   if (dualBlend)
+   {
+      fragName = "outFragColour";
+      VERSION = "#version 450\n";
+      pixelVars += "layout(location = 0, index = 0) out vec4 outFragColour;\n";
+      pixelVars += "layout(location = 0, index = 1) out vec4 outBlendColour;\n";
+
+      VIN = "in";
+      VOUT = "out";
+      FIN = "in";
+   }
+
+
+   std::string vertexVars =
+      "uniform mat4   uTransform;\n" +
+      VIN + " vec4 aVertex;\n";
 
 
 
@@ -299,12 +327,12 @@ GPUProg *GPUProg::create(unsigned int inID)
    if (inID & PROG_COLOUR_PER_VERTEX)
    {
       vertexVars +=
-        "attribute vec4 aColourArray;\n"
-        "varying vec4 vColourArray;\n";
+        VIN + " vec4 aColourArray;\n" +
+        VOUT + " vec4 vColourArray;\n";
       vertexProg =
         "   vColourArray = aColourArray;\n" + vertexProg;
       pixelVars +=
-        "varying vec4 vColourArray;\n";
+        FIN + " vec4 vColourArray;\n";
 
       if (fragColour!="")
          fragColour += "*";
@@ -315,17 +343,21 @@ GPUProg *GPUProg::create(unsigned int inID)
    if (inID & PROG_TEXTURE)
    {
       vertexVars +=
-        "attribute vec2 aTexCoord;\n"
-        "varying vec2 vTexCoord;\n";
+        VIN + " vec2 aTexCoord;\n" +
+        VOUT + " vec2 vTexCoord;\n";
 
       vertexProg =
         "   vTexCoord = aTexCoord;\n" + vertexProg;
 
       pixelVars +=
-        "uniform sampler2D uImage0;\n"
-        "varying vec2 vTexCoord;\n";
+        "uniform sampler2D uImage0;\n" +
+        FIN + " vec2 vTexCoord;\n";
 
-      if (!(inID & PROG_RADIAL))
+      if (dualBlend)
+      {
+         blendColour = "   outBlendColour = texture2D(uImage0,vTexCoord,-0.5)*outFragColour.a;\n";
+      }
+      else if (!(inID & PROG_RADIAL))
       {
          if (fragColour!="")
             fragColour += "*";
@@ -372,19 +404,20 @@ GPUProg *GPUProg::create(unsigned int inID)
    if (inID & PROG_NORMAL_DATA)
    {
       vertexVars +=
-        "attribute vec2 aNormal;\n"
-        "varying vec2 vNormal;\n";
+        VIN + " vec2 aNormal;\n" +
+        VOUT +" vec2 vNormal;\n";
 
       vertexProg =
         "   vNormal = aNormal;\n" + vertexProg;
 
       pixelVars +=
-        "varying vec2 vNormal;\n";
+        VOUT + " vec2 vNormal;\n";
    }
 
    std::string vertexShader = 
+      VERSION + 
       vertexVars + 
-      "void main()\n"
+      "void main()\n" +
       "{\n" +
          vertexProg +
       "}\n";
@@ -402,14 +435,23 @@ GPUProg *GPUProg::create(unsigned int inID)
  
 
    std::string pixelShader =
+      VERSION + 
       pixelVars +
       "void main()\n"
       "{\n" +
          pixelProlog +
-         "   gl_FragColor = " + fragColour + ";\n" +
+         "   " + fragName + " = " + fragColour + ";\n" +
+         blendColour + 
       "}\n";
 
-   return new OGLProg(vertexShader, pixelShader);
+   /*
+   {
+      printf("vertex :\n%s\n---\n", vertexShader.c_str());
+      printf("frag   :\n%s\n---\n", pixelShader.c_str());
+   }
+   */
+
+   return new OGLProg(vertexShader, pixelShader, inID);
 }
 
 
