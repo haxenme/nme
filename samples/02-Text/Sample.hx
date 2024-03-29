@@ -17,6 +17,7 @@ class Sample extends Sprite
 
       TextField.defaultAntiAliasType = stage.hasHardwareLcdFonts ?
                 AntiAliasType.ADVANCED_LCD : AntiAliasType.ADVANCED;
+      TextField.defaultForceFreeType = true;
 
       for(side in 0...2)
       {
@@ -77,7 +78,11 @@ class Sample extends Sprite
       input.multiline = true;
       input.width = 240;
       input.height = 300;
-      input.text = "Input";
+      input.text = "Input\n" + 
+        "This app tests font rendering.  The LCD (Sub pixel) rendering on hardware requires " +
+        "an extension that libAngle does not support on windows.\n" +
+        "You can rebuild with \"neko build.n ndll-windows-m64 -DNME_NO_ANGLE\" or add " + 
+        "the flag to your static links to increase the chances of finding hardware support.";
       input.border = true;
       input.borderColor = 0x000000;
       input.background = true;
@@ -95,23 +100,25 @@ class Sample extends Sprite
       tf.antiAliasType = AntiAliasType.ADVANCED_LCD;
       addChild(tf);
 
-      for(side in 0...2)
+      for(side in 0...3)
          for(cab in 0...2)
             for(aa in 0...3)
             {
                var tf = new nme.text.TextField();
                tf.autoSize = TextFieldAutoSize.LEFT;
                tf.background = true;
-               tf.backgroundColor = side==0 ? 0xe0e0e0 : 0x202020;
+               tf.backgroundColor = side!=1 ? 0xe0e0e0 : 0x202020;
                tf.border = true;
-               tf.borderColor = side==0 ? 0x000000 : 0x0000ff;
+               tf.borderColor = side!=1 ? 0x000000 : 0x0000ff;
                tf.antiAliasType = aa;
-               tf.textColor = side==0 ? 0x000000 : 0xffffff;
-               tf.text = "Utf1 Lorem Ipsum " +  cabText[cab] + " " + aaText[aa];
+               tf.textColor = side!=1 ? 0x000000 : 0xffffff;
+               tf.forceFreeType = side==2;
+               var freeT = side==2 ? "FreeType " : "";
+               tf.text = "Utf1 Lorem Ipsum " + freeT + cabText[cab] + " " + aaText[aa];
                tf.cacheAsBitmap = cab==0;
 
                addChild(tf);
-               tf.x = 20 + side*300;
+               tf.x = 20 + side*230;
                tf.y = 360 + aa*24 + cab*24*3;
             }
    }

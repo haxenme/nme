@@ -178,7 +178,7 @@ public:
    virtual ~FontFace() { };
 
    static FontFace *CreateNative(const TextFormat &inFormat,double inScale, AntiAliasType aaType);
-   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,FontBuffer inBytes, const std::string &inCombinedName);
+   static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,AntiAliasType aaType,FontBuffer inBytes, const std::string &inCombinedName);
    static FontFace *CreateCFFIFont(const TextFormat &inFormat,double inScale);
 
    virtual bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
@@ -213,7 +213,7 @@ public:
 
    Font *IncRef() { Object::IncRef(); return this; }
 
-   Tile GetGlyph(int inCharacter,int &outAdvance6);
+   const Tile &GetGlyph(int inCharacter,int &outAdvance6);
 
    void  UpdateMetrics(TextLineMetrics &ioMetrics);
 

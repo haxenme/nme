@@ -43,12 +43,15 @@ class TextField extends InteractiveObject
    public var caretIndex(get, set):Int;
 
    public static var defaultAntiAliasType = AntiAliasType.NORMAL;
+   public static var defaultForceFreeType = false;
 
    public function new() 
    {
       var handle = nme_text_field_create();
       super(handle, "TextField");
       antiAliasType = defaultAntiAliasType;
+      if (defaultForceFreeType)
+         forceFreeType = true;
    }
 
    public function appendText(newText:String):Void 

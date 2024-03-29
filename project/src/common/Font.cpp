@@ -181,7 +181,7 @@ Font::~Font()
 
 
 
-Tile Font::GetGlyph(int inCharacter,int &outAdvance)
+const Tile &Font::GetGlyph(int inCharacter,int &outAdvance)
 {
    bool use_default = false;
    Glyph &glyph = inCharacter < 128 ? mGlyph[inCharacter] : mExtendedGlyph[inCharacter];
@@ -201,7 +201,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
          }
          else
          {
-            Tile result = GetGlyph('?',outAdvance);
+            const Tile &result = GetGlyph('?',outAdvance);
             glyph = mGlyph['?'];
             return result;
          }
@@ -242,7 +242,7 @@ Tile Font::GetGlyph(int inCharacter,int &outAdvance)
          mCurrentSheet = -1;
       }
       // Now fill rect...
-      Tile tile = mSheets[glyph.sheet]->GetTile(glyph.tile);
+      const Tile &tile = mSheets[glyph.sheet]->GetTile(glyph.tile);
       // SharpenText(bitmap);
       RenderTarget target = tile.mSurface->BeginRender(tile.mRect);
       if (use_default)
@@ -517,7 +517,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
 
       if (bytes)
       {
-         face = FontFace::CreateFreeType(inFormat,inScale,bytes,pass==0 ? seekName : "");
+         face = FontFace::CreateFreeType(inFormat,inScale,aaType,bytes,pass==0 ? seekName : "");
          if (face)
             break;
       }
@@ -532,7 +532,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
 #endif
 
    if (!face)
-      face = FontFace::CreateFreeType(inFormat,inScale,NULL,"");
+      face = FontFace::CreateFreeType(inFormat,inScale,aaType,NULL,"");
 
 #ifndef HX_WINRT
    if (!native && !face)

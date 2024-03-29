@@ -572,9 +572,16 @@ public:
                glBlendFunc( GL_ONE, GL_ONE_MINUS_SRC_COLOR);
                break;
             case bmComponentAlpha:
-               glBlendFunc(0x88F9/*GL_SRC1_COLOR*/, 0x88FA /*GL_ONE_MINUS_SRC1_COLOR*/ );
-               //glBlendFunc( GL_ONE, GL_ZERO);
-               break;
+               if (hasDrawBufferBlend)
+               {
+                  glBlendFunc(0x88F9/*GL_SRC1_COLOR*/, 0x88FA /*GL_ONE_MINUS_SRC1_COLOR*/ );
+                  //glBlendFunc( GL_ONE, GL_ZERO);
+                  break;
+               }
+               else
+               {
+                  // Fallthough
+               }
             default:
                glBlendFunc(premAlpha ? GL_ONE : GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
          }

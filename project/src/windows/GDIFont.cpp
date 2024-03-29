@@ -103,9 +103,9 @@ public:
             RGB *dest = (RGB *)outTarget.Row(y + outTarget.mRect.y) + outTarget.mRect.x;
             for(int x=0;x<outTarget.mRect.w;x++)
             {
-               dest->r = src->r;
-               dest->g = src->g;
-               dest->b = src->b;
+               dest->r = sGammaLUT[src->r];
+               dest->g = sGammaLUT[src->g];
+               dest->b = sGammaLUT[src->b];
                dest++;
                src++;
             }

@@ -1885,7 +1885,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
 
 
                            int a;
-                           Tile tile = group.mFont->GetGlyph( ch, a);
+                           const Tile &tile = group.mFont->GetGlyph( ch, a);
 
                            if (fontSurface!=tile.mSurface)
                            {
@@ -2208,6 +2208,7 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
          int advance6 = 0;
          int ch = g.mString[cid];
          mCharPos.push_back( UserPoint(charX,charY) );
+         //printf("  %c : %f\n", ch, charX );
          line.mChars++;
          char_count++;
          cid++;
@@ -2249,7 +2250,7 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
          double right = charX;
          if (g.mFont)
          {
-            Tile tile = g.mFont->GetGlyph( ch, advance6 );
+            const Tile &tile = g.mFont->GetGlyph( ch, advance6 );
             charX += advance6*font6ToLocalX;
             right += (tile.mRect.w+tile.mOx)*fontToLocal;
             if (right<charX)
