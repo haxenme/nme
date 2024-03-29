@@ -288,7 +288,7 @@ public:
          if (!sGammaLUTInit)
          {
             for(int i=0;i<256;i++)
-               sGammaLUT[i] = pow(i/255.0,1.25)*255 + 0.5;
+               sGammaLUT[i] = pow(i/255.0,1.6)*255 + 0.5;
             sGammaLUTInit = true;
          }
          lut = sGammaLUT;

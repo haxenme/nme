@@ -36,6 +36,7 @@ private:
    float       sharpness;
    int         textColor;
    float       thickness;
+   float       lineSpaceScale;
    bool        useRichTextClipboard;
    bool        wordWrap;
    bool        isInput;
@@ -122,6 +123,8 @@ public:
    void modifyLocalMatrix(Matrix &ioMatrix);
    void setAntiAliasType(int inVal);
    int getAntiAliasType() const { return (int)antiAliasType; }
+   void setLineSpaceScale(double inVal);
+   inline float getLineSpaceScale() const { return lineSpaceScale; }
 
 
    int   getCaretIndex() { return caretIndex; }

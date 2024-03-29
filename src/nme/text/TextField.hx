@@ -29,6 +29,7 @@ class TextField extends InteractiveObject
    public var selectionEndIndex(get, null):Int;
    public var multiline(get, set):Bool;
    public var numLines(get, null):Int;
+   public var lineSpaceScale(get, set):Float;
    public var scrollH(get, set):Int;
    public var scrollV(get, set):Int;
    public var selectable(get, set):Bool;
@@ -184,6 +185,8 @@ class TextField extends InteractiveObject
    private function set_text(inText:String):String { nme_text_field_set_text(nmeHandle, inText); return inText; }
    private function get_textColor():Int { return nme_text_field_get_text_color(nmeHandle); }
    private function set_textColor(inCol:Int):Int { nme_text_field_set_text_color(nmeHandle, inCol); return inCol; }
+   private function get_lineSpaceScale():Float { return nme_text_field_get_line_space_scale(nmeHandle); }
+   private function set_lineSpaceScale(inValue:Float):Float { nme_text_field_set_line_space_scale(nmeHandle, inValue); return inValue; }
    private function get_textWidth():Float { return nme_text_field_get_text_width(nmeHandle); }
    private function get_textHeight():Float { return nme_text_field_get_text_height(nmeHandle); }
    private function get_type():TextFieldType { return nme_text_field_get_type(nmeHandle) ? TextFieldType.INPUT : TextFieldType.DYNAMIC; }
@@ -270,6 +273,8 @@ class TextField extends InteractiveObject
    private static var nme_text_field_send_key = PrimeLoader.load("nme_text_field_send_key", "oiiiv");
    private static var nme_text_field_set_anti_alias_type = PrimeLoader.load("nme_text_field_set_anti_alias_type", "oiv");
    private static var nme_text_field_get_anti_alias_type = PrimeLoader.load("nme_text_field_get_anti_alias_type", "oi");
+   private static var nme_text_field_set_line_space_scale = PrimeLoader.load("nme_text_field_set_line_space_scale", "odv");
+   private static var nme_text_field_get_line_space_scale = PrimeLoader.load("nme_text_field_get_line_space_scale", "od");
 }
 
 #else

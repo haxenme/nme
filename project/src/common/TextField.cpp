@@ -45,6 +45,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    sharpness(0),
    textColor(0x000000),
    thickness(0),
+   lineSpaceScale(1.0f),
    useRichTextClipboard(false),
    wordWrap(false),
    isInput(false)
@@ -297,6 +298,16 @@ void TextField::setAntiAliasType(int inVal)
    {
       antiAliasType = (AntiAliasType)inVal;
       mFontsDirty = true;
+   }
+}
+
+
+void TextField::setLineSpaceScale(double inScale)
+{
+   if (lineSpaceScale!=inScale)
+   {
+      lineSpaceScale = (float)inScale;
+      Layout();
    }
 }
 
@@ -2233,9 +2244,10 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
             if (ch=='\n' || ch=='\r')
             {
                // New line ...
-               line.mMetrics.fontToLocal(fontToLocal);
+               line.mMetrics.fontToLocal(fontToLocal*lineSpaceScale);
                if (i+1<mCharGroups.size() || cid+1<g.Chars())
                   line.mMetrics.height += g.mFormat->leading;
+
                charY += line.mMetrics.height;
                mLines.push_back(line);
                line.Clear();
@@ -2281,7 +2293,7 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
                line.mChars = last_word_line_chars;
                line.mMetrics.width = last_word_x;
             }
-            line.mMetrics.fontToLocal(fontToLocal);
+            line.mMetrics.fontToLocal(fontToLocal*lineSpaceScale);
             if (i+1<mCharGroups.size() || cid+1<g.Chars())
                line.mMetrics.height += g.mFormat->leading;
             charY += line.mMetrics.height;
@@ -2302,7 +2314,7 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
    {
       CharGroup *last=mCharGroups[mCharGroups.size()-1];
       last->UpdateMetrics(line.mMetrics);
-      line.mMetrics.fontToLocal(fontToLocal);
+      line.mMetrics.fontToLocal(fontToLocal*lineSpaceScale);
       if (endsWidthNewLine)
       {
          line.mY0 = charY;
@@ -2430,6 +2442,7 @@ void TextField::decodeStream(ObjectStreamIn &stream)
    stream.get(sharpness);
    stream.get(textColor);
    stream.get(thickness);
+   stream.get(lineSpaceScale);
    stream.get(useRichTextClipboard);
    stream.get(wordWrap);
    stream.get(isInput);
@@ -2489,6 +2502,7 @@ void TextField::encodeStream(ObjectStreamOut &stream)
    stream.add(sharpness);
    stream.add(textColor);
    stream.add(thickness);
+   stream.add(lineSpaceScale);
    stream.add(useRichTextClipboard);
    stream.add(wordWrap);
    stream.add(isInput);
