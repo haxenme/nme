@@ -13,6 +13,8 @@
 namespace nme
 {
 
+extern bool gDebugFontCreation;
+
 struct TextLineMetrics
 {
    float ascent;

@@ -2130,33 +2130,27 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
                   fabs(fabs(inMatrix.m00)-fabs(inMatrix.m11))<0.0001 &&
                 ( fabs(inMatrix.m10)<0.0001 || fabs(inMatrix.m11)<0.0001);
 
-   // Reuse old type
-   AntiAliasType aaType = fontAaType;
-
+   AntiAliasType wantAa = antiAliasType;
    if (inTarget)
    {
-      aaType = antiAliasType;
-      if (aaType==aaAdvancedLcd && ( !grid || fabs(inMatrix.m10)>1e-5 || !inTarget->supportsComponentAlpha() ) )
-         aaType = aaAdvanced;
+      if (wantAa==aaAdvancedLcd && ( !grid || fabs(inMatrix.m10)>1e-5 || !inTarget->supportsComponentAlpha() ) )
+         wantAa = aaAdvanced;
    }
 
    bool charPositionDirty =  mFontsDirty || fabs(scale-fontScale)>0.0001 || grid!=screenGrid;
-   if (charPositionDirty || aaType!=fontAaType )
+   if (charPositionDirty || wantAa!=fontAaType )
    {
       // fontScale is local-to-pixel scale
       fontScale = scale;
       screenGrid = grid;
-      fontAaType = aaType;
+      fontAaType = wantAa;
       for(int i=0;i<mCharGroups.size();i++)
          mCharGroups[i]->UpdateFont(fontScale,!embedFonts,fontAaType);
 
       mTilesDirty = true;
-      if (charPositionDirty)
-      {
-         mLinesDirty = true;
-         mFontsDirty = false;
-         fontToLocal = scale>0 ? 1.0/scale : 0.0;
-      }
+      mFontsDirty = false;
+      mLinesDirty = true;
+      fontToLocal = scale>0 ? 1.0/scale : 0.0;
    }
 
    if (!mLinesDirty)
@@ -2190,6 +2184,10 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
       max_x = 1;
    bool endsWidthNewLine = false;
 
+   //gDebugFontCreation =  getText()==WString(L"Back");
+   gDebugFontCreation = false;
+   if (gDebugFontCreation)
+      printf("Layout: %S\n", getText().c_str());
    for(int i=0;i<mCharGroups.size();i++)
    {
       CharGroup &g = *mCharGroups[i];
@@ -2263,10 +2261,12 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
          if (g.mFont)
          {
             const Tile &tile = g.mFont->GetGlyph( ch, advance6 );
-            charX += advance6*font6ToLocalX;
-            right += (tile.mRect.w+tile.mOx)*fontToLocal;
-            if (right<charX)
-               right = charX;
+            double advance = advance6*font6ToLocalX;
+            charX += advance;
+            if (gDebugFontCreation)
+               printf(" %c: %p  + adv=%f -> ox=%f ... charX=%f\n", ch, g.mFont, advance6/64.0, ox, charX );
+            double tileOverflow = std::max(0.0,(tile.mRect.w+tile.mOx)*fontToLocal - advance6);
+            right = charX + tileOverflow;
          }
          else
             advance6 = 0;
@@ -2330,9 +2330,13 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
    for(int i=0;i<mLines.size();i++)
    {
       double right = mLines[i].mMetrics.width;
+      if (gDebugFontCreation)
+         printf("  %d] %f\n", i, right);
       if (right>textWidth)
          textWidth = right;
    }
+   if (gDebugFontCreation)
+      printf(" -> textWidth %f\n", textWidth );
 
    textHeight = charY;
    //printf("textHeight = %f\n", textHeight);
@@ -2382,6 +2386,9 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
 
          // Get alignment...
          double extra = (fieldWidth - line.mMetrics.width);
+         if (gDebugFontCreation)
+            printf("  distribute %f\n", extra);
+
          switch(group.mFormat->align(tfaLeft))
          {
             case tfaJustify:
@@ -2743,10 +2750,21 @@ bool CharGroup::UpdateFont(double inScale,bool inNative, AntiAliasType aaType)
 
    if (!mFont || h!=mFontHeight || mFlags!=flags || mAaType!=aaType)
    {
+      if (gDebugFontCreation && mFont)
+      {
+         printf(" remake h:%d=%d f:%d=%d  a:%d,%d\n", h, mFontHeight, mFlags, flags, mAaType, aaType);
+      }
       Font *oldFont = mFont;
+      WString name = mFormat->font;
       mFont = Font::Create(*mFormat,inScale,inNative,aaType,true);
+      if (gDebugFontCreation)
+         printf("Font::Create name==%S h=%d, f=%04x scale=%f nat=%d aa=%d -> %p\n", name.c_str(), h, flags, inScale, inNative, (int)mAaType, mFont );
       if (oldFont)
+      {
+         if (gDebugFontCreation)
+            printf("  release %p\n", oldFont);
          oldFont->DecRef();
+      }
       mFontHeight = h;
       mFlags=flags;
       mAaType = aaType;

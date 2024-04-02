@@ -35,6 +35,8 @@ extern const unsigned char *gMonospaceData;
 namespace nme
 {
 
+bool gDebugFontCreation = false;
+
 bool gNmeNativeFonts = true;
 
 extern std::string GetFreeTypeFaceName(FontBuffer inBytes);

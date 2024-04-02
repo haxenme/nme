@@ -61,9 +61,6 @@
 #define NME_OUTLINE_EDGE_BEVEL 0x20
 #define NME_OUTLINE_EDGE_MITER 0x40
 
-static unsigned char sGammaLUT[256];
-static bool sGammaLUTInit = false;
-
 namespace nme
 {
 
@@ -80,6 +77,8 @@ class FreeTypeFont : public FontFace
    int    pad;
    FT_Stroker stroker;
    AntiAliasType aaType;
+   unsigned char rgbLut[256*3];
+   unsigned char gammaLut[256*3];
 
 public:
    //  inOutline in 64th of a pixel...
@@ -104,6 +103,25 @@ public:
          FT_Stroker_Set(stroker, inOutline, cap, miter, inOutlineMiter);
          pad = (inOutline+63)>>6;
       }
+
+      double p = 1.0+(inPixelHeight-10)*0.1;
+      if (p<1)
+         p = 1;
+      else if (p>1.8)
+         p = 1.8;
+      //printf(" %d p->%f\n",inPixelHeight, p);
+
+      if (aaType==aaAdvancedLcd)
+      {
+         for(int i=0;i<256;i++)
+            gammaLut[i] = pow(i/255.0,p)*255 + 0.5;
+      }
+
+      if (aaType==aaAdvanced)
+      {
+         for(int i=0;i<768;i++)
+            rgbLut[i] = pow(i/767.0,p)*255 + 0.5;
+      }
    }
 
 
@@ -122,7 +140,8 @@ public:
    {
       int idx = FT_Get_Char_Index( mFace, inChar );
 
-      int loadFlags = aaType==aaNormal ? NME_FREETYPE_NORMAL_FLAGS : FT_LOAD_DEFAULT;
+      //int loadFlags = aaType==aaNormal ? NME_FREETYPE_NORMAL_FLAGS : FT_LOAD_DEFAULT;
+      int loadFlags = NME_FREETYPE_NORMAL_FLAGS;
       int err = FT_Load_Glyph( mFace, idx, loadFlags  );
       if (err)
          return false;
@@ -156,10 +175,9 @@ public:
 
 
       FT_Render_Mode mode = FT_RENDER_MODE_NORMAL;
-      if (aaType==aaAdvancedLcd)
+      if (aaType!=aaNormal)
           mode = FT_RENDER_MODE_LCD;
-      // mode = FT_RENDER_MODE_MONO;
-      //if (mFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
+
       if (andRender)
       {
          err = FT_Render_Glyph( mFace->glyph, mode );
@@ -214,14 +232,52 @@ public:
          outAdvance = (mFace->glyph->advance.x);
 
          FT_Bitmap *bitmap = &mFace->glyph->bitmap;
+
+         int trimThresh = 15;
+
+         if (outAdvance && !(mTransform & (ffBold | ffItalic)) && inChar!=' ' && inChar!='_' && aaType!=aaNormal &&
+                (bitmap->pixel_mode == FT_PIXEL_MODE_GRAY || bitmap->pixel_mode == FT_PIXEL_MODE_LCD ))
+         {
+            int w = bitmap->width;
+            int h = bitmap->rows;
+            int srcBpp = bitmap->pixel_mode == FT_PIXEL_MODE_LCD ? 3 : 1;
+            int lastColMax = 0;
+            int firstColMax = 0;
+            for(int r=0;r<h;r++)
+            {
+               unsigned char *row = bitmap->buffer + r*bitmap->pitch;
+               for(int x=0;x<srcBpp;x++)
+                  if (row[x] > firstColMax)
+                     firstColMax = row[x];
+
+
+               row += w-srcBpp;
+               for(int x=0;x<srcBpp;x++)
+                  if (row[x] > lastColMax)
+                     lastColMax = row[x];
+            }
+            if (lastColMax<trimThresh)
+            {
+               outAdvance-=64;
+               //printf("trimmed '%c' (%d).\n",inChar,lastColMax);
+            }
+            //printf("keep '%c' (%d).\n",inChar,lastColMax);
+            //if (firstColMax<trimThresh)
+            //{
+               //outOx-=1;
+               //printf("slid '%c'.\n",inChar);
+            //}
+
+
+            //printf(" %c : %d/%d\n", inChar, firstColUsed,lastColUsed);
+         }
+
          //if (aaType==aaAdvancedLcd)
          //   printf(" %c] %dx%d + %d, -> adv=%d \n", inChar, bitmap->width, bitmap->rows, outOx, outAdvance>>6);
       }
 
 
       outW = bitmap->width;
-      if (aaType==aaAdvancedLcd)
-         outW = (outW+2)/3;
       outH = bitmap->rows;
 
       if (mTransform & ffUnderline)
@@ -257,7 +313,7 @@ public:
       {
          FT_Get_Glyph(mFace->glyph, &glyph);
          FT_Glyph_StrokeBorder(&glyph, stroker, false, false);
-         FT_Glyph_To_Bitmap( &glyph, aaType==aaAdvancedLcd ? FT_RENDER_MODE_LCD : FT_RENDER_MODE_NORMAL, 0, 1 );
+         FT_Glyph_To_Bitmap( &glyph, aaType!=aaNormal ? FT_RENDER_MODE_LCD : FT_RENDER_MODE_NORMAL, 0, 1 );
 
          FT_BitmapGlyph glyph_bitmap = (FT_BitmapGlyph)glyph;
          bitmap = &glyph_bitmap->bitmap;
@@ -265,6 +321,7 @@ public:
 
       int w = bitmap->width;
       int h = bitmap->rows;
+      int srcBpp = bitmap->pixel_mode==FT_PIXEL_MODE_LCD ? 3 : 1;
  
       if (mTransform & ffUnderline)
       {
@@ -275,28 +332,17 @@ public:
       if (h<underlineY1)
          h = underlineY1;
 
-      int bpp = aaType==aaAdvancedLcd ? 3 : 1;
-      if (w/bpp>outTarget.mRect.w || h>outTarget.mRect.h)
+      int destBpp = aaType==aaAdvancedLcd ? 3 : 1;
+      if (w/destBpp>outTarget.mRect.w || h>outTarget.mRect.h)
       {
          printf(" too big %d %d\n", outTarget.mRect.w, outTarget.mRect.h);
          return;
       }
 
-      const unsigned char *lut = nullptr;
-      if ( (bitmap->pixel_mode==FT_PIXEL_MODE_GRAY || bitmap->pixel_mode == FT_PIXEL_MODE_LCD) && aaType!=aaNormal )
-      {
-         if (!sGammaLUTInit)
-         {
-            for(int i=0;i<256;i++)
-               sGammaLUT[i] = pow(i/255.0,1.6)*255 + 0.5;
-            sGammaLUTInit = true;
-         }
-         lut = sGammaLUT;
-      }
 
       for(int r=0;r<h;r++)
       {
-         uint8  *dest = (uint8 *)outTarget.Row(r + outTarget.mRect.y) + outTarget.mRect.x*bpp;
+         uint8  *dest = (uint8 *)outTarget.Row(r + outTarget.mRect.y) + outTarget.mRect.x*destBpp;
 
          int underline = (r>=underlineY0 && r<underlineY1) ? 0xff : 0;
 
@@ -318,25 +364,35 @@ public:
                   bit >>= 1;
                }
             }
-            else if (bitmap->pixel_mode == FT_PIXEL_MODE_GRAY || bitmap->pixel_mode == FT_PIXEL_MODE_LCD )
+            else if (bitmap->pixel_mode == FT_PIXEL_MODE_GRAY)
+            {
+               for(int x=0;x<w;x++)
+                  *dest ++ = *row++;// | underline;
+            }
+            else
             {
                /*
-               if ( bitmap->pixel_mode == FT_PIXEL_MODE_LCD)
                {
                   char buf[1000];
                   for(int x=0;x<w;x++)
-                     buf[x] = row[x]>128 ? '#' : ' ';
+                     buf[x] = row[x]>128 ? '#' : row[x]>32 ? '\'' : '.';
                   buf[w] = '\0';
-                  printf("> %s\n", buf);
+                  FT_BitmapGlyph glyph_bitmap = (FT_BitmapGlyph)mFace->glyph;
+                  printf("> %s (%d %f lcd:%d)\n", buf, glyph_bitmap->left, mFace->glyph->advance.x/64.0, bitmap->pixel_mode == FT_PIXEL_MODE_LCD);
                }
                */
 
-               if (lut)
-                  for(int x=0;x<w;x++)
-                     *dest ++ = lut[*row++];
-               else
-                  for(int x=0;x<w;x++)
-                     *dest ++ = *row++;// | underline;
+                if (destBpp==1)
+                {
+                   for(int x=0;x<w;x+=3)
+                      *dest ++ = rgbLut[ row[x] + row[x+1] + row[x+2] ];
+                      //*dest ++ = gammaLut[ (row[x] + row[x+1]*2 + row[x+2]+2)>>2 ];
+                }
+                else
+                {
+                   for(int x=0;x<w;x++)
+                      *dest ++ = gammaLut[row[x]];
+                }
             }
          }
          else if (r>=underlineY0 && r<underlineY1)
@@ -841,11 +897,17 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale, An
    
    void* pBuffer = 0;
    face = FindFont(str,flags,inBytes,&pBuffer);
+   if (gDebugFontCreation)
+      printf("Found face %s %08x %p\n", str.c_str(), flags, face);
    if (!face)
    {
       const char *alternate = RemapFontName(str.c_str());
       if (alternate)
+      {
          face = FindFont(alternate,flags,inBytes,&pBuffer);
+         if (gDebugFontCreation)
+            printf("Found alternate face %s %p\n", alternate, face);
+      }
    }
 
    if (!face)
