@@ -41,6 +41,7 @@ jobs:
       - name: APT Install SDL libraries
         if: startsWith(matrix.os,'ubuntu')
         run: |
+          sudo apt-get update
           sudo apt-get -y install libasound2-dev libpulse-dev  libaudio-dev libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
         
       - name: Build Project
