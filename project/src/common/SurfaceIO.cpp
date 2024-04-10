@@ -117,6 +117,8 @@ struct MySrcManager
 
 namespace nme {
 
+bool gRespectExifOrientation = true;
+
 static bool isLittleEndian()
 {
    unsigned short val = 0;
@@ -195,6 +197,73 @@ bool SoftwareDecodeJPeg(unsigned char *inDest, int inWidth, int inHeight, const 
 }
 }
 
+// Returns requiured CW quardant rotation
+static int parseExif(const uint8 *data, int inLen)
+{
+   //printf("parseExif %d %c%c%c%c\n",inLen, data[0], data[1], data[2], data[3]);
+   int rotation = 0;
+
+   #define NEXT_SHORT (exif[msb]<<8) | exif[1-msb]; exif+=2
+   #define NEXT_INT big ? (exif[0]<<24) | (exif[1]<<16) | (exif[2]<<8) | exif[3] : \
+                         (exif[3]<<24) | (exif[2]<<16) | (exif[1]<<8) | exif[0]; \
+                         exif+=4;
+
+   if (inLen>10 && data[0]=='E' && data[1]=='x' && data[2]=='i' && data[3]=='f')
+   {
+      const uint8 *exif = data + 6;
+      const uint8 *end = data + inLen;
+
+      bool little = exif[0]==0x49 && exif[1]==0x49;
+      bool big = exif[0]==0x4D && exif[1]==0x4D;
+      if (!little && !big)
+         return rotation;
+      exif += 2;
+      int msb = big ? 0 : 1;
+      int test = NEXT_SHORT;
+      if (test!=42)
+         return rotation;
+
+      int offset = NEXT_INT;
+      if (offset>=8 && exif+(offset-8)+2 <= end )
+      {
+         exif += offset-8;
+         int entries = NEXT_SHORT;
+         //printf("Found exif entries:%d\n", entries);
+         for(int e=0; e<entries && exif+12<end; e++)
+         {
+            int tag = NEXT_SHORT;
+            int type = NEXT_SHORT;
+            int vpos = NEXT_INT;
+            int val = NEXT_SHORT;
+            exif += 2;
+            //printf("  tag:%d, type:%d val:%d\n", tag, type, val );
+            // Orientation/short
+            if (tag==274 && type==3)
+            {
+               //printf("Found rotation: %d\n", val);
+               switch(val)
+               {
+                  case 1: return 0; // normal - no rotation
+                  case 3: return 2; // 180 rotation
+                  case 6: return 1; // must rotate 90 cw
+                  case 8: return 3; // must rotate 270 cw (90 acw)
+                  default:
+                     //printf(" unknown rotation: %d\n", val);
+                     // Mirror cases - not handled
+                     return 0;
+               }
+            }
+         }
+
+      }
+   }
+
+   return rotation;
+}
+
+static const int APP0  = 0xe0;
+static const int COM   = 0xfe;
+
 static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen, IAppDataCallback *onAppData=nullptr)
 {
    struct jpeg_decompress_struct cinfo;
@@ -232,38 +301,95 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen, IAppDat
       cinfo.src = &manager.pub;
    }
 
-   if (onAppData)
+   if (onAppData || gRespectExifOrientation)
    {
-      const int APP0  = 0xe0;
-      const int COM   = 0xfe;
-
       cinfo.client_data = onAppData;
       unsigned int bufSize = inDataLen>0 ? inDataLen : 1<<20;
-      jpeg_save_markers(&cinfo, COM, bufSize);
-      for(int i=0;i<15;i++)
-         jpeg_save_markers(&cinfo, APP0 + i, bufSize);
+      if (onAppData)
+      {
+         jpeg_save_markers(&cinfo, COM, bufSize);
+         for(int i=0;i<15;i++)
+            jpeg_save_markers(&cinfo, APP0 + i, bufSize);
+      }
+      else
+      {
+         jpeg_save_markers(&cinfo, APP0 + 1, bufSize);
+      }
    }
 
    // Read file parameters with jpeg_read_header().
    if (jpeg_read_header(&cinfo, TRUE)!=JPEG_HEADER_OK)
       return 0;
 
+   int rotation = 0;
+   if (gRespectExifOrientation)
+   {
+      jpeg_saved_marker_ptr marker = cinfo.marker_list;
+      while(marker)
+      {
+         if (marker->marker==APP0+1)
+         {
+            rotation = parseExif(marker->data, marker->data_length);
+            if (rotation)
+               break;
+         }
+         marker = marker->next;
+      }
+   }
+
    cinfo.out_color_space = JCS_RGB;
 
    // Start decompressor.
    jpeg_start_decompress(&cinfo);
 
-   result = new SimpleSurface(cinfo.output_width, cinfo.output_height, pfRGB);
+   int imageW = rotation==1 || rotation==3 ? cinfo.output_height : cinfo.output_width;
+   int imageH = rotation==1 || rotation==3 ? cinfo.output_width : cinfo.output_height;
+   result = new SimpleSurface(imageW, imageH, pfRGB);
    result->IncRef();
 
 
-   RenderTarget target = result->BeginRender(Rect(cinfo.output_width, cinfo.output_height));
+   std::vector<RGB> rowBuf;
+   if (rotation!=0)
+      rowBuf.resize(cinfo.output_width);
+
+
+   RenderTarget target = result->BeginRender(Rect(imageW, imageH));
 
 
    while (cinfo.output_scanline < cinfo.output_height)
    {
-      uint8 * dest = target.Row(cinfo.output_scanline);
+      int y = cinfo.output_scanline;
+      uint8 * dest = rotation==0 ? target.Row(y) : (uint8 *)&rowBuf[0];
       jpeg_read_scanlines(&cinfo, &dest, 1);
+
+      if (rotation==1)
+      {
+         // 90 CW.  First row starts at the right and goes down
+         RGB *col = ((RGB *)target.Row(0)) + imageW - 1 - y;
+         for(int x=0; x<imageH; x++)
+         {
+            *col = rowBuf[x];
+            col += imageW;
+         }
+      }
+      else if (rotation==2)
+      {
+         // 180 CW.  First row starts at the bottom-right and goes left
+         RGB *row = ((RGB *)target.Row(imageH-1-y)) + imageW - 1;
+         for(int x=0; x<imageW; x++)
+            row[-x] = rowBuf[x];
+      }
+      else if (rotation==3)
+      {
+         // 90 ACW.  First row starts at the bottom-left and goes up
+         RGB *col = ((RGB *)target.Row(imageH-1)) + y;
+         for(int x=0; x<imageH; x++)
+         {
+            *col = rowBuf[x];
+            col -= imageW;
+         }
+      }
+
    }
    result->EndRender();
 

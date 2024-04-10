@@ -68,6 +68,7 @@ class BitmapData implements IBitmapDrawable
    public var nmeHandle:NativeHandle;
    public var data(get,null):UInt8Array;
    public var mipmaps(get, set):Bool;
+   public static var respectExifOrientation(null, set):Bool;
 
 
    public function new(inWidth:Int, inHeight:Int, inTransparent:Bool = true, ?inFillARGB:Int, inPixelFormat:Int = -1)
@@ -482,6 +483,11 @@ class BitmapData implements IBitmapDrawable
 
    public static inline function extractColor(v:Int):Int { return v & 0xFFFFFF; }
 
+   static function set_respectExifOrientation(val:Bool)
+   {
+      nme_bitmap_data_set_respect_exif_orientation(val);
+      return val;
+   }
 
    static inline function sameValue(a:Int, b:Int)
    {
@@ -857,6 +863,7 @@ class BitmapData implements IBitmapDrawable
    private static var nme_bitmap_data_get_uints8 = PrimeLoader.load("nme_bitmap_data_get_uints8", "ooiiiiv");
    private static var nme_bitmap_data_set_uints8 = PrimeLoader.load("nme_bitmap_data_set_uints8", "ooiiiiv");
    private static var nme_bitmap_data_get_data_handle = PrimeLoader.load("nme_bitmap_data_get_data_handle", "oo");
+   private static var nme_bitmap_data_set_respect_exif_orientation = PrimeLoader.load("nme_bitmap_data_set_respect_exif_orientation", "bv");
 }
 
 

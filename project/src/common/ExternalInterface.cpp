@@ -55,6 +55,7 @@ namespace nme
 {
 void InitCamera();
 void GetGLStats(int *statsArray, int n);
+extern bool gRespectExifOrientation;
 
 // Not static
 int _id_id=0;
@@ -4361,6 +4362,13 @@ int nme_bitmap_data_get_format(value inHandle)
    return 0;
 }
 DEFINE_PRIME1(nme_bitmap_data_get_format);
+
+
+void nme_bitmap_data_set_respect_exif_orientation(bool respect)
+{
+   gRespectExifOrientation = respect;
+}
+DEFINE_PRIME1v(nme_bitmap_data_set_respect_exif_orientation);
 
 
 value nme_bitmap_data_from_bytes(value inRGBBytes, value inAlphaBytes, value inOnAppData)
