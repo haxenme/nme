@@ -638,6 +638,7 @@ struct GraphicsJob
    int             mDataCount;
    bool            mIsTileJob;
    bool            mIsPointJob;
+   bool            mPolyAA;
    unsigned char   mTileMode;
    unsigned char   mBlendMode;
 };
@@ -691,6 +692,7 @@ public:
    void endFill();
    void beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix = Matrix(),
                         bool inRepeat = true, bool inSmooth = false);
+   void lineStyleSoftEdge();
    void lineStyle(double thickness, unsigned int color = 0, double alpha = 1.0,
                   bool pixelHinting = false, StrokeScaleMode scaleMode = ssmNormal,
                   StrokeCaps caps = scRound,

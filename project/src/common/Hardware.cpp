@@ -1,7 +1,7 @@
 #include <Graphics.h>
 #include <Surface.h>
 #include <NMEThread.h>
-
+#include <map>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -73,7 +73,7 @@ public:
       int align = 2*sizeof(float);
 
       mSolidMode = false;
-      mAlphaAA = false;
+      mPolyAA = inJob.mPolyAA;
       mPerpLen = 0.5;
       mStateScale = data.scaleOf(inState);
       mScale = mStateScale;
@@ -104,6 +104,15 @@ public:
          mElement.mScaleMode = ssmNormal;
          if (!SetFill(inJob.mFill,inHardware))
             return;
+
+         if (mPolyAA)
+         {
+            //printf("Reserve solid AA..\n");
+            mElement.mFlags |= DRAW_HAS_NORMAL;
+            mElement.mNormalOffset = mElement.mVertexOffset + mElement.mStride;
+            mElement.mStride += sizeof(float)*2;
+            mPolyAA = true;
+         }
       }
       else if (tessellate_lines && inJob.mStroke->scaleMode==ssmNormal)
       {
@@ -139,7 +148,6 @@ public:
             mElement.mFlags |= DRAW_HAS_NORMAL;
             mElement.mNormalOffset = mElement.mVertexOffset + mElement.mStride;
             mElement.mStride += sizeof(float)*2;
-            mAlphaAA = true;
          }
       }
       else
@@ -363,6 +371,94 @@ public:
          mElement.mSurface->DecRef();
    }
 
+   void calcEdgeDist(UserPoint &p0, UserPoint &p1, UserPoint &p2,
+                     float &d0, float &d1, float &d2 )
+   {
+
+      UserPoint perp = UserPoint( p1.y-p0.y, p0.x-p1.x ).Normalized();
+      float dist = fabs((p2-p0).Dot(perp));
+
+      d0 = 0;
+      d1 = 0;
+      d2 = dist;
+   }
+
+
+   void calcEdgePointDist(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2,
+                     float &d0, float &d1, float &d2 )
+   {
+      UserPoint perp = UserPoint( p1.y-p0.y, p0.x-p1.x ).Normalized();
+      float dist = fabs( (p2-p0).Dot(perp) );
+
+      d0 = d1 = dist;
+      d2 = 0;
+   }
+
+   void CalcNormalCoords(const std::vector<bool> &isOuter)
+   {
+      UserPoint *vertices = (UserPoint *)&data.mArray[ mElement.mVertexOffset ];
+      UserPoint *norm = (UserPoint *)&data.mArray[ mElement.mNormalOffset ];
+
+      int n = mElement.mCount/3;
+      for(int i=0;i<mElement.mCount;i+=3)
+      {
+         UserPoint &p0 = *vertices; Next(vertices);
+         UserPoint &p1 = *vertices; Next(vertices);
+         UserPoint &p2 = *vertices; Next(vertices);
+
+         bool e0 = isOuter[i];
+         bool e1 = isOuter[i+1];
+         bool e2 = isOuter[i+2];
+
+         UserPoint norm0(1000,1000);
+         UserPoint norm1(1000,1000);
+         UserPoint norm2(1000,1000);
+
+         // Only have x and y, so must choose edge to AA
+         if (e0 && e1 && e2)
+         {
+            float l0 = p0.Dist2(p1);
+            float l1 = p1.Dist2(p2);
+            float l2 = p2.Dist2(p0);
+            if (l0<=l1 && l0<=l2)
+               e0 = false;
+            else if (l1<l2)
+               e1 = false;
+            else
+               e2 = false;
+         }
+
+         if (e0)
+         {
+            calcEdgeDist(p0, p1, p2, norm0.x, norm1.x, norm2.x);
+            if (!e1 && !e2)
+               calcEdgePointDist(p0, p1, p2, norm0.y, norm1.y, norm2.y);
+         }
+
+         if (e1)
+         {
+            if (e0)
+               calcEdgeDist(p1, p2, p0, norm1.y, norm2.y, norm0.y);
+            else
+            {
+               calcEdgeDist(p1, p2, p0, norm1.x, norm2.x, norm0.x);
+               if (!e2)
+                  calcEdgePointDist(p1, p2, p0, norm1.y, norm2.y, norm0.y);
+            }
+         }
+
+         if (e2)
+         {
+            calcEdgeDist(p2, p0, p1, norm2.y, norm0.y, norm1.y);
+            if (!e0 && !e1)
+               calcEdgePointDist(p2, p0, p1, norm2.x, norm0.x, norm1.x);
+         }
+
+         *norm=norm0; Next(norm);
+         *norm=norm1; Next(norm);
+         *norm=norm2; Next(norm);
+      }
+   }
 
    void CalcTexCoords()
    {
@@ -1022,7 +1118,7 @@ public:
       }
    }
 
-   void PushVertices(const Vertices &inV)
+   void PushVertices(const Vertices &inV, const std::vector<bool> &isOuter)
    {
       ReserveArrays(inV.size());
 
@@ -1037,6 +1133,12 @@ public:
 
       if (mElement.mSurface)
          CalcTexCoords();
+
+      if (mPolyAA)
+      {
+         mElement.mFlags |= DRAW_EDGE_DIST;
+         CalcNormalCoords(isOuter);
+      }
 
       PushElement();
    }
@@ -1062,21 +1164,73 @@ public:
    }
 
 
-   void PushTriangleWireframe(const Vertices &inV)
+   void expandFan(Vertices &ioV, std::vector<bool> &outEdge)
    {
-      ReserveArrays(inV.size()*2);
+      UserPoint p0 = ioV[0];
+      UserPoint p1 = ioV[1];
 
-      //printf("PushVertices %d\n", inV.size());
-
-      UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
-      for(int i=0;i<inV.size();i+=3)
+      int n = (int)ioV.size();
+      Vertices tris;
+      tris.reserve( 3*(n-2) );
+      outEdge.reserve( 3*(n-2) );
+      for(int i=2;i<n;i++)
       {
-         *v = inV[i]; Next(v);
-         *v = inV[i+1]; Next(v);
-         *v = inV[i+1]; Next(v);
-         *v = inV[i+2]; Next(v);
-         *v = inV[i+2]; Next(v);
-         *v = inV[i]; Next(v);
+         tris.push_back(p0);
+         tris.push_back(p1);
+         tris.push_back(ioV[i]);
+
+         outEdge.push_back(i==2);
+         outEdge.push_back(true);
+         outEdge.push_back(i==n-1);
+
+         p1 = ioV[i];
+      }
+      std::swap(ioV, tris);
+   }
+
+
+
+   void PushTriangleWireframe(const Vertices &inV,bool isFan)
+   {
+      int n = (int)inV.size();
+
+      if (isFan)
+      {
+         int tris =  n-2;
+         ReserveArrays( 2 + 4*tris );
+         UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
+
+         UserPoint p0 = inV[0];
+         UserPoint p1 = inV[1];
+         *v = p0; Next(v);
+         *v = p1; Next(v);
+
+         for(int i=2;i<n;i++)
+         {
+            UserPoint p = inV[i];
+            *v = p0; Next(v);
+            *v = p; Next(v);
+            *v = p1; Next(v);
+            *v = p; Next(v);
+
+            p1 = p;
+         }
+      }
+      else
+      {
+         int tris = n/3;
+         ReserveArrays(tris*6);
+         UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
+
+         for(int i=0;i<inV.size();i+=3)
+         {
+            *v = inV[i]; Next(v);
+            *v = inV[i+1]; Next(v);
+            *v = inV[i+1]; Next(v);
+            *v = inV[i+2]; Next(v);
+            *v = inV[i+2]; Next(v);
+            *v = inV[i]; Next(v);
+         }
       }
 
       if (mElement.mSurface)
@@ -1085,16 +1239,67 @@ public:
       PushElement();
 
       data.mElements.last().mPrimType = ptLines;
+      printf("ok\n");
+   }
+
+   void calcEdgeIsOuter(const Vertices &ioOutline, std::vector<bool> &outOuter)
+   {
+      size_t n = ioOutline.size();
+      outOuter.resize(n);
+
+      std::map<int64,int> pidMap;
+      std::vector<int> pids(n);
+      int ids = 0;
+      for(int i=0; i<n; i++)
+      {
+         int64 key = *(const int64 *)&ioOutline[i];
+         auto it = pidMap.find(key);
+         if (it!=pidMap.end())
+            pids[i] = it->second;
+         else
+         {
+            int id = ids++;
+            pids[i] = id;
+            pidMap[key] = id;
+         }
+      }
+
+      std::map<int64,int> eidCount;
+      union
+      {
+         int p[2];
+         int64 key;
+      };
+
+      for(int tri=0; tri<n; tri+=3)
+         for(int e=0;e<3;e++)
+         {
+            p[0] = pids[tri+e];
+            p[1] = pids[tri+((e+1)%3)];
+            if (p[1]<p[0])
+               std::swap(p[0],p[1]);
+            eidCount[key]++;
+         }
+
+      for(int tri=0; tri<n; tri+=3)
+         for(int e=0;e<3;e++)
+         {
+            p[0] = pids[tri+e];
+            p[1] = pids[tri+((e+1)%3)];
+            if (p[1]<p[0])
+               std::swap(p[0],p[1]);
+            outOuter[tri+e] = eidCount[key]<2;
+         }
+
    }
 
 
-
    #define FLAT 0.000001
-   void AddPolygon(Vertices &inOutline,const QuickVec<int> &inSubPolys)
+   void AddPolygon(Vertices &ioOutline,const QuickVec<int> &inSubPolys)
    {
       bool showTriangles = false;
 
-      if (mSolidMode && inOutline.size()<3)
+      if (mSolidMode && ioOutline.size()<3)
          return;
 
       bool isConvex = inSubPolys.size()==1;
@@ -1102,14 +1307,14 @@ public:
       {
          if (isConvex)
          {
-            UserPoint base = inOutline[0];
-            int last = inOutline.size()-2;
+            UserPoint base = ioOutline[0];
+            int last = ioOutline.size()-2;
             int i = 0;
             bool positive = true;
             for( ;i<last;i++)
             {
-               UserPoint v0 = inOutline[i+1]-base;
-               UserPoint v1 = inOutline[i+2]-base;
+               UserPoint v0 = ioOutline[i+1]-base;
+               UserPoint v1 = ioOutline[i+2]-base;
                double diff = v0.Cross(v1);
                if (fabs(diff)>FLAT)
                {
@@ -1120,8 +1325,8 @@ public:
 
             for(++i;i<last;i++)
             {
-               UserPoint v0 = inOutline[i+1]-base;
-               UserPoint v1 = inOutline[i+2]-base;
+               UserPoint v0 = ioOutline[i+1]-base;
+               UserPoint v1 = ioOutline[i+2]-base;
                double diff = v0.Cross(v1);
                if (fabs(diff)>FLAT && (diff>0)!=positive)
                {
@@ -1132,11 +1337,11 @@ public:
          }
          if (!isConvex)
          {
-            ConvertOutlineToTriangles(inOutline,inSubPolys,mWinding);
+            ConvertOutlineToTriangles(ioOutline,inSubPolys,mWinding);
             //showTriangles = true;
          }
       }
-      if (mSolidMode && inOutline.size()<3)
+      if (mSolidMode && ioOutline.size()<3)
          return;
 
 
@@ -1144,17 +1349,28 @@ public:
       if (mElement.mSurface)
          mElement.mTexOffset = mElement.mVertexOffset + 2*sizeof(float);
 
+      bool fan = isConvex;
       if (showTriangles)
       {
-         PushTriangleWireframe(inOutline);
-         //PushOutline(inOutline);
+         PushTriangleWireframe(ioOutline, fan);
+         //PushOutline(ioOutline);
       }
       else
       {
-         PushVertices(inOutline);
+         std::vector<bool> isOuter;
+         if (!fan)
+         {
+            mElement.mPrimType = ptTriangles;
+            if (mPolyAA)
+               calcEdgeIsOuter(ioOutline, isOuter);
+         }
+         else if (mPolyAA)
+         {
+            expandFan(ioOutline,isOuter);
+            mElement.mPrimType = ptTriangles;
+         }
 
-         if (!isConvex)
-            data.mElements.last().mPrimType = ptTriangles;
+         PushVertices(ioOutline,isOuter);
       }
    }
 
@@ -2392,7 +2608,7 @@ public:
    bool        mGradReflect;
    unsigned int mGradFlags;
    bool        mSolidMode;
-   bool        mAlphaAA;
+   bool        mPolyAA;
    double      mMiterLimit;
    double      mPerpLen;
    double      mScale;

@@ -30,27 +30,28 @@ enum PrimType { ptTriangleFan, ptTriangleStrip, ptTriangles, ptLineStrip, ptPoin
 
 enum
 {
-   DRAW_HAS_COLOUR      = 0x00000001,
-   DRAW_HAS_NORMAL      = 0x00000002,
-   DRAW_HAS_PERSPECTIVE = 0x00000004,
-   DRAW_RADIAL          = 0x00000008,
+   DRAW_HAS_COLOUR      = 0x0001,
+   DRAW_HAS_NORMAL      = 0x0002,
+   DRAW_HAS_PERSPECTIVE = 0x0004,
+   DRAW_RADIAL          = 0x0008,
 
-   DRAW_HAS_TEX         = 0x00000010,
-   DRAW_BMP_REPEAT      = 0x00000020,
-   DRAW_BMP_SMOOTH      = 0x00000040,
+   DRAW_HAS_TEX         = 0x0010,
+   DRAW_BMP_REPEAT      = 0x0020,
+   DRAW_BMP_SMOOTH      = 0x0040,
    
-   DRAW_TILE_MOUSE      = 0x00000080,
+   DRAW_TILE_MOUSE      = 0x0080,
+   DRAW_EDGE_DIST       = 0x0100,
 };
 
 
 
 struct DrawElement
 {
-   uint8        mFlags;
+   unsigned short mFlags;
+   short        mRadialPos;
    uint8        mPrimType;
    uint8        mBlendMode;
    uint8        mScaleMode;
-   short        mRadialPos;
 
    uint8        mStride;
    int          mCount;

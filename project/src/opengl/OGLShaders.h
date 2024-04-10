@@ -24,6 +24,7 @@ public:
    int  getTextureSlot();
    void setTransform(const Trans4x4 &inTrans);
    virtual void setGradientFocus(float inFocus);
+   void setNormScale(float inScale);
 
    std::string mVertProg;
    std::string mFragProg;
@@ -33,11 +34,6 @@ public:
    int        mContextVersion;
    const ColorTransform *mColourTransform;
 
-
-   // int vertexSlot;
-   // int textureSlot;
-   // int normalSlot;
-   // int colourSlot;
 
    GLint     mImageSlot;
    GLint     mColourArraySlot;

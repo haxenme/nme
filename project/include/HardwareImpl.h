@@ -21,8 +21,9 @@ enum
    PROG_4D_INPUT      =     0x0100,
    PROG_PREM_ALPHA    =     0x0200,
    PROG_COMP_ALPHA    =     0x0400,
+   PROG_EDGE_DIST     =     0x0800,
 
-   PROG_COUNT =             0x0800,
+   PROG_COUNT =             0x1000,
 };
 
 inline unsigned int getProgId( const DrawElement &element, const ColorTransform *ctrans)
@@ -45,6 +46,9 @@ inline unsigned int getProgId( const DrawElement &element, const ColorTransform 
 
    if (element.mFlags & DRAW_HAS_NORMAL)
       progId |= PROG_NORMAL_DATA;
+
+   if (element.mFlags & DRAW_EDGE_DIST)
+      progId |= PROG_EDGE_DIST;
 
    if (element.mFlags & DRAW_RADIAL)
    {

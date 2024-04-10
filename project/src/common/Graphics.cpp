@@ -384,6 +384,13 @@ void Graphics::beginTiles(Surface *bitmapData,bool inSmooth,int inBlendMode, int
    OnChanged();
 }
 
+void Graphics::lineStyleSoftEdge()
+{
+   lineStyle(-1);
+   Flush();
+   mFillJob.mPolyAA = true;
+}
+
 void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
                   bool pixelHinting, StrokeScaleMode scaleMode,
                   StrokeCaps caps,
@@ -391,6 +398,7 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
 {
    Flush(true,false,true);
    endTiles();
+   mFillJob.mPolyAA = false;
    if (mLineJob.mStroke)
    {
       mLineJob.mStroke->DecRef();

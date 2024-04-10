@@ -622,6 +622,10 @@ public:
             glVertexAttribPointer(prog->normalSlot, 2, GL_FLOAT, GL_FALSE, stride,
                 data + element.mNormalOffset);
             glEnableVertexAttribArray(prog->normalSlot);
+            if (prog->normScaleSlot>=0)
+               prog->setNormScale(
+                      sqrt( 0.5*( mModelView.m00*mModelView.m00 + mModelView.m01*mModelView.m01 +
+                                  mModelView.m10*mModelView.m10 + mModelView.m11*mModelView.m11 ) ) );
          }
 
 

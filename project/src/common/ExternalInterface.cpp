@@ -2956,6 +2956,16 @@ void nme_gfx_end_fill(value inGfx)
 }
 DEFINE_PRIME1v(nme_gfx_end_fill);
 
+void nme_gfx_line_style_soft_edge(value argGfx)
+{
+   Graphics *gfx;
+   if (AbstractToObject(argGfx,gfx))
+   {
+      CHECK_ACCESS("nme_gfx_line_style_soft_edge");
+      gfx->lineStyleSoftEdge();
+   }
+}
+DEFINE_PRIME1v(nme_gfx_line_style_soft_edge);
 
 void nme_gfx_line_style(value argGfx, value argThickness, int argColour, double argAlpha,
                         bool argPixelHinting, int argScaleMode,

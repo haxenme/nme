@@ -197,7 +197,6 @@ namespace nme
 
 Texture *OGLCreateTexture(Surface *inSurface,unsigned int inFlags);
 
-
 class GPUProg
 {
 public:
@@ -214,11 +213,13 @@ public:
    virtual void setColourTransform(const ColorTransform *inTransform, unsigned int inColour,
                                     bool inPremultiplyAlpha) = 0;
    virtual void setGradientFocus(float inFocus) = 0;
+   virtual void setNormScale(float inScale) = 0;
 
    int vertexSlot;
    int textureSlot;
    int normalSlot;
    int colourSlot;
+   int normScaleSlot;
 
 };
 

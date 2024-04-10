@@ -173,6 +173,11 @@ class Graphics
       nme_gfx_begin_set_gradient_fill(nmeHandle, Type.enumIndex(type), colors, alphas, ratios, matrix, spreadMethod == null ? 0 : Type.enumIndex(spreadMethod), interpolationMethod == null ? 0 : Type.enumIndex(interpolationMethod), focalPointRatio, false);
    }
 
+   public function lineStyleSoftEdge():Void
+   {
+      nme_gfx_line_style_soft_edge(nmeHandle);
+   }
+
    public function lineStyle(?thickness:Null<Float>, color:Int = 0, alpha:Float = 1.0, pixelHinting:Bool = false, ?scaleMode:LineScaleMode, ?caps:CapsStyle, ?joints:JointStyle, miterLimit:Float = 3):Void 
    {
       nme_gfx_line_style(nmeHandle, thickness, color, alpha, pixelHinting, scaleMode == null ?  0 : Type.enumIndex(scaleMode), caps == null ?  0 : Type.enumIndex(caps), joints == null ?  0 : Type.enumIndex(joints), miterLimit);
@@ -205,6 +210,7 @@ class Graphics
    private static var nme_gfx_begin_set_gradient_fill = nme.PrimeLoader.load("nme_gfx_begin_set_gradient_fill", "oiooooiidbv");
    private static var nme_gfx_end_fill = PrimeLoader.load("nme_gfx_end_fill", "ov");
    private static var nme_gfx_line_style = nme.PrimeLoader.load("nme_gfx_line_style", "ooidbiiidv" );
+   private static var nme_gfx_line_style_soft_edge = nme.PrimeLoader.load("nme_gfx_line_style_soft_edge", "ov" );
    private static var nme_gfx_move_to = PrimeLoader.load("nme_gfx_move_to", "oddv");
    private static var nme_gfx_line_to = PrimeLoader.load("nme_gfx_line_to", "oddv");
    private static var nme_gfx_curve_to = PrimeLoader.load("nme_gfx_curve_to", "oddddv");

@@ -26,6 +26,7 @@ OGLProg::OGLProg(const std::string &inVertProg, const std::string &inFragProg,in
    textureSlot = -1;
    normalSlot = -1;
    colourSlot = -1;
+   normScaleSlot = -1;
 
    //printf("%s", inVertProg.c_str());
    //printf("%s", inFragProg.c_str());
@@ -146,8 +147,8 @@ void OGLProg::recreate()
    mFXSlot = glGetUniformLocation(mProgramId, "mFX");
    mASlot = glGetUniformLocation(mProgramId, "mA");
    mOn2ASlot = glGetUniformLocation(mProgramId, "mOn2A");
+   normScaleSlot = glGetUniformLocation(mProgramId, "uNormScale");
 
-   
    glUseProgram(mProgramId);
    if (mImageSlot>=0)
       glUniform1i(mImageSlot,0);
@@ -251,6 +252,13 @@ void OGLProg::setTransform(const Trans4x4 &inTrans)
 {
    glUniformMatrix4fv(mTransformSlot, 1, 0, inTrans[0]);
 }
+
+
+void OGLProg::setNormScale(float inScale)
+{
+   glUniform1f(normScaleSlot, inScale>0 ? 1.0f/inScale : 1.0f);
+}
+
 
 void OGLProg::setGradientFocus(float inFocus)
 {
@@ -407,11 +415,19 @@ GPUProg *GPUProg::create(unsigned int inID)
         VIN + " vec2 aNormal;\n" +
         VOUT +" vec2 vNormal;\n";
 
-      vertexProg =
-        "   vNormal = aNormal;\n" + vertexProg;
+      if (inID & PROG_EDGE_DIST)
+      {
+         vertexVars += "uniform float uNormScale;\n";
+         vertexProg =
+           "   vNormal = aNormal*uNormScale;\n" + vertexProg;
+      }
+      else
+         vertexProg =
+           "   vNormal = aNormal;\n" + vertexProg;
 
       pixelVars +=
         VOUT + " vec2 vNormal;\n";
+
    }
 
    std::string vertexShader = 
@@ -430,7 +446,13 @@ GPUProg *GPUProg::create(unsigned int inID)
 
    if ( inID & PROG_NORMAL_DATA )
    {
-      fragColour = "(" + fragColour + ") * vec4(1,1,1, min(vNormal.x-abs(vNormal.y),1.0) )";
+      std::string edgeAlpha = (inID & PROG_EDGE_DIST) ?
+            "min(vNormal.x,vNormal.y)"  :
+            "vNormal.x-abs(vNormal.y)";
+      if ( inID & PROG_PREM_ALPHA )
+         fragColour = "(" + fragColour + ") * min(" + edgeAlpha + ",1.0)";
+      else
+         fragColour = "(" + fragColour + ") * vec4(1,1,1, min(" + edgeAlpha + ",1.0) )";
    }
  
 
