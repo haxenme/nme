@@ -49,7 +49,218 @@ struct Range
 
 HardwareRenderer *HardwareRenderer::current = nullptr;
 
+//#define DBG_BALANCE
+struct PNTri
+{
+   int p[3];
+   int n[3];
 
+   PNTri() { n[0] = n[1] = n[2] = -1; }
+   PNTri(int p0, int p1, int p2, int n0, int n1, int n2)
+   {
+      p[0] = p0;
+      p[1] = p1;
+      p[2] = p2;
+
+      n[0] = n0;
+      n[1] = n1;
+      n[2] = n2;
+   }
+   int findNeighbour(int otid) const
+   {
+      if (n[0]==otid) return 0;
+      if (n[1]==otid) return 1;
+      if (n[2]==otid) return 2;
+      return -1;
+   }
+   int findOther(int p0, int p1) const
+   {
+      if (p[0]!=p0 && p[0]!=p1)
+         return p[0];
+      if (p[1]!=p0 && p[1]!=p1)
+         return p[1];
+      return p[2];
+   }
+   int oppositeTri(int pid) const
+   {
+      if (p[0]!=pid && p[1]!=pid)
+         return n[0];
+      if (p[1]!=pid && p[2]!=pid)
+         return n[1];
+      return n[2];
+   }
+
+   void setNeighbour(int p0, int p1, int nid)
+   {
+      if ( (p[0]==p0 && p[1]==p1) || (p[1]==p0 && p[0]==p1) )
+         n[0] = nid;
+      else if ( (p[1]==p0 && p[2]==p1) || (p[2]==p0 && p[1]==p1) )
+         n[1] = nid;
+      else if ( (p[2]==p0 && p[0]==p1) || (p[0]==p0 && p[2]==p1) )
+         n[2] = nid;
+      else
+         printf("Could not find neighbour to set.\n");
+   }
+   #ifdef DBG_BALANCE
+   void print(const char *name) const
+   {
+      printf("%s: %d %d %d\n",name, p[0], p[1], p[2]);
+      printf("    %d %d %d\n", n[0], n[1], n[2]);
+   }
+   #endif
+};
+typedef std::vector<PNTri> PNTris;
+
+#ifdef DBG_BALANCE
+static void verifyTris(const PNTris &tris)
+{
+   size_t n = tris.size();
+   for(int t=0;t<n;t++)
+   {
+      const PNTri &tri = tris[t];
+      for(int nei=0;nei<3;nei++)
+      {
+         if (tri.n[nei]>0)
+         {
+            const PNTri &nt = tris[tri.n[nei]];
+            int slot = nt.findNeighbour(t);
+            if (slot<0)
+            {
+               printf("Tri %d has neighbour %d, but not reverse\n", t, tri.n[nei] );
+               tri.print(" t0");
+               nt.print("  t1");
+               exit(-1);
+            }
+            int p0 = tri.p[nei];
+            int p1 = tri.p[(nei+1)%3];
+            int np0 = nt.p[slot];
+            int np1 = nt.p[(slot+1)%3];
+            if ( !( (p0==np0 && p1==np1) || (p0==np1 && p1==np0) ) )
+            {
+               printf(" points on edge do not match: %d-%d  %d-%d\n", p0,p1, np0,np1);
+               exit(-1);
+            }
+         }
+      }
+   }
+}
+#endif
+
+void balanceTris(PNTris &tris, const Vertices &p)
+{
+   int tcount = (int)tris.size();
+   std::vector<bool> queued(tcount);
+   std::vector<int> queue(tcount);
+   for(int i=0;i<tcount; i++)
+   {
+      queue[i] = i;
+      queued[i] = true;
+   }
+
+   #ifdef DBG_BALANCE
+   printf("init...\n");
+   verifyTris(tris);
+   #endif
+
+   int qs = tcount;
+   while(qs)
+   {
+      int tid0 = queue[--qs];
+      queued[tid0] = false;
+
+      PNTri &t0 = tris[tid0];
+      for(int n00=0;n00<3;n00++)
+      {
+         int tid1 = t0.n[n00];
+         if (tid1>=0)
+         {
+            int n01 = (n00+1)%3;
+            int n02 = (n00+2)%3;
+
+            int a = t0.p[n00];
+            int b = t0.p[n01];
+            int c = t0.p[n02];
+
+            PNTri &t1 = tris[tid1];
+            int d = t1.findOther(a,b);
+
+           /*
+                 change t0|t1  to    t0
+                                     --
+                                     t1
+                       t0.p[n00] = t1.p[n11 or n10]
+                      A +
+                Tac    /|\   Tad
+                      / | \
+                   C /  |  \ D
+         t0.p[n02 ] /___|___\  t1.n[n12]
+                    \   |   /
+                     \  |  /  Tbd
+               Tbc    \ | /
+                       \|B
+                       t0.p[n01] = t1.p[n10 or n11]
+
+                */
+            const UserPoint &A = p[a];
+            const UserPoint &B = p[b];
+            const UserPoint &C = p[c];
+            const UserPoint &D = p[d];
+
+            if ( A.Dist2(B) > C.Dist2(D) )
+            {
+               //Check to see if it is convex - are C&D on opposite side of AB
+               // and A&B on opposite sized of CD
+               UserPoint AB = B-A;
+               UserPoint CD = D-C;
+               // Different sign
+               if ( (AB.Cross(C-A) * AB.Cross(D-A) < 0) &&
+                    (CD.Cross(A-C) * CD.Cross(B-C) < 0)  )
+               {
+                  #ifdef DBG_BALANCE
+                  printf("Flip tri[%d] / tri[%d] neighbour %d\n", tid0, tid1, n00 );
+                  t0.print("  t0");
+                  t1.print("  t1");
+                  printf(" a=%d, b=%d, c=%d, d=%d\n", a,b,c,d );
+                  #endif
+                  // Triangle neighbours
+                  int Tac = t0.n[n02];
+                  int Tbc = t0.n[n01];
+                  int Tad = t1.oppositeTri(b);
+                  int Tbd = t1.oppositeTri(a);
+
+                  // Change T0  to ADC
+                  t0 = PNTri(a,d,c, Tad, tid1, Tac);
+
+                  // Tad points to t0 instead now
+                  if (Tad>=0)
+                     tris[Tad].setNeighbour(a,d,tid0);
+
+                  // Change T1 to CDB
+                  t1 = PNTri(c,d,b, tid0, Tbd, Tbc );
+                  // Tbc points to t1 instead now
+                  if (Tbc>=0)
+                     tris[Tbc].setNeighbour(b,c,tid1);
+
+
+                  #ifdef DBG_BALANCE
+                  verifyTris(tris);
+                  #endif
+
+                  queue[qs++] = tid0;
+                  queued[tid0]=true;
+                  if (!queued[tid1])
+                  {
+                     queue[qs++] = tid1;
+                     queued[tid1]=true;
+                  }
+
+                  break;
+               }
+            }
+         }
+      }
+   }
+}
 
 typedef QuickVec<float> Normals;
 
@@ -374,23 +585,29 @@ public:
    void calcEdgeDist(UserPoint &p0, UserPoint &p1, UserPoint &p2,
                      float &d0, float &d1, float &d2 )
    {
-
       UserPoint perp = UserPoint( p1.y-p0.y, p0.x-p1.x ).Normalized();
       float dist = fabs((p2-p0).Dot(perp));
 
+      /*
       d0 = 0;
       d1 = 0;
       d2 = dist;
+      */
+      d0 = 0;
+      d1 = 0;
+      d2 = p2.Dist( (p0+p1)*0.5 );
    }
 
 
    void calcEdgePointDist(const UserPoint &p0, const UserPoint &p1, const UserPoint &p2,
                      float &d0, float &d1, float &d2 )
    {
-      UserPoint perp = UserPoint( p1.y-p0.y, p0.x-p1.x ).Normalized();
-      float dist = fabs( (p2-p0).Dot(perp) );
+      //UserPoint perp = UserPoint( p1.y-p0.y, p0.x-p1.x ).Normalized();
+      //float dist = fabs( (p2-p0).Dot(perp) );
+      //d0 = d1 = dist;
 
-      d0 = d1 = dist;
+      d0 = p0.Dist(p2);
+      d1 = p1.Dist(p2);
       d2 = 0;
    }
 
@@ -1118,7 +1335,8 @@ public:
       }
    }
 
-   void PushVertices(const Vertices &inV, const std::vector<bool> &isOuter)
+
+   void PushVertices(const Vertices &inV)
    {
       ReserveArrays(inV.size());
 
@@ -1129,6 +1347,34 @@ public:
       {
          *v = inV[i];
          Next(v);
+      }
+
+      if (mElement.mSurface)
+         CalcTexCoords();
+
+      PushElement();
+   }
+
+   void PushTris(const PNTris &inTris, const Vertices &inPoints)
+   {
+      int n = (int)inTris.size();
+      ReserveArrays(n*3);
+      std::vector<bool> isOuter;
+      isOuter.reserve(n*3);
+
+      //printf("PushVertices %d\n", inV.size());
+
+      UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
+      for(int i=0;i<n;i++)
+      {
+         const PNTri &tri = inTris[i];
+         *v = inPoints[ tri.p[0] ]; Next(v);
+         *v = inPoints[ tri.p[1] ]; Next(v);
+         *v = inPoints[ tri.p[2] ]; Next(v);
+
+         isOuter.push_back( tri.n[0]<0 );
+         isOuter.push_back( tri.n[1]<0 );
+         isOuter.push_back( tri.n[2]<0 );
       }
 
       if (mElement.mSurface)
@@ -1164,31 +1410,55 @@ public:
    }
 
 
-   void expandFan(Vertices &ioV, std::vector<bool> &outEdge)
+   void fanToTris(PNTris &outTris, int pointCount)
    {
-      UserPoint p0 = ioV[0];
-      UserPoint p1 = ioV[1];
+      outTris.resize( pointCount-2 );
+      int p0 = 0;
+      int p1 = 1;
 
-      int n = (int)ioV.size();
-      Vertices tris;
-      tris.reserve( 3*(n-2) );
-      outEdge.reserve( 3*(n-2) );
-      for(int i=2;i<n;i++)
+      int triLeft = -1;
+      for(int i=2;i<pointCount;i++)
       {
-         tris.push_back(p0);
-         tris.push_back(p1);
-         tris.push_back(ioV[i]);
-
-         outEdge.push_back(i==2);
-         outEdge.push_back(true);
-         outEdge.push_back(i==n-1);
-
-         p1 = ioV[i];
+         outTris[i-2] = PNTri(p0, p1, i,
+                            i-3, -1, i+1<pointCount ? i-1 : -1);
+         p1 = i;
       }
-      std::swap(ioV, tris);
    }
 
 
+
+   void PushTrisWireframe(const PNTris &tris, const Vertices &inV)
+   {
+      int n = (int)tris.size();
+      if (mElement.mFlags & DRAW_HAS_NORMAL)
+      {
+         mElement.mFlags &= ~DRAW_HAS_NORMAL;
+         mElement.mNormalOffset = 0;
+         mElement.mStride -= sizeof(float)*2.0;
+      }
+      mElement.mWidth = 1;
+
+      ReserveArrays(n*6);
+      UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
+
+      for(int i=0;i<n;i++)
+      {
+         const PNTri &tri = tris[i];
+         *v = inV[ tri.p[0] ]; Next(v);
+         *v = inV[ tri.p[1] ]; Next(v);
+         *v = inV[ tri.p[1] ]; Next(v);
+         *v = inV[ tri.p[2] ]; Next(v);
+         *v = inV[ tri.p[2] ]; Next(v);
+         *v = inV[ tri.p[0] ]; Next(v);
+      }
+
+      if (mElement.mSurface)
+         CalcTexCoords();
+
+      mElement.mPrimType = ptLines;
+
+      PushElement();
+   }
 
    void PushTriangleWireframe(const Vertices &inV,bool isFan)
    {
@@ -1242,55 +1512,61 @@ public:
       printf("ok\n");
    }
 
-   void calcEdgeIsOuter(const Vertices &ioOutline, std::vector<bool> &outOuter)
+   void triListToTris(PNTris &outTris, Vertices &ioPoints)
    {
-      size_t n = ioOutline.size();
-      outOuter.resize(n);
+      size_t n = ioPoints.size();
+      outTris.resize(n/3);
 
       std::map<int64,int> pidMap;
-      std::vector<int> pids(n);
+      std::map<int64,int> edgeMap;
+      Vertices compact;
+      compact.reserve( ioPoints.size()*2/3 + 2 );
       int ids = 0;
-      for(int i=0; i<n; i++)
+      for(int i=0; i<n; i+=3)
       {
-         int64 key = *(const int64 *)&ioOutline[i];
-         auto it = pidMap.find(key);
-         if (it!=pidMap.end())
-            pids[i] = it->second;
-         else
+         int tid = i/3;
+         PNTri &tri = outTris[tid];
+         for(int p=0;p<3;p++)
          {
-            int id = ids++;
-            pids[i] = id;
-            pidMap[key] = id;
+            int64 key = *(const int64 *)&ioPoints[i+p];
+
+            auto it = pidMap.find(key);
+            if (it!=pidMap.end())
+               tri.p[p] = it->second;
+            else
+            {
+               compact.push_back( ioPoints[i+p] );
+               int id = ids++;
+               tri.p[p] = id;
+               pidMap[key] = id;
+            }
+         }
+
+         for(int n=0;n<3;n++)
+         {
+            union
+            {
+               int edgePoint[2];
+               int64 key;
+            };
+            edgePoint[0] = tri.p[n];
+            edgePoint[1] = tri.p[ (n+1)%3 ];
+            if (edgePoint[1]<edgePoint[0])
+               std::swap(edgePoint[0],edgePoint[1]);
+            auto it = edgeMap.find(key);
+            if (it!=edgeMap.end())
+            {
+               int code = it->second;
+               int nid = code & 3;
+               int oid = code >> 2;
+               outTris[oid].n[nid] = tid;
+               tri.n[n] = oid;
+            }
+            else
+               edgeMap[key] = (tid<<2) | n;
          }
       }
-
-      std::map<int64,int> eidCount;
-      union
-      {
-         int p[2];
-         int64 key;
-      };
-
-      for(int tri=0; tri<n; tri+=3)
-         for(int e=0;e<3;e++)
-         {
-            p[0] = pids[tri+e];
-            p[1] = pids[tri+((e+1)%3)];
-            if (p[1]<p[0])
-               std::swap(p[0],p[1]);
-            eidCount[key]++;
-         }
-
-      for(int tri=0; tri<n; tri+=3)
-         for(int e=0;e<3;e++)
-         {
-            p[0] = pids[tri+e];
-            p[1] = pids[tri+((e+1)%3)];
-            if (p[1]<p[0])
-               std::swap(p[0],p[1]);
-            outOuter[tri+e] = eidCount[key]<2;
-         }
-
+      std::swap(ioPoints, compact );
    }
 
 
@@ -1355,22 +1631,28 @@ public:
          PushTriangleWireframe(ioOutline, fan);
          //PushOutline(ioOutline);
       }
+      else if (mPolyAA)
+      {
+         PNTris     tris;
+
+         if (fan)
+            fanToTris(tris, ioOutline.size() );
+         else
+            triListToTris(tris, ioOutline );
+
+         //balanceTris(tris,ioOutline);
+         mElement.mPrimType = ptTriangles;
+         #ifdef DBG_BALANCE
+         PushTrisWireframe(tris,ioOutline);
+         #else
+         PushTris(tris,ioOutline);
+         #endif
+      }
       else
       {
-         std::vector<bool> isOuter;
          if (!fan)
-         {
             mElement.mPrimType = ptTriangles;
-            if (mPolyAA)
-               calcEdgeIsOuter(ioOutline, isOuter);
-         }
-         else if (mPolyAA)
-         {
-            expandFan(ioOutline,isOuter);
-            mElement.mPrimType = ptTriangles;
-         }
-
-         PushVertices(ioOutline,isOuter);
+         PushVertices(ioOutline);
       }
    }
 

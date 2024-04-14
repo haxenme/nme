@@ -256,7 +256,9 @@ void OGLProg::setTransform(const Trans4x4 &inTrans)
 
 void OGLProg::setNormScale(float inScale)
 {
-   glUniform1f(normScaleSlot, inScale>0 ? 1.0f/inScale : 1.0f);
+   // For debug
+   //glUniform1f(normScaleSlot, 1.0f);
+   glUniform1f(normScaleSlot, inScale);
 }
 
 

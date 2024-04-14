@@ -396,9 +396,10 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
                   StrokeCaps caps,
                   StrokeJoints joints, double miterLimit)
 {
-   Flush(true,false,true);
-   endTiles();
+   // Finish solid if changing mPolyAA
+   Flush(true,mFillJob.mPolyAA,true);
    mFillJob.mPolyAA = false;
+   endTiles();
    if (mLineJob.mStroke)
    {
       mLineJob.mStroke->DecRef();
