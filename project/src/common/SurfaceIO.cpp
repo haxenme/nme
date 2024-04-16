@@ -355,6 +355,7 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen, IAppDat
 
    RenderTarget target = result->BeginRender(Rect(imageW, imageH));
 
+   int strideBytes = target.Row(1)-target.Row(0);
 
    while (cinfo.output_scanline < cinfo.output_height)
    {
@@ -369,7 +370,7 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen, IAppDat
          for(int x=0; x<imageH; x++)
          {
             *col = rowBuf[x];
-            col += imageW;
+            col = (RGB *)((char *)col + strideBytes);
          }
       }
       else if (rotation==2)
@@ -386,7 +387,7 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen, IAppDat
          for(int x=0; x<imageH; x++)
          {
             *col = rowBuf[x];
-            col -= imageW;
+            col = (RGB *)((char *)col - strideBytes);
          }
       }
 
