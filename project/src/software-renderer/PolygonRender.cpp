@@ -597,31 +597,37 @@ bool PolygonRender::Render(const RenderTarget &inTarget, const RenderState &inSt
    
    if (visible_pixels.HasPixels())
    {
+      Transform trans = inState.mTransform;
+      int size = (int) std::max( std::max( fabs(extent.minX), fabs(extent.maxX) ),
+                                 std::max( fabs(extent.minY), fabs(extent.maxY) ) );
+      while(trans.mAAFactor>1 && trans.mAAFactor*size>16383)
+         trans.mAAFactor>>=1;
+
       // Check to see if AlphaMask is invalid...
       int tx = 0;
       int ty = 0;
-      
-      if (mAlphaMask && !mAlphaMask->Compatible(inState.mTransform, rect,visible_pixels, tx, ty))
+
+      if (mAlphaMask && !mAlphaMask->Compatible(trans, rect,visible_pixels, tx, ty))
       {
          mAlphaMask->Dispose();
          mAlphaMask = 0;
       }
-      
+
       if (!mAlphaMask)
       {
-         SetTransform(inState.mTransform);
-         
+         SetTransform(trans);
+
          // TODO: make visible_pixels a bit bigger ?
-         SpanRect span(visible_pixels, inState.mTransform.mAAFactor);
+         SpanRect span(visible_pixels, trans.mAAFactor);
          span.mWinding = GetWinding();
          mSpanRect = &span;
-         
-         int alpha_factor = Iterate(itCreateRenderer, *inState.mTransform.mMatrix);
+
+         int alpha_factor = Iterate(itCreateRenderer, *trans.mMatrix);
          mAlphaMask = mSpanRect->CreateMask(mTransform, alpha_factor);
-         
+
          mSpanRect = 0;
       }
-      
+
       if (inTarget.mPixelFormat == pfAlpha)
       {
          mAlphaMask->RenderBitmap(tx, ty, inTarget, inState);

@@ -95,7 +95,7 @@ class Point
    inline public function normalized(inplace=false):Point
    {
       var result = this;
-      var len = x*x+y*y;
+      var len = Math.sqrt(x*x+y*y);
       var scale  =  Math.abs(len)>1e-7 ? 1.0/len : 0.0;
       if (inplace)
       {
