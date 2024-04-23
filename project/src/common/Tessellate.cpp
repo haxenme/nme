@@ -216,7 +216,7 @@ struct ConcaveSet
 };
 
 
-void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
+bool OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
 {
    outTriangles.reserve( outTriangles.size() + (size-2)*3);
 
@@ -234,7 +234,7 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
          {
             p = head = p->next;
             if (p == p->next)
-               return;
+               return true;
          }
          else
          {
@@ -331,6 +331,7 @@ void OutlineToEars(EdgePoint *head, int size, Vertices &outTriangles)
          }
       }
    }
+   return size<3;
 }
 
 
@@ -822,7 +823,7 @@ static bool sortLeft(SubInfo *a, SubInfo *b)
 
 
 
-void TriangulateSubPolys(SubInfo *outer, QuickVec<SubInfo *> &holes,  Vertices &outTriangles)
+bool TriangulateSubPolys(SubInfo *outer, QuickVec<SubInfo *> &holes,  Vertices &outTriangles)
 {
    int holeCount = holes.size();
    int size = outer->size;
@@ -864,6 +865,7 @@ void TriangulateSubPolys(SubInfo *outer, QuickVec<SubInfo *> &holes,  Vertices &
       }
 
       delete poly2Tri;
+      return true
 
    #else
       if (holeCount)
@@ -885,7 +887,7 @@ void TriangulateSubPolys(SubInfo *outer, QuickVec<SubInfo *> &holes,  Vertices &
          }
       }
       EdgePoint *p = outer->first;
-      OutlineToEars(outer->first, size, outTriangles);
+      return OutlineToEars(outer->first, size, outTriangles);
    #endif
 }
 
@@ -913,14 +915,14 @@ static void dump(const SubInfo &sub)
 }
 
 // Clipper Version
-void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys,WindingRule inWinding)
+bool ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys,WindingRule inWinding)
 {
    Vertices triangles;
 
    int subs = inSubPolys.size();
    int n = ioOutline.size();
    if (subs<1 || n<1)
-      return;
+      return true;
 
    float minX = ioOutline[0].x;
    float maxX = minX;
@@ -935,7 +937,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    }
    float diffX = maxX-minX;
    float diffY = maxY-minY;
-   if (diffX==0 || diffY==0) return;
+   if (diffX==0 || diffY==0) return true;
    float diff = diffX > diffY ? diffX : diffY;
    float scale = (float)(0x40000000)/diff;
    float unscale = 1.0/scale;
@@ -965,7 +967,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    catch(...)
    {
       // Hmmm
-      return;
+      return false;
    }
 
    // TODO - winding pftEvenOdd, pftNonZero
@@ -1017,6 +1019,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    }
 
    ioOutline.swap(triangles);
+   return true;
 }
 
 #else
@@ -1030,11 +1033,11 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
 #define FUSE_TOL 1e-12
 
-void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys,WindingRule inWinding)
+bool ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPolys,WindingRule inWinding)
 {
    #ifdef NME_INTERNAL_CLIPPING
    if (inSubPolys.size()<1)
-      return;
+      return true;
    QuickVec<int> subPolys(inSubPolys);
    NmeClipOutline(ioOutline,subPolys,inWinding);
    #else
@@ -1043,7 +1046,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
 
    int subs = subPolys.size();
    if (subs<1)
-      return;
+      return true;
 
    Vertices triangles;
 
@@ -1132,6 +1135,7 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
    }
 
 
+   bool good = true;
    for(int group=0;group<groupId;group++)
    {
       int first = -1;
@@ -1153,11 +1157,13 @@ void ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
       }
       if (first>=0)
       {
-         TriangulateSubPolys(&subInfo[first], holes, triangles);
+         if (!TriangulateSubPolys(&subInfo[first], holes, triangles))
+            good = false;
       }
    }
 
    ioOutline.swap(triangles);
+   return good;
 }
 #endif
 

@@ -17,8 +17,13 @@ namespace nme
   #endif
 #endif
 
-enum { DEBUG_KEEP_LOOPS     = 0 };
-enum { DEBUG_FAT_LINES      = 0 };
+enum { DEBUG_KEEP_LOOPS      = 0 };
+enum { DEBUG_FAT_LINES       = 0 };
+enum { DEBUG_UNSCALED        = 0 };
+enum { DEBUG_NO_INTERIOR     = 0 };
+enum { DEBUG_NO_FAT_FALLBACK = 0 };
+enum { DEBUG_EXTRA_FAT       = 0 };
+enum { DEBUG_PRINT_THRESH    = 0 };
 
 
 struct CurveEdge
@@ -262,6 +267,18 @@ void balanceTris(PNTris &tris, const Vertices &p)
    }
 }
 
+/*
+void makePoly0ormals(PNTris &inTris, Vertices &inPoints, Vertices &outNormals)
+{
+   std::vector<float> edgeDist(inPoints.size);
+   for(int i=0;i<edgeDist.size();i++)
+      edgeDist[i] = 0.5;
+
+   traceEdge
+   offsetEdge(-1);
+}
+*/
+
 typedef QuickVec<float> Normals;
 
 class HardwareBuilder
@@ -284,7 +301,7 @@ public:
       int align = 2*sizeof(float);
 
       mSolidMode = false;
-      mPolyAA = inJob.mPolyAA;
+      mPolyAA = false;
       mPerpLen = 0.5;
       mStateScale = data.scaleOf(inState);
       mScale = mStateScale;
@@ -292,7 +309,6 @@ public:
       if (mScale<=0.001)
          mScale = 0.001;
       mCurveThresh2 = 0.125/mScale/mScale;
-      mFatLineCullThresh = 5.0/mScale;
       mWinding = inPath.winding;
 
       if (inJob.mIsTileJob)
@@ -316,13 +332,20 @@ public:
          if (!SetFill(inJob.mFill,inHardware))
             return;
 
-         if (mPolyAA)
+         if (inJob.mPolyAA && polyAaGeomOk(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]) )
          {
-            //printf("Reserve solid AA..\n");
-            mElement.mFlags |= DRAW_HAS_NORMAL;
-            mElement.mNormalOffset = mElement.mVertexOffset + mElement.mStride;
-            mElement.mStride += sizeof(float)*2;
-            mPolyAA = true;
+            mPolyAA = inJob.mPolyAA;
+            mElement.mPrimType = ptTriangles;
+
+            mCaps = scRound;
+            mJoints = sjRound;
+            mMiterLimit = 0.5;
+
+            mElement.mWidth = 1.0/mScale;
+            if (DEBUG_EXTRA_FAT)
+               mElement.mWidth = 5.0/mScale;
+            mPerpLen = mElement.mWidth*0.5;
+
          }
       }
       else if (tessellate_lines && inJob.mStroke->scaleMode==ssmNormal)
@@ -494,9 +517,17 @@ public:
             AddTiles(mode, &inPath.data[inJob.mData0], tiles);
          }
       }
-      else if (tessellate_lines && !mSolidMode)
+      else if (tessellate_lines && (!mSolidMode || mPolyAA) )
       {
-         AddLineTriangles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0] );
+         if (!AddLineTriangles(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0] ))
+         {
+            if (mPolyAA)
+            {
+               mPolyAA = false;
+               mSolidMode = true;
+               AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
+            }
+         }
       }
       else
       {
@@ -1355,12 +1386,10 @@ public:
       PushElement();
    }
 
-   void PushTris(const PNTris &inTris, const Vertices &inPoints)
+   void PushTris(PNTris &inTris, Vertices &inPoints)
    {
       int n = (int)inTris.size();
       ReserveArrays(n*3);
-      std::vector<bool> isOuter;
-      isOuter.reserve(n*3);
 
       //printf("PushVertices %d\n", inV.size());
 
@@ -1371,20 +1400,10 @@ public:
          *v = inPoints[ tri.p[0] ]; Next(v);
          *v = inPoints[ tri.p[1] ]; Next(v);
          *v = inPoints[ tri.p[2] ]; Next(v);
-
-         isOuter.push_back( tri.n[0]<0 );
-         isOuter.push_back( tri.n[1]<0 );
-         isOuter.push_back( tri.n[2]<0 );
       }
 
       if (mElement.mSurface)
          CalcTexCoords();
-
-      if (mPolyAA)
-      {
-         mElement.mFlags |= DRAW_EDGE_DIST;
-         CalcNormalCoords(isOuter);
-      }
 
       PushElement();
    }
@@ -1571,15 +1590,16 @@ public:
 
 
    #define FLAT 0.000001
-   void AddPolygon(Vertices &ioOutline,const QuickVec<int> &inSubPolys)
+   bool AddPolygon(Vertices &ioOutline,const QuickVec<int> &inSubPolys, bool requireClean = false)
    {
       bool showTriangles = false;
 
-      if (mSolidMode && ioOutline.size()<3)
-         return;
+      bool solid = mSolidMode || mPolyAA;
+      if (solid && ioOutline.size()<3)
+         return true;
 
       bool isConvex = inSubPolys.size()==1;
-      if (mSolidMode)
+      if (solid)
       {
          if (isConvex)
          {
@@ -1613,12 +1633,14 @@ public:
          }
          if (!isConvex)
          {
-            ConvertOutlineToTriangles(ioOutline,inSubPolys,mWinding);
+            bool good = ConvertOutlineToTriangles(ioOutline,inSubPolys,mWinding);
+            if (requireClean && !good)
+               return false;
             //showTriangles = true;
          }
       }
-      if (mSolidMode && ioOutline.size()<3)
-         return;
+      if (solid && ioOutline.size()<3)
+         return true;
 
 
       mElement.mVertexOffset = data.mArray.size();
@@ -1631,29 +1653,13 @@ public:
          PushTriangleWireframe(ioOutline, fan);
          //PushOutline(ioOutline);
       }
-      else if (mPolyAA)
-      {
-         PNTris     tris;
-
-         if (fan)
-            fanToTris(tris, ioOutline.size() );
-         else
-            triListToTris(tris, ioOutline );
-
-         //balanceTris(tris,ioOutline);
-         mElement.mPrimType = ptTriangles;
-         #ifdef DBG_BALANCE
-         PushTrisWireframe(tris,ioOutline);
-         #else
-         PushTris(tris,ioOutline);
-         #endif
-      }
       else
       {
          if (!fan)
             mElement.mPrimType = ptTriangles;
          PushVertices(ioOutline);
       }
+      return true;
    }
 
 
@@ -1818,6 +1824,8 @@ public:
       int steps = 1 + mPerpLen*mScale*angle*3;
       if (steps>60)
          steps = 60;
+      else if (steps<3)
+         steps = 3;
       double d_theta = angle / (steps+1);
       double theta = d_theta;
       for(int i=1;i<steps;i++)
@@ -1848,309 +1856,310 @@ public:
        }
    }
 
-
-
-   void cleanCurve(Curves &curve,bool inLoop,double inSide)
+   void cleanCurve(Curves &curve,bool isClosed,double inSide)
    {
       bool debug = false;
       double oT = curve[ curve.size()-1 ].t + 1;
 
+      float mergeThresh = mPerpLen * 0.001;
+      mergeThresh *= mergeThresh;
+      int dest = 0;
+      for(int i=0;i<curve.size();i++)
+      {
+         int mergeCount = 0;
+         for(int j=i+1; j<curve.size(); j++)
+            if ( curve[i].p.Dist2(curve[j].p) < mergeThresh )
+               mergeCount++;
+            else
+               break;
+         curve[dest] = curve[i];
+         if (mergeCount>0)
+         {
+            curve[dest].t = (curve[i].t + curve[i+mergeCount].t) * 0.5;
+            i+=mergeCount;
+         }
+         dest++;
+      }
+      curve.resize(dest);
+
       if (DEBUG_KEEP_LOOPS)
       {
-         if (inLoop)
-            curve.push_back( CurveEdge( curve[0].p, oT) );
+         int n  = (int)curve.size();
+         if (isClosed && curve[0].p != curve[n-1].p)
+            curve.push_back(curve[0]);
          return;
       }
 
-      double perp2 = mPerpLen*mPerpLen*4.0;
 
-      int lastStart = inLoop ? 0 : -3;
-      for(int startPoint=0; startPoint<curve.size()+lastStart;startPoint++)
+      int osize = (int)curve.size();
+      //const bool dbgPrint = false;
+      const bool dbgPrint = DEBUG_PRINT_THRESH>0 && curve.size()>DEBUG_PRINT_THRESH;
+      if (dbgPrint)
+         printf("Clear Curve - %d\n", osize);
+
+      int lastStart = isClosed ? 0 : -3;
+      for(int startPoint=0; startPoint<curve.size()+lastStart && curve.size()>2;startPoint++)
       {
+         // Get line segment ....... startPoint, startPoint+1:   p0 - p1
          const UserPoint &p0 = curve[startPoint].p;
          int startNext = (startPoint+1) % curve.size();
          UserPoint &p1 = curve[startNext].p;
-         UserPoint dp = p1-p0;
-         // Merge....
-         double dpLen = dp.x*dp.x + dp.y*dp.y;
-         if (dpLen < 0.0001)
+
+         UserPoint dir0 = p1-p0;
+         // Should already be cleaned, but maybe very close insertions
+         double len = dir0.Norm();
+         if ( len<0.000001 )
          {
+            if (dbgPrint)
+               printf("remove dupe %d/%d : %d\n", startPoint,startNext, (int)curve.size() );
             curve.erase(std::max(startPoint,startNext),1);
-            // will be incremented again
             startPoint--;
             continue;
          }
-         dpLen = inSide*sqrt(dpLen);
-         double dpX = dp.x/dpLen;
-         double dpY = dp.y/dpLen;
 
-         float minX = std::min(p0.x,p1.x);
-         float maxX = std::max(p0.x,p1.x);
-         float minY = std::min(p0.y,p1.y);
-         float maxY = std::max(p0.y,p1.y);
+         UserPoint onSideDist = dir0.Perp(-0.25*inSide/mPerpLen);
 
-
-         int stopOffset = inLoop ? curve.size() : -1;
-         for(int t = startPoint+2; t<curve.size() + stopOffset; t++)
+         // Next segment can't intersect with first segment since it shared end
+         int prevSlot = (startPoint+2) % curve.size();
+         UserPoint prevPoint = curve[prevSlot].p;
+         // Should already be cleaned, but maybe very close insertions
+         if ( (prevPoint-p1).Norm()<0.0001 )
          {
-            int testPoint = t;
-            int testNext = t+1;
-            if (inLoop)
-            {
-               testPoint = testPoint%curve.size();
-               testNext = testNext%curve.size();
-               if (testNext==startPoint || testPoint==startPoint)
-                  break;
-            }
-            const UserPoint &l0 = curve[testPoint].p;
+            if (dbgPrint)
+               printf("remove dupe1 %d\n", startNext );
+            curve.erase(std::max(startNext,prevSlot),1);
+            startPoint--;
+            continue;
+         }
 
-            //  Distance from testPoint to line-segment l1-l0
-            //    testPoint = l0 + alpha * dp
-            UserPoint dTest = l0-p0;
-            double perp = dTest.x*dpY - dTest.y*dpX;
-            //if (perp<0 || perp > mPerpLen*2)
-            if (perp*perp > perp2)
+         /*
+         if (dbgPrint)
+            printf("%d| curl0\n", prevSlot);
+         // If point is on "correct" side of line, we are done
+         if ( side<0 )
+            continue;
+         */
+
+         float side = onSideDist.Dot( prevPoint-p0 );
+         bool prevOnOddSide = side<0;
+         if ( side>1 )
+         {
+            //if (dbgPrint)
+            //   printf(" %d] stop early side %f\n", startPoint, side);
+            continue;
+         }
+
+         // Check all the points downstream, possibly including the closing segment from end to beginning
+         int stopOffset = isClosed ? curve.size() : -1;
+         int advance = 0;
+         for(int t = startPoint+3; t<curve.size() + stopOffset; t++)
+         {
+            int testPoint = t%curve.size(); 
+            if (testPoint==startPoint)
+            {
+               if (dbgPrint)
+                  printf(" %d] loopback done %d\n", startPoint, advance);
                break;
+            }
 
-            const UserPoint &l1 = curve[testNext].p;
-            if ( (l0.x<minX && l1.x<minX) ||
-                 (l0.x>maxX && l1.x>maxX) ||
-                 (l0.y<minY && l1.y<minY) ||
-                 (l0.y>maxY && l1.y>maxY) )
-              continue;
+            const UserPoint &p = curve[testPoint].p;
+            float side = onSideDist.Dot( p-p0 );
+            bool currentOnOddSide = side<0;
+            advance++;
+            //if (advance<5)
+            //   printf("  %d-%d i %d-%d, side0=%d, sid1=%f -> %d\n", startPoint, startNext, prevSlot,testPoint, prevOnOddSide, side,  currentOnOddSide );
 
-            UserPoint dl = l1-l0;
-            // Solve p0.x + a dp.x = l0.x + b dl.x
-            //       p0.y + a dp.y = l0.y + b dl.y
-
-            // Solve p0.x*dp.y + a dp.x*dp.y = l0.x*dp.y + b dl.x*dp.y
-            //       p0.y*dp.x + a dp.y*dp.x = l0.y*dp.x + b dl.y*dp.x
-            //    p0 x dp - l0 x dp = b dl x dp
-            //    (p0-l0) x dp = b dl x dp
-            double denom = dl.Cross(dp);
-            if (denom!=0.0)
+            if (prevOnOddSide != currentOnOddSide)
             {
-               double b = (p0-l0).Cross(dp)/denom;
-               if (b>=0 && b<=1.0)
+               const UserPoint dir = p-prevPoint;
+               // prevPoint -> p crosses the p0->p1 line
+
+               // Solve p0.x + a dir0.x = prevPoint.x + b dir.x
+               //       p0.y + a dir0.y = prevPoint.y + b dir.y
+
+               // Solve p0.x*dir0.y + a dir0.x*dir0.y = prevPoint.x*dir0.y + b dir.x*dir0.y
+               //       p0.y*dir0.x + a dir0.y*dir0.x = prevPoint.y*dir0.x + b dir.y*dir0.x
+               //    p0 x dir0 - prevPoint x dir0 = b dir x dir0
+               //    (p0-prevPoint) x dir0 = b dir x dir0
+               double denom = dir.Cross(dir0);
+               if (denom!=0.0)
                {
-                  double a =  (fabs(dp.x) > fabs(dp.y)) ? (l0.x + b*dl.x - p0.x)/dp.x :
-                                                          (l0.y + b*dl.y - p0.y)/dp.y;
-                  //if (a>=0 && a<=1) equals case?
-                  if ( (a!=1 && a!=0) || (b!=1 && b!=0) )
+                  double b = (p0-prevPoint).Cross(dir0)/denom;
+                  if (b>=0 && b<=1.0)
                   {
-                     if (a>=0 && a<=1)
+                     double a =  (fabs(dir0.x) > fabs(dir0.y)) ? (prevPoint.x + b*dir.x - p0.x)/dir0.x :
+                                                             (prevPoint.y + b*dir.y - p0.y)/dir0.y;
+                     //if (a>=0 && a<=1) equals case?
+                     if ( (a!=1 && a!=0) || (b!=1 && b!=0) )
                      {
-                        UserPoint p = p0 + dp*a;
-                        // Calculate loop-sense ...
-                        double sense = 0.0;
-                        int end = testPoint;
-                        if (end<startNext)
-                           end+=curve.size();
-                        UserPoint prev = p1 - p;;
-                        for(int i=startNext+1; i<end;i++)
+                        if (a>=0 && a<=1)
                         {
-                           UserPoint v = curve[ i%curve.size() ].p - p;
-                           sense += prev.Cross(v);
-                           prev = v;
-                        }
+                           if (dbgPrint)
+                              printf("Intersect %f %f  %d-%d  x  %d-%d\n", a, b, startPoint, startNext, prevSlot, testPoint );
+                           UserPoint p = p0 + dir0*a;
 
-                        if (sense*inSide>0) // figure-8 intersection Ok....
-                        {
-                           continue;
-                        }
-                        else
-                        if (testNext<startPoint)
-                        {
-                           if (startNext == 0)
+                           // Calculate loop-sense ...
+                           double sense = 0.0;
+                           int end = testPoint;
+                           UserPoint prev = p1 - p;
+                           // Loop p , startNext, startNext+1, startNext+1, ... prevSlot, p |  testPoint
+                           for(int i=startNext+1; i!=testPoint; i=(i+1)%curve.size() )
                            {
-                              // Remove the loop 
-                              //   c[startNext]
-                              //   ...
-                              //   c[testPoint]  <- p
-                              //   c[testNext]
-                              //   ...
-                              //   c[startPoint]
-                              // erase between 0 and testPoint
-                              curve[testPoint].p = p;
-
-                              //curve[testPoint].t = curve[testPoint>>1].t;
-                              curve.EraseAt(0, testPoint);
-                              // Done
+                              UserPoint v = curve[i].p - p;
+                              sense += prev.Cross(v);
+                              prev = v;
                            }
-                           else if (testPoint<startPoint)
+
+                           // figure-8 - more than one island of correctly oriented edges
+                           if (dbgPrint)
+                              printf(" sense: %f\n", sense);
+                           if (sense*inSide>0.00001)
                            {
-                              // Remove the loop 
-                              //   c[0]
-                              //   ...
-                              //   c[testPoint] <- p
-                              //   c[testNext]
-                              //   ...
-                              //   c[startPoint]
-                              //   c[startNext] <- p
-                              //   ...
-                              // 
-                              curve[testPoint].p = p;
-                              //curve[testPoint].t = curve[testPoint>>1].t;
-                              //curve.EraseAt(startNext,curve.size());
-                              oT = curve[startNext].t;
-                              curve.resize(startNext);
-                              curve.EraseAt(0,testPoint);
-                              startPoint-= testPoint;
-                              startPoint--;
+                              if (dbgPrint)
+                                  printf(" keep sub loop\n");
+                              break;
+                           }
+
+                           if (testPoint<startPoint)
+                           {
+                              if (dbgPrint)
+                                 printf("  snip wrap around\n");
+                              if (startNext == 0)
+                              {
+                                 if (dbgPrint)
+                                    printf("  snip start\n");
+                                 // Remove the loop up to testPoint, and replace testPoint with intersection
+                                 //   c[startNext]
+                                 //   ...
+                                 //   c[prevSlot]
+                                 //   c[testPoint]  <- p
+                                 //   ...
+                                 //   c[startPoint]
+                                 // erase between 0 and testPoint
+                                 curve[testPoint].p = p;
+                                 curve[testPoint].t = curve[0].t;
+                                 curve.EraseAt(0, testPoint);
+                                 // Done
+                              }
+                              else if (testPoint==0)
+                              {
+                                 if (dbgPrint)
+                                    printf("  snip end %d -> %d\n", (int)curve.size(), startNext+1);
+                                 // Remove the loop 
+                                 //   c[testPoint]
+                                 //   ...
+                                 //   c[startPoint]
+                                 //   c[startNext] <- p
+                                 //   ...
+                                 //   ...
+                                 curve[startNext].p = p;
+                                 //curve[startNext].t = curve[0].t;
+                                 curve.resize(startNext+1);
+                   
+                              }
+                              else if (testPoint<startPoint)
+                              {
+                                 // Replace prevSlot with intersection and delete points up to p
+                                 if (dbgPrint)
+                                    printf("  snip end wrap prevSlot=%d, testPoint=%d, startNext=%d, size=%d\n", prevSlot, testPoint, startNext, (int)curve.size() );
+                                 // Remove the loop 
+                                 //   c[0]
+                                 //   ...
+                                 //   c[prevSlot]  <- p
+                                 //   c[testPoint]
+                                 //   ...
+                                 //   c[startPoint]
+                                 //       -> wrap around to p
+                                 //   c[startNext]
+                                 //   ...
+                                 // 
+                                 curve[prevSlot].p = p;
+                                 curve[prevSlot].t = curve[0].t;
+                                 // Delete startNext onwards
+                                 //oT = curve[startNext].t;
+                                 curve.resize(startNext);
+                                 // Remove up to prevSlot
+                                 if (prevSlot)
+                                    curve.EraseAt(0,prevSlot);
+                                 startPoint-= prevSlot;
+                                 startPoint--;
+                              }
+                              else
+                              {
+                                 if (dbgPrint)
+                                    printf("  snip in middle\n");
+                                 // Remove the loop  - set first point to intersection, delete startNext onwards
+                                 //   c[testPoint]  <- p
+                                 //   ...
+                                 //   c[startPoint]
+                                 //   c[startNext]
+                                 //   ...
+                                 //   c[prevSlot]
+                                 curve[testPoint].p = p;
+                                 //oT = curve[startNext].t;
+                                 curve.EraseAt(startNext,curve.size());
+                                 startPoint--;
+                              }
                            }
                            else
                            {
+                              if (dbgPrint)
+                                 printf("  snip normal at %d\n", advance);
                               // Remove the loop 
-                              //   c[testNext]  <- p
-                              //   ...
                               //   c[startPoint]
                               //   c[startNext]
-                              //   ...
-                              //   c[testPoint]
-                              curve[testNext].p = p;
-                              oT = curve[startNext].t;
-                              curve.EraseAt(startNext,curve.size());
-                              startPoint--;
+                              //    ...
+                              //    c[prevSlot] <- p
+                              //    c[testPoint]
+                              //    ...
+                              curve[prevSlot].p = p;
+                              if (dbgPrint)
+                                 printf("  replace %d -> %f,%f\n", prevSlot, p.x, p.y );
+                              curve[prevSlot].t = curve[ (startNext+prevSlot) >> 1].t;
+                              if (dbgPrint)
+                                 printf("  erase %d...%d\n", startNext, testPoint );
+                              curve.EraseAt(startNext,prevSlot);
+                              // will get incremented
+                              startPoint -=1;
+                              if (startPoint<-1) startPoint = -1;
                            }
-                        }
-                        else
-                        {
-                           // Remove the loop 
-                           //   c[startPoint]
-                           //   c[startNext]
-                           //    ...
-                           //    c[testPoint] <- p
-                           //    c[testNext]
-                           //    ...
-                           curve[testPoint].p = p;
-                           curve[testPoint].t = curve[ (startNext+testPoint) >> 1].t;
-                           curve.EraseAt(startNext,testPoint);
-                           startPoint -=1;
-                           if (startPoint<-1) startPoint = -1;
-                        }
-                        // Try again...
-                        break;
-                     }
-                  }
-               }
-            }
-         }
-      }
-
-
-      /*
-      double sense = 0;
-      if (inLoop)
-      {
-         int n = inPath.size();
-         for(int i=0;i<n;i++)
-         {
-             const UserPoint &p0 = inPath[i].p;
-             const UserPoint &p1 = inPath[(i+1)%n].p;
-             sense += p0.Cross(p1);
-         }
-      }
-      */
-
-
-      if (inLoop) //&& curve.size()>1 && curve[ curve.size()-1].p != curve[0].p)
-         curve.push_back( CurveEdge( curve[0].p, oT) );
-   }
-
-
-
-
-
-   #if 0
-   void removeLoops(QuickVec<CurveEdge> &curve,int startPoint,float turningPoint,int *inAdjustStart=0)
-   {
-      if (DEBUG_KEEP_LOOPS!=0)
-         return;
-
-      for(int i=startPoint;i<curve.size()-2;i++)
-      {
-         const UserPoint &p0 = curve[i].p;
-         UserPoint &p1 = curve[i+1].p;
-         UserPoint dp = p1-p0;
-         if (fabs(dp.x) + fabs(dp.y) < 0.001)
-         {
-            if (inAdjustStart && *inAdjustStart>i)
-               (*inAdjustStart)--;
-            curve.erase(i,1);
-            i--;
-            continue;
-         }
-         float minX = std::min(p0.x,p1.x);
-         float maxX = std::max(p0.x,p1.x);
-         float minY = std::min(p0.y,p1.y);
-         float maxY = std::max(p0.y,p1.y);
-         float ct = curve[i].t;
-         int   cti = (int)ct;
-         bool afterTurning = turningPoint!=0 && ct>turningPoint;
-         for(int j=i+2;j<curve.size()-1;j++)
-         {
-            const UserPoint &l0 = curve[j].p;
-            const UserPoint &l1 = curve[j+1].p;
-            if ( (l0.x<minX && l1.x<minX) ||
-                 (l0.x>maxX && l1.x>maxX) ||
-                 (l0.y<minY && l1.y<minY) ||
-                 (l0.y>maxY && l1.y>maxY) )
-              continue;
-
-            // Only consider intersection with self or joint for second half of curve
-            if (turningPoint>0 && curve[j].t>turningPoint && cti<(int)curve[j].t-1)
-               break;
-
-            UserPoint dl = l1-l0;
-            // Solve p0.x + a dp.x = l0.x + b dl.x
-            //       p0.y + a dp.y = l0.y + b dl.y
-
-            // Solve p0.x*dp.y + a dp.x*dp.y = l0.x*dp.y + b dl.x*dp.y
-            //       p0.y*dp.x + a dp.y*dp.x = l0.y*dp.x + b dl.y*dp.x
-            //    p0 x dp - l0 x dp = b dl x dp
-            //    (p0-l0) x dp = b dl x dp
-            double denom = dl.Cross(dp);
-            if (denom!=0.0)
-            {
-               double b = (p0-l0).Cross(dp)/denom;
-               if (b>=0 && b<=1.0)
-               {
-                  double a =  (fabs(dp.x) > fabs(dp.y)) ? (l0.x + b*dl.x - p0.x)/dp.x :
-                                                          (l0.y + b*dl.y - p0.y)/dp.y;
-                  if (a>=0 && a<=1)
-                  {
-                     if (a>0 && a<1 && b>0 && b<1)
-                     {
-                        UserPoint p = p0 + dp*a;
-                        // Remove the loop 
-                        //   c[i]
-                        //    p  <- new point between c[i] and c[i+1]
-                        //    c[i+1]
-                        //    c[i+2]
-                        //    ...
-                        //    c[j]
-                        //    p  <- new point between c[j] and c[j+1]
-                        //    c[j+1]
-                        {
-                           // replace c[i+1] with p, and erase upto and including c[j]
-                           p1 = p;
-                           curve.EraseAt(i+2,j+1);
-                           if (inAdjustStart)
-                           {
-                              int &a = *inAdjustStart;
-                              if (a>i)
-                                 a = i;
-                           }
+                           // Go back to start point
+                           prevSlot = -1;
                            break;
                         }
                      }
                   }
                }
             }
+            // Point is outside the onSideDist - stop
+            // Don't care about overlap so much in non-mPolyAA case
+            //if (fabs(side)>1 )
+            if (side>1 || (!mPolyAA && side<-1) )
+            {
+               //if (dbgPrint)
+               //   printf(" %d] side @ %d %f\n", startPoint, advance, side);
+               break;
+            }
+
+            prevOnOddSide = currentOnOddSide;
+            prevSlot = testPoint;
+            prevPoint = p;
          }
       }
+
+      if (isClosed && curve.size()>1 && curve[ curve.size()-1].p != curve[0].p)
+         curve.push_back( CurveEdge( curve[0].p, oT) );
+
+      if (dbgPrint)
+      {
+         printf("new curve %d %f:\n", osize, inSide);
+         //for(int i=0; i<curve.size(); i++)
+            //printf(" %d] %f,%f  %f\n",  i, curve[i].p.x, curve[i].p.y, curve[i].t );
+      }
    }
-   #endif
+
+
+
 
 
    void AddCurveSegment(Curves &leftCurve, Curves &rightCurve,
@@ -2297,7 +2306,7 @@ public:
       }
    }
 
-   bool ComputeDistInfo(const UserPoint &otherSide, const UserPoint &prev, const UserPoint &p,
+   void ComputeDistInfo(const UserPoint &otherSide, const UserPoint &prev, const UserPoint &p,
                           UserPoint &outSideInfo, UserPoint &outInfo, double inSign)
    {
        /*
@@ -2318,44 +2327,136 @@ public:
 
        */
 
+      if (mPolyAA)
+      {
+         // inSign 1 -> 1, inSign -1 -> 0
+         // Shader uses: x - abs(y)
+         outSideInfo = UserPoint(1, 0.5+inSign*0.5);
+         outInfo = UserPoint(1, 0.5-inSign*0.5);
+      }
+      else
+      {
+         // Use simplified version to ensure values on edges of triangles match
+         float h = mElement.mWidth*mScale*0.5f;
+         outSideInfo = UserPoint(h, inSign*h);
+         outInfo = UserPoint(h, -inSign*h);
+      }
+
       //float lastLen = outSideInfo.x;
+      /*
       float h = fabs( (p-otherSide).Dot( (p-prev).Perp(1.0) ) );
+      h *= mScale * 0.5;
       if (h<mElement.mWidth)
          h = mElement.mWidth;
-      h *= mScale * 0.5;
-
       // Shader uses: x - abs(y)
       outSideInfo = UserPoint(h, inSign*h);
       outInfo = UserPoint(h, -inSign*h);
-
-      return false;
-      //bool forceTri =  fabs(outSideInfo.x-lastLen) > 1.0;
+      */
    }
 
-   void AddStrip(const QuickVec<Segment> &inPath, bool inLoop)
+   bool AddStrip(const QuickVec<Segment> &inPath, bool isClosed)
+   {
+      if (inPath.size()<2)
+         return true;
+
+      Curves leftCurve;
+      Curves rightCurve;
+
+      pathToCurves(inPath, isClosed, leftCurve, rightCurve);
+
+      if (leftCurve.size()<1 || rightCurve.size()<1)
+         return true;
+      if (leftCurve.size()<3 && rightCurve.size()<3)
+         return true;
+
+      if (mPolyAA)
+      {
+         float lx = leftCurve[0].p.x;
+         for(int i=1;i<leftCurve.size();i++)
+            lx = std::min(lx,leftCurve[i].p.x);
+         float rx = rightCurve[0].p.x;
+         for(int i=1;i<rightCurve.size();i++)
+            rx = std::min(rx,rightCurve[i].p.x);
+
+         int interiorVertexOffset = mElement.mVertexOffset;
+
+         // Right = outer, left=inner
+         Curves &inner = rx<lx ? leftCurve : rightCurve;
+         if (inner.size()>1 && !DEBUG_FAT_LINES && !DEBUG_NO_INTERIOR )
+         {
+            Vertices outline(inner.size());
+            for(int i=0; i<inner.size(); i++)
+               outline[i] = inner[i].p;
+
+            QuickVec<int> subs(1);
+            subs[0] = (int)outline.size();
+
+            mElement.mPrimType = ptTriangleFan;
+            mElement.mScaleMode = ssmNormal;
+            bool isGood = AddPolygon(outline, subs, true);
+            if (!isGood)
+            {
+               // Nibbled off too much and the interior could not be triangulated
+               //  (potentially an issue with cleanCurve too)
+               //  Fallback to normal solid
+               // In debug mode, predend we rendered it
+               return DEBUG_NO_FAT_FALLBACK;
+            }
+         }
+
+         // Exterior finge
+         int extra =  data.mArray.size() - interiorVertexOffset;
+         mElement.mVertexOffset += extra;
+         if (mElement.mTexOffset)
+            mElement.mTexOffset += extra;
+         if (mElement.mColourOffset)
+            mElement.mColourOffset += extra;
+
+         // Add normal flag
+         mElement.mFlags |= DRAW_HAS_NORMAL;
+         mElement.mNormalOffset = mElement.mVertexOffset + mElement.mStride;
+         mElement.mStride += sizeof(float)*2;
+
+         // Right = outer
+         if (rx<lx)
+            curvesToElement(rightCurve, leftCurve );
+         else
+            curvesToElement(leftCurve, rightCurve);
+      }
+      else
+      {
+         curvesToElement(leftCurve, rightCurve);
+      }
+      return true;
+   }
+
+
+   void pathToCurves(const QuickVec<Segment> &inPath, bool isClosed, Curves &leftCurve, Curves &rightCurve)
    {
       if (inPath.size()<2)
          return;
 
 
       // Allow shrinking to half the size
-      float s = mStateScale * 0.5;
-      if (data.mMinScale==0 || s>data.mMinScale)
-         data.mMinScale = s;
+      // Desable to allow debug by zooming in
+      if (!DEBUG_UNSCALED)
+      {
+         //hack
+         float s = mStateScale * 0.7;
+         if (data.mMinScale==0 || s>data.mMinScale)
+            data.mMinScale = s;
 
-      // And growing to 1.41 the size ...
-      s = mStateScale * 1.41;
-      if (data.mMaxScale==0 || s<data.mMaxScale)
-         data.mMaxScale = s;
+         // And growing to 1.41 the size ...
+         s = mStateScale * 1.41;
+         if (data.mMaxScale==0 || s<data.mMaxScale)
+            data.mMaxScale = s;
+      }
 
-
-      Curves leftCurve;
-      Curves rightCurve;
 
       float t = 0.0;
 
       // Endcap 0 ...
-      if (!inLoop)
+      if (!isClosed)
       {
          if (mCaps==scSquare || mCaps==scRound)
          {
@@ -2369,7 +2470,7 @@ public:
       UserPoint dir1;
 
       bool fancyJoints =  ( mPerpLen*mScale > 1.0 && mJoints==sjRound ) ||
-                          ( mPerpLen*mScale >= 0.999 && mJoints==sjMiter);
+                          ( mPerpLen*mScale >= 0.999 && mJoints==sjMiter) || mPolyAA;
 
       for(int i=1;i<inPath.size();i++)
       {
@@ -2383,7 +2484,7 @@ public:
           UserPoint next_dir;
           if (i+1<inPath.size())
              next_dir = inPath[i+1].getDir0(p).Normalized();
-          else if (!inLoop)
+          else if (!isClosed)
           {
              next_dir = dir1;
              //printf("Dup next_dir\n");
@@ -2516,23 +2617,17 @@ public:
       }
 
       // Endcap end ...
-      if (!inLoop && (mCaps==scSquare || mCaps==scRound))
+      if (!isClosed && (mCaps==scSquare || mCaps==scRound))
       {
          EndCap(leftCurve, rightCurve, p, dir1.Perp(mPerpLen),t);
       }
 
-      cleanCurve(leftCurve,inLoop,-1);
-      cleanCurve(rightCurve,inLoop,1);
+      cleanCurve(leftCurve,isClosed,-1);
+      cleanCurve(rightCurve,isClosed,1);
+   }
 
-      if (leftCurve.size()<1 || rightCurve.size()<1)
-         return;
-      if (leftCurve.size()<3 && rightCurve.size()<3)
-         return;
-
-      bool useTriStrip = true;
-      bool keepTriSense = true;
-
-
+    void curvesToElement(const Curves &leftCurve,const Curves &rightCurve )
+    {
       bool debug = false;
       /*
       if (debug)
@@ -2547,20 +2642,41 @@ public:
       }
       */
 
-      if (DEBUG_FAT_LINES==1)
+      //bool dbgPrt = leftCurve.size()>20 && leftCurve.size()<100;
+      const bool dbgPrt = false;
+      //printf("Curve %d %d\n", (int)leftCurve.size(), (int)rightCurve.size() );
+      if (dbgPrt)
+          printf("Flags: %04x, vo=%d, no=%d, to=%d, co=%d surf=%p\n", mElement. mFlags,
+              mElement.mVertexOffset, mElement.mNormalOffset, mElement.mTexOffset, mElement.mColourOffset,
+                mElement.mSurface );
+
+      if (DEBUG_FAT_LINES)
       {
          if (mElement.mFlags & DRAW_HAS_NORMAL)
          {
+            if (dbgPrt)
+               printf("Remove normal stride\n");
             mElement.mFlags &= ~DRAW_HAS_NORMAL;
+            if (mElement.mTexOffset>mElement.mNormalOffset)
+               mElement.mTexOffset -= sizeof(float)*2;
+            if (mElement.mColourOffset>mElement.mNormalOffset)
+               mElement.mColourOffset -= sizeof(float)*2;
+
             mElement.mNormalOffset = 0;
-            mElement.mStride -= sizeof(float)*2.0;
+            mElement.mStride -= sizeof(float)*2;
          }
          mElement.mWidth = 1;
+         mElement.mScaleMode = ssmNone;
+      }
 
 
+      if (DEBUG_FAT_LINES==1)
+      {
          for(int side=0; side<2; side++)
          {
-            Curves &curve = side==0 ? leftCurve : rightCurve;
+            if (dbgPrt)
+               printf("DBG: %s, voff=%d, stride=%d\n", side==0 ? "leftCurve" : "rightCurve", mElement.mVertexOffset, mElement.mStride);
+            const Curves &curve = side==0 ? leftCurve : rightCurve;
 
             int n = curve.size();
 
@@ -2570,16 +2686,24 @@ public:
 
             for(int i=0;i<n;i++)
             {
+               if (dbgPrt)
+                  printf(" %d ] %f,%f\n", i, curve[i].p.x, curve[i].p.y );
                *v = curve[i].p;
                Next(v);
             }
 
+
+            if (dbgPrt)
+               mElement.mColour = 0xff00ff00;
+            mElement.mPrimType = ptLineStrip;
+
             if (mElement.mSurface)
                CalcTexCoords();
 
-            PushElement();
-            data.mElements.last().mPrimType = ptLineStrip;
+            if (dbgPrt)
+               printf("Push %d\n", mElement.mCount);
 
+            PushElement();
             mElement.mVertexOffset = data.mArray.size();
             mElement.mCount = 0;
          }
@@ -2588,16 +2712,24 @@ public:
       }
 
 
-      data.mArray.reserve( mElement.mVertexOffset + (leftCurve.size() + rightCurve.size())
-                          * mElement.mStride * (useTriStrip?3:3) );
+      const bool keepTriSense = true;
+
+      int totalPoints = leftCurve.size() + rightCurve.size();
+      // 3 is worst case if we have to reverse the tri
+      int verticesPerPoint = DEBUG_FAT_LINES ? 4 : 3;
+      // Must start with 2 points in debug case, these 2 are already counted in the non case.
+      int extraPoints = DEBUG_FAT_LINES ? 2 : 0;
+      data.mArray.reserve( mElement.mVertexOffset + mElement.mStride *
+                             (totalPoints*verticesPerPoint + extraPoints)  );
 
 
 
       UserPoint *v = (UserPoint *)&data.mArray[mElement.mVertexOffset];
       UserPoint *normal = (mElement.mFlags & DRAW_HAS_NORMAL) ? (UserPoint *)&data.mArray[mElement.mNormalOffset] : 0;
 
-      UserPoint pLeft = leftCurve[0].p;
-      UserPoint pRight = rightCurve[0].p;
+      //printf("Curves : %d/%d\n", (int)leftCurve.size(), (int)rightCurve.size() );
+      UserPoint prevLeft = leftCurve[0].p;
+      UserPoint prevRight = rightCurve[0].p;
 
       UserPoint rightNormal(mPerpLen*mScale, -(mPerpLen*mScale+1.0));
       UserPoint leftNormal(mPerpLen*mScale, mPerpLen*mScale+1.0);
@@ -2612,64 +2744,70 @@ public:
       int prevEdge = PREV_LEFT;
 
 
+      int tris = 0;
       while(left<leftCurve.size() || right<rightCurve.size())
       {
-         //printf("  %d(%f),%d(%f)\n", left, leftCurve[left].t, right, rightCurve[right].t );
+         if (dbgPrt)
+            printf(" %d} %d(%f),%d(%f)\n",(added-2)/4, left, leftCurve[left].t, right, rightCurve[right].t );
+
          bool preferRight =
              left>=leftCurve.size() || (right<rightCurve.size() && rightCurve[right].t < leftCurve[left].t);
 
+
          if (preferRight)
          {
-            float testT = rightCurve[right].t;
-            UserPoint test = rightCurve[right++].p;
-            bool forceTri = ComputeDistInfo(pLeft, pRight, test, leftNormal, rightNormal, 1);
+            //printf("%d] Add right %d %f  : %f,%f\n", tris++, right, rightCurve[right].t, rightCurve[right].p.x, rightCurve[right].p.y );
+            
+            // Add point from right curve
+            UserPoint addPoint = rightCurve[right++].p;
+            if (!DEBUG_FAT_LINES)
+               ComputeDistInfo(prevLeft, prevRight, addPoint, leftNormal, rightNormal, 1);
 
 
-               if (!useTriStrip)
+            if (DEBUG_FAT_LINES)
+            {
+               if (added==0)
                {
-                  *v = pRight; Next(v);
-                  if (normal)
-                  {
-                     *normal = rightNormal;
-                     Next(normal);
-                  }
-
-                  *v = pLeft; Next(v);
-                  if (normal)
-                  {
-                     *normal = leftNormal;
-                     Next(normal);
-                  }
-                  added+=2;
+                  *v = prevLeft; Next(v);
+                  *v = prevRight; Next(v);
+                  added += 2;
                }
-               else
+
+               *v = prevLeft; Next(v);
+               *v = addPoint; Next(v);
+
+               *v = prevRight; Next(v);
+               *v = prevRight = addPoint; Next(v);
+
+               added+=4;
+            }
+            else
+            {
+               if (added==0)
                {
-                  if (added==0)
-                  {
-                     *v = pLeft; Next(v);
-                     if (normal)
-                        {  *normal = leftNormal; Next(normal); }
+                  *v = prevLeft; Next(v);
+                  if (normal)
+                     {  *normal = leftNormal; Next(normal); }
 
-                     *v = pRight; Next(v);
-                     if (normal)
-                        {  *normal = rightNormal; Next(normal); }
-                     added += 2;
-                  }
-                  else if (forceTri || (keepTriSense && prevEdge!=PREV_LEFT))
+                  *v = prevRight; Next(v);
+                  if (normal)
+                     {  *normal = rightNormal; Next(normal); }
+                  added += 2;
+               }
+               else if (keepTriSense && prevEdge!=PREV_LEFT)
+               {
+                  if (prevEdge==PREV_LEFT)
                   {
-                     if (prevEdge==PREV_LEFT)
-                     {
-                        *v = pRight; Next(v);
-                        if (normal)
-                           { *normal = rightNormal; Next(normal); }
-                        added++;
-                     }
-
-                     *v = pLeft; Next(v);
+                     *v = prevRight; Next(v);
                      if (normal)
-                        { *normal = leftNormal; Next(normal); }
+                        { *normal = rightNormal; Next(normal); }
                      added++;
                   }
+
+                  *v = prevLeft; Next(v);
+                  if (normal)
+                     { *normal = leftNormal; Next(normal); }
+                  added++;
                }
 
                added++;
@@ -2678,56 +2816,67 @@ public:
                   *normal = rightNormal;
                   Next(normal);
                }
-               *v = pRight = test;
+               *v = prevRight = addPoint;
                Next(v);
-               prevEdge = PREV_RIGHT;
+            }
+            
+            prevEdge = PREV_RIGHT;
          }
          else
          {
-            float testT = rightCurve[left].t;
-            UserPoint test = leftCurve[left++].p;
-            bool forceTri = ComputeDistInfo(pRight, pLeft, test, rightNormal, leftNormal, -1);
+            // printf("%d] Add left  %d %f  : %f,%f\n", tris++, left, leftCurve[left].t, leftCurve[left].p.x, leftCurve[left].p.y );
 
-               if (!useTriStrip)
+            // Add point from left curve
+            UserPoint addPoint = leftCurve[left++].p;
+            if (!DEBUG_FAT_LINES)
+               ComputeDistInfo(prevRight, prevLeft, addPoint, rightNormal, leftNormal, -1);
+
+            if (DEBUG_FAT_LINES)
+            {
+               if (added==0)
                {
-                  *v = pRight; Next(v);
-                  if (normal)
-                     { *normal = rightNormal; Next(normal); }
+                  *v = prevRight; Next(v);
+                  *v = prevLeft; Next(v);
+                  added += 2;
+               }
 
-                  *v = pLeft; Next(v);
+
+               *v = prevRight; Next(v);
+               *v = addPoint; Next(v);
+
+               *v = prevLeft; Next(v);
+               *v = prevLeft = addPoint; Next(v);
+
+               added+=4;
+            }
+            else
+            {
+               if (added==0)
+               {
+                  *v = prevLeft; Next(v);
                   if (normal)
-                     { *normal = leftNormal; Next(normal); }
+                     {  *normal = leftNormal; Next(normal); }
+
+                  *v = prevRight; Next(v);
+                  if (normal)
+                     {  *normal = rightNormal; Next(normal); }
+
                   added+=2;
                }
-               else
+               else if (keepTriSense && prevEdge!=PREV_RIGHT)
                {
-                  if (added==0)
+                  if (prevEdge==PREV_RIGHT)
                   {
-                     *v = pLeft; Next(v);
+                     *v = prevLeft; Next(v);
                      if (normal)
                         {  *normal = leftNormal; Next(normal); }
-
-                     *v = pRight; Next(v);
-                     if (normal)
-                        {  *normal = rightNormal; Next(normal); }
-
-                     added+=2;
-                  }
-                  else if (forceTri || (keepTriSense && prevEdge!=PREV_RIGHT))
-                  {
-                     if (prevEdge==PREV_RIGHT)
-                     {
-                        *v = pLeft; Next(v);
-                        if (normal)
-                           {  *normal = leftNormal; Next(normal); }
-                        added++;
-                     }
-
-                     *v = pRight; Next(v);
-                     if (normal)
-                        {  *normal = rightNormal; Next(normal); }
                      added++;
                   }
+
+                  *v = prevRight; Next(v);
+                  if (normal)
+                     {  *normal = rightNormal; Next(normal); }
+                  added++;
                }
 
                added++;
@@ -2736,19 +2885,24 @@ public:
                   *normal = leftNormal;
                   Next(normal);
                }
-               *v = pLeft = test;
+               *v = prevLeft = addPoint;
                Next(v);
-               prevEdge = PREV_LEFT;
+            }
+
+            prevEdge = PREV_LEFT;
          }
       }
 
       // Build triangle strip....
-      mElement.mPrimType = useTriStrip ? ptTriangleStrip : ptTriangles;
+      mElement.mPrimType = DEBUG_FAT_LINES ? ptLines : ptTriangleStrip;
       mElement.mCount = added;
       data.mArray.resize( mElement.mVertexOffset + mElement.mCount*mElement.mStride );
 
       if (mElement.mSurface)
+      {
+         //printf("Dbg text coords - %d\n", mElement.mTexOffset );
          CalcTexCoords();
+      }
 
       PushElement();
 
@@ -2765,7 +2919,121 @@ public:
    }
 
 
-   void AddLineTriangles(const uint8* inCommands, int inCount, const float *inData)
+
+   // Only support a single loop (no holes) in polyAA mode
+   bool polyAaGeomOk(const uint8* inCommands, int inCount, const float *inData)
+   {
+      UserPoint *point = (UserPoint *)inData;
+      UserPoint first;
+      UserPoint prev;
+
+      int stripSize = 0;
+      int added = 0;
+      for(int i=0;i<inCount;i++)
+      {
+         switch(inCommands[i])
+         {
+            case pcWideMoveTo:
+               point++;
+            case pcBeginAt:
+            case pcMoveTo:
+               if (stripSize==1 && prev==*point)
+               {
+                  point++;
+                  continue;
+               }
+
+               if (stripSize>1)
+                  if (added++>1) return false;
+
+               stripSize = 1;
+               prev = *point;
+               first = *point++;
+               break;
+
+            case pcWideLineTo:
+               point++;
+            case pcLineTo:
+               {
+               if (stripSize>0 && *point==prev)
+               {
+                  point++;
+                  continue;
+               }
+
+               stripSize++;
+
+               // Implicit loop closing...
+               if (stripSize>2 && *point==first )
+               {
+                  if (added++>1) return false;
+                  stripSize = 0;
+               }
+
+               prev = *point;
+               point++;
+               }
+               break;
+
+            case pcCurveTo:
+               {
+                  if (stripSize>0 && *point==prev && point[1]==prev)
+                  {
+                     point+=2;
+                     continue;
+                  }
+
+                  stripSize++;
+
+                  // Implicit loop closing...
+                  if (stripSize>=2 && point[1]==first)
+                  {
+                     if (added++>1) return false;
+                     stripSize = 0;
+                  }
+
+                  prev = point[1];
+                  point +=2;
+              }
+              break;
+
+
+            case pcCubicTo:
+               {
+                  if (stripSize>0 && *point==prev && point[1]==prev && point[2]==prev)
+                  {
+                     point+=3;
+                     continue;
+                  }
+
+                  stripSize++;
+
+                  // Implicit loop closing...
+                  if (stripSize>=2 && point[2]==first)
+                  {
+                     if (added++>1) return false;
+                     stripSize = 0;
+                  }
+
+                  prev = point[2];
+                  point +=3;
+              }
+              break;
+
+
+            default:
+               point += gCommandDataSize[ inCommands[i] ];
+         }
+      }
+
+      if (stripSize>1 && added)
+         return false;
+
+      return true;
+   }
+
+
+   bool AddLineTriangles(const uint8* inCommands, int inCount, const float *inData)
    {
       UserPoint *point = (UserPoint *)inData;
 
@@ -2792,7 +3060,8 @@ public:
 
                if (strip.size()>1)
                {
-                  AddStrip(strip,false);
+                  if (!AddStrip(strip,false))
+                     return false;
                }
 
                strip.resize(0);
@@ -2816,7 +3085,8 @@ public:
                // Implicit loop closing...
                if (strip.size()>2 && *point==first )
                {
-                  AddStrip(strip,true);
+                  if (!AddStrip(strip,true))
+                     return false;
                   strip.resize(0);
                }
 
@@ -2838,7 +3108,8 @@ public:
                   // Implicit loop closing...
                   if (strip.size()>=2 && point[1]==first)
                   {
-                     AddStrip(strip,true);
+                     if (!AddStrip(strip,true))
+                        return false;
                      strip.resize(0);
                   }
 
@@ -2861,7 +3132,8 @@ public:
                   // Implicit loop closing...
                   if (strip.size()>=2 && point[2]==first)
                   {
-                     AddStrip(strip,true);
+                     if (!AddStrip(strip,true))
+                        return false;
                      strip.resize(0);
                   }
 
@@ -2878,8 +3150,15 @@ public:
 
       if (strip.size()>1)
       {
-         AddStrip(strip,false);
+         if (mPolyAA)
+         {
+            strip.push_back(Segment(first));
+            return AddStrip(strip,true);
+         }
+         else
+            return AddStrip(strip,false);
       }
+      return true;
    }
 
 
@@ -2898,7 +3177,6 @@ public:
    float       mTileScaleX;
    float       mTileScaleY;
    double      mCurveThresh2;
-   double      mFatLineCullThresh;
    Matrix      mTextureMapper;
    StrokeCaps   mCaps;
    StrokeJoints mJoints;

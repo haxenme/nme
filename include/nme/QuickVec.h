@@ -351,7 +351,9 @@ public:
    void erase(size_t inFirst,size_t inLen)
    {
       if (inFirst>mSize || inFirst<0)
-         return;
+      {
+         throw std::runtime_error("bad erase");
+      }
       if (inFirst+inLen>=mSize || inLen<0)
          resize(inFirst);
       else
