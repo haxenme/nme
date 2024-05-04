@@ -18,12 +18,13 @@ namespace nme
 #endif
 
 enum { DEBUG_KEEP_LOOPS      = 0 };
-enum { DEBUG_FAT_LINES       = 0 };
+enum { DEBUG_FAT_LINES       = 0 }; // Could be 0, 1 or 2
 enum { DEBUG_UNSCALED        = 0 };
 enum { DEBUG_NO_INTERIOR     = 0 };
 enum { DEBUG_NO_FAT_FALLBACK = 0 };
 enum { DEBUG_EXTRA_FAT       = 0 };
 enum { DEBUG_PRINT_THRESH    = 0 };
+enum { DEBUG_PRINT_VERBOSE   = 0 };
 
 
 struct CurveEdge
@@ -1897,6 +1898,7 @@ public:
       if (dbgPrint)
          printf("Clear Curve - %d\n", osize);
 
+      //double perp2 = mPerpLen*2.0;
       int lastStart = isClosed ? 0 : -3;
       for(int startPoint=0; startPoint<curve.size()+lastStart && curve.size()>2;startPoint++)
       {
@@ -1917,7 +1919,9 @@ public:
             continue;
          }
 
-         UserPoint onSideDist = dir0.Perp(-0.25*inSide/mPerpLen);
+         // Stop searching for intersections earlier for fat lines, where we prefer overlap to missing parts
+         double allowDeviation = mPolyAA ? 4.0 : 2.0;
+         UserPoint onSideDist = dir0.Perp(-inSide/(mPerpLen*allowDeviation) );
 
          // Next segment can't intersect with first segment since it shared end
          int prevSlot = (startPoint+2) % curve.size();
@@ -1963,7 +1967,16 @@ public:
             }
 
             const UserPoint &p = curve[testPoint].p;
-            float side = onSideDist.Dot( p-p0 );
+            const UserPoint &dp = p-p0;
+            float side = onSideDist.Dot( dp );
+
+            // Original criteria - test before intersection test
+            //  Distance from testPoint to line-segment l1-p
+            //    testPoint = p + alpha * dp
+            //if (!mPolyAA && fabs(side)>1)
+               //break;
+
+
             bool currentOnOddSide = side<0;
             advance++;
             //if (advance<5)
@@ -2055,7 +2068,7 @@ public:
                                  curve[startNext].p = p;
                                  //curve[startNext].t = curve[0].t;
                                  curve.resize(startNext+1);
-                   
+
                               }
                               else if (testPoint<startPoint)
                               {
@@ -2075,8 +2088,9 @@ public:
                                  // 
                                  curve[prevSlot].p = p;
                                  curve[prevSlot].t = curve[0].t;
+                                 // New closing end point
+                                 oT = curve[startNext].t;
                                  // Delete startNext onwards
-                                 //oT = curve[startNext].t;
                                  curve.resize(startNext);
                                  // Remove up to prevSlot
                                  if (prevSlot)
@@ -2096,7 +2110,7 @@ public:
                                  //   ...
                                  //   c[prevSlot]
                                  curve[testPoint].p = p;
-                                 //oT = curve[startNext].t;
+                                 oT = curve[startNext].t;
                                  curve.EraseAt(startNext,curve.size());
                                  startPoint--;
                               }
@@ -2153,13 +2167,13 @@ public:
       if (dbgPrint)
       {
          printf("new curve %d %f:\n", osize, inSide);
-         //for(int i=0; i<curve.size(); i++)
-            //printf(" %d] %f,%f  %f\n",  i, curve[i].p.x, curve[i].p.y, curve[i].t );
+         if (DEBUG_PRINT_VERBOSE)
+         {
+            for(int i=0; i<curve.size(); i++)
+               printf(" %d] %f,%f  %f\n",  i, curve[i].p.x, curve[i].p.y, curve[i].t );
+         }
       }
    }
-
-
-
 
 
    void AddCurveSegment(Curves &leftCurve, Curves &rightCurve,
