@@ -2436,6 +2436,11 @@ public:
             curvesToElement(rightCurve, leftCurve );
          else
             curvesToElement(leftCurve, rightCurve);
+
+         // Remove normal flag
+         mElement.mFlags &= ~DRAW_HAS_NORMAL;
+         mElement.mNormalOffset = 0;
+         mElement.mStride -= sizeof(float)*2;
       }
       else
       {
