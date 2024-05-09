@@ -338,60 +338,163 @@ class Matrix3D
       ]);
    }
 
-   public function decompose():Vector<Vector3D> 
+   public function removeScaleAndPosition() : Vector<Vector3D>
    {
-      var vec = new Vector<Vector3D>();
-      var m = this.clone();
-      var mr = m.rawData;
-
-      var pos = new Vector3D(mr[12], mr[13], mr[14]);
-      mr[12] = 0;
-      mr[13] = 0;
-      mr[14] = 0;
+      var pos = new Vector3D(rawData[12], rawData[13], rawData[14]);
+      rawData[12] = 0;
+      rawData[13] = 0;
+      rawData[14] = 0;
 
       var scale = new Vector3D();
 
-      scale.x = Math.sqrt(mr[0] * mr[0] + mr[1] * mr[1] + mr[2] * mr[2]);
-      scale.y = Math.sqrt(mr[4] * mr[4] + mr[5] * mr[5] + mr[6] * mr[6]);
-      scale.z = Math.sqrt(mr[8] * mr[8] + mr[9] * mr[9] + mr[10] * mr[10]);
+      scale.x = Math.sqrt(rawData[0] * rawData[0] + rawData[1] * rawData[1] + rawData[2] * rawData[2]);
+      scale.y = Math.sqrt(rawData[4] * rawData[4] + rawData[5] * rawData[5] + rawData[6] * rawData[6]);
+      scale.z = Math.sqrt(rawData[8] * rawData[8] + rawData[9] * rawData[9] + rawData[10] * rawData[10]);
 
-      if (mr[0] * (mr[5] * mr[10] - mr[6] * mr[9]) - mr[1] * (mr[4] * mr[10] - mr[6] * mr[8]) + mr[2] * (mr[4] * mr[9] - mr[5] * mr[8]) < 0) 
+      if (rawData[0] * (rawData[5] * rawData[10] - rawData[6] * rawData[9]) - rawData[1] * (rawData[4] * rawData[10] - rawData[6] * rawData[8]) + rawData[2] * (rawData[4] * rawData[9] - rawData[5] * rawData[8]) < 0) 
       {
          scale.z = -scale.z;
       }
 
-      mr[0] /= scale.x; 
-      mr[1] /= scale.x; 
-      mr[2] /= scale.x; 
-      mr[4] /= scale.y; 
-      mr[5] /= scale.y; 
-      mr[6] /= scale.y; 
-      mr[8] /= scale.z; 
-      mr[9] /= scale.z; 
-      mr[10] /= scale.z;
+      rawData[0] /= scale.x; 
+      rawData[1] /= scale.x; 
+      rawData[2] /= scale.x; 
+      rawData[4] /= scale.y; 
+      rawData[5] /= scale.y; 
+      rawData[6] /= scale.y; 
+      rawData[8] /= scale.z; 
+      rawData[9] /= scale.z; 
+      rawData[10] /= scale.z;
+
+      var result = new Vector<Vector3D>(2);
+      result[0] = pos;
+      result[1] = scale;
+      return result;
+   }
+
+   public function decompose():Vector<Vector3D> 
+   {
+      var m = clone();
+      var ps = m.removeScaleAndPosition();
+      var mr = m.rawData;
 
       var rot = new Vector3D();
 
       rot.y = Math.asin( -mr[2]);
 
-      var C = Math.cos(rot.y);      
-      if (C > 0) 
+      var C = Math.cos(rot.y);
+      if (Math.abs(C) > 1e-5) 
       {
          rot.x = Math.atan2(mr[6], mr[10]);
          rot.z = Math.atan2(mr[1], mr[0]);
-
-      } else 
+      }
+      else
       {
          rot.z = 0;
          rot.x = Math.atan2(mr[4], mr[5]);
-      } 
+      }
 
-      vec.push(pos);
-      vec.push(rot);
-      vec.push(scale);
+      ps.insertAt(1,rot);
 
-      return vec;
+      return ps;
    }
+
+   // Assumed scaled
+   public function calculateQuaternion():Vector3D
+   {
+      var q = new Vector3D();
+
+      var tr = mxx + myy + mzz;
+
+      if (tr > 0)
+      {
+        var S = Math.sqrt(tr+1.0) * 2; // S=4*qw 
+        q.w = 0.25 * S;
+        q.x = (mzy - myz) / S;
+        q.y = (mxz - mzx) / S;
+        q.z = (myx - mxy) / S;
+      }
+      else if ((mxx > myy)&&(mxx > mzz))
+      {
+        var S = Math.sqrt(1.0 + mxx - myy - mzz) * 2; // S=4*qx 
+        q.w = (mzy - myz) / S;
+        q.x = 0.25 * S;
+        q.y = (mxy + myx) / S;
+        q.z = (mxz + mzx) / S;
+      }
+      else if (myy > mzz)
+      {
+        var S = Math.sqrt(1.0 + myy - mxx - mzz) * 2; // S=4*qy
+        q.w = (mxz - mzx) / S;
+        q.x = (mxy + myx) / S;
+        q.y = 0.25 * S;
+        q.z = (myz + mzy) / S;
+      }
+      else
+      {
+        var S = Math.sqrt(1.0 + mzz - mxx - myy) * 2; // S=4*qz
+        q.w = (myx - mxy) / S;
+        q.x = (mxz + mzx) / S;
+        q.y = (myz + mzy) / S;
+        q.z = 0.25 * S;
+      }
+      return q;
+   }
+
+   public function decomposeQuaternion():Array<Vector3D> 
+   {
+      var m = clone();
+      var ps = m.removeScaleAndPosition();
+      var q = m.calculateQuaternion();
+      ps.insertAt(1,q);
+      return ps;
+   }
+
+   public static function fromQuaternion(q:Vector3D)
+   {
+      var m = new Matrix3D();
+
+      var sqw = q.w*q.w;
+      var sqx = q.x*q.x;
+      var sqy = q.y*q.y;
+      var sqz = q.z*q.z;
+
+      m.mxx = ( sqx - sqy - sqz + sqw);
+      m.myy = (-sqx + sqy - sqz + sqw);
+      m.mzz = (-sqx - sqy + sqz + sqw);
+
+      var tmp1 = q.x*q.y;
+      var tmp2 = q.z*q.w;
+      m.myx = 2.0 * (tmp1 + tmp2);
+      m.mxy = 2.0 * (tmp1 - tmp2);
+
+      tmp1 = q.x*q.z;
+      tmp2 = q.y*q.w;
+      m.mzx = 2.0 * (tmp1 - tmp2);
+      m.mxz = 2.0 * (tmp1 + tmp2);
+      tmp1 = q.y*q.z;
+      tmp2 = q.x*q.w;
+      m.mzy = 2.0 * (tmp1 + tmp2);
+      m.myz = 2.0 * (tmp1 - tmp2);
+      return m;
+   }
+
+   public static function recomposeQuaternion(pqs:Vector<Vector3D>)
+   {
+      if (pqs[2]==null || pqs[2].x == 0 || pqs[2].y == 0 || pqs[2].z == 0)
+         throw "recomposeQuaternion - expected [R,Q,S]";
+
+      var mtx = Matrix3D.fromQuaternion(pqs[1]);
+
+      mtx.prependScale(pqs[2].x, pqs[2].y, pqs[2].z);
+
+      mtx.position = pqs[0];
+      mtx.rawData[15] = 1;
+
+      return mtx;
+   }
+
+
 
    inline public function originTransform():Vector3D 
    {
@@ -690,12 +793,23 @@ class Matrix3D
    }
 
    #if sys
-   public function print()
+   public function print(roundDown = 0.0)
    {
-      Sys.println('[ $mxx $mxy $mxz | $tx ]');
-      Sys.println('[ $myx $myy $myz | $ty ]');
-      Sys.println('[ $mzx $mzy $mzz | $tz ]');
-      Sys.println('[ $mwx $mwy $mwz | $tw ]');
+      if (roundDown>0)
+      {
+         var m = clone();
+         for(i in 0...16)
+            if ( Math.abs(m.rawData[i])<roundDown )
+               m.rawData[i] = 0.0;
+         m.print();
+      }
+      else
+      {
+         Sys.println('[ $mxx $mxy $mxz | $tx ]');
+         Sys.println('[ $myx $myy $myz | $ty ]');
+         Sys.println('[ $mzx $mzy $mzz | $tz ]');
+         Sys.println('[ $mwx $mwy $mwz | $tw ]');
+      }
    }
    #end
 

@@ -42,6 +42,24 @@ class Vector3D
       return new Vector3D(this.x + a.x, this.y + a.y, this.z + a.z);
    }
 
+   public static function slerp(a:Vector3D, b:Vector3D, t:Float):Vector3D
+   {
+      var d = a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;
+      var dN = Math.abs(d);
+      if (dN>=1.0)
+         return a.clone();
+      var theta = Math.acos(dN);
+      var denom = Math.sin(theta);
+      var wa = Math.sin( (1-t)*theta )/denom;
+      if (d<0)
+         wa = -wa;
+      var wb =Math.sin(t*theta)/denom;
+      return new Vector3D( a.x*wa + b.x*wb,
+                           a.y*wa + b.y*wb,
+                           a.z*wa + b.z*wb,
+                           a.w*wa + b.w*wb );
+   }
+
    inline public static function angleBetween(a:Vector3D, b:Vector3D):Float 
    {
       var a0 = a.clone();
@@ -190,7 +208,7 @@ class Vector3D
 
    inline public function toString():String 
    {
-      return "Vector3D(" + x + ", " + y + ", " + z + ")";
+      return 'Vector3D($x,$y,$z,$w)';
    }
 
    // Getters & Setters
