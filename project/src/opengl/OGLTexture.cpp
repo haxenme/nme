@@ -2,7 +2,7 @@
 
 #define SWAP_RB 0
 
-#if (defined(ANDROID_X86) || ( defined(ANDROID) && defined(HXCPP_M64) && !defined(HXCPP_ARM64)))
+#if ( defined(HX_ANDROID) && !( defined(HXCPP_ARM64) || defined(HXCPP_ARMV7) || defined(__arm__) || defined(__aarch64__) ) )
   #define ANDROID_SIM
 #endif
 
