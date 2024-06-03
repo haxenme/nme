@@ -407,6 +407,7 @@ class AndroidPlatform extends Platform
          return null;
 
       var out = ProcessHelper.getOutput(exe, [ "-list-avds"]);
+      out = out.filter( x -> x.indexOf("INFO")!=0 );
       return out;
    }
 

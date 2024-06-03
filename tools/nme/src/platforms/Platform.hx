@@ -151,6 +151,7 @@ class Platform
             adbName = test;
          // Hmm - use relative path and hope it works
       }
+      Log.verbose('Using adb $adbName from ANDROID_SDK "${project.environment.get("ANDROID_SDK")}"');
 
       adbFlags = [];
       if (project.targetFlags.exists("device"))

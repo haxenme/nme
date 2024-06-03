@@ -1464,6 +1464,7 @@ class CommandLineTools
             generate();
 
          case "emulator":
+            getHXCPPConfig(project);
             var android = new platforms.AndroidPlatform(project);
             android.emulator(words);
 
