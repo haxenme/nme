@@ -44,6 +44,20 @@
          -Ddebug                  -> Used in combination with above for debug
    -->
 
+   <section if="HXCPP_ARM64" unless="NME_SIMD_D">
+     <set name="NME_SIMD_D" value="-DNME_SIMD_ARM64" />
+     <set name="NME_SIMD_ARM64" value="1" />
+   </section>
+   <section if="HXCPP_ARM7" unless="NME_SIMD_D">
+     <set name="NME_SIMD_D" value="-DNME_SIMD_ARM7" />
+     <set name="NME_SIMD_ARM7" value="1" />
+   </section>
+   <section if="HXCPP_M64" unless="NME_SIMD_D">
+     <set name="NME_SIMD_D" value="-DNME_SIMD_X86_64" />
+     <set name="NME_SIMD_X86_64" value="1" />
+   </section>
+
+
    <!-- Where to find static libraries/includes -->
    <set name="NATIVE_TOOLKIT_PATH" value="${haxelib:nme-toolkit}" unless="NATIVE_TOOLKIT_PATH" />
 
@@ -119,11 +133,23 @@
    <!--<set name="HXCPP_DEBUG_LINK" value="1" />-->
 
 
+   <section if="NME_LOCAL_TOOLKIT">
+      <include name="toolkit/zlib/files.xml" />
+      <include name="toolkit/png/files.xml" />
+      <include name="toolkit/jpeg/files.xml" />
+   </section>
+   <section unless="NME_LOCAL_TOOLKIT">
+      <set name="NME_ZLIB" value="${NATIVE_TOOLKIT_PATH}/zlib/" />
+      <include name="${NME_ZLIB}/files.xml" />
+      <set name="NME_PNG" value="${NATIVE_TOOLKIT_PATH}/png/" />
+      <include name="${NME_PNG}/files.xml" />
+      <set name="NME_JPEG" value="${NATIVE_TOOLKIT_PATH}/jpeg/" />
+      <include name="${NME_JPEG}/files.xml" />
+   </section>
+
+
    <include name="${NATIVE_TOOLKIT_PATH}/ogg/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/vorbis/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/jpeg/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/png/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/zlib/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/freetype/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl/files.xml" />
@@ -222,6 +248,8 @@
       <compilerflag value="-DNME_OGL" if="NME_OGL" />
       <compilerflag value="-DNME_METAL" if="NME_METAL" />
       <compilerflag value="-DNME_AUDIO" unless="NME_NO_AUDIO" />
+      <compilerflag value="-DNME_SIMD_D" if="NME_SIMD_D" />
+      <compilerflag value="${NME_SIMD_D}" if="NME_SIMD_D" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
 
       <cache value="1" unless="winrpi" />
@@ -302,11 +330,16 @@
           <file name="${SRC_DIR}/linux/RpiMMal.cpp"/>
       </section>
 
+      <compilerflag value="-I${NME_ZLIB}"/>
+      <compilerflag value="-I${NME_PNG}"/>
+      <compilerflag value="-I${NME_PNG}/.." if="NME_LOCAL_TOOLKIT" />
+      <compilerflag value="-I${NME_JPEG}"/>
+      <compilerflag value="-I${NME_JPEG}/.." if="NME_LOCAL_TOOLKIT" />
+
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/jpeg"/>
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/png"/>
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/zlib"/>
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/freetype/include"/>
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/freetype/include/freetype"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/vorbis/include"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/ogg/include"/>
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/modplug" if="modplug" />
@@ -515,7 +548,14 @@
          <files id="native-toolkit-modplug" if="modplug" />
          <files id="native-toolkit-ogg"   />
          <files id="native-toolkit-vorbis" />
-         <files id="native-toolkit-jpeg" />
+         <section unless="NME_LOCAL_TOOLKIT" >
+            <files id="native-toolkit-jpeg" />
+         </section>
+         <section if="NME_LOCAL_TOOLKIT" >
+            <files id="native-toolkit-jpeg-8" />
+            <files id="native-toolkit-jpeg-12" />
+            <files id="native-toolkit-jpeg-16" />
+         </section>
          <files id="native-toolkit-png" />
          <files id="native-toolkit-zlib" />
          <files id="native-toolkit-angle" if="NME_ANGLE" />
@@ -677,9 +717,24 @@
    <files id="native-toolkit-vorbis" >
       <cache value="1" asLibrary="true" project="libVorbis" />
    </files>
-   <files id="native-toolkit-jpeg" >
-      <cache value="1" asLibrary="true" project="libJpeg" />
-   </files>
+
+   <section if="NME_LOCAL_TOOLKIT" >
+      <files id="native-toolkit-jpeg-8" >
+         <cache value="1" asLibrary="true" project="libJpeg8" />
+      </files>
+      <files id="native-toolkit-jpeg-12" >
+         <cache value="1" asLibrary="true" project="libJpeg12" />
+      </files>
+      <files id="native-toolkit-jpeg-16" >
+         <cache value="1" asLibrary="true" project="libJpeg16" />
+      </files>
+   </section>
+   <section unless="NME_LOCAL_TOOLKIT" >
+      <files id="native-toolkit-jpeg" >
+         <cache value="1" asLibrary="true" project="libJpeg" />
+      </files>
+   </section>
+
    <files id="native-toolkit-png" >
       <cache value="1" asLibrary="true" project="libPng" />
    </files>

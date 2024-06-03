@@ -1,0 +1,53 @@
+<xml>
+   <set name="NME_PNG" value="${this_dir}/libpng/" />
+
+   <files id="native-toolkit-png-depends">
+      <depend name="${NME_PNG}/png.h"/>
+   </files>
+
+   <files id="native-toolkit-png" tags="" >
+      <cache value="1" />
+      <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
+
+      <compilerflag value="-I${NME_PNG}" />
+      <compilerflag value="-I${NME_ZLIB}" />
+      <compilerflag value="-I${this_dir}" />
+      <compilerflag value="-DPNG_ARM_NEON_OPT=0" if="macos" />
+
+      <depend files="native-toolkit-png-depends" />
+
+      <depend name="${NME_PNG}pngstruct.h"/>
+      <depend name="${NME_PNG}pnginfo.h"/>
+      <depend name="${this_dir}/pnglibconf.h"/>
+      <depend name="${NME_PNG}pngpriv.h"/>
+      <depend name="${NME_PNG}pngconf.h"/>
+      <depend name="${NME_PNG}pngdebug.h"/>
+
+
+      <file name="${NME_PNG}png.c" />
+      <file name="${NME_PNG}pngerror.c" />
+      <file name="${NME_PNG}pngget.c" />
+      <file name="${NME_PNG}pngmem.c" />
+      <file name="${NME_PNG}pngpread.c" />
+      <file name="${NME_PNG}pngread.c" />
+      <file name="${NME_PNG}pngrio.c" />
+      <file name="${NME_PNG}pngrtran.c" />
+      <file name="${NME_PNG}pngrutil.c" />
+      <file name="${NME_PNG}pngset.c" />
+      <file name="${NME_PNG}pngtrans.c" />
+      <file name="${NME_PNG}pngwio.c" />
+      <file name="${NME_PNG}pngwrite.c" />
+      <file name="${NME_PNG}pngwtran.c" />
+      <file name="${NME_PNG}pngwutil.c" />
+
+      <section if="ios || tvoso || android">
+
+         <file name="${NME_PNG}arm/arm_init.c" />
+         <file name="${NME_PNG}arm/filter_neon_intrinsics.c" />
+         <file name="${NME_PNG}arm/palette_neon_intrinsics.c" />
+
+      </section>
+
+   </files>
+
+</xml>
