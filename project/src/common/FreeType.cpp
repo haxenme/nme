@@ -19,8 +19,8 @@
 #include FT_TRUETYPE_IDS_H
 
 #ifdef NME_TOOLKIT_BUILD
-#include <ftoutln.h>
-#include <ftstroke.h>
+#include "ftoutln.h"
+#include "ftstroke.h"
 #else
 #include <freetype/ftoutln.h>
 #endif

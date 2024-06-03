@@ -1,0 +1,139 @@
+<xml>
+
+   <set name="NME_FREETYPE" value="${this_dir}/freetype/"/>
+
+   <files id="native-toolkit-freetype-depends" >
+
+      <depend name="${NME_FREETYPE}include/ft2build.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/config/ftconfig.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/config/ftheader.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/config/ftmodule.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/config/ftoption.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/config/ftstdlib.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/freetype.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftadvanc.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftbbox.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftbdf.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftbzip2.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftcache.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftchapters.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftcid.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftdriver.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/fterrdef.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/fterrors.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftfntfmt.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftgasp.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftglyph.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftgxval.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftgzip.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftimage.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftincrem.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftlcdfil.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftlist.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftlzw.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftmac.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftmm.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftmodapi.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftmoderr.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftotval.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftoutln.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftparams.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftpfr.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftrender.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftsizes.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftsnames.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftstroke.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftsynth.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftsystem.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/fttrigon.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/fttypes.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ftwinfnt.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/t1tables.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/ttnameid.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/tttables.h"/>
+      <depend name="${NME_FREETYPE}include/freetype/tttags.h"/>
+
+   </files>
+
+   <files id="native-toolkit-freetype" tags="" >
+
+      <cache value="1" />
+      <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
+      <depend files="native-toolkit-freetype-depends" />
+
+      <compilerflag value="-I${NME_FREETYPE}freetype/include/freetype" />
+      <compilerflag value="-I${NME_FREETYPE}freetype/include" />
+      <compilerflag value="-I${NME_FREETYPE}include" />
+      <compilerflag value="-DFT2_BUILD_LIBRARY" />
+
+      <!--<compilerflag value="-DNATIVE_TOOLKIT_HAVE_PNG" if="NATIVE_TOOLKIT_HAVE_PNG" />
+      <compilerflag value="-I${NME_PNG}" if="NME_PNG" />-->
+
+      <file name="${NME_FREETYPE}src/autofit/autofit.c" />
+      <file name="${NME_FREETYPE}src/base/ftadvanc.c" />
+      <file name="${NME_FREETYPE}src/base/ftbbox.c" />
+      <file name="${NME_FREETYPE}src/base/ftbitmap.c" />
+      <file name="${NME_FREETYPE}src/base/ftcalc.c" />
+      <file name="${NME_FREETYPE}src/base/ftcid.c" />
+      <file name="${NME_FREETYPE}src/base/ftdbgmem.c" />
+      <file name="${NME_FREETYPE}src/base/ftdebug.c" />
+      <file name="${NME_FREETYPE}src/base/ftfntfmt.c" />
+      <file name="${NME_FREETYPE}src/base/ftfstype.c" />
+      <file name="${NME_FREETYPE}src/base/ftgasp.c" />
+      <file name="${NME_FREETYPE}src/base/ftgloadr.c" />
+      <file name="${NME_FREETYPE}src/base/ftglyph.c" />
+      <file name="${NME_FREETYPE}src/base/ftgxval.c" />
+      <file name="${NME_FREETYPE}src/base/fthash.c" />
+      <file name="${NME_FREETYPE}src/base/ftinit.c" />
+      <file name="${NME_FREETYPE}src/base/ftlcdfil.c" />
+      <file name="${NME_FREETYPE}src/base/ftmm.c" />
+      <file name="${NME_FREETYPE}src/base/ftobjs.c" />
+      <file name="${NME_FREETYPE}src/base/ftotval.c" />
+      <file name="${NME_FREETYPE}src/base/ftoutln.c" />
+      <file name="${NME_FREETYPE}src/base/ftpatent.c" />
+      <file name="${NME_FREETYPE}src/base/ftpfr.c" />
+      <file name="${NME_FREETYPE}src/base/ftpsprop.c" />
+      <file name="${NME_FREETYPE}src/base/ftrfork.c" />
+      <file name="${NME_FREETYPE}src/base/ftsnames.c" />
+      <file name="${NME_FREETYPE}src/base/ftstream.c" />
+      <file name="${NME_FREETYPE}src/base/ftstroke.c" />
+      <file name="${NME_FREETYPE}src/base/ftsynth.c" />
+      <file name="${NME_FREETYPE}src/base/ftsystem.c" />
+      <file name="${NME_FREETYPE}src/base/fttrigon.c" />
+      <file name="${NME_FREETYPE}src/base/fttype1.c" />
+      <file name="${NME_FREETYPE}src/base/ftutil.c" />
+      <file name="${NME_FREETYPE}src/base/ftwinfnt.c" />
+      <file name="${NME_FREETYPE}src/bdf/bdf.c" />
+      <file name="${NME_FREETYPE}src/bzip2/ftbzip2.c" />
+      <file name="${NME_FREETYPE}src/cache/ftcache.c" />
+      <file name="${NME_FREETYPE}src/cff/cffcmap.c" />
+      <file name="${NME_FREETYPE}src/cff/cffdrivr.c" />
+      <file name="${NME_FREETYPE}src/cff/cffgload.c" />
+      <file name="${NME_FREETYPE}src/cff/cffload.c" />
+      <file name="${NME_FREETYPE}src/cff/cffobjs.c" />
+      <file name="${NME_FREETYPE}src/cff/cffparse.c" />
+      <!--<file name="${NME_FREETYPE}src/cff/cffpic.c" />-->
+      <file name="${NME_FREETYPE}src/cid/type1cid.c" />
+      <file name="${NME_FREETYPE}src/gzip/ftgzip.c" />
+      <file name="${NME_FREETYPE}src/lzw/ftlzw.c" />
+      <file name="${NME_FREETYPE}src/pcf/pcf.c" />
+      <file name="${NME_FREETYPE}src/pfr/pfr.c" />
+      <file name="${NME_FREETYPE}src/psaux/psaux.c" />
+      <file name="${NME_FREETYPE}src/pshinter/pshinter.c" />
+      <file name="${NME_FREETYPE}src/psnames/psmodule.c" />
+      <file name="${NME_FREETYPE}src/raster/raster.c" />
+      <file name="${NME_FREETYPE}src/sfnt/sfnt.c" />
+      <file name="${NME_FREETYPE}src/smooth/smooth.c" />
+      <file name="${NME_FREETYPE}src/truetype/truetype.c" />
+      <file name="${NME_FREETYPE}src/type1/type1.c" />
+      <file name="${NME_FREETYPE}src/type42/type42.c" />
+      <file name="${NME_FREETYPE}src/winfonts/winfnt.c" />
+      <file name="${NME_FREETYPE}src/sdf/ftsdfrend.c" />
+      <file name="${NME_FREETYPE}src/sdf/ftsdfcommon.c" />
+      <file name="${NME_FREETYPE}src/sdf/ftsdf.c" />
+      <file name="${NME_FREETYPE}src/sdf/ftbsdf.c" />
+      <file name="${NME_FREETYPE}src/svg/ftsvg.c" />
+
+   </files>
+
+</xml>

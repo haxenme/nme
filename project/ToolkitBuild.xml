@@ -139,6 +139,7 @@
       <include name="toolkit/jpeg/files.xml" />
       <include name="toolkit/ogg/files.xml" />
       <include name="toolkit/vorbis/files.xml" />
+      <include name="toolkit/freetype/files.xml" />
    </section>
 
    <section unless="NME_LOCAL_TOOLKIT">
@@ -152,11 +153,12 @@
       <include name="${NME_OGG}/files.xml" />
       <set name="NME_VORBIS" value="${NATIVE_TOOLKIT_PATH}/vorbis/" />
       <include name="${NME_VORBIS}/files.xml" />
+      <set name="NME_FREETYPE" value="${NATIVE_TOOLKIT_PATH}/freetype/" />
+      <include name="${NME_FREETYPE}files.xml" />
    </section>
 
 
    <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/freetype/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl/files.xml" />
    <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
    <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" if="NME_MIXER" />
@@ -344,10 +346,12 @@
       <compilerflag value="-I${NME_OGG}include"/>
       <compilerflag value="-I${NME_OGG}.." if="NME_LOCAL_TOOLKIT" />
 
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype"/>
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/freetype/include"/>
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/freetype/include/freetype"/>
+      <compilerflag value="-I${NME_FREETYPE}"/>
+      <compilerflag value="-I${NME_FREETYPE}include"/>
+      <compilerflag value="-I${NME_FREETYPE}freetype/include"/>
+      <compilerflag value="-I${NME_FREETYPE}freetype/include/freetype"/>
+      <compilerflag value="-I${NME_FREETYPE}include/freetype"/>
+
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/modplug" if="modplug" />
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/curl/include" if="NME_CURL" />
 

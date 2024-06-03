@@ -13,3 +13,6 @@
 [submodule "project/toolkit/ogg/ogg"]
 	path = project/toolkit/ogg/ogg
 	url = https://github.com/xiph/ogg.git
+[submodule "project/toolkit/freetype/freetype"]
+	path = project/toolkit/freetype/freetype
+	url = https://github.com/freetype/freetype.git
