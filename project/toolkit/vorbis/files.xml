@@ -1,0 +1,72 @@
+<xml>
+
+   <set name="NME_VORBIS" value="${this_dir}/vorbis/" />
+
+   <files id="native-toolkit-vorbis-depends">
+      <depend name="${NME_VORBIS}include/vorbis/codec.h"/>
+      <depend name="${NME_VORBIS}include/vorbis/vorbisenc.h"/>
+      <depend name="${NME_VORBIS}include/vorbis/vorbisfile.h"/>
+   </files>
+   
+   <files id="native-toolkit-vorbis" tags="" >
+      
+      <cache value="1" />
+      <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
+
+      <depend files="native-toolkit-vorbis-depends"/>
+
+      <depend name="${NME_OGG}../config_types.h"/>
+      <depend name="${NME_OGG}include/ogg/ogg.h"/>
+      <depend name="${NME_OGG}include/ogg/os_types.h"/>
+
+      <depend name="${NME_VORBIS}lib/window.h"/>
+      <depend name="${NME_VORBIS}lib/smallft.h"/>
+      <depend name="${NME_VORBIS}lib/scales.h"/>
+      <depend name="${NME_VORBIS}lib/registry.h"/>
+      <depend name="${NME_VORBIS}lib/psy.h"/>
+      <depend name="${NME_VORBIS}lib/os.h"/>
+      <depend name="${NME_VORBIS}lib/misc.h"/>
+      <depend name="${NME_VORBIS}lib/mdct.h"/>
+      <depend name="${NME_VORBIS}lib/masking.h"/>
+      <depend name="${NME_VORBIS}lib/lsp.h"/>
+      <depend name="${NME_VORBIS}lib/lpc.h"/>
+      <depend name="${NME_VORBIS}lib/lookup_data.h"/>
+      <depend name="${NME_VORBIS}lib/lookup.h"/>
+      <depend name="${NME_VORBIS}lib/highlevel.h"/>
+      <depend name="${NME_VORBIS}lib/envelope.h"/>
+      <depend name="${NME_VORBIS}lib/codec_internal.h"/>
+      <depend name="${NME_VORBIS}lib/codebook.h"/>
+      <depend name="${NME_VORBIS}lib/bitrate.h"/>
+      <depend name="${NME_VORBIS}lib/backends.h"/>
+
+
+      <compilerflag value="-I${NME_VORBIS}include/"/>
+      <compilerflag value="-I${NME_VORBIS}lib/"/>
+      <compilerflag value="-I${NME_OGG}/include/"/>
+      
+      <file name="${NME_VORBIS}lib/mdct.c"/>
+      <file name="${NME_VORBIS}lib/smallft.c"/>
+      <file name="${NME_VORBIS}lib/block.c"/>
+      <file name="${NME_VORBIS}lib/envelope.c"/>
+      <file name="${NME_VORBIS}lib/window.c"/>
+      <file name="${NME_VORBIS}lib/lsp.c"/>
+      <file name="${NME_VORBIS}lib/lpc.c"/>
+      <file name="${NME_VORBIS}lib/analysis.c"/>
+      <file name="${NME_VORBIS}lib/synthesis.c"/>
+      <file name="${NME_VORBIS}lib/psy.c"/>
+      <file name="${NME_VORBIS}lib/info.c"/>
+      <file name="${NME_VORBIS}lib/floor1.c"/>
+      <file name="${NME_VORBIS}lib/floor0.c"/>
+      <file name="${NME_VORBIS}lib/res0.c"/>
+      <file name="${NME_VORBIS}lib/mapping0.c"/>
+      <file name="${NME_VORBIS}lib/registry.c"/>
+      <file name="${NME_VORBIS}lib/codebook.c"/>
+      <file name="${NME_VORBIS}lib/sharedbook.c"/>
+      <!--<file name="${NME_VORBIS}lib/lookup.c"/>-->
+      <file name="${NME_VORBIS}lib/bitrate.c"/>
+      <file name="${NME_VORBIS}lib/vorbisfile.c"/>
+      <file name="${NME_VORBIS}lib/vorbisenc.c"/>
+      
+   </files>
+   
+</xml>

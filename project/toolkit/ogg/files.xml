@@ -1,0 +1,26 @@
+<xml>
+
+   <set name="NME_OGG" value="${this_dir}/ogg/" />
+
+   <files id="native-toolkit-ogg-depends">
+      <depend name="${NME_OGG}include/ogg/ogg.h"/>
+      <depend name="${NME_OGG}include/ogg/os_types.h"/>
+      <depend name="${NME_OGG}../config_types.h"/>
+   </files>
+
+    <files id="native-toolkit-ogg" tags="" >
+
+        <compilerflag value="-I${NME_OGG}include/"/>
+        <compilerflag value="-I${NME_OGG}"/>
+        <cache value="1" />
+
+        <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
+
+        <depend files="native-toolkit-ogg-depends" />
+
+        <file name="${NME_OGG}src/bitwise.c" />
+        <file name="${NME_OGG}src/framing.c" />
+
+    </files>
+
+</xml>

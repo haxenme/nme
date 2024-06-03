@@ -10,6 +10,8 @@
 
       <cache value="1" />
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
+      <compilerflag value="-DSTDC" unless="windows" />
+      <compilerflag value="-DHAVE_UNISTD_H" unless="windows" />
 
       <depend files="native-toolkit-zlib-depends"/>
 

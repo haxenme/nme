@@ -7,3 +7,9 @@
 [submodule "project/toolkit/jpeg/libjpeg-turbo"]
 	path = project/toolkit/jpeg/libjpeg-turbo
 	url = https://github.com/libjpeg-turbo/libjpeg-turbo
+[submodule "project/toolkit/vorbis/vorbis"]
+	path = project/toolkit/vorbis/vorbis
+	url = https://github.com/xiph/vorbis.git
+[submodule "project/toolkit/ogg/ogg"]
+	path = project/toolkit/ogg/ogg
+	url = https://github.com/xiph/ogg.git
