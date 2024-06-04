@@ -1,0 +1,68 @@
+<xml>
+
+<set name="NME_MODPLUG" value="${this_dir}/libmodplug/src/" />
+
+<include name="${HXCPP}/build-tool/BuildCommon.xml" unless="build_common_included" />
+
+
+<files id="native-toolkit-modplug-depends" >
+   <depend name="${NME_MODPLUG}modplug.h"/>
+   <depend name="${NME_MODPLUG}/../../config.h"/>
+</files>
+
+<files id="native-toolkit-modplug" tags="" >
+   <cache value="1" />
+   <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
+   <depend files="native-toolkit-modplug-depends" />
+
+   <depend name="${NME_MODPLUG}libmodplug/sndfile.h"/>
+   <depend name="${NME_MODPLUG}libmodplug/stdafx.h"/>
+   <depend name="${NME_MODPLUG}libmodplug/it_defs.h"/>
+   <depend name="${NME_MODPLUG}tables.h"/>
+   <depend name="${NME_MODPLUG}load_pat.h"/>
+
+   <compilerflag value="-I${NME_MODPLUG}libmodplug" />
+   <compilerflag value="-I${NME_MODPLUG}" />
+   <compilerflag value="-I${NME_MODPLUG}/../.." />
+   <compilerflag value="-DMODPLUG_STATIC" />
+   <compilerflag value="-DHAVE_CONFIG_H" />
+
+   <cache value="1" />
+
+   <file name="${NME_MODPLUG}modplug.cpp" />
+   <file name="${NME_MODPLUG}sndmix.cpp" />
+   <file name="${NME_MODPLUG}load_med.cpp" />
+   <file name="${NME_MODPLUG}load_mdl.cpp" />
+   <file name="${NME_MODPLUG}load_dmf.cpp" />
+   <file name="${NME_MODPLUG}load_it.cpp" />
+   <file name="${NME_MODPLUG}load_ams.cpp" />
+   <file name="${NME_MODPLUG}load_abc.cpp" />
+   <file name="${NME_MODPLUG}load_s3m.cpp" />
+   <file name="${NME_MODPLUG}sndfile.cpp" />
+   <file name="${NME_MODPLUG}load_669.cpp" />
+   <file name="${NME_MODPLUG}load_dsm.cpp" />
+   <file name="${NME_MODPLUG}load_okt.cpp" />
+   <file name="${NME_MODPLUG}load_mtm.cpp" />
+   <file name="${NME_MODPLUG}load_far.cpp" />
+   <file name="${NME_MODPLUG}load_amf.cpp" />
+   <file name="${NME_MODPLUG}load_mt2.cpp" />
+   <file name="${NME_MODPLUG}load_umx.cpp" />
+   <file name="${NME_MODPLUG}mmcmp.cpp" />
+   <file name="${NME_MODPLUG}snd_fx.cpp" />
+   <file name="${NME_MODPLUG}load_stm.cpp" />
+   <file name="${NME_MODPLUG}load_mid.cpp" />
+   <file name="${NME_MODPLUG}fastmix.cpp" />
+   <file name="${NME_MODPLUG}load_dbm.cpp" />
+   <file name="${NME_MODPLUG}load_ptm.cpp" />
+   <file name="${NME_MODPLUG}load_xm.cpp" />
+   <file name="${NME_MODPLUG}load_wav.cpp" />
+   <file name="${NME_MODPLUG}load_ult.cpp" />
+   <file name="${NME_MODPLUG}load_pat.cpp" />
+   <file name="${NME_MODPLUG}load_psm.cpp" />
+   <file name="${NME_MODPLUG}snd_flt.cpp" />
+   <file name="${NME_MODPLUG}load_mod.cpp" />
+   <file name="${NME_MODPLUG}snd_dsp.cpp" />
+</files>
+
+</xml>
+

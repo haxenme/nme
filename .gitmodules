@@ -16,3 +16,14 @@
 [submodule "project/toolkit/freetype/freetype"]
 	path = project/toolkit/freetype/freetype
 	url = https://github.com/freetype/freetype.git
+[submodule "project/toolkit/sdl/SDL"]
+	path = project/toolkit/sdl/SDL
+	url = https://github.com/libsdl-org/SDL.git
+	branch = SDL2
+[submodule "project/toolkit/sdl-mixer/SDL_mixer"]
+	path = project/toolkit/sdl-mixer/SDL_mixer
+	url = https://github.com/libsdl-org/SDL_mixer.git
+	branch = SDL2
+[submodule "project/toolkit/modplug/libmodplug"]
+	path = project/toolkit/modplug/libmodplug
+	url = https://github.com/Konstanty/libmodplug.git

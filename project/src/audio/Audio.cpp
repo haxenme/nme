@@ -6,6 +6,7 @@
 #include <vorbis/vorbisfile.h>
 
 #ifdef NME_MODPLUG
+#define MODPLUG_STATIC
 #include <modplug.h>
 #endif
 

@@ -1,0 +1,113 @@
+<xml>
+
+<set name="NME_LIBSDL_MIXER" value="${this_dir}/SDL_mixer/" />
+
+<files id="native-toolkit-sdl-mixer-depends" >
+   <file name="${NME_LIBSDL_MIXER}SDL_mixer.h"  />
+</files>
+
+
+<files id="native-toolkit-sdl-mixer" tags="" >
+   <cache value="1" />
+   <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
+
+   <depend files="native-toolkit-modplug-depends" if="modplug" />
+   <depend files="native-toolkit-vorbis-depends" />
+   <depend files="native-toolkit-ogg-depends" />
+   <depend files="native-toolkit-sdl-depends" />
+   <depend files="native-toolkit-sdl-mixer-depends" />
+
+   <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
+   <compilerflag value="-I${NME_LIBSDL}include" />
+   <compilerflag value="-I${NME_LIBSDL_MIXER}src" />
+   <compilerflag value="-I${NME_LIBSDL_MIXER}include" />
+   <compilerflag value="-I${NME_LIBSDL_MIXER}src/codecs" />
+   <compilerflag value="-I${NME_VORBIS}include" />
+   <compilerflag value="-I${NME_OGG}include" />
+   <compilerflag value="-I${NME_MODPLUG}" />
+
+
+   <compilerflag value="-I${NME_LIBSDL_MIXER}native_midi" />
+   <compilerflag value="-DHAVE_LIBC" />
+   <compilerflag value="-DMODPLUG_STATIC" />
+   <compilerflag value="-DMUSIC_OGG" />
+   <compilerflag value="-DMUSIC_WAV" />
+   <compilerflag value="-DMUSIC_MP3_MINIMP3" />
+   <!--<compilerflag value="-DMUSIC_MOD_XMP" />-->
+   <compilerflag value="-DMID_MUSIC" />
+   <compilerflag value="-DMUSIC_MOD_MODPLUG"  unless="winrt" />
+   <compilerflag value="-DMUSIC_MID_TIMIDITY" unless="linux || winrt" />
+   <compilerflag value="-DMUSIC_MID_NATIVE" unless="linux || winrt" />
+   <compilerflag value='-DMODPLUG_HEADER="../../../../modplug/libmodplug/src/modplug.h"' />
+
+   <cache value="1" />
+
+   <!--
+   <file name="${NME_LIBSDL_MIXER}/src/effect_position.c"  />
+   <file name="${NME_LIBSDL_MIXER}/src/effect_stereoreverse.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/music_ogg.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/dynamic_ogg.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/dynamic_modplug.c" unless="winrt"/>
+   <file name="${NME_LIBSDL_MIXER}/src/music_modplug.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/load_ogg.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/effects_internal.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/load_aiff.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/load_voc.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/mixer.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/music.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/wavestream.c" />
+   <file name="${NME_LIBSDL_MIXER}native_midi/native_midi_common.c" unless="linux || winrt"  />
+   <file name="${NME_LIBSDL_MIXER}native_midi/native_midi_macosx.c" if="macos"  />
+   <file name="${NME_LIBSDL_MIXER}native_midi/native_midi_win32.c" if="windows" unless="winrt" />
+   -->
+
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/load_aiff.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/load_voc.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/mp3utils.c" />
+   <!--<file name="${NME_LIBSDL_MIXER}/src/codecs/music_cmd.c" />-->
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_drflac.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_flac.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_fluidsynth.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_gme.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_minimp3.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_modplug.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_mpg123.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_nativemidi.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_ogg.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_ogg_stb.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_opus.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_timidity.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_wav.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/music_wavpack.c" />
+   <!--<file name="${NME_LIBSDL_MIXER}/src/codecs/music_xmp.c" />-->
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/native_midi/native_midi_common.c" unless="linux || winrt" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/native_midi/native_midi_macosx.c" if="macos" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/native_midi/native_midi_win32.c" if="windows" unless="winrt" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/timidity/common.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/timidity/instrum.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/timidity/mix.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/timidity/output.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/timidity/playmidi.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/timidity/readmidi.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/timidity/resample.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/timidity/tables.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/timidity/timidity.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/effects_internal.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/effect_position.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/effect_stereoreverse.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/mixer.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/music.c" />
+   <file name="${NME_LIBSDL_MIXER}/src/utils.c" />
+
+
+
+</files>
+
+
+</xml>
+
+
+
+
+
+

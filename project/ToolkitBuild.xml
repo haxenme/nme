@@ -56,10 +56,10 @@
      <set name="NME_SIMD_D" value="-DNME_SIMD_X86_64" />
      <set name="NME_SIMD_X86_64" value="1" />
    </section>
-
-
-   <!-- Where to find static libraries/includes -->
-   <set name="NATIVE_TOOLKIT_PATH" value="${haxelib:nme-toolkit}" unless="NATIVE_TOOLKIT_PATH" />
+   <section if="HXCPP_M32 windows" unless="NME_SIMD_D">
+     <set name="NME_SIMD_D" value="-DNME_SIMD_X86" />
+     <set name="NME_SIMD_X86" value="1" />
+   </section>
 
 
    <!--
@@ -140,7 +140,14 @@
       <include name="toolkit/ogg/files.xml" />
       <include name="toolkit/vorbis/files.xml" />
       <include name="toolkit/freetype/files.xml" />
+      <include name="toolkit/sdl/files.xml" />
+      <include name="toolkit/modplug/files.xml" if="modplug" />
+      <include name="toolkit/sdl-mixer/files.xml" if="NME_MIXER" />
    </section>
+
+
+   <!-- Where to find static libraries/includes -->
+   <set name="NATIVE_TOOLKIT_PATH" value="${haxelib:nme-toolkit}" unless="NATIVE_TOOLKIT_PATH" />
 
    <section unless="NME_LOCAL_TOOLKIT">
       <set name="NME_ZLIB" value="${NATIVE_TOOLKIT_PATH}/zlib/" />
@@ -155,13 +162,17 @@
       <include name="${NME_VORBIS}/files.xml" />
       <set name="NME_FREETYPE" value="${NATIVE_TOOLKIT_PATH}/freetype/" />
       <include name="${NME_FREETYPE}files.xml" />
+      <set name="NME_LIBSDL" value="${NATIVE_TOOLKIT_PATH}/sdl/" />
+      <include name="${NME_LIBSDL}files.xml" />
+      <set name="NME_MODPLUG" value="${NATIVE_TOOLKIT_PATH}/modplug/" />
+      <include name="${NME_MODPLUG}/files.xml" if="modplug" />
+      <set name="NME_LIBSDL_MIXER" value="${NATIVE_TOOLKIT_PATH}/sdl-mixer/" />
+      <include name="${NME_LIBSDL_MIXER}files.xml" if="NME_MIXER" />
    </section>
 
 
-   <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/sdl/files.xml" />
-   <include name="${NATIVE_TOOLKIT_PATH}/modplug/files.xml" if="modplug" />
-   <include name="${NATIVE_TOOLKIT_PATH}/sdl-mixer/files.xml" if="NME_MIXER" />
+
+   <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" if="NME_CURL" />
 
    <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" unless="ANGLE_DIR" />
    <include name="${ANGLE_DIR}/files.xml" if="NME_ANGLE ANGLE_DIR" />
@@ -352,7 +363,7 @@
       <compilerflag value="-I${NME_FREETYPE}freetype/include/freetype"/>
       <compilerflag value="-I${NME_FREETYPE}include/freetype"/>
 
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/modplug" if="modplug" />
+      <compilerflag value="-I${NME_MODPLUG}" if="modplug" />
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/curl/include" if="NME_CURL" />
 
       <depend files="native-toolkit-freetype-depends" />
@@ -376,9 +387,10 @@
         <file name="${SRC_DIR}/audio/SDLSound.cpp"  if="NME_MIXER"/>
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <section unless="NME_NATIVE_SDL_SYSTEM" >
-           <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
-           <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl-mixer" if="NME_MIXER" />
            <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
+           <compilerflag value="-I${NME_LIBSDL}include" />
+           <compilerflag value="-I${NME_LIBSDL_MIXER}" if="NME_MIXER" />
+           <compilerflag value="-I${NME_LIBSDL_MIXER}/include" if="NME_MIXER" />
         </section>
         <section if="gcw0" >
            <compilerflag value="-I${GCW0_SDK}/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include/SDL2" />
@@ -708,7 +720,7 @@
       <depend name="${HXCPP}/include/hx/HxcppMain.h"/>
       <file name="${this_dir}/src/winrt/Main.cpp" />
       <compilerflag value="-Iinclude" />
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/sdl/include" />
+      <compilerflag value="-I${NME_LIBSDL}include" />
       <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
       <cache value="1" />
     </files>
@@ -757,7 +769,7 @@
       <section if="NME_METAL">
           <compilerflag value="-DSDL_VIDEO_METAL=1" />
           <compilerflag value="-DSDL_VIDEO_RENDER_METAL=1" />
-          <file name="${NATIVE_TOOLKIT_PATH}/sdl/src/render/metal/SDL_render_metal.m" />
+          <file name="${NME_LIBSDL}/src/render/metal/SDL_render_metal.m" />
       </section>
 
       <section if="NME_MIXER linux" >
