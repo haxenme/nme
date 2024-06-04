@@ -92,7 +92,7 @@
 
    <!-- Do we need to implement curl in NME -->
    <set name="NME_CURL" value="1" />
-   <unset name="NME_CURL" if="emscripten||winrt||gcw0" />
+   <unset name="NME_CURL" if="emscripten||winrt||gcw0||NME_LOCAL_TOOLKIT" />
 
    <!-- And allow https ? -->
    <set name="NME_SSL" value="1" />
@@ -168,11 +168,12 @@
       <include name="${NME_MODPLUG}/files.xml" if="modplug" />
       <set name="NME_LIBSDL_MIXER" value="${NATIVE_TOOLKIT_PATH}/sdl-mixer/" />
       <include name="${NME_LIBSDL_MIXER}files.xml" if="NME_MIXER" />
+
+      <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" if="NME_CURL" />
    </section>
 
 
 
-   <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" if="NME_CURL" />
 
    <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" unless="ANGLE_DIR" />
    <include name="${ANGLE_DIR}/files.xml" if="NME_ANGLE ANGLE_DIR" />
@@ -402,6 +403,7 @@
         <depend files="native-toolkit-sdl-mixer-depends" if="NME_MIXER"/>
       </section>
 
+      <compilerflag value="-DNME_CURL" if="NME_CURL"/>
       <section if="NME_CURL">
          <compilerflag value="-DNME_CURL_SSL" if="NME_SSL"/>
       </section>

@@ -36,7 +36,7 @@ class Loader extends Sprite
    {
       if (inBytes == null)
          return false;
-      
+
       try 
       {
          nmeImage = BitmapData.loadFromBytes(inBytes);
@@ -68,13 +68,16 @@ class Loader extends Sprite
    public function loadBytes(bytes:ByteArray, context:LoaderContext = null) 
    {
       // No "loader context" in nme
-      if (doLoad(bytes)) {
-		 var event = new Event(Event.COMPLETE);
-		 event.currentTarget = this;
+      if (doLoad(bytes))
+      {
+         var event = new Event(Event.COMPLETE);
+         event.currentTarget = this;
          contentLoaderInfo.dispatchEvent(event);
-      } else {
+      }
+      else
+      {
          contentLoaderInfo.DispatchIOErrorEvent();
-	  }
+     }
    }
 
    public function unload() 
@@ -96,7 +99,7 @@ class Loader extends Sprite
             contentLoaderInfo.height = 0;   
          }
          var event = new Event(Event.UNLOAD);
-		 event.currentTarget = this;
+         event.currentTarget = this;
          dispatchEvent(event);
       }
    }

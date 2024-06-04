@@ -10,7 +10,6 @@
 #endif
 
 #if defined(EMSCRIPTEN) || defined(HX_WINRT)
-#define NME_NO_CURL
 #define NME_NO_CAMERA
 #endif
 #if defined(HXCPP_JS_PRIME) || defined(HX_WINRT)
@@ -5491,7 +5490,7 @@ DEFINE_PRIME3v(nme_tilesheet_get_rect);
 // --- URL ----------------------------------------------------------
 value nme_curl_initialize(value inCACertFilePath)
 {
-   #ifndef NME_NO_CURL
+   #ifdef NME_CURL
    URLLoader::initialize(val_string(inCACertFilePath));
    #endif
    return alloc_null();
@@ -5501,7 +5500,7 @@ DEFINE_PRIM(nme_curl_initialize,1);
 
 value nme_curl_create(value inURLRequest)
 {
-   #ifndef NME_NO_CURL
+   #ifdef NME_CURL
    URLRequest request;
    FromValue(inURLRequest,request);
    URLLoader *loader = URLLoader::create(request);
@@ -5514,7 +5513,7 @@ DEFINE_PRIM(nme_curl_create,1);
 
 value nme_curl_process_loaders()
 {
-   #ifndef NME_NO_CURL
+   #ifdef NME_CURL
    return alloc_bool(URLLoader::processAll());
    #endif
    return alloc_bool(true);
@@ -5524,7 +5523,7 @@ DEFINE_PRIM(nme_curl_process_loaders,0);
 
 value nme_curl_update_loader(value inLoader,value outHaxeObj)
 {
-   #ifndef NME_NO_CURL
+   #ifdef NME_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -5540,7 +5539,7 @@ DEFINE_PRIM(nme_curl_update_loader,2);
 
 value nme_curl_get_error_message(value inLoader)
 {
-   #ifndef NME_NO_CURL
+   #ifdef NME_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -5554,7 +5553,7 @@ DEFINE_PRIM(nme_curl_get_error_message,1);
 
 value nme_curl_get_code(value inLoader)
 {
-   #ifndef NME_NO_CURL
+   #ifdef NME_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -5568,7 +5567,7 @@ DEFINE_PRIM(nme_curl_get_code,1);
 
 value nme_curl_get_data(value inLoader)
 {
-   #ifndef NME_NO_CURL
+   #ifdef NME_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -5584,7 +5583,7 @@ DEFINE_PRIM(nme_curl_get_data,1);
 
 value nme_curl_get_cookies(value inLoader)
 {
-   #ifndef NME_NO_CURL
+   #ifdef NME_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {
@@ -5603,7 +5602,7 @@ DEFINE_PRIM(nme_curl_get_cookies,1);
 
 value nme_curl_get_headers(value inLoader)
 {
-   #ifndef NME_NO_CURL
+   #ifdef NME_CURL
    URLLoader *loader;
    if (AbstractToObject(inLoader,loader))
    {

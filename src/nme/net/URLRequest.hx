@@ -29,10 +29,11 @@ class URLRequest
    /** @private */ public var __bytes:ByteArray;
    /** @private */ public var nmeBytes(get, set):ByteArray;
    
-   public function new(?inURL:String) 
+   public function new(?inURL:String,?inData:Dynamic) 
    {
       if (inURL != null)
          url = inURL;
+      data = inData;
 
       requestHeaders = [];
       method = URLRequestMethod.GET;
@@ -96,7 +97,7 @@ class URLRequest
          var vars:URLVariables = new URLVariables();
 
          for(i in Reflect.fields(data))
-            Reflect.setField(vars, i, Reflect.field(data, i));
+            vars.set(i, Reflect.field(data, i));
 
          var str = vars.toString();
          nmeBytes = new ByteArray();

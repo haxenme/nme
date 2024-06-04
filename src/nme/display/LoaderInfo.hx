@@ -61,17 +61,19 @@ class LoaderInfo extends URLLoader
       var dot = pendingURL.lastIndexOf(".");
       var extension = dot > 0 ? pendingURL.substr(dot + 1).toLowerCase() : "";
 
-      if(request.contentType == null ||
-        request.contentType.length == 0 ||
-        request.contentType == "application/x-www-form-urlencoded")
-        contentType = switch(extension)
+      if (request.contentType == null ||
+            request.contentType.length == 0 ||
+            request.contentType == "application/x-www-form-urlencoded")
         {
-            case "swf": "application/x-shockwave-flash";
-            case "jpg","jpeg": "image/jpeg";
-            case "png": "image/png";
-            case "gif": "image/gif";
-            default:
-            throw "Unrecognized file " + pendingURL;
+           contentType = switch(extension)
+           {
+               case "swf": "application/x-shockwave-flash";
+               case "jpg","jpeg": "image/jpeg";
+               case "png": "image/png";
+               case "gif": "image/gif";
+               default: null;
+               //throw "Unrecognized file " + pendingURL;
+           }
         }
 
 

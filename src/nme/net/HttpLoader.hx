@@ -70,7 +70,6 @@ class HttpLoader
 
       http = new Http(inRequest.url);
       http.onError = onError;
-
       http.onStatus = onStatus;
 
       for(header in urlRequest.requestHeaders)
@@ -81,11 +80,7 @@ class HttpLoader
 
       var isPost = urlRequest.method==URLRequestMethod.POST;
       if (isPost)
-      #if haxe4
          http.setPostBytes(urlRequest.nmeBytes);
-      #else 
-         http.setPostData(urlRequest.nmeBytes.toString());
-      #end
 
       runAsync(run);
    }
