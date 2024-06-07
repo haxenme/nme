@@ -182,6 +182,8 @@
             <compilerflag value="-msse2" unless="HXCPP_ARM64" />
             <compilerflag value="-msse3" unless="HXCPP_ARM64" />
             <compilerflag value="-mssse3" unless="HXCPP_ARM64" />
+            <compilerflag value="-fobjc-arc" />
+            <compilerflag value="-Wno-deprecated-register" />
 
         </section>
 
@@ -313,7 +315,7 @@
         </section>
 
         <section if="android || ios || windows || rpi || tvos" >
-
+<error value="poo" />
             <file name="${NME_LIBSDL}src/video/SDL_egl.c" />
             <file name="${NME_LIBSDL}src/render/opengles/SDL_render_gles.c" />
             <file name="${NME_LIBSDL}src/render/opengles2/SDL_render_gles2.c" />
@@ -543,8 +545,9 @@
         <section if="mac">
 
             <file name="${NME_LIBSDL}src/audio/coreaudio/SDL_coreaudio.m" />
-            <file name="${NME_LIBSDL}src/joystick/darwin/SDL_sysjoystick.c" />
             <file name="${NME_LIBSDL}src/haptic/darwin/SDL_syshaptic.c" />
+            <file name="${NME_LIBSDL}src/joystick/darwin/SDL_iokitjoystick.c" />
+            <file name="${NME_LIBSDL}src/joystick/iphoneos/SDL_mfijoystick.m" />
             <file name="${NME_LIBSDL}src/hidapi/mac/hid.c" />
             <file name="${NME_LIBSDL}src/power/macosx/SDL_syspower.c" />
             <file name="${NME_LIBSDL}src/file/cocoa/SDL_rwopsbundlesupport.m" />
@@ -556,7 +559,6 @@
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoametalview.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoamodes.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoamouse.m" />
-            <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoamousetap.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoaopengl.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoaopengles.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoashape.m" />

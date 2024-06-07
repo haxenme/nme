@@ -208,9 +208,15 @@
 #ifndef SDL_VIDEO_OPENGL_ES2
 #define SDL_VIDEO_OPENGL_ES2    1
 #endif
-#ifndef SDL_VIDEO_OPENGL_EGL
-#define SDL_VIDEO_OPENGL_EGL    0
+
+#ifdef SDL_VIDEO_OPENGL_EGL
+#undef SDL_VIDEO_OPENGL_EGL
 #endif
+
+//#ifndef SDL_VIDEO_OPENGL_EGL
+//#define SDL_VIDEO_OPENGL_EGL    0
+//#endif
+
 #ifndef SDL_VIDEO_OPENGL_CGL
 #define SDL_VIDEO_OPENGL_CGL    1
 #endif
