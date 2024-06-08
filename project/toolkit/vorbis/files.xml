@@ -43,6 +43,7 @@
       <compilerflag value="-I${NME_VORBIS}include/"/>
       <compilerflag value="-I${NME_VORBIS}lib/"/>
       <compilerflag value="-I${NME_OGG}/include/"/>
+      <compilerflag value="-I${this_dir}/.."/>
       
       <file name="${NME_VORBIS}lib/mdct.c"/>
       <file name="${NME_VORBIS}lib/smallft.c"/>

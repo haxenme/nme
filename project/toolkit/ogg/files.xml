@@ -12,6 +12,7 @@
 
         <compilerflag value="-I${NME_OGG}include/"/>
         <compilerflag value="-I${NME_OGG}"/>
+        <compilerflag value="-I${this_dir}/.."/>
         <cache value="1" />
 
         <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />

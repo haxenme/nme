@@ -351,6 +351,7 @@
           <file name="${SRC_DIR}/linux/RpiMMal.cpp"/>
       </section>
 
+      <compilerflag value="-I${this_dir}/toolkit" if="NME_LOCAL_TOOLKIT" />
       <compilerflag value="-I${NME_ZLIB}"/>
       <compilerflag value="-I${NME_PNG}"/>
       <compilerflag value="-I${NME_PNG}.." if="NME_LOCAL_TOOLKIT" />
@@ -358,7 +359,6 @@
       <compilerflag value="-I${NME_JPEG}.." if="NME_LOCAL_TOOLKIT" />
       <compilerflag value="-I${NME_VORBIS}include"/>
       <compilerflag value="-I${NME_OGG}include"/>
-      <compilerflag value="-I${NME_OGG}.." if="NME_LOCAL_TOOLKIT" />
 
       <compilerflag value="-I${NME_FREETYPE}"/>
       <compilerflag value="-I${NME_FREETYPE}include"/>
