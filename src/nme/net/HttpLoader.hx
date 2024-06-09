@@ -7,12 +7,14 @@ import nme.events.ProgressEvent;
 import nme.events.HTTPStatusEvent;
 import nme.utils.ByteArray;
 import haxe.Http;
+#if !js
 #if haxe4
 import sys.thread.Mutex;
 import sys.thread.Thread;
 #else
 import cpp.vm.Mutex;
 import cpp.vm.Thread;
+#end
 #end
 
 private class OutputWatcher extends haxe.io.BytesOutput
@@ -40,9 +42,11 @@ private class OutputWatcher extends haxe.io.BytesOutput
 
 class HttpLoader
 {
+   #if !js
    static var jobs:Array<Void->Void>;
    static var mutex:Mutex;
    static var workers = 0;
+   #end
 
 
    var urlLoader:URLLoader;
@@ -82,9 +86,12 @@ class HttpLoader
       if (isPost)
          http.setPostBytes(urlRequest.nmeBytes);
 
+      #if !js
       runAsync(run);
+      #end
    }
 
+   #if !js
    public function run()
    {
       var output = new OutputWatcher(this);
@@ -156,6 +163,7 @@ class HttpLoader
          //trace(" -> error");
       }
    }
+   #end
 
    public function onBytesLoaded(count:Int)
    {
@@ -183,7 +191,7 @@ class HttpLoader
       code = inStatus;
    }
 
-
+   #if !js
    public static function runAsync(job:Void->Void)
    {
       if (jobs==null)
@@ -219,6 +227,7 @@ class HttpLoader
          job();
       }
    }
+   #end
 
 
    public static function pollAll()

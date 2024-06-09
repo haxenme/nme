@@ -4,9 +4,9 @@ import ImportAll;
 class Export
 {
    @:native("typeof")
-   @:extern inline static function typeOf(d:Dynamic):String
+   extern inline static function typeOf(d:Dynamic):String
    {
-      return untyped __js__("typeof(d)");
+      return untyped js.Syntax.code("typeof(d)");
    }
 
 
@@ -15,7 +15,7 @@ class Export
       untyped __define_feature__("use.$iterator", {});
       untyped __define_feature__("use.$bind", {});
 
-      var global:Dynamic = untyped __js__("$global");
+      var global:Dynamic = untyped js.Syntax.code("$global");
       global.nmeClassesLoaded = true;
       // String map hack
       global.__map_reserved = untyped __map_reserved;
