@@ -31,8 +31,8 @@ class AndroidConfig
    public function new()
    {
       installLocation = "preferExternal";
-      minApiLevel = 16;
-      addV4Compat = true;
+      minApiLevel = 21;
+      addV4Compat = false;
       universalApk = false;
       appHeader = [];
       appIntent = [];

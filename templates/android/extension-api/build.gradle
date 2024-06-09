@@ -6,6 +6,7 @@ android {
 
     compileSdkVersion ::ANDROID_TARGET_SDK_VERSION::
     defaultConfig {
+        minSdkVersion ::ANDROID_MIN_API_LEVEL::
         targetSdkVersion ::ANDROID_TARGET_SDK_VERSION::
     }
     buildToolsVersion "34.0.0"
