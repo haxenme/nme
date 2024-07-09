@@ -1915,11 +1915,12 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                               float *tint = cid>=mSelectMin && cid<mSelectMax ? white : groupColour;
                               Rect r = tile.mRect;
 
-                              if (pos.x < GAP)
+                              if (pos.x < GAP )
                               {
                                  int dx = (GAP-pos.x)*fontScale + 0.001;
                                  r.x += dx;
                                  r.w -= dx;
+                                 p.x = GAP;
                               }
 
                               if (right>clipRight)
@@ -2734,7 +2735,7 @@ CharGroup::~CharGroup()
 
 bool CharGroup::UpdateFont(double inScale,bool inNative, AntiAliasType aaType)
 {
-   int h = 0.5 + inScale*mFormat->size;
+   int h = (inScale>=1.0 ? 0.5 : 0)  + inScale*mFormat->size;
    int flags = (mFormat->bold.Get() ? 1 : 0 ) |
                (mFormat->italic.Get() ? 2 : 0 ) |
                (mFormat->underline.Get() ? 4 : 0 );
