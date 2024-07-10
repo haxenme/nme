@@ -1067,6 +1067,7 @@ class CommandLineTools
             {
                if (project.command!="uploadcrashlytics")
                   project.command = "build";
+               project.androidConfig.bundleApk = true;
             }
             words.splice(w,1);
             break;

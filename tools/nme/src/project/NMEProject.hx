@@ -13,6 +13,7 @@ class AndroidConfig
    public var minApiLevel:Int;
    public var addV4Compat:Bool;
    public var universalApk:Bool;
+   public var bundleApk:Bool;
    public var targetApiLevel:Null<Int>;
    public var buildApiLevel:Null<Int>;
    public var appHeader:Array<String>;
@@ -34,6 +35,7 @@ class AndroidConfig
       minApiLevel = 21;
       addV4Compat = false;
       universalApk = false;
+      bundleApk = false;
       appHeader = [];
       appIntent = [];
       appActivity = [];

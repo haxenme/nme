@@ -337,6 +337,7 @@ class AndroidPlatform extends Platform
       
       context.ABIS = [for(abi in includedABIs()) '"${abi.name}"'].join(', ');
       context.ABI_CODES = [for(abi in includedABIs()) '\'${abi.name}\':${abi.versionCodeScaler}'].join(', ');
+      context.NME_BUNDLE_RELEASE = project.androidConfig.bundleApk;
    }
 
    function getNdkStackExe()

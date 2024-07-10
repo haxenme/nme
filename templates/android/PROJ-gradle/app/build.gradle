@@ -121,6 +121,7 @@ dependencies {
     }
 }
 
+::if !NME_BUNDLE_RELEASE::
 /* Assigns a different version code for each output APK
     other than the universal APK. */
 
@@ -140,3 +141,4 @@ android.applicationVariants.all { variant ->
         }
     }
 }
+::end::
