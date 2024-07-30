@@ -4860,50 +4860,62 @@ void nme_bitmap_data_flood_fill(value inSurface, int inX, int inY, int inColor)
    {  
       int width = surf->Width();
       int height = surf->Height();
+
+      if (inX<0 || inY<0 || inX>=width || inY>=height)
+         return;
       
-      std::vector<UserPoint> queue;
-      queue.push_back(UserPoint(inX,inY));
-      
-      int old = surf->getPixel(inX,inY);
-      
-      bool *search = new bool[width*height];
-      std::fill_n(search, width*height, false);
-      
+      int mask = HasAlphaChannel(surf->Format()) ? 0xffffffff : 0xffffff;
+      inColor &= mask;
+      int replace = surf->getPixel(inX,inY) & mask;
+      if ( replace==inColor )
+         return;
+
+      std::vector<ImagePoint> queue;
+      surf->setPixel(inX,inY,inColor,true);
+      if (surf->getPixel(inX,inY)&mask==inColor)
+      {
+         printf("Bad re-write?\n");
+         return;
+      }
+
+      queue.push_back(ImagePoint(inX,inY));
+      int changes = 1;
+
       while (queue.size() > 0)
       {
-         UserPoint currPoint = queue.back();
+         ImagePoint currPoint = queue.back();
          queue.pop_back();
          
          int x = currPoint.x;
          int y = currPoint.y;
        
-         if (x<0 || x>=width) continue;
-         if (y<0 || y>=height) continue;
-         
-         search[y*width + x] = true;
-         
-         if (surf->getPixel(x,y) == old)
+         if (x>0 && (surf->getPixel(x-1,y)&mask)==replace )
          {
-            surf->setPixel(x,y,inColor,true);
-            if (x<width && !search[y*width + (x+1)])
-            {
-               queue.push_back(UserPoint(x+1,y));
-            }
-            if (y<height && !search[(y+1)*width + x])
-            {
-               queue.push_back(UserPoint(x,y+1));
-            }
-            if (x>0 && !search[y*width + (x-1)])
-            {
-               queue.push_back(UserPoint(x-1,y));
-            }
-            if (y>0 && !search[(y-1)*width + x])
-            {
-               queue.push_back(UserPoint(x,y-1));
-            }
+            changes++;
+            surf->setPixel(x-1,y,inColor,true);
+            queue.push_back(ImagePoint(x-1,y));
          }
+         if (x+1<width && (surf->getPixel(x+1,y)&mask)==replace )
+         {
+            changes++;
+            surf->setPixel(x+1,y,inColor,true);
+            queue.push_back(ImagePoint(x+1,y));
+         }
+       
+         if (y>0 && (surf->getPixel(x,y-1)&mask)==replace )
+         {
+            changes++;
+            surf->setPixel(x,y-1,inColor,true);
+            queue.push_back(ImagePoint(x,y-1));
+         }
+         if (y+1<height && (surf->getPixel(x,y+1)&mask)==replace )
+         {
+            changes++;
+            surf->setPixel(x,y+1,inColor,true);
+            queue.push_back(ImagePoint(x,y+1));
+         }
+
       }
-      delete [] search;
    }
 }
 DEFINE_PRIME4v(nme_bitmap_data_flood_fill);
