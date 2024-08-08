@@ -230,7 +230,7 @@ class NMMLParser
                project.app.preloader = substitute(element.att.preloader);
 
             case "bootType":
-               var types = ["auto", "main", "new", "addStage" ];
+               var types = ["auto", "main", "new", "addStage", "mainCommandLine" ];
                var type = substitute(element.att.bootType);
                var typeId = types.indexOf(type);
                if (typeId<0)

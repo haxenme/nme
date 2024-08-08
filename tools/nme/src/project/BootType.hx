@@ -4,4 +4,5 @@ enum BootType
    BootTypeMain;
    BootTypeNew;
    BootTypeAddStage;
+   BootTypeMainCommandLine;
 }

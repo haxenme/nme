@@ -60,7 +60,7 @@ class ApplicationMain
         new ::APP_MAIN::();
      ::elseif (APP_BOOT_TYPE=="BootTypeAddStage")::
         new ApplicationDocument();
-     ::else::
+     ::elseif (APP_BOOT_TYPE!="BootTypeMainCommandLine")::
         ApplicationBoot.createInstance();
      ::end::
    }
@@ -117,8 +117,10 @@ class ApplicationMain
          #end
 
       #end
-   
 
+     ::if (APP_BOOT_TYPE=="BootTypeMainCommandLine")::
+     ::APP_MAIN::.main();
+     ::else::
    
       #if flash
          // Flash
@@ -266,6 +268,8 @@ class ApplicationMain
          // Unknown framework
          createInstance();
       #end
+
+      ::end::
    }
 
    @:keep function keepMe() return Reflect.callMethod;
