@@ -581,6 +581,7 @@
             <files id="native-toolkit-jpeg-8" />
             <files id="native-toolkit-jpeg-12" />
             <files id="native-toolkit-jpeg-16" />
+            <files id="native-toolkit-jpeg-asm" if="NME_SIMD_D" />
          </section>
          <files id="native-toolkit-png" />
          <files id="native-toolkit-zlib" />

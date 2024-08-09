@@ -27,6 +27,7 @@
       <depend files="native-toolkit-jpeg-depends-int"/>
       <compilerflag value="-I${NME_JPEG}" />
       <compilerflag value="-I${NME_JPEG}/.." />
+      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D" />
       <objprefix value="s16_" />
       <file name="${NME_JPEG}jcapistd.c" />
       <file name="${NME_JPEG}jccolor.c" />
@@ -49,6 +50,7 @@
    <files id="native-toolkit-jpeg-12" tags="">
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
 
+      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D" />
       <compilerflag value="-DBITS_IN_JSAMPLE=12" />
       <depend files="native-toolkit-jpeg-depends-int"/>
       <compilerflag value="-I${NME_JPEG}" />
@@ -93,10 +95,10 @@
 
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
 
+      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D" />
       <depend files="native-toolkit-jpeg-depends-int"/>
       <compilerflag value="-I${NME_JPEG}" />
       <compilerflag value="-I${NME_JPEG}/.." />
-      <compilerflag value="-I${NME_JPEG}/simd/nasm" />
 
       <files id="jpeg-sample12" />
       <files id="jpeg-sample16" />
@@ -162,45 +164,55 @@
       <file name="${NME_JPEG}jcarith.c" />
       <file name="${NME_JPEG}jdarith.c" />
 
-   </files>
 
-   <files id="jpeg-simd" >
-      <compilerflag value="${NME_SIMD_D}" if="NME_SIMD_D" />
-      <compilerflag value="-DNME_SIMD_D" if="NME_SIMD_D" />
       <section if="NME_SIMD_ARM64 || NME_SIMD_ARM7" >
          <file name="${NME_JPEG}jcapimin.c"/>
-         <file name="{$NME_JPEG}/simd/arm/jquanti-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jidctred-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jidctint-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jfdctint-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jidctfst-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jfdctfst-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jdsample-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jdmrgext-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jdcolor-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jdmerge-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jdcolext-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jcsample-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jcphuff-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jcgryext-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jcgray-neon.c" />
-         <file name="{$NME_JPEG}/simd/arm/jccolor-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jquanti-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jidctred-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jidctint-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jfdctint-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jidctfst-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jfdctfst-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jdsample-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jdcolor-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jdmerge-neon.c" />
+         <!--
+         <file name="${NME_JPEG}/simd/arm/jcgryext-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jdmrgext-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jdcolext-neon.c" />
+         -->
+         <file name="${NME_JPEG}/simd/arm/jcsample-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jcphuff-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jcgray-neon.c" />
+         <file name="${NME_JPEG}/simd/arm/jccolor-neon.c" />
 
          <section if="NME_SIMD_ARM64" >
-            <file name="{$NME_JPEG}/simd/arm/aarch64/jsimd_neon.S" />
-            <file name="{$NME_JPEG}/simd/arm/aarch64/jsimd.c" />
-            <file name="{$NME_JPEG}/simd/arm/aarch64/jccolext-neon.c" />
-            <file name="{$NME_JPEG}/simd/arm/aarch64/jchuff-neon.c" />
+            <file name="${NME_JPEG}/simd/arm/aarch64/jsimd_neon.S" />
+            <file name="${NME_JPEG}/simd/arm/aarch64/jsimd.c" />
+            <!--<file name="${NME_JPEG}/simd/arm/aarch64/jccolext-neon.c" />-->
+            <file name="${NME_JPEG}/simd/arm/aarch64/jchuff-neon.c" />
          </section>
          <section if="NME_SIMD_ARM7" >
-            <file name="{$NME_JPEG}/simd/arm/aarch64/jsimd_neon.S" />
-            <file name="{$NME_JPEG}/simd/arm/aarch64/jsimd.c" />
-            <file name="{$NME_JPEG}/simd/arm/aarch64/jccolext-neon.c" />
-            <file name="{$NME_JPEG}/simd/arm/aarch64/jchuff-neon.c" />
+            <file name="${NME_JPEG}/simd/arm/aarch64/jsimd_neon.S" />
+            <file name="${NME_JPEG}/simd/arm/aarch64/jsimd.c" />
+            <!--<file name="${NME_JPEG}/simd/arm/aarch64/jccolext-neon.c" />-->
+            <file name="${NME_JPEG}/simd/arm/aarch64/jchuff-neon.c" />
          </section>
       </section>
       <section if="NME_SIMD_X86_64" >
          <file name="${NME_JPEG}/simd/x86_64/jsimd.c" />
+      </section>
+   </files>
+
+   <files id="native-toolkit-jpeg-asm" >
+      <section if="NME_SIMD_X86_64" >
+         <assembler name="nasm" />
+         <compilerflag value="-fwin64" />
+         <compilerflag value="-D__x86_64__" />
+         <compilerflag value="-DWIN64" />
+         <compilerflag name="-I" value="${NME_JPEG}/simd/nasm/" />
+         <compilerflag name="-I" value="${NME_JPEG}/simd/x86_64/" />
+
          <file name="${NME_JPEG}/simd/x86_64/jsimdcpu.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jquanti-sse2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jquantf-sse2.asm" />
@@ -216,28 +228,22 @@
          <file name="${NME_JPEG}/simd/x86_64/jfdctflt-sse.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jdsample-sse2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jdsample-avx2.asm" />
-         <file name="${NME_JPEG}/simd/x86_64/jdmrgext-avx2.asm" />
-         <file name="${NME_JPEG}/simd/x86_64/jdmrgext-sse2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jdmerge-sse2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jdmerge-avx2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jdcolor-avx2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jdcolor-sse2.asm" />
-         <file name="${NME_JPEG}/simd/x86_64/jdcolext-sse2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jcsample-sse2.asm" />
-         <file name="${NME_JPEG}/simd/x86_64/jdcolext-avx2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jcsample-avx2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jchuff-sse2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jcphuff-sse2.asm" />
-         <file name="${NME_JPEG}/simd/x86_64/jcgryext-sse2.asm" />
-         <file name="${NME_JPEG}/simd/x86_64/jcgryext-avx2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jcgray-sse2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jccolor-sse2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jcgray-avx2.asm" />
          <file name="${NME_JPEG}/simd/x86_64/jccolor-avx2.asm" />
-         <file name="${NME_JPEG}/simd/x86_64/jccolext-avx2.asm" />
-         <file name="${NME_JPEG}/simd/x86_64/jccolext-sse2.asm" />
+
       </section>
    </files>
+
 
    <files id="jpeg-test-main" tags="">
       <depend files="native-toolkit-jpeg-depends-int"/>
