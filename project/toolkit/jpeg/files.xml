@@ -207,9 +207,16 @@
    <files id="native-toolkit-jpeg-asm" >
       <section if="NME_SIMD_X86_64" >
          <assembler name="nasm" />
-         <compilerflag value="-fwin64" />
          <compilerflag value="-D__x86_64__" />
-         <compilerflag value="-DWIN64" />
+         <section if="windows" >
+            <compilerflag value="-fwin64" />
+            <compilerflag value="-DWIN64" />
+         </section>
+         <section if="macos" >
+            <compilerflag value="-fmacho64" />
+            <compilerflag value="-DMACHO64" />
+            <compilerflag value="-DMACHO" />
+         </section>
          <compilerflag name="-I" value="${NME_JPEG}/simd/nasm/" />
          <compilerflag name="-I" value="${NME_JPEG}/simd/x86_64/" />
 
