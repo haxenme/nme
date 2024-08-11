@@ -23,6 +23,7 @@
    <compilerflag value="-I${NME_LIBSDL_MIXER}include" />
    <compilerflag value="-I${NME_LIBSDL_MIXER}src/codecs" />
    <compilerflag value="-I${NME_VORBIS}include" />
+   <compilerflag value="-I${this_dir}/.." />
    <compilerflag value="-I${NME_OGG}include" />
    <compilerflag value="-I${NME_MODPLUG}" />
 

@@ -779,10 +779,12 @@
 
       <section if="NME_MIXER linux" >
          <compilerflag value="-Isupport/linux"  />
-         <compilerflag value="-DSDL_AUDIO_DRIVER_ALSA" />
-         <compilerflag value='-DSDL_AUDIO_DRIVER_ALSA_DYNAMIC="libasound.so.2"'  />
-         <compilerflag value="-DSDL_AUDIO_DRIVER_PULSEAUDIO" />
-         <compilerflag value='-DSDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC="libpulse-simple.so.0"' />
+         <section unless="NME_LOCAL_TOOLKIT" >
+            <compilerflag value="-DSDL_AUDIO_DRIVER_ALSA" />
+            <compilerflag value='-DSDL_AUDIO_DRIVER_ALSA_DYNAMIC="libasound.so.2"'  />
+            <compilerflag value="-DSDL_AUDIO_DRIVER_PULSEAUDIO" />
+            <compilerflag value='-DSDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC="libpulse-simple.so.0"' />
+         </section>
       </section>
    </files>
    <files id="native-toolkit-sdl-mixer" >

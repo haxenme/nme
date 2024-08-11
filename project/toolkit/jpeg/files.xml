@@ -166,6 +166,8 @@
 
 
       <section if="NME_SIMD_ARM64 || NME_SIMD_ARM7" >
+         <compilerflag value="-DNEON_INTRINSICS=1" />
+
          <file name="${NME_JPEG}jcapimin.c"/>
          <file name="${NME_JPEG}/simd/arm/jquanti-neon.c" />
          <file name="${NME_JPEG}/simd/arm/jidctred-neon.c" />
@@ -174,6 +176,7 @@
          <file name="${NME_JPEG}/simd/arm/jidctfst-neon.c" />
          <file name="${NME_JPEG}/simd/arm/jfdctfst-neon.c" />
          <file name="${NME_JPEG}/simd/arm/jdsample-neon.c" />
+
          <file name="${NME_JPEG}/simd/arm/jdcolor-neon.c" />
          <file name="${NME_JPEG}/simd/arm/jdmerge-neon.c" />
          <!--
@@ -187,16 +190,14 @@
          <file name="${NME_JPEG}/simd/arm/jccolor-neon.c" />
 
          <section if="NME_SIMD_ARM64" >
-            <file name="${NME_JPEG}/simd/arm/aarch64/jsimd_neon.S" />
+            <!--<file name="${NME_JPEG}/simd/arm/aarch64/jsimd_neon.S" />-->
             <file name="${NME_JPEG}/simd/arm/aarch64/jsimd.c" />
-            <!--<file name="${NME_JPEG}/simd/arm/aarch64/jccolext-neon.c" />-->
             <file name="${NME_JPEG}/simd/arm/aarch64/jchuff-neon.c" />
          </section>
          <section if="NME_SIMD_ARM7" >
-            <file name="${NME_JPEG}/simd/arm/aarch64/jsimd_neon.S" />
-            <file name="${NME_JPEG}/simd/arm/aarch64/jsimd.c" />
-            <!--<file name="${NME_JPEG}/simd/arm/aarch64/jccolext-neon.c" />-->
-            <file name="${NME_JPEG}/simd/arm/aarch64/jchuff-neon.c" />
+            <!--<file name="${NME_JPEG}/simd/arm/aarch64/jsimd_neon.S" />-->
+            <file name="${NME_JPEG}/simd/arm/aarch32/jsimd.c" />
+            <file name="${NME_JPEG}/simd/arm/aarch32/jchuff-neon.c" />
          </section>
       </section>
       <section if="NME_SIMD_X86_64" >

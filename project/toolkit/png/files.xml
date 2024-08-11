@@ -40,7 +40,7 @@
       <file name="${NME_PNG}pngwtran.c" />
       <file name="${NME_PNG}pngwutil.c" />
 
-      <section if="ios || tvoso || android">
+      <section if="NME_SIMD_ARM64 || NME_SIMD_ARM7">
 
          <file name="${NME_PNG}arm/arm_init.c" />
          <file name="${NME_PNG}arm/filter_neon_intrinsics.c" />

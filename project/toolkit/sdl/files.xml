@@ -148,13 +148,17 @@
             <compilerflag value="-DUSING_GENERATED_CONFIG_H" />
             <compilerflag value="-DHAVE_LINUX_VERSION_H" />
             <compilerflag value="-D_REENTRANT" />
-            <compilerflag value="-mmmx" unless="rpi" />
-            <compilerflag value="-msse" unless="rpi" />
-            <compilerflag value="-msse2" unless="rpi" />
-            <compilerflag value="-msse3" unless="rpi" />
-            <compilerflag value="-mssse3" unless="rpi" />
+
+            <section unless="HXCPP_ARM64 || HXCPP_ARM7" >
+               <compilerflag value="-mmmx" />
+               <compilerflag value="-msse" />
+               <compilerflag value="-msse2" />
+               <compilerflag value="-msse3" />
+               <compilerflag value="-mssse3" />
+            </section>
 
             <compilerflag value="-mfpu=neon" if="rpi" />
+
             <compilerflag value="-mfloat-abi=hard" if="rpi" />
             <compilerflag value="-I-abi=hard" if="rpi" />
             <compilerflag value="-I/opt/vc/include" if="rpi" />
@@ -323,7 +327,7 @@
 
         </section>
 
-        <section if="windows || mac || ios || android || tvos">
+        <section if="windows || mac || ios || android || tvos || linux">
 
             <file name="${NME_LIBSDL}src/joystick/SDL_joystick.c" />
             <file name="${NME_LIBSDL}src/joystick/SDL_steam_virtual_gamepad.c" />
@@ -430,13 +434,13 @@
             <file name="${NME_LIBSDL}src/haptic/linux/SDL_syshaptic.c" />
             <!-- <file name="${NME_LIBSDL}src/hidapi/linux/hid.c" />
             <file name="${NME_LIBSDL}src/hidapi/linux/hidraw.cpp" /> -->
-            <file name="${NME_LIBSDL}src/joystick/bsd/SDL_sysjoystick.c" />
             <file name="${NME_LIBSDL}src/power/linux/SDL_syspower.c" />
             <file name="${NME_LIBSDL}src/core/linux/SDL_evdev.c" />
             <file name="${NME_LIBSDL}src/core/linux/SDL_evdev_kbd.c" />
+            <file name="${NME_LIBSDL}src/core/linux/SDL_evdev_capabilities.c" />
             <file name="${NME_LIBSDL}src/core/linux/SDL_udev.c" />
             <file name="${NME_LIBSDL}src/core/linux/SDL_dbus.c" />
-            <file name="${NME_LIBSDL}src/core/linux/SDL_fcitx.c" />
+            <!--<file name="${NME_LIBSDL}src/core/linux/SDL_fcitx.c" />-->
             <file name="${NME_LIBSDL}src/core/linux/SDL_ibus.c" />
             <file name="${NME_LIBSDL}src/core/linux/SDL_ime.c" />
             <file name="${NME_LIBSDL}src/core/linux/SDL_threadprio.c" />
@@ -459,7 +463,9 @@
             <file name="${NME_LIBSDL}src/video/x11/SDL_x11window.c" />
             <file name="${NME_LIBSDL}src/video/x11/SDL_x11xinput2.c" />
             <file name="${NME_LIBSDL}src/video/x11/edid-parse.c" />
-            <file name="${NME_LIBSDL}src/video/x11/imKStoUCS.c" />
+            <file name="${NME_LIBSDL}src/events/imKStoUCS.c" />
+            <file name="${NME_LIBSDL}src/events/SDL_scancode_tables.c" />
+            <file name="${NME_LIBSDL}src/events/SDL_keysym_to_scancode.c" />
             <file name="${NME_LIBSDL}src/filesystem/unix/SDL_sysfilesystem.c" />
             <file name="${NME_LIBSDL}src/locale/unix/SDL_syslocale.c" />
             <file name="${NME_LIBSDL}src/misc/unix/SDL_sysurl.c" />

@@ -209,6 +209,8 @@
 /* #undef SDL_AUDIO_DRIVER_FUSIONSOUND */
 /* #undef SDL_AUDIO_DRIVER_FUSIONSOUND_DYNAMIC */
 
+#define HAVE_LINUX_INPUT_H
+
 /* Enable various input drivers */
 #define SDL_INPUT_LINUXEV 1
 #define SDL_INPUT_LINUXKD 1
