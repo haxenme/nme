@@ -1805,6 +1805,13 @@ class GL
 
    #else // not (neko||cpp)
 
+
+   public static inline function getSupportedExtensions():Array<String>
+   {
+      var result = new Array<String>();
+      return result;
+   }
+
    // Stub to get flixel to compile
    public static function getParameter(pname:Int):Dynamic 
    {

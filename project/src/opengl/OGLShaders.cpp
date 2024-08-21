@@ -111,17 +111,17 @@ void OGLProg::recreate()
     // Check the status of the compile/link
    int logLen = 0;
    glGetProgramiv(mProgramId, GL_INFO_LOG_LENGTH, &logLen);
-   if(logLen > 0 || !linkStatus)
+   if(logLen > 1 || !linkStatus)
    {
        // Show any errors as appropriate
-       ELOG("----");
+       ELOG("---- ll=%d, !linkStatus=%d\n",logLen,!linkStatus);
        ELOG("VERT: %s", mVertProg.c_str());
        ELOG("FRAG: %s", mFragProg.c_str());
        if (logLen>0)
        {
           char *log = new char[logLen];
           glGetProgramInfoLog(mProgramId, logLen, &logLen, log);
-          ELOG("ERROR:\n%s\n", log);
+          ELOG("ERROR:x%d\n%s\n",logLen, log);
           delete [] log;
        }
        else
@@ -129,10 +129,18 @@ void OGLProg::recreate()
           ELOG("no error message.");
        }
 
-      glDeleteShader(mVertId);
-      glDeleteShader(mFragId);
-      glDeleteProgram(mProgramId);
-      mVertId = mFragId = mProgramId = 0;
+      if (!linkStatus)
+      {
+         ELOG("Could not link.");
+         glDeleteShader(mVertId);
+         glDeleteShader(mFragId);
+         glDeleteProgram(mProgramId);
+         mVertId = mFragId = mProgramId = 0;
+      }
+      else
+      {
+         ELOG("non fatal.");
+      }
    }
 
    vertexSlot = glGetAttribLocation(mProgramId, "aVertex");
