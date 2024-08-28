@@ -382,8 +382,8 @@ FontMap sgFontMap;
 #ifdef LINKED_FONT_DATA
 FontBuffer decompressFontData(int srcLen, int destLen, const unsigned char *inData)
 {
-   #ifdef JS_PRIME
-   FontBuffer data = new FontBuffer();
+   #ifdef HXCPP_JS_PRIME
+   FontBuffer data = new BufferData();
    data->IncRef();
    data->setDataSize(destLen,false);
    Bytef *dataPtr = (Bytef*)data->getData();

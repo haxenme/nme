@@ -33,13 +33,9 @@ class EmscriptenPlatform extends DesktopPlatform
       executablePath = applicationDirectory + "/" + executableFile;
       outputFiles.push(executableFile);
 
-      var wasmFile = "ApplicationMain.js";
-      executablePath = applicationDirectory + "/" + executableFile;
-      outputFiles.push(executableFile);
-
       project.haxeflags.push('-D exe_link');
       project.haxeflags.push('-D HXCPP_LINK_EMSCRIPTEN_EXT=$ext');
-      project.haxeflags.push('-D HXCPP_LINK_EMRUN');
+      project.haxeflags.push('-D HXCPP_LINK_MEMORY_GROWTH=1');
 
       memFile = project.getBool("emscriptenMemFile", false);
       if (memFile)
@@ -98,15 +94,19 @@ class EmscriptenPlatform extends DesktopPlatform
       Sys.println("          -browser ID, for specific one");
    }
 
+
    override public function run(arguments:Array<String>):Void 
    {
-      if (true)
+      if (false)
       {
          runPython(arguments);
       }
       else
       {
-         var server = new nme.net.http.Server( new nme.net.http.FileServer([FileSystem.fullPath(applicationDirectory) ]).onRequest  );
+         var server = new nme.net.http.Server(
+            new nme.net.http.FileServer([FileSystem.fullPath(applicationDirectory) ],
+              new nme.net.http.StdioHandler(),
+               ).onRequest  );
 
          var port = 2323;
          server.listen(port);
