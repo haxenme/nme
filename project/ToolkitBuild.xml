@@ -640,8 +640,7 @@
             <vflag name="-framework" value="QuartzCore" />
          </section>
 
-
-         <section if="emscripten">
+         <section if="jsprime">
             <vflag name="-s" value="EXPORTED_FUNCTIONS=['_malloc']" />
          </section>
 

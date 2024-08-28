@@ -14,8 +14,9 @@ class EmscriptenPlatform extends DesktopPlatform
    private var sdkPath:String;
    private var python:String;
    private var memFile:Bool;
+   var htmlOut = false;
 
-   override public function getOutputExtra() : String { return ext==".js" ? "jsprime" : ""; }
+   override public function getOutputExtra() : String { return "jsprime"; }
 
    public function new(inProject:NMEProject)
    {
@@ -23,18 +24,26 @@ class EmscriptenPlatform extends DesktopPlatform
 
       setupSdk();
 
-      ext = project.hasDef("EMSCRIPTEN_HTML") ? ".html" : ".js";
+      htmlOut = true; //project.hasDef("EMSCRIPTEN_HTML");
+      ext = htmlOut ? ".html" : ".js";
       applicationDirectory = getOutputDir();
-      executableFile = "ApplicationMain" + ext;
+
+
+      executableFile = "ApplicationMain.js";
       executablePath = applicationDirectory + "/" + executableFile;
       outputFiles.push(executableFile);
+
+      var wasmFile = "ApplicationMain.js";
+      executablePath = applicationDirectory + "/" + executableFile;
+      outputFiles.push(executableFile);
+
       project.haxeflags.push('-D exe_link');
       project.haxeflags.push('-D HXCPP_LINK_EMSCRIPTEN_EXT=$ext');
       project.haxeflags.push('-D HXCPP_LINK_EMRUN');
 
-      memFile = project.getBool("emscriptenMemFile", true);
-
-      project.haxeflags.push('-D HXCPP_LINK_MEM_FILE=' + (memFile?"1":"0") );
+      memFile = project.getBool("emscriptenMemFile", false);
+      if (memFile)
+         project.haxeflags.push('-D HXCPP_LINK_MEM_FILE=1');
    }
 
    override public function getPlatformDir() : String { return "emscripten"; }
@@ -45,44 +54,26 @@ class EmscriptenPlatform extends DesktopPlatform
 
    override public function copyBinary():Void 
    {
+      var dbg = project.debug ? "-debug" : "";
+
       // Must keep the same name
-      if (project.debug)
+      var src = haxeDir + '/cpp/ApplicationMain$dbg';
+      if (htmlOut && false)
       {
-         var src = haxeDir + "/cpp/ApplicationMain-debug";
-
-         if (ext==".html") // no 'debug'
-            FileHelper.copyFile(src + ext, applicationDirectory+"/ApplicationMain.html");
-         else
-            FileHelper.copyFile(src + ext, applicationDirectory+"/ApplicationMain-debug"+ext);
-
-         // Needed of O2?
-         if (memFile)
-            FileHelper.copyFile(src + ext+".mem", applicationDirectory+"/ApplicationMain-debug"+ext + ".mem" );
-
-         if (ext==".html")
-            FileHelper.copyFile(src + ".js", applicationDirectory+"/ApplicationMain-debug.js");
-
+         FileHelper.copyFile(src + ".html", applicationDirectory+"/index.html");
       }
-      else
-      {
-         var src = haxeDir + "/cpp/ApplicationMain";
 
-         FileHelper.copyFile(src + ext, executablePath);
-         // Needed of O2?
-         if (memFile)
-            FileHelper.copyFile(src + ext+".mem", executablePath+".mem");
-
-         if (ext==".html")
-            FileHelper.copyFile(src + ".js", applicationDirectory+"/ApplicationMain.js");
-      }
+      FileHelper.copyFile(src + ".js", applicationDirectory+'/ApplicationMain$dbg.js');
+      FileHelper.copyFile(src + ".wasm", applicationDirectory+'/ApplicationMain$dbg.wasm');
    }
 
    override function generateContext(context:Dynamic)
    {
       super.generateContext(context);
-      context.NME_LIB_JS = project.debug ? "ApplicationMain-debug.js" : "ApplicationMain.js";
+      var dbg = project.debug ? "-debug" : "";
+      context.NME_JS = 'ApplicationMain$dbg.js';
       context.NME_MEM_FILE = memFile;
-      context.NME_APP_JS = null;
+      context.NME_APP_JS = 'ApplicationMain$dbg.wasm';
    }
 
 
@@ -109,8 +100,33 @@ class EmscriptenPlatform extends DesktopPlatform
 
    override public function run(arguments:Array<String>):Void 
    {
+      if (true)
+      {
+         runPython(arguments);
+      }
+      else
+      {
+         var server = new nme.net.http.Server( new nme.net.http.FileServer([FileSystem.fullPath(applicationDirectory) ]).onRequest  );
+
+         var port = 2323;
+         server.listen(port);
+         new nme.net.URLRequest('http://localhost:$port/index.html' ).launchBrowser();
+
+         server.untilDeath();
+      }
+
+
+
+      //var fullPath =  FileSystem.fullPath('$applicationDirectory/index.html');
+      //new nme.net.URLRequest("file://" + fullPath).launchBrowser();
+   }
+
+
+   public function runPython(arguments:Array<String>):Void 
+   {
       var command = sdkPath==null ? "emrun" : sdkPath + "/emrun";
-      var source = ext == ".html" ? Path.withoutDirectory(executablePath) : "index.html";
+      var source = "index.html";
+      //var source = ext == ".html" ? Path.withoutDirectory(executablePath) : "index.html";
       var browser = CommandLineTools.browser;
       var browserOps = browser=="none" ? ["--no_browser"] : browser==null ? [] : ["--browser",browser];
       if (python!=null)

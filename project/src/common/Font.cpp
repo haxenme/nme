@@ -14,7 +14,11 @@
 #define strcasecmp stricmp
 #endif
 
-#ifdef HXCPP_JS_PRIME
+#if (defined(HXCPP_JS_PRIME) || defined(EMSCRIPTEN) )
+#define LINKED_FONT_DATA
+#endif
+
+#ifdef LINKED_FONT_DATA
 #include <zlib.h>
 
 extern int gSansFullSize;
@@ -375,13 +379,20 @@ const char *RemapFontName(const char *inName)
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
 
-#ifdef HXCPP_JS_PRIME
-BufferData *decompressFontData(int srcLen, int destLen, const unsigned char *inData)
+#ifdef LINKED_FONT_DATA
+FontBuffer decompressFontData(int srcLen, int destLen, const unsigned char *inData)
 {
-   BufferData *data = new BufferData();
+   #ifdef JS_PRIME
+   FontBuffer data = new FontBuffer();
    data->IncRef();
-
    data->setDataSize(destLen,false);
+   Bytef *dataPtr = (Bytef*)data->getData();
+   #else
+   AutoGCUnblocking unblock;
+   ByteArray byteArray(destLen);
+   Bytef *dataPtr = byteArray.Bytes();
+   FontBuffer data = new AutoGCRoot(byteArray.mValue);
+   #endif
 
    z_stream z;
    memset(&z,0,sizeof(z_stream));
@@ -393,8 +404,8 @@ BufferData *decompressFontData(int srcLen, int destLen, const unsigned char *inD
    z.next_in = (Bytef*)inData;
    z.avail_in = srcLen;
 
-   z.next_out = (Bytef*)data->getData();
-   z.avail_out = data->getDataSize();
+   z.next_out = dataPtr;
+   z.avail_out = destLen;
    int code = 0;
    if( (code = ::inflate(&z,flush)) < 0 )
    {
@@ -408,6 +419,28 @@ BufferData *decompressFontData(int srcLen, int destLen, const unsigned char *inD
 }
 #endif
 
+class EmptyFontFace : public FontFace
+{
+   int height;
+
+public:
+   EmptyFontFace(int inHeight) : height(inHeight) { }
+
+   bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
+                           int &outOx, int &outOy)
+   {
+      return false;
+   }
+   void RenderGlyph(int inChar,const RenderTarget &outTarget) { }
+
+   void UpdateMetrics(TextLineMetrics &ioMetrics)
+   {
+      ioMetrics.ascent = std::max( ioMetrics.ascent, (float)height);
+      ioMetrics.descent = std::max( ioMetrics.descent, (float)height);
+      ioMetrics.height = std::max( ioMetrics.height, (float)height);
+   }
+   int  Height() { return height; }
+};
 
 
 
@@ -502,7 +535,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
          //   printf("No resource\n");
       }
 
-      #ifdef HXCPP_JS_PRIME
+      #ifdef LINKED_FONT_DATA
       if (!bytes)
       {
          if (norm=="_sans")
@@ -540,13 +573,16 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
    if (!native && !face)
       face = FontFace::CreateNative(inFormat,inScale, aaType);
 #endif
+
    if (!face)
    {
-      //printf("Missing face : %s\n", fontName.c_str() );
-      TextFormat defaultFormat = inFormat;
-      defaultFormat.font = UTF8ToWide("_sans");
-      return Create(defaultFormat, inScale, inNative, aaType, inInitRef);
-      return 0;
+      if (fontName!="_sans")
+      {
+         TextFormat defaultFormat = inFormat;
+         defaultFormat.font = UTF8ToWide("_sans");
+         return Create(defaultFormat, inScale, inNative, aaType, inInitRef);
+      }
+      face = new EmptyFontFace(info.height);
    }
 
    font =  new Font(face,info.height,inInitRef);

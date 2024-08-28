@@ -18,7 +18,9 @@ class Export
       var global:Dynamic = untyped js.Syntax.code("$global");
       global.nmeClassesLoaded = true;
       // String map hack
+      #if (js_es < 5)
       global.__map_reserved = untyped __map_reserved;
+      #end
 
       if (typeOf(global.nmeOnClasses) == 'function')
          global.nmeOnClasses();

@@ -26,6 +26,7 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #include <emscripten/html5.h>
+#include <emscripten/bind.h>
 #endif
 
 #ifdef NME_MIXER

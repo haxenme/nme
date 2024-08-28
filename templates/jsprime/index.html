@@ -117,6 +117,7 @@
         progress: function() {
           var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedNmeClasses;
           if (this.binaryIsReady) loaded++;
+          console.log("progress: " + this.binaryIsReady + "/" + loaded);
 
 
           var preloadUpdate = window.preloadUpdate;
@@ -196,6 +197,7 @@
 
     <script>
           ::if (NME_MEM_FILE)::
+           // NME_JS_MEM
            (function() {
             var memoryInitializer = '::NME_JS::.mem';
             if (typeof Module['locateFile'] === 'function') {
@@ -211,8 +213,10 @@
          ::end::
 
           (function() {
+             // NME_JS
              Module.totalDownloads++;
              var xhr = new XMLHttpRequest;
+             console.log("::NME_JS::...");
              xhr.open("GET", "::NME_JS::", true);
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {
@@ -234,8 +238,10 @@
 
 
           (function() {
+             // NME_APP_JS
              Module.totalDownloads++;
              var xhr = new XMLHttpRequest;
+             console.log("::NME_APP_JS::...");
              xhr.open("GET", "::NME_APP_JS::", true);
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {
@@ -256,6 +262,7 @@
              xhr.send();
           }) ();
 
+          ::if (NME_CLASSES_JS)::
           (function() {
              Module.totalDownloads++;
              window.nmeOnClasses = function() { Module.progress() };
@@ -278,6 +285,7 @@
              };
              xhr.send();
           }) ();
+          ::end::
 
     </script>
 

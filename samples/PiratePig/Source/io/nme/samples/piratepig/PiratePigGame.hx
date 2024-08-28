@@ -644,7 +644,7 @@ class PiratePigGame extends Sprite {
 	
 	private function TileContainer_onMouseDown (event:MouseEvent):Void {
 		
-		if (Std.is (event.target, Tile)) {
+		if (Std.isOfType(event.target, Tile)) {
 			
 			selectedTile = cast event.target;
 			cacheMouse = new Point (event.stageX, event.stageY);

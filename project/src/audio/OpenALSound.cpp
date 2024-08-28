@@ -464,7 +464,6 @@ public:
 };
 
 
-
 class OpenALStreamChannel : public OpenALDoubleBufferChannel
 {
 public:
@@ -498,10 +497,20 @@ public:
       }
 
       //LOG_SOUND("STREAM\n");
-      char pcm[MAX_STREAM_BUFFER_SIZE];
+ 
       int bytes = ( (stream->getIsStereo() ? 4 : 2) * stream->getRate() * 400/1000 );
       if (bytes > MAX_STREAM_BUFFER_SIZE)
          bytes = MAX_STREAM_BUFFER_SIZE;
+
+      #ifdef EMSCRIPTEN
+      std::vector<char> pcmFillBuffer(bytes);
+      char *pcm = pcmFillBuffer.data();
+      #else
+      char pcm[MAX_STREAM_BUFFER_SIZE];
+      #endif
+
+
+
       bytes = bytes & ~7;
       int size = 0;
       int emptyBuffersCount = 0;
