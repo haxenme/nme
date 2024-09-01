@@ -43,7 +43,7 @@ class AndroidConfig
       appFeature = [];
       viewPackageName = "com.nmehost";
       viewTestDir = "";
-      gameActivityBase = "Activity";
+      gameActivityBase = "androidx.activity.ComponentActivity";
       gameActivityViewBase = "android.app.Fragment";
       extensions = new Map<String,Bool>();
    }

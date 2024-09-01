@@ -29,6 +29,7 @@
    <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
    <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
 
+   <set name="NME_LOCAL_TOOLKIT" value="1" if="android" />
 
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
    <!-- 

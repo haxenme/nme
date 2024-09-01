@@ -38,7 +38,7 @@
              />
 
 	
-   ::foreach appPermission:: <uses-permission android:name="::permission::" android:required="::required::" />
+   ::foreach appPermission:: ::permissionXml::
 ::end::
 	<uses-permission android:name="android.permission.WAKE_LOCK" />
 	<uses-permission android:name="android.permission.INTERNET" />

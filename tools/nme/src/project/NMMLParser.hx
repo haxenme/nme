@@ -547,8 +547,16 @@ class NMMLParser
                   project.androidConfig.appActivity.push(value);
 
                case "appPermission":
-                  project.androidConfig.appPermission.push(
-                      new AndroidPermission(value, childElement.has.required ? substitute(childElement.att.required) : "") );
+                  var permission = new AndroidPermission(value);
+                  if (childElement.has.required)
+                      permission.required = substitute(childElement.att.required);
+                  if (childElement.has.maxSdkVersion)
+                      permission.maxSdkVersion = substitute(childElement.att.maxSdkVersion);
+                  if (childElement.has.usesPermissionFlags)
+                      permission.usesPermissionFlags = substitute(childElement.att.usesPermissionFlags);
+                  permission.update();
+
+                  project.androidConfig.appPermission.push(permission);
 
                case "appFeature":
                   project.androidConfig.appFeature.push(

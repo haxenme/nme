@@ -10,6 +10,7 @@ import java.io.OutputStream;
 
 import java.io.Closeable;
 
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -23,6 +24,7 @@ import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.app.Activity;
 import android.annotation.SuppressLint;
+import org.json.*;
 
 // You will need to add the permission android.permission.BLUETOOTH/BLUETOOTH_ADMIN to use this
 @SuppressLint("MissingPermission") 
@@ -43,6 +45,7 @@ public class Bluetooth
 
    static BluetoothAdapter sBluetoothAdapter;
    static HashMap<String,BluetoothDevice> sDeviceMap = new HashMap<String,BluetoothDevice>();
+   static boolean isScanning = false;
 
    BluetoothDevice mDevice;
    BluetoothSocket mSocket;
@@ -51,11 +54,15 @@ public class Bluetooth
    byte [] mBuffer;
    
 
-   public Bluetooth(String inName)
+   public Bluetooth(String inAddress)
    {
-      sBluetoothAdapter.cancelDiscovery();
+      if (isScanning)
+      {
+         Log.e(TAG,"cancelDiscovery..");
+         sBluetoothAdapter.cancelDiscovery();
+      }
 
-      mDevice = sDeviceMap.get(inName);
+      mDevice = sDeviceMap.get(inAddress);
       if (mDevice!=null)
       {
          // Get a BluetoothSocket to connect with the given BluetoothDevice
@@ -128,11 +135,18 @@ public class Bluetooth
       );
    }
 
+   static int sScanId = 0;
    static void scanDevices(final HaxeObject inHandler)
    {
+      Log.e(TAG,"cancelDiscovery..");
+      sBluetoothAdapter.cancelDiscovery();
+
+      final int recScanId = ++sScanId;
+      Log.e(TAG,"scanDevices.." + recScanId );
       postDevices(inHandler, SCANNING , null );
 
       final ArrayList<String> scannedDevices = new ArrayList<String>();
+      sDeviceMap = new HashMap<String,BluetoothDevice>();
 
       final BroadcastReceiver[] receiverRef = new BroadcastReceiver [1];
       final Activity activity = GameActivity.getInstance().getActivity();
@@ -141,22 +155,17 @@ public class Bluetooth
       final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (isInitialStickyBroadcast())
+            {
+               Log.e(TAG,"onReceive isInitialStickyBroadcast");
+               return;
+            }
+
             String action = intent.getAction();
 
-            // When discovery finds a device
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Get the BluetoothDevice object from the Intent
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Log.e(TAG,"Found device " + device.getName() );
-                // If it's already paired, skip it
-                //if (device.getBondState() != BluetoothDevice.BOND_BONDED
-                    scannedDevices.add(device.getName());
-                sDeviceMap.put(device.getName(), device );
-            // When discovery is finished send the devices...
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-               Log.e(TAG,"Finished discovery");
-               String [] devices = scannedDevices.toArray(new String[scannedDevices.size()]);
-               postDevices(inHandler, devices.length==0 ? NO_PAIRED_DEVICES : BLUETOOTH_OK, devices );
+            if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
+            {
+               Log.e(TAG,"Finished discovery:" + recScanId + "/" + sScanId);
                if (receiverRef[0]!=null)
                {
                   Log.e(TAG,"unregisterReceiver");
@@ -164,13 +173,50 @@ public class Bluetooth
                   receiverRef[0] = null;
                }
             }
+
+            if (recScanId!=sScanId)
+            {
+               Log.e(TAG,"Overlapping scans?" + recScanId + "/" + sScanId);
+               return;
+            }
+            // When discovery finds a device
+            else if (BluetoothDevice.ACTION_FOUND.equals(action))
+            {
+                // Get the BluetoothDevice object from the Intent
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                try
+                {
+                   JSONObject obj= new JSONObject();
+                   obj.put("name", device.getName() );
+                   obj.put("string", device.toString() );
+                   obj.put("address", device.getAddress() );
+                   obj.put("alias", device.getAlias() );
+                   obj.put("bondState", device.getBondState() );
+                   obj.put("type", device.getType() );
+                   Log.e(TAG,"Found device " + obj.toString() );
+                   // If it's already paired, skip it
+                   //if (device.getBondState() != BluetoothDevice.BOND_BONDED
+                   scannedDevices.add(obj.toString());
+                }
+                catch (JSONException e)
+                {
+                   Log.e(TAG, "Error in device serialization." + device.toString() );
+                }
+                sDeviceMap.put(device.getAddress(), device );
+            // When discovery is finished send the devices...
+            }
+            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
+            {
+               Log.e(TAG,"Finished discovery - send");
+               String [] devices = scannedDevices.toArray(new String[scannedDevices.size()]);
+               postDevices(inHandler, devices.length==0 ? NO_PAIRED_DEVICES : BLUETOOTH_OK, devices );
+            }
          }
        };
        receiverRef[0] = receiver;
-
-       sBluetoothAdapter.cancelDiscovery();
  
        // Register for broadcasts when a device is discovered
+       Log.e(TAG,"registerReceiver..");
        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
        activity.registerReceiver(receiver, filter);
 
@@ -186,12 +232,13 @@ public class Bluetooth
                 Log.e(TAG,"unregisterReceiver");
                 activity.unregisterReceiver(receiverRef[0]);
                 receiverRef[0] = null;
+                isScanning = false;
              }
           } } );
-    
-       // Unregister broadcast listeners
 
-       sBluetoothAdapter.startDiscovery();
+
+
+      sBluetoothAdapter.startDiscovery();
 
    }
 
@@ -219,15 +266,26 @@ public class Bluetooth
       postDevices(inHandler, pairedDevices.size()==0 ? NO_PAIRED_DEVICES : BLUETOOTH_OK, result);
    }
 
+   static boolean getAdapter()
+   {
+      if (sBluetoothAdapter!=null)
+         return true;
+
+      Log.e(TAG,"Get adapter...");
+      GameActivity activity = GameActivity.getInstance();
+      BluetoothManager bluetoothManager = activity.getSystemService(BluetoothManager.class);
+      sBluetoothAdapter = bluetoothManager.getAdapter();
+      return sBluetoothAdapter!=null;
+   }
+
    public static void getDeviceListAsync(final HaxeObject inHandler,final boolean inFullScan)
    {
-      if (sBluetoothAdapter==null)
-         sBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-      if (sBluetoothAdapter==null)
+      if (!getAdapter())
       {
-          postDevices(inHandler,NO_BLUETOOTH, null);
+         postDevices(inHandler,NO_BLUETOOTH, null);
+         return;
       }
+
       if (!sBluetoothAdapter.isEnabled())
       {
          Log.e(TAG,"Enable bluetooth...");
@@ -331,9 +389,8 @@ public class Bluetooth
 
    public static Bluetooth create(String inDeviceName)
    {
-      if (sBluetoothAdapter==null)
-         sBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
+      if (!getAdapter())
+         return null;
       return new Bluetooth(inDeviceName);
    }
 

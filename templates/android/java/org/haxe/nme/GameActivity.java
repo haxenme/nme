@@ -49,6 +49,7 @@ import java.lang.Runnable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.ArrayList;
+import java.util.Map;
 import org.haxe.nme.Value;
 import java.net.NetworkInterface;
 import java.net.InetAddress;
@@ -64,6 +65,15 @@ import org.json.JSONObject;
 import org.json.JSONException;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+
+import androidx.core.content.ContextCompat;
+import android.content.pm.PackageManager;
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
+import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.core.app.ActivityCompat;
+
 
 ::if NME_APPLOVIN_KEY::
 import com.applovin.sdk.AppLovinSdk;
@@ -697,6 +707,83 @@ implements SensorEventListener
    public static GameActivity getInstance()
    {
       return activity;
+   }
+
+   // Register the permissions callback, which handles the user's response to the
+   // system permissions dialog. Save the return value, an instance of
+   // ActivityResultLauncher, as an instance variable.
+   HaxeObject pendingPermission = null;
+   public  ActivityResultLauncher<String> requestPermissionLauncher =
+       registerForActivityResult(new RequestPermission(), isGranted -> {
+          final HaxeObject cb = pendingPermission;
+          final String func = isGranted ? "onGrant" : "onDeny";
+          pendingPermission = null;
+          if (cb!=null)
+             mView.queueEvent(new Runnable() {
+             public void run() {
+                  cb.call0(func);
+               }
+            });
+    });
+
+   public  ActivityResultLauncher<String[]> requestMultiplePermissionLauncher =
+       registerForActivityResult(new RequestMultiplePermissions(), inResultMap -> {
+          final HaxeObject cb = pendingPermission;
+          final Map<String,Boolean> resultMap = inResultMap;
+          pendingPermission = null;
+          if (cb!=null)
+             mView.queueEvent(new Runnable() {
+             public void run() {
+               for(String permission : resultMap.keySet()) {
+                  cb.call1( resultMap.get(permission) ? "onGrant" : "onDeny", permission );
+                }
+               }
+            });
+    });
+
+
+
+   // Returns :
+   //   0 = Immediate accept
+   //   1 = Show UI with option to decline
+   //   2 = Make Request
+   public static int hasPermission(final String permission)
+   {
+      final GameActivity ga = activity;
+      Log.e(TAG,"CHECK:" +  permission );
+      if (ContextCompat.checkSelfPermission(ga, permission) == PackageManager.PERMISSION_GRANTED) {
+          // You can use the API that requires the permission.
+          return 0;
+      } else if (ActivityCompat.shouldShowRequestPermissionRationale(ga, permission)) {
+          // In an educational UI, explain to the user why your app requires this
+          // permission for a specific feature to behave as expected, and what
+          // features are disabled if it's declined. In this UI, include a
+          // "cancel" or "no thanks" button that lets the user continue
+          // using your app without granting the permission.
+          return 1;
+      } else {
+          return 2;
+      }
+   }
+
+   public static void requestPermission(final String permission, final HaxeObject inHandler)
+   {
+       final GameActivity ga = activity;
+       queueRunnable( new Runnable() { @Override public void run() {
+          // The registered ActivityResultCallback gets the result of this request.
+          ga.pendingPermission = inHandler;
+          ga.requestPermissionLauncher.launch(permission);
+       } });
+   }
+
+   public static void requestPermissions(final String permissions[], final HaxeObject inHandler)
+   {
+       final GameActivity ga = activity;
+       queueRunnable( new Runnable() { @Override public void run() {
+          // The registered ActivityResultCallback gets the result of this request.
+          ga.pendingPermission = inHandler;
+          ga.requestMultiplePermissionLauncher.launch(permissions);
+       } });
    }
 
    ::if !ANDROIDVIEW::

@@ -5,20 +5,32 @@ import nme.JNI;
 @:nativeProperty
 class BluetoothDeviceCallback
 {
-   var onDevices:Int->Array<String>->Void;
-   public function new(inCallback:Int->Array<String>->Void) onDevices = inCallback;
-   public function setDevicesAsync(inCode:Int, inDevices:Array<String>) onDevices(inCode,inDevices);
-}
-
-@:nativeProperty
-class Bluetooth
-{
    // ASync return codes
    public static inline var DISABLED = -2;
    public static inline var MISSING = -1;
    public static inline var OK = 0;
    public static inline var SCANNING = 1;
    public static inline var NONE_PAIRED = 2;
+
+   var onDevices:BluetoothScan->Void;
+
+   public function new(inCallback:BluetoothScan->Void) onDevices = inCallback;
+   public function setDevicesAsync(inCode:Int, inDevices:Array<String>)
+   {
+      onDevices( switch(inCode) {
+         case DISABLED: BluetoothDisabled;
+         case MISSING: BluetoothMissing;
+         case SCANNING: BluetoothScanning;
+         case NONE_PAIRED: BluetoothNonePaired;
+         case OK: BluetoothDevices(inDevices);
+         case _: trace("Bad device code?:" + inCode); BluetoothMissing;
+      } );
+   }
+}
+
+@:nativeProperty
+class Bluetooth
+{
 
    var handle:Dynamic;
 
@@ -41,7 +53,7 @@ class Bluetooth
       isSetup = true;
    }
 
-   static public function getDeviceListAsync(onDevices:Int->Array<String>->Void,inFullScan:Bool)
+   static public function getDeviceListAsync(onDevices:BluetoothScan->Void,inFullScan:Bool)
    {
       devicesAsync(new BluetoothDeviceCallback(onDevices),inFullScan);
    }

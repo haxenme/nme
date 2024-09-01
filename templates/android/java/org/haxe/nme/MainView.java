@@ -313,7 +313,6 @@ class MainView extends GLSurfaceView {
       }
    }
 
-
    // Called diectly by NME...
    static public void renderNow()
    {
