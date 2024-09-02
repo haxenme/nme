@@ -27,7 +27,7 @@
       <depend files="native-toolkit-jpeg-depends-int"/>
       <compilerflag value="-I${NME_JPEG}" />
       <compilerflag value="-I${NME_JPEG}/.." />
-      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D" />
+      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D16" />
       <objprefix value="s16_" />
       <file name="${NME_JPEG}jcapistd.c" />
       <file name="${NME_JPEG}jccolor.c" />
@@ -50,7 +50,7 @@
    <files id="native-toolkit-jpeg-12" tags="">
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
 
-      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D" />
+      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D_12" />
       <compilerflag value="-DBITS_IN_JSAMPLE=12" />
       <depend files="native-toolkit-jpeg-depends-int"/>
       <compilerflag value="-I${NME_JPEG}" />
