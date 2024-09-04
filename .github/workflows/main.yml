@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: krdlab/setup-haxe@v1.5.1
         with:
@@ -82,7 +82,7 @@ jobs:
 
       - name: Archive Linux Results
         if: startsWith(matrix.os,'ubuntu')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-64
           path: |
@@ -118,7 +118,7 @@ jobs:
                     
       - name: Archive Windows Results
         if: startsWith(matrix.os,'windows')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-64
           path: |
@@ -127,7 +127,7 @@ jobs:
 
       - name: Archive Mac Results
         if: startsWith(matrix.os,'macos')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mac-64
           path: |
@@ -139,19 +139,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - name: Download Linux
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v4
           with:
              name: linux-64
              path: nme
 
         - name: Download Mac
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v4
           with:
              name: mac-64
              path: nme
 
         - name: Download Windows
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v4
           with:
              name: windows-64
              path: nme
