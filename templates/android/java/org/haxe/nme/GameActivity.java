@@ -171,7 +171,7 @@ implements SensorEventListener
    public boolean  mTextUpdateLockout = false;
    public boolean  mIncrementalText = true;
    boolean ignoreTextReset = false;
-   static boolean consumeGamepadButtons = false;
+   public static boolean consumeGamepadButtons = false;
 
    public void onCreate(Bundle state)
    {

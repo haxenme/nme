@@ -595,6 +595,8 @@ class MainView extends GLSurfaceView {
                  }});
              return true;
          }
+         if (sendGamepadKey(inKeyCode,event) && GameActivity.consumeGamepadButtons)
+            return true;
          return super.onKeyDown(inKeyCode, event);
      }
 
@@ -618,6 +620,8 @@ class MainView extends GLSurfaceView {
                  }});
              return true;
          }
+         if (sendGamepadKey(inKeyCode,event) && GameActivity.consumeGamepadButtons)
+            return true;
          return super.onKeyDown(inKeyCode, event);
      }
 

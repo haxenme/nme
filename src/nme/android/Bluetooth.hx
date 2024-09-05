@@ -43,7 +43,7 @@ class Bluetooth
    public function new(inPortName:String, ?baud:Int = 9600, ?setupImmediately:Bool = false)
    {
       portName = inPortName;
-      baud = 57600;
+      //baud = 57600;
 
       handle = create(inPortName);
 

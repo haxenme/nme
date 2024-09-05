@@ -17,6 +17,12 @@ haxelib install nme
 haxelib run nme setup
 ```
 
+To run with `NME_LOCAL_TOOLKIT` (the default for android now), update the submodules with:
+```
+git submodule init
+git submodule update
+```
+
 To install a specific version
 
 1. Go to [the releases page](https://github.com/haxenme/nme/releases)
