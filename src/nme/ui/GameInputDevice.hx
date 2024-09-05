@@ -13,6 +13,9 @@ class GameInputDevice
    public var name(default, null):String;
    public var numControls(get, never):Int;
    public var sampleInterval:Int;
+   #if android
+   public var androidDevice:Int;
+   #end
 
    var nmeAxis = new Map<Int, GameInputControl> ();
    var nmeButton = new Map<Int, GameInputControl> ();
@@ -25,6 +28,10 @@ class GameInputDevice
    {
       this.id = id;
       this.name = name;
+      #if android
+      androidDevice = Std.parseInt(id);
+      #end
+
       var control;
       for (i in 0...6)
       {

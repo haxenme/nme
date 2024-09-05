@@ -16,12 +16,27 @@ class GameInput extends EventDispatcher
    static var nmeDevices = new Array<GameInputDevice>();
    static var nmeInstances = [];
    static var nmeKeyboardDevices = new Array<KeyboardInputDevice>();
+   static var added = false;
 
 
    public function new()
    {
       super();
       nmeInstances.push(this);
+
+      #if android
+      if (!added)
+      {
+         var  setInputManagerCallback = JNI.createStaticMethod(
+                "org/haxe/nme/GameActivity",
+                "setInputManagerCallback",
+                "(Lorg/haxe/nme/HaxeObject;)[I" );
+         added = true;
+         var existing:Array<Int> = setInputManagerCallback(this);
+         for(device in existing)
+            nme.app.Application.runOnMainThread( () -> nmeGamepadConnect(device) );
+      }
+      #end
 
       //Called from Stage
       //if (nmeInstances.length==1)
@@ -33,6 +48,22 @@ class GameInput extends EventDispatcher
          //  nmeGamepadAxisMove
       //}
    }
+
+   #if android
+   // Called from android handler
+   @keep function onInputDeviceAdded(device:Int)
+   {
+      nmeGamepadConnect(device);
+   }
+   @keep function onInputDeviceChanged(device:Int)
+   {
+      // ?
+   }
+   @keep function onInputDeviceRemoved(device:Int)
+   {
+      nmeGamepadDisconnect(device);
+   }
+   #end
 
    public function addKeyboardDevice0() : GameInputDevice
    {
@@ -107,7 +138,11 @@ class GameInput extends EventDispatcher
    static function getGamepadGuid(index:Int) : String
    {
       // TODO
+      #if android
+      return ""+index;
+      #else
       return "guid"+index;
+      #end
    }
 
 

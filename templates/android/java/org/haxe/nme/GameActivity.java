@@ -65,6 +65,8 @@ import org.json.JSONObject;
 import org.json.JSONException;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import android.hardware.input.InputManager;
+import android.view.MotionEvent;
 
 import androidx.core.content.ContextCompat;
 import android.content.pm.PackageManager;
@@ -112,6 +114,7 @@ implements SensorEventListener
    static HashMap<String, Class> mLoadedClasses = new HashMap<String, Class>();
    static SensorManager sensorManager;
    static android.text.ClipboardManager mClipboard;
+   static InputManager inputManager;
    private static List<Extension> extensions;
 
    ::if NME_FIREBASE::
@@ -136,6 +139,13 @@ implements SensorEventListener
        @Override protected void onSelectionChanged(int selStart, int selEnd) {
           if (activity!=null)
              activity.onSelectionChanged(selStart,selEnd);
+       }
+
+       // The view gets the events if it has focus
+       @Override public boolean onGenericMotionEvent(MotionEvent event)
+       {
+          //Log.v(TAG,"NME Forward MotionEvent" + event);
+          return activity.mView.onGenericMotionEvent(event);
        }
    }
 
@@ -373,6 +383,31 @@ implements SensorEventListener
        return activity.mBillingManager.getBillingClientResponseCode();
     }
     ::end::
+
+    public static int[] setInputManagerCallback(final HaxeObject inCallback)
+    {
+       final HaxeObject callback = inCallback;
+       inputManager = (InputManager)activity.mContext.getSystemService(Context.INPUT_SERVICE);
+       inputManager.registerInputDeviceListener( new InputManager.InputDeviceListener() {
+          @Override public void onInputDeviceAdded(final int deviceId) {
+             sendHaxe( new Runnable() {
+               @Override public void run() {
+                 callback.call1("onInputDeviceAdded", deviceId);
+          } }); }
+          @Override public void onInputDeviceChanged(final int deviceId) {
+             sendHaxe( new Runnable() {
+               @Override public void run() {
+                 callback.call1("onInputDeviceChanged", deviceId);
+          } }); }
+          @Override public void onInputDeviceRemoved(final int deviceId) {
+             sendHaxe( new Runnable() {
+               @Override public void run() {
+                 callback.call1("onInputDeviceRemoved", deviceId);
+          } }); }
+       }, activity.mHandler);
+
+       return inputManager.getInputDeviceIds();
+    }
 
 
    public void createStageVideoSync(HaxeObject inHandler)
