@@ -40,7 +40,7 @@ class GameInputDevice
          nmeControls.push(control);
       }
 
-      for (i in 0...15)
+      for (i in 0...GamepadButton.COUNT)
       {
          control = new GameInputControl(this, "BUTTON_" + i, 0, 1);
          nmeButton.set(i, control);
@@ -50,7 +50,7 @@ class GameInputDevice
 
    public function toString() return 'GameInputDevice($id:$name)';
 
-   public function getButtonAt(i:Int) return i>=0 && i<15 ? nmeControls[i+6] : null;
+   public function getButtonAt(i:Int) return i>=0 && i<GamepadButton.COUNT ? nmeControls[i+6] : null;
 
    public function getAxisAt(i:Int) return i>=0 && i<6 ? nmeControls[i] : null;
 
@@ -58,7 +58,7 @@ class GameInputDevice
 
    public function isButtonDown(buttonId:Int)
    {
-      if (buttonId<0 || buttonId>=15)
+      if (buttonId<0 || buttonId>=GamepadButton.COUNT)
          return false;
       return nmeControls[buttonId+6].value>0;
    }

@@ -67,6 +67,7 @@ import java.io.StringWriter;
 import java.io.PrintWriter;
 import android.hardware.input.InputManager;
 import android.view.MotionEvent;
+import android.view.InputDevice;
 
 import androidx.core.content.ContextCompat;
 import android.content.pm.PackageManager;
@@ -114,7 +115,7 @@ implements SensorEventListener
    static HashMap<String, Class> mLoadedClasses = new HashMap<String, Class>();
    static SensorManager sensorManager;
    static android.text.ClipboardManager mClipboard;
-   static InputManager inputManager;
+   public static InputManager inputManager;
    private static List<Extension> extensions;
 
    ::if NME_FIREBASE::
@@ -147,6 +148,7 @@ implements SensorEventListener
           //Log.v(TAG,"NME Forward MotionEvent" + event);
           return activity.mView.onGenericMotionEvent(event);
        }
+
    }
 
    ArrayList<Runnable> mOnDestroyListeners;
@@ -169,6 +171,7 @@ implements SensorEventListener
    public boolean  mTextUpdateLockout = false;
    public boolean  mIncrementalText = true;
    boolean ignoreTextReset = false;
+   static boolean consumeGamepadButtons = false;
 
    public void onCreate(Bundle state)
    {
@@ -214,6 +217,7 @@ implements SensorEventListener
       Extension.packageName = getApplicationContext().getPackageName();
       
       mClipboard = (android.text.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+      inputManager = (InputManager)activity.mContext.getSystemService(Context.INPUT_SERVICE);
 
       // Pre-load these, so the C++ knows where to find them
       
@@ -384,29 +388,56 @@ implements SensorEventListener
     }
     ::end::
 
+    static int[] filterArray(int[] array, java.util.function.IntPredicate predicate) {
+        return java.util.Arrays.stream(array)
+                .filter(predicate)
+                .toArray();
+    }
+
+    static boolean isGameDevice(int deviceId)
+    {
+       InputDevice device = inputManager.getInputDevice(deviceId);
+       int source = device.getSources();
+       boolean isJoystick = (source & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK;
+       boolean isGamepad = (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD;
+       boolean isGame = isJoystick || isGamepad;
+       if (device.isVirtual())
+          isGame = false;
+       Log.e(TAG, "Check InputDevice " + device.toString() + " joystick=" + isJoystick + " game=" + isGamepad);
+       return isGame;
+    }
+
+    static String getDeviceName(int deviceId)
+    {
+       InputDevice device = inputManager.getInputDevice(deviceId);
+       return device.getName();
+    }
+
     public static int[] setInputManagerCallback(final HaxeObject inCallback)
     {
        final HaxeObject callback = inCallback;
-       inputManager = (InputManager)activity.mContext.getSystemService(Context.INPUT_SERVICE);
        inputManager.registerInputDeviceListener( new InputManager.InputDeviceListener() {
           @Override public void onInputDeviceAdded(final int deviceId) {
-             sendHaxe( new Runnable() {
-               @Override public void run() {
-                 callback.call1("onInputDeviceAdded", deviceId);
-          } }); }
+             if (isGameDevice(deviceId))
+                sendHaxe( new Runnable() {
+                  @Override public void run() {
+                    callback.call1("onInputDeviceAdded", deviceId );
+             } }); }
           @Override public void onInputDeviceChanged(final int deviceId) {
-             sendHaxe( new Runnable() {
-               @Override public void run() {
-                 callback.call1("onInputDeviceChanged", deviceId);
-          } }); }
+             if (isGameDevice(deviceId))
+                sendHaxe( new Runnable() {
+                  @Override public void run() {
+                    callback.call1("onInputDeviceChanged", deviceId);
+             } }); }
           @Override public void onInputDeviceRemoved(final int deviceId) {
-             sendHaxe( new Runnable() {
-               @Override public void run() {
-                 callback.call1("onInputDeviceRemoved", deviceId);
-          } }); }
+             if (isGameDevice(deviceId))
+                sendHaxe( new Runnable() {
+                  @Override public void run() {
+                    callback.call1("onInputDeviceRemoved", deviceId);
+             } }); }
        }, activity.mHandler);
 
-       return inputManager.getInputDeviceIds();
+       return filterArray(inputManager.getInputDeviceIds(),GameActivity::isGameDevice);
     }
 
 
@@ -1579,6 +1610,15 @@ implements SensorEventListener
                     }
                 //}
                 }
+                if (mView!=null)
+                {
+                   if (mView.sendGamepadKey(keyCode, event))
+                   {
+                      if (consumeGamepadButtons)
+                          return true;
+                   }
+                 }
+
                 return false;
             }
         });
@@ -1603,8 +1643,12 @@ implements SensorEventListener
         */
     }
 
+   public static void setConsumeGamepadButtons(boolean consume)
+   {
+      consumeGamepadButtons = consume;
+   }
 
-   
+
    
    public static void vibrate(int period, int duration)
    {

@@ -17,6 +17,9 @@ class GameInput extends EventDispatcher
    static var nmeInstances = [];
    static var nmeKeyboardDevices = new Array<KeyboardInputDevice>();
    static var added = false;
+   #if android
+   static var getDeviceName:Dynamic;
+   #end
 
 
    public function new()
@@ -27,14 +30,21 @@ class GameInput extends EventDispatcher
       #if android
       if (!added)
       {
+         getDeviceName = JNI.createStaticMethod(
+                "org/haxe/nme/GameActivity",
+                "getDeviceName",
+                "(I)Ljava/lang/String;" );
+
          var  setInputManagerCallback = JNI.createStaticMethod(
                 "org/haxe/nme/GameActivity",
                 "setInputManagerCallback",
                 "(Lorg/haxe/nme/HaxeObject;)[I" );
          added = true;
+
          var existing:Array<Int> = setInputManagerCallback(this);
          for(device in existing)
             nme.app.Application.runOnMainThread( () -> nmeGamepadConnect(device) );
+         consumeGamepadButtons(true);
       }
       #end
 
@@ -47,6 +57,18 @@ class GameInput extends EventDispatcher
          //  nmeGamepadButton
          //  nmeGamepadAxisMove
       //}
+   }
+
+   // Consuming the 'B' button will prevent it from generating a "Back" event
+   public static function consumeGamepadButtons(consume:Bool)
+   {
+      #if android
+      var setConsumeGamepadButtons = JNI.createStaticMethod(
+         "org/haxe/nme/GameActivity",
+         "setConsumeGamepadButtons",
+         "(Z)V" );
+      setConsumeGamepadButtons(consume);
+      #end
    }
 
    #if android
@@ -148,8 +170,12 @@ class GameInput extends EventDispatcher
 
    static function getGamepadName(index:Int) : String
    {
+      #if android
+      return getDeviceName(index);
+      #else
       // TODO
       return "name"+index;
+      #end
    }
 
    private static function __getDevice(index:Int):GameInputDevice

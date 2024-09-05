@@ -359,18 +359,33 @@ public:
    {
       //__android_log_print(ANDROID_LOG_INFO, "NME", "OnJoy %d %d %d", inDeviceId, inCode, inDown);
       Event joystick( inDown ? etJoyButtonDown : etJoyButtonUp );
-      joystick.id = inDeviceId;
+      joystick.value = inDeviceId;
       joystick.code = inCode;
       HandleEvent(joystick);
    }
    
-   void OnJoyMotion(int inDeviceId, int inAxis, float inValue)
+   void OnJoyMotion(int inDeviceId, int inAxis, bool isGamepad, float inSx, float inSy)
    {
-      Event joystick(etJoyAxisMove);
-      joystick.id = inDeviceId;
-      joystick.code = inAxis;
-      joystick.value = inValue;
-      HandleEvent(joystick);
+      if (inAxis<6)
+      {
+         Event joystick(etJoyAxisMove);
+         joystick.value = inDeviceId;
+         joystick.code = inAxis;
+         joystick.scaleX = inSx;
+         joystick.scaleY = inSy;
+         joystick.y = isGamepad;
+         HandleEvent(joystick);
+      }
+      else // DPad/hat
+      {
+         Event joystick(etJoyHatMove);
+         joystick.value = inDeviceId;
+         joystick.code = 0;
+         joystick.scaleX = inSx;
+         joystick.scaleY = inSy;
+         joystick.y = true;
+         HandleEvent(joystick);
+      }
    }
    
    void OnTrackball(double inX, double inY)
@@ -911,11 +926,11 @@ JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyChange(JNIEnv * env, jobject 
    return nme::GetResult();
 }
 
-JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyMotion(JNIEnv * env, jobject obj, int deviceId, int axis, float value)
+JAVA_EXPORT int JNICALL Java_org_haxe_nme_NME_onJoyMotion(JNIEnv * env, jobject obj, int deviceId, int axis, bool isGame, float inSx, float inSy)
 {
    AutoHaxe haxe("onJoyMotion");
    if (nme::sStage)
-      nme::sStage->OnJoyMotion(deviceId,axis,value);
+      nme::sStage->OnJoyMotion(deviceId, axis, isGame, inSx, inSy);
    return nme::GetResult();
 }
 

@@ -25,6 +25,7 @@ public class NME {
      public static native int onContextLost();
      public static native int onTrackball(float x,float y);
      public static native int onJoyChange(int inDeviceID, int inCode, boolean inIsDown);
+     public static native int onJoyMotion(int inDeviceID, int inAxis, boolean isGamepad, float inX, float inY);
      public static native int onKeyChange(int inKeyCode, int inCharCode, boolean inIsDown, boolean isChar);
      public static native int onText(String inNewText, int inReplacePos, int inReplaceLength);
      public static native int onTextSelect( int inReplacePos, int inReplaceLength);

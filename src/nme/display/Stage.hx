@@ -800,44 +800,17 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
    }
 
 
-   private inline function axismap( code:Int )
-   {
-      #if openfl_legacy
-      switch(code)
-      {
-         case 3: code = 4;
-         case 2: code = 3;
-         case 4: code = 2;
-      }
-      #end
-      return code;
-   }
-   private inline function buttonmap( code:Int )
-   {
-      #if openfl_legacy
-      switch(code)
-      {
-         case  9: code = GamepadButton.LEFT_SHOULDER;
-         case  4: code = GamepadButton.BACK;
-         case  8: code = GamepadButton.RIGHT_STICK;
-         case 10: code = GamepadButton.RIGHT_SHOULDER;
-         case  6: code = GamepadButton.START;
-         case  7: code = GamepadButton.LEFT_STICK;
-      }
-      #end
-      return code;
-   }
-
    public function onJoystick(inEvent:AppEvent, inType:String):Void
    {
       var data:Array<Float> = null;
+      // user = deviceId
       var user = inEvent.value;
       var isGamePad:Bool = inEvent.y>0;
       if(inEvent.flags > 0)
       {
          ///is axis move event
          if(inEvent.flags==1)
-         {         
+         {
             if(nmeJoyAxisData[user]==null)
                nmeJoyAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
 
@@ -846,37 +819,26 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
             data[ inEvent.code+1 ] = inEvent.sy;
          }
          else if(inEvent.flags==3)
-         { 
+         {
             //isGamePad
             if(nmeJoyAxisData[user]==null)
                nmeJoyAxisData[user] = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ];
 
             data = nmeJoyAxisData[user];
-            data[ axismap(inEvent.code) ] = inEvent.sx;
-            data[ axismap(inEvent.code+1) ] = inEvent.sy;
+            data[ inEvent.code ] = inEvent.sx;
+            data[ inEvent.code+1 ] = inEvent.sy;
          }
          else if(inEvent.flags==2)
          {
             if(nmeJoyAxisData[user]!=null)
-               for(d in nmeJoyAxisData[user])
-                  d = 0.0;
+               for(d in 0...nmeJoyAxisData[user].length)
+                  nmeJoyAxisData[user][d] = 0.0;
          }
       }
-      #if openfl_legacy
-      if(isGamePad && StringTools.startsWith(inType,"button"))
-      {
-         //map sdl controller to legacy xinput
-         var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, buttonmap(inEvent.code),
-                                                inEvent.value, inEvent.sx, inEvent.sy, data, isGamePad);
-         nmeDispatchEvent(evt);
-      }
-      else
-      #end
-      {
-         var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code,
-                                                   inEvent.value, inEvent.sx, inEvent.sy, data, isGamePad);
-         nmeDispatchEvent(evt);
-      }
+
+      var evt:JoystickEvent = new JoystickEvent(inType, false, false, inEvent.id, inEvent.code,
+                                           inEvent.value, inEvent.sx, inEvent.sy, data, isGamePad);
+      nmeDispatchEvent(evt);
 
       if(GameInput.hasInstances())
       {

@@ -36,6 +36,8 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
 import java.util.TimerTask;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -70,8 +72,33 @@ class MainView extends GLSurfaceView {
    Semaphore pendingTimerSemaphore;
    boolean renderPending = false;
 
+   class StickState
+   {
+      public float[] x;
+      public float[] y;
 
-   
+      public StickState()
+      {
+         x = new float[]{0,0,0,0};
+         y = new float[]{0,0,0,0};
+      }
+
+      public void sendChange(MainView view, MotionEvent event, boolean gamepad, int slot, int axX, int axY)
+      {
+         float xVal = event.getAxisValue(axX);
+         float yVal = event.getAxisValue(axY);
+         if (xVal!=x[slot] || yVal!=y[slot])
+         {
+            x[slot] = xVal;
+            y[slot] = yVal;
+            view.HandleResult(NME.onJoyMotion(event.getDeviceId(),slot*2,gamepad, xVal, yVal) );
+         }
+      }
+   }
+
+   static Map<String,StickState> deviceMap = new HashMap<>();
+
+
   //private InputDevice device;
     public MainView(Context context,GameActivity inActivity, boolean inTranslucent)
     {
@@ -322,35 +349,40 @@ class MainView extends GLSurfaceView {
    }
    
    @Override
-   public boolean onGenericMotionEvent(MotionEvent event)
+   public boolean onGenericMotionEvent(final MotionEvent event)
    {
       //Log.e("NME VIEW", "Joystick " + event );
       final MainView me = this;
-      if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0)
+      final int source =  event.getSource();
+      final boolean joystick = (source & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK;
+      final boolean gamepad = (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD;
+      // Should we send ACTION_MOVE events anyhow?
+      //if (joystick || gamepad)
       {
          if (event.getAction() == MotionEvent.ACTION_MOVE)
          {
              final int deviceId = event.getDeviceId();
+             final InputDevice device = GameActivity.inputManager.getInputDevice(deviceId);
+             String devName = device.getDescriptor();
+             if (!deviceMap.containsKey(devName))
+                deviceMap.put(devName, new StickState() );
+             final StickState state = deviceMap.get(devName);
 
-             //Log.e("VIEW", "Joystick " + deviceId );
-             queueEvent(new Runnable() {
-              // This method will be called on the rendering thread:
-              public void run() {
-                  float [] axisValues = {
-                     event.getAxisValue(MotionEvent.AXIS_X),
-                     event.getAxisValue(MotionEvent.AXIS_Y),
-                     event.getAxisValue(MotionEvent.AXIS_HAT_X),
-                     event.getAxisValue(MotionEvent.AXIS_HAT_Y)
-                  };
-
-                  //Log.e("VIEW", "Joystick axis ->" + axisValues );
-
-                  me.HandleResult(NME.onJoyChange(deviceId,0,false));
-             }});
+             if (device!=null)
+             {
+                queueEvent(new Runnable() {
+                 public void run() {
+                    state.sendChange(me, event, gamepad, 0, MotionEvent.AXIS_X, MotionEvent.AXIS_Y);
+                    state.sendChange(me, event, gamepad, 1, MotionEvent.AXIS_Z, MotionEvent.AXIS_RZ);
+                    state.sendChange(me, event, gamepad, 2, MotionEvent.AXIS_LTRIGGER, MotionEvent.AXIS_RTRIGGER);
+                    //state.sendChange(me, event, gamepad, 2, MotionEvent.AXIS_BRAKE, MotionEvent.AXIS_GAS);
+                    state.sendChange(me, event, gamepad, 3, MotionEvent.AXIS_HAT_X, MotionEvent.AXIS_HAT_Y);
+                }});
+             }
              return true;
          }
       }
-      if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0)
+      if ((source & InputDevice.SOURCE_CLASS_POINTER) == InputDevice.SOURCE_CLASS_POINTER)
       {
          switch (event.getAction())
          {
@@ -490,21 +522,76 @@ class MainView extends GLSurfaceView {
        return 0;
     }
 
+    public static int translateGampadButton(int inCode)
+    {
+       switch(inCode)
+       {
+          case KeyEvent.KEYCODE_BUTTON_A: return 0;
+          case KeyEvent.KEYCODE_DPAD_CENTER: return 0; // Map to 'A'
+
+          case KeyEvent.KEYCODE_BUTTON_B: return 1;
+          case KeyEvent.KEYCODE_BUTTON_X: return 2;
+          case KeyEvent.KEYCODE_BUTTON_Y: return 3;
+
+          //case KeyEvent.KEYCODE_BACK: return 4;
+          case KeyEvent.KEYCODE_BUTTON_C: return 4; // Back
+          case KeyEvent.KEYCODE_GUIDE: return 5;
+          case KeyEvent.KEYCODE_BUTTON_START: return 6;
+
+          case KeyEvent.KEYCODE_BUTTON_THUMBL: return 7;
+          case KeyEvent.KEYCODE_BUTTON_THUMBR: return 8;
+
+          case KeyEvent.KEYCODE_BUTTON_L1: return 9;
+          case KeyEvent.KEYCODE_BUTTON_R1: return 10;
+
+          case KeyEvent.KEYCODE_DPAD_UP: return 11;
+          case KeyEvent.KEYCODE_DPAD_DOWN: return 12;
+          case KeyEvent.KEYCODE_DPAD_LEFT: return 13;
+          case KeyEvent.KEYCODE_DPAD_RIGHT: return 14;
+
+          case KeyEvent.KEYCODE_BUTTON_L2: return 15;
+          case KeyEvent.KEYCODE_BUTTON_R2: return 16;
+          case KeyEvent.KEYCODE_BUTTON_SELECT: return 17;
+       }
+
+       return -1;
+    }
+
+
+    public boolean sendGamepadKey(int keyCode, KeyEvent event)
+    {
+       final int key = translateGampadButton(keyCode);
+       if (key>=0)
+       {
+         final int deviceId = event.getDeviceId();
+         final boolean isDown = event.getAction() == KeyEvent.ACTION_DOWN;
+         if (keyCode!=0) {
+             final MainView me = this;
+             queueEvent(new Runnable() {
+                 // This method will be called on the rendering thread:
+                 public void run() {
+                     me.HandleResult(NME.onJoyChange(deviceId,key,isDown));
+                 }});
+             return true;
+         }
+       }
+       return false;
+    }
+
+    // This will only get called if the view is not part of the GameActivity
     @Override
     public boolean onKeyDown(final int inKeyCode, KeyEvent event)
     {
          // Log.e("VIEW","onKeyDown " + inKeyCode);
-          Log.v("VIEW", "device of event is " + event.getDeviceId());
          final MainView me = this;
          final int keyCode = translateKey(inKeyCode,event,true);
-         // Log.v("VIEW","onKeyDown " + inKeyCode + "->" + keyCode);
          final int deviceId = event.getDeviceId();
          if (keyCode!=0) {
              queueEvent(new Runnable() {
                  // This method will be called on the rendering thread:
                  public void run() {
                      me.HandleResult(NME.onKeyChange(keyCode,keyCode,true,true));
-                     me.HandleResult(NME.onJoyChange(deviceId,keyCode,true));
+                     //me.HandleResult(NME.onJoyChange(deviceId,keyCode,true));
                  }});
              return true;
          }
@@ -512,11 +599,11 @@ class MainView extends GLSurfaceView {
      }
 
 
+    // This will only get called if the view is not part of the GameActivity
     @Override
     public boolean onKeyUp(final int inKeyCode, KeyEvent event)
     {
          //Log.v("VIEW","onKeyUp " + inKeyCode);
-          Log.v("VIEW", "device of event is " + event.getDeviceId());
          final MainView me = this;
          final int keyCode = translateKey(inKeyCode,event,true);
          // Log.v("VIEW","onKeyUp " + inKeyCode + "->" + keyCode);
@@ -527,7 +614,7 @@ class MainView extends GLSurfaceView {
                  // This method will be called on the rendering thread:
                  public void run() {
                      me.HandleResult(NME.onKeyChange(keyCode,keyCode,false,false));
-                     me.HandleResult(NME.onJoyChange(deviceId,keyCode,false));
+                     //me.HandleResult(NME.onJoyChange(deviceId,keyCode,false));
                  }});
              return true;
          }
