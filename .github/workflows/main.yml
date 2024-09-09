@@ -17,6 +17,8 @@ jobs:
         
       - name: Install haxelibs
         run: |
+          git submodule init
+          git submodule update
           haxe -version
           haxelib install gm2d
           haxelib install format
