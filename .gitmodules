@@ -1,6 +1,3 @@
-[submodule "project/toolkit/zlib/zlib"]
-	path = project/toolkit/zlib/zlib
-	url = https://github.com/madler/zlib
 [submodule "project/toolkit/png/libpng"]
 	path = project/toolkit/png/libpng
 	url = https://github.com/pnggroup/libpng

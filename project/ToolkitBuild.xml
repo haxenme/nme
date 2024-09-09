@@ -135,7 +135,9 @@
 
 
    <section if="NME_LOCAL_TOOLKIT">
-      <include name="toolkit/zlib/files.xml" />
+      <include name="${HXCPP}/src/hx/libs/zlib/Build.xml" />
+      <set name="NME_ZLIB" value="${ZLIB_DIR}" />
+
       <include name="toolkit/png/files.xml" />
       <include name="toolkit/jpeg/files.xml" />
       <include name="toolkit/ogg/files.xml" />
@@ -550,7 +552,7 @@
    <set name="NME_SUFFIX" value="${LIBSUFFIX}" unless="HX_TARGET_SUFFIX" />
    <set name="NME_SUFFIX" value="" if="macos" />
 
-   <set name="HXCPP_LINK_NO_ZLIB" value="1" />
+   <set name="HXCPP_LINK_NO_ZLIB" value="1" unless="NME_LOCAL_TOOLKIT" />
 
    <target id="${target-id}" output="${LIBPREFIX}nme${NME_SUFFIX}" tool="linker" toolid="${STD_MODULE_LINK}">
       <outdir name="${OUT_DIR}/${BINDIR}" />
@@ -585,7 +587,8 @@
             <files id="native-toolkit-jpeg-asm" if="NME_SIMD_D" />
          </section>
          <files id="native-toolkit-png" />
-         <files id="native-toolkit-zlib" />
+         <files id="native-toolkit-zlib" unless="NME_LOCAL_TOOLKIT"  />
+         <files id="hxcpp_zlib" if="NME_LOCAL_TOOLKIT"  />
          <files id="native-toolkit-angle" if="NME_ANGLE" />
          <section if="NME_CURL">
             <files id="native-toolkit-curl" />
