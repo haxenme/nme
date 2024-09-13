@@ -1,6 +1,10 @@
 #ifndef INCLUDED_OGL_H
 #define INCLUDED_OGL_H
 
+#if defined(NME_DYNAMIC_ANGLE)
+#define DYNAMIC_OGL
+#endif
+
 #if defined(NME_ANGLE)
    // Static link, not dll import
    #define EGLAPI
@@ -56,7 +60,9 @@
 
   #define NME_GL_LEVEL 300
   #define NEED_EXTENSIONS
-  #define DYNAMIC_OGL
+  #ifndef DYNAMIC_OGL
+     #define DYNAMIC_OGL
+  #endif
 
   #define GL_GLEXT_PROTOTYPES
   #include <SDL_opengl.h>
@@ -109,6 +115,21 @@ typedef ptrdiff_t GLsizeiptrARB;
 #endif
 
 #endif
+
+namespace nme {
+void *GetGlFunction(const char *functionName);
+}
+
+
+#if defined(NME_GLES)
+const bool nmeEglMode = true;
+#elif defined(NME_DYNAMIC_ANGLE)
+extern bool nmeEglMode;
+#else
+const bool nmeEglMode = false;
+#endif
+
+
 
 #if defined(HX_WINDOWS) && !defined(NME_ANGLE)
 typedef HDC WinDC;

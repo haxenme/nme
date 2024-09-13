@@ -32,6 +32,9 @@
 #elif defined(GCW0)
    #define ARGB_STORE GL_RGBA
    #define ARGB_PIXEL GL_BGRA_EXT
+#elif defined(NME_DYNAMIC_ANGLE)
+   #define ARGB_STORE (nmeEglMode ? GL_BGRA : GL_RGBA)
+   #define ARGB_PIXEL (GL_BGRA)
 #elif defined(NME_GLES)
    #define ARGB_STORE GL_BGRA
    #define ARGB_PIXEL GL_BGRA
@@ -69,17 +72,21 @@ bool NonPO2Supported(bool inNotRepeating)
    #ifdef FORCE_NON_PO2
       return true;
    #endif
+   #ifdef NME_DYNAMIC_ANGLE
+   if (nmeEglMode)
+      return true;
+   #endif
 
    if (!tried)
    {
       tried = true;
       const char* extensions = (char*) glGetString(GL_EXTENSIONS);
      
-     gFullNPO2Support = strstr(extensions, "ARB_texture_non_power_of_two") != 0;
+     gFullNPO2Support = extensions && strstr(extensions, "ARB_texture_non_power_of_two") != 0;
      
      if (!gFullNPO2Support)
      {
-        gPartialNPO2Support = strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
+        gPartialNPO2Support = extensions && strstr(extensions, "GL_APPLE_texture_2D_limited_npot") != 0;
      }
       
      
@@ -315,31 +322,32 @@ public:
 
       bool copy_required = mSurface->GetBase() && (mTextureWidth!=mPixelWidth || mTextureHeight!=mPixelHeight || buffer_format!=fmt);
 
-      #if defined(__APPLE__) && !defined(NME_GLES)
+      #if defined(__APPLE__)
       // Minimum unpack on apple?
-      int unpackAlign = 4;
+      int unpackAlign = !nmeEglMode ? 4 : 1;
       #else
       int unpackAlign = 1;
       #endif
 
-      #if !defined(NME_GLES)
-      int texStride = (mTextureWidth*pw+unpackAlign-1)/unpackAlign*unpackAlign;
-      int srcStride = mSurface->GetStride();
-      if (texStride!=srcStride && !copy_required)
+      if (!nmeEglMode)
       {
-         copy_required = true;
-         for(int i=1;i<4;i++)
+         int texStride = (mTextureWidth*pw+unpackAlign-1)/unpackAlign*unpackAlign;
+         int srcStride = mSurface->GetStride();
+         if (texStride!=srcStride && !copy_required)
          {
-            int align = 1<<i;
-            if (align>=unpackAlign && srcStride == ((texStride+align-1)/align)*align)
+            copy_required = true;
+            for(int i=1;i<4;i++)
             {
-               copy_required = false;
-               unpackAlign = align;
-               break;
+               int align = 1<<i;
+               if (align>=unpackAlign && srcStride == ((texStride+align-1)/align)*align)
+               {
+                  copy_required = false;
+                  unpackAlign = align;
+                  break;
+               }
             }
          }
       }
-      #endif
 
       if (copy_required)
       {
@@ -370,9 +378,8 @@ public:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mMipmaps ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-      #ifndef NME_GLES
-      glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);
-      #endif
+      if (!nmeEglMode)
+         glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);
 
       glTexImage2D(GL_TEXTURE_2D, 0, store_format, mTextureWidth, mTextureHeight, 0, pixel_format, channel, buffer ? buffer : mSurface->GetBase());
 
@@ -454,8 +461,7 @@ public:
             int dh = mDirtyRect.h;
 
             bool copy_required = buffer_format!=fmt;
-            #if defined(NME_GLES)
-            if (!copy_required && dw!=mPixelWidth)
+            if (nmeEglMode && (!copy_required && dw!=mPixelWidth))
             {
                // Formats match but width does not. Can't use GL_UNPACK_ROW_LENGTH.
                //  Do we do the whole row, or copy?
@@ -470,7 +476,6 @@ public:
                else
                   copy_required = true;
             }
-            #endif
 
             if (copy_required)
             {
@@ -505,17 +510,17 @@ public:
             }
             else
             {
-               #ifndef NME_GLES
-               glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
-               #endif
+               if (!nmeEglMode)
+                  glPixelStorei(GL_UNPACK_ROW_LENGTH, mSurface->Width());
+
                glTexSubImage2D(GL_TEXTURE_2D, 0,
                   x0, y0,
                   dw, dh,
                   pixel_format, channel,
                   mSurface->Row(y0) + x0*pw );
-               #ifndef NME_GLES
-               glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
-               #endif
+
+               if (!nmeEglMode)
+                  glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
             }
 
             if (mMipmaps)

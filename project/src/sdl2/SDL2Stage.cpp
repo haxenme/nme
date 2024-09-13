@@ -1,6 +1,9 @@
 #define WINDOWS_IGNORE_PACKING_MISMATCH 1
 #include <Display.h>
 #include <Utils.h>
+#ifdef NME_SDL3
+  #define SDL_ENABLE_OLD_NAMES
+#endif
 #include <SDL.h>
 #include <Surface.h>
 #include <nme/NmeCffi.h>
@@ -15,7 +18,9 @@
 #endif
 
 #ifdef HX_WINDOWS
-#include <SDL_syswm.h>
+  #ifndef NME_SDL3
+  #include <SDL_syswm.h>
+  #endif
 #include <Windows.h>
 #include <Utils.h>
 #endif
@@ -26,6 +31,27 @@
 
 #if defined(HX_WINDOWS) && !defined(HX_WINRT)
 #define NME_WINDOWS_SINGLE_INSTANCE
+#endif
+
+#ifdef NME_OGL
+#include "../opengl/OGL.h"
+#endif
+
+#ifdef NME_SDL3
+#define SDL_GL_GetDrawableSize SDL_GetWindowSizeInPixels
+#define Mix_GetError SDL_GetError
+#define SDL_GameControllerNameForIndex SDL_GetGamepadNameForID
+#define SDL_JoystickNameForIndex SDL_GetJoystickNameForID
+
+SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+    return SDL_CreateSurface(width, height,
+            SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask));
+}
+
+typedef float MousePosType;
+#else
+typedef int MousePosType;
 #endif
 
 namespace nme
@@ -65,6 +91,11 @@ int InitSDL()
       SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
    #endif
 
+   #ifdef NME_DYNAMIC_ANGLE
+   InitOGLFunctions();
+   SDL_SetHint(SDL_HINT_RENDER_DRIVER, nmeEglMode ? "opengles2" : "opengl");
+   #endif
+
    int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
    
    if (err == 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER) == 0)
@@ -93,7 +124,16 @@ static void openAudio()
    //int frequency = MIX_DEFAULT_FREQUENCY //22050
    //The default frequency would have less latency, but is incompatible with the average MP3 file
    
+   #ifdef NME_SDL3
+   SDL_AudioSpec spec;
+   spec.format = AUDIO_S16;
+   spec.channels = 2;
+   spec.freq = frequency;
+
+   if (!Mix_OpenAudio(0,&spec))
+   #else
    if (Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, chunksize) != 0)
+   #endif
    {
       fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
       gSDLAudioState = sdaError;
@@ -196,9 +236,15 @@ public:
          r.w = inRect->w;
          r.h = inRect->h;
       }
-      
-      SDL_FillRect(mSurf,rect_ptr,SDL_MapRGBA(mSurf->format,
-            inColour>>16, inColour>>8, inColour, inColour>>24 )  );
+
+      Uint32 rgba;
+      #ifdef NME_SDL3
+      rgba = SDL_MapSurfaceRGBA(mSurf, inColour>>16, inColour>>8, inColour, inColour>>24 );
+      #else
+      rgba = SDL_MapRGBA(mSurf->format, inColour>>16, inColour>>8, inColour, inColour>>24 );
+      #endif
+
+      SDL_FillRect(mSurf,rect_ptr,rgba);
    }
 
    uint8 *Edit(const Rect *inRect)
@@ -299,12 +345,26 @@ SDL_Cursor *sDefaultCursor = 0;
 SDL_Cursor *sTextCursor = 0;
 SDL_Cursor *sHandCursor = 0;
 
+#ifdef NME_SDL3
+#define SDL_WINDOW_FULLSCREEN_DESKTOP SDL_WINDOW_FULLSCREEN
+#endif
 unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN_DESKTOP;
 //unsigned int FullscreenMode = SDL_WINDOW_FULLSCREEN;
 //
 extern void *GetMetalLayerFromRenderer(SDL_Renderer *renderer);
 static HardwareRenderer *sgHardwareRenderer = 0;
 
+static void nmeShowCursor(bool show)
+{
+   #ifdef NME_SDL3
+   if (show)
+      SDL_ShowCursor();
+   else
+      SDL_HideCursor();
+   #else
+   SDL_ShowCursor(show);
+   #endif
+}
 
 class SDLStage : public Stage
 {
@@ -421,6 +481,7 @@ public:
       Close(false);
    }
 
+
    bool getCaptureMouse()
    {
       return mCaptureMouse;
@@ -433,7 +494,12 @@ public:
    }
    void GetGlobalMouseState(int &outX, int &outY, int &outButtons)
    {
-      int flags = SDL_GetGlobalMouseState(&outX, &outY);
+      MousePosType mx = outX;
+      MousePosType my = outY;
+      int flags = SDL_GetGlobalMouseState(&mx, &my);
+      outX = (int)mx;
+      outY = (int)my;
+
       if (flags & SDL_BUTTON(SDL_BUTTON_LEFT))
         outButtons |= 0x1;
       if (flags & SDL_BUTTON(SDL_BUTTON_MIDDLE))
@@ -539,20 +605,26 @@ public:
          }
 
          mIsFullscreen = inFullscreen;
-         
+
          if (mIsFullscreen)
          {
             //SDL_SetWindowSize(mSDLWindow, sgDesktopWidth, sgDesktopHeight);
+            #ifdef NME_SDL3
+            SDL_SetWindowFullscreen(mSDLWindow, true);
+            #else
             SDL_DisplayMode mode;
             SDL_GetCurrentDisplayMode(0, &mode);
             mode.w = sgDesktopWidth;
             mode.h = sgDesktopHeight;
             SDL_SetWindowDisplayMode(mSDLWindow, &mode);
-            
             SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode /*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
+            #endif
          }
          else
          {
+            #ifdef NME_SDL3
+            SDL_SetWindowFullscreen(mSDLWindow, false);
+            #else
             SDL_SetWindowFullscreen(mSDLWindow, 0);
             /*
               Trust sdl to restore the window position
@@ -564,15 +636,20 @@ public:
             }
             #endif
             */
+            #endif
          }
          
-         SDL_ShowCursor(mShowCursor);
+         nmeShowCursor(mShowCursor);
       }
    }
 
 
    void SetResolution(int inWidth, int inHeight)
    {
+      #ifdef NME_SDL3
+
+      SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode);
+      #else
       fprintf(stderr, "SetResolution %i %i\n", inWidth, inHeight);
       SDL_DisplayMode mode;
       SDL_GetCurrentDisplayMode(0, &mode);
@@ -582,6 +659,7 @@ public:
       SDL_SetWindowFullscreen(mSDLWindow, 0);
       SDL_SetWindowDisplayMode(mSDLWindow, &mode);
       SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode);
+      #endif
    }
    
 
@@ -789,10 +867,10 @@ public:
       mCurrentCursor = inCursor;
       
       if (inCursor==curNone || !mShowCursor)
-         SDL_ShowCursor(false);
+         nmeShowCursor(false);
       else
       {
-         SDL_ShowCursor(true);
+         nmeShowCursor(true);
          
          if (inCursor==curPointer)
             SDL_SetCursor(sDefaultCursor);
@@ -827,7 +905,11 @@ public:
         if (inLock != mLockCursor) 
         {
            mLockCursor = inLock;
+           #ifdef NME_SDL3
+           SDL_SetWindowRelativeMouseMode(mSDLWindow, inLock ? SDL_TRUE : SDL_FALSE );
+           #else
            SDL_SetRelativeMouseMode( inLock ? SDL_TRUE : SDL_FALSE );
+           #endif
         }
     }
    
@@ -1625,136 +1707,162 @@ static SDLFrame *getEventFrame(int inId, bool useDefault = true)
    return nullptr;
 }
 
+static bool jButtonPressed(const SDL_JoyButtonEvent &ev)
+{
+   #ifdef NME_SDL3
+   return ev.down;
+   #else
+   return ev.state==SDL_PRESSED;
+   #endif
+}
+
+Uint32 getWindowOrEventType(SDL_Event &inEvent)
+{
+   #ifndef NME_SDL3
+   if (inEvent.type==SDL_WINDOWEVENT)
+      return inEvent.window.event;
+   #endif
+   return inEvent.type;
+}
+
 void ProcessEvent(SDL_Event &inEvent)
 {
-   if (inEvent.type!=SDL_WINDOWEVENT && gCurrentFileDialog)
+   #ifdef NME_SDL3
+   const bool isWindowEvent = inEvent.type>=SDL_EVENT_WINDOW_FIRST  || inEvent.type<=SDL_EVENT_WINDOW_LAST;
+   auto windowEventid = inEvent.type;
+   #else
+   const bool isWindowEvent = inEvent.type==SDL_WINDOWEVENT;
+   auto windowEventid = inEvent.window.event;
+   #endif
+
+   if (gCurrentFileDialog && !isWindowEvent)
       return;
 
-   switch(inEvent.type)
+   if (isWindowEvent)
+   {
+      SDLFrame *frame = getEventFrame(inEvent.window.windowID);
+      switch(windowEventid)
+      {
+         case SDL_WINDOWEVENT_SHOWN:
+         {
+            Event activate(etActivate);
+            frame->ProcessEvent(activate);
+            break;
+         }
+         case SDL_WINDOWEVENT_HIDDEN:
+         {
+            frame = getEventFrame(inEvent.window.windowID,false);
+            if (frame)
+            {
+               Event deactivate(etDeactivate);
+               frame->ProcessEvent(deactivate);
+            }
+            // else printf("ignore dead window\n");
+            break;
+         }
+         case SDL_WINDOWEVENT_EXPOSED:
+         {
+            Event poll(etPoll);
+            sgSDLFrame->ProcessEvent(poll);
+            Event redraw(etRedraw);
+            frame->ProcessEvent(redraw);
+            break;
+         }
+         //case SDL_WINDOWEVENT_RESIZED: break;
+         case SDL_WINDOWEVENT_SIZE_CHANGED:
+         {
+            frame = getEventFrame(inEvent.window.windowID,false);
+            if (frame)
+            {
+               Event resize(etResize, inEvent.window.data1, inEvent.window.data2);
+               frame->scaleMouseDpi(resize);
+               frame->Resize(resize.x, resize.y);
+               frame->ProcessEvent(resize);
+               Event redraw(etRedraw);
+               frame->ProcessEvent(redraw);
+            }
+            break;
+         }
+         case SDL_WINDOWEVENT_MINIMIZED:
+         {
+            frame->mStage->setIsFullscreen(false);
+            Event deactivate(etDeactivate);
+            frame->ProcessEvent(deactivate);
+            break;
+         }
+
+         case SDL_WINDOWEVENT_RESTORED:
+         case SDL_WINDOWEVENT_MAXIMIZED:
+         {
+            frame = getEventFrame(inEvent.window.windowID,false);
+            if (frame)
+            {
+               bool isMax = SDL_GetWindowFlags(frame->mWindow ) &
+                               (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP);
+               frame->mStage->setIsFullscreen(isMax);
+
+               Event activate(etActivate);
+               frame->ProcessEvent(activate);
+
+               int width = 0;
+               int height = 0;
+               //SDL_GetWindowSize(frame->mWindow, &width, &height);
+               SDL_GL_GetDrawableSize(frame->mWindow, &width, &height);
+
+               Event resize(etResize, width, height);
+               frame->Resize(width,height);
+               frame->ProcessEvent(resize);
+            }
+            break;
+         }
+
+         case SDL_WINDOWEVENT_MOVED:
+         {
+            Event event(etWindowMoved, inEvent.window.data1, inEvent.window.data2);
+            frame->ProcessEvent(event);
+            break;
+         }
+
+         case SDL_WINDOWEVENT_ENTER:
+         {
+            Event event(etWindowEnter);
+            frame->ProcessEvent(event);
+            break;
+         }
+         case SDL_WINDOWEVENT_LEAVE:
+         {
+            Event event(etWindowLeave);
+            frame->ProcessEvent(event);
+         }
+         case SDL_WINDOWEVENT_FOCUS_GAINED:
+         {
+            Event inputFocus(etGotInputFocus);
+            frame->ProcessEvent(inputFocus);
+            break;
+         }
+         case SDL_WINDOWEVENT_FOCUS_LOST:
+         {
+            Event inputFocus(etLostInputFocus);
+            frame->ProcessEvent(inputFocus);
+            break;
+         }
+         case SDL_WINDOWEVENT_CLOSE:
+         {
+            Event close(etWindowClose);
+            frame->ProcessEvent(close);
+            break;
+         }
+
+         default:
+            break;
+      }
+   }
+   else switch(inEvent.type)
    {
       case SDL_QUIT:
       {
          Event close(etQuit);
          sgSDLFrame->ProcessEvent(close);
-         break;
-      }
-      case SDL_WINDOWEVENT:
-      {
-         SDLFrame *frame = getEventFrame(inEvent.window.windowID);
-
-         switch (inEvent.window.event)
-         {
-            case SDL_WINDOWEVENT_SHOWN:
-            {
-               Event activate(etActivate);
-               frame->ProcessEvent(activate);
-               break;
-            }
-            case SDL_WINDOWEVENT_HIDDEN:
-            {
-               frame = getEventFrame(inEvent.window.windowID,false);
-               if (frame)
-               {
-                  Event deactivate(etDeactivate);
-                  frame->ProcessEvent(deactivate);
-               }
-               // else printf("ignore dead window\n");
-               break;
-            }
-            case SDL_WINDOWEVENT_EXPOSED:
-            {
-               Event poll(etPoll);
-               sgSDLFrame->ProcessEvent(poll);
-               Event redraw(etRedraw);
-               frame->ProcessEvent(redraw);
-               break;
-            }
-            //case SDL_WINDOWEVENT_RESIZED: break;
-            case SDL_WINDOWEVENT_SIZE_CHANGED:
-            {
-               frame = getEventFrame(inEvent.window.windowID,false);
-               if (frame)
-               {
-                  Event resize(etResize, inEvent.window.data1, inEvent.window.data2);
-                  frame->scaleMouseDpi(resize);
-                  frame->Resize(resize.x, resize.y);
-                  frame->ProcessEvent(resize);
-                  Event redraw(etRedraw);
-                  frame->ProcessEvent(redraw);
-               }
-               break;
-            }
-            case SDL_WINDOWEVENT_MINIMIZED:
-            {
-               frame->mStage->setIsFullscreen(false);
-               Event deactivate(etDeactivate);
-               frame->ProcessEvent(deactivate);
-               break;
-            }
-
-            case SDL_WINDOWEVENT_RESTORED:
-            case SDL_WINDOWEVENT_MAXIMIZED:
-               frame = getEventFrame(inEvent.window.windowID,false);
-               if (frame)
-               {
-                  bool isMax = SDL_GetWindowFlags(frame->mWindow ) &
-                               (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP);
-                  frame->mStage->setIsFullscreen(isMax);
-
-                  Event activate(etActivate);
-                  frame->ProcessEvent(activate);
-
-                  int width = 0;
-                  int height = 0;
-                  //SDL_GetWindowSize(frame->mWindow, &width, &height);
-                  SDL_GL_GetDrawableSize(frame->mWindow, &width, &height);
-
-                  Event resize(etResize, width, height);
-                  frame->Resize(width,height);
-                  frame->ProcessEvent(resize);
-               }
-               break;
-
-            case SDL_WINDOWEVENT_MOVED:
-               {
-                  Event event(etWindowMoved, inEvent.window.data1, inEvent.window.data2);
-                  frame->ProcessEvent(event);
-               }
-               break;
-
-            case SDL_WINDOWEVENT_ENTER:
-               {
-                  Event event(etWindowEnter);
-                  frame->ProcessEvent(event);
-               }
-               break;
-            case SDL_WINDOWEVENT_LEAVE:
-               {
-                  Event event(etWindowLeave);
-                  frame->ProcessEvent(event);
-               }
-            case SDL_WINDOWEVENT_FOCUS_GAINED:
-            {
-               Event inputFocus(etGotInputFocus);
-               frame->ProcessEvent(inputFocus);
-               break;
-            }
-            case SDL_WINDOWEVENT_FOCUS_LOST:
-            {
-               Event inputFocus(etLostInputFocus);
-               frame->ProcessEvent(inputFocus);
-               break;
-            }
-            case SDL_WINDOWEVENT_CLOSE:
-            {
-               Event close(etWindowClose);
-               frame->ProcessEvent(close);
-               break;
-            }
-
-            default:
-               break;
-         }
          break;
       }
 
@@ -1768,8 +1876,8 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_DROPCOMPLETE:
       {
          SDLFrame *frame = getEventFrame(inEvent.drop.windowID);
-         int x=0;
-         int y=0;
+         MousePosType x=0;
+         MousePosType y=0;
          SDL_GetMouseState(&x,&y);
          Event event(etDropEnd, x, y);
          frame->scaleMouseDpi(event);
@@ -1781,10 +1889,16 @@ void ProcessEvent(SDL_Event &inEvent)
       {
          SDLFrame *frame = getEventFrame(inEvent.drop.windowID);
          Event event(etDropFile);
+         #ifdef NME_SDL3
+         event.utf8Text = inEvent.drop.data;
+         event.utf8Length = strlen(inEvent.drop.data);
+         frame->ProcessEvent(event);
+         #else
          event.utf8Text = inEvent.drop.file;
          event.utf8Length = strlen(inEvent.drop.file);
          frame->ProcessEvent(event);
          SDL_free(inEvent.drop.file);
+         #endif
          break;
       }
 
@@ -1793,12 +1907,17 @@ void ProcessEvent(SDL_Event &inEvent)
       {
          SDLFrame *frame = getEventFrame(inEvent.motion.windowID);
             //default to 0
-         int deltaX = 0;
-         int deltaY = 0;
+         MousePosType deltaX = 0;
+         MousePosType deltaY = 0;
 
             //but if we are locking the cursor,
             //pass the delta in as well through as deltaX
-         if(SDL_GetRelativeMouseMode()) {
+         #ifdef NME_SDL3
+         if (SDL_GetWindowRelativeMouseMode(frame->mWindow))
+         #else
+         if (SDL_GetRelativeMouseMode())
+         #endif
+         {
             SDL_GetRelativeMouseState( &deltaX, &deltaY );
             deltaX = (int)(deltaX * frame->retinaScale);
             deltaY = (int)(deltaY * frame->retinaScale);
@@ -1853,8 +1972,8 @@ void ProcessEvent(SDL_Event &inEvent)
             //previous behavior in nme was fake button 3 for down, 4 for up
          int event_dir = (inEvent.wheel.y > 0) ? 3 : 4;
             //space to get the current mouse position, to make sure the values are sane
-         int _x = 0; 
-         int _y = 0;
+         MousePosType _x = 0; 
+         MousePosType _y = 0;
             //fetch the mouse position
          SDL_GetMouseState(&_x,&_y);
             //create the event
@@ -1931,19 +2050,15 @@ void ProcessEvent(SDL_Event &inEvent)
          SDLFrame *frame = getEventFrame(inEvent.key.windowID);
          Event key(inEvent.type == SDL_KEYDOWN ? etKeyDown : etKeyUp );
          bool right;
+
+         #ifdef NME_SDL3
+         key.value = SDLKeyToFlash(inEvent.key.key, right);
+         AddModStates(key.flags, inEvent.key.mod);
+         #else
          key.value = SDLKeyToFlash(inEvent.key.keysym.sym, right);
-         /*if (inEvent.type == SDL_KEYDOWN)
-         {
-            //key.code = key.value==keyBACKSPACE ? keyBACKSPACE : inEvent.key.keysym.unicode;
-            key.code = inEvent.key.keysym.scancode;
-            sLastUnicode[inEvent.key.keysym.scancode] = key.code;
-         }
-         else
-            // SDL does not provide unicode on key up, so remember it,
-            //  keyed by scancode
-            key.code = sLastUnicode[inEvent.key.keysym.scancode];*/
-         //key.code = 0;
          AddModStates(key.flags, inEvent.key.keysym.mod);
+         #endif
+
          if (right)
             key.flags |= efLocationRight;
          
@@ -1970,7 +2085,7 @@ void ProcessEvent(SDL_Event &inEvent)
              if(inEvent.jbutton.button>=SDL_CONTROLLER_BUTTON_DPAD_UP) 
                 controller->controllerHatEvent();
              else
-             controller->controllerButtonEvent(inEvent.jbutton.button, inEvent.jbutton.state==SDL_PRESSED);
+             controller->controllerButtonEvent(inEvent.jbutton.button, jButtonPressed(inEvent.jbutton) );
          }
          break;
       }
@@ -1997,7 +2112,7 @@ void ProcessEvent(SDL_Event &inEvent)
          break;
       }
       case SDL_JOYAXISMOTION:
-      {   
+      {
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
          if(controller != NULL && !controller->isGameController)
             controller->joyAxisMove(inEvent.jaxis.axis, inEvent.jaxis.value);
@@ -2005,10 +2120,10 @@ void ProcessEvent(SDL_Event &inEvent)
       }
       case SDL_JOYBUTTONDOWN:
       case SDL_JOYBUTTONUP:
-      {     
+      {
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
          if(controller!=NULL && !controller->isGameController)
-             controller->joyButtonEvent(inEvent.jbutton.button, inEvent.jbutton.state==SDL_PRESSED);
+             controller->joyButtonEvent(inEvent.jbutton.button, jButtonPressed(inEvent.jbutton) );
          break;
       }
       case SDL_JOYBALLMOTION:
@@ -2148,14 +2263,6 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    bool tryHighDpi = (inFlags & wfHighDpi) != 0;
    //WindowScaleMode scaleMode = (WindowScaleMode)( (inFlags & wfScaleMask)/wfScaleBase );
 
-   #ifdef HX_LINUX
-   if (opengl && isMain)
-   {
-      if (!InitOGLFunctions())
-        opengl = false;
-   }
-   #endif
-
    #ifdef NME_WINDOWS_SINGLE_INSTANCE
    bool singleInstance = (inFlags & wfSingleInstance) != 0;
    if (singleInstance)
@@ -2195,14 +2302,23 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       openAudio();
    #endif
    
+   #ifndef NME_SDL3
    if (SDL_GetNumVideoDisplays() > 0)
    {
-
       SDL_DisplayMode currentMode;
       SDL_GetDesktopDisplayMode(0, &currentMode);
       sgDesktopWidth = currentMode.w;
       sgDesktopHeight = currentMode.h;
    }
+   #else
+   SDL_DisplayID display_id = SDL_GetPrimaryDisplay();
+   const SDL_DisplayMode *modePtr = SDL_GetDesktopDisplayMode(display_id);
+   if (modePtr)
+   {
+      sgDesktopWidth = modePtr->w;
+      sgDesktopHeight = modePtr->h;
+   }
+   #endif
    
    int windowFlags, requestWindowFlags = 0;
    
@@ -2219,15 +2335,26 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    if (inFlags & wfAlwaysOnTop)
       requestWindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
 
-   #ifdef NME_ANGLE
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); 
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1); 
+   #ifdef NME_OGL
+   if (nmeEglMode)
+   {
+      //#ifdef NME_DYNAMIC_ANGLE
+      //SDL_setenv("SDL_VIDEO_GL_DRIVER", "libEGL.dll", 1);
+      //#endif
+      #ifndef NME_SDL3
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1); 
+      #endif
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES); 
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); 
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1); 
+   }
    #endif
 
    if (opengl)
    {
+      SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
+      SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
+
       SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 
       SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -2318,7 +2445,19 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          window = NULL;
       }
 
+      #ifdef NME_SDL3
+      SDL_PropertiesID props = SDL_CreateProperties();
+      SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, inTitle);
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, targetX);
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, targetY);
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, setWidth);
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, setHeight);
+      SDL_SetNumberProperty(props, "flags", requestWindowFlags);
+      window = SDL_CreateWindowWithProperties(props);
+      SDL_DestroyProperties(props);
+      #else
       window = SDL_CreateWindow(inTitle, targetX, targetY, setWidth, setHeight, requestWindowFlags);
+      #endif
 
       #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
       HINSTANCE handle = ::GetModuleHandle(0);
@@ -2328,11 +2467,18 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       LPARAM smicon = (LPARAM)::LoadImage(handle, resource, IMAGE_ICON, 
          GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 
+      #ifdef NME_SDL3
+      HWND hWin = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+      #else
       SDL_SysWMinfo wminfo;
       SDL_VERSION (&wminfo.version);
+      HWND hWin = (HWND)0;
       if (SDL_GetWindowWMInfo(window, &wminfo) == 1)
-      {
          hWin = wminfo.info.win.window;
+      #endif
+
+      if (hWin)
+      {
          if (icon)
          {
             ::SendMessage(hWin, WM_SETICON, ICON_BIG, icon);
@@ -2342,6 +2488,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
                 ::SendMessage(hWin, WM_SETICON, ICON_SMALL, icon);
          }
       }
+
       #endif
      
       // retrieve the actual window flags (as opposed to the requested ones)
@@ -2350,17 +2497,23 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
       bool hardware = metal||opengl;
 
-      int renderFlags = 0;
-      if (hardware) renderFlags |= SDL_RENDERER_ACCELERATED;
-      if (hardware && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
+      //printf("hardware: %d\n", hardware);
 
       if (hardware && sgMainRenderer)
       {
          renderer = sgMainRenderer;
          break;
       }
-      renderer = SDL_CreateRenderer (window, -1, renderFlags);
-      
+
+      #ifdef NME_SDL3
+      renderer = SDL_CreateRenderer(window, nullptr);
+      #else
+      int renderFlags = 0;
+      if (hardware) renderFlags |= SDL_RENDERER_ACCELERATED;
+      if (hardware && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
+      renderer = SDL_CreateRenderer(window, -1, renderFlags);
+      #endif
+
       if (opengl)
       {
          sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders));
@@ -2369,7 +2522,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       {
          sgIsOGL2 = false;
       }
-      
+
       if (!renderer && (inFlags & wfHW_AA_HIRES || inFlags & wfHW_AA)) {
          // if no window was created and AA was enabled, disable AA and try again
          fprintf(stderr, "Multisampling is not available. Retrying without. (%s)\n", SDL_GetError());
@@ -2405,6 +2558,16 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       fprintf(stderr, "Failed to create SDL renderer: %s\n", SDL_GetError());
       return;
    }
+
+   #ifdef NME_OGL
+   if (opengl && isMain)
+   {
+      if (!InitOGLFunctions())
+        opengl = false;
+   }
+   #endif
+
+
    
    int width, height;
    /*
@@ -2469,11 +2632,14 @@ HWND GetApplicationWindow()
    if (!sgSDLFrame)
       return (HWND)gNativeWindowHandle;
 
+   #ifdef NME_SDL3
+   return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(sgSDLFrame->mWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+   #else
    SDL_SysWMinfo wminfo;
    SDL_VERSION (&wminfo.version);
    if (SDL_GetWindowWMInfo(sgSDLFrame->mWindow, &wminfo) == 1)
        return wminfo.info.win.window;
-
+   #endif
    return 0;
 }
 #endif
@@ -2484,6 +2650,19 @@ QuickVec<int>* CapabilitiesGetScreenResolutions()
    InitSDL();
    QuickVec<int> *out = new QuickVec<int>();
    
+   #ifdef NME_SDL3
+
+   SDL_DisplayID display_id = SDL_GetPrimaryDisplay();
+
+   int count = 0;
+   SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display_id, &count);
+   for(int i=0;i<count;i++)
+   {
+      out->push_back(modes[i]->w);
+      out->push_back(modes[i]->h);
+   }
+   #else
+
    int numModes = SDL_GetNumDisplayModes(0);
    SDL_DisplayMode mode;
    
@@ -2493,7 +2672,8 @@ QuickVec<int>* CapabilitiesGetScreenResolutions()
       out->push_back(mode.w);
       out->push_back(mode.h);
    }
-   
+   #endif
+
    return out;
 }
 
@@ -2503,16 +2683,31 @@ QuickVec<ScreenMode>* CapabilitiesGetScreenModes()
    InitSDL();
    QuickVec<ScreenMode> *out = new QuickVec<ScreenMode>();
 
+
+   #ifdef NME_SDL3
+   SDL_DisplayID display_id = SDL_GetPrimaryDisplay();
+   int numModes = 0;
+   SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display_id, &numModes);
+   #else
+
    int numModes = SDL_GetNumDisplayModes(0);
    SDL_DisplayMode mode;
+   SDL_DisplayMode *modePtr = &mode;
+   #endif
 
    for (int i = 0; i < numModes; i++)
    {
-      SDL_GetDisplayMode(0, i, &mode);
+      #ifdef NME_SDL3
+      SDL_DisplayMode *modePtr = modes[i];
+      #else
+      SDL_GetDisplayMode(0, i, modePtr);
+      #endif
+
       ScreenMode screenMode;
-      screenMode.width = mode.w;
-      screenMode.height = mode.h;
-      switch (mode.format) {
+      screenMode.width = modePtr->w;
+      screenMode.height = modePtr->h;
+      switch (modePtr->format)
+      {
       case SDL_PIXELFORMAT_UNKNOWN:
          screenMode.format = PIXELFORMAT_UNKNOWN;
          break;
@@ -2622,7 +2817,7 @@ QuickVec<ScreenMode>* CapabilitiesGetScreenModes()
          screenMode.format = PIXELFORMAT_YVYU;
          break;
       }
-      screenMode.refreshRate = mode.refresh_rate;
+      screenMode.refreshRate = modePtr->refresh_rate;
       out->push_back(screenMode);
    }
 
@@ -2680,7 +2875,11 @@ void StartAnimation()
    event.type = SDL_NOEVENT;
 
    //SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
+   #if NME_SDL3
+   SDL_SetEventEnabled(SDL_DROPFILE, true);
+   #else
    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+   #endif
 
    double nextWake = GetTimeStamp();
    while(!sgDead)

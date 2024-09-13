@@ -11,9 +11,8 @@
 #endif
 
 
-#ifdef DECLARE_EXTENSION
 
-namespace nme { extern void *gOGLLibraryHandle; }
+#ifdef DECLARE_EXTENSION
 
 #define OGL_EXT(func,ret,args) \
    namespace nme { extern ret (CALLING_CONVENTION *func)args; }
@@ -25,21 +24,12 @@ namespace nme { extern void *gOGLLibraryHandle; }
 
 #elif defined(GET_EXTENSION)
 
-#ifdef HX_WINDOWS
-   #define OGL_EXT(func,ret,args) \
-   {\
-      *(void **)&nme::func = (void *)wglGetProcAddress(#func);\
-      if (!func) \
-         *(void **)&nme::func = (void *)wglGetProcAddress(#func "ARB");\
-   }
-#elif defined(HX_LINUX)
-   #define OGL_EXT(func,ret,args) \
-   {\
-      *(void **)&nme::func = (void *)dlsym(nme::gOGLLibraryHandle,#func);\
-      if (!func) \
-         *(void **)&nme::func = (void *)dlsym(nme::gOGLLibraryHandle,#func "ARB");\
-   }
-#endif
+#define OGL_EXT(func,ret,args) \
+{\
+   *(void **)&::nme::func = (void *)::nme::GetGlFunction(#func);\
+   if (!func) \
+      *(void **)&::nme::func = (void *)::nme::GetGlFunction(#func "ARB");\
+}
 
 #endif
 
@@ -192,6 +182,7 @@ OGL_EXT(glClear,void, (GLbitfield mask));
 OGL_EXT(glClearColor,void, (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha));
 //OGL_EXT(glClearColorx,void, (GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha));
 OGL_EXT(glClearDepth,void, (GLclampf depth));
+OGL_EXT(glClearDepthf,void, (GLclampf depth));
 //OGL_EXT(glClearDepthx,void, (GLclampx depth));
 OGL_EXT(glClearStencil,void, (GLint s));
 OGL_EXT(glClientActiveTexture,void, (GLenum texture));
@@ -208,6 +199,7 @@ OGL_EXT(glDeleteTextures,void, (GLsizei n, const GLuint *textures));
 OGL_EXT(glDepthFunc,void, (GLenum func));
 OGL_EXT(glDepthMask,void, (GLboolean flag));
 OGL_EXT(glDepthRange,void, (GLclampf zNear, GLclampf zFar));
+OGL_EXT(glDepthRangef,void, (GLclampf zNear, GLclampf zFar));
 //OGL_EXT(glDepthRangex,void, (GLclampx zNear, GLclampx zFar));
 OGL_EXT(glDisable,void, (GLenum cap));
 OGL_EXT(glDisableClientState,void, (GLenum array));
@@ -293,7 +285,7 @@ OGL_EXT(glViewport,void, (GLint x, GLint y, GLsizei width, GLsizei height));
 OGL_EXT(glGetTexParameteriv,void,(GLenum target,  GLenum pname,  GLint * params));
 OGL_EXT(glIsTexture, GLboolean, ( GLuint texture) );
 OGL_EXT(glIsEnabled, GLboolean, ( GLuint texture) );
-
+OGL_EXT(glGetShaderPrecisionFormat, void, (GLenum shaderType, GLenum precisionType, GLint *range, GLint *precision) );
 
 
 #endif

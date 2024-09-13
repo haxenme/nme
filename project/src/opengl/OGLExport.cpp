@@ -6,7 +6,6 @@
 
 #define OGLEXPORT
 
-
 #ifdef ANDROID
 #include <android/log.h>
 #include <EGL/egl.h>
@@ -506,19 +505,9 @@ DEFINE_PRIM(nme_gl_get_supported_extensions,1);
 
 value nme_gl_get_extension(value inName)
 {
-   void *result = 0;
    HxString name = valToHxString(inName);
 
-   #ifdef NME_ANGLE
-      result = (void *)eglGetProcAddress(name.c_str());
-   #elif defined(HX_WINDOWS)
-      result = (void *)wglGetProcAddress(name.c_str());
-   #elif defined(ANDROID)
-      result = (void *)eglGetProcAddress(name.c_str());
-   //Wait until I can test this...
-   //#elif defined(HX_LINUX)
-   //   result = dlsym(nme::gOGLLibraryHandle,#func);
-   #endif
+   void *result = (void *)nme::GetGlFunction(name.c_str());
 
    if (result)
    {
@@ -1503,30 +1492,35 @@ value nme_gl_shader_source(value inId,value inSource)
      // 300: in and out are used instead of attribute and varying.
      // GLSL 330+ texture2D to texture
 
-      #ifdef NME_GLES
-      buffer = "#version 100\n";
-      buffer = "#define texture texture2D\n";
-      #else
-        #ifdef HX_MACOS
-          buffer = "#version 120\n";
-        #else
-          buffer = "#version 130\n";
-        #endif
-      #endif
+      if (nmeEglMode)
+      {
+         buffer = "#version 100\n";
+         buffer = "#define texture texture2D\n";
+      }
+      else
+      {
+         #ifdef HX_MACOS
+            buffer = "#version 120\n";
+         #else
+           buffer = "#version 130\n";
+         #endif
+      }
    }
 
-   #ifdef NME_GLES
-   if (!precisionStart)
-      buffer += std::string("precision mediump float;\n") + std::string(versionEnd);
+   if (nmeEglMode)
+   {
+      if (!precisionStart)
+         buffer += std::string("precision mediump float;\n") + std::string(versionEnd);
+      else
+         buffer += std::string(versionEnd);
+   }
    else
-      buffer += std::string(versionEnd);
-
-   #else
-   if (precisionStart)
-      buffer += std::string(versionEnd, precisionStart-versionEnd) + std::string(precisionEnd, p-precisionEnd);
-   else
-      buffer += std::string(versionEnd);
-   #endif
+   {
+      if (precisionStart)
+         buffer += std::string(versionEnd, precisionStart-versionEnd) + std::string(precisionEnd, p-precisionEnd);
+      else
+         buffer += std::string(versionEnd);
+   }
 
    lines = buffer.c_str();
    //printf("===={{{\n%s\n}}}====\n", lines);
@@ -1665,20 +1659,25 @@ DEFINE_PRIM(nme_gl_get_shader_parameter,2);
 value nme_gl_get_shader_precision_format(value inShaderType,value inPrec)
 {
    DBGFUNC("getShaderPrecisionFormat");
-   #ifdef NME_GLES
-   int range[2];
-   int precision;
-   glGetShaderPrecisionFormat(val_int(inShaderType), val_int(inPrec), range, &precision);
+   #if defined(NME_GLES) || defined(NME_DYNAMIC_ANGLE)
+   if (nmeEglMode)
+   {
+      int range[2];
+      int precision;
+      glGetShaderPrecisionFormat(val_int(inShaderType), val_int(inPrec), range, &precision);
 
-   value result = alloc_empty_object( );
-   alloc_field(result,val_id("rangeMin"),alloc_int(range[0]));
-   alloc_field(result,val_id("rangeMax"),alloc_int(range[1]));
-   alloc_field(result,val_id("precision"),alloc_int(precision));
+      value result = alloc_empty_object( );
+      alloc_field(result,val_id("rangeMin"),alloc_int(range[0]));
+      alloc_field(result,val_id("rangeMax"),alloc_int(range[1]));
+      alloc_field(result,val_id("precision"),alloc_int(precision));
 
-   return result;
-   #else
-   return alloc_null();
+      return result;
+   }
+   else
    #endif
+   {
+      return alloc_null();
+   }
 }
 DEFINE_PRIM(nme_gl_get_shader_precision_format,2);
 
@@ -2060,11 +2059,17 @@ DEFINE_PRIM(nme_gl_clear_color,4);
 
 value nme_gl_clear_depth(value depth)
 {
-   #ifdef NME_GLES
-   glClearDepthf(val_number(depth));
+   #ifdef NME_DYNAMIC_ANGLE
+   if (nmeEglMode)
+      glClearDepthf(val_number(depth));
+   else
+      glClearDepth(val_number(depth));
+   #elif defined(NME_GLES)
+      glClearDepthf(val_number(depth));
    #else
-   glClearDepth(val_number(depth));
+      glClearDepth(val_number(depth));
    #endif
+
    return alloc_null();
 }
 DEFINE_PRIM(nme_gl_clear_depth,1);
@@ -2105,10 +2110,15 @@ DEFINE_PRIM(nme_gl_depth_mask,1);
 
 value nme_gl_depth_range(value inNear, value inFar)
 {
-   #ifdef NME_GLES
-   glDepthRangef(val_number(inNear), val_number(inFar));
+   #ifdef NME_DYNAMIC_ANGLE
+   if (nmeEglMode)
+      glDepthRangef(val_number(inNear), val_number(inFar));
+   else
+      glDepthRange(val_number(inNear), val_number(inFar));
+   #elif defined(NME_GLES)
+      glDepthRangef(val_number(inNear), val_number(inFar));
    #else
-   glDepthRange(val_number(inNear), val_number(inFar));
+      glDepthRange(val_number(inNear), val_number(inFar));
    #endif
    return alloc_null();
 }

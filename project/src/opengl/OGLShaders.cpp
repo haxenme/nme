@@ -53,7 +53,7 @@ GLuint OGLProg::createShader(GLuint inType, const char *inShader)
    GLint blen = 0;   
    GLsizei slen = 0;
 
-   glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &blen);       
+   glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &blen);
    if (blen > 0)
    {
       char* compiler_log = (char*)malloc(blen);
@@ -64,8 +64,7 @@ GLuint OGLProg::createShader(GLuint inType, const char *inShader)
    }
    else
    {
-      ELOG("Unknown error compiling shader : \n");
-    ELOG("%s\n", source);
+      ELOG("Unknown error compiling shader : %d\n",  glGetError() );
    }
    glDeleteShader(shader);
    return 0;
@@ -299,9 +298,8 @@ GPUProg *GPUProg::create(unsigned int inID)
    std::string pixelProlog = "";
    std::string blendColour = "";
 
-   #ifdef NME_GLES
-   pixelVars = std::string("precision mediump float;\n");
-   #endif
+   if (nmeEglMode)
+      pixelVars = std::string("precision mediump float;\n");
 
    std::string VIN = "attribute";
    std::string VOUT = "varying";

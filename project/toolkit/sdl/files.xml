@@ -15,64 +15,64 @@
     <files id="native-toolkit-sdl-depends">
         <depend name="${SDL_CONFIG_PATH}/SDL_config.h" if="SDL_CONFIG_PATH" />
 
-        <depend name="${NME_LIBSDL}include/SDL_config_android.h"/>
-        <depend name="${NME_LIBSDL}include/begin_code.h"/>
-        <depend name="${NME_LIBSDL}include/close_code.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_test_random.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_thread.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_timer.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_touch.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_types.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_version.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_video.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_surface.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_system.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_syswm.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_test.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_test_assert.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_test_common.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_render.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_revision.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_rwops.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_scancode.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_shape.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_stdinc.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_opengles2_gl2platform.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_opengles2_khrplatform.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_pixels.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_platform.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_power.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_quit.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_rect.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_opengl_glext.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_opengles.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_opengles2.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_opengles2_gl2.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_opengles2_gl2ext.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_mouse.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_mutex.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_name.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_opengl.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_hints.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_joystick.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_keyboard.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_keycode.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_loadso.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_log.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_main.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_messagebox.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_error.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_events.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_filesystem.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_gamecontroller.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_gesture.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_haptic.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_copying.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_cpuinfo.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_egl.h"/>
-        <depend name="${NME_LIBSDL}include/SDL_endian.h"/>
-
         <!--
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_config_android.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/begin_code.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/close_code.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_test_random.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_thread.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_timer.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_touch.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_types.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_version.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_video.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_surface.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_system.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_syswm.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_test.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_test_assert.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_test_common.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_render.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_revision.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_rwops.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_scancode.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_shape.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_stdinc.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_opengles2_gl2platform.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_opengles2_khrplatform.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_pixels.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_platform.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_power.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_quit.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_rect.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_opengl_glext.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_opengles.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_opengles2.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_opengles2_gl2.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_opengles2_gl2ext.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_mouse.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_mutex.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_name.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_opengl.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_hints.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_joystick.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_keyboard.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_keycode.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_loadso.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_log.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_main.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_messagebox.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_error.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_events.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_filesystem.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_gamecontroller.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_gesture.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_haptic.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_copying.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_cpuinfo.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_egl.h"/>
+        <depend name="${NME_LIBSDL}include/SDL3/SDL_endian.h"/>
+
         <depend name="${NME_LIBSDL}include/SDL_config_winrt.h"/>
         <depend name="${NME_LIBSDL}include/SDL_config_wiz.h"/>
         <depend name="${NME_LIBSDL}include/SDL_config_iphoneos.h"/>
@@ -81,7 +81,6 @@
         <depend name="${NME_LIBSDL}include/SDL_config_pandora.h"/>
         <depend name="${NME_LIBSDL}include/SDL_config_psp.h"/>
         <depend name="${NME_LIBSDL}include/SDL_config_windows.h" unless="winrt"/>
-        -->
 
         <depend name="${NME_LIBSDL}include/SDL_assert.h"/>
         <depend name="${NME_LIBSDL}include/SDL_atomic.h"/>
@@ -90,11 +89,9 @@
         <depend name="${NME_LIBSDL}include/SDL_blendmode.h"/>
         <depend name="${NME_LIBSDL}include/SDL_clipboard.h"/>
         <depend name="${NME_LIBSDL}include/SDL.h"/>
-        <!--
         <depend name="${NME_LIBSDL}include/SDL_gamecontrollerdb.h" if="winrt"/>
         <depend name="${NME_LIBSDL}include/SDL_windows.h" if="winrt"/>
         <depend name="${NME_LIBSDL}include/SDL_xinput.h" if="winrt"/>
-    -->
         <depend name="${NME_LIBSDL}src/core/winrt/SDL_winrtapp_common.h" if="winrt"/>
         <depend name="${NME_LIBSDL}src/core/winrt/SDL_winrtapp_direct3d.h" if="winrt"/>
         <depend name="${NME_LIBSDL}src/core/winrt/SDL_winrtapp_xaml.h" if="winrt"/>
@@ -102,6 +99,7 @@
         <depend name="${NME_LIBSDL}src/dynapi/SDL_dynapi.h" if="winrt"/>
         <depend name="${NME_LIBSDL}src/dynapi/SDL_dynapi_overrides.h" if="winrt"/>
         <depend name="${NME_LIBSDL}src/dynapi/SDL_dynapi_procs.h" if="winrt"/>
+    -->
 
     </files>
 
@@ -117,8 +115,8 @@
 
         <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
         <compilerflag value="-I${ANDROID_NDK_ROOT}/sources/android/cpufeatures" if="android"/>
-        <compilerflag value="-I${NME_LIBSDL}include/" />
-        <compilerflag value="-I${NME_LIBSDL}src/hidapi/hidapi/" />
+        <compilerflag value="-I${NME_LIBSDL}include/SDL3" />
+        <!--<compilerflag value="-I${NME_LIBSDL}src/hidapi/hidapi/" />-->
 
         <compilerflag value="-DGL_GLEXT_PROTOTYPES" if="android || rpi" />
         <compilerflag value="-DHAVE_LIBC" />
@@ -132,6 +130,7 @@
             <compilerflag value="-DNATIVE_TOOLKIT_SDL_ANGLE" if="NATIVE_TOOLKIT_SDL_ANGLE" />
             <compilerflag value="-DNATIVE_TOOLKIT_STATIC_ANGLE" if="NATIVE_TOOLKIT_STATIC_ANGLE" />
             <compilerflag value="-DSDL_VIDEO_STATIC_ANGLE" if="NATIVE_TOOLKIT_STATIC_ANGLE" />
+            <compilerflag value="-DNME_DYNAMIC_ANGLE" if="NME_DYNAMIC_ANGLE" />
 
         </section>
 
@@ -319,7 +318,6 @@
         </section>
 
         <section if="android || ios || windows || rpi || tvos" >
-<error value="poo" />
             <file name="${NME_LIBSDL}src/video/SDL_egl.c" />
             <file name="${NME_LIBSDL}src/render/opengles/SDL_render_gles.c" />
             <file name="${NME_LIBSDL}src/render/opengles2/SDL_render_gles2.c" />

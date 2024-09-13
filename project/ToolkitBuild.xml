@@ -25,7 +25,8 @@
    <set name="NME_METAL" value="1" if="mac" unless="nme_no_metal" />
    <set name="NME_NO_OGL" value="1" if="nme_no_ogl" />
    <set name="NME_NO_OGL" value="1" if="nme_metal" unless="mac" />
-   <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE" />
+   <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE || NME_LOCAL_TOOLKIT" />
+   <set name="NME_DYNAMIC_ANGLE" value="1" if="NME_LOCAL_TOOLKIT" unless="NME_NO_ANGLE" />
    <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
    <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
 
@@ -77,6 +78,7 @@
    <set name="NME_SDL2" value="1" if="macos" />
    <set name="NME_SDL2" value="1" if="winrpi" />
    <set name="NME_SDL2" value="1" if="gcw0" />
+   <set name="NME_SDL3" value="1" if="NME_LOCAL_TOOLKIT" />
    <set name="SYSTEM_FREETYPE" value="1" if="gcw0" />
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
@@ -84,7 +86,7 @@
    <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="NME_NO_AUDIO" />
 
    <!-- Use opengl backend ? -->
-   <set name="NME_NO_OGL" if="winrt" unless="NME_ANGLE" />
+   <set name="NME_NO_OGL" if="winrt" unless="NME_ANGLE || NME_DYNAMIC_ANGLE" />
    <set name="NME_OGL" value="1" unless="NME_NO_OGL" />
    <set name="NATIVE_TOOLKIT_METAL" value="1" if="NME_METAL" />
 
@@ -176,8 +178,6 @@
    </section>
 
 
-
-
    <include name="${NATIVE_TOOLKIT_PATH}/angle/files.xml" if="NME_ANGLE" unless="ANGLE_DIR" />
    <include name="${ANGLE_DIR}/files.xml" if="NME_ANGLE ANGLE_DIR" />
 
@@ -267,6 +267,7 @@
       <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
       <compilerflag value="-DNME_WORKER_THREADS" if="NME_WORKER_THREADS" />
       <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
+      <compilerflag value="-DNME_DYNAMIC_ANGLE" if="NME_DYNAMIC_ANGLE" />
       <compilerflag value="-DNME_OGL" if="NME_OGL" />
       <compilerflag value="-DNME_METAL" if="NME_METAL" />
       <compilerflag value="-DNME_AUDIO" unless="NME_NO_AUDIO" />
@@ -355,6 +356,7 @@
       </section>
 
       <compilerflag value="-I${this_dir}/toolkit" if="NME_LOCAL_TOOLKIT" />
+      <compilerflag value="-DNME_SDL3" if="NME_SDL3" />
       <compilerflag value="-I${NME_ZLIB}"/>
       <compilerflag value="-I${NME_PNG}"/>
       <compilerflag value="-I${NME_PNG}.." if="NME_LOCAL_TOOLKIT" />
@@ -394,9 +396,11 @@
         <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
         <section unless="NME_NATIVE_SDL_SYSTEM" >
            <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
-           <compilerflag value="-I${NME_LIBSDL}include" />
+           <compilerflag value="-I${NME_LIBSDL}include/SDL3" if="NME_SDL3" />
+           <compilerflag value="-I${NME_LIBSDL}include" inless="NME_SDL3" />
            <compilerflag value="-I${NME_LIBSDL_MIXER}" if="NME_MIXER" />
-           <compilerflag value="-I${NME_LIBSDL_MIXER}/include" if="NME_MIXER" />
+           <compilerflag value="-I${NME_LIBSDL_MIXER}/include/SDL3_mixer" if="NME_MIXER NME_SDL3" />
+           <compilerflag value="-I${NME_LIBSDL_MIXER}/include" if="NME_MIXER" unless="NME_SDL3" />
         </section>
         <section if="gcw0" >
            <compilerflag value="-I${GCW0_SDK}/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include/SDL2" />
@@ -523,6 +527,7 @@
       <compilerflag value="-DNME_POLY2TRI" if="NME_POLY2TRI" />
       <compilerflag value="-DNME_WORKER_THREADS" if="NME_WORKER_THREADS" />
       <compilerflag value="-DNME_ANGLE" if="NME_ANGLE" />
+      <compilerflag value="-DNME_DYNAMIC_ANGLE" if="NME_DYNAMIC_ANGLE" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
 
       <cache value="1" />
@@ -683,7 +688,7 @@
 
          <section if="windows" unless="winrt">
             <lib name="gdi32.lib" />
-            <lib name="opengl32.lib" unless="NME_ANGLE" />
+            <lib name="opengl32.lib" unless="NME_ANGLE || NME_DYNAMIC_ANGLE" />
             <lib name="user32.lib" />
             <lib name="kernel32.lib" />
             <lib name="advapi32.lib" />
@@ -728,7 +733,8 @@
       <depend name="${HXCPP}/include/hx/HxcppMain.h"/>
       <file name="${this_dir}/src/winrt/Main.cpp" />
       <compilerflag value="-Iinclude" />
-      <compilerflag value="-I${NME_LIBSDL}include" />
+      <compilerflag value="-I${NME_LIBSDL}include" unless="NME_SDL3" />
+      <compilerflag value="-I${NME_LIBSDL}include/SDL3" if="NME_SDL3" />
       <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
       <cache value="1" />
     </files>

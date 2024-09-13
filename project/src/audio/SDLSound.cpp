@@ -6,6 +6,12 @@
 #include <Sound.h>
 #include <hx/Thread.h>
 
+#ifndef NME_SDL3
+ #define SDL_IOFromConstMem(data, len) SDL_RWFromConstMem(data, len)
+#else
+ #define Mix_LoadWAV_RW Mix_LoadWAV_IO
+ #define Mix_LoadMUS_RW Mix_LoadMUS_IO
+#endif
 
 
 namespace nme
@@ -44,7 +50,7 @@ void onMusicDone()
 
 #ifdef EMSCRIPTEN
 namespace {
-void Mix_QuerySpec(int *frequency, Uint16 *format, int *channels)
+void Mix_QuerySpec(int *frequency, SDL_AudioFormat *format, int *channels)
 {
    *frequency = 44100;
    *format = 32784;
@@ -128,9 +134,9 @@ class SDLSoundChannel : public SoundChannel
 {
   enum { BUF_SIZE = (1<<17) };
 
-   int       mFrequency;
-   Uint16    mFormat;
-   int       mChannels;
+   int             mFrequency;
+   SDL_AudioFormat mFormat;
+   int             mChannels;
 
 
    int                mAsyncFrequency;
@@ -342,7 +348,7 @@ public:
       mDynamicDataDue = 0;
       mDynamicRequestPending = 0;
       mFrequency = 0;
-      mFormat = 0;
+      mFormat = (SDL_AudioFormat)0;
       mChannels = 0;
       mBufferAheadSamples = 0;
 
@@ -361,10 +367,14 @@ public:
       Mix_QuerySpec(&mFrequency, &mFormat, &mChannels);
       if (mFrequency!=44100)
          ELOG("Warning - Frequency mismatch %d",mFrequency);
+      #ifdef NME_SDL3
+      if (mFormat!=SDL_AUDIO_F32)
+      #else
       if (mFormat!=32784)
-         ELOG("Warning - Format mismatch    %d",mFormat);
+      #endif
+         ELOG("Warning - Format mismatch    %d",(int)mFormat);
       if (mChannels!=2)
-         ELOG("Warning - channe mismatch    %d",mChannels);
+         ELOG("Warning - channel mismatch    %d",mChannels);
 
       if (sMusicFrequency==0)
          sMusicFrequency = mFrequency;
@@ -651,7 +661,7 @@ class SDLSound : public Sound
    std::string filename;
    bool        loaded;
    int         frequency;
-   Uint16      format;
+   SDL_AudioFormat format;
    int         channels;
    double      duration;
    INmeSoundData *soundData;
@@ -672,7 +682,7 @@ public:
       initSound();
       if (Init())
       {
-         mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(inData, len), 1);
+         mChunk = Mix_LoadWAV_RW(SDL_IOFromConstMem(inData, len), 1);
 
          if (!mChunk)
          {
@@ -701,7 +711,7 @@ public:
       mChunk = 0;
       loaded = false;
       frequency = 0;
-      format = 0;
+      format = (SDL_AudioFormat)0;
       channels = 0;
       duration = 0.0;
       soundData = 0;
@@ -730,6 +740,25 @@ public:
          int bytes = soundData->getDecodedByteCount();
          if (soundData->getRate()!=frequency || !soundData->getIsStereo())
          {
+            #ifdef NME_SDL3
+
+            Uint8 *dst_data = NULL;
+            int dst_len = 0;
+            const SDL_AudioSpec src_spec = { format,
+                                             soundData->getIsStereo() ? 2 : 1,
+                                             soundData->getRate() };
+            const SDL_AudioSpec dst_spec = { format, channels, frequency };
+            if (!SDL_ConvertAudioSamples(&src_spec, data, soundData->getDecodedByteCount(),
+                                &dst_spec, &dst_data, &dst_len))
+            {
+               printf("Could not convert data?\n");
+            }
+            else
+            {
+               mChunk = Mix_QuickLoad_RAW(dst_data, dst_len);
+               SDL_free(dst_data);
+            }
+            #else
             SDL_AudioCVT wavecvt;
             if (SDL_BuildAudioCVT(&wavecvt,
                     format, soundData->getIsStereo() ? 2 : 1, soundData->getRate(),
@@ -744,6 +773,8 @@ public:
                SDL_ConvertAudio(&wavecvt);
                mChunk = Mix_QuickLoad_RAW(wavecvt.buf, wavecvt.len_cvt);
             }
+            #endif
+
             soundData->release();
             soundData = 0;
          }
@@ -787,9 +818,9 @@ public:
             if (n>0)
             {
                #ifndef NME_SDL12
-               mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(resource.Bytes(),n),false);
+               mChunk = Mix_LoadWAV_RW(SDL_IOFromConstMem(resource.Bytes(),n),false);
                #else
-               mChunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(resource.Bytes(),2));
+               mChunk = Mix_LoadWAV_RW(SDL_IOFromConstMem(resource.Bytes(),2));
                #endif
             }
             if (!mChunk)
@@ -879,7 +910,11 @@ public:
          //int sdlLoops = inLoops<0 ? -1 : inLoops==0 ? 1 : inLoops;
          int sdlLoops = inLoops<0 ? -1 : inLoops==0 ? 0 : inLoops-1;
          //int sdlLoops = inLoops;
+         #ifdef NME_SDL3
+         if (!Mix_PlayMusic( mMusic, sdlLoops ))
+         #else
          if (Mix_PlayMusic( mMusic, sdlLoops )<0)
+         #endif
          {
             onMusicDone();
          }
@@ -1021,9 +1056,9 @@ public:
                reso.resize(n);
                memcpy(&reso[0], resource.Bytes(), n);
                #ifdef NME_SDL2
-               mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], reso.size()),false);
+               mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(&reso[0], reso.size()),false);
                #else
-               mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], reso.size()));
+               mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(&reso[0], reso.size()));
                #endif
 
                if (mMusic)
@@ -1066,9 +1101,9 @@ public:
       memcpy(&reso[0], inData, len);
 
       #ifdef NME_SDL2
-      mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], len),false);
+      mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(&reso[0], len),false);
       #else
-      mMusic = Mix_LoadMUS_RW(SDL_RWFromConstMem(&reso[0], len));
+      mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(&reso[0], len));
       #endif
 
 
@@ -1118,7 +1153,11 @@ void SuspendSdlSound()
      return;
 
    sSoundPaused = true;
+   #ifdef NME_SDL3
+   SDL_PauseAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK);
+   #else
    SDL_PauseAudio(true);
+   #endif
 }
 
 void ResumeSdlSound()
@@ -1127,7 +1166,11 @@ void ResumeSdlSound()
      return;
 
    sSoundPaused = false;
+   #ifdef NME_SDL3
+   SDL_ResumeAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK);
+   #else
    SDL_PauseAudio(false);
+   #endif
 }
 
 Sound *CreateSdlSound(const std::string &inFilename,bool inForceMusic)

@@ -221,7 +221,30 @@ typedef unsigned int uintptr_t;
 #define SDL_VIDEO_RENDER_D3D11  0
 #endif
 
-#ifndef NATIVE_TOOLKIT_SDL_ANGLE
+
+#if defined(NME_DYNAMIC_ANGLE)
+
+/* Enable OpenGL support (ES2/ANGLE) */
+#ifndef SDL_VIDEO_OPENGL
+#define SDL_VIDEO_OPENGL    1
+#endif
+//#ifndef SDL_VIDEO_OPENGL_WGL
+//#define SDL_VIDEO_OPENGL_WGL    1
+//#endif
+#ifndef SDL_VIDEO_RENDER_OGL
+#define SDL_VIDEO_RENDER_OGL    1
+#endif
+#ifndef SDL_VIDEO_RENDER_OGL_ES2
+#define SDL_VIDEO_RENDER_OGL_ES2    1
+#endif
+#ifndef SDL_VIDEO_OPENGL_ES2
+#define SDL_VIDEO_OPENGL_ES2    1
+#endif
+#ifndef SDL_VIDEO_OPENGL_EGL
+#define SDL_VIDEO_OPENGL_EGL    1
+#endif
+
+#elif !defined(NATIVE_TOOLKIT_SDL_ANGLE)
 
 /* Enable OpenGL support */
 #ifndef SDL_VIDEO_OPENGL
@@ -233,18 +256,19 @@ typedef unsigned int uintptr_t;
 #ifndef SDL_VIDEO_RENDER_OGL
 #define SDL_VIDEO_RENDER_OGL    1
 #endif
-#ifndef SDL_VIDEO_RENDER_OGL_ES2
-#define SDL_VIDEO_RENDER_OGL_ES2    0
-#endif
-#ifndef SDL_VIDEO_OPENGL_ES2
-#define SDL_VIDEO_OPENGL_ES2    0
-#endif
-#ifndef SDL_VIDEO_OPENGL_EGL
-#define SDL_VIDEO_OPENGL_EGL    0
-#endif
+//#ifndef SDL_VIDEO_RENDER_OGL_ES2
+//#define SDL_VIDEO_RENDER_OGL_ES2    0
+//#endif
+//#ifndef SDL_VIDEO_OPENGL_ES2
+//#define SDL_VIDEO_OPENGL_ES2    0
+//#endif
+//#ifndef SDL_VIDEO_OPENGL_EGL
+//#define SDL_VIDEO_OPENGL_EGL    0
+//#endif
 
 /* Enable Vulkan support */
 #define SDL_VIDEO_VULKAN 1
+
 
 #else
 
@@ -252,12 +276,12 @@ typedef unsigned int uintptr_t;
 #ifndef SDL_VIDEO_OPENGL
 #define SDL_VIDEO_OPENGL    1
 #endif
-#ifndef SDL_VIDEO_OPENGL_WGL
-#define SDL_VIDEO_OPENGL_WGL    0
-#endif
-#ifndef SDL_VIDEO_RENDER_OGL
-#define SDL_VIDEO_RENDER_OGL    0
-#endif
+//#ifndef SDL_VIDEO_OPENGL_WGL
+//#define SDL_VIDEO_OPENGL_WGL    0
+//#endif
+//#ifndef SDL_VIDEO_RENDER_OGL
+//#define SDL_VIDEO_RENDER_OGL    0
+//#endif
 #ifndef SDL_VIDEO_RENDER_OGL_ES2
 #define SDL_VIDEO_RENDER_OGL_ES2    1
 #endif
