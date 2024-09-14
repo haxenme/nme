@@ -862,9 +862,9 @@ void *GetGlFunction(const char *functionName)
 {
    void *result = nullptr;
    #if defined(NME_DYNAMIC_ANGLE)
-   if (dynamicGetProcAddress)
-      result = dynamicGetProcAddress(functionName);
       #ifdef HX_WINDOWS
+      if (dynamicGetProcAddress)
+         result = dynamicGetProcAddress(functionName);
       if (!result && gOGLLibraryHandle)
          result = (void *)GetProcAddress(gOGLLibraryHandle,functionName);
       #endif

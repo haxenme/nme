@@ -143,11 +143,15 @@ FILE *OpenOverwrite(const char *inName)
 @end
 #endif
 
-
 @interface SDLApplication : NSApplication
 @end
 
-#ifndef NME_SDL2
+#ifdef NME_SDL3
+@implementation SDLApplication
+{
+}
+@end
+#elif !defined(NME_SDL2)
 @implementation SDLApplication
 /* Invoked from the Quit menu item */
 - (void)terminate:(id)sender
@@ -301,7 +305,6 @@ static void CustomApplicationMain (int argc, char **argv)
     #ifndef OBJC_ARC
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     #endif
-    SDLMain *sdlMain;
 
     /* Ensure the application object is initialised */
     [SDLApplication sharedApplication];
@@ -323,7 +326,7 @@ static void CustomApplicationMain (int argc, char **argv)
     setupWindowMenu();
 
     /* Create SDLMain and make it the app delegate */
-    sdlMain = [[SDLMain alloc] init];
+    SDLMain *sdlMain = [[SDLMain alloc] init];
     // cast
     id appDelegate = sdlMain;
     [NSApp setDelegate:appDelegate];

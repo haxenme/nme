@@ -34,7 +34,6 @@
         <depend name="${NME_LIBSDL}include/SDL3/SDL_test_common.h"/>
         <depend name="${NME_LIBSDL}include/SDL3/SDL_render.h"/>
         <depend name="${NME_LIBSDL}include/SDL3/SDL_revision.h"/>
-        <depend name="${NME_LIBSDL}include/SDL3/SDL_rwops.h"/>
         <depend name="${NME_LIBSDL}include/SDL3/SDL_scancode.h"/>
         <depend name="${NME_LIBSDL}include/SDL3/SDL_shape.h"/>
         <depend name="${NME_LIBSDL}include/SDL3/SDL_stdinc.h"/>
@@ -115,7 +114,12 @@
 
         <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
         <compilerflag value="-I${ANDROID_NDK_ROOT}/sources/android/cpufeatures" if="android"/>
+        <compilerflag value="-I${NME_LIBSDL}include" />
         <compilerflag value="-I${NME_LIBSDL}include/SDL3" />
+        <compilerflag value="-I${NME_LIBSDL}include/build_config" />
+        <compilerflag value="-I${NME_LIBSDL}src/video/khronos" />
+        <!--<compilerflag value="-I${NME_LIBSDL}../configs" />-->
+        <compilerflag value="-I${NME_LIBSDL}src" />
         <!--<compilerflag value="-I${NME_LIBSDL}src/hidapi/hidapi/" />-->
 
         <compilerflag value="-DGL_GLEXT_PROTOTYPES" if="android || rpi" />
@@ -126,7 +130,7 @@
 
         <section if="windows">
 
-            <compilerflag value="-DUSING_GENERATED_CONFIG_H" />
+            <compilerflag value="-DUSING_GENERATED_CONFIG_H" if="NME_USE_CONFIG" />
             <compilerflag value="-DNATIVE_TOOLKIT_SDL_ANGLE" if="NATIVE_TOOLKIT_SDL_ANGLE" />
             <compilerflag value="-DNATIVE_TOOLKIT_STATIC_ANGLE" if="NATIVE_TOOLKIT_STATIC_ANGLE" />
             <compilerflag value="-DSDL_VIDEO_STATIC_ANGLE" if="NATIVE_TOOLKIT_STATIC_ANGLE" />
@@ -144,7 +148,7 @@
 
         <section if="linux">
 
-            <compilerflag value="-DUSING_GENERATED_CONFIG_H" />
+            <compilerflag value="-DUSING_GENERATED_CONFIG_H" if="NME_USE_CONFIG" />
             <compilerflag value="-DHAVE_LINUX_VERSION_H" />
             <compilerflag value="-D_REENTRANT" />
 
@@ -176,7 +180,7 @@
 
         <section if="mac">
 
-            <compilerflag value="-DUSING_GENERATED_CONFIG_H" />
+            <compilerflag value="-DUSING_GENERATED_CONFIG_H" if="NME_USE_CONFIG" />
             <compilerflag value="-DTARGET_API_MAC_CARBON" />
             <compilerflag value="-DTARGET_API_MAC_OSX" />
             <compilerflag value="-D_THREAD_SAFE" />
@@ -192,33 +196,38 @@
 
         <file name="${NME_LIBSDL}src/SDL.c" />
         <file name="${NME_LIBSDL}src/SDL_assert.c" />
-        <file name="${NME_LIBSDL}src/SDL_dataqueue.c" />
         <file name="${NME_LIBSDL}src/SDL_error.c" />
         <file name="${NME_LIBSDL}src/SDL_hints.c" />
         <file name="${NME_LIBSDL}src/SDL_log.c" />
         <file name="${NME_LIBSDL}src/atomic/SDL_atomic.c" />
         <file name="${NME_LIBSDL}src/atomic/SDL_spinlock.c" />
+
         <file name="${NME_LIBSDL}src/audio/SDL_audio.c" />
         <file name="${NME_LIBSDL}src/audio/SDL_audiocvt.c" />
+        <file name="${NME_LIBSDL}src/audio/SDL_audioqueue.c" />
         <file name="${NME_LIBSDL}src/audio/SDL_audiotypecvt.c" />
+        <file name="${NME_LIBSDL}src/audio/SDL_audioresample.c" />
+        <file name="${NME_LIBSDL}src/audio/SDL_audiodev.c" />
         <file name="${NME_LIBSDL}src/audio/SDL_mixer.c" />
         <file name="${NME_LIBSDL}src/audio/SDL_wave.c" />
+
         <file name="${NME_LIBSDL}src/cpuinfo/SDL_cpuinfo.c" />
+        <file name="${NME_LIBSDL}src/file/SDL_iostream.c" />
         <file name="${NME_LIBSDL}src/dynapi/SDL_dynapi.c" />
         <file name="${NME_LIBSDL}src/events/SDL_clipboardevents.c" />
         <file name="${NME_LIBSDL}src/events/SDL_displayevents.c" />
         <file name="${NME_LIBSDL}src/events/SDL_dropevents.c" />
         <file name="${NME_LIBSDL}src/events/SDL_events.c" />
-        <file name="${NME_LIBSDL}src/events/SDL_gesture.c" />
         <file name="${NME_LIBSDL}src/events/SDL_keyboard.c" />
         <file name="${NME_LIBSDL}src/events/SDL_mouse.c" />
         <file name="${NME_LIBSDL}src/events/SDL_quit.c" />
         <file name="${NME_LIBSDL}src/events/SDL_touch.c" />
         <file name="${NME_LIBSDL}src/events/SDL_windowevents.c" />
-        <file name="${NME_LIBSDL}src/file/SDL_rwops.c" />
+        <file name="${NME_LIBSDL}src/events/SDL_pen.c" />
+        <file name="${NME_LIBSDL}src/events/SDL_categories.c" />
         <file name="${NME_LIBSDL}src/haptic/SDL_haptic.c" />
         <file name="${NME_LIBSDL}src/joystick/steam/SDL_steamcontroller.c" />
-        <file name="${NME_LIBSDL}src/joystick/SDL_gamecontroller.c" />
+        <file name="${NME_LIBSDL}src/joystick/SDL_gamepad.c" />
         <file name="${NME_LIBSDL}src/joystick/SDL_joystick.c" />
         <file name="${NME_LIBSDL}src/libm/e_atan2.c" />
         <file name="${NME_LIBSDL}src/libm/e_exp.c" />
@@ -245,15 +254,22 @@
         <file name="${NME_LIBSDL}src/render/SDL_yuv_sw.c" />
         <file name="${NME_LIBSDL}src/sensor/dummy/SDL_dummysensor.c" />
         <file name="${NME_LIBSDL}src/sensor/SDL_sensor.c" />
-        <file name="${NME_LIBSDL}src/stdlib/SDL_getenv.c" />
-        <file name="${NME_LIBSDL}src/stdlib/SDL_iconv.c" />
-        <file name="${NME_LIBSDL}src/stdlib/SDL_malloc.c" />
-        <file name="${NME_LIBSDL}src/stdlib/SDL_qsort.c" />
-        <file name="${NME_LIBSDL}src/stdlib/SDL_stdlib.c" />
-        <file name="${NME_LIBSDL}src/stdlib/SDL_string.c" />
-        <file name="${NME_LIBSDL}src/stdlib/SDL_strtokr.c" />
-        <file name="${NME_LIBSDL}src/stdlib/SDL_crc16.c" />
-        <file name="${NME_LIBSDL}src/stdlib/SDL_crc32.c" />
+
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_crc16.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_crc32.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_getenv.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_iconv.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_malloc.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_memcpy.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_memmove.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_memset.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_mslibc.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_qsort.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_random.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_stdlib.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_string.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_strtokr.c" />
+
         <file name="${NME_LIBSDL}src/thread/SDL_thread.c" />
         <file name="${NME_LIBSDL}src/timer/SDL_timer.c" />
 
@@ -274,12 +290,18 @@
         <file name="${NME_LIBSDL}src/video/SDL_fillrect.c" />
         <file name="${NME_LIBSDL}src/video/SDL_pixels.c" />
         <file name="${NME_LIBSDL}src/video/SDL_rect.c" />
-        <file name="${NME_LIBSDL}src/video/SDL_shape.c" />
         <file name="${NME_LIBSDL}src/video/SDL_stretch.c" />
         <file name="${NME_LIBSDL}src/video/SDL_surface.c" />
         <file name="${NME_LIBSDL}src/video/SDL_video.c" />
         <file name="${NME_LIBSDL}src/video/SDL_vulkan_utils.c" />
         <file name="${NME_LIBSDL}src/video/SDL_yuv.c" />
+
+        <file name="${NME_LIBSDL}src/video/offscreen/SDL_offscreenevents.c" />
+        <file name="${NME_LIBSDL}src/video/offscreen/SDL_offscreenframebuffer.c" />
+        <file name="${NME_LIBSDL}src/video/offscreen/SDL_offscreenopengles.c" />
+        <file name="${NME_LIBSDL}src/video/offscreen/SDL_offscreenvideo.c" />
+        <file name="${NME_LIBSDL}src/video/offscreen/SDL_offscreenvulkan.c" />
+        <file name="${NME_LIBSDL}src/video/offscreen/SDL_offscreenwindow.c" />
 
         <file name="${NME_LIBSDL}src/audio/disk/SDL_diskaudio.c" />
         <file name="${NME_LIBSDL}src/loadso/dlopen/SDL_sysloadso.c" />
@@ -306,6 +328,27 @@
         <file name="${NME_LIBSDL}src/locale/SDL_locale.c" />
         <file name="${NME_LIBSDL}src/misc/SDL_url.c" />
 
+        <file name="${NME_LIBSDL}src/gpu/SDL_gpu.c" />
+        <file name="${NME_LIBSDL}src/render/sdlgpu/SDL_render_gpu.c" />
+        <file name="${NME_LIBSDL}src/render/sdlgpu/SDL_shaders_gpu.c" />
+        <file name="${NME_LIBSDL}src/render/sdlgpu/SDL_pipeline_gpu.c" />
+        <file name="${NME_LIBSDL}src/storage/SDL_storage.c" />
+        <file name="${NME_LIBSDL}src/storage/generic/SDL_genericstorage.c" />
+        <file name="${NME_LIBSDL}src/SDL_properties.c" />
+        <file name="${NME_LIBSDL}src/filesystem/SDL_filesystem.c" />
+        <file name="${NME_LIBSDL}src/core/SDL_core_unsupported.c" />
+        <file name="${NME_LIBSDL}src/video/SDL_video_unsupported.c" />
+        <file name="${NME_LIBSDL}src/camera/SDL_camera.c" />
+        <file name="${NME_LIBSDL}src/camera/dummy/SDL_camera_dummy.c" />
+        <file name="${NME_LIBSDL}src/SDL_hashtable.c" />
+        <file name="${NME_LIBSDL}src/time/SDL_time.c" />
+        <file name="${NME_LIBSDL}src/events/SDL_keymap.c" />
+        <file name="${NME_LIBSDL}src/main/SDL_runapp.c" />
+        <file name="${NME_LIBSDL}src/main/SDL_main_callbacks.c" />
+        <file name="${NME_LIBSDL}src/main/generic/SDL_sysmain_callbacks.c" />
+        <file name="${NME_LIBSDL}src/dialog/SDL_dialog_utils.c" />
+
+
         <section unless="windows">
 
             <file name="${NME_LIBSDL}src/thread/pthread/SDL_syscond.c" />
@@ -313,13 +356,16 @@
             <file name="${NME_LIBSDL}src/thread/pthread/SDL_syssem.c" />
             <file name="${NME_LIBSDL}src/thread/pthread/SDL_systhread.c" />
             <file name="${NME_LIBSDL}src/thread/pthread/SDL_systls.c" />
+            <file name="${NME_LIBSDL}src/thread/pthread/SDL_sysrwlock.c" />
             <file name="${NME_LIBSDL}src/timer/unix/SDL_systimer.c" />
+            <file name="${NME_LIBSDL}src/filesystem/posix/SDL_sysfsops.c" />
+            <file name="${NME_LIBSDL}src/time/unix/SDL_systime.c" />
+            <file name="${NME_LIBSDL}src/locale/unix/SDL_syslocale.c" />
 
         </section>
 
-        <section if="android || ios || windows || rpi || tvos" >
+        <section if="android || ios || windows || rpi || tvos || mac" >
             <file name="${NME_LIBSDL}src/video/SDL_egl.c" />
-            <file name="${NME_LIBSDL}src/render/opengles/SDL_render_gles.c" />
             <file name="${NME_LIBSDL}src/render/opengles2/SDL_render_gles2.c" />
             <file name="${NME_LIBSDL}src/render/opengles2/SDL_shaders_gles2.c" />
 
@@ -328,6 +374,8 @@
         <section if="windows || mac || ios || android || tvos || linux">
 
             <file name="${NME_LIBSDL}src/joystick/SDL_joystick.c" />
+            <file name="${NME_LIBSDL}src/joystick/apple/SDL_mfijoystick.m" if="mac" />
+            <file name="${NME_LIBSDL}src/joystick/virtual/SDL_virtualjoystick.c" />
             <file name="${NME_LIBSDL}src/joystick/SDL_steam_virtual_gamepad.c" />
             <file name="${NME_LIBSDL}src/joystick/controller_type.c" />
             <file name="${NME_LIBSDL}src/joystick/hidapi/SDL_hidapi_gamecube.c" />
@@ -551,10 +599,7 @@
             <file name="${NME_LIBSDL}src/audio/coreaudio/SDL_coreaudio.m" />
             <file name="${NME_LIBSDL}src/haptic/darwin/SDL_syshaptic.c" />
             <file name="${NME_LIBSDL}src/joystick/darwin/SDL_iokitjoystick.c" />
-            <file name="${NME_LIBSDL}src/joystick/iphoneos/SDL_mfijoystick.m" />
             <file name="${NME_LIBSDL}src/hidapi/mac/hid.c" />
-            <file name="${NME_LIBSDL}src/power/macosx/SDL_syspower.c" />
-            <file name="${NME_LIBSDL}src/file/cocoa/SDL_rwopsbundlesupport.m" />
             <file name="${NME_LIBSDL}src/filesystem/cocoa/SDL_sysfilesystem.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoaclipboard.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoaevents.m" />
@@ -569,15 +614,22 @@
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoavideo.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoavulkan.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoawindow.m" />
-            <file name="${NME_LIBSDL}src/locale/macosx/SDL_syslocale.m" />
-            <file name="${NME_LIBSDL}src/misc/macosx/SDL_sysurl.m" />
+            <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoaopengles.m" />
+            <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoapen.m" />
+            <file name="${NME_LIBSDL}src/dialog/cocoa/SDL_cocoadialog.m" />
 
+            <file name="${NME_LIBSDL}src/gpu/vulkan/SDL_gpu_vulkan.c" />
+            <file name="${NME_LIBSDL}src/gpu/metal/SDL_gpu_metal.m" />
+
+            <file name="${NME_LIBSDL}src/timer/unix/SDL_systimer.c" />
+            <file name="${NME_LIBSDL}src/misc/macos/SDL_sysurl.m" />
+            <file name="${NME_LIBSDL}src/power/macos/SDL_syspower.c" />
+            <file name="${NME_LIBSDL}src/camera/coremedia/SDL_camera_coremedia.m" />
         </section>
 
         <section if="ios || tvos">
 
             <file name="${NME_LIBSDL}src/audio/coreaudio/SDL_coreaudio.m" />
-            <file name="${NME_LIBSDL}src/file/cocoa/SDL_rwopsbundlesupport.m" />
             <file name="${NME_LIBSDL}src/filesystem/cocoa/SDL_sysfilesystem.m" />
             <file name="${NME_LIBSDL}src/joystick/iphoneos/SDL_sysjoystick.m" />
             <file name="${NME_LIBSDL}src/haptic/dummy/SDL_syshaptic.c" />

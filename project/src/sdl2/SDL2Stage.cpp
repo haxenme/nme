@@ -1728,7 +1728,8 @@ Uint32 getWindowOrEventType(SDL_Event &inEvent)
 void ProcessEvent(SDL_Event &inEvent)
 {
    #ifdef NME_SDL3
-   const bool isWindowEvent = inEvent.type>=SDL_EVENT_WINDOW_FIRST  || inEvent.type<=SDL_EVENT_WINDOW_LAST;
+   const bool isWindowEvent = inEvent.type>=SDL_EVENT_WINDOW_FIRST &&
+                              inEvent.type<=SDL_EVENT_WINDOW_LAST;
    auto windowEventid = inEvent.type;
    #else
    const bool isWindowEvent = inEvent.type==SDL_WINDOWEVENT;
@@ -2816,6 +2817,8 @@ QuickVec<ScreenMode>* CapabilitiesGetScreenModes()
       case SDL_PIXELFORMAT_YVYU:
          screenMode.format = PIXELFORMAT_YVYU;
          break;
+      default:
+         continue;
       }
       screenMode.refreshRate = modePtr->refresh_rate;
       out->push_back(screenMode);

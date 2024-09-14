@@ -29,7 +29,15 @@
 
 namespace nme
 {
-#ifdef NME_SDL2
+
+
+#ifdef NME_SDL3
+void *GetMetalLayerFromRenderer(SDL_Renderer *renderer)
+{
+   const CAMetalLayer *swapchain = (__bridge CAMetalLayer *)SDL_GetRenderMetalLayer(renderer);
+   return (void *)swapchain;
+}
+#elif defined(NME_SDL2)
 void *GetMetalLayerFromRenderer(SDL_Renderer *renderer)
 {
    const CAMetalLayer *swapchain = (__bridge CAMetalLayer *)SDL_RenderGetMetalLayer(renderer);

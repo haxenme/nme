@@ -102,7 +102,7 @@
    <set name="NME_SSL_EXTRA" value="_ssl" if="NME_SSL"/>
    <set name="NATIVE_TOOLKIT_CURL_SSL" value="1" if="NME_SSL" />
    
-
+   <!--<setenv name="MACOSX_DEPLOYMENT_TARGET" value="10.12" if="NME_SDL3" />-->
    <!--
       What audio backend it use?
       For windows, linux, use SDL_mixer
@@ -638,6 +638,9 @@
             <vflag name="-framework" value="OpenGL" if="NME_OGL" />
             <vflag name="-framework" value="AppKit" />
             <vflag name="-framework" value="OpenAL"/>
+            <vflag name="-framework" value="GameController" if="NME_SDL3" />
+            <vflag name="-framework" value="CoreHaptics" if="NME_SDL3" />
+            <vflag name="-framework" value="UniformTypeIdentifiers" if="NME_SDL3" />
             <vflag name="-framework" value="AVFoundation" if="NME_CAMERA"/>
             <vflag name="-framework" value="CoreMedia" if="NME_CAMERA"/>
             <vflag name="-framework" value="CoreVideo" if="NME_CAMERA"/>

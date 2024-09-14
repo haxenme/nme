@@ -62,6 +62,7 @@
    <file name="${NME_LIBSDL_MIXER}native_midi/native_midi_win32.c" if="windows" unless="winrt" />
    -->
 
+   <file name="${NME_LIBSDL_MIXER}/src/codecs/load_sndfile.c" />
    <file name="${NME_LIBSDL_MIXER}/src/codecs/load_aiff.c" />
    <file name="${NME_LIBSDL_MIXER}/src/codecs/load_voc.c" />
    <file name="${NME_LIBSDL_MIXER}/src/codecs/mp3utils.c" />
