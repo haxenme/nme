@@ -2507,7 +2507,13 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       }
 
       #ifdef NME_SDL3
-      renderer = SDL_CreateRenderer(window, nullptr);
+      {
+      //int n = SDL_GetNumRenderDrivers();
+      //for(int i=0;i<n;i++)
+      //   printf(" %d] %s\n",i, SDL_GetRenderDriver(i));
+
+      renderer = SDL_CreateRenderer(window, metal ? "metal" : nullptr);
+      }
       #else
       int renderFlags = 0;
       if (hardware) renderFlags |= SDL_RENDERER_ACCELERATED;
@@ -2524,7 +2530,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          sgIsOGL2 = false;
       }
 
-      if (!renderer && (inFlags & wfHW_AA_HIRES || inFlags & wfHW_AA)) {
+      if (!renderer && (inFlags & wfHW_AA_HIRES || inFlags & wfHW_AA))
+      {
          // if no window was created and AA was enabled, disable AA and try again
          fprintf(stderr, "Multisampling is not available. Retrying without. (%s)\n", SDL_GetError());
          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, false);
@@ -2559,6 +2566,8 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       fprintf(stderr, "Failed to create SDL renderer: %s\n", SDL_GetError());
       return;
    }
+
+   //printf("Created renderer %s\n", SDL_GetRendererName(renderer) );
 
    #ifdef NME_OGL
    if (opengl && isMain)
