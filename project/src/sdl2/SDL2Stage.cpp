@@ -89,6 +89,9 @@ int InitSDL()
       SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
    else
       SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+      #ifdef NME_SDL3
+      SDL_SetHint(SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE, "0");
+      #endif
    #endif
 
    #ifdef NME_DYNAMIC_ANGLE
@@ -419,16 +422,14 @@ public:
             }
             else
             {
-               void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
-               mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
+               mHardwareRenderer = HardwareRenderer::CreateMetal(mSDLRenderer);
             }
             #elif defined(NME_OGL)
             mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, sgIsOGL2);
 
             #elif defined(NME_METAL)
 
-            void *swapchain = GetMetalLayerFromRenderer(mSDLRenderer);
-            mHardwareRenderer = HardwareRenderer::CreateMetal(swapchain);
+            mHardwareRenderer = HardwareRenderer::CreateMetal(mSDLRenderer);
    
             #else
             #error "No valid HardwareRenderer"

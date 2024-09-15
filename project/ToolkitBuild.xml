@@ -29,6 +29,7 @@
    <set name="NME_DYNAMIC_ANGLE" value="1" if="NME_LOCAL_TOOLKIT" unless="NME_NO_ANGLE" />
    <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
    <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />
+   <set name="OBJC_ARC" value="1" if="NME_SDL3" />
 
    <set name="NME_LOCAL_TOOLKIT" value="1" if="android" />
 
@@ -274,7 +275,6 @@
       <compilerflag value="-DNME_SIMD_D" if="NME_SIMD_D" />
       <compilerflag value="${NME_SIMD_D}" if="NME_SIMD_D" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
-      <mflag value="-fobjc-arc" if="NME_LOCAL_TOOLKIT" />
 
 
       <cache value="1" unless="winrpi" />

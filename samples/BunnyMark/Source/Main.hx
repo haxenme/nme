@@ -39,12 +39,6 @@ class Main extends Sprite
    {
       super();
 
-      trace("--");
-      for(ext in nme.gl.GL.getSupportedExtensions())
-         if (ext.indexOf("draw_buffer")>=0 || ext.indexOf("frame")>=0)
-            trace("  " + ext);
-      trace("--");
-
       bunnies = new Array();
       minX = 0;
       maxX = 800;

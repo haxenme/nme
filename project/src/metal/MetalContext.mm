@@ -31,19 +31,6 @@ namespace nme
 {
 
 
-#ifdef NME_SDL3
-void *GetMetalLayerFromRenderer(SDL_Renderer *renderer)
-{
-   const CAMetalLayer *swapchain = (__bridge CAMetalLayer *)SDL_GetRenderMetalLayer(renderer);
-   return (void *)swapchain;
-}
-#elif defined(NME_SDL2)
-void *GetMetalLayerFromRenderer(SDL_Renderer *renderer)
-{
-   const CAMetalLayer *swapchain = (__bridge CAMetalLayer *)SDL_RenderGetMetalLayer(renderer);
-   return (void *)swapchain;
-}
-#endif
 
 static const double one_on_256 = 1.0/256.0;
 
@@ -498,7 +485,6 @@ struct MetalProgram
       shader += shaderTail;
 
 
-      // printf("SHADER: %x whole=%d\n%s\n\n",progId, wholeTexture, shader.c_str() );
 
       __autoreleasing NSError *error = nil;
 
@@ -506,6 +492,7 @@ struct MetalProgram
 
       id<MTLLibrary> lib  = [device newLibraryWithSource:librarySrc options:nil error:&error];
       if(!lib) {
+          printf("Shader compile failed: %x whole=%d\n%s\n\n",progId, wholeTexture, shader.c_str() );
           [NSException raise:@"Failed to compile shaders" format:@"%@", [error localizedDescription]];
       }
 
@@ -677,13 +664,16 @@ struct MetalProgram
 
 };
 
-
+static size_t totalBuffer = 0;
 struct MetalBuffer
 {
    id<MTLBuffer> buffer;
+   int size;
 
    MetalBuffer(id<MTLDevice> device, const void *pointer, NSUInteger length)
    {
+      size = (int)length;
+      totalBuffer += length;
       buffer = [device newBufferWithBytes:pointer 
                              length:(NSUInteger)length 
                              options:MTLResourceCPUCacheModeWriteCombined ];
@@ -691,7 +681,12 @@ struct MetalBuffer
    
    ~MetalBuffer()
    {
+      #ifndef OBJC_ARC
+      [buffer release];
+      #endif
+
       buffer = nil;
+      totalBuffer -= size;
    }
 };
 
@@ -740,7 +735,7 @@ class MetalContext : public HardwareRenderer
 
 public:
 
-   MetalContext(void *inCAMetalLayer) :
+   MetalContext(CAMetalLayer *inCAMetalLayer) :
       swapchain(0),
       _device(nil),
       queue(nil),
@@ -749,7 +744,7 @@ public:
       surface(nullptr)
    {
      frame = 0;
-     swapchain = (__bridge CAMetalLayer *)inCAMetalLayer;
+     swapchain = inCAMetalLayer;
      _device = swapchain.device;
      queue =  [_device newCommandQueue];
      width = height = 0;
@@ -977,9 +972,17 @@ public:
 };
 
 
-HardwareRenderer *HardwareRenderer::CreateMetal(void *inLayer)
+HardwareRenderer *HardwareRenderer::CreateMetal(void *inRenderer)
 {
-   HardwareRenderer *ctx = new MetalContext(inLayer);
+   SDL_Renderer *renderer = (SDL_Renderer *)renderer;
+
+   #ifdef NME_SDL3
+   CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)SDL_GetRenderMetalLayer(renderer);
+   #elif defined(NME_SDL2)
+   CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)SDL_RenderGetMetalLayer(renderer);
+   #endif
+
+   HardwareRenderer *ctx = new MetalContext( metalLayer );
 
    return ctx;
 }
