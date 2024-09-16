@@ -135,6 +135,29 @@ public class Bluetooth
       );
    }
 
+   static void addDevice(ArrayList<String> scannedDevices,BluetoothDevice device)
+   {
+      try
+      {
+         JSONObject obj= new JSONObject();
+         obj.put("name", device.getName() );
+         obj.put("string", device.toString() );
+         obj.put("address", device.getAddress() );
+         obj.put("alias", device.getAlias() );
+         obj.put("bondState", device.getBondState() );
+         obj.put("type", device.getType() );
+         Log.e(TAG,"Found device " + obj.toString() );
+         // If it's already paired, skip it
+         //if (device.getBondState() != BluetoothDevice.BOND_BONDED
+         scannedDevices.add(obj.toString());
+      }
+      catch (JSONException e)
+      {
+         Log.e(TAG, "Error in device serialization." + device.toString() );
+      }
+      sDeviceMap.put(device.getAddress(), device );
+ }
+
    static int sScanId = 0;
    static void scanDevices(final HaxeObject inHandler)
    {
@@ -145,11 +168,11 @@ public class Bluetooth
       Log.e(TAG,"scanDevices.." + recScanId );
       postDevices(inHandler, SCANNING , null );
 
-      final ArrayList<String> scannedDevices = new ArrayList<String>();
       sDeviceMap = new HashMap<String,BluetoothDevice>();
 
       final BroadcastReceiver[] receiverRef = new BroadcastReceiver [1];
       final Activity activity = GameActivity.getInstance().getActivity();
+      final ArrayList<String> scannedDevices = new ArrayList<String>();
 
       // The BroadcastReceiver that listens for discovered devices/scan done events
       final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -184,25 +207,9 @@ public class Bluetooth
             {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                try
-                {
-                   JSONObject obj= new JSONObject();
-                   obj.put("name", device.getName() );
-                   obj.put("string", device.toString() );
-                   obj.put("address", device.getAddress() );
-                   obj.put("alias", device.getAlias() );
-                   obj.put("bondState", device.getBondState() );
-                   obj.put("type", device.getType() );
-                   Log.e(TAG,"Found device " + obj.toString() );
-                   // If it's already paired, skip it
-                   //if (device.getBondState() != BluetoothDevice.BOND_BONDED
-                   scannedDevices.add(obj.toString());
-                }
-                catch (JSONException e)
-                {
-                   Log.e(TAG, "Error in device serialization." + device.toString() );
-                }
-                sDeviceMap.put(device.getAddress(), device );
+                addDevice(scannedDevices, device);
+
+
             // When discovery is finished send the devices...
             }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
@@ -245,25 +252,26 @@ public class Bluetooth
    static void sendDevices(HaxeObject inHandler)
    {
       Set<BluetoothDevice> pairedDevices = sBluetoothAdapter.getBondedDevices();
-      String [] result = null;
+      final ArrayList<String> scannedDevices = new ArrayList<String>();
 
       // If there are paired devices
       Log.e(TAG,"Found paired devices " +  pairedDevices.size());
 
       if (pairedDevices.size() > 0)
       {
-          result = new String[pairedDevices.size()];
           int idx = 0;
           // Loop through paired devices
           for (BluetoothDevice device : pairedDevices)
           {
+             addDevice(scannedDevices, device);
              // Add the name and address to an array adapter to show in a ListView
-             result[idx++] = device.getName();// + "\n" + device.getAddress();
-             sDeviceMap.put(device.getName(), device );
+             //result[idx++] = device.getName();// + "\n" + device.getAddress();
+             //sDeviceMap.put(device.getAddress(), device );
           }
       }
 
-      postDevices(inHandler, pairedDevices.size()==0 ? NO_PAIRED_DEVICES : BLUETOOTH_OK, result);
+      String [] devices = scannedDevices.toArray(new String[scannedDevices.size()]);
+      postDevices(inHandler, devices.length==0 ? NO_PAIRED_DEVICES : BLUETOOTH_OK, devices );
    }
 
    static boolean getAdapter()
