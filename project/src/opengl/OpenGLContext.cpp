@@ -942,7 +942,11 @@ bool InitDynamicGLES()
       #endif
    }
 
+   #ifdef HX_WINDOWS
    return dynamicEglGetProcAddress;
+   #else
+   return false;
+   #endif
 }
 
 bool InitOGLFunctions()
