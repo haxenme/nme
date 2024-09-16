@@ -26,6 +26,7 @@
    <set name="NME_NO_OGL" value="1" if="nme_no_ogl" />
    <set name="NME_NO_OGL" value="1" if="nme_metal" unless="mac" />
    <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE || NME_LOCAL_TOOLKIT" />
+   <set name="NME_NO_ANGLE" value="1" unless="windows" />
    <set name="NME_DYNAMIC_ANGLE" value="1" if="NME_LOCAL_TOOLKIT" unless="NME_NO_ANGLE" />
    <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
    <set name="NATIVE_TOOLKIT_STATIC_ANGLE" value="1" if="NME_ANGLE" />

@@ -50,6 +50,9 @@ SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth
 }
 
 typedef float MousePosType;
+
+std::string nmeRenderer;
+
 #else
 typedef int MousePosType;
 #endif
@@ -2258,6 +2261,18 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    #if defined(NME_OGL) && defined(NME_METAL)
    nmeOpenglRenderer = !(inFlags & wfHardwareMetal);
    bool hw = (inFlags & wfHardware) != 0;
+   #ifdef NME_SDL3
+   if (nmeRenderer=="opengl")
+   {
+      hw = true;
+      nmeOpenglRenderer = true;
+   }
+   else if (nmeRenderer=="metal")
+   {
+      hw = true;
+      nmeOpenglRenderer = false;
+   }
+   #endif
    bool opengl = hw && nmeOpenglRenderer;
    bool metal = hw && !nmeOpenglRenderer;
    #elif defined(NME_OGL)

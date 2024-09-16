@@ -805,6 +805,10 @@ void nme_set_renderer(HxString inRenderer)
    if (std::string(inRenderer.c_str())=="opengl")
       nmeEglMode = false;
    #endif
+   #ifdef NME_SDL3
+   extern std::string nmeRenderer;
+   nmeRenderer = inRenderer.c_str();
+   #endif
 }
 DEFINE_PRIME1v(nme_set_renderer);
 
