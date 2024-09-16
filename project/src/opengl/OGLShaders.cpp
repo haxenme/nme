@@ -41,6 +41,13 @@ GLuint OGLProg::createShader(GLuint inType, const char *inShader)
 {
    const char *source = inShader;
    GLuint shader = glCreateShader(inType);
+   if (shader==0)
+   {
+      ELOG("Error in glCreateShader : %d\n",  glGetError() );
+      *(int *)0=0;
+      return 0;
+   }
+
 
    glShaderSource(shader,1,&source,0);
    glCompileShader(shader);
@@ -50,7 +57,7 @@ GLuint OGLProg::createShader(GLuint inType, const char *inShader)
    if (compiled)
       return shader;
 
-   GLint blen = 0;   
+   GLint blen = 0;
    GLsizei slen = 0;
 
    glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &blen);
@@ -64,6 +71,8 @@ GLuint OGLProg::createShader(GLuint inType, const char *inShader)
    }
    else
    {
+      printf("Shader %d\n", shader);
+      ELOG("%s\n", source);
       ELOG("Unknown error compiling shader : %d\n",  glGetError() );
    }
    glDeleteShader(shader);

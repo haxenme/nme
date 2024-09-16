@@ -780,26 +780,33 @@ int nme_get_bits()
 DEFINE_PRIME0(nme_get_bits);
 
 
-value nme_log(value inMessage)
+void nme_log(HxString message)
 {
-   HxString message = valToHxString(inMessage);
    #ifdef IPHONE
       nmeLog(message.c_str());
    #else
       printf("%s\n",message.c_str());
    #endif
-
-   return alloc_null();
 }
-DEFINE_PRIM(nme_log,1);
+DEFINE_PRIME1v(nme_log);
 
 int *sNmeCrashPtr = (int *)nullptr;
-value nme_crash()
+void nme_crash()
 {
    *sNmeCrashPtr = 0xdeadbeef;
-   return alloc_null();
 }
-DEFINE_PRIM(nme_crash,0);
+DEFINE_PRIME0v(nme_crash);
+
+void nme_set_renderer(HxString inRenderer)
+{
+   //printf("nme_set_renderer %s\n", inRenderer.c_str() );
+   #ifdef NME_DYNAMIC_ANGLE
+   extern bool nmeEglMode;
+   if (std::string(inRenderer.c_str())=="opengl")
+      nmeEglMode = false;
+   #endif
+}
+DEFINE_PRIME1v(nme_set_renderer);
 
 
 

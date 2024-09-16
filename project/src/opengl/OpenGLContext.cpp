@@ -7,7 +7,7 @@
 #endif
 
 #ifdef NME_DYNAMIC_ANGLE
-bool nmeEglMode = false;
+bool nmeEglMode = true;
 #endif
 
 
@@ -849,7 +849,8 @@ public:
 static HMODULE gEGLLibraryHandle = 0;
 static HMODULE gOGLLibraryHandle = 0;
 typedef PROC (*wglGetProcAddressFunc)(const char * unnamedParam1);
-wglGetProcAddressFunc dynamicGetProcAddress = nullptr;
+wglGetProcAddressFunc dynamicWglGetProcAddress = nullptr;
+wglGetProcAddressFunc dynamicEglGetProcAddress = nullptr;
 #else
 //static void * gEGLLibraryHandle = 0;
 static void * gOGLLibraryHandle = 0;
@@ -863,10 +864,20 @@ void *GetGlFunction(const char *functionName)
    void *result = nullptr;
    #if defined(NME_DYNAMIC_ANGLE)
       #ifdef HX_WINDOWS
-      if (dynamicGetProcAddress)
-         result = dynamicGetProcAddress(functionName);
+      if (!result && dynamicEglGetProcAddress)
+      {
+         result = dynamicEglGetProcAddress(functionName);
+      }
+      if (!result && dynamicWglGetProcAddress)
+      {
+         result = dynamicWglGetProcAddress(functionName);
+      }
       if (!result && gOGLLibraryHandle)
+      {
          result = (void *)GetProcAddress(gOGLLibraryHandle,functionName);
+      }
+      //if (!result)
+      //   printf("Could not get %p/%p %s\n", dynamicWglGetProcAddress, dynamicEglGetProcAddress ,functionName);
       #endif
    #elif defined(NME_ANGLE)
       //result = (void *)eglGetProcAddress(functionName);
@@ -884,7 +895,55 @@ void *GetGlFunction(const char *functionName)
    return result;
 }
 
-bool use_angle = false;
+// Loads eglGetProcAddress, if wanted by nmeEglMode.
+// Otherwise sets up to load opengl32
+bool InitDynamicGLES()
+{
+   static bool isinit = false;
+   if (!isinit)
+   {
+      isinit = true;
+
+      #ifdef NME_DYNAMIC_ANGLE
+      if (nmeEglMode)
+      {
+         #ifdef HX_WINDOWS
+         gEGLLibraryHandle = LoadLibraryA("libEGL.dll");
+         if (!gEGLLibraryHandle)
+         {
+            fprintf(stderr,"ERROR: Could not open libEGL\n");
+            nmeEglMode = false;
+         }
+         else
+         {
+            dynamicEglGetProcAddress = (wglGetProcAddressFunc)GetProcAddress(gEGLLibraryHandle, "eglGetProcAddress");
+         }
+         #endif
+
+         if (dynamicEglGetProcAddress)
+            return true;
+      }
+      #endif
+
+      #ifdef HX_WINDOWS
+      gOGLLibraryHandle = LoadLibraryA("opengl32.dll");
+      if (!gOGLLibraryHandle)
+      {
+         printf("Error - could not load hardware driver\n");
+         return false;
+      }
+
+      dynamicWglGetProcAddress = (wglGetProcAddressFunc)GetProcAddress(gOGLLibraryHandle, "wglGetProcAddress");
+      if (!dynamicWglGetProcAddress)
+      {
+         printf("Error - could not load hardware interface\n");
+         return false;
+      }
+      #endif
+   }
+
+   return dynamicEglGetProcAddress;
+}
 
 bool InitOGLFunctions()
 {
@@ -893,52 +952,8 @@ bool InitOGLFunctions()
    {
       extentions_init = true;
 
-      #ifdef NME_DYNAMIC_ANGLE
-      if (use_angle)
-      {
-         #ifdef HX_WINDOWS
-         gEGLLibraryHandle = LoadLibraryA("libEGL.dll");
-         gOGLLibraryHandle = LoadLibraryA("libGLESv2.dll");
-         if (!gEGLLibraryHandle)
-         {
-            //printf("Could not open libEGL\n");
-            use_angle = false;
-         }
-         else
-         {
-            dynamicGetProcAddress = (wglGetProcAddressFunc)GetProcAddress(gEGLLibraryHandle, "eglGetProcAddress");
-            //printf("eglGetProcAddress -> %p\n", dynamicGetProcAddress);
-         }
-         #endif
-      }
+      InitDynamicGLES();
 
-      if (!use_angle)
-      {
-         #ifdef HX_WINDOWS
-         gOGLLibraryHandle = LoadLibraryA("opengl32.dll");
-         if (!gOGLLibraryHandle)
-         {
-            printf("Error - could not load hardware driver\n");
-            result = false;
-            return result;
-         }
-
-         dynamicGetProcAddress = (wglGetProcAddressFunc)GetProcAddress(gOGLLibraryHandle, "wglGetProcAddress");
-         if (!dynamicGetProcAddress)
-         {
-            printf("Error - could not load hardware interface\n");
-            result = false;
-            return result;
-         }
-         #endif
-      }
-
-      nmeEglMode = use_angle;
-      #else
-         #ifdef HX_WINDOWS
-         gOGLLibraryHandle = LoadLibraryA("opengl32.dll");
-         #endif
-      #endif
 
       #ifdef HX_LINUX
       if (!gOGLLibraryHandle)
@@ -988,3 +1003,8 @@ HardwareRenderer *HardwareRenderer::CreateOpenGL(void *inWindow, void *inGLCtx, 
 }
 
 } // end namespace nme
+
+extern "C" {
+   void nmeInitOGLFunctions() { nme::InitOGLFunctions(); }
+}
+

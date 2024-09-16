@@ -245,6 +245,7 @@ public:
 };
 
 void InitOGL2Extensions();
+bool InitDynamicGLES();
 
 #define NME_GL_STATS_DRAW_ARRAYS 0x0
 #define NME_GL_STATS_DRAW_ELEMENTS 0x2

@@ -708,6 +708,13 @@
             <lib name="comdlg32.lib" />
             <lib name="setupapi.lib" />
             <lib name="d3d9.lib" if="NME_ANGLE"/>
+            <section if="NME_SDL3">
+               <lib name="d3d9.lib" />
+               <!--
+               <lib name="d3d11.lib" />
+               <lib name="d3d12.lib" />
+               -->
+            </section>
          </section>
 
          <section if="winrt">

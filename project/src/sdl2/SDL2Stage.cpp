@@ -95,9 +95,10 @@ int InitSDL()
    #endif
 
    #ifdef NME_DYNAMIC_ANGLE
-   InitOGLFunctions();
-   SDL_SetHint(SDL_HINT_RENDER_DRIVER, nmeEglMode ? "opengles2" : "opengl");
+   bool forceEgl = InitDynamicGLES();
+   SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, forceEgl ? "1" : "0");
    #endif
+
 
    int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
    
@@ -192,10 +193,16 @@ public:
          lastWindow = window;
          int width = 0;
          int height = 0;
+
+         #ifdef SDL3
+         SDL_GetWindowSizeInPixels(window, &width, &height);
+         #else
          SDL_GL_GetDrawableSize(window, &width, &height);
          //SDL_GetWindowSize(window, &width, &height);
-         mHardware->SetWindowSize(width,height);
+         #endif
          SDL_GL_MakeCurrent(window, context);
+         mHardware->SetWindowSize(width,height);
+
       }
       return HardwareSurface::BeginRender(inRect, inForHitTest);
    }
@@ -2246,6 +2253,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       MacBoot();
    #endif
 
+
    bool fullscreen = (inFlags & wfFullScreen) != 0;
    #if defined(NME_OGL) && defined(NME_METAL)
    nmeOpenglRenderer = !(inFlags & wfHardwareMetal);
@@ -2509,11 +2517,32 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
       #ifdef NME_SDL3
       {
-      //int n = SDL_GetNumRenderDrivers();
-      //for(int i=0;i<n;i++)
-      //   printf(" %d] %s\n",i, SDL_GetRenderDriver(i));
+         int n = SDL_GetNumRenderDrivers();
+         #if !defined(NME_DYNAMIC_ANGLE)
+         bool useEgl = nmeEglMode;
+         #else
+         bool useEgl = false;
+         #endif
 
-      renderer = SDL_CreateRenderer(window, metal ? "metal" : nullptr);
+         for(int i=0;i<n;i++)
+         {
+            std::string rname = SDL_GetRenderDriver(i);
+            #if defined(NME_DYNAMIC_ANGLE)
+            if (rname=="opengles2" && nmeEglMode)
+               useEgl = true;
+            #endif
+            //printf(" %d] %s\n",i, rname.c_str());
+         }
+
+         renderer = SDL_CreateRenderer(window, metal ? "metal" : useEgl ? "opengles2" : "opengl" );
+         std::string rname = SDL_GetRendererName(renderer);
+         #ifdef NME_DYNAMIC_ANGLE
+         if (rname=="opengles2")
+            nmeEglMode = true;
+         #endif
+         //printf("Using driver: %s, nmeEglMode=%d\n", rname.c_str(), nmeEglMode);
+
+         InitOGLFunctions();
       }
       #else
       int renderFlags = 0;
@@ -2528,7 +2557,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       }
       else
       {
-         sgIsOGL2 = false;
+         sgIsOGL2 = nmeEglMode;
       }
 
       if (!renderer && (inFlags & wfHW_AA_HIRES || inFlags & wfHW_AA))

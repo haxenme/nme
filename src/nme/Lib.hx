@@ -10,8 +10,10 @@ import nme.display.Stage;
 import nme.net.URLRequest;
 import nme.Lib;
 import nme.Loader;
+import nme.PrimeLoader;
 import nme.app.Application;
 import haxe.CallStack;
+using StringTools;
 
 #if (nme_static && cpp && !cppia)
 import nme.StaticNme;
@@ -58,14 +60,32 @@ class Lib
    public static var bits(get, never):Int;
    public static var silentRecreate(get,set):Bool;
    public static var stageFactory:(Window)->Stage;
-
-
+   public static var nmeArgPrefix = "--nme-backend=";
 
    public static function create(inOnLoaded:Void->Void, inWidth:Int, inHeight:Int,
               inFrameRate:Float = 60.0, inColour:Int = 0xffffffff, inFlags:Int = 0x0f,
               inTitle:String = "NME", ?inIcon:Surface, ?inDummy:Dynamic) 
    {
       title = inTitle;
+
+      #if sys
+      if (nmeArgPrefix!=null && nme_set_renderer!=null)
+      {
+         var args = nme.system.System.getArgs();
+         var nmeBackend:String = null;
+         var kept = [];
+         for(a in args)
+            if (a.startsWith(nmeArgPrefix))
+               nmeBackend = a.substr( nmeArgPrefix.length );
+            else
+               kept.push(a);
+         if (nmeBackend!=null)
+         {
+            nme.system.System.setArgs(kept);
+            nme_set_renderer(nmeBackend);
+         }
+      }
+      #end
 
       var params = {
          width:inWidth,
@@ -266,9 +286,9 @@ class Lib
    public static function set_silentRecreate(inVal:Bool) { Application.silentRecreate=inVal; return inVal; }
 
    // Native Methods
-   //private static var nme_get_frame_stage = Loader.load("nme_get_frame_stage", 1);
-   private static var nme_log = Loader.load("nme_log", 1);
-   private static var nme_crash = Loader.load("nme_crash",0);
+   private static var nme_log = PrimeLoader.load("nme_log", "sv");
+   private static var nme_crash = PrimeLoader.load("nme_crash","v");
+   private static var nme_set_renderer = PrimeLoader.load("nme_set_renderer","sv");
 }
 
 #else
