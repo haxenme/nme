@@ -58,7 +58,7 @@ class CommandLineTools
             "androidview", "android-view", "iphonesim", "android", "androidsim", "rpi",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
             "watchsimulator", "watchos", "jsprime", "winrt", "uwp", "rg350",
-            "bundlerelease", "bundledebug", "arm64" ];
+            "bundlerelease", "bundledebug", "arm64", "wasm" ];
    static var allCommands = 
           [ "help", "setup", "document", "generate", "create", "xcode", "clone", "demo",
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
@@ -137,7 +137,7 @@ class CommandLineTools
             if (jsPlatform!=null)
                jsPlatform.copyOutputTo(platform.getOutputDir());
 
-         case Platform.EMSCRIPTEN:
+         case Platform.EMSCRIPTEN, Platform.WASM:
             platform = new platforms.EmscriptenPlatform(project);
 
          case Platform.JS:

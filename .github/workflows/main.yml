@@ -66,16 +66,6 @@ jobs:
            cd acadnme
            haxelib run nme cpp build -DHXCPP_M64
            
-      - name: Setup Emscripten
-        if: startsWith(matrix.os,'ubuntu')
-        uses: mymindstorm/setup-emsdk@v11
-
-      - name: Build JSPRIME
-        if: startsWith(matrix.os,'ubuntu')
-        run: |
-          cd project
-          neko build.n jsprime
-
       - name: Clean Project
         if: startsWith(matrix.os,'ubuntu')
         run: |
@@ -90,13 +80,6 @@ jobs:
           path: |
              ndll/Linux64/nme.ndll
              bin/Linux/Acadnme
-             ndll/Emscripten/nme.wasm
-             ndll/Emscripten/nme.js
-             ndll/Emscripten/nme.js.mem
-             ndll/Emscripten/NmeClasses.js
-             ndll/Emscripten/preloader.js
-             ndll/Emscripten/parsenme.js
-             ndll/Emscripten/export_classes.info
              src/cppia/export_classes.info
              version.env
              tools

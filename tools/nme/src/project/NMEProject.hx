@@ -300,8 +300,8 @@ class NMEProject
                classPaths.push(cp);
             macros.push("--macro cpp.cppia.HostClasses.include()");
 
-         case "emscripten":
-            target = Platform.EMSCRIPTEN;
+         case "emscripten", "wasm":
+            target = Platform.WASM;
             targetFlags.set("emscripten", "");
             staticLink = true;
             haxedefs.set("emscripten","1");
@@ -451,7 +451,7 @@ class NMEProject
             platformType = Platform.TYPE_WEB;
             embedAssets = false;
 
-         case Platform.EMSCRIPTEN:
+         case Platform.EMSCRIPTEN, Platform.WASM:
             platformType = Platform.TYPE_WEB;
             embedAssets = true;
 

@@ -42,8 +42,8 @@ class EmscriptenPlatform extends DesktopPlatform
          project.haxeflags.push('-D HXCPP_LINK_MEM_FILE=1');
    }
 
-   override public function getPlatformDir() : String { return "emscripten"; }
-   override public function getBinName() : String { return "Emscripten"; }
+   override public function getPlatformDir() : String { return "wasm"; }
+   override public function getBinName() : String { return "Wasm"; }
    override public function getNativeDllExt() { return ".js"; }
    override public function getLibExt() { return ".a"; }
 

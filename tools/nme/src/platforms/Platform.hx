@@ -30,6 +30,7 @@ class Platform
    public static inline var WATCH = "WATCH";
    public static inline var JSPRIME = "JSPRIME"; // Alias for HTML5
    public static inline var RG350 = "RG350";
+   public static inline var WASM = "wasm";
 
 
    public static inline var TYPE_WEB = "WEB";
