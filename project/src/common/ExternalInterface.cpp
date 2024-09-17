@@ -20,6 +20,10 @@
 #ifdef ANDROID
 #include <android/log.h>
 #endif
+#if defined(EMSCRIPTEN)
+#include "emscripten.h"
+#include <sys/stat.h>
+#endif
 
 #include <nme/NmeCffi.h>
 #include <Utils.h>
@@ -42,7 +46,6 @@
 #include <NmeStateVersion.h>
 #endif
 #include <nme/NmeApi.h>
-
 
 #ifdef min
 #undef min
@@ -5800,6 +5803,50 @@ DEFINE_PRIM(nme_file_dialog_folder,2);
 */
 
 
+#ifdef EMSCRIPTEN
+AutoGCRoot *openCallbackRoot = nullptr;
+
+extern "C" {
+
+EMSCRIPTEN_KEEPALIVE int nme_file_upload_complete(char const *filename, char const *mime_type, char *buffer, size_t buffer_size, void *callback_data) {
+   if (!openCallbackRoot)
+      return 0;
+   /// Load a file - this function is called from javascript when the file upload is activated
+   //printf("Got callback %s %p %s x %d!\n", filename, openCallbackRoot, mime_type, (int)buffer_size);
+
+   mkdir("/uploads/",S_IRWXU);
+   std::string localName = "/uploads/";
+   localName += filename;
+
+   FILE *file = fopen(localName.c_str(), "wb");
+   fwrite(buffer, buffer_size,1, file);
+   fclose(file);
+
+   value val = alloc_string(localName.c_str());
+
+   val_call1(openCallbackRoot->get(), val);
+
+   delete openCallbackRoot;
+   openCallbackRoot = nullptr;
+   return 1;
+}
+
+EMSCRIPTEN_KEEPALIVE int nme_file_upload_info( const char *event, double progress) {
+   if (!openCallbackRoot)
+      return 0;
+   //printf("File info: %s\n", event);
+   std::string type = event;
+   if (type=="abort" || type=="error")
+   {
+      delete openCallbackRoot;
+      openCallbackRoot = nullptr;
+   }
+   return 1;
+}
+
+}
+#endif
+
 bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultPath, HxString inTypes, value inCallback, int inFlags )
 {
    if (gCurrentFileDialog)
@@ -5823,8 +5870,84 @@ bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultP
    }
    else
       return true;
-   #endif
 
+   #elif defined(EMSCRIPTEN)
+
+   //printf("Launch for types:%s.\n", inTypes.c_str());
+   std::string types(inTypes.c_str());
+   auto pos = types.find('|');
+   if (pos!=std::string::npos)
+   {
+      types = types.substr(pos+1);
+      pos = types.find('|');
+      if (pos!=std::string::npos)
+         types = types.substr(0,pos);
+      std::string newFilter = "";
+      const char *p = types.c_str();
+      const char *end = p + types.size();
+      while(p<end)
+      {
+         if (*p=='*')
+         {
+            p++;
+            const char *s = p;
+            while(*p!=';' && *p!='\n')
+               p++;
+            if (p>s)
+            {
+               if (newFilter.size())
+                  newFilter += ",";
+               newFilter += std::string(s, p-s);
+            }
+         }
+      }
+      //printf("New filter: %s\n", newFilter.c_str());
+      types = newFilter;
+   }
+
+   delete openCallbackRoot;
+   openCallbackRoot = new AutoGCRoot(inCallback);
+   EM_ASM({
+    globalThis['my_callback'] = function(e) {
+       const file_reader = new FileReader();
+       file_reader.onload = (event) => {
+         const uint8Arr = new Uint8Array(event.target.result);
+         const data_ptr = Module['_malloc'](uint8Arr.length);
+         const data_on_heap = new Uint8Array(Module['HEAPU8'].buffer, data_ptr, uint8Arr.length);
+         data_on_heap.set(uint8Arr);
+         Module['ccall']('nme_file_upload_complete', 'number', ['string', 'string', 'number', 'number', 'number' ], [event.target.filename, event.target.mime_type, data_on_heap.byteOffset, uint8Arr.length]);
+         Module['_free'](data_ptr);
+       };
+       file_reader.onloadstart = (event) => {
+         Module['ccall']('nme_file_upload_info', 'number', ['string', 'number'], ['start',0]);
+       };
+       file_reader.onprogress = (event) => {
+         var frac = event.loaded/event.total;
+         Module['ccall']('nme_file_upload_info', 'number', ['string', 'number'], ['progress',frac]);
+       };
+       file_reader.onabort = (event) => {
+         Module['ccall']('nme_file_upload_info', 'number', ['string', 'number'], ['abort',0]);
+       };
+       file_reader.onerror = (event) => {
+         Module['ccall']('nme_file_upload_info', 'number', ['string', 'number'], ['error',0]);
+       };
+
+       file_reader.filename = e.target.files[0].name;
+       file_reader.mime_type = e.target.files[0].type;
+       file_reader.readAsArrayBuffer(e.target.files[0]);
+    };
+
+    var file_selector = document.createElement('input');
+    file_selector.setAttribute('type', 'file');
+    file_selector.setAttribute('onchange', 'globalThis["my_callback"](event)');
+    file_selector.setAttribute('accept', UTF8ToString($0));
+    file_selector.click();
+    }, types.c_str() );
+
+
+    return true;
+
+   #endif
    return false;
 }
 DEFINE_PRIME6(nme_file_dialog_open);

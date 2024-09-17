@@ -10,14 +10,7 @@ import nme.utils.ByteArray;
 import gm2d.Screen;
 import nme.geom.Rectangle;
 import gm2d.ui.Layout;
-import gm2d.ui.TextLabel;
-import gm2d.ui.TileControl;
-import gm2d.ui.Widget;
-import gm2d.ui.Button;
-import gm2d.ui.TextInput;
-import gm2d.ui.CheckButtons;
-import gm2d.ui.Image;
-import gm2d.ui.ListControl;
+import gm2d.ui.*;
 import gm2d.skin.FillStyle;
 import gm2d.skin.LineStyle;
 import gm2d.skin.Shape;
@@ -39,6 +32,7 @@ class AcadnmeBoot extends Screen implements IBoot
    var serverEnabled:Bool;
    var store:SharedObject;
    var storeData:Dynamic;
+   var button:Button;
    var nmeVersion:String;
 
    public function new()
@@ -96,7 +90,7 @@ class AcadnmeBoot extends Screen implements IBoot
        hostBar.setItemLayout( new HorizontalLayout([1,0]).stretch() );
 
        hostBar.addWidget(new TextLabel("Host:" + getConnectionStatus(),{ textColor:accent, align:Layout.AlignCenterY|Layout.AlignStretch }) );
-       hostBar.addWidget( Button.BMPButton( createMenuIcon(), onMenu, { shape:ShapeNone } ) );
+       hostBar.addWidget( button = Button.BMPButton( createMenuIcon(), onMenu, { shape:ShapeNone } ) );
        hostBar.build();
 
        titleBar.addWidget(hostBar);
@@ -128,6 +122,26 @@ class AcadnmeBoot extends Screen implements IBoot
    }
 
    function onMenu()
+   {
+      var menuItemm = new MenuItem("Options");
+      menuItemm.add( new MenuItem("Settings..", onSettings ) );
+      menuItemm.add( new MenuItem("Open..", onOpen ) );
+
+      var popup = new PopupMenu(menuItemm);
+      var pos = button.localToGlobal( new Point(0,0) );
+      gm2d.Game.popup( popup, pos.x, pos.y);
+
+   }
+
+   function onOpen(_)
+   {
+      nme.system.Dialog.fileOpen("Select NME File", "Selct file to run", null, "Nme Files|*.nme", filename-> {
+         if (filename!=null)
+            launch(filename);
+      } );
+   }
+
+   function onSettings(_)
    {
       var panel = new gm2d.ui.Panel("Settings");
       panel.addLabelUI("Enable Network", new CheckButtons(serverEnabled, onEnable) );
@@ -189,6 +203,8 @@ class AcadnmeBoot extends Screen implements IBoot
                 path = launchScript[k];
          }
       }
+      if (path==null && FileSystem.exists(name) )
+         path = name;
       if (path==null)
          return 'Unknown application $name';
       haxe.Timer.delay( function() Acadnme.runScript(path), 0 );

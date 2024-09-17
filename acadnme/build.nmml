@@ -44,8 +44,7 @@
      <appIntent value="android.intent.category.LEANBACK_LAUNCHER" />
   </android>
 
-  <set name="nmeDest" if="rpi" />
-     <assets from="../bin/apps/"  rename="${nmeDest}" if="mobile||web||rpi" less="nocompile" >
+  <assets from="../bin/apps/"  unless="nocompile" >
      <asset name="AcadnmeBoot.nme" />
      <!--
      <asset name="Flappybalt.nme" />

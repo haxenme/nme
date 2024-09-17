@@ -653,8 +653,8 @@
             <vflag name="-framework" value="QuartzCore" />
          </section>
 
-         <section if="HXCPP_JS_PRIME">
-            <vflag name="-s" value="EXPORTED_FUNCTIONS=['_malloc']" />
+         <section if="HXCPP_JS_PRIME || emscripten">
+            <vflag name="-s" value="EXPORTED_FUNCTIONS=['_malloc','_free','_main','ccall']" />
          </section>
 
          <section if="android">
