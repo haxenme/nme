@@ -668,6 +668,8 @@
          <section if="HXCPP_JS_PRIME || emscripten">
             <vflag name="-s" value="EXPORTED_FUNCTIONS=['_malloc','_free','_main','ccall']" />
             <vflag name="-s" value="FETCH=1" />
+            <vflag name="-s" value="STACK_SIZE=262144" if="wasm" />
+            <vflag name="-s" value="MIN_WEBGL_VERSION=2" if="wasm" />
          </section>
 
          <section if="android">

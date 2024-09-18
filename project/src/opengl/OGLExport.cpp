@@ -377,6 +377,7 @@ unsigned int getResource(value inResource, ResoType inType)
       else if (resource->contextVersion!=gTextureContextVersion)
       {
          ELOG("Warning: %s resource is from old context in %s", getTypeString(inType), sDebugName);
+         resource->contextVersion=gTextureContextVersion;
       }
       else if (resource->type!=inType)
       {

@@ -8,7 +8,7 @@ using haxe.macro.PositionTools;
 
 class BuildXml
 {
-   public static macro function importRelative(inFilename:String):Array<Field>
+   public static macro function importRelative(inFilename:String, compileDef:String, mergeTarget:String ):Array<Field>
    {
       var dir = Path.directory(Context.currentPos().getInfos().file);
       if (!Path.isAbsolute(dir))
@@ -20,10 +20,10 @@ class BuildXml
          dir = here + dir;
       }
       var xmlInject =
-        "<set name='NME_STATIC_LINK' value='1' />\n" + 
+        "<set name='"+ compileDef + "' value='1' />\n" + 
         "<import name='" +  Path.normalize( dir+inFilename )  + "'/>\n" + 
         "<target id='haxe'>\n" + 
-        "  <merge id='nme-target'/>\n" + 
+        "  <merge id='" + mergeTarget + "'/>\n" + 
         "</target>;\n";
       var p = Context.currentPos();
       Context.getLocalClass().get().meta.add(":buildXml", [ { expr:EConst( CString( xmlInject ) ), pos:p } ], p  );

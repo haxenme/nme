@@ -363,7 +363,7 @@ public:
 
    void Resize(int inWidth, int inHeight, bool resizeWindow = false)
    {
-      #ifdef HX_WINDOWS
+      #if (defined(HX_WINDOWS) || defined(emscripten))
       if (mIsOpenGL && !resizeWindow)
       {
          // Little hack to help windows
@@ -378,6 +378,8 @@ public:
          // display lists. So Work around it.
          gTextureContextVersion++;
          
+
+
          if (mIsOpenGL)
          {
             Event contextLost(etRenderContextLost);
