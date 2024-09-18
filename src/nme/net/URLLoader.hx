@@ -8,7 +8,11 @@ import nme.events.ProgressEvent;
 import nme.events.HTTPStatusEvent;
 import nme.utils.ByteArray;
 import nme.Loader;
+
+#if !no_haxe_http
+// Not using haxe.http avoids inclusing all the https cpp code
 import nme.net.HttpLoader;
+#end
 
 #if html5
 // ok
@@ -35,7 +39,9 @@ class URLLoader extends EventDispatcher
    public var dataFormat:URLLoaderDataFormat;
 
    public var nmeHandle:NativeHandle;
+   #if !no_haxe_http
    public var httpLoader:HttpLoader;
+   #end
 
    private static var hasCurlLoader = false;
    private static var activeLoaders = new List<URLLoader>();
@@ -63,7 +69,14 @@ class URLLoader extends EventDispatcher
          load(request);
    }
 
-   override public function toString() return 'URLLoader(${nmeHandle!=null?"curl":httpLoader!=null?"http":"null"})';
+   override public function toString()
+   {
+      #if no_haxe_http
+      return 'URLLoader(${nmeHandle!=null?"curl":"null"})';
+      #else
+      return 'URLLoader(${nmeHandle!=null?"curl":httpLoader!=null?"http":"null"})';
+      #end
+   }
 
    public function close() 
    {
@@ -76,9 +89,7 @@ class URLLoader extends EventDispatcher
 
    public static function initialize(inCACertFilePath:String) 
    {
-      #if !NME_USE_HTTP
       nme_curl_initialize(inCACertFilePath);
-      #end
    }
 
    public function load(request:URLRequest) 
@@ -119,16 +130,18 @@ class URLLoader extends EventDispatcher
          request.nmePrepare();
 
          nmeHandle = nme_curl_create(request);
+         #if !no_haxe_http
          if (nmeHandle==null)
          {
             httpLoader = new HttpLoader(this,request);
          }
          else
+         #end
          {
             hasCurlLoader = true;
          }
 
-         if (nmeHandle==null && HttpLoader==null)
+         if (nmeHandle==null #if !no_haxe_http && HttpLoader==null #end )
             onError("Could not open URL");
          else
          {
@@ -204,7 +217,7 @@ class URLLoader extends EventDispatcher
 
    private function update()
    {
-      if (nmeHandle!=null || httpLoader!=null)
+      if (nmeHandle!=null #if !no_haxe_http || httpLoader!=null #end )
       {
          var old_loaded = bytesLoaded;
          var old_total = bytesTotal;
@@ -266,13 +279,21 @@ class URLLoader extends EventDispatcher
    {
       if (nmeHandle!=null)
          return nme_curl_get_error_message(nmeHandle);
+      #if no_haxe_http
+      return null;
+      #else
       return httpLoader.getErrorMessage();
+      #end
    }
    function getData(): ByteArray
    {
       if (nmeHandle!=null)
          return nme_curl_get_data(nmeHandle);
+      #if no_haxe_http
+      return null;
+      #else
       return httpLoader.getData();
+      #end
    }
    function getString(): String
    {
@@ -281,13 +302,21 @@ class URLLoader extends EventDispatcher
          var bytes:ByteArray = getData();
          return bytes == null ? "" : bytes.asString();
       }
+      #if no_haxe_http
+      return "";
+      #else
       return httpLoader.getString();
+      #end
    }
    function getCode(): Int
    {
       if (nmeHandle!=null)
          return nme_curl_get_code(nmeHandle);
+      #if no_haxe_http
+      return 400;
+      #else
       return httpLoader.getCode();
+      #end
    }
    function updateLoader()
    {
@@ -295,18 +324,24 @@ class URLLoader extends EventDispatcher
       {
          nme_curl_update_loader(nmeHandle,this);
       }
+      #if !no_haxe_http
       else
       {
          bytesLoaded = httpLoader.bytesLoaded;
          bytesTotal = httpLoader.bytesTotal;
          state = httpLoader.state;
       }
+      #end
    }
    function getHeaders() : Array<String>
    {
       if (nmeHandle!=null)
          return nme_curl_get_headers(nmeHandle);
+      #if no_haxe_http
+      return null;
+      #else
       return httpLoader.getHeaders();
+      #end
    }
 
 
@@ -314,7 +349,11 @@ class URLLoader extends EventDispatcher
    {
       if (nmeHandle!=null)
          return nme_curl_get_cookies(nmeHandle);
+      #if no_haxe_http
+      return null;
+      #else
       return httpLoader==null ? null : httpLoader.getCookies();
+      #end
    }
 
    static function pollLoaders()

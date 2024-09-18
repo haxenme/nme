@@ -95,14 +95,25 @@
    <!-- For systems that do not create the egl context for us -->
    <set name="NME_EGL" value="1" if="rpi" unless="sdl_rpi" />
 
-   <!-- Do we need to implement curl in NME -->
-   <set name="NME_CURL" value="1" />
-   <unset name="NME_CURL" if="emscripten||winrt||gcw0||NME_LOCAL_TOOLKIT" />
+   <!-- It will fallback to using haxe http, which can handle https, without libCurl -->
+   <!--<set name="NME_CURL" value="1" />-->
+
+
+   <!-- Use native browser API.  This will check CORS however. -->
+   <set name="NME_CURL_NATIVE" value="1" if="emscripten" />
+
+   <set name="NME_CURL" value="1" if="NME_CURL_NATIVE" />
+
+   <unset name="NME_CURL" if="winrt||gcw0||NME_LOCAL_TOOLKIT||NME_NO_CURL" unless="NME_CURL_NATIVE" />
+
+   <set name="NME_CURL_TOOLKIT" value="1" if="NME_CURL" unless="NME_CURL_NATIVE" />
 
    <!-- And allow https ? -->
-   <set name="NME_SSL" value="1" />
-   <set name="NME_SSL_EXTRA" value="_ssl" if="NME_SSL"/>
-   <set name="NATIVE_TOOLKIT_CURL_SSL" value="1" if="NME_SSL" />
+   <section if="NME_CURL_TOOLKIT" >
+      <set name="NME_SSL" value="1" />
+      <set name="NME_SSL_EXTRA" value="_ssl" if="NME_SSL"/>
+      <set name="NATIVE_TOOLKIT_CURL_SSL" value="1" if="NME_SSL" />
+   </section>
    
    <!--<setenv name="MACOSX_DEPLOYMENT_TARGET" value="10.12" if="NME_SDL3" />-->
    <!--
@@ -176,7 +187,7 @@
       <set name="NME_LIBSDL_MIXER" value="${NATIVE_TOOLKIT_PATH}/sdl-mixer/" />
       <include name="${NME_LIBSDL_MIXER}files.xml" if="NME_MIXER" />
 
-      <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" if="NME_CURL" />
+      <include name="${NATIVE_TOOLKIT_PATH}/curl/files.xml" if="NME_CURL_TOOLKIT" />
    </section>
 
 
@@ -340,6 +351,7 @@
       <section if="emscripten">
          <compilerflag value="-sUSE_SDL=1"/>
          <file name="${SRC_DIR}/emscripten/System.cpp" />
+         <file name="${SRC_DIR}/emscripten/CurlFetch.cpp" />
          <file name="${SRC_DIR}/emscripten/JsPrime.cpp" if="HXCPP_JS_PRIME" />
 
          <file name="${SRC_DIR}/emscripten/_sans.cpp" />
@@ -373,7 +385,7 @@
       <compilerflag value="-I${NME_FREETYPE}include/freetype"/>
 
       <compilerflag value="-I${NME_MODPLUG}" if="modplug" />
-      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/curl/include" if="NME_CURL" />
+      <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/curl/include" if="NME_CURL_TOOLKIT" />
 
       <depend files="native-toolkit-freetype-depends" />
       <depend files="native-toolkit-jpeg-depends" />
@@ -381,7 +393,7 @@
       <depend files="native-toolkit-vorbis-depends" />
       <depend files="native-toolkit-ogg-depends" />
       <depend files="native-toolkit-modplug-depends" if="modplug" />
-      <depend files="native-toolkit-curl-depends" if="NME_CURL" />
+      <depend files="native-toolkit-curl-depends" if="NME_CURL_TOOLKIT" />
 
       <section if="NME_NATIVE_SDL_SYSTEM" unless="NME_SDL2" >
         <compilerflag value="-I/opt/local/include" if="macos" />
@@ -414,7 +426,7 @@
       </section>
 
       <compilerflag value="-DNME_CURL" if="NME_CURL"/>
-      <section if="NME_CURL">
+      <section if="NME_CURL" unless="NME_CURL_NATIVE" >
          <compilerflag value="-DNME_CURL_SSL" if="NME_SSL"/>
       </section>
 
@@ -472,7 +484,7 @@
       <file name="${SRC_DIR}/common/Input.cpp" unless="iphone" />
       <file name="${SRC_DIR}/common/SurfaceIO.cpp" unless="sdl_image" />
       <file name="${SRC_DIR}/common/ManagedStage.cpp" unless="winrt" />
-      <file name="${SRC_DIR}/common/CURL.cpp" if="NME_CURL"/>
+      <file name="${SRC_DIR}/common/CURL.cpp" if="NME_CURL_TOOLKIT"/>
       <file name="${SRC_DIR}/common/Thread.cpp"/>
       <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
       <file name="${SRC_DIR}/common/ObjectStream.cpp" />
@@ -596,7 +608,7 @@
          <files id="native-toolkit-zlib" unless="NME_LOCAL_TOOLKIT"  />
          <files id="hxcpp_zlib" if="NME_LOCAL_TOOLKIT"  />
          <files id="native-toolkit-angle" if="NME_ANGLE" />
-         <section if="NME_CURL">
+         <section if="NME_CURL_TOOLKIT">
             <files id="native-toolkit-curl" />
          </section>
 
@@ -655,6 +667,7 @@
 
          <section if="HXCPP_JS_PRIME || emscripten">
             <vflag name="-s" value="EXPORTED_FUNCTIONS=['_malloc','_free','_main','ccall']" />
+            <vflag name="-s" value="FETCH=1" />
          </section>
 
          <section if="android">

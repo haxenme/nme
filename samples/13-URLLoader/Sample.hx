@@ -104,7 +104,8 @@ class Sample extends Sprite
         post.data = vars;
         //post.verbose = true;
         var postLoad = new URLLoader();
-        postLoad.addEventListener(IOErrorEvent.IO_ERROR, e -> postTextField.htmlText = "Error:" + e );
+        postLoad.addEventListener(IOErrorEvent.IO_ERROR, e ->
+           postTextField.htmlText = "Error in post:" + e + " " + post);
         postLoad.addEventListener(Event.COMPLETE, function(_) {
            postTextField.htmlText = postLoad.data.toString();
         } );
@@ -143,6 +144,9 @@ class Sample extends Sprite
     {
        trace("error " + e);
        xmlTextField.text = "Error:" + e.text;
+       #if wasm
+       xmlTextField.text += " Perhaps CORS - check developer console";
+       #end
     }
 }
 

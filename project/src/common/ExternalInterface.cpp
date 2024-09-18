@@ -628,7 +628,7 @@ void ToValue(value &outVal,const ColorTransform &inTrans)
 
 
 
-#ifndef EMSCRIPTEN
+#ifdef NME_CURL
 void FromValue(value obj, URLRequest &request)
 {
    request.url = val_string( val_field(obj, _id_url) );
