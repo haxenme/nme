@@ -43,7 +43,9 @@
    #define ARGB_PIXEL GL_BGRA
 #endif
 
-//Constant Value:  32993 
+#ifndef GL_UNPACK_ROW_LENGTH
+#define GL_UNPACK_ROW_LENGTH 0x0CF2
+#endif
 
 namespace nme
 {

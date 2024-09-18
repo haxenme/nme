@@ -6,6 +6,10 @@
 #include <dlfcn.h>
 #endif
 
+#ifdef ANDROID
+#include <EGL/egl.h>
+#endif
+
 #ifdef NME_DYNAMIC_ANGLE
 bool nmeEglMode = true;
 #endif
