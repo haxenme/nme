@@ -9,6 +9,10 @@
 #include <nme/NmeCffi.h>
 #include <KeyCodes.h>
 #include <map>
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
 
 #include <Sound.h>
 
@@ -75,7 +79,7 @@ enum { NO_TOUCH = -1 };
 
 
 int InitSDL()
-{   
+{
    if (sgInitCalled)
       return 0;
       
@@ -102,6 +106,9 @@ int InitSDL()
    SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, forceEgl ? "1" : "0");
    #endif
 
+   #if EMSCRIPTEN
+   SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
+   #endif
 
    int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
    
@@ -1116,7 +1123,6 @@ extern "C" void MacBoot( /*void (*)()*/ );
 
 
 
-#ifndef EMSCRIPTEN
 
 #define MAX_JOYSTICKS 16
 #define etControllerAxisMove etJoyAxisMove
@@ -1396,7 +1402,6 @@ typedef struct controllerState
       }
    }
 } ControllerState;
-#endif
 
 
 void AddModStates(int &ioFlags,int inState = -1)
@@ -1845,6 +1850,7 @@ void ProcessEvent(SDL_Event &inEvent)
          {
             Event event(etWindowLeave);
             frame->ProcessEvent(event);
+            break;
          }
          case SDL_WINDOWEVENT_FOCUS_GAINED:
          {
@@ -2080,7 +2086,7 @@ void ProcessEvent(SDL_Event &inEvent)
          frame->ProcessEvent(key);
          break;
       }
-      #ifndef EMSCRIPTEN
+
       case SDL_CONTROLLERAXISMOTION:
       {   
          ControllerState* controller = sgJoysticksState[inEvent.jbutton.which];
@@ -2170,7 +2176,6 @@ void ProcessEvent(SDL_Event &inEvent)
          }
          break;
       }
-      #endif
       case SDL_AUDIODEVICEADDED:
          // TODO
          break;
@@ -2669,7 +2674,20 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    //SDL_GameControllerEventState(SDL_TRUE);
 
    if (isMain)
+   {
+      #if EMSCRIPTEN
+      //emscripten_set_resize_callback("canvas", nullptr, false, onCanvasSize);
+      EM_ASM({
+      window.onresize = function() {
+         Module['ccall']('nmeOnCanvasSize', 'number',[],[]);
+      }
+      });
+
+      emscripten_set_main_loop(StartAnimation, 0, false);
+      #else
       StartAnimation();
+      #endif
+   }
 }
 
 
@@ -2925,6 +2943,71 @@ static SDL_TimerID sgTimerID = 0;
 #define SDL_NOEVENT -1;
 #endif
 
+#ifdef EMSCRIPTEN
+extern void clUpdateAsyncChannels();
+extern void nme_native_resource_release_temps();
+
+static bool sCheckCanvasSize = true;
+static double sgDeviceDpi = 1.0;
+static int sgCanvasWidth = 0;
+static int sgCanvasHeight = 0;
+
+extern "C"
+{
+EMSCRIPTEN_KEEPALIVE int nmeOnCanvasSize()
+{
+   sCheckCanvasSize = true;
+   return 1;
+}
+}
+
+void StartAnimation()
+{
+   SDL_Event event;
+   while(SDL_PollEvent(&event))
+   {
+      ProcessEvent(event);
+      // if (sgDead) break;
+      event.type = -1;
+      #ifdef HXCPP_JS_PRIME
+      nme_native_resource_release_temps();
+      #endif
+   }
+
+   clUpdateAsyncChannels();
+
+   if (sCheckCanvasSize)
+   {
+      sCheckCanvasSize = false;
+      double w=0;
+      double h=0;
+      emscripten_get_element_css_size("canvas", &w, &h);
+      int cw = w*sgDeviceDpi;
+      int ch = h*sgDeviceDpi;
+      if (sgCanvasWidth!=cw || sgCanvasHeight!=ch)
+      {
+         sgCanvasWidth=cw;
+         sgCanvasHeight=ch;
+
+         Event resize(etResize,cw,ch);
+         sgSDLFrame->Resize(cw,ch);
+         sgSDLFrame->ProcessEvent(resize);
+         #ifdef HXCPP_JS_PRIME
+         nme_native_resource_release_temps();
+         #endif
+      }
+   }
+
+   Event poll(etPoll);
+   sgSDLFrame->ProcessEvent(poll);
+   #ifdef HXCPP_JS_PRIME
+   nme_native_resource_release_temps();
+   #endif
+   //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, nextWake);
+}
+
+#else
+
 
 void StartAnimation()
 {
@@ -3019,6 +3102,7 @@ void StartAnimation()
    sgSDLFrame->ProcessEvent(kill);
    SDL_Quit();
 }
+#endif
 
 bool SetClipboardText(const char* text)
 {

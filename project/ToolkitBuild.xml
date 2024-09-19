@@ -79,8 +79,9 @@
    <set name="NME_SDL2" value="1" if="linux" unless="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL2" value="1" if="macos" />
    <set name="NME_SDL2" value="1" if="winrpi" />
+   <set name="NME_SDL2" value="1" if="emscripten" />
    <set name="NME_SDL2" value="1" if="gcw0" />
-   <set name="NME_SDL3" value="1" if="NME_LOCAL_TOOLKIT" />
+   <set name="NME_SDL3" value="1" if="NME_LOCAL_TOOLKIT" unless="emscripten" />
    <set name="SYSTEM_FREETYPE" value="1" if="gcw0" />
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
@@ -184,6 +185,7 @@
       <include name="${NME_LIBSDL}files.xml" />
       <set name="NME_MODPLUG" value="${NATIVE_TOOLKIT_PATH}/modplug/" />
       <include name="${NME_MODPLUG}/files.xml" if="modplug" />
+
       <set name="NME_LIBSDL_MIXER" value="${NATIVE_TOOLKIT_PATH}/sdl-mixer/" />
       <include name="${NME_LIBSDL_MIXER}files.xml" if="NME_MIXER" />
 
@@ -349,7 +351,7 @@
       </section>
 
       <section if="emscripten">
-         <compilerflag value="-sUSE_SDL=1"/>
+         <compilerflag value="-sUSE_SDL=2"/>
          <file name="${SRC_DIR}/emscripten/System.cpp" />
          <file name="${SRC_DIR}/emscripten/CurlFetch.cpp" />
          <file name="${SRC_DIR}/emscripten/JsPrime.cpp" if="HXCPP_JS_PRIME" />
@@ -626,10 +628,14 @@
             </section>
             <section if="NME_SDL2" >
                <lib name="-lSDL2" />
-               <lib name="-lSDL2_Mixer" />
+               <lib name="-lSDL2_Mixer" unless="NME_NO_AUDIO||emscripten" />
                <lib name="-lEGL" />
                <lib name="-lGLESv2" />
                <lib name="-lfreetype" if="SYSTEM_FREETYPE" />
+
+               <section if="emscripten" >
+                   <lib name="-sUSE_SDL_MIXER=2" />
+               </section>
             </section>
          </section>
             <!--<lib name="-lcurl" />
