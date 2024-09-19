@@ -298,7 +298,6 @@ class NMMLParser
    private function parseAssetsElement(element:Access, basePath:String = ""):Void 
    {
       var path = basePath;
-      var embed = project.embedAssets;
       var targetPath = "";
       var glyphs = null;
       var type = null;
@@ -328,8 +327,11 @@ class NMMLParser
 
       path = project.relocatePath(path);
 
-      if (element.has.embed) 
-         embed = embed || parseBool(substitute(element.att.embed));
+      var embed = project.defaultEmbedAssets;
+      if (project.forceEmbedAssets)
+         embed = true;
+      else if (element.has.embed)
+         embed = parseBool(substitute(element.att.embed));
 
       if (element.has.glyphs) 
          glyphs = substitute(element.att.glyphs);
@@ -436,7 +438,6 @@ class NMMLParser
             {
                var childPath = substitute(childElement.has.name ? childElement.att.name : childElement.att.path);
                var childTargetPath = childPath;
-               var childEmbed = embed;
                var childType = type;
                var childGlyphs = glyphs;
 
@@ -445,8 +446,11 @@ class NMMLParser
                if (childElement.has.rename) 
                   childTargetPath = childElement.att.rename;
 
-               if (childElement.has.embed) 
-                  childEmbed =  parseBool(substitute(childElement.att.embed)) || project.embedAssets;
+               var childEmbed = embed;
+               if (project.forceEmbedAssets)
+                  childEmbed = true;
+               else if (childElement.has.embed)
+                  childEmbed = parseBool(substitute(childElement.att.embed));
 
                if (childElement.has.glyphs) 
                   childGlyphs = substitute(childElement.att.glyphs);
@@ -1007,9 +1011,11 @@ class NMMLParser
                      var name = substitute(element.att.path);
                      var id = element.has.id ? substitute(element.att.id) : new Path(name).file;
                      var path = project.relocatePath(name);
-                     var embed = project.embedAssets;
-                     if (element.has.embed) 
-                        embed = embed || parseBool(substitute(element.att.embed));
+                     var embed = project.defaultEmbedAssets;
+                     if (project.forceEmbedAssets)
+                        embed = true;
+                     else if (element.has.embed)
+                        embed = parseBool(substitute(element.att.embed));
 
                      var asset = new Asset(path, id, null, embed);
                      //asset.id = id;

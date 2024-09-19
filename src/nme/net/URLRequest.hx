@@ -25,6 +25,7 @@ class URLRequest
    public var data:Dynamic;
    public var credentials:String;
    public var followRedirects:Bool;
+   public var allowFile:Bool;
 
    /** @private */ public var __bytes:ByteArray;
    /** @private */ public var nmeBytes(get, set):ByteArray;
@@ -41,6 +42,11 @@ class URLRequest
       verbose = false;
       cookieString = "";
       authType = 0;
+      #if web
+      allowFile = false;
+      #else
+      allowFile = true;
+      #end
       contentType = "application/x-www-form-urlencoded";
       credentials = "";
       followRedirects = true;

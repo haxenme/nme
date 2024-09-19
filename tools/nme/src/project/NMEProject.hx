@@ -181,7 +181,8 @@ class NMEProject
    public var certificate:Keystore;
 
    // Flags
-   public var embedAssets:Bool;
+   public var forceEmbedAssets:Bool;
+   public var defaultEmbedAssets:Bool;
    public var skipAssets:Bool;
    public var openflCompat:Bool;
    public var debug:Bool;
@@ -203,7 +204,8 @@ class NMEProject
    public function new() 
    {
       baseTemplateContext = {};
-      embedAssets = false;
+      forceEmbedAssets = false;
+      defaultEmbedAssets = false;
       skipAssets = false;
       openflCompat = true;
       iosConfig = new IOSConfig();
@@ -441,31 +443,29 @@ class NMEProject
       {
          case Platform.FLASH:
             platformType = Platform.TYPE_WEB;
-            embedAssets = true;
+            forceEmbedAssets = true;
 
          case Platform.CPPIA:
             platformType = Platform.TYPE_SCRIPT;
-            embedAssets = false;
 
          case Platform.JS:
             platformType = Platform.TYPE_WEB;
-            embedAssets = false;
 
          case Platform.EMSCRIPTEN, Platform.WASM:
             platformType = Platform.TYPE_WEB;
-            embedAssets = true;
+            defaultEmbedAssets = true;
 
          case Platform.JSPRIME, Platform.HTML5:
             platformType = Platform.TYPE_WEB;
-            embedAssets = false;
+            defaultEmbedAssets = true;
 
          case Platform.ANDROID, Platform.IOS,
               Platform.IOSVIEW, Platform.ANDROIDVIEW:
 
             platformType = Platform.TYPE_MOBILE;
 
-            if (target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW) 
-               embedAssets = true;
+            if (target==Platform.IOSVIEW || target==Platform.ANDROIDVIEW)
+               forceEmbedAssets = true;
 
             window.width = 0;
             window.height = 0;
@@ -857,7 +857,7 @@ class NMEProject
       }
 
       context.BUILD_DIR = app.binDir;
-      context.EMBED_ASSETS = embedAssets ? "true" : "false";
+      context.EMBED_ASSETS = forceEmbedAssets ? "true" : "false";
       context.OPENFL_COMPAT = openflCompat ? "true" : "false";
       if (openflCompat)
       {
@@ -945,7 +945,7 @@ class NMEProject
             asset.alphaMode = defaultMode;
          asset.preprocess(convertDir);
 
-         if ( (embedAssets || asset.embed) && target!=Platform.FLASH && target!=Platform.JSPRIME && target!=Platform.CPPIA)
+         if ( asset.embed && target!=Platform.FLASH && target!=Platform.JSPRIME && target!=Platform.CPPIA)
          {
             asset.resourceName = asset.flatName;
             //var relPath = PathHelper.relocatePath(asset.sourcePath, inBuildDir);

@@ -97,8 +97,9 @@ class URLLoader extends EventDispatcher
       state = urlInit;
       var pref = request.url.substr(0, 7);
 
-      if (pref != "http://" && pref != "https:/") { // local file
-
+      if (request.allowFile && (pref != "http://" && pref != "https:/"))
+      {
+         // local file
          try 
          {
             var bytes = ByteArray.readFile(request.url);

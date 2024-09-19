@@ -103,9 +103,10 @@ class EmscriptenPlatform extends DesktopPlatform
       }
       else
       {
+         var verbose = true;
          var server = new nme.net.http.Server(
             new nme.net.http.FileServer([FileSystem.fullPath(applicationDirectory) ],
-              new nme.net.http.StdioHandler( Sys.println ),
+              new nme.net.http.StdioHandler( Sys.println ), verbose
                ).onRequest  );
 
          var port = 2323;
