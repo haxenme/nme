@@ -815,6 +815,40 @@ void nme_set_renderer(HxString inRenderer)
 DEFINE_PRIME1v(nme_set_renderer);
 
 
+value nme_get_webpage_url()
+{
+   #ifdef EMSCRIPTEN
+   const char* url = emscripten_run_script_string("window.location.href");
+   return alloc_string(url);
+   #else
+   return alloc_null();
+   #endif
+}
+DEFINE_PRIM(nme_get_webpage_url,0);
+
+value nme_get_webpage_param(value param)
+{
+   #ifdef EMSCRIPTEN
+   const char *q = val_string(param);
+   char *str = (char*)EM_ASM_PTR({
+      const params = new URLSearchParams(window.location.search);
+      const val = params.get(UTF8ToString($0));
+      if (val==null) return 0;
+      return stringToNewUTF8(val);
+   }, q);
+   if (!str)
+      return alloc_null();
+   value result = alloc_string(str);
+   free(str);
+   return result;
+   #else
+   return alloc_null();
+   #endif
+}
+DEFINE_PRIM(nme_get_webpage_param,1);
+
+
+
 
 
 // --- ByteArray -----------------------------------------------------

@@ -218,6 +218,16 @@ class Lib
       return result;
    }
 
+   public static function getWebpageUrl() : String
+   {
+      return nme_get_webpage_url();
+   }
+
+   public static function getWebpageParam(param:String) : String
+   {
+      return nme_get_webpage_param(param);
+   }
+
 
    // haxe flash compat
    public static function getURL(url:URLRequest, ?target:String):Void 
@@ -289,6 +299,8 @@ class Lib
    private static var nme_log = PrimeLoader.load("nme_log", "sv");
    private static var nme_crash = PrimeLoader.load("nme_crash","v");
    private static var nme_set_renderer = PrimeLoader.load("nme_set_renderer","sv");
+   private static var nme_get_webpage_url = Loader.load("nme_get_webpage_url",0);
+   private static var nme_get_webpage_param = Loader.load("nme_get_webpage_param",1);
 }
 
 #else

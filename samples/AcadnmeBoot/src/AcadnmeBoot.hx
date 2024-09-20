@@ -34,6 +34,7 @@ class AcadnmeBoot extends Screen implements IBoot
    var storeData:Dynamic;
    var button:Button;
    var nmeVersion:String;
+   var isWeb:Bool;
 
    public function new()
    {
@@ -41,20 +42,26 @@ class AcadnmeBoot extends Screen implements IBoot
 
       Acadnme.boot = this;
 
-      store = SharedObject.getLocal("acadnme-server");
-      storeData = store.data;
+      var url = nme.Lib.getWebpageUrl();
+      isWeb = url!=null;
 
-      serverPassword = storeData.serverPassword ==null ? "" : storeData.serverPassword;
-      serverEnabled = storeData.serverEnabled==null ? true : storeData.serverEnabled;
-      Server.setEnabled(serverEnabled);
-      Server.setPassword(serverPassword);
+      if (!isWeb)
+      {
+         store = SharedObject.getLocal("acadnme-server");
+         storeData = store.data;
+
+         serverPassword = storeData.serverPassword ==null ? "" : storeData.serverPassword;
+         serverEnabled = storeData.serverEnabled==null ? true : storeData.serverEnabled;
+         Server.setEnabled(serverEnabled);
+         Server.setPassword(serverPassword);
 
 
-      Server.functions["launch"] = launch;
-      Server.functions["apps"] = apps;
-      Server.functions["uninstall"] =  uninstall;
-      Server.functions["reload"] =  reloadSync;
-      defaultDir = getDefaultDir();
+         Server.functions["launch"] = launch;
+         Server.functions["apps"] = apps;
+         Server.functions["uninstall"] =  uninstall;
+         Server.functions["reload"] =  reloadSync;
+         defaultDir = getDefaultDir();
+      }
 
       var skin = new gm2d.skin.Skin(false);
       var pad = skin.scale(2);
@@ -89,7 +96,11 @@ class AcadnmeBoot extends Screen implements IBoot
        var hostBar = new Widget({ align:Layout.AlignCenterY  });
        hostBar.setItemLayout( new HorizontalLayout([1,0]).stretch() );
 
-       hostBar.addWidget(new TextLabel("Host:" + getConnectionStatus(),{ textColor:accent, align:Layout.AlignCenterY|Layout.AlignStretch }) );
+       if (url==null)
+          hostBar.addWidget(new TextLabel("Host:" + getConnectionStatus(),{ textColor:accent, align:Layout.AlignCenterY|Layout.AlignStretch }) );
+       else
+          hostBar.addWidget(new TextLabel("",{ textColor:accent, align:Layout.AlignCenterY|Layout.AlignStretch }) );
+
        hostBar.addWidget( button = Button.BMPButton( createMenuIcon(), onMenu, { shape:ShapeNone } ) );
        hostBar.build();
 
@@ -103,6 +114,11 @@ class AcadnmeBoot extends Screen implements IBoot
 
       build();
       makeCurrent();
+
+      if (isWeb)
+      {
+         var q = nme.Lib.getWebpageParam("prog");
+      }
    }
 
    function onEnable(inValue:Bool)
@@ -123,14 +139,20 @@ class AcadnmeBoot extends Screen implements IBoot
 
    function onMenu()
    {
-      var menuItemm = new MenuItem("Options");
-      menuItemm.add( new MenuItem("Settings..", onSettings ) );
-      menuItemm.add( new MenuItem("Open..", onOpen ) );
+      if (isWeb)
+      {
+         onOpen(null);
+      }
+      else
+      {
+         var menuItemm = new MenuItem("Options");
+         menuItemm.add( new MenuItem("Settings..", onSettings ) );
+         menuItemm.add( new MenuItem("Open..", onOpen ) );
 
-      var popup = new PopupMenu(menuItemm);
-      var pos = button.localToGlobal( new Point(0,0) );
-      gm2d.Game.popup( popup, pos.x, pos.y);
-
+         var popup = new PopupMenu(menuItemm);
+         var pos = button.localToGlobal( new Point(0,0) );
+         gm2d.Game.popup( popup, pos.x, pos.y);
+      }
    }
 
    function onOpen(_)

@@ -109,6 +109,7 @@ public:
 
       makeCurrent();
 
+
       #ifdef NME_GFX_DEBUG
       printf("Vendor: %s\n", (char *)glGetString(GL_VENDOR) );
       printf("Renderer: %s\n", (char *)glGetString(GL_RENDERER) );

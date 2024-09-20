@@ -97,7 +97,7 @@ class EmscriptenPlatform extends DesktopPlatform
 
    override public function run(arguments:Array<String>):Void 
    {
-      if (false)
+      if (project.hasDef("pythonServe"))
       {
          runPython(arguments);
       }
@@ -126,32 +126,31 @@ class EmscriptenPlatform extends DesktopPlatform
 
    public function runPython(arguments:Array<String>):Void 
    {
-      var command = sdkPath==null ? "emrun" : sdkPath + "/emrun";
+      var command = sdkPath==null ? [ "-m", "http.server" ] : [sdkPath + "/upstream/emscripten/emrun.py"];
       var source = "index.html";
       //var source = ext == ".html" ? Path.withoutDirectory(executablePath) : "index.html";
       var browser = CommandLineTools.browser;
       var browserOps = browser=="none" ? ["--no_browser"] : browser==null ? [] : ["--browser",browser];
+
       if (python!=null)
-      {
          PathHelper.addExePath( haxe.io.Path.directory(python) );
-         ProcessHelper.runCommand(applicationDirectory, "python", [command].concat(browserOps).concat([source]).concat(arguments) );
-      }
-      else
-         ProcessHelper.runCommand(applicationDirectory, command, [source].concat(browserOps).concat(arguments) );
+
+      ProcessHelper.runCommand(applicationDirectory, "python", command.concat(browserOps).concat([source]).concat(arguments) );
    }
 
    public function setupSdk()
    {
-      var hasSdk = project.hasDef("EMSCRIPTEN_SDK");
+      var hasSdk = project.hasDef("EMSDK");
       if (hasSdk)
-         sdkPath = project.getDef("EMSCRIPTEN_SDK");
-      var hasPython = project.hasDef("EMSCRIPTEN_PYTHON");
+         sdkPath = project.getDef("EMSDK");
+
+      var hasPython = project.hasDef("EMSDK_PYTHON");
       if (hasPython)
-         python = project.getDef("EMSCRIPTEN_PYTHON");
+         python = project.getDef("EMSDK_PYTHON");
 
       var home = CommandLineTools.home;
       var file = home + "/.emscripten";
-      if (FileSystem.exists(file))
+      if (!hasSdk && FileSystem.exists(file))
       {
          var content = sys.io.File.getContent(file);
          content = content.split("\r").join("");
@@ -173,7 +172,6 @@ class EmscriptenPlatform extends DesktopPlatform
             }
          }
       }
-
    }
 
 }
