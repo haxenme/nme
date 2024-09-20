@@ -55,7 +55,7 @@ SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth
 
 typedef float MousePosType;
 
-std::string nmeRenderer;
+extern std::string nmeRenderer;
 
 #else
 typedef int MousePosType;

@@ -58,6 +58,7 @@ void InitCamera();
 void GetGLStats(int *statsArray, int n);
 extern bool gRespectExifOrientation;
 
+
 // Not static
 int _id_id=0;
 
@@ -744,6 +745,7 @@ DEFINE_PRIME2(nme_##obj_prefix##_set_##prop)
 
 using namespace nme;
 
+std::string nmeRenderer;
 
 double nme_time_stamp()
 {
@@ -808,7 +810,6 @@ void nme_set_renderer(HxString inRenderer)
       nmeEglMode = false;
    #endif
    #ifdef NME_SDL3
-   extern std::string nmeRenderer;
    nmeRenderer = inRenderer.c_str();
    #endif
 }

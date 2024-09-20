@@ -44,7 +44,6 @@ GLuint OGLProg::createShader(GLuint inType, const char *inShader)
    if (shader==0)
    {
       ELOG("Error in glCreateShader : %d\n",  glGetError() );
-      *(int *)0=0;
       return 0;
    }
 
