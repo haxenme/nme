@@ -16,7 +16,6 @@
 #define NME_NO_LZMA
 #endif
 
-
 #ifdef ANDROID
 #include <android/log.h>
 #endif

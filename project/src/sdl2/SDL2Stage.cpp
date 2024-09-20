@@ -2961,6 +2961,7 @@ EMSCRIPTEN_KEEPALIVE int nmeOnCanvasSize()
 }
 }
 
+
 void StartAnimation()
 {
    SDL_Event event;
@@ -2974,7 +2975,9 @@ void StartAnimation()
       #endif
    }
 
+   #ifndef NME_NO_AUDIO
    clUpdateAsyncChannels();
+   #endif
 
    if (sCheckCanvasSize)
    {

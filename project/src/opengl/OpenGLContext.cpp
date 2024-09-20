@@ -37,8 +37,6 @@ void ReloadExtentions();
 
 // --- HardwareRenderer Interface ---------------------------------------------------------
 
-
-
 void ResetHardwareContext()
 {
    //__android_log_print(ANDROID_LOG_ERROR, "NME", "ResetHardwareContext");
@@ -108,7 +106,19 @@ public:
       for(int i=0;i<PROG_COUNT;i++)
          mProg[i] = 0;
 
+
       makeCurrent();
+
+      #ifdef NME_GFX_DEBUG
+      printf("Vendor: %s\n", (char *)glGetString(GL_VENDOR) );
+      printf("Renderer: %s\n", (char *)glGetString(GL_RENDERER) );
+      printf("Sahder: %s\n", (char *)glGetString(GL_SHADING_LANGUAGE_VERSION) );
+      #endif
+
+      #ifdef EMSCRIPTEN
+      for(int i=0;i<4;i++)
+         glDisableVertexAttribArray(i);
+      #endif
 
       const char *ext = (const char *)glGetString(GL_EXTENSIONS);
       if (ext && *ext)
@@ -470,10 +480,11 @@ public:
    void BeginDirectRender()
    {
       gDirectMaxAttribArray = 0;
+      #ifndef NME_NO_GETERROR
       int err0 = glGetError();
       if (err0 != GL_NO_ERROR)
            ELOG("GL Error Before BeginDirectRender %d\n", err0);
-
+      #endif
    }
 
    void EndDirectRender()
@@ -481,9 +492,11 @@ public:
       for(int i=0;i<gDirectMaxAttribArray;i++)
          glDisableVertexAttribArray(i);
 
+      #ifndef NME_NO_GETERROR
       int err = glGetError();
       if (err != GL_NO_ERROR)
            ELOG("GL Error in DirectRender %d\n", err);
+      #endif
    }
 
 

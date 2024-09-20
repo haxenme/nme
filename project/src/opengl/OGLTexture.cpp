@@ -387,6 +387,7 @@ public:
 
       if (mMipmaps)
       {
+         #if (!defined(EMSCRIPTEN) || !defined(NME_NO_GETERROR))
          glGetError();
          glGenerateMipmap(GL_TEXTURE_2D);
          int err = glGetError();
@@ -395,6 +396,7 @@ public:
             ELOG("Error creating mipmaps @ %dx%d,%d/%d : %d\n", mTextureWidth, mTextureHeight, store_format,pixel_format,  err);
             mMipmaps = false;
          }
+         #endif
       }
 
       mUploadedFormat = store_format;
@@ -528,9 +530,11 @@ public:
             if (mMipmaps)
                glGenerateMipmap(GL_TEXTURE_2D);
 
+            #ifndef NME_NO_GETERROR
             int err = glGetError();
             if (err != GL_NO_ERROR)
                ELOG("GL Error: %d %dx%d", err, mDirtyRect.w, mDirtyRect.h);
+            #endif
             mDirtyRect = Rect();
          }
       }
