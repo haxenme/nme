@@ -17,6 +17,7 @@
 
 <haxedef name="nme_api_level=611"/>
 
+<!-- you can 'unset' this if needed -->
 <haxedef name="no_haxe_http" if="wasm" />
 
 <section if="NME_HXTELEMETRY || telemetry">

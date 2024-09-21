@@ -29,11 +29,13 @@ private class OutputWatcher extends haxe.io.BytesOutput
    override public function prepare(nbytes:Int)
    {
       super.prepare(nbytes);
+      loader.checkClosed();
       loader.onBytesTotal(nbytes);
    }
 
    override function writeBytes(buf:haxe.io.Bytes, pos:Int, len:Int):Int
    {
+      loader.checkClosed();
       var result = super.writeBytes(buf, pos, len);
       loader.onBytesLoaded(b.length);
       return result;
@@ -54,6 +56,7 @@ class HttpLoader
    var errorMessage:String;
    var code:Int;
    var cookies:Array<String>;
+   var closed:Bool;
 
    var byteData:ByteArray;
    var stringData:String;
@@ -62,6 +65,9 @@ class HttpLoader
    public var bytesTotal(default,null):Int;
    public var state(default,null):Int;
    var http:Http;
+   #if !js
+   var output:OutputWatcher;
+   #end
 
    public function new(inLoader:URLLoader, inRequest:URLRequest)
    {
@@ -71,6 +77,7 @@ class HttpLoader
       bytesTotal = 0;
       state = URLLoader.urlLoading;
       code = 0;
+      closed = false;
 
       http = new Http(inRequest.url);
       http.onError = onError;
@@ -86,81 +93,103 @@ class HttpLoader
       if (isPost)
          http.setPostBytes(urlRequest.nmeBytes);
 
-      #if !js
+      #if wasm
+      run();
+      #elseif !js
       runAsync(run);
       #end
+   }
+
+   public function checkClosed()
+   {
+      if (closed)
+         throw "closed by client";
+   }
+
+   public function close()
+   {
+      state = URLLoader.urlClosed;
+      closed = true;
    }
 
    #if !js
    public function run()
    {
-      var output = new OutputWatcher(this);
-
-      var isPost = urlRequest.method==URLRequestMethod.POST;
-      http.customRequest(isPost, output);
-
-      if (state!=URLLoader.urlError)
+      try
       {
-         var bytes = output.getBytes();
+         var output = new OutputWatcher(this);
 
-         bytesLoaded = bytesTotal = bytes.length;
+         var isPost = urlRequest.method==URLRequestMethod.POST;
+         http.customRequest(isPost, output);
 
-         var encoding =  http.responseHeaders.get("Content-Encoding");
-         if (encoding=="gzip")
+         if (state!=URLLoader.urlError)
          {
-            var decoded = false;
-            try
+            var bytes = output.getBytes();
+
+            bytesLoaded = bytesTotal = bytes.length;
+
+            var encoding =  http.responseHeaders.get("Content-Encoding");
+            if (encoding=="gzip")
             {
-               if (bytes.length>10 && bytes.get(0)==0x1f && bytes.get(1)==0x8b)
+               var decoded = false;
+               try
                {
-                  var u = new haxe.zip.Uncompress(15|32);
-                  var tmp = haxe.io.Bytes.alloc(1<<16);
-                  u.setFlushMode(haxe.zip.FlushMode.SYNC);
-                  var b = new haxe.io.BytesBuffer();
-                  var pos = 0;
-                  while (true) {
-                     var r = u.execute(bytes, pos, tmp, 0);
-                     b.addBytes(tmp, 0, r.write);
-                     pos += r.read;
-                     if (r.done)
-                       break;
+                  if (bytes.length>10 && bytes.get(0)==0x1f && bytes.get(1)==0x8b)
+                  {
+                     var u = new haxe.zip.Uncompress(15|32);
+                     var tmp = haxe.io.Bytes.alloc(1<<16);
+                     u.setFlushMode(haxe.zip.FlushMode.SYNC);
+                     var b = new haxe.io.BytesBuffer();
+                     var pos = 0;
+                     while (true) {
+                        var r = u.execute(bytes, pos, tmp, 0);
+                        b.addBytes(tmp, 0, r.write);
+                        pos += r.read;
+                        if (r.done)
+                          break;
+                     }
+                     u.close();
+                     bytes = b.getBytes();
+                     decoded = bytes!=null;
                   }
-                  u.close();
-                  bytes = b.getBytes();
-                  decoded = bytes!=null;
                }
+               catch(e:Dynamic)
+               {
+                  trace(e);
+               }
+
+               if (!decoded)
+                  onError("Bad GZip data");
             }
-            catch(e:Dynamic)
+
+            if (urlLoader.dataFormat== URLLoaderDataFormat.BINARY)
             {
-               trace(e);
+               byteData = ByteArray.fromBytes(bytes);
+            }
+            else
+            {
+               #if neko
+               stringData = neko.Lib.stringReference(bytes);
+               #else
+               #if haxe4
+               stringData = bytes.getString(0, bytes.length, UTF8);
+               #else
+               stringData = bytes.getString(0, bytes.length);
+               #end
+               #end
             }
 
-            if (!decoded)
-               onError("Bad GZip data");
-         }
-
-         if (urlLoader.dataFormat== URLLoaderDataFormat.BINARY)
-         {
-            byteData = ByteArray.fromBytes(bytes);
+            state = URLLoader.urlComplete;
          }
          else
          {
-            #if neko
-            stringData = neko.Lib.stringReference(bytes);
-            #else
-            #if haxe4
-            stringData = bytes.getString(0, bytes.length, UTF8);
-            #else
-            stringData = bytes.getString(0, bytes.length);
-            #end
-            #end
+            //trace(" -> error");
          }
-
-         state = URLLoader.urlComplete;
       }
-      else
+      catch(e:Dynamic)
       {
-         //trace(" -> error");
+         if (!closed)
+            onError(""+e);
       }
    }
    #end

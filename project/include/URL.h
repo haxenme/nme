@@ -51,6 +51,7 @@ class URLLoader : public Object
 
       virtual ~URLLoader() { };
       virtual URLState getState()=0;
+      virtual void     close()=0;
       virtual int      bytesLoaded()=0;
       virtual int      bytesTotal()=0;
       virtual int      getHttpCode()=0;

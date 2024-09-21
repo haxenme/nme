@@ -204,6 +204,10 @@ public:
       return ((CURLLoader *)userdata)->ReadFunc(ptr,size,nmemb);
    }
 
+   void close()
+   {
+   }
+
    void SetPutBuffer(const unsigned char *inBuffer, size_t inLen)
    {
       mPutBuffer = new unsigned char[inLen];
@@ -225,16 +229,26 @@ public:
       processMultiMessages();
    }
 
-   ~CURLLoader()
+   void close()
    {
       delete [] mPutBuffer;
-      curl_easy_cleanup(mHandle);
-      sLoaders--;
-      if (sLoaders==0)
+      mPutBuffer = nullptr;
+      if (mHandle)
       {
-         curl_multi_cleanup(sCurlM);
-         sCurlM = 0;
+         curl_easy_cleanup(mHandle);
+         mHandle = nullptr;
+         sLoaders--;
+         if (sLoaders==0)
+         {
+            curl_multi_cleanup(sCurlM);
+            sCurlM = 0;
+         }
       }
+   }
+
+   ~CURLLoader()
+   {
+      close();
    }
 
    size_t onData( void *inBuffer, size_t inItemSize, size_t inItems)

@@ -51,6 +51,7 @@ class URLLoader extends EventDispatcher
    public static inline var urlLoading    = 2;
    public static inline var urlComplete    = 3;
    public static inline var urlError       = 4;
+   public static inline var urlClosed      = 5;
 
    private var state:Int;
    public var nmeOnComplete:Dynamic -> Bool;
@@ -69,6 +70,18 @@ class URLLoader extends EventDispatcher
          load(request);
    }
 
+   public function close():Void
+   {
+      activeLoaders.remove(this);
+      if (nmeHandle!=null)
+         nme_curl_close(nmeHandle);
+      #if !no_haxe_http
+      if (httpLoader!=null)
+        httpLoader.close();
+      #end
+      disposeHandler();
+   }
+
    override public function toString()
    {
       #if no_haxe_http
@@ -76,10 +89,6 @@ class URLLoader extends EventDispatcher
       #else
       return 'URLLoader(${nmeHandle!=null?"curl":httpLoader!=null?"http":"null"})';
       #end
-   }
-
-   public function close() 
-   {
    }
 
    public static function hasActive() 
@@ -130,7 +139,17 @@ class URLLoader extends EventDispatcher
       {
          request.nmePrepare();
 
-         nmeHandle = nme_curl_create(request);
+         #if no_haxe_http
+         var tryCurl = true;
+         #else
+         var tryCurl = !request.preferHaxeHttp;
+         #end
+
+         if (tryCurl)
+         {
+            nmeHandle = nme_curl_create(request);
+         }
+
          #if !no_haxe_http
          if (nmeHandle==null)
          {
@@ -380,6 +399,7 @@ class URLLoader extends EventDispatcher
    private static var nme_curl_get_data = Loader.load("nme_curl_get_data", 1);
    private static var nme_curl_get_cookies = Loader.load("nme_curl_get_cookies", 1);
    private static var nme_curl_get_headers = Loader.load("nme_curl_get_headers", 1);
+   private static var nme_curl_close = Loader.load("nme_curl_close", 1);
    private static var nme_curl_initialize = Loader.load("nme_curl_initialize", 1);
 }
 

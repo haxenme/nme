@@ -7,6 +7,7 @@ import nme.ui.Scale;
 import nme.utils.Float32Array;
 import nme.utils.UInt8Array;
 import nme.events.KeyboardEvent;
+import nme.utils.ByteArray;
 import AllNme;
 import Sys;
 
@@ -238,6 +239,13 @@ class Acadnme extends Sprite implements IScriptHandler
       }
    }
 
+   public function runBytes(bytes:ByteArray)
+   {
+       clearBoot();
+       trace("Run bytes " + bytes.length);
+       nme.script.Nme.runBytes(bytes);
+   }
+
    public function runBoot()
    {
       if (nme.Assets.hasBytes("AcadnmeBoot.nme"))
@@ -261,6 +269,13 @@ class Acadnme extends Sprite implements IScriptHandler
    {
       instance.run(inScript);
    }
+
+   @:keep // Used by boot
+   public static function runScriptBytes(inScript:ByteArray)
+   {
+      instance.runBytes(inScript);
+   }
+
 
    @:keep // Used by boot
    public static function getEngines() : Array< {name:String, version:String} >

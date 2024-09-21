@@ -26,6 +26,8 @@ class URLRequest
    public var credentials:String;
    public var followRedirects:Bool;
    public var allowFile:Bool;
+   // Uses internal version, which can side-step CORS prevention
+   public var preferHaxeHttp:Bool;
 
    /** @private */ public var __bytes:ByteArray;
    /** @private */ public var nmeBytes(get, set):ByteArray;

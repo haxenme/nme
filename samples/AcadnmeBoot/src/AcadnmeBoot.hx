@@ -17,8 +17,10 @@ import gm2d.skin.Shape;
 import gm2d.skin.Skin;
 import gm2d.svg.Svg;
 import gm2d.svg.SvgRenderer;
+import gm2d.Game;
 import sys.FileSystem;
-import nme.net.SharedObject;
+import nme.net.*;
+import nme.events.*;
 import sys.io.File;
 
 using  StringTools;
@@ -118,8 +120,64 @@ class AcadnmeBoot extends Screen implements IBoot
       if (isWeb)
       {
          var q = nme.Lib.getWebpageParam("prog");
+         if (q!=null && q!="")
+            downloadAndRun(q);
       }
    }
+
+   function downloadAndRun(url:String)
+   {
+      var loader = new URLLoader();
+      loader.dataFormat = URLLoaderDataFormat.BINARY;
+
+      var status:String = null;
+      var progress = ProgressDialog.create("Download", url, status, 100.0, () -> {
+         if (loader!=null)
+         {
+            loader = null;
+         }
+      } );
+      progress.show(true,false);
+      loader.addEventListener( Event.COMPLETE, (_) -> {
+         Game.closeDialog();
+         if (loader!=null)
+         {
+            var bytes:ByteArray = loader.data;
+            if (bytes==null)
+               warn("Error Loading Data","No data.");
+            else
+               Acadnme.runScriptBytes(bytes);
+         }
+      });
+      var lastPct = 0;
+      loader.addEventListener(ProgressEvent.PROGRESS, (p) -> {
+         var pct = Std.int( 100 * p.bytesLoaded / Math.max(1,p.bytesTotal) );
+         if (pct!=lastPct)
+         {
+            lastPct = pct;
+            progress.update(pct);
+         }
+      } );
+      loader.addEventListener(IOErrorEvent.IO_ERROR, (e) -> {
+          Game.closeDialog();
+          warn("Error Loading Data", "Error: " + e.text );
+      } );
+
+      var req = new URLRequest(url);
+      req.preferHaxeHttp = true;
+      loader.load(req);
+   }
+
+   public function warn(title:String, message:String)
+   {
+      var panel = new Panel(title);
+      //Sys.println("Warning:" + message);
+      panel.addLabel(message);
+      panel.addTextButton("Ok", Game.closeDialog );
+      var dlg = new gm2d.ui.Dialog(panel.getPane());
+      Game.doShowDialog(dlg,true);
+   }
+
 
    function onEnable(inValue:Bool)
    {

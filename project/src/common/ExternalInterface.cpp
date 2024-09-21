@@ -5570,6 +5570,19 @@ value nme_curl_create(value inURLRequest)
 }
 DEFINE_PRIM(nme_curl_create,1);
 
+value nme_curl_close(value inLoader)
+{
+   #ifdef NME_CURL
+   URLLoader *loader;
+   if (AbstractToObject(inLoader,loader))
+   {
+      loader->close();
+   }
+   #endif
+   return alloc_null();
+}
+DEFINE_PRIM(nme_curl_close,1);
+
 
 value nme_curl_process_loaders()
 {
