@@ -56,13 +56,16 @@
      <set name="NME_SIMD_D" value="-DNME_SIMD_ARM7" />
      <set name="NME_SIMD_ARM7" value="1" />
    </section>
-   <section if="HXCPP_M64" unless="NME_SIMD_D">
-     <set name="NME_SIMD_D" value="-DNME_SIMD_X86_64" />
-     <set name="NME_SIMD_X86_64" value="1" />
-   </section>
-   <section if="HXCPP_M32 windows" unless="NME_SIMD_D">
-     <set name="NME_SIMD_D" value="-DNME_SIMD_X86" />
-     <set name="NME_SIMD_X86" value="1" />
+
+   <section unless="android">
+      <section if="HXCPP_M64" unless="NME_SIMD_D">
+        <set name="NME_SIMD_D" value="-DNME_SIMD_X86_64" />
+        <set name="NME_SIMD_X86_64" value="1" />
+      </section>
+      <section if="HXCPP_M32 windows" unless="NME_SIMD_D">
+        <set name="NME_SIMD_D" value="-DNME_SIMD_X86" />
+        <set name="NME_SIMD_X86" value="1" />
+      </section>
    </section>
 
 

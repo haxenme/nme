@@ -100,6 +100,19 @@ class AndroidPlatform extends Platform
       else if(project.androidConfig.ABIs.length == 0)
       {
          project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"];
+         var explicitArch = [ "HXCPP_ARMV7", "HXCPP_ARM64", "HXCPP_X86", "HXCPP_X86_64" ];
+         var hasDef = false;
+         for( e in explicitArch)
+            if (project.hasDef(e))
+               hasDef = true;
+         if (hasDef)
+         {
+            var filtered = [];
+            for(i in 0...explicitArch.length)
+               if (project.hasDef(explicitArch[i]))
+                   filtered.push( project.androidConfig.ABIs[i]);
+            project.androidConfig.ABIs = filtered;
+         }
       }
 
       project.architectures = [for(abi in project.androidConfig.ABIs) findArchitectureByName(abi)];
