@@ -612,7 +612,7 @@
          </section>
          <files id="native-toolkit-png" />
          <files id="native-toolkit-zlib" unless="NME_LOCAL_TOOLKIT"  />
-         <files id="hxcpp_zlib" if="NME_LOCAL_TOOLKIT"  />
+         <files id="hxcpp_zlib" if="NME_LOCAL_TOOLKIT" unless="NME_STATIC_LINK"  />
          <files id="native-toolkit-angle" if="NME_ANGLE" />
          <section if="NME_CURL_TOOLKIT">
             <files id="native-toolkit-curl" />
