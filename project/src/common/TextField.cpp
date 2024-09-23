@@ -1887,9 +1887,9 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                      {
                         while(line<last_line && mLines[line+1].mChar0 >= cid)
                            line++;
-                        if (pos.y>fieldHeight)
-                           break;
                         double lineY = pos.y + mLines[line].mMetrics.ascent;
+                        if (lineY>fieldHeight)
+                           break;
                         if (pos.y>=GAP)
                         {
                            pos.y = lineY;
