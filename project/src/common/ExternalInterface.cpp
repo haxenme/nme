@@ -5894,6 +5894,7 @@ EMSCRIPTEN_KEEPALIVE int nme_file_upload_info( const char *event, double progres
 }
 #endif
 
+inline const char *safeStr( const char *inPtr ) { return inPtr ? inPtr : ""; }
 bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultPath, HxString inTypes, value inCallback, int inFlags )
 {
    if (gCurrentFileDialog)
@@ -5902,10 +5903,10 @@ bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultP
    // TODO - mac
    #if (defined(HX_WINDOWS) && !defined(HX_WINRT)) || defined(HX_MACOS)
    gCurrentFileDialog = new FileDialogSpec();
-   gCurrentFileDialog->title = inTitle.c_str();
-   gCurrentFileDialog->text = inText.c_str();
-   gCurrentFileDialog->defaultPath = inDefaultPath.c_str();
-   gCurrentFileDialog->fileTypes = inTypes.c_str();
+   gCurrentFileDialog->title = safeStr(inTitle.c_str());
+   gCurrentFileDialog->text = safeStr(inText.c_str());
+   gCurrentFileDialog->defaultPath = safeStr(inDefaultPath.c_str());
+   gCurrentFileDialog->fileTypes = safeStr(inTypes.c_str());
    gCurrentFileDialog->callback = new AutoGCRoot(inCallback);
    gCurrentFileDialog->flags = inFlags;
 
