@@ -169,7 +169,7 @@ public:
    virtual void Render(const RenderState &inState, const HardwareData &inData );
    virtual void RenderData(const HardwareData &inData, const ColorTransform *ctrans,const Trans4x4 &inTrans)=0;
 
-   virtual void BeginDirectRender()=0;
+   virtual void BeginDirectRender(const Rect &inRect)=0;
    virtual void EndDirectRender()=0;
 
 

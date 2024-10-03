@@ -904,10 +904,12 @@ void DirectRenderer::Render( const RenderTarget &inTarget, const RenderState &in
 {
    if (inState.mPhase==rpRender && inTarget.IsHardware())
    {
+      RenderState state(inState);
+
       gDirectRenderContext = inTarget.mHardware;
-      gDirectRenderContext->BeginDirectRender();
       Rect clip = inState.mClipRect;
       clip.y = inTarget.mHardware->Height() - clip.y - clip.h;
+      gDirectRenderContext->BeginDirectRender(clip);
       if (gNmeRenderGcFree)
       {
          gc_exit_blocking();

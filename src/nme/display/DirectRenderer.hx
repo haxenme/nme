@@ -18,7 +18,8 @@ class DirectRenderer extends DisplayObject
 
    private function nmeOnRender(inRect:Dynamic) 
    {
-      if (render != null) render(new Rectangle(inRect.x, inRect.y, inRect.width, inRect.height));
+      if (render != null)
+         render(new Rectangle(inRect.x, inRect.y, inRect.width, inRect.height));
    }
 
    public dynamic function render(inRect:Rectangle) 

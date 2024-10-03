@@ -478,8 +478,23 @@ public:
       #endif
    }
 
-   void BeginDirectRender()
+   void BeginDirectRender(const Rect &inRect)
    {
+      makeCurrent();
+
+      SetViewport(inRect);
+
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+
+      #ifdef WEBOS
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+      #endif
+
+      mLineWidth = 99999;
+
+
       gDirectMaxAttribArray = 0;
       #ifndef NME_NO_GETERROR
       int err0 = glGetError();
@@ -492,6 +507,9 @@ public:
    {
       for(int i=0;i<gDirectMaxAttribArray;i++)
          glDisableVertexAttribArray(i);
+
+      // Force dirty
+      mViewport.w = -1;
 
       #ifndef NME_NO_GETERROR
       int err = glGetError();

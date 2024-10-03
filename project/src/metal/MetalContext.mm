@@ -967,7 +967,7 @@ public:
       }
    }
 
-   void BeginDirectRender() { }
+   void BeginDirectRender(const Rect &inRect) { }
    void EndDirectRender() { }
 };
 
