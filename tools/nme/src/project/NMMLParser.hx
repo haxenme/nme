@@ -684,7 +684,14 @@ class NMMLParser
          project.templatePaths.push(path);
       }
    }
-   
+
+   function dumpVars(title:String, values:Map<String,String>)
+   {
+      Sys.println(title);
+      for(k in values.keys())
+         Sys.println("  " + k + "=" + values.get(k) );
+   }
+
    private function parseSequentially(xml:Access, section:String, extensionPath:String, inWarnUnknown):Void 
    {
       for(element in xml.elements) 
@@ -695,25 +702,33 @@ class NMMLParser
             switch(element.name) 
             {
                case "set":
-
-                  var name = element.att.name;
-                  var value = "";
-
-                  if (element.has.value) 
+                  if (!element.has.name)
                   {
-                     value = substitute(element.att.value);
+                     dumpVars("HaxeDefs",project.haxedefs);
+                     dumpVars("LocalDefs",project.localDefines);
+                     dumpVars("Environment",project.environment);
                   }
-
-                  switch(name) 
+                  else
                   {
-                     case "BUILD_DIR": project.app.binDir = value;
-                     case "SWF_VERSION": project.app.swfVersion = Std.parseFloat(value);
-                     case "PRERENDERED_ICON": project.iosConfig.prerenderedIcon = (value == "true");
-                     case "ANDROID_INSTALL_LOCATION": project.androidConfig.installLocation = value;
-                  }
+                     var name = element.att.name;
+                     var value = "";
 
-                  project.localDefines.set(name, value);
-                  project.environment.set(name, value);
+                     if (element.has.value) 
+                     {
+                        value = substitute(element.att.value);
+                     }
+
+                     switch(name) 
+                     {
+                        case "BUILD_DIR": project.app.binDir = value;
+                        case "SWF_VERSION": project.app.swfVersion = Std.parseFloat(value);
+                        case "PRERENDERED_ICON": project.iosConfig.prerenderedIcon = (value == "true");
+                        case "ANDROID_INSTALL_LOCATION": project.androidConfig.installLocation = value;
+                     }
+
+                     project.localDefines.set(name, value);
+                     project.environment.set(name, value);
+                  }
 
                case "unset":
 

@@ -1435,6 +1435,11 @@ class CommandLineTools
          sys.println("");
       }
 
+      if (project.architectures!=null)
+      {
+         Log.verbose("Using specified architectures:" + project.architectures );
+      }
+
       switch(command) 
       {
          case "":
@@ -1720,13 +1725,17 @@ class CommandLineTools
             else if (argument == "-bin") 
                binDirOverride = arguments[argIdx++];
 
-            else if (argument.substr(0, 4) == "-arm") 
+            else if (argument.substr(0, 4).toLowerCase() == "-arm") 
             {
                var name = argument.substr(1).toUpperCase();
-               var value = Type.createEnum(Architecture, name);
-
-               if (value != null) 
+               try {
+                  var value = Type.createEnum(Architecture, name);
                   project.architectures.push(value);
+               }
+               catch (e:Dynamic)
+               {
+                  throw "Unkown arm specification, use on of -ARMV5 -ARMV6 -ARMV7 -ARM64 or -32, -64 for x86/x86_64";
+               }
             }
             else if (argument == "-64") 
                project.architectures.push(Architecture.X64);

@@ -97,7 +97,11 @@ class AndroidPlatform extends Platform
             Log.error("Could not determine build target from adb, and no test ABI specified");
          }
       }
-      else if(project.androidConfig.ABIs.length == 0)
+      else if (project.architectures.length>0)
+      {
+         // Ok, use explicit list
+      }
+      else if (project.androidConfig.ABIs.length == 0 && project.architectures.length==0)
       {
          project.androidConfig.ABIs = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"];
          var explicitArch = [ "HXCPP_ARMV7", "HXCPP_ARM64", "HXCPP_X86", "HXCPP_X86_64" ];
@@ -115,10 +119,11 @@ class AndroidPlatform extends Platform
          }
       }
 
-      project.architectures = [for(abi in project.androidConfig.ABIs) findArchitectureByName(abi)];
-      
+      if (project.architectures.length==0)
+         project.architectures = [for(abi in project.androidConfig.ABIs) findArchitectureByName(abi)];
+
       Log.verbose("Valid archs: " + project.architectures );
-      
+
       var libDir = getOutputLibDir();
       for(abi in abis)
          if (project.architectures.indexOf(abi.architecture) == -1)
