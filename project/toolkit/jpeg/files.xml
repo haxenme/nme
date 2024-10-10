@@ -3,6 +3,9 @@
    <set name="NME_JPEG" value="${this_dir}/libjpeg-turbo/" />
    <echo value="${INCLUDE}/" />
 
+   <!-- nasm on mac x64 generate a whole lot of warning messages.  Nice just to skip it? -->
+   <set name="JPEG_SUPPRESS_SIMD" value="1" if="macos HXCPP_M64 NME_STATIC_LINK" unless="NME_NOISY_SIMD" />
+
 
    <files id="native-toolkit-jpeg-depends" >
       <depend name="${NME_JPEG}/jpeglib.h"/>
@@ -27,7 +30,7 @@
       <depend files="native-toolkit-jpeg-depends-int"/>
       <compilerflag value="-I${NME_JPEG}" />
       <compilerflag value="-I${NME_JPEG}/.." />
-      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D16" />
+      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D16" unless="JPEG_SUPPRESS_SIMD" />
       <objprefix value="s16_" />
       <file name="${NME_JPEG}jcapistd.c" />
       <file name="${NME_JPEG}jccolor.c" />
@@ -50,7 +53,7 @@
    <files id="native-toolkit-jpeg-12" tags="">
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
 
-      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D_12" />
+      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D_12" unless="JPEG_SUPPRESS_SIMD" />
       <compilerflag value="-DBITS_IN_JSAMPLE=12" />
       <depend files="native-toolkit-jpeg-depends-int"/>
       <compilerflag value="-I${NME_JPEG}" />
@@ -91,11 +94,9 @@
 
 
    <files id="native-toolkit-jpeg-8" tags="">
-      <cache value="1" />
-
       <tag value="${NATIVE_TOOLKIT_OPTIM_TAG}" if="NATIVE_TOOLKIT_OPTIM_TAG" />
 
-      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D" />
+      <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D" unless="JPEG_SUPPRESS_SIMD" />
       <depend files="native-toolkit-jpeg-depends-int"/>
       <compilerflag value="-I${NME_JPEG}" />
       <compilerflag value="-I${NME_JPEG}/.." />
@@ -200,13 +201,13 @@
             <file name="${NME_JPEG}/simd/arm/aarch32/jchuff-neon.c" />
          </section>
       </section>
-      <section if="NME_SIMD_X86_64" >
+      <section if="NME_SIMD_X86_64" unless="JPEG_SUPPRESS_SIMD"  >
          <file name="${NME_JPEG}/simd/x86_64/jsimd.c" />
       </section>
    </files>
 
    <files id="native-toolkit-jpeg-asm" >
-      <section if="NME_SIMD_X86_64" >
+      <section if="NME_SIMD_X86_64" unless="JPEG_SUPPRESS_SIMD" >
          <assembler name="nasm" />
          <compilerflag value="-D__x86_64__" />
          <section if="windows" >

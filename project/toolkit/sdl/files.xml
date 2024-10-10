@@ -539,7 +539,6 @@
             <file name="${NME_LIBSDL}src/audio/coreaudio/SDL_coreaudio.m" />
             <file name="${NME_LIBSDL}src/haptic/darwin/SDL_syshaptic.c" />
             <file name="${NME_LIBSDL}src/joystick/darwin/SDL_iokitjoystick.c" />
-            <file name="${NME_LIBSDL}src/hidapi/mac/hid.c" />
             <file name="${NME_LIBSDL}src/filesystem/cocoa/SDL_sysfilesystem.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoaclipboard.m" />
             <file name="${NME_LIBSDL}src/video/cocoa/SDL_cocoaevents.m" />
@@ -565,6 +564,7 @@
             <file name="${NME_LIBSDL}src/misc/macos/SDL_sysurl.m" />
             <file name="${NME_LIBSDL}src/power/macos/SDL_syspower.c" />
             <file name="${NME_LIBSDL}src/camera/coremedia/SDL_camera_coremedia.m" />
+
         </section>
 
         <section if="ios || tvos">
