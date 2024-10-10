@@ -63,6 +63,8 @@ typedef int MousePosType;
 
 namespace nme
 {
+static int sgDesktopX = 0;
+static int sgDesktopY = 0;
 static int sgDesktopWidth = 0;
 static int sgDesktopHeight = 0;
 static Rect sgWindowRect = Rect(0, 0, 0, 0);
@@ -2255,11 +2257,11 @@ static SDL_Renderer *sgMainRenderer = 0;
 void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight, unsigned int inFlags, const char *inTitle, Surface *inIcon)
 {
    bool isMain = sgSDLFrame==nullptr;
-
    #ifdef HX_MACOS
    if (isMain)
       MacBoot();
    #endif
+
 
 
    bool fullscreen = (inFlags & wfFullScreen) != 0;
@@ -2324,6 +2326,42 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       }
    }
    
+
+   #ifdef NME_SDL3
+      SDL_DisplayID startupDisplay = SDL_GetPrimaryDisplay();
+      #if defined(HX_WINDOWS) && !defined(HX_WINRT)
+      if (isMain)
+      {
+         HWND fg = GetForegroundWindow();
+         if (fg!=0)
+         {
+            RECT rect;
+            if (GetWindowRect(fg,&rect))
+            {
+               SDL_Point p;
+               p.x = (rect.left + rect.right)>>1;
+               p.y = (rect.top + rect.bottom)>>1;
+               startupDisplay = SDL_GetDisplayForPoint(&p);
+               /*
+               printf("Found startup display %d,%d -> %d\n", p.x, p.y, (int)startupDisplay);
+               int count = 0;
+               SDL_DisplayID *displays = SDL_GetDisplays(&count);
+               printf(" display count:%d\n", count);
+               for(int i=0;i<count;i++)
+               {
+                  SDL_Rect r;
+                  SDL_GetDisplayBounds(displays[i], &r);
+                  printf(" %d] %d,%d, %dx%d\n",i,r.x, r.y, r.w,r.h );
+               }
+               SDL_free(displays);
+               */
+            }
+         }
+      }
+      #endif
+   #endif
+
+
    //SDL_EnableUNICODE(1);
    //SDL_EnableKeyRepeat(500,30);
 
@@ -2341,13 +2379,26 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       sgDesktopHeight = currentMode.h;
    }
    #else
-   SDL_DisplayID display_id = SDL_GetPrimaryDisplay();
-   const SDL_DisplayMode *modePtr = SDL_GetDesktopDisplayMode(display_id);
-   if (modePtr)
+
+   SDL_Rect bounds;
+   // SDL_GetDisplayUsableBounds?
+   if (SDL_GetDisplayBounds(startupDisplay, &bounds))
    {
-      sgDesktopWidth = modePtr->w;
-      sgDesktopHeight = modePtr->h;
+       sgDesktopX = bounds.x;
+       sgDesktopY = bounds.y;
+       sgDesktopWidth = bounds.w;
+       sgDesktopHeight = bounds.h;
    }
+   else
+   {
+      const SDL_DisplayMode *modePtr = SDL_GetDesktopDisplayMode(startupDisplay);
+      if (modePtr)
+      {
+         sgDesktopWidth = modePtr->w;
+         sgDesktopHeight = modePtr->h;
+      }
+   }
+
    #endif
    
    int windowFlags, requestWindowFlags = 0;
@@ -2444,17 +2495,27 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
        int borderH = r.bottom-r.top - 100;
        if (targetH + borderH > sgDesktopHeight)
        {
-          targetY = -r.top;
+          targetY = sgDesktopX-r.top;
           targetH = sgDesktopHeight - borderH;
        }
+       else if (sgDesktopX!=0 || sgDesktopY!=0)
+       {
+          targetY = sgDesktopY + ((sgDesktopHeight-borderH-targetH)>>1);
+       }
+
        if (targetW + borderW > sgDesktopWidth)
        {
-          targetX = -r.left;
+          targetX = sgDesktopY-r.left;
           targetW = sgDesktopWidth - borderW;
        }
+       else if (sgDesktopX!=0 || sgDesktopY!=0)
+       {
+          targetX = sgDesktopX + ((sgDesktopWidth-borderW-targetW)>>1);
+       }
+
    }
    #endif
-   
+
    #ifdef HX_LINUX
    int setWidth = targetW;
    int setHeight = targetH;
