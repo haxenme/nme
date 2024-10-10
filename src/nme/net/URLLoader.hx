@@ -347,6 +347,7 @@ class URLLoader extends EventDispatcher
       #if !no_haxe_http
       else
       {
+         httpLoader.update();
          bytesLoaded = httpLoader.bytesLoaded;
          bytesTotal = httpLoader.bytesTotal;
          state = httpLoader.state;

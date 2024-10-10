@@ -7,7 +7,9 @@ import nme.events.ProgressEvent;
 import nme.events.HTTPStatusEvent;
 import nme.utils.ByteArray;
 import haxe.Http;
-#if !js
+
+#if http_threaded
+
 #if haxe4
 import sys.thread.Mutex;
 import sys.thread.Thread;
@@ -15,6 +17,12 @@ import sys.thread.Thread;
 import cpp.vm.Mutex;
 import cpp.vm.Thread;
 #end
+
+typedef HttpApi = haxe.Http;
+#else
+
+typedef HttpApi = nme.net.HttpNonBlocking;
+
 #end
 
 private class OutputWatcher extends haxe.io.BytesOutput
@@ -44,7 +52,7 @@ private class OutputWatcher extends haxe.io.BytesOutput
 
 class HttpLoader
 {
-   #if !js
+   #if http_threaded
    static var jobs:Array<Void->Void>;
    static var mutex:Mutex;
    static var workers = 0;
@@ -64,10 +72,9 @@ class HttpLoader
    public var bytesLoaded(default,null):Int;
    public var bytesTotal(default,null):Int;
    public var state(default,null):Int;
-   var http:Http;
-   #if !js
+   var http:HttpApi;
+
    var output:OutputWatcher;
-   #end
 
    public function new(inLoader:URLLoader, inRequest:URLRequest)
    {
@@ -79,9 +86,10 @@ class HttpLoader
       code = 0;
       closed = false;
 
-      http = new Http(inRequest.url);
+      http = new HttpApi(inRequest.url);
       http.onError = onError;
       http.onStatus = onStatus;
+      http.onBytes = onComplete;
 
       for(header in urlRequest.requestHeaders)
          http.addHeader(header.name, header.value);
@@ -93,10 +101,23 @@ class HttpLoader
       if (isPost)
          http.setPostBytes(urlRequest.nmeBytes);
 
-      #if wasm
-      run();
-      #elseif !js
-      runAsync(run);
+      var output = new OutputWatcher(this);
+      var isPost = urlRequest.method==URLRequestMethod.POST;
+
+      #if http_threaded
+      runAsync( () -> {
+         try
+         {
+            http.customRequest(isPost, output);
+         }
+         catch(e:Dynamic)
+         {
+            if (!closed)
+               onError(""+e);
+         }
+      } );
+      #else
+      http.nonblockingRequest(isPost, output);
       #end
    }
 
@@ -112,87 +133,65 @@ class HttpLoader
       closed = true;
    }
 
-   #if !js
-   public function run()
+   function onComplete(bytes:haxe.io.Bytes)
    {
-      try
+      bytesLoaded = bytesTotal = bytes.length;
+
+      var encoding =  http.responseHeaders.get("Content-Encoding");
+      if (encoding=="gzip")
       {
-         var output = new OutputWatcher(this);
-
-         var isPost = urlRequest.method==URLRequestMethod.POST;
-         http.customRequest(isPost, output);
-
-         if (state!=URLLoader.urlError)
+         var decoded = false;
+         try
          {
-            var bytes = output.getBytes();
-
-            bytesLoaded = bytesTotal = bytes.length;
-
-            var encoding =  http.responseHeaders.get("Content-Encoding");
-            if (encoding=="gzip")
+            if (bytes.length>10 && bytes.get(0)==0x1f && bytes.get(1)==0x8b)
             {
-               var decoded = false;
-               try
-               {
-                  if (bytes.length>10 && bytes.get(0)==0x1f && bytes.get(1)==0x8b)
-                  {
-                     var u = new haxe.zip.Uncompress(15|32);
-                     var tmp = haxe.io.Bytes.alloc(1<<16);
-                     u.setFlushMode(haxe.zip.FlushMode.SYNC);
-                     var b = new haxe.io.BytesBuffer();
-                     var pos = 0;
-                     while (true) {
-                        var r = u.execute(bytes, pos, tmp, 0);
-                        b.addBytes(tmp, 0, r.write);
-                        pos += r.read;
-                        if (r.done)
-                          break;
-                     }
-                     u.close();
-                     bytes = b.getBytes();
-                     decoded = bytes!=null;
-                  }
+               var u = new haxe.zip.Uncompress(15|32);
+               var tmp = haxe.io.Bytes.alloc(1<<16);
+               u.setFlushMode(haxe.zip.FlushMode.SYNC);
+               var b = new haxe.io.BytesBuffer();
+               var pos = 0;
+               while (true) {
+                  var r = u.execute(bytes, pos, tmp, 0);
+                  b.addBytes(tmp, 0, r.write);
+                  pos += r.read;
+                  if (r.done)
+                    break;
                }
-               catch(e:Dynamic)
-               {
-                  trace(e);
-               }
-
-               if (!decoded)
-                  onError("Bad GZip data");
+               u.close();
+               bytes = b.getBytes();
+               decoded = bytes!=null;
             }
-
-            if (urlLoader.dataFormat== URLLoaderDataFormat.BINARY)
-            {
-               byteData = ByteArray.fromBytes(bytes);
-            }
-            else
-            {
-               #if neko
-               stringData = neko.Lib.stringReference(bytes);
-               #else
-               #if haxe4
-               stringData = bytes.getString(0, bytes.length, UTF8);
-               #else
-               stringData = bytes.getString(0, bytes.length);
-               #end
-               #end
-            }
-
-            state = URLLoader.urlComplete;
          }
-         else
+         catch(e:Dynamic)
          {
-            //trace(" -> error");
+            trace(e);
          }
+
+         if (!decoded)
+            onError("Bad GZip data");
       }
-      catch(e:Dynamic)
+
+      if (urlLoader.dataFormat== URLLoaderDataFormat.BINARY)
       {
-         if (!closed)
-            onError(""+e);
+         byteData = ByteArray.fromBytes(bytes);
       }
+      else
+      {
+         #if neko
+         stringData = neko.Lib.stringReference(bytes);
+         #else
+         #if haxe4
+         stringData = bytes.getString(0, bytes.length, UTF8);
+         #else
+         stringData = bytes.getString(0, bytes.length);
+         #end
+         #end
+      }
+
+      state = URLLoader.urlComplete;
    }
-   #end
+
+
 
    public function onBytesLoaded(count:Int)
    {
@@ -220,7 +219,7 @@ class HttpLoader
       code = inStatus;
    }
 
-   #if !js
+   #if http_threaded
    public static function runAsync(job:Void->Void)
    {
       if (jobs==null)
@@ -258,10 +257,14 @@ class HttpLoader
    }
    #end
 
-
-   public static function pollAll()
+   inline public function update()
    {
+      #if !http_threaded
+      if (http!=null)
+         http.update();
+      #end
    }
+
 
    public function getErrorMessage() return errorMessage;
    public function getData(): ByteArray return byteData;
