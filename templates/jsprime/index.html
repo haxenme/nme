@@ -59,6 +59,19 @@
 
 
     <script type='text/javascript'>
+       const nmeSvg = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkViZW5lXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iMTAyNHB4IiBoZWlnaHQ9IjEwMjRweCIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMTAyNCAxMDI0IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnIHRyYW5zZm9ybT0ic2NhbGUoNCw0KSI+DQoJPHJlY3QgZmlsbD0iI0YwNUEyMiIgd2lkdGg9IjI1NiIgaGVpZ2h0PSIyNTYiLz4NCgk8cmVjdCB4PSIxOTguNCIgeT0iODkuNiIgZmlsbD0iI0ZDQjgxMyIgd2lkdGg9IjU3LjYiIGhlaWdodD0iMjUuNjAxIi8+DQoJPHJlY3QgeD0iMTk4LjQiIHk9IjExNS4yIiBmaWxsPSIjRkZGMTAwIiB3aWR0aD0iNTcuNiIgaGVpZ2h0PSIyNS42MDEiLz4NCgk8cmVjdCB4PSIxOTguNCIgeT0iMTQwLjgwMSIgZmlsbD0iI0ZDQjgxMyIgd2lkdGg9IjU3LjYiIGhlaWdodD0iMjUuNiIvPg0KCTxwb2x5Z29uIGZpbGw9IiNGQ0I4MTMiIHBvaW50cz0iMCw4OS42IDc2LjgwMSwxNjYuNCAxMDIuNCwxNjYuNCAxMDIuNCwxNDAuODAxIDUxLjIwMSw4OS42IAkiLz4NCgk8cG9seWdvbiBmaWxsPSIjRkZGMTAwIiBwb2ludHM9IjE4OS40MzksMTA0Ljk2IDE1My42LDE0MC44MDEgMTUzLjYsMTY2LjQgMTg5LjQzOSwxNjYuNCAJIi8+DQoJPHBvbHlnb24gZmlsbD0iI0ZDQjgxMyIgcG9pbnRzPSIxNTMuNiw4OS42IDE4OS40MzksODkuNiAxODkuNDM5LDEwNC45NiAxNTMuNiwxNDAuODAxIDEyOCwxMTUuMiAJIi8+DQoJPHBvbHlnb24gZmlsbD0iI0ZGRjEwMCIgcG9pbnRzPSIwLDg5LjYgMzUuODQxLDEyNS40NDEgMzUuODQxLDE2Ni40IDAsMTY2LjQgCSIvPg0KCTxwb2x5Z29uIGZpbGw9IiNGRkYxMDAiIHBvaW50cz0iMTAyLjQsODkuNiA3Ni44MDEsODkuNiA3Ni44MDEsMTE1LjIgMTI4LDE2Ni40IDE1My42LDE0MC44MDEgCSIvPg0KPC9nPg0KPC9zdmc+DQo=";
+
+
+       const img = new Image();
+       img.onload = () => {
+          var canvas = document.getElementById('canvas');
+          const ctx = canvas.getContext('2d');
+          const size = Math.min(canvas.width,canvas.height);
+          ctx.drawImage(img,(canvas.width-size)/2,(canvas.height-size)/2,size,size);
+       };
+       img.src = nmeSvg;
+
+
        var emrun_http_sequence_number=1;
        var emrunPost = function(msg){
           var http=new XMLHttpRequest;
