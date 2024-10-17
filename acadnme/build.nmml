@@ -68,6 +68,7 @@
   <unset name="no_haxe_http" if="wasm" />
   <engine name="Acadnme" version="6.0" />
   <haxedef name="HXCPP_LINK_TOTAL_MEMORY" value="32000000"/>
+
   <haxeflag name="-dce no" />
 
   <certificate path="${KEYSTORE_PATH}/android.keystore" alias="nme" password="${KEYSTORE_PASSWD}" if="KEYSTORE_PASSWD KEYSTORE_PATH" />

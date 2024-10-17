@@ -305,6 +305,7 @@ class Window
                appEventHandler.onDpiChanged(event);
 
             case EventId.DropBegin, EventId.DropFile, EventId.DropEnd:
+               appEventHandler.onDrop(event);
 
             case EventId.WindowClose:
                appEventHandler.onWindowClose();

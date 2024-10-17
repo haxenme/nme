@@ -1,8 +1,6 @@
 import cpp.cppia.HostClasses;
 
-import nme.display.Sprite;
-import nme.display.Bitmap;
-import nme.display.BitmapData;
+import nme.display.*;
 import nme.script.Server;
 import nme.geom.Point;
 import nme.Assets;
@@ -37,6 +35,7 @@ class AcadnmeBoot extends Screen implements IBoot
    var button:Button;
    var nmeVersion:String;
    var isWeb:Bool;
+   var listenStage:Stage;
 
    public function new()
    {
@@ -98,32 +97,102 @@ class AcadnmeBoot extends Screen implements IBoot
        var hostBar = new Widget({ align:Layout.AlignCenterY  });
        hostBar.setItemLayout( new HorizontalLayout([1,0]).stretch() );
 
-       if (url==null)
+       if (!isWeb)
+       {
           hostBar.addWidget(new TextLabel("Host:" + getConnectionStatus(),{ textColor:accent, align:Layout.AlignCenterY|Layout.AlignStretch }) );
+          hostBar.addWidget( button = Button.BMPButton( createMenuIcon(), onMenu, { shape:ShapeNone } ) );
+       }
        else
+       {
           hostBar.addWidget(new TextLabel("",{ textColor:accent, align:Layout.AlignCenterY|Layout.AlignStretch }) );
+          hostBar.addWidget( button = Button.TextButton( "Load .nme file", onMenu, {
+              textColor:0xffffff,
+              //line:LineSolid(1,0xff0000,1),
+              line:LineNone,
+              //fill:FillSolid(0xffffff,0.25),
+              fill:FillSolid(0xffa080,1),
+              shape:ShapeRoundRect,
+              margin:pad,
+          } ) );
+       }
 
-       hostBar.addWidget( button = Button.BMPButton( createMenuIcon(), onMenu, { shape:ShapeNone } ) );
        hostBar.build();
 
        titleBar.addWidget(hostBar);
        titleBar.build();
 
 
-      tileCtrl = new TileControl(["Stretch"], { padding:new Rectangle(10,0,20,10), columnWidth:400});
-      fillList();
-      addWidget(tileCtrl);
+      if (isWeb)
+      {
+         var tl = new TextLabel("Welcome To NME!", {
+               multiline:true,
+               wordwrap:true,
+               itemAlign:Layout.AlignTop,
+            }
+         );
+         var tf = tl.getLabel();
+         tf.htmlText = [
+            "<br>",
+            "<font size='32'><b>Welcome To NME!</b></font>",
+            "<br>",
+            "1. Compile your programs with <u>NME</u>.",
+            "<br>",
+            "   <i>nme cppia installer</i>",
+            "<br>",
+            "2. Run your .nme files using the button in the title bar!",
+            "<br>",
+         ].join("\n");
+         addChild(tf);
+         var b = skin.scale(10);
+         var layout = new TextLayout(tf).setBorders(b,b,b,b).stretch();
+         getItemLayout().add(layout);
+      }
+      else
+      {
+         tileCtrl = new TileControl(["Stretch"], { padding:new Rectangle(10,0,20,10), columnWidth:400});
+         fillList();
+         addWidget(tileCtrl);
+         addListeners();
+      }
 
       build();
       makeCurrent();
 
+      /*
+      CORS issues here 
       if (isWeb)
       {
          var q = nme.Lib.getWebpageParam("prog");
          if (q!=null && q!="")
             downloadAndRun(q);
       }
+      */
    }
+
+   function onDropFiles(e:DropEvent)
+   {
+      var items = e.items;
+      if (items!=null && items.length==1)
+      {
+         launch(items[0]);
+      }
+   }
+
+   function addListeners()
+   {
+      listenStage = stage;
+      listenStage.addEventListener(DropEvent.DROP_FILES, onDropFiles);
+   }
+
+   function removeListeners()
+   {
+      if (listenStage!=null)
+      {
+         listenStage.removeEventListener(DropEvent.DROP_FILES, onDropFiles);
+         listenStage = null;
+      }
+   }
+
 
    function downloadAndRun(url:String)
    {
@@ -146,7 +215,7 @@ class AcadnmeBoot extends Screen implements IBoot
             if (bytes==null)
                warn("Error Loading Data","No data.");
             else
-               Acadnme.runScriptBytes(bytes);
+               runBytes(bytes);
          }
       });
       var lastPct = 0;
@@ -273,23 +342,41 @@ class AcadnmeBoot extends Screen implements IBoot
       if (name=="" || name==null)
          return "usage : launch appName";
 
-      var path = launchScript.get(name);
-      if (path==null)
+      var path = null;
+      if (launchScript!=null)
       {
-         for(k in launchScript.keys())
+         path = launchScript.get(name);
+         if (path==null)
          {
-            var parts = k.split(".");
-            if (parts[ parts.length-1 ]==name)
-                path = launchScript[k];
+            for(k in launchScript.keys())
+            {
+               var parts = k.split(".");
+               if (parts[ parts.length-1 ]==name)
+                   path = launchScript[k];
+            }
          }
       }
       if (path==null && FileSystem.exists(name) )
          path = name;
       if (path==null)
          return 'Unknown application $name';
-      haxe.Timer.delay( function() Acadnme.runScript(path), 0 );
+      haxe.Timer.delay( () -> run(path), 0 );
       return "launched...";
    };
+
+
+   function runBytes(bytes:ByteArray)
+   {
+      removeListeners();
+      Acadnme.runScriptBytes(bytes);
+   }
+
+   function run(path:String)
+   {
+      removeListeners();
+      Acadnme.runScript(path);
+   }
+
 
 
    function apps() : String
@@ -380,7 +467,7 @@ class AcadnmeBoot extends Screen implements IBoot
    public function onSelect(path:String):Void
    {
       if (path!=null)
-         Acadnme.runScript(path);
+         run(path);
    }
 
    function addNmeApp(appName:String, details:Dynamic,path:String)
@@ -450,6 +537,9 @@ class AcadnmeBoot extends Screen implements IBoot
 
    public function fillList()
    {
+      if (isWeb)
+         return;
+
       launchScript = new Map<String, String>();
       tileCtrl.clear();
 

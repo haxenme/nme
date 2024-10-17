@@ -2634,7 +2634,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       #else
       int renderFlags = 0;
       if (hardware) renderFlags |= SDL_RENDERER_ACCELERATED;
+      #ifndef EMSCRIPTEN
       if (hardware && vsync) renderFlags |= SDL_RENDERER_PRESENTVSYNC;
+      #endif
       renderer = SDL_CreateRenderer(window, -1, renderFlags);
       #endif
 

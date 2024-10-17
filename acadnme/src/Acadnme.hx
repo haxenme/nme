@@ -34,7 +34,7 @@ class Acadnme extends Sprite implements IScriptHandler
 
 
       instance = this;
-      var startServer = #if emscripten false #else true #end;
+      var startServer = #if web false #else true #end;
 
       // For attaching a debugger
       var delay = Sys.getEnv("ACADNME_DELAY")!=null;
@@ -83,18 +83,20 @@ class Acadnme extends Sprite implements IScriptHandler
       }
       nme.system.System.setArgs(unusedArgs);
 
-      Server.functions["log"] = function(x) { scriptLog(x); return "ok"; }
 
-      server = new Server("Acadnme", Sys.getEnv("ACADNME_DIR"), this );
-      directory = server.directory;
 
       if (startServer)
       {
+         Server.functions["log"] = function(x) { scriptLog(x); return "ok"; }
+         server = new Server("Acadnme", Sys.getEnv("ACADNME_DIR"), this );
+         directory = server.directory;
          server.start();
          connectionStatus = server.connectedHost;
       }
       else
+      {
          connectionStatus = "Not started";
+      }
 
       if (script!=null)
       {
