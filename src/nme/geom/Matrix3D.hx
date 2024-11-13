@@ -515,10 +515,10 @@ class Matrix3D
    {
       var x:Float = v.x, y:Float = v.y, z:Float = v.z;
       return new Vector3D(
-         x * rawData[0] + y * rawData[1] + z * rawData[2],
-         x * rawData[4] + y * rawData[5] + z * rawData[6],
-         x * rawData[8] + y * rawData[9] + z * rawData[10],
-      0);
+         x * rawData[0] + y * rawData[4] + z * rawData[8],
+         x * rawData[1] + y * rawData[5] + z * rawData[9],
+         x * rawData[2] + y * rawData[6] + z * rawData[10],
+      1);
    }
 
 
