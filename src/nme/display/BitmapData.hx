@@ -195,7 +195,7 @@ class BitmapData implements IBitmapDrawable
    
    public function floodFill(x:Int, y:Int, color:Int):Void
    {
-	  nme_bitmap_data_flood_fill(nmeHandle, x, y, color);
+     nme_bitmap_data_flood_fill(nmeHandle, x, y, color);
    }
 
    
@@ -496,135 +496,135 @@ class BitmapData implements IBitmapDrawable
    
    /**
     * Flips an ARGB pixel value to BGRA or vice-versa
-    * @param	pix4 a 4-byte pixel value in AARRGGBB or BBGGRRAA format
+    * @param   pix4 a 4-byte pixel value in AARRGGBB or BBGGRRAA format
     * @return   pix4 flipped-endian format
     */
    
    public static inline function flip_pixel4(pix4:Int):Int{
-	   return (pix4       & 0xFF) << 24 |	//4th byte --> 1st byte
-			  (pix4 >>  8 & 0xFF) << 16 |	//3rd byte --> 2nd byte
-			  (pix4 >> 16 & 0xFF) <<  8 |	//2nd byte --> 3rd byte
-			  (pix4 >> 24 & 0xFF);       	//1st byte --> 4th byte
+      return (pix4       & 0xFF) << 24 |   //4th byte --> 1st byte
+           (pix4 >>  8 & 0xFF) << 16 |   //3rd byte --> 2nd byte
+           (pix4 >> 16 & 0xFF) <<  8 |   //2nd byte --> 3rd byte
+           (pix4 >> 24 & 0xFF);          //1st byte --> 4th byte
    }
    
    /**
     * Tests pixel values in an image against a specified threshold and sets pixels that pass the test to new color values.
-    * @param	sourceBitmapData input bitmap data. Source can be different BitmapData or can refer to current BitmapData. 
-    * @param	sourceRect rectangle that defines area of source image to use as input. 
-    * @param	destPoint point within destination image (current BitmapData) corresponding to upper-left corner of source rectangle. 
-    * @param	operation one of these strings: "<", "<=", ">", ">=", "==", "!="
-    * @param	threshold value each pixel is tested against to see if it meets or exceeds the threshhold.
-    * @param	color color value a pixel is set to if threshold test succeeds.
-    * @param	mask mask used to isolate a color component. 
-    * @param	copySource If true, pixel values from source image are copied to destination when threshold test fails. If false, source image is not copied when threshold test fails.
+    * @param   sourceBitmapData input bitmap data. Source can be different BitmapData or can refer to current BitmapData. 
+    * @param   sourceRect rectangle that defines area of source image to use as input. 
+    * @param   destPoint point within destination image (current BitmapData) corresponding to upper-left corner of source rectangle. 
+    * @param   operation one of these strings: "<", "<=", ">", ">=", "==", "!="
+    * @param   threshold value each pixel is tested against to see if it meets or exceeds the threshhold.
+    * @param   color color value a pixel is set to if threshold test succeeds.
+    * @param   mask mask used to isolate a color component. 
+    * @param   copySource If true, pixel values from source image are copied to destination when threshold test fails. If false, source image is not copied when threshold test fails.
     * @return
     */
    
-	public function threshold(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, operation:String, threshold:Int, color:Int = 0x00000000, mask:Int = 0xFFFFFFFF, copySource:Bool = false):Int {
-		
-		//Quick check to see if we can do this with an optimized faster case
-		if (sourceBitmapData == this && sourceRect.equals(rect) && destPoint.x==0 && destPoint.y==0) {
-			return _self_threshold(operation, threshold, color, mask);
-		}
-		
-		var sx:Int = Std.int(sourceRect.x);
-		var sy:Int = Std.int(sourceRect.y);
-		var sw:Int = Std.int(sourceBitmapData.width);
-		var sh:Int = Std.int(sourceBitmapData.height);
-		
-		var dx:Int = Std.int(destPoint.x);
-		var dy:Int = Std.int(destPoint.y);
-		
-		var bw:Int = width - sw - dx;
-		var bh:Int = height - sh - dy;
+   public function threshold(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, operation:String, threshold:Int, color:Int = 0x00000000, mask:Int = 0xFFFFFFFF, copySource:Bool = false):Int {
+      
+      //Quick check to see if we can do this with an optimized faster case
+      if (sourceBitmapData == this && sourceRect.equals(rect) && destPoint.x==0 && destPoint.y==0) {
+         return _self_threshold(operation, threshold, color, mask);
+      }
+      
+      var sx:Int = Std.int(sourceRect.x);
+      var sy:Int = Std.int(sourceRect.y);
+      var sw:Int = Std.int(sourceBitmapData.width);
+      var sh:Int = Std.int(sourceBitmapData.height);
+      
+      var dx:Int = Std.int(destPoint.x);
+      var dy:Int = Std.int(destPoint.y);
+      
+      var bw:Int = width - sw - dx;
+      var bh:Int = height - sh - dy;
 
-		var dw:Int = (bw < 0) ? sw + (width - sw - dx) : sw;
-		var dh:Int = (bw < 0) ? sh + (height - sh - dy) : sh;
-		
-		var hits:Int = 0;
-	
-		//flip endian-ness since this function's guts needs BGRA instead of RGBA
-		threshold = flip_pixel4(threshold);
-		color = flip_pixel4(color);
-	
-		//access the pixel data faster via raw bytes
-		
-		//Calculate how many bytes we need
-		var canvas_mem:Int = (sw * sh) * 4;
-		var source_mem:Int = 0;
-		if(copySource){
-			source_mem = (sw * sh) * 4;
-			//for storing both bitmaps in one ByteArray
-		}
-		var total_mem:Int = (canvas_mem + source_mem);
-		var mem:ByteArray = new ByteArray();
-		mem.setLength(total_mem);
-		
-		//write pixels into RAM
-		mem.position = 0;
-		var bd1 = sourceBitmapData.clone();
-		mem.writeBytes(bd1.getPixels(sourceRect));
-		mem.position = canvas_mem;
-		if(copySource){
-			var bd2 = sourceBitmapData.clone();
-			mem.writeBytes(bd2.getPixels(sourceRect));
-			}
-		
-		mem.position = 0;
-		
-		//Select the memory space (just once)
-		Memory.select(mem);
-		
-		var thresh_mask:Int = cast threshold & mask;
-		
-		//bound from 0...dw/dh to avoid unecessary calculations and return correct hits value
-		for (yy in 0...dh) {
-			for (xx in 0...dw) {
-				var pos:Int = ((xx + sx) + (yy + sy) * sw) * 4;
-				var pixelValue = Memory.getI32(pos);
-				var pix_mask:Int = cast pixelValue & mask;
-			
-				var i:Int = ucompare(pix_mask, thresh_mask);
-				var test:Bool = false;
-					 if (operation == "==") { test = i == 0; }
-				else if (operation == "<") { test = i == -1;}
-				else if (operation == ">") { test = i == 1; }
-				else if (operation == "!=") { test = i != 0; }
-				else if (operation == "<=") { test = i == 0 || i == -1; }
-				else if (operation == ">=") { test = i == 0 || i == 1; }
-				if(test){
-					Memory.setI32(pos, color);
-					hits++;
-				}else if (copySource) {
-					var source_color = Memory.getI32(canvas_mem+pos);
-					Memory.setI32(pos, source_color);
-				}
-			}
-		}		
-	mem.position = 0;	
-	bd1.setPixels(sourceRect, mem);			//draw to our temp buffer
-	copyPixels(bd1, bd1.rect, destPoint);	//draw to this bitmapdata at offset point
-	Memory.select(null);
-	return hits;	//# of pixels changed
+      var dw:Int = (bw < 0) ? sw + (width - sw - dx) : sw;
+      var dh:Int = (bw < 0) ? sh + (height - sh - dy) : sh;
+      
+      var hits:Int = 0;
+   
+      //flip endian-ness since this function's guts needs BGRA instead of RGBA
+      threshold = flip_pixel4(threshold);
+      color = flip_pixel4(color);
+   
+      //access the pixel data faster via raw bytes
+      
+      //Calculate how many bytes we need
+      var canvas_mem:Int = (sw * sh) * 4;
+      var source_mem:Int = 0;
+      if(copySource){
+         source_mem = (sw * sh) * 4;
+         //for storing both bitmaps in one ByteArray
+      }
+      var total_mem:Int = (canvas_mem + source_mem);
+      var mem:ByteArray = new ByteArray();
+      mem.setLength(total_mem);
+      
+      //write pixels into RAM
+      mem.position = 0;
+      var bd1 = sourceBitmapData.clone();
+      mem.writeBytes(bd1.getPixels(sourceRect));
+      mem.position = canvas_mem;
+      if(copySource){
+         var bd2 = sourceBitmapData.clone();
+         mem.writeBytes(bd2.getPixels(sourceRect));
+         }
+      
+      mem.position = 0;
+      
+      //Select the memory space (just once)
+      Memory.select(mem);
+      
+      var thresh_mask:Int = cast threshold & mask;
+      
+      //bound from 0...dw/dh to avoid unecessary calculations and return correct hits value
+      for (yy in 0...dh) {
+         for (xx in 0...dw) {
+            var pos:Int = ((xx + sx) + (yy + sy) * sw) * 4;
+            var pixelValue = Memory.getI32(pos);
+            var pix_mask:Int = cast pixelValue & mask;
+         
+            var i:Int = ucompare(pix_mask, thresh_mask);
+            var test:Bool = false;
+                if (operation == "==") { test = i == 0; }
+            else if (operation == "<") { test = i == -1;}
+            else if (operation == ">") { test = i == 1; }
+            else if (operation == "!=") { test = i != 0; }
+            else if (operation == "<=") { test = i == 0 || i == -1; }
+            else if (operation == ">=") { test = i == 0 || i == 1; }
+            if(test){
+               Memory.setI32(pos, color);
+               hits++;
+            }else if (copySource) {
+               var source_color = Memory.getI32(canvas_mem+pos);
+               Memory.setI32(pos, source_color);
+            }
+         }
+      }      
+   mem.position = 0;   
+   bd1.setPixels(sourceRect, mem);         //draw to our temp buffer
+   copyPixels(bd1, bd1.rect, destPoint);   //draw to this bitmapdata at offset point
+   Memory.select(null);
+   return hits;   //# of pixels changed
    }
    
    //******Replaces Int32.ucompare()******//
-	
-	/**
-	 * Compare 2 integers, byte-for-byte (unsigned mode)
-	 * @param	n1	an integer
-	 * @param	n2	another integer
-	 * @return	0 if n1 == n2, 1 if n1 > n2, -1 if n1 < n2
-	 */
-	
+   
+   /**
+    * Compare 2 integers, byte-for-byte (unsigned mode)
+    * @param   n1   an integer
+    * @param   n2   another integer
+    * @return   0 if n1 == n2, 1 if n1 > n2, -1 if n1 < n2
+    */
+   
    static public function ucompare(n1:Int, n2:Int) : Int {
         var tmp1 : Int;
         var tmp2 : Int;
-		
-		//For example, 
-			//tmp1 = 0xFF3D76BC;
-			//tmp2 = 0xFF3D76AA;
-			
+      
+      //For example, 
+         //tmp1 = 0xFF3D76BC;
+         //tmp2 = 0xFF3D76AA;
+         
         //Int has 32 bits - 4 bytes (except neko 1.8)
 
         //compare first - "head" bytes
@@ -668,64 +668,64 @@ class BitmapData implements IBitmapDrawable
         }
     }
    
-	//******END EXTRACTED SECTION******//
-	
+   //******END EXTRACTED SECTION******//
+   
    /**
     * Fast version for when you're not messing with multiple thingies
-    * @param	operation
-    * @param	threshold
-    * @param	color
-    * @param	mask
-    * @param	copySource
+    * @param   operation
+    * @param   threshold
+    * @param   color
+    * @param   mask
+    * @param   copySource
     * @return
     */
    
-	public function _self_threshold(operation:String, threshold:Int, color:Int = 0x00000000, mask:Int = 0xFFFFFFFF):Int {
-		var hits:Int = 0;
-	
-		//flip endian-ness since this function's guts needs BGRA instead of RGBA
-		threshold = flip_pixel4(threshold);
-		color = flip_pixel4(color);
-		
-		//access the pixel data faster via raw bytes
-		var mem:ByteArray = new ByteArray();
-		//32bit integer = 4 bytes
-		mem.setLength((width * height) * 4);
-		
-		//write pixels into RAM
-		var mem:ByteArray = getPixels(rect);
-		mem.position = 0;
-		
-		//Select the memory space (just once)
-		Memory.select(mem);
-		
-		var thresh_mask:Int = cast threshold & mask;
-		
-		for (yy in 0...height) {
-			var width_yy:Int = width * yy;
-			for (xx in 0...width) {
-				var pos:Int = (width_yy + xx) * 4;
-				var pixelValue = Memory.getI32(pos);
-				var pix_mask:Int = cast pixelValue & mask;
-			
-				var i:Int = ucompare(pix_mask, thresh_mask);
-				var test:Bool = false;
-					 if (operation == "==") { test = i == 0; }
-				else if (operation == "<") { test = i == -1;}
-				else if (operation == ">") { test = i == 1; }
-				else if (operation == "!=") { test = i != 0; }
-				else if (operation == "<=") { test = i == 0 || i == -1; }
-				else if (operation == ">=") { test = i == 0 || i == 1; }
-				if(test){
-					Memory.setI32(pos, color);
-					hits++;
-				}
-			}
-		}
-	mem.position = 0;
-	setPixels(rect, mem);
-	Memory.select(null);
-	return hits;
+   public function _self_threshold(operation:String, threshold:Int, color:Int = 0x00000000, mask:Int = 0xFFFFFFFF):Int {
+      var hits:Int = 0;
+   
+      //flip endian-ness since this function's guts needs BGRA instead of RGBA
+      threshold = flip_pixel4(threshold);
+      color = flip_pixel4(color);
+      
+      //access the pixel data faster via raw bytes
+      var mem:ByteArray = new ByteArray();
+      //32bit integer = 4 bytes
+      mem.setLength((width * height) * 4);
+      
+      //write pixels into RAM
+      var mem:ByteArray = getPixels(rect);
+      mem.position = 0;
+      
+      //Select the memory space (just once)
+      Memory.select(mem);
+      
+      var thresh_mask:Int = cast threshold & mask;
+      
+      for (yy in 0...height) {
+         var width_yy:Int = width * yy;
+         for (xx in 0...width) {
+            var pos:Int = (width_yy + xx) * 4;
+            var pixelValue = Memory.getI32(pos);
+            var pix_mask:Int = cast pixelValue & mask;
+         
+            var i:Int = ucompare(pix_mask, thresh_mask);
+            var test:Bool = false;
+                if (operation == "==") { test = i == 0; }
+            else if (operation == "<") { test = i == -1;}
+            else if (operation == ">") { test = i == 1; }
+            else if (operation == "!=") { test = i != 0; }
+            else if (operation == "<=") { test = i == 0 || i == -1; }
+            else if (operation == ">=") { test = i == 0 || i == 1; }
+            if(test){
+               Memory.setI32(pos, color);
+               hits++;
+            }
+         }
+      }
+   mem.position = 0;
+   setPixels(rect, mem);
+   Memory.select(null);
+   return hits;
    }
    
    public function generateFilterRect(sourceRect:Rectangle, filter:BitmapFilter):Rectangle 
@@ -806,6 +806,38 @@ class BitmapData implements IBitmapDrawable
    {
       // Handled internally...
    }
+
+
+
+   public function downscaleFit(w:Int, h:Int, bgCol = 0)
+   {
+      var src = this;
+
+      while(src.width>=w*2 || src.height>h*2)
+      {
+         var dest = new BitmapData(src.width>>1, src.height>>1, false, bgCol);
+         var mtx = new Matrix();
+         mtx.a = dest.width/src.width;
+         mtx.d = dest.height/src.height;
+         mtx.tx = 0;
+         mtx.ty = 0;
+         dest.draw(src,mtx,true);
+         src = dest;
+      }
+      var dest = new BitmapData(w, h, false, bgCol);
+
+      var scale = Math.min(  dest.width/src.width, dest.height/src.height );
+
+      var mtx = new Matrix();
+      mtx.a = scale;
+      mtx.d = scale;
+      mtx.tx = (w - scale*src.width) / 2;
+      mtx.ty = (h - scale*src.height) / 2;
+      dest.draw(src,mtx,true);
+
+      return dest;
+   }
+
 
    public function toString():String
    {
