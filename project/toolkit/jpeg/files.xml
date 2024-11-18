@@ -5,6 +5,7 @@
 
    <!-- nasm on mac x64 generate a whole lot of warning messages.  Nice just to skip it? -->
    <set name="JPEG_SUPPRESS_SIMD" value="1" if="macos HXCPP_M64 NME_STATIC_LINK" unless="NME_NOISY_SIMD" />
+   <set name="JPEG_SUPPRESS_SIMD" value="1" if="wasm" />
 
 
    <files id="native-toolkit-jpeg-depends" >

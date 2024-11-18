@@ -47,7 +47,7 @@ class ProgramTPosUniformCol extends ProgramBase
 
             var fragShader =
               #if !desktop 'precision mediump float;' + #end
-              "uniform vec4 col = vec4(1.0, 0.0, 0.0, 1.0);" +
+              "uniform vec4 col;" +
               "void main() {" +
               "gl_FragColor = col;"+
               "}";
@@ -74,6 +74,7 @@ class ProgramTPosUniformCol extends ProgramBase
       GL.drawArrays(primType, 0, primCount);
 
       GL.disableVertexAttribArray(posLocation);
+      GL.bindBuffer(GL.ARRAY_BUFFER, null);
    }
 
 
