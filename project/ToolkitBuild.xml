@@ -1,6 +1,6 @@
 <xml>
 
-   <set name="ios" value="1" if="iphone" />
+   <set name="ios" value="1" if="iphone||iphonesim" />
    <set name="tvos" value="1" if="appletv" />
    <set name="mac" value="1" if="macos" />
    <set name="native_toolkit_sdl_static" value="1" if="static_link" />
@@ -23,6 +23,7 @@
 
    <set name="NME_METAL" value="1" if="nme_metal" />
    <set name="NME_METAL" value="1" if="mac" unless="nme_no_metal" />
+   <set name="NME_VIDEO" value="1" unless="ios" />
    <set name="NME_NO_OGL" value="1" if="nme_no_ogl" />
    <set name="NME_NO_OGL" value="1" if="nme_metal" unless="mac" />
    <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE || NME_LOCAL_TOOLKIT" />

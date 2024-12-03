@@ -7,6 +7,7 @@
 #define NME_FLOAT32_VERT_VALUES
 #endif
 
+
 namespace nme
 {
 
@@ -141,7 +142,11 @@ public:
 
    static HardwareRenderer *current;
 
+   #ifndef IPHONE
    static HardwareRenderer *CreateMetal(void *inMetalLayer);
+   #endif
+   static HardwareRenderer *CreateMetalNull();
+
    static HardwareRenderer *CreateOpenGL(void *inWindow, void *inGLCtx, bool shaders);
    static HardwareRenderer *CreateDX11(void *inDevice, void *inContext);
 

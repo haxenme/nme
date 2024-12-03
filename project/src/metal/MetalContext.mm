@@ -971,7 +971,20 @@ public:
    void EndDirectRender() { }
 };
 
+HardwareRenderer *HardwareRenderer::CreateMetalNull()
+{
+   HardwareRenderer *ctx = new MetalContext( nullptr );
+   return ctx;
+}
 
+#ifdef IPHONE
+HardwareRenderer *HardwareRendererCreateMetal(CAMetalLayer *metalLayer)
+{
+   HardwareRenderer *ctx = new MetalContext( metalLayer );
+
+   return ctx;
+}
+#else
 HardwareRenderer *HardwareRenderer::CreateMetal(void *inRenderer)
 {
    SDL_Renderer *renderer = (SDL_Renderer *)renderer;
@@ -986,6 +999,7 @@ HardwareRenderer *HardwareRenderer::CreateMetal(void *inRenderer)
 
    return ctx;
 }
+#endif
 
 
 } // end namespace nme

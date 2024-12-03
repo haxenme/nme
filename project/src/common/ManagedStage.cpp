@@ -31,13 +31,15 @@ ManagedStage::ManagedStage(int inWidth,int inHeight,int inFlags)
    if (nmeOpenglRenderer)
       mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
    else
+   {
       // TODO?
-      mHardwareRenderer = HardwareRenderer::CreateMetal(0);
+      mHardwareRenderer = HardwareRenderer::CreateMetalNull();
+   }
    #elif defined(NME_OGL)
    mHardwareRenderer = HardwareRenderer::CreateOpenGL(0, 0, inFlags & wfAllowShaders);
    #elif defined(NME_METAL)
    // TODO?
-   mHardwareRenderer = HardwareRenderer::CreateMetal(0);
+   mHardwareRenderer = HardwareRenderer::CreateMetalNull();
    #else
    #error "No valid HardwareRenderer"
    #endif

@@ -48,6 +48,12 @@ namespace nme { int gFixedOrientation = -1; }
    #define APP_LOG(x) { }
 #endif
 
+#ifdef IPHONE
+namespace nme
+{
+HardwareRenderer *HardwareRendererCreateMetal(CAMetalLayer *metalLayer);
+}
+#endif
 
 #ifndef IPHONESIM
 CMMotionManager *sgCmManager = 0;
@@ -171,7 +177,9 @@ public:
    UIView         *container;
    UIView         *playerView;
    NMEView        *nmeView;
+   #ifdef NME_VIDEO
    class IOSVideo *video;
+   #endif
 
    bool           popupEnabled;
    bool           multiTouchEnabled;
@@ -459,7 +467,7 @@ static std::string nmeTitle;
 
    self.enableSetNeedsDisplay = YES;
 
-   mHardwareRenderer = HardwareRenderer::CreateMetal(metalLayer);
+   mHardwareRenderer = HardwareRendererCreateMetal(metalLayer);
 
    mHardwareRenderer->IncRef();
    mHardwareRenderer->SetWindowSize(backingSize.width, backingSize.height);
@@ -1160,6 +1168,7 @@ static std::string nmeTitle;
 @end // End NMEView
 
 
+#ifdef NME_VIDEO
 class IOSVideo;
 @interface PlayerHandler : NSObject
 {
@@ -1752,6 +1761,7 @@ public:
 
 @end
 
+#endif // NME_VIDEO
 
 double sgWakeUp = 0.0;
 
@@ -1769,7 +1779,9 @@ double sgWakeUp = 0.0;
 NMEStage::NMEStage(CGRect inRect) : nme::Stage(true)
 {
    APP_LOG(@"new NMEStage");
+   #ifdef NME_VIDEO
    video = 0;
+   #endif
    //printf("New NMEStage\n");
 
    sgNmeStage = this;
@@ -1915,6 +1927,7 @@ CGRect NMEStage::getViewBounds()
 
 void NMEStage::onVideoPlay()
 {
+   #ifdef NME_VIDEO
    if (!playerView)
    {
       playerView = video->getPlayerView();
@@ -1925,10 +1938,12 @@ void NMEStage::onVideoPlay()
       if (wantOpaqueBg!=haveOpaqueBg)
          recreateNmeView();
    }
+   #endif
 }
 
 StageVideo *NMEStage::createStageVideo(void *inOwner)
 {
+   #ifdef NME_VIDEO
    if (!video)
    {
       video = new IOSVideo(this,1.0/getDPIScale());
@@ -1936,6 +1951,9 @@ StageVideo *NMEStage::createStageVideo(void *inOwner)
    }
 
    return video;
+   #else
+   return nullptr;
+   #endif
 }
 
 
@@ -2008,11 +2026,13 @@ void NMEStage::OnEvent(Event &inEvt)
    int top = 0;
    gc_set_top_of_stack(&top,false);
 
+   #ifdef NME_VIDEO
    if (inEvt.type==etPoll && video)
       video->onPoll();
 
    if ((inEvt.type==etActivate || inEvt.type==etDeactivate) && video)
       video->setActive(inEvt.type==etActivate);
+   #endif
    HandleEvent(inEvt);
 }
 

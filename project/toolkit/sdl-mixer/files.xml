@@ -40,6 +40,7 @@
    <compilerflag value="-DMUSIC_MID_TIMIDITY" unless="linux || winrt" />
    <compilerflag value="-DMUSIC_MID_NATIVE" unless="linux || winrt" />
    <compilerflag value='-DMODPLUG_HEADER="../../../../modplug/libmodplug/src/modplug.h"' />
+   <compilerflag value='-Wno-deprecated-register' if='ios' />
 
    <cache value="1" />
 
