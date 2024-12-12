@@ -212,6 +212,7 @@ public:
    bool IsCacheDirty();
    void SyncSelection();
    void Focus();
+   void Unfocus();
    void setCaretIndex(int inIndex);
 
 

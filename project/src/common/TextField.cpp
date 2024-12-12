@@ -600,9 +600,19 @@ void TextField::setSelection(int inStartIndex, int inEndIndex)
    SyncSelection();
 }
 
+void TextField::Unfocus()
+{
+   Stage *stage = getStage();
+   if (stage)
+      stage->setTextInput(false);
+}
+
 
 void TextField::Focus()
 {
+   Stage *stage = getStage();
+   if (stage)
+      stage->setTextInput(true);
 #if defined(IPHONE) || defined (ANDROID) || defined(WEBOS) || defined(BLACKBERRY) || defined(TIZEN)
   if (needsSoftKeyboard)
   {

@@ -681,6 +681,16 @@ public:
       SDL_SetWindowFullscreen(mSDLWindow, FullscreenMode);
       #endif
    }
+
+   void setTextInput(bool enable)
+   {
+      #ifdef NME_SDL3
+      if (enable)
+         SDL_StartTextInput(mSDLWindow);
+      else
+         SDL_StopTextInput(mSDLWindow);
+      #endif
+   }
    
 
    void SetScreenMode(ScreenMode m)

@@ -472,6 +472,7 @@ public:
 
    virtual void setTitle(const std::string &) { }
    virtual std::string getTitle() { return ""; }
+   virtual void setTextInput(bool enable) { }
 
 
    DisplayObject *GetFocusObject() { return mFocusObject; }
