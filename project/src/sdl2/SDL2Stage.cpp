@@ -425,6 +425,7 @@ public:
       if (mIsFullscreen)
          displayState = sdsFullscreenInteractive;
 
+      #if defined(NME_OGL) || defined(NME_METAL)
       if (mIsHardware)
       {
          if (sgHardwareRenderer)
@@ -469,7 +470,9 @@ public:
             mPrimarySurface = new HardwareSurface(mHardwareRenderer);
       }
       else
+      #endif
       {
+         mIsHardware = false;
          mHardwareRenderer = 0;
          mSoftwareSurface = SDL_CreateRGBSurface(0, mWidth, mHeight, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
          if (!mSoftwareSurface)
@@ -2612,10 +2615,10 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          break;
       }
 
-      #ifdef NME_SDL3
+      #if defined(NME_SDL3)
       {
          int n = SDL_GetNumRenderDrivers();
-         #if !defined(NME_DYNAMIC_ANGLE)
+         #if !defined(NME_DYNAMIC_ANGLE) && defined(NME_OGL)
          bool useEgl = nmeEglMode;
          #else
          bool useEgl = false;
@@ -2639,7 +2642,9 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
          #endif
          //printf("Using driver: %s, nmeEglMode=%d\n", rname.c_str(), nmeEglMode);
 
+         #ifdef NME_OGL
          InitOGLFunctions();
+         #endif
       }
       #else
       int renderFlags = 0;
@@ -2650,6 +2655,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       renderer = SDL_CreateRenderer(window, -1, renderFlags);
       #endif
 
+      #ifdef NME_OGL
       if (opengl)
       {
          sgIsOGL2 = (inFlags & (wfAllowShaders | wfRequireShaders));
@@ -2658,6 +2664,7 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
       {
          sgIsOGL2 = nmeEglMode;
       }
+      #endif
 
       if (!renderer && (inFlags & wfHW_AA_HIRES || inFlags & wfHW_AA))
       {

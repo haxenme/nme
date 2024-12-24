@@ -1050,6 +1050,7 @@ class NMEProject
       context.WIN_DEPTH_BUFFER = window.depthBuffer;
       context.WIN_STENCIL_BUFFER = window.stencilBuffer;
       context.WIN_ALPHA_BUFFER = window.alphaBuffer;
+      context.WIN_ANTIALIASING = window.antialiasing;
 
       if (certificate != null) 
       {

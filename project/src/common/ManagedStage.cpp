@@ -41,11 +41,15 @@ ManagedStage::ManagedStage(int inWidth,int inHeight,int inFlags)
    // TODO?
    mHardwareRenderer = HardwareRenderer::CreateMetalNull();
    #else
-   #error "No valid HardwareRenderer"
+   mHardwareRenderer = nullptr;
    #endif
-   mHardwareRenderer->IncRef();
-   mHardwareSurface = new HardwareSurface(mHardwareRenderer);
-   mHardwareSurface->IncRef();
+
+   if (mHardwareRenderer)
+   {
+      mHardwareRenderer->IncRef();
+      mHardwareSurface = new HardwareSurface(mHardwareRenderer);
+      mHardwareSurface->IncRef();
+   }
 }
 
 ManagedStage::~ManagedStage()
@@ -67,7 +71,8 @@ void ManagedStage::SetActiveSize(int inW,int inH)
 {
    mActiveWidth = inW;
    mActiveHeight = inH;
-   mHardwareRenderer->SetWindowSize(inW,inH);
+   if (mHardwareRenderer)
+      mHardwareRenderer->SetWindowSize(inW,inH);
 
    Event event(etResize,inW,inH);
    Stage::HandleEvent(event);
