@@ -2,6 +2,8 @@ package nme.gl;
 
 #if nme_metal
 #error "GL not supported with NME_METAL"
+#elseif nme_no_ogl
+#error "GL not supported with nme_no_ogl"
 #else
 
 

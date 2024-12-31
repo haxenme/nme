@@ -86,7 +86,7 @@ class Loader
    {
       #if nme_static_link
       return Lib.load(moduleName, func, args);
-      #end
+      #else
 
       if (moduleInit) 
       {
@@ -145,6 +145,7 @@ class Loader
       #end
 
       return result;
+      #end
    }
 
    #if neko

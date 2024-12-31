@@ -730,6 +730,9 @@ class NMEProject
           if (name=="nme" && inStatic==null)
              isStatic = isStaticNme();
 
+          if (isStatic)
+             haxedefs.set(name.toLowerCase() + "_static_link", "1");
+
           ndlls.push( new NDLL(name, base, isStatic, inHaxelibName, noCopy) );
       }
       else if (inStatic && optionalStaticLink)
@@ -742,7 +745,7 @@ class NMEProject
       }
    }
 
-   public function addLib(name:String, version:String="",inNoCopy:Bool)
+   public function addLib(name:String, version:String="",inNoCopy:Bool, ?inStatic:Bool)
    {
       var haxelib = findHaxelib(name);
       if (haxelib==null)
@@ -779,7 +782,9 @@ class NMEProject
             raiseLib("nme");
 
          if (name=="nme" && !hasDef("watchos") )
-            addNdll("nme", haxelib.getBase(), null, "nme", inNoCopy);
+         {
+            addNdll("nme", haxelib.getBase(), inStatic, "nme", inNoCopy);
+         }
       }
       return haxelib;
   }
@@ -869,7 +874,6 @@ class NMEProject
             haxedefs.set("lime_legacy","1");
          }
          haxeflags.push("--remap openfl:nme");
-         addLib("nme","",false);
       }
 
       if (export!=null && export!="")

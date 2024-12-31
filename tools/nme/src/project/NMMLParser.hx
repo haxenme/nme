@@ -873,7 +873,7 @@ class NMMLParser
                  var base = extensionPath;
                  if (haxelib!="")
                  {
-                    var lib = project.addLib(haxelib,version,nocopy);
+                    var lib = project.addLib(haxelib,version,nocopy,isStatic);
                     base = lib.getBase();
                  }
                  if (name!="lime" && name!="openfl")
@@ -888,8 +888,10 @@ class NMMLParser
                   if (element.has.version) 
                      version = substitute(element.att.version);
 
+                  var isStatic:Null<Bool> = element.x.exists("static") ? parseBool(substitute(element.x.get("static"))) : null;
+
                   var nocopy = element.has.nocopy && parseBool(substitute(element.att.nocopy));
-                  project.addLib(name,version,nocopy);
+                  project.addLib(name,version,nocopy,isStatic);
  
 
                case "launchImage", "splashScreen":
