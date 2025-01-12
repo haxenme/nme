@@ -132,6 +132,7 @@
 
         <file name="${NME_LIBSDL}src/cpuinfo/SDL_cpuinfo.c" />
         <file name="${NME_LIBSDL}src/file/SDL_iostream.c" />
+        <file name="${NME_LIBSDL}src/file/SDL_asyncio.c" />
         <file name="${NME_LIBSDL}src/dynapi/SDL_dynapi.c" />
         <file name="${NME_LIBSDL}src/events/SDL_clipboardevents.c" />
         <file name="${NME_LIBSDL}src/events/SDL_displayevents.c" />
@@ -145,7 +146,6 @@
         <file name="${NME_LIBSDL}src/events/SDL_pen.c" />
         <file name="${NME_LIBSDL}src/events/SDL_categories.c" />
         <file name="${NME_LIBSDL}src/haptic/SDL_haptic.c" />
-        <file name="${NME_LIBSDL}src/joystick/steam/SDL_steamcontroller.c" />
         <file name="${NME_LIBSDL}src/joystick/SDL_gamepad.c" />
         <file name="${NME_LIBSDL}src/joystick/SDL_joystick.c" />
         <file name="${NME_LIBSDL}src/libm/e_atan2.c" />
@@ -188,6 +188,7 @@
         <file name="${NME_LIBSDL}/src/stdlib/SDL_stdlib.c" />
         <file name="${NME_LIBSDL}/src/stdlib/SDL_string.c" />
         <file name="${NME_LIBSDL}/src/stdlib/SDL_strtokr.c" />
+        <file name="${NME_LIBSDL}/src/stdlib/SDL_murmur3.c" />
 
         <file name="${NME_LIBSDL}src/thread/SDL_thread.c" />
         <file name="${NME_LIBSDL}src/timer/SDL_timer.c" />
@@ -248,9 +249,9 @@
         <file name="${NME_LIBSDL}src/misc/SDL_url.c" />
 
         <file name="${NME_LIBSDL}src/gpu/SDL_gpu.c" />
-        <file name="${NME_LIBSDL}src/render/sdlgpu/SDL_render_gpu.c" />
-        <file name="${NME_LIBSDL}src/render/sdlgpu/SDL_shaders_gpu.c" />
-        <file name="${NME_LIBSDL}src/render/sdlgpu/SDL_pipeline_gpu.c" />
+        <file name="${NME_LIBSDL}src/render/gpu/SDL_render_gpu.c" />
+        <file name="${NME_LIBSDL}src/render/gpu/SDL_shaders_gpu.c" />
+        <file name="${NME_LIBSDL}src/render/gpu/SDL_pipeline_gpu.c" />
         <file name="${NME_LIBSDL}src/storage/SDL_storage.c" />
         <file name="${NME_LIBSDL}src/storage/generic/SDL_genericstorage.c" />
         <file name="${NME_LIBSDL}src/SDL_properties.c" />
@@ -266,6 +267,9 @@
         <file name="${NME_LIBSDL}src/main/SDL_main_callbacks.c" />
         <file name="${NME_LIBSDL}src/main/generic/SDL_sysmain_callbacks.c" />
         <file name="${NME_LIBSDL}src/dialog/SDL_dialog_utils.c" />
+        <file name="${NME_LIBSDL}src/dialog/SDL_dialog.c" />
+        <file name="${NME_LIBSDL}src/process/SDL_process.c" />
+        <file name="${NME_LIBSDL}src/tray/SDL_tray_utils.c" />
 
 
         <section unless="windows">
@@ -280,6 +284,8 @@
             <file name="${NME_LIBSDL}src/filesystem/posix/SDL_sysfsops.c" />
             <file name="${NME_LIBSDL}src/time/unix/SDL_systime.c" />
             <file name="${NME_LIBSDL}src/locale/unix/SDL_syslocale.c" />
+            <file name="${NME_LIBSDL}src/process/posix/SDL_posixprocess.c" />
+            <file name="${NME_LIBSDL}/src/file/generic/SDL_asyncio_generic.c" />
 
         </section>
 
@@ -314,6 +320,7 @@
             <file name="${NME_LIBSDL}src/joystick/hidapi/SDL_hidapi_stadia.c" />
             <file name="${NME_LIBSDL}src/joystick/hidapi/SDL_hidapi_steamdeck.c" />
             <file name="${NME_LIBSDL}src/joystick/hidapi/SDL_hidapi_wii.c" />
+            <file name="${NME_LIBSDL}src/joystick/hidapi/SDL_hidapi_steam_hori.c" />
 
         </section>
 
@@ -564,6 +571,7 @@
             <file name="${NME_LIBSDL}src/misc/macos/SDL_sysurl.m" />
             <file name="${NME_LIBSDL}src/power/macos/SDL_syspower.c" />
             <file name="${NME_LIBSDL}src/camera/coremedia/SDL_camera_coremedia.m" />
+            <file name="${NME_LIBSDL}src/tray/cocoa/SDL_tray.m" />
 
         </section>
 

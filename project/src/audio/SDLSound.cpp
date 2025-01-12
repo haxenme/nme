@@ -33,7 +33,11 @@ enum { STEREO_SAMPLES = 2 };
 unsigned int  sSoundPos = 0;
 double        sMusicT0 = 0;
 double        sLastMusicUpdate = 0;
+#ifdef NME_SDL3
+double        sMusicFrequency = 0.0;
+#else
 double        sMusicFrequency = 44100;
+#endif
 bool          sSoundPaused = false;
 
 void onChannelDone(int inChannel)
@@ -365,10 +369,11 @@ public:
    void initSpec()
    {
       Mix_QuerySpec(&mFrequency, &mFormat, &mChannels);
+
       if (mFrequency!=44100)
          ELOG("Warning - Frequency mismatch %d",mFrequency);
       #ifdef NME_SDL3
-      if (mFormat!=SDL_AUDIO_F32)
+      if (mFormat!=SDL_AUDIO_S16)
       #else
       if (mFormat!=32784)
       #endif
