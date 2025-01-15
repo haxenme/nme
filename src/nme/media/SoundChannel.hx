@@ -95,7 +95,8 @@ class SoundChannel extends EventDispatcher
 
          if (nme_sound_channel_is_complete(nmeHandle)) 
          {
-            nmeHandle = null;
+            nme.NativeResource.disposeHandler(this);
+
             if (nmeDataProvider != null) 
                nmeDynamicSoundCount--;
 

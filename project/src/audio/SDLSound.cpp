@@ -38,6 +38,8 @@ double        sMusicFrequency = 0.0;
 #else
 double        sMusicFrequency = 44100;
 #endif
+int           sMusicSampleSize = sizeof(short);
+int           sMusicChannels = STEREO_SAMPLES;
 bool          sSoundPaused = false;
 
 void onChannelDone(int inChannel)
@@ -73,7 +75,7 @@ void onMusic(void *udata, Uint8 *stream, int len)
 
 void  onPostMix(void *udata, Uint8 *stream, int len)
 {
-   sSoundPos += len / sizeof(short) / STEREO_SAMPLES ;
+   sSoundPos += len / sMusicSampleSize / sMusicChannels ;
    sLastMusicUpdate = GetTimeStamp();
    if (!sMusicT0)
       sMusicT0 = sLastMusicUpdate;
@@ -131,9 +133,11 @@ static bool Init()
    return sChannelsInit;
 }
 
+
+#ifndef NME_SDL3 // {
+
 // ---  Using "Mix_Chunk" API ----------------------------------------------------
-
-
+// Mixer
 class SDLSoundChannel : public SoundChannel
 {
   enum { BUF_SIZE = (1<<17) };
@@ -173,6 +177,7 @@ class SDLSoundChannel : public SoundChannel
 
 
 public:
+   // Mixer
    SDLSoundChannel(Object *inSound, Mix_Chunk *inChunk, double inStartTime, int inLoops,
                   const SoundTransform &inTransform)
    {
@@ -239,7 +244,9 @@ public:
    }
 
 
-   SDLSoundChannel(const ByteArray &inBytes, const SoundTransform &inTransform)
+   // Sync channel
+   // Mixer
+   SDLSoundChannel(const ByteArray &inBytes, const SoundTransform &inTransform,  SoundDataFormat inDataFormat,bool inIsStereo, int inRate)
    {
       init();
       initSpec();
@@ -290,6 +297,7 @@ public:
    }
 
    // Async channel
+   // Mixer
    SDLSoundChannel( SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback)
    {
       init();
@@ -320,6 +328,7 @@ public:
    }
 
 
+   // Mixer
    void allocChannel()
    {
       // Allocate myself a channel
@@ -334,6 +343,7 @@ public:
          }
    }
 
+   // Mixer
    void init()
    {
       mSound = 0;
@@ -366,17 +376,14 @@ public:
    }
 
 
+   // Mixer
    void initSpec()
    {
       Mix_QuerySpec(&mFrequency, &mFormat, &mChannels);
 
       if (mFrequency!=44100)
          ELOG("Warning - Frequency mismatch %d",mFrequency);
-      #ifdef NME_SDL3
-      if (mFormat!=SDL_AUDIO_S16)
-      #else
       if (mFormat!=32784)
-      #endif
          ELOG("Warning - Format mismatch    %d",(int)mFormat);
       if (mChannels!=2)
          ELOG("Warning - channel mismatch    %d",mChannels);
@@ -385,6 +392,7 @@ public:
          sMusicFrequency = mFrequency;
    }
 
+   // Mixer
    void setTransform(const SoundTransform &inTransform) 
    {
       if (mChannel>=0)
@@ -403,6 +411,7 @@ public:
       }
    }
 
+   // Mixer
    void FillBuffer(const ByteArray &inBytes,bool inFirst)
    {
       int time_samples = inBytes.Size()/sizeof(float)/STEREO_SAMPLES;
@@ -507,6 +516,7 @@ public:
    }
 
 
+   // Mixer
    void FillBufferAsync(const ByteArray &inBytes)
    {
       int timeSamples = inBytes.Size()/mAsyncBytesPerSample;
@@ -523,6 +533,7 @@ public:
          addAsyncSamples( buffer + add*mAsyncBytesPerSample, timeSamples);
    }
  
+   // Mixer
    ~SDLSoundChannel()
    {
       delete [] mDynamicBuffer;
@@ -534,6 +545,7 @@ public:
          mSound->DecRef();
    }
 
+   // Mixer
    void CheckDone()
    {
       if (mChannel>=0 && sDoneChannel[mChannel])
@@ -560,6 +572,7 @@ public:
       }
    }
 
+   // Mixer
    bool isComplete()
    {
       CheckDone();
@@ -568,6 +581,7 @@ public:
    double getLeft() { return 1; }
    double getRight() { return 1; }
    double setPosition(const float &inFloat) { return 1; }
+   // Mixer
    void stop() 
    {
       if (mChannel>=0)
@@ -580,6 +594,7 @@ public:
       //CheckDone();
    }
 
+   // Mixer
    double getPosition()
    {
       if (!sMusicFrequency || !mChunk || !mChunk->alen)
@@ -590,10 +605,12 @@ public:
    }
 
 
+   // Mixer
    double getDataPosition()
    {
       return getMixerSamplesSince(mSoundPos0)*1000.0/mFrequency;
    }
+   // Mixer
    bool needsData()
    {
       if (!mDynamicBuffer || mDynamicRequestPending || isAsyncMode)
@@ -610,6 +627,7 @@ public:
 
    }
 
+   // Mixer
    void addData(const ByteArray &inBytes)
    {
       if (isAsyncMode)
@@ -641,14 +659,368 @@ public:
 
 };
 
+
+
+
+#else // }  NME_SDL3  {
+// ---  Using "SDL_AudioStream" API ----------------------------------------------------
+
+static SDL_AudioDeviceID sSdlSoundDevice = 0;
+static double sSdlSoundDeviceTime = 0.0;
+static int sSdlActiveSoundCount;
+
+static void SDLCALL audioCounter(void *userdata, const SDL_AudioSpec *spec, float *buffer, int buflen)
+{
+   int frames = buflen/(sizeof(float)*spec->channels);
+   sSdlSoundDeviceTime += (double)frames/spec->freq;
+   //printf(" t=%.3f\n", sSdlSoundDeviceTime);
+}
+
+enum ChannelMode
+{
+   cmChunk,
+   cmAsyncCallback,
+   cmCallback,
+   cmDrain,
+   cmDone,
+};
+
+class SDLSoundChannel : public SoundChannel
+{
+   enum { BUF_SIZE = (1<<17) };
+ 
+   SDL_AudioStream *stream;
+   SDL_AudioSpec   spec;
+
+   Object    *mSound;
+   Mix_Chunk *mChunk;
+
+   ChannelMode channelMode;
+
+   double startPosition;
+   int   loopsPending;
+   int   inputSampleSize;
+   bool  active;
+   double audioTime0;
+
+
+public:
+   // AudioStream - inChunk should be SDL_mixer format
+   SDLSoundChannel(Object *inSound, Mix_Chunk *inChunk, double inStartTime, int inLoops,
+                  const SoundTransform &inTransform)
+   {
+      init(cmChunk);
+      Mix_QuerySpec(&spec.freq, &spec.format, &spec.channels);
+      setSampleSize();
+      mChunk = inChunk;
+
+      mSound = inSound;
+      mSound->IncRef();
+      loopsPending = 0;
+
+      bool valid = false;
+
+      //printf("AudioStream %d x %d loops=%d\n", spec.freq, mChunk ? mChunk->alen : 0, inLoops);
+      if (spec.freq && mChunk && mChunk->alen)
+      {
+         valid = true;
+         startPosition = inStartTime*0.001;
+         int startBytes = (int)(startPosition*spec.freq) * inputSampleSize;
+         int startLoops = startBytes / mChunk->alen;
+         if (inLoops>=0)
+         {
+            inLoops-=startLoops; 
+            if (inLoops<0)
+            {
+               valid = false;
+               inLoops = 0;
+            }
+         }
+         startBytes = startBytes % mChunk->alen;
+         if (valid)
+         {
+            loopsPending = inLoops > 0 ? inLoops-1 : inLoops;
+            stream = SDL_CreateAudioStream(&spec, &spec);
+            //printf(" created stream %p\n", stream);
+
+            bool ok = SDL_PutAudioStreamData(stream, mChunk->abuf + startBytes, mChunk->alen - startBytes );
+
+            if (ok)
+               activate(&inTransform);
+            else
+               closeStream();
+         }
+      }
+      //printf(" -> channel %d\n", mChannel);
+
+   }
+
+   void activate(const SoundTransform *inTransform=nullptr)
+   {
+      active = true;
+      sSdlActiveSoundCount++;
+      if (!sSdlSoundDevice)
+      {
+         sSdlSoundDevice = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
+         sSdlSoundDeviceTime = 0.0;
+         SDL_SetAudioPostmixCallback( sSdlSoundDevice, audioCounter, nullptr);
+         //printf("Opened sdl sound device %d\n", (int)sSdlSoundDevice);
+      }
+
+      //printf("  added bytes %d-%d -> ok=%d\n", mChunk->alen,startBytes,ok);
+      if (!SDL_BindAudioStream(sSdlSoundDevice, stream ))
+      {
+         //printf(" could not SDL_BindAudioStream %s\n", SDL_GetError());
+         closeStream();
+      }
+      else
+      {
+         if (inTransform)
+            setTransform(*inTransform);
+      }
+   }
+
+   static int getSampleSize(SDL_AudioSpec *s)
+   {
+      switch(s->format)
+      {
+         case SDL_AUDIO_U8: return s->channels;
+         case SDL_AUDIO_S16: return s->channels*2;
+         case SDL_AUDIO_F32: return s->channels*4;
+      }
+      return 0;
+   }
+
+   void setSampleSize()
+   {
+      inputSampleSize = getSampleSize(&spec);
+   }
+
+
+   void setSpec( SoundDataFormat inDataFormat,bool inIsStereo, int inRate )
+   {
+      spec.freq = inRate;
+      spec.format = inDataFormat == sdfByte ? SDL_AUDIO_U8 : inDataFormat==sdfShort ? SDL_AUDIO_S16 : SDL_AUDIO_F32;
+      spec.channels = inIsStereo ? 2 : 1;
+      setSampleSize();
+   }
+
+   // Sync channel
+   // AudioStream
+   SDLSoundChannel(const ByteArray &inBytes, const SoundTransform &inTransform,  SoundDataFormat inDataFormat,bool inIsStereo, int inRate)
+   {
+      init(cmCallback);
+      mChunk = 0;
+      mSound = 0;
+
+      //printf(" AudioStream sync channel %d\n", mChannel);
+      setSpec( inDataFormat,inIsStereo,inRate );
+      stream = SDL_CreateAudioStream(&spec, &spec);
+
+      SDL_PutAudioStreamData(stream, inBytes.Bytes(), inBytes.Size());
+      activate(&inTransform);
+   }
+
+   // Async channel
+   // AudioStream - async
+   SDLSoundChannel( SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback)
+   {
+      init(cmAsyncCallback);
+
+      //printf(" AudioStream async channel %d\n", mChannel);
+      setSpec( inDataFormat,inIsStereo,inRate );
+      stream = SDL_CreateAudioStream(&spec, &spec);
+      activate();
+   }
+
+   // AudioStream
+   ~SDLSoundChannel()
+   {
+      if (mSound)
+         mSound->DecRef();
+
+      closeStream();
+   }
+
+   void closeStream()
+   {
+      //printf("closeStream %d %p\n", mChannel, stream);
+      if (stream)
+      {
+         SDL_DestroyAudioStream(stream);
+         stream = nullptr;
+
+         if (active)
+         {
+            active = false;
+            sSdlActiveSoundCount--;
+            if (sSdlSoundDevice && !sSdlActiveSoundCount)
+            {
+               SDL_CloseAudioDevice( sSdlSoundDevice );
+               sSdlSoundDevice = 0;
+               sSdlSoundDeviceTime = 0.0;
+            }
+         }
+      }
+   }
+
+
+   // AudioStream
+   void init(ChannelMode inMode)
+   {
+      channelMode = inMode;
+      active = false;
+      stream = nullptr;
+      mSound = nullptr;
+      mChunk = nullptr;
+      loopsPending = 0;
+      inputSampleSize = 0;
+      startPosition = 0.0;
+      audioTime0 = sSdlSoundDeviceTime;
+   }
+
+
+   // AudioStream
+   void setTransform(const SoundTransform &inTransform) 
+   {
+      if (stream)
+         SDL_SetAudioStreamGain(stream, inTransform.volume);
+   }
+
+
+   // AudioStream
+   bool CheckDone()
+   {
+      if (channelMode==cmCallback)
+         return false;
+
+      if (channelMode!=cmDone)
+      {
+         bool done = !stream || SDL_GetAudioStreamAvailable(stream)==0;
+         if (done && channelMode==cmAsyncCallback)
+         {
+            printf("Todo - asyncCallback\n");
+         }
+         if (done && loopsPending!=0 && mChunk && stream)
+         {
+            //printf("loopsPending -> %d\n", loopsPending);
+            if (SDL_PutAudioStreamData(stream, mChunk->abuf, mChunk->alen ))
+            {
+               if (loopsPending>0)
+                  loopsPending--;
+               return false;
+            }
+         }
+
+         if (done)
+            channelMode = cmDone;
+      }
+
+      return channelMode==cmDone;
+   }
+
+   // AudioStream
+   bool isComplete()
+   {
+      bool complete = CheckDone();
+      if (complete)
+         closeStream();
+      return complete;
+   }
+   double getLeft() { return 1; }
+   double getRight() { return 1; }
+   double setPosition(const float &inFloat) { return 1; }
+   void stop() 
+   {
+      //printf("AudioStream stop %d\n", mChannel);
+      closeStream();
+      //CheckDone();
+   }
+
+   // AudioStream
+   double getPosition()
+   {
+      if (!stream || channelMode==cmDone)
+         return 0.0;
+
+      return 1000.0 * (startPosition + sSdlSoundDeviceTime - audioTime0);
+   }
+
+
+   double getDataPosition()
+   {
+      if (!stream || !spec.freq)
+         return 0.0;
+
+      return (sSdlSoundDeviceTime - audioTime0) / spec.freq;
+   }
+
+   // AudioStream
+   bool needsData()
+   {
+      if (!stream || channelMode!=cmCallback || inputSampleSize<0)
+         return false;
+
+      int remaining = SDL_GetAudioStreamAvailable(stream);
+      //printf("  remaining: %d\n", remaining);
+      if (remaining==0)
+         return true;
+
+      SDL_AudioSpec src_spec;
+      SDL_AudioSpec dst_spec;
+      if (SDL_GetAudioStreamFormat(stream, &src_spec, &dst_spec))
+      {
+         int size = getSampleSize(&dst_spec);
+         if (size>0)
+         {
+            int frames = remaining/size;
+            double seconds = (double)frames/dst_spec.freq;
+            //printf("   = %.03f\n", seconds);
+            return seconds < 0.050;
+         }
+      }
+
+      return false;
+
+   }
+
+   // AudioStream
+   void addData(const ByteArray &inBytes)
+   {
+      //printf("AudioStream addData %d %p %d\n", mChannel, stream, inputSampleSize);
+      if (channelMode!=cmDone && stream && inputSampleSize)
+      {
+         if (channelMode==cmCallback)
+         {
+            int frames = inBytes.Size()/inputSampleSize;
+            if (frames<1024)
+               channelMode = cmDrain;
+         }
+
+         if (!SDL_PutAudioStreamData(stream, inBytes.Bytes(), inBytes.Size() ))
+         {
+            channelMode = cmDrain;
+         }
+      }
+   }
+
+};
+
+
+#endif // } end NME_SDL3
+
+
+
+
+
+
 SoundChannel *CreateSdlSyncChannel(const ByteArray &inBytes,const SoundTransform &inTransform,
     SoundDataFormat inDataFormat,bool inIsStereo, int inRate) 
 {
    if (!Init())
       return 0;
-   return new SDLSoundChannel(inBytes,inTransform);
+   return new SDLSoundChannel(inBytes,inTransform,inDataFormat, inIsStereo, inRate);
 }
-
 
 SoundChannel *CreateSdlAsyncChannel( SoundDataFormat inDataFormat,bool inIsStereo, int inRate, void *inCallback)
 {
@@ -668,6 +1040,7 @@ class SDLSound : public Sound
    int         frequency;
    SDL_AudioFormat format;
    int         channels;
+   int         sampleSize;
    double      duration;
    INmeSoundData *soundData;
 
@@ -676,7 +1049,16 @@ public:
    {
       initSound();
       filename = inFilename;
+      sampleSize = sizeof(short);
       Mix_QuerySpec(&frequency, &format, &channels);
+      #ifdef NME_SDL3
+      switch(format)
+      {
+         case SDL_AUDIO_U8: sampleSize = 1; break;
+         case SDL_AUDIO_S16: sampleSize = 2; break;
+         case SDL_AUDIO_F32: sampleSize = 4; break;
+      }
+      #endif
 
       if (Init())
          loadChunk();
@@ -849,7 +1231,9 @@ public:
       {
          int bytes = mChunk->alen;
          if (bytes && frequency && channels)
-            duration = (double)bytes/ (frequency*channels*sizeof(short) );
+         {
+            duration = (double)bytes/ (frequency*channels*sampleSize );
+         }
       }
       else
       {
@@ -873,6 +1257,7 @@ public:
          return 0;
       return new SDLSoundChannel(this,mChunk,startTime, loops,inTransform);
    }
+
    int getBytesLoaded() { return mChunk ? mChunk->alen : 0; }
    int getBytesTotal() { return mChunk ? mChunk->alen : 0; }
    bool ok() { return mChunk; }
@@ -899,6 +1284,25 @@ public:
       mSound = inSound;
       mSound->IncRef();
       mDuration = inSound->getLength();
+
+      #ifdef NME_SDL3
+      if (!sMusicFrequency)
+      {
+         SDL_AudioFormat fmt;
+         int ch;
+         int freq;
+         Mix_QuerySpec(&freq, &fmt, &ch);
+         sMusicFrequency = freq;
+         sMusicChannels = ch;
+         switch(fmt)
+         {
+            case SDL_AUDIO_U8: sMusicSampleSize = 1; break;
+            case SDL_AUDIO_S16: sMusicSampleSize = 2; break;
+            case SDL_AUDIO_F32: sMusicSampleSize = 4; break;
+         }
+
+      }
+      #endif
 
       mPlaying = false;
       if (mMusic)
@@ -961,6 +1365,7 @@ public:
       }
    }
 
+   // Music
    bool isComplete()
    {
       CheckDone();
@@ -1154,12 +1559,17 @@ public:
 
 void SuspendSdlSound()
 {
+   #ifdef NME_SDL3
+   if (sSdlSoundDevice)
+      SDL_PauseAudioDevice(sSdlSoundDevice);
+   #endif
+
+   sSoundPaused = true;
    if (gSDLAudioState!=sdaOpen)
      return;
 
-   sSoundPaused = true;
    #ifdef NME_SDL3
-   SDL_PauseAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK);
+   Mix_PauseAudio(true);
    #else
    SDL_PauseAudio(true);
    #endif
@@ -1167,12 +1577,17 @@ void SuspendSdlSound()
 
 void ResumeSdlSound()
 {
+   #ifdef NME_SDL3
+   if (sSdlSoundDevice)
+      SDL_ResumeAudioDevice(sSdlSoundDevice);
+   #endif
+
+   sSoundPaused = false;
    if (gSDLAudioState!=sdaOpen)
      return;
 
-   sSoundPaused = false;
    #ifdef NME_SDL3
-   SDL_ResumeAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK);
+   Mix_PauseAudio(false);
    #else
    SDL_PauseAudio(false);
    #endif

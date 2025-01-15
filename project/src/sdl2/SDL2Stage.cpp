@@ -87,7 +87,7 @@ int InitSDL()
       
    sgInitCalled = true;
    
-   #ifdef NME_MIXER
+   #if defined(NME_MIXER) && !defined(NME_SDL3)
    int audioFlag = SDL_INIT_AUDIO;
    #else
    int audioFlag = 0;
@@ -112,7 +112,12 @@ int InitSDL()
    SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
    #endif
 
-   int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | SDL_INIT_TIMER);
+   #ifdef NME_SDL3
+   int timerFlag = 0;
+   #else
+   int timerFlag = SDL_INIT_TIMER;
+   #endif
+   int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | timerFlag);
    
    if (err == 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER) == 0)
    {
@@ -153,6 +158,16 @@ static void openAudio()
    {
       fprintf(stderr,"Could not open sound: %s\n", Mix_GetError());
       gSDLAudioState = sdaError;
+   }
+   else
+   {
+      /*
+      int ch = 0;
+      SDL_AudioFormat fmt = AUDIO_S16;
+      int freq=100;
+      Mix_QuerySpec(&freq, &fmt, &ch);
+      printf("Opened audio: %dHz, %s, ch=%d\n", freq, fmt==AUDIO_S16?"s32":fmt==AUDIO_F32?"f32":"?", ch);
+      */
    }
    #endif
 }
