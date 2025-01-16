@@ -787,6 +787,7 @@ public:
          case SDL_AUDIO_U8: return s->channels;
          case SDL_AUDIO_S16: return s->channels*2;
          case SDL_AUDIO_F32: return s->channels*4;
+         default: ;
       }
       return 0;
    }
@@ -1057,6 +1058,7 @@ public:
          case SDL_AUDIO_U8: sampleSize = 1; break;
          case SDL_AUDIO_S16: sampleSize = 2; break;
          case SDL_AUDIO_F32: sampleSize = 4; break;
+         default: ;
       }
       #endif
 
@@ -1299,6 +1301,7 @@ public:
             case SDL_AUDIO_U8: sMusicSampleSize = 1; break;
             case SDL_AUDIO_S16: sMusicSampleSize = 2; break;
             case SDL_AUDIO_F32: sMusicSampleSize = 4; break;
+            default: ;
          }
 
       }
