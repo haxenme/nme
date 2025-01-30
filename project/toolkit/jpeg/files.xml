@@ -1,6 +1,7 @@
 <xml>
 
    <set name="NME_JPEG" value="${this_dir}/libjpeg-turbo/" />
+   <set name="NME_JPEG_SRC" value="${this_dir}/libjpeg-turbo/src/" />
    <echo value="${INCLUDE}/" />
 
    <!-- nasm on mac x64 generate a whole lot of warning messages.  Nice just to skip it? -->
@@ -9,45 +10,45 @@
 
 
    <files id="native-toolkit-jpeg-depends" >
-      <depend name="${NME_JPEG}/jpeglib.h"/>
+      <depend name="${NME_JPEG_SRC}/jpeglib.h"/>
       <depend name="${NME_JPEG}/../jconfig.h"/>
    </files>
 
    <files id="native-toolkit-jpeg-depends-int" >
-      <depend name="${NME_JPEG}/jpeglib.h"/>
+      <depend name="${NME_JPEG_SRC}/jpeglib.h"/>
       <depend name="${NME_JPEG}/../jconfig.h"/>
-      <depend name="${NME_JPEG}transupp.h"/>
-      <depend name="${NME_JPEG}jmemsys.h"/>
-      <depend name="${NME_JPEG}jmorecfg.h"/>
-      <depend name="${NME_JPEG}jpegint.h"/>
-      <depend name="${NME_JPEG}jinclude.h"/>
-      <depend name="${NME_JPEG}jerror.h"/>
-      <depend name="${NME_JPEG}jdct.h"/>
+      <depend name="${NME_JPEG_SRC}transupp.h"/>
+      <depend name="${NME_JPEG_SRC}jmemsys.h"/>
+      <depend name="${NME_JPEG_SRC}jmorecfg.h"/>
+      <depend name="${NME_JPEG_SRC}jpegint.h"/>
+      <depend name="${NME_JPEG_SRC}jinclude.h"/>
+      <depend name="${NME_JPEG_SRC}jerror.h"/>
+      <depend name="${NME_JPEG_SRC}jdct.h"/>
    </files>
 
 
    <files id="native-toolkit-jpeg-16" tags="">
       <compilerflag value="-DBITS_IN_JSAMPLE=16" />
       <depend files="native-toolkit-jpeg-depends-int"/>
-      <compilerflag value="-I${NME_JPEG}" />
+      <compilerflag value="-I${NME_JPEG}/src" />
       <compilerflag value="-I${NME_JPEG}/.." />
       <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D16" unless="JPEG_SUPPRESS_SIMD" />
       <objprefix value="s16_" />
-      <file name="${NME_JPEG}jcapistd.c" />
-      <file name="${NME_JPEG}jccolor.c" />
-      <file name="${NME_JPEG}jcdiffct.c" />
-      <file name="${NME_JPEG}jclossls.c" />
-      <file name="${NME_JPEG}jcmainct.c" />
-      <file name="${NME_JPEG}jcprepct.c" />
-      <file name="${NME_JPEG}jcsample.c" />
-      <file name="${NME_JPEG}jdapistd.c" />
-      <file name="${NME_JPEG}jdcolor.c" />
-      <file name="${NME_JPEG}jddiffct.c" />
-      <file name="${NME_JPEG}jdlossls.c" />
-      <file name="${NME_JPEG}jdmainct.c" />
-      <file name="${NME_JPEG}jdpostct.c" />
-      <file name="${NME_JPEG}jdsample.c" />
-      <file name="${NME_JPEG}jutils.c" />
+      <file name="${NME_JPEG_SRC}jcapistd.c" />
+      <file name="${NME_JPEG_SRC}jccolor.c" />
+      <file name="${NME_JPEG_SRC}jcdiffct.c" />
+      <file name="${NME_JPEG_SRC}jclossls.c" />
+      <file name="${NME_JPEG_SRC}jcmainct.c" />
+      <file name="${NME_JPEG_SRC}jcprepct.c" />
+      <file name="${NME_JPEG_SRC}jcsample.c" />
+      <file name="${NME_JPEG_SRC}jdapistd.c" />
+      <file name="${NME_JPEG_SRC}jdcolor.c" />
+      <file name="${NME_JPEG_SRC}jddiffct.c" />
+      <file name="${NME_JPEG_SRC}jdlossls.c" />
+      <file name="${NME_JPEG_SRC}jdmainct.c" />
+      <file name="${NME_JPEG_SRC}jdpostct.c" />
+      <file name="${NME_JPEG_SRC}jdsample.c" />
+      <file name="${NME_JPEG_SRC}jutils.c" />
    </files>
 
 
@@ -57,39 +58,39 @@
       <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D_12" unless="JPEG_SUPPRESS_SIMD" />
       <compilerflag value="-DBITS_IN_JSAMPLE=12" />
       <depend files="native-toolkit-jpeg-depends-int"/>
-      <compilerflag value="-I${NME_JPEG}" />
+      <compilerflag value="-I${NME_JPEG_SRC}" />
       <compilerflag value="-I${NME_JPEG}/.." />
       <objprefix value="s12_" />
 
-      <file name="${NME_JPEG}jcapistd.c" />
-      <file name="${NME_JPEG}jccolor.c" />
-      <file name="${NME_JPEG}jcdiffct.c" />
-      <file name="${NME_JPEG}jclossls.c" />
-      <file name="${NME_JPEG}jcmainct.c" />
-      <file name="${NME_JPEG}jcprepct.c" />
-      <file name="${NME_JPEG}jcsample.c" />
-      <file name="${NME_JPEG}jdapistd.c" />
-      <file name="${NME_JPEG}jdcolor.c" />
-      <file name="${NME_JPEG}jddiffct.c" />
-      <file name="${NME_JPEG}jdlossls.c" />
-      <file name="${NME_JPEG}jdmainct.c" />
-      <file name="${NME_JPEG}jdpostct.c" />
-      <file name="${NME_JPEG}jdsample.c" />
-      <file name="${NME_JPEG}jutils.c" />
+      <file name="${NME_JPEG_SRC}jcapistd.c" />
+      <file name="${NME_JPEG_SRC}jccolor.c" />
+      <file name="${NME_JPEG_SRC}jcdiffct.c" />
+      <file name="${NME_JPEG_SRC}jclossls.c" />
+      <file name="${NME_JPEG_SRC}jcmainct.c" />
+      <file name="${NME_JPEG_SRC}jcprepct.c" />
+      <file name="${NME_JPEG_SRC}jcsample.c" />
+      <file name="${NME_JPEG_SRC}jdapistd.c" />
+      <file name="${NME_JPEG_SRC}jdcolor.c" />
+      <file name="${NME_JPEG_SRC}jddiffct.c" />
+      <file name="${NME_JPEG_SRC}jdlossls.c" />
+      <file name="${NME_JPEG_SRC}jdmainct.c" />
+      <file name="${NME_JPEG_SRC}jdpostct.c" />
+      <file name="${NME_JPEG_SRC}jdsample.c" />
+      <file name="${NME_JPEG_SRC}jutils.c" />
 
-      <file name="${NME_JPEG}jccoefct.c" />
-      <file name="${NME_JPEG}jcdctmgr.c" />
-      <file name="${NME_JPEG}jdcoefct.c" />
-      <file name="${NME_JPEG}jddctmgr.c" />
-      <file name="${NME_JPEG}jdmerge.c" />
-      <file name="${NME_JPEG}jfdctfst.c" />
-      <file name="${NME_JPEG}jfdctint.c" />
-      <file name="${NME_JPEG}jidctflt.c" />
-      <file name="${NME_JPEG}jidctfst.c" />
-      <file name="${NME_JPEG}jidctint.c" />
-      <file name="${NME_JPEG}jidctred.c" />
-      <file name="${NME_JPEG}jquant1.c" />
-      <file name="${NME_JPEG}jquant2.c" />
+      <file name="${NME_JPEG_SRC}jccoefct.c" />
+      <file name="${NME_JPEG_SRC}jcdctmgr.c" />
+      <file name="${NME_JPEG_SRC}jdcoefct.c" />
+      <file name="${NME_JPEG_SRC}jddctmgr.c" />
+      <file name="${NME_JPEG_SRC}jdmerge.c" />
+      <file name="${NME_JPEG_SRC}jfdctfst.c" />
+      <file name="${NME_JPEG_SRC}jfdctint.c" />
+      <file name="${NME_JPEG_SRC}jidctflt.c" />
+      <file name="${NME_JPEG_SRC}jidctfst.c" />
+      <file name="${NME_JPEG_SRC}jidctint.c" />
+      <file name="${NME_JPEG_SRC}jidctred.c" />
+      <file name="${NME_JPEG_SRC}jquant1.c" />
+      <file name="${NME_JPEG_SRC}jquant2.c" />
    </files>
 
 
@@ -99,72 +100,72 @@
 
       <compilerflag value="-DWITH_SIMD=1" if="NME_SIMD_D" unless="JPEG_SUPPRESS_SIMD" />
       <depend files="native-toolkit-jpeg-depends-int"/>
-      <compilerflag value="-I${NME_JPEG}" />
-      <compilerflag value="-I${NME_JPEG}/.." />
+      <compilerflag value="-I${NME_JPEG_SRC}" />
+      <compilerflag value="-I${NME_JPEG}.." />
 
       <files id="jpeg-sample12" />
       <files id="jpeg-sample16" />
 
-      <file name="${NME_JPEG}jccoefct.c" />
-      <file name="${NME_JPEG}jcdctmgr.c" />
-      <file name="${NME_JPEG}jdcoefct.c" />
-      <file name="${NME_JPEG}jddctmgr.c" />
-      <file name="${NME_JPEG}jdmerge.c" />
-      <file name="${NME_JPEG}jfdctfst.c" />
-      <file name="${NME_JPEG}jfdctint.c" />
-      <file name="${NME_JPEG}jidctflt.c" />
-      <file name="${NME_JPEG}jidctfst.c" />
-      <file name="${NME_JPEG}jidctint.c" />
-      <file name="${NME_JPEG}jidctred.c" />
-      <file name="${NME_JPEG}jquant1.c" />
-      <file name="${NME_JPEG}jquant2.c" />
+      <file name="${NME_JPEG_SRC}jccoefct.c" />
+      <file name="${NME_JPEG_SRC}jcdctmgr.c" />
+      <file name="${NME_JPEG_SRC}jdcoefct.c" />
+      <file name="${NME_JPEG_SRC}jddctmgr.c" />
+      <file name="${NME_JPEG_SRC}jdmerge.c" />
+      <file name="${NME_JPEG_SRC}jfdctfst.c" />
+      <file name="${NME_JPEG_SRC}jfdctint.c" />
+      <file name="${NME_JPEG_SRC}jidctflt.c" />
+      <file name="${NME_JPEG_SRC}jidctfst.c" />
+      <file name="${NME_JPEG_SRC}jidctint.c" />
+      <file name="${NME_JPEG_SRC}jidctred.c" />
+      <file name="${NME_JPEG_SRC}jquant1.c" />
+      <file name="${NME_JPEG_SRC}jquant2.c" />
 
-      <file name="${NME_JPEG}jcapistd.c" />
-      <file name="${NME_JPEG}jccolor.c" />
-      <file name="${NME_JPEG}jcdiffct.c" />
-      <file name="${NME_JPEG}jclossls.c" />
-      <file name="${NME_JPEG}jcmainct.c" />
-      <file name="${NME_JPEG}jcprepct.c" />
-      <file name="${NME_JPEG}jcsample.c" />
-      <file name="${NME_JPEG}jdapistd.c" />
-      <file name="${NME_JPEG}jdcolor.c" />
-      <file name="${NME_JPEG}jddiffct.c" />
-      <file name="${NME_JPEG}jdlossls.c" />
-      <file name="${NME_JPEG}jdmainct.c" />
-      <file name="${NME_JPEG}jdpostct.c" />
-      <file name="${NME_JPEG}jdsample.c" />
-      <file name="${NME_JPEG}jutils.c" />
+      <file name="${NME_JPEG_SRC}jcapistd.c" />
+      <file name="${NME_JPEG_SRC}jccolor.c" />
+      <file name="${NME_JPEG_SRC}jcdiffct.c" />
+      <file name="${NME_JPEG_SRC}jclossls.c" />
+      <file name="${NME_JPEG_SRC}jcmainct.c" />
+      <file name="${NME_JPEG_SRC}jcprepct.c" />
+      <file name="${NME_JPEG_SRC}jcsample.c" />
+      <file name="${NME_JPEG_SRC}jdapistd.c" />
+      <file name="${NME_JPEG_SRC}jdcolor.c" />
+      <file name="${NME_JPEG_SRC}jddiffct.c" />
+      <file name="${NME_JPEG_SRC}jdlossls.c" />
+      <file name="${NME_JPEG_SRC}jdmainct.c" />
+      <file name="${NME_JPEG_SRC}jdpostct.c" />
+      <file name="${NME_JPEG_SRC}jdsample.c" />
+      <file name="${NME_JPEG_SRC}jutils.c" />
 
-      <file name="${NME_JPEG}jcapimin.c" />
-      <file name="${NME_JPEG}jchuff.c" />
-      <file name="${NME_JPEG}jcicc.c" />
-      <file name="${NME_JPEG}jcinit.c" />
-      <file name="${NME_JPEG}jclhuff.c" />
-      <file name="${NME_JPEG}jcmarker.c" />
-      <file name="${NME_JPEG}jcmaster.c" />
-      <file name="${NME_JPEG}jcomapi.c" />
-      <file name="${NME_JPEG}jcparam.c" />
-      <file name="${NME_JPEG}jcphuff.c" />
-      <file name="${NME_JPEG}jctrans.c" />
-      <file name="${NME_JPEG}jdapimin.c" />
-      <file name="${NME_JPEG}jdatadst.c" />
-      <file name="${NME_JPEG}jdatasrc.c" />
-      <file name="${NME_JPEG}jdhuff.c" />
-      <file name="${NME_JPEG}jdicc.c" />
-      <file name="${NME_JPEG}jdinput.c" />
-      <file name="${NME_JPEG}jdlhuff.c" />
-      <file name="${NME_JPEG}jdmarker.c" />
-      <file name="${NME_JPEG}jdmaster.c" />
-      <file name="${NME_JPEG}jdphuff.c" />
-      <file name="${NME_JPEG}jdtrans.c" />
-      <file name="${NME_JPEG}jerror.c" />
-      <file name="${NME_JPEG}jfdctflt.c" />
-      <file name="${NME_JPEG}jmemmgr.c" />
-      <file name="${NME_JPEG}jmemnobs.c" />
-      <file name="${NME_JPEG}jpeg_nbits.c" />
-      <file name="${NME_JPEG}jaricom.c" />
-      <file name="${NME_JPEG}jcarith.c" />
-      <file name="${NME_JPEG}jdarith.c" />
+      <file name="${NME_JPEG_SRC}jcapimin.c" />
+      <file name="${NME_JPEG_SRC}jchuff.c" />
+      <file name="${NME_JPEG_SRC}jcicc.c" />
+      <file name="${NME_JPEG_SRC}jcinit.c" />
+      <file name="${NME_JPEG_SRC}jclhuff.c" />
+      <file name="${NME_JPEG_SRC}jcmarker.c" />
+      <file name="${NME_JPEG_SRC}jcmaster.c" />
+      <file name="${NME_JPEG_SRC}jcomapi.c" />
+      <file name="${NME_JPEG_SRC}jcparam.c" />
+      <file name="${NME_JPEG_SRC}jcphuff.c" />
+      <file name="${NME_JPEG_SRC}jctrans.c" />
+      <file name="${NME_JPEG_SRC}jdapimin.c" />
+      <file name="${NME_JPEG_SRC}jdatadst.c" />
+      <file name="${NME_JPEG_SRC}jdatasrc.c" />
+      <file name="${NME_JPEG_SRC}jdhuff.c" />
+      <file name="${NME_JPEG_SRC}jdicc.c" />
+      <file name="${NME_JPEG_SRC}jdinput.c" />
+      <file name="${NME_JPEG_SRC}jdlhuff.c" />
+      <file name="${NME_JPEG_SRC}jdmarker.c" />
+      <file name="${NME_JPEG_SRC}jdmaster.c" />
+      <file name="${NME_JPEG_SRC}jdphuff.c" />
+      <file name="${NME_JPEG_SRC}jdtrans.c" />
+      <file name="${NME_JPEG_SRC}jerror.c" />
+      <file name="${NME_JPEG_SRC}jfdctflt.c" />
+      <file name="${NME_JPEG_SRC}jmemmgr.c" />
+      <file name="${NME_JPEG_SRC}jmemnobs.c" />
+      <file name="${NME_JPEG_SRC}jpeg_nbits.c" />
+      <file name="${NME_JPEG_SRC}jaricom.c" />
+      <file name="${NME_JPEG_SRC}jcarith.c" />
+      <file name="${NME_JPEG_SRC}jdarith.c" />
 
 
       <section if="NME_SIMD_ARM64 || NME_SIMD_ARM7" >
@@ -257,12 +258,12 @@
 
    <files id="jpeg-test-main" tags="">
       <depend files="native-toolkit-jpeg-depends-int"/>
-      <compilerflag value="-I${NME_JPEG}" />
-      <compilerflag value="-I${NME_JPEG}/.." />
+      <compilerflag value="-I${NME_JPEG_SRC}" />
+      <compilerflag value="-I${NME_JPEG}.." />
 
-      <file name="${NME_JPEG}/cjpeg.c" />
-      <file name="${NME_JPEG}/cdjpeg.c" />
-      <file name="${NME_JPEG}/rdswitch.c" />
+      <file name="${NME_JPEG_SRC}/cjpeg.c" />
+      <file name="${NME_JPEG_SRC}/cdjpeg.c" />
+      <file name="${NME_JPEG_SRC}/rdswitch.c" />
    </files>
 
    <target id="default"  tool="linker" toolid="exe" output="out" if="BUILD_TEST" >

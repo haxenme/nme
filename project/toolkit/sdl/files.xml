@@ -131,8 +131,8 @@
         <file name="${NME_LIBSDL}src/audio/SDL_wave.c" />
 
         <file name="${NME_LIBSDL}src/cpuinfo/SDL_cpuinfo.c" />
-        <file name="${NME_LIBSDL}src/file/SDL_iostream.c" />
-        <file name="${NME_LIBSDL}src/file/SDL_asyncio.c" />
+        <file name="${NME_LIBSDL}src/io/SDL_iostream.c" />
+        <file name="${NME_LIBSDL}src/io/SDL_asyncio.c" />
         <file name="${NME_LIBSDL}src/dynapi/SDL_dynapi.c" />
         <file name="${NME_LIBSDL}src/events/SDL_clipboardevents.c" />
         <file name="${NME_LIBSDL}src/events/SDL_displayevents.c" />
@@ -270,7 +270,7 @@
         <file name="${NME_LIBSDL}src/dialog/SDL_dialog.c" />
         <file name="${NME_LIBSDL}src/process/SDL_process.c" />
         <file name="${NME_LIBSDL}src/tray/SDL_tray_utils.c" />
-        <file name="${NME_LIBSDL}/src/file/generic/SDL_asyncio_generic.c" />
+        <file name="${NME_LIBSDL}/src/io/generic/SDL_asyncio_generic.c" />
 
 
         <section unless="windows">

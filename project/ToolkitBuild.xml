@@ -383,6 +383,7 @@
       <compilerflag value="-I${NME_PNG}"/>
       <compilerflag value="-I${NME_PNG}.." if="NME_LOCAL_TOOLKIT" />
       <compilerflag value="-I${NME_JPEG}"/>
+      <compilerflag value="-I${NME_JPEG}/src" if="NME_LOCAL_TOOLKIT" />
       <compilerflag value="-I${NME_JPEG}.." if="NME_LOCAL_TOOLKIT" />
       <compilerflag value="-I${NME_VORBIS}include"/>
       <compilerflag value="-I${NME_OGG}include"/>
