@@ -173,7 +173,7 @@
 
 
    <!-- Where to find static libraries/includes -->
-   <set name="NATIVE_TOOLKIT_PATH" value="${haxelib:nme-toolkit}" unless="NATIVE_TOOLKIT_PATH" />
+   <set name="NATIVE_TOOLKIT_PATH" value="${haxelib:nme-toolkit}" unless="NATIVE_TOOLKIT_PATH || NME_LOCAL_TOOLKIT" />
 
    <section unless="NME_LOCAL_TOOLKIT">
       <set name="NME_ZLIB" value="${NATIVE_TOOLKIT_PATH}/zlib/" />
