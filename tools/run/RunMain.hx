@@ -8,29 +8,31 @@ class RunMain
       log("Before this can be used, you need to:");
       log(" 1. Build the binaries appropriate to your system(s), this can be done with:");
       log("     cd project");
-      log("     neko build.n");
-      log("   Note: this requires the 'nme-toolkit' library, which can be installed with:");
-      log("     haxelib install nme-toolkit");
+      log("     haxelib run hxcpp ToolkitBuild.xml");
       log(" 2. Rebuild the main command-line tool, this can be done with:");
       log("     cd tools/nme");
       log("     haxe compile.hxml");
       log("   Note: this requires the 'gm2d' and 'format' libraries, which can be installed with:");
       log("     haxelib install gm2d");
       log("     haxelib install format");
-      log(" 3. Build the acadnme tool, this can be done with:");
+      log(" 3. Optionally, build the acadnme tool, this can be done with:");
       log("     cd acadnme");
-      log("     neko ../nme.n build .");
+      log("     haxelib run nme cpp nocompile");
+      log("     cd ../samples/AcadnmeBoot");
+      log("     haxelib run nme cppia installer");
+      log("     cd ../acadnme");
+      log("     haxelib run nme cpp build");
       while(true)
       {
-         Sys.print("\nWould you like to do this now [y/n]");
+         Sys.print("\nWould you like to do this now [y/n/a(ll, including acadnme)]");
          var code = Sys.getChar(true);
          if (code<=32)
             break;
          var answer = String.fromCharCode(code);
-         if (answer=="y" || answer=="Y")
+         if (answer=="y" || answer=="Y" || answer=="a" ||  answer=="A" )
          {
             log("");
-            setup();
+            setup(answer=="a" || answer=="A");
             executeNme();
             return;
          }
@@ -40,25 +42,23 @@ class RunMain
       log("");
    }
 
-   public static function setup()
+   public static function setup(acadnmeToo:Bool)
    {
-      log("Installing nme-toolkit...");
-      run("","haxelib", [ "install","nme-toolkit"]);
       buildBinaries([]);
       log("Installing gm2d...");
       run("","haxelib", [ "install","gm2d"]);
       log("Installing format...");
       run("","haxelib", [ "install","format"]);
       compileTool();
-      compileAcadnme();
+      if (acadnmeToo)
+         compileAcadnme();
       log("Initial setup complete.");
    }
 
    public static function buildBinaries(platforms:Array<String>)
    {
       log("Building binaries...");
-      var args = ["build.n"].concat(platforms);
-      run("project","neko", args);
+      run("project","haxelib", ["run","hxcpp","ToolkitBuild.xml"]);
    }
 
    public static function compileTool()
@@ -70,7 +70,9 @@ class RunMain
    public static function compileAcadnme()
    {
       log("Compiling acadnme tool...");
-      run("acadnme","neko", [ "../nme.n", "build", "."]);
+      run("acadnme","haxelib", [ "run", "nme", "cpp", "nocompile"]);
+      run("samples/AcadnmeBoot","haxelib", [ "run", "nme", "cppia", "installer"]);
+      run("acadnme","haxelib", [ "run", "nme", "cpp", "build"]);
    }
 
    public static function run(dir:String, command:String, args:Array<String>)

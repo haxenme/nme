@@ -171,7 +171,7 @@
       <section if="NME_SIMD_ARM64 || NME_SIMD_ARM7" >
          <compilerflag value="-DNEON_INTRINSICS=1" />
 
-         <file name="${NME_JPEG}jcapimin.c"/>
+         <file name="${NME_JPEG_SRC}jcapimin.c"/>
          <file name="${NME_JPEG}/simd/arm/jquanti-neon.c" />
          <file name="${NME_JPEG}/simd/arm/jidctred-neon.c" />
          <file name="${NME_JPEG}/simd/arm/jidctint-neon.c" />

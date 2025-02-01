@@ -3,17 +3,12 @@
    <set name="NME_LIBSDL" value="${this_dir}/SDL/" />
 
     <section unless="SDL_CONFIG_PATH" >
-       <set name="SDL_CONFIG_PATH" value="${this_dir}/configs/default/" unless="windows || mac || linux || rpi" />
        <set name="SDL_CONFIG_PATH" value="${this_dir}/configs/linux/" if="linux" unless="rpi"/>
-       <set name="SDL_CONFIG_PATH" value="${this_dir}/configs/windows/" if="windows" unless="winrt" />
-       <set name="SDL_CONFIG_PATH" value="${this_dir}/configs/winrt/" if="winrt" />
-       <set name="SDL_CONFIG_PATH" value="${this_dir}/configs/mac/" if="mac" />
-       <set name="SDL_CONFIG_PATH" value="${this_dir}/configs/rpi/" if="rpi" />
     </section>
 
 
     <files id="native-toolkit-sdl-depends">
-        <depend name="${SDL_CONFIG_PATH}/SDL_config.h" if="SDL_CONFIG_PATH" />
+        <depend name="${SDL_CONFIG_PATH}/SDL_build_config.h" if="SDL_CONFIG_PATH" />
 
         <!--
         -->
@@ -69,6 +64,7 @@
 
             <compilerflag value="-DUSING_GENERATED_CONFIG_H" if="NME_USE_CONFIG" />
             <compilerflag value="-DHAVE_LINUX_VERSION_H" />
+            <compilerflag value="-DHAVE_STDIO_H" />
             <compilerflag value="-D_REENTRANT" />
 
             <section unless="HXCPP_ARM64 || HXCPP_ARM7" >
@@ -392,16 +388,9 @@
         <section if="linux">
 
             <file name="${NME_LIBSDL}src/audio/SDL_audiodev.c" />
-            <file name="${NME_LIBSDL}src/audio/alsa/SDL_alsa_audio.c" />
-            <file name="${NME_LIBSDL}src/audio/arts/SDL_artsaudio.c" />
-            <file name="${NME_LIBSDL}src/audio/esd/SDL_esdaudio.c" />
-            <file name="${NME_LIBSDL}src/audio/fusionsound/SDL_fsaudio.c" />
-            <file name="${NME_LIBSDL}src/audio/nas/SDL_nasaudio.c" />
-            <file name="${NME_LIBSDL}src/audio/paudio/SDL_paudio.c" />
+            <!--<file name="${NME_LIBSDL}src/audio/alsa/SDL_alsa_audio.c" />-->
             <file name="${NME_LIBSDL}src/audio/pulseaudio/SDL_pulseaudio.c" />
-            <file name="${NME_LIBSDL}src/audio/qsa/SDL_qsa_audio.c" />
             <file name="${NME_LIBSDL}src/audio/sndio/SDL_sndioaudio.c" />
-            <file name="${NME_LIBSDL}src/audio/sun/SDL_sunaudio.c" />
             <file name="${NME_LIBSDL}src/audio/dsp/SDL_dspaudio.c" />
             <file name="${NME_LIBSDL}src/haptic/linux/SDL_syshaptic.c" />
             <!-- <file name="${NME_LIBSDL}src/hidapi/linux/hid.c" />
@@ -417,6 +406,7 @@
             <file name="${NME_LIBSDL}src/core/linux/SDL_ime.c" />
             <file name="${NME_LIBSDL}src/core/linux/SDL_threadprio.c" />
             <file name="${NME_LIBSDL}src/core/unix/SDL_poll.c" />
+            <file name="${NME_LIBSDL}src/core/unix/SDL_appid.c" />
             <file name="${NME_LIBSDL}src/joystick/linux/SDL_sysjoystick.c" />
             <file name="${NME_LIBSDL}src/video/x11/SDL_x11clipboard.c" />
             <file name="${NME_LIBSDL}src/video/x11/SDL_x11dyn.c" />
@@ -434,13 +424,21 @@
             <file name="${NME_LIBSDL}src/video/x11/SDL_x11vulkan.c" />
             <file name="${NME_LIBSDL}src/video/x11/SDL_x11window.c" />
             <file name="${NME_LIBSDL}src/video/x11/SDL_x11xinput2.c" />
+            <file name="${NME_LIBSDL}src/video/x11/SDL_x11pen.c" />
+            <file name="${NME_LIBSDL}src/video/x11/SDL_x11settings.c" />
+            <file name="${NME_LIBSDL}src/video/x11/xsettings-client.c" />
             <file name="${NME_LIBSDL}src/video/x11/edid-parse.c" />
             <file name="${NME_LIBSDL}src/events/imKStoUCS.c" />
             <file name="${NME_LIBSDL}src/events/SDL_scancode_tables.c" />
             <file name="${NME_LIBSDL}src/events/SDL_keysym_to_scancode.c" />
+            <file name="${NME_LIBSDL}src/events/SDL_keysym_to_keycode.c" />
             <file name="${NME_LIBSDL}src/filesystem/unix/SDL_sysfilesystem.c" />
             <file name="${NME_LIBSDL}src/locale/unix/SDL_syslocale.c" />
             <file name="${NME_LIBSDL}src/misc/unix/SDL_sysurl.c" />
+            <file name="${NME_LIBSDL}src/tray/unix/SDL_tray.c" />
+            <file name="${NME_LIBSDL}src/dialog/unix/SDL_unixdialog.c" />
+            <file name="${NME_LIBSDL}src/dialog/unix/SDL_portaldialog.c" />
+            <file name="${NME_LIBSDL}src/dialog/unix/SDL_zenitydialog.c" />
 
         </section>
 

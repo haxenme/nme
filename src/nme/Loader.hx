@@ -33,7 +33,9 @@ class Loader
 
    static public function findHaxeLib(inLib:String) 
    {
-      Sys.setCwd(Sys.args()[Sys.args().length-1]);
+      var args = Sys.args();
+      if (args!=null && args.length>0)
+         Sys.setCwd(args[args.length-1]);
       try 
       {
          var proc = new Process("haxelib", ["path", inLib]);
