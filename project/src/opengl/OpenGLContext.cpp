@@ -947,7 +947,8 @@ bool InitDynamicGLES()
          gEGLLibraryHandle = LoadLibraryA("libEGL.dll");
          if (!gEGLLibraryHandle)
          {
-            fprintf(stderr,"ERROR: Could not open libEGL\n");
+            // Silent fail for now
+            //fprintf(stderr,"ERROR: Could not open libEGL\n");
             nmeEglMode = false;
          }
          else

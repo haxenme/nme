@@ -2,6 +2,8 @@ import sys.io.File;
 
 class Write
 {
+   static var baseVersion = 150;
+
    public static function main()
    {
       var args = Sys.args();
@@ -9,6 +11,10 @@ class Write
       var gitVersion = args[1];
       if (buildNumber<1 || buildNumber==null || gitVersion==null)
          throw "Usage: Write buildNumber GITVER";
+
+      buildNumber -= baseVersion;
+      if (buildNumber<0)
+         buildNumber = 0;
 
 
       var jsonFile = "haxelib.json";

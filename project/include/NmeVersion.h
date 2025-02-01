@@ -1,3 +1,3 @@
-#ifndef NME_VERSION_NAME
-#define NME_VERSION_NAME "5.0.0"
+#ifndef NME_VERSION
+#define NME_VERSION "7.0.0"
 #endif
