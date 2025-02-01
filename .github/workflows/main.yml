@@ -8,11 +8,6 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-13]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Setup compile cache
-        env:
-          HXCPP_COMPILE_CACHE: ${{ runner.temp }}/hxcpp_cache
-          HXCPP_COMPILE_MB: 4000
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -53,6 +48,9 @@ jobs:
           sudo apt-get -y install libasound2-dev libpulse-dev  libaudio-dev libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
         
       - name: Build Project
+        env:
+          HXCPP_COMPILE_CACHE: ${{ runner.temp }}/hxcpp_cache
+          HXCPP_COMPILE_MB: 4000
         run: |
           cd project
           haxelib run hxcpp ToolkitBuild.xml -DHXCPP_M64
@@ -68,6 +66,9 @@ jobs:
            haxelib run nme cppia installer
            
       - name: Build Acadnme
+        env:
+          HXCPP_COMPILE_CACHE: ${{ runner.temp }}/hxcpp_cache
+          HXCPP_COMPILE_MB: 4000
         run: |
            cd acadnme
            haxelib run nme cpp build -DHXCPP_M64
