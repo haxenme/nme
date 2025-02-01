@@ -36,6 +36,9 @@
 
    <set name="NME_LOCAL_TOOLKIT" value="1" if="android" />
 
+   <!-- Disable until I can get the nasm tooling right -->
+   <set name="JPEG_SUPPRESS_SIMD" value="1" unless="NME_JPEG_SIMD" />
+
    <include name="${HXCPP}/build-tool/BuildCommon.xml"/>
    <!-- 
       Build with:
