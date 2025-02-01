@@ -2,7 +2,6 @@
 
    <set name="NME_JPEG" value="${this_dir}/libjpeg-turbo/" />
    <set name="NME_JPEG_SRC" value="${this_dir}/libjpeg-turbo/src/" />
-   <echo value="${INCLUDE}/" />
 
    <!-- nasm on mac x64 generate a whole lot of warning messages.  Nice just to skip it? -->
    <set name="JPEG_SUPPRESS_SIMD" value="1" if="macos HXCPP_M64 NME_STATIC_LINK" unless="NME_NOISY_SIMD" />
