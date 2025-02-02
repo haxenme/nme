@@ -43,12 +43,15 @@
 
         <section if="windows">
 
+            <compilerflag value="-I${this_dir}/../../include/xcompile" />
             <compilerflag value="-DUSING_GENERATED_CONFIG_H" if="NME_USE_CONFIG" />
             <compilerflag value="-DNATIVE_TOOLKIT_SDL_ANGLE" if="NATIVE_TOOLKIT_SDL_ANGLE" />
             <compilerflag value="-DNATIVE_TOOLKIT_STATIC_ANGLE" if="NATIVE_TOOLKIT_STATIC_ANGLE" />
             <compilerflag value="-DSDL_VIDEO_STATIC_ANGLE" if="NATIVE_TOOLKIT_STATIC_ANGLE" />
             <compilerflag value="-DNME_DYNAMIC_ANGLE" if="NME_DYNAMIC_ANGLE" />
             <compilerflag value="-DHAVE_MODF=1" />
+            <compilerflag value="-DHAVE_WINSDKVER_H=1" />
+            <compilerflag value="-DHAVE_GAMEINPUT_H=1" />
 
         </section>
 
@@ -282,6 +285,7 @@
             <file name="${NME_LIBSDL}src/time/unix/SDL_systime.c" />
             <file name="${NME_LIBSDL}src/locale/unix/SDL_syslocale.c" />
             <file name="${NME_LIBSDL}src/process/posix/SDL_posixprocess.c" />
+            <file name="${NME_LIBSDL}src/io/windows/SDL_asyncio_windows_ioring.c" />
 
         </section>
 
@@ -488,6 +492,7 @@
             <file name="${NME_LIBSDL}src/tray/windows/SDL_tray.c" />
             <file name="${NME_LIBSDL}src/process/windows/SDL_windowsprocess.c" />
             <file name="${NME_LIBSDL}src/video/windows/SDL_surface_utils.c" />
+            <file name="${NME_LIBSDL}src/joystick/gdk/SDL_gameinputjoystick.c" />
 
             <section unless="winrt">
 
