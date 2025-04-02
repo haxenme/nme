@@ -90,6 +90,13 @@ class Builder extends hxcpp.Builder
       if (args.remove("-Dnme-dev"))
          toolkitBuild = false;
 
+      if (args.remove("font"))
+      {
+         updateFontData();
+         if (args.length==0)
+            return;
+      }
+
       if (args.indexOf("emscripten")>=0 || args.indexOf("jsprime")>=0)
          updateFontData();
 

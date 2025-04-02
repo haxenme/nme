@@ -53,6 +53,7 @@ jobs:
           HXCPP_COMPILE_MB: 4000
         run: |
           cd project
+          neko build.n font
           haxelib run hxcpp ToolkitBuild.xml -DHXCPP_M64
           
       - name: Prep Acadnme
