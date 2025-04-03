@@ -1,6 +1,11 @@
 package;
 
+#if neko
 import neko.Lib;
+#else
+import cpp.Lib;
+#end
+
 #if nme
 import nme.Loader;
 #end

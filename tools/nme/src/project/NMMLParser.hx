@@ -79,6 +79,15 @@ class NMMLParser
       return false;
    }
 
+   public function hasField(o:Dynamic, fieldName:String)
+   {
+      #if cpp
+      return o!=null;
+      #else
+      return Reflect.hasField(o,fieldName);
+      #end
+   }
+
 
    public function path(value:String):Void 
    {
@@ -257,8 +266,10 @@ class NMMLParser
                var name = formatAttributeName(attribute);
                var value = substitute(element.att.resolve(attribute));
 
-               if (Reflect.hasField(project.app, name)) 
+               if (hasField(project.app, name)) 
+               {
                   Reflect.setField(project.app, name, value);
+               }
          }
       }
    }
@@ -1247,17 +1258,17 @@ class NMMLParser
                }
 
             case "height", "width", "fps", "antialiasing":
-               if (Reflect.hasField(project.window, name)) 
+               if (hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.parseInt(value));
 
             case "parameters", "ui":
                if (name=="ui" && value=="spritekit")
                   project.haxedefs.set("nme_spritekit", "1");
-               if (Reflect.hasField(project.window, name)) 
+               if (hasField(project.window, name)) 
                   Reflect.setField(project.window, name, Std.string(value));
 
             default:
-               if (Reflect.hasField(project.window, name)) 
+               if (hasField(project.window, name)) 
                   Reflect.setField(project.window, name, value == "true");
                else
                {

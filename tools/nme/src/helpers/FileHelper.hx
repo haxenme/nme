@@ -7,7 +7,10 @@ import haxe.Template;
 import sys.io.File;
 import sys.io.FileOutput;
 import sys.FileSystem;
+#if neko
 import neko.Lib;
+#end
+
 import platforms.Platform;
 using StringTools;
 

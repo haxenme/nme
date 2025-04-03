@@ -14,6 +14,10 @@ import nme.script.Client;
 import NMEProject;
 import nme.AlphaMode;
 
+#if nme_static_link
+import nme.StaticNme;
+#end
+
 using StringTools;
 
 
@@ -1373,11 +1377,13 @@ class CommandLineTools
 
       nme = PathHelper.getHaxelib(new Haxelib("nme"));
 
+      #if neko
       if (!Loader.foundNdll)
       {
          buildNdll();
          return;
       }
+      #end
 
       var project = new NMEProject( );
       project.localDefines.set("NME",nme);
@@ -1618,11 +1624,13 @@ class CommandLineTools
 
       nmeVersion = getVersion();
 
-      if (arguments.length > 0) 
+      // When the command-line tools are called from haxelib, 
+      // the last argument is the project directory and the
+      // path to NME is the current working directory 
+      var isHaxelib = #if neko true #else false #end;
+
+      if (isHaxelib && arguments.length > 0) 
       {
-         // When the command-line tools are called from haxelib, 
-         // the last argument is the project directory and the
-         // path to NME is the current working directory 
          var lastArgument = "";
          for(i in 0...arguments.length) 
          {

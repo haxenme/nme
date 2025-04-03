@@ -1,0 +1,15 @@
+-main CommandLineTools
+-cpp bin
+-cp src
+-cp src/helpers
+-cp src/project
+-cp ../../src
+-D nme
+-D ndll_silent_fail=1
+-lib format
+-lib gm2d
+-lib hxcpp
+-D HXCPP_STACK_TRACE
+-D nme_static_link
+-D nme_no_ogl
+-D NME_NO_AUDIO
