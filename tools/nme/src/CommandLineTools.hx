@@ -21,7 +21,6 @@ import nme.StaticNme;
 using StringTools;
 
 
-
 class Fs
 {
    public static function getDocs() return nme.filesystem.File.documentsDirectory.nativePath;

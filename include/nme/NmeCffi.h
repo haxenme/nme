@@ -1,14 +1,15 @@
 #ifndef NME_CFFI_H
 #define NME_CFFI_H
 
-
+#ifdef STATIC_LINK
+  #define HXCPP_NO_PRIME_EXPORT
+#endif
 
 #ifdef HXCPP_JS_PRIME
 #include "NmeJsPrime.h"
 #include <Utils.h>
 
 #else
-
 
 #include <hx/CFFIPrime.h>
 #include <string>

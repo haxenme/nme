@@ -52,3 +52,5 @@ all_objs
 
 # OSX
 *.DS_Store
+
+/nme.exe

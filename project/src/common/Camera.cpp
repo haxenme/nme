@@ -1,3 +1,6 @@
+#ifdef STATIC_LINK
+  #define HXCPP_NO_PRIME_EXPORT
+#endif
 #include <nme/Object.h>
 #include <nme/NmeApi.h>
 #include <nme/ImageBuffer.h>

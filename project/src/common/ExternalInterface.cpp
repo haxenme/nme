@@ -1,12 +1,17 @@
+// Create DLL..
 #ifndef STATIC_LINK
-#define IMPLEMENT_API
-#elif defined(HXCPP_JS_PRIME)
-#define IMPLEMENT_API
-#endif
+  #define IMPLEMENT_API
+  #if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX)
+    // Include neko glue....
+    #define NEKO_COMPATIBLE
+  #endif
 
-#if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX)
-// Include neko glue....
-#define NEKO_COMPATIBLE
+// Library/static link
+#else
+  #if defined(HXCPP_JS_PRIME)
+     #define IMPLEMENT_API
+  #endif
+
 #endif
 
 #if defined(EMSCRIPTEN) || defined(HX_WINRT)
