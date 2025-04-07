@@ -85,7 +85,11 @@ namespace nme {
 
 
 
+#ifdef NME_VIDEO
 HWND GetApplicationWindow();
+#else
+HWND GetApplicationWindow() { return 0; }
+#endif
 
 namespace {
 enum

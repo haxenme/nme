@@ -133,12 +133,12 @@
       For ios/mac  use core audio + openal
       For android use java (todo - opensl?)
    -->
-   <set name="NME_OPENAL" value="1" if="iphone" />
+   <set name="NME_OPENAL" value="1" if="iphone" unless="NME_NO_AUDIO" />
 
    <!-- Use to allow testing on mac... -->
-   <set name="NME_OPENAL" value="1" if="macos" />
+   <set name="NME_OPENAL" value="1" if="macos" unless="NME_NO_AUDIO" />
 
-   <set name="NME_OPENAL" value="1" if="emscripten" />
+   <set name="NME_OPENAL" value="1" if="emscripten" unless="NME_NO_AUDIO" />
 
    <set name="NME_CAMERA" value="1" unless="emscripten||winrt" />
 
@@ -281,7 +281,7 @@
    </files>
    
    
-   <files id="nme">
+   <files id="nme" tags="" >
       <compilerflag value="-I${NME_INC_DIR}"/>
       <compilerflag value="-I${INC_DIR}"/>
 
@@ -296,6 +296,7 @@
       <compilerflag value="-DNME_OGL" if="NME_OGL" />
       <compilerflag value="-DNME_METAL" if="NME_METAL" />
       <compilerflag value="-DNME_AUDIO" unless="NME_NO_AUDIO" />
+      <compilerflag value="-DNME_VIDEO" unless="NME_NO_VIDEO" />
       <compilerflag value="-DNME_SIMD_D" if="NME_SIMD_D" />
       <compilerflag value="${NME_SIMD_D}" if="NME_SIMD_D" />
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
@@ -316,7 +317,7 @@
          <file name="${SRC_DIR}/windows/CaptureDevice.cpp" if="NME_CAMERA" />
          <file name="${SRC_DIR}/windows/GDIFont.cpp" unless="winrt"/>
          <file name="${SRC_DIR}/windows/System.cpp"/>
-         <file name="${SRC_DIR}/audio/WindowsAcm.cpp" unless="mingw || winrt" />
+         <file name="${SRC_DIR}/audio/WindowsAcm.cpp" unless="mingw || winrt || NME_NO_AUDIO" />
          <compilerflag value="-DNME_NO_WINACM" if="mingw" />
          <compilerflag value="-DNME_NO_WINACM" if="winrt" />
       </section>
@@ -333,7 +334,7 @@
          <file name="${SRC_DIR}/mac/NSFont.cpp"/>
          <file name="${SRC_DIR}/mac/MacBoot.m" />
          <file name="${SRC_DIR}/mac/System.mm"/>
-         <file name="${SRC_DIR}/audio/AvAudio.mm" />
+         <file name="${SRC_DIR}/audio/AvAudio.mm" unless="NME_NO_AUDIO" />
          <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
       </section>
 
@@ -351,7 +352,7 @@
 
       <section if="android">
          <file name="${SRC_DIR}/android/AndroidCommon.cpp" />
-         <file name="${SRC_DIR}/audio/AndroidSound.cpp" />
+         <file name="${SRC_DIR}/audio/AndroidSound.cpp" unless="NME_NO_AUDIO" />
          <file name="${SRC_DIR}/android/AndroidFont.cpp"/>
          <file name="${SRC_DIR}/android/AndroidFrame.cpp"/>
          <file name="${SRC_DIR}/android/JNI.cpp"/>
@@ -414,13 +415,13 @@
         <compilerflag value="-I/usr/include/SDL" if="linux" />
         <compilerflag value="-DDYNAMIC_SDL" />
         <compilerflag value="-DNME_MIXER" if="NME_MIXER" />
-        <file name="${SRC_DIR}/audio/SDLSound.cpp" if="NME_MIXER" />
-        <file name="${SRC_DIR}/sdl/SDLStage.cpp"/>
+        <file name="${SRC_DIR}/audio/SDLSound.cpp" if="NME_MIXER" unless="NME_NO_AUDIO" />
+        <file name="${SRC_DIR}/sdl/SDLStage.cpp" unless="NME_NO_VIDEO" />
       </section>
 
       <section if="NME_SDL2">
-        <file name="${SRC_DIR}/audio/SDLSound.cpp"  if="NME_MIXER"/>
-        <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp"/>
+        <file name="${SRC_DIR}/audio/SDLSound.cpp"  if="NME_MIXER" unless="NME_NO_AUDIO" />
+        <file name="${SRC_DIR}/sdl2/SDL2Stage.cpp" unless="NME_NO_VIDEO" />
         <section unless="NME_NATIVE_SDL_SYSTEM" >
            <compilerflag value="-I${SDL_CONFIG_PATH}" if="SDL_CONFIG_PATH" />
            <compilerflag value="-I${NME_LIBSDL}include/SDL3" if="NME_SDL3" />
@@ -457,7 +458,7 @@
          <file name="${SRC_DIR}/metal/MetalContext.mm" />
       </section>
 
-      <section if="NME_OPENAL">
+      <section if="NME_OPENAL" >
          <file name="${SRC_DIR}/audio/OpenALSound.cpp" unless="NME_NO_AUDIO" />
          <compilerflag value="-DNME_OPENAL" />
       </section>
@@ -503,9 +504,11 @@
       <file name="${SRC_DIR}/common/Camera.cpp" if="NME_CAMERA" />
       <file name="${SRC_DIR}/common/ObjectStream.cpp" />
 
-      <file name="${SRC_DIR}/audio/Audio.cpp" />
-      <file name="${SRC_DIR}/audio/ChannelList.cpp" />
-      <file name="${SRC_DIR}/audio/Sound.cpp" unless="NME_NO_AUDIO" />
+      <section unless="NME_NO_AUDIO" >
+         <file name="${SRC_DIR}/audio/Audio.cpp" />
+         <file name="${SRC_DIR}/audio/ChannelList.cpp" />
+         <file name="${SRC_DIR}/audio/Sound.cpp" />
+      </section>
       
       <file name="${SRC_DIR}/common/XML/tinystr.cpp"/>
       <file name="${SRC_DIR}/common/XML/tinyxml.cpp"/>
@@ -599,16 +602,19 @@
          <lib name="-luuid" if="mingw" unless="static_link" />
       </section>
 
-      <section unless="NME_NATIVE_SDL_SYSTEM">
+      <section unless="NME_NATIVE_SDL_SYSTEM || NME_NO_VIDEO" >
          <section if="NME_SDL_ANY" >
             <files id="native-toolkit-sdl-mixer" if="NME_MIXER" />
             <files id="native-toolkit-sdl"   />
          </section>
       </section>
       
-         <files id="native-toolkit-modplug" if="modplug" />
-         <files id="native-toolkit-ogg"   />
-         <files id="native-toolkit-vorbis" />
+         <section unless="NME_NO_AUDIO" >
+           <files id="native-toolkit-modplug" if="modplug" />
+           <files id="native-toolkit-ogg"   />
+           <files id="native-toolkit-vorbis" />
+         </section>
+
          <section unless="NME_LOCAL_TOOLKIT" >
             <files id="native-toolkit-jpeg" />
          </section>
@@ -742,7 +748,7 @@
             <lib name="comdlg32.lib" />
             <lib name="setupapi.lib" />
             <lib name="d3d9.lib" if="NME_ANGLE"/>
-            <section if="NME_SDL3">
+            <section if="NME_SDL3" unless="NME_NO_VIDEO" >
                <lib name="d3d9.lib" />
                <!--
                <lib name="d3d11.lib" />

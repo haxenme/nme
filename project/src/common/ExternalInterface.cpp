@@ -1157,7 +1157,7 @@ DEFINE_PRIM(nme_get_local_ip_address,0);
 
 value nme_set_icon( value path ) {
    //printf( "setting icon\n" );
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS )
+   #if defined(NME_VIDEO) && (defined( HX_WINDOWS ) || defined( HX_MACOS ))
        SetIcon( val_string( path ) );
    #endif   
    return alloc_null();
@@ -1175,7 +1175,7 @@ DEFINE_PRIM( nme_sys_get_exe_name, 0 );
 value nme_capabilities_get_screen_resolutions ()
 {
    //Only really makes sense on PC platforms
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
+   #if defined(NME_VIDEO) && (defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX ))
       QuickVec<int>* res = CapabilitiesGetScreenResolutions();
       
       value result = alloc_array( res->size());
@@ -1195,7 +1195,7 @@ DEFINE_PRIME0(nme_capabilities_get_screen_resolutions);
 value nme_capabilities_get_screen_modes() 
 {
    //Only really makes sense on PC platforms
-   #if defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX )
+   #if defined(NME_VIDEO) && (defined( HX_WINDOWS ) || defined( HX_MACOS ) || defined( HX_LINUX ))
       QuickVec<ScreenMode>* modes = CapabilitiesGetScreenModes();
 
       value result = alloc_array( modes->size() * 4 );
@@ -1207,7 +1207,7 @@ value nme_capabilities_get_screen_modes()
          val_array_set_i(result,i * 4 + 2,alloc_int( mode.refreshRate ) );
          val_array_set_i(result,i * 4 + 3,alloc_int( (int)mode.format ) );
       }
-    
+
       return result;
     #endif  
     return alloc_null();
@@ -1216,36 +1216,56 @@ DEFINE_PRIM( nme_capabilities_get_screen_modes, 0 );
 
 
 double nme_capabilities_get_pixel_aspect_ratio()
-{   
+{
+   #ifdef NME_VIDEO
    return CapabilitiesGetPixelAspectRatio();  
+   #else
+   return 1.0;
+   #endif
 }
 DEFINE_PRIME0(nme_capabilities_get_pixel_aspect_ratio);
 
 
 double nme_capabilities_get_screen_dpi() 
-{   
+{
+   #ifdef NME_VIDEO
    return CapabilitiesGetScreenDPI();
+   #else
+   return 72.0;
+   #endif
 }
 DEFINE_PRIME0(nme_capabilities_get_screen_dpi);
 
 
 double nme_capabilities_get_screen_resolution_x()
-{   
+{
+   #ifdef NME_VIDEO
    return CapabilitiesGetScreenResolutionX(); 
+   #else
+   return 800.0;
+   #endif
 }
 DEFINE_PRIME0(nme_capabilities_get_screen_resolution_x);
 
 
 double nme_capabilities_get_screen_resolution_y ()
-{   
+{
+   #ifdef NME_VIDEO
    return CapabilitiesGetScreenResolutionY(); 
+   #else
+   return 600.0;
+   #endif
 }
 DEFINE_PRIME0(nme_capabilities_get_screen_resolution_y);
 
 
 value nme_capabilities_get_language()
-{   
+{
+   #ifdef NME_VIDEO
    return alloc_string(CapabilitiesGetLanguage().c_str()); 
+   #else
+   return alloc_string("english"); 
+   #endif
 }
 DEFINE_PRIM(nme_capabilities_get_language, 0);
 
@@ -1254,21 +1274,33 @@ DEFINE_PRIM(nme_capabilities_get_language, 0);
 #ifndef HXCPP_JS_PRIME
 value nme_desktop_clipboard_set_clipboard_text(value inText)
 {
+   #ifdef NME_VIDEO
    return alloc_bool(SetClipboardText(val_string(inText)));
+   #else
+   return alloc_null();
+   #endif
 }
 DEFINE_PRIM(nme_desktop_clipboard_set_clipboard_text, 1);
 
 
 bool nme_desktop_clipboard_has_clipboard_text()
 {
+   #ifdef NME_VIDEO
    return HasClipboardText();
+   #else
+   return false;
+   #endif
 }
 DEFINE_PRIME0(nme_desktop_clipboard_has_clipboard_text);
 
 
 value nme_desktop_clipboard_get_clipboard_text()
 {
+   #ifdef NME_VIDEO
    return alloc_string(GetClipboardText());
+   #else
+   return alloc_null();
+   #endif
 }
 DEFINE_PRIM(nme_desktop_clipboard_get_clipboard_text, 0);
 #endif
@@ -1439,12 +1471,14 @@ void nme_create_main_frame(value inCallback, int width, int height, int flags,
 {
    InitIDs();
 
+   #ifdef NME_VIDEO
    sOnCreateCallback = new AutoGCRoot(inCallback);
 
    Surface *icon=0;
    AbstractToObject(inIcon,icon);
 
    CreateMainFrame(OnMainFrameCreated, width, height, flags, title.c_str(), icon );
+   #endif
 }
 DEFINE_PRIME6v(nme_create_main_frame)
 
@@ -1486,14 +1520,18 @@ DEFINE_PRIME0v(nme_terminate);
 
 void nme_close()
 {
+   #ifdef NME_VIDEO
    StopAnimation();
+   #endif
 }
 DEFINE_PRIME0v(nme_close);
 
 
 value nme_start_animation()
 {
+   #ifdef NME_VIDEO
    StartAnimation();
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_start_animation,0);
@@ -1501,21 +1539,27 @@ DEFINE_PRIM(nme_start_animation,0);
 
 void nme_pause_animation()
 {
+   #ifdef NME_VIDEO
    PauseAnimation();
+   #endif
 }
 DEFINE_PRIME0v(nme_pause_animation);
 
 
 void nme_resume_animation()
 {
+   #ifdef NME_VIDEO
    ResumeAnimation();
+   #endif
 }
 DEFINE_PRIME0v(nme_resume_animation);
 
 
 value nme_stop_animation()
 {
+   #ifdef NME_VIDEO
    StopAnimation();
+   #endif
    return alloc_null();
 }
 DEFINE_PRIM(nme_stop_animation,0);

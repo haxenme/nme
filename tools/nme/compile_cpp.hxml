@@ -13,6 +13,7 @@
 -D nme_static_link
 -D nme_no_ogl
 -D NME_NO_AUDIO
+-D NME_NO_VIDEO
 -D HXCPP_NO_IMPLIB
 -D HXCPP_STATIC_CFFI
 -D HAXE_FULL_OUTPUT_NAME=../../../nme.exe

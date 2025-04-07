@@ -745,6 +745,7 @@ void TextField::AddCharacter(int inCharCode)
 
 void TextField::PasteSelection()
 {
+   #ifdef NME_VIDEO
    Stage *stage = getStage();
    if (stage)
    {
@@ -757,6 +758,7 @@ void TextField::PasteSelection()
    }
 
    InsertString(UTF8ToWide(GetClipboardText()));
+   #endif
 }
 
 void TextField::replaceSelectedText(const WString &inText)
@@ -2054,7 +2056,9 @@ void TextField::CopySelection()
          sCopyBuffer += WString( group.mString.mPtr,  mSelectMax - group.mChar0 );
       }
    }
+   #ifdef NME_VIDEO
    SetClipboardText(WideToUTF8(sCopyBuffer).c_str());
+   #endif
 }
 
 void TextField::DeleteSelection()
