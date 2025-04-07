@@ -82,7 +82,7 @@ class NMMLParser
    public function hasField(o:Dynamic, fieldName:String)
    {
       #if cpp
-      return o!=null;
+      return Type.getInstanceFields( Type.getClass(o) ).indexOf(fieldName) >= 0;
       #else
       return Reflect.hasField(o,fieldName);
       #end

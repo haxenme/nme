@@ -987,6 +987,7 @@ HardwareRenderer *HardwareRendererCreateMetal(CAMetalLayer *metalLayer)
 #else
 HardwareRenderer *HardwareRenderer::CreateMetal(void *inRenderer)
 {
+   #ifdef NME_VIDEO
    SDL_Renderer *renderer = (SDL_Renderer *)renderer;
 
    #ifdef NME_SDL3
@@ -998,6 +999,9 @@ HardwareRenderer *HardwareRenderer::CreateMetal(void *inRenderer)
    HardwareRenderer *ctx = new MetalContext( metalLayer );
 
    return ctx;
+   #else
+   return nullptr;
+   #endif
 }
 #endif
 

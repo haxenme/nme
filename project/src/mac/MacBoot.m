@@ -300,6 +300,7 @@ static void setupWindowMenu(void)
 }
 
 /* Replacement for NSApplicationMain */
+#ifdef NME_VIDEO
 static void CustomApplicationMain (int argc, char **argv)
 {
     #ifndef OBJC_ARC
@@ -340,9 +341,10 @@ static void CustomApplicationMain (int argc, char **argv)
     [pool release];
     #endif
 }
-
+#endif
 #endif
 
+#ifdef NME_VIDEO
 
 /*
  * Catch document open requests...this lets us notice files when the app
@@ -418,6 +420,8 @@ static void CustomApplicationMain (int argc, char **argv)
     /* We're done, thank you for playing */
     //exit(status);
 }
+#endif
+
 @end
 
 
@@ -493,7 +497,7 @@ void MacBoot()
 #if SDL_USE_NIB_FILE
     [SDLApplication poseAsClass:[NSApplication class]];
     NSApplicationMain(argc, argv);
-#else
+#elif defined(NME_VIDEO)
     CustomApplicationMain(0, 0);
 #endif
 }
