@@ -71,6 +71,9 @@ class JsPlatform extends Platform
 
    override public function run(arguments:Array<String>):Void 
    {
+      #if no_haxe_http
+      throw("Can't serve files with no_haxe_http.");
+      #else
       var server = new nme.net.http.Server( new nme.net.http.FileServer([FileSystem.fullPath(applicationDirectory) ]).onRequest  );
 
       var port = 2323;
@@ -78,11 +81,7 @@ class JsPlatform extends Platform
       new nme.net.URLRequest('http://localhost:$port/index.html' ).launchBrowser();
 
       server.untilDeath();
-
-
-
-      //var fullPath =  FileSystem.fullPath('$applicationDirectory/index.html');
-      //new nme.net.URLRequest("file://" + fullPath).launchBrowser();
+      #end
    }
 }
 

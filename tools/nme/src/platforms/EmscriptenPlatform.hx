@@ -8,6 +8,7 @@ import sys.FileSystem;
 class EmscriptenPlatform extends DesktopPlatform
 {
    private var applicationDirectory:String;
+   private var applicationMain:String;
    private var executableFile:String;
    private var executablePath:String;
    private var ext:String;
@@ -29,9 +30,11 @@ class EmscriptenPlatform extends DesktopPlatform
       applicationDirectory = getOutputDir();
 
 
-      executableFile = "ApplicationMain.js";
+      applicationMain = project.app.file;
+      executableFile = applicationMain + ".js";
       executablePath = applicationDirectory + "/" + executableFile;
       outputFiles.push(executableFile);
+      outputFiles.push(applicationMain + ".wasm");
 
       project.haxeflags.push('-D exe_link');
       project.haxeflags.push('-D HXCPP_LINK_EMSCRIPTEN_EXT=$ext');
@@ -39,7 +42,10 @@ class EmscriptenPlatform extends DesktopPlatform
 
       memFile = project.getBool("emscriptenMemFile", false);
       if (memFile)
+      {
          project.haxeflags.push('-D HXCPP_LINK_MEM_FILE=1');
+         outputFiles.push(applicationMain + ".mem");
+      }
    }
 
    override public function getPlatformDir() : String { return "wasm"; }
@@ -52,24 +58,23 @@ class EmscriptenPlatform extends DesktopPlatform
    {
       var dbg = project.debug ? "-debug" : "";
 
-      // Must keep the same name
       var src = haxeDir + '/cpp/ApplicationMain$dbg';
       if (htmlOut && false)
       {
          FileHelper.copyFile(src + ".html", applicationDirectory+"/index.html");
       }
 
-      FileHelper.copyFile(src + ".js", applicationDirectory+'/ApplicationMain$dbg.js');
-      FileHelper.copyFile(src + ".wasm", applicationDirectory+'/ApplicationMain$dbg.wasm');
+      FileHelper.copyFileReplace(src + ".js", applicationDirectory+'/$applicationMain.js',
+        "ApplicationMain.wasm", applicationMain+".wasm" );
+      FileHelper.copyFile(src + ".wasm", applicationDirectory+'/$applicationMain.wasm');
    }
 
    override function generateContext(context:Dynamic)
    {
       super.generateContext(context);
-      var dbg = project.debug ? "-debug" : "";
-      context.NME_JS = 'ApplicationMain$dbg.js';
+      context.NME_JS = '$applicationMain.js';
       context.NME_MEM_FILE = memFile;
-      context.NME_APP_JS = 'ApplicationMain$dbg.wasm';
+      context.NME_APP_JS = '$applicationMain.wasm';
    }
 
 
@@ -103,6 +108,9 @@ class EmscriptenPlatform extends DesktopPlatform
       }
       else
       {
+         #if no_haxe_http
+         throw("Can't serve files with no_haxe_http.  Try pythonServe=...");
+         #else
          var verbose = true;
          var server = new nme.net.http.Server(
             new nme.net.http.FileServer([FileSystem.fullPath(applicationDirectory) ],
@@ -115,6 +123,7 @@ class EmscriptenPlatform extends DesktopPlatform
          new nme.net.URLRequest('http://localhost:$port/index.html' ).launchBrowser();
 
          server.untilDeath();
+         #end
       }
 
 

@@ -47,6 +47,22 @@ class FileHelper
       }
    }
 
+   public static function copyFileReplace(source:String, destination:String,from:String,to:String)
+   {
+      Log.verbose(" - Copying file by lines: " + source + " -> " + destination);
+      var dir = haxe.io.Path.directory(destination);
+      if (!sys.FileSystem.exists(dir))
+        sys.FileSystem.createDirectory(dir);      
+
+      var fileContents:String = File.getContent(source);
+
+      fileContents = fileContents.split(from).join(to);
+
+      var fileOutput:FileOutput = File.write(destination, true);
+      fileOutput.writeString(fileContents);
+      fileOutput.close();
+   }
+
    public static function copyFile(source:String, destination:String, ?context:{?MACROS:Dynamic}, process:Bool = true,
       ?onFile:String->Void) : Bool
    {
@@ -94,11 +110,11 @@ class FileHelper
             else
             {
                Log.verbose(" - Copying template file: " + source + " -> " + destination);
-               var dir = haxe.io.Path.directory(destination);    
-               if (!sys.FileSystem.exists(dir))                  
-               {                                                 
+               var dir = haxe.io.Path.directory(destination);
+               if (!sys.FileSystem.exists(dir))
+               {
                  sys.FileSystem.createDirectory(dir);      
-               }                                                 
+               }
                var fileOutput:FileOutput = File.write(destination, true);
                fileOutput.writeString(result);
                fileOutput.close();

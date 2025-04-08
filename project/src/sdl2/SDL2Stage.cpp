@@ -132,6 +132,7 @@ int InitSDL()
 
 static void openAudio()
 {
+   #ifdef NME_AUDIO
    #ifdef NME_MIXER
    gSDLAudioState = sdaOpen;
 
@@ -169,6 +170,7 @@ static void openAudio()
       printf("Opened audio: %dHz, %s, ch=%d\n", freq, fmt==AUDIO_S16?"s32":fmt==AUDIO_F32?"f32":"?", ch);
       */
    }
+   #endif
    #endif
 }
 
@@ -3076,7 +3078,7 @@ void StartAnimation()
       #endif
    }
 
-   #ifndef NME_NO_AUDIO
+   #ifdef NME_AUDIO
    clUpdateAsyncChannels();
    #endif
 

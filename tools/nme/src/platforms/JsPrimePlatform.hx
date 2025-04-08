@@ -396,6 +396,9 @@ class JsPrimePlatform extends Platform
 
    function runServer(dir:String, browser:String, useLan:Bool)
    {
+      #if no_haxe_http
+      throw("Can't serve files with no_haxe_http.");
+      #else
       var host = useLan ? nme.system.System.getLocalIpAddress() : "localhost";
       var port = 6931;
       var url = 'http://$host:$port/index.html';
@@ -408,6 +411,7 @@ class JsPrimePlatform extends Platform
          new nme.net.URLRequest(url).launchBrowser();
 
       server.untilDeath();
+      #end
    }
 
    override public function run(arguments:Array<String>):Void 
