@@ -56,14 +56,14 @@ class WindowsPlatform extends DesktopPlatform
       {
          FileHelper.copyFile(haxeDir + "/cpp/ApplicationMain" + (project.debug ? "-debug" : "") + ".exe", executablePath);
 
-         var ico = "icon.ico";
+         var ico = "replacevistaicon.ico";
          var iconPath = PathHelper.combine(applicationDirectory, ico);
 
          if (IconHelper.createWindowsIcon(project.icons, iconPath)) 
          {
-            //outputFiles.push(ico);
             var replaceVI = CommandLineTools.nme + "/tools/nme/bin/ReplaceVistaIcon.exe";
             ProcessHelper.runCommand("", replaceVI , [ executablePath, iconPath ], true, true);
+            FileSystem.deleteFile(iconPath);
          }
       }
    }
