@@ -167,7 +167,7 @@
       <file name="${NME_JPEG_SRC}jdarith.c" />
 
 
-      <section if="NME_SIMD_ARM64 || NME_SIMD_ARM7" >
+      <section if="NME_SIMD_ARM64 || NME_SIMD_ARM7" unless="JPEG_SUPPRESS_SIMD" >
          <compilerflag value="-DNEON_INTRINSICS=1" />
 
          <file name="${NME_JPEG_SRC}jcapimin.c"/>

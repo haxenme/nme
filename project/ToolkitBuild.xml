@@ -61,6 +61,7 @@
    <section if="HXCPP_ARMV7" unless="NME_SIMD_D">
      <set name="NME_SIMD_D" value="-DNME_SIMD_ARM7" />
      <set name="NME_SIMD_ARM7" value="1" />
+     <set name="JPEG_SUPPRESS_SIMD" value="1" />
    </section>
 
    <section unless="android">
