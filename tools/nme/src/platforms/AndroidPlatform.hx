@@ -537,7 +537,8 @@ class AndroidPlatform extends Platform
                command = "app:uploadCrashlyticsSymbolFileRelease";
          }
 
-         if(PlatformHelper.hostPlatform==Platform.MAC)
+         if(PlatformHelper.hostPlatform==Platform.MAC ||
+            PlatformHelper.hostPlatform==Platform.LINUX  )
             ProcessHelper.runCommand(outputDir, 'chmod', ['+x', './gradlew']);
           
          var exe = PlatformHelper.hostPlatform==Platform.WINDOWS ? "./gradlew.bat" : "./gradlew";
