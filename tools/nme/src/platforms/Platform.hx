@@ -610,7 +610,12 @@ class Platform
 
              var nsis = project.getDef("NSIS");
              if (nsis==null)
-                Log.error('Please set the NSIS variable to point to the NSIS install directory');
+             {
+                Log.verbose('NSIS not set, assuming in path');
+                nsis = "makensis.exe";
+             }
+             else
+                nsis = nsis+"/makensis.exe";
 
              if (name=="" || name==null)
                 name = getDeploymentName("-installer.exe");
@@ -634,15 +639,24 @@ class Platform
              }
              var sorted = sortLen([for(k in dirMap.keys()) k ]);
              context.INSTALLER_DIRS = [ for(k in sorted) { dir:backslash(k), files:dirMap.get(k) } ];
-             context.INSTALLER_ICON = backslash(getOutputDir()+"/icon.ico");
+
+             var iconPath = PathHelper.combine(from, "nsisicon.ico" );
+             if (!IconHelper.createWindowsIcon(project.icons, iconPath))
+                iconPath = null;
+             else
+                context.INSTALLER_ICON = backslash(iconPath);
+
              context.UNINSTALL_FILES = outputFiles.map(backslash);
              context.EXE_NAME = getBinaryName();
 
              copyTemplate("nsis/installer.nsis", scriptName, false);
 
-             ProcessHelper.runCommand("",nsis+"/makensis.exe", ["/NOCD", scriptName] );
+             ProcessHelper.runCommand("",nsis, ["/NOCD", scriptName] );
 
              Log.verbose("Wrote " + name);
+
+             if (iconPath!=null)
+                FileSystem.deleteFile(iconPath);
 
              if (project.certificate!=null)
              {
