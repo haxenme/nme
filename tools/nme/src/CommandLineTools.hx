@@ -1809,8 +1809,12 @@ class CommandLineTools
             {
                Sys.putEnv("HXCPP_VERBOSE","1");
                Log.mVerbose = true;
-               if (project.haxeflags.indexOf("--times")<0)
-                  project.haxeflags.push("--times");
+            }
+            // Quite verbose - log on, but no hxcpp verbose
+            else if (argument == "-qv" || argument == "-qverbose") 
+            {
+               Log.mVerbose = true;
+               Sys.putEnv("HXCPP_LOG_SETUP","1");
             }
             else if (argument == "-silent")
             {
@@ -1826,6 +1830,8 @@ class CommandLineTools
                project.haxeflags.push("-v");
                Sys.putEnv("HXCPP_VERBOSE","1");
                Log.mVerbose = true;
+               if (project.haxeflags.indexOf("--times")<0)
+                  project.haxeflags.push("--times");
             }
             else if (argument == "-args")
             {

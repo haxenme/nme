@@ -319,16 +319,18 @@ class AndroidPlatform extends Platform
       // Will not install on devices less than this ....
       context.ANDROID_MIN_API_LEVEL = project.androidConfig.minApiLevel;
 
+      var maxApiLevel = getMaxApiLevel(project.androidConfig.minApiLevel); 
+
       // Features we have tested and will use if available
       context.ANDROID_TARGET_API_LEVEL = project.androidConfig.targetApiLevel==null ?
-           getMaxApiLevel(project.androidConfig.minApiLevel) : project.androidConfig.targetApiLevel;
+            maxApiLevel : project.androidConfig.targetApiLevel;
 
       if (context.ANDROID_TARGET_API_LEVEL < context.ANDROID_MIN_API_LEVEL)
          context.ANDROID_TARGET_API_LEVEL = context.ANDROID_MIN_API_LEVEL;
 
       // SDK to use for building, that we have installed
-      context.ANDROID_BUILD_API_LEVEL = getMaxApiLevel(project.androidConfig.minApiLevel);
-      context.ANDROID_TARGET_SDK_VERSION = getMaxApiLevel(project.androidConfig.minApiLevel);
+      context.ANDROID_BUILD_API_LEVEL = maxApiLevel;
+      context.ANDROID_TARGET_SDK_VERSION = maxApiLevel;
       if (project.hasDef("androidBilling") && context.ANDROID_TARGET_SDK_VERSION<26)
       {
          context.ANDROID_TARGET_SDK_VERSION = 26;
@@ -497,21 +499,26 @@ class AndroidPlatform extends Platform
    public function getMaxApiLevel(inMinimum:Int) : Int
    { 
       var result = inMinimum;
+      Log.verbose(" search Android API >= " + result);
       if (project.environment.exists("ANDROID_SDK"))
          try
          {
             var dir = project.environment.get("ANDROID_SDK");
+            Log.verbose('  checking ANDROID_SDK variable:$dir');
             for(file in FileSystem.readDirectory(dir+"/platforms"))
             {
                if (file.substr(0,8)=="android-")
                {
                   var val = Std.parseInt(file.substr(8));
                   if (val>result)
+                  {
                      result = val;
+                     Log.verbose("   found better API:" + file);
+                  }
                }
             }
          } catch(e:Dynamic){}
-
+     Log.verbose(" using Android API >= " + result);
      return result;
    }
 

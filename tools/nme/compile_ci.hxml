@@ -17,3 +17,4 @@
 -D HXCPP_STATIC_CFFI
 -D HAXE_FULL_OUTPUT_NAME=../../../nme.exe
 -D no_haxe_http
+-debug
