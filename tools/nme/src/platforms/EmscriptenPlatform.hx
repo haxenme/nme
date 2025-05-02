@@ -59,14 +59,19 @@ class EmscriptenPlatform extends DesktopPlatform
       var dbg = project.debug ? "-debug" : "";
 
       var src = haxeDir + '/cpp/ApplicationMain$dbg';
-      if (htmlOut && false)
-      {
-         FileHelper.copyFile(src + ".html", applicationDirectory+"/index.html");
-      }
 
       FileHelper.copyFileReplace(src + ".js", applicationDirectory+'/$applicationMain.js',
-        "ApplicationMain.wasm", applicationMain+".wasm" );
+        'ApplicationMain$dbg.wasm', applicationMain+".wasm" );
       FileHelper.copyFile(src + ".wasm", applicationDirectory+'/$applicationMain.wasm');
+
+      if ( project.icons!=null && project.icons.length>0)
+      {
+         var ico = "icon.ico";
+         var iconPath = PathHelper.combine(applicationDirectory, ico);
+
+         if (IconHelper.createWindowsIcon(project.icons, iconPath, true)) 
+            outputFiles.push(ico);
+      }
    }
 
    override function generateContext(context:Dynamic)

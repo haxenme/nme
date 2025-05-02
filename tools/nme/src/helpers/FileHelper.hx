@@ -56,7 +56,9 @@ class FileHelper
 
       var fileContents:String = File.getContent(source);
 
-      fileContents = fileContents.split(from).join(to);
+      var parts = fileContents.split(from);
+      fileContents = parts.join(to);
+      //Log.verbose("   - replace " + from + " with " + to + " ok:" + (parts.length>1) );
 
       var fileOutput:FileOutput = File.write(destination, true);
       fileOutput.writeString(fileContents);
@@ -74,7 +76,7 @@ class FileHelper
              extension == "java" ||
              extension == "hx" ||
              extension == "hxml" ||
-          extension == "html" || 
+             extension == "html" ||
              extension == "ini" ||
              extension == "gpe" ||
              extension == "pch" ||

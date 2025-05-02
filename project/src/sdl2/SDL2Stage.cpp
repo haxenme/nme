@@ -77,7 +77,7 @@ const int sgJoystickDeadZone = 1000;
 static HANDLE sgMutexRunning = NULL;
 #endif
 
-enum { NO_TOUCH = -1 };
+const Uint64 NO_TOUCH = 0xdeadbeef;
 
 
 int InitSDL()
@@ -111,6 +111,8 @@ int InitSDL()
    #if EMSCRIPTEN
    SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
    #endif
+
+   SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 
    #ifdef NME_SDL3
    int timerFlag = 0;
@@ -424,6 +426,18 @@ class SDLStage : public Stage
    bool         mCaptureMouse;
 
 public:
+   bool   mMultiTouch;
+   Uint64 mSingleTouchID;
+   int    mSingleTouchX;
+   int    mSingleTouchY;
+   Uint64 mSecondTouchID;
+   int    mSecondTouchX;
+   int    mSecondTouchY;
+   double lastFingerDist;
+
+
+
+public:
    SDLStage(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsHardware, int inWidth, int inHeight)
    {
       mWidth = inWidth;
@@ -501,24 +515,26 @@ public:
       }
       mPrimarySurface->IncRef();
      
-      #if defined(WEBOS) || defined(BLACKBERRY)
-      mMultiTouch = true;
-      #else
       mMultiTouch = false;
-      #endif
       mSingleTouchID = NO_TOUCH;
-      mDX = 0;
-      mDY = 0;
-      
-      mDownX = 0;
-      mDownY = 0;
+      mSingleTouchX = 0;
+      mSingleTouchY = 0;
+      mSecondTouchID = NO_TOUCH;
+      mSecondTouchX = 0;
+      mSecondTouchY = 0;
+      lastFingerDist = 100.0;
    }
 
-   
-   
    ~SDLStage()
    {
       Close(false);
+   }
+
+   double getFingerDist()
+   {
+      int dx = mSecondTouchX - mSingleTouchX;
+      int dy = mSecondTouchY - mSingleTouchY;
+      return sqrt( (double)dx*dx + dy*dy );
    }
 
 
@@ -851,37 +867,7 @@ public:
          inEvent.type = etQuit;
       }
       #endif
-      
-      #if defined(WEBOS) || defined(BLACKBERRY)
-      if (inEvent.type == etMouseMove || inEvent.type == etMouseDown || inEvent.type == etMouseUp)
-      {
-         if (mSingleTouchID == NO_TOUCH || inEvent.value == mSingleTouchID || !mMultiTouch)
-         inEvent.flags |= efPrimaryTouch;
-         
-         if (mMultiTouch)
-         {
-            switch(inEvent.type)
-            {
-               case etMouseDown: inEvent.type = etTouchBegin; break;
-               case etMouseUp: inEvent.type = etTouchEnd; break;
-               case etMouseMove: inEvent.type = etTouchMove; break;
-            }
-            
-            if (inEvent.type == etTouchBegin)
-            {   
-               mDownX = inEvent.x;
-               mDownY = inEvent.y;   
-            }
-            
-            if (inEvent.type == etTouchEnd)
-            {   
-               if (mSingleTouchID == inEvent.value)
-                  mSingleTouchID = NO_TOUCH;
-            }
-         }
-      }
-      #endif
-      
+
       HandleEvent(inEvent);
    }
    
@@ -999,24 +985,20 @@ public:
    
    bool getMultitouchSupported()
    { 
-      #if defined(WEBOS) || defined(BLACKBERRY)
       return true;
-      #else
-      return false;
-      #endif
    }
    
    
-   void setMultitouchActive(bool inActive) { mMultiTouch = inActive; }
+   void setMultitouchActive(bool inActive)
+   {
+      printf("setMultitouchActive -> %d\n", inActive);
+      mMultiTouch = inActive;
+   }
    
    
    bool getMultitouchActive()
    {
-      #if defined(WEBOS) || defined(BLACKBERRY)
       return mMultiTouch;
-      #else
-      return false;
-      #endif
    }
 
    
@@ -1030,15 +1012,6 @@ public:
    }
 
 
-   bool mMultiTouch;
-   int  mSingleTouchID;
-  
-   double mDX;
-   double mDY;
-
-   double mDownX;
-   double mDownY;
-   
    const char *getJoystickName(int id)
    {
       #ifdef EMSCRIPTEN
@@ -1085,6 +1058,7 @@ public:
    double mAccZ;
 
    int windowID;
+   int primaryTouchId;
 
 
    SDLFrame(SDL_Window *inWindow, SDL_Renderer *inRenderer, uint32 inWindowFlags, bool inIsHardware, int inWidth, int inHeight)
@@ -1097,6 +1071,7 @@ public:
       mStage->IncRef();
 
       retinaScale = getRetinaScale();
+      primaryTouchId = -1;
    }
    
    
@@ -2013,8 +1988,9 @@ void ProcessEvent(SDL_Event &inEvent)
          frame->ProcessEvent(mouse);
          break;
       }
+
       case SDL_MOUSEWHEEL: 
-      {   
+      {
          SDLFrame *frame = getEventFrame(inEvent.wheel.windowID);
          if (inEvent.wheel.y==0)
             break;
@@ -2041,45 +2017,147 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_FINGERDOWN:
       {
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
+         Uint64  touchId = (Uint64)inEvent.tfinger.fingerId;
+         SDLStage *stage = frame->mStage;
+         bool isPrimary = stage->mSingleTouchID==NO_TOUCH;
          int width = 0;
          int height = 0;
          //SDL_GetWindowSize(frame->mWindow, &width, &height);
          SDL_GL_GetDrawableSize(frame->mWindow, &width, &height);
+         int mx = (int)(inEvent.tfinger.x*width);
+         int my = (int)(inEvent.tfinger.y*height);
 
-         // button?
-         Event mouse(etMouseDown, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
-         mouse.flags |= efLeftDown;
-         frame->ProcessEvent(mouse);
+         if (isPrimary)
+         {
+            stage->mSingleTouchID = touchId;
+            stage->mSingleTouchX = mx;
+            stage->mSingleTouchY = my;
+            stage->mSecondTouchID = NO_TOUCH;
+         }
+         else if (stage->mSecondTouchID==NO_TOUCH)
+         {
+            stage->mSecondTouchID = touchId;
+            stage->mSecondTouchX = mx;
+            stage->mSecondTouchY = my;
+            stage->lastFingerDist = stage->getFingerDist();
+         }
+
+         if (stage->mMultiTouch)
+         {
+            // TODO - send raw events
+         }
+         else if (isPrimary)
+         {
+            // Convert to mouse events
+            Event mouse(etMouseDown, mx, my, 0);
+            mouse.flags |= efLeftDown;
+            mouse.flags |= efPrimaryTouch;
+            frame->ProcessEvent(mouse);
+         }
          break;
       }
 
       case SDL_FINGERUP:
       {
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
+         Uint64  touchId = (Uint64)inEvent.tfinger.fingerId;
+         SDLStage *stage = frame->mStage;
          int width = 0;
          int height = 0;
          //SDL_GetWindowSize(frame->mWindow, &width, &height);
          SDL_GL_GetDrawableSize(frame->mWindow, &width, &height);
+         int mx = (int)(inEvent.tfinger.x*width);
+         int my = (int)(inEvent.tfinger.y*height);
+
+         bool isPrimary = stage->mSingleTouchID==touchId;
+         if (isPrimary)
+         {
+            stage->mSingleTouchID = NO_TOUCH;
+            stage->mSecondTouchID = NO_TOUCH;
+            stage->lastFingerDist = -1;
+         }
 
          // button?
-         Event mouse(etMouseUp, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
-         //mouse.flags |= efLeftDown;
-         frame->ProcessEvent(mouse);
+         if (stage->mMultiTouch)
+         {
+            // TODO - send raw event
+         }
+         else if (isPrimary)
+         {
+            Event mouse(etMouseUp, mx, my, 0);
+            mouse.flags |= efPrimaryTouch;
+            //mouse.flags |= efLeftDown;
+            frame->ProcessEvent(mouse);
+         }
          break;
       }
 
       case SDL_FINGERMOTION:
       {
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
+         Uint64  touchId = (Uint64)inEvent.tfinger.fingerId;
+         SDLStage *stage = frame->mStage;
+         bool isPrimary = stage->mSingleTouchID==touchId;
          int width = 0;
          int height = 0;
          //SDL_GetWindowSize(frame->mWindow, &width, &height);
          SDL_GL_GetDrawableSize(frame->mWindow, &width, &height);
+         int mx = (int)(inEvent.tfinger.x*width);
+         int my = (int)(inEvent.tfinger.y*height);
+
+         //printf("  motion %d] pri=%d sec=%d mouse=%d,%d\n", (int)touchId,  touchId==stage->mSingleTouchX, touchId==stage->mSecondTouchID, mx, my);
+
+
+         if (!stage->mMultiTouch && (isPrimary || stage->mSecondTouchID==touchId) && stage->mSecondTouchID!=NO_TOUCH)
+         {
+            if (isPrimary)
+            {
+               stage->mSingleTouchX = mx;
+               stage->mSingleTouchY = my;
+            }
+            else
+            {
+               stage->mSecondTouchX = mx;
+               stage->mSecondTouchY = my;
+            }
+
+            double dist = stage->getFingerDist();
+            if (dist>0)
+            {
+               double bump = 0.9;
+               mx = (stage->mSingleTouchX + stage->mSecondTouchX) >> 1;
+               my = (stage->mSingleTouchY + stage->mSecondTouchY) >> 1;
+               if (dist<=stage->lastFingerDist*bump)
+               {
+                   stage->lastFingerDist *= bump;
+                   Event mouse(etMouseUp, mx, my, 4);
+                   mouse.deltaX = 0;
+                   mouse.deltaY = -1;
+                   frame->ProcessEvent(mouse);
+               }
+               else if (dist>=stage->lastFingerDist/bump)
+               {
+                   stage->lastFingerDist /= bump;
+                   Event mouse(etMouseUp, mx, my, 3);
+                   mouse.deltaX = 0;
+                   mouse.deltaY = 1;
+                   frame->ProcessEvent(mouse);
+               }
+            }
+            break;
+         }
 
          // button?
-         Event mouse(etMouseMove, inEvent.tfinger.x*width, inEvent.tfinger.y*height, 0);
-         mouse.flags |= efLeftDown;
-         frame->ProcessEvent(mouse);
+         if (stage->mMultiTouch)
+         {
+            // TODO - send raw event
+         }
+         else if (isPrimary)
+         {
+            Event mouse(etMouseMove, mx, my, 0);
+            mouse.flags |= efLeftDown;
+            frame->ProcessEvent(mouse);
+         }
          break;
       }
 

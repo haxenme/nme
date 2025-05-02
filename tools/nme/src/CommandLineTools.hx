@@ -1668,7 +1668,10 @@ class CommandLineTools
                argValue = r.matched(1);
 
             if (argument.substr(0, 2) == "-D") 
+            {
                project.haxedefs.set(argument.substr(2, equals - 2), argValue);
+               project.localDefines.set(argument.substr(2, equals - 2), argValue);
+            }
             else if (argument.substr(0, equals) == "-device") 
                project.targetFlags.set("device",argValue);
             else if (argument.substr(0, 2) == "--") 
