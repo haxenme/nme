@@ -1748,6 +1748,16 @@ Uint32 getWindowOrEventType(SDL_Event &inEvent)
    return inEvent.type;
 }
 
+template<typename T>
+inline Uint64 getFingerId(const T &e)
+{
+   #ifndef NME_SDL3
+   return e.fingerId;
+   #else
+   return e.fingerID;
+   #endif
+}
+
 void ProcessEvent(SDL_Event &inEvent)
 {
    #ifdef NME_SDL3
@@ -2017,7 +2027,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_FINGERDOWN:
       {
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
-         Uint64  touchId = (Uint64)inEvent.tfinger.fingerId;
+         Uint64  touchId = getFingerId(inEvent.tfinger);
          SDLStage *stage = frame->mStage;
          bool isPrimary = stage->mSingleTouchID==NO_TOUCH;
          int width = 0;
@@ -2060,7 +2070,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_FINGERUP:
       {
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
-         Uint64  touchId = (Uint64)inEvent.tfinger.fingerId;
+         Uint64  touchId = getFingerId(inEvent.tfinger);
          SDLStage *stage = frame->mStage;
          int width = 0;
          int height = 0;
@@ -2095,7 +2105,7 @@ void ProcessEvent(SDL_Event &inEvent)
       case SDL_FINGERMOTION:
       {
          SDLFrame *frame = getEventFrame(inEvent.tfinger.windowID);
-         Uint64  touchId = (Uint64)inEvent.tfinger.fingerId;
+         Uint64  touchId = getFingerId(inEvent.tfinger);
          SDLStage *stage = frame->mStage;
          bool isPrimary = stage->mSingleTouchID==touchId;
          int width = 0;
