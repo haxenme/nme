@@ -4,6 +4,7 @@ import haxe.io.Path;
 import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
+using StringTools;
 
 class EmscriptenPlatform extends DesktopPlatform
 {
@@ -17,7 +18,7 @@ class EmscriptenPlatform extends DesktopPlatform
    private var memFile:Bool;
    var htmlOut = false;
 
-   override public function getOutputExtra() : String { return "jsprime"; }
+   override public function getOutputExtra() : String { return "wasm"; }
 
    public function new(inProject:NMEProject)
    {
@@ -53,7 +54,6 @@ class EmscriptenPlatform extends DesktopPlatform
    override public function getNativeDllExt() { return ".js"; }
    override public function getLibExt() { return ".a"; }
 
-
    override public function copyBinary():Void 
    {
       var dbg = project.debug ? "-debug" : "";
@@ -61,7 +61,7 @@ class EmscriptenPlatform extends DesktopPlatform
       var src = haxeDir + '/cpp/ApplicationMain$dbg';
 
       FileHelper.copyFileReplace(src + ".js", applicationDirectory+'/$applicationMain.js',
-        'ApplicationMain$dbg.wasm', applicationMain+".wasm" );
+        'ApplicationMain$dbg.wasm', applicationMain+".wasm", true );
       FileHelper.copyFile(src + ".wasm", applicationDirectory+'/$applicationMain.wasm');
 
       if ( project.icons!=null && project.icons.length>0)
@@ -74,12 +74,116 @@ class EmscriptenPlatform extends DesktopPlatform
       }
    }
 
+   public function getJsImport(name:String) : String
+   {
+      var def = project.getDef(name);
+      if (def==null)
+         return null;
+      try
+      {
+         return sys.io.File.getContent(def);
+      }
+      catch(e:Dynamic)
+      {
+         Log.error("Could not load Js part " + name + "->" + def);
+      }
+      return null;
+   }
+
+   function stripPreloader(script:String, flags:Array<String>):String
+   {
+      if (flags.indexOf('arrayiterator')>=0)
+      {
+         var len0 = script.length;
+         var lines = script.split("\n");
+         var newLines = [];
+         var removing = false;
+         for(line in lines)
+         {
+            if (removing)
+            {
+               if (line.startsWith("}"))
+                  removing = false;
+            }
+            else if (line.indexOf("haxe_iterators")>=0)
+               removing = true;
+            else
+               newLines.push(line);
+         }
+         script = newLines.join("\n");
+         Log.verbose("Strip iterators " + (script.length<len0) );
+
+      }
+      return script;
+   }
+
+
    override function generateContext(context:Dynamic)
    {
       super.generateContext(context);
       context.NME_JS = '$applicationMain.js';
       context.NME_MEM_FILE = memFile;
       context.NME_APP_JS = '$applicationMain.wasm';
+      context.NME_JS_FOOTER = getJsImport("nmeJsFooter");
+      context.NME_JS_HEADER = getJsImport("nmeJsHeader");
+      context.EM_RUN_HOOKS = project.getBool("HXCPP_LINK_EMRUN", false );
+
+
+      if (project.hasDef("preloadBg"))
+         context.PRELOAD_BG = '"' + project.getDef("preloadBg") + '"';
+      else
+      {
+         var bg = project.window.background;
+         context.PRELOAD_BG = '"#' + StringTools.hex(bg,6) + '"';
+      }
+
+      if (project.hasDef("preloadFg"))
+         context.PRELOAD_FG = '"' + project.getDef("preloadFg") + '"';
+      else
+      {
+         var bg = project.window.background;
+         var r = (bg>>16) & 0xff;
+         var g = (bg>>8) & 0xff;
+         var b = (bg) & 0xff;
+         r = (r>=160) ? 0 : 255;
+         g = (g>=160) ? 0 : 255;
+         b = (b>=160) ? 0 : 255;
+         var fg = (r<<16) | (g<<8) | b;
+         context.PRELOAD_FG = '"#' + StringTools.hex(fg,6) + '"';
+      }
+
+      var preloader = project.getDef("preloader");
+      if (!project.hasDef("nopreloader") )
+      {
+         if (preloader==null)
+         {
+            preloader = CommandLineTools.nme + "/ndll/Emscripten/preloader.js";
+            Log.verbose('Using default preloader $preloader');
+         }
+         else
+         {
+            Log.verbose('Using specified $preloader');
+         }
+     }
+
+      if (preloader!=null)
+      {
+         try {
+            var script = File.getContent(preloader);
+
+            var preloadStrip = project.getDef("preloadStrip");
+            if (preloadStrip!=null)
+            {
+               script = stripPreloader(script, [for(s in preloadStrip.split(" ")) s.toLowerCase() ]);
+            }
+            context.NME_PRELOADER = script;
+         }
+         catch(e:Dynamic)
+         {
+            Log.error("Could not load preloader '" + preloader + "'");
+         }
+      }
+
    }
 
 

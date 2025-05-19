@@ -696,7 +696,7 @@ class Platform
    public function copyTemplateDir(from:String, to:String, warnIfNotFound = true, ?inForOutput=true, ?inFilter:String->Bool) : Bool
    {
       return FileHelper.recursiveCopyTemplate(project.templatePaths, from, to, context, true, warnIfNotFound, 
-          inForOutput ? addOutput : null, inFilter );
+          inForOutput ? addOutput : null, inFilter, project.getBool("stripHtml",true) );
    }
    public function copyTemplate(from:String, to:String,doAddOutput=true)
    {

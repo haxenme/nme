@@ -47,7 +47,7 @@ class FileHelper
       }
    }
 
-   public static function copyFileReplace(source:String, destination:String,from:String,to:String)
+   public static function copyFileReplace(source:String, destination:String,from:String,to:String, stripComments=false)
    {
       Log.verbose(" - Copying file by lines: " + source + " -> " + destination);
       var dir = haxe.io.Path.directory(destination);
@@ -58,6 +58,9 @@ class FileHelper
 
       var parts = fileContents.split(from);
       fileContents = parts.join(to);
+
+      if (stripComments)
+         fileContents = FileHelper.stripComments(destination,fileContents);
       //Log.verbose("   - replace " + from + " with " + to + " ok:" + (parts.length>1) );
 
       var fileOutput:FileOutput = File.write(destination, true);
@@ -65,8 +68,77 @@ class FileHelper
       fileOutput.close();
    }
 
+   public static function stripComments(destination:String, html:String) : String
+   {
+      var len0 = html.length;
+      html = html.split("\r").join("");
+      var lines = html.split("\n");
+      var newLines = [];
+      var remove = false;
+      for(l in lines)
+      {
+         if (remove)
+         {
+            if (l.indexOf("*/")>0)
+               remove = false;
+         }
+         else
+         {
+            var pos =  l.indexOf("//");
+            if (pos>=0)
+            {
+               var prefix = l.substr(0,pos);
+               var allSpace = true;
+               for(ch in prefix)
+                  if (ch!=" ".code && ch!="\t".code)
+                  {
+                     allSpace = false;
+                     break;
+                  }
+               if (!allSpace)
+               {
+                  if ( prefix.endsWith(" ") || prefix.endsWith("\t") )
+                     newLines.push(prefix);
+                  else
+                     newLines.push(l);
+               }
+            }
+            else if (l.length>0)
+            {
+               var commStart = l.indexOf("/**");
+               if (commStart >= 0)
+               {
+                  var tail = l.substr(commStart);
+                  l = l.substr(0,commStart);
+
+                  var commEnd = tail.indexOf("*/");
+                  if (commEnd>0)
+                  {
+                     l += tail.substr(commEnd+2);
+                  }
+                  else
+                     remove = true;
+               }
+
+               for(ch in l)
+                  if (ch!=" ".code && ch!="\t".code)
+                  {
+                     newLines.push(l);
+                     break;
+                  }
+            }
+         }
+      }
+
+      html = newLines.join("\n");
+
+      if (html.length<len0)
+         Log.verbose("Stripped " + destination );
+      return html;
+   }
+
    public static function copyFile(source:String, destination:String, ?context:{?MACROS:Dynamic}, process:Bool = true,
-      ?onFile:String->Void) : Bool
+      ?onFile:String->Void, stripHtml=false) : Bool
    {
       var extension = Path.extension(source);
       var copied = false;
@@ -104,6 +176,8 @@ class FileHelper
 
             if (extension=="java")
                result = result.split("org.haxe.lime.GameActivity").join("org.haxe.nme.GameActivity");
+            else if (extension=="html" && stripHtml)
+               result = stripComments(destination,result);
 
             if (FileSystem.exists(destination) && File.getContent(destination)==result)
             {
@@ -140,13 +214,13 @@ class FileHelper
       return copied;
    }
 
-   public static function copyFileTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true, ?onFile:String->Void) 
+   public static function copyFileTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true, ?onFile:String->Void,stripHtml=false)
    {
       var path = PathHelper.findTemplate(templatePaths, source);
 
       if (path != null) 
       {
-         copyFile(path, destination, context, process,onFile);
+         copyFile(path, destination, context, process,onFile,stripHtml);
       }
    }
 
@@ -202,7 +276,7 @@ class FileHelper
    }
 
    public static function recursiveCopy(source:String, destination:String, context:Dynamic = null, process:Bool = true,
-      ?onFile:String->Void) 
+      ?onFile:String->Void, stripHtml=false) 
    {
       PathHelper.mkdir(destination);
 
@@ -230,7 +304,7 @@ class FileHelper
             }
             else
             {
-               copyFile(itemSource, itemDestination, context, process);
+               copyFile(itemSource, itemDestination, context, process, null, stripHtml);
                if (onFile!=null)
                   onFile(itemDestination);
             }
@@ -238,7 +312,7 @@ class FileHelper
       }
    }
 
-   public static function recursiveCopyTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true,warn=true, ?onFile:String->Void, ?inFilter:String->Bool)
+   public static function recursiveCopyTemplate(templatePaths:Array<String>, source:String, destination:String, context:Dynamic = null, process:Bool = true,warn=true, ?onFile:String->Void, ?inFilter:String->Bool, stripHtml=false)
    {
       PathHelper.mkdir(destination);
 
@@ -282,11 +356,11 @@ class FileHelper
 
          if (FileSystem.isDirectory(itemSource)) 
          {
-            recursiveCopyTemplate(templatePaths, source + "/" + file, destination + "/" + file, context, process, false, onFile, inFilter );
+            recursiveCopyTemplate(templatePaths, source + "/" + file, destination + "/" + file, context, process, false, onFile, inFilter, stripHtml );
          }
          else
          {
-            if (copyFile(itemSource, itemDestination, context, process))
+            if (copyFile(itemSource, itemDestination, context, process, null, stripHtml))
             {
                var notCopied = ignored.get(file);
                if (notCopied!=null)

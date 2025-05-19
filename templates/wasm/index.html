@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="icon" type="image/vnd.microsoft.icon" href="icon.ico" />
+	
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	
+	<title>::APP_TITLE::</title>
+	
+	<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	
+	::if linkedLibraries::::foreach (linkedLibraries)::
+	<script type="text/javascript" src="::__current__::"></script>::end::::end::
+	
+	<script>
+		window.preloadBg = ::PRELOAD_BG::;
+		window.preloadFg = ::PRELOAD_FG::;
+		window.addEventListener ("touchmove", function (event) { event.preventDefault (); }, false);
+		if (typeof window.devicePixelRatio != 'undefined' && window.devicePixelRatio > 2) {
+			var meta = document.getElementById ("viewport");
+			meta.setAttribute ('content', 'width=device-width, initial-scale=' + (2 / window.devicePixelRatio) + ', user-scalable=no');
+		}
+	</script>
+	
+
+	<style>
+		html,body { margin: 0; padding: 0; width:100%; height: 100%; overflow: hidden; }
+      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+     canvas.emscripten { border: 0px none; width:100%;height:100% }
+	</style>
+
+   ::if (NME_JS_HEADER!=null)::
+   ::NME_JS_HEADER::
+   ::end::
+	
+</head>
+<body>
+   ::if (NME_JS_BODY!=null)::
+   ::NME_JS_BODY::
+   ::else::
+   <div class="emscripten_border" id="stage" style="position:absolute;width:100%;height:100%;" >
+      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabIndex="-1" ></canvas>
+   </div>
+   ::end::
+
+    ::if (NME_PRELOADER!=null)::
+       <script type='text/javascript'>
+       ::NME_PRELOADER::
+       </script>
+    ::end::
+
+    ::if (PARSE_NME!=null)::
+       <script type='text/javascript'>
+       ::PARSE_NME::
+       </script>
+    ::end::
+
+
+    <script type='text/javascript'>
+       const nmeSvg = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkViZW5lXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iMTAyNHB4IiBoZWlnaHQ9IjEwMjRweCIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMTAyNCAxMDI0IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnIHRyYW5zZm9ybT0ic2NhbGUoNCw0KSI+DQoJPHJlY3QgZmlsbD0iI0YwNUEyMiIgd2lkdGg9IjI1NiIgaGVpZ2h0PSIyNTYiLz4NCgk8cmVjdCB4PSIxOTguNCIgeT0iODkuNiIgZmlsbD0iI0ZDQjgxMyIgd2lkdGg9IjU3LjYiIGhlaWdodD0iMjUuNjAxIi8+DQoJPHJlY3QgeD0iMTk4LjQiIHk9IjExNS4yIiBmaWxsPSIjRkZGMTAwIiB3aWR0aD0iNTcuNiIgaGVpZ2h0PSIyNS42MDEiLz4NCgk8cmVjdCB4PSIxOTguNCIgeT0iMTQwLjgwMSIgZmlsbD0iI0ZDQjgxMyIgd2lkdGg9IjU3LjYiIGhlaWdodD0iMjUuNiIvPg0KCTxwb2x5Z29uIGZpbGw9IiNGQ0I4MTMiIHBvaW50cz0iMCw4OS42IDc2LjgwMSwxNjYuNCAxMDIuNCwxNjYuNCAxMDIuNCwxNDAuODAxIDUxLjIwMSw4OS42IAkiLz4NCgk8cG9seWdvbiBmaWxsPSIjRkZGMTAwIiBwb2ludHM9IjE4OS40MzksMTA0Ljk2IDE1My42LDE0MC44MDEgMTUzLjYsMTY2LjQgMTg5LjQzOSwxNjYuNCAJIi8+DQoJPHBvbHlnb24gZmlsbD0iI0ZDQjgxMyIgcG9pbnRzPSIxNTMuNiw4OS42IDE4OS40MzksODkuNiAxODkuNDM5LDEwNC45NiAxNTMuNiwxNDAuODAxIDEyOCwxMTUuMiAJIi8+DQoJPHBvbHlnb24gZmlsbD0iI0ZGRjEwMCIgcG9pbnRzPSIwLDg5LjYgMzUuODQxLDEyNS40NDEgMzUuODQxLDE2Ni40IDAsMTY2LjQgCSIvPg0KCTxwb2x5Z29uIGZpbGw9IiNGRkYxMDAiIHBvaW50cz0iMTAyLjQsODkuNiA3Ni44MDEsODkuNiA3Ni44MDEsMTE1LjIgMTI4LDE2Ni40IDE1My42LDE0MC44MDEgCSIvPg0KPC9nPg0KPC9zdmc+DQo=";
+
+
+       const img = new Image();
+       img.onload = () => {
+          var canvas = document.getElementById('canvas');
+          const ctx = canvas.getContext('2d');
+          const size = Math.min(canvas.width,canvas.height);
+          ctx.drawImage(img,(canvas.width-size)/2,(canvas.height-size)/2,size,size);
+       };
+       img.src = nmeSvg;
+
+
+       var emrun_http_sequence_number=1;
+       var emrunPost = function(msg){
+          var http=new XMLHttpRequest;
+          http.open("POST","stdio.html",true);
+          http.send(msg)
+       }
+
+       var Module = {
+        preRun: [],
+        postRun: [],
+        print: (function() {
+          if ( document.URL.search(":693")!=-1)
+             return function(text) {
+               if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+               emrunPost("^out^"+emrun_http_sequence_number++ +"^"+encodeURIComponent(text));
+             }
+          else
+            return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            console.log(text);
+          };
+        })(),
+        canvas: (function() {
+          var canvas = document.getElementById('canvas');
+
+          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+          // application robust, you may want to override this behavior before shipping!
+          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+          canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+          return canvas;
+        })(),
+        totalDownloads: 1,
+
+        downloadedNmeJs: 0,
+        nmeJs: null,
+        binaryIsReady : false,
+
+        downloadedNmeApp: 0,
+        nmeAppLoaded: false,
+        nmeApp: null,
+        nmeAppDataBase: 0,
+        nmeAppHeader: {},
+        nmeAppItems: {},
+
+        downloadedNmeClasses: 0,
+        nmeClasses: null,
+
+        calledRun: false,
+        ::if (NME_WASM)::
+        locateFile: function(filename,scriptDir) {
+           if (filename=="nme.wasm") return '::NME_WASM::';
+           return scriptDir + filename;
+        },
+        ::end::
+        progress: function() {
+          var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedNmeClasses;
+          if (this.binaryIsReady) loaded++;
+          console.log("progress: " + this.binaryIsReady + "/" + loaded);
+
+
+          var preloadUpdate = window.preloadUpdate;
+          var fraction = loaded/this.totalDownloads;
+          if ( typeof(preloadUpdate)=="function" ) preloadUpdate(fraction);
+
+          if (this.nmeJs!=null) {
+             var script = document.createElement("script");
+             script.text = this.nmeJs;
+             this.nmeJs = null;
+             document.head.appendChild(script);
+          }
+
+          if (!this.binaryIsReady) return;
+          if (!this.calledRun)
+          {
+             window.setTimeout(function() { Module.progress(); }, 100);
+             return;
+          }
+
+          if (this.nmeClasses!=null) {
+             var script = document.createElement("script");
+             script.text = this.nmeClasses;
+             this.nmeClasses = null;
+             document.head.appendChild(script);
+          }
+          if ( typeof(window.nmeClassesLoaded)=="undefined")
+             return;
+
+          if (!this.nmeAppLoaded && this.nmeApp!=null) {
+             var script = document.createElement("script");
+             script.text = window.parseNme();
+             this.nmeAppLoaded = true;
+             document.head.appendChild(script);
+          }
+        },
+
+        // This will get called by emsscripen code once it c++ constructors have run
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          if (left==0) {
+             this.binaryIsReady = true;
+             this.progress();
+          }
+        },
+        printErr: (function() {
+          if (document.URL.search("localhost")!=-1 && (document.URL.search(":693")!=-1)!=-1)
+             return function(text) {
+               if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+               emrunPost("^err^"+emrun_http_sequence_number++ +"^"+encodeURIComponent(text));
+               console.error(text);
+             }
+          else
+            return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            console.error(text);
+          };
+        })(),
+
+        printErr: function(text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          console.error(text);
+        },
+        setStatus: function(text) {
+          console.log(text);
+        },
+        parseNmeApp : function() {
+        },
+        closePreloader: function() {
+           if ( typeof(window.closePreloader)!=undefined)
+              window.closePreloader();
+        },
+
+
+      };
+    </script>
+
+    <script>
+          ::if (NME_MEM_FILE)::
+           // NME_JS_MEM
+           (function() {
+            var memoryInitializer = '::NME_JS::.mem';
+            if (typeof Module['locateFile'] === 'function') {
+              memoryInitializer = Module['locateFile'](memoryInitializer);
+            } else if (Module['memoryInitializerPrefixURL']) {
+              memoryInitializer = Module['memoryInitializerPrefixURL'] + memoryInitializer;
+            }
+            var xhr = Module['memoryInitializerRequest'] = new XMLHttpRequest();
+            xhr.open('GET', memoryInitializer, true);
+            xhr.responseType = 'arraybuffer';
+            xhr.send(null);
+          })();
+         ::end::
+
+          (function() {
+             // NME_JS
+             Module.totalDownloads++;
+             var xhr = new XMLHttpRequest;
+             console.log("::NME_JS::...");
+             xhr.open("GET", "::NME_JS::", true);
+             xhr.onload = function (e) {
+               if (xhr.readyState === 4) {
+                 if (xhr.status === 200) {
+                   Module.downloadedNmeJs = 1;
+                   Module.nmeJs =xhr.response; 
+                   Module.progress();
+                 } else {
+                   console.error(xhr.response);
+                 }
+               }
+             };
+             xhr.onprogress = function (e) {
+               Module.downloadedNmeJs = e.loaded / e.total;
+               Module.progress();
+             };
+             xhr.send();
+          }) ();
+
+
+          (function() {
+             // NME_APP_JS
+             Module.totalDownloads++;
+             var xhr = new XMLHttpRequest;
+             console.log("::NME_APP_JS::...");
+             xhr.open("GET", "::NME_APP_JS::", true);
+             xhr.onload = function (e) {
+               if (xhr.readyState === 4) {
+                 if (xhr.status === 200) {
+                   Module.downloadedNmeApp = 1;
+                   Module.nmeApp =xhr.response; 
+                   Module.progress();
+                 } else {
+                   console.error(xhr.response);
+                 }
+               }
+             };
+             xhr.onprogress = function (e) {
+               Module.downloadedNmeApp = e.loaded / e.total;
+               Module.progress();
+             };
+             xhr.responseType = 'arraybuffer';
+             xhr.send();
+          }) ();
+
+          ::if (NME_CLASSES_JS)::
+          (function() {
+             Module.totalDownloads++;
+             window.nmeOnClasses = function() { Module.progress() };
+             var xhr = new XMLHttpRequest;
+             xhr.open("GET", "::NME_CLASSES_JS::", true);
+             xhr.onload = function (e) {
+               if (xhr.readyState === 4) {
+                 if (xhr.status === 200) {
+                   Module.downloadedNmeClasses = 1;
+                   Module.nmeClasses =xhr.response; 
+                   Module.progress();
+                 } else {
+                   console.error(xhr.response);
+                 }
+               }
+             };
+             xhr.onprogress = function (e) {
+               Module.downloadedNmeClasses = e.loaded / e.total;
+               Module.progress();
+             };
+             xhr.send();
+          }) ();
+          ::end::
+
+    </script>
+
+    ::if (NME_JS_FOOTER!=null)::
+    ::NME_JS_FOOTER::
+    ::end::
+
+
+</body>
+</html>
+
