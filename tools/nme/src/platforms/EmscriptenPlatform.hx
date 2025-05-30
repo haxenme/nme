@@ -213,7 +213,11 @@ class EmscriptenPlatform extends DesktopPlatform
    {
       if (project.hasDef("pythonServe"))
       {
-         runPython(arguments);
+         var server = "" + project.getDef("pythonServe");
+         if (server.endsWith(".py"))
+            runPython(server,arguments);
+         else
+            runPython(arguments);
       }
       else
       {
@@ -242,9 +246,9 @@ class EmscriptenPlatform extends DesktopPlatform
    }
 
 
-   public function runPython(arguments:Array<String>):Void 
+   public function runPython(?pythonFile:String, arguments:Array<String>):Void 
    {
-      var command = sdkPath==null ? [ "-m", "http.server" ] : [sdkPath + "/upstream/emscripten/emrun.py"];
+      var command = pythonFile!=null ? [pythonFile] : sdkPath==null ? [ "-m", "http.server" ] : [sdkPath + "/upstream/emscripten/emrun.py"];
       var source = "index.html";
       //var source = ext == ".html" ? Path.withoutDirectory(executablePath) : "index.html";
       var browser = CommandLineTools.browser;
