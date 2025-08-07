@@ -1036,6 +1036,7 @@ class NMEProject
       context.APP_MAIN_PACKAGE = main.substr(0, indexOfPeriod + 1);
       context.APP_MAIN_CLASS = main.substr(indexOfPeriod + 1);
 
+      context.NME_VERBOSE = Log.mVerbose;
       context.DEBUG = debug;
       context.MEGATRACE = megaTrace;
       context.SWF_VERSION = app.swfVersion;

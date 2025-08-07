@@ -13,9 +13,15 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 ::end::
 
+::if NME_VERBOSE::
+tasks.withType(JavaCompile) {
+    options.deprecation = true
+}
+::end::
 
 android {
-    namespace "::APP_PACKAGE::"
+    namespace = "::APP_PACKAGE::"
+
 
     ::if ANDROID_COMPILE_SDK_VERSION::
     compileSdkVersion ::ANDROID_COMPILE_SDK_VERSION::
@@ -24,6 +30,11 @@ android {
     //  so can be regularly updated
     compileSdkVersion 34
     ::end::
+
+    //compileOptions {
+    //    sourceCompatibility JavaVersion.VERSION_17
+    //}
+
 
     buildToolsVersion "34.0.0"
     defaultConfig {
@@ -51,7 +62,7 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             ::if KEY_STORE::
-            signingConfig signingConfigs.release
+            signingConfig = signingConfigs.release
             ::end::
 
             ::if NME_FIREBASE_CRASHLYTICS::
@@ -60,9 +71,9 @@ android {
                 // servers. By default, this is disabled to improve build speeds.
                 // This flag must be enabled to see properly-symbolicated native
                 // stack traces in the Crashlytics dashboard.
-                nativeSymbolUploadEnabled true
+                nativeSymbolUploadEnabled = true
 
-                unstrippedNativeLibsDir "::NME_UNSTRIPPED_ROOT::"
+                unstrippedNativeLibsDir = "::NME_UNSTRIPPED_ROOT::"
             }
             ::end::
         }
@@ -74,7 +85,7 @@ android {
         abi {
 
             // Enables building multiple APKs per ABI.
-            enable true
+            enable = true
 
             // By default all ABIs are included, so use reset() and include to specify that we only
             // want APKs for x86 and x86_64.
@@ -86,7 +97,7 @@ android {
             include ::ABIS::
 
             // Specifies that we do not want to also generate a universal APK that includes all ABIs.
-            universalApk ::UNIVERSAL_APK::
+            universalApk = ::UNIVERSAL_APK::
         }
     }
 }
@@ -98,13 +109,19 @@ dependencies {
     })
     // Support is in 'androidx.core' now
     ::if ANDROID_BILLING::
-    api 'com.android.billingclient:billing:6.0.1'
+    api 'com.android.billingclient:billing:8.0.0'
     ::end::
     testImplementation 'junit:junit:4.12'
 
     ::if NME_APPLOVIN_KEY::
     implementation 'com.applovin:applovin-sdk:+'
     ::end::
+
+    ::if NME_ADMOB_APP_ID::
+    implementation 'com.google.android.gms:play-services-ads:24.2.0'
+    implementation 'com.google.android.ump:user-messaging-platform:3.2.0'
+    ::end::
+
 
     ::if NME_FIREBASE::
       // Add the dependency for the Performance Monitoring library

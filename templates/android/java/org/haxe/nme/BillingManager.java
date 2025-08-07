@@ -38,6 +38,8 @@ import com.android.billingclient.api.PurchasesResponseListener;
 //import com.android.billingclient.api.Purchase.PurchasesResult;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.UnfetchedProduct;
+import com.android.billingclient.api.QueryProductDetailsResult;
 import com.android.billingclient.api.QueryPurchasesParams;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryProductDetailsParams.Product;
@@ -45,6 +47,7 @@ import com.android.billingclient.api.QueryProductDetailsParams.Product;
 //import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.PendingPurchasesParams;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -121,7 +124,10 @@ public class BillingManager implements PurchasesUpdatedListener {
         BASE_64_ENCODED_PUBLIC_KEY = inPublicKey;
         mActivity = activity;
         mBillingUpdatesListener = updatesListener;
-        mBillingClient = BillingClient.newBuilder(mActivity).enablePendingPurchases().setListener(this).build();
+        PendingPurchasesParams params = PendingPurchasesParams.newBuilder()
+                .enableOneTimeProducts() // Enable pending purchases for one-time products
+                .build();
+        mBillingClient = BillingClient.newBuilder(mActivity).enablePendingPurchases(params).setListener(this).build();
 
         // Start setup. This is asynchronous and the specified listener will be called
         // once setup completes.
@@ -150,6 +156,7 @@ public class BillingManager implements PurchasesUpdatedListener {
        obj.put("sku", sku.getProductId() );
        obj.put("title", sku.getTitle() );
        obj.put("type", sku.getProductType() );
+       //obj.put("fetched", true );
        if (sku.getProductType().equals(ProductType.INAPP))
        {
           ProductDetails.OneTimePurchaseOfferDetails  d = sku.getOneTimePurchaseOfferDetails();
@@ -169,6 +176,25 @@ public class BillingManager implements PurchasesUpdatedListener {
 */
        return obj;
     }
+
+    public static JSONObject getUFProductJson(UnfetchedProduct sku) throws JSONException
+    {
+       JSONObject obj= new JSONObject();
+       obj.put("sku", sku.getProductId() );
+       obj.put("type", sku.getProductType() );
+       obj.put("fetched", false );
+
+/*
+       obj.put("freeTrialPeriod", sku.getFreeTrialPeriod() );
+       obj.put("introductoryPrice", sku.getIntroductoryPrice() );
+       obj.put("introductoryPriceAmountMicros", sku.getIntroductoryPriceAmountMicros() );
+       obj.put("introductoryPriceCycles", sku.getIntroductoryPriceCycles() );
+       obj.put("introductoryPricePeriod", sku.getIntroductoryPricePeriod() );
+       obj.put("subscriptionPeriod", sku.getSubscriptionPeriod() );
+*/
+       return obj;
+    }
+
 
     public void queryProductsAsync(final String type, String [] products, final HaxeObject onResult)
     {
@@ -194,18 +220,25 @@ public class BillingManager implements PurchasesUpdatedListener {
             mBillingClient.queryProductDetailsAsync( params,
                 new ProductDetailsResponseListener() {
                     public void onProductDetailsResponse(BillingResult billingResult,
-                        List<ProductDetails> productDetailsList) {
+                        final QueryProductDetailsResult productDetailsResult) {
 
                          //Log.e(TAG, "onProductDetailsResponse");
                          int responseCode = billingResult.getResponseCode();
                          String result = "";
                          try {
                             JSONArray array= new JSONArray();
-                            for(ProductDetails sku : productDetailsList)
+                            for(ProductDetails sku : productDetailsResult.getProductDetailsList() )
                             {
                                JSONObject obj = getProductJson(sku);
                                array.put(obj);
                             }
+                            /*
+                            for(UnfetchedProduct sku : productDetailsResult.getUnfetchedProducts() )
+                            {
+                               JSONObject obj = getUFProductJson(sku);
+                               array.put(obj);
+                            }
+                            */
                             result = array.toString();
                             //Log.e(TAG, " result=" + result );
 
@@ -296,7 +329,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                 mBillingClient.queryProductDetailsAsync(prodParams,
                         new ProductDetailsResponseListener() {
                              public void onProductDetailsResponse(BillingResult billingResult,
-                                 final List<ProductDetails> productDetailsList) {
+                                 final QueryProductDetailsResult productDetailsResult) {
 
                                 if (billingResult.getResponseCode()!=BillingResponseCode.OK)
                                 {
@@ -304,6 +337,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                                 }
                                 else
                                 {
+                                   List<ProductDetails> productDetailsList = productDetailsResult.getProductDetailsList();
                                    if (productDetailsList.size()!=1)
                                    {
                                       failedPurchase(productId, -100 - productDetailsList.size());

@@ -7,7 +7,7 @@ import platforms.Platform;
 
 class ProcessHelper 
 {
-   public static function getOutput(command:String, args:Array<String>, inEcho:Bool = false, inShowErrors=false) : Array<String>
+   public static function getOutput(command:String, args:Array<String>, inEcho:Bool = false, inShowErrors=false, inThrowErrors=false) : Array<String>
    {
       var result = new Array<String>();
 
@@ -31,9 +31,14 @@ class ProcessHelper
       {
          var code = process.exitCode();
          process.close();
-         if (code!=0 && inShowErrors)
+         if (code!=0)
          {
-            Log.error("Error running: command " + args.join(" "));
+            if (inShowErrors)
+               Log.error("running: " + command + " " + args.join(" "));
+            else if (inThrowErrors)
+            {
+               throw "Error running: " + command + " " + args.join(" ");
+            }
          }
       }
 

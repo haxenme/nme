@@ -2,7 +2,7 @@ package nme.store;
 
 #if ios
 @:fileXml('tag="nme-haxe"')
-@:cppInclude('./AppLovinIos.mm')
+@:cppInclude('./AdMobIos.mm')
 #end
 class AppLovin
 {
@@ -49,9 +49,9 @@ class AppLovin
    }
 
    #if android
-   static var androidSetWatcher = JNI.createStaticMethod("org/haxe/nme/NmeAppLovin", "setWatcher", "(Lorg/haxe/nme/HaxeObject;ZZ)V");
-   static var androidPlayInterstitial = JNI.createStaticMethod("org/haxe/nme/NmeAppLovin", "playInterstitial", "()V");
-   static var androidPlayReward = JNI.createStaticMethod("org/haxe/nme/NmeAppLovin", "playReward", "()V");
+   static var androidSetWatcher = JNI.createStaticMethod("org/haxe/nme/NmeAdMob", "setWatcher", "(Lorg/haxe/nme/HaxeObject;ZZ)V");
+   static var androidPlayInterstitial = JNI.createStaticMethod("org/haxe/nme/NmeAdMob", "playInterstitial", "()V");
+   static var androidPlayReward = JNI.createStaticMethod("org/haxe/nme/NmeAdMob", "playReward", "()V");
    #elseif ios
    @:native("loadInterstitialAd")
    extern static function loadInterstitialAd() : Void;
@@ -63,5 +63,6 @@ class AppLovin
    extern static function showInterstitialAd() : Void;
    #end
 }
+
 
 

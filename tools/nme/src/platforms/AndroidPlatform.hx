@@ -349,7 +349,13 @@ class AndroidPlatform extends Platform
       context.NME_FIREBASE_PERFORMANCE = project.hasDef("firebasePerformance");
       context.NME_STRIPPED_ROOT = getStrippedRoot();
       context.NME_UNSTRIPPED_ROOT = getUnstrippedRoot();
-      
+ 
+
+      if (project.hasDef("bundlerelease") || project.hasDef("bundledebug") ||
+            project.hasDef("real_ads") )
+         context.NME_REAL_ADS = true;
+
+
       if(gradle)
          setGradleLibraries();
       else
@@ -603,7 +609,7 @@ class AndroidPlatform extends Platform
       // ProcessHelper.runCommand("", adbName, adbFlags.concat([ "install", "-r", targetPath ]) );
       try
       {
-         var lines = ProcessHelper.getOutput(adbName,adbFlags.concat([ "install", "-r", targetPath ]), Log.mVerbose, Log.mVerbose);
+         var lines = ProcessHelper.getOutput(adbName,adbFlags.concat([ "install", "-r", targetPath ]), true, false, true);
          var failure = ~/Failure/;
          for(line in lines)
             if (failure.match(line))
@@ -611,7 +617,8 @@ class AndroidPlatform extends Platform
       }
       catch(e:Dynamic)
       {
-         Log.error("Could not run adb install " + e);
+         Log.warn("Error installing " + e);
+         Log.error("Try uninstalling old version: nme project.nmml uninstall");
          installed = false;
       }
       installed = true;

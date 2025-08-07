@@ -27,7 +27,8 @@ class NmeAppLovin
    static AppLovinAd loadedAd;
    static AppLovinInterstitialAdDialog adDialog;
    static HaxeObject watcher;
-   static boolean preloadOnInit = false;
+   static boolean preloadInterstitialOnInit = false;
+   static boolean preloadRewardOnInit = false;
    static boolean isInit = false;
    static final String TAG = "NmeAppLovin";
 
@@ -44,48 +45,57 @@ class NmeAppLovin
             {
                 isInit = true;
                 Log.d(TAG,"initializeSdk done pre=" + preloadOnInit);
-                if (preloadOnInit)
-                {
+                if (preloadInterstitialOnInit)
                    preloadAsync();
+                if (preloadRewardOnInit)
                    preloadRewardAsync();
-                }
             }
       });
       //isInit = true;
    }
 
-   public static void setWatcher(final HaxeObject inWatcher, final boolean andPreload)
+   public static void setWatcher(final HaxeObject inWatcher, final boolean preloadInterstitial, final boolean preloadReward)
    {
       Log.d(TAG,"setWatcher");
       watcher = inWatcher;
-      if (andPreload)
+      if (preloadInterstitial || preloadReward)
       {
          GameActivity.queueRunnable( new Runnable() {
          @Override public void run() {
-            preloadOnInit = true;
             if (isInit)
+            {
                Log.d(TAG,"setWatcher done init=" + isInit);
                preloadOnInit = false;
-               preloadAsync();
-               preloadRewardAsync();
+               if (preloadInterstitial)
+                  preloadInterstitialAsync();
+               if (preloadReward)
+                  preloadRewardAsync();
+            }
+            else
+            {
+               preloadInterstitialOnInit = preloadInterstitial;
+               preloadRewardOnInit = preloadReward;
+            }
          } } );
       }
    }
 
-   public static void playInterstitial( )
+   public static boolean playInterstitial( )
    {
       GameActivity.queueRunnable( new Runnable() {
          @Override public void run() {
              playInterstitialAsync();
          } } );
+      return true;
    }
 
-   public static void playReward( )
+   public static boolean playReward( )
    {
       GameActivity.queueRunnable( new Runnable() {
          @Override public void run() {
             playRewardAsync();
          } } );
+      return true;
    }
 
    static void send(final String message)
@@ -93,13 +103,14 @@ class NmeAppLovin
        GameActivity.sendHaxe( new Runnable() {
          @Override public void run() {
             if (watcher!=null)
-               watcher.call1("onAppLovin", message);
+               watcher.call1("onAdApi", message);
          } } );
    }
 
 
-   static void preloadAsync()
+   static void preloadInterstitialAsync()
    {
+      preloadInterstitialOnInit = false;
       Context ctx = sGameActivity.mContext;
       // Load an Interstitial Ad
       AppLovinSdk.getInstance( ctx ).getAdService().loadNextAd( AppLovinAdSize.INTERSTITIAL,
@@ -123,6 +134,7 @@ class NmeAppLovin
 
    static void preloadRewardAsync()
    {
+      preloadInterstitialOnInit = false;
       Context ctx = sGameActivity.mContext;
       if (myIncent==null)
          myIncent = AppLovinIncentivizedInterstitial.create(ctx);

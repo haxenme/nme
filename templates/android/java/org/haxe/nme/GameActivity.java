@@ -76,7 +76,11 @@ import androidx.activity.result.contract.ActivityResultContracts.RequestMultiple
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.core.app.ActivityCompat;
-
+import androidx.annotation.NonNull;
+::if NME_ADMOB_APP_ID::
+import com.google.android.ump.ConsentForm.OnConsentFormDismissedListener;
+import com.google.android.ump.FormError;
+::end::
 
 ::if NME_APPLOVIN_KEY::
 import com.applovin.sdk.AppLovinSdk;
@@ -84,6 +88,7 @@ import com.applovin.sdk.AppLovinSdk;
 ::if NME_FIREBASE::
 import com.google.firebase.analytics.FirebaseAnalytics;
 ::end::
+
 
 public class GameActivity extends ::GAME_ACTIVITY_BASE::
 implements SensorEventListener
@@ -121,6 +126,7 @@ implements SensorEventListener
    ::if NME_FIREBASE::
    private FirebaseAnalytics mFirebaseAnalytics;
    ::end::
+
    
    public Handler mHandler;
    RelativeLayout mContainer;
@@ -277,11 +283,17 @@ implements SensorEventListener
 
      for(Extension extension : extensions)
         extension.onCreate(state);
-       
+
+     ::if NME_ADMOB_APP_ID::
+     NmeAdMob.initializeSdk(this);
+     ::end::
+
+
      Uri link = getIntentAppLink();
      if(link != null)
         NME.setLaunchAppLink(link.toString());
    }
+
 
    ::if ANDROIDVIEW::
    public View onCreateView(android.view.LayoutInflater inflater, ViewGroup group, Bundle saved)
@@ -851,6 +863,42 @@ implements SensorEventListener
           ga.requestMultiplePermissionLauncher.launch(permissions);
        } });
    }
+
+   public static boolean isPrivacyOptionRequired()
+   {
+      ::if NME_ADMOB_APP_ID::
+      GoogleMobileAdsConsentManager m = NmeAdMob.googleMobileAdsConsentManager;
+      return m.isPrivacyOptionsRequired();
+      ::else::
+      return false;
+      ::end::
+   }
+
+   public static boolean showPrivacyOptionsForm(final HaxeObject onShown)
+   {
+      ::if NME_ADMOB_APP_ID::
+      final GoogleMobileAdsConsentManager m = NmeAdMob.googleMobileAdsConsentManager;
+      if (m!=null)
+      {
+          queueRunnable( new Runnable() { @Override public void run() {
+             m.showPrivacyOptionsForm(activity,
+                new OnConsentFormDismissedListener() {
+                  @Override
+                  public void onConsentFormDismissed(FormError formError) {
+
+                     sendHaxe( new Runnable() {
+                            @Override public void run() {
+                               onShown.call0("onPrivacyShown" );
+                       } });
+                  }
+             });
+          } } );
+          return true;
+      }
+      ::end::
+      return false;
+   }
+
 
    ::if !ANDROIDVIEW::
    public Activity getActivity()
