@@ -22,7 +22,7 @@ class ProgramBase
 
    public function renderMtx(mvp:Matrix3D) render( Float32Array.fromMatrix(mvp) );
 
-   public function renderModelView(mvp:Matrix3D,mv:Matrix3D) renderMtx( mvp );
+   public function renderModelView(mvp:Matrix3D,mv:Matrix3D, ?m:Matrix3D) renderMtx( mvp );
 
    public function renderClipped(mvp:Float32Array, plane:Vector3D) render(mvp);
 
