@@ -13,7 +13,7 @@ typedef ABI = {
 
 class AndroidPlatform extends Platform
 {
-   var gradle:Bool;
+   var gradle:Bool = true;
    var abis:Array<ABI>;
    var installed:Bool;
    var useArchDirs:Bool;
@@ -64,12 +64,10 @@ class AndroidPlatform extends Platform
 
       if (project.hasDef("androidBilling"))
       {
-         CommandLineTools.gradle = true;
          project.haxedefs.set("gradle", "1");
          project.haxedefs.set("androidBilling", "1");
       }
 
-      gradle = CommandLineTools.gradle;
       if (gradle)
       {
          Log.verbose("Using gradle build system");
@@ -779,25 +777,6 @@ class AndroidPlatform extends Platform
       packageDirectory = destination + srcPath + "/" + packageDirectory.split(".").join("/");
       PathHelper.mkdir(packageDirectory);
       copyTemplate("android/MainActivity.java", packageDirectory + "/MainActivity.java");
-
-      if (!gradle)
-      {
-         var movedFiles = [ "src/org/haxe/nme/HaxeObject.java",
-                            "src/org/haxe/nme/Value.java",
-                            "src/org/haxe/nme/NME.java",
-                            "bin/classes/org/haxe/nme/HaxeObject.class",
-                            "bin/classes/org/haxe/nme/Value.class",
-                            "bin/classes/org/haxe/nme/NME.class" ];
-         for(moved in movedFiles)
-         {
-            var file = destination + "/" + moved;
-            if (FileSystem.exists(file))
-            {
-               Log.verbose("Remove legacy file " + file);
-               FileSystem.deleteFile(file);
-            }
-         }
-      }
 
       var jarDir = getAppDir()+"/deps/extension-api/libs";
       for(javaPath in project.javaPaths) 

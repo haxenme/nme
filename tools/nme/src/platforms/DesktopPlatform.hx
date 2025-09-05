@@ -19,4 +19,6 @@ class DesktopPlatform extends Platform
 
      project.haxedefs.set(isArm64 ? "HXCPP_ARM64" : is64 ? "HXCPP_M64" : "HXCPP_M32",null);
    }
+
+   override public function isDesktop() return true;
 }

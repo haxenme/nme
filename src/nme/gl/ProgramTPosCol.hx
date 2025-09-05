@@ -135,7 +135,10 @@ class ProgramTPosCol extends ProgramBase
    override public function dispose()
    {
       GL.deleteBuffer(posBuffer);
+      posBuffer = null;
       GL.deleteBuffer(colBuffer);
+      colBuffer = null;
+      prog = null;
    }
 
 
@@ -143,6 +146,8 @@ class ProgramTPosCol extends ProgramBase
 
    override public function renderClipped(mvp:Float32Array, plane:Vector3D)
    {
+      if (prog==null)
+         throw "Disposed program is being used";
       GL.useProgram(prog);
 
       GL.bindBuffer(GL.ARRAY_BUFFER, posBuffer);

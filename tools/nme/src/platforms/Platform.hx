@@ -127,6 +127,7 @@ class Platform
    public function getBinaryName() { return ""; }
    public function getArchSuffix() { return ""; }
    public function postBuild() { }
+   public function isDesktop() return false;
 
    public function wantLldb() : Bool
    {
@@ -229,6 +230,13 @@ class Platform
    public function install() { }
 
    public function createInstaller() { }
+
+   public function createVSCodeFiles()
+   {
+      var vscodeDir = Sys.getCwd() + "/.vscode";
+      PathHelper.mkdir(vscodeDir);
+      copyTemplate("vscode/launch.json", vscodeDir + "/launch.json");
+   }
 
    public function createManifestHeader()
    {

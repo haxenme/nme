@@ -1,5 +1,6 @@
 package;
 
+import haxe.macro.Type.Ref;
 import std.RealSys;
 import std.SysProxy;
 import haxe.io.Path;
@@ -13,6 +14,7 @@ import nme.net.SharedObject;
 import nme.script.Client;
 import NMEProject;
 import nme.AlphaMode;
+import haxe.Json;
 
 #if nme_static_link
 import nme.StaticNme;
@@ -32,28 +34,27 @@ class CommandLineTools
    public static var nme(default,null):String;
    public static var home:String;
    public static var sys:SysProxy;
-   public static var gradle:Bool = true;
-   public static var quick:Bool = false;
-   public static var fat:Bool = false;
+   public static var nmeVersion:String;
    public static var browser:String = null;
-
-   static var toolkit:Bool = true;
-   static var haxeVer:String = null;
-   static var additionalArguments:Array<String>;
-   static var command:String;
-   static var assumedTest:Bool = false;
-   static var debug:Bool;
-   static var forceFlag:Bool = false;
-   static var staticFlag:Bool = false;
-   static var sampleInDir:String = "";
-   static var words:Array<String>;
-   static var traceEnabled:Null<Bool>;
-   static var host = PlatformHelper.hostPlatform;
-   static var nmeVersion:String;
-   static var binDirOverride:String = "";
-   static var store:SharedObject;
-   static var storeData:Dynamic;
    static var readHxcppConfig = false;
+   static var host = PlatformHelper.hostPlatform;
+
+   public var quick:Bool = false;
+   public var fat:Bool = false;
+
+   var toolkit:Bool = true;
+   var additionalArguments:Array<String>;
+   var command:String;
+   var assumedTest:Bool = false;
+   var debug:Bool;
+   var forceFlag:Bool = false;
+   var staticFlag:Bool = false;
+   var sampleInDir:String = "";
+   var words:Array<String>;
+   var traceEnabled:Null<Bool>;
+   var binDirOverride:String = "";
+   var store:SharedObject;
+   var storeData:Dynamic;
 
 
    static var allTargets = 
@@ -67,13 +68,13 @@ class CommandLineTools
              "installer", "copy-if-newer", "tidy", "set", "unset", "nocompile",
             "clean", "update", "build", "run", "rerun", "install", "uninstall", "trace", "test",
             "rebuild", "shell", "icon", "banner", "favicon", "serve", "listbrowsers",
-            "prepare", "quickrun", "uploadcrashlytics", "ndk-stack", "emulator" ];
+            "prepare", "vscode", "quickrun", "uploadcrashlytics", "ndk-stack", "emulator" ];
    static var setNames =  [ "target", "bin", "command", "cppiaHost", "cppiaClassPath", "deploy", "developmentTeam" ];
    static var setNamesHelp =  [ "default when no target is specifiec", "alternate location for binary files", "default command to run", "executable for running cppia code", "additional class path when building cppia", "remote deployment host", "IOS development team id (10 character code)" ];
    static var quickSetNames =  [ "debug", "verbose" ];
 
 
-   private static function buildProject(project:NMEProject) 
+   private function buildProject(project:NMEProject) 
    {
       if (!loadProject(project,command=="script"))
          return;
@@ -192,7 +193,7 @@ class CommandLineTools
             platform.uninstall();
          }
 
-         if (command == "update" || command == "build" || command == "test" || command=="xcode" || command=="installer" || command=="prepare" ) 
+         if (command == "update" || command == "build" || command == "test" || command=="xcode" || command=="installer" || command=="prepare" || command=="vscode") 
          {
             Log.verbose("\nRunning command: UPDATE");
             platform.updateBuildDir();
@@ -211,13 +212,17 @@ class CommandLineTools
             haxed = true;
          }
 
-         if (command == "prepare")
+         if (command == "prepare" || command=="vscode")
          {
             Log.verbose("\nRunning command: PREPARE");
             platform.updateBuildDir();
-            Sys.println("PREPARE BUILD_FILE=" + platform.getHaxeDir() + "/build.hxml");
+            var hxmlFile = platform.getHaxeDir() + "/build.hxml";
+            Sys.println("PREPARE BUILD_FILE=" + hxmlFile);
             Sys.println("PREPARE BUILD_DIR=" + Sys.getCwd());
             Sys.println("PREPARE BUILD_OUTPUT=" + platform.getBinaryName());
+
+            if (command=="vscode")
+               createVscodeFiles(project,platform,hxmlFile);
          }
 
          if (command == "build" || command == "test" || command=="xcode" || command=="installer" || command=="quickrun" ) 
@@ -278,7 +283,7 @@ class CommandLineTools
       }
    }
 
-   static function showSampleHelp(inMode:String)
+   function showSampleHelp(inMode:String)
    {
       if (inMode=="demo")
          sys.println("nme demo [target] - build given sample [with given target]");
@@ -318,7 +323,7 @@ class CommandLineTools
    }
 
 
-   static public function export(info:String, filter:String, sourceDir:String)
+   public function export(info:String, filter:String, sourceDir:String)
    {
          {
             try
@@ -377,7 +382,7 @@ class CommandLineTools
    }
 
 
-   static function getSamples(dir:String)
+   function getSamples(dir:String)
    {
       var result = new Array<Sample>();
 
@@ -395,7 +400,7 @@ class CommandLineTools
       return result;
    }
 
-   static function showSamples(name:String, dir:String)
+   function showSamples(name:String, dir:String)
    {
       var samples = getSamples(dir);
 
@@ -403,7 +408,7 @@ class CommandLineTools
       sys.println(name + " samples: " + joint + samples.join(joint) );
    }
 
-   static function findSample(project:NMEProject,samples:Array<Sample>, name:String, target:String )
+   function findSample(project:NMEProject,samples:Array<Sample>, name:String, target:String )
    {
       var nameLen = name.length;
       for(sample in samples)
@@ -435,8 +440,233 @@ class CommandLineTools
       Log.error("Could not find unique sample " + name);
    }
 
+   function saveVscodeEntry(file:String, json:Dynamic)
+   {
+      var vscodeDir = Sys.getCwd() + "/.vscode";
+      if (!FileSystem.exists(vscodeDir))
+         PathHelper.mkdir(vscodeDir);
+      var fullFile = vscodeDir + "/" + file;
+      try {
+         File.saveContent(fullFile, Json.stringify(json,"   "));
+         Log.verbose("Updated " + fullFile);
+      }
+      catch(e:Dynamic)
+      {
+         Log.error("Could not save " + fullFile + " :" + e);
+      }
+   }
 
-   static function doSample(project:NMEProject,dir:String,sampleTarget:String)
+   function loadVscodeEntry(file:String, forceOverwrite:Bool = false) : Dynamic
+   {
+      var vscodeDir = Sys.getCwd() + "/.vscode";
+      var fullFile = vscodeDir + "/" + file;
+
+      var json:Dynamic = {};
+      if (forceOverwrite)
+         return json;
+
+      var commentRegEx = ~/^(.*)\/\/.*$/;
+      try
+      {
+         var content = File.getContent(fullFile);
+         var lines = new Array<String>();
+         for(line in content.split("\n"))
+         {
+            // Bit hacky
+            if (commentRegEx.match(line))
+               lines.push(commentRegEx.matched(1));
+            else
+               lines.push(line);
+         }
+         json = Json.parse(lines.join("\n"));
+      }
+      catch(e:Dynamic)
+      {
+      }
+
+      return json;
+   }
+
+
+   function ensureArrayEntry(json:Dynamic, section:String, entry:Dynamic, byField:String = null)
+   {
+      var found = false;
+      var arr:Array<Dynamic> = Reflect.field(json,section);
+      if (arr==null)
+         Reflect.setField(json,section,arr=[]);
+      else
+      {
+         var sought:String = byField!=null ? Reflect.field(entry,byField) : new String(entry);
+         for(a in arr)
+         { 
+            var have = byField!=null ? Reflect.field(a,byField) : new String(a);
+            if (have==sought)
+            {
+               trace("Found existing entry " + sought);
+               found = true;
+               break;
+            }
+         }
+      }
+
+      if (!found)
+         arr.push(entry);
+
+      return !found;
+   }
+
+   function ensureKeyEntry(json:Dynamic, section:String, entry:String, value:Dynamic)
+   {
+      var found = false;
+      var map:Dynamic = Reflect.field(json,section);
+      if (map==null)
+         Reflect.setField(json,section,map={});
+      else
+         found = Reflect.field(map,entry)!=null;
+
+      if (!found)
+         Reflect.setField(map,entry,value);
+
+      return !found;
+   }
+
+   function createVscodeFiles(project:NMEProject, platform:Platform,hxmlFile:String)
+   {
+      var forceOverwrite = project.hasDef("forceVscode");
+      // Settings
+      var json = loadVscodeEntry("settings.json",forceOverwrite);
+      var changed = ensureArrayEntry(json, "haxe.configurations", [  hxmlFile ]);
+
+      var exclude = project.app.binDir + "/*/haxe/cpp";
+      changed = ensureKeyEntry(json, "files.exclude", exclude, true) || changed;
+
+      if (changed)
+         saveVscodeEntry("settings.json", json);
+      // Launch
+      json = loadVscodeEntry("launch.json", forceOverwrite);
+      changed = false;
+      if (json.version!="0.2.0")
+      {
+         json.version = "0.2.0";
+         changed = true;
+      }
+      if (platform.isDesktop())
+      {
+         changed = ensureArrayEntry(json, "configurations",{
+            name:"nme cpp debug",
+            type:"haxe-eval",
+            preLaunchTask:"run cpp debug",
+            request:"launch",
+         }, "name") || changed;
+
+         changed = ensureArrayEntry(json, "configurations",{
+            name:"nme cpp debugger",
+            type:"hxcpp",
+            preLaunchTask:"build with debugger",
+            // Is it always in workspaceFolder ?
+            program: "${workspaceFolder}/" + platform.getOutputDir() + "/" + platform.getBinaryName(),
+            request:"launch",
+         }, "name") || changed;
+
+         changed = ensureArrayEntry(json, "configurations",{
+            name:"nme cpp release",
+            type:"haxe-eval",
+            preLaunchTask:"run cpp release",
+            request:"launch",
+         }, "name") || changed;
+      }
+      else
+      {
+         changed = ensureArrayEntry(json, "configurations",{
+            name:"nme " + project.targetName + " release",
+            type:"haxe-eval",
+            preLaunchTask:"nme " + project.targetName + " release",
+            request:"launch",
+         }, "name") || changed;
+         changed = ensureArrayEntry(json, "configurations",{
+            name:"nme " + project.targetName + " debug",
+            type:"haxe-eval",
+            preLaunchTask:"nme " + project.targetName + " debug",
+            request:"launch",
+         }, "name") || changed;
+ 
+      }
+      if (changed)
+         saveVscodeEntry("launch.json", json);
+      // Tasks
+      json = loadVscodeEntry("tasks.json", forceOverwrite);
+      changed = false;
+
+      if (platform.isDesktop())
+      {
+         if (json.version!="2.0.0")
+         {
+            json.version = "2.0.0";
+            changed = true;
+         }
+         changed = ensureArrayEntry(json, "tasks",{
+            label:"build cpp release",
+            type:"shell",
+            command:"haxelib run nme cpp build",
+            group:"build",
+            problemMatcher:[],
+         }, "label") || changed;
+         changed = ensureArrayEntry(json, "tasks",{
+            label:"run cpp release",
+            type:"shell",
+            command:"haxelib run nme cpp",
+            group:"test",
+            problemMatcher:[],
+         }, "label") || changed;
+ 
+         changed = ensureArrayEntry(json, "tasks",{
+            label:"build cpp debug",
+            type:"shell",
+            group:"build",
+            command:"haxelib run nme build cpp -debug",
+            problemMatcher:[],
+         }, "label") || changed;
+
+         changed = ensureArrayEntry(json, "tasks",{
+            label:"run cpp debug",
+            type:"shell",
+            command:"haxelib run nme cpp -debug",
+            group:"test",
+            problemMatcher:[],
+         }, "label") || changed;
+ 
+         changed = ensureArrayEntry(json, "tasks",{
+            label:"build with debugger",
+            type:"shell",
+            group:"build",
+            command:"haxelib run nme cpp build -debug -lib hxcpp-debug-server",
+            problemMatcher:[],
+         }, "label") || changed;
+      }
+      else
+      {
+         changed = ensureArrayEntry(json, "tasks",{
+            label:"nme " + project.targetName + " release",
+            type:"shell",
+            command:'haxelib run nme ${project.targetName}',
+            group:"test",
+            problemMatcher:[],
+         }, "label") || changed;
+         changed = ensureArrayEntry(json, "tasks",{
+            label:"nme " + project.targetName + " debug",
+            type:"shell",
+            command:'haxelib run nme ${project.targetName} -debug',
+            group:"test",
+            problemMatcher:[],
+         }, "label") || changed;
+      }
+      if (changed)
+         saveVscodeEntry("tasks.json", json);
+   }
+
+
+
+   function doSample(project:NMEProject,dir:String,sampleTarget:String)
    {
       if (command=="demo")
       {
@@ -462,8 +692,6 @@ class CommandLineTools
             args.push("-debug");
          if (!toolkit)
             args.push("-notoolkit");
-         if (!gradle)
-            args.push("-ant");
          if (browser!=null)
          {
             args.push("-browser");
@@ -518,7 +746,7 @@ class CommandLineTools
       }
    }
 
-   static function processSample(project:NMEProject, inMode:String)
+   function processSample(project:NMEProject, inMode:String)
    {
       var target="";
       if (words.length>1 && isTarget(words[words.length-1]))
@@ -573,7 +801,7 @@ class CommandLineTools
      }
    }
 
-   private static function createTemplate() 
+   private function createTemplate() 
    {
       if (words.length > 0) 
       {
@@ -705,7 +933,7 @@ class CommandLineTools
       }
    }
 
-   private static function setup():Void 
+   private function setup():Void 
    {
       if (PlatformHelper.hostPlatform==Platform.WINDOWS)
       {
@@ -766,11 +994,11 @@ class CommandLineTools
    }
 
 
-   private static function document():Void 
+   private function document():Void 
    {
    }
 
-   private static function displayHelp():Void 
+   private function displayHelp():Void 
    {
       displayInfo();
 
@@ -840,9 +1068,10 @@ class CommandLineTools
       sys.println("  [ios] -simulator : Build/test for the device simulator");
       sys.println("  [ios] -simulator -ipad : Build/test for the iPad Simulator");
       sys.println("  (run|test) -args a0 a1 ... : Pass remaining arguments to executable");
+      sys.println("         ... -fargs a0 a1 ... : Pass remaining arguments to executable, convert to full path is possible");  
    }
 
-   private static function displayInfo(showHint:Bool = false, skipBanner:Bool = false):Void 
+   private function displayInfo(showHint:Bool = false, skipBanner:Bool = false):Void 
    {
       if (!skipBanner) // Does not show up so well in xcode
       {
@@ -927,11 +1156,11 @@ class CommandLineTools
    }
 
 
-   private static function generate():Void 
+   private function generate():Void 
    {
    }
 
-   private static function getBuildNumber(project:NMEProject, increment:Bool = true):Void 
+   private function getBuildNumber(project:NMEProject, increment:Bool = true):Void 
    {
       if (project.app.buildNumber == "1") 
       {
@@ -1047,7 +1276,7 @@ class CommandLineTools
    }
    #end
 
-   static function loadProject(project:NMEProject,allowMissing:Bool) : Bool
+   function loadProject(project:NMEProject,allowMissing:Bool) : Bool
    {
       Log.verbose("Loading project...");
 
@@ -1248,7 +1477,7 @@ class CommandLineTools
       return true;
    }
 
-   private static function resolveClass(name:String):Class<Dynamic> 
+   private function resolveClass(name:String):Class<Dynamic> 
    {
       if (name.toLowerCase().indexOf("project") > -1) 
       {
@@ -1280,7 +1509,7 @@ class CommandLineTools
    }
 
 
-   public static function setValue()
+   public function setValue()
    {
       if (words.length==2 || isIn(setNames,words[0]))
       {
@@ -1308,14 +1537,14 @@ class CommandLineTools
    }
 
 
-   public static function getValue(inValue:String) : Dynamic
+   public function getValue(inValue:String) : Dynamic
    {
       return Reflect.field(storeData, inValue);
    }
 
 
 
-   public static function unsetValue()
+   public function unsetValue()
    {
       if (words.length!=1 || !(isIn(setNames,words[0]) || isIn(quickSetNames,words[0])) )
       {
@@ -1350,12 +1579,12 @@ class CommandLineTools
       }
    }
 
-   public static function rebuild(project:NMEProject)
+   public function rebuild(project:NMEProject)
    {
       new hxcpp.Builder(additionalArguments);
    }
 
-   public static function runNme(project:NMEProject)
+   public function runNme(project:NMEProject)
    {
       if (words.length!=1)
          Log.error("Expected nme file.nme [-args extra args]");
@@ -1369,21 +1598,8 @@ class CommandLineTools
       sys = new RealSys();
    }
 
-   public static function main():Void 
+   public function new(args:Array<String>)
    {
-      if(sys == null)
-          init();
-
-      nme = PathHelper.getHaxelib(new Haxelib("nme"));
-
-      #if neko
-      if (!Loader.foundNdll)
-      {
-         buildNdll();
-         return;
-      }
-      #end
-
       var project = new NMEProject( );
       project.localDefines.set("NME",nme);
 
@@ -1424,7 +1640,7 @@ class CommandLineTools
       }
 
 
-      processArguments(project);
+      processArguments(project,args);
 
       if (storeData.cppiaClassPath!=null && !project.hasDef("CPPIA_CLASSPATH") )
          project.localDefines.set("CPPIA_CLASSPATH", storeData.cppiaClassPath);
@@ -1499,6 +1715,7 @@ class CommandLineTools
             Sys.putEnv("HXCPP_NO_COLOUR","1");
             if (Sys.getEnv("NME_ALREADY_BUILDING")=="BUILDING")
                sys.println("...already building");
+
             else
                buildProject(project);
 
@@ -1510,7 +1727,7 @@ class CommandLineTools
              words.shift();
              android.runNdkStack(words);
 
-         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile", "prepare", "quickrun", "uploadcrashlytics":
+         case "clean", "update", "build", "run", "rerun", "install", "installer", "uninstall", "trace", "test", "tidy", "nocompile", "prepare", "vscode","quickrun", "uploadcrashlytics":
 
             if (words.length > 2) 
             {
@@ -1564,7 +1781,7 @@ class CommandLineTools
       return { protocol:protocol, name:name };
    }
 
-   public static function createIcon(project:NMEProject, inBanner:Bool, favIcon = false)
+   public function createIcon(project:NMEProject, inBanner:Bool, favIcon = false)
    {
       var width = 0;
       var height = 0;
@@ -1612,41 +1829,20 @@ class CommandLineTools
    }
    */
 
-
-   private static function processArguments(project:NMEProject):Void 
+   static function argToFull(localArg:String)
    {
-      var arguments = sys.args();
-
-      var lastCharacter = nme.substr( -1, 1);
-      if (lastCharacter == "/" || lastCharacter == "\\") 
-         nme = nme.substr(0, -1);
-
-      nmeVersion = getVersion();
-
-      // When the command-line tools are called from haxelib, 
-      // the last argument is the project directory and the
-      // path to NME is the current working directory 
-      var isHaxelib = #if neko true #else false #end;
-
-      if (isHaxelib && arguments.length > 0) 
+      if (PathHelper.isAbsolute(localArg) || !FileSystem.exists(localArg))
       {
-         var lastArgument = "";
-         for(i in 0...arguments.length) 
-         {
-            lastArgument = arguments.pop();
-            if (lastArgument.length > 0) break;
-         }
-
-         lastArgument = new Path(lastArgument).toString();
-         if (((StringTools.endsWith(lastArgument, "/") && lastArgument != "/") ||
-               StringTools.endsWith(lastArgument, "\\")) &&
-               !StringTools.endsWith(lastArgument, ":\\")) 
-            lastArgument = lastArgument.substr(0, lastArgument.length - 1);
-
-         if (FileSystem.exists(lastArgument) && FileSystem.isDirectory(lastArgument)) 
-            Sys.setCwd(lastArgument);
+         Log.verbose(' skip $localArg : ${PathHelper.isAbsolute(localArg)} ${FileSystem.exists(localArg)}');
+         return localArg;
       }
 
+      return FileSystem.fullPath(localArg);
+   }
+
+
+   private function processArguments(project:NMEProject, arguments:Array<String>):Void 
+   {
       project.localDefines.set("DOCS", Fs.getDocs());
       project.localDefines.set("DESKTOP", Fs.getDesktop());
 
@@ -1758,8 +1954,7 @@ class CommandLineTools
 
             else if (argument=="-ant" || argument=="-Dant")
             {
-               gradle = false;
-               project.haxedefs.remove("gradle");
+               throw "Ant builds are no longer supported";
             }
             else if (argument=="-q" || argument=="-quick")
             {
@@ -1841,6 +2036,11 @@ class CommandLineTools
                while(argIdx < arguments.length)
                    additionalArguments.push(arguments[argIdx++]);
             }
+            else if (argument == "-fargs")
+            {
+               while(argIdx < arguments.length)
+                   additionalArguments.push(argToFull(arguments[argIdx++]));
+            }
             else if (argument == "-notrace") 
                traceEnabled = false;
 
@@ -1916,6 +2116,62 @@ class CommandLineTools
       if(command == 'quickrun')
          project.skipAssets = true;
    }
+
+
+   public static function main()
+   {
+      if(sys == null)
+          init();
+
+
+      nme = PathHelper.getHaxelib(new Haxelib("nme"));
+      var lastCharacter = nme.substr( -1, 1);
+      if (lastCharacter == "/" || lastCharacter == "\\") 
+         nme = nme.substr(0, -1);
+
+      nmeVersion = getVersion();
+
+      // When the command-line tools are called from haxelib, 
+      // the last argument is the project directory and the
+      // path to NME is the current working directory 
+      var isHaxelib = #if neko true #else false #end;
+
+      var arguments = sys.args();
+
+      if (isHaxelib && arguments.length > 0) 
+      {
+         var lastArgument = "";
+         for(i in 0...arguments.length) 
+         {
+            lastArgument = arguments.pop();
+            if (lastArgument.length > 0) break;
+         }
+
+         lastArgument = new Path(lastArgument).toString();
+         if (((StringTools.endsWith(lastArgument, "/") && lastArgument != "/") ||
+               StringTools.endsWith(lastArgument, "\\")) &&
+               !StringTools.endsWith(lastArgument, ":\\")) 
+            lastArgument = lastArgument.substr(0, lastArgument.length - 1);
+
+         if (FileSystem.exists(lastArgument) && FileSystem.isDirectory(lastArgument)) 
+            Sys.setCwd(lastArgument);
+      }
+
+      #if neko
+      if (!Loader.foundNdll)
+      {
+         buildNdll();
+         return;
+      }
+      #end
+
+
+      var tool = new CommandLineTools(arguments);
+   }
+
+
+
+
 }
 
 
