@@ -443,6 +443,7 @@
         <compilerflag value="-DSDL_OGL" if="NME_OGL"/>
         <compilerflag value="-DNME_MIXER" if="NME_MIXER" />
         <compilerflag value="-DNME_SDL2" />
+        <depend name="${SRC_DIR}/sdl2/GameControllerDB.h" />
         <depend files="native-toolkit-sdl-depends" />
         <depend files="native-toolkit-sdl-mixer-depends" if="NME_MIXER"/>
       </section>
