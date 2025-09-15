@@ -1153,7 +1153,6 @@ class NMMLParser
                      if (element.has.deployment) 
                      {
                         var deployment = substitute(element.att.deployment);
-                        project.haxedefs.set("HXCPP_IOS_MIN_VERSION", deployment);
 
                         // If it is specified, assume the dev knows what he is doing!
                         project.iosConfig.deployment = deployment;

@@ -33,10 +33,19 @@ Sound *Sound::FromFile(const std::string &inFilename, bool inForceMusic, const s
 
    AudioFormat format = determineFormatFromFile(inFilename);
 
-   if (format==eAF_mp3 || (inForceMusic && format!=eAF_ogg && format!=eAF_mid ) || inEngine=="avplayer"  )
-      result = CreateAvPlayerSound(inFilename);
+   //LOG_SOUND("Format: %d/%d, fm=%d\n", (int)format, (int)eAF_ogg, inForceMusic);
+   if (format!=eAF_ogg && format!=eAF_mid)
+   {
+      result = CreateAvPlayerSound(inFilename, inForceMusic);
+   }
    else
+   {
+      #ifdef NME_OPENAL
       result = ReadAndCreate(inFilename, inForceMusic, CreateOpenAlSound);
+      #else
+      result = ReadAndCreate(inFilename, inForceMusic, CreateAvPlayerSound);
+      #endif
+   }
 
    #elif defined(EMSCRIPTEN)
       result = ReadAndCreate(inFilename, inForceMusic, CreateOpenAlSound);
@@ -76,18 +85,17 @@ Sound *Sound::FromEncodedBytes(const unsigned char *inData, int inLen, bool inFo
 
    #elif defined(IPHONE)
 
-   // AVPlayer must be used to play mp3 files
-   // OpenAl must be used to play ogg and mid
-
-   // OpenAl allows small files to be cached in buffers
-   // AVPlayer as better hardware pathways
-
-   AudioFormat format = determineFormatFromBytes(inData, inLen);
-
-   if (format==eAF_mp3 || (inForceMusic && format!=eAF_ogg && format!=eAF_mid ) )
-      result = CreateAvPlayerSound(inData,inLen);
-   else
-      result = CreateOpenAlSound(inData, inLen, inForceMusic);
+     #ifdef NME_OPENAL
+        // AVPlayer must be used to play mp3 files
+        AudioFormat format = determineFormatFromBytes(inData, inLen);
+        if (format==eAF_mp3 || (inForceMusic && format!=eAF_ogg && format!=eAF_mid ) )
+           result = CreateAvPlayerSound(inData,inLen,inForceMusic);
+        else
+           result = CreateOpenAlSound(inData, inLen, inForceMusic);
+     #else
+        // AVPlayer as better hardware pathways
+        result = CreateAvPlayerSound(inData, inLen, inForceMusic);
+     #endif
 
    #elif defined(EMSCRIPTEN)
       result = CreateOpenAlSound(inData, inLen, inForceMusic);
@@ -135,7 +143,11 @@ SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inData, const Sou
 
    #elif defined(IPHONE)
 
-   result = CreateOpenAlSyncChannel(inData, inTransform, inDataFormat, inIsStereo, inRate);
+      #ifdef NME_OPENAL
+       result = CreateOpenAlSyncChannel(inData, inTransform, inDataFormat, inIsStereo, inRate);
+      #else
+       result = CreateAvPlayerSyncChannel(inData, inTransform, inDataFormat, inIsStereo, inRate);
+      #endif
 
    #elif defined(EMSCRIPTEN)
 
@@ -212,6 +224,7 @@ void Sound::Suspend(unsigned int inFlags)
       #endif
    }
 }
+
 
 
 void Sound::Resume(unsigned int inFlags)

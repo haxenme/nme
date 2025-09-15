@@ -45,6 +45,7 @@ class IOSPlatform extends Platform
 
       project.haxeflags.push('-cpp $haxeDir/cpp');
       project.haxeflags.push("-D HXCPP_CPP11");
+      project.haxeflags.push("-D HXCPP_IOS_MIN_VERSION=" + project.iosConfig.deployment);
 
       var architectures = project.architectures;
       var config = project.iosConfig;
@@ -156,6 +157,7 @@ class IOSPlatform extends Platform
    {
       var config = project.iosConfig;
 
+
       context.HAS_ICON = false;
       context.HAS_LAUNCH_IMAGE = !useLaunchScreen;
       context.USE_LAUNCH_SCREEN = useLaunchScreen;
@@ -172,6 +174,9 @@ class IOSPlatform extends Platform
       context.NME_IOS_INCLUDE = 'haxe/cpp/include';
       if (project.hasDef("nme_metal"))
          context.NME_METAL = true;
+
+      var nmeExe = project.getDef("nmeExe");
+      context.NME_EXE = nmeExe==null ? "nme" : nmeExe;
 
       var col = project.window.background;
       if (project.watchProject!=null)
@@ -274,7 +279,7 @@ ${hxcpp_include}';
       }
       context.DEPLOYMENT = config.deployment;
       var deploy = Std.parseFloat( config.deployment );
-      for(i in 6...20)
+      for(i in 6...30)
          if (i>=deploy)
             Reflect.setField(context,"IOS_DEPLOYMENT_" + i,true);
 

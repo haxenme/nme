@@ -309,7 +309,7 @@
 /* Begin PBXLegacyTarget section */
 		1EF0A87F121AE1CE003F2F59 /* Build Haxe */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "run nme xcode ::PROJECT_FILE:: -v ios --xcodeconfig=$(CONFIGURATION) --xcodearch='$(ARCHS)'";
+			buildArgumentsString = "run ::NME_EXE:: xcode ::PROJECT_FILE:: -v ios --xcodeconfig=$(CONFIGURATION) --xcodearch='$(ARCHS)'";
 			buildConfigurationList = 1E2A794D24DE95EA0005015A /* Build configuration list for PBXLegacyTarget "Build Haxe" */;
 			buildPhases = (
 			);
@@ -499,7 +499,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "echo ::BUILD_TOOL_PATH:: run nme xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME; ::BUILD_TOOL_PATH:: run nme xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME";
+			shellScript = "echo ::BUILD_TOOL_PATH:: run ::NME_EXE:: xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME; ::BUILD_TOOL_PATH:: run ::NME_EXE:: xcode '::PROJECT_FILENAME::' -v $PLATFORM_NAME";
 		};
 /* End PBXShellScriptBuildPhase section */
 ::end::

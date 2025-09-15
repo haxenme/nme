@@ -134,7 +134,9 @@
       For ios/mac  use core audio + openal
       For android use java (todo - opensl?)
    -->
-   <set name="NME_OPENAL" value="1" if="iphone" unless="NME_NO_AUDIO" />
+
+   <!-- You can sef NME_OPENAL for iphone, but now it defaults to AvPlayer -->
+   <!--<set name="NME_OPENAL" value="1" if="iphone" unless="NME_NO_AUDIO" />-->
 
    <!-- Use to allow testing on mac... -->
    <set name="NME_OPENAL" value="1" if="macos" unless="NME_NO_AUDIO" />
@@ -255,6 +257,8 @@
       <depend name="${NMEP}/include/Utils.h" />
       <depend name="${NMEP}/include/Video.h" />
 
+      <depend name="${NMEP}/src/audio/Audio.h" />
+
       <depend name="${NMEP}/src/software-renderer/BitmapFill.h" />
       <depend name="${NMEP}/src/software-renderer/AlphaMask.h" />
       <depend name="${NMEP}/src/software-renderer/Render.h" />
@@ -303,6 +307,7 @@
       <compilerflag value="-I${ANGLE_DIR}/include" if="NME_ANGLE" />
       <compilerflag value="-DNME_GFX_DEBUG" if="NME_GFX_DEBUG" />
       <compilerflag value="-DNME_NO_GLGETERROR" if="emscripten" unless="NME_GFX_DEBUG" />
+      <compilerflag value="-DNME_OPENAL" if="NME_OPENAL" unless="NME_NO_AUDIO" />
 
       <cache value="1" unless="winrpi" />
       <cache value="1" asLibrary="true" if="winrpi NME_STATIC_LINK" />
@@ -348,6 +353,7 @@
          <file name="${SRC_DIR}/iPhone/System.mm"/>
          <file name="${SRC_DIR}/apple/Utils.mm"/>
          <file name="${SRC_DIR}/cocoa/FileManager.mm"/>
+         <!--<file name="${SRC_DIR}/audio/AvAudio.mm" unless="NME_NO_AUDIO" />-->
          <file name="${SRC_DIR}/audio/IosSound.mm" unless="NME_NO_AUDIO"/>
       </section>
 
@@ -461,7 +467,6 @@
 
       <section if="NME_OPENAL" >
          <file name="${SRC_DIR}/audio/OpenALSound.cpp" unless="NME_NO_AUDIO" />
-         <compilerflag value="-DNME_OPENAL" />
       </section>
 
 

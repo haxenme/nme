@@ -43,8 +43,10 @@ void ResumeSdlSound();
 void avSuspendAudio();
 void avResumeAudio();
 
-Sound *CreateAvPlayerSound(const unsigned char *inData, int len);
-Sound *CreateAvPlayerSound(const std::string &inFilename);
+Sound *CreateAvPlayerSound(const unsigned char *inData, int len, bool forceMusic);
+Sound *CreateAvPlayerSound(const std::string &inFilename, bool forceMusic);
+SoundChannel *CreateAvPlayerDynamiveChannel(const SoundTransform &inTransform,
+              SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
 
 Sound *CreateOpenAlSound(const unsigned char *inData, int len, bool inForceMusic);
 SoundChannel *CreateOpenAlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
@@ -57,7 +59,8 @@ void PingOpenAl();
 Sound *CreateOpenSlSound(const unsigned char *inData, int len, bool inForceMusic);
 SoundChannel *CreateOpenSlSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
               SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
-
+SoundChannel *CreateAvPlayerSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
+              SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
 
 
 class INmeSoundData;
@@ -65,8 +68,9 @@ class INmeSoundStream;
 
 enum
 {
-   SoundForceDecode = 0x0001,
-   SoundJustInfo    = 0x0002,
+   SoundForceDecode  = 0x0001,
+   SoundJustInfo     = 0x0002,
+   SoundAddWavHeader = 0x0004,
 };
 
 
@@ -104,14 +108,19 @@ public:
    virtual int    getRate() const = 0;
    virtual bool   getIsDecoded() const = 0;
    virtual short  *decodeAll() = 0;
+   virtual unsigned char *decodeWithHeader() = 0;
    virtual int    getDecodedByteCount() const = 0;
    virtual INmeSoundStream *createStream()=0;
 
    virtual bool isValid() const { return getChannelSampleCount(); }
+   inline void IncRef() { addRef(); }
+   inline void DecRef() { release(); }
 protected:
    // Call "release"
    ~INmeSoundData() { }
 };
+
+typedef ::nme::ObjectPtr<INmeSoundData> INmeSoundDataPtr;
 
 
 

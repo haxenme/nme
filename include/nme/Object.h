@@ -100,6 +100,59 @@ public:
    int mRefCount;
 };
 
+template<typename OBJ>
+class ObjectPtr
+{
+   OBJ *ptr;
+
+public:
+   ObjectPtr(OBJ *inPtr=nullptr) : ptr(inPtr) { if (inPtr) inPtr->IncRef(); }
+
+   // Copy constructor
+   ObjectPtr(const ObjectPtr& other) : ptr(other.ptr) { if (ptr) ptr->IncRef(); }
+   /// Move assignment
+   ObjectPtr& operator=(ObjectPtr&& other) noexcept
+   {
+      if (this != &other)
+      {
+          if (ptr) ptr->DecRef();
+          ptr = other.ptr;
+          other.ptr = nullptr;
+      }
+      return *this;
+   }
+
+   ObjectPtr(ObjectPtr&& other) noexcept : ptr(other.ptr) { other.ptr = nullptr; }
+
+   ~ObjectPtr() { if (ptr) ptr->DecRef(); }
+
+    // Copy assignment
+    ObjectPtr& operator=(const ObjectPtr& other)
+    {
+        if (this != &other) {
+           if (other.ptr) other.ptr->IncRef();
+           if (ptr) ptr->DecRef();
+           ptr = other.ptr;
+        }
+        return *this;
+    }
+
+    OBJ& operator*() const { return *ptr; }
+    OBJ* operator->() const { return ptr; }
+    OBJ* get() const { return ptr; }
+
+    // Reset pointer
+    void reset(OBJ* p = nullptr) {
+       if (p) p->IncRef();
+       if (ptr) ptr->DecRef();
+       ptr = p;
+    }
+
+    // Check if pointer is valid
+    explicit operator bool() const { return ptr != nullptr; }
+
+};
+
 class ApiObject : public Object
 {
 public:

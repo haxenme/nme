@@ -13,6 +13,7 @@
 //The audio interface is to embed functions which are to be implemented in 
 //the platform specific layers. 
 
+#define WAV_HEADER_SIZE 44
 
 namespace
 {
@@ -177,6 +178,8 @@ bool parseWav(const unsigned char *inData, int len,
    //Now we set the variables that we passed in with the
    //data from the structs
    *outSampleRate = (int)wave_format.sampleRate;
+
+   LOG_SOUND(" parsed byte rate %d\n", wave_format.byteRate);
    
    //The format is worked out by looking at the number of
    //channels and the bits per sample.
@@ -512,6 +515,7 @@ public:
    bool   isDecoded;
    int    channelSampleCount;
    QuickVec<short> decodedBuffer;
+   QuickVec<unsigned char> wavOutBuffer;
    QuickVec<unsigned char> sourceBuffer;
    AudioFormat fileFormat;
 
@@ -588,7 +592,13 @@ public:
 
          if (!(flags & SoundJustInfo))
          {
-            if (bitsPerSample==16)
+            if (flags & SoundAddWavHeader)
+            {
+               isDecoded = true;
+               wavOutBuffer.Set(inData, inDataLength);
+               return;
+            }
+            else if (bitsPerSample==16)
             {
                decodedBuffer.Set( (short *)rawData, rawLength/sizeof(short) );
             }
@@ -650,9 +660,24 @@ public:
             if (duration<=2.0 || (inFlags & SoundForceDecode) )
             {
                isDecoded = true;
-               decodedBuffer.resize((int)channelSampleCount * (isStereo?2:1) );
-               char *buffer = (char *)decodedBuffer.ByteData();
-               int remaining = decodedBuffer.ByteCount();
+               char *buffer = nullptr;
+               int remaining = 0;
+ 
+               if (inFlags & SoundAddWavHeader)
+               {
+                  wavOutBuffer.resize( WAV_HEADER_SIZE + (int)channelSampleCount * (isStereo?2:1) * 2 );
+
+                  buffer = (char *)wavOutBuffer.ByteData() + WAV_HEADER_SIZE;
+                  remaining = wavOutBuffer.ByteCount() - WAV_HEADER_SIZE;
+               }
+               else
+               {
+                  decodedBuffer.resize((int)channelSampleCount * (isStereo?2:1) );
+
+                  buffer = (char *)decodedBuffer.ByteData();
+                  remaining = decodedBuffer.ByteCount();
+               }
+
                int bitStream = 0;
                while(remaining>0)
                {
@@ -660,12 +685,17 @@ public:
                   if (bytes<=0)
                   {
                      // Stopping early might be ok, since timing might not be 100 % accurate
-                     decodedBuffer.resize( decodedBuffer.size() - remaining/sizeof(short) );
+                     if (inFlags & SoundAddWavHeader)
+                        wavOutBuffer.resize( wavOutBuffer.size() - remaining );
+                     else
+                        decodedBuffer.resize( decodedBuffer.size() - remaining/sizeof(short) );
                      break;
                   }
                   remaining -= bytes;
                   buffer += bytes;
                }
+               if (inFlags & SoundAddWavHeader)
+                  fillWavHeader();
             }
             else
             {
@@ -701,9 +731,25 @@ public:
                   if (duration<=2.0 || (inFlags & SoundForceDecode) )
                   {
                      isDecoded = true;
-                     decodedBuffer.resize((int)samples * (isStereo?2:1) );
-                     char *buffer = (char *)decodedBuffer.ByteData();
-                     int remaining = decodedBuffer.ByteCount();
+
+                     char *buffer = nullptr;
+                     int remaining = 0;
+    
+                     if (inFlags & SoundAddWavHeader)
+                     {
+                        wavOutBuffer.resize( WAV_HEADER_SIZE + (int)channelSampleCount * (isStereo?2:1) * 2 );
+
+                        buffer = (char *)wavOutBuffer.ByteData() + WAV_HEADER_SIZE;
+                        remaining = wavOutBuffer.ByteCount() - WAV_HEADER_SIZE;
+                     }
+                     else
+                     {
+                        decodedBuffer.resize((int)channelSampleCount * (isStereo?2:1) );
+
+                        buffer = (char *)decodedBuffer.ByteData();
+                        remaining = decodedBuffer.ByteCount();
+                     }
+
                      int bitStream = 0;
                      while(remaining>0)
                      {
@@ -719,6 +765,8 @@ public:
                         remaining -= bytes;
                         buffer += bytes;
                      }
+                     if (inFlags & SoundAddWavHeader)
+                        fillWavHeader();
                   }
                   else
                   {
@@ -743,6 +791,62 @@ public:
    int    getRate() const { return rate; }
    bool   getIsDecoded() const { return isDecoded; }
 
+   void fillWavHeader()
+   {
+      unsigned char *header = &wavOutBuffer[0];
+
+      uint32_t totalFileSizeMinus8 = wavOutBuffer.size()-8;
+
+      memcpy(header,"RIFF",4); header += 4;
+      *(int *)header = totalFileSizeMinus8; header += 4;
+
+      memcpy(header,"WAVE",4); header+=4;
+
+      int channelCount  = isStereo ? 2 : 1;
+
+
+      unsigned int byteRate = rate*channelCount*2;
+
+      // fmt Chunk (20 bytes)
+      memcpy(header,"fmt ",4); header+=4;
+      *(int *)header = 16; header += 4; // fmt chunk size (16)
+      *(short *)header = 1; header += 2; // Format = PCM (1)
+      *(short *)header = channelCount; header += 2;
+      *(int *)header = rate; header += 4;
+      *(int *)header = byteRate; header += 4; // byte rate
+      *(short *)header = channelCount*2; header += 2; // sample block
+      *(short *)header = 16; header += 2; // 16 bites per sample
+
+      memcpy(header,"data",4); header+=4;
+      *(int *)header = channelSampleCount*channelCount*2; header+=4; // Audio data
+
+   }
+
+   unsigned char *decodeWithHeader()
+   {
+     if (!isDecoded && sourceBuffer.size())
+         parseOgg(sourceBuffer.ByteData(), sourceBuffer.ByteCount(), SoundForceDecode);
+
+      if (!isDecoded || !channelSampleCount)
+         return 0;
+
+
+      LOG_SOUND("Filled sound = check...\n");
+      int channels = 0;
+      int bps = 0;
+      int sr = 0;
+      const unsigned char *p = nullptr;
+      int dlen = 0;
+
+      bool rep = parseWav(wavOutBuffer.mPtr, wavOutBuffer.size(),
+                    &channels, &bps, &sr, 
+                    p, dlen);
+      LOG_SOUND("Reparsed :  %d: %d %d %d x %d / %d\n", rep, channels, bps, sr, dlen, wavOutBuffer.size());
+
+
+      return wavOutBuffer.mPtr;
+   }
+
    short *decodeAll()
    {
       if (!isDecoded && sourceBuffer.size())
@@ -756,6 +860,8 @@ public:
 
    int getDecodedByteCount() const
    {
+      if (wavOutBuffer.ByteCount()>0)
+         return wavOutBuffer.ByteCount();
       return decodedBuffer.ByteCount();
    }
 
