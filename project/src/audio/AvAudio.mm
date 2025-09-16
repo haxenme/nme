@@ -232,6 +232,11 @@ public:
       delegate = nil;
    }
 
+   unsigned char *decodeWithHeader()
+   {
+      throw std::runtime_error("not implemented");
+   }
+
    virtual INmeSoundData  *addRef() { refCount++; return this; }
    virtual void   release() { refCount--; if (refCount<=0) delete this; }
 

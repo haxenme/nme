@@ -110,19 +110,6 @@ public:
 
    // Copy constructor
    ObjectPtr(const ObjectPtr& other) : ptr(other.ptr) { if (ptr) ptr->IncRef(); }
-   /// Move assignment
-   ObjectPtr& operator=(ObjectPtr&& other) noexcept
-   {
-      if (this != &other)
-      {
-          if (ptr) ptr->DecRef();
-          ptr = other.ptr;
-          other.ptr = nullptr;
-      }
-      return *this;
-   }
-
-   ObjectPtr(ObjectPtr&& other) noexcept : ptr(other.ptr) { other.ptr = nullptr; }
 
    ~ObjectPtr() { if (ptr) ptr->DecRef(); }
 
@@ -149,7 +136,7 @@ public:
     }
 
     // Check if pointer is valid
-    explicit operator bool() const { return ptr != nullptr; }
+    operator bool() const { return ptr != nullptr; }
 
 };
 

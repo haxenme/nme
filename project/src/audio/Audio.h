@@ -117,7 +117,7 @@ public:
    inline void DecRef() { release(); }
 protected:
    // Call "release"
-   ~INmeSoundData() { }
+   virtual ~INmeSoundData() { }
 };
 
 typedef ::nme::ObjectPtr<INmeSoundData> INmeSoundDataPtr;
