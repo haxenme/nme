@@ -6,29 +6,52 @@ buildscript {
         google()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:3.6.4"
+        classpath "com.android.tools.build:gradle:8.6.0"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
 
-        ::if NME_FIREBASE::
-          classpath 'com.google.gms:google-services:4.3.8'
-          ::if NME_FIREBASE_PERFORMANCE::
-           // Add the dependency for the Performance Monitoring plugin
-           classpath 'com.google.firebase:perf-plugin:1.4.0'  // Performance Monitoring plugin
-          ::end::
+        // ::if NME_FIREBASE::
+        //   classpath 'com.google.gms:google-services:4.4.2'
+        //   ::if NME_FIREBASE_PERFORMANCE::
+        //    // Add the dependency for the Performance Monitoring plugin
+        //    classpath 'com.google.firebase:perf-plugin:1.4.0'  // Performance Monitoring plugin
+        //   ::end::
 
-          ::if NME_FIREBASE_CRASHLYTICS::
-          classpath 'com.google.firebase:firebase-crashlytics-gradle:2.7.0'
-          ::end::
-        ::end::
+        //   ::if NME_FIREBASE_CRASHLYTICS::
+        //   classpath 'com.google.firebase:firebase-crashlytics-gradle:2.7.0'
+        //   ::end::
+        // ::end::
     }
 }
 
+plugins {
+    // Make sure that you have the AGP plugin 8.1+ dependency
+    id 'com.android.application' version '8.2.0' apply false
+    // ...
+    ::if NME_FIREBASE::
+      // Make sure that you have the Google services Gradle plugin 4.4.1+ dependency
+      id 'com.google.gms.google-services' version '4.4.2' apply false
+      ::if NME_FIREBASE_PERFORMANCE::
+      // Add the dependency for the Performance Monitoring Gradle plugin
+      id 'com.google.firebase.firebase-perf' version '1.4.2' apply false
+      ::end::
+
+    
+      ::if NME_FIREBASE_CRASHLYTICS::
+      // Add the dependency for the Crashlytics Gradle plugin
+      id 'com.google.firebase.crashlytics' version '3.0.2' apply false
+      ::end::
+    ::end::
+}
+
+
 allprojects {
     repositories {
+      mavenCentral()
         jcenter()
         google()
+        gradlePluginPortal()
     }
 
    //gradle.projectsEvaluated {

@@ -1,25 +1,37 @@
-apply plugin: 'com.android.application'
-::if NME_FIREBASE::
-apply plugin: 'com.google.gms.google-services'
+plugins {
+   id 'com.android.application'
 
-::if NME_FIREBASE_CRASHLYTICS::
-// Apply the Crashlytics Gradle plugin
-apply plugin: 'com.google.firebase.crashlytics'
-::end::
+  
+  
+  ::if NME_FIREBASE::
+  // Make sure that you have the Google services Gradle plugin
+  id 'com.google.gms.google-services'
+     ::if NME_FIREBASE_PERFORMANCE::
+     // Add the Performance Monitoring Gradle plugin
+    id 'com.google.firebase.firebase-perf'
+     ::end::
+    ::if NME_FIREBASE_CRASHLYTICS::
+    // Add the Crashlytics Gradle plugin
+    id 'com.google.firebase.crashlytics'
+    ::end::
 
-::end::
+  ::end::
+
+}
+// apply plugin: 'com.android.application'
 
 
 android {
+    namespace '::NAMESPACE::'
     ::if ANDROID_COMPILE_SDK_VERSION::
     compileSdkVersion ::ANDROID_COMPILE_SDK_VERSION::
     ::else::
     // This does not effect the output, only the gradle system and some warnings,
     //  so can be regularly updated
-    compileSdkVersion 28
+    compileSdkVersion 34
     ::end::
 
-    buildToolsVersion "28.0.3"
+    buildToolsVersion "33.0.1"
     defaultConfig {
         applicationId "::APP_PACKAGE::"
         minSdkVersion ::ANDROID_MIN_API_LEVEL::
@@ -61,8 +73,11 @@ android {
                 // stack traces in the Crashlytics dashboard.
                 nativeSymbolUploadEnabled true
 
-                strippedNativeLibsDir "::NME_STRIPPED_ROOT::"
-                unstrippedNativeLibsDir "::NME_UNSTRIPPED_ROOT::"
+                // strippedNativeLibsDir "::NME_STRIPPED_ROOT::"
+                // unstrippedNativeLibsDir "::NME_UNSTRIPPED_ROOT::"
+                // strippedNativeLibsDir "build/intermediates/stripped_native_libs/release/out/lib"
+                // unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/release/out/lib'
+
             }
             ::end::
         }
@@ -99,7 +114,7 @@ dependencies {
     // Support is in 'androidx.core' now
     ::if ANDROID_BILLING::
     // api 'com.android.billingclient:billing:2.1.0'
-    api "com.android.billingclient:billing:4.0.0"
+    api "com.android.billingclient:billing:7.0.0"
     ::end::
     testImplementation 'junit:junit:4.12'
 
@@ -109,7 +124,7 @@ dependencies {
 
     ::if NME_FIREBASE::
       // Add the dependency for the Performance Monitoring library
-      implementation platform('com.google.firebase:firebase-bom')
+      implementation platform('com.google.firebase:firebase-bom:33.3.0')
       implementation 'com.google.firebase:firebase-analytics'
 
       ::if NME_FIREBASE_PERFORMANCE::
@@ -124,7 +139,7 @@ dependencies {
         //implementation 'com.google.firebase:firebase-inappmessaging'
         //implementation 'com.google.firebase:firebase-inappmessaging-display'
         //implementation 'com.google.firebase:firebase-messaging'
-        implementation 'com.google.firebase:firebase-iid'
+        // implementation 'com.google.firebase:firebase-iid'
         // implementation 'com.google.firebase:firebase-messaging:17.3.4'
         // implementation 'com.google.firebase:firebase-core:16.0.4'
         //implementation 'com.google.firebase:firebase-config'

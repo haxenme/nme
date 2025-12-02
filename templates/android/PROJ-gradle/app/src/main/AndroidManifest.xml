@@ -20,9 +20,11 @@
        ::if (HAS_ICON):: android:icon="@drawable/icon"::end::
        ::if (HAS_BANNER):: android:banner="@drawable/banner"::end::
        ::foreach appHeader:: ::__current__:: ::end::
+
    >
 
       <activity
+        android:exported="true"
         android:name="MainActivity"
         android:label="::APP_TITLE::"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize"::if (WIN_ORIENTATION!=""):: android:screenOrientation="::WIN_ORIENTATION::"::end::

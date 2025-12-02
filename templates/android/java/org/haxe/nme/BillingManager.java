@@ -24,18 +24,25 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.android.billingclient.api.BillingClient.FeatureType;
-import com.android.billingclient.api.BillingClient.SkuType;
+import com.android.billingclient.api.BillingClient.ProductType;
+import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams;
+//import com.android.billingclient.api.BillingClient.SkuType;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.Purchase.PurchaseState;
-import com.android.billingclient.api.Purchase.PurchasesResult;
+import com.android.billingclient.api.ProductDetailsResponseListener;
+import com.android.billingclient.api.PurchasesResponseListener;
+//import com.android.billingclient.api.Purchase.PurchasesResult;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.QueryPurchasesParams;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsParams.Product;
+//import com.android.billingclient.api.SkuDetailsParams;
+//import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import java.io.IOException;
@@ -51,8 +58,7 @@ import org.json.JSONException;
 
 import android.text.TextUtils;
 import android.util.Base64;
-// import com.android.billingclient.util.BillingHelper;
-import android.util.Log;
+//import com.android.billingclient.util.BillingHelper;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -83,7 +89,7 @@ public class BillingManager implements PurchasesUpdatedListener {
     /**
      * True if billing service is connected now.
      */
-    private boolean mIsServiceConnected;
+    private boolean mIsServiceConnected = false;
 
     private final HaxeObject mBillingUpdatesListener;
 
@@ -121,44 +127,109 @@ public class BillingManager implements PurchasesUpdatedListener {
         // once setup completes.
         // It also starts to report all the new purchases through onPurchasesUpdated() callback.
         startServiceConnection(new Runnable() {
-            @Override
-            public void run() {
-
-                Purchase.PurchasesResult resSubs = mBillingClient.queryPurchases(SkuType.SUBS);
-                Purchase.PurchasesResult resInApp = mBillingClient.queryPurchases(SkuType.INAPP);
-
-                String purchases = "";
-                //if (resSubs.getResponseCode()==0 || resInApp.getResponseCode()==0)
-                {
-                   try
-                   {
-                      JSONArray array = new JSONArray();
-                      for(Purchase purchase : resSubs.getPurchasesList())
-                          handlePurchase(purchase,array);
-                      for(Purchase purchase : resInApp.getPurchasesList())
-                          handlePurchase(purchase,array);
-                      purchases = array.toString();
-                   }
-                   catch (JSONException e)
-                   {
-                      Log.e(TAG, "Error in handling purchase");
-                      Log.e(TAG, GameActivity.getStackTrace(e));
-                   }
-                }
-                final String purchaseCap = purchases;
-
-                GameActivity.sendHaxe( new Runnable() {
+            @Override public void run() {
+               Log.d(TAG, "Billing client - started");
+               GameActivity.sendHaxe( new Runnable() {
                    @Override
                    public void run() {
                    // Notifying the listener that billing client is ready
                    mBillingUpdatesListener.call0("onBillingClientSetupFinished");
-                   if (purchaseCap!="")
-                      mBillingUpdatesListener.call2("onPurchasesUpdated", 0, purchaseCap);
+                   //if (purchaseCap!="")
+                   //   mBillingUpdatesListener.call2("onPurchasesUpdated", 0, purchaseCap);
                  } } );
-                // IAB is fully set up. Now, let's get an inventory of stuff we own.
-                //  - need an explicit billingQuery now
-            }
-        });
+ 
+             } } );
+
+    }
+
+
+    public static JSONObject getProductJson(ProductDetails sku) throws JSONException
+    {
+       JSONObject obj= new JSONObject();
+       obj.put("description", sku.getDescription() );
+       obj.put("sku", sku.getProductId() );
+       obj.put("title", sku.getTitle() );
+       obj.put("type", sku.getProductType() );
+       if (sku.getProductType().equals(ProductType.INAPP))
+       {
+          ProductDetails.OneTimePurchaseOfferDetails  d = sku.getOneTimePurchaseOfferDetails();
+          obj.put("price", d.getFormattedPrice() );
+          obj.put("priceAmountMicros", d.getPriceAmountMicros() );
+          obj.put("priceCurrencyCode", d.getPriceCurrencyCode() );
+       }
+       obj.put("name", sku.getName() );
+
+/*
+       obj.put("freeTrialPeriod", sku.getFreeTrialPeriod() );
+       obj.put("introductoryPrice", sku.getIntroductoryPrice() );
+       obj.put("introductoryPriceAmountMicros", sku.getIntroductoryPriceAmountMicros() );
+       obj.put("introductoryPriceCycles", sku.getIntroductoryPriceCycles() );
+       obj.put("introductoryPricePeriod", sku.getIntroductoryPricePeriod() );
+       obj.put("subscriptionPeriod", sku.getSubscriptionPeriod() );
+*/
+       return obj;
+    }
+
+    public void queryProductsAsync(final String type, String [] products, final HaxeObject onResult)
+    {
+       Log.d(TAG, "Billing client - queryProductsAsync " + products.length);
+       List<Product> plist = new ArrayList<Product>();
+
+       for(String p : products)
+       {
+           //Log.d(TAG, "Billing type " + type + "/" + ProductType.SUBS + "/" + ProductType.INAPP);
+           plist.add(Product.newBuilder().setProductId(p).setProductType(type).build());
+       }
+
+       final QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+          .setProductList(plist).build();
+
+       final QueryPurchasesParams queryPurchasesParams = QueryPurchasesParams.newBuilder().setProductType(type).build();
+ 
+       final BillingManager man = this;
+
+       startServiceConnection(new Runnable() {
+            @Override public void run() {
+
+            mBillingClient.queryProductDetailsAsync( params,
+                new ProductDetailsResponseListener() {
+                    public void onProductDetailsResponse(BillingResult billingResult,
+                        List<ProductDetails> productDetailsList) {
+
+                         //Log.e(TAG, "onProductDetailsResponse");
+                         int responseCode = billingResult.getResponseCode();
+                         String result = "";
+                         try {
+                            JSONArray array= new JSONArray();
+                            for(ProductDetails sku : productDetailsList)
+                            {
+                               JSONObject obj = getProductJson(sku);
+                               array.put(obj);
+                            }
+                            result = array.toString();
+                            //Log.e(TAG, " result=" + result );
+
+                         } catch (JSONException e) {
+                            Log.e(TAG, GameActivity.getStackTrace(e));
+                            responseCode = -1;
+                         }
+
+                         final int code = responseCode;
+                         final String skus = result;
+                         GameActivity.queueRunnable( new Runnable() {
+                           @Override public void run() {
+                               onResult.call2("onSkuDetails", code, skus);
+                           } } );
+              } } );
+
+           mBillingClient.queryPurchasesAsync(queryPurchasesParams,
+              new PurchasesResponseListener() {
+                 public void onQueryPurchasesResponse( BillingResult billingResult, List<Purchase> purchases) {
+                   man.onPurchasesUpdated(billingResult, purchases);
+
+            } } );
+
+        } } );
     }
 
 
@@ -169,6 +240,7 @@ public class BillingManager implements PurchasesUpdatedListener {
     public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases)
     {
        int resultCode = billingResult.getResponseCode();
+       //Log.w(TAG,"onPurchasesUpdated:" + resultCode);
 
        String result = "";
        try
@@ -207,39 +279,47 @@ public class BillingManager implements PurchasesUpdatedListener {
     /**
      * Start a purchase or subscription replace flow
      */
-    public void initiatePurchaseFlow(final String skuId, final String billingType)
+    public void initiatePurchaseFlow(final String productId, final String billingType)
     {
        Runnable queryRequest = new Runnable() {
             @Override
             public void run() {
                 // Query the purchase async
-                SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-                params.setSkusList( Arrays.asList(skuId) ).setType(billingType);
-                // Find SkuDetails for sku ...
-                mBillingClient.querySkuDetailsAsync(params.build(),
-                        new SkuDetailsResponseListener() {
-                            @Override
-                            public void onSkuDetailsResponse(BillingResult result,
-                                                             List<SkuDetails> skuDetailsList) {
+                //SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+                //params.setSkusList( Arrays.asList(skuId) ).setType(billingType);
+                //mBillingClient.querySkuDetailsAsync(params.build(),
 
-                                if (result.getResponseCode()!=BillingResponseCode.OK)
+                Product p = Product.newBuilder().setProductId(productId).setProductType(billingType).build();
+                final QueryProductDetailsParams prodParams = QueryProductDetailsParams.newBuilder()
+                      .setProductList( Arrays.asList(p)).build();
+
+                mBillingClient.queryProductDetailsAsync(prodParams,
+                        new ProductDetailsResponseListener() {
+                             public void onProductDetailsResponse(BillingResult billingResult,
+                                 final List<ProductDetails> productDetailsList) {
+
+                                if (billingResult.getResponseCode()!=BillingResponseCode.OK)
                                 {
-                                   failedPurchase(skuId, result.getResponseCode());
+                                   failedPurchase(productId, billingResult.getResponseCode());
                                 }
                                 else
                                 {
-                                   if (skuDetailsList.size()!=1)
+                                   if (productDetailsList.size()!=1)
                                    {
-                                      failedPurchase(skuId, -100 - skuDetailsList.size());
+                                      failedPurchase(productId, -100 - productDetailsList.size());
                                    }
                                    else
                                    {
                                       // Now launch
-                                      final SkuDetails skuDetails = skuDetailsList.get(0);
+
+                                      final ProductDetails productDetails = productDetailsList.get(0);
+                                      final ProductDetailsParams productDetailsParams
+                                         = ProductDetailsParams.newBuilder().setProductDetails(productDetails).build();
                                       Runnable purchaseFlowRequest = new Runnable() {
                                           @Override public void run() {
+
                                               BillingFlowParams purchaseParams = BillingFlowParams.newBuilder()
-                                                   .setSkuDetails(skuDetails).build();
+                                                   .setProductDetailsParamsList( Arrays.asList(productDetailsParams) ).build();
                                               mBillingClient.launchBillingFlow(mActivity, purchaseParams);
                                           }
                                       };
@@ -271,30 +351,6 @@ public class BillingManager implements PurchasesUpdatedListener {
         }
     }
 
-    public void querySkuDetailsAsync(@SkuType final String itemType, final List<String> skuList,
-                                     final SkuDetailsResponseListener listener)
-    {
-
-        // Creating a runnable from the request to use it inside our connection retry policy below
-        Runnable queryRequest = new Runnable() {
-            @Override
-            public void run() {
-                // Query the purchase async
-                SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-                params.setSkusList(skuList).setType(itemType);
-                mBillingClient.querySkuDetailsAsync(params.build(),
-                        new SkuDetailsResponseListener() {
-                            @Override
-                            public void onSkuDetailsResponse(BillingResult responseCode,
-                                                             List<SkuDetails> skuDetailsList) {
-                                listener.onSkuDetailsResponse(responseCode, skuDetailsList);
-                            }
-                        });
-            }
-        };
-
-        executeServiceRequest(queryRequest);
-    }
 
     public void consumeAsync(final String purchaseToken) {
         // If we've already scheduled to consume this token - no action is needed (this could happen
@@ -355,20 +411,24 @@ public class BillingManager implements PurchasesUpdatedListener {
     {
        boolean valid = verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature());
 
-       JSONObject obj= new JSONObject();
-       obj.put("sku", purchase.getSkus().get(0) );
-       obj.put("valid", valid );
-       obj.put("purchaseToken", purchase.getPurchaseToken() );
-       obj.put("orderId", purchase.getOrderId() );
-       obj.put("packageName", purchase.getPackageName() );
-       // 0=unknown, 1=purchased, 2=pending
-       obj.put("purchaseState", purchase.getPurchaseState() );
-       obj.put("purchaseTime", purchase.getPurchaseTime() );
-       obj.put("signature", purchase.getSignature() );
-       obj.put("isAcknowledged", purchase.isAcknowledged() );
-       obj.put("isAutoRenewing", purchase.isAutoRenewing() );
-      
-       outList.put(obj);
+       Log.w(TAG, "handlePurchase " + purchase.getProducts() );
+       for(String sku : purchase.getProducts() )
+       {
+          JSONObject obj= new JSONObject();
+          obj.put("sku", sku);
+          obj.put("valid", valid );
+          obj.put("purchaseToken", purchase.getPurchaseToken() );
+          obj.put("orderId", purchase.getOrderId() );
+          obj.put("packageName", purchase.getPackageName() );
+          // 0=unknown, 1=purchased, 2=pending
+          obj.put("purchaseState", purchase.getPurchaseState() );
+          obj.put("purchaseTime", purchase.getPurchaseTime() );
+          obj.put("signature", purchase.getSignature() );
+          obj.put("isAcknowledged", purchase.isAcknowledged() );
+          obj.put("isAutoRenewing", purchase.isAutoRenewing() );
+
+          outList.put(obj);
+       }
     }
 
 
@@ -392,16 +452,21 @@ public class BillingManager implements PurchasesUpdatedListener {
     }
 
     public void startServiceConnection(final Runnable executeOnSuccess) {
+        //Log.e(TAG,"startConnection ...");
         mBillingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(BillingResult billingResult) {
 
                 int billingResponseCode = billingResult.getResponseCode();
+                //Log.w(TAG, "onBillingSetupFinished " + billingResponseCode);
                 if (billingResponseCode == BillingResponseCode.OK) {
                     mIsServiceConnected = true;
                     if (executeOnSuccess != null) {
                         executeOnSuccess.run();
                     }
+                }
+                else  {
+                   Log.w(TAG, "onBillingSetup could not setup billing" + billingResponseCode);
                 }
                 mBillingClientResponseCode = billingResponseCode;
 
@@ -409,6 +474,7 @@ public class BillingManager implements PurchasesUpdatedListener {
 
             @Override
             public void onBillingServiceDisconnected() {
+                Log.w(TAG, "onBillingServiceDisconnected");
                 mIsServiceConnected = false;
             }
         });
@@ -456,13 +522,13 @@ public class BillingManager implements PurchasesUpdatedListener {
     public static boolean verifyPurchaseInsecure(String base64PublicKey, String signedData,
             String signature) throws IOException {
         
+        /*
         if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey)
                 || TextUtils.isEmpty(signature)) {
-            // BillingHelper.logWarn(TAG, "Purchase verification failed: missing data.");
-            Log.w(TAG,"Purchase verification failed: missing data.");
+            BillingHelper.logWarn(TAG, "Purchase verification failed: missing data.");
             return false;
         }
-
+        */
         PublicKey key = generatePublicKey(base64PublicKey);
         return verify(key, signedData, signature);
     }
@@ -484,8 +550,7 @@ public class BillingManager implements PurchasesUpdatedListener {
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
             String msg = "Invalid key specification: " + e;
-            // BillingHelper.logWarn(TAG, msg);
-            Log.w(TAG, msg);
+            //BillingHelper.logWarn(TAG, msg);
             throw new IOException(msg);
         }
     }
@@ -504,8 +569,7 @@ public class BillingManager implements PurchasesUpdatedListener {
         try {
             signatureBytes = Base64.decode(signature, Base64.DEFAULT);
         } catch (IllegalArgumentException e) {
-            // BillingHelper.logWarn(TAG, "Base64 decoding failed.");
-            Log.w(TAG, "Base64 decoding failed.");
+            //BillingHelper.logWarn(TAG, "Base64 decoding failed.");
             return false;
         }
         try {
@@ -513,8 +577,7 @@ public class BillingManager implements PurchasesUpdatedListener {
             signatureAlgorithm.initVerify(publicKey);
             signatureAlgorithm.update(signedData.getBytes());
             if (!signatureAlgorithm.verify(signatureBytes)) {
-                // BillingHelper.logWarn(TAG, "Signature verification failed.");
-                Log.w(TAG,"Signature verification failed.");
+                //BillingHelper.logWarn(TAG, "Signature verification failed.");
                 return false;
             }
             return true;
@@ -522,11 +585,9 @@ public class BillingManager implements PurchasesUpdatedListener {
             // "RSA" is guaranteed to be available.
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
-            // BillingHelper.logWarn(TAG, "Invalid key specification.");
-            Log.w(TAG,"Invalid key specification");
+            //BillingHelper.logWarn(TAG, "Invalid key specification.");
         } catch (SignatureException e) {
-            // BillingHelper.logWarn(TAG, "Signature exception.");
-            Log.w(TAG, "Signature exception");
+            //BillingHelper.logWarn(TAG, "Signature exception.");
         }
         return false;
     }

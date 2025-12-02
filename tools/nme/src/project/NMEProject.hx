@@ -803,7 +803,7 @@ class NMEProject
             if (findHaxelib("swf")!=null)
             {
                Log.verbose("Using swf haxelib native swf handler");
-               libraryHandlers.set("SWF","format.swf.SWFLibrary");
+               libraryHandlers.set("SWF","swf.SWFLibrary");
             }
             else if (findHaxelib("gm2d")!=null)
             {
