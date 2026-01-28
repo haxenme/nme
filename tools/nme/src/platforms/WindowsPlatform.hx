@@ -36,6 +36,10 @@ class WindowsPlatform extends DesktopPlatform
    override public function getNativeDllExt() { return ".dll"; }
    override public function getLibExt() { return ".lib"; }
    override public function getBinaryName() { return executableFile; }
+   override public function getExecutable()
+   {
+      return executablePath;
+   }
 
    override public function updateBuildDir():Void 
    {

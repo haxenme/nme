@@ -24,6 +24,9 @@ class MacPlatform extends DesktopPlatform
    }
 
 
+   override public function preferMetal()  return true;
+   override public function preferMp3()  return true;
+
 
    override public function getOutputExtra() { return "mac"; }
    override public function getNativeDllExt() { return ".dylib"; }
@@ -32,6 +35,11 @@ class MacPlatform extends DesktopPlatform
    override public function getAssetDir() { return getOutputDir() + "/Contents/Resources"; }
    override public function getBinName() : String { return isArm64 ? "MacArm64" : is64 ? "Mac64" : "Mac"; }
 
+
+   override public function getExecutable()
+   {
+      return executablePath;
+   }
 
 
    override public function copyBinary():Void 

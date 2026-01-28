@@ -121,7 +121,7 @@ int InitSDL()
    #endif
    int err = SDL_Init(SDL_INIT_VIDEO | audioFlag | timerFlag);
    
-   if (err == 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER) == 0)
+   if (err >= 0 && SDL_InitSubSystem (SDL_INIT_GAMECONTROLLER) )
    {
       sgGameControllerEnabled = true;
       #if defined(HX_WINDOWS) || defined(HX_MACOS) || defined(HX_LINUX) 

@@ -88,6 +88,13 @@ class Platform
       haxeDir = targetDir + "/haxe";
    }
 
+   public function getExecutable()
+   {
+      var applicationDirectory = getExeDir();
+      var executableFile = project.app.file;
+      return applicationDirectory + "/" + executableFile;
+   }
+
    public function addOutputQuiet(inFile:String, quiet=false) : Void
    {
       var base = getOutputDir() + "/";
@@ -103,8 +110,51 @@ class Platform
    }
    public function addOutput(inFile:String) addOutputQuiet(inFile, false);
 
+   public function hasAsset(type: Asset->Bool ) : Bool
+   {
+      for(asset in project.assets) 
+         if (type(asset))
+            return true;
+      return false;
+   }
+
+   public function preferMetal()  return false;
+   public function preferMp3()  return false;
+
+
+   public function enableNmeModules()
+   {
+      if (preferMetal())
+      {
+         Log.verbose("PREFER METAL");
+         if (!project.hasDef("nme_metal") && !project.hasDef("NME_ALLOW_GL"))
+         {
+            project.haxedefs.set("nme_metal","1");
+            project.haxedefs.set("nme_no_ogl","1");
+         }
+      }
+
+      if (preferMp3())
+      {
+         Log.verbose("PREFER MP3");
+         if (hasAsset( a-> a.isOgg ))
+            Log.warn("Project contains ogg assets - performace may be poor compared to mp3");
+         else 
+            project.haxedefs.set("NME_NO_OGG","1");
+
+         if (hasAsset( a-> a.isMidi ))
+            Log.warn("Project contains midi assets - performace may be poor compared to mp3");
+         else 
+            project.haxedefs.set("NME_NO_MIDI","1");
+      }
+   }
+
    public function init()
    {
+      if (project.isStaticNme())
+         enableNmeModules();
+      else
+         Log.verbose("Not static nme - not enabling modules");
       context = project.getContext(haxeDir);
       generateContext(context);
    }

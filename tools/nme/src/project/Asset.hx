@@ -26,6 +26,8 @@ class Asset
    public var isSound:Bool;
    public var isMusic:Bool;
    public var isImage:Bool;
+   public var isOgg:Bool = false;
+   public var isMidi:Bool = false;
    public var isLibrary:Bool;
    public var conversion:String;
 
@@ -59,10 +61,18 @@ class Asset
             case "otf", "ttf":
                type = AssetType.FONT;
 
-            case "wav", "ogg":
+            case "wav":
                type = AssetType.SOUND;
 
-            case "mp3", "mp2", "mid":
+            case "ogg":
+               type = AssetType.SOUND;
+               isOgg = true;
+
+            case "mid","midi":
+               type = AssetType.MUSIC;
+               isMidi = true;
+
+            case "mp3", "mp2":
                type = AssetType.MUSIC;
 
             case "swf":

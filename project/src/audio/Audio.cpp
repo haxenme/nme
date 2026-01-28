@@ -3,7 +3,9 @@
 #include <ByteArray.h>
 #include <cstdio>
 #include <iostream>
+#ifdef NME_OGG
 #include <vorbis/vorbisfile.h>
+#endif
 
 #ifdef NME_MODPLUG
 #define MODPLUG_STATIC
@@ -194,7 +196,7 @@ bool parseWav(const unsigned char *inData, int len,
 
 // === OGG ======
 
-
+#ifdef NME_OGG
 struct NME_OggMemoryFile
 {
    const unsigned char* data;
@@ -250,8 +252,9 @@ static ov_callbacks NmeOggApi =
    (long (*)(void *))                           NME_OggBufferTell
 };
 
-} // end anon namespace
+#endif
 
+} // end anon namespace
 
 namespace nme
 {
@@ -264,8 +267,10 @@ bool isMp3(const std::string &inFilename)
 
 AudioFormat determineFormatFromBytes(const unsigned char *inData, int len)
 {
+   #ifdef NME_OGG
    if (len >= 35 && SameBuffer(inData, "OggS", 4) && SameBuffer(&inData[28], "\x01vorbis", 7))
       return eAF_ogg;
+   #endif
 
    if (len >= 12 && SameBuffer(inData, "RIFF", 4) && SameBuffer(&inData[8], "WAVE", 4))
       return eAF_wav;
@@ -369,7 +374,7 @@ public:
 };
 
 
-
+#ifdef NME_OGG
 class NmeSoundStreamOgg : public NmeSoundStream 
 {
    OggVorbis_File file;
@@ -428,7 +433,7 @@ public:
       return inSeconds;
    }
 };
-
+#endif
 
 
 
@@ -532,9 +537,11 @@ public:
             decodeWav(inData, inDataLength);
             break;
 
+         #ifdef NME_OGG
          case eAF_ogg:
             parseOgg(inData, inDataLength, flags);
             break;
+         #endif
 
          #ifdef NME_MODPLUG
          case eAF_mid:
@@ -709,6 +716,7 @@ public:
 
  
 
+   #ifdef NME_OGG
    void parseOgg(const unsigned char *inData, int inDataLength, unsigned int inFlags)
    {
       NME_OggMemoryFile memoryFile = { inData, inDataLength, 0 };
@@ -783,6 +791,7 @@ public:
          ov_clear(&ovFileHandle);
       }
    }
+   #endif
 
 
    double getDuration() const { return duration; }
@@ -824,8 +833,10 @@ public:
 
    unsigned char *decodeWithHeader()
    {
-     if (!isDecoded && sourceBuffer.size())
+      #ifdef NME_OGG
+      if (!isDecoded && sourceBuffer.size())
          parseOgg(sourceBuffer.ByteData(), sourceBuffer.ByteCount(), SoundForceDecode);
+      #endif
 
       if (!isDecoded || !channelSampleCount)
          return 0;
@@ -849,8 +860,10 @@ public:
 
    short *decodeAll()
    {
+      #ifdef NME_OGG
       if (!isDecoded && sourceBuffer.size())
          parseOgg(sourceBuffer.ByteData(), sourceBuffer.ByteCount(), SoundForceDecode);
+      #endif
 
       if (!isDecoded || !channelSampleCount)
          return 0;
@@ -874,8 +887,10 @@ public:
          return 0;
       }
 
+      #ifdef NME_OGG
       if (fileFormat==eAF_ogg)
          return new NmeSoundStreamOgg(this, sourceBuffer.ByteData(), sourceBuffer.ByteCount());
+      #endif
 
       #ifdef NME_MODPLUG
       if (fileFormat==eAF_mid)

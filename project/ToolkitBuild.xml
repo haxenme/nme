@@ -98,6 +98,7 @@
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
    <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="NME_NO_AUDIO" />
+   <set name="NME_OGG" value="1" unless="NME_NO_AUDIO || NME_NO_OGG" />
 
    <!-- Use opengl backend ? -->
    <set name="NME_NO_OGL" if="winrt" unless="NME_ANGLE || NME_DYNAMIC_ANGLE" />
@@ -155,7 +156,7 @@
    <set name="SUP_DIR" value="${this_dir}/support" if="this_dir" />
    <set name="OUT_DIR" value="../${NDLLDIR}" />
 
-   <set name="modplug" value="1" unless="android||emscripten" />
+   <set name="modplug" value="1" unless="android||emscripten||NME_NO_MIDI" />
    
    <!-- <set name="new_link" value="1" /> -->
  
@@ -169,8 +170,8 @@
 
       <include name="toolkit/png/files.xml" />
       <include name="toolkit/jpeg/files.xml" />
-      <include name="toolkit/ogg/files.xml" />
-      <include name="toolkit/vorbis/files.xml" />
+      <include name="toolkit/ogg/files.xml" unless="NME_NO_OGG"/>
+      <include name="toolkit/vorbis/files.xml" unless="NME_NO_OGG"/>
       <include name="toolkit/freetype/files.xml" />
       <include name="toolkit/sdl/files.xml" />
       <include name="toolkit/modplug/files.xml" if="modplug" />
@@ -188,10 +189,10 @@
       <include name="${NME_PNG}/files.xml" />
       <set name="NME_JPEG" value="${NATIVE_TOOLKIT_PATH}/jpeg/" />
       <include name="${NME_JPEG}/files.xml" />
-      <set name="NME_OGG" value="${NATIVE_TOOLKIT_PATH}/ogg/" />
-      <include name="${NME_OGG}/files.xml" />
-      <set name="NME_VORBIS" value="${NATIVE_TOOLKIT_PATH}/vorbis/" />
-      <include name="${NME_VORBIS}/files.xml" />
+      <set name="NME_OGG" value="${NATIVE_TOOLKIT_PATH}/ogg/" unless="NME_NO_OGG"/>
+      <include name="${NME_OGG}/files.xml" unless="NME_NO_OGG" />
+      <set name="NME_VORBIS" value="${NATIVE_TOOLKIT_PATH}/vorbis/" unless="NME_NO_OGG"  />
+      <include name="${NME_VORBIS}/files.xml" unless="NME_NO_OGG"  />
       <set name="NME_FREETYPE" value="${NATIVE_TOOLKIT_PATH}/freetype/" />
       <include name="${NME_FREETYPE}files.xml" />
       <set name="NME_LIBSDL" value="${NATIVE_TOOLKIT_PATH}/sdl/" />
@@ -397,8 +398,8 @@
       <compilerflag value="-I${NME_JPEG}"/>
       <compilerflag value="-I${NME_JPEG}/src" if="NME_LOCAL_TOOLKIT" />
       <compilerflag value="-I${NME_JPEG}.." if="NME_LOCAL_TOOLKIT" />
-      <compilerflag value="-I${NME_VORBIS}include"/>
-      <compilerflag value="-I${NME_OGG}include"/>
+      <compilerflag value="-I${NME_VORBIS}include" unless="NME_NO_OGG" />
+      <compilerflag value="-I${NME_OGG}include" unless="NME_NO_OGG" />
 
       <compilerflag value="-I${NME_FREETYPE}"/>
       <compilerflag value="-I${NME_FREETYPE}include"/>
@@ -412,8 +413,8 @@
       <depend files="native-toolkit-freetype-depends" />
       <depend files="native-toolkit-jpeg-depends" />
       <depend files="native-toolkit-png-depends" />
-      <depend files="native-toolkit-vorbis-depends" />
-      <depend files="native-toolkit-ogg-depends" />
+      <depend files="native-toolkit-vorbis-depends" unless="NME_NO_OGG" />
+      <depend files="native-toolkit-ogg-depends" unless="NME_NO_OGG" />
       <depend files="native-toolkit-modplug-depends" if="modplug" />
       <depend files="native-toolkit-curl-depends" if="NME_CURL_TOOLKIT" />
 
@@ -617,8 +618,8 @@
       
          <section unless="NME_NO_AUDIO" >
            <files id="native-toolkit-modplug" if="modplug" />
-           <files id="native-toolkit-ogg"   />
-           <files id="native-toolkit-vorbis" />
+           <files id="native-toolkit-ogg" unless="NME_NO_OGG" />
+           <files id="native-toolkit-vorbis" unless="NME_NO_OGG" />
          </section>
 
          <section unless="NME_LOCAL_TOOLKIT" >

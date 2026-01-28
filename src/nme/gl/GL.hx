@@ -1,9 +1,9 @@
 package nme.gl;
 
 #if nme_metal
-#error "GL not supported with NME_METAL"
+#error "GL not supported with nme_metal - try setting 'NME_ALLOW_GL' in your project file"
 #elseif nme_no_ogl
-#error "GL not supported with nme_no_ogl"
+#error "GL supported explicitly disabled with nme_no_ogl setting"
 #else
 
 

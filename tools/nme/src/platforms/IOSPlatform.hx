@@ -148,6 +148,10 @@ class IOSPlatform extends Platform
       }
    }
 
+
+   override public function preferMetal()  return true;
+   override public function preferMp3()  return true;
+
    override public function getBinName() : String { return "iPhone"; }
    override public function getAssetDir() { return getOutputDir() + "/assets"; }
    override public function getPlatformDir() : String { return "ios"; }

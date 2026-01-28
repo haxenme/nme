@@ -697,6 +697,12 @@ class NMEProject
 
    public function isStaticNme()
    {
+      var nme = findNdll("nme");
+      return nme==null ? isStaticNmeDefault() : nme.isStatic;
+   }
+
+   public function isStaticNmeDefault()
+   {
       if (hasDef("rpi"))
          haxedefs.set("nme_static","1");
 
@@ -728,7 +734,7 @@ class NMEProject
           var isStatic:Bool = optionalStaticLink && inStatic!=null ? inStatic : staticLink;
 
           if (name=="nme" && inStatic==null)
-             isStatic = isStaticNme();
+             isStatic = isStaticNmeDefault();
 
           if (isStatic)
              haxedefs.set(name.toLowerCase() + "_static_link", "1");

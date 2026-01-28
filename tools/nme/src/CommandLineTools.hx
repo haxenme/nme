@@ -564,7 +564,7 @@ class CommandLineTools
             type:"hxcpp",
             preLaunchTask:"build with debugger",
             // Is it always in workspaceFolder ?
-            program: "${workspaceFolder}/" + platform.getOutputDir() + "/" + platform.getBinaryName(),
+            program: "${workspaceFolder}/" + platform.getExecutable(),
             request:"launch",
          }, "name") || changed;
 
@@ -639,7 +639,7 @@ class CommandLineTools
             label:"build with debugger",
             type:"shell",
             group:"build",
-            command:"haxelib run nme cpp build -debug -lib hxcpp-debug-server",
+            command:"haxelib run nme cpp build -debugger -lib hxcpp-debug-server",
             problemMatcher:[],
          }, "label") || changed;
       }
@@ -1054,6 +1054,7 @@ class CommandLineTools
       sys.println("");
       sys.println("  -D : Specify a define to use when processing other commands");
       sys.println("  -debug : Use debug configuration instead of release");
+      sys.println("  -debugger : Use debug configuration instead of release, and enable debugger in hxcpp");
       sys.println("  -megatrace : Add maximum debugging");
       sys.println("  -verbose : Print additional information(when available)");
       sys.println("  -f : force setup re-write");
@@ -2047,6 +2048,11 @@ class CommandLineTools
             else if (argument == "-debug") 
             {
                project.setDebug(debug = true);
+            }
+            else if (argument == "-debugger") 
+            {
+               project.setDebug(debug = true);
+               project.haxedefs.set("HXCPP_DEBUGGER","1");
             }
             else if (argument == "-megatrace")
                project.setDebug(project.megaTrace = debug = true);
