@@ -14,6 +14,13 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothProfile;
+import java.io.ByteArrayOutputStream;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +31,8 @@ import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.app.Activity;
 import android.annotation.SuppressLint;
+import org.haxe.nme.GameActivity;
+import java.util.List;
 import org.json.*;
 
 // You will need to add the permission android.permission.BLUETOOTH/BLUETOOTH_ADMIN to use this
@@ -46,8 +55,19 @@ public class Bluetooth
    static BluetoothAdapter sBluetoothAdapter;
    static HashMap<String,BluetoothDevice> sDeviceMap = new HashMap<String,BluetoothDevice>();
    static boolean isScanning = false;
+   // TODO - allow explicit UUIDs to be specified for RX/TX characteristics
+   UUID bleRxUuid = null;
+   UUID bleTxUuid = null;
+ 
 
    BluetoothDevice mDevice;
+   BluetoothGatt   mGatt;
+   BluetoothGattCharacteristic tx;
+   BluetoothGattCharacteristic rx; 
+   boolean  bleConnected;
+   boolean  bleConnecting;
+   ByteArrayOutputStream mBleReceiveBuffer = new ByteArrayOutputStream();
+   final Object mBleLock = new Object();
    BluetoothSocket mSocket;
    InputStream mInput;
    OutputStream mOutput;
@@ -65,10 +85,49 @@ public class Bluetooth
       mDevice = sDeviceMap.get(inAddress);
       if (mDevice!=null)
       {
+         boolean isBLE = mDevice.getType()==BluetoothDevice.DEVICE_TYPE_LE;
+         Log.e(TAG,"Create bluetooth " + inAddress + " isBLE:" + isBLE);
          // Get a BluetoothSocket to connect with the given BluetoothDevice
-         try {
-            mSocket = mDevice.createRfcommSocketToServiceRecord(SerialUuid);
-         } catch (IOException e)
+         final Bluetooth thiz = this;
+         try
+         {
+            if (isBLE)
+            {
+               final BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
+               @Override
+               public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                   if (newState == BluetoothProfile.STATE_CONNECTED) {
+                     Log.e(TAG, "BLE connected, starting service discovery...");
+                     gatt.discoverServices();
+                   } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                     thiz.onBLEConnected(false);
+                   }
+               }
+               @Override
+               public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                   if (status == BluetoothGatt.GATT_SUCCESS) {
+                     thiz.onBLEConnected(true);
+                   } else {
+                     Log.e(TAG, "Service discovery failed with status: " + status);
+                   }
+               }
+               @Override
+               public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                   byte[] data = characteristic.getValue();
+                   Log.e(TAG,"Received BLE notification, " + data.length + " bytes");
+                   if (data != null && data.length > 0) {
+                     synchronized (thiz.mBleLock) {
+                        thiz.mBleReceiveBuffer.write(data, 0, data.length);
+                     }
+                   }
+               } };
+               bleConnecting = true;
+               mGatt = mDevice.connectGatt(GameActivity.getInstance().getActivity(), false, bluetoothGattCallback);
+            }
+            else
+               mSocket = mDevice.createRfcommSocketToServiceRecord(SerialUuid);
+         }
+         catch (IOException e)
          {
             Log.e(TAG,"Error opening bluetooth "+e);
          }
@@ -94,7 +153,105 @@ public class Bluetooth
             mSocket = null;
         }
       }
-      Log.e(TAG,"Connected " + (mSocket!=null) );
+      Log.e(TAG,"Connected " + (mSocket!=null || mGatt!=null) );
+   }
+
+   void onBLEConnected(boolean inConnected)
+   {
+      bleConnected = inConnected;
+      bleConnecting = false;
+      Log.e(TAG,"Bluetooth " + (inConnected ? "connected" : "disconnected"));
+      if (inConnected)
+      {
+         Log.e(TAG,"Discover services...");
+         List<BluetoothGattService> services = mGatt.getServices();
+         
+        
+         // Standard BLE services to skip during auto-detection
+         final UUID genericAccessUuid = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb");
+         final UUID genericAttributeUuid = UUID.fromString("00001801-0000-1000-8000-00805f9b34fb");
+         final UUID deviceInfoUuid = UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
+         
+         // Candidates for auto-detection fallback
+         BluetoothGattCharacteristic autoRx = null;
+         BluetoothGattCharacteristic autoTx = null;
+         
+         for (BluetoothGattService service : services)
+         {
+            UUID serviceUuid = service.getUuid();
+            Log.e(TAG,"Service " + serviceUuid);
+            
+            boolean isStandardService = serviceUuid.equals(genericAccessUuid) || 
+                                         serviceUuid.equals(genericAttributeUuid) ||
+                                         serviceUuid.equals(deviceInfoUuid);
+            
+            for (BluetoothGattCharacteristic characteristic : service.getCharacteristics())
+            {
+               UUID uuid = characteristic.getUuid();
+               int props = characteristic.getProperties();
+               Log.e(TAG,"  Characteristic " + uuid + " props=0x" + Integer.toHexString(props));
+               
+               // First priority: explicit UUID match
+               if (bleRxUuid!=null && uuid.equals(bleRxUuid))
+               {
+                  Log.e(TAG,"  Found RX characteristic (explicit UUID)");
+                  rx = characteristic;
+               }
+               else if (bleTxUuid!=null && uuid.equals(bleTxUuid))
+               {
+                  Log.e(TAG,"  Found TX characteristic (explicit UUID)");
+                  tx = characteristic;
+               }
+               
+               // Second priority: auto-detect based on properties (skip standard services)
+               if (!isStandardService)
+               {
+                  if (autoRx == null && ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0 ||
+                                         (props & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0))
+                  {
+                     autoRx = characteristic;
+                     Log.e(TAG,"  Found candidate RX characteristic (notify/indicate)");
+                  }
+                  if (autoTx == null && ((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0 ||
+                                         (props & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0))
+                  {
+                     autoTx = characteristic;
+                     Log.e(TAG,"  Found candidate TX characteristic (write)");
+                  }
+               }
+            }
+         }
+         
+         // Fall back to auto-detected characteristics if explicit UUIDs not found
+         if (rx == null && autoRx != null)
+         {
+            Log.e(TAG,"Using auto-detected RX characteristic: " + autoRx.getUuid());
+            rx = autoRx;
+         }
+         if (tx == null && autoTx != null)
+         {
+            Log.e(TAG,"Using auto-detected TX characteristic: " + autoTx.getUuid());
+            tx = autoTx;
+         }
+      }
+      else
+      {
+         tx = null;
+         rx = null;
+      }
+      if (tx!=null && rx!=null)
+      {
+         Log.e(TAG,"Enable notifications...");
+         mGatt.setCharacteristicNotification(rx, true);
+         // Write to CCCD descriptor to enable notifications on the remote device
+         UUID cccdUuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+         BluetoothGattDescriptor descriptor = rx.getDescriptor(cccdUuid);
+         if (descriptor != null) {
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mGatt.writeDescriptor(descriptor);
+         }
+      }  
+      Log.e(TAG,"BLE streams " + (tx!=null) + "/" + (rx!=null) );
    }
 
    public static boolean isEnabled()
@@ -327,8 +484,29 @@ public class Bluetooth
 
    public int writeBytes(String buffer)
    {
+      if (bleConnecting && tx==null)
+      {
+         Log.e(TAG,"Still connecting BLE, cannot write byte yet:" + buffer);
+         return 0;
+       }
+      if (tx != null)
+      {
+         try
+         {
+            byte[] data = buffer.getBytes();
+            tx.setValue(data);
+            if (mGatt.writeCharacteristic(tx))
+               return data.length;
+         } catch(Exception e)
+         {
+            Log.e(TAG,"Error writing to BLE characteristic: " + e);
+         }
+         return 0;
+      }
       try
       {
+         if (mOutput==null)
+            return 0;
          mOutput.write(buffer.getBytes());
          return buffer.length();
       } catch(IOException e) { }
@@ -337,6 +515,26 @@ public class Bluetooth
 
    public String readBytes(int length)
    {
+      if (bleConnecting && rx==null)
+      {
+         Log.e(TAG,"Still connecting BLE, cannot read byte yet:" + length);
+         return null;
+       }
+      if (rx != null) {
+         synchronized (mBleLock) {
+            byte[] buffered = mBleReceiveBuffer.toByteArray();
+            int toRead = Math.min(length, buffered.length);
+            if (toRead > 0) {
+               //Log.e(TAG,"Read " + toRead + " bytes from BLE buffer, " + (buffered.length - toRead) + " bytes remain");
+               mBleReceiveBuffer.reset();
+               if (toRead < buffered.length) {
+                  mBleReceiveBuffer.write(buffered, toRead, buffered.length - toRead);
+               }
+               return new String(buffered, 0, toRead);
+            }
+         }
+         return null;
+      }
       if (mBuffer==null || mBuffer.length<length)
          mBuffer = new byte[length];
 
@@ -350,8 +548,24 @@ public class Bluetooth
 
    public boolean writeByte(int inByte)
    {
+      if (bleConnecting && tx==null)
+      {
+         Log.e(TAG,"Still connecting BLE, cannot write byte yet:" + inByte);
+         return false;
+       }
+      if (tx!=null)
+      {
+         try
+         {
+            tx.setValue(new byte[] { (byte)inByte });
+            return mGatt.writeCharacteristic(tx);
+         } catch(Exception e) { }
+         return false;
+      }
       try
       {
+         if (mOutput==null)
+            return false;
          mOutput.write(inByte);
          return true;
       } catch(IOException e) { }
@@ -360,8 +574,23 @@ public class Bluetooth
 
    public int readByte()
    {
+      if (rx != null) {
+         synchronized (mBleLock) {
+            byte[] buffered = mBleReceiveBuffer.toByteArray();
+            if (buffered.length > 0) {
+               mBleReceiveBuffer.reset();
+               if (buffered.length > 1) {
+                  mBleReceiveBuffer.write(buffered, 1, buffered.length - 1);
+               }
+               return buffered[0] & 0xFF;
+            }
+         }
+         return 0;
+      }
       try
       {
+         if (mInput==null)
+            return 0;
          return mInput.read();
       } catch(IOException e) { }
       return 0;
@@ -374,8 +603,15 @@ public class Bluetooth
 
    public int available()
    {
+      if (rx != null) {
+         synchronized (mBleLock) {
+            return mBleReceiveBuffer.size();
+         }
+      }
       try
       {
+         if (mInput==null)
+            return 0;
          return mInput.available();
       } catch(IOException e) { }
       return 0;
@@ -385,14 +621,22 @@ public class Bluetooth
    {
       try
       {
-         mInput.close();
-         mOutput.close();
-         mSocket.close();
+         if (mGatt!=null)
+            mGatt.close();
+         if (mInput!=null)
+            mInput.close();
+         if (mOutput!=null)
+            mOutput.close();
+         if (mSocket!=null)
+            mSocket.close();
       } catch(IOException e) { }
       return 1;
    }
 
-   public boolean ok() { return mSocket!=null; }
+   public boolean ok()
+   {
+      return mSocket!=null || bleConnecting || (tx!=null && rx!=null);
+   }
 
 
    public static Bluetooth create(String inDeviceName)
