@@ -48,6 +48,7 @@ TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    lineSpaceScale(1.0f),
    useRichTextClipboard(false),
    wordWrap(false),
+   wordSplit(wsAlways),
    isInput(false)
 {
    mStringState = ssText;
@@ -371,6 +372,16 @@ void TextField::setWordWrap(bool inWordWrap)
 {
    wordWrap = inWordWrap;
    setWidth(explicitWidth);
+   mLinesDirty = true;
+   mGfxDirty = true;
+   DirtyCache();
+}
+
+void TextField::setWordSplit(int inWordSplit)
+{
+   if (inWordSplit==wordSplit)
+      return;
+   wordSplit = (TextFieldWordSplit)inWordSplit;
    mLinesDirty = true;
    mGfxDirty = true;
    DirtyCache();
@@ -2128,11 +2139,11 @@ void TextField::InsertString(const WString &inString)
 #endif
 
 
-static bool IsWord(int inCh)
+static bool IsWordBreak(int inCh, TextFieldWordSplit inWordSplit)
 {
   //return inCh<255 && (iswalpha(inCh) || isdigit(inCh) || inCh=='_');
   // TODO - other breaks?
-  return !iswspace(inCh) && inCh!='-';
+  return  iswspace(inCh) || inCh=='-' || (inWordSplit==wsSymbol && !iswalpha(inCh) && !isdigit(inCh) && inCh != '_');
 }
 
 // Combine x,y scaling with rotation to calculate pixel coordinates for
@@ -2177,6 +2188,9 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
 
    double font6ToLocalX = fontToLocal/64.0;
 
+   gDebugFontCreation = false;
+
+
    mLines.resize(0);
    mCharPos.resize(0);
 
@@ -2185,143 +2199,180 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
    if (scaleX==0 || scaleY==0)
       return;
 
-   double oldW = fieldWidth;
-   double oldH = fieldHeight;
-
-   Line line;
-   int char_count = 0;
-   double charX = 0;
-   double charY = 0;
-   line.mY0 = charY;
-   mLastUpDownX = -1;
+   bool fitLongestWord = wordSplit != wsAlways && wordWrap && !displayAsPassword;
    double max_x = autoSize!=asNone && !wordWrap ? 1e30 : fieldWidth - GAP*2.0;
    if (max_x<1)
       max_x = 1;
+
+   double oldW = fieldWidth;
+   double oldH = fieldHeight;
+   double longestWord = 0;
+
+   Line line;
    bool endsWidthNewLine = false;
+   double charY = 0;
+   int char_count = 0;
 
-   //gDebugFontCreation =  getText()==WString(L"Back");
-   gDebugFontCreation = false;
-   if (gDebugFontCreation)
-      printf("Layout: %S\n", getText().c_str());
-   for(int i=0;i<mCharGroups.size();i++)
+   int passCount = fitLongestWord ? 2 : 1;
+   //printf("\nLayout '%S' fieldWidth=%f, fitLongest %d, allow=%d, wrap=%d multi=%d\n", getText().c_str(), fieldWidth, fitLongestWord, allowWordSplit, wordWrap, multiline);
+   for (int pass = 0; pass < passCount; pass++)
    {
-      CharGroup &g = *mCharGroups[i];
-      g.mChar0 = char_count;
-      int cid = 0;
-      int last_word_cid = 0;
-      double last_word_x = charX;
-      int last_word_line_chars = line.mChars;
-
-      g.UpdateMetrics(line.mMetrics);
-      while(cid<g.Chars())
+      if (pass == 1)
       {
+         // Longest word already fits
+         if (longestWord <= max_x)
+            break;
+         // Go again, with new width
+         max_x = longestWord;
+         fieldWidth = max_x + GAP*2.0;
+         mLines.resize(0);
+         mCharPos.resize(0);
+         line.Clear();
+         charY = 0;
          endsWidthNewLine = false;
-         if (line.mChars==0)
-         {
-            charX = 0;
-            line.mY0 = charY;
-            line.mChar0 = char_count;
-            line.mCharGroup0 = i;
-            line.mCharInGroup0 = cid;
-            last_word_line_chars = 0;
-            last_word_cid = cid;
-            last_word_x = 0;
-            g.UpdateMetrics(line.mMetrics);
-         }
+         char_count = 0;
+         //printf("Re-layout with fieldWidth=%f\n", fieldWidth);
+      }
+      double charX = 0;
+      line.mY0 = charY;
+      mLastUpDownX = -1;
 
-         int advance6 = 0;
-         int ch = g.mString[cid];
-         mCharPos.push_back( UserPoint(charX,charY) );
-         //printf("  %c : %f\n", ch, charX );
-         line.mChars++;
-         char_count++;
-         cid++;
+      //gDebugFontCreation =  getText()==WString(L"Back");
+      for (int i = 0; i < mCharGroups.size(); i++)
+      {
+         CharGroup& g = *mCharGroups[i];
+         g.mChar0 = char_count;
+         int cid = 0;
+         int last_word_cid = 0;
+         double last_word_x = charX;
+         int last_word_line_chars = line.mChars;
 
-         if (!displayAsPassword && !iswalpha(ch) && !isdigit(ch) && ch!='_' && ch!=';' && ch!='.' && ch!=',' && ch!='"' && ch!=':' && ch!='\'' && ch!='!' && ch!='?')
+         g.UpdateMetrics(line.mMetrics);
+         while (cid < g.Chars())
          {
-            if (!IsWord(ch) || (cid>=2 && !IsWord(g.mString[cid-2]))  )
+            endsWidthNewLine = false;
+            if (line.mChars == 0)
             {
-               if ( (ch<255 && !IsWord(ch)) || line.mChars==1)
+               charX = 0;
+               line.mY0 = charY;
+               line.mChar0 = char_count;
+               line.mCharGroup0 = i;
+               line.mCharInGroup0 = cid;
+               last_word_line_chars = 0;
+               last_word_cid = cid;
+               last_word_x = 0;
+               g.UpdateMetrics(line.mMetrics);
+            }
+
+            int advance6 = 0;
+            int ch = g.mString[cid];
+            mCharPos.push_back(UserPoint(charX, charY));
+            //printf("  %c : %f\n", ch, charX );
+            line.mChars++;
+            char_count++;
+            cid++;
+
+            if (displayAsPassword)
+               ch = gPasswordChar;
+            else
+            {
+               bool isBreak = IsWordBreak(ch, wordSplit);
+               if (isBreak && (ch == '"' || ch == '\''))
                {
-                  last_word_cid = cid;
-                  last_word_line_chars = line.mChars;
+                  // Don't break after a quote at the beginning of a word
+                  if (cid < g.Chars() && !IsWordBreak(g.mString[cid], wordSplit))
+                     isBreak = false;
+               }
+               if (isBreak)
+               {
+                  if (ch < 255 || line.mChars == 1)
+                  {
+                     last_word_cid = cid;
+                     last_word_line_chars = line.mChars;
+                  }
+                  else
+                  {
+                     last_word_cid = cid - 1;
+                     last_word_line_chars = line.mChars - 1;
+                  }
+                  last_word_x = charX;
+
+                  if (ch == '\n' || ch == '\r')
+                  {
+                     // New line ...
+                     line.mMetrics.fontToLocal(fontToLocal * lineSpaceScale);
+                     if (i + 1 < mCharGroups.size() || cid + 1 < g.Chars())
+                        line.mMetrics.height += g.mFormat->leading;
+
+                     charY += line.mMetrics.height;
+                     mLines.push_back(line);
+                     line.Clear();
+                     endsWidthNewLine = true;
+                     continue;
+                  }
+               }
+            }
+
+            double ox = charX;
+            double right = charX;
+            if (g.mFont)
+            {
+               const Tile& tile = g.mFont->GetGlyph(ch, advance6);
+               double advance = advance6 * font6ToLocalX;
+               charX += advance;
+               if (gDebugFontCreation)
+                  printf(" %c: %p  + adv=%f -> ox=%f ... charX=%f\n", ch, g.mFont, advance6 / 64.0, ox, charX);
+               double tileOverflow = std::max(0.0, (tile.mRect.w + tile.mOx) * fontToLocal - advance6);
+               right = charX + tileOverflow;
+            }
+            else
+               advance6 = 0;
+
+
+            //  printf(" Char %c (%f..%f/%f) %p\n", ch, ox, max_x, charY, g.mFont);
+            if (!displayAsPassword && (wordWrap) && right > max_x + 0.1 && line.mChars > 1)
+            {
+               // No break on line so far - push out longest word
+               if (last_word_line_chars == 0 && fitLongestWord)
+               {
+                  longestWord = std::max(longestWord, right);
                }
                else
                {
-                  last_word_cid = cid-1;
-                  last_word_line_chars = line.mChars-1;
+                  // No break on line so far - just back up 1 character....
+                  if (last_word_line_chars == 0 || !wordWrap)
+                  {
+                     cid--;
+                     line.mChars--;
+                     char_count--;
+                     mCharPos.qpop();
+                     line.mMetrics.width = ox;
+                  }
+                  else
+                  {
+                     // backtrack to last break ...
+                     cid = last_word_cid;
+                     char_count -= line.mChars - last_word_line_chars;
+                     mCharPos.resize(char_count);
+                     line.mChars = last_word_line_chars;
+                     line.mMetrics.width = last_word_x;
+                  }
+                  line.mMetrics.fontToLocal(fontToLocal * lineSpaceScale);
+                  if (i + 1 < mCharGroups.size() || cid + 1 < g.Chars())
+                     line.mMetrics.height += g.mFormat->leading;
+                  charY += line.mMetrics.height;
+                  charX = 0;
+                  mLines.push_back(line);
+                  line.Clear();
+                  g.UpdateMetrics(line.mMetrics);
+                  continue;
                }
-               last_word_x = charX;
             }
 
-            if (ch=='\n' || ch=='\r')
-            {
-               // New line ...
-               line.mMetrics.fontToLocal(fontToLocal*lineSpaceScale);
-               if (i+1<mCharGroups.size() || cid+1<g.Chars())
-                  line.mMetrics.height += g.mFormat->leading;
-
-               charY += line.mMetrics.height;
-               mLines.push_back(line);
-               line.Clear();
-               endsWidthNewLine = true;
-               continue;
-            }
+            if (screenGrid)
+               right = ((int)((right * fontScale + 0.999))) * fontToLocal;
+            line.mMetrics.width = right;
          }
-
-         double ox = charX;
-         if (displayAsPassword)
-            ch = gPasswordChar;
-         double right = charX;
-         if (g.mFont)
-         {
-            const Tile &tile = g.mFont->GetGlyph( ch, advance6 );
-            double advance = advance6*font6ToLocalX;
-            charX += advance;
-            if (gDebugFontCreation)
-               printf(" %c: %p  + adv=%f -> ox=%f ... charX=%f\n", ch, g.mFont, advance6/64.0, ox, charX );
-            double tileOverflow = std::max(0.0,(tile.mRect.w+tile.mOx)*fontToLocal - advance6);
-            right = charX + tileOverflow;
-         }
-         else
-            advance6 = 0;
-
-
-         //  printf(" Char %c (%f..%f/%f) %p\n", ch, ox, max_x, charY, g.mFont);
-         if ( !displayAsPassword && (wordWrap) && right > max_x && line.mChars>1)
-         {
-            // No break on line so far - just back up 1 character....
-            if (last_word_line_chars==0 || !wordWrap)
-            {
-               cid--;
-               line.mChars--;
-               char_count--;
-               mCharPos.qpop();
-               line.mMetrics.width = ox;
-            }
-            else
-            {
-               // backtrack to last break ...
-               cid = last_word_cid;
-               char_count-= line.mChars - last_word_line_chars;
-               mCharPos.resize(char_count);
-               line.mChars = last_word_line_chars;
-               line.mMetrics.width = last_word_x;
-            }
-            line.mMetrics.fontToLocal(fontToLocal*lineSpaceScale);
-            if (i+1<mCharGroups.size() || cid+1<g.Chars())
-               line.mMetrics.height += g.mFormat->leading;
-            charY += line.mMetrics.height;
-            charX = 0;
-            mLines.push_back(line);
-            line.Clear();
-            g.UpdateMetrics(line.mMetrics);
-            continue;
-         }
-
-         if (screenGrid)
-            right = ((int)((right*fontScale+0.999)))*fontToLocal;
-         line.mMetrics.width = right;
       }
    }
 
@@ -2467,6 +2518,7 @@ void TextField::decodeStream(ObjectStreamIn &stream)
    stream.get(lineSpaceScale);
    stream.get(useRichTextClipboard);
    stream.get(wordWrap);
+   stream.get(wordSplit);
    stream.get(isInput);
 
    stream.get(scrollH);
@@ -2527,6 +2579,7 @@ void TextField::encodeStream(ObjectStreamOut &stream)
    stream.add(lineSpaceScale);
    stream.add(useRichTextClipboard);
    stream.add(wordWrap);
+   stream.add(wordSplit);
    stream.add(isInput);
 
    stream.add(scrollH);

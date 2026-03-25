@@ -37,8 +37,9 @@ private:
    int         textColor;
    float       thickness;
    float       lineSpaceScale;
-   bool        useRichTextClipboard;
+   TextFieldWordSplit wordSplit;
    bool        wordWrap;
+   bool        useRichTextClipboard;
    bool        isInput;
 
    int         mSelectMin;
@@ -155,7 +156,9 @@ public:
    bool  getMultiline() const { return multiline; }
    void  setMultiline(bool inMultiline);
    bool  getWordWrap() const { return wordWrap; }
+   TextFieldWordSplit getWordSplit() const { return wordSplit; }
    void  setWordWrap(bool inWordWrap);
+   void  setWordSplit(int inWordSplit);
    int   getMaxChars() const { return maxChars; }
    void  setMaxChars(int inMaxChars) { maxChars = inMaxChars; }
    bool  getDisplayAsPassword() const { return displayAsPassword; }

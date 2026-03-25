@@ -41,6 +41,7 @@ class TextField extends InteractiveObject
    public var textWidth(get, null):Float;
    public var type(get, set):TextFieldType;
    public var wordWrap(get, set):Bool;
+   public var wordSplit(get, set):TextFieldWordSplit;
    public var caretIndex(get, set):Int;
 
    public static var defaultAntiAliasType = AntiAliasType.NORMAL;
@@ -193,6 +194,8 @@ class TextField extends InteractiveObject
    private function set_type(inType:TextFieldType):TextFieldType { nme_text_field_set_type(nmeHandle, inType == TextFieldType.INPUT); return inType; }
    private function get_wordWrap():Bool { return nme_text_field_get_word_wrap(nmeHandle); }
    private function set_wordWrap(inVal:Bool):Bool { nme_text_field_set_word_wrap(nmeHandle, inVal); return inVal; }
+   private function get_wordSplit():TextFieldWordSplit { return nme_text_field_get_word_split(nmeHandle); }
+   private function set_wordSplit(inVal:TextFieldWordSplit):TextFieldWordSplit { nme_text_field_set_word_split(nmeHandle, inVal); return inVal; }
    private function get_caretIndex():Int { return nme_text_field_get_caret_index(nmeHandle); }
    private function set_caretIndex(inVal:Int):Int { nme_text_field_set_caret_index(nmeHandle, inVal); return inVal; }
 
@@ -232,6 +235,8 @@ class TextField extends InteractiveObject
    private static var nme_text_field_set_multiline = PrimeLoader.load("nme_text_field_set_multiline", "obv");
    private static var nme_text_field_get_word_wrap = PrimeLoader.load("nme_text_field_get_word_wrap", "ob");
    private static var nme_text_field_set_word_wrap = PrimeLoader.load("nme_text_field_set_word_wrap", "obv");
+   private static var nme_text_field_get_word_split = PrimeLoader.load("nme_text_field_get_word_split", "oi");
+   private static var nme_text_field_set_word_split = PrimeLoader.load("nme_text_field_set_word_split", "oiv");
    private static var nme_text_field_get_border = PrimeLoader.load("nme_text_field_get_border", "ob");
    private static var nme_text_field_set_border = PrimeLoader.load("nme_text_field_set_border", "obv");
    private static var nme_text_field_get_border_color = PrimeLoader.load("nme_text_field_get_border_color", "oi");

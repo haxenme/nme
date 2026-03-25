@@ -51,6 +51,7 @@ enum AntiAliasType { aaNormal, aaAdvanced, aaAdvancedLcd  };
 enum AutoSizeMode  { asCenter, asLeft, asNone, asRight };
 enum TextFormatAlign { tfaCenter, tfaJustify, tfaLeft, tfaRight};
 enum GridFitType { gftNone, gftPixel, gftSubPixel };
+enum TextFieldWordSplit { wsNever, wsAlways, wsSymbol };
 
 
 template<typename T>
