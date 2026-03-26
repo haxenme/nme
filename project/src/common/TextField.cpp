@@ -1900,6 +1900,13 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                for(int c=0;c<group.Chars();c++)
                {
                   int ch = group.mString[c];
+                  bool isLowSurrogate = (ch >= 0xDC00 && ch <= 0xDFFF) && c > 0 && group.mString[c - 1] >= 0xD800 && group.mString[c - 1] <= 0xDBFF;
+                  if (isLowSurrogate)
+                     continue;
+                  bool isHighSurrogate = (ch >= 0xD800 && ch <= 0xDBFF) && c < group.Chars() - 1 && group.mString[c + 1] >= 0xDC00 && group.mString[c + 1] <= 0xDFFF;
+                  if (isHighSurrogate)
+                     ch = 0x10000 + ((ch - 0xD800) << 10) + (group.mString[c + 1] - 0xDC00);
+
                   if (displayAsPassword)
                      ch = gPasswordChar;
                   if (ch!='\n' && ch!='\r')
@@ -2214,7 +2221,7 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
    int char_count = 0;
 
    int passCount = fitLongestWord ? 2 : 1;
-   //printf("\nLayout '%S' fieldWidth=%f, fitLongest %d, allow=%d, wrap=%d multi=%d\n", getText().c_str(), fieldWidth, fitLongestWord, allowWordSplit, wordWrap, multiline);
+   //printf("\nLayout '%S' fieldWidth=%f, fitLongest %d, allow=%d, wrap=%d multi=%d\n", getText().c_str(), fieldWidth, fitLongestWord, wordSplit, wordWrap, multiline);
    for (int pass = 0; pass < passCount; pass++)
    {
       if (pass == 1)
@@ -2271,6 +2278,28 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
             line.mChars++;
             char_count++;
             cid++;
+
+            bool isLowSurrogate = ch >= 0xDC00 && ch <= 0xDFFF;
+            if (isLowSurrogate && cid>=2)
+            {
+               int high = g.mString[cid - 2];
+               // the second part of a surrogate pair - a zero-width character
+               if (high >= 0xD800 && high <= 0xDBFF)
+               {
+                  continue;
+               }
+            }
+
+            // Check for surrogate pair...
+            if (ch >= 0xD800 && ch <= 0xDBFF && cid<g.Chars())
+            {
+                int low = g.mString[cid];
+                if (low >= 0xDC00 && low <= 0xDFFF)
+                {
+                    // Combine to form unicode code point
+                    ch = ((ch - 0xD800) << 10) + (low - 0xDC00) + 0x10000;
+                }
+            }
 
             if (displayAsPassword)
                ch = gPasswordChar;
