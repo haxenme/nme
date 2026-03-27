@@ -7,7 +7,7 @@ class EmojiFont
       #if windows
       return "seguiemj.ttf";
       #elseif mac
-      return null;
+      return "/System/Library/Fonts/Apple Color Emoji.ttc";
       #elseif linux
       return null;
       #elseif ios
