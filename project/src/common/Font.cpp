@@ -36,6 +36,10 @@ extern const unsigned char *gMonospaceData;
 
 #endif
 
+#if defined(_WIN32) && !defined(HX_WINRT)
+#define NME_NATIVE_FONTS
+#endif
+
 namespace nme
 {
 
@@ -379,6 +383,26 @@ const char *RemapFontName(const char *inName)
 typedef std::map<FontInfo, Font *> FontMap;
 FontMap sgFontMap;
 
+void Font::TidyCache()
+{
+   // Clear out any old fonts
+   for (FontMap::iterator fit = sgFontMap.begin(); fit != sgFontMap.end();)
+   {
+      if (fit->second->GetRefCount() == 1)
+      {
+         //printf("Clean cache %S\n", fit->first.name.c_str());
+         fit->second->DecRef();
+         FontMap::iterator next = fit;
+         next++;
+         sgFontMap.erase(fit);
+         fit = next;
+      }
+      else
+         ++fit;
+   }
+}
+
+
 #ifdef LINKED_FONT_DATA
 FontBuffer decompressFontData(int srcLen, int destLen, const unsigned char *inData)
 {
@@ -457,19 +481,19 @@ static std::string registerNorm(const std::string &inName)
    return result;
 }
 
-Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasType aaType, bool inInitRef)
+Font* Font::Create(TextFormat& inFormat, double inScale, bool inNative, AntiAliasType aaType, bool inInitRef)
 {
    bool native = inNative && gNmeNativeFonts;
-   bool outline = inFormat.outline.Get()>0;
+   bool outline = inFormat.outline.Get() > 0;
    if (outline)
       native = false;
 
 
-   FontInfo info(inFormat,inScale,native,aaType);
+   FontInfo info(inFormat, inScale, native, aaType);
 
-   Font *font = 0;
+   Font* font = 0;
    FontMap::iterator fit = sgFontMap.find(info);
-   if (fit!=sgFontMap.end())
+   if (fit != sgFontMap.end())
    {
       font = fit->second;
       if (inInitRef)
@@ -477,25 +501,27 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
       return font;
    }
 
-   std::string fontName(WideToUTF8(inFormat.font));
+   std::wstring fontNameW(inFormat.font);
+   bool absoluteName = fontNameW.find(L'/') != std::wstring::npos || fontNameW.find(L'\\') != std::wstring::npos;
+   std::string fontName(WideToUTF8(fontNameW));
 
-   FontFace *face = 0;
-   
+   FontFace* face = 0;
+
    int pass0 = inFormat.bold || inFormat.italic ? 0 : 1;
-    
-   for(int pass=pass0;pass<3;pass++)
+
+   for (int pass = pass0; pass < 3; pass++)
    {
       std::string seekName = fontName;
-      if (pass==0)
+      if (pass == 0)
       {
-          if (inFormat.bold)
-              seekName += " Bold";
-          if (inFormat.italic)
-              seekName += " Italic";
+         if (inFormat.bold)
+            seekName += " Bold";
+         if (inFormat.italic)
+            seekName += " Italic";
       }
-      else if (pass==2)
+      else if (pass == 2)
       {
-         const char *remappedFont = RemapFontName(fontName.c_str());
+         const char* remappedFont = RemapFontName(fontName.c_str());
          if (!remappedFont)
             break;
          seekName = remappedFont;
@@ -505,7 +531,7 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
       FontBuffer bytes = 0;
       FontBytesMap::iterator fbit = sgRegisteredFonts.find(norm);
 
-      if (fbit!=sgRegisteredFonts.end())
+      if (fbit != sgRegisteredFonts.end())
       {
          bytes = fbit->second;
          //printf("Registered!\n");
@@ -521,15 +547,15 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
          if (resource.Ok())
          {
             #ifdef HXCPP_JS_PRIME
-            sgRegisteredFonts[norm] = val_to_buffer( resource.mValue );
+            sgRegisteredFonts[norm] = val_to_buffer(resource.mValue);
             sgRegisteredFonts[norm]->IncRef();
             #else
-            sgRegisteredFonts[norm] = new AutoGCRoot( resource.mValue );
+            sgRegisteredFonts[norm] = new AutoGCRoot(resource.mValue);
             #endif
 
             fbit = sgRegisteredFonts.find(norm);
             bytes = fbit->second;
-          //  printf("Found!\n");
+            //  printf("Found!\n");
          }
          //else
          //   printf("No resource\n");
@@ -538,12 +564,12 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
       #ifdef LINKED_FONT_DATA
       if (!bytes)
       {
-         if (norm=="_sans")
-            bytes = decompressFontData( gSansCompressedSize, gSansFullSize, gSansData );
-         else if (norm=="_serif")
-            bytes = decompressFontData( gSerifCompressedSize, gSerifFullSize, gSerifData );
-         else if (norm=="_monospace")
-            bytes = decompressFontData( gMonospaceCompressedSize, gMonospaceFullSize, gMonospaceData );
+         if (norm == "_sans")
+            bytes = decompressFontData(gSansCompressedSize, gSansFullSize, gSansData);
+         else if (norm == "_serif")
+            bytes = decompressFontData(gSerifCompressedSize, gSerifFullSize, gSerifData);
+         else if (norm == "_monospace")
+            bytes = decompressFontData(gMonospaceCompressedSize, gMonospaceFullSize, gMonospaceData);
 
          if (bytes)
             sgRegisteredFonts[norm] = bytes;
@@ -552,27 +578,33 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
 
       if (bytes)
       {
-         face = FontFace::CreateFreeType(inFormat,inScale,aaType,bytes,pass==0 ? seekName : "");
+         face = FontFace::CreateFreeType(inFormat, inScale, aaType, bytes, pass == 0 ? seekName : "");
          if (face)
             break;
       }
    }
 
    if (!face)
-      face = FontFace::CreateCFFIFont(inFormat,inScale);
+      face = FontFace::CreateCFFIFont(inFormat, inScale);
 
-#ifndef HX_WINRT
-   if (native && !face)
-      face = FontFace::CreateNative(inFormat,inScale, aaType);
-#endif
+   #ifdef NME_NATIVE_FONTS
+   if (native && !face && !absoluteName)
+   {
+      face = FontFace::CreateNative(inFormat, inScale, aaType);
+   }
+   #endif
 
    if (!face)
-      face = FontFace::CreateFreeType(inFormat,inScale,aaType,NULL,"");
+   {
+      face = FontFace::CreateFreeType(inFormat, inScale, aaType, NULL, "");
+   }
 
-#ifndef HX_WINRT
-   if (!native && !face)
-      face = FontFace::CreateNative(inFormat,inScale, aaType);
-#endif
+   #ifdef NME_NATIVE_FONTS
+   if (!native && !face && !absoluteName)
+   {
+      face = FontFace::CreateNative(inFormat, inScale, aaType);
+   }
+   #endif
 
    if (!face)
    {
@@ -588,22 +620,8 @@ Font *Font::Create(TextFormat &inFormat,double inScale,bool inNative,AntiAliasTy
    font =  new Font(face,info.height,inInitRef);
    // Store for Ron ...
    font->IncRef();
-   sgFontMap[info] = font;
 
-   // Clear out any old fonts
-   for (FontMap::iterator fit = sgFontMap.begin(); fit!=sgFontMap.end();)
-   {
-      if (fit->second->GetRefCount()==1)
-      {
-         fit->second->DecRef();
-         FontMap::iterator next = fit;
-         next++;
-         sgFontMap.erase(fit);
-         fit = next;
-      }
-      else
-         ++fit;
-   }
+   sgFontMap[info] = font;
    
    return font;
 }

@@ -21,6 +21,34 @@ int gPasswordChar = 42; // *
 
 static const double GAP = 2.0;
 
+struct CharRange
+{
+   int from;
+   int to;
+};
+
+struct SpecialCharFont
+{
+   WString font;
+   std::vector<CharRange> chars;
+   int minMatch;
+
+   bool matches(int ch) const
+   {
+      if (ch < minMatch)
+         return false;
+      for(const auto &range : chars)
+         if (ch>=range.from && ch<range.to)
+            return true;
+      return false;
+   }
+};
+
+static std::vector<SpecialCharFont> gSpecialCharFonts;
+
+SpecialCharFont* findSpecialRange(const std::wstring::value_type* inString, int pos, int n, int* outStart, int* outEnd);
+
+
 TextField::TextField(bool inInitRef) : DisplayObject(inInitRef),
    alwaysShowSelection(false),
    antiAliasType(aaNormal),
@@ -1096,6 +1124,9 @@ void TextField::Clear()
    maxScrollV = 1;
    scrollV = 1;
    scrollH = 0;
+   mLinesDirty = true;
+   mFontsDirty = true;
+   mGfxDirty = true;
 }
 
 Cursor TextField::GetCursor()
@@ -1108,16 +1139,69 @@ Cursor TextField::GetCursor()
 void TextField::setText(const WString &inString)
 {
    Clear();
-   CharGroup *chars = new CharGroup;
-   chars->mString.Set(inString.c_str(),inString.length());
-   chars->mFormat = defaultTextFormat->IncRef();
-   chars->mFont = 0;
-   chars->mFontHeight = 0;
-   chars->mFlags = 0;
-   mCharGroups.push_back(chars);
-   mLinesDirty = true;
-   mFontsDirty = true;
-   mGfxDirty = true;
+
+   int n = inString.length();
+   if (n == 0 || gSpecialCharFonts.empty())
+   {
+      CharGroup* chars = new CharGroup;
+      chars->mString.Set(inString.c_str(), n);
+      chars->mFormat = defaultTextFormat->IncRef();
+      chars->mFont = 0;
+      chars->mFontHeight = 0;
+      chars->mFlags = 0;
+      mCharGroups.push_back(chars);
+      return;
+   }
+
+
+   int pos = 0;
+   while(pos<n)
+   {
+      int spos0 = 0;
+      int spos1 = 0;
+      SpecialCharFont* specialFont = findSpecialRange(inString.c_str(), pos, n, &spos0, &spos1);
+      if (specialFont)
+      {
+         // Normal text up to the special font
+         if (spos0 > pos)
+         {
+            CharGroup *chars = new CharGroup;
+            chars->mString.Set(inString.c_str() + pos,spos0-pos);
+            chars->mFormat = defaultTextFormat->IncRef();
+            chars->mFont = 0;
+            chars->mFontHeight = 0;
+            chars->mFlags = 0;
+            mCharGroups.push_back(chars);
+         }
+
+         // Special font text
+         CharGroup *chars = new CharGroup;
+         chars->mString.Set(inString.c_str() + spos0, spos1 - spos0);
+         chars->mFormat = new TextFormat(*defaultTextFormat);
+         chars->mFormat->font = specialFont->font;
+         chars->mFormat->setSpecial = true;
+         chars->mFormat->bold = false;
+         chars->mFormat->italic = false;
+         chars->mFont = 0;
+         chars->mFontHeight = 0;
+         chars->mFlags = 0;
+         mCharGroups.push_back(chars);
+
+         pos = spos1;
+      }
+      // Final text block
+      else
+      {
+         CharGroup* chars = new CharGroup;
+         chars->mString.Set(inString.c_str() + pos, n - pos);
+         chars->mFormat = defaultTextFormat->IncRef();
+         chars->mFont = 0;
+         chars->mFontHeight = 0;
+         chars->mFlags = 0;
+         mCharGroups.push_back(chars);
+         pos = n;
+      }
+   }
 }
 
 WString TextField::getText()
@@ -1465,8 +1549,6 @@ void TextField::AddNode(const TiXmlNode *inNode, TextFormat *inFormat,int &ioCha
 void TextField::setHTMLText(const WString &inString)
 {
    Clear();
-   mLinesDirty = true;
-   mFontsDirty = true;
 
    WString str;
    str += L"<top>";
@@ -1881,6 +1963,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
          int line = 0;
          int last_line = mLines.size()-1;
          Surface *fontSurface = 0;
+         bool keepRgb = false;
          uint32  hardwareTint = 0;
          double clipRight = fieldWidth-GAP;
 
@@ -1893,10 +1976,11 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
             if (group.Chars() && group.mFont)
             {
                ARGB tint = group.mFormat->color(textColor);
-               groupColour[0] = tint.getR()/255.0;
-               groupColour[1] = tint.getG()/255.0;
-               groupColour[2] = tint.getB()/255.0;
+               groupColour[0] = tint.getR() / 255.0;
+               groupColour[1] = tint.getG() / 255.0;
+               groupColour[2] = tint.getB() / 255.0;
                groupColour[3] = 1.0;
+
                for(int c=0;c<group.Chars();c++)
                {
                   int ch = group.mString[c];
@@ -1932,7 +2016,11 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                            {
                               //if (fontSurface) mTiles->endTiles();
                               fontSurface = tile.mSurface;
-                              mTiles->beginTiles(fontSurface,!screenGrid,fontSurface->Format()==pfRGB ? bmComponentAlpha : bmNormal);
+                              // LCD
+                              bool isLcd = fontSurface->Format() == pfRGB;
+                              // NMEFont / emoji
+                              keepRgb = fontSurface->Format() == pfBGRA;
+                              mTiles->beginTiles(fontSurface,!screenGrid, isLcd ? bmComponentAlpha : bmNormal);
                            }
 
                            UserPoint p(pos.x+tile.mOx*fontToLocal,pos.y+tile.mOy*fontToLocal);
@@ -1942,7 +2030,7 @@ void TextField::Render( const RenderTarget &inTarget, const RenderState &inState
                            double right = p.x+tile.mRect.w*fontToLocal;
                            if (right>GAP)
                            {
-                              float *tint = cid>=mSelectMin && cid<mSelectMax ? white : groupColour;
+                              float *tint = keepRgb || (cid>=mSelectMin && cid<mSelectMax) ? white : groupColour;
                               Rect r = tile.mRect;
 
                               if (pos.x < GAP )
@@ -2177,8 +2265,8 @@ void TextField::Layout(const Matrix &inMatrix, const RenderTarget *inTarget)
       fontScale = scale;
       screenGrid = grid;
       fontAaType = wantAa;
-      for(int i=0;i<mCharGroups.size();i++)
-         mCharGroups[i]->UpdateFont(fontScale,!embedFonts,fontAaType);
+      for (int i = 0; i < mCharGroups.size(); i++)
+         mCharGroups[i]->UpdateFont(fontScale, !embedFonts, fontAaType);
 
       mTilesDirty = true;
       mFontsDirty = false;
@@ -2695,7 +2783,8 @@ TextFormat::TextFormat() :
    tabStops( QuickVec<int>() ),
    target(L""),
    underline(false),
-   url(L"")
+   url(L""),
+   setSpecial(false)
 {
   //sFmtObjs++;
 }
@@ -2721,7 +2810,8 @@ TextFormat::TextFormat(const TextFormat &inRHS,bool inInitRef) : Object(inInitRe
    tabStops( inRHS.tabStops),
    target(inRHS.target),
    underline(inRHS.underline),
-   url(inRHS.url)
+   url(inRHS.url),
+   setSpecial(inRHS.setSpecial)
 {
   //sFmtObjs++;
 }
@@ -2882,17 +2972,18 @@ void CharGroup::ApplyFormat(TextFormat *inFormat)
    inFormat->italic.Apply(mFormat->italic);
    inFormat->underline.Apply(mFormat->underline);
 
-   if (inFormat->font.Get() != mFormat->font.Get())
-   {
-      inFormat->font.Apply(mFormat->font);
-      mFontHeight = -1;
-      Font* cacheFont = mFont;
-      mFont = 0;
-      mFontHeight = 0;
-      mFlags = 0;
-      if (cacheFont)
-         cacheFont->DecRef();
-   }
+   if ( !(mFormat->setSpecial) || inFormat->setSpecial)
+      if (inFormat->font.Get() != mFormat->font.Get())
+      {
+         inFormat->font.Apply(mFormat->font);
+         mFontHeight = -1;
+         Font* cacheFont = mFont;
+         mFont = 0;
+         mFontHeight = 0;
+         mFlags = 0;
+         if (cacheFont)
+            cacheFont->DecRef();
+      }
    
    inFormat->indent.Apply(mFormat->indent);
    inFormat->kerning.Apply(mFormat->kerning);
@@ -2908,6 +2999,84 @@ void CharGroup::ApplyFormat(TextFormat *inFormat)
    inFormat->target.Apply(mFormat->target);
    inFormat->url.Apply(mFormat->url);
 }
+
+void TextField::addSpecialCharFont(const WString& inFont, const int* fromTos, int fromToCount)
+{
+    SpecialCharFont scf;
+    scf.font = inFont;
+    int min = fromTos[0];
+    for(int i=0; i<fromToCount; i+=2)
+    {
+       CharRange range;
+       range.from = fromTos[i];
+       range.to = fromTos[i+1];
+       if (i>0 && scf.chars[-1].to == range.from)
+          scf.chars[-1].to = range.to;
+       else
+          scf.chars.push_back(range);
+       min = std::min(min, range.from);
+    }
+    scf.minMatch = min;
+    gSpecialCharFonts.push_back(scf);
+}
+
+void TextField::clearSpecialCharFonts()
+{
+   gSpecialCharFonts.clear();
+}
+
+SpecialCharFont* findSpecialRange(const std::wstring::value_type* inString, int pos, int n, int* outStart, int* outEnd)
+{
+   if (gSpecialCharFonts.empty())
+      return nullptr;
+
+   for (int i = pos; i < n; i++)
+   {
+      int ch = inString[i];
+      int charLen = 1;
+      bool isHighSurrogate = (ch >= 0xD800 && ch <= 0xDBFF) && i + 1 < n && inString[i + 1] >= 0xDC00 && inString[i + 1] <= 0xDFFF;
+      if (isHighSurrogate)
+      {
+         ch = 0x10000 + ((ch - 0xD800) << 10) + (inString[i + 1] - 0xDC00);
+         charLen = 2;
+      }
+
+      for (SpecialCharFont& font : gSpecialCharFonts)
+      {
+         if (font.matches(ch))
+         {
+            *outStart = i;
+            int j = i + charLen; // Start after the first matched character (including its surrogate pair)
+            
+            while (j < n)
+            {
+               ch = inString[j];
+               charLen = 1;
+               isHighSurrogate = (ch >= 0xD800 && ch <= 0xDBFF) && j + 1 < n && inString[j + 1] >= 0xDC00 && inString[j + 1] <= 0xDFFF;
+               if (isHighSurrogate)
+               {
+                  ch = 0x10000 + ((ch - 0xD800) << 10) + (inString[j + 1] - 0xDC00);
+                  charLen = 2;
+               }
+
+               if (!font.matches(ch))
+                  break;
+
+               j += charLen;
+            }
+            *outEnd = j;
+            return &font;
+         }
+      }
+      
+      // Skip the low surrogate if we processed a surrogate pair
+      if (isHighSurrogate)
+         i++;
+   }
+   return nullptr;
+}
+
+
 
 } // end namespace nme
 

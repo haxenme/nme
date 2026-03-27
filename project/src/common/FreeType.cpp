@@ -5,6 +5,7 @@
 #include <map>
 
 #include <Utils.h>
+#include <Surface.h>
 
 #if defined(HX_WINRT) && defined(__cplusplus_winrt)
 #define NOMINMAX
@@ -17,6 +18,7 @@
 #include FT_BITMAP_H
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
+#include FT_TRUETYPE_TABLES_H
 
 #ifdef NME_TOOLKIT_BUILD
 #include "ftoutln.h"
@@ -61,6 +63,12 @@
 #define NME_OUTLINE_EDGE_BEVEL 0x20
 #define NME_OUTLINE_EDGE_MITER 0x40
 
+// OpenType table tags for color font detection
+#define TAG_COLR FT_MAKE_TAG('C','O','L','R')
+#define TAG_CBDT FT_MAKE_TAG('C','B','D','T')
+#define TAG_sbix FT_MAKE_TAG('s','b','i','x')
+#define TAG_SVG  FT_MAKE_TAG('S','V','G',' ')
+
 namespace nme
 {
 
@@ -74,6 +82,7 @@ class FreeTypeFont : public FontFace
    uint32 mTransform;
    int    mPixelHeight;
    bool   stroked;
+   bool   isRgbFont;
    int    pad;
    FT_Stroker stroker;
    AntiAliasType aaType;
@@ -90,6 +99,46 @@ public:
      mTransform(inTransform), mBuffer(inBuffer)
    {
       stroked = inOutline>0;
+      
+      // Detect color font by checking for color font tables
+      // Priority: CBDT (PNG bitmaps, best support), sbix (Apple PNG), then COLR (vector, limited support)
+      isRgbFont = false;
+      if (mFace)
+      {
+         FT_ULong length = 0;
+         // Prefer CBDT (embedded PNG bitmaps) - best FreeType support
+         if (FT_Load_Sfnt_Table(mFace, TAG_CBDT, 0, NULL, &length) == 0 && length > 0)
+            isRgbFont = true;
+         // sbix (Apple format, embedded PNGs)
+         else if (FT_Load_Sfnt_Table(mFace, TAG_sbix, 0, NULL, &length) == 0 && length > 0)
+            isRgbFont = true;
+         // COLR (color layers) - FreeType has partial support, COLRv1 may not render
+         else if (FT_Load_Sfnt_Table(mFace, TAG_COLR, 0, NULL, &length) == 0 && length > 0)
+            isRgbFont = true;
+         // SVG - requires external renderer, won't work
+         else if (FT_Load_Sfnt_Table(mFace, TAG_SVG, 0, NULL, &length) == 0 && length > 0)
+            isRgbFont = true;
+         
+         // For bitmap emoji fonts (CBDT/sbix), select an available strike
+         // FT_Set_Pixel_Sizes doesn't work - they have fixed sizes (e.g., 128x128)
+         if (isRgbFont && mFace->num_fixed_sizes > 0)
+         {
+            int bestStrike = 0;
+            int bestDiff = 999999;
+            for (int i = 0; i < mFace->num_fixed_sizes; i++)
+            {
+               int strikeHeight = mFace->available_sizes[i].height;
+               int diff = abs(strikeHeight - inPixelHeight);
+               if (diff < bestDiff)
+               {
+                  bestDiff = diff;
+                  bestStrike = i;
+               }
+            }
+            FT_Select_Size(mFace, bestStrike);
+         }
+      }
+      
       pad = 0;
       if (stroked)
       {
@@ -134,20 +183,26 @@ public:
       if (mBuffer) free(mBuffer);
    }
 
-   PixelFormat getImageFormat() const { return aaType==aaAdvancedLcd ? pfRGB : pfAlpha; }
+   PixelFormat getImageFormat() const { return isRgbFont ? pfBGRA : aaType==aaAdvancedLcd ? pfRGB : pfAlpha; }
 
    bool LoadBitmap(int inChar,bool andRender=true)
    {
       int idx = FT_Get_Char_Index( mFace, inChar );
+      if (idx == 0)
+         return false;
 
       //int loadFlags = aaType==aaNormal ? NME_FREETYPE_NORMAL_FLAGS : FT_LOAD_DEFAULT;
       int loadFlags = NME_FREETYPE_NORMAL_FLAGS;
+      if (isRgbFont)
+         loadFlags = FT_LOAD_COLOR | FT_LOAD_RENDER;  // Need RENDER for CBDT bitmap fonts
+
       int err = FT_Load_Glyph( mFace, idx, loadFlags  );
       if (err)
          return false;
 
+
       bool emboldened = false;
-      if (mTransform & ffItalic)
+      if (!isRgbFont && (mTransform & ffItalic))
       {
          if ( mFace->glyph->format == FT_GLYPH_FORMAT_OUTLINE )
          {
@@ -163,7 +218,7 @@ public:
          }
       }
 
-      if (mTransform & ffBold)
+      if (!isRgbFont && (mTransform & ffBold))
       {
          if ( mFace->glyph->format == FT_GLYPH_FORMAT_OUTLINE )
          {
@@ -175,19 +230,21 @@ public:
 
 
       FT_Render_Mode mode = FT_RENDER_MODE_NORMAL;
-      if (aaType!=aaNormal)
+      if (aaType!=aaNormal && !isRgbFont)
           mode = FT_RENDER_MODE_LCD;
 
       if (andRender)
       {
-         err = FT_Render_Glyph( mFace->glyph, mode );
-         if (err)
+         // Color emoji fonts (CBDT/sbix) already have bitmap data after FT_Load_Glyph
+         // Calling FT_Render_Glyph on them fails or produces 0x0 bitmaps
+         if (mFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
          {
-            printf("could not render\n");
-            return false;
+            err = FT_Render_Glyph( mFace->glyph, mode );
+            if (err)
+               return false;
          }
 
-         if (mTransform & ffBold)
+         if (!isRgbFont && (mTransform & ffBold))
          {
             if ( mFace->glyph->format != FT_GLYPH_FORMAT_OUTLINE && !emboldened)
             {
@@ -207,8 +264,9 @@ public:
    bool GetGlyphInfo(int inChar, int &outW, int &outH, int &outAdvance,
                            int &outOx, int &outOy)
    {
-      if (!LoadBitmap(inChar,!stroked))
+      if (!LoadBitmap(inChar, !stroked))
          return false;
+
 
       FT_Bitmap *bitmap = &mFace->glyph->bitmap;
 
@@ -225,18 +283,37 @@ public:
          outOy = -glyph_bitmap->top;
          outAdvance = (glyph->advance.x);
       }
+      else if (mFace->glyph->format == FT_GLYPH_FORMAT_BITMAP)
+      {
+         outOx = mFace->glyph->bitmap_left;
+         outOy = -mFace->glyph->bitmap_top;
+         outW = bitmap->width;
+         outH = bitmap->rows;
+         outAdvance = (mFace->glyph->advance.x);
+         if (mFace->size->metrics.y_ppem!=mPixelHeight)
+         {
+            double scale = (double)mPixelHeight / mFace->size->metrics.y_ppem;
+            outOx = (int)(outOx * scale);
+            outOy = (int)(outOy * scale);
+            outAdvance = (int)(outAdvance * scale);
+            outW = (int)(outW * scale);
+            outH = (int)(outH * scale);
+            //printf("Scale %d from %d: %dx%d\n", mPixelHeight, mFace->size->metrics.y_ppem, outW, outH);
+         }
+         return true;
+      }
       else
       {
          outOx = mFace->glyph->bitmap_left;
          outOy = -mFace->glyph->bitmap_top;
          outAdvance = (mFace->glyph->advance.x);
 
-         FT_Bitmap *bitmap = &mFace->glyph->bitmap;
+         bitmap = &mFace->glyph->bitmap;
 
          int trimThresh = 15;
 
          if (outAdvance && !(mTransform & (ffBold | ffItalic)) && inChar!=' ' && inChar!='_' && aaType!=aaNormal &&
-                (bitmap->pixel_mode == FT_PIXEL_MODE_GRAY || bitmap->pixel_mode == FT_PIXEL_MODE_LCD ))
+               !isRgbFont && (bitmap->pixel_mode == FT_PIXEL_MODE_GRAY || bitmap->pixel_mode == FT_PIXEL_MODE_LCD ))
          {
             int w = bitmap->width;
             int h = bitmap->rows;
@@ -259,21 +336,9 @@ public:
             if (lastColMax<trimThresh)
             {
                outAdvance-=64;
-               //printf("trimmed '%c' (%d).\n",inChar,lastColMax);
             }
-            //printf("keep '%c' (%d).\n",inChar,lastColMax);
-            //if (firstColMax<trimThresh)
-            //{
-               //outOx-=1;
-               //printf("slid '%c'.\n",inChar);
-            //}
-
-
-            //printf(" %c : %d/%d\n", inChar, firstColUsed,lastColUsed);
          }
 
-         //if (aaType==aaAdvancedLcd)
-         //   printf(" %c] %dx%d + %d, -> adv=%d \n", inChar, bitmap->width, bitmap->rows, outOx, outAdvance>>6);
       }
 
 
@@ -321,8 +386,11 @@ public:
 
       int w = bitmap->width;
       int h = bitmap->rows;
-      int srcBpp = bitmap->pixel_mode==FT_PIXEL_MODE_LCD ? 3 : 1;
- 
+      int srcBpp = bitmap->pixel_mode==FT_PIXEL_MODE_LCD ? 3 : 
+                   bitmap->pixel_mode==FT_PIXEL_MODE_BGRA ? 4 : 1;
+
+      //printf("Bitmap %d %d bpp:%d, target %d %d\n", w, h, srcBpp, outTarget.mRect.w, outTarget.mRect.h);
+
       if (mTransform & ffUnderline)
       {
          underlineY0 = mFace->glyph->bitmap_top + getUnderlineOffset();
@@ -332,8 +400,35 @@ public:
       if (h<underlineY1)
          h = underlineY1;
 
-      int destBpp = aaType==aaAdvancedLcd ? 3 : 1;
-      if (w/destBpp>outTarget.mRect.w || h>outTarget.mRect.h)
+      FT_Bitmap scaled;
+      if (mFace->glyph->format == FT_GLYPH_FORMAT_BITMAP && isRgbFont)
+      {
+         //printf("Scale %d from %d\n", mPixelHeight, mFace->size->metrics.y_ppem);
+         double scale = (double)mPixelHeight / mFace->size->metrics.y_ppem;
+         int destW = (int)(w * scale);
+         int destH = (int)(h * scale);
+         if (destW!=w || destH!=h)
+         {
+            SimpleSurface *bmp = new SimpleSurface(w, h, pfBGRA);
+            bmp->IncRef();
+            for(int y=0;y<h;y++)
+            {
+               unsigned char *dest = (unsigned char *)bmp->Row(y);
+               unsigned char *src = bitmap->buffer + y*bitmap->pitch;
+               memcpy(dest, src, 4*w);
+            }
+            DRect dest( outTarget.mRect.x, outTarget.mRect.y, destW, destH );
+            // TODO : better scaling and premA
+            bmp->StretchTo(outTarget, Rect(0,0,w,h), dest, 1);
+            bmp->DecRef();
+            return;
+         }
+      }
+
+
+      int destBpp = isRgbFont ? 4 : aaType==aaAdvancedLcd ? 3 : 1;
+      int checkW = isRgbFont ? w : w/destBpp;
+      if (checkW>outTarget.mRect.w || h>outTarget.mRect.h)
       {
          printf(" too big %d %d\n", outTarget.mRect.w, outTarget.mRect.h);
          return;
@@ -349,7 +444,20 @@ public:
          if (r<bitmap->rows)
          {
             unsigned char *row = bitmap->buffer + r*bitmap->pitch;
-            if (bitmap->pixel_mode == FT_PIXEL_MODE_MONO)
+            if (bitmap->pixel_mode == FT_PIXEL_MODE_BGRA)
+            {
+               // Color font - copy BGRA directly
+               for(int x=0;x<w;x++)
+               {
+                  dest[0] = row[0]; // B
+                  dest[1] = row[1]; // G
+                  dest[2] = row[2]; // R
+                  dest[3] = row[3]; // A
+                  dest += 4;
+                  row += 4;
+               }
+            }
+            else if (bitmap->pixel_mode == FT_PIXEL_MODE_MONO)
             {
                unsigned int bit = 0;
                unsigned int data = 0;
@@ -397,11 +505,17 @@ public:
          }
          else if (r>=underlineY0 && r<underlineY1)
          {
-            memset( dest, 0xff, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
+            if (isRgbFont)
+               memset(dest, 0xff, w * 4);
+            else
+               memset( dest, 0xff, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
          }
          else
          {
-            memset( dest, 0x00, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
+            if (isRgbFont)
+               memset(dest, 0x00, w * 4);
+            else
+               memset( dest, 0x00, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
          }
       }
 
@@ -412,6 +526,9 @@ public:
 
    int Height()
    {
+      // For Bitmap fonts, return virtual height based on pixel height
+      if (mFace->glyph->format == FT_GLYPH_FORMAT_BITMAP && isRgbFont)
+         return mPixelHeight;
       return mFace->size->metrics.height/(1<<6);
    }
 
@@ -421,9 +538,14 @@ public:
       if (mFace)
       {
          FT_Size_Metrics &metrics = mFace->size->metrics;
-         ioMetrics.ascent = std::max( ioMetrics.ascent, (float)metrics.ascender/(1<<6) );
-         ioMetrics.descent = std::max( ioMetrics.descent, (float)fabs((float)metrics.descender/(1<<6)) );
-         ioMetrics.height = std::max( ioMetrics.height, (float)metrics.height/(1<<6) );
+         float scale = 1.0f/(1<<6);
+         if (mFace->glyph->format == FT_GLYPH_FORMAT_BITMAP && isRgbFont)
+         {
+            scale *= (float)mPixelHeight / mFace->size->metrics.y_ppem;
+         }
+         ioMetrics.ascent = std::max( ioMetrics.ascent, (float)metrics.ascender*scale );
+         ioMetrics.descent = std::max( ioMetrics.descent, (float)fabs((float)metrics.descender*scale) );
+         ioMetrics.height = std::max( ioMetrics.height, (float)metrics.height*scale );
       }
    }
 
@@ -927,7 +1049,7 @@ FontFace *FontFace::CreateFreeType(const TextFormat &inFormat,double inScale, An
    if ( inFormat.underline )
       transform |= ffUnderline;
 
-   return new FreeTypeFont(face,height,aaType,scaledOutline,inFormat.outlineFlags.Get(),miter8d8<<8,transform,pBuffer);
+   return new FreeTypeFont(face, height, aaType, scaledOutline, inFormat.outlineFlags.Get(), miter8d8 << 8, transform, pBuffer);
 }
 
 

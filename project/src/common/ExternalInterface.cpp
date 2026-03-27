@@ -121,6 +121,7 @@ static int _id_tabStops;
 static int _id_target;
 static int _id_underline;
 static int _id_url;
+static int _id_setSpecial;
 static int _id_userAgent;
 static int _id_error;
 static int _id_state;
@@ -254,6 +255,7 @@ extern "C" void InitIDs()
    _id_target = val_id("target");
    _id_underline = val_id("underline");
    _id_url = val_id("url");
+   _id_setSpecial = val_id("setSpecial");
    _id_userAgent = val_id("userAgent");
    _id_error = val_id("error");
    _id_bytesTotal = val_id("bytesTotal");
@@ -3874,6 +3876,7 @@ inline value alloc_wstring(const WString &inStr)
 
 
 void FromValue(Optional<int> &outVal,value inVal) { outVal = (int)val_number(inVal); }
+void FromValue(bool &outVal,value inVal) { outVal = (bool)val_number(inVal); }
 void FromValue(Optional<float> &outVal,value inVal) { outVal = (float)val_number(inVal); }
 void FromValue(Optional<double> &outVal,value inVal) { outVal = (double)val_number(inVal); }
 void FromValue(Optional<uint32> &outVal,value inVal) { outVal = (uint32)val_number(inVal); }
@@ -3932,6 +3935,7 @@ void SetTextFormat(TextFormat &outFormat, value inValue)
    STF(target);
    STF(underline);
    STF(url);
+   STF(setSpecial);
 }
 
 
@@ -3990,6 +3994,7 @@ void GetTextFormat(const TextFormat &inFormat, value &outValue, bool inIfSet = f
    GTF(target,inIfSet);
    GTF(underline,inIfSet);
    GTF(url,inIfSet);
+   alloc_field(outValue, _id_setSpecial, ToValue( inFormat.setSpecial ) );
 }
 
 
@@ -4162,6 +4167,27 @@ void nme_text_field_set_selection(value inText,int inStart,int inEnd)
       text->setSelection(inStart, inEnd);
 }
 DEFINE_PRIME3v(nme_text_field_set_selection);
+
+
+void nme_text_field_add_special_char_font(value inFont, value fromTos)
+{
+   int fromToCount = val_array_size(fromTos);
+   if (fromToCount & 1)
+      val_throw(alloc_string("fromTos array must have even number of elements"));
+   const int* fromToPtr = val_array_int(fromTos);
+   if (!fromToPtr)
+      val_throw(alloc_string("fromTos must be an array of ints"));   
+
+   TextField::addSpecialCharFont( valToStdWString(inFont), fromToPtr, fromToCount);
+}
+DEFINE_PRIME2v(nme_text_field_add_special_char_font)
+
+void nme_text_field_clear_special_char_fonts()
+{
+   TextField::clearSpecialCharFonts();
+}
+DEFINE_PRIME0v(nme_text_field_clear_special_char_fonts)
+
 
 
 #define TEXT_PROP_GET(prop,Prop,to_val) \

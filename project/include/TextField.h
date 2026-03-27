@@ -12,6 +12,7 @@ class TiXmlNode;
 namespace nme
 {
 
+
 class TextField : public DisplayObject
 {
 private:
@@ -221,6 +222,9 @@ public:
 
    void decodeStream(ObjectStreamIn &inStream);
    void encodeStream(ObjectStreamOut &inStream);
+
+   static void addSpecialCharFont(const WString& inFont, const int *fromTos, int fromToCount);
+   static void clearSpecialCharFonts();
 
 protected:
    ~TextField();

@@ -31,6 +31,7 @@ class TextFormat
    public var target:String;
    public var underline:Dynamic;
    public var url:String;
+   public var setSpecial:Bool;
 
    public function new(?in_font:String, ?in_size:Dynamic, ?in_color:Dynamic, ?in_bold:Dynamic, ?in_italic:Dynamic, ?in_underline:Dynamic, ?in_url:String, ?in_target:String, ?in_align:String, ?in_leftMargin:Dynamic, ?in_rightMargin:Dynamic, ?in_indent:Dynamic, ?in_leading:Dynamic) 
    {
@@ -47,6 +48,7 @@ class TextFormat
       rightMargin = in_rightMargin;
       indent = in_indent;
       leading = in_leading;
+      setSpecial = false;
    }
 }
 

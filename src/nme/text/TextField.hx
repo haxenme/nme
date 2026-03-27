@@ -142,6 +142,15 @@ class TextField extends InteractiveObject
    public function sendCopy() { sendKey(0, nme.ui.Keyboard.C, false, true, false ); }
    public function sendPaste() { sendKey(0, nme.ui.Keyboard.V, false, true, false ); }
 
+   public static function clearSpecialCharFonts()
+   {
+      nme_text_field_clear_special_char_fonts();
+   }
+   public static function addSpecialCharFont(inFont:String, fromTos:Array<Int>)
+   {
+      nme_text_field_add_special_char_font(inFont, fromTos);
+   }
+
 
 
    // Getters & Setters
@@ -280,6 +289,9 @@ class TextField extends InteractiveObject
    private static var nme_text_field_get_anti_alias_type = PrimeLoader.load("nme_text_field_get_anti_alias_type", "oi");
    private static var nme_text_field_set_line_space_scale = PrimeLoader.load("nme_text_field_set_line_space_scale", "odv");
    private static var nme_text_field_get_line_space_scale = PrimeLoader.load("nme_text_field_get_line_space_scale", "od");
+
+   private static var nme_text_field_add_special_char_font = PrimeLoader.load("nme_text_field_add_special_char_font", "oov");
+   private static var nme_text_field_clear_special_char_fonts = PrimeLoader.load("nme_text_field_clear_special_char_fonts", "v");
 }
 
 #else

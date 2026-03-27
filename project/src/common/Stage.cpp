@@ -550,6 +550,7 @@ void Stage::BeginRenderStage(bool inClear)
 void Stage::RenderStage()
 {
    ColorTransform::TidyCache();
+   Font::TidyCache();
 
    if (currentTarget.IsHardware())
       currentTarget.mHardware->SetQuality(quality);

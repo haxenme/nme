@@ -52,6 +52,7 @@
       <depend name="${NME_FREETYPE}include/freetype/ttnameid.h"/>
       <depend name="${NME_FREETYPE}include/freetype/tttables.h"/>
       <depend name="${NME_FREETYPE}include/freetype/tttags.h"/>
+      <depend name="${NME_FREETYPE}src/sfnt/pngshim.c" />
 
    </files>
 
@@ -65,9 +66,10 @@
       <compilerflag value="-I${NME_FREETYPE}freetype/include" />
       <compilerflag value="-I${NME_FREETYPE}include" />
       <compilerflag value="-DFT2_BUILD_LIBRARY" />
+      <compilerflag value="-DFT_CONFIG_OPTION_USE_PNG=1" />
 
-      <!--<compilerflag value="-DNATIVE_TOOLKIT_HAVE_PNG" if="NATIVE_TOOLKIT_HAVE_PNG" />
-      <compilerflag value="-I${NME_PNG}" if="NME_PNG" />-->
+      <compilerflag value="-I${NME_PNG}" if="NME_PNG" />
+      <compilerflag value="-I${NME_PNG}/.." if="NME_PNG" />
 
       <file name="${NME_FREETYPE}src/autofit/autofit.c" />
       <file name="${NME_FREETYPE}src/base/ftadvanc.c" />

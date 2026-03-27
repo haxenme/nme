@@ -3,6 +3,8 @@ package nme.text;
 
 import nme.display.BitmapData;
 
+typedef NMEFontFactory = NMEFontDef -> NMEFont;
+
 @:nativeProperty
 class NMEFont 
 {
@@ -67,25 +69,5 @@ class NMEFont
    }
 }
 
-typedef NMEFontDef = 
-{
-   name:String,
-   height:Int,
-   bold:Bool,
-   italic:Bool,
-
-};
-
-typedef NMEFontFactory = NMEFontDef -> NMEFont;
-
-typedef NMEGlyphInfo = 
-{
-   width:Int,
-   height:Int,
-   advance:Int,
-   offsetX:Int,
-   offsetY:Int,
-
-};
 
 #end

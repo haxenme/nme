@@ -119,6 +119,7 @@ public:
    Optional<WString>  target;
    Optional<bool>          underline;
    Optional<WString>  url;
+   bool                   setSpecial;
 
    TextFormat();
    ~TextFormat();
@@ -180,7 +181,7 @@ class FontFace
 public:
    virtual ~FontFace() { };
 
-   static FontFace *CreateNative(const TextFormat &inFormat,double inScale, AntiAliasType aaType);
+   static FontFace* CreateNative(const TextFormat& inFormat, double inScale, AntiAliasType aaType);
    static FontFace *CreateFreeType(const TextFormat &inFormat,double inScale,AntiAliasType aaType,FontBuffer inBytes, const std::string &inCombinedName);
    static FontFace *CreateCFFIFont(const TextFormat &inFormat,double inScale);
 
@@ -208,6 +209,7 @@ class Font : public Object
 
 public:
    static Font *Create(TextFormat &inFormat,double inScale, bool inNative, AntiAliasType aaType, bool inInitRef=true);
+   static void TidyCache();
 
    NmeObjectType getObjectType() { return notFont; }
    void encodeStream(class ObjectStreamOut &inStream);

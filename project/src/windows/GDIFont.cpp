@@ -18,6 +18,42 @@ static int sgDIB_H = 0;
 static unsigned char sGammaLUT[256];
 static bool sGammaLUTInit = false;
 
+
+// Helper function to create OpenType table tags (big-endian)
+#define MAKE_TAG(a,b,c,d) ((DWORD)(a) | ((DWORD)(b) << 8) | ((DWORD)(c) << 16) | ((DWORD)(d) << 24))
+
+static bool IsColourFont(HFONT hFont)
+{
+   if (!hFont || !sgFontDC)
+      return false;
+
+   HFONT oldFont = (HFONT)SelectObject(sgFontDC, hFont);
+
+   // Check for common colour font tables (tags are in big-endian order)
+   // COLR/CPAL - Microsoft colour fonts
+   DWORD colrSize = GetFontData(sgFontDC, MAKE_TAG('C', 'O', 'L', 'R'), 0, NULL, 0);
+   DWORD cpalSize = GetFontData(sgFontDC, MAKE_TAG('C', 'P', 'A', 'L'), 0, NULL, 0);
+
+   // CBDT/CBLC - Google color emoji
+   DWORD cbdtSize = GetFontData(sgFontDC, MAKE_TAG('C', 'B', 'D', 'T'), 0, NULL, 0);
+   DWORD cblcSize = GetFontData(sgFontDC, MAKE_TAG('C', 'B', 'L', 'C'), 0, NULL, 0);
+
+   // sbix - Apple color emoji
+   DWORD sbixSize = GetFontData(sgFontDC, MAKE_TAG('s', 'b', 'i', 'x'), 0, NULL, 0);
+
+   // SVG - OpenType-SVG color fonts
+   DWORD svgSize = GetFontData(sgFontDC, MAKE_TAG('S', 'V', 'G', ' '), 0, NULL, 0);
+
+   SelectObject(sgFontDC, oldFont);
+
+   bool isColor = (colrSize != GDI_ERROR && cpalSize != GDI_ERROR) ||
+      (cbdtSize != GDI_ERROR && cblcSize != GDI_ERROR) ||
+      (sbixSize != GDI_ERROR) ||
+      (svgSize != GDI_ERROR);
+
+   return isColor;
+}
+
 class GDIFont : public FontFace
 {
 public:
@@ -154,6 +190,7 @@ int CALLBACK MyEnumFontFunc(
     LPARAM lParam
 )
 {
+   // Stop at first match - we just want to know if it is there or not...
    return 0;
 }
 
@@ -180,6 +217,14 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale,AntiA
    desc.lfQuality = aaType == aaNormal ? ANTIALIASED_QUALITY : CLEARTYPE_QUALITY;
    desc.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
    wcsncpy(desc.lfFaceName,inFormat.font(L"times").c_str(),LF_FACESIZE);
+
+   if (!sgFontDC)
+   {
+      sgFontDC = CreateCompatibleDC(0);
+      SetBkColor(sgFontDC, RGB(0,0,0));
+      SetTextColor(sgFontDC, RGB(255,255,255));
+      SetTextAlign( sgFontDC, TA_TOP );
+   }
 
 
    // Check to see if it is there....
@@ -224,18 +269,16 @@ FontFace *FontFace::CreateNative(const TextFormat &inFormat,double inScale,AntiA
 
    //printf(" create native:%S.\n", desc.lfFaceName);
 
-   if (!sgFontDC)
-   {
-      sgFontDC = CreateCompatibleDC(0);
-      SetBkColor(sgFontDC, RGB(0,0,0));
-      SetTextColor(sgFontDC, RGB(255,255,255));
-      SetTextAlign( sgFontDC, TA_TOP );
-   }
-
-
    HFONT hfont = CreateFontIndirectW( &desc );
    if (!hfont)
      return 0;
+
+   if (IsColourFont(hfont))
+   {
+      // Colour fonts don't render well with GDI, so we won't use them as native fonts
+      DeleteObject(hfont);
+      return 0;
+   }
 
    return new GDIFont(hfont,height, inFormat.bold, inFormat.italic, aaType==aaAdvancedLcd);
 }
