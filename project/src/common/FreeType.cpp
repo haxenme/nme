@@ -417,9 +417,40 @@ public:
                unsigned char *src = bitmap->buffer + y*bitmap->pitch;
                memcpy(dest, src, 4*w);
             }
-            DRect dest( outTarget.mRect.x, outTarget.mRect.y, destW, destH );
-            // TODO : better scaling and premA
-            bmp->StretchTo(outTarget, Rect(0,0,w,h), dest, 1);
+            bmp->ChangeInternalFormat(pfBGRPremA);
+
+            while (w > destW * 2 || h > destH * 2)
+            {
+               SimpleSurface* smaller = new SimpleSurface(w / 2, h / 2, bmp->Format());
+               smaller->IncRef();
+               smaller->Clear(0,nullptr);
+
+               {
+                  AutoSurfaceRender sr(smaller);
+                  DRect rect(0, 0, smaller->Width(), smaller->Height());
+                  bmp->StretchTo(sr.Target(), Rect(0, 0, w, h), rect, 1);
+               }
+               bmp->DecRef();
+               bmp = smaller;
+               w = bmp->Width();
+               h = bmp->Height();
+            }
+
+            SimpleSurface* sized = new SimpleSurface(destW, destH, pfBGRA);
+            sized->IncRef();
+            sized->Clear(0, nullptr);
+
+            {
+               AutoSurfaceRender sr(sized);
+               DRect rect(0, 0, sized->Width(), sized->Height());
+               bmp->StretchTo(sr.Target(), Rect(0, 0, w, h), rect, 1);
+            }
+            bmp->DecRef();
+            bmp = sized;
+            w = destW;
+            h = destH;
+
+            bmp->BlitTo(outTarget, Rect(0, 0, w, h), outTarget.mRect.x, outTarget.mRect.y, bmCopy, nullptr, 0xffffff);
             bmp->DecRef();
             return;
          }
