@@ -80,9 +80,13 @@ class Platform
             is64 = true;
          }
          else
-            for(architecture in project.architectures) 
-               if (architecture == Architecture.X64) 
-                  is64 = true;
+         {
+            var hostArch = PlatformHelper.hostArchitecture;
+            if (hostArch == Architecture.X64) 
+               is64 = true;
+            else if (hostArch == Architecture.ARM64) 
+               is64 = isArm64 = true;
+         }
       }
       targetDir = project.app.binDir + "/" + getPlatformDir();
       haxeDir = targetDir + "/haxe";

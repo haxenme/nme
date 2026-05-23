@@ -17,7 +17,17 @@ class PlatformHelper
       {
          switch(hostPlatform) 
          {
-            case Platform.WINDOWS, Platform.LINUX, Platform.MAC:
+            case Platform.MAC:
+               var process = new Process("uname", [ "-a" ]);
+               var output = process.stdout.readAll().toString();
+               process.stderr.readAll();
+               process.exitCode();
+               process.close();
+
+               var uname = output.toLowerCase();
+               _hostArchitecture = uname.indexOf("arm64") != -1 ? Architecture.ARM64 : Architecture.X64;
+
+            case Platform.WINDOWS, Platform.LINUX:
                var bits = nme.Lib.bits;
                _hostArchitecture = bits==64 ? Architecture.X64 : Architecture.X86;
 

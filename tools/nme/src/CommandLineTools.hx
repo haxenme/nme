@@ -1561,7 +1561,7 @@ class CommandLineTools
 
    static function buildNdll()
    {
-      sys.println("The binary nme.ndll is not distrubuted with source code, and is not built for your system yet.");
+      sys.println("The binary nme.ndll is not distrubuted with source code, and is not built for your system (" + Sys.systemName() + ") yet.");
       while(true)
       {
          Sys.print("Would you like to build it now Y/n ? >");

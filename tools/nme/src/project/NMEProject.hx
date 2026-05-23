@@ -502,7 +502,11 @@ class NMEProject
                      architectures = [ PlatformHelper.hostArchitecture ];
                }
                else
-                  architectures = [ Architecture.X64 ];
+               {
+                  architectures = [ PlatformHelper.hostArchitecture ];
+                  if (architectures[0]!=Architecture.X64)
+                     architectures.push( Architecture.X64 );
+               }
             }
             window.singleInstance = false;
 

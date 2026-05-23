@@ -135,6 +135,9 @@ class Loader
             // Try haxelib64 ...
             if (result == null)
                result = tryLoad(haxelib + slash + "ndll" + slash + sysName() + "64" + slash + "nme", func, args);
+            // Try arm64 ...
+            if (result == null)
+               result = tryLoad(haxelib + slash + "ndll" + slash + sysName() + "Arm64" + slash + "nme", func, args);
          }
       }
 	  
