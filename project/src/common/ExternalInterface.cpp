@@ -5237,7 +5237,7 @@ value nme_sound_from_data(value inData, value inLen, value inForceMusic, value i
    }
    else
    {
-      val_throw(alloc_string("No Sound"));
+      val_throw(alloc_string("Could not create sound from encoded data."));
    }
    #endif
    return alloc_null();

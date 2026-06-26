@@ -142,7 +142,7 @@
    <!-- Use to allow testing on mac... -->
    <set name="NME_OPENAL" value="1" if="macos" unless="NME_NO_AUDIO" />
 
-   <set name="NME_OPENAL" value="1" if="emscripten" unless="NME_NO_AUDIO" />
+   <set name="NME_WEB_AUDIO" value="1" if="emscripten" unless="NME_NO_AUDIO" />
 
    <set name="NME_CAMERA" value="1" unless="emscripten||winrt" />
 
@@ -309,6 +309,7 @@
       <compilerflag value="-DNME_GFX_DEBUG" if="NME_GFX_DEBUG" />
       <compilerflag value="-DNME_NO_GLGETERROR" if="emscripten" unless="NME_GFX_DEBUG" />
       <compilerflag value="-DNME_OPENAL" if="NME_OPENAL" unless="NME_NO_AUDIO" />
+      <compilerflag value="-DNME_WEB_AUDIO" if="NME_WEB_AUDIO" />
 
       <cache value="1" unless="winrpi" />
       <cache value="1" asLibrary="true" if="winrpi NME_STATIC_LINK" />
@@ -379,6 +380,7 @@
          <file name="${SRC_DIR}/emscripten/_sans.cpp" />
          <file name="${SRC_DIR}/emscripten/_serif.cpp" />
          <file name="${SRC_DIR}/emscripten/_monospace.cpp" />
+         <file name="${SRC_DIR}/audio/WebAudioSound.cpp" if="NME_WEB_AUDIO" unless="NME_NO_AUDIO" />
       </section>
 
       <section if="rpi" unless="winrpi" >
@@ -665,9 +667,6 @@
                <lib name="-lGLESv2" />
                <lib name="-lfreetype" if="SYSTEM_FREETYPE" />
 
-               <section if="emscripten" >
-                   <lib name="-sUSE_SDL_MIXER=2" />
-               </section>
             </section>
          </section>
             <!--<lib name="-lcurl" />

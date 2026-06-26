@@ -2447,36 +2447,18 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
    #ifdef NME_SDL3
       SDL_DisplayID startupDisplay = SDL_GetPrimaryDisplay();
-      #if defined(HX_WINDOWS) && !defined(HX_WINRT)
       if (isMain)
       {
-         HWND fg = GetForegroundWindow();
-         if (fg!=0)
-         {
-            RECT rect;
-            if (GetWindowRect(fg,&rect))
-            {
-               SDL_Point p;
-               p.x = (rect.left + rect.right)>>1;
-               p.y = (rect.top + rect.bottom)>>1;
-               startupDisplay = SDL_GetDisplayForPoint(&p);
-               /*
-               printf("Found startup display %d,%d -> %d\n", p.x, p.y, (int)startupDisplay);
-               int count = 0;
-               SDL_DisplayID *displays = SDL_GetDisplays(&count);
-               printf(" display count:%d\n", count);
-               for(int i=0;i<count;i++)
-               {
-                  SDL_Rect r;
-                  SDL_GetDisplayBounds(displays[i], &r);
-                  printf(" %d] %d,%d, %dx%d\n",i,r.x, r.y, r.w,r.h );
-               }
-               SDL_free(displays);
-               */
-            }
-         }
+         float mx = 0;
+         float my = 0;
+         SDL_GetGlobalMouseState(&mx, &my);
+         SDL_Point p;
+         p.x = (int)mx;
+         p.y = (int)my;
+         SDL_DisplayID mouseDisplay = SDL_GetDisplayForPoint(&p);
+         if (mouseDisplay)
+            startupDisplay = mouseDisplay;
       }
-      #endif
    #endif
 
 
@@ -2595,6 +2577,14 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
    int targetX = SDL_WINDOWPOS_UNDEFINED;
    int targetY = SDL_WINDOWPOS_UNDEFINED;
 
+   #if defined(HX_MACOS)
+   if (!borderless && !fullscreen)
+   {
+      targetX = sgDesktopX + ((sgDesktopWidth - targetW) >> 1);
+      targetY = sgDesktopY + ((sgDesktopHeight - targetH) >> 1);
+   }
+   #endif
+
    #if (defined(HX_WINDOWS) && !defined(HX_WINRT))
    HWND hWin = 0;
 
@@ -2670,6 +2660,11 @@ void CreateMainFrame(FrameCreationCallback inOnFrame, int inWidth, int inHeight,
 
       window = SDL_CreateWindowWithProperties(props);
       SDL_DestroyProperties(props);
+
+      #if defined(HX_MACOS)
+      if (window && !fullscreen && targetX != SDL_WINDOWPOS_UNDEFINED && targetY != SDL_WINDOWPOS_UNDEFINED)
+         SDL_SetWindowPosition(window, targetX, targetY);
+      #endif
       #else
       window = SDL_CreateWindow(inTitle, targetX, targetY, setWidth, setHeight, requestWindowFlags);
       #endif
@@ -3176,8 +3171,13 @@ void StartAnimation()
       double w=0;
       double h=0;
       emscripten_get_element_css_size("canvas", &w, &h);
-      int cw = w*sgDeviceDpi;
-      int ch = h*sgDeviceDpi;
+      int cw = (int)(w*sgDeviceDpi + 0.5);
+      int ch = (int)(h*sgDeviceDpi + 0.5);
+      if (cw<=0 || ch<=0)
+      {
+         sCheckCanvasSize = true;
+         return;
+      }
       if (sgCanvasWidth!=cw || sgCanvasHeight!=ch)
       {
          sgCanvasWidth=cw;
@@ -3191,6 +3191,9 @@ void StartAnimation()
          #endif
       }
    }
+
+   if (sgCanvasWidth<=0 || sgCanvasHeight<=0)
+      return;
 
    Event poll(etPoll);
    sgSDLFrame->ProcessEvent(poll);

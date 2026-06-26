@@ -62,6 +62,12 @@ SoundChannel *CreateOpenSlSyncChannel(const ByteArray &inData, const SoundTransf
 SoundChannel *CreateAvPlayerSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
               SoundDataFormat inDataFormat,bool inIsStereo, int inRate);
 
+Sound *CreateWebAudioSound(const unsigned char *inData, int len, bool inForceMusic);
+SoundChannel *CreateWebAudioSyncChannel(const ByteArray &inData, const SoundTransform &inTransform,
+              SoundDataFormat inDataFormat, bool inIsStereo, int inRate);
+void SuspendWebAudio();
+void ResumeWebAudio();
+
 
 class INmeSoundData;
 class INmeSoundStream;

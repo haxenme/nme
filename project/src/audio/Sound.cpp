@@ -48,7 +48,7 @@ Sound *Sound::FromFile(const std::string &inFilename, bool inForceMusic, const s
    }
 
    #elif defined(EMSCRIPTEN)
-      result = ReadAndCreate(inFilename, inForceMusic, CreateOpenAlSound);
+      result = ReadAndCreate(inFilename, inForceMusic, CreateWebAudioSound);
    #else
 
      #ifdef HX_MACOS
@@ -98,13 +98,7 @@ Sound *Sound::FromEncodedBytes(const unsigned char *inData, int inLen, bool inFo
      #endif
 
    #elif defined(EMSCRIPTEN)
-      result = CreateOpenAlSound(inData, inLen, inForceMusic);
-      if (!result || !result->ok())
-      {
-         if (result)
-            result->DecRef();
-         result = CreateSdlSound(inData, inLen, inForceMusic);
-      }
+      result = CreateWebAudioSound(inData, inLen, inForceMusic);
    #else
 
 
@@ -151,7 +145,7 @@ SoundChannel *SoundChannel::CreateSyncChannel(const ByteArray &inData, const Sou
 
    #elif defined(EMSCRIPTEN)
 
-   result = CreateOpenAlSyncChannel(inData, inTransform, inDataFormat, inIsStereo, inRate);
+   result = CreateWebAudioSyncChannel(inData, inTransform, inDataFormat, inIsStereo, inRate);
 
    #else
 
@@ -213,6 +207,10 @@ void Sound::Suspend(unsigned int inFlags)
       SuspendOpenAl();
       #endif
 
+      #ifdef NME_WEB_AUDIO
+      SuspendWebAudio();
+      #endif
+
       #if defined(NME_MIXER)
       SuspendSdlSound();
       #endif
@@ -237,6 +235,10 @@ void Sound::Resume(unsigned int inFlags)
    {
       #ifdef NME_OPENAL
       ResumeOpenAl();
+      #endif
+
+      #ifdef NME_WEB_AUDIO
+      ResumeWebAudio();
       #endif
 
       #ifdef NME_MIXER
