@@ -5,12 +5,26 @@
 
 
 extern "C" {
+#ifndef NME_NO_JPEG
 #include <jpeglib.h>
+#endif
 #include <png.h>
 }
 #include <setjmp.h>
 
 using namespace nme;
+
+namespace nme {
+bool gRespectExifOrientation = true;
+};
+
+static bool isLittleEndian()
+{
+   unsigned short val = 0;
+   *(unsigned char *)(&val) = 1;
+   return val==1;
+}
+
 
 struct ReadBuf
 {
@@ -33,6 +47,7 @@ struct ReadBuf
    int mLen;
 };
 
+#ifndef NME_NO_JPEG
 struct ErrorData
 {
    struct jpeg_error_mgr base; // base
@@ -116,15 +131,6 @@ struct MySrcManager
 
 
 namespace nme {
-
-bool gRespectExifOrientation = true;
-
-static bool isLittleEndian()
-{
-   unsigned short val = 0;
-   *(unsigned char *)(&val) = 1;
-   return val==1;
-}
 
 
 bool SoftwareDecodeJPeg(unsigned char *inDest, int inWidth, int inHeight, const uint8 *inData,unsigned int inDataLen)
@@ -545,6 +551,7 @@ static bool EncodeJPG(Surface *inSurface, ByteArray *outBytes,double inQuality)
 }
 
 
+#endif // !NME_NO_JPEG
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg)
 {
@@ -862,6 +869,9 @@ Surface *Surface::Load(const OSChar *inFilename, IAppDataCallback *onAppData)
    }
    Surface *result = 0;
 
+   #ifdef NME_NO_JPEG
+   result = TryPNG(file,0,0);
+   #else
    if (jpegFirst)
    {
       result = TryJPEG(file,0,0, onAppData);
@@ -895,6 +905,7 @@ Surface *Surface::Load(const OSChar *inFilename, IAppDataCallback *onAppData)
          result = TryPNG(file,0,0);
       }
    }
+   #endif
 
    fclose(file);
    return result;
@@ -906,9 +917,12 @@ Surface *Surface::LoadFromBytes(const uint8 *inBytes,int inLen, IAppDataCallback
       return 0;
 
    Surface *result = 0;
+   #ifndef NME_NO_JPEG
    if (*inBytes==0xff)
       result = TryJPEG(0,inBytes,inLen,onAppData);
-   else if (*inBytes==0x89)
+   else
+   #endif
+   if (*inBytes==0x89)
       result = TryPNG(0,inBytes,inLen);
 
    return result;
@@ -919,8 +933,12 @@ bool Surface::Encode( ByteArray *outBytes,bool inPNG,double inQuality)
    if (inPNG)
       return EncodePNG(this,outBytes);
    
+   #ifndef NME_NO_JPEG
    else
       return EncodeJPG(this,outBytes,inQuality);
+   #endif
+
+   return false;
 }
 
 

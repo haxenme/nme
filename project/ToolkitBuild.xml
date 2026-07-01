@@ -28,6 +28,7 @@
    <set name="NME_VIDEO" value="1" unless="ios" />
    <set name="NME_NO_OGL" value="1" if="nme_no_ogl" />
    <set name="NME_NO_OGL" value="1" if="nme_metal" unless="mac" />
+   <set name="NME_NO_JPEG" value="1" if="nme_no_jpeg" />
    <set name="NME_ANGLE" value="1" if="windows||winrt" unless="NME_NO_ANGLE || NME_LOCAL_TOOLKIT" />
    <set name="NME_DYNAMIC_ANGLE" value="1" if="NME_LOCAL_TOOLKIT windows" unless="NME_NO_ANGLE || NME_NO_OGL" />
    <set name="NATIVE_TOOLKIT_SDL_ANGLE" value="1" if="NME_ANGLE" />
@@ -169,7 +170,7 @@
       <set name="NME_ZLIB" value="${ZLIB_DIR}" />
 
       <include name="toolkit/png/files.xml" />
-      <include name="toolkit/jpeg/files.xml" />
+      <include name="toolkit/jpeg/files.xml" unless="NME_NO_JPEG" />
       <include name="toolkit/ogg/files.xml" unless="NME_NO_OGG"/>
       <include name="toolkit/vorbis/files.xml" unless="NME_NO_OGG"/>
       <include name="toolkit/freetype/files.xml" />
@@ -187,8 +188,8 @@
       <include name="${NME_ZLIB}/files.xml" />
       <set name="NME_PNG" value="${NATIVE_TOOLKIT_PATH}/png/" />
       <include name="${NME_PNG}/files.xml" />
-      <set name="NME_JPEG" value="${NATIVE_TOOLKIT_PATH}/jpeg/" />
-      <include name="${NME_JPEG}/files.xml" />
+      <set name="NME_JPEG" value="${NATIVE_TOOLKIT_PATH}/jpeg/" unless="NME_NO_JPEG" />
+      <include name="${NME_JPEG}/files.xml" unless="NME_NO_JPEG" />
       <set name="NME_OGG" value="${NATIVE_TOOLKIT_PATH}/ogg/" unless="NME_NO_OGG"/>
       <include name="${NME_OGG}/files.xml" unless="NME_NO_OGG" />
       <set name="NME_VORBIS" value="${NATIVE_TOOLKIT_PATH}/vorbis/" unless="NME_NO_OGG"  />
@@ -309,6 +310,8 @@
       <compilerflag value="-DNME_GFX_DEBUG" if="NME_GFX_DEBUG" />
       <compilerflag value="-DNME_NO_GLGETERROR" if="emscripten" unless="NME_GFX_DEBUG" />
       <compilerflag value="-DNME_OPENAL" if="NME_OPENAL" unless="NME_NO_AUDIO" />
+      <compilerflag value="-DNME_NO_JPEG" if="NME_NO_JPEG" />
+      <compilerflag value="-DNME_NO_FONTDATA" if="NME_NO_FONTDATA emscripten" />
       <compilerflag value="-DNME_WEB_AUDIO" if="NME_WEB_AUDIO" />
 
       <cache value="1" unless="winrpi" />
@@ -377,11 +380,16 @@
          <file name="${SRC_DIR}/emscripten/CurlFetch.cpp" />
          <file name="${SRC_DIR}/emscripten/JsPrime.cpp" if="HXCPP_JS_PRIME" />
 
+         <file name="${SRC_DIR}/audio/WebAudioSound.cpp" if="NME_WEB_AUDIO" unless="NME_NO_AUDIO" />
+      </section>
+
+      <section if="emscripten" unless="NME_NO_FONTDATA" >
          <file name="${SRC_DIR}/emscripten/_sans.cpp" />
          <file name="${SRC_DIR}/emscripten/_serif.cpp" />
          <file name="${SRC_DIR}/emscripten/_monospace.cpp" />
-         <file name="${SRC_DIR}/audio/WebAudioSound.cpp" if="NME_WEB_AUDIO" unless="NME_NO_AUDIO" />
       </section>
+
+
 
       <section if="rpi" unless="winrpi" >
          <compilerflag value="-I/opt/vc/include" />
@@ -397,9 +405,10 @@
       <compilerflag value="-I${NME_ZLIB}"/>
       <compilerflag value="-I${NME_PNG}"/>
       <compilerflag value="-I${NME_PNG}.." if="NME_LOCAL_TOOLKIT" />
-      <compilerflag value="-I${NME_JPEG}"/>
-      <compilerflag value="-I${NME_JPEG}/src" if="NME_LOCAL_TOOLKIT" />
-      <compilerflag value="-I${NME_JPEG}.." if="NME_LOCAL_TOOLKIT" />
+
+      <compilerflag value="-I${NME_JPEG}" unless="NME_NO_JEG" />
+      <compilerflag value="-I${NME_JPEG}/src" if="NME_LOCAL_TOOLKIT" unless="NME_NO_JEG"  />
+      <compilerflag value="-I${NME_JPEG}.." if="NME_LOCAL_TOOLKIT" unless="NME_NO_JEG"  />
       <compilerflag value="-I${NME_VORBIS}include" unless="NME_NO_OGG" />
       <compilerflag value="-I${NME_OGG}include" unless="NME_NO_OGG" />
 
@@ -413,7 +422,7 @@
       <compilerflag value="-I${NATIVE_TOOLKIT_PATH}/curl/include" if="NME_CURL_TOOLKIT" />
 
       <depend files="native-toolkit-freetype-depends" />
-      <depend files="native-toolkit-jpeg-depends" />
+      <depend files="native-toolkit-jpeg-depends" unless="NME_NO_JPEG"/>
       <depend files="native-toolkit-png-depends" />
       <depend files="native-toolkit-vorbis-depends" unless="NME_NO_OGG" />
       <depend files="native-toolkit-ogg-depends" unless="NME_NO_OGG" />
@@ -625,15 +634,16 @@
            <files id="native-toolkit-vorbis" unless="NME_NO_OGG" />
          </section>
 
-         <section unless="NME_LOCAL_TOOLKIT" >
+         <section unless="NME_LOCAL_TOOLKIT || NME_NO_JPEG" >
             <files id="native-toolkit-jpeg" />
          </section>
-         <section if="NME_LOCAL_TOOLKIT" >
+         <section if="NME_LOCAL_TOOLKIT" unless="NME_NO_JPEG" >
             <files id="native-toolkit-jpeg-8" />
             <files id="native-toolkit-jpeg-12" />
             <files id="native-toolkit-jpeg-16" />
             <files id="native-toolkit-jpeg-asm" if="NME_SIMD_D" />
          </section>
+
          <files id="native-toolkit-png" />
          <files id="native-toolkit-zlib" unless="NME_LOCAL_TOOLKIT"  />
 
@@ -817,7 +827,7 @@
       <cache value="1" asLibrary="true" project="libVorbis" />
    </files>
 
-   <section if="NME_LOCAL_TOOLKIT" >
+   <section if="NME_LOCAL_TOOLKIT" unless="NME_NO_JPEG" >
       <files id="native-toolkit-jpeg-8" >
          <cache value="1" asLibrary="true" project="libJpeg8" />
       </files>
@@ -828,7 +838,7 @@
          <cache value="1" asLibrary="true" project="libJpeg16" />
       </files>
    </section>
-   <section unless="NME_LOCAL_TOOLKIT" >
+   <section unless="NME_LOCAL_TOOLKIT || NME_NO_JPEG" >
       <files id="native-toolkit-jpeg" >
          <cache value="1" asLibrary="true" project="libJpeg" />
       </files>

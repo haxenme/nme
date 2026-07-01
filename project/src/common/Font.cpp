@@ -14,7 +14,7 @@
 #define strcasecmp stricmp
 #endif
 
-#if (defined(HXCPP_JS_PRIME) || defined(EMSCRIPTEN) )
+#if ( (defined(HXCPP_JS_PRIME) || defined(EMSCRIPTEN) ) && !defined(NME_NO_FONTDATA) )
 #define LINKED_FONT_DATA
 #endif
 
