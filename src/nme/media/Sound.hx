@@ -3,9 +3,11 @@ package nme.media;
 
 import nme.events.IEventDispatcher;
 import nme.events.EventDispatcher;
+import nme.events.ProgressEvent;
 import nme.events.IOErrorEvent;
 import nme.events.SampleDataEvent;
-import nme.net.URLRequest;
+import nme.events.Event;
+import nme.net.*;
 import nme.Loader;
 import nme.errors.Error;
 import nme.utils.ByteArray;
@@ -22,6 +24,7 @@ class Sound extends EventDispatcher
    public var isBuffering(get, null):Bool;
    public var length(get, null):Float;
    public var url(default, null):String;
+   public var error(default, null):String;
 
    public var nmeHandle:NativeHandle;
    private var nmeLoading:Bool;
@@ -46,8 +49,51 @@ class Sound extends EventDispatcher
       nmeDynamicSound = false;
 
       if (stream != null)
-         load(stream, context, forcePlayAsMusic, inEngine);
+      {
+         var useFileApi = #if wasm false #else true #end;
+         if (useFileApi)
+         {
+            load(stream, context, forcePlayAsMusic, inEngine);
+         }
+         else
+         {
+            nmeLoading = true;
+            var loader = new nme.net.URLLoader();
+            loader.dataFormat = URLLoaderDataFormat.BINARY;
+            loader.addEventListener(Event.COMPLETE, (e) -> {
+               var bytes = loader.data;
+               nmeLoading = false;
+               bytesLoaded = bytesTotal = bytes.length;
+               nmeHandle = nme_sound_from_data(bytes, bytes.length, forcePlayAsMusic, inEngine);
+               if (nmeHandle == null)
+               {
+                  error = "Could not decode sound data";
+                  var errorEvent = new IOErrorEvent(IOErrorEvent.IO_ERROR, true, false, error);
+                  dispatchEvent(errorEvent);
+               }
+               else
+               {
+                  url = stream.url;
+                  dispatchEvent(new Event(Event.COMPLETE));
+               }
+            });
+            loader.addEventListener(ProgressEvent.PROGRESS, (e:ProgressEvent) -> {
+               bytesLoaded = loader.bytesLoaded;
+               bytesTotal = loader.bytesTotal;
+               dispatchEvent(e);
+            });
+            loader.addEventListener(IOErrorEvent.IO_ERROR, (e:IOErrorEvent) -> {
+               nmeLoading = false;
+               bytesLoaded = bytesTotal = 0;
+               nmeHandle = null;
+               error = "" + e;
+               dispatchEvent(e);
+            });
+            loader.load(stream);
+         }
+      }
    }
+
    public function getEngine()
    {
       // TODO
@@ -91,7 +137,6 @@ class Sound extends EventDispatcher
       if (nmeHandle == null) 
       {
          throw("Could not load " + (forcePlayAsMusic ? "music" : "sound") + ":" + stream.url);
-
       }
       else 
       {
