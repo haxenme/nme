@@ -127,10 +127,16 @@ class EmscriptenPlatform extends DesktopPlatform
       context.NME_JS_FOOTER = getJsImport("nmeJsFooter");
       context.NME_JS_HEADER = getJsImport("nmeJsHeader");
       context.EM_RUN_HOOKS = project.getBool("HXCPP_LINK_EMRUN", false );
+      if (project.getBool("nme_reuse_tab", false) && project.command.toLowerCase()=="test")
+         context.NME_REUSE_TAB = true;
+      context.EM_RUN_HOOKS = project.getBool("HXCPP_LINK_EMRUN", false );
 
 
       if (project.hasDef("preloadBg"))
+      {
          context.PRELOAD_BG = '"' + project.getDef("preloadBg") + '"';
+         Log.verbose('Using specified preloadBg ' + context.PRELOAD_BG);
+      }
       else
       {
          var bg = project.window.background;
@@ -138,7 +144,10 @@ class EmscriptenPlatform extends DesktopPlatform
       }
 
       if (project.hasDef("preloadFg"))
+      {
          context.PRELOAD_FG = '"' + project.getDef("preloadFg") + '"';
+         Log.verbose('Using specified preloadFg ' + context.PRELOAD_FG);
+      }
       else
       {
          var bg = project.window.background;
@@ -164,6 +173,10 @@ class EmscriptenPlatform extends DesktopPlatform
          {
             Log.verbose('Using specified $preloader');
          }
+     }
+     else
+     {
+        Log.verbose('No preloader specified');
      }
 
       if (preloader!=null)

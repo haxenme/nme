@@ -9,7 +9,7 @@
 	<title>::APP_TITLE::</title>
 	
 	<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
 	
 	::if linkedLibraries::::foreach (linkedLibraries)::
 	<script type="text/javascript" src="::__current__::"></script>::end::::end::
@@ -37,6 +37,40 @@
 	
 </head>
 <body>
+   ::if NME_REUSE_TAB::
+<script>
+(() => {
+  const key = location.origin + location.pathname + location.search;
+  const id = crypto.randomUUID();
+  const ch = new BroadcastChannel("nne-tab-reuse");
+  let acknowledged = false;
+  ch.onmessage = (e) => {
+    const m = e.data || {};
+    if (m.type === "probe" && m.key === key && m.from !== id) {
+      ch.postMessage({ type: "ack", to: m.from, key });
+      location.reload();
+      window.focus();
+    }
+    // New tab receives ack from existing tab
+    if (m.type === "ack" && m.to === id && m.key === key) {
+      acknowledged = true;
+      window.close();
+      // Fallback if close is blocked
+      setTimeout(() => {
+        if (!document.hidden) {
+          document.body.innerHTML =
+            "<p>Duplicate tab detected. Existing tab was refreshed. You can close this tab.</p>";
+        }
+      }, 150);
+    }
+  };
+  // Ask if a matching tab exists
+  ch.postMessage({ type: "probe", from: id, key });
+})();
+</script>
+   ::end::
+
+
    ::if (NME_JS_BODY!=null)::
    ::NME_JS_BODY::
    ::else::
