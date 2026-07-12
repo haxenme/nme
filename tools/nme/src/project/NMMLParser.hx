@@ -344,6 +344,10 @@ class NMMLParser
       else if (element.has.embed)
          embed = parseBool(substitute(element.att.embed));
 
+      var preload = false;
+      if (element.has.preload)
+         preload = parseBool(substitute(element.att.preload));
+
       if (element.has.glyphs) 
          glyphs = substitute(element.att.glyphs);
 
@@ -379,7 +383,7 @@ class NMMLParser
             if (element.has.id) 
                id = substitute(element.att.id);
 
-            var asset = new Asset(path, targetPath, type, embed, assetsAlpha);
+            var asset = new Asset(path, targetPath, type, embed, preload, project.targetName, assetsAlpha);
             asset.setId(id);
 
             if (glyphs != null) 
@@ -430,7 +434,7 @@ class NMMLParser
                }
             }
 
-            parseAssetsElementDirectory(path, targetPath, include, exclude, type, embed, assetsAlpha, glyphs, recurse);
+            parseAssetsElementDirectory(path, targetPath, include, exclude, type, embed, preload, assetsAlpha, glyphs, recurse);
          }
       }
       else
@@ -463,6 +467,10 @@ class NMMLParser
                else if (childElement.has.embed)
                   childEmbed = parseBool(substitute(childElement.att.embed));
 
+               var childPreload = preload;
+               if (childElement.has.preload)
+                  childPreload = parseBool(substitute(childElement.att.preload));
+
                if (childElement.has.glyphs) 
                   childGlyphs = substitute(childElement.att.glyphs);
 
@@ -484,7 +492,7 @@ class NMMLParser
                   id = substitute(childElement.att.name);
 
 
-               var asset = new Asset(path + childPath, targetPath + childTargetPath, childType, childEmbed, childAlpha);
+               var asset = new Asset(path + childPath, targetPath + childTargetPath, childType, childEmbed, childPreload, project.targetName, childAlpha);
                asset.setId(id);
 
                if (childGlyphs != null) 
@@ -496,7 +504,7 @@ class NMMLParser
       }
    }
 
-   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:Bool, assetsAlpha:AlphaMode, glyphs:String, recursive:Bool):Void 
+   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:Bool, preload:Bool, assetsAlpha:AlphaMode, glyphs:String, recursive:Bool):Void 
    {
       var files = FileSystem.readDirectory(path);
 
@@ -508,13 +516,13 @@ class NMMLParser
          if (FileSystem.isDirectory(path + "/" + file) && recursive) 
          {
             if (filter(file, [ "*" ], exclude.split("|"))) 
-               parseAssetsElementDirectory(path + "/" + file, targetPath + file, include, exclude, type, embed, assetsAlpha, glyphs, true);
+               parseAssetsElementDirectory(path + "/" + file, targetPath + file, include, exclude, type, embed, preload, assetsAlpha, glyphs, true);
          }
          else
          {
             if (filter(file, include.split("|"), exclude.split("|"))) 
             {
-               var asset = new Asset(path + "/" + file, targetPath + file, type, embed, assetsAlpha);
+               var asset = new Asset(path + "/" + file, targetPath + file, type, embed, preload, project.targetName, assetsAlpha);
 
                if (glyphs != null) 
                   asset.glyphs = glyphs;
@@ -1045,7 +1053,7 @@ class NMMLParser
                      else if (element.has.embed)
                         embed = parseBool(substitute(element.att.embed));
 
-                     var asset = new Asset(path, id, null, embed);
+                     var asset = new Asset(path, id, null, embed, false, project.targetName);
                      //asset.id = id;
                      project.assets.push(asset);
                   }

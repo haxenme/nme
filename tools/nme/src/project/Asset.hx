@@ -3,6 +3,7 @@ import nme.display.BitmapData;
 import nme.AlphaMode;
 import sys.FileSystem;
 import sys.io.File;
+import platforms.Platform;
 
 
 class Asset 
@@ -30,11 +31,13 @@ class Asset
    public var isMidi:Bool = false;
    public var isLibrary:Bool;
    public var conversion:String;
+   public var preload:Bool = false;
 
-   public function new(path:String = "", rename:String = "", inType:AssetType, inEmbed:Bool, ?inAlphaMode:AlphaMode) 
+   public function new(path:String = "", rename:String = "", inType:AssetType, inEmbed:Bool, inPreload:Bool, targetName:String, inAlphaMode:AlphaMode = null) 
    {
-      embed = inEmbed;
-      isResource = embed;
+      preload = inPreload && (targetName == Platform.WASM);
+      embed = inEmbed && !preload;
+      isResource = embed && (targetName != Platform.FLASH);
       sourcePath = path;
       alphaMode = inAlphaMode==null ? AlphaDefault : inAlphaMode;
 
@@ -98,6 +101,7 @@ class Asset
       isImage = type==IMAGE;
       isLibrary = type==SWF;
    }
+
 
    public function preprocess(convertDir:String)
    {

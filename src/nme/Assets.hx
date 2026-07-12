@@ -44,6 +44,33 @@ typedef AssetLibFactory = String -> nme.AssetLib;
 
 
 @:nativeProperty
+#if emscripten
+@:cppFileCode('
+#include <emscripten.h>
+
+EM_JS(int, nme_module_get_asset, (const char* path), {
+   var data = Module.nmeGetAsset ? Module.nmeGetAsset(UTF8ToString(path)) : null;
+   if (!data) return 0;
+   var bytes = (data instanceof Uint8Array) ? data : new Uint8Array(data.buffer !== undefined ? data.buffer : data);
+   var len = bytes.length;
+   var ptr = _malloc(len + 4);
+   HEAP32[ptr >> 2] = len;
+   HEAPU8.set(bytes, ptr + 4);
+   return ptr;
+});
+
+nme::utils::ByteArray nmeGetModuleAsset(String inPath)
+{
+   int packed = nme_module_get_asset(inPath.__s);
+   if (!packed) return null();
+   int len = *(int*)(size_t)packed;
+   nme::utils::ByteArray result = nme::utils::ByteArray_obj::__new(len,false);
+   ::memcpy(result->b->getBase(), (const void*)((size_t)packed + 4), len);
+   ::free((void*)(size_t)packed);
+   return result;
+}
+')
+#end
 class Assets 
 {
    public static inline var UNCACHED = 0;
@@ -66,6 +93,10 @@ class Assets
    public static var cache = new Cache();
 
 
+   #if emscripten
+   @:native("nmeGetModuleAsset")
+   extern public static function nmeGetModuleAsset(inPath:String):ByteArray;
+   #end
 
    public static function fromAssetList(assetList:String, inAddScriptBase:Bool,inAlphaToo:Bool)
    {
@@ -339,7 +370,15 @@ class Assets
             if (byteFactory.exists(filename))
                data = BitmapData.loadFromBytes( byteFactory.get(filename)() );
             else
-               data = BitmapData.load(filename);
+            {
+               #if emscripten
+               var moduleBytes = nmeGetModuleAsset(filename);
+               if (moduleBytes != null)
+                  data = BitmapData.loadFromBytes(moduleBytes);
+               #end
+               if (data == null)
+                  data = BitmapData.load(filename);
+            }
          }
          if (data!=null && data.transparent)
          {
@@ -417,28 +456,23 @@ class Assets
             data = Type.createInstance(Type.resolveClass(i.className), []);
          #elseif (js&&!jsprime)
             return null;
-            /*
-            var asset:Dynamic = ApplicationMain.urlLoaders.get(i.path).data;
-            data = null;
-            if (#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(asset, String)) 
-            {
-               bytes = new ByteArray();
-               bytes.writeUTFBytes(asset);
-            }
-            else if (!#if (haxe_ver>="4.1") Std.isOfType #else Std.is #end(data, ByteArray)) 
-            {
-               badType(is,"Bytes");
-               return null;
-            }
-            */
          #else
             var filename = i.path;
-            if (pathMapper.exists(filename))
-               filename = pathMapper.get(filename);
-            if (byteFactory.exists(filename))
-               data = byteFactory.get(filename)();
-            else
-               data = ByteArray.readFile(filename);
+            #if emscripten
+            data = nmeGetModuleAsset(filename);
+            if (data!=null)
+               useCache = true;
+            #end
+
+            if (data==null)
+            {
+               if (pathMapper.exists(filename))
+                  filename = pathMapper.get(filename);
+               if (byteFactory.exists(filename))
+                  data = byteFactory.get(filename)();
+               else
+                  data = ByteArray.readFile(filename);
+            } 
          #end
       }
 

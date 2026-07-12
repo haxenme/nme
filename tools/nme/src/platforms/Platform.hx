@@ -795,7 +795,7 @@ class Platform
       for(asset in project.assets) 
       {
          var target = catPaths(base, asset.targetPath );
-         if (!asset.embed)
+         if (!asset.isResource)
          {
             PathHelper.mkdir(Path.directory(target));
             addOutput(target);

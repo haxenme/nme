@@ -162,14 +162,18 @@
         binaryIsReady : false,
 
         downloadedNmeApp: 0,
-        nmeAppLoaded: false,
         nmeApp: null,
         nmeAppDataBase: 0,
         nmeAppHeader: {},
         nmeAppItems: {},
 
-        downloadedNmeClasses: 0,
-        nmeClasses: null,
+        downloadedAssets: 0,
+        nmeAssets: {},
+        nmeGetAsset: function(path) {
+          var data = this.nmeAssets[path];
+          delete this.nmeAssets[path];
+          return data || null;
+        },
 
         calledRun: false,
         ::if (NME_WASM)::
@@ -179,7 +183,7 @@
         },
         ::end::
         progress: function() {
-          var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedNmeClasses;
+          var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedAssets;
           if (this.binaryIsReady) loaded++;
           console.log("progress: " + this.binaryIsReady + "/" + loaded);
 
@@ -202,21 +206,6 @@
              return;
           }
 
-          if (this.nmeClasses!=null) {
-             var script = document.createElement("script");
-             script.text = this.nmeClasses;
-             this.nmeClasses = null;
-             document.head.appendChild(script);
-          }
-          if ( typeof(window.nmeClassesLoaded)=="undefined")
-             return;
-
-          if (!this.nmeAppLoaded && this.nmeApp!=null) {
-             var script = document.createElement("script");
-             script.text = window.parseNme();
-             this.nmeAppLoaded = true;
-             document.head.appendChild(script);
-          }
         },
 
         // This will get called by emsscripen code once it c++ constructors have run
@@ -313,7 +302,6 @@
              xhr.send();
           }) ();
 
-
           (function() {
              // NME_APP_JS
              Module.totalDownloads++;
@@ -338,30 +326,43 @@
              xhr.responseType = 'arraybuffer';
              xhr.send();
           }) ();
-
-          ::if (NME_CLASSES_JS)::
-          (function() {
-             Module.totalDownloads++;
-             window.nmeOnClasses = function() { Module.progress() };
-             var xhr = new XMLHttpRequest;
-             xhr.open("GET", "::NME_CLASSES_JS::", true);
-             xhr.onload = function (e) {
-               if (xhr.readyState === 4) {
-                 if (xhr.status === 200) {
-                   Module.downloadedNmeClasses = 1;
-                   Module.nmeClasses =xhr.response; 
-                   Module.progress();
-                 } else {
-                   console.error(xhr.response);
-                 }
-               }
-             };
-             xhr.onprogress = function (e) {
-               Module.downloadedNmeClasses = e.loaded / e.total;
-               Module.progress();
-             };
-             xhr.send();
-          }) ();
+          ::if PRELOAD_ASSETS::
+          (function(assets) {
+            Module.totalDownloads += assets.length;
+            var assetProgress = {};
+            assets.forEach(function(assetPath) {
+              assetProgress[assetPath] = 0;
+              var xhr = new XMLHttpRequest();
+              xhr.open('GET', assetPath, true);
+              xhr.responseType = 'arraybuffer';
+              xhr.onprogress = function(e) {
+                if (e.lengthComputable) {
+                  var prev = assetProgress[assetPath];
+                  assetProgress[assetPath] = e.loaded / e.total;
+                  Module.downloadedAssets += assetProgress[assetPath] - prev;
+                  Module.progress();
+                }
+              };
+              xhr.onload = function(e) {
+                if (xhr.readyState === 4) {
+                  if (xhr.status === 200) {
+                    var prev = assetProgress[assetPath];
+                    assetProgress[assetPath] = 1;
+                    Module.downloadedAssets += 1 - prev;
+                    Module.nmeAssets[assetPath] = new Uint8Array(xhr.response);
+                    Module.progress();
+                  } else {
+                    console.error('Failed to preload asset: ' + assetPath + ' (' + xhr.status + ')');
+                  }
+                }
+              };
+              xhr.send();
+            });
+          }) ( [
+            ::foreach (PRELOAD_ASSETS)::
+               '::targetPath::',
+            ::end::
+          ] );
           ::end::
 
     </script>

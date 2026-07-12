@@ -94,7 +94,7 @@ class HxParser
            project.classPaths.push(value);
 
         case "asset":
-           var asset = new Asset(value, value, null, true);
+           var asset = new Asset(value, value, null, true, false, project.targetName );
            project.assets.push(asset);
 
         case "background":

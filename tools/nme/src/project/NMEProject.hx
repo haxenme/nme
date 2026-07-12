@@ -959,7 +959,7 @@ class NMEProject
             asset.alphaMode = defaultMode;
          asset.preprocess(convertDir);
 
-         if ( asset.embed && target!=Platform.FLASH && target!=Platform.JSPRIME && target!=Platform.CPPIA)
+         if ( asset.isResource )
          {
             asset.resourceName = asset.flatName;
             //var relPath = PathHelper.relocatePath(asset.sourcePath, inBuildDir);

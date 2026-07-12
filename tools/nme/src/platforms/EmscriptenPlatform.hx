@@ -53,6 +53,7 @@ class EmscriptenPlatform extends DesktopPlatform
    override public function getBinName() : String { return "Wasm"; }
    override public function getNativeDllExt() { return ".js"; }
    override public function getLibExt() { return ".a"; }
+   override public function get_platform() : String { return Platform.WASM; }
 
    override public function copyBinary():Void 
    {
@@ -160,6 +161,9 @@ class EmscriptenPlatform extends DesktopPlatform
          var fg = (r<<16) | (g<<8) | b;
          context.PRELOAD_FG = '"#' + StringTools.hex(fg,6) + '"';
       }
+      var preloadAssets = [for(a in project.assets) if (a.preload) a];
+      if  (preloadAssets.length>0)
+         context.PRELOAD_ASSETS = preloadAssets;
 
       var preloader = project.getDef("preloader");
       if (!project.hasDef("nopreloader") )
@@ -177,6 +181,8 @@ class EmscriptenPlatform extends DesktopPlatform
      else
      {
         Log.verbose('No preloader specified');
+        if (preloadAssets.length>0)
+           Log.error('Preloaded assets, but no preloader specified');
      }
 
       if (preloader!=null)
