@@ -169,6 +169,7 @@
 
         downloadedAssets: 0,
         nmeAssets: {},
+        nmeAssetStates: {},
         nmeGetAsset: function(path) {
           var data = this.nmeAssets[path];
           delete this.nmeAssets[path];
@@ -360,6 +361,34 @@
             });
           }) ( [
             ::foreach (PRELOAD_ASSETS)::
+               '::targetPath::',
+            ::end::
+          ] );
+          ::end::
+
+          ::if PRELOAD_ASSETS_START::
+          // PreloadStart assets: begin downloading immediately but do not block app startup
+          (function(assets) {
+            assets.forEach(function(assetPath) {
+              Module.nmeAssetStates[assetPath] = 1; // loading
+              var xhr = new XMLHttpRequest();
+              xhr.open('GET', assetPath, true);
+              xhr.responseType = 'arraybuffer';
+              xhr.onload = function(e) {
+                if (xhr.readyState === 4) {
+                  if (xhr.status === 200) {
+                    Module.nmeAssets[assetPath] = new Uint8Array(xhr.response);
+                    Module.nmeAssetStates[assetPath] = 2; // ready
+                  } else {
+                    Module.nmeAssetStates[assetPath] = 3; // error
+                    console.error('Failed to load start asset: ' + assetPath + ' (' + xhr.status + ')');
+                  }
+                }
+              };
+              xhr.send();
+            });
+          }) ( [
+            ::foreach (PRELOAD_ASSETS_START)::
                '::targetPath::',
             ::end::
           ] );

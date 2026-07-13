@@ -4,6 +4,7 @@ import haxe.io.Path;
 import haxe.Template;
 import sys.io.File;
 import sys.FileSystem;
+import PreloadMode;
 using StringTools;
 
 class EmscriptenPlatform extends DesktopPlatform
@@ -161,9 +162,12 @@ class EmscriptenPlatform extends DesktopPlatform
          var fg = (r<<16) | (g<<8) | b;
          context.PRELOAD_FG = '"#' + StringTools.hex(fg,6) + '"';
       }
-      var preloadAssets = [for(a in project.assets) if (a.preload) a];
-      if  (preloadAssets.length>0)
-         context.PRELOAD_ASSETS = preloadAssets;
+      var preloadWaitAssets = [for(a in project.assets) if (a.preload == PreloadWait) a];
+      var preloadStartAssets = [for(a in project.assets) if (a.preload == PreloadStart) a];
+      if (preloadWaitAssets.length > 0)
+         context.PRELOAD_ASSETS = preloadWaitAssets;
+      if (preloadStartAssets.length > 0)
+         context.PRELOAD_ASSETS_START = preloadStartAssets;
 
       var preloader = project.getDef("preloader");
       if (!project.hasDef("nopreloader") )
@@ -181,7 +185,7 @@ class EmscriptenPlatform extends DesktopPlatform
      else
      {
         Log.verbose('No preloader specified');
-        if (preloadAssets.length>0)
+        if (preloadWaitAssets.length > 0 || preloadStartAssets.length > 0)
            Log.error('Preloaded assets, but no preloader specified');
      }
 

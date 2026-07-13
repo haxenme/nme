@@ -16,6 +16,7 @@ import IconType;
 import platforms.Platform;
 import nme.AlphaMode;
 import BootType;
+import PreloadMode;
 
 using StringTools;
 
@@ -112,6 +113,19 @@ class NMMLParser
    {
       var v = substitute(value);
       return v=="1" || v=="true" || v=="TRUE";
+   }
+
+   function parsePreload(value:String):PreloadMode
+   {
+      return switch(value.toLowerCase())
+      {
+         case "wait", "1", "true": PreloadWait;
+         case "start": PreloadStart;
+         case "none", "0", "false": PreloadNone;
+         default:
+            Log.error('Unknown preload mode "$value", expected "none", "wait" or "start"');
+            PreloadNone;
+      };
    }
 
    function parseAnd(condition:String)
@@ -344,9 +358,9 @@ class NMMLParser
       else if (element.has.embed)
          embed = parseBool(substitute(element.att.embed));
 
-      var preload = false;
+      var preload:PreloadMode = PreloadNone;
       if (element.has.preload)
-         preload = parseBool(substitute(element.att.preload));
+         preload = parsePreload(substitute(element.att.preload));
 
       if (element.has.glyphs) 
          glyphs = substitute(element.att.glyphs);
@@ -469,7 +483,7 @@ class NMMLParser
 
                var childPreload = preload;
                if (childElement.has.preload)
-                  childPreload = parseBool(substitute(childElement.att.preload));
+                  childPreload = parsePreload(substitute(childElement.att.preload));
 
                if (childElement.has.glyphs) 
                   childGlyphs = substitute(childElement.att.glyphs);
@@ -504,7 +518,7 @@ class NMMLParser
       }
    }
 
-   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:Bool, preload:Bool, assetsAlpha:AlphaMode, glyphs:String, recursive:Bool):Void 
+   private function parseAssetsElementDirectory(path:String, targetPath:String, include:String, exclude:String, type:AssetType, embed:Bool, preload:PreloadMode, assetsAlpha:AlphaMode, glyphs:String, recursive:Bool):Void 
    {
       var files = FileSystem.readDirectory(path);
 
@@ -1053,7 +1067,7 @@ class NMMLParser
                      else if (element.has.embed)
                         embed = parseBool(substitute(element.att.embed));
 
-                     var asset = new Asset(path, id, null, embed, false, project.targetName);
+                     var asset = new Asset(path, id, null, embed, PreloadNone, project.targetName);
                      //asset.id = id;
                      project.assets.push(asset);
                   }

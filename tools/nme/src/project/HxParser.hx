@@ -6,6 +6,7 @@ import sys.io.File;
 import sys.FileSystem;
 import NMEProject;
 import platforms.Platform;
+import PreloadMode;
 
 class HxParser
 {
@@ -94,7 +95,7 @@ class HxParser
            project.classPaths.push(value);
 
         case "asset":
-           var asset = new Asset(value, value, null, true, false, project.targetName );
+           var asset = new Asset(value, value, null, true, PreloadNone, project.targetName );
            project.assets.push(asset);
 
         case "background":

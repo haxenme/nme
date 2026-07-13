@@ -31,12 +31,12 @@ class Asset
    public var isMidi:Bool = false;
    public var isLibrary:Bool;
    public var conversion:String;
-   public var preload:Bool = false;
+   public var preload:PreloadMode = PreloadNone;
 
-   public function new(path:String = "", rename:String = "", inType:AssetType, inEmbed:Bool, inPreload:Bool, targetName:String, inAlphaMode:AlphaMode = null) 
+   public function new(path:String = "", rename:String = "", inType:AssetType, inEmbed:Bool, inPreload:PreloadMode, targetName:String, inAlphaMode:AlphaMode = null) 
    {
-      preload = inPreload && (targetName == Platform.WASM);
-      embed = inEmbed && !preload;
+      preload = (targetName == Platform.WASM) ? inPreload : PreloadNone;
+      embed = inEmbed && (preload == PreloadNone);
       isResource = embed && (targetName != Platform.FLASH);
       sourcePath = path;
       alphaMode = inAlphaMode==null ? AlphaDefault : inAlphaMode;

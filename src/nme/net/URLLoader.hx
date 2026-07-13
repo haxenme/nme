@@ -52,9 +52,13 @@ class URLLoader extends EventDispatcher
    public static inline var urlComplete    = 3;
    public static inline var urlError       = 4;
    public static inline var urlClosed      = 5;
+   public static inline var urlPreloadWait = 6;
 
    private var state:Int;
    public var nmeOnComplete:Dynamic -> Bool;
+   #if emscripten
+   private var preloadWaitPath:String;
+   #end
 
    public function new(?request:URLRequest) 
    {
@@ -104,6 +108,40 @@ class URLLoader extends EventDispatcher
    public function load(request:URLRequest) 
    {
       state = urlInit;
+
+      #if emscripten
+      var _pstate = nme.Assets.getModuleAssetState(request.url);
+      if (_pstate == 2) // ready — consume directly
+      {
+         var bytes = nme.Assets.getModuleAsset(request.url);
+         if (bytes != null)
+         {
+            switch(dataFormat)
+            {
+               case TEXT: data = bytes.asString();
+               case VARIABLES: data = new URLVariables(bytes.asString());
+               default: data = bytes;
+            }
+            nmeDataComplete();
+         }
+         else
+            onError("Preload asset missing: " + request.url);
+         return;
+      }
+      else if (_pstate == 3) // error
+      {
+         onError("Preload error for " + request.url);
+         return;
+      }
+      else if (_pstate == 1) // loading — wait without starting a new request
+      {
+         preloadWaitPath = request.url;
+         state = urlPreloadWait;
+         activeLoaders.push(this);
+         return;
+      }
+      #end
+
       var pref = request.url.substr(0, 7);
 
       if (request.allowFile && (pref != "http://" && pref != "https:/"))
@@ -207,7 +245,7 @@ class URLLoader extends EventDispatcher
          for(loader in oldLoaders) 
          {
             loader.update();
-            if (loader.state == urlLoading)
+            if (loader.state == urlLoading #if emscripten || loader.state == urlPreloadWait #end)
                activeLoaders.push(loader);
          }
       }
@@ -237,6 +275,35 @@ class URLLoader extends EventDispatcher
 
    private function update()
    {
+      #if emscripten
+      if (state == urlPreloadWait)
+      {
+         var pstate = nme.Assets.getModuleAssetState(preloadWaitPath);
+         if (pstate == 2)
+         {
+            var bytes = nme.Assets.getModuleAsset(preloadWaitPath);
+            if (bytes != null)
+            {
+               bytesTotal = bytes.length;
+               dispatchEvent(new Event(Event.OPEN));
+               switch(dataFormat)
+               {
+                  case TEXT: data = bytes.asString();
+                  case VARIABLES: data = new URLVariables(bytes.asString());
+                  default: data = bytes;
+               }
+               state = urlComplete;
+               nmeDataComplete();
+            }
+            else
+               onError("Preload asset missing: " + preloadWaitPath);
+         }
+         else if (pstate == 3)
+            onError("Preload error for " + preloadWaitPath);
+         return;
+      }
+      #end
+
       if (nmeHandle!=null #if !no_haxe_http || httpLoader!=null #end )
       {
          var old_loaded = bytesLoaded;

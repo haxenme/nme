@@ -59,6 +59,11 @@ EM_JS(int, nme_module_get_asset, (const char* path), {
    return ptr;
 });
 
+EM_JS(int, nme_module_asset_get_state, (const char* path), {
+   var states = Module.nmeAssetStates;
+   return states ? (states[UTF8ToString(path)] || 0) : 0;
+});
+
 nme::utils::ByteArray nmeGetModuleAsset(String inPath)
 {
    int packed = nme_module_get_asset(inPath.__s);
@@ -68,6 +73,11 @@ nme::utils::ByteArray nmeGetModuleAsset(String inPath)
    ::memcpy(result->b->getBase(), (const void*)((size_t)packed + 4), len);
    ::free((void*)(size_t)packed);
    return result;
+}
+
+int nmeGetModuleAssetState(String inPath)
+{
+   return nme_module_asset_get_state(inPath.__s);
 }
 ')
 #end
@@ -82,7 +92,7 @@ class Assets
    public static var byteFactory = new haxe.ds.StringMap<Void->ByteArray>();
    public static var libraryFactories = new haxe.ds.StringMap<AssetLibFactory>();
    public static var loadedLibraries = new haxe.ds.StringMap<AssetLib>();
-   #if js
+   #if emscripten
    public static var cacheMode:Int = STRONG_CACHE;
    #else
    public static var cacheMode:Int = WEAK_CACHE;
@@ -95,8 +105,39 @@ class Assets
 
    #if emscripten
    @:native("nmeGetModuleAsset")
-   extern public static function nmeGetModuleAsset(inPath:String):ByteArray;
+   extern static function nmeGetModuleAsset(inPath:String):ByteArray;
+
+   @:native("nmeGetModuleAssetState")
+   extern static function nmeGetModuleAssetState(inPath:String):Int;
+
+   /** Fetch a preloaded asset by raw file path; consumes it from the JS cache. */
+   public static function getModuleAsset(path:String):ByteArray
+      return nmeGetModuleAsset(path);
+
+   /** Returns preload state by raw file path (0=none, 1=loading, 2=ready, 3=error).
+       Same cpp file as the extern, so no header needed. */
+   public static function getModuleAssetState(path:String):Int
+      return nmeGetModuleAssetState(path);
    #end
+
+   /**
+    * Returns the preload state for an asset by id (0=none, 1=loading, 2=ready, 3=error).
+    * On non-emscripten platforms always returns 0.
+    */
+   public static function getPreloadState(id:String):Int
+   {
+      #if emscripten
+      var i = getInfo(id);
+      if (i == null) return 0;
+      if (i.isResource) return 0;
+      var filename = i.path;
+      if (pathMapper.exists(filename))
+         filename = pathMapper.get(filename);
+      return getModuleAssetState(filename);
+      #else
+      return 0;
+      #end
+   }
 
    public static function fromAssetList(assetList:String, inAddScriptBase:Bool,inAlphaToo:Bool)
    {
@@ -372,7 +413,7 @@ class Assets
             else
             {
                #if emscripten
-               var moduleBytes = nmeGetModuleAsset(filename);
+               var moduleBytes = getModuleAsset(filename);
                if (moduleBytes != null)
                   data = BitmapData.loadFromBytes(moduleBytes);
                #end
@@ -459,7 +500,7 @@ class Assets
          #else
             var filename = i.path;
             #if emscripten
-            data = nmeGetModuleAsset(filename);
+            data = getModuleAsset(filename);
             if (data!=null)
                useCache = true;
             #end
@@ -523,7 +564,6 @@ class Assets
             i.isResource ?  new Font("",null,null,i.path,id) :  new Font(i.path,null,null,null,id);
          #end
 
-trace('$id -> $font');
       trySetCache(i,useCache,font);
 
       return font;
@@ -584,7 +624,23 @@ trace('$id -> $font');
       }
       else
       {
-         sound = new Sound(new URLRequest(i.path), null, i.type == MUSIC || forceMusic, inEngine); 
+         #if emscripten
+         var pstate = getModuleAssetState(i.path);
+         if (pstate == 2) // ready — consume directly, no request needed
+         {
+            var bytes = getModuleAsset(i.path);
+            if (bytes != null)
+            {
+               sound = new Sound();
+               sound.loadCompressedDataFromByteArray(bytes, bytes.length, i.type == MUSIC || forceMusic, inEngine);
+            }
+         }
+         else if (pstate != 3) // 0=not preload or 1=loading → URLLoader will wait
+         #end
+         {
+            sound = new Sound(new URLRequest(i.path), null, i.type == MUSIC || forceMusic, inEngine);
+         }
+         // pstate == 3 (error): sound stays null
       }
     
       #end
