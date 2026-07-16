@@ -28,6 +28,7 @@ EM_JS(int, nme_webaudio_init, (), {
       wa.ctx = new AudioContext();
       wa.pending = null;  // at most one pending music track at a time
       wa.unlockRegistered = false;
+      wa.explicitlySuspended = false;
 
       // One-shot handler: resumes the AudioContext and starts any music entries
       // that were blocked by the browser's autoplay policy.
@@ -36,6 +37,7 @@ EM_JS(int, nme_webaudio_init, (), {
          wa.unlockRegistered = true;
          var events = ['click', 'keydown', 'touchstart', 'pointerdown'];
          var unlock = function() {
+            if (wa.explicitlySuspended) return;
             events.forEach(function(ev) { document.removeEventListener(ev, unlock, true); });
             wa.unlockRegistered = false;
             wa.ctx.resume().then(function() {
@@ -77,7 +79,7 @@ EM_JS(void, nme_webaudio_free_buffer, (int id), {
 EM_JS(int, nme_webaudio_play, (int bufferId, double offsetSec, double volume, double pan, int loops), {
    var wa = Module._nme_wa;
    var ctx = wa.ctx;
-   if (ctx.state === 'suspended') { ctx.resume(); wa.registerUnlock(); }
+   if (ctx.state === 'suspended' && !wa.explicitlySuspended) { ctx.resume(); wa.registerUnlock(); }
 
    var ab = wa.buffers[bufferId];
    if (!ab) return 0;
@@ -200,12 +202,18 @@ EM_JS(void, nme_webaudio_set_transform, (int id, double volume, double pan), {
 
 EM_JS(void, nme_webaudio_suspend, (), {
    var wa = Module._nme_wa;
-   if (wa && wa.ctx) wa.ctx.suspend();
+   if (wa && wa.ctx) {
+      wa.explicitlySuspended = true;
+      wa.ctx.suspend();
+   }
 });
 
 EM_JS(void, nme_webaudio_resume, (), {
    var wa = Module._nme_wa;
-   if (wa && wa.ctx) wa.ctx.resume();
+   if (wa && wa.ctx) {
+      wa.explicitlySuspended = false;
+      wa.ctx.resume();
+   }
 });
 
 
@@ -223,7 +231,7 @@ EM_JS(int, nme_webaudio_music_play, (const unsigned char *inData, int len,
       double offsetSec, double volume, double pan, int loops), {
    var wa = Module._nme_wa;
    var ctx = wa.ctx;
-   if (ctx.state === 'suspended') ctx.resume();  // best-effort; unlock handler covers the async case
+   if (ctx.state === 'suspended' && !wa.explicitlySuspended) ctx.resume();  // best-effort; unlock handler covers the async case
 
    var bytes   = new Uint8Array(HEAPU8.buffer, inData, len);
    var blob    = new Blob([bytes]);
@@ -273,7 +281,7 @@ EM_JS(int, nme_webaudio_music_play, (const unsigned char *inData, int len,
       // sees isComplete() == true and gets cleaned up normally.
       if (wa.pending) wa.pending.stopped = true;
       wa.pending = entry;
-      wa.registerUnlock();
+      if (!wa.explicitlySuspended) wa.registerUnlock();
    });
    return id;
 });

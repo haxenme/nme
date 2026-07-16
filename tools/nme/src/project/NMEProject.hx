@@ -964,7 +964,8 @@ class NMEProject
             asset.resourceName = asset.flatName;
             //var relPath = PathHelper.relocatePath(asset.sourcePath, inBuildDir);
             //haxeflags.push("-resource " + relPath  + "@" + asset.flatName );
-            haxeflags.push("-resource " + asset.sourcePath  + "@" + asset.flatName );
+            if (target!=Platform.WASM && target!=Platform.EMSCRIPTEN)
+               haxeflags.push("-resource " + asset.sourcePath  + "@" + asset.flatName );
          }
 
          context.assets.push(asset);

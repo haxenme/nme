@@ -237,6 +237,12 @@ class Assets
 
    public static function getResource(inName:String) : ByteArray
    {
+      #if emscripten
+      var moduleBytes = getModuleAsset(inName);
+      if (moduleBytes!=null)
+         return moduleBytes;
+      #end
+
       var bytes = haxe.Resource.getBytes(inName);
       if (bytes==null)
       {
@@ -688,7 +694,13 @@ class Assets
       }
 
       if (i.isResource)
-         return haxe.Resource.getString(i.path);
+      {
+         var resource = getResource(i.path);
+         if (resource==null)
+            return null;
+         resource.position = 0;
+         return resource.readUTFBytes(resource.length);
+      }
 
       var bytes = getBytes(id,useCache);
 

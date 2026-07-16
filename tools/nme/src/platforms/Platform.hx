@@ -904,11 +904,32 @@ class Platform
       return project.app.file + ".nme";
    }
 
+   public function createNmeBundle()
+   {
+      var found = false;
+      for(asset in project.assets)
+         if (asset.isResource)
+         {
+            found=true;
+            break;
+         }
+      if (!found)
+         return null;
+
+      PathHelper.mkdir(getOutputDir());
+      var filename = getOutputDir() + "/assets.nme";
+      return createNmeFileFormat(filename, true);
+   }
+
    public function createNmeFile()
    {
       PathHelper.mkdir(getOutputDir());
-
       var filename = getOutputDir() + "/" + getNmeFilename();
+      return createNmeFileFormat(filename, false);
+   }
+
+   public function createNmeFileFormat(filename:String, bundledOnly:Bool)
+   {
       addOutput(filename);
 
       var outfile = sys.io.File.write(filename,true);
@@ -924,33 +945,36 @@ class Platform
 
       var index = new Array<NmeItem>();
 
-      for(s in ["cppiaScript", "jsScript" ])
-      {
-         var script = project.getDef(s);
-         if (script!=null)
+      if (!bundledOnly)
+         for(s in ["cppiaScript", "jsScript" ])
          {
-            var bytes = File.getBytes(script);
-            data.push(bytes);
-            var item = new NmeItem();
-            item.offset = offset;
-            item.length = bytes.length;
-            item.type = "TEXT";
-            item.id = s;
-            index.push(item);
-            offset += item.length;
+            var script = project.getDef(s);
+            if (script!=null)
+            {
+               var bytes = File.getBytes(script);
+               data.push(bytes);
+               var item = new NmeItem();
+               item.offset = offset;
+               item.length = bytes.length;
+               item.type = "TEXT";
+               item.id = s;
+               index.push(item);
+               offset += item.length;
+            }
          }
-      }
- 
+   
       var base = getOutputDir();
       for(asset in project.assets)
       {
+         if (bundledOnly && !asset.isResource)
+            continue;
          var bytes = File.getBytes( asset.sourcePath);
          data.push(bytes);
          var item = new NmeItem();
          item.offset = offset;
          item.length = bytes.length;
          item.type = Std.string(asset.type);
-         item.id = asset.id;
+         item.id = bundledOnly ? asset.resourceName : asset.id;
          if (asset.type==IMAGE)
             item.alphaMode = Std.string(asset.alphaMode);
          index.push(item);
@@ -967,5 +991,7 @@ class Platform
       outfile.close();
 
       Log.verbose("Wrote " + filename);
+
+      return filename;
    }
 }

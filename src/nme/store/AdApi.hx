@@ -32,7 +32,9 @@ class AdApi
       #if NME_APPLOVIN_KEY
       return AppLovin.init(preloadInterstitial, preloadReward);
       #elseif NME_ADMOB_APP_ID
-      return AdMob.init(preloadInterstitial, preloadReward
+      return AdMob.init(preloadInterstitial, preloadReward);
+      #elseif NME_CRAZYGAMES_SDK
+      return CrazyGames.init(preloadInterstitial, preloadReward);
       #end
       return false;
    }
@@ -44,6 +46,8 @@ class AdApi
       return AppLovin.isValid();
       #elseif NME_ADMOB_APP_ID
       return AdMob.isValid();
+      #elseif NME_CRAZYGAMES_SDK
+      return CrazyGames.isValid();
       #end
       return false;
    }
@@ -60,11 +64,25 @@ class AdApi
       ok = AppLovin.playInterstitial(andThen);
       #elseif NME_ADMOB_APP_ID
       ok = AdMob.playInterstitial(andThen);
+      #elseif NME_CRAZYGAMES_SDK
+      ok = CrazyGames.playInterstitial(andThen);
       #end
 
       if (!ok)
          afterInterstitial = null;
       return ok;
+   }
+
+   public static function hasAdNetwork()
+   {
+      #if NME_APPLOVIN_KEY
+      return true;
+      #elseif NME_ADMOB_APP_ID
+      return true;
+      #elseif NME_CRAZYGAMES_SDK
+      return true;
+      #end
+      return false;
    }
 
    public static function playReward(onFinsish:Bool->Void)
@@ -81,6 +99,8 @@ class AdApi
       ok = AppLovin.playReward();
       #elseif NME_ADMOB_APP_ID
       ok = AdMob.playReward();
+      #elseif NME_CRAZYGAMES_SDK
+      ok = CrazyGames.playReward();
       #end
 
       if (!ok)

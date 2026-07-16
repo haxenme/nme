@@ -260,7 +260,8 @@
                if (xhr.readyState === 4) {
                  if (xhr.status === 200) {
                    Module.downloadedNmeApp = 1;
-                   Module.nmeApp =xhr.response; 
+                   Module.nmeApp =xhr.response;
+                   Module.wasmBinary = xhr.response;
                    Module.progress();
                  } else {
                    console.error(xhr.response);

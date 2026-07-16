@@ -123,11 +123,19 @@ class EmscriptenPlatform extends DesktopPlatform
    override function generateContext(context:Dynamic)
    {
       super.generateContext(context);
+      for(asset in project.assets)
+         if (asset.isResource)
+         {
+            context.NME_RESOURCE_BUNDLE = true;
+            break;
+         }
       context.NME_JS = '$applicationMain.js';
       context.NME_MEM_FILE = memFile;
       context.NME_APP_JS = '$applicationMain.wasm';
       context.NME_JS_FOOTER = getJsImport("nmeJsFooter");
       context.NME_JS_HEADER = getJsImport("nmeJsHeader");
+      if (project.hasDef("NME_CRAZYGAMES_SDK"))
+         context.NME_CRAZYGAMES_SDK = true;
       context.EM_RUN_HOOKS = project.getBool("HXCPP_LINK_EMRUN", false );
       if (project.getBool("nme_reuse_tab", false) && project.command.toLowerCase()=="test")
          context.NME_REUSE_TAB = true;
@@ -207,6 +215,11 @@ class EmscriptenPlatform extends DesktopPlatform
          }
       }
 
+   }
+
+   override public function buildPackage():Void
+   {
+      createNmeBundle();
    }
 
 
