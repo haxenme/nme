@@ -23,7 +23,7 @@ class BillingManager
          ?inManagedSubs:Array<String>,
          ?billingObserver:BillingEvent->Void) : Bool
    {
-      trace("Billing manager init");
+      //trace("Billing manager init");
       managedInApps = inManagedInApps;
       managedSubs = inManagedSubs;
       skuInfo = new Map();

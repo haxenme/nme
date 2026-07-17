@@ -240,7 +240,9 @@
           console.error(text);
         },
         setStatus: function(text) {
+          ::if NME_LOG_CONSOLE::
           console.log(text);
+          ::end::
            if (text && text.indexOf('Running') >= 0) {
              if (typeof window.closePreloader === 'function') {
                window.closePreloader();
@@ -330,7 +332,9 @@
              // NME_JS
              Module.totalDownloads++;
              var xhr = new XMLHttpRequest;
+             ::if NME_LOG_CONSOLE::
              console.log("::NME_JS::...");
+             ::end::
              xhr.open("GET", "::NME_JS::", true);
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {
@@ -354,7 +358,9 @@
              // NME_APP_JS
              Module.totalDownloads++;
              var xhr = new XMLHttpRequest;
+             ::if NME_LOG_CONSOLE::
              console.log("::NME_APP_JS::...");
+             ::end::
              xhr.open("GET", "::NME_APP_JS::", true);
              xhr.onload = function (e) {
                if (xhr.readyState === 4) {

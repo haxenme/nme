@@ -50,7 +50,10 @@ typedef AssetLibFactory = String -> nme.AssetLib;
 
 EM_JS(int, nme_module_get_asset, (const char* path), {
    var data = Module.nmeGetAsset ? Module.nmeGetAsset(UTF8ToString(path)) : null;
-   if (!data) return 0;
+   if (!data) {
+      console.error("[nme_module_get_asset] missing asset: " + UTF8ToString(path) + "\\n");
+      return 0;
+   }
    var bytes = (data instanceof Uint8Array) ? data : new Uint8Array(data.buffer !== undefined ? data.buffer : data);
    var len = bytes.length;
    var ptr = _malloc(len + 4);
@@ -695,7 +698,7 @@ class Assets
 
       if (i.isResource)
       {
-         var resource = getResource(i.path);
+         var resource = getBytesInfo(i,true);
          if (resource==null)
             return null;
          resource.position = 0;

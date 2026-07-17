@@ -1153,6 +1153,14 @@ class Stage extends DisplayObjectContainer implements nme.app.IPollClient implem
       return rect;
    }
 
+   public function captureScreen():BitmapData
+   {
+      var bitmap = new BitmapData(stage.stageWidth, stage.stageHeight, false, color);
+      var mtx = nmeGetConcatenatedMatrix();
+      bitmap.draw(stage, mtx, null, null, null, true);
+      return bitmap;
+   }
+
 
    #if cpp
    public function setMouseFilter(inHandler:Event->Void)
