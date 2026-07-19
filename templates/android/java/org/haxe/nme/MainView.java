@@ -450,8 +450,8 @@ class MainView extends GLSurfaceView {
        //Log.e("VIEW","Actions : " + action );
 
        // This is actually index, not id....
-       int idx = (action & MotionEvent.ACTION_POINTER_ID_MASK) >>
-                       (MotionEvent.ACTION_POINTER_ID_SHIFT);
+       int idx = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >>
+                       (MotionEvent.ACTION_POINTER_INDEX_SHIFT);
 
        final int t = type;
        //if (type!=etTouchMove)

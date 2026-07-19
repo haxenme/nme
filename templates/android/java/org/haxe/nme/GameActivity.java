@@ -119,7 +119,7 @@ implements SensorEventListener
    static DisplayMetrics metrics;
    static HashMap<String, Class> mLoadedClasses = new HashMap<String, Class>();
    static SensorManager sensorManager;
-   static android.text.ClipboardManager mClipboard;
+   static android.content.ClipboardManager mClipboard;
    public static InputManager inputManager;
    private static List<Extension> extensions;
 
@@ -194,12 +194,12 @@ implements SensorEventListener
       mContext = this;
       mAssets = getAssets();
       requestWindowFeature(Window.FEATURE_NO_TITLE);
-      getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+      androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
       ::end::
 
       _sound = new Sound(mContext);
 
-      mHandler = new Handler();
+      mHandler = new Handler(android.os.Looper.getMainLooper());
       ::if (WIN_ALPHA_BUFFER)::
       mBackground = 0x00000000;
       ::else::
@@ -208,13 +208,20 @@ implements SensorEventListener
       
       //getResources().getAssets();
       
-      metrics = new DisplayMetrics();
-      mContext.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-
-      ::if WIN_FULLSCREEN::::if (ANDROID_TARGET_SDK_VERSION >= 19)::
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-         mContext.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
-      ::end::::end::
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+         metrics = new DisplayMetrics();
+         android.view.WindowMetrics wm = mContext.getWindowManager().getCurrentWindowMetrics();
+         metrics.widthPixels = wm.getBounds().width();
+         metrics.heightPixels = wm.getBounds().height();
+         DisplayMetrics dm = mContext.getResources().getDisplayMetrics();
+         metrics.density = dm.density;
+         metrics.densityDpi = dm.densityDpi;
+         metrics.xdpi = dm.xdpi;
+         metrics.ydpi = dm.ydpi;
+         metrics.scaledDensity = dm.scaledDensity;
+      } else {
+         metrics = mContext.getResources().getDisplayMetrics();
+      }
       
       Extension.assetManager = mAssets;
       Extension.callbackHandler = mHandler;
@@ -222,7 +229,7 @@ implements SensorEventListener
       Extension.mainContext = this;
       Extension.packageName = getApplicationContext().getPackageName();
       
-      mClipboard = (android.text.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+      mClipboard = (android.content.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
       inputManager = (InputManager)activity.mContext.getSystemService(Context.INPUT_SERVICE);
 
       // Pre-load these, so the C++ knows where to find them
@@ -261,7 +268,7 @@ implements SensorEventListener
       mView = new MainView(mContext, this, (mBackground & 0xff000000)==0 );
       Extension.mainView = mView;
 
-      mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
+      mContainer.addView(mView, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT) );
 
       getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);//remove keyboard at start
       //mView.requestFocus();
@@ -460,7 +467,7 @@ implements SensorEventListener
          mView.setTranslucent(true);
          mVideoView = new NMEVideoView(this,inHandler);
 
-         RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
+         RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
          videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 
          mContainer.addView( mVideoView, 0, videoLayout );
@@ -517,7 +524,7 @@ implements SensorEventListener
             int x1 = mContainer.getWidth() - x0 - w;
             int y1 = mContainer.getHeight() - y0 - h;
 
-            RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
+            RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
             //videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
             //Log.d(TAG, "setMargins " + x0 + " " + y0 + " " + x1 + " " + y1);
             videoLayout.setMargins(x0,y0,x1,y1);
@@ -555,11 +562,11 @@ implements SensorEventListener
      mView.setTranslucent(inTrans);
 
      if (mView!=null)
-        mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
+        mContainer.addView(mView, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT) );
 
      if (mVideoView!=null)
      {
-        RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
+        RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
 
         videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         mContainer.addView( mVideoView, 0, videoLayout );
@@ -601,16 +608,11 @@ implements SensorEventListener
   }
 
   private void hideSystemUi() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      View decorView = this.getWindow().getDecorView();
-      decorView.setSystemUiVisibility(
-        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        | View.SYSTEM_UI_FLAG_FULLSCREEN
-        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-    }
+    androidx.core.view.WindowInsetsControllerCompat controller =
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+    controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+    controller.setSystemBarsBehavior(
+        androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
   }
 ::end::::end::
    
@@ -622,7 +624,8 @@ implements SensorEventListener
  
    public static double CapabilitiesScaledDensity()
    {
-      return metrics.scaledDensity;
+      return mContext.getResources().getDisplayMetrics().density
+             * mContext.getResources().getConfiguration().fontScale;
    }
 
    
@@ -659,15 +662,8 @@ implements SensorEventListener
    
    public static boolean setClipboardText(String text) {
         try {
-            int sdk = android.os.Build.VERSION.SDK_INT;
-            if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB)
-                mClipboard.setText(text);
-            else {
-                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mClipboard;
-                android.content.ClipData clip = android.content.ClipData
-                    .newPlainText("label", text);
-                clipboard.setPrimaryClip(clip);
-            }
+            android.content.ClipData clip = android.content.ClipData.newPlainText("label", text);
+            mClipboard.setPrimaryClip(clip);
             return true;
         } catch (Exception e) {
             return false;
@@ -675,39 +671,21 @@ implements SensorEventListener
    }
 
    public static boolean hasClipboardText() {
-        int sdk = android.os.Build.VERSION.SDK_INT;
-        if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB)
-            return mClipboard.getText() != null;
-        else {
-            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mClipboard;
-
-            if (!(clipboard.hasPrimaryClip()))
-                return false;
-
-            if (!(clipboard.getPrimaryClipDescription().hasMimeType(android.content.ClipDescription.MIMETYPE_TEXT_PLAIN)))
-                return false;
-
-            android.content.ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
-                return item.getText() != null;
-        }
+        if (!mClipboard.hasPrimaryClip())
+            return false;
+        if (!mClipboard.getPrimaryClipDescription().hasMimeType(android.content.ClipDescription.MIMETYPE_TEXT_PLAIN))
+            return false;
+        android.content.ClipData.Item item = mClipboard.getPrimaryClip().getItemAt(0);
+        return item.getText() != null;
    }
 
    public static String getClipboardText() {
-       int sdk = android.os.Build.VERSION.SDK_INT;
-       if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB)
-           return mClipboard.getText().toString();
-       else {
-           android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mClipboard;
-
-           if (!(clipboard.hasPrimaryClip()))
-               return "";
-
-           if (!(clipboard.getPrimaryClipDescription().hasMimeType(android.content.ClipDescription.MIMETYPE_TEXT_PLAIN)))
-               return "";
-
-           android.content.ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
-           return item.getText() != null ? item.getText().toString() : "";
-       }
+        if (!mClipboard.hasPrimaryClip())
+            return "";
+        if (!mClipboard.getPrimaryClipDescription().hasMimeType(android.content.ClipDescription.MIMETYPE_TEXT_PLAIN))
+            return "";
+        android.content.ClipData.Item item = mClipboard.getPrimaryClip().getItemAt(0);
+        return item.getText() != null ? item.getText().toString() : "";
    }
    
    public void doPause()
@@ -749,8 +727,8 @@ implements SensorEventListener
          mContainer.removeView(mView);
 
          mContainer.addView(mKeyInTextView);
-         mContainer.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT) );
-         RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
+         mContainer.addView(mView, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT) );
+         RelativeLayout.LayoutParams videoLayout = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
          videoLayout.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
          mContainer.addView( mVideoView, 0, videoLayout );
 
@@ -948,6 +926,7 @@ implements SensorEventListener
          } } );
    }
    
+   @SuppressWarnings("deprecation")
    @Override public void onActivityResult(int requestCode, int resultCode, Intent data)
    {
       Log.d(TAG,"onActivityResult");
@@ -1161,27 +1140,13 @@ implements SensorEventListener
       super.onStart();
 
       ::if WIN_FULLSCREEN::
-      ::if (ANDROID_TARGET_SDK_VERSION >= 19)::
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        getWindow().getDecorView().setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-            View.SYSTEM_UI_FLAG_FULLSCREEN |
-            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        );
+      {
+        androidx.core.view.WindowInsetsControllerCompat controller =
+            androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+            androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
       }
-      ::elseif (ANDROID_TARGET_SDK_VERSION >= 16)::
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-        getWindow().getDecorView().setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-            View.SYSTEM_UI_FLAG_LOW_PROFILE |
-            View.SYSTEM_UI_FLAG_FULLSCREEN
-        );
-      }
-      ::end::
       ::end::
 
       for(Extension extension : extensions)
@@ -1265,7 +1230,12 @@ implements SensorEventListener
    
    private int prepareDeviceOrientation()
    {
-      int rawOrientation = mContext.getWindowManager().getDefaultDisplay().getOrientation();
+      int rawOrientation;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+         rawOrientation = mContext.getDisplay().getRotation();
+      } else {
+         rawOrientation = mContext.getWindowManager().getDefaultDisplay().getRotation();
+      }
       
       if (rawOrientation != bufferedDisplayOrientation)
       {
@@ -1502,10 +1472,7 @@ implements SensorEventListener
          else
              activity.mKeyInTextView.setInputType(activity.mDefaultInputType);
 
-         mgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-         // On the Nexus One, SHOW_FORCED makes it impossible
-         // to manually dismiss the keyboard.
-         // On the Droid SHOW_IMPLICIT doesn't bring up the keyboard.
+         mgr.showSoftInput(activity.mKeyInTextView, 0);
          activity.mTextUpdateLockout = false;
       }
    }
@@ -1700,24 +1667,28 @@ implements SensorEventListener
    
    public static void vibrate(int period, int duration)
    {
-      Vibrator v = (Vibrator)mContext.getSystemService(Context.VIBRATOR_SERVICE);
-      
+      Vibrator v;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+         android.os.VibratorManager vm = (android.os.VibratorManager)
+               mContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+         v = vm.getDefaultVibrator();
+      } else {
+         v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+      }
+
       if (period == 0)
       {
-         v.vibrate(duration);
+         v.vibrate(android.os.VibrationEffect.createOneShot(
+               duration, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
       }
       else
-      {   
+      {
          int periodMS = (int)Math.ceil(period / 2);
          int count = (int)Math.ceil((duration / period) * 2);
          long[] pattern = new long[count];
-         
          for (int i = 0; i < count; i++)
-         {
             pattern[i] = periodMS;
-         }
-         
-         v.vibrate(pattern, -1);
+         v.vibrate(android.os.VibrationEffect.createWaveform(pattern, -1));
       }
    }
 

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.io.IOException;
 import android.os.ParcelUuid;
+import android.os.Build;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.app.Activity;
@@ -112,17 +113,21 @@ public class Bluetooth
                    }
                }
                @Override
-               public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                   byte[] data = characteristic.getValue();
+               public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, byte[] data) {
                    Log.e(TAG,"Received BLE notification, " + data.length + " bytes");
                    if (data != null && data.length > 0) {
                      synchronized (thiz.mBleLock) {
                         thiz.mBleReceiveBuffer.write(data, 0, data.length);
                      }
                    }
+               }
+               @Override
+               @SuppressWarnings("deprecation")
+               public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                   onCharacteristicChanged(gatt, characteristic, characteristic.getValue());
                } };
                bleConnecting = true;
-               mGatt = mDevice.connectGatt(GameActivity.getInstance().getActivity(), false, bluetoothGattCallback);
+               mGatt = mDevice.connectGatt(GameActivity.getInstance().getActivity(), false, bluetoothGattCallback, android.bluetooth.BluetoothDevice.TRANSPORT_LE);
             }
             else
                mSocket = mDevice.createRfcommSocketToServiceRecord(SerialUuid);
@@ -247,8 +252,12 @@ public class Bluetooth
          UUID cccdUuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
          BluetoothGattDescriptor descriptor = rx.getDescriptor(cccdUuid);
          if (descriptor != null) {
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            mGatt.writeDescriptor(descriptor);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+               mGatt.writeDescriptor(descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            } else {
+               descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+               mGatt.writeDescriptor(descriptor);
+            }
          }
       }  
       Log.e(TAG,"BLE streams " + (tx!=null) + "/" + (rx!=null) );
@@ -260,24 +269,22 @@ public class Bluetooth
    }
 
 
+   @SuppressWarnings("deprecation")
    public static void getDevices()
    {
-      if (sBluetoothAdapter==null)
-         sBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+      if (!getAdapter())
+         return;
 
-      if (sBluetoothAdapter!=null)
+      if (!sBluetoothAdapter.isEnabled())
       {
-         if (!sBluetoothAdapter.isEnabled())
-         {
-            Log.e(TAG,"Enable bluetooth...");
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            GameActivity activity = GameActivity.getInstance();
-            activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-         }
-         else
-         {
-            Log.e(TAG,"Bluetooth already enabled ...");
-         }
+         Log.e(TAG,"Enable bluetooth...");
+         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+         GameActivity activity = GameActivity.getInstance();
+         activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+      }
+      else
+      {
+         Log.e(TAG,"Bluetooth already enabled ...");
       }
    }
 
@@ -363,7 +370,9 @@ public class Bluetooth
             else if (BluetoothDevice.ACTION_FOUND.equals(action))
             {
                 // Get the BluetoothDevice object from the Intent
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                BluetoothDevice device = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                    ? intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class)
+                    : intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 addDevice(scannedDevices, device);
 
 
@@ -494,8 +503,15 @@ public class Bluetooth
          try
          {
             byte[] data = buffer.getBytes();
-            tx.setValue(data);
-            if (mGatt.writeCharacteristic(tx))
+            boolean ok;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+               ok = mGatt.writeCharacteristic(tx, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+                    == android.bluetooth.BluetoothStatusCodes.SUCCESS;
+            } else {
+               tx.setValue(data);
+               ok = mGatt.writeCharacteristic(tx);
+            }
+            if (ok)
                return data.length;
          } catch(Exception e)
          {
@@ -557,8 +573,14 @@ public class Bluetooth
       {
          try
          {
-            tx.setValue(new byte[] { (byte)inByte });
-            return mGatt.writeCharacteristic(tx);
+            byte[] data = new byte[] { (byte)inByte };
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+               return mGatt.writeCharacteristic(tx, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+                      == android.bluetooth.BluetoothStatusCodes.SUCCESS;
+            } else {
+               tx.setValue(data);
+               return mGatt.writeCharacteristic(tx);
+            }
          } catch(Exception e) { }
          return false;
       }

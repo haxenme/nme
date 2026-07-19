@@ -167,7 +167,12 @@ public class Sound implements SoundPool.OnLoadCompleteListener
     		mSoundDuration = new HashMap<Integer, Long>();
 
     		mTimeStamp = System.currentTimeMillis();
-			mSoundPool = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
+			mSoundPool = new SoundPool.Builder()
+               .setMaxStreams(8)
+               .setAudioAttributes(new android.media.AudioAttributes.Builder()
+                  .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+                  .build())
+               .build();
          mSoundPool.setOnLoadCompleteListener(this);
 		}
 
