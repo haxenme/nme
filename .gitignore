@@ -53,4 +53,7 @@ all_objs
 # OSX
 *.DS_Store
 
+.gradle
+templates/android/PROJ-gradle/build
+
 /nme.exe

@@ -4,12 +4,19 @@ android {
 
     namespace = "org.haxe.extension"
 
-    compileSdkVersion ::ANDROID_TARGET_SDK_VERSION::
+    ::if ANDROID_COMPILE_SDK_MINOR::
+    compileSdk {
+        version = release(::ANDROID_COMPILE_SDK_MAJOR::) {
+            minorApiLevel = ::ANDROID_COMPILE_SDK_MINOR::
+        }
+    }
+    ::else::
+    compileSdk ::ANDROID_COMPILE_SDK_MAJOR::
+    ::end::
     defaultConfig {
         minSdkVersion ::ANDROID_MIN_API_LEVEL::
         targetSdkVersion ::ANDROID_TARGET_SDK_VERSION::
     }
-    buildToolsVersion "34.0.0"
 
     sourceSets {
         main {

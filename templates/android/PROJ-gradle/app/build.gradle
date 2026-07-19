@@ -1,7 +1,3 @@
-plugins {
-    id 'org.jetbrains.kotlin.android' version '1.8.0' apply false
-}
-
 apply plugin: 'com.android.application'
 ::if NME_FIREBASE::
 apply plugin: 'com.google.gms.google-services'
@@ -10,7 +6,6 @@ apply plugin: 'com.google.gms.google-services'
 // Apply the Crashlytics Gradle plugin
 apply plugin: 'com.google.firebase.crashlytics'
 ::end::
-
 ::end::
 
 ::if NME_VERBOSE::
@@ -24,11 +19,17 @@ android {
 
 
     ::if ANDROID_COMPILE_SDK_VERSION::
-    compileSdkVersion ::ANDROID_COMPILE_SDK_VERSION::
+    compileSdk ::ANDROID_COMPILE_SDK_VERSION::
     ::else::
-    // This does not effect the output, only the gradle system and some warnings,
-    //  so can be regularly updated
-    compileSdkVersion 34
+    ::if ANDROID_COMPILE_SDK_MINOR::
+    compileSdk {
+        version = release(::ANDROID_COMPILE_SDK_MAJOR::) {
+            minorApiLevel = ::ANDROID_COMPILE_SDK_MINOR::
+        }
+    }
+    ::else::
+    compileSdk ::ANDROID_COMPILE_SDK_MAJOR::
+    ::end::
     ::end::
 
     //compileOptions {
@@ -36,14 +37,13 @@ android {
     //}
 
 
-    buildToolsVersion "34.0.0"
     defaultConfig {
         applicationId "::APP_PACKAGE::"
         minSdkVersion ::ANDROID_MIN_API_LEVEL::
         targetSdkVersion ::ANDROID_TARGET_API_LEVEL::
         versionCode ::APP_BUILD_NUMBER::
         versionName "::APP_VERSION::"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     ::if KEY_STORE::
@@ -60,7 +60,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             ::if KEY_STORE::
             signingConfig = signingConfigs.release
             ::end::
@@ -104,9 +104,7 @@ android {
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     // Support is in 'androidx.core' now
     ::if ANDROID_BILLING::
     api 'com.android.billingclient:billing:8.0.0'
@@ -132,7 +130,7 @@ dependencies {
       ::end::
 
       ::if NME_FIREBASE_CRASHLYTICS::
-         implementation 'com.google.firebase:firebase-crashlytics-ndk:19.0.1'
+         implementation 'com.google.firebase:firebase-crashlytics-ndk:20.1.0'
       ::end::
     ::end::
 
@@ -159,19 +157,20 @@ dependencies {
 /* Assigns a different version code for each output APK
     other than the universal APK. */
 
-ext.abiCodes = [::ABI_CODES::]
+def abiCodes = [::ABI_CODES::]
 
-import com.android.build.OutputFile
+import com.android.build.api.variant.FilterConfiguration
 
-android.applicationVariants.all { variant ->
-    
-    variant.outputs.each { output ->
-        
-        def baseAbiVersionCode = project.ext.abiCodes.get(output.getFilter(OutputFile.ABI))
-        
-        if (baseAbiVersionCode != null) {
-            
-            output.versionCodeOverride = baseAbiVersionCode * 10000 + variant.versionCode
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.outputs.forEach { output ->
+            def abiFilter = output.filters.find { it.filterType == FilterConfiguration.FilterType.ABI }
+            if (abiFilter != null) {
+                def code = abiCodes.get(abiFilter.identifier)
+                if (code != null) {
+                    output.versionCode.set(code * 10000 + (output.versionCode.get() ?: 1))
+                }
+            }
         }
     }
 }

@@ -1,5 +1,9 @@
 package nme.media;
 
+#if !nme_camera_api
+#error "Please add -Dnme_camera_api to your NME project file to use Camera"
+#end
+
 import nme.Loader;
 import nme.display.BitmapData;
 import nme.events.StatusEvent;

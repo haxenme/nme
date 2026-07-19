@@ -2,18 +2,13 @@
 
 #define SWAP_RB 0
 
-#if ( defined(HX_ANDROID) && !( defined(HXCPP_ARM64) || defined(HXCPP_ARMV7) || defined(__arm__) || defined(__aarch64__) ) )
-  #define ANDROID_SIM
-#endif
-
 // 0xAARRGGBB
 #if defined(ANDROID)
-   #ifdef ANDROID_SIM
-      #undef SWAP_RB
-      static bool SWAP_RB = false;
-      static bool SWAP_RB_MIP = false;
-      static bool sFormatChecked = false;
-   #endif
+   // determine at runtime if we can use GL_BGRA_EXT or not
+   #undef SWAP_RB
+   static bool SWAP_RB = false;
+   static bool SWAP_RB_MIP = false;
+   static bool sFormatChecked = false;
    static int ARGB_STORE = GL_BGRA_EXT;
    static int ARGB_PIXEL = GL_BGRA_EXT;
    static int ARGB_STORE_MIP = GL_BGRA_EXT;
@@ -100,7 +95,7 @@ bool NonPO2Supported(bool inNotRepeating)
 }
 
 
-#ifdef ANDROID_SIM
+#ifdef ANDROID
 void checkRgbFormat()
 {
    sFormatChecked = true;
@@ -115,7 +110,7 @@ void checkRgbFormat()
    int err = glGetError();
    if (err)
    {
-      ELOG("Switching texture format for simulator");
+      ELOG("Switching texture format based on runtime support");
       ARGB_STORE = GL_RGBA;
       ARGB_PIXEL = /*GL_BGRA*/ 0x80E1;
 
@@ -160,7 +155,7 @@ GLenum getTextureStorage(PixelFormat pixelFormat, bool mips)
 {
    switch(pixelFormat)
    {
-      #ifdef ANDROID_SIM
+   #ifdef ANDROID
       case pfRGB:  return gOglAllowRgb ? GL_RGB : mips ? ARGB_STORE_MIP : ARGB_STORE;
       case pfBGRA:     return mips ? ARGB_STORE_MIP : ARGB_STORE;
       case pfBGRPremA: return mips ? ARGB_STORE_MIP : ARGB_STORE;
@@ -198,7 +193,7 @@ GLenum getTransferOgl(PixelFormat pixelFormat, bool mips)
 {
    switch(pixelFormat)
    {
-      #ifdef ANDROID_SIM
+   #ifdef ANDROID
       case pfRGB:  return gOglAllowRgb ? GL_RGB : mips ? ARGB_PIXEL_MIP : ARGB_PIXEL;
       case pfBGRA:     return mips ? ARGB_PIXEL_MIP : ARGB_PIXEL;
       case pfBGRPremA: return mips ? ARGB_PIXEL_MIP : ARGB_PIXEL;
@@ -229,7 +224,7 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat, bool mips)
          // Fallthough
 
       case pfBGRA:
-         #ifdef ANDROID_SIM
+         #ifdef ANDROID
          return (mips ? SWAP_RB_MIP : SWAP_RB) ? pfRGBA :pfBGRA;
          #else
          return SWAP_RB ? pfRGBA :pfBGRA;
@@ -244,7 +239,7 @@ PixelFormat getTransferFormat(PixelFormat pixelFormat, bool mips)
 
 
       case pfBGRPremA:
-         #ifdef ANDROID_SIM
+         #ifdef ANDROID
          return (mips ? SWAP_RB_MIP : SWAP_RB) ? pfRGBPremA :pfBGRPremA;
          #else
          return SWAP_RB ? pfRGBPremA :pfBGRPremA;
@@ -279,7 +274,7 @@ class OGLTexture : public Texture
 public:
    OGLTexture(Surface *inSurface,unsigned int inFlags)
    {
-      #ifdef ANDROID_SIM
+      #ifdef ANDROID
       if (!sFormatChecked)
          checkRgbFormat();
       #endif

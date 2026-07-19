@@ -1,3 +1,4 @@
+::if NME_CAMERA_API::
 package org.haxe.nme;
 
 import android.util.Log;
@@ -181,4 +182,16 @@ class CameraInterface implements SurfaceTexture.OnFrameAvailableListener
    }
 
 }
+::else::
+package org.haxe.nme;
 
+// Camera stub - add -Dnme_camera_api to your NME project file to enable camera.
+class CameraInterface {
+   public CameraInterface() { }
+   public void open(int inTextureId, boolean inPreferFront, int width, int height, int milliFps) { }
+   public void startPreview() { }
+   public void close() { }
+   void getTextureTransform(int[] outSize, float[] outMatrix) { outSize[0] = 0; outSize[1] = 0; }
+   public boolean getNextTexture(float[] outMatrix) { return false; }
+}
+::end::

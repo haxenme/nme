@@ -17,6 +17,8 @@ class AndroidPlatform extends Platform
    var abis:Array<ABI>;
    var installed:Bool;
    var useArchDirs:Bool;
+   var maxApiLevelStr:String = "";
+   var maxApiLevelMinor:Int = 0;
 
    public function new(inProject:NMEProject)
    {
@@ -333,6 +335,12 @@ class AndroidPlatform extends Platform
       {
          context.ANDROID_TARGET_SDK_VERSION = 26;
       }
+      // Full SDK folder suffix (e.g. "37.1" or "35") kept for reference
+      context.ANDROID_COMPILE_SDK_STRING = maxApiLevelStr;
+      // Major/minor for AGP 9+ compileSdk { version = release(major) { minorApiLevel = minor } }
+      context.ANDROID_COMPILE_SDK_MAJOR = maxApiLevel;
+      if (maxApiLevelMinor > 0)
+         context.ANDROID_COMPILE_SDK_MINOR = maxApiLevelMinor;
 
       context.GAME_ACTIVITY_BASE = project.androidConfig.gameActivityBase;
 
@@ -342,6 +350,7 @@ class AndroidPlatform extends Platform
       context.ANDROID_EXTENSIONS =extensions;
 
       context.ANDROID_SDK = StringTools.replace(project.environment.get("ANDROID_SDK"),"\\","/");
+      context.NME_CAMERA_API = project.hasDef("nme_camera_api");
       context.NME_FIREBASE = project.hasDef("firebase") || project.hasDef("firebasePerformance") || project.hasDef("crashlytics");
       context.NME_FIREBASE_CRASHLYTICS = project.hasDef("crashlytics");
       context.NME_FIREBASE_PERFORMANCE = project.hasDef("firebasePerformance");
@@ -503,6 +512,8 @@ class AndroidPlatform extends Platform
    public function getMaxApiLevel(inMinimum:Int) : Int
    { 
       var result = inMinimum;
+      maxApiLevelStr = Std.string(inMinimum);
+      maxApiLevelMinor = 0;
       Log.verbose(" search Android API >= " + result);
       if (project.environment.exists("ANDROID_SDK"))
          try
@@ -513,16 +524,30 @@ class AndroidPlatform extends Platform
             {
                if (file.substr(0,8)=="android-")
                {
-                  var val = Std.parseInt(file.substr(8));
-                  if (val>result)
+                  var suffix = file.substr(8);
+                  var major:Null<Int>;
+                  var minor:Int = 0;
+                  var dotIdx = suffix.indexOf(".");
+                  if (dotIdx != -1) {
+                     major = Std.parseInt(suffix.substr(0, dotIdx));
+                     var parsedMinor = Std.parseInt(suffix.substr(dotIdx + 1));
+                     minor = (parsedMinor != null) ? parsedMinor : 0;
+                  } else {
+                     major = Std.parseInt(suffix);
+                  }
+                  if (major != null
+                     && (major > result || (major == result && minor > maxApiLevelMinor))
+                     && FileSystem.exists(dir+"/platforms/"+file+"/android.jar"))
                   {
-                     result = val;
+                     result = major;
+                     maxApiLevelStr = suffix;
+                     maxApiLevelMinor = minor;
                      Log.verbose("   found better API:" + file);
                   }
                }
             }
          } catch(e:Dynamic){}
-     Log.verbose(" using Android API >= " + result);
+     Log.verbose(' using Android API $result.$maxApiLevelMinor ($maxApiLevelStr)');
      return result;
    }
 
@@ -668,6 +693,17 @@ class AndroidPlatform extends Platform
    override public function getOutputExtra()
    {
       return gradle ? "android/PROJ-gradle" : "android/PROJ";
+   }
+
+   override public function updateExtra()
+   {
+      var extra = getOutputExtra();
+      if (extra != "")
+      {
+         var output = getOutputDir();
+         // Exclude Gradle's build output directory that can accumulate in the template source
+         copyTemplateDir(extra, output, true, true, function(f) return f != "build");
+      }
    }
 
    function addV4CompatLib(inDest:String)

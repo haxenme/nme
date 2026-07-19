@@ -167,11 +167,11 @@ class FileHelper
           extension == "storyboard" ||
           isText(source))) 
           {
-         var fileContents:String = File.getContent(source);
-         var template:Template = new Template(fileContents);
-
          try
          {
+            var fileContents:String = File.getContent(source);
+            var template:Template = new Template(fileContents);
+
             var result = template.execute(context, context.MACROS);
 
             if (extension=="java")
