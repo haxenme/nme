@@ -5,7 +5,13 @@ jobs:
  build_matrix:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13]
+        include:
+          - os: ubuntu-latest
+            arch_flag: -DHXCPP_M64
+          - os: windows-latest
+            arch_flag: -DHXCPP_M64
+          - os: macos-latest
+            arch_flag: -DHXCPP_ARM64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -54,7 +60,7 @@ jobs:
         run: |
           cd project
           neko build.n font
-          haxelib run hxcpp ToolkitBuild.xml -DHXCPP_M64
+          haxelib run hxcpp ToolkitBuild.xml ${{ matrix.arch_flag }}
           
       - name: Prep Acadnme
         run: |
@@ -72,7 +78,7 @@ jobs:
           HXCPP_COMPILE_MB: 4000
         run: |
            cd acadnme
-           haxelib run nme cpp build -DHXCPP_M64
+           haxelib run nme cpp build ${{ matrix.arch_flag }}
            
       - name: Clean Project
         if: startsWith(matrix.os,'ubuntu')
@@ -122,9 +128,9 @@ jobs:
         if: startsWith(matrix.os,'macos')
         uses: actions/upload-artifact@v4
         with:
-          name: mac-64
+          name: mac-arm64
           path: |
-            ndll/Mac64/nme.ndll
+            ndll/MacArm64/nme.ndll
             bin/Mac/Acadnme.app
  release:
     name: Release
@@ -140,7 +146,7 @@ jobs:
         - name: Download Mac
           uses: actions/download-artifact@v4
           with:
-             name: mac-64
+             name: mac-arm64
              path: nme
 
         - name: Download Windows

@@ -96,6 +96,8 @@
    <set name="NME_SDL3" value="1" if="NME_LOCAL_TOOLKIT" unless="emscripten" />
    <set name="SYSTEM_FREETYPE" value="1" if="gcw0" />
 
+   <set name="NME_WEB_AUDIO" value="1" if="emscripten" unless="NME_NO_AUDIO" />
+
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
    <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="NME_NO_AUDIO || NME_WEB_AUDIO" />
@@ -143,7 +145,6 @@
    <!-- Use to allow testing on mac... -->
    <set name="NME_OPENAL" value="1" if="macos" unless="NME_NO_AUDIO" />
 
-   <set name="NME_WEB_AUDIO" value="1" if="emscripten" unless="NME_NO_AUDIO" />
 
    <set name="NME_CAMERA" value="1" unless="emscripten||winrt" />
 
