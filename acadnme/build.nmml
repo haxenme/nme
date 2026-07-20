@@ -16,6 +16,7 @@
   <app
      file="Acadnme" 
      main="Acadnme"
+     bootType="addStage"
   />
   
   <window
@@ -32,7 +33,7 @@
 
   <set name="nativeFonts" value="false" />
 
-  <android targetApiLevel="26" >
+  <android targetApiLevel="29" >
      <appHeader value='android:isGame="true"' />
 
      <appPermission value="android.software.leanback" required="false" />

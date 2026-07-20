@@ -32,11 +32,11 @@ class ScriptMain
             if (dpiScale<1.5)
                dpiScale = 1.0;
             var scaledW = Std.int( ::WIN_WIDTH:: * dpiScale);
-            if (scaledW>window.width)
-               scaledW = window.width;
+            //if (scaledW>window.width)
+            //   scaledW = window.width;
             var scaledH = Std.int( ::WIN_HEIGHT:: * dpiScale);
-            if (scaledH>window.height)
-               scaledH = window.height;
+            //if (scaledH>window.height)
+            //   scaledH = window.height;
             window.resize(scaledW, scaledH);
             var x0 = window.x;
             var y0 = window.y;

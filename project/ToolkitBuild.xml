@@ -98,7 +98,7 @@
 
    <set name="NME_SDL_ANY" value="1" if="NME_NATIVE_SDL_SYSTEM" />
    <set name="NME_SDL_ANY" value="1" if="NME_SDL2" />
-   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="NME_NO_AUDIO" />
+   <set name="NME_MIXER" value="1" if="NME_SDL_ANY" unless="NME_NO_AUDIO || NME_WEB_AUDIO" />
    <set name="NME_OGG" value="1" unless="NME_NO_AUDIO || NME_NO_OGG" />
 
    <!-- Use opengl backend ? -->

@@ -126,7 +126,7 @@ class AcadnmeBoot extends Screen implements IBoot
       {
          var tl = new TextLabel("Welcome To NME!", {
                multiline:true,
-               wordwrap:true,
+               wordWrap:true,
                itemAlign:Layout.AlignTop,
             }
          );
@@ -149,7 +149,8 @@ class AcadnmeBoot extends Screen implements IBoot
       }
       else
       {
-         tileCtrl = new TileControl(["Stretch"], { padding:new Rectangle(10,0,20,10), columnWidth:400});
+         tileCtrl = new TileControl(["Stretch"],
+             { padding:new Rectangle(10,0,20,10), columnWidth:400});
          fillList();
          addWidget(tileCtrl);
          addListeners();

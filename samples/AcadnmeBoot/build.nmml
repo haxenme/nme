@@ -30,6 +30,7 @@
 
   <!-- IBoot  -->
   <classpath name="../../acadnme/src" />
+  <haxedef name="nme_camera_api" />
 
   <assets embed="true" >
      <string name = "default.svg" />
