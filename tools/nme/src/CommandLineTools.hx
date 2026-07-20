@@ -1028,6 +1028,16 @@ class CommandLineTools
       sys.println("  banner filename width height: generate project banner");
       sys.println("  favicon filename: generate project favicon");
       sys.println("  prepare filename: prepare the project for building, but print info only");
+      sys.println("  (build) -Ddeploy=protocol:file");
+      sys.println("       zip:zipfile.zip - create a zip file with the project output");
+      sys.println("       zip: - create a zip file with an auto-generated name");
+      sys.println("       dir:path - copy output files to given directory");
+      sys.println("       bindir:path - copy output to platform-specific subdirectory under path");
+      sys.println("       nme:path - copy .nme bundle to given path");
+      sys.println("       adb:path - push output files via Android Debug Bridge");
+      sys.println("       script:[@password@]host - deploy to remote acadnme script server");
+      sys.println("       nsis:installer.exe - create NSIS Windows installer (Windows only)");
+
       sys.println("");
       sys.println(" Targets : ");
       sys.println("");

@@ -63,6 +63,7 @@
 
   <haxelib name="nme" nocopy="true" />
   <haxedef name="scriptable" />
+  <haxedef name="nme_camera_api" />
   <haxedef name="NME_ANGLE" if="windows" />
   <haxedef name="HXCPP_M64" if="windows" />
   <unset name="no_haxe_http" if="wasm" />
