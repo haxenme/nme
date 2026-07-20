@@ -22,8 +22,18 @@ jobs:
           git submodule update --init --depth 1 --checkout
 
       - uses: krdlab/setup-haxe@v1.5.1
+        if: "!startsWith(matrix.os, 'macos')"
         with:
           haxe-version: 4.3.4
+
+      - name: Install Haxe (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew install haxe
+          haxe -version
+          neko -version
+          mkdir -p ~/haxelib
+          haxelib setup ~/haxelib
 
       - name: Install haxelibs
         run: |
