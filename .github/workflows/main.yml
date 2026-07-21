@@ -40,7 +40,8 @@ jobs:
           haxe -version
           haxelib install gm2d
           haxelib install format
-          haxelib install hxcpp
+          curl -L https://github.com/HaxeFoundation/hxcpp/releases/download/v4.3.148/hxcpp-4.3.148.zip -o hxcpp.zip
+          haxelib install hxcpp.zip
           haxelib dev nme .
 
       - name: Set Version
