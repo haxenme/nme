@@ -502,28 +502,23 @@ class Assets
       }
       else
       {
-         #if flash
-            data = Type.createInstance(Type.resolveClass(i.className), []);
-         #elseif (js&&!jsprime)
-            return null;
-         #else
-            var filename = i.path;
-            #if emscripten
+         var filename = i.path;
+         if (pathMapper.exists(filename))
+            filename = pathMapper.get(filename);
+         if (byteFactory.exists(filename))
+            data = byteFactory.get(filename)();
+ 
+         #if emscripten
+         if (data==null)
+         {
             data = getModuleAsset(filename);
             if (data!=null)
                useCache = true;
-            #end
-
-            if (data==null)
-            {
-               if (pathMapper.exists(filename))
-                  filename = pathMapper.get(filename);
-               if (byteFactory.exists(filename))
-                  data = byteFactory.get(filename)();
-               else
-                  data = ByteArray.readFile(filename);
-            } 
+         }
          #end
+
+         if (data==null)
+            data = ByteArray.readFile(filename);
       }
 
       if (data != null) 

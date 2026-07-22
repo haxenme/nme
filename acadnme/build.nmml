@@ -61,6 +61,7 @@
   <export name="../src/cppia/export_classes.info" />
 
   <source path="src" />
+  <template path="templates" />
 
   <haxelib name="nme" nocopy="true" />
   <haxedef name="scriptable" />

@@ -20,7 +20,7 @@ class FileServer extends Handler
    {
       for(d in dirs)
       {
-         var path = d + "/" + request.url;
+         var path = d + "/" + request.filePath;
          if (FileSystem.exists(path))
          {
             var data = sys.io.File.getBytes(path);

@@ -114,7 +114,6 @@ class EmscriptenPlatform extends DesktopPlatform
          }
          script = newLines.join("\n");
          Log.verbose("Strip iterators " + (script.length<len0) );
-
       }
       return script;
    }
@@ -269,13 +268,24 @@ class EmscriptenPlatform extends DesktopPlatform
          var port = 2323;
          server.listen(port);
          trace("Serving :" + port);
-         new nme.net.URLRequest('http://localhost:$port/index.html' ).launchBrowser();
-
+         var launchUrl = 'http://localhost:$port/index.html';
+         var launchScript = project.getDef("nmeLaunchScript");
+         if (launchScript != null && launchScript != "")
+         {
+            // Remap Dropbox share links to the CORS-friendly direct-download domain
+            if (launchScript.indexOf("www.dropbox.com") >= 0)
+            {
+               launchScript = launchScript.replace("www.dropbox.com", "dl.dropboxusercontent.com");
+               launchScript = new EReg("[?&]dl=\\d+", "").replace(launchScript, "");
+               Log.verbose("Remapped Dropbox URL for CORS: " + launchScript);
+            }
+            var encoded = haxe.crypto.Base64.encode(haxe.io.Bytes.ofString(launchScript));
+            launchUrl += '?nme=$encoded';
+         }
+         new nme.net.URLRequest(launchUrl).launchBrowser();
          server.untilDeath();
          #end
       }
-
-
 
       //var fullPath =  FileSystem.fullPath('$applicationDirectory/index.html');
       //new nme.net.URLRequest("file://" + fullPath).launchBrowser();

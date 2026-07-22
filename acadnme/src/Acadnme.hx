@@ -15,6 +15,46 @@ import nme.script.Server;
 import nme.script.IScriptHandler;
 
 
+@:nativeProperty
+#if emscripten
+@:cppFileCode('
+#include <emscripten.h>
+
+EM_JS(int, acad_get_start_script, (), {
+   var data = Module.startScript;
+   if (!data) return 0;
+   var bytes = (data instanceof Uint8Array) ? data : new Uint8Array(data);
+   var len = bytes.length;
+   var ptr = _malloc(len + 4);
+   HEAP32[ptr >> 2] = len;
+   HEAPU8.set(bytes, ptr + 4);
+   return ptr;
+});
+
+EM_JS(int, acad_has_start_script_error, (), {
+   return Module.startScriptError ? 1 : 0;
+});
+
+EM_JS(void, acad_show_start_script_error, (), {
+   var msg = Module.startScriptError || "Unknown error loading script";
+   var div = document.createElement("div");
+   div.style.cssText = "position:fixed;top:0;left:0;right:0;padding:16px;background:#c0392b;color:#fff;font-family:sans-serif;font-size:14px;z-index:9999;word-break:break-all;";
+   div.textContent = "Error loading script: " + msg;
+   document.body.appendChild(div);
+});
+
+nme::utils::ByteArray acadGetStartScript()
+{
+   int packed = acad_get_start_script();
+   if (!packed) return null();
+   int len = *(int*)(size_t)packed;
+   nme::utils::ByteArray result = nme::utils::ByteArray_obj::__new(len,false);
+   ::memcpy(result->b->getBase(), (const void*)((size_t)packed + 4), len);
+   ::free((void*)(size_t)packed);
+   return result;
+}
+')
+#end
 class Acadnme extends Sprite implements IScriptHandler
 {
    var script:String;
@@ -250,6 +290,21 @@ class Acadnme extends Sprite implements IScriptHandler
 
    public function runBoot()
    {
+      #if emscripten
+      var startBytes:ByteArray = untyped __cpp__("acadGetStartScript()");
+      if (startBytes != null)
+      {
+         trace("Running script from nme= URL parameter");
+         nme.script.Nme.runBytes(startBytes);
+         return;
+      }
+      else if ( (untyped __cpp__("acad_has_start_script_error()") : Int) != 0 )
+      {
+         untyped __cpp__("acad_show_start_script_error()");
+         return;
+      }
+      #end
+
       if (nme.Assets.hasBytes("AcadnmeBoot.nme"))
       {
          trace("Run AcadnmeBoot.nme");
