@@ -240,12 +240,6 @@ class Assets
 
    public static function getResource(inName:String) : ByteArray
    {
-      #if emscripten
-      var moduleBytes = getModuleAsset(inName);
-      if (moduleBytes!=null)
-         return moduleBytes;
-      #end
-
       var bytes = haxe.Resource.getBytes(inName);
       if (bytes==null)
       {
@@ -253,6 +247,12 @@ class Assets
          if (factory!=null)
             return factory();
       }
+      #if emscripten
+      var moduleBytes = getModuleAsset(inName);
+      if (moduleBytes!=null)
+         return moduleBytes;
+      #end
+
       if (bytes==null)
       {
          trace("[nme.Assets] missing binary resource '" + inName + "'");

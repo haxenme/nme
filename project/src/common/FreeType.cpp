@@ -267,6 +267,12 @@ public:
       if (!LoadBitmap(inChar, !stroked))
          return false;
 
+      int underlineH = 0;
+      if (mTransform & ffUnderline)
+      {
+         int underlineY0 = mFace->glyph->bitmap_top + getUnderlineOffset();
+         underlineH = getUnderlineHeight();
+      }
 
       FT_Bitmap *bitmap = &mFace->glyph->bitmap;
 
@@ -283,24 +289,26 @@ public:
          outOy = -glyph_bitmap->top;
          outAdvance = (glyph->advance.x);
       }
-      else if (mFace->glyph->format == FT_GLYPH_FORMAT_BITMAP)
+      else if (mFace->glyph->format == FT_GLYPH_FORMAT_BITMAP && isRgbFont)
       {
          outOx = mFace->glyph->bitmap_left;
          outOy = -mFace->glyph->bitmap_top;
          outW = bitmap->width;
          outH = bitmap->rows;
          outAdvance = (mFace->glyph->advance.x);
-         if (mFace->size->metrics.y_ppem!=mPixelHeight)
+
+         double scale = (double)mPixelHeight / mFace->size->metrics.y_ppem;
+         int destW = (int)(outW * scale);
+         int destH = (int)(outH * scale);
+         if (destW!=outW || destH!=outH)
          {
-            double scale = (double)mPixelHeight / mFace->size->metrics.y_ppem;
             outOx = (int)(outOx * scale);
             outOy = (int)(outOy * scale);
             outAdvance = (int)(outAdvance * scale);
-            outW = (int)(outW * scale);
-            outH = (int)(outH * scale);
-            //printf("Scale %d from %d: %dx%d\n", mPixelHeight, mFace->size->metrics.y_ppem, outW, outH);
+            outW = destW;
+            outH = destH;
+            return true;
          }
-         return true;
       }
       else
       {
@@ -338,12 +346,11 @@ public:
                outAdvance-=64;
             }
          }
-
       }
-
 
       outW = bitmap->width;
       outH = bitmap->rows;
+      //printf("GetGlyphInfo %d: %dx%d, advance:%d\n", inChar, outW, outH, outAdvance);
 
       if (mTransform & ffUnderline)
       {
@@ -351,8 +358,10 @@ public:
          int underlineY1 = underlineY0 + getUnderlineHeight();
          if (outH<underlineY1)
             outH = underlineY1;
+         int aw = (outAdvance+63)>>6;
+         if (aw>outW)
+            outW = aw;
       }
-
 
       if (stroked)
          FT_Done_Glyph(glyph);
@@ -390,20 +399,8 @@ public:
                    bitmap->pixel_mode==FT_PIXEL_MODE_BGRA ? 4 : 1;
 
       //printf("Bitmap %d %d bpp:%d, target %d %d\n", w, h, srcBpp, outTarget.mRect.w, outTarget.mRect.h);
-
-      if (mTransform & ffUnderline)
-      {
-         underlineY0 = mFace->glyph->bitmap_top + getUnderlineOffset();
-         underlineY1 = underlineY0 + getUnderlineHeight();
-      }
-
-      if (h<underlineY1)
-         h = underlineY1;
-
-      FT_Bitmap scaled;
       if (mFace->glyph->format == FT_GLYPH_FORMAT_BITMAP && isRgbFont)
       {
-         //printf("Scale %d from %d\n", mPixelHeight, mFace->size->metrics.y_ppem);
          double scale = (double)mPixelHeight / mFace->size->metrics.y_ppem;
          int destW = (int)(w * scale);
          int destH = (int)(h * scale);
@@ -457,15 +454,27 @@ public:
       }
 
 
+      if (mTransform & ffUnderline)
+      {
+         underlineY0 = mFace->glyph->bitmap_top + getUnderlineOffset();
+         underlineY1 = underlineY0 + getUnderlineHeight();
+      }
+
+      if (h<underlineY1)
+         h = underlineY1;
+
+
       int destBpp = isRgbFont ? 4 : aaType==aaAdvancedLcd ? 3 : 1;
       int checkW = isRgbFont ? w : w/destBpp;
       if (checkW>outTarget.mRect.w || h>outTarget.mRect.h)
       {
-         printf(" too big %d %d\n", outTarget.mRect.w, outTarget.mRect.h);
+         printf(" ############## Char %d: too big %dx%d > %dx%d\n", inChar, checkW, h, outTarget.mRect.w, outTarget.mRect.h);
          return;
       }
 
 
+      int destW = outTarget.mRect.w;
+      int destH = outTarget.mRect.h;
       for(int r=0;r<h;r++)
       {
          uint8  *dest = (uint8 *)outTarget.Row(r + outTarget.mRect.y) + outTarget.mRect.x*destBpp;
@@ -537,16 +546,16 @@ public:
          else if (r>=underlineY0 && r<underlineY1)
          {
             if (isRgbFont)
-               memset(dest, 0xff, w * 4);
+               memset(dest, 0xff, destW * 4);
             else
-               memset( dest, 0xff, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
+               memset( dest, 0xff, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? destW/8 : destW);
          }
          else
          {
             if (isRgbFont)
-               memset(dest, 0x00, w * 4);
+               memset(dest, 0x00, destW * 4);
             else
-               memset( dest, 0x00, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? w/8 : w);
+               memset( dest, 0x00, bitmap->pixel_mode == FT_PIXEL_MODE_MONO ? destW/8 : destW);
          }
       }
 

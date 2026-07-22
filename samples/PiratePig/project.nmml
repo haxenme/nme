@@ -2,7 +2,8 @@
 <project>
 	
 	<meta title="Pirate Pig" package="io.nme.samples.piratepig" version="1.0.0" company="Nme/Joshua Granick" />
-	<app path="Export" file="PiratePig" main="io.nme.samples.piratepig.PiratePig" />
+
+	<app path="bin" file="PiratePig" main="io.nme.samples.piratepig.PiratePig" />
 	
 	<window width="600" height="800" />
 	
@@ -11,7 +12,8 @@
 	<haxelib name="nme" />
 	<haxelib name="actuate" />
 	
-	<ios binaries="armv7" />
+	<set name="deploy" value = "nme:../../bin/apps" if="installer" />
+
 
    <set name="NME_ALPHA_MODE" value="preprocess" />
 	
@@ -26,10 +28,5 @@
 		<sound path="5.ogg" id="sound5" />
 		<music path="theme.ogg" id="soundTheme" />
 	</assets>
-	
-	<section if="release-sign">
-		<certificate path="path/to/android.keystore" if="android" />
-		<certificate path="path/to/author.p12" if="blackberry" />
-	</section>
 	
 </project>

@@ -14,7 +14,7 @@
 
 #endif
 
-#if defined(EMSCRIPTEN) || defined(HX_WINRT)
+#if defined(__EMSCRIPTEN__) || defined(HX_WINRT)
 #define NME_NO_CAMERA
 #endif
 #if defined(HXCPP_JS_PRIME) || defined(HX_WINRT)
@@ -24,7 +24,7 @@
 #ifdef ANDROID
 #include <android/log.h>
 #endif
-#if defined(EMSCRIPTEN)
+#if defined(__EMSCRIPTEN__)
 #include "emscripten.h"
 #include <sys/stat.h>
 #endif
@@ -825,7 +825,7 @@ DEFINE_PRIME1v(nme_set_renderer);
 
 value nme_get_webpage_url()
 {
-   #ifdef EMSCRIPTEN
+   #ifdef __EMSCRIPTEN__
    const char* url = emscripten_run_script_string("window.location.href");
    return alloc_string(url);
    #else
@@ -836,7 +836,7 @@ DEFINE_PRIM(nme_get_webpage_url,0);
 
 value nme_get_webpage_param(value param)
 {
-   #ifdef EMSCRIPTEN
+   #ifdef __EMSCRIPTEN__
    const char *q = val_string(param);
    char *str = (char*)EM_ASM_PTR({
       const params = new URLSearchParams(window.location.search);
@@ -1416,7 +1416,7 @@ DEFINE_PRIME1v(nme_stage_set_fixed_orientation);
 
 void nme_init_sdl_audio()
 {
-   #if defined(NME_MIXER) && !defined(EMSCRIPTEN)
+   #if defined(NME_MIXER) && !defined(__EMSCRIPTEN__)
    if (gSDLAudioState==sdaNotInit)
       InitSDLAudio();
    #endif
@@ -3659,7 +3659,7 @@ void nme_gfx_draw_tiles(value inGfx, value inSheet, value inXYIDs, int flags, in
                if (buf)
                   fvals = (float *)buffer_data(buf);
             }
-            #ifndef EMSCRIPTEN
+            #ifndef __EMSCRIPTEN__
             if (!fvals && val_is_string(inXYIDs))
                fvals = (float *)val_string(inXYIDs);
             #endif
@@ -4865,7 +4865,7 @@ void nme_bitmap_data_get_floats32(value inSurface, value inData, int inOffset, i
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
-      #ifndef EMSCRIPTEN
+      #ifndef __EMSCRIPTEN__
       unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
       if (data)
       {
@@ -4885,7 +4885,7 @@ void nme_bitmap_data_set_floats32(value inSurface, value inData, int inOffset, i
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
-      #ifndef EMSCRIPTEN
+      #ifndef __EMSCRIPTEN__
       unsigned char *data = (unsigned char *)val_to_kind(inData, gDataPointer);
       if (data)
       {
@@ -4906,7 +4906,7 @@ void nme_bitmap_data_get_uints8(value inSurface, value inData, int inOffset, int
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
-      #ifndef EMSCRIPTEN
+      #ifndef __EMSCRIPTEN__
       Uint8 *data = (Uint8 *)val_data(inData);
       if (!data)
          data = (Uint8 *)val_array_int(inData);
@@ -4952,7 +4952,7 @@ void nme_bitmap_data_set_uints8(value inSurface, value inData, int inOffset, int
    Surface *surf;
    if (AbstractToObject(inSurface,surf))
    {
-      #ifndef EMSCRIPTEN
+      #ifndef __EMSCRIPTEN__
       Uint8 *data = (Uint8 *)val_data(inData);
       if (!data)
          data = (Uint8 *)val_array_int(inData);
@@ -5926,7 +5926,7 @@ DEFINE_PRIM(nme_file_dialog_folder,2);
 */
 
 
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 AutoGCRoot *openCallbackRoot = nullptr;
 
 extern "C" {
@@ -5934,6 +5934,14 @@ extern "C" {
 EMSCRIPTEN_KEEPALIVE int nme_file_upload_complete(char const *filename, char const *mime_type, char *buffer, size_t buffer_size, void *callback_data) {
    if (!openCallbackRoot)
       return 0;
+   if (!filename || !buffer || buffer_size==0)
+   {
+      printf("File upload failed: %s %p %d\n", filename, buffer, (int)buffer_size);
+      delete openCallbackRoot;
+      openCallbackRoot = nullptr;
+      val_call1(openCallbackRoot->get(), alloc_null());
+      return 0;
+   }
    /// Load a file - this function is called from javascript when the file upload is activated
    //printf("Got callback %s %p %s x %d!\n", filename, openCallbackRoot, mime_type, (int)buffer_size);
 
@@ -5995,7 +6003,7 @@ bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultP
    else
       return true;
 
-   #elif defined(EMSCRIPTEN)
+   #elif defined(__EMSCRIPTEN__)
 
    //printf("Launch for types:%s.\n", inTypes.c_str());
    std::string types(inTypes.c_str());
@@ -6037,9 +6045,8 @@ bool nme_file_dialog_open(HxString inTitle, HxString inText, HxString inDefaultP
        file_reader.onload = (event) => {
          const uint8Arr = new Uint8Array(event.target.result);
          const data_ptr = Module['_malloc'](uint8Arr.length);
-         const data_on_heap = new Uint8Array(Module['HEAPU8'].buffer, data_ptr, uint8Arr.length);
-         data_on_heap.set(uint8Arr);
-         Module['ccall']('nme_file_upload_complete', 'number', ['string', 'string', 'number', 'number', 'number' ], [event.target.filename, event.target.mime_type, data_on_heap.byteOffset, uint8Arr.length]);
+         HEAPU8.set(uint8Arr, data_ptr);
+         Module['ccall']('nme_file_upload_complete', 'number', ['string', 'string', 'number', 'number', 'number' ], [event.target.filename, event.target.mime_type, data_ptr, uint8Arr.length, 0]);
          Module['_free'](data_ptr);
        };
        file_reader.onloadstart = (event) => {
@@ -6111,6 +6118,27 @@ void nme_get_glstats(value aStatsArray)
   }
 }
 DEFINE_PRIME1v(nme_get_glstats)
+
+
+#ifdef NME_NO_CAMERA
+value nme_camera_create(value inName) { return alloc_null(); }
+DEFINE_PRIM(nme_camera_create,1);
+
+value nme_camera_on_poll(value inCamera,value inHandler) { return alloc_null(); }
+DEFINE_PRIM(nme_camera_on_poll,2);
+
+value nme_camera_close(value inCamera) { return alloc_null(); }
+DEFINE_PRIM(nme_camera_close,1);
+
+void nme_camera_get_depth(value inCamera,value outBytes) { }
+DEFINE_PRIME2v(nme_camera_get_depth);
+
+int nme_camera_get_jpeg_size(value inCamera) { return 0; }
+DEFINE_PRIME1(nme_camera_get_jpeg_size);
+
+void nme_camera_get_jpeg_data(value inCamera, value outData) { }
+DEFINE_PRIME2v(nme_camera_get_jpeg_data);
+#endif
 
 // Reference this to bring in all the symbols for the static library
 #if STATIC_LINK

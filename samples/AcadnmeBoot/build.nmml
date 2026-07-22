@@ -12,6 +12,7 @@
   <app
      file="AcadnmeBoot" 
      main="AcadnmeBoot"
+     bootType="addStage"
   />
   
   <!--background="0x643B0F"-->

@@ -150,7 +150,7 @@ class AcadnmeBoot extends Screen implements IBoot
       else
       {
          tileCtrl = new TileControl(["Stretch"],
-             { padding:new Rectangle(10,0,20,10), columnWidth:400});
+             { padding:new Rectangle(10,0,20,10), columnWidth:400, fill:FillSolid(0xf8f8f8,1) });
          fillList();
          addWidget(tileCtrl);
          addListeners();
@@ -285,7 +285,7 @@ class AcadnmeBoot extends Screen implements IBoot
 
    function onOpen(_)
    {
-      nme.system.Dialog.fileOpen("Select NME File", "Selct file to run", null, "Nme Files|*.nme", filename-> {
+      nme.system.Dialog.fileOpen("Select NME File", "Select file to run", null, "Nme Files|*.nme", filename-> {
          if (filename!=null)
             launch(filename);
       } );
@@ -667,7 +667,7 @@ class AcadnmeBoot extends Screen implements IBoot
 
    public function createDetails(bitmap:Widget, dir:String, name:String, developer:String, inDisabled:String, path:String)
    {
-      var result = new gm2d.ui.Control(["SimpleTile"],{ onEnter:function() onSelect(path), onClick:function() onSelect(path) } );
+      var result = new gm2d.ui.Control(["SimpleTile"],{ onEnter:function() onSelect(path), onClick:function() onSelect(path), fill:FillSolid(0xffffff,1) } );
       result.addChild(bitmap);
       var row = new HorizontalLayout();
       row.add(bitmap.getLayout());
