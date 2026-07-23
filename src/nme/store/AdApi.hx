@@ -9,6 +9,10 @@ class AdApi
    public static var rewardReady = false;
 
    static var onPrivacy:Void->Void;
+   #if desktop
+   static var hostMuteTestState:Bool = false;
+   static var hostMuteTimer:haxe.Timer = null;
+   #end
    // use to wrap static context into instance
    #if android
    function new() {}
@@ -24,10 +28,10 @@ class AdApi
 
    public static function setWatcher(inWatcher:String->Void, preloadInterstitial:Bool, preloadReward:Bool)
    {
+      watcher = inWatcher;
+
       if (!isValid())
          return false;
-
-      watcher = inWatcher;
 
       #if NME_APPLOVIN_KEY
       return AppLovin.init(preloadInterstitial, preloadReward);
@@ -107,6 +111,70 @@ class AdApi
          onRewardWatched = null;
       return ok;
 
+   }
+
+   public static function getMuteAudio():Bool
+   {
+      #if NME_CRAZYGAMES_SDK
+      return CrazyGames.getMuteAudio();
+      #end
+      #if desktop
+      var v = Sys.getEnv("NME_HOST_MUTE");
+      if (v == "test") {
+         if (hostMuteTimer == null) {
+            hostMuteTimer = new haxe.Timer(5000);
+            hostMuteTimer.run = function() {
+               hostMuteTestState = !hostMuteTestState;
+               onEvent("onSettingsChanged");
+            };
+         }
+         return hostMuteTestState;
+      }
+      if (v != null && v != "0") return true;
+      #end
+      return false;
+   }
+
+   public static function reportGameplayStart():Void
+   {
+      #if NME_CRAZYGAMES_SDK
+      CrazyGames.reportGameplayStart();
+      #end
+   }
+
+   public static function reportGameplayStop():Void
+   {
+      #if NME_CRAZYGAMES_SDK
+      CrazyGames.reportGameplayStop();
+      #end
+   }
+
+   public static function happytime():Void
+   {
+      #if NME_CRAZYGAMES_SDK
+      CrazyGames.happytime();
+      #end
+   }
+
+   public static function reportGameCompletedPercentage(pct:Int):Void
+   {
+      #if NME_CRAZYGAMES_SDK
+      CrazyGames.reportGameCompletedPercentage(pct);
+      #end
+   }
+
+   public static function setGameContext(context:{}):Void
+   {
+      #if NME_CRAZYGAMES_SDK
+      CrazyGames.setGameContext(context);
+      #end
+   }
+
+   public static function clearGameContext():Void
+   {
+      #if NME_CRAZYGAMES_SDK
+      CrazyGames.clearGameContext();
+      #end
    }
 
    public static function isPrivacyOptionRequired()

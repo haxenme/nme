@@ -20,68 +20,47 @@ EM_JS(int, nme_crazygames_is_valid, (), {
 });
 
 EM_JS(int, nme_crazygames_is_ready, (), {
-   return !!(typeof window !== "undefined" && window.__nmeCrazyGamesReady === true);
+   return !!(typeof window !== "undefined" && window.__nmeHostingApiReady === true);
 });
 
+// SDK init is done by the HTML template before WASM starts; this just registers
+// the settings-change listener and fires any requested preload events.
 EM_JS(int, nme_crazygames_init, (int preloadInterstitial, int preloadReward), {
-   if (!nme_crazygames_is_valid()) {
+   if (!window.__nmeHostingApiReady) {
       return 0;
    }
 
-   if (typeof window !== "undefined") {
-      if (window.__nmeCrazyGamesInitPromise) {
-         return 1;
-      }
+   window.CrazyGames.SDK.game.addSettingsChangeListener(function(newSettings) {
+      Module.ccall("nme_crazygames_on_event", null, ["string"], ["onSettingsChanged"]);
+   });
 
-      window.__nmeCrazyGamesReady = false;
-
-      window.__nmeCrazyGamesInitPromise = Promise.resolve(window.CrazyGames.SDK.init()).then(function() {
-         window.__nmeCrazyGamesReady = true;
-
-         if (preloadInterstitial) {
-            if (typeof Module !== "undefined" && Module.ccall) {
-               Module.ccall("nme_crazygames_on_event", null, ["string"], ["onInterstitialPreloaded"]);
-            }
-         }
-         if (preloadReward) {
-            if (typeof Module !== "undefined" && Module.ccall) {
-               Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardPreloaded"]);
-            }
-         }
-
-      }).catch(function(e) {
-         window.__nmeCrazyGamesInitPromise = null;
-         window.__nmeCrazyGamesReady = false;
-      });
+   if (preloadInterstitial) {
+      Module.ccall("nme_crazygames_on_event", null, ["string"], ["onInterstitialPreloaded"]);
+   }
+   if (preloadReward) {
+      Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardPreloaded"]);
    }
 
    return 1;
 });
 
 EM_JS(int, nme_crazygames_play_interstitial, (), {
-   if (!nme_crazygames_is_ready()) {
+   if (!window.__nmeHostingApiReady) {
       return 0;
    }
 
-   var ad = window.CrazyGames.SDK.ad;
-   ad.requestAd("midgame", {
+   window.CrazyGames.SDK.ad.requestAd("midgame", {
       adStarted: function() {
-         if (typeof Module !== "undefined" && Module.ccall) {
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoBegan"]);
-         }
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoBegan"]);
       },
       adFinished: function() {
-         if (typeof Module !== "undefined" && Module.ccall) {
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoEnded"]);
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onInterstitialHidden"]);
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onInterstitialPreloaded"]);
-         }
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoEnded"]);
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onInterstitialHidden"]);
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onInterstitialPreloaded"]);
       },
       adError: function() {
-         if (typeof Module !== "undefined" && Module.ccall) {
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoEnded"]);
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onInterstitialFailedToShow"]);
-         }
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoEnded"]);
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onInterstitialFailedToShow"]);
       }
    });
 
@@ -89,35 +68,66 @@ EM_JS(int, nme_crazygames_play_interstitial, (), {
 });
 
 EM_JS(int, nme_crazygames_play_reward, (), {
-   if (!nme_crazygames_is_ready()) {
+   if (!window.__nmeHostingApiReady) {
       return 0;
    }
 
-   var ad = window.CrazyGames.SDK.ad;
-   ad.requestAd("rewarded", {
+   window.CrazyGames.SDK.ad.requestAd("rewarded", {
       adStarted: function() {
-         if (typeof Module !== "undefined" && Module.ccall) {
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoBegan"]);
-         }
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoBegan"]);
       },
       adFinished: function() {
-         if (typeof Module !== "undefined" && Module.ccall) {
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoEnded"]);
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardVerified"]);
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardHidden"]);
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardPreloaded"]);
-         }
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoEnded"]);
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardVerified"]);
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardHidden"]);
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardPreloaded"]);
       },
       adError: function() {
-         if (typeof Module !== "undefined" && Module.ccall) {
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoEnded"]);
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardFailed"]);
-            Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardHidden"]);
-         }
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onVideoEnded"]);
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardFailed"]);
+         Module.ccall("nme_crazygames_on_event", null, ["string"], ["onRewardHidden"]);
       }
    });
 
    return 1;
+});
+
+EM_JS(int, nme_crazygames_get_mute_audio, (), {
+   if (!window.__nmeHostingApiReady) return 0;
+   var settings = window.CrazyGames.SDK.game.settings;
+   return (settings && settings.muteAudio) ? 1 : 0;
+});
+
+EM_JS(void, nme_crazygames_report_gameplay_start, (), {
+   if (!window.__nmeHostingApiReady) return;
+   window.CrazyGames.SDK.game.gameplayStart();
+});
+
+EM_JS(void, nme_crazygames_report_gameplay_stop, (), {
+   if (!window.__nmeHostingApiReady) return;
+   window.CrazyGames.SDK.game.gameplayStop();
+});
+
+EM_JS(void, nme_crazygames_happytime, (), {
+   if (!window.__nmeHostingApiReady) return;
+   window.CrazyGames.SDK.game.happytime();
+});
+
+EM_JS(void, nme_crazygames_report_game_completed_percentage, (int pct), {
+   if (!window.__nmeHostingApiReady) return;
+   window.CrazyGames.SDK.game.reportGameCompletedPercentage(pct);
+});
+
+EM_JS(void, nme_crazygames_set_game_context, (const char *json), {
+   if (!window.__nmeHostingApiReady) return;
+   try {
+      window.CrazyGames.SDK.game.setGameContext(JSON.parse(UTF8ToString(json)));
+   } catch(e) {}
+});
+
+EM_JS(void, nme_crazygames_clear_game_context, (), {
+   if (!window.__nmeHostingApiReady) return;
+   window.CrazyGames.SDK.game.clearGameContext();
 });
 ')
 #end
@@ -159,6 +169,57 @@ class CrazyGames
       #end
    }
 
+   public static function getMuteAudio():Bool
+   {
+      #if emscripten
+      return nme_crazygames_get_mute_audio() != 0;
+      #else
+      return false;
+      #end
+   }
+
+   public static function reportGameplayStart():Void
+   {
+      #if emscripten
+      nme_crazygames_report_gameplay_start();
+      #end
+   }
+
+   public static function reportGameplayStop():Void
+   {
+      #if emscripten
+      nme_crazygames_report_gameplay_stop();
+      #end
+   }
+
+   public static function happytime():Void
+   {
+      #if emscripten
+      nme_crazygames_happytime();
+      #end
+   }
+
+   public static function reportGameCompletedPercentage(pct:Int):Void
+   {
+      #if emscripten
+      nme_crazygames_report_game_completed_percentage(pct);
+      #end
+   }
+
+   public static function setGameContext(context:{}):Void
+   {
+      #if emscripten
+      nme_crazygames_set_game_context(haxe.Json.stringify(context));
+      #end
+   }
+
+   public static function clearGameContext():Void
+   {
+      #if emscripten
+      nme_crazygames_clear_game_context();
+      #end
+   }
+
    #if emscripten
    @:native("nme_crazygames_init")
    extern static function nme_crazygames_init(preloadInterstitial:Bool, preloadReward:Bool):Int;
@@ -174,5 +235,26 @@ class CrazyGames
 
    @:native("nme_crazygames_play_reward")
    extern static function nme_crazygames_play_reward():Int;
+
+   @:native("nme_crazygames_get_mute_audio")
+   extern static function nme_crazygames_get_mute_audio():Int;
+
+   @:native("nme_crazygames_report_gameplay_start")
+   extern static function nme_crazygames_report_gameplay_start():Void;
+
+   @:native("nme_crazygames_report_gameplay_stop")
+   extern static function nme_crazygames_report_gameplay_stop():Void;
+
+   @:native("nme_crazygames_happytime")
+   extern static function nme_crazygames_happytime():Void;
+
+   @:native("nme_crazygames_report_game_completed_percentage")
+   extern static function nme_crazygames_report_game_completed_percentage(pct:Int):Void;
+
+   @:native("nme_crazygames_set_game_context")
+   extern static function nme_crazygames_set_game_context(json:cpp.ConstCharStar):Void;
+
+   @:native("nme_crazygames_clear_game_context")
+   extern static function nme_crazygames_clear_game_context():Void;
    #end
 }

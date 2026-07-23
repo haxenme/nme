@@ -167,6 +167,7 @@
 
         downloadedNmeApp: 0,
         downloadedAssets: 0,
+        downloadedHostingApi: 0,
         nmeAssets: {},
         nmeAssetStates: {},
         bundleReady: true,
@@ -184,7 +185,7 @@
         },
         ::end::
         progress: function() {
-          var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedAssets;
+          var loaded = this.downloadedNmeJs + this.downloadedNmeApp + this.downloadedAssets + this.downloadedHostingApi;
           if (this.binaryIsReady) loaded++;
 
 
@@ -197,6 +198,12 @@
           if (this.nmeJs!=null) {
              if (!this.wasmBinary)
                return;
+             ::if NME_CRAZYGAMES_SDK::
+             if (!window.__nmeHostingApiReady) return;
+             if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game) {
+               window.CrazyGames.SDK.game.loadingStop();
+             }
+             ::end::
              var script = document.createElement("script");
              script.text = this.nmeJs;
              this.nmeJs = null;
@@ -308,6 +315,28 @@
 
       ::if NME_RESOURCE_BUNDLE::
       Module.bundleReady = false;
+      ::end::
+
+      ::if NME_CRAZYGAMES_SDK::
+      Module.totalDownloads++;
+      (function() {
+        function onReady() {
+          window.__nmeHostingApiReady = true;
+          Module.downloadedHostingApi = 1;
+          window.CrazyGames.SDK.game.loadingStart();
+          Module.progress();
+        }
+        function onFail() {
+          window.__nmeHostingApiReady = true;
+          Module.downloadedHostingApi = 1;
+          Module.progress();
+        }
+        if (window.CrazyGames && window.CrazyGames.SDK) {
+          window.CrazyGames.SDK.init().then(onReady).catch(onFail);
+        } else {
+          onFail();
+        }
+      })();
       ::end::
     </script>
 
