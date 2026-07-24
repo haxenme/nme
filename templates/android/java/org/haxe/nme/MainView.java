@@ -152,6 +152,8 @@ class MainView extends GLSurfaceView {
                 EGLConfig[] configs = new EGLConfig[1];
                 int[] num_config = new int[1];
 
+		setPreserveEGLContextOnPause(true);
+
 
                 // Try as specified - aa
                 if (::WIN_ANTIALIASING:: >= 1)

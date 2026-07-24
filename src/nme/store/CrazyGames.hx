@@ -151,7 +151,7 @@ class CrazyGames
       #end
    }
 
-   public static function playInterstitial(andThen:Void->Void):Bool
+   public static function playInterstitial():Bool
    {
       #if emscripten
       return nme_crazygames_play_interstitial() != 0;

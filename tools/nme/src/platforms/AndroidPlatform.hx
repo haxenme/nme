@@ -69,6 +69,14 @@ class AndroidPlatform extends Platform
          project.haxedefs.set("gradle", "1");
          project.haxedefs.set("androidBilling", "1");
       }
+      if (project.hasDef("NME_ADMOB_APP_ID"))
+         project.haxedefs.set("NME_ADMOB_APP_ID", project.getDef("NME_ADMOB_APP_ID"));
+
+      if (project.hasDef("NME_ADMOB_INTERSTITIAL_ID"))
+         project.haxedefs.set("NME_ADMOB_INTERSTITIAL_ID", project.getDef("NME_ADMOB_INTERSTITIAL_ID"));
+
+      if (project.hasDef("NME_ADMOB_REWARD_ID"))
+         project.haxedefs.set("NME_ADMOB_REWARD_ID", project.getDef("NME_ADMOB_REWARD_ID"));
 
       if (gradle)
       {

@@ -159,6 +159,7 @@ implements SensorEventListener
 
    ArrayList<Runnable> mOnDestroyListeners;
    static SparseArray<IActivityResult> sResultHandler = new SparseArray<IActivityResult>();
+   static java.util.HashSet<String> sFailedResources = new java.util.HashSet<String>();
    
    private static float[] accelData = new float[3];
    private static int bufferedDisplayOrientation = -1;
@@ -292,7 +293,10 @@ implements SensorEventListener
         extension.onCreate(state);
 
      ::if NME_ADMOB_APP_ID::
-     NmeAdMob.initializeSdk(this);
+     // Store activity ref now; initializeSdk is deferred until setWatcher is called
+     // from Haxe (render thread), ensuring watcher is set before any SDK callbacks fire.
+     Log.d(TAG,"NME GameActivity storing activity ref for AdMob (init deferred until setWatcher)");
+     NmeAdMob.sGameActivity = this;
      ::end::
 
 
@@ -601,6 +605,7 @@ implements SensorEventListener
 ::if (WIN_FULLSCREEN)::::if (ANDROID_TARGET_SDK_VERSION >= 19)::
   @Override
   public void onWindowFocusChanged(boolean hasFocus) {
+    Log.d(TAG,"NME GameActivity onWindowFocusChanged hasFocus=" + hasFocus);
     super.onWindowFocusChanged(hasFocus);
     if(hasFocus) {
       hideSystemUi();
@@ -608,6 +613,7 @@ implements SensorEventListener
   }
 
   private void hideSystemUi() {
+    Log.d(TAG,"NME GameActivity hideSystemUi");
     androidx.core.view.WindowInsetsControllerCompat controller =
         androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
     controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars());
@@ -944,6 +950,9 @@ implements SensorEventListener
    
    public static byte[] getResource(String inResource)
    {
+      if (sFailedResources.contains(inResource))
+         return null;
+
       try
       {
          InputStream inputStream = null;
@@ -965,6 +974,7 @@ implements SensorEventListener
       }
       catch (java.io.IOException e)
       {
+         sFailedResources.add(inResource);
          Log.e(TAG,  "getResource" + ":" + e.toString());
       }
       

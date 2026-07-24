@@ -9,6 +9,12 @@ class AdApi
    public static var rewardReady = false;
 
    static var onPrivacy:Void->Void;
+   static var interstitialRetryDelay = 30.0; // seconds; doubles on each failure, capped at 300s
+   static var interstitialRetryTimer:haxe.Timer = null;
+   static var rewardRetryDelay = 30.0;
+   static var rewardRetryTimer:haxe.Timer = null;
+   static var _consentGranted = false;      // true once canRequestAds was confirmed (SDK initialized)
+   static var _consentUnavailable = false;  // true if consent explicitly required but not granted
    #if desktop
    static var hostMuteTestState:Bool = false;
    static var hostMuteTimer:haxe.Timer = null;
@@ -28,6 +34,7 @@ class AdApi
 
    public static function setWatcher(inWatcher:String->Void, preloadInterstitial:Bool, preloadReward:Bool)
    {
+      trace("NME AdApi setWatcher preloadInterstitial=" + preloadInterstitial + " preloadReward=" + preloadReward);
       watcher = inWatcher;
 
       if (!isValid())
@@ -65,11 +72,11 @@ class AdApi
 
       var ok = false;
       #if NME_APPLOVIN_KEY
-      ok = AppLovin.playInterstitial(andThen);
+      ok = AppLovin.playInterstitial();
       #elseif NME_ADMOB_APP_ID
-      ok = AdMob.playInterstitial(andThen);
+      ok = AdMob.playInterstitial();
       #elseif NME_CRAZYGAMES_SDK
-      ok = CrazyGames.playInterstitial(andThen);
+      ok = CrazyGames.playInterstitial();
       #end
 
       if (!ok)
@@ -89,28 +96,34 @@ class AdApi
       return false;
    }
 
-   public static function playReward(onFinsish:Bool->Void)
+   public static function playReward(onFinsish:Bool->Void) : Void
    {
-      if (!rewardReady)
+      var ok = false;
+
+      if (rewardReady)
       {
-         return false;
+         rewardReady = false;
+         onRewardWatched = onFinsish;
+
+         #if NME_APPLOVIN_KEY
+         ok = AppLovin.playReward();
+         #elseif NME_ADMOB_APP_ID
+         ok = AdMob.playReward();
+         #elseif NME_CRAZYGAMES_SDK
+         ok = CrazyGames.playReward();
+         #end
+         trace("NME AdApi playReward ok=" + ok);
+      }
+      else
+      {
+         trace("NME AdApi playReward called but rewardReady=" + rewardReady);
       }
 
-      onRewardWatched = onFinsish;
-
-      var ok = false;
-      #if NME_APPLOVIN_KEY
-      ok = AppLovin.playReward();
-      #elseif NME_ADMOB_APP_ID
-      ok = AdMob.playReward();
-      #elseif NME_CRAZYGAMES_SDK
-      ok = CrazyGames.playReward();
-      #end
-
       if (!ok)
+      {
          onRewardWatched = null;
-      return ok;
-
+         onFinsish(false);
+      }
    }
 
    public static function getMuteAudio():Bool
@@ -177,6 +190,85 @@ class AdApi
       #end
    }
 
+   // Schedules a background retry with exponential backoff. No consent dialog shown.
+   static function scheduleInterstitialRetry() {
+      if (interstitialRetryTimer != null || !hasAdNetwork()) return;
+      trace("NME AdApi scheduling interstitial retry in " + interstitialRetryDelay + "s");
+      var delay = interstitialRetryDelay;
+      interstitialRetryTimer = haxe.Timer.delay(function() {
+         interstitialRetryTimer = null;
+         interstitialRetryDelay = Math.min(delay * 2, 300.0);
+         retryInterstitialLoad();
+      }, Std.int(delay * 1000));
+   }
+
+   static function scheduleRewardRetry() {
+      if (rewardRetryTimer != null || !hasAdNetwork() || _consentUnavailable) return;
+      trace("NME AdApi scheduling reward retry in " + rewardRetryDelay + "s");
+      var delay = rewardRetryDelay;
+      rewardRetryTimer = haxe.Timer.delay(function() {
+         rewardRetryTimer = null;
+         rewardRetryDelay = Math.min(delay * 2, 300.0);
+         retryRewardBackground();
+      }, Std.int(delay * 1000));
+   }
+
+   // Retry interstitial preload without showing a consent dialog.
+   // Called automatically by the retry timer; can also be called at game checkpoints.
+   public static function retryInterstitialLoad() {
+      trace("NME AdApi retryInterstitialLoad isPreloaded=" + isPreloaded);
+      if (isPreloaded) return;
+      #if NME_ADMOB_APP_ID
+      AdMob.retryInterstitialLoad();
+      #end
+   }
+
+   // Background retry for reward ad — no consent dialog.
+   static function retryRewardBackground() {
+      if (rewardReady) return;
+      #if NME_ADMOB_APP_ID
+      AdMob.retryRewardBackground();
+      #end
+   }
+
+   // Cancel any pending interstitial retry timer and immediately attempt a preload.
+   // Call at game checkpoints where an interstitial will soon be needed.
+   public static function primeInterstitial() {
+      if (isPreloaded) return;
+      if (interstitialRetryTimer != null) { interstitialRetryTimer.stop(); interstitialRetryTimer = null; }
+      interstitialRetryDelay = 30.0;
+      retryInterstitialLoad();
+   }
+
+   // Cancel any pending reward retry timer and immediately attempt a preload.
+   // Call before showing the "earn reward" option so the ad is ready when the user taps.
+   public static function primeReward() {
+      if (rewardReady) return;
+      if (rewardRetryTimer != null) { rewardRetryTimer.stop(); rewardRetryTimer = null; }
+      rewardRetryDelay = 30.0;
+      retryRewardBackground();
+   }
+
+   // Call at a user-initiated moment (e.g., showing the "earn reward" prompt).
+   // May show a consent dialog — acceptable here since the user initiated it.
+   // Result arrives via watcher: onRewardPreloaded / onRewardPreloadFailed.
+   public static function requestRewardLoad() {
+      trace("NME AdApi requestRewardLoad rewardReady=" + rewardReady);
+      if (rewardReady) return;
+      #if NME_ADMOB_APP_ID
+      AdMob.requestRewardLoad();
+      #end
+   }
+
+   // Returns the current state of reward ad availability for display logic.
+   public static function getRewardState():AdApiRewardState {
+      if (!hasAdNetwork()) return ApiUndefined;
+      if (_consentUnavailable) return ApiNoConsent;
+      if (!_consentGranted) return ApiNotReady;
+      if (rewardReady) return ApiRewardReady;
+      return ApiRewardNotLoaded;
+   }
+
    public static function isPrivacyOptionRequired()
    {
       #if android
@@ -216,6 +308,23 @@ class AdApi
             }
          case "onInterstitialPreloaded":
             isPreloaded = true;
+            interstitialRetryDelay = 30.0; // reset backoff for next ad cycle
+
+         case "onSdkInitialized":
+            // MobileAds.initialize complete — consent was granted and SDK is running
+            _consentGranted = true;
+            _consentUnavailable = false;
+
+         case "onConsentNetworkError":
+            // Could not reach consent server — suggest checking network, keep retrying
+            isPreloaded = false;
+            scheduleInterstitialRetry();
+
+         case "onConsentUnavailable":
+            // Consent required but not granted — user must take action, stop retrying
+            _consentUnavailable = true;
+            isPreloaded = false;
+            rewardReady = false;
          // ios
          case "onVideoBegan":
             nme.media.Sound.suspend(true);
@@ -226,15 +335,21 @@ class AdApi
 
          case "onInterstitialPreloadFailed":
             isPreloaded = false;
+            scheduleInterstitialRetry();
 
          case "onRewardPreloaded":
             rewardReady = true;
+            rewardRetryDelay = 30.0; // reset backoff for next ad cycle
 
          case "onRewardPreloadFailed":
             rewardReady = false;
+            scheduleRewardRetry();
 
          case "onRewardHidden":
             nme.media.Sound.suspend(false);
+
+         case "onRewardDisplayed":
+            nme.media.Sound.suspend(true);
 
          case "onRewardVerified":
             if (onRewardWatched!=null)
