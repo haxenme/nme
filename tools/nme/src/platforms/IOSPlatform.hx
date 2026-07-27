@@ -144,6 +144,18 @@ class IOSPlatform extends Platform
 
       if (project.hasDef("iosBilling"))
          project.haxedefs.set("iosBilling", "1");
+
+      if (project.hasDef("NME_ADMOB_APP_ID"))
+         project.haxedefs.set("NME_ADMOB_APP_ID", project.getDef("NME_ADMOB_APP_ID"));
+
+      if (project.hasDef("NME_ADMOB_INTERSTITIAL_ID"))
+         project.haxedefs.set("NME_ADMOB_INTERSTITIAL_ID", project.getDef("NME_ADMOB_INTERSTITIAL_ID"));
+
+      if (project.hasDef("NME_ADMOB_REWARD_ID"))
+         project.haxedefs.set("NME_ADMOB_REWARD_ID", project.getDef("NME_ADMOB_REWARD_ID"));
+
+      if (project.hasDef("NME_REAL_ADS"))
+         project.haxedefs.set("NME_REAL_ADS", "1");
    }
 
    override public function buildPackage():Void 
@@ -267,6 +279,22 @@ ${hxcpp_include}';
       context.THUMB_SUPPORT = hasArch(ARMV6) ? "GCC_THUMB_SUPPORT = NO;" : "";
       context.KEY_STORE_IDENTITY = "iPhone Developer";
 
+      if (project.hasDef("NME_ADMOB_APP_ID"))
+      {
+         context.NME_ADMOB_APP_ID = true;
+         var dep = Std.parseFloat(config.deployment);
+         if (dep < 14) config.deployment = "14.0";
+         if (!project.customIOSproperties.exists("GADApplicationIdentifier"))
+            project.customIOSproperties.set("GADApplicationIdentifier", project.getDef("NME_ADMOB_APP_ID"));
+         if (!project.customIOSproperties.exists("NSUserTrackingUsageDescription"))
+            project.customIOSproperties.set("NSUserTrackingUsageDescription",
+               "This identifier will be used to deliver personalized ads to you.");
+         // System frameworks required by AdMob
+         if (!project.dependencies.exists("AppTrackingTransparency"))
+            project.dependencies.set("AppTrackingTransparency", new Dependency("AppTrackingTransparency.framework", "", ""));
+         if (!project.dependencies.exists("JavaScriptCore"))
+            project.dependencies.set("JavaScriptCore", new Dependency("JavaScriptCore.framework", "", ""));
+      }
 
       var customIOSproperties = [];
       for(key in project.customIOSproperties.keys()) {

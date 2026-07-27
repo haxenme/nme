@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -21,6 +21,10 @@
       ::end::
 
 		::ADDL_PBX_BUILD_FILE::
+		::if (NME_ADMOB_APP_ID)::
+		ADBC11C0000000020000AA04 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = ADBC11C0000000020000AA02 /* GoogleMobileAds */; };
+		ADBC11C0000000020000BB02 /* AdMobIos.mm in Sources */ = {isa = PBXBuildFile; fileRef = ADBC11C0000000020000BB01 /* AdMobIos.mm */; };
+		::end::
 		1E2E17AD131E8B5D0048F3C7 /* ::APP_FILE::/assets in Resources */ = {isa = PBXBuildFile; fileRef = 1E2E17A5131E8B5D0048F3C7 /* ::APP_FILE::/assets */; };
 		1E3B11C21854877600E698A8 /* ::APP_FILE::/Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1E3B11C11854877600E698A8 /* ::APP_FILE::/Images.xcassets */; };
 		1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EEEBA9A121AF1C60048A9DF /* UIKit.framework */; };
@@ -156,6 +160,9 @@
 		BB000BB100000000000000001 /* IosStoreKit2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IosStoreKit2.swift; sourceTree = "<group>"; };
 		BB000BB100000000000000003 /* NmeBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NmeBridgingHeader.h; sourceTree = "<group>"; };
 		::end::
+		::if (NME_ADMOB_APP_ID)::
+		ADBC11C0000000020000BB01 /* AdMobIos.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AdMobIos.mm; sourceTree = "<group>"; };
+		::end::
 
 /* End PBXFileReference section */
 
@@ -179,6 +186,9 @@
 				1EEEBAFE121BE2980048A9DF /* AVFoundation.framework in Frameworks */,
 				1EEEBB00121BE2B30048A9DF /* Foundation.framework in Frameworks */,
 				::ADDL_PBX_FRAMEWORKS_BUILD_PHASE::
+				::if (NME_ADMOB_APP_ID)::
+				ADBC11C0000000020000AA04 /* GoogleMobileAds in Frameworks */,
+				::end::
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,6 +214,9 @@
 				::if (IOS_BILLING)::
 				BB000BB100000000000000001 /* IosStoreKit2.swift */,
 				BB000BB100000000000000003 /* NmeBridgingHeader.h */,
+				::end::
+				::if (NME_ADMOB_APP_ID)::
+				ADBC11C0000000020000BB01 /* AdMobIos.mm */,
 				::end::
 			);
 			path =  "::APP_FILE::/Classes";
@@ -360,6 +373,11 @@
 			productName = "::APP_TITLE::";
 			productReference = 1D6058910D05DD3D006BFB54 /* ::APP_FILE::.app */;
 			productType = "com.apple.product-type.application";
+			::if (NME_ADMOB_APP_ID)::
+			packageProductDependencies = (
+				ADBC11C0000000020000AA02 /* GoogleMobileAds */,
+			);
+			::end::
 		};
 ::if (NME_WATCHOS)::
 		1ECD4ADD1D521CDE00ED25DA /* ::WATCH_FILE:: */ = {
@@ -463,6 +481,11 @@
 				1ECD4AE91D521CDE00ED25DA /* ::WATCH_FILE:: Extension */,
             ::end::
 			);
+			::if (NME_ADMOB_APP_ID)::
+			packageReferences = (
+				ADBC11C0000000020000AA01 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
+			::end::
 		};
 /* End PBXProject section */
 
@@ -528,6 +551,9 @@
 				1EF0A83A121ADB8E013F2F59 /* Import.m in Sources */,
 				::if (IOS_BILLING)::
 				BB000BB100000000000000002 /* IosStoreKit2.swift in Sources */,
+				::end::
+				::if (NME_ADMOB_APP_ID)::
+				ADBC11C0000000020000BB02 /* AdMobIos.mm in Sources */,
 				::end::
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1176,6 +1202,28 @@
 
 
 /* End XCConfigurationList section */
+
+::if (NME_ADMOB_APP_ID)::
+/* Begin XCRemoteSwiftPackageReference section */
+		ADBC11C0000000020000AA01 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		ADBC11C0000000020000AA02 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ADBC11C0000000020000AA01 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
+::end::
+
 	};
 	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
 }

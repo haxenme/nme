@@ -66,6 +66,8 @@ class AdMob
       trace("NME AdMob retryInterstitialLoad");
       #if android
       androidRetryInterstitialLoad();
+      #elseif ios
+      nmeAdMobRetryInterstitial();
       #end
    }
 
@@ -73,6 +75,8 @@ class AdMob
       trace("NME AdMob retryRewardBackground");
       #if android
       androidRetryRewardBackground();
+      #elseif ios
+      nmeAdMobRetryReward();
       #end
    }
 
@@ -80,6 +84,8 @@ class AdMob
       trace("NME AdMob requestRewardLoad");
       #if android
       androidRetryRewardLoad();
+      #elseif ios
+      nmeAdMobRetryReward();
       #end
    }
 
@@ -91,6 +97,8 @@ class AdMob
    static var androidRetryRewardLoad = JNI.createStaticMethod("org/haxe/nme/NmeAdMob", "retryRewardLoad", "()V");
    static var androidRetryRewardBackground = JNI.createStaticMethod("org/haxe/nme/NmeAdMob", "retryRewardBackground", "()V");
    #elseif ios
+   public static function onEvent(e:String) AdApi.onEvent(e);
+
    @:native("loadInterstitialAd")
    extern static function loadInterstitialAd() : Void;
    @:native("loadRewardedVideo")
@@ -99,6 +107,10 @@ class AdMob
    extern static function showRewardedVideo() : Void;
    @:native("showInterstitialAd")
    extern static function showInterstitialAd() : Void;
+   @:native("nmeAdMobRetryInterstitial")
+   extern static function nmeAdMobRetryInterstitial() : Void;
+   @:native("nmeAdMobRetryReward")
+   extern static function nmeAdMobRetryReward() : Void;
    #end
 }
 
