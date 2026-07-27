@@ -1,217 +1,57 @@
 #import <UIKit/UIKit.h>
-#import <StoreKit/StoreKit.h>
-
-#import "RMAppReceipt.h"
-#import "RMStoreTransaction.h"
-#import "RMStoreAppReceiptVerifier.h"
 
 typedef nme::store::IosBillingManager_obj BM;
 
-@interface StoreObserver: NSObject<SKPaymentTransactionObserver,SKProductsRequestDelegate> {
-}
-@property (nonatomic, strong) SKProductsRequest *request;
-@property (nonatomic, strong) NSArray<SKProduct *> *products;
+// Swift entry points - implemented in IosStoreKit2.swift via @_silgen_name
+extern "C" void nme_swift_init_store(void);
+extern "C" void nme_swift_query_products(const char** skus, int count);
+extern "C" void nme_swift_purchase(const char* sku);
+extern "C" void nme_swift_restore(void);
 
-- (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions;
-- (void)validateProductIdentifiers:(NSSet *)productIdentifiers;
-- (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response;
-- (void)requestPaymentFor:(NSString *)sku withQuantity:(int)quantity;
-
-@end
-
-static StoreObserver *sgStore = 0;
-
-static RMStoreAppReceiptVerifier *sgReceiptVerifier = 0;
-
-
-void verifyTransaction(SKPaymentTransaction *transaction)
-{
-   [sgReceiptVerifier verifyTransaction:transaction
-               success: ^{
-                   NSLog(@"paymentQueue transaction good");
-                   SKPayment *payment = transaction.payment;
-                   NSString* product = payment.productIdentifier;
-                   BM::onPurchase(product,true,false);
-                   [ [SKPaymentQueue defaultQueue]  finishTransaction:transaction];
-               }
-               failure: ^(NSError *err) {
-                   NSLog(@"paymentQueue transaction bad: %@",[err localizedDescription]);
-                   SKPayment *payment = transaction.payment;
-                   NSString* product = payment.productIdentifier;
-                   BM::onPurchase(product,false,false);
-                   [ [SKPaymentQueue defaultQueue]  finishTransaction:transaction];
-               } ];
-}
-
-
-@implementation StoreObserver
-
-- (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
-{
-   NSLog(@"paymentQueue %@", transactions);
-
-   for(SKPaymentTransaction *transaction in transactions)
-   {
-      SKPayment *payment = transaction.payment;
-      NSString* product = payment.productIdentifier;
-      NSLog(@"->product %@", product);
-
-      switch (transaction.transactionState)
-      {
-         case SKPaymentTransactionStatePurchased:
-             NSLog(@"->purchased");
-             verifyTransaction(transaction);
-             break;
-         
-         case SKPaymentTransactionStateFailed:
-             NSLog(@"paymentQueue transaction failed: %@",[transaction.error localizedDescription]);
-             BM::onPurchase(product,false,false);
-             [ [SKPaymentQueue defaultQueue]  finishTransaction:transaction];
-             break;
-
-         case SKPaymentTransactionStateRestored:
-             NSLog(@"->restored");
-             verifyTransaction(transaction);
-             break;
-
-         case SKPaymentTransactionStateDeferred:
-             NSLog(@"->deferred");
-             BM::onPurchaseDeferred(product);
-             [ [SKPaymentQueue defaultQueue]  finishTransaction:transaction];
-             break;
-         default:
-             NSLog(@"->unknown %@ %@", transaction, payment);
-             break;
-      }
-   }
-}
-
-
-// Custom method.
-- (void)validateProductIdentifiers:(NSSet *)productIdentifiers
-{
-    NSLog(@"Validating products: %@", productIdentifiers);
-    SKProductsRequest *productsRequest = [[SKProductsRequest alloc]
-        initWithProductIdentifiers:productIdentifiers];
-
-    // Keep a strong reference to the request.
-    self.request = productsRequest;
-    productsRequest.delegate = self;
-    [productsRequest start];
-}
-
-static NSString *priceToString(SKProduct *product)
-{
-   NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-   [numberFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
-   [numberFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
-   [numberFormatter setLocale:product.priceLocale];
-   return [numberFormatter stringFromNumber:product.price];
-}
-
-
-
-// SKProductsRequestDelegate protocol method.
-- (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
+// Callbacks invoked from Swift back into the Haxe/hxcpp runtime
+extern "C" void nme_store_on_purchase(const char* sku, bool valid, bool pending)
 {
    hx::NativeAttach haxe;
-   @autoreleasepool {
-    NSLog(@"Got response : %@",response);
-    if (response!=nil)
-    {
-       NSLog(@"Got response products: %@",response.products);
-       bool found = false;
-       for(SKProduct *product in response.products)
-       {
-          NSLog(@" product: %@",product);
-          NSLog(@" p id: %@",product.productIdentifier);
-          NSLog(@" p tit: %@",product.localizedTitle);
-          NSLog(@" p des: %@",product.localizedDescription);
-          BM::addSkuDetails( 
-             product.productIdentifier,
-             product.localizedTitle,
-             product.localizedDescription,
-             priceToString( product ), 
-             String()
-          );
-          found = true;
-       }
-       if (found)
-          BM::onSkuDetailsDone( );
-
-
-       self.products = response.products;
-
-       NSLog(@"Got response errors: %@",response.invalidProductIdentifiers);
-       for (NSString *invalidIdentifier in response.invalidProductIdentifiers) {
-           // Handle any invalid product identifiers.
-       }
-    }
-  }
+   BM::onPurchase(String(sku), valid, pending);
 }
 
-
-- (void)requestPaymentFor:(NSString *)sku withQuantity:(int)quantity
+extern "C" void nme_store_add_sku_detail(const char* name, const char* title,
+                                          const char* desc, const char* price,
+                                          const char* period)
 {
-   NSLog(@"requestPaymentFor %@", sku);
-   if (self.products!=nil)
-   {
-      for(SKProduct *product in self.products)
-      {
-         if ( [product.productIdentifier isEqualToString:sku] )
-         {
-            SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-             payment.quantity = quantity;
-            [[SKPaymentQueue defaultQueue] addPayment:payment];
-            return;
-         }
-      }
-      NSLog(@"requestPaymentFor - could not fund product");
-   }
-   else
-      NSLog(@"requestPaymentFor - no products found");
-
-   BM::onPurchase(sku,false,false);
+   hx::NativeAttach haxe;
+   BM::addSkuDetails(String(name), String(title), String(desc), String(price),
+                     period && *period ? String(period) : String());
 }
 
-@end
-
-
-void initStore(const unsigned char *inData, int inDataLength)
+extern "C" void nme_store_on_sku_done(void)
 {
-   NSLog(@"Init!");
-   sgStore = [[StoreObserver alloc] init ];
-   NSData* data = [NSData dataWithBytes:inData length:inDataLength];
-   [RMAppReceipt setAppleRootCertificateData:data];
-   sgReceiptVerifier = [[RMStoreAppReceiptVerifier alloc] init];
-   [ [SKPaymentQueue defaultQueue] addTransactionObserver:sgStore];
-   NSLog(@"OK!");
+   hx::NativeAttach haxe;
+   BM::onSkuDetailsDone();
 }
 
-
-void requestPayment( ::String inProduct, bool isSubscription, int quantity=1)
+void nativeInitStore()
 {
-   [sgStore requestPaymentFor:inProduct withQuantity:quantity ];
+   nme_swift_init_store();
 }
 
-
-void billingQuery( ::String inType, ::Array< ::String> inSkus)
+void requestPayment(::String inProduct, bool isSubscription, int quantity=1)
 {
-   NSMutableSet *skus = [[NSMutableSet alloc] init];
-   NSLog(@"billingQuery..");
-   printf("sku count: %d\n", inSkus->length);
-   for(int i=0;i<inSkus->length;i++)
-   {
-      NSString *str = inSkus[i];
-      [skus addObject:str];
-   }
-   NSLog(@"Validate..");
-   [sgStore validateProductIdentifiers:skus];
+   nme_swift_purchase(inProduct.c_str());
+}
+
+void billingQuery(::String inType, ::Array<::String> inSkus)
+{
+   int n = inSkus->length;
+   const char** skus = new const char*[n];
+   for (int i = 0; i < n; i++)
+      skus[i] = inSkus[i].c_str();
+   nme_swift_query_products(skus, n);
+   delete[] skus;
 }
 
 void nativeRestore()
 {
-   NSLog(@"restore purchases...");
-   [ [SKPaymentQueue defaultQueue] restoreCompletedTransactions];
+   nme_swift_restore();
 }
 

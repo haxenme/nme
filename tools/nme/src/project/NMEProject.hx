@@ -94,7 +94,7 @@ class IOSConfig
    public function new()
    {
       compiler =  "clang";
-      deployment =  "13.0";
+      deployment =  "15.0";
       deviceConfig =  UNIVERSAL;
       linkerFlags =  new Array();
       viewTestDir =  "";

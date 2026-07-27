@@ -41,6 +41,9 @@
       ::if (USE_LAUNCH_SCREEN)::
       DD187576264AC32400D0CD5F /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DD187575264AC32400D0CD5F /* Launch Screen.storyboard */; };
 		::end::
+		::if (IOS_BILLING)::
+		BB000BB100000000000000002 /* IosStoreKit2.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000BB100000000000000001 /* IosStoreKit2.swift */; };
+		::end::
 
 /* End PBXBuildFile section */
 
@@ -149,6 +152,11 @@
 ::end::
 
 
+		::if (IOS_BILLING)::
+		BB000BB100000000000000001 /* IosStoreKit2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IosStoreKit2.swift; sourceTree = "<group>"; };
+		BB000BB100000000000000003 /* NmeBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NmeBridgingHeader.h; sourceTree = "<group>"; };
+		::end::
+
 /* End PBXFileReference section */
 
 
@@ -193,6 +201,10 @@
 			children = (
 				1EF0A839121ADB8E003F2F59 /* Main.mm */,
 				1EF0A839121ADB8E013F2F59 /* Import.m */,
+				::if (IOS_BILLING)::
+				BB000BB100000000000000001 /* IosStoreKit2.swift */,
+				BB000BB100000000000000003 /* NmeBridgingHeader.h */,
+				::end::
 			);
 			path =  "::APP_FILE::/Classes";
 			sourceTree = "<group>";
@@ -514,6 +526,9 @@
 			files = (
 				1EF0A83A121ADB8E003F2F59 /* Main.mm in Sources */,
 				1EF0A83A121ADB8E013F2F59 /* Import.m in Sources */,
+				::if (IOS_BILLING)::
+				BB000BB100000000000000002 /* IosStoreKit2.swift in Sources */,
+				::end::
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -801,7 +816,12 @@
 				IPHONEOS_DEPLOYMENT_TARGET = ::DEPLOYMENT::;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-	                        STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				::if (IOS_BILLING)::
+				SWIFT_VERSION = 5.9;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/::APP_FILE::/Classes/NmeBridgingHeader.h";
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				::end::
+                        STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				TARGETED_DEVICE_FAMILY = "::TARGET_DEVICES::";
 				VALID_ARCHS = "::VALID_ARCHS::";
 ::THUMB_SUPPORT::
@@ -863,6 +883,11 @@
 				IPHONEOS_DEPLOYMENT_TARGET = ::DEPLOYMENT::;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;
+				::if (IOS_BILLING)::
+				SWIFT_VERSION = 5.9;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/::APP_FILE::/Classes/NmeBridgingHeader.h";
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				::end::
 	                        STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				TARGETED_DEVICE_FAMILY = "::TARGET_DEVICES::";
 				VALID_ARCHS = "::VALID_ARCHS::";

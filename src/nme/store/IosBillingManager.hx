@@ -1,8 +1,11 @@
 package nme.store;
 
+#if !iosBilling
+#error "Please set iosBilling in your project"
+#end
+
 @:cppInclude("./IosStore.mm")
 @:depend("./IosStore.mm")
-@:buildXml('<include name="${haxelib:nme-store-utils}/nmestoreutils.xml"/>')
 class IosBillingManager
 {
    // billingType strings
@@ -10,14 +13,12 @@ class IosBillingManager
    public inline static var SUBS = "subs";
 
 
-   @:native("::initStore")
-   extern public static function initStore(cert:cpp.Pointer<cpp.UInt8>, cerLen:Int) : Void ;
+   @:native("::nativeInitStore")
+   extern static function nativeInitStore() : Void;
 
    public static function init() : Void
    {
-      var bytes = nme.Assets.getBytes("AppleIncRootCertificate");
-      var data = bytes.getData();
-      initStore(cpp.NativeArray.address(data,0), data.length );
+      nativeInitStore();
       BillingManager.fire( StoreSetupComplete(true) );
    }
 

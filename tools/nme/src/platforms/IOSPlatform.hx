@@ -56,6 +56,11 @@ class IOSPlatform extends Platform
          deployment = 11;
          config.deployment="11.0";
       }
+      if (project.hasDef("iosBilling") && deployment < 15)
+      {
+         deployment = 15;
+         config.deployment = "15.0";
+      }
       if (config.sourceFlavour=="mm")
          project.haxeflags.push("-D objc");
       useLaunchScreen = config.useLaunchScreen;
@@ -136,6 +141,9 @@ class IOSPlatform extends Platform
          }
       }
       Log.verbose("Valid Archs: " + architectures );
+
+      if (project.hasDef("iosBilling"))
+         project.haxedefs.set("iosBilling", "1");
    }
 
    override public function buildPackage():Void 
@@ -183,6 +191,9 @@ class IOSPlatform extends Platform
       context.NME_IOS_INCLUDE = 'haxe/cpp/include';
       if (project.hasDef("nme_metal"))
          context.NME_METAL = true;
+
+      if (project.hasDef("iosBilling"))
+         context.IOS_BILLING = 1;
 
       if (project.hasDef("verboseProject"))
          context.VERBOSE_PROJECT = true;
