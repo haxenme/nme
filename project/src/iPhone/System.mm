@@ -52,7 +52,9 @@ bool LaunchBrowser(const char *inUtf8URL)
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     #endif
 	NSString *str = [[NSString alloc] initWithUTF8String:inUtf8URL];	
-	[[UIApplication sharedApplication] openURL:[NSURL URLWithString: str]];
+	[[UIApplication sharedApplication] openURL:[NSURL URLWithString: str]
+	                                   options:@{}
+	                         completionHandler:nil];
 	#ifndef OBJC_ARC
 	[str release];
 	[pool drain];
@@ -154,7 +156,10 @@ const std::string &GetResourcePath()
 
 int GetDeviceOrientation()
 {
-   return ( [UIApplication sharedApplication].statusBarOrientation );
+   UIWindowScene *scene = (UIWindowScene *)[[[UIApplication sharedApplication].connectedScenes
+      filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"activationState == %d",
+         UISceneActivationStateForegroundActive]] anyObject];
+   return scene ? scene.interfaceOrientation : UIInterfaceOrientationUnknown;
 }
 
 double CapabilitiesGetPixelAspectRatio()
@@ -172,9 +177,10 @@ double CapabilitiesGetScreenDPI()
         screenScale = [[UIScreen mainScreen] scale];
     }
     float dpi;
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+    UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;
+    if (idiom == UIUserInterfaceIdiomPad) {
         dpi = 132 * screenScale;
-    } else if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+    } else if (idiom == UIUserInterfaceIdiomPhone) {
         dpi = 163 * screenScale;
     } else {
         dpi = 160 * screenScale;
@@ -273,7 +279,6 @@ bool SetClipboardText(const char* text) {
     @try {
         NSString *str = [[NSString alloc] initWithUTF8String:text];
         UIPasteboard *appPasteBoard = [UIPasteboard generalPasteboard];
-        appPasteBoard.persistent = YES;
         [appPasteBoard setString: str];
         return true;
     }

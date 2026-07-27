@@ -353,8 +353,8 @@ Camera *CreateCamera(const char *inName)
 - (void)dataOutputSynchronizer:(AVCaptureDataOutputSynchronizer *)synchronizer 
 didOutputSynchronizedDataCollection:(AVCaptureSynchronizedDataCollection *)synchronizedDataCollection
 {
-   AVCaptureSynchronizedSampleBufferData *syncedVideoData = synchronizedDataCollection[ mCamera->output];
-   AVCaptureSynchronizedDepthData *syncedDepthData = synchronizedDataCollection[ mCamera->depthDataOutput];
+   AVCaptureSynchronizedSampleBufferData *syncedVideoData = (AVCaptureSynchronizedSampleBufferData *)synchronizedDataCollection[mCamera->output];
+   AVCaptureSynchronizedDepthData *syncedDepthData = (AVCaptureSynchronizedDepthData *)synchronizedDataCollection[mCamera->depthDataOutput];
 
    if (syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped)
       return;

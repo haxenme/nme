@@ -94,7 +94,7 @@ class IOSConfig
    public function new()
    {
       compiler =  "clang";
-      deployment =  "12.0";
+      deployment =  "13.0";
       deviceConfig =  UNIVERSAL;
       linkerFlags =  new Array();
       viewTestDir =  "";
@@ -342,7 +342,7 @@ class NMEProject
             androidConfig.gameActivityBase = "android.app.Fragment";
             target = Platform.ANDROIDVIEW;
 
-         case "iphonesim":
+         case "iphonesim","iphonesimulator":
             target = Platform.IOS;
             haxedefs.set("iphone", "1");
             targetFlags.set("simulator", "");

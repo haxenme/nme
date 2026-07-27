@@ -1433,7 +1433,6 @@ value nme_get_frame_stage(value inValue)
    Frame *frame;
    if (!AbstractToObject(inValue,frame))
       return alloc_null();
-   
 
    return ObjectToAbstract(frame->GetStage());
 }
@@ -1448,7 +1447,8 @@ void OnMainFrameCreated(Frame *inFrame)
    value frame = inFrame ? ObjectToAbstract(inFrame) : alloc_null();
    value cb = sOnCreateCallback->get();
    delete sOnCreateCallback;
-   val_call1(cb,frame );
+   sOnCreateCallback = 0;
+   val_call1(cb,frame);
 }
 
 void nme_set_package(HxString inCompany,HxString inFile,HxString inPackage,HxString inVersion)

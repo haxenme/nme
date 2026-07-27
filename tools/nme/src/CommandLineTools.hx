@@ -59,7 +59,7 @@ class CommandLineTools
 
    static var allTargets = 
           [ "cpp", "neko", "ios", "iphone", "iphoneos", "iosview", "ios-view",
-            "androidview", "android-view", "iphonesim", "android", "androidsim", "rpi",
+            "androidview", "android-view", "iphonesim", "iphonesimulator", "android", "androidsim", "rpi",
             "windows", "mac", "linux", "flash", "cppia", "emscripten", "html5",
             "watchsimulator", "watchos", "jsprime", "winrt", "uwp", "rg350",
             "bundlerelease", "bundledebug", "arm64", "wasm" ];
@@ -1053,7 +1053,7 @@ class CommandLineTools
       sys.println("  ios         : Create Apple iOS applications");
       sys.println("  rpi         : Create RaspberryPi applications");
       sys.println("  iphone      : ios + device debugging");
-      sys.println("  iphonesim   : ios + simulator");
+      sys.println("  iphonesim/iphonesimulator   : ios + simulator");
       sys.println("  rg350       : Retro Gamer 350 console");
       sys.println("  watchos     : watch extension");
       sys.println("  watchsimulator : watch extension + simulator");

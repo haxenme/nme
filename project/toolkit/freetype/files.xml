@@ -67,6 +67,8 @@
       <compilerflag value="-I${NME_FREETYPE}include" />
       <compilerflag value="-DFT2_BUILD_LIBRARY" />
       <compilerflag value="-DFT_CONFIG_OPTION_USE_PNG=1" />
+      <compilerflag value="-DFT_CONFIG_OPTION_SYSTEM_ZLIB=1" />
+      <compilerflag value="-I${NME_ZLIB}" if="NME_ZLIB" />
 
       <compilerflag value="-I${NME_PNG}" if="NME_PNG" />
       <compilerflag value="-I${NME_PNG}/.." if="NME_PNG" />

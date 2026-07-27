@@ -19,6 +19,7 @@ class IOSPlatform extends Platform
    var buildV6:Bool;
    var buildV7:Bool;
    var buildArm64:Bool;
+   var buildSimArm64:Bool;
    var buildI386:Bool;
    var buildX86_64:Bool;
 
@@ -70,7 +71,7 @@ class IOSPlatform extends Platform
 
       ArrayHelper.addUnique(architectures, Architecture.X86_64);
    
-      buildV6 = buildV7 = buildI386 = buildArm64 = buildX86_64 = false;
+      buildV6 = buildV7 = buildI386 = buildArm64 = buildSimArm64 = buildX86_64 = false;
 
       if (project.command == "xcode")
       {
@@ -92,9 +93,13 @@ class IOSPlatform extends Platform
                       Log.error("Armv7 not supported");
                    buildV7 = true;
                case "arm64":
-                   if (!hasArch(Architecture.ARM64))
-                      Log.error("Arm64 not supported");
-                   buildArm64 = true;
+                   if (project.targetFlags.exists("simulator"))
+                      buildSimArm64 = true;
+                   else {
+                      if (!hasArch(Architecture.ARM64))
+                         Log.error("Arm64 not supported");
+                      buildArm64 = true;
+                   }
                default:
                    trace("Locals :" + project.localDefines);
                    trace("Env :" + project.environment);
@@ -114,7 +119,7 @@ class IOSPlatform extends Platform
             if (crankUpSimulatorIs64())
             {
                ArrayHelper.addUnique(architectures, Architecture.ARM64);
-               buildX86_64 = true;
+               buildSimArm64 = true;
             }
             else
             {
@@ -178,6 +183,11 @@ class IOSPlatform extends Platform
       context.NME_IOS_INCLUDE = 'haxe/cpp/include';
       if (project.hasDef("nme_metal"))
          context.NME_METAL = true;
+
+      if (project.hasDef("verboseProject"))
+         context.VERBOSE_PROJECT = true;
+      else if (Log.mVerbose)
+         Log.warn("Running in verbose mode but 'verboseProject' is not set - the -v flag won't be baked into the generated Xcode project.");
 
       var nmeExe = project.getDef("nmeExe");
       context.NME_EXE = nmeExe==null ? "nme" : nmeExe;
@@ -406,6 +416,9 @@ ${hxcpp_include}';
       if (buildArm64)
          runHaxeWithArgs(args.concat(["-D", "HXCPP_ARM64", "-D", "iphoneos" ]));
 
+      if (buildSimArm64)
+         runHaxeWithArgs(args.concat(["-D", "HXCPP_ARM64", "-D", "iphonesim"]));
+
       if (buildI386)
          runHaxeWithArgs(args.concat(["-D", "iphonesim"]));
 
@@ -436,6 +449,9 @@ ${hxcpp_include}';
 
       if (buildArm64)
          copyApplicationMain(dbg + ".iphoneos-64.a", "arm64" + dbg);
+
+      if (buildSimArm64)
+         copyApplicationMain(dbg + ".iphonesim.a", "arm64-sim" + dbg);
 
       if (buildI386)
          copyApplicationMain(dbg + ".iphonesim.a", "i386" + dbg);
@@ -582,9 +598,9 @@ ${hxcpp_include}';
 
       PathHelper.mkdir(projectDirectory + "/lib");
 
-      for(archID in 0...5) 
+      for(archID in 0...6) 
       {
-         var arch = [ "armv6", "armv7", "i386", "arm64", "x86_64" ][archID];
+         var arch = [ "armv6", "armv7", "i386", "arm64", "x86_64", "arm64-sim" ][archID];
 
          if (arch == "armv6" && !context.ARMV6)
             continue;
@@ -595,7 +611,7 @@ ${hxcpp_include}';
          if (arch == "arm64" && !context.ARM64)
             continue;
 
-         var libExt = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a", ".iphoneos-64.a", ".iphonesim-64.a"  ][archID];
+         var libExt = [ ".iphoneos.a", ".iphoneos-v7.a", ".iphonesim.a", ".iphoneos-64.a", ".iphonesim-64.a", ".iphonesim-64.a" ][archID];
 
          PathHelper.mkdir(projectDirectory + "/lib/" + arch);
          PathHelper.mkdir(projectDirectory + "/lib/" + arch + "-debug");
@@ -636,12 +652,12 @@ ${hxcpp_include}';
             platformName = "iphonesimulator";
 
         var iphoneVersion = project.environment.get("IPHONE_VER");
-        var commands = [ "-configuration", configuration, "-allowProvisioningUpdates", "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
+        var commands = [ "-scheme", project.app.file, "-configuration", configuration, "-allowProvisioningUpdates", "PLATFORM_NAME=" + platformName, "SDKROOT=" + platformName + iphoneVersion ];
 
         if (project.targetFlags.exists("simulator")) 
         {
             commands.push("-arch");
-            commands.push(buildX86_64 ? "x86_64" : "i386" );
+            commands.push(buildSimArm64 ? "arm64" : (buildX86_64 ? "x86_64" : "i386"));
         }
 
         if (additionalArguments != null) 

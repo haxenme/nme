@@ -17,6 +17,19 @@ namespace nme
   #endif
 #endif
 
+static inline int getBufferAlignment()
+{
+   #ifdef NME_METAL
+     #ifdef NME_OGL
+     return nmeOpenglRenderer ? 1 : 256;
+     #else
+     return 256;
+     #endif
+   #else
+   return 1;
+   #endif
+}
+
 enum { DEBUG_KEEP_LOOPS      = 0 };
 enum { DEBUG_FAT_LINES       = 0 }; // Could be 0, 1 or 2
 enum { DEBUG_UNSCALED        = 0 };
@@ -297,7 +310,7 @@ public:
       memset(&mElement,0,sizeof(mElement));
       mElement.mWidth = -1;
       mElement.mColour = 0xffffffff;
-      mElement.mVertexOffset = ioData.mArray.size();
+      mElement.mVertexOffset = alignedOffset();
       mElement.mStride = 2*sizeof(float);
       int align = 2*sizeof(float);
 
@@ -450,7 +463,7 @@ public:
                mElement.mSurface->DecRef();
             memset(&mElement,0,sizeof(mElement));
             mElement.mColour = 0xffffffff;
-            mElement.mVertexOffset = ioData.mArray.size();
+            mElement.mVertexOffset = alignedOffset();
             mElement.mStride = 2*sizeof(float);
             mElement.mScaleMode = ssmNormal;
             mElement.mWidth = inJob.mStroke->thickness;
@@ -534,6 +547,20 @@ public:
       {
          AddObject(&inPath.commands[inJob.mCommand0], inJob.mCommandCount, &inPath.data[inJob.mData0]);
       }
+   }
+
+   int alignedOffset()
+   {
+      int size = (int)data.mArray.size();
+      int align = getBufferAlignment();
+      if (align > 1)
+      {
+         int aligned = (size + align - 1) & ~(align - 1);
+         if (aligned > size)
+            data.mArray.resize(aligned);
+         return aligned;
+      }
+      return size;
    }
 
    void ReserveArraysTight(int inN)
@@ -1644,7 +1671,7 @@ public:
          return true;
 
 
-      mElement.mVertexOffset = data.mArray.size();
+      mElement.mVertexOffset = alignedOffset();
       if (mElement.mSurface)
          mElement.mTexOffset = mElement.mVertexOffset + 2*sizeof(float);
 
@@ -2723,7 +2750,7 @@ public:
                printf("Push %d\n", mElement.mCount);
 
             PushElement();
-            mElement.mVertexOffset = data.mArray.size();
+            mElement.mVertexOffset = alignedOffset();
             mElement.mCount = 0;
          }
 
@@ -3225,7 +3252,18 @@ void CreatePointJob(const GraphicsJob &inJob,const GraphicsPath &inPath,Hardware
    }
 
    elem.mPrimType = ptPoints;
-   elem.mVertexOffset = ioData.mArray.size();
+   {
+      int bufAlign = getBufferAlignment();
+      int arraySize = (int)ioData.mArray.size();
+      if (bufAlign > 1)
+      {
+         int aligned = (arraySize + bufAlign - 1) & ~(bufAlign - 1);
+         if (aligned > arraySize)
+            ioData.mArray.resize(aligned);
+         arraySize = aligned;
+      }
+      elem.mVertexOffset = arraySize;
+   }
    elem.mStride = sizeof(float)*2;
    if (!fill)
    {

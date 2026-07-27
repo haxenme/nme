@@ -15,6 +15,8 @@
 
 ::if NME_METAL::
 #define NME_METAL
+// Forward-declare MTL4RenderPassDescriptor for iOS 26+ SDK compatibility (MTKView.h references it)
+@class MTL4RenderPassDescriptor;
 #import <MetalKit/MetalKit.h>
 ::end::
 
@@ -273,7 +275,7 @@ static NSString *sgDisplayLinkMode = NSRunLoopCommonModes;
    stage = inStage;
 
    displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(mainLoop:)];
-   [displayLink setFrameInterval:animationFrameInterval];
+   displayLink.preferredFramesPerSecond = 60;
 
    animating = true;
    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:sgDisplayLinkMode];
@@ -2067,7 +2069,7 @@ bool nmeIsMain = true;
 #define UIInterfaceOrientationAllMask  (UIInterfaceOrientationPortraitMask | UIInterfaceOrientationLandscapeLeftMask | UIInterfaceOrientationLandscapeRightMask | UIInterfaceOrientationPortraitUpsideDownMask)
 #define UIInterfaceOrientationAllButUpsideDownMask  (UIInterfaceOrientationPortraitMask | UIInterfaceOrientationLandscapeLeftMask | UIInterfaceOrientationLandscapeRightMask)
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+- (BOOL)nmeSupportsOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
    if (gFixedOrientation >= 0)
    {
@@ -2099,6 +2101,11 @@ bool nmeIsMain = true;
    return evt.result == 2;
 }
 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+   return [self nmeSupportsOrientation:interfaceOrientation];
+}
+
 - (void) setNMEMain:(bool)isMain
 {
    nmeIsMain = isMain;
@@ -2110,12 +2117,12 @@ bool nmeIsMain = true;
    int mask = 1;
    bool isOverridden = false;
 
-   if ([self shouldAutorotateToInterfaceOrientation:UIInterfaceOrientationLandscapeLeft]) {
+   if ([self nmeSupportsOrientation:UIInterfaceOrientationLandscapeLeft]) {
       isOverridden = true;
       mask = UIInterfaceOrientationLandscapeLeftMask;
    }
 
-   if ([self shouldAutorotateToInterfaceOrientation:UIInterfaceOrientationLandscapeRight]) {
+   if ([self nmeSupportsOrientation:UIInterfaceOrientationLandscapeRight]) {
       if (isOverridden) {
          mask |= UIInterfaceOrientationLandscapeRightMask;
       } else {
@@ -2124,7 +2131,7 @@ bool nmeIsMain = true;
       }
    }
 
-   if ([self shouldAutorotateToInterfaceOrientation:UIInterfaceOrientationPortraitUpsideDown]) {
+   if ([self nmeSupportsOrientation:UIInterfaceOrientationPortraitUpsideDown]) {
       if (isOverridden) {
          mask |= UIInterfaceOrientationPortraitUpsideDownMask;
       } else {
@@ -2133,7 +2140,7 @@ bool nmeIsMain = true;
       }
    }
 
-   if ([self shouldAutorotateToInterfaceOrientation:UIInterfaceOrientationPortrait]) {
+   if ([self nmeSupportsOrientation:UIInterfaceOrientationPortrait]) {
       if (isOverridden) {
          mask |= UIInterfaceOrientationPortraitMask;
       } else {
@@ -2264,6 +2271,47 @@ bool nmeIsMain = true;
 
 
 
+// --- NMESceneDelegate --------------------------------------------------------
+
+@interface NMESceneDelegate : UIResponder <UIWindowSceneDelegate>
+@property (nonatomic, strong) UIWindow *window;
+@end
+
+@implementation NMESceneDelegate
+
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions
+{
+   APP_LOG(@"scene:willConnectToSession:");
+   if (![scene isKindOfClass:[UIWindowScene class]])
+      return;
+   UIWindowScene *windowScene = (UIWindowScene *)scene;
+   UIWindow *win = [[UIWindow alloc] initWithWindowScene:windowScene];
+   self.window = win;
+   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
+   [win makeKeyAndVisible];
+   NMEStageViewController *c = [[NMEStageViewController alloc] init];
+   nme_app_set_active(true);
+   [UIApplication sharedApplication].idleTimerDisabled = YES;
+   self.window.rootViewController = c;
+   sOnFrame(new IOSViewFrame(c->nmeStage));
+}
+
+- (void)sceneDidDisconnect:(UIScene *)scene   { nme_app_set_active(false); }
+- (void)sceneWillResignActive:(UIScene *)scene { nme_app_set_active(false); }
+- (void)sceneDidEnterBackground:(UIScene *)scene
+{
+   nme_app_set_active(false);
+   APP_LOG(@"sceneDidEnterBackground");
+}
+- (void)sceneDidBecomeActive:(UIScene *)scene
+{
+   APP_LOG(@"sceneDidBecomeActive");
+   nme_app_set_active(true);
+}
+
+@end
+
+
 // --- NMEAppDelegate ----------------------------------------------------------
 
 
@@ -2286,45 +2334,21 @@ bool nmeIsMain = true;
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
    APP_LOG(@"application start");
-   
-   //audio from other apps mixes with your audio
-   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
-   
-   UIWindow *win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-   window = win;
-   [window makeKeyAndVisible];
-   NMEStageViewController  *c = [[NMEStageViewController alloc] init];
-   controller = c;
-   nme_app_set_active(true);
-   application.idleTimerDisabled = YES;
-   // Accessing the .view property causes the 'loadView' callback
-   //[win addSubview:c.view];
-   self.window.rootViewController = c;
-   sOnFrame( new IOSViewFrame(c->nmeStage) );
-   return YES;
+   return YES; // Window setup is handled by NMESceneDelegate
+}
+
+- (UISceneConfiguration *)application:(UIApplication *)application
+   configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
+   options:(UISceneConnectionOptions *)options
+{
+   return [[UISceneConfiguration alloc] initWithName:@"Default Configuration"
+                                         sessionRole:connectingSceneSession.role];
 }
 
 - (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
    APP_LOG(@"willFinishLaunchingWithOptions");
    return YES;
-}
-
-- (void) applicationWillResignActive:(UIApplication *)application
-{
-   nme_app_set_active(false);
-}
-
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-   nme_app_set_active(false);
-   APP_LOG(@"applicationDidEnterBackground");
-}
-
-- (void) applicationDidBecomeActive:(UIApplication *)application
-{
-   APP_LOG(@"applicationDidBecomeActive");
-   nme_app_set_active(true);
 }
 
 - (void) applicationWillTerminate:(UIApplication *)application
