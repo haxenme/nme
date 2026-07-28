@@ -84,9 +84,10 @@ GameAudioManager *avAudioManager = nil;
     session = [AVAudioSession sharedInstance];
     NSError *error = nil;
 
-    // Use AVAudioSessionCategoryAmbient for games (allows mixing with other audio, respects mute switch)
-    [session setCategory:AVAudioSessionCategoryAmbient
-            withOptions:0
+    // AVAudioSessionCategoryPlayback: ignores the mute/silent switch, uses media volume
+    // MixWithOthers: allows mixing with background audio (e.g. music apps)
+    [session setCategory:AVAudioSessionCategoryPlayback
+            withOptions:AVAudioSessionCategoryOptionMixWithOthers
                   error:&error];
     if (error) {
         NSLog(@"Failed to set audio session category: %@", error.localizedDescription);
@@ -306,6 +307,7 @@ public:
    {
       // Never had one in the first place, or maybe relinquishPlayer or stopped.
       bool isPlaying = avPlayer!=nil;
+      bool avGood = avPlayer!=nil;
 
       if (isPlaying)
       {
@@ -331,7 +333,9 @@ public:
       }
 
       if (!isPlaying)
-         LOG_SOUND("AVAudioPlayerChannel %s isComplete\n", name.c_str());
+      {
+         LOG_SOUND("AVAudioPlayerChannel %s isComplete, avOk: %d\n", name.c_str(), avGood);
+      }
       return !isPlaying;
    }
 

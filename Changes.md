@@ -1,3 +1,56 @@
+
+
+
+
+v7.0
+--------------------------
+
+**Breaking Changes**
+* Version bump to 7 - `NME_LOCAL_TOOLKIT` is now the default; projects relying on `haxelib:nme-toolkit` need to set that explicitly or switch
+* iOS minimum deployment target raised to **15**
+* iOS in-app purchases migrated to **StoreKit2** - code using the old StoreKit1 APIs will need updating
+* Android minimum SDK raised to **API 29** (Android 10) - devices below this are no longer supported
+* Android billing manager updated to **8.0** - existing billing integration code must be updated
+* `fingerId` member casing changed (`fingetId` → correct spelling) - call sites need updating
+
+**New Features**
+* Native **WebAudio** backend for WASM (`NME_WEB_AUDIO` define) - SDL audio is bypassed when this is active
+* WASM asset **preloading**: assets can be fully loaded and cached before the app starts, or allowed to arrive asynchronously after startup
+* WASM resources saved to an external bundle file; binary name now derived from `app.file`
+* Music can be loaded over HTTP on WASM when a URL is specified
+* Emoji rendering support via font substitution and colour-font loading; freetype PNG glyph support added
+* UTF-16 surrogate pair support in text rendering
+* `TextField` word-split mode: text can now reflow to fit around its longest word, with configurable split behaviour
+* `Stage.screenCapture` API added
+* Optional model matrix parameter added to `renderModelView`
+* **AdMob** interface added for both iOS and Android (including preload/failure management)
+* **CrazyGames** SDK hooks: expanded API with loading/progress callbacks and `hostMute` option
+* Android **BLE** serial transfers supported
+* Camera API stub added for WASM/Acadnme targets (no-op when camera hardware not present)
+* Initial VS Code integration support
+* `nme_tab_reuse` debug flag to reuse the same browser tab on WASM reloads
+* `-qv` ("quite verbose") logging option; per-category logging control added
+* Separate WASM output template (distinct from jsprime); option to strip comments from generated web output
+* Lean binary build option: JPEG library and embedded font data can be excluded
+* NME tool can be built without HTTP support; without video libraries (`NME_NO_VIDEO`)
+* NSIS installer: tool is found automatically in PATH; installer icon generated
+* Improved large-icon downscaling
+* Mac: prefer Metal renderer; updated VSCode executable naming
+
+**iOS Fixes**
+* iOS simulator: arm64 flag, naming conventions, deployment version, `NMESceneDelegate` lifecycle, orientation API, Metal graphics buffer alignment
+* Default iOS audio backend switched to **AvPlayer**
+* `safeRect` updated for modern mobile notch/Dynamic Island layouts
+
+**Platform / Build**
+* Prefer host architecture when cross-compiling for cpp targets
+* Output symbols stripped from release builds where possible; `nme.exe` generated in repo root on Windows
+* `JPEG_SUPPRESS_SIMD` set for armv7 to work around toolchain issues
+* Linux SDL3 build updates
+
+v6.3.149
+--------------------------
+
 * Default to ndll builds for desktop
 * Add winrpi for toolkit
 * Default to libAngle on windows
