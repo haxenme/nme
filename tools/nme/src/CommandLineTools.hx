@@ -1160,6 +1160,7 @@ class CommandLineTools
             ProcessHelper.runCommand(nme + "/bin/Linux/Acadnme", "./Acadnme", args);
 
          case Platform.MAC:
+            ProcessHelper.runCommand("", "chmod", [ "u+x", nme + "/bin/Mac/Acadnme.app/Contents/MacOS/Acadnme" ]);
             ProcessHelper.runCommand(nme + "/bin/Mac/Acadnme.app/Contents/MacOS", "./Acadnme", args);
 
          default:
