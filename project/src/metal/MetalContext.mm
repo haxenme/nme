@@ -819,6 +819,7 @@ public:
       setOrtho(inRect.x,inRect.x1(), inRect.y1(),inRect.y);
       // Set the region of the drawable to draw into.
       [renderEncoder setViewport:(MTLViewport){(double)inRect.x, (double)inRect.y, (double)inRect.w, (double)inRect.h, 0.0, 1.0 }];
+
    }
    void Clear(uint32 inColour,const Rect *inRect=0)
    {

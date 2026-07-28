@@ -524,6 +524,23 @@ public:
    void setMultitouchActive(bool inActive) { mMultiTouch = inActive; }
    bool getMultitouchActive() {  return mMultiTouch; }
 
+   void GetSafeRectangle(Rect &outRect) override
+   {
+      JNIEnv *env = GetEnv();
+      jclass cls = FindClass("org/haxe/nme/MainView");
+      jmethodID mid = env->GetStaticMethodID(cls, "getSafeInsets", "()[I");
+      if (!mid) return;
+      jintArray arr = (jintArray)env->CallStaticObjectMethod(cls, mid);
+      if (!arr) return;
+      jint *data = env->GetIntArrayElements(arr, nullptr);
+      outRect.x += data[0];
+      outRect.y += data[2];
+      outRect.w -= data[0] + data[1];
+      outRect.h -= data[2] + data[3];
+      env->ReleaseIntArrayElements(arr, data, JNI_ABORT);
+      env->DeleteLocalRef(arr);
+   }
+
    AndroidVideo *video;
 
    bool mMultiTouch;

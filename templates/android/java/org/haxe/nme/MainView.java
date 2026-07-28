@@ -28,6 +28,8 @@ import android.view.MotionEvent;
 import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.view.View;
+import android.view.WindowInsets;
+import android.os.Build;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -278,6 +280,24 @@ class MainView extends GLSurfaceView {
 
          setZOrderMediaOverlay(true);
       }
+   }
+
+   public static int[] getSafeInsets()
+   {
+      if (mRefreshView == null) return new int[]{0, 0, 0, 0};
+      WindowInsets insets = mRefreshView.getRootWindowInsets();
+      if (insets == null) return new int[]{0, 0, 0, 0};
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+         android.graphics.Insets combined = insets.getInsets(
+            WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+         return new int[]{combined.left, combined.right, combined.top, combined.bottom};
+      } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+         android.view.DisplayCutout cutout = insets.getDisplayCutout();
+         if (cutout == null) return new int[]{0, 0, 0, 0};
+         return new int[]{cutout.getSafeInsetLeft(), cutout.getSafeInsetRight(),
+                          cutout.getSafeInsetTop(),  cutout.getSafeInsetBottom()};
+      }
+      return new int[]{0, 0, 0, 0};
    }
 
    // Haxe thread

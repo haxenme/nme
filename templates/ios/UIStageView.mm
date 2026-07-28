@@ -1152,7 +1152,14 @@ static std::string nmeTitle;
    #ifndef NME_METAL
    mStage->needRecreateOGLFrameBuffer = true;
    #else
+   [super layoutSubviews];
    backingSize = [self drawableSize];
+
+   // MTKView's layoutSubviews does not update CAMetalLayer.drawableSize when driven
+   // by an external render loop (enableSetNeedsDisplay = YES).  Set it explicitly so
+   // nextDrawable returns a texture at the new size rather than the old one.
+   CAMetalLayer *metalLayer = (CAMetalLayer*)self.layer;
+   metalLayer.drawableSize = backingSize;
 
    mHardwareRenderer->SetWindowSize(backingSize.width,backingSize.height);
    mStage->OnOGLResize(backingSize.width,backingSize.height);
@@ -1837,11 +1844,13 @@ void NMEStage::NS::GetSafeRectangle( nmeRect &outRectangle)
 {
    if (@available(iOS 11.0, *))
    {
-      UIEdgeInsets inset = getRootView().safeAreaInsets;
-      outRectangle.x += inset.left;
-      outRectangle.y += inset.top;
-      outRectangle.w -= inset.right + inset.left;
-      outRectangle.h -= inset.bottom + inset.top;
+      UIWindow *window = getRootView().window;
+      UIEdgeInsets inset = window ? window.safeAreaInsets : getRootView().safeAreaInsets;
+      double scale = nmeView->dpiScale;
+      outRectangle.x += inset.left * scale;
+      outRectangle.y += inset.top * scale;
+      outRectangle.w -= (inset.right + inset.left) * scale;
+      outRectangle.h -= (inset.bottom + inset.top) * scale;
    }
 }
 
