@@ -53,7 +53,12 @@ jobs:
           cd tools/nme
           haxe compile.hxml
 
-        
+      - name: Build Preloader
+        if: startsWith(matrix.os,'ubuntu')
+        run: |
+          cd tools/preloader
+          haxe compile.hxml
+
       - name: Check XCode
         if: startsWith(matrix.os,'macos')
         run: xcode-select -p
@@ -74,6 +79,7 @@ jobs:
           haxelib run hxcpp ToolkitBuild.xml ${{ matrix.arch_flag }}
           
       - name: Prep Acadnme
+        if: "!startsWith(matrix.os,'ubuntu')"
         run: |
            cd acadnme
            haxelib run nme cpp nocompile
@@ -84,6 +90,7 @@ jobs:
            haxelib run nme cppia installer
            
       - name: Build Acadnme
+        if: "!startsWith(matrix.os,'ubuntu')"
         env:
           HXCPP_COMPILE_CACHE: ${{ runner.temp }}/hxcpp_cache
           HXCPP_COMPILE_MB: 4000
@@ -104,7 +111,7 @@ jobs:
           name: linux-64
           path: |
              ndll/Linux64/nme.ndll
-             bin/Linux/Acadnme
+             ndll/Emscripten/preloader.js
              src/cppia/export_classes.info
              version.env
              tools
