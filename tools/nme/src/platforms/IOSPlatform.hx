@@ -217,6 +217,9 @@ class IOSPlatform extends Platform
       var nmeExe = project.getDef("nmeExe");
       context.NME_EXE = nmeExe==null ? "nme" : nmeExe;
 
+      var exeBaseName = haxe.io.Path.withoutExtension(haxe.io.Path.withoutDirectory(nme.system.System.exeName)).toLowerCase();
+      var isCiTool = exeBaseName == "nme";
+
       var col = project.window.background;
       if (project.watchProject!=null)
       {
@@ -319,8 +322,14 @@ ${hxcpp_include}';
           blocks.push({value:value});
       }
       context.CUSTOM_BLOCKS = blocks;
-       
-      context.BUILD_TOOL_PATH = getAbsolutePath("haxelib");
+
+      if (isCiTool) {
+         context.BUILD_TOOL_PATH = nme.system.System.exeName;
+         context.NME_XCODE_CMD = "xcode";
+      } else {
+         context.BUILD_TOOL_PATH = getAbsolutePath("haxelib");
+         context.NME_XCODE_CMD = "run " + context.NME_EXE + " xcode";
+      }
 
       var requiredCapabilities = [];
 
