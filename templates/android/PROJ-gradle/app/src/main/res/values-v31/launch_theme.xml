@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="launch_background">::ANDROID_BG_COLOR::</color>
+    <style name="LaunchTheme" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/launch_background</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowSplashScreenBackground">::ANDROID_BG_COLOR::</item>
+        ::if (HAS_SPLASH_ICON)::
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/splash_icon</item>
+        ::else::
+        ::if (HAS_ICON)::
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/icon</item>
+        ::end::
+        ::end::
+    </style>
+</resources>

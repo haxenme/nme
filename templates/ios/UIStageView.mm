@@ -54,6 +54,8 @@ namespace nme { int gFixedOrientation = -1; }
 namespace nme
 {
 HardwareRenderer *HardwareRendererCreateMetal(CAMetalLayer *metalLayer);
+void avSuspendAudio();
+void avResumeAudio();
 }
 #endif
 
@@ -2517,9 +2519,15 @@ void nme_app_set_active(bool inActive)
    }
 
    if (inActive)
+   {
+      nme::avResumeAudio();
       nme::StartAnimation();
+   }
    else
+   {
+      nme::avSuspendAudio();
       nme::StopAnimation();
+   }
 }
 
 

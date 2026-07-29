@@ -1100,6 +1100,8 @@ void avResumeAudio()
 {
    LOG_SOUND("avResumeAudio %d", (int)allAvChannels.size());
    sessionSuspended = false;
+   sessionInterrupted = false;  // clear any stale interruption state from backgrounding
+   [session setActive:YES error:nil];
    avCheckPlayable();
 }
 

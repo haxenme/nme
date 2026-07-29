@@ -204,8 +204,10 @@ class IOSPlatform extends Platform
       if (project.hasDef("nme_metal"))
          context.NME_METAL = true;
 
-      if (project.hasDef("iosBilling"))
+      if (project.hasDef("iosBilling")) {
          context.IOS_BILLING = 1;
+         context.NME_IOS_IAP = 1;
+      }
 
       if (project.hasDef("verboseProject"))
          context.VERBOSE_PROJECT = true;
@@ -294,6 +296,11 @@ ${hxcpp_include}';
             project.dependencies.set("AppTrackingTransparency", new Dependency("AppTrackingTransparency.framework", "", ""));
          if (!project.dependencies.exists("JavaScriptCore"))
             project.dependencies.set("JavaScriptCore", new Dependency("JavaScriptCore.framework", "", ""));
+
+         var skAdNetworkIds = [];
+         for (id in project.skAdNetworkIds)
+            skAdNetworkIds.push({ value: id });
+         context.SKADNETWORK_IDS = skAdNetworkIds;
       }
 
       var customIOSproperties = [];

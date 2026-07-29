@@ -1139,6 +1139,9 @@ class NMMLParser
                 case "customIOSBlock":
                     var value = element.has.value ? substitute(element.att.value) : "";
                     project.customIOSBlock.push(value);
+                case "skAdNetworkId":
+                    var value = element.has.value ? substitute(element.att.value) : "";
+                    if (value != "") project.skAdNetworkIds.push(value);
                 case "frameworkSearchPaths":
                     var value = element.has.value ? substitute(element.att.value) : "";
                     var full = FileSystem.fullPath(value);

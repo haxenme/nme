@@ -46,6 +46,7 @@
       DD187576264AC32400D0CD5F /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DD187575264AC32400D0CD5F /* Launch Screen.storyboard */; };
 		::end::
 		::if (IOS_BILLING)::
+		1E8ECCB03019B2DD00326947 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E8ECCAF3019B2DD00326947 /* StoreKit.framework */; };
 		BB000BB100000000000000002 /* IosStoreKit2.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000BB100000000000000001 /* IosStoreKit2.swift */; };
 		::end::
 
@@ -130,6 +131,9 @@
 		1EF0A839121ADB8E013F2F59 /* Import.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.m; name = Import.m; path = "::APP_FILE::/Classes/Import.m"; sourceTree = SOURCE_ROOT; };
 		50C0551A1D7D0BB0005B17C7 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		50C0551C1D7D0E0B005B17C7 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		::if (IOS_BILLING)::
+		1E8ECCAF3019B2DD00326947 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		::end::
       ::if (USE_LAUNCH_SCREEN)::
       DD187575264AC32400D0CD5F /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = "Launch Screen.storyboard"; path = "::APP_FILE::/Launch Screen.storyboard"; sourceTree = "<group>"; };
       ::end::
@@ -174,6 +178,7 @@
 			files = (
 			        50C0551B1D7D0BB0005B17C7 /* CoreVideo.framework in Frameworks */,
 			        50C0551D1D7D0E0B005B17C7 /* CoreMedia.framework in Frameworks */,
+		        ::if (IOS_BILLING)::1E8ECCB03019B2DD00326947 /* StoreKit.framework in Frameworks */,::end::
 				1EEEBA9B121AF1C60048A9DF /* UIKit.framework in Frameworks */,
 				1EEEBAA3121AF2210048A9DF /* OpenAL.framework in Frameworks */,
 				1EEEBAA5121AF2210048A9DF /* MetalKit/OpenGLES.framework in Frameworks */,
@@ -188,6 +193,9 @@
 				::ADDL_PBX_FRAMEWORKS_BUILD_PHASE::
 				::if (NME_ADMOB_APP_ID)::
 				ADBC11C0000000020000AA04 /* GoogleMobileAds in Frameworks */,
+				::end::
+				::if (IOS_BILLING)::
+				1E8ECCB03019B2DD00326947 /* StoreKit.framework in Frameworks */,
 				::end::
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -288,6 +296,7 @@
 				1EEEBAFF121BE2B30048A9DF /* Foundation.framework */,
 				1EEEBAFB121BE2980048A9DF /* AudioToolbox.framework */,
 				1EEEBAFD121BE2980048A9DF /* AVFoundation.framework */,
+				::if (IOS_BILLING)::1E8ECCAF3019B2DD00326947 /* StoreKit.framework */,::end::
 				::ADDL_PBX_FRAMEWORK_GROUP::
 			);
 			name = Frameworks;

@@ -78,49 +78,37 @@ std::string CapabilitiesGetLanguage()
 
 std::string GetUserPreference(const char *inId)
 {
-	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-	#ifndef OBJC_ARC
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    #endif
-	NSString *strId = [[NSString alloc] initWithUTF8String:inId];
-	NSString *pref = [userDefaults stringForKey:strId];
-	std::string result(pref?[pref UTF8String]:"");
-	#ifndef OBJC_ARC
-	[strId release];
-	[pool drain];
-    #endif
+	std::string result;
+	@autoreleasepool {
+		NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+		NSString *strId = [[NSString alloc] initWithUTF8String:inId];
+		NSString *pref = [userDefaults stringForKey:strId];
+		result = pref ? [pref UTF8String] : "";
+		//NSLog(@"[NME] GetUserPreference key=%s value=%s", inId, result.c_str());
+	}
 	return result;
 }
 	
 bool SetUserPreference(const char *inId, const char *inPreference)
 {
-	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-	#ifndef OBJC_ARC
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    #endif
-	NSString *strId = [[NSString alloc] initWithUTF8String:inId];
-	NSString *strPref = [[NSString alloc] initWithUTF8String:inPreference];
-	[userDefaults setObject:strPref forKey:strId];
-	#ifndef OBJC_ARC
-	[strId release];
-	[strPref release];
-	[pool drain];
-    #endif
+	@autoreleasepool {
+		NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+		NSString *strId = [[NSString alloc] initWithUTF8String:inId];
+		NSString *strPref = [[NSString alloc] initWithUTF8String:inPreference];
+		//NSLog(@"[NME] SetUserPreference key=%s value=%s", inId, inPreference);
+		[userDefaults setObject:strPref forKey:strId];
+	}
 	return true;
 }
 
 bool ClearUserPreference(const char *inId)
 {
-	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-	#ifndef OBJC_ARC
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    #endif
-	NSString *strId = [[NSString alloc] initWithUTF8String:inId];
-	[userDefaults setObject:@"" forKey:strId];
-	#ifndef OBJC_ARC
-	[strId release];
-	[pool drain];
-    #endif
+	@autoreleasepool {
+		NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+		NSString *strId = [[NSString alloc] initWithUTF8String:inId];
+		//NSLog(@"[NME] ClearUserPreference key=%s", inId);
+		[userDefaults setObject:@"" forKey:strId];
+	}
 	return true;
 }
 

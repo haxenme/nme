@@ -26,7 +26,6 @@ class IosBillingManager
    extern public static function billingQuery(itemType:String, skuList:Array<String>) : Void ;
    public static function querySkuDetails(itemType:String, skuList:Array<String>) : Void
    {
-      trace('querySkuDetails3 $skuList');
       billingQuery(itemType, skuList);
    }
 
@@ -46,7 +45,6 @@ class IosBillingManager
    @:keep
    function onSkuError(name:String) :Void
    {
-      trace("Error wirh SKU:" + name);
       BillingManager.fire( SkuDetailsUpdated(false) );
    }
 
@@ -58,7 +56,7 @@ class IosBillingManager
          title:title,
          description:description,
          price:price,
-         subscriptionPeriod:subscriptionPeriod,
+         //subscriptionPeriod:subscriptionPeriod,
          type: subscriptionPeriod==null ? "inapp" : "subs"
       });
 
@@ -107,70 +105,6 @@ class IosBillingManager
    }
 
 
-
-   /*
-
-   @:keep
-   function onBillingClientSetupFinished()
-   {
-      BillingManager.fire( StoreSetupComplete(true) );
-   }
-
-
-   @:keep
-   function onPurchasesUpdated(code:Int, jsonDetails:String)
-   {
-      try
-      {
-         var details:Array<Dynamic> = haxe.Json.parse(jsonDetails);
-         if (details!=null)
-         {
-            var haxePurchases = new Array<Purchase>();
-            for(p in details)
-               haxePurchases.push( new Purchase(p) );
-
-            BillingManager.setPurchases(haxePurchases);
-            return;
-         }
-      }
-      catch(e:Dynamic)
-      {
-         trace("error with purchases:" + e);
-      }
-      BillingManager.fire( PurchasesUpdated(code) );
-   }
-
-   @:keep
-   function onPurchaseFailed(sku:String, code:Int)
-   {
-      BillingManager.fire( PurchaseFailed(sku, code) );
-   }
-
-   @:keep
-   function onConsumeFinished(purchaseToken:String, responseCode:Int)
-   {
-      BillingManager.fire( ConsumeComplete(purchaseToken, responseCode) );
-   }
-
-
-
-
-   public static function close() : Void
-   {
-      billingClose();
-   }
-
-
-   public static function consumeAsync(purchaseToken:String) : Void
-   {
-      billingConsume(purchaseToken);
-   }
-
-   public static  function getBillingClientResponseCode() : Int
-   {
-      return billingClientCode();
-   }
-   */
 }
 
 

@@ -379,6 +379,9 @@ class AndroidPlatform extends Platform
       context.ABIS = [for(abi in includedABIs()) '"${abi.name}"'].join(', ');
       context.ABI_CODES = [for(abi in includedABIs()) '\'${abi.name}\':${abi.versionCodeScaler}'].join(', ');
       context.NME_BUNDLE_RELEASE = project.androidConfig.bundleApk;
+
+      context.ANDROID_BG_COLOR = "#" + StringTools.hex(project.window.background, 6);
+      context.ANDROID_FG_COLOR = "#" + StringTools.hex(project.window.foreground, 6);
    }
 
    function getNdkStackExe()
@@ -792,6 +795,14 @@ class AndroidPlatform extends Platform
       {
          if (IconHelper.createIcon(normalIcons, iconSizes[i], iconSizes[i], destination + "/res/mipmap-" + iconTypes[i] + "/icon.png")) 
             context.HAS_ICON = true;
+      }
+
+      // Splash screen icon at 240dp base size (Android 12+ windowSplashScreenAnimatedIcon view is 240dp)
+      var splashIconSizes = [ 180, 240, 360, 480, 720, 960 ];
+      for(i in 0...iconTypes.length) 
+      {
+         if (IconHelper.createIcon(normalIcons, splashIconSizes[i], splashIconSizes[i], destination + "/res/mipmap-" + iconTypes[i] + "/splash_icon.png")) 
+            context.HAS_SPLASH_ICON = true;
       }
 
       var fgIcons = project.icons.filter( icon -> icon.type == IconFg );

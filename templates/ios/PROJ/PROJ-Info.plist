@@ -55,6 +55,21 @@
    <key>NSCameraUsageDescription</key>
    <string>::CAMERA_USAGE::</string>
    ::end::
+   ::if (NME_ADMOB_APP_ID)::
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+		::foreach SKADNETWORK_IDS::
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>::value::</string>
+		</dict>
+		::end::
+	</array>
+   ::end::
    ::if (FILE_SHARING)::
 	<key>UIFileSharingEnabled</key>
 	<string>YES</string>

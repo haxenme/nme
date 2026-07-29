@@ -62,18 +62,33 @@ class NmeStore {
     }
 
     func queryProducts(_ ids: [String]) async {
+        /*
+        if let appTx = try? await AppTransaction.shared,
+           case .verified(let tx) = appTx {
+            let storefront = await Storefront.current?.countryCode ?? "unknown"
+            print("[NmeStore] environment=\(tx.environment.rawValue) bundleID=\(tx.bundleID) storefront=\(storefront)")
+        }
+        */
+        print("[NmeStore] queryProducts: requesting \(ids.count) SKU(s): \(ids.joined(separator: ", "))")
         do {
             let fetched = try await Product.products(for: Set(ids))
             products = fetched
+            print("[NmeStore] queryProducts: received \(fetched.count) product(s)")
             for p in fetched {
-                let period = subscriptionPeriodString(p.subscription?.subscriptionPeriod)
+                let period = p.type == .autoRenewable ? subscriptionPeriodString(p.subscription?.subscriptionPeriod) : ""
+                print("[NmeStore] queryProducts*: SKU=\(p.id) name=\(p.displayName) price=\(p.displayPrice) period=\(period)")
                 nme_store_add_sku_detail(p.id, p.displayName, p.description,
                                          p.displayPrice, period)
+                if let entitlement = await Transaction.currentEntitlement(for: p.id),
+                   case .verified(let tx) = entitlement {
+                    print("[NmeStore] queryProducts: \(p.id) already owned")
+                    nme_store_on_purchase(tx.productID, true, false)
+                }
             }
         } catch {
-            // Return empty list on error; Haxe side will get SkuDetailsUpdated(false)
-            // if no products were sent before nme_store_on_sku_done.
+            print("[NmeStore] queryProducts: error fetching products: \(error)")
         }
+        print("[NmeStore] queryProducts done.")
         nme_store_on_sku_done()
     }
 
@@ -105,10 +120,20 @@ class NmeStore {
     }
 
     func restore() async {
+        print("[NmeStore] restore: checking currentEntitlements")
+        var count = 0
         for await result in Transaction.currentEntitlements {
             if case .verified(let tx) = result {
+                print("[NmeStore] restore: found verified entitlement SKU=\(tx.productID)")
                 nme_store_on_purchase(tx.productID, true, false)
+                count += 1
+            } else {
+                print("[NmeStore] restore: skipping unverified entitlement")
             }
+        }
+        print("[NmeStore] restore: done, \(count) entitlement(s) found")
+        if count == 0 {
+            nme_store_on_purchase("", false, false)
         }
     }
 }
