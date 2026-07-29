@@ -79,7 +79,6 @@ jobs:
           haxelib run hxcpp ToolkitBuild.xml ${{ matrix.arch_flag }}
           
       - name: Prep Acadnme
-        if: "!startsWith(matrix.os,'ubuntu')"
         run: |
            cd acadnme
            haxelib run nme cpp nocompile
