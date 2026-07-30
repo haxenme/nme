@@ -146,7 +146,7 @@
    <set name="NME_OPENAL" value="1" if="macos" unless="NME_NO_AUDIO" />
 
 
-   <set name="NME_CAMERA" value="1" unless="emscripten||winrt" />
+   <set name="NME_CAMERA" value="1" unless="emscripten||winrt||android||iphone||NME_NO_CAMERA" />
 
    <!-- Built relative to "bin" -->
    <set name="NME_ROOT" value="" />
@@ -313,6 +313,7 @@
       <compilerflag value="-DNME_OPENAL" if="NME_OPENAL" unless="NME_NO_AUDIO" />
       <compilerflag value="-DNME_NO_JPEG" if="NME_NO_JPEG" />
       <compilerflag value="-DNME_NO_FONTDATA" if="NME_NO_FONTDATA emscripten" />
+      <compilerflag value="-DNME_NO_CAMERA" unless="NME_CAMERA" />
       <compilerflag value="-DNME_WEB_AUDIO" if="NME_WEB_AUDIO" />
 
       <cache value="1" unless="winrpi" />

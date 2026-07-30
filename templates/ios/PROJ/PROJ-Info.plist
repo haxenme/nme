@@ -76,6 +76,8 @@
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<string>YES</string>
    ::end::
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
