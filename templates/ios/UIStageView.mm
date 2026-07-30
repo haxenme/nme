@@ -2302,7 +2302,7 @@ bool nmeIsMain = true;
    [win makeKeyAndVisible];
    NMEStageViewController *c = [[NMEStageViewController alloc] init];
    nme_app_set_active(true);
-   [UIApplication sharedApplication].idleTimerDisabled = YES;
+   ::if (NME_KEEP_AWAKE)::[UIApplication sharedApplication].idleTimerDisabled = YES;::end::
    self.window.rootViewController = c;
    sOnFrame(new IOSViewFrame(c->nmeStage));
 }

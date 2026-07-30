@@ -204,6 +204,9 @@ class IOSPlatform extends Platform
       if (project.hasDef("nme_metal"))
          context.NME_METAL = true;
 
+      if (project.hasDef("nmeKeepAwake"))
+         context.NME_KEEP_AWAKE = true;
+
       if (project.hasDef("iosBilling")) {
          context.IOS_BILLING = 1;
          context.NME_IOS_IAP = 1;

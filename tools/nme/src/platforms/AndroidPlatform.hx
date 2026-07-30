@@ -536,16 +536,15 @@ class AndroidPlatform extends Platform
                if (file.substr(0,8)=="android-")
                {
                   var suffix = file.substr(8);
-                  var major:Null<Int>;
-                  var minor:Int = 0;
-                  var dotIdx = suffix.indexOf(".");
-                  if (dotIdx != -1) {
-                     major = Std.parseInt(suffix.substr(0, dotIdx));
-                     var parsedMinor = Std.parseInt(suffix.substr(dotIdx + 1));
-                     minor = (parsedMinor != null) ? parsedMinor : 0;
-                  } else {
-                     major = Std.parseInt(suffix);
+                  var versionRe = ~/^(\d+)(?:\.(\d+))?$/;
+                  if (!versionRe.match(suffix))
+                  {
+                     Log.verbose("   skipping " + file + " (non-release suffix)");
+                     continue;
                   }
+                  var major:Null<Int> = Std.parseInt(versionRe.matched(1));
+                  var minorStr = versionRe.matched(2);
+                  var minor:Int = (minorStr != null && minorStr != "") ? Std.parseInt(minorStr) : 0;
                   if (major != null
                      && (major > result || (major == result && minor > maxApiLevelMinor))
                      && FileSystem.exists(dir+"/platforms/"+file+"/android.jar"))
