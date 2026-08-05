@@ -421,7 +421,12 @@ struct MetalProgram
          shader += "   col += uniforms->colourOffset;\n";
 
       if (progId&PROG_NORMAL_DATA)
-         shader += "   col *= min(in.norm.x-abs(in.norm.y),1.0);";
+      {
+         if (progId & PROG_PREM_ALPHA)
+            shader += "   col *= min(in.norm.x-abs(in.norm.y),1.0);";
+         else
+            shader += "   col.a *= min(in.norm.x-abs(in.norm.y),1.0);";
+      }
 
       shader += 
         "    return col;\n"

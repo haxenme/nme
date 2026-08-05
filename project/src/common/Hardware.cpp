@@ -39,6 +39,16 @@ enum { DEBUG_EXTRA_FAT       = 0 };
 enum { DEBUG_PRINT_THRESH    = 0 };
 enum { DEBUG_PRINT_VERBOSE   = 0 };
 
+// PolyAA soft-edge fringe: how far (in pixels) the AA feather extends outward
+// from the true solid edge, and the alpha it starts at (right at the true
+// edge) before fading linearly to 0 over that distance. 1.0/0.25 keeps the
+// same "excess coverage area" (visual edge weight) as the old symmetric
+// 0.5-in/0.5-out fringe; widening the fringe while lowering the peak alpha
+// keeps a similar weight but spreads the same feather over more pixels.
+#define POLY_AA_FRINGE 0.7
+#define POLY_AA_FRINGE_ALPHA 0.7
+
+
 
 struct CurveEdge
 {
@@ -355,10 +365,11 @@ public:
             mJoints = sjRound;
             mMiterLimit = 0.5;
 
-            mElement.mWidth = 1.0/mScale;
+            mElement.mWidth = POLY_AA_FRINGE/mScale;
             if (DEBUG_EXTRA_FAT)
                mElement.mWidth = 5.0/mScale;
-            mPerpLen = mElement.mWidth*0.5;
+            // Outward-only fringe now - no inward half to split off.
+            mPerpLen = mElement.mWidth;
 
          }
       }
@@ -1949,6 +1960,15 @@ public:
          // Stop searching for intersections earlier for fat lines, where we prefer overlap to missing parts
          double allowDeviation = mPolyAA ? 4.0 : 2.0;
          UserPoint onSideDist = dir0.Perp(-inSide/(mPerpLen*allowDeviation) );
+         // Bound the search by actual 2D distance from p0, not perpendicular
+         // distance from the (infinite) p0-p1 line. A point can be far along
+         // the line's own direction yet still read as "close" perpendicular-
+         // wise, which is how a thin, tightly curled shape can bridge across
+         // to its own far side. A plain distance bound keeps this a local,
+         // "am I still near this corner" test - side is still used for its
+         // sign, to detect an actual crossing.
+         double searchDist = mPerpLen*allowDeviation;
+         double searchDist2 = searchDist*searchDist;
 
          // Next segment can't intersect with first segment since it shared end
          int prevSlot = (startPoint+2) % curve.size();
@@ -1973,7 +1993,7 @@ public:
 
          float side = onSideDist.Dot( prevPoint-p0 );
          bool prevOnOddSide = side<0;
-         if ( side>1 )
+         if ( (prevPoint-p0).Norm2() > searchDist2 )
          {
             //if (dbgPrint)
             //   printf(" %d] stop early side %f\n", startPoint, side);
@@ -2172,13 +2192,12 @@ public:
                   }
                }
             }
-            // Point is outside the onSideDist - stop
-            // Don't care about overlap so much in non-mPolyAA case
-            //if (fabs(side)>1 )
-            if (side>1 || (!mPolyAA && side<-1) )
+            // Point is too far from p0 to still be "this corner" - it already
+            // had its chance to register as a crossing above, so stop now.
+            if ( dp.Norm2() > searchDist2 )
             {
                //if (dbgPrint)
-               //   printf(" %d] side @ %d %f\n", startPoint, advance, side);
+               //   printf(" %d] dist @ %d %f\n", startPoint, advance, dp.Norm2());
                break;
             }
 
@@ -2370,10 +2389,11 @@ public:
 
       if (mPolyAA)
       {
-         // inSign 1 -> 1, inSign -1 -> 0
+         // inSign 1 -> POLY_AA_FRINGE_ALPHA, inSign -1 -> 0
          // Shader uses: x - abs(y)
-         outSideInfo = UserPoint(1, 0.5+inSign*0.5);
-         outInfo = UserPoint(1, 0.5-inSign*0.5);
+         const double half = POLY_AA_FRINGE_ALPHA*0.5;
+         outSideInfo = UserPoint(POLY_AA_FRINGE_ALPHA, half+inSign*half);
+         outInfo = UserPoint(POLY_AA_FRINGE_ALPHA, half-inSign*half);
       }
       else
       {
@@ -2395,39 +2415,92 @@ public:
       */
    }
 
+   // Flattens inPath itself (zero offset), reusing the same adaptive curve
+   // subdivision as the left/right offset curves so it shares their 't' timeline.
+   // This is the true solid edge: the PolyAA interior tessellates directly to it
+   // (same as a plain, non-AA solid fill would), and it is the alpha=1 side of
+   // the outward-only AA fringe. cleanCurve is deliberately skipped here - its
+   // self-intersection pruning divides by mPerpLen, which is meaningless (and
+   // unnecessary) for a curve with no offset.
+   void buildTrueCurve(const QuickVec<Segment> &inPath, Curves &outCurve)
+   {
+      double savedPerpLen = mPerpLen;
+      mPerpLen = 0;
+
+      double t = 1.0;
+      Curves scratch;
+      for(int i=1;i<inPath.size();i++)
+      {
+         const Segment &seg = inPath[i];
+         UserPoint p0 = inPath[i-1].p;
+         UserPoint p = seg.p;
+
+         if (seg.isCurve())
+         {
+            scratch.resize(0);
+            if (seg.isCurve2())
+               AddCubicSegment(outCurve, scratch, UserPoint(0,0), UserPoint(0,0),
+                                p0, seg.curve0, seg.curve1, seg.p, p0,p0,p,p, t);
+            else
+               AddCurveSegment(outCurve, scratch, UserPoint(0,0), UserPoint(0,0),
+                                p0, seg.curve0, seg.p, p0,p0,p,p, t);
+         }
+         else
+         {
+            outCurve.push_back( CurveEdge(p0,t) );
+            outCurve.push_back( CurveEdge(p,t+0.99) );
+         }
+         // pathToCurves advances t by 1.0 here, then another 1.0 after its
+         // per-vertex joint handling (to leave room for join geometry) - match
+         // that same +2.0-per-vertex timeline so this curve's t values line up
+         // with leftCurve/rightCurve's for curvesToElement's t-based merge.
+         t += 2.0;
+      }
+
+      mPerpLen = savedPerpLen;
+   }
+
    bool AddStrip(const QuickVec<Segment> &inPath, bool isClosed)
    {
       if (inPath.size()<2)
          return true;
 
-      Curves leftCurve;
-      Curves rightCurve;
-
-      pathToCurves(inPath, isClosed, leftCurve, rightCurve);
-
-      if (leftCurve.size()<1 || rightCurve.size()<1)
-         return true;
-      if (leftCurve.size()<3 && rightCurve.size()<3)
-         return true;
-
       if (mPolyAA)
       {
-         float lx = leftCurve[0].p.x;
-         for(int i=1;i<leftCurve.size();i++)
-            lx = std::min(lx,leftCurve[i].p.x);
-         float rx = rightCurve[0].p.x;
-         for(int i=1;i<rightCurve.size();i++)
-            rx = std::min(rx,rightCurve[i].p.x);
+         // Interior: tessellated straight to the true (un-offset) edge - exactly
+         // as a plain, non-AA solid fill would be - so it is always a clean,
+         // well-defined polygon regardless of how tight the curvature gets.
+         Curves trueCurve;
+         buildTrueCurve(inPath, trueCurve);
+
+         if (trueCurve.size()<3)
+            return true;
+
+         // Which offset side (left or right of travel) is the outward one
+         // depends on the path's winding direction, from the true path's own
+         // signed area (shoelace sum). Only that side is built at all - the
+         // inward side would either sit fully inside the (now always opaque)
+         // interior, wasted work, or - once the fill has any transparency -
+         // visibly double up the blended alpha where it overlaps.
+         double signedArea2 = 0;
+         for(int i=0;i<trueCurve.size();i++)
+            signedArea2 += trueCurve[i].p.Cross( trueCurve[(i+1)%trueCurve.size()].p );
+         bool wantLeft = signedArea2>=0;
+
+         Curves leftCurve, rightCurve;
+         pathToCurves(inPath, isClosed, leftCurve, rightCurve, wantLeft, !wantLeft);
+         Curves &outerCurve = wantLeft ? leftCurve : rightCurve;
+
+         if (outerCurve.size()<1)
+            return true;
 
          int interiorVertexOffset = mElement.mVertexOffset;
 
-         // Right = outer, left=inner
-         Curves &inner = rx<lx ? leftCurve : rightCurve;
-         if (inner.size()>1 && !DEBUG_FAT_LINES && !DEBUG_NO_INTERIOR )
+         if (!DEBUG_FAT_LINES && !DEBUG_NO_INTERIOR )
          {
-            Vertices outline(inner.size());
-            for(int i=0; i<inner.size(); i++)
-               outline[i] = inner[i].p;
+            Vertices outline(trueCurve.size());
+            for(int i=0; i<trueCurve.size(); i++)
+               outline[i] = trueCurve[i].p;
 
             QuickVec<int> subs(1);
             subs[0] = (int)outline.size();
@@ -2437,15 +2510,17 @@ public:
             bool isGood = AddPolygon(outline, subs, true);
             if (!isGood)
             {
-               // Nibbled off too much and the interior could not be triangulated
-               //  (potentially an issue with cleanCurve too)
-               //  Fallback to normal solid
+               // Could not triangulate the true edge - fallback to normal solid
                // In debug mode, predend we rendered it
                return DEBUG_NO_FAT_FALLBACK;
             }
          }
 
-         // Exterior finge
+         // Exterior fringe - a single outward-only AA strip (true edge -> the
+         // outward offset curve), alpha 1 at the true edge fading to 0 at the
+         // offset curve. Since the interior is always opaque right up to the
+         // true edge, two PolyAA solids that abut exactly meet with no
+         // background gap.
          int extra =  data.mArray.size() - interiorVertexOffset;
          mElement.mVertexOffset += extra;
          if (mElement.mTexOffset)
@@ -2453,31 +2528,57 @@ public:
          if (mElement.mColourOffset)
             mElement.mColourOffset += extra;
 
-         // Add normal flag
+         // Add normal flag. Metal's shader assumes a fixed pos/norm/tex/vcol
+         // vertex layout (Metal has no per-attribute offset, unlike GL, so it
+         // can't just be told where each field landed) - tex/colour were
+         // already assigned slots by SetFill() earlier, so insert normal
+         // right after pos here and push them along, rather than appending
+         // normal after them, to keep that order intact.
          mElement.mFlags |= DRAW_HAS_NORMAL;
-         mElement.mNormalOffset = mElement.mVertexOffset + mElement.mStride;
+         mElement.mNormalOffset = mElement.mVertexOffset + sizeof(float)*2;
+         if (mElement.mTexOffset)
+            mElement.mTexOffset += sizeof(float)*2;
+         if (mElement.mColourOffset)
+            mElement.mColourOffset += sizeof(float)*2;
          mElement.mStride += sizeof(float)*2;
 
-         // Right = outer
-         if (rx<lx)
-            curvesToElement(rightCurve, leftCurve );
-         else
-            curvesToElement(leftCurve, rightCurve);
+         curvesToElement(outerCurve, trueCurve);
 
          // Remove normal flag
          mElement.mFlags &= ~DRAW_HAS_NORMAL;
          mElement.mNormalOffset = 0;
+         if (mElement.mTexOffset)
+            mElement.mTexOffset -= sizeof(float)*2;
+         if (mElement.mColourOffset)
+            mElement.mColourOffset -= sizeof(float)*2;
          mElement.mStride -= sizeof(float)*2;
       }
       else
       {
+         Curves leftCurve;
+         Curves rightCurve;
+
+         pathToCurves(inPath, isClosed, leftCurve, rightCurve);
+
+         if (leftCurve.size()<1 || rightCurve.size()<1)
+            return true;
+         if (leftCurve.size()<3 && rightCurve.size()<3)
+            return true;
+
          curvesToElement(leftCurve, rightCurve);
       }
       return true;
    }
 
 
-   void pathToCurves(const QuickVec<Segment> &inPath, bool isClosed, Curves &leftCurve, Curves &rightCurve)
+   // wantLeft/wantRight let a caller that only needs one offset side (PolyAA,
+   // once it knows which side is outward) skip flattening, joint geometry and
+   // cleanCurve for the other - a discarded scratch curve still absorbs
+   // whatever a curved (bezier) segment's adaptive subdivision writes to it,
+   // since that recursion computes both sides together, but every straight
+   // segment, joint and the final cleanCurve pass is skipped outright.
+   void pathToCurves(const QuickVec<Segment> &inPath, bool isClosed, Curves &leftCurve, Curves &rightCurve,
+                      bool wantLeft=true, bool wantRight=true)
    {
       if (inPath.size()<2)
          return;
@@ -2518,6 +2619,11 @@ public:
       bool fancyJoints =  ( mPerpLen*mScale > 1.0 && mJoints==sjRound ) ||
                           ( mPerpLen*mScale >= 0.999 && mJoints==sjMiter) || mPolyAA;
 
+      // Discard bin for AddCubicSegment/AddCurveSegment's unwanted-side output -
+      // that recursion computes both sides together, so this just lets the
+      // wanted side's result through without a separate code path.
+      Curves scratch;
+
       for(int i=1;i<inPath.size();i++)
       {
           const Segment &seg = inPath[i];
@@ -2555,31 +2661,35 @@ public:
           if (seg.isCurve())
           {
              if (seg.isCurve2())
-                AddCubicSegment(leftCurve,rightCurve,perp0, perp1,p0,seg.curve0,seg.curve1,seg.p, p0_left, p0_right, p1_left, p1_right,t);
+                AddCubicSegment(wantLeft?leftCurve:scratch, wantRight?rightCurve:scratch,
+                                 perp0, perp1,p0,seg.curve0,seg.curve1,seg.p, p0_left, p0_right, p1_left, p1_right,t);
              else
-                AddCurveSegment(leftCurve,rightCurve,perp0, perp1,p0,seg.curve0,seg.p, p0_left, p0_right, p1_left, p1_right,t);
+                AddCurveSegment(wantLeft?leftCurve:scratch, wantRight?rightCurve:scratch,
+                                 perp0, perp1,p0,seg.curve0,seg.p, p0_left, p0_right, p1_left, p1_right,t);
              t+=1.0;
           }
           else
           {
-             leftCurve.push_back( CurveEdge(p0_left,t) );
-             leftCurve.push_back( CurveEdge(p1_left,t+0.99) );
-
-             rightCurve.push_back( CurveEdge(p0_right,t) );
-             rightCurve.push_back( CurveEdge(p1_right,t+0.99) );
+             if (wantLeft)
+             {
+                leftCurve.push_back( CurveEdge(p0_left,t) );
+                leftCurve.push_back( CurveEdge(p1_left,t+0.99) );
+             }
+             if (wantRight)
+             {
+                rightCurve.push_back( CurveEdge(p0_right,t) );
+                rightCurve.push_back( CurveEdge(p1_right,t+0.99) );
+             }
 
              t+=1.0;
           }
-
-          float segJoinLeft = leftCurve.last().t;
-          float segJoinRight = rightCurve.last().t;
 
           float angle = next_dir.Dot(dir1);
           bool fullReverse = angle<-0.9999;
           if (fullReverse)
           {
-             leftCurve.push_back( CurveEdge(p1_right,t) );
-             rightCurve.push_back( CurveEdge(p1_left,t) );
+             if (wantLeft) leftCurve.push_back( CurveEdge(p1_right,t) );
+             if (wantRight) rightCurve.push_back( CurveEdge(p1_left,t) );
           }
           else if ( fancyJoints && angle<0.9 )
           {
@@ -2642,19 +2752,27 @@ public:
                       double angle = acos(dir1.Dot(next_dir));
                       if (angle<0) angle += M_PI;
                       if (alpha>0) // left
-                         AddArc(leftCurve, p, angle, -perp1, dir1*mPerpLen, t );
+                      {
+                         if (wantLeft)
+                            AddArc(leftCurve, p, angle, -perp1, dir1*mPerpLen, t );
+                      }
                       else // right
-                         AddArc(rightCurve, p, angle, perp1, dir1*mPerpLen, t );
+                      {
+                         if (wantRight)
+                            AddArc(rightCurve, p, angle, perp1, dir1*mPerpLen, t );
+                      }
                 }
                 else
                 {
                       if (alpha>0) // left
                       {
-                         AddMiter(leftCurve, p, p1_left, p-next_perp, alpha, dir1, next_dir,t);
+                         if (wantLeft)
+                            AddMiter(leftCurve, p, p1_left, p-next_perp, alpha, dir1, next_dir,t);
                       }
                       else // Right
                       {
-                         AddMiter(rightCurve, p, p1_right, p+next_perp, -alpha, dir1, next_dir,t);
+                         if (wantRight)
+                            AddMiter(rightCurve, p, p1_right, p+next_perp, -alpha, dir1, next_dir,t);
                       }
                 }
              }
@@ -2668,8 +2786,10 @@ public:
          EndCap(leftCurve, rightCurve, p, dir1.Perp(mPerpLen),t);
       }
 
-      cleanCurve(leftCurve,isClosed,-1);
-      cleanCurve(rightCurve,isClosed,1);
+      if (wantLeft)
+         cleanCurve(leftCurve,isClosed,-1);
+      if (wantRight)
+         cleanCurve(rightCurve,isClosed,1);
    }
 
     void curvesToElement(const Curves &leftCurve,const Curves &rightCurve )
