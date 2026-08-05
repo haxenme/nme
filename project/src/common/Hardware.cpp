@@ -48,6 +48,25 @@ enum { DEBUG_PRINT_VERBOSE   = 0 };
 #define POLY_AA_FRINGE 0.7
 #define POLY_AA_FRINGE_ALPHA 0.7
 
+// For small/thin PolyAA polygons, the fringe (and eventually the interior)
+// gets tapered down rather than left at full strength, to avoid the classic
+// sub-pixel-geometry problem where a point-sampled tiny shape either shows up
+// at full alpha or not at all depending on whether it happens to cover a
+// sample point. Two independent tapers:
+//
+// - Fringe ink budget: the fringe's average alpha (POLY_AA_FRINGE_ALPHA/2)
+//   times its area (~perimeter * POLY_AA_FRINGE) is capped at
+//   POLY_AA_FRINGE_INK_BUDGET times the interior's own area/ink, so the
+//   fringe can't visually dominate a shape too small to carry it. 1.0 means
+//   "fringe ink <= interior ink"; raise it to delay tapering until smaller
+//   shapes, lower it to taper sooner.
+#define POLY_AA_FRINGE_INK_BUDGET 0.5
+// - Interior floor: only once the shape's smallest bounding dimension drops
+//   below this (pixels) does the interior itself start fading towards
+//   transparent - gated on min dimension rather than area so a long thin
+//   line doesn't fade just for being thin.
+#define POLY_AA_MIN_SIZE 1.0
+
 
 
 struct CurveEdge
@@ -326,6 +345,7 @@ public:
 
       mSolidMode = false;
       mPolyAA = false;
+      mPolyAAFringeAlpha = POLY_AA_FRINGE_ALPHA;
       mPerpLen = 0.5;
       mStateScale = data.scaleOf(inState);
       mScale = mStateScale;
@@ -2389,11 +2409,14 @@ public:
 
       if (mPolyAA)
       {
-         // inSign 1 -> POLY_AA_FRINGE_ALPHA, inSign -1 -> 0
+         // inSign 1 -> mPolyAAFringeAlpha, inSign -1 -> 0
          // Shader uses: x - abs(y)
-         const double half = POLY_AA_FRINGE_ALPHA*0.5;
-         outSideInfo = UserPoint(POLY_AA_FRINGE_ALPHA, half+inSign*half);
-         outInfo = UserPoint(POLY_AA_FRINGE_ALPHA, half-inSign*half);
+         // mPolyAAFringeAlpha is POLY_AA_FRINGE_ALPHA, scaled down per-shape by
+         // AddStrip for small/thin polygons - see the ink-budget/min-size taper
+         // computed there.
+         const double half = mPolyAAFringeAlpha*0.5;
+         outSideInfo = UserPoint(mPolyAAFringeAlpha, half+inSign*half);
+         outInfo = UserPoint(mPolyAAFringeAlpha, half-inSign*half);
       }
       else
       {
@@ -2482,10 +2505,36 @@ public:
          // inward side would either sit fully inside the (now always opaque)
          // interior, wasted work, or - once the fill has any transparency -
          // visibly double up the blended alpha where it overlaps.
+         // The same pass also picks up perimeter and bounding box, for the
+         // small-polygon fringe/interior tapers below.
          double signedArea2 = 0;
+         UserPoint bboxMin = trueCurve[0].p;
+         UserPoint bboxMax = trueCurve[0].p;
+         double perimeter = 0;
          for(int i=0;i<trueCurve.size();i++)
-            signedArea2 += trueCurve[i].p.Cross( trueCurve[(i+1)%trueCurve.size()].p );
+         {
+            const UserPoint &p0 = trueCurve[i].p;
+            const UserPoint &p1 = trueCurve[(i+1)%trueCurve.size()].p;
+            signedArea2 += p0.Cross(p1);
+            perimeter += (p1-p0).Norm();
+            if (p0.x<bboxMin.x) bboxMin.x = p0.x;
+            if (p0.y<bboxMin.y) bboxMin.y = p0.y;
+            if (p0.x>bboxMax.x) bboxMax.x = p0.x;
+            if (p0.y>bboxMax.y) bboxMax.y = p0.y;
+         }
          bool wantLeft = signedArea2>=0;
+
+         // Small/thin polygon tapers - see POLY_AA_FRINGE_INK_BUDGET/POLY_AA_MIN_SIZE.
+         double areaPx = 0.5*fabs(signedArea2)*mScale*mScale;
+         double perimeterPx = perimeter*mScale;
+         double minDimPx = std::min(bboxMax.x-bboxMin.x,bboxMax.y-bboxMin.y)*mScale;
+
+         double fringeInk = perimeterPx*POLY_AA_FRINGE*POLY_AA_FRINGE_ALPHA*0.5;
+         double fringeTaper = fringeInk>0 ?
+                std::min(1.0, POLY_AA_FRINGE_INK_BUDGET*areaPx/fringeInk) : 1.0;
+         double interiorTaper = std::min(1.0, minDimPx/POLY_AA_MIN_SIZE);
+
+         mPolyAAFringeAlpha = POLY_AA_FRINGE_ALPHA*fringeTaper*interiorTaper;
 
          Curves leftCurve, rightCurve;
          pathToCurves(inPath, isClosed, leftCurve, rightCurve, wantLeft, !wantLeft);
@@ -2507,7 +2556,18 @@ public:
 
             mElement.mPrimType = ptTriangleFan;
             mElement.mScaleMode = ssmNormal;
+
+            // Fade the interior itself only once it is below POLY_AA_MIN_SIZE -
+            // restored immediately after, since the fringe applies its own
+            // (already-computed) taper separately via mPolyAAFringeAlpha.
+            uint32 savedColour = mElement.mColour;
+            if (interiorTaper<1.0)
+            {
+               int a = (int)( (savedColour>>24) * interiorTaper );
+               mElement.mColour = (savedColour & 0x00ffffff) | (a<<24);
+            }
             bool isGood = AddPolygon(outline, subs, true);
+            mElement.mColour = savedColour;
             if (!isGood)
             {
                // Could not triangulate the true edge - fallback to normal solid
@@ -3336,6 +3396,7 @@ public:
    unsigned int mGradFlags;
    bool        mSolidMode;
    bool        mPolyAA;
+   double      mPolyAAFringeAlpha;
    double      mMiterLimit;
    double      mPerpLen;
    double      mScale;
