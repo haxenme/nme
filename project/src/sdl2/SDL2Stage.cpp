@@ -1808,8 +1808,11 @@ void ProcessEvent(SDL_Event &inEvent)
             frame = getEventFrame(inEvent.window.windowID,false);
             if (frame)
             {
+               // SDL_WINDOWEVENT_SIZE_CHANGED is aliased to SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+               // under NME_SDL3, so data1/data2 already arrive in device pixels - unlike mouse
+               // events, this must not be passed through scaleMouseDpi (which converts points to
+               // pixels), or the stage size ends up double-scaled relative to the real drawable.
                Event resize(etResize, inEvent.window.data1, inEvent.window.data2);
-               frame->scaleMouseDpi(resize);
                frame->Resize(resize.x, resize.y);
                frame->ProcessEvent(resize);
                Event redraw(etRedraw);
