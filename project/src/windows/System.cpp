@@ -110,7 +110,6 @@ static unsigned __stdcall dialog_proc( void *inSpec )
    FileDialogSpec *spec = (FileDialogSpec *)inSpec;
    if (spec->flags & flagDirectory)
    {
-
       IFileDialog *dlg = 0;
       if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&dlg))))
       {
@@ -178,6 +177,7 @@ static unsigned __stdcall dialog_proc( void *inSpec )
       ofn.lpstrDefExt = "*";
 
       const char *path0 = spec->defaultPath.c_str();
+      std::string pathBuf;
       if (*path0)
       {
          const char *lastWord = path0;
@@ -194,15 +194,17 @@ static unsigned __stdcall dialog_proc( void *inSpec )
          }
          if (lastWord && hasDot)
          {
-            size_t len = spec->defaultPath.size();
-            memcpy(ofn.lpstrFile, spec->defaultPath.c_str(), len );
-            for(size_t i=0; i<len; i++)
-               if (ofn.lpstrFile[i]=='/')
-                  ofn.lpstrFile[i]='\\';
-            ofn.nFileOffset = (WORD)(lastWord-path0);
+           ofn.nFileOffset = (WORD)(lastWord-path0);
          }
          else
-            ofn.lpstrInitialDir = path0;
+         {
+            pathBuf = path0;
+            for (size_t i = 0; i < pathBuf.size(); i++)
+               if (pathBuf[i] == '/')
+                  pathBuf[i] = '\\';
+            pathBuf += "\\";
+            ofn.lpstrInitialDir = pathBuf.c_str();
+         }
       }
 
       bool result = (spec->flags & flagSave) ? GetSaveFileName(&ofn) : GetOpenFileName(&ofn);
