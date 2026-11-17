@@ -808,10 +808,23 @@ class AndroidPlatform extends Platform
       var bgIcons = project.icons.filter( icon -> icon.type == IconBg );
       if (fgIcons.length >0 && bgIcons.length>0)
       {
-         for(i in 0...iconTypes.length) 
+         // Adaptive icon layers are 108dp square (the launcher masks them down to
+         // about 72dp), not the 48dp of a legacy icon
+         var layerSizes = [ 81, 108, 162, 216, 324, 432 ];
+         for(i in 0...iconTypes.length)
          {
-            IconHelper.createIcon(fgIcons, iconSizes[i], iconSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/fg_icon.png"); 
-            IconHelper.createIcon(bgIcons, iconSizes[i], iconSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/bg_icon.png"); 
+            IconHelper.createIcon(fgIcons, layerSizes[i], layerSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/fg_icon.png");
+            IconHelper.createIcon(bgIcons, layerSizes[i], layerSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/bg_icon.png");
+         }
+
+         // Optional single colour layer, used by Android 13+ themed icons.
+         // Only its alpha matters: the launcher tints it.
+         var monoIcons = project.icons.filter( icon -> icon.type == IconMono );
+         if (monoIcons.length>0)
+         {
+            for(i in 0...iconTypes.length)
+               IconHelper.createIcon(monoIcons, layerSizes[i], layerSizes[i], destination + "/res/drawable-" + iconTypes[i] + "/mono_icon.png");
+            context.HAS_MONO_ICON = true;
          }
 
          copyTemplate("android/adaptive_icon.xml", destination + "/res/mipmap-anydpi-v26/icon.xml");
