@@ -78,4 +78,19 @@ class MacPlatform extends DesktopPlatform
       context.HAS_ICON = IconHelper.createMacIcon(project.icons, PathHelper.combine(contentDirectory,"icon.icns"));
    }
 
+   override public function postBuild():Void 
+   {
+      // Sign the executable rather than the bundle - signing the bundle seals
+      //  Contents/Resources, so the signature is invalidated whenever the assets change.
+      // The debug build gets the get-task-allow entitlement, which Instruments requires
+      //  before it will profile the process.
+      var entitlements = targetDir + "/" + project.app.file + ".entitlements";
+      copyTemplate("mac-build/Entitlements.plist", entitlements, false);
+
+      var identity = project.hasDef("MAC_SIGN_IDENTITY") ? project.getDef("MAC_SIGN_IDENTITY") : "-";
+
+      ProcessHelper.runCommand("", "codesign",
+         [ "-f", "-s", identity, "--entitlements", entitlements, executablePath ]);
+   }
+
 }
