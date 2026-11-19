@@ -3170,7 +3170,7 @@ public:
                }
 
                if (stripSize>1)
-                  if (added++>1) return false;
+                  if (added++>0) return false;
 
                stripSize = 1;
                prev = *point;
@@ -3192,7 +3192,7 @@ public:
                // Implicit loop closing...
                if (stripSize>2 && *point==first )
                {
-                  if (added++>1) return false;
+                  if (added++>0) return false;
                   stripSize = 0;
                }
 
@@ -3214,7 +3214,7 @@ public:
                   // Implicit loop closing...
                   if (stripSize>=2 && point[1]==first)
                   {
-                     if (added++>1) return false;
+                     if (added++>0) return false;
                      stripSize = 0;
                   }
 
@@ -3237,7 +3237,7 @@ public:
                   // Implicit loop closing...
                   if (stripSize>=2 && point[2]==first)
                   {
-                     if (added++>1) return false;
+                     if (added++>0) return false;
                      stripSize = 0;
                   }
 
