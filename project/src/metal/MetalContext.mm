@@ -115,12 +115,20 @@ struct MetalTexture : public Texture
 
          // Create the texture from the device by using the descriptor
          tex = [inDevice newTextureWithDescriptor:textureDescriptor];
+
+         #ifndef OBJC_ARC
+         [textureDescriptor release];
+         #endif
       }
       dirtyRect = Rect(0,0,width,height);
 
    }
    ~MetalTexture()
    {
+      #ifndef OBJC_ARC
+      [tex release];
+      #endif
+      tex = nil;
    }
 
    void update()
@@ -532,9 +540,22 @@ struct MetalProgram
       }
 
       pipelineState = [device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&error];
+
+      #ifndef OBJC_ARC
+      [pipelineStateDescriptor release];
+      [fragmentFunction release];
+      [vertexFunction release];
+      [lib release];
+      #endif
    }
 
-   ~MetalProgram() {}
+   ~MetalProgram()
+   {
+      #ifndef OBJC_ARC
+      [pipelineState release];
+      #endif
+      pipelineState = nil;
+   }
 
 
    void setTransform(const Trans4x4 &inTrans)
@@ -756,6 +777,17 @@ public:
      for(int i=0;i<TOTAL_PROGS;i++)
         allPrograms[i] = nullptr;
       colourBuf = nil;
+   }
+
+   ~MetalContext()
+   {
+      for(int i=0;i<TOTAL_PROGS;i++)
+         delete allPrograms[i];
+
+      #ifndef OBJC_ARC
+      [queue release];
+      #endif
+      queue = nil;
    }
 
    void OnContextLost()
