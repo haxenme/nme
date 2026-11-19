@@ -205,6 +205,10 @@ enum StrokeCaps { scRound, scNone, scSquare };
 enum StrokeJoints { sjRound, sjMiter, sjBevel };
 enum StrokeScaleMode { ssmNormal, ssmNone, ssmVertical, ssmHorizontal, ssmOpenGL };
 
+// Whether a stroke is drawn over the fill (the default, and flash behaviour) or
+//  under it (svg "paint-order: stroke")
+enum LineOrder { loOverFill, loUnderFill };
+
 class GraphicsStroke : public IGraphicsStroke
 {
 public:
@@ -639,6 +643,8 @@ struct GraphicsJob
    bool            mIsTileJob;
    bool            mIsPointJob;
    bool            mPolyAA;
+   // Line job that is drawn under the fill it shares a path with
+   bool            mUnderFill;
    unsigned char   mTileMode;
    unsigned char   mBlendMode;
 };
@@ -670,7 +676,22 @@ private:
    GraphicsJob               mLineJob;
    GraphicsJob               mTileJob;
 
+   // Whether the line job is drawn over or under the fill job.  This is separate
+   //  state from the line style, and persists over lineStyle calls.
+   LineOrder                 mLineOrder;
+   // Set by fillStyleSoftEdge - persistent request for a soft (hardware AA) fill edge.
+   bool                      mSoftEdgeRequested;
+
    UserPoint                 mCursor;
+
+   // Insert a job at inPos, keeping the incremental hardware build consistent
+   void insertJobAt(int inPos, const GraphicsJob &inJob);
+
+   // Derive the effective mFillJob.mPolyAA from the soft-edge requests and line order.
+   bool wantFillSoftEdge(bool inHasLine, LineOrder inOrder) const;
+   bool wantFillSoftEdge(bool inHasLine) const { return wantFillSoftEdge(inHasLine,mLineOrder); }
+   // ... and apply it, flushing the pending jobs if it changes
+   void updateFillSoftEdge();
 
 
 public:
@@ -692,7 +713,8 @@ public:
    void endFill();
    void beginBitmapFill(Surface *bitmapData, const Matrix &inMatrix = Matrix(),
                         bool inRepeat = true, bool inSmooth = false);
-   void lineStyleSoftEdge();
+   void fillStyleSoftEdge(bool inEnabled=true);
+   void lineOrder(LineOrder inOrder);
    void lineStyle(double thickness, unsigned int color = 0, double alpha = 1.0,
                   bool pixelHinting = false, StrokeScaleMode scaleMode = ssmNormal,
                   StrokeCaps caps = scRound,

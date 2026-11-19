@@ -3054,16 +3054,27 @@ void nme_gfx_end_fill(value inGfx)
 }
 DEFINE_PRIME1v(nme_gfx_end_fill);
 
-void nme_gfx_line_style_soft_edge(value argGfx)
+void nme_gfx_fill_style_soft_edge(value argGfx, bool argEnabled)
 {
    Graphics *gfx;
    if (AbstractToObject(argGfx,gfx))
    {
-      CHECK_ACCESS("nme_gfx_line_style_soft_edge");
-      gfx->lineStyleSoftEdge();
+      CHECK_ACCESS("nme_gfx_fill_style_soft_edge");
+      gfx->fillStyleSoftEdge(argEnabled);
    }
 }
-DEFINE_PRIME1v(nme_gfx_line_style_soft_edge);
+DEFINE_PRIME2v(nme_gfx_fill_style_soft_edge);
+
+void nme_gfx_line_order(value argGfx, int argOrder)
+{
+   Graphics *gfx;
+   if (AbstractToObject(argGfx,gfx))
+   {
+      CHECK_ACCESS("nme_gfx_line_order");
+      gfx->lineOrder( argOrder==loUnderFill ? loUnderFill : loOverFill );
+   }
+}
+DEFINE_PRIME2v(nme_gfx_line_order);
 
 void nme_gfx_line_style(value argGfx, value argThickness, int argColour, double argAlpha,
                         bool argPixelHinting, int argScaleMode,

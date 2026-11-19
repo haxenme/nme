@@ -173,9 +173,28 @@ class Graphics
       nme_gfx_begin_set_gradient_fill(nmeHandle, Type.enumIndex(type), colors, alphas, ratios, matrix, spreadMethod == null ? 0 : Type.enumIndex(spreadMethod), interpolationMethod == null ? 0 : Type.enumIndex(interpolationMethod), focalPointRatio, false);
    }
 
+   // Ends the line and asks for a soft edge on the fill.  Kept for compatibility -
+   //  this is now just shorthand, and unlike the original the soft edge is not
+   //  cleared by a later lineStyle call.  Use fillStyleSoftEdge(false) for that.
    public function lineStyleSoftEdge():Void
    {
-      nme_gfx_line_style_soft_edge(nmeHandle);
+      lineStyle();
+      fillStyleSoftEdge(true);
+   }
+
+   // Request a soft (antialiased) edge on the fill.  It only has an effect when the
+   //  fill edge is visible, ie there is no line, or the line is drawn under the
+   //  fill.  The request persists over lineStyle calls.  Hardware rendering only.
+   public function fillStyleSoftEdge(enabled:Bool = true):Void
+   {
+      nme_gfx_fill_style_soft_edge(nmeHandle, enabled);
+   }
+
+   // Whether the line is drawn over the fill (the default) or under it.  This is
+   //  separate state from lineStyle, and persists over lineStyle calls.
+   public function lineOrder(order:LineOrder):Void
+   {
+      nme_gfx_line_order(nmeHandle, order == null ? 0 : Type.enumIndex(order));
    }
 
    public function lineStyle(?thickness:Null<Float>, color:Int = 0, alpha:Float = 1.0, pixelHinting:Bool = false, ?scaleMode:LineScaleMode, ?caps:CapsStyle, ?joints:JointStyle, miterLimit:Float = 3):Void 
@@ -210,7 +229,8 @@ class Graphics
    private static var nme_gfx_begin_set_gradient_fill = nme.PrimeLoader.load("nme_gfx_begin_set_gradient_fill", "oiooooiidbv");
    private static var nme_gfx_end_fill = PrimeLoader.load("nme_gfx_end_fill", "ov");
    private static var nme_gfx_line_style = nme.PrimeLoader.load("nme_gfx_line_style", "ooidbiiidv" );
-   private static var nme_gfx_line_style_soft_edge = nme.PrimeLoader.load("nme_gfx_line_style_soft_edge", "ov" );
+   private static var nme_gfx_fill_style_soft_edge = nme.PrimeLoader.load("nme_gfx_fill_style_soft_edge", "obv" );
+   private static var nme_gfx_line_order = nme.PrimeLoader.load("nme_gfx_line_order", "oiv" );
    private static var nme_gfx_move_to = PrimeLoader.load("nme_gfx_move_to", "oddv");
    private static var nme_gfx_line_to = PrimeLoader.load("nme_gfx_line_to", "oddv");
    private static var nme_gfx_curve_to = PrimeLoader.load("nme_gfx_curve_to", "oddddv");

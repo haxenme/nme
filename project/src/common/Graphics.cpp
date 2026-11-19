@@ -28,6 +28,8 @@ Graphics::Graphics(DisplayObject *inOwner,bool inInitRef) : Object(inInitRef)
    mClearCount = 0;
    mVersion = 0;
    mOwner = inOwner;
+   mLineOrder = loOverFill;
+   mSoftEdgeRequested = false;
 }
 
 
@@ -75,6 +77,8 @@ void Graphics::clear(bool inForceFreeHardware)
    mBuiltHardware = 0;
    mMeasuredJobs = 0;
    mCursor = UserPoint(0,0);
+   mLineOrder = loOverFill;
+   mSoftEdgeRequested = false;
    OnChanged();
 }
 
@@ -384,11 +388,45 @@ void Graphics::beginTiles(Surface *bitmapData,bool inSmooth,int inBlendMode, int
    OnChanged();
 }
 
-void Graphics::lineStyleSoftEdge()
+// The hardware "soft edge" fringe on the fill job is only visible when it is not
+//  covered by a line drawn over the top of it, so it is only applied when there is
+//  no line, or the line is drawn under the fill.
+bool Graphics::wantFillSoftEdge(bool inHasLine, LineOrder inOrder) const
 {
-   lineStyle(-1);
-   Flush();
-   mFillJob.mPolyAA = true;
+   return mSoftEdgeRequested && (!inHasLine || inOrder==loUnderFill);
+}
+
+void Graphics::updateFillSoftEdge()
+{
+   bool want = wantFillSoftEdge(mLineJob.mStroke!=0);
+   if (want!=mFillJob.mPolyAA)
+   {
+      // Finish the jobs drawn with the old setting
+      Flush(true,true,true);
+      mFillJob.mPolyAA = want;
+   }
+}
+
+void Graphics::fillStyleSoftEdge(bool inEnabled)
+{
+   if (inEnabled!=mSoftEdgeRequested)
+   {
+      mSoftEdgeRequested = inEnabled;
+      updateFillSoftEdge();
+   }
+}
+
+void Graphics::lineOrder(LineOrder inOrder)
+{
+   if (inOrder!=mLineOrder)
+   {
+      bool want = wantFillSoftEdge(mLineJob.mStroke!=0, inOrder);
+      // Finish the line job - the order can't change part way through a line.
+      // The flush uses the old order, so it must happen before mLineOrder changes.
+      Flush(true,want!=mFillJob.mPolyAA,true);
+      mLineOrder = inOrder;
+      mFillJob.mPolyAA = want;
+   }
 }
 
 void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
@@ -396,9 +434,10 @@ void Graphics::lineStyle(double thickness, unsigned int color, double alpha,
                   StrokeCaps caps,
                   StrokeJoints joints, double miterLimit)
 {
+   bool want = wantFillSoftEdge(thickness>=0);
    // Finish solid if changing mPolyAA
-   Flush(true,mFillJob.mPolyAA,true);
-   mFillJob.mPolyAA = false;
+   Flush(true,want!=mFillJob.mPolyAA,true);
+   mFillJob.mPolyAA = want;
    endTiles();
    if (mLineJob.mStroke)
    {
@@ -568,6 +607,35 @@ void Graphics::drawTriangles(const QuickVec<float> &inXYs,
 
 
 
+void Graphics::insertJobAt(int inPos, const GraphicsJob &inJob)
+{
+   if (inPos>=(int)mJobs.size())
+   {
+      mJobs.push_back(inJob);
+   }
+   else
+   {
+      mJobs.InsertAt(inPos,inJob);
+      if (inPos<mBuiltHardware)
+      {
+         // The hardware elements are built, and drawn, in job order, so inserting
+         //  a job below the ones already built means they must be built again.
+         mBuiltHardware = 0;
+         if (mHardwareData)
+            mHardwareData->clear();
+      }
+   }
+}
+
+// Is this one of the plain fill jobs created below, ie something a line job
+//  with loUnderFill order should be drawn beneath?
+static bool isPlainFillJob(const GraphicsJob &inJob)
+{
+   return inJob.mFill && !inJob.mStroke && !inJob.mIsTileJob &&
+          !inJob.mTriangles && !inJob.mIsPointJob;
+}
+
+
 // This routine converts a list of "GraphicsPaths" (mItems) into a list
 //  of LineData and SolidData.
 // The items intermix fill-styles and line-stypes with move/draw/triangle
@@ -578,6 +646,8 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
    int n = mPathData->commands.size();
    int d = mPathData->data.size();
    bool wasFilled = false;
+   // Where the fill job flushed by this call ended up, if any
+   int fillPos = -1;
 
    if (inTile)
    {
@@ -603,22 +673,19 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
 
          // Move the fill job up the list so it is "below" lines that start at the same
          // (or later) data point
-         int pos = mJobs.size()-1;
+         int pos = (int)mJobs.size()-1;
          while(pos>=0)
          {
             if (mJobs[pos].mData0 < mFillJob.mData0)
                break;
+            // ... but stay above a line that is meant to be under the fill
+            if (mJobs[pos].mUnderFill)
+               break;
             pos--;
          }
          pos++;
-         if (pos==mJobs.size())
-         {
-            mJobs.push_back(mFillJob);
-         }
-         else
-         {
-            mJobs.InsertAt(0,mFillJob);
-         }
+         insertJobAt(pos, mFillJob);
+         fillPos = pos;
          mFillJob.mCommand0 = n;
          mFillJob.mData0 = d;
       }
@@ -630,9 +697,39 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
       if (mLineJob.mStroke && mLineJob.mCommand0 <n-1)
       {
          mLineJob.mStroke->IncRef();
+         mLineJob.mUnderFill = mLineOrder==loUnderFill;
+
+         // By default the line goes on top of everything flushed so far
+         int pos = (int)mJobs.size();
+         bool underFlushedFill = false;
+         if (mLineJob.mUnderFill)
+         {
+            if (fillPos>=0)
+            {
+               // The fill flushed above shares the end of the path data with this
+               //  line, so it always covers it - go underneath
+               pos = fillPos;
+               underFlushedFill = true;
+            }
+            // Move the line job down the list so it is "below" the fill jobs that
+            //  cover the same path data.  This mirrors the fill insertion above.
+            while(pos>0)
+            {
+               const GraphicsJob &job = mJobs[pos-1];
+               if (!isPlainFillJob(job))
+                  break;
+               // Does the fill job's data range overlap the line's?
+               if (job.mData0 + job.mDataCount <= mLineJob.mData0 || job.mData0 >= d)
+                  break;
+               underFlushedFill = true;
+               pos--;
+            }
+         }
 
          // Add closing segment...
-         if (wasFilled)
+         // The shape is closed if it is filled, either by the fill job flushed above,
+         //  or - for a line under the fill - by one flushed in an earlier call.
+         if (wasFilled || underFlushedFill)
          {
             mPathData->closeLine(mLineJob.mCommand0,mLineJob.mData0);
             n = mPathData->commands.size();
@@ -640,7 +737,7 @@ void Graphics::Flush(bool inLine, bool inFill, bool inTile)
          }
          mLineJob.mCommandCount = n-mLineJob.mCommand0;
          mLineJob.mDataCount = d-mLineJob.mData0;
-         mJobs.push_back(mLineJob);
+         insertJobAt(pos, mLineJob);
       }
       mLineJob.mCommand0 = n;
       mLineJob.mData0 = d;

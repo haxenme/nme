@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+
+  <meta
+     title="NME Line Order Test"
+     package="org.haxe.nme.lineorder"
+     version="1.0.0"
+     company="nme"
+  />
+
+  <app
+     file="LineOrder"
+     main="Main"
+  />
+
+  <window
+     width="660"
+     height="1010"
+     fps="60"
+     background="0xd0d0d0"
+     require_shaders="true"
+     resizable="true"
+     hardware="true"
+  />
+
+  <icon name="../../assets/icons/nme.svg" />
+  <source path="src" />
+
+  <haxelib name="nme" />
+
+</project>
