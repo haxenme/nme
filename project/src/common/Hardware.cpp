@@ -1860,17 +1860,33 @@ public:
 
       UserPoint getDir0(const UserPoint &inP0) const
       {
-         return curve0-inP0;
+         UserPoint d = curve0-inP0;
+         if (d.x==0 && d.y==0)
+         {
+            d = curve1-inP0;
+            if (d.x==0 && d.y==0)
+               d = p-inP0;
+         }
+         return d;
       }
       UserPoint getDir1(const UserPoint &inP0) const
       {
          if (isCurve())
-            return p-curve1;
+         {
+            UserPoint d = p-curve1;
+            if (d.x==0 && d.y==0)
+            {
+               d = p-curve0;
+               if (d.x==0 && d.y==0)
+                  d = p-inP0;
+            }
+            return d;
+         }
          return p-inP0;
       }
       UserPoint getDirAverage(const UserPoint &inP0) const { return p-inP0; }
 
-      inline bool isCurve() const { return p!=curve1; }
+      inline bool isCurve() const { return p!=curve1 || curve0!=curve1; }
       inline bool isCurve2() const { return curve0!=curve1; }
 
       UserPoint p;
@@ -3323,7 +3339,7 @@ public:
 
             case pcCurveTo:
                {
-                  if (strip.size()>0 && *point==prev && point[1]==prev)
+                  if (strip.size()>0 && point[1]==prev && point[0].Dist2(prev)<=mCurveThresh2)
                   {
                      point+=2;
                      continue;
@@ -3347,7 +3363,8 @@ public:
 
             case pcCubicTo:
                {
-                  if (strip.size()>0 && *point==prev && point[1]==prev && point[2]==prev)
+                  if (strip.size()>0 && point[2]==prev &&
+                      point[0].Dist2(prev)<=mCurveThresh2 && point[1].Dist2(prev)<=mCurveThresh2)
                   {
                      point+=3;
                      continue;
