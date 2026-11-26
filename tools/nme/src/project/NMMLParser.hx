@@ -569,6 +569,9 @@ class NMMLParser
 
       if (element.has.universalApk)
          project.androidConfig.universalApk = parseBool(element.att.universalApk);
+
+      if (element.has.defaultPermissions)
+         project.androidConfig.defaultPermissions = parseBool(substitute(element.att.defaultPermissions));
  
       for(childElement in element.elements) 
       {

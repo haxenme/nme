@@ -314,6 +314,7 @@ class AndroidPlatform extends Platform
             staticNme = true;
       context.STATIC_NME = staticNme;
       context.UNIVERSAL_APK = project.androidConfig.universalApk;
+      context.DEFAULT_PERMISSIONS = project.androidConfig.defaultPermissions;
 
       context.appHeader = project.androidConfig.appHeader;
       context.appActivity = project.androidConfig.appActivity;

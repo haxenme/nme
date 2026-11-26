@@ -13,6 +13,8 @@ class AndroidConfig
    public var minApiLevel:Int;
    public var addV4Compat:Bool;
    public var universalApk:Bool;
+   // WAKE_LOCK, INTERNET, VIBRATE and ACCESS_NETWORK_STATE; turn off for apps that need none of them
+   public var defaultPermissions:Bool;
    public var bundleApk:Bool;
    public var targetApiLevel:Null<Int>;
    public var buildApiLevel:Null<Int>;
@@ -35,6 +37,7 @@ class AndroidConfig
       minApiLevel = 21;
       addV4Compat = false;
       universalApk = false;
+      defaultPermissions = true;
       bundleApk = false;
       appHeader = [];
       appIntent = [];
