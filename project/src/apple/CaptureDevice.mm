@@ -245,7 +245,7 @@ public:
    void copyFrame(ImageBuffer *outBuffer, FrameBuffer *inFrame)
    {
       int n = inFrame->width * inFrame->height;
-      unsigned char *src = &inFrame->data[0];
+      unsigned char *src = inFrame->data.data();
       unsigned char *dest = outBuffer->Edit(0);
       memcpy(dest,src,n*4);
       outBuffer->Commit();

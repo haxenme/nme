@@ -3348,7 +3348,7 @@ const char *GetClipboardText()
                   utf8Buffer[bufferPos++] = *charStart++;
          }
          utf8Buffer[bufferPos] = '\0';
-         clipboardText = (const char *)&utf8Buffer[0];
+         clipboardText = (const char *)utf8Buffer.data();
       }
    }
    #endif

@@ -1467,16 +1467,16 @@ public:
             if (n>0)
             {
                reso.resize(n);
-               memcpy(&reso[0], resource.Bytes(), n);
+               memcpy(reso.data(), resource.Bytes(), n);
                #ifdef NME_SDL2
-               mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(&reso[0], reso.size()),false);
+               mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(reso.data(), reso.size()),false);
                #else
-               mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(&reso[0], reso.size()));
+               mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(reso.data(), reso.size()));
                #endif
 
                if (mMusic)
                {
-                  INmeSoundData *stream = INmeSoundData::create(&reso[0], reso.size(),SoundJustInfo);
+                  INmeSoundData *stream = INmeSoundData::create(reso.data(), reso.size(),SoundJustInfo);
                   if (stream)
                   {
                      duration = stream->getDuration() * 1000.0;
@@ -1511,12 +1511,12 @@ public:
       loaded = true;
       
       reso.resize(len);
-      memcpy(&reso[0], inData, len);
+      memcpy(reso.data(), inData, len);
 
       #ifdef NME_SDL2
-      mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(&reso[0], len),false);
+      mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(reso.data(), len),false);
       #else
-      mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(&reso[0], len));
+      mMusic = Mix_LoadMUS_RW(SDL_IOFromConstMem(reso.data(), len));
       #endif
 
 

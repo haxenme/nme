@@ -626,13 +626,13 @@ int main(int argc, char **argv)
    size_t size = ftell(source_file);
    fseek(source_file, 0, SEEK_SET);
    buffer.resize(size);
-   int got = (int)fread( &buffer[0], size, 1, source_file );
+   int got = (int)fread( buffer.data(), size, 1, source_file );
    fclose(source_file);
    fprintf(stderr,"source bytes %d/%d\n", (int)size,got);
 
    MMalDecoder decoder(true);
    for(int i=0;i<1;i++)
-       decoder.decodeBytes(0,0,0,&buffer[0], (unsigned int)size );
+       decoder.decodeBytes(0,0,0,buffer.data(), (unsigned int)size );
    fprintf(stderr,"bye.\n");
 
 }

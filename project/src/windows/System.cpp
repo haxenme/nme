@@ -160,7 +160,7 @@ static unsigned __stdcall dialog_proc( void *inSpec )
       for(int i=0;i<len;i++)
          buf[i] = ptr[i]=='|' ? '\0' : ptr[i];
       buf[len] = '\0';
-      ofn.lpstrFilter = &buf[0];
+      ofn.lpstrFilter = buf.data();
       ofn.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR;
       if (spec->flags & flagMustExist)
          ofn.Flags |= OFN_FILEMUSTEXIST;
@@ -171,7 +171,7 @@ static unsigned __stdcall dialog_proc( void *inSpec )
       if (spec->flags & flagPromptOverwrite)
          ofn.Flags |= OFN_OVERWRITEPROMPT;
       //ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
-      ofn.lpstrFile = &path[0];
+      ofn.lpstrFile = path.data();
       ofn.lpstrTitle = spec->title.c_str();
       ofn.nMaxFile = path.size();
       ofn.lpstrDefExt = "*";

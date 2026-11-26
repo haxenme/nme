@@ -178,7 +178,7 @@ bool SoftwareDecodeJPeg(unsigned char *inDest, int inWidth, int inHeight, const 
    bool trim = inWidth < cinfo.output_width;
    int activeWidth = std::min( (int)inWidth,  (int)cinfo.output_width);
    std::vector<uint8> rowBuf(trim ? cinfo.output_width : 0);
-   uint8 *bufPtr = trim ? &rowBuf[0] : nullptr;
+   uint8 *bufPtr = trim ? rowBuf.data() : nullptr;
 
 
    while (cinfo.output_scanline < activeHeight)
@@ -366,7 +366,7 @@ static Surface *TryJPEG(FILE *inFile,const uint8 *inData, int inDataLen, IAppDat
    while (cinfo.output_scanline < cinfo.output_height)
    {
       int y = cinfo.output_scanline;
-      uint8 * dest = rotation==0 ? target.Row(y) : (uint8 *)&rowBuf[0];
+      uint8 * dest = rotation==0 ? target.Row(y) : (uint8 *)rowBuf.data();
       jpeg_read_scanlines(&cinfo, &dest, 1);
 
       if (rotation==1)

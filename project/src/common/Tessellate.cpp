@@ -781,7 +781,7 @@ struct SubInfo
       edgeBuffer.resize(inN);
       size = inN;
 
-      first =&edgeBuffer[0];
+      first =edgeBuffer.data();
       for(int i=0;i<inN;i++)
       {
          int prev = (i+inN-1) % inN;
@@ -839,7 +839,7 @@ bool TriangulateSubPolys(SubInfo *outer, QuickVec<SubInfo *> &holes,  Vertices &
       int p0 = 0;
       for(int i=0;i<size;i++)
          pointBuffer[i].set( p[i].p.x, p[i].p.y );
-      poly2Tri->AddSubPoly(&pointBuffer[0],size);
+      poly2Tri->AddSubPoly(pointBuffer.data(),size);
       p0 += size;
 
       for(int h=0;h<holeCount;h++)
@@ -999,7 +999,7 @@ bool ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
       SubInfo outer;
       ClipperLib::PolyNodes &children = poly->Childs;
       int kids = children.size();
-      outer.linkPolygon( &path[0], path.size(), UserPoint(minX,minY), unscale, reverse );
+      outer.linkPolygon( path.data(), path.size(), UserPoint(minX,minY), unscale, reverse );
       //dump(outer);
 
       QuickVec<SubInfo> holes(kids);
@@ -1008,7 +1008,7 @@ bool ConvertOutlineToTriangles(Vertices &ioOutline,const QuickVec<int> &inSubPol
       for(int c=0;c<kids;c++)
       {
          const ClipperLib::Path &path = children[c]->Contour;
-         holes[c].linkPolygon( &path[0], path.size(), UserPoint(minX,minY), unscale, reverse );
+         holes[c].linkPolygon( path.data(), path.size(), UserPoint(minX,minY), unscale, reverse );
          holesPtr[c] = &holes[c];
          //dump(holes[c]);
       }

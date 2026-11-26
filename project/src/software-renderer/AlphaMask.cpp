@@ -297,7 +297,7 @@ SpanRect::SpanRect(const Rect &inRect, int inAA)
    {
       if (sTransitionsBuffer.size() < mRect.h)
          sTransitionsBuffer.resize(mRect.h);
-      mTransitions = &sTransitionsBuffer[0];
+      mTransitions = sTransitionsBuffer.data();
    }
    else
    {
@@ -317,7 +317,7 @@ SpanRect::SpanRect(const Rect &inRect, int inAA)
 
 SpanRect::~SpanRect()
 {
-   if (mTransitions && mTransitions != &sTransitionsBuffer[0])
+   if (mTransitions && mTransitions != sTransitionsBuffer.data())
       delete [] mTransitions;
 }
    
@@ -613,7 +613,7 @@ AlphaMask *SpanRect::CreateMask(const Transform &inTransform, int inAlpha, Lines
    
    if (inLines.size() < rect.h)
       inLines.resize(rect.h);
-   mLines = &inLines[0];
+   mLines = inLines.data();
    
    AlphaMask *mask = AlphaMask::Create(rect, inTransform);
    Transitions *t = &mTransitions[0];

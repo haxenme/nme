@@ -148,7 +148,7 @@ void BufferData::setDataSize(int inSize, bool keepData)
 void BufferData::swapData(std::vector<unsigned char > &ioData)
 {
    setDataSize(ioData.size(),false);
-   memcpy(data, &ioData[0], ioData.size() );
+   memcpy(data, ioData.data(), ioData.size() );
    std::vector<unsigned char > empty;
    empty.swap(ioData);
 }

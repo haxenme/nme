@@ -786,7 +786,7 @@ public:
             tex[idx++] = 0.0; tex[idx++] = 1.0;
             tex[idx++] = 1.0; tex[idx++] = 1.0;
          }
-         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*tex.size(), &tex[0], GL_STATIC_DRAW);
+         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*tex.size(), tex.data(), GL_STATIC_DRAW);
       }
       else
          glBindBuffer(GL_ARRAY_BUFFER, mFullTexCoordsBuffer);
@@ -827,7 +827,7 @@ public:
                data[idx++] = v0+2;
                v0 += 4;
             }
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short)*data.size(), &data[0], GL_STATIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short)*data.size(), data.data(), GL_STATIC_DRAW);
          }
          else
          {
@@ -845,7 +845,7 @@ public:
                data[idx++] = v0+2;
                v0 += 4;
             }
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*data.size(), &data[0], GL_STATIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*data.size(), data.data(), GL_STATIC_DRAW);
          }
       }
       else

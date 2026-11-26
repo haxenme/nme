@@ -49,8 +49,8 @@ public:
       if (request.postData.Size()>0)
       {
          postData.resize(request.postData.Size());
-         memcpy(&postData[0],request.postData.Bytes(), request.postData.Size());
-         attr.requestData = &postData[0];
+         memcpy(postData.data(),request.postData.Bytes(), request.postData.Size());
+         attr.requestData = postData.data();
          attr.requestDataSize = postData.size();
       }
 
@@ -120,7 +120,7 @@ public:
       if (allHeaders.size())
       {
          allHeaders.push_back(nullptr);
-         attr.requestHeaders = &allHeaders[0];
+         attr.requestHeaders = allHeaders.data();
       }
 
 
@@ -217,8 +217,8 @@ public:
          if (len)
          {
             std::vector<char> buf(len);
-            emscripten_fetch_get_response_headers(fetch, &buf[0], len);
-            char **headers = emscripten_fetch_unpack_response_headers(&buf[0]);
+            emscripten_fetch_get_response_headers(fetch, buf.data(), len);
+            char **headers = emscripten_fetch_unpack_response_headers(buf.data());
             std::string sep(": ");
             for(char **h = headers; *h; h+=2)
                outHeaders.push_back( h[0] + sep + h[1] );

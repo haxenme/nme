@@ -1170,8 +1170,8 @@ void SimpleSurface::getFloats32(float *outData, int inStride, PixelFormat inForm
       buffer.resize( stride * h );
       PixelConvert(w, h,
           mPixelFormat,  ptr, mStride, GetPlaneOffset(),
-          inFormat, &buffer[0], stride, 0 );
-      ptr = &buffer[0];
+          inFormat, buffer.data(), stride, 0 );
+      ptr = buffer.data();
    }
    bool swizzleRgb = (inTransform & FloatSwizzeRgb );
 
@@ -1337,7 +1337,7 @@ void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat i
    {
       stride = w * pixelSize;
       buffer.resize( stride * h );
-      ptr = &buffer[0];
+      ptr = buffer.data();
    }
    int ppr = w * pixelSize;
 
@@ -1378,7 +1378,7 @@ void SimpleSurface::setFloats32(const float *inData, int inStride, PixelFormat i
    if (inFormat!=mPixelFormat)
    {
       PixelConvert(w, h,
-          inFormat,  &buffer[0], stride, 0,
+          inFormat,  buffer.data(), stride, 0,
           mPixelFormat, ptr, mStride, 0 );
    }
 

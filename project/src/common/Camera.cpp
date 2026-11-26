@@ -171,7 +171,7 @@ void Camera::onPoll(value handler)
             alloc_field(handler, _id_depth_data, alloc_null() );
          else
          {
-            value ptr = alloc_abstract(gDataPointer, &depth[0]);
+            value ptr = alloc_abstract(gDataPointer, depth.data());
             alloc_field(handler, _id_depth_data, ptr);
          }
 
@@ -230,7 +230,7 @@ void nme_camera_get_depth(value inCamera,value outBytes)
       int size = byteArray.Size();
       if (camera->depth.size()>0 && size>=camera->depth.size()*4)
       {
-         memcpy(bytes, &camera->depth[0], camera->depth.size()*4);
+         memcpy(bytes, camera->depth.data(), camera->depth.size()*4);
       }
    }
 }

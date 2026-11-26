@@ -771,7 +771,7 @@ public:
             float *src = (float *)data;
 
             convertBuffer.resize(values);
-            short *dest = &convertBuffer[0];
+            short *dest = convertBuffer.data();
             for(int v=0;v<values;v++)
                 dest[v] = src[v] * 10000;
  

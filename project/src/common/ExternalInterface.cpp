@@ -4097,7 +4097,7 @@ void nme_text_field_get_line_positions(value inText,int inIndex0,value outLines)
       else
       {
          std::vector<double> buf(n);
-         text->getLinePositions(inIndex0,&buf[0],n);
+         text->getLinePositions(inIndex0,buf.data(),n);
          for(int i=0;i<n;i++)
             val_array_set_i(outLines, i, alloc_float(buf[i]));
       }
@@ -5804,7 +5804,7 @@ int nme_zip_encode(value ioBuffer)
 
    z.next_in = (Bytef*)buf->getData();
    z.avail_in = slen;
-   z.next_out = (Bytef*)&dest[0];
+   z.next_out = (Bytef*)dest.data();
    z.avail_out = dlen;
 
    int code = 0;
@@ -5813,7 +5813,7 @@ int nme_zip_encode(value ioBuffer)
        deflateEnd(&z);
        val_throw( alloc_string("bad deflate") );
    }
-   int size = z.next_out - (Bytef*)&dest[0];
+   int size = z.next_out - (Bytef*)dest.data();
    dest.resize(size);
    buf->swapData(dest);
    deflateEnd(&z);
@@ -5857,7 +5857,7 @@ int nme_zip_decode(value ioBuffer)
       }
       if (code==Z_STREAM_END)
       {
-         int size = z.next_out - (Bytef*)&dest[0];
+         int size = z.next_out - (Bytef*)dest.data();
          dest.resize(size);
          buf->swapData(dest);
          inflateEnd(&z);

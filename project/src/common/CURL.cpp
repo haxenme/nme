@@ -144,8 +144,8 @@ public:
       {
          std::vector<char> buffer;
          buffer.resize(512);
-         snprintf(&buffer[0], buffer.size(), "Content-Type: %s", r.contentType);
-         headerlist = curl_slist_append(headerlist, &buffer[0]);
+         snprintf(buffer.data(), buffer.size(), "Content-Type: %s", r.contentType);
+         headerlist = curl_slist_append(headerlist, buffer.data());
       }
       headerlist = curl_slist_append(headerlist, "Expect:");
 
@@ -157,8 +157,8 @@ public:
             URLRequestHeader h = r.headers[i];
             std::vector<char> buffer;
             buffer.resize(strlen(h.name) + strlen(h.value) + 3); // 1 for terminating char, 2 for ': '
-            snprintf(&buffer[0], buffer.size(), "%s: %s", h.name, h.value);
-            headerlist = curl_slist_append(headerlist, &buffer[0]);
+            snprintf(buffer.data(), buffer.size(), "%s: %s", h.name, h.value);
+            headerlist = curl_slist_append(headerlist, buffer.data());
          }
       }
 

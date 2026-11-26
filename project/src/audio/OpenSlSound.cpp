@@ -492,16 +492,16 @@ public:
             float *src = (float *)data;
 
             buffer.resize(values*sizeof(short));
-            short *dest = (short *)&buffer[0];
+            short *dest = (short *)buffer.data();
             for(int v=0;v<values;v++)
                 dest[v] = src[v] * 16383.0;
          }
          else
          {
             buffer.resize(size);
-            memcpy(&buffer[0], data, size);
+            memcpy(buffer.data(), data, size);
          }
-         queueData(&buffer[0], buffer.size());
+         queueData(buffer.data(), buffer.size());
       }
 
       int samples = size/sampleSize;
@@ -716,7 +716,7 @@ public:
 
       LOG_SOUND("Filled %d bytes", size);
 
-      queueData( &buffer[0], size );
+      queueData( buffer.data(), size );
    }
 
 

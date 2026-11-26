@@ -1976,7 +1976,7 @@ void nme_gl_draw_buffers(value inBuffers)
    for(int i=0;i<n;i++)
       buffers[i] = ptr ? ptr[i] : val_int(val_array_i(inBuffers,i));
  
-   glDrawBuffers(n,&buffers[0]);
+   glDrawBuffers(n,buffers.data());
    #endif
 }
 DEFINE_PRIME1v(nme_gl_draw_buffers);

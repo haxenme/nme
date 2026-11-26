@@ -629,7 +629,7 @@ int MyNewFace(const std::string &inFace, int inIndex, FT_Face *outFace, FontBuff
             {
                fseek(file,0,SEEK_SET);
                data.resize(len);
-               fread(&data[0],len,1,file);
+               fread(data.data(),len,1,file);
             }
             fclose(file);
 

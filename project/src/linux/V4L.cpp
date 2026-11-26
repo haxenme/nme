@@ -43,8 +43,8 @@ struct V4LAsyncBuf
    const unsigned char *setMjpegData(const uint8 *inData, int inLen)
    {
       jpegBuffer.resize(inLen);
-      memcpy(&jpegBuffer[0], inData, inLen);
-      return &jpegBuffer[0];
+      memcpy(jpegBuffer.data(), inData, inLen);
+      return jpegBuffer.data();
    }
 };
 
@@ -611,7 +611,7 @@ public:
             V4LAsyncBuf *async = getReadBuffer();
             if (async)
             {
-               const uint8 *src = &async->rgbBuffer[0];
+               const uint8 *src = async->rgbBuffer.data();
                int srcStride = width*3;
 
                uint8 *dest = buffer->Edit(0);
@@ -705,8 +705,8 @@ public:
    const unsigned char *setMjpegData(const uint8 *inData, int inLen)
    {
       jpegBuffer.resize(inLen);
-      memcpy(&jpegBuffer[0], inData, inLen);
-      return &jpegBuffer[0];
+      memcpy(jpegBuffer.data(), inData, inLen);
+      return jpegBuffer.data();
    }
 
    void onI420(HwCallbackFrame *inFrame)
@@ -721,17 +721,17 @@ public:
 
       if (currentWriteBuffer)
       {
-         dest = &currentWriteBuffer->rgbBuffer[0];
+         dest = currentWriteBuffer->rgbBuffer.data();
          destStride = width*3;
          currentWriteBuffer->i420Buf.resize(size);
-         i420Buf = &currentWriteBuffer->i420Buf[0];
+         i420Buf = currentWriteBuffer->i420Buf.data();
       }
       else
       {
          dest = buffer->Edit(0);
          destStride = buffer->GetStride();
          i420Buffer.resize(size);
-         i420Buf = &i420Buffer[0];
+         i420Buf = i420Buffer.data();
       }
 
       const uint8 *l0 = inFrame->buffer + inFrame->cropY*inFrame->width + inFrame->cropX;
@@ -792,7 +792,7 @@ public:
            return;
         currentWriteBuffer->rgbBuffer.resize( width*height*3 );
         stride = width*3;
-        dest = &currentWriteBuffer->rgbBuffer[0];
+        dest = currentWriteBuffer->rgbBuffer.data();
      }
      else
      {
@@ -930,7 +930,7 @@ public:
    }
    const unsigned char *getJpegData()
    {
-      return jpegBuffer.size() ? &jpegBuffer[0] : nullptr;
+      return jpegBuffer.size() ? jpegBuffer.data() : nullptr;
    }
 
 };

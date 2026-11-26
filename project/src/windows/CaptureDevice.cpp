@@ -382,15 +382,15 @@ public:
          FrameBuffer *frameBuffer = getWriteBuffer();
 
          frameBuffer->data.resize(size);
-         if (!size || !&frameBuffer->data[0])
+         if (!size || !frameBuffer->data.data())
          {
-            printf("Printf alloc frame - %d (%p) %dx%d\n", size, &frameBuffer->data[0],width,height);
+            printf("Printf alloc frame - %d (%p) %dx%d\n", size, frameBuffer->data.data(),width,height);
          }
          frameBuffer->width = width;
          frameBuffer->height = height;
          frameBuffer->stride = mBytesPerRow;
 
-         if (inGrabber->GetCurrentBuffer(&size, (long*)&frameBuffer->data[0])==S_OK)
+         if (inGrabber->GetCurrentBuffer(&size, (long*)frameBuffer->data.data())==S_OK)
          {
             frameBuffer->age = frameId++;
          }
@@ -507,7 +507,7 @@ public:
          //printf("Got framebuffer %d\n", frameBuffer->age);
          unsigned char *dest = outBuffer->Edit(0);
          //printf("Dest %p (%dx%d, %d)\n", dest, outBuffer->Width(), outBuffer->Height(), outBuffer->GetStride() );
-         unsigned char *src = &inFrame->data[0];
+         unsigned char *src = inFrame->data.data();
          for(int y=0;y<height;y++)
          {
             int destY = height-1-y;

@@ -146,11 +146,11 @@ struct MetalTexture : public Texture
             std::vector<uint8> buf(dirtyRect.w*dirtyRect.h*4);
             PixelConvert(dirtyRect.w,dirtyRect.h,
                             surface->Format(), p0, surface->GetStride(), surface->GetPlaneOffset(),
-                            pfBGRPremA, &buf[0], dirtyRect.w*4, dirtyRect.w*dirtyRect.h*4 );
+                            pfBGRPremA, buf.data(), dirtyRect.w*4, dirtyRect.w*dirtyRect.h*4 );
 
             [tex replaceRegion:region
                mipmapLevel:0
-               withBytes:&buf[0]
+               withBytes:buf.data()
                bytesPerRow:dirtyRect.w*4];
          }
          else
@@ -683,9 +683,9 @@ struct MetalProgram
 
    void bindUniforms(id<MTLRenderCommandEncoder> renderEncoder)
    {
-      [renderEncoder setVertexBytes:&uniformBuf[0]  length:uniformBuf.size()  atIndex:UNIFORM_SLOT];
+      [renderEncoder setVertexBytes:uniformBuf.data()  length:uniformBuf.size()  atIndex:UNIFORM_SLOT];
       if (focusOffset>=0)
-         [renderEncoder setFragmentBytes:&uniformBuf[0]  length:uniformBuf.size()  atIndex:FRAG_UNIFORM_SLOT];
+         [renderEncoder setFragmentBytes:uniformBuf.data()  length:uniformBuf.size()  atIndex:FRAG_UNIFORM_SLOT];
    }
 
 };
