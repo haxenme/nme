@@ -1,5 +1,6 @@
 #include <hx/CFFI.h>
 #include <Display.h>
+#include <TextField.h>
 #include <Surface.h>
 #include <KeyCodes.h>
 #include <Utils.h>
@@ -497,16 +498,41 @@ public:
       }
 
       int sk;
+      bool multiline = true;
+      int maxChars = 0;
       DisplayObject *fobj = GetFocusObject();
       if(fobj)
+      {
           sk = fobj->softKeyboard;
+          TextField *field = dynamic_cast<TextField *>(fobj);
+          if (field)
+          {
+             multiline = field->getMultiline();
+             maxChars = field->getMaxChars();
+          }
+      }
       else
           sk = softKeyboard;
-      jmethodID mid = env->GetStaticMethodID(cls, "popupKeyboard", "(ILjava/lang/String;I)V");
-      if (mid == 0)
-        return;
 
-      env->CallStaticVoidMethod(cls, mid, (int)inMode, str, sk);
+      jmethodID mid = env->GetStaticMethodID(cls, "popupKeyboard", "(ILjava/lang/String;IZI)V");
+      if (mid != 0)
+      {
+         env->CallStaticVoidMethod(cls, mid, (int)inMode, str, sk, (jboolean)multiline, maxChars);
+      }
+      else
+      {
+         // An older GameActivity template, without the line and length options
+         env->ExceptionClear();
+         mid = env->GetStaticMethodID(cls, "popupKeyboard", "(ILjava/lang/String;I)V");
+         if (mid == 0)
+         {
+           env->ExceptionClear();
+           return;
+         }
+         env->CallStaticVoidMethod(cls, mid, (int)inMode, str, sk);
+      }
+      if (str)
+         env->DeleteLocalRef(str);
    }
 
    void SetPopupTextSelection(int inSel0, int inSel1)

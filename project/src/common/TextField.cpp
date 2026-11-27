@@ -644,6 +644,8 @@ void TextField::Unfocus()
    Stage *stage = getStage();
    if (stage)
       stage->setTextInput(false);
+   // Hides the soft keyboard, as for other objects
+   DisplayObject::Unfocus();
 }
 
 
@@ -834,28 +836,50 @@ void TextField::replaceText(int inC0, int inC1, const WString &inText)
    InsertString(inText);
 }
 
+// From a soft keyboard that keeps its own copy of the text: replace
+//  [inPos0,inPos1) with inText
 void TextField::onTextUpdate(const std::string &inText, int inPos0, int inPos1)
 {
-   if (inPos1>inPos0)
+   std::string text = inText;
+   // A single-line field takes no line breaks, even if the keyboard sends one
+   if (!multiline)
+      text.erase( std::remove_if(text.begin(), text.end(),
+                     [](char c) { return c=='\n' || c=='\r'; }), text.end() );
+
+   bool deleting = inPos1>inPos0;
+   if (!deleting && text.empty())
+      return;
+
+   if (deleting)
    {
       mSelectMin = inPos0;
       mSelectMax = inPos1;
       DeleteSelection();
    }
    else
-      caretIndex = inPos0;
-
-   Stage *stage = getStage();
-   if (stage)
    {
-      Event onText(etChar);
-      onText.utf8Text = inText.c_str();
-      onText.utf8Length = inText.size();
-      onText.id = getID();
-      stage->HandleEvent(onText);
+      mSelectMin = mSelectMax = 0;
+      caretIndex = inPos0;
    }
 
-   InsertString(UTF8ToWide(inText));
+   if (!text.empty())
+   {
+      Stage *stage = getStage();
+      if (stage)
+      {
+         Event onText(etChar);
+         onText.utf8Text = text.c_str();
+         onText.utf8Length = text.size();
+         onText.id = getID();
+         stage->HandleEvent(onText);
+      }
+
+      InsertString(UTF8ToWide(text));
+   }
+
+   // As typing on a hardware keyboard does
+   OnChange();
+   ShowCaret();
 }
 
 

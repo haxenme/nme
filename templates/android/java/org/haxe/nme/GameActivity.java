@@ -20,7 +20,10 @@ import android.os.Handler;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
+import android.text.InputFilter;
 import android.view.View;
 import android.view.Window;
 import android.widget.FrameLayout;
@@ -1423,11 +1426,21 @@ implements SensorEventListener
    
    public static void popupKeyboard(final int inMode, final  String inContent, final int inType)
    {
+      popupKeyboard(inMode, inContent, inType, true, 0);
+   }
+
+   // inMultiline: Enter inserts a newline. Otherwise it is an action key - Done -
+   //  that sends Enter to the field and hides the keyboard.
+   // inMaxChars: when >0, the keyboard stops at the field's own limit, so the
+   //  two copies of the text agree.
+   public static void popupKeyboard(final int inMode, final  String inContent, final int inType,
+                                    final boolean inMultiline, final int inMaxChars)
+   {
       try { 
          activity.mHandler.post(new Runnable() {
             @Override public void run() {
                try {
-                  handlePopKeyboard(inMode, inContent, inType);
+                  handlePopKeyboard(inMode, inContent, inType, inMultiline, inMaxChars);
                }
                catch(Exception e) {
                   Log.e(TAG, getStackTrace(e));
@@ -1442,47 +1455,66 @@ implements SensorEventListener
       }
    }
 
-   private static void handlePopKeyboard(final int inMode, final  String inContent, final int inType)
+   private static int inputTypeFor(int inType, int inBase)
+   {
+      switch(inType)
+      {
+         case 1: return inBase | InputType.TYPE_TEXT_VARIATION_PERSON_NAME;
+         case 2: return inBase | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+         case 3: return InputType.TYPE_CLASS_NUMBER;
+         case 4: return inBase | InputType.TYPE_TEXT_VARIATION_PHONETIC;
+         case 5: return inBase | InputType.TYPE_TEXT_VARIATION_URI;
+         case 101: return inBase | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD; //only on android
+      }
+      return inBase;
+   }
+
+   private static void handlePopKeyboard(final int inMode, final  String inContent, final int inType,
+                                         final boolean inMultiline, final int inMaxChars)
    {
       InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
       mgr.hideSoftInputFromWindow(activity.mView.getWindowToken(), 0);
       
       if (inMode!=KEYBOARD_OFF)
       {
+         EditText edit = activity.mKeyInTextView;
          activity.mTextUpdateLockout = true;
          activity.mIncrementalText = inContent==null;
+
+         // Configure the editor before giving it text and focus, so the keyboard
+         //  starts with the right type, Enter key and limit
+         int base = activity.mDefaultInputType;
+         boolean singleLine = !activity.mIncrementalText && !inMultiline;
+         if (singleLine)
+            base &= ~InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+         edit.setInputType(inputTypeFor(inType, base));
+         // The editor itself is hidden: never let the keyboard show it fullscreen
+         int ime = EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_FLAG_NO_FULLSCREEN;
+         edit.setImeOptions(ime | (singleLine ? EditorInfo.IME_ACTION_DONE : EditorInfo.IME_ACTION_NONE));
+         if (!activity.mIncrementalText && inMaxChars>0)
+            edit.setFilters(new InputFilter[]{ new InputFilter.LengthFilter(inMaxChars) });
+         else
+            edit.setFilters(new InputFilter[0]);
+
          if (inMode==KEYBOARD_DUMB)
             activity.mView.requestFocus();
          else // todo - force native control
          {
-            activity.mKeyInTextView.requestFocus();
+            edit.requestFocus();
             if (!activity.mIncrementalText)
             {
-               activity.mKeyInTextView.setText(inContent);
+               edit.setText(inContent);
+               edit.setSelection(edit.getText().length());
             }
             else
             {
-               activity.mKeyInTextView.setText("*");
-               activity.mKeyInTextView.setSelection(1);
+               edit.setText("*");
+               edit.setSelection(1);
             }
          }
 
-         if (inType == 1)
-             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
-         else if (inType == 2)
-             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-         else if (inType == 5)
-             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_URI);
-         else if (inType == 3)
-             activity.mKeyInTextView.setInputType(InputType.TYPE_CLASS_NUMBER);
-         else if (inType == 4)
-             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_PHONETIC);
-         else if (inType == 101)//only on android
-             activity.mKeyInTextView.setInputType(activity.mDefaultInputType | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-         else
-             activity.mKeyInTextView.setInputType(activity.mDefaultInputType);
-
-         mgr.showSoftInput(activity.mKeyInTextView, 0);
+         mgr.restartInput(edit);
+         mgr.showSoftInput(edit, 0);
          activity.mTextUpdateLockout = false;
       }
    }
@@ -1496,23 +1528,36 @@ implements SensorEventListener
          {
             if (!activity.mIncrementalText)
             {
-                activity.mTextUpdateLockout = true;
+               activity.mTextUpdateLockout = true;
                //Log.v("VIEW","Run setPopupSelection " + (activity.mIncrementalText ?"inc ":"smart ") + inSel0 + "..." + inSel1 );
-               if (inSel0!=inSel1)
-                  activity.mKeyInTextView.setSelection(inSel0,inSel1);
-               else {
-                  int selection = calcSelectionIndex(inSel0, activity.mKeyInTextView);
-                  activity.mKeyInTextView.setSelection(selection);
-               }
-                activity.mTextUpdateLockout = false;
+               EditText edit = activity.mKeyInTextView;
+               edit.setSelection(clampIndex(inSel0, edit), clampIndex(inSel1, edit));
+               activity.mTextUpdateLockout = false;
             }
          }} );
    }
 
-   private static int calcSelectionIndex(int index, EditText editText){
-      if(index >= editText.getText().length())
-         return 0;
-      return index;
+   // The field and the editor should hold the same text; if they ever disagree,
+   //  keep the caret in range rather than throwing or jumping to the start
+   private static int clampIndex(int index, EditText editText)
+   {
+      int len = editText.getText().length();
+      return index<0 ? 0 : index>len ? len : index;
+   }
+
+   // Enter, from the keyboard's action key on a single-line field
+   void sendEnter()
+   {
+      if (mView==null)
+         return;
+      mView.queueEvent(new Runnable() {
+         public void run() {
+            if (mView==null)
+               return;
+            mView.HandleResult(NME.onKeyChange(13, 13, true, false));
+            mView.HandleResult(NME.onKeyChange(13, 13, false, false));
+         }
+      });
    }
         
    void onSelectionChanged(final int selStart, final int selEnd)
@@ -1551,11 +1596,15 @@ implements SensorEventListener
                if(ignoreTextReset)
                   return;
                //Log.v("VIEW*","onTextChanged [" + s + "] " + start + " " + before + " " + count);
+               // s is the live Editable: copy what changed now, on this thread,
+               //  since it may have changed again by the time the render thread runs
+               final String replace = count==0 ? "" : s.subSequence(start,start+count).toString();
+               final boolean incremental = mIncrementalText;
                mView.queueEvent(new Runnable() {
                   public void run() {
                      if (mView==null)
                         return;
-                     if (mIncrementalText)
+                     if (incremental)
                       {
                         for(int i = 1;i <= before;i++)
                         {
@@ -1563,9 +1612,9 @@ implements SensorEventListener
                            mView.HandleResult(NME.onKeyChange(8, 8, true, false));
                            mView.HandleResult(NME.onKeyChange(8, 8, false, false));
                         }
-                        for (int i = start; i < start + count; i++)
+                        for (int i = 0; i < replace.length(); i++)
                         {
-                           int keyCode = s.charAt(i);
+                           int keyCode = replace.charAt(i);
                            if (keyCode != 0)
                             {
                               mView.HandleResult(NME.onKeyChange(keyCode, keyCode, true, keyCode == 10 ? false : true));
@@ -1575,7 +1624,6 @@ implements SensorEventListener
                      }
                      else
                      {
-                        String replace = count==0 ? "" : s.subSequence(start,start+count).toString();
                         //Log.v("VIEW*","replaced " + replace + " at  " + start + " (delete =" + before + ")" );
                         mView.HandleResult(NME.onText(replace,start,start+before));
                      }
@@ -1602,6 +1650,21 @@ implements SensorEventListener
         });
 
         
+        mKeyInTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (mIncrementalText)
+                   return false;
+                // Hardware Enter also arrives here as a key event; take its down only
+                if (event!=null && event.getAction()!=KeyEvent.ACTION_DOWN)
+                   return true;
+                sendEnter();
+                InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                mgr.hideSoftInputFromWindow(mKeyInTextView.getWindowToken(), 0);
+                return true;
+            }
+        });
+
         mKeyInTextView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
